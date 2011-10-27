@@ -1,0 +1,34 @@
+# Local GMail program! #
+
+Gmail's #1 feature is speed.  They have an advantage because they can
+paralellize reads over multiple spindles, home users only have one.
+
+Assume 1 seek costs 15ms.  That means that to seem fast (<200ms), any
+query must require less than 13 disk seeks (13*14 = 195).
+
+If we assume 3 seeks for 'looking up a search result' using a normal
+posting list, that only leaves 10 for gathering up the result data itself,
+which is a bit limited.  This sucks.  RAM to the rescue!
+
+
+## Some times ##
+
+gunzip|wc a 3MB file with 5x compression (600KB) takes 0.5 seconds. 
+
+Just wc on the 3MB file also takes 0.5 seconds.  Is compressing worth it?
+Not sure...
+
+
+## How much can we fit in RAM? ##
+
+1. Give each e-mail a 9 byte ID (3 for file ID, 6 for offset in file)
+
+2. Store 240 bytes about each message: from, subject, tag list
+
+3. That gives 4 messages / KB, roughly.  So 4000 messages / MB,
+   or 100000 messages in 25 MB.
+
+Loading that into RAM only takes a few seconds, and after that we can
+look up metadata about arbitrary messages in RAM-time, not disk-time.
+
+
