@@ -26,7 +26,8 @@
 #     using sequential scans from the rear end of the index.
 #
 ###################################################################################
-import codecs, locale, hashlib, mailbox, os, random, re, sys, time
+import codecs, getopt, locale, hashlib, mailbox, os, random, re, sys, time
+import readline
 import email.parser
 import lxml.html
 
@@ -34,34 +35,34 @@ import lxml.html
 def b64c(b):
   return b.replace('\n', '').replace('=', '').replace('/', '_')
 
+def strhash(s, length):
+  s2 = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '', s.lower())
+  while len(s2) < length:
+    h = hashlib.md5()
+    h.update(s.encode('utf-8'))
+    s2 += b64c(h.digest().encode('base64')).lower()
+  return s2[:length]
+
 def b64int(i):
   h = hex(int(i))[2:]
   h = (len(h) & 1) and '0'+h or h
   return b64c(h.decode('hex').encode('base64'))
 
 
-class ConfigManager(dict):
-  def load(self): pass
-  def save(self): pass
-  def parse(self, args): pass
-  def mailindex_file(self): return self.get('mailindex_file', 'mailpile.idx')
-  def postinglist_dir(self): return self.get('postinglist_dir', 'search')
-
-
 class PostingListStore(object):
 
-  MAX_SIZE = 8*1024
-  HASH_LEN = 6
+  MAX_SIZE = 10*1024  # 12k is 3 blocks, we aim for half-filling the 3rd one.
+  HASH_LEN = 9
 
   @classmethod
   def Append(cls, word, mail_id, config):
     sig = cls.WordSig(word)
     fd, fn = cls.GetFile(sig, config, mode='a')
-    if (os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
-                                                       cls.MAX_SIZE-(cls.HASH_LEN*3)
-        and (fn != sig[:cls.HASH_LEN] or random.randint(0, 100) == 1)):
+    if ((os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
+                                                      cls.MAX_SIZE-(cls.HASH_LEN*3))
+        and (random.randint(0, 50) == 1)):
       # This will compact the files and split out hot-spots, but we only bother
-      # when the files are big or "now and then" for max-depth files.
+      # "once in a while" when the files are "big".
       fd.close()
       pls = cls(word, config)
       pls.append(mail_id)
@@ -73,10 +74,7 @@ class PostingListStore(object):
 
   @classmethod
   def WordSig(cls, word):
-    h = hashlib.md5()
-    h.update(word)
-    return '%s/%s' % (b64c(h.digest().encode('base64'))[:cls.HASH_LEN],
-                      word[:8*cls.HASH_LEN])
+    return '%s/%s' % (strhash(word, cls.HASH_LEN), word[:8*cls.HASH_LEN])
 
   @classmethod
   def GetFile(cls, sig, config, mode='r'):
@@ -272,11 +270,66 @@ class MailIndex(object):
                                    textpart.lower()))
     for word in keywords:
       try:
-        PostingListStore.Append(word.encode('utf-8'), msg_info[0], self.config)
+        PostingListStore.Append(word, msg_info[0], self.config)
       except UnicodeDecodeError:
         # FIXME: we just ignore garbage
         pass
 
+  def find(self, searchterms):
+    pass
+
+
+class ConfigManager(dict):
+  def load(self): pass
+  def save(self): pass
+  def get_mailboxes(self):
+    return [('000', '000')]
+
+  def mailindex_file(self):
+    return self.get('mailindex_file', 'mailpile.idx')
+
+  def postinglist_dir(self):
+    return self.get('postinglist_dir', 'search')
+
+  def get_index(self):
+    if 'index' in self: return self['index']
+    idx = self['index'] = MailIndex(self)
+    idx.load()
+    return idx
+
+
+COMMANDS = {
+  'r:': 'rescan=',
+  'a:': 'add=',
+  's:': 'search=',
+}
+def Action(opt, arg, config):
+  if opt in ('a', 'add'):
+    pass
+
+  elif opt in ('r', 'rescan'):
+    for fid, fpath in config.get_mailboxes():
+      idx = config.get_index()
+      idx.scan_mbox(fid, fpath)
+      idx.save()
+
+  elif opt in ('s', 'search'):
+    summary = config.get_index().find(arg.split(' '))
+    print '%s' % summary
+
+  else:
+    print 'Unknown command: %s' % opt
+
+
+def Interact(config):
+  while True:
+    opt = raw_input('mailpile> ').strip()
+    if opt:
+      if ' ' in opt:
+        opt, arg = opt.split(' ', 1)
+      else:
+        arg = None
+      Action(opt, arg, config)
 
 
 if __name__ == "__main__":
@@ -284,10 +337,15 @@ if __name__ == "__main__":
   re.LOCALE = 1
 
   config = ConfigManager()
-  config.parse(sys.argv[1:])
+  config.load()
+  opts, args = getopt.getopt(sys.argv[1:],
+                             ''.join(COMMANDS.keys()),
+                             COMMANDS.values())
 
-  index = MailIndex(config)
-  index.load();
-  index.scan_mbox('000', '000')
-  index.save()
+  for opt, arg in opts:
+    Action(opt.replace('-', ''), arg, config)
+
+  if not opts:
+    Interact(config)
+
 
