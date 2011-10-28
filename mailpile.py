@@ -129,14 +129,16 @@ class PostingListStore(object):
         biggest = biggest[:len(prefix)+1]
         self.save(prefix=biggest)
 
-        for k in [k for k in self.WORDS if k.startswith(biggest)]:
-          del self.WORDS[k]
+        for key in [k for k in self.WORDS if k.startswith(biggest)]:
+          del self.WORDS[key]
         output = self.fmt_file(prefix)
 
     if output:
       fd = open(os.path.join(self.config.postinglist_dir(), prefix), 'w')
       fd.write(output)
       fd.close()
+    else:
+      os.remove(os.path.join(self.config.postinglist_dir(), prefix))
 
   def hits(self):
     return self.WORDS[self.sig]
@@ -193,7 +195,7 @@ class MailIndex(object):
       if msg_id in self.MSGIDS:
         # Just update location
         self.MSGIDS[msg_id][1] = msg_ptr
-        self.PTRS[msg_ptr] = self.MSGIDS[msg_id][1]
+        self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
         print 'Updated: %s (%s)' % (msg_ptr, self.PTRS[msg_ptr][0])
       else:
         # Add new message!
@@ -225,7 +227,7 @@ class MailIndex(object):
         self.index_message(msg_info, msg)
         print 'Added: %s' % msg_id
 
-      if (i % 100) == 0: self.save()
+      if (i % 100) == 99: self.save()
 
     return self
 
