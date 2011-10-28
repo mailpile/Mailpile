@@ -50,31 +50,41 @@ class ConfigManager(dict):
 
 class PostingListStore(object):
 
-  MAX_SIZE = 12*1024
+  MAX_SIZE = 8*1024
+  HASH_LEN = 6
 
   @classmethod
   def Append(cls, word, mail_id, config):
     sig = cls.WordSig(word)
     fd, fn = cls.GetFile(sig, config, mode='a')
-    fd.write('%s\t%s\n' % (sig, mail_id))
-    fd.close()
-    # Compact the file if it's gotten too "big"
-    if os.path.getsize(os.path.join(config.postinglist_dir(), fn)) > cls.MAX_SIZE:
-      if fn != sig or random.randint(0, 50) == 1:
-        cls(word, config).save()
+    if (os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
+                                                       cls.MAX_SIZE-(cls.HASH_LEN*3)
+        and (fn != sig[:cls.HASH_LEN] or random.randint(0, 100) == 1)):
+      # This will compact the files and split out hot-spots, but we only bother
+      # when the files are big or "now and then" for max-depth files.
+      fd.close()
+      pls = cls(word, config)
+      pls.append(mail_id)
+      pls.save()
+    else:
+      # Quick and dirty append is the default.
+      fd.write('%s\t%s\n' % (sig, mail_id))
+      fd.close()
 
   @classmethod
   def WordSig(cls, word):
-    h = hashlib.sha1()
+    h = hashlib.md5()
     h.update(word)
-    return b64c(h.digest().encode('base64'))
+    return '%s/%s' % (b64c(h.digest().encode('base64'))[:cls.HASH_LEN],
+                      word[:8*cls.HASH_LEN])
 
   @classmethod
   def GetFile(cls, sig, config, mode='r'):
+    sig = sig[:cls.HASH_LEN]
     while len(sig) > 0:
       fn = os.path.join(config.postinglist_dir(), sig)
       try:
-        if os.path.exists(fn): return (open(fn, mode), sig)
+        if os.path.exists(fn): return (codecs.open(fn, mode, 'utf-8'), sig)
       except:
         pass
 
@@ -84,7 +94,7 @@ class PostingListStore(object):
         if 'r' in mode:
           return (sig, None)
         else:
-          return (open(fn, mode), sig)
+          return (codecs.open(fn, mode, 'utf-8'), sig)
     # Not reached
     return (None, None)
 
@@ -109,7 +119,7 @@ class PostingListStore(object):
       fd.close()
 
   def fmt_file(self, prefix):
-    output = '' 
+    output = ''
     for word in self.WORDS:
       if word.startswith(prefix) and len(self.WORDS[word]) > 0:
         output += '%s\t%s\n' % (word,
@@ -120,7 +130,7 @@ class PostingListStore(object):
     prefix = prefix or self.filename
     output = self.fmt_file(prefix)
 
-    if len(output) > self.MAX_SIZE:
+    if len(output) > self.MAX_SIZE and len(prefix) < self.HASH_LEN:
       biggest = self.sig
       for word in self.WORDS:
         if len(self.WORDS[word]) > len(self.WORDS[biggest]):
@@ -133,12 +143,16 @@ class PostingListStore(object):
           del self.WORDS[key]
         output = self.fmt_file(prefix)
 
-    if output:
-      fd = open(os.path.join(self.config.postinglist_dir(), prefix), 'w')
-      fd.write(output)
-      fd.close()
-    else:
-      os.remove(os.path.join(self.config.postinglist_dir(), prefix))
+    try:
+      if output:
+        fd = codecs.open(os.path.join(self.config.postinglist_dir(), prefix),
+                         'w', 'utf-8')
+        fd.write(output)
+        fd.close()
+      else:
+        os.remove(os.path.join(self.config.postinglist_dir(), prefix))
+    except:
+      print 'Warning: %s' % (sys.exc_info(), )
 
   def hits(self):
     return self.WORDS[self.sig]
@@ -158,7 +172,10 @@ class MailIndex(object):
     self.MSGIDS = {}
 
   def load(self):
-    fd = codecs.open(self.config.mailindex_file(), 'r', 'utf-8')
+    try:
+      fd = codecs.open(self.config.mailindex_file(), 'r', 'utf-8')
+    except:
+      return
     for line in fd:
       line = line.strip()
       if line and not line.startswith('#'):
@@ -190,8 +207,20 @@ class MailIndex(object):
       # Message new or modified, let's parse it.
       p = email.parser.Parser()
       msg = p.parse(msg_fd)
-      msg_id = msg['message-id'] or msg_ptr
+      def hdr(name):
+        decoded = email.header.decode_header(msg[name] or '')
+        try:
+          return (''.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
+                  ).replace('\t', ' ').replace('\n', ' ')
+        except:
+          try:
+            return (''.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
+                    ).replace('\t', ' ').replace('\n', ' ')
+          except:
+            print 'Boom: %s/%s' % (msg[name], decoded)
+            return ''
 
+      msg_id = hdr('message-id') or '<%s@mailpile>' % msg_ptr
       if msg_id in self.MSGIDS:
         # Just update location
         self.MSGIDS[msg_id][1] = msg_ptr
@@ -199,19 +228,6 @@ class MailIndex(object):
         print 'Updated: %s (%s)' % (msg_ptr, self.PTRS[msg_ptr][0])
       else:
         # Add new message!
-        def hdr(name):
-          decoded = email.header.decode_header(msg[name] or '')
-          try:
-            return (''.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
-                    ).replace('\t', ' ').replace('\n', ' ')
-          except:
-            try:
-              return (''.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
-                      ).replace('\t', ' ').replace('\n', ' ')
-            except:
-              print 'Boom: %s/%s' % (msg[name], decoded)
-              return ''
-
         msg_info = [b64int(len(self.INDEX)), # Our index ID
                     msg_ptr,                 # Location on disk
                     0,                       # Size
@@ -261,7 +277,7 @@ class MailIndex(object):
         # FIXME: we just ignore garbage
         pass
 
- 
+
 
 if __name__ == "__main__":
   re.UNICODE = 1
