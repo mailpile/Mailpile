@@ -322,14 +322,17 @@ def Action(opt, arg, config):
 
 
 def Interact(config):
-  while True:
-    opt = raw_input('mailpile> ').strip()
-    if opt:
-      if ' ' in opt:
-        opt, arg = opt.split(' ', 1)
-      else:
-        arg = None
-      Action(opt, arg, config)
+  try:
+    while True:
+      opt = raw_input('mailpile> ').strip()
+      if opt:
+        if ' ' in opt:
+          opt, arg = opt.split(' ', 1)
+        else:
+          arg = None
+        Action(opt, arg, config)
+  except EOFError:
+    print
 
 
 if __name__ == "__main__":
