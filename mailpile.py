@@ -48,6 +48,10 @@ def b64int(i):
   h = (len(h) & 1) and '0'+h or h
   return b64c(h.decode('hex').encode('base64'))
 
+def intb64(b64):
+  return int((b64.replace('_', '/')+'==').decode('base64').encode('hex'), 16)
+
+
 
 class PostingListStore(object):
 
@@ -237,11 +241,11 @@ class MailIndex(object):
       def hdr(name):
         decoded = email.header.decode_header(msg[name] or '')
         try:
-          return (''.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
+          return (' '.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
                   ).replace('\t', ' ').replace('\n', ' ')
         except:
           try:
-            return (''.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
+            return (' '.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
                     ).replace('\t', ' ').replace('\n', ' ')
           except:
             print 'Boom: %s/%s' % (msg[name], decoded)
@@ -308,6 +312,9 @@ class MailIndex(object):
         # FIXME: we just ignore garbage
         pass
 
+  def get_by_msg_idx(self, msg_idx):
+    return self.INDEX[intb64(msg_idx)]
+
   def grep(self, term, field):
     return [m[self.MSG_IDX] for m in self.INDEX if -1 != m[field].find(term)]
 
@@ -316,10 +323,13 @@ class MailIndex(object):
     for term in searchterms:
       r.append([])
       rt = r[-1]
-      self.mark('Scanning subjects')
-      rt.extend(self.grep(term, self.MSG_SUBJECT))
-      self.mark('Scanning senders')
-      rt.extend(self.grep(term, self.MSG_FROM))
+      # FIXME: This method sucks, becuase it will have different semantics
+      #        from the other.  We should instead populat the posting lists
+      #        directly and scan them.  Also, posting lists are *faster*.
+    # self.mark('Scanning subjects')
+    # rt.extend(self.grep(term, self.MSG_SUBJECT))
+    # self.mark('Scanning senders')
+    # rt.extend(self.grep(term, self.MSG_FROM))
       self.mark('Scanning body')
       rt.extend(PostingListStore(term, self.config).hits())
 
@@ -368,9 +378,12 @@ def Action(opt, arg, config):
   elif opt in ('s', 'search'):
     idx = config.get_index()
     idx.reset_marks()
-    summary = idx.search(arg.split(' '))
+    results = idx.search(arg.split(' '))
+    for mid in sorted(list(results))[:25]:
+      msg_info = idx.get_by_msg_idx(mid)
+      print '%s from %s' % (msg_info[idx.MSG_SUBJECT], msg_info[idx.MSG_FROM])
+    idx.mark('Listed 25 of %d messages' % len(results))
     idx.reset_marks()
-    print '%s' % sorted(list(summary))[:25]
 
   else:
     print 'Unknown command: %s' % opt
