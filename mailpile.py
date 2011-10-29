@@ -163,25 +163,39 @@ class PostingListStore(object):
 
 
 class MailIndex(object):
+
+  MSG_IDX     = 0
+  MSG_PTR     = 1
+  MSG_SIZE    = 2
+  MSG_ID      = 3
+  MSG_DATE    = 4
+  MSG_FROM    = 5
+  MSG_SUBJECT = 6
+  MSG_CONV_ID = 7
+  MSG_TAGS    = 8
+
   def __init__(self, config):
     self.config = config
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
+    self.times = []
 
   def load(self):
     try:
       fd = codecs.open(self.config.mailindex_file(), 'r', 'utf-8')
     except:
       return
+    self.mark('Loading index')
     for line in fd:
       line = line.strip()
       if line and not line.startswith('#'):
         message = line.split('\t')
         self.INDEX.append(message)
-        self.PTRS[message[1]] = message
-        self.MSGIDS[message[3]] = message
+        self.PTRS[message[self.MSG_PTR]] = message
+        self.MSGIDS[message[self.MSG_ID]] = message
     fd.close()
+    self.mark('Loaded index')
 
   def save(self):
     fd = codecs.open(self.config.mailindex_file(), 'w', 'utf-8')
@@ -192,14 +206,29 @@ class MailIndex(object):
       fd.write('\n')
     fd.close()
 
+  def reset_marks(self):
+    t = self.times
+    self.times = []
+    if t:
+      result = 'Elapsed: %.3fs (%s)' % (t[-1][0] - t[0][0], t[-1][1])
+      print '%s%s' % (result, ' ' * (79-len(result)))
+      return t[-1][0] - t[0][0]
+    else:
+      return 0
+
+  def mark(self, progress):
+    print '%s%s\r' % (progress, ' ' * (79-len(progress))), # FIXME: Abstract out UI
+    self.times.append((time.time(), progress))
+
   def scan_mbox(self, idx, filename):
+    self.mark('Loading mailbox: %s' % filename)
     mbox = mailbox.mbox(filename)
     for i in range(0, len(mbox)):
       msg_fd = mbox.get_file(i)
       msg_ptr = '%s%s' % (idx, b64int(msg_fd._pos))
 
       if msg_ptr in self.PTRS:
-        print 'Skipped: %s (%s)' % (msg_ptr, self.PTRS[msg_ptr][0])
+#       print 'Skipped: %s (%s)' % (msg_ptr, self.PTRS[msg_ptr][self.MSG_ID])
         continue
 
       # Message new or modified, let's parse it.
@@ -223,7 +252,7 @@ class MailIndex(object):
         # Just update location
         self.MSGIDS[msg_id][1] = msg_ptr
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
-        print 'Updated: %s (%s)' % (msg_ptr, self.PTRS[msg_ptr][0])
+#       print 'Updated: %s (%s)' % (msg_ptr, self.PTRS[msg_ptr][self.MSG_ID])
       else:
         # Add new message!
         msg_info = [b64int(len(self.INDEX)), # Our index ID
@@ -239,10 +268,14 @@ class MailIndex(object):
         self.INDEX.append(msg_info)
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = msg_info
         self.index_message(msg_info, msg)
-        print 'Added: %s' % msg_id
+#       print 'Added: %s (%s)' % (msg_ptr, msg_id)
 
-      if (i % 100) == 99: self.save()
+      if (i % 100) == 99:
+        self.mark('Parsed %2.2d%% (%d/%d messages)' % (100 * i/len(mbox),
+                                                       i, len(mbox)))
+      if (i % 1000) == 999: self.save()
 
+    self.mark('Done parsing')
     return self
 
   def index_message(self, msg_info, msg):
@@ -275,8 +308,27 @@ class MailIndex(object):
         # FIXME: we just ignore garbage
         pass
 
-  def find(self, searchterms):
-    pass
+  def grep(self, term, field):
+    return [m[self.MSG_IDX] for m in self.INDEX if -1 != m[field].find(term)]
+
+  def search(self, searchterms):
+    r = []
+    for term in searchterms:
+      r.append([])
+      rt = r[-1]
+      self.mark('Scanning subjects')
+      rt.extend(self.grep(term, self.MSG_SUBJECT))
+      self.mark('Scanning senders')
+      rt.extend(self.grep(term, self.MSG_FROM))
+      self.mark('Scanning body')
+      rt.extend(PostingListStore(term, self.config).hits())
+
+    results = set(r[0])
+    for rt in r[1:]:
+      results &= set(rt)
+
+    self.mark('Found %d results' % len(results))
+    return results
 
 
 class ConfigManager(dict):
@@ -314,8 +366,11 @@ def Action(opt, arg, config):
       idx.save()
 
   elif opt in ('s', 'search'):
-    summary = config.get_index().find(arg.split(' '))
-    print '%s' % summary
+    idx = config.get_index()
+    idx.reset_marks()
+    summary = idx.search(arg.split(' '))
+    idx.reset_marks()
+    print '%s' % sorted(list(summary))[:25]
 
   else:
     print 'Unknown command: %s' % opt
@@ -324,7 +379,7 @@ def Action(opt, arg, config):
 def Interact(config):
   try:
     while True:
-      opt = raw_input('mailpile> ').strip()
+      opt = raw_input('mailpile> ').decode('utf-8').strip()
       if opt:
         if ' ' in opt:
           opt, arg = opt.split(' ', 1)
