@@ -190,7 +190,7 @@ class MailIndex(object):
       fd = codecs.open(self.config.mailindex_file(), 'r', 'utf-8')
     except:
       return
-    self.mark('Loading index')
+    self.mark('Loading index...')
     for line in fd:
       line = line.strip()
       if line and not line.startswith('#'):
@@ -202,6 +202,7 @@ class MailIndex(object):
     self.mark('Loaded index')
 
   def save(self):
+    self.mark("Saving index...")
     fd = codecs.open(self.config.mailindex_file(), 'w', 'utf-8')
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
@@ -209,6 +210,7 @@ class MailIndex(object):
       fd.write('\t'.join([('%s' % i) for i in item]))
       fd.write('\n')
     fd.close()
+    self.mark("Saved index")
 
   def reset_marks(self):
     t = self.times
@@ -221,18 +223,21 @@ class MailIndex(object):
       return 0
 
   def mark(self, progress):
-    print '%s%s\r' % (progress, ' ' * (79-len(progress))), # FIXME: Abstract out UI
+    sys.stdout.write('%s%s\r' % (progress, ' ' * (79-len(progress))))
+    sys.stdout.flush()
     self.times.append((time.time(), progress))
 
   def scan_mbox(self, idx, filename):
-    self.mark('Loading mailbox: %s' % filename)
+    self.mark('Scanning mailbox: %s' % filename)
     mbox = mailbox.mbox(filename)
     for i in range(0, len(mbox)):
       msg_fd = mbox.get_file(i)
       msg_ptr = '%s%s' % (idx, b64int(msg_fd._pos))
 
+      if (i % 100) == 0:
+        self.mark('Parsed %2.2d%% (%d/%d messages)' % (100 * i/len(mbox),
+                                                       i, len(mbox)))
       if msg_ptr in self.PTRS:
-#       print 'Skipped: %s (%s)' % (msg_ptr, self.PTRS[msg_ptr][self.MSG_ID])
         continue
 
       # Message new or modified, let's parse it.
@@ -256,7 +261,6 @@ class MailIndex(object):
         # Just update location
         self.MSGIDS[msg_id][1] = msg_ptr
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
-#       print 'Updated: %s (%s)' % (msg_ptr, self.PTRS[msg_ptr][self.MSG_ID])
       else:
         # Add new message!
         msg_info = [b64int(len(self.INDEX)), # Our index ID
@@ -272,14 +276,10 @@ class MailIndex(object):
         self.INDEX.append(msg_info)
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = msg_info
         self.index_message(msg_info, msg)
-#       print 'Added: %s (%s)' % (msg_ptr, msg_id)
 
-      if (i % 100) == 99:
-        self.mark('Parsed %2.2d%% (%d/%d messages)' % (100 * i/len(mbox),
-                                                       i, len(mbox)))
       if (i % 1000) == 999: self.save()
 
-    self.mark('Done parsing')
+    self.mark('Scanned mailbox: %s' % filename)
     return self
 
   def index_message(self, msg_info, msg):
@@ -361,7 +361,7 @@ class ConfigManager(dict):
 
 
 COMMANDS = {
-  'r:': 'rescan=',
+  'r': 'rescan',
   'a:': 'add=',
   's:': 'search=',
 }
@@ -370,10 +370,13 @@ def Action(opt, arg, config):
     pass
 
   elif opt in ('r', 'rescan'):
+    idx = config.get_index()
+    idx.reset_marks()
     for fid, fpath in config.get_mailboxes():
-      idx = config.get_index()
       idx.scan_mbox(fid, fpath)
-      idx.save()
+      idx.reset_marks()
+    idx.save()
+    idx.reset_marks()
 
   elif opt in ('s', 'search'):
     idx = config.get_index()
