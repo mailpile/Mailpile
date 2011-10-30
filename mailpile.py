@@ -2,28 +2,10 @@
 #
 # Mailpile.py (C) Copyright 2011, Bjarni R. Einarsson <http://bre.klaki.net/>
 #
-# This program maintains and interacts with a high-performance local e-mail
-# index.  Goals:
-#
-#   - Support GMail-like conversations, filters and searches
-#   - Sub-200ms search results on single core and single disk, for mailboxes
-#     with X00000 messages (after the index has been loaded into RAM).
-#   - Compatibility with standard Unix mailboxes.
-#   - Be usable as a back-end for a modern personal web-mail solution.
-#
-# Strategy:
-#
-#   - Searches will be answered using posting lists stored in files on disk
-#     (10-50ms access times for non-huge posting lists: the pathological 'a'
-#     posting list will probably take 300ms or so, which can be fixed by only
-#     reading the final desired N results... if we care).
-#
-#   - Information required to display results (To, From, Subject, ...) lives
-#     in a RAM-based index, populated when the user logs on.  Average message
-#     overhead should be <300B, allowing 100000 e-mails in 30MB of RAM.
-#
-#   - User-editable tags also live in the RAM index and can be quickly searched
-#     using sequential scans from the rear end of the index.
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the  GNU  Affero General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
 #
 ###################################################################################
 import codecs, datetime, getopt, locale, hashlib, os, random, re, sys, time
