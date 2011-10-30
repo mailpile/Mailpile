@@ -108,6 +108,7 @@ patches for:
    * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
    * Move everything to `$HOME/.mailpile` or a sane Windows alternative
+   * Support for other mailbox formats, maybe even POP3/IMAP indexing
    * Meaningful settings and a way to load/save them
    * A shell scripting interface for automation
    * An XML-RPC interface to the search engine
