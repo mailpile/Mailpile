@@ -29,6 +29,8 @@
 import codecs, datetime, getopt, locale, hashlib, os, random, re, sys, time
 import lxml.html
 
+WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
+STOPLIST = ('re', 'as', 'and', 'or', 'for', 'by', 'to', 'og')
 
 def b64c(b):
   return b.replace('\n', '').replace('=', '').replace('/', '_')
@@ -286,17 +288,17 @@ class MailIndex(object):
                     hdr('subject'),          # Subject
                     0,                       # Conversation ID
                     '']                      # No tags for now
-
         self.INDEX.append(msg_info)
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = msg_info
-        self.index_message(msg_info, msg)
+        self.index_message(msg_info, msg, msg_date,
+                           hdr('to'), hdr('from'), hdr('subject'))
 
       if (i % 1000) == 999: self.save()
 
     self.mark('Scanned mailbox: %s' % filename)
     return self
 
-  def index_message(self, msg_info, msg):
+  def index_message(self, msg_info, msg, msg_date, msg_to, msg_from, msg_subject):
     keywords = set()
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
@@ -313,12 +315,17 @@ class MailIndex(object):
         else:
           textpart = None
       else:
+        keywords.add('has:attachment')
         textpart = None
+
       if textpart:
         # FIXME: Does this lowercase non-ASCII characters correctly?
-        keywords |= set(re.findall(re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\'
-                                              '\<\>\?,\.\/\-]{2,}'),
-                                   textpart.lower()))
+        keywords |= set(re.findall(WORD_REGEXP, textpart.lower()))
+
+    keywords |= set([t+':subject' for t in re.findall(WORD_REGEXP, msg_subject.lower())])
+    keywords |= set([t+':from' for t in re.findall(WORD_REGEXP, msg_from.lower())])
+    keywords |= set([t+':to' for t in re.findall(WORD_REGEXP, msg_to.lower())])
+    keywords -= set(STOPLIST)
     for word in keywords:
       try:
         PostingListStore.Append(word, msg_info[0], self.config)
@@ -337,15 +344,20 @@ class MailIndex(object):
     for term in searchterms:
       r.append([])
       rt = r[-1]
-      # FIXME: This method sucks, becuase it will have different semantics
-      #        from the other.  We should instead populat the posting lists
-      #        directly and scan them.  Also, posting lists are *faster*.
-    # self.mark('Scanning subjects')
-    # rt.extend(self.grep(term, self.MSG_SUBJECT))
-    # self.mark('Scanning senders')
-    # rt.extend(self.grep(term, self.MSG_FROM))
-      self.mark('Scanning body')
-      rt.extend(PostingListStore(term, self.config).hits())
+      term = term.lower()
+      if term.startswith('body:'):
+        rt.extend(PostingListStore(term[5:], self.config).hits())
+      elif ':' in term:
+        self.mark('Searching...')
+        t = term.split(':', 1)
+        rt.extend(PostingListStore('%s:%s' % (t[1], t[0]), self.config).hits())
+      else:
+        self.mark('Searching subject...')
+        rt.extend(PostingListStore(term+':subject', self.config).hits())
+        self.mark('Searching from...')
+        rt.extend(PostingListStore(term+':from', self.config).hits())
+        self.mark('Searching body...')
+        rt.extend(PostingListStore(term, self.config).hits())
 
     results = set(r[0])
     for rt in r[1:]:
@@ -390,16 +402,16 @@ def Action(opt, arg, config):
       for fid, fpath in config.get_mailboxes():
         idx.scan_mbox(fid, fpath)
         idx.mark('\n')
-      idx.save()
-      idx.reset_marks()
-    except:
-      idx.save()
-      raise
+    except KeyboardInterrupt:
+      pass
+    idx.save()
+    idx.reset_marks()
 
   elif opt in ('s', 'search'):
+    if not arg: return
     idx = config.get_index()
     idx.reset_marks()
-    results = idx.search(arg.split(' '))
+    results = idx.search(arg.split())
     count = 0
     for mid in sorted(list(results))[-20:]:
       count += 1
@@ -412,7 +424,7 @@ def Action(opt, arg, config):
                ) % (count, msg_date.year, msg_date.month, msg_date.day,
                     msg_from, msg_subj)
       except:
-        print '\t(not in index: %s)' % mid
+        print '-- (not in index: %s)' % mid
     idx.mark('Listed %d of %d messages' % (count, len(results)))
     idx.reset_marks()
 
@@ -429,7 +441,7 @@ def Interact(config):
         if ' ' in opt:
           opt, arg = opt.split(' ', 1)
         else:
-          arg = None
+          arg = ''
         Action(opt, arg, config)
   except EOFError:
     print
