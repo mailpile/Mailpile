@@ -26,9 +26,7 @@
 #     using sequential scans from the rear end of the index.
 #
 ###################################################################################
-import codecs, getopt, locale, hashlib, mailbox, os, random, re, sys, time
-import readline
-import email.parser
+import codecs, datetime, getopt, locale, hashlib, os, random, re, sys, time
 import lxml.html
 
 
@@ -55,7 +53,8 @@ def intb64(b64):
 
 class PostingListStore(object):
 
-  MAX_SIZE = 10*1024  # 12k is 3 blocks, we aim for half-filling the 3rd one.
+  MAX_SIZE = 30*1024  # 32k is 8 blocks, we aim for half-filling the last one.
+                      # Bumping this to 64k performs *much* worse on my laptop.
   HASH_LEN = 9
 
   @classmethod
@@ -154,7 +153,8 @@ class PostingListStore(object):
       else:
         os.remove(os.path.join(self.config.postinglist_dir(), prefix))
     except:
-      print 'Warning: %s' % (sys.exc_info(), )
+#     print 'Warning: %s' % (sys.exc_info(), )
+      pass
 
   def hits(self):
     return self.WORDS[self.sig]
@@ -223,22 +223,27 @@ class MailIndex(object):
       return 0
 
   def mark(self, progress):
-    sys.stdout.write('%s%s\r' % (progress, ' ' * (79-len(progress))))
+    sys.stdout.write('  %s%s\r' % (progress, ' ' * (77-len(progress))))
     sys.stdout.flush()
     self.times.append((time.time(), progress))
 
   def scan_mbox(self, idx, filename):
+    import mailbox, email.parser, rfc822
+
     self.mark('Scanning mailbox: %s' % filename)
     mbox = mailbox.mbox(filename)
+    msg_date = int(time.time())
     for i in range(0, len(mbox)):
       msg_fd = mbox.get_file(i)
       msg_ptr = '%s%s' % (idx, b64int(msg_fd._pos))
 
-      if (i % 100) == 0:
-        self.mark('Parsed %2.2d%% (%d/%d messages)' % (100 * i/len(mbox),
-                                                       i, len(mbox)))
+      parse_status = 'Parsed %d%% (%d/%d messages)' % (100 * i/len(mbox),
+                                                       i, len(mbox))
       if msg_ptr in self.PTRS:
+        if (i % 119) == 0: self.mark(parse_status)
         continue
+      else:
+        self.mark(parse_status)
 
       # Message new or modified, let's parse it.
       p = email.parser.Parser()
@@ -263,11 +268,20 @@ class MailIndex(object):
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
       else:
         # Add new message!
+        try:
+          msg_date = int(rfc822.mktime_tz(rfc822.parsedate_tz(hdr('date'))))
+        except:
+          print 'Date parsing: %s' % (sys.exc_info(), )
+          # This is a hack: We assume the messages in the mailbox are in
+          # chronological order and just add 1 second to the date of the last
+          # message.  This should be a better-than-nothing guess.
+          msg_date += 1
+
         msg_info = [b64int(len(self.INDEX)), # Our index ID
                     msg_ptr,                 # Location on disk
                     0,                       # Size
                     msg_id,                  # Message-ID
-                    hdr('date'),             # Parsed Date:
+                    b64int(msg_date),        # Date as a UTC timestamp
                     hdr('from'),             # From:
                     hdr('subject'),          # Subject
                     0,                       # Conversation ID
@@ -345,7 +359,7 @@ class ConfigManager(dict):
   def load(self): pass
   def save(self): pass
   def get_mailboxes(self):
-    return [('000', '000')]
+    return [('000', '000'), ('001', '001')]
 
   def mailindex_file(self):
     return self.get('mailindex_file', 'mailpile.idx')
@@ -372,20 +386,34 @@ def Action(opt, arg, config):
   elif opt in ('r', 'rescan'):
     idx = config.get_index()
     idx.reset_marks()
-    for fid, fpath in config.get_mailboxes():
-      idx.scan_mbox(fid, fpath)
+    try:
+      for fid, fpath in config.get_mailboxes():
+        idx.scan_mbox(fid, fpath)
+        idx.mark('\n')
+      idx.save()
       idx.reset_marks()
-    idx.save()
-    idx.reset_marks()
+    except:
+      idx.save()
+      raise
 
   elif opt in ('s', 'search'):
     idx = config.get_index()
     idx.reset_marks()
     results = idx.search(arg.split(' '))
-    for mid in sorted(list(results))[:25]:
-      msg_info = idx.get_by_msg_idx(mid)
-      print '%s from %s' % (msg_info[idx.MSG_SUBJECT], msg_info[idx.MSG_FROM])
-    idx.mark('Listed 25 of %d messages' % len(results))
+    count = 0
+    for mid in sorted(list(results))[-20:]:
+      count += 1
+      try:
+        msg_info = idx.get_by_msg_idx(mid)
+        msg_from = msg_info[idx.MSG_FROM]
+        msg_subj = msg_info[idx.MSG_SUBJECT]
+        msg_date = datetime.date.fromtimestamp(intb64(msg_info[idx.MSG_DATE]))
+        print ('%2.2s %4.4d-%2.2d-%2.2d  %-25.25s  %-38.38s'
+               ) % (count, msg_date.year, msg_date.month, msg_date.day,
+                    msg_from, msg_subj)
+      except:
+        print '\t(not in index: %s)' % mid
+    idx.mark('Listed %d of %d messages' % (count, len(results)))
     idx.reset_marks()
 
   else:
@@ -393,6 +421,7 @@ def Action(opt, arg, config):
 
 
 def Interact(config):
+  import readline
   try:
     while True:
       opt = raw_input('mailpile> ').decode('utf-8').strip()
