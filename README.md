@@ -1,6 +1,6 @@
 # mailpile.py! #
 
-This is MailPile!
+This is Mailpile!
 
 Mailpile wants to be an free-as-in-freedom personal e-mail searching and
 indexing tool, largely inspired by Google's popular free e-mail service.
@@ -26,12 +26,13 @@ formatted Unix mailbox.
 
 The program `mailpile.py` expects to find a folder named `search` in the
 current directory and symbolic links named `000` and `001` to whichever
-two mailboxes you want indexed.  Omitting one is fine.
+two mailboxes you want indexed.  Omitting one is fine.  If you want more,
+you'll have to Use The Source.
 
 (In the future these things should all move to `$HOME/.mailpile` and
-become more configurable.)
+become more configurable, see the TODO list below.)
 
-So a simple test run might look like so:
+A simple test run might look like so:
 
     $ ln -s /var/spool/mail/YOURNAME 000
     $ mkdir search
@@ -67,13 +68,20 @@ names and subjects.  Using the `to/from/subject/att` prefix will search
 that part of the message only.  There's no way to *only* search bodies,
 they're too full of crap anyway.  Adding terms narrows the search.
 
+You can also search from the command line with `mailpile.py -s term`,
+but that will be really slow because the metadata index has to be
+loaded into RAM on each invocation.
+
 
 ## A word on performance ##
 
 Searching is all about disk seeks.
 
 Mailpile tries to keep seeks to a minimum: any single-keyword search can
-be answered by opening and parsing one relatively small file.
+be answered by opening and parsing one relatively small file.  A single
+search should take on the order of 200ms or less, repeated searches or
+searches for closely related keywords will be about 10x faster due to
+the OS cache.
 
 This is possible, because all the metadata about the messages themselves
 is kept in RAM.  This may seem extravagant, but on modern computers you
@@ -96,10 +104,12 @@ patches for:
    * A way to pageinate through search results
    * A more efficient incremental indexer
    * A way to view/extract messages/attachments
-   * A way to assign/edit/remove tags to messages
+   * A way to assign/edit/remove tags (including read/unread/inbox)
+   * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
-   * Move everything to $HOME/.mailpile or a sane Windows alternative
+   * Move everything to `$HOME/.mailpile` or a sane Windows alternative
    * Meaningful settings and a way to load/save them
+   * A shell scripting interface for automation
    * An XML-RPC interface to the search engine
    * A pretty UI on top of said XML-RPC interface
 
