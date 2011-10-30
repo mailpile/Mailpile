@@ -315,13 +315,20 @@ class MailIndex(object):
         else:
           textpart = None
       else:
-        keywords.add('has:attachment')
         textpart = None
+
+      att = part.get_filename()
+      if att:
+        keywords.add('attachment:has')
+        keywords |= set([t+':att' for t in re.findall(WORD_REGEXP, att.lower())])
+        textpart = (textpart or '') + ' ' + att
 
       if textpart:
         # FIXME: Does this lowercase non-ASCII characters correctly?
         keywords |= set(re.findall(WORD_REGEXP, textpart.lower()))
 
+    keywords |= set(re.findall(WORD_REGEXP, msg_subject.lower()))
+    keywords |= set(re.findall(WORD_REGEXP, msg_from.lower()))
     keywords |= set([t+':subject' for t in re.findall(WORD_REGEXP, msg_subject.lower())])
     keywords |= set([t+':from' for t in re.findall(WORD_REGEXP, msg_from.lower())])
     keywords |= set([t+':to' for t in re.findall(WORD_REGEXP, msg_to.lower())])
@@ -345,18 +352,13 @@ class MailIndex(object):
       r.append([])
       rt = r[-1]
       term = term.lower()
+      self.mark('Searching...')
       if term.startswith('body:'):
         rt.extend(PostingListStore(term[5:], self.config).hits())
       elif ':' in term:
-        self.mark('Searching...')
         t = term.split(':', 1)
         rt.extend(PostingListStore('%s:%s' % (t[1], t[0]), self.config).hits())
       else:
-        self.mark('Searching subject...')
-        rt.extend(PostingListStore(term+':subject', self.config).hits())
-        self.mark('Searching from...')
-        rt.extend(PostingListStore(term+':from', self.config).hits())
-        self.mark('Searching body...')
         rt.extend(PostingListStore(term, self.config).hits())
 
     results = set(r[0])
