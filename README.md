@@ -1,12 +1,9 @@
-# mailpile.py! #
+# Welcome to Mailpile! #
 
-This is Mailpile!
-
-Mailpile wants to be an free-as-in-freedom personal e-mail searching and
-indexing tool, largely inspired by Google's popular free e-mail service.
-
-It wants to be eventually become a fast and functional back-end for
-awesome personal mail clients.  Probably webmail!
+Mailpile is a free-as-in-freedom personal e-mail searching and indexing
+tool, largely inspired by Google's popular free e-mail service.  It wants
+to be eventually become a fast and flexible back-end for awesome personal
+mail clients, probably webmail.
 
 
 ## Requirements ##
