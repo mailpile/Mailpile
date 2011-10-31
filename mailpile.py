@@ -12,7 +12,7 @@ import codecs, datetime, getopt, locale, hashlib, os, random, re, sys, time
 import lxml.html
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
-STOPLIST = ('re', 'as', 'and', 'or', 'for', 'by', 'to', 'og')
+STOPLIST = ('re', 'as', 'the', 'is', 'has', 'and', 'or', 'for', 'by', 'to', 'og')
 
 def b64c(b):
   return b.replace('\n', '').replace('=', '').replace('/', '_')
@@ -221,7 +221,7 @@ class MailIndex(object):
   def scan_mbox(self, idx, filename):
     import mailbox, email.parser, rfc822
 
-    self.mark('Scanning mailbox: %s' % filename)
+    self.mark('Scanning mailbox: %s (may take a while)' % filename)
     mbox = mailbox.mbox(filename)
     msg_date = int(time.time())
     for i in range(0, len(mbox)):
