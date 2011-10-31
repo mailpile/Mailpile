@@ -45,9 +45,11 @@ scan from where it left off.
 
 ## Basic use ##
 
-At the moment `mailpile.py` only supports one command: `search`
+At the moment `mailpile.py` only supports two commands, `rescan` (see
+above) and `search`.  They may be abbreviated to just `r` or `s`, and
+work both as command-line arguments and interactive commands.
 
-Some examples:
+The fun one is `search`:
 
     $ ./mailpile.py
     mailpile> search bjarni einarsson
@@ -56,18 +58,22 @@ Some examples:
     ...
     mailpile> search from:bjarni to:somebody
     ...
-    mailpile> search att:pdf
+    mailpile> s att:pdf
     ...
-    mailpile> search has:attachment
+    mailpile> s has:attachment
 
 The default search will search in message bodies, from lines, attachment
 names and subjects.  Using the `to/from/subject/att` prefix will search
 that part of the message only.  There's no way to *only* search bodies,
 they're too full of crap anyway.  Adding terms narrows the search.
 
-You can also search from the command line with `mailpile.py -s term`,
-but that will be really slow because the metadata index has to be
+You can search from the command line with `mailpile.py -s term`,
+but that will be rather slow because the metadata index has to be
 loaded into RAM on each invocation.
+
+(One of the TODOs is to change the command-line invocation to be
+more shell-script friendly, which mostly would involve making the
+output format more regular and machine readable.)
 
 
 ## A word on performance ##
