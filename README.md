@@ -2,7 +2,7 @@
 
 Mailpile is a free-as-in-freedom personal e-mail searching and indexing
 tool, largely inspired by Google's popular free e-mail service.  It wants
-to be eventually become a fast and flexible back-end for awesome personal
+to eventually become a fast and flexible back-end for awesome personal
 mail clients, probably webmail.
 
 
@@ -121,9 +121,9 @@ patches for:
 I am especially interested in help with UI work, I suck at that.
 
 Note that Mailpile's emphasis is on *speed* and most of the features
-above have already been designs "in my head".  Chat with me on freenode
+above have already basic designs "in my head".  Chat with me on freenode
 (I am BjarniRunar, and hang out on #pagekite) if you're interested in
-my take on how to implement these things.
+my take on how to implement these things. Or just send a pull request! :-)
 
 
 ## Roadmap ##
@@ -145,7 +145,7 @@ Milestone 1 has been reached.
 ## Credits and License ##
 
 Bjarni R. Einarsson <http://bre.klaki.net/> wrote this!  If you think
-it's neat, you should check out PageKite: <https://pagekite.net/>
+it's neat, you should also check out PageKite: <https://pagekite.net/>
 
 Send me a patch: *your name here*
 
