@@ -79,13 +79,13 @@ Searching is all about disk seeks.
 
 Mailpile tries to keep seeks to a minimum: any single-keyword search can
 be answered by opening and parsing one relatively small file.  A single
-search should take on the order of 200ms or less, repeated searches or
-searches for closely related keywords will be about 10x faster due to
-the OS cache.
+search should take on the order of 200-400ms, depending on your filesystem
+and hard drive.  Repeated searches or searches for closely related keywords
+will be up to 10x faster, due to help from the OS cache.
 
-This is possible, because all the metadata about the messages themselves
-is kept in RAM.  This may seem extravagant, but on modern computers you
-can actually handle massive amounts of e-mail this way.
+This level of performance is possible, because all the metadata about the
+messages themselves is kept in RAM.  This may seem extravagant, but on
+modern computers you can actually handle massive amounts of e-mail this way.
 
 Mailpile stores in RAM a little over 160 bytes of metadata per message
 (actual size depends largely on the size of various headers), but Python
