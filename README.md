@@ -93,7 +93,7 @@ memory your browser (or desktop e-mail client) eats up.
 
 ## TODO ##
 
-A random laundry list of things I haven't done yet and would accept
+A random laundry list of things I haven't done yet and might accept
 patches for:
 
    * Searchable dates (year:2010, month:12, day:24, date:2010-12-24)
@@ -102,6 +102,7 @@ patches for:
    * A more efficient incremental indexer
    * A way to view/extract messages/attachments
    * A way to assign/edit/remove tags (including read/unread/inbox)
+   * Assign conversation IDs to messages (simplistic threading)
    * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
    * Move everything to `$HOME/.mailpile` or a sane Windows alternative
@@ -110,6 +111,29 @@ patches for:
    * A shell scripting interface for automation
    * An XML-RPC interface to the search engine
    * A pretty UI on top of said XML-RPC interface
+
+I am especially interested in help with UI work, I suck at that.
+
+Note that Mailpile's emphasis is on *speed* and most of the features
+above have already been designs "in my head".  Chat with me on freenode
+(I am BjarniRunar, and hang out on #pagekite) if you're interested in
+my take on how to implement these things.
+
+
+## Roadmap ##
+
+This is the Mailpile roadmap:
+
+   1. Write Python prototype for indexing and rapidly searching large
+      volumes of e-mail. Define on-disk data formats.
+   2. Add support for GMail-style conversation threading, tags and filters.
+   3. Give it a very basic, ugly web interface, define an XML-RPC API.
+   4. Look for some HTML/Javascript gurus who want to build a nice UI.
+   5. Iterate until awesome.
+   6. Rewrite search engine (using same data formats and same XML-RPC API)
+      in C. If anyone cares - Python might be good enough.
+
+Milestone 1 has been reached.
 
 
 ## Credits and License ##
