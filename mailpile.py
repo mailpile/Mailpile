@@ -35,10 +35,10 @@ def intb64(b64):
 
 
 
-class PostingListStore(object):
+class PostingList(object):
 
-  MAX_SIZE = 30*1024  # 32k is 8 blocks, we aim for half-filling the last one.
-                      # Bumping this to 64k performs *much* worse on my laptop.
+  MAX_SIZE = 30 # 32k is 8 blocks, we aim for half-filling the last one.
+                # Bumping this to 64k performs *much* worse on my laptop.
   HASH_LEN = 9
 
   @classmethod
@@ -46,7 +46,7 @@ class PostingListStore(object):
     sig = cls.WordSig(word)
     fd, fn = cls.GetFile(sig, config, mode='a')
     if ((os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
-                                                      cls.MAX_SIZE-(cls.HASH_LEN*3))
+                 (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*3))
         and (random.randint(0, 50) == 1)):
       # This will compact the files and split out hot-spots, but we only bother
       # "once in a while" when the files are "big".
@@ -85,14 +85,14 @@ class PostingListStore(object):
 
   def __init__(self, word, config):
     self.config = config
-    self.sig = PostingListStore.WordSig(word)
+    self.sig = PostingList.WordSig(word)
     self.word = word
     self.WORDS = {self.sig: set()}
     self.load()
 
   def load(self):
     self.size = 0
-    fd, sig = PostingListStore.GetFile(self.sig, self.config)
+    fd, sig = PostingList.GetFile(self.sig, self.config)
     self.filename = sig
     if fd:
       for line in fd:
@@ -115,7 +115,8 @@ class PostingListStore(object):
     prefix = prefix or self.filename
     output = self.fmt_file(prefix)
 
-    if len(output) > self.MAX_SIZE and len(prefix) < self.HASH_LEN:
+    if (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE) and
+        len(prefix) < self.HASH_LEN):
       biggest = self.sig
       for word in self.WORDS:
         if len(self.WORDS[word]) > len(self.WORDS[biggest]):
@@ -174,19 +175,25 @@ class MailIndex(object):
       fd = codecs.open(self.config.mailindex_file(), 'r', 'utf-8')
     except:
       return
-    self.mark('Loading index...')
+    self.mark('Loading metadata index...')
+    count = 0
     for line in fd:
+      count += 1
+      if (count % 719) == 718: self.mark('Loading metadata index... (%s)' % count)
       line = line.strip()
       if line and not line.startswith('#'):
         message = line.split('\t')
-        self.INDEX.append(message)
-        self.PTRS[message[self.MSG_PTR]] = message
-        self.MSGIDS[message[self.MSG_ID]] = message
+        if len(message) > self.MSG_CONV_ID:
+          self.INDEX.append(message)
+          self.PTRS[message[self.MSG_PTR]] = message
+          self.MSGIDS[message[self.MSG_ID]] = message
+        else:
+          print 'Bogus line: %s' % line
     fd.close()
-    self.mark('Loaded index')
+    self.mark('Loaded metadata index')
 
   def save(self):
-    self.mark("Saving index...")
+    self.mark("Saving metadata index...")
     fd = codecs.open(self.config.mailindex_file(), 'w', 'utf-8')
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
@@ -194,7 +201,7 @@ class MailIndex(object):
       fd.write('\t'.join([('%s' % i) for i in item]))
       fd.write('\n')
     fd.close()
-    self.mark("Saved index")
+    self.mark("Saved metadata index")
 
   def reset_marks(self):
     t = self.times
@@ -236,11 +243,11 @@ class MailIndex(object):
         decoded = email.header.decode_header(msg[name] or '')
         try:
           return (' '.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
-                  ).replace('\t', ' ').replace('\n', ' ')
+                  ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
         except:
           try:
             return (' '.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
-                    ).replace('\t', ' ').replace('\n', ' ')
+                    ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
           except:
             print 'Boom: %s/%s' % (msg[name], decoded)
             return ''
@@ -317,7 +324,7 @@ class MailIndex(object):
     keywords -= set(STOPLIST)
     for word in keywords:
       try:
-        PostingListStore.Append(word, msg_info[0], self.config)
+        PostingList.Append(word, msg_info[0], self.config)
       except UnicodeDecodeError:
         # FIXME: we just ignore garbage
         pass
@@ -336,12 +343,12 @@ class MailIndex(object):
       term = term.lower()
       self.mark('Searching...')
       if term.startswith('body:'):
-        rt.extend(PostingListStore(term[5:], self.config).hits())
+        rt.extend(PostingList(term[5:], self.config).hits())
       elif ':' in term:
         t = term.split(':', 1)
-        rt.extend(PostingListStore('%s:%s' % (t[1], t[0]), self.config).hits())
+        rt.extend(PostingList('%s:%s' % (t[1], t[0]), self.config).hits())
       else:
-        rt.extend(PostingListStore(term, self.config).hits())
+        rt.extend(PostingList(term, self.config).hits())
 
     results = set(r[0])
     for rt in r[1:]:
@@ -374,10 +381,36 @@ COMMANDS = {
   'r': 'rescan',
   'a:': 'add=',
   's:': 'search=',
+  'S:': 'set=',
+  'U:': 'unset=',
+  'P:': 'print=',
 }
 def Action(opt, arg, config):
   if opt in ('a', 'add'):
     pass
+
+  elif opt in ('P', 'print'):
+    key = arg.strip().lower()
+    if key in config:
+      print '%s = %s' % (key, config[key])
+    else:
+      print '%s is unset' % key
+
+  elif opt in ('U', 'unset'):
+    key = arg.strip().lower()
+    if key in config:
+      del config[key]
+    print '%s is unset' % key
+
+  elif opt in ('S', 'set'):
+    key, val = arg.split('=')
+    key = key.strip().lower()
+    if key.endswith('_kb'):
+      config[key] = int(val.strip())
+      print '%s = %d (int)' % (key, config[key])
+    else:
+      config[key] = val.strip()
+      print '%s = %s' % (key, config[key])
 
   elif opt in ('r', 'rescan'):
     idx = config.get_index()
