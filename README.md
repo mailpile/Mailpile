@@ -19,7 +19,7 @@ At the moment, you also need your e-mail to be in a traditional mbox
 formatted Unix mailbox.
 
 
-## Installation ##
+## Indexing your mail ##
 
 The program `mailpile.py` expects to find a folder named `search` in the
 current directory and symbolic links named `000` and `001` to whichever
@@ -35,12 +35,28 @@ A simple test run might look like so:
     $ mkdir search
     $ ./mailpile.py -r
 
-The program print details of its progress as it runs.  Note that just
-opening the mailbox may take quite a while if it is large enough (it
-takes about a bit over a minute to open my 500MB mailbox), and it will
-index a few messages per second.  Stopping the program with CTRL-C is
-nondestructive, it will save its progress, re-running will continue the
-scan from where it left off.
+The program prints details of its progress as it runs.  Note that just
+opening the mailbox may take quite a while if it is large enough (it takes
+about a bit over a minute to open my 500MB mailbox).  Stopping the program
+with CTRL-C is nondestructive - it will save its progress and re-running
+will continue the scan from where it left off.
+
+### Huge mailboxes ###
+
+If you are importing a very large amount of mail, it may be worth tweaking
+the default size of the posting-lists (search term indexes) to avoid frequent
+compactions and splits, both of which thrash the disk quite a bit:
+
+    $ ./mailpile.py
+    mailpile> set postinglist_kb = 1024
+    mailpile> rescan
+    ...
+
+This will result in much slower searches, but once the mail has been imported
+we can reset the limit and optimize the index:
+
+    mailpile> unset postinglist_kb
+    mailpile> optimize
 
 
 ## Basic use ##

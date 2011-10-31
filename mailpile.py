@@ -42,11 +42,42 @@ class PostingList(object):
   HASH_LEN = 9
 
   @classmethod
+  def Optimize(cls, config):
+    postinglist_kb = config.get('postinglist_kb', cls.MAX_SIZE)
+    postinglist_dir = config.postinglist_dir()
+
+    # Pass 1: Compact all files
+    for fn in sorted(os.listdir(postinglist_dir)):
+      lastsize = 'initial'
+      config.ui.mark('Pass 1: Compacting %s' % fn)
+      cls('%s' % fn, config, sig=fn).save()
+
+    # Pass 2: While mergable pair exists: merge them!
+    files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
+    files.sort(key=lambda a: -len(a))
+    for fn in files:
+      size = os.path.getsize(os.path.join(postinglist_dir, fn)) 
+      fnp = fn[:-1]
+      while not os.path.exists(os.path.join(postinglist_dir, fnp)): fnp = fnp[:-1]
+      size += os.path.getsize(os.path.join(postinglist_dir, fnp)) 
+      if (size < (1024*postinglist_kb-(cls.HASH_LEN*3))):
+        config.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
+        fd = codecs.open(os.path.join(postinglist_dir, fn), 'r', 'utf-8')
+        fdp = codecs.open(os.path.join(postinglist_dir, fnp), 'a', 'utf-8')
+        for line in fd:
+          fdp.write(line)
+        fdp.close()
+        fd.close()
+        os.remove(os.path.join(postinglist_dir, fn))
+
+    return len(os.listdir(postinglist_dir))
+
+  @classmethod
   def Append(cls, word, mail_id, config):
     sig = cls.WordSig(word)
     fd, fn = cls.GetFile(sig, config, mode='a')
     if ((os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
-                 (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*3))
+            (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*3))
         and (random.randint(0, 50) == 1)):
       # This will compact the files and split out hot-spots, but we only bother
       # "once in a while" when the files are "big".
@@ -83,9 +114,9 @@ class PostingList(object):
     # Not reached
     return (None, None)
 
-  def __init__(self, word, config):
+  def __init__(self, word, config, sig=None):
     self.config = config
-    self.sig = PostingList.WordSig(word)
+    self.sig = sig or PostingList.WordSig(word)
     self.word = word
     self.WORDS = {self.sig: set()}
     self.load()
@@ -115,8 +146,8 @@ class PostingList(object):
     prefix = prefix or self.filename
     output = self.fmt_file(prefix)
 
-    if (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE) and
-        len(prefix) < self.HASH_LEN):
+    while (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE) and
+           len(prefix) < self.HASH_LEN):
       biggest = self.sig
       for word in self.WORDS:
         if len(self.WORDS[word]) > len(self.WORDS[biggest]):
@@ -135,11 +166,13 @@ class PostingList(object):
                          'w', 'utf-8')
         fd.write(output)
         fd.close()
+        return len(output)
       else:
         os.remove(os.path.join(self.config.postinglist_dir(), prefix))
+        return 0
     except:
 #     print 'Warning: %s' % (sys.exc_info(), )
-      pass
+      return 0
 
   def hits(self):
     return self.WORDS[self.sig]
@@ -168,18 +201,21 @@ class MailIndex(object):
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
-    self.times = []
 
   def load(self):
+    self.INDEX = []
+    self.PTRS = {}
+    self.MSGIDS = {}
+
+    self.config.ui.mark('Loading metadata index...')
     try:
       fd = codecs.open(self.config.mailindex_file(), 'r', 'utf-8')
     except:
       return
-    self.mark('Loading metadata index...')
-    count = 0
+
     for line in fd:
-      count += 1
-      if (count % 719) == 718: self.mark('Loading metadata index... (%s)' % count)
+      if (len(self.INDEX) % 719) == 718:
+        self.config.ui.mark('Loading metadata index... (%s)' % len(self.INDEX))
       line = line.strip()
       if line and not line.startswith('#'):
         message = line.split('\t')
@@ -190,10 +226,10 @@ class MailIndex(object):
         else:
           print 'Bogus line: %s' % line
     fd.close()
-    self.mark('Loaded metadata index')
+    self.config.ui.mark('Loaded metadata index')
 
   def save(self):
-    self.mark("Saving metadata index...")
+    self.config.ui.mark("Saving metadata index...")
     fd = codecs.open(self.config.mailindex_file(), 'w', 'utf-8')
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
@@ -201,27 +237,12 @@ class MailIndex(object):
       fd.write('\t'.join([('%s' % i) for i in item]))
       fd.write('\n')
     fd.close()
-    self.mark("Saved metadata index")
-
-  def reset_marks(self):
-    t = self.times
-    self.times = []
-    if t:
-      result = 'Elapsed: %.3fs (%s)' % (t[-1][0] - t[0][0], t[-1][1])
-      print '%s%s' % (result, ' ' * (79-len(result)))
-      return t[-1][0] - t[0][0]
-    else:
-      return 0
-
-  def mark(self, progress):
-    sys.stdout.write('  %s%s\r' % (progress, ' ' * (77-len(progress))))
-    sys.stdout.flush()
-    self.times.append((time.time(), progress))
+    self.config.ui.mark("Saved metadata index")
 
   def scan_mbox(self, idx, filename):
     import mailbox, email.parser, rfc822
 
-    self.mark('Scanning mailbox: %s (may take a while)' % filename)
+    self.config.ui.mark('Scanning mailbox: %s (may take a while)' % filename)
     mbox = mailbox.mbox(filename)
     msg_date = int(time.time())
     for i in range(0, len(mbox)):
@@ -231,10 +252,10 @@ class MailIndex(object):
       parse_status = 'Parsed %d%% (%d/%d messages)' % (100 * i/len(mbox),
                                                        i, len(mbox))
       if msg_ptr in self.PTRS:
-        if (i % 119) == 0: self.mark(parse_status)
+        if (i % 119) == 0: self.config.ui.mark(parse_status)
         continue
       else:
-        self.mark(parse_status)
+        self.config.ui.mark(parse_status)
 
       # Message new or modified, let's parse it.
       p = email.parser.Parser()
@@ -284,7 +305,7 @@ class MailIndex(object):
 
       if (i % 1000) == 999: self.save()
 
-    self.mark('Scanned mailbox: %s' % filename)
+    self.config.ui.mark('Scanned mailbox: %s' % filename)
     return self
 
   def index_message(self, msg_info, msg, msg_date, msg_to, msg_from, msg_subject):
@@ -341,7 +362,7 @@ class MailIndex(object):
       r.append([])
       rt = r[-1]
       term = term.lower()
-      self.mark('Searching...')
+      self.config.ui.mark('Searching...')
       if term.startswith('body:'):
         rt.extend(PostingList(term[5:], self.config).hits())
       elif ':' in term:
@@ -354,11 +375,34 @@ class MailIndex(object):
     for rt in r[1:]:
       results &= set(rt)
 
-    self.mark('Found %d results' % len(results))
+    self.config.ui.mark('Found %d results' % len(results))
     return results
 
 
+class TextUI(object):
+  def __init__(self):
+    self.times = []
+
+  def reset_marks(self):
+    t = self.times
+    self.times = []
+    if t:
+      result = 'Elapsed: %.3fs (%s)' % (t[-1][0] - t[0][0], t[-1][1])
+      print '%s%s' % (result, ' ' * (79-len(result)))
+      return t[-1][0] - t[0][0]
+    else:
+      return 0
+
+  def mark(self, progress):
+    sys.stdout.write('  %s%s\r' % (progress, ' ' * (77-len(progress))))
+    sys.stdout.flush()
+    self.times.append((time.time(), progress))
+
+
 class ConfigManager(dict):
+
+  ui = None
+
   def load(self): pass
   def save(self): pass
   def get_mailboxes(self):
@@ -384,10 +428,15 @@ COMMANDS = {
   'S:': 'set=',
   'U:': 'unset=',
   'P:': 'print=',
+  'O': 'optimize',
 }
 def Action(opt, arg, config):
   if opt in ('a', 'add'):
     pass
+
+  elif opt in ('O', 'optimize'):
+    filecount = PostingList.Optimize(config)
+    print 'Search index now has %s posting lists' % filecount
 
   elif opt in ('P', 'print'):
     key = arg.strip().lower()
@@ -414,20 +463,20 @@ def Action(opt, arg, config):
 
   elif opt in ('r', 'rescan'):
     idx = config.get_index()
-    idx.reset_marks()
+    config.ui.reset_marks()
     try:
       for fid, fpath in config.get_mailboxes():
         idx.scan_mbox(fid, fpath)
-        idx.mark('\n')
+        config.ui.mark('\n')
     except KeyboardInterrupt:
       pass
     idx.save()
-    idx.reset_marks()
+    config.ui.reset_marks()
 
   elif opt in ('s', 'search'):
     if not arg: return
     idx = config.get_index()
-    idx.reset_marks()
+    config.ui.reset_marks()
     results = idx.search(arg.split())
     count = 0
     for mid in sorted(list(results))[-20:]:
@@ -442,8 +491,8 @@ def Action(opt, arg, config):
                     msg_from, msg_subj)
       except:
         print '-- (not in index: %s)' % mid
-    idx.mark('Listed %d of %d messages' % (count, len(results)))
-    idx.reset_marks()
+    config.ui.mark('Listed %d of %d messages' % (count, len(results)))
+    config.ui.reset_marks()
 
   else:
     print 'Unknown command: %s' % opt
@@ -470,6 +519,7 @@ if __name__ == "__main__":
 
   config = ConfigManager()
   config.load()
+  config.ui = TextUI()
   opts, args = getopt.getopt(sys.argv[1:],
                              ''.join(COMMANDS.keys()),
                              COMMANDS.values())
