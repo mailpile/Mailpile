@@ -244,7 +244,7 @@ class MailIndex(object):
   def update_ptrs_and_msgids(self):
     self.config.ui.mark('Updating high level indexes')
     for offset in range(0, len(self.INDEX)):
-      message = self.l2m(self.INDEX[i])
+      message = self.l2m(self.INDEX[offset])
       if len(message) > self.MSG_CONV_ID:
         self.PTRS[message[self.MSG_PTR]] = offset
         self.MSGIDS[message[self.MSG_ID]] = offset
