@@ -70,7 +70,9 @@ class PostingList(object):
         fd.close()
         os.remove(os.path.join(postinglist_dir, fn))
 
-    return len(os.listdir(postinglist_dir))
+    filecount = len(os.listdir(postinglist_dir))
+    config.ui.mark('Optimized %s posting lists' % filecount)
+    return filecount
 
   @classmethod
   def Append(cls, word, mail_id, config):
@@ -135,17 +137,17 @@ class PostingList(object):
       fd.close()
 
   def fmt_file(self, prefix):
-    output = ''
+    self.config.ui.mark('Formatting prefix %s' % prefix)
+    output = []
     for word in self.WORDS:
       if word.startswith(prefix) and len(self.WORDS[word]) > 0:
-        output += '%s\t%s\n' % (word,
-                                '\t'.join(['%s' % x for x in self.WORDS[word]]))
-    return output
+        output.append('%s\t%s\n' % (word,
+                                '\t'.join(['%s' % x for x in self.WORDS[word]])))
+    return ''.join(output)
 
   def save(self, prefix=None):
     prefix = prefix or self.filename
     output = self.fmt_file(prefix)
-
     while (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE) and
            len(prefix) < self.HASH_LEN):
       biggest = self.sig
@@ -435,8 +437,12 @@ def Action(opt, arg, config):
     pass
 
   elif opt in ('O', 'optimize'):
-    filecount = PostingList.Optimize(config)
-    print 'Search index now has %s posting lists' % filecount
+    try:
+      filecount = PostingList.Optimize(config)
+      config.ui.reset_marks()
+    except KeyboardInterrupt:
+      config.ui.mark('Aborted')
+      config.ui.reset_marks()
 
   elif opt in ('P', 'print'):
     key = arg.strip().lower()
@@ -469,7 +475,7 @@ def Action(opt, arg, config):
         idx.scan_mbox(fid, fpath)
         config.ui.mark('\n')
     except KeyboardInterrupt:
-      pass
+      config.ui.mark('Aborted')
     idx.save()
     config.ui.reset_marks()
 
