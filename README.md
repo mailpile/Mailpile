@@ -48,7 +48,7 @@ the default size of the posting-lists (search term indexes) to avoid frequent
 compactions and splits, both of which thrash the disk quite a bit:
 
     $ ./mailpile.py
-    mailpile> set postinglist_kb = 1024
+    mailpile> set postinglist_kb = 10240
     mailpile> rescan
     ...
 

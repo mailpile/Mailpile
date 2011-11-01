@@ -244,15 +244,16 @@ class MailIndex(object):
   def scan_mbox(self, idx, filename):
     import mailbox, email.parser, rfc822
 
-    self.config.ui.mark('Scanning mailbox: %s (may take a while)' % filename)
+    self.config.ui.mark(('%s: Opening mailbox: %s (may take a while)'
+                         ) % (idx, filename))
     mbox = mailbox.mbox(filename)
     msg_date = int(time.time())
     for i in range(0, len(mbox)):
       msg_fd = mbox.get_file(i)
       msg_ptr = '%s%s' % (idx, b64int(msg_fd._pos))
 
-      parse_status = 'Parsed %d%% (%d/%d messages)' % (100 * i/len(mbox),
-                                                       i, len(mbox))
+      parse_status = ('%s: Reading your mail: %d%% (%d/%d messages)'
+                      ) % (idx, 100 * i/len(mbox), i, len(mbox))
       if msg_ptr in self.PTRS:
         if (i % 119) == 0: self.config.ui.mark(parse_status)
         continue
@@ -307,7 +308,7 @@ class MailIndex(object):
 
       if (i % 1000) == 999: self.save()
 
-    self.config.ui.mark('Scanned mailbox: %s' % filename)
+    self.config.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
     return self
 
   def index_message(self, msg_info, msg, msg_date, msg_to, msg_from, msg_subject):
