@@ -8,7 +8,8 @@
 # later version.
 #
 ###################################################################################
-import codecs, datetime, getopt, locale, hashlib, os, random, re, sys, time
+import codecs, datetime, getopt, locale, hashlib, os, random, re
+import struct, sys, time
 import lxml.html
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
@@ -26,12 +27,15 @@ def strhash(s, length):
   return s2[:length]
 
 def b64int(i):
-  h = hex(int(i))[2:]
-  h = (len(h) & 1) and '0'+h or h
-  return b64c(h.decode('hex').encode('base64'))
+  return re.split("A+$", struct.pack("Q", i)
+                               .encode("base64")
+                               .replace("=", '').replace("\n", '')
+                  )[0].replace("/", "_") or "A"
 
 def intb64(b64):
-  return int((b64.replace('_', '/')+'==').decode('base64').encode('hex'), 16)
+  padding = "A"*(11-len(b64))
+  return struct.unpack("Q", ("%s%s==" % (b64.replace("_", "/"), padding)
+                             ).decode("base64"))[0]
 
 
 class PostingList(object):
@@ -204,8 +208,11 @@ class MailIndex(object):
     self.PTRS = {}
     self.MSGIDS = {}
 
-  def l2m(self, line): return line.decode('utf-8').split('\t')
-  def m2l(self, message): return '\t'.join(message).encode('utf-8')
+  def l2m(self, line):
+    return line.decode('utf-8').split('\t')
+
+  def m2l(self, message):
+    return '\t'.join([str(p) for p in message]).encode('utf-8')
 
   def load(self):
     self.INDEX = []
