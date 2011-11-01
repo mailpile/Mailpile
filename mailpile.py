@@ -34,7 +34,6 @@ def intb64(b64):
   return int((b64.replace('_', '/')+'==').decode('base64').encode('hex'), 16)
 
 
-
 class PostingList(object):
 
   MAX_SIZE = 30 # 32k is 8 blocks, we aim for half-filling the last one.
@@ -58,7 +57,8 @@ class PostingList(object):
     for fn in files:
       size = os.path.getsize(os.path.join(postinglist_dir, fn)) 
       fnp = fn[:-1]
-      while not os.path.exists(os.path.join(postinglist_dir, fnp)): fnp = fnp[:-1]
+      while not os.path.exists(os.path.join(postinglist_dir, fnp)):
+        fnp = fnp[:-1]
       size += os.path.getsize(os.path.join(postinglist_dir, fnp)) 
       if (size < (1024*postinglist_kb-(cls.HASH_LEN*3))):
         config.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
@@ -204,46 +204,50 @@ class MailIndex(object):
     self.PTRS = {}
     self.MSGIDS = {}
 
+  def l2m(self, line): return line.decode('utf-8').split('\t')
+  def m2l(self, message): return '\t'.join(message).encode('utf-8')
+
   def load(self):
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
-
     self.config.ui.mark('Loading metadata index...')
     try:
-      fd = codecs.open(self.config.mailindex_file(), 'r', 'utf-8')
+      fd = open(self.config.mailindex_file(), 'r')
     except:
       return
-
     for line in fd:
-      if (len(self.INDEX) % 719) == 718:
-        self.config.ui.mark('Loading metadata index... (%s)' % len(self.INDEX))
       line = line.strip()
       if line and not line.startswith('#'):
-        message = line.split('\t')
-        if len(message) > self.MSG_CONV_ID:
-          self.INDEX.append(message)
-          self.PTRS[message[self.MSG_PTR]] = message
-          self.MSGIDS[message[self.MSG_ID]] = message
-        else:
-          print 'Bogus line: %s' % line
+        self.INDEX.append(line)
     fd.close()
-    self.config.ui.mark('Loaded metadata index')
+    self.config.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
 
   def save(self):
     self.config.ui.mark("Saving metadata index...")
-    fd = codecs.open(self.config.mailindex_file(), 'w', 'utf-8')
+    fd = open(self.config.mailindex_file(), 'w')
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
     for item in self.INDEX:
-      fd.write('\t'.join([('%s' % i) for i in item]))
+      fd.write(item)
       fd.write('\n')
     fd.close()
     self.config.ui.mark("Saved metadata index")
 
+  def update_ptrs_and_msgids(self):
+    self.config.ui.mark('Updating high level indexes')
+    for offset in range(0, len(self.INDEX)):
+      message = self.l2m(self.INDEX[i])
+      if len(message) > self.MSG_CONV_ID:
+        self.PTRS[message[self.MSG_PTR]] = offset
+        self.MSGIDS[message[self.MSG_ID]] = offset
+      else:
+        print 'Bogus line: %s' % line
+
   def scan_mbox(self, idx, filename):
     import mailbox, email.parser, rfc822
 
+    self.update_ptrs_and_msgids()
     self.config.ui.mark(('%s: Opening mailbox: %s (may take a while)'
                          ) % (idx, filename))
     mbox = mailbox.mbox(filename)
@@ -279,6 +283,7 @@ class MailIndex(object):
       msg_id = hdr('message-id') or '<%s@mailpile>' % msg_ptr
       if msg_id in self.MSGIDS:
         # Just update location
+        raise Exception("FIXME: Unimplemented")
         self.MSGIDS[msg_id][1] = msg_ptr
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
       else:
@@ -301,8 +306,9 @@ class MailIndex(object):
                     hdr('subject'),          # Subject
                     0,                       # Conversation ID
                     '']                      # No tags for now
-        self.INDEX.append(msg_info)
-        self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = msg_info
+
+        self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = len(self.INDEX)
+        self.INDEX.append(self.m2l(msg_info))
         self.index_message(msg_info, msg, msg_date,
                            hdr('to'), hdr('from'), hdr('subject'))
 
@@ -354,10 +360,7 @@ class MailIndex(object):
         pass
 
   def get_by_msg_idx(self, msg_idx):
-    return self.INDEX[intb64(msg_idx)]
-
-  def grep(self, term, field):
-    return [m[self.MSG_IDX] for m in self.INDEX if -1 != m[field].find(term)]
+    return self.l2m(self.INDEX[intb64(msg_idx)])
 
   def search(self, searchterms):
     r = []
@@ -432,6 +435,7 @@ COMMANDS = {
   'U:': 'unset=',
   'P:': 'print=',
   'O': 'optimize',
+  'l': 'load',
 }
 def Action(opt, arg, config):
   if opt in ('a', 'add'):
@@ -478,6 +482,10 @@ def Action(opt, arg, config):
     except KeyboardInterrupt:
       config.ui.mark('Aborted')
     idx.save()
+    config.ui.reset_marks()
+
+  elif opt in ('l', 'load'):
+    config.get_index()
     config.ui.reset_marks()
 
   elif opt in ('s', 'search'):
@@ -536,5 +544,4 @@ if __name__ == "__main__":
 
   if not opts:
     Interact(config)
-
 
