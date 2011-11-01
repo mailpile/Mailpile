@@ -8,7 +8,7 @@
 # later version.
 #
 ###################################################################################
-import codecs, datetime, getopt, locale, hashlib, os, random, re, sys, time
+import codecs, datetime, getopt, locale, hashlib, os, random, re, sys, time, struct
 import lxml.html
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
@@ -26,12 +26,11 @@ def strhash(s, length):
   return s2[:length]
 
 def b64int(i):
-  h = hex(int(i))[2:]
-  h = (len(h) & 1) and '0'+h or h
-  return b64c(h.decode('hex').encode('base64'))
+  return re.split("A+", struct.pack("Q", i).encode("base64").replace("=", '').replace("\n", ''))[0].replace("/", "_")
 
 def intb64(b64):
-  return int((b64.replace('_', '/')+'==').decode('base64').encode('hex'), 16)
+  padding = "A"*(11-len(b64))
+  return struct.unpack("Q", ("%s%s=\n"%(b64.replace("_", "/"),padding)).decode("base64"))
 
 
 class PostingList(object):
