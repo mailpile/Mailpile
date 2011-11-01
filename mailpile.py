@@ -209,10 +209,10 @@ class MailIndex(object):
     self.MSGIDS = {}
 
   def l2m(self, line):
-    return line.decode('utf-8').split('\t')
+    return line.decode('utf-8').split(u'\t')
 
   def m2l(self, message):
-    return '\t'.join([str(p) for p in message]).encode('utf-8')
+    return (u'\t'.join([unicode(p) for p in message])).encode('utf-8')
 
   def load(self):
     self.INDEX = []
