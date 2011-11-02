@@ -13,7 +13,9 @@ import struct, sys, time
 import lxml.html
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
-STOPLIST = ('re', 'as', 'the', 'is', 'has', 'and', 'or', 'for', 'by', 'to', 'og')
+# FIXME: This stoplist may be a bad idea.
+STOPLIST = ('an', 'and', 'are', 'as', 'at', 'by', 'for', 'from', 'has', 'is',
+            'og', 'or', 're', 'so', 'the', 'to', 'was')
 
 def b64c(b):
   return b.replace('\n', '').replace('=', '').replace('/', '_')
