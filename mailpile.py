@@ -23,7 +23,7 @@ def b64c(b):
 def strhash(s, length):
   s2 = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '', s.lower())
   while len(s2) < length:
-    h = hashlib.md5()
+    h = hashlib.sha1()
     h.update(s.encode('utf-8'))
     s2 += b64c(h.digest().encode('base64')).lower()
   return s2[:length]
@@ -44,7 +44,7 @@ class PostingList(object):
 
   MAX_SIZE = 30 # 32k is 8 blocks, we aim for half-filling the last one.
                 # Bumping this to 64k performs *much* worse on my laptop.
-  HASH_LEN = 9
+  HASH_LEN = 12
 
   @classmethod
   def Optimize(cls, config):
@@ -53,23 +53,22 @@ class PostingList(object):
 
     # Pass 1: Compact all files
     for fn in sorted(os.listdir(postinglist_dir)):
-      lastsize = 'initial'
-      config.ui.mark('Pass 1: Compacting %s' % fn)
-      cls('%s' % fn, config, sig=fn).save()
+      config.ui.mark('Pass 1: Compacting >%s<' % fn)
+      cls(fn, config, sig=fn).save()
 
     # Pass 2: While mergable pair exists: merge them!
     files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
     files.sort(key=lambda a: -len(a))
     for fn in files:
-      size = os.path.getsize(os.path.join(postinglist_dir, fn)) 
+      size = os.path.getsize(os.path.join(postinglist_dir, fn))
       fnp = fn[:-1]
       while not os.path.exists(os.path.join(postinglist_dir, fnp)):
         fnp = fnp[:-1]
-      size += os.path.getsize(os.path.join(postinglist_dir, fnp)) 
-      if (size < (1024*postinglist_kb-(cls.HASH_LEN*3))):
+      size += os.path.getsize(os.path.join(postinglist_dir, fnp))
+      if (size < (1024*postinglist_kb-(cls.HASH_LEN*6))):
         config.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
-        fd = codecs.open(os.path.join(postinglist_dir, fn), 'r', 'utf-8')
-        fdp = codecs.open(os.path.join(postinglist_dir, fnp), 'a', 'utf-8')
+        fd = open(os.path.join(postinglist_dir, fn), 'r')
+        fdp = open(os.path.join(postinglist_dir, fnp), 'a')
         for line in fd:
           fdp.write(line)
         fdp.close()
@@ -85,7 +84,7 @@ class PostingList(object):
     sig = cls.WordSig(word)
     fd, fn = cls.GetFile(sig, config, mode='a')
     if ((os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
-            (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*3))
+            (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*6))
         and (random.randint(0, 50) == 1)):
       # This will compact the files and split out hot-spots, but we only bother
       # "once in a while" when the files are "big".
@@ -100,7 +99,7 @@ class PostingList(object):
 
   @classmethod
   def WordSig(cls, word):
-    return '%s/%s' % (strhash(word, cls.HASH_LEN), word[:8*cls.HASH_LEN])
+    return strhash(word, cls.HASH_LEN*2)
 
   @classmethod
   def GetFile(cls, sig, config, mode='r'):
@@ -108,7 +107,7 @@ class PostingList(object):
     while len(sig) > 0:
       fn = os.path.join(config.postinglist_dir(), sig)
       try:
-        if os.path.exists(fn): return (codecs.open(fn, mode, 'utf-8'), sig)
+        if os.path.exists(fn): return (open(fn, mode), sig)
       except:
         pass
 
@@ -118,7 +117,7 @@ class PostingList(object):
         if 'r' in mode:
           return (sig, None)
         else:
-          return (codecs.open(fn, mode, 'utf-8'), sig)
+          return (open(fn, mode), sig)
     # Not reached
     return (None, None)
 
@@ -143,19 +142,19 @@ class PostingList(object):
       fd.close()
 
   def fmt_file(self, prefix):
-    self.config.ui.mark('Formatting prefix %s' % prefix)
     output = []
+    self.config.ui.mark('Formatting prefix %s' % unicode(prefix))
     for word in self.WORDS:
       if word.startswith(prefix) and len(self.WORDS[word]) > 0:
         output.append('%s\t%s\n' % (word,
-                                '\t'.join(['%s' % x for x in self.WORDS[word]])))
+                               '\t'.join(['%s' % x for x in self.WORDS[word]])))
     return ''.join(output)
 
   def save(self, prefix=None):
     prefix = prefix or self.filename
     output = self.fmt_file(prefix)
-    while (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE) and
-           len(prefix) < self.HASH_LEN):
+    while (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE)
+           and len(prefix) < self.HASH_LEN):
       biggest = self.sig
       for word in self.WORDS:
         if len(self.WORDS[word]) > len(self.WORDS[biggest]):
@@ -170,8 +169,7 @@ class PostingList(object):
 
     try:
       if output:
-        fd = codecs.open(os.path.join(self.config.postinglist_dir(), prefix),
-                         'w', 'utf-8')
+        fd = open(os.path.join(self.config.postinglist_dir(), prefix), 'w')
         fd.write(output)
         fd.close()
         return len(output)
