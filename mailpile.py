@@ -12,10 +12,12 @@ import codecs, datetime, getopt, locale, hashlib, os, random, re
 import struct, sys, time
 import lxml.html
 
+
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
 # FIXME: This stoplist may be a bad idea.
 STOPLIST = ('an', 'and', 'are', 'as', 'at', 'by', 'for', 'from', 'has', 'is',
             'og', 'or', 're', 'so', 'the', 'to', 'was')
+
 
 def b64c(b):
   return b.replace('\n', '').replace('=', '').replace('/', '_')
@@ -115,7 +117,7 @@ class PostingList(object):
         sig = sig[:-1]
       else:
         if 'r' in mode:
-          return (sig, None)
+          return (None, sig)
         else:
           return (open(fn, mode), sig)
     # Not reached
@@ -399,9 +401,24 @@ class MailIndex(object):
     return results
 
 
+class NullUI(object):
+  def print_key(self, key, config): pass
+  def reset_marks(self): pass
+  def mark(self, progress): pass
+
+
 class TextUI(object):
   def __init__(self):
     self.times = []
+
+  def print_key(self, key, config):
+    if key in config:
+      if key in config.INTS:
+        print '%s = %s (int)' % (key, config[key])
+      else:
+        print '%s = %s' % (key, config[key])
+    else:
+      print '%s is unset' % key
 
   def reset_marks(self):
     t = self.times
@@ -419,24 +436,97 @@ class TextUI(object):
     self.times.append((time.time(), progress))
 
 
+class UsageError(Exception):
+  pass
+
+
 class ConfigManager(dict):
 
-  ui = None
+  ui = NullUI()
+  index = None
+  section = 'default'
 
-  def load(self): pass
-  def save(self): pass
+  INTS = ('postinglist_kb', )
+  STRINGS = ('mailindex_file', 'postinglist_dir')
+  DICTS = ('mailbox')
+
+  def workdir(self):
+    return os.environ.get('MAILPILE_HOME', os.path.expanduser('~/.mailpile'))
+
+  def conffile(self):
+    return os.path.join(self.workdir(), 'config.rc')
+
+  def parse_unset(self, arg):
+    key = arg.strip().lower()
+    if key in self:
+      del config[key]
+    elif ':' in key and key.split(':', 1)[0] in self.DICTS:
+      key, subkey = key.split(':', 1)
+      if key in self and subkey in self[key]:
+        del self[key][subkey]
+    self.ui.print_key(key, self)
+
+  def parse_set(self, line):
+    key, val = [k.strip() for k in line.split('=', 1)]
+    key = key.lower()
+    if key in self.INTS:
+      self[key] = int(val)
+    elif key in self.STRINGS:
+      self[key] = val
+    elif ':' in key and key.split(':', 1)[0] in self.DICTS:
+      key, subkey = key.split(':', 1)
+      if key not in self:
+        self[key] = {}
+      self[key][subkey] = val
+    else:
+      raise UsageError('Unknown key in config: %s' % key)
+    self.ui.print_key(key, self)
+
+  def load(self, section='default'):
+    self.section = section
+    if not os.path.exists(self.workdir()):
+      os.mkdir(self.workdir())
+    else:
+      self.index = None
+      for key in (self.INTS + self.STRINGS):
+        if key in self: del self[key]
+      try:
+        fd = open(self.conffile(), 'r')
+        insect = section
+        for line in fd:
+          line = line.strip()
+          if line.startswith('#') or not line:
+            pass
+          elif line.startswith('[') and line.endswith(']'):
+            insect = line[1:-1]
+          elif '=' in line:
+            if insect == section:
+              self.parse_set(line)
+          else:
+            raise UsageError('Bad line in config: %s' % line)
+        fd.close()
+      except IOError:
+        pass
+
+  def save(self):
+    pass
+
   def get_mailboxes(self):
     return [('000', '000'), ('001', '001')]
 
   def mailindex_file(self):
-    return self.get('mailindex_file', 'mailpile.idx')
+    return self.get('mailindex_file',
+                    os.path.join(self.workdir(), 'mailpile.idx'))
 
   def postinglist_dir(self):
-    return self.get('postinglist_dir', 'search')
+    d = self.get('postinglist_dir',
+                 os.path.join(self.workdir(), 'search'))
+    if not os.path.exists(d): os.mkdir(d)
+    return d
 
   def get_index(self):
-    if 'index' in self: return self['index']
-    idx = self['index'] = MailIndex(self)
+    if self.index: return self.index
+    idx = self.index = MailIndex(self)
     idx.load()
     return idx
 
@@ -464,27 +554,13 @@ def Action(opt, arg, config):
       config.ui.reset_marks()
 
   elif opt in ('P', 'print'):
-    key = arg.strip().lower()
-    if key in config:
-      print '%s = %s' % (key, config[key])
-    else:
-      print '%s is unset' % key
+    config.ui.print_key(arg.strip().lower(), config)
 
   elif opt in ('U', 'unset'):
-    key = arg.strip().lower()
-    if key in config:
-      del config[key]
-    print '%s is unset' % key
+    config.parse_unset(arg)
 
   elif opt in ('S', 'set'):
-    key, val = arg.split('=')
-    key = key.strip().lower()
-    if key.endswith('_kb'):
-      config[key] = int(val.strip())
-      print '%s = %d (int)' % (key, config[key])
-    else:
-      config[key] = val.strip()
-      print '%s = %s' % (key, config[key])
+    config.parse_set(arg)
 
   elif opt in ('r', 'rescan'):
     idx = config.get_index()
@@ -524,7 +600,7 @@ def Action(opt, arg, config):
     config.ui.reset_marks()
 
   else:
-    print 'Unknown command: %s' % opt
+    raise UsageError('Unknown command: %s' % opt)
 
 
 def Interact(config):
@@ -537,7 +613,10 @@ def Interact(config):
           opt, arg = opt.split(' ', 1)
         else:
           arg = ''
-        Action(opt, arg, config)
+        try:
+          Action(opt, arg, config)
+        except UsageError, e:
+          print 'Error: %s' % e
   except EOFError:
     print
 
@@ -549,13 +628,19 @@ if __name__ == "__main__":
   config = ConfigManager()
   config.load()
   config.ui = TextUI()
-  opts, args = getopt.getopt(sys.argv[1:],
-                             ''.join(COMMANDS.keys()),
-                             COMMANDS.values())
+  try:
+    opts, args = getopt.getopt(sys.argv[1:],
+                               ''.join(COMMANDS.keys()),
+                               COMMANDS.values())
+    for opt, arg in opts:
+      Action(opt.replace('-', ''), arg, config)
+    if args:
+      Action(args[0], ' '.join(args[1:]), config)
 
-  for opt, arg in opts:
-    Action(opt.replace('-', ''), arg, config)
+  except (getopt.GetoptError, UsageError), e:
+    print 'Error: %s' % e
+    sys.exit(1)
 
-  if not opts:
+  if not opts and not args:
     Interact(config)
 
