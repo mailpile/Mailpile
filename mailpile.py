@@ -356,6 +356,12 @@ class MailIndex(object):
         # FIXME: Does this lowercase non-ASCII characters correctly?
         keywords |= set(re.findall(WORD_REGEXP, textpart.lower()))
 
+    mdate = datetime.date.fromtimestamp(msg_date)
+    keywords.add('%s:year' % mdate.year)
+    keywords.add('%s:month' % mdate.month)
+    keywords.add('%s:day' % mdate.day)
+    keywords.add('%s-%s-%s:date' % (mdate.year, mdate.month, mdate.day))
+
     keywords |= set(re.findall(WORD_REGEXP, msg_subject.lower()))
     keywords |= set(re.findall(WORD_REGEXP, msg_from.lower()))
     keywords |= set([t+':subject' for t in re.findall(WORD_REGEXP, msg_subject.lower())])
