@@ -77,11 +77,17 @@ The fun one is `search`:
     mailpile> s att:pdf
     ...
     mailpile> s has:attachment
+    ...
+    mailpile> s date:2011-1-30
+    ...
+    mailpile> s year:2011 month:12
+    ...
 
 The default search will search in message bodies, from lines, attachment
-names and subjects.  Using the `to/from/subject/att` prefix will search
-that part of the message only.  There's no way to *only* search bodies,
-they're too full of crap anyway.  Adding terms narrows the search.
+names and subjects.  Using the `to/from/subject/att/...` prefixes will
+search that part of the message only.  There's no way to *only* search
+bodies, they're too full of crap anyway.  Adding terms narrows the
+search.
 
 You can search from the command line with `mailpile.py -s term`,
 but that will be rather slow because the metadata index has to be
@@ -97,10 +103,12 @@ output format more regular and machine readable.)
 Searching is all about disk seeks.
 
 Mailpile tries to keep seeks to a minimum: any single-keyword search can
-be answered by opening and parsing one relatively small file.  A single
-search should take on the order of 200-400ms, depending on your filesystem
-and hard drive.  Repeated searches or searches for closely related keywords
-will be up to 10x faster, due to help from the OS cache.
+be answered by opening and parsing one relatively small file, which should
+take on the order of 200-400ms, depending on your filesystem and hard
+drive.  Repeated searches or searches for closely related keywords will be
+up to 10x faster, due to help from the OS cache.
+
+This *includes* the time it takes to render the list of results.
 
 This level of performance is possible, because all the metadata about the
 messages themselves is kept in RAM.  This may seem extravagant, but on
@@ -108,9 +116,13 @@ modern computers you can actually handle massive amounts of e-mail this way.
 
 Mailpile stores in RAM a little over 160 bytes of metadata per message
 (actual size depends largely on the size of various headers), but Python
-bloats that to about 1KB.  This means handling 100000 messages should
-consume about 100MB of RAM, which isn't too bad if you consider how much
-memory your browser (or desktop e-mail client) eats up.
+overhead brings that to about 240B.  This means handling a million messages
+should consume about 240MB of RAM - not too bad if you consider how much
+memory your browser (or desktop e-mail client) eats up.  Also, who has
+a million e-mails? :-)
+
+(Caveat: Really common terms will take longer due to the size of the result
+set - but searching for really common terms won't give good results anyway.)
 
 
 ## TODO ##
@@ -118,7 +130,6 @@ memory your browser (or desktop e-mail client) eats up.
 A random laundry list of things I haven't done yet and might accept
 patches for:
 
-   * Searchable dates (year:2010, month:12, day:24, date:2010-12-24)
    * Porperly sort the search results by date
    * A way to pageinate through search results
    * A more efficient incremental indexer
@@ -160,14 +171,17 @@ Milestone 1 has been reached.
 
 ## Credits and License ##
 
-Bjarni R. Einarsson <http://bre.klaki.net/> wrote this!  If you think
+Bjarni R. Einarsson <http://bre.klaki.net/> created this!  If you think
 it's neat, you should also check out PageKite: <https://pagekite.net/>
-
-Send me a patch: *your name here*
 
 The GMail guys get mad props for creating the best webmail service out
 there.  Wishing the Free Software world had something like it is what
 inspired me to start working on this.
+
+Contributors:
+
+   * Bjarni R. Einasson <http://bre.klaki.net/>
+   * Smari McCarthy <smari at immi dot is>
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the  GNU  Affero General Public License as published
