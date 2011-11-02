@@ -47,16 +47,14 @@ If you are importing a very large amount of mail, it may be worth tweaking
 the default size of the posting-lists (search term indexes) to avoid frequent
 compactions and splits, both of which thrash the disk quite a bit:
 
-    $ ./mailpile.py
-    mailpile> set postinglist_kb = 10240
-    mailpile> rescan
+    $ ./mailpile.py -S postinglist_kb=10240 --optimize --rescan
     ...
 
 This will result in much slower searches, but once the mail has been imported
 we can reset the limit and optimize the index:
 
-    mailpile> unset postinglist_kb
-    mailpile> optimize
+    $ ./mailpile.py -U postinglist_kb --optimize
+    ...
 
 
 ## Basic use ##
