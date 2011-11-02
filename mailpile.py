@@ -290,8 +290,9 @@ class MailIndex(object):
       msg_id = hdr('message-id') or '<%s@mailpile>' % msg_ptr
       if msg_id in self.MSGIDS:
         # Just update location
-        raise Exception("FIXME: Unimplemented")
-        self.MSGIDS[msg_id][1] = msg_ptr
+        msg_info = self.l2m(self.INDEX[self.MSGIDS[msg_id]])
+        msg_info[self.MSG_PTR] = msg_ptr
+        self.INDEX[self.MSGIDS[msg_id]] = self.m2l(msg_info)
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
       else:
         # Add new message!
