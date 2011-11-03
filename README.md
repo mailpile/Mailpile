@@ -128,7 +128,6 @@ set - but searching for really common terms won't give good results anyway.)
 A random laundry list of things I haven't done yet and might accept
 patches for:
 
-   * A way to pageinate through search results
    * A more efficient incremental indexer
    * A way to view/extract messages/attachments
    * A way to assign/edit/remove tags (including read/unread/inbox)

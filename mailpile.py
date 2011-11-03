@@ -52,16 +52,16 @@ class PostingList(object):
   HASH_LEN = 12
 
   @classmethod
-  def Optimize(cls, config):
-    postinglist_kb = config.get('postinglist_kb', cls.MAX_SIZE)
-    postinglist_dir = config.postinglist_dir()
+  def Optimize(cls, session):
+    postinglist_kb = session.config.get('postinglist_kb', cls.MAX_SIZE)
+    postinglist_dir = session.config.postinglist_dir()
 
     # Pass 1: Compact all files that are 90% or more of our target size
     for fn in sorted(os.listdir(postinglist_dir)):
       if (os.path.getsize(os.path.join(postinglist_dir, fn)) >
                                                         900*postinglist_kb):
-        config.ui.mark('Pass 1: Compacting >%s<' % fn)
-        cls(fn, config, sig=fn).save()
+        session.ui.mark('Pass 1: Compacting >%s<' % fn)
+        cls(session, fn, sig=fn).save()
 
     # Pass 2: While mergable pair exists: merge them!
     files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
@@ -73,7 +73,7 @@ class PostingList(object):
         fnp = fnp[:-1]
       size += os.path.getsize(os.path.join(postinglist_dir, fnp))
       if (size < (1024*postinglist_kb-(cls.HASH_LEN*6))):
-        config.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
+        session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
         fd = open(os.path.join(postinglist_dir, fn), 'r')
         fdp = open(os.path.join(postinglist_dir, fnp), 'a')
         for line in fd:
@@ -83,13 +83,14 @@ class PostingList(object):
         os.remove(os.path.join(postinglist_dir, fn))
 
     filecount = len(os.listdir(postinglist_dir))
-    config.ui.mark('Optimized %s posting lists' % filecount)
+    session.ui.mark('Optimized %s posting lists' % filecount)
     return filecount
 
   @classmethod
-  def Append(cls, word, mail_id, config, compact=True):
+  def Append(cls, session, word, mail_id, compact=True):
+    config = session.config
     sig = cls.WordSig(word)
-    fd, fn = cls.GetFile(sig, config, mode='a')
+    fd, fn = cls.GetFile(session, sig, mode='a')
     if (compact
         and (os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
              (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*6))
@@ -97,7 +98,7 @@ class PostingList(object):
       # This will compact the files and split out hot-spots, but we only bother
       # "once in a while" when the files are "big".
       fd.close()
-      pls = cls(word, config)
+      pls = cls(session, word)
       pls.append(mail_id)
       pls.save()
     else:
@@ -110,10 +111,10 @@ class PostingList(object):
     return strhash(word, cls.HASH_LEN*2)
 
   @classmethod
-  def GetFile(cls, sig, config, mode='r'):
+  def GetFile(cls, session, sig, mode='r'):
     sig = sig[:cls.HASH_LEN]
     while len(sig) > 0:
-      fn = os.path.join(config.postinglist_dir(), sig)
+      fn = os.path.join(session.config.postinglist_dir(), sig)
       try:
         if os.path.exists(fn): return (open(fn, mode), sig)
       except:
@@ -129,8 +130,9 @@ class PostingList(object):
     # Not reached
     return (None, None)
 
-  def __init__(self, word, config, sig=None):
-    self.config = config
+  def __init__(self, session, word, sig=None):
+    self.config = session.config
+    self.session = session
     self.sig = sig or PostingList.WordSig(word)
     self.word = word
     self.WORDS = {self.sig: set()}
@@ -138,7 +140,7 @@ class PostingList(object):
 
   def load(self):
     self.size = 0
-    fd, sig = PostingList.GetFile(self.sig, self.config)
+    fd, sig = PostingList.GetFile(self.session, self.sig)
     self.filename = sig
     if fd:
       for line in fd:
@@ -151,7 +153,7 @@ class PostingList(object):
 
   def fmt_file(self, prefix):
     output = []
-    self.config.ui.mark('Formatting prefix %s' % unicode(prefix))
+    self.session.ui.mark('Formatting prefix %s' % unicode(prefix))
     for word in self.WORDS:
       if word.startswith(prefix) and len(self.WORDS[word]) > 0:
         output.append('%s\t%s\n' % (word,
@@ -223,24 +225,25 @@ class MailIndex(object):
   def m2l(self, message):
     return (u'\t'.join([unicode(p) for p in message])).encode('utf-8')
 
-  def load(self):
+  def load(self, session):
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
-    self.config.ui.mark('Loading metadata index...')
+    session.ui.mark('Loading metadata index...')
     try:
       fd = open(self.config.mailindex_file(), 'r')
-    except:
-      return
-    for line in fd:
-      line = line.strip()
-      if line and not line.startswith('#'):
-        self.INDEX.append(line)
-    fd.close()
-    self.config.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
+      for line in fd:
+        line = line.strip()
+        if line and not line.startswith('#'):
+          self.INDEX.append(line)
+      fd.close()
+    except IOError:
+      session.ui.warning(('Metadata index not found: %s'
+                          ) % self.config.mailindex_file())
+    session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
 
-  def save(self):
-    self.config.ui.mark("Saving metadata index...")
+  def save(self, session):
+    session.ui.mark("Saving metadata index...")
     fd = open(self.config.mailindex_file(), 'w')
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
@@ -248,10 +251,10 @@ class MailIndex(object):
       fd.write(item)
       fd.write('\n')
     fd.close()
-    self.config.ui.mark("Saved metadata index")
+    session.ui.mark("Saved metadata index")
 
-  def update_ptrs_and_msgids(self):
-    self.config.ui.mark('Updating high level indexes')
+  def update_ptrs_and_msgids(self, session):
+    session.ui.mark('Updating high level indexes')
     for offset in range(0, len(self.INDEX)):
       message = self.l2m(self.INDEX[offset])
       if len(message) > self.MSG_CONV_ID:
@@ -260,11 +263,11 @@ class MailIndex(object):
       else:
         print 'Bogus line: %s' % line
 
-  def scan_mbox(self, idx, filename):
+  def scan_mbox(self, session, idx, filename):
     import mailbox, email.parser, rfc822
 
     self.update_ptrs_and_msgids()
-    self.config.ui.mark(('%s: Opening mailbox: %s (may take a while)'
+    self.session.ui.mark(('%s: Opening mailbox: %s (may take a while)'
                          ) % (idx, filename))
     mbox = mailbox.mbox(filename)
     msg_date = int(time.time())
@@ -276,10 +279,10 @@ class MailIndex(object):
       parse_status = ('%s: Reading your mail: %d%% (%d/%d messages)'
                       ) % (idx, 100 * i/len(mbox), i, len(mbox))
       if msg_ptr in self.PTRS:
-        if (i % 119) == 0: self.config.ui.mark(parse_status)
+        if (i % 119) == 0: session.ui.mark(parse_status)
         continue
       else:
-        self.config.ui.mark(parse_status)
+        session.ui.mark(parse_status)
 
       # Message new or modified, let's parse it.
       p = email.parser.Parser()
@@ -332,11 +335,11 @@ class MailIndex(object):
                            compact=False)
         added += 1
 
-      if (i % 1000) == 999: self.save()
+      if (i % 1000) == 999: self.save(session)
 
     if added > 100:
-      PostingList.Optimize(self.config)
-    self.config.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
+      PostingList.Optimize(session)
+    session.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
     return self
 
   def index_message(self, msg_info, msg, msg_date, msg_to, msg_from, msg_subject,
@@ -383,7 +386,7 @@ class MailIndex(object):
     keywords -= set(STOPLIST)
     for word in keywords:
       try:
-        PostingList.Append(word, msg_info[0], self.config, compact=compact)
+        PostingList.Append(session, word, msg_info[0], compact=compact)
       except UnicodeDecodeError:
         # FIXME: we just ignore garbage
         pass
@@ -391,30 +394,30 @@ class MailIndex(object):
   def get_by_msg_idx(self, msg_idx):
     return self.l2m(self.INDEX[intb64(msg_idx)])
 
-  def search(self, searchterms):
+  def search(self, session, searchterms):
     r = []
     for term in searchterms:
       r.append([])
       rt = r[-1]
       term = term.lower()
-      self.config.ui.mark('Searching...')
+      session.ui.mark('Searching...')
       if term.startswith('body:'):
-        rt.extend(PostingList(term[5:], self.config).hits())
+        rt.extend(PostingList(session, term[5:]).hits())
       elif ':' in term:
         t = term.split(':', 1)
-        rt.extend(PostingList('%s:%s' % (t[1], t[0]), self.config).hits())
+        rt.extend(PostingList(session, '%s:%s' % (t[1], t[0])).hits())
       else:
-        rt.extend(PostingList(term, self.config).hits())
+        rt.extend(PostingList(session, term).hits())
 
     results = set(r[0])
     for rt in r[1:]:
       results &= set(rt)
 
-    self.config.ui.mark('Found %d results' % len(results))
+    session.ui.mark('Found %d results' % len(results))
     return results
 
-  def sort_results(self, results):
-    how = self.config.get('order', 'reverse_date')
+  def sort_results(self, session, results, how=None):
+    how = how or self.config.get('order', 'reverse_date')
     sign = how.startswith('reverse_') and -1 or 1
     sort_max = self.config.get('sort_max', 5000)
 
@@ -423,8 +426,8 @@ class MailIndex(object):
     elif how.endswith('index'):
       results.sort(key=lambda k: sign*intb64(k))
     elif len(results) > sort_max:
-      self.config.ui.warning(('Over sort_max (%s) results, using index order.'
-                              ) % sort_max)
+      session.ui.warning(('Over sort_max (%s) results, using index order.'
+                          ) % sort_max)
       results.sort(key=lambda k: sign*intb64(k))
       return False
 
@@ -439,7 +442,7 @@ class MailIndex(object):
     elif how.endswith('subject'):
       results.sort(key=lambda k: self.l2m(self.INDEX[intb64(k)])[self.MSG_SUBJECT])
     else:
-      self.config.ui.warning('Unknown sort order: %s' % how)
+      session.ui.warning('Unknown sort order: %s' % how)
       return False
 
     return True
@@ -491,6 +494,30 @@ class TextUI(object):
     sys.stdout.flush()
     self.times.append((time.time(), progress))
 
+  def display_results(self, idx, results, start=0, num=20):
+    if not results: return
+
+    if start > len(results)-num: start = len(results)-num
+    if start < 0: start = 0
+
+    count = 0
+    for mid in results[start:start+num]:
+      count += 1
+      try:
+        msg_info = idx.get_by_msg_idx(mid)
+        msg_from = msg_info[idx.MSG_FROM]
+        msg_subj = msg_info[idx.MSG_SUBJECT]
+        msg_date = datetime.date.fromtimestamp(intb64(msg_info[idx.MSG_DATE]))
+        print ('%2.2s %4.4d-%2.2d-%2.2d  %-25.25s  %-38.38s'
+               ) % (count, msg_date.year, msg_date.month, msg_date.day,
+                    msg_from, msg_subj)
+      except:
+        print '-- (not in index: %s)' % mid
+    session.ui.mark('Listed %d-%d of %d messages' % (start+1, start+count,
+                                                     len(results)))
+    return start + count
+
+
 
 class UsageError(Exception):
   pass
@@ -498,7 +525,6 @@ class UsageError(Exception):
 
 class ConfigManager(dict):
 
-  ui = NullUI()
   index = None
   section = 'default'
 
@@ -522,7 +548,7 @@ class ConfigManager(dict):
         del self[key][subkey]
     self.ui.print_key(key, self)
 
-  def parse_set(self, line):
+  def parse_set(self, session, line):
     key, val = [k.strip() for k in line.split('=', 1)]
     key = key.lower()
     if key in self.INTS:
@@ -536,11 +562,12 @@ class ConfigManager(dict):
       self[key][subkey] = val
     else:
       raise UsageError('Unknown key in config: %s' % key)
-    self.ui.print_key(key, self)
+    session.ui.print_key(key, self)
 
-  def load(self, section='default'):
+  def load(self, session, section='default'):
     self.section = section
     if not os.path.exists(self.workdir()):
+      session.ui.notify('Creating: %s' % self.workdir())
       os.mkdir(self.workdir())
     else:
       self.index = None
@@ -557,7 +584,7 @@ class ConfigManager(dict):
             insect = line[1:-1]
           elif '=' in line:
             if insect == section:
-              self.parse_set(line)
+              self.parse_set(session, line)
           else:
             raise UsageError('Bad line in config: %s' % line)
         fd.close()
@@ -580,11 +607,21 @@ class ConfigManager(dict):
     if not os.path.exists(d): os.mkdir(d)
     return d
 
-  def get_index(self):
+  def get_index(self, session):
     if self.index: return self.index
     idx = self.index = MailIndex(self)
-    idx.load()
+    idx.load(session)
     return idx
+
+
+class Session(object):
+
+  ui = NullUI()
+  results = None
+  results_displayed = 0
+
+  def __init__(self, config):
+    self.config = config
 
 
 COMMANDS = {
@@ -596,72 +633,77 @@ COMMANDS = {
   'P:': 'print=',
   'O': 'optimize',
   'l': 'load',
+  'n': 'next',
+  'p': 'previous',
 }
-def Action(opt, arg, config):
+def Action(session, opt, arg):
+  config = session.config
+
   if opt in ('a', 'add'):
     pass
 
   elif opt in ('O', 'optimize'):
     try:
-      filecount = PostingList.Optimize(config)
-      config.ui.reset_marks()
+      filecount = PostingList.Optimize(session)
+      session.ui.reset_marks()
     except KeyboardInterrupt:
-      config.ui.mark('Aborted')
-      config.ui.reset_marks()
+      session.ui.mark('Aborted')
+      session.ui.reset_marks()
 
   elif opt in ('P', 'print'):
-    config.ui.print_key(arg.strip().lower(), config)
+    session.ui.print_key(arg.strip().lower(), config)
 
   elif opt in ('U', 'unset'):
-    config.parse_unset(arg)
+    config.parse_unset(session, arg)
 
   elif opt in ('S', 'set'):
-    config.parse_set(arg)
+    config.parse_set(session, arg)
 
   elif opt in ('r', 'rescan'):
-    idx = config.get_index()
-    config.ui.reset_marks()
+    idx = config.get_index(session)
+    session.ui.reset_marks()
     try:
       for fid, fpath in config.get_mailboxes():
-        idx.scan_mbox(fid, fpath)
-        config.ui.mark('\n')
+        idx.scan_mbox(session, fid, fpath)
+        session.ui.mark('\n')
     except KeyboardInterrupt:
-      config.ui.mark('Aborted')
-    idx.save()
-    config.ui.reset_marks()
+      session.ui.mark('Aborted')
+    idx.save(session)
+    session.ui.reset_marks()
 
   elif opt in ('l', 'load'):
-    config.get_index()
-    config.ui.reset_marks()
+    config.get_index(session)
+    session.ui.reset_marks()
+
+  elif opt in ('n', 'next'):
+    idx = config.get_index(session)
+    session.ui.reset_marks()
+    session.results_displayed = session.ui.display_results(idx, session.results,
+                                               start=session.results_displayed)
+    session.ui.reset_marks()
+
+  elif opt in ('p', 'previous'):
+    idx = config.get_index(session)
+    session.ui.reset_marks()
+    session.results_displayed = session.ui.display_results(idx, session.results,
+                                             start=session.results_displayed-40)
+    session.ui.reset_marks()
 
   elif opt in ('s', 'search'):
     if not arg: return
-    idx = config.get_index()
-    config.ui.reset_marks()
-    results = list(idx.search(arg.split()))
-    idx.sort_results(results)
-    count = 0
-    for mid in results[:20]:
-      count += 1
-      try:
-        msg_info = idx.get_by_msg_idx(mid)
-        msg_from = msg_info[idx.MSG_FROM]
-        msg_subj = msg_info[idx.MSG_SUBJECT]
-        msg_date = datetime.date.fromtimestamp(intb64(msg_info[idx.MSG_DATE]))
-        print ('%2.2s %4.4d-%2.2d-%2.2d  %-25.25s  %-38.38s'
-               ) % (count, msg_date.year, msg_date.month, msg_date.day,
-                    msg_from, msg_subj)
-      except:
-        print '-- (not in index: %s)' % mid
-    config.ui.mark('Listed %d of %d messages' % (count, len(results)))
-    config.ui.reset_marks()
+    idx = config.get_index(session)
+    session.ui.reset_marks()
+    session.results = list(idx.search(session, arg.split()))
+    idx.sort_results(session, session.results)
+    session.results_displayed = session.ui.display_results(idx, session.results)
+    session.ui.reset_marks()
 
   else:
     raise UsageError('Unknown command: %s' % opt)
 
 
 
-def Interact(config):
+def Interact(session):
   import readline
   try:
     while True:
@@ -672,7 +714,7 @@ def Interact(config):
         else:
           arg = ''
         try:
-          Action(opt, arg, config)
+          Action(session, opt, arg)
         except UsageError, e:
           print 'Error: %s' % e
   except EOFError:
@@ -683,22 +725,22 @@ if __name__ == "__main__":
   re.UNICODE = 1
   re.LOCALE = 1
 
-  config = ConfigManager()
-  config.load()
-  config.ui = TextUI()
+  session = Session(ConfigManager())
+  session.config.load(session)
+  session.ui = TextUI()
   try:
     opts, args = getopt.getopt(sys.argv[1:],
                                ''.join(COMMANDS.keys()),
                                COMMANDS.values())
     for opt, arg in opts:
-      Action(opt.replace('-', ''), arg, config)
+      Action(session, opt.replace('-', ''), arg)
     if args:
-      Action(args[0], ' '.join(args[1:]), config)
+      Action(session, args[0], ' '.join(args[1:]))
 
   except (getopt.GetoptError, UsageError), e:
     print 'Error: %s' % e
     sys.exit(1)
 
   if not opts and not args:
-    Interact(config)
+    Interact(session)
 
