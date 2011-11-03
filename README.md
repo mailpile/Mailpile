@@ -128,7 +128,6 @@ set - but searching for really common terms won't give good results anyway.)
 A random laundry list of things I haven't done yet and might accept
 patches for:
 
-   * Porperly sort the search results by date
    * A way to pageinate through search results
    * A more efficient incremental indexer
    * A way to view/extract messages/attachments
@@ -136,7 +135,6 @@ patches for:
    * Assign conversation IDs to messages (simplistic threading)
    * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
-   * Move everything to `$HOME/.mailpile` or a sane Windows alternative
    * Support for other mailbox formats, maybe even POP3/IMAP indexing
    * Meaningful settings and a way to load/save them
    * A shell scripting interface for automation

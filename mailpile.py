@@ -22,12 +22,15 @@ STOPLIST = ('an', 'and', 'are', 'as', 'at', 'by', 'for', 'from', 'has', 'is',
 def b64c(b):
   return b.replace('\n', '').replace('=', '').replace('/', '_')
 
+def sha1b64(s):
+  h = hashlib.sha1()
+  h.update(s.encode('utf-8'))
+  return h.digest().encode('base64')
+
 def strhash(s, length):
   s2 = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '', s.lower())
   while len(s2) < length:
-    h = hashlib.sha1()
-    h.update(s.encode('utf-8'))
-    s2 += b64c(h.digest().encode('base64')).lower()
+    s2 += b64c(sha1b64(s)).lower()
   return s2[:length]
 
 def b64int(i):
@@ -400,16 +403,57 @@ class MailIndex(object):
     self.config.ui.mark('Found %d results' % len(results))
     return results
 
+  def sort_results(self, results):
+    how = self.config.get('order', 'unsorted')
+    if how == 'unsorted':
+      return True
+
+    sort_max = self.config.get('sort_max', 10000)
+    if len(results) > sort_max:
+      self.config.ui.warning('Over sort_max (%s) results, not sorting.' % sort_max)
+      return False
+
+    sign = how.startswith('reverse_') and -1 or 1
+    if how.endswith('index'):
+      results.sort(key=lambda k: sign*intb64(k))
+    elif how.endswith('random'):
+      now = time.time()
+      results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
+    elif how.endswith('date'):
+      results.sort(key=lambda k: sign*intb64(self.l2m(self.INDEX[intb64(k)]
+                                                      )[self.MSG_DATE]))
+    elif how.endswith('from'):
+      results.sort(key=lambda k: self.l2m(self.INDEX[intb64(k)])[self.MSG_FROM])
+    elif how.endswith('subject'):
+      results.sort(key=lambda k: self.l2m(self.INDEX[intb64(k)])[self.MSG_SUBJECT])
+    else:
+      self.config.ui.warning('Unknown sort order: %s' % how)
+      return False
+
+    return True
+
 
 class NullUI(object):
   def print_key(self, key, config): pass
   def reset_marks(self): pass
   def mark(self, progress): pass
+  def notify(self, message): pass
+  def warning(self, message): pass
+  def errro(self, message): pass
 
 
 class TextUI(object):
   def __init__(self):
     self.times = []
+
+  def notify(self, message):
+    print '%s' % message
+
+  def warning(self, message):
+    print 'Warning: %s' % message
+
+  def error(self, message):
+    print 'Error: %s' % message
 
   def print_key(self, key, config):
     if key in config:
@@ -446,8 +490,8 @@ class ConfigManager(dict):
   index = None
   section = 'default'
 
-  INTS = ('postinglist_kb', )
-  STRINGS = ('mailindex_file', 'postinglist_dir')
+  INTS = ('postinglist_kb', 'sort_max')
+  STRINGS = ('mailindex_file', 'postinglist_dir', 'order')
   DICTS = ('mailbox')
 
   def workdir(self):
@@ -582,9 +626,10 @@ def Action(opt, arg, config):
     if not arg: return
     idx = config.get_index()
     config.ui.reset_marks()
-    results = idx.search(arg.split())
+    results = list(idx.search(arg.split()))
+    idx.sort_results(results)
     count = 0
-    for mid in sorted(list(results))[-20:]:
+    for mid in results[:20]:
       count += 1
       try:
         msg_info = idx.get_by_msg_idx(mid)
@@ -601,6 +646,7 @@ def Action(opt, arg, config):
 
   else:
     raise UsageError('Unknown command: %s' % opt)
+
 
 
 def Interact(config):
