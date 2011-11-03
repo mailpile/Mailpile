@@ -56,10 +56,12 @@ class PostingList(object):
     postinglist_kb = config.get('postinglist_kb', cls.MAX_SIZE)
     postinglist_dir = config.postinglist_dir()
 
-    # Pass 1: Compact all files
+    # Pass 1: Compact all files that are 90% or more of our target size
     for fn in sorted(os.listdir(postinglist_dir)):
-      config.ui.mark('Pass 1: Compacting >%s<' % fn)
-      cls(fn, config, sig=fn).save()
+      if (os.path.getsize(os.path.join(postinglist_dir, fn)) >
+                                                        900*postinglist_kb):
+        config.ui.mark('Pass 1: Compacting >%s<' % fn)
+        cls(fn, config, sig=fn).save()
 
     # Pass 2: While mergable pair exists: merge them!
     files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
