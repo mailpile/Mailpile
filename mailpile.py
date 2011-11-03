@@ -188,7 +188,7 @@ class PostingList(object):
         os.remove(os.path.join(self.config.postinglist_dir(), prefix))
         return 0
     except:
-#     print 'Warning: %s' % (sys.exc_info(), )
+      self.session.ui.warning('%s' % (sys.exc_info(), ))
       return 0
 
   def hits(self):
@@ -452,23 +452,18 @@ class NullUI(object):
   def print_key(self, key, config): pass
   def reset_marks(self): pass
   def mark(self, progress): pass
-  def notify(self, message): pass
-  def warning(self, message): pass
-  def errro(self, message): pass
+  def notify(self, message): print '%s' % message
+  def warning(self, message): print 'Warning: %s' % message
+  def error(self, message): print 'Error: %s' % message
 
 
 class TextUI(object):
   def __init__(self):
     self.times = []
 
-  def notify(self, message):
-    print '%s' % message
-
-  def warning(self, message):
-    print 'Warning: %s' % message
-
-  def error(self, message):
-    print 'Error: %s' % message
+  def notify(self, message): print '%s' % message
+  def warning(self, message): print 'Warning: %s' % message
+  def error(self, message): print 'Error: %s' % message
 
   def print_key(self, key, config):
     if key in config:
@@ -494,11 +489,16 @@ class TextUI(object):
     sys.stdout.flush()
     self.times.append((time.time(), progress))
 
-  def display_results(self, idx, results, start=0, num=20):
+  def display_results(self, idx, results, start=0, end=None, num=20):
     if not results: return
 
-    if start > len(results)-num: start = len(results)-num
+    if end: start = end - num
+    if start > len(results): start = len(results)
     if start < 0: start = 0
+
+    clen = max(3, len('%d' % len(results)))
+    cfmt = '%%%d.%ds' % (clen, clen)
+    sfmt = '%%-%d.%ds' % (39-clen, 39-clen)
 
     count = 0
     for mid in results[start:start+num]:
@@ -508,14 +508,15 @@ class TextUI(object):
         msg_from = msg_info[idx.MSG_FROM]
         msg_subj = msg_info[idx.MSG_SUBJECT]
         msg_date = datetime.date.fromtimestamp(intb64(msg_info[idx.MSG_DATE]))
-        print ('%2.2s %4.4d-%2.2d-%2.2d  %-25.25s  %-38.38s'
-               ) % (count, msg_date.year, msg_date.month, msg_date.day,
-                    msg_from, msg_subj)
+        print (cfmt+' %4.4d-%2.2d-%2.2d  %-25.25s  '+sfmt
+               ) % (start + count, msg_date.year, msg_date.month,
+                    msg_date.day, msg_from, msg_subj)
       except:
+        raise
         print '-- (not in index: %s)' % mid
     session.ui.mark('Listed %d-%d of %d messages' % (start+1, start+count,
                                                      len(results)))
-    return start + count
+    return (start, count)
 
 
 
@@ -618,7 +619,7 @@ class Session(object):
 
   ui = NullUI()
   results = None
-  results_displayed = 0
+  displayed = (0, 0)
 
   def __init__(self, config):
     self.config = config
@@ -678,15 +679,17 @@ def Action(session, opt, arg):
   elif opt in ('n', 'next'):
     idx = config.get_index(session)
     session.ui.reset_marks()
-    session.results_displayed = session.ui.display_results(idx, session.results,
-                                               start=session.results_displayed)
+    pos, count = session.displayed
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   start=pos+count)
     session.ui.reset_marks()
 
   elif opt in ('p', 'previous'):
     idx = config.get_index(session)
     session.ui.reset_marks()
-    session.results_displayed = session.ui.display_results(idx, session.results,
-                                             start=session.results_displayed-40)
+    pos, count = session.displayed
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   end=pos)
     session.ui.reset_marks()
 
   elif opt in ('s', 'search'):
@@ -695,7 +698,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
     session.results = list(idx.search(session, arg.split()))
     idx.sort_results(session, session.results)
-    session.results_displayed = session.ui.display_results(idx, session.results)
+    session.displayed = session.ui.display_results(idx, session.results)
     session.ui.reset_marks()
 
   else:
@@ -716,7 +719,7 @@ def Interact(session):
         try:
           Action(session, opt, arg)
         except UsageError, e:
-          print 'Error: %s' % e
+          session.ui.error(e)
   except EOFError:
     print
 
@@ -738,7 +741,7 @@ if __name__ == "__main__":
       Action(session, args[0], ' '.join(args[1:]))
 
   except (getopt.GetoptError, UsageError), e:
-    print 'Error: %s' % e
+    session.ui.error(e)
     sys.exit(1)
 
   if not opts and not args:
