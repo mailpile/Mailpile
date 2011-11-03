@@ -416,26 +416,29 @@ class MailIndex(object):
     session.ui.mark('Found %d results' % len(results))
     return results
 
-  def sort_results(self, session, results, how=None):
+  def sort_results(self, session, results, how=None, force=False):
+    force = how or False
     how = how or self.config.get('order', 'reverse_date')
-    sign = how.startswith('reverse_') and -1 or 1
+    sign = how.startswith('rev') and -1 or 1
     sort_max = self.config.get('sort_max', 5000)
+    if not results: return
 
+    if len(results) > sort_max and not force:
+      session.ui.warning(('Over sort_max (%s) results, using index order.'
+                          ) % sort_max)
+      if sign < 0: results.reverse()
+      return False
+
+    session.ui.mark('Sorting messages in %s order...' % how)
     if how == 'unsorted':
       pass
     elif how.endswith('index'):
       results.sort(key=lambda k: sign*intb64(k))
-    elif len(results) > sort_max:
-      session.ui.warning(('Over sort_max (%s) results, using index order.'
-                          ) % sort_max)
-      results.sort(key=lambda k: sign*intb64(k))
-      return False
-
     elif how.endswith('random'):
       now = time.time()
       results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
     elif how.endswith('date'):
-      results.sort(key=lambda k: sign*intb64(self.l2m(self.INDEX[intb64(k)]
+      results.sort(key=lambda k: intb64(self.l2m(self.INDEX[intb64(k)]
                                                       )[self.MSG_DATE]))
     elif how.endswith('from'):
       results.sort(key=lambda k: self.l2m(self.INDEX[intb64(k)])[self.MSG_FROM])
@@ -445,6 +448,9 @@ class MailIndex(object):
       session.ui.warning('Unknown sort order: %s' % how)
       return False
 
+    if sign < 0: results.reverse()
+
+    session.ui.mark('Sorted messages in %s order' % how)
     return True
 
 
@@ -618,6 +624,7 @@ class ConfigManager(dict):
 class Session(object):
 
   ui = NullUI()
+  order = None
   results = None
   displayed = (0, 0)
 
@@ -626,16 +633,17 @@ class Session(object):
 
 
 COMMANDS = {
-  'r': 'rescan',
   'a:': 'add=',
+  'l': 'load',
+  'n': 'next',
+  'o:': 'order=',
+  'O': 'optimize',
+  'p': 'previous',
+  'P:': 'print=',
+  'r': 'rescan',
   's:': 'search=',
   'S:': 'set=',
   'U:': 'unset=',
-  'P:': 'print=',
-  'O': 'optimize',
-  'l': 'load',
-  'n': 'next',
-  'p': 'previous',
 }
 def Action(session, opt, arg):
   config = session.config
@@ -697,7 +705,15 @@ def Action(session, opt, arg):
     idx = config.get_index(session)
     session.ui.reset_marks()
     session.results = list(idx.search(session, arg.split()))
-    idx.sort_results(session, session.results)
+    idx.sort_results(session, session.results, how=session.order)
+    session.displayed = session.ui.display_results(idx, session.results)
+    session.ui.reset_marks()
+
+  elif opt in ('o', 'order'):
+    idx = config.get_index(session)
+    session.ui.reset_marks()
+    session.order = arg or None
+    idx.sort_results(session, session.results, how=session.order)
     session.displayed = session.ui.display_results(idx, session.results)
     session.ui.reset_marks()
 
