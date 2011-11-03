@@ -85,11 +85,12 @@ class PostingList(object):
     return filecount
 
   @classmethod
-  def Append(cls, word, mail_id, config):
+  def Append(cls, word, mail_id, config, compact=True):
     sig = cls.WordSig(word)
     fd, fn = cls.GetFile(sig, config, mode='a')
-    if ((os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
-            (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*6))
+    if (compact
+        and (os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
+             (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*6))
         and (random.randint(0, 50) == 1)):
       # This will compact the files and split out hot-spots, but we only bother
       # "once in a while" when the files are "big".
@@ -155,10 +156,11 @@ class PostingList(object):
                                '\t'.join(['%s' % x for x in self.WORDS[word]])))
     return ''.join(output)
 
-  def save(self, prefix=None):
+  def save(self, prefix=None, compact=True):
     prefix = prefix or self.filename
     output = self.fmt_file(prefix)
-    while (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE)
+    while (compact and
+           len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE)
            and len(prefix) < self.HASH_LEN):
       biggest = self.sig
       for word in self.WORDS:
@@ -264,6 +266,7 @@ class MailIndex(object):
                          ) % (idx, filename))
     mbox = mailbox.mbox(filename)
     msg_date = int(time.time())
+    added = 0
     for i in range(0, len(mbox)):
       msg_fd = mbox.get_file(i)
       msg_ptr = '%s%s' % (idx, b64int(msg_fd._pos))
@@ -323,14 +326,19 @@ class MailIndex(object):
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = len(self.INDEX)
         self.INDEX.append(self.m2l(msg_info))
         self.index_message(msg_info, msg, msg_date,
-                           hdr('to'), hdr('from'), hdr('subject'))
+                           hdr('to'), hdr('from'), hdr('subject'),
+                           compact=False)
+        added += 1
 
       if (i % 1000) == 999: self.save()
 
+    if added > 100:
+      PostingList.Optimize(self.config)
     self.config.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
     return self
 
-  def index_message(self, msg_info, msg, msg_date, msg_to, msg_from, msg_subject):
+  def index_message(self, msg_info, msg, msg_date, msg_to, msg_from, msg_subject,
+                    compact=True):
     keywords = set()
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
@@ -373,7 +381,7 @@ class MailIndex(object):
     keywords -= set(STOPLIST)
     for word in keywords:
       try:
-        PostingList.Append(word, msg_info[0], self.config)
+        PostingList.Append(word, msg_info[0], self.config, compact=compact)
       except UnicodeDecodeError:
         # FIXME: we just ignore garbage
         pass
