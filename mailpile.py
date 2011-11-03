@@ -404,18 +404,20 @@ class MailIndex(object):
     return results
 
   def sort_results(self, results):
-    how = self.config.get('order', 'unsorted')
-    if how == 'unsorted':
-      return True
+    how = self.config.get('order', 'reverse_date')
+    sign = how.startswith('reverse_') and -1 or 1
+    sort_max = self.config.get('sort_max', 5000)
 
-    sort_max = self.config.get('sort_max', 10000)
-    if len(results) > sort_max:
-      self.config.ui.warning('Over sort_max (%s) results, not sorting.' % sort_max)
+    if how == 'unsorted':
+      pass
+    elif how.endswith('index'):
+      results.sort(key=lambda k: sign*intb64(k))
+    elif len(results) > sort_max:
+      self.config.ui.warning(('Over sort_max (%s) results, using index order.'
+                              ) % sort_max)
+      results.sort(key=lambda k: sign*intb64(k))
       return False
 
-    sign = how.startswith('reverse_') and -1 or 1
-    if how.endswith('index'):
-      results.sort(key=lambda k: sign*intb64(k))
     elif how.endswith('random'):
       now = time.time()
       results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
