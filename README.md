@@ -33,7 +33,7 @@ A simple test run might look like so:
 
     $ ln -s /var/spool/mail/YOURNAME 000
     $ mkdir search
-    $ ./mailpile.py -r
+    $ ./mailpile.py -R
 
 The program prints details of its progress as it runs.  Note that just
 opening the mailbox may take quite a while if it is large enough (it takes
@@ -44,8 +44,8 @@ will continue the scan from where it left off.
 ### Huge mailboxes ###
 
 If you are importing a very large amount of mail, it may be worth tweaking
-the default size of the posting-lists (search term indexes) to avoid frequent
-compactions and splits, both of which thrash the disk quite a bit:
+the default size of the posting-lists (search term indexes) to avoid
+thrashing the disk too much:
 
     $ ./mailpile.py -S postinglist_kb=10240 --optimize --rescan
     ...
@@ -59,11 +59,13 @@ we can reset the limit and optimize the index:
 
 ## Basic use ##
 
-At the moment `mailpile.py` only supports two commands, `rescan` (see
-above) and `search`.  They may be abbreviated to just `r` or `s`, and
-work both as command-line arguments and interactive commands.
+The most important command `mailpile.py` supports is the `search` command.
+The second most importand is probably `help`. :-)
 
-The fun one is `search`:
+All commands can be abbreviated to only their first character (the less
+commonly used commands use capital letters for this).
+
+Some examples:
 
     $ ./mailpile.py
     mailpile> search bjarni einarsson
@@ -71,6 +73,10 @@ The fun one is `search`:
     mailpile> search subject:bjarni
     ...
     mailpile> search from:bjarni to:somebody
+    ...
+    mailpile> order date
+    ...
+    mailpile> o reverse-date
     ...
     mailpile> s att:pdf
     ...
@@ -82,13 +88,19 @@ The fun one is `search`:
     ...
 
 The default search will search in message bodies, from lines, attachment
-names and subjects.  Using the `to/from/subject/att/...` prefixes will
+names and subjects.  Using a `to/from/subject/att/...` prefix will
 search that part of the message only.  There's no way to *only* search
 bodies, they're too full of crap anyway.  Adding terms narrows the
 search.
 
-You can search from the command line with `mailpile.py -s term`,
-but that will be rather slow because the metadata index has to be
+The `order` commands lets you sort results.  Available sort orders
+are: `index`, `random`, `date`, `from` and `subject`.  Any order
+may be reversed by prefixing it with `reverse-`.
+
+You can paginate through results using `next` and `previous`.
+
+You can also search from the command line with `mailpile.py -s term`,
+but that will be a bit slower because the metadata index has to be
 loaded into RAM on each invocation.
 
 (One of the TODOs is to change the command-line invocation to be
@@ -161,7 +173,7 @@ This is the Mailpile roadmap:
    6. Rewrite search engine (using same data formats and same XML-RPC API)
       in C. If anyone cares - Python might be good enough.
 
-Milestone 1 has been reached.
+We are roughly at milestone 1, with work beginning on 2 and 3.
 
 
 ## Credits and License ##

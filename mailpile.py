@@ -1,12 +1,13 @@
 #!/usr/bin/python
-#
-# Mailpile.py (C) Copyright 2011, Bjarni R. Einarsson <http://bre.klaki.net/>
-#
-# This program is free software: you can redistribute it and/or modify it under
-# the terms of the  GNU  Affero General Public License as published by the Free
-# Software Foundation, either version 3 of the License, or (at your option) any
-# later version.
-#
+ABOUT="""\
+Mailpile.py - a tool for searching and      Copyright 2011, Bjarni R. Einarsson
+             organizing piles of e-mail                <http://bre.klaki.net/>
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the  GNU  Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+"""
 ###################################################################################
 import codecs, datetime, getopt, locale, hashlib, os, random, re
 import struct, sys, time
@@ -418,7 +419,7 @@ class MailIndex(object):
 
   def sort_results(self, session, results, how=None, force=False):
     force = how or False
-    how = how or self.config.get('order', 'reverse_date')
+    how = how or self.config.get('default_order', 'reverse_date')
     sign = how.startswith('rev') and -1 or 1
     sort_max = self.config.get('sort_max', 5000)
     if not results: return
@@ -458,18 +459,36 @@ class NullUI(object):
   def print_key(self, key, config): pass
   def reset_marks(self): pass
   def mark(self, progress): pass
+
   def notify(self, message): print '%s' % message
   def warning(self, message): print 'Warning: %s' % message
   def error(self, message): print 'Error: %s' % message
 
+  def print_intro(self, help=False):
+    print ABOUT
+    print 'For instructions type `help`, press <CTRL-D> to quit.\n'
 
-class TextUI(object):
+  def print_help(self, commands):
+    print '\nMailpile understands the following commands:\n'
+    last_rank = None
+    cmds = commands.keys()
+    cmds.sort(key=lambda k: commands[k][3])
+    for c in cmds:
+      cmd, args, explanation, rank = commands[c]
+      if not rank: continue
+
+      if last_rank and int(rank/10) != last_rank: print
+      last_rank = int(rank/10)
+
+      print '   %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
+                                          args and ('<%s>' % args) or '',
+                                          explanation)
+    print
+
+
+class TextUI(NullUI):
   def __init__(self):
     self.times = []
-
-  def notify(self, message): print '%s' % message
-  def warning(self, message): print 'Warning: %s' % message
-  def error(self, message): print 'Error: %s' % message
 
   def print_key(self, key, config):
     if key in config:
@@ -536,7 +555,7 @@ class ConfigManager(dict):
   section = 'default'
 
   INTS = ('postinglist_kb', 'sort_max')
-  STRINGS = ('mailindex_file', 'postinglist_dir', 'order')
+  STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order')
   DICTS = ('mailbox')
 
   def workdir(self):
@@ -633,22 +652,27 @@ class Session(object):
 
 
 COMMANDS = {
-  'a:': 'add=',
-  'l': 'load',
-  'n': 'next',
-  'o:': 'order=',
-  'O': 'optimize',
-  'p': 'previous',
-  'P:': 'print=',
-  'r': 'rescan',
-  's:': 'search=',
-  'S:': 'set=',
-  'U:': 'unset=',
+  'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      54),
+  'h':  ('help',     '',              'Print help on how to use mailpile',   0),
+  'L':  ('load',     '',              'Load the metadata index',            11),
+  'n':  ('next',     '',              'Display next page of results',       31),
+  'o:': ('order=',   '[rev-]what',   ('Sort by: date, from, subject, '
+                                      'random or index'),                   33),
+  'O':  ('optimize', '',              'Optimize the keyword search index',  12),
+  'p':  ('previous', '',              'Display previous page of results',   32),
+  'P:': ('print=',   'var',           'Print a setting',                    52),
+  'R':  ('rescan',   '',              'Scan all mailboxes for new messages',13),
+  's:': ('search=',  'terms ...',     'Search!',                            30),
+  'S:': ('set=',     'var=value',     'Change a setting',                   50),
+  'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
 }
 def Action(session, opt, arg):
   config = session.config
 
-  if opt in ('a', 'add'):
+  if not opt or opt in ('h', 'help'):
+    session.ui.print_help(COMMANDS)
+
+  elif opt in ('A', 'add'):
     pass
 
   elif opt in ('O', 'optimize'):
@@ -668,7 +692,7 @@ def Action(session, opt, arg):
   elif opt in ('S', 'set'):
     config.parse_set(session, arg)
 
-  elif opt in ('r', 'rescan'):
+  elif opt in ('R', 'rescan'):
     idx = config.get_index(session)
     session.ui.reset_marks()
     try:
@@ -680,7 +704,8 @@ def Action(session, opt, arg):
     idx.save(session)
     session.ui.reset_marks()
 
-  elif opt in ('l', 'load'):
+  elif opt in ('L', 'load'):
+    config.index = session.results = None
     config.get_index(session)
     session.ui.reset_marks()
 
@@ -750,7 +775,7 @@ if __name__ == "__main__":
   try:
     opts, args = getopt.getopt(sys.argv[1:],
                                ''.join(COMMANDS.keys()),
-                               COMMANDS.values())
+                               [v[0] for v in COMMANDS.values()])
     for opt, arg in opts:
       Action(session, opt.replace('-', ''), arg)
     if args:
@@ -761,5 +786,6 @@ if __name__ == "__main__":
     sys.exit(1)
 
   if not opts and not args:
+    session.ui.print_intro(help=True)
     Interact(session)
 
