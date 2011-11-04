@@ -465,30 +465,34 @@ class MailIndex(object):
     if not results: return
 
     if len(results) > sort_max and not force:
-      session.ui.warning(('Over sort_max (%s) results, not sorting much.'
+      session.ui.warning(('Over sort_max (%s) results, sorting badly.'
                           ) % sort_max)
       results.sort()
       if sign < 0: results.reverse()
       return False
 
     session.ui.mark('Sorting messages in %s order...' % how)
-    if how == 'unsorted':
-      pass
-    elif how.endswith('index'):
-      results.sort()
-    elif how.endswith('random'):
-      now = time.time()
-      results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
-    elif how.endswith('date'):
-      results.sort(key=lambda k: long(self.l2m(self.INDEX[k]
+    try:
+      if how == 'unsorted':
+        pass
+      elif how.endswith('index'):
+        results.sort()
+      elif how.endswith('random'):
+        now = time.time()
+        results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
+      elif how.endswith('date'):
+        results.sort(key=lambda k: long(self.l2m(self.INDEX[k]
                                                       )[self.MSG_DATE], 36))
-    elif how.endswith('from'):
-      results.sort(key=lambda k: self.l2m(self.INDEX[k])[self.MSG_FROM])
-    elif how.endswith('subject'):
-      results.sort(key=lambda k: self.l2m(self.INDEX[k])[self.MSG_SUBJECT])
-    else:
-      session.ui.warning('Unknown sort order: %s' % how)
-      return False
+      elif how.endswith('from'):
+        results.sort(key=lambda k: self.l2m(self.INDEX[k])[self.MSG_FROM])
+      elif how.endswith('subject'):
+        results.sort(key=lambda k: self.l2m(self.INDEX[k])[self.MSG_SUBJECT])
+      else:
+        session.ui.warning('Unknown sort order: %s' % how)
+        return False
+    except:
+      session.ui.warning('Sort failed, sorting badly.  Partial index?')
+      results.sort()
 
     if sign < 0: results.reverse()
 
