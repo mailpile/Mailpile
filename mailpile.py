@@ -40,10 +40,14 @@ def b64int(i):
                                .replace("=", '').replace("\n", '')
                   )[0].replace("/", "_") or "A"
 
+IB64 = {}
 def intb64(b64):
-  padding = "A"*(11-len(b64))
-  return struct.unpack("Q", ("%s%s==" % (b64.replace("_", "/"), padding)
-                             ).decode("base64"))[0]
+  global IB64
+  if b64 not in IB64:
+    padding = "A"*(11-len(b64))
+    IB64[b64] = struct.unpack("Q", ("%s%s==" % (b64.replace("_", "/"), padding)
+                                    ).decode("base64"))[0]
+  return IB64[b64]
 
 
 class PostingList(object):
@@ -241,6 +245,9 @@ class MailIndex(object):
     except IOError:
       session.ui.warning(('Metadata index not found: %s'
                           ) % self.config.mailindex_file())
+    if session.interactive:
+      session.ui.mark('Creating index lookup table...')
+      for i in range(0, len(self.INDEX)): intb64(b64int(i))
     session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
 
   def save(self, session):
@@ -267,9 +274,9 @@ class MailIndex(object):
   def scan_mbox(self, session, idx, filename):
     import mailbox, email.parser, rfc822
 
-    self.update_ptrs_and_msgids()
-    self.session.ui.mark(('%s: Opening mailbox: %s (may take a while)'
-                         ) % (idx, filename))
+    self.update_ptrs_and_msgids(session)
+    session.ui.mark(('%s: Opening mailbox: %s (may take a while)'
+                     ) % (idx, filename))
     mbox = mailbox.mbox(filename)
     msg_date = int(time.time())
     added = 0
@@ -428,13 +435,13 @@ class MailIndex(object):
     force = how or False
     how = how or self.config.get('default_order', 'reverse_date')
     sign = how.startswith('rev') and -1 or 1
-    sort_max = self.config.get('sort_max', 5000)
+    sort_max = self.config.get('sort_max', 10000)
     if not results: return
 
     if len(results) > sort_max and not force:
       session.ui.warning(('Over sort_max (%s) results, not sorting much.'
                           ) % sort_max)
-      results.sort(key=lambda k: (len(k), k))
+      results.sort(key=lambda k: intb64(k))
       if sign < 0: results.reverse()
       return False
 
@@ -654,6 +661,7 @@ class Session(object):
   order = None
   results = None
   displayed = (0, 0)
+  interactive = False
 
   def __init__(self, config):
     self.config = config
@@ -799,6 +807,7 @@ if __name__ == "__main__":
     sys.exit(1)
 
   if not opts and not args:
+    session.interactive = True
     session.ui.print_intro(help=True)
     Interact(session)
 
