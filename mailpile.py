@@ -180,17 +180,17 @@ class PostingList(object):
         output = self.fmt_file(prefix)
 
     try:
+      outfile = os.path.join(self.config.postinglist_dir(), prefix)
       if output:
-        fd = open(os.path.join(self.config.postinglist_dir(), prefix), 'w')
+        fd = open(outfile, 'w')
         fd.write(output)
         fd.close()
         return len(output)
-      else:
-        os.remove(os.path.join(self.config.postinglist_dir(), prefix))
-        return 0
+      elif os.path.exists(outfile):
+        os.remove(outfile)
     except:
       self.session.ui.warning('%s' % (sys.exc_info(), ))
-      return 0
+    return 0
 
   def hits(self):
     return self.WORDS[self.sig]
@@ -538,9 +538,9 @@ class TextUI(NullUI):
   def print_key(self, key, config):
     if key in config:
       if key in config.INTS:
-        print '%s = %s (int)' % (key, config[key])
+        print '%s = %s (int)' % (key, config.get(key))
       else:
-        print '%s = %s' % (key, config[key])
+        print '%s = %s' % (key, config.get(key))
     else:
       print '%s is unset' % key
 
@@ -597,7 +597,6 @@ class UsageError(Exception):
 class ConfigManager(dict):
 
   index = None
-  section = 'default'
 
   INTS = ('postinglist_kb', 'sort_max')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order')
@@ -612,7 +611,7 @@ class ConfigManager(dict):
   def parse_unset(self, arg):
     key = arg.strip().lower()
     if key in self:
-      del config[key]
+      del self[key]
     elif ':' in key and key.split(':', 1)[0] in self.DICTS:
       key, subkey = key.split(':', 1)
       if key in self and subkey in self[key]:
@@ -635,8 +634,7 @@ class ConfigManager(dict):
       raise UsageError('Unknown key in config: %s' % key)
     session.ui.print_key(key, self)
 
-  def load(self, session, section='default'):
-    self.section = section
+  def load(self, session):
     if not os.path.exists(self.workdir()):
       session.ui.notify('Creating: %s' % self.workdir())
       os.mkdir(self.workdir())
@@ -646,16 +644,12 @@ class ConfigManager(dict):
         if key in self: del self[key]
       try:
         fd = open(self.conffile(), 'r')
-        insect = section
         for line in fd:
           line = line.strip()
           if line.startswith('#') or not line:
             pass
-          elif line.startswith('[') and line.endswith(']'):
-            insect = line[1:-1]
           elif '=' in line:
-            if insect == section:
-              self.parse_set(session, line)
+            self.parse_set(session, line)
           else:
             raise UsageError('Bad line in config: %s' % line)
         fd.close()
@@ -665,8 +659,24 @@ class ConfigManager(dict):
   def save(self):
     pass
 
+  def next_mailbox(self):
+    if 'mailbox' not in self or not self['mailbox']:
+      return '0'
+    else:
+      return b36(1+max([int(k, 36) for k in self['mailbox']]))
+
   def get_mailboxes(self):
-    return [('000', '000'), ('001', '001')]
+    def fmt_mbxid(k):
+      k = b36(int(k, 36))
+      if len(k) > 3:
+        raise ValueError('Mailbox ID too large: %s' % k)
+      return ('000'+k)[-3:]
+    return [(fmt_mbxid(k), self['mailbox'][k])
+            for k in sorted(self['mailbox'])]
+
+  def history_file(self):
+    return self.get('history_file',
+                    os.path.join(self.workdir(), 'history'))
 
   def mailindex_file(self):
     return self.get('mailindex_file',
@@ -696,6 +706,10 @@ class Session(object):
   def __init__(self, config):
     self.config = config
 
+  def error(self, message):
+    self.ui.error(message)
+    if not self.interactive: sys.exit(1)
+
 
 COMMANDS = {
   'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      54),
@@ -719,7 +733,11 @@ def Action(session, opt, arg):
     session.ui.print_help(COMMANDS)
 
   elif opt in ('A', 'add'):
-    pass
+    if os.path.exists(arg):
+      arg = os.path.abspath(arg)
+      config.parse_set(session, 'mailbox:%s=%s' % (config.next_mailbox(), arg))
+    else:
+      session.error('No such file/directory: %s' % arg)
 
   elif opt in ('O', 'optimize'):
     try:
@@ -803,6 +821,12 @@ def Action(session, opt, arg):
 def Interact(session):
   import readline
   try:
+    readline.read_history_file(session.config.history_file())
+  except IOError:
+    pass
+  readline.set_history_length(100)
+
+  try:
     while True:
       opt = raw_input('mailpile> ').decode('utf-8').strip()
       if opt:
@@ -813,9 +837,11 @@ def Interact(session):
         try:
           Action(session, opt, arg)
         except UsageError, e:
-          session.ui.error(e)
+          session.error(e)
   except EOFError:
     print
+
+  readline.write_history_file(session.config.history_file())
 
 
 if __name__ == "__main__":
@@ -835,8 +861,7 @@ if __name__ == "__main__":
       Action(session, args[0], ' '.join(args[1:]))
 
   except (getopt.GetoptError, UsageError), e:
-    session.ui.error(e)
-    sys.exit(1)
+    session.error(e)
 
   if not opts and not args:
     session.interactive = True
