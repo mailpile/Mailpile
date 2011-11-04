@@ -141,7 +141,6 @@ patches for:
    * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
    * Support for other mailbox formats, maybe even POP3/IMAP indexing
-   * Meaningful settings and a way to load/save them
    * A shell scripting interface for automation
    * An XML-RPC interface to the search engine
    * A pretty UI on top of said XML-RPC interface
