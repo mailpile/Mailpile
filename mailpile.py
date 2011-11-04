@@ -398,6 +398,10 @@ class MailIndex(object):
   def search(self, session, searchterms):
     r = []
     for term in searchterms:
+      if term in STOPLIST:
+        session.ui.warning('Ignoring common word: %s' % term)
+        continue
+
       r.append([])
       rt = r[-1]
       term = term.lower()
@@ -410,9 +414,12 @@ class MailIndex(object):
       else:
         rt.extend(PostingList(session, term).hits())
 
-    results = set(r[0])
-    for rt in r[1:]:
-      results &= set(rt)
+    if r:
+      results = set(r[0])
+      for rt in r[1:]:
+        results &= set(rt)
+    else:
+      results = set()
 
     session.ui.mark('Found %d results' % len(results))
     return results
@@ -729,7 +736,12 @@ def Action(session, opt, arg):
     if not arg: return
     idx = config.get_index(session)
     session.ui.reset_marks()
-    session.results = list(idx.search(session, arg.split()))
+    # FIXME: This is all rather dumb.  Make it smarter!
+    if ':' in arg:
+      session.results = list(idx.search(session, arg.lower().split()))
+    else:
+      session.results = list(idx.search(session,
+                             re.findall(WORD_REGEXP, arg.lower())))
     idx.sort_results(session, session.results, how=session.order)
     session.displayed = session.ui.display_results(idx, session.results)
     session.ui.reset_marks()
