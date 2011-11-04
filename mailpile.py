@@ -34,20 +34,14 @@ def strhash(s, length):
     s2 += b64c(sha1b64(s)).lower()
   return s2[:length]
 
-def b64int(i):
-  return re.split("A+$", struct.pack("Q", i)
-                               .encode("base64")
-                               .replace("=", '').replace("\n", '')
-                  )[0].replace("/", "_") or "A"
+def b36(number):
+  alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  base36 = ''
+  while number:
+    number, i = divmod(number, 36)
+    base36 = alphabet[i] + base36
+  return base36 or alphabet[0]
 
-IB64 = {}
-def intb64(b64):
-  global IB64
-  if b64 not in IB64:
-    padding = "A"*(11-len(b64))
-    IB64[b64] = struct.unpack("Q", ("%s%s==" % (b64.replace("_", "/"), padding)
-                                    ).decode("base64"))[0]
-  return IB64[b64]
 
 
 class PostingList(object):
@@ -215,8 +209,9 @@ class MailIndex(object):
   MSG_DATE    = 4
   MSG_FROM    = 5
   MSG_SUBJECT = 6
-  MSG_CONV_ID = 7
-  MSG_TAGS    = 8
+  MSG_TAGS    = 7
+  MSG_REPLIES = 8
+  MSG_CONV_ID = 9
 
   def __init__(self, config):
     self.config = config
@@ -245,9 +240,6 @@ class MailIndex(object):
     except IOError:
       session.ui.warning(('Metadata index not found: %s'
                           ) % self.config.mailindex_file())
-    if session.interactive:
-      session.ui.mark('Creating index lookup table...')
-      for i in range(0, len(self.INDEX)): intb64(b64int(i))
     session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
 
   def save(self, session):
@@ -282,7 +274,7 @@ class MailIndex(object):
     added = 0
     for i in range(0, len(mbox)):
       msg_fd = mbox.get_file(i)
-      msg_ptr = '%s%s' % (idx, b64int(msg_fd._pos))
+      msg_ptr = '%s%s' % (idx, b36(long(msg_fd._pos)))
 
       parse_status = ('%s: Reading your mail: %d%% (%d/%d messages)'
                       ) % (idx, 100 * i/len(mbox), i, len(mbox))
@@ -295,8 +287,8 @@ class MailIndex(object):
       # Message new or modified, let's parse it.
       p = email.parser.Parser()
       msg = p.parse(msg_fd)
-      def hdr(name):
-        decoded = email.header.decode_header(msg[name] or '')
+      def hdr(name, value=None):
+        decoded = email.header.decode_header(value or msg[name] or '')
         try:
           return (' '.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
                   ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
@@ -308,7 +300,7 @@ class MailIndex(object):
             print 'Boom: %s/%s' % (msg[name], decoded)
             return ''
 
-      msg_id = hdr('message-id') or '<%s@mailpile>' % msg_ptr
+      msg_id = b64c(sha1b64((hdr('message-id') or msg_ptr).strip()))
       if msg_id in self.MSGIDS:
         # Just update location
         msg_info = self.l2m(self.INDEX[self.MSGIDS[msg_id]])
@@ -317,6 +309,8 @@ class MailIndex(object):
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
       else:
         # Add new message!
+        msg_mid = b36(len(self.INDEX))
+
         try:
           msg_date = int(rfc822.mktime_tz(rfc822.parsedate_tz(hdr('date'))))
         except:
@@ -326,15 +320,37 @@ class MailIndex(object):
           # message.  This should be a better-than-nothing guess.
           msg_date += 1
 
-        msg_info = [b64int(len(self.INDEX)), # Our index ID
-                    msg_ptr,                 # Location on disk
-                    0,                       # Size
-                    msg_id,                  # Message-ID
-                    b64int(msg_date),        # Date as a UTC timestamp
-                    hdr('from'),             # From:
-                    hdr('subject'),          # Subject
-                    0,                       # Conversation ID
-                    '']                      # No tags for now
+        msg_conv = None
+        refs = set((hdr('references') + ' ' + hdr('in-reply-to')
+                    ).replace(',', ' ').strip().split())
+        for ref_id in [b64c(sha1b64(r)) for r in refs]:
+          try:
+            # Get conversation ID ...
+            ref_mid = self.MSGIDS[ref_id]
+            msg_conv = self.l2m(self.INDEX[ref_mid])[self.MSG_CONV_ID]
+            # Update root of conversation thread
+            parent = self.l2m(self.INDEX[int(msg_conv, 36)])
+            parent[self.MSG_REPLIES] += '%s,' % msg_mid
+            self.INDEX[int(msg_conv, 36)] = self.m2l(parent)
+            break
+          except:
+            pass
+        if not msg_conv:
+          # FIXME: If subject implies this is a reply, scan back a couple
+          #        hundred messages for similar subjects - but not infinitely,
+          #        conversations don't last forever.
+          msg_conv = msg_mid
+
+        msg_info = [msg_mid,                  # Our index ID
+                    msg_ptr,                  # Location on disk
+                    0,                        # Size
+                    msg_id,                   # Message-ID
+                    b36(msg_date),            # Date as a UTC timestamp
+                    hdr('from'),              # From:
+                    hdr('subject'),           # Subject
+                    '',                       # No tags for now
+                    '',                       # No replies for now
+                    msg_conv]                 # Conversation ID
 
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = len(self.INDEX)
         self.INDEX.append(self.m2l(msg_info))
@@ -350,8 +366,8 @@ class MailIndex(object):
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
     return self
 
-  def index_message(self, msg_info, msg, msg_date, msg_to, msg_from, msg_subject,
-                    compact=True):
+  def index_message(self, msg_info, msg, msg_date,
+                    msg_to, msg_from, msg_subject, compact=True):
     keywords = set()
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
@@ -400,7 +416,11 @@ class MailIndex(object):
         pass
 
   def get_by_msg_idx(self, msg_idx):
-    return self.l2m(self.INDEX[intb64(msg_idx)])
+    try:
+      return self.l2m(self.INDEX[msg_idx])
+    except IndexError:
+      return (None, None, None, None, b36(0),
+              '(not in index)', '(not in index)', None, None)
 
   def search(self, session, searchterms):
     r = []
@@ -428,6 +448,7 @@ class MailIndex(object):
     else:
       results = set()
 
+    results = [int(r, 36) for r in results]
     session.ui.mark('Found %d results' % len(results))
     return results
 
@@ -441,7 +462,7 @@ class MailIndex(object):
     if len(results) > sort_max and not force:
       session.ui.warning(('Over sort_max (%s) results, not sorting much.'
                           ) % sort_max)
-      results.sort(key=lambda k: intb64(k))
+      results.sort()
       if sign < 0: results.reverse()
       return False
 
@@ -449,17 +470,17 @@ class MailIndex(object):
     if how == 'unsorted':
       pass
     elif how.endswith('index'):
-      results.sort(key=lambda k: intb64(k))
+      results.sort()
     elif how.endswith('random'):
       now = time.time()
       results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
     elif how.endswith('date'):
-      results.sort(key=lambda k: intb64(self.l2m(self.INDEX[intb64(k)]
-                                                      )[self.MSG_DATE]))
+      results.sort(key=lambda k: long(self.l2m(self.INDEX[k]
+                                                      )[self.MSG_DATE], 36))
     elif how.endswith('from'):
-      results.sort(key=lambda k: self.l2m(self.INDEX[intb64(k)])[self.MSG_FROM])
+      results.sort(key=lambda k: self.l2m(self.INDEX[k])[self.MSG_FROM])
     elif how.endswith('subject'):
-      results.sort(key=lambda k: self.l2m(self.INDEX[intb64(k)])[self.MSG_SUBJECT])
+      results.sort(key=lambda k: self.l2m(self.INDEX[k])[self.MSG_SUBJECT])
     else:
       session.ui.warning('Unknown sort order: %s' % how)
       return False
@@ -547,7 +568,7 @@ class TextUI(NullUI):
         msg_info = idx.get_by_msg_idx(mid)
         msg_from = msg_info[idx.MSG_FROM]
         msg_subj = msg_info[idx.MSG_SUBJECT]
-        msg_date = datetime.date.fromtimestamp(intb64(msg_info[idx.MSG_DATE]))
+        msg_date = datetime.date.fromtimestamp(long(msg_info[idx.MSG_DATE], 36))
         print (cfmt+' %4.4d-%2.2d-%2.2d  %-25.25s  '+sfmt
                ) % (start + count, msg_date.year, msg_date.month,
                     msg_date.day, msg_from, msg_subj)

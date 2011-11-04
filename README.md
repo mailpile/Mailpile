@@ -124,12 +124,12 @@ This level of performance is possible, because all the metadata about the
 messages themselves is kept in RAM.  This may seem extravagant, but on
 modern computers you can actually handle massive amounts of e-mail this way.
 
-Mailpile stores in RAM a little over 160 bytes of metadata per message
-(actual size depends largely on the size of various headers), but Python
-overhead brings that to about 240B.  This means handling a million messages
-should consume about 240MB of RAM - not too bad if you consider how much
-memory your browser (or desktop e-mail client) eats up.  Also, who has
-a million e-mails? :-)
+Mailpile stores in RAM about 180 bytes of metadata per message (actual size
+depends largely on the size of various headers), but Python overhead brings
+that to about 250B.  This means handling a million messages should consume
+about 250MB of RAM - not too bad if you consider how much memory your
+browser (or desktop e-mail client) eats up.  Also, who has a million
+e-mails? :-)
 
 (Caveat: Really common terms will take longer due to the size of the result
 set - but searching for really common terms won't give good results anyway.)
@@ -143,7 +143,7 @@ patches for:
    * A more efficient incremental indexer
    * A way to view/extract messages/attachments
    * A way to assign/edit/remove tags (including read/unread/inbox)
-   * Assign conversation IDs to messages (simplistic threading)
+   * Improve conversation IDs assignment
    * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
    * Support for other mailbox formats, maybe even POP3/IMAP indexing
