@@ -21,18 +21,19 @@ formatted Unix mailbox.
 
 ## Indexing your mail ##
 
-The program `mailpile.py` expects to find a folder named `search` in the
-current directory and symbolic links named `000` and `001` to whichever
-two mailboxes you want indexed.  Omitting one is fine.  If you want more,
-you'll have to Use The Source.
+The program `mailpile.py` will create and use a folder in your home
+directory named `.mailpile` for its indexes and settings.  Currently it
+also expects the current directory to containe symbolic links named `000`
+and `001` to whichever two mailboxes you want indexed (this will be made
+configurable later).  Omitting one is fine.  If you want more, you'll
+have to Use The Source.
 
-(In the future these things should all move to `$HOME/.mailpile` and
-become more configurable, see the TODO list below.)
+(In the future these things should all become more configurable, see
+the TODO list below.)
 
 A simple test run might look like so:
 
     $ ln -s /var/spool/mail/YOURNAME 000
-    $ mkdir search
     $ ./mailpile.py -R
 
 The program prints details of its progress as it runs.  Note that just
@@ -143,6 +144,7 @@ patches for:
    * A more efficient incremental indexer
    * A way to view/extract messages/attachments
    * A way to assign/edit/remove tags (including read/unread/inbox)
+   * Finish implementing `~/.mailpile/config.rc`, with profiles
    * Improve conversation IDs assignment
    * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
