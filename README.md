@@ -22,25 +22,18 @@ formatted Unix mailbox.
 ## Indexing your mail ##
 
 The program `mailpile.py` will create and use a folder in your home
-directory named `.mailpile` for its indexes and settings.  Currently it
-also expects the current directory to containe symbolic links named `000`
-and `001` to whichever two mailboxes you want indexed (this will be made
-configurable later).  Omitting one is fine.  If you want more, you'll
-have to Use The Source.
-
-(In the future these things should all become more configurable, see
-the TODO list below.)
+directory named `.mailpile` for its indexes and settings.
 
 A simple test run might look like so:
 
-    $ ln -s /var/spool/mail/YOURNAME 000
+    $ ./mailpile.py -A /var/spool/mail/YOURNAME
     $ ./mailpile.py -R
 
 The program prints details of its progress as it runs.  Note that just
 opening the mailbox may take quite a while if it is large enough (it takes
 about a bit over a minute to open my 500MB mailbox).  Stopping the program
-with CTRL-C is nondestructive - it will save its progress and re-running
-will continue the scan from where it left off.
+with CTRL-C is (relatively) nondestructive - it will try to save its
+progress and re-running should continue the scan from where it left off.
 
 ### Huge mailboxes ###
 
@@ -144,7 +137,6 @@ patches for:
    * A more efficient incremental indexer
    * A way to view/extract messages/attachments
    * A way to assign/edit/remove tags (including read/unread/inbox)
-   * Finish implementing `~/.mailpile/config.rc`, with profiles
    * Improve conversation IDs assignment
    * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
