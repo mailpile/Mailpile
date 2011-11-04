@@ -16,8 +16,8 @@ import lxml.html
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
 # FIXME: This stoplist may be a bad idea.
-STOPLIST = ('an', 'and', 'are', 'as', 'at', 'by', 'for', 'from', 'has', 'is',
-            'og', 'or', 're', 'so', 'the', 'to', 'was')
+STOPLIST = ('an', 'and', 'are', 'as', 'at', 'by', 'for', 'from', 'has', 'in',
+            'is', 'og', 'or', 're', 'so', 'the', 'to', 'was')
 
 
 def b64c(b):
@@ -432,8 +432,9 @@ class MailIndex(object):
     if not results: return
 
     if len(results) > sort_max and not force:
-      session.ui.warning(('Over sort_max (%s) results, using index order.'
+      session.ui.warning(('Over sort_max (%s) results, not sorting much.'
                           ) % sort_max)
+      results.sort(key=lambda k: (len(k), k))
       if sign < 0: results.reverse()
       return False
 
@@ -441,7 +442,7 @@ class MailIndex(object):
     if how == 'unsorted':
       pass
     elif how.endswith('index'):
-      results.sort(key=lambda k: sign*intb64(k))
+      results.sort(key=lambda k: intb64(k))
     elif how.endswith('random'):
       now = time.time()
       results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
