@@ -51,15 +51,17 @@ class PostingList(object):
   HASH_LEN = 12
 
   @classmethod
-  def Optimize(cls, session):
+  def Optimize(cls, session, idx, force=False):
     postinglist_kb = session.config.get('postinglist_kb', cls.MAX_SIZE)
     postinglist_dir = session.config.postinglist_dir()
 
     # Pass 1: Compact all files that are 90% or more of our target size
     for fn in sorted(os.listdir(postinglist_dir)):
-      if (os.path.getsize(os.path.join(postinglist_dir, fn)) >
+      if (force or
+          os.path.getsize(os.path.join(postinglist_dir, fn)) >
                                                         900*postinglist_kb):
         session.ui.mark('Pass 1: Compacting >%s<' % fn)
+        # FIXME: Remove invalid and deleted messages from posting lists.
         cls(session, fn, sig=fn).save()
 
     # Pass 2: While mergable pair exists: merge them!
@@ -363,7 +365,7 @@ class MailIndex(object):
       if (i % 1000) == 999: self.save(session)
 
     if added > 100:
-      PostingList.Optimize(session)
+      PostingList.Optimize(session, self)
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
     return self
 
@@ -446,6 +448,8 @@ class MailIndex(object):
       results = set(r[0])
       for rt in r[1:]:
         results &= set(rt)
+      # Sometimes the scan gets aborted...
+      results -= set([b36(len(self.INDEX))])
     else:
       results = set()
 
@@ -715,7 +719,9 @@ def Action(session, opt, arg):
 
   elif opt in ('O', 'optimize'):
     try:
-      filecount = PostingList.Optimize(session)
+      idx = config.get_index(session)
+      filecount = PostingList.Optimize(session, idx,
+                                       force=(arg == 'harder'))
       session.ui.reset_marks()
     except KeyboardInterrupt:
       session.ui.mark('Aborted')
