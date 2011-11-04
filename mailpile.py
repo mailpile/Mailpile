@@ -341,9 +341,13 @@ class MailIndex(object):
           #        conversations don't last forever.
           msg_conv = msg_mid
 
+        self.index_message(msg_mid, msg, msg_date,
+                           hdr('to'), hdr('from'), hdr('subject'),
+                           compact=False)
+
         msg_info = [msg_mid,                  # Our index ID
                     msg_ptr,                  # Location on disk
-                    0,                        # Size
+                    b36(msg_fd.tell()),       # Size?
                     msg_id,                   # Message-ID
                     b36(msg_date),            # Date as a UTC timestamp
                     hdr('from'),              # From:
@@ -354,9 +358,6 @@ class MailIndex(object):
 
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = len(self.INDEX)
         self.INDEX.append(self.m2l(msg_info))
-        self.index_message(msg_info, msg, msg_date,
-                           hdr('to'), hdr('from'), hdr('subject'),
-                           compact=False)
         added += 1
 
       if (i % 1000) == 999: self.save(session)
@@ -366,7 +367,7 @@ class MailIndex(object):
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
     return self
 
-  def index_message(self, msg_info, msg, msg_date,
+  def index_message(self, msg_mid, msg, msg_date,
                     msg_to, msg_from, msg_subject, compact=True):
     keywords = set()
     for part in msg.walk():
@@ -410,7 +411,7 @@ class MailIndex(object):
     keywords -= set(STOPLIST)
     for word in keywords:
       try:
-        PostingList.Append(session, word, msg_info[0], compact=compact)
+        PostingList.Append(session, word, msg_mid, compact=compact)
       except UnicodeDecodeError:
         # FIXME: we just ignore garbage
         pass
