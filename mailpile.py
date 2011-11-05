@@ -318,7 +318,7 @@ class MailIndex(object):
     import mailbox, email.parser, rfc822
 
     self.update_ptrs_and_msgids(session)
-    session.ui.mark(('%s: Opening mailbox: %s (may take a while)'
+    session.ui.mark(('%s: Opening: %s (may take a while)'
                      ) % (idx, filename))
     mbox = mailbox.mbox(filename)
     msg_date = int(time.time())
