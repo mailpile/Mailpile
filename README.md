@@ -59,7 +59,9 @@ The second most important is probably `help`. :-)
 All commands can be abbreviated to only their first character (the less
 commonly used commands use capital letters for this).
 
-Some examples:
+### Searching ###
+
+Some searching examples:
 
     $ ./mailpile.py
     mailpile> search bjarni einarsson
@@ -67,10 +69,6 @@ Some examples:
     mailpile> search subject:bjarni
     ...
     mailpile> search from:bjarni to:somebody
-    ...
-    mailpile> order date
-    ...
-    mailpile> o reverse-date
     ...
     mailpile> s att:pdf
     ...
@@ -87,19 +85,33 @@ search that part of the message only.  There's no way to *only* search
 bodies, they're too full of crap anyway.  Adding terms narrows the
 search.
 
-The `order` commands lets you sort results.  Available sort orders
-are: `index`, `random`, `date`, `from` and `subject`.  Any order
-may be reversed by prefixing it with `reverse-`.
-
 You can paginate through results using `next` and `previous`.
 
 You can also search from the command line with `mailpile.py -s term`,
 but that will be a bit slower because the metadata index has to be
 loaded into RAM on each invocation.
 
-(One of the TODOs is to change the command-line invocation to be
-more shell-script friendly, which mostly would involve making the
-output format more regular and machine readable.)
+### Sorting the results ###
+
+The `order` command lets you sort results.  Available sort orders
+are: `index`, `random`, `date`, `from` and `subject`.  Threading
+may be disabled by prefixing the order with `flat-`, and the order
+may be reversed by further prefixing it with `rev-`.  Examples:
+
+    mailpile> order rev-subject    # Reverse subject order
+    ...
+    mailpile> order rev-flat-date  # Flat reverse date order
+    ...
+    mailpile> order                # Default sort order
+    ...
+
+You can also change the default sort order by using the `order`
+setting:
+
+    mailpile> set order = rev-flat-date  # Change default order
+    ...
+    mailpile> unset order                # Use program defaults
+    ...
 
 
 ## A word on performance ##

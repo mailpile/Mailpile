@@ -224,6 +224,7 @@ class MailIndex(object):
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
+    self.CACHE = {}
 
   def l2m(self, line):
     return line.decode('utf-8').split(u'\t')
@@ -422,14 +423,25 @@ class MailIndex(object):
         # FIXME: we just ignore garbage
         pass
 
-  def get_by_msg_idx(self, msg_idx):
+  def get_msg_by_idx(self, msg_idx):
     try:
-      return self.l2m(self.INDEX[msg_idx])
+      if msg_idx not in self.CACHE:
+        self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
+      return self.CACHE[msg_idx]
     except IndexError:
       return (None, None, None, None, b36(0),
               '(not in index)', '(not in index)', None, None)
 
+  def get_conversation(self, msg_idx):
+    return self.get_msg_by_idx(
+             int(self.get_msg_by_idx(msg_idx)[self.MSG_CONV_ID], 36))
+
+  def get_replies(self, msg_info):
+    return [self.get_msg_by_idx(int(r, 36)) for r
+            in msg_info[self.MSG_REPLIES].split(',') if r]
+
   def search(self, session, searchterms):
+    if len(self.CACHE.keys()) > 5000: self.CACHE = {}
     r = []
     for term in searchterms:
       if term in STOPLIST:
@@ -461,11 +473,11 @@ class MailIndex(object):
     session.ui.mark('Found %d results' % len(results))
     return results
 
-  def sort_results(self, session, results, how=None, force=False):
+  def sort_results(self, session, results, how=None):
     force = how or False
     how = how or self.config.get('default_order', 'reverse_date')
     sign = how.startswith('rev') and -1 or 1
-    sort_max = self.config.get('sort_max', 10000)
+    sort_max = self.config.get('sort_max', 5000)
     if not results: return
 
     if len(results) > sort_max and not force:
@@ -473,7 +485,10 @@ class MailIndex(object):
                           ) % sort_max)
       results.sort()
       if sign < 0: results.reverse()
-      return False
+      leftovers = results[sort_max:]
+      results[sort_max:] = []
+    else:
+      leftovers = []
 
     session.ui.mark('Sorting messages in %s order...' % how)
     try:
@@ -485,20 +500,31 @@ class MailIndex(object):
         now = time.time()
         results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
       elif how.endswith('date'):
-        results.sort(key=lambda k: long(self.l2m(self.INDEX[k]
-                                                      )[self.MSG_DATE], 36))
+        results.sort(key=lambda k: long(self.get_msg_by_idx(k)[self.MSG_DATE], 36))
       elif how.endswith('from'):
-        results.sort(key=lambda k: self.l2m(self.INDEX[k])[self.MSG_FROM])
+        results.sort(key=lambda k: self.get_msg_by_idx(k)[self.MSG_FROM])
       elif how.endswith('subject'):
-        results.sort(key=lambda k: self.l2m(self.INDEX[k])[self.MSG_SUBJECT])
+        results.sort(key=lambda k: self.get_msg_by_idx(k)[self.MSG_SUBJECT])
       else:
         session.ui.warning('Unknown sort order: %s' % how)
+        results.extend(leftovers)
         return False
     except:
       session.ui.warning('Sort failed, sorting badly.  Partial index?')
-      results.sort()
 
     if sign < 0: results.reverse()
+
+    if 'flat' not in how:
+      conversations = [int(self.get_msg_by_idx(r)[self.MSG_CONV_ID], 36)
+                       for r in results]
+      results[:] = []
+      chash = {}
+      for c in conversations:
+        if c not in chash:
+          results.append(c)
+          chash[c] = 1
+
+    results.extend(leftovers)
 
     session.ui.mark('Sorted messages in %s order' % how)
     return True
@@ -563,6 +589,26 @@ class TextUI(NullUI):
     sys.stdout.flush()
     self.times.append((time.time(), progress))
 
+  def name(self, sender):
+    words = re.sub('["<>]', '', sender).split()
+    nomail = [w for w in words if not '@' in w]
+    if nomail: return ' '.join(nomail)
+    return ' '.join(words)
+
+  def names(self, senders):
+    if len(senders) > 3:
+      return re.sub('["<>]', '', ','.join([x.split()[0] for x in senders]))
+    return ','.join([self.name(s) for s in senders])
+
+  def compact(self, namelist, maxlen):
+    l = len(namelist)
+    while l > maxlen:
+      namelist = re.sub(',[^, \.]+,', ',,', namelist, 1)
+      if l == len(namelist): break
+      l = len(namelist)
+    namelist = re.sub(',,,+,', ' .. ', namelist, 1)
+    return namelist
+
   def display_results(self, idx, results, start=0, end=None, num=20):
     if not results: return
 
@@ -578,18 +624,27 @@ class TextUI(NullUI):
     for mid in results[start:start+num]:
       count += 1
       try:
-        msg_info = idx.get_by_msg_idx(mid)
-        msg_from = msg_info[idx.MSG_FROM]
+        msg_info = idx.get_msg_by_idx(mid)
         msg_subj = msg_info[idx.MSG_SUBJECT]
-        msg_date = datetime.date.fromtimestamp(long(msg_info[idx.MSG_DATE], 36))
+
+        msg_from = [msg_info[idx.MSG_FROM]]
+        msg_from.extend([r[idx.MSG_FROM] for r in idx.get_replies(msg_info)])
+
+        msg_date = [msg_info[idx.MSG_DATE]]
+        msg_date.extend([r[idx.MSG_DATE] for r in idx.get_replies(msg_info)])
+        msg_date = datetime.date.fromtimestamp(max([
+                                                int(d, 36) for d in msg_date]))
+
         print (cfmt+' %4.4d-%2.2d-%2.2d  %-25.25s  '+sfmt
-               ) % (start + count, msg_date.year, msg_date.month,
-                    msg_date.day, msg_from, msg_subj)
+               ) % (start + count,
+                    msg_date.year, msg_date.month, msg_date.day,
+                    self.compact(self.names(msg_from), 25),
+                    msg_subj)
       except:
         raise
         print '-- (not in index: %s)' % mid
-    session.ui.mark('Listed %d-%d of %d messages' % (start+1, start+count,
-                                                     len(results)))
+    session.ui.mark(('Listed %d-%d of %d results'
+                     ) % (start+1, start+count, len(results)))
     return (start, count)
 
 
@@ -604,7 +659,7 @@ class ConfigManager(dict):
 
   INTS = ('postinglist_kb', 'sort_max')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order')
-  DICTS = ('mailbox')
+  DICTS = ('mailbox', 'tag')
 
   def workdir(self):
     return os.environ.get('MAILPILE_HOME', os.path.expanduser('~/.mailpile'))
@@ -676,11 +731,11 @@ class ConfigManager(dict):
         fd.write('%s = %s\n' % (key, self[key]))
     fd.close()
 
-  def next_mailbox(self):
-    if 'mailbox' not in self or not self['mailbox']:
+  def nid(self, what):
+    if what not in self or not self[what]:
       return '0'
     else:
-      return b36(1+max([int(k, 36) for k in self['mailbox']]))
+      return b36(1+max([int(k, 36) for k in self[what]]))
 
   def get_mailboxes(self):
     def fmt_mbxid(k):
@@ -752,7 +807,8 @@ def Action(session, opt, arg):
   elif opt in ('A', 'add'):
     if os.path.exists(arg):
       arg = os.path.abspath(arg)
-      if config.parse_set(session, 'mailbox:%s=%s' % (config.next_mailbox(), arg)):
+      if config.parse_set(session,
+                          'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
         config.save()
     else:
       session.error('No such file/directory: %s' % arg)
