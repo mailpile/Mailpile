@@ -54,7 +54,7 @@ we can reset the limit and optimize the index:
 ## Basic use ##
 
 The most important command `mailpile.py` supports is the `search` command.
-The second most importand is probably `help`. :-)
+The second most important is probably `help`. :-)
 
 All commands can be abbreviated to only their first character (the less
 commonly used commands use capital letters for this).
