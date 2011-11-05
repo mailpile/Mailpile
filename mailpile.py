@@ -308,7 +308,7 @@ class MailIndex(object):
         self.PTRS[message[self.MSG_PTR]] = offset
         self.MSGIDS[message[self.MSG_ID]] = offset
       else:
-        print 'Bogus line: %s' % line
+        session.ui.warning('Bogus line: %s' % line)
 
   def scan_mbox(self, session, idx, filename):
     import mailbox, email.parser, rfc822
@@ -344,7 +344,7 @@ class MailIndex(object):
             return (' '.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
                     ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
           except:
-            print 'Boom: %s/%s' % (msg[name], decoded)
+            session.ui.warning('Boom: %s/%s' % (msg[name], decoded))
             return ''
 
       msg_id = b64c(sha1b64((hdr('message-id') or msg_ptr).strip()))
@@ -361,7 +361,7 @@ class MailIndex(object):
         try:
           msg_date = int(rfc822.mktime_tz(rfc822.parsedate_tz(hdr('date'))))
         except:
-          print 'Date parsing: %s' % (sys.exc_info(), )
+          session.ui.warning('Date parsing: %s' % (sys.exc_info(), ))
           # This is a hack: We assume the messages in the mailbox are in
           # chronological order and just add 1 second to the date of the last
           # message.  This should be a better-than-nothing guess.
@@ -388,7 +388,7 @@ class MailIndex(object):
           #        conversations don't last forever.
           msg_conv = msg_mid
 
-        self.index_message(msg_mid, msg, msg_date,
+        self.index_message(session, msg_mid, msg, msg_date,
                            hdr('to'), hdr('from'), hdr('subject'),
                            compact=False)
 
@@ -415,7 +415,7 @@ class MailIndex(object):
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
     return self
 
-  def index_message(self, msg_mid, msg, msg_date,
+  def index_message(self, session, msg_mid, msg, msg_date,
                     msg_to, msg_from, msg_subject, compact=True):
     keywords = set()
     for part in msg.walk():
@@ -428,7 +428,7 @@ class MailIndex(object):
           try:
             textpart = lxml.html.fromstring(payload).text_content()
           except:
-            print 'Parsing failed: %s' % payload
+            session.ui.warning('Parsing failed: %s' % payload)
             textpart = None
         else:
           textpart = None
@@ -572,20 +572,24 @@ class MailIndex(object):
 
 
 class NullUI(object):
+
   def print_key(self, key, config): pass
   def reset_marks(self): pass
   def mark(self, progress): pass
 
-  def notify(self, message): print '%s' % message
-  def warning(self, message): print 'Warning: %s' % message
-  def error(self, message): print 'Error: %s' % message
+  def say(self, text='', newline='\n', fd=sys.stdout):
+    fd.write(text.encode('utf-8')+newline)
+    fd.flush()
+
+  def notify(self, message): self.say(str(message))
+  def warning(self, message): self.say('Warning: %s' % message)
+  def error(self, message): self.say('Error: %s' % message)
 
   def print_intro(self, help=False):
-    print ABOUT
-    print 'For instructions type `help`, press <CTRL-D> to quit.\n'
+    self.say(ABOUT+'\nFor instructions type `help`, press <CTRL-D> to quit.\n')
 
   def print_help(self, commands):
-    print '\nMailpile understands the following commands:\n'
+    self.say('\nMailpile understands the following commands:\n')
     last_rank = None
     cmds = commands.keys()
     cmds.sort(key=lambda k: commands[k][3])
@@ -593,13 +597,13 @@ class NullUI(object):
       cmd, args, explanation, rank = commands[c]
       if not rank: continue
 
-      if last_rank and int(rank/10) != last_rank: print
+      if last_rank and int(rank/10) != last_rank: self.say()
       last_rank = int(rank/10)
 
-      print '   %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
-                                          args and ('<%s>' % args) or '',
-                                          explanation)
-    print
+      self.say('   %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
+                                             args and ('<%s>' % args) or '',
+                                             explanation))
+    self.say()
 
 
 class TextUI(NullUI):
@@ -609,25 +613,25 @@ class TextUI(NullUI):
   def print_key(self, key, config):
     if key in config:
       if key in config.INTS:
-        print '%s = %s (int)' % (key, config.get(key))
+        self.say('%s = %s (int)' % (key, config.get(key)))
       else:
-        print '%s = %s' % (key, config.get(key))
+        self.say('%s = %s' % (key, config.get(key)))
     else:
-      print '%s is unset' % key
+      self.say('%s is unset' % key)
 
   def reset_marks(self):
     t = self.times
     self.times = []
     if t:
       result = 'Elapsed: %.3fs (%s)' % (t[-1][0] - t[0][0], t[-1][1])
-      print '%s%s' % (result, ' ' * (79-len(result)))
+      self.say('%s%s' % (result, ' ' * (79-len(result))))
       return t[-1][0] - t[0][0]
     else:
       return 0
 
   def mark(self, progress):
-    sys.stdout.write('  %s%s\r' % (progress, ' ' * (77-len(progress))))
-    sys.stdout.flush()
+    self.say('  %s%s\r' % (progress, ' ' * (77-len(progress))),
+             newline='', fd=sys.stderr)
     self.times.append((time.time(), progress))
 
   def name(self, sender):
@@ -676,14 +680,14 @@ class TextUI(NullUI):
         msg_date = datetime.date.fromtimestamp(max([
                                                 int(d, 36) for d in msg_date]))
 
-        print (cfmt+' %4.4d-%2.2d-%2.2d  %-25.25s  '+sfmt
-               ) % (start + count,
-                    msg_date.year, msg_date.month, msg_date.day,
-                    self.compact(self.names(msg_from), 25),
-                    msg_subj)
+        self.say((cfmt+' %4.4d-%2.2d-%2.2d  %-25.25s  '+sfmt
+                  ) % (start + count,
+                       msg_date.year, msg_date.month, msg_date.day,
+                       self.compact(self.names(msg_from), 25),
+                       msg_subj))
       except:
         raise
-        print '-- (not in index: %s)' % mid
+        self.say('-- (not in index: %s)' % mid)
     session.ui.mark(('Listed %d-%d of %d results'
                      ) % (start+1, start+count, len(results)))
     return (start, count)
@@ -698,7 +702,7 @@ class ConfigManager(dict):
 
   index = None
 
-  INTS = ('postinglist_kb', 'sort_max')
+  INTS = ('postinglist_kb', 'sort_max', 'num_results')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order')
   DICTS = ('mailbox', 'tag')
 
@@ -843,6 +847,7 @@ COMMANDS = {
 }
 def Action(session, opt, arg):
   config = session.config
+  num_results = config.get('num_results', 20)
 
   if not opt or opt in ('h', 'help'):
     session.ui.print_help(COMMANDS)
@@ -897,7 +902,8 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
     pos, count = session.displayed
     session.displayed = session.ui.display_results(idx, session.results,
-                                                   start=pos+count)
+                                                   start=pos+count,
+                                                   num=num_results)
     session.ui.reset_marks()
 
   elif opt in ('p', 'previous'):
@@ -905,7 +911,8 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
     pos, count = session.displayed
     session.displayed = session.ui.display_results(idx, session.results,
-                                                   end=pos)
+                                                   end=pos,
+                                                   num=num_results)
     session.ui.reset_marks()
 
   elif opt in ('s', 'search'):
@@ -919,7 +926,8 @@ def Action(session, opt, arg):
       session.results = list(idx.search(session,
                              re.findall(WORD_REGEXP, arg.lower())))
     idx.sort_results(session, session.results, how=session.order)
-    session.displayed = session.ui.display_results(idx, session.results)
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   num=num_results)
     session.ui.reset_marks()
 
   elif opt in ('o', 'order'):
@@ -927,7 +935,8 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
     session.order = arg or None
     idx.sort_results(session, session.results, how=session.order)
-    session.displayed = session.ui.display_results(idx, session.results)
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   num=num_results)
     session.ui.reset_marks()
 
   else:
@@ -981,7 +990,7 @@ if __name__ == "__main__":
     session.error(e)
 
   if not opts and not args:
-    session.interactive = True
+    session.interactive = session.ui.interactive = True
     session.ui.print_intro(help=True)
     Interact(session)
 
