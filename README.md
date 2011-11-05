@@ -193,7 +193,7 @@ inspired me to start working on this.
 Contributors:
 
    * Bjarni R. Einasson <http://bre.klaki.net/>
-   * Smari McCarthy <smari at immi dot is>
+   * Smari McCarthy <http://www.smarimccarthy.com/>
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the  GNU  Affero General Public License as published
