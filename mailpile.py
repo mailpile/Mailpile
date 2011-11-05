@@ -82,8 +82,7 @@ def cached_open(filename, mode):
 
 class PostingList(object):
 
-  MAX_SIZE = 30 # 32k is 8 blocks, we aim for half-filling the last one.
-                # Bumping this to 64k performs *much* worse on my laptop.
+  MAX_SIZE = 60  # perftest gives: 75% below 500ms, 50% below 100ms
   HASH_LEN = 12
 
   @classmethod
