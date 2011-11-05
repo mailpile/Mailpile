@@ -14,6 +14,9 @@ import struct, sys, time
 import lxml.html
 
 
+global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
+global WORD_REGEXP, STOPLIST
+
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
 # FIXME: This stoplist may be a bad idea.
 STOPLIST = ('an', 'and', 'are', 'as', 'at', 'by', 'for', 'from', 'has', 'in',
@@ -47,6 +50,7 @@ def b36(number):
 # appended to much more often than others.  This implements a simple
 # LRU cache of file descriptors we are appending to.
 APPEND_FD_CACHE = {}
+APPEND_FD_CACHE_SIZE = 500
 APPEND_FD_CACHE_ORDER = []
 def flush_append_cache(ratio=1, count=None):
   global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER
@@ -57,10 +61,11 @@ def flush_append_cache(ratio=1, count=None):
   APPEND_FD_CACHE_ORDER[:drop] = []
 
 def cached_open(filename, mode):
-  global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER
+  global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
   if mode == 'a':
     if filename not in APPEND_FD_CACHE:
-      if len(APPEND_FD_CACHE) > 500: flush_append_cache(count=1)
+      if len(APPEND_FD_CACHE) > APPEND_FD_CACHE_SIZE:
+        flush_append_cache(count=1)
       try:
         APPEND_FD_CACHE[filename] = open(filename, 'a')
       except:
@@ -701,7 +706,7 @@ class ConfigManager(dict):
 
   index = None
 
-  INTS = ('postinglist_kb', 'sort_max', 'num_results')
+  INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order')
   DICTS = ('mailbox', 'tag')
 
@@ -976,6 +981,11 @@ if __name__ == "__main__":
   session = Session(ConfigManager())
   session.config.load(session)
   session.ui = TextUI()
+
+  # Set globals from config here ...
+  APPEND_FD_CACHE_SIZE = session.config.get('fd_cache_size',
+                                            APPEND_FD_CACHE_SIZE)
+
   try:
     opts, args = getopt.getopt(sys.argv[1:],
                                ''.join(COMMANDS.keys()),
