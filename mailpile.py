@@ -77,11 +77,13 @@ class PostingList(object):
         session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
         fd = open(os.path.join(postinglist_dir, fn), 'r')
         fdp = open(os.path.join(postinglist_dir, fnp), 'a')
-        for line in fd:
-          fdp.write(line)
-        fdp.close()
-        fd.close()
-        os.remove(os.path.join(postinglist_dir, fn))
+        try:
+          for line in fd:
+            fdp.write(line)
+        finally:
+          fdp.close()
+          fd.close()
+          os.remove(os.path.join(postinglist_dir, fn))
 
     filecount = len(os.listdir(postinglist_dir))
     session.ui.mark('Optimized %s posting lists' % filecount)
@@ -161,7 +163,7 @@ class PostingList(object):
                                '\t'.join(['%s' % x for x in self.WORDS[word]])))
     return ''.join(output)
 
-  def save(self, prefix=None, compact=True):
+  def save(self, prefix=None, compact=True, mode='w'):
     prefix = prefix or self.filename
     output = self.fmt_file(prefix)
     while (compact and
@@ -173,7 +175,7 @@ class PostingList(object):
           biggest = word
       if len(biggest) > len(prefix):
         biggest = biggest[:len(prefix)+1]
-        self.save(prefix=biggest)
+        self.save(prefix=biggest, mode='a')
 
         for key in [k for k in self.WORDS if k.startswith(biggest)]:
           del self.WORDS[key]
@@ -182,10 +184,12 @@ class PostingList(object):
     try:
       outfile = os.path.join(self.config.postinglist_dir(), prefix)
       if output:
-        fd = open(outfile, 'w')
-        fd.write(output)
-        fd.close()
-        return len(output)
+        try:
+          fd = open(outfile, mode)
+          fd.write(output)
+          return len(output)
+        finally:
+          fd.close()
       elif os.path.exists(outfile):
         os.remove(outfile)
     except:
