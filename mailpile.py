@@ -43,6 +43,42 @@ def b36(number):
   return base36 or alphabet[0]
 
 
+# Indexing messages is an append-heavy operation, and some files are
+# appended to much more often than others.  This implements a simple
+# LRU cache of file descriptors we are appending to.
+APPEND_FD_CACHE = {}
+APPEND_FD_CACHE_ORDER = []
+def flush_append_cache(ratio=1, count=None):
+  global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER
+  drop = count or ratio*len(APPEND_FD_CACHE)
+  for fn in APPEND_FD_CACHE_ORDER[:drop]:
+    APPEND_FD_CACHE[fn].close()
+    del APPEND_FD_CACHE[fn]
+  APPEND_FD_CACHE_ORDER[:drop] = []
+
+def cached_open(filename, mode):
+  global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER
+  if mode == 'a':
+    if filename not in APPEND_FD_CACHE:
+      if len(APPEND_FD_CACHE) > 500: flush_append_cache(count=1)
+      try:
+        APPEND_FD_CACHE[filename] = open(filename, 'a')
+      except:
+        # Too many open files?  Close a bunch and try again.
+        flush_append_cache(ratio=0.3)
+        APPEND_FD_CACHE[filename] = open(filename, 'a')
+      APPEND_FD_CACHE_ORDER.append(filename)
+    else:
+      APPEND_FD_CACHE_ORDER.remove(filename)
+      APPEND_FD_CACHE_ORDER.append(filename)
+    return APPEND_FD_CACHE[filename]
+  else:
+    if filename in APPEND_FD_CACHE:
+      APPEND_FD_CACHE[filename].close()
+      APPEND_FD_CACHE_ORDER.remove(filename)
+      del APPEND_FD_CACHE[filename]
+    return open(filename, mode)
+
 
 class PostingList(object):
 
@@ -52,6 +88,8 @@ class PostingList(object):
 
   @classmethod
   def Optimize(cls, session, idx, force=False):
+    flush_append_cache()
+
     postinglist_kb = session.config.get('postinglist_kb', cls.MAX_SIZE)
     postinglist_dir = session.config.postinglist_dir()
 
@@ -75,16 +113,19 @@ class PostingList(object):
       size += os.path.getsize(os.path.join(postinglist_dir, fnp))
       if (size < (1024*postinglist_kb-(cls.HASH_LEN*6))):
         session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
-        fd = open(os.path.join(postinglist_dir, fn), 'r')
-        fdp = open(os.path.join(postinglist_dir, fnp), 'a')
+        fd = cached_open(os.path.join(postinglist_dir, fn), 'r')
+        fdp = cached_open(os.path.join(postinglist_dir, fnp), 'a')
         try:
           for line in fd:
             fdp.write(line)
+        except:
+          flush_append_cache()
+          raise
         finally:
-          fdp.close()
           fd.close()
           os.remove(os.path.join(postinglist_dir, fn))
 
+    flush_append_cache()
     filecount = len(os.listdir(postinglist_dir))
     session.ui.mark('Optimized %s posting lists' % filecount)
     return filecount
@@ -107,7 +148,6 @@ class PostingList(object):
     else:
       # Quick and dirty append is the default.
       fd.write('%s\t%s\n' % (sig, mail_id))
-      fd.close()
 
   @classmethod
   def WordSig(cls, word):
@@ -119,7 +159,7 @@ class PostingList(object):
     while len(sig) > 0:
       fn = os.path.join(session.config.postinglist_dir(), sig)
       try:
-        if os.path.exists(fn): return (open(fn, mode), sig)
+        if os.path.exists(fn): return (cached_open(fn, mode), sig)
       except:
         pass
 
@@ -129,7 +169,7 @@ class PostingList(object):
         if 'r' in mode:
           return (None, sig)
         else:
-          return (open(fn, mode), sig)
+          return (cached_open(fn, mode), sig)
     # Not reached
     return (None, None)
 
@@ -185,11 +225,11 @@ class PostingList(object):
       outfile = os.path.join(self.config.postinglist_dir(), prefix)
       if output:
         try:
-          fd = open(outfile, mode)
+          fd = cached_open(outfile, mode)
           fd.write(output)
           return len(output)
         finally:
-          fd.close()
+          if mode != 'a': fd.close()
       elif os.path.exists(outfile):
         os.remove(outfile)
     except:
@@ -369,6 +409,7 @@ class MailIndex(object):
 
       if (i % 1000) == 999: self.save(session)
 
+    flush_append_cache()
     if added > 100:
       PostingList.Optimize(session, self)
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
@@ -743,8 +784,10 @@ class ConfigManager(dict):
       if len(k) > 3:
         raise ValueError('Mailbox ID too large: %s' % k)
       return ('000'+k)[-3:]
-    return [(fmt_mbxid(k), self['mailbox'][k])
-            for k in sorted(self['mailbox'])]
+    mailboxes = self['mailbox'].keys()
+    mailboxes.sort()
+    mailboxes.reverse()
+    return [(fmt_mbxid(k), self['mailbox'][k]) for k in mailboxes]
 
   def history_file(self):
     return self.get('history_file',
