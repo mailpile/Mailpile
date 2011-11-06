@@ -644,8 +644,8 @@ class NullUI(object):
   def print_intro(self, help=False):
     self.say(ABOUT+'\nFor instructions type `help`, press <CTRL-D> to quit.\n')
 
-  def print_help(self, commands):
-    self.say('\nMailpile understands the following commands:\n')
+  def print_help(self, commands, tags):
+    self.say('Commands:')
     last_rank = None
     cmds = commands.keys()
     cmds.sort(key=lambda k: commands[k][3])
@@ -656,10 +656,14 @@ class NullUI(object):
       if last_rank and int(rank/10) != last_rank: self.say()
       last_rank = int(rank/10)
 
-      self.say('   %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
-                                             args and ('<%s>' % args) or '',
-                                             explanation))
-    self.say()
+      self.say('    %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
+                                              args and ('<%s>' % args) or '',
+                                              explanation))
+    self.say('\nTags:  (use a tag as a command to display tagged messages)')
+    tags.sort()
+    for i in range(0, len(tags)):
+      self.say('    %-12.12s' % tags[i], newline=(i%5==4) and '\n' or '')
+    self.say('\n')
 
 
 class TextUI(NullUI):
@@ -902,8 +906,8 @@ COMMANDS = {
   'R':  ('rescan',   '',              'Scan all mailboxes for new messages',13),
   's:': ('search=',  'terms ...',     'Search!',                            30),
   'S:': ('set=',     'var=value',     'Change a setting',                   50),
-  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag messages',              40),
-  'T:': ('addtag=',  'tag',           'Create a new tag',                   41),
+  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        34),
+  'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
   'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
 }
 def Action(session, opt, arg):
@@ -911,7 +915,7 @@ def Action(session, opt, arg):
   num_results = config.get('num_results', 20)
 
   if not opt or opt in ('h', 'help'):
-    session.ui.print_help(COMMANDS)
+    session.ui.print_help(COMMANDS, session.config['tag'].values())
 
   elif opt in ('A', 'add'):
     if os.path.exists(arg):
