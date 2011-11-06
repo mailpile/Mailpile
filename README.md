@@ -114,6 +114,35 @@ setting:
     ...
 
 
+### Tags and tagging ###
+
+Mailpile allows you to create tags and attach any number of tags to each
+message.  For example:
+
+    mailpile> addtag Inbox
+    ...
+    mailpile> search to:bre from:klaki
+    ...
+    mailpile> tag +Inbox all
+    ...
+    mailpile> inbox
+    ...
+
+The `tag` command accepts a single tag name, prefixed with a `+` or `-`
+(for adding or removing the tag), followed by a description of messages.
+The message description can be:
+
+  * `all` will affect all messages
+  * `these` will affect currently listed messages
+  * A list of numbers or ranges (`1 2 3 5-10 15`)
+
+All these are relative to the last search, so `1` is the first result
+of the most recent search and `all` would be all matching messages.
+
+Tags names are themselves recognized as specialized search commands in
+the `mailpile` CLI.
+
+
 ## A word on performance ##
 
 Searching is all about disk seeks.

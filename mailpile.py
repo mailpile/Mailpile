@@ -245,9 +245,14 @@ class PostingList(object):
 
   def append(self, eid):
     self.WORDS[self.sig].add(eid)
+    return self
 
   def remove(self, eid):
-    self.WORDS[self.sig].remove(eid)
+    try:
+      self.WORDS[self.sig].remove(eid)
+    except KeyError:
+      pass
+    return self
 
 
 class MailIndex(object):
@@ -302,6 +307,7 @@ class MailIndex(object):
       fd.write(item)
       fd.write('\n')
     fd.close()
+    flush_append_cache()
     session.ui.mark("Saved metadata index")
 
   def update_ptrs_and_msgids(self, session):
@@ -413,7 +419,7 @@ class MailIndex(object):
 
       if (i % 1000) == 999: self.save(session)
 
-    flush_append_cache()
+    self.save(session)
     if added > 100:
       PostingList.Optimize(session, self)
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
@@ -481,9 +487,55 @@ class MailIndex(object):
     return self.get_msg_by_idx(
              int(self.get_msg_by_idx(msg_idx)[self.MSG_CONV_ID], 36))
 
-  def get_replies(self, msg_info):
+  def get_replies(self, msg_info=None, msg_idx=None):
+    if not msg_info: msg_info = self.get_msg_by_idx(msg_idx)
     return [self.get_msg_by_idx(int(r, 36)) for r
             in msg_info[self.MSG_REPLIES].split(',') if r]
+
+  def get_tags(self, msg_info=None, msg_idx=None):
+    if not msg_info: msg_info = self.get_msg_by_idx(msg_idx)
+    return [r for r in msg_info[self.MSG_TAGS].split(',') if r]
+
+  def add_tag(self, session, tag_id, msg_info=None, msg_idxs=None):
+    pls = PostingList(session, '%s:tag' % tag_id)
+    if not msg_idxs:
+      msg_idxs = [int(msg_info[self.MSG_IDX], 36)]
+    session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
+    for msg_idx in list(msg_idxs):
+      for reply in self.get_replies(msg_idx=msg_idx):
+        msg_idxs.add(int(reply[self.MSG_IDX], 36))
+        if msg_idx % 1000 == 0: self.CACHE = {}
+    for msg_idx in msg_idxs:
+      msg_info = self.get_msg_by_idx(msg_idx)
+      tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
+      tags.add(tag_id)
+      msg_info[self.MSG_TAGS] = ','.join(list(tags))
+      self.INDEX[msg_idx] = self.m2l(msg_info)
+      pls.append(msg_info[self.MSG_IDX])
+      if msg_idx % 1000 == 0: self.CACHE = {}
+    pls.save()
+    self.CACHE = {}
+
+  def remove_tag(self, session, tag_id, msg_info=None, msg_idxs=None):
+    pls = PostingList(session, '%s:tag' % tag_id)
+    if not msg_idxs:
+      msg_idxs = [int(msg_info[self.MSG_IDX], 36)]
+    session.ui.mark('Untagging %d messages (%s)' % (len(msg_idxs), tag_id))
+    for msg_idx in list(msg_idxs):
+      for reply in self.get_replies(msg_idx=msg_idx):
+        msg_idxs.add(int(reply[self.MSG_IDX], 36))
+        if msg_idx % 1000 == 0: self.CACHE = {}
+    for msg_idx in msg_idxs:
+      msg_info = self.get_msg_by_idx(msg_idx)
+      tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
+      if tag_id in tags:
+        tags.remove(tag_id)
+        msg_info[self.MSG_TAGS] = ','.join(list(tags))
+        self.INDEX[msg_idx] = self.m2l(msg_info)
+      pls.remove(msg_info[self.MSG_IDX])
+      if msg_idx % 1000 == 0: self.CACHE = {}
+    pls.save()
+    self.CACHE = {}
 
   def search(self, session, searchterms):
     if len(self.CACHE.keys()) > 5000: self.CACHE = {}
@@ -667,7 +719,6 @@ class TextUI(NullUI):
 
     clen = max(3, len('%d' % len(results)))
     cfmt = '%%%d.%ds' % (clen, clen)
-    sfmt = '%%-%d.%ds' % (39-clen, 39-clen)
 
     count = 0
     for mid in results[start:start+num]:
@@ -684,11 +735,15 @@ class TextUI(NullUI):
         msg_date = datetime.date.fromtimestamp(max([
                                                 int(d, 36) for d in msg_date]))
 
-        self.say((cfmt+' %4.4d-%2.2d-%2.2d  %-25.25s  '+sfmt
+        msg_tags = ','.join([idx.config['tag'].get(t, t)
+                             for t in idx.get_tags(msg_info=msg_info)])
+
+        sfmt = '%%-%d.%ds' % (39-(clen+len(msg_tags)),39-(clen+len(msg_tags)))
+        self.say((cfmt+' %4.4d-%2.2d-%2.2d  %-25.25s %s '+sfmt
                   ) % (start + count,
                        msg_date.year, msg_date.month, msg_date.day,
                        self.compact(self.names(msg_from), 25),
-                       msg_subj))
+                       msg_tags, msg_subj))
       except:
         raise
         self.say('-- (not in index: %s)' % mid)
@@ -822,7 +877,7 @@ class Session(object):
 
   ui = NullUI()
   order = None
-  results = None
+  results = []
   displayed = (0, 0)
   interactive = False
 
@@ -847,6 +902,8 @@ COMMANDS = {
   'R':  ('rescan',   '',              'Scan all mailboxes for new messages',13),
   's:': ('search=',  'terms ...',     'Search!',                            30),
   'S:': ('set=',     'var=value',     'Change a setting',                   50),
+  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag messages',              40),
+  'T:': ('addtag=',  'tag',           'Create a new tag',                   41),
   'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
 }
 def Action(session, opt, arg):
@@ -864,6 +921,16 @@ def Action(session, opt, arg):
         config.save()
     else:
       session.error('No such file/directory: %s' % arg)
+
+  elif opt in ('T', 'addtag'):
+    if (arg
+        and ' ' not in arg
+        and arg.lower() not in [v.lower() for v in config['tag'].values()]):
+      if config.parse_set(session,
+                          'tag:%s=%s' % (config.nid('tag'), arg)):
+        config.save()
+    else:
+      session.error('Invalid tag: %s' % arg)
 
   elif opt in ('O', 'optimize'):
     try:
@@ -897,7 +964,8 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif opt in ('L', 'load'):
-    config.index = session.results = None
+    config.index = None
+    session.results = []
     config.get_index(session)
     session.ui.reset_marks()
 
@@ -919,26 +987,77 @@ def Action(session, opt, arg):
                                                    num=num_results)
     session.ui.reset_marks()
 
-  elif opt in ('s', 'search'):
-    if not arg: return
+  elif opt in ('t', 'tag'):
     idx = config.get_index(session)
     session.ui.reset_marks()
-    # FIXME: This is all rather dumb.  Make it smarter!
-    if ':' in arg:
-      session.results = list(idx.search(session, arg.lower().split()))
-    else:
-      session.results = list(idx.search(session,
-                             re.findall(WORD_REGEXP, arg.lower())))
-    idx.sort_results(session, session.results, how=session.order)
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   num=num_results)
-    session.ui.reset_marks()
+    try:
+      words = arg.split()
+      op = words[0][0]
+      tag = words[0][1:]
+      tag_id = [t for t in config['tag']
+                if config['tag'][t].lower() == tag.lower()][0]
+
+      msg_ids = set()
+      for what in words[1:]:
+        if what.lower() == 'these':
+          b, c = session.displayed
+          msg_ids |= set(session.results[b:b+c])
+        elif what.lower() == 'all':
+          msg_ids |= set(session.results)
+        elif what.startswith('='):
+          try:
+            msg_ids.add(session.results[int(what[1:], 36)])
+          except:
+            session.ui.warning('What message is %s?' % (what, ))
+        elif '-' in what:
+          try:
+            b, e = what.split('-')
+            msg_ids |= set(session.results[int(b)-1:int(e)])
+          except:
+            session.ui.warning('What message is %s?' % (what, ))
+        else:
+          try:
+            msg_ids.add(session.results[int(what)-1])
+          except:
+            session.ui.warning('What message is %s?' % (what, ))
+
+      if op == '-':
+        idx.remove_tag(session, tag_id, msg_idxs=msg_ids)
+      else:
+        idx.add_tag(session, tag_id, msg_idxs=msg_ids)
+      idx.save(session)
+      session.ui.reset_marks()
+
+    except (TypeError, ValueError, IndexError):
+      session.ui.error('That made no sense: %s %s' % (opt, arg))
 
   elif opt in ('o', 'order'):
     idx = config.get_index(session)
     session.ui.reset_marks()
     session.order = arg or None
-    idx.sort_results(session, session.results, how=session.order)
+    idx.sort_results(session, session.results,
+                     how=session.order)
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   num=num_results)
+    session.ui.reset_marks()
+
+  elif (opt in ('s', 'search')
+        or opt.lower() in [t.lower() for t in config['tag'].values()]):
+    idx = config.get_index(session)
+    session.ui.reset_marks()
+
+    # FIXME: This is all rather dumb.  Make it smarter!
+    if opt not in ('s', 'search'):
+      tid = [t for t in config['tag'] if config['tag'][t].lower() == opt.lower()]
+      session.results = list(idx.search(session, ['tag:%s' % tid[0]]))
+    elif ':' in arg:
+      session.results = list(idx.search(session, arg.lower().split()))
+    else:
+      session.results = list(idx.search(session,
+                             re.findall(WORD_REGEXP, arg.lower())))
+
+    idx.sort_results(session, session.results,
+                     how=session.order)
     session.displayed = session.ui.display_results(idx, session.results,
                                                    num=num_results)
     session.ui.reset_marks()
