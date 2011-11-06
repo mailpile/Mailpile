@@ -177,7 +177,6 @@ patches for:
 
    * A more efficient incremental indexer
    * A way to view/extract messages/attachments
-   * A way to assign/edit/remove tags (including read/unread/inbox)
    * Improve conversation IDs assignment
    * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
