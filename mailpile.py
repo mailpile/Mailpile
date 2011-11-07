@@ -739,15 +739,16 @@ class TextUI(NullUI):
         msg_date = datetime.date.fromtimestamp(max([
                                                 int(d, 36) for d in msg_date]))
 
-        msg_tags = ','.join([idx.config['tag'].get(t, t)
+        msg_tags = '<'.join([idx.config['tag'].get(t, t)
                              for t in idx.get_tags(msg_info=msg_info)])
+        msg_tags = msg_tags and (' <%s' % msg_tags) or '  '
 
-        sfmt = '%%-%d.%ds' % (39-(clen+len(msg_tags)),39-(clen+len(msg_tags)))
-        self.say((cfmt+' %4.4d-%2.2d-%2.2d  %-25.25s %s '+sfmt
+        sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
+        self.say((cfmt+' %4.4d-%2.2d-%2.2d %-25.25s '+sfmt
                   ) % (start + count,
                        msg_date.year, msg_date.month, msg_date.day,
                        self.compact(self.names(msg_from), 25),
-                       msg_tags, msg_subj))
+                       msg_subj, msg_tags))
       except:
         raise
         self.say('-- (not in index: %s)' % mid)
