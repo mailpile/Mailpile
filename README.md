@@ -5,6 +5,12 @@ tool, largely inspired by Google's popular free e-mail service.  It wants
 to eventually become a fast and flexible back-end for awesome personal
 mail clients, probably webmail.
 
+**WARNING:**  Mailpile is still experimental and isn't actually very useful
+yet.  It'll tell you that you have mail matching a given search and let
+you sort it and browse the subjects... but it won't help you actually read
+or write any mail.  If you are looking for a useful tool right now, you
+should probably check back in a couple of weeks.
+
 
 ## Requirements ##
 
