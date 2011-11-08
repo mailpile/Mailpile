@@ -545,9 +545,16 @@ class MailIndex(object):
         session.ui.warning('Ignoring common word: %s' % term)
         continue
 
-      r.append([])
-      rt = r[-1]
+      if term[0] in ('-', '+'):
+        op = term[0]
+        term = term[1:]
+      else:
+        op = None
+
+      r.append((op, []))
+      rt = r[-1][1]
       term = term.lower()
+
       session.ui.mark('Searching...')
       if term.startswith('body:'):
         rt.extend(PostingList(session, term[5:]).hits())
@@ -558,9 +565,14 @@ class MailIndex(object):
         rt.extend(PostingList(session, term).hits())
 
     if r:
-      results = set(r[0])
-      for rt in r[1:]:
-        results &= set(rt)
+      results = set(r[0][1])
+      for (op, rt) in r[1:]:
+        if op == '+':
+          results |= set(rt)
+        elif op == '-':
+          results -= set(rt)
+        else:
+          results &= set(rt)
       # Sometimes the scan gets aborted...
       results -= set([b36(len(self.INDEX))])
     else:
@@ -739,7 +751,7 @@ class TextUI(NullUI):
         msg_date = datetime.date.fromtimestamp(max([
                                                 int(d, 36) for d in msg_date]))
 
-        msg_tags = '<'.join([idx.config['tag'].get(t, t)
+        msg_tags = '<'.join([re.sub("^.*/", "", idx.config['tag'].get(t, t))
                              for t in idx.get_tags(msg_info=msg_info)])
         msg_tags = msg_tags and (' <%s' % msg_tags) or '  '
 
@@ -1055,7 +1067,7 @@ def Action(session, opt, arg):
     if opt not in ('s', 'search'):
       tid = [t for t in config['tag'] if config['tag'][t].lower() == opt.lower()]
       session.results = list(idx.search(session, ['tag:%s' % tid[0]]))
-    elif ':' in arg:
+    elif ':' in arg or '-' in arg or '+' in arg:
       session.results = list(idx.search(session, arg.lower().split()))
     else:
       session.results = list(idx.search(session,

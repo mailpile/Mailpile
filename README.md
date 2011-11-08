@@ -76,11 +76,13 @@ Some searching examples:
     ...
     mailpile> search from:bjarni to:somebody
     ...
+    mailpile> search from:bjarni -from:pagekite
+    ...
     mailpile> s att:pdf
     ...
     mailpile> s has:attachment
     ...
-    mailpile> s date:2011-1-30
+    mailpile> s date:2011-1-30 +date:2011-1-29
     ...
     mailpile> s year:2011 month:12
     ...
@@ -88,8 +90,11 @@ Some searching examples:
 The default search will search in message bodies, from lines, attachment
 names and subjects.  Using a `to/from/subject/att/...` prefix will
 search that part of the message only.  There's no way to *only* search
-bodies, they're too full of crap anyway.  Adding terms narrows the
-search.
+bodies, they're too full of crap anyway.
+
+Adding terms narrows the search, unless the extra terms are prefixed with
+a `+`, then results are combined.  Prefixing with `-` removes matches for
+that term instead.
 
 You can paginate through results using `next` and `previous`.
 
