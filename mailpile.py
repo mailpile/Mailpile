@@ -671,10 +671,11 @@ class NullUI(object):
       self.say('    %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
                                               args and ('<%s>' % args) or '',
                                               explanation))
-    self.say('\nTags:  (use a tag as a command to display tagged messages)')
+    self.say('\nTags:  (use a tag as a command to display tagged messages)\n  ',
+             '')
     tags.sort()
     for i in range(0, len(tags)):
-      self.say('    %-12.12s' % tags[i], newline=(i%5==4) and '\n' or '')
+      self.say('%-18.18s ' % tags[i], newline=(i%4==3) and '\n  ' or '')
     self.say('\n')
 
 
