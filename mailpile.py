@@ -8,9 +8,9 @@ the terms of the  GNU  Affero General Public License as published by the Free
 Software Foundation, either version 3 of the License, or (at your option) any
 later version.
 """
-###################################################################################
-import codecs, datetime, getopt, locale, hashlib, os, random, re
-import struct, sys, time
+###############################################################################
+import codecs, datetime, email.parser, getopt, hashlib, locale, mailbox
+import os, cPickle, random, re, rfc822, struct, sys, time
 import lxml.html
 
 
@@ -84,6 +84,75 @@ def cached_open(filename, mode):
       del APPEND_FD_CACHE[filename]
     return open(filename, mode)
 
+
+##[ Enhanced mailbox classes for incremental updates ]#########################
+
+class IncrementalMbox(mailbox.mbox):
+
+  last_parsed = 0
+  save_to = None
+
+  def __getstate__(self):
+    odict = self.__dict__.copy()
+    del odict['_file']
+    return odict
+
+  def __setstate__(self, dict):
+    self.__dict__.update(dict)
+    try:
+      self._file = open(self._path, 'rb+')
+    except IOError, e:
+      if e.errno == errno.ENOENT:
+        raise NoSuchMailboxError(self._path)
+      elif e.errno == errno.EACCES:
+        self._file = open(self._path, 'rb')
+      else:
+        raise
+    self._update_toc()
+
+  def _update_toc(self):
+    self._file.seek(0, 2)
+    if self._file_length == self._file.tell(): return
+
+    self._file.seek(self._toc[self._next_key-1][0])
+    line = self._file.readline()
+    if not line.startswith('From '):
+      raise IOError("Mailbox has been modified")
+
+    self._file.seek(self._file_length)
+    start = None
+    while True:
+      line_pos = self._file.tell()
+      line = self._file.readline()
+      if line.startswith('From '):
+        if start:
+          self._toc[self._next_key] = (start, line_pos - len(os.linesep))
+          self._next_key += 1
+        start = line_pos
+      elif line == '':
+        self._toc[self._next_key] = (start, line_pos)
+        self._next_key += 1
+        break
+    self._file_length = self._file.tell()
+    self.save(None)
+
+  def save(self, session, to=None):
+    if to:
+      self.save_to = to
+    if self.save_to and len(self) > 0:
+      if session: session.ui.mark('Saving state to %s' % self.save_to)
+      fd = open(self.save_to, 'w')
+      cPickle.dump(self, fd)
+      fd.close()
+
+  def get_msg_ptr(self, idx, toc_id):
+    return '%s%s' % (idx, b36(long(self.get_file(toc_id)._pos)))
+
+  def get_msg_size(self, toc_id):
+    return self._toc[toc_id][1] - self._toc[toc_id][0]
+
+
+##[ The search and index code itself ]#########################################
 
 class PostingList(object):
 
@@ -256,6 +325,7 @@ class PostingList(object):
 
 
 class MailIndex(object):
+  """This is a lazily parsing object representing a mailpile index."""
 
   MSG_IDX     = 0
   MSG_PTR     = 1
@@ -320,56 +390,61 @@ class MailIndex(object):
       else:
         session.ui.warning('Bogus line: %s' % line)
 
-  def scan_mbox(self, session, idx, filename):
-    import mailbox, email.parser, rfc822
+  def hdr(self, msg, name, value=None):
+    decoded = email.header.decode_header(value or msg[name] or '')
+    try:
+      return (' '.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
+              ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
+    except:
+      try:
+        return (' '.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
+                ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
+      except:
+        session.ui.warning('Boom: %s/%s' % (msg[name], decoded))
+        return ''
 
-    self.update_ptrs_and_msgids(session)
-    session.ui.mark(('%s: Opening: %s (may take a while)'
-                     ) % (idx, filename))
-    mbox = mailbox.mbox(filename)
-    msg_date = int(time.time())
+  def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
+    mbox = mailbox_opener(session, idx, mailbox_fn)
+    if mbox.last_parsed+1 == len(mbox): return 0
+
+    if len(self.PTRS.keys()) == 0:
+      self.update_ptrs_and_msgids(session)
+
     added = 0
-    for i in range(0, len(mbox)):
-      msg_fd = mbox.get_file(i)
-      msg_ptr = '%s%s' % (idx, b36(long(msg_fd._pos)))
-
+    msg_date = int(time.time())
+    for i in range(mbox.last_parsed+1, len(mbox)):
       parse_status = ('%s: Reading your mail: %d%% (%d/%d messages)'
                       ) % (idx, 100 * i/len(mbox), i, len(mbox))
+
+      msg_ptr = mbox.get_msg_ptr(idx, i)
       if msg_ptr in self.PTRS:
-        if (i % 119) == 0: session.ui.mark(parse_status)
+        if (i % 317) == 0: session.ui.mark(parse_status)
         continue
       else:
         session.ui.mark(parse_status)
 
       # Message new or modified, let's parse it.
       p = email.parser.Parser()
-      msg = p.parse(msg_fd)
-      def hdr(name, value=None):
-        decoded = email.header.decode_header(value or msg[name] or '')
-        try:
-          return (' '.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
-                  ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-        except:
-          try:
-            return (' '.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
-                    ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-          except:
-            session.ui.warning('Boom: %s/%s' % (msg[name], decoded))
-            return ''
-
-      msg_id = b64c(sha1b64((hdr('message-id') or msg_ptr).strip()))
+      msg = p.parse(mbox.get_file(i))
+      msg_id = b64c(sha1b64((self.hdr(msg, 'message-id') or msg_ptr).strip()))
       if msg_id in self.MSGIDS:
-        # Just update location
         msg_info = self.l2m(self.INDEX[self.MSGIDS[msg_id]])
-        msg_info[self.MSG_PTR] = msg_ptr
-        self.INDEX[self.MSGIDS[msg_id]] = self.m2l(msg_info)
-        self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
+        old_ptr = msg_info[self.MSG_PTR]
+        if (old_ptr != msg_ptr) and (old_ptr[:3] == msg_ptr[:3]):
+          # Just update location, if it has moved within the same mailbox - if
+          # the same message is present in multiple mailboxes, just ignore it.
+          msg_info[self.MSG_PTR] = msg_ptr
+          msg_info[self.MSG_SIZE] = b36(mbox.get_msg_size(i))
+          self.INDEX[self.MSGIDS[msg_id]] = self.m2l(msg_info)
+          self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
+          added += 1
       else:
         # Add new message!
         msg_mid = b36(len(self.INDEX))
 
         try:
-          msg_date = int(rfc822.mktime_tz(rfc822.parsedate_tz(hdr('date'))))
+          msg_date = int(rfc822.mktime_tz(
+                                   rfc822.parsedate_tz(self.hdr(msg, 'date'))))
         except:
           session.ui.warning('Date parsing: %s' % (sys.exc_info(), ))
           # This is a hack: We assume the messages in the mailbox are in
@@ -378,7 +453,7 @@ class MailIndex(object):
           msg_date += 1
 
         msg_conv = None
-        refs = set((hdr('references') + ' ' + hdr('in-reply-to')
+        refs = set((self.hdr(msg, 'references')+' '+self.hdr(msg, 'in-reply-to')
                     ).replace(',', ' ').strip().split())
         for ref_id in [b64c(sha1b64(r)) for r in refs]:
           try:
@@ -398,35 +473,31 @@ class MailIndex(object):
           #        conversations don't last forever.
           msg_conv = msg_mid
 
-        self.index_message(session, msg_mid, msg, msg_date,
-                           hdr('to'), hdr('from'), hdr('subject'),
-                           compact=False)
+        self.index_message(session, msg_mid, msg, msg_date, compact=False)
 
-        msg_info = [msg_mid,                  # Our index ID
-                    msg_ptr,                  # Location on disk
-                    b36(msg_fd.tell()),       # Size?
-                    msg_id,                   # Message-ID
-                    b36(msg_date),            # Date as a UTC timestamp
-                    hdr('from'),              # From:
-                    hdr('subject'),           # Subject
-                    '',                       # No tags for now
-                    '',                       # No replies for now
-                    msg_conv]                 # Conversation ID
+        msg_info = [msg_mid,                   # Our index ID
+                    msg_ptr,                   # Location on disk
+                    b36(mbox.get_msg_size(i)), # Size?
+                    msg_id,                    # Message-ID
+                    b36(msg_date),             # Date as a UTC timestamp
+                    self.hdr(msg, 'from'),     # From:
+                    self.hdr(msg, 'subject'),  # Subject
+                    '',                        # No tags for now
+                    '',                        # No replies for now
+                    msg_conv]                  # Conversation ID
 
         self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = len(self.INDEX)
         self.INDEX.append(self.m2l(msg_info))
         added += 1
 
-      if (i % 1000) == 999: self.save(session)
-
-    self.save(session)
-    if added > 100:
-      PostingList.Optimize(session, self)
-    session.ui.mark('%s: Indexed mailbox: %s' % (idx, filename))
-    return self
+    if added:
+      mbox.last_parsed = i
+      mbox.save(session)
+    session.ui.mark('%s: Indexed mailbox: %s' % (idx, mailbox_fn))
+    return added
 
   def index_message(self, session, msg_mid, msg, msg_date,
-                    msg_to, msg_from, msg_subject, compact=True):
+                    compact=True):
     keywords = set()
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
@@ -461,11 +532,17 @@ class MailIndex(object):
     keywords.add('%s:day' % mdate.day)
     keywords.add('%s-%s-%s:date' % (mdate.year, mdate.month, mdate.day))
 
-    keywords |= set(re.findall(WORD_REGEXP, msg_subject.lower()))
-    keywords |= set(re.findall(WORD_REGEXP, msg_from.lower()))
-    keywords |= set([t+':subject' for t in re.findall(WORD_REGEXP, msg_subject.lower())])
-    keywords |= set([t+':from' for t in re.findall(WORD_REGEXP, msg_from.lower())])
-    keywords |= set([t+':to' for t in re.findall(WORD_REGEXP, msg_to.lower())])
+    msg_subject = self.hdr(msg, 'subject').lower()
+    msg_list = self.hdr(msg, 'list-id').lower()
+    msg_from = self.hdr(msg, 'from').lower()
+    msg_to = self.hdr(msg, 'to').lower()
+
+    keywords |= set(re.findall(WORD_REGEXP, msg_subject))
+    keywords |= set(re.findall(WORD_REGEXP, msg_from))
+    keywords |= set([t+':subject' for t in re.findall(WORD_REGEXP, msg_subject)])
+    keywords |= set([t+':list' for t in re.findall(WORD_REGEXP, msg_list)])
+    keywords |= set([t+':from' for t in re.findall(WORD_REGEXP, msg_from)])
+    keywords |= set([t+':to' for t in re.findall(WORD_REGEXP, msg_to)])
     keywords -= set(STOPLIST)
     for word in keywords:
       try:
@@ -859,6 +936,19 @@ class ConfigManager(dict):
     else:
       return b36(1+max([int(k, 36) for k in self[what]]))
 
+  def open_mailbox(self, session, mailbox_id, mailbox_fn):
+    pfn = os.path.join(self.workdir(), 'pickled-mailbox.%s' % mailbox_id)
+    try:
+      session.ui.mark(('%s: Updating: %s'
+                       ) % (mailbox_id, mailbox_fn))
+      mbox = cPickle.load(open(pfn, 'r'))
+    except (IOError, EOFError):
+      session.ui.mark(('%s: Opening: %s (may take a while)'
+                       ) % (mailbox_id, mailbox_fn))
+      mbox = IncrementalMbox(mailbox_fn)
+      mbox.save(session, to=pfn)
+    return mbox
+
   def get_mailboxes(self):
     def fmt_mbxid(k):
       k = b36(int(k, 36))
@@ -972,13 +1062,17 @@ def Action(session, opt, arg):
   elif opt in ('R', 'rescan'):
     idx = config.get_index(session)
     session.ui.reset_marks()
+    count = 0
     try:
       for fid, fpath in config.get_mailboxes():
-        idx.scan_mbox(session, fid, fpath)
+        count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
         session.ui.mark('\n')
     except KeyboardInterrupt:
       session.ui.mark('Aborted')
-    idx.save(session)
+    if count:
+      idx.save(session)
+    else:
+      session.ui.mark('Nothing changed')
     session.ui.reset_marks()
 
   elif opt in ('L', 'load'):

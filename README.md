@@ -186,7 +186,6 @@ set - but searching for really common terms won't give good results anyway.)
 A random laundry list of things I haven't done yet and might accept
 patches for:
 
-   * A more efficient incremental indexer
    * A way to view/extract messages/attachments
    * Improve conversation IDs assignment
    * A way to create filters for auto-tagging messages
