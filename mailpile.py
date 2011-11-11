@@ -473,7 +473,10 @@ class MailIndex(object):
           #        conversations don't last forever.
           msg_conv = msg_mid
 
-        self.index_message(session, msg_mid, msg, msg_date, compact=False)
+        keywords = self.index_message(session, msg_mid, msg, msg_date,
+                                      compact=False,
+                                      filter_hook=self.filter_keywords)
+        tags = [k.split(':')[0] for k in keywords if k.endswith(':tag')]
 
         msg_info = [msg_mid,                   # Our index ID
                     msg_ptr,                   # Location on disk
@@ -482,7 +485,7 @@ class MailIndex(object):
                     b36(msg_date),             # Date as a UTC timestamp
                     self.hdr(msg, 'from'),     # From:
                     self.hdr(msg, 'subject'),  # Subject
-                    '',                        # No tags for now
+                    ','.join(tags),            # Initial tags
                     '',                        # No replies for now
                     msg_conv]                  # Conversation ID
 
@@ -495,6 +498,24 @@ class MailIndex(object):
       mbox.save(session)
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, mailbox_fn))
     return added
+
+  def filter_keywords(self, session, msg_mid, msg, keywords):
+    keywordmap = {}
+    msg_idx_list = [msg_mid]
+    for kw in keywords:
+      keywordmap[kw] = msg_idx_list
+
+    for fid, terms, tags, comment in session.config.get_filters():
+      if (terms == '*'
+      or  len(self.search(None, terms.split(), keywords=keywordmap)) > 0):
+        for t in tags.split():
+          kw = '%s:tag' % t[1:]
+          if t[0] == '-':
+            if kw in keywordmap: del keywordmap[kw]
+          else:
+            keywordmap[kw] = msg_idx_list
+
+    return set(keywordmap.keys())
 
   def index_message(self, session, msg_mid, msg, msg_date,
                     compact=True, filter_hook=None):
@@ -546,7 +567,7 @@ class MailIndex(object):
     keywords -= set(STOPLIST)
 
     if filter_hook:
-      filter_hook(session, msg, keywords)
+      keywords = filter_hook(session, msg_mid, msg, keywords)
 
     for word in keywords:
       try:
@@ -554,6 +575,8 @@ class MailIndex(object):
       except UnicodeDecodeError:
         # FIXME: we just ignore garbage
         pass
+
+    return keywords
 
   def get_msg_by_idx(self, msg_idx):
     try:
@@ -619,10 +642,9 @@ class MailIndex(object):
     self.CACHE = {}
 
   def search(self, session, searchterms, keywords=None):
-
     if keywords:
       def hits(term):
-        return set(keywords.get(term, None))
+        return set(keywords.get(term, []))
     else:
       def hits(term):
         session.ui.mark('Searching for %s' % term)
@@ -632,7 +654,8 @@ class MailIndex(object):
     r = []
     for term in searchterms:
       if term in STOPLIST:
-        session.ui.warning('Ignoring common word: %s' % term)
+        if session:
+          session.ui.warning('Ignoring common word: %s' % term)
         continue
 
       if term[0] in ('-', '+'):
@@ -663,12 +686,14 @@ class MailIndex(object):
         else:
           results &= set(rt)
       # Sometimes the scan gets aborted...
-      results -= set([b36(len(self.INDEX))])
+      if not keywords:
+        results -= set([b36(len(self.INDEX))])
     else:
       results = set()
 
     results = [int(r, 36) for r in results]
-    session.ui.mark('Found %d results' % len(results))
+    if session:
+      session.ui.mark('Found %d results' % len(results))
     return results
 
   def sort_results(self, session, results, how=None):
@@ -854,8 +879,8 @@ class TextUI(NullUI):
         msg_date = datetime.date.fromtimestamp(max([
                                                 int(d, 36) for d in msg_date]))
 
-        msg_tags = '<'.join([re.sub("^.*/", "", idx.config['tag'].get(t, t))
-                             for t in idx.get_tags(msg_info=msg_info)])
+        msg_tags = '<'.join(sorted([re.sub("^.*/", "", idx.config['tag'].get(t, t))
+                                    for t in idx.get_tags(msg_info=msg_info)]))
         msg_tags = msg_tags and (' <%s' % msg_tags) or '  '
 
         sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
@@ -979,9 +1004,9 @@ class ConfigManager(dict):
     filters.sort(key=lambda k: int(k, 36))
     flist = []
     for fid in filters:
-      comment = self.get('filter', {}).get(fid, '(none)')
-      terms = self.get('filter_terms', {}).get(fid, '(none)')
-      tags = self.get('filter_tags', {}).get(fid, '(none)')
+      comment = self.get('filter', {}).get(fid, '')
+      terms = unicode(self.get('filter_terms', {}).get(fid, ''))
+      tags = unicode(self.get('filter_tags', {}).get(fid, ''))
       flist.append((fid, terms, tags, comment))
     return flist
 
@@ -1110,9 +1135,13 @@ def Action_Filter_Add(session, config, flags, args):
   if not terms or (len(args) < 1):
     raise UsageError('Need search term and flags')
 
-  tags = []
+  tags, tids = [], []
   while args and args[0][0] in ('-', '+'):
-    tags.append(args.pop(0))
+    tag = args.pop(0)
+    tags.append(tag)
+    tids.append([tag[0]+t for t in config['tag']
+                 if config['tag'][t].lower() == tag[1:].lower()][0])
+
   if not args:
     args = ['Filter for %s' % ' '.join(tags)]
 
@@ -1124,7 +1153,7 @@ def Action_Filter_Add(session, config, flags, args):
   if (config.parse_set(session, ('filter:%s=%s'
                                  ) % (tag_id, ' '.join(args)))
   and config.parse_set(session, ('filter_tags:%s=%s'
-                                 ) % (tag_id, ' '.join(tags)))
+                                 ) % (tag_id, ' '.join(tids)))
   and config.parse_set(session, ('filter_terms:%s=%s'
                                  ) % (tag_id, ' '.join(terms)))):
     config.get_index(session).save(session)
@@ -1137,10 +1166,10 @@ def Action_Filter_Delete(session, config, flags, args):
   if len(args) < 1 or args[0] not in config.get('filter', {}):
     raise UsageError('Delete what?')
 
-  tag_id = args[0]
-  if (config.parse_unset(session, 'filter:%s' % tag_id)
-  and config.parse_unset(session, 'filter_tags:%s' % tag_id)
-  and config.parse_unset(session, 'filter_terms:%s' % tag_id)):
+  fid = args[0]
+  if (config.parse_unset(session, 'filter:%s' % fid)
+  and config.parse_unset(session, 'filter_tags:%s' % fid)
+  and config.parse_unset(session, 'filter_terms:%s' % fid)):
     config.save()
   else:
     raise Exception('That failed, not sure why?!')
@@ -1149,18 +1178,20 @@ def Action_Filter_Move(session, config, flags, args):
   raise Exception('Unimplemented')
 
 def Action_Filter_List(session, config, flags, args):
-  session.ui.say('  ID  Tags                   Terms             Description')
+  session.ui.say('  ID  Tags                   Terms')
   for fid, terms, tags, comment in config.get_filters():
-    session.ui.say((' %3.3s %-23.23s %-17.17s %s'
-                    ) % (fid, tags,
-                         (terms == '*') and '(all new mail)' or terms,
-                         comment))
+    session.ui.say((' %3.3s %-23.23s %-20.20s %s'
+                    ) % (fid,
+        ' '.join(['%s%s' % (t[0], config['tag'][t[1:]]) for t in tags.split()]),
+                       (terms == '*') and '(all new mail)' or terms or '(none)',
+                         comment or '(none)'))
 
 def Action_Filter(session, opt, arg):
   config = session.config
   args = arg.split()
   flags = []
-  while args and args[0] in ('add', 'delete', 'move', 'list', 'new', 'notag'):
+  while args and args[0] in ('add', 'set', 'delete', 'move', 'list',
+                             'new', 'notag'):
     flags.append(args.pop(0))
   try:
     if 'delete' in flags:
@@ -1177,7 +1208,7 @@ def Action_Filter(session, opt, arg):
     session.error(e)
     return
   session.ui.say(
-    'Usage: filter add [new] [notag] [=ID] <[+|-]tags ...> [description]\n'
+    'Usage: filter [new] [notag] [=ID] <[+|-]tags ...> [description]\n'
     '       filter delete <id>\n'
     '       filter move <id> <pos>\n'
     '       filter list')
@@ -1240,6 +1271,7 @@ def Action(session, opt, arg):
         session.ui.mark('\n')
     except KeyboardInterrupt:
       session.ui.mark('Aborted')
+      count = 1
     if count:
       idx.save(session)
     else:

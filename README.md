@@ -125,7 +125,7 @@ setting:
     ...
 
 
-### Tags and tagging ###
+### Tags and filters ###
 
 Mailpile allows you to create tags and attach any number of tags to each
 message.  For example:
@@ -152,6 +152,26 @@ of the most recent search and `all` would be all matching messages.
 
 Tags names are themselves recognized as specialized search commands in
 the `mailpile` CLI.
+
+If you want Mailpile to automatically tag (or untag) messages based on
+certain search criteria, you can use the `filter` command instead:
+
+    mailpile> addtag Lists/Diaspora
+    ...
+    mailpile> search list:diaspora
+    ...
+    mailpile> filter +lists/diaspora -inbox Diaspora Mail
+    ...
+
+This will tag all the search results and then apply the same rules as
+new messages are received.
+
+Filters are always processed in a fixed order, so even if one filter
+adds a tag, a subsequent one may remove it again.  This allows you to
+define common patterns such as "All mail goes to the Inbox and is
+tagged as new, except this mailing list and that junk mail".  Run the
+`filter` command on its own to get a brief summary of how to remove,
+edit or reorder the filters.
 
 
 ## A word on performance ##
@@ -187,9 +207,9 @@ A random laundry list of things I haven't done yet and might accept
 patches for:
 
    * A way to view/extract messages/attachments
-   * Improve conversation IDs assignment
-   * A way to create filters for auto-tagging messages
    * The ability to compose and send e-mail, and replies
+   * Delivery mode for adding a single message to the index
+   * Improve conversation IDs assignment
    * Support for other mailbox formats, maybe even POP3/IMAP indexing
    * A shell scripting interface for automation
    * An XML-RPC interface to the search engine
