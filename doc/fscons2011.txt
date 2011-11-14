@@ -1,0 +1,112 @@
+
+
+
+ #     #
+ ##   ##    ##       #    #       #####      #    #       ######
+ # # # #   #  #      #    #       #    #     #    #       #
+ #  #  #  #    #     #    #       #    #     #    #       #####
+ #     #  ######     #    #       #####      #    #       #
+ #     #  #    #     #    #       #          #    #       #
+ #     #  #    #     #    ######  #          #    ######  ######
+
+
+                           to: from:
+                        subject: email
+                      @ to: subject: list-id:
+              envelope from: to sender: spam to:
+         from: search GMail @ in-reply-to: GPG bounce
+      subscribe 419 v1agra from: envelope-to: @ SMTP hello!
+
+
+
+
+
+
+      What is FOSS hackers' favorite proprietary program?
+
+
+                        Is it GMail?
+
+
+                   Dunno, but it is mine!
+
+ 
+                             :-)
+
+
+
+
+
+
+
+    Mailpile is a fast personal searching, indexing and
+    tagging tool for e-mail.
+
+    It is fast fast fast fast!
+
+    It is new.
+
+
+                    It wants: A web interface
+                              To cure my GMail addiction
+                              <your desires here>
+
+
+
+
+
+
+
+   Mailpile is: 2 weeks old
+                1424 lines of Python
+                AGPLv3 licensed
+
+
+
+        Mailpile searches my 80093 e-mails, sorts the
+        results and displays them, in about 400ms.
+
+        Running `wc` on a small file also takes 400ms.
+
+       
+
+
+
+
+
+              Mailpile has a roadmap:           
+
+
+   :)  1. Write indexing and searching engine.
+
+   :)  2. GMail-style conversation threading, tags and filters.
+
+       3. Create an XML-RPC API, build an ugly web UI.
+
+       4. Get help!  Convince HTML/JS gurus to build a nice UI.
+
+       5. Iterate until awesome.
+
+
+
+
+
+
+
+
+                     You can help!
+
+
+
+           https://github.com/pagekite/Mailpile
+
+                   (or just google it)
+
+
+
+
+
+
+
+
+
