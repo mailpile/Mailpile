@@ -15,13 +15,24 @@ import lxml.html
 
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
-global WORD_REGEXP, STOPLIST
+global WORD_REGEXP, STOPLIST, BORING_HEADERS
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
-# FIXME: This stoplist may be a bad idea.
+
 STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
                 'has', 'http', 'in', 'is', 'it', 'mailto', 'og', 'or',
                 're', 'so', 'the', 'to', 'was'])
+
+BORING_HEADERS = ('received', 'date',
+                  'content-type', 'content-disposition', 'mime-version',
+                  'dkim-signature', 'domainkey-signature', 'received-spf')
+
+
+class UsageError(Exception):
+  pass
+
+class AccessError(Exception):
+  pass
 
 
 def b64c(b):
@@ -111,7 +122,7 @@ def cached_open(filename, mode):
     return open(filename, mode)
 
 
-##[ Enhanced mailbox classes for incremental updates ]#########################
+##[ Enhanced mailbox and message classes ]#####################################
 
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
@@ -180,6 +191,69 @@ class IncrementalMbox(mailbox.mbox):
     return '%s%s:%s' % (idx,
                         b36(long(self.get_file(toc_id)._pos)),
                         b36(self.get_msg_size(toc_id)))
+
+  def get_file_by_ptr(self, msg_ptr, from_=False):
+    start, length = msg_ptr[3:].split(':')
+    start = int(start, 36)
+    length = int(length, 36)
+    self._file.seek(start)
+    if not from_:
+      self._file.readline()
+    return mailbox._PartialFile(self._file, self._file.tell(), start+length)
+
+
+class Email(object):
+  """This is a lazy-loading object representing a single email."""
+
+  def __init__(self, idx, msg_idx):
+    self.index = idx
+    self.config = idx.config
+    self.msg_idx = msg_idx
+    self.msg_info = None
+    self.msg_parsed = None
+
+  def get_msg_info(self, field):
+    if not self.msg_info:
+      self.msg_info = self.index.get_msg_by_idx(self.msg_idx)
+    return self.msg_info[field]
+
+  def get_file(self):
+    for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
+      try:
+        mbox = self.config.open_mailbox(None, msg_ptr[:3])
+        return mbox.get_file_by_ptr(msg_ptr, from_=True)
+      except (IOError, OSError):
+        pass
+    return None
+
+  def get_msg(self):
+    if not self.msg_parsed:
+      fd = self.get_file()
+      if fd:
+        self.msg_parsed = email.parser.Parser().parse(fd)
+    if not self.msg_parsed:
+      IndexError('Message not found?')
+    return self.msg_parsed
+
+  def is_thread(self):
+    return (0 < len(self.get_msg_info(self.index.MSG_REPLIES)))
+
+  def get(self, field, default=None):
+    """Get one (or all) indexed fields for this mail."""
+    field = field.lower()
+    if field == 'subject':
+      return self.get_msg_info(self.index.MSG_SUBJECT)
+    elif field == 'from':
+      return self.get_msg_info(self.index.MSG_FROM)
+    else:
+      return self.get_msg().get(field, default)
+
+  def get_body_text(self):
+    for part in self.get_msg().walk():
+      charset = part.get_charset() or 'iso-8859-1'
+      if part.get_content_type() == 'text/plain':
+        return part.get_payload(None, True).decode(charset)
+    return ''
 
 
 ##[ The search and index code itself ]#########################################
@@ -474,7 +548,7 @@ class MailIndex(object):
     self.set_msg_by_idx(msg_idx, msg_info)
 
   def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
-    mbox = mailbox_opener(session, idx, mailbox_fn)
+    mbox = mailbox_opener(session, idx)
     if mbox.last_parsed+1 == len(mbox): return 0
 
     if len(self.PTRS.keys()) == 0:
@@ -583,7 +657,7 @@ class MailIndex(object):
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
       if part.get_content_type() == 'text/plain':
-        textpart = part.get_payload(None, True)
+        textpart = part.get_payload(None, True).decode(charset)
       elif part.get_content_type() == 'text/html':
         payload = part.get_payload(None, True).decode(charset)
         if payload:
@@ -619,7 +693,7 @@ class MailIndex(object):
 
     for key in msg.keys():
       key_lower = key.lower()
-      if key_lower not in ('received', 'date'):
+      if key_lower not in BORING_HEADERS:
         words = set(re.findall(WORD_REGEXP, self.hdr(msg, key).lower()))
         words -= STOPLIST
         keywords |= set(['%s:%s' % (t, key_lower) for t in words])
@@ -877,8 +951,16 @@ class NullUI(object):
                      (terms == '*') and '(all new mail)' or terms or '(none)',
                      comment or '(none)'))
 
-  def print_message(self, msg, raw=False, fd=sys.stdout):
-    pass
+  def display_messages(self, emails, raw=False, sep='', fd=sys.stdout):
+    for email in emails:
+      self.say(sep, fd=fd)
+      if raw:
+        for line in email.get_file().readlines():
+          self.say(line, newline='', fd=fd)
+      else:
+        for hdr in ('Date', 'To', 'From', 'Subject'):
+          self.say('%s: %s' % (hdr, email.get(hdr, '(unknown)')), fd=fd)
+        self.say('\n%s' % email.get_body_text(), fd=fd)
 
 
 class TextUI(NullUI):
@@ -982,15 +1064,25 @@ class TextUI(NullUI):
                      ) % (start+1, start+count, len(results)))
     return (start, count)
 
-
-
-class UsageError(Exception):
-  pass
+  def display_messages(self, emails, raw=False, sep='', fd=None):
+    if not fd:
+      viewer = subprocess.Popen(['less'], stdin=subprocess.PIPE)
+      fd = viewer.stdin
+    else:
+      viewer = None
+    try:
+      NullUI.display_messages(self, emails, raw=raw, sep=('_' * 80), fd=fd)
+    except IOError:
+      pass
+    if viewer:
+      fd.close()
+      viewer.wait()
 
 
 class ConfigManager(dict):
 
   index = None
+  MBOX_CACHE = {}
 
   INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
@@ -1083,18 +1175,26 @@ class ConfigManager(dict):
     else:
       return b36(1+max([int(k, 36) for k in self[what]]))
 
-  def open_mailbox(self, session, mailbox_id, mailbox_fn):
+  def open_mailbox(self, session, mailbox_id):
     pfn = os.path.join(self.workdir(), 'pickled-mailbox.%s' % mailbox_id)
-    try:
-      session.ui.mark(('%s: Updating: %s'
-                       ) % (mailbox_id, mailbox_fn))
-      mbox = cPickle.load(open(pfn, 'r'))
-    except (IOError, EOFError):
-      session.ui.mark(('%s: Opening: %s (may take a while)'
-                       ) % (mailbox_id, mailbox_fn))
-      mbox = IncrementalMbox(mailbox_fn)
-      mbox.save(session, to=pfn)
-    return mbox
+    for mid, mailbox_fn in self.get_mailboxes():
+      if mid == mailbox_id:
+        if mid not in self.MBOX_CACHE:
+          try:
+            if session:
+              session.ui.mark(('%s: Updating: %s'
+                               ) % (mailbox_id, mailbox_fn))
+            self.MBOX_CACHE[mid] = cPickle.load(open(pfn, 'r'))
+          except (IOError, EOFError):
+            if session:
+              session.ui.mark(('%s: Opening: %s (may take a while)'
+                               ) % (mailbox_id, mailbox_fn))
+            mbox = IncrementalMbox(mailbox_fn)
+            mbox.save(session, to=pfn)
+            self.MBOX_CACHE[mid] = mbox
+        if mid in self.MBOX_CACHE:
+          return self.MBOX_CACHE[mid]
+    raise IndexError('No such mailbox: %s' % mailbox_id)
 
   def get_filters(self):
     filters = self.get('filter', {}).keys()
@@ -1173,7 +1273,34 @@ COMMANDS = {
   't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        34),
   'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
   'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
+  'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          35),
 }
+def Choose_Messages(session, words):
+  msg_ids = set()
+  for what in words:
+    if what.lower() == 'these':
+      b, c = session.displayed
+      msg_ids |= set(session.results[b:b+c])
+    elif what.lower() == 'all':
+      msg_ids |= set(session.results)
+    elif what.startswith('='):
+      try:
+        msg_ids.add(session.results[int(what[1:], 36)])
+      except:
+        session.ui.warning('What message is %s?' % (what, ))
+    elif '-' in what:
+      try:
+        b, e = what.split('-')
+        msg_ids |= set(session.results[int(b)-1:int(e)])
+      except:
+        session.ui.warning('What message is %s?' % (what, ))
+    else:
+      try:
+        msg_ids.add(session.results[int(what)-1])
+      except:
+        session.ui.warning('What message is %s?' % (what, ))
+  return msg_ids
+
 def Action_Tag(session, opt, arg, save=True):
   idx = session.config.get_index(session)
   session.ui.reset_marks()
@@ -1184,30 +1311,7 @@ def Action_Tag(session, opt, arg, save=True):
     tag_id = [t for t in session.config['tag']
               if session.config['tag'][t].lower() == tag.lower()][0]
 
-    msg_ids = set()
-    for what in words[1:]:
-      if what.lower() == 'these':
-        b, c = session.displayed
-        msg_ids |= set(session.results[b:b+c])
-      elif what.lower() == 'all':
-        msg_ids |= set(session.results)
-      elif what.startswith('='):
-        try:
-          msg_ids.add(session.results[int(what[1:], 36)])
-        except:
-          session.ui.warning('What message is %s?' % (what, ))
-      elif '-' in what:
-        try:
-          b, e = what.split('-')
-          msg_ids |= set(session.results[int(b)-1:int(e)])
-        except:
-          session.ui.warning('What message is %s?' % (what, ))
-      else:
-        try:
-          msg_ids.add(session.results[int(what)-1])
-        except:
-          session.ui.warning('What message is %s?' % (what, ))
-
+    msg_ids = Choose_Messages(session, words[1:])
     if op == '-':
       idx.remove_tag(session, tag_id, msg_idxs=msg_ids)
     else:
@@ -1306,7 +1410,8 @@ def Action(session, opt, arg):
   num_results = config.get('num_results', 20)
 
   if not opt or opt in ('h', 'help'):
-    session.ui.print_help(COMMANDS, session.config['tag'].values())
+    session.ui.print_help(COMMANDS,
+                          session.config.get('tag', {}).values())
 
   elif opt in ('A', 'add'):
     if os.path.exists(arg):
@@ -1425,9 +1530,19 @@ def Action(session, opt, arg):
                                                    num=num_results)
     session.ui.reset_marks()
 
+  elif opt in ('v', 'view'):
+    args = arg.split()
+    if args[0] == 'raw':
+      raw = args.pop(0)
+    else:
+      raw = False
+    idx = config.get_index(session)
+    emails = [Email(idx, i) for i in Choose_Messages(session, args)]
+    session.ui.display_messages(emails, raw=raw)
+    session.ui.reset_marks()
+
   else:
     raise UsageError('Unknown command: %s' % opt)
-
 
 
 def Interact(session):
