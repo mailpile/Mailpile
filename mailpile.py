@@ -10,7 +10,7 @@ later version.
 """
 ###############################################################################
 import codecs, datetime, email.parser, getopt, hashlib, locale, mailbox
-import os, cPickle, random, re, rfc822, struct, sys, time
+import os, cPickle, random, re, rfc822, struct, subprocess, sys, time
 import lxml.html
 
 
@@ -46,6 +46,30 @@ def b36(number):
     number, i = divmod(number, 36)
     base36 = alphabet[i] + base36
   return base36 or alphabet[0]
+
+GPG_BEGIN_MESSAGE = '-----BEGIN PGP MESSAGE'
+GPG_END_MESSAGE = '-----END PGP MESSAGE'
+def decrypt_gpg(lines, fd):
+  for line in fd:
+    lines.append(line)
+    if line.startswith(GPG_END_MESSAGE):
+      break
+
+  gpg = subprocess.Popen(['gpg', '--batch'],
+                         stdin=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
+
+  return gpg.communicate(input=''.join(lines))[0].splitlines(True)
+
+def gpg_open(filename, recipient, mode):
+  fd = open(filename, mode)
+  if recipient and ('a' in mode or 'w' in mode):
+    gpg = subprocess.Popen(['gpg', '--batch', '-aer', recipient],
+                           stdin=subprocess.PIPE,
+                           stdout=fd)
+    return gpg.stdin
+  return fd
 
 
 # Indexing messages is an append-heavy operation, and some files are
@@ -261,18 +285,29 @@ class PostingList(object):
     self.WORDS = {self.sig: set()}
     self.load()
 
+  def parse_line(self, line):
+    words = line.strip().split('\t')
+    if len(words) > 1:
+      if words[0] not in self.WORDS: self.WORDS[words[0]] = set()
+      self.WORDS[words[0]] |= set(words[1:])
+
   def load(self):
     self.size = 0
     fd, sig = PostingList.GetFile(self.session, self.sig)
     self.filename = sig
     if fd:
-      for line in fd:
-        self.size += len(line)
-        words = line.strip().split('\t')
-        if len(words) > 1:
-          if words[0] not in self.WORDS: self.WORDS[words[0]] = set()
-          self.WORDS[words[0]] |= set(words[1:])
-      fd.close()
+      try:
+        for line in fd:
+          self.size += len(line)
+          if line.startswith(GPG_BEGIN_MESSAGE):
+            for line in decrypt_gpg([line], fd):
+              self.parse_line(line)
+          else:
+            self.parse_line(line)
+      except ValueError:
+        pass
+      finally:
+        fd.close()
 
   def fmt_file(self, prefix):
     output = []
@@ -365,10 +400,19 @@ class MailIndex(object):
     session.ui.mark('Loading metadata index...')
     try:
       fd = open(self.config.mailindex_file(), 'r')
-      for line in fd:
-        line = line.strip()
-        if line and not line.startswith('#'):
-          self.INDEX.append(line)
+      try:
+        for line in fd:
+          if line.startswith(GPG_BEGIN_MESSAGE):
+            for line in decrypt_gpg([line], fd):
+              line = line.strip()
+              if line and not line.startswith('#'):
+                self.INDEX.append(line)
+          else:
+            line = line.strip()
+            if line and not line.startswith('#'):
+              self.INDEX.append(line)
+      except ValueError:
+        pass
       fd.close()
     except IOError:
       session.ui.warning(('Metadata index not found: %s'
@@ -377,7 +421,8 @@ class MailIndex(object):
 
   def save(self, session):
     session.ui.mark("Saving metadata index...")
-    fd = open(self.config.mailindex_file(), 'w')
+    fd = gpg_open(self.config.mailindex_file(),
+                  self.config.get('gpg_recipient'), 'w')
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
     for item in self.INDEX:
@@ -931,8 +976,7 @@ class TextUI(NullUI):
                        msg_date.year, msg_date.month, msg_date.day,
                        self.compact(self.names(msg_from), 25),
                        msg_subj, msg_tags))
-      except:
-        raise
+      except (IndexError, ValueError):
         self.say('-- (not in index: %s)' % mid)
     session.ui.mark(('Listed %d-%d of %d results'
                      ) % (start+1, start+count, len(results)))
@@ -949,7 +993,8 @@ class ConfigManager(dict):
   index = None
 
   INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size')
-  STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order')
+  STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
+             'gpg_recipient')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags')
 
   def workdir(self):
@@ -986,6 +1031,15 @@ class ConfigManager(dict):
     session.ui.print_key(key, self)
     return True
 
+  def parse_config(self, session, line):
+    line = line.strip()
+    if line.startswith('#') or not line:
+      pass
+    elif '=' in line:
+      self.parse_set(session, line)
+    else:
+      raise UsageError('Bad line in config: %s' % line)
+
   def load(self, session):
     if not os.path.exists(self.workdir()):
       session.ui.notify('Creating: %s' % self.workdir())
@@ -996,14 +1050,15 @@ class ConfigManager(dict):
         if key in self: del self[key]
       try:
         fd = open(self.conffile(), 'r')
-        for line in fd:
-          line = line.strip()
-          if line.startswith('#') or not line:
-            pass
-          elif '=' in line:
-            self.parse_set(session, line)
-          else:
-            raise UsageError('Bad line in config: %s' % line)
+        try:
+          for line in fd:
+            if line.startswith(GPG_BEGIN_MESSAGE):
+              for line in decrypt_gpg([line], fd):
+                self.parse_config(session, line)
+            else:
+              self.parse_config(session, line)
+        except ValueError:
+          pass
         fd.close()
       except IOError:
         pass
@@ -1012,7 +1067,7 @@ class ConfigManager(dict):
     if not os.path.exists(self.workdir()):
       session.ui.notify('Creating: %s' % self.workdir())
       os.mkdir(self.workdir())
-    fd = open(self.conffile(), 'w')
+    fd = gpg_open(self.conffile(), self.get('gpg_recipient'), 'w')
     fd.write('# Mailpile autogenerated configuration file\n')
     for key in sorted(self.keys()):
       if key in self.DICTS:
