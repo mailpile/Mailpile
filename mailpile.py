@@ -19,8 +19,9 @@ global WORD_REGEXP, STOPLIST
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
 # FIXME: This stoplist may be a bad idea.
-STOPLIST = ('an', 'and', 'are', 'as', 'at', 'by', 'for', 'from', 'has', 'in',
-            'is', 'og', 'or', 're', 'so', 'the', 'to', 'was')
+STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
+                'has', 'http', 'in', 'is', 'it', 'mailto', 'og', 'or',
+                're', 'so', 'the', 'to', 'was'])
 
 
 def b64c(b):
@@ -32,7 +33,8 @@ def sha1b64(s):
   return h.digest().encode('base64')
 
 def strhash(s, length):
-  s2 = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '', s.lower())
+  s2 = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '',
+              s.lower())[:(length-4)]
   while len(s2) < length:
     s2 += b64c(sha1b64(s)).lower()
   return s2[:length]
@@ -473,9 +475,9 @@ class MailIndex(object):
           #        conversations don't last forever.
           msg_conv = msg_mid
 
-        keywords = self.index_message(session, msg_mid, msg, msg_date,
+        keywords = self.index_message(session, msg_mid, msg_id, msg, msg_date,
                                       compact=False,
-                                      filter_hook=self.filter_keywords)
+                                      filter_hooks=[self.filter_keywords])
         tags = [k.split(':')[0] for k in keywords if k.endswith(':tag')]
 
         msg_info = [msg_mid,                   # Our index ID
@@ -517,8 +519,8 @@ class MailIndex(object):
 
     return set(keywordmap.keys())
 
-  def index_message(self, session, msg_mid, msg, msg_date,
-                    compact=True, filter_hook=None):
+  def index_message(self, session, msg_mid, msg_id, msg, msg_date,
+                    compact=True, filter_hooks=[]):
     keywords = set()
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
@@ -552,22 +554,22 @@ class MailIndex(object):
     keywords.add('%s:month' % mdate.month)
     keywords.add('%s:day' % mdate.day)
     keywords.add('%s-%s-%s:date' % (mdate.year, mdate.month, mdate.day))
+    keywords.add('%s:id' % msg_id)
+    keywords |= set(re.findall(WORD_REGEXP, self.hdr(msg, 'subject').lower()))
+    keywords |= set(re.findall(WORD_REGEXP, self.hdr(msg, 'from').lower()))
+    keywords -= STOPLIST
 
-    msg_subject = self.hdr(msg, 'subject').lower()
-    msg_list = self.hdr(msg, 'list-id').lower()
-    msg_from = self.hdr(msg, 'from').lower()
-    msg_to = self.hdr(msg, 'to').lower()
+    for key in msg.keys():
+      key_lower = key.lower()
+      if key_lower not in ('received', 'date'):
+        words = set(re.findall(WORD_REGEXP, self.hdr(msg, key).lower()))
+        words -= STOPLIST
+        keywords |= set(['%s:%s' % (t, key_lower) for t in words])
+        if 'list' in key_lower:
+          keywords |= set(['%s:list' % t for t in words])
 
-    keywords |= set(re.findall(WORD_REGEXP, msg_subject))
-    keywords |= set(re.findall(WORD_REGEXP, msg_from))
-    keywords |= set([t+':subject' for t in re.findall(WORD_REGEXP, msg_subject)])
-    keywords |= set([t+':list' for t in re.findall(WORD_REGEXP, msg_list)])
-    keywords |= set([t+':from' for t in re.findall(WORD_REGEXP, msg_from)])
-    keywords |= set([t+':to' for t in re.findall(WORD_REGEXP, msg_to)])
-    keywords -= set(STOPLIST)
-
-    if filter_hook:
-      keywords = filter_hook(session, msg_mid, msg, keywords)
+    for hook in filter_hooks:
+      keywords = hook(session, msg_mid, msg, keywords)
 
     for word in keywords:
       try:
