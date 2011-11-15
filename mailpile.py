@@ -90,12 +90,14 @@ def cached_open(filename, mode):
 ##[ Enhanced mailbox classes for incremental updates ]#########################
 
 class IncrementalMbox(mailbox.mbox):
+  """A mbox class that supports pickling and a few mailpile specifics."""
 
   last_parsed = 0
   save_to = None
 
   def __getstate__(self):
     odict = self.__dict__.copy()
+    # Pickle can't handle file objects.
     del odict['_file']
     return odict
 
@@ -157,6 +159,7 @@ class IncrementalMbox(mailbox.mbox):
 ##[ The search and index code itself ]#########################################
 
 class PostingList(object):
+  """A posting list is a map of search terms to message IDs."""
 
   MAX_SIZE = 60  # perftest gives: 75% below 500ms, 50% below 100ms
   HASH_LEN = 12
@@ -170,8 +173,8 @@ class PostingList(object):
 
     # Pass 1: Compact all files that are 90% or more of our target size
     for fn in sorted(os.listdir(postinglist_dir)):
-      if (force or
-          os.path.getsize(os.path.join(postinglist_dir, fn)) >
+      if (force
+      or  os.path.getsize(os.path.join(postinglist_dir, fn)) >
                                                         900*postinglist_kb):
         session.ui.mark('Pass 1: Compacting >%s<' % fn)
         # FIXME: Remove invalid and deleted messages from posting lists.
@@ -211,9 +214,9 @@ class PostingList(object):
     sig = cls.WordSig(word)
     fd, fn = cls.GetFile(session, sig, mode='a')
     if (compact
-        and (os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
+    and (os.path.getsize(os.path.join(config.postinglist_dir(), fn)) >
              (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*6))
-        and (random.randint(0, 50) == 1)):
+    and (random.randint(0, 50) == 1)):
       # This will compact the files and split out hot-spots, but we only bother
       # "once in a while" when the files are "big".
       fd.close()
@@ -281,9 +284,9 @@ class PostingList(object):
   def save(self, prefix=None, compact=True, mode='w'):
     prefix = prefix or self.filename
     output = self.fmt_file(prefix)
-    while (compact and
-           len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE)
-           and len(prefix) < self.HASH_LEN):
+    while (compact
+    and    len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE)
+    and    len(prefix) < self.HASH_LEN):
       biggest = self.sig
       for word in self.WORDS:
         if len(self.WORDS[word]) > len(self.WORDS[biggest]):
@@ -772,7 +775,7 @@ class NullUI(object):
   def print_intro(self, help=False):
     self.say(ABOUT+'\nFor instructions type `help`, press <CTRL-D> to quit.\n')
 
-  def print_help(self, commands, tags):
+  def print_help(self, commands, tags=None):
     self.say('Commands:')
     last_rank = None
     cmds = commands.keys()
@@ -794,6 +797,18 @@ class NullUI(object):
       for i in range(0, len(tags)):
         self.say('%-18.18s ' % tags[i], newline=(i%4==3) and '\n  ' or '')
     self.say('\n')
+
+  def print_filters(self, config):
+    self.say('  ID  Tags                   Terms')
+    for fid, terms, tags, comment in config.get_filters():
+      self.say((' %3.3s %-23.23s %-20.20s %s'
+                ) % (fid,
+        ' '.join(['%s%s' % (t[0], config['tag'][t[1:]]) for t in tags.split()]),
+                     (terms == '*') and '(all new mail)' or terms or '(none)',
+                     comment or '(none)'))
+
+  def print_message(self, msg, raw=False, fd=sys.stdout):
+    pass
 
 
 class TextUI(NullUI):
@@ -1179,15 +1194,6 @@ def Action_Filter_Delete(session, config, flags, args):
 def Action_Filter_Move(session, config, flags, args):
   raise Exception('Unimplemented')
 
-def Action_Filter_List(session, config, flags, args):
-  session.ui.say('  ID  Tags                   Terms')
-  for fid, terms, tags, comment in config.get_filters():
-    session.ui.say((' %3.3s %-23.23s %-20.20s %s'
-                    ) % (fid,
-        ' '.join(['%s%s' % (t[0], config['tag'][t[1:]]) for t in tags.split()]),
-                       (terms == '*') and '(all new mail)' or terms or '(none)',
-                         comment or '(none)'))
-
 def Action_Filter(session, opt, arg):
   config = session.config
   args = arg.split()
@@ -1201,7 +1207,7 @@ def Action_Filter(session, opt, arg):
     elif 'move' in flags:
       return Action_Filter_Move(session, config, flags, args)
     elif 'list' in flags:
-      return Action_Filter_List(session, config, flags, args)
+      return session.ui.print_filters(config)
     else:
       return Action_Filter_Add(session, config, flags, args)
   except UsageError:
