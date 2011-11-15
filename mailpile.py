@@ -70,7 +70,7 @@ def cached_open(filename, mode):
         flush_append_cache(count=1)
       try:
         APPEND_FD_CACHE[filename] = open(filename, 'a')
-      except:
+      except (IOError, OSError):
         # Too many open files?  Close a bunch and try again.
         flush_append_cache(ratio=0.3)
         APPEND_FD_CACHE[filename] = open(filename, 'a')
@@ -238,7 +238,7 @@ class PostingList(object):
       fn = os.path.join(session.config.postinglist_dir(), sig)
       try:
         if os.path.exists(fn): return (cached_open(fn, mode), sig)
-      except:
+      except (IOError, OSError):
         pass
 
       if len(sig) > 1:
@@ -400,11 +400,11 @@ class MailIndex(object):
     try:
       return (' '.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
               ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-    except:
+    except UnicodeDecodeError:
       try:
         return (' '.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
                 ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-      except:
+      except UnicodeDecodeError:
         session.ui.warning('Boom: %s/%s' % (msg[name], decoded))
         return ''
 
@@ -450,7 +450,7 @@ class MailIndex(object):
         try:
           msg_date = int(rfc822.mktime_tz(
                                    rfc822.parsedate_tz(self.hdr(msg, 'date'))))
-        except:
+        except ValueError:
           session.ui.warning('Date parsing: %s' % (sys.exc_info(), ))
           # This is a hack: We assume the messages in the mailbox are in
           # chronological order and just add 1 second to the date of the last
@@ -470,7 +470,7 @@ class MailIndex(object):
             parent[self.MSG_REPLIES] += '%s,' % msg_mid
             self.INDEX[int(msg_conv, 36)] = self.m2l(parent)
             break
-          except:
+          except (KeyError, ValueError, IndexError):
             pass
         if not msg_conv:
           # FIXME: If subject implies this is a reply, scan back a couple
