@@ -19,6 +19,10 @@ Backing up is the obvious solution (and not necessarily Mailpile's problem),
 but it would be interesting to explore the option of integrating with
 Tahoe-LAFS to provide "out of the box" secure distributed storage.
 
+... but it would probably be too slow.  An alternative, now that mailpile
+knows how to GPG encrypt/decrypt things, is to add unhosted support or
+webdav.  That might get us Tahoe-LAFS for free anyway?
+
 
 ## Remote sources and sync
 
