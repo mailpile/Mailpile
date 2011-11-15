@@ -70,8 +70,11 @@ def decrypt_gpg(lines, fd):
                          stdin=subprocess.PIPE,
                          stderr=subprocess.PIPE,
                          stdout=subprocess.PIPE)
+  lines = gpg.communicate(input=''.join(lines))[0].splitlines(True)
+  if gpg.wait() != 0:
+    raise AccessError("GPG was unable to decrypt the data.")
 
-  return gpg.communicate(input=''.join(lines))[0].splitlines(True)
+  return  lines
 
 def gpg_open(filename, recipient, mode):
   fd = open(filename, mode)
@@ -1575,9 +1578,13 @@ if __name__ == "__main__":
   re.UNICODE = 1
   re.LOCALE = 1
 
-  session = Session(ConfigManager())
-  session.config.load(session)
-  session.ui = TextUI()
+  try:
+    session = Session(ConfigManager())
+    session.config.load(session)
+    session.ui = TextUI()
+  except AccessError, e:
+    sys.stderr.write('Access denied: %s\n' % e)
+    sys.exit(1)
 
   # Set globals from config here ...
   APPEND_FD_CACHE_SIZE = session.config.get('fd_cache_size',
