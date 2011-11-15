@@ -28,7 +28,7 @@ been edited/moved.
 
 It silently ignores duplicates found in other mailboxes, which is probably
 not great behavior, instead it should probably track all locations for a
-message.
+message (update: this has been fixed).
 
 This in turn implies a backup/sync option: Mailpile could enforce a policy
 of all messages always existing in multiple mailboxes OR a simpler policy

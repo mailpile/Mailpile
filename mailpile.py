@@ -149,11 +149,13 @@ class IncrementalMbox(mailbox.mbox):
       cPickle.dump(self, fd)
       fd.close()
 
-  def get_msg_ptr(self, idx, toc_id):
-    return '%s%s' % (idx, b36(long(self.get_file(toc_id)._pos)))
-
   def get_msg_size(self, toc_id):
     return self._toc[toc_id][1] - self._toc[toc_id][0]
+
+  def get_msg_ptr(self, idx, toc_id):
+    return '%s%s:%s' % (idx,
+                        b36(long(self.get_file(toc_id)._pos)),
+                        b36(self.get_msg_size(toc_id)))
 
 
 ##[ The search and index code itself ]#########################################
@@ -333,8 +335,8 @@ class MailIndex(object):
   """This is a lazily parsing object representing a mailpile index."""
 
   MSG_IDX     = 0
-  MSG_PTR     = 1
-  MSG_SIZE    = 2
+  MSG_PTRS    = 1
+  MSG_UNUSED  = 2  # Was size, now reserved for other fun things
   MSG_ID      = 3
   MSG_DATE    = 4
   MSG_FROM    = 5
@@ -390,8 +392,9 @@ class MailIndex(object):
     for offset in range(0, len(self.INDEX)):
       message = self.l2m(self.INDEX[offset])
       if len(message) > self.MSG_CONV_ID:
-        self.PTRS[message[self.MSG_PTR]] = offset
         self.MSGIDS[message[self.MSG_ID]] = offset
+        for msg_ptr in message[self.MSG_PTRS].split(','):
+          self.PTRS[msg_ptr] = offset
       else:
         session.ui.warning('Bogus line: %s' % line)
 
@@ -407,6 +410,23 @@ class MailIndex(object):
       except UnicodeDecodeError:
         session.ui.warning('Boom: %s/%s' % (msg[name], decoded))
         return ''
+
+  def update_location(self, session, msg_idx, msg_ptr):
+    msg_info = self.get_msg_by_idx(msg_idx)
+    msg_ptrs = msg_info[self.MSG_PTRS].split(',')
+    self.PTRS[msg_ptr] = msg_idx
+
+    # If message was seen in this mailbox before, update the location
+    for i in range(0, len(msg_ptrs)):
+      if (msg_ptrs[i][:3] == msg_ptr[:3]):
+        msg_ptrs[i] = msg_ptr
+        msg_ptr = None
+        break
+
+    # Otherwise, this is a new mailbox, record this sighting as well!
+    if msg_ptr: msg_ptrs.append(msg_ptr)
+    msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
+    self.set_msg_by_idx(msg_idx, msg_info)
 
   def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
     mbox = mailbox_opener(session, idx, mailbox_fn)
@@ -433,16 +453,8 @@ class MailIndex(object):
       msg = p.parse(mbox.get_file(i))
       msg_id = b64c(sha1b64((self.hdr(msg, 'message-id') or msg_ptr).strip()))
       if msg_id in self.MSGIDS:
-        msg_info = self.l2m(self.INDEX[self.MSGIDS[msg_id]])
-        old_ptr = msg_info[self.MSG_PTR]
-        if (old_ptr != msg_ptr) and (old_ptr[:3] == msg_ptr[:3]):
-          # Just update location, if it has moved within the same mailbox - if
-          # the same message is present in multiple mailboxes, just ignore it.
-          msg_info[self.MSG_PTR] = msg_ptr
-          msg_info[self.MSG_SIZE] = b36(mbox.get_msg_size(i))
-          self.INDEX[self.MSGIDS[msg_id]] = self.m2l(msg_info)
-          self.PTRS[msg_ptr] = self.MSGIDS[msg_id]
-          added += 1
+        self.update_location(session, self.MSGIDS[msg_id], msg_ptr)
+        added += 1
       else:
         # Add new message!
         msg_mid = b36(len(self.INDEX))
@@ -464,11 +476,11 @@ class MailIndex(object):
           try:
             # Get conversation ID ...
             ref_mid = self.MSGIDS[ref_id]
-            msg_conv = self.l2m(self.INDEX[ref_mid])[self.MSG_CONV_ID]
+            msg_conv = self.get_msg_by_idx(ref_mid)[self.MSG_CONV_ID]
             # Update root of conversation thread
-            parent = self.l2m(self.INDEX[int(msg_conv, 36)])
+            parent = self.get_msg_by_idx(int(msg_conv, 36))
             parent[self.MSG_REPLIES] += '%s,' % msg_mid
-            self.INDEX[int(msg_conv, 36)] = self.m2l(parent)
+            self.set_msg_by_idx(int(msg_conv, 36), parent)
             break
           except (KeyError, ValueError, IndexError):
             pass
@@ -483,19 +495,17 @@ class MailIndex(object):
                                       filter_hooks=[self.filter_keywords])
         tags = [k.split(':')[0] for k in keywords if k.endswith(':tag')]
 
-        msg_info = [msg_mid,                   # Our index ID
-                    msg_ptr,                   # Location on disk
-                    b36(mbox.get_msg_size(i)), # Size?
-                    msg_id,                    # Message-ID
-                    b36(msg_date),             # Date as a UTC timestamp
-                    self.hdr(msg, 'from'),     # From:
-                    self.hdr(msg, 'subject'),  # Subject
-                    ','.join(tags),            # Initial tags
-                    '',                        # No replies for now
-                    msg_conv]                  # Conversation ID
-
-        self.PTRS[msg_ptr] = self.MSGIDS[msg_id] = len(self.INDEX)
-        self.INDEX.append(self.m2l(msg_info))
+        self.set_msg_by_idx(len(self.INDEX),
+                            [msg_mid,                   # Our index ID
+                             msg_ptr,                   # Location on disk
+                             '',                        # UNUSED
+                             msg_id,                    # Message-ID
+                             b36(msg_date),             # Date as a UTC timestamp
+                             self.hdr(msg, 'from'),     # From:
+                             self.hdr(msg, 'subject'),  # Subject
+                             ','.join(tags),            # Initial tags
+                             '',                        # No replies for now
+                             msg_conv])                 # Conversation ID
         added += 1
 
     if added:
@@ -591,6 +601,21 @@ class MailIndex(object):
     except IndexError:
       return (None, None, None, None, b36(0),
               '(not in index)', '(not in index)', None, None)
+
+  def set_msg_by_idx(self, msg_idx, msg_info):
+    if msg_idx < len(self.INDEX):
+      self.INDEX[msg_idx] = self.m2l(msg_info)
+    elif msg_idx == len(self.INDEX):
+      self.INDEX.append(self.m2l(msg_info))
+    else:
+      raise IndexError('%s is outside the index' % msg_idx)
+
+    if msg_idx in self.CACHE:
+      del(self.CACHE[msg_idx])
+
+    self.MSGIDS[msg_info[self.MSG_ID]] = msg_idx
+    for msg_ptr in msg_info[self.MSG_PTRS]:
+      self.PTRS[msg_ptr] = msg_idx
 
   def get_conversation(self, msg_idx):
     return self.get_msg_by_idx(
