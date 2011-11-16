@@ -16,7 +16,7 @@ should probably check back in a couple of weeks.
 
 Mailpile is developed on a Debian 6 system, running:
 
-   * Python 2.5
+   * Python 2.6
    * python-lxml 2.2.8
 
 It might work with other versions. :-)
