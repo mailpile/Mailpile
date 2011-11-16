@@ -262,7 +262,7 @@ We are roughly at milestone 2, with work beginning on 3.
 
 ## Credits and License ##
 
-Bjarni R. Einarsson <http://bre.klaki.net/> created this!  If you think
+Bjarni R. Einarsson (<http://bre.klaki.net/>) created this!  If you think
 it's neat, you should also check out PageKite: <https://pagekite.net/>
 
 The GMail guys get mad props for creating the best webmail service out
@@ -271,8 +271,8 @@ inspired me to start working on this.
 
 Contributors:
 
-   * Bjarni R. Einasson <http://bre.klaki.net/>
-   * Smari McCarthy <http://www.smarimccarthy.com/>
+   * Bjarni R. Einasson (<http://bre.klaki.net/>)
+   * Smari McCarthy (<http://www.smarimccarthy.com/>)
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the  GNU  Affero General Public License as published
