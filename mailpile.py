@@ -94,7 +94,7 @@ APPEND_FD_CACHE_SIZE = 500
 APPEND_FD_CACHE_ORDER = []
 def flush_append_cache(ratio=1, count=None):
   global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER
-  drop = count or ratio*len(APPEND_FD_CACHE)
+  drop = count or int(ratio*len(APPEND_FD_CACHE_ORDER))
   for fn in APPEND_FD_CACHE_ORDER[:drop]:
     APPEND_FD_CACHE[fn].close()
     del APPEND_FD_CACHE[fn]
@@ -120,8 +120,11 @@ def cached_open(filename, mode):
   else:
     if filename in APPEND_FD_CACHE:
       APPEND_FD_CACHE[filename].close()
-      APPEND_FD_CACHE_ORDER.remove(filename)
       del APPEND_FD_CACHE[filename]
+      try:
+        APPEND_FD_CACHE_ORDER.remove(filename)
+      except ValueError:
+        pass
     return open(filename, mode)
 
 
@@ -284,6 +287,7 @@ class PostingList(object):
         cls(session, fn, sig=fn).save()
 
     # Pass 2: While mergable pair exists: merge them!
+    flush_append_cache()
     files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
     files.sort(key=lambda a: -len(a))
     for fn in files:
@@ -656,7 +660,7 @@ class MailIndex(object):
 
   def index_message(self, session, msg_mid, msg_id, msg, msg_date,
                     compact=True, filter_hooks=[]):
-    keywords = set()
+    keywords = []
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
       if part.get_content_type() == 'text/plain':
@@ -676,32 +680,34 @@ class MailIndex(object):
 
       att = part.get_filename()
       if att:
-        keywords.add('attachment:has')
-        keywords |= set([t+':att' for t in re.findall(WORD_REGEXP, att.lower())])
+        keywords.append('attachment:has')
+        keywords.extend([t+':att' for t in re.findall(WORD_REGEXP, att.lower())])
         textpart = (textpart or '') + ' ' + att
 
       if textpart:
         # FIXME: Does this lowercase non-ASCII characters correctly?
-        keywords |= set(re.findall(WORD_REGEXP, textpart.lower()))
+        keywords.extend(re.findall(WORD_REGEXP, textpart.lower()))
 
     mdate = datetime.date.fromtimestamp(msg_date)
-    keywords.add('%s:year' % mdate.year)
-    keywords.add('%s:month' % mdate.month)
-    keywords.add('%s:day' % mdate.day)
-    keywords.add('%s-%s-%s:date' % (mdate.year, mdate.month, mdate.day))
-    keywords.add('%s:id' % msg_id)
-    keywords |= set(re.findall(WORD_REGEXP, self.hdr(msg, 'subject').lower()))
-    keywords |= set(re.findall(WORD_REGEXP, self.hdr(msg, 'from').lower()))
-    keywords -= STOPLIST
+    keywords.append('%s:year' % mdate.year)
+    keywords.append('%s:month' % mdate.month)
+    keywords.append('%s:day' % mdate.day)
+    keywords.append('%s-%s-%s:date' % (mdate.year, mdate.month, mdate.day))
+    keywords.append('%s:id' % msg_id)
+    keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'subject').lower()))
+    keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'from').lower()))
 
     for key in msg.keys():
       key_lower = key.lower()
       if key_lower not in BORING_HEADERS:
         words = set(re.findall(WORD_REGEXP, self.hdr(msg, key).lower()))
         words -= STOPLIST
-        keywords |= set(['%s:%s' % (t, key_lower) for t in words])
+        keywords.extend(['%s:%s' % (t, key_lower) for t in words])
         if 'list' in key_lower:
-          keywords |= set(['%s:list' % t for t in words])
+          keywords.extend(['%s:list' % t for t in words])
+
+    keywords = set(keywords)
+    keywords -= STOPLIST
 
     for hook in filter_hooks:
       keywords = hook(session, msg_mid, msg, keywords)
