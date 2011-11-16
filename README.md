@@ -1,9 +1,9 @@
 # Welcome to Mailpile! #
 
 Mailpile is a free-as-in-freedom personal e-mail searching and indexing
-tool, largely inspired by Google's popular free e-mail service.  It wants
-to eventually become a fast and flexible back-end for awesome personal
-mail clients, probably webmail.
+tool, largely inspired by Google's popular proprietary-but-gratis e-mail
+service.  It wants to eventually become a fast and flexible back-end
+for awesome personal mail clients, including webmail.
 
 **WARNING:**  Mailpile is still experimental and isn't actually very useful
 yet.  It'll tell you that you have mail matching a given search and let
@@ -82,9 +82,21 @@ that term instead.
 
 You can paginate through results using `next` and `previous`.
 
+To view a message, use the `view` command with the number of the result
+or one of the magic words `all` or `these`:
+
+    mailpile> search year:2011 month:12
+    ...
+    mailpile> view 1 2 6
+    ...
+
+(Mailpile currently assumes you have `less` installed and in your path for
+viewing e-mail. This is a temporary hack.)
+
 You can also search from the command line with `mailpile.py -s term`,
 but that will be a bit slower because the metadata index has to be
 loaded into RAM on each invocation.
+
 
 ### Sorting the results ###
 
@@ -163,7 +175,6 @@ edit or reorder the filters.
 Mailpile doesn't yet know how to read and index encrypted e-mail, but it
 will in the future.  In the future Mailpile may also know how to log on to
 your remote IMAP and POP3 accounts and download or index remote mail.
-
 This means for sensitive messages, the search index becomes a potential
 security risk, as does the configuration file.  More broadly, easy access
 to all your communications can be a privacy risk in and of itself:
@@ -179,9 +190,9 @@ encrypt its config and data using your key, like so:
 
     $ ./mailpile.py -S gpg_recipient=youremail@yourdomain.com
 
-**Note:** Currently this only encrypts the main index and config file, the
-search terms themselves are not encrypted yet.  This is still much better
-than nothing.
+**Note:** Currently this only encrypts the main index and config file, and
+only works if `gpg` is in your path. The search terms themselves are not
+encrypted yet. Like all the others, this feature is a work in progress. :-)
 
 
 ## A word on performance ##
