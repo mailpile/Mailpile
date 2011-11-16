@@ -195,17 +195,14 @@ class IncrementalMbox(mailbox.mbox):
 
   def get_msg_ptr(self, idx, toc_id):
     return '%s%s:%s' % (idx,
-                        b36(long(self.get_file(toc_id)._pos)),
+                        b36(self._toc[toc_id][0]),
                         b36(self.get_msg_size(toc_id)))
 
-  def get_file_by_ptr(self, msg_ptr, from_=False):
+  def get_file_by_ptr(self, msg_ptr):
     start, length = msg_ptr[3:].split(':')
     start = int(start, 36)
     length = int(length, 36)
-    self._file.seek(start)
-    if not from_:
-      self._file.readline()
-    return mailbox._PartialFile(self._file, self._file.tell(), start+length)
+    return mailbox._PartialFile(self._file, start, start+length)
 
 
 class Email(object):
@@ -227,7 +224,7 @@ class Email(object):
     for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
       try:
         mbox = self.config.open_mailbox(None, msg_ptr[:3])
-        return mbox.get_file_by_ptr(msg_ptr, from_=True)
+        return mbox.get_file_by_ptr(msg_ptr)
       except (IOError, OSError):
         pass
     return None
@@ -913,6 +910,8 @@ class MailIndex(object):
 
 class NullUI(object):
 
+  interactive = False
+
   def print_key(self, key, config): pass
   def reset_marks(self): pass
   def mark(self, progress): pass
@@ -965,6 +964,13 @@ class NullUI(object):
       self.say(sep, fd=fd)
       if raw:
         for line in email.get_file().readlines():
+          try:
+            line = line.decode('utf-8')
+          except UnicodeDecodeError:
+            try:
+              line = line.decode('iso-8859-1')
+            except:
+              line = '(MAILPILE DECODING FAILED)\n'
           self.say(line, newline='', fd=fd)
       else:
         for hdr in ('Date', 'To', 'From', 'Subject'):
@@ -1074,14 +1080,15 @@ class TextUI(NullUI):
     return (start, count)
 
   def display_messages(self, emails, raw=False, sep='', fd=None):
-    if not fd:
+    if not fd and self.interactive:
       viewer = subprocess.Popen(['less'], stdin=subprocess.PIPE)
       fd = viewer.stdin
     else:
+      fd = sys.stdout
       viewer = None
     try:
       NullUI.display_messages(self, emails, raw=raw, sep=('_' * 80), fd=fd)
-    except IOError:
+    except IOError, e:
       pass
     if viewer:
       fd.close()
@@ -1466,18 +1473,17 @@ def Action(session, opt, arg):
   elif opt in ('R', 'rescan'):
     idx = config.get_index(session)
     session.ui.reset_marks()
-    count = 0
+    count = 1
     try:
       for fid, fpath in config.get_mailboxes():
         count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
         session.ui.mark('\n')
+      count -= 1
+      if not count: session.ui.mark('Nothing changed')
     except KeyboardInterrupt:
       session.ui.mark('Aborted')
-      count = 1
-    if count:
-      idx.save(session)
-    else:
-      session.ui.mark('Nothing changed')
+    finally:
+      if count: idx.save(session)
     session.ui.reset_marks()
 
   elif opt in ('L', 'load'):
@@ -1541,7 +1547,7 @@ def Action(session, opt, arg):
 
   elif opt in ('v', 'view'):
     args = arg.split()
-    if args[0] == 'raw':
+    if args and args[0].lower() == 'raw':
       raw = args.pop(0)
     else:
       raw = False
