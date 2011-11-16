@@ -32,29 +32,13 @@ directory named `.mailpile` for its indexes and settings.
 
 A simple test run might look like so:
 
-    $ ./mailpile.py -A /var/spool/mail/YOURNAME
-    $ ./mailpile.py -R
+    $ ./mailpile.py -A /var/spool/mail/YOURNAME -R
 
 The program prints details of its progress as it runs.  Note that just
 opening the mailbox may take quite a while if it is large enough (it takes
 about a bit over a minute to open my 500MB mailbox).  Stopping the program
 with CTRL-C is (relatively) nondestructive - it will try to save its
 progress and re-running should continue the scan from where it left off.
-
-### Huge mailboxes ###
-
-If you are importing a very large amount of mail, it may be worth tweaking
-the default size of the posting-lists (search term indexes) to avoid
-thrashing the disk too much:
-
-    $ ./mailpile.py -S postinglist_kb=10240 --optimize --rescan
-    ...
-
-This will result in much slower searches, but once the mail has been imported
-we can reset the limit and optimize the index:
-
-    $ ./mailpile.py -U postinglist_kb --optimize
-    ...
 
 
 ## Basic use ##
