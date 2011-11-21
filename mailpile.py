@@ -29,6 +29,9 @@ BORING_HEADERS = ('received', 'date',
                   'dkim-signature', 'domainkey-signature', 'received-spf')
 
 
+class WorkerError(Exception):
+  pass
+
 class UsageError(Exception):
   pass
 
@@ -1294,16 +1297,23 @@ class Worker(threading.Thread):
       session, task, name = self.JOBS.pop(0)
       self.LOCK.release()
 
-      if session:
-        session.ui.mark('Starting: %s' % name)
-        session.report_task_completed(task())
-      else:
-        task()
+      try:
+        if session:
+          session.ui.mark('Starting: %s' % name)
+          session.report_task_completed(task())
+        else:
+          task()
+      except Exception, e:
+        self.session.ui.error('%s failed in %s: %s' % (name, self.NAME, e))
+        if session: session.report_task_failed()
 
-  def quit(self):
+  def die_soon(self, session=None):
     def die():
       self.ALIVE = False
-    self.add_task(self.session, die, '%s shutdown' % self.NAME)
+    self.add_task(session, die, '%s shutdown' % self.NAME)
+
+  def quit(self, session=None):
+    self.die_soon(session=session)
     self.join()
 
 
@@ -1315,6 +1325,7 @@ class Session(object):
   searched = []
   displayed = (0, 0)
   interactive = False
+  task_result = None
 
   def __init__(self, config):
     self.config = config
@@ -1322,14 +1333,20 @@ class Session(object):
 
   def report_task_completed(self, result):
     self.wait_lock.acquire()
+    self.task_result = result
     self.wait_lock.notify()
     self.wait_lock.release()
 
+  def report_task_failed(self):
+    self.report_task_completed(None)
+
   def wait_for_task(self, quiet=False):
     self.wait_lock.acquire()
+    self.task_result = None
     self.wait_lock.wait()
     self.wait_lock.release()
     self.ui.reset_marks(quiet=quiet)
+    return self.task_result
 
   def error(self, message):
     self.ui.error(message)
@@ -1503,6 +1520,15 @@ def Action_Rescan(session, config):
   finally:
     if count: idx.save(session)
   session.ui.reset_marks()
+  return True
+
+def Action_Load(session, config):
+  config.index = None
+  session.results = []
+  session.searched = []
+  config.get_index(session)
+  session.ui.reset_marks()
+  return True
 
 def Action(session, opt, arg):
   config = session.config
@@ -1558,14 +1584,14 @@ def Action(session, opt, arg):
   elif opt in ('R', 'rescan'):
     config.slow_worker.add_task(session, lambda: Action_Rescan(session, config),
                                 'Rescan')
-    session.wait_for_task(quiet=True)
+    if not session.wait_for_task(quiet=True):
+      raise WorkerError()
 
   elif opt in ('L', 'load'):
-    config.index = None
-    session.results = []
-    session.searched = []
-    config.get_index(session)
-    session.ui.reset_marks()
+    config.slow_worker.add_task(session, lambda: Action_Load(session, config),
+                                'Load')
+    if not session.wait_for_task(quiet=True):
+      raise WorkerError()
 
   elif opt in ('n', 'next'):
     idx = config.get_index(session)
