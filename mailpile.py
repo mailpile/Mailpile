@@ -10,7 +10,8 @@ later version.
 """
 ###############################################################################
 import codecs, datetime, email.parser, getopt, hashlib, locale, mailbox
-import os, cPickle, random, re, rfc822, struct, subprocess, sys, time
+import os, cPickle, random, re, rfc822, struct, subprocess, sys
+import threading, time
 import lxml.html
 
 
@@ -181,7 +182,7 @@ class IncrementalMbox(mailbox.mbox):
     self._file_length = self._file.tell()
     self.save(None)
 
-  def save(self, session, to=None):
+  def save(self, session=None, to=None):
     if to:
       self.save_to = to
     if self.save_to and len(self) > 0:
@@ -497,8 +498,8 @@ class MailIndex(object):
                           ) % self.config.mailindex_file())
     session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
 
-  def save(self, session):
-    session.ui.mark("Saving metadata index...")
+  def save(self, session=None):
+    if session: session.ui.mark("Saving metadata index...")
     fd = gpg_open(self.config.mailindex_file(),
                   self.config.get('gpg_recipient'), 'w')
     fd.write('# This is the mailpile.py index file.\n')
@@ -508,7 +509,7 @@ class MailIndex(object):
       fd.write('\n')
     fd.close()
     flush_append_cache()
-    session.ui.mark("Saved metadata index")
+    if session: session.ui.mark("Saved metadata index")
 
   def update_ptrs_and_msgids(self, session):
     session.ui.mark('Updating high level indexes')
@@ -553,6 +554,8 @@ class MailIndex(object):
 
   def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
     mbox = mailbox_opener(session, idx)
+    session.ui.mark('%s: Scanning: %s' % (idx, mailbox_fn))
+
     if mbox.last_parsed+1 == len(mbox): return 0
 
     if len(self.PTRS.keys()) == 0:
@@ -908,12 +911,14 @@ class MailIndex(object):
     return True
 
 
+##[ User Interface classes ]###################################################
+
 class NullUI(object):
 
   interactive = False
 
   def print_key(self, key, config): pass
-  def reset_marks(self): pass
+  def reset_marks(self, quiet=False): pass
   def mark(self, progress): pass
 
   def say(self, text='', newline='\n', fd=sys.stdout):
@@ -1003,12 +1008,13 @@ class TextUI(NullUI):
     else:
       self.say('%s is unset' % key)
 
-  def reset_marks(self):
+  def reset_marks(self, quiet=False):
     t = self.times
     self.times = []
     if t:
-      result = 'Elapsed: %.3fs (%s)' % (t[-1][0] - t[0][0], t[-1][1])
-      self.say('%s%s' % (result, ' ' * (79-len(result))))
+      if not quiet:
+        result = 'Elapsed: %.3fs (%s)' % (t[-1][0] - t[0][0], t[-1][1])
+        self.say('%s%s' % (result, ' ' * (79-len(result))))
       return t[-1][0] - t[0][0]
     else:
       return 0
@@ -1095,9 +1101,14 @@ class TextUI(NullUI):
       viewer.wait()
 
 
+##[ The Configuration Manager ]###############################################
+
 class ConfigManager(dict):
 
+  fast_worker = None
+  slow_worker = None
   index = None
+
   MBOX_CACHE = {}
 
   INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size')
@@ -1255,6 +1266,47 @@ class ConfigManager(dict):
     return idx
 
 
+##[ Sessions and User Commands ]###############################################
+
+
+class Worker(threading.Thread):
+
+  def __init__(self, name, session, jobs=None, lock=None):
+    threading.Thread.__init__(self)
+    self.NAME = name or 'Worker'
+    self.ALIVE = False
+    self.JOBS = jobs or []
+    self.LOCK = lock or threading.Condition()
+    self.session = session
+
+  def add_task(self, session, task, name):
+    self.LOCK.acquire()
+    self.JOBS.append((session, task, name))
+    self.LOCK.notify()
+    self.LOCK.release()
+
+  def run(self):
+    self.ALIVE = True
+    while self.ALIVE:
+      self.LOCK.acquire()
+      while len(self.JOBS) < 1:
+        self.LOCK.wait()
+      session, task, name = self.JOBS.pop(0)
+      self.LOCK.release()
+
+      if session:
+        session.ui.mark('Starting: %s' % name)
+        session.report_task_completed(task())
+      else:
+        task()
+
+  def quit(self):
+    def die():
+      self.ALIVE = False
+    self.add_task(self.session, die, '%s shutdown' % self.NAME)
+    self.join()
+
+
 class Session(object):
 
   ui = NullUI()
@@ -1266,6 +1318,18 @@ class Session(object):
 
   def __init__(self, config):
     self.config = config
+    self.wait_lock = threading.Condition()
+
+  def report_task_completed(self, result):
+    self.wait_lock.acquire()
+    self.wait_lock.notify()
+    self.wait_lock.release()
+
+  def wait_for_task(self, quiet=False):
+    self.wait_lock.acquire()
+    self.wait_lock.wait()
+    self.wait_lock.release()
+    self.ui.reset_marks(quiet=quiet)
 
   def error(self, message):
     self.ui.error(message)
@@ -1333,9 +1397,12 @@ def Action_Tag(session, opt, arg, save=True):
     else:
       idx.add_tag(session, tag_id, msg_idxs=msg_ids)
 
-    if save:
-      idx.save(session)
     session.ui.reset_marks()
+
+    if save:
+      # Background save makes things feel fast!
+      session.config.slow_worker.add_task(None, idx.save, 'Save index')
+
     return True
 
   except (TypeError, ValueError, IndexError):
@@ -1421,6 +1488,22 @@ def Action_Filter(session, opt, arg):
     '       filter move <id> <pos>\n'
     '       filter list')
 
+def Action_Rescan(session, config):
+  idx = config.get_index(session)
+  session.ui.reset_marks()
+  count = 1
+  try:
+    for fid, fpath in config.get_mailboxes():
+      count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
+      session.ui.mark('\n')
+    count -= 1
+    if not count: session.ui.mark('Nothing changed')
+  except KeyboardInterrupt:
+    session.ui.mark('Aborted')
+  finally:
+    if count: idx.save(session)
+  session.ui.reset_marks()
+
 def Action(session, opt, arg):
   config = session.config
   num_results = config.get('num_results', 20)
@@ -1465,26 +1548,17 @@ def Action(session, opt, arg):
     session.ui.print_key(arg.strip().lower(), config)
 
   elif opt in ('U', 'unset'):
-    if config.parse_unset(session, arg): config.save()
+    if config.parse_unset(session, arg):
+      config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
 
   elif opt in ('S', 'set'):
-    if config.parse_set(session, arg): config.save()
+    if config.parse_set(session, arg):
+      config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
 
   elif opt in ('R', 'rescan'):
-    idx = config.get_index(session)
-    session.ui.reset_marks()
-    count = 1
-    try:
-      for fid, fpath in config.get_mailboxes():
-        count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
-        session.ui.mark('\n')
-      count -= 1
-      if not count: session.ui.mark('Nothing changed')
-    except KeyboardInterrupt:
-      session.ui.mark('Aborted')
-    finally:
-      if count: idx.save(session)
-    session.ui.reset_marks()
+    config.slow_worker.add_task(session, lambda: Action_Rescan(session, config),
+                                'Rescan')
+    session.wait_for_task(quiet=True)
 
   elif opt in ('L', 'load'):
     config.index = None
@@ -1591,31 +1665,44 @@ if __name__ == "__main__":
   re.LOCALE = 1
 
   try:
-    session = Session(ConfigManager())
+    # Create our global config manager and the default (CLI) session
+    config = ConfigManager()
+    session = Session(config)
     session.config.load(session)
     session.ui = TextUI()
   except AccessError, e:
     sys.stderr.write('Access denied: %s\n' % e)
     sys.exit(1)
 
-  # Set globals from config here ...
-  APPEND_FD_CACHE_SIZE = session.config.get('fd_cache_size',
-                                            APPEND_FD_CACHE_SIZE)
-
   try:
-    opts, args = getopt.getopt(sys.argv[1:],
-                               ''.join(COMMANDS.keys()),
-                               [v[0] for v in COMMANDS.values()])
-    for opt, arg in opts:
-      Action(session, opt.replace('-', ''), arg)
-    if args:
-      Action(session, args[0], ' '.join(args[1:]))
+    # Create and start worker threads
+    config.fast_worker = Worker('Fast worker', session)
+    config.fast_worker.start()
+    config.slow_worker = Worker('Slow worker', session)
+    config.slow_worker.start()
 
-  except (getopt.GetoptError, UsageError), e:
-    session.error(e)
+    # Set globals from config here ...
+    APPEND_FD_CACHE_SIZE = session.config.get('fd_cache_size',
+                                              APPEND_FD_CACHE_SIZE)
 
-  if not opts and not args:
-    session.interactive = session.ui.interactive = True
-    session.ui.print_intro(help=True)
-    Interact(session)
+    try:
+      opts, args = getopt.getopt(sys.argv[1:],
+                                 ''.join(COMMANDS.keys()),
+                                 [v[0] for v in COMMANDS.values()])
+      for opt, arg in opts:
+        Action(session, opt.replace('-', ''), arg)
+      if args:
+        Action(session, args[0], ' '.join(args[1:]))
+
+    except (getopt.GetoptError, UsageError), e:
+      session.error(e)
+
+    if not opts and not args:
+      session.interactive = session.ui.interactive = True
+      session.ui.print_intro(help=True)
+      Interact(session)
+
+  finally:
+    if config.fast_worker: config.fast_worker.quit()
+    if config.slow_worker: config.slow_worker.quit()
 
