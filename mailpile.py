@@ -1274,12 +1274,12 @@ class ConfigManager(dict):
 
 class Worker(threading.Thread):
 
-  def __init__(self, name, session, jobs=None, lock=None):
+  def __init__(self, name, session):
     threading.Thread.__init__(self)
     self.NAME = name or 'Worker'
     self.ALIVE = False
-    self.JOBS = jobs or []
-    self.LOCK = lock or threading.Condition()
+    self.JOBS = []
+    self.LOCK = threading.Condition()
     self.session = session
 
   def add_task(self, session, task, name):
