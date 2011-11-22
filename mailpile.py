@@ -531,9 +531,9 @@ class MailIndex(object):
     try:
       return (' '.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
               ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-    except UnicodeDecodeError:
+    except (UnicodeDecodeError, LookupError):
       try:
-        return (' '.join([t[0].decode(t[1] or 'utf-8') for t in decoded])
+        return (' '.join([t[0].decode('utf-8') for t in decoded])
                 ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
       except UnicodeDecodeError:
         session.ui.warning('Boom: %s/%s' % (msg[name], decoded))
