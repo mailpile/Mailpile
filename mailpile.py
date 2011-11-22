@@ -1284,9 +1284,9 @@ class Worker(threading.Thread):
     self.LOCK = threading.Condition()
     self.session = session
 
-  def add_task(self, session, name, task):
+  def add_task(self, session, name, task, post_task=None):
     self.LOCK.acquire()
-    self.JOBS.append((session, task, name))
+    self.JOBS.append((session, name, task, post_task))
     self.LOCK.notify()
     self.LOCK.release()
 
@@ -1295,8 +1295,7 @@ class Worker(threading.Thread):
       # We run this in the foreground on the main interactive session,
       # so CTRL-C has a chance to work.
       try:
-        self.add_task(session, 'Flush', lambda: True)
-        session.wait_for_task(quiet=True)
+        self.flush(session, wait=1)
         self.pause()
         rv = task()
       except KeyboardInterrupt:
@@ -1319,7 +1318,7 @@ class Worker(threading.Thread):
       self.LOCK.acquire()
       while len(self.JOBS) < 1:
         self.LOCK.wait()
-      session, task, name = self.JOBS.pop(0)
+      session, name, task, post_task = self.JOBS.pop(0)
       self.LOCK.release()
 
       try:
@@ -1331,6 +1330,16 @@ class Worker(threading.Thread):
       except Exception, e:
         self.session.ui.error('%s failed in %s: %s' % (name, self.NAME, e))
         if session: session.report_task_failed()
+
+      if post_task:
+        try:
+          post_task()
+        except:
+          pass
+
+  def flush(self, session, wait=0):
+    self.add_task(session, 'Flush', lambda: True, lambda: time.sleep(wait))
+    session.wait_for_task(quiet=True)
 
   def pause(self):
     self.LOCK.acquire()
