@@ -1288,6 +1288,21 @@ class Worker(threading.Thread):
     self.LOCK.notify()
     self.LOCK.release()
 
+  def do(self, session, task, name):
+    if session.main:
+      # We run this in the foreground on the main interactive session,
+      # so CTRL-C has a chance to work.
+      try:
+        self.pause()
+        return task()
+      except KeyboardInterrupt:
+        return True
+      finally:
+        self.unpause()
+    else:
+      self.add_task(session, task, name)
+      return session.wait_for_task()
+
   def run(self):
     self.ALIVE = True
     while self.ALIVE:
@@ -1307,6 +1322,12 @@ class Worker(threading.Thread):
         self.session.ui.error('%s failed in %s: %s' % (name, self.NAME, e))
         if session: session.report_task_failed()
 
+  def pause(self):
+    self.LOCK.acquire()
+
+  def unpause(self):
+    self.LOCK.release()
+
   def die_soon(self, session=None):
     def die():
       self.ALIVE = False
@@ -1319,12 +1340,14 @@ class Worker(threading.Thread):
 
 class Session(object):
 
+  main = False
+  interactive = False
+
   ui = NullUI()
   order = None
   results = []
   searched = []
   displayed = (0, 0)
-  interactive = False
   task_result = None
 
   def __init__(self, config):
@@ -1530,6 +1553,17 @@ def Action_Load(session, config):
   session.ui.reset_marks()
   return True
 
+def Action_Optimize(session, config, arg):
+  try:
+    idx = config.get_index(session)
+    filecount = PostingList.Optimize(session, idx,
+                                     force=(arg == 'harder'))
+    session.ui.reset_marks()
+  except KeyboardInterrupt:
+    session.ui.mark('Aborted')
+    session.ui.reset_marks()
+  return True
+
 def Action(session, opt, arg):
   config = session.config
   num_results = config.get('num_results', 20)
@@ -1543,7 +1577,7 @@ def Action(session, opt, arg):
       arg = os.path.abspath(arg)
       if config.parse_set(session,
                           'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
-        config.save()
+        config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
     else:
       session.error('No such file/directory: %s' % arg)
 
@@ -1553,7 +1587,7 @@ def Action(session, opt, arg):
     and arg.lower() not in [v.lower() for v in config['tag'].values()]):
       if config.parse_set(session,
                           'tag:%s=%s' % (config.nid('tag'), arg)):
-        config.save()
+        config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
     else:
       session.error('Invalid tag: %s' % arg)
 
@@ -1561,14 +1595,10 @@ def Action(session, opt, arg):
     Action_Filter(session, opt, arg)
 
   elif opt in ('O', 'optimize'):
-    try:
-      idx = config.get_index(session)
-      filecount = PostingList.Optimize(session, idx,
-                                       force=(arg == 'harder'))
-      session.ui.reset_marks()
-    except KeyboardInterrupt:
-      session.ui.mark('Aborted')
-      session.ui.reset_marks()
+    if not config.slow_worker.do(session,
+                                 lambda: Action_Optimize(session, config, arg),
+                                 'Optimize'):
+      raise WorkerError()
 
   elif opt in ('P', 'print'):
     session.ui.print_key(arg.strip().lower(), config)
@@ -1582,15 +1612,15 @@ def Action(session, opt, arg):
       config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
 
   elif opt in ('R', 'rescan'):
-    config.slow_worker.add_task(session, lambda: Action_Rescan(session, config),
-                                'Rescan')
-    if not session.wait_for_task(quiet=True):
+    if not config.slow_worker.do(session,
+                                 lambda: Action_Rescan(session, config),
+                                 'Rescan'):
       raise WorkerError()
 
   elif opt in ('L', 'load'):
-    config.slow_worker.add_task(session, lambda: Action_Load(session, config),
-                                'Load')
-    if not session.wait_for_task(quiet=True):
+    if not config.slow_worker.do(session,
+                                 lambda: Action_Load(session, config),
+                                 'Load'):
       raise WorkerError()
 
   elif opt in ('n', 'next'):
@@ -1695,6 +1725,7 @@ if __name__ == "__main__":
     config = ConfigManager()
     session = Session(config)
     session.config.load(session)
+    session.main = True
     session.ui = TextUI()
   except AccessError, e:
     sys.stderr.write('Access denied: %s\n' % e)
