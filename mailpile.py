@@ -475,11 +475,11 @@ class MailIndex(object):
   def m2l(self, message):
     return (u'\t'.join([unicode(p) for p in message])).encode('utf-8')
 
-  def load(self, session):
+  def load(self, session=None):
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
-    session.ui.mark('Loading metadata index...')
+    if session: session.ui.mark('Loading metadata index...')
     try:
       fd = open(self.config.mailindex_file(), 'r')
       try:
@@ -497,9 +497,10 @@ class MailIndex(object):
         pass
       fd.close()
     except IOError:
-      session.ui.warning(('Metadata index not found: %s'
-                          ) % self.config.mailindex_file())
-    session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
+      if session: session.ui.warning(('Metadata index not found: %s'
+                                      ) % self.config.mailindex_file())
+    if session:
+      session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
 
   def save(self, session=None):
     if session: session.ui.mark("Saving metadata index...")
@@ -1164,7 +1165,7 @@ class ConfigManager(dict):
 
   def load(self, session):
     if not os.path.exists(self.workdir()):
-      session.ui.notify('Creating: %s' % self.workdir())
+      if session: session.ui.notify('Creating: %s' % self.workdir())
       os.mkdir(self.workdir())
     else:
       self.index = None
@@ -1282,26 +1283,27 @@ class Worker(threading.Thread):
     self.LOCK = threading.Condition()
     self.session = session
 
-  def add_task(self, session, task, name):
+  def add_task(self, session, name, task):
     self.LOCK.acquire()
     self.JOBS.append((session, task, name))
     self.LOCK.notify()
     self.LOCK.release()
 
-  def do(self, session, task, name):
+  def do(self, session, name, task):
     if session.main:
       # We run this in the foreground on the main interactive session,
       # so CTRL-C has a chance to work.
       try:
         self.pause()
-        return task()
+        task()
       except KeyboardInterrupt:
-        return True
+        raise
       finally:
         self.unpause()
     else:
-      self.add_task(session, task, name)
-      return session.wait_for_task()
+      self.add_task(session, name, task)
+      if not session.wait_for_task():
+        raise WorkerError()
 
   def run(self):
     self.ALIVE = True
@@ -1331,7 +1333,7 @@ class Worker(threading.Thread):
   def die_soon(self, session=None):
     def die():
       self.ALIVE = False
-    self.add_task(session, die, '%s shutdown' % self.NAME)
+    self.add_task(session, '%s shutdown' % self.NAME, die)
 
   def quit(self, session=None):
     self.die_soon(session=session)
@@ -1441,7 +1443,7 @@ def Action_Tag(session, opt, arg, save=True):
 
     if save:
       # Background save makes things feel fast!
-      session.config.slow_worker.add_task(None, idx.save, 'Save index')
+      session.config.slow_worker.add_task(None, 'Save index', idx.save)
 
     return True
 
@@ -1480,9 +1482,11 @@ def Action_Filter_Add(session, config, flags, args):
                                  ) % (tag_id, ' '.join(tids)))
   and config.parse_set(session, ('filter_terms:%s=%s'
                                  ) % (tag_id, ' '.join(terms)))):
-    config.get_index(session).save(session)
-    config.save()
     session.ui.reset_marks()
+    def save_filter():
+      config.save()
+      config.get_index(None).save(None)
+    config.slow_worker.add_task(None, 'Save filter', save_filter)
   else:
     raise Exception('That failed, not sure why?!')
 
@@ -1577,7 +1581,7 @@ def Action(session, opt, arg):
       arg = os.path.abspath(arg)
       if config.parse_set(session,
                           'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
-        config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
+        config.slow_worker.add_task(None, 'Save config', lambda: config.save())
     else:
       session.error('No such file/directory: %s' % arg)
 
@@ -1587,7 +1591,7 @@ def Action(session, opt, arg):
     and arg.lower() not in [v.lower() for v in config['tag'].values()]):
       if config.parse_set(session,
                           'tag:%s=%s' % (config.nid('tag'), arg)):
-        config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
+        config.slow_worker.add_task(None, 'Save config', lambda: config.save())
     else:
       session.error('Invalid tag: %s' % arg)
 
@@ -1595,33 +1599,27 @@ def Action(session, opt, arg):
     Action_Filter(session, opt, arg)
 
   elif opt in ('O', 'optimize'):
-    if not config.slow_worker.do(session,
-                                 lambda: Action_Optimize(session, config, arg),
-                                 'Optimize'):
-      raise WorkerError()
+    config.slow_worker.do(session, 'Optimize',
+                          lambda: Action_Optimize(session, config, arg))
 
   elif opt in ('P', 'print'):
     session.ui.print_key(arg.strip().lower(), config)
 
   elif opt in ('U', 'unset'):
     if config.parse_unset(session, arg):
-      config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
+      config.slow_worker.add_task(None, 'Save config', lambda: config.save())
 
   elif opt in ('S', 'set'):
     if config.parse_set(session, arg):
-      config.slow_worker.add_task(None, lambda: config.save(), 'Save config')
+      config.slow_worker.add_task(None, 'Save config', lambda: config.save())
 
   elif opt in ('R', 'rescan'):
-    if not config.slow_worker.do(session,
-                                 lambda: Action_Rescan(session, config),
-                                 'Rescan'):
-      raise WorkerError()
+    config.slow_worker.do(session, 'Rescan',
+                          lambda: Action_Rescan(session, config))
 
   elif opt in ('L', 'load'):
-    if not config.slow_worker.do(session,
-                                 lambda: Action_Load(session, config),
-                                 'Load'):
-      raise WorkerError()
+    config.slow_worker.do(session, 'Load',
+                          lambda: Action_Load(session, config))
 
   elif opt in ('n', 'next'):
     idx = config.get_index(session)
