@@ -97,7 +97,6 @@ APPEND_FD_CACHE = {}
 APPEND_FD_CACHE_SIZE = 500
 APPEND_FD_CACHE_ORDER = []
 def flush_append_cache(ratio=1, count=None):
-  global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER
   drop = count or int(ratio*len(APPEND_FD_CACHE_ORDER))
   for fn in APPEND_FD_CACHE_ORDER[:drop]:
     APPEND_FD_CACHE[fn].close()
@@ -105,7 +104,6 @@ def flush_append_cache(ratio=1, count=None):
   APPEND_FD_CACHE_ORDER[:drop] = []
 
 def cached_open(filename, mode):
-  global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
   if mode == 'a':
     if filename not in APPEND_FD_CACHE:
       if len(APPEND_FD_CACHE) > APPEND_FD_CACHE_SIZE:
@@ -769,7 +767,8 @@ class MailIndex(object):
     session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in list(msg_idxs):
       for reply in self.get_replies(msg_idx=msg_idx):
-        msg_idxs.add(int(reply[self.MSG_IDX], 36))
+        if reply[self.MSG_IDX]:
+          msg_idxs.add(int(reply[self.MSG_IDX], 36))
         if msg_idx % 1000 == 0: self.CACHE = {}
     for msg_idx in msg_idxs:
       msg_info = self.get_msg_by_idx(msg_idx)
@@ -786,11 +785,13 @@ class MailIndex(object):
     pls = PostingList(session, '%s:tag' % tag_id)
     if not msg_idxs:
       msg_idxs = [int(msg_info[self.MSG_IDX], 36)]
-    session.ui.mark('Untagging %d messages (%s)' % (len(msg_idxs), tag_id))
+    session.ui.mark('Untagging conversations (%s)' % (tag_id, ))
     for msg_idx in list(msg_idxs):
       for reply in self.get_replies(msg_idx=msg_idx):
-        msg_idxs.add(int(reply[self.MSG_IDX], 36))
+        if reply[self.MSG_IDX]:
+          msg_idxs.add(int(reply[self.MSG_IDX], 36))
         if msg_idx % 1000 == 0: self.CACHE = {}
+    session.ui.mark('Untagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in msg_idxs:
       msg_info = self.get_msg_by_idx(msg_idx)
       tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
@@ -1272,7 +1273,6 @@ class ConfigManager(dict):
 
 ##[ Sessions and User Commands ]###############################################
 
-
 class Worker(threading.Thread):
 
   def __init__(self, name, session):
@@ -1448,6 +1448,7 @@ def Action_Tag(session, opt, arg, save=True):
     return True
 
   except (TypeError, ValueError, IndexError):
+    session.ui.reset_marks()
     session.ui.error('That made no sense: %s %s' % (opt, arg))
     return False
 
