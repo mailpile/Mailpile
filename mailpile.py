@@ -12,6 +12,8 @@ later version.
 import codecs, datetime, email.parser, getopt, hashlib, locale, mailbox
 import os, cPickle, random, re, rfc822, struct, subprocess, sys
 import threading, time
+import SocketServer
+from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 import lxml.html
 
 
@@ -921,14 +923,30 @@ class MailIndex(object):
 class NullUI(object):
 
   interactive = False
+  buffering = False
+  buffered = []
 
   def print_key(self, key, config): pass
   def reset_marks(self, quiet=False): pass
   def mark(self, progress): pass
 
+  def flush(self):
+    while len(self.buffered) > 0:
+      self.buffered.pop(0)()
+
+  def block(self):
+    self.buffering = True
+
+  def unblock(self):
+    self.flush()
+    self.buffering = False
+
   def say(self, text='', newline='\n', fd=sys.stdout):
-    fd.write(text.encode('utf-8')+newline)
-    fd.flush()
+    def sayit():
+      fd.write(text.encode('utf-8')+newline)
+      fd.flush()
+    self.buffered.append(sayit)
+    if not self.buffering: self.flush()
 
   def notify(self, message): self.say(str(message))
   def warning(self, message): self.say('Warning: %s' % message)
@@ -1110,7 +1128,7 @@ class TextUI(NullUI):
 
 class ConfigManager(dict):
 
-  fast_worker = None
+  http_worker = None
   slow_worker = None
   index = None
 
@@ -1722,7 +1740,9 @@ def Interact(session):
 
   try:
     while True:
+      session.ui.block()
       opt = raw_input('mailpile> ').decode('utf-8').strip()
+      session.ui.unblock()
       if opt:
         if ' ' in opt:
           opt, arg = opt.split(' ', 1)
@@ -1737,6 +1757,32 @@ def Interact(session):
 
   readline.write_history_file(session.config.history_file())
 
+
+##[ Web and XML-RPC Interface ]###############################################
+
+class HttpRequestHandler(SimpleXMLRPCRequestHandler):
+  def log_message(self, fmt, *args):
+    self.server.session.ui.say(fmt % (args))
+
+class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
+  def __init__(self, session, sspec, handler):
+    SimpleXMLRPCServer.__init__(self, sspec, handler)
+    self.session = session
+
+class HttpWorker(threading.Thread):
+  def __init__(self, session, sspec):
+    threading.Thread.__init__(self)
+    self.httpd = HttpServer(session, sspec, HttpRequestHandler)
+    self.session = session
+
+  def run(self):
+    self.httpd.serve_forever()
+
+  def quit(self):
+    self.httpd.shutdown()
+
+
+##[ Main ]####################################################################
 
 if __name__ == "__main__":
   re.UNICODE = 1
@@ -1755,10 +1801,10 @@ if __name__ == "__main__":
 
   try:
     # Create and start worker threads
-    config.fast_worker = Worker('Fast worker', session)
-    config.fast_worker.start()
     config.slow_worker = Worker('Slow worker', session)
     config.slow_worker.start()
+    config.http_worker = HttpWorker(session, ('', 0))
+    config.http_worker.start()
 
     # Set globals from config here ...
     APPEND_FD_CACHE_SIZE = session.config.get('fd_cache_size',
@@ -1784,6 +1830,6 @@ if __name__ == "__main__":
       Interact(session)
 
   finally:
-    if config.fast_worker: config.fast_worker.quit()
-    if config.slow_worker: config.slow_worker.quit()
+    for w in (config.http_worker, config.slow_worker):
+      if w: w.quit()
 
