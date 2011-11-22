@@ -1050,7 +1050,7 @@ class TextUI(NullUI):
     return namelist
 
   def display_results(self, idx, results, start=0, end=None, num=20):
-    if not results: return
+    if not results: return (0, 0)
 
     if end: start = end - num
     if start > len(results): start = len(results)
@@ -1266,8 +1266,9 @@ class ConfigManager(dict):
 
   def get_index(self, session):
     if self.index: return self.index
-    idx = self.index = MailIndex(self)
+    idx = MailIndex(self)
     idx.load(session)
+    self.index = idx
     return idx
 
 
@@ -1294,16 +1295,23 @@ class Worker(threading.Thread):
       # We run this in the foreground on the main interactive session,
       # so CTRL-C has a chance to work.
       try:
+        self.add_task(session, 'Flush', lambda: True)
+        session.wait_for_task(quiet=True)
         self.pause()
-        task()
+        rv = task()
       except KeyboardInterrupt:
         raise
       finally:
         self.unpause()
     else:
       self.add_task(session, name, task)
-      if session and not session.wait_for_task():
-        raise WorkerError()
+      if session:
+        rv = session.wait_for_task()
+        if not rv:
+          raise WorkerError()
+      else:
+        rv = True
+    return rv
 
   def run(self):
     self.ALIVE = True
@@ -1317,7 +1325,7 @@ class Worker(threading.Thread):
       try:
         if session:
           session.ui.mark('Starting: %s' % name)
-          session.report_task_completed(task())
+          session.report_task_completed(task(), name)
         else:
           task()
       except Exception, e:
@@ -1356,7 +1364,7 @@ class Session(object):
     self.config = config
     self.wait_lock = threading.Condition()
 
-  def report_task_completed(self, result):
+  def report_task_completed(self, result, name):
     self.wait_lock.acquire()
     self.task_result = result
     self.wait_lock.notify()
@@ -1423,9 +1431,27 @@ def Choose_Messages(session, words):
         session.ui.warning('What message is %s?' % (what, ))
   return msg_ids
 
+def Action_Load(session, config, reset=False, wait=True):
+  if not reset and config.index:
+    return config.index
+  def do_load():
+    if reset:
+      config.index = None
+      session.results = []
+      session.searched = []
+      session.displayed = (0, 0)
+    idx = config.get_index(session)
+    if session:
+      session.ui.reset_marks()
+    return idx
+  if wait:
+    return config.slow_worker.do(session, 'Load', do_load)
+  else:
+    config.slow_worker.add_task(session, 'Load', do_load)
+    return None
+
 def Action_Tag(session, opt, arg, save=True):
-  idx = session.config.get_index(session)
-  session.ui.reset_marks()
+  idx = Action_Load(session, session.config)
   try:
     words = arg.split()
     op = words[0][0]
@@ -1486,7 +1512,7 @@ def Action_Filter_Add(session, config, flags, args):
     session.ui.reset_marks()
     def save_filter():
       config.save()
-      config.get_index(None).save(None)
+      config.index.save(None)
     config.slow_worker.add_task(None, 'Save filter', save_filter)
   else:
     raise Exception('That failed, not sure why?!')
@@ -1534,8 +1560,7 @@ def Action_Filter(session, opt, arg):
     '       filter list')
 
 def Action_Rescan(session, config):
-  idx = config.get_index(session)
-  session.ui.reset_marks()
+  idx = config.index
   count = 1
   try:
     for fid, fpath in config.get_mailboxes():
@@ -1550,17 +1575,9 @@ def Action_Rescan(session, config):
   session.ui.reset_marks()
   return True
 
-def Action_Load(session, config):
-  config.index = None
-  session.results = []
-  session.searched = []
-  config.get_index(session)
-  session.ui.reset_marks()
-  return True
-
 def Action_Optimize(session, config, arg):
   try:
-    idx = config.get_index(session)
+    idx = config.index
     filecount = PostingList.Optimize(session, idx,
                                      force=(arg == 'harder'))
     session.ui.reset_marks()
@@ -1615,15 +1632,15 @@ def Action(session, opt, arg):
       config.slow_worker.add_task(None, 'Save config', lambda: config.save())
 
   elif opt in ('R', 'rescan'):
+    Action_Load(session, config)
     config.slow_worker.do(session, 'Rescan',
                           lambda: Action_Rescan(session, config))
 
   elif opt in ('L', 'load'):
-    config.slow_worker.do(session, 'Load',
-                          lambda: Action_Load(session, config))
+    Action_Load(session, config, reset=True)
 
   elif opt in ('n', 'next'):
-    idx = config.get_index(session)
+    idx = Action_Load(session, config)
     session.ui.reset_marks()
     pos, count = session.displayed
     session.displayed = session.ui.display_results(idx, session.results,
@@ -1632,8 +1649,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif opt in ('p', 'previous'):
-    idx = config.get_index(session)
-    session.ui.reset_marks()
+    idx = Action_Load(session, config)
     pos, count = session.displayed
     session.displayed = session.ui.display_results(idx, session.results,
                                                    end=pos,
@@ -1644,8 +1660,7 @@ def Action(session, opt, arg):
     Action_Tag(session, opt, arg)
 
   elif opt in ('o', 'order'):
-    idx = config.get_index(session)
-    session.ui.reset_marks()
+    idx = Action_Load(session, config)
     session.order = arg or None
     idx.sort_results(session, session.results,
                      how=session.order)
@@ -1655,8 +1670,7 @@ def Action(session, opt, arg):
 
   elif (opt in ('s', 'search')
         or opt.lower() in [t.lower() for t in config['tag'].values()]):
-    idx = config.get_index(session)
-    session.ui.reset_marks()
+    idx = Action_Load(session, config)
 
     # FIXME: This is all rather dumb.  Make it smarter!
     if opt not in ('s', 'search'):
@@ -1680,7 +1694,7 @@ def Action(session, opt, arg):
       raw = args.pop(0)
     else:
       raw = False
-    idx = config.get_index(session)
+    idx = Action_Load(session, config)
     emails = [Email(idx, i) for i in Choose_Messages(session, args)]
     session.ui.display_messages(emails, raw=raw)
     session.ui.reset_marks()
@@ -1754,6 +1768,8 @@ if __name__ == "__main__":
       session.error(e)
 
     if not opts and not args:
+      config.slow_worker.add_task(None, 'Load',
+                                  lambda: Action_Load(None, config))
       session.interactive = session.ui.interactive = True
       session.ui.print_intro(help=True)
       Interact(session)
