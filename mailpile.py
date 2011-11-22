@@ -1290,7 +1290,7 @@ class Worker(threading.Thread):
     self.LOCK.release()
 
   def do(self, session, name, task):
-    if session.main:
+    if session and session.main:
       # We run this in the foreground on the main interactive session,
       # so CTRL-C has a chance to work.
       try:
@@ -1302,7 +1302,7 @@ class Worker(threading.Thread):
         self.unpause()
     else:
       self.add_task(session, name, task)
-      if not session.wait_for_task():
+      if session and not session.wait_for_task():
         raise WorkerError()
 
   def run(self):
