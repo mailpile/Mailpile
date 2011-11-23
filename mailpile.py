@@ -10,15 +10,18 @@ later version.
 """
 ###############################################################################
 import codecs, datetime, email.parser, getopt, hashlib, locale, mailbox
-import os, cPickle, random, re, rfc822, struct, subprocess, sys
+import os, cPickle, random, re, rfc822, socket, struct, subprocess, sys
 import threading, time
 import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+from urlparse import parse_qs, urlparse
 import lxml.html
 
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
-global WORD_REGEXP, STOPLIST, BORING_HEADERS
+global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
+
+DEFAULT_PORT = 33411
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]:\"|;\'\\\<\>\?,\.\/\-]{2,}')
 
@@ -952,8 +955,16 @@ class NullUI(object):
   def warning(self, message): self.say('Warning: %s' % message)
   def error(self, message): self.say('Error: %s' % message)
 
-  def print_intro(self, help=False):
-    self.say(ABOUT+'\nFor instructions type `help`, press <CTRL-D> to quit.\n')
+  def print_intro(self, help=False, http_worker=None):
+    if http_worker:
+      http_status = 'on: http://%s:%s/' % http_worker.httpd.sspec
+    else:
+      http_status = 'disabled.'
+    self.say('\n'.join([ABOUT,
+                        'The web interface is %s' % http_status,
+                        '',
+                        'For instructions type `help`, press <CTRL-D> to quit.',
+                        '']))
 
   def print_help(self, commands, tags=None):
     self.say('Commands:')
@@ -1134,9 +1145,10 @@ class ConfigManager(dict):
 
   MBOX_CACHE = {}
 
-  INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size')
+  INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size',
+          'http_port')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
-             'gpg_recipient')
+             'gpg_recipient', 'http_host')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags')
 
   def workdir(self):
@@ -1160,7 +1172,10 @@ class ConfigManager(dict):
     key, val = [k.strip() for k in line.split('=', 1)]
     key = key.lower()
     if key in self.INTS:
-      self[key] = int(val)
+      try:
+        self[key] = int(val)
+      except ValueError:
+        raise UsageError('%s is not an integer' % val)
     elif key in self.STRINGS:
       self[key] = val
     elif ':' in key and key.split(':', 1)[0] in self.DICTS:
@@ -1760,14 +1775,102 @@ def Interact(session):
 
 ##[ Web and XML-RPC Interface ]###############################################
 
+
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
+
+  PAGE_HEAD = "<html><head>"
+  PAGE_LANDING_CSS = """\
+ body {text-align: center; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
+ #search input {width: 170px;}"""
+  PAGE_CONTENT_CSS = """\
+ body, div, h1, #header {font-family: monospace; color: #000; padding: 0; margin: 0;}
+ #heading, #pile {padding: 5px 10px;}
+ #heading {font-size: 3.75em; padding-left: 15px; padding-top: 15px; display: inline-block;}
+ #pile {z-index: -3; color: #888; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
+ #search {display: inline-block;}
+ #search input {width: 400px;}"""
+  PAGE_BODY = """\
+</head><body><div id=header>
+ <h1 id=heading>M<span style="font-size: 0.8em;">AILPILE</span>!</h1>
+ <form method=post id=search><input type="text" size=100 name="q">
+ <input type=hidden name=sid value='%(session_id)s'></form>
+ <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
+ from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
+ subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
+</div><div id=content>"""
+  PAGE_TAIL = "</div></body></html>"
+
+  def send_standard_headers(self, header_list=[],
+                            cachectrl='private', mimetype='text/html'):
+    if mimetype.startswith('text/') and ';' not in mimetype:
+      mimetype += ('; charset=utf-8')
+    self.send_header('Cache-Control', cachectrl)
+    self.send_header('Content-Type', mimetype)
+    for header in header_list:
+      self.send_header(header[0], header[1])
+    self.end_headers()
+
+  def send_full_response(self, message, code=200, msg='OK', mimetype='text/html',
+                         header_list=[], suppress_body=False):
+    message = str(message)
+    self.log_request(code, message and len(message) or '-')
+    self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
+    if code == 401:
+      self.send_header('WWW-Authenticate',
+                       'Basic realm=MP%d' % (time.time()/3600))
+    self.send_header('Content-Length', len(message or ''))
+    self.send_standard_headers(header_list=header_list, mimetype=mimetype)
+    if not suppress_body:
+      self.wfile.write(message or '')
+
+  def render_page(self, title='A huge pile of mail', body='',
+                 css=None, variables=None):
+    variables = variables or {
+      'session_id': 'unknown'
+    }
+    css = css or (body and self.PAGE_CONTENT_CSS
+                        or self.PAGE_LANDING_CSS)
+    return '\n'.join([self.PAGE_HEAD % variables,
+                      '<title>', title, '</title>',
+                      '<style type="text/css">', css, '</style>',
+                      self.PAGE_BODY % variables, body,
+                      self.PAGE_TAIL % variables])
+
+  def do_POST(self):
+    (scheme, netloc, path, params, query, frag) = urlparse(self.path)
+    if path.startswith('/xmlrpc/'):
+      return SimpleXMLRPCRequestHandler.do_POST(self)
+    else:
+      # FIXME: Parse posted data
+      return self.do_GET(post_data={'FIXME': 'FIXME'})
+
+  def do_HEAD(self):
+    return self.do_GET(suppress_body=True)
+
+  def do_GET(self, post_data={}, suppress_body=False):
+    (scheme, netloc, path, params, query, frag) = urlparse(self.path)
+    # FIXME: Evaluate query params
+    #  - fetch session
+    #  - run commands
+    #  - set variables
+    body = ''
+    variables = {}
+    self.send_full_response(self.render_page(body=body,
+                                             variables=variables),
+                            suppress_body=suppress_body)
+
   def log_message(self, fmt, *args):
     self.server.session.ui.say(fmt % (args))
+
 
 class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
   def __init__(self, session, sspec, handler):
     SimpleXMLRPCServer.__init__(self, sspec, handler)
     self.session = session
+    self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
+    if (self.sspec[1] != DEFAULT_PORT):
+      session.ui.say('Listening on http://%s:%s/' % self.sspec)
 
 class HttpWorker(threading.Thread):
   def __init__(self, session, sspec):
@@ -1803,8 +1906,13 @@ if __name__ == "__main__":
     # Create and start worker threads
     config.slow_worker = Worker('Slow worker', session)
     config.slow_worker.start()
-    config.http_worker = HttpWorker(session, ('', 0))
-    config.http_worker.start()
+
+    # Start the HTTP worker?
+    sspec = (config.get('http_host', 'localhost'),
+             config.get('http_port', DEFAULT_PORT))
+    if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
+      config.http_worker = HttpWorker(session, sspec)
+      config.http_worker.start()
 
     # Set globals from config here ...
     APPEND_FD_CACHE_SIZE = session.config.get('fd_cache_size',
@@ -1826,7 +1934,7 @@ if __name__ == "__main__":
       config.slow_worker.add_task(None, 'Load',
                                   lambda: Action_Load(None, config))
       session.interactive = session.ui.interactive = True
-      session.ui.print_intro(help=True)
+      session.ui.print_intro(help=True, http_worker=config.http_worker)
       Interact(session)
 
   finally:
