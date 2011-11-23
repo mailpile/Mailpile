@@ -9,9 +9,9 @@ Software Foundation, either version 3 of the License, or (at your option) any
 later version.
 """
 ###############################################################################
-import codecs, datetime, email.parser, getopt, hashlib, locale, mailbox
+import cgi, codecs, datetime, email.parser, getopt, hashlib, locale, mailbox
 import os, cPickle, random, re, rfc822, socket, struct, subprocess, sys
-import threading, time
+import tempfile, threading, time
 import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urlparse import parse_qs, urlparse
@@ -1135,6 +1135,25 @@ class TextUI(NullUI):
       viewer.wait()
 
 
+class HtmlUI(TextUI):
+
+  buffered_html = []
+
+  def say(self, text='', newline='\n', fd=None):
+    if text.startswith('\r') and self.buffered_html:
+      self.buffered_html[-1] = (text+newline).replace('\r', '')
+    else:
+      self.buffered_html.append(text+newline)
+
+  def render_html(self):
+    html = (''.join(self.buffered_html)
+              .replace('&', '&amp;')
+              .replace('>', '&gt;')
+              .replace('<', '&lt;'))
+    self.buffered_html = []
+    return '<pre>' + html + '</pre>'
+
+
 ##[ The Configuration Manager ]###############################################
 
 class ConfigManager(dict):
@@ -1780,13 +1799,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
   PAGE_HEAD = "<html><head>"
   PAGE_LANDING_CSS = """\
- body {text-align: center; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
+ body {text-align: center; background: #f7f7f7; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
  #search input {width: 170px;}"""
   PAGE_CONTENT_CSS = """\
- body, div, h1, #header {font-family: monospace; color: #000; padding: 0; margin: 0;}
+ body {background: #f7f7f7; font-family: monospace; color: #000;}
+ body, div, h1, #header {padding: 0; margin: 0;}
  #heading, #pile {padding: 5px 10px;}
  #heading {font-size: 3.75em; padding-left: 15px; padding-top: 15px; display: inline-block;}
- #pile {z-index: -3; color: #888; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
+ #pile {z-index: -3; color: #666; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
  #search {display: inline-block;}
  #search input {width: 400px;}"""
   PAGE_BODY = """\
@@ -1812,7 +1832,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
   def send_full_response(self, message, code=200, msg='OK', mimetype='text/html',
                          header_list=[], suppress_body=False):
-    message = str(message)
+    message = unicode(message).encode('utf-8')
     self.log_request(code, message and len(message) or '-')
     self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
     if code == 401:
@@ -1823,13 +1843,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     if not suppress_body:
       self.wfile.write(message or '')
 
-  def render_page(self, title='A huge pile of mail', body='',
-                 css=None, variables=None):
-    variables = variables or {
-      'session_id': 'unknown'
-    }
-    css = css or (body and self.PAGE_CONTENT_CSS
-                        or self.PAGE_LANDING_CSS)
+  def render_page(self, body='', title=None, css=None, variables=None):
+    title = title or 'A huge pile of mail'
+    variables = variables or {'session_id': ''}
+    css = css or (body and self.PAGE_CONTENT_CSS or self.PAGE_LANDING_CSS)
     return '\n'.join([self.PAGE_HEAD % variables,
                       '<title>', title, '</title>',
                       '<style type="text/css">', css, '</style>',
@@ -1840,22 +1857,58 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     if path.startswith('/xmlrpc/'):
       return SimpleXMLRPCRequestHandler.do_POST(self)
-    else:
-      # FIXME: Parse posted data
-      return self.do_GET(post_data={'FIXME': 'FIXME'})
+
+    post_data = { }
+    try:
+      clength = int(self.headers.get('content-length'))
+      ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+      if ctype == 'multipart/form-data':
+        post_data = cgi.parse_multipart(self.rfile, pdict)
+      elif ctype == 'application/x-www-form-urlencoded':
+        if clength > 5*1024*1024:
+          raise ValueError('OMG, input too big')
+        post_data = cgi.parse_qs(self.rfile.read(clength), 1)
+      else:
+        raise ValueError('Unknown content-type')
+
+    except (IOError, ValueError), e:
+      body = 'POST geborked: %s' % e
+      vlist = {'session_id': ''}
+      self.send_full_response(self.render_page(body=body,
+                                               title='Internal Error',
+                                               variables=vlist),
+                              code=500)
+      return None
+    return self.do_GET(post_data=post_data)
 
   def do_HEAD(self):
     return self.do_GET(suppress_body=True)
 
   def do_GET(self, post_data={}, suppress_body=False):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
-    # FIXME: Evaluate query params
-    #  - fetch session
-    #  - run commands
-    #  - set variables
-    body = ''
-    variables = {}
+    query_data = parse_qs(query)
+
+    session_id = post_data.get('sid', query_data.get('sid', [None]))[0]
+    session_id, session = self.server.get_session(session_id, create=HtmlUI)
+
+    args = post_data.get('q', query_data.get('q', ['']))[0].split()
+    if args:
+      try:
+        Action(session, args[0], ' '.join(args[1:]))
+        body = session.ui.render_html()
+        title = 'Uhm'
+      except UsageError, e:
+        body = 'Oops: %s' % e
+        title = 'Error'
+    else:
+      body = ''
+      title = None
+
+    variables = {
+      'session_id': session_id
+    }
     self.send_full_response(self.render_page(body=body,
+                                             title=title,
                                              variables=variables),
                             suppress_body=suppress_body)
 
@@ -1867,10 +1920,21 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
   def __init__(self, session, sspec, handler):
     SimpleXMLRPCServer.__init__(self, sspec, handler)
     self.session = session
+    self.sessions = {}
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
-    if (self.sspec[1] != DEFAULT_PORT):
-      session.ui.say('Listening on http://%s:%s/' % self.sspec)
+
+  def get_session(self, sid=None, create=False):
+    if not sid: sid = b36(int(time.time())) # FIXME: Insecure
+    if sid not in self.sessions:
+      if create:
+        session = Session(self.session.config)
+        session.ui = create()
+        self.sessions[sid] = session
+      else:
+        return (sid, None)
+    return (sid, self.sessions[sid])
+
 
 class HttpWorker(threading.Thread):
   def __init__(self, session, sspec):
