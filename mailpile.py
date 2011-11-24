@@ -1335,11 +1335,12 @@ class Worker(threading.Thread):
     self.ALIVE = False
     self.JOBS = []
     self.LOCK = threading.Condition()
+    self.pauses = 0
     self.session = session
 
-  def add_task(self, session, name, task, post_task=None):
+  def add_task(self, session, name, task):
     self.LOCK.acquire()
-    self.JOBS.append((session, name, task, post_task))
+    self.JOBS.append((session, name, task))
     self.LOCK.notify()
     self.LOCK.release()
 
@@ -1348,17 +1349,16 @@ class Worker(threading.Thread):
       # We run this in the foreground on the main interactive session,
       # so CTRL-C has a chance to work.
       try:
-        self.flush(session, wait=1)
-        self.pause()
+        self.pause(session)
         rv = task()
+        self.unpause(session)
       except KeyboardInterrupt:
+        self.unpause(session)
         raise
-      finally:
-        self.unpause()
     else:
       self.add_task(session, name, task)
       if session:
-        rv = session.wait_for_task()
+        rv = session.wait_for_task(name)
         if not rv:
           raise WorkerError()
       else:
@@ -1371,34 +1371,32 @@ class Worker(threading.Thread):
       self.LOCK.acquire()
       while len(self.JOBS) < 1:
         self.LOCK.wait()
-      session, name, task, post_task = self.JOBS.pop(0)
+      session, name, task = self.JOBS.pop(0)
       self.LOCK.release()
 
       try:
         if session:
           session.ui.mark('Starting: %s' % name)
-          session.report_task_completed(task(), name)
+          session.report_task_completed(name, task())
         else:
           task()
       except Exception, e:
         self.session.ui.error('%s failed in %s: %s' % (name, self.NAME, e))
-        if session: session.report_task_failed()
+        if session: session.report_task_failed(name)
 
-      if post_task:
-        try:
-          post_task()
-        except:
-          pass
+  def pause(self, session):
+    self.pauses += 1
+    if self.pauses == 1:
+      def pause_task():
+        session.report_task_completed('Pause', True)
+        session.wait_for_task('Unpause', quiet=True)
+      self.add_task(None, 'Pause', pause_task)
+      session.wait_for_task('Pause', quiet=True)
 
-  def flush(self, session, wait=0):
-    self.add_task(session, 'Flush', lambda: True, lambda: time.sleep(wait))
-    session.wait_for_task(quiet=True)
-
-  def pause(self):
-    self.LOCK.acquire()
-
-  def unpause(self):
-    self.LOCK.release()
+  def unpause(self, session):
+    self.pauses -= 1
+    if self.pauses == 0:
+      session.report_task_completed('Unpause', True)
 
   def die_soon(self, session=None):
     def die():
@@ -1420,28 +1418,33 @@ class Session(object):
   results = []
   searched = []
   displayed = (0, 0)
-  task_result = None
+  task_results = []
 
   def __init__(self, config):
     self.config = config
     self.wait_lock = threading.Condition()
 
-  def report_task_completed(self, result, name):
+  def report_task_completed(self, name, result):
     self.wait_lock.acquire()
-    self.task_result = result
-    self.wait_lock.notify()
+    self.task_results.append((name, result))
+    self.wait_lock.notify_all()
     self.wait_lock.release()
 
-  def report_task_failed(self):
-    self.report_task_completed(None)
+  def report_task_failed(self, name):
+    self.report_task_completed(name, None)
 
-  def wait_for_task(self, quiet=False):
-    self.wait_lock.acquire()
-    self.task_result = None
-    self.wait_lock.wait()
-    self.wait_lock.release()
-    self.ui.reset_marks(quiet=quiet)
-    return self.task_result
+  def wait_for_task(self, wait_for, quiet=False):
+    while True:
+      self.wait_lock.acquire()
+      for i in range(0, len(self.task_results)):
+        if self.task_results[i][0] == wait_for:
+          tn, rv = self.task_results.pop(i)
+          self.wait_lock.release()
+          self.ui.reset_marks(quiet=quiet)
+          return rv
+
+      self.wait_lock.wait()
+      self.wait_lock.release()
 
   def error(self, message):
     self.ui.error(message)
