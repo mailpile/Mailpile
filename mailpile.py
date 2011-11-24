@@ -1413,9 +1413,9 @@ class Worker(threading.Thread):
       self.ALIVE = False
     self.add_task(session, '%s shutdown' % self.NAME, die)
 
-  def quit(self, session=None):
+  def quit(self, session=None, join=True):
     self.die_soon(session=session)
-    self.join()
+    if join: self.join()
 
 
 class Session(object):
@@ -1462,23 +1462,24 @@ class Session(object):
 
 
 COMMANDS = {
-  'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      54),
+  'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      60),
   'F:': ('filter=',  'options',       'Add/edit/delete auto-tagging rules', 56),
   'h':  ('help',     '',              'Print help on how to use mailpile',   0),
-  'L':  ('load',     '',              'Load the metadata index',            11),
-  'n':  ('next',     '',              'Display next page of results',       31),
+  'L':  ('load',     '',              'Load the metadata index',            61),
+  'n':  ('next',     '',              'Display next page of results',       91),
   'o:': ('order=',   '[rev-]what',   ('Sort by: date, from, subject, '
-                                      'random or index'),                   33),
-  'O':  ('optimize', '',              'Optimize the keyword search index',  12),
-  'p':  ('previous', '',              'Display previous page of results',   32),
+                                      'random or index'),                   93),
+  'O':  ('optimize', '',              'Optimize the keyword search index',  62),
+  'p':  ('previous', '',              'Display previous page of results',   92),
   'P:': ('print=',   'var',           'Print a setting',                    52),
-  'R':  ('rescan',   '',              'Scan all mailboxes for new messages',13),
-  's:': ('search=',  'terms ...',     'Search!',                            30),
+  'R':  ('rescan',   '',              'Scan all mailboxes for new messages',63),
+  's:': ('search=',  'terms ...',     'Search!',                            90),
   'S:': ('set=',     'var=value',     'Change a setting',                   50),
-  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        34),
+  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        94),
   'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
   'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
-  'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          35),
+  'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          95),
+  'W':  ('www',      '',              'Just run the web server',            56),
 }
 def Choose_Messages(session, words):
   msg_ids = set()
@@ -1666,6 +1667,9 @@ def Action(session, opt, arg):
   if not opt or opt in ('h', 'help'):
     session.ui.print_help(COMMANDS,
                           session.config.get('tag', {}).values())
+
+  elif opt in ('W', 'webserver'):
+    while True: time.sleep(60)
 
   elif opt in ('A', 'add'):
     if os.path.exists(arg):
@@ -2001,7 +2005,8 @@ class HttpWorker(threading.Thread):
     self.httpd.serve_forever()
 
   def quit(self):
-    self.httpd.shutdown()
+    if self.httpd: self.httpd.shutdown()
+    self.httpd = None
 
 
 ##[ Main ]####################################################################
@@ -2049,12 +2054,16 @@ if __name__ == "__main__":
     except (getopt.GetoptError, UsageError), e:
       session.error(e)
 
+
     if not opts and not args:
       config.slow_worker.add_task(None, 'Load',
                                   lambda: Action_Load(None, config))
       session.interactive = session.ui.interactive = True
       session.ui.print_intro(help=True, http_worker=config.http_worker)
       Interact(session)
+
+  except KeyboardInterrupt:
+    pass
 
   finally:
     for w in (config.http_worker, config.slow_worker):
