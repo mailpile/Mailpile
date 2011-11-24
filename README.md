@@ -41,6 +41,15 @@ with CTRL-C is (relatively) nondestructive - it will try to save its
 progress and re-running should continue the scan from where it left off.
 
 
+## Web interface ##
+
+Mailpile has a built-in web server and will eventually include a proper
+web-based interface for searching, reading and composing e-mail.
+
+For now the interface simply mirrors the command-line UI described
+below, using the exact same commands...
+
+
 ## Basic use ##
 
 The most important command `mailpile.py` supports is the `search` command.
