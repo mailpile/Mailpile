@@ -160,9 +160,9 @@ class IncrementalMbox(mailbox.mbox):
         self._file = open(self._path, 'rb')
       else:
         raise
-    self._update_toc()
+    self.update_toc()
 
-  def _update_toc(self):
+  def update_toc(self):
     self._file.seek(0, 2)
     if self._file_length == self._file.tell(): return
 
@@ -1263,21 +1263,22 @@ class ConfigManager(dict):
     pfn = os.path.join(self.workdir(), 'pickled-mailbox.%s' % mailbox_id)
     for mid, mailbox_fn in self.get_mailboxes():
       if mid == mailbox_id:
-        if mid not in self.MBOX_CACHE:
-          try:
+        try:
+          if mid in self.MBOX_CACHE:
+            self.MBOX_CACHE[mid].update_toc()
+          else:
             if session:
               session.ui.mark(('%s: Updating: %s'
                                ) % (mailbox_id, mailbox_fn))
             self.MBOX_CACHE[mid] = cPickle.load(open(pfn, 'r'))
-          except (IOError, EOFError):
-            if session:
-              session.ui.mark(('%s: Opening: %s (may take a while)'
-                               ) % (mailbox_id, mailbox_fn))
-            mbox = IncrementalMbox(mailbox_fn)
-            mbox.save(session, to=pfn)
-            self.MBOX_CACHE[mid] = mbox
-        if mid in self.MBOX_CACHE:
-          return self.MBOX_CACHE[mid]
+        except (IOError, EOFError):
+          if session:
+            session.ui.mark(('%s: Opening: %s (may take a while)'
+                             ) % (mailbox_id, mailbox_fn))
+          mbox = IncrementalMbox(mailbox_fn)
+          mbox.save(session, to=pfn)
+          self.MBOX_CACHE[mid] = mbox
+        return self.MBOX_CACHE[mid]
     raise IndexError('No such mailbox: %s' % mailbox_id)
 
   def get_filters(self):
