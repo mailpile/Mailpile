@@ -1891,7 +1891,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     session_id = post_data.get('sid', query_data.get('sid', [None]))[0]
     session_id, session = self.server.get_session(session_id, create=HtmlUI)
 
-    args = post_data.get('q', query_data.get('q', ['']))[0].split()
+    cmd = post_data.get('q', query_data.get('q', ['']))[0]
+    args = cmd.decode('utf-8').split()
     if args:
       try:
         Action(session, args[0], ' '.join(args[1:]))
