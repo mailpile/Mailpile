@@ -1798,7 +1798,11 @@ def Interact(session):
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
-  PAGE_HEAD = "<html><head>"
+  PAGE_HEAD = """\
+<html><head>
+ <script type='text/javascript'>
+  function focus(eid) {document.getElementById(eid).focus();}
+ </script>"""
   PAGE_LANDING_CSS = """\
  body {text-align: center; background: #f7f7f7; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
  #search input {width: 170px;}"""
@@ -1809,11 +1813,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  #heading {font-size: 3.75em; padding-left: 15px; padding-top: 15px; display: inline-block;}
  #pile {z-index: -3; color: #666; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
  #search {display: inline-block;}
- #search input {width: 400px;}"""
-  PAGE_BODY = """\
-</head><body><div id=header>
+ #qbox {width: 400px;}"""
+  PAGE_BODY = """
+</head><body onLoad='focus("qbox");'><div id=header>
  <h1 id=heading>M<span style="font-size: 0.8em;">AILPILE</span>!</h1>
- <form method=post id=search><input type="text" size=100 name="q">
+ <form method=post id=search><input id=qbox type="text" size=100 name="q">
  <input type=hidden name=sid value='%(session_id)s'></form>
  <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
  from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
