@@ -272,7 +272,7 @@ class PostingList(object):
   """A posting list is a map of search terms to message IDs."""
 
   MAX_SIZE = 60  # perftest gives: 75% below 500ms, 50% below 100ms
-  HASH_LEN = 12
+  HASH_LEN = 24
 
   @classmethod
   def Optimize(cls, session, idx, force=False):
@@ -340,7 +340,7 @@ class PostingList(object):
 
   @classmethod
   def WordSig(cls, word):
-    return strhash(word, cls.HASH_LEN*2)
+    return strhash(word, cls.HASH_LEN)
 
   @classmethod
   def GetFile(cls, session, sig, mode='r'):
