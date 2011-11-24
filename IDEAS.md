@@ -4,9 +4,46 @@ These are random ideas that may or may not make sense.  Most of them
 were in one way or another inspired by conversations at FSCONS 2011.
 
 
+## Web interface URL design
+
+Designing the URL space for the web UI is important.  Some ideas:
+
+### Tags:
+
+    http://mailpile/Inbox/
+    http://mailpile/Lists/Partalistinn/
+    http://mailpile/Lists/Partalistinn/feed.xml
+    http://mailpile/Lists/Partalistinn/feed.json
+
+### Messages:
+
+    http://mailpile/=IDX/messageidsha1sum/
+    http://mailpile/=IDX/messageidsha1sum/message.xml
+    http://mailpile/=IDX/messageidsha1sum/message.json
+    http://mailpile/=IDX/messageidsha1sum/thread.json
+    http://mailpile/=IDX/messageidsha1sum/thread.xml
+    http://mailpile/=IDX/messageidsha1sum/inline/4/attachment.jpg
+    http://mailpile/=IDX/messageidsha1sum/preview/3/attachment.jpg
+    http://mailpile/=IDX/messageidsha1sum/download/3/attachment.jpg
+
+### Searches:
+
+    http://mailpile/?q=search%20terms
+    http://mailpile/feed.xml?q=search%20terms
+    http://mailpile/Inbox/?q=search%20terms
+    http://mailpile/Inbox/feed.json?q=search%20terms
+
+### Other commands:
+
+    http://mailpile/...?cmd=command%20args
+    http://mailpile/_/command?args=args
+    http://mailpile/_/command.xml?args=args
+    http://mailpile/_/command.json?args=args
+
+
 ## Encrypting the index
 
-How much performance to we lose if we GPG encrypt the index?  This could
+How much performance to we lose if we GPG encrypt the index?  This would
 hurt the indexing process but maybe not general use...
 
 

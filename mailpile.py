@@ -927,7 +927,9 @@ class NullUI(object):
 
   interactive = False
   buffering = False
-  buffered = []
+
+  def __init__(self):
+    self.buffered = []
 
   def print_key(self, key, config): pass
   def reset_marks(self, quiet=False): pass
@@ -1019,6 +1021,7 @@ class NullUI(object):
 
 class TextUI(NullUI):
   def __init__(self):
+    NullUI.__init__(self)
     self.times = []
 
   def print_key(self, key, config):
@@ -1137,7 +1140,9 @@ class TextUI(NullUI):
 
 class HtmlUI(TextUI):
 
-  buffered_html = []
+  def __init__(self):
+    TextUI.__init__(self)
+    self.buffered_html = []
 
   def say(self, text='', newline='\n', fd=None):
     if text.startswith('\r') and self.buffered_html:
@@ -1303,6 +1308,11 @@ class ConfigManager(dict):
     mailboxes.reverse()
     return [(fmt_mbxid(k), self['mailbox'][k]) for k in mailboxes]
 
+  def get_tag_id(self, tn):
+    tn = tn.lower()
+    tid = [t for t in self['tag'] if self['tag'][t].lower() == tn]
+    return tid and tid[0] or None
+
   def history_file(self):
     return self.get('history_file',
                     os.path.join(self.workdir(), 'history'))
@@ -1415,14 +1425,14 @@ class Session(object):
 
   ui = NullUI()
   order = None
-  results = []
-  searched = []
-  displayed = (0, 0)
-  task_results = []
 
   def __init__(self, config):
     self.config = config
     self.wait_lock = threading.Condition()
+    self.results = []
+    self.searched = []
+    self.displayed = (0, 0)
+    self.task_results = []
 
   def report_task_completed(self, name, result):
     self.wait_lock.acquire()
@@ -1521,8 +1531,7 @@ def Action_Tag(session, opt, arg, save=True):
     words = arg.split()
     op = words[0][0]
     tag = words[0][1:]
-    tag_id = [t for t in session.config['tag']
-              if session.config['tag'][t].lower() == tag.lower()][0]
+    tag_id = session.config.get_tag_id(tag)
 
     msg_ids = Choose_Messages(session, words[1:])
     if op == '-':
@@ -1557,8 +1566,7 @@ def Action_Filter_Add(session, config, flags, args):
   while args and args[0][0] in ('-', '+'):
     tag = args.pop(0)
     tags.append(tag)
-    tids.append([tag[0]+t for t in config['tag']
-                 if config['tag'][t].lower() == tag[1:].lower()][0])
+    tids.append(tag[0]+config.get_tag_id(tag[1:]))
 
   if not args:
     args = ['Filter for %s' % ' '.join(tags)]
@@ -1739,7 +1747,7 @@ def Action(session, opt, arg):
 
     # FIXME: This is all rather dumb.  Make it smarter!
     if opt not in ('s', 'search'):
-      tid = [t for t in config['tag'] if config['tag'][t].lower() == opt.lower()]
+      tid = config.get_tag_id(opt)
       session.searched = ['tag:%s' % tid[0]]
     elif ':' in arg or '-' in arg or '+' in arg:
       session.searched = arg.lower().split()
@@ -1808,25 +1816,33 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  </script>"""
   PAGE_LANDING_CSS = """\
  body {text-align: center; background: #f7f7f7; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
+ #heading a {text-decoration: none; color: #000;}
+ #footer {text-align: center; font-size: 0.5em; margin-top: 15px;}
  #search input {width: 170px;}"""
   PAGE_CONTENT_CSS = """\
  body {background: #f7f7f7; font-family: monospace; color: #000;}
  body, div, h1, #header {padding: 0; margin: 0;}
  #heading, #pile {padding: 5px 10px;}
  #heading {font-size: 3.75em; padding-left: 15px; padding-top: 15px; display: inline-block;}
+ #heading a {text-decoration: none; color: #000;}
  #pile {z-index: -3; color: #666; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
  #search {display: inline-block;}
+ #footer {text-align: center; font-size: 0.8em; margin-top: 15px;}
  #qbox {width: 400px;}"""
   PAGE_BODY = """
 </head><body onLoad='focus("qbox");'><div id=header>
- <h1 id=heading>M<span style="font-size: 0.8em;">AILPILE</span>!</h1>
+ <h1 id=heading><a href=/>M<span style="font-size: 0.8em;">AILPILE</span>!</a></h1>
  <form method=post id=search><input id=qbox type="text" size=100 name="q">
  <input type=hidden name=sid value='%(session_id)s'></form>
  <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
  from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
  subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
 </div><div id=content>"""
-  PAGE_TAIL = "</div></body></html>"
+  PAGE_TAIL = """\
+</div><p id=footer>&lt;
+ <a href="https://github.com/pagekite/Mailpile">free software</a>
+ by <a href="http://bre.klaki.net/">bre</a>
+&gt;</p></body></html>"""
 
   def send_standard_headers(self, header_list=[],
                             cachectrl='private', mimetype='text/html'):
@@ -1863,7 +1879,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
   def do_POST(self):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
-    if path.startswith('/xmlrpc/'):
+    if path.startswith('/::XMLRPC::/'):
       return SimpleXMLRPCRequestHandler.do_POST(self)
 
     post_data = { }
@@ -1892,15 +1908,45 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   def do_HEAD(self):
     return self.do_GET(suppress_body=True)
 
+  def parse_pqp(self, path, query_data, post_data):
+    q = post_data.get('q', query_data.get('q', ['']))[0].strip()
+
+    if path.startswith('/_/'):
+      cmd = ' '.join([path[3:], query_data.get('args', [''])[0]])
+    elif path.startswith('/='):
+      cmd = ' '.join(['view', ''])
+    elif len(path) > 1:
+      parts = path.split('/')[1:]
+      if parts:
+        fn = parts.pop()
+        tid = self.server.session.config.get_tag_id('/'.join(parts))
+        if tid:
+          if q and q[0] != '/':
+            q = 'tag:%s %s' % (tid, q)
+          elif not q:
+            q = 'tag:%s' % tid
+
+    if q:
+      if q[0] == '/':
+        cmd = q[1:]
+      else:
+        tag = ''
+        cmd = ''.join(['search ', tag, q])
+    else:
+      cmd = ''
+
+    cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
+    return cmd.decode('utf-8').split()
+
   def do_GET(self, post_data={}, suppress_body=False):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     query_data = parse_qs(query)
 
+    # FIXME: Check cookie?
     session_id = post_data.get('sid', query_data.get('sid', [None]))[0]
-    session_id, session = self.server.get_session(session_id, create=HtmlUI)
+    session_id, session = self.server.get_session(sid=session_id, create=HtmlUI)
 
-    cmd = post_data.get('q', query_data.get('q', ['']))[0]
-    args = cmd.decode('utf-8').split()
+    args = self.parse_pqp(path, query_data, post_data)
     if args:
       try:
         Action(session, args[0], ' '.join(args[1:]))
