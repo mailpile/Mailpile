@@ -1922,7 +1922,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   PAGE_HEAD = """\
 <html><head>
  <script type='text/javascript'>
-  function focus(eid) {document.getElementById(eid).focus();}
+  function focus(eid) {var e = document.getElementById(eid);e.focus();
+   if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
+   else {e.value = e.value;}}
  </script>"""
   PAGE_LANDING_CSS = """\
  body {text-align: center; background: #f0fff0; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
@@ -1961,7 +1963,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 </head><body onLoad='focus("qbox");'><form action='%(path)s' method=post>
 <div id=header>
  <h1 id=heading><a href=/>M<span style="font-size: 0.8em;">AILPILE</span>!</a></h1>
- <div id=search><input id=qbox type=text size=100 name="q" value="%(lastq)s"></div>
+ <div id=search><input id=qbox type=text size=100 name="q" value="%(lastq)s "></div>
  <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
  from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
  subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
