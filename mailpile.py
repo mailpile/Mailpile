@@ -1081,9 +1081,11 @@ class TextUI(NullUI):
     namelist = re.sub(',,,+,', ' .. ', namelist, 1)
     return namelist
 
-  def display_results(self, idx, results, start=0, end=None, num=20):
+  def display_results(self, idx, results, terms,
+                            start=0, end=None, num=None):
     if not results: return (0, 0)
 
+    num = num or 20
     if end: start = end - num
     if start > len(results): start = len(results)
     if start < 0: start = 0
@@ -1146,17 +1148,94 @@ class HtmlUI(TextUI):
 
   def say(self, text='', newline='\n', fd=None):
     if text.startswith('\r') and self.buffered_html:
-      self.buffered_html[-1] = (text+newline).replace('\r', '')
+      self.buffered_html[-1] = ('text', (text+newline).replace('\r', ''))
     else:
-      self.buffered_html.append(text+newline)
+      self.buffered_html.append(('text', text+newline))
+
+  def fmt(self, l):
+    return l[1].replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
 
   def render_html(self):
-    html = (''.join(self.buffered_html)
-              .replace('&', '&amp;')
-              .replace('>', '&gt;')
-              .replace('<', '&lt;'))
+    html = ''.join([l[1] for l in self.buffered_html if l[0] == 'html'])
+    html += '<br><pre>%s</pre>' % ''.join([self.fmt(l)
+                                           for l in self.buffered_html
+                                           if l[0] != 'html'])
     self.buffered_html = []
-    return '<pre>' + html + '</pre>'
+    return html
+
+  def display_results(self, idx, results, terms,
+                            start=0, end=None, num=None):
+    if not results: return (0, 0)
+
+    num = num or 50
+    if end: start = end - num
+    if start > len(results): start = len(results)
+    if start < 0: start = 0
+
+    count = 0
+    nav = []
+    if start > 0:
+      nav.append(('<a href="?q=/search @%d %s">&lt;&lt; page back</a>'
+                  ) % (max(1, start-num+1), ' '.join(terms)))
+    else:
+      nav.append('first page')
+    nav.append('(about %d results)' % len(results))
+    if start+num < len(results):
+      nav.append(('<a href="?q=/search @%d %s">next page &gt;&gt;</a>'
+                  ) % (start+num+1, ' '.join(terms)))
+    else:
+      nav.append('last page')
+    self.buffered_html.append(('html', ('<p id=rnavtop class=rnav>%s &nbsp; </p>'
+                                        ) % ' '.join(nav)))
+
+    self.buffered_html.append(('html', '<table class=results>'))
+    for mid in results[start:start+num]:
+      count += 1
+      try:
+        msg_info = idx.get_msg_by_idx(mid)
+        msg_subj = msg_info[idx.MSG_SUBJECT]
+
+        msg_from = [msg_info[idx.MSG_FROM]]
+        msg_from.extend([r[idx.MSG_FROM] for r in idx.get_replies(msg_info)])
+
+        msg_date = [msg_info[idx.MSG_DATE]]
+        msg_date.extend([r[idx.MSG_DATE] for r in idx.get_replies(msg_info)])
+        msg_date = datetime.date.fromtimestamp(max([
+                                                int(d, 36) for d in msg_date]))
+
+        msg_tags = sorted([idx.config['tag'].get(t,t)
+                           for t in idx.get_tags(msg_info=msg_info)
+                           if 'tag:%s' % t not in terms])
+        tag_classes = ['t_%s' % t.replace('/', '_') for t in msg_tags]
+        msg_tags = ['<a href="/%s/">%s</a>' % (t, re.sub("^.*/", "", t))
+                    for t in msg_tags]
+
+        self.buffered_html.append(('html', ('<tr class="result %s %s">'
+          '<td class=checkbox><input type=checkbox name=cb_%s></td>'
+          '<td class=from><a href="/=%s/%s/">%s</a></td>'
+          '<td class=subject><a href="/=%s/%s/">%s</a></td>'
+          '<td class=tags>%s</td>'
+          '<td class=date><a href="?q=date:%4.4d-%d-%d">%4.4d-%2.2d-%2.2d</a></td>'
+        '</tr>\n') % (
+          (count % 2) and 'odd' or 'even', ' '.join(tag_classes),
+          msg_info[idx.MSG_IDX],
+          msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
+          self.compact(self.names(msg_from), 25),
+          msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
+          msg_subj,
+          ', '.join(msg_tags),
+          msg_date.year, msg_date.month, msg_date.day,
+          msg_date.year, msg_date.month, msg_date.day,
+        )))
+      except (IndexError, ValueError):
+        pass
+    self.buffered_html.append(('html', '</table>'))
+    self.buffered_html.append(('html', ('<p id=rnavbot class=rnav>%s &nbsp; </p>'
+                                        ) % ' '.join(nav)))
+    session.ui.mark(('Listed %d-%d of %d results'
+                     ) % (start+1, start+count, len(results)))
+    return (start, count)
+
 
 
 ##[ The Configuration Manager ]###############################################
@@ -1362,7 +1441,7 @@ class Worker(threading.Thread):
         self.pause(session)
         rv = task()
         self.unpause(session)
-      except KeyboardInterrupt:
+      except:
         self.unpause(session)
         raise
     else:
@@ -1395,18 +1474,24 @@ class Worker(threading.Thread):
         if session: session.report_task_failed(name)
 
   def pause(self, session):
+    self.LOCK.acquire()
     self.pauses += 1
     if self.pauses == 1:
+      self.LOCK.release()
       def pause_task():
         session.report_task_completed('Pause', True)
         session.wait_for_task('Unpause', quiet=True)
       self.add_task(None, 'Pause', pause_task)
       session.wait_for_task('Pause', quiet=True)
+    else:
+      self.LOCK.release()
 
   def unpause(self, session):
+    self.LOCK.acquire()
     self.pauses -= 1
     if self.pauses == 0:
       session.report_task_completed('Unpause', True)
+    self.LOCK.release()
 
   def die_soon(self, session=None):
     def die():
@@ -1491,8 +1576,8 @@ def Choose_Messages(session, words):
       msg_ids |= set(session.results)
     elif what.startswith('='):
       try:
-        msg_ids.add(session.results[int(what[1:], 36)])
-      except:
+        msg_ids.add(int(what[1:], 36))
+      except ValueError:
         session.ui.warning('What message is %s?' % (what, ))
     elif '-' in what:
       try:
@@ -1662,7 +1747,7 @@ def Action_Optimize(session, config, arg):
 
 def Action(session, opt, arg):
   config = session.config
-  num_results = config.get('num_results', 20)
+  num_results = config.get('num_results', None)
 
   if not opt or opt in ('h', 'help'):
     session.ui.print_help(COMMANDS,
@@ -1721,6 +1806,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
     pos, count = session.displayed
     session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
                                                    start=pos+count,
                                                    num=num_results)
     session.ui.reset_marks()
@@ -1729,6 +1815,7 @@ def Action(session, opt, arg):
     idx = Action_Load(session, config)
     pos, count = session.displayed
     session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
                                                    end=pos,
                                                    num=num_results)
     session.ui.reset_marks()
@@ -1742,6 +1829,7 @@ def Action(session, opt, arg):
     idx.sort_results(session, session.results,
                      how=session.order)
     session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
                                                    num=num_results)
     session.ui.reset_marks()
 
@@ -1750,18 +1838,36 @@ def Action(session, opt, arg):
     idx = Action_Load(session, config)
 
     # FIXME: This is all rather dumb.  Make it smarter!
+
+    session.searched = []
     if opt not in ('s', 'search'):
       tid = config.get_tag_id(opt)
       session.searched = ['tag:%s' % tid[0]]
-    elif ':' in arg or '-' in arg or '+' in arg:
-      session.searched = arg.lower().split()
+
+    if arg.startswith('@'):
+      try:
+        if ' ' in arg:
+          args = arg[1:].split(' ')
+          start = args.pop(0)
+        else:
+          start, args = arg[1:], []
+        start = int(start)-1
+        arg = ' '.join(args)
+      except ValueError:
+        raise UsageError('Weird starting point')
     else:
-      session.searched = re.findall(WORD_REGEXP, arg.lower())
+      start = 0
+
+    if ':' in arg or '-' in arg or '+' in arg:
+      session.searched.extend(arg.lower().split())
+    else:
+      session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
 
     session.results = list(idx.search(session, session.searched))
-    idx.sort_results(session, session.results,
-                     how=session.order)
+    idx.sort_results(session, session.results, how=session.order)
     session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
+                                                   start=start,
                                                    num=num_results)
     session.ui.reset_marks()
 
@@ -1819,34 +1925,55 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   function focus(eid) {document.getElementById(eid).focus();}
  </script>"""
   PAGE_LANDING_CSS = """\
- body {text-align: center; background: #f7f7f7; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
+ body {text-align: center; background: #f0fff0; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
  #heading a {text-decoration: none; color: #000;}
  #footer {text-align: center; font-size: 0.5em; margin-top: 15px;}
  #search input {width: 170px;}"""
   PAGE_CONTENT_CSS = """\
- body {background: #f7f7f7; font-family: monospace; color: #000;}
- body, div, h1, #header {padding: 0; margin: 0;}
+ body {background: #f0fff0; font-family: monospace; color: #000;}
+ body, div, form, h1, #header {padding: 0; margin: 0;}
+ pre {display: inline-block; margin: 0 5px; padding: 0 5px;}
  #heading, #pile {padding: 5px 10px;}
  #heading {font-size: 3.75em; padding-left: 15px; padding-top: 15px; display: inline-block;}
  #heading a {text-decoration: none; color: #000;}
  #pile {z-index: -3; color: #666; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
  #search {display: inline-block;}
- #footer {text-align: center; font-size: 0.8em; margin-top: 15px;}
+ #content {width: 80%; float: right;}
+ #sidebar {width: 19%; float: left;}
+ #footer {text-align: center; font-size: 0.8em; margin-top: 15px; clear: both;}
+ p.rnav {margin: 4px 10px; text-align: center;}
+ table.results {table-layout: fixed; border: 0; border-collapse: collapse; width: 100%; font-size: 13px; font-family: Helvetica,Arial;}
+ tr.result td {overflow: hidden; white-space: nowrap; padding: 1px 3px; margin: 0;}
+ tr.result td a {color: #000; text-decoration: none;}
+ tr.result td a:hover {text-decoration: underline;}
+ tr.result td.date a {color: #777;}
+ tr.t_new {font-weight: bold;}
+ #rnavtop {position: absolute; top: 0; right: 0;}
+ td.date {width: 5em; font-size: 11px; text-align: center;}
+ td.checkbox {width: 1.5em; text-align: center;}
+ td.from {width: 25%; font-size: 12px;}
+ td.tags {width: 12%; font-size: 11px; text-align: center;}
+ tr.result td.tags a {color: #777;}
+ tr.odd {background: #ffffff;}
+ tr.even {background: #eeeeee;}
  #qbox {width: 400px;}"""
   PAGE_BODY = """
-</head><body onLoad='focus("qbox");'><div id=header>
+</head><body onLoad='focus("qbox");'><form action='%(path)s' method=post>
+<div id=header>
  <h1 id=heading><a href=/>M<span style="font-size: 0.8em;">AILPILE</span>!</a></h1>
- <form method=post id=search><input id=qbox type="text" size=100 name="q">
- <input type=hidden name=sid value='%(session_id)s'></form>
+ <div id=search><input id=qbox type=text size=100 name="q" value="%(lastq)s"></div>
  <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
  from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
  subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
 </div><div id=content>"""
+  PAGE_SIDEBAR = """\
+</div><div id=sidebar>"""
   PAGE_TAIL = """\
 </div><p id=footer>&lt;
  <a href="https://github.com/pagekite/Mailpile">free software</a>
  by <a href="http://bre.klaki.net/">bre</a>
-&gt;</p></body></html>"""
+&gt;</p>
+</form></body></html>"""
 
   def send_standard_headers(self, header_list=[],
                             cachectrl='private', mimetype='text/html'):
@@ -1871,14 +1998,16 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     if not suppress_body:
       self.wfile.write(message or '')
 
-  def render_page(self, body='', title=None, css=None, variables=None):
+  def render_page(self, body='', title=None, sidebar='', css=None,
+                        variables=None):
     title = title or 'A huge pile of mail'
-    variables = variables or {'session_id': ''}
+    variables = variables or {'lastq': '', 'path': ''}
     css = css or (body and self.PAGE_CONTENT_CSS or self.PAGE_LANDING_CSS)
     return '\n'.join([self.PAGE_HEAD % variables,
                       '<title>', title, '</title>',
                       '<style type="text/css">', css, '</style>',
                       self.PAGE_BODY % variables, body,
+                      self.PAGE_SIDEBAR % variables, sidebar,
                       self.PAGE_TAIL % variables])
 
   def do_POST(self):
@@ -1901,10 +2030,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     except (IOError, ValueError), e:
       body = 'POST geborked: %s' % e
-      vlist = {'session_id': ''}
       self.send_full_response(self.render_page(body=body,
-                                               title='Internal Error',
-                                               variables=vlist),
+                                               title='Internal Error'),
                               code=500)
       return None
     return self.do_GET(post_data=post_data)
@@ -1915,10 +2042,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   def parse_pqp(self, path, query_data, post_data):
     q = post_data.get('q', query_data.get('q', ['']))[0].strip()
 
+    cmd = ''
     if path.startswith('/_/'):
       cmd = ' '.join([path[3:], query_data.get('args', [''])[0]])
     elif path.startswith('/='):
-      cmd = ' '.join(['view', ''])
+      # FIXME: Should verify that the message ID matches!
+      cmd = ' '.join(['view', path[1:].split('/')[0]])
     elif len(path) > 1:
       parts = path.split('/')[1:]
       if parts:
@@ -1936,36 +2065,32 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       else:
         tag = ''
         cmd = ''.join(['search ', tag, q])
-    else:
-      cmd = ''
 
     cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
-    return cmd.decode('utf-8').split()
+    return cmd.decode('utf-8')
 
   def do_GET(self, post_data={}, suppress_body=False):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     query_data = parse_qs(query)
 
-    # FIXME: Check cookie?
-    session_id = post_data.get('sid', query_data.get('sid', [None]))[0]
-    session_id, session = self.server.get_session(sid=session_id, create=HtmlUI)
-
-    args = self.parse_pqp(path, query_data, post_data)
-    if args:
+    cmd = self.parse_pqp(path, query_data, post_data)
+    if cmd:
       try:
-        Action(session, args[0], ' '.join(args[1:]))
+        session = Session(self.server.session.config)
+        session.ui = HtmlUI()
+        for arg in cmd.split(' /'):
+          args = arg.strip().split()
+          Action(session, args[0], ' '.join(args[1:]))
         body = session.ui.render_html()
-        title = 'Uhm'
+        title = 'The biggest pile of mail EVAR!'
       except UsageError, e:
         body = 'Oops: %s' % e
-        title = 'Error'
+        title = 'Ouch, too much mail, urgle, *choke*'
     else:
       body = ''
       title = None
 
-    variables = {
-      'session_id': session_id
-    }
+    variables = {'lastq': cmd and '/%s' % cmd or '', 'path': path}
     self.send_full_response(self.render_page(body=body,
                                              title=title,
                                              variables=variables),
@@ -1982,17 +2107,6 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     self.sessions = {}
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
-
-  def get_session(self, sid=None, create=False):
-    if not sid: sid = b36(int(time.time())) # FIXME: Insecure
-    if sid not in self.sessions:
-      if create:
-        session = Session(self.session.config)
-        session.ui = create()
-        self.sessions[sid] = session
-      else:
-        return (sid, None)
-    return (sid, self.sessions[sid])
 
 
 class HttpWorker(threading.Thread):
