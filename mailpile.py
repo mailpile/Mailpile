@@ -1242,6 +1242,7 @@ class HtmlUI(TextUI):
 
 class ConfigManager(dict):
 
+  cron_worker = None
   http_worker = None
   slow_worker = None
   index = None
@@ -1249,7 +1250,7 @@ class ConfigManager(dict):
   MBOX_CACHE = {}
 
   INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size',
-          'http_port')
+          'http_port', 'rescan_interval')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
              'gpg_recipient', 'http_host', 'rescan_command')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags')
@@ -1413,8 +1414,83 @@ class ConfigManager(dict):
     self.index = idx
     return idx
 
+  def start_workers(config, session):
+    # Set globals from config first...
+    global APPEND_FD_CACHE_SIZE
+    APPEND_FD_CACHE_SIZE = config.get('fd_cache_size',
+                                      APPEND_FD_CACHE_SIZE)
+
+    # Start the workers
+    config.slow_worker = Worker('Slow worker', session)
+    config.slow_worker.start()
+    config.cron_worker = Cron('Cron worker', session)
+    config.cron_worker.start()
+
+    # Schedule periodic rescanning, if requested.
+    rescan_interval = config.get('rescan_interval', None)
+    if rescan_interval:
+      def rescan():
+        config.slow_worker.add_task(None, 'Rescan',
+                                    lambda: Action_Rescan(session, config))
+      config.cron_worker.add_task('rescan', rescan_interval, rescan)
+
+    # Start the HTTP worker if requested
+    sspec = (config.get('http_host', 'localhost'),
+             config.get('http_port', DEFAULT_PORT))
+    if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
+      config.http_worker = HttpWorker(session, sspec)
+      config.http_worker.start()
+
+  def stop_workers(config):
+    for w in (config.http_worker, config.slow_worker, config.cron_worker):
+      if w: w.quit()
+
 
 ##[ Sessions and User Commands ]###############################################
+
+class Cron(threading.Thread):
+
+  def __init__(self, name, session):
+    threading.Thread.__init__(self)
+    self.ALIVE = False
+    self.name = name
+    self.session = session
+    self.schedule = {}
+    self.sleep = 10
+
+  def add_task(self, name, interval, task):
+    self.schedule[name] = [name, interval, task, 0]
+    self.sleep = 60
+    for i in range(1, 61):
+      ok = True
+      for tn in self.schedule:
+        if (self.schedule[tn][1] % i) != 0: ok = False
+      if ok: self.sleep = i
+
+  def cancel_task(self, name):
+    if name in self.schedule:
+      del self.schedule[name]
+
+  def run(self):
+    self.ALIVE = True
+    while self.ALIVE:
+      now = time.time()
+      for task_spec in self.schedule.values():
+        name, interval, task, last = task_spec
+        if task_spec[3] + task_spec[1] <= now:
+          task_spec[3] = now
+          task()
+
+      # Some tasks take longer than others...
+      delay = time.time() - now + self.sleep
+      while delay > 0 and self.ALIVE:
+        time.sleep(min(1, delay))
+        delay -= 1
+
+  def quit(self, session=None, join=True):
+    self.ALIVE = False
+    if join: self.join()
+
 
 class Worker(threading.Thread):
 
@@ -1720,12 +1796,13 @@ def Action_Filter(session, opt, arg):
 
 def Action_Rescan(session, config):
   idx = config.index
-  count = 1
+  count = 0
   try:
     pre_command = config.get('rescan_command', None)
     if pre_command:
       session.ui.mark('Running: %s' % pre_command)
       subprocess.check_call(pre_command, shell=True)
+    count = 1
     for fid, fpath in config.get_mailboxes():
       count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
       session.ui.mark('\n')
@@ -1733,9 +1810,10 @@ def Action_Rescan(session, config):
     if not count: session.ui.mark('Nothing changed')
   except (KeyboardInterrupt, subprocess.CalledProcessError), e:
     session.ui.mark('Aborted: %s' % e)
-    session.ui.mark('\n')
   finally:
-    if count: idx.save(session)
+    if count:
+      session.ui.mark('\n')
+      idx.save(session)
   session.ui.reset_marks()
   return True
 
@@ -2155,19 +2233,7 @@ if __name__ == "__main__":
 
   try:
     # Create and start worker threads
-    config.slow_worker = Worker('Slow worker', session)
-    config.slow_worker.start()
-
-    # Start the HTTP worker?
-    sspec = (config.get('http_host', 'localhost'),
-             config.get('http_port', DEFAULT_PORT))
-    if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
-      config.http_worker = HttpWorker(session, sspec)
-      config.http_worker.start()
-
-    # Set globals from config here ...
-    APPEND_FD_CACHE_SIZE = session.config.get('fd_cache_size',
-                                              APPEND_FD_CACHE_SIZE)
+    config.start_workers(session)
 
     try:
       opts, args = getopt.getopt(sys.argv[1:],
@@ -2193,6 +2259,5 @@ if __name__ == "__main__":
     pass
 
   finally:
-    for w in (config.http_worker, config.slow_worker):
-      if w: w.quit()
+    config.stop_workers()
 
