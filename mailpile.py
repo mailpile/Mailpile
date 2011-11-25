@@ -1251,7 +1251,7 @@ class ConfigManager(dict):
   INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size',
           'http_port')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
-             'gpg_recipient', 'http_host')
+             'gpg_recipient', 'http_host', 'rescan_command')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags')
 
   def workdir(self):
@@ -1722,13 +1722,18 @@ def Action_Rescan(session, config):
   idx = config.index
   count = 1
   try:
+    pre_command = config.get('rescan_command', None)
+    if pre_command:
+      session.ui.mark('Running: %s' % pre_command)
+      subprocess.check_call(pre_command, shell=True)
     for fid, fpath in config.get_mailboxes():
       count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
       session.ui.mark('\n')
     count -= 1
     if not count: session.ui.mark('Nothing changed')
-  except KeyboardInterrupt:
-    session.ui.mark('Aborted')
+  except (KeyboardInterrupt, subprocess.CalledProcessError), e:
+    session.ui.mark('Aborted: %s' % e)
+    session.ui.mark('\n')
   finally:
     if count: idx.save(session)
   session.ui.reset_marks()
