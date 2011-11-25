@@ -1237,6 +1237,354 @@ class HtmlUI(TextUI):
     return (start, count)
 
 
+##[ Specialized threads ]######################################################
+
+class Cron(threading.Thread):
+
+  def __init__(self, name, session):
+    threading.Thread.__init__(self)
+    self.ALIVE = False
+    self.name = name
+    self.session = session
+    self.schedule = {}
+    self.sleep = 10
+
+  def add_task(self, name, interval, task):
+    self.schedule[name] = [name, interval, task, time.time()]
+    self.sleep = 60
+    for i in range(1, 61):
+      ok = True
+      for tn in self.schedule:
+        if (self.schedule[tn][1] % i) != 0: ok = False
+      if ok: self.sleep = i
+
+  def cancel_task(self, name):
+    if name in self.schedule:
+      del self.schedule[name]
+
+  def run(self):
+    self.ALIVE = True
+    while self.ALIVE:
+      now = time.time()
+      for task_spec in self.schedule.values():
+        name, interval, task, last = task_spec
+        if task_spec[3] + task_spec[1] <= now:
+          task_spec[3] = now
+          task()
+
+      # Some tasks take longer than others...
+      delay = time.time() - now + self.sleep
+      while delay > 0 and self.ALIVE:
+        time.sleep(min(1, delay))
+        delay -= 1
+
+  def quit(self, session=None, join=True):
+    self.ALIVE = False
+    if join: self.join()
+
+
+class Worker(threading.Thread):
+
+  def __init__(self, name, session):
+    threading.Thread.__init__(self)
+    self.NAME = name or 'Worker'
+    self.ALIVE = False
+    self.JOBS = []
+    self.LOCK = threading.Condition()
+    self.pauses = 0
+    self.session = session
+
+  def add_task(self, session, name, task):
+    self.LOCK.acquire()
+    self.JOBS.append((session, name, task))
+    self.LOCK.notify()
+    self.LOCK.release()
+
+  def do(self, session, name, task):
+    if session and session.main:
+      # We run this in the foreground on the main interactive session,
+      # so CTRL-C has a chance to work.
+      try:
+        self.pause(session)
+        rv = task()
+        self.unpause(session)
+      except:
+        self.unpause(session)
+        raise
+    else:
+      self.add_task(session, name, task)
+      if session:
+        rv = session.wait_for_task(name)
+        if not rv:
+          raise WorkerError()
+      else:
+        rv = True
+    return rv
+
+  def run(self):
+    self.ALIVE = True
+    while self.ALIVE:
+      self.LOCK.acquire()
+      while len(self.JOBS) < 1:
+        self.LOCK.wait()
+      session, name, task = self.JOBS.pop(0)
+      self.LOCK.release()
+
+      try:
+        if session:
+          session.ui.mark('Starting: %s' % name)
+          session.report_task_completed(name, task())
+        else:
+          task()
+      except Exception, e:
+        self.session.ui.error('%s failed in %s: %s' % (name, self.NAME, e))
+        if session: session.report_task_failed(name)
+
+  def pause(self, session):
+    self.LOCK.acquire()
+    self.pauses += 1
+    if self.pauses == 1:
+      self.LOCK.release()
+      def pause_task():
+        session.report_task_completed('Pause', True)
+        session.wait_for_task('Unpause', quiet=True)
+      self.add_task(None, 'Pause', pause_task)
+      session.wait_for_task('Pause', quiet=True)
+    else:
+      self.LOCK.release()
+
+  def unpause(self, session):
+    self.LOCK.acquire()
+    self.pauses -= 1
+    if self.pauses == 0:
+      session.report_task_completed('Unpause', True)
+    self.LOCK.release()
+
+  def die_soon(self, session=None):
+    def die():
+      self.ALIVE = False
+    self.add_task(session, '%s shutdown' % self.NAME, die)
+
+  def quit(self, session=None, join=True):
+    self.die_soon(session=session)
+    if join: self.join()
+
+
+##[ Web and XML-RPC Interface ]###############################################
+
+class HttpRequestHandler(SimpleXMLRPCRequestHandler):
+
+  PAGE_HEAD = """\
+<html><head>
+ <script type='text/javascript'>
+  function focus(eid) {var e = document.getElementById(eid);e.focus();
+   if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
+   else {e.value = e.value;}}
+ </script>"""
+  PAGE_LANDING_CSS = """\
+ body {text-align: center; background: #f0fff0; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
+ #heading a {text-decoration: none; color: #000;}
+ #footer {text-align: center; font-size: 0.5em; margin-top: 15px;}
+ #search input {width: 170px;}"""
+  PAGE_CONTENT_CSS = """\
+ body {background: #f0fff0; font-family: monospace; color: #000;}
+ body, div, form, h1, #header {padding: 0; margin: 0;}
+ pre {display: inline-block; margin: 0 5px; padding: 0 5px;}
+ #heading, #pile {padding: 5px 10px;}
+ #heading {font-size: 3.75em; padding-left: 15px; padding-top: 15px; display: inline-block;}
+ #heading a {text-decoration: none; color: #000;}
+ #pile {z-index: -3; color: #666; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
+ #search {display: inline-block;}
+ #content {width: 80%; float: right;}
+ #sidebar {width: 19%; float: left;}
+ #footer {text-align: center; font-size: 0.8em; margin-top: 15px; clear: both;}
+ p.rnav {margin: 4px 10px; text-align: center;}
+ table.results {table-layout: fixed; border: 0; border-collapse: collapse; width: 100%; font-size: 13px; font-family: Helvetica,Arial;}
+ tr.result td {overflow: hidden; white-space: nowrap; padding: 1px 3px; margin: 0;}
+ tr.result td a {color: #000; text-decoration: none;}
+ tr.result td a:hover {text-decoration: underline;}
+ tr.result td.date a {color: #777;}
+ tr.t_new {font-weight: bold;}
+ #rnavtop {position: absolute; top: 0; right: 0;}
+ td.date {width: 5em; font-size: 11px; text-align: center;}
+ td.checkbox {width: 1.5em; text-align: center;}
+ td.from {width: 25%; font-size: 12px;}
+ td.tags {width: 12%; font-size: 11px; text-align: center;}
+ tr.result td.tags a {color: #777;}
+ tr.odd {background: #ffffff;}
+ tr.even {background: #eeeeee;}
+ #qbox {width: 400px;}"""
+  PAGE_BODY = """
+</head><body onLoad='focus("qbox");'><form action='%(path)s' method=post>
+<div id=header>
+ <h1 id=heading><a href=/>M<span style="font-size: 0.8em;">AILPILE</span>!</a></h1>
+ <div id=search><input id=qbox type=text size=100 name="q" value="%(lastq)s "></div>
+ <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
+ from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
+ subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
+</div><div id=content>"""
+  PAGE_SIDEBAR = """\
+</div><div id=sidebar>"""
+  PAGE_TAIL = """\
+</div><p id=footer>&lt;
+ <a href="https://github.com/pagekite/Mailpile">free software</a>
+ by <a href="http://bre.klaki.net/">bre</a>
+&gt;</p>
+</form></body></html>"""
+
+  def send_standard_headers(self, header_list=[],
+                            cachectrl='private', mimetype='text/html'):
+    if mimetype.startswith('text/') and ';' not in mimetype:
+      mimetype += ('; charset=utf-8')
+    self.send_header('Cache-Control', cachectrl)
+    self.send_header('Content-Type', mimetype)
+    for header in header_list:
+      self.send_header(header[0], header[1])
+    self.end_headers()
+
+  def send_full_response(self, message, code=200, msg='OK', mimetype='text/html',
+                         header_list=[], suppress_body=False):
+    message = unicode(message).encode('utf-8')
+    self.log_request(code, message and len(message) or '-')
+    self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
+    if code == 401:
+      self.send_header('WWW-Authenticate',
+                       'Basic realm=MP%d' % (time.time()/3600))
+    self.send_header('Content-Length', len(message or ''))
+    self.send_standard_headers(header_list=header_list, mimetype=mimetype)
+    if not suppress_body:
+      self.wfile.write(message or '')
+
+  def render_page(self, body='', title=None, sidebar='', css=None,
+                        variables=None):
+    title = title or 'A huge pile of mail'
+    variables = variables or {'lastq': '', 'path': ''}
+    css = css or (body and self.PAGE_CONTENT_CSS or self.PAGE_LANDING_CSS)
+    return '\n'.join([self.PAGE_HEAD % variables,
+                      '<title>', title, '</title>',
+                      '<style type="text/css">', css, '</style>',
+                      self.PAGE_BODY % variables, body,
+                      self.PAGE_SIDEBAR % variables, sidebar,
+                      self.PAGE_TAIL % variables])
+
+  def do_POST(self):
+    (scheme, netloc, path, params, query, frag) = urlparse(self.path)
+    if path.startswith('/::XMLRPC::/'):
+      return SimpleXMLRPCRequestHandler.do_POST(self)
+
+    post_data = { }
+    try:
+      clength = int(self.headers.get('content-length'))
+      ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+      if ctype == 'multipart/form-data':
+        post_data = cgi.parse_multipart(self.rfile, pdict)
+      elif ctype == 'application/x-www-form-urlencoded':
+        if clength > 5*1024*1024:
+          raise ValueError('OMG, input too big')
+        post_data = cgi.parse_qs(self.rfile.read(clength), 1)
+      else:
+        raise ValueError('Unknown content-type')
+
+    except (IOError, ValueError), e:
+      body = 'POST geborked: %s' % e
+      self.send_full_response(self.render_page(body=body,
+                                               title='Internal Error'),
+                              code=500)
+      return None
+    return self.do_GET(post_data=post_data)
+
+  def do_HEAD(self):
+    return self.do_GET(suppress_body=True)
+
+  def parse_pqp(self, path, query_data, post_data):
+    q = post_data.get('q', query_data.get('q', ['']))[0].strip()
+
+    cmd = ''
+    if path.startswith('/_/'):
+      cmd = ' '.join([path[3:], query_data.get('args', [''])[0]])
+    elif path.startswith('/='):
+      # FIXME: Should verify that the message ID matches!
+      cmd = ' '.join(['view', path[1:].split('/')[0]])
+    elif len(path) > 1:
+      parts = path.split('/')[1:]
+      if parts:
+        fn = parts.pop()
+        tid = self.server.session.config.get_tag_id('/'.join(parts))
+        if tid:
+          if q and q[0] != '/':
+            q = 'tag:%s %s' % (tid, q)
+          elif not q:
+            q = 'tag:%s' % tid
+
+    if q:
+      if q[0] == '/':
+        cmd = q[1:]
+      else:
+        tag = ''
+        cmd = ''.join(['search ', tag, q])
+
+    cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
+    return cmd.decode('utf-8')
+
+  def do_GET(self, post_data={}, suppress_body=False):
+    (scheme, netloc, path, params, query, frag) = urlparse(self.path)
+    query_data = parse_qs(query)
+
+    cmd = self.parse_pqp(path, query_data, post_data)
+    if cmd:
+      try:
+        session = Session(self.server.session.config)
+        session.ui = HtmlUI()
+        for arg in cmd.split(' /'):
+          args = arg.strip().split()
+          Action(session, args[0], ' '.join(args[1:]))
+        body = session.ui.render_html()
+        title = 'The biggest pile of mail EVAR!'
+      except UsageError, e:
+        body = 'Oops: %s' % e
+        title = 'Ouch, too much mail, urgle, *choke*'
+    else:
+      body = ''
+      title = None
+
+    variables = {'lastq': cmd and '/%s' % cmd or '', 'path': path}
+    self.send_full_response(self.render_page(body=body,
+                                             title=title,
+                                             variables=variables),
+                            suppress_body=suppress_body)
+
+  def log_message(self, fmt, *args):
+    self.server.session.ui.say(fmt % (args))
+
+
+class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
+  def __init__(self, session, sspec, handler):
+    SimpleXMLRPCServer.__init__(self, sspec, handler)
+    self.session = session
+    self.sessions = {}
+    self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
+
+  def finish_request(self, request, client_address):
+    try:
+      SimpleXMLRPCServer.finish_request(self, request, client_address)
+    except socket.error:
+      pass
+
+
+class HttpWorker(threading.Thread):
+  def __init__(self, session, sspec):
+    threading.Thread.__init__(self)
+    self.httpd = HttpServer(session, sspec, HttpRequestHandler)
+    self.session = session
+
+  def run(self):
+    self.httpd.serve_forever()
+
+  def quit(self):
+    if self.httpd: self.httpd.shutdown()
+    self.httpd = None
+
 
 ##[ The Configuration Manager ]###############################################
 
@@ -1447,137 +1795,6 @@ class ConfigManager(dict):
 
 
 ##[ Sessions and User Commands ]###############################################
-
-class Cron(threading.Thread):
-
-  def __init__(self, name, session):
-    threading.Thread.__init__(self)
-    self.ALIVE = False
-    self.name = name
-    self.session = session
-    self.schedule = {}
-    self.sleep = 10
-
-  def add_task(self, name, interval, task):
-    self.schedule[name] = [name, interval, task, 0]
-    self.sleep = 60
-    for i in range(1, 61):
-      ok = True
-      for tn in self.schedule:
-        if (self.schedule[tn][1] % i) != 0: ok = False
-      if ok: self.sleep = i
-
-  def cancel_task(self, name):
-    if name in self.schedule:
-      del self.schedule[name]
-
-  def run(self):
-    self.ALIVE = True
-    while self.ALIVE:
-      now = time.time()
-      for task_spec in self.schedule.values():
-        name, interval, task, last = task_spec
-        if task_spec[3] + task_spec[1] <= now:
-          task_spec[3] = now
-          task()
-
-      # Some tasks take longer than others...
-      delay = time.time() - now + self.sleep
-      while delay > 0 and self.ALIVE:
-        time.sleep(min(1, delay))
-        delay -= 1
-
-  def quit(self, session=None, join=True):
-    self.ALIVE = False
-    if join: self.join()
-
-
-class Worker(threading.Thread):
-
-  def __init__(self, name, session):
-    threading.Thread.__init__(self)
-    self.NAME = name or 'Worker'
-    self.ALIVE = False
-    self.JOBS = []
-    self.LOCK = threading.Condition()
-    self.pauses = 0
-    self.session = session
-
-  def add_task(self, session, name, task):
-    self.LOCK.acquire()
-    self.JOBS.append((session, name, task))
-    self.LOCK.notify()
-    self.LOCK.release()
-
-  def do(self, session, name, task):
-    if session and session.main:
-      # We run this in the foreground on the main interactive session,
-      # so CTRL-C has a chance to work.
-      try:
-        self.pause(session)
-        rv = task()
-        self.unpause(session)
-      except:
-        self.unpause(session)
-        raise
-    else:
-      self.add_task(session, name, task)
-      if session:
-        rv = session.wait_for_task(name)
-        if not rv:
-          raise WorkerError()
-      else:
-        rv = True
-    return rv
-
-  def run(self):
-    self.ALIVE = True
-    while self.ALIVE:
-      self.LOCK.acquire()
-      while len(self.JOBS) < 1:
-        self.LOCK.wait()
-      session, name, task = self.JOBS.pop(0)
-      self.LOCK.release()
-
-      try:
-        if session:
-          session.ui.mark('Starting: %s' % name)
-          session.report_task_completed(name, task())
-        else:
-          task()
-      except Exception, e:
-        self.session.ui.error('%s failed in %s: %s' % (name, self.NAME, e))
-        if session: session.report_task_failed(name)
-
-  def pause(self, session):
-    self.LOCK.acquire()
-    self.pauses += 1
-    if self.pauses == 1:
-      self.LOCK.release()
-      def pause_task():
-        session.report_task_completed('Pause', True)
-        session.wait_for_task('Unpause', quiet=True)
-      self.add_task(None, 'Pause', pause_task)
-      session.wait_for_task('Pause', quiet=True)
-    else:
-      self.LOCK.release()
-
-  def unpause(self, session):
-    self.LOCK.acquire()
-    self.pauses -= 1
-    if self.pauses == 0:
-      session.report_task_completed('Unpause', True)
-    self.LOCK.release()
-
-  def die_soon(self, session=None):
-    def die():
-      self.ALIVE = False
-    self.add_task(session, '%s shutdown' % self.NAME, die)
-
-  def quit(self, session=None, join=True):
-    self.die_soon(session=session)
-    if join: self.join()
-
 
 class Session(object):
 
@@ -1995,223 +2212,6 @@ def Interact(session):
     print
 
   readline.write_history_file(session.config.history_file())
-
-
-##[ Web and XML-RPC Interface ]###############################################
-
-
-class HttpRequestHandler(SimpleXMLRPCRequestHandler):
-
-  PAGE_HEAD = """\
-<html><head>
- <script type='text/javascript'>
-  function focus(eid) {var e = document.getElementById(eid);e.focus();
-   if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
-   else {e.value = e.value;}}
- </script>"""
-  PAGE_LANDING_CSS = """\
- body {text-align: center; background: #f0fff0; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
- #heading a {text-decoration: none; color: #000;}
- #footer {text-align: center; font-size: 0.5em; margin-top: 15px;}
- #search input {width: 170px;}"""
-  PAGE_CONTENT_CSS = """\
- body {background: #f0fff0; font-family: monospace; color: #000;}
- body, div, form, h1, #header {padding: 0; margin: 0;}
- pre {display: inline-block; margin: 0 5px; padding: 0 5px;}
- #heading, #pile {padding: 5px 10px;}
- #heading {font-size: 3.75em; padding-left: 15px; padding-top: 15px; display: inline-block;}
- #heading a {text-decoration: none; color: #000;}
- #pile {z-index: -3; color: #666; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
- #search {display: inline-block;}
- #content {width: 80%; float: right;}
- #sidebar {width: 19%; float: left;}
- #footer {text-align: center; font-size: 0.8em; margin-top: 15px; clear: both;}
- p.rnav {margin: 4px 10px; text-align: center;}
- table.results {table-layout: fixed; border: 0; border-collapse: collapse; width: 100%; font-size: 13px; font-family: Helvetica,Arial;}
- tr.result td {overflow: hidden; white-space: nowrap; padding: 1px 3px; margin: 0;}
- tr.result td a {color: #000; text-decoration: none;}
- tr.result td a:hover {text-decoration: underline;}
- tr.result td.date a {color: #777;}
- tr.t_new {font-weight: bold;}
- #rnavtop {position: absolute; top: 0; right: 0;}
- td.date {width: 5em; font-size: 11px; text-align: center;}
- td.checkbox {width: 1.5em; text-align: center;}
- td.from {width: 25%; font-size: 12px;}
- td.tags {width: 12%; font-size: 11px; text-align: center;}
- tr.result td.tags a {color: #777;}
- tr.odd {background: #ffffff;}
- tr.even {background: #eeeeee;}
- #qbox {width: 400px;}"""
-  PAGE_BODY = """
-</head><body onLoad='focus("qbox");'><form action='%(path)s' method=post>
-<div id=header>
- <h1 id=heading><a href=/>M<span style="font-size: 0.8em;">AILPILE</span>!</a></h1>
- <div id=search><input id=qbox type=text size=100 name="q" value="%(lastq)s "></div>
- <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
- from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
- subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
-</div><div id=content>"""
-  PAGE_SIDEBAR = """\
-</div><div id=sidebar>"""
-  PAGE_TAIL = """\
-</div><p id=footer>&lt;
- <a href="https://github.com/pagekite/Mailpile">free software</a>
- by <a href="http://bre.klaki.net/">bre</a>
-&gt;</p>
-</form></body></html>"""
-
-  def send_standard_headers(self, header_list=[],
-                            cachectrl='private', mimetype='text/html'):
-    if mimetype.startswith('text/') and ';' not in mimetype:
-      mimetype += ('; charset=utf-8')
-    self.send_header('Cache-Control', cachectrl)
-    self.send_header('Content-Type', mimetype)
-    for header in header_list:
-      self.send_header(header[0], header[1])
-    self.end_headers()
-
-  def send_full_response(self, message, code=200, msg='OK', mimetype='text/html',
-                         header_list=[], suppress_body=False):
-    message = unicode(message).encode('utf-8')
-    self.log_request(code, message and len(message) or '-')
-    self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
-    if code == 401:
-      self.send_header('WWW-Authenticate',
-                       'Basic realm=MP%d' % (time.time()/3600))
-    self.send_header('Content-Length', len(message or ''))
-    self.send_standard_headers(header_list=header_list, mimetype=mimetype)
-    if not suppress_body:
-      self.wfile.write(message or '')
-
-  def render_page(self, body='', title=None, sidebar='', css=None,
-                        variables=None):
-    title = title or 'A huge pile of mail'
-    variables = variables or {'lastq': '', 'path': ''}
-    css = css or (body and self.PAGE_CONTENT_CSS or self.PAGE_LANDING_CSS)
-    return '\n'.join([self.PAGE_HEAD % variables,
-                      '<title>', title, '</title>',
-                      '<style type="text/css">', css, '</style>',
-                      self.PAGE_BODY % variables, body,
-                      self.PAGE_SIDEBAR % variables, sidebar,
-                      self.PAGE_TAIL % variables])
-
-  def do_POST(self):
-    (scheme, netloc, path, params, query, frag) = urlparse(self.path)
-    if path.startswith('/::XMLRPC::/'):
-      return SimpleXMLRPCRequestHandler.do_POST(self)
-
-    post_data = { }
-    try:
-      clength = int(self.headers.get('content-length'))
-      ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
-      if ctype == 'multipart/form-data':
-        post_data = cgi.parse_multipart(self.rfile, pdict)
-      elif ctype == 'application/x-www-form-urlencoded':
-        if clength > 5*1024*1024:
-          raise ValueError('OMG, input too big')
-        post_data = cgi.parse_qs(self.rfile.read(clength), 1)
-      else:
-        raise ValueError('Unknown content-type')
-
-    except (IOError, ValueError), e:
-      body = 'POST geborked: %s' % e
-      self.send_full_response(self.render_page(body=body,
-                                               title='Internal Error'),
-                              code=500)
-      return None
-    return self.do_GET(post_data=post_data)
-
-  def do_HEAD(self):
-    return self.do_GET(suppress_body=True)
-
-  def parse_pqp(self, path, query_data, post_data):
-    q = post_data.get('q', query_data.get('q', ['']))[0].strip()
-
-    cmd = ''
-    if path.startswith('/_/'):
-      cmd = ' '.join([path[3:], query_data.get('args', [''])[0]])
-    elif path.startswith('/='):
-      # FIXME: Should verify that the message ID matches!
-      cmd = ' '.join(['view', path[1:].split('/')[0]])
-    elif len(path) > 1:
-      parts = path.split('/')[1:]
-      if parts:
-        fn = parts.pop()
-        tid = self.server.session.config.get_tag_id('/'.join(parts))
-        if tid:
-          if q and q[0] != '/':
-            q = 'tag:%s %s' % (tid, q)
-          elif not q:
-            q = 'tag:%s' % tid
-
-    if q:
-      if q[0] == '/':
-        cmd = q[1:]
-      else:
-        tag = ''
-        cmd = ''.join(['search ', tag, q])
-
-    cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
-    return cmd.decode('utf-8')
-
-  def do_GET(self, post_data={}, suppress_body=False):
-    (scheme, netloc, path, params, query, frag) = urlparse(self.path)
-    query_data = parse_qs(query)
-
-    cmd = self.parse_pqp(path, query_data, post_data)
-    if cmd:
-      try:
-        session = Session(self.server.session.config)
-        session.ui = HtmlUI()
-        for arg in cmd.split(' /'):
-          args = arg.strip().split()
-          Action(session, args[0], ' '.join(args[1:]))
-        body = session.ui.render_html()
-        title = 'The biggest pile of mail EVAR!'
-      except UsageError, e:
-        body = 'Oops: %s' % e
-        title = 'Ouch, too much mail, urgle, *choke*'
-    else:
-      body = ''
-      title = None
-
-    variables = {'lastq': cmd and '/%s' % cmd or '', 'path': path}
-    self.send_full_response(self.render_page(body=body,
-                                             title=title,
-                                             variables=variables),
-                            suppress_body=suppress_body)
-
-  def log_message(self, fmt, *args):
-    self.server.session.ui.say(fmt % (args))
-
-
-class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
-  def __init__(self, session, sspec, handler):
-    SimpleXMLRPCServer.__init__(self, sspec, handler)
-    self.session = session
-    self.sessions = {}
-    self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
-
-  def finish_request(self, request, client_address):
-    try:
-      SimpleXMLRPCServer.finish_request(self, request, client_address)
-    except socket.error:
-      pass
-
-
-class HttpWorker(threading.Thread):
-  def __init__(self, session, sspec):
-    threading.Thread.__init__(self)
-    self.httpd = HttpServer(session, sspec, HttpRequestHandler)
-    self.session = session
-
-  def run(self):
-    self.httpd.serve_forever()
-
-  def quit(self):
-    if self.httpd: self.httpd.shutdown()
-    self.httpd = None
 
 
 ##[ Main ]####################################################################
