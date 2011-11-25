@@ -2110,6 +2110,12 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
 
+  def finish_request(self, request, client_address):
+    try:
+      SimpleXMLRPCServer.finish_request(self, request, client_address)
+    except socket.error:
+      pass
+
 
 class HttpWorker(threading.Thread):
   def __init__(self, session, sspec):
