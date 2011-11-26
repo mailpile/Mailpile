@@ -595,7 +595,7 @@ class MailIndex(object):
         try:
           msg_date = int(rfc822.mktime_tz(
                                    rfc822.parsedate_tz(self.hdr(msg, 'date'))))
-        except ValueError:
+        except (ValueError, TypeError):
           session.ui.warning('Date parsing: %s' % (sys.exc_info(), ))
           # This is a hack: We assume the messages in the mailbox are in
           # chronological order and just add 1 second to the date of the last
