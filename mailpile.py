@@ -138,6 +138,16 @@ def cached_open(filename, mode):
 
 ##[ Enhanced mailbox and message classes ]#####################################
 
+## Dear hackers!
+##
+## It would be great to have more mailbox classes.  They should be derived
+## from or implement the same interfaces as Python's native mailboxes, with
+## the additional constraint that they support pickling and unpickling using
+## cPickle.  The mailbox class is also responsible for generating and parsing
+## a "pointer" which should be a short as possible while still encoding the
+## info required to locate this message and this message only within the
+## larger mailbox.
+
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
 
