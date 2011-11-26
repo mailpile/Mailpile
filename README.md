@@ -258,8 +258,14 @@ patches for:
    * A shell scripting interface for automation
    * An XML-RPC interface to the search engine
    * A pretty UI on top of said XML-RPC interface
+   * A routine for importing/indexing messages from Thunderbird,
+     Evolution, KMail, Outlook, ... which converts folder structure
+     into tags.
 
 I am especially interested in help with UI work, I suck at that.
+
+Also, I do not use Evolution, Outlook etc, or other mailbox formats, so if
+you want features related to them, patches will speed things up *a lot*.
 
 Note that Mailpile's emphasis is on *speed* and most of the features
 above have already basic designs "in my head".  Chat with me on freenode
