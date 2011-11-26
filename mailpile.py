@@ -1,7 +1,8 @@
 #!/usr/bin/python
 ABOUT="""\
-Mailpile.py - a tool for searching and      Copyright 2011, Bjarni R. Einarsson
-             organizing piles of e-mail                <http://bre.klaki.net/>
+Mailpile.py          a tool               Copyright 2011, Bjarni R. Einarsson
+               for searching and                      <http://bre.klaki.net/>
+           organizing piles of e-mail
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the  GNU  Affero General Public License as published by the Free
@@ -533,14 +534,17 @@ class MailIndex(object):
       if cs:
         try:
           return text.decode(cs)
-        except (UnicodeEncodeError, LookupError):
+        except (UnicodeEncodeError, UnicodeDecodeError, LookupError):
           pass
     return "".join(i for i in text if ord(i)<128)
 
   def hdr(self, msg, name, value=None):
-    decoded = email.header.decode_header(value or msg[name] or '')
-    return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
-            ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
+    try:
+      decoded = email.header.decode_header(value or msg[name] or '')
+      return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
+              ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
+    except email.errors.HeaderParseError:
+      return ''
 
   def update_location(self, session, msg_idx, msg_ptr):
     msg_info = self.get_msg_by_idx(msg_idx)
@@ -1199,10 +1203,11 @@ class HtmlUI(TextUI):
       count += 1
       try:
         msg_info = idx.get_msg_by_idx(mid)
-        msg_subj = msg_info[idx.MSG_SUBJECT]
+        msg_subj = msg_info[idx.MSG_SUBJECT] or '(no subject)'
 
         msg_from = [msg_info[idx.MSG_FROM]]
         msg_from.extend([r[idx.MSG_FROM] for r in idx.get_replies(msg_info)])
+        msg_from = msg_from or ['(no sender)']
 
         msg_date = [msg_info[idx.MSG_DATE]]
         msg_date.extend([r[idx.MSG_DATE] for r in idx.get_replies(msg_info)])
