@@ -20,7 +20,9 @@ import lxml.html
 
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
-global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
+global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING
+
+QUITTING = False
 
 DEFAULT_PORT = 33411
 
@@ -294,6 +296,7 @@ class PostingList(object):
 
     # Pass 1: Compact all files that are 90% or more of our target size
     for fn in sorted(os.listdir(postinglist_dir)):
+      if QUITTING: break
       if (force
       or  os.path.getsize(os.path.join(postinglist_dir, fn)) >
                                                         900*postinglist_kb):
@@ -306,6 +309,7 @@ class PostingList(object):
     files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
     files.sort(key=lambda a: -len(a))
     for fn in files:
+      if QUITTING: break
       size = os.path.getsize(os.path.join(postinglist_dir, fn))
       fnp = fn[:-1]
       while not os.path.exists(os.path.join(postinglist_dir, fnp)):
@@ -585,6 +589,7 @@ class MailIndex(object):
     added = 0
     msg_date = int(time.time())
     for i in range(mbox.last_parsed+1, len(mbox)):
+      if QUITTING: break
       parse_status = ('%s: Reading your mail: %d%% (%d/%d messages)'
                       ) % (idx, 100 * i/len(mbox), i, len(mbox))
 
@@ -1285,7 +1290,7 @@ class Cron(threading.Thread):
 
   def run(self):
     self.ALIVE = True
-    while self.ALIVE:
+    while self.ALIVE and not QUITTING:
       now = time.time()
       for task_spec in self.schedule.values():
         name, interval, task, last = task_spec
@@ -1344,7 +1349,7 @@ class Worker(threading.Thread):
 
   def run(self):
     self.ALIVE = True
-    while self.ALIVE:
+    while self.ALIVE and not QUITTING:
       self.LOCK.acquire()
       while len(self.JOBS) < 1:
         self.LOCK.wait()
@@ -1591,7 +1596,7 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
       SimpleXMLRPCServer.finish_request(self, request, client_address)
     except socket.error:
       pass
-
+    if QUITTING: self.shutdown()
 
 class HttpWorker(threading.Thread):
   def __init__(self, session, sspec):
@@ -2048,6 +2053,7 @@ def Action_Rescan(session, config):
       subprocess.check_call(pre_command, shell=True)
     count = 1
     for fid, fpath in config.get_mailboxes():
+      if QUITTING: break
       count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
       config.clear_mbox_cache()
       session.ui.mark('\n')
@@ -2288,5 +2294,6 @@ if __name__ == "__main__":
     pass
 
   finally:
+    QUITTING = True
     config.stop_workers()
 
