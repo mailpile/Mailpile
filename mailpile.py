@@ -529,18 +529,19 @@ class MailIndex(object):
       else:
         session.ui.warning('Bogus line: %s' % line)
 
+  def try_decode(self, text, charset):
+    for cs in (charset, 'iso-8859-1', 'utf-8'):
+      if cs:
+        try:
+          return text.decode(cs)
+        except (UnicodeEncodeError, LookupError):
+          pass
+    return "".join(i for i in text if ord(i)<128)
+
   def hdr(self, msg, name, value=None):
     decoded = email.header.decode_header(value or msg[name] or '')
-    try:
-      return (' '.join([t[0].decode(t[1] or 'iso-8859-1') for t in decoded])
-              ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-    except (UnicodeDecodeError, LookupError):
-      try:
-        return (' '.join([t[0].decode('utf-8') for t in decoded])
-                ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
-      except UnicodeDecodeError:
-        session.ui.warning('Boom: %s/%s' % (msg[name], decoded))
-        return ''
+    return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
+            ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
 
   def update_location(self, session, msg_idx, msg_ptr):
     msg_info = self.get_msg_by_idx(msg_idx)
@@ -671,9 +672,9 @@ class MailIndex(object):
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
       if part.get_content_type() == 'text/plain':
-        textpart = part.get_payload(None, True).decode(charset)
+        textpart = self.try_decode(part.get_payload(None, True), charset)
       elif part.get_content_type() == 'text/html':
-        payload = part.get_payload(None, True).decode(charset)
+        payload = self.try_decode(part.get_payload(None, True), charset)
         if payload:
           try:
             textpart = lxml.html.fromstring(payload).text_content()
@@ -687,6 +688,7 @@ class MailIndex(object):
 
       att = part.get_filename()
       if att:
+        att = self.try_decode(att, charset)
         keywords.append('attachment:has')
         keywords.extend([t+':att' for t in re.findall(WORD_REGEXP, att.lower())])
         textpart = (textpart or '') + ' ' + att
