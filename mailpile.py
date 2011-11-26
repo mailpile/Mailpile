@@ -512,8 +512,7 @@ class MailIndex(object):
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
     for item in self.INDEX:
-      fd.write(item)
-      fd.write('\n')
+      fd.write(item + '\n')
     fd.close()
     flush_append_cache()
     if session: session.ui.mark("Saved metadata index")
@@ -594,8 +593,12 @@ class MailIndex(object):
         msg_mid = b36(len(self.INDEX))
 
         try:
+          last_date = msg_date
           msg_date = int(rfc822.mktime_tz(
                                    rfc822.parsedate_tz(self.hdr(msg, 'date'))))
+          if msg_date > (time.time() + 24*3600):
+            # Messages from the future are treated as today's
+            msg_date = last_date + 1
         except (ValueError, TypeError):
           session.ui.warning('Date parsing: %s' % (sys.exc_info(), ))
           # This is a hack: We assume the messages in the mailbox are in
@@ -1598,6 +1601,7 @@ class ConfigManager(dict):
   index = None
 
   MBOX_CACHE = {}
+  RUNNING = {}
 
   INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size',
           'http_port', 'rescan_interval')
@@ -1694,6 +1698,9 @@ class ConfigManager(dict):
     else:
       return b36(1+max([int(k, 36) for k in self[what]]))
 
+  def clear_mbox_cache(self):
+    self.MBOX_CACHE = {}
+
   def open_mailbox(self, session, mailbox_id):
     pfn = os.path.join(self.workdir(), 'pickled-mailbox.%s' % mailbox_id)
     for mid, mailbox_fn in self.get_mailboxes():
@@ -1735,7 +1742,6 @@ class ConfigManager(dict):
       return ('000'+k)[-3:]
     mailboxes = self['mailbox'].keys()
     mailboxes.sort()
-    mailboxes.reverse()
     return [(fmt_mbxid(k), self['mailbox'][k]) for k in mailboxes]
 
   def get_tag_id(self, tn):
@@ -1780,8 +1786,9 @@ class ConfigManager(dict):
     rescan_interval = config.get('rescan_interval', None)
     if rescan_interval:
       def rescan():
-        config.slow_worker.add_task(None, 'Rescan',
-                                    lambda: Action_Rescan(session, config))
+        if 'rescan' not in config.RUNNING:
+          config.slow_worker.add_task(None, 'Rescan',
+                                      lambda: Action_Rescan(session, config))
       config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
     # Start the HTTP worker if requested
@@ -2014,6 +2021,8 @@ def Action_Filter(session, opt, arg):
     '       filter list')
 
 def Action_Rescan(session, config):
+  if 'rescan' in config.RUNNING: return
+  config.RUNNING['rescan'] = True
   idx = config.index
   count = 0
   try:
@@ -2024,6 +2033,7 @@ def Action_Rescan(session, config):
     count = 1
     for fid, fpath in config.get_mailboxes():
       count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
+      config.clear_mbox_cache()
       session.ui.mark('\n')
     count -= 1
     if not count: session.ui.mark('Nothing changed')
@@ -2034,6 +2044,7 @@ def Action_Rescan(session, config):
       session.ui.mark('\n')
       idx.save(session)
   session.ui.reset_marks()
+  del config.RUNNING['rescan']
   return True
 
 def Action_Optimize(session, config, arg):
