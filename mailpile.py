@@ -628,7 +628,7 @@ class MailIndex(object):
           msg_conv = msg_mid
 
         keywords = self.index_message(session, msg_mid, msg_id, msg, msg_date,
-                                      compact=False,
+                                      mailbox=idx, compact=False,
                                       filter_hooks=[self.filter_keywords])
         tags = [k.split(':')[0] for k in keywords if k.endswith(':tag')]
 
@@ -670,7 +670,7 @@ class MailIndex(object):
     return set(keywordmap.keys())
 
   def index_message(self, session, msg_mid, msg_id, msg, msg_date,
-                    compact=True, filter_hooks=[]):
+                    mailbox=None, compact=True, filter_hooks=[]):
     keywords = []
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
@@ -708,6 +708,7 @@ class MailIndex(object):
     keywords.append('%s:id' % msg_id)
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'subject').lower()))
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'from').lower()))
+    if mailbox: keywords.append('%s:mailbox' % mailbox)
 
     for key in msg.keys():
       key_lower = key.lower()
