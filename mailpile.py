@@ -884,6 +884,8 @@ class MailIndex(object):
 
       if term.startswith('body:'):
         rt.extend(hits(term[5:]))
+      elif term == 'all:mail':
+        rt.extend([b36(i) for i in range(0, len(self.INDEX))])
       elif ':' in term:
         t = term.split(':', 1)
         rt.extend(hits('%s:%s' % (t[1], t[0])))
