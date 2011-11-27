@@ -639,7 +639,7 @@ class MailIndex(object):
             session.ui.warning('=%s/%s is from the FUTURE!' % (msg_mid, msg_id))
             # Messages from the future are treated as today's
             msg_date = last_date + 1
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OverflowError):
           session.ui.warning('=%s/%s has a bogus date.' % (msg_mid, msg_id))
           # This is a hack: We assume the messages in the mailbox are in
           # chronological order and just add 1 second to the date of the last
@@ -748,7 +748,7 @@ class MailIndex(object):
     keywords.append('%s:id' % msg_id)
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'subject').lower()))
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'from').lower()))
-    if mailbox: keywords.append('%s:mailbox' % mailbox)
+    if mailbox: keywords.append('%s:mailbox' % mailbox.lower())
 
     for key in msg.keys():
       key_lower = key.lower()
