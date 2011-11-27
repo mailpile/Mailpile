@@ -599,7 +599,7 @@ class MailIndex(object):
 
   def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
     mbox = mailbox_opener(session, idx)
-    session.ui.mark('%s: Scanning: %s' % (idx, mailbox_fn))
+    session.ui.mark('%s: Checking: %s' % (idx, mailbox_fn))
 
     if mbox.last_parsed+1 == len(mbox): return 0
 
@@ -916,7 +916,7 @@ class MailIndex(object):
     force = how or False
     how = how or self.config.get('default_order', 'reverse_date')
     sign = how.startswith('rev') and -1 or 1
-    sort_max = self.config.get('sort_max', 5000)
+    sort_max = self.config.get('sort_max', 2500)
     if not results: return
 
     if len(results) > sort_max and not force:
