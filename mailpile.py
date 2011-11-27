@@ -176,6 +176,22 @@ class IncrementalMbox(mailbox.mbox):
     self.update_toc()
 
   def update_toc(self):
+    # FIXME: Does this break on zero-length mailboxes?
+
+    # Scan for incomplete entries in the toc, so they can get fixed.
+    for i in sorted(self._toc.keys()):
+      if i > 0 and self._toc[i][0] is None:
+        self._file_length = self._toc[i-1][0]
+        self._next_key = i-1
+        del self._toc[i-1]
+        del self._toc[i]
+        break
+      elif self._toc[i][0] and not self._toc[i][1]:
+        self._file_length = self._toc[i][0]
+        self._next_key = i
+        del self._toc[i]
+        break
+
     self._file.seek(0, 2)
     if self._file_length == self._file.tell(): return
 
@@ -184,7 +200,7 @@ class IncrementalMbox(mailbox.mbox):
     if not line.startswith('From '):
       raise IOError("Mailbox has been modified")
 
-    self._file.seek(self._file_length)
+    self._file.seek(self._file_length-len(os.linesep))
     start = None
     while True:
       line_pos = self._file.tell()
