@@ -112,6 +112,7 @@ def flush_append_cache(ratio=1, count=None):
   APPEND_FD_CACHE_ORDER[:drop] = []
 
 def cached_open(filename, mode):
+  # FIXME: This is not thread safe at all!
   if mode == 'a':
     if filename not in APPEND_FD_CACHE:
       if len(APPEND_FD_CACHE) > APPEND_FD_CACHE_SIZE:
@@ -129,12 +130,15 @@ def cached_open(filename, mode):
     return APPEND_FD_CACHE[filename]
   else:
     if filename in APPEND_FD_CACHE:
-      APPEND_FD_CACHE[filename].close()
-      del APPEND_FD_CACHE[filename]
-      try:
-        APPEND_FD_CACHE_ORDER.remove(filename)
-      except ValueError:
-        pass
+      if 'w' in mode or mode == 'r+':
+        APPEND_FD_CACHE[filename].close()
+        del APPEND_FD_CACHE[filename]
+        try:
+          APPEND_FD_CACHE_ORDER.remove(filename)
+        except ValueError:
+          pass
+      else:
+        APPEND_FD_CACHE[filename].flush()
     return open(filename, mode)
 
 
