@@ -636,10 +636,11 @@ class MailIndex(object):
           msg_date = int(rfc822.mktime_tz(
                                    rfc822.parsedate_tz(self.hdr(msg, 'date'))))
           if msg_date > (time.time() + 24*3600):
+            session.ui.warning('=%s/%s is from the FUTURE!' % (msg_mid, msg_id))
             # Messages from the future are treated as today's
             msg_date = last_date + 1
         except (ValueError, TypeError):
-          session.ui.warning('Date parsing: %s' % (sys.exc_info(), ))
+          session.ui.warning('=%s/%s has a bogus date.' % (msg_mid, msg_id))
           # This is a hack: We assume the messages in the mailbox are in
           # chronological order and just add 1 second to the date of the last
           # message.  This should be a better-than-nothing guess.
@@ -717,14 +718,14 @@ class MailIndex(object):
         textpart = self.try_decode(part.get_payload(None, True), charset)
       elif part.get_content_type() == 'text/html':
         payload = self.try_decode(part.get_payload(None, True), charset)
-        if payload:
+        if len(payload) > 3:
           try:
             textpart = lxml.html.fromstring(payload).text_content()
           except:
-            session.ui.warning('Parsing failed: %s' % payload)
-            textpart = None
+            session.ui.warning('=%s/%s has bogus HTML.' % (msg_mid, msg_id))
+            textpart = payload
         else:
-          textpart = None
+          textpart = payload
       else:
         textpart = None
 
@@ -998,9 +999,12 @@ class NullUI(object):
     self.buffered.append(sayit)
     if not self.buffering: self.flush()
 
-  def notify(self, message): self.say(str(message))
-  def warning(self, message): self.say('Warning: %s' % message)
-  def error(self, message): self.say('Error: %s' % message)
+  def notify(self, message):
+    self.say('%s%s' % (message, ' ' * (79-len(message))))
+  def warning(self, message):
+    self.say('Warning: %s%s' % (message, ' ' * (69-len(message))))
+  def error(self, message):
+    self.say('Error: %s%s' % (message, ' ' * (71-len(message))))
 
   def print_intro(self, help=False, http_worker=None):
     if http_worker:
@@ -1600,7 +1604,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                             suppress_body=suppress_body)
 
   def log_message(self, fmt, *args):
-    self.server.session.ui.say(fmt % (args))
+    self.server.session.ui.notify(('HTTPD: '+fmt) % (args))
 
 
 class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
