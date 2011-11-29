@@ -1247,9 +1247,9 @@ class HtmlUI(TextUI):
     count = 0
     nav = []
     if start > 0:
-      start = max(1, start-num+1)
+      bstart = max(1, start-num+1)
       nav.append(('<a href="/?q=/search%s %s">&lt;&lt; page back</a>'
-                  ) % (start > 1 and (' @%d' % start) or '', ' '.join(terms)))
+                  ) % (bstart > 1 and (' @%d' % bstart) or '', ' '.join(terms)))
     else:
       nav.append('first page')
     nav.append('(about %d results)' % len(results))
