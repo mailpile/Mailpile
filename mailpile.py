@@ -1229,9 +1229,9 @@ class HtmlUI(TextUI):
 
   def render_html(self):
     html = ''.join([l[1] for l in self.buffered_html if l[0] == 'html'])
-    html += '<br><pre>%s</pre>' % ''.join([self.fmt(l)
-                                           for l in self.buffered_html
-                                           if l[0] != 'html'])
+    html += '<br /><pre>%s</pre>' % ''.join([self.fmt(l)
+                                             for l in self.buffered_html
+                                             if l[0] != 'html'])
     self.buffered_html = []
     return html
 
@@ -1258,10 +1258,10 @@ class HtmlUI(TextUI):
                   ) % (start+num+1, ' '.join(terms)))
     else:
       nav.append('last page')
-    self.buffered_html.append(('html', ('<p id=rnavtop class=rnav>%s &nbsp; </p>'
-                                        ) % ' '.join(nav)))
+    self.buffered_html.append(('html', ('<p id="rnavtop" class="rnav">%s &nbsp;'
+                                        ' </p>\n') % ' '.join(nav)))
 
-    self.buffered_html.append(('html', '<table class=results>'))
+    self.buffered_html.append(('html', '<table class="results">\n'))
     for mid in results[start:start+num]:
       count += 1
       try:
@@ -1284,12 +1284,12 @@ class HtmlUI(TextUI):
         msg_tags = ['<a href="/%s/">%s</a>' % (t, re.sub("^.*/", "", t))
                     for t in msg_tags]
 
-        self.buffered_html.append(('html', ('<tr class="result %s %s">'
-          '<td class=checkbox><input type=checkbox name=msg_%s></td>'
-          '<td class=from><a href="/=%s/%s/">%s</a></td>'
-          '<td class=subject><a href="/=%s/%s/">%s</a></td>'
-          '<td class=tags>%s</td>'
-          '<td class=date><a href="?q=date:%4.4d-%d-%d">%4.4d-%2.2d-%2.2d</a></td>'
+        self.buffered_html.append(('html', (' <tr class="result %s %s">'
+          '<td class="checkbox"><input type="checkbox" name="msg_%s" /></td>'
+          '<td class="from"><a href="/=%s/%s/">%s</a></td>'
+          '<td class="subject"><a href="/=%s/%s/">%s</a></td>'
+          '<td class="tags">%s</td>'
+          '<td class="date"><a href="?q=date:%4.4d-%d-%d">%4.4d-%2.2d-%2.2d</a></td>'
         '</tr>\n') % (
           (count % 2) and 'odd' or 'even', ' '.join(tag_classes),
           msg_info[idx.MSG_IDX],
@@ -1303,9 +1303,9 @@ class HtmlUI(TextUI):
         )))
       except (IndexError, ValueError):
         pass
-    self.buffered_html.append(('html', '</table>'))
-    self.buffered_html.append(('html', ('<p id=rnavbot class=rnav>%s &nbsp; </p>'
-                                        ) % ' '.join(nav)))
+    self.buffered_html.append(('html', '</table>\n'))
+    self.buffered_html.append(('html', ('<p id="rnavbot" class="rnav">%s &nbsp;'
+                                        ' </p>\n') % ' '.join(nav)))
     session.ui.mark(('Listed %d-%d of %d results'
                      ) % (start+1, start+count, len(results)))
     return (start, count)
@@ -1449,7 +1449,9 @@ class Worker(threading.Thread):
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
   PAGE_HEAD = """\
-<html><head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
  <script type='text/javascript'>
   function focus(eid) {var e = document.getElementById(eid);e.focus();
    if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
@@ -1497,25 +1499,27 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  tr.even {background: #eeeeee;}
  #qbox {width: 400px;}"""
   PAGE_BODY = """
-</head><body onLoad='focus("qbox");'><div id=header>
- <h1 id=heading><a href=/>M<span style="font-size: 0.8em;">AILPILE</span>!</a></h1>
- <form id=search action='/'>
-  <input id=qbox type=text size=100 name="q" value="%(lastq)s "></form>
- <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
-  from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
+</head><body onload='focus("qbox");'><div id='header'>
+ <h1 id='heading'>
+  <a href='/'>M<span style='font-size: 0.8em;'>AILPILE</span>!</a></h1>
+ <div id='search'><form action='/'>
+  <input id='qbox' type='text' size='100' name='q' value='%(lastq)s ' />
+ </form></div>
+ <p id='pile'>to: from:<br />subject: email<br />@ to: subject: list-id:<br />envelope
+  from: to sender: spam to:<br />from: search GMail @ in-reply-to: GPG bounce<br />
   subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
 </div>
-<form id=actions method='POST'><div id=content>"""
+<form id='actions' action='' method='post'><div id='content'>"""
   PAGE_SIDEBAR = """\
-</div><div id=sidebar>
- <div id=sidebar_btns>
-  <input id=rm_tag_btn type=submit name=rm_tag value="un-" title="Untag messages">
-  <input id=add_tag_btn type=submit name=add_tag value="tag" title="Tag messages">
+</div><div id='sidebar'>
+ <div id='sidebar_btns'>
+  <input id='rm_tag_btn' type='submit' name='rm_tag' value='un-' title='Untag messages' />
+  <input id='add_tag_btn' type='submit' name='add_tag' value='tag' title='Tag messages' />
  </div>"""
   PAGE_TAIL = """\
-</div><p id=footer>&lt;
- <a href="https://github.com/pagekite/Mailpile">free software</a>
- by <a href="http://bre.klaki.net/">bre</a>
+</div><p id='footer'>&lt;
+ <a href='https://github.com/pagekite/Mailpile'>free software</a>
+ by <a title='Bjarni R. Einarsson' href='http://bre.klaki.net/'>bre</a>
 &gt;</p>
 </form></body></html>"""
 
@@ -1661,19 +1665,21 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     tids.sort(key=tord)
     for tid in tids:
       checked = ('tag:%s' % tid) in session.searched and ' checked' or ''
+      checked1 = checked and ' checked="checked"' or ''
       tag_name = session.config.get('tag', {}).get(tid)
       tag_new = index.STATS.get(tid, [0,0])[1]
       sidebar.append((' <li id="tag_%s" class="%s">'
-                      '<input type=checkbox name="tag_%s"%s>'
+                      '<input type="checkbox" name="tag_%s"%s />'
                       ' <a href="/%s/">%s</a>'
                       ' <span class="tag_new %s">(<b>%s</b>)</span>'
-                      '</li>') % (tid, checked, tid, checked,
+                      '</li>') % (tid, checked, tid, checked1,
                                   tag_name, tag_name,
                                   tag_new and 'some' or 'none', tag_new))
     sidebar.append('</ul>')
     variables = {
       'lastq': post_data.get('lq',
-                 query_data.get('q', [path != '/' and path[:-1] or '']))[0],
+                 query_data.get('q', [path != '/' and path[:-1] or ''])
+                             )[0].strip(),
       'path': path
     }
     self.send_full_response(self.render_page(body=body,
