@@ -1247,13 +1247,14 @@ class HtmlUI(TextUI):
     count = 0
     nav = []
     if start > 0:
-      nav.append(('<a href="?q=/search @%d %s">&lt;&lt; page back</a>'
-                  ) % (max(1, start-num+1), ' '.join(terms)))
+      start = max(1, start-num+1)
+      nav.append(('<a href="/?q=/search%s %s">&lt;&lt; page back</a>'
+                  ) % (start > 1 and (' @%d' % start) or '', ' '.join(terms)))
     else:
       nav.append('first page')
     nav.append('(about %d results)' % len(results))
     if start+num < len(results):
-      nav.append(('<a href="?q=/search @%d %s">next page &gt;&gt;</a>'
+      nav.append(('<a href="/?q=/search @%d %s">next page &gt;&gt;</a>'
                   ) % (start+num+1, ' '.join(terms)))
     else:
       nav.append('last page')
@@ -1284,7 +1285,7 @@ class HtmlUI(TextUI):
                     for t in msg_tags]
 
         self.buffered_html.append(('html', ('<tr class="result %s %s">'
-          '<td class=checkbox><input type=checkbox name=cb_%s></td>'
+          '<td class=checkbox><input type=checkbox name=msg_%s></td>'
           '<td class=from><a href="/=%s/%s/">%s</a></td>'
           '<td class=subject><a href="/=%s/%s/">%s</a></td>'
           '<td class=tags>%s</td>'
@@ -1471,8 +1472,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  #search {display: inline-block;}
  #content {width: 80%; float: right;}
  #sidebar {width: 19%; float: left; overflow: hidden;}
- #sidebar ul.tag_list {white-space: nowrap; padding-left: 2.5em;}
+ #sidebar .checked {font-weight: bold;}
+ #sidebar ul.tag_list {list-style-type: none; white-space: nowrap; padding-left: 3em;}
  #sidebar .none {display: none;}
+ #sidebar ul.tag_list input {position: absolute; margin: 0; margin-left: -1.5em;}
+ #sidebar #sidebar_btns {display: inline-block; float: right;}
+ #sidebar #sidebar_btns input {font-size: 0.8em; padding: 1px 2px; background: #d0dddd0; border: 1px solid #707770;}
+ #sidebar #sidebar_btns input:hover {background: #e0eee0;}
  #footer {text-align: center; font-size: 0.8em; margin-top: 15px; clear: both;}
  p.rnav {margin: 4px 10px; text-align: center;}
  table.results {table-layout: fixed; border: 0; border-collapse: collapse; width: 100%; font-size: 13px; font-family: Helvetica,Arial;}
@@ -1491,16 +1497,21 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  tr.even {background: #eeeeee;}
  #qbox {width: 400px;}"""
   PAGE_BODY = """
-</head><body onLoad='focus("qbox");'><form action='%(path)s' method=post>
-<div id=header>
+</head><body onLoad='focus("qbox");'><div id=header>
  <h1 id=heading><a href=/>M<span style="font-size: 0.8em;">AILPILE</span>!</a></h1>
- <div id=search><input id=qbox type=text size=100 name="q" value="%(lastq)s "></div>
+ <form id=search action='/'>
+  <input id=qbox type=text size=100 name="q" value="%(lastq)s "></form>
  <p id=pile>to: from:<br>subject: email<br>@ to: subject: list-id:<br>envelope
- from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
- subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
-</div><div id=content>"""
+  from: to sender: spam to:<br>from: search GMail @ in-reply-to: GPG bounce<br>
+  subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
+</div>
+<form id=actions method='POST'><div id=content>"""
   PAGE_SIDEBAR = """\
-</div><div id=sidebar>"""
+</div><div id=sidebar>
+ <div id=sidebar_btns>
+  <input id=rm_tag_btn type=submit name=rm_tag value="un-" title="Untag messages">
+  <input id=add_tag_btn type=submit name=add_tag value="tag" title="Tag messages">
+ </div>"""
   PAGE_TAIL = """\
 </div><p id=footer>&lt;
  <a href="https://github.com/pagekite/Mailpile">free software</a>
@@ -1572,8 +1583,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   def do_HEAD(self):
     return self.do_GET(suppress_body=True)
 
-  def parse_pqp(self, path, query_data, post_data):
-    q = post_data.get('q', query_data.get('q', ['']))[0].strip()
+  def parse_pqp(self, path, query_data, post_data, config):
+    q = post_data.get('lq', query_data.get('q', ['']))[0].strip()
 
     cmd = ''
     if path.startswith('/_/'):
@@ -1599,14 +1610,28 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         tag = ''
         cmd = ''.join(['search ', tag, q])
 
-    cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
+    if 'add_tag' in post_data or 'rm_tag' in post_data:
+      if 'add_tag' in post_data:
+        fmt = 'tag +%s %s /%s'
+      else:
+        fmt = 'tag -%s %s /%s'
+      msgs = ['='+k[4:] for k in post_data if k.startswith('msg_')]
+      if msgs:
+        for tid in [k[4:] for k in post_data if k.startswith('tag_')]:
+          tname = config.get('tag', {}).get(tid)
+          if tname:
+            cmd = fmt % (tname, ' '.join(msgs), cmd)
+    else:
+      cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
+
     return cmd.decode('utf-8')
 
   def do_GET(self, post_data={}, suppress_body=False):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     query_data = parse_qs(query)
 
-    cmd = self.parse_pqp(path, query_data, post_data)
+    cmd = self.parse_pqp(path, query_data, post_data,
+                         self.server.session.config)
     session = Session(self.server.session.config)
     session.ui = HtmlUI()
     index = session.config.get_index(session)
@@ -1627,17 +1652,30 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     sidebar = ['<ul class="tag_list">']
     tids = index.config.get('tag', {}).keys()
-    tids.sort(key=lambda k: index.config['tag'][k])
+    special = ['new', 'inbox', 'sent', 'drafts', 'spam', 'trash']
+    def tord(k):
+      tname = index.config['tag'][k]
+      if tname.lower() in special:
+        return '00000-%s-%s' % (special.index(tname.lower()), tname)
+      return tname
+    tids.sort(key=tord)
     for tid in tids:
+      checked = ('tag:%s' % tid) in session.searched and ' checked' or ''
       tag_name = session.config.get('tag', {}).get(tid)
       tag_new = index.STATS.get(tid, [0,0])[1]
-      sidebar.append((' <li id="tag_%s"><a href="/%s/">%s</a>'
+      sidebar.append((' <li id="tag_%s" class="%s">'
+                      '<input type=checkbox name="tag_%s"%s>'
+                      ' <a href="/%s/">%s</a>'
                       ' <span class="tag_new %s">(<b>%s</b>)</span>'
-                      '</li>') % (tid, tag_name, tag_name,
+                      '</li>') % (tid, checked, tid, checked,
+                                  tag_name, tag_name,
                                   tag_new and 'some' or 'none', tag_new))
     sidebar.append('</ul>')
-
-    variables = {'lastq': cmd and '/%s' % cmd or '', 'path': path}
+    variables = {
+      'lastq': post_data.get('lq',
+                 query_data.get('q', [path != '/' and path[:-1] or '']))[0],
+      'path': path
+    }
     self.send_full_response(self.render_page(body=body,
                                              title=title,
                                              sidebar='\n'.join(sidebar),
