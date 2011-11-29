@@ -1458,6 +1458,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  body {text-align: center; background: #f0fff0; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
  #heading a {text-decoration: none; color: #000;}
  #footer {text-align: center; font-size: 0.5em; margin-top: 15px;}
+ #sidebar {display: none;}
  #search input {width: 170px;}"""
   PAGE_CONTENT_CSS = """\
  body {background: #f0fff0; font-family: monospace; color: #000;}
@@ -1469,7 +1470,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  #pile {z-index: -3; color: #666; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
  #search {display: inline-block;}
  #content {width: 80%; float: right;}
- #sidebar {width: 19%; float: left;}
+ #sidebar {width: 19%; float: left; overflow: hidden;}
+ #sidebar ul.tag_list {white-space: nowrap; padding-left: 2.5em;}
+ #sidebar .none {display: none;}
  #footer {text-align: center; font-size: 0.8em; margin-top: 15px; clear: both;}
  p.rnav {margin: 4px 10px; text-align: center;}
  table.results {table-layout: fixed; border: 0; border-collapse: collapse; width: 100%; font-size: 13px; font-family: Helvetica,Arial;}
@@ -1604,10 +1607,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     query_data = parse_qs(query)
 
     cmd = self.parse_pqp(path, query_data, post_data)
+    session = Session(self.server.session.config)
+    session.ui = HtmlUI()
+    index = session.config.get_index(session)
+
     if cmd:
       try:
-        session = Session(self.server.session.config)
-        session.ui = HtmlUI()
         for arg in cmd.split(' /'):
           args = arg.strip().split()
           Action(session, args[0], ' '.join(args[1:]))
@@ -1616,21 +1621,20 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       except UsageError, e:
         body = 'Oops: %s' % e
         title = 'Ouch, too much mail, urgle, *choke*'
-
     else:
       body = ''
       title = None
 
-    index = session.config.get_index(session)
-    sidebar = ['<ul>']
+    sidebar = ['<ul class="tag_list">']
     tids = index.config.get('tag', {}).keys()
     tids.sort(key=lambda k: index.config['tag'][k])
     for tid in tids:
       tag_name = session.config.get('tag', {}).get(tid)
       tag_new = index.STATS.get(tid, [0,0])[1]
-      sidebar.append((' <li><a href="/%s/">%s</a>%s</li>'
-                      ) % (tag_name, tag_name,
-                           tag_new and '(<b>%s</b>)' % tag_new or ''))
+      sidebar.append((' <li id="tag_%s"><a href="/%s/">%s</a>'
+                      ' <span class="tag_new %s">(<b>%s</b>)</span>'
+                      '</li>') % (tid, tag_name, tag_name,
+                                  tag_new and 'some' or 'none', tag_new))
     sidebar.append('</ul>')
 
     variables = {'lastq': cmd and '/%s' % cmd or '', 'path': path}
