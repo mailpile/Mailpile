@@ -859,7 +859,7 @@ class MailIndex(object):
   def search(self, session, searchterms, keywords=None):
     if keywords:
       def hits(term):
-        return set(keywords.get(term, []))
+        return keywords.get(term, [])
     else:
       def hits(term):
         session.ui.mark('Searching for %s' % term)
@@ -884,14 +884,14 @@ class MailIndex(object):
       term = term.lower()
 
       if term.startswith('body:'):
-        rt.extend(hits(term[5:]))
+        rt.extend([int(h, 36) for h in hits(term[5:])])
       elif term == 'all:mail':
-        rt.extend([b36(i) for i in range(0, len(self.INDEX))])
+        rt.extend(range(0, len(self.INDEX)))
       elif ':' in term:
         t = term.split(':', 1)
-        rt.extend(hits('%s:%s' % (t[1], t[0])))
+        rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
       else:
-        rt.extend(hits(term))
+        rt.extend([int(h, 36) for h in hits(term)])
 
     if r:
       results = set(r[0][1])
@@ -904,11 +904,10 @@ class MailIndex(object):
           results &= set(rt)
       # Sometimes the scan gets aborted...
       if not keywords:
-        results -= set([b36(len(self.INDEX))])
+        results -= set([len(self.INDEX)])
     else:
       results = set()
 
-    results = [int(r, 36) for r in results]
     if session:
       session.ui.mark('Found %d results' % len(results))
     return results
