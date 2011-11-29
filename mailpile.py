@@ -397,8 +397,8 @@ class PostingList(object):
     # Not reached
     return (None, None)
 
-  def __init__(self, session, word, sig=None):
-    self.config = session.config
+  def __init__(self, session, word, sig=None, config=None):
+    self.config = config or session.config
     self.session = session
     self.sig = sig or PostingList.WordSig(word)
     self.word = word
@@ -502,6 +502,7 @@ class MailIndex(object):
 
   def __init__(self, config):
     self.config = config
+    self.STATS = {}
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
@@ -968,6 +969,21 @@ class MailIndex(object):
     session.ui.mark('Sorted messages in %s order' % how)
     return True
 
+  def update_tag_stats(self, session, config, update_tags=None):
+    session = session or Session(config)
+    new_tid = config.get_tag_id('new')
+    new_msgs = (new_tid and PostingList(session, '%s:tag' % new_tid).hits()
+                         or set([]))
+    self.STATS.update({
+      'ALL': [len(self.INDEX), len(new_msgs)]
+    })
+    for tid in (update_tags or config.get('tag', {}).keys()):
+      if session: session.ui.mark('Counting messages in tag:%s' % tid)
+      hits = PostingList(session, '%s:tag' % tid).hits()
+      self.STATS[tid] = [len(hits), len(hits & new_msgs)]
+
+    return self.STATS
+
 
 ##[ User Interface classes ]###################################################
 
@@ -1019,7 +1035,7 @@ class NullUI(object):
                         'For instructions type `help`, press <CTRL-D> to quit.',
                         '']))
 
-  def print_help(self, commands, tags=None):
+  def print_help(self, commands, tags=None, index=None):
     self.say('Commands:')
     last_rank = None
     cmds = commands.keys()
@@ -1034,12 +1050,17 @@ class NullUI(object):
       self.say('    %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
                                               args and ('<%s>' % args) or '',
                                               explanation))
-    if tags:
+    if tags and index:
       self.say('\nTags:  (use a tag as a command to display tagged messages)',
                '\n  ')
-      tags.sort()
-      for i in range(0, len(tags)):
-        self.say('%-18.18s ' % tags[i], newline=(i%4==3) and '\n  ' or '')
+      tkeys = tags.keys()
+      tkeys.sort(key=lambda k: tags[k])
+      for i in range(0, len(tkeys)):
+        tid = tkeys[i]
+        self.say(('%6.6s %-17.17s '
+                  ) % ('%s' % (int(index.STATS.get(tid, [0, 0])[1]) or ''),
+                       tags[tid]),
+                 newline=(i%3==2) and '\n  ' or '')
     self.say('\n')
 
   def print_filters(self, config):
@@ -1595,13 +1616,27 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       except UsageError, e:
         body = 'Oops: %s' % e
         title = 'Ouch, too much mail, urgle, *choke*'
+
     else:
       body = ''
       title = None
 
+    index = session.config.get_index(session)
+    sidebar = ['<ul>']
+    tids = index.config.get('tag', {}).keys()
+    tids.sort(key=lambda k: index.config['tag'][k])
+    for tid in tids:
+      tag_name = session.config.get('tag', {}).get(tid)
+      tag_new = index.STATS.get(tid, [0,0])[1]
+      sidebar.append((' <li><a href="/%s/">%s</a>%s</li>'
+                      ) % (tag_name, tag_name,
+                           tag_new and '(<b>%s</b>)' % tag_new or ''))
+    sidebar.append('</ul>')
+
     variables = {'lastq': cmd and '/%s' % cmd or '', 'path': path}
     self.send_full_response(self.render_page(body=body,
                                              title=title,
+                                             sidebar='\n'.join(sidebar),
                                              variables=variables),
                             suppress_body=suppress_body)
 
@@ -1642,6 +1677,7 @@ class HttpWorker(threading.Thread):
 
 class ConfigManager(dict):
 
+  background = None
   cron_worker = None
   http_worker = None
   slow_worker = None
@@ -1817,33 +1853,42 @@ class ConfigManager(dict):
     self.index = idx
     return idx
 
-  def start_workers(config, session):
+  def prepare_workers(config, session, daemons=False):
     # Set globals from config first...
     global APPEND_FD_CACHE_SIZE
     APPEND_FD_CACHE_SIZE = config.get('fd_cache_size',
                                       APPEND_FD_CACHE_SIZE)
 
+    if not config.background:
+      # Create a silent background session
+      config.background = Session(config)
+      config.background.ui = TextUI()
+      config.background.ui.block()
+
     # Start the workers
-    config.slow_worker = Worker('Slow worker', session)
-    config.slow_worker.start()
-    config.cron_worker = Cron('Cron worker', session)
-    config.cron_worker.start()
+    if not config.slow_worker:
+      config.slow_worker = Worker('Slow worker', session)
+      config.slow_worker.start()
+    if daemons and not config.cron_worker:
+      config.cron_worker = Cron('Cron worker', session)
+      config.cron_worker.start()
 
-    # Schedule periodic rescanning, if requested.
-    rescan_interval = config.get('rescan_interval', None)
-    if rescan_interval:
-      def rescan():
-        if 'rescan' not in config.RUNNING:
-          config.slow_worker.add_task(None, 'Rescan',
-                                      lambda: Action_Rescan(session, config))
-      config.cron_worker.add_task('rescan', rescan_interval, rescan)
+      # Schedule periodic rescanning, if requested.
+      rescan_interval = config.get('rescan_interval', None)
+      if rescan_interval:
+        def rescan():
+          if 'rescan' not in config.RUNNING:
+            config.slow_worker.add_task(None, 'Rescan',
+                                        lambda: Action_Rescan(session, config))
+        config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
-    # Start the HTTP worker if requested
-    sspec = (config.get('http_host', 'localhost'),
-             config.get('http_port', DEFAULT_PORT))
-    if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
-      config.http_worker = HttpWorker(session, sspec)
-      config.http_worker.start()
+    if daemons and not config.http_worker:
+      # Start the HTTP worker if requested
+      sspec = (config.get('http_host', 'localhost'),
+               config.get('http_port', DEFAULT_PORT))
+      if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
+        config.http_worker = HttpWorker(session, sspec)
+        config.http_worker.start()
 
   def stop_workers(config):
     for w in (config.http_worker, config.slow_worker, config.cron_worker):
@@ -1941,18 +1986,20 @@ def Choose_Messages(session, words):
         session.ui.warning('What message is %s?' % (what, ))
   return msg_ids
 
-def Action_Load(session, config, reset=False, wait=True):
+def Action_Load(session, config, reset=False, wait=True, quiet=False):
   if not reset and config.index:
     return config.index
   def do_load():
     if reset:
       config.index = None
-      session.results = []
-      session.searched = []
-      session.displayed = (0, 0)
+      if session:
+        session.results = []
+        session.searched = []
+        session.displayed = (0, 0)
     idx = config.get_index(session)
+    idx.update_tag_stats(session, config)
     if session:
-      session.ui.reset_marks()
+      session.ui.reset_marks(quiet=quiet)
     return idx
   if wait:
     return config.slow_worker.do(session, 'Load', do_load)
@@ -1978,7 +2025,12 @@ def Action_Tag(session, opt, arg, save=True):
 
     if save:
       # Background save makes things feel fast!
-      session.config.slow_worker.add_task(None, 'Save index', idx.save)
+      def background():
+        idx.update_tag_stats(session, session.config)
+        idx.save()
+      session.config.slow_worker.add_task(None, 'Save index', background)
+    else:
+      idx.update_tag_stats(session, session.config)
 
     return True
 
@@ -2091,6 +2143,7 @@ def Action_Rescan(session, config):
     if count:
       session.ui.mark('\n')
       idx.save(session)
+  idx.update_tag_stats(session, config)
   session.ui.reset_marks()
   del config.RUNNING['rescan']
   return True
@@ -2108,14 +2161,16 @@ def Action_Optimize(session, config, arg):
 
 def Action(session, opt, arg):
   config = session.config
+  session.ui.reset_marks(quiet=True)
   num_results = config.get('num_results', None)
 
   if not opt or opt in ('h', 'help'):
-    session.ui.print_help(COMMANDS,
-                          session.config.get('tag', {}).values())
+    session.ui.print_help(COMMANDS, tags=session.config.get('tag', {}),
+                                    index=config.get_index(session))
 
   elif opt in ('W', 'webserver'):
-    while True: time.sleep(60)
+    config.prepare_workers(session, daemons=True)
+    while not QUITTING: time.sleep(1)
 
   elif opt in ('A', 'add'):
     if os.path.exists(arg):
@@ -2268,7 +2323,7 @@ def Interact(session):
         try:
           Action(session, opt, arg)
         except UsageError, e:
-          session.error(e)
+          session.error(str(e))
   except EOFError:
     print
 
@@ -2293,8 +2348,8 @@ if __name__ == "__main__":
     sys.exit(1)
 
   try:
-    # Create and start worker threads
-    config.start_workers(session)
+    # Create and start (most) worker threads
+    config.prepare_workers(session)
 
     try:
       opts, args = getopt.getopt(sys.argv[1:],
@@ -2310,8 +2365,9 @@ if __name__ == "__main__":
 
 
     if not opts and not args:
-      config.slow_worker.add_task(None, 'Load',
-                                  lambda: Action_Load(None, config))
+      # Create and start the rest of the threads, load the index.
+      config.prepare_workers(session, daemons=True)
+      Action_Load(session, config, quiet=True)
       session.interactive = session.ui.interactive = True
       session.ui.print_intro(help=True, http_worker=config.http_worker)
       Interact(session)
