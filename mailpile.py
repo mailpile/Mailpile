@@ -988,6 +988,7 @@ class MailIndex(object):
 
 class NullUI(object):
 
+  WIDTH = 80
   interactive = False
   buffering = False
 
@@ -1017,11 +1018,11 @@ class NullUI(object):
     if not self.buffering: self.flush()
 
   def notify(self, message):
-    self.say('%s%s' % (message, ' ' * (79-len(message))))
+    self.say('%s%s' % (message, ' ' * (self.WIDTH-1-len(message))))
   def warning(self, message):
-    self.say('Warning: %s%s' % (message, ' ' * (69-len(message))))
+    self.say('Warning: %s%s' % (message, ' ' * (self.WIDTH-11-len(message))))
   def error(self, message):
-    self.say('Error: %s%s' % (message, ' ' * (71-len(message))))
+    self.say('Error: %s%s' % (message, ' ' * (self.WIDTH-9-len(message))))
 
   def print_intro(self, help=False, http_worker=None):
     if http_worker:
@@ -1054,22 +1055,24 @@ class NullUI(object):
                '\n  ')
       tkeys = tags.keys()
       tkeys.sort(key=lambda k: tags[k])
+      wrap = int(self.WIDTH / 23)
       for i in range(0, len(tkeys)):
         tid = tkeys[i]
-        self.say(('%6.6s %-17.17s '
+        self.say(('%5.5s %-18.18s'
                   ) % ('%s' % (int(index.STATS.get(tid, [0, 0])[1]) or ''),
                        tags[tid]),
-                 newline=(i%3==2) and '\n  ' or '')
+                 newline=(i%wrap)==(wrap-1) and '\n  ' or '')
     self.say('\n')
 
   def print_filters(self, config):
-    self.say('  ID  Tags                   Terms')
+    w = int(self.WIDTH * 23/80)
+    ffmt = ' %%3.3s %%-%d.%ds %%-%d.%ds %%s' % (w, w, w-2, w-2)
+    self.say(ffmt % ('ID', ' Tags', 'Terms', ''))
     for fid, terms, tags, comment in config.get_filters():
-      self.say((' %3.3s %-23.23s %-20.20s %s'
-                ) % (fid,
+      self.say(ffmt % (fid,
         ' '.join(['%s%s' % (t[0], config['tag'][t[1:]]) for t in tags.split()]),
-                     (terms == '*') and '(all new mail)' or terms or '(none)',
-                     comment or '(none)'))
+                       (terms == '*') and '(all new mail)' or terms or '(none)',
+                       comment or '(none)'))
 
   def display_messages(self, emails, raw=False, sep='', fd=sys.stdout):
     for email in emails:
@@ -1122,13 +1125,13 @@ class TextUI(NullUI):
     if t:
       if not quiet:
         result = 'Elapsed: %.3fs (%s)' % (t[-1][0] - t[0][0], t[-1][1])
-        self.say('%s%s' % (result, ' ' * (79-len(result))))
+        self.say('%s%s' % (result, ' ' * (self.WIDTH-1-len(result))))
       return t[-1][0] - t[0][0]
     else:
       return 0
 
   def mark(self, progress):
-    self.say('  %s%s\r' % (progress, ' ' * (77-len(progress))),
+    self.say('  %s%s\r' % (progress, ' ' * (self.WIDTH-3-len(progress))),
              newline='', fd=sys.stderr)
     self.times.append((time.time(), progress))
 
@@ -1203,7 +1206,7 @@ class TextUI(NullUI):
       fd = sys.stdout
       viewer = None
     try:
-      NullUI.display_messages(self, emails, raw=raw, sep=('_' * 80), fd=fd)
+      NullUI.display_messages(self, emails, raw=raw, sep=('_' * self.WIDTH), fd=fd)
     except IOError, e:
       pass
     if viewer:
@@ -1212,6 +1215,8 @@ class TextUI(NullUI):
 
 
 class HtmlUI(TextUI):
+
+  WIDTH = 110
 
   def __init__(self):
     TextUI.__init__(self)
