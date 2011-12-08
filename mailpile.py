@@ -47,8 +47,8 @@ class AccessError(Exception):
   pass
 
 
-def b64c(b):
-  return b.replace('\n', '').replace('=', '').replace('/', '_')
+def b64c(b): return b.replace('\n', '').replace('=', '').replace('/', '_')
+def b64w(b): return b64c(b).replace('+', '-')
 
 def sha1b64(s):
   h = hashlib.sha1()
@@ -1295,7 +1295,7 @@ class HtmlUI(TextUI):
           '<td class="tags">%s</td>'
           '<td class="date"><a href="?q=date:%4.4d-%d-%d">%4.4d-%2.2d-%2.2d</a></td>'
         '</tr>\n') % (
-          (count % 2) and 'odd' or 'even', ' '.join(tag_classes),
+          (count % 2) and 'odd' or 'even', ' '.join(tag_classes).lower(),
           msg_info[idx.MSG_IDX],
           msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
           self.compact(self.names(msg_from), 25),
@@ -1508,12 +1508,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   <a href='/'>M<span style='font-size: 0.8em;'>AILPILE</span>!</a></h1>
  <div id='search'><form action='/'>
   <input id='qbox' type='text' size='100' name='q' value='%(lastq)s ' />
+  <input type='hidden' name='csrf' value='%(csrf)s' />
  </form></div>
  <p id='pile'>to: from:<br />subject: email<br />@ to: subject: list-id:<br />envelope
   from: to sender: spam to:<br />from: search GMail @ in-reply-to: GPG bounce<br />
   subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
 </div>
-<form id='actions' action='' method='post'><div id='content'>"""
+<form id='actions' action='' method='post'>
+<input type='hidden' name='csrf' value='%(csrf)s' /><div id='content'>"""
   PAGE_SIDEBAR = """\
 </div><div id='sidebar'>
  <div id='sidebar_btns'>
@@ -1550,10 +1552,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     if not suppress_body:
       self.wfile.write(message or '')
 
+  def csrf(self):
+    ts = '%x' % int(time.time()/60)
+    return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret, ts]))))
+
   def render_page(self, body='', title=None, sidebar='', css=None,
                         variables=None):
     title = title or 'A huge pile of mail'
-    variables = variables or {'lastq': '', 'path': ''}
+    variables = variables or {'lastq': '', 'path': '', 'csrf': self.csrf()}
     css = css or (body and self.PAGE_CONTENT_CSS or self.PAGE_LANDING_CSS)
     return '\n'.join([self.PAGE_HEAD % variables,
                       '<title>', title, '</title>',
@@ -1681,9 +1687,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                                   tag_new and 'some' or 'none', tag_new))
     sidebar.append('</ul>')
     variables = {
-      'lastq': post_data.get('lq',
-                 query_data.get('q', [path != '/' and path[:-1] or ''])
+      'lastq': post_data.get('lq', query_data.get('q',
+                          [path != '/' and path[1] != '=' and path[:-1] or ''])
                              )[0].strip(),
+      'csrf': self.csrf(),
       'path': path
     }
     self.send_full_response(self.render_page(body=body,
@@ -1703,6 +1710,9 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     self.sessions = {}
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
+    # FIXME: This could be more securely random
+    self.secret = '-'.join([str(x) for x in [self.socket, self.sspec,
+                                             time.time(), self.session]])
 
   def finish_request(self, request, client_address):
     try:
