@@ -4,7 +4,6 @@
 #
 import datetime, re, sys
 
-from mailpile import ABOUT
 from mailpile.util import *
 
 

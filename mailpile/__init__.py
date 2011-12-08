@@ -19,6 +19,10 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urlparse import parse_qs, urlparse
 import lxml.html
 
+# This is a hack..
+import mailpile.ui
+mailpile.ui.ABOUT = ABOUT
+
 from mailpile.util import *
 from mailpile.mailutils import *
 from mailpile.ui import *
