@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from datetime import date
 from setuptools import setup
-from mailpile import APPVER
+from mailpile.app import APPVER
 import os
 
 try:
