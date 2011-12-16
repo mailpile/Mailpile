@@ -1,4 +1,6 @@
 #!/usr/bin/python
+import os
+
 from mailpile.util import *
 from mailpile.mailutils import Email
 
