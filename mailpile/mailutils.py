@@ -11,7 +11,10 @@
 ## larger mailbox.
 #
 ###############################################################################
-import cPickle, email.parser, mailbox, os
+import cPickle
+import email.parser
+import mailbox
+import os
 
 from mailpile.util import *
 

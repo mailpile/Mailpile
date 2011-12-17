@@ -2,7 +2,15 @@
 #
 # Misc. utility functions for Mailpile.
 #
-import cgi, hashlib, locale, re, subprocess, sys, tempfile, threading, time
+import cgi
+import hashlib
+import locale
+import re
+import subprocess
+import sys
+import tempfile
+import threading
+import time
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING

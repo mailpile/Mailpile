@@ -2,7 +2,9 @@
 #
 # Basic user-interface stuff
 #
-import datetime, re, sys
+import datetime
+import re
+import sys
 
 from mailpile.util import *
 
