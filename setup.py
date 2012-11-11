@@ -17,12 +17,13 @@ setup(
     license="AGPLv3+",
     author="Bjarni R. Einarsson",
     author_email="bre@klaki.net",
-    url="http://mailpile.pagekite.me/",
+    url="http://themailpile.org/",
     description="""Mailpile is a personal tool for searching and indexing e-mail.""",
     long_description="""\
 Mailpile is a tool for building and maintaining a tagging search
-engine for a personal collection of e-mail.
+engine for a personal collection of e-mail.  It can be used as a
+simple web-mail client.
 """,
    packages=['mailpile'],
-   scripts=['scripts/pagekite'],
+   scripts=['scripts/mailpile'],
 )

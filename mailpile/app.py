@@ -1,7 +1,7 @@
 #!/usr/bin/python
 APPVER="0.0.0+github"
 ABOUT="""\
-Mailpile.py          a tool               Copyright 2011, Bjarni R. Einarsson
+Mailpile.py          a tool          Copyright 2011-2012, Bjarni R. Einarsson
                for searching and                      <http://bre.klaki.net/>
            organizing piles of e-mail
 
@@ -530,7 +530,7 @@ class MailIndex(object):
       return self.CACHE[msg_idx]
     except IndexError:
       return (None, None, None, None, b36(0),
-              '(not in index)', '(not in index)', None, None)
+              '(not in index)', '(not in index)', '', '', '-1')
 
   def set_msg_by_idx(self, msg_idx, msg_info):
     if msg_idx < len(self.INDEX):
