@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os
+import traceback
 
 from mailpile.util import *
 from mailpile.mailutils import Email
@@ -203,6 +204,8 @@ def Action_Rescan(session, config):
     if not count: session.ui.mark('Nothing changed')
   except (KeyboardInterrupt, subprocess.CalledProcessError), e:
     session.ui.mark('Aborted: %s' % e)
+    if config.get('debug'):
+      session.ui.say(traceback.format_exc())
   finally:
     if count:
       session.ui.mark('\n')
