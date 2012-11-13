@@ -388,6 +388,10 @@ class MailIndex(object):
             session.ui.warning('=%s/%s is from the FUTURE!' % (msg_mid, msg_id))
             # Messages from the future are treated as today's
             msg_date = last_date + 1
+          elif msg_date < 0:
+            session.ui.warning('=%s/%s has a negative date!' % (msg_mid, msg_id))
+            msg_date = last_date + 1
+
         except (ValueError, TypeError, OverflowError):
           session.ui.warning('=%s/%s has a bogus date.' % (msg_mid, msg_id))
           # This is a hack: We assume the messages in the mailbox are in
