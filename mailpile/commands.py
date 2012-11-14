@@ -2,8 +2,9 @@
 import os
 import traceback
 
-from mailpile.util import *
 from mailpile.mailutils import Email
+from mailpile.search import PostingList
+from mailpile.util import *
 
 COMMANDS = {
   'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      60),
