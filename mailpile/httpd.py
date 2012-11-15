@@ -8,12 +8,13 @@ import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urlparse import parse_qs, urlparse
 
+import mailpile.util
 from mailpile.util import *
 from mailpile.ui import Session, HtmlUI
 from mailpile.commands import Action
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
-global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING
+global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
 
 DEFAULT_PORT = 33411
 
@@ -287,7 +288,7 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
       SimpleXMLRPCServer.finish_request(self, request, client_address)
     except socket.error:
       pass
-    if QUITTING: self.shutdown()
+    if mailpile.util.QUITTING: self.shutdown()
 
 
 class HttpWorker(threading.Thread):

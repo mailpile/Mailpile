@@ -2,6 +2,7 @@
 import os
 import traceback
 
+import mailpile.util
 from mailpile.mailutils import Email
 from mailpile.search import PostingList
 from mailpile.util import *
@@ -197,7 +198,7 @@ def Action_Rescan(session, config):
       subprocess.check_call(pre_command, shell=True)
     count = 1
     for fid, fpath in config.get_mailboxes():
-      if QUITTING: break
+      if mailpile.util.QUITTING: break
       count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
       config.clear_mbox_cache()
       session.ui.mark('\n')
@@ -238,7 +239,7 @@ def Action(session, opt, arg):
 
   elif opt in ('W', 'webserver'):
     config.prepare_workers(session, daemons=True)
-    while not QUITTING: time.sleep(1)
+    while not mailpile.util.QUITTING: time.sleep(1)
 
   elif opt in ('A', 'add'):
     if os.path.exists(arg):

@@ -23,7 +23,7 @@ import SocketServer
 from urlparse import parse_qs, urlparse
 import lxml.html
 
-
+import mailpile.util
 from mailpile.util import *
 from mailpile.ui import *
 
@@ -46,7 +46,7 @@ class PostingList(object):
     for c in cls.CHARACTERS:
       postinglist_dir = session.config.postinglist_dir(c)
       for fn in sorted(os.listdir(postinglist_dir)):
-        if QUITTING: break
+        if mailpile.util.QUITTING: break
         if (force
         or  os.path.getsize(os.path.join(postinglist_dir, fn)) >
                                                         900*postinglist_kb):
@@ -61,7 +61,7 @@ class PostingList(object):
       files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
       files.sort(key=lambda a: -len(a))
       for fn in files:
-        if QUITTING: break
+        if mailpile.util.QUITTING: break
         size = os.path.getsize(os.path.join(postinglist_dir, fn))
         fnp = fn[:-1]
         while not os.path.exists(os.path.join(postinglist_dir, fnp)):
@@ -344,7 +344,7 @@ class MailIndex(object):
     added = 0
     msg_date = int(time.time())
     for i in range(mbox.last_parsed+1, len(mbox)):
-      if QUITTING: break
+      if mailpile.util.QUITTING: break
       parse_status = ('%s: Reading your mail: %d%% (%d/%d messages)'
                       ) % (idx, 100 * i/len(mbox), i, len(mbox))
 

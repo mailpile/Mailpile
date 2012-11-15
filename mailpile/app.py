@@ -38,6 +38,7 @@ import lxml.html
 
 # This is a hack..
 import mailpile.ui
+import mailpile.util
 mailpile.ui.ABOUT = ABOUT
 
 from mailpile.commands import *
@@ -75,7 +76,7 @@ class Cron(threading.Thread):
 
   def run(self):
     self.ALIVE = True
-    while self.ALIVE and not QUITTING:
+    while self.ALIVE and not mailpile.util.QUITTING:
       now = time.time()
       for task_spec in self.schedule.values():
         name, interval, task, last = task_spec
@@ -134,7 +135,7 @@ class Worker(threading.Thread):
 
   def run(self):
     self.ALIVE = True
-    while self.ALIVE and not QUITTING:
+    while self.ALIVE and not mailpile.util.QUITTING:
       self.LOCK.acquire()
       while len(self.JOBS) < 1:
         self.LOCK.wait()
@@ -478,7 +479,7 @@ def Main(args):
     pass
 
   finally:
-    QUITTING = True
+    mailpile.util.QUITTING = True
     config.stop_workers()
 
 if __name__ == "__main__":
