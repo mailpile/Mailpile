@@ -374,8 +374,8 @@ class MailIndex(object):
             session.ui.warning('=%s/%s is from the FUTURE!' % (msg_mid, msg_id))
             # Messages from the future are treated as today's
             msg_date = last_date + 1
-          elif msg_date < 0:
-            session.ui.warning('=%s/%s has a negative date!' % (msg_mid, msg_id))
+          elif msg_date < 1:
+            session.ui.warning('=%s/%s is PREHISTORIC!' % (msg_mid, msg_id))
             msg_date = last_date + 1
 
         except (ValueError, TypeError, OverflowError):
@@ -477,7 +477,11 @@ class MailIndex(object):
 
       if textpart:
         # FIXME: Does this lowercase non-ASCII characters correctly?
+        # FIXME: What about encrypted content?
         keywords.extend(re.findall(WORD_REGEXP, textpart.lower()))
+        # FIXME: Do this better.
+        if '-----BEGIN PGP' in textpart and '-----END PGP' in textpart:
+          keywords.append('pgp:has')
 
     mdate = datetime.date.fromtimestamp(msg_date)
     keywords.append('%s:year' % mdate.year)
