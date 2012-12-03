@@ -13,10 +13,15 @@
 ###############################################################################
 import cPickle
 import email.parser
+import errno
 import mailbox
 import os
 
 from mailpile.util import *
+
+
+class NoSuchMailboxError(OSError):
+  pass
 
 
 class IncrementalMbox(mailbox.mbox):
@@ -34,6 +39,8 @@ class IncrementalMbox(mailbox.mbox):
   def __setstate__(self, dict):
     self.__dict__.update(dict)
     try:
+      if not os.path.exists(self._path):
+        raise NoSuchMailboxError(self._path)
       self._file = open(self._path, 'rb+')
     except IOError, e:
       if e.errno == errno.ENOENT:

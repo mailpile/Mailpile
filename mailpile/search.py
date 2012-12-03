@@ -25,6 +25,7 @@ import lxml.html
 
 import mailpile.util
 from mailpile.util import *
+from mailpile.mailutils import NoSuchMailboxError
 from mailpile.ui import *
 
 
@@ -333,8 +334,12 @@ class MailIndex(object):
     self.set_msg_by_idx(msg_idx, msg_info)
 
   def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
-    mbox = mailbox_opener(session, idx)
-    session.ui.mark('%s: Checking: %s' % (idx, mailbox_fn))
+    try:
+      mbox = mailbox_opener(session, idx)
+      session.ui.mark('%s: Checking: %s' % (idx, mailbox_fn))
+    except (IOError, OSError, NoSuchMailboxError):
+      session.ui.mark('%s: Error opening: %s' % (idx, mailbox_fn))
+      return 0
 
     if mbox.last_parsed+1 == len(mbox): return 0
 
@@ -524,7 +529,7 @@ class MailIndex(object):
       return self.CACHE[msg_idx]
     except IndexError:
       return (None, None, None, None, b36(0),
-              '(not in index)', '(not in index)', '', '', '-1')
+              '(not in index)', '(not in index: %s)' % msg_idx, '', '', '-1')
 
   def set_msg_by_idx(self, msg_idx, msg_info):
     if msg_idx < len(self.INDEX):

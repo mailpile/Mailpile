@@ -313,7 +313,7 @@ class ConfigManager(dict):
           mbox.save(session, to=pfn)
           self.MBOX_CACHE[mid] = mbox
         return self.MBOX_CACHE[mid]
-    raise IndexError('No such mailbox: %s' % mailbox_id)
+    raise NoSuchMailboxError('No such mailbox: %s' % mailbox_id)
 
   def get_filters(self):
     filters = self.get('filter', {}).keys()
