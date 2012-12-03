@@ -1,7 +1,7 @@
 # A pile of ideas
 
 These are random ideas that may or may not make sense.  Most of them
-were in one way or another inspired by conversations at FSCONS 2011.
+were in one way or another inspired by conversations at FSCONS 2011/2012.
 
 
 ## Web interface URL design
@@ -41,10 +41,51 @@ Designing the URL space for the web UI is important.  Some ideas:
     http://mailpile/_/command.json?args=args
 
 
+## Power user features
+
+   * Fast for large amounts of e-mail
+   * Powerful searching
+   * Powerful filters
+  --
+   * Sticky search: checked messages stay in the list
+   * GPG encryption: mail and/or local data
+   * GPG indexing: automatic or manual
+   * Reply all, reply many, forwarding, bouncing
+   * Multiple personalities for composing: name/email/gpg/sig/template
+   * Personal mailing lists: if UI is public, allow direct unsubscribe
+   * Schedule messages for sending later
+   * Built-in web-bug support to know who has read what and when
+   * Revokable mail: send an URL, display message in browser.
+   * Multimedia composing
+   * Collaborative composing
+   * Google Translate integration
+   * Ability to drop messages from the search index?
+   * Facebook integration for photos?
+   * Jabber transport to snag for Facebook messages?
+   * Markdown!
+
+
 ## Encrypting the index
 
 How much performance to we lose if we GPG encrypt the index?  This would
 hurt the indexing process but maybe not general use...
+
+How about the posting lists?  That's gonna hurt all the time.
+
+
+## GPG integration
+
+Need to be able to index encrypted mail, but it would be ideal if it
+weren't trivial to reconstruct encrypted mails using the search index.
+
+Idea: encrypted messages are indexed using random IDs, the random ID
+to message-ID mapping is stored encrypted?  What happens if all the
+mail is encrypted?
+
+Idea: encrypt the posting lists.  Maybe just the ones referencing
+encrypted messages?  Leaky.
+
+Idea: fuck it, just require people encrypt their disks.
 
 
 ## Tahoe-LAFS integration
