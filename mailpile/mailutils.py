@@ -168,6 +168,41 @@ class Email(object):
     for part in self.get_msg().walk():
       charset = part.get_charset() or 'iso-8859-1'
       if part.get_content_type() == 'text/plain':
-        return part.get_payload(None, True).decode(charset)
-    return ''
+        text = part.get_payload(None, True).decode(charset)
+        # FIXME: Is there a PGP-encrypted or signed block?  If so, extract
+        #        the clear-text only.
+        return (text, {})
+    return ('', {})
+
+  def get_msg_summary(self):
+    return [
+      self.get_msg_info(self.index.MSG_IDX),
+      self.get_msg_info(self.index.MSG_ID),
+      self.get_msg_info(self.index.MSG_FROM),
+      self.get_msg_info(self.index.MSG_SUBJECT)
+    ]
+
+  def get_message_tree(self):
+    tree = {
+      'id': self.get_msg_info(self.index.MSG_ID),
+      'tags': self.get_msg_info(self.index.MSG_TAGS).split(','),
+      'summary': self.get_msg_summary(),
+      'headers': {},
+      'parts': [],
+      'conversation': []
+    }
+
+    conv_id = self.get_msg_info(self.index.MSG_CONV_ID)
+    if conv_id:
+      conv = Email(self.index, int(conv_id, 36))
+      tree['conversation'] = convs = [conv.get_msg_summary()]
+      for rid in conv.get_msg_info(self.index.MSG_REPLIES).split(','):
+        if rid:
+          convs.append(Email(self.index, int(rid, 36)).get_msg_summary())
+
+    msg = self.get_msg()
+    for part in msg.walk():
+      pass
+
+    return tree
 

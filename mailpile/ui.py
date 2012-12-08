@@ -34,11 +34,14 @@ class NullUI(object):
     self.buffering = False
 
   def say(self, text='', newline='\n', fd=sys.stdout):
+    if not fd:
+      fd = sys.stdout
     def sayit():
       fd.write(text.encode('utf-8')+newline)
       fd.flush()
     self.buffered.append(sayit)
-    if not self.buffering: self.flush()
+    if not self.buffering:
+      self.flush()
 
   def notify(self, message):
     self.say('%s%s' % (message, ' ' * (self.WIDTH-1-len(message))))
@@ -97,10 +100,11 @@ class NullUI(object):
                        (terms == '*') and '(all new mail)' or terms or '(none)',
                        comment or '(none)'))
 
-  def display_messages(self, emails, raw=False, sep='', fd=sys.stdout):
+  def display_messages(self, emails,
+                       raw=False, sep='', fd=sys.stdout, context=True):
     for email in emails:
-      self.say(sep, fd=fd)
       if raw:
+        self.say(sep, fd=fd)
         for line in email.get_file().readlines():
           try:
             line = line.decode('utf-8')
@@ -111,9 +115,17 @@ class NullUI(object):
               line = '(MAILPILE DECODING FAILED)\n'
           self.say(line, newline='', fd=fd)
       else:
-        for hdr in ('Date', 'To', 'From', 'Subject'):
-          self.say('%s: %s' % (hdr, email.get(hdr, '(unknown)')), fd=fd)
-        self.say('\n%s' % email.get_body_text(), fd=fd)
+        tree = email.get_message_tree()
+        if context and 1 < len(tree['conversation']):
+          self.display_results(email.index,
+                               [int(m[0], 36) for m in tree['conversation']],
+                               [],
+                               expand=[email], fd=fd)
+        else:
+          self.say(sep, fd=fd)
+          for hdr in ('Date', 'To', 'From', 'Subject'):
+            self.say('%s: %s' % (hdr, email.get(hdr, '(unknown)')), fd=fd)
+          self.say('\n%s' % email.get_body_text()[0], fd=fd)
 
 
 class TextUI(NullUI):
@@ -179,7 +191,8 @@ class TextUI(NullUI):
     return namelist
 
   def display_results(self, idx, results, terms,
-                            start=0, end=None, num=None):
+                            start=0, end=None, num=None, expand=None,
+                            fd=None):
     if not results: return (0, 0)
 
     num = num or 20
@@ -191,43 +204,53 @@ class TextUI(NullUI):
     cfmt = '%%%d.%ds' % (clen, clen)
 
     count = 0
+    expand_ids = [e.msg_idx for e in (expand or [])]
     for mid in results[start:start+num]:
       count += 1
-      try:
-        msg_info = idx.get_msg_by_idx(mid)
-        msg_subj = msg_info[idx.MSG_SUBJECT]
+      if expand and mid in expand_ids:
+        self.display_messages([expand[expand_ids.index(mid)]],
+                              context=False, fd=fd);
+      else:
+        try:
+          msg_info = idx.get_msg_by_idx(mid)
+          msg_subj = msg_info[idx.MSG_SUBJECT]
 
-        conversation = idx.get_conversation(msg_info)
-        msg_from = [r[idx.MSG_FROM] for r in conversation]
-        msg_date = [r[idx.MSG_DATE] for r in conversation]
-        msg_date = datetime.date.fromtimestamp(max([
-                                                int(d, 36) for d in msg_date]))
+          conversation = idx.get_conversation(msg_info)
+          msg_from = [r[idx.MSG_FROM] for r in conversation]
+          msg_date = [r[idx.MSG_DATE] for r in conversation]
+          msg_date = datetime.date.fromtimestamp(max([
+                                                 int(d, 36) for d in msg_date]))
 
-        msg_tags = '<'.join(sorted([re.sub("^.*/", "", idx.config['tag'].get(t, t))
-                                    for t in idx.get_tags(msg_info=msg_info)]))
-        msg_tags = msg_tags and (' <%s' % msg_tags) or '  '
+          msg_tags = '<'.join(sorted([re.sub("^.*/", "", idx.config['tag'].get(t, t))
+                                       for t in idx.get_tags(msg_info=msg_info)]))
+          msg_tags = msg_tags and (' <%s' % msg_tags) or '  '
 
-        sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
-        self.say((cfmt+' %4.4d-%2.2d-%2.2d %-25.25s '+sfmt
-                  ) % (start + count,
-                       msg_date.year, msg_date.month, msg_date.day,
-                       self.compact(self.names(msg_from), 25),
-                       msg_subj, msg_tags))
-      except (IndexError, ValueError):
-        self.say('-- (not in index: %s)' % mid)
+          sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
+          self.say((cfmt+' %4.4d-%2.2d-%2.2d %-25.25s '+sfmt
+                    ) % (start + count,
+                         msg_date.year, msg_date.month, msg_date.day,
+                         self.compact(self.names(msg_from), 25),
+                         msg_subj, msg_tags),
+                    fd=fd)
+        except (IndexError, ValueError):
+          self.say('-- (not in index: %s)' % mid)
     self.mark(('Listed %d-%d of %d results'
                ) % (start+1, start+count, len(results)))
     return (start, count)
 
-  def display_messages(self, emails, raw=False, sep='', fd=None):
-    if not fd and self.interactive:
-      viewer = subprocess.Popen(['less'], stdin=subprocess.PIPE)
-      fd = viewer.stdin
-    else:
-      fd = sys.stdout
-      viewer = None
+  def display_messages(self, emails, raw=False, sep=None, fd=None, context=True):
+    viewer = None
+    if not fd:
+      if self.interactive:
+        viewer = subprocess.Popen(['less'], stdin=subprocess.PIPE)
+        fd = viewer.stdin
+      else:
+        fd = sys.stdout
     try:
-      NullUI.display_messages(self, emails, raw=raw, sep=('_' * self.WIDTH), fd=fd)
+      NullUI.display_messages(self, emails,
+                              raw=raw,
+                              sep=(sep is None and ('_' * self.WIDTH) or sep),
+                              fd=fd, context=context)
     except IOError, e:
       pass
     if viewer:
@@ -252,16 +275,20 @@ class HtmlUI(TextUI):
   def fmt(self, l):
     return l[1].replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
 
+  def transform_text(self):
+    text = [self.fmt(l) for l in self.buffered_html if l[0] != 'html']
+    self.buffered_html = [l for l in self.buffered_html if l[0] == 'html']
+    self.buffered_html.append(('html', '<pre>%s</pre>' % ''.join(text)))
+
   def render_html(self):
-    html = ''.join([l[1] for l in self.buffered_html if l[0] == 'html'])
-    html += '<br /><pre>%s</pre>' % ''.join([self.fmt(l)
-                                             for l in self.buffered_html
-                                             if l[0] != 'html'])
+    self.transform_text()
+    html = ''.join([l[1] for l in self.buffered_html])
     self.buffered_html = []
     return html
 
   def display_results(self, idx, results, terms,
-                            start=0, end=None, num=None):
+                            start=0, end=None, num=None,
+                            expand=None, fd=None):
     if not results: return (0, 0)
 
     num = num or 50
@@ -287,43 +314,58 @@ class HtmlUI(TextUI):
                                         ' </p>\n') % ' '.join(nav)))
 
     self.buffered_html.append(('html', '<table class="results">\n'))
+    expand_ids = [e.msg_idx for e in (expand or [])]
     for mid in results[start:start+num]:
       count += 1
       try:
         msg_info = idx.get_msg_by_idx(mid)
-        msg_subj = msg_info[idx.MSG_SUBJECT] or '(no subject)'
 
-        conversation = idx.get_conversation(msg_info)
-        msg_from = [r[idx.MSG_FROM] for r in conversation]
-        msg_from = msg_from or ['(no sender)']
-        msg_date = [r[idx.MSG_DATE] for r in conversation]
-        msg_date = datetime.date.fromtimestamp(max([
-                                                int(d, 36) for d in msg_date]))
+        if expand and mid in expand_ids:
+          self.buffered_html.append(('html', (' <tr class="result %s">'
+            '<td valign=top class="checkbox"><input type="checkbox" name="msg_%s" /></td>'
+            '<td valign=top class="message" colspan=4>\n'
+          ) % (
+            (count % 2) and 'odd' or 'even',
+            msg_info[idx.MSG_IDX],
+          )))
+          self.display_messages([expand[expand_ids.index(mid)]],
+                                context=False, fd=fd, sep='');
+          self.transform_text()
+          self.buffered_html.append(('html', '  </td></tr>'))
+        else:
+          msg_subj = msg_info[idx.MSG_SUBJECT] or '(no subject)'
 
-        msg_tags = sorted([idx.config['tag'].get(t,t)
-                           for t in idx.get_tags(msg_info=msg_info)
-                           if 'tag:%s' % t not in terms])
-        tag_classes = ['t_%s' % t.replace('/', '_') for t in msg_tags]
-        msg_tags = ['<a href="/%s/">%s</a>' % (t, re.sub("^.*/", "", t))
-                    for t in msg_tags]
+          conversation = idx.get_conversation(msg_info)
+          msg_from = [r[idx.MSG_FROM] for r in conversation]
+          msg_from = msg_from or ['(no sender)']
+          msg_date = [r[idx.MSG_DATE] for r in conversation]
+          msg_date = datetime.date.fromtimestamp(max([
+                                                 int(d, 36) for d in msg_date]))
 
-        self.buffered_html.append(('html', (' <tr class="result %s %s">'
-          '<td class="checkbox"><input type="checkbox" name="msg_%s" /></td>'
-          '<td class="from"><a href="/=%s/%s/">%s</a></td>'
-          '<td class="subject"><a href="/=%s/%s/">%s</a></td>'
-          '<td class="tags">%s</td>'
-          '<td class="date"><a href="?q=date:%4.4d-%d-%d">%4.4d-%2.2d-%2.2d</a></td>'
-        '</tr>\n') % (
-          (count % 2) and 'odd' or 'even', ' '.join(tag_classes).lower(),
-          msg_info[idx.MSG_IDX],
-          msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
-          self.compact(self.names(msg_from), 25),
-          msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
-          msg_subj,
-          ', '.join(msg_tags),
-          msg_date.year, msg_date.month, msg_date.day,
-          msg_date.year, msg_date.month, msg_date.day,
-        )))
+          msg_tags = sorted([idx.config['tag'].get(t,t)
+                             for t in idx.get_tags(msg_info=msg_info)
+                             if 'tag:%s' % t not in terms])
+          tag_classes = ['t_%s' % t.replace('/', '_') for t in msg_tags]
+          msg_tags = ['<a href="/%s/">%s</a>' % (t, re.sub("^.*/", "", t))
+                      for t in msg_tags]
+
+          self.buffered_html.append(('html', (' <tr class="result %s %s">'
+            '<td class="checkbox"><input type="checkbox" name="msg_%s" /></td>'
+            '<td class="from"><a href="/=%s/%s/">%s</a></td>'
+            '<td class="subject"><a href="/=%s/%s/">%s</a></td>'
+            '<td class="tags">%s</td>'
+            '<td class="date"><a href="?q=date:%4.4d-%d-%d">%4.4d-%2.2d-%2.2d</a></td>'
+          '</tr>\n') % (
+            (count % 2) and 'odd' or 'even', ' '.join(tag_classes).lower(),
+            msg_info[idx.MSG_IDX],
+            msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
+            self.compact(self.names(msg_from), 25),
+            msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
+            msg_subj,
+            ', '.join(msg_tags),
+            msg_date.year, msg_date.month, msg_date.day,
+            msg_date.year, msg_date.month, msg_date.day,
+          )))
       except (IndexError, ValueError):
         pass
     self.buffered_html.append(('html', '</table>\n'))
