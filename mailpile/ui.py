@@ -197,11 +197,9 @@ class TextUI(NullUI):
         msg_info = idx.get_msg_by_idx(mid)
         msg_subj = msg_info[idx.MSG_SUBJECT]
 
-        msg_from = [msg_info[idx.MSG_FROM]]
-        msg_from.extend([r[idx.MSG_FROM] for r in idx.get_replies(msg_info)])
-
-        msg_date = [msg_info[idx.MSG_DATE]]
-        msg_date.extend([r[idx.MSG_DATE] for r in idx.get_replies(msg_info)])
+        conversation = idx.get_conversation(msg_info)
+        msg_from = [r[idx.MSG_FROM] for r in conversation]
+        msg_date = [r[idx.MSG_DATE] for r in conversation]
         msg_date = datetime.date.fromtimestamp(max([
                                                 int(d, 36) for d in msg_date]))
 
@@ -295,12 +293,10 @@ class HtmlUI(TextUI):
         msg_info = idx.get_msg_by_idx(mid)
         msg_subj = msg_info[idx.MSG_SUBJECT] or '(no subject)'
 
-        msg_from = [msg_info[idx.MSG_FROM]]
-        msg_from.extend([r[idx.MSG_FROM] for r in idx.get_replies(msg_info)])
+        conversation = idx.get_conversation(msg_info)
+        msg_from = [r[idx.MSG_FROM] for r in conversation]
         msg_from = msg_from or ['(no sender)']
-
-        msg_date = [msg_info[idx.MSG_DATE]]
-        msg_date.extend([r[idx.MSG_DATE] for r in idx.get_replies(msg_info)])
+        msg_date = [r[idx.MSG_DATE] for r in conversation]
         msg_date = datetime.date.fromtimestamp(max([
                                                 int(d, 36) for d in msg_date]))
 

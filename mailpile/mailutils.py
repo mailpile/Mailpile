@@ -151,7 +151,8 @@ class Email(object):
     return self.msg_parsed
 
   def is_thread(self):
-    return (0 < len(self.get_msg_info(self.index.MSG_REPLIES)))
+    return ((self.get_msg_info(self.index.MSG_CONV_ID)) or
+            (0 < len(self.get_msg_info(self.index.MSG_REPLIES))))
 
   def get(self, field, default=None):
     """Get one (or all) indexed fields for this mail."""

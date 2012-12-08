@@ -546,12 +546,18 @@ class MailIndex(object):
     for msg_ptr in msg_info[self.MSG_PTRS]:
       self.PTRS[msg_ptr] = msg_idx
 
-  def get_conversation(self, msg_idx):
-    return self.get_msg_by_idx(
-             int(self.get_msg_by_idx(msg_idx)[self.MSG_CONV_ID], 36))
+  def get_conversation(self, msg_info=None, msg_idx=None):
+    if not msg_info:
+      msg_info = self.get_msg_by_idx(msg_idx)
+    conv_id = msg_info[self.MSG_CONV_ID]
+    if conv_id:
+      return [msg_info] + self.get_replies(msg_idx=int(conv_id, 36))
+    else:
+      return [msg_info]
 
   def get_replies(self, msg_info=None, msg_idx=None):
-    if not msg_info: msg_info = self.get_msg_by_idx(msg_idx)
+    if not msg_info:
+      msg_info = self.get_msg_by_idx(msg_idx)
     return [self.get_msg_by_idx(int(r, 36)) for r
             in msg_info[self.MSG_REPLIES].split(',') if r]
 
@@ -701,13 +707,13 @@ class MailIndex(object):
     if sign < 0: results.reverse()
 
     if 'flat' not in how:
-      conversations = [int(self.get_msg_by_idx(r)[self.MSG_CONV_ID], 36)
+      conversations = [(r, int(self.get_msg_by_idx(r)[self.MSG_CONV_ID], 36))
                        for r in results]
       results[:] = []
       chash = {}
-      for c in conversations:
+      for r, c in conversations:
         if c not in chash:
-          results.append(c)
+          results.append(r)
           chash[c] = 1
 
     results.extend(leftovers)
