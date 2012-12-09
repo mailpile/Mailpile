@@ -177,17 +177,17 @@ class TextUI(NullUI):
     return ' '.join(words)
 
   def names(self, senders):
-    if len(senders) > 3:
-      return re.sub('["<>]', '', ','.join([x.split()[0] for x in senders]))
-    return ','.join([self.name(s) for s in senders])
+    if len(senders) > 1:
+      return re.sub('["<>]', '', ', '.join([x.split()[0] for x in senders]))
+    return ', '.join([self.name(s) for s in senders])
 
   def compact(self, namelist, maxlen):
     l = len(namelist)
     while l > maxlen:
-      namelist = re.sub(',[^, \.]+,', ',,', namelist, 1)
+      namelist = re.sub(', *[^, \.]+, *', ',,', namelist, 1)
       if l == len(namelist): break
       l = len(namelist)
-    namelist = re.sub(',,,+,', ' .. ', namelist, 1)
+    namelist = re.sub(',,,+, *', ' .. ', namelist, 1)
     return namelist
 
   def display_results(self, idx, results, terms,
@@ -216,7 +216,11 @@ class TextUI(NullUI):
           msg_subj = msg_info[idx.MSG_SUBJECT]
 
           conversation = idx.get_conversation(msg_info)
-          msg_from = [r[idx.MSG_FROM] for r in conversation]
+          if expand:
+            msg_from = [msg_info[idx.MSG_FROM]]
+          else:
+            msg_from = [r[idx.MSG_FROM] for r in conversation]
+          msg_from = msg_from or ['(no sender)']
           msg_date = [r[idx.MSG_DATE] for r in conversation]
           msg_date = datetime.date.fromtimestamp(max([
                                                  int(d, 36) for d in msg_date]))
@@ -336,7 +340,10 @@ class HtmlUI(TextUI):
           msg_subj = msg_info[idx.MSG_SUBJECT] or '(no subject)'
 
           conversation = idx.get_conversation(msg_info)
-          msg_from = [r[idx.MSG_FROM] for r in conversation]
+          if expand:
+            msg_from = [msg_info[idx.MSG_FROM]]
+          else:
+            msg_from = [r[idx.MSG_FROM] for r in conversation]
           msg_from = msg_from or ['(no sender)']
           msg_date = [r[idx.MSG_DATE] for r in conversation]
           msg_date = datetime.date.fromtimestamp(max([
@@ -359,7 +366,7 @@ class HtmlUI(TextUI):
             (count % 2) and 'odd' or 'even', ' '.join(tag_classes).lower(),
             msg_info[idx.MSG_IDX],
             msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
-            self.compact(self.names(msg_from), 25),
+            self.compact(self.names(msg_from), 30),
             msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
             msg_subj,
             ', '.join(msg_tags),

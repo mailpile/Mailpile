@@ -551,7 +551,8 @@ class MailIndex(object):
       msg_info = self.get_msg_by_idx(msg_idx)
     conv_id = msg_info[self.MSG_CONV_ID]
     if conv_id:
-      return [msg_info] + self.get_replies(msg_idx=int(conv_id, 36))
+      return ([self.get_msg_by_idx(int(conv_id, 36))] +
+              self.get_replies(msg_idx=int(conv_id, 36)))
     else:
       return [msg_info]
 
