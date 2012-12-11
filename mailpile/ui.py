@@ -215,13 +215,15 @@ class TextUI(NullUI):
           msg_info = idx.get_msg_by_idx(mid)
           msg_subj = msg_info[idx.MSG_SUBJECT]
 
-          conversation = idx.get_conversation(msg_info)
           if expand:
             msg_from = [msg_info[idx.MSG_FROM]]
+            msg_date = [msg_info[idx.MSG_DATE]]
           else:
+            conversation = idx.get_conversation(msg_info)
             msg_from = [r[idx.MSG_FROM] for r in conversation]
+            msg_date = [r[idx.MSG_DATE] for r in conversation]
+
           msg_from = msg_from or ['(no sender)']
-          msg_date = [r[idx.MSG_DATE] for r in conversation]
           msg_date = datetime.date.fromtimestamp(max([
                                                  int(d, 36) for d in msg_date]))
 
@@ -339,13 +341,15 @@ class HtmlUI(TextUI):
         else:
           msg_subj = msg_info[idx.MSG_SUBJECT] or '(no subject)'
 
-          conversation = idx.get_conversation(msg_info)
           if expand:
             msg_from = [msg_info[idx.MSG_FROM]]
+            msg_date = [msg_info[idx.MSG_DATE]]
           else:
+            conversation = idx.get_conversation(msg_info)
             msg_from = [r[idx.MSG_FROM] for r in conversation]
+            msg_date = [r[idx.MSG_DATE] for r in conversation]
+
           msg_from = msg_from or ['(no sender)']
-          msg_date = [r[idx.MSG_DATE] for r in conversation]
           msg_date = datetime.date.fromtimestamp(max([
                                                  int(d, 36) for d in msg_date]))
 
