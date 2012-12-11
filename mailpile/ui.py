@@ -128,7 +128,7 @@ class NullUI(object):
         self.say(line, newline='', fd=fd)
     else:
       self.say(sep, fd=fd)
-      for hdr in ('Date', 'To', 'From', 'Subject'):
+      for hdr in ('To', 'From', 'Date', 'Subject'):
         self.say('%s: %s' % (hdr, email.get(hdr, '(unknown)')), fd=fd)
       self.say('', fd=fd)
       for part in tree['text_parts']:
@@ -338,10 +338,17 @@ class HtmlUI(TextUI):
       try:
         msg_info = idx.get_msg_by_idx(mid)
 
+        msg_tags = sorted([idx.config['tag'].get(t,t)
+                           for t in idx.get_tags(msg_info=msg_info)
+                           if 'tag:%s' % t not in terms])
+        tag_classes = ['t_%s' % t.replace('/', '_') for t in msg_tags]
+        msg_tags = ['<a href="/%s/">%s</a>' % (t, re.sub("^.*/", "", t))
+                    for t in msg_tags]
+
         if expand and mid in expand_ids:
           self.buffered_html.append(('html', (' <tr class="result message %s">'
             '<td valign=top class="checkbox"><input type="checkbox" name="msg_%s" /></td>'
-            '<td valign=top class="message" colspan=4>\n'
+            '<td valign=top class="message" colspan=2>\n'
           ) % (
             (count % 2) and 'odd' or 'even',
             msg_info[idx.MSG_IDX],
@@ -349,7 +356,17 @@ class HtmlUI(TextUI):
           self.display_messages([expand[expand_ids.index(mid)]],
                                 context=False, fd=fd, sep='');
           self.transform_text()
-          self.buffered_html.append(('html', '  </td></tr>'))
+
+          msg_date = datetime.date.fromtimestamp(int(msg_info[idx.MSG_DATE], 36))
+          self.buffered_html.append(('html', (
+            '</td>'
+            '<td valign=top class="tags">%s</td>'
+            '<td valign=top class="date"><a href="?q=date:%4.4d-%d-%d">%4.4d-%2.2d-%2.2d</a></td>'
+          '</tr>\n') % (
+            ', '.join(msg_tags),
+            msg_date.year, msg_date.month, msg_date.day,
+            msg_date.year, msg_date.month, msg_date.day
+          )))
         else:
           msg_subj = msg_info[idx.MSG_SUBJECT] or '(no subject)'
 
@@ -364,13 +381,6 @@ class HtmlUI(TextUI):
           msg_from = msg_from or ['(no sender)']
           msg_date = datetime.date.fromtimestamp(max([
                                                  int(d, 36) for d in msg_date]))
-
-          msg_tags = sorted([idx.config['tag'].get(t,t)
-                             for t in idx.get_tags(msg_info=msg_info)
-                             if 'tag:%s' % t not in terms])
-          tag_classes = ['t_%s' % t.replace('/', '_') for t in msg_tags]
-          msg_tags = ['<a href="/%s/">%s</a>' % (t, re.sub("^.*/", "", t))
-                      for t in msg_tags]
 
           self.buffered_html.append(('html', (' <tr class="result %s %s">'
             '<td class="checkbox"><input type="checkbox" name="msg_%s" /></td>'
@@ -411,7 +421,7 @@ class HtmlUI(TextUI):
         self.say(line, newline='', fd=fd)
     else:
       self.buffered_html.append(('html', '<div class=headers>'))
-      for hdr in ('Date', 'To', 'From', 'Subject'):
+      for hdr in ('To', 'From', 'Subject'):
         html = '<b>%s:</b> %s<br>' % (hdr, email.get(hdr, '(unknown)'))
         self.buffered_html.append(('html', html))
       self.buffered_html.append(('html', '</div><br><div class=message>'))

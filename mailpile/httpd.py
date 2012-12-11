@@ -58,7 +58,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  p.rnav {margin: 4px 10px; text-align: center;}
  table.results {table-layout: fixed; border: 0; border-collapse: collapse; width: 100%; font-size: 13px; font-family: Helvetica,Arial;}
  tr.result td {overflow: hidden; white-space: nowrap; padding: 1px 3px; margin: 0;}
- tr.message td {white-space: pre-wrap; font-family: monospace;}
+ tr.message td .message {white-space: pre-wrap; font-family: monospace;}
  tr.result td a {color: #000; text-decoration: none;}
  tr.result td a:hover {text-decoration: underline;}
  tr.result td.date a {color: #777;}
@@ -69,9 +69,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  td.from {width: 25%; font-size: 12px;}
  td.tags {width: 12%; font-size: 11px; text-align: center;}
  tr.result td.tags a {color: #777;}
+ tr.message td .headers {margin-top: 0px; font-size: 1.1em;}
  tr.message td .message .quote {color: #777;}
- tr.message td .message .pgpsign {color: #999;}
- tr.message td .message .pgptext {color: #220; padding: 3px; margin: -3px; background: #ff7;}
+ tr.message td .message .pgpsign {color: #aaa; margin-bottom: -3px; margin-top: 3px;}
+ tr.message td .message .pgptext {padding: 3px; margin: -3px; background: #ccf;}
  tr.odd {background: #ffffff;}
  tr.even {background: #eeeeee;}
  #qbox {width: 400px;}"""
