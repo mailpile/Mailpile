@@ -225,12 +225,32 @@ class Email(object):
 
   def parse_line_type(self, line, block):
     # FIXME: Detect PGP blocks, forwarded messages, signatures, ...
-    stripped = line.strip()
+    stripped = line.rstrip()
+
+    if stripped == '-----BEGIN PGP SIGNED MESSAGE-----':
+      return 'pgpstart', 'pgpsign'
+    if block == 'pgpstart':
+      if line.startswith('Hash: ') or stripped == '':
+        return 'pgpstart', 'pgpsign'
+      else:
+        return 'pgpsigned', 'pgptext'
+    if block == 'pgpsigned':
+      if (stripped == '-----BEGIN PGP SIGNATURE-----'):
+        return 'pgpsignature', 'pgpsign'
+      else:
+        return 'pgpsigned', 'pgptext'
+    if block == 'pgpsignature':
+      if stripped == '-----END PGP SIGNATURE-----':
+        return 'pgpend', 'pgpsign'
+      else:
+        return 'pgpsignature', 'pgpsign'
+
     if block == 'quote':
       if stripped != '' and not line.startswith('>'):
         return 'quote', 'quote'
     if line.startswith('>') or stripped.endswith(' wrote:'):
       return 'quote', 'quote'
+
     return 'body', 'text'
 
   def parse_text_part(self, data):

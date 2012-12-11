@@ -339,7 +339,7 @@ class HtmlUI(TextUI):
         msg_info = idx.get_msg_by_idx(mid)
 
         if expand and mid in expand_ids:
-          self.buffered_html.append(('html', (' <tr class="result %s">'
+          self.buffered_html.append(('html', (' <tr class="result message %s">'
             '<td valign=top class="checkbox"><input type="checkbox" name="msg_%s" /></td>'
             '<td valign=top class="message" colspan=4>\n'
           ) % (
@@ -397,6 +397,31 @@ class HtmlUI(TextUI):
     self.mark(('Listed %d-%d of %d results'
                ) % (start+1, start+count, len(results)))
     return (start, count)
+
+  def display_message(self, email, tree, raw=False, sep='', fd=None):
+    if raw:
+      for line in email.get_file().readlines():
+        try:
+          line = line.decode('utf-8')
+        except UnicodeDecodeError:
+          try:
+            line = line.decode('iso-8859-1')
+          except:
+            line = '(MAILPILE DECODING FAILED)\n'
+        self.say(line, newline='', fd=fd)
+    else:
+      self.buffered_html.append(('html', '<div class=headers>'))
+      for hdr in ('Date', 'To', 'From', 'Subject'):
+        html = '<b>%s:</b> %s<br>' % (hdr, email.get(hdr, '(unknown)'))
+        self.buffered_html.append(('html', html))
+      self.buffered_html.append(('html', '</div><br><div class=message>'))
+      for part in tree['text_parts']:
+        self.buffered_html.append(self.fmt_part(part))
+      self.buffered_html.append(('html', '</div>'))
+
+  def fmt_part(self, part):
+    text = part['data']
+    return ('html', '<p class="%s">%s</p>' % (part['type'], text))
 
 
 class Session(object):
