@@ -18,6 +18,7 @@ import mailbox
 import os
 
 from mailpile.util import *
+from lxml.html.clean import Cleaner
 
 
 class NoSuchMailboxError(OSError):
@@ -164,22 +165,14 @@ class Email(object):
     else:
       return self.get_msg().get(field, default)
 
-  def get_body_text(self):
-    for part in self.get_msg().walk():
-      charset = part.get_charset() or 'iso-8859-1'
-      if part.get_content_type() == 'text/plain':
-        text = part.get_payload(None, True).decode(charset)
-        # FIXME: Is there a PGP-encrypted or signed block?  If so, extract
-        #        the clear-text only.
-        return (text, {})
-    return ('', {})
-
   def get_msg_summary(self):
     return [
       self.get_msg_info(self.index.MSG_IDX),
       self.get_msg_info(self.index.MSG_ID),
       self.get_msg_info(self.index.MSG_FROM),
-      self.get_msg_info(self.index.MSG_SUBJECT)
+      self.get_msg_info(self.index.MSG_SUBJECT),
+      self.get_msg_info(self.index.MSG_DATE),
+      self.get_msg_info(self.index.MSG_TAGS).split(',')
     ]
 
   def get_message_tree(self):
@@ -188,7 +181,10 @@ class Email(object):
       'tags': self.get_msg_info(self.index.MSG_TAGS).split(','),
       'summary': self.get_msg_summary(),
       'headers': {},
-      'parts': [],
+      'attributes': {},
+      'text_parts': [],
+      'html_parts': [],
+      'attachments': [],
       'conversation': []
     }
 
@@ -200,9 +196,57 @@ class Email(object):
         if rid:
           convs.append(Email(self.index, int(rid, 36)).get_msg_summary())
 
+    # FIXME: Decide if this is strict enough or too strict...?
+    html_cleaner = Cleaner(page_structure=True, meta=True, links=True,
+                           javascript=True, scripts=True, frames=True,
+                           embedded=True, safe_attrs_only=True)
+
     msg = self.get_msg()
     for part in msg.walk():
-      pass
+      mimetype = part.get_content_type()
+      if mimetype in ('text/plain', 'text/html'):
+        charset = part.get_charset() or 'iso-8859-1'
+        payload = part.get_payload(None, True)
+        try:
+          payload = payload.decode(charset)
+        except UnicodeDecodeError:
+          pass
+        if mimetype == 'text/plain':
+          tree['text_parts'].extend(self.parse_text_part(payload))
+        else:
+          tree['html_parts'].append({
+            'type': 'html',
+            'data': html_cleaner.clean_html(payload)
+          })
+      else:
+        pass
 
     return tree
+
+  def parse_line_type(self, line, block):
+    # FIXME: Detect PGP blocks, forwarded messages, signatures, ...
+    stripped = line.strip()
+    if block == 'quote':
+      if stripped != '' and not line.startswith('>'):
+        return 'quote', 'quote'
+    if line.startswith('>') or stripped.endswith(' wrote:'):
+      return 'quote', 'quote'
+    return 'body', 'text'
+
+  def parse_text_part(self, data):
+    current = {
+      'type': 'bogus',
+    }
+    parse = []
+    block = 'body'
+    for line in data.splitlines(True):
+      block, ltype = self.parse_line_type(line, block)
+      if ltype != current['type']:
+        current = {
+          'type': ltype,
+          'data': '',
+        }
+        parse.append(current)
+      current['data'] += line
+    return parse
 

@@ -104,28 +104,40 @@ class NullUI(object):
                        raw=False, sep='', fd=sys.stdout, context=True):
     for email in emails:
       if raw:
-        self.say(sep, fd=fd)
-        for line in email.get_file().readlines():
-          try:
-            line = line.decode('utf-8')
-          except UnicodeDecodeError:
-            try:
-              line = line.decode('iso-8859-1')
-            except:
-              line = '(MAILPILE DECODING FAILED)\n'
-          self.say(line, newline='', fd=fd)
+        self.display_message(email, None, raw=True, sep=sep, fd=fd)
       else:
         tree = email.get_message_tree()
-        if context and 1 < len(tree['conversation']):
-          self.display_results(email.index,
-                               [int(m[0], 36) for m in tree['conversation']],
-                               [],
+        if context:
+          conversation = [int(m[0], 36) for m in tree['conversation']]
+          self.display_results(email.index, conversation or [email.index], [],
                                expand=[email], fd=fd)
         else:
-          self.say(sep, fd=fd)
-          for hdr in ('Date', 'To', 'From', 'Subject'):
-            self.say('%s: %s' % (hdr, email.get(hdr, '(unknown)')), fd=fd)
-          self.say('\n%s' % email.get_body_text()[0], fd=fd)
+          self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
+
+  def display_message(self, email, tree, raw=False, sep='', fd=None):
+    if raw:
+      self.say(sep, fd=fd)
+      for line in email.get_file().readlines():
+        try:
+          line = line.decode('utf-8')
+        except UnicodeDecodeError:
+          try:
+            line = line.decode('iso-8859-1')
+          except:
+            line = '(MAILPILE DECODING FAILED)\n'
+        self.say(line, newline='', fd=fd)
+    else:
+      self.say(sep, fd=fd)
+      for hdr in ('Date', 'To', 'From', 'Subject'):
+        self.say('%s: %s' % (hdr, email.get(hdr, '(unknown)')), fd=fd)
+      self.say('', fd=fd)
+      for part in tree['text_parts']:
+        if part['type'] == 'quote':
+          self.say('[quoted text]', fd=fd)
+        else:
+          self.say('%s' % part['data'], fd=fd, newline='')
+      self.say('', fd=fd)
+
 
 
 class TextUI(NullUI):
