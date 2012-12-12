@@ -7,6 +7,12 @@ from mailpile.mailutils import Email
 from mailpile.search import PostingList
 from mailpile.util import *
 
+try:
+  from GnuPGInterface import GnuPG
+except ImportError:
+  GnuPG = None
+
+
 COMMANDS = {
   'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      60),
   'F:': ('filter=',  'options',       'Add/edit/delete auto-tagging rules', 56),
@@ -19,6 +25,7 @@ COMMANDS = {
   'p':  ('previous', '',              'Display previous page of results',   92),
   'P:': ('print=',   'var',           'Print a setting',                    52),
   'R':  ('rescan',   '',              'Scan all mailboxes for new messages',63),
+  'g:': ('gpgrecv',  'key-ID',        'Fetch a GPG key from keyservers',    64),
   's:': ('search=',  'terms ...',     'Search!',                            90),
   'S:': ('set=',     'var=value',     'Change a setting',                   50),
   't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        94),
@@ -282,6 +289,17 @@ def Action(session, opt, arg):
     Action_Load(session, config)
     config.slow_worker.do(session, 'Rescan',
                           lambda: Action_Rescan(session, config))
+
+  elif opt in ('g', 'gpgrecv'):
+    try:
+      session.ui.mark('Invoking GPG to fetch key %s' % arg)
+      gpg = GnuPG().run(['--recv-key', arg], create_fhs=['stderr'])
+      session.ui.say(gpg.handles['stderr'].read())
+      gpg.handles['stderr'].close()
+      gpg.wait()
+    except IOError:
+      pass
+    session.ui.reset_marks()
 
   elif opt in ('L', 'load'):
     Action_Load(session, config, reset=True)

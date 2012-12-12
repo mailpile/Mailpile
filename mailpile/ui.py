@@ -447,8 +447,17 @@ class HtmlUI(TextUI):
     return t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
   def fmt_part(self, part):
-    what = (part['type'], self.escape_html(part['data']))
-    return ('html', autolink_html('<p class="%s">%s</p>' % what))
+    what = [part['type'], self.escape_html(part['data'])]
+    if what[0] == 'pgpbeginsign':
+      what[1] = ('<input type="submit" name="gpg_recvkey"'
+                 ' value="Get PGP key and Verify">' + what[1])
+    elif what[0] == 'pgpsignature':
+      key_id = re.search('key ID ([0-9A-Fa-f]+)', what[1])
+      if key_id:
+        what[1] += ('<input type="hidden" name="gpg_key_id" value="0x%s">'
+                    ) % key_id.group(1)
+
+    return ('html', autolink_html('<p class="%s">%s</p>' % tuple(what)))
 
 
 class Session(object):

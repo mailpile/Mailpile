@@ -321,8 +321,6 @@ class Email(object):
           except:
             part['data'] += traceback.format_exc()
 
-          #print 'GnuPG result: %s / %s' % (gpg.wait(), result)
-
       # FIXME: Handle encrypted messages
       if decrypt:
         pass

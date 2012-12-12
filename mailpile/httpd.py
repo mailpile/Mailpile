@@ -71,9 +71,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  tr.result td.tags a {color: #777;}
  tr.message td .headers {margin-top: 0px; font-size: 1.1em;}
  tr.message td .message .quote {color: #777;}
- tr.message td .message .pgpbeginsign {color: #aaa; margin-bottom: -3px; margin-top: 3px;}
+ tr.message td .message .pgpbeginsign {margin: -3px -3px 3px -3px; font-size: 0.8em; color: #ccf; background: #779;}
+ tr.message td .message .pgpbeginsign input {float: right; margin: 3px; font-weight: bold; padding: 1px 2px; background: #ccf; color: #446; border: 1px solid #446;}
+ tr.message td .message .pgpbeginsign input:hover {background: #eef;}
  tr.message td .message .pgpsignedtext {padding: 3px; margin: -3px; background: #ccf;}
- tr.message td .message .pgpsignature {color: #aaa; margin-top: 3px;}
+ tr.message td .message .pgpsignature {margin: 3px -3px 3px -3px; font-size: 0.8em; color: #ccf; background: #779;}
  tr.message td .message .pgpbeginverified {text-align: center; margin: -3px -3px 3px -3px; font-size: 0.8em; color: #cfc; background: #797;}
  tr.message td .message .pgpverifiedtext {padding: 3px; margin: -3px; background: #cfc;}
  tr.message td .message .pgpverification {display: none;}
@@ -213,6 +215,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
           tname = config.get('tag', {}).get(tid)
           if tname:
             cmd = fmt % (tname, ' '.join(msgs), cmd)
+    elif 'gpg_recvkey' in post_data:
+      cmd = 'gpgrecv %s /%s' % (post_data.get('gpg_key_id')[0], cmd)
     else:
       cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
 
