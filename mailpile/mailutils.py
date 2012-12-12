@@ -155,7 +155,7 @@ class Email(object):
     return ((self.get_msg_info(self.index.MSG_CONV_ID)) or
             (0 < len(self.get_msg_info(self.index.MSG_REPLIES))))
 
-  def get(self, field, default=None):
+  def get(self, field, default=''):
     """Get one (or all) indexed fields for this mail."""
     field = field.lower()
     if field == 'subject':
@@ -163,7 +163,8 @@ class Email(object):
     elif field == 'from':
       return self.get_msg_info(self.index.MSG_FROM)
     else:
-      return self.get_msg().get(field, default)
+      raw = ' '.join(self.get_msg().get_all(field, default))
+      return self.index.hdr(0, 0, value=raw) or raw
 
   def get_msg_summary(self):
     return [
@@ -205,19 +206,24 @@ class Email(object):
     for part in msg.walk():
       mimetype = part.get_content_type()
       if mimetype in ('text/plain', 'text/html'):
-        charset = part.get_charset() or 'iso-8859-1'
+        charset = part.get_charset() or 'utf-8'
         payload = part.get_payload(None, True)
         try:
           payload = payload.decode(charset)
         except UnicodeDecodeError:
-          pass
-        if mimetype == 'text/plain':
-          tree['text_parts'].extend(self.parse_text_part(payload))
-        else:
+          try:
+            payload = payload.decode('iso-8859-1')
+          except UnicodeDecodeError, e:
+            print 'Decode failed: %s %s' % (charset, e)
+        if (mimetype == 'text/html' or
+            '<html>' in payload or
+            '</body>' in payload):
           tree['html_parts'].append({
             'type': 'html',
             'data': html_cleaner.clean_html(payload)
           })
+        else:
+          tree['text_parts'].extend(self.parse_text_part(payload))
       else:
         pass
 

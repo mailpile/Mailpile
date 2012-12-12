@@ -7,6 +7,7 @@ import re
 import sys
 
 from mailpile.util import *
+from lxml.html.clean import autolink_html
 
 
 class NullUI(object):
@@ -422,15 +423,30 @@ class HtmlUI(TextUI):
     else:
       self.buffered_html.append(('html', '<div class=headers>'))
       for hdr in ('To', 'From', 'Subject'):
-        html = '<b>%s:</b> %s<br>' % (hdr, email.get(hdr, '(unknown)'))
+        html = ('<b>%s:</b> %s<br>'
+                ) % (hdr, self.escape_html(email.get(hdr, '(unknown)')))
         self.buffered_html.append(('html', html))
       self.buffered_html.append(('html', '</div><br><div class=message>'))
-      for part in tree['text_parts']:
-        self.buffered_html.append(self.fmt_part(part))
+
+      if tree['text_parts']:
+        last = '<bogus>'
+        for part in tree['text_parts']:
+          if part['data'] != last:
+            self.buffered_html.append(self.fmt_part(part))
+            last = part['data']
+      else:
+        last = '<bogus>'
+        for part in tree['html_parts']:
+          if part['data'] != last:
+            self.buffered_html.append(('html', autolink_html(part['data'])))
+            last = part['data']
       self.buffered_html.append(('html', '</div>'))
 
+  def escape_html(self, t):
+    return t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
   def fmt_part(self, part):
-    text = part['data']
+    text = autolink_html(self.escape_html(part['data']))
     return ('html', '<p class="%s">%s</p>' % (part['type'], text))
 
 
