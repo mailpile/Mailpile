@@ -285,8 +285,9 @@ you want features related to them, patches will speed things up *a lot*.
 
 Note that Mailpile's emphasis is on *speed* and most of the features
 above have already basic designs "in my head".  Chat with me on freenode
-(I am BjarniRunar, and hang out on #mailpile) if you're interested in
-my take on how to implement these things. Or just send a pull request! :-)
+(I am BjarniRunar, and hang out on #mailpile) or
+[Twitter](https://twitter.com/HerraBRE) if you're interested in my take
+on how to implement these things. Or just send a pull request! :-)
 
 
 ## Roadmap ##
