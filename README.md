@@ -7,10 +7,10 @@ for awesome personal mail clients, including webmail.
 
 **WARNING:**  Mailpile is still experimental and isn't actually very useful
 yet.  It'll tell you that you have mail matching a given search and let
-you sort it, browse the threads and read messages... but it is still won't
-help you communicate, as there is no way to compose new messages.  If you
-just want a useful tool aren't interested in hacking on the code, you
-should probably check back later or [follow @HerraBRE on
+you sort it, browse threads and read messages... but it still won't help
+you communicate, as there is no way to compose new messages.  If you just
+want a useful tool aren't interested in hacking on the code, you should
+probably check back later or [follow @HerraBRE on
 Twitter](https://twitter.com/HerraBRE) and watch for updates.
 
 
