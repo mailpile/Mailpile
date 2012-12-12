@@ -446,8 +446,8 @@ class HtmlUI(TextUI):
     return t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
   def fmt_part(self, part):
-    text = autolink_html(self.escape_html(part['data']))
-    return ('html', '<p class="%s">%s</p>' % (part['type'], text))
+    what = (part['type'], self.escape_html(part['data']))
+    return ('html', autolink_html('<p class="%s">%s</p>' % what))
 
 
 class Session(object):
