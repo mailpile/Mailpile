@@ -113,6 +113,7 @@ class NullUI(object):
           self.display_results(email.index, conversation or [email.index], [],
                                expand=[email], fd=fd)
         else:
+          email.evaluate_pgp(tree)
           self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
 
   def display_message(self, email, tree, raw=False, sep='', fd=None):

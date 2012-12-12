@@ -16,9 +16,15 @@ import email.parser
 import errno
 import mailbox
 import os
+import traceback
 
 from mailpile.util import *
 from lxml.html.clean import Cleaner
+
+try:
+  from GnuPGInterface import GnuPG
+except ImportError:
+  GnuPG = None
 
 
 class NoSuchMailboxError(OSError):
@@ -213,55 +219,28 @@ class Email(object):
         except UnicodeDecodeError:
           try:
             payload = payload.decode('iso-8859-1')
+            charset = 'iso-8859-1'
           except UnicodeDecodeError, e:
             print 'Decode failed: %s %s' % (charset, e)
         if (mimetype == 'text/html' or
             '<html>' in payload or
             '</body>' in payload):
           tree['html_parts'].append({
+            'charset': charset,
             'type': 'html',
             'data': html_cleaner.clean_html(payload)
           })
         else:
-          tree['text_parts'].extend(self.parse_text_part(payload))
+          tree['text_parts'].extend(self.parse_text_part(payload, charset))
       else:
         pass
 
     return tree
 
-  def parse_line_type(self, line, block):
-    # FIXME: Detect PGP blocks, forwarded messages, signatures, ...
-    stripped = line.rstrip()
-
-    if stripped == '-----BEGIN PGP SIGNED MESSAGE-----':
-      return 'pgpstart', 'pgpsign'
-    if block == 'pgpstart':
-      if line.startswith('Hash: ') or stripped == '':
-        return 'pgpstart', 'pgpsign'
-      else:
-        return 'pgpsigned', 'pgptext'
-    if block == 'pgpsigned':
-      if (stripped == '-----BEGIN PGP SIGNATURE-----'):
-        return 'pgpsignature', 'pgpsign'
-      else:
-        return 'pgpsigned', 'pgptext'
-    if block == 'pgpsignature':
-      if stripped == '-----END PGP SIGNATURE-----':
-        return 'pgpend', 'pgpsign'
-      else:
-        return 'pgpsignature', 'pgpsign'
-
-    if block == 'quote':
-      if stripped == '':
-        return 'quote', 'quote'
-    if line.startswith('>') or stripped.endswith(' wrote:'):
-      return 'quote', 'quote'
-
-    return 'body', 'text'
-
-  def parse_text_part(self, data):
+  def parse_text_part(self, data, charset):
     current = {
       'type': 'bogus',
+      'charset': charset
     }
     parse = []
     block = 'body'
@@ -271,8 +250,80 @@ class Email(object):
         current = {
           'type': ltype,
           'data': '',
+          'charset': charset
         }
         parse.append(current)
       current['data'] += line
     return parse
 
+  def parse_line_type(self, line, block):
+    # FIXME: Detect PGP blocks, forwarded messages, signatures, ...
+    stripped = line.rstrip()
+
+    if stripped == '-----BEGIN PGP SIGNED MESSAGE-----':
+      return 'pgpbeginsign', 'pgpbeginsign'
+    if block == 'pgpbeginsign':
+      if line.startswith('Hash: ') or stripped == '':
+        return 'pgpbeginsign', 'pgpbeginsign'
+      else:
+        return 'pgpsignedtext', 'pgpsignedtext'
+    if block == 'pgpsignedtext':
+      if (stripped == '-----BEGIN PGP SIGNATURE-----'):
+        return 'pgpsignature', 'pgpsignature'
+      else:
+        return 'pgpsignedtext', 'pgpsignedtext'
+    if block == 'pgpsignature':
+      if stripped == '-----END PGP SIGNATURE-----':
+        return 'pgpend', 'pgpsignature'
+      else:
+        return 'pgpsignature', 'pgpsignature'
+
+    if block == 'quote':
+      if stripped == '':
+        return 'quote', 'quote'
+    if line.startswith('>') or stripped.endswith(' wrote:'):
+      return 'quote', 'quote'
+
+    return 'body', 'text'
+
+  PGP_OK = {
+    'pgpbeginsign': 'pgpbeginverified',
+    'pgpsignedtext': 'pgpverifiedtext',
+    'pgpsignature': 'pgpverification',
+  }
+  def evaluate_pgp(self, tree, check_sigs=True, decrypt=False):
+    pgpdata = []
+    for part in tree['text_parts']:
+
+      # Handle signed messages
+      if check_sigs and GnuPG:
+        if part['type'] == 'pgpbeginsign':
+          pgpdata = [part]
+        elif part['type'] == 'pgpsignedtext':
+          pgpdata.append(part)
+        elif part['type'] == 'pgpsignature':
+          pgpdata.append(part)
+          try:
+            message = ''.join([p['data'].encode(p['charset']) for p in pgpdata])
+            gpg = GnuPG().run(['--verify'], create_fhs=['stdin', 'stderr'])
+            gpg.handles['stdin'].write(message)
+            gpg.handles['stdin'].close()
+            result = ''
+            for fh in ('stderr', ):
+              result += gpg.handles[fh].read()
+              gpg.handles[fh].close()
+            gpg.wait()
+            pgpdata[0]['data'] = result.decode('utf-8')
+            for p in pgpdata:
+              p['type'] = self.PGP_OK.get(p['type'], p['type'])
+          except IOError:
+            part['data'] += result.decode('utf-8')
+          except:
+            part['data'] += traceback.format_exc()
+
+          #print 'GnuPG result: %s / %s' % (gpg.wait(), result)
+
+      # FIXME: Handle encrypted messages
+      if decrypt:
+        pass
+ 

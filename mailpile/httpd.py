@@ -71,8 +71,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  tr.result td.tags a {color: #777;}
  tr.message td .headers {margin-top: 0px; font-size: 1.1em;}
  tr.message td .message .quote {color: #777;}
- tr.message td .message .pgpsign {color: #aaa; margin-bottom: -3px; margin-top: 3px;}
- tr.message td .message .pgptext {padding: 3px; margin: -3px; background: #ccf;}
+ tr.message td .message .pgpbeginsign {color: #aaa; margin-bottom: -3px; margin-top: 3px;}
+ tr.message td .message .pgpsignedtext {padding: 3px; margin: -3px; background: #ccf;}
+ tr.message td .message .pgpsignature {color: #aaa; margin-top: 3px;}
+ tr.message td .message .pgpbeginverified {text-align: center; margin: -3px -3px 3px -3px; font-size: 0.8em; color: #cfc; background: #797;}
+ tr.message td .message .pgpverifiedtext {padding: 3px; margin: -3px; background: #cfc;}
+ tr.message td .message .pgpverification {display: none;}
  tr.odd {background: #ffffff;}
  tr.even {background: #eeeeee;}
  #qbox {width: 400px;}"""
