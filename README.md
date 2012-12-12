@@ -227,7 +227,9 @@ encrypt its config and data using your key, like so:
 
 **Note:** Currently this only encrypts the main index and config file, and
 only works if `gpg` is in your path. The search terms themselves are not
-encrypted yet. Like all the others, this feature is a work in progress. :-)
+encrypted, which means the contents of individual messages could at least
+in part be derived from the index.  Store the index on an encrypted volume
+if you consider this a problem.
 
 
 ## A word on performance ##
