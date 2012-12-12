@@ -252,7 +252,7 @@ class Email(object):
         return 'pgpsignature', 'pgpsign'
 
     if block == 'quote':
-      if stripped != '' and not line.startswith('>'):
+      if stripped == '':
         return 'quote', 'quote'
     if line.startswith('>') or stripped.endswith(' wrote:'):
       return 'quote', 'quote'
