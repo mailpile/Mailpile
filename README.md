@@ -25,14 +25,26 @@ At the moment, you also need your e-mail to be in a traditional mbox
 formatted Unix mailbox.
 
 
+## Setting up the environment ##
+
+Until we've properly packaged Mailpile, you will need to configure your
+environment before running it, specifically the `PYTHONPATH` variable.
+
+The easiest way to do that is to use the recipe from the `Makefile`:
+
+    $ $(make dev)
+
+Then just run `./mp` as described below.
+
+
 ## Indexing your mail ##
 
-The program `mailpile.py` will create and use a folder in your home
-directory named `.mailpile` for its indexes and settings.
+Mailpile will create and use a folder in your home directory named
+`.mailpile` for its indexes and settings.
 
 A simple test run might look like so:
 
-    $ ./mailpile.py -A /var/spool/mail/YOURNAME -R
+    $ ./mp -A /var/spool/mail/YOURNAME -R
 
 The program prints details of its progress as it runs.  Note that just
 opening the mailbox may take quite a while if it is large enough (it takes
@@ -56,7 +68,7 @@ Maybe someday you will build a fancier UI for us. :-)
 If you want to run the web UI without the CLI interface, start the
 program like this:
 
-    $ ./mailpile.py -W
+    $ ./mp -W
 
 The server listens on `localhost:33411` by default, you can change
 the host and port by setting the `http_host` and `http_port` variables.
@@ -66,7 +78,7 @@ will need to restart the program for these changes to take effect.
 
 ## Basic use ##
 
-The most important command `mailpile.py` supports is the `search` command.
+The most important command Mailpile supports is the `search` command.
 The second most important is probably `help`. :-)
 
 All commands can be abbreviated to only their first character (the less
@@ -76,7 +88,7 @@ commonly used commands use capital letters for this).
 
 Some searching examples:
 
-    $ ./mailpile.py
+    $ ./mp
     mailpile> search bjarni einarsson
     ...
     mailpile> search subject:bjarni
@@ -116,7 +128,7 @@ or one of the magic words `all` or `these`:
 (Mailpile currently assumes you have `less` installed and in your path for
 viewing e-mail. This is a temporary hack.)
 
-You can also search from the command line with `mailpile.py -s term`,
+You can also search from the command line with `./mp -s term`,
 but that will be a bit slower because the metadata index has to be
 loaded into RAM on each invocation.
 
@@ -211,7 +223,7 @@ Alternately, if you have a GPG key and run Mailpile in an environment
 where gpg-agent is available for key management, you can tell Mailpile to
 encrypt its config and data using your key, like so:
 
-    $ ./mailpile.py -S gpg_recipient=youremail@yourdomain.com
+    $ ./mp -S gpg_recipient=youremail@yourdomain.com
 
 **Note:** Currently this only encrypts the main index and config file, and
 only works if `gpg` is in your path. The search terms themselves are not
