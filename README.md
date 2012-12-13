@@ -28,7 +28,7 @@ At the moment, you also need your e-mail to be in a traditional mbox
 formatted Unix mailbox.
 
 
-## Setting up the environment ##
+## Setting up the environment and config ##
 
 Until we've properly packaged Mailpile, you will need to configure your
 environment before running it, specifically the `PYTHONPATH` variable.
@@ -37,7 +37,28 @@ The easiest way to do that is to use the recipe from the `Makefile`:
 
     $ $(make dev)
 
-Then just run `./mp` as described below.
+Once this has been done, you run `./mp` as described below.
+
+For best results, the next step is to set up basic tags and filters so
+Mailpile will behave like a normal mail client.  You want to create
+`New` and `Inbox` tags, and filters which put new messages in those
+folders automatically.  (Note that if you are importing lots of old
+mail, you may want to postpone the filter definition until after the
+import, to start with a clean slate.)
+
+   $ ./mp
+   ...
+   mailpile> addtag New
+   ...
+
+   mailpile> addtag Inbox
+   ...
+
+   mailpile> filter new +Inbox +New New mail filter
+   ...
+
+   mailpile> filter read -New Read mail filter
+   ...
 
 
 ## Indexing your mail ##
