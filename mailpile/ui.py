@@ -117,8 +117,10 @@ class NullUI(object):
         if context:
           try:
             try:
-              conversation = [int(m[0], 36) for m in tree['conversation']]
+              conversation = [int(m[0], 36) for m in tree['conversation']
+                                                  if m[0] is not None]
             except TypeError:
+              self.warning('Bad conversation: %s' % tree['conversation'])
               conversation = [email.msg_idx]
             self.display_results(email.index,  conversation, [],
                                  expand=[email], fd=fd)
