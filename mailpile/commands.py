@@ -247,7 +247,7 @@ def Action(session, opt, arg):
   num_results = config.get('num_results', None)
 
   if not opt or opt in ('h', 'help'):
-    session.ui.print_help(COMMANDS, tags=session.config.get('tag', {}),
+    session.ui.print_help(COMMANDS, tags=config.get('tag', {}),
                                     index=config.get_index(session))
 
   elif opt in ('W', 'webserver'):
@@ -266,7 +266,7 @@ def Action(session, opt, arg):
   elif opt in ('T', 'addtag'):
     if (arg
     and ' ' not in arg
-    and arg.lower() not in [v.lower() for v in config['tag'].values()]):
+    and arg.lower() not in [v.lower() for v in config.get('tag', {}).values()]):
       if config.parse_set(session,
                           'tag:%s=%s' % (config.nid('tag'), arg)):
         config.slow_worker.add_task(None, 'Save config', lambda: config.save())
@@ -343,7 +343,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif (opt in ('s', 'search')
-        or opt.lower() in [t.lower() for t in config['tag'].values()]):
+        or opt.lower() in [t.lower() for t in config.get('tag', {}).values()]):
     idx = Action_Load(session, config)
 
     # FIXME: This is all rather dumb.  Make it smarter!
