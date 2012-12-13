@@ -641,6 +641,10 @@ class MailIndex(object):
         rt.extend([int(h, 36) for h in hits(term[5:])])
       elif term == 'all:mail':
         rt.extend(range(0, len(self.INDEX)))
+      elif term.startswith('tag:'):
+        t = term.split(':', 1)
+        t[1] = self.config.get_tag_id(t[1]) or t[1]
+        rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
       elif ':' in term:
         t = term.split(':', 1)
         rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
