@@ -572,7 +572,7 @@ class MailIndex(object):
       msg_idxs = [int(msg_info[self.MSG_IDX], 36)]
     session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in list(msg_idxs):
-      for reply in self.get_replies(msg_idx=msg_idx):
+      for reply in self.get_conversation(msg_idx=msg_idx):
         if reply[self.MSG_IDX]:
           msg_idxs.add(int(reply[self.MSG_IDX], 36))
         if msg_idx % 1000 == 0: self.CACHE = {}
@@ -593,7 +593,7 @@ class MailIndex(object):
       msg_idxs = [int(msg_info[self.MSG_IDX], 36)]
     session.ui.mark('Untagging conversations (%s)' % (tag_id, ))
     for msg_idx in list(msg_idxs):
-      for reply in self.get_replies(msg_idx=msg_idx):
+      for reply in self.get_conversation(msg_idx=msg_idx):
         if reply[self.MSG_IDX]:
           msg_idxs.add(int(reply[self.MSG_IDX], 36))
         if msg_idx % 1000 == 0: self.CACHE = {}
