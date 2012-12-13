@@ -115,9 +115,15 @@ class NullUI(object):
       else:
         tree = email.get_message_tree()
         if context:
-          conversation = [int(m[0], 36) for m in tree['conversation']]
-          self.display_results(email.index, conversation or [email.index], [],
-                               expand=[email], fd=fd)
+          try:
+            try:
+              conversation = [int(m[0], 36) for m in tree['conversation']]
+            except TypeError:
+              conversation = [email.msg_idx]
+            self.display_results(email.index,  conversation, [],
+                                 expand=[email], fd=fd)
+          except TypeError:
+            self.warning('No conversation, bad ID: %s' % email.msg_idx)
         else:
           email.evaluate_pgp(tree)
           self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
