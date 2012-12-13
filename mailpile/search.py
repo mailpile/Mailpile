@@ -453,6 +453,17 @@ class MailIndex(object):
 
     return set(keywordmap.keys())
 
+  def apply_filters(self, session, filter_on, msg_mids=None, msg_idxs=None):
+    if not msg_idxs:
+      msg_idxs = [int(mid, 36) for mid in msg_mids]
+    for fid, trms, tags, c in session.config.get_filters(filter_on=filter_on):
+      for t in tags.split():
+        tag_id = t[1:].split(':')[0]
+        if t[0] == '-':
+          self.remove_tag(session, tag_id, msg_idxs=set(msg_idxs))
+        else:
+          self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
+
   def index_message(self, session, msg_mid, msg_id, msg, msg_date,
                     mailbox=None, compact=True, filter_hooks=[]):
     keywords = []
@@ -566,16 +577,18 @@ class MailIndex(object):
     if not msg_info: msg_info = self.get_msg_by_idx(msg_idx)
     return [r for r in msg_info[self.MSG_TAGS].split(',') if r]
 
-  def add_tag(self, session, tag_id, msg_info=None, msg_idxs=None):
+  def add_tag(self, session, tag_id,
+              msg_info=None, msg_idxs=None, conversation=False):
     pls = PostingList(session, '%s:tag' % tag_id)
     if not msg_idxs:
-      msg_idxs = [int(msg_info[self.MSG_IDX], 36)]
+      msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
     session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in list(msg_idxs):
-      for reply in self.get_conversation(msg_idx=msg_idx):
-        if reply[self.MSG_IDX]:
-          msg_idxs.add(int(reply[self.MSG_IDX], 36))
-        if msg_idx % 1000 == 0: self.CACHE = {}
+      if conversation:
+        for reply in self.get_conversation(msg_idx=msg_idx):
+          if reply[self.MSG_IDX]:
+            msg_idxs.add(int(reply[self.MSG_IDX], 36))
+          if msg_idx % 1000 == 0: self.CACHE = {}
     for msg_idx in msg_idxs:
       msg_info = self.get_msg_by_idx(msg_idx)
       tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
@@ -587,16 +600,18 @@ class MailIndex(object):
     pls.save()
     self.CACHE = {}
 
-  def remove_tag(self, session, tag_id, msg_info=None, msg_idxs=None):
+  def remove_tag(self, session, tag_id,
+                 msg_info=None, msg_idxs=None, conversation=False):
     pls = PostingList(session, '%s:tag' % tag_id)
     if not msg_idxs:
-      msg_idxs = [int(msg_info[self.MSG_IDX], 36)]
+      msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
     session.ui.mark('Untagging conversations (%s)' % (tag_id, ))
     for msg_idx in list(msg_idxs):
-      for reply in self.get_conversation(msg_idx=msg_idx):
-        if reply[self.MSG_IDX]:
-          msg_idxs.add(int(reply[self.MSG_IDX], 36))
-        if msg_idx % 1000 == 0: self.CACHE = {}
+      if conversation:
+        for reply in self.get_conversation(msg_idx=msg_idx):
+          if reply[self.MSG_IDX]:
+            msg_idxs.add(int(reply[self.MSG_IDX], 36))
+          if msg_idx % 1000 == 0: self.CACHE = {}
     session.ui.mark('Untagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in msg_idxs:
       msg_info = self.get_msg_by_idx(msg_idx)

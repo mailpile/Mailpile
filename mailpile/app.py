@@ -315,7 +315,7 @@ class ConfigManager(dict):
         return self.MBOX_CACHE[mid]
     raise NoSuchMailboxError('No such mailbox: %s' % mailbox_id)
 
-  def get_filters(self):
+  def get_filters(self, filter_on=None):
     filters = self.get('filter', {}).keys()
     filters.sort(key=lambda k: int(k, 36))
     flist = []
@@ -323,6 +323,8 @@ class ConfigManager(dict):
       comment = self.get('filter', {}).get(fid, '')
       terms = unicode(self.get('filter_terms', {}).get(fid, ''))
       tags = unicode(self.get('filter_tags', {}).get(fid, ''))
+      if filter_on is not None and terms != filter_on:
+        continue
       flist.append((fid, terms, tags, comment))
     return flist
 

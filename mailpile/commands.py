@@ -91,9 +91,9 @@ def Action_Tag(session, opt, arg, save=True):
 
     msg_ids = Choose_Messages(session, words[1:])
     if op == '-':
-      idx.remove_tag(session, tag_id, msg_idxs=msg_ids)
+      idx.remove_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
     else:
-      idx.add_tag(session, tag_id, msg_idxs=msg_ids)
+      idx.add_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
 
     session.ui.reset_marks()
 
@@ -114,14 +114,20 @@ def Action_Tag(session, opt, arg, save=True):
     return False
 
 def Action_Filter_Add(session, config, flags, args):
-  terms = ('new' in flags) and ['*'] or session.searched
   if args and args[0][0] == '=':
     tag_id = args.pop(0)[1:]
   else:
     tag_id = config.nid('filter')
 
+  if 'read' in flags:
+    terms = ['@read']
+  elif 'new' in flags:
+    terms = ['*']
+  else:
+    terms = session.searched
+
   if not terms or (len(args) < 1):
-    raise UsageError('Need search term and flags')
+    raise UsageError('Need flags and search terms or a hook')
 
   tags, tids = [], []
   while args and args[0][0] in ('-', '+'):
@@ -171,7 +177,7 @@ def Action_Filter(session, opt, arg):
   args = arg.split()
   flags = []
   while args and args[0] in ('add', 'set', 'delete', 'move', 'list',
-                             'new', 'notag'):
+                             'new', 'read', 'notag'):
     flags.append(args.pop(0))
   try:
     if 'delete' in flags:
@@ -188,7 +194,7 @@ def Action_Filter(session, opt, arg):
     session.error(e)
     return
   session.ui.say(
-    'Usage: filter [new] [notag] [=ID] <[+|-]tags ...> [description]\n'
+    'Usage: filter [new|read] [notag] [=ID] <[+|-]tags ...> [description]\n'
     '       filter delete <id>\n'
     '       filter move <id> <pos>\n'
     '       filter list')
@@ -382,7 +388,10 @@ def Action(session, opt, arg):
       raw = False
     idx = Action_Load(session, config)
     emails = [Email(idx, i) for i in Choose_Messages(session, args)]
-    session.ui.display_messages(emails, raw=raw)
+    if emails:
+      idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx for e in emails])
+      session.ui.clear()
+      session.ui.display_messages(emails, raw=raw)
     session.ui.reset_marks()
 
   else:

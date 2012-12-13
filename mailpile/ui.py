@@ -23,6 +23,9 @@ class NullUI(object):
   def reset_marks(self, quiet=False): pass
   def mark(self, progress): pass
 
+  def clear(self):
+    self.buffered = []
+
   def flush(self):
     while len(self.buffered) > 0:
       self.buffered.pop(0)()
@@ -95,11 +98,14 @@ class NullUI(object):
     w = int(self.WIDTH * 23/80)
     ffmt = ' %%3.3s %%-%d.%ds %%-%d.%ds %%s' % (w, w, w-2, w-2)
     self.say(ffmt % ('ID', ' Tags', 'Terms', ''))
-    for fid, terms, tags, comment in config.get_filters():
-      self.say(ffmt % (fid,
+    for fid, terms, tags, comment in config.get_filters(filter_on=None):
+      self.say(ffmt % (
+        fid,
         ' '.join(['%s%s' % (t[0], config['tag'][t[1:]]) for t in tags.split()]),
-                       (terms == '*') and '(all new mail)' or terms or '(none)',
-                       comment or '(none)'))
+        ((terms == '*') and '(all new mail)' or
+         (terms == '@read') and '(read mail)' or terms or '(none)'),
+        comment or '(none)'
+      ))
 
   def display_messages(self, emails,
                        raw=False, sep='', fd=sys.stdout, context=True):
@@ -284,6 +290,9 @@ class HtmlUI(TextUI):
 
   def __init__(self):
     TextUI.__init__(self)
+    self.buffered_html = []
+
+  def clear(self):
     self.buffered_html = []
 
   def say(self, text='', newline='\n', fd=None):
