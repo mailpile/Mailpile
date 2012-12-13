@@ -100,8 +100,11 @@ APPEND_FD_CACHE_ORDER = []
 def flush_append_cache(ratio=1, count=None):
   drop = count or int(ratio*len(APPEND_FD_CACHE_ORDER))
   for fn in APPEND_FD_CACHE_ORDER[:drop]:
-    APPEND_FD_CACHE[fn].close()
-    del APPEND_FD_CACHE[fn]
+    try:
+      APPEND_FD_CACHE[fn].close()
+      del APPEND_FD_CACHE[fn]
+    except KeyError:
+      pass
   APPEND_FD_CACHE_ORDER[:drop] = []
 
 def cached_open(filename, mode):
@@ -124,11 +127,11 @@ def cached_open(filename, mode):
   else:
     if filename in APPEND_FD_CACHE:
       if 'w' in mode or mode == 'r+':
-        APPEND_FD_CACHE[filename].close()
-        del APPEND_FD_CACHE[filename]
         try:
+          APPEND_FD_CACHE[filename].close()
+          del APPEND_FD_CACHE[filename]
           APPEND_FD_CACHE_ORDER.remove(filename)
-        except ValueError:
+        except ValueError, KeyError:
           pass
       else:
         APPEND_FD_CACHE[filename].flush()
