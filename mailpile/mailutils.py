@@ -228,7 +228,7 @@ class Email(object):
           tree['html_parts'].append({
             'charset': charset,
             'type': 'html',
-            'data': html_cleaner.clean_html(payload)
+            'data': (payload.strip() and html_cleaner.clean_html(payload)) or ''
           })
         else:
           tree['text_parts'].extend(self.parse_text_part(payload, charset))
