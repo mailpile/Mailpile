@@ -340,8 +340,11 @@ class ConfigManager(dict):
 
   def get_tag_id(self, tn):
     tn = tn.lower()
-    tid = [t for t in self['tag'] if self['tag'][t].lower() == tn]
-    return tid and tid[0] or None
+    try:
+      tid = [t for t in self['tag'] if self['tag'][t].lower() == tn]
+      return tid and tid[0] or None
+    except KeyError:
+      return None
 
   def history_file(self):
     return self.get('history_file',
