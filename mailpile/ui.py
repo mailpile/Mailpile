@@ -427,15 +427,17 @@ class HtmlUI(TextUI):
         html = ('<b>%s:</b> %s<br>'
                 ) % (hdr, self.escape_html(email.get(hdr, '(unknown)')))
         self.buffered_html.append(('html', html))
-      self.buffered_html.append(('html', '</div><br><div class=message>'))
+      self.buffered_html.append(('html', '</div><br>'))
 
       if tree['text_parts']:
+        self.buffered_html.append(('html', '<div class="message plain">'))
         last = '<bogus>'
         for part in tree['text_parts']:
           if part['data'] != last:
             self.buffered_html.append(self.fmt_part(part))
             last = part['data']
       else:
+        self.buffered_html.append(('html', '<div class="message html">'))
         last = '<bogus>'
         for part in tree['html_parts']:
           if part['data'] != last:
