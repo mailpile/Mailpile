@@ -14,6 +14,7 @@ except ImportError:
 
 
 COMMANDS = {
+  'e:': ('extract=', 'att msg [>fn]', 'Extract attachment(s) to file(s)',   96),
   'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      60),
   'F:': ('filter=',  'options',       'Add/edit/delete auto-tagging rules', 56),
   'h':  ('help',     '',              'Print help on how to use mailpile',   0),
@@ -36,7 +37,10 @@ COMMANDS = {
 }
 def Choose_Messages(session, words):
   msg_ids = set()
-  for what in words:
+  all_words = []
+  for word in words:
+    all_words.extend(word.split(','))
+  for what in all_words:
     if what.lower() == 'these':
       b, c = session.displayed
       msg_ids |= set(session.results[b:b+c])
@@ -88,7 +92,6 @@ def Action_Tag(session, opt, arg, save=True):
     op = words[0][0]
     tag = words[0][1:]
     tag_id = session.config.get_tag_id(tag)
-
     msg_ids = Choose_Messages(session, words[1:])
     if op == '-':
       idx.remove_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
@@ -392,6 +395,19 @@ def Action(session, opt, arg):
       idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx for e in emails])
       session.ui.clear()
       session.ui.display_messages(emails, raw=raw)
+    session.ui.reset_marks()
+
+  elif opt in ('e', 'extract'):
+    args = arg.split()
+    idx = Action_Load(session, config)
+    cid = args.pop(0)
+    if len(args) > 0 and args[-1].startswith('>'):
+      name_fmt = args.pop(-1)[1:]
+    else:
+      name_fmt = None
+    emails = [Email(idx, i) for i in Choose_Messages(session, args)]
+    for email in emails:
+      email.extract_attachment(session, cid, name_fmt=name_fmt)
     session.ui.reset_marks()
 
   else:

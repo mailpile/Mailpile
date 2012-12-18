@@ -227,25 +227,24 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     query_data = parse_qs(query)
 
-    cmd = self.parse_pqp(path, query_data, post_data,
-                         self.server.session.config)
     session = Session(self.server.session.config)
     session.ui = HtmlUI()
     index = session.config.get_index(session)
-
-    if cmd:
-      try:
+    try:
+      cmd = self.parse_pqp(path, query_data, post_data,
+                           self.server.session.config)
+      if cmd:
         for arg in cmd.split(' /'):
           args = arg.strip().split()
           Action(session, args[0], ' '.join(args[1:]))
         body = session.ui.render_html()
         title = 'The biggest pile of mail EVAR!'
-      except UsageError, e:
-        body = 'Oops: %s' % e
-        title = 'Ouch, too much mail, urgle, *choke*'
-    else:
-      body = ''
-      title = None
+      else:
+        body = ''
+        title = None
+    except UsageError, e:
+      body = 'Oops: %s' % e
+      title = 'Ouch, too much mail, urgle, *choke*'
 
     sidebar = ['<ul class="tag_list">']
     tids = index.config.get('tag', {}).keys()

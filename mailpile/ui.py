@@ -3,6 +3,7 @@
 # Basic user-interface stuff
 #
 import datetime
+import random
 import re
 import sys
 
@@ -154,6 +155,38 @@ class NullUI(object):
           self.say('%s' % part['data'], fd=fd, newline='')
       self.say('', fd=fd)
 
+  DEFAULT_DATA_NAME_FMT = '%(msg_idx)s.%(count)s_%(att_name)s.%(att_ext)s'
+  DEFAULT_DATA_ATTRS = {
+    'msg_idx': 'file',
+    'mimetype': 'application/octet-stream',
+    'att_name': 'unnamed',
+    'att_ext': 'dat',
+    'rand': '0000'
+  }
+  DEFAULT_DATA_EXTS = {
+    # FIXME: Add more!
+    'text/plain': 'txt',
+    'text/html': 'html',
+    'image/gif': 'gif',
+    'image/jpeg': 'jpg',
+    'image/png': 'png'
+  }
+  def make_data_filename(self, name_fmt, attributes):
+    return (name_fmt or self.DEFAULT_DATA_NAME_FMT) % attributes
+
+  def make_data_attributes(self, attributes={}):
+    attrs = self.DEFAULT_DATA_ATTRS.copy()
+    attrs.update(attributes)
+    attrs['rand'] = '%4.4x' % random.randint(0, 0xffff)
+    if attrs['att_ext'] == self.DEFAULT_DATA_ATTRS['att_ext']:
+      if attrs['mimetype'] in self.DEFAULT_DATA_EXTS:
+        attrs['att_ext'] = self.DEFAULT_DATA_EXTS[attrs['mimetype']]
+    return attrs
+
+  def open_for_data(self, name_fmt=None, attributes={}):
+    filename = self.make_data_filename(name_fmt,
+                                       self.make_data_attributes(attributes))
+    return filename, open(filename, 'w')
 
 
 class TextUI(NullUI):

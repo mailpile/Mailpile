@@ -182,6 +182,46 @@ class Email(object):
       self.get_msg_info(self.index.MSG_TAGS).split(',')
     ]
 
+  def extract_attachment(self, session, att_id, name_fmt=None):
+    msg = self.get_msg()
+    count = 0
+    for part in msg.walk():
+      mimetype = part.get_content_type()
+      if mimetype.startswith('multipart/'):
+        continue
+
+      content_id = part.get('content-id', '')
+      pfn = part.get_filename() or ''
+      count += 1
+      if (('*' == att_id)
+      or  ('#%s' % count == att_id)
+      or  (content_id == att_id)
+      or  (mimetype == att_id)
+      or  (pfn.lower().endswith('.%s' % att_id))
+      or  (pfn == att_id)):
+
+        charset = self.decode_payload(part)[1]
+        attributes = {
+          'msg_idx': b36(self.msg_idx),
+          'count': count,
+          'charset': charset,
+          'content_id': content_id,
+        }
+        if pfn:
+          if '.' in pfn:
+            pfn, attributes['att_ext'] = pfn.rsplit('.', 1)
+            attributes['att_ext'] = attributes['att_ext'].lower()
+          attributes['att_name'] = pfn
+        if mimetype:
+          attributes['mimetype'] = mimetype
+
+        fn, fd = session.ui.open_for_data(name_fmt=name_fmt,
+                                          attributes=attributes)
+        # FIXME: OMG, RAM ugh.
+        fd.write(part.get_payload(None, True))
+        fd.close()
+        session.ui.notify('Wrote attachment to: %s' % fn)
+
   def get_message_tree(self):
     tree = {
       'id': self.get_msg_info(self.index.MSG_ID),
@@ -212,16 +252,7 @@ class Email(object):
     for part in msg.walk():
       mimetype = part.get_content_type()
       if mimetype in ('text/plain', 'text/html'):
-        charset = part.get_charset() or 'utf-8'
-        payload = part.get_payload(None, True)
-        try:
-          payload = payload.decode(charset)
-        except UnicodeDecodeError:
-          try:
-            payload = payload.decode('iso-8859-1')
-            charset = 'iso-8859-1'
-          except UnicodeDecodeError, e:
-            print 'Decode failed: %s %s' % (charset, e)
+        payload, charset = self.decode_payload(part)
         if (mimetype == 'text/html' or
             '<html>' in payload or
             '</body>' in payload):
@@ -236,6 +267,19 @@ class Email(object):
         pass
 
     return tree
+
+  def decode_payload(self, part):
+    charset = part.get_charset() or 'utf-8'
+    payload = part.get_payload(None, True) or ''
+    try:
+      payload = payload.decode(charset)
+    except UnicodeDecodeError:
+      try:
+        payload = payload.decode('iso-8859-1')
+        charset = 'iso-8859-1'
+      except UnicodeDecodeError, e:
+        print 'Decode failed: %s %s' % (charset, e)
+    return payload, charset
 
   def parse_text_part(self, data, charset):
     current = {
