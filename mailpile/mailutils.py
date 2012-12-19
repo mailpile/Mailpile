@@ -185,6 +185,7 @@ class Email(object):
   def extract_attachment(self, session, att_id, name_fmt=None):
     msg = self.get_msg()
     count = 0
+    extracted = 0
     for part in msg.walk():
       mimetype = part.get_content_type()
       if mimetype.startswith('multipart/'):
@@ -200,12 +201,13 @@ class Email(object):
       or  (pfn.lower().endswith('.%s' % att_id))
       or  (pfn == att_id)):
 
-        charset = self.decode_payload(part)[1]
+        payload = part.get_payload(None, True)
         attributes = {
           'msg_idx': b36(self.msg_idx),
           'count': count,
-          'charset': charset,
-          'content_id': content_id,
+          'length': len(payload),
+          'content-id': content_id,
+          'filename': pfn,
         }
         if pfn:
           if '.' in pfn:
@@ -218,9 +220,12 @@ class Email(object):
         fn, fd = session.ui.open_for_data(name_fmt=name_fmt,
                                           attributes=attributes)
         # FIXME: OMG, RAM ugh.
-        fd.write(part.get_payload(None, True))
+        fd.write(payload)
         fd.close()
         session.ui.notify('Wrote attachment to: %s' % fn)
+        extracted += 1
+    if 0 == extracted:
+      session.ui.notify('No attachments found for: %s' % att_id)
 
   def get_message_tree(self):
     tree = {
@@ -248,10 +253,17 @@ class Email(object):
                            javascript=True, scripts=True, frames=True,
                            embedded=True, safe_attrs_only=True)
 
+    # Note: count algorithm must match that used in extract_attachment above
     msg = self.get_msg()
+    count = 0
     for part in msg.walk():
       mimetype = part.get_content_type()
-      if mimetype in ('text/plain', 'text/html'):
+      if mimetype.startswith('multipart/'):
+        continue
+
+      count += 1
+      if (part.get('content-disposition', 'inline') == 'inline'
+      and mimetype in ('text/plain', 'text/html')):
         payload, charset = self.decode_payload(part)
         if (mimetype == 'text/html' or
             '<html>' in payload or
@@ -264,7 +276,13 @@ class Email(object):
         else:
           tree['text_parts'].extend(self.parse_text_part(payload, charset))
       else:
-        pass
+        tree['attachments'].append({
+          'mimetype': mimetype,
+          'count': count,
+          'length': len(part.get_payload(None, True)),
+          'content-id': part.get('content-id', ''),
+          'filename': part.get_filename() or ''
+        })
 
     return tree
 

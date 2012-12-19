@@ -10,7 +10,7 @@ from urlparse import parse_qs, urlparse
 
 import mailpile.util
 from mailpile.util import *
-from mailpile.ui import Session, HtmlUI
+from mailpile.ui import Session, HtmlUI, SuppressHtmlOutput
 from mailpile.commands import Action
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
@@ -110,6 +110,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 &gt;</p>
 </form></body></html>"""
 
+  def send_http_response(self, code, msg):
+    self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
+
   def send_standard_headers(self, header_list=[],
                             cachectrl='private', mimetype='text/html'):
     if mimetype.startswith('text/') and ';' not in mimetype:
@@ -124,7 +127,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                          header_list=[], suppress_body=False):
     message = unicode(message).encode('utf-8')
     self.log_request(code, message and len(message) or '-')
-    self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
+    self.send_http_response(code, msg)
     if code == 401:
       self.send_header('WWW-Authenticate',
                        'Basic realm=MP%d' % (time.time()/3600))
@@ -185,8 +188,23 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     if path.startswith('/_/'):
       cmd = ' '.join([path[3:], query_data.get('args', [''])[0]])
     elif path.startswith('/='):
-      # FIXME: Should verify that the message ID matches!
-      cmd = ' '.join(['view', path[1:].split('/')[0]])
+      parts = path.split('/')
+      if len(parts) == 4:
+        msg_idx = parts[1]
+        if parts[3] == '':
+          cmd = ' '.join(['view', msg_idx])
+        elif parts[3] in ('message.xml', 'message.json'):
+          # FIXME: send message tree as XML or JSON
+          pass
+        if parts[3].lower().startswith('cid:'):
+          cmd = ' '.join(['extract', '<%s>' % parts[3][4:], msg_idx])
+        elif parts[3].lower().startswith('att:'):
+          cmd = ' '.join(['extract', '#%s' % parts[3][4:], msg_idx])
+        else:
+          # bogus?
+          pass
+      elif len(parts) == 6:
+        pass
     elif len(path) > 1:
       parts = path.split('/')[1:]
       if parts:
@@ -228,7 +246,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     query_data = parse_qs(query)
 
     session = Session(self.server.session.config)
-    session.ui = HtmlUI()
+    session.ui = HtmlUI(self)
     index = session.config.get_index(session)
     try:
       cmd = self.parse_pqp(path, query_data, post_data,
@@ -245,6 +263,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     except UsageError, e:
       body = 'Oops: %s' % e
       title = 'Ouch, too much mail, urgle, *choke*'
+    except SuppressHtmlOutput:
+      return
 
     sidebar = ['<ul class="tag_list">']
     tids = index.config.get('tag', {}).keys()

@@ -153,6 +153,11 @@ class NullUI(object):
           self.say('[quoted text]', fd=fd)
         else:
           self.say('%s' % part['data'], fd=fd, newline='')
+      if tree['attachments']:
+        self.say('', fd=fd)
+        for att in tree['attachments']:
+          desc = '%(count)s: %(filename)s (%(mimetype)s, %(length)s bytes)' % att
+          self.say(' [Attachment #%s]' % desc, fd=fd)
       self.say('', fd=fd)
 
   DEFAULT_DATA_NAME_FMT = '%(msg_idx)s.%(count)s_%(att_name)s.%(att_ext)s'
@@ -325,13 +330,42 @@ class TextUI(NullUI):
       viewer.wait()
 
 
+class SuppressHtmlOutput(Exception):
+  pass
+
+
+class RawHttpResponder:
+
+  def __init__(self, request, attributes={}):
+    self.request = request
+    #
+    # FIXME: Security risks here, untrusted content may find its way into
+    #        our raw HTTP headers etc.
+    #
+    mimetype = attributes.get('mimetype', 'application/octet-stream')
+    filename = attributes.get('filename', 'attachment.dat').replace('"', '')
+    length = attributes['length']
+    request.send_http_response(200, 'OK')
+    request.send_standard_headers(header_list=[
+      ('Content-Length', length),
+      ('Content-Disposition', 'attachment; filename="%s"' % filename)
+    ], mimetype=mimetype)
+
+  def write(self, data):
+    self.request.wfile.write(data)
+
+  def close(self):
+    raise SuppressHtmlOutput()
+
+
 class HtmlUI(TextUI):
 
   WIDTH = 110
 
-  def __init__(self):
+  def __init__(self, request):
     TextUI.__init__(self)
     self.buffered_html = []
+    self.request = request
 
   def clear(self):
     self.buffered_html = []
@@ -493,6 +527,13 @@ class HtmlUI(TextUI):
           if part['data'] != last:
             self.buffered_html.append(('html', autolink_html(part['data'])))
             last = part['data']
+      if tree['attachments']:
+        self.buffered_html.append(('html', '</div><div class="attachments"><ul>'))
+        for att in tree['attachments']:
+          desc = ('<a href="./att:%(count)s">Attachment: %(filename)s</a> '
+                  '(%(mimetype)s, %(length)s bytes)') % att
+          self.buffered_html.append(('html', '<li>%s</li>' % desc))
+        self.buffered_html.append(('html', '</ul>'))
       self.buffered_html.append(('html', '</div>'))
 
   def escape_html(self, t):
@@ -510,6 +551,9 @@ class HtmlUI(TextUI):
                     ) % key_id.group(1)
 
     return ('html', autolink_html('<p class="%s">%s</p>' % tuple(what)))
+
+  def open_for_data(self, name_fmt=None, attributes={}):
+    return 'HTTP Client', RawHttpResponder(self.request, attributes)
 
 
 class Session(object):

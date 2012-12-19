@@ -20,9 +20,8 @@ Designing the URL space for the web UI is important.  Some ideas:
     http://mailpile/=IDX/messageidsha1sum/
     http://mailpile/=IDX/messageidsha1sum/message.xml
     http://mailpile/=IDX/messageidsha1sum/message.json
-    http://mailpile/=IDX/messageidsha1sum/thread.json
-    http://mailpile/=IDX/messageidsha1sum/thread.xml
     http://mailpile/=IDX/messageidsha1sum/cid:ATTID
+    http://mailpile/=IDX/messageidsha1sum/att:COUNT
     http://mailpile/=IDX/messageidsha1sum/inline/4/attachment.jpg
     http://mailpile/=IDX/messageidsha1sum/preview/3/attachment.jpg
     http://mailpile/=IDX/messageidsha1sum/download/3/attachment.jpg
