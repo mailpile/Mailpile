@@ -464,8 +464,8 @@ class MailIndex(object):
         else:
           self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
-  def index_message(self, session, msg_mid, msg_id, msg, msg_date,
-                    mailbox=None, compact=True, filter_hooks=[]):
+  def message_keywords(self, session, msg_mid, msg_id, msg, msg_date,
+                       mailbox=None):
     keywords = []
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
@@ -518,8 +518,12 @@ class MailIndex(object):
         if 'list' in key_lower:
           keywords.extend(['%s:list' % t for t in words])
 
-    keywords = set(keywords)
-    keywords -= STOPLIST
+    return (set(keywords) - STOPLIST)
+
+  def index_message(self, session, msg_mid, msg_id, msg, msg_date,
+                    mailbox=None, compact=True, filter_hooks=[]):
+    keywords = self.message_keywords(session, msg_mid, msg_id, msg, msg_date,
+                                     mailbox=mailbox)
 
     for hook in filter_hooks:
       keywords = hook(session, msg_mid, msg, keywords)
