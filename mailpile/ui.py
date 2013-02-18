@@ -14,6 +14,7 @@ from lxml.html.clean import autolink_html
 class NullUI(object):
 
   WIDTH = 80
+  MAX_BUFFER_LEN = 150
   interactive = False
   buffering = False
 
@@ -45,6 +46,8 @@ class NullUI(object):
       fd.write(text.encode('utf-8')+newline)
       fd.flush()
     self.buffered.append(sayit)
+    while len(self.buffered) > self.MAX_BUFFER_LEN:
+      self.buffered[0:(self.MAX_BUFFER_LEN/10)] = []
     if not self.buffering:
       self.flush()
 
