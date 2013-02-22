@@ -291,7 +291,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     variables = {
       'lastq': post_data.get('lq', query_data.get('q',
                           [path != '/' and path[1] != '=' and path[:-1] or ''])
-                             )[0].strip(),
+                             )[0].strip().decode('utf-8'),
       'csrf': self.csrf(),
       'path': path
     }
