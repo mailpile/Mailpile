@@ -23,8 +23,9 @@ from lxml.html.clean import Cleaner
 
 try:
   from GnuPGInterface import GnuPG
+  from mailpile.pgpmime import PGPMimeParser
 except ImportError:
-  GnuPG = None
+  GnuPG = PGPMimeParser = None
 
 
 class NoSuchMailboxError(OSError):
@@ -152,7 +153,10 @@ class Email(object):
     if not self.msg_parsed:
       fd = self.get_file()
       if fd:
-        self.msg_parsed = email.parser.Parser().parse(fd)
+        if GnuPG:
+          self.msg_parsed = PGPMimeParser().parse(fd)
+        else:
+          self.msg_parsed = email.parser.Parser().parse(fd)
     if not self.msg_parsed:
       IndexError('Message not found?')
     return self.msg_parsed
@@ -264,7 +268,8 @@ class Email(object):
       count += 1
       if (part.get('content-disposition', 'inline') == 'inline'
       and mimetype in ('text/plain', 'text/html')):
-        payload, charset = self.decode_payload(part)
+        payload, charset, openpgp_sig = self.decode_payload(part)
+        # FIXME: Do something with the openpgp data!
         if (mimetype == 'text/html' or
             '<html>' in payload or
             '</body>' in payload):
@@ -297,7 +302,11 @@ class Email(object):
         charset = 'iso-8859-1'
       except UnicodeDecodeError, e:
         print 'Decode failed: %s %s' % (charset, e)
-    return payload, charset
+    try:
+      openpgp_sig = part.openpgp_sig
+    except AttributeError:
+      openpgp_sig = ''
+    return payload, charset, openpgp_sig
 
   def parse_text_part(self, data, charset):
     current = {
