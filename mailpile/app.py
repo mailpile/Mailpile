@@ -198,7 +198,8 @@ class ConfigManager(dict):
   INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size',
           'http_port', 'rescan_interval')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
-             'gpg_recipient', 'http_host', 'rescan_command', 'debug')
+             'gpg_recipient', 'gpg_keyserver',
+             'http_host', 'rescan_command', 'debug')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags')
 
   def workdir(self):

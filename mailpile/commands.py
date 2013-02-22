@@ -302,7 +302,9 @@ def Action(session, opt, arg):
   elif opt in ('g', 'gpgrecv'):
     try:
       session.ui.mark('Invoking GPG to fetch key %s' % arg)
-      gpg = GnuPG().run(['--recv-key', arg], create_fhs=['stderr'])
+      keyserver = config.get('gpg_keyserver', 'pool.sks-keyservers.net')
+      gpg = GnuPG().run(['--keyserver', keyserver,
+                         '--recv-key', arg], create_fhs=['stderr'])
       session.ui.say(gpg.handles['stderr'].read())
       gpg.handles['stderr'].close()
       gpg.wait()
