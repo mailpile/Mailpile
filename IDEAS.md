@@ -147,3 +147,38 @@ it might be useful as a super-bookmarking tool which indexes arbitrary
 pages on demand.  We'd want a mirroring feature to go with this though.
 
 
+## Fighting spam
+
+Training a Bayes filter would ideally be done automatically:
+
+   - Replying to a message can be treated as a relatively strong
+     indicator that a message is not spam - could lead to
+     auto-whitelisting of the sender.
+
+   - Archiving a message or tagging is a weak indicator that a message
+     is not spam.
+
+   - Flagging as spam trains the spam filter.
+
+Do we want to implement the mailer fingerprinter?
+
+PageKite allows us to use the web:
+
+   - Folks could submit e-mail using web forms instead of SMTP, where
+     anti-comment-spam tech can be used to avoid spam.
+
+   - Borderline spam could potentially get auto-replies directing
+     senders to an annoying "prove you are human" form.
+
+Combining Mailpile and PageKite, means mail clients can start talking
+to each-other.  Could this be useful for fighting spam?
+
+   - Marking mail AS SPAM or as NOT SPAM could be shared anonymously
+     with peers, via. hashes.
+
+   - Reputation information could be shared as well.  But with friends
+     only, as it will inevitably leak who you are communicating with?
+     The benefit is a potential friends-of-friends whitelist for preventing
+     false-positives and allowing spam filters to be more aggressive.
+
+
