@@ -544,10 +544,10 @@ class HtmlUI(TextUI):
 
   def fmt_part(self, part):
     what = [part['type'], self.escape_html(part['data'])]
-    if what[0] == 'pgpbeginsign':
+    if what[0] == 'pgpbeginsigned':
       what[1] = ('<input type="submit" name="gpg_recvkey"'
                  ' value="Get PGP key and Verify">' + what[1])
-    elif what[0] == 'pgpsignature':
+    if what[0] in ('pgpsignature', 'pgpbeginsigned'):
       key_id = re.search('key ID ([0-9A-Fa-f]+)', what[1])
       if key_id:
         what[1] += ('<input type="hidden" name="gpg_key_id" value="0x%s">'

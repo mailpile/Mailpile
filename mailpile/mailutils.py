@@ -268,18 +268,21 @@ class Email(object):
       count += 1
       if (part.get('content-disposition', 'inline') == 'inline'
       and mimetype in ('text/plain', 'text/html')):
-        payload, charset, openpgp_sig = self.decode_payload(part)
+        payload, charset, openpgp = self.decode_payload(part)
         # FIXME: Do something with the openpgp data!
         if (mimetype == 'text/html' or
             '<html>' in payload or
             '</body>' in payload):
           tree['html_parts'].append({
+            'openpgp_status': openpgp and openpgp[0] or '',
+            'openpgp_data': openpgp and openpgp[1] or '',
             'charset': charset,
             'type': 'html',
             'data': (payload.strip() and html_cleaner.clean_html(payload)) or ''
           })
         else:
-          tree['text_parts'].extend(self.parse_text_part(payload, charset))
+          tree['text_parts'].extend(self.parse_text_part(payload, charset,
+                                                         openpgp))
       else:
         tree['attachments'].append({
           'mimetype': mimetype,
@@ -303,21 +306,29 @@ class Email(object):
       except UnicodeDecodeError, e:
         print 'Decode failed: %s %s' % (charset, e)
     try:
-      openpgp_sig = part.openpgp_sig
+      openpgp = part.openpgp
     except AttributeError:
-      openpgp_sig = ''
-    return payload, charset, openpgp_sig
+      openpgp = None
+    return payload, charset, openpgp
 
-  def parse_text_part(self, data, charset):
+  def parse_text_part(self, data, charset, openpgp):
     current = {
       'type': 'bogus',
       'charset': charset
     }
     parse = []
+    if openpgp:
+      parse.append({
+        'type': 'pgpbegin%s' % openpgp[0],
+        'data': openpgp[1],
+        'charset': charset
+      })
     block = 'body'
     for line in data.splitlines(True):
       block, ltype = self.parse_line_type(line, block)
       if ltype != current['type']:
+        if openpgp:
+          ltype = 'pgp%stext' % openpgp[0]
         current = {
           'type': ltype,
           'data': '',
@@ -332,10 +343,10 @@ class Email(object):
     stripped = line.rstrip()
 
     if stripped == '-----BEGIN PGP SIGNED MESSAGE-----':
-      return 'pgpbeginsign', 'pgpbeginsign'
-    if block == 'pgpbeginsign':
+      return 'pgpbeginsigned', 'pgpbeginsigned'
+    if block == 'pgpbeginsigned':
       if line.startswith('Hash: ') or stripped == '':
-        return 'pgpbeginsign', 'pgpbeginsign'
+        return 'pgpbeginsigned', 'pgpbeginsigned'
       else:
         return 'pgpsignedtext', 'pgpsignedtext'
     if block == 'pgpsignedtext':
@@ -358,7 +369,7 @@ class Email(object):
     return 'body', 'text'
 
   PGP_OK = {
-    'pgpbeginsign': 'pgpbeginverified',
+    'pgpbeginsigned': 'pgpbeginverified',
     'pgpsignedtext': 'pgpverifiedtext',
     'pgpsignature': 'pgpverification',
   }
@@ -368,7 +379,7 @@ class Email(object):
 
       # Handle signed messages
       if check_sigs and GnuPG:
-        if part['type'] == 'pgpbeginsign':
+        if part['type'] == 'pgpbeginsigned':
           pgpdata = [part]
         elif part['type'] == 'pgpsignedtext':
           pgpdata.append(part)
@@ -376,7 +387,8 @@ class Email(object):
           pgpdata.append(part)
           try:
             message = ''.join([p['data'].encode(p['charset']) for p in pgpdata])
-            gpg = GnuPG().run(['--verify'], create_fhs=['stdin', 'stderr'])
+            gpg = GnuPG().run(['--utf8-strings', '--verify'],
+                              create_fhs=['stdin', 'stderr'])
             gpg.handles['stdin'].write(message)
             gpg.handles['stdin'].close()
             result = ''

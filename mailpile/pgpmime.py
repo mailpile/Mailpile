@@ -1,3 +1,5 @@
+import tempfile
+
 from email.parser import Parser
 from GnuPGInterface import GnuPG
 
@@ -5,11 +7,7 @@ from GnuPGInterface import GnuPG
 class PGPMimeParser(Parser):
 
   def parse_pgpmime(self, message):
-    # FIXME: Walk the resulting message, if we find PGP/Mime signed parts,
-    #        check the signature.  If we find PGP/Mime encrypted parts,
-    #        decrypt and parse the contents.
-
-    sig_count, sig_part, sig_sig, sig_alg = 0, None, None, 'SHA1'
+    sig_count, sig_part, sig_alg = 0, None, 'SHA1'
     enc_count, enc_part, enc_ver = 0, None, None
 
     for part in message.walk():
@@ -20,27 +18,27 @@ class PGPMimeParser(Parser):
           sig_part = part
           sig_count = 2
         elif mimetype == 'application/pgp-signature':
-          sig_sig = part.get_payload()
           sig_count = 0
 
-          pgptext = ('-----BEGIN PGP SIGNED MESSAGE-----\nHash: %s\n\n%s%s'
-                     ) % (sig_alg,
-                          '\r\n'.join(sig_part.as_string().splitlines(False)),
-                          sig_sig)
-          gpg = GnuPG().run(['--verify'], create_fhs=['stdin', 'stderr'])
-          gpg.handles['stdin'].write(pgptext)
+          sig = tempfile.NamedTemporaryFile()
+          sig.write(part.get_payload())
+          sig.flush()
+          msg = '\r\n'.join(sig_part.as_string().splitlines(False))+'\r\n'
+
+          gpg = GnuPG().run(['--utf8-strings', '--verify', sig.name, '-'],
+                            create_fhs=['stdin', 'stderr'])
+          gpg.handles['stdin'].write(msg)
           gpg.handles['stdin'].close()
           result = gpg.handles['stderr'].read().decode('utf-8')
           gpg.handles['stderr'].close()
           try:
             gpg.wait()
+            sig_part.openpgp = ('verified', result)
           except IOError:
-            pass
-
-          sig_part.openpgp_sig = result
-          print result  # FIXME, delete this
+            sig_part.openpgp = ('signed', result)
 
       elif enc_count > 0:
+        # FIXME: Decrypt and parse!
         pass
 
       elif mimetype == 'multipart/signed':
