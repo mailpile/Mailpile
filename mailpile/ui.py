@@ -6,6 +6,7 @@ import datetime
 import random
 import re
 import sys
+import traceback
 
 from mailpile.util import *
 from lxml.html.clean import autolink_html
@@ -130,6 +131,7 @@ class NullUI(object):
                                  expand=[email], fd=fd)
           except TypeError:
             self.warning('No conversation, bad ID: %s' % email.msg_idx)
+            self.warning(traceback.format_exc())
         else:
           email.evaluate_pgp(tree)
           self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
@@ -149,7 +151,7 @@ class NullUI(object):
     else:
       self.say(sep, fd=fd)
       for hdr in ('From', 'Subject', 'Date', 'To', 'Cc'):
-        value = email.get(hdr, None)
+        value = email.get(hdr, '')
         if value:
           self.say('%s: %s' % (hdr, value), fd=fd)
       self.say('', fd=fd)
@@ -513,7 +515,7 @@ class HtmlUI(TextUI):
     else:
       self.buffered_html.append(('html', '<div class=headers>'))
       for hdr in ('From', 'Subject', 'To', 'Cc'):
-        value = email.get(hdr, None)
+        value = email.get(hdr, '')
         if value:
           html = '<b>%s:</b> %s<br>' % (hdr, self.escape_html(value))
           self.buffered_html.append(('html', html))

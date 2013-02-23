@@ -310,7 +310,9 @@ class MailIndex(object):
 
   def hdr(self, msg, name, value=None):
     try:
-      decoded = email.header.decode_header(value or msg[name] or '')
+      if value is None and msg:
+        value = msg[name]
+      decoded = email.header.decode_header(value or '')
       return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
               ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
     except email.errors.HeaderParseError:
