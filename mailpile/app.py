@@ -310,7 +310,7 @@ class ConfigManager(dict):
           if session:
             session.ui.mark(('%s: Opening: %s (may take a while)'
                              ) % (mailbox_id, mailbox_fn))
-          mbox = IncrementalMbox(mailbox_fn)
+          mbox = OpenMailbox(mailbox_fn)
           mbox.save(session, to=pfn)
           self.MBOX_CACHE[mid] = mbox
         return self.MBOX_CACHE[mid]

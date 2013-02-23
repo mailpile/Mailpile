@@ -343,21 +343,25 @@ class MailIndex(object):
       session.ui.mark('%s: Error opening: %s' % (idx, mailbox_fn))
       return 0
 
-    if mbox.last_parsed+1 == len(mbox): return 0
+    unparsed = mbox.unparsed()
+    if not unparsed:
+      return 0
 
     if len(self.PTRS.keys()) == 0:
       self.update_ptrs_and_msgids(session)
 
     added = 0
     msg_date = int(time.time())
-    for i in range(mbox.last_parsed+1, len(mbox)):
+    for ui in range(0, len(unparsed)):
       if mailpile.util.QUITTING: break
+
+      i = unparsed[ui]
       parse_status = ('%s: Reading your mail: %d%% (%d/%d messages)'
-                      ) % (idx, 100 * i/len(mbox), i, len(mbox))
+                      ) % (idx, 100 * ui/len(unparsed), ui, len(unparsed))
 
       msg_ptr = mbox.get_msg_ptr(idx, i)
       if msg_ptr in self.PTRS:
-        if (i % 317) == 0: session.ui.mark(parse_status)
+        if (ui % 317) == 0: session.ui.mark(parse_status)
         continue
       else:
         session.ui.mark(parse_status)
@@ -431,7 +435,7 @@ class MailIndex(object):
         added += 1
 
     if added:
-      mbox.last_parsed = i
+      mbox.mark_parsed(i)
       mbox.save(session)
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, mailbox_fn))
     return added

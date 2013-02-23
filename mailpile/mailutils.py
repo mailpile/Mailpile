@@ -70,6 +70,49 @@ class NoSuchMailboxError(OSError):
   pass
 
 
+def OpenMailbox(fn):
+  if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'cur')):
+    return IncrementalMaildir(fn)
+  else:
+    return IncrementalMbox(fn)
+
+
+class IncrementalMaildir(mailbox.Maildir):
+  """A Maildir class that supports pickling and a few mailpile specifics."""
+
+  save_to = None
+  parsed = {}
+
+  def save(self, session=None, to=None):
+    if to:
+      self.save_to = to
+    if self.save_to and len(self) > 0:
+      if session: session.ui.mark('Saving state to %s' % self.save_to)
+      fd = open(self.save_to, 'w')
+      cPickle.dump(self, fd)
+      fd.close()
+
+  def unparsed(self):
+    return [i for i in self.keys() if i not in self.parsed]
+
+  def mark_parsed(self, i):
+    self.parsed[i] = True
+
+  def update_toc(self):
+    pass
+
+  def get_msg_size(self, toc_id):
+    fd = self.get_file(toc_id)
+    fd.seek(0, 2)
+    return fd.tell()
+
+  def get_msg_ptr(self, idx, toc_id):
+    return '%s%s' % (idx, toc_id)
+
+  def get_file_by_ptr(self, msg_ptr):
+    return self.get_file(msg_ptr[3:])
+
+
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
 
@@ -96,6 +139,12 @@ class IncrementalMbox(mailbox.mbox):
       else:
         raise
     self.update_toc()
+
+  def unparsed(self):
+    return range(self.last_parsed+1, len(self))
+
+  def mark_parsed(self, i):
+    self.last_parsed = i
 
   def update_toc(self):
     # FIXME: Does this break on zero-length mailboxes?
