@@ -148,8 +148,10 @@ class NullUI(object):
         self.say(line, newline='', fd=fd)
     else:
       self.say(sep, fd=fd)
-      for hdr in ('To', 'From', 'Date', 'Subject'):
-        self.say('%s: %s' % (hdr, email.get(hdr, '(unknown)')), fd=fd)
+      for hdr in ('From', 'Subject', 'Date', 'To', 'Cc'):
+        value = email.get(hdr, None)
+        if value:
+          self.say('%s: %s' % (hdr, value), fd=fd)
       self.say('', fd=fd)
       for part in tree['text_parts']:
         if part['type'] == 'quote':
@@ -510,10 +512,11 @@ class HtmlUI(TextUI):
         self.say(line, newline='', fd=fd)
     else:
       self.buffered_html.append(('html', '<div class=headers>'))
-      for hdr in ('To', 'From', 'Subject'):
-        html = ('<b>%s:</b> %s<br>'
-                ) % (hdr, self.escape_html(email.get(hdr, '(unknown)')))
-        self.buffered_html.append(('html', html))
+      for hdr in ('From', 'Subject', 'To', 'Cc'):
+        value = email.get(hdr, None)
+        if value:
+          html = '<b>%s:</b> %s<br>' % (hdr, self.escape_html(value))
+          self.buffered_html.append(('html', html))
       self.buffered_html.append(('html', '</div><br>'))
 
       if tree['text_parts']:
