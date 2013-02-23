@@ -28,6 +28,13 @@ except ImportError:
   GnuPG = PGPMimeParser = None
 
 
+def ParseMessage(fd, pgpmime=True):
+  if GnuPG and pgpmime:
+    return PGPMimeParser().parse(fd)
+  else:
+    return email.parser.Parser().parse(fd)
+
+
 class NoSuchMailboxError(OSError):
   pass
 
@@ -149,14 +156,11 @@ class Email(object):
         pass
     return None
 
-  def get_msg(self):
+  def get_msg(self, pgpmime=True):
     if not self.msg_parsed:
       fd = self.get_file()
       if fd:
-        if GnuPG:
-          self.msg_parsed = PGPMimeParser().parse(fd)
-        else:
-          self.msg_parsed = email.parser.Parser().parse(fd)
+        self.msg_parsed = ParseMessage(fd, pgpmime=pgpmime)
     if not self.msg_parsed:
       IndexError('Message not found?')
     return self.msg_parsed

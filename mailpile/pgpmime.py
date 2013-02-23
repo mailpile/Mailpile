@@ -7,35 +7,37 @@ from GnuPGInterface import GnuPG
 class PGPMimeParser(Parser):
 
   def parse_pgpmime(self, message):
-    sig_count, sig_part, sig_alg = 0, None, 'SHA1'
-    enc_count, enc_part, enc_ver = 0, None, None
+    sig_count, sig_parts, sig_alg = 0, [], 'SHA1'
+    enc_count, enc_parts, enc_ver = 0, [], None
 
     for part in message.walk():
       mimetype = part.get_content_type()
 
-      if sig_count > 0:
-        if sig_count == 1:
-          sig_part = part
-          sig_count = 2
-        elif mimetype == 'application/pgp-signature':
-          sig_count = 0
+      if (sig_count > 1) and (mimetype == 'application/pgp-signature'):
+        sig = tempfile.NamedTemporaryFile()
+        sig.write(part.get_payload())
+        sig.flush()
+        msg = '\r\n'.join(sig_parts[0].as_string().splitlines(False))+'\r\n'
 
-          sig = tempfile.NamedTemporaryFile()
-          sig.write(part.get_payload())
-          sig.flush()
-          msg = '\r\n'.join(sig_part.as_string().splitlines(False))+'\r\n'
+        gpg = GnuPG().run(['--utf8-strings', '--verify', sig.name, '-'],
+                          create_fhs=['stdin', 'stderr'])
+        gpg.handles['stdin'].write(msg)
+        gpg.handles['stdin'].close()
+        try:
+          gpg.wait()
+          summary = ('verified', result)
+        except IOError:
+          summary = ('signed', result)
 
-          gpg = GnuPG().run(['--utf8-strings', '--verify', sig.name, '-'],
-                            create_fhs=['stdin', 'stderr'])
-          gpg.handles['stdin'].write(msg)
-          gpg.handles['stdin'].close()
-          result = gpg.handles['stderr'].read().decode('utf-8')
-          gpg.handles['stderr'].close()
-          try:
-            gpg.wait()
-            sig_part.openpgp = ('verified', result)
-          except IOError:
-            sig_part.openpgp = ('signed', result)
+        for sig_part in sig_parts:
+          sig_part.openpgp = summary
+
+        # Reset!
+        sig_count, sig_parts = 0, []
+
+      elif sig_count > 0:
+          sig_parts.append(part)
+          sig_count += 1
 
       elif enc_count > 0:
         # FIXME: Decrypt and parse!

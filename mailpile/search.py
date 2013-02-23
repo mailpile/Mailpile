@@ -2,8 +2,8 @@
 import cgi
 import codecs
 import datetime
-import email.parser
 import getopt
+import email
 import hashlib
 import locale
 import mailbox
@@ -25,7 +25,7 @@ import lxml.html
 
 import mailpile.util
 from mailpile.util import *
-from mailpile.mailutils import NoSuchMailboxError
+from mailpile.mailutils import NoSuchMailboxError, ParseMessage
 from mailpile.ui import *
 
 
@@ -361,8 +361,7 @@ class MailIndex(object):
         session.ui.mark(parse_status)
 
       # Message new or modified, let's parse it.
-      p = email.parser.Parser()
-      msg = p.parse(mbox.get_file(i))
+      msg = ParseMessage(mbox.get_file(i), pgpmime=False)
       msg_id = b64c(sha1b64((self.hdr(msg, 'message-id') or msg_ptr).strip()))
       if msg_id in self.MSGIDS:
         self.update_location(session, self.MSGIDS[msg_id], msg_ptr)
@@ -467,6 +466,7 @@ class MailIndex(object):
   def message_keywords(self, session, msg_mid, msg_id, msg, msg_date,
                        mailbox=None):
     keywords = []
+    textpart = None
     for part in msg.walk():
       charset = part.get_charset() or 'iso-8859-1'
       if part.get_content_type() == 'text/plain':
@@ -481,8 +481,8 @@ class MailIndex(object):
             textpart = payload
         else:
           textpart = payload
-      else:
-        textpart = None
+      elif 'pgp' in part.get_content_type():
+        keywords.append('pgp:has')
 
       att = part.get_filename()
       if att:
