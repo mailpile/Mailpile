@@ -25,7 +25,7 @@ import lxml.html
 
 import mailpile.util
 from mailpile.util import *
-from mailpile.mailutils import NoSuchMailboxError, ParseMessage
+from mailpile.mailutils import NoSuchMailboxError, ParseMessage, HeaderPrint
 from mailpile.ui import *
 
 
@@ -510,6 +510,7 @@ class MailIndex(object):
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'subject').lower()))
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'from').lower()))
     if mailbox: keywords.append('%s:mailbox' % mailbox.lower())
+    keywords.append('%s:hprint' % HeaderPrint(msg))
 
     for key in msg.keys():
       key_lower = key.lower()

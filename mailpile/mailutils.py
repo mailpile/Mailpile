@@ -29,10 +29,41 @@ except ImportError:
 
 
 def ParseMessage(fd, pgpmime=True):
+  pos = fd.tell()
+  header = [fd.readline()]
+  while header[-1] not in ('', '\n', '\r\n'):
+    line = fd.readline()
+    if line.startswith(' ') or line.startswith('\t'):
+      header[-1] += line
+    else:
+      header.append(line)
+
+  fd.seek(pos)
   if GnuPG and pgpmime:
-    return PGPMimeParser().parse(fd)
+    message = PGPMimeParser().parse(fd)
   else:
-    return email.parser.Parser().parse(fd)
+    message = email.parser.Parser().parse(fd)
+
+  message.raw_header = header
+  return message
+
+
+MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
+               'mime-version','content-disposition', 'content-type',
+               'user-agent', 'list-id', 'list-subscribe', 'list-unsubscribe',
+               'x-ms-tnef-correlator', 'x-ms-has-attach')
+DULL_HEADERS = ('in-reply-to', 'references')
+def HeaderPrint(message):
+  """Generate a fingerprint from message headers which identifies the MUA."""
+  headers = [x.split(':', 1)[0] for x in message.raw_header]
+
+  while headers and headers[0].lower() not in MUA_HEADERS:
+    headers.pop(0)
+  while headers and headers[-1].lower() not in MUA_HEADERS:
+    headers.pop(-1)
+  headers = [h for h in headers if h.lower() not in DULL_HEADERS]
+
+  return b64w(sha1b64('\n'.join(headers))).lower()
 
 
 class NoSuchMailboxError(OSError):
@@ -164,6 +195,9 @@ class Email(object):
     if not self.msg_parsed:
       IndexError('Message not found?')
     return self.msg_parsed
+
+  def get_headerprint(self):
+    return HeaderPrint(self.get_msg())
 
   def is_thread(self):
     return ((self.get_msg_info(self.index.MSG_CONV_ID)) or
@@ -411,4 +445,4 @@ class Email(object):
       # FIXME: Handle encrypted messages
       if decrypt:
         pass
- 
+
