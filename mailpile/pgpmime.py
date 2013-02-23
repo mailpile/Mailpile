@@ -19,15 +19,17 @@ class PGPMimeParser(Parser):
         sig.flush()
         msg = '\r\n'.join(sig_parts[0].as_string().splitlines(False))+'\r\n'
 
-        gpg = GnuPG().run(['--utf8-strings', '--verify', sig.name, '-'],
-                          create_fhs=['stdin', 'stderr'])
-        gpg.handles['stdin'].write(msg)
-        gpg.handles['stdin'].close()
+        result = None
         try:
+          gpg = GnuPG().run(['--utf8-strings', '--verify', sig.name, '-'],
+                            create_fhs=['stdin', 'stderr'])
+          gpg.handles['stdin'].write(msg)
+          gpg.handles['stdin'].close()
+          result = gpg.handles['stderr'].read().decode('utf-8')
           gpg.wait()
           summary = ('verified', result)
         except IOError:
-          summary = ('signed', result)
+          summary = ('signed', result or 'Error running GnuPG')
 
         for sig_part in sig_parts:
           sig_part.openpgp = summary
