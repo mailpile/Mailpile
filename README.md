@@ -24,8 +24,8 @@ Mailpile is developed on a Debian 6 system, running:
 
 It might work with other versions. :-)
 
-At the moment, you also need your e-mail to be in a traditional mbox
-formatted Unix mailbox.
+You also need your e-mail to either be in a traditional mbox formatted
+Unix mailbox, or a Maildir.
 
 
 ## Setting up the environment and config ##
