@@ -303,9 +303,10 @@ def Action(session, opt, arg):
     try:
       session.ui.mark('Invoking GPG to fetch key %s' % arg)
       keyserver = config.get('gpg_keyserver', 'pool.sks-keyservers.net')
-      gpg = GnuPG().run(['--keyserver', keyserver,
+      gpg = GnuPG().run(['--utf8-strings',
+                         '--keyserver', keyserver,
                          '--recv-key', arg], create_fhs=['stderr'])
-      session.ui.say(gpg.handles['stderr'].read())
+      session.ui.say(gpg.handles['stderr'].read().decode('utf-8'))
       gpg.handles['stderr'].close()
       gpg.wait()
     except IOError:
