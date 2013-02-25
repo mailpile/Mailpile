@@ -83,6 +83,10 @@ class IncrementalMaildir(mailbox.Maildir):
   save_to = None
   parsed = {}
 
+  def __setstate__(self, dict):
+    self.__dict__.update(dict)
+    self.update_toc()
+
   def save(self, session=None, to=None):
     if to:
       self.save_to = to
@@ -99,7 +103,7 @@ class IncrementalMaildir(mailbox.Maildir):
     self.parsed[i] = True
 
   def update_toc(self):
-    pass
+    self._refresh()
 
   def get_msg_size(self, toc_id):
     fd = self.get_file(toc_id)
@@ -200,15 +204,31 @@ class IncrementalMbox(mailbox.mbox):
   def get_msg_size(self, toc_id):
     return self._toc[toc_id][1] - self._toc[toc_id][0]
 
+  def get_msg_cs1k(self, start, max_length):
+    self._file.seek(start, 0)
+    firstKB = self._file.read(min(1024, max_length))
+    if firstKB == '':
+      raise IOError('No data found')
+    return b64w(sha1b64(firstKB)[:4])
+
   def get_msg_ptr(self, idx, toc_id):
-    return '%s%s:%s' % (idx,
-                        b36(self._toc[toc_id][0]),
-                        b36(self.get_msg_size(toc_id)))
+    msg_start = self._toc[toc_id][0]
+    msg_size = self.get_msg_size(toc_id)
+    return '%s%s:%s:%s' % (idx,
+                           b36(msg_start),
+                           b36(msg_size),
+                           self.get_msg_cs1k(msg_start, msg_size))
 
   def get_file_by_ptr(self, msg_ptr):
-    start, length = msg_ptr[3:].split(':')
-    start = int(start, 36)
-    length = int(length, 36)
+    parts = msg_ptr[3:].split(':')
+    start = int(parts[0], 36)
+    length = int(parts[1], 36)
+
+    # Make sure we can actually read the message
+    cs1k = self.get_msg_cs1k(start, length)
+    if len(parts) > 2 and cs1k != parts[2][:4]:
+      raise IOError('Message not found')
+
     return mailbox._PartialFile(self._file, start, start+length)
 
 
@@ -231,8 +251,12 @@ class Email(object):
     for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
       try:
         mbox = self.config.open_mailbox(None, msg_ptr[:3])
-        return mbox.get_file_by_ptr(msg_ptr)
+        fd = mbox.get_file_by_ptr(msg_ptr)
+        # FIXME: How do we know we have the right message?
+        return fd
       except (IOError, OSError):
+        # FIXME: If this pointer is wrong, should we fix the index?
+        print '%s not in %s' % (msg_ptr, mbox)
         pass
     return None
 
