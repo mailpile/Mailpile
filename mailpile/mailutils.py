@@ -126,9 +126,8 @@ class IncrementalGmvault(IncrementalMaildir):
   def __init__(self, dirname, factory=rfc822.Message, create=True):
     IncrementalMaildir.__init__(self, dirname, factory, create)
 
-    dbpath = os.path.join(self._path, 'db')
-    self._paths = dict((os.path.join('db', entry), os.path.join(dbpath, entry)) for entry in os.listdir(dbpath))
-    self._toc_mtimes = dict((i, 0) for i in self._paths)
+    self._paths = { 'db': os.path.join(self._path, 'db') }
+    self._toc_mtimes = { 'db': 0}
 
   def get_file(self, key):
     """Return a file-like representation or raise a KeyError."""
@@ -143,11 +142,10 @@ class IncrementalGmvault(IncrementalMaildir):
     """Update table of contents mapping."""
     # Refresh toc
     self._toc = {}
-    for subdir in self._toc_mtimes:
-      path = self._paths[subdir]
-      for entry in os.listdir(path):
-	if entry.endswith('.eml.gz') or entry.endswith('.eml'):
-          self._toc[entry] = os.path.join(subdir, entry)
+    for path in self._paths:
+      for dirpath, dirnames, filenames in os.walk(self._paths[path]):        
+        for filename in [f for f in filenames if f.endswith(".eml.gz") or f.endswith(".eml")]:
+          self._toc[filename] = os.path.join(dirpath, filename)
 
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
