@@ -132,7 +132,11 @@ class IncrementalGmvault(IncrementalMaildir):
 
   def get_file(self, key):
     """Return a file-like representation or raise a KeyError."""
-    f = gzip.open(os.path.join(self._path, self._lookup(key)), 'rb')
+    fname = self._lookup(key)
+    if fname.endswith('.gz'):
+      f = gzip.open(os.path.join(self._path, fname), 'rb')
+    else:
+      f = open(os.path.join(self._path, fname), 'rb')
     return mailbox._ProxyFile(f)
 
   def _refresh(self):
@@ -142,13 +146,8 @@ class IncrementalGmvault(IncrementalMaildir):
     for subdir in self._toc_mtimes:
       path = self._paths[subdir]
       for entry in os.listdir(path):
-	if not entry.endswith('.gz'):
-	  continue
-        p = os.path.join(path, entry)
-        if os.path.isdir(p):
-          continue
-        self._toc[entry] = os.path.join(subdir, entry)
-    self._last_read = time.time()
+	if entry.endswith('.eml.gz') or entry.endswith('.eml'):
+          self._toc[entry] = os.path.join(subdir, entry)
 
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
