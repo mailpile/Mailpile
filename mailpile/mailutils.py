@@ -17,6 +17,8 @@ import errno
 import mailbox
 import os
 import traceback
+import rfc822
+import gzip
 
 from mailpile.util import *
 from lxml.html.clean import Cleaner
@@ -73,6 +75,8 @@ class NoSuchMailboxError(OSError):
 def OpenMailbox(fn):
   if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'cur')):
     return IncrementalMaildir(fn)
+  elif os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'db')):
+    return IncrementalGmvault(fn)
   else:
     return IncrementalMbox(fn)
 
@@ -116,6 +120,32 @@ class IncrementalMaildir(mailbox.Maildir):
   def get_file_by_ptr(self, msg_ptr):
     return self.get_file(msg_ptr[3:])
 
+class IncrementalGmvault(IncrementalMaildir):
+  """A Gmvault class that supports pickling and a few mailpile specifics."""
+  
+  def __init__(self, dirname, factory=rfc822.Message, create=True):
+    IncrementalMaildir.__init__(self, dirname, factory, create)
+
+    self._paths = { 'db': os.path.join(self._path, 'db') }
+    self._toc_mtimes = { 'db': 0}
+
+  def get_file(self, key):
+    """Return a file-like representation or raise a KeyError."""
+    fname = self._lookup(key)
+    if fname.endswith('.gz'):
+      f = gzip.open(os.path.join(self._path, fname), 'rb')
+    else:
+      f = open(os.path.join(self._path, fname), 'rb')
+    return mailbox._ProxyFile(f)
+
+  def _refresh(self):
+    """Update table of contents mapping."""
+    # Refresh toc
+    self._toc = {}
+    for path in self._paths:
+      for dirpath, dirnames, filenames in os.walk(self._paths[path]):        
+        for filename in [f for f in filenames if f.endswith(".eml.gz") or f.endswith(".eml")]:
+          self._toc[filename] = os.path.join(dirpath, filename)
 
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
