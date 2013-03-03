@@ -24,8 +24,8 @@ Mailpile is developed on a Debian 6 system, running:
 
 It might work with other versions. :-)
 
-You also need your e-mail to either be in a traditional mbox formatted
-Unix mailbox, or a Maildir.
+You also need your e-mail to be in a traditional mbox formatted Unix
+mailbox, a Maildir or a gmvault backup repository.
 
 
 ## Setting up the environment and config ##
@@ -342,6 +342,7 @@ Contributors:
 
    * Bjarni R. Einasson (<http://bre.klaki.net/>)
    * Smari McCarthy (<http://www.smarimccarthy.com/>)
+   * Björgvin Ragnarsson (<https://github.com/nifgraup/>)
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the  GNU  Affero General Public License as published
