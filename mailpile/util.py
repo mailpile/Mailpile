@@ -45,7 +45,10 @@ def b64w(b): return b64c(b).replace('+', '-')
 
 def sha1b64(s):
   h = hashlib.sha1()
-  h.update(s.encode('utf-8'))
+  if type(s) == type(unicode()):
+    h.update(s.encode('utf-8'))
+  else:
+    h.update(s)
   return h.digest().encode('base64')
 
 def strhash(s, length):
