@@ -306,7 +306,7 @@ class ConfigManager(dict):
               session.ui.mark(('%s: Updating: %s'
                                ) % (mailbox_id, mailbox_fn))
             self.MBOX_CACHE[mid] = cPickle.load(open(pfn, 'r'))
-        except (IOError, EOFError):
+        except:
           if session:
             session.ui.mark(('%s: Opening: %s (may take a while)'
                              ) % (mailbox_id, mailbox_fn))
