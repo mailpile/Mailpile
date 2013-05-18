@@ -84,6 +84,7 @@ def OpenMailbox(fn):
 class IncrementalMaildir(mailbox.Maildir):
   """A Maildir class that supports pickling and a few mailpile specifics."""
 
+  editable = True
   save_to = None
   parsed = {}
 
@@ -122,6 +123,8 @@ class IncrementalMaildir(mailbox.Maildir):
 
 class IncrementalGmvault(IncrementalMaildir):
   """A Gmvault class that supports pickling and a few mailpile specifics."""
+
+  editable = False
   
   def __init__(self, dirname, factory=rfc822.Message, create=True):
     IncrementalMaildir.__init__(self, dirname, factory, create)
@@ -150,6 +153,7 @@ class IncrementalGmvault(IncrementalMaildir):
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
 
+  editable = False
   last_parsed = 0
   save_to = None
 

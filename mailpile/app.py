@@ -199,7 +199,7 @@ class ConfigManager(dict):
           'http_port', 'rescan_interval')
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
              'gpg_recipient', 'gpg_keyserver',
-             'http_host', 'rescan_command', 'debug')
+             'http_host', 'rescan_command', 'debug', 'drafts_mailbox')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags')
 
   def workdir(self):
@@ -315,6 +315,14 @@ class ConfigManager(dict):
           self.MBOX_CACHE[mid] = mbox
         return self.MBOX_CACHE[mid]
     raise NoSuchMailboxError('No such mailbox: %s' % mailbox_id)
+
+  def open_drafts(self, session):
+    drafts_id = self.get('drafts_mailbox', None)
+    if not drafts_id:
+      mailbox = os.path.join(self.workdir(), 'drafts')
+
+      # FIXME: If not in mailboxes, add it and get ID.
+    return self.open_mailbox(session, drafts_id)
 
   def get_filters(self, filter_on=None):
     filters = self.get('filter', {}).keys()
