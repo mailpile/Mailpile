@@ -327,6 +327,7 @@ class MailIndex(object):
     self.PTRS = {}
     self.MSGIDS = {}
     self.CACHE = {}
+    self.MODIFIED = set()
 
   def l2m(self, line):
     return line.decode('utf-8').split(u'\t')
@@ -348,8 +349,7 @@ class MailIndex(object):
           self.INDEX[pos] = line
       except ValueError:
         pass
-    if session:
-      session.ui.mark('Loading metadata index...')
+    if session: session.ui.mark('Loading metadata index...')
     try:
       fd = open(self.config.mailindex_file(), 'r')
       for line in fd:
@@ -365,7 +365,20 @@ class MailIndex(object):
     if session:
       session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
 
+  def save_changes(self, session=None):
+    mods, self.MODIFIED = self.MODIFIED, set()
+    if mods:
+      if session: session.ui.mark("Saving metadata index changes...")
+      fd = gpg_open(self.config.mailindex_file(),
+                    self.config.get('gpg_recipient'), 'a')
+      for pos in mods:
+        fd.write(self.INDEX[pos] + '\n')
+      fd.close()
+      flush_append_cache()
+      if session: session.ui.mark("Saved metadata index changes")
+
   def save(self, session=None):
+    self.MODIFIED = set()
     if session: session.ui.mark("Saving metadata index...")
     fd = gpg_open(self.config.mailindex_file(),
                   self.config.get('gpg_recipient'), 'w')
@@ -645,6 +658,7 @@ class MailIndex(object):
               '(not in index)', '(not in index: %s)' % msg_idx, '', '', '-1')
 
   def set_msg_by_idx(self, msg_idx, msg_info):
+    self.MODIFIED.add(msg_idx)
     if msg_idx < len(self.INDEX):
       self.INDEX[msg_idx] = self.m2l(msg_info)
     elif msg_idx == len(self.INDEX):
@@ -697,6 +711,7 @@ class MailIndex(object):
       tags.add(tag_id)
       msg_info[self.MSG_TAGS] = ','.join(list(tags))
       self.INDEX[msg_idx] = self.m2l(msg_info)
+      self.MODIFIED.add(msg_idx)
       pls.append(msg_info[self.MSG_IDX])
       if msg_idx % 1000 == 0: self.CACHE = {}
     pls.save()
@@ -723,6 +738,7 @@ class MailIndex(object):
         tags.remove(tag_id)
         msg_info[self.MSG_TAGS] = ','.join(list(tags))
         self.INDEX[msg_idx] = self.m2l(msg_info)
+        self.MODIFIED.add(msg_idx)
       eids.append(msg_info[self.MSG_IDX])
       if msg_idx % 1000 == 0: self.CACHE = {}
     pls.remove(eids)

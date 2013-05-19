@@ -104,7 +104,7 @@ def Action_Tag(session, opt, arg, save=True):
       # Background save makes things feel fast!
       def background():
         idx.update_tag_stats(session, session.config)
-        idx.save()
+        idx.save_changes()
       session.config.slow_worker.add_task(None, 'Save index', background)
     else:
       idx.update_tag_stats(session, session.config)
@@ -155,7 +155,7 @@ def Action_Filter_Add(session, config, flags, args):
     session.ui.reset_marks()
     def save_filter():
       config.save()
-      config.index.save(None)
+      config.index.save_changes()
     config.slow_worker.add_task(None, 'Save filter', save_filter)
   else:
     raise Exception('That failed, not sure why?!')
@@ -227,7 +227,10 @@ def Action_Rescan(session, config):
   finally:
     if count:
       session.ui.mark('\n')
-      idx.save(session)
+      if count < 500:
+        idx.save_changes(session)
+      else:
+        idx.save(session)
       GlobalPostingList.Optimize(session, idx, quick=True)
   idx.update_tag_stats(session, config)
   session.ui.reset_marks()
@@ -237,6 +240,7 @@ def Action_Rescan(session, config):
 def Action_Optimize(session, config, arg):
   try:
     idx = config.index
+    idx.save(session)
     filecount = GlobalPostingList.Optimize(session, idx,
                                            force=(arg == 'harder'))
     session.ui.reset_marks()
