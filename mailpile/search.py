@@ -90,9 +90,9 @@ class PostingList(object):
     return filecount
 
   @classmethod
-  def Append(cls, session, word, mail_id, compact=True):
+  def Append(cls, session, word, mail_ids, compact=True, sig=None):
     config = session.config
-    sig = cls.WordSig(word)
+    sig = sig or cls.WordSig(word)
     fd, fn = cls.GetFile(session, sig, mode='a')
     if (compact
     and (os.path.getsize(os.path.join(config.postinglist_dir(fn), fn)) >
@@ -101,22 +101,27 @@ class PostingList(object):
       # This will compact the files and split out hot-spots, but we only bother
       # "once in a while" when the files are "big".
       fd.close()
-      pls = cls(session, word)
-      pls.append(mail_id)
+      pls = cls(session, word, sig=sig)
+      for mail_id in mail_ids:
+        pls.append(mail_id)
       pls.save()
     else:
       # Quick and dirty append is the default.
-      fd.write('%s\t%s\n' % (sig, mail_id))
+      fd.write('%s\t%s\n' % (sig, '\t'.join(mail_ids)))
 
   @classmethod
   def WordSig(cls, word):
     return strhash(word, cls.HASH_LEN)
 
   @classmethod
+  def SaveFile(cls, session, prefix):
+    return os.path.join(session.config.postinglist_dir(prefix), prefix)
+
+  @classmethod
   def GetFile(cls, session, sig, mode='r'):
     sig = sig[:cls.HASH_LEN]
     while len(sig) > 0:
-      fn = os.path.join(session.config.postinglist_dir(sig), sig)
+      fn = cls.SaveFile(session, sig)
       try:
         if os.path.exists(fn): return (cached_open(fn, mode), sig)
       except (IOError, OSError):
@@ -135,7 +140,7 @@ class PostingList(object):
   def __init__(self, session, word, sig=None, config=None):
     self.config = config or session.config
     self.session = session
-    self.sig = sig or PostingList.WordSig(word)
+    self.sig = sig or self.WordSig(word)
     self.word = word
     self.WORDS = {self.sig: set()}
     self.load()
@@ -148,7 +153,7 @@ class PostingList(object):
 
   def load(self):
     self.size = 0
-    fd, sig = PostingList.GetFile(self.session, self.sig)
+    fd, sig = self.GetFile(self.session, self.sig)
     self.filename = sig
     if fd:
       try:
@@ -167,17 +172,14 @@ class PostingList(object):
   def fmt_file(self, prefix):
     output = []
     self.session.ui.mark('Formatting prefix %s' % unicode(prefix))
-    for word in self.WORDS:
-      if word.startswith(prefix) and len(self.WORDS[word]) > 0:
-        output.append('%s\t%s\n' % (word,
-                               '\t'.join(['%s' % x for x in self.WORDS[word]])))
+    for word in self.WORDS.keys():
+      data = self.WORDS.get(word, [])
+      if ((prefix == 'ALL' or word.startswith(prefix)) and len(data) > 0):
+        output.append('%s\t%s\n' % (word, '\t'.join(['%s' % x for x in data])))
     return ''.join(output)
 
-  def save(self, prefix=None, compact=True, mode='w'):
-    prefix = prefix or self.filename
-    output = self.fmt_file(prefix)
-    while (compact
-    and    len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE)
+  def compact(self, prefix, output):
+    while (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE)
     and    len(prefix) < self.HASH_LEN):
       biggest = self.sig
       for word in self.WORDS:
@@ -186,13 +188,19 @@ class PostingList(object):
       if len(biggest) > len(prefix):
         biggest = biggest[:len(prefix)+1]
         self.save(prefix=biggest, mode='a')
-
         for key in [k for k in self.WORDS if k.startswith(biggest)]:
           del self.WORDS[key]
         output = self.fmt_file(prefix)
+    return prefix, output
 
+  def save(self, prefix=None, compact=True, mode='w'):
+    prefix = prefix or self.filename
+    output = self.fmt_file(prefix)
+    if compact:
+      prefix, output = self.compact(prefix, output)
     try:
-      outfile = os.path.join(self.config.postinglist_dir(prefix), prefix)
+      outfile = self.SaveFile(self.session, prefix)
+      self.session.ui.mark('Writing %d bytes to %s' % (len(output), outfile))
       if output:
         try:
           fd = cached_open(outfile, mode)
@@ -202,6 +210,7 @@ class PostingList(object):
           if mode != 'a': fd.close()
       elif os.path.exists(outfile):
         os.remove(outfile)
+        flush_append_cache()
     except:
       self.session.ui.warning('%s' % (sys.exc_info(), ))
     return 0
@@ -213,12 +222,89 @@ class PostingList(object):
     self.WORDS[self.sig].add(eid)
     return self
 
-  def remove(self, eid):
+  def remove(self, eids):
     try:
-      self.WORDS[self.sig].remove(eid)
+      for eid in eids:
+        self.WORDS[self.sig].remove(eid)
     except KeyError:
       pass
     return self
+
+
+GLOBAL_POSTING_LIST = None
+class GlobalPostingList(PostingList):
+
+  @classmethod
+  def Optimize(cls, session, idx, force=False, quick=False):
+    pls = GlobalPostingList(session, '')
+    count = 0
+    keys = sorted(GLOBAL_POSTING_LIST.keys())
+    for sig in keys:
+      if (count % 50) == 0:
+        session.ui.mark(('Updating search index... %d%% (%s)'
+                         ) % (count*100 / len(keys), sig))
+      pls.migrate(sig, compact=quick)
+      count += 1
+    pls.save()
+
+    if quick:
+      return count
+    else:
+      return PostingList.Optimize(session, idx, force=force)
+
+  @classmethod
+  def SaveFile(cls, session, prefix):
+    return os.path.join(session.config.workdir(), 'global.dat')
+
+  @classmethod
+  def GetFile(cls, session, sig, mode='r'):
+    try:
+      return (cached_open(cls.SaveFile(session, sig), mode), 'global.dat')
+    except (IOError, OSError):
+      return (None, 'global.dat')
+
+  @classmethod
+  def Append(cls, session, word, mail_ids, compact=True):
+    super(GlobalPostingList, cls).Append(session, word, mail_ids, compact=compact)
+    global GLOBAL_POSTING_LIST
+    sig = cls.WordSig(word)
+    if sig not in GLOBAL_POSTING_LIST:
+      GLOBAL_POSTING_LIST[sig] = set()
+    for mail_id in mail_ids:
+      GLOBAL_POSTING_LIST[sig].add(mail_id)
+
+  def fmt_file(self, prefix):
+    return PostingList.fmt_file(self, 'ALL')
+
+  def load(self):
+    self.filename = 'global.dat'
+    global GLOBAL_POSTING_LIST
+    if GLOBAL_POSTING_LIST:
+      self.WORDS = GLOBAL_POSTING_LIST
+    else:
+      PostingList.load(self)
+      GLOBAL_POSTING_LIST = self.WORDS
+
+  def compact(self, prefix, output):
+    return prefix, output
+
+  def migrate(self, sig=None, compact=True):
+    sig = sig or self.sig
+    if sig in self.WORDS and len(self.WORDS[sig]) > 0:
+      PostingList.Append(self.session, sig, self.WORDS[sig],
+                         sig=sig, compact=compact)
+      del self.WORDS[sig]
+
+  def remove(self, eids):
+    PostingList(self.session, self.word,
+                sig=self.sig, config=self.config).remove(eids).save()
+    return PostingList.remove(self, eids)
+
+  def hits(self):
+    return (self.WORDS.get(self.sig, set())
+           | PostingList(self.session, self.word,
+                         sig=self.sig, config=self.config).hits())
+
 
 
 class MailIndex(object):
@@ -433,6 +519,8 @@ class MailIndex(object):
                              '',                        # No replies for now
                              msg_conv])                 # Conversation ID
         added += 1
+        if (added % 250) == 0:
+          GlobalPostingList.Optimize(session, self, quick=True)
 
     if added:
       mbox.mark_parsed(i)
@@ -537,7 +625,7 @@ class MailIndex(object):
 
     for word in keywords:
       try:
-        PostingList.Append(session, word, msg_mid, compact=compact)
+        GlobalPostingList.Append(session, word, [msg_mid], compact=compact)
       except UnicodeDecodeError:
         # FIXME: we just ignore garbage
         pass
@@ -590,7 +678,7 @@ class MailIndex(object):
 
   def add_tag(self, session, tag_id,
               msg_info=None, msg_idxs=None, conversation=False):
-    pls = PostingList(session, '%s:tag' % tag_id)
+    pls = GlobalPostingList(session, '%s:tag' % tag_id)
     if not msg_idxs:
       msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
     session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
@@ -613,7 +701,7 @@ class MailIndex(object):
 
   def remove_tag(self, session, tag_id,
                  msg_info=None, msg_idxs=None, conversation=False):
-    pls = PostingList(session, '%s:tag' % tag_id)
+    pls = GlobalPostingList(session, '%s:tag' % tag_id)
     if not msg_idxs:
       msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
     session.ui.mark('Untagging conversations (%s)' % (tag_id, ))
@@ -624,6 +712,7 @@ class MailIndex(object):
             msg_idxs.add(int(reply[self.MSG_IDX], 36))
           if msg_idx % 1000 == 0: self.CACHE = {}
     session.ui.mark('Untagging %d messages (%s)' % (len(msg_idxs), tag_id))
+    eids = []
     for msg_idx in msg_idxs:
       msg_info = self.get_msg_by_idx(msg_idx)
       tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
@@ -631,8 +720,9 @@ class MailIndex(object):
         tags.remove(tag_id)
         msg_info[self.MSG_TAGS] = ','.join(list(tags))
         self.INDEX[msg_idx] = self.m2l(msg_info)
-      pls.remove(msg_info[self.MSG_IDX])
+      eids.append(msg_info[self.MSG_IDX])
       if msg_idx % 1000 == 0: self.CACHE = {}
+    pls.remove(eids)
     pls.save()
     self.CACHE = {}
 
@@ -643,7 +733,7 @@ class MailIndex(object):
     else:
       def hits(term):
         session.ui.mark('Searching for %s' % term)
-        return PostingList(session, term).hits()
+        return GlobalPostingList(session, term).hits()
 
     if len(self.CACHE.keys()) > 5000: self.CACHE = {}
     r = []
@@ -755,14 +845,14 @@ class MailIndex(object):
   def update_tag_stats(self, session, config, update_tags=None):
     session = session or Session(config)
     new_tid = config.get_tag_id('new')
-    new_msgs = (new_tid and PostingList(session, '%s:tag' % new_tid).hits()
+    new_msgs = (new_tid and GlobalPostingList(session, '%s:tag' % new_tid).hits()
                          or set([]))
     self.STATS.update({
       'ALL': [len(self.INDEX), len(new_msgs)]
     })
     for tid in (update_tags or config.get('tag', {}).keys()):
       if session: session.ui.mark('Counting messages in tag:%s' % tid)
-      hits = PostingList(session, '%s:tag' % tid).hits()
+      hits = GlobalPostingList(session, '%s:tag' % tid).hits()
       self.STATS[tid] = [len(hits), len(hits & new_msgs)]
 
     return self.STATS

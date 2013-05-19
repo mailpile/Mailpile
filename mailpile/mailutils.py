@@ -350,7 +350,7 @@ class Email(object):
       or  (pfn.lower().endswith('.%s' % att_id))
       or  (pfn == att_id)):
 
-        payload = part.get_payload(None, True)
+        payload = part.get_payload(None, True) or ''
         attributes = {
           'msg_idx': b36(self.msg_idx),
           'count': count,
@@ -432,7 +432,7 @@ class Email(object):
         tree['attachments'].append({
           'mimetype': mimetype,
           'count': count,
-          'length': len(part.get_payload(None, True)),
+          'length': len(part.get_payload(None, True) or ''),
           'content-id': part.get('content-id', ''),
           'filename': part.get_filename() or ''
         })

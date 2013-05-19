@@ -137,7 +137,10 @@ def cached_open(filename, mode):
         except ValueError, KeyError:
           pass
       else:
-        APPEND_FD_CACHE[filename].flush()
+        try:
+          APPEND_FD_CACHE[filename].flush()
+        except ValueError:
+          pass
     return open(filename, mode)
 
 

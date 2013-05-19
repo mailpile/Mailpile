@@ -4,7 +4,7 @@ import traceback
 
 import mailpile.util
 from mailpile.mailutils import Email
-from mailpile.search import PostingList
+from mailpile.search import PostingList, GlobalPostingList
 from mailpile.util import *
 
 try:
@@ -228,6 +228,7 @@ def Action_Rescan(session, config):
     if count:
       session.ui.mark('\n')
       idx.save(session)
+      GlobalPostingList.Optimize(session, idx, quick=True)
   idx.update_tag_stats(session, config)
   session.ui.reset_marks()
   del config.RUNNING['rescan']
@@ -236,8 +237,8 @@ def Action_Rescan(session, config):
 def Action_Optimize(session, config, arg):
   try:
     idx = config.index
-    filecount = PostingList.Optimize(session, idx,
-                                     force=(arg == 'harder'))
+    filecount = GlobalPostingList.Optimize(session, idx,
+                                           force=(arg == 'harder'))
     session.ui.reset_marks()
   except KeyboardInterrupt:
     session.ui.mark('Aborted')
