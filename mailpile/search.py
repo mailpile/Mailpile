@@ -306,7 +306,6 @@ class GlobalPostingList(PostingList):
                          sig=self.sig, config=self.config).hits())
 
 
-
 class MailIndex(object):
   """This is a lazily parsing object representing a mailpile index."""
 
@@ -339,22 +338,26 @@ class MailIndex(object):
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
-    if session: session.ui.mark('Loading metadata index...')
-    try:
-      fd = open(self.config.mailindex_file(), 'r')
+    def process_line(line):
       try:
-        for line in fd:
-          if line.startswith(GPG_BEGIN_MESSAGE):
-            for line in decrypt_gpg([line], fd):
-              line = line.strip()
-              if line and not line.startswith('#'):
-                self.INDEX.append(line)
-          else:
-            line = line.strip()
-            if line and not line.startswith('#'):
-              self.INDEX.append(line)
+        line = line.strip()
+        if line and not line.startswith('#'):
+          pos = int(line.split('\t', 1)[0], 36)
+          while len(self.INDEX) < pos+1:
+            self.INDEX.append('')
+          self.INDEX[pos] = line
       except ValueError:
         pass
+    if session:
+      session.ui.mark('Loading metadata index...')
+    try:
+      fd = open(self.config.mailindex_file(), 'r')
+      for line in fd:
+        if line.startswith(GPG_BEGIN_MESSAGE):
+          for line in decrypt_gpg([line], fd):
+            process_line(line)
+        else:
+          process_line(line)
       fd.close()
     except IOError:
       if session: session.ui.warning(('Metadata index not found: %s'
