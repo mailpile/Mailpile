@@ -297,7 +297,7 @@ class ConfigManager(dict):
   def open_mailbox(self, session, mailbox_id):
     pfn = os.path.join(self.workdir(), 'pickled-mailbox.%s' % mailbox_id)
     for mid, mailbox_fn in self.get_mailboxes():
-      if mid == mailbox_id:
+      if int(mid, 36) == int(mailbox_id, 36):
         try:
           if mid in self.MBOX_CACHE:
             self.MBOX_CACHE[mid].update_toc()

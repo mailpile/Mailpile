@@ -268,6 +268,8 @@ class GlobalPostingList(PostingList):
     super(GlobalPostingList, cls).Append(session, word, mail_ids, compact=compact)
     global GLOBAL_POSTING_LIST
     sig = cls.WordSig(word)
+    if GLOBAL_POSTING_LIST is None:
+      GLOBAL_POSTING_LIST = {}
     if sig not in GLOBAL_POSTING_LIST:
       GLOBAL_POSTING_LIST[sig] = set()
     for mail_id in mail_ids:
