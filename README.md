@@ -39,26 +39,14 @@ The easiest way to do that is to use the recipe from the `Makefile`:
 
 Once this has been done, you run `./mp` as described below.
 
-For best results, the next step is to set up basic tags and filters so
-Mailpile will behave like a normal mail client.  You want to create
-`New` and `Inbox` tags, and filters which put new messages in those
-folders automatically.  (Note that if you are importing lots of old
-mail, you may want to postpone the filter definition until after the
-import, to start with a clean slate.)
+For best results, the next step is to tell the program your e-mail
+address and set up basic tags (`New`, `Inbox`, etc.) and filters so
+Mailpile will behave like a normal mail client.  Mailpile can do this
+for you, but if you are importing lots of old mail, you may want to
+postpone the filter definition until after the import (see below), to
+start with a clean slate:
 
-    $ ./mp
-    ...
-
-    mailpile> addtag New
-    ...
-
-    mailpile> addtag Inbox
-    ...
-
-    mailpile> filter new +Inbox +New New mail filter
-    ...
-
-    mailpile> filter read -New Read mail filter
+    $ ./mp --set "from: yourmail@domain.com = Your name" --setup
     ...
 
 
@@ -69,13 +57,19 @@ Mailpile will create and use a folder in your home directory named
 
 A simple test run might look like so:
 
-    $ ./mp -A /var/spool/mail/YOURNAME -R
+    $ ./mp --add /var/spool/mail/YOURNAME --rescan
 
 The program prints details of its progress as it runs.  Note that just
-opening the mailbox may take quite a while if it is large enough (it takes
-about a bit over a minute to open my 500MB mailbox).  Stopping the program
-with CTRL-C is (relatively) nondestructive - it will try to save its
-progress and re-running should continue the scan from where it left off.
+opening the mailbox may take quite a while if it is large enough (it
+takes about a bit over a minute to open my 500MB mailbox).  Once the
+mailbox has been opened, my laptop (a 1.66Ghz Intel Atom with a 5400rpm
+HDD) the program can index roughly four messages per second, so if you
+are processing thousands of messages you should expect it to take a few
+hours.
+
+Stopping the program with CTRL-C is (relatively) nondestructive - it
+will try to save its progress and re-running should continue the scan
+from where it left off.
 
 
 ## Web interface ##
@@ -93,7 +87,7 @@ Maybe someday you will build a fancier UI for us. :-)
 If you want to run the web UI without the CLI interface, start the
 program like this:
 
-    $ ./mp -W
+    $ ./mp --www
 
 The server listens on `localhost:33411` by default, you can change
 the host and port by setting the `http_host` and `http_port` variables.

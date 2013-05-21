@@ -200,6 +200,9 @@ class NullUI(object):
                                        self.make_data_attributes(attributes))
     return filename, open(filename, 'w')
 
+  def edit_messages(self, emails):
+    self.say('Sorry, this UI cannot edit messages.')
+
 
 class TextUI(NullUI):
   def __init__(self):

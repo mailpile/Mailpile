@@ -219,6 +219,8 @@ class PostingList(object):
     return self.WORDS[self.sig]
 
   def append(self, eid):
+    if self.sig not in self.WORDS:
+      self.WORDS[self.sig] = set()
     self.WORDS[self.sig].add(eid)
     return self
 
@@ -545,6 +547,24 @@ class MailIndex(object):
       mbox.save(session)
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, mailbox_fn))
     return added
+
+  def add_new_msg(self, msg_ptr, msg_id, msg_date, msg_from, msg_subject, tags):
+    msg_idx = len(self.INDEX)
+    msg_mid = b36(msg_idx)
+    msg_info = [
+      msg_mid,                                     # Index ID
+      msg_ptr,                                     # Location on disk
+      '',                                          # UNUSED
+      b64c(sha1b64((msg_id or msg_ptr).strip())),  # Message ID
+      b36(msg_date),                               # Date as a UTC timstamp
+      msg_from,                                    # From:
+      msg_subject,                                 # Subject
+      ','.join(tags),                              # Initial tags
+      '',                                          # No replies for now
+      msg_mid                                      # Conversation ID
+    ]
+    self.set_msg_by_idx(msg_idx, msg_info)
+    return msg_idx, msg_info
 
   def filter_keywords(self, session, msg_mid, msg, keywords):
     keywordmap = {}

@@ -13,6 +13,7 @@
 ###############################################################################
 import cPickle
 import email.parser
+import email.utils
 import errno
 import mailbox
 import os
@@ -275,6 +276,27 @@ class Email(object):
     self.msg_idx = msg_idx
     self.msg_info = None
     self.msg_parsed = None
+
+  @classmethod
+  def Create(cls, idx, mbx_id, mbx,
+             msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
+             msg_subject=None, msg_text=None):
+    msg = mailbox.Message()
+    msg.set_charset('utf-8')
+    msg_date = int(time.time())
+    msg['From'] = msg_from = msg_from or idx.config.get_from_address()
+    msg['Date'] = email.utils.formatdate(msg_date)
+    msg['Message-Id'] = msg_id = email.utils.make_msgid('mailpile')
+    msg['Subject'] = msg_subj = (msg_subject or 'New message')
+    if msg_to: msg['To'] = ', '.join(msg_to)
+    if msg_cc: msg['Cc'] = ', '.join(msg_cc)
+    if msg_cc: msg['Bcc'] = ', '.join(msg_bcc)
+    if msg_text: msg.set_content(msg_text)
+    msg_key = mbx.add(msg)
+    msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbx_id, msg_key),
+                                        msg_id,
+                                        msg_date, msg_from, msg_subj, [])
+    return cls(idx, msg_idx)
 
   def get_msg_info(self, field):
     if not self.msg_info:

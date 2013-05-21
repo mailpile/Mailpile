@@ -200,7 +200,8 @@ class ConfigManager(dict):
   STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
              'gpg_recipient', 'gpg_keyserver',
              'http_host', 'rescan_command', 'debug', 'drafts_mailbox')
-  DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags')
+  DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags',
+           'from')
 
   def workdir(self):
     return os.environ.get('MAILPILE_HOME', os.path.expanduser('~/.mailpile'))
@@ -233,7 +234,7 @@ class ConfigManager(dict):
       key, subkey = key.split(':', 1)
       if key not in self:
         self[key] = {}
-      self[key][subkey] = val
+      self[key][subkey.strip()] = val
     else:
       raise UsageError('Unknown key in config: %s' % key)
     session.ui.print_key(key, self)
@@ -320,9 +321,11 @@ class ConfigManager(dict):
     drafts_id = self.get('drafts_mailbox', None)
     if not drafts_id:
       mailbox = os.path.join(self.workdir(), 'drafts')
-
-      # FIXME: If not in mailboxes, add it and get ID.
-    return self.open_mailbox(session, drafts_id)
+      mbx = IncrementalMaildir(mailbox)
+      drafts_id = ('0000%s' % self.nid('mailbox'))[-3:]
+      self.parse_set(session, 'mailbox:%s=%s' % (drafts_id, mailbox))
+      self.parse_set(session, 'drafts_mailbox=%s' % (drafts_id))
+    return drafts_id, self.open_mailbox(session, drafts_id)
 
   def get_filters(self, filter_on=None):
     filters = self.get('filter', {}).keys()
@@ -336,6 +339,15 @@ class ConfigManager(dict):
         continue
       flist.append((fid, terms, tags, comment))
     return flist
+
+  def get_from_address(self):
+    froms = self.get('from', {})
+    for f in froms.keys():
+      if f.startswith('*'):
+        return '%s <%s>' % (froms[f], f[1:])
+    for f in sorted(froms.keys()):
+      return '%s <%s>' % (froms[f], f)
+    return None
 
   def get_mailboxes(self):
     def fmt_mbxid(k):

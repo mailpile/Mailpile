@@ -14,25 +14,31 @@ except ImportError:
 
 
 COMMANDS = {
-  'e:': ('extract=', 'att msg [>fn]', 'Extract attachment(s) to file(s)',   96),
-  'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      60),
+  '0':  ('setup',    '',              'Perform initial setup',              60),
+  'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      61),
+  'c:': ('compose=', '[msg]',         '(Continue) Composing an e-mail',     90),
+  'd:': ('delete=',  'msg',           'Delete a message from the index',    88),
+  'e:': ('extract=', 'att msg [>fn]', 'Extract attachment(s) to file(s)',   86),
   'F:': ('filter=',  'options',       'Add/edit/delete auto-tagging rules', 56),
   'h':  ('help',     '',              'Print help on how to use mailpile',   0),
-  'L':  ('load',     '',              'Load the metadata index',            61),
-  'n':  ('next',     '',              'Display next page of results',       91),
+  'L':  ('load',     '',              'Load the metadata index',            63),
+  'm':  ('mail',     'msg [email]',   'Mail/bounce a message (to someone)', 99),
+  'f':  ('forward',  '[att] m1 ...',  'Forward messages (and attachments)', 92),
+  'n':  ('next',     '',              'Display next page of results',       81),
   'o:': ('order=',   '[rev-]what',   ('Sort by: date, from, subject, '
-                                      'random or index'),                   93),
-  'O':  ('optimize', '',              'Optimize the keyword search index',  62),
-  'p':  ('previous', '',              'Display previous page of results',   92),
+                                      'random or index'),                   83),
+  'O':  ('optimize', '',              'Optimize the keyword search index',  64),
+  'p':  ('previous', '',              'Display previous page of results',   82),
   'P:': ('print=',   'var',           'Print a setting',                    52),
+  'r:': ('reply=',   '[all] m1 ...',  'Reply(-all) to one or more messages',91),
   'R':  ('rescan',   '',              'Scan all mailboxes for new messages',63),
-  'g:': ('gpgrecv',  'key-ID',        'Fetch a GPG key from keyservers',    64),
-  's:': ('search=',  'terms ...',     'Search!',                            90),
+  'g:': ('gpgrecv',  'key-ID',        'Fetch a GPG key from keyservers',    65),
+  's:': ('search=',  'terms ...',     'Search!',                            80),
   'S:': ('set=',     'var=value',     'Change a setting',                   50),
-  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        94),
+  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        84),
   'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
   'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
-  'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          95),
+  'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          85),
   'W':  ('www',      '',              'Just run the web server',            56),
 }
 def Choose_Messages(session, words):
@@ -207,6 +213,7 @@ def Action_Rescan(session, config):
   config.RUNNING['rescan'] = True
   idx = config.index
   count = 0
+  rv = True
   try:
     pre_command = config.get('rescan_command', None)
     if pre_command:
@@ -219,11 +226,16 @@ def Action_Rescan(session, config):
       config.clear_mbox_cache()
       session.ui.mark('\n')
     count -= 1
-    if not count: session.ui.mark('Nothing changed')
+    if count:
+      if not mailpile.util.QUITTING:
+        GlobalPostingList.Optimize(session, idx, quick=True)
+    else:
+      session.ui.mark('Nothing changed')
   except (KeyboardInterrupt, subprocess.CalledProcessError), e:
     session.ui.mark('Aborted: %s' % e)
     if config.get('debug'):
       session.ui.say(traceback.format_exc())
+    rv = False
   finally:
     if count:
       session.ui.mark('\n')
@@ -231,22 +243,69 @@ def Action_Rescan(session, config):
         idx.save_changes(session)
       else:
         idx.save(session)
-      GlobalPostingList.Optimize(session, idx, quick=True)
   idx.update_tag_stats(session, config)
   session.ui.reset_marks()
   del config.RUNNING['rescan']
-  return True
+  return rv
 
 def Action_Optimize(session, config, arg):
   try:
-    idx = config.index
+    idx = Action_Load(session, config)
     idx.save(session)
-    filecount = GlobalPostingList.Optimize(session, idx,
-                                           force=(arg == 'harder'))
+    GlobalPostingList.Optimize(session, idx, force=(arg == 'harder'))
     session.ui.reset_marks()
   except KeyboardInterrupt:
     session.ui.mark('Aborted')
     session.ui.reset_marks()
+  return True
+
+def Action_Compose(session, config, args):
+  if session.interactive:
+    idx = Action_Load(session, config)
+    if args:
+      emails = [Email(idx, i) for i in Choose_Messages(session, args)]
+    else:
+      drafts_id, drafts = config.open_drafts(session)
+      emails = [Email.Create(idx, drafts_id, drafts)]
+      Action(session,
+             'tag', '+Drafts =%s' % emails[0].get_msg_info(idx.MSG_IDX))
+    session.ui.clear()
+    session.ui.reset_marks()
+    session.ui.edit_messages(emails)
+  else:
+    session.ui.say('Sorry, this UI cannot edit messages.')
+  return True
+
+def Action_Reply(session, config, args):
+  if args and args[0].lower() == 'all':
+    relpy_all = args.pop(0) or True
+  else:
+    reply_all = False
+  return True
+
+def Action_Forward(session, config, args):
+  if args and args[0].lower().startswith('att'):
+    relpy_all = args.pop(0) or True
+  else:
+    reply_all = False
+  return True
+
+def Action_Mail(session, config, args):
+  return True
+
+def Action_Setup(session):
+  # Create local mailboxes
+  session.config.open_drafts(session)
+
+  # Create standard tags and filters
+  tags = session.config.get('tag', {}).values()
+  for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Trash'):
+    if t not in tags:
+      Action(session, 'addtag', t)
+  if 'New' not in tags:
+    Action(session, 'filter', 'new +Inbox +New New Mail filter')
+    Action(session, 'filter', 'read -New Read Mail filter')
+
   return True
 
 def Action(session, opt, arg):
@@ -258,18 +317,42 @@ def Action(session, opt, arg):
     session.ui.print_help(COMMANDS, tags=config.get('tag', {}),
                                     index=config.get_index(session))
 
-  elif opt in ('W', 'webserver'):
-    config.prepare_workers(session, daemons=True)
-    while not mailpile.util.QUITTING: time.sleep(1)
+  elif opt in ('0', 'setup'):
+    Action_Setup(session)
 
   elif opt in ('A', 'add'):
-    if os.path.exists(arg):
-      arg = os.path.abspath(arg)
-      if config.parse_set(session,
-                          'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
-        config.slow_worker.add_task(None, 'Save config', lambda: config.save())
+    if arg in config.get('mailbox', {}).values():
+      session.ui.warning('Already in the pile: %s' % arg)
     else:
-      session.error('No such file/directory: %s' % arg)
+      if os.path.exists(arg):
+        arg = os.path.abspath(arg)
+        if config.parse_set(session,
+                            'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
+          config.slow_worker.add_task(None, 'Save config', lambda: config.save())
+      else:
+        session.error('No such file/directory: %s' % arg)
+
+  elif opt in ('F', 'filter'):
+    Action_Filter(session, opt, arg)
+
+  elif opt in ('L', 'load'):
+    Action_Load(session, config, reset=True)
+
+  elif opt in ('O', 'optimize'):
+    config.slow_worker.do(session, 'Optimize',
+                          lambda: Action_Optimize(session, config, arg))
+
+  elif opt in ('P', 'print'):
+    session.ui.print_key(arg.strip().lower(), config)
+
+  elif opt in ('R', 'rescan'):
+    Action_Load(session, config)
+    config.slow_worker.do(session, 'Rescan',
+                          lambda: Action_Rescan(session, config))
+
+  elif opt in ('S', 'set'):
+    if config.parse_set(session, arg):
+      config.slow_worker.add_task(None, 'Save config', lambda: config.save())
 
   elif opt in ('T', 'addtag'):
     if (arg
@@ -281,28 +364,32 @@ def Action(session, opt, arg):
     else:
       session.error('Invalid tag: %s' % arg)
 
-  elif opt in ('F', 'filter'):
-    Action_Filter(session, opt, arg)
-
-  elif opt in ('O', 'optimize'):
-    config.slow_worker.do(session, 'Optimize',
-                          lambda: Action_Optimize(session, config, arg))
-
-  elif opt in ('P', 'print'):
-    session.ui.print_key(arg.strip().lower(), config)
-
   elif opt in ('U', 'unset'):
     if config.parse_unset(session, arg):
       config.slow_worker.add_task(None, 'Save config', lambda: config.save())
 
-  elif opt in ('S', 'set'):
-    if config.parse_set(session, arg):
-      config.slow_worker.add_task(None, 'Save config', lambda: config.save())
+  elif opt in ('W', 'www'):
+    config.prepare_workers(session, daemons=True)
+    while not mailpile.util.QUITTING: time.sleep(1)
 
-  elif opt in ('R', 'rescan'):
-    Action_Load(session, config)
-    config.slow_worker.do(session, 'Rescan',
-                          lambda: Action_Rescan(session, config))
+  elif opt in ('c', 'compose'):
+    Action_Compose(session, config, arg.split())
+
+  elif opt in ('e', 'extract'):
+    args = arg.split()
+    idx = Action_Load(session, config)
+    cid = args.pop(0)
+    if len(args) > 0 and args[-1].startswith('>'):
+      name_fmt = args.pop(-1)[1:]
+    else:
+      name_fmt = None
+    emails = [Email(idx, i) for i in Choose_Messages(session, args)]
+    for email in emails:
+      email.extract_attachment(session, cid, name_fmt=name_fmt)
+    session.ui.reset_marks()
+
+  elif opt in ('f', 'forward'):
+    Action_Forward(session, config, arg.split())
 
   elif opt in ('g', 'gpgrecv'):
     try:
@@ -318,8 +405,8 @@ def Action(session, opt, arg):
       pass
     session.ui.reset_marks()
 
-  elif opt in ('L', 'load'):
-    Action_Load(session, config, reset=True)
+  elif opt in ('m', 'mail'):
+    Action_Mail(session, config, arg.split())
 
   elif opt in ('n', 'next'):
     idx = Action_Load(session, config)
@@ -328,6 +415,16 @@ def Action(session, opt, arg):
     session.displayed = session.ui.display_results(idx, session.results,
                                                    session.searched,
                                                    start=pos+count,
+                                                   num=num_results)
+    session.ui.reset_marks()
+
+  elif opt in ('o', 'order'):
+    idx = Action_Load(session, config)
+    session.order = arg or None
+    idx.sort_results(session, session.results,
+                     how=session.order)
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
                                                    num=num_results)
     session.ui.reset_marks()
 
@@ -340,18 +437,8 @@ def Action(session, opt, arg):
                                                    num=num_results)
     session.ui.reset_marks()
 
-  elif opt in ('t', 'tag'):
-    Action_Tag(session, opt, arg)
-
-  elif opt in ('o', 'order'):
-    idx = Action_Load(session, config)
-    session.order = arg or None
-    idx.sort_results(session, session.results,
-                     how=session.order)
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   num=num_results)
-    session.ui.reset_marks()
+  elif opt in ('r', 'reply'):
+    Action_Reply(session, config, arg.split())
 
   elif (opt in ('s', 'search')
         or opt.lower() in [t.lower() for t in config.get('tag', {}).values()]):
@@ -391,6 +478,9 @@ def Action(session, opt, arg):
                                                    num=num_results)
     session.ui.reset_marks()
 
+  elif opt in ('t', 'tag'):
+    Action_Tag(session, opt, arg)
+
   elif opt in ('v', 'view'):
     args = arg.split()
     if args and args[0].lower() == 'raw':
@@ -405,20 +495,5 @@ def Action(session, opt, arg):
       session.ui.display_messages(emails, raw=raw)
     session.ui.reset_marks()
 
-  elif opt in ('e', 'extract'):
-    args = arg.split()
-    idx = Action_Load(session, config)
-    cid = args.pop(0)
-    if len(args) > 0 and args[-1].startswith('>'):
-      name_fmt = args.pop(-1)[1:]
-    else:
-      name_fmt = None
-    emails = [Email(idx, i) for i in Choose_Messages(session, args)]
-    for email in emails:
-      email.extract_attachment(session, cid, name_fmt=name_fmt)
-    session.ui.reset_marks()
-
   else:
     raise UsageError('Unknown command: %s' % opt)
-
-
