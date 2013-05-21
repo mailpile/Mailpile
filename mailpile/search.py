@@ -183,7 +183,7 @@ class PostingList(object):
     and    len(prefix) < self.HASH_LEN):
       biggest = self.sig
       for word in self.WORDS:
-        if len(self.WORDS[word]) > len(self.WORDS[biggest]):
+        if len(self.WORDS.get(word, [])) > len(self.WORDS.get(biggest, [])):
           biggest = word
       if len(biggest) > len(prefix):
         biggest = biggest[:len(prefix)+1]
@@ -223,11 +223,11 @@ class PostingList(object):
     return self
 
   def remove(self, eids):
-    try:
-      for eid in eids:
+    for eid in eids:
+      try:
         self.WORDS[self.sig].remove(eid)
-    except KeyError:
-      pass
+      except KeyError:
+        pass
     return self
 
 
@@ -537,7 +537,7 @@ class MailIndex(object):
                              '',                        # No replies for now
                              msg_conv])                 # Conversation ID
         added += 1
-        if (added % 250) == 0:
+        if (added % 1000) == 0:
           GlobalPostingList.Optimize(session, self, quick=True)
 
     if added:
