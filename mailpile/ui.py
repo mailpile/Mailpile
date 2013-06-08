@@ -3,6 +3,7 @@
 # Basic user-interface stuff
 #
 import datetime
+import os
 import random
 import re
 import sys
@@ -338,6 +339,19 @@ class TextUI(NullUI):
     if viewer:
       fd.close()
       viewer.wait()
+
+  def edit_messages(self, emails):
+    for email in emails:
+      if email.is_editable():
+        tf = tempfile.NamedTemporaryFile(suffix='.txt')
+        tf.write(email.get_editing_string())
+        tf.flush()
+        rv = subprocess.call(['edit', tf.name])
+        tf.seek(0, 0)
+        email.update_from_string(tf.read())
+        tf.close()
+      else:
+        self.say('That message cannot be edited.')
 
 
 class SuppressHtmlOutput(Exception):

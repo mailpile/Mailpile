@@ -282,7 +282,7 @@ class Email(object):
              msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
              msg_subject=None, msg_text=None):
     msg = mailbox.Message()
-    msg.set_charset('utf-8')
+    #msg.set_charset('utf-8')
     msg_date = int(time.time())
     msg['From'] = msg_from = msg_from or idx.config.get_from_address()
     msg['Date'] = email.utils.formatdate(msg_date)
@@ -298,23 +298,84 @@ class Email(object):
                                         msg_date, msg_from, msg_subj, [])
     return cls(idx, msg_idx)
 
+  def is_editable(self):
+    mbox, ptr, fd = self.get_mbox_ptr_and_fd()
+    return mbox.editable
+
+  UNEDITABLE_HEADERS = ('message-id', 'mime-version', 'references',
+                        'in-reply-to', 'content-type', 'content-disposition',
+                        'content-transfer-encoding')
+  def get_editing_string(self):
+    lines = []
+    tree = self.get_message_tree()
+    for hdr in sorted(tree['headers'].keys()):
+      if hdr.lower() not in self.UNEDITABLE_HEADERS:
+        lines.append('%s: %s' % (hdr, tree['headers'][hdr]))
+
+    for att in tree['attachments']:
+      lines.append('Attachment-%s: %s' % (att['count'], att['filename']))
+
+    # FIXME: Add pseudo-headers for GPG stuff?
+
+    lines.append('')
+    lines.extend([t['data'].strip() for t in tree['text_parts']])
+    lines.append('\n')
+    return '\n'.join(lines)
+
+  def update_from_string(self, data):
+    newmsg = email.parser.Parser().parsestr(data)
+    oldmsg = self.get_msg()
+
+    # Copy over the uneditable headers from the old message
+    for hdr in oldmsg.keys():
+      if hdr.lower() in self.UNEDITABLE_HEADERS:
+        newmsg[hdr] = oldmsg[hdr]
+
+    new_body = newmsg.get_payload()
+
+    # Copy the attachments we are keeping
+    attachments = [h for h in newmsg.keys() if h.startswith('Attachment-')]
+    if attachments:
+      # FIXME: Convert to multipart
+      for hdr in attachments:
+        print 'FIXME: Should copy %s' % hdr
+
+    # FIXME: If we are generating HTML, convert to multipart/mixed
+    #        Use markdown and template to generate fancy HTML part
+
+    # Save result back to mailbox
+    mbx, ptr, fd = self.get_mbox_ptr_and_fd()
+    mbx[ptr[3:]] = newmsg
+
+    # Update the in-memory-index with new sender, subject
+    msg_info = self.index.get_msg_by_idx(self.msg_idx)
+    msg_info[self.index.MSG_SUBJECT] = newmsg['subject']
+    msg_info[self.index.MSG_FROM] = newmsg['from']
+    self.index.set_msg_by_idx(self.msg_idx, msg_info)
+
+    # FIXME: What to do about the search index?  Update?
+
+    print '=== New message ===\n%s' % newmsg.as_string()
+
   def get_msg_info(self, field):
     if not self.msg_info:
       self.msg_info = self.index.get_msg_by_idx(self.msg_idx)
     return self.msg_info[field]
 
-  def get_file(self):
+  def get_mbox_ptr_and_fd(self):
     for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
       try:
         mbox = self.config.open_mailbox(None, msg_ptr[:3])
         fd = mbox.get_file_by_ptr(msg_ptr)
         # FIXME: How do we know we have the right message?
-        return fd
+        return mbox, msg_ptr, fd
       except (IOError, OSError):
         # FIXME: If this pointer is wrong, should we fix the index?
         print '%s not in %s' % (msg_ptr, mbox)
-        pass
-    return None
+    return None, None, None
+
+  def get_file(self):
+    return self.get_mbox_ptr_and_fd()[2]
 
   def get_msg(self, pgpmime=True):
     if not self.msg_parsed:
@@ -424,8 +485,10 @@ class Email(object):
                            javascript=True, scripts=True, frames=True,
                            embedded=True, safe_attrs_only=True)
 
-    # Note: count algorithm must match that used in extract_attachment above
     msg = self.get_msg()
+    tree['headers'] = dict(msg)
+
+    # Note: count algorithm must match that used in extract_attachment above
     count = 0
     for part in msg.walk():
       mimetype = part.get_content_type()
