@@ -1,7 +1,7 @@
 #!/usr/bin/python
 APPVER="0.0.0+github"
 ABOUT="""\
-Mailpile.py          a tool          Copyright 2011-2012, Bjarni R. Einarsson
+Mailpile.py          a tool          Copyright 2011-2013, Bjarni R. Einarsson
                for searching and                      <http://bre.klaki.net/>
            organizing piles of e-mail
 
