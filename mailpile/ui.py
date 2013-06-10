@@ -342,17 +342,28 @@ class TextUI(NullUI):
 
   def edit_messages(self, emails):
     for email in emails:
-      if email.is_editable():
-        tf = tempfile.NamedTemporaryFile(suffix='.txt')
-        tf.write(email.get_editing_string().encode('utf-8'))
-        tf.flush()
-        rv = subprocess.call(['edit', tf.name])
-        tf.seek(0, 0)
-        email.update_from_string(tf.read())
-        tf.close()
-      else:
-        self.say('That message cannot be edited.')
+      try:
+        if email.is_editable():
+          es = email.get_editing_string().encode('utf-8')
 
+          tf = tempfile.NamedTemporaryFile(suffix='.txt')
+          tf.write(es)
+          tf.flush()
+          rv = subprocess.call(['edit', tf.name])
+          tf.seek(0, 0)
+          ns = tf.read()
+          tf.close()
+
+          if es != ns:
+            email.update_from_string(ns)
+            self.say('Message saved.  Use the "mail" command to send it.')
+          else:
+            self.warning('Message unchanged.')
+        else:
+          self.error('That message cannot be edited.')
+      except:
+        self.warning('Editing failed!')
+        self.warning(traceback.format_exc())
 
 class SuppressHtmlOutput(Exception):
   pass

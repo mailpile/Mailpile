@@ -419,8 +419,7 @@ class Email(object):
     self.index.set_msg_by_idx(self.msg_idx, msg_info)
 
     # FIXME: What to do about the search index?  Update?
-
-    print '=== New message ===\n%s' % newmsg.as_string()
+    return self
 
   def get_msg_info(self, field):
     if not self.msg_info:
