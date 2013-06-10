@@ -344,7 +344,7 @@ class TextUI(NullUI):
     for email in emails:
       if email.is_editable():
         tf = tempfile.NamedTemporaryFile(suffix='.txt')
-        tf.write(email.get_editing_string())
+        tf.write(email.get_editing_string().encode('utf-8'))
         tf.flush()
         rv = subprocess.call(['edit', tf.name])
         tf.seek(0, 0)

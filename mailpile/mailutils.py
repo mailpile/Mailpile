@@ -12,6 +12,7 @@
 #
 ###############################################################################
 import cPickle
+import email.header
 import email.parser
 import email.utils
 import errno
@@ -20,6 +21,11 @@ import os
 import traceback
 import rfc822
 import gzip
+
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from mailpile.util import *
 from lxml.html.clean import Cleaner
@@ -126,7 +132,7 @@ class IncrementalGmvault(IncrementalMaildir):
   """A Gmvault class that supports pickling and a few mailpile specifics."""
 
   editable = False
-  
+
   def __init__(self, dirname, factory=rfc822.Message, create=True):
     IncrementalMaildir.__init__(self, dirname, factory, create)
 
@@ -147,7 +153,7 @@ class IncrementalGmvault(IncrementalMaildir):
     # Refresh toc
     self._toc = {}
     for path in self._paths:
-      for dirpath, dirnames, filenames in os.walk(self._paths[path]):        
+      for dirpath, dirnames, filenames in os.walk(self._paths[path]):
         for filename in [f for f in filenames if f.endswith(".eml.gz") or f.endswith(".eml")]:
           self._toc[filename] = os.path.join(dirpath, filename)
 
@@ -282,7 +288,6 @@ class Email(object):
              msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
              msg_subject=None, msg_text=None):
     msg = mailbox.Message()
-    #msg.set_charset('utf-8')
     msg_date = int(time.time())
     msg['From'] = msg_from = msg_from or idx.config.get_from_address()
     msg['Date'] = email.utils.formatdate(msg_date)
@@ -302,15 +307,31 @@ class Email(object):
     mbox, ptr, fd = self.get_mbox_ptr_and_fd()
     return mbox.editable
 
-  UNEDITABLE_HEADERS = ('message-id', 'mime-version', 'references',
-                        'in-reply-to', 'content-type', 'content-disposition',
-                        'content-transfer-encoding')
+  MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
+                  'content-transfer-encoding')
+  UNEDITABLE_HEADERS = ('message-id', 'references') + MIME_HEADERS
+  HEADER_ORDER = {
+    'date': 1,
+    'from': 2,
+    'subject': 3,
+    'to': 4,
+    'cc': 5,
+    'bcc': 6,
+  }
   def get_editing_string(self):
     lines = []
     tree = self.get_message_tree()
-    for hdr in sorted(tree['headers'].keys()):
-      if hdr.lower() not in self.UNEDITABLE_HEADERS:
-        lines.append('%s: %s' % (hdr, tree['headers'][hdr]))
+
+    # We care about header order and such things...
+    hdrs = dict([(h.lower(), h) for h in tree['headers'].keys()
+                                if h.lower() not in self.UNEDITABLE_HEADERS])
+    hdrs['to'] = hdrs.get('to', 'To')
+    hdrs['cc'] = hdrs.get('cc', 'Cc')
+    hdrs['bcc'] = hdrs.get('bcc', 'Bcc')
+    keys = hdrs.keys()
+    keys.sort(key=lambda k: (self.HEADER_ORDER.get(k, 99), k))
+    for hdr in [hdrs[k] for k in keys]:
+      lines.append('%s: %s' % (hdr, tree['headers'].get(hdr, '')))
 
     for att in tree['attachments']:
       lines.append('Attachment-%s: %s' % (att['count'], att['filename']))
@@ -322,35 +343,79 @@ class Email(object):
     lines.append('\n')
     return '\n'.join(lines)
 
+  def encoded_hdr(self, msg, hdr):
+    hdr_value = msg[hdr]
+    try:
+      hdr_value.encode('us-ascii')
+    except:
+      if hdr.lower() in ('from', 'to', 'cc', 'bcc'):
+        addrs = []
+        for addr in [a.strip() for a in hdr_value.split(',')]:
+          name, part = [], []
+          words = addr.split()
+          for w in words:
+            if w[0] == '<' or '@' in w:
+              part.append((w, 'us-ascii'))
+            else:
+              name.append(w)
+          if name:
+            name = ' '.join(name)
+            try:
+              part[0:0] = [(name.encode('us-ascii'), 'us-ascii')]
+            except:
+              part[0:0] = [(name, 'utf-8')]
+          addrs.append(email.header.make_header(part).encode())
+        hdr_value = ', '.join(addrs)
+      else:
+        parts = [(hdr_value, 'utf-8')]
+        hdr_value = email.header.make_header(parts).encode()
+    return hdr_value
+
   def update_from_string(self, data):
     newmsg = email.parser.Parser().parsestr(data)
     oldmsg = self.get_msg()
+    outmsg = MIMEMultipart()
+
+    # Copy over editable headers from the input string, skipping blanks
+    for hdr in newmsg.keys():
+      encoded_hdr = self.encoded_hdr(newmsg, hdr)
+      if len(encoded_hdr.strip()) > 0:
+        outmsg[hdr] = encoded_hdr
 
     # Copy over the uneditable headers from the old message
     for hdr in oldmsg.keys():
-      if hdr.lower() in self.UNEDITABLE_HEADERS:
-        newmsg[hdr] = oldmsg[hdr]
+      if ((hdr.lower() not in self.MIME_HEADERS)
+      and (hdr.lower() in self.UNEDITABLE_HEADERS)):
+        outmsg[hdr] = oldmsg[hdr]
 
-    new_body = newmsg.get_payload()
+    # Copy the message text
+    new_body = newmsg.get_payload().decode('utf-8')
+    try:
+      new_body.encode('us-ascii')
+      charset = 'us-ascii'
+    except:
+      charset = 'utf-8'
+    outmsg.attach(MIMEText(new_body, _subtype='plain', _charset=charset))
+    # FIXME: If we are generating HTML, convert to multipart/mixed
+    #         Use markdown and template to generate fancy HTML part
 
     # Copy the attachments we are keeping
     attachments = [h for h in newmsg.keys() if h.startswith('Attachment-')]
     if attachments:
-      # FIXME: Convert to multipart
       for hdr in attachments:
         print 'FIXME: Should copy %s' % hdr
 
-    # FIXME: If we are generating HTML, convert to multipart/mixed
-    #        Use markdown and template to generate fancy HTML part
-
     # Save result back to mailbox
+    return self.update_from_msg(outmsg)
+
+  def update_from_msg(self, newmsg):
     mbx, ptr, fd = self.get_mbox_ptr_and_fd()
     mbx[ptr[3:]] = newmsg
 
     # Update the in-memory-index with new sender, subject
     msg_info = self.index.get_msg_by_idx(self.msg_idx)
-    msg_info[self.index.MSG_SUBJECT] = newmsg['subject']
-    msg_info[self.index.MSG_FROM] = newmsg['from']
+    msg_info[self.index.MSG_SUBJECT] = self.index.hdr(newmsg, 'subject')
+    msg_info[self.index.MSG_FROM] = self.index.hdr(newmsg, 'from')
     self.index.set_msg_by_idx(self.msg_idx, msg_info)
 
     # FIXME: What to do about the search index?  Update?
@@ -486,7 +551,8 @@ class Email(object):
                            embedded=True, safe_attrs_only=True)
 
     msg = self.get_msg()
-    tree['headers'] = dict(msg)
+    for hdr in msg.keys():
+      tree['headers'][hdr] = self.index.hdr(msg, hdr)
 
     # Note: count algorithm must match that used in extract_attachment above
     count = 0
