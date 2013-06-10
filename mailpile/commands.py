@@ -4,7 +4,7 @@ import os.path
 import traceback
 
 import mailpile.util
-from mailpile.mailutils import Email
+from mailpile.mailutils import Email, NotEditableError
 from mailpile.search import MailIndex, PostingList, GlobalPostingList
 from mailpile.util import *
 
@@ -304,6 +304,8 @@ def Action_Attach(session, config, args):
     try:
       email.add_attachments(files)
       session.ui.say(' - %s' % subject)
+    except NotEditableError:
+      session.ui.error('Read-only message: %s' % subject)
     except:
       session.ui.error('Error attaching to %s' % subject)
       session.ui.say(traceback.format_exc())

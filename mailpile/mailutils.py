@@ -39,6 +39,13 @@ except ImportError:
   GnuPG = PGPMimeParser = None
 
 
+class NotEditableError(ValueError):
+  pass
+
+class NoSuchMailboxError(OSError):
+  pass
+
+
 def ParseMessage(fd, pgpmime=True):
   pos = fd.tell()
   header = [fd.readline()]
@@ -75,10 +82,6 @@ def HeaderPrint(message):
   headers = [h for h in headers if h.lower() not in DULL_HEADERS]
 
   return b64w(sha1b64('\n'.join(headers))).lower()
-
-
-class NoSuchMailboxError(OSError):
-  pass
 
 
 def OpenMailbox(fn):
@@ -374,6 +377,9 @@ class Email(object):
     return hdr_value
 
   def add_attachments(self, filenames):
+    if not self.is_editable():
+      raise NotEditableError('Mailbox is read-only.')
+
     msg = self.get_msg()
     for fn in filenames:
       data = open(fn, 'rb').read()
@@ -391,6 +397,9 @@ class Email(object):
     return self.update_from_msg(msg)
 
   def update_from_string(self, data):
+    if not self.is_editable():
+      raise NotEditableError('Mailbox is read-only.')
+
     newmsg = email.parser.Parser().parsestr(data)
     oldmsg = self.get_msg()
     outmsg = MIMEMultipart()
@@ -428,6 +437,9 @@ class Email(object):
     return self.update_from_msg(outmsg)
 
   def update_from_msg(self, newmsg):
+    if not self.is_editable():
+      raise NotEditableError('Mailbox is read-only.')
+
     mbx, ptr, fd = self.get_mbox_ptr_and_fd()
     mbx[ptr[3:]] = newmsg
 
