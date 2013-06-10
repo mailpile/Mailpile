@@ -17,11 +17,13 @@ import email.parser
 import email.utils
 import errno
 import mailbox
+import mimetypes
 import os
 import traceback
 import rfc822
 import gzip
 
+from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -370,6 +372,23 @@ class Email(object):
         parts = [(hdr_value, 'utf-8')]
         hdr_value = email.header.make_header(parts).encode()
     return hdr_value
+
+  def add_attachments(self, filenames):
+    msg = self.get_msg()
+    for fn in filenames:
+      data = open(fn, 'rb').read()
+      ctype, encoding = mimetypes.guess_type(fn)
+      maintype, subtype = (ctype or 'application/octet-stream').split('/', 1)
+      if maintype == 'image':
+        att = MIMEImage(data, _subtype=subtype)
+      else:
+        att = MIMEBase(maintype, subtype)
+        att.set_payload(data)
+        encoders.encode_base64(att)
+      att.add_header('Content-Disposition', 'attachment',
+                     filename=os.path.basename(fn))
+      msg.attach(att)
+    return self.update_from_msg(msg)
 
   def update_from_string(self, data):
     newmsg = email.parser.Parser().parsestr(data)

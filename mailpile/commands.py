@@ -1,10 +1,11 @@
 #!/usr/bin/python
 import os
+import os.path
 import traceback
 
 import mailpile.util
 from mailpile.mailutils import Email
-from mailpile.search import PostingList, GlobalPostingList
+from mailpile.search import MailIndex, PostingList, GlobalPostingList
 from mailpile.util import *
 
 try:
@@ -281,6 +282,35 @@ def Action_Compose(session, config, args):
     session.ui.say('Sorry, this UI cannot edit messages.')
   return True
 
+def Action_Attach(session, config, args):
+  idx = Action_Load(session, config)
+  session.ui.clear()
+
+  files = []
+  while os.path.exists(args[-1]):
+    files.append(args.pop(-1))
+  if not files:
+    session.ui.error('No files found')
+    return False
+
+  emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
+  if not emails:
+    session.ui.error('No messages selected')
+    return False
+
+  session.ui.say('Attaching %s to...' % ', '.join(files))
+  for email in emails:
+    subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
+    try:
+      email.add_attachments(files)
+      session.ui.say(' - %s' % subject)
+    except:
+      session.ui.error('Error attaching to %s' % subject)
+      session.ui.say(traceback.format_exc())
+
+  session.ui.reset_marks()
+  return True
+
 def Action_Reply(session, config, args):
   if args and args[0].lower() == 'all':
     relpy_all = args.pop(0) or True
@@ -376,6 +406,9 @@ def Action(session, opt, arg):
   elif opt in ('W', 'www'):
     config.prepare_workers(session, daemons=True)
     while not mailpile.util.QUITTING: time.sleep(1)
+
+  elif opt in ('a', 'attach'):
+    Action_Attach(session, config, arg.split())
 
   elif opt in ('c', 'compose'):
     Action_Compose(session, config, arg.split())
