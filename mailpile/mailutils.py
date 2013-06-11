@@ -376,24 +376,26 @@ class Email(object):
         hdr_value = email.header.make_header(parts).encode()
     return hdr_value
 
+  def make_attachment(self, fn):
+    data = open(fn, 'rb').read()
+    ctype, encoding = mimetypes.guess_type(fn)
+    maintype, subtype = (ctype or 'application/octet-stream').split('/', 1)
+    if maintype == 'image':
+      att = MIMEImage(data, _subtype=subtype)
+    else:
+      att = MIMEBase(maintype, subtype)
+      att.set_payload(data)
+      encoders.encode_base64(att)
+    att.add_header('Content-Disposition', 'attachment',
+                   filename=os.path.basename(fn))
+    return att
+
   def add_attachments(self, filenames):
     if not self.is_editable():
       raise NotEditableError('Mailbox is read-only.')
-
     msg = self.get_msg()
     for fn in filenames:
-      data = open(fn, 'rb').read()
-      ctype, encoding = mimetypes.guess_type(fn)
-      maintype, subtype = (ctype or 'application/octet-stream').split('/', 1)
-      if maintype == 'image':
-        att = MIMEImage(data, _subtype=subtype)
-      else:
-        att = MIMEBase(maintype, subtype)
-        att.set_payload(data)
-        encoders.encode_base64(att)
-      att.add_header('Content-Disposition', 'attachment',
-                     filename=os.path.basename(fn))
-      msg.attach(att)
+      msg.attach(self.make_attachment(fn))
     return self.update_from_msg(msg)
 
   def update_from_string(self, data):
@@ -406,9 +408,12 @@ class Email(object):
 
     # Copy over editable headers from the input string, skipping blanks
     for hdr in newmsg.keys():
-      encoded_hdr = self.encoded_hdr(newmsg, hdr)
-      if len(encoded_hdr.strip()) > 0:
-        outmsg[hdr] = encoded_hdr
+      if hdr.startswith('Attachment-'):
+        pass
+      else:
+        encoded_hdr = self.encoded_hdr(newmsg, hdr)
+        if len(encoded_hdr.strip()) > 0:
+          outmsg[hdr] = encoded_hdr
 
     # Copy over the uneditable headers from the old message
     for hdr in oldmsg.keys():
@@ -424,14 +429,25 @@ class Email(object):
     except:
       charset = 'utf-8'
     outmsg.attach(MIMEText(new_body, _subtype='plain', _charset=charset))
-    # FIXME: If we are generating HTML, convert to multipart/mixed
-    #         Use markdown and template to generate fancy HTML part
+    # FIXME: Use markdown and template to generate fancy HTML part
 
     # Copy the attachments we are keeping
     attachments = [h for h in newmsg.keys() if h.startswith('Attachment-')]
     if attachments:
-      for hdr in attachments:
-        print 'FIXME: Should copy %s' % hdr
+      oldtree = self.get_message_tree()
+      for att in oldtree['attachments']:
+        hdr = 'Attachment-%s' % att['count']
+        if hdr in attachments:
+          # FIXME: Update the filename to match whatever the user typed
+          outmsg.attach(att['part'])
+          attachments.remove(hdr)
+
+    # Attach some new files?
+    for hdr in attachments:
+      try:
+        outmsg.attach(self.make_attachment(newmsg[hdr]))
+      except:
+        pass # FIXME: Warn user that failed...
 
     # Save result back to mailbox
     return self.update_from_msg(outmsg)
@@ -613,6 +629,7 @@ class Email(object):
         tree['attachments'].append({
           'mimetype': mimetype,
           'count': count,
+          'part': part,
           'length': len(part.get_payload(None, True) or ''),
           'content-id': part.get('content-id', ''),
           'filename': part.get_filename() or ''
