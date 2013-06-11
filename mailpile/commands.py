@@ -271,8 +271,8 @@ def Action_Compose(session, config, args):
     if args:
       emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
     else:
-      drafts_id, drafts = config.open_drafts(session)
-      emails = [Email.Create(idx, drafts_id, drafts)]
+      local_id, lmbox = config.open_local_mailbox(session)
+      emails = [Email.Create(idx, local_id, lmbox)]
       Action(session,
              'tag', '+Drafts =%s' % emails[0].get_msg_info(idx.MSG_IDX))
     session.ui.clear()
@@ -332,7 +332,7 @@ def Action_Mail(session, config, args):
 
 def Action_Setup(session):
   # Create local mailboxes
-  session.config.open_drafts(session)
+  session.config.open_local_mailbox(session)
 
   # Create standard tags and filters
   tags = session.config.get('tag', {}).values()

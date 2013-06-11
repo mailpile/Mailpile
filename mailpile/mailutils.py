@@ -289,15 +289,46 @@ class Email(object):
     self.msg_parsed = None
 
   @classmethod
+  def encoded_hdr(self, msg, hdr, value=None):
+    hdr_value = value or msg[hdr]
+    try:
+      hdr_value.encode('us-ascii')
+    except:
+      if hdr.lower() in ('from', 'to', 'cc', 'bcc'):
+        addrs = []
+        for addr in [a.strip() for a in hdr_value.split(',')]:
+          name, part = [], []
+          words = addr.split()
+          for w in words:
+            if w[0] == '<' or '@' in w:
+              part.append((w, 'us-ascii'))
+            else:
+              name.append(w)
+          if name:
+            name = ' '.join(name)
+            try:
+              part[0:0] = [(name.encode('us-ascii'), 'us-ascii')]
+            except:
+              part[0:0] = [(name, 'utf-8')]
+          addrs.append(email.header.make_header(part).encode())
+        hdr_value = ', '.join(addrs)
+      else:
+        parts = [(hdr_value, 'utf-8')]
+        hdr_value = email.header.make_header(parts).encode()
+    return hdr_value
+
+  @classmethod
   def Create(cls, idx, mbx_id, mbx,
              msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
              msg_subject=None, msg_text=None):
     msg = mailbox.Message()
     msg_date = int(time.time())
-    msg['From'] = msg_from = msg_from or idx.config.get_from_address()
+    msg_from = msg_from or idx.config.get_from_address()
+    msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
     msg['Date'] = email.utils.formatdate(msg_date)
     msg['Message-Id'] = msg_id = email.utils.make_msgid('mailpile')
-    msg['Subject'] = msg_subj = (msg_subject or 'New message')
+    msg_subj  = (msg_subject or 'New message')
+    msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
     if msg_to: msg['To'] = ', '.join(msg_to)
     if msg_cc: msg['Cc'] = ', '.join(msg_cc)
     if msg_cc: msg['Bcc'] = ', '.join(msg_bcc)
@@ -347,34 +378,6 @@ class Email(object):
     lines.extend([t['data'].strip() for t in tree['text_parts']])
     lines.append('\n')
     return '\n'.join(lines)
-
-  def encoded_hdr(self, msg, hdr):
-    hdr_value = msg[hdr]
-    try:
-      hdr_value.encode('us-ascii')
-    except:
-      if hdr.lower() in ('from', 'to', 'cc', 'bcc'):
-        addrs = []
-        for addr in [a.strip() for a in hdr_value.split(',')]:
-          name, part = [], []
-          words = addr.split()
-          for w in words:
-            if w[0] == '<' or '@' in w:
-              part.append((w, 'us-ascii'))
-            else:
-              name.append(w)
-          if name:
-            name = ' '.join(name)
-            try:
-              part[0:0] = [(name.encode('us-ascii'), 'us-ascii')]
-            except:
-              part[0:0] = [(name, 'utf-8')]
-          addrs.append(email.header.make_header(part).encode())
-        hdr_value = ', '.join(addrs)
-      else:
-        parts = [(hdr_value, 'utf-8')]
-        hdr_value = email.header.make_header(parts).encode()
-    return hdr_value
 
   def make_attachment(self, fn):
     data = open(fn, 'rb').read()
