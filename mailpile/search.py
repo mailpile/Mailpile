@@ -256,14 +256,14 @@ class GlobalPostingList(PostingList):
 
   @classmethod
   def SaveFile(cls, session, prefix):
-    return os.path.join(session.config.workdir(), 'global.dat')
+    return os.path.join(session.config.workdir(), 'kw-journal.dat')
 
   @classmethod
   def GetFile(cls, session, sig, mode='r'):
     try:
-      return (cached_open(cls.SaveFile(session, sig), mode), 'global.dat')
+      return (cached_open(cls.SaveFile(session, sig), mode), 'kw-journal.dat')
     except (IOError, OSError):
-      return (None, 'global.dat')
+      return (None, 'kw-journal.dat')
 
   @classmethod
   def Append(cls, session, word, mail_ids, compact=True):
@@ -281,7 +281,7 @@ class GlobalPostingList(PostingList):
     return PostingList.fmt_file(self, 'ALL')
 
   def load(self):
-    self.filename = 'global.dat'
+    self.filename = 'kw-journal.dat'
     global GLOBAL_POSTING_LIST
     if GLOBAL_POSTING_LIST:
       self.WORDS = GLOBAL_POSTING_LIST
