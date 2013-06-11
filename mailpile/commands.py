@@ -265,23 +265,6 @@ def Action_Optimize(session, config, arg):
     session.ui.reset_marks()
   return True
 
-def Action_Compose(session, config, args):
-  if session.interactive:
-    idx = Action_Load(session, config)
-    if args:
-      emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
-    else:
-      local_id, lmbox = config.open_local_mailbox(session)
-      emails = [Email.Create(idx, local_id, lmbox)]
-      Action(session,
-             'tag', '+Drafts =%s' % emails[0].get_msg_info(idx.MSG_IDX))
-    session.ui.clear()
-    session.ui.reset_marks()
-    session.ui.edit_messages(emails)
-  else:
-    session.ui.say('Sorry, this UI cannot edit messages.')
-  return True
-
 def Action_Attach(session, config, args):
   idx = Action_Load(session, config)
   session.ui.clear()
@@ -313,12 +296,71 @@ def Action_Attach(session, config, args):
   session.ui.reset_marks()
   return True
 
+def Action_Compose(session, config, args):
+  idx = Action_Load(session, config)
+  if args:
+    emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
+  else:
+    local_id, lmbox = config.open_local_mailbox(session)
+    emails = [Email.Create(idx, local_id, lmbox)]
+    Action(session,
+           'tag', '+Drafts =%s' % emails[0].get_msg_info(idx.MSG_IDX))
+  if session.interactive:
+    session.ui.clear()
+    session.ui.reset_marks()
+    session.ui.edit_messages(emails)
+  else:
+    session.ui.say('%d message(s) created as drafts' % len(emails))
+  return True
+
 def Action_Reply(session, config, args):
   if args and args[0].lower() == 'all':
-    relpy_all = args.pop(0) or True
+    reply_all = args.pop(0) or True
   else:
     reply_all = False
-  return True
+
+  idx = Action_Load(session, config)
+  refs = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
+  if refs:
+    trees = [m.get_message_tree() for m in refs]
+    ref_ids = [t['headers_lc']['message-id'] for t in trees]
+    ref_subjs = [t['headers_lc']['subject'] for t in trees]
+    msg_to = [t['headers_lc'].get('reply-to',
+                                  t['headers_lc']['from']) for t in trees]
+    msg_cc = []
+    if reply_all:
+      msg_cc += [t['headers_lc'].get('to', '') for t in trees]
+      msg_cc += [t['headers_lc'].get('cc', '') for t in trees]
+    msg_bodies = []
+    for t in trees:
+       # FIXME: Templates/settings for how we quote replies?
+       text = (('%s wrote:\n' % t['headers_lc']['from']) +
+               ''.join([p['data'] for p in t['text_parts']
+                        if p['type'] in ('text', 'quote',
+                                         'pgpsignedtext',
+                                         'pgpverifiedtext')]))
+       msg_bodies.append(text.replace('\n', '\n>'))
+
+    local_id, lmbox = config.open_local_mailbox(session)
+    email = Email.Create(idx, local_id, lmbox,
+                         msg_text='\n\n'.join(msg_bodies),
+                         msg_subject=('Re: %s' % ref_subjs[-1]),
+                         msg_to=msg_to,
+                         msg_cc=[r for r in msg_cc if r],
+                         msg_references=[i for i in ref_ids if i])
+    Action(session,
+           'tag', '+Drafts =%s' % email.get_msg_info(idx.MSG_IDX))
+
+    if session.interactive:
+      session.ui.clear()
+      session.ui.reset_marks()
+      session.ui.edit_messages([email])
+    else:
+      session.ui.say('Message created as draft')
+      return True
+  else:
+    session.ui.warning('No message found')
+    return False
 
 def Action_Forward(session, config, args):
   if args and args[0].lower().startswith('att'):

@@ -320,7 +320,7 @@ class Email(object):
   @classmethod
   def Create(cls, idx, mbx_id, mbx,
              msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
-             msg_subject=None, msg_text=None):
+             msg_subject=None, msg_text=None, msg_references=None):
     msg = mailbox.Message()
     msg_date = int(time.time())
     msg_from = msg_from or idx.config.get_from_address()
@@ -329,10 +329,17 @@ class Email(object):
     msg['Message-Id'] = msg_id = email.utils.make_msgid('mailpile')
     msg_subj  = (msg_subject or 'New message')
     msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
-    if msg_to: msg['To'] = ', '.join(msg_to)
-    if msg_cc: msg['Cc'] = ', '.join(msg_cc)
-    if msg_cc: msg['Bcc'] = ', '.join(msg_bcc)
-    if msg_text: msg.set_content(msg_text)
+    if msg_to:
+      msg['To'] = cls.encoded_hdr(None, 'to', value=', '.join(set(msg_to)))
+    if msg_cc:
+      msg['Cc'] = cls.encoded_hdr(None, 'cc', value=', '.join(set(msg_cc)))
+    if msg_bcc:
+      msg['Bcc'] = cls.encoded_hdr(None, 'bcc', value=', '.join(set(msg_bcc)))
+    if msg_references:
+      msg['In-Reply-To'] = msg_references[-1]
+      msg['References'] = ', '.join(msg_references)
+    if msg_text:
+      msg.set_payload(msg_text, 'utf-8')
     msg_key = mbx.add(msg)
     msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbx_id, msg_key),
                                         msg_id,
@@ -345,8 +352,10 @@ class Email(object):
 
   MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                   'content-transfer-encoding')
-  UNEDITABLE_HEADERS = ('message-id', 'references') + MIME_HEADERS
+  UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
   HEADER_ORDER = {
+    'in-reply-to': -2,
+    'references': -1,
     'date': 1,
     'from': 2,
     'subject': 3,
@@ -579,6 +588,7 @@ class Email(object):
       'tags': self.get_msg_info(self.index.MSG_TAGS).split(','),
       'summary': self.get_msg_summary(),
       'headers': {},
+      'headers_lc': {},
       'attributes': {},
       'text_parts': [],
       'html_parts': [],
@@ -602,6 +612,7 @@ class Email(object):
     msg = self.get_msg()
     for hdr in msg.keys():
       tree['headers'][hdr] = self.index.hdr(msg, hdr)
+      tree['headers_lc'][hdr.lower()] = self.index.hdr(msg, hdr)
 
     # Note: count algorithm must match that used in extract_attachment above
     count = 0
