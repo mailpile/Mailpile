@@ -4,7 +4,7 @@ import os.path
 import traceback
 
 import mailpile.util
-from mailpile.mailutils import Email, NotEditableError
+from mailpile.mailutils import Email, NotEditableError, PrepareMail, SendMail
 from mailpile.search import MailIndex, PostingList, GlobalPostingList
 from mailpile.util import *
 
@@ -418,6 +418,22 @@ def Action_Forward(session, config, args):
     return False
 
 def Action_Mail(session, config, args):
+  bounce_to = []
+  while '@' in args[-1]:
+    bounce_to.append(args.pop(-1))
+
+  idx = Action_Load(session, config)
+  session.ui.clear()
+  session.ui.reset_marks()
+
+  # Process one at a time so we don't eat too much memory
+  for email in [Email(idx, i) for i in Choose_Messages(session, idx, args)]:
+    try:
+      SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
+    except:
+      session.ui.error('Failed to send %s' % email)
+      print traceback.format_exc()
+
   return True
 
 def Action_Setup(session):

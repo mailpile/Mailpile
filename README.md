@@ -46,7 +46,9 @@ for you, but if you are importing lots of old mail, you may want to
 postpone the filter definition until after the import (see below), to
 start with a clean slate:
 
-    $ ./mp --set "from: yourmail@domain.com = Your name" --setup
+    $ ./mp --set "from: yourmail@domain.com = Your name" \
+           --set "sendmail: default = smtp:yourmailserver:25" \
+           --setup
     ...
 
 

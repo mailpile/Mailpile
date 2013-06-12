@@ -48,6 +48,8 @@ from mailpile.search import *
 from mailpile.ui import *
 from mailpile.util import *
 
+SENDMAIL = '/usr/sbin/sendmail -i %(rcpt)s'
+
 
 ##[ Specialized threads ]######################################################
 
@@ -201,7 +203,7 @@ class ConfigManager(dict):
              'gpg_recipient', 'gpg_keyserver',
              'http_host', 'rescan_command', 'debug', 'local_mailbox')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags',
-           'from')
+           'from', 'sendmail')
 
   def workdir(self):
     return os.environ.get('MAILPILE_HOME', os.path.expanduser('~/.mailpile'))
@@ -349,6 +351,12 @@ class ConfigManager(dict):
     for f in sorted(froms.keys()):
       return '%s <%s>' % (froms[f], f)
     return None
+
+  def get_sendmail(self, sender='default', rcpts='-t'):
+    sm = self.get('sendmail', {})
+    return sm.get(sender, sm.get('default', SENDMAIL)) % {
+      'rcpt': ','.join(rcpts)
+    }
 
   def get_mailboxes(self):
     def fmt_mbxid(k):

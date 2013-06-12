@@ -20,6 +20,7 @@ import mailbox
 import mimetypes
 import os
 import traceback
+import re
 import rfc822
 import gzip
 
@@ -40,6 +41,9 @@ except ImportError:
 
 
 class NotEditableError(ValueError):
+  pass
+
+class NoRecipientError(ValueError):
   pass
 
 class NoSuchMailboxError(OSError):
@@ -64,6 +68,70 @@ def ParseMessage(fd, pgpmime=True):
 
   message.raw_header = header
   return message
+
+def ExtractEmails(string):
+  emails = []
+  for w in [sw.strip() for sw in re.compile('[,\s]+').split(string)]:
+    if '@' in w:
+      if w.startswith('<'): w = w[1:]
+      if w.endswith('>'): w = w[:-1]
+      emails.append(w)
+  return emails
+
+def PrepareMail(email, sender=None, rcpts=None):
+  if not sender or not rcpts:
+    tree = email.get_message_tree()
+    sender = sender or tree['headers_lc']['from']
+    if not rcpts:
+      rcpts = ExtractEmails(tree['headers_lc'].get('to', ''))
+      rcpts += ExtractEmails(tree['headers_lc'].get('cc', ''))
+      rcpts += ExtractEmails(tree['headers_lc'].get('bcc', ''))
+      if not rcpts:
+        raise NoRecipientError()
+      rcpts += [sender]
+
+  # Cleanup...
+  sender = ExtractEmails(sender)[0]
+  rcpts, rr = [], rcpts
+  for r in rr:
+    rcpts.extend(ExtractEmails(r))
+
+  msg = email.get_msg()
+
+  # Remove headers we don't want to expose
+  for bcc in ('bcc', 'Bcc', 'BCc', 'BCC'):
+    if bcc in msg:
+      del msg['bcc']
+
+  # FIXME: Sign, encrypt, ?
+
+  return (sender, set(rcpts), msg)
+
+def SendMail(session, from_to_msg_tuples):
+  for frm, to, msg in from_to_msg_tuples:
+    sm_fd = None
+    sm_close = lambda: True
+    sendmail = session.config.get_sendmail(frm, to).strip()
+    if sendmail.startswith('|'):
+      cmd = sendmail[1:].strip().split()
+      print 'Running: %s' % cmd
+      proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+      sm_fd = proc.stdin
+      sm_close = proc.stdin.close
+      # FIXME: Update session UI with progress info
+
+    elif sendmail.startswith('smtp:'):
+      host, port = smtp.rsplit(':', 1)
+      # FIXME: Update session UI with progress info
+      # FIXME: Connect to remote SMTP server, have a chat...
+      pass
+    else:
+      pass # FIXME: Complain!
+
+    # FIXME: Update session UI with progress info
+
+    sm_fd.write(str(msg))
+    sm_close()
 
 
 MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
