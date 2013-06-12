@@ -321,7 +321,7 @@ class Email(object):
   def Create(cls, idx, mbx_id, mbx,
              msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
              msg_subject=None, msg_text=None, msg_references=None):
-    msg = mailbox.Message()
+    msg = MIMEMultipart()
     msg_date = int(time.time())
     msg_from = msg_from or idx.config.get_from_address()
     msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
@@ -339,7 +339,12 @@ class Email(object):
       msg['In-Reply-To'] = msg_references[-1]
       msg['References'] = ', '.join(msg_references)
     if msg_text:
-      msg.set_payload(msg_text, 'utf-8')
+      try:
+        msg_text.encode('us-ascii')
+        charset = 'us-ascii'
+      except:
+        charset = 'utf-8'
+      msg.attach(MIMEText(msg_text, _subtype='plain', _charset=charset))
     msg_key = mbx.add(msg)
     msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbx_id, msg_key),
                                         msg_id,

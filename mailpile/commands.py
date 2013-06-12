@@ -339,7 +339,7 @@ def Action_Reply(session, config, args):
                         if p['type'] in ('text', 'quote',
                                          'pgpsignedtext',
                                          'pgpverifiedtext')]))
-       msg_bodies.append(text.replace('\n', '\n>'))
+       msg_bodies.append(text.replace('\n', '\n> '))
 
     local_id, lmbox = config.open_local_mailbox(session)
     email = Email.Create(idx, local_id, lmbox,
@@ -364,10 +364,58 @@ def Action_Reply(session, config, args):
 
 def Action_Forward(session, config, args):
   if args and args[0].lower().startswith('att'):
-    relpy_all = args.pop(0) or True
+    with_atts = args.pop(0) or True
   else:
-    reply_all = False
-  return True
+    with_atts = False
+
+  idx = Action_Load(session, config)
+  refs = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
+  if refs:
+    trees = [m.get_message_tree() for m in refs]
+    ref_subjs = [t['headers_lc']['subject'] for t in trees]
+    msg_bodies = []
+    msg_atts = []
+    for t in trees:
+       # FIXME: Templates/settings for how we quote forwards?
+       text = '-------- Original Message --------\n'
+       for h in ('Date', 'Subject', 'From', 'To'):
+         v = t['headers_lc'].get(h.lower(), None)
+         if v:
+           text += '%s: %s\n' % (h, v)
+       text += '\n'
+       text += ''.join([p['data'] for p in t['text_parts']
+                       if p['type'] in ('text', 'quote',
+                                        'pgpsignedtext',
+                                        'pgpverifiedtext')])
+       msg_bodies.append(text)
+       if with_atts:
+         for att in t['attachments']:
+           if att['mimetype'] not in ('application/pgp-signature', ):
+             msg_atts.append(att['part'])
+
+    local_id, lmbox = config.open_local_mailbox(session)
+    email = Email.Create(idx, local_id, lmbox,
+                         msg_text='\n\n'.join(msg_bodies),
+                         msg_subject=('Fwd: %s' % ref_subjs[-1]))
+    if msg_atts:
+      msg = email.get_msg()
+      for att in msg_atts:
+        msg.attach(att)
+      email.update_from_msg(msg)
+
+    Action(session,
+           'tag', '+Drafts =%s' % email.get_msg_info(idx.MSG_IDX))
+
+    if session.interactive:
+      session.ui.clear()
+      session.ui.reset_marks()
+      session.ui.edit_messages([email])
+    else:
+      session.ui.say('Message created as draft')
+      return True
+  else:
+    session.ui.warning('No message found')
+    return False
 
 def Action_Mail(session, config, args):
   return True
