@@ -134,7 +134,7 @@ class NullUI(object):
             self.warning('No conversation, bad ID: %s' % email.msg_idx)
             self.warning(traceback.format_exc())
         else:
-          email.evaluate_pgp(tree)
+          email.evaluate_pgp(tree, decrypt=True)
           self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
 
   def display_message(self, email, tree, raw=False, sep='', fd=None):

@@ -323,7 +323,7 @@ def Action_Reply(session, config, args):
   idx = Action_Load(session, config)
   refs = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
   if refs:
-    trees = [m.get_message_tree() for m in refs]
+    trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True) for m in refs]
     ref_ids = [t['headers_lc'].get('message-id') for t in trees]
     ref_subjs = [t['headers_lc'].get('subject') for t in trees]
     msg_to = [t['headers_lc'].get('reply-to',
@@ -379,7 +379,7 @@ def Action_Forward(session, config, args):
   idx = Action_Load(session, config)
   refs = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
   if refs:
-    trees = [m.get_message_tree() for m in refs]
+    trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True) for m in refs]
     ref_subjs = [t['headers_lc']['subject'] for t in trees]
     msg_bodies = []
     msg_atts = []

@@ -844,6 +844,19 @@ class Email(object):
       else:
         return 'pgpsignature', 'pgpsignature'
 
+    if stripped == '-----BEGIN PGP MESSAGE-----':
+      return 'pgpbegin', 'pgpbegin'
+    if block == 'pgpbegin':
+      if ':' in line or stripped == '':
+        return 'pgpbegin', 'pgpbegin'
+      else:
+        return 'pgptext', 'pgptext'
+    if block == 'pgptext':
+      if stripped == '-----END PGP MESSAGE-----':
+        return 'pgpend', 'pgpend'
+      else:
+        return 'pgptext', 'pgptext'
+
     if block == 'quote':
       if stripped == '':
         return 'quote', 'quote'
@@ -856,6 +869,9 @@ class Email(object):
     'pgpbeginsigned': 'pgpbeginverified',
     'pgpsignedtext': 'pgpverifiedtext',
     'pgpsignature': 'pgpverification',
+    'pgpbegin': 'pgpbeginverified',
+    'pgptext': 'pgpverifiedtext',
+    'pgpend': 'pgpverification',
   }
   def evaluate_pgp(self, tree, check_sigs=True, decrypt=False):
     pgpdata = []
@@ -887,8 +903,33 @@ class Email(object):
             part['data'] += result.decode('utf-8')
           except:
             part['data'] += traceback.format_exc()
+          pgpdata = []
 
-      # FIXME: Handle encrypted messages
-      if decrypt:
-        pass
+      if decrypt and GnuPG:
+        if part['type'] in ('pgpbegin', 'pgptext'):
+          pgpdata.append(part)
+        elif part['type'] == 'pgpend':
+          pgpdata.append(part)
+          try:
+            message = ''.join([p['data'] for p in pgpdata])
+            gpg = GnuPG().run(['--utf8-strings'],
+                              create_fhs=['stdin', 'stdout', 'stderr'])
+            gpg.handles['stdin'].write(message)
+            gpg.handles['stdin'].close()
+            results = {}
+            for fh in ('stderr', 'stdout'):
+              results[fh] = gpg.handles[fh].read()
+              gpg.handles[fh].close()
+            gpg.wait()
+            pgpdata[0]['data'] = results['stderr'].decode('utf-8')
+            pgpdata[1]['data'] = results['stdout'].decode('utf-8')
+            for p in pgpdata:
+              p['type'] = self.PGP_OK.get(p['type'], p['type'])
+          except IOError:
+            part['data'] += result.decode('utf-8')
+          except:
+            part['data'] += traceback.format_exc()
+          pgpdata = []
+
+    return tree
 
