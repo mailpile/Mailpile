@@ -101,14 +101,16 @@ def Action_Tag(session, opt, arg, save=True):
   idx = Action_Load(session, session.config)
   try:
     words = arg.split()
-    op = words[0][0]
-    tag = words[0][1:]
-    tag_id = session.config.get_tag_id(tag)
-    msg_ids = Choose_Messages(session, idx, words[1:])
-    if op == '-':
-      idx.remove_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
-    else:
-      idx.add_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
+    ops = []
+    while words and words[0][0] in ('-', '+'):
+      ops.append(words.pop(0))
+    msg_ids = Choose_Messages(session, idx, words)
+    for op in ops:
+      tag_id = session.config.get_tag_id(op[1:])
+      if op[0] == '-':
+        idx.remove_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
+      else:
+        idx.add_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
 
     session.ui.reset_marks()
 
