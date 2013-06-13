@@ -442,6 +442,8 @@ def Action_Mail(session, config, args):
   for email in [Email(idx, i) for i in Choose_Messages(session, idx, args)]:
     try:
       SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
+      msg_idx = emails[0].get_msg_info(idx.MSG_IDX)
+      Action(session, 'tag', '-Drafts +Sent =%s' % msg_idx)
     except:
       session.ui.error('Failed to send %s' % email)
       print traceback.format_exc()
@@ -455,7 +457,7 @@ def Action_Setup(session):
 
   # Create standard tags and filters
   tags = session.config.get('tag', {}).values()
-  for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Trash'):
+  for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
     if t not in tags:
       Action(session, 'addtag', t)
   if 'New' not in tags:
