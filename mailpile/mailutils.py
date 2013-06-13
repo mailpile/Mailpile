@@ -45,6 +45,9 @@ except ImportError:
 class NotEditableError(ValueError):
   pass
 
+class NoFromAddressError(ValueError):
+  pass
+
 class NoRecipientError(ValueError):
   pass
 
@@ -441,6 +444,8 @@ class Email(object):
     msg = MIMEMultipart()
     msg_date = int(time.time())
     msg_from = msg_from or idx.config.get_from_address()
+    if not msg_from:
+      raise NoFromAddressError()
     msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
     msg['Date'] = email.utils.formatdate(msg_date)
     msg['Message-Id'] = msg_id = email.utils.make_msgid('mailpile')

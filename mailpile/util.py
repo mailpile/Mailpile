@@ -124,8 +124,11 @@ def cached_open(filename, mode):
         APPEND_FD_CACHE[filename] = open(filename, 'a')
       APPEND_FD_CACHE_ORDER.append(filename)
     else:
-      APPEND_FD_CACHE_ORDER.remove(filename)
-      APPEND_FD_CACHE_ORDER.append(filename)
+      try:
+        APPEND_FD_CACHE_ORDER.remove(filename)
+        APPEND_FD_CACHE_ORDER.append(filename)
+      except (ValueError, KeyError):
+        pass
     return APPEND_FD_CACHE[filename]
   else:
     if filename in APPEND_FD_CACHE:
@@ -134,7 +137,7 @@ def cached_open(filename, mode):
           APPEND_FD_CACHE[filename].close()
           del APPEND_FD_CACHE[filename]
           APPEND_FD_CACHE_ORDER.remove(filename)
-        except ValueError, KeyError:
+        except (ValueError, KeyError):
           pass
       else:
         try:

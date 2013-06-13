@@ -4,7 +4,7 @@ import os.path
 import traceback
 
 import mailpile.util
-from mailpile.mailutils import Email, NotEditableError, PrepareMail, SendMail
+from mailpile.mailutils import Email, NotEditableError, NoFromAddressError, PrepareMail, SendMail
 from mailpile.search import MailIndex, PostingList, GlobalPostingList
 from mailpile.util import *
 
@@ -24,8 +24,8 @@ COMMANDS = {
   'F:': ('filter=',  'options',       'Add/edit/delete auto-tagging rules', 56),
   'h':  ('help',     '',              'Print help on how to use mailpile',   0),
   'L':  ('load',     '',              'Load the metadata index',            63),
-  'm':  ('mail',     'msg [email]',   'Mail/bounce a message (to someone)', 99),
-  'f':  ('forward',  '[att] m1 ...',  'Forward messages (and attachments)', 93),
+  'm:': ('mail=',    'msg [email]',   'Mail/bounce a message (to someone)', 99),
+  'f:': ('forward=', '[att] m1 ...',  'Forward messages (and attachments)', 93),
   'n':  ('next',     '',              'Display next page of results',       81),
   'o:': ('order=',   '[rev-]what',   ('Sort by: date, from, subject, '
                                       'random or index'),                   83),
@@ -324,8 +324,8 @@ def Action_Reply(session, config, args):
   refs = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
   if refs:
     trees = [m.get_message_tree() for m in refs]
-    ref_ids = [t['headers_lc']['message-id'] for t in trees]
-    ref_subjs = [t['headers_lc']['subject'] for t in trees]
+    ref_ids = [t['headers_lc'].get('message-id') for t in trees]
+    ref_subjs = [t['headers_lc'].get('subject') for t in trees]
     msg_to = [t['headers_lc'].get('reply-to',
                                   t['headers_lc']['from']) for t in trees]
     msg_cc = []
@@ -343,14 +343,19 @@ def Action_Reply(session, config, args):
        msg_bodies.append(text.replace('\n', '\n> '))
 
     local_id, lmbox = config.open_local_mailbox(session)
-    email = Email.Create(idx, local_id, lmbox,
-                         msg_text='\n\n'.join(msg_bodies),
-                         msg_subject=('Re: %s' % ref_subjs[-1]),
-                         msg_to=msg_to,
-                         msg_cc=[r for r in msg_cc if r],
-                         msg_references=[i for i in ref_ids if i])
-    Action(session,
-           'tag', '+Drafts =%s' % email.get_msg_info(idx.MSG_IDX))
+    try:
+      email = Email.Create(idx, local_id, lmbox,
+                           msg_text='\n\n'.join(msg_bodies),
+                           msg_subject=('Re: %s' % ref_subjs[-1]),
+                           msg_to=msg_to,
+                           msg_cc=[r for r in msg_cc if r],
+                           msg_references=[i for i in ref_ids if i])
+      Action(session,
+             'tag', '+Drafts =%s' % email.get_msg_info(idx.MSG_IDX))
+    except NoFromAddressError:
+      session.ui.warning('You must configure a From address first.')
+      session.ui.reset_marks()
+      return False
 
     if session.interactive:
       session.ui.clear()
@@ -424,7 +429,7 @@ def Action_Forward(session, config, args):
 
 def Action_Mail(session, config, args):
   bounce_to = []
-  while '@' in args[-1]:
+  while args and '@' in args[-1]:
     bounce_to.append(args.pop(-1))
 
   idx = Action_Load(session, config)
