@@ -311,6 +311,7 @@ def Action_Compose(session, config, args):
     session.ui.edit_messages(emails)
   else:
     session.ui.say('%d message(s) created as drafts' % len(emails))
+  session.ui.reset_marks()
   return True
 
 def Action_Reply(session, config, args):
@@ -357,9 +358,11 @@ def Action_Reply(session, config, args):
       session.ui.edit_messages([email])
     else:
       session.ui.say('Message created as draft')
+      session.ui.reset_marks()
       return True
   else:
     session.ui.warning('No message found')
+    session.ui.reset_marks()
     return False
 
 def Action_Forward(session, config, args):
@@ -412,9 +415,11 @@ def Action_Forward(session, config, args):
       session.ui.edit_messages([email])
     else:
       session.ui.say('Message created as draft')
+      session.ui.reset_marks()
       return True
   else:
     session.ui.warning('No message found')
+    session.ui.reset_marks()
     return False
 
 def Action_Mail(session, config, args):
@@ -434,6 +439,7 @@ def Action_Mail(session, config, args):
       session.ui.error('Failed to send %s' % email)
       print traceback.format_exc()
 
+  session.ui.reset_marks()
   return True
 
 def Action_Setup(session):

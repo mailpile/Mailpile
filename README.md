@@ -46,9 +46,13 @@ for you, but if you are importing lots of old mail, you may want to
 postpone the filter definition until after the import (see below), to
 start with a clean slate:
 
-    $ ./mp --set "from: yourmail@domain.com = Your name" \
-           --set "sendmail: default = smtp:yourmailserver:25" \
-           --setup
+    $ ./mp --set "from: yourmail@domain.com = Your name" --setup
+    ...
+
+If you do not have a local working mail server in `/usr/sbin/sendmail`,
+you will also want to configure a default outgoing SMTP server:
+
+    $ ./mp --set "sendmail: default = smtp:yourmailserver:25"
     ...
 
 

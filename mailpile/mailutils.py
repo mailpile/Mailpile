@@ -30,6 +30,8 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from smtplib import SMTP, SMTP_SSL
+
 from mailpile.util import *
 from lxml.html.clean import Cleaner
 
@@ -44,6 +46,9 @@ class NotEditableError(ValueError):
   pass
 
 class NoRecipientError(ValueError):
+  pass
+
+class InsecureSmtpError(ValueError):
   pass
 
 class NoSuchMailboxError(OSError):
@@ -109,29 +114,73 @@ def PrepareMail(email, sender=None, rcpts=None):
 
 def SendMail(session, from_to_msg_tuples):
   for frm, to, msg in from_to_msg_tuples:
-    sm_fd = None
-    sm_close = lambda: True
+    sm_write = sm_close = lambda: True
     sendmail = session.config.get_sendmail(frm, to).strip()
+    session.ui.mark('Connecting to %s' % sendmail)
     if sendmail.startswith('|'):
       cmd = sendmail[1:].strip().split()
-      print 'Running: %s' % cmd
       proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-      sm_fd = proc.stdin
+      sm_write = proc.stdin.write
       sm_close = proc.stdin.close
       # FIXME: Update session UI with progress info
 
-    elif sendmail.startswith('smtp:'):
-      host, port = smtp.rsplit(':', 1)
-      # FIXME: Update session UI with progress info
-      # FIXME: Connect to remote SMTP server, have a chat...
-      pass
+    elif (sendmail.startswith('smtp:') or
+          sendmail.startswith('smtpssl:') or
+          sendmail.startswith('smtptls:')):
+      host, port = sendmail.split(':', 1)[1].rsplit(':', 1)
+      smtp_ssl = sendmail.startswith('smtpssl')
+      if '@' in host:
+        userpass, host = host.rsplit('@', 1)
+        user, pwd = userpass.split(':', 1)
+      else:
+        user = pwd = None
+
+      server = smtp_ssl and SMTP_SSL() or SMTP()
+      server.connect(host, int(port))
+      server.ehlo()
+      if not smtp_ssl:
+        # We always try to enable TLS, even if the user just requested
+        # plain-text smtp.  But we only throw errors if the user asked
+        # for encryption.
+        try:
+          server.starttls()
+          server.ehlo()
+        except:
+          if sendmail.startswith('smtptls'):
+            raise InsecureSmtpError()
+      if user and pwd:
+        server.login(user, pwd)
+
+      server.mail(frm)
+      for rcpt in to:
+        server.rcpt(rcpt)
+      server.docmd('DATA')
+
+      def sender(data):
+        for line in data.splitlines(1):
+          if line.startswith('.'):
+            server.send('.')
+          server.send(line)
+
+      def closer():
+        server.send('\r\n.\r\n')
+        server.quit()
+
+      sm_write = sender
+      sm_close = closer
     else:
-      pass # FIXME: Complain!
+      raise Exception('Invalid sendmail: %s' % sendmail)
 
-    # FIXME: Update session UI with progress info
-
-    sm_fd.write(str(msg))
+    session.ui.mark('Preparing message...')
+    string = str(msg)
+    total = len(string)
+    while string:
+      sm_write(string[:65536])
+      string = string[65536:]
+      session.ui.mark(('Sending message... (%d%%)'
+                       ) % (100 * (total-len(string))/total))
     sm_close()
+    session.ui.mark('Message sent, %d bytes' % total)
 
 
 MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',

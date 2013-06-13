@@ -48,7 +48,7 @@ from mailpile.search import *
 from mailpile.ui import *
 from mailpile.util import *
 
-SENDMAIL = '/usr/sbin/sendmail -i %(rcpt)s'
+DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 
 
 ##[ Specialized threads ]######################################################
@@ -353,8 +353,9 @@ class ConfigManager(dict):
     return None
 
   def get_sendmail(self, sender='default', rcpts='-t'):
+    global DEFAULT_SENDMAIL
     sm = self.get('sendmail', {})
-    return sm.get(sender, sm.get('default', SENDMAIL)) % {
+    return sm.get(sender, sm.get('default', DEFAULT_SENDMAIL)) % {
       'rcpt': ','.join(rcpts)
     }
 
