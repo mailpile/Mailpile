@@ -100,50 +100,53 @@ def gpg_open(filename, recipient, mode):
 APPEND_FD_CACHE = {}
 APPEND_FD_CACHE_SIZE = 500
 APPEND_FD_CACHE_ORDER = []
-def flush_append_cache(ratio=1, count=None):
-  drop = count or int(ratio*len(APPEND_FD_CACHE_ORDER))
-  for fn in APPEND_FD_CACHE_ORDER[:drop]:
-    try:
-      APPEND_FD_CACHE[fn].close()
-      del APPEND_FD_CACHE[fn]
-    except KeyError:
-      pass
-  APPEND_FD_CACHE_ORDER[:drop] = []
+APPEND_FD_CACHE_LOCK = threading.Lock()
+def flush_append_cache(ratio=1, count=None, lock=True):
+  try:
+    if lock: APPEND_FD_CACHE_LOCK.acquire()
+    drop = count or int(ratio*len(APPEND_FD_CACHE_ORDER))
+    for fn in APPEND_FD_CACHE_ORDER[:drop]:
+      try:
+        APPEND_FD_CACHE[fn].close()
+        del APPEND_FD_CACHE[fn]
+      except KeyError:
+        pass
+    APPEND_FD_CACHE_ORDER[:drop] = []
+  finally:
+    if lock: APPEND_FD_CACHE_LOCK.release()
 
 def cached_open(filename, mode):
-  # FIXME: This is not thread safe at all!
-  if mode == 'a':
-    if filename not in APPEND_FD_CACHE:
-      if len(APPEND_FD_CACHE) > APPEND_FD_CACHE_SIZE:
-        flush_append_cache(count=1)
-      try:
-        APPEND_FD_CACHE[filename] = open(filename, 'a')
-      except (IOError, OSError):
-        # Too many open files?  Close a bunch and try again.
-        flush_append_cache(ratio=0.3)
-        APPEND_FD_CACHE[filename] = open(filename, 'a')
-      APPEND_FD_CACHE_ORDER.append(filename)
-    else:
-      try:
+  try:
+    APPEND_FD_CACHE_LOCK.acquire()
+    if mode == 'a':
+      fd = None
+      if filename in APPEND_FD_CACHE:
         APPEND_FD_CACHE_ORDER.remove(filename)
-        APPEND_FD_CACHE_ORDER.append(filename)
-      except (ValueError, KeyError):
-        pass
-    return APPEND_FD_CACHE[filename]
-  else:
-    if filename in APPEND_FD_CACHE:
-      if 'w' in mode or mode == 'r+':
+        fd = APPEND_FD_CACHE[filename]
+      if not fd or fd.closed:
+        if len(APPEND_FD_CACHE) > APPEND_FD_CACHE_SIZE:
+          flush_append_cache(count=1, lock=False)
         try:
-          APPEND_FD_CACHE[filename].close()
-          del APPEND_FD_CACHE[filename]
-          APPEND_FD_CACHE_ORDER.remove(filename)
-        except (ValueError, KeyError):
-          pass
-      else:
+          fd = APPEND_FD_CACHE[filename] = open(filename, 'a')
+        except (IOError, OSError):
+          # Too many open files?  Close a bunch and try again.
+          flush_append_cache(ratio=0.3, lock=False)
+          fd = APPEND_FD_CACHE[filename] = open(filename, 'a')
+      APPEND_FD_CACHE_ORDER.append(filename)
+      return fd
+    else:
+      if filename in APPEND_FD_CACHE:
+        fd = APPEND_FD_CACHE[filename]
         try:
-          APPEND_FD_CACHE[filename].flush()
-        except ValueError:
+          if 'w' in mode or '+' in mode:
+            del APPEND_FD_CACHE[filename]
+            APPEND_FD_CACHE_ORDER.remove(filename)
+            fd.close()
+          else:
+            fd.flush()
+        except (ValueError, IOError):
           pass
-    return open(filename, mode)
-
+      return open(filename, mode)
+  finally:
+    APPEND_FD_CACHE_LOCK.release()
 
