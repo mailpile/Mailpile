@@ -194,6 +194,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         msg_idx = parts[1]
         if parts[3] == '':
           cmd = ' '.join(['view', msg_idx])
+        elif parts[3] == 'message.eml':
+          cmd = ' '.join(['view', 'raw', msg_idx])
         elif parts[3] in ('message.xml', 'message.json'):
           # FIXME: send message tree as XML or JSON
           pass
