@@ -393,6 +393,16 @@ class RawHttpResponder:
     raise SuppressHtmlOutput()
 
 
+class JsonUI(TextUI):
+  def __init__(self, request):
+    TextUI.__init__(self)
+    self.buffered_json = []
+    self.request = request
+
+  def clear(self):
+    self.buffered_json = []
+
+
 class HtmlUI(TextUI):
 
   WIDTH = 110
