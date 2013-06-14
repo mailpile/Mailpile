@@ -509,33 +509,13 @@ class MailIndex(object):
           # message.  This should be a better-than-nothing guess.
           msg_date += 1
 
-        msg_conv = None
-        refs = set((self.hdr(msg, 'references')+' '+self.hdr(msg, 'in-reply-to')
-                    ).replace(',', ' ').strip().split())
-        for ref_id in [b64c(sha1b64(r)) for r in refs]:
-          try:
-            # Get conversation ID ...
-            ref_mid = self.MSGIDS[ref_id]
-            msg_conv = self.get_msg_by_idx(ref_mid)[self.MSG_CONV_ID]
-            # Update root of conversation thread
-            parent = self.get_msg_by_idx(int(msg_conv, 36))
-            parent[self.MSG_REPLIES] += '%s,' % msg_mid
-            self.set_msg_by_idx(int(msg_conv, 36), parent)
-            break
-          except (KeyError, ValueError, IndexError):
-            pass
-        if not msg_conv:
-          # FIXME: If subject implies this is a reply, scan back a couple
-          #        hundred messages for similar subjects - but not infinitely,
-          #        conversations don't last forever.
-          msg_conv = msg_mid
-
         keywords = self.index_message(session, msg_mid, msg_id, msg, msg_date,
                                       mailbox=idx, compact=False,
                                       filter_hooks=[self.filter_keywords])
         tags = [k.split(':')[0] for k in keywords if k.endswith(':tag')]
 
-        self.set_msg_by_idx(len(self.INDEX),
+        msg_idx = len(self.INDEX)
+        self.set_msg_by_idx(msg_idx,
                             [msg_mid,                   # Our index ID
                              msg_ptr,                   # Location on disk
                              '',                        # UNUSED
@@ -545,7 +525,9 @@ class MailIndex(object):
                              self.hdr(msg, 'subject'),  # Subject
                              ','.join(tags),            # Initial tags
                              '',                        # No replies for now
-                             msg_conv])                 # Conversation ID
+                             ''])                       # Conversation ID
+        self.set_conversation_ids(msg_mid, msg)
+
         added += 1
         if (added % 1000) == 0:
           GlobalPostingList.Optimize(session, self, quick=True)
@@ -555,6 +537,59 @@ class MailIndex(object):
       mbox.save(session)
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, mailbox_fn))
     return added
+
+  def set_conversation_ids(self, msg_mid, msg):
+    msg_conv = None
+    refs = set((self.hdr(msg, 'references')+' '+self.hdr(msg, 'in-reply-to')
+                ).replace(',', ' ').strip().split())
+    for ref_id in [b64c(sha1b64(r)) for r in refs]:
+      try:
+        # Get conversation ID ...
+        ref_mid = self.MSGIDS[ref_id]
+        msg_conv = self.get_msg_by_idx(ref_mid)[self.MSG_CONV_ID]
+        # Update root of conversation thread
+        parent = self.get_msg_by_idx(int(msg_conv, 36))
+        replies = parent[self.MSG_REPLIES][:-1].split(',')
+        if msg_mid not in replies:
+          replies.append(msg_mid)
+        parent[self.MSG_REPLIES] = ','.join(replies)+','
+        self.set_msg_by_idx(int(msg_conv, 36), parent)
+        break
+      except (KeyError, ValueError, IndexError):
+        pass
+
+    msg_idx = int(msg_mid, 36)
+    msg_info = self.get_msg_by_idx(msg_idx)
+
+    if not msg_conv:
+      # Can we do plain GMail style subject-based threading?
+      # FIXME: Is this too aggressive? Make configurable?
+      subj = msg_info[self.MSG_SUBJECT].lower().replace('re: ', '')
+      date = long(msg_info[self.MSG_DATE], 36)
+      for midx in reversed(range(max(0, msg_idx - 250), msg_idx)):
+        try:
+          m_info = self.get_msg_by_idx(midx)
+          if m_info[self.MSG_SUBJECT].lower().replace('re: ', '') == subj:
+            msg_conv = m_info[self.MSG_CONV_ID]
+            parent = self.get_msg_by_idx(int(msg_conv, 36))
+            replies = parent[self.MSG_REPLIES][:-1].split(',')
+            if len(replies) < 100:
+              if msg_mid not in replies:
+                replies.append(msg_mid)
+              parent[self.MSG_REPLIES] = ','.join(replies)+','
+              self.set_msg_by_idx(int(msg_conv, 36), parent)
+              break
+          if date - long(m_info[self.MSG_DATE], 36) > 5*24*3600:
+            break
+        except (KeyError, ValueError, IndexError):
+          pass
+
+    if not msg_conv:
+      # OK, we are our own conversation root.
+      msg_conv = msg_mid
+
+    msg_info[self.MSG_CONV_ID] = msg_conv
+    self.set_msg_by_idx(msg_idx, msg_info)
 
   def add_new_msg(self, msg_ptr, msg_id, msg_date, msg_from, msg_subject, tags):
     msg_idx = len(self.INDEX)

@@ -471,6 +471,7 @@ class Email(object):
     msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbx_id, msg_key),
                                         msg_id,
                                         msg_date, msg_from, msg_subj, [])
+    idx.set_conversation_ids(msg_info[idx.MSG_IDX], msg)
     return cls(idx, msg_idx)
 
   def is_editable(self):
@@ -603,6 +604,7 @@ class Email(object):
     msg_info[self.index.MSG_SUBJECT] = self.index.hdr(newmsg, 'subject')
     msg_info[self.index.MSG_FROM] = self.index.hdr(newmsg, 'from')
     self.index.set_msg_by_idx(self.msg_idx, msg_info)
+    self.index.set_conversation_ids(msg_info[self.index.MSG_IDX], newmsg)
 
     # FIXME: What to do about the search index?  Update?
     return self
