@@ -7,8 +7,8 @@ for awesome personal mail clients, including webmail.
 
 **WARNING:**  Mailpile is still experimental and isn't actually very useful
 yet.  It'll tell you that you have mail matching a given search and let
-you sort it, browse threads and read messages... but it still won't help
-you communicate, as there is no way to compose new messages.  If you just
+you sort it, browse threads and read messages... but the user interface and
+message composing/sending functionality is still very immature.  If you just
 want a useful tool aren't interested in hacking on the code, you should
 probably check back later or [follow @HerraBRE on
 Twitter](https://twitter.com/HerraBRE) and watch for updates.
@@ -50,10 +50,14 @@ start with a clean slate:
     ...
 
 If you do not have a local working mail server in `/usr/sbin/sendmail`,
-you will also want to configure a default outgoing SMTP server:
+you may also want to configure a default outgoing SMTP server:
 
     $ ./mp --set "sendmail: default = smtp:yourmailserver:25"
     ...
+
+Mailpile does not currently access IMAP or POP3 servers directly, it
+relies on other tools (such as `fetchmail`) to take care of downloading
+new mail.
 
 
 ## Indexing your mail ##
