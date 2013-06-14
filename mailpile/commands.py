@@ -169,7 +169,7 @@ def Action_Filter_Add(session, config, flags, args):
     session.ui.reset_marks()
     def save_filter():
       config.save()
-      config.index.save_changes()
+      if config.index: config.index.save_changes()
     config.slow_worker.add_task(None, 'Save filter', save_filter)
   else:
     raise Exception('That failed, not sure why?!')
