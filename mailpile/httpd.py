@@ -77,8 +77,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  tr.message td .message .pgpbeginsigned input:hover {background: #eef;}
  tr.message td .message .pgpsignedtext {padding: 3px; margin: -3px; background: #ccf;}
  tr.message td .message .pgpsignature {margin: 3px -3px 3px -3px; font-size: 0.8em; color: #ccf; background: #779;}
- tr.message td .message .pgpbeginverified {text-align: center; margin: -3px -3px 3px -3px; font-size: 0.8em; color: #cfc; background: #797;}
- tr.message td .message .pgpverifiedtext {padding: 3px; margin: -3px; background: #cfc;}
+ tr.message td .message .pgpbeginverified {margin: -3px -3px 3px -3px; padding-left: 1em; font-size: 0.8em; color: #cfc; background: #797;}
+ tr.message td .message .pgpverifiedtext {padding: 3px; margin: -3px; background: #bfd;}
+ tr.message td .message .pgpsecuretext {padding: 3px; margin: -3px; background: #cfc;}
  tr.message td .message .pgpverification {display: none;}
  tr.odd {background: #ffffff;}
  tr.even {background: #eeeeee;}

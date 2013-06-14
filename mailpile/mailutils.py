@@ -870,7 +870,7 @@ class Email(object):
     'pgpsignedtext': 'pgpverifiedtext',
     'pgpsignature': 'pgpverification',
     'pgpbegin': 'pgpbeginverified',
-    'pgptext': 'pgpverifiedtext',
+    'pgptext': 'pgpsecuretext',
     'pgpend': 'pgpverification',
   }
   def evaluate_pgp(self, tree, check_sigs=True, decrypt=False):

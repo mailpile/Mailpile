@@ -341,6 +341,7 @@ def Action_Reply(session, config, args):
                ''.join([p['data'] for p in t['text_parts']
                         if p['type'] in ('text', 'quote',
                                          'pgpsignedtext',
+                                         'pgpsecuretext',
                                          'pgpverifiedtext')]))
        msg_bodies.append(text.replace('\n', '\n> '))
 
@@ -396,6 +397,7 @@ def Action_Forward(session, config, args):
        text += ''.join([p['data'] for p in t['text_parts']
                        if p['type'] in ('text', 'quote',
                                         'pgpsignedtext',
+                                         'pgpsecuretext',
                                         'pgpverifiedtext')])
        msg_bodies.append(text)
        if with_atts:
