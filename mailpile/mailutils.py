@@ -896,7 +896,7 @@ class Email(object):
               result += gpg.handles[fh].read()
               gpg.handles[fh].close()
             gpg.wait()
-            pgpdata[0]['data'] = result.decode('utf-8')
+            pgpdata[0]['data'] = result.decode('utf-8')+'\n'
             for p in pgpdata:
               p['type'] = self.PGP_OK.get(p['type'], p['type'])
           except IOError:
@@ -921,7 +921,7 @@ class Email(object):
               results[fh] = gpg.handles[fh].read()
               gpg.handles[fh].close()
             gpg.wait()
-            pgpdata[0]['data'] = results['stderr'].decode('utf-8')
+            pgpdata[0]['data'] = results['stderr'].decode('utf-8')+'\n'
             pgpdata[1]['data'] = results['stdout'].decode('utf-8')
             for p in pgpdata:
               p['type'] = self.PGP_OK.get(p['type'], p['type'])

@@ -347,10 +347,14 @@ class MailIndex(object):
       try:
         line = line.strip()
         if line and not line.startswith('#'):
-          pos = int(line.split('\t', 1)[0], 36)
+          pos, ptrs, junk, msgid, rest = line.split('\t', 4)
+          pos = int(pos, 36)
           while len(self.INDEX) < pos+1:
             self.INDEX.append('')
           self.INDEX[pos] = line
+          self.MSGIDS[msgid] = pos
+          for msg_ptr in ptrs:
+            self.PTRS[msg_ptr] = pos
       except ValueError:
         pass
     if session: session.ui.mark('Loading metadata index...')
@@ -444,7 +448,11 @@ class MailIndex(object):
   def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
     try:
       mbox = mailbox_opener(session, idx)
-      session.ui.mark('%s: Checking: %s' % (idx, mailbox_fn))
+      if mbox.editable:
+        session.ui.mark('%s: Skipped: %s' % (idx, mailbox_fn))
+        return 0
+      else:
+        session.ui.mark('%s: Checking: %s' % (idx, mailbox_fn))
     except (IOError, OSError, NoSuchMailboxError):
       session.ui.mark('%s: Error opening: %s' % (idx, mailbox_fn))
       return 0
