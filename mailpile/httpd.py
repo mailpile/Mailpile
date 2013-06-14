@@ -235,10 +235,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     except: restype = "html"
 
     if restype == "json":
-      print "JSON!"
       session.ui = JsonUI(self)
     else:
-      print "HTML!"
       session.ui = HtmlUI(self)
 
     session.ui.set_postdata(post_data)
@@ -250,7 +248,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       cmd = self.parse_pqp(path, query_data, post_data,
                            self.server.session.config)
       if cmd:
-        print "Running command %s" % cmd
         for arg in cmd.split(' /'):
           args = arg.strip().split()
           Action(session, args[0], ' '.join(args[1:]))
