@@ -305,8 +305,14 @@ def Action_Compose(session, config, args):
   else:
     local_id, lmbox = config.open_local_mailbox(session)
     emails = [Email.Create(idx, local_id, lmbox)]
-    Action(session,
-           'tag', '+Drafts =%s' % emails[0].get_msg_info(idx.MSG_IDX))
+    try:
+      idx.add_tag(session, session.config.get_tag_id('Drafts'),
+                  msg_idxs=[int(e.get_msg_info(idx.MSG_IDX), 36) for e in emails],
+                  conversation=False)
+    except (TypeError, ValueError, IndexError):
+      if session.config.get('debug'):
+        session.ui.say(traceback.format_exc())
+
   if session.interactive:
     session.ui.clear()
     session.ui.reset_marks()
@@ -353,8 +359,14 @@ def Action_Reply(session, config, args):
                            msg_to=msg_to,
                            msg_cc=[r for r in msg_cc if r],
                            msg_references=[i for i in ref_ids if i])
-      Action(session,
-             'tag', '+Drafts =%s' % email.get_msg_info(idx.MSG_IDX))
+      try:
+        idx.add_tag(session, session.config.get_tag_id('Drafts'),
+                    msg_idxs=[int(email.get_msg_info(idx.MSG_IDX), 36)],
+                    conversation=False)
+      except (TypeError, ValueError, IndexError):
+        if session.config.get('debug'):
+          session.ui.say(traceback.format_exc())
+
     except NoFromAddressError:
       session.ui.warning('You must configure a From address first.')
       session.ui.reset_marks()
@@ -415,8 +427,13 @@ def Action_Forward(session, config, args):
         msg.attach(att)
       email.update_from_msg(msg)
 
-    Action(session,
-           'tag', '+Drafts =%s' % email.get_msg_info(idx.MSG_IDX))
+    try:
+      idx.add_tag(session, session.config.get_tag_id('Drafts'),
+                  msg_idxs=[int(email.get_msg_info(idx.MSG_IDX), 36)],
+                  conversation=False)
+    except (TypeError, ValueError, IndexError):
+      if session.config.get('debug'):
+        session.ui.say(traceback.format_exc())
 
     if session.interactive:
       session.ui.clear()
