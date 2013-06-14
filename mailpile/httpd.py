@@ -223,73 +223,45 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     query_data = parse_qs(query)
 
     session = Session(self.server.session.config)
-    if path.endswith(".json"):
+
+    if path == "/favicon.ico": path = "/_/static/favicon.ico"
+    if path.startswith("/_/static/"):
+      self.send_file(path.split("/_/static/")[1])
+      return
+
+    try:
+	path, restype = path.split(".")
+	path += "/"
+    except: restype = "html"
+
+    if restype == "json":
       print "JSON!"
       session.ui = JsonUI(self)
-      session.ui.render()
     else:
       print "HTML!"
       session.ui = HtmlUI(self)
 
-    index = session.config.get_index(session)
-    try:
-      if path == "/favicon.ico": path = "/_/static/favicon.ico"
-      if path.startswith("/_/static/"):
-        self.send_file(path.split("/_/static/")[1])
-        return
+    session.ui.set_postdata(post_data)
+    session.ui.set_querydata(query_data)
 
+    index = session.config.get_index(session)
+    usageerror = False
+    try:
       cmd = self.parse_pqp(path, query_data, post_data,
                            self.server.session.config)
       if cmd:
+        print "Running command %s" % cmd
         for arg in cmd.split(' /'):
           args = arg.strip().split()
           Action(session, args[0], ' '.join(args[1:]))
 
-        body = session.ui.render_html()
-        title = 'The biggest pile of mail EVAR!'
-      else:
-        body = ''
-        title = None
     except UsageError, e:
-      body = 'Oops: %s' % e
-      title = 'Ouch, too much mail, urgle, *choke*'
+      usageerror = True
     except SuppressHtmlOutput:
       return
 
-    sidebar = ['<ul class="tag_list">']
-    tids = index.config.get('tag', {}).keys()
-    special = ['new', 'inbox', 'sent', 'drafts', 'spam', 'trash']
-    def tord(k):
-      tname = index.config['tag'][k]
-      if tname.lower() in special:
-        return '00000-%s-%s' % (special.index(tname.lower()), tname)
-      return tname
-    tids.sort(key=tord)
-    for tid in tids:
-      checked = ('tag:%s' % tid) in session.searched and ' checked' or ''
-      checked1 = checked and ' checked="checked"' or ''
-      tag_name = session.config.get('tag', {}).get(tid)
-      tag_new = index.STATS.get(tid, [0,0])[1]
-      sidebar.append((' <li id="tag_%s" class="%s">'
-                      '<input type="checkbox" name="tag_%s"%s />'
-                      ' <a href="/%s/">%s</a>'
-                      ' <span class="tag_new %s">(<b>%s</b>)</span>'
-                      '</li>') % (tid, checked, tid, checked1,
-                                  tag_name, tag_name,
-                                  tag_new and 'some' or 'none', tag_new))
-    sidebar.append('</ul>')
-    variables = {
-      'lastq': post_data.get('lq', query_data.get('q',
-                          [path != '/' and path[1] != '=' and path[:-1] or ''])
-                             )[0].strip().decode('utf-8'),
-      'csrf': self.csrf(),
-      'path': path
-    }
-    self.send_full_response(self.render_page(body=body,
-                                             title=title,
-                                             sidebar='\n'.join(sidebar),
-                                             variables=variables),
-                            suppress_body=suppress_body)
+    session.ui.render()
+
 
   def log_message(self, fmt, *args):
     self.server.session.ui.notify(('HTTPD: '+fmt) % (args))

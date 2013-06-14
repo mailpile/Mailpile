@@ -39,7 +39,7 @@ Designing the URL space for the web UI is important.  Some ideas:
     http://mailpile/_/command?args=args
     http://mailpile/_/command.xml?args=args
     http://mailpile/_/command.json?args=args
-
+    http://mailpile/_/static/filename		# Serve static file
 
 ## Power user features
 
