@@ -105,7 +105,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     self.log_request(code, message and len(message) or '-')
     self.send_http_response(code, msg)
-    
+ 
     if code == 401:
       self.send_header('WWW-Authenticate',
                        'Basic realm=MP%d' % (time.time()/3600))
