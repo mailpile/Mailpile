@@ -443,9 +443,56 @@ class JsonUI(HttpUI):
 
     return (start, count)
 
-  def display_messages(self, emails, raw=False, sep=None, fd=None, context=True):
-    # self.say("Message!")
-    pass
+  def display_messages(self, emails,
+                       raw=False, sep='', fd=sys.stdout, context=True):
+    for email in emails:
+      # This doesn't do e-mail contexts...
+      tree = email.get_message_tree()
+      email.evaluate_pgp(tree, decrypt=True)
+      self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
+
+  def display_message(self, email, tree, raw=False, sep='', fd=None):
+    print "Displaying a message..."
+    if raw:
+      for line in email.get_file().readlines():
+        try:
+          line = line.decode('utf-8')
+        except UnicodeDecodeError:
+          try:
+            line = line.decode('iso-8859-1')
+          except:
+            line = '(MAILPILE DECODING FAILED)\n'
+        self.say(line, newline='', fd=fd)
+    else:
+      self.buffered_json["text_parts"] = []
+      self.buffered_json["html_parts"] = []
+      self.buffered_json["attachments"] = []
+      self.buffered_json["headers"] = {}
+      for hdr in ('From', 'Subject', 'To', 'Cc'):
+        value = email.get(hdr, '')
+        if value:
+          self.buffered_json["headers"][hdr] = value
+
+      if tree["text_parts"]:
+        last = '<bogus>'
+        for part in tree['text_parts']:
+          if part['data'] != last:
+            self.buffered_json["text_parts"].append(part)
+            last = part['data']
+      
+      if tree["html_parts"]:
+        last = '<bogus>'
+        for part in tree['html_parts']:
+          if part['data'] != last:
+            self.buffered_json["text_parts"].append(part['data'])
+            last = part['data']
+
+      if tree['attachments']:
+        for att in tree['attachments']:
+          attachment = {"url": "./att:%(count)s" % att, "filename": "%(filename)s" % att, 
+                        "mimetype": "%(mimetype)s" % att, "size": "%(length)s" % att}
+          self.buffered_json["attachments"].append(attachment)
+
 
   def render(self):
     try:
