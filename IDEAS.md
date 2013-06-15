@@ -40,6 +40,10 @@ Designing the URL space for the web UI is important.  Some ideas:
     http://mailpile/_/command.xml?args=args
     http://mailpile/_/command.json?args=args
 
+### Static content, skins, images, icons, fonts etc.
+
+    http://mailpile/_/static/...
+
 
 ## Power user features
 
