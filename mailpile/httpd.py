@@ -230,8 +230,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       return
 
     try:
-	path, restype = path.split(".")
-	path += "/"
+      path, restype = path.split(".")
+      path += "/"
     except: restype = "html"
 
     if restype == "json":

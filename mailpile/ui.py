@@ -2,6 +2,7 @@
 #
 # Basic user-interface stuff
 #
+###############################################################################
 import datetime
 import os
 import random
@@ -406,14 +407,14 @@ class HttpUI(TextUI):
 class JsonUI(HttpUI):
   def __init__(self, request):
     HttpUI.__init__(self, request)
-    self.buffered_json = []
+    self.buffered_json = {"chatter": [], "results": []}
     self.request = request
 
   def clear(self):
-    self.buffered_json = []
+    self.buffered_json = {"chatter": [], "results": []}
 
   def say(self, text=[], newline=None, fd=None):
-    self.buffered_json.append(text)
+    self.buffered_json["chatter"].append(text)
 
   def fmt(self, l):
     # return l[1].replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
@@ -422,7 +423,6 @@ class JsonUI(HttpUI):
   def display_results(self, idx, results, terms,
                             start=0, end=0, num=0, expand=None,
                             fd=None):
-    print "Display results.."
     if not results: return (0, 0)
 
     num = num or 50
@@ -439,13 +439,60 @@ class JsonUI(HttpUI):
                          for t in idx.get_tags(msg_info=msg_info)
                          if 'tag:%s' % t not in terms])
 
-      self.buffered_json.append({"msg_info": msg_info, "msg_tags": msg_tags})
+      self.buffered_json["results"].append({"msg_info": msg_info, "msg_tags": msg_tags})
 
     return (start, count)
 
-  def display_messages(self, emails, raw=False, sep=None, fd=None, context=True):
-    print "Display messages.."
-    self.say("Message!")
+  def display_messages(self, emails,
+                       raw=False, sep='', fd=sys.stdout, context=True):
+    for email in emails:
+      # This doesn't do e-mail contexts...
+      tree = email.get_message_tree()
+      email.evaluate_pgp(tree, decrypt=True)
+      self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
+
+  def display_message(self, email, tree, raw=False, sep='', fd=None):
+    print "Displaying a message..."
+    if raw:
+      for line in email.get_file().readlines():
+        try:
+          line = line.decode('utf-8')
+        except UnicodeDecodeError:
+          try:
+            line = line.decode('iso-8859-1')
+          except:
+            line = '(MAILPILE DECODING FAILED)\n'
+        self.say(line, newline='', fd=fd)
+    else:
+      self.buffered_json["text_parts"] = []
+      self.buffered_json["html_parts"] = []
+      self.buffered_json["attachments"] = []
+      self.buffered_json["headers"] = {}
+      for hdr in ('From', 'Subject', 'To', 'Cc'):
+        value = email.get(hdr, '')
+        if value:
+          self.buffered_json["headers"][hdr] = value
+
+      if tree["text_parts"]:
+        last = '<bogus>'
+        for part in tree['text_parts']:
+          if part['data'] != last:
+            self.buffered_json["text_parts"].append(part)
+            last = part['data']
+      
+      if tree["html_parts"]:
+        last = '<bogus>'
+        for part in tree['html_parts']:
+          if part['data'] != last:
+            self.buffered_json["text_parts"].append(part['data'])
+            last = part['data']
+
+      if tree['attachments']:
+        for att in tree['attachments']:
+          attachment = {"url": "./att:%(count)s" % att, "filename": "%(filename)s" % att, 
+                        "mimetype": "%(mimetype)s" % att, "size": "%(length)s" % att}
+          self.buffered_json["attachments"].append(attachment)
+
 
   def render(self):
     try:
@@ -455,7 +502,6 @@ class JsonUI(HttpUI):
 
     session = Session(self.request.server.session.config)
     index = session.config.get_index(session)
-    print "Rendering"
     resp = self.buffered_json
     message = json.dumps(resp)
 
