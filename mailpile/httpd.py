@@ -10,14 +10,14 @@ from urlparse import parse_qs, urlparse
 
 import mailpile.util
 from mailpile.util import *
-from mailpile.ui import Session, HtmlUI, SuppressHtmlOutput
+from mailpile.ui import Session, HtmlUI, JsonUI, SuppressHtmlOutput
 from mailpile.commands import Action
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
 
 DEFAULT_PORT = 33411
-
+STATIC_PATH = "static/"
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
@@ -25,73 +25,23 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+ <script src="/_/static/js/jquery.js"></script>
  <script type='text/javascript'>
   function focus(eid) {var e = document.getElementById(eid);e.focus();
    if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
    else {e.value = e.value;}}
  </script>"""
-  PAGE_LANDING_CSS = """\
- body {text-align: center; background: #f0fff0; color: #000; font-size: 2em; font-family: monospace; padding-top: 50px;}
- #heading a {text-decoration: none; color: #000;}
- #footer {text-align: center; font-size: 0.5em; margin-top: 15px;}
- #sidebar {display: none;}
- #search input {width: 170px;}"""
-  PAGE_CONTENT_CSS = """\
- body {background: #f0fff0; font-family: monospace; color: #000;}
- body, div, form, h1, #header {padding: 0; margin: 0;}
- pre {display: inline-block; margin: 0 5px; padding: 0 5px;}
- #heading, #pile {padding: 5px 10px;}
- #heading {font-size: 3.75em; padding-left: 15px; padding-top: 15px; display: inline-block;}
- #heading a {text-decoration: none; color: #000;}
- #pile {z-index: -3; color: #666; font-size: 0.6em; position: absolute; top: 0; left: 0; text-align: center;}
- #search {display: inline-block;}
- #content {width: 80%; float: right;}
- #sidebar {width: 19%; float: left; overflow: hidden;}
- #sidebar .checked {font-weight: bold;}
- #sidebar ul.tag_list {list-style-type: none; white-space: nowrap; padding-left: 3em;}
- #sidebar .none {display: none;}
- #sidebar ul.tag_list input {position: absolute; margin: 0; margin-left: -1.5em;}
- #sidebar #sidebar_btns {display: inline-block; float: right;}
- #sidebar #sidebar_btns input {font-size: 0.8em; padding: 1px 2px; background: #d0dddd0; border: 1px solid #707770;}
- #sidebar #sidebar_btns input:hover {background: #e0eee0;}
- #footer {text-align: center; font-size: 0.8em; margin-top: 15px; clear: both;}
- p.rnav {margin: 4px 10px; text-align: center;}
- table.results {table-layout: fixed; border: 0; border-collapse: collapse; width: 100%; font-size: 13px; font-family: Helvetica,Arial;}
- tr.result td {overflow: hidden; white-space: nowrap; padding: 1px 3px; margin: 0;}
- tr.message td .plain {white-space: pre-wrap; font-family: monospace;}
- tr.message td .html {white-space: normal; overflow: auto;}
- tr.result td a {color: #000; text-decoration: none;}
- tr.result td a:hover {text-decoration: underline;}
- tr.result td.date a {color: #777;}
- tr.t_new {font-weight: bold;}
- #rnavtop {position: absolute; top: 0; right: 0;}
- td.date {width: 5em; font-size: 11px; text-align: center;}
- td.checkbox {width: 1.5em; text-align: center;}
- td.from {width: 25%; font-size: 12px;}
- td.tags {width: 12%; font-size: 11px; text-align: center;}
- tr.result td.tags a {color: #777;}
- tr.message td .headers {margin-top: 0px; font-size: 1.1em;}
- tr.message td .message .quote {color: #777;}
- tr.message td .message .pgpbeginsigned {margin: -3px -3px 3px -3px; font-size: 0.8em; color: #ccf; background: #779;}
- tr.message td .message .pgpbeginsigned input {float: right; margin: 3px; font-weight: bold; padding: 1px 2px; background: #ccf; color: #446; border: 1px solid #446;}
- tr.message td .message .pgpbeginsigned input:hover {background: #eef;}
- tr.message td .message .pgpsignedtext {padding: 3px; margin: -3px; background: #ccf;}
- tr.message td .message .pgpsignature {margin: 3px -3px 3px -3px; font-size: 0.8em; color: #ccf; background: #779;}
- tr.message td .message .pgpbeginverified {margin: -3px -3px 3px -3px; padding-left: 1em; font-size: 0.8em; color: #cfc; background: #797;}
- tr.message td .message .pgpverifiedtext {padding: 3px; margin: -3px; background: #bfd;}
- tr.message td .message .pgpsecuretext {padding: 3px; margin: -3px; background: #cfc;}
- tr.message td .message .pgpverification {display: none;}
- tr.odd {background: #ffffff;}
- tr.even {background: #eeeeee;}
- #qbox {width: 400px;}"""
   PAGE_BODY = """
 </head><body onload='focus("qbox");'><div id='header'>
  <h1 id='heading'>
   <a href='/'>M<span style='font-size: 0.8em;'>AILPILE</span>!</a></h1>
- <div id='search'><form action='/'>
-  <input id='qbox' type='text' size='100' name='q' value='%(lastq)s ' />
-  <input type='hidden' name='csrf' value='%(csrf)s' />
- </form></div>
+  <div class="btnbar">
+   <a class="btn btn-primary" onclick="compose();return false;" href="/_/compose">Compose</a>
+   <div id='search'><form action='/'>
+    <input id='qbox' type='text' size='100' name='q' value='%(lastq)s ' /><input type="submit" class="btn btn-search" value=""/>
+    <input type='hidden' name='csrf' value='%(csrf)s' />
+   </form></div>
+  </div>
  <p id='pile'>to: from:<br />subject: email<br />@ to: subject: list-id:<br />envelope
   from: to sender: spam to:<br />from: search GMail @ in-reply-to: GPG bounce<br />
   subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
@@ -137,18 +87,42 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     if not suppress_body:
       self.wfile.write(message or '')
 
+  def send_file(self, filename):
+    import mimetypes
+    # Needs more checking
+    try:
+      mimetype = mimetypes.guess_type(STATIC_PATH + filename)[0] or "application/octet-stream"
+      message = open(STATIC_PATH + filename).read()
+      code, msg = 200, "OK"
+    except IOError, e:
+      if e.errno == 2:
+        code, msg = 404, "File not found"
+      elif e.errno == 13:
+        code, msg = 403, "Access denied"
+      else:
+        code, msg = 500, "Internal server error"
+      message = ""
+
+    self.log_request(code, message and len(message) or '-')
+    self.send_http_response(code, msg)
+    
+    if code == 401:
+      self.send_header('WWW-Authenticate',
+                       'Basic realm=MP%d' % (time.time()/3600))
+    self.send_header('Content-Length', len(message or ''))
+    self.send_standard_headers(header_list=[], mimetype=mimetype)
+    self.wfile.write(message or '')
+
   def csrf(self):
     ts = '%x' % int(time.time()/60)
     return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret, ts]))))
 
-  def render_page(self, body='', title=None, sidebar='', css=None,
-                        variables=None):
+  def render_page(self, body='', title=None, sidebar='', variables=None):
     title = title or 'A huge pile of mail'
     variables = variables or {'lastq': '', 'path': '', 'csrf': self.csrf()}
-    css = css or (body and self.PAGE_CONTENT_CSS or self.PAGE_LANDING_CSS)
     return '\n'.join([self.PAGE_HEAD % variables,
                       '<title>', title, '</title>',
-                      '<style type="text/css">', css, '</style>',
+                      '<link rel="stylesheet" href="/_/static/css/mailpile.css">',
                       self.PAGE_BODY % variables, body,
                       self.PAGE_SIDEBAR % variables, sidebar,
                       self.PAGE_TAIL % variables])
@@ -242,15 +216,34 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     else:
       cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
 
-    return cmd.decode('utf-8')
+    return cmd.decode('utf-8').strip()
 
   def do_GET(self, post_data={}, suppress_body=False):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     query_data = parse_qs(query)
 
     session = Session(self.server.session.config)
-    session.ui = HtmlUI(self)
+
+    if path == "/favicon.ico": path = "/_/static/favicon.ico"
+    if path.startswith("/_/static/"):
+      self.send_file(path.split("/_/static/")[1])
+      return
+
+    try:
+	path, restype = path.split(".")
+	path += "/"
+    except: restype = "html"
+
+    if restype == "json":
+      session.ui = JsonUI(self)
+    else:
+      session.ui = HtmlUI(self)
+
+    session.ui.set_postdata(post_data)
+    session.ui.set_querydata(query_data)
+
     index = session.config.get_index(session)
+    usageerror = False
     try:
       cmd = self.parse_pqp(path, query_data, post_data,
                            self.server.session.config)
@@ -258,51 +251,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         for arg in cmd.split(' /'):
           args = arg.strip().split()
           Action(session, args[0], ' '.join(args[1:]))
-        body = session.ui.render_html()
-        title = 'The biggest pile of mail EVAR!'
-      else:
-        body = ''
-        title = None
+
     except UsageError, e:
-      body = 'Oops: %s' % e
-      title = 'Ouch, too much mail, urgle, *choke*'
+      usageerror = True
     except SuppressHtmlOutput:
       return
 
-    sidebar = ['<ul class="tag_list">']
-    tids = index.config.get('tag', {}).keys()
-    special = ['new', 'inbox', 'sent', 'drafts', 'spam', 'trash']
-    def tord(k):
-      tname = index.config['tag'][k]
-      if tname.lower() in special:
-        return '00000-%s-%s' % (special.index(tname.lower()), tname)
-      return tname
-    tids.sort(key=tord)
-    for tid in tids:
-      checked = ('tag:%s' % tid) in session.searched and ' checked' or ''
-      checked1 = checked and ' checked="checked"' or ''
-      tag_name = session.config.get('tag', {}).get(tid)
-      tag_new = index.STATS.get(tid, [0,0])[1]
-      sidebar.append((' <li id="tag_%s" class="%s">'
-                      '<input type="checkbox" name="tag_%s"%s />'
-                      ' <a href="/%s/">%s</a>'
-                      ' <span class="tag_new %s">(<b>%s</b>)</span>'
-                      '</li>') % (tid, checked, tid, checked1,
-                                  tag_name, tag_name,
-                                  tag_new and 'some' or 'none', tag_new))
-    sidebar.append('</ul>')
-    variables = {
-      'lastq': post_data.get('lq', query_data.get('q',
-                          [path != '/' and path[1] != '=' and path[:-1] or ''])
-                             )[0].strip().decode('utf-8'),
-      'csrf': self.csrf(),
-      'path': path
-    }
-    self.send_full_response(self.render_page(body=body,
-                                             title=title,
-                                             sidebar='\n'.join(sidebar),
-                                             variables=variables),
-                            suppress_body=suppress_body)
+    session.ui.render()
+
 
   def log_message(self, fmt, *args):
     self.server.session.ui.notify(('HTTPD: '+fmt) % (args))
