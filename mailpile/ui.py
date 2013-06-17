@@ -2,6 +2,7 @@
 #
 # Basic user-interface stuff
 #
+###############################################################################
 import datetime
 import os
 import random
@@ -392,13 +393,129 @@ class RawHttpResponder:
   def close(self):
     raise SuppressHtmlOutput()
 
+class HttpUI(TextUI):
+  def __init__(self, request):
+    TextUI.__init__(self)
 
-class HtmlUI(TextUI):
+  def set_postdata(self, postdata):
+    self.post_data = postdata
 
+  def set_querydata(self, querydata):
+    self.query_data = querydata
+
+
+class JsonUI(HttpUI):
+  def __init__(self, request):
+    HttpUI.__init__(self, request)
+    self.buffered_json = {"chatter": [], "results": []}
+    self.request = request
+
+  def clear(self):
+    self.buffered_json = {"chatter": [], "results": []}
+
+  def say(self, text=[], newline=None, fd=None):
+    self.buffered_json["chatter"].append(text)
+
+  def fmt(self, l):
+    # return l[1].replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
+    return l
+
+  def display_results(self, idx, results, terms,
+                            start=0, end=0, num=0, expand=None,
+                            fd=None):
+    if not results: return (0, 0)
+
+    num = num or 50
+    if end: start = end - num
+    if start > len(results): start = len(results)
+    if start < 0: start = 0
+
+    count = 0
+    for mid in results[start:start+num]:
+      count += 1
+      msg_info = idx.get_msg_by_idx(mid)
+
+      msg_tags = sorted([idx.config['tag'].get(t,t)
+                         for t in idx.get_tags(msg_info=msg_info)
+                         if 'tag:%s' % t not in terms])
+
+      self.buffered_json["results"].append({"msg_info": msg_info, "msg_tags": msg_tags})
+
+    return (start, count)
+
+  def display_messages(self, emails,
+                       raw=False, sep='', fd=sys.stdout, context=True):
+    for email in emails:
+      # This doesn't do e-mail contexts...
+      tree = email.get_message_tree()
+      email.evaluate_pgp(tree, decrypt=True)
+      self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
+
+  def display_message(self, email, tree, raw=False, sep='', fd=None):
+    print "Displaying a message..."
+    if raw:
+      for line in email.get_file().readlines():
+        try:
+          line = line.decode('utf-8')
+        except UnicodeDecodeError:
+          try:
+            line = line.decode('iso-8859-1')
+          except:
+            line = '(MAILPILE DECODING FAILED)\n'
+        self.say(line, newline='', fd=fd)
+    else:
+      self.buffered_json["text_parts"] = []
+      self.buffered_json["html_parts"] = []
+      self.buffered_json["attachments"] = []
+      self.buffered_json["headers"] = {}
+      for hdr in ('From', 'Subject', 'To', 'Cc'):
+        value = email.get(hdr, '')
+        if value:
+          self.buffered_json["headers"][hdr] = value
+
+      if tree["text_parts"]:
+        last = '<bogus>'
+        for part in tree['text_parts']:
+          if part['data'] != last:
+            self.buffered_json["text_parts"].append(part)
+            last = part['data']
+      
+      if tree["html_parts"]:
+        last = '<bogus>'
+        for part in tree['html_parts']:
+          if part['data'] != last:
+            self.buffered_json["text_parts"].append(part['data'])
+            last = part['data']
+
+      if tree['attachments']:
+        for att in tree['attachments']:
+          attachment = {"url": "./att:%(count)s" % att, "filename": "%(filename)s" % att, 
+                        "mimetype": "%(mimetype)s" % att, "size": "%(length)s" % att}
+          self.buffered_json["attachments"].append(attachment)
+
+
+  def render(self):
+    try:
+      import simplejson as json
+    except:
+      import json
+
+    session = Session(self.request.server.session.config)
+    index = session.config.get_index(session)
+    resp = self.buffered_json
+    message = json.dumps(resp)
+
+    self.request.send_http_response(200, "OK")
+    self.request.send_header('Content-Length', len(message or ''))
+    self.request.send_standard_headers(header_list=[], mimetype="application/json")
+    self.request.wfile.write(message)
+
+
+class HtmlUI(HttpUI):
   WIDTH = 110
 
   def __init__(self, request):
-    TextUI.__init__(self)
+    HttpUI.__init__(self, request)
     self.buffered_html = []
     self.request = request
 
@@ -417,7 +534,47 @@ class HtmlUI(TextUI):
   def transform_text(self):
     text = [self.fmt(l) for l in self.buffered_html if l[0] != 'html']
     self.buffered_html = [l for l in self.buffered_html if l[0] == 'html']
-    self.buffered_html.append(('html', '<pre>%s</pre>' % ''.join(text)))
+    self.buffered_html.append(('html', '<pre id="chatter">%s</pre>' % ''.join(text)))
+
+  def render(self, path="/"):
+    session = Session(self.request.server.session.config)
+    index = session.config.get_index(session)
+    sidebar = ['<ul class="tag_list">']
+    tids = index.config.get('tag', {}).keys()
+    special = ['new', 'inbox', 'sent', 'drafts', 'spam', 'trash']
+    def tord(k):
+      tname = index.config['tag'][k]
+      if tname.lower() in special:
+        return '00000-%s-%s' % (special.index(tname.lower()), tname)
+      return tname
+    tids.sort(key=tord)
+    for tid in tids:
+      checked = ('tag:%s' % tid) in session.searched and ' checked' or ''
+      checked1 = checked and ' checked="checked"' or ''
+      tag_name = session.config.get('tag', {}).get(tid)
+      tag_new = index.STATS.get(tid, [0,0])[1]
+      sidebar.append((' <li id="tag_%s" class="%s">'
+                      '<input type="checkbox" name="tag_%s"%s />'
+                      ' <a href="/%s/">%s</a>'
+                      ' <span class="tag_new %s">(<b>%s</b>)</span>'
+                      '</li>') % (tid, checked, tid, checked1,
+                                  tag_name, tag_name,
+                                  tag_new and 'some' or 'none', tag_new))
+    sidebar.append('</ul>')
+    variables = {
+      'lastq': self.post_data.get('lq', self.query_data.get('q',
+                          [path != '/' and path[1] != '=' and path[:-1] or ''])
+                             )[0].strip().decode('utf-8'),
+      'csrf': self.request.csrf(),
+      'path': path
+    }
+    body = self.render_html()
+    title = 'The biggest pile of mail EVAR!'
+    self.request.send_full_response(self.request.render_page(body=body,
+                                             title=title,
+                                             sidebar='\n'.join(sidebar),
+                                             variables=variables),
+                            suppress_body=False)
 
   def render_html(self):
     self.transform_text()
@@ -452,7 +609,7 @@ class HtmlUI(TextUI):
     self.buffered_html.append(('html', ('<p id="rnavtop" class="rnav">%s &nbsp;'
                                         ' </p>\n') % ' '.join(nav)))
 
-    self.buffered_html.append(('html', '<table class="results">\n'))
+    self.buffered_html.append(('html', '<table class="results" id="results">\n'))
     expand_ids = [e.msg_idx for e in (expand or [])]
     for mid in results[start:start+num]:
       count += 1

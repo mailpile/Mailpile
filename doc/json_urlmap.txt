@@ -1,0 +1,44 @@
+== Mailpile JSON URL map ==
+
+/_/search.json?q=[query]        # search 
+/=[index]/[messageid].json      # view message
+
+== View message format ==
+{
+	attachments: [ ],
+	results: [ ],
+	headers: {
+	},
+	html_parts: [ ],
+	text_parts: [
+		{
+			data: "TEXT OF PART",
+			charset: "CHARSET",
+			type: "PART TYPE"
+		},
+	],
+	chatter: [ "SERVER CHATTER" ]
+}
+
+== Search result message format ==
+
+{
+	chatter: [ "SERVER CHATTER" ],
+	results: [
+		{
+			msg_tags: [ ],
+			msg_info: [ "14ZU",
+						"001YN2K5Q:1RU2:rarb",
+						"",
+						"xZxKl1uFxt77dqhWit0UFwc73bg",
+						"MID7QD",
+						"root@localhost",
+						"SUBJECT",
+						"0,1",
+						"",
+						"14ZP"
+			]
+		}
+	]
+}
+
