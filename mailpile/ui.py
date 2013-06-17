@@ -439,7 +439,8 @@ class JsonUI(HttpUI):
                          for t in idx.get_tags(msg_info=msg_info)
                          if 'tag:%s' % t not in terms])
 
-      self.buffered_json["results"].append({"msg_info": msg_info, "msg_tags": msg_tags})
+      self.buffered_json["results"].append({"msg_info": msg_info,
+                                            "msg_tags": msg_tags})
 
     return (start, count)
 
@@ -479,7 +480,7 @@ class JsonUI(HttpUI):
           if part['data'] != last:
             self.buffered_json["text_parts"].append(part)
             last = part['data']
-      
+ 
       if tree["html_parts"]:
         last = '<bogus>'
         for part in tree['html_parts']:
@@ -489,8 +490,10 @@ class JsonUI(HttpUI):
 
       if tree['attachments']:
         for att in tree['attachments']:
-          attachment = {"url": "./att:%(count)s" % att, "filename": "%(filename)s" % att, 
-                        "mimetype": "%(mimetype)s" % att, "size": "%(length)s" % att}
+          attachment = {"url": "./att:%(count)s" % att,
+                        "filename": "%(filename)s" % att,
+                        "mimetype": "%(mimetype)s" % att,
+                        "size": "%(length)s" % att}
           self.buffered_json["attachments"].append(attachment)
 
 
