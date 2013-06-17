@@ -534,7 +534,7 @@ class HtmlUI(HttpUI):
   def transform_text(self):
     text = [self.fmt(l) for l in self.buffered_html if l[0] != 'html']
     self.buffered_html = [l for l in self.buffered_html if l[0] == 'html']
-    self.buffered_html.append(('html', '<pre>%s</pre>' % ''.join(text)))
+    self.buffered_html.append(('html', '<pre id="chatter">%s</pre>' % ''.join(text)))
 
   def render(self, path="/"):
     session = Session(self.request.server.session.config)
@@ -609,7 +609,7 @@ class HtmlUI(HttpUI):
     self.buffered_html.append(('html', ('<p id="rnavtop" class="rnav">%s &nbsp;'
                                         ' </p>\n') % ' '.join(nav)))
 
-    self.buffered_html.append(('html', '<table class="results">\n'))
+    self.buffered_html.append(('html', '<table class="results" id="results">\n'))
     expand_ids = [e.msg_idx for e in (expand or [])]
     for mid in results[start:start+num]:
       count += 1
