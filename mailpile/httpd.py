@@ -26,6 +26,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
  <script src="/_/static/js/jquery.js"></script>
+ <script src="/_/static/js/mailpile.js"></script>
  <script type='text/javascript'>
   function focus(eid) {var e = document.getElementById(eid);e.focus();
    if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
@@ -34,7 +35,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   PAGE_BODY = """
 </head><body onload='focus("qbox");'><div id='header'>
  <h1 id='heading'>
-  <a href='/'>M<span style='font-size: 0.8em;'>AILPILE</span>!</a></h1>
+  <a href='/'><img src="/_/static/img/logo-252.png"/></a></h1>
   <div class="btnbar">
    <a class="btn btn-primary" onclick="compose();return false;" href="/_/compose">Compose</a>
    <div id='search'><form action='/'>
@@ -42,9 +43,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     <input type='hidden' name='csrf' value='%(csrf)s' />
    </form></div>
   </div>
- <p id='pile'>to: from:<br />subject: email<br />@ to: subject: list-id:<br />envelope
-  from: to sender: spam to:<br />from: search GMail @ in-reply-to: GPG bounce<br />
-  subscribe 419 v1agra from: envelope-to: @ SMTP hello!</p>
 </div>
 <form id='actions' action='' method='post'>
 <input type='hidden' name='csrf' value='%(csrf)s' /><div id='content'>"""

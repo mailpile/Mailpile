@@ -40,6 +40,7 @@ COMMANDS = {
   't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        84),
   'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
   'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
+  'u':  ('update',   '',              'Force statistics update',            69),
   'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          85),
   'W':  ('www',      '',              'Just run the web server',            56),
 }
@@ -215,6 +216,12 @@ def Action_Filter(session, opt, arg):
     '       filter delete <id>\n'
     '       filter move <id> <pos>\n'
     '       filter list')
+
+def Action_UpdateStats(session, config):
+  idx = config.index
+  tags = config.get("tag", {})
+  idx.update_tag_stats(session, config, tags.keys())
+  session.ui.say("Statistics updated.")
 
 def Action_Rescan(session, config):
   if 'rescan' in config.RUNNING: return
@@ -660,6 +667,9 @@ def Action(session, opt, arg):
 
   elif opt in ('t', 'tag'):
     Action_Tag(session, opt, arg)
+
+  elif opt in ('u', 'updatestats'):
+    Action_UpdateStats(session, config)
 
   elif opt in ('v', 'view'):
     args = arg.split()
