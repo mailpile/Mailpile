@@ -10,6 +10,12 @@ import re
 import sys
 import traceback
 
+try:
+  # FIXME: Why is this here?
+  import simplejson as json
+except:
+  import json
+
 from mailpile.util import *
 from lxml.html.clean import autolink_html
 
@@ -393,6 +399,7 @@ class RawHttpResponder:
   def close(self):
     raise SuppressHtmlOutput()
 
+
 class HttpUI(TextUI):
   def __init__(self, request):
     TextUI.__init__(self)
@@ -407,14 +414,24 @@ class HttpUI(TextUI):
 class JsonUI(HttpUI):
   def __init__(self, request):
     HttpUI.__init__(self, request)
-    self.buffered_json = {"chatter": [], "results": []}
     self.request = request
+    self.clear()
 
   def clear(self):
-    self.buffered_json = {"chatter": [], "results": []}
+    self.buffered_json = {
+      "status": 'ok',
+      "chatter": [],
+      "results": []
+    }
 
   def say(self, text=[], newline=None, fd=None):
-    self.buffered_json["chatter"].append(text)
+    # Just suppress the progress indicator chitter chatter
+    if not text.endswith('\r'):
+      self.buffered_json["chatter"].append(text)
+
+  def error(self, message):
+    self.buffered_json['status'] = 'error'
+    return HttpUI.error(self, message)
 
   def fmt(self, l):
     # return l[1].replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
@@ -453,7 +470,6 @@ class JsonUI(HttpUI):
       self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
 
   def display_message(self, email, tree, raw=False, sep='', fd=None):
-    print "Displaying a message..."
     if raw:
       for line in email.get_file().readlines():
         try:
@@ -480,7 +496,7 @@ class JsonUI(HttpUI):
           if part['data'] != last:
             self.buffered_json["text_parts"].append(part)
             last = part['data']
- 
+
       if tree["html_parts"]:
         last = '<bogus>'
         for part in tree['html_parts']:
@@ -496,22 +512,15 @@ class JsonUI(HttpUI):
                         "size": "%(length)s" % att}
           self.buffered_json["attachments"].append(attachment)
 
+  def render(self, session, path):
+    code = (self.buffered_json['status'] == 'ok') and 200 or 500
+    message = json.dumps(self.buffered_json, indent=2)
 
-  def render(self):
-    try:
-      import simplejson as json
-    except:
-      import json
-
-    session = Session(self.request.server.session.config)
-    index = session.config.get_index(session)
-    resp = self.buffered_json
-    message = json.dumps(resp)
-
-    self.request.send_http_response(200, "OK")
+    self.request.send_http_response(code, (code == 200) and "OK" or 'Error')
     self.request.send_header('Content-Length', len(message or ''))
-    self.request.send_standard_headers(header_list=[], mimetype="application/json")
+    self.request.send_standard_headers(mimetype="application/json")
     self.request.wfile.write(message)
+    self.request.log_request(code, message and len(message) or '-')
 
 
 class HtmlUI(HttpUI):
@@ -526,9 +535,8 @@ class HtmlUI(HttpUI):
     self.buffered_html = []
 
   def say(self, text='', newline='\n', fd=None):
-    if text.startswith('\r') and self.buffered_html:
-      self.buffered_html[-1] = ('text', (text+newline).replace('\r', ''))
-    else:
+    # Just suppress the progress indicator chitter chatter
+    if not text.endswith('\r'):
       self.buffered_html.append(('text', text+newline))
 
   def fmt(self, l):
@@ -539,8 +547,7 @@ class HtmlUI(HttpUI):
     self.buffered_html = [l for l in self.buffered_html if l[0] == 'html']
     self.buffered_html.append(('html', '<pre id="chatter">%s</pre>' % ''.join(text)))
 
-  def render(self, path="/"):
-    session = Session(self.request.server.session.config)
+  def render(self, session, path):
     index = session.config.get_index(session)
     sidebar = ['<ul class="tag_list">']
     tids = index.config.get('tag', {}).keys()
@@ -564,20 +571,21 @@ class HtmlUI(HttpUI):
                                   tag_name, tag_name,
                                   tag_new and 'some' or 'none', tag_new))
     sidebar.append('</ul>')
+    lastqpath = (path != '/' and path[1] not in ('=', '_') and path[:-1]
+                 or '')
     variables = {
       'lastq': self.post_data.get('lq', self.query_data.get('q',
-                          [path != '/' and path[1] != '=' and path[:-1] or ''])
-                             )[0].strip().decode('utf-8'),
+                                  [lastqpath]))[0].strip().decode('utf-8'),
       'csrf': self.request.csrf(),
       'path': path
     }
     body = self.render_html()
     title = 'The biggest pile of mail EVAR!'
     self.request.send_full_response(self.request.render_page(body=body,
-                                             title=title,
-                                             sidebar='\n'.join(sidebar),
-                                             variables=variables),
-                            suppress_body=False)
+                                                             title=title,
+                                                        sidebar='\n'.join(sidebar),
+                                                        variables=variables),
+                                    suppress_body=False)
 
   def render_html(self):
     self.transform_text()

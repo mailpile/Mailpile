@@ -1,12 +1,15 @@
 == Mailpile JSON URL map ==
 
-/_/search.json?q=[query]        # search
-/=[index]/[messageid].json      # view message
+NOTE: This will probably change in the very near future!
 
-== View message format ==
+/search.json?q=[query]               # search
+/=[index]/[messageid]/message.json   # fetch message tree
+
+== Message tree format ==
 {
+        status: "ok", # or "error"
 	attachments: [ ],
-	results: [ ],
+	results: [ ], # See search result format below (context)
 	headers: {
 	},
 	html_parts: [ ],
@@ -23,6 +26,7 @@
 == Search result message format ==
 
 {
+        status: "ok", # or "error"
 	chatter: [ "SERVER CHATTER" ],
 	results: [
 		{

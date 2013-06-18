@@ -928,7 +928,7 @@ class Email(object):
             for p in pgpdata:
               p['type'] = self.PGP_OK.get(p['type'], p['type'])
           except IOError:
-            part['data'] += result.decode('utf-8')
+            part['data'] += results['stderr'].decode('utf-8')
           except:
             part['data'] += traceback.format_exc()
           pgpdata = []

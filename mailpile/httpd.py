@@ -7,6 +7,7 @@ import mimetypes
 import socket
 import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+from urllib import quote, unquote
 from urlparse import parse_qs, urlparse
 
 import mailpile.util
@@ -22,6 +23,7 @@ STATIC_PATH = "static/"
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
+  # FIXME: these belong in HtmlUI
   PAGE_HEAD = """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
@@ -121,6 +123,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret, ts]))))
 
   def render_page(self, body='', title=None, sidebar='', variables=None):
+    # FIXME: this belongs in HtmlUI
     title = title or 'A huge pile of mail'
     variables = variables or {'lastq': '', 'path': '', 'csrf': self.csrf()}
     return '\n'.join([self.PAGE_HEAD % variables,
@@ -159,22 +162,20 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     return self.do_GET(suppress_body=True)
 
   def parse_pqp(self, path, query_data, post_data, config):
-    q = post_data.get('lq', query_data.get('q', ['']))[0].strip()
+    q = post_data.get('lq', query_data.get('q', ['']))[0].strip().decode('utf-8')
 
     cmd = ''
     if path.startswith('/_/'):
-      cmd = ' '.join([path[3:], query_data.get('args', [''])[0]])
+      cmd = path[3:].replace('.json', '').replace('.xml', '') + ' '
+      cmd += query_data.get('args', [''])[0]
     elif path.startswith('/='):
       parts = path.split('/')
       if len(parts) == 4:
         msg_idx = parts[1]
-        if parts[3] == '':
+        if parts[3] in ('', 'message.xml', 'message.json'):
           cmd = ' '.join(['view', msg_idx])
         elif parts[3] == 'message.eml':
           cmd = ' '.join(['view', 'raw', msg_idx])
-        elif parts[3] in ('message.xml', 'message.json'):
-          # FIXME: send message tree as XML or JSON
-          pass
         if parts[3].lower().startswith('cid:'):
           cmd = ' '.join(['extract', '<%s>' % parts[3][4:], msg_idx])
         elif parts[3].lower().startswith('att:'):
@@ -184,6 +185,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
           pass
       elif len(parts) == 6:
         pass
+
     elif len(path) > 1:
       parts = path.split('/')[1:]
       if parts:
@@ -218,12 +220,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     else:
       cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
 
-    return cmd.decode('utf-8').strip()
+    return cmd.strip()
 
   def do_GET(self, post_data={}, suppress_body=False):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     query_data = parse_qs(query)
+    path = unquote(path)
 
+    # HTTP is stateless, so we create a new session for each request.
     session = Session(self.server.session.config)
 
     if path == "/favicon.ico":
@@ -232,20 +236,22 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       self.send_file(path.split("/_/static/")[1])
       return
 
-    try:
-      path, restype = path.split(".")
-      path += "/"
-    except: restype = "html"
+    restype = 'html'
+    if not path or path == '/':
+      # FIXME: This should probably be a login page of some sort.
+      path = '/Inbox/'
 
-    if restype == "json":
+    # We peek at the ending to select a UI, but any further parsing of the
+    # path and arguments takes place in parse_pqp.
+    if path.endswith('.json'):
       session.ui = JsonUI(self)
+    elif path.endswith('.xml'):
+      session.ui = XmlUI(self) # FIXME: does not work
     else:
       session.ui = HtmlUI(self)
 
     session.ui.set_postdata(post_data)
     session.ui.set_querydata(query_data)
-
-    index = session.config.get_index(session)
     try:
       cmd = self.parse_pqp(path, query_data, post_data,
                            self.server.session.config)
@@ -259,8 +265,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     except SuppressHtmlOutput:
       return
 
-    session.ui.render()
-
+    session.ui.render(session, path)
 
   def log_message(self, fmt, *args):
     self.server.session.ui.notify(('HTTPD: '+fmt) % (args))
