@@ -3,6 +3,7 @@
 # Mailpile's built-in HTTPD
 #
 ###############################################################################
+import mimetypes
 import socket
 import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
@@ -27,6 +28,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
  <script src="/_/static/js/jquery.js"></script>
  <script src="/_/static/js/mailpile.js"></script>
+ <link rel="stylesheet" href="/_/static/css/mailpile.css">
  <script type='text/javascript'>
   function focus(eid) {var e = document.getElementById(eid);e.focus();
    if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
@@ -86,24 +88,27 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       self.wfile.write(message or '')
 
   def send_file(self, filename):
-    import mimetypes
     # Needs more checking
-    try:
-      mimetype = mimetypes.guess_type(STATIC_PATH + filename)[0] or "application/octet-stream"
-      message = open(STATIC_PATH + filename).read()
-      code, msg = 200, "OK"
-    except IOError, e:
-      if e.errno == 2:
-        code, msg = 404, "File not found"
-      elif e.errno == 13:
-        code, msg = 403, "Access denied"
-      else:
-        code, msg = 500, "Internal server error"
-      message = ""
+    if '..' in filename:
+      code, msg = 403, "Access denied"
+    else:
+      try:
+        filepath = STATIC_PATH + filename
+        mimetype = mimetypes.guess_type(filepath)[0] or "application/octet-stream"
+        message = open(filepath).read()
+        code, msg = 200, "OK"
+      except IOError, e:
+        if e.errno == 2:
+          code, msg = 404, "File not found"
+        elif e.errno == 13:
+          code, msg = 403, "Access denied"
+        else:
+          code, msg = 500, "Internal server error"
+        message = ""
 
     self.log_request(code, message and len(message) or '-')
     self.send_http_response(code, msg)
- 
+
     if code == 401:
       self.send_header('WWW-Authenticate',
                        'Basic realm=MP%d' % (time.time()/3600))
@@ -120,7 +125,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     variables = variables or {'lastq': '', 'path': '', 'csrf': self.csrf()}
     return '\n'.join([self.PAGE_HEAD % variables,
                       '<title>', title, '</title>',
-                      '<link rel="stylesheet" href="/_/static/css/mailpile.css">',
                       self.PAGE_BODY % variables, body,
                       self.PAGE_SIDEBAR % variables, sidebar,
                       self.PAGE_TAIL % variables])
@@ -222,7 +226,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     session = Session(self.server.session.config)
 
-    if path == "/favicon.ico": path = "/_/static/favicon.ico"
+    if path == "/favicon.ico":
+      path = "/_/static/favicon.ico"
     if path.startswith("/_/static/"):
       self.send_file(path.split("/_/static/")[1])
       return
@@ -241,7 +246,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     session.ui.set_querydata(query_data)
 
     index = session.config.get_index(session)
-    usageerror = False
     try:
       cmd = self.parse_pqp(path, query_data, post_data,
                            self.server.session.config)
@@ -251,7 +255,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
           Action(session, args[0], ' '.join(args[1:]))
 
     except UsageError, e:
-      usageerror = True
+      session.ui.error('%s' % e)
     except SuppressHtmlOutput:
       return
 

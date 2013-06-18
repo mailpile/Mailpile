@@ -1,6 +1,6 @@
 == Mailpile JSON URL map ==
 
-/_/search.json?q=[query]        # search 
+/_/search.json?q=[query]        # search
 /=[index]/[messageid].json      # view message
 
 == View message format ==
