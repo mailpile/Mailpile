@@ -17,6 +17,7 @@ except:
   import json
 
 from mailpile.util import *
+from mailpile.search import MailIndex
 from lxml.html.clean import autolink_html
 
 
@@ -433,10 +434,6 @@ class JsonUI(HttpUI):
     self.buffered_json['status'] = 'error'
     return HttpUI.error(self, message)
 
-  def fmt(self, l):
-    # return l[1].replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
-    return l
-
   def display_results(self, idx, results, terms,
                             start=0, end=0, num=0, expand=None,
                             fd=None):
@@ -469,6 +466,16 @@ class JsonUI(HttpUI):
       email.evaluate_pgp(tree, decrypt=True)
       self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
 
+  def explain_msg_summary(self, info):
+    return {
+      'idx': info[0],
+      'id': info[1],
+      'from': info[2],
+      'subject': info[3],
+      'date': long(info[4], 36),
+      'tag_ids': info[5]
+    }
+
   def display_message(self, email, tree, raw=False, sep='', fd=None):
     if raw:
       for line in email.get_file().readlines():
@@ -481,36 +488,14 @@ class JsonUI(HttpUI):
             line = '(MAILPILE DECODING FAILED)\n'
         self.say(line, newline='', fd=fd)
     else:
-      self.buffered_json["text_parts"] = []
-      self.buffered_json["html_parts"] = []
-      self.buffered_json["attachments"] = []
-      self.buffered_json["headers"] = {}
-      for hdr in ('From', 'Subject', 'To', 'Cc'):
-        value = email.get(hdr, '')
-        if value:
-          self.buffered_json["headers"][hdr] = value
-
-      if tree["text_parts"]:
-        last = '<bogus>'
-        for part in tree['text_parts']:
-          if part['data'] != last:
-            self.buffered_json["text_parts"].append(part)
-            last = part['data']
-
-      if tree["html_parts"]:
-        last = '<bogus>'
-        for part in tree['html_parts']:
-          if part['data'] != last:
-            self.buffered_json["text_parts"].append(part['data'])
-            last = part['data']
-
-      if tree['attachments']:
-        for att in tree['attachments']:
-          attachment = {"url": "./att:%(count)s" % att,
-                        "filename": "%(filename)s" % att,
-                        "mimetype": "%(mimetype)s" % att,
-                        "size": "%(length)s" % att}
-          self.buffered_json["attachments"].append(attachment)
+      pruned = {}
+      for k in tree:
+        if k not in ('headers_lc', 'summary', 'conversation'):
+          pruned[k] = tree[k]
+      pruned['summary'] = self.explain_msg_summary(tree['summary'])
+      pruned['conversation'] = [self.explain_msg_summary(c)
+                                for c in tree['conversation']]
+      self.buffered_json["results"].append(pruned)
 
   def render_data(self, session, path):
     code = (self.buffered_json['status'] == 'ok') and 200 or 500
@@ -526,7 +511,6 @@ class JsonUI(HttpUI):
     self.request.log_request(code, message and len(message) or '-')
 
 
-
 class XmlUI(JsonUI):
 
   def esc(self, d):
@@ -535,21 +519,22 @@ class XmlUI(JsonUI):
     return d.encode('utf-8')
 
   def render_xml_data(self, data, name='', attrs={}, indent=''):
+    attrtext = ''
     if type(data) == type(dict()):
-      data = self.render_xml_dict(data, indent=indent)
+      data = self.render_xml_dict(data, indent=indent)+indent
       dtype = 'dict'
     elif type(data) == type(list()):
-      data = self.render_xml_list(data, name=name, indent=indent)
+      data = self.render_xml_list(data, name=name, indent=indent)+indent
       dtype = 'list'
     elif type(data) == type(set()):
-      data = self.render_xml_list(list(data), name=name, indent=indent)
+      data = self.render_xml_list(list(data), name=name, indent=indent)+indent
       dtype = 'set'
     else:
       data = self.esc(data)
       dtype = None
-    if data.endswith('\n'):
-      data += indent
-    attrtext = dtype and (' type="%s"' % dtype) or ''
+      if '\n' in data:
+        attrtext += ' xml:space="preserve"'
+    attrtext += dtype and (' type="%s"' % dtype) or ''
     for attr in attrs:
       attrtext += ' %s="%s"' % (attr, self.esc(attrs[attr]))
     if data.strip():
