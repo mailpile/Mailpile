@@ -28,9 +28,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
- <script src="/_/static/js/jquery.js"></script>
- <script src="/_/static/js/mailpile.js"></script>
- <link rel="stylesheet" href="/_/static/css/mailpile.css">
+ <link rel="stylesheet" href="/_/static/css/mailpile.css" />
+ <script type='text/javascript' src='/_/static/js/jquery.min.js'></script>
+ <script type='text/javascript' src='/_/static/js/mailpile.js'></script>
  <script type='text/javascript'>
   function focus(eid) {var e = document.getElementById(eid);e.focus();
    if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
