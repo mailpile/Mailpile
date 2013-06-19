@@ -12,7 +12,7 @@ from urlparse import parse_qs, urlparse
 
 import mailpile.util
 from mailpile.util import *
-from mailpile.ui import Session, HtmlUI, JsonUI, XmlUI, SuppressHtmlOutput
+from mailpile.ui import *
 from mailpile.commands import Action
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
@@ -248,7 +248,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     if path.endswith('.json'):
       session.ui = JsonUI(self)
     elif path.endswith('.xml'):
-      session.ui = XmlUI(self) # FIXME: does not work
+      session.ui = XmlUI(self)
+    elif path.endswith('.rss'):
+      session.ui = RssUI(self)
     else:
       session.ui = HtmlUI(self)
 

@@ -13,12 +13,14 @@ Designing the URL space for the web UI is important.  Some ideas:
     http://mailpile/Inbox/
     http://mailpile/Lists/Partalistinn/
     http://mailpile/Lists/Partalistinn/feed.xml
+    http://mailpile/Lists/Partalistinn/feed.rss
     http://mailpile/Lists/Partalistinn/feed.json
 
 ### Messages:
 
     http://mailpile/=IDX/messageidsha1sum/
     http://mailpile/=IDX/messageidsha1sum/message.xml
+    http://mailpile/=IDX/messageidsha1sum/message.rss
     http://mailpile/=IDX/messageidsha1sum/message.json
     http://mailpile/=IDX/messageidsha1sum/cid:ATTID
     http://mailpile/=IDX/messageidsha1sum/att:COUNT
@@ -30,6 +32,7 @@ Designing the URL space for the web UI is important.  Some ideas:
 
     http://mailpile/?q=search%20terms
     http://mailpile/feed.xml?q=search%20terms
+    http://mailpile/feed.rss?q=search%20terms
     http://mailpile/Inbox/?q=search%20terms
     http://mailpile/Inbox/feed.json?q=search%20terms
 

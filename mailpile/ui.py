@@ -566,6 +566,10 @@ class XmlUI(JsonUI):
     return code, message, 'text/xml'
 
 
+class RssUI(XmlUI):
+  pass
+
+
 class HtmlUI(HttpUI):
   WIDTH = 110
 
