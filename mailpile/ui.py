@@ -489,8 +489,9 @@ class JsonUI(HttpUI):
   def prune_message_tree(self, tree):
     pruned = {}
     for k in tree:
-      if k not in ('headers_lc', 'summary', 'conversation'):
+      if k not in ('headers_lc', 'summary', 'conversation', 'tags'):
         pruned[k] = tree[k]
+    pruned['tag_ids'] = tree['tags']
     pruned['summary'] = self.explain_msg_summary(tree['summary'])
     pruned['conversation'] = [self.explain_msg_summary(c)
                               for c in tree['conversation']]
@@ -633,7 +634,6 @@ class RssUI(XmlUI):
       if 'tags' in r: del r['tags']
       if '_id' in r: del r['_id']
 
-    print '%s' % self.buffered_json
     # FIXME: Add channel info to buffered_json before rendering.
 
     return XmlUI.render_data(self, session, path)[0], 'application/rss+xml'

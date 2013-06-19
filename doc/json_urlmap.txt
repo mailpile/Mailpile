@@ -7,42 +7,57 @@ NOTE: This will probably change in the very near future!
 
 == Message tree format ==
 {
-        status: "ok", # or "error"
-	attachments: [ ],
-	results: [ ], # See search result format below (context)
-	headers: {
-	},
-	html_parts: [ ],
-	text_parts: [
-		{
-			data: "TEXT OF PART",
-			charset: "CHARSET",
-			type: "PART TYPE"
-		},
-	],
-	loglines: [ "SERVER CHATTER" ]
+    command: "",
+    loglines: [ "CHATTER", ... ],
+    results: [
+    {
+        id: "abcdefghijklmnopqrstuvwxyz1234567890",
+        tag_ids: [
+            "1", "4", ...
+        ],
+        summary: {
+            # Same format as search results, for just this message
+        },
+        headers: {
+            "Subject": "We will rock you",
+            ...
+        },
+        html_parts: [
+        {
+            data: "html text ...",
+            charset: "utf-8",
+            type: "html",
+        }, ... ],
+        text_parts: [
+        {
+            data: "text ...",
+            charset: "utf-8",
+            type: "text", # or quote or pgp*
+        }, ... ],
+        attributes: {},
+        attachments: [ ],
+        conversation: [
+        {
+            # Same format as search results, for just this message
+        }, ... ],
+    }, ... ],
 }
 
 == Search result message format ==
 
 {
-        status: "ok", # or "error"
-	loglines: [ "SERVER CHATTER" ],
-	results: [
-		{
-			msg_tags: [ ],
-			msg_info: [ "14ZU",
-						"001YN2K5Q:1RU2:rarb",
-						"",
-						"xZxKl1uFxt77dqhWit0UFwc73bg",
-						"MID7QD",
-						"root@localhost",
-						"SUBJECT",
-						"0,1",
-						"",
-						"14ZP"
-			]
-		}
-	]
+    command: "",
+    loglines: [ "CHATTER", ... ],
+    results: [
+    {
+        from: "Bjarni <bre@evil.com>",
+        subject: "Hello world",
+        date: 1371214183,
+        tags: [ "New", "Inbox", ... ],
+        tag_ids: [ "1", "5", ... ],
+        url: "/blahblah/"
+        idx: "ABC",
+        id: "abcdefghijklmnopqrstuvwxyz1234567890"
+    }, ... ],
 }
 
