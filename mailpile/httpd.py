@@ -174,7 +174,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       parts = path.split('/')
       if len(parts) == 4:
         msg_idx = parts[1]
-        if parts[3] in ('', 'message.xml', 'message.json'):
+        if parts[3] in ('', 'message.xml', 'message.json', 'message.rss'):
           cmd = ' '.join(['view', msg_idx])
         elif parts[3] == 'message.eml':
           cmd = ' '.join(['view', 'raw', msg_idx])

@@ -419,25 +419,40 @@ class JsonUI(HttpUI):
     self.clear()
 
   def clear(self):
+    self.status_code = 200
+    self.buffered_results = []
+    self.buffered_loglines = []
     self.buffered_json = {
-      "status": 'ok',
-      "loglines": [],
-      "results": []
+      "command": '',
+      "loglines": self.buffered_loglines,
+      "results": self.buffered_results
     }
 
   def say(self, text=[], newline=None, fd=None):
     # Just suppress the progress indicator chitter chatter
     if not text.endswith('\r'):
-      self.buffered_json["loglines"].append(text.rstrip())
+      self.buffered_loglines.append(text.rstrip())
 
   def error(self, message):
-    self.buffered_json['status'] = 'error'
+    self.status_code = 500
     return HttpUI.error(self, message)
+
+  def explain_msg_summary(self, info):
+    return {
+      'idx': info[0],
+      'id': info[1],
+      'from': info[2],
+      'subject': info[3],
+      'date': long(info[4], 36),
+      'tag_ids': info[5],
+      'url': '/=%s/%s/' % (info[0], info[1])
+    }
 
   def display_results(self, idx, results, terms,
                             start=0, end=0, num=0, expand=None,
                             fd=None):
-    if not results: return (0, 0)
+    if not results:
+      return (0, 0)
 
     num = num or 50
     if end: start = end - num
@@ -448,13 +463,18 @@ class JsonUI(HttpUI):
     for mid in results[start:start+num]:
       count += 1
       msg_info = idx.get_msg_by_idx(mid)
-
-      msg_tags = sorted([idx.config['tag'].get(t,t)
-                         for t in idx.get_tags(msg_info=msg_info)
-                         if 'tag:%s' % t not in terms])
-
-      self.buffered_json["results"].append({"msg_info": msg_info,
-                                            "msg_tags": msg_tags})
+      result = self.explain_msg_summary([
+        msg_info[MailIndex.MSG_IDX],
+        msg_info[MailIndex.MSG_ID],
+        msg_info[MailIndex.MSG_FROM],
+        msg_info[MailIndex.MSG_SUBJECT],
+        msg_info[MailIndex.MSG_DATE],
+        msg_info[MailIndex.MSG_TAGS].split(','),
+      ])
+      result['tags'] = sorted([idx.config['tag'].get(t,t)
+                               for t in idx.get_tags(msg_info=msg_info)
+                                     if 'tag:%s' % t not in terms])
+      self.buffered_results.append(result)
 
     return (start, count)
 
@@ -466,15 +486,15 @@ class JsonUI(HttpUI):
       email.evaluate_pgp(tree, decrypt=True)
       self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
 
-  def explain_msg_summary(self, info):
-    return {
-      'idx': info[0],
-      'id': info[1],
-      'from': info[2],
-      'subject': info[3],
-      'date': long(info[4], 36),
-      'tag_ids': info[5]
-    }
+  def prune_message_tree(self, tree):
+    pruned = {}
+    for k in tree:
+      if k not in ('headers_lc', 'summary', 'conversation'):
+        pruned[k] = tree[k]
+    pruned['summary'] = self.explain_msg_summary(tree['summary'])
+    pruned['conversation'] = [self.explain_msg_summary(c)
+                              for c in tree['conversation']]
+    return pruned
 
   def display_message(self, email, tree, raw=False, sep='', fd=None):
     if raw:
@@ -488,30 +508,28 @@ class JsonUI(HttpUI):
             line = '(MAILPILE DECODING FAILED)\n'
         self.say(line, newline='', fd=fd)
     else:
-      pruned = {}
-      for k in tree:
-        if k not in ('headers_lc', 'summary', 'conversation'):
-          pruned[k] = tree[k]
-      pruned['summary'] = self.explain_msg_summary(tree['summary'])
-      pruned['conversation'] = [self.explain_msg_summary(c)
-                                for c in tree['conversation']]
-      self.buffered_json["results"].append(pruned)
+      self.buffered_results.append(self.prune_message_tree(tree))
 
   def render_data(self, session, path):
-    code = (self.buffered_json['status'] == 'ok') and 200 or 500
     message = json.dumps(self.buffered_json, indent=1)
-    return code, message, 'application/json'
+    return message, 'application/json'
 
   def render(self, session, path):
-    code, message, mimetype = self.render_data(session, path)
-    self.request.send_http_response(code, (code == 200) and "OK" or 'Error')
+    message, mimetype = self.render_data(session, path)
+    self.request.send_http_response(self.status_code,
+                                  (self.status_code == 200) and "OK" or 'Error')
     self.request.send_header('Content-Length', len(message or ''))
     self.request.send_standard_headers(mimetype=mimetype, cachectrl='no-cache')
     self.request.wfile.write(message)
-    self.request.log_request(code, message and len(message) or '-')
+    self.request.log_request(self.status_code, message and len(message) or '-')
 
 
 class XmlUI(JsonUI):
+
+  ROOT_NAME = 'xml'
+  ROOT_ATTRS = {'testing': True}
+  EXPLAIN_XML = True
+  BARE_LISTS = False
 
   def esc(self, d):
     d = unicode(d)
@@ -526,17 +544,24 @@ class XmlUI(JsonUI):
     elif type(data) == type(list()):
       data = self.render_xml_list(data, name=name, indent=indent)+indent
       dtype = 'list'
+      if self.BARE_LISTS:
+        return data
     elif type(data) == type(set()):
       data = self.render_xml_list(list(data), name=name, indent=indent)+indent
       dtype = 'set'
+      if self.BARE_LISTS:
+        return data
     else:
       data = self.esc(data)
       dtype = None
       if '\n' in data:
         attrtext += ' xml:space="preserve"'
-    attrtext += dtype and (' type="%s"' % dtype) or ''
+
+    if self.EXPLAIN_XML:
+      attrtext += dtype and (' type="%s"' % dtype) or ''
     for attr in attrs:
       attrtext += ' %s="%s"' % (attr, self.esc(attrs[attr]))
+
     if data.strip():
       return '%s<%s%s>%s</%s>' % (indent, name, attrtext, data, name)
     else:
@@ -559,15 +584,59 @@ class XmlUI(JsonUI):
     return '\n'.join(xml)+'\n'
 
   def render_data(self, session, path):
-    code = (self.buffered_json['status'] == 'ok') and 200 or 500
-    message = self.render_xml_data(self.buffered_json, name='xml', attrs={
-      'testing': True
-    })
-    return code, message, 'text/xml'
+    message = ('<?xml version="1.0"?>\n' +
+               self.render_xml_data(self.buffered_json,
+                                    name=self.ROOT_NAME,
+                                    attrs=self.ROOT_ATTRS))
+    return message, 'text/xml'
 
 
 class RssUI(XmlUI):
-  pass
+
+  ROOT_NAME = 'rss'
+  ROOT_ATTRS = {'version': '2.0'}
+  EXPLAIN_XML = False
+  BARE_LISTS = True
+
+  def clear(self):
+    XmlUI.clear(self)
+    self.buffered_json = {
+      "channel": {'items': self.buffered_results}
+    }
+
+  def explain_msg_summary(self, info):
+    summary = XmlUI.explain_msg_summary(self, info)
+    return {
+      '_id': summary['id'],
+      'title': summary['subject'],
+      'link': summary['url'],
+      'pubDate': summary['date']
+    }
+
+  def prune_message_tree(self, tree):
+    r = {}
+    r['items'] = [self.explain_msg_summary(c) for c in tree['conversation']]
+    for item in r['items']:
+      if item['_id'] == tree['id']:
+        item['description'] = 'FIXME: Insert text body here, w/o quotes?'
+    return r
+
+  def render_data(self, session, path):
+    # Reparent conversation list for single message
+    if (len(self.buffered_results) > 0
+    and 'items' in self.buffered_results[0]):
+      self.buffered_results = self.buffered_results[0]['items']
+      self.buffered_json['channel']['items'] = self.buffered_results
+
+    # Cleanup...
+    for r in self.buffered_results:
+      if 'tags' in r: del r['tags']
+      if '_id' in r: del r['_id']
+
+    print '%s' % self.buffered_json
+    # FIXME: Add channel info to buffered_json before rendering.
+
+    return XmlUI.render_data(self, session, path)[0], 'application/rss+xml'
 
 
 class HtmlUI(HttpUI):
