@@ -52,7 +52,7 @@ MailPile.prototype.search = function(q) {
 			tr.append('<td class="date"><a onclick="mailpile.search(\'date:' + ymd + '\');">' + zpymd + '</a></td>');
 			$("#results tbody").append(tr);
 		}
-		that.chatter(data.chatter);
+		that.loglines(data.chatter);
 	});
 }
 MailPile.prototype.set = function() {}
@@ -64,7 +64,7 @@ MailPile.prototype.view = function(idx, msgid) {
 	var that = this;
 	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
 		$("#results").empty();
-		$that.chatter(data.chatter);
+		$that.loglines(data.chatter);
 	})
 }
 
@@ -78,10 +78,10 @@ MailPile.prototype.json_get = function(cmd, params, callback) {
 	$.getJSON(url, params, callback);
 }
 
-MailPile.prototype.chatter = function(text) {
-	$("#chatter").empty();
+MailPile.prototype.loglines = function(text) {
+	$("#loglines").empty();
 	for (var i = 0; i < text.length; i++) {
-		$("#chatter").append(text[i] + "\n");
+		$("#loglines").append(text[i] + "\n");
 	}
 }
 

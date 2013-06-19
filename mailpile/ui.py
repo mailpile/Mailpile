@@ -588,7 +588,7 @@ class HtmlUI(HttpUI):
   def transform_text(self):
     text = [self.fmt(l) for l in self.buffered_html if l[0] != 'html']
     self.buffered_html = [l for l in self.buffered_html if l[0] == 'html']
-    self.buffered_html.append(('html', '<pre id="chatter">%s</pre>' % ''.join(text)))
+    self.buffered_html.append(('html', '<pre id="loglines">%s</pre>' % ''.join(text)))
 
   def render(self, session, path):
     index = session.config.get_index(session)
