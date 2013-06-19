@@ -35,6 +35,9 @@ MailPile.prototype.search = function(q) {
 	var that = this;
 	$("#qbox").val(q);
 	this.json_get("search", {"q": q}, function(data) {
+		if ($("#results").length == 0) {
+			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		}
 		$("#results tbody").empty();
 		for (var i = 0; i < data.results.length; i++) {
 			msg_info = data.results[i].msg_info;
@@ -63,6 +66,9 @@ MailPile.prototype.update = function() {}
 MailPile.prototype.view = function(idx, msgid) {
 	var that = this;
 	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
+		if ($("#results").length == 0) {
+			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		}
 		$("#results").empty();
 		$that.chatter(data.chatter);
 	})
