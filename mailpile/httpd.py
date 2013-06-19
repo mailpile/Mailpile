@@ -12,7 +12,7 @@ from urlparse import parse_qs, urlparse
 
 import mailpile.util
 from mailpile.util import *
-from mailpile.ui import Session, HtmlUI, JsonUI, SuppressHtmlOutput
+from mailpile.ui import Session, HtmlUI, JsonUI, XmlUI, SuppressHtmlOutput
 from mailpile.commands import Action
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE

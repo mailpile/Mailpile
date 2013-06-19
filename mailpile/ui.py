@@ -420,14 +420,14 @@ class JsonUI(HttpUI):
   def clear(self):
     self.buffered_json = {
       "status": 'ok',
-      "chatter": [],
+      "loglines": [],
       "results": []
     }
 
   def say(self, text=[], newline=None, fd=None):
     # Just suppress the progress indicator chitter chatter
     if not text.endswith('\r'):
-      self.buffered_json["chatter"].append(text)
+      self.buffered_json["loglines"].append(text.rstrip())
 
   def error(self, message):
     self.buffered_json['status'] = 'error'
@@ -512,15 +512,73 @@ class JsonUI(HttpUI):
                         "size": "%(length)s" % att}
           self.buffered_json["attachments"].append(attachment)
 
-  def render(self, session, path):
+  def render_data(self, session, path):
     code = (self.buffered_json['status'] == 'ok') and 200 or 500
-    message = json.dumps(self.buffered_json, indent=2)
+    message = json.dumps(self.buffered_json, indent=1)
+    return code, message, 'application/json'
 
+  def render(self, session, path):
+    code, message, mimetype = self.render_data(session, path)
     self.request.send_http_response(code, (code == 200) and "OK" or 'Error')
     self.request.send_header('Content-Length', len(message or ''))
-    self.request.send_standard_headers(mimetype="application/json")
+    self.request.send_standard_headers(mimetype=mimetype, cachectrl='no-cache')
     self.request.wfile.write(message)
     self.request.log_request(code, message and len(message) or '-')
+
+
+
+class XmlUI(JsonUI):
+
+  def esc(self, d):
+    d = unicode(d)
+    d = d.replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
+    return d.encode('utf-8')
+
+  def render_xml_data(self, data, name='', attrs={}, indent=''):
+    if type(data) == type(dict()):
+      data = self.render_xml_dict(data, indent=indent)
+      dtype = 'dict'
+    elif type(data) == type(list()):
+      data = self.render_xml_list(data, name=name, indent=indent)
+      dtype = 'list'
+    elif type(data) == type(set()):
+      data = self.render_xml_list(list(data), name=name, indent=indent)
+      dtype = 'set'
+    else:
+      data = self.esc(data)
+      dtype = None
+    if data.endswith('\n'):
+      data += indent
+    attrtext = dtype and (' type="%s"' % dtype) or ''
+    for attr in attrs:
+      attrtext += ' %s="%s"' % (attr, self.esc(attrs[attr]))
+    if data.strip():
+      return '%s<%s%s>%s</%s>' % (indent, name, attrtext, data, name)
+    else:
+      return '%s<%s%s/>' % (indent, name, attrtext)
+
+  def render_xml_list(self, lst, name='items', indent=''):
+    xml = ['']
+    if name.endswith('s'):
+      nh = name[:-1]
+    else:
+      nh = 'item'
+    for item in lst:
+      xml.append(self.render_xml_data(item, name=nh, indent=indent+' '))
+    return '\n'.join(xml)+'\n'
+
+  def render_xml_dict(self, dct, name='dict', indent=''):
+    xml = ['']
+    for name in dct.keys():
+      xml.append(self.render_xml_data(dct[name], name=name, indent=indent+' '))
+    return '\n'.join(xml)+'\n'
+
+  def render_data(self, session, path):
+    code = (self.buffered_json['status'] == 'ok') and 200 or 500
+    message = self.render_xml_data(self.buffered_json, name='xml', attrs={
+      'testing': True
+    })
+    return code, message, 'text/xml'
 
 
 class HtmlUI(HttpUI):

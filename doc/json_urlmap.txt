@@ -20,14 +20,14 @@ NOTE: This will probably change in the very near future!
 			type: "PART TYPE"
 		},
 	],
-	chatter: [ "SERVER CHATTER" ]
+	loglines: [ "SERVER CHATTER" ]
 }
 
 == Search result message format ==
 
 {
         status: "ok", # or "error"
-	chatter: [ "SERVER CHATTER" ],
+	loglines: [ "SERVER CHATTER" ],
 	results: [
 		{
 			msg_tags: [ ],
