@@ -58,11 +58,21 @@ MailPile.prototype.search = function(q) {
 		that.chatter(data.loglines);
 	});
 }
-MailPile.prototype.set = function() {}
-MailPile.prototype.tag = function() {}
-MailPile.prototype.addtag = function() {}
+
+MailPile.prototype.set = function(key, value) {
+	var that = this;
+	this.json_get("set", {"args": key + "=" + value}, function(data) {
+		if (data.status == "ok") {
+			that.notice("Success: " + data.loglines[0]);
+		}
+	});
+}
+
+MailPile.prototype.tag = function(msgids, tags) {}
+MailPile.prototype.addtag = function(tagname) {}
 MailPile.prototype.unset = function() {}
 MailPile.prototype.update = function() {}
+
 MailPile.prototype.view = function(idx, msgid) {
 	var that = this;
 	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
@@ -89,6 +99,18 @@ MailPile.prototype.chatter = function(text) {
 	for (var i = 0; i < text.length; i++) {
 		$("#chatter").append(text[i] + "\n");
 	}
+}
+
+MailPile.prototype.notice = function(msg) {
+	console.log("NOTICE: " + msg);
+}
+
+MailPile.prototype.error = function(msg) {
+	console.log("ERROR: " + msg);
+}
+
+MailPile.prototype.warning = function(msg) {
+	console.log("WARNING: " + msg);
 }
 
 
