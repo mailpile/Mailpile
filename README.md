@@ -330,7 +330,7 @@ This is the Mailpile roadmap:
    6. Rewrite search engine (using same data formats and same XML-RPC API)
       in C. If anyone cares - Python might be good enough.
 
-We are roughly at milestone 2, with work beginning on 3.
+We are roughly at milestone 2, with work progressing on 3.
 
 
 ## Credits and License ##

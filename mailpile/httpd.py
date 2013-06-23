@@ -232,7 +232,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     session.ui.render(session, self.server_url(), path)
 
   def log_message(self, fmt, *args):
-    self.server.session.ui.notify(('HTTPD: '+fmt) % (args))
+    self.server.session.ui.notify(self.server_url() + ' ' + (fmt % args))
 
 
 class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
