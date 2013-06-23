@@ -35,27 +35,29 @@ MailPile.prototype.search = function(q) {
 	var that = this;
 	$("#qbox").val(q);
 	this.json_get("search", {"q": q}, function(data) {
-		if ($("#results").length == 0) {
-			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		if (data.status == "ok") {
+			if ($("#results").length == 0) {
+				$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+			}
+			$("#results tbody").empty();
+			for (var i = 0; i < data.results.length; i++) {
+				msg_info = data.results[i].msg_info;
+				msg_tags = data.results[i].msg_tags;
+				d = new Date(parseInt(msg_info[4], 36)*1000)
+				zpymd = d.getFullYear() + "-" + (d.getMonth()+1).pad(2) + "-" + d.getDate().pad(2);
+				ymd = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+				taghrefs = msg_tags.map(function(e){ return '<a onclick="mailpile.search(\'\\' + e + '\')">' + e + '</a>'}).join(" ");
+				tr = $('<tr class="result"></tr>');
+				tr.addClass((i%2==0)?"even":"odd");
+				tr.append('<td class="checkbox"><input type="checkbox" name="msg_' + msg_info[0] + '"/></td>');
+				tr.append('<td class="from">' + msg_info[5] + '</td>');
+				tr.append('<td class="subject">' + msg_info[6] + '</td>');
+				tr.append('<td class="tags">' + taghrefs + '</td>');
+				tr.append('<td class="date"><a onclick="mailpile.search(\'date:' + ymd + '\');">' + zpymd + '</a></td>');
+				$("#results tbody").append(tr);
+			}
+			that.chatter(data.loglines);
 		}
-		$("#results tbody").empty();
-		for (var i = 0; i < data.results.length; i++) {
-			msg_info = data.results[i].msg_info;
-			msg_tags = data.results[i].msg_tags;
-			d = new Date(parseInt(msg_info[4], 36)*1000)
-			zpymd = d.getFullYear() + "-" + (d.getMonth()+1).pad(2) + "-" + d.getDate().pad(2);
-			ymd = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
-			taghrefs = msg_tags.map(function(e){ return '<a onclick="mailpile.search(\'\\' + e + '\')">' + e + '</a>'}).join(" ");
-			tr = $('<tr class="result"></tr>');
-			tr.addClass((i%2==0)?"even":"odd");
-			tr.append('<td class="checkbox"><input type="checkbox" name="msg_' + msg_info[0] + '"/></td>');
-			tr.append('<td class="from">' + msg_info[5] + '</td>');
-			tr.append('<td class="subject">' + msg_info[6] + '</td>');
-			tr.append('<td class="tags">' + taghrefs + '</td>');
-			tr.append('<td class="date"><a onclick="mailpile.search(\'date:' + ymd + '\');">' + zpymd + '</a></td>');
-			$("#results tbody").append(tr);
-		}
-		that.chatter(data.loglines);
 	});
 }
 
@@ -64,6 +66,8 @@ MailPile.prototype.set = function(key, value) {
 	this.json_get("set", {"args": key + "=" + value}, function(data) {
 		if (data.status == "ok") {
 			that.notice("Success: " + data.loglines[0]);
+		} else if (data.status == "error") {
+			this.error(data.loglines[0]);
 		}
 	});
 }
@@ -76,11 +80,13 @@ MailPile.prototype.update = function() {}
 MailPile.prototype.view = function(idx, msgid) {
 	var that = this;
 	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
-		if ($("#results").length == 0) {
-			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		if (data.status == "ok") {
+			if ($("#results").length == 0) {
+				$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+			}
+			$("#results").empty();
+			$that.chatter(data.loglines);
 		}
-		$("#results").empty();
-		$that.chatter(data.loglines);
 	})
 }
 
