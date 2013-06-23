@@ -596,7 +596,6 @@ def Action(session, opt, arg):
     keys = []
     try:
       session.ui.mark('Listing available GPG keys')
-      keyserver = config.get('gpg_keyserver', 'pool.sks-keyservers.net')
       gpg = GnuPG().run(['--list-keys'], create_fhs=['stderr', 'stdout'])
       keylines = gpg.handles['stdout'].readlines()
       curkey = {}

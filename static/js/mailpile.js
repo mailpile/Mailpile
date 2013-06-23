@@ -36,7 +36,13 @@ MailPile.prototype.gpgrecv = function(keyid) {
 }
 
 MailPile.prototype.gpglistkeys = function() {
-	
+	mailpile.json_get("gpglistkeys", {}, function(data) {
+		$("#content").append('<div class="dialog" id="gpgkeylist"></div>');
+		for (k in data.results) {
+			key = data.results[k]
+			$("#gpgkeylist").append("<li>Key: " + key.uids[0].replace("<", "&lt;").replace(">", "&gt;") + ": " + key.pub.keyid + "</li>");
+		}
+	});
 }
 
 MailPile.prototype.search = function(q) {
