@@ -434,6 +434,9 @@ class JsonUI(HttpUI):
     self.buffered_json['status'] = 'error'
     return HttpUI.error(self, message)
 
+  def display_data(self, data):
+    self.buffered_json["results"] = data
+
   def display_results(self, idx, results, terms,
                             start=0, end=0, num=0, expand=None,
                             fd=None):

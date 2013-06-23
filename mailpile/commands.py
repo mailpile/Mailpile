@@ -592,6 +592,64 @@ def Action(session, opt, arg):
       pass
     session.ui.reset_marks()
 
+  elif opt in ('gpglistkeys'):
+    keys = []
+    try:
+      session.ui.mark('Listing available GPG keys')
+      keyserver = config.get('gpg_keyserver', 'pool.sks-keyservers.net')
+      gpg = GnuPG().run(['--list-keys'], create_fhs=['stderr', 'stdout'])
+      keylines = gpg.handles['stdout'].readlines()
+      curkey = {}
+      for line in keylines:
+        if line[0:3] == "pub":
+          if curkey != {}:
+            keys.append(curkey)
+            curkey = {}
+          args = line.split("pub")[1].strip().split(" ")
+          if len(args) == 3:
+            expiry = args[2]
+          else:
+            expiry = None
+          keytype, keyid = args[0].split("/")
+          created = args[1]
+          curkey["subkeys"] = []
+          curkey["uids"] = []
+          curkey["pub"] = {"keyid": keyid, "type": keytype, "created": created, "expires": expiry}
+        elif line[0:3] == "sec":
+          if curkey != {}:
+            keys.append(curkey)
+            curkey = {}
+          args = line.split("pub")[1].strip().split(" ")
+          if len(args) == 3:
+            expiry = args[2]
+          else:
+            expiry = None
+          keytype, keyid = args[0].split("/")
+          created = args[1]
+          curkey["subkeys"] = []
+          curkey["uids"] = []
+          curkey["sec"] = {"keyid": keyid, "type": keytype, "created": created, "expires": expiry}
+        elif line[0:3] == "uid":
+          curkey["uids"].append(line.split("uid")[1].strip())
+        elif line[0:3] == "sub":
+          args = line.split("sub")[1].strip().split(" ")
+          if len(args) == 3:
+            expiry = args[2]
+          else:
+            expiry = None
+          keytype, keyid = args[0].split("/")
+          created = args[1]
+          curkey["subkeys"].append({"keyid": keyid, "type": keytype, "created": created, "expires": expiry})
+      gpg.handles['stderr'].close()
+      gpg.handles['stdout'].close()
+      gpg.wait()
+      session.ui.display_data(keys)
+    except IndexError, e:
+      print e, "'%s'" % line
+    except IOError:
+      pass
+    session.ui.reset_marks()
+
   elif opt in ('m', 'mail'):
     Action_Mail(session, config, arg.split())
 

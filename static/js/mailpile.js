@@ -30,7 +30,15 @@ MailPile.prototype.previous = function() {}
 MailPile.prototype.print = function() {}
 MailPile.prototype.reply = function() {}
 MailPile.prototype.rescan = function() {}
-MailPile.prototype.gpgrecv = function() {}
+
+MailPile.prototype.gpgrecv = function(keyid) {
+
+}
+
+MailPile.prototype.gpglistkeys = function() {
+	
+}
+
 MailPile.prototype.search = function(q) {
 	var that = this;
 	$("#qbox").val(q);
