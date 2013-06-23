@@ -407,15 +407,16 @@ class ConfigManager(dict):
     if '..' in fpath:
       raise ValueError('Parent paths are not allowed')
 
-    bpath = self.get('path', self.DEFAULT_PATHS)[ftype]
-    fpath = os.path.join(bpath, fpath)
-    if not fpath.startswith('/'):
-      cpath = os.path.join(self.workdir(), fpath)
+    # This should raise a KeyError if the ftype is unrecognized
+    bpath = self.get('path', {}).get(ftype) or self.DEFAULT_PATHS[ftype]
+    if not bpath.startswith('/'):
+      cpath = os.path.join(self.workdir(), bpath)
       if os.path.exists(cpath) or 'w' in mode:
-        fpath = cpath
+        bpath = cpath
       else:
-        fpath = os.path.join('.SELF', fpath)
+        bpath = os.path.join('.SELF', bpath)
 
+    fpath = os.path.join(bpath, fpath)
     return fpath, open(fpath, mode)
 
   def prepare_workers(config, session, daemons=False):

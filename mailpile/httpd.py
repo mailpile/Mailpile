@@ -24,6 +24,13 @@ DEFAULT_PORT = 33411
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
+  def http_host(self):
+    return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
+
+  def server_url(self):
+    return '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
+                        self.headers.get('host', 'localhost'))
+
   def send_http_response(self, code, msg):
     self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
 
@@ -59,7 +66,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       code, msg = 403, "Access denied"
     else:
       try:
-        fpath, fd = config.open_file('html_template', filename)
+        tpl = config.get('path', {}).get(self.http_host(), 'html_template')
+        fpath, fd = config.open_file(tpl, filename)
         mimetype = mimetypes.guess_type(fpath)[0] or "application/octet-stream"
         message = fd.read()
         code, msg = 200, "OK"
@@ -221,7 +229,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     except SuppressHtmlOutput:
       return
 
-    session.ui.render(session, path)
+    session.ui.render(session, self.server_url(), path)
 
   def log_message(self, fmt, *args):
     self.server.session.ui.notify(('HTTPD: '+fmt) % (args))

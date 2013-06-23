@@ -512,12 +512,12 @@ class JsonUI(HttpUI):
     else:
       self.buffered_results.append(self.prune_message_tree(tree))
 
-  def render_data(self, session, path):
+  def render_data(self, session, request_url, request_path):
     message = json.dumps(self.buffered_json, indent=1)
     return message, 'application/json'
 
-  def render(self, session, path):
-    message, mimetype = self.render_data(session, path)
+  def render(self, session, request_url, request_path):
+    message, mimetype = self.render_data(session, request_url, request_path)
     self.request.send_http_response(self.status_code,
                                   (self.status_code == 200) and "OK" or 'Error')
     self.request.send_header('Content-Length', len(message or ''))
@@ -585,7 +585,7 @@ class XmlUI(JsonUI):
       xml.append(self.render_xml_data(dct[name], name=name, indent=indent+' '))
     return '\n'.join(xml)+'\n'
 
-  def render_data(self, session, path):
+  def render_data(self, session, request_url, request_path):
     message = ('<?xml version="1.0"?>\n' +
                self.render_xml_data(self.buffered_json,
                                     name=self.ROOT_NAME,
@@ -623,12 +623,16 @@ class RssUI(XmlUI):
         item['description'] = 'FIXME: Insert text body here, w/o quotes?'
     return r
 
-  def render_data(self, session, path):
+  def render_data(self, session, request_url, request_path):
     # Reparent conversation list for single message
     if (len(self.buffered_results) > 0
     and 'items' in self.buffered_results[0]):
       self.buffered_results = self.buffered_results[0]['items']
       self.buffered_json['channel']['items'] = self.buffered_results
+
+    # Make URLs absolute
+    for item in self.buffered_results:
+      item['link'] = '%s%s' % (request_url, item['link'])
 
     # Cleanup...
     for r in self.buffered_results:
@@ -637,7 +641,8 @@ class RssUI(XmlUI):
 
     # FIXME: Add channel info to buffered_json before rendering.
 
-    return XmlUI.render_data(self, session, path)[0], 'application/rss+xml'
+    return (XmlUI.render_data(self, session, request_url, request_path)[0],
+            'application/rss+xml')
 
 
 class HtmlUI(HttpUI):
@@ -664,7 +669,7 @@ class HtmlUI(HttpUI):
     self.buffered_html = [l for l in self.buffered_html if l[0] == 'html']
     self.buffered_html.append(('html', '<pre id="loglines">%s</pre>' % ''.join(text)))
 
-  def render(self, session, path):
+  def render(self, session, request_url, path):
     config = session.config
     index = config.get_index(session)
     sidebar = ['<ul class="tag_list">']
@@ -692,6 +697,7 @@ class HtmlUI(HttpUI):
     lastqpath = (path != '/' and path[1] not in ('=', '_') and path[:-1]
                  or '')
     variables = {
+      'url': request_url,
       'lastq': self.post_data.get('lq', self.query_data.get('q',
                                   [lastqpath]))[0].strip().decode('utf-8'),
       'csrf': self.request.csrf(),
@@ -708,9 +714,9 @@ class HtmlUI(HttpUI):
                                     suppress_body=False)
 
   def render_page(self, config, variables, body='', title='', sidebar=''):
+    tpl = config.get('path', {}).get(self.request.http_host(), 'html_template')
     def r(part):
-      return config.open_file('html_template', 'html/%s.html' % part
-                              )[1].read() % variables
+      return config.open_file(tpl, 'html/%s.html' % part)[1].read() % variables
     return ''.join([
       r('head'), '<title>', title, '</title>',
       r('body'), body,
