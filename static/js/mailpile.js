@@ -55,7 +55,7 @@ MailPile.prototype.search = function(q) {
 			tr.append('<td class="date"><a onclick="mailpile.search(\'date:' + ymd + '\');">' + zpymd + '</a></td>');
 			$("#results tbody").append(tr);
 		}
-		that.chatter(data.chatter);
+		that.chatter(data.loglines);
 	});
 }
 MailPile.prototype.set = function() {}
@@ -70,7 +70,7 @@ MailPile.prototype.view = function(idx, msgid) {
 			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
 		}
 		$("#results").empty();
-		$that.chatter(data.chatter);
+		$that.chatter(data.loglines);
 	})
 }
 
