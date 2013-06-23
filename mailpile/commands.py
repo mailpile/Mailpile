@@ -25,14 +25,14 @@ COMMANDS = {
   'h':  ('help',     '',              'Print help on how to use mailpile',   0),
   'L':  ('load',     '',              'Load the metadata index',            63),
   'm:': ('mail=',    'msg [email]',   'Mail/bounce a message (to someone)', 99),
-  'f:': ('forward=', '[att] m1 ...',  'Forward messages (and attachments)', 93),
+  'f:': ('forward=', '[att] m1 ...',  'Forward messages (and attachments)', 94),
   'n':  ('next',     '',              'Display next page of results',       81),
   'o:': ('order=',   '[rev-]what',   ('Sort by: date, from, subject, '
                                       'random or index'),                   83),
   'O':  ('optimize', '',              'Optimize the keyword search index',  64),
   'p':  ('previous', '',              'Display previous page of results',   82),
   'P:': ('print=',   'var',           'Print a setting',                    52),
-  'r:': ('reply=',   '[all] m1 ...',  'Reply(-all) to one or more messages',92),
+  'r:': ('reply=',   '[all] m1 ...',  'Reply(-all) to one or more messages',93),
   'R':  ('rescan',   '',              'Scan all mailboxes for new messages',63),
   'g:': ('gpgrecv',  'key-ID',        'Fetch a GPG key from keyservers',    65),
   's:': ('search=',  'terms ...',     'Search!',                            80),
@@ -40,9 +40,10 @@ COMMANDS = {
   't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        84),
   'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
   'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
-  'u':  ('update',   '',              'Force statistics update',            69),
+  'u:': ('update=',  'msg path/to/f', 'Update message from file',           91),
   'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          85),
   'W':  ('www',      '',              'Just run the web server',            56),
+  'Y':  ('recount',  '',              'Force statistics update',            69),
 }
 def Choose_Messages(session, idx, words):
   msg_ids = set()
@@ -326,6 +327,19 @@ def Action_Compose(session, config, args):
     session.ui.edit_messages(emails)
   else:
     session.ui.say('%d message(s) created as drafts' % len(emails))
+  session.ui.reset_marks()
+  return True
+
+def Action_Update(session, config, args):
+  if len(args) > 1:
+    idx = Action_Load(session, config)
+    fn = args.pop(-1)
+    emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
+    for email in emails:
+      email.update_from_string( open(fn, 'rb').read())
+    session.ui.say('%d message(s) updated' % len(emails))
+  else:
+    session.ui.error('Nothing to update!')
   session.ui.reset_marks()
   return True
 
@@ -668,8 +682,8 @@ def Action(session, opt, arg):
   elif opt in ('t', 'tag'):
     Action_Tag(session, opt, arg)
 
-  elif opt in ('u', 'updatestats'):
-    Action_UpdateStats(session, config)
+  elif opt in ('u', 'update'):
+    Action_Update(session, config, arg.split())
 
   elif opt in ('v', 'view'):
     args = arg.split()
@@ -684,6 +698,9 @@ def Action(session, opt, arg):
       session.ui.clear()
       session.ui.display_messages(emails, raw=raw)
     session.ui.reset_marks()
+
+  elif opt in ('Y', 'recount'):
+    Action_UpdateStats(session, config)
 
   else:
     raise UsageError('Unknown command: %s' % opt)
