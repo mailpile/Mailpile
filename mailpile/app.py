@@ -196,6 +196,9 @@ class ConfigManager(dict):
 
   MBOX_CACHE = {}
   RUNNING = {}
+  DEFAULT_PATHS = {
+    'html_template': 'static/default',
+  }
 
   INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size',
           'http_port', 'rescan_interval')
@@ -203,7 +206,7 @@ class ConfigManager(dict):
              'gpg_recipient', 'gpg_keyserver',
              'http_host', 'rescan_command', 'debug', 'local_mailbox')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags',
-           'from', 'sendmail')
+           'from', 'sendmail', 'path')
 
   def workdir(self):
     return os.environ.get('MAILPILE_HOME', os.path.expanduser('~/.mailpile'))
@@ -399,6 +402,21 @@ class ConfigManager(dict):
     idx.load(session)
     self.index = idx
     return idx
+
+  def open_file(self, ftype, fpath, mode='rb'):
+    if '..' in fpath:
+      raise ValueError('Parent paths are not allowed')
+
+    bpath = self.get('path', self.DEFAULT_PATHS)[ftype]
+    fpath = os.path.join(bpath, fpath)
+    if not fpath.startswith('/'):
+      cpath = os.path.join(self.workdir(), fpath)
+      if os.path.exists(cpath) or 'w' in mode:
+        fpath = cpath
+      else:
+        fpath = os.path.join('.SELF', fpath)
+
+    return fpath, open(fpath, mode)
 
   def prepare_workers(config, session, daemons=False):
     # Set globals from config first...

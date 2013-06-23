@@ -4,6 +4,7 @@
 #
 ###############################################################################
 import mimetypes
+import os
 import socket
 import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
@@ -19,49 +20,9 @@ global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
 
 DEFAULT_PORT = 33411
-STATIC_PATH = "static/"
+
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
-
-  # FIXME: these belong in HtmlUI
-  PAGE_HEAD = """\
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
- <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
- <link rel="stylesheet" href="/_/static/css/mailpile.css" />
- <script type='text/javascript' src='/_/static/js/jquery.min.js'></script>
- <script type='text/javascript' src='/_/static/js/mailpile.js'></script>
- <script type='text/javascript'>
-  function focus(eid) {var e = document.getElementById(eid);e.focus();
-   if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
-   else {e.value = e.value;}}
- </script>"""
-  PAGE_BODY = """
-</head><body onload='focus("qbox");'><div id='header'>
- <h1 id='heading'>
-  <a href='/'><img src="/_/static/img/logo-252.png"/></a></h1>
-  <div class="btnbar">
-   <a class="btn btn-primary" onclick="compose();return false;" href="/_/compose">Compose</a>
-   <div id='search'><form action='/'>
-    <input id='qbox' type='text' size='100' name='q' value='%(lastq)s ' /><input type="submit" class="btn btn-search" value=""/>
-    <input type='hidden' name='csrf' value='%(csrf)s' />
-   </form></div>
-  </div>
-</div>
-<form id='actions' action='' method='post'>
-<input type='hidden' name='csrf' value='%(csrf)s' /><div id='content'>"""
-  PAGE_SIDEBAR = """\
-</div><div id='sidebar'>
- <div id='sidebar_btns'>
-  <input id='rm_tag_btn' type='submit' name='rm_tag' value='un-' title='Untag messages' />
-  <input id='add_tag_btn' type='submit' name='add_tag' value='tag' title='Tag messages' />
- </div>"""
-  PAGE_TAIL = """\
-</div><p id='footer'>&lt;
- <a href='https://github.com/pagekite/Mailpile'>free software</a>
- by <a title='Bjarni R. Einarsson' href='http://bre.klaki.net/'>bre</a>
-&gt;</p>
-</form></body></html>"""
 
   def send_http_response(self, code, msg):
     self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
@@ -92,15 +53,15 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     if not suppress_body:
       self.wfile.write(message or '')
 
-  def send_file(self, filename):
+  def send_file(self, config, filename):
     # Needs more checking
     if '..' in filename:
       code, msg = 403, "Access denied"
     else:
       try:
-        filepath = STATIC_PATH + filename
-        mimetype = mimetypes.guess_type(filepath)[0] or "application/octet-stream"
-        message = open(filepath).read()
+        fpath, fd = config.open_file('html_template', filename)
+        mimetype = mimetypes.guess_type(fpath)[0] or "application/octet-stream"
+        message = fd.read()
         code, msg = 200, "OK"
       except IOError, e:
         if e.errno == 2:
@@ -124,21 +85,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     ts = '%x' % int(time.time()/60)
     return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret, ts]))))
 
-  def render_page(self, body='', title=None, sidebar='', variables=None):
-    # FIXME: this belongs in HtmlUI
-    title = title or 'A huge pile of mail'
-    variables = variables or {'lastq': '', 'path': '', 'csrf': self.csrf()}
-    return '\n'.join([self.PAGE_HEAD % variables,
-                      '<title>', title, '</title>',
-                      self.PAGE_BODY % variables, body,
-                      self.PAGE_SIDEBAR % variables, sidebar,
-                      self.PAGE_TAIL % variables])
-
   def do_POST(self):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     if path.startswith('/::XMLRPC::/'):
       return SimpleXMLRPCRequestHandler.do_POST(self)
 
+    config = self.server.session.config
     post_data = { }
     try:
       clength = int(self.headers.get('content-length'))
@@ -153,10 +105,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         raise ValueError('Unknown content-type')
 
     except (IOError, ValueError), e:
-      body = 'POST geborked: %s' % e
-      self.send_full_response(self.render_page(body=body,
-                                               title='Internal Error'),
-                              code=500)
+      r = HtmlUI(self).render_page(config,
+                                   {'lastq': '', 'csrf': '', 'path': ''},
+                                   body='POST geborked: %s' % e,
+                                   title='Internal Error')
+      self.send_full_response(r, code=500)
       return None
     return self.do_GET(post_data=post_data)
 
@@ -164,7 +117,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     return self.do_GET(suppress_body=True)
 
   def parse_pqp(self, path, query_data, post_data, config):
-    q = post_data.get('lq', query_data.get('q', ['']))[0].strip().decode('utf-8')
+    q = post_data.get('q', query_data.get('q', ['']))[0].strip().decode('utf-8')
 
     cmd = ''
     if path.startswith('/_/'):
@@ -192,7 +145,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       parts = path.split('/')[1:]
       if parts:
         fn = parts.pop()
-        tid = self.server.session.config.get_tag_id('/'.join(parts))
+        tid = config.get_tag_id('/'.join(parts))
         if tid:
           if q and q[0] != '/':
             q = 'tag:%s %s' % (tid, q)
@@ -230,13 +183,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     path = unquote(path)
 
     # HTTP is stateless, so we create a new session for each request.
-    session = Session(self.server.session.config)
+    config = self.server.session.config
+    session = Session(config)
 
     if path == "/favicon.ico":
       path = "/_/static/favicon.ico"
     if path.startswith("/_/static/"):
-      self.send_file(path.split("/_/static/")[1])
-      return
+      return self.send_file(config, path.split("/_/static/", 1)[1])
 
     restype = 'html'
     if not path or path == '/':
@@ -257,8 +210,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     session.ui.set_postdata(post_data)
     session.ui.set_querydata(query_data)
     try:
-      cmd = self.parse_pqp(path, query_data, post_data,
-                           self.server.session.config)
+      cmd = self.parse_pqp(path, query_data, post_data, config)
       if cmd:
         for arg in cmd.split(' /'):
           args = arg.strip().split()

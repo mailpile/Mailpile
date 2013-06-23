@@ -1,0 +1,15 @@
+</head><body onload='focus("qbox");'><div id='header'>
+ <h1 id='heading'>
+  <a href='/'><img src="/_/static/img/logo-252.png"/></a></h1>
+  <div class="btnbar">
+   <a class="btn btn-primary" onclick="compose();return false;"
+      href="/_/compose">Compose</a>
+   <div id='search'><form action='/'>
+    <input id='qbox' type='text' size='100' name='q' value='%(lastq)s ' />
+    <input type="submit" class="btn btn-search" value=""/>
+    <input type='hidden' name='csrf' value='%(csrf)s' />
+   </form></div>
+  </div>
+</div>
+<form id='actions' action='' method='post'>
+<input type='hidden' name='csrf' value='%(csrf)s' /><div id='content'>

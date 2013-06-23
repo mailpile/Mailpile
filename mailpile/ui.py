@@ -21,6 +21,10 @@ from mailpile.search import MailIndex
 from lxml.html.clean import autolink_html
 
 
+class SuppressHtmlOutput(Exception):
+  pass
+
+
 class NullUI(object):
 
   WIDTH = 80
@@ -373,9 +377,6 @@ class TextUI(NullUI):
         self.warning('Editing failed!')
         self.warning(traceback.format_exc())
 
-class SuppressHtmlOutput(Exception):
-  pass
-
 
 class RawHttpResponder:
 
@@ -664,12 +665,13 @@ class HtmlUI(HttpUI):
     self.buffered_html.append(('html', '<pre id="loglines">%s</pre>' % ''.join(text)))
 
   def render(self, session, path):
-    index = session.config.get_index(session)
+    config = session.config
+    index = config.get_index(session)
     sidebar = ['<ul class="tag_list">']
-    tids = index.config.get('tag', {}).keys()
+    tids = config.get('tag', {}).keys()
     special = ['new', 'inbox', 'sent', 'drafts', 'spam', 'trash']
     def tord(k):
-      tname = index.config['tag'][k]
+      tname = config['tag'][k]
       if tname.lower() in special:
         return '00000-%s-%s' % (special.index(tname.lower()), tname)
       return tname
@@ -677,7 +679,7 @@ class HtmlUI(HttpUI):
     for tid in tids:
       checked = ('tag:%s' % tid) in session.searched and ' checked' or ''
       checked1 = checked and ' checked="checked"' or ''
-      tag_name = session.config.get('tag', {}).get(tid)
+      tag_name = config.get('tag', {}).get(tid)
       tag_new = index.STATS.get(tid, [0,0])[1]
       sidebar.append((' <li id="tag_%s" class="%s">'
                       '<input type="checkbox" name="tag_%s"%s />'
@@ -695,13 +697,27 @@ class HtmlUI(HttpUI):
       'csrf': self.request.csrf(),
       'path': path
     }
-    body = self.render_html()
+
+    # FIXME: This title is dumb
     title = 'The biggest pile of mail EVAR!'
-    self.request.send_full_response(self.request.render_page(body=body,
-                                                             title=title,
-                                                        sidebar='\n'.join(sidebar),
-                                                        variables=variables),
+
+    self.request.send_full_response(self.render_page(config, variables,
+                                                    title=title,
+                                                   body=self.render_html(),
+                                                  sidebar='\n'.join(sidebar)),
                                     suppress_body=False)
+
+  def render_page(self, config, variables, body='', title='', sidebar=''):
+    def r(part):
+      return config.open_file('html_template', 'html/%s.html' % part
+                              )[1].read() % variables
+    return ''.join([
+      r('head'), '<title>', title, '</title>',
+      r('body'), body,
+      r('sidebar'), sidebar,
+      r('tail')
+    ])
+
 
   def render_html(self):
     self.transform_text()
