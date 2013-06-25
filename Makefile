@@ -2,7 +2,7 @@
 export PYTHONPATH := .
 
 combined:
-	@./scripts/breeder.py html \
+	@./scripts/breeder.py static \
                      	mailpile/__init__.py \
 			mailpile/util.py \
 			mailpile/mailutils.py \
