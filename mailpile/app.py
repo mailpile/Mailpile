@@ -521,7 +521,6 @@ def Main(args):
     except (getopt.GetoptError, UsageError), e:
       session.error(e)
 
-
     if not opts and not args:
       # Create and start the rest of the threads, load the index.
       config.prepare_workers(session, daemons=True)
