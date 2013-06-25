@@ -125,7 +125,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     return self.do_GET(suppress_body=True)
 
   def parse_pqp(self, path, query_data, post_data, config):
-    q = post_data.get('q', query_data.get('q', ['']))[0].strip().decode('utf-8')
+    q = post_data.get('lq', query_data.get('q', ['']))[0].strip().decode('utf-8')
 
     cmd = ''
     if path.startswith('/_/'):
