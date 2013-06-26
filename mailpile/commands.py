@@ -100,6 +100,8 @@ class Command:
     return msg_ids
 
   def _error(self, message):
+    if self.name:
+      self.session.ui.reset_marks()
     self.session.ui.error(message)
     return False
 
@@ -145,7 +147,7 @@ class Command:
 
 class Setup(Command):
   """Perform initial setup"""
-  ORDER = ('Internals', 10)
+  ORDER = ('Internals', 0)
   def command(self):
     session = self.session
 
@@ -166,14 +168,14 @@ class Setup(Command):
 
 class Load(Command):
   """Load or reload the metadata index"""
-  ORDER = ('Internals', 30)
+  ORDER = ('Internals', 1)
   def command(self, reset=True, wait=True, quiet=False):
     return self._idx(reset=reset, wait=wait, quiet=quiet)
 
 
 class Rescan(Command):
   """Scan all mailboxes for new messages"""
-  ORDER = ('Internals', 40)
+  ORDER = ('Internals', 2)
   SERIALIZE = 'Rescan'
   def command(self):
     session, config = self.session, self.session.config
@@ -221,7 +223,7 @@ class Rescan(Command):
 
 class Optimize(Command):
   """Optimize the keyword search index"""
-  ORDER = ('Internals', 50)
+  ORDER = ('Internals', 3)
   SYNOPSIS = '[harder]'
   SERIALIZE = 'Optimize'
   def command(self):
@@ -236,7 +238,7 @@ class Optimize(Command):
 
 class UpdateStats(Command):
   """Force statistics update"""
-  ORDER = ('Internals', 70)
+  ORDER = ('Internals', 4)
   def command(self):
     session, config = self.session, self.session.config
     idx = config.index
@@ -245,11 +247,19 @@ class UpdateStats(Command):
     session.ui.mark("Statistics updated")
 
 
+class RunWWW(Command):
+  """Just run the web server"""
+  ORDER = ('Internals', 5)
+  def command(self):
+    self.session.config.prepare_workers(self.session, daemons=True)
+    while not mailpile.util.QUITTING: time.sleep(1)
+
+
 ##[ Tags and Filters ]#########################################################
 
 class Tag(Command):
   """Add/remove/list/edit message tags"""
-  ORDER = ('Tagging', 10)
+  ORDER = ('Tagging', 0)
   SYNOPSIS = '<[+|-]tags> <msgs>'
   def command(self, save=True):
     idx = self._idx()
@@ -300,7 +310,7 @@ class Tag(Command):
 
 class Filter(Command):
   """Add/edit/delete/list auto-tagging rules"""
-  ORDER = ('Tagging', 20)
+  ORDER = ('Tagging', 1)
   SYNOPSIS = '[new|read] [notag] [=ID] <[+|-]tags ...> [description]'
   def command(self):
     args, session, config = self.args, self.session, self.session.config
@@ -381,7 +391,7 @@ class Filter(Command):
 
 class Compose(Command):
   """(Continue) Composing an e-mail"""
-  ORDER = ('Composing', 10)
+  ORDER = ('Composing', 0)
   SYNOPSIS = '<[msg]>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -407,7 +417,7 @@ class Compose(Command):
 
 class Update(Command):
   """Update message from a file"""
-  ORDER = ('Composing', 20)
+  ORDER = ('Composing', 1)
   SYNOPSIS = '<msg path/to/f>'
   def command(self):
     if len(self.args) > 1:
@@ -424,7 +434,7 @@ class Update(Command):
 
 class Attach(Command):
   """Attach a file to a message"""
-  ORDER = ('Composing', 30)
+  ORDER = ('Composing', 2)
   SYNOPSIS = '<msg path/to/f>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -457,7 +467,7 @@ class Attach(Command):
 
 class Reply(Command):
   """Reply(-all) to one or more messages"""
-  ORDER = ('Composing', 40)
+  ORDER = ('Composing', 3)
   SYNOPSIS = '<[all] m1 ...>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -519,7 +529,7 @@ class Reply(Command):
 
 class Forward(Command):
   """Forward messages (and attachments)"""
-  ORDER = ('Composing', 50)
+  ORDER = ('Composing', 4)
   SYNOPSIS = '<[att] m1 ...>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -582,7 +592,7 @@ class Forward(Command):
 
 class Mail(Command):
   """Mail/bounce a message (to someone)"""
-  ORDER = ('Composing', 90)
+  ORDER = ('Composing', 5)
   SYNOPSIS = '<msg [email]>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -608,7 +618,7 @@ class Mail(Command):
 
 class Search(Command):
   """Search your mail!"""
-  ORDER = ('Searching', 10)
+  ORDER = ('Searching', 0)
   SYNOPSIS = '<terms ...>'
   def command(self, search=None):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -641,7 +651,7 @@ class Search(Command):
 
 class Next(Command):
   """Display next page of results"""
-  ORDER = ('Searching', 20)
+  ORDER = ('Searching', 1)
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
     num_results = config.get('num_results', None)
@@ -655,7 +665,7 @@ class Next(Command):
 
 class Previous(Command):
   """Display previous page of results"""
-  ORDER = ('Searching', 30)
+  ORDER = ('Searching', 2)
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
     num_results = config.get('num_results', None)
@@ -669,7 +679,7 @@ class Previous(Command):
 
 class Order(Command):
   """Sort by: date, from, subject, random or index"""
-  ORDER = ('Searching', 40)
+  ORDER = ('Searching', 3)
   SYNOPSIS = '<terms ...>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -684,7 +694,7 @@ class Order(Command):
 
 class View(Command):
   """View one or more messages"""
-  ORDER = ('Searching', 60)
+  ORDER = ('Searching', 4)
   SYNOPSIS = '<[raw] m1 ...>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -702,7 +712,7 @@ class View(Command):
 
 class Extract(Command):
   """Extract attachment(s) to file(s)"""
-  ORDER = ('Searching', 70)
+  ORDER = ('Searching', 5)
   SYNOPSIS = '<att msg [>fn]>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -719,7 +729,7 @@ class Extract(Command):
 
 class Delete(Command):
   """Delete a message from the index"""
-  ORDER = ('Searching', 80)
+  ORDER = ('Searching', 6)
   SYNOPSIS = '<msg>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -728,9 +738,44 @@ class Delete(Command):
 
 ##[ Configuration commands ]###################################################
 
+class ConfigSet(Command):
+  """Change a setting"""
+  ORDER = ('Config', 1)
+  SYNOPSIS = '<var=value>'
+  SPLIT_ARGS = False
+  def command(self):
+    session, config = self.session, self.session.config
+    if config.parse_set(session, self.args[0]):
+      self._serialize('Save config', lambda: config.save())
+    return True
+
+
+class ConfigUnset(Command):
+  """Reset a setting to the default"""
+  ORDER = ('Config', 2)
+  SYNOPSIS = '<var>'
+  SPLIT_ARGS = False
+  def command(self):
+    session, config = self.session, self.session.config
+    if config.parse_unset(session, self.args[0]):
+      self._serialize('Save config', lambda: config.save())
+    return True
+
+
+class ConfigPrint(Command):
+  """Print a setting"""
+  ORDER = ('Config', 3)
+  SYNOPSIS = '<var>'
+  SPLIT_ARGS = False
+  def command(self):
+    self.session.ui.print_key(self.args[0].strip().lower(),
+                              self.session.config)
+    return True
+
+
 class AddMailbox(Command):
   """Add a mailbox"""
-  ORDER = ('Config', 10)
+  ORDER = ('Config', 4)
   SYNOPSIS = '</path/to/mbx>'
   SPLIT_ARG = False
   def command(self):
@@ -747,84 +792,15 @@ class AddMailbox(Command):
         return self._error('No such file/directory: %s' % fn)
     return True
 
-class AddMailbox(Command):
-  """Add a mailbox"""
-  ORDER = ('Config', 10)
-  SYNOPSIS = '</path/to/mbx>'
+
+class GPG(Command):
+  """GPG commands"""
+  ORDER = ('Config', 5)
   def command(self):
-    session, config = self.session, self.session.config
+    raise Exception('FIXME: Should print instructions')
 
-
-
-###############################################################################
-
-
-
-# FIXME: Remove these
-def Action_Load(session, config, reset=False, wait=True, quiet=False):
-  return Load(session, 'load').run(reset=reset, wait=wait, quiet=quiet)
-def Action_Tag(session, opt, arg, save=True):
-  return Tag(session, opt, arg).run()
-def Action_Rescan(session, config):
-  return Rescan(session, 'rescan').rescan()
-
-def Action(session, opt, arg):
-  config = session.config
-  session.ui.reset_marks(quiet=True)
-
-  if not opt or opt in ('h', 'help'):
-    session.ui.print_help(COMMANDS, tags=config.get('tag', {}),
-                                    index=config.get_index(session))
-
-  elif opt in ('0', 'setup'):
-    return Setup(session, 'setup').run()
-
-  elif opt in ('A', 'add'):
-    return AddMailbox(session, 'add', arg).run()
-
-  elif opt in ('F', 'filter'):
-    return Filter(session, 'filter', arg).run()
-
-  elif opt in ('L', 'load'):
-    return Load(session, 'load').run()
-
-  elif opt in ('O', 'optimize'):
-    return Optimize(session, 'optimize', arg).run()
-
-  elif opt in ('P', 'print'):
-    session.ui.print_key(arg.strip().lower(), config)
-
-  elif opt in ('R', 'rescan'):
-    return Rescan(session, 'rescan').run()
-
-  elif opt in ('S', 'set'):
-    if config.parse_set(session, arg):
-      config.slow_worker.add_task(None, 'Save config', lambda: config.save())
-
-  elif opt in ('T', 'addtag'):
-    return Tag(session, 'tag', ['add'] + arg.split()).run()
-
-  elif opt in ('U', 'unset'):
-    if config.parse_unset(session, arg):
-      config.slow_worker.add_task(None, 'Save config', lambda: config.save())
-
-  elif opt in ('W', 'www'):
-    config.prepare_workers(session, daemons=True)
-    while not mailpile.util.QUITTING: time.sleep(1)
-
-  elif opt in ('a', 'attach'):
-    return Attach(session, 'attach', arg).run()
-
-  elif opt in ('c', 'compose'):
-    return Compose(session, 'compose', arg).run()
-
-  elif opt in ('e', 'extract'):
-    return Extract(session, 'extract', arg).run()
-
-  elif opt in ('f', 'forward'):
-    return Forward(session, 'forward', arg).run()
-
-  elif opt in ('g', 'gpgrecv'):
+  def recv_key(self):
+    session, config, arg = self.session, self.session.config, self.args[0]
     try:
       session.ui.mark('Invoking GPG to fetch key %s' % arg)
       keyserver = config.get('gpg_keyserver', 'pool.sks-keyservers.net')
@@ -834,11 +810,13 @@ def Action(session, opt, arg):
       session.ui.say(gpg.handles['stderr'].read().decode('utf-8'))
       gpg.handles['stderr'].close()
       gpg.wait()
+      session.ui.mark('Done')
     except IOError:
-      pass
-    session.ui.reset_marks()
+      return self._error('Failed to fetch key %s' % arg)
+    return True
 
-  elif opt in ('gpglistkeys'):
+  def list_keys(self):
+    session, config, arg = self.session, self.session.config, self.args[0]
     keys = []
     try:
       session.ui.mark('Listing available GPG keys')
@@ -890,77 +868,107 @@ def Action(session, opt, arg):
       gpg.wait()
       session.ui.display_data(keys)
     except IndexError, e:
-      print e, "'%s'" % line
+      self._ignore_exception()
     except IOError:
-      pass
-    session.ui.reset_marks()
+      return False
+    return True
 
-  elif opt in ('m', 'mail'):
-    return Mail(session, 'mail', arg).run()
+  SUBCOMMANDS = {
+    'recv': (recv_key, '<key-ID>'),
+    'list': (list_keys, '')
+  }
 
-  elif opt in ('n', 'next'):
-    return Next(session, 'next').run()
 
-  elif opt in ('o', 'order'):
-    return Order(session, 'order', arg).run()
+###############################################################################
 
-  elif opt in ('p', 'previous'):
-    return Previous(session, 'previous').run()
+# FIXME: Remove these
+def Action_Load(session, config, reset=False, wait=True, quiet=False):
+  return Load(session, 'load').run(reset=reset, wait=wait, quiet=quiet)
+def Action_Tag(session, opt, arg, save=True):
+  return Tag(session, opt, arg).run()
+def Action_Rescan(session, config):
+  return Rescan(session, 'rescan').rescan()
 
-  elif opt in ('r', 'reply'):
-    return Reply(session, 'reply', arg).run()
 
-  elif opt in ('s', 'search'):
-    return Search(session, 'search', arg).run()
+class Help(Command):
+  """Print help on Mailpile or individual commands."""
+  ORDER = ('Config', 9)
+  def command(self):
+    if self.args:
+      raise Exception('FIXME: Per-command help is missing')
+    else:
+      cmd_list = {}
+      count = 0
+      for grp in COMMAND_GROUPS:
+        count += 10
+        for c in COMMANDS:
+          name, cls = COMMANDS[c]
+          if cls.ORDER[0] == grp:
+            cmd_list[c] = (name, cls.SYNOPSIS, cls.__doc__, count+cls.ORDER[1])
+      self.session.ui.print_help(cmd_list,
+                                 tags=self.session.config.get('tag', {}),
+                                 index=self._idx())
+    return True
 
-  elif opt in ('t', 'tag'):
-    return Tag(session, 'tag', arg).run()
 
-  elif opt in ('u', 'update'):
-    return Update(session, 'update', arg).run()
+def Action(session, opt, arg):
+  session.ui.reset_marks(quiet=True)
+  config = session.config
 
-  elif opt in ('v', 'view'):
-    return View(session, 'view', arg).run()
+  if not opt:
+    return Help(session, 'help').run()
 
-  elif opt in ('Y', 'recount'):
-    return UpdateStats(session, 'recount').run()
+  # Use the COMMANDS dict by default.
+  if len(opt) == 1:
+    if opt in COMMANDS:
+      return COMMANDS[opt][1](session, opt, arg).run()
+    elif opt+':' in COMMANDS:
+      return COMMANDS[opt+':'][1](session, opt, arg).run()
+  for name, cls in COMMANDS.values():
+    if opt == name or opt == name[:-1]:
+      return cls(session, opt, arg).run()
 
+  # Backwards compatibility hacks
+  if opt in ('T', 'addtag'):
+    return Tag(session, 'tag', ['add'] + arg.split()).run()
+  elif opt in ('g', 'gpgrecv'):
+    return GPG(session, 'gpgrecv', ['recv'] + arg.split()).run()
+
+  # Tags are commands
   elif opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
     tid = config.get_tag_id(opt)
     return Search(session, opt, arg).run(search=['tag:%s' % tid[0]])
 
-  else:
-    raise UsageError('Unknown command: %s' % opt)
+  # OK, give up!
+  raise UsageError('Unknown command: %s' % opt)
 
-
+COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
 COMMANDS = {
-  '0':  ('setup',    '',              'Perform initial setup',              60),
-  'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      61),
-  'a:': ('attach=',  'msg path/to/f', 'Attach a file to a message',         91),
-  'c:': ('compose=', '[msg]',         '(Continue) Composing an e-mail',     90),
-  'd:': ('delete=',  'msg',           'Delete a message from the index',    88),
-  'e:': ('extract=', 'att msg [>fn]', 'Extract attachment(s) to file(s)',   86),
-  'F:': ('filter=',  'options',       'Add/edit/delete auto-tagging rules', 56),
-  'h':  ('help',     '',              'Print help on how to use mailpile',   0),
-  'L':  ('load',     '',              'Load the metadata index',            63),
-  'm:': ('mail=',    'msg [email]',   'Mail/bounce a message (to someone)', 99),
-  'f:': ('forward=', '[att] m1 ...',  'Forward messages (and attachments)', 94),
-  'n':  ('next',     '',              'Display next page of results',       81),
-  'o:': ('order=',   '[rev-]what',   ('Sort by: date, from, subject, '
-                                      'random or index'),                   83),
-  'O':  ('optimize', '',              'Optimize the keyword search index',  64),
-  'p':  ('previous', '',              'Display previous page of results',   82),
-  'P:': ('print=',   'var',           'Print a setting',                    52),
-  'r:': ('reply=',   '[all] m1 ...',  'Reply(-all) to one or more messages',93),
-  'R':  ('rescan',   '',              'Scan all mailboxes for new messages',63),
-  'g:': ('gpgrecv',  'key-ID',        'Fetch a GPG key from keyservers',    65),
-  's:': ('search=',  'terms ...',     'Search!',                            80),
-  'S:': ('set=',     'var=value',     'Change a setting',                   50),
-  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        84),
-  'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
-  'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
-  'u:': ('update=',  'msg path/to/f', 'Update message from file',           91),
-  'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          85),
-  'W':  ('www',      '',              'Just run the web server',            56),
-  'Y':  ('recount',  '',              'Force statistics update',            69),
+  '0':    ('setup',    Setup),
+  'A:':   ('add=',     AddMailbox),
+  'a:':   ('attach=',  Attach),
+  'c:':   ('compose=', Compose),
+  'd:':   ('delete=',  Delete),
+  'e:':   ('extract=', Extract),
+  'F:':   ('filter=',  Filter),
+  'h':    ('help',     Help),
+  'L':    ('load',     Load),
+  'm:':   ('mail=',    Mail),
+  'f:':   ('forward=', Forward),
+  'n':    ('next',     Next),
+  'o:':   ('order=',   Order),
+  'O':    ('optimize', Optimize),
+  'p':    ('previous', Previous),
+  'P:':   ('print=',   ConfigPrint),
+  'r:':   ('reply=',   Reply),
+  'R':    ('rescan',   Rescan),
+  'g:':   ('gpg',      GPG),
+  's:':   ('search=',  Search),
+  'S:':   ('set=',     ConfigSet),
+  't:':   ('tag=',     Tag),
+  'U:':   ('unset=',   ConfigUnset),
+  'u:':   ('update=',  Update),
+  'v:':   ('view=',    View),
+  'W':    ('www',      RunWWW),
+  'Y':    ('recount',  UpdateStats)
 }

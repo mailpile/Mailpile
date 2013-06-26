@@ -109,7 +109,7 @@ class NullUI(object):
       last_rank = int(rank/10)
 
       self.say('    %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
-                                              args and ('<%s>' % args) or '',
+                                              args and ('%s' % args) or '',
                                               explanation))
     if tags and index:
       self.say('\nTags:  (use a tag as a command to display tagged messages)',
