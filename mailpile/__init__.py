@@ -7,6 +7,7 @@ import mailpile.ui
 __all__ = ["app", "commands", "mailutils", "search", "ui", "util"]
 
 class Mailpile(object):
+  """This object provides a simple Python API to Mailpile."""
 
   def __init__(self, ui=mailpile.ui.TextUI):
     self._config = mailpile.app.ConfigManager()
@@ -16,14 +17,18 @@ class Mailpile(object):
     self._ui = self._session.ui = ui()
 
     for (cmd, args, hlp, order) in mailpile.commands.COMMANDS.values():
-      if cmd.endswith('='):
-        cmd = cmd[:-1]
-        def r(s, args):
-          return mailpile.commands.Action(s._session, cmd, args)
-      else:
-        def r(s):
-          return mailpile.commands.Action(s._session, cmd, '')
-      setattr(self, cmd, r)
+      cmd, fnc = self._mk_action(cmd)
+      fnc.__doc__ = hlp
+      setattr(self, cmd, fnc)
 
-    self._config.prepare_workers(self._session)
+  def _mk_action(self, cmd):
+    if cmd.endswith('='):
+      cmd = cmd[:-1]
+      def fnc(args):
+        return mailpile.commands.Action(self._session, cmd, args)
+      return cmd, fnc
+    else:
+      def fnc():
+        return mailpile.commands.Action(self._session, cmd, '')
+      return cmd, fnc
 

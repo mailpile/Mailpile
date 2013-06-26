@@ -184,15 +184,22 @@ class Worker(threading.Thread):
     if join: self.join()
 
 
+class DumbWorker(Worker):
+  def add_task(self, session, name, task):
+    try:
+      self.LOCK.acquire()
+      return task()
+    finally:
+      self.LOCK.release()
+  def do(self, session, name, task):
+    return self.add_task(session, name, task)
+  def run(self):
+    pass
+
+
 ##[ The Configuration Manager ]###############################################
 
 class ConfigManager(dict):
-
-  background = None
-  cron_worker = None
-  http_worker = None
-  slow_worker = None
-  index = None
 
   MBOX_CACHE = {}
   RUNNING = {}
@@ -207,6 +214,13 @@ class ConfigManager(dict):
              'http_host', 'rescan_command', 'debug', 'local_mailbox')
   DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags',
            'from', 'sendmail', 'path')
+
+  def __init__(self):
+    self.background = None
+    self.cron_worker = None
+    self.http_worker = None
+    self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
+    self.index = None
 
   def workdir(self):
     return os.environ.get('MAILPILE_HOME', os.path.expanduser('~/.mailpile'))
@@ -432,7 +446,7 @@ class ConfigManager(dict):
       config.background.ui.block()
 
     # Start the workers
-    if not config.slow_worker:
+    if config.slow_worker == config.dumb_worker:
       config.slow_worker = Worker('Slow worker', session)
       config.slow_worker.start()
     if daemons and not config.cron_worker:
