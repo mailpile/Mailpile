@@ -1,4 +1,11 @@
 #!/usr/bin/python
+#
+# These are the Mailpile commands, the public "API" we expose for searching,
+# tagging and editing e-mail.
+#
+# Consulte the COMMANDS dict at the bottom of this file for a list of which
+# commands have been defined and what their names and command-line flags are.
+#
 import os
 import os.path
 import traceback
@@ -45,303 +52,412 @@ COMMANDS = {
   'W':  ('www',      '',              'Just run the web server',            56),
   'Y':  ('recount',  '',              'Force statistics update',            69),
 }
-def Choose_Messages(session, idx, words):
-  msg_ids = set()
-  all_words = []
-  for word in words:
-    all_words.extend(word.split(','))
-  for what in all_words:
-    if what.lower() == 'these':
-      b, c = session.displayed
-      msg_ids |= set(session.results[b:b+c])
-    elif what.lower() == 'all':
-      msg_ids |= set(session.results)
-    elif what.startswith('='):
-      try:
-        msg_id = int(what[1:], 36)
-        if msg_id >= 0 and msg_id < len(idx.INDEX):
-          msg_ids.add(msg_id)
-        else:
-          session.ui.warning('ID out of bounds: %s' % (what[1:], ))
-      except ValueError:
-        session.ui.warning('What message is %s?' % (what, ))
-    elif '-' in what:
-      try:
-        b, e = what.split('-')
-        msg_ids |= set(session.results[int(b)-1:int(e)])
-      except:
-        session.ui.warning('What message is %s?' % (what, ))
-    else:
-      try:
-        msg_ids.add(session.results[int(what)-1])
-      except:
-        session.ui.warning('What message is %s?' % (what, ))
-  return msg_ids
 
-def Action_Load(session, config, reset=False, wait=True, quiet=False):
-  if not reset and config.index:
-    return config.index
-  def do_load():
-    if reset:
-      config.index = None
-      if session:
+class Command:
+  """Generic command object."""
+  GROUP = None
+
+  SYNOPSIS = None
+  SUBCOMMANDS = {}
+  FAILURE = 'Failed: %(name)s %(args)s'
+  SERIALIZE = False
+  def __init__(self, session, name, args=None, data=None):
+    self.session = session
+    self.name = name
+    self.args = args or []
+    self.data = data or {}
+
+  def _idx(self, reset=False, wait=True, quiet=False):
+    session, config = self.session, self.session.config
+    if not reset and config.index:
+      return config.index
+
+    def do_load():
+      if reset:
+        config.index = None
         session.results = []
         session.searched = []
         session.displayed = (0, 0)
-    idx = config.get_index(session)
-    idx.update_tag_stats(session, config)
-    if session:
-      session.ui.reset_marks(quiet=quiet)
-    return idx
-  if wait:
-    return config.slow_worker.do(session, 'Load', do_load)
-  else:
-    config.slow_worker.add_task(session, 'Load', do_load)
+      idx = config.get_index(session)
+      idx.update_tag_stats(session, config)
+      if not wait:
+        session.ui.reset_marks(quiet=quiet)
+      return idx
+    if wait:
+      return config.slow_worker.do(session, 'Load', do_load)
+    else:
+      config.slow_worker.add_task(session, 'Load', do_load)
+      return None
+
+  def _choose_messages(self, words):
+    msg_ids = set()
+    all_words = []
+    for word in words:
+      all_words.extend(word.split(','))
+    for what in all_words:
+      if what.lower() == 'these':
+        b, c = session.displayed
+        msg_ids |= set(self.session.results[b:b+c])
+      elif what.lower() == 'all':
+        msg_ids |= set(self.session.results)
+      elif what.startswith('='):
+        try:
+          msg_id = int(what[1:], 36)
+          if msg_id >= 0 and msg_id < len(self._idx().INDEX):
+            msg_ids.add(msg_id)
+          else:
+            self.session.ui.warning('ID out of bounds: %s' % (what[1:], ))
+        except ValueError:
+          self.session.ui.warning('What message is %s?' % (what, ))
+      elif '-' in what:
+        try:
+          b, e = what.split('-')
+          msg_ids |= set(self.session.results[int(b)-1:int(e)])
+        except:
+          self.session.ui.warning('What message is %s?' % (what, ))
+      else:
+        try:
+          msg_ids.add(self.session.results[int(what)-1])
+        except:
+          self.session.ui.warning('What message is %s?' % (what, ))
+    return msg_ids
+
+  def _error(self, message):
+    self.session.ui.error(message)
+    return False
+
+  def _ignore_exception(self):
+    if self.session.config.get('debug'):
+      self.session.ui.say(traceback.format_exc())
+
+  def _serialize(self, name, function):
+    session, config = self.session, self.session.config
+    return config.slow_worker.do(session, name, function)
+
+  def run(self, *args, **kwargs):
+    if self.SERIALIZE:
+      # Some functions we always run in the slow worker, to make sure
+      # they don't get run in parallel with other things.
+      return self._serialize(self.SERIALIZE, lambda: self._run(*args, **kwargs))
+    else:
+      return self._run(*args, **kwargs)
+
+  def _run(self, *args, **kwargs):
+    try:
+      if self.SUBCOMMANDS and self.args[0] in self.SUBCOMMANDS:
+        subcmd = self.args.pop(0)
+        self.name += ' ' + subcmd
+        return self.SUBCOMMANDS[subcmd][0](self, *args, **kwargs)
+      else:
+        return self.command(*args, **kwargs)
+    except UsageError:
+      raise
+    except:
+      self._ignore_exception()
+      return self._error(self.FAILURE % {'name': self.name,
+                                         'args': ' '.join(self.args) })
+    finally:
+      self.session.ui.reset_marks()
+
+  def command(self):
     return None
 
-def Action_Tag(session, opt, arg, save=True):
-  idx = Action_Load(session, session.config)
-  try:
-    words = arg.split()
+
+class Load(Command):
+  """Load or reload the metadata index"""
+  GROUP = 'Config'
+  def command(self, reset=False, wait=True, quiet=False):
+    return self._idx(reset=reset, wait=wait, quiet=quiet)
+
+
+class Tag(Command):
+  """Add/remove/list/edit message tags"""
+  GROUP = 'Tagging'
+  SYNOPSIS = '<[+|-]tags> <msgs>'
+  def command(self, save=True):
+    idx = self._idx()
+    words = self.args[:]
     ops = []
     while words and words[0][0] in ('-', '+'):
       ops.append(words.pop(0))
-    msg_ids = Choose_Messages(session, idx, words)
+    msg_ids = self._choose_messages(words)
     for op in ops:
-      tag_id = session.config.get_tag_id(op[1:])
+      tag_id = self.session.config.get_tag_id(op[1:])
       if op[0] == '-':
-        idx.remove_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
+        idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
       else:
-        idx.add_tag(session, tag_id, msg_idxs=msg_ids, conversation=True)
-
-    session.ui.reset_marks()
+        idx.add_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
 
     if save:
       # Background save makes things feel fast!
       def background():
-        idx.update_tag_stats(session, session.config)
+        idx.update_tag_stats(self.session, self.session.config)
         idx.save_changes()
-      session.config.slow_worker.add_task(None, 'Save index', background)
+      self._serialize('Save index', background)
     else:
-      idx.update_tag_stats(session, session.config)
+      idx.update_tag_stats(self.session, self.session.config)
 
     return True
 
-  except (TypeError, ValueError, IndexError):
-    session.ui.reset_marks()
-    session.ui.error('That made no sense: %s %s' % (opt, arg))
-    return False
+  def add_tag(self):
+    config = self.session.config
+    existing = [v.lower() for v in config.get('tag', {}).values()]
+    for tag in self.args:
+      if ' ' in tag:
+        return self._error('Invalid tag: %s' % tag)
+      if tag.lower() in existing:
+        return self._error('Tag already exists: %s' % tag)
+    for tag in self.args:
+      if config.parse_set(self.session, 'tag:%s=%s' % (config.nid('tag'), tag)):
+        self._serialize('Save config', lambda: config.save())
+    return True
 
-def Action_Filter_Add(session, config, flags, args):
-  if args and args[0][0] == '=':
-    tag_id = args.pop(0)[1:]
-  else:
-    tag_id = config.nid('filter')
-
-  if 'read' in flags:
-    terms = ['@read']
-  elif 'new' in flags:
-    terms = ['*']
-  else:
-    terms = session.searched
-
-  if not terms or (len(args) < 1):
-    raise UsageError('Need flags and search terms or a hook')
-
-  tags, tids = [], []
-  while args and args[0][0] in ('-', '+'):
-    tag = args.pop(0)
-    tags.append(tag)
-    tids.append(tag[0]+config.get_tag_id(tag[1:]))
-
-  if not args:
-    args = ['Filter for %s' % ' '.join(tags)]
-
-  if 'notag' not in flags and 'new' not in flags and 'read' not in flags:
-    for tag in tags:
-      if not Action_Tag(session, 'filter/tag', '%s all' % tag, save=False):
-        raise UsageError()
-
-  if (config.parse_set(session, ('filter:%s=%s'
-                                 ) % (tag_id, ' '.join(args)))
-  and config.parse_set(session, ('filter_tags:%s=%s'
-                                 ) % (tag_id, ' '.join(tids)))
-  and config.parse_set(session, ('filter_terms:%s=%s'
-                                 ) % (tag_id, ' '.join(terms)))):
-    session.ui.reset_marks()
-    def save_filter():
-      config.save()
-      if config.index: config.index.save_changes()
-    config.slow_worker.add_task(None, 'Save filter', save_filter)
-  else:
-    raise Exception('That failed, not sure why?!')
-
-def Action_Filter_Delete(session, config, flags, args):
-  if len(args) < 1 or args[0] not in config.get('filter', {}):
-    raise UsageError('Delete what?')
-
-  fid = args[0]
-  if (config.parse_unset(session, 'filter:%s' % fid)
-  and config.parse_unset(session, 'filter_tags:%s' % fid)
-  and config.parse_unset(session, 'filter_terms:%s' % fid)):
-    config.save()
-  else:
-    raise Exception('That failed, not sure why?!')
-
-def Action_Filter_Move(session, config, flags, args):
-  raise Exception('Unimplemented')
-
-def Action_Filter(session, opt, arg):
-  config = session.config
-  args = arg.split()
-  flags = []
-  while args and args[0] in ('add', 'set', 'delete', 'move', 'list',
-                             'new', 'read', 'notag'):
-    flags.append(args.pop(0))
-  try:
-    if 'delete' in flags:
-      return Action_Filter_Delete(session, config, flags, args)
-    elif 'move' in flags:
-      return Action_Filter_Move(session, config, flags, args)
-    elif 'list' in flags:
-      return session.ui.print_filters(config)
-    else:
-      return Action_Filter_Add(session, config, flags, args)
-  except UsageError:
+  def list_tags(self):
     pass
-  except Exception, e:
-    session.error(e)
-    return
-  session.ui.say(
-    'Usage: filter [new|read] [notag] [=ID] <[+|-]tags ...> [description]\n'
-    '       filter delete <id>\n'
-    '       filter move <id> <pos>\n'
-    '       filter list')
 
-def Action_UpdateStats(session, config):
-  idx = config.index
-  tags = config.get("tag", {})
-  idx.update_tag_stats(session, config, tags.keys())
-  session.ui.say("Statistics updated.")
+  SUBCOMMANDS = {
+    'add':  (add_tag,   '<tag>'),
+    'list': (list_tags, ''),
+  }
 
-def Action_Rescan(session, config):
-  if 'rescan' in config.RUNNING: return
-  config.RUNNING['rescan'] = True
-  idx = config.index
-  count = 0
-  rv = True
-  try:
-    pre_command = config.get('rescan_command', None)
-    if pre_command:
-      session.ui.mark('Running: %s' % pre_command)
-      subprocess.check_call(pre_command, shell=True)
-    count = 1
-    for fid, fpath in config.get_mailboxes():
-      if mailpile.util.QUITTING: break
-      count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
-      config.clear_mbox_cache()
-      session.ui.mark('\n')
-    count -= 1
-    if count:
-      if not mailpile.util.QUITTING:
-        GlobalPostingList.Optimize(session, idx, quick=True)
+
+class Filter(Command):
+  """Add/edit/delete/list auto-tagging rules"""
+  GROUP = 'Tagging'
+  SYNOPSIS = '[new|read] [notag] [=ID] <[+|-]tags ...> [description]'
+  def command(self):
+    args, session, config = self.args, self.session, self.session.config
+
+    flags = []
+    while args and args[0] in ('add', 'set', 'new', 'read', 'notag'):
+      flags.append(args.pop(0))
+
+    if args and args[0] and args[0][0] == '=':
+      tag_id = args.pop(0)[1:]
     else:
-      session.ui.mark('Nothing changed')
-  except (KeyboardInterrupt, subprocess.CalledProcessError), e:
-    session.ui.mark('Aborted: %s' % e)
-    if config.get('debug'):
-      session.ui.say(traceback.format_exc())
-    rv = False
-  finally:
-    if count:
-      session.ui.mark('\n')
-      if count < 500:
-        idx.save_changes(session)
+      tag_id = config.nid('filter')
+
+    if 'read' in flags:
+      terms = ['@read']
+    elif 'new' in flags:
+      terms = ['*']
+    else:
+      terms = session.searched
+
+    if not terms or (len(args) < 1):
+      raise UsageError('Need flags and search terms or a hook')
+
+    tags, tids = [], []
+    while args and args[0][0] in ('-', '+'):
+      tag = args.pop(0)
+      tags.append(tag)
+      tids.append(tag[0]+config.get_tag_id(tag[1:]))
+
+    if not args:
+      args = ['Filter for %s' % ' '.join(tags)]
+
+    if 'notag' not in flags and 'new' not in flags and 'read' not in flags:
+      for tag in tags:
+        if not Action_Tag(session, 'filter/tag', '%s all' % tag, save=False):
+          raise UsageError()
+
+    if (config.parse_set(session, ('filter:%s=%s'
+                                   ) % (tag_id, ' '.join(args)))
+    and config.parse_set(session, ('filter_tags:%s=%s'
+                                   ) % (tag_id, ' '.join(tids)))
+    and config.parse_set(session, ('filter_terms:%s=%s'
+                                   ) % (tag_id, ' '.join(terms)))):
+      session.ui.reset_marks()
+      def save_filter():
+        config.save()
+        if config.index: config.index.save_changes()
+      self._serialize('Save filter', save_filter)
+    else:
+      raise Exception('That failed, not sure why?!')
+
+  def rm(self):
+    session, config = self.session, self.session.config
+    if len(self.args) < 1 or self.args[0] not in config.get('filter', {}):
+      raise UsageError('Delete what?')
+    fid = self.args[0]
+    if (config.parse_unset(session, 'filter:%s' % fid)
+    and config.parse_unset(session, 'filter_tags:%s' % fid)
+    and config.parse_unset(session, 'filter_terms:%s' % fid)):
+      config.save()
+    else:
+      raise Exception('That failed, not sure why?!')
+
+  def mv(self):
+    raise Exception('Unimplemented')
+
+  def ls(self):
+    return self.session.ui.print_filters(self.session.config)
+
+  SUBCOMMANDS = {
+    'delete': (rm, '<id>'),
+    'move':   (mv, '<id> <pos>'),
+    'list':   (ls, ''),
+  }
+
+
+class UpdateStats(Command):
+  """Force statistics update"""
+  GROUP = 'Config'
+  def command(self):
+    session, config = self.session, self.session.config
+    idx = config.index
+    tags = config.get("tag", {})
+    idx.update_tag_stats(session, config, tags.keys())
+    session.ui.mark("Statistics updated")
+
+
+class Rescan(Command):
+  """Scan all mailboxes for new messages"""
+  GROUP = 'Config'
+  SERIALIZE = 'Rescan'
+  def command(self):
+    session, config = self.session, self.session.config
+
+    # FIXME: Need a lock here?
+    if 'rescan' in config.RUNNING:
+      return True
+    config.RUNNING['rescan'] = True
+
+    idx = self._idx()
+    count = 0
+    rv = True
+    try:
+      pre_command = config.get('rescan_command', None)
+      if pre_command:
+        session.ui.mark('Running: %s' % pre_command)
+        subprocess.check_call(pre_command, shell=True)
+      count = 1
+      for fid, fpath in config.get_mailboxes():
+        if mailpile.util.QUITTING: break
+        count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
+        config.clear_mbox_cache()
+        session.ui.mark('\n')
+      count -= 1
+      if count:
+        if not mailpile.util.QUITTING:
+          GlobalPostingList.Optimize(session, idx, quick=True)
       else:
-        idx.save(session)
-  idx.update_tag_stats(session, config)
-  session.ui.reset_marks()
-  del config.RUNNING['rescan']
-  return rv
+        session.ui.mark('Nothing changed')
+    except (KeyboardInterrupt, subprocess.CalledProcessError), e:
+      session.ui.mark('Aborted: %s' % e)
+      self._ignore_exception()
+      return False
+    finally:
+      if count:
+        session.ui.mark('\n')
+        if count < 500:
+          idx.save_changes(session)
+        else:
+          idx.save(session)
+      del config.RUNNING['rescan']
+      idx.update_tag_stats(session, config)
+    return True
 
-def Action_Optimize(session, config, arg):
-  try:
-    idx = Action_Load(session, config)
-    idx.save(session)
-    GlobalPostingList.Optimize(session, idx, force=(arg == 'harder'))
-    session.ui.reset_marks()
-  except KeyboardInterrupt:
-    session.ui.mark('Aborted')
-    session.ui.reset_marks()
-  return True
 
-def Action_Attach(session, config, args):
-  idx = Action_Load(session, config)
-  session.ui.clear()
-
-  files = []
-  while os.path.exists(args[-1]):
-    files.append(args.pop(-1))
-  if not files:
-    session.ui.error('No files found')
-    return False
-
-  emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
-  if not emails:
-    session.ui.error('No messages selected')
-    return False
-
-  session.ui.say('Attaching %s to...' % ', '.join(files))
-  for email in emails:
-    subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
+class Optimize(Command):
+  """Optimize the keyword search index"""
+  GROUP = 'Config'
+  SYNOPSIS = '[harder]'
+  SERIALIZE = 'Optimize'
+  def command(self):
     try:
-      email.add_attachments(files)
-      session.ui.say(' - %s' % subject)
-    except NotEditableError:
-      session.ui.error('Read-only message: %s' % subject)
-    except:
-      session.ui.error('Error attaching to %s' % subject)
-      session.ui.say(traceback.format_exc())
+      GlobalPostingList.Optimize(self.session, self._idx(),
+                                 force=('harder' in self.args))
+      return True
+    except KeyboardInterrupt:
+      session.ui.mark('Aborted')
+      return False
 
-  session.ui.reset_marks()
-  return True
 
-def Action_Compose(session, config, args):
-  idx = Action_Load(session, config)
-  if args:
-    emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
-  else:
-    local_id, lmbox = config.open_local_mailbox(session)
-    emails = [Email.Create(idx, local_id, lmbox)]
-    try:
-      idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                  msg_idxs=[int(e.get_msg_info(idx.MSG_IDX), 36) for e in emails],
-                  conversation=False)
-    except (TypeError, ValueError, IndexError):
-      if session.config.get('debug'):
-        session.ui.say(traceback.format_exc())
+# FIXME: Remove these
+def Action_Load(session, config, reset=False, wait=True, quiet=False):
+  return Load(session, 'load').run(reset=reset, wait=wait, quiet=quiet)
+def Action_Tag(session, opt, arg, save=True):
+  return Tag(session, opt, args=arg.split()).run()
+def Action_Rescan(session, config):
+  return Rescan(session, 'rescan').rescan()
 
-  if session.interactive:
-    session.ui.clear()
-    session.ui.reset_marks()
-    session.ui.edit_messages(emails)
-  else:
-    session.ui.say('%d message(s) created as drafts' % len(emails))
-  session.ui.reset_marks()
-  return True
 
-def Action_Update(session, config, args):
-  if len(args) > 1:
-    idx = Action_Load(session, config)
-    fn = args.pop(-1)
-    emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
+class Attach(Command):
+  """Attach a file to a message"""
+  GROUP = 'Composing'
+  SYNOPSIS = '<msg path/to/f>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+
+    files = []
+    while os.path.exists(self.args[-1]):
+      files.append(self.args.pop(-1))
+    if not files:
+      return self._error('No files found')
+
+    emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+    if not emails:
+      return self._error('No messages selected')
+
+    # FIXME: Using "say" here is rather lame.
+    session.ui.say('Attaching %s to...' % ', '.join(files))
     for email in emails:
-      email.update_from_string( open(fn, 'rb').read())
-    session.ui.say('%d message(s) updated' % len(emails))
-  else:
-    session.ui.error('Nothing to update!')
-  session.ui.reset_marks()
-  return True
+      subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
+      try:
+        email.add_attachments(files)
+        session.ui.say(' - %s' % subject)
+      except NotEditableError:
+        session.ui.error('Read-only message: %s' % subject)
+      except:
+        session.ui.error('Error attaching to %s' % subject)
+        self._ignore_exception()
+
+    return True
+
+
+class Compose(Command):
+  """(Continue) Composing an e-mail"""
+  GROUP = 'Composing'
+  SYNOPSIS = '<[msg]>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+    if self.args:
+      emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+    else:
+      local_id, lmbox = config.open_local_mailbox(session)
+      emails = [Email.Create(idx, local_id, lmbox)]
+      try:
+        msg_idxs = [int(e.get_msg_info(idx.MSG_IDX), 36) for e in emails]
+        idx.add_tag(session, session.config.get_tag_id('Drafts'),
+                    msg_idxs=msg_idxs, conversation=False)
+      except (TypeError, ValueError, IndexError):
+        self._ignore_exception()
+
+    if session.interactive:
+      session.ui.clear()
+      session.ui.edit_messages(emails)
+    else:
+      session.ui.say('%d message(s) created as drafts' % len(emails))
+    return True
+
+
+class Update(Command):
+  """Update message from a file"""
+  GROUP = 'Composing'
+  SYNOPSIS = '<msg path/to/f>'
+  def command(self):
+    if len(self.args) > 1:
+      session, config, idx = self.session, self.session.config, self._idx()
+      fn = self.args.pop(-1)
+      emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+      for email in emails:
+        email.update_from_string(open(fn, 'rb').read())
+      session.ui.say('%d message(s) updated' % len(emails))
+    else:
+      return self._error('Nothing to update!')
+    return True
+
 
 def Action_Reply(session, config, args):
   if args and args[0].lower() == 'all':
@@ -499,7 +615,7 @@ def Action_Setup(session):
   tags = session.config.get('tag', {}).values()
   for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
     if t not in tags:
-      Action(session, 'addtag', t)
+      Action(session, 'tag add', t)
   if 'New' not in tags:
     Action(session, 'filter', 'new +Inbox +New New Mail filter')
     Action(session, 'filter', 'read -New Read Mail filter')
@@ -531,7 +647,7 @@ def Action(session, opt, arg):
         session.error('No such file/directory: %s' % arg)
 
   elif opt in ('F', 'filter'):
-    Action_Filter(session, opt, arg)
+    return Filter(session, 'filter', arg.split(' ')).run()
 
   elif opt in ('L', 'load'):
     Action_Load(session, config, reset=True)
@@ -544,23 +660,14 @@ def Action(session, opt, arg):
     session.ui.print_key(arg.strip().lower(), config)
 
   elif opt in ('R', 'rescan'):
-    Action_Load(session, config)
-    config.slow_worker.do(session, 'Rescan',
-                          lambda: Action_Rescan(session, config))
+    return Rescan(session, 'rescan').run()
 
   elif opt in ('S', 'set'):
     if config.parse_set(session, arg):
       config.slow_worker.add_task(None, 'Save config', lambda: config.save())
 
   elif opt in ('T', 'addtag'):
-    if (arg
-    and ' ' not in arg
-    and arg.lower() not in [v.lower() for v in config.get('tag', {}).values()]):
-      if config.parse_set(session,
-                          'tag:%s=%s' % (config.nid('tag'), arg)):
-        config.slow_worker.add_task(None, 'Save config', lambda: config.save())
-    else:
-      session.error('Invalid tag: %s' % arg)
+    return Tag(session, 'tag', ['add'] + arg.split()).run()
 
   elif opt in ('U', 'unset'):
     if config.parse_unset(session, arg):
@@ -571,10 +678,10 @@ def Action(session, opt, arg):
     while not mailpile.util.QUITTING: time.sleep(1)
 
   elif opt in ('a', 'attach'):
-    Action_Attach(session, config, arg.split())
+    return Attach(session, 'attach', arg.split()).run()
 
   elif opt in ('c', 'compose'):
-    Action_Compose(session, config, arg.split())
+    return Compose(session, 'compose', arg.split()).run()
 
   elif opt in ('e', 'extract'):
     args = arg.split()
@@ -740,7 +847,7 @@ def Action(session, opt, arg):
     Action_Tag(session, opt, arg)
 
   elif opt in ('u', 'update'):
-    Action_Update(session, config, arg.split())
+    return Update(session, 'update', arg.split()).run()
 
   elif opt in ('v', 'view'):
     args = arg.split()
@@ -757,7 +864,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif opt in ('Y', 'recount'):
-    Action_UpdateStats(session, config)
+    return UpdateStats(session, 'recount').run()
 
   else:
     raise UsageError('Unknown command: %s' % opt)
