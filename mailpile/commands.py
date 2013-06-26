@@ -29,7 +29,7 @@ class Command:
   FAILURE = 'Failed: %(name)s %(args)s'
   SERIALIZE = False
 
-  def __init__(self, session, name, args=None, data=None):
+  def __init__(self, session, name=None, args=None, data=None):
     self.session = session
     self.name = name
     self.args = args or []
@@ -147,10 +147,10 @@ class Setup(Command):
     tags = session.config.get('tag', {}).values()
     for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
       if t not in tags:
-        Tag(session, '', ['add', t]).run()
+        Tag(session, args=['add', t]).run()
     if 'New' not in tags:
-      Filter(session, '', ['new', '+Inbox', '+New', 'New Mail filter']).run()
-      Filter(session, '', ['read', '-New', 'Read Mail filter']).run()
+      Filter(session, args=['new', '+Inbox', '+New', 'New Mail filter']).run()
+      Filter(session, args=['read', '-New', 'Read Mail filter']).run()
 
     return True
 
@@ -158,7 +158,7 @@ class Setup(Command):
 class Load(Command):
   """Load or reload the metadata index"""
   ORDER = ('Internals', 30)
-  def command(self, reset=False, wait=True, quiet=False):
+  def command(self, reset=True, wait=True, quiet=False):
     return self._idx(reset=reset, wait=wait, quiet=quiet)
 
 
@@ -587,7 +587,7 @@ class Mail(Command):
       try:
         SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
         msg_idx = emails[0].get_msg_info(idx.MSG_IDX)
-        Tag(session, '', ['-Drafts', '+Sent', '=%s'% msg_idx]).run()
+        Tag(session, args=['-Drafts', '+Sent', '=%s'% msg_idx]).run()
       except:
         session.ui.error('Failed to send %s' % email)
         self._ignore_exception()
@@ -595,7 +595,142 @@ class Mail(Command):
     return True
 
 
-##############################################################################
+##[ Searching and browsing ]##################################################
+
+class Search(Command):
+  """Search your mail!"""
+  ORDER = ('Searching', 10)
+  SYNOPSIS = '<terms ...>'
+  def command(self, search=None):
+    session, config, idx = self.session, self.session.config, self._idx()
+    session.searched = search or []
+    num_results = config.get('num_results', None)
+
+    if self.args and self.args[0].startswith('@'):
+      try:
+        start = int(args.pop(0)[1:])-1
+      except ValueError:
+        raise UsageError('Weird starting point')
+    else:
+      start = 0
+
+    # FIXME: Is this dumb?
+    for arg in self.args:
+      if ':' in arg or (arg and arg[0] in ('-', '+')):
+        session.searched.append(arg.lower())
+      else:
+        session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
+
+    session.results = list(idx.search(session, session.searched))
+    idx.sort_results(session, session.results, how=session.order)
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
+                                                   start=start,
+                                                   num=num_results)
+    return True
+
+
+class Next(Command):
+  """Display next page of results"""
+  ORDER = ('Searching', 20)
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+    num_results = config.get('num_results', None)
+    pos, count = session.displayed
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
+                                                   start=pos+count,
+                                                   num=num_results)
+    return True
+
+
+class Previous(Command):
+  """Display previous page of results"""
+  ORDER = ('Searching', 30)
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+    num_results = config.get('num_results', None)
+    pos, count = session.displayed
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
+                                                   end=pos,
+                                                   num=num_results)
+    return True
+
+
+class Order(Command):
+  """Sort by: date, from, subject, random or index"""
+  ORDER = ('Searching', 40)
+  SYNOPSIS = '<terms ...>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+    num_results = config.get('num_results', None)
+    session.order = self.args and self.args[0] or None
+    idx.sort_results(session, session.results, how=session.order)
+    session.displayed = session.ui.display_results(idx, session.results,
+                                                   session.searched,
+                                                   num=num_results)
+    return True
+
+
+class View(Command):
+  """View one or more messages"""
+  ORDER = ('Searching', 60)
+  SYNOPSIS = '<[raw] m1 ...>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+    if self.args and self.args[0].lower() == 'raw':
+      raw = self.args.pop(0)
+    else:
+      raw = False
+    emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+    if emails:
+      idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx for e in emails])
+      session.ui.clear()
+      session.ui.display_messages(emails, raw=raw)
+    return True
+
+
+class Extract(Command):
+  """Extract attachment(s) to file(s)"""
+  ORDER = ('Searching', 70)
+  SYNOPSIS = '<att msg [>fn]>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+    cid = self.args.pop(0)
+    if len(self.args) > 0 and self.args[-1].startswith('>'):
+      name_fmt = self.args.pop(-1)[1:]
+    else:
+      name_fmt = None
+    emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+    for email in emails:
+      email.extract_attachment(session, cid, name_fmt=name_fmt)
+    return True
+
+
+class Delete(Command):
+  """Delete a message from the index"""
+  ORDER = ('Searching', 80)
+  SYNOPSIS = '<msg>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+    raise Exception('Unimplemented')
+
+
+##[ Configuration commands ]###################################################
+
+class X(Command):
+  """Search your mail!"""
+  ORDER = ('Searching', 10)
+  SYNOPSIS = '<terms ...>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+
+
+
+###############################################################################
+
+
 
 # FIXME: Remove these
 def Action_Load(session, config, reset=False, wait=True, quiet=False):
@@ -608,7 +743,6 @@ def Action_Rescan(session, config):
 def Action(session, opt, arg):
   config = session.config
   session.ui.reset_marks(quiet=True)
-  num_results = config.get('num_results', None)
 
   if not opt or opt in ('h', 'help'):
     session.ui.print_help(COMMANDS, tags=config.get('tag', {}),
@@ -633,11 +767,10 @@ def Action(session, opt, arg):
     return Filter(session, 'filter', arg.split(' ')).run()
 
   elif opt in ('L', 'load'):
-    Action_Load(session, config, reset=True)
+    return Load(session, 'load').run()
 
   elif opt in ('O', 'optimize'):
-    config.slow_worker.do(session, 'Optimize',
-                          lambda: Action_Optimize(session, config, arg))
+    return Optimize(session, 'optimize', arg.split()).run()
 
   elif opt in ('P', 'print'):
     session.ui.print_key(arg.strip().lower(), config)
@@ -667,17 +800,7 @@ def Action(session, opt, arg):
     return Compose(session, 'compose', arg.split()).run()
 
   elif opt in ('e', 'extract'):
-    args = arg.split()
-    idx = Action_Load(session, config)
-    cid = args.pop(0)
-    if len(args) > 0 and args[-1].startswith('>'):
-      name_fmt = args.pop(-1)[1:]
-    else:
-      name_fmt = None
-    emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
-    for email in emails:
-      email.extract_attachment(session, cid, name_fmt=name_fmt)
-    session.ui.reset_marks()
+    return Extract(session, 'extract', arg.split()).run()
 
   elif opt in ('f', 'forward'):
     return Forward(session, 'forward', arg.split()).run()
@@ -757,74 +880,19 @@ def Action(session, opt, arg):
     return Mail(session, 'mail', arg.split()).run()
 
   elif opt in ('n', 'next'):
-    idx = Action_Load(session, config)
-    session.ui.reset_marks()
-    pos, count = session.displayed
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   start=pos+count,
-                                                   num=num_results)
-    session.ui.reset_marks()
+    return Next(session, 'next').run()
 
   elif opt in ('o', 'order'):
-    idx = Action_Load(session, config)
-    session.order = arg or None
-    idx.sort_results(session, session.results,
-                     how=session.order)
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   num=num_results)
-    session.ui.reset_marks()
+    return Order(session, 'order', arg.split()).run()
 
   elif opt in ('p', 'previous'):
-    idx = Action_Load(session, config)
-    pos, count = session.displayed
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   end=pos,
-                                                   num=num_results)
-    session.ui.reset_marks()
+    return Previous(session, 'previous').run()
 
   elif opt in ('r', 'reply'):
     return Reply(session, 'reply', arg.split()).run()
 
-  elif (opt in ('s', 'search')
-        or opt.lower() in [t.lower() for t in config.get('tag', {}).values()]):
-    idx = Action_Load(session, config)
-
-    # FIXME: This is all rather dumb.  Make it smarter!
-
-    session.searched = []
-    if opt not in ('s', 'search'):
-      tid = config.get_tag_id(opt)
-      session.searched = ['tag:%s' % tid[0]]
-
-    if arg.startswith('@'):
-      try:
-        if ' ' in arg:
-          args = arg[1:].split(' ')
-          start = args.pop(0)
-        else:
-          start, args = arg[1:], []
-        start = int(start)-1
-        arg = ' '.join(args)
-      except ValueError:
-        raise UsageError('Weird starting point')
-    else:
-      start = 0
-
-    if ':' in arg or '-' in arg or '+' in arg:
-      session.searched.extend(arg.lower().split())
-    else:
-      session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
-
-    session.results = list(idx.search(session, session.searched))
-    idx.sort_results(session, session.results, how=session.order)
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   start=start,
-                                                   num=num_results)
-    session.ui.reset_marks()
+  elif opt in ('s', 'search'):
+    return Search(session, 'search', arg.split()).run()
 
   elif opt in ('t', 'tag'):
     return Tag(session, 'tag', arg.split()).run()
@@ -833,21 +901,14 @@ def Action(session, opt, arg):
     return Update(session, 'update', arg.split()).run()
 
   elif opt in ('v', 'view'):
-    args = arg.split()
-    if args and args[0].lower() == 'raw':
-      raw = args.pop(0)
-    else:
-      raw = False
-    idx = Action_Load(session, config)
-    emails = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
-    if emails:
-      idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx for e in emails])
-      session.ui.clear()
-      session.ui.display_messages(emails, raw=raw)
-    session.ui.reset_marks()
+    return View(session, 'view', arg.split()).run()
 
   elif opt in ('Y', 'recount'):
     return UpdateStats(session, 'recount').run()
+
+  elif opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
+    tid = config.get_tag_id(opt)
+    return Search(session, opt, arg.split()).run(search=['tag:%s' % tid[0]])
 
   else:
     raise UsageError('Unknown command: %s' % opt)
