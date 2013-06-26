@@ -260,7 +260,7 @@ class RunWWW(Command):
 class Tag(Command):
   """Add/remove/list/edit message tags"""
   ORDER = ('Tagging', 0)
-  SYNOPSIS = '<[+|-]tags> <msgs>'
+  SYNOPSIS = '<[+|-]tags msgs>'
   def command(self, save=True):
     idx = self._idx()
     words = self.args[:]
