@@ -108,9 +108,13 @@ class NullUI(object):
       if last_rank and int(rank/10) != last_rank: self.say()
       last_rank = int(rank/10)
 
-      self.say('    %s|%-8.8s %-15.15s %s' % (c[0], cmd.replace('=', ''),
-                                              args and ('%s' % args) or '',
-                                              explanation))
+      if c[0] == '_':
+        c = '  '
+      else:
+        c = '%s|' % c[0]
+      self.say('    %s%-8.8s %-15.15s %s' % (c, cmd.replace('=', ''),
+                                             args and ('%s' % args) or '',
+                                             explanation))
     if tags and index:
       self.say('\nTags:  (use a tag as a command to display tagged messages)',
                '\n  ')

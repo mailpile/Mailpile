@@ -942,33 +942,35 @@ def Action(session, opt, arg):
   # OK, give up!
   raise UsageError('Unknown command: %s' % opt)
 
-COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
+# Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = {
-  '0':    ('setup',    Setup),
-  'A:':   ('add=',     AddMailbox),
-  'a:':   ('attach=',  Attach),
-  'c:':   ('compose=', Compose),
-  'd:':   ('delete=',  Delete),
-  'e:':   ('extract=', Extract),
-  'F:':   ('filter=',  Filter),
-  'h':    ('help',     Help),
-  'L':    ('load',     Load),
-  'm:':   ('mail=',    Mail),
-  'f:':   ('forward=', Forward),
-  'n':    ('next',     Next),
-  'o:':   ('order=',   Order),
-  'O':    ('optimize', Optimize),
-  'p':    ('previous', Previous),
-  'P:':   ('print=',   ConfigPrint),
-  'r:':   ('reply=',   Reply),
-  'R':    ('rescan',   Rescan),
-  'g:':   ('gpg',      GPG),
-  's:':   ('search=',  Search),
-  'S:':   ('set=',     ConfigSet),
-  't:':   ('tag=',     Tag),
-  'U:':   ('unset=',   ConfigUnset),
-  'u:':   ('update=',  Update),
-  'v:':   ('view=',    View),
-  'W':    ('www',      RunWWW),
-  'Y':    ('recount',  UpdateStats)
+  '_setup': ('setup',    Setup),
+  'A:':     ('add=',     AddMailbox),
+  'a:':     ('attach=',  Attach),
+  'c:':     ('compose=', Compose),
+  'd:':     ('delete=',  Delete),
+  'e:':     ('extract=', Extract),
+  'F:':     ('filter=',  Filter),
+  'h':      ('help',     Help),
+  '_load':  ('load',     Load),
+  'm:':     ('mail=',    Mail),
+  'f:':     ('forward=', Forward),
+  'n':      ('next',     Next),
+  'o:':     ('order=',   Order),
+  '_optim': ('optimize', Optimize),
+  'p':      ('previous', Previous),
+  'P:':     ('print=',   ConfigPrint),
+  'r:':     ('reply=',   Reply),
+  '_resca': ('rescan',   Rescan),
+  'g:':     ('gpg',      GPG),
+  's:':     ('search=',  Search),
+  'S:':     ('set=',     ConfigSet),
+  't:':     ('tag=',     Tag),
+  'U:':     ('unset=',   ConfigUnset),
+  'u:':     ('update=',  Update),
+  'v:':     ('view=',    View),
+  '_www':   ('www',      RunWWW),
+  '_recou': ('recount',  UpdateStats)
 }
+COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
+

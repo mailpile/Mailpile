@@ -524,8 +524,8 @@ def Main(args):
     config.prepare_workers(session)
 
     try:
-      opts, args = getopt.getopt(args,
-                                 ''.join(COMMANDS.keys()),
+      opts, args = getopt.getopt(args, ''.join([k for k in COMMANDS.keys()
+                                                if not k[0] == '_']),
                                  [v[0] for v in COMMANDS.values()])
       for opt, arg in opts:
         Action(session, opt.replace('-', ''), arg)
