@@ -61,7 +61,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       self.wfile.write(message or '')
 
   def send_file(self, config, filename):
-    # Needs more checking
+    # FIXME: Do we need more security checks?
     if '..' in filename:
       code, msg = 403, "Access denied"
     else:

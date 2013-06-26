@@ -1,6 +1,17 @@
 #!/usr/bin/python
 #
-# Basic user-interface stuff
+# This is a collection of "User interface" classes.
+#
+# The role of these classes is to translate internal data structures and
+# progress reports into whatever makes sense for a given user interface.
+#
+# As an example, the TextUI presents everything as plain-text, the JsonUI
+# and XmlUI classe generate structured machine-readable output, the HtmlUI
+# generates template-based HTML pages.
+#
+# UI class methods fall roughly into two categories:
+#   - Logging and progress reporting
+#   - Rendering the final results of a successful command
 #
 ###############################################################################
 import datetime
@@ -19,6 +30,8 @@ except:
 from mailpile.util import *
 from mailpile.search import MailIndex
 from lxml.html.clean import autolink_html
+
+ABOUT = "This is Mailpile!"  # This usually gets overwritten by app.py
 
 
 class SuppressHtmlOutput(Exception):
@@ -411,6 +424,9 @@ class HttpUI(TextUI):
 
   def set_querydata(self, querydata):
     self.query_data = querydata
+
+  def open_for_data(self, name_fmt=None, attributes={}):
+    return 'HTTP Client', RawHttpResponder(self.request, attributes)
 
 
 class JsonUI(HttpUI):
@@ -905,16 +921,11 @@ class HtmlUI(HttpUI):
 
     return ('html', autolink_html('<p class="%s">%s</p>' % tuple(what)))
 
-  def open_for_data(self, name_fmt=None, attributes={}):
-    return 'HTTP Client', RawHttpResponder(self.request, attributes)
-
 
 class Session(object):
 
   main = False
   interactive = False
-
-  ui = NullUI()
   order = None
 
   def __init__(self, config):
@@ -924,6 +935,7 @@ class Session(object):
     self.searched = []
     self.displayed = (0, 0)
     self.task_results = []
+    self.ui = NullUI()
 
   def report_task_completed(self, name, result):
     self.wait_lock.acquire()
@@ -949,5 +961,6 @@ class Session(object):
 
   def error(self, message):
     self.ui.error(message)
-    if not self.interactive: sys.exit(1)
+    if not self.interactive:
+      sys.exit(1)
 

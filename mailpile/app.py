@@ -41,7 +41,7 @@ import mailpile.ui
 import mailpile.util
 mailpile.ui.ABOUT = ABOUT
 
-from mailpile.commands import *
+from mailpile.commands import COMMANDS, Action_Load, Action_Rescan
 from mailpile.mailutils import *
 from mailpile.httpd import *
 from mailpile.search import *
