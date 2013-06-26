@@ -24,11 +24,11 @@ except ImportError:
 class Command:
   """Generic command object all others inherit from"""
   ORDER = (None, 0)
-
   SYNOPSIS = None
   SUBCOMMANDS = {}
   FAILURE = 'Failed: %(name)s %(args)s'
   SERIALIZE = False
+
   def __init__(self, session, name, args=None, data=None):
     self.session = session
     self.name = name
@@ -125,22 +125,46 @@ class Command:
       return self._error(self.FAILURE % {'name': self.name,
                                          'args': ' '.join(self.args) })
     finally:
-      self.session.ui.reset_marks()
+      if self.name:
+        self.session.ui.reset_marks()
 
   def command(self):
     return None
 
 
+##[ Internals ]###############################################################
+
+class Setup(Command):
+  """Perform initial setup"""
+  ORDER = ('Internals', 10)
+  def command(self):
+    session = self.session
+
+    # Create local mailboxes
+    session.config.open_local_mailbox(session)
+
+    # Create standard tags and filters
+    tags = session.config.get('tag', {}).values()
+    for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
+      if t not in tags:
+        Tag(session, '', ['add', t]).run()
+    if 'New' not in tags:
+      Filter(session, '', ['new', '+Inbox', '+New', 'New Mail filter']).run()
+      Filter(session, '', ['read', '-New', 'Read Mail filter']).run()
+
+    return True
+
+
 class Load(Command):
   """Load or reload the metadata index"""
-  ORDER = ('Config', 30)
+  ORDER = ('Internals', 30)
   def command(self, reset=False, wait=True, quiet=False):
     return self._idx(reset=reset, wait=wait, quiet=quiet)
 
 
 class Rescan(Command):
   """Scan all mailboxes for new messages"""
-  ORDER = ('Config', 40)
+  ORDER = ('Internals', 40)
   SERIALIZE = 'Rescan'
   def command(self):
     session, config = self.session, self.session.config
@@ -188,7 +212,7 @@ class Rescan(Command):
 
 class Optimize(Command):
   """Optimize the keyword search index"""
-  ORDER = ('Config', 50)
+  ORDER = ('Internals', 50)
   SYNOPSIS = '[harder]'
   SERIALIZE = 'Optimize'
   def command(self):
@@ -203,7 +227,7 @@ class Optimize(Command):
 
 class UpdateStats(Command):
   """Force statistics update"""
-  ORDER = ('Config', 70)
+  ORDER = ('Internals', 70)
   def command(self):
     session, config = self.session, self.session.config
     idx = config.index
@@ -211,6 +235,8 @@ class UpdateStats(Command):
     idx.update_tag_stats(session, config, tags.keys())
     session.ui.mark("Statistics updated")
 
+
+##[ Tags and Filters ]#########################################################
 
 class Tag(Command):
   """Add/remove/list/edit message tags"""
@@ -341,6 +367,8 @@ class Filter(Command):
     'list':   (ls, ''),
   }
 
+
+##[ Composing e-mail ]#########################################################
 
 class Compose(Command):
   """(Continue) Composing an e-mail"""
@@ -559,7 +587,7 @@ class Mail(Command):
       try:
         SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
         msg_idx = emails[0].get_msg_info(idx.MSG_IDX)
-        Tag(session, 'tag', ['-Drafts', '+Sent', '=%s'% msg_idx]).run()
+        Tag(session, '', ['-Drafts', '+Sent', '=%s'% msg_idx]).run()
       except:
         session.ui.error('Failed to send %s' % email)
         self._ignore_exception()
@@ -567,20 +595,7 @@ class Mail(Command):
     return True
 
 
-def Action_Setup(session):
-  # Create local mailboxes
-  session.config.open_local_mailbox(session)
-
-  # Create standard tags and filters
-  tags = session.config.get('tag', {}).values()
-  for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
-    if t not in tags:
-      Action(session, 'tag add', t)
-  if 'New' not in tags:
-    Action(session, 'filter', 'new +Inbox +New New Mail filter')
-    Action(session, 'filter', 'read -New Read Mail filter')
-
-  return True
+##############################################################################
 
 # FIXME: Remove these
 def Action_Load(session, config, reset=False, wait=True, quiet=False):
