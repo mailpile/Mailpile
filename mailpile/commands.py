@@ -23,7 +23,7 @@ except ImportError:
 
 class Command:
   """Generic command object all others inherit from"""
-  GROUP = None
+  ORDER = (None, 0)
 
   SYNOPSIS = None
   SUBCOMMANDS = {}
@@ -133,14 +133,88 @@ class Command:
 
 class Load(Command):
   """Load or reload the metadata index"""
-  GROUP = 'Config'
+  ORDER = ('Config', 30)
   def command(self, reset=False, wait=True, quiet=False):
     return self._idx(reset=reset, wait=wait, quiet=quiet)
 
 
+class Rescan(Command):
+  """Scan all mailboxes for new messages"""
+  ORDER = ('Config', 40)
+  SERIALIZE = 'Rescan'
+  def command(self):
+    session, config = self.session, self.session.config
+
+    # FIXME: Need a lock here?
+    if 'rescan' in config.RUNNING:
+      return True
+    config.RUNNING['rescan'] = True
+
+    idx = self._idx()
+    count = 0
+    rv = True
+    try:
+      pre_command = config.get('rescan_command', None)
+      if pre_command:
+        session.ui.mark('Running: %s' % pre_command)
+        subprocess.check_call(pre_command, shell=True)
+      count = 1
+      for fid, fpath in config.get_mailboxes():
+        if mailpile.util.QUITTING: break
+        count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
+        config.clear_mbox_cache()
+        session.ui.mark('\n')
+      count -= 1
+      if count:
+        if not mailpile.util.QUITTING:
+          GlobalPostingList.Optimize(session, idx, quick=True)
+      else:
+        session.ui.mark('Nothing changed')
+    except (KeyboardInterrupt, subprocess.CalledProcessError), e:
+      session.ui.mark('Aborted: %s' % e)
+      self._ignore_exception()
+      return False
+    finally:
+      if count:
+        session.ui.mark('\n')
+        if count < 500:
+          idx.save_changes(session)
+        else:
+          idx.save(session)
+      del config.RUNNING['rescan']
+      idx.update_tag_stats(session, config)
+    return True
+
+
+class Optimize(Command):
+  """Optimize the keyword search index"""
+  ORDER = ('Config', 50)
+  SYNOPSIS = '[harder]'
+  SERIALIZE = 'Optimize'
+  def command(self):
+    try:
+      GlobalPostingList.Optimize(self.session, self._idx(),
+                                 force=('harder' in self.args))
+      return True
+    except KeyboardInterrupt:
+      session.ui.mark('Aborted')
+      return False
+
+
+class UpdateStats(Command):
+  """Force statistics update"""
+  ORDER = ('Config', 70)
+  def command(self):
+    session, config = self.session, self.session.config
+    idx = config.index
+    tags = config.get("tag", {})
+    idx.update_tag_stats(session, config, tags.keys())
+    session.ui.mark("Statistics updated")
+
+
 class Tag(Command):
   """Add/remove/list/edit message tags"""
-  GROUP = 'Tagging'
+  ORDER = ('Tagging', 10)
   SYNOPSIS = '<[+|-]tags> <msgs>'
   def command(self, save=True):
     idx = self._idx()
@@ -191,7 +265,7 @@ class Tag(Command):
 
 class Filter(Command):
   """Add/edit/delete/list auto-tagging rules"""
-  GROUP = 'Tagging'
+  ORDER = ('Tagging', 20)
   SYNOPSIS = '[new|read] [notag] [=ID] <[+|-]tags ...> [description]'
   def command(self):
     args, session, config = self.args, self.session, self.session.config
@@ -268,92 +342,52 @@ class Filter(Command):
   }
 
 
-class UpdateStats(Command):
-  """Force statistics update"""
-  GROUP = 'Config'
+class Compose(Command):
+  """(Continue) Composing an e-mail"""
+  ORDER = ('Composing', 10)
+  SYNOPSIS = '<[msg]>'
   def command(self):
-    session, config = self.session, self.session.config
-    idx = config.index
-    tags = config.get("tag", {})
-    idx.update_tag_stats(session, config, tags.keys())
-    session.ui.mark("Statistics updated")
+    session, config, idx = self.session, self.session.config, self._idx()
+    if self.args:
+      emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+    else:
+      local_id, lmbox = config.open_local_mailbox(session)
+      emails = [Email.Create(idx, local_id, lmbox)]
+      try:
+        msg_idxs = [int(e.get_msg_info(idx.MSG_IDX), 36) for e in emails]
+        idx.add_tag(session, session.config.get_tag_id('Drafts'),
+                    msg_idxs=msg_idxs, conversation=False)
+      except (TypeError, ValueError, IndexError):
+        self._ignore_exception()
 
-
-class Rescan(Command):
-  """Scan all mailboxes for new messages"""
-  GROUP = 'Config'
-  SERIALIZE = 'Rescan'
-  def command(self):
-    session, config = self.session, self.session.config
-
-    # FIXME: Need a lock here?
-    if 'rescan' in config.RUNNING:
-      return True
-    config.RUNNING['rescan'] = True
-
-    idx = self._idx()
-    count = 0
-    rv = True
-    try:
-      pre_command = config.get('rescan_command', None)
-      if pre_command:
-        session.ui.mark('Running: %s' % pre_command)
-        subprocess.check_call(pre_command, shell=True)
-      count = 1
-      for fid, fpath in config.get_mailboxes():
-        if mailpile.util.QUITTING: break
-        count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
-        config.clear_mbox_cache()
-        session.ui.mark('\n')
-      count -= 1
-      if count:
-        if not mailpile.util.QUITTING:
-          GlobalPostingList.Optimize(session, idx, quick=True)
-      else:
-        session.ui.mark('Nothing changed')
-    except (KeyboardInterrupt, subprocess.CalledProcessError), e:
-      session.ui.mark('Aborted: %s' % e)
-      self._ignore_exception()
-      return False
-    finally:
-      if count:
-        session.ui.mark('\n')
-        if count < 500:
-          idx.save_changes(session)
-        else:
-          idx.save(session)
-      del config.RUNNING['rescan']
-      idx.update_tag_stats(session, config)
+    if session.interactive:
+      session.ui.clear()
+      session.ui.edit_messages(emails)
+    else:
+      session.ui.say('%d message(s) created as drafts' % len(emails))
     return True
 
 
-class Optimize(Command):
-  """Optimize the keyword search index"""
-  GROUP = 'Config'
-  SYNOPSIS = '[harder]'
-  SERIALIZE = 'Optimize'
+class Update(Command):
+  """Update message from a file"""
+  ORDER = ('Composing', 20)
+  SYNOPSIS = '<msg path/to/f>'
   def command(self):
-    try:
-      GlobalPostingList.Optimize(self.session, self._idx(),
-                                 force=('harder' in self.args))
-      return True
-    except KeyboardInterrupt:
-      session.ui.mark('Aborted')
-      return False
-
-
-# FIXME: Remove these
-def Action_Load(session, config, reset=False, wait=True, quiet=False):
-  return Load(session, 'load').run(reset=reset, wait=wait, quiet=quiet)
-def Action_Tag(session, opt, arg, save=True):
-  return Tag(session, opt, args=arg.split()).run()
-def Action_Rescan(session, config):
-  return Rescan(session, 'rescan').rescan()
+    if len(self.args) > 1:
+      session, config, idx = self.session, self.session.config, self._idx()
+      fn = self.args.pop(-1)
+      emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+      for email in emails:
+        email.update_from_string(open(fn, 'rb').read())
+      session.ui.say('%d message(s) updated' % len(emails))
+    else:
+      return self._error('Nothing to update!')
+    return True
 
 
 class Attach(Command):
   """Attach a file to a message"""
-  GROUP = 'Composing'
+  ORDER = ('Composing', 30)
   SYNOPSIS = '<msg path/to/f>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -384,52 +418,9 @@ class Attach(Command):
     return True
 
 
-class Compose(Command):
-  """(Continue) Composing an e-mail"""
-  GROUP = 'Composing'
-  SYNOPSIS = '<[msg]>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    if self.args:
-      emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-    else:
-      local_id, lmbox = config.open_local_mailbox(session)
-      emails = [Email.Create(idx, local_id, lmbox)]
-      try:
-        msg_idxs = [int(e.get_msg_info(idx.MSG_IDX), 36) for e in emails]
-        idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                    msg_idxs=msg_idxs, conversation=False)
-      except (TypeError, ValueError, IndexError):
-        self._ignore_exception()
-
-    if session.interactive:
-      session.ui.clear()
-      session.ui.edit_messages(emails)
-    else:
-      session.ui.say('%d message(s) created as drafts' % len(emails))
-    return True
-
-
-class Update(Command):
-  """Update message from a file"""
-  GROUP = 'Composing'
-  SYNOPSIS = '<msg path/to/f>'
-  def command(self):
-    if len(self.args) > 1:
-      session, config, idx = self.session, self.session.config, self._idx()
-      fn = self.args.pop(-1)
-      emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-      for email in emails:
-        email.update_from_string(open(fn, 'rb').read())
-      session.ui.say('%d message(s) updated' % len(emails))
-    else:
-      return self._error('Nothing to update!')
-    return True
-
-
 class Reply(Command):
   """Reply(-all) to one or more messages"""
-  GROUP = 'Composing'
+  ORDER = ('Composing', 40)
   SYNOPSIS = '<[all] m1 ...>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -491,7 +482,7 @@ class Reply(Command):
 
 class Forward(Command):
   """Forward messages (and attachments)"""
-  GROUP = 'Composing'
+  ORDER = ('Composing', 50)
   SYNOPSIS = '<[att] m1 ...>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -554,7 +545,7 @@ class Forward(Command):
 
 class Mail(Command):
   """Mail/bounce a message (to someone)"""
-  GROUP = 'Composing'
+  ORDER = ('Composing', 90)
   SYNOPSIS = '<msg [email]>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
@@ -590,6 +581,14 @@ def Action_Setup(session):
     Action(session, 'filter', 'read -New Read Mail filter')
 
   return True
+
+# FIXME: Remove these
+def Action_Load(session, config, reset=False, wait=True, quiet=False):
+  return Load(session, 'load').run(reset=reset, wait=wait, quiet=quiet)
+def Action_Tag(session, opt, arg, save=True):
+  return Tag(session, opt, args=arg.split()).run()
+def Action_Rescan(session, config):
+  return Rescan(session, 'rescan').rescan()
 
 def Action(session, opt, arg):
   config = session.config
