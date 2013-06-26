@@ -28,12 +28,21 @@ class Command:
   SUBCOMMANDS = {}
   FAILURE = 'Failed: %(name)s %(args)s'
   SERIALIZE = False
+  SPLIT_ARG = 10000  # A big number!
 
-  def __init__(self, session, name=None, args=None, data=None):
+  def __init__(self, session, name=None, arg=None, data=None):
     self.session = session
     self.name = name
-    self.args = args or []
     self.data = data or {}
+    if type(arg) == type(list()):
+      self.args = arg
+    elif arg:
+      if self.SPLIT_ARG:
+        self.args = arg.split(' ', self.SPLIT_ARG)
+      else:
+        self.args = [arg]
+    else:
+      self.args = []
 
   def _idx(self, reset=False, wait=True, quiet=False):
     session, config = self.session, self.session.config
@@ -147,10 +156,10 @@ class Setup(Command):
     tags = session.config.get('tag', {}).values()
     for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
       if t not in tags:
-        Tag(session, args=['add', t]).run()
+        Tag(session, arg=['add', t]).run()
     if 'New' not in tags:
-      Filter(session, args=['new', '+Inbox', '+New', 'New Mail filter']).run()
-      Filter(session, args=['read', '-New', 'Read Mail filter']).run()
+      Filter(session, arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
+      Filter(session, arg=['read', '-New', 'Read Mail filter']).run()
 
     return True
 
@@ -587,7 +596,7 @@ class Mail(Command):
       try:
         SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
         msg_idx = emails[0].get_msg_info(idx.MSG_IDX)
-        Tag(session, args=['-Drafts', '+Sent', '=%s'% msg_idx]).run()
+        Tag(session, arg=['-Drafts', '+Sent', '=%s'% msg_idx]).run()
       except:
         session.ui.error('Failed to send %s' % email)
         self._ignore_exception()
@@ -719,12 +728,31 @@ class Delete(Command):
 
 ##[ Configuration commands ]###################################################
 
-class X(Command):
-  """Search your mail!"""
-  ORDER = ('Searching', 10)
-  SYNOPSIS = '<terms ...>'
+class AddMailbox(Command):
+  """Add a mailbox"""
+  ORDER = ('Config', 10)
+  SYNOPSIS = '</path/to/mbx>'
+  SPLIT_ARG = False
   def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
+    session, config, fn = self.session, self.session.config, self.args[0]
+    if fn in config.get('mailbox', {}).values():
+      session.ui.warning('Already in the pile: %s' % fn)
+    else:
+      if os.path.exists(fn):
+        arg = os.path.abspath(fn)
+        if config.parse_set(session,
+                            'mailbox:%s=%s' % (config.nid('mailbox'), fn)):
+          self._serialize('Save config', lambda: config.save())
+      else:
+        return self._error('No such file/directory: %s' % fn)
+    return True
+
+class AddMailbox(Command):
+  """Add a mailbox"""
+  ORDER = ('Config', 10)
+  SYNOPSIS = '</path/to/mbx>'
+  def command(self):
+    session, config = self.session, self.session.config
 
 
 
@@ -736,7 +764,7 @@ class X(Command):
 def Action_Load(session, config, reset=False, wait=True, quiet=False):
   return Load(session, 'load').run(reset=reset, wait=wait, quiet=quiet)
 def Action_Tag(session, opt, arg, save=True):
-  return Tag(session, opt, args=arg.split()).run()
+  return Tag(session, opt, arg).run()
 def Action_Rescan(session, config):
   return Rescan(session, 'rescan').rescan()
 
@@ -749,28 +777,19 @@ def Action(session, opt, arg):
                                     index=config.get_index(session))
 
   elif opt in ('0', 'setup'):
-    Action_Setup(session)
+    return Setup(session, 'setup').run()
 
   elif opt in ('A', 'add'):
-    if arg in config.get('mailbox', {}).values():
-      session.ui.warning('Already in the pile: %s' % arg)
-    else:
-      if os.path.exists(arg):
-        arg = os.path.abspath(arg)
-        if config.parse_set(session,
-                            'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
-          config.slow_worker.add_task(None, 'Save config', lambda: config.save())
-      else:
-        session.error('No such file/directory: %s' % arg)
+    return AddMailbox(session, 'add', arg).run()
 
   elif opt in ('F', 'filter'):
-    return Filter(session, 'filter', arg.split(' ')).run()
+    return Filter(session, 'filter', arg).run()
 
   elif opt in ('L', 'load'):
     return Load(session, 'load').run()
 
   elif opt in ('O', 'optimize'):
-    return Optimize(session, 'optimize', arg.split()).run()
+    return Optimize(session, 'optimize', arg).run()
 
   elif opt in ('P', 'print'):
     session.ui.print_key(arg.strip().lower(), config)
@@ -794,16 +813,16 @@ def Action(session, opt, arg):
     while not mailpile.util.QUITTING: time.sleep(1)
 
   elif opt in ('a', 'attach'):
-    return Attach(session, 'attach', arg.split()).run()
+    return Attach(session, 'attach', arg).run()
 
   elif opt in ('c', 'compose'):
-    return Compose(session, 'compose', arg.split()).run()
+    return Compose(session, 'compose', arg).run()
 
   elif opt in ('e', 'extract'):
-    return Extract(session, 'extract', arg.split()).run()
+    return Extract(session, 'extract', arg).run()
 
   elif opt in ('f', 'forward'):
-    return Forward(session, 'forward', arg.split()).run()
+    return Forward(session, 'forward', arg).run()
 
   elif opt in ('g', 'gpgrecv'):
     try:
@@ -877,38 +896,38 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif opt in ('m', 'mail'):
-    return Mail(session, 'mail', arg.split()).run()
+    return Mail(session, 'mail', arg).run()
 
   elif opt in ('n', 'next'):
     return Next(session, 'next').run()
 
   elif opt in ('o', 'order'):
-    return Order(session, 'order', arg.split()).run()
+    return Order(session, 'order', arg).run()
 
   elif opt in ('p', 'previous'):
     return Previous(session, 'previous').run()
 
   elif opt in ('r', 'reply'):
-    return Reply(session, 'reply', arg.split()).run()
+    return Reply(session, 'reply', arg).run()
 
   elif opt in ('s', 'search'):
-    return Search(session, 'search', arg.split()).run()
+    return Search(session, 'search', arg).run()
 
   elif opt in ('t', 'tag'):
-    return Tag(session, 'tag', arg.split()).run()
+    return Tag(session, 'tag', arg).run()
 
   elif opt in ('u', 'update'):
-    return Update(session, 'update', arg.split()).run()
+    return Update(session, 'update', arg).run()
 
   elif opt in ('v', 'view'):
-    return View(session, 'view', arg.split()).run()
+    return View(session, 'view', arg).run()
 
   elif opt in ('Y', 'recount'):
     return UpdateStats(session, 'recount').run()
 
   elif opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
     tid = config.get_tag_id(opt)
-    return Search(session, opt, arg.split()).run(search=['tag:%s' % tid[0]])
+    return Search(session, opt, arg).run(search=['tag:%s' % tid[0]])
 
   else:
     raise UsageError('Unknown command: %s' % opt)
