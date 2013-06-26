@@ -21,40 +21,8 @@ except ImportError:
   GnuPG = None
 
 
-COMMANDS = {
-  '0':  ('setup',    '',              'Perform initial setup',              60),
-  'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      61),
-  'a:': ('attach=',  'msg path/to/f', 'Attach a file to a message',         91),
-  'c:': ('compose=', '[msg]',         '(Continue) Composing an e-mail',     90),
-  'd:': ('delete=',  'msg',           'Delete a message from the index',    88),
-  'e:': ('extract=', 'att msg [>fn]', 'Extract attachment(s) to file(s)',   86),
-  'F:': ('filter=',  'options',       'Add/edit/delete auto-tagging rules', 56),
-  'h':  ('help',     '',              'Print help on how to use mailpile',   0),
-  'L':  ('load',     '',              'Load the metadata index',            63),
-  'm:': ('mail=',    'msg [email]',   'Mail/bounce a message (to someone)', 99),
-  'f:': ('forward=', '[att] m1 ...',  'Forward messages (and attachments)', 94),
-  'n':  ('next',     '',              'Display next page of results',       81),
-  'o:': ('order=',   '[rev-]what',   ('Sort by: date, from, subject, '
-                                      'random or index'),                   83),
-  'O':  ('optimize', '',              'Optimize the keyword search index',  64),
-  'p':  ('previous', '',              'Display previous page of results',   82),
-  'P:': ('print=',   'var',           'Print a setting',                    52),
-  'r:': ('reply=',   '[all] m1 ...',  'Reply(-all) to one or more messages',93),
-  'R':  ('rescan',   '',              'Scan all mailboxes for new messages',63),
-  'g:': ('gpgrecv',  'key-ID',        'Fetch a GPG key from keyservers',    65),
-  's:': ('search=',  'terms ...',     'Search!',                            80),
-  'S:': ('set=',     'var=value',     'Change a setting',                   50),
-  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        84),
-  'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
-  'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
-  'u:': ('update=',  'msg path/to/f', 'Update message from file',           91),
-  'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          85),
-  'W':  ('www',      '',              'Just run the web server',            56),
-  'Y':  ('recount',  '',              'Force statistics update',            69),
-}
-
 class Command:
-  """Generic command object."""
+  """Generic command object all others inherit from"""
   GROUP = None
 
   SYNOPSIS = None
@@ -459,153 +427,154 @@ class Update(Command):
     return True
 
 
-def Action_Reply(session, config, args):
-  if args and args[0].lower() == 'all':
-    reply_all = args.pop(0) or True
-  else:
-    reply_all = False
+class Reply(Command):
+  """Reply(-all) to one or more messages"""
+  GROUP = 'Composing'
+  SYNOPSIS = '<[all] m1 ...>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
 
-  idx = Action_Load(session, config)
-  refs = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
-  if refs:
-    trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True) for m in refs]
-    ref_ids = [t['headers_lc'].get('message-id') for t in trees]
-    ref_subjs = [t['headers_lc'].get('subject') for t in trees]
-    msg_to = [t['headers_lc'].get('reply-to',
-                                  t['headers_lc']['from']) for t in trees]
-    msg_cc = []
-    if reply_all:
-      msg_cc += [t['headers_lc'].get('to', '') for t in trees]
-      msg_cc += [t['headers_lc'].get('cc', '') for t in trees]
-    msg_bodies = []
-    for t in trees:
-       # FIXME: Templates/settings for how we quote replies?
-       text = (('%s wrote:\n' % t['headers_lc']['from']) +
-               ''.join([p['data'] for p in t['text_parts']
-                        if p['type'] in ('text', 'quote',
-                                         'pgpsignedtext',
-                                         'pgpsecuretext',
-                                         'pgpverifiedtext')]))
-       msg_bodies.append(text.replace('\n', '\n> '))
+    if self.args and self.args[0].lower() == 'all':
+      reply_all = self.args.pop(0) or True
+    else:
+      reply_all = False
 
-    local_id, lmbox = config.open_local_mailbox(session)
-    try:
+    refs = [Email(idx, i) for i in self._choose_messages(self.args)]
+    if refs:
+      trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True) for m in refs]
+      ref_ids = [t['headers_lc'].get('message-id') for t in trees]
+      ref_subjs = [t['headers_lc'].get('subject') for t in trees]
+      msg_to = [t['headers_lc'].get('reply-to',
+                                    t['headers_lc']['from']) for t in trees]
+      msg_cc = []
+      if reply_all:
+        msg_cc += [t['headers_lc'].get('to', '') for t in trees]
+        msg_cc += [t['headers_lc'].get('cc', '') for t in trees]
+      msg_bodies = []
+      for t in trees:
+        # FIXME: Templates/settings for how we quote replies?
+        text = (('%s wrote:\n' % t['headers_lc']['from']) +
+                 ''.join([p['data'] for p in t['text_parts']
+                          if p['type'] in ('text', 'quote',
+                                           'pgpsignedtext',
+                                           'pgpsecuretext',
+                                           'pgpverifiedtext')]))
+        msg_bodies.append(text.replace('\n', '\n> '))
+
+      local_id, lmbox = config.open_local_mailbox(session)
+      try:
+        email = Email.Create(idx, local_id, lmbox,
+                             msg_text='\n\n'.join(msg_bodies),
+                             msg_subject=('Re: %s' % ref_subjs[-1]),
+                             msg_to=msg_to,
+                             msg_cc=[r for r in msg_cc if r],
+                             msg_references=[i for i in ref_ids if i])
+        try:
+          idx.add_tag(session, session.config.get_tag_id('Drafts'),
+                      msg_idxs=[int(email.get_msg_info(idx.MSG_IDX), 36)],
+                      conversation=False)
+        except (TypeError, ValueError, IndexError):
+          self._ignore_exception()
+
+      except NoFromAddressError:
+        return self._error('You must configure a From address first.')
+
+      if session.interactive:
+        session.ui.edit_messages([email])
+      else:
+        session.ui.say('Message created as draft')
+        session.ui.reset_marks()
+      return True
+    else:
+      return self._error('No message found')
+
+
+class Forward(Command):
+  """Forward messages (and attachments)"""
+  GROUP = 'Composing'
+  SYNOPSIS = '<[att] m1 ...>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
+
+    if self.args and self.args[0].lower().startswith('att'):
+      with_atts = self.args.pop(0) or True
+    else:
+      with_atts = False
+
+    refs = [Email(idx, i) for i in self._choose_messages(self.args)]
+    if refs:
+      trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True) for m in refs]
+      ref_subjs = [t['headers_lc']['subject'] for t in trees]
+      msg_bodies = []
+      msg_atts = []
+      for t in trees:
+        # FIXME: Templates/settings for how we quote forwards?
+        text = '-------- Original Message --------\n'
+        for h in ('Date', 'Subject', 'From', 'To'):
+          v = t['headers_lc'].get(h.lower(), None)
+          if v:
+            text += '%s: %s\n' % (h, v)
+        text += '\n'
+        text += ''.join([p['data'] for p in t['text_parts']
+                         if p['type'] in ('text', 'quote',
+                                          'pgpsignedtext',
+                                          'pgpsecuretext',
+                                          'pgpverifiedtext')])
+        msg_bodies.append(text)
+        if with_atts:
+          for att in t['attachments']:
+            if att['mimetype'] not in ('application/pgp-signature', ):
+              msg_atts.append(att['part'])
+
+      local_id, lmbox = config.open_local_mailbox(session)
       email = Email.Create(idx, local_id, lmbox,
                            msg_text='\n\n'.join(msg_bodies),
-                           msg_subject=('Re: %s' % ref_subjs[-1]),
-                           msg_to=msg_to,
-                           msg_cc=[r for r in msg_cc if r],
-                           msg_references=[i for i in ref_ids if i])
+                           msg_subject=('Fwd: %s' % ref_subjs[-1]))
+      if msg_atts:
+        msg = email.get_msg()
+        for att in msg_atts:
+          msg.attach(att)
+        email.update_from_msg(msg)
+
       try:
         idx.add_tag(session, session.config.get_tag_id('Drafts'),
                     msg_idxs=[int(email.get_msg_info(idx.MSG_IDX), 36)],
                     conversation=False)
       except (TypeError, ValueError, IndexError):
-        if session.config.get('debug'):
-          session.ui.say(traceback.format_exc())
+        self._ignore_exception()
 
-    except NoFromAddressError:
-      session.ui.warning('You must configure a From address first.')
-      session.ui.reset_marks()
-      return False
-
-    if session.interactive:
-      session.ui.clear()
-      session.ui.reset_marks()
-      session.ui.edit_messages([email])
-    else:
-      session.ui.say('Message created as draft')
-      session.ui.reset_marks()
+      if session.interactive:
+        session.ui.edit_messages([email])
+      else:
+        session.ui.say('Message created as draft')
       return True
-  else:
-    session.ui.warning('No message found')
-    session.ui.reset_marks()
-    return False
-
-def Action_Forward(session, config, args):
-  if args and args[0].lower().startswith('att'):
-    with_atts = args.pop(0) or True
-  else:
-    with_atts = False
-
-  idx = Action_Load(session, config)
-  refs = [Email(idx, i) for i in Choose_Messages(session, idx, args)]
-  if refs:
-    trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True) for m in refs]
-    ref_subjs = [t['headers_lc']['subject'] for t in trees]
-    msg_bodies = []
-    msg_atts = []
-    for t in trees:
-       # FIXME: Templates/settings for how we quote forwards?
-       text = '-------- Original Message --------\n'
-       for h in ('Date', 'Subject', 'From', 'To'):
-         v = t['headers_lc'].get(h.lower(), None)
-         if v:
-           text += '%s: %s\n' % (h, v)
-       text += '\n'
-       text += ''.join([p['data'] for p in t['text_parts']
-                       if p['type'] in ('text', 'quote',
-                                        'pgpsignedtext',
-                                         'pgpsecuretext',
-                                        'pgpverifiedtext')])
-       msg_bodies.append(text)
-       if with_atts:
-         for att in t['attachments']:
-           if att['mimetype'] not in ('application/pgp-signature', ):
-             msg_atts.append(att['part'])
-
-    local_id, lmbox = config.open_local_mailbox(session)
-    email = Email.Create(idx, local_id, lmbox,
-                         msg_text='\n\n'.join(msg_bodies),
-                         msg_subject=('Fwd: %s' % ref_subjs[-1]))
-    if msg_atts:
-      msg = email.get_msg()
-      for att in msg_atts:
-        msg.attach(att)
-      email.update_from_msg(msg)
-
-    try:
-      idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                  msg_idxs=[int(email.get_msg_info(idx.MSG_IDX), 36)],
-                  conversation=False)
-    except (TypeError, ValueError, IndexError):
-      if session.config.get('debug'):
-        session.ui.say(traceback.format_exc())
-
-    if session.interactive:
-      session.ui.clear()
-      session.ui.reset_marks()
-      session.ui.edit_messages([email])
     else:
-      session.ui.say('Message created as draft')
-      session.ui.reset_marks()
-      return True
-  else:
-    session.ui.warning('No message found')
-    session.ui.reset_marks()
-    return False
+      return self._error('No message found')
 
-def Action_Mail(session, config, args):
-  bounce_to = []
-  while args and '@' in args[-1]:
-    bounce_to.append(args.pop(-1))
 
-  idx = Action_Load(session, config)
-  session.ui.clear()
-  session.ui.reset_marks()
+class Mail(Command):
+  """Mail/bounce a message (to someone)"""
+  GROUP = 'Composing'
+  SYNOPSIS = '<msg [email]>'
+  def command(self):
+    session, config, idx = self.session, self.session.config, self._idx()
 
-  # Process one at a time so we don't eat too much memory
-  for email in [Email(idx, i) for i in Choose_Messages(session, idx, args)]:
-    try:
-      SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
-      msg_idx = emails[0].get_msg_info(idx.MSG_IDX)
-      Action(session, 'tag', '-Drafts +Sent =%s' % msg_idx)
-    except:
-      session.ui.error('Failed to send %s' % email)
-      print traceback.format_exc()
+    bounce_to = []
+    while self.args and '@' in self.args[-1]:
+      bounce_to.append(self.args.pop(-1))
 
-  session.ui.reset_marks()
-  return True
+    # Process one at a time so we don't eat too much memory
+    for email in [Email(idx, i) for i in Choose_Messages(session, idx, args)]:
+      try:
+        SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
+        msg_idx = emails[0].get_msg_info(idx.MSG_IDX)
+        Tag(session, 'tag', ['-Drafts', '+Sent', '=%s'% msg_idx]).run()
+      except:
+        session.ui.error('Failed to send %s' % email)
+        self._ignore_exception()
+
+    return True
+
 
 def Action_Setup(session):
   # Create local mailboxes
@@ -697,7 +666,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif opt in ('f', 'forward'):
-    Action_Forward(session, config, arg.split())
+    return Forward(session, 'forward', arg.split()).run()
 
   elif opt in ('g', 'gpgrecv'):
     try:
@@ -771,7 +740,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif opt in ('m', 'mail'):
-    Action_Mail(session, config, arg.split())
+    return Mail(session, 'mail', arg.split()).run()
 
   elif opt in ('n', 'next'):
     idx = Action_Load(session, config)
@@ -803,7 +772,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif opt in ('r', 'reply'):
-    Action_Reply(session, config, arg.split())
+    return Reply(session, 'reply', arg.split()).run()
 
   elif (opt in ('s', 'search')
         or opt.lower() in [t.lower() for t in config.get('tag', {}).values()]):
@@ -844,7 +813,7 @@ def Action(session, opt, arg):
     session.ui.reset_marks()
 
   elif opt in ('t', 'tag'):
-    Action_Tag(session, opt, arg)
+    return Tag(session, 'tag', arg.split()).run()
 
   elif opt in ('u', 'update'):
     return Update(session, 'update', arg.split()).run()
@@ -868,3 +837,36 @@ def Action(session, opt, arg):
 
   else:
     raise UsageError('Unknown command: %s' % opt)
+
+
+COMMANDS = {
+  '0':  ('setup',    '',              'Perform initial setup',              60),
+  'A:': ('add=',     'path/to/mbox',  'Add a mailbox',                      61),
+  'a:': ('attach=',  'msg path/to/f', 'Attach a file to a message',         91),
+  'c:': ('compose=', '[msg]',         '(Continue) Composing an e-mail',     90),
+  'd:': ('delete=',  'msg',           'Delete a message from the index',    88),
+  'e:': ('extract=', 'att msg [>fn]', 'Extract attachment(s) to file(s)',   86),
+  'F:': ('filter=',  'options',       'Add/edit/delete auto-tagging rules', 56),
+  'h':  ('help',     '',              'Print help on how to use mailpile',   0),
+  'L':  ('load',     '',              'Load the metadata index',            63),
+  'm:': ('mail=',    'msg [email]',   'Mail/bounce a message (to someone)', 99),
+  'f:': ('forward=', '[att] m1 ...',  'Forward messages (and attachments)', 94),
+  'n':  ('next',     '',              'Display next page of results',       81),
+  'o:': ('order=',   '[rev-]what',   ('Sort by: date, from, subject, '
+                                      'random or index'),                   83),
+  'O':  ('optimize', '',              'Optimize the keyword search index',  64),
+  'p':  ('previous', '',              'Display previous page of results',   82),
+  'P:': ('print=',   'var',           'Print a setting',                    52),
+  'r:': ('reply=',   '[all] m1 ...',  'Reply(-all) to one or more messages',93),
+  'R':  ('rescan',   '',              'Scan all mailboxes for new messages',63),
+  'g:': ('gpgrecv',  'key-ID',        'Fetch a GPG key from keyservers',    65),
+  's:': ('search=',  'terms ...',     'Search!',                            80),
+  'S:': ('set=',     'var=value',     'Change a setting',                   50),
+  't:': ('tag=',     '[+|-]tag msg',  'Tag or untag search results',        84),
+  'T:': ('addtag=',  'tag',           'Create a new tag',                   55),
+  'U:': ('unset=',   'var',           'Reset a setting to the default',     51),
+  'u:': ('update=',  'msg path/to/f', 'Update message from file',           91),
+  'v:': ('view=',    '[raw] m1 ...',  'View one or more messages',          85),
+  'W':  ('www',      '',              'Just run the web server',            56),
+  'Y':  ('recount',  '',              'Force statistics update',            69),
+}
