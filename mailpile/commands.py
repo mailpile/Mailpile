@@ -34,8 +34,8 @@ class Command:
     self.session = session
     self.name = name
     self.data = data or {}
-    if type(arg) == type(list()):
-      self.args = arg
+    if type(arg) in (type(list()), type(tuple())):
+      self.args = list(arg)
     elif arg:
       if self.SPLIT_ARG:
         self.args = arg.split(' ', self.SPLIT_ARG)

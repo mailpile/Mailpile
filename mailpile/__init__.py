@@ -16,15 +16,18 @@ class Mailpile(object):
     self._session.main = True
     self._ui = self._session.ui = ui()
 
-    for (cmd, args, hlp, order) in mailpile.commands.COMMANDS.values():
+    for (cmd, cls) in mailpile.commands.COMMANDS.values():
       cmd, fnc = self._mk_action(cmd)
-      fnc.__doc__ = hlp
+      if cls.SYNOPSIS:
+        fnc.__doc__ = '%s(%s)  # %s' % (cmd, cls.SYNOPSIS, cls.__doc__)
+      else:
+        fnc.__doc__ = '%s()  # %s' % (cmd, cls.__doc__)
       setattr(self, cmd, fnc)
 
   def _mk_action(self, cmd):
     if cmd.endswith('='):
       cmd = cmd[:-1]
-      def fnc(args):
+      def fnc(*args):
         return mailpile.commands.Action(self._session, cmd, args)
       return cmd, fnc
     else:
