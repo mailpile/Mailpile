@@ -914,6 +914,9 @@ def Action(session, opt, arg, data=None):
   session.ui.reset_marks(quiet=True)
   config = session.config
 
+  if session.config.get('debug'):
+    session.ui.say('Running: %s "%s" data=%s' % (opt, arg, data))
+
   if not opt:
     return Help(session, 'help').run()
 
