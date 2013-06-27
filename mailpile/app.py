@@ -121,10 +121,8 @@ class Worker(threading.Thread):
       try:
         self.pause(session)
         rv = task()
+      finally:
         self.unpause(session)
-      except:
-        self.unpause(session)
-        raise
     else:
       self.add_task(session, name, task)
       if session:

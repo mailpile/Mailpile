@@ -119,6 +119,10 @@ class Command:
     session, config = self.session, self.session.config
     return config.slow_worker.do(session, name, function)
 
+  def _background(self, name, function):
+    session, config = self.session, self.session.config
+    return config.slow_worker.add_task(session, name, function)
+
   def run(self, *args, **kwargs):
     if self.SERIALIZE:
       # Some functions we always run in the slow worker, to make sure
@@ -288,7 +292,7 @@ class Tag(Command):
       def background():
         idx.update_tag_stats(self.session, self.session.config)
         idx.save_changes()
-      self._serialize('Save index', background)
+      self._background('Save index', background)
     else:
       idx.update_tag_stats(self.session, self.session.config)
 
@@ -304,7 +308,7 @@ class Tag(Command):
         return self._error('Tag already exists: %s' % tag)
     for tag in self.args:
       if config.parse_set(self.session, 'tag:%s=%s' % (config.nid('tag'), tag)):
-        self._serialize('Save config', lambda: config.save())
+        self._background('Save config', lambda: config.save())
     return True
 
   def list_tags(self):
