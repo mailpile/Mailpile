@@ -127,8 +127,6 @@ class Worker(threading.Thread):
       self.add_task(session, name, task)
       if session:
         rv = session.wait_for_task(name)
-        if not rv:
-          raise WorkerError()
       else:
         rv = True
     return rv

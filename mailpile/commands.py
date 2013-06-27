@@ -365,11 +365,12 @@ class Filter(Command):
                                    ) % (tag_id, ' '.join(tids)))
     and config.parse_set(session, ('filter_terms:%s=%s'
                                    ) % (tag_id, ' '.join(terms)))):
-      session.ui.reset_marks()
       def save_filter():
         config.save()
         if config.index: config.index.save_changes()
+        return True
       self._serialize('Save filter', save_filter)
+      return True
     else:
       raise Exception('That failed, not sure why?!')
 
