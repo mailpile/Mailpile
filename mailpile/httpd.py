@@ -127,6 +127,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   def parse_pqp(self, path, query_data, post_data, config):
     q = post_data.get('lq', query_data.get('q', ['']))[0].strip().decode('utf-8')
 
+    data = {}
     cmd = ''
     if path.startswith('/_/'):
       cmd = path[3:].replace('.json', '').replace('.xml', '') + ' '
@@ -182,8 +183,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       cmd = 'gpgrecv %s /%s' % (post_data.get('gpg_key_id')[0], cmd)
     else:
       cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
+      for pd in post_data:
+        if pd not in ('lq', 'csrf'):
+          data[pd] = post_data[pd][0]
 
-    return cmd.strip()
+    return cmd.strip(), data
 
   def do_GET(self, post_data={}, suppress_body=False):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
@@ -218,11 +222,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     session.ui.set_postdata(post_data)
     session.ui.set_querydata(query_data)
     try:
-      cmd = self.parse_pqp(path, query_data, post_data, config)
+      cmd, data = self.parse_pqp(path, query_data, post_data, config)
       if cmd:
         for arg in cmd.split(' /'):
           args = arg.strip().split()
-          Action(session, args[0], ' '.join(args[1:]))
+          Action(session, args[0], ' '.join(args[1:]), data=data)
 
     except UsageError, e:
       session.ui.error('%s' % e)
