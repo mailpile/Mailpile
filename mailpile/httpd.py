@@ -195,6 +195,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         try:
           pid = int(pd[5:])
           msg_idx = post_data.get('save_%d_msg' % pid)[0]
+          if cmd.startswith('compose'):
+            cmd = 'compose =%s' % msg_idx
           if pd.startswith('mail_'):
             cmd = 'mail =%s /%s' % (msg_idx, cmd)
           cmd = 'update =%s @save_%d_data /%s' % (msg_idx, pid, cmd)
