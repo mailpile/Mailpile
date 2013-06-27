@@ -105,6 +105,12 @@ class Command:
     self.session.ui.error(message)
     return False
 
+  def _read_file_or_data(self, fn):
+    if fn in self.data:
+      return self.data[fn]
+    else:
+      return open(fn, 'rb').read()
+
   def _ignore_exception(self):
     if self.session.config.get('debug'):
       self.session.ui.say(traceback.format_exc())
@@ -408,11 +414,8 @@ class Compose(Command):
       except (TypeError, ValueError, IndexError):
         self._ignore_exception()
 
-    if session.interactive:
-      session.ui.clear()
-      session.ui.edit_messages(emails)
-    else:
-      session.ui.say('%d message(s) created as drafts' % len(emails))
+    session.ui.edit_messages(emails)
+    session.ui.mark('%d message(s) created as drafts' % len(emails))
     return True
 
 
@@ -423,10 +426,10 @@ class Update(Command):
   def command(self):
     if len(self.args) > 1:
       session, config, idx = self.session, self.session.config, self._idx()
-      fn = self.args.pop(-1)
+      update = self._read_file_or_data(self.args.pop(-1))
       emails = [Email(idx, i) for i in self._choose_messages(self.args)]
       for email in emails:
-        email.update_from_string(open(fn, 'rb').read())
+        email.update_from_string(update)
       session.ui.say('%d message(s) updated' % len(emails))
     else:
       return self._error('Nothing to update!')
@@ -903,7 +906,7 @@ class Help(Command):
     return True
 
 
-def Action(session, opt, arg):
+def Action(session, opt, arg, data=None):
   session.ui.reset_marks(quiet=True)
   config = session.config
 
@@ -913,23 +916,23 @@ def Action(session, opt, arg):
   # Use the COMMANDS dict by default.
   if len(opt) == 1:
     if opt in COMMANDS:
-      return COMMANDS[opt][1](session, opt, arg).run()
+      return COMMANDS[opt][1](session, opt, arg, data=data).run()
     elif opt+':' in COMMANDS:
-      return COMMANDS[opt+':'][1](session, opt, arg).run()
+      return COMMANDS[opt+':'][1](session, opt, arg, data=data).run()
   for name, cls in COMMANDS.values():
     if opt == name or opt == name[:-1]:
-      return cls(session, opt, arg).run()
+      return cls(session, opt, arg, data=data).run()
 
-  # Backwards compatibility hacks
-  if opt in ('T', 'addtag'):
+  # Backwards compatibility
+  if opt == 'addtag':
     return Tag(session, 'tag', ['add'] + arg.split()).run()
-  elif opt in ('g', 'gpgrecv'):
-    return GPG(session, 'gpgrecv', ['recv'] + arg.split()).run()
+  elif opt == 'gpgrecv':
+    return GPG(session, 'gpg', ['recv'] + arg.split()).run()
 
   # Tags are commands
   elif opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
     tid = config.get_tag_id(opt)
-    return Search(session, opt, arg).run(search=['tag:%s' % tid[0]])
+    return Search(session, opt, arg, data=data).run(search=['tag:%s' % tid[0]])
 
   # OK, give up!
   raise UsageError('Unknown command: %s' % opt)
