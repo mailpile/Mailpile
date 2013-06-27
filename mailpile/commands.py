@@ -245,6 +245,7 @@ class UpdateStats(Command):
     tags = config.get("tag", {})
     idx.update_tag_stats(session, config, tags.keys())
     session.ui.mark("Statistics updated")
+    return True
 
 
 class RunWWW(Command):
@@ -253,6 +254,7 @@ class RunWWW(Command):
   def command(self):
     self.session.config.prepare_workers(self.session, daemons=True)
     while not mailpile.util.QUITTING: time.sleep(1)
+    return True
 
 
 ##[ Tags and Filters ]#########################################################
@@ -344,9 +346,8 @@ class Filter(Command):
       args = ['Filter for %s' % ' '.join(tags)]
 
     if 'notag' not in flags and 'new' not in flags and 'read' not in flags:
-      for tag in tags:
-        if not Action_Tag(session, 'filter/tag', '%s all' % tag, save=False):
-          raise UsageError()
+      if not Tag(session, 'filter/tag', tags + ['all']).run(save=False):
+        raise UsageError()
 
     if (config.parse_set(session, ('filter:%s=%s'
                                    ) % (tag_id, ' '.join(args)))
@@ -880,15 +881,6 @@ class GPG(Command):
 
 
 ###############################################################################
-
-# FIXME: Remove these
-def Action_Load(session, config, reset=False, wait=True, quiet=False):
-  return Load(session, 'load').run(reset=reset, wait=wait, quiet=quiet)
-def Action_Tag(session, opt, arg, save=True):
-  return Tag(session, opt, arg).run()
-def Action_Rescan(session, config):
-  return Rescan(session, 'rescan').rescan()
-
 
 class Help(Command):
   """Print help on Mailpile or individual commands."""

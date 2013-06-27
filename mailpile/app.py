@@ -41,7 +41,7 @@ import mailpile.ui
 import mailpile.util
 mailpile.ui.ABOUT = ABOUT
 
-from mailpile.commands import COMMANDS, Action_Load, Action_Rescan
+import mailpile.commands
 from mailpile.mailutils import *
 from mailpile.httpd import *
 from mailpile.search import *
@@ -458,8 +458,9 @@ class ConfigManager(dict):
       if rescan_interval:
         def rescan():
           if 'rescan' not in config.RUNNING:
-            config.slow_worker.add_task(None, 'Rescan',
-                                        lambda: Action_Rescan(session, config))
+            rsc = mailpile.commands.Rescan(session, 'rescan')
+            rsc.SERIALIZE = False
+            config.slow_worker.add_task(None, 'Rescan', rsc.run)
         config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
     if daemons and not config.http_worker:
@@ -524,9 +525,10 @@ def Main(args):
     config.prepare_workers(session)
 
     try:
-      opts, args = getopt.getopt(args, ''.join([k for k in COMMANDS.keys()
-                                                if not k[0] == '_']),
-                                 [v[0] for v in COMMANDS.values()])
+      shorta = ''.join([k for k in mailpile.commands.COMMANDS.keys()
+                        if not k[0] == '_'])
+      longa = [v[0] for v in mailpile.commands.COMMANDS.values()]
+      opts, args = getopt.getopt(args, shorta, longa)
       for opt, arg in opts:
         Action(session, opt.replace('-', ''), arg)
       if args:
@@ -538,7 +540,7 @@ def Main(args):
     if not opts and not args:
       # Create and start the rest of the threads, load the index.
       config.prepare_workers(session, daemons=True)
-      Action_Load(session, config, quiet=True)
+      mailpile.commands.Load(session, '').run(quiet=True)
       session.interactive = session.ui.interactive = True
       session.ui.print_intro(help=True, http_worker=config.http_worker)
       Interact(session)
