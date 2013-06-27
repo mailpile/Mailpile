@@ -796,8 +796,9 @@ class HtmlUI(HttpUI):
       try:
         msg_info = idx.get_msg_by_idx(mid)
 
-        msg_tags = sorted([idx.config['tag'].get(t,t)
-                           for t in idx.get_tags(msg_info=msg_info)
+        all_msg_tags = [idx.config['tag'].get(t,t)
+                        for t in idx.get_tags(msg_info=msg_info)]
+        msg_tags = sorted([t for t in all_msg_tags
                            if 'tag:%s' % t not in terms])
         tag_classes = ['t_%s' % t.replace('/', '_') for t in msg_tags]
         msg_tags = ['<a href="/%s/">%s</a>' % (t, re.sub("^.*/", "", t))
@@ -840,18 +841,19 @@ class HtmlUI(HttpUI):
           msg_date = datetime.date.fromtimestamp(max([
                                                  int(d, 36) for d in msg_date]))
 
+          edit = ('Drafts' in all_msg_tags) and 'edit.html' or ''
           self.buffered_html.append(('html', (' <tr class="result %s %s">'
             '<td class="checkbox"><input type="checkbox" name="msg_%s" /></td>'
-            '<td class="from"><a href="/=%s/%s/">%s</a></td>'
-            '<td class="subject"><a href="/=%s/%s/">%s</a></td>'
+            '<td class="from"><a href="/=%s/%s/%s">%s</a></td>'
+            '<td class="subject"><a href="/=%s/%s/%s">%s</a></td>'
             '<td class="tags">%s</td>'
             '<td class="date"><a href="?q=date:%4.4d-%d-%d">%4.4d-%2.2d-%2.2d</a></td>'
           '</tr>\n') % (
             (count % 2) and 'odd' or 'even', ' '.join(tag_classes).lower(),
             msg_info[idx.MSG_IDX],
-            msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
+            msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID], edit,
             self._compact(self._names(msg_from), 30),
-            msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
+            msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID], edit,
             msg_subj,
             ', '.join(msg_tags),
             msg_date.year, msg_date.month, msg_date.day,
