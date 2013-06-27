@@ -38,7 +38,7 @@ class SuppressHtmlOutput(Exception):
   pass
 
 
-class NullUI(object):
+class BaseUI(object):
 
   WIDTH = 80
   MAX_BUFFER_LEN = 150
@@ -166,6 +166,26 @@ class NullUI(object):
           email.evaluate_pgp(tree, decrypt=True)
           self.display_message(email, tree, raw=raw, sep=sep, fd=fd)
 
+  def _name(self, sender):
+    words = re.sub('["<>]', '', sender).split()
+    nomail = [w for w in words if not '@' in w]
+    if nomail: return ' '.join(nomail)
+    return ' '.join(words)
+
+  def _names(self, senders):
+    if len(senders) > 1:
+      return re.sub('["<>]', '', ', '.join([x.split()[0] for x in senders]))
+    return ', '.join([self._name(s) for s in senders])
+
+  def _compact(self, namelist, maxlen):
+    l = len(namelist)
+    while l > maxlen:
+      namelist = re.sub(', *[^, \.]+, *', ',,', namelist, 1)
+      if l == len(namelist): break
+      l = len(namelist)
+    namelist = re.sub(',,,+, *', ' .. ', namelist, 1)
+    return namelist
+
   def display_message(self, email, tree, raw=False, sep='', fd=None):
     if raw:
       self.say(sep, fd=fd)
@@ -213,10 +233,10 @@ class NullUI(object):
     'image/jpeg': 'jpg',
     'image/png': 'png'
   }
-  def make_data_filename(self, name_fmt, attributes):
+  def _make_data_filename(self, name_fmt, attributes):
     return (name_fmt or self.DEFAULT_DATA_NAME_FMT) % attributes
 
-  def make_data_attributes(self, attributes={}):
+  def _make_data_attributes(self, attributes={}):
     attrs = self.DEFAULT_DATA_ATTRS.copy()
     attrs.update(attributes)
     attrs['rand'] = '%4.4x' % random.randint(0, 0xffff)
@@ -226,17 +246,17 @@ class NullUI(object):
     return attrs
 
   def open_for_data(self, name_fmt=None, attributes={}):
-    filename = self.make_data_filename(name_fmt,
-                                       self.make_data_attributes(attributes))
+    filename = self._make_data_filename(name_fmt,
+                                       self._make_data_attributes(attributes))
     return filename, open(filename, 'w')
 
   def edit_messages(self, emails):
     self.say('Sorry, this UI cannot edit messages.')
 
 
-class TextUI(NullUI):
+class TextUI(BaseUI):
   def __init__(self):
-    NullUI.__init__(self)
+    BaseUI.__init__(self)
     self.times = []
 
   def print_key(self, key, config):
@@ -275,26 +295,6 @@ class TextUI(NullUI):
     self.say('  %s%s\r' % (progress, ' ' * (self.WIDTH-3-len(progress))),
              newline='', fd=sys.stderr)
     self.times.append((time.time(), progress))
-
-  def name(self, sender):
-    words = re.sub('["<>]', '', sender).split()
-    nomail = [w for w in words if not '@' in w]
-    if nomail: return ' '.join(nomail)
-    return ' '.join(words)
-
-  def names(self, senders):
-    if len(senders) > 1:
-      return re.sub('["<>]', '', ', '.join([x.split()[0] for x in senders]))
-    return ', '.join([self.name(s) for s in senders])
-
-  def compact(self, namelist, maxlen):
-    l = len(namelist)
-    while l > maxlen:
-      namelist = re.sub(', *[^, \.]+, *', ',,', namelist, 1)
-      if l == len(namelist): break
-      l = len(namelist)
-    namelist = re.sub(',,,+, *', ' .. ', namelist, 1)
-    return namelist
 
   def display_results(self, idx, results, terms,
                             start=0, end=None, num=None, expand=None,
@@ -341,7 +341,7 @@ class TextUI(NullUI):
           self.say((cfmt+' %4.4d-%2.2d-%2.2d %-25.25s '+sfmt
                     ) % (start + count,
                          msg_date.year, msg_date.month, msg_date.day,
-                         self.compact(self.names(msg_from), 25),
+                         self._compact(self._names(msg_from), 25),
                          msg_subj, msg_tags),
                     fd=fd)
         except (IndexError, ValueError):
@@ -359,7 +359,7 @@ class TextUI(NullUI):
       else:
         fd = sys.stdout
     try:
-      NullUI.display_messages(self, emails,
+      BaseUI.display_messages(self, emails,
                               raw=raw,
                               sep=(sep is None and ('_' * self.WIDTH) or sep),
                               fd=fd, context=context)
@@ -419,9 +419,9 @@ class RawHttpResponder:
     raise SuppressHtmlOutput()
 
 
-class HttpUI(TextUI):
+class HttpUI(BaseUI):
   def __init__(self, request):
-    TextUI.__init__(self)
+    BaseUI.__init__(self)
 
   def set_postdata(self, postdata):
     self.post_data = postdata
@@ -850,7 +850,7 @@ class HtmlUI(HttpUI):
             (count % 2) and 'odd' or 'even', ' '.join(tag_classes).lower(),
             msg_info[idx.MSG_IDX],
             msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
-            self.compact(self.names(msg_from), 30),
+            self._compact(self._names(msg_from), 30),
             msg_info[idx.MSG_IDX], msg_info[idx.MSG_ID],
             msg_subj,
             ', '.join(msg_tags),
@@ -939,7 +939,7 @@ class Session(object):
     self.searched = []
     self.displayed = (0, 0)
     self.task_results = []
-    self.ui = NullUI()
+    self.ui = BaseUI()
 
   def report_task_completed(self, name, result):
     self.wait_lock.acquire()
