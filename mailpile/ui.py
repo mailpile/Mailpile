@@ -490,12 +490,19 @@ class JsonUI(HttpUI):
   def prune_message_tree(self, tree):
     pruned = {}
     for k in tree:
-      if k not in ('headers_lc', 'summary', 'conversation', 'tags'):
+      if k not in ('headers_lc', 'summary', 'conversation', 'tags',
+                   'attachments'):
         pruned[k] = tree[k]
     pruned['tag_ids'] = tree['tags']
     pruned['summary'] = self.explain_msg_summary(tree['summary'])
     pruned['conversation'] = [self.explain_msg_summary(c)
                               for c in tree['conversation']]
+    pruned['attachments'] = attachments = []
+    for a in tree.get('attachments', []):
+      att = {}
+      att.update(a)
+      del att['part']
+      attachments.append(att)
     return pruned
 
   def display_message(self, email, tree, raw=False, sep='', fd=None):
