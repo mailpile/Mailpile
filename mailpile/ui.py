@@ -925,6 +925,24 @@ class HtmlUI(HttpUI):
 
     return ('html', autolink_html('<p class="%s">%s</p>' % tuple(what)))
 
+  def edit_messages(self, emails):
+    for email in emails:
+      if email.is_editable():
+        es = email.get_editing_string()
+        save_id = len(self.buffered_html)
+        self.buffered_html.append(('html',
+                                   '<div class=editing>'
+                            '<input type=hidden name="save_%d_msg" value="%s">'
+                              '<textarea name="@save_%d_data" cols=72 rows=20>'
+                                   '' % (save_id, email.msg_mid(), save_id)))
+        self.buffered_html.append(('html', self.escape_html(es)))
+        self.buffered_html.append(('html', '</textarea><br>'
+                                '<input type=submit name="save_%d" value=Save>'
+                                '<input type=submit name="mail_%d" value=Send>'
+                                           '</div>' % (save_id, save_id)))
+      else:
+        self.error('That message cannot be edited.')
+
 
 class Session(object):
 

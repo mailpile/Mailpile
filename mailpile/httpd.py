@@ -138,6 +138,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         msg_idx = parts[1]
         if parts[3] in ('', 'message.xml', 'message.json', 'message.rss'):
           cmd = ' '.join(['view', msg_idx])
+        elif parts[3] == 'edit.html':
+          cmd = ' '.join(['compose', msg_idx])
         elif parts[3] == 'message.eml':
           cmd = ' '.join(['view', 'raw', msg_idx])
         if parts[3].lower().startswith('cid:'):
@@ -168,6 +170,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         tag = ''
         cmd = ''.join(['search ', tag, q])
 
+    # Default command/argument processing.
+    cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
+    for pd in post_data:
+      if pd.startswith('@'):
+        data[pd] = post_data[pd][0]
+
+    # Explicit support for a few particular commands
     if 'add_tag' in post_data or 'rm_tag' in post_data:
       if 'add_tag' in post_data:
         fmt = 'tag +%s %s /%s'
@@ -179,13 +188,18 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
           tname = config.get('tag', {}).get(tid)
           if tname:
             cmd = fmt % (tname, ' '.join(msgs), cmd)
-    elif 'gpg_recvkey' in post_data:
+    if 'gpg_recvkey' in post_data:
       cmd = 'gpgrecv %s /%s' % (post_data.get('gpg_key_id')[0], cmd)
-    else:
-      cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
-      for pd in post_data:
-        if pd not in ('lq', 'csrf'):
-          data[pd] = post_data[pd][0]
+    for pd in post_data:
+      if pd.startswith('save_') or pd.startswith('mail_'):
+        try:
+          pid = int(pd[5:])
+          msg_idx = post_data.get('save_%d_msg' % pid)[0]
+          if pd.startswith('mail_'):
+            cmd = 'mail =%s /%s' % (msg_idx, cmd)
+          cmd = 'update =%s @save_%d_data /%s' % (msg_idx, pid, cmd)
+        except ValueError:
+          pass
 
     return cmd.strip(), data
 

@@ -19,6 +19,7 @@ Designing the URL space for the web UI is important.  Some ideas:
 ### Messages:
 
     http://mailpile/=IDX/messageidsha1sum/
+    http://mailpile/=IDX/messageidsha1sum/edit.html
     http://mailpile/=IDX/messageidsha1sum/message.xml
     http://mailpile/=IDX/messageidsha1sum/message.rss
     http://mailpile/=IDX/messageidsha1sum/message.json

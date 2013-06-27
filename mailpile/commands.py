@@ -611,10 +611,10 @@ class Mail(Command):
       bounce_to.append(self.args.pop(-1))
 
     # Process one at a time so we don't eat too much memory
-    for email in [Email(idx, i) for i in Choose_Messages(session, idx, args)]:
+    for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
       try:
+        msg_idx = email.get_msg_info(idx.MSG_IDX)
         SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
-        msg_idx = emails[0].get_msg_info(idx.MSG_IDX)
         Tag(session, arg=['-Drafts', '+Sent', '=%s'% msg_idx]).run()
       except:
         session.ui.error('Failed to send %s' % email)

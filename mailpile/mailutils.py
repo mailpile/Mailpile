@@ -408,6 +408,9 @@ class Email(object):
     self.msg_info = None
     self.msg_parsed = None
 
+  def msg_mid(self):
+    return b36(self.msg_idx)
+
   @classmethod
   def encoded_hdr(self, msg, hdr, value=None):
     hdr_value = value or msg[hdr]
