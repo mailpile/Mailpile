@@ -200,7 +200,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       return self.send_file(config, path.split("/_/static/", 1)[1])
 
     restype = 'html'
-    if not path or path == '/':
+    if not path or path == '/' and not query:
       # FIXME: This should probably be a login page of some sort.
       path = '/Inbox/'
 
