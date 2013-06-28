@@ -168,7 +168,7 @@ class Setup(Command):
     tags = session.config.get('tag', {}).values()
     for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
       if t not in tags:
-        Tag(session, arg=['add', t]).run()
+        Tag(session, 'tag', arg=['add', t]).run()
     if 'New' not in tags:
       Filter(session, arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
       Filter(session, arg=['read', '-New', 'Read Mail filter']).run()
