@@ -825,7 +825,7 @@ class GPG(Command):
     return True
 
   def list_keys(self):
-    session, config, arg = self.session, self.session.config, self.args[0]
+    session, config = self.session, self.session.config
     keys = []
     try:
       session.ui.mark('Listing available GPG keys')
@@ -875,7 +875,7 @@ class GPG(Command):
       gpg.handles['stderr'].close()
       gpg.handles['stdout'].close()
       gpg.wait()
-      session.ui.display_data(keys)
+      session.ui.display_gpg_keys(keys)
     except IndexError, e:
       self._ignore_exception()
     except IOError:

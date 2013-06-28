@@ -256,6 +256,9 @@ class BaseUI(object):
   def edit_messages(self, emails):
     self.say('Sorry, this UI cannot edit messages.')
 
+  def display_gpg_keys(self, data):
+    self.say('%s' % data)
+
 
 class TextUI(BaseUI):
   def __init__(self):
@@ -472,8 +475,7 @@ class JsonUI(HttpUI):
       'url': '/=%s/%s/' % (info[0], info[1])
     }
 
-  def display_data(self, data):
-    # FIXME: This is way too generic
+  def display_gpg_keys(self, data):
     self.buffered_json['results'] = self.buffered_results = data
 
   def display_results(self, idx, results, terms,

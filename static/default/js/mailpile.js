@@ -36,7 +36,7 @@ MailPile.prototype.gpgrecv = function(keyid) {
 }
 
 MailPile.prototype.gpglistkeys = function() {
-	mailpile.json_get("gpglistkeys", {}, function(data) {
+	mailpile.json_get("gpg list", {}, function(data) {
 		$("#content").append('<div class="dialog" id="gpgkeylist"></div>');
 		for (k in data.results) {
 			key = data.results[k]
