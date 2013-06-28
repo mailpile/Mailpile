@@ -46,13 +46,13 @@ for you, but if you are importing lots of old mail, you may want to
 postpone the filter definition until after the import (see below), to
 start with a clean slate:
 
-    $ ./mp --set "from: yourmail@domain.com = Your name" --setup
+    $ ./mp --set "my_from: yourmail@domain.com = Your name" --setup
     ...
 
 If you do not have a local working mail server in `/usr/sbin/sendmail`,
 you may also want to configure a default outgoing SMTP server:
 
-    $ ./mp --set "sendmail: default = smtp:yourmailserver:25"
+    $ ./mp --set "my_sendmail: default = smtp:yourmailserver:25"
     ...
 
 Mailpile does not currently access IMAP or POP3 servers directly, it

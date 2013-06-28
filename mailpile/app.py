@@ -203,13 +203,48 @@ class ConfigManager(dict):
     'html_template': 'static/default',
   }
 
-  INTS = ('postinglist_kb', 'sort_max', 'num_results', 'fd_cache_size',
-          'http_port', 'rescan_interval')
-  STRINGS = ('mailindex_file', 'postinglist_dir', 'default_order',
-             'gpg_recipient', 'gpg_keyserver',
-             'http_host', 'rescan_command', 'debug', 'local_mailbox')
-  DICTS = ('mailbox', 'tag', 'filter', 'filter_terms', 'filter_tags',
-           'from', 'sendmail', 'path')
+  CATEGORIES = {
+    'cfg': 'User preferences',
+    'gab': 'Groups and address book data',
+    'prf': 'User profiles and identities',
+    'sys': 'Technical system settings',
+    'tag': 'Tags and filters',
+  }
+  INTS = {
+    'fd_cache_size':   ('entries',       'sys', 'Max files kept open at once'),
+    'http_port':       ('port',          'sys', 'Listening port for web UI'),
+    'num_results':     ('results',       'cfg', 'Search results per page'),
+    'postinglist_kb':  ('kilobytes',     'sys', 'Posting list target size'),
+    'rescan_interval': ('seconds',       'cfg', 'New mail check frequency'),
+    'sort_max':        ('results',       'sys', 'Max results we sort "well"'),
+  }
+  STRINGS = {
+    'debug':           ('level',         'sys', 'Enable debugging'),
+    'default_order':   ('order',         'cfg', 'Default sort order'),
+    'gpg_recipient':   ('key ID',        'cfg', 'Encrypt local data to ...'),
+    'gpg_keyserver':   ('host:port',     'sys', 'Preferred GPG key server'),
+    'http_host':       ('hostname',      'sys', 'Listening host for web UI'),
+    'local_mailbox':   ('/dir/path',     'sys', 'Local read/write Maildir'),
+    'mailindex_file':  ('/file/path',    'sys', 'Metadata index file'),
+    'postinglist_dir': ('/dir/path',     'sys', 'Search index directory'),
+    'rescan_command':  ('shell command', 'cfg', 'Command run before rescanning'),
+  }
+  DICTS = {
+    'contact':         ('email=name',    'gab', 'Name of contact'),
+    'contact_alias':   ('email=email',   'gab', 'Map e-mail to main contact'),
+    'mailbox':         ('id=/file/path', 'sys', 'Mailboxes we index'),
+    'my_from':         ('email=name',    'prf', 'Name in From: line'),
+    'my_sendmail':     ('email=method',  'prf', 'How to send mail'),
+    'filter':          ('id=comment',    'tag', 'Human readable description'),
+    'filter_terms':    ('id=terms',      'tag', 'Search terms to match on'),
+    'filter_tags':     ('id=tags',       'tag', 'Tags to add/remove'),
+    'path':            ('ide=/dir/path', 'sys', 'Locations of assorted data'),
+    'tag':             ('id=name',       'tag', 'Mailpile tags'),
+  }
+  CONFIG_MIGRATE = {
+    'from': 'my_from',
+    'sendmail': 'my_sendmail'
+  }
 
   def __init__(self):
     self.background = None
@@ -238,15 +273,19 @@ class ConfigManager(dict):
   def parse_set(self, session, line):
     key, val = [k.strip() for k in line.split('=', 1)]
     key = key.lower()
-    if key in self.INTS:
+    if ':' in key:
+      key, subkey = key.split(':', 1)
+    else:
+      subkey = None
+    key = self.CONFIG_MIGRATE.get(key, key)
+    if key in self.INTS and subkey is None:
       try:
         self[key] = int(val)
       except ValueError:
         raise UsageError('%s is not an integer' % val)
-    elif key in self.STRINGS:
+    elif key in self.STRINGS and subkey is None:
       self[key] = val
-    elif ':' in key and key.split(':', 1)[0] in self.DICTS:
-      key, subkey = key.split(':', 1)
+    elif key in self.DICTS and subkey is not None:
       if key not in self:
         self[key] = {}
       self[key][subkey.strip()] = val
@@ -270,7 +309,7 @@ class ConfigManager(dict):
       os.mkdir(self.workdir())
     else:
       self.index = None
-      for key in (self.INTS + self.STRINGS):
+      for key in self.INTS.keys() + self.STRINGS.keys():
         if key in self: del self[key]
       try:
         fd = open(self.conffile(), 'rb')
@@ -357,7 +396,7 @@ class ConfigManager(dict):
     return flist
 
   def get_from_address(self):
-    froms = self.get('from', {})
+    froms = self.get('my_from', {})
     for f in froms.keys():
       if f.startswith('*'):
         return '%s <%s>' % (froms[f], f[1:])
@@ -367,7 +406,7 @@ class ConfigManager(dict):
 
   def get_sendmail(self, sender='default', rcpts='-t'):
     global DEFAULT_SENDMAIL
-    sm = self.get('sendmail', {})
+    sm = self.get('my_sendmail', {})
     return sm.get(sender, sm.get('default', DEFAULT_SENDMAIL)) % {
       'rcpt': ','.join(rcpts)
     }
