@@ -73,11 +73,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         code, msg = 200, "OK"
       except IOError, e:
         if e.errno == 2:
-          code, msg = 404, "File not found"
+          code, msg, mimetype = 404, "File not found", 'text/plain'
         elif e.errno == 13:
-          code, msg = 403, "Access denied"
+          code, msg, mimetype = 403, "Access denied", 'text/plain'
         else:
-          code, msg = 500, "Internal server error"
+          code, msg, mimetype = 500, "Internal server error", 'text/plain'
         message = ""
 
     self.log_request(code, message and len(message) or '-')
