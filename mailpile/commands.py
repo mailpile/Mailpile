@@ -751,7 +751,7 @@ class ConfigSet(Command):
   """Change a setting"""
   ORDER = ('Config', 1)
   SYNOPSIS = '<var=value>'
-  SPLIT_ARGS = False
+  SPLIT_ARG = False
   def command(self):
     session, config = self.session, self.session.config
     if config.parse_set(session, self.args[0]):
@@ -763,7 +763,7 @@ class ConfigUnset(Command):
   """Reset a setting to the default"""
   ORDER = ('Config', 2)
   SYNOPSIS = '<var>'
-  SPLIT_ARGS = False
+  SPLIT_ARG = False
   def command(self):
     session, config = self.session, self.session.config
     if config.parse_unset(session, self.args[0]):
@@ -775,7 +775,7 @@ class ConfigPrint(Command):
   """Print a setting"""
   ORDER = ('Config', 3)
   SYNOPSIS = '<var>'
-  SPLIT_ARGS = False
+  SPLIT_ARG = False
   def command(self):
     self.session.ui.print_key(self.args[0].strip().lower(),
                               self.session.config)
