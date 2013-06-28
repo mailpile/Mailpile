@@ -133,7 +133,7 @@ class Command:
 
   def _run(self, *args, **kwargs):
     try:
-      if self.SUBCOMMANDS and self.args[0] in self.SUBCOMMANDS:
+      if self.SUBCOMMANDS and self.args and self.args[0] in self.SUBCOMMANDS:
         subcmd = self.args.pop(0)
         self.name += ' ' + subcmd
         return self.SUBCOMMANDS[subcmd][0](self, *args, **kwargs)
