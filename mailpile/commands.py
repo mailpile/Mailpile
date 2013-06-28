@@ -636,7 +636,7 @@ class Search(Command):
 
     if self.args and self.args[0].startswith('@'):
       try:
-        start = int(args.pop(0)[1:])-1
+        start = int(self.args.pop(0)[1:])-1
       except ValueError:
         raise UsageError('Weird starting point')
     else:
