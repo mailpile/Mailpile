@@ -16,10 +16,10 @@ Twitter](https://twitter.com/HerraBRE) and watch for updates.
 
 ## Requirements ##
 
-Mailpile is developed on a Debian 6 system, running:
+Mailpile is developed on a Debian 7 system, running:
 
-   * Python 2.6
-   * python-lxml 2.2.8
+   * Python 2.7
+   * python-lxml 2.3.2
    * python-gnupginterface 0.3.2
 
 It might work with other versions. :-)
@@ -261,6 +261,40 @@ in part be derived from the index.  Store the index on an encrypted volume
 if you consider this a problem.
 
 
+## Hacking and exploring ##
+
+### Code structure ###
+
+Mailpile's python code lives in `mailpile/`.
+
+Mailpile's default HTML templates and Javascript lives in `static/default/`
+
+Miscellaneous documentation is in `doc/`.
+
+
+### Internal variables ###
+
+There are a bunch of variables that can be tweaked. For a complete list:
+
+    mailpile> help variables
+    ...
+
+
+### JSON, XML, RSS, ... ###
+
+JSON and XML versions exist for most web-based commands and requests.
+
+For individual e-mails, appending `message.xml` or `message.json` to the
+URL will provide a machine-readable rendering of the parsed message (for
+a raw dump of the undecoded message, request `message.eml`).
+
+For search results, append `feed.xml`, `feed.json` or `feed.rss` to the
+path part of the URL.
+
+For other commands, just append `.xml` or `.json` to the command name
+(e.g. `http://localhost:33411/_/help.xml` is a very useless example).
+
+
 ## A word on performance ##
 
 Searching is all about disk seeks.
@@ -293,21 +327,17 @@ set - but searching for really common terms won't give good results anyway.)
 A random laundry list of things I haven't done yet and might accept
 patches for:
 
-   * A way to view/extract messages/attachments
-   * The ability to compose and send e-mail, and replies
-   * Delivery mode for adding a single message to the index
-   * Improve conversation IDs assignment
+   * Delivery mode for adding a single message to the index (SMTP server?)
+   * Improve conversation IDs assignment/threading
    * Support for other mailbox formats, maybe even POP3/IMAP indexing
-   * A shell scripting interface for automation
-   * An XML-RPC interface to the search engine
-   * A pretty UI on top of said XML-RPC interface
-   * A routine for importing/indexing messages from Thunderbird,
-     Evolution, KMail, Outlook, ... which converts folder structure
-     into tags.
+   * A nice Python API for automation
+   * An XML-RPC interface to the Python API
+   * A pretty UI on top of the XML-RPC API, or the HTTP/JSON UI.
+   * A user-friendly setup wizard which auto-discovers and imports/indexes
+     messages from Thunderbird, Evolution, KMail, Outlook, Mail.app, GMail
+     ... which also grabs metadata like tags and folder structure.
 
-I am especially interested in help with UI work, I suck at that.
-
-Also, I do not use Evolution, Outlook etc, or other mailbox formats, so if
+I do not use Evolution, Outlook, Mail.app, or weird mailbox formats, so if
 you want features related to them, patches will speed things up *a lot*.
 
 Note that Mailpile's emphasis is on *speed* and most of the features
@@ -330,7 +360,7 @@ This is the Mailpile roadmap:
    6. Rewrite search engine (using same data formats and same XML-RPC API)
       in C. If anyone cares - Python might be good enough.
 
-We are roughly at milestone 2, with work progressing on 3.
+We have passed milestone 2, with work progressing on 3 and 4.
 
 
 ## Credits and License ##
