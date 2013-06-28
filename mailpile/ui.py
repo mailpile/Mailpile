@@ -449,6 +449,10 @@ class JsonUI(HttpUI):
       'url': '/=%s/%s/' % (info[0], info[1])
     }
 
+  def display_data(self, data):
+    # FIXME: This is way too generic
+    self.buffered_json['results'] = self.buffered_results = data
+
   def display_results(self, idx, results, terms,
                             start=0, end=0, num=0, expand=None,
                             fd=None):

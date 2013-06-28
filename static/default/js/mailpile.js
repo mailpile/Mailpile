@@ -30,11 +30,28 @@ MailPile.prototype.previous = function() {}
 MailPile.prototype.print = function() {}
 MailPile.prototype.reply = function() {}
 MailPile.prototype.rescan = function() {}
-MailPile.prototype.gpgrecv = function() {}
+
+MailPile.prototype.gpgrecv = function(keyid) {
+
+}
+
+MailPile.prototype.gpglistkeys = function() {
+	mailpile.json_get("gpglistkeys", {}, function(data) {
+		$("#content").append('<div class="dialog" id="gpgkeylist"></div>');
+		for (k in data.results) {
+			key = data.results[k]
+			$("#gpgkeylist").append("<li>Key: " + key.uids[0].replace("<", "&lt;").replace(">", "&gt;") + ": " + key.pub.keyid + "</li>");
+		}
+	});
+}
+
 MailPile.prototype.search = function(q) {
 	var that = this;
 	$("#qbox").val(q);
 	this.json_get("search", {"q": q}, function(data) {
+		if ($("#results").length == 0) {
+			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		}
 		$("#results tbody").empty();
 		for (var i = 0; i < data.results.length; i++) {
 			msg_info = data.results[i];
@@ -55,14 +72,29 @@ MailPile.prototype.search = function(q) {
 		that.loglines(data.chatter);
 	});
 }
-MailPile.prototype.set = function() {}
-MailPile.prototype.tag = function() {}
-MailPile.prototype.addtag = function() {}
+
+MailPile.prototype.set = function(key, value) {
+	var that = this;
+	this.json_get("set", {"args": key + "=" + value}, function(data) {
+		if (data.status == "ok") {
+			that.notice("Success: " + data.loglines[0]);
+		} else if (data.status == "error") {
+			this.error(data.loglines[0]);
+		}
+	});
+}
+
+MailPile.prototype.tag = function(msgids, tags) {}
+MailPile.prototype.addtag = function(tagname) {}
 MailPile.prototype.unset = function() {}
 MailPile.prototype.update = function() {}
+
 MailPile.prototype.view = function(idx, msgid) {
 	var that = this;
 	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
+		if ($("#results").length == 0) {
+			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		}
 		$("#results").empty();
 		$that.loglines(data.chatter);
 	})
@@ -83,6 +115,18 @@ MailPile.prototype.loglines = function(text) {
 	for (var i = 0; i < text.length; i++) {
 		$("#loglines").append(text[i] + "\n");
 	}
+}
+
+MailPile.prototype.notice = function(msg) {
+	console.log("NOTICE: " + msg);
+}
+
+MailPile.prototype.error = function(msg) {
+	console.log("ERROR: " + msg);
+}
+
+MailPile.prototype.warning = function(msg) {
+	console.log("WARNING: " + msg);
 }
 
 
