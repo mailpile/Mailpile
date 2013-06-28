@@ -328,12 +328,13 @@ A random laundry list of things I haven't done yet and might accept
 patches for:
 
    * Delivery mode for adding a single message to the index (SMTP server?)
+   * Spam detection
    * Improve conversation IDs assignment/threading
    * New "attributes" for the indexer to facilitate smart searches
    * Support for other mailbox formats, maybe even POP3/IMAP indexing
-   * A nice Python API for automation
-   * An XML-RPC interface to the Python API
-   * A pretty UI on top of the XML-RPC API, or the HTTP/JSON UI.
+   * A nice Python/XML-RPC API for automation (in progress)
+   * A pretty UI on top of the XML-RPC API, or the HTTP/JSON UI. (in progress)
+   * Packaging improvements
    * A user-friendly setup wizard which auto-discovers and imports/indexes
      messages from Thunderbird, Evolution, KMail, Outlook, Mail.app, GMail
      ... which also grabs metadata like tags and folder structure.
