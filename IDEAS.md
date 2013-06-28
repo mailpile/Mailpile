@@ -190,3 +190,8 @@ to each-other.  Could this be useful for fighting spam?
      false-positives and allowing spam filters to be more aggressive.
 
 
+## Packaging ##
+
+Take a look at sickbeard, sabnzbd, couchpotato for inspiration regarding
+packaging.
+

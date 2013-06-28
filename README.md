@@ -329,6 +329,7 @@ patches for:
 
    * Delivery mode for adding a single message to the index (SMTP server?)
    * Improve conversation IDs assignment/threading
+   * New "attributes" for the indexer to facilitate smart searches
    * Support for other mailbox formats, maybe even POP3/IMAP indexing
    * A nice Python API for automation
    * An XML-RPC interface to the Python API
