@@ -232,6 +232,8 @@ class ConfigManager(dict):
   DICTS = {
     'contact':         ('email=name',    'gab', 'Name of contact'),
     'contact_alias':   ('email=email',   'gab', 'Map e-mail to main contact'),
+    'group':           ('id=name',       'gab', 'Mailpile groups'),
+    'group_emails':    ('id=emails',     'gab', 'Group members'),
     'mailbox':         ('id=/file/path', 'sys', 'Mailboxes we index'),
     'my_from':         ('email=name',    'prf', 'Name in From: line'),
     'my_sendmail':     ('email=method',  'prf', 'How to send mail'),

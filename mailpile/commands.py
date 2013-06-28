@@ -267,7 +267,7 @@ class RunWWW(Command):
     return True
 
 
-##[ Tags and Filters ]#########################################################
+##[ Tags, Filters, Contacts, Groups, ... ]#####################################
 
 class Tag(Command):
   """Add/remove/list/edit message tags"""
@@ -397,6 +397,52 @@ class Filter(Command):
     'move':   (mv, '<id> <pos>'),
     'list':   (ls, ''),
   }
+
+
+class Contact(Command):
+  """Add/remove/list/edit contacts"""
+  ORDER = ('Tagging', 3)
+  SYNOPSIS = '<email>'
+  def command(self, save=True):
+    # FIXME: Display contact information for this contact
+    raise Exception("Unimplemented")
+
+  def add_contacts(self):
+    raise Exception("Unimplemented")
+
+  def list_contacts(self):
+    raise Exception("Unimplemented")
+
+  SUBCOMMANDS = {
+    'add':  (add_contacts, '<msgs>'),
+    'list': (list_contacts, ''),
+  }
+
+
+class Group(Command):
+  """Add/remove/list/edit groups"""
+  ORDER = ('Tagging', 4)
+  SYNOPSIS = '<group>'
+  def command(self, save=True):
+    # FIXME: Display contact list for this group
+    raise Exception("Unimplemented")
+
+  def add_contacts(self):
+    raise Exception("Unimplemented")
+
+  def add_group(self):
+    raise Exception("Unimplemented")
+
+  def list_groups(self):
+    raise Exception("Unimplemented")
+
+  SUBCOMMANDS = {
+    'add':  (add_group,     '<name>'),
+    'addc': (add_contacts,  '<emails>'),
+    'list': (list_groups,   ''),
+  }
+
+
 
 
 ##[ Composing e-mail ]#########################################################
@@ -959,6 +1005,7 @@ COMMANDS = {
   'A:':     ('add=',     AddMailbox),
   'a:':     ('attach=',  Attach),
   'c:':     ('compose=', Compose),
+  'C:':     ('contact=', Contact),
   'd:':     ('delete=',  Delete),
   'e:':     ('extract=', Extract),
   'F:':     ('filter=',  Filter),
@@ -974,6 +1021,7 @@ COMMANDS = {
   'r:':     ('reply=',   Reply),
   '_resca': ('rescan',   Rescan),
   'g:':     ('gpg',      GPG),
+  'G:':     ('group=',   Group),
   's:':     ('search=',  Search),
   'S:':     ('set=',     ConfigSet),
   't:':     ('tag=',     Tag),
