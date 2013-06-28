@@ -13,6 +13,9 @@
 #   - Logging and progress reporting
 #   - Rendering the final results of a successful command
 #
+# TODO: rework UIs result commands and commands to return "rendered result"
+#       objects?
+#
 ###############################################################################
 import datetime
 import os
