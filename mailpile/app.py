@@ -204,11 +204,11 @@ class ConfigManager(dict):
   }
 
   CATEGORIES = {
-    'cfg': 'User preferences',
-    'gab': 'Groups and address book data',
-    'prf': 'User profiles and identities',
-    'sys': 'Technical system settings',
-    'tag': 'Tags and filters',
+    'cfg': (3, 'User preferences'),
+    'gab': (2, 'Groups and address book data'),
+    'prf': (4, 'User profiles and identities'),
+    'sys': (0, 'Technical system settings'),
+    'tag': (1, 'Tags and filters'),
   }
   INTS = {
     'fd_cache_size':   ('entries',       'sys', 'Max files kept open at once'),

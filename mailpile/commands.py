@@ -910,6 +910,14 @@ class Help(Command):
                                  index=self._idx())
     return True
 
+  def help_vars(self):
+    self.session.ui.print_variable_help(self.session.config)
+    return True
+
+  SUBCOMMANDS = {
+    'variables': (help_vars, ''),
+  }
+
 
 def Action(session, opt, arg, data=None):
   session.ui.reset_marks(quiet=True)

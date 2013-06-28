@@ -132,6 +132,22 @@ class BaseUI(object):
                  newline=(i%wrap)==(wrap-1) and '\n  ' or '')
     self.say('\n')
 
+  def print_variable_help(self, config):
+    cats = config.CATEGORIES.keys()
+    cats.sort(key=lambda k: config.CATEGORIES[k])
+    for cat in cats:
+      self.say('%s' % config.CATEGORIES[cat][1])
+      vhelp = []
+      for what in config.INTS, config.STRINGS, config.DICTS:
+        for ii, i in what.iteritems():
+          if i[1] == cat:
+            sep = ('=' in i[0]) and ': ' or ' = '
+            vhelp.append('  %-35s %s' % ('%s%s<%s>' % (ii, sep,
+                                             i[0].replace('=', '> = <')), i[2]))
+      for l in sorted(vhelp):
+        self.say(l)
+      self.say('')
+
   def print_filters(self, config):
     w = int(self.WIDTH * 23/80)
     ffmt = ' %%3.3s %%-%d.%ds %%-%d.%ds %%s' % (w, w, w-2, w-2)
