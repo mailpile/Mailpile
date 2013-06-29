@@ -788,7 +788,8 @@ class AddMailbox(Command):
   SYNOPSIS = '</path/to/mbx>'
   SPLIT_ARG = False
   def command(self):
-    session, config, fn = self.session, self.session.config, self.args[0]
+    session, config, raw_fn = self.session, self.session.config, self.args[0]
+    fn = os.path.expanduser(fn)
     if fn in config.get('mailbox', {}).values():
       session.ui.warning('Already in the pile: %s' % fn)
     else:
@@ -798,7 +799,7 @@ class AddMailbox(Command):
                             'mailbox:%s=%s' % (config.nid('mailbox'), fn)):
           self._serialize('Save config', lambda: config.save())
       else:
-        return self._error('No such file/directory: %s' % fn)
+        return self._error('No such file/directory: %s' % raw_fn)
     return True
 
 
