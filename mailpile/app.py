@@ -213,6 +213,7 @@ class ConfigManager(dict):
   }
   INTS = {
     'fd_cache_size':   ('entries',       'sys', 'Max files kept open at once'),
+    'history_length':  ('lines',         'sys', 'History length, <0 = no save'),
     'http_port':       ('port',          'sys', 'Listening port for web UI'),
     'num_results':     ('results',       'cfg', 'Search results per page'),
     'postinglist_kb':  ('kilobytes',     'sys', 'Posting list target size'),
@@ -524,7 +525,13 @@ def Interact(session):
     readline.read_history_file(session.config.history_file())
   except IOError:
     pass
-  readline.set_history_length(100)
+
+  # Negative history means no saving state to disk.
+  history_length = session.config.get('history_length', 100)
+  if history_length >= 0:
+    readline.set_history_length(history_length)
+  else:
+    readline.set_history_length(-history_length)
 
   try:
     while True:
@@ -543,7 +550,8 @@ def Interact(session):
   except EOFError:
     print
 
-  readline.write_history_file(session.config.history_file())
+  if history_length > 0:
+    readline.write_history_file(session.config.history_file())
 
 def Main(args):
   re.UNICODE = 1
