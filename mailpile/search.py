@@ -154,17 +154,10 @@ class PostingList(object):
 
   def load(self):
     self.size = 0
-    fd, sig = self.GetFile(self.session, self.sig)
-    self.filename = sig
+    fd, self.filename = self.GetFile(self.session, self.sig)
     if fd:
       try:
-        for line in fd:
-          self.size += len(line)
-          if line.startswith(GPG_BEGIN_MESSAGE):
-            for line in decrypt_gpg([line], fd):
-              self.parse_line(line)
-          else:
-            self.parse_line(line)
+        self.size = decrypt_and_parse_lines(fd, self.parse_line)
       except ValueError:
         pass
       finally:

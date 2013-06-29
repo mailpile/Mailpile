@@ -318,6 +318,9 @@ class TextUI(BaseUI):
              newline='', fd=sys.stderr)
     self.times.append((time.time(), progress))
 
+  def display_contact(self, contact):
+    self.say('%s' % contact)
+
   def display_results(self, idx, results, terms,
                             start=0, end=None, num=None, expand=None,
                             fd=None):

@@ -42,6 +42,7 @@ import mailpile.util
 mailpile.ui.ABOUT = ABOUT
 
 import mailpile.commands
+from mailpile.contacts import Contact
 from mailpile.mailutils import *
 from mailpile.httpd import *
 from mailpile.search import *
@@ -232,8 +233,6 @@ class ConfigManager(dict):
     'rescan_command':  ('shell command', 'cfg', 'Command run before rescanning'),
   }
   DICTS = {
-    'contact':         ('email=name',    'gab', 'Name of contact'),
-    'contact_alias':   ('email=email',   'gab', 'Map e-mail to main contact'),
     'group':           ('id=name',       'gab', 'Mailpile groups'),
     'group_emails':    ('id=emails',     'gab', 'Group members'),
     'mailbox':         ('id=/file/path', 'sys', 'Mailboxes we index'),
@@ -256,6 +255,7 @@ class ConfigManager(dict):
     self.http_worker = None
     self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
     self.index = None
+    self.contacts = {}
 
   def workdir(self):
     return os.environ.get('MAILPILE_HOME', os.path.expanduser('~/.mailpile'))
@@ -313,22 +313,19 @@ class ConfigManager(dict):
       os.mkdir(self.workdir())
     else:
       self.index = None
-      for key in self.INTS.keys() + self.STRINGS.keys():
-        if key in self: del self[key]
+      for key in self.INTS.keys() + self.STRINGS.keys() + self.DICTS.keys():
+        if key in self:
+          del self[key]
       try:
         fd = open(self.conffile(), 'rb')
         try:
-          for line in fd:
-            if line.startswith(GPG_BEGIN_MESSAGE):
-              for line in decrypt_gpg([line], fd):
-                self.parse_config(session, line.decode('utf-8'))
-            else:
-              self.parse_config(session, line.decode('utf-8'))
+          decrypt_and_parse_lines(fd, lambda l: self.parse_config(session, l))
         except ValueError:
           pass
         fd.close()
       except IOError:
         pass
+    self.load_contacts(session)
 
   def save(self):
     if not os.path.exists(self.workdir()):
@@ -433,6 +430,30 @@ class ConfigManager(dict):
     except KeyError:
       return None
 
+  def load_contacts(self, session):
+    try:
+      contact_dir = self.data_directory('contacts')
+      for fn in os.listdir(contact_dir):
+        c = Contact().load(os.path.join(contact_dir, fn))
+        c.GPG_RECIPIENT = lambda: self.get('gpg_recipient')
+        self.contacts[c.email.lower()] = c
+        session.ui.mark('Loaded %s' % c.email)
+    except OSError:
+      pass
+
+  def get_contact(self, email):
+    return self.contacts.get(email.lower(), None)
+
+  def add_contact(self, email, name=None):
+    contact_dir = self.data_directory('contacts', mode='w', mkdir=True)
+    self.contacts[email.lower()] = c = Contact()
+    c.FILENAME = os.path.join(contact_dir, c.random_uid) + '.vcf'
+    c.GPG_RECIPIENT = lambda: self.get('gpg_recipient')
+    c.email = email
+    if name is not None:
+      c.fn = name
+    return c.save()
+
   def history_file(self):
     return self.get('history_file',
                     os.path.join(self.workdir(), 'history'))
@@ -456,21 +477,23 @@ class ConfigManager(dict):
     self.index = idx
     return idx
 
-  def open_file(self, ftype, fpath, mode='rb', mkdir=False):
-    if '..' in fpath:
-      raise ValueError('Parent paths are not allowed')
-
+  def data_directory(self, ftype, mode='rb', mkdir=False):
     # This should raise a KeyError if the ftype is unrecognized
     bpath = self.get('path', {}).get(ftype) or self.DEFAULT_PATHS[ftype]
     if not bpath.startswith('/'):
       cpath = os.path.join(self.workdir(), bpath)
       if os.path.exists(cpath) or 'w' in mode:
         bpath = cpath
-        if mkdir and not os.path.exists(os.path.dirname(cpath)):
-          os.mkdir(os.path.dirname(cpath))
+        if mkdir and not os.path.exists(cpath):
+          os.mkdir(cpath)
       else:
         bpath = os.path.join('.SELF', bpath)
+    return bpath
 
+  def open_file(self, ftype, fpath, mode='rb', mkdir=False):
+    if '..' in fpath:
+      raise ValueError('Parent paths are not allowed')
+    bpath = self.data_directory(ftype, mode=mode, mkdir=mkdir)
     fpath = os.path.join(bpath, fpath)
     return fpath, open(fpath, mode)
 

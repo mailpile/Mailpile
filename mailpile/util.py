@@ -84,6 +84,17 @@ def decrypt_gpg(lines, fd):
 
   return  lines
 
+def decrypt_and_parse_lines(fd, parser):
+  size = 0
+  for line in fd:
+    size += len(line)
+    if line.startswith(GPG_BEGIN_MESSAGE):
+       for line in decrypt_gpg([line], fd):
+         parser(line.decode('utf-8'))
+    else:
+      parser(line.decode('utf-8'))
+  return size
+
 def gpg_open(filename, recipient, mode):
   fd = open(filename, mode)
   if recipient and ('a' in mode or 'w' in mode):

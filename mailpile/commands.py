@@ -11,7 +11,7 @@ import os.path
 import traceback
 
 import mailpile.util
-from mailpile.mailutils import Email, NotEditableError, NoFromAddressError, PrepareMail, SendMail
+from mailpile.mailutils import Email, ExtractEmails, NotEditableError, NoFromAddressError, PrepareMail, SendMail
 from mailpile.search import MailIndex, PostingList, GlobalPostingList
 from mailpile.util import *
 
@@ -406,23 +406,32 @@ class Contact(Command):
   def command(self, save=True):
     session, config = self.session, self.session.config
     for email in self.args:
-      name = config.get('contact', {}).get(email, None)
-      if name is not None:
-        vcard = self._get_data(email, 'vcard')
-        image = self._get_data(email, 'jpg')
-        session.ui.display_contact(email, name, vcard, image)
+      contact = config.get_contact(email)
+      if contact:
+        session.ui.display_contact(contact)
       else:
         session.ui.warning('No such contact: %s' % email)
-    raise Exception("Unimplemented")
+    return True
 
-  def _get_data(self, email, ext):
-    try:
-      return config.open_file('contacts', '%s.%s' % (email, ext)).read()
-    except (OSError, IOError):
-      return None, None
+  def _fparse(self, fromdata):
+    email = ExtractEmails(fromdata)[0]
+    name = fromdata.replace(email, '').replace('<>', '').strip()
+    return email, (name or email)
 
   def add_contacts(self):
-    raise Exception("Unimplemented")
+    session, config, idx = self.session, self.session.config, self._idx()
+    pairs = []
+    if self.args and '@'in self.args[0]:
+      pairs = [(self.args[0], ' '.join(self.args[1:]))]
+    else:
+      for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
+        pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
+    if pairs:
+      for email, name in pairs:
+        config.add_contact(email, name)
+    else:
+      return self._error('Nothing to do!')
+    return True
 
   def ls_contacts(self):
     raise Exception("Unimplemented")
@@ -463,8 +472,6 @@ class Group(Command):
     'list':   (ls_groups,    ''),
     'delete': (rm_groups,    ''),
   }
-
-
 
 
 ##[ Composing e-mail ]#########################################################
