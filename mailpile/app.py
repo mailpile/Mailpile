@@ -573,8 +573,13 @@ def Interact(session):
   except EOFError:
     print
 
-  if history_length > 0:
-    readline.write_history_file(session.config.history_file())
+  try:
+    if session.config.get('history_length', 100) > 0:
+      readline.write_history_file(session.config.history_file())
+    else:
+      os.remove(session.config.history_file())
+  except OSError:
+    pass
 
 def Main(args):
   re.UNICODE = 1
