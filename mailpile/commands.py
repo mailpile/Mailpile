@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/env python
 #
 # These are the Mailpile commands, the public "API" we expose for searching,
 # tagging and editing e-mail.
@@ -789,7 +789,7 @@ class AddMailbox(Command):
   SPLIT_ARG = False
   def command(self):
     session, config, raw_fn = self.session, self.session.config, self.args[0]
-    fn = os.path.expanduser(fn)
+    fn = os.path.expanduser(raw_fn)
     if fn in config.get('mailbox', {}).values():
       session.ui.warning('Already in the pile: %s' % fn)
     else:
