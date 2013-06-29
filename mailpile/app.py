@@ -201,6 +201,7 @@ class ConfigManager(dict):
   RUNNING = {}
   DEFAULT_PATHS = {
     'html_template': 'static/default',
+    'contacts':      'contacts',
   }
 
   CATEGORIES = {
@@ -454,7 +455,7 @@ class ConfigManager(dict):
     self.index = idx
     return idx
 
-  def open_file(self, ftype, fpath, mode='rb'):
+  def open_file(self, ftype, fpath, mode='rb', mkdir=False):
     if '..' in fpath:
       raise ValueError('Parent paths are not allowed')
 
@@ -464,6 +465,8 @@ class ConfigManager(dict):
       cpath = os.path.join(self.workdir(), bpath)
       if os.path.exists(cpath) or 'w' in mode:
         bpath = cpath
+        if mkdir and not os.path.exists(os.path.dirname(cpath)):
+          os.mkdir(os.path.dirname(cpath))
       else:
         bpath = os.path.join('.SELF', bpath)
 

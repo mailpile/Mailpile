@@ -404,18 +404,36 @@ class Contact(Command):
   ORDER = ('Tagging', 3)
   SYNOPSIS = '<email>'
   def command(self, save=True):
-    # FIXME: Display contact information for this contact
+    session, config = self.session, self.session.config
+    for email in self.args:
+      name = config.get('contact', {}).get(email, None)
+      if name is not None:
+        vcard = self._get_data(email, 'vcard')
+        image = self._get_data(email, 'jpg')
+        session.ui.display_contact(email, name, vcard, image)
+      else:
+        session.ui.warning('No such contact: %s' % email)
     raise Exception("Unimplemented")
+
+  def _get_data(self, email, ext):
+    try:
+      return config.open_file('contacts', '%s.%s' % (email, ext)).read()
+    except (OSError, IOError):
+      return None, None
 
   def add_contacts(self):
     raise Exception("Unimplemented")
 
-  def list_contacts(self):
+  def ls_contacts(self):
+    raise Exception("Unimplemented")
+
+  def rm_contacts(self):
     raise Exception("Unimplemented")
 
   SUBCOMMANDS = {
-    'add':  (add_contacts, '<msgs>'),
-    'list': (list_contacts, ''),
+    'add':    (add_contacts, '<msgs>|<email> <name>'),
+    'list':   (ls_contacts,  ''),
+    'delete': (rm_contacts,  ''),
   }
 
 
@@ -433,13 +451,17 @@ class Group(Command):
   def add_group(self):
     raise Exception("Unimplemented")
 
-  def list_groups(self):
+  def ls_groups(self):
+    raise Exception("Unimplemented")
+
+  def rm_groups(self):
     raise Exception("Unimplemented")
 
   SUBCOMMANDS = {
-    'add':  (add_group,     '<name>'),
-    'addc': (add_contacts,  '<emails>'),
-    'list': (list_groups,   ''),
+    'add':    (add_group,    '<name>'),
+    'addc':   (add_contacts, '<group> <emails>'),
+    'list':   (ls_groups,    ''),
+    'delete': (rm_groups,    ''),
   }
 
 
