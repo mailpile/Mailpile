@@ -231,6 +231,7 @@ class ConfigManager(dict):
     'mailindex_file':  ('/file/path',    'sys', 'Metadata index file'),
     'postinglist_dir': ('/dir/path',     'sys', 'Search index directory'),
     'rescan_command':  ('shell command', 'cfg', 'Command run before rescanning'),
+    'obfuscate_index': ('key',           'sys', 'Scramble the index using key')
   }
   DICTS = {
     'group':           ('id=name',       'gab', 'Mailpile groups'),
