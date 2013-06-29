@@ -381,6 +381,7 @@ Contributors:
    * Smari McCarthy (<http://www.smarimccarthy.com/>)
    * Björgvin Ragnarsson (<https://github.com/nifgraup/>)
    * Brennan Novak (<https://brennannovak.com/>)
+   * Halldór Rúnarsson (<https://github.com/halldor>)
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the  GNU  Affero General Public License as published
