@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 #
 # These are the Mailpile commands, the public "API" we expose for searching,
 # tagging and editing e-mail.
@@ -408,7 +408,7 @@ class Contact(Command):
     for email in self.args:
       contact = config.get_contact(email)
       if contact:
-        session.ui.display_contact(contact)
+        session.ui.display_contact(contact, compact=False)
       else:
         session.ui.warning('No such contact: %s' % email)
     return True
@@ -428,19 +428,48 @@ class Contact(Command):
         pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
     if pairs:
       for email, name in pairs:
-        config.add_contact(email, name)
+        contact = config.add_contact(email, name)
+        session.ui.display_contact(contact, compact=False)
     else:
       return self._error('Nothing to do!')
     return True
 
+  def set_contact(self):
+    session, config = self.session, self.session.config
+    email, var, val = self.args[0], self.args[1], ' '.join(self.args[2:])
+    try:
+      contact = config.get_contact(email)
+      if not contact:
+        return self._error('Contact not found')
+      if val:
+        contact[var] = val
+      else:
+        del contact[var]
+      contact.save()
+      session.ui.display_contact(config.contacts[email], compact=False)
+      return True
+    except:
+      self._ignore_exception()
+      return self._error('Error setting %s = %s' % (var, val))
+
   def ls_contacts(self):
-    raise Exception("Unimplemented")
+    session, config = self.session, self.session.config
+    for email in sorted(config.contacts.keys()):
+      session.ui.display_contact(config.contacts[email], compact=True)
+    return True
 
   def rm_contacts(self):
-    raise Exception("Unimplemented")
+    session, config = self.session, self.session.config
+    for email in self.args:
+      if config.del_contact(email):
+        session.ui.say('Deleted: %s' % email)
+      else:
+        session.ui.error('No such contact: %s' % email)
+    return True
 
   SUBCOMMANDS = {
     'add':    (add_contacts, '<msgs>|<email> <name>'),
+    'set':    (set_contact,  '<email> <attr> <value>'),
     'list':   (ls_contacts,  ''),
     'delete': (rm_contacts,  ''),
   }

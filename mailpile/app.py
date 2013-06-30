@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 APPVER="0.0.0+github"
 ABOUT="""\
 Mailpile.py          a tool          Copyright 2011-2013, Bjarni R. Einarsson
@@ -435,10 +435,13 @@ class ConfigManager(dict):
     try:
       contact_dir = self.data_directory('contacts')
       for fn in os.listdir(contact_dir):
-        c = Contact().load(os.path.join(contact_dir, fn))
-        c.GPG_RECIPIENT = lambda: self.get('gpg_recipient')
-        self.contacts[c.email.lower()] = c
-        session.ui.mark('Loaded %s' % c.email)
+        try:
+          c = Contact().load(os.path.join(contact_dir, fn))
+          c.GPG_RECIPIENT = lambda: self.get('gpg_recipient')
+          self.contacts[c.email.lower()] = c
+          session.ui.mark('Loaded %s' % c.email)
+        except:
+          session.ui.warning('Failed to load contact %s' % fn)
     except OSError:
       pass
 
@@ -448,12 +451,24 @@ class ConfigManager(dict):
   def add_contact(self, email, name=None):
     contact_dir = self.data_directory('contacts', mode='w', mkdir=True)
     self.contacts[email.lower()] = c = Contact()
-    c.FILENAME = os.path.join(contact_dir, c.random_uid) + '.vcf'
-    c.GPG_RECIPIENT = lambda: self.get('gpg_recipient')
+    c.filename = os.path.join(contact_dir, c.random_uid) + '.vcf'
+    c.gpg_recipient = lambda: self.get('gpg_recipient')
     c.email = email
     if name is not None:
       c.fn = name
     return c.save()
+
+  def del_contact(self, email):
+    contact = self.get_contact(email)
+    try:
+      if contact:
+        del self.contacts[email.lower()]
+        os.remove(contact.filename)
+        return True
+      else:
+        return False
+    except (OSError, IOError):
+      return False
 
   def history_file(self):
     return self.get('history_file',
