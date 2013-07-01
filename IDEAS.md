@@ -37,6 +37,15 @@ Designing the URL space for the web UI is important.  Some ideas:
     http://mailpile/Inbox/?q=search%20terms
     http://mailpile/Inbox/feed.json?q=search%20terms
 
+### Contacts:
+
+    http://mailpile/_/contact/bre@klaki.net/
+    http://mailpile/_/contact/contactid/
+    http://mailpile/_/contact/contactid.json
+    http://mailpile/_/contact/list/bre/
+    http://mailpile/_/contact/list/bre.json
+    http://mailpile/_/contact/list/--full/bre.json
+
 ### Other commands:
 
     http://mailpile/...?cmd=command%20args

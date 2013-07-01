@@ -242,7 +242,7 @@ class Optimize(Command):
                                  force=('harder' in self.args))
       return True
     except KeyboardInterrupt:
-      session.ui.mark('Aborted')
+      self.session.ui.mark('Aborted')
       return False
 
 
@@ -428,8 +428,11 @@ class Contact(Command):
         pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
     if pairs:
       for email, name in pairs:
-        contact = config.add_contact(email, name)
-        session.ui.display_contact(contact, compact=False)
+        if email.lower() not in config.contacts:
+          contact = config.add_contact(email, name)
+          session.ui.display_contact(contact, compact=False)
+        else:
+          session.ui.warning('Already exists: %s' % email)
     else:
       return self._error('Nothing to do!')
     return True
@@ -441,22 +444,21 @@ class Contact(Command):
       contact = config.get_contact(email)
       if not contact:
         return self._error('Contact not found')
+      config.deindex_contact(contact)
       if val:
-        contact[var] = val
+        if ',' in val:
+          contact[var] = [[v, []] for v in val.split(',')]
+        else:
+          contact[var] = val
       else:
         del contact[var]
+      config.index_contact(contact)
       contact.save()
       session.ui.display_contact(config.contacts[email], compact=False)
       return True
     except:
       self._ignore_exception()
       return self._error('Error setting %s = %s' % (var, val))
-
-  def ls_contacts(self):
-    session, config = self.session, self.session.config
-    for email in sorted(config.contacts.keys()):
-      session.ui.display_contact(config.contacts[email], compact=True)
-    return True
 
   def rm_contacts(self):
     session, config = self.session, self.session.config
@@ -467,11 +469,27 @@ class Contact(Command):
         session.ui.error('No such contact: %s' % email)
     return True
 
+  def find_contacts(self):
+    session, config = self.session, self.session.config
+    if self.args and self.args[0] == '--full':
+      self.args.pop(0)
+      compact = False
+    else:
+      compact = True
+    if self.args:
+      contacts = config.find_contacts(self.args)
+    else:
+      contacts = [config.contacts[k] for k in config.contacts if '@' not in k]
+      contacts.sort(key=lambda c: c.fn)
+    for contact in contacts:
+      session.ui.display_contact(contact, compact=compact)
+    return True
+
   SUBCOMMANDS = {
-    'add':    (add_contacts, '<msgs>|<email> <name>'),
-    'set':    (set_contact,  '<email> <attr> <value>'),
-    'list':   (ls_contacts,  ''),
-    'delete': (rm_contacts,  ''),
+    'add':    (add_contacts,  '<msgs>|<email> <name>'),
+    'set':    (set_contact,   '<email> <attr> <value>'),
+    'list':   (find_contacts, '[--full] [<terms>]'),
+    'delete': (rm_contacts,   '<email>'),
   }
 
 

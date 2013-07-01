@@ -437,32 +437,59 @@ class ConfigManager(dict):
       for fn in os.listdir(contact_dir):
         try:
           c = Contact().load(os.path.join(contact_dir, fn))
-          c.GPG_RECIPIENT = lambda: self.get('gpg_recipient')
-          self.contacts[c.email.lower()] = c
+          c.gpg_recipient = lambda: self.get('gpg_recipient')
+          self.index_contact(c)
           session.ui.mark('Loaded %s' % c.email)
         except:
+          import traceback
+          traceback.print_exc()
           session.ui.warning('Failed to load contact %s' % fn)
     except OSError:
       pass
 
+  def index_contact(self, c):
+    for email, attrs in c.get('EMAIL', []):
+      self.contacts[email.lower()] = c
+    self.contacts[c.random_uid] = c
+
+  def deindex_contact(self, c):
+    for email, attrs in c.get('EMAIL', []):
+      if email.lower() in self.contacts:
+        del self.contacts[email.lower()]
+    if c.random_uid in self.contacts:
+      del self.contacts[c.random_uid]
+
   def get_contact(self, email):
     return self.contacts.get(email.lower(), None)
 
+  def find_contacts(self, terms):
+    results, contacts = [], self.contacts
+    for term in terms:
+      term = term.lower()
+      results.append(set([contacts[k].random_uid for k in contacts
+                          if term in k or term in contacts[k].fn.lower()]))
+    while len(results) > 1:
+      results[0] &= results.pop(-1)
+    results = [contacts[c] for c in results[0]]
+    results.sort(key=lambda k: k.fn)
+    return results
+
   def add_contact(self, email, name=None):
     contact_dir = self.data_directory('contacts', mode='w', mkdir=True)
-    self.contacts[email.lower()] = c = Contact()
+    c = Contact()
     c.filename = os.path.join(contact_dir, c.random_uid) + '.vcf'
     c.gpg_recipient = lambda: self.get('gpg_recipient')
     c.email = email
     if name is not None:
       c.fn = name
+    self.index_contact(c)
     return c.save()
 
   def del_contact(self, email):
     contact = self.get_contact(email)
     try:
       if contact:
-        del self.contacts[email.lower()]
+        self.deindex_contact(contact)
         os.remove(contact.filename)
         return True
       else:

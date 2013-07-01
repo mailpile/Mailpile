@@ -972,6 +972,13 @@ class HtmlUI(HttpUI):
       else:
         self.error('That message cannot be edited.')
 
+  def display_contact(self, contact, compact=False):
+    if compact:
+      self.say('%s' % contact)
+    else:
+      self.buffered_html.append(('html',
+                        '<pre>%s</pre>' % self.escape_html(contact.as_vCard())))
+
 
 class Session(object):
 

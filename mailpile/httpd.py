@@ -130,8 +130,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     data = {}
     cmd = ''
     if path.startswith('/_/'):
-      cmd = path[3:].replace('.json', '').replace('.xml', '') + ' '
-      cmd += query_data.get('args', [''])[0]
+      cmd = path[3:].replace('/', ' ').replace('.json', '').replace('.xml', '')
+      cmd += ' ' + query_data.get('args', [''])[0]
     elif path.startswith('/='):
       parts = path.split('/')
       if len(parts) == 4:
