@@ -16,6 +16,7 @@ import email.header
 import email.parser
 import email.utils
 import errno
+import logging
 import mailbox
 import mimetypes
 import os
@@ -32,6 +33,7 @@ from email.mime.text import MIMEText
 
 from smtplib import SMTP, SMTP_SSL
 
+from mailpile import imap_mailbox
 from mailpile.util import *
 from lxml.html.clean import Cleaner
 
@@ -41,6 +43,7 @@ try:
 except ImportError:
   GnuPG = PGPMimeParser = None
 
+logger = logging.getLogger(__name__)
 
 class NotEditableError(ValueError):
   pass
@@ -60,6 +63,11 @@ class NoSuchMailboxError(OSError):
 
 def ParseMessage(fd, pgpmime=True):
   pos = fd.tell()
+  if logger.isEnabledFor(logging.DEBUG):
+    fd.seek(0, os.SEEK_END)
+    _len = fd.tell()
+    fd.seek(pos)
+    logger.debug("Parsing message (fd: %s, len: %d, pos: %d)" % (fd, _len, pos))
   header = [fd.readline()]
   while header[-1] not in ('', '\n', '\r\n'):
     line = fd.readline()
@@ -193,7 +201,7 @@ MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
 DULL_HEADERS = ('in-reply-to', 'references')
 def HeaderPrint(message):
   """Generate a fingerprint from message headers which identifies the MUA."""
-  headers = [x.split(':', 1)[0] for x in message.raw_header]
+  headers = message.keys() #[x.split(':', 1)[0] for x in message.raw_header]
 
   while headers and headers[0].lower() not in MUA_HEADERS:
     headers.pop(0)
@@ -204,7 +212,23 @@ def HeaderPrint(message):
   return b64w(sha1b64('\n'.join(headers))).lower()
 
 
-def OpenMailbox(fn):
+def OpenMailbox(fn): 
+  logger.debug("Opening mailbox %s" % fn)
+  if fn.startswith("imap://"):
+    # FIXME(halldor): waaaayy too naive - expects imap://username:password@server/mailbox
+    url = fn[7:]
+    try:
+      serverpart, mailbox = url.split("/")
+    except ValueError:
+      serverpart = url
+      mailbox = None
+    try:
+      userpart, server = serverpart.split("@")
+      user, password = userpart.split(":")
+    except ValueError:
+      raise
+
+    return IncrementalIMAPMailbox(server, user=user, password=password, mailbox=mailbox)
   if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'cur')):
     return IncrementalMaildir(fn)
   elif os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'db')):
@@ -212,6 +236,49 @@ def OpenMailbox(fn):
   else:
     return IncrementalMbox(fn)
 
+class IncrementalIMAPMailbox(imap_mailbox.IMAPMailbox):
+  editable = True
+  save_to = None
+  parsed = {}
+
+  def __setstate__(self, dict):
+    self.__dict__.update(dict)
+    self.update_toc()
+
+  def __getstate__(self):
+    odict = self.__dict__.copy()
+    # Pickle can't handle file objects.
+    del odict['_mailbox']
+    return odict
+
+  def save(self, session=None, to=None):
+    if to:
+      self.save_to = to
+    if self.save_to and len(self) > 0:
+      if session: session.ui.mark('Saving state to %s' % self.save_to)
+      fd = open(self.save_to, 'w')
+      cPickle.dump(self, fd)
+      fd.close()
+
+  def unparsed(self):
+    return [i for i in self.keys() if i not in self.parsed]
+
+  def mark_parsed(self, i):
+    self.parsed[i] = True
+
+  def update_toc(self):
+    self._refresh()
+
+  def get_msg_size(self, toc_id):
+    fd = self.get_file(toc_id)
+    fd.seek(0, 2)
+    return fd.tell()
+
+  def get_msg_ptr(self, idx, toc_id):
+    return '%s%s' % (idx, toc_id)
+
+  def get_file_by_ptr(self, msg_ptr):
+    return self.get_file(msg_ptr[3:])
 
 class IncrementalMaildir(mailbox.Maildir):
   """A Maildir class that supports pickling and a few mailpile specifics."""
