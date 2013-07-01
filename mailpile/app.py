@@ -446,15 +446,19 @@ class ConfigManager(dict):
       pass
 
   def index_contact(self, c):
-    if c.kind == 'individual':
-      for email, attrs in c.get('EMAIL', []):
+    for email, attrs in c.get('EMAIL', []):
+      if c.kind == 'individual':
+        self.contacts[email.lower()] = c
+      elif c.kind == 'group' and email[0] == '@':
         self.contacts[email.lower()] = c
     self.contacts[c.random_uid] = c
 
   def deindex_contact(self, c):
-    if c.kind == 'individual':
-      for email, attrs in c.get('EMAIL', []):
-        if email.lower() in self.contacts:
+    for email, attrs in c.get('EMAIL', []):
+      if email.lower() in self.contacts:
+        if c.kind == 'individual':
+          del self.contacts[email.lower()]
+        elif c.kind == 'group' and '@' == email[0]:
           del self.contacts[email.lower()]
     if c.random_uid in self.contacts:
       del self.contacts[c.random_uid]

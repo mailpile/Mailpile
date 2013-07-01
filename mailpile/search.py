@@ -26,7 +26,7 @@ import lxml.html
 
 import mailpile.util
 from mailpile.util import *
-from mailpile.mailutils import NoSuchMailboxError, ParseMessage, HeaderPrint
+from mailpile.mailutils import NoSuchMailboxError, ExtractEmails, ParseMessage, HeaderPrint
 from mailpile.ui import *
 
 
@@ -611,8 +611,19 @@ class MailIndex(object):
     for kw in keywords:
       keywordmap[kw] = msg_idx_list
 
+    try:
+      msg_from = ExtractEmails(self.hdr(msg, 'from'))[0]
+    except:
+      msg_from = None
+    def is_group_match(terms):
+      contact = session.config.contacts.get(terms)
+      if msg_from and contact and contact.kind == 'group':
+        return msg_from.lower() in contact.members
+      return False
+
     for fid, terms, tags, comment in session.config.get_filters():
       if (terms == '*'
+      or  is_group_match(terms)
       or  len(self.search(None, terms.split(), keywords=keywordmap)) > 0):
         for t in tags.split():
           kw = '%s:tag' % t[1:]

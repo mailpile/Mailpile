@@ -422,14 +422,21 @@ class Contact(Command):
   def _prepare_new_contact(self, contact):
     pass
 
+  def _valid_contact_id(self, email):
+    return (email and '@' in email[1:])
+
+  def _add_from_messages(self):
+    pairs = []
+    for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
+      pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
+    return pairs
+
   def add_contacts(self):
     session, config, idx = self.session, self.session.config, self._idx()
-    pairs = []
-    if self.args and '@'in self.args[0]:
+    if self.args and self._valid_contact_id(self.args[0]):
       pairs = [(self.args[0], ' '.join(self.args[1:]))]
     else:
-      for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
-        pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
+      pairs = self._add_from_messages()
     if pairs:
       for email, name in pairs:
         if email.lower() not in config.contacts:
@@ -442,6 +449,12 @@ class Contact(Command):
       return self._error('Nothing to do!')
     return True
 
+  def _format_values(self, key, vals):
+    if key.upper() in ('MEMBER', ):
+      return [['mailto:%s' % e, []] for e in vals]
+    else:
+      return [[e, []] for e in vals]
+
   def set_contact(self):
     session, config = self.session, self.session.config
     email, var, val = self.args[0], self.args[1], ' '.join(self.args[2:])
@@ -452,7 +465,7 @@ class Contact(Command):
       config.deindex_contact(contact)
       if val:
         if ',' in val:
-          contact[var] = [[v, []] for v in val.split(',')]
+          contact[var] = self._format_values(var, val.split(','))
         else:
           contact[var] = val
       else:
@@ -503,6 +516,12 @@ class Group(Contact):
   def _prepare_new_contact(self, contact):
     # FIXME: We should create tags and a filter for this group.
     pass
+
+  def _valid_contact_id(self, email):
+    return (email and '@' == email[0])
+
+  def _add_from_messages(self):
+    raise ValueError('Invalid group ids: %s' % self.args)
 
 
 ##[ Composing e-mail ]#########################################################
