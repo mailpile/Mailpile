@@ -7,6 +7,7 @@ from mailpile.app import Main
 from mailpile.plugins import *
 
 formatter = '[%(asctime)s] {%(module)s:%(lineno)d} %(levelname)s - %(message)s'
-logging.basicConfig(filename="/Users/halldor/.mailpile/mailpile.log", level=logging.DEBUG, format=formatter)
+logging.basicConfig(filename="mailpile-debug.log",
+                    level=logging.DEBUG, format=formatter)
 
 Main(sys.argv[1:])
