@@ -234,8 +234,6 @@ class ConfigManager(dict):
     'obfuscate_index': ('key',           'sys', 'Scramble the index using key')
   }
   DICTS = {
-    'group':           ('id=name',       'gab', 'Mailpile groups'),
-    'group_emails':    ('id=emails',     'gab', 'Group members'),
     'mailbox':         ('id=/file/path', 'sys', 'Mailboxes we index'),
     'my_from':         ('email=name',    'prf', 'Name in From: line'),
     'my_sendmail':     ('email=method',  'prf', 'How to send mail'),
@@ -448,40 +446,46 @@ class ConfigManager(dict):
       pass
 
   def index_contact(self, c):
-    for email, attrs in c.get('EMAIL', []):
-      self.contacts[email.lower()] = c
+    if c.kind == 'individual':
+      for email, attrs in c.get('EMAIL', []):
+        self.contacts[email.lower()] = c
     self.contacts[c.random_uid] = c
 
   def deindex_contact(self, c):
-    for email, attrs in c.get('EMAIL', []):
-      if email.lower() in self.contacts:
-        del self.contacts[email.lower()]
+    if c.kind == 'individual':
+      for email, attrs in c.get('EMAIL', []):
+        if email.lower() in self.contacts:
+          del self.contacts[email.lower()]
     if c.random_uid in self.contacts:
       del self.contacts[c.random_uid]
 
   def get_contact(self, email):
     return self.contacts.get(email.lower(), None)
 
-  def find_contacts(self, terms):
+  def find_contacts(self, terms, kinds=['individual']):
     results, contacts = [], self.contacts
+    if not terms:
+      results = [set([contacts[k].random_uid for k in contacts
+                      if contacts[k].kind in kinds])]
     for term in terms:
       term = term.lower()
       results.append(set([contacts[k].random_uid for k in contacts
-                          if term in k or term in contacts[k].fn.lower()]))
+                          if (term in k or term in contacts[k].fn.lower())
+                          and contacts[k].kind in kinds]))
     while len(results) > 1:
       results[0] &= results.pop(-1)
     results = [contacts[c] for c in results[0]]
     results.sort(key=lambda k: k.fn)
     return results
 
-  def add_contact(self, email, name=None):
+  def add_contact(self, email, name=None, kind=None):
     contact_dir = self.data_directory('contacts', mode='w', mkdir=True)
     c = Contact()
     c.filename = os.path.join(contact_dir, c.random_uid) + '.vcf'
     c.gpg_recipient = lambda: self.get('gpg_recipient')
     c.email = email
-    if name is not None:
-      c.fn = name
+    if name is not None: c.fn = name
+    if kind is not None: c.kind = kind
     self.index_contact(c)
     return c.save()
 

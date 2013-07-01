@@ -403,6 +403,7 @@ class Contact(Command):
   """Add/remove/list/edit contacts"""
   ORDER = ('Tagging', 3)
   SYNOPSIS = '<email>'
+  KIND = 'individual'
   def command(self, save=True):
     session, config = self.session, self.session.config
     for email in self.args:
@@ -418,6 +419,9 @@ class Contact(Command):
     name = fromdata.replace(email, '').replace('<>', '').strip()
     return email, (name or email)
 
+  def _prepare_new_contact(self, contact):
+    pass
+
   def add_contacts(self):
     session, config, idx = self.session, self.session.config, self._idx()
     pairs = []
@@ -429,7 +433,8 @@ class Contact(Command):
     if pairs:
       for email, name in pairs:
         if email.lower() not in config.contacts:
-          contact = config.add_contact(email, name)
+          contact = config.add_contact(email, name, self.KIND)
+          self._prepare_new_contact(contact)
           session.ui.display_contact(contact, compact=False)
         else:
           session.ui.warning('Already exists: %s' % email)
@@ -476,11 +481,7 @@ class Contact(Command):
       compact = False
     else:
       compact = True
-    if self.args:
-      contacts = config.find_contacts(self.args)
-    else:
-      contacts = [config.contacts[k] for k in config.contacts if '@' not in k]
-      contacts.sort(key=lambda c: c.fn)
+    contacts = config.find_contacts(self.args, kinds=[self.KIND])
     for contact in contacts:
       session.ui.display_contact(contact, compact=compact)
     return True
@@ -493,32 +494,15 @@ class Contact(Command):
   }
 
 
-class Group(Command):
+class Group(Contact):
   """Add/remove/list/edit groups"""
   ORDER = ('Tagging', 4)
   SYNOPSIS = '<group>'
-  def command(self, save=True):
-    # FIXME: Display contact list for this group
-    raise Exception("Unimplemented")
+  KIND = 'group'
 
-  def add_contacts(self):
-    raise Exception("Unimplemented")
-
-  def add_group(self):
-    raise Exception("Unimplemented")
-
-  def ls_groups(self):
-    raise Exception("Unimplemented")
-
-  def rm_groups(self):
-    raise Exception("Unimplemented")
-
-  SUBCOMMANDS = {
-    'add':    (add_group,    '<name>'),
-    'addc':   (add_contacts, '<group> <emails>'),
-    'list':   (ls_groups,    ''),
-    'delete': (rm_groups,    ''),
-  }
+  def _prepare_new_contact(self, contact):
+    # FIXME: We should create tags and a filter for this group.
+    pass
 
 
 ##[ Composing e-mail ]#########################################################

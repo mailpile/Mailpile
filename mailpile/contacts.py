@@ -75,6 +75,8 @@ class Contact(dict):
 
   fn = property(lambda self: self.get('FN', [[None]])[0][0],
                 lambda self, v: self.__setitem__('FN', v))
+  kind = property(lambda self: self.get('KIND', [[None]])[0][0] or 'individual',
+                  lambda self, v: self.__setitem__('KIND', v))
 
   def _getset_email(self, newemail=None):
     first = None
