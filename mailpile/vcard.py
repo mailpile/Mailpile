@@ -71,7 +71,13 @@ class SimpleVCard(dict):
         dict.__setitem__(self, key, [[val, []]])
 
   def __str__(self):
-    return '%s <%s>' % (self.fn, self.email)
+    if self.kind == 'individual':
+      return 'Contact: %s <%s>' % (self.fn, self.email)
+    elif self.kind == 'group':
+      return 'Group: %s (%s = %s)' % (self.fn, self.nickname,
+                                   ','.join([e[0] for e in self.get('EMAIL')]))
+    else:
+      return '%s: %s (%s)' % (self.kind, self.fn, self.nickname)
 
   fn = property(lambda self: self.get('FN', [[None]])[0][0],
                 lambda self, v: self.__setitem__('FN', v))
@@ -80,6 +86,8 @@ class SimpleVCard(dict):
   members = property(lambda self: [(m[0].startswith('mailto:') and m[0][7:]
                                                                 or m[0]).lower()
                                    for m in self.get('MEMBER', [])])
+  nickname = property(lambda self: self.get('NICKNAME', [[None]])[0][0],
+                      lambda self, v: self.__setitem__('KIND', v))
 
   def _getset_email(self, newemail=None):
     first = None

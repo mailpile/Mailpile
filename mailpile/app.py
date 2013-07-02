@@ -446,11 +446,12 @@ class ConfigManager(dict):
       pass
 
   def index_vcard(self, c):
-    for email, attrs in c.get('EMAIL', []):
-      if c.kind == 'individual':
+    if c.kind == 'individual':
+      for email, attrs in c.get('EMAIL', []):
         self.vcards[email.lower()] = c
-      elif c.kind == 'group' and email[0] == '@':
-        self.vcards[email.lower()] = c
+    else:
+      for handle, attrs in c.get('NICKNAME', []):
+        self.vcards[handle.lower()] = c
     self.vcards[c.random_uid] = c
 
   def deindex_vcard(self, c):
@@ -458,8 +459,10 @@ class ConfigManager(dict):
       if email.lower() in self.vcards:
         if c.kind == 'individual':
           del self.vcards[email.lower()]
-        elif c.kind == 'group' and '@' == email[0]:
-          del self.vcards[email.lower()]
+    for handle, attrs in c.get('NICKNAME', []):
+      if handle.lower() in self.vcards:
+        if c.kind != 'individual':
+          del self.vcards[handle.lower()]
     if c.random_uid in self.vcards:
       del self.vcards[c.random_uid]
 
@@ -470,24 +473,27 @@ class ConfigManager(dict):
     results, vcards = [], self.vcards
     if not terms:
       results = [set([vcards[k].random_uid for k in vcards
-                      if vcards[k].kind in kinds])]
+                      if (vcards[k].kind in kinds) or not kinds])]
     for term in terms:
       term = term.lower()
       results.append(set([vcards[k].random_uid for k in vcards
                           if (term in k or term in vcards[k].fn.lower())
-                          and vcards[k].kind in kinds]))
+                          and ((vcards[k].kind in kinds) or not kinds)]))
     while len(results) > 1:
       results[0] &= results.pop(-1)
     results = [vcards[c] for c in results[0]]
     results.sort(key=lambda k: k.fn)
     return results
 
-  def add_vcard(self, email, name=None, kind=None):
+  def add_vcard(self, handle, name=None, kind=None):
     vcard_dir = self.data_directory('vcards', mode='w', mkdir=True)
     c = SimpleVCard()
     c.filename = os.path.join(vcard_dir, c.random_uid) + '.vcf'
     c.gpg_recipient = lambda: self.get('gpg_recipient')
-    c.email = email
+    if kind == 'individual':
+      c.email = handle
+    else:
+      c['NICKNAME'] = handle
     if name is not None: c.fn = name
     if kind is not None: c.kind = kind
     self.index_vcard(c)

@@ -402,8 +402,8 @@ class Filter(Command):
 class VCard(Command):
   """Add/remove/list/edit vcards"""
   ORDER = ('Internals', 6)
-  SYNOPSIS = '<email>'
-  KIND = 'misc'
+  SYNOPSIS = '<nickname>'
+  KIND = ''
   def command(self, save=True):
     session, config = self.session, self.session.config
     for email in self.args:
@@ -422,8 +422,8 @@ class VCard(Command):
   def _prepare_new_vcard(self, vcard):
     pass
 
-  def _valid_vcard_id(self, email):
-    return (email and '@' in email[1:])
+  def _valid_vcard_handle(self, vc_handle):
+    return (vc_handle and '@' in vc_handle[1:])
 
   def _add_from_messages(self):
     pairs = []
@@ -433,14 +433,14 @@ class VCard(Command):
 
   def add_vcards(self):
     session, config, idx = self.session, self.session.config, self._idx()
-    if self.args and self._valid_vcard_id(self.args[0]):
+    if self.args and self._valid_vcard_handle(self.args[0]):
       pairs = [(self.args[0], ' '.join(self.args[1:]))]
     else:
       pairs = self._add_from_messages()
     if pairs:
-      for email, name in pairs:
-        if email.lower() not in config.vcards:
-          vcard = config.add_vcard(email, name, self.KIND)
+      for handle, name in pairs:
+        if handle.lower() not in config.vcards:
+          vcard = config.add_vcard(handle, name, self.KIND)
           self._prepare_new_vcard(vcard)
           session.ui.display_vcard(vcard, compact=False)
         else:
@@ -494,7 +494,8 @@ class VCard(Command):
       compact = False
     else:
       compact = True
-    vcards = config.find_vcards(self.args, kinds=[self.KIND])
+    kinds = self.KIND and [self.KIND] or []
+    vcards = config.find_vcards(self.args, kinds=kinds)
     for vcard in vcards:
       session.ui.display_vcard(vcard, compact=compact)
     return True
@@ -519,13 +520,15 @@ class Group(VCard):
   SYNOPSIS = '<group>'
   KIND = 'group'
 
-  def _valid_vcard_id(self, email):
-    # FIXME: If there is already a tag by this name, complain.
-    return (email and '@' == email[0])
+  def _valid_vcard_handle(self, vc_handle):
+    # If there is already a tag by this name, complain.
+    return (vc_handle
+       and  ('@' not in vc_handle[0])
+       and  (not self.session.config.get_tag_id(vc_handle)))
 
   def _prepare_new_vcard(self, vcard):
     # FIXME: We should create tags and a filter for this group.
-    pass
+    return False
 
   def _add_from_messages(self):
     raise ValueError('Invalid group ids: %s' % self.args)

@@ -611,19 +611,8 @@ class MailIndex(object):
     for kw in keywords:
       keywordmap[kw] = msg_idx_list
 
-    try:
-      msg_from = ExtractEmails(self.hdr(msg, 'from'))[0]
-    except:
-      msg_from = None
-    def is_group_match(terms):
-      contact = session.config.vcards.get(terms)
-      if msg_from and contact and contact.kind == 'group':
-        return msg_from.lower() in contact.members
-      return False
-
     for fid, terms, tags, comment in session.config.get_filters():
       if (terms == '*'
-      or  is_group_match(terms)
       or  len(self.search(None, terms.split(), keywords=keywordmap)) > 0):
         for t in tags.split():
           kw = '%s:tag' % t[1:]
@@ -771,7 +760,7 @@ class MailIndex(object):
   def add_tag(self, session, tag_id,
               msg_info=None, msg_idxs=None, conversation=False):
     pls = GlobalPostingList(session, '%s:tag' % tag_id)
-    if not msg_idxs:
+    if msg_info and not msg_idxs:
       msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
     session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in list(msg_idxs):
@@ -856,7 +845,7 @@ class MailIndex(object):
         t[1] = self.config.get_tag_id(t[1]) or t[1]
         rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
       elif term.startswith('group:'):
-        group = self.config.vcards.get('@' + term.split(':', 1)[1])
+        group = self.config.vcards.get(term.split(':', 1)[1])
         if group and group.kind == 'group':
           for email, attrs in group.get('EMAIL', []):
             rt.extend([int(h, 36) for h in hits('%s:from' % email.lower())])
