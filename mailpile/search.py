@@ -616,7 +616,7 @@ class MailIndex(object):
     except:
       msg_from = None
     def is_group_match(terms):
-      contact = session.config.contacts.get(terms)
+      contact = session.config.vcards.get(terms)
       if msg_from and contact and contact.kind == 'group':
         return msg_from.lower() in contact.members
       return False
@@ -695,9 +695,12 @@ class MailIndex(object):
     for key in msg.keys():
       key_lower = key.lower()
       if key_lower not in BORING_HEADERS:
+        emails = ExtractEmails(self.hdr(msg, key))
         words = set(re.findall(WORD_REGEXP, self.hdr(msg, key).lower()))
         words -= STOPLIST
         keywords.extend(['%s:%s' % (t, key_lower) for t in words])
+        keywords.extend(['%s:%s' % (e.lower(), key_lower) for e in emails])
+        keywords.extend(['%s:email' % e.lower() for e in emails])
         if 'list' in key_lower:
           keywords.extend(['%s:list' % t for t in words])
 
@@ -852,6 +855,11 @@ class MailIndex(object):
         t = term.split(':', 1)
         t[1] = self.config.get_tag_id(t[1]) or t[1]
         rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
+      elif term.startswith('group:'):
+        group = self.config.vcards.get('@' + term.split(':', 1)[1])
+        if group and group.kind == 'group':
+          for email, attrs in group.get('EMAIL', []):
+            rt.extend([int(h, 36) for h in hits('%s:from' % email.lower())])
       elif ':' in term:
         t = term.split(':', 1)
         rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
