@@ -11,6 +11,7 @@ import os.path
 import traceback
 
 import mailpile.util
+import mailpile.ui
 from mailpile.mailutils import Email, ExtractEmails, NotEditableError, NoFromAddressError, PrepareMail, SendMail
 from mailpile.search import MailIndex, PostingList, GlobalPostingList
 from mailpile.util import *
@@ -312,11 +313,35 @@ class Tag(Command):
     return True
 
   def list_tags(self):
-    pass
+    raise Exception('Unimplemented')
+
+  def rm_tag(self):
+    session, config = self.session, self.session.config
+    existing = [v.lower() for v in config.get('tag', {}).values()]
+    removed = 0
+    clean_session = mailpile.ui.Session(config)
+    clean_session.ui = session.ui
+    for tag in self.args:
+      tag_id = config.get_tag_id(tag)
+      if tag_id:
+        if (Search(clean_session, 'search', ['tag:%s' % tag]).run()
+        and Tag(clean_session, 'tag', ['-%s' % tag, 'all']).run()
+        and config.parse_unset(session, 'tag:%s' % tag_id)):
+          removed += 1
+        else:
+          raise Exception('That failed, not sure why?!')
+      else:
+        self._error('No such tag %s' % tag)
+    if removed:
+      config.save()
+      return True
+    else:
+      return False
 
   SUBCOMMANDS = {
-    'add':  (add_tag,   '<tag>'),
-    'list': (list_tags, ''),
+    'add':    (add_tag,   '<tag>'),
+    'delete': (rm_tag,    '<tag>'),
+    'list':   (list_tags, ''),
   }
 
 

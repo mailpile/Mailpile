@@ -624,8 +624,10 @@ class MailIndex(object):
     return set(keywordmap.keys())
 
   def apply_filters(self, session, filter_on, msg_mids=None, msg_idxs=None):
-    if not msg_idxs:
+    if msg_idxs is None:
       msg_idxs = [int(mid, 36) for mid in msg_mids]
+    if not msg_idxs:
+      return
     for fid, trms, tags, c in session.config.get_filters(filter_on=filter_on):
       for t in tags.split():
         tag_id = t[1:].split(':')[0]
@@ -760,7 +762,7 @@ class MailIndex(object):
   def add_tag(self, session, tag_id,
               msg_info=None, msg_idxs=None, conversation=False):
     pls = GlobalPostingList(session, '%s:tag' % tag_id)
-    if msg_info and not msg_idxs:
+    if msg_info and msg_idxs is None:
       msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
     session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in list(msg_idxs):
@@ -784,8 +786,10 @@ class MailIndex(object):
   def remove_tag(self, session, tag_id,
                  msg_info=None, msg_idxs=None, conversation=False):
     pls = GlobalPostingList(session, '%s:tag' % tag_id)
-    if not msg_idxs:
+    if msg_info and msg_idxs is None:
       msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
+    if not msg_idxs:
+      return
     session.ui.mark('Untagging conversations (%s)' % (tag_id, ))
     for msg_idx in list(msg_idxs):
       if conversation:
