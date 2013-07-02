@@ -318,11 +318,11 @@ class TextUI(BaseUI):
              newline='', fd=sys.stderr)
     self.times.append((time.time(), progress))
 
-  def display_contact(self, contact, compact=False):
+  def display_vcard(self, vcard, compact=False):
     if compact:
-      self.say('%s' % contact)
+      self.say('%s' % vcard)
     else:
-      self.say('%s' % contact.as_vCard())
+      self.say('%s' % vcard.as_vCard())
 
   def display_results(self, idx, results, terms,
                             start=0, end=None, num=None, expand=None,
@@ -972,12 +972,12 @@ class HtmlUI(HttpUI):
       else:
         self.error('That message cannot be edited.')
 
-  def display_contact(self, contact, compact=False):
+  def display_vcard(self, vcard, compact=False):
     if compact:
-      self.say('%s' % contact)
+      self.say('%s' % vcard)
     else:
       self.buffered_html.append(('html',
-                        '<pre>%s</pre>' % self.escape_html(contact.as_vCard())))
+                        '<pre>%s</pre>' % self.escape_html(vcard.as_vCard())))
 
 
 class Session(object):

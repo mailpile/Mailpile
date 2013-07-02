@@ -42,7 +42,7 @@ import mailpile.util
 mailpile.ui.ABOUT = ABOUT
 
 import mailpile.commands
-from mailpile.contacts import Contact
+from mailpile.vcard import SimpleVCard
 from mailpile.mailutils import *
 from mailpile.httpd import *
 from mailpile.search import *
@@ -202,7 +202,7 @@ class ConfigManager(dict):
   RUNNING = {}
   DEFAULT_PATHS = {
     'html_template': 'static/default',
-    'contacts':      'contacts',
+    'vcards':        'vcards',
   }
 
   CATEGORIES = {
@@ -254,7 +254,7 @@ class ConfigManager(dict):
     self.http_worker = None
     self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
     self.index = None
-    self.contacts = {}
+    self.vcards = {}
 
   def workdir(self):
     return os.environ.get('MAILPILE_HOME', os.path.expanduser('~/.mailpile'))
@@ -324,7 +324,7 @@ class ConfigManager(dict):
         fd.close()
       except IOError:
         pass
-    self.load_contacts(session)
+    self.load_vcards(session)
 
   def save(self):
     if not os.path.exists(self.workdir()):
@@ -429,76 +429,76 @@ class ConfigManager(dict):
     except KeyError:
       return None
 
-  def load_contacts(self, session):
+  def load_vcards(self, session):
     try:
-      contact_dir = self.data_directory('contacts')
-      for fn in os.listdir(contact_dir):
+      vcard_dir = self.data_directory('vcards')
+      for fn in os.listdir(vcard_dir):
         try:
-          c = Contact().load(os.path.join(contact_dir, fn))
+          c = SimpleVCard().load(os.path.join(vcard_dir, fn))
           c.gpg_recipient = lambda: self.get('gpg_recipient')
-          self.index_contact(c)
+          self.index_vcard(c)
           session.ui.mark('Loaded %s' % c.email)
         except:
           import traceback
           traceback.print_exc()
-          session.ui.warning('Failed to load contact %s' % fn)
+          session.ui.warning('Failed to load vcard %s' % fn)
     except OSError:
       pass
 
-  def index_contact(self, c):
+  def index_vcard(self, c):
     for email, attrs in c.get('EMAIL', []):
       if c.kind == 'individual':
-        self.contacts[email.lower()] = c
+        self.vcards[email.lower()] = c
       elif c.kind == 'group' and email[0] == '@':
-        self.contacts[email.lower()] = c
-    self.contacts[c.random_uid] = c
+        self.vcards[email.lower()] = c
+    self.vcards[c.random_uid] = c
 
-  def deindex_contact(self, c):
+  def deindex_vcard(self, c):
     for email, attrs in c.get('EMAIL', []):
-      if email.lower() in self.contacts:
+      if email.lower() in self.vcards:
         if c.kind == 'individual':
-          del self.contacts[email.lower()]
+          del self.vcards[email.lower()]
         elif c.kind == 'group' and '@' == email[0]:
-          del self.contacts[email.lower()]
-    if c.random_uid in self.contacts:
-      del self.contacts[c.random_uid]
+          del self.vcards[email.lower()]
+    if c.random_uid in self.vcards:
+      del self.vcards[c.random_uid]
 
-  def get_contact(self, email):
-    return self.contacts.get(email.lower(), None)
+  def get_vcard(self, email):
+    return self.vcards.get(email.lower(), None)
 
-  def find_contacts(self, terms, kinds=['individual']):
-    results, contacts = [], self.contacts
+  def find_vcards(self, terms, kinds=['individual']):
+    results, vcards = [], self.vcards
     if not terms:
-      results = [set([contacts[k].random_uid for k in contacts
-                      if contacts[k].kind in kinds])]
+      results = [set([vcards[k].random_uid for k in vcards
+                      if vcards[k].kind in kinds])]
     for term in terms:
       term = term.lower()
-      results.append(set([contacts[k].random_uid for k in contacts
-                          if (term in k or term in contacts[k].fn.lower())
-                          and contacts[k].kind in kinds]))
+      results.append(set([vcards[k].random_uid for k in vcards
+                          if (term in k or term in vcards[k].fn.lower())
+                          and vcards[k].kind in kinds]))
     while len(results) > 1:
       results[0] &= results.pop(-1)
-    results = [contacts[c] for c in results[0]]
+    results = [vcards[c] for c in results[0]]
     results.sort(key=lambda k: k.fn)
     return results
 
-  def add_contact(self, email, name=None, kind=None):
-    contact_dir = self.data_directory('contacts', mode='w', mkdir=True)
-    c = Contact()
-    c.filename = os.path.join(contact_dir, c.random_uid) + '.vcf'
+  def add_vcard(self, email, name=None, kind=None):
+    vcard_dir = self.data_directory('vcards', mode='w', mkdir=True)
+    c = SimpleVCard()
+    c.filename = os.path.join(vcard_dir, c.random_uid) + '.vcf'
     c.gpg_recipient = lambda: self.get('gpg_recipient')
     c.email = email
     if name is not None: c.fn = name
     if kind is not None: c.kind = kind
-    self.index_contact(c)
+    self.index_vcard(c)
     return c.save()
 
-  def del_contact(self, email):
-    contact = self.get_contact(email)
+  def del_vcard(self, email):
+    vcard = self.get_vcard(email)
     try:
-      if contact:
-        self.deindex_contact(contact)
-        os.remove(contact.filename)
+      if vcard:
+        self.deindex_vcard(vcard)
+        os.remove(vcard.filename)
         return True
       else:
         return False

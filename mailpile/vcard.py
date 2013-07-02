@@ -5,7 +5,7 @@ import random
 from mailpile.util import *
 
 
-class Contact(dict):
+class SimpleVCard(dict):
   VCARD_OTHER_KEYS = {
     'AGENT': '', 
     'CLASS': '',

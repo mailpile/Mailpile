@@ -399,17 +399,17 @@ class Filter(Command):
   }
 
 
-class Contact(Command):
-  """Add/remove/list/edit contacts"""
-  ORDER = ('Tagging', 3)
+class VCard(Command):
+  """Add/remove/list/edit vcards"""
+  ORDER = ('Internals', 6)
   SYNOPSIS = '<email>'
-  KIND = 'individual'
+  KIND = 'misc'
   def command(self, save=True):
     session, config = self.session, self.session.config
     for email in self.args:
-      contact = config.get_contact(email)
-      if contact:
-        session.ui.display_contact(contact, compact=False)
+      vcard = config.get_vcard(email)
+      if vcard:
+        session.ui.display_vcard(vcard, compact=False)
       else:
         session.ui.warning('No such contact: %s' % email)
     return True
@@ -419,10 +419,10 @@ class Contact(Command):
     name = fromdata.replace(email, '').replace('<>', '').strip()
     return email, (name or email)
 
-  def _prepare_new_contact(self, contact):
+  def _prepare_new_vcard(self, vcard):
     pass
 
-  def _valid_contact_id(self, email):
+  def _valid_vcard_id(self, email):
     return (email and '@' in email[1:])
 
   def _add_from_messages(self):
@@ -431,18 +431,18 @@ class Contact(Command):
       pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
     return pairs
 
-  def add_contacts(self):
+  def add_vcards(self):
     session, config, idx = self.session, self.session.config, self._idx()
-    if self.args and self._valid_contact_id(self.args[0]):
+    if self.args and self._valid_vcard_id(self.args[0]):
       pairs = [(self.args[0], ' '.join(self.args[1:]))]
     else:
       pairs = self._add_from_messages()
     if pairs:
       for email, name in pairs:
-        if email.lower() not in config.contacts:
-          contact = config.add_contact(email, name, self.KIND)
-          self._prepare_new_contact(contact)
-          session.ui.display_contact(contact, compact=False)
+        if email.lower() not in config.vcards:
+          vcard = config.add_vcard(email, name, self.KIND)
+          self._prepare_new_vcard(vcard)
+          session.ui.display_vcard(vcard, compact=False)
         else:
           session.ui.warning('Already exists: %s' % email)
     else:
@@ -455,70 +455,77 @@ class Contact(Command):
     else:
       return [[e, []] for e in vals]
 
-  def set_contact(self):
+  def set_vcard(self):
     session, config = self.session, self.session.config
     email, var, val = self.args[0], self.args[1], ' '.join(self.args[2:])
     try:
-      contact = config.get_contact(email)
-      if not contact:
+      vcard = config.get_vcard(email)
+      if not vcard:
         return self._error('Contact not found')
-      config.deindex_contact(contact)
+      config.deindex_vcard(vcard)
       if val:
         if ',' in val:
-          contact[var] = self._format_values(var, val.split(','))
+          vcard[var] = self._format_values(var, val.split(','))
         else:
-          contact[var] = val
+          vcard[var] = val
       else:
-        del contact[var]
-      config.index_contact(contact)
-      contact.save()
-      session.ui.display_contact(config.contacts[email], compact=False)
+        del vcard[var]
+      vcard.save()
+      config.index_vcard(vcard)
+      session.ui.display_vcard(config.vcards[email], compact=False)
       return True
     except:
       self._ignore_exception()
       return self._error('Error setting %s = %s' % (var, val))
 
-  def rm_contacts(self):
+  def rm_vcards(self):
     session, config = self.session, self.session.config
     for email in self.args:
-      if config.del_contact(email):
+      if config.del_vcard(email):
         session.ui.say('Deleted: %s' % email)
       else:
         session.ui.error('No such contact: %s' % email)
     return True
 
-  def find_contacts(self):
+  def find_vcards(self):
     session, config = self.session, self.session.config
     if self.args and self.args[0] == '--full':
       self.args.pop(0)
       compact = False
     else:
       compact = True
-    contacts = config.find_contacts(self.args, kinds=[self.KIND])
-    for contact in contacts:
-      session.ui.display_contact(contact, compact=compact)
+    vcards = config.find_vcards(self.args, kinds=[self.KIND])
+    for vcard in vcards:
+      session.ui.display_vcard(vcard, compact=compact)
     return True
 
   SUBCOMMANDS = {
-    'add':    (add_contacts,  '<msgs>|<email> <name>'),
-    'set':    (set_contact,   '<email> <attr> <value>'),
-    'list':   (find_contacts, '[--full] [<terms>]'),
-    'delete': (rm_contacts,   '<email>'),
+    'add':    (add_vcards,  '<msgs>|<email> <name>'),
+    'set':    (set_vcard,   '<email> <attr> <value>'),
+    'list':   (find_vcards, '[--full] [<terms>]'),
+    'delete': (rm_vcards,   '<email>'),
   }
 
 
-class Group(Contact):
+class Contact(VCard):
+  ORDER = ('Tagging', 3)
+  SYNOPSIS = '<email>'
+  KIND = 'individual'
+
+
+class Group(VCard):
   """Add/remove/list/edit groups"""
   ORDER = ('Tagging', 4)
   SYNOPSIS = '<group>'
   KIND = 'group'
 
-  def _prepare_new_contact(self, contact):
+  def _valid_vcard_id(self, email):
+    # FIXME: If there is already a tag by this name, complain.
+    return (email and '@' == email[0])
+
+  def _prepare_new_vcard(self, vcard):
     # FIXME: We should create tags and a filter for this group.
     pass
-
-  def _valid_contact_id(self, email):
-    return (email and '@' == email[0])
 
   def _add_from_messages(self):
     raise ValueError('Invalid group ids: %s' % self.args)
@@ -1108,6 +1115,7 @@ COMMANDS = {
   'U:':     ('unset=',   ConfigUnset),
   'u:':     ('update=',  Update),
   'v:':     ('view=',    View),
+  '_vcard': ('vcard=',   VCard),
   '_www':   ('www',      RunWWW),
   '_recou': ('recount',  UpdateStats)
 }
