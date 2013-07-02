@@ -51,9 +51,17 @@ def sha1b64(s):
     h.update(s)
   return h.digest().encode('base64')
 
+def sha512b64(s):
+  h = hashlib.sha512()
+  if type(s) == type(unicode()):
+    h.update(s.encode('utf-8'))
+  else:
+    h.update(s)
+  return h.digest().encode('base64')
+
 def strhash(s, length, obfuscate=None):
   if obfuscate:
-    s2 = b64c(sha1b64('%s%s' % (s, obfuscate))).lower()
+    s2 = b64c(sha512b64('%s%s' % (s, obfuscate))).lower()
   else:
     s2 = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '',
                 s.lower())[:(length-4)]
