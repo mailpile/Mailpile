@@ -348,7 +348,7 @@ class Tag(Command):
 class Filter(Command):
   """Add/edit/delete/list auto-tagging rules"""
   ORDER = ('Tagging', 1)
-  SYNOPSIS = '[new|read] [notag] [=ID] <[+|-]tags ...> [description]'
+  SYNOPSIS = '[new|read] [notag] [=ID] [terms] <[+|-]tags ...> [description]'
   def command(self):
     args, session, config = self.args, self.session, self.session.config
 
@@ -357,14 +357,18 @@ class Filter(Command):
       flags.append(args.pop(0))
 
     if args and args[0] and args[0][0] == '=':
-      tag_id = args.pop(0)[1:]
+      filter_id = args.pop(0)[1:]
     else:
-      tag_id = config.nid('filter')
+      filter_id = config.nid('filter')
 
     if 'read' in flags:
       terms = ['@read']
     elif 'new' in flags:
       terms = ['*']
+    elif args[0] and args[0][0] not in ('-', '+'):
+      terms = []
+      while args and args[0][0] not in ('-', '+'):
+        terms.append(args.pop(0))
     else:
       terms = session.searched
 
@@ -385,11 +389,11 @@ class Filter(Command):
         raise UsageError()
 
     if (config.parse_set(session, ('filter:%s=%s'
-                                   ) % (tag_id, ' '.join(args)))
+                                   ) % (filter_id, ' '.join(args)))
     and config.parse_set(session, ('filter_tags:%s=%s'
-                                   ) % (tag_id, ' '.join(tids)))
+                                   ) % (filter_id, ' '.join(tids)))
     and config.parse_set(session, ('filter_terms:%s=%s'
-                                   ) % (tag_id, ' '.join(terms)))):
+                                   ) % (filter_id, ' '.join(terms)))):
       def save_filter():
         config.save()
         if config.index: config.index.save_changes()
@@ -401,15 +405,29 @@ class Filter(Command):
 
   def rm(self):
     session, config = self.session, self.session.config
-    if len(self.args) < 1 or self.args[0] not in config.get('filter', {}):
+    if len(self.args) < 1:
       raise UsageError('Delete what?')
-    fid = self.args[0]
-    if (config.parse_unset(session, 'filter:%s' % fid)
-    and config.parse_unset(session, 'filter_tags:%s' % fid)
-    and config.parse_unset(session, 'filter_terms:%s' % fid)):
+
+    removed = 0
+    filters = config.get('filter', {})
+    filter_terms = config.get('filter_terms', {})
+    for fid in self.args[:]:
+      if fid not in filters:
+        match = [f for f in filters if filter_terms[f] == fid]
+        if match:
+          self.args.remove(fid)
+          self.args.extend(match)
+
+    for fid in self.args:
+      if (config.parse_unset(session, 'filter:%s' % fid)
+      and config.parse_unset(session, 'filter_tags:%s' % fid)
+      and config.parse_unset(session, 'filter_terms:%s' % fid)):
+        removed += 1
+      else:
+        session.ui.warning('Failed to remove %s' % fid)
+    if removed:
       config.save()
-    else:
-      raise Exception('That failed, not sure why?!')
+    return True
 
   def mv(self):
     raise Exception('Unimplemented')
