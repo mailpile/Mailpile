@@ -99,7 +99,10 @@ class BaseUI(object):
                         'For instructions type `help`, press <CTRL-D> to quit.',
                         '']))
 
-  def print_help(self, commands, tags=None, index=None):
+  def print_help(self, commands, pre=None, post=None, width=8,
+                                 tags=None, index=None):
+    if pre:
+      self.say(pre+'\n')
     self.say('Commands:')
     last_rank = None
     cmds = commands.keys()
@@ -115,9 +118,15 @@ class BaseUI(object):
         c = '  '
       else:
         c = '%s|' % c[0]
-      self.say('    %s%-8.8s %-15.15s %s' % (c, cmd.replace('=', ''),
-                                             args and ('%s' % args) or '',
-                                             explanation))
+      fmt = '    %%s%%-%d.%ds' % (width, width)
+      if explanation:
+        fmt += ' %-15.15s %s'
+      else:
+        fmt += ' %s %s '
+      self.say(fmt % (c, cmd.replace('=', ''),
+                      args and ('%s' % args) or '',
+                      (explanation.splitlines() or [''])[0]))
+
     if tags and index:
       self.say('\nTags:  (use a tag as a command to display tagged messages)',
                '\n  ')
@@ -130,7 +139,8 @@ class BaseUI(object):
                   ) % ('%s' % (int(index.STATS.get(tid, [0, 0])[1]) or ''),
                        tags[tid]),
                  newline=(i%wrap)==(wrap-1) and '\n  ' or '')
-    self.say('\n')
+      self.say('')
+    self.say((post or ''))
 
   def print_variable_help(self, config):
     cats = config.CATEGORIES.keys()

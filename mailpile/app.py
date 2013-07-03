@@ -207,7 +207,6 @@ class ConfigManager(dict):
 
   CATEGORIES = {
     'cfg': (3, 'User preferences'),
-    'gab': (2, 'Groups and address book data'),
     'prf': (4, 'User profiles and identities'),
     'sys': (0, 'Technical system settings'),
     'tag': (1, 'Tags and filters'),

@@ -339,7 +339,9 @@ patches for:
    * Improve conversation IDs assignment/threading
    * New "attributes" for the indexer to facilitate smart searches
    * Better query parser (terms AND terms) or (terms AND NOT terms), etc.
-   * Support for other mailbox formats, maybe even POP3/IMAP indexing
+   * Support for other mailbox formats
+   * Pseudo-mailbox for indexing pidgin/purple conversation logs
+   * Support POP3/IMAP indexing (IMAP in progress)
    * A nice Python/XML-RPC API for automation (in progress)
    * A pretty UI on top of the XML-RPC API, or the HTTP/JSON UI. (in progress)
    * Packaging improvements

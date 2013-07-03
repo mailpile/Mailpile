@@ -25,7 +25,9 @@ except ImportError:
 class Command:
   """Generic command object all others inherit from"""
   ORDER = (None, 0)
+  IS_HELP = False
   SYNOPSIS = None
+  EXAMPLES = None
   SUBCOMMANDS = {}
   FAILURE = 'Failed: %(name)s %(args)s'
   SERIALIZE = False
@@ -138,6 +140,11 @@ class Command:
         subcmd = self.args.pop(0)
         self.name += ' ' + subcmd
         return self.SUBCOMMANDS[subcmd][0](self, *args, **kwargs)
+      elif self.SUBCOMMANDS and self.args and self.args[0] == 'help':
+        if self.IS_HELP:
+          return self.command(*args, **kwargs)
+        else:
+          return Help(self.session, 'help', [self.name]).run()
       else:
         return self.command(*args, **kwargs)
     except UsageError:
@@ -324,6 +331,7 @@ class Tag(Command):
     for tag in self.args:
       tag_id = config.get_tag_id(tag)
       if tag_id:
+        # FIXME: Update filters too
         if (Search(clean_session, 'search', ['tag:%s' % tag]).run()
         and Tag(clean_session, 'tag', ['-%s' % tag, 'all']).run()
         and config.parse_unset(session, 'tag:%s' % tag_id)):
@@ -563,6 +571,7 @@ class VCard(Command):
 
 
 class Contact(VCard):
+  """Add/remove/list/edit contacts"""
   ORDER = ('Tagging', 3)
   SYNOPSIS = '<email>'
   KIND = 'individual'
@@ -1094,9 +1103,23 @@ class GPG(Command):
 class Help(Command):
   """Print help on Mailpile or individual commands."""
   ORDER = ('Config', 9)
+  IS_HELP = True
+  SYNOPSIS = "[command]"
   def command(self):
     if self.args:
-      raise Exception('FIXME: Per-command help is missing')
+      command = self.args.pop(0)
+      for name, cls in COMMANDS.values():
+        if name.replace('=', '') == command:
+          order = 1
+          cmd_list = {'_main': (name, cls.SYNOPSIS, '', order)}
+          for cmd in sorted(cls.SUBCOMMANDS.keys()):
+            order += 1
+            cmd_list['_%s' % cmd] = ('%s' % name,
+                                     '%s %s' % (cmd, cls.SUBCOMMANDS[cmd][1]),
+                                     '', order)
+          self.session.ui.print_help(cmd_list,
+                                     pre=cls.__doc__, post=cls.EXAMPLES,
+                                     width=len(name.replace('=', '')))
     else:
       cmd_list = {}
       count = 0
@@ -1104,8 +1127,9 @@ class Help(Command):
         count += 10
         for c in COMMANDS:
           name, cls = COMMANDS[c]
+          synopsis = cls.SUBCOMMANDS and '<command ...>' or cls.SYNOPSIS
           if cls.ORDER[0] == grp:
-            cmd_list[c] = (name, cls.SYNOPSIS, cls.__doc__, count+cls.ORDER[1])
+            cmd_list[c] = (name, synopsis, cls.__doc__, count+cls.ORDER[1])
       self.session.ui.print_help(cmd_list,
                                  tags=self.session.config.get('tag', {}),
                                  index=self._idx())
@@ -1125,7 +1149,7 @@ def Action(session, opt, arg, data=None):
   config = session.config
 
   if session.config.get('debug'):
-    session.ui.say('Running: %s "%s" data=%s' % (opt, arg, data))
+    session.ui.say('=====[ Running: %s "%s" data=%s ]=====' % (opt, arg, data))
 
   if not opt:
     return Help(session, 'help').run()
