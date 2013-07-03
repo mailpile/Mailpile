@@ -469,7 +469,7 @@ class VCard(Command):
     return (vc_handle and '@' in vc_handle[1:])
 
   def _add_from_messages(self):
-    pairs = []
+    pairs, idx = [], self._idx()
     for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
       pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
     return pairs

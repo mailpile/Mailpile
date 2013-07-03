@@ -848,11 +848,19 @@ class MailIndex(object):
         t = term.split(':', 1)
         t[1] = self.config.get_tag_id(t[1]) or t[1]
         rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
-      elif term.startswith('group:'):
+      elif term.startswith('group:') or term.startswith('togroup:'):
         group = self.config.vcards.get(term.split(':', 1)[1])
+        emails = []
         if group and group.kind == 'group':
           for email, attrs in group.get('EMAIL', []):
-            rt.extend([int(h, 36) for h in hits('%s:from' % email.lower())])
+            contact = self.config.vcards.get(email.lower(), None)
+            if contact:
+              emails.extend([e[0].lower() for e in contact.get('EMAIL', [])])
+            else:
+              emails.append(email.lower())
+        fromto = term.startswith('group:') and 'from' or 'to'
+        for email in set(emails):
+          rt.extend([int(h, 36) for h in hits('%s:%s' % (email, fromto))])
       elif ':' in term:
         t = term.split(':', 1)
         rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
