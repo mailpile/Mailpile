@@ -341,6 +341,7 @@ patches for:
    * Better query parser (terms AND terms) or (terms AND NOT terms), etc.
    * Support for other mailbox formats
    * Pseudo-mailbox for indexing pidgin/purple conversation logs
+   * Create a Maildir which GPG encrypts/decrypts its contents (for drafts)
    * Support POP3/IMAP indexing (IMAP in progress)
    * A nice Python/XML-RPC API for automation (in progress)
    * A pretty UI on top of the XML-RPC API, or the HTTP/JSON UI. (in progress)
