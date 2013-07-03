@@ -75,7 +75,7 @@ class SimpleVCard(dict):
       return 'Contact: %s <%s>' % (self.fn, self.email)
     elif self.kind == 'group':
       return 'Group: %s (%s = %s)' % (self.fn, self.nickname,
-                                   ','.join([e[0] for e in self.get('EMAIL')]))
+                                ','.join([e[0] for e in self.get('EMAIL', [])]))
     else:
       return '%s: %s (%s)' % (self.kind, self.fn, self.nickname)
 

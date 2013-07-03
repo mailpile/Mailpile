@@ -155,7 +155,8 @@ class BaseUI(object):
     for fid, terms, tags, comment in config.get_filters(filter_on=None):
       self.say(ffmt % (
         fid,
-        ' '.join(['%s%s' % (t[0], config['tag'][t[1:]]) for t in tags.split()]),
+        ' '.join(['%s%s' % (t[0], config['tag'].get(t[1:], t[1:]))
+                  for t in tags.split()]),
         ((terms == '*') and '(all new mail)' or
          (terms == '@read') and '(read mail)' or terms or '(none)'),
         comment or '(none)'

@@ -74,7 +74,7 @@ class Command:
       all_words.extend(word.split(','))
     for what in all_words:
       if what.lower() == 'these':
-        b, c = session.displayed
+        b, c = self.session.displayed
         msg_ids |= set(self.session.results[b:b+c])
       elif what.lower() == 'all':
         msg_ids |= set(self.session.results)
@@ -469,7 +469,7 @@ class VCard(Command):
           self._prepare_new_vcard(vcard)
           session.ui.display_vcard(vcard, compact=False)
         else:
-          session.ui.warning('Already exists: %s' % email)
+          session.ui.warning('Already exists: %s' % handle)
     else:
       return self._error('Nothing to do!')
     return True
@@ -497,7 +497,7 @@ class VCard(Command):
         del vcard[var]
       vcard.save()
       config.index_vcard(vcard)
-      session.ui.display_vcard(config.vcards[email], compact=False)
+      session.ui.display_vcard(vcard, compact=False)
       return True
     except:
       self._ignore_exception()
