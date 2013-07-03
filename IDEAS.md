@@ -60,14 +60,18 @@ Designing the URL space for the web UI is important.  Some ideas:
 
 ## Power user features
 
+Done?
+
    * Fast for large amounts of e-mail
    * Powerful searching
    * Powerful filters
-  --
-   * Sticky search: checked messages stay in the list
    * GPG encryption: mail and/or local data
-   * GPG indexing: automatic or manual
    * Reply all, reply many, forwarding, bouncing
+
+Ideas:
+
+   * Sticky search: checked messages stay in the list
+   * GPG indexing: automatic or manual
    * Multiple personalities for composing: name/email/gpg/sig/template
    * Personal mailing lists: if UI is public, allow direct unsubscribe
    * Schedule messages for sending later
@@ -76,33 +80,10 @@ Designing the URL space for the web UI is important.  Some ideas:
    * Multimedia composing
    * Collaborative composing
    * Google Translate integration
-   * Ability to drop messages from the search index?
-   * Facebook integration for photos?
-   * Jabber transport to snag for Facebook messages?
+   * Ability to drop messages from the search index? (Delete)
+   * Facebook/Gravatar integration for photos?
+   * Jabber transport to snag Facebook messages? Facebook app?
    * Markdown!
-
-
-## Encrypting the index
-
-How much performance to we lose if we GPG encrypt the index?  This would
-hurt the indexing process but maybe not general use...
-
-How about the posting lists?  That's gonna hurt all the time.
-
-
-## GPG integration
-
-Need to be able to index encrypted mail, but it would be ideal if it
-weren't trivial to reconstruct encrypted mails using the search index.
-
-Idea: encrypted messages are indexed using random IDs, the random ID
-to message-ID mapping is stored encrypted?  What happens if all the
-mail is encrypted?
-
-Idea: encrypt the posting lists.  Maybe just the ones referencing
-encrypted messages?  Leaky.
-
-Idea: fuck it, just require people encrypt their disks.
 
 
 ## Tahoe-LAFS integration
@@ -162,6 +143,8 @@ may become untenable.  It's like busy mailing lists, only worse.
 It's a search engine.  It could search the web, but more realistically
 it might be useful as a super-bookmarking tool which indexes arbitrary
 pages on demand.  We'd want a mirroring feature to go with this though.
+
+We should be able to index the chat logs from e.g. Pidgin/Purple.
 
 
 ## Fighting spam
