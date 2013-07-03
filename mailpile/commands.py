@@ -474,10 +474,15 @@ class VCard(Command):
       pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
     return pairs
 
+  def _pre_delete_vcard(self, vcard):
+    pass
+
   def add_vcards(self):
     session, config, idx = self.session, self.session.config, self._idx()
-    if self.args and self._valid_vcard_handle(self.args[0]):
-      pairs = [(self.args[0], ' '.join(self.args[1:]))]
+    if (len(self.args) > 2
+    and self.args[1] == '='
+    and self._valid_vcard_handle(self.args[0])):
+      pairs = [(self.args[0], ' '.join(self.args[2:]))]
     else:
       pairs = self._add_from_messages()
     if pairs:
@@ -500,9 +505,13 @@ class VCard(Command):
 
   def set_vcard(self):
     session, config = self.session, self.session.config
-    email, var, val = self.args[0], self.args[1], ' '.join(self.args[2:])
+    handle, var = self.args[0], self.args[1]
+    if self.args[2] == '=':
+      val = ' '.join(self.args[3:])
+    else:
+      val = ' '.join(self.args[2:])
     try:
-      vcard = config.get_vcard(email)
+      vcard = config.get_vcard(handle)
       if not vcard:
         return self._error('Contact not found')
       config.deindex_vcard(vcard)
@@ -523,11 +532,13 @@ class VCard(Command):
 
   def rm_vcards(self):
     session, config = self.session, self.session.config
-    for email in self.args:
-      if config.del_vcard(email):
-        session.ui.say('Deleted: %s' % email)
+    for handle in self.args:
+      vcard = config.get_vcard(handle)
+      if vcard:
+        self._pre_delete_vcard(vcard)
+        config.del_vcard(handle)
       else:
-        session.ui.error('No such contact: %s' % email)
+        session.ui.error('No such contact: %s' % handle)
     return True
 
   def find_vcards(self):
@@ -566,15 +577,26 @@ class Group(VCard):
   def _valid_vcard_handle(self, vc_handle):
     # If there is already a tag by this name, complain.
     return (vc_handle
-       and  ('@' not in vc_handle[0])
+       and  ('-' != vc_handle[0])
+       and  ('@' not in vc_handle)
        and  (not self.session.config.get_tag_id(vc_handle)))
 
   def _prepare_new_vcard(self, vcard):
-    # FIXME: We should create tags and a filter for this group.
-    return False
+    handle = vcard.nickname
+    return (Tag(self.session, 'tag', ['add', handle]).run()
+       and  Filter(self.session, 'filter', ['add',
+                                            'group:%s' % handle,
+                                            '+%s' % handle,
+                                            vcard.fn]).run())
 
   def _add_from_messages(self):
     raise ValueError('Invalid group ids: %s' % self.args)
+
+  def _pre_delete_vcard(self, vcard):
+    handle = vcard.nickname
+    return (Filter(self.session, 'filter', ['delete',
+                                            'group:%s' % handle]).run()
+       and  Tag(self.session, 'tag', ['delete', handle]).run())
 
 
 ##[ Composing e-mail ]#########################################################
