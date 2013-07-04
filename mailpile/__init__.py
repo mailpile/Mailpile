@@ -4,7 +4,11 @@ import mailpile.app
 import mailpile.commands
 import mailpile.ui
 
-__all__ = ["app", "commands", "mailutils", "search", "ui", "util"]
+# Load the standard plugins
+from mailpile.plugins import *
+
+__all__ = ['Mailpile',
+           "app", "commands", "plugins", "mailutils", "search", "ui", "util"]
 
 class Mailpile(object):
   """This object provides a simple Python API to Mailpile."""
@@ -15,7 +19,6 @@ class Mailpile(object):
     self._session.config.load(self._session)
     self._session.main = True
     self._ui = self._session.ui = ui()
-
     for (cmd, cls) in mailpile.commands.COMMANDS.values():
       cmd, fnc = self._mk_action(cmd)
       if cls.SYNOPSIS:

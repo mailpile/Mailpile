@@ -1,5 +1,8 @@
 # Plugins!
 
+# These are the plugins we import by default
+__all__ = ['groups', 'dates']
+
 class PluginError(Exception):
   pass
 
