@@ -69,6 +69,13 @@ class BaseUI(object):
     self.flush()
     self.buffering = False
 
+  def start_command(self, cmd, args, kwargs):
+    self.clear()
+    self.mark('%s(%s)' % (cmd, ', '.join((args or []) + ['%s' % kwargs])))
+
+  def finish_command(self):
+    self.reset_marks()
+
   def say(self, text='', newline='\n', fd=sys.stdout):
     if not fd:
       fd = sys.stdout
@@ -99,6 +106,19 @@ class BaseUI(object):
                         'For instructions type `help`, press <CTRL-D> to quit.',
                         '']))
 
+  def print_tags(self, tags, index):
+    tkeys = tags.keys()
+    tkeys.sort(key=lambda k: tags[k])
+    wrap = int(self.WIDTH / 23)
+    for i in range(0, len(tkeys)):
+      tid = tkeys[i]
+      self.say(('%s%5.5s %-18.18s'
+                ) % ((i%wrap) == 0 and '  ' or '',
+                     '%s' % (int(index.STATS.get(tid, [0, 0])[1]) or ''),
+                     tags[tid]),
+               newline=(i%wrap)==(wrap-1) and '\n' or '')
+    self.say('')
+
   def print_help(self, commands, pre=None, post=None, width=8,
                                  tags=None, index=None):
     if pre:
@@ -126,20 +146,10 @@ class BaseUI(object):
       self.say(fmt % (c, cmd.replace('=', ''),
                       args and ('%s' % args) or '',
                       (explanation.splitlines() or [''])[0]))
-
     if tags and index:
       self.say('\nTags:  (use a tag as a command to display tagged messages)',
-               '\n  ')
-      tkeys = tags.keys()
-      tkeys.sort(key=lambda k: tags[k])
-      wrap = int(self.WIDTH / 23)
-      for i in range(0, len(tkeys)):
-        tid = tkeys[i]
-        self.say(('%5.5s %-18.18s'
-                  ) % ('%s' % (int(index.STATS.get(tid, [0, 0])[1]) or ''),
-                       tags[tid]),
-                 newline=(i%wrap)==(wrap-1) and '\n  ' or '')
-      self.say('')
+               '\n')
+      self.print_tags(tags, index)
     self.say((post or ''))
 
   def print_variable_help(self, config):

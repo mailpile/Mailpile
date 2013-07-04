@@ -52,7 +52,7 @@ class Command:
     if not reset and config.index:
       return config.index
 
-    def do_load():
+    def __do_load():
       if reset:
         config.index = None
         session.results = []
@@ -64,9 +64,9 @@ class Command:
         session.ui.reset_marks(quiet=quiet)
       return idx
     if wait:
-      return config.slow_worker.do(session, 'Load', do_load)
+      return config.slow_worker.do(session, 'Load', __do_load)
     else:
-      config.slow_worker.add_task(session, 'Load', do_load)
+      config.slow_worker.add_task(session, 'Load', __do_load)
       return None
 
   def _choose_messages(self, words):
@@ -103,8 +103,6 @@ class Command:
     return msg_ids
 
   def _error(self, message):
-    if self.name:
-      self.session.ui.reset_marks()
     self.session.ui.error(message)
     return False
 
@@ -126,6 +124,41 @@ class Command:
     session, config = self.session, self.session.config
     return config.slow_worker.add_task(session, name, function)
 
+  def _starting(self, *args, **kwargs):
+    if self.name:
+      self.session.ui.start_command(self.name, args, kwargs)
+
+  def _finishing(self):
+    if self.name:
+       self.session.ui.finish_command()
+
+  def _run(self, *args, **kwargs):
+    try:
+      if self.SUBCOMMANDS and self.args and self.args[0] in self.SUBCOMMANDS:
+        subcmd = self.args.pop(0)
+        if self.name:
+          self.name += ' ' + subcmd
+        self._starting(*args, **kwargs)
+        rv = self.SUBCOMMANDS[subcmd][0](self, *args, **kwargs)
+      elif self.SUBCOMMANDS and self.args and self.args[0] == 'help':
+        if self.IS_HELP:
+          self._starting(*args, **kwargs)
+          rv = self.command(*args, **kwargs)
+        else:
+          return Help(self.session, arg=[self.name]).run()
+      else:
+        self._starting(*args, **kwargs)
+        rv = self.command(*args, **kwargs)
+      self._finishing()
+      return rv
+    except UsageError:
+      raise
+    except:
+      self._finishing()
+      self._ignore_exception()
+      return self._error(self.FAILURE % {'name': self.name,
+                                         'args': ' '.join(self.args) })
+
   def run(self, *args, **kwargs):
     if self.SERIALIZE:
       # Some functions we always run in the slow worker, to make sure
@@ -133,29 +166,6 @@ class Command:
       return self._serialize(self.SERIALIZE, lambda: self._run(*args, **kwargs))
     else:
       return self._run(*args, **kwargs)
-
-  def _run(self, *args, **kwargs):
-    try:
-      if self.SUBCOMMANDS and self.args and self.args[0] in self.SUBCOMMANDS:
-        subcmd = self.args.pop(0)
-        self.name += ' ' + subcmd
-        return self.SUBCOMMANDS[subcmd][0](self, *args, **kwargs)
-      elif self.SUBCOMMANDS and self.args and self.args[0] == 'help':
-        if self.IS_HELP:
-          return self.command(*args, **kwargs)
-        else:
-          return Help(self.session, 'help', [self.name]).run()
-      else:
-        return self.command(*args, **kwargs)
-    except UsageError:
-      raise
-    except:
-      self._ignore_exception()
-      return self._error(self.FAILURE % {'name': self.name,
-                                         'args': ' '.join(self.args) })
-    finally:
-      if self.name:
-        self.session.ui.reset_marks()
 
   def command(self):
     return None
@@ -176,7 +186,7 @@ class Setup(Command):
     tags = session.config.get('tag', {}).values()
     for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
       if t not in tags:
-        Tag(session, 'tag', arg=['add', t]).run()
+        Tag(session, arg=['add', t]).run()
     if 'New' not in tags:
       Filter(session, arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
       Filter(session, arg=['read', '-New', 'Read Mail filter']).run()
@@ -320,7 +330,8 @@ class Tag(Command):
     return True
 
   def list_tags(self):
-    raise Exception('Unimplemented')
+    self.session.ui.print_tags(self.session.config.get('tag', {}), self._idx())
+    return True
 
   def rm_tag(self):
     session, config = self.session, self.session.config
@@ -332,8 +343,8 @@ class Tag(Command):
       tag_id = config.get_tag_id(tag)
       if tag_id:
         # FIXME: Update filters too
-        if (Search(clean_session, 'search', ['tag:%s' % tag]).run()
-        and Tag(clean_session, 'tag', ['-%s' % tag, 'all']).run()
+        if (Search(clean_session, arg=['tag:%s' % tag]).run()
+        and Tag(clean_session, arg=['-%s' % tag, 'all']).run()
         and config.parse_unset(session, 'tag:%s' % tag_id)):
           removed += 1
         else:
@@ -393,7 +404,7 @@ class Filter(Command):
       args = ['Filter for %s' % ' '.join(tags)]
 
     if 'notag' not in flags and 'new' not in flags and 'read' not in flags:
-      if not Tag(session, 'filter/tag', tags + ['all']).run(save=False):
+      if not Tag(session, arg=tags + ['all']).run(save=False):
         raise UsageError()
 
     if (config.parse_set(session, ('filter:%s=%s'
@@ -591,21 +602,18 @@ class Group(VCard):
        and  (not self.session.config.get_tag_id(vc_handle)))
 
   def _prepare_new_vcard(self, vcard):
-    handle = vcard.nickname
-    return (Tag(self.session, 'tag', ['add', handle]).run()
-       and  Filter(self.session, 'filter', ['add',
-                                            'group:%s' % handle,
-                                            '+%s' % handle,
-                                            vcard.fn]).run())
+    session, handle = self.session, vcard.nickname
+    return (Tag(session, arg=['add', handle]).run()
+       and  Filter(session, arg=['add', 'group:%s' % handle,
+                                 '+%s' % handle, vcard.fn]).run())
 
   def _add_from_messages(self):
     raise ValueError('Invalid group ids: %s' % self.args)
 
   def _pre_delete_vcard(self, vcard):
-    handle = vcard.nickname
-    return (Filter(self.session, 'filter', ['delete',
-                                            'group:%s' % handle]).run()
-       and  Tag(self.session, 'tag', ['delete', handle]).run())
+    session, handle = self.session, vcard.nickname
+    return (Filter(session, arg=['delete', 'group:%s' % handle]).run()
+       and  Tag(session, arg=['delete', handle]).run())
 
 
 ##[ Composing e-mail ]#########################################################
@@ -739,7 +747,6 @@ class Reply(Command):
         session.ui.edit_messages([email])
       else:
         session.ui.say('Message created as draft')
-        session.ui.reset_marks()
       return True
     else:
       return self._error('No message found')
@@ -1029,7 +1036,7 @@ class GPG(Command):
       session.ui.say(gpg.handles['stderr'].read().decode('utf-8'))
       gpg.handles['stderr'].close()
       gpg.wait()
-      session.ui.mark('Done')
+      session.ui.mark('Fetched key %s' % arg)
     except IOError:
       return self._error('Failed to fetch key %s' % arg)
     return True
@@ -1106,6 +1113,7 @@ class Help(Command):
   IS_HELP = True
   SYNOPSIS = "[command]"
   def command(self):
+    self.session.ui.reset_marks(quiet=True)
     if self.args:
       command = self.args.pop(0)
       for name, cls in COMMANDS.values():
@@ -1136,8 +1144,12 @@ class Help(Command):
     return True
 
   def help_vars(self):
+    self.session.ui.reset_marks(quiet=True)
     self.session.ui.print_variable_help(self.session.config)
     return True
+
+  def _starting(self, *args, **kwargs): pass
+  def _finishing(self): pass
 
   SUBCOMMANDS = {
     'variables': (help_vars, ''),
@@ -1147,9 +1159,6 @@ class Help(Command):
 def Action(session, opt, arg, data=None):
   session.ui.reset_marks(quiet=True)
   config = session.config
-
-  if session.config.get('debug'):
-    session.ui.say('=====[ Running: %s "%s" data=%s ]=====' % (opt, arg, data))
 
   if not opt:
     return Help(session, 'help').run()
@@ -1172,11 +1181,12 @@ def Action(session, opt, arg, data=None):
 
   # Tags are commands
   elif opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
-    tid = config.get_tag_id(opt)
-    return Search(session, opt, arg, data=data).run(search=['tag:%s' % tid[0]])
+    search = ['tag:%s' % config.get_tag_id(opt)[0]]
+    return Search(session, opt, arg=arg, data=data).run(search=search)
 
   # OK, give up!
   raise UsageError('Unknown command: %s' % opt)
+
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = {
