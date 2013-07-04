@@ -124,9 +124,9 @@ class Command:
     session, config = self.session, self.session.config
     return config.slow_worker.add_task(session, name, function)
 
-  def _starting(self, *args, **kwargs):
+  def _starting(self):
     if self.name:
-      self.session.ui.start_command(self.name, args, kwargs)
+      self.session.ui.start_command(self.name, self.args, self.data)
 
   def _finishing(self):
     if self.name:
@@ -138,16 +138,16 @@ class Command:
         subcmd = self.args.pop(0)
         if self.name:
           self.name += ' ' + subcmd
-        self._starting(*args, **kwargs)
+        self._starting()
         rv = self.SUBCOMMANDS[subcmd][0](self, *args, **kwargs)
       elif self.SUBCOMMANDS and self.args and self.args[0] == 'help':
         if self.IS_HELP:
-          self._starting(*args, **kwargs)
+          self._starting()
           rv = self.command(*args, **kwargs)
         else:
           return Help(self.session, arg=[self.name]).run()
       else:
-        self._starting(*args, **kwargs)
+        self._starting()
         rv = self.command(*args, **kwargs)
       self._finishing()
       return rv
@@ -1150,7 +1150,7 @@ class Help(Command):
     self.session.ui.print_variable_help(self.session.config)
     return True
 
-  def _starting(self, *args, **kwargs): pass
+  def _starting(self): pass
   def _finishing(self): pass
 
   SUBCOMMANDS = {
