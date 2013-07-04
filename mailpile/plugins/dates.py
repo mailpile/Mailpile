@@ -29,7 +29,10 @@ def _adjust(d):
 
 def search(config, term, hits):
   try:
-    start, end = term.split(':', 1)[1].split('..')
+    if '..' in term:
+      start, end = term.split(':', 1)[1].split('..')
+    else:
+      start = end = term.split(':', 1)[1]
     start = [int(p) for p in start.split('-')][:3]
     end = [int(p) for p in end.split('-')[:3]]
     while len(start) < 3:
