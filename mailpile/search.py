@@ -817,7 +817,7 @@ class MailIndex(object):
   def search_tag(self, term, hits):
     t = term.split(':', 1)
     t[1] = self.config.get_tag_id(t[1]) or t[1]
-    return [int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))]
+    return hits('%s:%s' % (t[1], t[0]))
 
   def search_date_range(self, term, hits):
     def _adjust(d):
@@ -864,7 +864,7 @@ class MailIndex(object):
 
       rt = []
       for term in terms:
-        rt.extend([int(h, 36) for h in hits(term)])
+        rt.extend(hits(term))
       return rt
     except:
       raise ValueError('Invalid date range: %s' % term)
@@ -881,17 +881,17 @@ class MailIndex(object):
           emails.append(email.lower())
     fromto = term.startswith('group:') and 'from' or 'to'
     for email in set(emails):
-      rt.extend([int(h, 36) for h in hits('%s:%s' % (email, fromto))])
+      rt.extend(hits('%s:%s' % (email, fromto)))
     return rt
 
   def search(self, session, searchterms, keywords=None):
     if keywords:
       def hits(term):
-        return keywords.get(term, [])
+        return [int(h, 36) for h in keywords.get(term, [])]
     else:
       def hits(term):
         session.ui.mark('Searching for %s' % term)
-        return GlobalPostingList(session, term).hits()
+        return [int(h, 36) for h in GlobalPostingList(session, term).hits()]
 
     # Replace some GMail-compatible terms with what we really use
     for p in ('', '+', '-'):
@@ -927,7 +927,7 @@ class MailIndex(object):
       if ':' in term:
         # FIXME: Make search words pluggable!
         if term.startswith('body:'):
-          rt.extend([int(h, 36) for h in hits(term[5:])])
+          rt.extend(hits(term[5:]))
         elif term == 'all:mail':
           rt.extend(range(0, len(self.INDEX)))
         elif term.startswith('tag:'):
@@ -938,9 +938,9 @@ class MailIndex(object):
           rt.extend(self.search_groups(term, hits))
         else:
           t = term.split(':', 1)
-          rt.extend([int(h, 36) for h in hits('%s:%s' % (t[1], t[0]))])
+          rt.extend(hits('%s:%s' % (t[1], t[0])))
       else:
-        rt.extend([int(h, 36) for h in hits(term)])
+        rt.extend(hits(term))
 
     if r:
       results = set(r[0][1])
