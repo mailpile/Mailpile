@@ -590,34 +590,6 @@ class Contact(VCard):
   KIND = 'individual'
 
 
-class Group(VCard):
-  """Add/remove/list/edit groups"""
-  ORDER = ('Tagging', 4)
-  SYNOPSIS = '<group>'
-  KIND = 'group'
-
-  def _valid_vcard_handle(self, vc_handle):
-    # If there is already a tag by this name, complain.
-    return (vc_handle
-       and  ('-' != vc_handle[0])
-       and  ('@' not in vc_handle)
-       and  (not self.session.config.get_tag_id(vc_handle)))
-
-  def _prepare_new_vcard(self, vcard):
-    session, handle = self.session, vcard.nickname
-    return (Tag(session, arg=['add', handle]).run()
-       and  Filter(session, arg=['add', 'group:%s' % handle,
-                                 '+%s' % handle, vcard.fn]).run())
-
-  def _add_from_messages(self):
-    raise ValueError('Invalid group ids: %s' % self.args)
-
-  def _pre_delete_vcard(self, vcard):
-    session, handle = self.session, vcard.nickname
-    return (Filter(session, arg=['delete', 'group:%s' % handle]).run()
-       and  Tag(session, arg=['delete', handle]).run())
-
-
 ##[ Composing e-mail ]#########################################################
 
 class Compose(Command):
@@ -1212,7 +1184,6 @@ COMMANDS = {
   'r:':     ('reply=',   Reply),
   '_resca': ('rescan',   Rescan),
   'g:':     ('gpg',      GPG),
-  'G:':     ('group=',   Group),
   's:':     ('search=',  Search),
   'S:':     ('set=',     ConfigSet),
   't:':     ('tag=',     Tag),

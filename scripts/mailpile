@@ -2,4 +2,8 @@
 import sys
 from mailpile.app import Main
 
+# Import the plugins we want
+import mailpile.plugins.groups
+import mailpile.plugins.dates
+
 Main(sys.argv[1:])

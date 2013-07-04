@@ -25,6 +25,7 @@ from urlparse import parse_qs, urlparse
 import lxml.html
 
 import mailpile.util
+from mailpile.plugins import get_search_term
 from mailpile.util import *
 from mailpile.mailutils import NoSuchMailboxError, ExtractEmails, ParseMessage, HeaderPrint
 from mailpile.ui import *
@@ -819,71 +820,6 @@ class MailIndex(object):
     t[1] = self.config.get_tag_id(t[1]) or t[1]
     return hits('%s:%s' % (t[1], t[0]))
 
-  def search_date_range(self, term, hits):
-    def _adjust(d):
-      if d[2] > 31:
-        d[1] += 1
-        d[2] -= 31
-      if d[1] > 12:
-        d[0] += 1
-        d[1] -= 12
-    try:
-      start, end = term.split(':', 1)[1].split('..')
-      start = [int(p) for p in start.split('-')][:3]
-      end = [int(p) for p in end.split('-')[:3]]
-      while len(start) < 3:
-        start.append(1)
-      if len(end) == 1:
-        end.extend([12, 31])
-      elif len(end) == 2:
-        end.append(31)
-      if not start < end:
-        raise ValueError()
-
-      terms = []
-      while start < end:
-        # Move forward one year?
-        if start[1:] == [1, 1]:
-          ny = [start[0], 12, 31]
-          if ny <= end:
-            terms.append('%d:year' % start[0])
-            start[0] += 1
-            continue
-        # Move forward one month?
-        if start[2] == 1:
-          nm = [start[0], start[1], 31]
-          if nm <= end:
-            terms.append('%d-%d:yearmonth' % (start[0], start[1]))
-            start[1] += 1
-            _adjust(start)
-            continue
-        # Move forward one day...
-        terms.append('%d-%d-%d:date' % tuple(start))
-        start[2] += 1
-        _adjust(start)
-
-      rt = []
-      for term in terms:
-        rt.extend(hits(term))
-      return rt
-    except:
-      raise ValueError('Invalid date range: %s' % term)
-
-  def search_groups(self, term, hits):
-    group = self.config.vcards.get(term.split(':', 1)[1])
-    rt, emails = [], []
-    if group and group.kind == 'group':
-      for email, attrs in group.get('EMAIL', []):
-        contact = self.config.vcards.get(email.lower(), None)
-        if contact:
-          emails.extend([e[0].lower() for e in contact.get('EMAIL', [])])
-        else:
-          emails.append(email.lower())
-    fromto = term.startswith('group:') and 'from' or 'to'
-    for email in set(emails):
-      rt.extend(hits('%s:%s' % (email, fromto)))
-    return rt
-
   def search(self, session, searchterms, keywords=None):
     if keywords:
       def hits(term):
@@ -932,13 +868,13 @@ class MailIndex(object):
           rt.extend(range(0, len(self.INDEX)))
         elif term.startswith('tag:'):
           rt.extend(self.search_tag(term, hits))
-        elif term.startswith('dates:'):
-          rt.extend(self.search_date_range(term, hits))
-        elif term.startswith('group:') or term.startswith('togroup:'):
-          rt.extend(self.search_groups(term, hits))
         else:
           t = term.split(':', 1)
-          rt.extend(hits('%s:%s' % (t[1], t[0])))
+          fnc = get_search_term(t[0])
+          if fnc:
+            rt.extend(fnc(self.config, term, hits))
+          else:
+            rt.extend(hits('%s:%s' % (t[1], t[0])))
       else:
         rt.extend(hits(term))
 
