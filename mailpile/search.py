@@ -893,6 +893,19 @@ class MailIndex(object):
         session.ui.mark('Searching for %s' % term)
         return GlobalPostingList(session, term).hits()
 
+    # Replace some GMail-compatible terms with what we really use
+    for p in ('', '+', '-'):
+      while p+'is:unread' in searchterms:
+        searchterms[searchterms.index(p+'is:unread')] = p+'tag:New'
+      while p+'in:spam' in searchterms:
+        searchterms[searchterms.index(p+'in:spam')] = p+'tag:Spam'
+      while p+'in:trash' in searchterms:
+        searchterms[searchterms.index(p+'in:trash')] = p+'tag:Trash'
+
+    # If first term is a negative search, prepend an all:mail
+    if searchterms and searchterms[0] and searchterms[0][0] == '-':
+      searchterms[:0] = ['all:mail']
+
     if len(self.CACHE.keys()) > 5000: self.CACHE = {}
     r = []
     for term in searchterms:

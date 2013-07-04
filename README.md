@@ -126,6 +126,8 @@ Some searching examples:
     ...
     mailpile> search from:bjarni -from:pagekite
     ...
+    mailpile> search group:family -from:mom
+    ...
     mailpile> s att:pdf
     ...
     mailpile> s has:attachment
@@ -133,6 +135,8 @@ Some searching examples:
     mailpile> s date:2011-1-30 +date:2011-1-29
     ...
     mailpile> s year:2011 month:12
+    ...
+    mailpile> s dates:2011-12..2012-04-15
     ...
 
 The default search will search in message bodies, from lines, attachment
@@ -160,6 +164,22 @@ viewing e-mail. This is a temporary hack.)
 You can also search from the command line with `./mp -s term`,
 but that will be a bit slower because the metadata index has to be
 loaded into RAM on each invocation.
+
+
+#### Special search terms ####
+
+Here is a brief list of the special search terms:
+
+    all:mail         All messages
+    att:<word>       Search within attachment file names
+    dates:<B>..<E>   Search dates from B to E
+    in:spam          Same as tag:Spam
+    in:trash         Same as tag:Trash
+    is:unread        Same as tag:New
+    group:<name>     Messages from people in a group
+    has:attachment   Messages with attachments
+    has:pgp          Messages with signed or encrypted content
+    togroup:<name>   Messages to people in a group
 
 
 ### Sorting the results ###
