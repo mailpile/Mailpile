@@ -24,8 +24,8 @@ import SocketServer
 from urlparse import parse_qs, urlparse
 import lxml.html
 
-import mailpile.util
 import mailpile.plugins as plugins
+import mailpile.util
 from mailpile.util import *
 from mailpile.mailutils import NoSuchMailboxError, ExtractEmails, ParseMessage, HeaderPrint
 from mailpile.ui import *
@@ -641,20 +641,27 @@ class MailIndex(object):
                        mailbox=None):
     keywords = []
     textpart = None
+    payload = [None]
     for part in msg.walk():
+      payload[0] = None
+      ctype = part.get_content_type()
       charset = part.get_charset() or 'iso-8859-1'
-      if part.get_content_type() == 'text/plain':
-        textpart = self.try_decode(part.get_payload(None, True), charset)
-      elif part.get_content_type() == 'text/html':
-        payload = self.try_decode(part.get_payload(None, True), charset)
-        if len(payload) > 3:
+      def _loader(p):
+        if payload[0] is None:
+          payload[0] = self.try_decode(p.get_payload(None, True), charset)
+        return payload[0]
+      if ctype == 'text/plain':
+        textpart = _loader(part)
+      elif ctype == 'text/html':
+        _loader(part)
+        if len(payload[0]) > 3:
           try:
-            textpart = lxml.html.fromstring(payload).text_content()
+            textpart = lxml.html.fromstring(payload[0]).text_content()
           except:
             session.ui.warning('=%s/%s has bogus HTML.' % (msg_mid, msg_id))
-            textpart = payload
+            textpart = payload[0]
         else:
-          textpart = payload
+          textpart = payload[0]
       elif 'pgp' in part.get_content_type():
         keywords.append('pgp:has')
 
@@ -672,15 +679,18 @@ class MailIndex(object):
         # FIXME: Do this better.
         if '-----BEGIN PGP' in textpart and '-----END PGP' in textpart:
           keywords.append('pgp:has')
+        for extract in plugins.get_text_kw_extractors():
+          keywords.extend(extract(self, msg, ctype, lambda: textpart))
+
+      for extract in plugins.get_data_kw_extractors():
+        keywords.extend(extract(self, msg, ctype, att, part,
+                                lambda: _loader(part)))
 
     keywords.append('%s:id' % msg_id)
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'subject').lower()))
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'from').lower()))
     if mailbox: keywords.append('%s:mailbox' % mailbox.lower())
     keywords.append('%s:hprint' % HeaderPrint(msg))
-
-    for extract in plugins.get_meta_kw_extractors():
-      keywords.extend(extract(self, msg_mid, msg, msg_date))
 
     for key in msg.keys():
       key_lower = key.lower()
@@ -693,6 +703,9 @@ class MailIndex(object):
         keywords.extend(['%s:email' % e for e in emails])
         if 'list' in key_lower:
           keywords.extend(['%s:list' % t for t in words])
+
+    for extract in plugins.get_meta_kw_extractors():
+      keywords.extend(extract(self, msg_mid, msg, msg_date))
 
     return (set(keywords) - STOPLIST)
 
