@@ -4,6 +4,33 @@ class PluginError(Exception):
   pass
 
 
+##[ Pluggable keyword extractors ]############################################
+
+DATA_KW_EXTRACTORS = {}
+TEXT_KW_EXTRACTORS = {}
+HTML_KW_EXTRACTORS = {}
+META_KW_EXTRACTORS = {}
+
+def _rkwe(kw_hash, term, function):
+  if term in kw_hash:
+    raise PluginError('Already registered: %s' % term)
+  kw_hash[term] = function
+
+def register_data_kw_extractor(term, function):
+  return _rkwe(DATA_KW_EXTRACTORS, term, function)
+def register_text_kw_extractor(term, function):
+  return _rkwe(TEXT_KW_EXTRACTORS, term, function)
+def register_html_kw_extractor(term, function):
+  return _rkwe(HTML_KW_EXTRACTORS, term, function)
+def register_meta_kw_extractor(term, function):
+  return _rkwe(META_KW_EXTRACTORS, term, function)
+
+def get_data_kw_extractors(): return DATA_KW_EXTRACTORS.values()
+def get_text_kw_extractors(): return TEXT_KW_EXTRACTORS.values()
+def get_html_kw_extractors(): return HTML_KW_EXTRACTORS.values()
+def get_meta_kw_extractors(): return META_KW_EXTRACTORS.values()
+
+
 ##[ Pluggable search terms ]##################################################
 
 SEARCH_TERMS = {}

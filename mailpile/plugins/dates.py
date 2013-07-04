@@ -1,4 +1,21 @@
+import datetime
 import mailpile.plugins
+
+##[ Keywords ]################################################################
+
+def meta_kw_extractor(index, msg_mid, msg, msg_date):
+  mdate = datetime.date.fromtimestamp(msg_date)
+  keywords = [
+    '%s:year' % mdate.year,
+    '%s:month' % mdate.month,
+    '%s:day' % mdate.day,
+    '%s-%s:yearmonth' % (mdate.year, mdate.month),
+    '%s-%s-%s:date' % (mdate.year, mdate.month, mdate.day)
+  ]
+  return keywords
+
+mailpile.plugins.register_meta_kw_extractor('dates', meta_kw_extractor)
+
 
 ##[ Search terms ]############################################################
 

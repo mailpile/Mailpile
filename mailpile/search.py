@@ -25,7 +25,7 @@ from urlparse import parse_qs, urlparse
 import lxml.html
 
 import mailpile.util
-from mailpile.plugins import get_search_term
+import mailpile.plugins as plugins
 from mailpile.util import *
 from mailpile.mailutils import NoSuchMailboxError, ExtractEmails, ParseMessage, HeaderPrint
 from mailpile.ui import *
@@ -673,17 +673,14 @@ class MailIndex(object):
         if '-----BEGIN PGP' in textpart and '-----END PGP' in textpart:
           keywords.append('pgp:has')
 
-    mdate = datetime.date.fromtimestamp(msg_date)
-    keywords.append('%s:year' % mdate.year)
-    keywords.append('%s:month' % mdate.month)
-    keywords.append('%s:day' % mdate.day)
-    keywords.append('%s-%s:yearmonth' % (mdate.year, mdate.month))
-    keywords.append('%s-%s-%s:date' % (mdate.year, mdate.month, mdate.day))
     keywords.append('%s:id' % msg_id)
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'subject').lower()))
     keywords.extend(re.findall(WORD_REGEXP, self.hdr(msg, 'from').lower()))
     if mailbox: keywords.append('%s:mailbox' % mailbox.lower())
     keywords.append('%s:hprint' % HeaderPrint(msg))
+
+    for extract in plugins.get_meta_kw_extractors():
+      keywords.extend(extract(self, msg_mid, msg, msg_date))
 
     for key in msg.keys():
       key_lower = key.lower()
@@ -870,7 +867,7 @@ class MailIndex(object):
           rt.extend(self.search_tag(term, hits))
         else:
           t = term.split(':', 1)
-          fnc = get_search_term(t[0])
+          fnc = plugins.get_search_term(t[0])
           if fnc:
             rt.extend(fnc(self.config, term, hits))
           else:
