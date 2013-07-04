@@ -380,6 +380,7 @@ class Filter(Command):
     else:
       filter_id = config.nid('filter')
 
+    auto_tag = False
     if 'read' in flags:
       terms = ['@read']
     elif 'new' in flags:
@@ -390,6 +391,7 @@ class Filter(Command):
         terms.append(args.pop(0))
     else:
       terms = session.searched
+      auto_tag = True
 
     if not terms or (len(args) < 1):
       raise UsageError('Need flags and search terms or a hook')
@@ -403,7 +405,7 @@ class Filter(Command):
     if not args:
       args = ['Filter for %s' % ' '.join(tags)]
 
-    if 'notag' not in flags and 'new' not in flags and 'read' not in flags:
+    if auto_tag and 'notag' not in flags:
       if not Tag(session, arg=tags + ['all']).run(save=False):
         raise UsageError()
 

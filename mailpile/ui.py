@@ -59,8 +59,11 @@ class BaseUI(object):
     self.buffered = []
 
   def flush(self):
-    while len(self.buffered) > 0:
-      self.buffered.pop(0)()
+    try:
+      while len(self.buffered) > 0:
+        self.buffered.pop(0)()
+    except IndexError:
+      pass
 
   def block(self):
     self.buffering = True

@@ -686,12 +686,12 @@ class MailIndex(object):
     for key in msg.keys():
       key_lower = key.lower()
       if key_lower not in BORING_HEADERS:
-        emails = ExtractEmails(self.hdr(msg, key))
+        emails = ExtractEmails(self.hdr(msg, key).lower())
         words = set(re.findall(WORD_REGEXP, self.hdr(msg, key).lower()))
         words -= STOPLIST
         keywords.extend(['%s:%s' % (t, key_lower) for t in words])
-        keywords.extend(['%s:%s' % (e.lower(), key_lower) for e in emails])
-        keywords.extend(['%s:email' % e.lower() for e in emails])
+        keywords.extend(['%s:%s' % (e, key_lower) for e in emails])
+        keywords.extend(['%s:email' % e for e in emails])
         if 'list' in key_lower:
           keywords.extend(['%s:list' % t for t in words])
 
