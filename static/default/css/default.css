@@ -86,7 +86,18 @@ you can use the generic selector below, but it's slower:
 .icon-compose,
 .icon-attachment,
 .icon-message,
-.icon-search {
+.icon-search,
+.icon-spam,
+.icon-speed,
+.icon-file-web,
+.icon-file-video,
+.icon-file-unknown,
+.icon-file-spreadsheet,
+.icon-file-image,
+.icon-file-encrypted,
+.icon-file-document,
+.icon-file-audio,
+.icon-file-archive {
   font-family: 'Mailpile-Interface';
   speak: none;
   font-style: normal;
@@ -152,6 +163,39 @@ you can use the generic selector below, but it's slower:
 }
 .icon-search:before {
   content: "\e012";
+}
+.icon-spam:before {
+  content: "\e013";
+}
+.icon-speed:before {
+  content: "\e014";
+}
+.icon-file-web:before {
+  content: "\e015";
+}
+.icon-file-video:before {
+  content: "\e016";
+}
+.icon-file-unknown:before {
+  content: "\e017";
+}
+.icon-file-spreadsheet:before {
+  content: "\e018";
+}
+.icon-file-image:before {
+  content: "\e019";
+}
+.icon-file-encrypted:before {
+  content: "\e01a";
+}
+.icon-file-document:before {
+  content: "\e01b";
+}
+.icon-file-audio:before {
+  content: "\e01c";
+}
+.icon-file-archive:before {
+  content: "\e01d";
 }
 /* Backgrounds */
 .background-gray {
@@ -5368,4 +5412,8 @@ label span.form_error {
 }
 #footer a {
   font-size: 12px;
+}
+/* File Browser */
+.item-file {
+  font-size: 125px;
 }
