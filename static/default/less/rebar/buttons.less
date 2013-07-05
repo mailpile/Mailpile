@@ -1,0 +1,132 @@
+/* #Buttons
+================================================== */
+
+	/* Primary */
+	.button,
+	.button-primary,
+	button,
+	input[type="submit"],
+	input[type="reset"],
+	input[type="button"] {
+		.button-globals(@button-primary-color, @button-primary-shadow);
+		.button-border(@button-primary-border);
+		.button-background(@button-primary-top, @button-primary-bottom);
+		text-decoration: none;
+	}
+	.button:visited,
+	.button-primary:visited {
+		.button-globals(@button-primary-color, @button-primary-shadow);
+		.button-border(@button-primary-border);
+		.button-background(@button-primary-top, @button-primary-bottom);
+		text-decoration: none;
+	}
+	.button:hover,
+	.button-primary:hover,
+	button:hover,
+	input[type="submit"]:hover,
+	input[type="reset"]:hover,
+	input[type="button"]:hover {
+		.button-border(@button-primary-border);	
+		.button-background(@button-primary-top-hover, @button-primary-bottom-hover);
+		text-decoration: none;
+	}
+	.button:active,
+	.button-primary:active,
+	button:active,
+	input[type="submit"]:active,
+	input[type="reset"]:active,
+	input[type="button"]:active {	
+		.button-border(@button-primary-border-hover);
+		.button-background(@button-primary-top-hover, @button-primary-top-hover);
+		text-decoration: none;
+	}
+
+
+	/* Secondary */
+	.button-secondary {
+		.button-globals(@button-secondary-color, @button-secondary-shadow);
+		.button-border(@button-secondary-border);
+		.button-background(@button-secondary-top, @button-secondary-bottom);
+	}
+	.button-secondary:hover {
+		.button-border(@button-secondary-border-hover);	
+		.button-background(@button-secondary-top-hover, @button-secondary-bottom-hover);
+		text-decoration: none;
+	}
+	.button-secondary:active {
+		.button-border(@button-secondary-border-hover);	
+		.button-background(@button-secondary-top-hover, @button-secondary-top-hover);
+		text-decoration: none;
+	}
+
+
+	/* Alert */
+	.button-alert {
+		.button-globals(@button-alert-color, @button-alert-shadow);
+		.button-border(@button-alert-border);
+		.button-background(@button-alert-top, @button-alert-bottom);
+	}
+	.button-alert:hover {
+		.button-border(@button-alert-border-hover);	
+		.button-background(@button-alert-top-hover, @button-alert-bottom-hover);
+		text-decoration: none;
+	}
+	.button-alert:active {
+		.button-border(@button-alert-border-hover);	
+		.button-background(@button-alert-top-hover, @button-alert-top-hover);
+		text-decoration: none;
+	}
+
+
+	/* Warning */
+	.button-warning {
+		.button-globals(@button-warning-color, @button-warning-shadow);
+		.button-border(@button-warning-border);
+		.button-background(@button-warning-top, @button-warning-bottom);
+	}
+	.button-warning:hover {
+		.button-border(@button-warning-border-hover);
+		.button-background(@button-warning-top-hover, @button-warning-bottom-hover);
+		text-decoration: none;
+	}
+	.button-warning:active {
+		.button-border(@button-warning-border-hover);
+		.button-background(@button-warning-top-hover, @button-warning-top-hover);
+		text-decoration: none;
+	}
+
+
+	/* Icons */
+	.button span,
+	.button-secondary span,
+	.button-alert span,
+	.button-warning span, {
+		margin-right: 5px;
+	}
+
+
+	/* Full Width */
+	.button.full-width,
+	.button-primary.full-width,
+	.button-secondary.full-width,
+	.button-alert.full-width,
+	.button-warning.full-width,
+	.button-big-primary.full-width,
+	.button-big-secondary.full-width,
+	button.full-width,
+	input[type="submit"].full-width,
+	input[type="reset"].full-width,
+	input[type="button"].full-width {
+		width: 100%;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+		text-align: center;
+	}
+
+
+	/* Fix for odd Mozilla border & padding issues */
+	button::-moz-focus-inner,
+	input::-moz-focus-inner {
+    	border: 0;
+    	padding: 0;
+	}

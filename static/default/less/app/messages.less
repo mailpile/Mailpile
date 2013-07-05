@@ -1,0 +1,46 @@
+/* Messages - Error, Warning, Debug, Info, Success */
+
+	#messages div {
+		margin: 0px;
+		padding: 10px 10px 10px 20px;
+		list-style: none;
+		font-family: @text-font-family-bold;
+		text-shadow: @text-shadow-on-dark;
+		color: @white;
+		border-bottom: 1px solid @gray;
+		background-color: @white;
+	}
+
+	#messages span.message-text {
+		width: 90%;
+		padding-top: 3px;
+		display: block;
+		float: left;
+		text-align: left;
+	}
+
+	#messages abbr.message-close {
+		cursor: pointer;
+		float: right;
+		display: block;
+		background: @white;
+		color: @text-color;
+		box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
+		padding: 2px 10px;
+		font-size: 12px;
+		font-weight: bold;
+		border-radius: 4px;
+	}
+	
+	#messages abbr.message-close:hover {
+		background: @gray;
+		box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);		
+	}
+
+	#messages .error   { background-color: @red; }
+	#messages .warning { background-color: @orange; }
+	#messages .debug   { background-color: @yellow; }
+	#messages .info    { background-color: @blue; }
+	#messages .success { background-color: @green; }
+	
+	

@@ -1,0 +1,158 @@
+/* Web */
+	
+
+	#header { 
+		width: 100%;
+		min-width: 700px;
+		height: 74px;
+		background: @grayLight;
+		border-bottom: 1px solid @gray;		
+	}
+	
+	#header h1 {
+		float: left;
+		line-height: 36px;
+	}
+	
+	#header h1 small {
+		display: block;
+		font-size: 18px;
+		line-height: 18px;
+	}
+	
+	#header nav {
+		float: right;	
+	}
+	
+	#header nav ul li {
+		display: inline-block;
+		float: left;
+		margin-left: 20px;
+		text-align: center;
+	}
+	
+	#header nav ul li a {
+		font-size: 14px;
+		font-family: @text-font-family-bold;
+	}
+	
+	#header nav ul li a span {
+		display: block;
+		font-size: 36px;
+	}
+	
+	
+	#container {
+		width: 100%;
+		min-width: 700px;
+	}
+	
+	
+/* Sidebar */
+
+	#sidebar {
+		width: 25%;
+		min-width: 250px;
+		float: right;
+		background: @grayLight;
+		border-right: 1px solid @gray;		
+	}
+	
+	#sidebar a {
+		
+	}
+	
+
+/* Sub Navigation */
+
+	#sub-navigation	{
+		width: 75%;
+		min-width: 450px;
+		height: 62px;
+		float: right;
+		background: @grayLight;
+		border-bottom: 1px solid @gray;
+	}
+	
+	#sub-navigation ul li {
+		display: inline-block;
+		float: left;
+		margin-left: 20px;
+		text-align: center;
+	}	
+	
+	#sub-navigation a {
+		font-family: @text-font-family-bold;
+		color: @grayDark;
+	}
+
+	#sub-navigation a.navigation-on {
+		border-radius: @base-border-radius;
+		background: @gray;
+		padding: 6px 10px;
+		color: @white;
+	}
+
+	.navigation-icon {
+		margin: 0 8px 0 4px;
+		color: @grayDark;
+	}
+	
+	
+	.navigation-attention-urgent {
+		border-radius: @base-border-radius;
+		background: @orangeRed;
+		padding: 1px 4px;
+		color: @white;
+	}
+
+	.navigation-attention-important {
+		border-radius: @base-border-radius;	
+		background: @orange;
+		padding: 1px 4px;
+		color: @white;		
+	}
+	
+
+	
+	#content {
+		width: 75%;
+		min-width: 450px;
+		float: right;	
+	}
+
+
+	
+	/* Search */
+	#search {
+		height: 55px;
+		border-bottom: 1px solid @gray;
+	}
+	
+	#search span.icon-search {
+		float: left;
+		font-size: 24px;
+		color: @grayDark;
+	}
+	
+	#search input[type=text] {
+		width: 75%;
+		float: left;
+		border: 0px;
+		outline: none;
+	}
+	
+	#search input[type=text]:focus {
+		outline: none;
+	}
+	
+	#search input[type=submit] {
+		float: right;
+	}
+	
+	
+	/* Bulk Actions */
+	#bulk-actions {
+		height: 38px;
+		border-bottom: 1px solid @gray;
+	}

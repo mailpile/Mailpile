@@ -1,0 +1,42 @@
+/* #Typography
+================================================== */
+
+/* Headings */
+
+	h1, h2, h3, h4, h5, h6 {
+		color: @headings-color;
+		font-family: @headings-font-family;
+		font-weight: @headings-font-weight;
+		letter-spacing: @headings-letter-spacing;
+	}
+
+	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit; }
+	h1 { font-size: @headings-size-h1; line-height: 70px; margin-bottom: 21px; }
+	h2 { font-size: @headings-size-h2; line-height: 58px; margin-bottom: 18px; }
+	h3 { font-size: @headings-size-h3; line-height: 46px; margin-bottom: 12px; }
+	h4 { font-size: @headings-size-h4; line-height: 36px; margin-bottom: 10px; }
+	h5 { font-size: @headings-size-h5; line-height: 30px; margin-bottom: 10px; }
+	h6 { font-size: @headings-size-h6; line-height: 24px; margin-bottom: 10px; }
+
+
+	.subheader { color: #777; }
+
+
+/* Non Headings */
+
+	p { margin: 0 0 20px 0; }
+	p img { margin: 0; }
+	p.lead { font-size: 21px; line-height: 27px; color: #777;  }
+
+	em { font-style: @em-font-style; }
+	strong { font-family: @strong-font-family; font-weight: @strong-font-weight; color: @strong-color; }
+	small { font-size: 80%; }
+
+
+/*	Blockquotes  */
+
+	blockquote, blockquote p { font-size: @blockquote-font-size; line-height: @blockquote-line-height; color: @blockquote-color; font-style: @blockquote-font-style; margin: 0 0 10px 0; }
+	blockquote { margin: 0 0 20px; padding: 9px 20px 0 19px; border-left: 4px solid #c9c9c9; }
+	blockquote cite { display: block; font-size: 12px; color: #555; }
+	blockquote cite:before { content: "\2014 \0020"; }
+	blockquote cite a, blockquote cite a:visited, blockquote cite a:visited { color: #555; }

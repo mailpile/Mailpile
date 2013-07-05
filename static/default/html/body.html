@@ -1,15 +1,59 @@
-</head><body onload='focus("qbox");'><div id='header'>
- <h1 id='heading'>
-  <a href='/'><img src="/_/static/img/logo-252.png"/></a></h1>
-  <div class="btnbar">
-   <a class="btn btn-primary" onclick="compose();return false;"
-      href="/_/compose">Compose</a>
-   <div id='search'><form action='/'>
-    <input id='qbox' type='text' size='100' name='q' value='%(lastq)s ' />
-    <input type="submit" class="btn btn-search" value=""/>
-    <input type='hidden' name='csrf' value='%(csrf)s' />
-   </form></div>
-  </div>
+</head>
+<body onload='focus("qbox");'>
+
+<div id="header">
+
+	<h1 id="heading">
+		<span class="icon-logo"></span>
+		Brennan Novak's
+		<small><strong>mail</strong>pile</small>
+	</h1>
+
+	<nav>
+		<ul>
+			<li><a href="#"><span class="icon-donate"></span>Donate</a></li>
+			<li><a href="#"><span class="icon-user"></span>Contacts</a></li>
+			<li><a href="#"><span class="icon-settings"></span>Settings</a></li>
+		</ul>
+	</nav>
+
+	<div class="clearfix"></div>
+
 </div>
-<form id='actions' action='' method='post'>
-<input type='hidden' name='csrf' value='%(csrf)s' /><div id='content'>
+
+<div id="container">
+
+	<nav id="sub-navigation">
+		<ul>
+			<li><a href="#" class="navigation-on"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">5</span> New</a></li>
+			<li><a href="#"><span class="navigation-icon icon-later"></span><span class="navigation-attention-important">12</span> Later</a></li>
+			<li><a href="#"><span class="navigation-icon icon-message"></span><span>2,415</span> Read</a></li>
+		</ul>
+	</nav>
+
+	<div id="content">
+
+		<div id='search'>
+			<form action='/' class="clearfix">
+				<span class="icon-search"></span>
+				<input id='qbox' type='text' size='100' name='q' value='%(lastq)s ' />
+				<input type="submit" class="button-primary" value="Search"/>
+				<input type='hidden' name='csrf' value='%(csrf)s' />
+			</form>
+			<div id="search-params">
+				<a href="#" class="" id="search-start-time">Start time</a> to 
+				<a href="#" class="" id="search-end-time">Present</a> with
+				<a href="#" id="search-tags">No tags</a> and
+				<a href="#" id="search-all-groups">All groups</a>
+			</div>
+		</div>
+
+		<div id="bulk-actions">
+			<a href="#"><span class="icon-groups"></span> Add to Group</a>
+			<a href="#"><span class="icon-tag"></span> Assign Tags</a>
+			<a href="#"><span class="icon-trash"></span> Delete</a>
+		</div>
+
+		<form id='actions' action='' method='post'>
+			<input type='hidden' name='csrf' value='%(csrf)s' />
+	
