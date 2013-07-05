@@ -1,6 +1,7 @@
 import datetime
 import mailpile.plugins
 
+
 ##[ Keywords ]################################################################
 
 def meta_kw_extractor(index, msg_mid, msg, msg_date):

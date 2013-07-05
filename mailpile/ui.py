@@ -1,20 +1,13 @@
 #!/usr/bin/python
 #
-# This is a collection of "User interface" classes.
+# This file contains the UserInteraction and Session classes.
 #
-# The role of these classes is to translate internal data structures and
-# progress reports into whatever makes sense for a given user interface.
+# The Session encapsulates settings and command results, allowing commands
+# to be chanined in an interactive environment.
 #
-# As an example, the TextUI presents everything as plain-text, the JsonUI
-# and XmlUI classe generate structured machine-readable output, the HtmlUI
-# generates template-based HTML pages.
-#
-# UI class methods fall roughly into two categories:
-#   - Logging and progress reporting
-#   - Rendering the final results of a successful command
-#
-# TODO: rework UIs result commands and commands to return "rendered result"
-#       objects?
+# The UserInteraction classes log the progress and performance of individual
+# operations and assist with rendering the results in various formats (text,
+# HTML, JSON, etc.).
 #
 ###############################################################################
 import datetime
@@ -23,12 +16,7 @@ import random
 import re
 import sys
 import traceback
-
-try:
-  # FIXME: Why is this here?
-  import simplejson as json
-except:
-  import json
+import json
 
 from mailpile.util import *
 from mailpile.search import MailIndex
@@ -39,6 +27,88 @@ ABOUT = "This is Mailpile!"  # This usually gets overwritten by app.py
 
 class SuppressHtmlOutput(Exception):
   pass
+
+
+class UserInteraction:
+  """Log the progress and performance of individual operations"""
+  MAX_BUFFER_LEN = 150
+
+  LOG_URGENT  =  0
+  LOG_RESULT  =  5
+  LOG_ERROR   = 10
+  LOG_NOTIFY  = 20
+  LOG_WARNING = 30
+  LOG_DEBUG   = 40
+  LOG_ALL     = 99
+
+  def __init__(self, log_parent=None):
+    self.log_parent = parent
+    self.log_buffer = []
+    self.log_buffering = False
+    self.log_level = self.LOG_ALL
+    self.interactive = False
+    self.time_tracking = [('Main', [])]
+
+  def display(self, text):
+    sys.stdout.write('%s' % text.encode('utf-8'))
+
+  # Logging
+  def clear_log(self):
+    self.log_buffer = []
+  def flush_log(self):
+    try:
+      while len(self.log_buffer) > 0:
+        level, message = self.log_buffer.pop(0)
+        if level <= self.log_level:
+          self.display(message)
+    except IndexError:
+      pass
+  def block(self):
+    self.buffering = True
+  def unblock(self):
+    self.buffering = False
+    self.flush()
+  def log(self, level, message):
+    if self.buffering:
+      self.log_buffer.append((level, message))
+      while len(self.log_buffer) > self.MAX_BUFFER_LEN:
+        self.log_buffer[0:(self.MAX_BUFFER_LEN/10)] = []
+    elif level <= self.log_level:
+      self.display(message)
+
+  # Progress indication and performance tracking
+  times = property(lambda: self.time_tracking[0][1])
+  def mark(self, action, percent=None):
+    """Note that we are about to perform an action."""
+    self.say('  %s%s\r' % (action, ' ' * (self.WIDTH-3-len(progress))),
+             newline='', fd=sys.stderr)
+    self.times.append((time.time(), action))
+  def reset_marks(self, quiet=False):
+    """This sequence of actions is complete."""
+    t = self.times
+    self.times = []
+    if t:
+      elapsed = t[-1][0] - t[0][0]
+      if not quiet:
+        result = 'Elapsed: %.3fs (%s)' % (elapsed, t[-1][1])
+        self.say('%s%s' % (result, ' ' * (self.WIDTH-1-len(result))))
+      return elapsed
+    else:
+      return 0
+  def mark_push(self, subtask):
+    """We are beginnning a sub-sequence we want to track separately."""
+    self.time_tracking[:0] = [(subtask, [])]
+  def mark_pop(self, quiet=False):
+    """Sub-task completed."""
+    elapsed = self.reset_marks(quiet=quiet)
+    if len(self.time_tracking) > 1:
+      subtask, times = self.time_tracking.pop(0)
+      self.mark('Completed %s in %.3fs' % (subtask, elapsed))
+    return elapsed
+
+  def render_result(self, result):
+    """Render command result objects to the user"""
+    self.log(self.LOG_RESULT, unicode(result))
 
 
 class BaseUI(object):
@@ -935,7 +1005,7 @@ class HtmlUI(HttpUI):
       for hdr in ('From', 'Subject', 'To', 'Cc'):
         value = email.get(hdr, '')
         if value:
-          html = '<b>%s:</b> %s<br>' % (hdr, self.escape_html(value))
+          html = '<b>%s:</b> %s<br>' % (hdr, escape_html(value))
           self.buffered_html.append(('html', html))
       self.buffered_html.append(('html', '</div><br>'))
 
@@ -962,11 +1032,8 @@ class HtmlUI(HttpUI):
         self.buffered_html.append(('html', '</ul>'))
       self.buffered_html.append(('html', '</div>'))
 
-  def escape_html(self, t):
-    return t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-
   def fmt_part(self, part):
-    what = [part['type'], self.escape_html(part['data'])]
+    what = [part['type'], escape_html(part['data'])]
     if what[0] == 'pgpbeginsigned':
       what[1] = ('<input type="submit" name="gpg_recvkey"'
                  ' value="Get PGP key and Verify">' + what[1])
@@ -988,7 +1055,7 @@ class HtmlUI(HttpUI):
                             '<input type=hidden name="save_%d_msg" value="%s">'
                               '<textarea name="@save_%d_data" cols=72 rows=20>'
                                    '' % (save_id, email.msg_mid(), save_id)))
-        self.buffered_html.append(('html', self.escape_html(es)))
+        self.buffered_html.append(('html', escape_html(es)))
         self.buffered_html.append(('html', '</textarea><br>'
                                 '<input type=submit name="save_%d" value=Save>'
                                 '<input type=submit name="mail_%d" value=Send>'
@@ -1001,7 +1068,7 @@ class HtmlUI(HttpUI):
       self.say('%s' % vcard)
     else:
       self.buffered_html.append(('html',
-                        '<pre>%s</pre>' % self.escape_html(vcard.as_vCard())))
+                        '<pre>%s</pre>' % escape_html(vcard.as_vCard())))
 
 
 class Session(object):

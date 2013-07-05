@@ -1,9 +1,6 @@
 import mailpile.plugins
 from mailpile.commands import Command, VCard, Tag, Filter
 
-##[ Config variables ]########################################################
-
-
 
 ##[ Search terms ]############################################################
 

@@ -43,6 +43,9 @@ class AccessError(Exception):
 def b64c(b): return b.replace('\n', '').replace('=', '').replace('/', '_')
 def b64w(b): return b64c(b).replace('+', '-')
 
+def escape_html(t):
+  return t.replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
+
 def sha1b64(s):
   h = hashlib.sha1()
   if type(s) == type(unicode()):

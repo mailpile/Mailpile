@@ -33,10 +33,33 @@ class Command:
   SERIALIZE = False
   SPLIT_ARG = 10000  # A big number!
 
+  class CommandResult:
+    def __init__(self, command, result):
+      self.command = command
+      self.result = result
+
+    def __nonzero__(self):
+      return self.result.__nonzero__()
+
+    def as_text(self):
+      return unicode(self.result)
+    __str__ = lambda self: self.as_text()
+    __unicode__ = lambda self: self.as_text()
+
+    def as_html(self):
+      return escape_html(unicode(self))
+
+    def as_dict(self):
+      return {
+        'command': self.command,
+        'result': self.result
+      }
+
   def __init__(self, session, name=None, arg=None, data=None):
     self.session = session
     self.name = name
     self.data = data or {}
+    self.result = None
     if type(arg) in (type(list()), type(tuple())):
       self.args = list(arg)
     elif arg:
@@ -128,9 +151,10 @@ class Command:
     if self.name:
       self.session.ui.start_command(self.name, self.args, self.data)
 
-  def _finishing(self):
+  def _finishing(self, rv):
     if self.name:
        self.session.ui.finish_command()
+    return self.CommandResult(self.name, rv)
 
   def _run(self, *args, **kwargs):
     try:
@@ -149,12 +173,11 @@ class Command:
       else:
         self._starting()
         rv = self.command(*args, **kwargs)
-      self._finishing()
-      return rv
+      return self._finishing(rv)
     except UsageError:
       raise
     except:
-      self._finishing()
+      self._finishing(False)
       self._ignore_exception()
       return self._error(self.FAILURE % {'name': self.name,
                                          'args': ' '.join(self.args) })
@@ -281,7 +304,8 @@ class RunWWW(Command):
   ORDER = ('Internals', 5)
   def command(self):
     self.session.config.prepare_workers(self.session, daemons=True)
-    while not mailpile.util.QUITTING: time.sleep(1)
+    while not mailpile.util.QUITTING:
+      time.sleep(1)
     return True
 
 
@@ -1086,6 +1110,41 @@ class Help(Command):
   ORDER = ('Config', 9)
   IS_HELP = True
   SYNOPSIS = "[command]"
+
+  class CommandResult(Command.CommandResult):
+    def as_text(self):
+      text = ['Commands:']
+      last_rank = None
+      cmds = self.result['commands']
+      width = self.result.get('width', 8)
+      ckeys = cmds.keys()
+      ckeys.sort(key=lambda k: cmds[k][3])
+      for c in ckeys:
+        cmd, args, explanation, rank = cmds[c]
+        if not rank: continue
+        if last_rank and int(rank/10) != last_rank: text.append('')
+        last_rank = int(rank/10)
+        if c[0] == '_':
+          c = '  '
+        else:
+          c = '%s|' % c[0]
+        fmt = '    %%s%%-%d.%ds' % (width, width)
+        if explanation:
+          fmt += ' %-15.15s %s'
+        else:
+          fmt += ' %s %s '
+        text.append(fmt % (c, cmd.replace('=', ''),
+                           args and ('%s' % args) or '',
+                           (explanation.splitlines() or [''])[0]))
+      if 'tags' in self.result:
+        text.extend([
+          '',
+          'Tags:  (use a tag as a command to display tagged messages)',
+          '',
+          self.result['tags'].as_text()
+        ])
+      return '\n'.join(text)
+
   def command(self):
     self.session.ui.reset_marks(quiet=True)
     if self.args:
@@ -1099,9 +1158,12 @@ class Help(Command):
             cmd_list['_%s' % cmd] = ('%s' % name,
                                      '%s %s' % (cmd, cls.SUBCOMMANDS[cmd][1]),
                                      '', order)
-          self.session.ui.print_help(cmd_list,
-                                     pre=cls.__doc__, post=cls.EXAMPLES,
-                                     width=len(name.replace('=', '')))
+          return {
+            'pre': cls.__doc__,
+            'commands': cmd_list,
+            'width': len(name),
+            'post': cls.EXAMPLES
+          }
     else:
       cmd_list = {}
       count = 0
@@ -1112,10 +1174,11 @@ class Help(Command):
           synopsis = cls.SUBCOMMANDS and '<command ...>' or cls.SYNOPSIS
           if cls.ORDER[0] == grp:
             cmd_list[c] = (name, synopsis, cls.__doc__, count+cls.ORDER[1])
-      self.session.ui.print_help(cmd_list,
-                                 tags=self.session.config.get('tag', {}),
-                                 index=self._idx())
-    return True
+      return {
+        'commands': cmd_list,
+        'tags': Tag(self.session, arg=['list']).run(),
+        'index': self._idx()
+      }
 
   def help_vars(self):
     self.session.ui.reset_marks(quiet=True)
@@ -1123,7 +1186,8 @@ class Help(Command):
     return True
 
   def _starting(self): pass
-  def _finishing(self): pass
+  def _finishing(self, rv):
+    return self.CommandResult(self.name, rv)
 
   SUBCOMMANDS = {
     'variables': (help_vars, ''),
@@ -1164,32 +1228,32 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = {
-  '_setup': ('setup',    Setup),
   'A:':     ('add=',     AddMailbox),
   'a:':     ('attach=',  Attach),
   'c:':     ('compose=', Compose),
   'C:':     ('contact=', Contact),
   'd:':     ('delete=',  Delete),
   'e:':     ('extract=', Extract),
-  'F:':     ('filter=',  Filter),
-  'h':      ('help',     Help),
-  '_load':  ('load',     Load),
-  'm:':     ('mail=',    Mail),
   'f:':     ('forward=', Forward),
+  'F:':     ('filter=',  Filter),
+  'g:':     ('gpg',      GPG),
+  'h':      ('help',     Help),
+  'm:':     ('mail=',    Mail),
   'n':      ('next',     Next),
   'o:':     ('order=',   Order),
-  '_optim': ('optimize', Optimize),
   'p':      ('previous', Previous),
   'P:':     ('print=',   ConfigPrint),
   'r:':     ('reply=',   Reply),
-  '_resca': ('rescan',   Rescan),
-  'g:':     ('gpg',      GPG),
   's:':     ('search=',  Search),
   'S:':     ('set=',     ConfigSet),
   't:':     ('tag=',     Tag),
   'U:':     ('unset=',   ConfigUnset),
   'u:':     ('update=',  Update),
   'v:':     ('view=',    View),
+  '_setup': ('setup',    Setup),
+  '_load':  ('load',     Load),
+  '_optim': ('optimize', Optimize),
+  '_resca': ('rescan',   Rescan),
   '_vcard': ('vcard=',   VCard),
   '_www':   ('www',      RunWWW),
   '_recou': ('recount',  UpdateStats)
