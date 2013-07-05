@@ -1,5 +1,7 @@
 /* Web */
-	
+
+
+/* Header */
 
 	#header { 
 		width: 100%;
@@ -7,34 +9,57 @@
 		height: 74px;
 		background: @grayLight;
 		border-bottom: 1px solid @gray;		
+		box-sizing: border-box;
+	}
+	
+	#header .logo {
+		width: 64px;
+		height: 45px;
+		display: inline-block;
+		position: relative;
+		top: 8px;
+		margin-right: 15px;
+		left: 20px;
 	}
 	
 	#header h1 {
-		float: left;
+		display: inline-block;
+		position: relative;
+		top: 10px;
+		left: 15px;
 		line-height: 36px;
 	}
 	
 	#header h1 small {
+		font-family: @text-font-family;
 		display: block;
 		font-size: 18px;
 		line-height: 18px;
 	}
 	
 	#header nav {
-		float: right;	
+		float: right;
+		position: relative;
+		top: 10px;
+		right: 15px;	
 	}
 	
 	#header nav ul li {
 		display: inline-block;
 		float: left;
-		margin-left: 20px;
+		margin-left: 30px;
 		text-align: center;
 	}
 	
-	#header nav ul li a {
+	#header nav a {
 		font-size: 14px;
 		font-family: @text-font-family-bold;
+		color: @grayDark;
 	}
+	
+	#header nav a:hover {
+		color: @blue;
+	} 
 	
 	#header nav ul li a span {
 		display: block;
@@ -42,39 +67,99 @@
 	}
 	
 	
+	
+/* Container */
+
 	#container {
 		width: 100%;
 		min-width: 700px;
+		height: 100%;
 	}
+
 	
 	
 /* Sidebar */
 
-	#sidebar {
+	.sidebar-wrapper {
 		width: 25%;
-		min-width: 250px;
-		float: right;
+		max-width: 275px;
+		min-width: 190px;
+		float: left;
+	}
+
+	#sidebar {
+		height: 100%;
 		background: @grayLight;
-		border-right: 1px solid @gray;		
+		border-right: 1px solid @gray;
+		box-sizing: border-box;
 	}
 	
 	#sidebar a {
-		
+		font-family: @text-font-family-bold;
+		font-size: 18px;
 	}
 	
+	#sidebar a span {
+		position: relative;
+		top: 3px;
+		left: 0px;
+		font-size: 24px;
+		margin-right: 4px;
+	}
+
+	#sidebar nav {
+		margin: 20px;
+	}
+
+	#sidebar nav ul li {
+		margin: 20px 0;
+	}
+
+	#button-compose small {
+		display: block;
+		font-size: 12px;
+		color: @gray;
+	}
+
+	// HIDE UNSED
+	#sidebar_btns, .tag_list {
+		display: none;
+	}
+
+	
+/* Content */	
+	
+	#content {
+		width: 75%;
+		min-width: 510px;
+		float: right;
+	}
+
+	#content div.pile-speed {
+		text-align: center;
+		font-family: @text-font-family;
+		color: @gray;
+	}
+
 
 /* Sub Navigation */
 
 	#sub-navigation	{
-		width: 75%;
+		width: 100%;
 		min-width: 450px;
 		height: 62px;
 		float: right;
 		background: @grayLight;
 		border-bottom: 1px solid @gray;
+		box-sizing: border-box;
 	}
 	
-	#sub-navigation ul li {
+	#sub-navigation ul {
+		position: relative;
+		top: 15px;
+	}
+	
+	#sub-navigation li {
 		display: inline-block;
 		float: left;
 		margin-left: 20px;
@@ -114,19 +199,15 @@
 	}
 	
 
-	
-	#content {
-		width: 75%;
-		min-width: 450px;
-		float: right;	
-	}
-
 
 	
-	/* Search */
+/* Search */
+
 	#search {
-		height: 55px;
+		min-height: 55px;
 		border-bottom: 1px solid @gray;
+		padding: 5px 20px;
+		box-sizing: padding-box;
 	}
 	
 	#search span.icon-search {
@@ -140,19 +221,63 @@
 		float: left;
 		border: 0px;
 		outline: none;
+		font-family: @text-font-family-bold;
+		color: @gray;
 	}
 	
 	#search input[type=text]:focus {
 		outline: none;
+		color: @grayDark;
 	}
 	
 	#search input[type=submit] {
 		float: right;
 	}
 	
+	#search-params a {
+		padding: 5px 10px;
+		background: @grayLight;
+		color: @grayDark;
+		font-family: @text-font-family-bold;
+		font-size: 14px;
+		border-radius: @base-border-radius;
+		border: 1px solid @gray;
+	}
 	
-	/* Bulk Actions */
+	#search-params a:hover {
+		background-color: darken(@grayLight, 15%);
+	}
+
+	
+/* Bulk Actions */
+
 	#bulk-actions {
-		height: 38px;
 		border-bottom: 1px solid @gray;
+		color: @grayDark;
+		padding-left: 20px;
+		box-sizing: padding-box;
+	}
+	
+	#bulk-actions a {
+		display: inline-block;
+		margin: 10px 30px 10px 0;
+		color: @grayDark;
+	}
+	
+	#bulk-actions a:hover {
+		color: @red; 
+	}
+
+
+
+/* Footer */
+
+	#footer {
+		margin: 20px 0;
+		font-size: 12px;
+		text-align: center;
+	}
+	
+	#footer a {
+		font-size: 12px;
 	}

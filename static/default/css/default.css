@@ -3601,7 +3601,7 @@ body {
 /* Config - Change the settings in this file change the look and feel of your style */
 /* Colors */
 /* Container */
-/* Margins, Paddings, and Spacings */
+/* Base - Margins, Paddings, and Spacings */
 /* Grid */
 /* Body */
 /* Text */
@@ -3845,7 +3845,7 @@ em {
 strong {
   font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
-  color: #333333;
+  color: inherit;
 }
 small {
   font-size: 80%;
@@ -3959,7 +3959,7 @@ input[type="button"] {
   font-weight: normal !important;
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-  padding: 5px 15px;
+  padding: 10px 15px 5px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -3992,7 +3992,7 @@ input[type="button"] {
   font-weight: normal !important;
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-  padding: 5px 15px;
+  padding: 10px 15px 5px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -4062,7 +4062,7 @@ input[type="button"]:active {
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
   text-decoration: none;
-  padding: 5px 15px;
+  padding: 10px 15px 5px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -4121,7 +4121,7 @@ input[type="button"]:active {
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
   text-decoration: none;
-  padding: 5px 15px;
+  padding: 10px 15px 5px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -4180,7 +4180,7 @@ input[type="button"]:active {
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
   text-decoration: none;
-  padding: 5px 15px;
+  padding: 10px 15px 5px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -5141,7 +5141,7 @@ label span.form_error {
   background-color: #fbb03b;
 }
 #messages .debug {
-  background-color: #d4b34e;
+  background-color: #b3b3b3;
 }
 #messages .info {
   background-color: #456479;
@@ -5150,61 +5150,131 @@ label span.form_error {
   background-color: #4b7945;
 }
 /* Web */
+/* Header */
 #header {
   width: 100%;
   min-width: 700px;
   height: 74px;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
+  box-sizing: border-box;
+}
+#header .logo {
+  width: 64px;
+  height: 45px;
+  display: inline-block;
+  position: relative;
+  top: 8px;
+  margin-right: 15px;
+  left: 20px;
 }
 #header h1 {
-  float: left;
+  display: inline-block;
+  position: relative;
+  top: 10px;
+  left: 15px;
   line-height: 36px;
 }
 #header h1 small {
+  font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   display: block;
   font-size: 18px;
   line-height: 18px;
 }
 #header nav {
   float: right;
+  position: relative;
+  top: 10px;
+  right: 15px;
 }
 #header nav ul li {
   display: inline-block;
   float: left;
-  margin-left: 20px;
+  margin-left: 30px;
   text-align: center;
 }
-#header nav ul li a {
+#header nav a {
   font-size: 14px;
   font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #4d4d4d;
+}
+#header nav a:hover {
+  color: #456479;
 }
 #header nav ul li a span {
   display: block;
   font-size: 36px;
 }
+/* Container */
 #container {
   width: 100%;
   min-width: 700px;
+  height: 100%;
 }
 /* Sidebar */
-#sidebar {
+.sidebar-wrapper {
   width: 25%;
-  min-width: 250px;
-  float: right;
+  max-width: 275px;
+  min-width: 190px;
+  float: left;
+}
+#sidebar {
+  height: 100%;
   background: #f2f2f2;
   border-right: 1px solid #b3b3b3;
+  box-sizing: border-box;
+}
+#sidebar a {
+  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+}
+#sidebar a span {
+  position: relative;
+  top: 3px;
+  left: 0px;
+  font-size: 24px;
+  margin-right: 4px;
+}
+#sidebar nav {
+  margin: 20px;
+}
+#sidebar nav ul li {
+  margin: 20px 0;
+}
+#button-compose small {
+  display: block;
+  font-size: 12px;
+  color: #b3b3b3;
+}
+#sidebar_btns,
+.tag_list {
+  display: none;
+}
+/* Content */#content {
+  width: 75%;
+  min-width: 510px;
+  float: right;
+}
+#content div.pile-speed {
+  text-align: center;
+  font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #b3b3b3;
 }
 /* Sub Navigation */
 #sub-navigation {
-  width: 75%;
+  width: 100%;
   min-width: 450px;
   height: 62px;
   float: right;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
+  box-sizing: border-box;
 }
-#sub-navigation ul li {
+#sub-navigation ul {
+  position: relative;
+  top: 15px;
+}
+#sub-navigation li {
   display: inline-block;
   float: left;
   margin-left: 20px;
@@ -5236,15 +5306,12 @@ label span.form_error {
   padding: 1px 4px;
   color: #ffffff;
 }
-#content {
-  width: 75%;
-  min-width: 450px;
-  float: right;
-}
 /* Search */
 #search {
-  height: 55px;
+  min-height: 55px;
   border-bottom: 1px solid #b3b3b3;
+  padding: 5px 20px;
+  box-sizing: padding-box;
 }
 #search span.icon-search {
   float: left;
@@ -5256,15 +5323,49 @@ label span.form_error {
   float: left;
   border: 0px;
   outline: none;
+  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #b3b3b3;
 }
 #search input[type=text]:focus {
   outline: none;
+  color: #4d4d4d;
 }
 #search input[type=submit] {
   float: right;
 }
+#search-params a {
+  padding: 5px 10px;
+  background: #f2f2f2;
+  color: #4d4d4d;
+  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #b3b3b3;
+}
+#search-params a:hover {
+  background-color: #cccccc;
+}
 /* Bulk Actions */
 #bulk-actions {
-  height: 38px;
   border-bottom: 1px solid #b3b3b3;
+  color: #4d4d4d;
+  padding-left: 20px;
+  box-sizing: padding-box;
+}
+#bulk-actions a {
+  display: inline-block;
+  margin: 10px 30px 10px 0;
+  color: #4d4d4d;
+}
+#bulk-actions a:hover {
+  color: #be2408;
+}
+/* Footer */
+#footer {
+  margin: 20px 0;
+  font-size: 12px;
+  text-align: center;
+}
+#footer a {
+  font-size: 12px;
 }
