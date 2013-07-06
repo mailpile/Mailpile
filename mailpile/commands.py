@@ -6,8 +6,10 @@
 # Consulte the COMMANDS dict at the bottom of this file for a list of which
 # commands have been defined and what their names and command-line flags are.
 #
+import datetime
 import os
 import os.path
+import re
 import traceback
 
 import mailpile.util
@@ -34,14 +36,17 @@ class Command:
   SPLIT_ARG = 10000  # A big number!
 
   class CommandResult:
-    def __init__(self, command, result):
+    def __init__(self, command, result, what):
       self.command = command
       self.result = result
+      self.what = what 
 
     def __nonzero__(self):
       return self.result.__nonzero__()
 
     def as_text(self):
+      if type(self.result) == type(True):
+        return '%s: %s' % (self.result and 'Succeeded' or 'Failed', self.what)
       return unicode(self.result)
     __str__ = lambda self: self.as_text()
     __unicode__ = lambda self: self.as_text()
@@ -57,6 +62,7 @@ class Command:
 
   def __init__(self, session, name=None, arg=None, data=None):
     self.session = session
+    self.serialize = self.SERIALIZE
     self.name = name
     self.data = data or {}
     self.result = None
@@ -136,8 +142,7 @@ class Command:
       return open(fn, 'rb').read()
 
   def _ignore_exception(self):
-    if self.session.config.get('debug'):
-      self.session.ui.say(traceback.format_exc())
+    self.session.ui.debug(traceback.format_exc())
 
   def _serialize(self, name, function):
     session, config = self.session, self.session.config
@@ -151,42 +156,38 @@ class Command:
     if self.name:
       self.session.ui.start_command(self.name, self.args, self.data)
 
-  def _finishing(self, rv):
+  def _finishing(self, command, rv):
     if self.name:
        self.session.ui.finish_command()
-    return self.CommandResult(self.name, rv)
+    return self.CommandResult(self.name, rv, command.__doc__ or self.__doc__)
 
   def _run(self, *args, **kwargs):
     try:
+      def command(self, *args, **kwargs):
+        return self.command(*args, **kwargs)
       if self.SUBCOMMANDS and self.args and self.args[0] in self.SUBCOMMANDS:
         subcmd = self.args.pop(0)
         if self.name:
           self.name += ' ' + subcmd
-        self._starting()
-        rv = self.SUBCOMMANDS[subcmd][0](self, *args, **kwargs)
+        command = self.SUBCOMMANDS[subcmd][0]
       elif self.SUBCOMMANDS and self.args and self.args[0] == 'help':
-        if self.IS_HELP:
-          self._starting()
-          rv = self.command(*args, **kwargs)
-        else:
+        if not self.IS_HELP:
           return Help(self.session, arg=[self.name]).run()
-      else:
-        self._starting()
-        rv = self.command(*args, **kwargs)
-      return self._finishing(rv)
+      self._starting()
+      return self._finishing(command, command(self, *args, **kwargs))
     except UsageError:
       raise
     except:
-      self._finishing(False)
+      self._finishing(command, False)
       self._ignore_exception()
       return self._error(self.FAILURE % {'name': self.name,
                                          'args': ' '.join(self.args) })
 
   def run(self, *args, **kwargs):
-    if self.SERIALIZE:
+    if self.serialize:
       # Some functions we always run in the slow worker, to make sure
       # they don't get run in parallel with other things.
-      return self._serialize(self.SERIALIZE, lambda: self._run(*args, **kwargs))
+      return self._serialize(self.serialize, lambda: self._run(*args, **kwargs))
     else:
       return self._run(*args, **kwargs)
 
@@ -221,7 +222,7 @@ class Load(Command):
   """Load or reload the metadata index"""
   ORDER = ('Internals', 1)
   def command(self, reset=True, wait=True, quiet=False):
-    return self._idx(reset=reset, wait=wait, quiet=quiet)
+    return self._idx(reset=reset, wait=wait, quiet=quiet) and True or False
 
 
 class Rescan(Command):
@@ -314,6 +315,28 @@ class RunWWW(Command):
 class Tag(Command):
   """Add/remove/list/edit message tags"""
   ORDER = ('Tagging', 0)
+
+  class CommandResult(Command.CommandResult):
+    def tags_as_text(self):
+      tags = self.result['tags']
+      wrap = int(78/23) # FIXME: Magic number
+      text = []
+      for i in range(0, len(tags)):
+        text.append(('%s%5.5s %-18.18s'
+                     ) % ((i%wrap) == 0 and '  ' or '',
+                     '%s' % (tags[i]['new'] or ''),
+                     tags[i]['name'])
+                   + ((i%wrap)==(wrap-1) and '\n' or ''))
+      return ''.join(text)+'\n'
+    def added_as_text(self):
+      return ('Added tags: '
+             +', '.join([k['name'] for k in self.result['added']]))
+    def as_text(self):
+      return ''.join([
+        ('added' in self.result) and self.added_as_text() or '',
+        ('tags' in self.result) and self.tags_as_text() or '',
+      ])
+
   SYNOPSIS = '<[+|-]tags msgs>'
   def command(self, save=True):
     idx = self._idx()
@@ -348,14 +371,24 @@ class Tag(Command):
         return self._error('Invalid tag: %s' % tag)
       if tag.lower() in existing:
         return self._error('Tag already exists: %s' % tag)
-    for tag in self.args:
+    result = []
+    for tag in sorted(self.args):
       if config.parse_set(self.session, 'tag:%s=%s' % (config.nid('tag'), tag)):
-        self._background('Save config', lambda: config.save())
-    return True
+        result.append({'name': tag, 'tid': config.get_tag_id(tag), 'new': 0})
+    if result:
+      self._background('Save config', lambda: config.save())
+    return {'added': result}
 
   def list_tags(self):
-    self.session.ui.print_tags(self.session.config.get('tag', {}), self._idx())
-    return True
+    result, idx = [], self._idx()
+    for tid, tag in self.session.config.get('tag', {}).iteritems():
+      result.append({
+        'name': tag,
+        'tid': tid,
+        'new': int(idx.STATS.get(tid, [0, 0])[1])
+      })
+    result.sort(key=lambda k: k['name'])
+    return {'tags': result}
 
   def rm_tag(self):
     session, config = self.session, self.session.config
@@ -367,7 +400,7 @@ class Tag(Command):
       tag_id = config.get_tag_id(tag)
       if tag_id:
         # FIXME: Update filters too
-        if (Search(clean_session, arg=['tag:%s' % tag]).run()
+        if (COMMANDS['s:'][1](clean_session, arg=['tag:%s' % tag]).run()
         and Tag(clean_session, arg=['-%s' % tag, 'all']).run()
         and config.parse_unset(session, 'tag:%s' % tag_id)):
           removed += 1
@@ -650,7 +683,7 @@ class Update(Command):
       emails = [Email(idx, i) for i in self._choose_messages(self.args)]
       for email in emails:
         email.update_from_string(update)
-      session.ui.say('%d message(s) updated' % len(emails))
+      session.ui.notify('%d message(s) updated' % len(emails))
     else:
       return self._error('Nothing to update!')
     return True
@@ -674,12 +707,12 @@ class Attach(Command):
       return self._error('No messages selected')
 
     # FIXME: Using "say" here is rather lame.
-    session.ui.say('Attaching %s to...' % ', '.join(files))
+    session.ui.notify('Attaching %s to...' % ', '.join(files))
     for email in emails:
       subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
       try:
         email.add_attachments(files)
-        session.ui.say(' - %s' % subject)
+        session.ui.notify(' - %s' % subject)
       except NotEditableError:
         session.ui.error('Read-only message: %s' % subject)
       except:
@@ -744,7 +777,7 @@ class Reply(Command):
       if session.interactive:
         session.ui.edit_messages([email])
       else:
-        session.ui.say('Message created as draft')
+        session.ui.notify('Message created as draft')
       return True
     else:
       return self._error('No message found')
@@ -807,7 +840,7 @@ class Forward(Command):
       if session.interactive:
         session.ui.edit_messages([email])
       else:
-        session.ui.say('Message created as draft')
+        session.ui.notify('Message created as draft')
       return True
     else:
       return self._error('No message found')
@@ -835,128 +868,6 @@ class Mail(Command):
         self._ignore_exception()
 
     return True
-
-
-##[ Searching and browsing ]##################################################
-
-class Search(Command):
-  """Search your mail!"""
-  ORDER = ('Searching', 0)
-  SYNOPSIS = '<terms ...>'
-  def command(self, search=None):
-    session, config, idx = self.session, self.session.config, self._idx()
-    session.searched = search or []
-    num_results = config.get('num_results', None)
-
-    if self.args and self.args[0].startswith('@'):
-      try:
-        start = int(self.args.pop(0)[1:])-1
-      except ValueError:
-        raise UsageError('Weird starting point')
-    else:
-      start = 0
-
-    # FIXME: Is this dumb?
-    for arg in self.args:
-      if ':' in arg or (arg and arg[0] in ('-', '+')):
-        session.searched.append(arg.lower())
-      else:
-        session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
-
-    session.results = list(idx.search(session, session.searched))
-    idx.sort_results(session, session.results, how=session.order)
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   start=start,
-                                                   num=num_results)
-    return True
-
-
-class Next(Command):
-  """Display next page of results"""
-  ORDER = ('Searching', 1)
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    num_results = config.get('num_results', None)
-    pos, count = session.displayed
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   start=pos+count,
-                                                   num=num_results)
-    return True
-
-
-class Previous(Command):
-  """Display previous page of results"""
-  ORDER = ('Searching', 2)
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    num_results = config.get('num_results', None)
-    pos, count = session.displayed
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   end=pos,
-                                                   num=num_results)
-    return True
-
-
-class Order(Command):
-  """Sort by: date, from, subject, random or index"""
-  ORDER = ('Searching', 3)
-  SYNOPSIS = '<terms ...>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    num_results = config.get('num_results', None)
-    session.order = self.args and self.args[0] or None
-    idx.sort_results(session, session.results, how=session.order)
-    session.displayed = session.ui.display_results(idx, session.results,
-                                                   session.searched,
-                                                   num=num_results)
-    return True
-
-
-class View(Command):
-  """View one or more messages"""
-  ORDER = ('Searching', 4)
-  SYNOPSIS = '<[raw] m1 ...>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    if self.args and self.args[0].lower() == 'raw':
-      raw = self.args.pop(0)
-    else:
-      raw = False
-    emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-    if emails:
-      idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx for e in emails])
-      session.ui.clear()
-      session.ui.display_messages(emails, raw=raw)
-    return True
-
-
-class Extract(Command):
-  """Extract attachment(s) to file(s)"""
-  ORDER = ('Searching', 5)
-  SYNOPSIS = '<att msg [>fn]>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    cid = self.args.pop(0)
-    if len(self.args) > 0 and self.args[-1].startswith('>'):
-      name_fmt = self.args.pop(-1)[1:]
-    else:
-      name_fmt = None
-    emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-    for email in emails:
-      email.extract_attachment(session, cid, name_fmt=name_fmt)
-    return True
-
-
-class Delete(Command):
-  """Delete a message from the index"""
-  ORDER = ('Searching', 6)
-  SYNOPSIS = '<msg>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    raise Exception('Unimplemented')
 
 
 ##[ Configuration commands ]###################################################
@@ -1031,7 +942,7 @@ class GPG(Command):
       gpg = GnuPG().run(['--utf8-strings',
                          '--keyserver', keyserver,
                          '--recv-key', arg], create_fhs=['stderr'])
-      session.ui.say(gpg.handles['stderr'].read().decode('utf-8'))
+      session.ui.debug(gpg.handles['stderr'].read().decode('utf-8'))
       gpg.handles['stderr'].close()
       gpg.wait()
       session.ui.mark('Fetched key %s' % arg)
@@ -1110,9 +1021,30 @@ class Help(Command):
   ORDER = ('Config', 9)
   IS_HELP = True
   SYNOPSIS = "[command]"
+  ABOUT = 'This is Mailpile!'
 
   class CommandResult(Command.CommandResult):
-    def as_text(self):
+    def splash_as_text(self):
+      return '\n'.join([
+        self.result['splash'],
+        'The web interface is %s' % (self.result['http_url'] or 'disabled.'),
+        '',
+        'For instructions, type `help`, press <CTRL-D> to quit.',
+        ''
+      ])
+    def variables_as_text(self):
+      text = []
+      for group in self.result['variables']:
+        text.append(group['name'])
+        for var in group['variables']:
+          sep =  ('=' in var['type']) and ': ' or ' = '
+          text.append(('  %-35s %s'
+                       ) % ('%s%s<%s>' % (var['var'], sep,
+                                          var['type'].replace('=', '> = <')),
+                            var['desc']))
+        text.append('')
+      return '\n'.join(text)
+    def commands_as_text(self):
       text = ['Commands:']
       last_rank = None
       cmds = self.result['commands']
@@ -1145,6 +1077,15 @@ class Help(Command):
         ])
       return '\n'.join(text)
 
+    def as_text(self):
+      if not self.result:
+        return 'Error'
+      return ''.join([
+        ('splash' in self.result) and self.splash_as_text() or '',
+        ('variables' in self.result) and self.variables_as_text() or '',
+        ('commands' in self.result) and self.commands_as_text() or '',
+      ])
+
   def command(self):
     self.session.ui.reset_marks(quiet=True)
     if self.args:
@@ -1164,6 +1105,7 @@ class Help(Command):
             'width': len(name),
             'post': cls.EXAMPLES
           }
+      return self._error('Unknown command')
     else:
       cmd_list = {}
       count = 0
@@ -1181,16 +1123,44 @@ class Help(Command):
       }
 
   def help_vars(self):
-    self.session.ui.reset_marks(quiet=True)
-    self.session.ui.print_variable_help(self.session.config)
-    return True
+    config = self.session.config
+    result = []
+    for cat in config.CATEGORIES.keys():
+      variables = []
+      for what in config.INTS, config.STRINGS, config.DICTS:
+        for ii, i in what.iteritems():
+          variables.append({
+            'var': ii,
+            'type': i[0],
+            'desc': i[2]
+          })
+      variables.sort(key=lambda k: k['var'])
+      result.append({
+        'category': cat,
+        'name': config.CATEGORIES[cat][1],
+        'variables': variables
+      }) 
+    result.sort(key=lambda k: config.CATEGORIES[k['category']][0])
+    return {'variables': result}
+
+  def help_splash(self):
+    http_worker = self.session.config.http_worker
+    if http_worker:
+      http_url = 'http://%s:%s/' % http_worker.httpd.sspec
+    else:
+      http_url = ''
+    return {
+      'splash': self.ABOUT,
+      'http_url': http_url,
+    }
 
   def _starting(self): pass
-  def _finishing(self, rv):
-    return self.CommandResult(self.name, rv)
+  def _finishing(self, command, rv):
+    return self.CommandResult(self.name, rv, command.__doc__ or self.__doc__)
 
   SUBCOMMANDS = {
     'variables': (help_vars, ''),
+    'splash': (help_splash, ''),
   }
 
 
@@ -1219,8 +1189,8 @@ def Action(session, opt, arg, data=None):
 
   # Tags are commands
   elif opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
-    search = ['tag:%s' % config.get_tag_id(opt)[0]]
-    return Search(session, opt, arg=arg, data=data).run(search=search)
+    s = ['tag:%s' % config.get_tag_id(opt)[0]]
+    return COMMANDS['s:'][1](session, opt, arg=arg, data=data).run(search=s)
 
   # OK, give up!
   raise UsageError('Unknown command: %s' % opt)
@@ -1232,24 +1202,17 @@ COMMANDS = {
   'a:':     ('attach=',  Attach),
   'c:':     ('compose=', Compose),
   'C:':     ('contact=', Contact),
-  'd:':     ('delete=',  Delete),
-  'e:':     ('extract=', Extract),
   'f:':     ('forward=', Forward),
   'F:':     ('filter=',  Filter),
   'g:':     ('gpg',      GPG),
   'h':      ('help',     Help),
   'm:':     ('mail=',    Mail),
-  'n':      ('next',     Next),
-  'o:':     ('order=',   Order),
-  'p':      ('previous', Previous),
   'P:':     ('print=',   ConfigPrint),
   'r:':     ('reply=',   Reply),
-  's:':     ('search=',  Search),
   'S:':     ('set=',     ConfigSet),
   't:':     ('tag=',     Tag),
   'U:':     ('unset=',   ConfigUnset),
   'u:':     ('update=',  Update),
-  'v:':     ('view=',    View),
   '_setup': ('setup',    Setup),
   '_load':  ('load',     Load),
   '_optim': ('optimize', Optimize),

@@ -36,12 +36,8 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urlparse import parse_qs, urlparse
 import lxml.html
 
-# This is a hack..
-import mailpile.ui
 import mailpile.util
-mailpile.ui.ABOUT = ABOUT
-
-import mailpile.commands
+from mailpile.commands import COMMANDS, Action, Help, Load, Rescan
 from mailpile.vcard import SimpleVCard
 from mailpile.mailutils import *
 from mailpile.httpd import *
@@ -49,6 +45,7 @@ from mailpile.search import *
 from mailpile.ui import *
 from mailpile.util import *
 
+Help.ABOUT = ABOUT
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 
 
@@ -149,7 +146,8 @@ class Worker(threading.Thread):
           task()
       except Exception, e:
         self.session.ui.error('%s failed in %s: %s' % (name, self.NAME, e))
-        if session: session.report_task_failed(name)
+        if session:
+          session.report_task_failed(name)
 
   def pause(self, session):
     self.LOCK.acquire()
@@ -261,6 +259,26 @@ class ConfigManager(dict):
   def conffile(self):
     return os.path.join(self.workdir(), 'config.rc')
 
+  def key_string(self, key):
+    if ':' in key:
+      key, subkey = key.split(':', 1)
+    else:
+      subkey = None
+    if key in self:
+      if key in self.INTS:
+         return '%s = %s (int)' % (key, self.get(key))
+      else:
+        val = self.get(key)
+        if subkey:
+          if subkey in val:
+            return '%s:%s = %s' % (key, subkey, val[subkey])
+          else:
+            return '%s:%s is unset' % (key, subkey)
+        else:
+          return '%s = %s' % (key, self.get(key))
+    else:
+      return '%s is unset' % key
+
   def parse_unset(self, session, arg):
     key = arg.strip().lower()
     if key in self:
@@ -269,7 +287,7 @@ class ConfigManager(dict):
       key, subkey = key.split(':', 1)
       if key in self and subkey in self[key]:
         del self[key][subkey]
-    session.ui.print_key(key, self)
+    session.ui.notify(self.key_string(key))
     return True
 
   def parse_set(self, session, line):
@@ -293,7 +311,7 @@ class ConfigManager(dict):
       self[key][subkey.strip()] = val
     else:
       raise UsageError('Unknown key in config: %s' % key)
-    session.ui.print_key(key, self)
+    session.ui.notify(self.key_string(key))
     return True
 
   def parse_config(self, session, line):
@@ -578,8 +596,8 @@ class ConfigManager(dict):
       if rescan_interval:
         def rescan():
           if 'rescan' not in config.RUNNING:
-            rsc = mailpile.commands.Rescan(session, 'rescan')
-            rsc.SERIALIZE = False
+            rsc = Rescan(session, 'rescan')
+            rsc.serialize = False
             config.slow_worker.add_task(None, 'Rescan', rsc.run)
         config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
@@ -623,7 +641,7 @@ def Interact(session):
         else:
           arg = ''
         try:
-          Action(session, opt, arg)
+          session.ui.render_result(Action(session, opt, arg))
         except UsageError, e:
           session.error(str(e))
   except EOFError:
@@ -647,7 +665,7 @@ def Main(args):
     session = Session(config)
     session.config.load(session)
     session.main = True
-    session.ui = TextUI()
+    session.ui = UserInteraction()
   except AccessError, e:
     sys.stderr.write('Access denied: %s\n' % e)
     sys.exit(1)
@@ -657,9 +675,8 @@ def Main(args):
     config.prepare_workers(session)
 
     try:
-      shorta = ''.join([k for k in mailpile.commands.COMMANDS.keys()
-                        if not k[0] == '_'])
-      longa = [v[0] for v in mailpile.commands.COMMANDS.values()]
+      shorta = ''.join([k for k in COMMANDS.keys() if not k[0] == '_'])
+      longa = [v[0] for v in COMMANDS.values()]
       opts, args = getopt.getopt(args, shorta, longa)
       for opt, arg in opts:
         Action(session, opt.replace('-', ''), arg)
@@ -672,9 +689,9 @@ def Main(args):
     if not opts and not args:
       # Create and start the rest of the threads, load the index.
       config.prepare_workers(session, daemons=True)
-      mailpile.commands.Load(session, '').run(quiet=True)
+      Load(session, '').run(quiet=True)
+      session.ui.render_result(Help(session, 'Help', ['splash']).run())
       session.interactive = session.ui.interactive = True
-      session.ui.print_intro(help=True, http_worker=config.http_worker)
       Interact(session)
 
   except KeyboardInterrupt:

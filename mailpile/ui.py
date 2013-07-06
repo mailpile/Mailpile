@@ -22,8 +22,6 @@ from mailpile.util import *
 from mailpile.search import MailIndex
 from lxml.html.clean import autolink_html
 
-ABOUT = "This is Mailpile!"  # This usually gets overwritten by app.py
-
 
 class SuppressHtmlOutput(Exception):
   pass
@@ -32,25 +30,35 @@ class SuppressHtmlOutput(Exception):
 class UserInteraction:
   """Log the progress and performance of individual operations"""
   MAX_BUFFER_LEN = 150
+  MAX_WIDTH = 79
 
-  LOG_URGENT  =  0
-  LOG_RESULT  =  5
-  LOG_ERROR   = 10
-  LOG_NOTIFY  = 20
-  LOG_WARNING = 30
-  LOG_DEBUG   = 40
-  LOG_ALL     = 99
+  LOG_URGENT   =  0
+  LOG_RESULT   =  5
+  LOG_ERROR    = 10
+  LOG_NOTIFY   = 20
+  LOG_WARNING  = 30
+  LOG_PROGRESS = 40
+  LOG_DEBUG    = 50
+  LOG_ALL      = 99
 
   def __init__(self, log_parent=None):
-    self.log_parent = parent
+    self.log_parent = log_parent
     self.log_buffer = []
     self.log_buffering = False
     self.log_level = self.LOG_ALL
     self.interactive = False
     self.time_tracking = [('Main', [])]
+    self.last_display = [self.LOG_PROGRESS, 0]
 
-  def display(self, text):
-    sys.stdout.write('%s' % text.encode('utf-8'))
+  def display(self, text, level=LOG_URGENT):
+    pad = ''
+    if self.last_display[0] in (self.LOG_PROGRESS, ):
+      pad = ' ' * max(0, min(self.MAX_WIDTH, self.MAX_WIDTH-len(text)))
+      sys.stderr.write('\r')
+    elif self.last_display[0] not in (self.LOG_RESULT, ):
+      sys.stderr.write('\n')
+    sys.stderr.write('%s%s' % (text.encode('utf-8'), pad))
+    self.last_display = [level, len(text)]
 
   # Logging
   def clear_log(self):
@@ -60,28 +68,39 @@ class UserInteraction:
       while len(self.log_buffer) > 0:
         level, message = self.log_buffer.pop(0)
         if level <= self.log_level:
-          self.display(message)
+          self.display(message, level)
     except IndexError:
       pass
   def block(self):
-    self.buffering = True
+    self.display('')
+    self.log_buffering = True
   def unblock(self):
-    self.buffering = False
-    self.flush()
+    self.log_buffering = False
+    self.last_display = [self.LOG_RESULT, 0]
+    self.flush_log()
   def log(self, level, message):
-    if self.buffering:
+    if self.log_buffering:
       self.log_buffer.append((level, message))
       while len(self.log_buffer) > self.MAX_BUFFER_LEN:
         self.log_buffer[0:(self.MAX_BUFFER_LEN/10)] = []
     elif level <= self.log_level:
-      self.display(message)
+      self.display(message, level)
+  def finish_command(self):
+    pass
+  def start_command(self):
+    pass
+
+  error = lambda self, msg: self.log(self.LOG_ERROR, msg)
+  notify = lambda self, msg: self.log(self.LOG_NOTIFY, msg)
+  warning = lambda self, msg: self.log(self.LOG_WARNING, msg)
+  progress = lambda self, msg: self.log(self.LOG_PROGRESS, msg)
+  debug = lambda self, msg: self.log(self.LOG_DEBUG, msg)
 
   # Progress indication and performance tracking
-  times = property(lambda: self.time_tracking[0][1])
+  times = property(lambda self: self.time_tracking[0][1])
   def mark(self, action, percent=None):
     """Note that we are about to perform an action."""
-    self.say('  %s%s\r' % (action, ' ' * (self.WIDTH-3-len(progress))),
-             newline='', fd=sys.stderr)
+    self.progress(action)
     self.times.append((time.time(), action))
   def reset_marks(self, quiet=False):
     """This sequence of actions is complete."""
@@ -90,8 +109,7 @@ class UserInteraction:
     if t:
       elapsed = t[-1][0] - t[0][0]
       if not quiet:
-        result = 'Elapsed: %.3fs (%s)' % (elapsed, t[-1][1])
-        self.say('%s%s' % (result, ' ' * (self.WIDTH-1-len(result))))
+        self.notify('Elapsed: %.3fs (%s)' % (elapsed, t[-1][1]))
       return elapsed
     else:
       return 0
@@ -106,9 +124,16 @@ class UserInteraction:
       self.mark('Completed %s in %.3fs' % (subtask, elapsed))
     return elapsed
 
+  # Higher level command-related methods
+  def start_command(self, cmd, args, kwargs):
+    self.flush_log()
+    self.mark('%s(%s)' % (cmd, ', '.join((args or []) + ['%s' % kwargs])))
+  def finish_command(self):
+    self.reset_marks()
   def render_result(self, result):
     """Render command result objects to the user"""
-    self.log(self.LOG_RESULT, unicode(result))
+    self.display('', level=self.LOG_RESULT)
+    sys.stdout.write(unicode(result)+'\n')
 
 
 class BaseUI(object):
@@ -167,79 +192,6 @@ class BaseUI(object):
     self.say('Warning: %s%s' % (message, ' ' * (self.WIDTH-11-len(message))))
   def error(self, message):
     self.say('Error: %s%s' % (message, ' ' * (self.WIDTH-9-len(message))))
-
-  def print_intro(self, help=False, http_worker=None):
-    if http_worker:
-      http_status = 'on: http://%s:%s/' % http_worker.httpd.sspec
-    else:
-      http_status = 'disabled.'
-    self.say('\n'.join([ABOUT,
-                        'The web interface is %s' % http_status,
-                        '',
-                        'For instructions type `help`, press <CTRL-D> to quit.',
-                        '']))
-
-  def print_tags(self, tags, index):
-    tkeys = tags.keys()
-    tkeys.sort(key=lambda k: tags[k])
-    wrap = int(self.WIDTH / 23)
-    for i in range(0, len(tkeys)):
-      tid = tkeys[i]
-      self.say(('%s%5.5s %-18.18s'
-                ) % ((i%wrap) == 0 and '  ' or '',
-                     '%s' % (int(index.STATS.get(tid, [0, 0])[1]) or ''),
-                     tags[tid]),
-               newline=(i%wrap)==(wrap-1) and '\n' or '')
-    self.say('')
-
-  def print_help(self, commands, pre=None, post=None, width=8,
-                                 tags=None, index=None):
-    if pre:
-      self.say(pre+'\n')
-    self.say('Commands:')
-    last_rank = None
-    cmds = commands.keys()
-    cmds.sort(key=lambda k: commands[k][3])
-    for c in cmds:
-      cmd, args, explanation, rank = commands[c]
-      if not rank: continue
-
-      if last_rank and int(rank/10) != last_rank: self.say()
-      last_rank = int(rank/10)
-
-      if c[0] == '_':
-        c = '  '
-      else:
-        c = '%s|' % c[0]
-      fmt = '    %%s%%-%d.%ds' % (width, width)
-      if explanation:
-        fmt += ' %-15.15s %s'
-      else:
-        fmt += ' %s %s '
-      self.say(fmt % (c, cmd.replace('=', ''),
-                      args and ('%s' % args) or '',
-                      (explanation.splitlines() or [''])[0]))
-    if tags and index:
-      self.say('\nTags:  (use a tag as a command to display tagged messages)',
-               '\n')
-      self.print_tags(tags, index)
-    self.say((post or ''))
-
-  def print_variable_help(self, config):
-    cats = config.CATEGORIES.keys()
-    cats.sort(key=lambda k: config.CATEGORIES[k])
-    for cat in cats:
-      self.say('%s' % config.CATEGORIES[cat][1])
-      vhelp = []
-      for what in config.INTS, config.STRINGS, config.DICTS:
-        for ii, i in what.iteritems():
-          if i[1] == cat:
-            sep = ('=' in i[0]) and ': ' or ' = '
-            vhelp.append('  %-35s %s' % ('%s%s<%s>' % (ii, sep,
-                                             i[0].replace('=', '> = <')), i[2]))
-      for l in sorted(vhelp):
-        self.say(l)
-      self.say('')
 
   def print_filters(self, config):
     w = int(self.WIDTH * 23/80)
@@ -374,27 +326,6 @@ class TextUI(BaseUI):
   def __init__(self):
     BaseUI.__init__(self)
     self.times = []
-
-  def print_key(self, key, config):
-    if ':' in key:
-      key, subkey = key.split(':', 1)
-    else:
-      subkey = None
-
-    if key in config:
-      if key in config.INTS:
-        self.say('%s = %s (int)' % (key, config.get(key)))
-      else:
-        val = config.get(key)
-        if subkey:
-          if subkey in val:
-            self.say('%s:%s = %s' % (key, subkey, val[subkey]))
-          else:
-            self.say('%s:%s is unset' % (key, subkey))
-        else:
-          self.say('%s = %s' % (key, config.get(key)))
-    else:
-      self.say('%s is unset' % key)
 
   def reset_marks(self, quiet=False):
     t = self.times
@@ -1073,12 +1004,11 @@ class HtmlUI(HttpUI):
 
 class Session(object):
 
-  main = False
-  interactive = False
-  order = None
-
   def __init__(self, config):
     self.config = config
+    self.interactive = False
+    self.main = False
+    self.order = None
     self.wait_lock = threading.Condition()
     self.results = []
     self.searched = []

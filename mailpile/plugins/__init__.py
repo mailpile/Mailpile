@@ -1,7 +1,9 @@
 # Plugins!
 
+import mailpile.commands
+
 # These are the plugins we import by default
-__all__ = ['groups', 'dates']
+__all__ = ['search', 'groups', 'dates']
 
 class PluginError(Exception):
   pass
@@ -46,10 +48,8 @@ def register_search_term(term, function):
 
 ##[ Pluggable commands ]##################################################
 
-COMMANDS = {}
-
 def register_command(shortname, longname, cls):
-  global COMMANDS
+  COMMANDS = mailpile.commands.COMMANDS
   if shortname in COMMANDS or shortname.replace(':', '') in COMMANDS:
     raise PluginError('Already registered: %s' % shortname)
   COMMANDS[shortname] = (longname, cls)
