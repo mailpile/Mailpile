@@ -1,0 +1,265 @@
+/* Colors */
+
+	@white: #FFFFFF;
+	@black: #333333;
+	@grayLight: #F2F2F2;
+	@gray: #B3B3B3;
+	@grayDark: #4D4D4D;
+	@blue: #3a6b8c;	
+	@brown: #826f69;
+	@yellow: #d4b34e;
+	@green: #4b7945;
+	@orange: #FBB03B;
+	@orangeRed: #F15A24;
+	@red: #BE2408;
+
+
+
+/* Container */
+
+	@desktop-max-container-width: 1140px;
+	@desktop-container-width: 960px;
+	@tablet-container-width: 768px;
+	@mobile-container-width: 420px;
+
+
+
+/* Base - Margins, Paddings, and Spacings */
+
+	@base-line-height: 20px;
+	@base-margin: 20px;
+	@base-margin-bottom: @base-margin * 1.5;
+	@base-padding: 20px;
+	@base-border-radius: 4px;
+
+
+
+/* Grid */
+
+	@grid-gutter: 20px;
+	@column-count: 16;
+
+	@tablet-column-width: 100%;	
+	@mobile-column-width: 100%;
+
+
+
+/* Body */
+
+	@body-background-color: #ffffff;
+	@body-background-image: ~'';
+	@body-background-repeat: ~'';
+	@body-background-position: ~'';
+
+
+
+/* Text */
+
+	@text-font-size: 18px;
+	@text-font-weight: normal;
+	@text-font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-italic: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-semibold: Museo-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-bold: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-line-height: 24px;
+	@text-color: #333333;
+	@text-color-light: #999999;
+
+	@em-font-style: @text-font-family-italic;
+
+	@strong-font-family: @text-font-family-bold;
+	@strong-font-weight: normal;
+	@strong-color: inherit;
+
+	@text-shadow-on-light: 1px 1px 1px #888888;
+	@text-shadow-on-dark: 0 -1px 0 rgba(0, 0, 0, 0.4);
+
+
+
+/* Links */
+	
+	@link-font-size: 18px;
+	@link-font-wieght: bold;
+	@link-color: @red;
+	@link-color-hover: darken(@red, 10%);
+	@link-decoration: none;
+	@link-decoration-hover: none;
+	
+
+
+/* Headings */
+
+	@headings-color: #333333;
+	@headings-font-family: @text-font-family-bold;
+	@headings-font-weight: normal;
+	@headings-letter-spacing: 0px;
+	@headings-size-h1: 36px;
+	@headings-size-h2: 30px;
+	@headings-size-h3: 24px;
+	@headings-size-h4: 21px;
+	@headings-size-h5: 18px;
+	@headings-size-h6: 14px;
+
+
+
+/* Navigation */
+
+	@navigation-background: #222222;
+	@navigation-text: #EEEEEE;
+	@navigation-text-hover: #AAAAAA;
+	@navigation-text-dark: #818181;
+	@navigation-elements: #AAAAAA;
+	@navigation-shadows: #EEEEEE;
+	
+	@navigation-sub-background: #d9d9d9;
+	@navigation-sub-text: #EEEEEE;
+	@navigation-sub-text-hover: #AAAAAA;
+	@navigation-sub-text-dark: #818181;
+	@navigation-sub-elements: #AAAAAA;
+	@navigation-sub-shadows: #EEEEEE;
+
+
+
+/* Lists */
+
+	@list-margin: ~'';
+	@list-padding: ~'';
+	@list-item-margin: ~'';
+	@list-item-padding: ~'';
+	@list-item-type: ~'';
+
+
+
+/* Separators */
+
+	@blockquote-font-size: 18px;
+	@blockquote-font-style: italic;
+	@blockquote-line-height: 24px;
+	@blockquote-color: #666666;
+	
+	@hr-border-type: solid;
+	@hr-border-color: @gray;
+	@hr-border-width: 1px 0 0;
+	@hr-border-margin: 35px 0;
+
+	
+
+/* Buttons */
+
+	.button-globals(@color: #eeeeee, @shadow: 1px 1px 1px #333333) {
+
+		// Font
+		color: @color !important;
+		font-family: @text-font-family-semibold !important;	
+		font-size: 16px;
+		font-weight: normal !important;
+		line-height: normal;
+		text-shadow: @shadow; 		
+		text-decoration: none;
+
+		// Display
+		padding: 8px 15px 4px 12px;
+		display: inline-block;
+		cursor: pointer;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+
+		// Select
+	    -webkit-user-select:none;
+	    -moz-user-select:none;
+	    -ms-user-select:none;
+	    user-select:none;
+	    
+	    // Animate
+	    -webkit-transition-duration: 0.2s;
+	    -moz-transition-duration: 0.2s;
+	    transition-duration: 0.2s;	    
+	}
+
+	.button-border(@border-color) {
+
+		border: 1px solid @border-color, ;
+		border-top: 1px solid (@border-color + #222222);
+		border-left: 1px solid (@border-color + #222222);
+
+		-moz-border-radius: 4px;
+		-webkit-border-radius: 4px;
+		border-radius: 4px;
+	}
+
+	.button-background(@color-top: #666666, @color-bottom: #333333) {
+
+	    background: @color-top;
+	}
+
+	@button-primary-top: @blue;
+	@button-primary-top-hover: darken(@button-primary-top, 12%);
+	@button-primary-bottom: @blue;
+	@button-primary-bottom-hover: darken(@button-primary-bottom, 12%);
+	@button-primary-color: @white;
+	@button-primary-shadow: @text-shadow-on-dark;
+	@button-primary-border: @blue;
+	@button-primary-border-hover: @blue;
+	
+	@button-secondary-top: @green;
+	@button-secondary-top-hover: darken(@button-secondary-top, 20%);
+	@button-secondary-bottom: @green;
+	@button-secondary-bottom-hover: darken(@button-secondary-bottom, 20%);
+	@button-secondary-color: @white;
+	@button-secondary-shadow: @text-shadow-on-dark;
+	@button-secondary-border: #7ba2a7;
+	@button-secondary-border-hover: @blue;
+
+	@button-alert-top: @brown;
+	@button-alert-top-hover: darken(@button-alert-top, 20%);
+	@button-alert-bottom: @brown;
+	@button-alert-bottom-hover: darken(@button-alert-bottom, 20%);
+	@button-alert-color: @white;
+	@button-alert-shadow: @text-shadow-on-dark;
+	@button-alert-border: #8596b3;
+	@button-alert-border-hover: @blue;
+
+	@button-warning-top: @red;
+	@button-warning-top-hover: darken(@button-warning-top, 20%);
+	@button-warning-bottom: @red;
+	@button-warning-bottom-hover: darken(@button-warning-bottom, 20%);
+	@button-warning-color: @white;
+	@button-warning-shadow: @text-shadow-on-dark;
+	@button-warning-border: #713c2a;
+	@button-warning-border-hover: @blue;
+
+
+
+/* Forms */
+
+	@form-elements-background: #FFFFFF;
+	@form-elements-color: #666666;
+	@form-elements-color-focus: #333333;
+	@form-elements-font-size: 18px;
+	@form-elements-font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+	@form-border-size: 1px;
+	@form-border-color: #999999;
+	@form-border-radius: 4px;
+	@form-border-color-focus: #666666;
+
+	@form-select-color: @blue;
+	@form-label-color: @blue;
+
+
+
+/* Tables */
+
+	@table-background-color: @green;
+	@table-background-color-striped: #FEFEFE;
+
+	@table-margins: @base-line-height;	
+	@table-padding: 15px;
+	
+	@table-border: 1px solid @green;
+	@table-border-radius: 5px;
+
+	@table-td-border-top: 1px solid @green;
+	@table-line-height: 18px;
+

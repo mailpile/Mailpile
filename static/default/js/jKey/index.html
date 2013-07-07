@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>jKey Samples</title>
+    <style>
+      @import url(http://fonts.googleapis.com/css?family=Ubuntu&v2);
+    
+      /* Set HTML5 block elements block for FF <4 */
+      article, section, nav {display:block}
+    
+      /* Base styles */
+      body {margin:0;border-top:20px solid #ccc;padding:10px;font-family:'Ubuntu',serif;}
+      kbd {
+        background:#eee;
+        border-color:#ccc #aaa #888 #bbb;
+        border-width:2px 4px 5px 3px;
+        border-style:solid;
+        color:#000;
+        padding:3px 2px;
+        white-space:nowrap;
+        display:inline-block;
+        min-width:25px;
+        text-align:center;
+        -webkit-box-shadow:rgba(0,0,0,0.5) 0 0 5px;
+        -moz-box-shadow:rgba(0,0,0,0.5) 0 0 5px;
+        box-shadow:rgba(0,0,0,0.5) 0 0 5px;
+        position:relative;
+        font-family:helvetica,arial,sans-serif;
+        text-shadow:none;
+      }
+      kbd:hover {-webkit-box-shadow:rgba(0,0,0,0.75) 0 0 5px;top:1px;}
+      header {}
+      sup {font-size:12px;position:relative;top:-10px;left:-10px;}
+      h1 {font-size:54px;font-weight:bold;color:#3987C6;margin:0 0 5px 0;}
+      h2 {font-size:24px;font-style:italic;margin:0 0 25px 0;}
+      h3 {font-size:18px;}
+      p {line-height:1.5em;padding:12px 0;}
+      pre {
+        font-family:courier,monospace;
+        border:1px solid #999;
+        background:#ddd;
+        font-size:12px;
+        padding:10px;
+        line-height:16px;
+        color:#000;
+      }
+      
+      
+      #wrapper {margin:0 auto;width:500px;padding:0 0 130px 0;}
+    
+      #key-support-list li{padding:10px 0}
+    
+      #console {
+        position:fixed;
+        bottom:0;
+        left:0;
+        background:hsla(0,100%,100%,1);
+        height:125px;
+        width:100%;
+        border-top:1px solid #ccc;
+        overflow:auto;
+        font-size:12px;
+      }
+      #console ol {margin:0;padding:0;}
+      #console li {
+        list-style:none;
+        padding:8px;
+        border-bottom:1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <header>
+        <h1>jKey <sup>Beta 1.2</sup></h1>
+        <h2>Key shortcuts made simple</h2>
+        <h3>Downloads</h3>
+        <a href="http://oscargodson.com/labs/jkey/jquery.jkey-1.2.js">Download 1.2</a>
+        <h3>Examples</h3>
+        <p>All examples below are running right now on this page, so to demo them just press the keys mentioned and they'll display in the little jKey console below. To clear the console press <kbd>alt</kbd> + <kbd>shift</kbd> + <kbd>c</kbd></p>
+      </header>
+      <article>
+        <h4>Example 1 - Basic Usage</h4>
+        <p>Below is the most basic usage. Press the <kbd>a</kbd> key to give you an alert. Code below:</p>
+        <pre>
+$(document).jkey('a',function(){
+  jkey.log('You pressed the a key.');
+});</pre>
+        <h5>Example 1A - Selecting An Element</h5>
+        <p>jKey works with jQuery, so you can select any applicable element to set a key command to. Basically, any element that can be focused on such as an input or textarea can have a key command applied to it. Example:</p>
+        <p>
+        <strong>Type the letter <kbd>i</kbd> inside the box</strong><br>
+        <input id="example1a" type="text">
+        </p>
+        <pre>
+$('#example1a').jkey('i',function(){
+  jkey.log('You pressed the i key inside of an input.');
+});</pre>
+        
+        <h5>Example 1B - Comboing Anything!</h5>
+        <p>Unlike OS key shortcuts, jKey allows you to combo just about any key supported by jKey. For example:</p>
+        <pre>
+$(document).jkey('y+u',function(){
+  jkey.log('You pressed y and u!');
+});</pre>
+        <p>Please see the <a href="#key-support">key support</a> section below to see what's supported by jKey.</p>
+        <h4>Example 2 - Key Combos</h4>
+        <pre>
+$(document).jkey('alt+d',function(){
+  jkey.log('Congrats, you did a key combo: alt+d');
+});</pre>
+        <h5>Example 2A - Chaining Key Combos</h5>
+        <p>With jKey you can intuitively connect more than just two keys for a combo. For example:</p>
+        <pre>
+$(document).jkey('alt+shift+s',function(){
+  jkey.log('Congrats, you did a key combo: alt+shift+s');
+});</pre>
+        <h4>Example 3 - Multiple Selections</h4>
+        <p>You can also do multiple selections. You can select multiple keys just as you'd select multiple elements in CSS or jQuery. Useful for trying to catch user intent, e.g. doing <kbd>w</kbd> and <kbd>&uarr;</kbd>, so a user can move a character in a game forward with either key like many computer games.</p>
+        <pre>
+$(document).jkey('w, up',function(){
+  jkey.log('You pressed either w, or up!');
+});</pre>
+        <h4>Example 4 - Grabbing the Keys Pressed in the Callback</h4>
+        <p>Sometimes when working with key shortcuts you want to have similar, but different, events fire when certain keys are pressed. For example, you want to have a sliding animation happen when the user presses <kbd>&larr;</kbd> or <kbd>&rarr;</kbd>. The funcationality is basically the same, speed, animation, tween, AJAX event maybe, etc. However, you're a good developer and you want to keep things <a href="http://en.wikipedia.org/wiki/Don't_repeat_yourself" title="Don't Repeat Yourself">DRY</a>. Thanks to jKey this is simple:</p>
+        <pre>
+$(document).jkey('left, right',function(key){
+  var direction;
+  if(key == 'left'){
+    direction = 'left';
+  }
+  else{
+    direction = 'right';
+  }
+  jkey.log(direction);
+});</pre>
+        
+        
+        <h4>Example 5 - Allowing Bubbling of Events</h4>
+        <p>There might be times when you don't want to prevent keys from bubbling such as the <kbd>up</kbd> or <kbd>down</kbd> keys. By default, jKey will prevent bubbling so that you don't manually have to as <strong>most</strong> of the time when using jKey you don't want it to bubble and make the page go haywire. However, when you do want it to it's just a simple boolean value you set like so:</p>
+        <p>
+            <strong>Try typing <kbd>g</kbd></strong><br>
+            <input id="example5_1" type="text"><br>
+            <br><strong>Now, try typing <kbd>h</kbd></strong><br>
+            <input id="example5_2" type="text">
+        </p>
+        <pre>
+$('#example5_1').jkey('g',function(key){
+  jkey.log('Blocked from typing g!');
+});
+
+$('#example5_2').jkey('h',true,function(key){
+  jkey.log('Allowed to bubble h!');
+});</pre>
+        
+        <h4 id="key-support">Key Support</h4>
+        <ul id="key-support-list">
+          <li>a-z</li>
+          <li>0-9</li>
+          <li>f1-f12</li>
+          <li>left, down, up, right</li>
+          <li>esc/escape, insert, delete, home, end, pgup/pageup, pgdn/pagedown, fn/function[3]</li>
+          <li>ctrl/control, alt, shift, backspace/osxdelete[1], enter/return[2], super/windows, capslk/capslock, tab, space/spacebar</li>
+          <li>`, ~, -, _, =, +, [, {, ], }, \, |, ;, :, ', ", ,, &lt;, ., &gt, /, ?</li>
+        </ul>
+        
+        <p>If we're missing something, let us know in the bug reporter on our <a href="https://github.com/OscarGodson/jKey">Github page</a>.</p>
+
+        <p>[1] - This is the Mac version of the <kbd>&larr; backspace</kbd> button. Calling either should work across OSs. Due to conflicts with normal western keyboards, we went with "osxdelete". We suggest just using the <kbd>&larr; backspace</kbd>.</p>
+        
+        <p>[2] - This is the Mac version of the <kbd>&crarr; enter</kbd> key. Calling either should work across OSs.</p>
+        
+        <p>[3] - This will NOT work in Mac OS X. It does not send a key event to the browser. Silly Apple.</p>
+        
+        <h4>Important Notes!</h4>
+        <h5>IE Doesn't Like <code>$(window)</code></h5>
+        <p>This isn't jKey's fault. IE doesn't allow you to attach key events to the window. jKey will try to fix it for you if you do it by accident though. If you want to attach a key event to the document/window use <code>$(document)</code> instead.</p>
+        
+        <h5>Don't nest your key commands (for now)</h5>
+        <p>What we mean by this is, as of now, jKey can handle key commands like:
+        <kbd>alt</kbd> + <kbd>a</kbd> and <kbd>alt</kbd> + <kbd>shift</kbd> + <kbd>a</kbd> in the same document, but when you go to do the 2nd one that includes <kbd>shift</kbd>, it'll run the 1st event as well. This is <em>most likely</em> not what you want.</p>
+        
+        <h5>Special characters that have the share the same physical key, get the same key code</h5>
+        <p>For example, you can call : OR ;, [ OR {, etc. They are the same key to jKey.</p>
+        
+        <h5>Function key will NOT work on Mac OS X</h5>
+        <p>There is nothing jKey can do about this. OS X doesn't send a key code back to the browser. Sorry!</p>
+      </article>
+    </div>
+    <div id="console">
+      <ol></ol>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+    <script src="jquery.jkey.js"></script>
+    <script>
+    
+      /**
+      * Example 1
+      * @returns {jkey.console} Will log the string provided
+      */
+      $(document).jkey('a',function(){
+        jkey.log('You pressed the a key.');
+      });
+      
+      /**
+      * Example 1A
+      * @returns {jkey.console} Will log the string provided
+      */
+      $('#example1a').jkey('i',function(){
+        jkey.log('You pressed the i key inside of an input.');
+      });
+      
+      /**
+      * Example 1B
+      * @returns {jkey.console} Will log the string provided
+      */
+      $(document).jkey('y+u',function(){
+        jkey.log('You pressed y and u!');
+      });
+
+      /**
+      * Example 2
+      * @returns {jkey.console} Will log the string provided
+      */
+      $(document).jkey('alt+d',function(){
+        jkey.log('Congrats, you did a key combo: alt+d');
+      });
+      
+      /**
+      * Example 2A
+      * @returns {jkey.console} Will log the string provided
+      */
+      $(document).jkey('alt+shift+s',function(){
+        jkey.log('Congrats, you did a key combo: alt+shift+s');
+      });
+      
+      /**
+      * Example 3
+      * @returns {jkey.console} Will log the string provided
+      */
+      $(document).jkey('w, up',true,function(){
+        jkey.log('You pressed either w, or up!');
+      });
+      
+      /**
+      * Example 4
+      * @param key {string} The key that was pressed
+      * @returns {jkey.console} Will log the string provided
+      */
+      $(document).jkey('left, right',function(key){
+        var direction;
+        if(key == 'left'){
+          direction = 'left';
+        }
+        else{
+          direction = 'right';
+        }
+        jkey.log(direction);
+      });
+      
+      
+      /**
+      * Example 5
+      * @param key {string} The key that was pressed
+      * @param preventDefault {boolean} Want to let the event bubble up?
+      * @returns {jkey.console} Will log the string provided
+      */
+      $('#example5_1').jkey('g',function(key){
+        jkey.log('Blocked from typing g!');
+      });
+      
+      $('#example5_2').jkey('h',true,function(key){
+        jkey.log('Allowed to bubble h!');
+      });
+      
+      //Clear's the console.
+      $(document).jkey('alt+shift+c',function(){
+        jkey.clear();
+      });
+      
+      /**
+       * jkey.console is a quick and dirty solution to adding a cross browser "console"
+       * use like jkey.console('your message here!');
+       */
+      $console = $('#console');
+      jkey = {
+        log:function(msg){
+          $console.find('ol').append('<li>'+msg+'</li>');
+          $console.scrollTop($console.find('ol').height());
+        },
+        clear:function(){
+          $console.find('ol').empty();
+        }
+      }
+      
+      //Welcome message!
+      jkey.log('Welcome to the jKey plugin documentation. Here is where you will get logs from the examples above. To clear the console press alt+shift+c. Have fun!');
+      
+    </script>
+  </body>
+</html>
