@@ -3886,7 +3886,8 @@ p.lead {
 em {
   font-style: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-strong {
+strong,
+b {
   font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: inherit;
@@ -5218,6 +5219,8 @@ label span.form_error {
   top: 10px;
   left: 15px;
   line-height: 36px;
+  color: #4d4d4d;
+  font-weight: normal;
 }
 #header h1 small {
   font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -5240,6 +5243,7 @@ label span.form_error {
 #header nav a {
   font-size: 14px;
   font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
   color: #4d4d4d;
 }
 #header nav a:hover {
@@ -5252,25 +5256,35 @@ label span.form_error {
 /* Container */
 #container {
   width: 100%;
-  min-width: 700px;
-  height: 100%;
+  min-width: 800px;
+  padding: 0;
+  margin: 0;
 }
 /* Sidebar */
-.sidebar-wrapper {
-  width: 25%;
-  max-width: 275px;
-  min-width: 190px;
-  float: left;
-}
 #sidebar {
+  width: 25%;
+  min-width: 200px;
   height: 100%;
+  display: inline-block;
+  float: left;
   background: #f2f2f2;
   border-right: 1px solid #b3b3b3;
   box-sizing: border-box;
+  margin: 0;
+  padding: 0px;
+  border-spacing: 0px;
+  line-height: 18px;
 }
 #sidebar a {
   font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 18px;
+  color: #4d4d4d;
+}
+#sidebar a:hover {
+  color: #456479;
+}
+#sidebar a:active {
+  color: #be2408;
 }
 #sidebar a span {
   position: relative;
@@ -5279,49 +5293,61 @@ label span.form_error {
   font-size: 24px;
   margin-right: 4px;
 }
-#sidebar nav {
-  margin: 20px;
-}
 #sidebar nav ul li {
-  margin: 20px 0;
+  margin: 0 0 20px 0;
+}
+#button-compose span.icon-compose {
+  position: relative;
+  top: 15px;
+  left: 0px;
 }
 #button-compose small {
   display: block;
   font-size: 12px;
+  line-height: 12px;
   color: #b3b3b3;
-}
-#sidebar_btns,
-.tag_list {
-  display: none;
+  position: relative;
+  top: 5px;
+  left: 35px;
 }
 /* Content */#content {
   width: 75%;
-  min-width: 510px;
-  float: right;
+  min-width: 600px;
+  float: left;
+  display: inline-block;
+  box-sizing: border-box;
+  border-spacing: 10px;
 }
 #content div.pile-speed {
   text-align: center;
   font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #b3b3b3;
 }
+#content div.pile-speed span {
+  font-size: 24px;
+  margin-right: 10px;
+  position: relative;
+  top: 3px;
+  left: 0px;
+}
 /* Sub Navigation */
 #sub-navigation {
   width: 100%;
   min-width: 450px;
-  height: 62px;
   float: right;
+  display: block;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
   box-sizing: border-box;
+  padding: 15px 0 15px 15px;
 }
 #sub-navigation ul {
-  position: relative;
-  top: 15px;
+  display: block;
 }
 #sub-navigation li {
   display: inline-block;
   float: left;
-  margin-left: 20px;
+  margin-right: 20px;
   text-align: center;
 }
 #sub-navigation a {
@@ -5358,19 +5384,30 @@ label span.form_error {
   box-sizing: padding-box;
 }
 #search span.icon-search {
-  float: left;
+  position: relative;
+  top: 6px;
+  left: 0px;
+  display: inline-block;
   font-size: 24px;
   color: #4d4d4d;
 }
 #search input[type=text] {
   width: 75%;
-  float: left;
+  display: inline-block;
   border: 0px;
   outline: none;
   font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 24px;
+  color: #4d4d4d;
+  padding: 0px;
+}
+#search input[type=text]:placeholder {
   color: #b3b3b3;
 }
 #search input[type=text]:focus {
+  -moz-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   outline: none;
   color: #4d4d4d;
 }
@@ -5404,6 +5441,38 @@ label span.form_error {
 #bulk-actions a:hover {
   color: #be2408;
 }
+#bulk-actions a span {
+  position: relative;
+  top: 2px;
+  left: 0px;
+}
+/* Pile */
+#pile-results {
+  width: 100%;
+}
+#pile-results tr:hover {
+  background: #f7f1de;
+}
+#pile-results tr td {
+  padding: 10px;
+  border-spacing: 0px;
+  border-bottom: 1px solid #b3b3b3;
+  font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+#pile-results td.from {
+  padding-left: 15px;
+}
+#pile-results td.subject {
+  width: ;
+  overflow: hidden;
+}
+#pile-results tr td a {
+  font-size: 14px;
+}
+#pile-actions {
+  margin: 15px;
+}
 /* Footer */
 #footer {
   margin: 20px 0;
@@ -5415,5 +5484,22 @@ label span.form_error {
 }
 /* File Browser */
 .item-file {
+  width: 150px;
+  float: left;
+  margin: 25px 25px;
+  padding: 20px;
+  text-align: center;
+}
+.item-file:hover {
+  background: #f2f2f2;
+}
+.item-file-icon {
+  display: block;
   font-size: 125px;
+  margin-bottom: 10px;
+}
+.item-file-name {
+  font-size: 14px;
+  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 14px;
 }

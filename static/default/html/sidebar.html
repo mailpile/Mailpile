@@ -1,22 +1,14 @@
 		</form>
-		
 		<div class="pile-speed">
 			<span class="icon-speed"></span><strong>5 Messages</strong> in <strong>0.01 seconds</strong>, vroom!
-		</div>
-		
+		</div>	
 	</div>
-	
-	<div class="sidebar-wrapper">
-	
-	<div id='sidebar'>
 
-		<a class="button-primary" id="button-compose" onclick="compose();return false;" href="/_/compose">
-			<span class="icon-compose"></span>Compose <small>4 Drafts</small>
-		</a>
-
+	<div id="sidebar">
 		<nav>
 			<ul>
-				<li><a href="#" class=""><span class="icon-message"></span> Inbox</a></li>
+				<li><a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>4 Drafts</small></a></li>
+				<li class=""><a href="#" class=""><span class="icon-message"></span> Inbox</a></li>
 				<li><a href="#" class=""><span class="icon-sent"></span> Sent</a></li>
 				<li><a href="#" class=""><span class="icon-tag"></span> Family Stuffs</a></li>
 				<li><a href="#" class=""><span class="icon-tag"></span> Banking</a></li>
@@ -25,8 +17,7 @@
 				<li><a href="#" class=""><span class="icon-trash"></span> Trash</a></li>
 			</ul>
 		</nav>
-
-		<div id='sidebar_btns'>
+		<div id="sidebar_btns">
 			<input id='rm_tag_btn' type='submit' name='rm_tag' value='un-' title='Untag messages' />
 			<input id='add_tag_btn' type='submit' name='add_tag' value='tag' title='Tag messages' />
 		</div>

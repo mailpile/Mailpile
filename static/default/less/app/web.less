@@ -28,6 +28,8 @@
 		top: 10px;
 		left: 15px;
 		line-height: 36px;
+		color: @grayDark;
+		font-weight: normal;		
 	}
 	
 	#header h1 small {
@@ -54,6 +56,7 @@
 	#header nav a {
 		font-size: 14px;
 		font-family: @text-font-family-bold;
+		font-weight: normal;
 		color: @grayDark;
 	}
 	
@@ -72,32 +75,45 @@
 
 	#container {
 		width: 100%;
-		min-width: 700px;
-		height: 100%;
+		min-width: 800px;
+//		display: table;
+		padding: 0;
+		margin: 0;
 	}
 
-	
-	
+
 /* Sidebar */
 
-	.sidebar-wrapper {
-		width: 25%;
-		max-width: 275px;
-		min-width: 190px;
-		float: left;
-	}
-
 	#sidebar {
+		width: 25%;	
+		min-width: 200px;
 		height: 100%;
+//		display: table-cell;
+		display: inline-block;
+		float: left;
 		background: @grayLight;
+//		border: 1px solid red;
 		border-right: 1px solid @gray;
 		box-sizing: border-box;
+		margin: 0;
+		padding: 0px;
+		border-spacing:0px;
+		line-height: 18px;
 	}
 	
 	#sidebar a {
 		font-family: @text-font-family-bold;
 		font-size: 18px;
+		color: @grayDark;
 	}
+	
+	#sidebar a:hover {
+		color: @blue;
+	}
+
+	#sidebar a:active {
+		color: @red;
+	}	
 	
 	#sidebar a span {
 		position: relative;
@@ -107,32 +123,43 @@
 		margin-right: 4px;
 	}
 
-	#sidebar nav {
-		margin: 20px;
+	#sidebar nav ul {
+		//margin: 0 20px 20px 30px;
 	}
 
 	#sidebar nav ul li {
-		margin: 20px 0;
+		margin: 0 0 20px 0;
+	}
+
+	#button-compose span.icon-compose {
+		position: relative;
+		top: 15px;
+		left: 0px;
 	}
 
 	#button-compose small {
 		display: block;
 		font-size: 12px;
+		line-height: 12px;
 		color: @gray;
+		position: relative;
+		top: 5px;
+		left: 35px;
 	}
 
-	// HIDE UNSED
-	#sidebar_btns, .tag_list {
-		display: none;
-	}
 
-	
+
+
 /* Content */	
 	
 	#content {
 		width: 75%;
-		min-width: 510px;
-		float: right;
+		min-width: 600px;
+//		display: table-cell;
+float: left;
+		display: inline-block;
+		box-sizing: border-box;
+		border-spacing:10px;
 	}
 
 	#content div.pile-speed {
@@ -141,28 +168,40 @@
 		color: @gray;
 	}
 
+	#content div.pile-speed span {
+		font-size: 24px;
+		margin-right: 10px;
+		position: relative;
+		top: 3px;
+		left: 0px;
+	}
+
+	
+
+
 
 /* Sub Navigation */
 
 	#sub-navigation	{
 		width: 100%;
 		min-width: 450px;
-		height: 62px;
 		float: right;
+		display: block;
 		background: @grayLight;
 		border-bottom: 1px solid @gray;
 		box-sizing: border-box;
+		padding: 15px 0 15px 15px;
 	}
 	
 	#sub-navigation ul {
-		position: relative;
-		top: 15px;
+		display: block;
+
 	}
 	
 	#sub-navigation li {
 		display: inline-block;
 		float: left;
-		margin-left: 20px;
+		margin-right: 20px;
 		text-align: center;
 	}	
 	
@@ -211,21 +250,33 @@
 	}
 	
 	#search span.icon-search {
-		float: left;
+		position: relative;
+		top: 6px;
+		left: 0px;
+		display: inline-block;
 		font-size: 24px;
 		color: @grayDark;
 	}
 	
 	#search input[type=text] {
 		width: 75%;
-		float: left;
+		display: inline-block;
 		border: 0px;
 		outline: none;
 		font-family: @text-font-family-bold;
+		font-size: 24px;
+		color: @grayDark;
+		padding: 0px;
+	}
+	
+	#search input[type=text]:placeholder {
 		color: @gray;
 	}
 	
 	#search input[type=text]:focus {
+ 		-moz-box-shadow: 0 0 0 rgba(0,0,0,0);
+		-webkit-box-shadow: 0 0 0 rgba(0,0,0,0);
+		box-shadow:  0 0 0 rgba(0,0,0,0);
 		outline: none;
 		color: @grayDark;
 	}
@@ -268,6 +319,49 @@
 		color: @red; 
 	}
 
+	#bulk-actions a span {
+		position: relative;
+		top: 2px;
+		left: 0px;
+	}
+
+
+/* Pile */
+
+	#pile-results {
+		width: 100%;
+	}
+	
+	#pile-results tr:hover {
+		background: lighten(@yellow, 35%);
+	}
+
+	#pile-results tr td {
+		padding: 10px;
+		border-spacing: 0px;
+		border-bottom: 1px solid @gray;
+		font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 14px;
+	}
+	
+	#pile-results td.from {
+		padding-left: 15px;
+	}
+	
+	#pile-results td.subject {
+		width: ;
+		overflow: hidden;
+	}
+	
+	
+	#pile-results tr td a {
+		font-size: 14px;
+	}
+	
+
+	#pile-actions {
+		margin: 15px;
+	}
 
 
 /* Footer */
@@ -287,5 +381,25 @@
 /* File Browser */
 
 	.item-file {
+		width: 150px;
+		float: left; 
+		margin: 25px 25px;
+		padding: 20px;
+		text-align: center;
+	}
+	
+	.item-file:hover {
+		background: @grayLight;
+	}
+
+	.item-file-icon {
+		display: block;
 		font-size: 125px;
+		margin-bottom: 10px;
+	}
+	
+	.item-file-name {
+		font-size: 14px;
+		font-family: @text-font-family-bold;
+		line-height: 14px;
 	}
