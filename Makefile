@@ -31,7 +31,7 @@ distclean: clean
 
 clean:
 	@rm -vf *.pyc */*.pyc mailpile-tmp.py scripts/breeder.py mailpile.py
-	@rm -vf .appver MANIFEST setup.cfg .SELF
+	@rm -vf .appver MANIFEST setup.cfg .SELF mp
 	@rm -vrf *.egg-info build/
 	@rm -vf debian/files debian/control debian/copyright debian/changelog
 	@rm -vrf debian/pagekite* debian/python* debian/init.d
