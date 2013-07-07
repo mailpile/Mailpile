@@ -76,7 +76,7 @@
 	#container {
 		width: 100%;
 		min-width: 800px;
-//		display: table;
+		display: table;
 		padding: 0;
 		margin: 0;
 	}
@@ -87,18 +87,15 @@
 	#sidebar {
 		width: 25%;	
 		min-width: 200px;
-		height: 100%;
-//		display: table-cell;
-		display: inline-block;
-		float: left;
+		display: table-cell;
 		background: @grayLight;
-//		border: 1px solid red;
 		border-right: 1px solid @gray;
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0px;
 		border-spacing:0px;
 		line-height: 18px;
+		vertical-align: top;
 	}
 	
 	#sidebar a {
@@ -124,11 +121,11 @@
 	}
 
 	#sidebar nav ul {
-		//margin: 0 20px 20px 30px;
+		margin: 15px 20px 20px 30px;
 	}
 
 	#sidebar nav ul li {
-		margin: 0 0 20px 0;
+		margin: 25px 0;
 	}
 
 	#button-compose span.icon-compose {
@@ -155,9 +152,7 @@
 	#content {
 		width: 75%;
 		min-width: 600px;
-//		display: table-cell;
-float: left;
-		display: inline-block;
+		display: table-cell;
 		box-sizing: border-box;
 		border-spacing:10px;
 	}
@@ -243,10 +238,13 @@ float: left;
 /* Search */
 
 	#search {
-		min-height: 55px;
 		border-bottom: 1px solid @gray;
-		padding: 5px 20px;
+		padding: 10px 20px;
 		box-sizing: padding-box;
+	}
+
+	#search form {
+		margin-bottom: 0px;
 	}
 	
 	#search span.icon-search {
@@ -267,6 +265,10 @@ float: left;
 		font-size: 24px;
 		color: @grayDark;
 		padding: 0px;
+		margin-bottom: 0px;
+		position: relative;
+		top: 5px;
+		left: 10px;
 	}
 	
 	#search input[type=text]:placeholder {
@@ -306,6 +308,7 @@ float: left;
 		border-bottom: 1px solid @gray;
 		color: @grayDark;
 		padding-left: 20px;
+		padding-right: 20px;
 		box-sizing: padding-box;
 	}
 	
@@ -325,6 +328,14 @@ float: left;
 		left: 0px;
 	}
 
+	#bulk-actions h5 {
+		float: right;
+		margin-top: 10px;
+		color: @grayDark;
+		font-family: @text-font-family-italic;
+		line-height: 24px;
+	}
+
 
 /* Pile */
 
@@ -332,7 +343,7 @@ float: left;
 		width: 100%;
 	}
 	
-	#pile-results tr:hover {
+	#pile-results tr.result:hover {
 		background: lighten(@yellow, 35%);
 	}
 
@@ -363,6 +374,12 @@ float: left;
 		margin: 15px;
 	}
 
+
+
+	#pile-results tr.result-on, tr.result-on:hover {
+		background: lighten(@blue, 45%);
+	}
+	
 
 /* Footer */
 
