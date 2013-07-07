@@ -580,7 +580,7 @@ class ConfigManager(dict):
     if not config.background:
       # Create a silent background session
       config.background = Session(config)
-      config.background.ui = TextUI()
+      config.background.ui = BackgroundInteraction()
       config.background.ui.block()
 
     # Start the workers

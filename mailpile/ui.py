@@ -49,6 +49,7 @@ class UserInteraction:
     self.interactive = False
     self.time_tracking = [('Main', [])]
     self.last_display = [self.LOG_PROGRESS, 0]
+    self.render_mode = 'text'
 
   def display(self, text, level=LOG_URGENT):
     pad = ''
@@ -133,10 +134,51 @@ class UserInteraction:
   def render_result(self, result):
     """Render command result objects to the user"""
     self.display('', level=self.LOG_RESULT)
-    sys.stdout.write(unicode(result)+'\n')
+    if self.render_mode == 'json':
+      sys.stdout.write(result.as_json()+'\n')
+    elif self.render_mode == 'html':
+      sys.stdout.write(result.as_html()+'\n')
+    else:
+      sys.stdout.write(unicode(result)+'\n')
+
+  def render_json(self, data):
+    """Render data as JSON"""
+    return json.dumps(data, indent=1)
+
+  def _template(self, config, tpl_name):
+    try:
+      fn = '%s.html' % tpl_name
+      return config.open_file('html_template', fn)[1].read()
+    except (IOError, OSError, AttributeError):
+      return '%(data)s'
+
+  def render_html(self, cfg, tpl_name, data):
+    """Render data as HTML"""
+    try:
+      if isinstance(data, dict):
+        d = {'data': data}
+        for elem in data:
+          d[elem] = self.render_html(cfg, '%s-%s' % (tpl_name, elem), data[elem])
+        return self._template(cfg, tpl_name) % d
+      elif isinstance(data, list) or isinstance(data, set):
+        html = []
+        for item in data:
+          html.append(self.render_html(cfg, tpl_name, item))
+        return ''.join(html)
+      else:
+        return escape_html(unicode(data))
+    except (ValueError, KeyError):
+      return '%s' % escape_html(unicode(data))
 
 
-class BaseUI(object):
+class HttpUserInteraction(UserInteraction):
+  pass
+
+class BackgroundInteraction(UserInteraction):
+  pass
+
+
+class xxBaseUI(object):
 
   WIDTH = 80
   MAX_BUFFER_LEN = 150
@@ -322,9 +364,9 @@ class BaseUI(object):
     self.say('%s' % data)
 
 
-class TextUI(BaseUI):
+class xxTextUI(xxBaseUI):
   def __init__(self):
-    BaseUI.__init__(self)
+    xxBaseUI.__init__(self)
     self.times = []
 
   def reset_marks(self, quiet=False):
@@ -412,9 +454,9 @@ class TextUI(BaseUI):
       else:
         fd = sys.stdout
     try:
-      BaseUI.display_messages(self, emails,
-                              raw=raw,
-                              sep=(sep is None and ('_' * self.WIDTH) or sep),
+      xx.BaseUI.display_messages(self, emails,
+                                 raw=raw,
+                                sep=(sep is None and ('_' * self.WIDTH) or sep),
                               fd=fd, context=context)
     except IOError, e:
       pass
@@ -472,9 +514,9 @@ class RawHttpResponder:
     raise SuppressHtmlOutput()
 
 
-class HttpUI(BaseUI):
+class xxHttpUI(xxBaseUI):
   def __init__(self, request):
-    BaseUI.__init__(self)
+    xxBaseUI.__init__(self)
 
   def set_postdata(self, postdata):
     self.post_data = postdata
@@ -486,9 +528,9 @@ class HttpUI(BaseUI):
     return 'HTTP Client', RawHttpResponder(self.request, attributes)
 
 
-class JsonUI(HttpUI):
+class xxJsonUI(xxHttpUI):
   def __init__(self, request):
-    HttpUI.__init__(self, request)
+    xxHttpUI.__init__(self, request)
     self.request = request
     self.clear()
 
@@ -509,7 +551,7 @@ class JsonUI(HttpUI):
 
   def error(self, message):
     self.status_code = 500
-    return HttpUI.error(self, message)
+    return xxHttpUI.error(self, message)
 
   def explain_msg_summary(self, info):
     return {
@@ -609,7 +651,7 @@ class JsonUI(HttpUI):
     self.request.log_request(self.status_code, message and len(message) or '-')
 
 
-class XmlUI(JsonUI):
+class xxXmlUI(xxJsonUI):
 
   ROOT_NAME = 'xml'
   ROOT_ATTRS = {'testing': True}
@@ -676,7 +718,7 @@ class XmlUI(JsonUI):
     return message, 'text/xml'
 
 
-class RssUI(XmlUI):
+class xxRssUI(xxXmlUI):
 
   ROOT_NAME = 'rss'
   ROOT_ATTRS = {'version': '2.0'}
@@ -684,13 +726,13 @@ class RssUI(XmlUI):
   BARE_LISTS = True
 
   def clear(self):
-    XmlUI.clear(self)
+    xxXmlUI.clear(self)
     self.buffered_json = {
       "channel": {'items': self.buffered_results}
     }
 
   def explain_msg_summary(self, info):
-    summary = XmlUI.explain_msg_summary(self, info)
+    summary = xxXmlUI.explain_msg_summary(self, info)
     return {
       '_id': summary['id'],
       'title': summary['subject'],
@@ -724,15 +766,15 @@ class RssUI(XmlUI):
 
     # FIXME: Add channel info to buffered_json before rendering.
 
-    return (XmlUI.render_data(self, session, request_url, request_path)[0],
+    return (xxXmlUI.render_data(self, session, request_url, request_path)[0],
             'application/rss+xml')
 
 
-class HtmlUI(HttpUI):
+class xxHtmlUI(xxHttpUI):
   WIDTH = 110
 
   def __init__(self, request):
-    HttpUI.__init__(self, request)
+    xxHttpUI.__init__(self, request)
     self.buffered_html = []
     self.request = request
 
@@ -1014,7 +1056,7 @@ class Session(object):
     self.searched = []
     self.displayed = (0, 0)
     self.task_results = []
-    self.ui = BaseUI()
+    self.ui = UserInteraction()
 
   def report_task_completed(self, name, result):
     self.wait_lock.acquire()

@@ -33,26 +33,26 @@ class Command:
   SUBCOMMANDS = {}
   FAILURE = 'Failed: %(name)s %(args)s'
   SERIALIZE = False
+  TEMPLATE_ID = 'command'
   SPLIT_ARG = 10000  # A big number!
 
   class CommandResult:
-    def __init__(self, command, result, what):
+    def __init__(self, session, command, template_id, doc, result):
+      self.session = session
       self.command = command
+      self.template_id = template_id
+      self.doc = doc
       self.result = result
-      self.what = what 
 
     def __nonzero__(self):
       return self.result.__nonzero__()
 
     def as_text(self):
       if type(self.result) == type(True):
-        return '%s: %s' % (self.result and 'Succeeded' or 'Failed', self.what)
+        return '%s: %s' % (self.result and 'Succeeded' or 'Failed', self.doc)
       return unicode(self.result)
     __str__ = lambda self: self.as_text()
     __unicode__ = lambda self: self.as_text()
-
-    def as_html(self):
-      return escape_html(unicode(self))
 
     def as_dict(self):
       return {
@@ -60,9 +60,18 @@ class Command:
         'result': self.result
       }
 
+    def as_html(self):
+      return self.session.ui.render_html(self.session.config,
+                                         'html/%s' % self.template_id,
+                                         self.as_dict())
+
+    def as_json(self):
+      return self.session.ui.render_json(self.as_dict())
+
   def __init__(self, session, name=None, arg=None, data=None):
     self.session = session
     self.serialize = self.SERIALIZE
+    self.template_id = self.TEMPLATE_ID
     self.name = name
     self.data = data or {}
     self.result = None
@@ -159,7 +168,8 @@ class Command:
   def _finishing(self, command, rv):
     if self.name:
        self.session.ui.finish_command()
-    return self.CommandResult(self.name, rv, command.__doc__ or self.__doc__)
+    return self.CommandResult(self.session, self.name, self.template_id,
+                              command.__doc__ or self.__doc__, rv)
 
   def _run(self, *args, **kwargs):
     try:
@@ -167,6 +177,7 @@ class Command:
         return self.command(*args, **kwargs)
       if self.SUBCOMMANDS and self.args and self.args[0] in self.SUBCOMMANDS:
         subcmd = self.args.pop(0)
+        self.template_id += '_' + subcmd
         if self.name:
           self.name += ' ' + subcmd
         command = self.SUBCOMMANDS[subcmd][0]
@@ -1016,6 +1027,15 @@ class GPG(Command):
 
 ###############################################################################
 
+class DisplayMode(Command):
+  """Choose format for command results."""
+  ORDER = ('Internals', 7)
+  SYNOPSIS = "[mode]"
+  def command(self):
+    self.session.ui.render_mode = self.args[0]
+    return True
+
+
 class Help(Command):
   """Print help on Mailpile or individual commands."""
   ORDER = ('Config', 9)
@@ -1139,7 +1159,7 @@ class Help(Command):
         'category': cat,
         'name': config.CATEGORIES[cat][1],
         'variables': variables
-      }) 
+      })
     result.sort(key=lambda k: config.CATEGORIES[k['category']][0])
     return {'variables': result}
 
@@ -1156,7 +1176,8 @@ class Help(Command):
 
   def _starting(self): pass
   def _finishing(self, command, rv):
-    return self.CommandResult(self.name, rv, command.__doc__ or self.__doc__)
+    return self.CommandResult(self.session, self.name, self.template_id,
+                              command.__doc__ or self.__doc__, rv)
 
   SUBCOMMANDS = {
     'variables': (help_vars, ''),
@@ -1213,6 +1234,7 @@ COMMANDS = {
   't:':     ('tag=',     Tag),
   'U:':     ('unset=',   ConfigUnset),
   'u:':     ('update=',  Update),
+  '_dmode': ('output=',  DisplayMode),
   '_setup': ('setup',    Setup),
   '_load':  ('load',     Load),
   '_optim': ('optimize', Optimize),

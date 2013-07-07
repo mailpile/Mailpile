@@ -113,7 +113,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         raise ValueError('Unknown content-type')
 
     except (IOError, ValueError), e:
-      r = HtmlUI(self).render_page(config,
+      r = self.server.session.ui.render_page(config,
                                    {'lastq': '', 'csrf': '', 'path': ''},
                                    body='POST geborked: %s' % e,
                                    title='Internal Error')
@@ -226,14 +226,15 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     # We peek at the ending to select a UI, but any further parsing of the
     # path and arguments takes place in parse_pqp.
+    session.ui = HttpUserInteraction(self)
     if path.endswith('.json'):
-      session.ui = JsonUI(self)
+      session.ui.render_mode = 'json'
     elif path.endswith('.xml'):
-      session.ui = XmlUI(self)
+      session.ui.render_mode = 'xml'
     elif path.endswith('.rss'):
-      session.ui = RssUI(self)
+      session.ui.render_mode = 'rss'
     else:
-      session.ui = HtmlUI(self)
+      session.ui.render_mode = 'html'
 
     session.ui.set_postdata(post_data)
     session.ui.set_querydata(query_data)

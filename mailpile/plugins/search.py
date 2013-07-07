@@ -3,27 +3,53 @@ import re
 
 import mailpile.plugins
 from mailpile.commands import Command
+from mailpile.mailutils import Email
 from mailpile.search import MailIndex
 from mailpile.util import *
 
 
-def explain_msg_summary(info):
-  return {
-    'idx': info[0],
-    'id': info[1],
-    'from': info[2],
-    'subject': info[3],
-    'date': long(info[4], 36),
-    'tag_ids': info[5],
-    'url': '/=%s/%s/' % (info[0], info[1])
-  }
-
-def message_details(session, idx, emails, raw=False, context=True):
-  return {'FIXME': 'FIXME'}
-
 class SearchResults(dict):
+  def _explain_msg_summary(self, info):
+    return {
+      'idx': info[0],
+      'id': info[1],
+      'from': info[2],
+      'subject': info[3],
+      'date': long(info[4], 36),
+      'tag_ids': info[5],
+      'url': '/=%s/%s/' % (info[0], info[1])
+    }
+
+  def _prune_msg_tree(self, tree, context=True, parts=False):
+    pruned = {}
+    for k in tree:
+      if k not in ('headers_lc', 'summary', 'tags', 'conversation',
+                   'attachments'):
+        pruned[k] = tree[k]
+    pruned['tag_ids'] = tree['tags']
+    pruned['summary'] = self._explain_msg_summary(tree['summary'])
+    if context:
+      pruned['conversation'] = [self._explain_msg_summary(c)
+                                for c in tree['conversation']]
+    pruned['attachments'] = attachments = []
+    for a in tree.get('attachments', []):
+      att = {}
+      att.update(a)
+      if not parts:
+        del att['part']
+      attachments.append(att)
+    return pruned
+
+  def _message_details(self, emails, context=True):
+    results = []
+    for email in emails:
+      tree = email.get_message_tree()
+      email.evaluate_pgp(tree, decrypt=True)
+      results.append(self._prune_msg_tree(tree, context=context))
+    return results
+
   def __init__(self, session, idx,
-               results=None, start=0, end=None, expand=None):
+               results=None, start=0, end=None, num=None, expand=None):
     dict.__init__(self)
     self.session = session
     self.idx = idx
@@ -33,18 +59,18 @@ class SearchResults(dict):
       return (0, 0), []
 
     terms = session.searched
-    num = session.config.get('num_results', 20)
+    num = num or session.config.get('num_results', 20)
     if end: start = end - num
-    if start > len(session.results): start = len(session.results)
+    if start > len(results): start = len(results)
     if start < 0: start = 0
 
     rv = []
     count = 0
     expand_ids = [e.msg_idx for e in (expand or [])]
-    for mid in session.results[start:start+num]:
+    for mid in results[start:start+num]:
       count += 1
       msg_info = idx.get_msg_by_idx(mid)
-      result = explain_msg_summary([
+      result = self._explain_msg_summary([
         msg_info[MailIndex.MSG_IDX],
         msg_info[MailIndex.MSG_ID],
         msg_info[MailIndex.MSG_FROM],
@@ -56,8 +82,8 @@ class SearchResults(dict):
                                for t in idx.get_tags(msg_info=msg_info)
                                      if 'tag:%s' % t not in terms])
       if expand and mid in expand_ids:
-        result['message'] = message_details([expand[expand_ids.index(mid)]],
-                                            context=False)
+        exp_ids = [expand[expand_ids.index(mid)]]
+        result['message'] = self._message_details(exp_ids)[0]
       rv.append(result)
 
     self['messages'] = rv
@@ -70,7 +96,7 @@ class SearchResults(dict):
   def previous_set(self):
     return SearchResults(self.session, self.idx,
                          end=self['start'])
- 
+
   def _name(self, sender):
     words = re.sub('["<>]', '', sender).split()
     nomail = [w for w in words if not '@' in w]
@@ -97,15 +123,18 @@ class SearchResults(dict):
     text = []
     count = self['start']
     for m in self['messages']:
-      msg_date = datetime.date.fromtimestamp(m['date'])
-      msg_tags = m['tags'] and (' <' + '<'.join(m['tags'])) or ''
-      sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
-      text.append((cfmt+' %4.4d-%2.2d-%2.2d %-25.25s '+sfmt
-                   ) % (count,
-                        msg_date.year, msg_date.month, msg_date.day,
-                  self._compact(self._names([m['from'] or '(no sender)']), 25),
-                        m['subject'], msg_tags))
       count += 1
+      if 'message' in m:
+        text.append('%s' % m['message'])
+      else:
+        msg_date = datetime.date.fromtimestamp(m['date'])
+        msg_tags = m['tags'] and (' <' + '<'.join(m['tags'])) or ''
+        sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
+        text.append((cfmt+' %4.4d-%2.2d-%2.2d %-25.25s '+sfmt
+                     ) % (count,
+                          msg_date.year, msg_date.month, msg_date.day,
+                    self._compact(self._names([m['from'] or '(no sender)']), 25),
+                          m['subject'], msg_tags))
     return '\n'.join(text)+'\n'
 
 
@@ -114,6 +143,7 @@ class SearchResults(dict):
 class Search(Command):
   """Search your mail!"""
   ORDER = ('Searching', 0)
+  TEMPLATE_ID = 'search'
   class CommandResult(Command.CommandResult):
     def as_text(self):
       return self.result.as_text()
@@ -174,19 +204,40 @@ class Order(Search):
 class View(Command):
   """View one or more messages"""
   ORDER = ('Searching', 4)
+  class CommandResult(Command.CommandResult):
+    def as_text(self):
+      return ('\n%s\n' % ('=' * self.session.ui.MAX_WIDTH)
+              ).join([r.as_text() for r in self.result])
+
+  class RawResult(dict):
+    def as_text(self):
+      try:
+        return self['data'].decode('utf-8')
+      except UnicodeDecodeError:
+        try:
+          return self['data'].decode('iso-8859-1')
+        except:
+          return '(MAILPILE FAILED TO DECODE MESSAGE)'
+
   SYNOPSIS = '<[raw] m1 ...>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
+    results = []
     if self.args and self.args[0].lower() == 'raw':
       raw = self.args.pop(0)
     else:
       raw = False
     emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-    if emails:
-      idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx for e in emails])
-      session.ui.clear()
-      session.ui.display_messages(emails, raw=raw)
-    return True
+    idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx for e in emails])
+    for email in emails:
+      if raw:
+        results.append(self.RawResult({'data': email.get_file().read()}))
+      else:
+        conv = [int(c[0], 36) for c in email.get_message_tree()['conversation']]
+        results.append(SearchResults(session, idx,
+                                     results=conv, num=len(conv),
+                                     expand=[email]))
+    return results
 
 
 class Extract(Command):
@@ -215,10 +266,12 @@ class Delete(Command):
     raise Exception('Unimplemented')
 
 
+mailpile.plugins.register_command('d:', 'delete=',  Delete)
 mailpile.plugins.register_command('s:', 'search=',  Search)
-mailpile.plugins.register_command('n:', 'next=',    Next) 
+mailpile.plugins.register_command('n:', 'next=',    Next)
 mailpile.plugins.register_command('e:', 'extract=', Extract)
 mailpile.plugins.register_command('n',  'next',     Next)
 mailpile.plugins.register_command('o:', 'order',    Order)
 mailpile.plugins.register_command('p',  'previous', Previous)
+mailpile.plugins.register_command('v:', 'view',     View)
 
