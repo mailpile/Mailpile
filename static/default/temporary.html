@@ -58,7 +58,6 @@
 			</ul>
 		</nav>
 		<hr>
-		
 	</div>
 <!-- END BODY -->
 
@@ -67,7 +66,7 @@
 	<div id="content">
 		<nav id="sub-navigation">
 			<ul class="clearfix">
-				<li><a href="#" class="navigation-on"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">5</span> New</a></li>
+				<li class="navigation-on"><a href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">5</span> New</a></li>
 				<li><a href="#"><span class="navigation-icon icon-later"></span><span class="navigation-attention-important">12</span> Later</a></li>
 				<li><a href="#"><span class="navigation-icon icon-message"></span><span>2,415</span> Read</a></li>
 			</ul>
@@ -87,172 +86,170 @@
 			</div>
 		</div>
 		<div id="bulk-actions" class="clearfix">
-			<a href="#"><span class="icon-groups"></span> Add to Group</a>
-			<a href="#"><span class="icon-tag"></span> Assign Tags</a>
-			<a href="#"><span class="icon-trash"></span> Delete</a>
-			
-			<h5><span id="bulk-actions-selected-count">0</span> Messages Selected</h5>
+			<a class="bulk-action" href="#add-to-group"><span class="icon-groups"></span> Add to Group</a>
+			<a class="bulk-action" href="#assign-tags"><span class="icon-tag"></span> Assign Tags</a>
+			<a class="bulk-action" href="#delete"><span class="icon-trash"></span> Delete</a>
+			<h5><b><span id="bulk-actions-selected-count">0</span> Messages</b> Selected</h5>
 		</div>
 		<form id='actions' action='' method='post'>
 			<input type='hidden' name='csrf' value='%(csrf)s' />
-		
-		
+
 			<!-- DYNAMIC MAILBOX DATA -->
 			<table class="pile-results" id="pile-results">
 			<tbody>
-				<tr class="result odd t_inbox t_sent">
+				<tr class="result odd t_inbox t_sent" data-state="normal">
 					<td class="from"><a href="/=L5/2eSfqDQgcXS81WghRobpZq+O4UY/">Marcel .. Alan</a></td>
 					<td class="subject"><a href="/=L5/2eSfqDQgcXS81WghRobpZq+O4UY/">Re: Flash Problem</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_L5"></td>
 				</tr>
-				<tr class="result even t_inbox t_sent">
+				<tr class="result even t_inbox t_sent" data-state="normal">
 					<td class="from"><a href="/=L4/i0ioMGzyApdDMtw+3MbrVanp_yg/">Andras, Mike</a></td>
 					<td class="subject"><a href="/=L4/i0ioMGzyApdDMtw+3MbrVanp_yg/">Re: installation from boot.iso on a usb stick</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_L4"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=L3/cJeV3opJJZIdUUSl7OInfrwhAcw/">Luca .. Patrick, Matt</a></td>
 					<td class="subject"><a href="/=L3/cJeV3opJJZIdUUSl7OInfrwhAcw/">Re: entropy</a></td>
 					
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_L3"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=L2/tZV2Nav6Hp4qDMghqgfTTzshk_o/">Bill, H.</a></td>
 					<td class="subject"><a href="/=L2/tZV2Nav6Hp4qDMghqgfTTzshk_o/">Re: Problem with ssh identies</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_L2"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=L1/ymJ+3ikY1xjeFWMwLdYcfrl0EDE/">William .. Aaron, Aaron</a></td>
 					<td class="subject"><a href="/=L1/ymJ+3ikY1xjeFWMwLdYcfrl0EDE/">Re: Setting up Tigervnc [FAILED] ?!? -- [SOLVED]</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_L1"></td>
 				</tr>
-				<tr class="result even t_inbox">
+				<tr class="result even t_inbox" data-state="normal">
 					<td class="from"><a href="/=KZ/tFYJavk2tb70ppd25t0yX_gr8h8/">Joachim Backes</a></td>
 					<td class="subject"><a href="/=KZ/tFYJavk2tb70ppd25t0yX_gr8h8/">Lost background pixmaps after closing a nautilus window in GNOME [F12]</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_KZ"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=KY/Jr1GUZ01PZva7zY7Ve9NU04rDm0/">Joachim,,,Ed, Joachim, Ed</a></td>
 					<td class="subject"><a href="/=KY/Jr1GUZ01PZva7zY7Ve9NU04rDm0/">Re: [solved] Help needed: Howto play offline a video presented on  a website</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_KY"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=KU/oa81pN5DX_6hBQlWdiQmkqZkyF8/">Mike .. j.halifax,,g</a></td>
 					<td class="subject"><a href="/=KU/oa81pN5DX_6hBQlWdiQmkqZkyF8/">Re: mailing list losing mail?</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_KU"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=KT/fzmB+dspb8ErjWhXcQF63BCCqbQ/">Vadkan, Alexander</a></td>
 					<td class="subject"><a href="/=KT/fzmB+dspb8ErjWhXcQF63BCCqbQ/">Re: chroot a few apps</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_KT"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=KP/p6tvv7hEkDR0gZfp1y92p2fc4p4/">Gilboa Davara</a></td>
 					<td class="subject"><a href="/=KP/p6tvv7hEkDR0gZfp1y92p2fc4p4/">Tracker indexes emails... but not contacts?</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_KP"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=KK/CgR6TTZkRm1muxouAQuBUVs2xGY/">Skunk Worx</a></td>
 					<td class="subject"><a href="/=KK/CgR6TTZkRm1muxouAQuBUVs2xGY/">f12 audio video issues</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_KK"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=KB/3A2Kk0152J2w1wURoQPNIcrlt8U/">Dave .. Dave, Dave, Chris</a></td>
 					<td class="subject"><a href="/=KB/3A2Kk0152J2w1wURoQPNIcrlt8U/">Re: mac usb drive problem with F11</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_KB"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=KA/c5OHxCgrrp03DUYL0bwiTyfLWJw/">KC8LDO</a></td>
 					<td class="subject"><a href="/=KA/c5OHxCgrrp03DUYL0bwiTyfLWJw/">Fedora 12 - how to mount a CDROM to use on a remote desktop?</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_KA"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=K6/XaXntIcVwFFBQtQkqhG5y5ClnHw/">Max, Bill, john, Chris, Bill</a></td>
 					<td class="subject"><a href="/=K6/XaXntIcVwFFBQtQkqhG5y5ClnHw/">Re: Any linux-based microSD utilities?</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_K6"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=K5/fzHRCQ6g8ukPjRx4W8fhmE7c2bI/">François .. Terry, Bill</a></td>
 					<td class="subject"><a href="/=K5/fzHRCQ6g8ukPjRx4W8fhmE7c2bI/">Re: ati drivers f12</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td><td class="checkbox"><input type="checkbox" name="msg_K5"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=K4/b68K4Ytz5AF+3OapmYInXh2Ut48/">Jim, Jorge</a></td>
 					<td class="subject"><a href="/=K4/b68K4Ytz5AF+3OapmYInXh2Ut48/">Re: ASF format ??</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td><td class="checkbox"><input type="checkbox" name="msg_K4"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=K0/fHokWA5avCjoHClo3fLzjTQO9_4/">Rich, Rich, Paulo</a></td>
 					<td class="subject"><a href="/=K0/fHokWA5avCjoHClo3fLzjTQO9_4/">Re: Fedora 12: no sound update</a></td>
 					<td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td><td class="checkbox"><input type="checkbox" name="msg_K0"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=JV/mpO6nM9egj6PTS6MvpPEaw9pcSg/">Kevin .. Peter, Kevin, Kevin</a></td>
 					<td class="subject"><a href="/=JV/mpO6nM9egj6PTS6MvpPEaw9pcSg/">Re: is suspend broken?</a></td><td class="date"><a href="?q=date:2010-1-9">2010-01-09</a></td><td class="checkbox"><input type="checkbox" name="msg_JV"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=JR/cL+OpFTCalElOEIgU5be0wyPI98/">Gianluca Cecchi</a></td>
 					<td class="subject"><a href="/=JR/cL+OpFTCalElOEIgU5be0wyPI98/">[OT] help with mplayer option to replicate aplay -D option</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_JR"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=JO/ESF0CyOOetCEgZaVkJuP86xU+ZA/">John .. Gilboa, John, Stewart</a></td>
 					<td class="subject"><a href="/=JO/ESF0CyOOetCEgZaVkJuP86xU+ZA/">Re: How do I get SB X-FI sound card working on Fedora 12</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_JO"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=JI/vcYbNnRTPdoi2qlPPUjVF+w07T4/">Luca, Chris</a></td>
 					<td class="subject"><a href="/=JI/vcYbNnRTPdoi2qlPPUjVF+w07T4/">Re: kernel module</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_JI"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=JG/CzVs8y0DkguPUR_RymGjsIpHNKo/">Rich Emberson</a></td>
 					<td class="subject"><a href="/=JG/CzVs8y0DkguPUR_RymGjsIpHNKo/">Fedora 12: no sound</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_JG"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=JE/KJWPeUtlZSC9uLPwk6Dsi__C_lw/">Wolfgang, Andrew, Paul, Marko</a></td>
 					<td class="subject"><a href="/=JE/KJWPeUtlZSC9uLPwk6Dsi__C_lw/">Re: fedora core 12 with dual head and kde</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_JE"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=JB/caSa_CvXJPueIjDBPjlLE3DLcIc/">Bill, Paul, Greg, Tim, Bill</a></td>
 					<td class="subject"><a href="/=JB/caSa_CvXJPueIjDBPjlLE3DLcIc/">Re: Network Audio</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_JB"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=JA/Wo86_2F4ZXHTFT0+tPTT+2gltME/">Chris .. Bill</a></td>
 					<td class="subject"><a href="/=JA/Wo86_2F4ZXHTFT0+tPTT+2gltME/">Re: Best way to get minimal system</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_JA"></td>
 				</tr>
-				<tr class="result even t_inbox t_new t_sent">
+				<tr class="result even t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=J7/1DsqWRqa9cgPIE_gA5tEr60lf8c/">Leon Stringer</a></td>
 					<td class="subject"><a href="/=J7/1DsqWRqa9cgPIE_gA5tEr60lf8c/">Installing F12 on Mactel</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
 					<td class="checkbox"><input type="checkbox" name="msg_J7"></td>
 				</tr>
-				<tr class="result odd t_inbox t_new t_sent">
+				<tr class="result odd t_inbox t_new t_sent" data-state="normal">
 					<td class="from"><a href="/=J1/_1NaO37hIc6UnPnZXiDJxPTYpKY/">John Nissley</a></td>
 					<td class="subject"><a href="/=J1/_1NaO37hIc6UnPnZXiDJxPTYpKY/">Re: Clean install of Fedora 12 will not bring up login screen after  upgrade(Resolved)</a></td>
 					<td class="date"><a href="?q=date:2010-1-8">2010-01-08</a></td>
@@ -261,10 +258,12 @@
 			</tbody>
 			</table>
 
-			<div id="pile-actions">
+			<div id="pile-bottom" class="clearfix">
 				<a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
-				<h4>1 - 5 of 2,456 Messages</h4>
-				<a href="#">Show Expanded View</a>
+				<div>
+					<h5>1 - 5 of 2,456 Messages</h5><br>
+					<a class="change-result-size" href="#">Show Expanded View</a>
+				</div>
 			</div>
 
 			<!-- END DYNAMIC MAILBOX DATA -->
@@ -290,50 +289,80 @@
 <script type="text/javascript" src="/_/static/js/jKey/jquery.jkey.js"></script>
 <script type="text/javascript" src="/_/static/js/mailpile.js"></script>
 <script type="text/javascript">
+$(document).ready(function() {
 
 	/* Hide Various Things */
 	$('#search-params, #bulk-actions').hide();
 
 
+
 	/* Search Box */
-	$('#qbox').jkey('enter, return', function(key) {
-	
+	$('#qbox').jkey('enter, return', function(key) {	
     	console.log('Search query submitted');
-	
 		$('#search-params').slideDown();
 	});
 
 
+
 	/* Bulk Actions */
-	
+	$('.bulk-action').on('click', function(e) {
 
+		e.preventDefault()
+		alert('This will someday ' + $(this).attr('href'));
 
+	});
 
 
 	/* Result Actions */
-	$('tr.result').on('click', function() {
+	var pileActionSelect = function(item) {
 
-		console.log('Clicked .result');
-
-		// Increment Selected Counter
+		// Increment Selected
 		$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
 
 		// Show Actions
 		$('#bulk-actions').slideDown();
 
-		// Color Row
-		$(this).addClass('result-on').removeClass('result');
+		// Style & Select Checkbox
+		item.removeClass('result').addClass('result-on')
+		.data('state', 'selected')
+		.find('td.checkbox input[type=checkbox]').prop('checked', true);	
+	}
 
-		// Select Checkbox
-		$(this).find('td.checkbox input[type=checkbox]').attr('checked','checked');
+	var pileActionUnselect = function(item) {
 
+		// Decrement Selected
+		var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
+
+		$('#bulk-actions-selected-count').html(selected_count);
+
+		// Hide Actions
+		if (selected_count < 1) {
+			$('#bulk-actions').slideUp();
+		}
+
+		// Style & Unselect Checkbox
+		item.removeClass('result-on').addClass('result')
+		.data('state', 'normal')
+		.find('td.checkbox input[type=checkbox]').prop('checked', false);
+	}
+
+	$('#pile-results').on('click', 'tr', function() {		
+		if ($(this).data('state') == 'selected') {
+			pileActionUnselect($(this));
+		}
+		else {
+			pileActionSelect($(this));
+		}
 	});
 
-	
 
+
+	/* OLD UNUSED STUFF */
 	function focus(eid) {var e = document.getElementById(eid);e.focus();
 	if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
 	else {e.value = e.value;}}
+
+});	
 </script>
 </body>
 </html>

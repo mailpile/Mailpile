@@ -85,8 +85,8 @@
 /* Sidebar */
 
 	#sidebar {
-		width: 25%;	
-		min-width: 200px;
+		width: 22%;	
+		min-width: 225px;
 		display: table-cell;
 		background: @grayLight;
 		border-right: 1px solid @gray;
@@ -98,14 +98,35 @@
 		vertical-align: top;
 	}
 	
+	#sidebar nav ul {
+	}
+
+	#sidebar nav ul li {
+	}
+	
+	#sidebar li.navigation-on {
+		background: @gray;
+	}
+
+	#sidebar li.navigation-on a {
+		cursor: default;		
+		color: @white;
+	}
+
+	#sidebar li.navigation-on a span {
+		color: @grayDark;
+	}
+	
 	#sidebar a {
+		display: block;
+		padding: 15px 20px;
 		font-family: @text-font-family-bold;
 		font-size: 18px;
 		color: @grayDark;
 	}
 	
 	#sidebar a:hover {
-		color: @blue;
+		color: @red;
 	}
 
 	#sidebar a:active {
@@ -120,13 +141,6 @@
 		margin-right: 4px;
 	}
 
-	#sidebar nav ul {
-		margin: 15px 20px 20px 30px;
-	}
-
-	#sidebar nav ul li {
-		margin: 25px 0;
-	}
 
 	#button-compose span.icon-compose {
 		position: relative;
@@ -150,8 +164,8 @@
 /* Content */	
 	
 	#content {
-		width: 75%;
-		min-width: 600px;
+		width: 78%;
+		min-width: 575px;
 		display: table-cell;
 		box-sizing: border-box;
 		border-spacing:10px;
@@ -185,8 +199,28 @@
 		background: @grayLight;
 		border-bottom: 1px solid @gray;
 		box-sizing: border-box;
-		padding: 15px 0 15px 15px;
 	}
+
+	#sub-navigation a {
+		display: block;	
+		padding: 10px 15px;
+		font-family: @text-font-family-bold;
+		color: @grayDark;
+	}
+	
+	#sub-navigation a:hover, #sub-navigation a:hover span.navigation-icon {
+		color: @red;
+	}
+
+	#sub-navigation li.navigation-on {
+		background: @gray;
+	}
+
+	#sub-navigation li.navigation-on a {
+		cursor: default;
+		padding: 10px 15px;
+		color: @white;
+	}	
 	
 	#sub-navigation ul {
 		display: block;
@@ -196,21 +230,10 @@
 	#sub-navigation li {
 		display: inline-block;
 		float: left;
-		margin-right: 20px;
 		text-align: center;
 	}	
 	
-	#sub-navigation a {
-		font-family: @text-font-family-bold;
-		color: @grayDark;
-	}
 
-	#sub-navigation a.navigation-on {
-		border-radius: @base-border-radius;
-		background: @gray;
-		padding: 6px 10px;
-		color: @white;
-	}
 
 	.navigation-icon {
 		margin: 0 8px 0 4px;
@@ -370,16 +393,33 @@
 	}
 	
 
-	#pile-actions {
+	#pile-bottom {
 		margin: 15px;
 	}
-
-
-
-	#pile-results tr.result-on, tr.result-on:hover {
-		background: lighten(@blue, 45%);
+	
+	#pile-bottom h5 {
+		float: right;
+		color: @grayDark;
 	}
 	
+	#pile-bottom div {
+		float: right;
+		text-align: right;
+	}
+	
+	#pile-bottom div a.change-result-size {
+		font-size: 12px;
+	}
+
+
+	// Results
+	#pile-results tr.result-on {
+		background: @grayLight;
+	}
+	
+	#pile-results tr.result-on:hover {
+		background: darken(@grayLight, 5%);
+	}
 
 /* Footer */
 
