@@ -1,0 +1,81 @@
+/* Rebar V0.1
+*  Copyright 2013, Brennan Novak
+*/
+
+
+/* Documentation Styles
+================================================== */
+		
+
+	div.doc-section { margin: 30px 0; }
+
+	.hidden-code a { font-size: 12px; color: #999; }
+	.hidden-code > div { display: none; }
+
+
+	/* Grid */
+	#grid .column,
+	#grid .columns {
+		background: #ddd;
+		height: 25px;
+		line-height: 25px;
+		margin-bottom: 10px;
+		text-align: center;
+		text-transform: uppercase;
+		color: #555;
+		font-size: 12px;
+		font-weight: bold;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
+		border-radius: 2px;
+	}
+	
+	#grid .column:hover,
+	#grid .columns:hover {
+		background: #bbb;
+		color: #333;
+	}
+
+	#grid .example-grid { overflow: hidden; }
+
+
+	
+	/* Boxes */
+	#boxes div.boxes {
+		background: #d9d9d9;
+	}
+
+
+	.post-button-note,
+	.post-button-note a {
+		font-size: 11px;
+		color: #999;
+	}
+
+	/* Buttons */
+	#buttons a { margin-right: 20px; }
+
+	#icons li { margin-bottom: 20px; }
+	#icons span { font-size: 30px; line-height: 30px; position: relative; top: 7px; left: 0px; margin-right: 10px; }
+
+
+	/* Color Palate */
+	.color-palate-item { 
+		width: 120px;
+		height: 150px;
+		margin: 0px 20px 20px 0px;
+		float: left;
+		font-size: 12px;
+		font-weight: bold;
+		text-align: center;
+		padding-top: 25px;
+		cursor: pointer;
+	}
+
+
+	/* Gist */
+	.gist-meta { display: none !important;}
+
+
+
+

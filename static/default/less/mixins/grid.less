@@ -1,0 +1,50 @@
+/*---------------------------------------------------
+    Rebar - Grid
+  ---------------------------------------------------*/
+
+
+.grid(@grid-container-width, @grid-column-count, @grid-gutter) {
+
+	// Create
+	@grid-column-width: @grid-container-width / @grid-column-count;
+	
+	.container { width: @grid-container-width; word-wrap:break-word; }
+
+	.container .one.column          { width: (1 * @grid-column-width - @grid-gutter); }
+	.container .two.columns         { width: (2 * @grid-column-width - @grid-gutter); }
+	.container .three.columns       { width: (3 * @grid-column-width - @grid-gutter); }
+	.container .four.columns        { width: (4 * @grid-column-width - @grid-gutter); }
+	.container .five.columns        { width: (5 * @grid-column-width - @grid-gutter); }
+	.container .six.columns         { width: (6 * @grid-column-width - @grid-gutter); }
+	.container .seven.columns       { width: (7 * @grid-column-width - @grid-gutter); }
+	.container .eight.columns       { width: (8 * @grid-column-width - @grid-gutter); }
+	.container .nine.columns        { width: (9 * @grid-column-width - @grid-gutter); }
+	.container .ten.columns         { width: (10 * @grid-column-width - @grid-gutter); }
+	.container .eleven.columns      { width: (11 * @grid-column-width - @grid-gutter); }
+	.container .twelve.columns      { width: (12 * @grid-column-width - @grid-gutter); }
+	.container .thirteen.columns    { width: (13 * @grid-column-width - @grid-gutter); }
+	.container .fourteen.columns    { width: (14 * @grid-column-width - @grid-gutter); }
+	.container .fifteen.columns     { width: (15 * @grid-column-width - @grid-gutter); }
+	.container .sixteen.columns     { width: (16 * @grid-column-width - @grid-gutter); }
+
+	.container .one-third.column   	{ width: (@grid-container-width / 3) - @grid-gutter; }
+	.container .two-thirds.column 	{ width: ((@grid-container-width / 3) * 2) - @grid-gutter; }
+	.container .half.column    		{ width: (@grid-container-width / 2) - @grid-gutter; }
+
+	.container .offset-by-one      { padding-left: @grid-column-width; }
+	.container .offset-by-two      { padding-left: @grid-column-width * 2; }
+	.container .offset-by-three    { padding-left: @grid-column-width * 3; }
+	.container .offset-by-four     { padding-left: @grid-column-width * 4; }
+	.container .offset-by-five     { padding-left: @grid-column-width * 5; }
+	.container .offset-by-six      { padding-left: @grid-column-width * 6; }
+	.container .offset-by-seven    { padding-left: @grid-column-width * 7; }
+	.container .offset-by-eight    { padding-left: @grid-column-width * 8; }
+	.container .offset-by-nine     { padding-left: @grid-column-width * 9; }
+	.container .offset-by-ten      { padding-left: @grid-column-width * 10; }
+	.container .offset-by-eleven   { padding-left: @grid-column-width * 11; }
+	.container .offset-by-twelve   { padding-left: @grid-column-width * 12; }
+	.container .offset-by-thirteen { padding-left: @grid-column-width * 13; }
+	.container .offset-by-fourteen { padding-left: @grid-column-width * 14; }
+	.container .offset-by-fifteen  { padding-left: @grid-column-width * 15; }
+
+}
