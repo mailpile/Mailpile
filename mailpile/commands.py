@@ -1027,12 +1027,12 @@ class GPG(Command):
 
 ###############################################################################
 
-class DisplayMode(Command):
+class Output(Command):
   """Choose format for command results."""
   ORDER = ('Internals', 7)
   SYNOPSIS = "[mode]"
   def command(self):
-    self.session.ui.render_mode = self.args[0]
+    self.session.ui.render_mode = self.args and self.args[0] or 'text'
     return True
 
 
@@ -1234,7 +1234,7 @@ COMMANDS = {
   't:':     ('tag=',     Tag),
   'U:':     ('unset=',   ConfigUnset),
   'u:':     ('update=',  Update),
-  '_dmode': ('output=',  DisplayMode),
+  '_dmode': ('output=',  Output),
   '_setup': ('setup',    Setup),
   '_load':  ('load',     Load),
   '_optim': ('optimize', Optimize),
