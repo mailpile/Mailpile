@@ -1,5 +1,9 @@
 # Welcome to Mailpile! #
 
+> **NOTE:** Mailpile is currently undergoing heavy refactoring work
+> to accomodate a better UI and better programmatic access. Pull at your
+> own risk! :-)
+
 Mailpile is a free-as-in-freedom personal e-mail searching and indexing
 tool, largely inspired by Google's popular proprietary-but-gratis e-mail
 service.  It wants to eventually become a fast and flexible back-end
