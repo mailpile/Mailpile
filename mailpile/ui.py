@@ -57,7 +57,11 @@ class UserInteraction:
     self.time_tracking = [('Main', [])]
     self.last_display = [self.LOG_PROGRESS, 0]
     self.render_mode = 'text'
-    self.html_variables = {}
+    self.html_variables = {
+      'title': 'Mailpile',
+      'name': 'Bradley Manning',
+      'csrf': '',
+    }
 
   # Logging
   def _display_log(self, text, level=LOG_URGENT):

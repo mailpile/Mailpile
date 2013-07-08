@@ -42,11 +42,11 @@ def search(config, term, hits):
       end.extend([12, 31])
     elif len(end) == 2:
       end.append(31)
-    if not start < end:
+    if not start <= end:
       raise ValueError()
 
     terms = []
-    while start < end:
+    while start <= end:
       # Move forward one year?
       if start[1:] == [1, 1]:
         ny = [start[0], 12, 31]
