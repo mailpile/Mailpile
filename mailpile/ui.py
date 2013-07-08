@@ -61,6 +61,7 @@ class UserInteraction:
       'title': 'Mailpile',
       'name': 'Bradley Manning',
       'csrf': '',
+      'even_odd': 'odd'
     }
 
   # Logging
@@ -185,8 +186,10 @@ class UserInteraction:
       elif (isinstance(data, list)
       or    isinstance(data, tuple)
       or    isinstance(data, set)):
-        html = []
+        eo, html = 0, []
         for item in data:
+          eo += 1
+          self.html_variables['even_odd'] = ((eo%2)==0) and 'even' or 'odd'
           html.append(self.render_html(cfg, tpl_name, item))
         return ' '.join(html)
       else:

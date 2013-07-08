@@ -154,6 +154,11 @@ class Search(Command):
   class CommandResult(Command.CommandResult):
     def as_text(self):
       return self.result.as_text()
+    def as_html(self):
+      for msg in self.result['messages']:
+        msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
+                                      ['t_%s' % t.lower() for t in msg['tags']])
+      return Command.CommandResult.as_html(self)
 
   SYNOPSIS = '<terms ...>'
   def command(self, search=None):
