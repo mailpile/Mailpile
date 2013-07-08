@@ -90,21 +90,21 @@ class SearchResults(dict):
         result['message'] = self._message_details(exp_ids)[0]
       rv.append(result)
 
-    self._set_values(rv, start, num, len(results))
+    self._set_values(rv, start, count, len(results))
 
   def _set_values(self, messages, start, count, total):
     self['messages'] = messages
-    self['start'] = start
+    self['start'] = start+1
     self['count'] = count
     self['end'] = start+count
     self['total'] = total
 
   def next_set(self):
     return SearchResults(self.session, self.idx,
-                         start=self['start'] + self['count'])
+                         start=self['start'] - 1 + self['count'])
   def previous_set(self):
     return SearchResults(self.session, self.idx,
-                         end=self['start'])
+                         end=self['start'] - 1)
 
   def _name(self, sender):
     words = re.sub('["<>]', '', sender).split()
@@ -132,7 +132,6 @@ class SearchResults(dict):
     text = []
     count = self['start']
     for m in self['messages']:
-      count += 1
       if 'message' in m:
         text.append('%s' % m['message'])
       else:
@@ -142,6 +141,7 @@ class SearchResults(dict):
                      ) % (count, m['date'],
                     self._compact(self._names([m['from'] or '(no sender)']), 25),
                           m['subject'], msg_tags))
+      count += 1
     return '\n'.join(text)+'\n'
 
 
