@@ -10,12 +10,15 @@ from mailpile.util import *
 
 class SearchResults(dict):
   def _explain_msg_summary(self, info):
+    msg_ts = long(info[4], 36)
+    msg_date = datetime.date.fromtimestamp(msg_ts)
     return {
       'idx': info[0],
       'id': info[1],
       'from': info[2],
       'subject': info[3],
-      'date': long(info[4], 36),
+      'timestamp': msg_ts,
+      'date': '%4.4d-%2.2d-%2.2d' % (msg_date.year, msg_date.month, msg_date.day),
       'tag_ids': info[5],
       'url': '/=%s/%s/' % (info[0], info[1])
     }
@@ -56,7 +59,8 @@ class SearchResults(dict):
 
     results = results or session.results
     if not results:
-      return (0, 0), []
+      self._set_values([], 0, 0, 0)
+      return
 
     terms = session.searched
     num = num or session.config.get('num_results', 20)
@@ -86,9 +90,14 @@ class SearchResults(dict):
         result['message'] = self._message_details(exp_ids)[0]
       rv.append(result)
 
-    self['messages'] = rv
+    self._set_values(rv, start, num, len(results))
+
+  def _set_values(self, messages, start, count, total):
+    self['messages'] = messages
     self['start'] = start
-    self['count'] = num
+    self['count'] = count
+    self['end'] = start+count
+    self['total'] = total
 
   def next_set(self):
     return SearchResults(self.session, self.idx,
@@ -127,12 +136,10 @@ class SearchResults(dict):
       if 'message' in m:
         text.append('%s' % m['message'])
       else:
-        msg_date = datetime.date.fromtimestamp(m['date'])
         msg_tags = m['tags'] and (' <' + '<'.join(m['tags'])) or ''
         sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
-        text.append((cfmt+' %4.4d-%2.2d-%2.2d %-25.25s '+sfmt
-                     ) % (count,
-                          msg_date.year, msg_date.month, msg_date.day,
+        text.append((cfmt+' %s %-25.25s '+sfmt
+                     ) % (count, m['date'],
                     self._compact(self._names([m['from'] or '(no sender)']), 25),
                           m['subject'], msg_tags))
     return '\n'.join(text)+'\n'

@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+	<link rel="stylesheet" href="/_/static/css/default.css" />
+
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Favicons
+	================================================== -->
+	<link rel="shortcut icon" href="/_/static/img/logo-color.png">
+	<link rel="apple-touch-icon" sizes="57x57" href="/_/static/img/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/_/static/img/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="/_/static/img/apple-touch-icon-114x114.png">
+	<title>%(title)s</title>
+</head>
+
+<!-- START BODY -->
+<body>
+
+<div id="header" class="clearfix">
+	<img class="logo" src="/_/static/icons/logo-color.svg">
+	<h1>%(name)s's<small><b>mail</b>pile</small></h1>
+	<nav>
+		<ul>
+			<li><a href="#"><span class="icon-donate"></span>Donate</a></li>
+			<li><a href="#"><span class="icon-user"></span>Contacts</a></li>
+			<li><a href="#"><span class="icon-settings"></span>Settings</a></li>
+		</ul>
+	</nav>
+</div>
+
+<div id="container">
+
+	<div id="sidebar">
+		<nav>
+			<ul>
+				<li><a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>4 Drafts</small></a></li>
+				<li class="navigation-on"><a href="/Inbox/" class=""><span class="icon-message"></span> Inbox</a></li>
+				<li><a href="/Sent/" class=""><span class="icon-sent"></span> Sent</a></li>
+				<li><a href="/Family/" class=""><span class="icon-tag"></span> Family</a></li>
+				<li><a href="/Banking/" class=""><span class="icon-tag"></span> Banking</a></li>
+				<li><a href="/Environment/" class=""><span class="icon-tag"></span> Environment</a></li>
+				<li><a href="/Spam/" class=""><span class="icon-spam"></span> Spam</a></li>
+				<li><a href="/Trash/" class=""><span class="icon-trash"></span> Trash</a></li>
+			</ul>
+		</nav>
+		<hr>			
+		<nav>
+			<ul>
+				<li><a href="/_/search/has:pgp" class=""><span class="icon-encrypted"></span> Encrypted</a></li>
+				<li><a href="/_/search/att:jpg" class=""><span class="icon-photos"></span> Photos</a></li>
+				<li><a href="/_/search/has:attachment" class=""><span class="icon-files"></span> Files</a></li>
+				<li><a href="/_/search/http" class=""><span class="icon-links"></span> Links</a></li>
+				<li><a href="/_/group/list" class=""><span class="icon-groups"></span> Groups</a></li>
+			</ul>
+		</nav>
+		<hr>
+	</div>
+<!-- END BODY -->
+
+
+	<!-- START CONTENT -->
+	<div id="content">
+		<nav id="sub-navigation">
+			<ul class="clearfix">
+				<li class="navigation-on"><a href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">5</span> New</a></li>
+				<li><a href="#"><span class="navigation-icon icon-later"></span><span class="navigation-attention-important">12</span> Later</a></li>
+				<li><a href="#"><span class="navigation-icon icon-message"></span><span>2,415</span> Read</a></li>
+			</ul>
+		</nav>
+		<div id="search" class="clearfix">
+			<form id="search-form" action="/" class="clearfix">
+				<span class="icon-search"></span>
+				<input id="qbox" type="text" name="q" placeholder="Custom Search..." value="" />
+				<input type="submit" class="button-primary" value="Search"/>
+				<input type="hidden" name="csrf" value="%(csrf)s" />
+			</form>
+			<div id="search-params" class="clearfix">
+				<a href="#" class="" id="search-start-time">Start time</a> to 
+				<a href="#" class="" id="search-end-time">Present</a> with
+				<a href="#" id="search-tags">No tags</a> and
+				<a href="#" id="search-all-groups">All groups</a>
+			</div>
+		</div>
+%(results)s
+		<div id="footer">
+			<a href='http://mailpile.is'>Mailpile</a> is free software made by <a title='Bjarni R. Einarsson' href='http://bre.klaki.net'>bre</a>, <a title="Brennan Novak" href="https://brennannovak.com">bnvk</a> &amp; more
+		</div>
+
+	</div>
+	<!-- END CONTENT -->
+
+	<div class="clearfix"></div>
+
+</div>
+
+<script type="text/javascript" src="/_/static/js/jquery.min.js"></script>
+<script type="text/javascript" src="/_/static/js/jKey/jquery.jkey.js"></script>
+<script type="text/javascript" src="/_/static/js/mailpile.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+
+	/* Hide Various Things */
+	$('#search-params, #bulk-actions').hide();
+
+
+
+	/* Search Box */
+	$('#qbox').jkey('enter, return', function(key) {	
+    	console.log('Search query submitted');
+		$('#search-params').slideDown();
+	});
+
+
+
+	/* Bulk Actions */
+	$('.bulk-action').on('click', function(e) {
+
+		e.preventDefault();
+		
+		var checkboxes = $('#pile-results input[type=checkbox]');
+		var action = $(this).attr('href');
+		var count = 0;
+		
+		$.each(checkboxes, function() {
+
+			if ($(this).val() === 'selected') {
+				console.log('This is here ' + $(this).attr('name'));
+				
+				count++;
+			}
+			
+		});
+		
+		
+		alert(count + ' items selected to "' + action.replace('#', '') + '"');
+
+	});
+
+
+	/* Result Actions */
+	var pileActionSelect = function(item) {
+
+		// Increment Selected
+		$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
+
+		// Show Actions
+		$('#bulk-actions').slideDown();
+
+		// Style & Select Checkbox
+		item.removeClass('result').addClass('result-on')
+		.data('state', 'selected')
+		.find('td.checkbox input[type=checkbox]')
+		.val('selected')
+		.prop('checked', true);	
+	}
+
+	var pileActionUnselect = function(item) {
+
+		// Decrement Selected
+		var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
+
+		$('#bulk-actions-selected-count').html(selected_count);
+
+		// Hide Actions
+		if (selected_count < 1) {
+			$('#bulk-actions').slideUp();
+		}
+
+		// Style & Unselect Checkbox
+		item.removeClass('result-on').addClass('result')
+		.data('state', 'normal')
+		.find('td.checkbox input[type=checkbox]')
+		.val('normal')
+		.prop('checked', false);
+	}
+
+	$('#pile-results').on('click', 'tr', function() {		
+		if ($(this).data('state') === 'selected') {
+			pileActionUnselect($(this));
+		}
+		else {
+			pileActionSelect($(this));
+		}
+	});
+
+
+
+	/* OLD UNUSED STUFF */
+	function focus(eid) {var e = document.getElementById(eid);e.focus();
+	if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
+	else {e.value = e.value;}}
+
+});	
+</script>
+</body>
+</html>

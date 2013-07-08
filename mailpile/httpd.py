@@ -219,38 +219,41 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     if path.startswith("/_/static/"):
       return self.send_file(config, path.split("/_/static/", 1)[1])
 
-    restype = 'html'
     if not path or path == '/' and not query:
       # FIXME: This should probably be a login page of some sort.
       path = '/Inbox/'
 
-    # We peek at the ending to select a UI, but any further parsing of the
-    # path and arguments takes place in parse_pqp.
     session.ui = HttpUserInteraction(self)
-    if path.endswith('.json'):
-      session.ui.render_mode = 'json'
-    elif path.endswith('.xml'):
-      session.ui.render_mode = 'xml'
-    elif path.endswith('.rss'):
-      session.ui.render_mode = 'rss'
-    else:
-      session.ui.render_mode = 'html'
 
-    session.ui.set_postdata(post_data)
-    session.ui.set_querydata(query_data)
+    # We peek at the ending to configure the UI, but any further parsing of
+    # the path and arguments takes place in parse_pqp.
+    if path.endswith('.json'):    session.ui.render_mode = 'json'
+    elif path.endswith('.jhtml'): session.ui.render_mode = 'jhtml'
+    elif path.endswith('.xml'):   session.ui.render_mode = 'xml'
+    elif path.endswith('.rss'):   session.ui.render_mode = 'rss'
+    elif path.endswith('.txt'):   session.ui.render_mode = 'text'
+    else:                         session.ui.render_mode = 'html'
+
     try:
       cmd, data = self.parse_pqp(path, query_data, post_data, config)
+      session.ui.html_variables = {
+        'title': 'Mailpile dummy title',
+        'csrf': 'FIXMEFIXME',
+        'name': session.config.get('my_from', {1: 'Bradley Manning'}
+                                   ).values()[0]
+      }
       if cmd:
         for arg in cmd.split(' /'):
           args = arg.strip().split()
-          Action(session, args[0], ' '.join(args[1:]), data=data)
-
+          result = Action(session, args[0], ' '.join(args[1:]), data=data)
+          session.ui.display_result(result)
     except UsageError, e:
       session.ui.error('%s' % e)
     except SuppressHtmlOutput:
       return
 
-    session.ui.render(session, self.server_url(), path)
+    mimetype, content = session.ui.render_response(session.config)
+    self.send_full_response(content, mimetype=mimetype)
 
   def log_message(self, fmt, *args):
     self.server.session.ui.notify(self.server_url() + ' ' + (fmt % args))

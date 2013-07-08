@@ -641,7 +641,7 @@ def Interact(session):
         else:
           arg = ''
         try:
-          session.ui.render_result(Action(session, opt, arg))
+          session.ui.display_result(Action(session, opt, arg))
         except UsageError, e:
           session.error(str(e))
   except EOFError:
@@ -690,7 +690,7 @@ def Main(args):
       # Create and start the rest of the threads, load the index.
       config.prepare_workers(session, daemons=True)
       Load(session, '').run(quiet=True)
-      session.ui.render_result(Help(session, 'Help', ['splash']).run())
+      session.ui.display_result(Help(session, 'Help', ['splash']).run())
       session.interactive = session.ui.interactive = True
       Interact(session)
 

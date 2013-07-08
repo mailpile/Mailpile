@@ -26,15 +26,15 @@ except ImportError:
 
 class Command:
   """Generic command object all others inherit from"""
-  ORDER = (None, 0)
-  IS_HELP = False
-  SYNOPSIS = None
   EXAMPLES = None
-  SUBCOMMANDS = {}
   FAILURE = 'Failed: %(name)s %(args)s'
+  IS_HELP = False
+  ORDER = (None, 0)
   SERIALIZE = False
-  TEMPLATE_ID = 'command'
   SPLIT_ARG = 10000  # A big number!
+  SUBCOMMANDS = {}
+  SYNOPSIS = None
+  TEMPLATE_ID = 'command'
 
   class CommandResult:
     def __init__(self, session, command, template_id, doc, result):
@@ -287,8 +287,8 @@ class Rescan(Command):
 class Optimize(Command):
   """Optimize the keyword search index"""
   ORDER = ('Internals', 3)
-  SYNOPSIS = '[harder]'
   SERIALIZE = 'Optimize'
+  SYNOPSIS = '[harder]'
   def command(self):
     try:
       GlobalPostingList.Optimize(self.session, self._idx(),
@@ -653,9 +653,9 @@ class VCard(Command):
 
 class Contact(VCard):
   """Add/remove/list/edit contacts"""
+  KIND = 'individual'
   ORDER = ('Tagging', 3)
   SYNOPSIS = '<email>'
-  KIND = 'individual'
 
 
 ##[ Composing e-mail ]#########################################################
@@ -886,8 +886,8 @@ class Mail(Command):
 class ConfigSet(Command):
   """Change a setting"""
   ORDER = ('Config', 1)
-  SYNOPSIS = '<var=value>'
   SPLIT_ARG = False
+  SYNOPSIS = '<var=value>'
   def command(self):
     session, config = self.session, self.session.config
     if config.parse_set(session, self.args[0]):
@@ -898,8 +898,8 @@ class ConfigSet(Command):
 class ConfigUnset(Command):
   """Reset a setting to the default"""
   ORDER = ('Config', 2)
-  SYNOPSIS = '<var>'
   SPLIT_ARG = False
+  SYNOPSIS = '<var>'
   def command(self):
     session, config = self.session, self.session.config
     if config.parse_unset(session, self.args[0]):
@@ -910,8 +910,8 @@ class ConfigUnset(Command):
 class ConfigPrint(Command):
   """Print a setting"""
   ORDER = ('Config', 3)
-  SYNOPSIS = '<var>'
   SPLIT_ARG = False
+  SYNOPSIS = '<var>'
   def command(self):
     self.session.ui.print_key(self.args[0].strip().lower(),
                               self.session.config)
@@ -921,8 +921,8 @@ class ConfigPrint(Command):
 class AddMailbox(Command):
   """Add a mailbox"""
   ORDER = ('Config', 4)
-  SYNOPSIS = '</path/to/mbx>'
   SPLIT_ARG = False
+  SYNOPSIS = '</path/to/mbx>'
   def command(self):
     session, config, raw_fn = self.session, self.session.config, self.args[0]
     fn = os.path.expanduser(raw_fn)
@@ -1038,10 +1038,10 @@ class Output(Command):
 
 class Help(Command):
   """Print help on Mailpile or individual commands."""
+  ABOUT = 'This is Mailpile!'
   ORDER = ('Config', 9)
   IS_HELP = True
-  SYNOPSIS = "[command]"
-  ABOUT = 'This is Mailpile!'
+  TEMPLATE_ID = 'help'
 
   class CommandResult(Command.CommandResult):
     def splash_as_text(self):
@@ -1106,6 +1106,7 @@ class Help(Command):
         ('commands' in self.result) and self.commands_as_text() or '',
       ])
 
+  SYNOPSIS = "[command]"
   def command(self):
     self.session.ui.reset_marks(quiet=True)
     if self.args:

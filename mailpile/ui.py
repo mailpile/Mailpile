@@ -27,6 +27,13 @@ class SuppressHtmlOutput(Exception):
   pass
 
 
+def dict_add(d1, d2):
+  d = {}
+  d.update(d1)
+  d.update(d2)
+  return d
+
+
 class UserInteraction:
   """Log the progress and performance of individual operations"""
   MAX_BUFFER_LEN = 150
@@ -50,8 +57,10 @@ class UserInteraction:
     self.time_tracking = [('Main', [])]
     self.last_display = [self.LOG_PROGRESS, 0]
     self.render_mode = 'text'
+    self.html_variables = {}
 
-  def display(self, text, level=LOG_URGENT):
+  # Logging
+  def _display_log(self, text, level=LOG_URGENT):
     pad = ''
     if self.last_display[0] in (self.LOG_PROGRESS, ):
       pad = ' ' * max(0, min(self.MAX_WIDTH, self.MAX_WIDTH-len(text)))
@@ -60,8 +69,6 @@ class UserInteraction:
       sys.stderr.write('\n')
     sys.stderr.write('%s%s' % (text.encode('utf-8'), pad))
     self.last_display = [level, len(text)]
-
-  # Logging
   def clear_log(self):
     self.log_buffer = []
   def flush_log(self):
@@ -69,11 +76,11 @@ class UserInteraction:
       while len(self.log_buffer) > 0:
         level, message = self.log_buffer.pop(0)
         if level <= self.log_level:
-          self.display(message, level)
+          self._display_log(message, level)
     except IndexError:
       pass
   def block(self):
-    self.display('')
+    self._display_log('')
     self.log_buffering = True
   def unblock(self):
     self.log_buffering = False
@@ -85,7 +92,7 @@ class UserInteraction:
       while len(self.log_buffer) > self.MAX_BUFFER_LEN:
         self.log_buffer[0:(self.MAX_BUFFER_LEN/10)] = []
     elif level <= self.log_level:
-      self.display(message, level)
+      self._display_log(message, level)
   def finish_command(self):
     pass
   def start_command(self):
@@ -126,56 +133,117 @@ class UserInteraction:
     return elapsed
 
   # Higher level command-related methods
+  def _display_result(self, result):
+    sys.stdout.write(result+'\n')
   def start_command(self, cmd, args, kwargs):
     self.flush_log()
     self.mark('%s(%s)' % (cmd, ', '.join((args or []) + ['%s' % kwargs])))
   def finish_command(self):
     self.reset_marks()
-  def render_result(self, result):
+  def display_result(self, result):
     """Render command result objects to the user"""
-    self.display('', level=self.LOG_RESULT)
+    self._display_log('', level=self.LOG_RESULT)
     if self.render_mode == 'json':
-      sys.stdout.write(result.as_json()+'\n')
-    elif self.render_mode == 'html':
-      sys.stdout.write(result.as_html()+'\n')
+      self._display_result(result.as_json())
+    elif self.render_mode in ('html', 'jhtml'):
+      self._display_result(result.as_html())
+    elif self.render_mode == 'xml':
+      self._display_result(result.as_xml())
+    elif self.render_mode == 'rss':
+      self._display_result(result.as_rss())
     else:
-      sys.stdout.write(unicode(result)+'\n')
+      self._display_result(unicode(result))
 
+  # Rendering helpers for templating and such
   def render_json(self, data):
     """Render data as JSON"""
     return json.dumps(data, indent=1)
-
-  def _template(self, config, tpl_name):
+  def _html_template(self, config, tpl_name, elems=None):
     try:
       fn = '%s.html' % tpl_name
-      return config.open_file('html_template', fn)[1].read()
+      return config.open_file('html_template', fn)[1].read().decode('utf-8')
     except (IOError, OSError, AttributeError):
-      return '%(data)s'
-
+      if elems:
+        return ('<div class="%s">\n  ' % tpl_name.replace('/', '_') +
+                '\n  '.join(['<span class="%s">%%(%s)s</span>' % (e,e)
+                             for e in elems]) +
+                '\n</div>')
+      else:
+        return '%(data)s'
   def render_html(self, cfg, tpl_name, data):
     """Render data as HTML"""
     try:
       if isinstance(data, dict):
-        d = {'data': data}
+        d = dict_add(self.html_variables, {'data': data})
         for elem in data:
           d[elem] = self.render_html(cfg, '%s-%s' % (tpl_name, elem), data[elem])
-        return self._template(cfg, tpl_name) % d
-      elif isinstance(data, list) or isinstance(data, set):
+        return self._html_template(cfg, tpl_name, elems=data.keys()) % d
+      elif (isinstance(data, list)
+      or    isinstance(data, tuple)
+      or    isinstance(data, set)):
         html = []
         for item in data:
           html.append(self.render_html(cfg, tpl_name, item))
-        return ''.join(html)
+        return ' '.join(html)
       else:
         return escape_html(unicode(data))
     except (ValueError, KeyError):
-      return '%s' % escape_html(unicode(data))
+      return '<!-- %s -->\n%s' % (
+        escape_html(traceback.format_exc()),
+        escape_html(unicode(data))
+      )
 
 
 class HttpUserInteraction(UserInteraction):
-  pass
+  def __init__(self, request, *args, **kwargs):
+    UserInteraction.__init__(self, *args, **kwargs)
+    self.request = request
+    self.logged = []
+    self.results = []
+
+  # Just buffer up rendered data
+  def _display_log(self, text, level=UserInteraction.LOG_URGENT):
+    self.logged.append((level, text))
+  def _display_result(self, result):
+    self.results.append(result)
+
+  # Render to HTML/JSON/...
+  def _render_jhtml_response(self, config, variables):
+    return json.dumps(dict_add(variables, {
+      'results': self.results,
+      'logged': self.logged,
+    }))
+  def _render_text_response(self, config, variables):
+    return '%s\n%s' % (
+      '\n'.join([l[1] for l in self.logged]),
+      ('\n%s\n' % ('=' * 79)).join(self.results)
+    )
+  def _render_html_response(self, config):
+    return (
+      self._html_template(config, 'html/page', elems=['results', 'logged'])
+    ) % dict_add(self.html_variables, {
+      'results': '\n'.join(['<div class="result">%s</div>' % r
+                            for r in self.results]),
+      'logged': '\n'.join(['<p class="ll_%s">%s</p>' % l
+                           for l in self.logged])
+    })
+  def render_response(self, config):
+    if self.render_mode == 'json':
+      return ('application/json', '[%s]' % ','.join(self.results))
+    elif self.render_mode == 'jhtml':
+      return ('application/json', self._render_jhtml_response(config))
+    elif self.render_mode == 'html':
+      return ('text/html', self._render_html_response(config))
+    else:
+      return ('text/plain', self._render_text_response(config))
+
 
 class BackgroundInteraction(UserInteraction):
-  pass
+  # FIXME: This shouldn't be quite so silent...
+  def _display_log(self, text, level=UserInteraction.LOG_URGENT):
+    pass
+  def _display_result(self, result):
+    pass
 
 
 class xxBaseUI(object):
