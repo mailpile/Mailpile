@@ -189,10 +189,10 @@ class Command:
     except UsageError:
       raise
     except:
-      self._finishing(command, False)
       self._ignore_exception()
-      return self._error(self.FAILURE % {'name': self.name,
-                                         'args': ' '.join(self.args) })
+      self._error(self.FAILURE % {'name': self.name,
+                                  'args': ' '.join(self.args) })
+      return self._finishing(command, False)
 
   def run(self, *args, **kwargs):
     if self.serialize:
@@ -328,7 +328,7 @@ class Tag(Command):
   ORDER = ('Tagging', 0)
 
   class CommandResult(Command.CommandResult):
-    def tags_as_text(self):
+    def _tags_as_text(self):
       tags = self.result['tags']
       wrap = int(78/23) # FIXME: Magic number
       text = []
@@ -339,13 +339,26 @@ class Tag(Command):
                      tags[i]['name'])
                    + ((i%wrap)==(wrap-1) and '\n' or ''))
       return ''.join(text)+'\n'
-    def added_as_text(self):
+    def _added_as_text(self):
       return ('Added tags: '
              +', '.join([k['name'] for k in self.result['added']]))
+    def _tagging_as_text(self):
+      what = []
+      if self.result['tagged']:
+        what.append('Tagged ' +
+                    ', '.join([k['name'] for k in self.result['tagged']]))
+      if self.result['untagged']:
+        what.append('Untagged ' +
+                    ', '.join([k['name'] for k in self.result['untagged']]))
+      return '%s (%d messages)' % (', '.join(what), len(self.result['msg_ids']))
     def as_text(self):
+      if not self.result:
+        return 'Failed'
       return ''.join([
-        ('added' in self.result) and self.added_as_text() or '',
-        ('tags' in self.result) and self.tags_as_text() or '',
+        ('added' in self.result) and self._added_as_text() or '',
+        ('removed' in self.result) and self._added_as_text() or '',
+        ('tags' in self.result) and self._tags_as_text() or '',
+        ('msg_ids' in self.result) and self._tagging_as_text() or '',
       ])
 
   SYNOPSIS = '<[+|-]tags msgs>'
@@ -355,13 +368,19 @@ class Tag(Command):
     ops = []
     while words and words[0][0] in ('-', '+'):
       ops.append(words.pop(0))
+
     msg_ids = self._choose_messages(words)
+
+    rv = {'msg_ids': [], 'tagged': [], 'untagged': []}
+    rv['msg_ids'] = [b36(i) for i in msg_ids]
     for op in ops:
       tag_id = self.session.config.get_tag_id(op[1:])
       if op[0] == '-':
         idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
+        rv['untagged'].append({'name': op[1:], 'tid': tag_id})
       else:
         idx.add_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
+        rv['tagged'].append({'name': op[1:], 'tid': tag_id})
 
     if save:
       # Background save makes things feel fast!
@@ -372,7 +391,7 @@ class Tag(Command):
     else:
       idx.update_tag_stats(self.session, self.session.config)
 
-    return True
+    return rv
 
   def add_tag(self):
     config = self.session.config
@@ -404,9 +423,9 @@ class Tag(Command):
   def rm_tag(self):
     session, config = self.session, self.session.config
     existing = [v.lower() for v in config.get('tag', {}).values()]
-    removed = 0
     clean_session = mailpile.ui.Session(config)
     clean_session.ui = session.ui
+    result = []
     for tag in self.args:
       tag_id = config.get_tag_id(tag)
       if tag_id:
@@ -414,16 +433,14 @@ class Tag(Command):
         if (COMMANDS['s:'][1](clean_session, arg=['tag:%s' % tag]).run()
         and Tag(clean_session, arg=['-%s' % tag, 'all']).run()
         and config.parse_unset(session, 'tag:%s' % tag_id)):
-          removed += 1
+          result.append({'name': tag, 'tid': tag_id})
         else:
           raise Exception('That failed, not sure why?!')
       else:
         self._error('No such tag %s' % tag)
-    if removed:
+    if result:
       config.save()
-      return True
-    else:
-      return False
+    return {'removed': result}
 
   SUBCOMMANDS = {
     'add':    (add_tag,   '<tag>'),
@@ -534,17 +551,18 @@ class Filter(Command):
 class VCard(Command):
   """Add/remove/list/edit vcards"""
   ORDER = ('Internals', 6)
-  SYNOPSIS = '<nickname>'
   KIND = ''
+  SYNOPSIS = '<nickname>'
   def command(self, save=True):
     session, config = self.session, self.session.config
+    vcards = []
     for email in self.args:
       vcard = config.get_vcard(email)
       if vcard:
-        session.ui.display_vcard(vcard, compact=False)
+        vcards.append(vcard)
       else:
         session.ui.warning('No such contact: %s' % email)
-    return True
+    return vcards
 
   def _fparse(self, fromdata):
     email = ExtractEmails(fromdata)[0]
@@ -575,16 +593,17 @@ class VCard(Command):
     else:
       pairs = self._add_from_messages()
     if pairs:
+      vcards = []
       for handle, name in pairs:
         if handle.lower() not in config.vcards:
           vcard = config.add_vcard(handle, name, self.KIND)
           self._prepare_new_vcard(vcard)
-          session.ui.display_vcard(vcard, compact=False)
+          vcards.append(vcard)
         else:
           session.ui.warning('Already exists: %s' % handle)
     else:
       return self._error('Nothing to do!')
-    return True
+    return vcards
 
   def _format_values(self, key, vals):
     if key.upper() in ('MEMBER', ):

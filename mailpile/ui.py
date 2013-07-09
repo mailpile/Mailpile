@@ -215,12 +215,12 @@ class HttpUserInteraction(UserInteraction):
     self.results.append(result)
 
   # Render to HTML/JSON/...
-  def _render_jhtml_response(self, config, variables):
-    return json.dumps(dict_add(variables, {
+  def _render_jhtml_response(self, config):
+    return json.dumps(dict_add(self.html_variables, {
       'results': self.results,
       'logged': self.logged,
     }))
-  def _render_text_response(self, config, variables):
+  def _render_text_response(self, config):
     return '%s\n%s' % (
       '\n'.join([l[1] for l in self.logged]),
       ('\n%s\n' % ('=' * 79)).join(self.results)

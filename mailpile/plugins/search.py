@@ -99,6 +99,9 @@ class SearchResults(dict):
     self['end'] = start+count
     self['total'] = total
 
+  def __nonzero__(self):
+    return (self['count'] != 0)
+
   def next_set(self):
     return SearchResults(self.session, self.idx,
                          start=self['start'] - 1 + self['count'])
