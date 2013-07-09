@@ -643,7 +643,7 @@ def Interact(session):
         try:
           session.ui.display_result(Action(session, opt, arg))
         except UsageError, e:
-          session.error(str(e))
+          session.error(unicode(e))
   except EOFError:
     print
 

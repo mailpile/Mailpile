@@ -57,7 +57,8 @@ class Command:
     def as_dict(self):
       return {
         'command': self.command,
-        'result': self.result
+        'result': self.result,
+        'elapsed': '%.3f' % self.session.ui.time_elapsed
       }
 
     def as_html(self):
@@ -326,6 +327,7 @@ class RunWWW(Command):
 class Tag(Command):
   """Add/remove/list/edit message tags"""
   ORDER = ('Tagging', 0)
+  TEMPLATE_ID = 'tag'
 
   class CommandResult(Command.CommandResult):
     def _tags_as_text(self):
@@ -411,11 +413,17 @@ class Tag(Command):
 
   def list_tags(self):
     result, idx = [], self._idx()
+    wanted = [t.lower() for t in self.args if not t.startswith('!')]
+    unwanted = [t[1:].lower() for t in self.args if t.startswith('!')]
     for tid, tag in self.session.config.get('tag', {}).iteritems():
+      if wanted and tag.lower() not in wanted: continue
+      if unwanted and tag.lower() in unwanted: continue
       result.append({
         'name': tag,
         'tid': tid,
-        'new': int(idx.STATS.get(tid, [0, 0])[1])
+        'all': int(idx.STATS.get(tid, [0, 0])[0]),
+        'new': int(idx.STATS.get(tid, [0, 0])[1]),
+        'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
       })
     result.sort(key=lambda k: k['name'])
     return {'tags': result}

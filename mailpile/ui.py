@@ -18,6 +18,7 @@ import sys
 import traceback
 import json
 
+import mailpile.commands
 from mailpile.util import *
 from mailpile.search import MailIndex
 from lxml.html.clean import autolink_html
@@ -55,13 +56,15 @@ class UserInteraction:
     self.log_level = self.LOG_ALL
     self.interactive = False
     self.time_tracking = [('Main', [])]
+    self.time_elapsed = 0.0
     self.last_display = [self.LOG_PROGRESS, 0]
     self.render_mode = 'text'
     self.html_variables = {
       'title': 'Mailpile',
       'name': 'Bradley Manning',
       'csrf': '',
-      'even_odd': 'odd'
+      'even_odd': 'odd',
+      'mailpile_size': 0
     }
 
   # Logging
@@ -120,7 +123,7 @@ class UserInteraction:
     t = self.times
     self.times = []
     if t:
-      elapsed = t[-1][0] - t[0][0]
+      self.time_elapsed = elapsed = t[-1][0] - t[0][0]
       if not quiet:
         self.notify('Elapsed: %.3fs (%s)' % (elapsed, t[-1][1]))
       return elapsed
@@ -149,15 +152,15 @@ class UserInteraction:
     """Render command result objects to the user"""
     self._display_log('', level=self.LOG_RESULT)
     if self.render_mode == 'json':
-      self._display_result(result.as_json())
+      return self._display_result(result.as_json())
     elif self.render_mode in ('html', 'jhtml'):
-      self._display_result(result.as_html())
+      return self._display_result(result.as_html())
     elif self.render_mode == 'xml':
-      self._display_result(result.as_xml())
+      return self._display_result(result.as_xml())
     elif self.render_mode == 'rss':
-      self._display_result(result.as_rss())
+      return self._display_result(result.as_rss())
     else:
-      self._display_result(unicode(result))
+      return self._display_result(unicode(result))
 
   # Rendering helpers for templating and such
   def render_json(self, data):
@@ -226,9 +229,19 @@ class HttpUserInteraction(UserInteraction):
       ('\n%s\n' % ('=' * 79)).join(self.results)
     )
   def _render_html_response(self, config):
-    return (
-      self._html_template(config, 'html/page', elems=['results', 'logged'])
-    ) % dict_add(self.html_variables, {
+    page = self._html_template(config, 'html/page', elems=['results', 'logged'])
+
+    quiet = Session(config)
+    quiet.ui = SilentInteraction()
+    while page.startswith('<!-- set'):
+      load, page = page.split('\n', 1)
+      _set, vname, _eq, mode, cmd = load.strip()[5:-4].split(None, 4)
+      cmd, arg = (' ' in cmd) and cmd.split(' ', 1) or (cmd, '')
+      quiet.ui.render_mode = mode
+      result = mailpile.commands.Action(quiet, cmd, arg)
+      self.html_variables[vname] = quiet.ui.display_result(result)
+
+    return page % dict_add(self.html_variables, {
       'results': '\n'.join(['<div class="result">%s</div>' % r
                             for r in self.results]),
       'logged': '\n'.join(['<p class="ll_%s">%s</p>' % l
@@ -250,7 +263,15 @@ class BackgroundInteraction(UserInteraction):
   def _display_log(self, text, level=UserInteraction.LOG_URGENT):
     pass
   def _display_result(self, result):
+    return result
+
+
+class SilentInteraction(UserInteraction):
+  # FIXME: This shouldn't be quite so silent...
+  def _display_log(self, text, level=UserInteraction.LOG_URGENT):
     pass
+  def _display_result(self, result):
+    return result
 
 
 class xxBaseUI(object):

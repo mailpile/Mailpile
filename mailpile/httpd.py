@@ -240,7 +240,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         'title': 'Mailpile dummy title',
         'csrf': 'FIXMEFIXME',
         'name': session.config.get('my_from', {1: 'Bradley Manning'}
-                                   ).values()[0]
+                                   ).values()[0],
+        'mailpile_size': len(session.config.index.INDEX)
       }
       if cmd:
         for arg in cmd.split(' /'):

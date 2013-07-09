@@ -1,26 +1,40 @@
 import datetime
 import re
+import time
 
 import mailpile.plugins
 from mailpile.commands import Command
-from mailpile.mailutils import Email
+from mailpile.mailutils import Email, ExtractEmails
 from mailpile.search import MailIndex
 from mailpile.util import *
 
 
+def _friendly_date(days_ago, default):
+  if days_ago < 1:
+    return 'today'
+  elif days_ago < 2:
+    return 'yesterday'
+  elif days_ago < 7:
+    return '%d days ago' % days_ago
+  else:
+    return default
+
 class SearchResults(dict):
   def _explain_msg_summary(self, info):
+    days_ago = (time.time() - long(info[4], 36)) / (24*3600)
     msg_ts = long(info[4], 36)
     msg_date = datetime.date.fromtimestamp(msg_ts)
+    date = '%4.4d-%2.2d-%2.2d' % (msg_date.year, msg_date.month, msg_date.day)
     return {
       'idx': info[0],
       'id': info[1],
       'from': info[2],
       'subject': info[3],
       'timestamp': msg_ts,
-      'date': '%4.4d-%2.2d-%2.2d' % (msg_date.year, msg_date.month, msg_date.day),
+      'date': date,
+      'friendly_date': _friendly_date(days_ago, date),
       'tag_ids': info[5],
-      'url': '/=%s/%s/' % (info[0], info[1])
+      'url': '/=%s/%s/' % (info[0], info[1]),
     }
 
   def _prune_msg_tree(self, tree, context=True, parts=False):
@@ -50,6 +64,26 @@ class SearchResults(dict):
       email.evaluate_pgp(tree, decrypt=True)
       results.append(self._prune_msg_tree(tree, context=context))
     return results
+
+  def _name(self, sender):
+    words = re.sub('["<>]', '', sender).split()
+    nomail = [w for w in words if not '@' in w]
+    if nomail: return ' '.join(nomail)
+    return ' '.join(words)
+
+  def _names(self, senders):
+    if len(senders) > 1:
+      return re.sub('["<>]', '', ', '.join([x.split()[0] for x in senders]))
+    return ', '.join([self._name(s) for s in senders])
+
+  def _compact(self, namelist, maxlen):
+    l = len(namelist)
+    while l > maxlen:
+      namelist = re.sub(', *[^, \.]+, *', ',,', namelist, 1)
+      if l == len(namelist): break
+      l = len(namelist)
+    namelist = re.sub(',,,+, *', ' .. ', namelist, 1)
+    return namelist
 
   def __init__(self, session, idx,
                results=None, start=0, end=None, num=None, expand=None):
@@ -85,6 +119,22 @@ class SearchResults(dict):
       result['tags'] = sorted([idx.config['tag'].get(t,t)
                                for t in idx.get_tags(msg_info=msg_info)
                                      if 'tag:%s' % t not in terms])
+      if not expand:
+        conv = idx.get_conversation(msg_info)
+      else:
+        conv = [msg_info]
+      conv_from = [c[MailIndex.MSG_FROM] for c in conv]
+
+      result['short_from'] = self._compact(self._names(conv_from), 25)
+      result['conv_count'] = len(conv)
+      result['conv_idxs'] = [c[MailIndex.MSG_IDX] for c in conv]
+      # FIXME: conv_people should look stuff in our contact list
+      result['conv_people'] = people = [{
+        'email': (ExtractEmails(p) or [''])[0],
+        'name': self._name(p),
+      } for p in list(set(conv_from))]
+      people.sort(key=lambda i: i['name']+i['email'])
+
       if expand and mid in expand_ids:
         exp_ids = [expand[expand_ids.index(mid)]]
         result['message'] = self._message_details(exp_ids)[0]
@@ -109,26 +159,6 @@ class SearchResults(dict):
     return SearchResults(self.session, self.idx,
                          end=self['start'] - 1)
 
-  def _name(self, sender):
-    words = re.sub('["<>]', '', sender).split()
-    nomail = [w for w in words if not '@' in w]
-    if nomail: return ' '.join(nomail)
-    return ' '.join(words)
-
-  def _names(self, senders):
-    if len(senders) > 1:
-      return re.sub('["<>]', '', ', '.join([x.split()[0] for x in senders]))
-    return ', '.join([self._name(s) for s in senders])
-
-  def _compact(self, namelist, maxlen):
-    l = len(namelist)
-    while l > maxlen:
-      namelist = re.sub(', *[^, \.]+, *', ',,', namelist, 1)
-      if l == len(namelist): break
-      l = len(namelist)
-    namelist = re.sub(',,,+, *', ' .. ', namelist, 1)
-    return namelist
-
   def as_text(self):
     clen = max(3, len('%d' % len(self.session.results)))
     cfmt = '%%%d.%ds' % (clen, clen)
@@ -141,9 +171,8 @@ class SearchResults(dict):
         msg_tags = m['tags'] and (' <' + '<'.join(m['tags'])) or ''
         sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
         text.append((cfmt+' %s %-25.25s '+sfmt
-                     ) % (count, m['date'],
-                    self._compact(self._names([m['from'] or '(no sender)']), 25),
-                          m['subject'], msg_tags))
+                     ) % (count, m['date'], m['short_from'], m['subject'],
+                          msg_tags))
       count += 1
     return '\n'.join(text)+'\n'
 
@@ -248,7 +277,8 @@ class View(Command):
       if raw:
         results.append(self.RawResult({'data': email.get_file().read()}))
       else:
-        conv = [int(c[0], 36) for c in email.get_message_tree()['conversation']]
+        conv = [int(c[0], 36)
+                for c in idx.get_conversation(msg_idx=email.msg_idx)]
         results.append(SearchResults(session, idx,
                                      results=conv, num=len(conv),
                                      expand=[email]))
