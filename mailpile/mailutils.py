@@ -669,10 +669,11 @@ class Email(object):
       self.get_msg_info(self.index.MSG_TAGS).split(',')
     ]
 
-  def extract_attachment(self, session, att_id, name_fmt=None):
+  def extract_attachment(self, session, att_id, name_fmt=None, mode='download'):
     msg = self.get_msg()
     count = 0
     extracted = 0
+    filename, attributes = '', {}
     for part in msg.walk():
       mimetype = part.get_content_type()
       if mimetype.startswith('multipart/'):
@@ -704,15 +705,26 @@ class Email(object):
         if mimetype:
           attributes['mimetype'] = mimetype
 
-        fn, fd = session.ui.open_for_data(name_fmt=name_fmt,
-                                          attributes=attributes)
-        # FIXME: OMG, RAM ugh.
-        fd.write(payload)
-        fd.close()
-        session.ui.notify('Wrote attachment to: %s' % fn)
+        # FIXME: If we are asked for a preview, we should modify the payload
+        #        to be a thumbnail of some sort.
+
+        filesize = len(payload)
+        if mode.startswith('inline'):
+          attributes['data'] = payload
+          session.ui.notify('Extracted attachment %s' % att_id)
+        else:
+          filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
+                                                  attributes=attributes)
+          # FIXME: OMG, RAM ugh.
+          fd.write(payload)
+          fd.close()
+          session.ui.notify('Wrote attachment to: %s' % fn)
         extracted += 1
     if 0 == extracted:
       session.ui.notify('No attachments found for: %s' % att_id)
+      return None, None
+    else:
+      return filename, attributes
 
   def get_message_tree(self):
     tree = {

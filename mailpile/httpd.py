@@ -150,7 +150,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
           # bogus?
           pass
       elif len(parts) == 6:
-        pass
+        if parts[3] in ('inline', 'inline-preview', 'preview', 'download'):
+          cmd = ' '.join(['extract', parts[3], '#%s' % parts[4], parts[1]])
 
     elif len(path) > 1:
       parts = path.split('/')[1:]

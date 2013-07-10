@@ -184,11 +184,17 @@ class Search(Command):
   ORDER = ('Searching', 0)
   TEMPLATE_ID = 'search'
   class CommandResult(Command.CommandResult):
+    def __init__(self, *args, **kwargs):
+      self.fixed_up = False
+      return Command.CommandResult.__init__(self, *args, **kwargs)
     def _fixup(self):
+      if self.fixed_up:
+        return self
       for result in (self.result or []):
         for msg in result.get('messages', []):
           msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
                                         ['t_%s' % t.lower() for t in msg['tags']])
+      self.fixed_up = True
       return self
     def as_text(self):
       return '\n'.join([r.as_text() for r in (self.result or [])])
@@ -295,18 +301,51 @@ class View(Search):
 class Extract(Command):
   """Extract attachment(s) to file(s)"""
   ORDER = ('Searching', 5)
+  TEMPLATE_ID = 'extract'
+
+  class CommandResult(Command.CommandResult):
+    def __init__(self, *args, **kwargs):
+      self.fixed_up = False
+      return Command.CommandResult.__init__(self, *args, **kwargs)
+    def _fixup(self):
+      if self.fixed_up:
+        return self
+      for result in (self.result or []):
+        if 'data' in result:
+          result['data'] = result['data'].encode('base64').replace('\n', '')
+      self.fixed_up = True
+      return self
+    def as_html(self):
+      return Command.CommandResult.as_html(self._fixup())
+    def as_dict(self):
+      return Command.CommandResult.as_dict(self._fixup())
+
   SYNOPSIS = '<att msg [>fn]>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
+
+    if self.args[0] in ('inline', 'inline-preview', 'preview', 'download'):
+      mode = self.args.pop(0)
+    else:
+      mode = 'download'
     cid = self.args.pop(0)
     if len(self.args) > 0 and self.args[-1].startswith('>'):
       name_fmt = self.args.pop(-1)[1:]
     else:
       name_fmt = None
+
     emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+    results = []
     for email in emails:
-      email.extract_attachment(session, cid, name_fmt=name_fmt)
-    return True
+      fn, info = email.extract_attachment(session, cid,
+                                          name_fmt=name_fmt,
+                                          mode=mode)
+      if info:
+        info['idx'] = email.msg_idx
+        if fn:
+          info['created_file'] = fn
+        results.append(info)
+    return results
 
 
 class Delete(Command):
