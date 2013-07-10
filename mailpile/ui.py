@@ -164,6 +164,38 @@ class UserInteraction:
     else:
       return self._display_result(unicode(result))
 
+  # Creating output files
+  DEFAULT_DATA_NAME_FMT = '%(msg_idx)s.%(count)s_%(att_name)s.%(att_ext)s'
+  DEFAULT_DATA_ATTRS = {
+    'msg_idx': 'file',
+    'mimetype': 'application/octet-stream',
+    'att_name': 'unnamed',
+    'att_ext': 'dat',
+    'rand': '0000'
+  }
+  DEFAULT_DATA_EXTS = {
+    # FIXME: Add more!
+    'text/plain': 'txt',
+    'text/html': 'html',
+    'image/gif': 'gif',
+    'image/jpeg': 'jpg',
+    'image/png': 'png'
+  }
+  def _make_data_filename(self, name_fmt, attributes):
+    return (name_fmt or self.DEFAULT_DATA_NAME_FMT) % attributes
+  def _make_data_attributes(self, attributes={}):
+    attrs = self.DEFAULT_DATA_ATTRS.copy()
+    attrs.update(attributes)
+    attrs['rand'] = '%4.4x' % random.randint(0, 0xffff)
+    if attrs['att_ext'] == self.DEFAULT_DATA_ATTRS['att_ext']:
+      if attrs['mimetype'] in self.DEFAULT_DATA_EXTS:
+        attrs['att_ext'] = self.DEFAULT_DATA_EXTS[attrs['mimetype']]
+    return attrs
+  def open_for_data(self, name_fmt=None, attributes={}):
+    filename = self._make_data_filename(name_fmt,
+                                       self._make_data_attributes(attributes))
+    return filename, open(filename, 'w')
+
   # Rendering helpers for templating and such
   def render_json(self, data):
     """Render data as JSON"""
@@ -218,6 +250,10 @@ class HttpUserInteraction(UserInteraction):
     self.logged.append((level, text))
   def _display_result(self, result):
     self.results.append(result)
+
+  # Stream raw data to the client on open_for_data
+  def open_for_data(self, name_fmt=None, attributes={}):
+    return 'HTTP Client', RawHttpResponder(self.request, attributes)
 
   # Render to HTML/JSON/...
   def _render_jhtml_response(self, config):
@@ -421,39 +457,6 @@ class xxBaseUI(object):
           desc = '%(count)s: %(filename)s (%(mimetype)s, %(length)s bytes)' % att
           self.say(' [Attachment #%s]' % desc, fd=fd)
       self.say('', fd=fd)
-
-  DEFAULT_DATA_NAME_FMT = '%(msg_idx)s.%(count)s_%(att_name)s.%(att_ext)s'
-  DEFAULT_DATA_ATTRS = {
-    'msg_idx': 'file',
-    'mimetype': 'application/octet-stream',
-    'att_name': 'unnamed',
-    'att_ext': 'dat',
-    'rand': '0000'
-  }
-  DEFAULT_DATA_EXTS = {
-    # FIXME: Add more!
-    'text/plain': 'txt',
-    'text/html': 'html',
-    'image/gif': 'gif',
-    'image/jpeg': 'jpg',
-    'image/png': 'png'
-  }
-  def _make_data_filename(self, name_fmt, attributes):
-    return (name_fmt or self.DEFAULT_DATA_NAME_FMT) % attributes
-
-  def _make_data_attributes(self, attributes={}):
-    attrs = self.DEFAULT_DATA_ATTRS.copy()
-    attrs.update(attributes)
-    attrs['rand'] = '%4.4x' % random.randint(0, 0xffff)
-    if attrs['att_ext'] == self.DEFAULT_DATA_ATTRS['att_ext']:
-      if attrs['mimetype'] in self.DEFAULT_DATA_EXTS:
-        attrs['att_ext'] = self.DEFAULT_DATA_EXTS[attrs['mimetype']]
-    return attrs
-
-  def open_for_data(self, name_fmt=None, attributes={}):
-    filename = self._make_data_filename(name_fmt,
-                                       self._make_data_attributes(attributes))
-    return filename, open(filename, 'w')
 
   def edit_messages(self, emails):
     self.say('Sorry, this UI cannot edit messages.')

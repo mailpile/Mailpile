@@ -185,13 +185,13 @@ class Search(Command):
   TEMPLATE_ID = 'search'
   class CommandResult(Command.CommandResult):
     def _fixup(self):
-      for result in self.result:
+      for result in (self.result or []):
         for msg in result.get('messages', []):
           msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
                                         ['t_%s' % t.lower() for t in msg['tags']])
       return self
     def as_text(self):
-      return '\n'.join([r.as_text() for r in self.result])
+      return '\n'.join([r.as_text() for r in (self.result or [])])
     def as_html(self):
       return Command.CommandResult.as_html(self._fixup())
     def as_dict(self):
