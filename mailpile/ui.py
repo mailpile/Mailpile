@@ -18,6 +18,8 @@ import sys
 import traceback
 import json
 
+from collections import defaultdict
+
 import mailpile.commands
 from mailpile.util import *
 from mailpile.search import MailIndex
@@ -28,10 +30,10 @@ class SuppressHtmlOutput(Exception):
   pass
 
 
-def dict_add(d1, d2):
-  d = {}
-  d.update(d1)
-  d.update(d2)
+def default_dict(*args):
+  d = defaultdict(str)
+  for arg in args:
+    d.update(arg)
   return d
 
 
@@ -182,7 +184,7 @@ class UserInteraction:
     """Render data as HTML"""
     try:
       if isinstance(data, dict):
-        d = dict_add(self.html_variables, {'data': data})
+        d = default_dict(self.html_variables, {'data': data})
         for elem in data:
           d[elem] = self.render_html(cfg, '%s-%s' % (tpl_name, elem), data[elem])
         return self._html_template(cfg, tpl_name, elems=data.keys()) % d
@@ -219,7 +221,7 @@ class HttpUserInteraction(UserInteraction):
 
   # Render to HTML/JSON/...
   def _render_jhtml_response(self, config):
-    return json.dumps(dict_add(self.html_variables, {
+    return json.dumps(default_dict(self.html_variables, {
       'results': self.results,
       'logged': self.logged,
     }))
@@ -241,7 +243,7 @@ class HttpUserInteraction(UserInteraction):
       result = mailpile.commands.Action(quiet, cmd, arg)
       self.html_variables[vname] = quiet.ui.display_result(result)
 
-    return page % dict_add(self.html_variables, {
+    return page % default_dict(self.html_variables, {
       'results': '\n'.join(['<div class="result">%s</div>' % r
                             for r in self.results]),
       'logged': '\n'.join(['<p class="ll_%s">%s</p>' % l

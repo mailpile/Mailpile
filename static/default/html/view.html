@@ -1,0 +1,13 @@
+		<div id="bulk-actions" class="clearfix">
+			<a class="bulk-action" href="#add-to-group"><span class="icon-groups"></span> Add to Group</a>
+			<a class="bulk-action" href="#assign-tags"><span class="icon-tag"></span> Assign Tags</a>
+			<a class="bulk-action" href="#delete"><span class="icon-trash"></span> Delete</a>
+			<h5><b><span id="bulk-actions-selected-count">0</span> Messages</b> Selected</h5>
+		</div>
+		<form id="pile-results" action="" method="post">
+			<input type='hidden' name='csrf' value='%(csrf)s' />
+%(result)s
+		</form>
+		<div class="pile-speed">
+			<span class="icon-speed"></span>Searched your <strong>mail</strong>pile in <strong>%(elapsed)s seconds</strong>. Vroom!
+		</div>

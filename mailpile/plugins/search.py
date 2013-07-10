@@ -184,13 +184,18 @@ class Search(Command):
   ORDER = ('Searching', 0)
   TEMPLATE_ID = 'search'
   class CommandResult(Command.CommandResult):
+    def _fixup(self):
+      for result in self.result:
+        for msg in result.get('messages', []):
+          msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
+                                        ['t_%s' % t.lower() for t in msg['tags']])
+      return self
     def as_text(self):
-      return self.result.as_text()
+      return '\n'.join([r.as_text() for r in self.result])
     def as_html(self):
-      for msg in self.result['messages']:
-        msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
-                                      ['t_%s' % t.lower() for t in msg['tags']])
-      return Command.CommandResult.as_html(self)
+      return Command.CommandResult.as_html(self._fixup())
+    def as_dict(self):
+      return Command.CommandResult.as_dict(self._fixup())
 
   SYNOPSIS = '<terms ...>'
   def command(self, search=None):
@@ -215,7 +220,7 @@ class Search(Command):
     session.results = list(idx.search(session, session.searched))
     idx.sort_results(session, session.results, how=session.order)
     session.displayed = SearchResults(session, idx, start=start)
-    return session.displayed
+    return [session.displayed]
 
 class Next(Search):
   """Display next page of results"""
@@ -223,7 +228,7 @@ class Next(Search):
   def command(self):
     session = self.session
     session.displayed = session.displayed.next_set()
-    return session.displayed
+    return [session.displayed]
 
 class Previous(Search):
   """Display previous page of results"""
@@ -231,7 +236,7 @@ class Previous(Search):
   def command(self):
     session = self.session
     session.displayed = session.displayed.previous_set()
-    return session.displayed
+    return [session.displayed]
 
 class Order(Search):
   """Sort by: date, from, subject, random or index"""
@@ -242,19 +247,16 @@ class Order(Search):
     session.order = self.args and self.args[0] or None
     idx.sort_results(session, session.results, how=session.order)
     session.displayed = SearchResults(session, idx)
-    return session.displayed
+    return [session.displayed]
 
 
-class View(Command):
+class View(Search):
   """View one or more messages"""
   ORDER = ('Searching', 4)
-  class CommandResult(Command.CommandResult):
-    def as_text(self):
-      return ('\n%s\n' % ('=' * self.session.ui.MAX_WIDTH)
-              ).join([r.as_text() for r in self.result])
+  TEMPLATE_ID = 'view'
 
   class RawResult(dict):
-    def as_text(self):
+    def _decode(self):
       try:
         return self['data'].decode('utf-8')
       except UnicodeDecodeError:
@@ -262,6 +264,10 @@ class View(Command):
           return self['data'].decode('iso-8859-1')
         except:
           return '(MAILPILE FAILED TO DECODE MESSAGE)'
+    def as_text(self):
+      return self._decode()
+    def as_html(self):
+      return '<pre>%s</pre>' % escape_html(self._decode())
 
   SYNOPSIS = '<[raw] m1 ...>'
   def command(self):
@@ -279,6 +285,7 @@ class View(Command):
       else:
         conv = [int(c[0], 36)
                 for c in idx.get_conversation(msg_idx=email.msg_idx)]
+        conv.reverse()
         results.append(SearchResults(session, idx,
                                      results=conv, num=len(conv),
                                      expand=[email]))
