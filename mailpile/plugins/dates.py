@@ -1,3 +1,4 @@
+import time
 import datetime
 import mailpile.plugins
 
@@ -28,12 +29,27 @@ def _adjust(d):
     d[0] += 1
     d[1] -= 12
 
+def _mk_date(ts):
+  mdate = datetime.date.fromtimestamp(ts)
+  return '%d-%d-%d' % (mdate.year, mdate.month, mdate.day)
+
+_date_offsets = {
+  'today': 0,
+  'yesterday': 1
+}
 def search(config, term, hits):
   try:
+    word = term.split(':', 1)[1].lower()
     if '..' in term:
-      start, end = term.split(':', 1)[1].split('..')
+      start, end = word.split('..')
     else:
-      start = end = term.split(':', 1)[1]
+      start = end = word
+
+    if start in _date_offsets:
+      start = _mk_date(time.time() - _date_offsets[start]*24*3600)
+    if end in _date_offsets:
+      end = _mk_date(time.time() - _date_offsets[end]*24*3600)
+
     start = [int(p) for p in start.split('-')][:3]
     end = [int(p) for p in end.split('-')[:3]]
     while len(start) < 3:
@@ -77,4 +93,5 @@ def search(config, term, hits):
     raise ValueError('Invalid date range: %s' % term)
 
 mailpile.plugins.register_search_term('dates', search)
+mailpile.plugins.register_search_term('date', search)
 
