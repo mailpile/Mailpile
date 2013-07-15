@@ -956,13 +956,16 @@ class AddMailbox(Command):
     if fn in config.get('mailbox', {}).values():
       session.ui.warning('Already in the pile: %s' % fn)
     else:
-      if os.path.exists(fn):
-        arg = os.path.abspath(fn)
-        if config.parse_set(session,
-                            'mailbox:%s=%s' % (config.nid('mailbox'), fn)):
-          self._serialize('Save config', lambda: config.save())
+      if fn.startswith("imap://"):
+        arg = fn
       else:
-        return self._error('No such file/directory: %s' % raw_fn)
+        if os.path.exists(fn):
+          arg = os.path.abspath(fn)
+        else:
+          return self._error('No such file/directory: %s' % raw_fn)
+      if config.parse_set(session,
+                          'mailbox:%s=%s' % (config.nid('mailbox'), fn)):
+        self._serialize('Save config', lambda: config.save())
     return True
 
 
