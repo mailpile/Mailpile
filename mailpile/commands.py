@@ -7,7 +7,6 @@
 # commands have been defined and what their names and command-line flags are.
 #
 import datetime
-import logging
 import os
 import os.path
 import re
@@ -24,7 +23,6 @@ try:
 except ImportError:
   GnuPG = None
 
-logger = logging.getLogger(__name__)
 
 class Command:
   """Generic command object all others inherit from"""

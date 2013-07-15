@@ -1,4 +1,3 @@
-import logging
 try:
     import cStringIO as StringIO
 except ImportError:
@@ -7,7 +6,6 @@ except ImportError:
 from imaplib import IMAP4, IMAP4_SSL
 from mailbox import Mailbox, Message
 
-logger = logging.getLogger(__name__)
 
 class IMAPMailbox(Mailbox):
     """
@@ -17,7 +15,6 @@ class IMAPMailbox(Mailbox):
     """
     def __init__(self, host, port=993, user=None, password=None, mailbox=None, use_ssl=True, factory=None):
         """Initialize a Mailbox instance."""
-        logger.debug("Opening IMAP mailbox %s:%d. SSL:%s" % (host, port, use_ssl))
         if use_ssl:
             self._mailbox = IMAP4_SSL(host, port)
         else:
@@ -44,7 +41,6 @@ class IMAPMailbox(Mailbox):
         raise NotImplementedError('Method must be implemented by subclass')
 
     def _get(self, key):
-        logger.debug("Fetching %s" % key)
         typ, data = self._mailbox.fetch(key, '(RFC822)')
         response = data[0]
         if typ != "OK" or response is None:

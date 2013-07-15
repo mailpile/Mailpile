@@ -16,7 +16,6 @@ import email.header
 import email.parser
 import email.utils
 import errno
-import logging
 import mailbox
 import mimetypes
 import os
@@ -43,7 +42,6 @@ try:
 except ImportError:
   GnuPG = PGPMimeParser = None
 
-logger = logging.getLogger(__name__)
 
 class NotEditableError(ValueError):
   pass
@@ -63,11 +61,6 @@ class NoSuchMailboxError(OSError):
 
 def ParseMessage(fd, pgpmime=True):
   pos = fd.tell()
-  if logger.isEnabledFor(logging.DEBUG):
-    fd.seek(0, os.SEEK_END)
-    _len = fd.tell()
-    fd.seek(pos)
-    logger.debug("Parsing message (fd: %s, len: %d, pos: %d)" % (fd, _len, pos))
   header = [fd.readline()]
   while header[-1] not in ('', '\n', '\r\n'):
     line = fd.readline()
@@ -213,7 +206,6 @@ def HeaderPrint(message):
 
 
 def OpenMailbox(fn): 
-  logger.debug("Opening mailbox %s" % fn)
   if fn.startswith("imap://"):
     # FIXME(halldor): waaaayy too naive - expects imap://username:password@server/mailbox
     url = fn[7:]
