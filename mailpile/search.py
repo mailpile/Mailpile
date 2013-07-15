@@ -640,10 +640,9 @@ class MailIndex(object):
   def message_keywords(self, session, msg_mid, msg_id, msg, msg_date,
                        mailbox=None):
     keywords = []
-    textpart = None
     payload = [None]
     for part in msg.walk():
-      payload[0] = None
+      textpart = payload[0] = None
       ctype = part.get_content_type()
       charset = part.get_charset() or 'iso-8859-1'
       def _loader(p):
