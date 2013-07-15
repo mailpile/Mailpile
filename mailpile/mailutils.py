@@ -205,7 +205,7 @@ def HeaderPrint(message):
   return b64w(sha1b64('\n'.join(headers))).lower()
 
 
-def OpenMailbox(fn): 
+def OpenMailbox(fn):
   if fn.startswith("imap://"):
     # FIXME(halldor): waaaayy too naive - expects imap://username:password@server/mailbox
     url = fn[7:]
