@@ -656,12 +656,12 @@ class MailIndex(object):
         _loader(part)
         if len(payload[0]) > 3:
           try:
-            textpart = lxml.html.fromstring(payload[0]).text_content()
+            textpart += lxml.html.fromstring(payload[0]).text_content()
           except:
             session.ui.warning('=%s/%s has bogus HTML.' % (msg_mid, msg_id))
-            textpart = payload[0]
+            textpart += payload[0]
         else:
-          textpart = payload[0]
+          textpart += payload[0]
       elif 'pgp' in part.get_content_type():
         keywords.append('pgp:has')
 
