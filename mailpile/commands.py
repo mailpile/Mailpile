@@ -34,13 +34,13 @@ class Command:
   SPLIT_ARG = 10000  # A big number!
   SUBCOMMANDS = {}
   SYNOPSIS = None
-  TEMPLATE_ID = 'command'
+  TEMPLATE_IDS = ['command']
 
   class CommandResult:
-    def __init__(self, session, command, template_id, doc, result):
+    def __init__(self, session, command, template_ids, doc, result):
       self.session = session
       self.command = command
-      self.template_id = template_id
+      self.template_ids = template_ids
       self.doc = doc
       self.result = result
 
@@ -63,7 +63,7 @@ class Command:
 
     def as_html(self):
       return self.session.ui.render_html(self.session.config,
-                                         'html/%s' % self.template_id,
+                                     ['html/%s' % t for t in self.template_ids],
                                          self.as_dict())
 
     def as_json(self):
@@ -72,7 +72,7 @@ class Command:
   def __init__(self, session, name=None, arg=None, data=None):
     self.session = session
     self.serialize = self.SERIALIZE
-    self.template_id = self.TEMPLATE_ID
+    self.template_ids = self.TEMPLATE_IDS[:]
     self.name = name
     self.data = data or {}
     self.result = None
@@ -170,7 +170,7 @@ class Command:
   def _finishing(self, command, rv):
     if self.name:
        self.session.ui.finish_command()
-    return self.CommandResult(self.session, self.name, self.template_id,
+    return self.CommandResult(self.session, self.name, self.template_ids,
                               command.__doc__ or self.__doc__, rv)
 
   def _run(self, *args, **kwargs):
@@ -179,7 +179,8 @@ class Command:
         return self.command(*args, **kwargs)
       if self.SUBCOMMANDS and self.args and self.args[0] in self.SUBCOMMANDS:
         subcmd = self.args.pop(0)
-        self.template_id += '_' + subcmd
+        for i in range(0, len(self.template_ids)):
+          self.template_ids[i] += '_' + subcmd
         if self.name:
           self.name += ' ' + subcmd
         command = self.SUBCOMMANDS[subcmd][0]
@@ -328,7 +329,7 @@ class RunWWW(Command):
 class Tag(Command):
   """Add/remove/list/edit message tags"""
   ORDER = ('Tagging', 0)
-  TEMPLATE_ID = 'tag'
+  TEMPLATE_IDS = ['tag']
 
   class CommandResult(Command.CommandResult):
     def _tags_as_text(self):
@@ -849,7 +850,7 @@ class Help(Command):
   ABOUT = 'This is Mailpile!'
   ORDER = ('Config', 9)
   IS_HELP = True
-  TEMPLATE_ID = 'help'
+  TEMPLATE_IDS = ['help']
 
   class CommandResult(Command.CommandResult):
     def splash_as_text(self):
@@ -985,7 +986,7 @@ class Help(Command):
 
   def _starting(self): pass
   def _finishing(self, command, rv):
-    return self.CommandResult(self.session, self.name, self.template_id,
+    return self.CommandResult(self.session, self.name, self.template_ids,
                               command.__doc__ or self.__doc__, rv)
 
   SUBCOMMANDS = {

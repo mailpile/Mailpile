@@ -200,26 +200,30 @@ class UserInteraction:
   def render_json(self, data):
     """Render data as JSON"""
     return json.dumps(data, indent=1)
-  def _html_template(self, config, tpl_name, elems=None):
-    try:
-      fn = '%s.html' % tpl_name
-      return config.open_file('html_template', fn)[1].read().decode('utf-8')
-    except (IOError, OSError, AttributeError):
-      if elems:
-        return ('<div class="%s">\n  ' % tpl_name.replace('/', '_') +
-                '\n  '.join(['<span class="%s">%%(%s)s</span>' % (e,e)
-                             for e in elems]) +
-                '\n</div>')
-      else:
-        return '%(data)s'
-  def render_html(self, cfg, tpl_name, data):
+  def _html_template(self, config, tpl_names, elems=None):
+    for tpl_name in tpl_names:
+      try:
+        fn = '%s.html' % tpl_name
+        return config.open_file('html_template', fn)[1].read().decode('utf-8')
+      except (IOError, OSError, AttributeError):
+        pass
+    if elems:
+      return ('<div class="%s">\n  ' % tpl_names[0].replace('/', '_') +
+              '\n  '.join(['<span class="%s">%%(%s)s</span>' % (e,e)
+                           for e in elems]) +
+              '\n</div>')
+    else:
+      return '%(data)s'
+  def render_html(self, cfg, tpl_names, data):
     """Render data as HTML"""
     try:
       if isinstance(data, dict):
         d = default_dict(self.html_variables, {'data': data})
         for elem in data:
-          d[elem] = self.render_html(cfg, '%s-%s' % (tpl_name, elem), data[elem])
-        return self._html_template(cfg, tpl_name, elems=data.keys()) % d
+          d[elem] = self.render_html(cfg,
+                                     ['%s-%s' % (t, elem) for t in tpl_names],
+                                     data[elem])
+        return self._html_template(cfg, tpl_names, elems=data.keys()) % d
       elif (isinstance(data, list)
       or    isinstance(data, tuple)
       or    isinstance(data, set)):
@@ -227,7 +231,7 @@ class UserInteraction:
         for item in data:
           eo += 1
           self.html_variables['even_odd'] = ((eo%2)==0) and 'even' or 'odd'
-          html.append(self.render_html(cfg, tpl_name, item))
+          html.append(self.render_html(cfg, tpl_names, item))
         return ' '.join(html)
       else:
         return escape_html(unicode(data))
@@ -270,8 +274,8 @@ class HttpUserInteraction(UserInteraction):
       ('\n%s\n' % ('=' * 79)).join(self.results)
     )
   def _render_html_response(self, config):
-    page = self._html_template(config, 'html/page', elems=['results', 'logged'])
-
+    page = self._html_template(config, ['html/page'],
+                               elems=['results', 'logged'])
     quiet = Session(config)
     quiet.ui = SilentInteraction()
     while page.startswith('<!-- set'):

@@ -16,7 +16,7 @@ from mailpile.plugins.search import Search, SearchResults
 class Compose(Search):
   """(Continue) Composing an e-mail"""
   ORDER = ('Composing', 0)
-  TEMPLATE_ID = 'compose'
+  TEMPLATE_IDS = ['compose'] + Search.TEMPLATE_IDS
 
   SYNOPSIS = '<[msg]>'
   def command(self):
@@ -51,7 +51,7 @@ class Compose(Search):
 class Update(Compose):
   """Update message from a file"""
   ORDER = ('Composing', 1)
-  TEMPLATE_ID = 'update'
+  TEMPLATE_IDS = ['update'] + Compose.TEMPLATE_IDS
 
   SYNOPSIS = '<msg path/to/f>'
   def command(self):
@@ -70,7 +70,7 @@ class Update(Compose):
 class Attach(Compose):
   """Attach a file to a message"""
   ORDER = ('Composing', 2)
-  TEMPLATE_ID = 'attach'
+  TEMPLATE_IDS = ['attach'] + Compose.TEMPLATE_IDS
 
   SYNOPSIS = '<msg path/to/f>'
   def command(self):
@@ -107,7 +107,7 @@ class Attach(Compose):
 class Reply(Compose):
   """Reply(-all) to one or more messages"""
   ORDER = ('Composing', 3)
-  TEMPLATE_ID = 'reply'
+  TEMPLATE_IDS = ['reply'] + Compose.TEMPLATE_IDS
 
   SYNOPSIS = '<[all] m1 ...>'
   def command(self):
@@ -166,7 +166,7 @@ class Reply(Compose):
 class Forward(Compose):
   """Forward messages (and attachments)"""
   ORDER = ('Composing', 4)
-  TEMPLATE_ID = 'forward'
+  TEMPLATE_IDS = ['forward'] + Compose.TEMPLATE_IDS
 
   SYNOPSIS = '<[att] m1 ...>'
   def command(self):
@@ -227,7 +227,7 @@ class Forward(Compose):
 class Mail(Command):
   """Mail/bounce a message (to someone)"""
   ORDER = ('Composing', 5)
-  TEMPLATE_ID = 'mail'
+  TEMPLATE_IDS = ['mail']
 
   SYNOPSIS = '<msg [email]>'
   def command(self):

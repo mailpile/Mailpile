@@ -182,7 +182,7 @@ class SearchResults(dict):
 class Search(Command):
   """Search your mail!"""
   ORDER = ('Searching', 0)
-  TEMPLATE_ID = 'search'
+  TEMPLATE_IDS = ['search']
   class CommandResult(Command.CommandResult):
     def __init__(self, *args, **kwargs):
       self.fixed_up = False
@@ -259,7 +259,7 @@ class Order(Search):
 class View(Search):
   """View one or more messages"""
   ORDER = ('Searching', 4)
-  TEMPLATE_ID = 'view'
+  TEMPLATE_IDS = ['view'] + Search.TEMPLATE_IDS
 
   class RawResult(dict):
     def _decode(self):
@@ -301,7 +301,7 @@ class View(Search):
 class Extract(Command):
   """Extract attachment(s) to file(s)"""
   ORDER = ('Searching', 5)
-  TEMPLATE_ID = 'extract'
+  TEMPLATE_IDS = ['extract']
 
   class CommandResult(Command.CommandResult):
     def __init__(self, *args, **kwargs):
