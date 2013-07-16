@@ -133,3 +133,97 @@ MailPile.prototype.warning = function(msg) {
 var mailpile = new MailPile();
 
 // Non-exposed functions: www, setup
+$(document).ready(function() {
+
+	/* Hide Various Things */
+	$('#search-params, #bulk-actions').hide();
+
+
+
+	/* Search Box */
+	$('#qbox').jkey('enter, return', function(key) {	
+    	console.log('Search query submitted');
+		$('#search-params').slideDown('fast');
+	});
+
+
+
+	/* Bulk Actions */
+	$('.bulk-action').on('click', function(e) {
+
+		e.preventDefault();
+		
+		var checkboxes = $('#pile-results input[type=checkbox]');
+		var action = $(this).attr('href');
+		var count = 0;
+		
+		$.each(checkboxes, function() {
+
+			if ($(this).val() === 'selected') {
+				console.log('This is here ' + $(this).attr('name'));
+				
+				count++;
+			}
+			
+		});
+		
+		
+		alert(count + ' items selected to "' + action.replace('#', '') + '"');
+
+	});
+
+
+	/* Result Actions */
+	var pileActionSelect = function(item) {
+
+		// Increment Selected
+		$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
+
+		// Show Actions
+		$('#bulk-actions').slideDown('fast');
+
+		// Style & Select Checkbox
+		item.removeClass('result').addClass('result-on')
+		.data('state', 'selected')
+		.find('td.checkbox input[type=checkbox]')
+		.val('selected')
+		.prop('checked', true);	
+	}
+
+	var pileActionUnselect = function(item) {
+
+		// Decrement Selected
+		var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
+
+		$('#bulk-actions-selected-count').html(selected_count);
+
+		// Hide Actions
+		if (selected_count < 1) {
+			$('#bulk-actions').slideUp('fast');
+		}
+
+		// Style & Unselect Checkbox
+		item.removeClass('result-on').addClass('result')
+		.data('state', 'normal')
+		.find('td.checkbox input[type=checkbox]')
+		.val('normal')
+		.prop('checked', false);
+	}
+
+	$('#pile-results').on('click', 'tr', function() {		
+		if ($(this).data('state') === 'selected') {
+			pileActionUnselect($(this));
+		}
+		else {
+			pileActionSelect($(this));
+		}
+	});
+
+
+
+	/* OLD UNUSED STUFF */
+	function focus(eid) {var e = document.getElementById(eid);e.focus();
+	if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
+	else {e.value = e.value;}}
+
+});	
