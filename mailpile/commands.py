@@ -96,7 +96,7 @@ class Command:
         config.index = None
         session.results = []
         session.searched = []
-        session.displayed = (0, 0)
+        session.displayed = {'start': 1, 'count': 0}
       idx = config.get_index(session)
       idx.update_tag_stats(session, config)
       if not wait:
@@ -115,7 +115,8 @@ class Command:
       all_words.extend(word.split(','))
     for what in all_words:
       if what.lower() == 'these':
-        b, c = self.session.displayed
+        b = self.session.displayed['start'] - 1
+        c = self.session.displayed['count']
         msg_ids |= set(self.session.results[b:b+c])
       elif what.lower() == 'all':
         msg_ids |= set(self.session.results)
@@ -685,229 +686,6 @@ class Contact(VCard):
   SYNOPSIS = '<email>'
 
 
-##[ Composing e-mail ]#########################################################
-
-class Compose(Command):
-  """(Continue) Composing an e-mail"""
-  ORDER = ('Composing', 0)
-  SYNOPSIS = '<[msg]>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    if self.args:
-      emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-    else:
-      local_id, lmbox = config.open_local_mailbox(session)
-      emails = [Email.Create(idx, local_id, lmbox)]
-      try:
-        msg_idxs = [int(e.get_msg_info(idx.MSG_IDX), 36) for e in emails]
-        idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                    msg_idxs=msg_idxs, conversation=False)
-      except (TypeError, ValueError, IndexError):
-        self._ignore_exception()
-
-    session.ui.edit_messages(emails)
-    session.ui.mark('%d message(s) created as drafts' % len(emails))
-    return True
-
-
-class Update(Command):
-  """Update message from a file"""
-  ORDER = ('Composing', 1)
-  SYNOPSIS = '<msg path/to/f>'
-  def command(self):
-    if len(self.args) > 1:
-      session, config, idx = self.session, self.session.config, self._idx()
-      update = self._read_file_or_data(self.args.pop(-1))
-      emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-      for email in emails:
-        email.update_from_string(update)
-      session.ui.notify('%d message(s) updated' % len(emails))
-    else:
-      return self._error('Nothing to update!')
-    return True
-
-
-class Attach(Command):
-  """Attach a file to a message"""
-  ORDER = ('Composing', 2)
-  SYNOPSIS = '<msg path/to/f>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-
-    files = []
-    while os.path.exists(self.args[-1]):
-      files.append(self.args.pop(-1))
-    if not files:
-      return self._error('No files found')
-
-    emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-    if not emails:
-      return self._error('No messages selected')
-
-    # FIXME: Using "say" here is rather lame.
-    session.ui.notify('Attaching %s to...' % ', '.join(files))
-    for email in emails:
-      subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
-      try:
-        email.add_attachments(files)
-        session.ui.notify(' - %s' % subject)
-      except NotEditableError:
-        session.ui.error('Read-only message: %s' % subject)
-      except:
-        session.ui.error('Error attaching to %s' % subject)
-        self._ignore_exception()
-
-    return True
-
-
-class Reply(Command):
-  """Reply(-all) to one or more messages"""
-  ORDER = ('Composing', 3)
-  SYNOPSIS = '<[all] m1 ...>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-
-    if self.args and self.args[0].lower() == 'all':
-      reply_all = self.args.pop(0) or True
-    else:
-      reply_all = False
-
-    refs = [Email(idx, i) for i in self._choose_messages(self.args)]
-    if refs:
-      trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True) for m in refs]
-      ref_ids = [t['headers_lc'].get('message-id') for t in trees]
-      ref_subjs = [t['headers_lc'].get('subject') for t in trees]
-      msg_to = [t['headers_lc'].get('reply-to',
-                                    t['headers_lc']['from']) for t in trees]
-      msg_cc = []
-      if reply_all:
-        msg_cc += [t['headers_lc'].get('to', '') for t in trees]
-        msg_cc += [t['headers_lc'].get('cc', '') for t in trees]
-      msg_bodies = []
-      for t in trees:
-        # FIXME: Templates/settings for how we quote replies?
-        text = (('%s wrote:\n' % t['headers_lc']['from']) +
-                 ''.join([p['data'] for p in t['text_parts']
-                          if p['type'] in ('text', 'quote',
-                                           'pgpsignedtext',
-                                           'pgpsecuretext',
-                                           'pgpverifiedtext')]))
-        msg_bodies.append(text.replace('\n', '\n> '))
-
-      local_id, lmbox = config.open_local_mailbox(session)
-      try:
-        email = Email.Create(idx, local_id, lmbox,
-                             msg_text='\n\n'.join(msg_bodies),
-                             msg_subject=('Re: %s' % ref_subjs[-1]),
-                             msg_to=msg_to,
-                             msg_cc=[r for r in msg_cc if r],
-                             msg_references=[i for i in ref_ids if i])
-        try:
-          idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                      msg_idxs=[int(email.get_msg_info(idx.MSG_IDX), 36)],
-                      conversation=False)
-        except (TypeError, ValueError, IndexError):
-          self._ignore_exception()
-
-      except NoFromAddressError:
-        return self._error('You must configure a From address first.')
-
-      if session.interactive:
-        session.ui.edit_messages([email])
-      else:
-        session.ui.notify('Message created as draft')
-      return True
-    else:
-      return self._error('No message found')
-
-
-class Forward(Command):
-  """Forward messages (and attachments)"""
-  ORDER = ('Composing', 4)
-  SYNOPSIS = '<[att] m1 ...>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-
-    if self.args and self.args[0].lower().startswith('att'):
-      with_atts = self.args.pop(0) or True
-    else:
-      with_atts = False
-
-    refs = [Email(idx, i) for i in self._choose_messages(self.args)]
-    if refs:
-      trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True) for m in refs]
-      ref_subjs = [t['headers_lc']['subject'] for t in trees]
-      msg_bodies = []
-      msg_atts = []
-      for t in trees:
-        # FIXME: Templates/settings for how we quote forwards?
-        text = '-------- Original Message --------\n'
-        for h in ('Date', 'Subject', 'From', 'To'):
-          v = t['headers_lc'].get(h.lower(), None)
-          if v:
-            text += '%s: %s\n' % (h, v)
-        text += '\n'
-        text += ''.join([p['data'] for p in t['text_parts']
-                         if p['type'] in ('text', 'quote',
-                                          'pgpsignedtext',
-                                          'pgpsecuretext',
-                                          'pgpverifiedtext')])
-        msg_bodies.append(text)
-        if with_atts:
-          for att in t['attachments']:
-            if att['mimetype'] not in ('application/pgp-signature', ):
-              msg_atts.append(att['part'])
-
-      local_id, lmbox = config.open_local_mailbox(session)
-      email = Email.Create(idx, local_id, lmbox,
-                           msg_text='\n\n'.join(msg_bodies),
-                           msg_subject=('Fwd: %s' % ref_subjs[-1]))
-      if msg_atts:
-        msg = email.get_msg()
-        for att in msg_atts:
-          msg.attach(att)
-        email.update_from_msg(msg)
-
-      try:
-        idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                    msg_idxs=[int(email.get_msg_info(idx.MSG_IDX), 36)],
-                    conversation=False)
-      except (TypeError, ValueError, IndexError):
-        self._ignore_exception()
-
-      if session.interactive:
-        session.ui.edit_messages([email])
-      else:
-        session.ui.notify('Message created as draft')
-      return True
-    else:
-      return self._error('No message found')
-
-
-class Mail(Command):
-  """Mail/bounce a message (to someone)"""
-  ORDER = ('Composing', 5)
-  SYNOPSIS = '<msg [email]>'
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-
-    bounce_to = []
-    while self.args and '@' in self.args[-1]:
-      bounce_to.append(self.args.pop(-1))
-
-    # Process one at a time so we don't eat too much memory
-    for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
-      try:
-        msg_idx = email.get_msg_info(idx.MSG_IDX)
-        SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
-        Tag(session, arg=['-Drafts', '+Sent', '=%s'% msg_idx]).run()
-      except:
-        session.ui.error('Failed to send %s' % email)
-        self._ignore_exception()
-
-    return True
-
-
 ##[ Configuration commands ]###################################################
 
 class ConfigSet(Command):
@@ -1251,20 +1029,14 @@ def Action(session, opt, arg, data=None):
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = {
   'A:':     ('add=',     AddMailbox),
-  'a:':     ('attach=',  Attach),
-  'c:':     ('compose=', Compose),
   'C:':     ('contact=', Contact),
-  'f:':     ('forward=', Forward),
   'F:':     ('filter=',  Filter),
   'g:':     ('gpg',      GPG),
   'h':      ('help',     Help),
-  'm:':     ('mail=',    Mail),
   'P:':     ('print=',   ConfigPrint),
-  'r:':     ('reply=',   Reply),
   'S:':     ('set=',     ConfigSet),
   't:':     ('tag=',     Tag),
   'U:':     ('unset=',   ConfigUnset),
-  'u:':     ('update=',  Update),
   '_dmode': ('output=',  Output),
   '_setup': ('setup',    Setup),
   '_load':  ('load',     Load),
