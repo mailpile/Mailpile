@@ -13,7 +13,15 @@ from mailpile.util import *
 from mailpile.plugins.search import Search, SearchResults
 
 
-class Compose(Search):
+class ReturnsSearchResults(Search):
+  def _return_search_results(self, session, idx, emails, expand=None):
+    session.results = [e.msg_idx for e in emails]
+    session.displayed = SearchResults(session, idx,
+                                      num=len(emails), expand=expand)
+    return [session.displayed]
+
+
+class Compose(ReturnsSearchResults):
   """(Continue) Composing an e-mail"""
   ORDER = ('Composing', 0)
   TEMPLATE_IDS = ['compose'] + Search.TEMPLATE_IDS
@@ -38,17 +46,10 @@ class Compose(Search):
   def _edit_new_messages(self, session, idx, emails):
     session.ui.edit_messages(emails)
     session.ui.mark('%d message(s) created as drafts' % len(emails))
-    return self._return_search_results(session, idx, emails)
-
-  def _return_search_results(self, session, idx, emails):
-    session.results = [e.msg_idx for e in emails]
-    session.displayed = SearchResults(session, idx,
-                                      num=len(emails),
-                                      expand=[emails[0]])
-    return [session.displayed]
+    return self._return_search_results(session, idx, emails, emails)
 
 
-class Update(Compose):
+class Update(ReturnsSearchResults):
   """Update message from a file"""
   ORDER = ('Composing', 1)
   TEMPLATE_IDS = ['update'] + Compose.TEMPLATE_IDS
@@ -62,12 +63,12 @@ class Update(Compose):
       for email in emails:
         email.update_from_string(update)
       session.ui.notify('%d message(s) updated' % len(emails))
-      return self._return_search_results(session, idx, emails)
+      return self._return_search_results(session, idx, emails, emails)
     else:
       return self._error('Nothing to update!')
 
 
-class Attach(Compose):
+class Attach(ReturnsSearchResults):
   """Attach a file to a message"""
   ORDER = ('Composing', 2)
   TEMPLATE_IDS = ['attach'] + Compose.TEMPLATE_IDS
@@ -101,7 +102,7 @@ class Attach(Compose):
 
     session.ui.notify(('Attached %s to %d messages'
                        ) % (', '.join(files), len(updated)))
-    return self._return_search_results(session, idx, updated)
+    return self._return_search_results(session, idx, updated, updated)
 
 
 class Reply(Compose):
@@ -224,7 +225,7 @@ class Forward(Compose):
       return self._error('No message found')
 
 
-class Mail(Command):
+class Mail(ReturnsSearchResults):
   """Mail/bounce a message (to someone)"""
   ORDER = ('Composing', 5)
   TEMPLATE_IDS = ['mail']
@@ -238,16 +239,18 @@ class Mail(Command):
       bounce_to.append(self.args.pop(-1))
 
     # Process one at a time so we don't eat too much memory
+    sent = []
     for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
       try:
         msg_idx = email.get_msg_info(idx.MSG_IDX)
         SendMail(session, [PrepareMail(email, rcpts=(bounce_to or None))])
         Tag(session, arg=['-Drafts', '+Sent', '=%s'% msg_idx]).run()
+        sent.append(email)
       except:
         session.ui.error('Failed to send %s' % email)
         self._ignore_exception()
 
-    return True
+    return self._return_search_results(session, idx, emails)
 
 
 mailpile.plugins.register_command('a:', 'attach=',  Attach)
