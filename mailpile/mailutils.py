@@ -553,9 +553,8 @@ class Email(object):
     'cc': 5,
     'bcc': 6,
   }
-  def get_editing_string(self):
+  def get_editing_string(self, tree):
     lines = []
-    tree = self.get_message_tree()
 
     # We care about header order and such things...
     hdrs = dict([(h.lower(), h) for h in tree['headers'].keys()
@@ -796,7 +795,8 @@ class Email(object):
       'text_parts': [],
       'html_parts': [],
       'attachments': [],
-      'conversation': []
+      'conversation': [],
+      'is_editable': self.is_editable()
     }
 
     conv_id = self.get_msg_info(self.index.MSG_CONV_ID)
@@ -851,6 +851,9 @@ class Email(object):
           'content-id': part.get('content-id', ''),
           'filename': part.get_filename() or ''
         })
+
+    if tree['is_editable']:
+      tree['editing_string'] = self.get_editing_string(tree)
 
     return tree
 
