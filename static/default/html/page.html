@@ -11,30 +11,22 @@
 	<link rel="stylesheet" href="/_/static/css/default.css" />
 
 	<!--[if lt IE 9]>
-		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<script src="/_/static/js/html5.js"></script>
 	<![endif]-->
 
-	<!-- Favicons
-	================================================== -->
-	<link rel="shortcut icon" href="/_/static/img/logo-color.png">
+	<!-- Apple Icons -->
 	<link rel="apple-touch-icon" sizes="57x57" href="/_/static/img/apple-touch-icon.png">
 	<link rel="apple-touch-icon" sizes="72x72" href="/_/static/img/apple-touch-icon-72x72.png">
 	<link rel="apple-touch-icon" sizes="114x114" href="/_/static/img/apple-touch-icon-114x114.png">
-	<title>%(title)s</title>
 
-        <!-- FIXME: Belongs in the .css, here for testing -->
-	<style type='text/css'>
-                .tag_new_0 .navigation-attention-important {display: none}
-                #debug {padding: 0; margin: 1em; text-align: right; line-height: 1em; font-size: 0.75em;}
-                tr.message-body {margin-top: -1em;}
-                div.message-body {margin-top: 1em;}
-                #debug {white-space: pre-wrap;}
-                p.text-part-text {white-space: pre-wrap;}
-                p.text-part-quote {white-space: pre-wrap; color: #777; max-height: 5em; overflow: hidden;}
-	</style>
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="/_/img/favicon.png" />
+	<link rel="icon" type="image/png" href="/_/img/favicon.png" />
+
+	<title>%(title)s | %(name)s's</title>
+
 </head>
 
-<!-- START BODY -->
 <body>
 
 <div id="header" class="clearfix">
@@ -55,9 +47,9 @@
 		<nav>
 			<ul>
 				<li><a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>4 Drafts</small></a></li>
-%(high_tags)s
-%(user_tags)s
-%(low_tags)s
+				%(high_tags)s
+				%(user_tags)s
+				%(low_tags)s
 			</ul>
 		</nav>
 		<hr>			
@@ -72,38 +64,16 @@
 		</nav>
 		<hr>
 	</div>
-<!-- END BODY -->
 
 
 	<!-- START CONTENT -->
 	<div id="content">
-		<nav id="sub-navigation">
-			<ul class="clearfix">
-				<li class="navigation-on"><a href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">5</span> New</a></li>
-				<li><a href="#"><span class="navigation-icon icon-later"></span><span class="navigation-attention-important">12</span> Later</a></li>
-				<li><a href="#"><span class="navigation-icon icon-message"></span><span>2,415</span> Read</a></li>
-			</ul>
-		</nav>
-		<div id="search" class="clearfix">
-			<form id="search-form" action="/" class="clearfix">
-				<span class="icon-search"></span>
-				<input id="qbox" type="text" name="q" placeholder="Custom Search..." value="" />
-				<input type="submit" class="button-primary" value="Search"/>
-				<input type="hidden" name="csrf" value="%(csrf)s" />
-			</form>
-			<div id="search-params" class="clearfix">
-				<a href="#" class="" id="search-start-time">Start time</a> to 
-				<a href="#" class="" id="search-end-time">Present</a> with
-				<a href="#" id="search-tags">No tags</a> and
-				<a href="#" id="search-all-groups">All groups</a>
-			</div>
-		</div>
-%(results)s
+		%(results)s
 		<div id="footer">
-			<a href='http://mailpile.is'>Mailpile</a> is free software made by <a title='Bjarni R. Einarsson' href='http://bre.klaki.net'>bre</a>, <a title="Brennan Novak" href="https://brennannovak.com">bnvk</a> &amp; more
+			<a href='http://mailpile.is'>Mailpile</a> is free software made by <a title="Bjarni R. Einarsson" href="http://bre.klaki.net" target="_blank">bre</a>, <a title="Brennan Novak" href="https://brennannovak.com" target="_blank">bnvk</a>, <a href="http://www.smarimccarthy.is/" target="_blank">smári</a> &amp; <a href="https://github.com/pagekite/Mailpile/graphs/contributors" target="_blank">more</a>
 		</div>
 
-                <div id="debug">%(logged)s</div>
+		<div id="debug">%(logged)s</div>
 	</div>
 	<!-- END CONTENT -->
 
@@ -114,101 +84,5 @@
 <script type="text/javascript" src="/_/static/js/jquery.min.js"></script>
 <script type="text/javascript" src="/_/static/js/jKey/jquery.jkey.js"></script>
 <script type="text/javascript" src="/_/static/js/mailpile.js"></script>
-<script type="text/javascript">
-$(document).ready(function() {
-
-	/* Hide Various Things */
-	$('#search-params, #bulk-actions').hide();
-
-
-
-	/* Search Box */
-	$('#qbox').jkey('enter, return', function(key) {	
-    	console.log('Search query submitted');
-		$('#search-params').slideDown();
-	});
-
-
-
-	/* Bulk Actions */
-	$('.bulk-action').on('click', function(e) {
-
-		e.preventDefault();
-		
-		var checkboxes = $('#pile-results input[type=checkbox]');
-		var action = $(this).attr('href');
-		var count = 0;
-		
-		$.each(checkboxes, function() {
-
-			if ($(this).val() === 'selected') {
-				console.log('This is here ' + $(this).attr('name'));
-				
-				count++;
-			}
-			
-		});
-		
-		
-		alert(count + ' items selected to "' + action.replace('#', '') + '"');
-
-	});
-
-
-	/* Result Actions */
-	var pileActionSelect = function(item) {
-
-		// Increment Selected
-		$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
-
-		// Show Actions
-		$('#bulk-actions').slideDown();
-
-		// Style & Select Checkbox
-		item.removeClass('result').addClass('result-on')
-		.data('state', 'selected')
-		.find('td.checkbox input[type=checkbox]')
-		.val('selected')
-		.prop('checked', true);	
-	}
-
-	var pileActionUnselect = function(item) {
-
-		// Decrement Selected
-		var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
-
-		$('#bulk-actions-selected-count').html(selected_count);
-
-		// Hide Actions
-		if (selected_count < 1) {
-			$('#bulk-actions').slideUp();
-		}
-
-		// Style & Unselect Checkbox
-		item.removeClass('result-on').addClass('result')
-		.data('state', 'normal')
-		.find('td.checkbox input[type=checkbox]')
-		.val('normal')
-		.prop('checked', false);
-	}
-
-	$('#pile-results').on('click', 'tr', function() {		
-		if ($(this).data('state') === 'selected') {
-			pileActionUnselect($(this));
-		}
-		else {
-			pileActionSelect($(this));
-		}
-	});
-
-
-
-	/* OLD UNUSED STUFF */
-	function focus(eid) {var e = document.getElementById(eid);e.focus();
-	if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
-	else {e.value = e.value;}}
-
-});	
-</script>
 </body>
 </html>
