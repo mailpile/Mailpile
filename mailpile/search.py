@@ -731,8 +731,8 @@ class MailIndex(object):
         self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
       return self.CACHE[msg_idx]
     except IndexError:
-      return (None, None, None, None, b36(0),
-              '(not in index)', '(not in index: %s)' % msg_idx, '', '', '-1')
+      return [None, None, None, None, b36(0),
+              '(not in index)', '(not in index: %s)' % msg_idx, '', '', '-1']
 
   def set_msg_by_idx(self, msg_idx, msg_info):
     self.MODIFIED.add(msg_idx)
@@ -783,13 +783,14 @@ class MailIndex(object):
             msg_idxs.add(int(reply[self.MSG_IDX], 36))
           if msg_idx % 1000 == 0: self.CACHE = {}
     for msg_idx in msg_idxs:
-      msg_info = self.get_msg_by_idx(msg_idx)
-      tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
-      tags.add(tag_id)
-      msg_info[self.MSG_TAGS] = ','.join(list(tags))
-      self.INDEX[msg_idx] = self.m2l(msg_info)
-      self.MODIFIED.add(msg_idx)
-      pls.append(msg_info[self.MSG_IDX])
+      if msg_idx >= 0 and msg_idx < len(self.INDEX):
+        msg_info = self.get_msg_by_idx(msg_idx)
+        tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
+        tags.add(tag_id)
+        msg_info[self.MSG_TAGS] = ','.join(list(tags))
+        self.INDEX[msg_idx] = self.m2l(msg_info)
+        self.MODIFIED.add(msg_idx)
+        pls.append(msg_info[self.MSG_IDX])
       if msg_idx % 1000 == 0: self.CACHE = {}
     pls.save()
     self.CACHE = {}
@@ -811,14 +812,15 @@ class MailIndex(object):
     session.ui.mark('Untagging %d messages (%s)' % (len(msg_idxs), tag_id))
     eids = []
     for msg_idx in msg_idxs:
-      msg_info = self.get_msg_by_idx(msg_idx)
-      tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
-      if tag_id in tags:
-        tags.remove(tag_id)
-        msg_info[self.MSG_TAGS] = ','.join(list(tags))
-        self.INDEX[msg_idx] = self.m2l(msg_info)
-        self.MODIFIED.add(msg_idx)
-      eids.append(msg_info[self.MSG_IDX])
+      if msg_idx >= 0 and msg_idx < len(self.INDEX):
+        msg_info = self.get_msg_by_idx(msg_idx)
+        tags = set([r for r in msg_info[self.MSG_TAGS].split(',') if r])
+        if tag_id in tags:
+          tags.remove(tag_id)
+          msg_info[self.MSG_TAGS] = ','.join(list(tags))
+          self.INDEX[msg_idx] = self.m2l(msg_info)
+          self.MODIFIED.add(msg_idx)
+        eids.append(msg_info[self.MSG_IDX])
       if msg_idx % 1000 == 0: self.CACHE = {}
     pls.remove(eids)
     pls.save()

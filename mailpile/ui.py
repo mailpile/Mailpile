@@ -237,6 +237,9 @@ class UserInteraction:
         escape_html(unicode(data))
       )
 
+  def edit_messages(self, emails):
+    self.error('Sorry, this UI cannot edit messages.')
+
 
 class HttpUserInteraction(UserInteraction):
   def __init__(self, request, *args, **kwargs):
@@ -295,21 +298,23 @@ class HttpUserInteraction(UserInteraction):
     else:
       return ('text/plain', self._render_text_response(config))
 
-
-class BackgroundInteraction(UserInteraction):
-  # FIXME: This shouldn't be quite so silent...
-  def _display_log(self, text, level=UserInteraction.LOG_URGENT):
+  def edit_messages(self, emails):
     pass
-  def _display_result(self, result):
-    return result
 
 
 class SilentInteraction(UserInteraction):
-  # FIXME: This shouldn't be quite so silent...
   def _display_log(self, text, level=UserInteraction.LOG_URGENT):
     pass
   def _display_result(self, result):
     return result
+  def edit_messages(self, emails):
+    pass
+
+
+class BackgroundInteraction(SilentInteraction):
+  # FIXME: This shouldn't be quite so silent...
+  pass
+
 
 
 class xxBaseUI(object):
