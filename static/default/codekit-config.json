@@ -178,10 +178,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/rebar\/lists.less" : {
+    "\/less\/config.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/rebar\/lists.less",
-      "outputAbbreviatedPath" : "\/less\/css\/lists.css",
+      "inputAbbreviatedPath" : "\/less\/config.less",
+      "outputAbbreviatedPath" : "\/css\/config.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -204,10 +204,10 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
-    "\/less\/app\/messages.less" : {
+    "\/less\/rebar\/lists.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/app\/messages.less",
-      "outputAbbreviatedPath" : "\/less\/css\/messages.css",
+      "inputAbbreviatedPath" : "\/less\/rebar\/lists.less",
+      "outputAbbreviatedPath" : "\/less\/css\/lists.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -260,10 +260,21 @@
       "outputAbbreviatedPath" : "\/js\/mailpile-min.js",
       "fileType" : 64
     },
-    "\/less\/config.less" : {
+    "\/img\/favicon.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/favicon.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/favicon.png",
+      "initialSize" : 641,
+      "fileType" : 8192
+    },
+    "\/less\/app\/messages.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/config.less",
-      "outputAbbreviatedPath" : "\/css\/config.css",
+      "inputAbbreviatedPath" : "\/less\/app\/messages.less",
+      "outputAbbreviatedPath" : "\/less\/css\/messages.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -276,17 +287,6 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
-    },
-    "\/img\/favicon.png" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/img\/favicon.png",
-      "processed" : 0,
-      "outputAbbreviatedPath" : "\/img\/favicon.png",
-      "initialSize" : 641,
-      "fileType" : 8192
     },
     "\/less\/rebar\/base.less" : {
       "ieCompatibility" : 1,
@@ -393,17 +393,6 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
-    "\/img\/apple-touch-icon.png" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
-      "processed" : 0,
-      "outputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
-      "initialSize" : 1174,
-      "fileType" : 8192
-    },
     "\/js\/jKey\/jquery.jkey.js" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -414,6 +403,17 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/jKey\/jquery.jkey-min.js",
       "fileType" : 64
+    },
+    "\/img\/apple-touch-icon.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
+      "initialSize" : 1174,
+      "fileType" : 8192
     },
     "\/css\/default.css" : {
       "ignoreWasSetByUser" : 0,
@@ -522,21 +522,21 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/html\/view-result-messages-message-summary.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/view-result-messages-message-summary.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/html\/search.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/html\/search.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/html\/view-result-messages-message-summary.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/view-result-messages-message-summary.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -618,10 +618,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/app\/webfonts.less" : {
+    "\/less\/app\/backgrounds.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/app\/webfonts.less",
-      "outputAbbreviatedPath" : "\/less\/css\/webfonts.css",
+      "inputAbbreviatedPath" : "\/less\/app\/backgrounds.less",
+      "outputAbbreviatedPath" : "\/less\/css\/backgrounds.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -635,10 +635,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/app\/backgrounds.less" : {
+    "\/less\/app\/webfonts.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/app\/backgrounds.less",
-      "outputAbbreviatedPath" : "\/less\/css\/backgrounds.css",
+      "inputAbbreviatedPath" : "\/less\/app\/webfonts.less",
+      "outputAbbreviatedPath" : "\/less\/css\/webfonts.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -680,22 +680,16 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/mailpile.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/mailpile.less",
-      "outputAbbreviatedPath" : "~\/Dropbox\/Mailpile\/public\/mailpile.css",
-      "outputPathIsSetByUser" : 1,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 0,
-      "strictImports" : 0,
+    "\/js\/jKey\/jquery.jkey.min.js" : {
       "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
+      "ignore" : 0,
       "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/js\/jKey\/jquery.jkey.min.js",
+      "outputStyle" : 1,
+      "syntaxCheckerStyle" : 1,
+      "outputAbbreviatedPath" : "\/js\/jKey\/jquery.jkey.min-min.js",
+      "fileType" : 64
     },
     "\/less\/rebar\/separators.less" : {
       "ieCompatibility" : 1,
@@ -713,17 +707,6 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
-    },
-    "\/js\/jKey\/jquery.jkey.min.js" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/js\/jKey\/jquery.jkey.min.js",
-      "outputStyle" : 1,
-      "syntaxCheckerStyle" : 1,
-      "outputAbbreviatedPath" : "\/js\/jKey\/jquery.jkey.min-min.js",
-      "fileType" : 64
     },
     "\/html\/tag_list-result-tags.html" : {
       "ignoreWasSetByUser" : 0,
