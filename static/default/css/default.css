@@ -68,36 +68,38 @@ Instead of a list of all class selectors,
 you can use the generic selector below, but it's slower:
 [class*="icon-"] {
 */
+.icon-zip,
+.icon-video,
 .icon-user,
+.icon-unknown,
 .icon-trash,
 .icon-tag,
+.icon-spreadsheet,
+.icon-speed,
+.icon-spam,
 .icon-settings,
 .icon-sent,
+.icon-search,
 .icon-rss,
+.icon-privacy,
 .icon-photos,
 .icon-notifications,
-.icon-logo,
+.icon-music,
+.icon-message,
 .icon-links,
 .icon-later,
+.icon-image,
+.icon-hosting,
 .icon-groups,
 .icon-files,
 .icon-encrypted,
 .icon-donate,
 .icon-compose,
+.icon-code,
+.icon-calendar,
 .icon-attachment,
-.icon-message,
-.icon-search,
-.icon-spam,
-.icon-speed,
-.icon-file-web,
-.icon-file-video,
-.icon-file-unknown,
-.icon-file-spreadsheet,
-.icon-file-image,
-.icon-file-encrypted,
-.icon-file-document,
-.icon-file-audio,
-.icon-file-archive {
+.icon-logo,
+.icon-ads {
   font-family: 'Mailpile-Interface';
   speak: none;
   font-style: normal;
@@ -107,95 +109,101 @@ you can use the generic selector below, but it's slower:
   line-height: 1;
   -webkit-font-smoothing: antialiased;
 }
-.icon-user:before {
+.icon-zip:before {
   content: "\e000";
 }
-.icon-trash:before {
+.icon-video:before {
   content: "\e001";
 }
-.icon-tag:before {
+.icon-user:before {
   content: "\e002";
 }
-.icon-settings:before {
+.icon-unknown:before {
   content: "\e003";
 }
-.icon-sent:before {
+.icon-trash:before {
   content: "\e004";
 }
-.icon-rss:before {
+.icon-tag:before {
   content: "\e005";
 }
-.icon-photos:before {
+.icon-spreadsheet:before {
   content: "\e006";
 }
-.icon-notifications:before {
+.icon-speed:before {
   content: "\e007";
 }
-.icon-logo:before {
+.icon-spam:before {
   content: "\e008";
 }
-.icon-links:before {
+.icon-settings:before {
   content: "\e009";
 }
-.icon-later:before {
+.icon-sent:before {
   content: "\e00a";
 }
-.icon-groups:before {
+.icon-search:before {
   content: "\e00b";
 }
-.icon-files:before {
+.icon-rss:before {
   content: "\e00c";
 }
-.icon-encrypted:before {
+.icon-privacy:before {
   content: "\e00d";
 }
-.icon-donate:before {
+.icon-photos:before {
   content: "\e00e";
 }
-.icon-compose:before {
+.icon-notifications:before {
   content: "\e00f";
 }
-.icon-attachment:before {
+.icon-music:before {
   content: "\e010";
 }
 .icon-message:before {
   content: "\e011";
 }
-.icon-search:before {
-  content: "\e012";
-}
-.icon-spam:before {
-  content: "\e013";
-}
-.icon-speed:before {
+.icon-links:before {
   content: "\e014";
 }
-.icon-file-web:before {
+.icon-later:before {
   content: "\e015";
 }
-.icon-file-video:before {
+.icon-image:before {
   content: "\e016";
 }
-.icon-file-unknown:before {
+.icon-hosting:before {
   content: "\e017";
 }
-.icon-file-spreadsheet:before {
+.icon-groups:before {
   content: "\e018";
 }
-.icon-file-image:before {
+.icon-files:before {
   content: "\e019";
 }
-.icon-file-encrypted:before {
+.icon-encrypted:before {
   content: "\e01a";
 }
-.icon-file-document:before {
+.icon-donate:before {
   content: "\e01b";
 }
-.icon-file-audio:before {
+.icon-compose:before {
   content: "\e01c";
 }
-.icon-file-archive:before {
+.icon-code:before {
   content: "\e01d";
+}
+.icon-calendar:before {
+  content: "\e01e";
+}
+.icon-attachment:before {
+  content: "\e01f";
+}
+.icon-logo:before {
+  content: "\e012";
+}
+.icon-ads:before {
+  content: "\e020";
 }
 /* Backgrounds */
 .background-gray {
@@ -3840,33 +3848,33 @@ h6 a {
 }
 h1 {
   font-size: 36px;
-  line-height: 70px;
-  margin-bottom: 21px;
+  line-height: 36px;
+  margin-bottom: 30px;
 }
 h2 {
   font-size: 30px;
-  line-height: 58px;
-  margin-bottom: 18px;
+  line-height: 30px;
+  margin-bottom: 30px;
 }
 h3 {
   font-size: 24px;
-  line-height: 46px;
-  margin-bottom: 12px;
+  line-height: 24px;
+  margin-bottom: 30px;
 }
 h4 {
   font-size: 21px;
-  line-height: 36px;
-  margin-bottom: 10px;
+  line-height: 21px;
+  margin-bottom: 30px;
 }
 h5 {
   font-size: 18px;
-  line-height: 30px;
-  margin-bottom: 10px;
+  line-height: 18px;
+  margin-bottom: 30px;
 }
 h6 {
   font-size: 14px;
-  line-height: 24px;
-  margin-bottom: 10px;
+  line-height: 14px;
+  margin-bottom: 30px;
 }
 .subheader {
   color: #777;
@@ -3886,8 +3894,7 @@ p.lead {
 em {
   font-style: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-strong,
-b {
+strong {
   font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: inherit;
@@ -5154,6 +5161,35 @@ label span.form_error {
 }
 #messages .success {
   background-color: #4b7945;
+}
+/* FIXME: Belongs in the .css, here for testing */
+.tag_new_0 .navigation-attention-important {
+  display: none;
+}
+#debug {
+  padding: 0;
+  margin: 1em;
+  text-align: right;
+  line-height: 1em;
+  font-size: 0.75em;
+}
+tr.message-body {
+  margin-top: -1em;
+}
+div.message-body {
+  margin-top: 1em;
+}
+#debug {
+  white-space: pre-wrap;
+}
+p.text-part-text {
+  white-space: pre-wrap;
+}
+p.text-part-quote {
+  white-space: pre-wrap;
+  color: #777;
+  max-height: 5em;
+  overflow: hidden;
 }
 /* Web */
 /* Header */

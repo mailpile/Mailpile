@@ -11,13 +11,12 @@
 	}
 
 	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit; }
-	h1 { font-size: @headings-size-h1; line-height: 70px; margin-bottom: 21px; }
-	h2 { font-size: @headings-size-h2; line-height: 58px; margin-bottom: 18px; }
-	h3 { font-size: @headings-size-h3; line-height: 46px; margin-bottom: 12px; }
-	h4 { font-size: @headings-size-h4; line-height: 36px; margin-bottom: 10px; }
-	h5 { font-size: @headings-size-h5; line-height: 30px; margin-bottom: 10px; }
-	h6 { font-size: @headings-size-h6; line-height: 24px; margin-bottom: 10px; }
-
+	h1 { font-size: @headings-size-h1; line-height: (@headings-size-h1 * @headings-line-height); margin-bottom: @base-margin-bottom; }
+	h2 { font-size: @headings-size-h2; line-height: (@headings-size-h2 * @headings-line-height); margin-bottom: @base-margin-bottom; }
+	h3 { font-size: @headings-size-h3; line-height: (@headings-size-h3 * @headings-line-height); margin-bottom: @base-margin-bottom; }
+	h4 { font-size: @headings-size-h4; line-height: (@headings-size-h4 * @headings-line-height); margin-bottom: @base-margin-bottom; }
+	h5 { font-size: @headings-size-h5; line-height: (@headings-size-h5 * @headings-line-height); margin-bottom: @base-margin-bottom; }
+	h6 { font-size: @headings-size-h6; line-height: (@headings-size-h6 * @headings-line-height); margin-bottom: @base-margin-bottom; }
 
 	.subheader { color: #777; }
 
@@ -29,7 +28,7 @@
 	p.lead { font-size: 21px; line-height: 27px; color: #777;  }
 
 	em { font-style: @em-font-style; }
-	strong, b { font-family: @strong-font-family; font-weight: @strong-font-weight; color: @strong-color; }
+	strong { font-family: @strong-font-family; font-weight: @strong-font-weight; color: @strong-color; }
 	small { font-size: 80%; }
 
 

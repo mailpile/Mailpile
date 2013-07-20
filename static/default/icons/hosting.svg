@@ -3,7 +3,9 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="100px" height="100px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
-<path d="M64.199,0L91.17,27.628V100H9.097V0H64.199z M18.941,90.159h62.391l-0.165-58.993L60.111,9.841h-41.17V90.159z"/>
-<polygon points="60.072,51.141 60.072,59.034 30.5,59.034 30.5,43.25 60.072,43.25 "/>
-<polygon points="60.072,51.141 69.75,57.656 69.75,51.141 69.75,44.627 "/>
+<g>
+	<path id="path5203" d="M44.432-0.159L14.354,16.247h42.333L83.739-0.159H44.432z M60.839,20.543v78.663l27.344-25.929V2.965
+		L60.839,20.543z M11.62,20.934v78.907h44.532V20.934H11.62z M19.432,29.528h28.125v4.687H19.432V29.528z M19.432,38.903h28.125
+		v4.687H19.432V38.903z M19.432,48.278h28.125v4.688H19.432V48.278z M19.432,57.653h28.125v4.688H19.432V57.653z"/>
+</g>
 </svg>
