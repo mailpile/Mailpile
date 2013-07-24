@@ -719,9 +719,12 @@ class ConfigPrint(Command):
   SPLIT_ARG = False
   SYNOPSIS = '<var>'
   def command(self):
-    self.session.ui.print_key(self.args[0].strip().lower(),
-                              self.session.config)
-    return True
+    key = self.args[0].strip().lower()
+    try:
+      return {key: self.session.config[key]}
+    except KeyError:
+      self.session.error('No such key: %s' % key)
+      return False
 
 
 class AddMailbox(Command):
