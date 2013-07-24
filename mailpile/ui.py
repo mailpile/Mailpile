@@ -10,6 +10,7 @@
 # HTML, JSON, etc.).
 #
 ###############################################################################
+from collections import defaultdict
 import datetime
 import os
 import random
@@ -18,12 +19,12 @@ import sys
 import traceback
 import json
 
-from collections import defaultdict
+from lxml.html.clean import autolink_html
+import jsontemplate
 
 import mailpile.commands
 from mailpile.util import *
 from mailpile.search import MailIndex
-from lxml.html.clean import autolink_html
 
 
 class SuppressHtmlOutput(Exception):
@@ -209,38 +210,16 @@ class UserInteraction:
         pass
     if elems:
       return ('<div class="%s">\n  ' % tpl_names[0].replace('/', '_') +
-              '\n  '.join(['<span class="%s">%%(%s)s</span>' % (e,e)
+              '\n  '.join(['<span class="%s">{%s}</span>' % (e,e)
                            for e in elems]) +
               '\n</div>')
     else:
-      return '%(data)s'
+      return '{data}'
   def render_html(self, cfg, tpl_names, data):
     """Render data as HTML"""
-    try:
-      if isinstance(data, dict):
-        d = default_dict(self.html_variables, {'data': data})
-        for elem in data:
-          d[elem] = self.render_html(cfg,
-                                     ['%s-%s' % (t, elem) for t in tpl_names],
-                                     data[elem])
-        return self._html_template(cfg, tpl_names, elems=data.keys()) % d
-      elif (isinstance(data, list)
-      or    isinstance(data, tuple)
-      or    isinstance(data, set)):
-        eo, html = 0, []
-        for item in data:
-          eo += 1
-          self.html_variables['even_odd'] = ((eo%2)==0) and 'even' or 'odd'
-          html.append(self.render_html(cfg, tpl_names, item))
-        return ' '.join(html)
-      else:
-        return escape_html(unicode(data))
-    except (ValueError, KeyError):
-      return '<!-- %s -->\n%s' % (
-        escape_html(traceback.format_exc()),
-        escape_html(unicode(data))
-      )
-
+    return jsontemplate.expand(self._html_template(cfg, tpl_names,
+                                                   elems=data.keys()), data,
+                               undefined_str='')
   def edit_messages(self, emails):
     self.error('Sorry, this UI cannot edit messages.')
 
@@ -278,20 +257,20 @@ class HttpUserInteraction(UserInteraction):
                                elems=['results', 'logged'])
     quiet = Session(config)
     quiet.ui = SilentInteraction()
-    while page.startswith('<!-- set'):
+    while page.startswith('{# set'):
       load, page = page.split('\n', 1)
-      _set, vname, _eq, mode, cmd = load.strip()[5:-4].split(None, 4)
+      _set, vname, _eq, mode, cmd = load.strip()[3:-2].split(None, 4)
       cmd, arg = (' ' in cmd) and cmd.split(' ', 1) or (cmd, '')
       quiet.ui.render_mode = mode
       result = mailpile.commands.Action(quiet, cmd, arg)
       self.html_variables[vname] = quiet.ui.display_result(result)
 
-    return page % default_dict(self.html_variables, {
+    return jsontemplate.expand(page, default_dict(self.html_variables, {
       'results': '\n'.join(['<div class="result">%s</div>' % r
                             for r in self.results]),
       'logged': '\n'.join(['<p class="ll_%s">%s</p>' % l
                            for l in self.logged])
-    })
+    }), undefined_str='')
   def render_response(self, config):
     if self.render_mode == 'json':
       return ('application/json', '[%s]' % ','.join(self.results))

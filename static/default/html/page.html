@@ -1,8 +1,8 @@
-<!-- set top_tags  = html tag list new starred -->
-<!-- set high_tags = html tag list inbox sent -->
-<!-- set user_tags = html tag list !drafts !inbox !new !sent !spam !trash -->
-<!-- set low_tags  = html tag list spam trash -->
-<!-- set unread    = html tag list new -->
+{# set high_tags = html tag list inbox sent }
+{# set top_tags  = html tag list new starred }
+{# set user_tags = html tag list !drafts !inbox !new !sent !spam !trash }
+{# set low_tags  = html tag list spam trash }
+{# set unread    = html tag list new }
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -23,7 +23,7 @@
 	<link rel="shortcut icon" href="/_/img/favicon.png" />
 	<link rel="icon" type="image/png" href="/_/img/favicon.png" />
 
-	<title>%(title)s | %(name)s's</title>
+	<title>{title} | {name}'s mailpile</title>
 
 </head>
 
@@ -31,7 +31,7 @@
 
 <div id="header" class="clearfix">
 	<img class="logo" src="/_/static/icons/logo-color.svg">
-	<h1>%(name)s's<small><b>mail</b>pile of <b>%(mailpile_size)s</b> emails</small></h1>
+	<h1>{name}'s<small><b>mail</b>pile of <b>{mailpile_size}</b> emails</small></h1>
 	<nav>
 		<ul>
 			<li><a href="#"><span class="icon-donate"></span>Donate</a></li>
@@ -47,9 +47,9 @@
 		<nav>
 			<ul>
 				<li><a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>4 Drafts</small></a></li>
-				%(high_tags)s
-				%(user_tags)s
-				%(low_tags)s
+				{high_tags}
+				{user_tags}
+				{low_tags}
 			</ul>
 		</nav>
 		<hr>			
@@ -68,12 +68,12 @@
 
 	<!-- START CONTENT -->
 	<div id="content">
-		%(results)s
+		{results}
 		<div id="footer">
 			<a href='http://mailpile.is'>Mailpile</a> is free software made by <a title="Bjarni R. Einarsson" href="http://bre.klaki.net" target="_blank">bre</a>, <a title="Brennan Novak" href="https://brennannovak.com" target="_blank">bnvk</a>, <a href="http://www.smarimccarthy.is/" target="_blank">smári</a> &amp; <a href="https://github.com/pagekite/Mailpile/graphs/contributors" target="_blank">more</a>
 		</div>
 
-		<div id="debug">%(logged)s</div>
+		<div id="debug">{logged}</div>
 	</div>
 	<!-- END CONTENT -->
 
