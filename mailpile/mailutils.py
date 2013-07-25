@@ -537,8 +537,7 @@ class Email(object):
     return cls(idx, msg_idx)
 
   def is_editable(self):
-    mbox, ptr, fd = self.get_mbox_ptr_and_fd()
-    return mbox.editable
+    return self.config.is_editable_message(self.get_msg_info(self.index.MSG_PTRS))
 
   MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                   'content-transfer-encoding')
@@ -668,6 +667,7 @@ class Email(object):
     self.index.set_conversation_ids(msg_info[self.index.MSG_IDX], newmsg)
 
     # FIXME: What to do about the search index?  Update?
+    self.msg_parsed = None
     return self
 
   def get_msg_info(self, field):
@@ -724,7 +724,8 @@ class Email(object):
       self.get_msg_info(self.index.MSG_FROM),
       self.get_msg_info(self.index.MSG_SUBJECT),
       self.get_msg_info(self.index.MSG_DATE),
-      self.get_msg_info(self.index.MSG_TAGS).split(',')
+      self.get_msg_info(self.index.MSG_TAGS).split(','),
+      self.is_editable()
     ]
 
   def extract_attachment(self, session, att_id, name_fmt=None, mode='download'):
@@ -796,7 +797,6 @@ class Email(object):
       'html_parts': [],
       'attachments': [],
       'conversation': [],
-      'is_editable': self.is_editable()
     }
 
     conv_id = self.get_msg_info(self.index.MSG_CONV_ID)
@@ -852,7 +852,8 @@ class Email(object):
           'filename': part.get_filename() or ''
         })
 
-    if tree['is_editable']:
+    if self.is_editable():
+      tree['is_editable'] = True
       tree['editing_string'] = self.get_editing_string(tree)
 
     return tree

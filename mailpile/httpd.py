@@ -139,7 +139,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if parts[3] in ('', 'message.xml', 'message.json', 'message.rss'):
           cmd = ' '.join(['view', msg_idx])
         elif parts[3] == 'edit.html':
-          cmd = ' '.join(['compose', msg_idx])
+          edit_key = '@edit_'+msg_idx[1:]
+          if edit_key in post_data:
+            cmd = ' '.join(['update', msg_idx, edit_key])
+          else:
+            cmd = ' '.join(['compose', msg_idx])
         elif parts[3] == 'message.eml':
           cmd = ' '.join(['view', 'raw', msg_idx])
         if parts[3].lower().startswith('cid:'):

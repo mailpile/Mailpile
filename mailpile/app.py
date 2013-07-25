@@ -366,6 +366,16 @@ class ConfigManager(dict):
   def clear_mbox_cache(self):
     self.MBOX_CACHE = {}
 
+  def is_editable_message(self, msg_ptrs):
+    for ptr in msg_ptrs.split(','):
+      if not self.is_editable_mailbox(ptr[:3]):
+        return False
+    return True
+
+  def is_editable_mailbox(self, mailbox_id):
+    # FIXME: This may be too narrow?
+    return (mailbox_id == self.get('local_mailbox', None))
+
   def open_mailbox(self, session, mailbox_id):
     pfn = os.path.join(self.workdir(), 'pickled-mailbox.%s' % mailbox_id)
     for mid, mailbox_fn in self.get_mailboxes():
@@ -383,7 +393,7 @@ class ConfigManager(dict):
             session.ui.mark(('%s: Opening: %s (may take a while)'
                              ) % (mailbox_id, mailbox_fn))
           mbox = OpenMailbox(mailbox_fn)
-          mbox.editable = (mailbox_id == self.get('local_mailbox', None))
+          mbox.editable = self.is_editable_mailbox(mailbox_id)
           mbox.save(session, to=pfn)
           self.MBOX_CACHE[mid] = mbox
         return self.MBOX_CACHE[mid]

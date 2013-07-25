@@ -13,11 +13,17 @@ from mailpile.util import *
 from mailpile.plugins.search import Search, SearchResults
 
 
+class EditableSearchResults(SearchResults):
+  def _prune_msg_tree(self, *args, **kwargs):
+    kwargs['editable'] = True
+    return SearchResults._prune_msg_tree(self, *args, **kwargs)
+
+
 class ReturnsSearchResults(Search):
   def _return_search_results(self, session, idx, emails, expand=None):
     session.results = [e.msg_idx for e in emails]
-    session.displayed = SearchResults(session, idx,
-                                      num=len(emails), expand=expand)
+    session.displayed = EditableSearchResults(session, idx,
+                                              num=len(emails), expand=expand)
     return [session.displayed]
 
 

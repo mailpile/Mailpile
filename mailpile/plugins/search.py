@@ -25,7 +25,7 @@ class SearchResults(dict):
     msg_ts = long(info[4], 36)
     msg_date = datetime.date.fromtimestamp(msg_ts)
     date = '%4.4d-%2.2d-%2.2d' % (msg_date.year, msg_date.month, msg_date.day)
-    return {
+    expl = {
       'idx': info[0],
       'id': info[1],
       'from': info[2],
@@ -36,12 +36,17 @@ class SearchResults(dict):
       'tag_ids': info[5],
       'url': '/=%s/%s/' % (info[0], info[1]),
     }
+    if info[6]:
+      expl['is_editable'] = True
+    return expl
 
-  def _prune_msg_tree(self, tree, context=True, parts=False):
+  def _prune_msg_tree(self, tree, context=True, parts=False, editable=False):
     pruned = {}
+    prune = ['headers_lc', 'summary', 'tags', 'conversation', 'attachments']
+    if not editable:
+      prune.append('editing_string')
     for k in tree:
-      if k not in ('headers_lc', 'summary', 'tags', 'conversation',
-                   'attachments'):
+      if k not in prune:
         pruned[k] = tree[k]
     pruned['tag_ids'] = tree['tags']
     pruned['summary'] = self._explain_msg_summary(tree['summary'])
@@ -115,6 +120,7 @@ class SearchResults(dict):
         msg_info[MailIndex.MSG_SUBJECT],
         msg_info[MailIndex.MSG_DATE],
         msg_info[MailIndex.MSG_TAGS].split(','),
+        session.config.is_editable_message(msg_info[MailIndex.MSG_PTRS])
       ])
       result['tags'] = sorted([idx.config['tag'].get(t,t)
                                for t in idx.get_tags(msg_info=msg_info)
