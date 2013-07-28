@@ -298,6 +298,15 @@ class HttpUserInteraction(UserInteraction):
   def edit_messages(self, emails):
     pass
 
+  def print_filters(self, args):
+    print args
+    return args
+
+class BackgroundInteraction(UserInteraction):
+  # FIXME: This shouldn't be quite so silent...
+  def _display_log(self, text, level=UserInteraction.LOG_URGENT):
+    pass
+
 
 class SilentInteraction(UserInteraction):
   def _display_log(self, text, level=UserInteraction.LOG_URGENT):

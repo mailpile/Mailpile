@@ -77,8 +77,11 @@ class SearchResults(dict):
     return ' '.join(words)
 
   def _names(self, senders):
-    if len(senders) > 1:
-      return re.sub('["<>]', '', ', '.join([x.split()[0] for x in senders]))
+    try:
+      if len(senders) > 1:
+        return re.sub('["<>]', '', ', '.join([x.split()[0] for x in senders]))
+    except IndexError:
+      pass
     return ', '.join([self._name(s) for s in senders])
 
   def _compact(self, namelist, maxlen):

@@ -499,8 +499,8 @@ class MailIndex(object):
 
         except (ValueError, TypeError, OverflowError):
           session.ui.warning('=%s/%s has a bogus date.' % (msg_mid, msg_id))
-          if session.config.get('debug'):
-            session.ui.say(traceback.format_exc())
+          #if session.config.get('debug'):
+          #  session.ui.say(traceback.format_exc())
           # This is a hack: We assume the messages in the mailbox are in
           # chronological order and just add 1 second to the date of the last
           # message.  This should be a better-than-nothing guess.
