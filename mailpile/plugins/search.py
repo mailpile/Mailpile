@@ -94,6 +94,7 @@ class SearchResults(dict):
                results=None, start=0, end=None, num=None, expand=None):
     dict.__init__(self)
     self.session = session
+    self.expand = expand
     self.idx = idx
 
     results = results or session.results
@@ -142,8 +143,8 @@ class SearchResults(dict):
       people.sort(key=lambda i: i['name']+i['email'])
 
       if expand and mid in expand_ids:
-        exp_ids = [expand[expand_ids.index(mid)]]
-        result['message'] = self._message_details(exp_ids)[0]
+        exp_email = expand[expand_ids.index(mid)]
+        result['message'] = self._message_details([exp_email])[0]
       rv.append(result)
 
     self._set_values(rv, start, count, len(results))
@@ -170,9 +171,12 @@ class SearchResults(dict):
     cfmt = '%%%d.%ds' % (clen, clen)
     text = []
     count = self['start']
+    expand_ids = [e.msg_idx for e in (self.expand or [])]
+    print 'Wat: %s' % expand_ids
     for m in self['messages']:
       if 'message' in m:
-        text.append('%s' % m['message'])
+        exp_email = self.expand[expand_ids.index(int(m['idx'], 36))]
+        text.append(exp_email.get_editing_string(exp_email.get_message_tree()))
       else:
         msg_tags = m['tags'] and (' <' + '<'.join(m['tags'])) or ''
         sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
@@ -364,11 +368,10 @@ class Delete(Command):
 
 
 mailpile.plugins.register_command('d:', 'delete=',  Delete)
-mailpile.plugins.register_command('s:', 'search=',  Search)
-mailpile.plugins.register_command('n:', 'next=',    Next)
 mailpile.plugins.register_command('e:', 'extract=', Extract)
-mailpile.plugins.register_command('n',  'next',     Next)
+mailpile.plugins.register_command('n:', 'next=',    Next)
 mailpile.plugins.register_command('o:', 'order',    Order)
 mailpile.plugins.register_command('p',  'previous', Previous)
+mailpile.plugins.register_command('s:', 'search=',  Search)
 mailpile.plugins.register_command('v:', 'view',     View)
 

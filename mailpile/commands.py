@@ -211,27 +211,6 @@ class Command:
 
 ##[ Internals ]###############################################################
 
-class Setup(Command):
-  """Perform initial setup"""
-  ORDER = ('Internals', 0)
-  def command(self):
-    session = self.session
-
-    # Create local mailboxes
-    session.config.open_local_mailbox(session)
-
-    # Create standard tags and filters
-    tags = session.config.get('tag', {}).values()
-    for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
-      if t not in tags:
-        Tag(session, arg=['add', t]).run()
-    if 'New' not in tags:
-      Filter(session, arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
-      Filter(session, arg=['read', '-New', 'Read Mail filter']).run()
-
-    return True
-
-
 class Load(Command):
   """Load or reload the metadata index"""
   ORDER = ('Internals', 1)
@@ -322,369 +301,6 @@ class RunWWW(Command):
     while not mailpile.util.QUITTING:
       time.sleep(1)
     return True
-
-
-##[ Tags, Filters, Contacts, Groups, ... ]#####################################
-
-class Tag(Command):
-  """Add/remove/list/edit message tags"""
-  ORDER = ('Tagging', 0)
-  TEMPLATE_IDS = ['tag']
-
-  class CommandResult(Command.CommandResult):
-    def _tags_as_text(self):
-      tags = self.result['tags']
-      wrap = int(78/23) # FIXME: Magic number
-      text = []
-      for i in range(0, len(tags)):
-        text.append(('%s%5.5s %-18.18s'
-                     ) % ((i%wrap) == 0 and '  ' or '',
-                     '%s' % (tags[i]['new'] or ''),
-                     tags[i]['name'])
-                   + ((i%wrap)==(wrap-1) and '\n' or ''))
-      return ''.join(text)+'\n'
-    def _added_as_text(self):
-      return ('Added tags: '
-             +', '.join([k['name'] for k in self.result['added']]))
-    def _tagging_as_text(self):
-      what = []
-      if self.result['tagged']:
-        what.append('Tagged ' +
-                    ', '.join([k['name'] for k in self.result['tagged']]))
-      if self.result['untagged']:
-        what.append('Untagged ' +
-                    ', '.join([k['name'] for k in self.result['untagged']]))
-      return '%s (%d messages)' % (', '.join(what), len(self.result['msg_ids']))
-    def as_text(self):
-      if not self.result:
-        return 'Failed'
-      return ''.join([
-        ('added' in self.result) and self._added_as_text() or '',
-        ('removed' in self.result) and self._added_as_text() or '',
-        ('tags' in self.result) and self._tags_as_text() or '',
-        ('msg_ids' in self.result) and self._tagging_as_text() or '',
-      ])
-
-  SYNOPSIS = '<[+|-]tags msgs>'
-  def command(self, save=True):
-    idx = self._idx()
-    words = self.args[:]
-    ops = []
-    while words and words[0][0] in ('-', '+'):
-      ops.append(words.pop(0))
-
-    msg_ids = self._choose_messages(words)
-
-    rv = {'msg_ids': [], 'tagged': [], 'untagged': []}
-    rv['msg_ids'] = [b36(i) for i in msg_ids]
-    for op in ops:
-      tag_id = self.session.config.get_tag_id(op[1:])
-      if op[0] == '-':
-        idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
-        rv['untagged'].append({'name': op[1:], 'tid': tag_id})
-      else:
-        idx.add_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
-        rv['tagged'].append({'name': op[1:], 'tid': tag_id})
-
-    if save:
-      # Background save makes things feel fast!
-      def background():
-        idx.update_tag_stats(self.session, self.session.config)
-        idx.save_changes()
-      self._background('Save index', background)
-    else:
-      idx.update_tag_stats(self.session, self.session.config)
-
-    return rv
-
-  def add_tag(self):
-    config = self.session.config
-    existing = [v.lower() for v in config.get('tag', {}).values()]
-    for tag in self.args:
-      if ' ' in tag:
-        return self._error('Invalid tag: %s' % tag)
-      if tag.lower() in existing:
-        return self._error('Tag already exists: %s' % tag)
-    result = []
-    for tag in sorted(self.args):
-      if config.parse_set(self.session, 'tag:%s=%s' % (config.nid('tag'), tag)):
-        result.append({'name': tag, 'tid': config.get_tag_id(tag), 'new': 0})
-    if result:
-      self._background('Save config', lambda: config.save())
-    return {'added': result}
-
-  def list_tags(self):
-    result, idx = [], self._idx()
-    wanted = [t.lower() for t in self.args if not t.startswith('!')]
-    unwanted = [t[1:].lower() for t in self.args if t.startswith('!')]
-    for tid, tag in self.session.config.get('tag', {}).iteritems():
-      if wanted and tag.lower() not in wanted: continue
-      if unwanted and tag.lower() in unwanted: continue
-      result.append({
-        'name': tag,
-        'tid': tid,
-        'all': int(idx.STATS.get(tid, [0, 0])[0]),
-        'new': int(idx.STATS.get(tid, [0, 0])[1]),
-        'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
-      })
-    result.sort(key=lambda k: k['name'])
-    return {'tags': result}
-
-  def rm_tag(self):
-    session, config = self.session, self.session.config
-    existing = [v.lower() for v in config.get('tag', {}).values()]
-    clean_session = mailpile.ui.Session(config)
-    clean_session.ui = session.ui
-    result = []
-    for tag in self.args:
-      tag_id = config.get_tag_id(tag)
-      if tag_id:
-        # FIXME: Update filters too
-        if (COMMANDS['s:'][1](clean_session, arg=['tag:%s' % tag]).run()
-        and Tag(clean_session, arg=['-%s' % tag, 'all']).run()
-        and config.parse_unset(session, 'tag:%s' % tag_id)):
-          result.append({'name': tag, 'tid': tag_id})
-        else:
-          raise Exception('That failed, not sure why?!')
-      else:
-        self._error('No such tag %s' % tag)
-    if result:
-      config.save()
-    return {'removed': result}
-
-  SUBCOMMANDS = {
-    'add':    (add_tag,   '<tag>'),
-    'delete': (rm_tag,    '<tag>'),
-    'list':   (list_tags, ''),
-  }
-
-
-class Filter(Command):
-  """Add/edit/delete/list auto-tagging rules"""
-  ORDER = ('Tagging', 1)
-  SYNOPSIS = '[new|read] [notag] [=ID] [terms] <[+|-]tags ...> [description]'
-  def command(self):
-    args, session, config = self.args, self.session, self.session.config
-
-    flags = []
-    while args and args[0] in ('add', 'set', 'new', 'read', 'notag'):
-      flags.append(args.pop(0))
-
-    if args and args[0] and args[0][0] == '=':
-      filter_id = args.pop(0)[1:]
-    else:
-      filter_id = config.nid('filter')
-
-    auto_tag = False
-    if 'read' in flags:
-      terms = ['@read']
-    elif 'new' in flags:
-      terms = ['*']
-    elif args[0] and args[0][0] not in ('-', '+'):
-      terms = []
-      while args and args[0][0] not in ('-', '+'):
-        terms.append(args.pop(0))
-    else:
-      terms = session.searched
-      auto_tag = True
-
-    if not terms or (len(args) < 1):
-      raise UsageError('Need flags and search terms or a hook')
-
-    tags, tids = [], []
-    while args and args[0][0] in ('-', '+'):
-      tag = args.pop(0)
-      tags.append(tag)
-      tids.append(tag[0]+config.get_tag_id(tag[1:]))
-
-    if not args:
-      args = ['Filter for %s' % ' '.join(tags)]
-
-    if auto_tag and 'notag' not in flags:
-      if not Tag(session, arg=tags + ['all']).run(save=False):
-        raise UsageError()
-
-    if (config.parse_set(session, ('filter:%s=%s'
-                                   ) % (filter_id, ' '.join(args)))
-    and config.parse_set(session, ('filter_tags:%s=%s'
-                                   ) % (filter_id, ' '.join(tids)))
-    and config.parse_set(session, ('filter_terms:%s=%s'
-                                   ) % (filter_id, ' '.join(terms)))):
-      def save_filter():
-        config.save()
-        if config.index: config.index.save_changes()
-        return True
-      self._serialize('Save filter', save_filter)
-      return True
-    else:
-      raise Exception('That failed, not sure why?!')
-
-  def rm(self):
-    session, config = self.session, self.session.config
-    if len(self.args) < 1:
-      raise UsageError('Delete what?')
-
-    removed = 0
-    filters = config.get('filter', {})
-    filter_terms = config.get('filter_terms', {})
-    for fid in self.args[:]:
-      if fid not in filters:
-        match = [f for f in filters if filter_terms[f] == fid]
-        if match:
-          self.args.remove(fid)
-          self.args.extend(match)
-
-    for fid in self.args:
-      if (config.parse_unset(session, 'filter:%s' % fid)
-      and config.parse_unset(session, 'filter_tags:%s' % fid)
-      and config.parse_unset(session, 'filter_terms:%s' % fid)):
-        removed += 1
-      else:
-        session.ui.warning('Failed to remove %s' % fid)
-    if removed:
-      config.save()
-    return True
-
-  def mv(self):
-    raise Exception('Unimplemented')
-
-  def ls(self):
-    return self.session.ui.print_filters(self.session.config)
-
-  SUBCOMMANDS = {
-    'delete': (rm, '<id>'),
-    'move':   (mv, '<id> <pos>'),
-    'list':   (ls, ''),
-  }
-
-
-class VCard(Command):
-  """Add/remove/list/edit vcards"""
-  ORDER = ('Internals', 6)
-  KIND = ''
-  SYNOPSIS = '<nickname>'
-  def command(self, save=True):
-    session, config = self.session, self.session.config
-    vcards = []
-    for email in self.args:
-      vcard = config.get_vcard(email)
-      if vcard:
-        vcards.append(vcard)
-      else:
-        session.ui.warning('No such contact: %s' % email)
-    return vcards
-
-  def _fparse(self, fromdata):
-    email = ExtractEmails(fromdata)[0]
-    name = fromdata.replace(email, '').replace('<>', '').strip()
-    return email, (name or email)
-
-  def _prepare_new_vcard(self, vcard):
-    pass
-
-  def _valid_vcard_handle(self, vc_handle):
-    return (vc_handle and '@' in vc_handle[1:])
-
-  def _add_from_messages(self):
-    pairs, idx = [], self._idx()
-    for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
-      pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
-    return pairs
-
-  def _pre_delete_vcard(self, vcard):
-    pass
-
-  def add_vcards(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    if (len(self.args) > 2
-    and self.args[1] == '='
-    and self._valid_vcard_handle(self.args[0])):
-      pairs = [(self.args[0], ' '.join(self.args[2:]))]
-    else:
-      pairs = self._add_from_messages()
-    if pairs:
-      vcards = []
-      for handle, name in pairs:
-        if handle.lower() not in config.vcards:
-          vcard = config.add_vcard(handle, name, self.KIND)
-          self._prepare_new_vcard(vcard)
-          vcards.append(vcard)
-        else:
-          session.ui.warning('Already exists: %s' % handle)
-    else:
-      return self._error('Nothing to do!')
-    return vcards
-
-  def _format_values(self, key, vals):
-    if key.upper() in ('MEMBER', ):
-      return [['mailto:%s' % e, []] for e in vals]
-    else:
-      return [[e, []] for e in vals]
-
-  def set_vcard(self):
-    session, config = self.session, self.session.config
-    handle, var = self.args[0], self.args[1]
-    if self.args[2] == '=':
-      val = ' '.join(self.args[3:])
-    else:
-      val = ' '.join(self.args[2:])
-    try:
-      vcard = config.get_vcard(handle)
-      if not vcard:
-        return self._error('Contact not found')
-      config.deindex_vcard(vcard)
-      if val:
-        if ',' in val:
-          vcard[var] = self._format_values(var, val.split(','))
-        else:
-          vcard[var] = val
-      else:
-        del vcard[var]
-      vcard.save()
-      config.index_vcard(vcard)
-      session.ui.display_vcard(vcard, compact=False)
-      return True
-    except:
-      self._ignore_exception()
-      return self._error('Error setting %s = %s' % (var, val))
-
-  def rm_vcards(self):
-    session, config = self.session, self.session.config
-    for handle in self.args:
-      vcard = config.get_vcard(handle)
-      if vcard:
-        self._pre_delete_vcard(vcard)
-        config.del_vcard(handle)
-      else:
-        session.ui.error('No such contact: %s' % handle)
-    return True
-
-  def find_vcards(self):
-    session, config = self.session, self.session.config
-    if self.args and self.args[0] == '--full':
-      self.args.pop(0)
-      compact = False
-    else:
-      compact = True
-    kinds = self.KIND and [self.KIND] or []
-    vcards = config.find_vcards(self.args, kinds=kinds)
-    for vcard in vcards:
-      session.ui.display_vcard(vcard, compact=compact)
-    return True
-
-  SUBCOMMANDS = {
-    'add':    (add_vcards,  '<msgs>|<email> <name>'),
-    'set':    (set_vcard,   '<email> <attr> <value>'),
-    'list':   (find_vcards, '[--full] [<terms>]'),
-    'delete': (rm_vcards,   '<email>'),
-  }
-
-
-class Contact(VCard):
-  """Add/remove/list/edit contacts"""
-  KIND = 'individual'
-  ORDER = ('Tagging', 3)
-  SYNOPSIS = '<email>'
 
 
 ##[ Configuration commands ]###################################################
@@ -951,7 +567,7 @@ class Help(Command):
             cmd_list[c] = (name, synopsis, cls.__doc__, count+cls.ORDER[1])
       return {
         'commands': cmd_list,
-        'tags': Tag(self.session, arg=['list']).run(),
+        'tags': COMMANDS['t:'][1](self.session, arg=['list']).run(),
         'index': self._idx()
       }
 
@@ -1017,9 +633,9 @@ def Action(session, opt, arg, data=None):
 
   # Backwards compatibility
   if opt == 'addtag':
-    return Tag(session, 'tag', ['add'] + arg.split()).run()
+    return COMMANDS['t:'][1](session, 'tag', ['add'] + arg.split()).run()
   elif opt == 'gpgrecv':
-    return GPG(session, 'gpg', ['recv'] + arg.split()).run()
+    return COMMANDS['g:'][1](session, 'gpg', ['recv'] + arg.split()).run()
 
   # Tags are commands
   elif opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
@@ -1033,20 +649,14 @@ def Action(session, opt, arg, data=None):
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = {
   'A:':     ('add=',     AddMailbox),
-  'C:':     ('contact=', Contact),
-  'F:':     ('filter=',  Filter),
-  'g:':     ('gpg',      GPG),
   'h':      ('help',     Help),
   'P:':     ('print=',   ConfigPrint),
   'S:':     ('set=',     ConfigSet),
-  't:':     ('tag=',     Tag),
   'U:':     ('unset=',   ConfigUnset),
   '_dmode': ('output=',  Output),
-  '_setup': ('setup',    Setup),
   '_load':  ('load',     Load),
   '_optim': ('optimize', Optimize),
   '_resca': ('rescan',   Rescan),
-  '_vcard': ('vcard=',   VCard),
   '_www':   ('www',      RunWWW),
   '_recou': ('recount',  UpdateStats)
 }

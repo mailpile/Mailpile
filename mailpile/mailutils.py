@@ -777,7 +777,7 @@ class Email(object):
           # FIXME: OMG, RAM ugh.
           fd.write(payload)
           fd.close()
-          session.ui.notify('Wrote attachment to: %s' % fn)
+          session.ui.notify('Wrote attachment to: %s' % filename)
         extracted += 1
     if 0 == extracted:
       session.ui.notify('No attachments found for: %s' % att_id)

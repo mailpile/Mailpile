@@ -1,5 +1,8 @@
 import mailpile.plugins
-from mailpile.commands import Command, VCard, Tag, Filter
+from mailpile.commands import Command
+
+from mailpile.plugins.tags import Tag, Filter
+from mailpile.plugins.contacts import VCard
 
 
 ##[ Search terms ]############################################################
