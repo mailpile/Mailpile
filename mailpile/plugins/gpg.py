@@ -2,6 +2,11 @@ import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.util import *
 
+try:
+  from GnuPGInterface import GnuPG
+except ImportError:
+  GnuPG = None
+
 
 ##[ Commands ]################################################################
 
@@ -91,4 +96,5 @@ class GPG(Command):
   }
 
 
-mailpile.plugins.register_command('g:', 'gpg', GPG)
+if GnuPG is not None:
+  mailpile.plugins.register_command('g:', 'gpg', GPG)

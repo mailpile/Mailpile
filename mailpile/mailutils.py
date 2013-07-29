@@ -567,7 +567,8 @@ class Email(object):
       lines.append('%s: %s' % (hdr, tree['headers'].get(hdr, '')))
 
     for att in tree['attachments']:
-      lines.append('Attachment-%s: %s' % (att['count'], att['filename']))
+      lines.append('Attachment-%s: %s' % (att['count'],
+                                          att['filename'] or '(unnamed)'))
 
     # FIXME: Add pseudo-headers for GPG stuff?
 
