@@ -1003,7 +1003,7 @@ class Email(object):
               gpg.handles[fh].close()
             gpg.wait()
             pgpdata[0]['data'] = results['stderr'].decode('utf-8')+'\n'
-            pgpdata[1]['data'] = results['stdout'].decode('utf-8')
+            pgpdata[1]['data'] = self._decode_gpg(message, results['stdout'])
             for p in pgpdata:
               p['type'] = self.PGP_OK.get(p['type'], p['type'])
           except IOError:
@@ -1013,4 +1013,11 @@ class Email(object):
           pgpdata = []
 
     return tree
+
+  def _decode_gpg(self, message, decrypted):
+    header, body = message.replace('\r\n', '\n').split('\n\n', 1)
+    for line in header.lower().split('\n'):
+      if line.startswith('charset:'):
+        return decrypted.decode(line.split()[1])
+    return decrypted.decode('utf-8')
 
