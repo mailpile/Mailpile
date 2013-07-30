@@ -11,6 +11,7 @@
 #
 ###############################################################################
 from collections import defaultdict
+import cgi
 import datetime
 import os
 import random
@@ -29,6 +30,19 @@ from mailpile.search import MailIndex
 
 class SuppressHtmlOutput(Exception):
   pass
+
+
+def _html_escape(data):
+  return cgi.escape(unicode(data))
+
+JSONTEMPLATE_ARGS = {
+  'undefined_str': '',
+  'more_formatters': {
+    'html': _html_escape
+  },
+  'default_formatter': 'html'
+}
+
 
 
 def default_dict(*args):
@@ -219,7 +233,7 @@ class UserInteraction:
     """Render data as HTML"""
     return jsontemplate.expand(self._html_template(cfg, tpl_names,
                                                    elems=data.keys()), data,
-                               undefined_str='')
+                               **JSONTEMPLATE_ARGS)
   def edit_messages(self, emails):
     self.error('Sorry, this UI cannot edit messages.')
 
@@ -270,7 +284,7 @@ class HttpUserInteraction(UserInteraction):
                             for r in self.results]),
       'logged': '\n'.join(['<p class="ll_%s">%s</p>' % l
                            for l in self.logged])
-    }), undefined_str='')
+    }), **JSONTEMPLATE_ARGS)
   def render_response(self, config):
     if self.render_mode == 'json':
       return ('application/json', '[%s]' % ','.join(self.results))
