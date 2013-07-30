@@ -228,7 +228,15 @@ class Filter(Command):
     raise Exception('Unimplemented')
 
   def ls(self):
-    return self.session.ui.print_filters(self.session.config)
+    results = []
+    for fid, trms, tags, cmnt in self.session.config.get_filters(filter_on=None):
+      results.append({
+        'fid': fid,
+        'terms': trms,
+        'tags': tags,
+        'comment': cmnt
+      })
+    return results
 
   SUBCOMMANDS = {
     'delete': (rm, '<id>'),
