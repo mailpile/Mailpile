@@ -2,6 +2,7 @@ import tempfile
 
 from email.parser import Parser
 from GnuPGInterface import GnuPG
+import re
 
 
 class PGPMimeParser(Parser):
@@ -29,7 +30,18 @@ class PGPMimeParser(Parser):
           gpg.wait()
           summary = ('verified', result)
         except IOError:
-          summary = ('signed', result or 'Error running GnuPG')
+          if not result:
+            summary = ('signed', 'Error running GnuPG')
+          else:          
+            reslines = [g.split("gpg: ")[1] for g in result.strip().split("\n")]
+            matchgr = re.match(".*made (.*) using (.*) key ID ([a-zA-Z0-9]{8}).*", reslines[0])
+            keyid = matchgr.groups()[2]
+            keytype = matchgr.groups()[1]
+            datetime = matchgr.groups()[0]
+
+            # FIXME: This should understand what kind of UI we have.
+            summary = ('signed', "Signed %s with %s key 0x%s (<a onclick=\"mailpile.gpgrecvkey('%s');\">fetch key</a>)" 
+              % (datetime, keytype, keyid, keyid))
 
         for sig_part in sig_parts:
           sig_part.openpgp = summary

@@ -31,8 +31,12 @@ MailPile.prototype.print = function() {}
 MailPile.prototype.reply = function() {}
 MailPile.prototype.rescan = function() {}
 
-MailPile.prototype.gpgrecv = function(keyid) {
-
+MailPile.prototype.gpgrecvkey = function(keyid) {
+	console.log("Fetching GPG key 0x" + keyid);
+	mailpile.json_get("gpg recv_key", {}, function(data) {
+		console.log("Fetch command execed for GPG key 0x" + keyid + ", resulting in:");
+		console.log(data);
+	});
 }
 
 MailPile.prototype.gpglistkeys = function() {
