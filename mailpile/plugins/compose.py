@@ -256,7 +256,7 @@ class Mail(ReturnsSearchResults):
         session.ui.error('Failed to send %s' % email)
         self._ignore_exception()
 
-    return self._return_search_results(session, idx, emails)
+    return self._return_search_results(session, idx, sent)
 
 
 mailpile.plugins.register_command('a:', 'attach=',  Attach)
