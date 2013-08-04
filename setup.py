@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 from datetime import date
 from setuptools import setup
 from mailpile.app import APPVER
