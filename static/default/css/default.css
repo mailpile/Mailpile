@@ -70,8 +70,11 @@ you can use the generic selector below, but it's slower:
 */
 .icon-zip,
 .icon-video,
+.icon-verified,
 .icon-user,
+.icon-unverified,
 .icon-unknown,
+.icon-unencrypted,
 .icon-trash,
 .icon-tag,
 .icon-spreadsheet,
@@ -86,6 +89,7 @@ you can use the generic selector below, but it's slower:
 .icon-notifications,
 .icon-music,
 .icon-message,
+.icon-logo,
 .icon-links,
 .icon-later,
 .icon-image,
@@ -98,8 +102,9 @@ you can use the generic selector below, but it's slower:
 .icon-code,
 .icon-calendar,
 .icon-attachment,
-.icon-logo,
-.icon-ads {
+.icon-ads,
+.icon-connections,
+.icon-themes {
   font-family: 'Mailpile-Interface';
   speak: none;
   font-style: normal;
@@ -115,95 +120,110 @@ you can use the generic selector below, but it's slower:
 .icon-video:before {
   content: "\e001";
 }
-.icon-user:before {
+.icon-verified:before {
   content: "\e002";
 }
-.icon-unknown:before {
+.icon-user:before {
   content: "\e003";
 }
-.icon-trash:before {
+.icon-unverified:before {
   content: "\e004";
 }
-.icon-tag:before {
+.icon-unknown:before {
   content: "\e005";
 }
-.icon-spreadsheet:before {
+.icon-unencrypted:before {
   content: "\e006";
 }
-.icon-speed:before {
+.icon-trash:before {
   content: "\e007";
 }
-.icon-spam:before {
+.icon-tag:before {
   content: "\e008";
 }
-.icon-settings:before {
+.icon-spreadsheet:before {
   content: "\e009";
 }
-.icon-sent:before {
+.icon-speed:before {
   content: "\e00a";
 }
-.icon-search:before {
+.icon-spam:before {
   content: "\e00b";
 }
-.icon-rss:before {
+.icon-settings:before {
   content: "\e00c";
 }
-.icon-privacy:before {
+.icon-sent:before {
   content: "\e00d";
 }
-.icon-photos:before {
+.icon-search:before {
   content: "\e00e";
 }
-.icon-notifications:before {
+.icon-rss:before {
   content: "\e00f";
 }
-.icon-music:before {
+.icon-privacy:before {
   content: "\e010";
 }
-.icon-message:before {
+.icon-photos:before {
   content: "\e011";
 }
-.icon-links:before {
-  content: "\e014";
-}
-.icon-later:before {
-  content: "\e015";
-}
-.icon-image:before {
-  content: "\e016";
-}
-.icon-hosting:before {
-  content: "\e017";
-}
-.icon-groups:before {
-  content: "\e018";
-}
-.icon-files:before {
-  content: "\e019";
-}
-.icon-encrypted:before {
-  content: "\e01a";
-}
-.icon-donate:before {
-  content: "\e01b";
-}
-.icon-compose:before {
-  content: "\e01c";
-}
-.icon-code:before {
-  content: "\e01d";
-}
-.icon-calendar:before {
-  content: "\e01e";
-}
-.icon-attachment:before {
-  content: "\e01f";
-}
-.icon-logo:before {
+.icon-notifications:before {
   content: "\e012";
 }
-.icon-ads:before {
+.icon-music:before {
+  content: "\e013";
+}
+.icon-message:before {
+  content: "\e014";
+}
+.icon-logo:before {
+  content: "\e015";
+}
+.icon-links:before {
+  content: "\e016";
+}
+.icon-later:before {
+  content: "\e017";
+}
+.icon-image:before {
+  content: "\e018";
+}
+.icon-hosting:before {
+  content: "\e019";
+}
+.icon-groups:before {
+  content: "\e01a";
+}
+.icon-files:before {
+  content: "\e01b";
+}
+.icon-encrypted:before {
+  content: "\e01c";
+}
+.icon-donate:before {
+  content: "\e01d";
+}
+.icon-compose:before {
+  content: "\e01e";
+}
+.icon-code:before {
+  content: "\e01f";
+}
+.icon-calendar:before {
   content: "\e020";
+}
+.icon-attachment:before {
+  content: "\e021";
+}
+.icon-ads:before {
+  content: "\e022";
+}
+.icon-connections:before {
+  content: "\e023";
+}
+.icon-themes:before {
+  content: "\e024";
 }
 /* Backgrounds */
 .background-gray {
@@ -5230,6 +5250,9 @@ p.text-part-quote {
   position: relative;
   top: 10px;
   right: 15px;
+}
+#header nav ul {
+  display: inline-block;
 }
 #header nav ul li {
   display: inline-block;
