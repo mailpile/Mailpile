@@ -40,7 +40,9 @@ mailbox, a Maildir or a gmvault backup repository.
 Until we've properly packaged Mailpile, you will need to configure your
 environment before running it, specifically the `PYTHONPATH` variable.
 
-The easiest way to do that is to use the recipe from the `Makefile`:
+The easiest way to do that is to enter the Mailpile source folder (the
+one with the `Makefile` and `README.md` in it) and use the recipe from
+the `Makefile`:
 
     $ $(make dev)
 
