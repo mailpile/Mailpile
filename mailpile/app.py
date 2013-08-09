@@ -367,7 +367,7 @@ class ConfigManager(dict):
     self.MBOX_CACHE = {}
 
   def is_editable_message(self, msg_ptrs):
-    for ptr in msg_ptrs.split(','):
+    for ptr in msg_ptrs.split('||'):
       if not self.is_editable_mailbox(ptr[:3]):
         return False
     return True
