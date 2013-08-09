@@ -348,7 +348,7 @@ class MailIndex(object):
             self.INDEX.append('')
           self.INDEX[pos] = line
           self.MSGIDS[msgid] = pos
-          for msg_ptr in ptrs:
+          for msg_ptr in ptrs.split('||'):
             self.PTRS[msg_ptr] = pos
       except ValueError:
         pass
@@ -399,7 +399,7 @@ class MailIndex(object):
       message = self.l2m(self.INDEX[offset])
       if len(message) > self.MSG_CONV_ID:
         self.MSGIDS[message[self.MSG_ID]] = offset
-        for msg_ptr in message[self.MSG_PTRS].split(','):
+        for msg_ptr in message[self.MSG_PTRS].split('||'):
           self.PTRS[msg_ptr] = offset
       else:
         session.ui.warning('Bogus line: %s' % line)
@@ -425,7 +425,7 @@ class MailIndex(object):
 
   def update_location(self, session, msg_idx, msg_ptr):
     msg_info = self.get_msg_by_idx(msg_idx)
-    msg_ptrs = msg_info[self.MSG_PTRS].split(',')
+    msg_ptrs = msg_info[self.MSG_PTRS].split('||')
     self.PTRS[msg_ptr] = msg_idx
 
     # If message was seen in this mailbox before, update the location
@@ -437,7 +437,7 @@ class MailIndex(object):
 
     # Otherwise, this is a new mailbox, record this sighting as well!
     if msg_ptr: msg_ptrs.append(msg_ptr)
-    msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
+    msg_info[self.MSG_PTRS] = '||'.join(msg_ptrs)
     self.set_msg_by_idx(msg_idx, msg_info)
 
   def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
@@ -514,7 +514,7 @@ class MailIndex(object):
         msg_idx = len(self.INDEX)
         self.set_msg_by_idx(msg_idx,
                             [msg_mid,                   # Our index ID
-                             msg_ptr,                   # Location on disk
+                             '||'.join([msg_ptr, ]),                   # Location on disk
                              '',                        # UNUSED
                              msg_id,                    # Message-ID
                              b36(msg_date),             # Date as a UTC timestamp
@@ -593,7 +593,7 @@ class MailIndex(object):
     msg_mid = b36(msg_idx)
     msg_info = [
       msg_mid,                                     # Index ID
-      msg_ptr,                                     # Location on disk
+      '||'.join([msg_ptr, ]),                                     # Location on disk
       '',                                          # UNUSED
       b64c(sha1b64((msg_id or msg_ptr).strip())),  # Message ID
       b36(msg_date),                               # Date as a UTC timstamp
@@ -747,7 +747,7 @@ class MailIndex(object):
       del(self.CACHE[msg_idx])
 
     self.MSGIDS[msg_info[self.MSG_ID]] = msg_idx
-    for msg_ptr in msg_info[self.MSG_PTRS]:
+    for msg_ptr in msg_info[self.MSG_PTRS].split('||'):
       self.PTRS[msg_ptr] = msg_idx
 
   def get_conversation(self, msg_info=None, msg_idx=None):

@@ -677,7 +677,7 @@ class Email(object):
     return self.msg_info[field]
 
   def get_mbox_ptr_and_fd(self):
-    for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
+    for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split('||'):
       try:
         mbox = self.config.open_mailbox(None, msg_ptr[:3])
         fd = mbox.get_file_by_ptr(msg_ptr)
