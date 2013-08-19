@@ -115,8 +115,10 @@ class SimpleVCard(dict):
   random_uid = property(_random_uid)
 
   def as_jCard(self):
-    # FIXME: Render as a jCard
-    raise Exception('Unimplemented')
+    # FIXME: Needs type info and attributes.
+    card = [[key.lower(), {}, "text", self[key][0][0]] for key in self.order]
+    stream = ["vcardstream", ["vcard", card]]
+    return stream
 
   def as_xCard(self):
     # FIXME: Render as an xCard
