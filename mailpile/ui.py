@@ -11,7 +11,6 @@
 #
 ###############################################################################
 from collections import defaultdict
-import cgi
 import datetime
 import os
 import random
@@ -30,19 +29,6 @@ from mailpile.search import MailIndex
 
 class SuppressHtmlOutput(Exception):
   pass
-
-
-def _html_escape(data):
-  return cgi.escape(unicode(data))
-
-JSONTEMPLATE_ARGS = {
-  'undefined_str': '',
-  'more_formatters': {
-    'html': _html_escape
-  },
-  'default_formatter': 'html'
-}
-
 
 
 def default_dict(*args):
@@ -214,7 +200,15 @@ class UserInteraction:
   # Rendering helpers for templating and such
   def render_json(self, data):
     """Render data as JSON"""
-    return json.dumps(data, indent=1)
+    from json import JSONEncoder
+    class NoFailEncoder(JSONEncoder):
+      def default(self, obj):
+        if isinstance(obj, (list, dict, str, unicode, int, float, bool, type(None))):
+            return JSONEncoder.default(self, obj)
+        return "COMPLEXBLOB"
+
+    return json.dumps(data, indent=1, cls=NoFailEncoder)
+
   def _html_template(self, config, tpl_names, elems=None):
     for tpl_name in tpl_names:
       try:
@@ -233,7 +227,7 @@ class UserInteraction:
     """Render data as HTML"""
     return jsontemplate.expand(self._html_template(cfg, tpl_names,
                                                    elems=data.keys()), data,
-                               **JSONTEMPLATE_ARGS)
+                               undefined_str='')
   def edit_messages(self, emails):
     self.error('Sorry, this UI cannot edit messages.')
 
@@ -284,7 +278,7 @@ class HttpUserInteraction(UserInteraction):
                             for r in self.results]),
       'logged': '\n'.join(['<p class="ll_%s">%s</p>' % l
                            for l in self.logged])
-    }), **JSONTEMPLATE_ARGS)
+    }), undefined_str='')
   def render_response(self, config):
     if self.render_mode == 'json':
       return ('application/json', '[%s]' % ','.join(self.results))
