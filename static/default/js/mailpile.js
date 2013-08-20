@@ -134,6 +134,90 @@ MailPile.prototype.warning = function(msg) {
 }
 
 
+MailPile.prototype.results_list = function() {
+	$('#btn-display-list').addClass('navigation-on');
+	$('#btn-display-graph').removeClass('navigation-on');
+	$('#pile-graph').hide();
+	$('#pile-results').show();
+}
+
+MailPile.prototype.results_graph = function() {
+	$('#btn-display-graph').addClass('navigation-on');
+	$('#btn-display-list').removeClass('navigation-on');
+	$('#pile-results').hide();
+	$('#pile-graph').show();
+
+	d3.json("/_/shownetwork.json?args=Serval", function(error, graph) {
+		graph = graph[0].result;
+		console.log(graph);
+		var width = 640; // $("#pile-graph-canvas").width();
+		var height = 640; // $("#pile-graph-canvas").height();
+		var force = d3.layout.force()
+	   				.charge(-600)
+	   				.linkDistance(150)
+	   				.size([width, height]);
+
+		var svg = d3.select("#pile-graph-canvas").append("svg");
+
+		var color = d3.scale.category20();
+
+		var tooltip = d3.select("body")
+		    .append("div")
+	    	.style("position", "absolute")
+	    	.style("z-index", "10")
+	    	.style("visibility", "hidden")
+	    	.text("a simple tooltip");
+
+		force
+			.nodes(graph.nodes)
+	    	.links(graph.links)
+	    	.start();
+
+		var link = svg.selectAll(".link")
+			.data(graph.links)
+			.enter().append("line")
+		  .attr("class", "link")
+		  .style("stroke-width", function(d) { return Math.sqrt(3*d.value); });
+
+		var node = svg.selectAll(".node")
+		      .data(graph.nodes)
+			  .enter().append("g")
+		      .attr("class", "node")
+		      .call(force.drag);
+
+		node.append("circle")
+			.attr("r", 15)
+		    .style("fill", function(d) { return color(d.group); })
+
+
+	    node.append("text")
+	    	.attr("x", 20)
+	    	.attr("dy", "0.35em")
+	    	.style("opacity", "0.3")
+	    	.text(function(d) { return d.email; });
+
+	    link.append("text").attr("x", 12).attr("dy", ".35em").text(function(d) { return d.type; })
+
+	  node.on("mouseover", function() {
+		node.selectAll("text").style("opacity", "1");
+	  });
+	  node.on("mouseout", function() {
+	  	node.selectAll("text").style("opacity", "0.3");
+	  });
+
+	  force.on("tick", function() {
+	    link.attr("x1", function(d) { return d.source.x; })
+	        .attr("y1", function(d) { return d.source.y; })
+	        .attr("x2", function(d) { return d.target.x; })
+	        .attr("y2", function(d) { return d.target.y; });
+
+	    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	  });
+	});
+
+}
+
+
 var mailpile = new MailPile();
 
 // Non-exposed functions: www, setup
@@ -231,3 +315,6 @@ $(document).ready(function() {
 	else {e.value = e.value;}}
 
 });	
+
+
+

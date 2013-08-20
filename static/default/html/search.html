@@ -3,6 +3,9 @@
 		<li class="navigation-on"><a href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">5</span> New</a></li>
 		<li><a href="#"><span class="navigation-icon icon-later"></span><span class="navigation-attention-important">12</span> Later</a></li>
 		<li><a href="#"><span class="navigation-icon icon-message"></span><span>2,415</span> Read</a></li>
+
+		<li id="btn-display-list" class="navigation-on"><a onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span> List</a></li>
+		<li id="btn-display-graph"><a onclick="mailpile.results_graph();"><span class="navigation-icon icon-graph"></span> Graph</a></li>
 	</ul>
 </nav>
 
@@ -27,7 +30,25 @@
 	<a class="bulk-action" href="#delete"><span class="icon-trash"></span> Delete</a>
 	<h5><b><span id="bulk-actions-selected-count">0</span> Messages</b> Selected</h5>
 </div>
-<form id="pile-results" action="" method="POST">
+<div id="pile-graph" style="display: none;">
+	<style>
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+text {
+  fill: #000;
+  font: 12px sans-serif;
+  pointer-events: none;
+}
+	</style>
+	<div id="pile-graph-canvas" style="width: 100%; height: 640px;">
+	</div>
+</div>
+<div id="pile-results">
+<form id="pile-results-form" action="" method="POST">
 	<input type='hidden' name='csrf' value='{csrf}' />
         {.repeated section result}
         <table class="pile-results" id="pile-results"><tbody>
@@ -85,6 +106,8 @@
         </div>
         {.end}
 </form>
+</div>
+
 <div class="pile-speed">
 	<span class="icon-speed"></span>Searched your <strong>mail</strong>pile in <strong>{elapsed} seconds</strong>. Vroom!
 </div>
