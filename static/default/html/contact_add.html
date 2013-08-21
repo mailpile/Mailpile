@@ -1,0 +1,44 @@
+<nav id="sub-navigation">
+	<ul class="clearfix">
+		<li><a href="/_/contact/list/"><span class="navigation-icon icon-notifications"></span>Contacts</a></li>
+		<li class="navigation-on"><a href="/_/contact/add/"><span class="navigation-icon icon-notifications"></span>New Contact</a></li>
+	</ul>
+</nav>
+
+{.section result}
+{.or}
+<div id="pile-results">
+<form id="pile-results-form" action="/_/contact/add/" method="POST">
+	<input type='hidden' name='csrf' value='{csrf}' />
+    <table><tbody>
+        <tr>
+            <td class="contact-name">
+                Name:
+            </td>
+            <td class="contact-name">
+                <input type="text" name="name" value=""/>
+            </td>
+        </tr>
+       	<tr>
+            <td class="contact-name">
+                E-mail:
+            </td>
+            <td class="contact-name">
+                <input type="text" name="email" value=""/>
+            </td>
+        </tr>
+       	<tr>
+            <td class="contact-name">
+            </td>
+            <td class="contact-name">
+                <input type="submit" value="Add contact"/>
+            </td>
+        </tr>
+    </tbody></table>
+</form>
+</div>
+{.end}
+
+<div class="pile-speed">
+	<span class="icon-speed"></span>Searched your <strong>mail</strong>pile contacts in <strong>{elapsed} seconds</strong>. Vroom!
+</div>

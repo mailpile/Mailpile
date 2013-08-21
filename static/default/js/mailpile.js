@@ -11,6 +11,18 @@ Number.prototype.pad = function(size){
 function MailPile() {
 	this.msgcache = [];
 	this.searchcache = [];
+	this.keybindings = [];
+	this.commands = [];
+}
+
+MailPile.prototype.keybindings_loadfromserver = function() {
+	var that = this;
+	this.json_get("help", {}, function(data) {
+		console.log(data);
+		for (key in data[0].result.commands) {
+			console.log(key);
+		}
+	});
 }
 
 MailPile.prototype.add = function() {}
@@ -75,6 +87,10 @@ MailPile.prototype.search = function(q) {
 		}
 		that.loglines(data.chatter);
 	});
+}
+
+MailPile.prototype.go = function(q) {
+	window.location.href = q;
 }
 
 MailPile.prototype.set = function(key, value) {
@@ -226,14 +242,16 @@ $(document).ready(function() {
 	/* Hide Various Things */
 	$('#search-params, #bulk-actions').hide();
 
-
-
 	/* Search Box */
-	$('#qbox').jkey('enter, return', function(key) {	
-    	console.log('Search query submitted');
+	$('#qbox').bind("focus", function(key) {	
 		$('#search-params').slideDown('fast');
 	});
-
+	$('#qbox').bind("blur", function(key) {	
+		$('#search-params').slideUp('fast');
+	});
+	Mousetrap.bind("/", function() { $("#qbox").focus(); return false; });
+	Mousetrap.bind("g i", function() { mailpile.go("/Inbox/"); });
+	Mousetrap.bind("g c", function() { mailpile.go("/_/contact/list/"); });
 
 
 	/* Bulk Actions */

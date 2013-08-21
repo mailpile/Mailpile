@@ -122,6 +122,9 @@ class SimpleVCard(dict):
     stream = ["vcardstream", ["vcard", card]]
     return stream
 
+  def as_mpCard(self):
+    return dict([(key, self[key][0][0]) for key in self.order])
+
   def as_xCard(self):
     # FIXME: Render as an xCard
     raise Exception('Unimplemented')

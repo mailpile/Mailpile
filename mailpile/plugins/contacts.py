@@ -58,7 +58,7 @@ class VCard(Command):
           session.ui.warning('Already exists: %s' % handle)
     else:
       return self._error('Nothing to do!')
-    return vcards
+    return {"contacts": [x.as_mpCard() for x in vcards]}
 
   def _format_values(self, key, vals):
     if key.upper() in ('MEMBER', ):
@@ -113,12 +113,19 @@ class VCard(Command):
       compact = True
     kinds = self.KIND and [self.KIND] or []
     vcards = config.find_vcards(self.args, kinds=kinds)
-    for vcard in vcards:
-      session.ui.display_vcard(vcard, compact=compact)
-    return True
+    #for vcard in vcards:
+    #  session.ui.display_vcard(vcard, compact=compact)
+    ctx = {}
+    ctx["contacts"] = [x.as_mpCard() for x in vcards]
+    ctx["query"] = " ".join(self.args)
+    ctx["total"] = len(vcards)
+    ctx["start"] = 1
+    ctx["end"] = len(vcards)
+    ctx["count"] = len(vcards)
+    return ctx
 
   SUBCOMMANDS = {
-    'add':    (add_vcards,  '<msgs>|<email> <name>'),
+    'add':    (add_vcards,  '<msgs>|<email> = <name>'),
     'set':    (set_vcard,   '<email> <attr> <value>'),
     'list':   (find_vcards, '[--full] [<terms>]'),
     'delete': (rm_vcards,   '<email>'),
@@ -130,6 +137,7 @@ class Contact(VCard):
   KIND = 'individual'
   ORDER = ('Tagging', 3)
   SYNOPSIS = '<email>'
+  TEMPLATE_IDS = ['contact']
 
 
 mailpile.plugins.register_command('C:',     'contact=', Contact)
