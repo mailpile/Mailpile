@@ -64,7 +64,7 @@ class UserInteraction:
     self.render_mode = 'text'
     self.html_variables = {
       'title': 'Mailpile',
-      'name': 'Bradley Manning',
+      'name': 'Chelsea Manning',
       'csrf': '',
       'even_odd': 'odd',
       'mailpile_size': 0
