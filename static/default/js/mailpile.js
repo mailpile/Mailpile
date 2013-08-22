@@ -11,6 +11,18 @@ Number.prototype.pad = function(size){
 function MailPile() {
 	this.msgcache = [];
 	this.searchcache = [];
+	this.keybindings = [];
+	this.commands = [];
+}
+
+MailPile.prototype.keybindings_loadfromserver = function() {
+	var that = this;
+	this.json_get("help", {}, function(data) {
+		console.log(data);
+		for (key in data[0].result.commands) {
+			console.log(key);
+		}
+	});
 }
 
 MailPile.prototype.add = function() {}
@@ -31,8 +43,12 @@ MailPile.prototype.print = function() {}
 MailPile.prototype.reply = function() {}
 MailPile.prototype.rescan = function() {}
 
-MailPile.prototype.gpgrecv = function(keyid) {
-
+MailPile.prototype.gpgrecvkey = function(keyid) {
+	console.log("Fetching GPG key 0x" + keyid);
+	mailpile.json_get("gpg recv_key", {}, function(data) {
+		console.log("Fetch command execed for GPG key 0x" + keyid + ", resulting in:");
+		console.log(data);
+	});
 }
 
 MailPile.prototype.gpglistkeys = function() {
@@ -71,6 +87,10 @@ MailPile.prototype.search = function(q) {
 		}
 		that.loglines(data.chatter);
 	});
+}
+
+MailPile.prototype.go = function(q) {
+	window.location.href = q;
 }
 
 MailPile.prototype.set = function(key, value) {
@@ -130,6 +150,90 @@ MailPile.prototype.warning = function(msg) {
 }
 
 
+MailPile.prototype.results_list = function() {
+	$('#btn-display-list').addClass('navigation-on');
+	$('#btn-display-graph').removeClass('navigation-on');
+	$('#pile-graph').hide();
+	$('#pile-results').show();
+}
+
+MailPile.prototype.results_graph = function() {
+	$('#btn-display-graph').addClass('navigation-on');
+	$('#btn-display-list').removeClass('navigation-on');
+	$('#pile-results').hide();
+	$('#pile-graph').show();
+
+	d3.json("/_/shownetwork.json?args=Serval", function(error, graph) {
+		graph = graph[0].result;
+		console.log(graph);
+		var width = 640; // $("#pile-graph-canvas").width();
+		var height = 640; // $("#pile-graph-canvas").height();
+		var force = d3.layout.force()
+	   				.charge(-600)
+	   				.linkDistance(150)
+	   				.size([width, height]);
+
+		var svg = d3.select("#pile-graph-canvas").append("svg");
+
+		var color = d3.scale.category20();
+
+		var tooltip = d3.select("body")
+		    .append("div")
+	    	.style("position", "absolute")
+	    	.style("z-index", "10")
+	    	.style("visibility", "hidden")
+	    	.text("a simple tooltip");
+
+		force
+			.nodes(graph.nodes)
+	    	.links(graph.links)
+	    	.start();
+
+		var link = svg.selectAll(".link")
+			.data(graph.links)
+			.enter().append("line")
+		  .attr("class", "link")
+		  .style("stroke-width", function(d) { return Math.sqrt(3*d.value); });
+
+		var node = svg.selectAll(".node")
+		      .data(graph.nodes)
+			  .enter().append("g")
+		      .attr("class", "node")
+		      .call(force.drag);
+
+		node.append("circle")
+			.attr("r", 15)
+		    .style("fill", function(d) { return color(d.group); })
+
+
+	    node.append("text")
+	    	.attr("x", 20)
+	    	.attr("dy", "0.35em")
+	    	.style("opacity", "0.3")
+	    	.text(function(d) { return d.email; });
+
+	    link.append("text").attr("x", 12).attr("dy", ".35em").text(function(d) { return d.type; })
+
+	  node.on("mouseover", function() {
+		node.selectAll("text").style("opacity", "1");
+	  });
+	  node.on("mouseout", function() {
+	  	node.selectAll("text").style("opacity", "0.3");
+	  });
+
+	  force.on("tick", function() {
+	    link.attr("x1", function(d) { return d.source.x; })
+	        .attr("y1", function(d) { return d.source.y; })
+	        .attr("x2", function(d) { return d.target.x; })
+	        .attr("y2", function(d) { return d.target.y; });
+
+	    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	  });
+	});
+
+}
+
+
 var mailpile = new MailPile();
 
 // Non-exposed functions: www, setup
@@ -138,14 +242,16 @@ $(document).ready(function() {
 	/* Hide Various Things */
 	$('#search-params, #bulk-actions').hide();
 
-
-
 	/* Search Box */
-	$('#qbox').jkey('enter, return', function(key) {	
-    	console.log('Search query submitted');
+	$('#qbox').bind("focus", function(key) {	
 		$('#search-params').slideDown('fast');
 	});
-
+	$('#qbox').bind("blur", function(key) {	
+		$('#search-params').slideUp('fast');
+	});
+	Mousetrap.bind("/", function() { $("#qbox").focus(); return false; });
+	Mousetrap.bind("g i", function() { mailpile.go("/Inbox/"); });
+	Mousetrap.bind("g c", function() { mailpile.go("/_/contact/list/"); });
 
 
 	/* Bulk Actions */
@@ -227,3 +333,6 @@ $(document).ready(function() {
 	else {e.value = e.value;}}
 
 });	
+
+
+

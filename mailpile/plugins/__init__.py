@@ -4,7 +4,7 @@ import mailpile.commands
 
 # These are the plugins we import by default
 __all__ = ['search', 'tags', 'contacts', 'compose', 'groups', 'dates',
-           'gpg', 'setup']
+           'gpg', 'setup', 'networkgraph']
 
 class PluginError(Exception):
   pass

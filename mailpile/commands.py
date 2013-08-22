@@ -361,7 +361,6 @@ class AddMailbox(Command):
         self._serialize('Save config', lambda: config.save())
     return True
 
-
 ###############################################################################
 
 class Output(Command):

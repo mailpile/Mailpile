@@ -1,0 +1,21 @@
+Tests that need to be written:
+
+  - Search tests
+	- Performance test [DONE?]
+	- from:, to:, etc..
+	- Keywords
+  - Indexing tests
+	- Make sure indexing works [DONE]
+	- Feed in badly formatted mail
+	- Different text encodings
+  - Tagging tests
+	- Add tag
+	- Tag mail
+	- Untag mail
+  - Filtering tests
+	- Add
+	- Filter
+	- Delete
+  - HTTP server
+	- ...
+  - ...
