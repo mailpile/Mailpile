@@ -250,9 +250,11 @@ $(document).ready(function() {
 		$('#search-params').slideUp('fast');
 	});
 	Mousetrap.bind("/", function() { $("#qbox").focus(); return false; });
+	Mousetrap.bind("C", function() { mailpile.go("/_/compose/"); });
 	Mousetrap.bind("g i", function() { mailpile.go("/Inbox/"); });
 	Mousetrap.bind("g c", function() { mailpile.go("/_/contact/list/"); });
-
+	Mousetrap.bind("g n c", function() { mailpile.go("/_/contact/add/"); });
+	Mousetrap.bind("g n m", function() { mailpile.go("/_/compose/"); });
 
 	/* Bulk Actions */
 	$('.bulk-action').on('click', function(e) {
