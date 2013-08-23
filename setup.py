@@ -25,5 +25,10 @@ engine for a personal collection of e-mail.  It can be used as a
 simple web-mail client.
 """,
    packages=['mailpile'],
-   scripts=['scripts/mailpile'],
+   entry_points = {
+     'console_scripts': [
+       'mp = mailpile.__main__:main',
+       'mailpile = mailpile.__main__:main'
+     ]
+   },
 )
