@@ -9,7 +9,7 @@ from lxml import etree
 
 class SimpleVCard(dict):
   VCARD_OTHER_KEYS = {
-    'AGENT': '', 
+    'AGENT': '',
     'CLASS': '',
     'EXPERTISE': '',
     'HOBBY': '',
@@ -172,7 +172,7 @@ class SimpleVCard(dict):
         if not key in self:
           self[key] = []
         self.order.append(key)
-        self[key].append([data, attrs]) 
+        self[key].append([data, attrs])
 
     return self
 
@@ -205,11 +205,11 @@ class DAVClient:
       self.auth = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
     else:
       self.auth = None
-    
+
   def request(self, url, method, headers={}, body=""):
     if self.protocol == "https":
       req = httplib.HTTPSConnection(self.host, self.port)
-      # FIXME: Verify HTTPS certificate      
+      # FIXME: Verify HTTPS certificate
     else:
       req = httplib.HTTPConnection(self.host, self.port)
 

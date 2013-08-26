@@ -33,7 +33,7 @@ class PGPMimeParser(Parser):
         except IOError:
           if not result:
             summary = ('signed', 'Error running GnuPG')
-          else:          
+          else:
             reslines = [g.split("gpg: ")[1] for g in result.strip().split("\n")]
             matchgr = re.match(".*made (.*) using (.*) key ID ([a-zA-Z0-9]{8}).*", reslines[0])
             keyid = matchgr.groups()[2]
@@ -41,7 +41,7 @@ class PGPMimeParser(Parser):
             datetime = matchgr.groups()[0]
 
             # FIXME: This should understand what kind of UI we have.
-            summary = ('signed', "Signed %s with %s key 0x%s (<a onclick=\"mailpile.gpgrecvkey('%s');\">fetch key</a>)" 
+            summary = ('signed', "Signed %s with %s key 0x%s (<a onclick=\"mailpile.gpgrecvkey('%s');\">fetch key</a>)"
               % (datetime, keytype, keyid, keyid))
 
         for sig_part in sig_parts:
@@ -54,7 +54,7 @@ class PGPMimeParser(Parser):
           sig_parts.append(part)
           sig_count += 1
 
-      elif enc_count > 0 and (mimetype == 'application/octet-stream'):        
+      elif enc_count > 0 and (mimetype == 'application/octet-stream'):
         # FIXME: Decrypt and parse!
         crypt = tempfile.NamedTemporaryFile()
         crypt.write(part.get_payload())

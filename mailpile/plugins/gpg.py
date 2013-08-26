@@ -126,7 +126,7 @@ class GPG(Command):
     """Decrypt a message."""
     session, config, arg = self.session, self.session.config, self.args[0]
     raise Exception("IMPLEMENT ME!")
-    
+ 
   def sign_key(self):
     """Sign a public key."""
     session, config, arg = self.session, self.session.config, self.args[0]
