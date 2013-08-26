@@ -297,7 +297,7 @@ $(document).ready(function() {
 	$('#qbox').bind("blur", function(key) {	
 		$('#search-params').slideUp('fast');
 	});
-	keybindings.foreach(function(item){
+	keybindings.forEach(function(item){
 		if (item[1] == "global") {
 			Mousetrap.bindGlobal(item[0], item[2]);
 		} else {
