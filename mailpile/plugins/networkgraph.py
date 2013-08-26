@@ -1,3 +1,8 @@
+# FIXME: This command is horribly slow, and demonstrates deficienies in
+#        our current indexing. The search index needs to understand the
+#        social graph natively so this, and other social queries, can be
+#        fast.
+
 import datetime
 import re
 import time
