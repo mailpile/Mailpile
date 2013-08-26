@@ -180,8 +180,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     for pd in post_data:
       if pd.startswith('@'):
         data[pd] = post_data[pd][0]
-      else:
-        data[pd] = post_data[pd]
 
     # Explicit support for a few particular commands
     if 'add_tag' in post_data or 'rm_tag' in post_data:
