@@ -218,8 +218,7 @@ class Search(Command):
     def as_dict(self):
       return Command.CommandResult.as_dict(self._fixup())
 
-  SYNOPSIS = '<terms ...>'
-  def command(self, search=None):
+  def _do_search(self, search=None):
     session, idx = self.session, self._idx()
     session.searched = search or []
 
@@ -240,6 +239,11 @@ class Search(Command):
 
     session.results = list(idx.search(session, session.searched))
     idx.sort_results(session, session.results, how=session.order)
+    return session, idx, start
+
+  SYNOPSIS = '<terms ...>'
+  def command(self, search=None):
+    session, idx, start = self._do_search(search=search)
     session.displayed = SearchResults(session, idx, start=start)
     return [session.displayed]
 

@@ -1,4 +1,3 @@
-
 import datetime
 import re
 import time
@@ -13,25 +12,19 @@ from mailpile.plugins.search import Search
 
 
 
-class NetworkGraph(Command):
+class NetworkGraph(Search):
   """Get a graph of the network in the current search results."""
   ORDER = ('Searching', 1)
 
-  def command(self):
+  class CommandResult(Command.CommandResult):
+    pass
+
+  def command(self, search=None):
+    session, idx, start = self._do_search(search=search)
+
     nodes = []
     links = []
     res = {}
-
-    session, idx = self.session, self._idx()
-
-    if len(self.args) > 0:
-      for arg in self.args:
-        if ':' in arg or (arg and arg[0] in ('-', '+')):
-          session.searched.append(arg.lower())
-        else:
-          session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
-      session.results = list(idx.search(session, session.searched))
-      idx.sort_results(session, session.results, how=session.order)
 
     for messageid in session.results:
       message = Email(self._idx(), messageid)
