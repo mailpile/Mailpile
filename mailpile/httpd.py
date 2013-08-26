@@ -180,6 +180,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     for pd in post_data:
       if pd.startswith('@'):
         data[pd] = post_data[pd][0]
+      else:
+        data[pd] = post_data[pd]
 
     # Explicit support for a few particular commands
     if 'add_tag' in post_data or 'rm_tag' in post_data:
@@ -244,7 +246,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       session.ui.html_variables = {
         'title': 'Mailpile dummy title',
         'csrf': 'FIXMEFIXME',
-        'name': session.config.get('my_from', {1: 'Bradley Manning'}
+        'name': session.config.get('my_from', {1: 'Chelsea Manning'}
                                    ).values()[0],
         'mailpile_size': len(session.config.index.INDEX)
       }

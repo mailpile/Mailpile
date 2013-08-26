@@ -41,12 +41,19 @@ class VCard(Command):
 
   def add_vcards(self):
     session, config, idx = self.session, self.session.config, self._idx()
+
     if (len(self.args) > 2
     and self.args[1] == '='
     and self._valid_vcard_handle(self.args[0])):
       pairs = [(self.args[0], ' '.join(self.args[2:]))]
+    elif self.data:
+      if self.data.has_key("@contactname") and self.data.has_key("@contactemail"):
+        pairs = [(self.data["@contactemail"], self.data["@contactname"])]
+      elif self.data.has_key("contactnames") and self.data.has_key("contactemails"):
+        pairs = zip(self.data["contactemails"], self.data["contactnames"])
     else:
       pairs = self._add_from_messages()
+
     if pairs:
       vcards = []
       for handle, name in pairs:

@@ -74,6 +74,13 @@
 		</div>
 
 		<div id="debug">{logged|raw}</div>
+
+		<div style="display: none; position: fixed; top: 20%; left: 40%; right: 40%; width: 20%; background: #eee; border: 1px solid #ccc;" id="dialog_tag">
+			<form onsubmit="mailpile.go('/'+$('#dialog_tag_input').val() + '/'); return false;">
+				<input type="text" id="dialog_tag_input"/>
+				<input type="submit" value="Go">
+			</form>
+		</div>
 	</div>
 	<!-- END CONTENT -->
 
