@@ -90,6 +90,7 @@ MailPile.prototype.search = function(q) {
 }
 
 MailPile.prototype.go = function(q) {
+	console.log("Going to ", q);
 	window.location.href = q;
 }
 
@@ -156,6 +157,12 @@ MailPile.prototype.results_list = function() {
 	$('#pile-graph').hide();
 	$('#pile-results').show();
 }
+
+
+MailPile.prototype.focus_search = function() {
+	$("#qbox").focus(); return false;
+}
+
 
 MailPile.prototype.results_graph = function() {
 	$('#btn-display-graph').addClass('navigation-on');
@@ -234,6 +241,22 @@ MailPile.prototype.results_graph = function() {
 }
 
 
+var keybindings = [
+	["/", 		"normal",	mailpile.focus_search],
+	["C", 		"normal",	function() { mailpile.go("/_/compose/"); }],
+	["g i", 	"normal",	function() { mailpile.go("/Inbox/"); }],
+	["g c", 	"normal",	function() { mailpile.go("/_/contact/list/"); }],
+	["g n c", 	"normal",	function() { mailpile.go("/_/contact/add/"); }],
+	["g n m",	"normal",	function() { mailpile.go("/_/compose/"); }],
+	["g t",		"normal",	function() { $("#dialog_tag").show(); $("#dialog_tag_input").focus(); return false; }],
+	["esc",		"global",	function() {
+					$("#dialog_tag_input").blur();
+					$("#qbox").blur();
+					$("#dialog_tag").hide();
+				}],
+];
+
+
 var mailpile = new MailPile();
 
 // Non-exposed functions: www, setup
@@ -249,12 +272,13 @@ $(document).ready(function() {
 	$('#qbox').bind("blur", function(key) {	
 		$('#search-params').slideUp('fast');
 	});
-	Mousetrap.bind("/", function() { $("#qbox").focus(); return false; });
-	Mousetrap.bind("C", function() { mailpile.go("/_/compose/"); });
-	Mousetrap.bind("g i", function() { mailpile.go("/Inbox/"); });
-	Mousetrap.bind("g c", function() { mailpile.go("/_/contact/list/"); });
-	Mousetrap.bind("g n c", function() { mailpile.go("/_/contact/add/"); });
-	Mousetrap.bind("g n m", function() { mailpile.go("/_/compose/"); });
+	keybindings.foreach(function(item){
+		if (item[1] == "global") {
+			Mousetrap.bindGlobal(item[0], item[2]);
+		} else {
+			Mousetrap.bind(item[0], item[2]);
+		}
+	})
 
 	/* Bulk Actions */
 	$('.bulk-action').on('click', function(e) {
