@@ -1,5 +1,6 @@
 import mailpile.plugins
 from mailpile.commands import Command
+from mailpile.mailutils import Email, ExtractEmails
 from mailpile.util import *
 
 
