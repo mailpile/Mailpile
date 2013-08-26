@@ -13,6 +13,7 @@ function MailPile() {
 	this.searchcache = [];
 	this.keybindings = [];
 	this.commands = [];
+	this.graphselected = [];
 }
 
 MailPile.prototype.keybindings_loadfromserver = function() {
@@ -158,29 +159,42 @@ MailPile.prototype.results_list = function() {
 	$('#pile-results').show();
 }
 
+MailPile.prototype.graph_actionbuttons = function() {
+	if (this.graphselected.length >= 1) {
+		$("#btn-compose-message").show();
+	} else {
+		$("#btn-compose-message").hide();
+	}
+	if (this.graphselected.length >= 2) {
+		$("#btn-found-group").show();
+	} else {
+		$("#btn-found-group").hide();
+	}
+}
 
 MailPile.prototype.focus_search = function() {
 	$("#qbox").focus(); return false;
 }
 
 
-MailPile.prototype.results_graph = function() {
+MailPile.prototype.results_graph = function(args) {
 	$('#btn-display-graph').addClass('navigation-on');
 	$('#btn-display-list').removeClass('navigation-on');
 	$('#pile-results').hide();
 	$('#pile-graph').show();
 
-	d3.json("/_/shownetwork.json?args=Serval", function(error, graph) {
+	d3.json("/_/shownetwork.json?args=" + args, function(error, graph) {
 		graph = graph[0].result;
 		console.log(graph);
 		var width = 640; // $("#pile-graph-canvas").width();
 		var height = 640; // $("#pile-graph-canvas").height();
 		var force = d3.layout.force()
-	   				.charge(-600)
-	   				.linkDistance(150)
+	   				.charge(-300)
+	   				.linkDistance(75)
 	   				.size([width, height]);
 
-		var svg = d3.select("#pile-graph-canvas").append("svg");
+		var svg = d3.select("#pile-graph-canvas-svg");
+		$("#pile-graph-canvas-svg").empty();
 
 		var color = d3.scale.category20();
 
@@ -199,8 +213,8 @@ MailPile.prototype.results_graph = function() {
 		var link = svg.selectAll(".link")
 			.data(graph.links)
 			.enter().append("line")
-		  .attr("class", "link")
-		  .style("stroke-width", function(d) { return Math.sqrt(3*d.value); });
+			.attr("class", "link")
+			.style("stroke-width", function(d) { return Math.sqrt(3*d.value); });
 
 		var node = svg.selectAll(".node")
 		      .data(graph.nodes)
@@ -209,40 +223,51 @@ MailPile.prototype.results_graph = function() {
 		      .call(force.drag);
 
 		node.append("circle")
-			.attr("r", 15)
-		    .style("fill", function(d) { return color(d.group); })
-
+			.attr("r", 8)
+		    .style("fill", function(d) { return color("#3a6b8c"); })
 
 	    node.append("text")
-	    	.attr("x", 20)
+	    	.attr("x", 12)
 	    	.attr("dy", "0.35em")
 	    	.style("opacity", "0.3")
 	    	.text(function(d) { return d.email; });
 
 	    link.append("text").attr("x", 12).attr("dy", ".35em").text(function(d) { return d.type; })
 
-	  node.on("mouseover", function() {
-		node.selectAll("text").style("opacity", "1");
-	  });
-	  node.on("mouseout", function() {
-	  	node.selectAll("text").style("opacity", "0.3");
-	  });
+	   	node.on("click", function(d, m, q) {
+	   		// d.attr("toggled", !d.attr("toggled"));
+	   		// d.style("color", "#f00");
+	   		if (mailpile.graphselected.indexOf(d["email"]) < 0) {
+		   		d3.select(node[q][m]).selectAll("circle").style("fill", "#4b7945");
+		   		mailpile.graphselected.push(d["email"]);
+	   		} else {
+	   			mailpile.graphselected.pop(d["email"]);
+	   			d3.select(node[q][m]).selectAll("circle").style("fill", "#3a6b8c");
+	   		}
+	   		mailpile.graph_actionbuttons();
+	   	});
+		node.on("mouseover", function(d, m, q) {
+			d3.select(node[q][m]).selectAll("text").style("opacity", "1");
+		});
+		node.on("mouseout", function(d, m, q) {
+			d3.select(node[q][m]).selectAll("text").style("opacity", "0.3");
+		});
 
-	  force.on("tick", function() {
-	    link.attr("x1", function(d) { return d.source.x; })
-	        .attr("y1", function(d) { return d.source.y; })
-	        .attr("x2", function(d) { return d.target.x; })
-	        .attr("y2", function(d) { return d.target.y; });
+		force.on("tick", function() {
+			link.attr("x1", function(d) { return d.source.x; })
+			    .attr("y1", function(d) { return d.source.y; })
+			    .attr("x2", function(d) { return d.target.x; })
+			    .attr("y2", function(d) { return d.target.y; });
 
-	    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-	  });
+			node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+		});
 	});
 
 }
 
 
 var keybindings = [
-	["/", 		"normal",	mailpile.focus_search],
+	["/", 		"normal",	function() { $("#qbox").focus(); return false; }],
 	["C", 		"normal",	function() { mailpile.go("/_/compose/"); }],
 	["g i", 	"normal",	function() { mailpile.go("/Inbox/"); }],
 	["g c", 	"normal",	function() { mailpile.go("/_/contact/list/"); }],

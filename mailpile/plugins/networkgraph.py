@@ -20,11 +20,11 @@ class NetworkGraph(Command):
   def command(self):
     nodes = []
     links = []
+    res = {}
 
     session, idx = self.session, self._idx()
 
     if len(self.args) > 0:
-      print "Got args. Running search."
       for arg in self.args:
         if ':' in arg or (arg and arg[0] in ('-', '+')):
           session.searched.append(arg.lower())
@@ -32,41 +32,50 @@ class NetworkGraph(Command):
           session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
       session.results = list(idx.search(session, session.searched))
       idx.sort_results(session, session.results, how=session.order)
-      print session.results
 
     for messageid in session.results:
       message = Email(self._idx(), messageid)
       try:
-        msgfrom = ExtractEmails(message.get("from"))[0]
+        msgfrom = ExtractEmails(message.get("from"))[0].lower()
       except IndexError, e:
         print "No e-mail address in '%s'" % message.get("from")
         continue
 
-      msgto = ExtractEmails(message.get("to"))
-      msgcc = ExtractEmails(message.get("cc"))
-      msgbcc = ExtractEmails(message.get("bcc"))
+      msgto = [x.lower() for x in ExtractEmails(message.get("to"))]
+      msgcc = [x.lower() for x in ExtractEmails(message.get("cc"))]
+      msgbcc = [x.lower() for x in ExtractEmails(message.get("bcc"))]
 
       if msgfrom not in [m["email"] for m in nodes]:
         nodes.append({"email": msgfrom})
 
-      for msgset, msgtype  in ((msgto, "to"), (msgcc, "cc"), (msgbcc, "bcc")):
+      for msgset in [msgto, msgcc, msgbcc]:
         for address in msgset:
           if address not in [m["email"] for m in nodes]:
             nodes.append({"email": address})
 
-        fromid = [x["email"] for x in nodes].index(msgfrom)
-        searchspace = [m for m in links if m["source"] == fromid and m["type"] == msgtype]
+        curnodes = [x["email"] for x in nodes]
+        fromid = curnodes.index(msgfrom)
+        searchspace = [m for m in links if m["source"] == fromid]
         for recipient in msgset:
-          index = [x["email"] for x in nodes].index(recipient)
+          index = curnodes.index(recipient)
           link = [m for m in searchspace if m["target"] == index]
           if len(link) == 0:
-            links.append({"source": fromid, "target": index, "type": msgtype, "weight": 1})
+            links.append({"source": fromid, "target": index, "value": 1})
           elif len(link) == 1:
-            link[0]["weight"] += 1
+            link[0]["value"] += 1
           else:
             raise ValueError("Too many links! - This should never happen.")
 
-    return {"nodes": nodes, "links": links, "searched": session.searched}
+      if len(nodes) >= 200:
+        # Let's put a hard upper limit on how many nodes we can have, for performance reasons.
+        # There might be a better way to do this though...
+        res["limit_hit"] = True
+        break
+
+    res["nodes"] = nodes
+    res["links"] = links
+    res["searched"] = session.searched
+    return res
 
 
 mailpile.plugins.register_command('N', 'shownetwork',  NetworkGraph)

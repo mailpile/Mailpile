@@ -30,7 +30,7 @@
 	<a class="bulk-action" href="#delete"><span class="icon-trash"></span> Delete</a>
 	<h5><b><span id="bulk-actions-selected-count">0</span> Messages</b> Selected</h5>
 </div>
-<div id="pile-graph" style="display: none;">
+<div id="pile-graph" style="display: none; position: relative;">
 	<style>
 .link {
   fill: none;
@@ -44,7 +44,12 @@ text {
   pointer-events: none;
 }
 	</style>
+	<div id="graph-actions" style="position: absolute; top: 10px; right: 20px;" class="clearfix">
+		<a style="display: none;" id="btn-compose-message" class="bulk-action" href="#add-to-group"><span class="icon-compose"></span> Compose Message to Selected</a>
+		<a style="display: none;" id="btn-found-group" class="bulk-action" href="#add-to-group"><span class="icon-groups"></span> Add Selected to Group</a>
+	</div>
 	<div id="pile-graph-canvas" style="width: 100%; height: 640px;">
+		<svg id="pile-graph-canvas-svg"></svg>
 	</div>
 </div>
 <div id="pile-results">
