@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2.7
 results = {
  'postinglist_kb = 126': [
    (0.727, 63481),                                
