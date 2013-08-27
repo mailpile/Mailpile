@@ -422,8 +422,8 @@ Contributors:
    * Brennan Novak (<https://brennannovak.com/>)
    * Halldór Rúnarsson (<https://github.com/halldor>)
 
-This program is free software: you can redistribute it and/or modify it
-under the terms of the  GNU  Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or (at
-your option) any later version.
+This program is free software: you can redistribute it and/or modify it under
+the terms of either the GNU Affero General Public License as published by the
+Free Software Foundation or the Apache License 2.0 as published by the Apache
+Software Foundation. See the file COPYING.md for details.
 
