@@ -448,8 +448,8 @@ class MailIndex(object):
         return 0
       else:
         session.ui.mark('%s: Checking: %s' % (idx, mailbox_fn))
-    except (IOError, OSError, NoSuchMailboxError):
-      session.ui.mark('%s: Error opening: %s' % (idx, mailbox_fn))
+    except (IOError, OSError, NoSuchMailboxError), e:
+      session.ui.mark('%s: Error opening: %s (%s)' % (idx, mailbox_fn, e))
       return 0
 
     unparsed = mbox.unparsed()

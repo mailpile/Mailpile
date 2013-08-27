@@ -86,6 +86,11 @@ HDD) the program can index roughly four messages per second, so if you
 are processing thousands of messages you should expect it to take a few
 hours.
 
+You can repeat the add command to specify multiple mailboxes.  Boxes
+can be in mailbox or maildir format.  Boxes are not recursive, though.
+If you have many maildirs in a tree, you must specify each one
+individually.
+
 Stopping the program with CTRL-C is (relatively) nondestructive - it
 will try to save its progress and re-running should continue the scan
 from where it left off.
