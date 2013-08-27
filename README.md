@@ -16,7 +16,7 @@ webmail.
 yet.  It'll tell you that you have mail matching a given search and let
 you sort it, browse threads and read messages... but the user interface and
 message composing/sending functionality is still very immature.  If you just
-want a useful tool aren't interested in hacking on the code, you should
+want a useful tool and aren't interested in hacking on the code, you should
 probably check back later or [follow @HerraBRE on
 Twitter](https://twitter.com/HerraBRE) and watch for updates.
 
