@@ -68,6 +68,19 @@ Mailpile does not currently access IMAP or POP3 servers directly, it
 relies on other tools (such as `fetchmail`) to take care of downloading
 new mail.
 
+## Developing using docker ##
+
+You can build a docker image:
+
+    docker build -t mailpile scripts/docker/
+
+and run it:
+
+    docker run -i -t mailpile
+
+or enter the container's bash prompt directly:
+
+    docker run -i -t mailpile bash
 
 ## Indexing your mail ##
 
