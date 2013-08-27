@@ -108,10 +108,18 @@ program like this:
 
     $ ./mp --www
 
-The server listens on `localhost:33411` by default, you can change
-the host and port by setting the `http_host` and `http_port` variables.
-Setting `http_host` to `disabled` disables the server.  Note that you
-will need to restart the program for these changes to take effect.
+The server listens on `localhost:33411` by default, meaning you cannot
+access it from a different computer (for security reasons). You can change
+the host and port by setting the `http_host` and `http_port` variables
+(more about [internal variables](#internal-variables) below).
+For example if you want to run the server to be accessible
+from another computer as well, you can run Mailpile
+with:
+
+    $ ./mp --set http_host=0.0.0.0
+
+Setting `http_host` to `disabled` disables the server.
+
 
 
 ## Basic use ##
@@ -314,6 +322,19 @@ There are a bunch of variables that can be tweaked. For a complete list:
 
     mailpile> help variables
     ...
+
+To set a variable to some value either run Mailpile with:
+
+    $ ./mp --set variable=value
+
+Or alternatively run `./mp` and issue:
+
+    > set variable=value
+
+after which you need to restart the program for it to take effect
+(Ctrl+D and `./mp`). You can print the value of a variable using:
+
+    > print variable
 
 
 ### JSON, XML, RSS, ... ###
