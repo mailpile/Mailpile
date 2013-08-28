@@ -35,3 +35,7 @@ clean:
 	@rm -vf debian/files debian/control debian/copyright debian/changelog
 	@rm -vrf debian/pagekite* debian/python* debian/init.d
 
+virtualenv:
+	virtualenv mp-virtualenv
+	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
+	
