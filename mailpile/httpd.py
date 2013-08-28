@@ -239,6 +239,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     elif path.endswith('.txt'):   session.ui.render_mode = 'text'
     else:                         session.ui.render_mode = 'html'
 
+    if not session.config.index:
+      session.ui.error("Index not found or empty, please check")
+      return
     try:
       cmd, data = self.parse_pqp(path, query_data, post_data, config)
       idx = session.config.index
