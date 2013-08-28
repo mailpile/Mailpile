@@ -350,6 +350,18 @@ For other commands, just append `.xml` or `.json` to the command name
 (e.g. `http://localhost:33411/_/help.xml` is a very useless example).
 
 
+### Developing using virtualenv ###
+
+The `Makefile` includes a recipe for setting up a virtualenv for use
+with Mailpile:
+
+    $ make virtualenv
+    $ source mp-virtualenv/bin/activate
+    $ mailpile
+
+This allows easy, sandboxed usage.
+
+
 ### Developing using docker ###
 
 You can build a docker image:
