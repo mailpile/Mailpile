@@ -27,7 +27,6 @@ simple web-mail client.
    packages=['mailpile'],
    entry_points = {
      'console_scripts': [
-       'mp = mailpile.__main__:main',
        'mailpile = mailpile.__main__:main'
      ]
    },
