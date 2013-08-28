@@ -1,2 +1,6 @@
 *.pyc
 *.mo
+build/
+dist/
+mailpile.egg-info/
+mailpile-tmp.py

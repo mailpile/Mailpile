@@ -37,21 +37,26 @@ mailbox, a Maildir or a gmvault backup repository.
 
 ## Setting up the basic config ##
 
-For best results, the first step is to tell Mailpile your e-mail
+    $ pip install -r requirements.txt
+    $ python setup.py install
+
+Once this has been done, you run `mp` as described below.
+
+For best results, the next step is to tell the program your e-mail
 address and set up basic tags (`New`, `Inbox`, etc.) and filters so
 Mailpile will behave like a normal mail client.  Mailpile can do this
 for you, but if you are importing lots of old mail, you may want to
 postpone the filter definition until after the import (see below), to
 start with a clean slate:
 
-    $ ./mp --set "my_from: yourmail@domain.com = Your name" --setup
+    $ mp --set "my_from: yourmail@domain.com = Your name" --setup
     ...
 
 If you do not have a local working mail server in `/usr/sbin/sendmail`,
 you may also want to configure a default outgoing SMTP server:
 
-    $ ./mp --set "my_sendmail: default = smtp:yourmailserver:25"
-    ...
+    $ mp --set "my_sendmail: default = smtp:yourmailserver:25"
+    ..
 
 Mailpile does not by default access IMAP or POP3 servers directly, it
 relies on other tools (such as `fetchmail`) to take care of downloading
@@ -65,7 +70,7 @@ Mailpile will create and use a folder in your home directory named
 
 A simple test run might look like so:
 
-    $ ./mp --add /var/spool/mail/YOURNAME --rescan
+    $ mp --add /var/spool/mail/YOURNAME --rescan
 
 The program prints details of its progress as it runs.  Note that just
 opening the mailbox may take quite a while if it is large enough (it
@@ -100,7 +105,7 @@ Maybe someday you will build a fancier UI for us. :-)
 If you want to run the web UI without the CLI interface, start the
 program like this:
 
-    $ ./mp --www
+    $ mp --www
 
 The server listens on `localhost:33411` by default, meaning you cannot
 access it from a different computer (for security reasons). You can change
@@ -128,7 +133,7 @@ commonly used commands use capital letters for this).
 
 Some searching examples:
 
-    $ ./mp
+    $ mp
     mailpile> search bjarni einarsson
     ...
     mailpile> search subject:bjarni
@@ -172,7 +177,7 @@ or one of the magic words `all` or `these`:
 (Mailpile currently assumes you have `less` installed and in your path for
 viewing e-mail. This is a temporary hack.)
 
-You can also search from the command line with `./mp -s term`,
+You can also search from the command line with `mp -s term`,
 but that will be a bit slower because the metadata index has to be
 loaded into RAM on each invocation.
 
@@ -283,7 +288,7 @@ Alternately, if you have a GPG key and run Mailpile in an environment
 where gpg-agent is available for key management, you can tell Mailpile
 to encrypt its config and data using your key, like so:
 
-    $ ./mp --set "gpg_recipient = youremail@yourdomain.com"
+    $ mp --set "gpg_recipient = youremail@yourdomain.com"
 
 Note that this only encrypts the main index and config file, and only
 works if `gpg` is in your path. The search terms themselves are not
@@ -292,7 +297,7 @@ least in part be derived from the index.  This problem can be mitigated,
 at the cost of some performance, by telling Mailpile to use a one-way
 hash to obfuscate the search terms:
 
-    $ ./mp --set "obfuscate_index = Some RaNdoM LongISH silly SECRET"
+    $ mp --set "obfuscate_index = Some RaNdoM LongISH silly SECRET"
 
 Note that if you change this setting, whatever has already been indexed
 will "disappear" and become unfindable.  So do this first if you do it
@@ -437,8 +442,15 @@ Contributors:
    * Brennan Novak (<https://brennannovak.com/>)
    * Halldór Rúnarsson (<https://github.com/halldor>)
 
+<<<<<<< HEAD
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
 Free Software Foundation or the Apache License 2.0 as published by the Apache
 Software Foundation. See the file COPYING.md for details.
 
+=======
+This program is free software: you can redistribute it and/or modify it
+under the terms of the  GNU  Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+>>>>>>> 510a3186bea7374ccf23a2cac09b0969076083fd
