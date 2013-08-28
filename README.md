@@ -120,7 +120,6 @@ with:
 Setting `http_host` to `disabled` disables the server.
 
 
-
 ## Basic use ##
 
 The most important command Mailpile supports is the `search` command.
@@ -349,6 +348,21 @@ path part of the URL.
 
 For other commands, just append `.xml` or `.json` to the command name
 (e.g. `http://localhost:33411/_/help.xml` is a very useless example).
+
+
+### Developing using docker ###
+
+You can build a docker image:
+
+    docker build -t mailpile scripts/docker/
+
+and run it:
+
+    docker run -i -t mailpile
+
+or enter the container's bash prompt directly:
+
+    docker run -i -t mailpile bash
 
 
 ## A word on performance ##
