@@ -35,20 +35,9 @@ You also need your e-mail to be in a traditional mbox formatted Unix
 mailbox, a Maildir or a gmvault backup repository.
 
 
-## Setting up the environment and config ##
+## Setting up the basic config ##
 
-Until we've properly packaged Mailpile, you will need to configure your
-environment before running it, specifically the `PYTHONPATH` variable.
-
-The easiest way to do that is to enter the Mailpile source folder (the
-one with the `Makefile` and `README.md` in it) and use the recipe from
-the `Makefile`:
-
-    $ $(make dev)
-
-Once this has been done, you run `./mp` as described below.
-
-For best results, the next step is to tell the program your e-mail
+For best results, the first step is to tell Mailpile your e-mail
 address and set up basic tags (`New`, `Inbox`, etc.) and filters so
 Mailpile will behave like a normal mail client.  Mailpile can do this
 for you, but if you are importing lots of old mail, you may want to
@@ -64,7 +53,7 @@ you may also want to configure a default outgoing SMTP server:
     $ ./mp --set "my_sendmail: default = smtp:yourmailserver:25"
     ...
 
-Mailpile does not currently access IMAP or POP3 servers directly, it
+Mailpile does not by default access IMAP or POP3 servers directly, it
 relies on other tools (such as `fetchmail`) to take care of downloading
 new mail.
 

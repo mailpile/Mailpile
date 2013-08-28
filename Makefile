@@ -1,6 +1,11 @@
 # Recipies for stuff
 export PYTHONPATH := .
 
+dev: tools
+	@rm -f .SELF
+	@ln -fs . .SELF
+	@echo export PYTHONPATH=`pwd`
+
 combined:
 	@./scripts/breeder.py static \
                      	mailpile/__init__.py \
@@ -15,12 +20,6 @@ combined:
 	@mv mailpile-tmp.py dist/mailpile-`python setup.py --version`.py
 	@ls -l dist/mailpile-*.py
 
-dev: tools
-	@rm -f .SELF
-	@ln -fs . .SELF
-	@ln -fs scripts/mailpile mp
-	@echo export PYTHONPATH=`pwd`
-
 tools: scripts/breeder.py Makefile
 
 scripts/breeder.py:
@@ -31,7 +30,7 @@ distclean: clean
 
 clean:
 	@rm -vf *.pyc */*.pyc mailpile-tmp.py scripts/breeder.py mailpile.py
-	@rm -vf .appver MANIFEST setup.cfg .SELF mp
+	@rm -vf .appver MANIFEST setup.cfg .SELF
 	@rm -vrf *.egg-info build/
 	@rm -vf debian/files debian/control debian/copyright debian/changelog
 	@rm -vrf debian/pagekite* debian/python* debian/init.d
