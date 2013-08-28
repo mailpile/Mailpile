@@ -221,7 +221,7 @@ def thumbnail(fileobj, filename=None, height=None, width=None):
   miniature = basename + '_' + size + format
   miniature_filename = os.path.join(filehead, miniature)
   
-  if os.path.exists(miniature_filename) and os.path.getmtime(filename)>os.path.getmtime(miniature_filename):
+  if os.path.exists(filename) and os.path.exists(miniature_filename) and os.path.getmtime(filename)>os.path.getmtime(miniature_filename):
     os.unlink(miniature_filename)
   # if the image wasn't already resized, resize it ; note: checks against supplied filename. If the file has
   # not already been extracted, will always generate... this is possibly a bug!
