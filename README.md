@@ -441,6 +441,8 @@ Contributors:
    * Björgvin Ragnarsson (<https://github.com/nifgraup/>)
    * Brennan Novak (<https://brennannovak.com/>)
    * Halldór Rúnarsson (<https://github.com/halldor>)
+   * Danx0r (<https://github.com/danx0r>)
+   * Steinn Steinsson (<https://github.com/steinn>)
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
