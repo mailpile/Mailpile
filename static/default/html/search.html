@@ -69,6 +69,16 @@ text {
 		                {.section summary}<ul class="message-headers">
 	                                <li><b>Date:</b> {date}</li>
                                 	<li><b>From:</b> {from}</li>
+                        {.end}
+                        {.section headers}
+                        	{.section To}
+	                                <li><b>To:</b> {To}</li>
+                        	{.end}
+                        	{.section Cc}
+	                                <li><b>Cc:</b> {Cc}</li>
+                        	{.end}
+                        {.end}
+		                {.section summary}
                                 	<li><b>Subject:</b> {subject}</li>
                                 </ul>{.end}
                                 <div class="message-body">
