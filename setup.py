@@ -5,15 +5,15 @@ from mailpile.app import APPVER
 import os
 
 try:
-  # This borks sdist.
-  os.remove('.SELF')
+    # This borks sdist.
+    os.remove('.SELF')
 except:
-  pass
+    pass
 
 setup(
     name="mailpile",
     version=APPVER.replace('github',
-                           'dev'+date.today().isoformat().replace('-', '')),
+                           'dev' + date.today().isoformat().replace('-', '')),
     license="AGPLv3+",
     author="Bjarni R. Einarsson",
     author_email="bre@klaki.net",
@@ -24,10 +24,10 @@ Mailpile is a tool for building and maintaining a tagging search
 engine for a personal collection of e-mail.  It can be used as a
 simple web-mail client.
 """,
-   packages=['mailpile','mailpile.plugins'],
-   entry_points = {
-     'console_scripts': [
-       'mailpile = mailpile.__main__:main'
-     ]
-   },
+    packages=['mailpile', 'mailpile.plugins'],
+    entry_points={
+        'console_scripts': [
+            'mailpile = mailpile.__main__:main'
+        ]
+    },
 )

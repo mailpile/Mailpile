@@ -8,11 +8,13 @@ from mailbox import Mailbox, Message
 
 
 class IMAPMailbox(Mailbox):
+
     """
     Basic implementation of IMAP Mailbox. Needs a lot of work.
 
     As of now only get_* is implemented.
     """
+
     def __init__(self, host, port=993, user=None, password=None, mailbox=None, use_ssl=True, factory=None):
         """Initialize a Mailbox instance."""
         if use_ssl:
