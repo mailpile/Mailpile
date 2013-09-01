@@ -67,13 +67,13 @@ text {
                                 <input type=submit value='Save'>
                             {.or}
 		                {.section summary}<ul class="message-headers">
-	                                <li><b>Date:</b> {date}</li>
-                                	<li><b>From:</b> {from}</li>
-                                	<li><b>Subject:</b> {subject}</li>
+	                                <li><b>Date:</b> {date|html}</li>
+                                	<li><b>From:</b> {from|html}</li>
+                                	<li><b>Subject:</b> {subject|html}</li>
                                 </ul>{.end}
                                 <div class="message-body">
 		                {.repeated section text_parts}
-                                        <p class="text-part-{type}">{data}</p>
+                                        <p class="text-part-{type}">{data|html}</p>
                                 {.end}</div>
                                 <ul class="message-attachments">
 		                {.repeated section attachments}
