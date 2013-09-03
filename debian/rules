@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+#See https://wiki.debian.org/Python/LibraryStyleGuide
+PYTHON2=$(shell pyversions -vr)
+
+
+%:
+	dh $@ --with python2
+override_dh_auto_configure:	
+override_dh_auto_build:
+override_dh_auto_clean:
+	rm -rf build
+	rm -rf *.egg-info
+build-python%:
+	python$* setup.py build
+override_dh_auto_build: $(PYTHON2:%=build-python%)
+	dh_auto_build
+override_dh_auto_install: $(PYTHON2:%=install-python%)
+	dh_auto_install
+install-python%:
+	python$* setup.py install --root=$(CURDIR)/debian/mailpile --install-layout=deb

@@ -376,7 +376,16 @@ or enter the container's bash prompt directly:
 
     docker run -i -t mailpile bash
 
+### Generating DEB packages ###
 
+You first need to generate a changelog.
+The following command uses an empty changelog message,
+this will probably be changed in the future.
+
+    dch --create -v 0.0.0-dev$(shell date +%Y%m%d) --package mailpile ""
+
+Then, you can build the debian package 
+    
 ## A word on performance ##
 
 Searching is all about disk seeks.
