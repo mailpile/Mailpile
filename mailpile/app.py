@@ -572,7 +572,7 @@ class ConfigManager(dict):
         if mkdir and not os.path.exists(cpath):
           os.mkdir(cpath)
       else:
-        bpath = os.path.join('.SELF', bpath)
+        bpath = os.path.join('.', bpath)
     return bpath
 
   def open_file(self, ftype, fpath, mode='rb', mkdir=False):
