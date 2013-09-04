@@ -453,7 +453,7 @@ class MailIndex(object):
     except (ValueError, TypeError, OverflowError):
       return None
 
-  def _extract_date(self, session, msg_mid, msg_idx, msg, last_date):
+  def _extract_date(self, session, msg_mid, msg_id, msg, last_date):
     """Extract a date, sanity checking against the Received: headers."""
     hdrs = [self.hdr(msg, 'date')] + msg.get_all('received')
     dates = [self._parse_date(date_hdr) for date_hdr in hdrs]
