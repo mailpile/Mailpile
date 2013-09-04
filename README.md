@@ -6,7 +6,7 @@
 
 **Hey, check out our fundraiser! <http://igg.me/at/mailpile>**
 
-Mailpile (<http:/www.mailpile.is/>) is a free-as-in-freedom personal
+Mailpile (<http://www.mailpile.is/>) is a free-as-in-freedom personal
 e-mail searching and indexing tool, largely inspired by Google's popular
 proprietary-but-gratis e-mail service.  It wants to eventually become a
 fast and flexible back-end for awesome personal mail clients, including
