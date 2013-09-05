@@ -330,6 +330,7 @@ class MailIndex(object):
     self.EMAIL_IDS = {}
     self.CACHE = {}
     self.MODIFIED = set()
+    self.EMAILS_SAVED = 0
 
   def l2m(self, line):
     return line.decode('utf-8').split(u'\t')
@@ -395,18 +396,22 @@ class MailIndex(object):
                                       ) % self.config.mailindex_file())
     if session:
       session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
+    self.EMAILS_SAVED = len(self.EMAILS)
 
   def save_changes(self, session=None):
     mods, self.MODIFIED = self.MODIFIED, set()
-    if mods:
+    if mods or len(self.EMAILS) > self.EMAILS_SAVED:
       if session: session.ui.mark("Saving metadata index changes...")
       fd = gpg_open(self.config.mailindex_file(),
                     self.config.get('gpg_recipient'), 'a')
+      for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
+        fd.write('@%s\t%s\n' % (b36(eid), self.EMAILS[eid]))
       for pos in mods:
         fd.write(self.INDEX[pos] + '\n')
       fd.close()
       flush_append_cache()
       if session: session.ui.mark("Saved metadata index changes")
+      self.EMAILS_SAVED = len(self.EMAILS)
 
   def save(self, session=None):
     self.MODIFIED = set()
@@ -415,6 +420,8 @@ class MailIndex(object):
                   self.config.get('gpg_recipient'), 'w')
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
+    for eid in range(0, len(self.EMAILS)):
+      fd.write('@%s\t%s\n' % (b36(eid), self.EMAILS[eid]))
     for item in self.INDEX:
       fd.write(item + '\n')
     fd.close()
@@ -554,8 +561,12 @@ class MailIndex(object):
                                       filter_hooks=[self.filter_keywords])
         tags = [k.split(':')[0] for k in keywords if k.endswith(':tag')]
 
+        msg_to = (ExtractEmails(self.hdr(msg, 'to')) +
+                  ExtractEmails(self.hdr(msg, 'cc')) +
+                  ExtractEmails(self.hdr(msg, 'bcc')))
+
         msg_idx, msg_info = self.add_new_msg(msg_ptr, msg_id, msg_date,
-                                             self.hdr(msg, 'from'), [],
+                                             self.hdr(msg, 'from'), msg_to,
                                              self.hdr(msg, 'subject'), '',
                                              tags)
         self.set_conversation_ids(msg_info[self.MSG_IDX], msg)
@@ -623,9 +634,21 @@ class MailIndex(object):
     msg_info[self.MSG_CONV_ID] = msg_conv
     self.set_msg_by_idx(msg_idx, msg_info)
 
+  def _add_email(self, email):
+    eid = len(self.EMAILS)
+    self.EMAILS.append(email)
+    self.EMAIL_IDS[email.lower()] = eid
+    # FIXME: This needs to get written out...
+    return eid
+
   def _compact_to_list(self, msg_to):
-    # FIXME
-    return ''
+    eids = []
+    for email in msg_to:
+      eid = self.EMAIL_IDS.get(email.lower())
+      if eid is None:
+        eid = self._add_email(email)
+      eids.append(eid)
+    return ','.join([b36(e) for e in set(eids)])
 
   def add_new_msg(self, msg_ptr, msg_id, msg_date, msg_from, msg_to,
                         msg_subject, msg_snippet, tags):
