@@ -747,6 +747,7 @@ class Email(object):
       self.get_msg_info(self.index.MSG_FROM),
       self.index.expand_to_list(self.msg_info),
       self.get_msg_info(self.index.MSG_SUBJECT),
+      self.get_msg_info(self.index.MSG_SNIPPET),
       self.get_msg_info(self.index.MSG_DATE),
       self.get_msg_info(self.index.MSG_TAGS).split(','),
       self.is_editable()

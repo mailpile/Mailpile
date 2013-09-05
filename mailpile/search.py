@@ -529,6 +529,7 @@ class MailIndex(object):
     if len(self.PTRS.keys()) == 0:
       self.update_ptrs_and_msgids(session)
 
+    snippet_max = session.config.get('snippet_max', 80)
     added = 0
     msg_date = int(time.time())
     for ui in range(0, len(unparsed)):
@@ -556,9 +557,16 @@ class MailIndex(object):
         msg_mid = b36(len(self.INDEX))
 
         msg_date = self._extract_date(session, msg_mid, msg_id, msg, msg_date)
-        keywords = self.index_message(session, msg_mid, msg_id, msg, msg_date,
-                                      mailbox=idx, compact=False,
-                                      filter_hooks=[self.filter_keywords])
+
+        keywords, snippet = self.index_message(session,
+                                               msg_mid, msg_id, msg, msg_date,
+                                               mailbox=idx,
+                                               compact=False,
+                                            filter_hooks=[self.filter_keywords])
+
+        msg_subject = self.hdr(msg, 'subject')
+        msg_snippet = snippet[:max(0, snippet_max-len(msg_subject))]
+
         tags = [k.split(':')[0] for k in keywords if k.endswith(':tag')]
 
         msg_to = (ExtractEmails(self.hdr(msg, 'to')) +
@@ -567,7 +575,7 @@ class MailIndex(object):
 
         msg_idx, msg_info = self.add_new_msg(msg_ptr, msg_id, msg_date,
                                              self.hdr(msg, 'from'), msg_to,
-                                             self.hdr(msg, 'subject'), '',
+                                             msg_subject, msg_snippet,
                                              tags)
         self.set_conversation_ids(msg_info[self.MSG_IDX], msg)
 
@@ -705,9 +713,10 @@ class MailIndex(object):
         else:
           self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
-  def message_keywords(self, session, msg_mid, msg_id, msg, msg_date,
-                       mailbox=None):
+  def read_message(self, session, msg_mid, msg_id, msg, msg_date,
+                         mailbox=None):
     keywords = []
+    snippet = ''
     payload = [None]
     for part in msg.walk():
       textpart = payload[0] = None
@@ -749,6 +758,9 @@ class MailIndex(object):
         for extract in plugins.get_text_kw_extractors():
           keywords.extend(extract(self, msg, ctype, lambda: textpart))
 
+        if len(snippet) < 1024:
+          snippet += ' ' + textpart
+
       for extract in plugins.get_data_kw_extractors():
         keywords.extend(extract(self, msg, ctype, att, part,
                                 lambda: _loader(part)))
@@ -774,12 +786,14 @@ class MailIndex(object):
     for extract in plugins.get_meta_kw_extractors():
       keywords.extend(extract(self, msg_mid, msg, msg_date))
 
-    return (set(keywords) - STOPLIST)
+    snippet = snippet.replace('\n', ' ').replace('\t', ' ').replace('\r', '')
+    return (set(keywords) - STOPLIST), snippet.strip()
 
   def index_message(self, session, msg_mid, msg_id, msg, msg_date,
                     mailbox=None, compact=True, filter_hooks=[]):
-    keywords = self.message_keywords(session, msg_mid, msg_id, msg, msg_date,
-                                     mailbox=mailbox)
+    keywords, snippet = self.read_message(session,
+                                          msg_mid, msg_id, msg, msg_date,
+                                          mailbox=mailbox)
 
     for hook in filter_hooks:
       keywords = hook(session, msg_mid, msg, keywords)
@@ -791,7 +805,7 @@ class MailIndex(object):
         # FIXME: we just ignore garbage
         pass
 
-    return keywords
+    return keywords, snippet
 
   def get_msg_by_idx(self, msg_idx):
     try:

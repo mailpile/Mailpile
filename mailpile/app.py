@@ -301,6 +301,7 @@ class ConfigManager(dict):
     'postinglist_kb':  ('kilobytes',     'sys', 'Posting list target size'),
     'rescan_interval': ('seconds',       'cfg', 'New mail check frequency'),
     'sort_max':        ('results',       'sys', 'Max results we sort "well"'),
+    'snippet_max':     ('characters',    'sys', 'Max size of metadata snippets'),
     'gpg_clearsign':   ('boolean',       'cfg', 'Inline PGP signatures or attached'),
   }
   STRINGS = {
