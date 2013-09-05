@@ -641,7 +641,7 @@ class MailIndex(object):
     # FIXME: This needs to get written out...
     return eid
 
-  def _compact_to_list(self, msg_to):
+  def compact_to_list(self, msg_to):
     eids = []
     for email in msg_to:
       eid = self.EMAIL_IDS.get(email.lower())
@@ -649,6 +649,10 @@ class MailIndex(object):
         eid = self._add_email(email)
       eids.append(eid)
     return ','.join([b36(e) for e in set(eids)])
+
+  def expand_to_list(self, msg_info):
+    eids = msg_info[self.MSG_TO]
+    return [self.EMAILS[int(e, 36)] for e in eids.split(',') if e]
 
   def add_new_msg(self, msg_ptr, msg_id, msg_date, msg_from, msg_to,
                         msg_subject, msg_snippet, tags):
@@ -660,7 +664,7 @@ class MailIndex(object):
       b64c(sha1b64((msg_id or msg_ptr).strip())),  # Message ID
       b36(msg_date),                               # Date as a UTC timstamp
       msg_from,                                    # From:
-      self._compact_to_list(msg_to or []),         # To: / Cc: / Bcc:
+      self.compact_to_list(msg_to or []),          # To: / Cc: / Bcc:
       msg_subject,                                 # Subject
       msg_snippet,                                 # Snippet
       ','.join(tags),                              # Initial tags

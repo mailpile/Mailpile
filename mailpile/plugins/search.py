@@ -22,19 +22,20 @@ def _friendly_date(days_ago, default):
 
 class SearchResults(dict):
   def _explain_msg_summary(self, info):
-    days_ago = (time.time() - long(info[4], 36)) / (24*3600)
-    msg_ts = long(info[4], 36)
+    msg_ts = long(info[5], 36)
+    days_ago = (time.time() - msg_ts) / (24*3600)
     msg_date = datetime.date.fromtimestamp(msg_ts)
     date = '%4.4d-%2.2d-%2.2d' % (msg_date.year, msg_date.month, msg_date.day)
     expl = {
       'idx': info[0],
       'id': info[1],
       'from': info[2],
-      'subject': info[3],
+      'to': info[3],
+      'subject': info[4],
       'timestamp': msg_ts,
       'date': date,
       'friendly_date': _friendly_date(days_ago, date),
-      'tag_ids': info[5],
+      'tag_ids': info[6],
       'url': UrlMap(self.session).url_thread(info[0])
     }
     if info[6]:
@@ -130,6 +131,7 @@ class SearchResults(dict):
         msg_info[MailIndex.MSG_IDX],
         msg_info[MailIndex.MSG_ID],
         msg_info[MailIndex.MSG_FROM],
+        idx.expand_to_list(msg_info),
         msg_info[MailIndex.MSG_SUBJECT],
         msg_info[MailIndex.MSG_DATE],
         msg_info[MailIndex.MSG_TAGS].split(','),

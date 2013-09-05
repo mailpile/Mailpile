@@ -739,10 +739,13 @@ class Email(object):
       return self.index.hdr(0, 0, value=raw) or raw
 
   def get_msg_summary(self):
+    # We do this first to make sure self.msg_info is loaded
+    msg_idx = self.get_msg_info(self.index.MSG_IDX)
     return [
-      self.get_msg_info(self.index.MSG_IDX),
+      msg_idx,
       self.get_msg_info(self.index.MSG_ID),
       self.get_msg_info(self.index.MSG_FROM),
+      self.index.expand_to_list(self.msg_info),
       self.get_msg_info(self.index.MSG_SUBJECT),
       self.get_msg_info(self.index.MSG_DATE),
       self.get_msg_info(self.index.MSG_TAGS).split(','),
