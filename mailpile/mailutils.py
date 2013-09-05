@@ -36,6 +36,8 @@ from mailpile.mailboxes.macmail import MacMaildir
 from mailpile.util import *
 from lxml.html.clean import Cleaner
 
+MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
+
 try:
   from GnuPGInterface import GnuPG
   from mailpile.pgpmime import PGPMimeParser
@@ -254,7 +256,7 @@ def UnorderedPicklable(parent, editable=False):
       return '%s%s' % (idx, toc_id)
 
     def get_file_by_ptr(self, msg_ptr):
-      return self.get_file(msg_ptr[3:])
+      return self.get_file(msg_ptr[MBX_ID_LEN:])
 
     def get_msg_size(self, toc_id):
       fd = self.get_file(toc_id)
@@ -458,7 +460,7 @@ class IncrementalMbox(mailbox.mbox):
                            self.get_msg_cs1k(msg_start, msg_size))
 
   def get_file_by_ptr(self, msg_ptr):
-    parts = msg_ptr[3:].split(':')
+    parts = msg_ptr[MBX_ID_LEN:].split(':')
     start = int(parts[0], 36)
     length = int(parts[1], 36)
 
@@ -671,7 +673,7 @@ class Email(object):
       raise NotEditableError('Mailbox is read-only.')
 
     mbx, ptr, fd = self.get_mbox_ptr_and_fd()
-    mbx[ptr[3:]] = newmsg
+    mbx[ptr[MBX_ID_LEN:]] = newmsg
 
     # Update the in-memory-index with new sender, subject
     msg_info = self.index.get_msg_by_idx(self.msg_idx)
@@ -692,7 +694,7 @@ class Email(object):
   def get_mbox_ptr_and_fd(self):
     for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
       try:
-        mbox = self.config.open_mailbox(None, msg_ptr[:3])
+        mbox = self.config.open_mailbox(None, msg_ptr[:MBX_ID_LEN])
         fd = mbox.get_file_by_ptr(msg_ptr)
         # FIXME: How do we know we have the right message?
         return mbox, msg_ptr, fd

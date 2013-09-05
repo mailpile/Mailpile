@@ -452,7 +452,7 @@ class ConfigManager(dict):
 
   def is_editable_message(self, msg_ptrs):
     for ptr in msg_ptrs.split(','):
-      if not self.is_editable_mailbox(ptr[:3]):
+      if not self.is_editable_mailbox(ptr[:MBX_ID_LEN]):
         return False
     return True
 
@@ -488,7 +488,7 @@ class ConfigManager(dict):
     if not local_id:
       mailbox = os.path.join(self.workdir, 'mail')
       mbx = IncrementalMaildir(mailbox)
-      local_id = ('0000%s' % self.nid('mailbox'))[-3:]
+      local_id = (('0' * MBX_ID_LEN) + self.nid('mailbox'))[-MBX_ID_LEN:]
       self.parse_set(session, 'mailbox:%s=%s' % (local_id, mailbox))
       self.parse_set(session, 'local_mailbox=%s' % (local_id))
     return local_id, self.open_mailbox(session, local_id)
@@ -525,9 +525,9 @@ class ConfigManager(dict):
   def get_mailboxes(self):
     def fmt_mbxid(k):
       k = b36(int(k, 36))
-      if len(k) > 3:
+      if len(k) > MBX_ID_LEN:
         raise ValueError('Mailbox ID too large: %s' % k)
-      return ('000'+k)[-3:]
+      return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
     mailboxes = self['mailbox'].keys()
     mailboxes.sort()
     return [(fmt_mbxid(k), self['mailbox'][k]) for k in mailboxes]

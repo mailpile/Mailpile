@@ -444,7 +444,7 @@ class MailIndex(object):
 
     # If message was seen in this mailbox before, update the location
     for i in range(0, len(msg_ptrs)):
-      if (msg_ptrs[i][:3] == msg_ptr[:3]):
+      if (msg_ptrs[i][:MBX_ID_LEN] == msg_ptr[:MBX_ID_LEN]):
         msg_ptrs[i] = msg_ptr
         msg_ptr = None
         break
