@@ -799,8 +799,10 @@ class MailIndex(object):
         self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
       return self.CACHE[msg_idx]
     except IndexError:
-      return [None, None, None, None, b36(0),
-              '(not in index)', '(not in index: %s)' % msg_idx, '', '', '-1']
+      return [None, None, None, b36(0),
+              '(no sender)', '',
+              '(not in index: %s)' % msg_idx, '',
+              '', '', '-1']
 
   def set_msg_by_idx(self, msg_idx, msg_info):
     self.MODIFIED.add(msg_idx)
