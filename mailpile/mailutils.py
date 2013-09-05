@@ -545,9 +545,10 @@ class Email(object):
         charset = 'utf-8'
       msg.attach(MIMEText(msg_text, _subtype='plain', _charset=charset))
     msg_key = mbx.add(msg)
+    msg_to = []
     msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbx_id, msg_key),
-                                        msg_id,
-                                        msg_date, msg_from, msg_subj, [])
+                                        msg_id, msg_date, msg_from, msg_to,
+                                        msg_subj, '', [])
     idx.set_conversation_ids(msg_info[idx.MSG_IDX], msg)
     return cls(idx, msg_idx)
 

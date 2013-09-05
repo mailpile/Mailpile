@@ -26,7 +26,7 @@ import lxml.html
 import mailpile.plugins as plugins
 import mailpile.util
 from mailpile.util import *
-from mailpile.mailutils import NoSuchMailboxError, ExtractEmails, ParseMessage, HeaderPrint
+from mailpile.mailutils import MBX_ID_LEN, NoSuchMailboxError, ExtractEmails, ParseMessage, HeaderPrint
 from mailpile.ui import *
 
 
@@ -310,14 +310,15 @@ class MailIndex(object):
 
   MSG_IDX     = 0
   MSG_PTRS    = 1
-  MSG_UNUSED  = 2  # Was size, now reserved for other fun things
-  MSG_ID      = 3
-  MSG_DATE    = 4
-  MSG_FROM    = 5
+  MSG_ID      = 2
+  MSG_DATE    = 3
+  MSG_FROM    = 4
+  MSG_TO      = 5
   MSG_SUBJECT = 6
-  MSG_TAGS    = 7
-  MSG_REPLIES = 8
-  MSG_CONV_ID = 9
+  MSG_SNIPPET = 7
+  MSG_TAGS    = 8
+  MSG_REPLIES = 9
+  MSG_CONV_ID = 10
 
   def __init__(self, config):
     self.config = config
@@ -325,6 +326,8 @@ class MailIndex(object):
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
+    self.EMAILS = []
+    self.EMAIL_IDS = {}
     self.CACHE = {}
     self.MODIFIED = set()
 
@@ -352,11 +355,22 @@ class MailIndex(object):
     self.INDEX = []
     self.PTRS = {}
     self.MSGIDS = {}
+    self.EMAILS = []
+    self.EMAIL_IDS = {}
     def process_line(line):
       try:
         line = line.strip()
-        if line and not line.startswith('#'):
-          pos, ptrs, junk, msgid, rest = line.split('\t', 4)
+        if line.startswith('#'):
+          pass
+        elif line.startswith('@'):
+          pos, email = line[1:].split('\t', 1)
+          pos = int(pos, 36)
+          while len(self.EMAILS) < pos+1:
+            self.EMAILS.append('')
+          self.EMAILS[pos] = email
+          self.EMAIL_IDS[email.lower()] = pos
+        elif line:
+          pos, ptrs, msgid, rest = line.split('\t', 3)
           pos = int(pos, 36)
           while len(self.INDEX) < pos+1:
             self.INDEX.append('')
@@ -540,19 +554,11 @@ class MailIndex(object):
                                       filter_hooks=[self.filter_keywords])
         tags = [k.split(':')[0] for k in keywords if k.endswith(':tag')]
 
-        msg_idx = len(self.INDEX)
-        self.set_msg_by_idx(msg_idx,
-                            [msg_mid,                   # Our index ID
-                             msg_ptr,                   # Location on disk
-                             '',                        # UNUSED
-                             msg_id,                    # Message-ID
-                             b36(msg_date),             # Date as a UTC timestamp
-                             self.hdr(msg, 'from'),     # From:
-                             self.hdr(msg, 'subject'),  # Subject
-                             ','.join(tags),            # Initial tags
-                             '',                        # No replies for now
-                             ''])                       # Conversation ID
-        self.set_conversation_ids(msg_mid, msg)
+        msg_idx, msg_info = self.add_new_msg(msg_ptr, msg_id, msg_date,
+                                             self.hdr(msg, 'from'), [],
+                                             self.hdr(msg, 'subject'), '',
+                                             tags)
+        self.set_conversation_ids(msg_info[self.MSG_IDX], msg)
 
         added += 1
         if (added % 1000) == 0:
@@ -617,17 +623,23 @@ class MailIndex(object):
     msg_info[self.MSG_CONV_ID] = msg_conv
     self.set_msg_by_idx(msg_idx, msg_info)
 
-  def add_new_msg(self, msg_ptr, msg_id, msg_date, msg_from, msg_subject, tags):
+  def _compact_to_list(self, msg_to):
+    # FIXME
+    return ''
+
+  def add_new_msg(self, msg_ptr, msg_id, msg_date, msg_from, msg_to,
+                        msg_subject, msg_snippet, tags):
     msg_idx = len(self.INDEX)
     msg_mid = b36(msg_idx)
     msg_info = [
       msg_mid,                                     # Index ID
       msg_ptr,                                     # Location on disk
-      '',                                          # UNUSED
       b64c(sha1b64((msg_id or msg_ptr).strip())),  # Message ID
       b36(msg_date),                               # Date as a UTC timstamp
       msg_from,                                    # From:
+      self._compact_to_list(msg_to or []),         # To: / Cc: / Bcc:
       msg_subject,                                 # Subject
+      msg_snippet,                                 # Snippet
       ','.join(tags),                              # Initial tags
       '',                                          # No replies for now
       msg_mid                                      # Conversation ID
