@@ -50,6 +50,20 @@ class Command:
     __unicode__ = lambda self: self.as_text()
 
     def as_dict(self):
+      if (type(self.result)==list):
+        # add To and Cc fields to summary
+        for i in range(len(self.result)):
+          if "messages" in self.result[i]:
+            for j in range(len(self.result[i]['messages'])):
+              if "message" in self.result[i]['messages'][j] and \
+                     "headers" in self.result[i]['messages'][j]['message'] and\
+                     "summary" in self.result[i]['messages'][j]['message']:
+                if "To" in self.result[i]['messages'][j]['message']['headers']:
+                  self.result[i]['messages'][j]['message']['summary']['to'] = \
+                     self.result[i]['messages'][j]['message']['headers']['To']
+                if "Cc" in self.result[i]['messages'][j]['message']['headers']:
+                  self.result[i]['messages'][j]['message']['summary']['cc'] = \
+                     self.result[i]['messages'][j]['message']['headers']['Cc']
       return {
         'command': self.command,
         'result': self.result,
