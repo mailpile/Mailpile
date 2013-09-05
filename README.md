@@ -28,13 +28,17 @@ Mailpile is developed on a Debian 7 system, running:
    * Python 2.7
    * python-lxml 2.3.2
    * python-gnupginterface 0.3.2
+   * libxml2-dev
+   * libxslt1-dev
 
 It might work with other versions. :-)
 
 You can either user your OS package manager to install equivalent packages
 or use the following command to ask Python to do the work for you:
 
+    # apt-get install python2.7-dev libxml2-dev libxslt1-dev
     $ pip install -r requirements.txt
+    
 
 You also need your e-mail to be in a traditional mbox formatted Unix
 mailbox, a Maildir or a gmvault backup repository.
