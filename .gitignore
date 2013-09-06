@@ -7,3 +7,6 @@ mailpile-tmp.py
 *~
 mp-virtualenv
 *.debhelper
+.idea
+*.iml
+*.ipr
