@@ -6,3 +6,6 @@ mailpile.egg-info/
 mailpile-tmp.py
 *~
 mp-virtualenv
+.idea
+*.iml
+*.ipr
