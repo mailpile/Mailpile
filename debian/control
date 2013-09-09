@@ -1,0 +1,13 @@
+Source: mailpile
+Maintainer: Mailpile <team@mailpile.is>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 8), python (>= 2.7), python-gnupginterface (>= 0.3.2), python-lxml (>= 2.3.2)
+X-Python-Version: >= 2.6
+
+Package: mailpile
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}, python-gnupginterface (>= 0.3.2), python-lxml (>= 2.3.2)
+Homepage: https://mailpile.is
+Description: Mailpile
