@@ -31,8 +31,8 @@ from email.mime.text import MIMEText
 
 from smtplib import SMTP, SMTP_SSL
 
-from mailpile.imap_mailbox import IMAPMailbox
-from mailpile.macmail_mailbox import MacMaildir
+from mailpile.mailboxes.imap import IMAPMailbox
+from mailpile.mailboxes.macmail import MacMaildir
 from mailpile.util import *
 from lxml.html.clean import Cleaner
 
