@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 APPVER="0.0.0+github"
 ABOUT="""\
 Mailpile.py          a tool          Copyright 2011-2013, Bjarni R. Einarsson

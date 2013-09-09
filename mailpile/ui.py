@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file contains the UserInteraction and Session classes.
 #

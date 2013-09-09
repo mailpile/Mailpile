@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Mailpile's built-in HTTPD
 #

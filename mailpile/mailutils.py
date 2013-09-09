@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 ## Dear hackers!
 ##

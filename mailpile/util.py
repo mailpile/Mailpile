@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Misc. utility functions for Mailpile.
 #

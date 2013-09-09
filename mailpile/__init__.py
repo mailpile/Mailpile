@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import mailpile.app
 import mailpile.commands
 import mailpile.ui
