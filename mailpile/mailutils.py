@@ -773,13 +773,19 @@ class Email(object):
           attributes['data'] = payload
           session.ui.notify('Extracted attachment %s' % att_id)
         elif mode.startswith('preview'):
-          path = "static/thumbs/" + attributes["filename"]
-          filename = thumbnail(payload, path, height=250)
           attributes['thumb'] = True
+          attributes['mimetype'] = 'image/jpeg'
+          attributes['disposition'] = 'inline'
+          filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
+                                                  attributes=attributes)
+          if thumbnail(payload, fd, height=250):
+            session.ui.notify('Wrote preview to: %s' % filename)
+          else:
+            session.ui.notify('Failed to generate thumbnail')
+          fd.close()
         else:
           filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
                                                   attributes=attributes)
-          # FIXME: OMG, RAM ugh.
           fd.write(payload)
           fd.close()
           session.ui.notify('Wrote attachment to: %s' % filename)
