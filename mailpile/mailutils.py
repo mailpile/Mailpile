@@ -772,6 +772,10 @@ class Email(object):
         if mode.startswith('inline'):
           attributes['data'] = payload
           session.ui.notify('Extracted attachment %s' % att_id)
+        elif mode.startswith('preview'):
+          path = "static/thumbs/" + attributes["filename"]
+          filename = thumbnail(payload, path, height=250)
+          attributes['thumb'] = True
         else:
           filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
                                                   attributes=attributes)

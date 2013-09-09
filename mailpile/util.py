@@ -7,6 +7,7 @@ import hashlib
 import locale
 import re
 import subprocess
+import os
 import sys
 import tempfile
 import threading
@@ -175,3 +176,60 @@ def cached_open(filename, mode):
   finally:
     APPEND_FD_CACHE_LOCK.release()
 
+
+import StringIO
+try:
+  import Image
+except:
+  Image = None
+
+def thumbnail(fileobj, filename=None, height=None, width=None):
+  """
+  Generates thumbnail image from supplied fileobj, which should be a file, StringIO, or string,
+  containing a PIL-supported image.
+  FIXME: Failure modes unmanaged.
+  """
+  if Image == None:
+    # If we don't have PIL, we just return the supplied filename in the hopes
+    # that somebody had the good sense to extract the right attachment to that
+    # filename...
+    return filename
+
+  if not isinstance(fileobj, StringIO.StringIO) and not isinstance(fileobj, file):
+    fileobj = StringIO.StringIO(fileobj)
+
+  image = Image.open(fileobj)
+
+  # defining the size
+  if height == None and width == None:
+    raise Exception("Must supply width or height!")
+  if height and not width:
+    x = height
+    y = int((float(height)/image.size[0]) * image.size[1])
+  elif width and not height:
+    y = width
+    x = int((float(width)/image.size[1]) * image.size[0])
+  else:
+    y = width
+    x = height
+
+  size = "%dx%d" % (y, x)
+
+  # defining the filename and the miniature filename
+  filehead, filetail = os.path.split(filename)
+  basename, format = os.path.splitext(filetail)
+  miniature = basename + '_' + size + format
+  miniature_filename = os.path.join(filehead, miniature)
+  
+  if os.path.exists(filename) and os.path.exists(miniature_filename) and os.path.getmtime(filename)>os.path.getmtime(miniature_filename):
+    os.unlink(miniature_filename)
+  # if the image wasn't already resized, resize it ; note: checks against supplied filename. If the file has
+  # not already been extracted, will always generate... this is possibly a bug!
+  if not os.path.exists(miniature_filename):
+    image.thumbnail([x, y], Image.ANTIALIAS)
+    try:
+      image.save(miniature_filename, image.format, quality=90, optimize=1)
+    except:
+      image.save(miniature_filename, image.format, quality=90)
+
+  return miniature_filename
