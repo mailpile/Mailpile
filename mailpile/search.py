@@ -455,7 +455,7 @@ class MailIndex(object):
 
   def _extract_date(self, session, msg_mid, msg_id, msg, last_date):
     """Extract a date, sanity checking against the Received: headers."""
-    hdrs = [self.hdr(msg, 'date')] + msg.get_all('received')
+    hdrs = [self.hdr(msg, 'date')] + (msg.get_all('received') or [])
     dates = [self._parse_date(date_hdr) for date_hdr in hdrs]
     msg_date = dates[0]
     nz_dates = sorted([d for d in dates if d])
