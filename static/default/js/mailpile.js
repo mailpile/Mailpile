@@ -297,13 +297,13 @@ $(document).ready(function() {
 	$('#qbox').bind("blur", function(key) {	
 		$('#search-params').slideUp('fast');
 	});
-	keybindings.forEach(function(item){
+	for (item in keybindings) {
 		if (item[1] == "global") {
 			Mousetrap.bindGlobal(item[0], item[2]);
 		} else {
 			Mousetrap.bind(item[0], item[2]);
 		}
-	})
+	}
 
 	/* Bulk Actions */
 	$('.bulk-action').on('click', function(e) {
