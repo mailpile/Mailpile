@@ -375,8 +375,7 @@ and run it:
 or enter the container's bash prompt directly:
 
     docker run -i -t mailpile bash
-
-
+    
 ## A word on performance ##
 
 Searching is all about disk seeks.

@@ -6,3 +6,4 @@ mailpile.egg-info/
 mailpile-tmp.py
 *~
 mp-virtualenv
+*.debhelper
