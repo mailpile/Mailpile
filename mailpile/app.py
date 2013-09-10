@@ -51,6 +51,10 @@ DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 ##[ Specialized threads ]######################################################
 
 class Cron(threading.Thread):
+  """
+  An instance of this class represents a cron-like worker thread
+  that manages and executes tasks in regular intervals
+  """
 
   def __init__(self, name, session):
     threading.Thread.__init__(self)
@@ -61,35 +65,71 @@ class Cron(threading.Thread):
     self.sleep = 10
 
   def add_task(self, name, interval, task):
-    self.schedule[name] = [name, interval, task, time.time()]
-    self.sleep = 60
-    for i in range(1, 61):
-      ok = True
-      for tn in self.schedule:
-        if (self.schedule[tn][1] % i) != 0: ok = False
-      if ok: self.sleep = i
+    """
+    Add a task to the cron worker queue
+    
+    Keyword arguments:
+    name -- The name of the task to add
+    interval -- The interval (in seconds) of the task
+    task  -- A task function
+    """
+    self.schedule[name] = (name, interval, task, time.time())
+    self.sleep = 1
+    # (Re)alculate how long we can sleep between tasks
+    #  (sleep min. 1 sec, max. 61 sec)
+    # --> Calculate the GCD of the task intervals
+    for i in range(2, 61): #i = second
+      # Check if any scheduled task intervals are != 0 mod i
+      filterFunc = lambda task: (task[1] % i) != 0
+      filteredTasks = filter(filterFunc, self.schedule)
+      # We can sleep for i seconds if i divides all intervals
+      if (len(filteredTasks) == 0): self.sleep = i
 
   def cancel_task(self, name):
+    """
+    Cancel a task in the current Cron instance.
+    If a task with the given name does not exist,
+    ignore the request.
+    
+    Keyword arguments:
+    name -- The name of the task to cancel
+    """
     if name in self.schedule:
       del self.schedule[name]
 
   def run(self):
+    """
+    Thread main function for a Cron instance.
+    
+    """
     self.ALIVE = True
+    # Main thread loop
     while self.ALIVE and not mailpile.util.QUITTING:
       now = time.time()
+      # Check if any of the task is (over)due
       for task_spec in self.schedule.values():
         name, interval, task, last = task_spec
-        if task_spec[3] + task_spec[1] <= now:
+        if last + interval <= now:
           task_spec[3] = now
           task()
 
       # Some tasks take longer than others...
       delay = time.time() - now + self.sleep
+      # Sleep for max. 1 sec to react to the quit
+      #  signal in time
       while delay > 0 and self.ALIVE:
         time.sleep(min(1, delay))
         delay -= 1
 
   def quit(self, session=None, join=True):
+    """
+    Send a signal to the current Cron instance
+    to stop operation.
+    
+    Keyword arguments:
+    join -- If this is True, this method will wait until
+            the Cron thread exits.
+    """
     self.ALIVE = False
     if join: self.join()
 
