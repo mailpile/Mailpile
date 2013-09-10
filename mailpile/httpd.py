@@ -83,9 +83,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       self.send_header('WWW-Authenticate',
                        'Basic realm=MP%d' % (time.time()/3600))
     #If suppress_body == True, we don't know the content length
+    contentLengthHeaders = []
     if not suppress_body:
-        header_list.append( ('Content-Length', len(message or '')))
-    self.send_standard_headers(header_list=header_list,
+        contentLengthHeaders = [ ('Content-Length', len(message or '')) ]
+    self.send_standard_headers(header_list=header_list + contentLengthHeaders,
                                mimetype=mimetype,
                                cachectrl="no-cache")
     #Response body
