@@ -7,13 +7,22 @@ import time
 import errno
 
 
+class _MacMaildirPartialFile(mailbox._PartialFile):
+    def __init__(self, fd):
+        length = int(fd.readline().strip())
+        start = fd.tell()
+        stop = start+length
+        mailbox._PartialFile.__init__(self, fd, start=start, stop=stop)
+
+
 class MacMaildirMessage(mailbox.Message):
     def __init__(self, message=None):
         if hasattr(message, "read"):
-            bytes = int(message.readline().strip())
-            message = message.read(bytes)
+            length = int(message.readline().strip())
+            message = message.read(length)
 
         mailbox.Message.__init__(self, message)
+
 
 class MacMaildir(mailbox.Mailbox):
     def __init__(self, dirname, factory=rfc822.Message, create=True):
@@ -100,10 +109,11 @@ class MacMaildir(mailbox.Mailbox):
             raise KeyError("No message with key %s" % key)
 
     def get_message(self, key):
-        subpath = self._lookup(key)
-        f = open(os.path.join(self._mailroot, subpath), 'r')
+        f = open(os.path.join(self._mailroot, self._lookup(key)), 'r')
         msg = MacMaildirMessage(f)
         f.close()
-        subdir, name = os.path.split(subpath)
         return msg
 
+    def get_file(self, key):
+        f = open(os.path.join(self._mailroot, self._lookup(key)), 'r')
+        return _MacMaildirPartialFile(f)

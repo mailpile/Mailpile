@@ -208,6 +208,7 @@ def HeaderPrint(message):
 def OpenMailbox(fn):
   for mbox_cls in (IncrementalIMAPMailbox,
                    IncrementalMaildir,
+                   IncrementalMacMaildir,
                    IncrementalGmvault):
     try:
       return mbox_cls(*mbox_cls.parse_path(fn))
