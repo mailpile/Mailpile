@@ -6,7 +6,7 @@
 
 **Hey, check out our fundraiser! <http://igg.me/at/mailpile>**
 
-Mailpile (<http:/www.mailpile.is/>) is a free-as-in-freedom personal
+Mailpile (<http://www.mailpile.is/>) is a free-as-in-freedom personal
 e-mail searching and indexing tool, largely inspired by Google's popular
 proprietary-but-gratis e-mail service.  It wants to eventually become a
 fast and flexible back-end for awesome personal mail clients, including
@@ -16,7 +16,7 @@ webmail.
 yet.  It'll tell you that you have mail matching a given search and let
 you sort it, browse threads and read messages... but the user interface and
 message composing/sending functionality is still very immature.  If you just
-want a useful tool aren't interested in hacking on the code, you should
+want a useful tool and aren't interested in hacking on the code, you should
 probably check back later or [follow @HerraBRE on
 Twitter](https://twitter.com/HerraBRE) and watch for updates.
 
@@ -26,29 +26,24 @@ Twitter](https://twitter.com/HerraBRE) and watch for updates.
 Mailpile is developed on a Debian 7 system, running:
 
    * Python 2.7
+   * python-imaging 1.1.7
    * python-lxml 2.3.2
    * python-gnupginterface 0.3.2
 
 It might work with other versions. :-)
 
+You can either user your OS package manager to install equivalent packages
+or use the following command to ask Python to do the work for you:
+
+    $ pip install -r requirements.txt
+
 You also need your e-mail to be in a traditional mbox formatted Unix
 mailbox, a Maildir or a gmvault backup repository.
 
 
-## Setting up the environment and config ##
+## Setting up the basic config ##
 
-Until we've properly packaged Mailpile, you will need to configure your
-environment before running it, specifically the `PYTHONPATH` variable.
-
-The easiest way to do that is to enter the Mailpile source folder (the
-one with the `Makefile` and `README.md` in it) and use the recipe from
-the `Makefile`:
-
-    $ $(make dev)
-
-Once this has been done, you run `./mp` as described below.
-
-For best results, the next step is to tell the program your e-mail
+For best results, the first step is to tell the program your e-mail
 address and set up basic tags (`New`, `Inbox`, etc.) and filters so
 Mailpile will behave like a normal mail client.  Mailpile can do this
 for you, but if you are importing lots of old mail, you may want to
@@ -62,9 +57,9 @@ If you do not have a local working mail server in `/usr/sbin/sendmail`,
 you may also want to configure a default outgoing SMTP server:
 
     $ ./mp --set "my_sendmail: default = smtp:yourmailserver:25"
-    ...
+    ..
 
-Mailpile does not currently access IMAP or POP3 servers directly, it
+Mailpile does not by default access IMAP or POP3 servers directly, it
 relies on other tools (such as `fetchmail`) to take care of downloading
 new mail.
 
@@ -85,6 +80,11 @@ mailbox has been opened, my laptop (a 1.66Ghz Intel Atom with a 5400rpm
 HDD) the program can index roughly four messages per second, so if you
 are processing thousands of messages you should expect it to take a few
 hours.
+
+You can repeat the add command to specify multiple mailboxes.  Boxes
+can be in mailbox or maildir format.  Boxes are not recursive, though.
+If you have many maildirs in a tree, you must specify each one
+individually.
 
 Stopping the program with CTRL-C is (relatively) nondestructive - it
 will try to save its progress and re-running should continue the scan
@@ -108,10 +108,17 @@ program like this:
 
     $ ./mp --www
 
-The server listens on `localhost:33411` by default, you can change
-the host and port by setting the `http_host` and `http_port` variables.
-Setting `http_host` to `disabled` disables the server.  Note that you
-will need to restart the program for these changes to take effect.
+The server listens on `localhost:33411` by default, meaning you cannot
+access it from a different computer (for security reasons). You can change
+the host and port by setting the `http_host` and `http_port` variables
+(more about [internal variables](#internal-variables) below).
+For example if you want to run the server to be accessible
+from another computer as well, you can run Mailpile
+with:
+
+    $ ./mp --set http_host=0.0.0.0
+
+Setting `http_host` to `disabled` disables the server.
 
 
 ## Basic use ##
@@ -170,7 +177,7 @@ or one of the magic words `all` or `these`:
 (Mailpile currently assumes you have `less` installed and in your path for
 viewing e-mail. This is a temporary hack.)
 
-You can also search from the command line with `./mp -s term`,
+You can also search from the command line with `mp -s term`,
 but that will be a bit slower because the metadata index has to be
 loaded into RAM on each invocation.
 
@@ -315,6 +322,19 @@ There are a bunch of variables that can be tweaked. For a complete list:
     mailpile> help variables
     ...
 
+To set a variable to some value either run Mailpile with:
+
+    $ ./mp --set variable=value
+
+Or alternatively run `./mp` and issue:
+
+    > set variable=value
+
+after which you need to restart the program for it to take effect
+(Ctrl+D and `./mp`). You can print the value of a variable using:
+
+    > print variable
+
 
 ### JSON, XML, RSS, ... ###
 
@@ -331,6 +351,32 @@ For other commands, just append `.xml` or `.json` to the command name
 (e.g. `http://localhost:33411/_/help.xml` is a very useless example).
 
 
+### Developing using virtualenv ###
+
+The `Makefile` includes a recipe for setting up a virtualenv for use
+with Mailpile:
+
+    $ make virtualenv
+    $ source mp-virtualenv/bin/activate
+    $ mailpile
+
+This allows easy, sandboxed usage.
+
+
+### Developing using docker ###
+
+You can build a docker image:
+
+    docker build -t mailpile scripts/docker/
+
+and run it:
+
+    docker run -i -t mailpile
+
+or enter the container's bash prompt directly:
+
+    docker run -i -t mailpile bash
+    
 ## A word on performance ##
 
 Searching is all about disk seeks.
@@ -421,9 +467,13 @@ Contributors:
    * Björgvin Ragnarsson (<https://github.com/nifgraup/>)
    * Brennan Novak (<https://brennannovak.com/>)
    * Halldór Rúnarsson (<https://github.com/halldor>)
+   * Danx0r (<https://github.com/danx0r>)
+   * Steinn Steinsson (<https://github.com/steinn>)
+   * Dražen Lučanin (<https://github.com/kermit666>)
+   * Uli Köhler (<https://github.com/ulikoehler>)
 
-This program is free software: you can redistribute it and/or modify it
-under the terms of the  GNU  Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or (at
-your option) any later version.
+This program is free software: you can redistribute it and/or modify it under
+the terms of either the GNU Affero General Public License as published by the
+Free Software Foundation or the Apache License 2.0 as published by the Apache
+Software Foundation. See the file COPYING.md for details.
 

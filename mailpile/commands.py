@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # These are the Mailpile commands, the public "API" we expose for searching,
 # tagging and editing e-mail.
 #

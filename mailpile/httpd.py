@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Mailpile's built-in HTTPD
 #
@@ -241,12 +240,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     try:
       cmd, data = self.parse_pqp(path, query_data, post_data, config)
+      idx = session.config.index
       session.ui.html_variables = {
         'title': 'Mailpile dummy title',
         'csrf': 'FIXMEFIXME',
         'name': session.config.get('my_from', {1: 'Chelsea Manning'}
                                    ).values()[0],
-        'mailpile_size': len(session.config.index.INDEX)
+        'mailpile_size': idx and len(idx.INDEX) or 0
       }
       if cmd:
         for arg in cmd.split(' /'):

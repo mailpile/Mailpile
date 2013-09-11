@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 ## Dear hackers!
 ##
@@ -32,7 +31,8 @@ from email.mime.text import MIMEText
 
 from smtplib import SMTP, SMTP_SSL
 
-from mailpile import imap_mailbox
+from mailpile.mailboxes.imap import IMAPMailbox
+from mailpile.mailboxes.macmail import MacMaildir
 from mailpile.util import *
 from lxml.html.clean import Cleaner
 
@@ -206,36 +206,79 @@ def HeaderPrint(message):
 
 
 def OpenMailbox(fn):
-  if fn.startswith("imap://"):
-    # FIXME(halldor): waaaayy too naive - expects imap://username:password@server/mailbox
-    url = fn[7:]
+  for mbox_cls in (IncrementalIMAPMailbox,
+                   IncrementalMaildir,
+                   IncrementalMacMaildir,
+                   IncrementalGmvault):
     try:
-      serverpart, mailbox = url.split("/")
-    except ValueError:
-      serverpart = url
-      mailbox = None
-    try:
+      return mbox_cls(*mbox_cls.parse_path(fn))
+    except:
+      #traceback.print_exc()
+      pass
+  return IncrementalMbox(fn)
+
+
+def UnorderedPicklable(parent, editable=False):
+  """A factory for generating unordered, picklable mailbox classes."""
+
+  class UnorderedPicklableMailbox(parent):
+    def __init__(self, *args, **kwargs):
+      parent.__init__(self, *args, **kwargs)
+      self.editable = editable
+      self.save_to = None
+      self.parsed = {}
+
+    def unparsed(self):
+      return [i for i in self.keys() if i not in self.parsed]
+
+    def mark_parsed(self, i):
+      self.parsed[i] = True
+
+    def __setstate__(self, dict):
+      self.__dict__.update(dict)
+      self.update_toc()
+
+    def save(self, session=None, to=None):
+      if to:
+        self.save_to = to
+      if self.save_to and len(self) > 0:
+        if session: session.ui.mark('Saving state to %s' % self.save_to)
+        fd = open(self.save_to, 'w')
+        cPickle.dump(self, fd)
+        fd.close()
+
+    def update_toc(self):
+      self._refresh()
+
+    def get_msg_ptr(self, idx, toc_id):
+      return '%s%s' % (idx, toc_id)
+
+    def get_file_by_ptr(self, msg_ptr):
+      return self.get_file(msg_ptr[3:])
+
+    def get_msg_size(self, toc_id):
+      fd = self.get_file(toc_id)
+      fd.seek(0, 2)
+      return fd.tell()
+
+  return UnorderedPicklableMailbox
+
+
+class IncrementalIMAPMailbox(UnorderedPicklable(IMAPMailbox)):
+  @classmethod
+  def parse_path(cls, path):
+    if path.startswith("imap://"):
+      url = path[7:]
+      try:
+        serverpart, mailbox = url.split("/")
+      except ValueError:
+        serverpart = url
+        mailbox = None
       userpart, server = serverpart.split("@")
       user, password = userpart.split(":")
-    except ValueError:
-      raise
-
-    return IncrementalIMAPMailbox(server, user=user, password=password, mailbox=mailbox)
-  if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'cur')):
-    return IncrementalMaildir(fn)
-  elif os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'db')):
-    return IncrementalGmvault(fn)
-  else:
-    return IncrementalMbox(fn)
-
-class IncrementalIMAPMailbox(imap_mailbox.IMAPMailbox):
-  editable = True
-  save_to = None
-  parsed = {}
-
-  def __setstate__(self, dict):
-    self.__dict__.update(dict)
-    self.update_toc()
+      # WARNING: Order must match IMAPMailbox.__init__(...)
+      return (server, 993, user, password)
+    raise ValueError('Not an IMAP url: %s' % path)
 
   def __getstate__(self):
     odict = self.__dict__.copy()
@@ -243,79 +286,40 @@ class IncrementalIMAPMailbox(imap_mailbox.IMAPMailbox):
     del odict['_mailbox']
     return odict
 
-  def save(self, session=None, to=None):
-    if to:
-      self.save_to = to
-    if self.save_to and len(self) > 0:
-      if session: session.ui.mark('Saving state to %s' % self.save_to)
-      fd = open(self.save_to, 'w')
-      cPickle.dump(self, fd)
-      fd.close()
-
-  def unparsed(self):
-    return [i for i in self.keys() if i not in self.parsed]
-
-  def mark_parsed(self, i):
-    self.parsed[i] = True
-
-  def update_toc(self):
-    self._refresh()
-
   def get_msg_size(self, toc_id):
+    # FIXME: We should make this less horrible.
     fd = self.get_file(toc_id)
     fd.seek(0, 2)
     return fd.tell()
 
-  def get_msg_ptr(self, idx, toc_id):
-    return '%s%s' % (idx, toc_id)
 
-  def get_file_by_ptr(self, msg_ptr):
-    return self.get_file(msg_ptr[3:])
-
-class IncrementalMaildir(mailbox.Maildir):
+class IncrementalMaildir(UnorderedPicklable(mailbox.Maildir, editable=True)):
   """A Maildir class that supports pickling and a few mailpile specifics."""
+  @classmethod
+  def parse_path(cls, fn):
+    if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'cur')):
+      return (fn, )
+    raise ValueError('Not a Maildir: %s' % fn)
 
-  editable = True
-  save_to = None
-  parsed = {}
 
-  def __setstate__(self, dict):
-    self.__dict__.update(dict)
-    self.update_toc()
+class IncrementalMacMaildir(UnorderedPicklable(MacMaildir)):
+  """A Mac Mail.app maildir class that supports pickling etc."""
+  @classmethod
+  def parse_path(cls, fn):
+    if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'Info.plist')):
+      return (fn, )
+    raise ValueError('Not a Mac Mail.app Maildir: %s' % fn)
 
-  def save(self, session=None, to=None):
-    if to:
-      self.save_to = to
-    if self.save_to and len(self) > 0:
-      if session: session.ui.mark('Saving state to %s' % self.save_to)
-      fd = open(self.save_to, 'w')
-      cPickle.dump(self, fd)
-      fd.close()
-
-  def unparsed(self):
-    return [i for i in self.keys() if i not in self.parsed]
-
-  def mark_parsed(self, i):
-    self.parsed[i] = True
-
-  def update_toc(self):
-    self._refresh()
-
-  def get_msg_size(self, toc_id):
-    fd = self.get_file(toc_id)
-    fd.seek(0, 2)
-    return fd.tell()
-
-  def get_msg_ptr(self, idx, toc_id):
-    return '%s%s' % (idx, toc_id)
-
-  def get_file_by_ptr(self, msg_ptr):
-    return self.get_file(msg_ptr[3:])
 
 class IncrementalGmvault(IncrementalMaildir):
   """A Gmvault class that supports pickling and a few mailpile specifics."""
 
-  editable = False
+  @classmethod
+  def parse_path(cls, fn):
+    if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'db')):
+      return (fn, )
+    raise ValueError('Not a Gmvault: %s' % fn)
+
 
   def __init__(self, dirname, factory=rfc822.Message, create=True):
     IncrementalMaildir.__init__(self, dirname, factory, create)
@@ -685,7 +689,7 @@ class Email(object):
         return mbox, msg_ptr, fd
       except (IOError, OSError):
         # FIXME: If this pointer is wrong, should we fix the index?
-        print '%s not in %s' % (msg_ptr, mbox)
+        print '%s not in %s' % (msg_ptr, self)
     return None, None, None
 
   def get_file(self):
@@ -772,10 +776,20 @@ class Email(object):
         if mode.startswith('inline'):
           attributes['data'] = payload
           session.ui.notify('Extracted attachment %s' % att_id)
+        elif mode.startswith('preview'):
+          attributes['thumb'] = True
+          attributes['mimetype'] = 'image/jpeg'
+          attributes['disposition'] = 'inline'
+          filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
+                                                  attributes=attributes)
+          if thumbnail(payload, fd, height=250):
+            session.ui.notify('Wrote preview to: %s' % filename)
+          else:
+            session.ui.notify('Failed to generate thumbnail')
+          fd.close()
         else:
           filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
                                                   attributes=attributes)
-          # FIXME: OMG, RAM ugh.
           fd.write(payload)
           fd.close()
           session.ui.notify('Wrote attachment to: %s' % filename)

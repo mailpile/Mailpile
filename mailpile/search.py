@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import cgi
 import codecs
 import datetime
@@ -440,6 +439,41 @@ class MailIndex(object):
     msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
     self.set_msg_by_idx(msg_idx, msg_info)
 
+  def _parse_date(self, date_hdr):
+    """Parse a Date: or Received: header into a unix timestamp."""
+    try:
+      if ';' in date_hdr:
+        date_hdr = date_hdr.split(';')[-1].strip()
+      msg_date = int(rfc822.mktime_tz(rfc822.parsedate_tz(date_hdr)))
+      if (msg_date > (time.time() + 24*3600)) or (msg_date < 1):
+        return None
+      else:
+        return msg_date
+    except (ValueError, TypeError, OverflowError):
+      return None
+
+  def _extract_date(self, session, msg_mid, msg_id, msg, last_date):
+    """Extract a date, sanity checking against the Received: headers."""
+    hdrs = [self.hdr(msg, 'date')] + (msg.get_all('received') or [])
+    dates = [self._parse_date(date_hdr) for date_hdr in hdrs]
+    msg_date = dates[0]
+    nz_dates = sorted([d for d in dates if d])
+
+    if nz_dates:
+      median = nz_dates[len(nz_dates)/2]
+      if msg_date and abs(msg_date-median) < 7*24*3600:
+        return msg_date
+      else:
+        session.ui.warning(('=%s/%s using Recieved: instead of Date:'
+                            ) % (msg_mid, msg_id))
+        return median
+    else:
+      # If the above fails, we assume the messages in the mailbox are in
+      # chronological order and just add 1 second to the date of the last
+      # message if date parsing fails for some reason.
+      session.ui.warning('=%s/%s has a bogus date' % (msg_mid, msg_id))
+      return last_date + 1
+
   def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
     try:
       mbox = mailbox_opener(session, idx)
@@ -448,8 +482,8 @@ class MailIndex(object):
         return 0
       else:
         session.ui.mark('%s: Checking: %s' % (idx, mailbox_fn))
-    except (IOError, OSError, NoSuchMailboxError):
-      session.ui.mark('%s: Error opening: %s' % (idx, mailbox_fn))
+    except (IOError, OSError, NoSuchMailboxError), e:
+      session.ui.mark('%s: Error opening: %s (%s)' % (idx, mailbox_fn, e))
       return 0
 
     unparsed = mbox.unparsed()
@@ -485,27 +519,7 @@ class MailIndex(object):
         # Add new message!
         msg_mid = b36(len(self.INDEX))
 
-        try:
-          last_date = msg_date
-          msg_date = int(rfc822.mktime_tz(
-                                   rfc822.parsedate_tz(self.hdr(msg, 'date'))))
-          if msg_date > (time.time() + 24*3600):
-            session.ui.warning('=%s/%s is from the FUTURE!' % (msg_mid, msg_id))
-            # Messages from the future are treated as today's
-            msg_date = last_date + 1
-          elif msg_date < 1:
-            session.ui.warning('=%s/%s is PREHISTORIC!' % (msg_mid, msg_id))
-            msg_date = last_date + 1
-
-        except (ValueError, TypeError, OverflowError):
-          session.ui.warning('=%s/%s has a bogus date.' % (msg_mid, msg_id))
-          #if session.config.get('debug'):
-          #  session.ui.say(traceback.format_exc())
-          # This is a hack: We assume the messages in the mailbox are in
-          # chronological order and just add 1 second to the date of the last
-          # message.  This should be a better-than-nothing guess.
-          msg_date += 1
-
+        msg_date = self._extract_date(session, msg_mid, msg_id, msg, msg_date)
         keywords = self.index_message(session, msg_mid, msg_id, msg, msg_date,
                                       mailbox=idx, compact=False,
                                       filter_hooks=[self.filter_keywords])

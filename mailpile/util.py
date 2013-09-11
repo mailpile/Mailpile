@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Misc. utility functions for Mailpile.
 #
@@ -7,6 +6,7 @@ import hashlib
 import locale
 import re
 import subprocess
+import os
 import sys
 import tempfile
 import threading
@@ -29,7 +29,7 @@ BORING_HEADERS = ('received', 'date',
                   'content-type', 'content-disposition', 'mime-version',
                   'dkim-signature', 'domainkey-signature', 'received-spf')
 
- 
+
 class WorkerError(Exception):
   pass
 
@@ -175,3 +175,49 @@ def cached_open(filename, mode):
   finally:
     APPEND_FD_CACHE_LOCK.release()
 
+
+import StringIO
+try:
+  import Image
+except:
+  Image = None
+
+def thumbnail(fileobj, output_fd, height=None, width=None):
+  """
+  Generates thumbnail image from supplied fileobj, which should be a file,
+  StringIO, or string, containing a PIL-supported image.
+  FIXME: Failure modes unmanaged.
+  """
+  if not Image:
+    # If we don't have PIL, we just return the supplied filename in the hopes
+    # that somebody had the good sense to extract the right attachment to that
+    # filename...
+    return None
+
+  if not isinstance(fileobj, StringIO.StringIO) and not isinstance(fileobj, file):
+    fileobj = StringIO.StringIO(fileobj)
+
+  image = Image.open(fileobj)
+
+  # defining the size
+  if height == None and width == None:
+    raise Exception("Must supply width or height!")
+  if height and not width:
+    x = height
+    y = int((float(height)/image.size[0]) * image.size[1])
+  elif width and not height:
+    y = width
+    x = int((float(width)/image.size[1]) * image.size[0])
+  else:
+    y = width
+    x = height
+
+  size = "%dx%d" % (y, x)
+
+  image.thumbnail([x, y], Image.ANTIALIAS)
+  try:
+    image.save(output_fd, format=image.format, quality=90, optimize=1)
+  except:
+    image.save(output_fd, format=image.format, quality=90)
+
+  return image

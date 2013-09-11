@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file contains the UserInteraction and Session classes.
 #
@@ -606,11 +605,12 @@ class RawHttpResponder:
     #
     mimetype = attributes.get('mimetype', 'application/octet-stream')
     filename = attributes.get('filename', 'attachment.dat').replace('"', '')
+    disposition = attributes.get('disposition', 'attachment')
     length = attributes['length']
     request.send_http_response(200, 'OK')
     request.send_standard_headers(header_list=[
       ('Content-Length', length),
-      ('Content-Disposition', 'attachment; filename="%s"' % filename)
+      ('Content-Disposition', '%s; filename="%s"' % (disposition, filename))
     ], mimetype=mimetype)
 
   def write(self, data):

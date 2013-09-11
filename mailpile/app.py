@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 APPVER="0.0.0+github"
 ABOUT="""\
 Mailpile.py          a tool          Copyright 2011-2013, Bjarni R. Einarsson
@@ -6,9 +5,9 @@ Mailpile.py          a tool          Copyright 2011-2013, Bjarni R. Einarsson
            organizing piles of e-mail
 
 This program is free software: you can redistribute it and/or modify it under
-the terms of the  GNU  Affero General Public License as published by the Free
-Software Foundation, either version 3 of the License, or (at your option) any
-later version.
+the terms of either the GNU Affero General Public License as published by the
+Free Software Foundation or the Apache License 2.0 as published by the Apache
+Software Foundation. See the file COPYING.md for details.
 """
 ###############################################################################
 import cgi
@@ -572,7 +571,7 @@ class ConfigManager(dict):
         if mkdir and not os.path.exists(cpath):
           os.mkdir(cpath)
       else:
-        bpath = os.path.join('.SELF', bpath)
+        bpath = os.path.join('.', bpath)
     return bpath
 
   def open_file(self, ftype, fpath, mode='rb', mkdir=False):
