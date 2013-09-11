@@ -89,12 +89,15 @@ class MacMaildir(mailbox.Mailbox):
         while not paths == []:
             curpath = paths.pop(0)
             fullpath = os.path.join(self._mailroot, curpath)
-            for entry in os.listdir(fullpath):
-                p = os.path.join(fullpath, entry)
-                if os.path.isdir(p):
-                    paths.append(os.path.join(curpath, entry))
-                elif entry[-5:] == ".emlx":
-                    self._toc[entry[:-5]] = os.path.join(curpath, entry)
+            try:
+                for entry in os.listdir(fullpath):
+                    p = os.path.join(fullpath, entry)
+                    if os.path.isdir(p):
+                        paths.append(os.path.join(curpath, entry))
+                    elif entry[-5:] == ".emlx":
+                        self._toc[entry[:-5]] = os.path.join(curpath, entry)
+            except (OSError, IOError):
+                pass  # Ignore difficulties reading individual folders
 
     def _lookup(self, key):
         try:
