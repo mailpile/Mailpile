@@ -320,7 +320,6 @@ class IncrementalGmvault(IncrementalMaildir):
       return (fn, )
     raise ValueError('Not a Gmvault: %s' % fn)
 
-
   def __init__(self, dirname, factory=rfc822.Message, create=True):
     IncrementalMaildir.__init__(self, dirname, factory, create)
 
@@ -344,6 +343,7 @@ class IncrementalGmvault(IncrementalMaildir):
       for dirpath, dirnames, filenames in os.walk(self._paths[path]):
         for filename in [f for f in filenames if f.endswith(".eml.gz") or f.endswith(".eml")]:
           self._toc[filename] = os.path.join(dirpath, filename)
+
 
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
