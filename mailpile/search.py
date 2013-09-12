@@ -201,7 +201,8 @@ class PostingList(object):
           fd.write(output)
           return len(output)
         finally:
-          if mode != 'a': fd.close()
+          if mode != 'a' and fd:
+            fd.close()
       elif os.path.exists(outfile):
         os.remove(outfile)
         flush_append_cache()
