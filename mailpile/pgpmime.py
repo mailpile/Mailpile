@@ -13,6 +13,7 @@ class PGPMimeParser(Parser):
     sig_count, sig_parts, sig_alg = 0, [], 'SHA1'
     enc_count, enc_parts, enc_ver = 0, [], None
 
+    print "PGP MIME message received."
     for part in message.walk():
       mimetype = part.get_content_type()
       if (sig_count > 1) and (mimetype == 'application/pgp-signature'):
@@ -68,16 +69,14 @@ class PGPMimeParser(Parser):
                             create_fhs=['stdin', 'stdout', 'stderr'])
           gpg.handles['stdin'].write(msg)
           gpg.handles['stdin'].close()
-          result = gpg.handles['stdout'].read().decode('utf-8')
+          result = gpg.handles['stdout'].read()
+          # result = result.decode('utf-8')
           gpg.wait()
-          print "Decrypted:"
-          print result
           summary = ('decrypted', result)
           # part.attach(result)
           s = StringIO.StringIO()
           s.write(result)
           m = Parser().parse(s)
-          print m
           m = Message()
           m.set_payload(result)
           part.set_payload([m])
@@ -87,6 +86,7 @@ class PGPMimeParser(Parser):
           if not result:
             summary = ('encrypted', 'Error running GnuPG')
           else:
+            print result
             #reslines = [g.split("gpg: ")[1] for g in result.strip().split("\n")]
             #matchgr = re.match(".*made (.*) using (.*) key ID ([a-zA-Z0-9]{8}).*", reslines[0])
             #keyid = matchgr.groups()[2]
