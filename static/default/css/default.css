@@ -5568,3 +5568,8 @@ p.text-part-quote {
   font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 14px;
 }
+/* Compose */
+.compose-section {
+  padding: .75em;
+  border-bottom: 1px solid #b3b3b3;
+}
