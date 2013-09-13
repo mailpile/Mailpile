@@ -643,7 +643,9 @@ def Interact(session):
   try:
     while True:
       session.ui.block()
-      opt = raw_input('mailpile> ').decode('utf-8').strip()
+      #Bold gray prompt, if output is a TTY
+      prompt = '\x1B[30;1mmailpile> \x1B[0m' if sys.stdout.isatty() else 'mailpile> '
+      opt = raw_input(prompt).decode('utf-8').strip()
       session.ui.unblock()
       if opt:
         if ' ' in opt:
