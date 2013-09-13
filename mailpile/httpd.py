@@ -166,7 +166,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             q = 'tag:%s %s' % (tid, q)
           elif not q:
             q = 'tag:%s' % tid
-
+            
     if q:
       if q[0] == '/':
         cmd = q[1:]
