@@ -374,7 +374,7 @@ class ConfigManager(dict):
 
   def is_editable_mailbox(self, mailbox_id):
     # FIXME: This may be too narrow?
-    return (mailbox_id == self.get('local_mailbox', None))
+    return (int(mailbox_id, 36) == int(self.get('local_mailbox', 'ZZZZ'), 36))
 
   def open_mailbox(self, session, mailbox_id):
     pfn = os.path.join(self.workdir(), 'pickled-mailbox.%s' % mailbox_id)
