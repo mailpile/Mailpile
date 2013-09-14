@@ -43,10 +43,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     Send common HTTP headers plus a list of custom headers:
     - Cache-Control
     - Content-Type
-    
+
     This function does not send the HTTP/1.1 header, so
     ensure self.send_http_response() was called before
-    
+
     Keyword arguments:
     header_list -- A list of custom headers to send, containing key-value tuples
     cachectrl   -- The value of the 'Cache-Control' header field
@@ -64,7 +64,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                          header_list=[], suppress_body=False):
     """
     Sends the HTTP header and a response list
-    
+
     message       -- The body of the response to send
     header_list   -- A list of custom headers to send,
                      containing key-value tuples
