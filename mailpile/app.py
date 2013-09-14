@@ -61,7 +61,7 @@ class Cron(threading.Thread):
     Initializes a new Cron instance.
     Note that the thread will not be started automatically, so
     you need to call start() manually.
-    
+
     Keyword arguments:
     name -- The name of the Cron instance
     session -- Currently unused
@@ -78,7 +78,7 @@ class Cron(threading.Thread):
   def add_task(self, name, interval, task):
     """
     Add a task to the cron worker queue
-    
+
     Keyword arguments:
     name -- The name of the task to add
     interval -- The interval (in seconds) of the task
@@ -92,7 +92,7 @@ class Cron(threading.Thread):
     finally:
         #Not releasing the lock will block the entire cron thread
         self.lock.release()
-    
+
   def __recalculateSleep(self):
     """
     Recalculate the maximum sleep delay.
@@ -107,14 +107,14 @@ class Cron(threading.Thread):
                             if int(task[1]) % i != 0]
         # We can sleep for i seconds if i divides all intervals
         if (len(filteredTasks) == 0): self.sleep = i
-      
+
 
   def cancel_task(self, name):
     """
     Cancel a task in the current Cron instance.
     If a task with the given name does not exist,
     ignore the request.
-    
+
     Keyword arguments:
     name -- The name of the task to cancel
     """
@@ -129,7 +129,7 @@ class Cron(threading.Thread):
   def run(self):
     """
     Thread main function for a Cron instance.
-    
+
     """
     self.ALIVE = True
     # Main thread loop
@@ -148,7 +148,7 @@ class Cron(threading.Thread):
           #Set last_executed
           self.schedule[name][3] = time.time()
           task()
-      
+
       # Some tasks take longer than others,
       #  so use the time before executing tasks
       #  as reference for the delay
@@ -170,7 +170,7 @@ class Cron(threading.Thread):
     """
     Send a signal to the current Cron instance
     to stop operation.
-    
+
     Keyword arguments:
     join -- If this is True, this method will wait until
             the Cron thread exits.
