@@ -713,7 +713,7 @@ def MakeTokenRegex(meta_left, meta_right):
   OR_TOKEN,  # {.or}
   END_TOKEN,  # {.end}
   PARTIAL_TOKEN, # {.partial filename}
-  ) = range(10)
+  ) = range(9)
 
 
 def _MatchDirective(token):
