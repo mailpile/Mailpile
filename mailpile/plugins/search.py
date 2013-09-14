@@ -70,21 +70,27 @@ class SearchResults(dict):
       results.append(self._prune_msg_tree(tree, context=context))
     return results
 
-  def _name(self, sender):
+  def _name(self, sender, short=True):
     words = re.sub('["<>]', '', sender).split()
     nomail = [w for w in words if not '@' in w]
-    if nomail: return ' '.join(nomail)
-    return ' '.join(words)
+    if nomail:
+      if short:
+        return nomail[0]
+      return ' '.join(nomail)
+    elif words:
+      if short:
+        return words[0].split('@', 1)[0]
+      return words[0]
+    return '(nobody)'
 
   def _names(self, senders):
-    try:
-      if len(senders) > 1:
-        text = re.sub('["<>]', '', ', '.join([x.split()[0] for x in senders]))
-        return text
-    except IndexError:
-      pass
-    text = ', '.join([self._name(s) for s in senders])
-    return re.sub(', (, )+', '..', text)
+    if len(senders) > 1:
+      return ', '.join([self._name(x) for x in senders])
+    if len(senders) < 1:
+      return '(no sender)'
+    if senders:
+      return self._name(senders[0], short=False)
+    return ''
 
   def _compact(self, namelist, maxlen):
     l = len(namelist)
