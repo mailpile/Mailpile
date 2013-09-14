@@ -72,7 +72,7 @@ def sha1b64(s):
   '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\\n'
   
   Keyword arguments:
-  s -- The strign to hash
+  s -- The string to hash
   """
   h = hashlib.sha1()
   if type(s) == type(unicode()):
