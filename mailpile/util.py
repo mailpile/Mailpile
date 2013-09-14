@@ -40,18 +40,39 @@ class UsageError(Exception):
 class AccessError(Exception):
   pass
 
-
 def b64c(b): return b.replace('\n', '').replace('=', '').replace('/', '_')
 def b64w(b): return b64c(b).replace('+', '-')
 
+import cgi
+
 def escape_html(t):
-  return t.replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
+  """
+  Replace characters that have a special meaning in HTML
+  by their entity equivalents. Return the replaced
+  string.
+  
+  >>> escape_html("Hello, Goodbye.")
+  'Hello, Goodbye.'
+  >>> escape_html("Hello<>World")
+  'Hello&lt;&gt;World'
+  >>> escape_html("<&>")
+  '&lt;&amp;&gt;'
+  
+  Keyword arguments:
+  t -- The string to escape
+  """
+  return cgi.escape(t)
 
 def sha1b64(s):
   """
-  >>> from mailpile import util
-  >>> util.sha1b64("Hello")
-  '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\n'
+  Apply the SHA1 hash algorithm to a string
+  and return the base64-encoded hash value
+  
+  >>> sha1b64("Hello")
+  '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\\n'
+  
+  Keyword arguments:
+  s -- The strign to hash
   """
   h = hashlib.sha1()
   if type(s) == type(unicode()):
@@ -62,9 +83,16 @@ def sha1b64(s):
 
 def sha512b64(s):
   """
-  >>> from mailpile import util
-  >>> util.sha512b64("Hello")
-  'NhX4DJ0pPtdAJof5SyLVjlKbjMeRb4+sf933+9WvTPd309eVp6AKFr9+fz+5Vh7puq5IDan+ehh2\nnnGIawPzFQ==\n'
+  Apply the SHA512 hash algorithm to a string
+  and return the base64-encoded hash value
+  
+  >>> sha512b64("Hello")
+  'NhX4DJ0pPtdAJof5SyLVjlKbjMeRb4+sf933+9WvTPd309eVp6AKFr9+fz+5Vh7puq5IDan+ehh2\\nnnGIawPzFQ==\\n'
+  >>> sha512b64(u"Hello")
+  'NhX4DJ0pPtdAJof5SyLVjlKbjMeRb4+sf933+9WvTPd309eVp6AKFr9+fz+5Vh7puq5IDan+ehh2\\nnnGIawPzFQ==\\n'
+  
+  Keyword arguments:
+  s -- The string to hash
   """
   h = hashlib.sha512()
   if type(s) == type(unicode()):
@@ -75,26 +103,43 @@ def sha512b64(s):
 
 def strhash(s, length, obfuscate=None):
   """
-  >>> from mailpile import util
-  >>> util.strhash("Hello", 10)
+  Create a hash of 
+  
+  >>> strhash("Hello", 10)
   'hello9_+ei'
-  >>> util.strhash("Goodbye", 5, obfuscate=util.sha512b64)
-  '3vb7l'
+  >>> strhash("Goodbye", 5, obfuscate="mysalt")
+  'voxpj'
+  
+  Keyword arguments:
+  s -- The string to be hashed
+  length -- The length of the hash to create.
+            Might be limited by the hash method
+  obfuscate -- None to disable SHA512 obfuscation,
+               or a salt to append to the string
+               before hashing
   """
   if obfuscate:
-    s2 = b64c(sha512b64('%s%s' % (s, obfuscate))).lower()
-  else:
-    s2 = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '',
+    hashedStr = b64c(sha512b64('%s%s' % (s, obfuscate)).lower())
+  else: #Don't obfuscate
+    hashedStr = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '',
                 s.lower())[:(length-4)]
-    while len(s2) < length:
-      s2 += b64c(sha1b64(s)).lower()
-  return s2[:length]
+    while len(hashedStr) < length:
+      hashedStr += b64c(sha1b64(s)).lower()
+  return hashedStr[:length]
 
 def b36(number):
   """
-  >>> from mailpile import util
-  >>> util.b36(2701)
+  Convert a number to base36
+  
+  >>> b36(2701)
   '231'
+  >>> b36(12345)
+  '9IX'
+  >>> b36(None)
+  '0'
+  
+  Keyword arguments:
+  number -- An integer to convert to base36
   """
   alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   base36 = ''
@@ -207,9 +252,15 @@ except:
 
 def thumbnail(fileobj, output_fd, height=None, width=None):
   """
-  Generates thumbnail image from supplied fileobj, which should be a file,
+  Generates a thumbnail image , which should be a file,
   StringIO, or string, containing a PIL-supported image.
   FIXME: Failure modes unmanaged.
+  
+  Keyword arguments:
+  fileobj -- Either a StringIO instance, a file object or
+             a string (containing the image) to
+             read the source image from
+  output_fd -- A file object or filename, or StringIO to
   """
   if not Image:
     # If we don't have PIL, we just return the supplied filename in the hopes
@@ -217,6 +268,7 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
     # filename...
     return None
 
+  #Ensure the source image is either a file-like object or a StringIO
   if not isinstance(fileobj, StringIO.StringIO) and not isinstance(fileobj, file):
     fileobj = StringIO.StringIO(fileobj)
 
@@ -225,22 +277,29 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
   # defining the size
   if height == None and width == None:
     raise Exception("Must supply width or height!")
+  # If only one coordinate is given, calculate the
+  # missing one in order to make the thumbnail
+  # have the same proportions as the source img
   if height and not width:
     x = height
     y = int((float(height)/image.size[0]) * image.size[1])
   elif width and not height:
     y = width
     x = int((float(width)/image.size[1]) * image.size[0])
-  else:
+  else: #We have both sizes
     y = width
     x = height
-
-  size = "%dx%d" % (y, x)
-
   image.thumbnail([x, y], Image.ANTIALIAS)
+  # If saving an optimized image fails, save it unoptimized
+  # Keep the format (png, jpg) of the source image
   try:
     image.save(output_fd, format=image.format, quality=90, optimize=1)
   except:
     image.save(output_fd, format=image.format, quality=90)
 
   return image
+
+# If 'python util.py' is executed, start the doctest unittest
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
