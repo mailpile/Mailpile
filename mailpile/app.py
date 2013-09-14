@@ -726,10 +726,11 @@ def Interact(session):
     readline.set_history_length(-history_length)
 
   try:
+    prompt = session.ui.palette.color('mailpile> ',
+                                      color=session.ui.palette.BLACK,
+                                      weight=session.ui.palette.BOLD)
     while True:
       session.ui.block()
-      #Bold gray prompt, if output is a TTY
-      prompt = '\x1B[30;1mmailpile> \x1B[0m' if sys.stdout.isatty() else 'mailpile> '
       opt = raw_input(prompt).decode('utf-8').strip()
       session.ui.unblock()
       if opt:
@@ -763,6 +764,8 @@ def Main(args):
     session.config.load(session)
     session.main = True
     session.ui = UserInteraction()
+    if sys.stdout.isatty():
+      session.ui.palette = ANSIColors()
   except AccessError, e:
     sys.stderr.write('Access denied: %s\n' % e)
     sys.exit(1)
@@ -785,10 +788,10 @@ def Main(args):
 
     if not opts and not args:
       # Create and start the rest of the threads, load the index.
+      session.interactive = session.ui.interactive = True
       config.prepare_workers(session, daemons=True)
       Load(session, '').run(quiet=True)
       session.ui.display_result(Help(session, 'Help', ['splash']).run())
-      session.interactive = session.ui.interactive = True
       Interact(session)
 
   except KeyboardInterrupt:
