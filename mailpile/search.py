@@ -371,7 +371,14 @@ class MailIndex(object):
           self.EMAILS[pos] = email
           self.EMAIL_IDS[email.lower()] = pos
         elif line:
-          pos, ptrs, msgid, rest = line.split('\t', 3)
+          words = line.split('\t')
+          if len(words) == 10:
+            # This is an old index file, reorder to match new hotness
+            pos, p, unused, msgid, d, f, s, t, r, c = words
+            ptrs = ','.join(['0'+ptr for ptr in p.split(',')])
+            line = '\t'.join([pos, ptrs, msgid, d, f, '', s, '', t, r, c])
+          else:
+            pos, ptrs, msgid = words[:3]
           pos = int(pos, 36)
           while len(self.INDEX) < pos+1:
             self.INDEX.append('')
