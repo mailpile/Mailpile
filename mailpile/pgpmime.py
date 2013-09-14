@@ -13,7 +13,6 @@ class PGPMimeParser(Parser):
     sig_count, sig_parts, sig_alg = 0, [], 'SHA1'
     enc_count, enc_parts, enc_ver = 0, [], None
 
-    print "PGP MIME message received."
     for part in message.walk():
       mimetype = part.get_content_type()
       if (sig_count > 1) and (mimetype == 'application/pgp-signature'):
@@ -61,7 +60,6 @@ class PGPMimeParser(Parser):
         crypt.write(part.get_payload())
         crypt.flush()
         msg = '\r\n'.join(part.as_string().splitlines(False))+'\r\n'
-        print msg
 
         result = None
         try:
@@ -86,7 +84,6 @@ class PGPMimeParser(Parser):
           if not result:
             summary = ('encrypted', 'Error running GnuPG')
           else:
-            print result
             #reslines = [g.split("gpg: ")[1] for g in result.strip().split("\n")]
             #matchgr = re.match(".*made (.*) using (.*) key ID ([a-zA-Z0-9]{8}).*", reslines[0])
             #keyid = matchgr.groups()[2]
@@ -94,7 +91,6 @@ class PGPMimeParser(Parser):
             #datetime = matchgr.groups()[0]
 
             # FIXME: This should understand what kind of UI we have.
-            print "FAIL"
             summary = ('encrypted', result)
 
         for enc_part in enc_parts:
