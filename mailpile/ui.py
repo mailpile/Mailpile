@@ -37,6 +37,34 @@ def default_dict(*args):
   return d
 
 
+class NoColors:
+  """Dummy color constants"""
+  NORMAL = ''
+  BOLD   = ''
+  NONE   = ''
+  BLACK  = ''
+  RED    = ''
+  YELLOW = ''
+  BLUE   = ''
+  FORMAT = "%s%s"
+  RESET  = ''
+
+  def color(self, text, color='', weight=''):
+    return '%s%s%s' % (self.FORMAT % (color, weight), text, self.RESET)
+
+class ANSIColors(NoColors):
+  """ANSI color constants"""
+  NORMAL = ''
+  BOLD   = ';1'
+  NONE   = '0'
+  BLACK  = "30"
+  RED    = "31"
+  YELLOW = "33"
+  BLUE   = "34"
+  RESET  = "\x1B[0m"
+  FORMAT = "\x1B[%s%sm"
+
+
 class UserInteraction:
   """Log the progress and performance of individual operations"""
   MAX_BUFFER_LEN = 150
@@ -61,6 +89,7 @@ class UserInteraction:
     self.time_elapsed = 0.0
     self.last_display = [self.LOG_PROGRESS, 0]
     self.render_mode = 'text'
+    self.palette = NoColors()
     self.html_variables = {
       'title': 'Mailpile',
       'name': 'Chelsea Manning',
@@ -77,7 +106,13 @@ class UserInteraction:
       sys.stderr.write('\r')
     elif self.last_display[0] not in (self.LOG_RESULT, ):
       sys.stderr.write('\n')
-    sys.stderr.write('%s%s' % (text.encode('utf-8'), pad))
+    c, w = self.palette.NONE, self.palette.NORMAL
+    if level == self.LOG_URGENT: c, w = self.palette.RED, self.palette.BOLD
+    elif level == self.LOG_ERROR: c = self.palette.RED
+    elif level == self.LOG_WARNING: c = self.palette.YELLOW
+    elif level == self.LOG_PROGRESS: c = self.palette.BLUE
+    sys.stderr.write('%s%s' % (self.palette.color(text.encode('utf-8'),
+                                                  color=c, weight=w), pad))
     self.last_display = [level, len(text)]
   def clear_log(self):
     self.log_buffer = []

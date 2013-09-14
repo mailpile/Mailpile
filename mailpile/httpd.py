@@ -24,17 +24,34 @@ DEFAULT_PORT = 33411
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
   def http_host(self):
+    """Return the current server host, e.g. 'localhost'"""
+    #rsplit removes port
     return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
 
   def server_url(self):
+    """Return the current server URL, e.g. 'http://localhost:33411/'"""
     return '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
                         self.headers.get('host', 'localhost'))
 
   def send_http_response(self, code, msg):
+    """Send the HTTP response header"""
     self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
 
   def send_standard_headers(self, header_list=[],
                             cachectrl='private', mimetype='text/html'):
+    """
+    Send common HTTP headers plus a list of custom headers:
+    - Cache-Control
+    - Content-Type
+
+    This function does not send the HTTP/1.1 header, so
+    ensure self.send_http_response() was called before
+
+    Keyword arguments:
+    header_list -- A list of custom headers to send, containing key-value tuples
+    cachectrl   -- The value of the 'Cache-Control' header field
+    mimetype    -- The MIME type to send as 'Content-Type' value
+    """
     if mimetype.startswith('text/') and ';' not in mimetype:
       mimetype += ('; charset=utf-8')
     self.send_header('Cache-Control', cachectrl)
@@ -45,17 +62,33 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
   def send_full_response(self, message, code=200, msg='OK', mimetype='text/html',
                          header_list=[], suppress_body=False):
+    """
+    Sends the HTTP header and a response list
+
+    message       -- The body of the response to send
+    header_list   -- A list of custom headers to send,
+                     containing key-value tuples
+    code          -- The HTTP response code to send
+    mimetype      -- The MIME type to send as 'Content-Type' value
+    suppress_body -- Set this to True to ignore the message parameter
+                     and not send any response body
+    """
     message = unicode(message).encode('utf-8')
     self.log_request(code, message and len(message) or '-')
+    #Send HTTP/1.1 header
     self.send_http_response(code, msg)
+    #Send all headers
     if code == 401:
       self.send_header('WWW-Authenticate',
                        'Basic realm=MP%d' % (time.time()/3600))
-    self.send_standard_headers(header_list=header_list + [
-                                 ('Content-Length', len(message or ''))
-                               ],
+    #If suppress_body == True, we don't know the content length
+    contentLengthHeaders = []
+    if not suppress_body:
+        contentLengthHeaders = [ ('Content-Length', len(message or '')) ]
+    self.send_standard_headers(header_list=header_list + contentLengthHeaders,
                                mimetype=mimetype,
                                cachectrl="no-cache")
+    #Response body
     if not suppress_body:
       self.wfile.write(message or '')
 
@@ -69,6 +102,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         fpath, fd = config.open_file(tpl, filename)
         mimetype = mimetypes.guess_type(fpath)[0] or "application/octet-stream"
         message = fd.read()
+        fd.close()
         code, msg = 200, "OK"
       except IOError, e:
         if e.errno == 2:
@@ -89,6 +123,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     self.wfile.write(message or '')
 
   def csrf(self):
+    """
+    Generate a hashed token from the current timestamp
+    and the server secret to avoid CSRF attacks
+    """
     ts = '%x' % int(time.time()/60)
     return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret, ts]))))
 

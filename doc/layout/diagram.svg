@@ -1,0 +1,1075 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="diagram.svg"
+   inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/diagram.png"
+   inkscape:export-xdpi="99.830002"
+   inkscape:export-ydpi="99.830002">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.89383562"
+     inkscape:cx="411.27566"
+     inkscape:cy="853.24907"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="1366"
+     inkscape:window-height="683"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g4426"
+       transform="matrix(0.96170578,0,0,0.96170578,13.867469,82.083978)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/datastores.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <rect
+         rx="13.28655"
+         y="9.1588745"
+         x="10.606615"
+         height="218.19295"
+         width="286.88333"
+         id="rect3976-7"
+         style="fill:#b7c8be;fill-opacity:1;stroke:none" />
+      <g
+         transform="translate(0,30)"
+         id="g3996">
+        <g
+           id="g3899"
+           transform="matrix(0.61454024,0,0,0.61454024,21.702167,-4.2893123)">
+          <g
+             transform="matrix(1.2583342,0,0,0.83764108,189.9714,47.193534)"
+             id="g3776">
+            <path
+               inkscape:connector-curvature="0"
+               style="fill:#008080;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+               d="m 24.84375,70.5 c -0.892547,0 -1.625,0.701203 -1.625,1.59375 l 0,169.53125 c 0,0.29905 0.109154,0.573 0.25,0.8125 -0.140816,0.26906 -0.25,0.53791 -0.25,0.8125 0,5.57892 29.645581,10.09375 66.1875,10.09375 36.54192,0 66.15625,-4.51483 66.15625,-10.09375 0,-0.27023 -0.0823,-0.54762 -0.21875,-0.8125 0.13799,-0.23774 0.21875,-0.51674 0.21875,-0.8125 l 0,-169.53125 c 0,-0.892547 -0.73245,-1.59375 -1.625,-1.59375 l -129.09375,0 z"
+               id="rect2985" />
+            <path
+               sodipodi:type="arc"
+               style="fill:#008080;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+               id="path2987-5"
+               sodipodi:cx="85.357887"
+               sodipodi:cy="212.92542"
+               sodipodi:rx="44.95179"
+               sodipodi:ry="10.101525"
+               d="m 130.30968,212.92542 c 0,5.57891 -20.1256,10.10152 -44.951793,10.10152 -24.826188,0 -44.95179,-4.52261 -44.95179,-10.10152 0,-5.57892 20.125602,-10.10153 44.95179,-10.10153 24.826193,0 44.951793,4.52261 44.951793,10.10153 z"
+               transform="matrix(1.4719102,0,0,1,-36.240644,-141.67512)" />
+          </g>
+          <text
+             sodipodi:linespacing="125%"
+             id="text3780"
+             y="187.95508"
+             x="244.29198"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:25px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="187.95508"
+               x="244.29198"
+               id="tspan3782"
+               sodipodi:role="line">Mail Index</tspan></text>
+        </g>
+        <g
+           id="g3850"
+           transform="matrix(0.61454024,0,0,0.61454024,21.494373,-29.120492)">
+          <rect
+             rx="1.4585625"
+             y="94.689926"
+             x="9.043726"
+             height="65.755203"
+             width="153.63849"
+             id="rect3848"
+             style="fill:#00aa88;fill-opacity:1;stroke:#000000;stroke-width:0.90470552;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text3780-8"
+             y="136.66788"
+             x="38.066338"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:25px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="136.66788"
+               x="38.066338"
+               id="tspan3782-0"
+               sodipodi:role="line">Mail box</tspan></text>
+        </g>
+        <g
+           transform="matrix(0.61454024,0,0,0.61454024,21.49437,18.369138)"
+           id="g3850-2">
+          <rect
+             rx="1.4585625"
+             y="94.689926"
+             x="9.043726"
+             height="65.755203"
+             width="153.63849"
+             id="rect3848-0"
+             style="fill:#00aa88;fill-opacity:1;stroke:#000000;stroke-width:0.90470552;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text3780-8-3"
+             y="136.66788"
+             x="38.066338"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:25px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="136.66788"
+               x="38.066338"
+               id="tspan3782-0-3"
+               sodipodi:role="line">Mail box</tspan></text>
+        </g>
+        <g
+           transform="matrix(0.61454024,0,0,0.61454024,22.11515,85.413308)"
+           id="g3850-6">
+          <rect
+             rx="1.4585625"
+             y="94.689926"
+             x="9.043726"
+             height="65.755203"
+             width="153.63849"
+             id="rect3848-8"
+             style="fill:#00aa88;fill-opacity:1;stroke:#000000;stroke-width:0.90470552;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text3780-8-4"
+             y="136.66788"
+             x="38.066338"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:25px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="136.66788"
+               x="38.066338"
+               id="tspan3782-0-2"
+               sodipodi:role="line">Mail box</tspan></text>
+        </g>
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="121.1405"
+           y="-71.382401"
+           id="text3895"
+           sodipodi:linespacing="125%"
+           transform="matrix(0,1,-1,0,0,0)"><tspan
+             sodipodi:role="line"
+             id="tspan3897"
+             x="121.1405"
+             y="-71.382401"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">...</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:120.79424286px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="176.84137"
+           y="112.3281"
+           id="text3906"
+           sodipodi:linespacing="125%"
+           transform="scale(0.69989859,1.4287784)"><tspan
+             sodipodi:role="line"
+             id="tspan3908"
+             x="176.84137"
+             y="112.3281"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">}</tspan></text>
+      </g>
+      <text
+         sodipodi:linespacing="125%"
+         id="text3780-8-6-5"
+         y="35.676582"
+         x="24.79574"
+         style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-size:17px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+           y="35.676582"
+           x="24.79574"
+           id="tspan3782-0-1-1"
+           sodipodi:role="line">Mail management backend</tspan></text>
+    </g>
+    <g
+       id="g4820"
+       transform="matrix(0.96170578,0,0,0.96170578,12.462131,82.083993)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/apicommands.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <rect
+         rx="12.631579"
+         y="9.1588745"
+         x="310.84399"
+         height="309.10666"
+         width="272.74118"
+         id="rect3976"
+         style="fill:#b7c8be;fill-opacity:1;stroke:none" />
+      <path
+         sodipodi:nodetypes="sssssssccccss"
+         inkscape:connector-curvature="0"
+         id="rect4320"
+         d="m 453.22474,50.290859 102.12693,0 c 2.77,0 5,2.23 5,5 l 0,145.563491 c 0,2.77 -2.23,5 -5,5 l -102.12693,0 c -2.77,0 -5,-2.23 -5,-5 l 0,-56.61931 c 0,-8.93571 -30,-7.07106 -30,-7.07106 l 0,-24.24366 c 0,0 30,2.46811 30,-8.08122 l 0,-49.548241 c 0,-2.77 2.23,-5 5,-5 z"
+         style="fill:#a7ac93;fill-opacity:1;stroke:none" />
+      <g
+         transform="translate(-16.445435,0)"
+         id="g4305">
+        <rect
+           style="fill:#abc837;fill-opacity:1;stroke:#000000;stroke-width:0.55597794;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           id="rect3848-6"
+           width="94.41703"
+           height="40.409218"
+           x="342.42029"
+           y="150.72803"
+           rx="0.89634532" />
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="368.02011"
+           y="176.52141"
+           id="text3780-8-6"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3782-0-1"
+             x="368.02011"
+             y="176.52141"
+             style="font-size:15.36350632px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">Group</tspan></text>
+      </g>
+      <g
+         transform="translate(-16.445435,0)"
+         id="g4310">
+        <rect
+           style="fill:#abc837;fill-opacity:1;stroke:#000000;stroke-width:0.55597794;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           id="rect3848-0-9"
+           width="94.41703"
+           height="40.409218"
+           x="342.42029"
+           y="198.21765"
+           rx="0.89634532" />
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="357.91531"
+           y="223.92102"
+           id="text3780-8-3-9"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3782-0-3-8"
+             x="357.91531"
+             y="223.92102"
+             style="font-size:15.36350632px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">Compose</tspan></text>
+      </g>
+      <g
+         transform="translate(-16.445435,0)"
+         id="g4315">
+        <rect
+           style="fill:#abc837;fill-opacity:1;stroke:#000000;stroke-width:0.55597794;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           id="rect3848-8-0"
+           width="94.41703"
+           height="40.409218"
+           x="342.42029"
+           y="265.26181"
+           rx="0.89634532" />
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="377.28473"
+           y="289.5661"
+           id="text3780-8-4-4"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3782-0-2-4"
+             x="377.28473"
+             y="289.5661"
+             style="font-size:15.36350632px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">Tag</tspan></text>
+      </g>
+      <text
+         transform="matrix(0,1,-1,0,0,0)"
+         sodipodi:linespacing="125%"
+         id="text3895-2"
+         y="-371.82706"
+         x="242.79825"
+         style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+           y="-371.82706"
+           x="242.79825"
+           id="tspan3897-8"
+           sodipodi:role="line">...</tspan></text>
+      <text
+         sodipodi:linespacing="125%"
+         id="text3780-8-6-5-7"
+         y="35.676582"
+         x="321.57828"
+         style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-size:17px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+           y="35.676582"
+           x="321.57828"
+           id="tspan3782-0-1-1-6"
+           sodipodi:role="line">API Commands</tspan></text>
+      <g
+         id="g4622">
+        <rect
+           style="fill:#abc837;fill-opacity:1;stroke:#000000;stroke-width:0.55597794;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           id="rect3848-6-8"
+           width="94.41703"
+           height="40.409218"
+           x="325.97485"
+           y="55.738182"
+           rx="0.89634532" />
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="350.50195"
+           y="81.531563"
+           id="text3780-8-6-2"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3782-0-1-0"
+             x="350.50195"
+             y="81.531563"
+             style="font-size:15.36350632px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">Search</tspan></text>
+      </g>
+      <g
+         transform="translate(-16.445435,0)"
+         id="g4300">
+        <rect
+           style="fill:#abc837;fill-opacity:1;stroke:#000000;stroke-width:0.55599999;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           id="rect3848-0-9-2"
+           width="94.41703"
+           height="40.409218"
+           x="342.42029"
+           y="103.22781"
+           rx="0.89634532" />
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="362.47635"
+           y="128.93117"
+           id="text3780-8-3-9-9"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3782-0-3-8-4"
+             x="362.47635"
+             y="128.93117"
+             style="font-size:15.36350632px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">Contact</tspan></text>
+      </g>
+      <g
+         transform="translate(23.192901,-28.909328)"
+         id="g4279">
+        <g
+           id="g4264">
+          <rect
+             rx="0.60080016"
+             y="98.684959"
+             x="449.45248"
+             height="27.085394"
+             width="63.285622"
+             id="rect3848-0-9-2-2"
+             style="fill:#abc837;fill-opacity:1;stroke:#000000;stroke-width:0.55599999;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text3780-8-3-9-9-8"
+             y="115.91335"
+             x="472.21292"
+             style="font-size:16.47650146px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:10.29781437px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="115.91335"
+               x="472.21292"
+               id="tspan3782-0-3-8-4-9"
+               sodipodi:role="line">Add</tspan></text>
+          <text
+             sodipodi:linespacing="125%"
+             id="text4323"
+             y="250.92612"
+             x="428.06232"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="250.92612"
+               x="428.06232"
+               id="tspan4325"
+               sodipodi:role="line">Some commands </tspan><tspan
+               id="tspan4327"
+               style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="265.92612"
+               x="428.06232"
+               sodipodi:role="line">have subcommands.</tspan><tspan
+               style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="280.92612"
+               x="428.06232"
+               sodipodi:role="line"
+               id="tspan4454" /><tspan
+               style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="295.92612"
+               x="428.06232"
+               sodipodi:role="line"
+               id="tspan4456">All commands return</tspan><tspan
+               style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="310.92612"
+               x="428.06232"
+               sodipodi:role="line"
+               id="tspan4458">internal Python</tspan><tspan
+               style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="325.92612"
+               x="428.06232"
+               sodipodi:role="line"
+               id="tspan4460">data structures.</tspan></text>
+        </g>
+        <g
+           id="g4269">
+          <rect
+             rx="0.60080016"
+             y="130.69234"
+             x="449.45248"
+             height="27.085394"
+             width="63.285622"
+             id="rect3848-0-9-2-2-3"
+             style="fill:#abc837;fill-opacity:1;stroke:#000000;stroke-width:0.55599999;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text3780-8-3-9-9-8-6"
+             y="147.92073"
+             x="472.68558"
+             style="font-size:16.47650146px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:10.29781437px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="147.92073"
+               x="472.68558"
+               id="tspan3782-0-3-8-4-9-7"
+               sodipodi:role="line">List</tspan></text>
+        </g>
+        <g
+           id="g4274">
+          <rect
+             rx="0.60080016"
+             y="188.19351"
+             x="449.45248"
+             height="27.085394"
+             width="63.285622"
+             id="rect3848-0-9-2-2-3-0"
+             style="fill:#abc837;fill-opacity:1;stroke:#000000;stroke-width:0.55599999;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text3780-8-3-9-9-8-6-0"
+             y="205.42191"
+             x="465.66617"
+             style="font-size:16.47650146px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:10.29781437px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="205.42191"
+               x="465.66617"
+               id="tspan3782-0-3-8-4-9-7-6"
+               sodipodi:role="line">Delete</tspan></text>
+        </g>
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="164.72954"
+           y="-479.73898"
+           id="text3895-2-2"
+           sodipodi:linespacing="125%"
+           transform="matrix(0,1,-1,0,0,0)"><tspan
+             sodipodi:role="line"
+             id="tspan3897-8-7"
+             x="164.72954"
+             y="-479.73898"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">...</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g5270"
+       transform="matrix(0.96170578,0,0,0.96170578,12.462131,82.083993)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/outputformats.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <rect
+         rx="6.6229124"
+         y="9.1588764"
+         x="596.93927"
+         height="309.10666"
+         width="143.00198"
+         id="rect3976-1"
+         style="fill:#b7c8be;fill-opacity:1;stroke:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3780-8-6-5-7-7"
+         y="35.676575"
+         x="607.67352"
+         style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-size:17px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+           y="35.676575"
+           x="607.67352"
+           id="tspan3782-0-1-1-6-6"
+           sodipodi:role="line">Output formats</tspan></text>
+      <g
+         transform="translate(3.4134178,0)"
+         id="g5153">
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="243.55193"
+           y="-663.67053"
+           id="text3895-2-6"
+           sodipodi:linespacing="125%"
+           transform="matrix(0,1,-1,0,0,0)"><tspan
+             sodipodi:role="line"
+             id="tspan3897-8-74"
+             x="243.55193"
+             y="-663.67053"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">...</tspan></text>
+        <g
+           id="g4919"
+           transform="translate(0,-2.3752451e-5)">
+          <rect
+             style="fill:#d4ff2a;fill-opacity:1;stroke:#000000;stroke-width:0.58999997;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+             id="rect4462"
+             width="94.973"
+             height="40.965"
+             x="617.54034"
+             y="53.335938" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text4563"
+             y="79.274979"
+             x="629.57031"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="79.274979"
+               x="629.57031"
+               id="tspan4565"
+               sodipodi:role="line">Console UI</tspan></text>
+        </g>
+        <g
+           id="g4914"
+           transform="translate(0,-4.3011178)">
+          <rect
+             style="fill:#d4ff2a;fill-opacity:1;stroke:#000000;stroke-width:0.58999997;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+             id="rect4462-6"
+             width="94.973"
+             height="40.965"
+             x="617.54034"
+             y="105.53486" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text4563-5"
+             y="131.47389"
+             x="645.83374"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="131.47389"
+               x="645.83374"
+               id="tspan4565-3"
+               sodipodi:role="line">JSON </tspan></text>
+        </g>
+        <g
+           id="g4909"
+           transform="translate(0,-7.3075036)">
+          <rect
+             style="fill:#d4ff2a;fill-opacity:1;stroke:#000000;stroke-width:0.58999997;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+             id="rect4462-6-6"
+             width="94.973"
+             height="40.965"
+             x="617.54034"
+             y="156.43907" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text4563-5-5"
+             y="182.37811"
+             x="643.69141"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="182.37811"
+               x="643.69141"
+               id="tspan4565-3-8"
+               sodipodi:role="line">HTML</tspan></text>
+        </g>
+        <g
+           id="g4904"
+           transform="translate(0,-11.432671)">
+          <rect
+             style="fill:#d4ff2a;fill-opacity:1;stroke:#000000;stroke-width:0.58999997;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+             id="rect4462-6-4"
+             width="94.973"
+             height="40.965"
+             x="617.54034"
+             y="208.46207" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text4563-5-3"
+             y="234.40109"
+             x="645.83374"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="234.40109"
+               x="645.83374"
+               id="tspan4565-3-3"
+               sodipodi:role="line">JSON </tspan></text>
+        </g>
+        <g
+           id="g4899"
+           transform="translate(0,9.6261501e-6)">
+          <rect
+             style="fill:#d4ff2a;fill-opacity:1;stroke:#000000;stroke-width:0.58999997;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+             id="rect4462-6-4-0"
+             width="94.973"
+             height="40.965"
+             x="617.54034"
+             y="264.68903" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text4563-5-3-0"
+             y="290.54019"
+             x="635.24292"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="290.54019"
+               x="635.24292"
+               id="tspan4565-3-3-2"
+               sodipodi:role="line">XMLRPC</tspan></text>
+        </g>
+      </g>
+    </g>
+    <rect
+       style="fill:#b7c8be;fill-opacity:1;stroke:none"
+       id="rect3976-1-9"
+       width="137.52583"
+       height="191.65082"
+       x="585.81305"
+       y="399.2587"
+       rx="6.3692932"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/interactionmodes.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002" />
+    <text
+       xml:space="preserve"
+       style="font-size:19.71187019px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+       x="596.38037"
+       y="422.78348"
+       id="text3780-8-6-5-7-7-5"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/interactionmodes.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002"><tspan
+         sodipodi:role="line"
+         id="tspan3782-0-1-1-6-6-8"
+         x="596.38037"
+         y="422.78348"
+         style="font-size:13.63221645px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">Interaction modes</tspan></text>
+    <g
+       id="g5234"
+       transform="matrix(0.96170578,0,0,0.96170578,15.01581,390.17093)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/interactionmodes.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <rect
+         style="fill:#7fff2a;fill-opacity:1;stroke:#000000;stroke-width:0.58999997;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         id="rect4462-4"
+         width="94.973"
+         height="40.965"
+         x="617.54034"
+         y="53.335938" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text4563-2"
+         y="79.274979"
+         x="638.28247"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+           y="79.274979"
+           x="638.28247"
+           id="tspan4565-5"
+           sodipodi:role="line">Console</tspan></text>
+    </g>
+    <g
+       id="g5239"
+       transform="matrix(0.96170578,0,0,0.96170578,15.01581,390.17093)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/interactionmodes.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <rect
+         style="fill:#7fff2a;fill-opacity:1;stroke:#000000;stroke-width:0.58999997;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         id="rect4462-4-6"
+         width="94.973"
+         height="40.965"
+         x="617.54034"
+         y="103.17477" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text4563-2-3"
+         y="129.11378"
+         x="622.34863"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+           y="129.11378"
+           x="622.34863"
+           id="tspan4565-5-2"
+           sodipodi:role="line">HTTP Server</tspan></text>
+    </g>
+    <g
+       id="g5614"
+       transform="matrix(0.96170578,0,0,0.96170578,13.867469,82.176471)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/datastores.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <rect
+         rx="13.28655"
+         y="240.77545"
+         x="10.606615"
+         height="165.61057"
+         width="286.88333"
+         id="rect3976-7-0"
+         style="fill:#b7c8be;fill-opacity:1;stroke:none" />
+      <g
+         transform="translate(3.5269223,258.62328)"
+         id="g3996-2">
+        <g
+           id="g3899-1"
+           transform="matrix(0.61454024,0,0,0.61454024,-35.355304,-26.664791)">
+          <g
+             transform="matrix(1.2583342,0,0,0.83764108,189.9714,47.193534)"
+             id="g3776-9">
+            <path
+               inkscape:connector-curvature="0"
+               style="fill:#008080;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+               d="m 24.84375,70.5 c -0.892547,0 -1.625,0.701203 -1.625,1.59375 l 0,169.53125 c 0,0.29905 0.109154,0.573 0.25,0.8125 -0.140816,0.26906 -0.25,0.53791 -0.25,0.8125 0,5.57892 29.645581,10.09375 66.1875,10.09375 36.54192,0 66.15625,-4.51483 66.15625,-10.09375 0,-0.27023 -0.0823,-0.54762 -0.21875,-0.8125 0.13799,-0.23774 0.21875,-0.51674 0.21875,-0.8125 l 0,-169.53125 c 0,-0.892547 -0.73245,-1.59375 -1.625,-1.59375 l -129.09375,0 z"
+               id="rect2985-1" />
+            <path
+               sodipodi:type="arc"
+               style="fill:#008080;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+               id="path2987-5-9"
+               sodipodi:cx="85.357887"
+               sodipodi:cy="212.92542"
+               sodipodi:rx="44.95179"
+               sodipodi:ry="10.101525"
+               d="m 130.30968,212.92542 c 0,5.57891 -20.1256,10.10152 -44.951793,10.10152 -24.826188,0 -44.95179,-4.52261 -44.95179,-10.10152 0,-5.57892 20.125602,-10.10153 44.95179,-10.10153 24.826193,0 44.951793,4.52261 44.951793,10.10153 z"
+               transform="matrix(1.4719102,0,0,1,-36.240644,-141.67512)" />
+          </g>
+          <text
+             sodipodi:linespacing="125%"
+             id="text3780-6"
+             y="187.95508"
+             x="253.08104"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"><tspan
+               style="font-size:25px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="187.95508"
+               x="253.08104"
+               id="tspan3782-6"
+               sodipodi:role="line">Contacts</tspan></text>
+        </g>
+      </g>
+      <text
+         sodipodi:linespacing="125%"
+         id="text3780-8-6-5-8"
+         y="267.29315"
+         x="24.79574"
+         style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-size:17px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+           y="267.29315"
+           x="24.79574"
+           id="tspan3782-0-1-1-9"
+           sodipodi:role="line">Contact management backend</tspan></text>
+    </g>
+    <g
+       id="g5590"
+       transform="matrix(0.96170578,0,0,0.96170578,12.462131,114.782)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/datastores.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <g
+         id="g5456"
+         transform="translate(1.1187739,231.61657)">
+        <rect
+           style="fill:#b7c8be;fill-opacity:1;stroke:none"
+           id="rect3976-7-0-6"
+           width="286.88333"
+           height="165.61057"
+           x="10.949138"
+           y="189.74109"
+           rx="13.28655" />
+        <g
+           id="g3996-2-0"
+           transform="translate(3.869441,207.58894)">
+          <g
+             transform="matrix(0.61454024,0,0,0.61454024,-35.355304,-26.664791)"
+             id="g3899-1-3">
+            <g
+               id="g5470"
+               transform="translate(-123.79438,-7.2820224)">
+              <g
+                 id="g5482">
+                <g
+                   id="g5478">
+                  <path
+                     id="rect2985-1-0"
+                     d="m 221.54824,106.24723 c -1.12312,0 -2.04479,0.58736 -2.04479,1.33499 l 0,142.00634 c 0,0.2505 0.13735,0.47997 0.31458,0.68058 -0.17719,0.22538 -0.31458,0.45058 -0.31458,0.68059 0,4.67313 37.30405,8.45494 83.28599,8.45494 45.98195,0 83.24667,-3.78181 83.24667,-8.45494 0,-0.22636 -0.10356,-0.45871 -0.27526,-0.68059 0.17364,-0.19914 0.27526,-0.43284 0.27526,-0.68058 l 0,-142.00634 c 0,-0.74763 -0.92166,-1.33499 -2.04479,-1.33499 l -162.44308,0 z"
+                     style="fill:#008080;fill-opacity:1;stroke:#000000;stroke-width:1.0266608;stroke-opacity:1"
+                     inkscape:connector-curvature="0" />
+                  <path
+                     transform="matrix(1.8521549,0,0,0.83764108,144.67375,-71.479367)"
+                     d="m 130.30968,212.92542 c 0,5.57891 -20.1256,10.10152 -44.951793,10.10152 -24.826188,0 -44.95179,-4.52261 -44.95179,-10.10152 0,-5.57892 20.125602,-10.10153 44.95179,-10.10153 24.826193,0 44.951793,4.52261 44.951793,10.10153 z"
+                     sodipodi:ry="10.101525"
+                     sodipodi:rx="44.95179"
+                     sodipodi:cy="212.92542"
+                     sodipodi:cx="85.357887"
+                     id="path2987-5-9-6"
+                     style="fill:#008080;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+                     sodipodi:type="arc" />
+                </g>
+                <text
+                   xml:space="preserve"
+                   style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+                   x="302.04956"
+                   y="170.13281"
+                   id="text3780-6-7"
+                   sodipodi:linespacing="125%"><tspan
+                     sodipodi:role="line"
+                     id="tspan3782-6-8"
+                     x="302.04956"
+                     y="170.13281"
+                     style="font-size:25px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Lato;-inkscape-font-specification:Lato">GnuPG</tspan><tspan
+                     id="tspan5476"
+                     sodipodi:role="line"
+                     x="302.04956"
+                     y="201.38281"
+                     style="font-size:25px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Lato;-inkscape-font-specification:Lato">Keystore</tspan></text>
+              </g>
+            </g>
+          </g>
+        </g>
+        <text
+           xml:space="preserve"
+           style="font-size:24.58160973px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="25.138262"
+           y="216.2588"
+           id="text3780-8-6-5-8-2"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3782-0-1-1-9-5"
+             x="25.138262"
+             y="216.2588"
+             style="font-size:17px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">PGP backend</tspan></text>
+      </g>
+      <g
+         transform="translate(-463.64753,442.65103)"
+         id="g5234-2">
+        <g
+           id="g5561">
+          <rect
+             style="fill:#008066;fill-opacity:1;stroke:#000000;stroke-width:0.71767718;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+             id="rect4462-4-1"
+             width="140.52527"
+             height="40.965"
+             x="-133.71475"
+             y="635.65936"
+             transform="matrix(0,-1,1,0,0,0)" />
+          <text
+             sodipodi:linespacing="125%"
+             id="text4563-2-7"
+             y="661.59839"
+             x="-87.226532"
+             style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+             xml:space="preserve"
+             transform="matrix(0,-1,1,0,0,0)"><tspan
+               style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+               y="661.59839"
+               x="-87.226532"
+               id="tspan4565-5-0"
+               sodipodi:role="line">GnuPG</tspan></text>
+        </g>
+        <rect
+           transform="matrix(0,-1,1,0,0,0)"
+           y="705.59808"
+           x="-133.71475"
+           height="40.965"
+           width="140.52527"
+           id="rect4462-4-1-2"
+           style="fill:#008066;fill-opacity:1;stroke:#000000;stroke-width:0.71767718;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+        <text
+           transform="matrix(0,-1,1,0,0,0)"
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+           x="-117.35471"
+           y="731.53711"
+           id="text4563-2-7-6"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan4565-5-0-6"
+             x="-117.35471"
+             y="731.53711"
+             style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">GnuPGInterface</tspan></text>
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:38.4682312px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+       x="484.3118"
+       y="-159.89407"
+       id="text5626"
+       sodipodi:linespacing="125%"
+       transform="matrix(0,1,-1,0,0,0)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/datastores.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002"><tspan
+         sodipodi:role="line"
+         id="tspan5628"
+         x="484.3118"
+         y="-159.89407"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">...</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+       x="327.51236"
+       y="348.28973"
+       id="text5630"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5632"
+         x="327.51236"
+         y="348.28973"
+         style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato" /></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5634"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+       transform="matrix(0.96170578,0,0,0.96170578,4.768485,82.083993)"><flowRegion
+         id="flowRegion5636"><rect
+           id="rect5638"
+           width="267.38931"
+           height="583.82642"
+           x="321.18362"
+           y="330.88568" /></flowRegion><flowPara
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:justify;text-anchor:start;font-family:Lato;-inkscape-font-specification:Lato"
+         id="flowPara5650">Mailpile has a number of backend data stores for different types of data. Each backend exposes an internal interface. These can be seen as &quot;Models&quot;.</flowPara><flowPara
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:justify;text-anchor:start;font-family:Lato;-inkscape-font-specification:Lato"
+         id="flowPara5654" /><flowPara
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:justify;text-anchor:start;font-family:Lato;-inkscape-font-specification:Lato"
+         id="flowPara5660">There are in addition a number of API commands. Each command can have zero or more subcommands. These return internal Python data structures that are to be used in output. These can be seen as &quot;Views&quot;.</flowPara><flowPara
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:justify;text-anchor:start;font-family:Lato;-inkscape-font-specification:Lato"
+         id="flowPara5666" /><flowPara
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:justify;text-anchor:start;font-family:Lato;-inkscape-font-specification:Lato"
+         id="flowPara5668">The output formatters each consume an internal data structure from a command, and based on the data and other context provided will format the output appropriately. In most cases the output format will consist exclusively of the data output from the command, but sometimes when the output format requires, it will bake in further data provided as extra context. Some will use some kind of template format to structure the data.</flowPara><flowPara
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:justify;text-anchor:start;font-family:Lato;-inkscape-font-specification:Lato"
+         id="flowPara5670" /><flowPara
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:justify;text-anchor:start;font-family:Lato;-inkscape-font-specification:Lato"
+         id="flowPara5672">All interaction with the system is done through an interaction mode, currently either a console or HTTP server. These consume commands and parameters and return output. Every interaction mode can return every output format, although some may be meaningless to the given mode.</flowPara></flowRoot>    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+       x="35.047745"
+       y="67.763603"
+       id="text5674"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5676"
+         x="35.047745"
+         y="67.763603"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato">How Mailpile works</tspan></text>
+    <g
+       id="g5698"
+       transform="translate(10.516023,0)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/commandstructure.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <rect
+         rx="6.5340629"
+         y="942.37262"
+         x="12.155639"
+         height="79.638748"
+         width="698.75116"
+         id="rect5696"
+         style="fill:#b7c8be;fill-opacity:1;stroke:#b7c8be;stroke-width:0.59078294;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text5678"
+         y="975.45306"
+         x="24.892687"
+         style="font-size:36.13278961px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-size:18.06639481px"
+           y="975.45306"
+           x="24.892687"
+           id="tspan5680"
+           sodipodi:role="line">Console:  &gt; <tspan
+   id="tspan5684"
+   style="font-size:18.06639481px;font-weight:bold">command subcommand arguments</tspan></tspan><tspan
+           style="font-size:18.06639481px"
+           id="tspan5682"
+           y="998.44019"
+           x="24.892687"
+           sodipodi:role="line">   HTTP:  http://mailpile/_/<tspan
+   id="tspan5690"
+   style="font-size:18.06639481px;font-weight:bold">command</tspan>/<tspan
+   id="tspan5692"
+   style="font-size:18.06639481px;font-weight:bold">subcommand</tspan>/?args=<tspan
+   id="tspan5694"
+   style="font-size:18.06639481px;font-weight:bold">arguments</tspan></tspan></text>
+    </g>
+    <g
+       id="g5239-8"
+       transform="matrix(0.96170578,0,0,0.96170578,14.922596,436.70464)"
+       inkscape:export-filename="/home/smari/Projects/Mailpile/Mailpile/doc/interactionmodes.png"
+       inkscape:export-xdpi="99.830002"
+       inkscape:export-ydpi="99.830002">
+      <rect
+         style="fill:#7fff2a;fill-opacity:1;stroke:#000000;stroke-width:0.58999997;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         id="rect4462-4-6-6"
+         width="94.973"
+         height="40.965"
+         x="617.54034"
+         y="105.2544" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text4563-2-3-6"
+         y="131.19342"
+         x="632.32056"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeX Gyre Cursor;-inkscape-font-specification:TeX Gyre Cursor"
+         xml:space="preserve"><tspan
+           style="font-size:15px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lato;-inkscape-font-specification:Lato"
+           y="131.19342"
+           x="632.32056"
+           id="tspan4565-5-2-0"
+           sodipodi:role="line">XMLRPC*</tspan></text>
+    </g>
+  </g>
+</svg>

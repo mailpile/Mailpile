@@ -1,3 +1,4 @@
+# coding: utf-8
 #
 # Misc. utility functions for Mailpile.
 #
@@ -47,6 +48,11 @@ def escape_html(t):
   return t.replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
 
 def sha1b64(s):
+  """
+  >>> from mailpile import util
+  >>> util.sha1b64("Hello")
+  '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\n'
+  """
   h = hashlib.sha1()
   if type(s) == type(unicode()):
     h.update(s.encode('utf-8'))
@@ -55,6 +61,11 @@ def sha1b64(s):
   return h.digest().encode('base64')
 
 def sha512b64(s):
+  """
+  >>> from mailpile import util
+  >>> util.sha512b64("Hello")
+  'NhX4DJ0pPtdAJof5SyLVjlKbjMeRb4+sf933+9WvTPd309eVp6AKFr9+fz+5Vh7puq5IDan+ehh2\nnnGIawPzFQ==\n'
+  """
   h = hashlib.sha512()
   if type(s) == type(unicode()):
     h.update(s.encode('utf-8'))
@@ -63,6 +74,13 @@ def sha512b64(s):
   return h.digest().encode('base64')
 
 def strhash(s, length, obfuscate=None):
+  """
+  >>> from mailpile import util
+  >>> util.strhash("Hello", 10)
+  'hello9_+ei'
+  >>> util.strhash("Goodbye", 5, obfuscate=util.sha512b64)
+  '3vb7l'
+  """
   if obfuscate:
     s2 = b64c(sha512b64('%s%s' % (s, obfuscate))).lower()
   else:
@@ -73,6 +91,11 @@ def strhash(s, length, obfuscate=None):
   return s2[:length]
 
 def b36(number):
+  """
+  >>> from mailpile import util
+  >>> util.b36(2701)
+  '231'
+  """
   alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   base36 = ''
   while number:

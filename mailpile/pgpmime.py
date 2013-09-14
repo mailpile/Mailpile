@@ -60,7 +60,6 @@ class PGPMimeParser(Parser):
         crypt.write(part.get_payload())
         crypt.flush()
         msg = '\r\n'.join(part.as_string().splitlines(False))+'\r\n'
-        print msg
 
         result = None
         try:
@@ -70,14 +69,11 @@ class PGPMimeParser(Parser):
           gpg.handles['stdin'].close()
           result = gpg.handles['stdout'].read().decode('utf-8')
           gpg.wait()
-          print "Decrypted:"
-          print result
           summary = ('decrypted', result)
           # part.attach(result)
           s = StringIO.StringIO()
           s.write(result)
           m = Parser().parse(s)
-          print m
           m = Message()
           m.set_payload(result)
           part.set_payload([m])
@@ -94,7 +90,6 @@ class PGPMimeParser(Parser):
             #datetime = matchgr.groups()[0]
 
             # FIXME: This should understand what kind of UI we have.
-            print "FAIL"
             summary = ('encrypted', result)
 
         for enc_part in enc_parts:
