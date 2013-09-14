@@ -77,7 +77,23 @@ class UserInteraction:
       sys.stderr.write('\r')
     elif self.last_display[0] not in (self.LOG_RESULT, ):
       sys.stderr.write('\n')
-    sys.stderr.write('%s%s' % (text.encode('utf-8'), pad))
+        #On TTYs, print color-coded message
+    ansiPrefix = ''
+    ansiPostfix = ''
+    if sys.stderr.isatty():
+        #Generate an ANSI color from the loglevel
+        colorCode = "30" #Black, nothing special
+        if level is self.LOG_URGENT: colorCode = "31;1" #Bold red
+        elif level is self.LOG_ERROR: colorCode = "31" #Red
+        elif level is self.LOG_WARNING: colorCode = "33" #Yellow
+        elif level is self.LOG_PROGRESS: colorCode = "34" #Blue
+        #Generate a print prefix and postfix
+        ansiPrefix = "\x1B[%sm" % colorCode
+        ansiPostfix = "\x1B[0m"
+    sys.stderr.write('%s%s%s%s' % (ansiPrefix,
+                                   text.encode('utf-8'),
+                                   pad,
+                                   ansiPostfix))
     self.last_display = [level, len(text)]
   def clear_log(self):
     self.log_buffer = []
