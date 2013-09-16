@@ -62,6 +62,7 @@ class Compose(ReturnsSearchResults):
     def _edit_new_messages(self, session, idx, emails):
         session.ui.edit_messages(emails)
         session.ui.mark('%d message(s) created as drafts' % len(emails))
+        self._idx().save()
         return self._return_search_results(session, idx, emails, emails)
 
 

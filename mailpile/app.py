@@ -493,6 +493,8 @@ class ConfigManager(dict):
       local_id = (('0' * MBX_ID_LEN) + self.nid('mailbox'))[-MBX_ID_LEN:]
       self.parse_set(session, 'mailbox:%s=%s' % (local_id, mailbox))
       self.parse_set(session, 'local_mailbox=%s' % (local_id))
+    else:
+      local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
     return local_id, self.open_mailbox(session, local_id)
 
   def get_filters(self, filter_on=None):
