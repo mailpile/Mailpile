@@ -55,57 +55,26 @@ text {
 <form id="pile-results-form" action="" method="POST">
 	<input type='hidden' name='csrf' value='{csrf}' />
         {.repeated section result}
-        <table class="pile-results" id="pile-results"><tbody>
-                {.repeated section messages}
-                <tr class="result {even_odd} {.section is_editable} is_editable {.end} {tag_classes}" data-state="normal">
-                        {.section message}
-                        <td class="message-body" colspan="2">
-                            {.section editing_string}
-                                <textarea name='@edit_{idx}' cols="72" rows="20">{@}</textarea>
-                                <input type=submit value='Save'>
-                            {.or}
-		                {.section summary}<ul class="message-headers">
-	                                <li><b>Date:</b> {date|html}</li>
-                                	<li><b>From:</b> {from|html}</li>
-                        {.end}
-                        {.section headers}
-                        	{.section To}
-	                                <li><b>To:</b> {To|html}</li>
-                        	{.end}
-                        	{.section Cc}
-	                                <li><b>Cc:</b> {Cc|html}</li>
-                        	{.end}
-                        {.end}
-		                {.section summary}
-                                	<li><b>Subject:</b> {subject|html}</li>
-                                </ul>{.end}
-                                <div class="message-body">
-		                {.repeated section text_parts}
-                                        <p class="text-part-{type}">{data|html}</p>
-                                {.end}</div>
-                          <ul class="message-attachments">
-		                {.repeated section attachments}
-                          	<li><a href="./att:{count}" type="{mimetype}">{filename}</a>({mimetype} {length} bytes)</li>
-		                {.end}</ul>
-                            {.end}
-	                </td>
-                        {.or}
-	                <td class="from" title='{.repeated section conv_people} {name} &lt;{email}&gt;{.end}'>
-		                <a href="{url}{.section is_editable}edit.html{.end}">{short_from}</a>
-	                </td>
-	                <td class="subject">
-		                <a href="{url}{.section is_editable}edit.html{.end}">{subject}</a>
-	                </td>
-                        {.end}
-	                <td class="date" valign="top">
-	                	<a href="/_/search/dates:{date}">{friendly_date}</a>
-	                </td>
-	                <td class="checkbox" valign="top">
-		                <input type="checkbox" name="msg_{idx}" value="normal">
-	                </td>
-                </tr>
-                {.end}
-        </tbody></table>
+        <table class="pile-results" id="pile-results">
+        <tbody>
+	        {.repeated section messages}
+	        <tr class="result {even_odd} {.section is_editable} is_editable {.end} {tag_classes}" data-state="normal">	                
+	          <td class="from" title='{.repeated section conv_people} {name} &lt;{email}&gt;{.end}'>
+	            <a href="{url}{.section is_editable}edit.html{.end}">{short_from}</a>
+	          </td>
+	          <td class="subject">
+	            <a href="{url}{.section is_editable}edit.html{.end}">{subject}</a>
+	          </td>
+	          <td class="date" valign="top">
+	          	<a href="/_/search/dates:{date}">{friendly_date}</a>
+	          </td>
+	          <td class="checkbox" valign="top">
+	            <input type="checkbox" name="msg_{idx}" value="normal">
+	          </td>
+	        </tr>
+	        {.end}
+        </tbody>
+        </table>
         <div id="pile-bottom" class="clearfix">
 	        <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
 	        <div>

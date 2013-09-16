@@ -3896,9 +3896,10 @@ p.lead {
 em {
   font-style: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-strong {
+strong,
+b {
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: normal;
+  font-weight: bold;
   color: inherit;
 }
 small {
