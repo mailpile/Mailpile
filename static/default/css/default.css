@@ -5,7 +5,7 @@
 /* #Fonts
 ================================================== */
 /* @license
- * MyFonts Webfont Build ID 2595194, 2013-07-04T13:54:29-0400
+ * Mailpile font designed for Mailpile
  * 
  * The fonts listed in this notice are subject to the End User License
  * Agreement(s) entered into by the website owner. All other parties are 
@@ -13,36 +13,18 @@
  * 
  * You may obtain a valid license at the URLs below.
  * 
- * Webfont: Museo 700 by exljbris
- * URL: http://www.myfonts.com/fonts/exljbris/museo/700/
+ * Webfont: Mailpile by Brennan Novak
+ * URL: http://github.com/mailpile/fonts
  * 
- * Webfont: Museo 300 by exljbris
- * URL: http://www.myfonts.com/fonts/exljbris/museo/300/
+ * Mailpile font is licensed under the SIL Open Font License (OFL)
+ * http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL
  * 
- * Webfont: Museo 500 by exljbris
- * URL: http://www.myfonts.com/fonts/exljbris/museo/500/
- * 
- * 
- * License: http://www.myfonts.com/viewlicense?type=web&buildid=2595194
- * Licensed pageviews: Unlimited
- * Webfonts copyright: Copyright (c) 2008 by Jos Buivenga/exljbris. All rights reserved.
- * 
- * © 2013 MyFonts Inc
+ * © 2013 Mailpile
 */
 @font-face {
-  font-family: 'Museo-700';
-  src: url('../webfonts/27997A_0_0.eot');
-  src: url('../webfonts/27997A_0_0.eot?#iefix') format('embedded-opentype'), url('../webfonts/27997A_0_0.woff') format('woff'), url('../webfonts/27997A_0_0.ttf') format('truetype'), url('../webfonts/27997A_0_0.svg#wf') format('svg');
-}
-@font-face {
-  font-family: 'Museo-300';
-  src: url('../webfonts/27997A_1_0.eot');
-  src: url('../webfonts/27997A_1_0.eot?#iefix') format('embedded-opentype'), url('../webfonts/27997A_1_0.woff') format('woff'), url('../webfonts/27997A_1_0.ttf') format('truetype'), url('../webfonts/27997A_1_0.svg#wf') format('svg');
-}
-@font-face {
-  font-family: 'Museo-500';
-  src: url('../webfonts/27997A_2_0.eot');
-  src: url('../webfonts/27997A_2_0.eot?#iefix') format('embedded-opentype'), url('../webfonts/27997A_2_0.woff') format('woff'), url('../webfonts/27997A_2_0.ttf') format('truetype'), url('../webfonts/27997A_2_0.svg#wf') format('svg');
+  font-family: 'Mailpile-300';
+  src: url('../webfonts/Mailpile.eot');
+  src: url('../webfonts/Mailpile.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile.woff') format('woff'), url('../webfonts/Mailpile.ttf') format('truetype'), url('../webfonts/Mailpile.svg#wf') format('svg');
 }
 @font-face {
   font-family: 'Mailpile-Interface';
@@ -3817,7 +3799,7 @@ body {
   background:    #ffffff;
   font-size: 18px;
   font-weight: normal;
-  font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 24px;
   color: #333333;
   -webkit-font-smoothing: antialiased;
@@ -3854,7 +3836,7 @@ h4,
 h5,
 h6 {
   color: #333333;
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   letter-spacing: 0px;
 }
@@ -3912,10 +3894,10 @@ p.lead {
   color: #777;
 }
 em {
-  font-style: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-style: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 strong {
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: inherit;
 }
@@ -4026,7 +4008,7 @@ input[type="submit"],
 input[type="reset"],
 input[type="button"] {
   color: #ffffff !important;
-  font-family: Museo-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
@@ -4056,7 +4038,7 @@ input[type="button"] {
 .button:visited,
 .button-primary:visited {
   color: #ffffff !important;
-  font-family: Museo-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
@@ -4116,7 +4098,7 @@ input[type="button"]:active {
 /* Secondary */
 .button-secondary {
   color: #ffffff !important;
-  font-family: Museo-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
@@ -4166,7 +4148,7 @@ input[type="button"]:active {
 /* Alert */
 .button-alert {
   color: #ffffff !important;
-  font-family: Museo-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
@@ -4216,7 +4198,7 @@ input[type="button"]:active {
 /* Warning */
 .button-warning {
   color: #ffffff !important;
-  font-family: Museo-500, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
@@ -5138,7 +5120,7 @@ label span.form_error {
   margin: 0px;
   padding: 10px 10px 10px 20px;
   list-style: none;
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
   color: #ffffff;
   border-bottom: 1px solid #b3b3b3;
@@ -5240,7 +5222,7 @@ p.text-part-quote {
   font-weight: normal;
 }
 #header h1 small {
-  font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   display: block;
   font-size: 18px;
   line-height: 18px;
@@ -5262,7 +5244,7 @@ p.text-part-quote {
 }
 #header nav a {
   font-size: 14px;
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: #4d4d4d;
 }
@@ -5308,7 +5290,7 @@ p.text-part-quote {
 #sidebar a {
   display: block;
   padding: 15px 20px;
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 18px;
   color: #4d4d4d;
 }
@@ -5348,7 +5330,7 @@ p.text-part-quote {
 }
 #content div.pile-speed {
   text-align: center;
-  font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #b3b3b3;
 }
 #content div.pile-speed span {
@@ -5371,7 +5353,7 @@ p.text-part-quote {
 #sub-navigation a {
   display: block;
   padding: 10px 15px;
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #4d4d4d;
 }
 #sub-navigation a:hover,
@@ -5432,7 +5414,7 @@ p.text-part-quote {
   display: inline-block;
   border: 0px;
   outline: none;
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 24px;
   color: #4d4d4d;
   padding: 0px;
@@ -5458,7 +5440,7 @@ p.text-part-quote {
   padding: 5px 10px;
   background: #f2f2f2;
   color: #4d4d4d;
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   border-radius: 4px;
   border: 1px solid #b3b3b3;
@@ -5491,7 +5473,7 @@ p.text-part-quote {
   float: right;
   margin-top: 10px;
   color: #4d4d4d;
-  font-family: Museo-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 24px;
 }
 /* Pile */
@@ -5565,7 +5547,7 @@ p.text-part-quote {
 }
 .item-file-name {
   font-size: 14px;
-  font-family: Museo-700, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 14px;
 }
 /* Compose */
