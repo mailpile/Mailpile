@@ -969,7 +969,6 @@ class Email(object):
     'pgpend': 'pgpverification',
   }
   def evaluate_pgp(self, tree, check_sigs=True, decrypt=False):
-    print "Evaluate PGP"
     pgpdata = []
     for part in tree['text_parts']:
 

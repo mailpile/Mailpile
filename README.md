@@ -25,10 +25,10 @@ Twitter](https://twitter.com/HerraBRE) and watch for updates.
 
 Mailpile is developed on a Debian 7 system, running:
 
-   * Python 2.7
-   * python-imaging 1.1.7
-   * python-lxml 2.3.2
-   * python-gnupginterface 0.3.2
+   * [Python](http://python.org) 2.7
+   * [python-imaging](http://www.pythonware.com/products/pil/) 1.1.7
+   * [python-lxml](http://lxml.de/) 2.3.2
+   * [python-gnupginterface](http://py-gnupg.sourceforge.net/) 0.3.2
 
 It might work with other versions. :-)
 
