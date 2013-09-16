@@ -452,14 +452,15 @@ class ConfigManager(dict):
     self.MBOX_CACHE = {}
 
   def is_editable_message(self, msg_ptrs):
-    for ptr in msg_ptrs.split(','):
+    for ptr in (msg_ptrs or '').split(','):
       if not self.is_editable_mailbox(ptr[:MBX_ID_LEN]):
         return False
     return True
 
   def is_editable_mailbox(self, mailbox_id):
     # FIXME: This may be too narrow?
-    return (int(mailbox_id, 36) == int(self.get('local_mailbox', 'ZZZZ'), 36))
+    return (int(mailbox_id or '-1', 36) == int(self.get('local_mailbox',
+                                                        'ZZZZZ'), 36))
 
   def open_mailbox(self, session, mailbox_id):
     pfn = os.path.join(self.workdir, 'pickled-mailbox.%s' % mailbox_id)
