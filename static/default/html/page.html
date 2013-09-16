@@ -46,7 +46,9 @@
 	<div id="sidebar">
 		<nav>
 			<ul>
-				<li><a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>4 Drafts</small></a></li>
+				<li class="navigation-on">
+					<a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>4 Drafts</small></a>
+				</li>
 				{high_tags|raw}
 				{user_tags|raw}
 				{low_tags|raw}

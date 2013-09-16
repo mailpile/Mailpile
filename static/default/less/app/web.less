@@ -103,6 +103,7 @@
 	}
 	
 	#sidebar nav ul {
+		margin: 12px;
 	}
 
 	#sidebar nav ul li {
@@ -110,6 +111,7 @@
 	
 	#sidebar li.navigation-on {
 		background: @gray;
+		border-radius: @base-border-radius;
 	}
 
 	#sidebar li.navigation-on a {
@@ -121,9 +123,14 @@
 		color: @grayDark;
 	}
 	
+	#sidebar li.navigation-on a small {
+		color: @grayDark;
+	}
+	
+	
 	#sidebar a {
 		display: block;
-		padding: 15px 20px;
+		padding: 15px 0px;
 		font-family: @text-font-family-bold;
 		font-size: 18px;
 		color: @grayDark;
@@ -204,6 +211,10 @@
 		border-bottom: 1px solid @gray;
 		box-sizing: border-box;
 	}
+	
+	#sub-navigation ul {
+		margin: 12px;	
+	}
 
 	#sub-navigation a {
 		display: block;	
@@ -218,6 +229,7 @@
 
 	#sub-navigation li.navigation-on {
 		background: @gray;
+		border-radius: @base-border-radius;		
 	}
 
 	#sub-navigation li.navigation-on a {

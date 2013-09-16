@@ -5277,8 +5277,12 @@ p.text-part-quote {
   line-height: 18px;
   vertical-align: top;
 }
+#sidebar nav ul {
+  margin: 12px;
+}
 #sidebar li.navigation-on {
   background: #b3b3b3;
+  border-radius: 5px;
 }
 #sidebar li.navigation-on a {
   cursor: default;
@@ -5287,9 +5291,12 @@ p.text-part-quote {
 #sidebar li.navigation-on a span {
   color: #4d4d4d;
 }
+#sidebar li.navigation-on a small {
+  color: #4d4d4d;
+}
 #sidebar a {
   display: block;
-  padding: 15px 20px;
+  padding: 15px 0px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 18px;
   color: #4d4d4d;
@@ -5350,6 +5357,9 @@ p.text-part-quote {
   border-bottom: 1px solid #b3b3b3;
   box-sizing: border-box;
 }
+#sub-navigation ul {
+  margin: 12px;
+}
 #sub-navigation a {
   display: block;
   padding: 10px 15px;
@@ -5362,6 +5372,7 @@ p.text-part-quote {
 }
 #sub-navigation li.navigation-on {
   background: #b3b3b3;
+  border-radius: 5px;
 }
 #sub-navigation li.navigation-on a {
   cursor: default;
@@ -5381,13 +5392,13 @@ p.text-part-quote {
   color: #4d4d4d;
 }
 .navigation-attention-urgent {
-  border-radius: 4px;
+  border-radius: 5px;
   background: #f15a24;
   padding: 1px 4px;
   color: #ffffff;
 }
 .navigation-attention-important {
-  border-radius: 4px;
+  border-radius: 5px;
   background: #fbb03b;
   padding: 1px 4px;
   color: #ffffff;
@@ -5442,7 +5453,7 @@ p.text-part-quote {
   color: #4d4d4d;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
-  border-radius: 4px;
+  border-radius: 5px;
   border: 1px solid #b3b3b3;
 }
 #search-params a:hover {
