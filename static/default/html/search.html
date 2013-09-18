@@ -54,35 +54,35 @@ text {
 <div id="pile-results">
 <form id="pile-results-form" action="" method="POST">
 	<input type='hidden' name='csrf' value='{csrf}' />
-        {.repeated section result}
-        <table class="pile-results" id="pile-results">
-        <tbody>
-	        {.repeated section messages}
-	        <tr class="result {even_odd} {.section is_editable} is_editable {.end} {tag_classes}" data-state="normal">	                
-	          <td class="from" title='{.repeated section conv_people} {name} &lt;{email}&gt;{.end}'>
-	            <a href="{url}{.section is_editable}edit.html{.end}">{short_from}</a>
-	          </td>
-	          <td class="subject">
-	            <a href="{url}{.section is_editable}edit.html{.end}">{subject}</a>
-	          </td>
-	          <td class="date" valign="top">
-	          	<a href="/_/search/dates:{date}">{friendly_date}</a>
-	          </td>
-	          <td class="checkbox" valign="top">
-	            <input type="checkbox" name="msg_{idx}" value="normal">
-	          </td>
-	        </tr>
-	        {.end}
-        </tbody>
-        </table>
-        <div id="pile-bottom" class="clearfix">
-	        <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
-	        <div>
-		        <h5>{start} - {end} of {total} Messages</h5><br>
-		        <a class="change-result-size" href="#">Show Expanded View</a>
-	        </div>
-        </div>
-        {.end}
+  {.repeated section result}
+  <table class="pile-results" id="pile-results">
+  <tbody>
+    {.repeated section messages}
+    <tr class="result {even_odd} {.section is_editable} is_editable {.end} {tag_classes}" data-state="normal">	                
+      <td class="from" title='{.repeated section conv_people} {name} &lt;{email}&gt;{.end}'>
+        <a href="{url}{.section is_editable}edit.html{.end}">{short_from}</a>
+      </td>
+      <td class="subject">
+        <a href="{url}{.section is_editable}edit.html{.end}">{subject}</a>
+      </td>
+      <td class="date" valign="top">
+      	<a href="/_/search/dates:{date}">{friendly_date}</a>
+      </td>
+      <td class="checkbox" valign="top">
+        <input type="checkbox" name="msg_{idx}" value="normal">
+      </td>
+    </tr>
+    {.end}
+  </tbody>
+  </table>
+  <div id="pile-bottom" class="clearfix">
+    <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
+    <div>
+      <h5>{start} - {end} of {total} Messages</h5><br>
+      <a class="change-result-size" href="#">Show Expanded View</a>
+    </div>
+  </div>
+  {.end}
 </form>
 </div>
 

@@ -10,15 +10,14 @@
 <tbody>
 
 {.repeated section messages}
-<tr class="result {even_odd} {.section is_editable} is_editable {.end} {tag_classes}" data-state="normal">
+{.section message}
 
-  {.section message}
-  <td class="message-body" colspan="2">
+<tr class="" data-state="normal">
+  <td class="message-body" colspan="4">
 
 		<!-- Details -->
     {.section summary}
 		<ul class="message-headers">
-      <li><b>Date:</b> {date|html}</li>
       <li><b>From:</b> {from|html}</li>
       {.end}
       {.section headers}
@@ -40,7 +39,7 @@
     {.repeated section text_parts}
       <p class="text-part-{type}">{data|html}</p>
     {.end}</div>
-    
+
     <ul class="message-attachments">
     {.repeated section attachments}
       <li><a href="./att:{count}" type="{mimetype}">{filename}</a>({mimetype} {length} bytes)</li>
@@ -49,22 +48,26 @@
     <!-- End Message & Attachments -->
 
   </td>
-  
-  {.or}
+</tr>  
+
+{.or}
+
+<tr class="result {even_odd} {.section is_editable} is_editable {.end} {tag_classes}" data-state="normal">  
   <td class="from" title='{.repeated section conv_people} {name} &lt;{email}&gt;{.end}'>
     <a href="{url}{.section is_editable}edit.html{.end}">{short_from}</a>
   </td>
   <td class="subject">
     <a href="{url}{.section is_editable}edit.html{.end}">{subject}</a>
   </td>
-  {.end}
   <td class="date" valign="top">
-  	<a href="/_/search/dates:{date}">{friendly_date}</a>
+  	<a href="/_/search/dates:{date}" data-full_date="{date|html}">{friendly_date}</a>
   </td>
   <td class="checkbox" valign="top">
     <input type="checkbox" name="msg_{idx}" value="normal">
   </td>
 </tr>
+
+  {.end}
 
 {.end}
 </tbody>

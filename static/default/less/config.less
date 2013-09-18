@@ -14,14 +14,12 @@
 	@red: #BE2408;
 
 
-
 /* Container */
 
 	@desktop-max-container-width: 1140px;
 	@desktop-container-width: 960px;
 	@tablet-container-width: 768px;
 	@mobile-container-width: 420px;
-
 
 
 /* Base - Margins, Paddings, and Spacings */
@@ -33,7 +31,6 @@
 	@base-border-radius: 5px;
 
 
-
 /* Grid */
 
 	@grid-gutter: 20px;
@@ -43,14 +40,12 @@
 	@mobile-column-width: 100%;
 
 
-
 /* Body */
 
 	@body-background-color: #ffffff;
 	@body-background-image: ~'';
 	@body-background-repeat: ~'';
 	@body-background-position: ~'';
-
 
 
 /* Text */
@@ -75,7 +70,6 @@
 	@text-shadow-on-dark: 0 -1px 0 rgba(0, 0, 0, 0.4);
 
 
-
 /* Links */
 	
 	@link-font-size: 18px;
@@ -86,12 +80,11 @@
 	@link-decoration-hover: none;
 	
 
-
 /* Headings */
 
 	@headings-color: #333333;
 	@headings-font-family: @text-font-family-bold;
-	@headings-font-weight: normal;
+	@headings-font-weight: bold;	
 	@headings-letter-spacing: 0px;
 	@headings-size-h1: 36px;
 	@headings-size-h2: 30px;
@@ -119,7 +112,6 @@
 	@navigation-sub-shadows: #EEEEEE;
 
 
-
 /* Lists */
 
 	@list-margin: ~'';
@@ -127,7 +119,6 @@
 	@list-item-margin: ~'';
 	@list-item-padding: ~'';
 	@list-item-type: ~'';
-
 
 
 /* Separators */
@@ -141,7 +132,6 @@
 	@hr-border-color: @gray;
 	@hr-border-width: 1px 0 0;
 	@hr-border-margin: 35px 0;
-
 	
 
 /* Buttons */
@@ -166,15 +156,15 @@
 		box-sizing: border-box;
 
 		// Select
-	    -webkit-user-select:none;
-	    -moz-user-select:none;
-	    -ms-user-select:none;
-	    user-select:none;
+	  -webkit-user-select:none;
+	  -moz-user-select:none;
+	  -ms-user-select:none;
+	  user-select:none;
 	    
-	    // Animate
-	    -webkit-transition-duration: 0.2s;
-	    -moz-transition-duration: 0.2s;
-	    transition-duration: 0.2s;	    
+	  // Animate
+	  -webkit-transition-duration: 0.2s;
+	  -moz-transition-duration: 0.2s;
+	  transition-duration: 0.2s;	    
 	}
 
 	.button-border(@border-color) {
@@ -190,7 +180,7 @@
 
 	.button-background(@color-top: #666666, @color-bottom: #333333) {
 
-	    background: @color-top;
+	  background: @color-top;
 	}
 
 	@button-primary-top: @blue;
