@@ -177,13 +177,17 @@ class Command:
       if self.SUBCOMMANDS and self.args and self.args[0] in self.SUBCOMMANDS:
         subcmd = self.args.pop(0)
         for i in range(0, len(self.template_ids)):
-          self.template_ids[i] += '_' + subcmd
+          self.template_ids[i] += '/' + subcmd
         if self.name:
           self.name += ' ' + subcmd
         command = self.SUBCOMMANDS[subcmd][0]
       elif self.SUBCOMMANDS and self.args and self.args[0] == 'help':
         if not self.IS_HELP:
           return Help(self.session, arg=[self.name]).run()
+      else:
+        for i in range(0, len(self.template_ids)):
+          self.template_ids[i] += '/index'
+          
       self._starting()
       return self._finishing(command, command(self, *args, **kwargs))
     except UsageError:
