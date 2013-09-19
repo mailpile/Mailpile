@@ -195,8 +195,9 @@ class UserInteraction:
     self._display_log('', level=self.LOG_RESULT)
     if self.render_mode == 'json':
       return self._display_result(result.as_json())
-    elif self.render_mode in ('html', 'jhtml'):
-      return self._display_result(result.as_html())
+    elif self.render_mode.endswith('html'):
+      template = self.render_mode.replace('.jhtml', '.html')
+      return self._display_result(result.as_html(template=template))
     elif self.render_mode == 'xml':
       return self._display_result(result.as_xml())
     elif self.render_mode == 'rss':

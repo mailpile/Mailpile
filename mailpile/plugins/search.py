@@ -225,10 +225,10 @@ class Search(Command):
       return self
     def as_text(self):
       return '\n'.join([r.as_text() for r in (self.result or [])])
-    def as_html(self):
-      return Command.CommandResult.as_html(self._fixup())
-    def as_dict(self):
-      return Command.CommandResult.as_dict(self._fixup())
+    def as_html(self, *args, **kwargs):
+      return Command.CommandResult.as_html(self._fixup(), *args, **kwargs)
+    def as_dict(self, *args, **kwargs):
+      return Command.CommandResult.as_dict(self._fixup(), *args, **kwargs)
 
   def _do_search(self, search=None):
     session, idx = self.session, self._idx()
@@ -308,9 +308,9 @@ class View(Search):
           return self['data'].decode('iso-8859-1')
         except:
           return '(MAILPILE FAILED TO DECODE MESSAGE)'
-    def as_text(self):
+    def as_text(self, *args, **kwargs):
       return self._decode()
-    def as_html(self):
+    def as_html(self, *args, **kwargs):
       return '<pre>%s</pre>' % escape_html(self._decode())
 
   SYNOPSIS = '<[raw] m1 ...>'
@@ -354,10 +354,10 @@ class Extract(Command):
           result['data'] = result['data'].encode('base64').replace('\n', '')
       self.fixed_up = True
       return self
-    def as_html(self):
-      return Command.CommandResult.as_html(self._fixup())
-    def as_dict(self):
-      return Command.CommandResult.as_dict(self._fixup())
+    def as_html(self, *args, **kwargs):
+      return Command.CommandResult.as_html(self._fixup(), *args, **kwargs)
+    def as_dict(self, *args, **kwargs):
+      return Command.CommandResult.as_dict(self._fixup(), *args, **kwargs)
 
   SYNOPSIS = '<att msg [>fn]>'
   def command(self):
