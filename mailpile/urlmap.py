@@ -25,7 +25,7 @@ class UrlMap:
     it is HTML. It is strongly recommended that only the versioned API
     endpoints be used for automation.
     """
-    API_VERSIONS = (20130900, )
+    API_VERSIONS = (0, )
 
     def __init__(self, session):
         self.session = session
@@ -114,7 +114,6 @@ class UrlMap:
         """Redirects to /in/Inbox/ for now.  (FIXME)"""
         return [self._command('_redirect', args=['/in/Inbox/'], method=False)]
 
-    # FIXME: This should come from the search plugin
     def _map_tag(self, request, path_parts, query_data, post_data):
         """
         Map /in/TAG_NAME/ to tag searches.
@@ -122,32 +121,34 @@ class UrlMap:
         >>> path = '/in/Inbox/'
         >>> commands = urlmap._map_tag(request, path[1:].split('/'), {}, {})
         >>> commands
-        [<mailpile.plugins.search.Search...>]
-        >>> commands[0].args
+        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+        >>> commands[1].args
         ['tag:1']
         """
+        output = self._choose_output(path_parts)
         tag = '/'.join([p for p in path_parts[1:] if p])
         tag_search = ['tag:%s' % self.session.config.get_tag_id(tag)]
         return [
+            output,
             self._command('search', args=tag_search,
                                     query_data=query_data,
                                     post_data=post_data)
         ]
 
-    # FIXME: This should come from the search plugin
     def _map_thread(self, request, path_parts, query_data, post_data):
         """
-        Map /thread/METADATA_ID/ to view commands.
+        Map /thread/METADATA_ID/... to view or extract commands.
 
         >>> path = '/thread/123/'
         >>> commands = urlmap._map_thread(request, path[1:].split('/'), {}, {})
         >>> commands
-        [<mailpile.plugins.search.View...>]
-        >>> commands[0].args
+        [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
+        >>> commands[1].args
         ['=123']
         """
         message_mid = path_parts[1]
         return [
+            self._choose_output(path_parts),
             self._command('view', args=['=%s' % message_mid],
                                   query_data=query_data,
                                   post_data=post_data)
@@ -161,6 +162,7 @@ class UrlMap:
        '':        _map_root,
        'in':      _map_tag,
        'thread':  _map_thread,
+       'static':  _map_RESERVED,
        'message': _map_RESERVED
     }
 
@@ -178,13 +180,13 @@ class UrlMap:
         Traceback (most recent call last):
             ...
         ValueError: Unknown API level: 999
-        >>> urlmap.map(request, '/api/20130900/bogus', {}, {})
+        >>> urlmap.map(request, '/api/0/bogus', {}, {})
         Traceback (most recent call last):
             ...
         ValueError: Unknown command: bogus
 
         The root currently just redirects to /in/Inbox/:
-        >>> o, r = urlmap.map(request, '/', {}, {})
+        >>> r = urlmap.map(request, '/', {}, {})[0]
         >>> r, r.args
         (<...UrlRedirect instance at 0x...>, ['/in/Inbox/'])
 
@@ -218,18 +220,19 @@ class UrlMap:
 
         # For non-API calls, strip prefixes before further processing
         path_parts = path[1:].split('/')
-        output = [self._choose_output(path_parts)]
 
         # Check for the registered priority shortcuts
         if path_parts[0] in self.MAP_PATHS:
             method = self.MAP_PATHS[path_parts[0]]
-            return output + method(self, request, path_parts,
-                                         query_data, post_data)
+            return method(self, request, path_parts, query_data, post_data)
 
         # Fall back to API-style
-        return output + [self._command(path_parts[0], args=path_parts[1:],
-                                                      query_data=query_data,
-                                                      post_data=post_data)]
+        return [
+            self._choose_output(path_parts),
+            self._command(path_parts[0], args=path_parts[1:],
+                                         query_data=query_data,
+                                         post_data=post_data)
+        ]
 
     def url_thread(self, message_id):
         pass
