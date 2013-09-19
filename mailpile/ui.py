@@ -272,7 +272,6 @@ class UserInteraction:
     alldata = default_dict(cfg)
     alldata.update(self.html_variables)
     alldata.update(data)
-    print alldata
     try:
       return template.render(alldata)
     except:
