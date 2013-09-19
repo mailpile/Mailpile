@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends "layouts/base.html" %}
 {% block content %}
-{% include("_sub_nav_search.html") %}
-{% include("_search_searchbar.html") %}
+{% include("partials/sub_nav_search.html") %}
+{% include("partials/search_searchbar.html") %}
 
 <div id="pile-graph" style="display: none; position: relative;">
     <style>
@@ -61,5 +61,5 @@ text {
   </form>
 </div>
 
-{% include("_details_search_speed.html") %}
+{% include("partials/details_search_speed.html") %}
 {% endblock %}

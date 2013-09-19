@@ -1,0 +1,38 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+{% include("partials/sub_nav_contacts.html") %}
+
+
+<div id="pile-results">
+<form id="pile-results-form" action="/_/contact/add/" method="POST">
+        <input type='hidden' name='csrf' value='{csrf}' />
+    <table><tbody>
+        <tr>
+            <td class="contact-name">
+                Name:
+            </td>
+            <td class="contact-name">
+                <input type="text" name="@contactname" value=""/>
+            </td>
+        </tr>
+        <tr>
+            <td class="contact-name">
+                E-mail:
+            </td>
+            <td class="contact-name">
+                <input type="text" name="@contactemail" value=""/>
+            </td>
+        </tr>
+        <tr>
+            <td class="contact-name">
+            </td>
+            <td class="contact-name">
+                <input type="submit" value="Add contact"/>
+            </td>
+        </tr>
+    </tbody></table>
+</form>
+</div>
+
+{% endblock %}

@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends "layouts/base.html" %}
 
 {% block content %}
-{% include("_sub_nav_view.html") %}
+{% include("partials/sub_nav_view.html") %}
 
 <table class="pile-results" id="pile-results">
   <tbody>
@@ -55,5 +55,5 @@
 </tbody>
 </table>
 
-{% include("_details_search_speed.html") %}
+{% include("partials/details_search_speed.html") %}
 {% endblock %}

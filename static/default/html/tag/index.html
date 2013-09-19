@@ -1,0 +1,18 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+{% include("partials/sub_nav_tags.html") %}
+
+
+<h1>Tag Page Needs Fixing</h1>
+
+
+<ul>
+  <li><a href="/{name}/" title="{all} emails" class="tag_new_{new}"
+       ><span class="icon-tag"></span> {name}
+        <span class='navigation-attention-important'>{new}</span>
+      </a>
+  </li>
+</ul>
+
+{% endblock %}
