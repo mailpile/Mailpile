@@ -250,7 +250,7 @@ class UserInteraction:
 
   def _html_template(self, config, tpl_names, elems=None):
     theme_path = os.path.join(config.data_directory('html_theme'), 'html')
-    env = Environment(loader=FileSystemLoader('mailpile', '%s' % theme_path),
+    env = Environment(loader=FileSystemLoader('%s' % theme_path),
                       extensions=['jinja2.ext.i18n', 'jinja2.ext.with_', 'mailpile.jinjaextensions.MailpileCommand'])
     env.session = self.session
     for tpl_name in tpl_names:
