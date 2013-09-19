@@ -283,7 +283,7 @@ class ConfigManager(dict):
   MBOX_CACHE = {}
   RUNNING = {}
   DEFAULT_PATHS = {
-    'html_template': 'static/default',
+    'html_theme':    'static/default',
     'vcards':        'vcards',
   }
 
@@ -313,7 +313,7 @@ class ConfigManager(dict):
     'mailindex_file':  ('/file/path',    'sys', 'Metadata index file'),
     'postinglist_dir': ('/dir/path',     'sys', 'Search index directory'),
     'rescan_command':  ('shell command', 'cfg', 'Command run before rescanning'),
-    'obfuscate_index': ('key',           'sys', 'Scramble the index using key')
+    'obfuscate_index': ('key',           'sys', 'Scramble the index using key'),
   }
   DICTS = {
     'mailbox':         ('id=/file/path', 'sys', 'Mailboxes we index'),
@@ -656,7 +656,7 @@ class ConfigManager(dict):
         if mkdir and not os.path.exists(cpath):
           os.mkdir(cpath)
       else:
-        bpath = os.path.join('.', bpath)
+        bpath = os.path.join(os.path.dirname(__file__), '..', bpath)
     return bpath
 
   def open_file(self, ftype, fpath, mode='rb', mkdir=False):

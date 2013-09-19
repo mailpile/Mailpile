@@ -36,11 +36,48 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
     "\/html\/extract-result.html" : {
+=======
+    "\/less\/rebar\/forms.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/forms.less",
+      "outputAbbreviatedPath" : "\/less\/css\/forms.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/extract-result.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+<<<<<<< HEAD
+    "\/img\/apple-touch-icon-114x114.png" : {
+=======
+    "\/html\/extract-result.html" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
+      "inputAbbreviatedPath" : "\/img\/apple-touch-icon-114x114.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/apple-touch-icon-114x114.png",
+      "initialSize" : 2914,
+      "fileType" : 8192
+    },
+    "\/less\/rebar\/forms.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/forms.less",
+      "outputAbbreviatedPath" : "\/less\/css\/forms.css",
+=======
       "inputAbbreviatedPath" : "\/html\/extract-result.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
@@ -56,27 +93,11 @@
       "initialSize" : 2914,
       "fileType" : 8192
     },
-    "\/less\/rebar\/forms.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/rebar\/forms.less",
-      "outputAbbreviatedPath" : "\/less\/css\/forms.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
     "\/less\/rebar\/images.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/images.less",
       "outputAbbreviatedPath" : "\/less\/css\/images.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -90,6 +111,31 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
+    "\/less\/rebar\/images.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/images.less",
+      "outputAbbreviatedPath" : "\/less\/css\/images.css",
+=======
+    "\/less\/rebar\/tables.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/tables.less",
+      "outputAbbreviatedPath" : "\/less\/css\/tables.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+<<<<<<< HEAD
     "\/less\/rebar\/tables.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/tables.less",
@@ -108,6 +154,8 @@
       "debugStyle" : 0
     },
     "\/js\/d3.v3.min.js" : {
+=======
+    "\/js\/d3.v3.min.js" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
@@ -119,10 +167,25 @@
       "fileType" : 64
     },
     "\/html\/contact.html" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
+      "inputAbbreviatedPath" : "\/js\/d3.v3.min.js",
+      "outputStyle" : 1,
+      "syntaxCheckerStyle" : 1,
+      "outputAbbreviatedPath" : "\/js\/d3.v3.min-min.js",
+      "fileType" : 64
+    },
+    "\/html\/contact.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+=======
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "inputAbbreviatedPath" : "\/html\/contact.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
@@ -156,6 +219,8 @@
       "debugStyle" : 0
     },
     "\/less\/app\/icons.less" : {
+<<<<<<< HEAD
+=======
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app\/icons.less",
       "outputAbbreviatedPath" : "\/less\/css\/icons.css",
@@ -173,9 +238,10 @@
       "debugStyle" : 0
     },
     "\/less\/mixins\/grid.less" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/mixins\/grid.less",
-      "outputAbbreviatedPath" : "\/less\/css\/grid.css",
+      "inputAbbreviatedPath" : "\/less\/app\/icons.less",
+      "outputAbbreviatedPath" : "\/less\/css\/icons.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -189,6 +255,12 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
+    "\/less\/mixins\/grid.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/mixins\/grid.less",
+      "outputAbbreviatedPath" : "\/less\/css\/grid.css",
+=======
     "\/html\/_contact_subnav.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 1,
@@ -202,6 +274,7 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/links.less",
       "outputAbbreviatedPath" : "\/less\/css\/links.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -215,11 +288,25 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
+    "\/html\/_contact_subnav.html" : {
+=======
     "\/index.html" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
+      "inputAbbreviatedPath" : "\/html\/_contact_subnav.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/less\/rebar\/links.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/links.less",
+      "outputAbbreviatedPath" : "\/less\/css\/links.css",
+=======
       "inputAbbreviatedPath" : "\/index.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
@@ -256,6 +343,7 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/navigation.less",
       "outputAbbreviatedPath" : "\/less\/css\/navigation.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -269,16 +357,41 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
+    "\/index.html" : {
+=======
     "\/js\/mailpile.js" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
+      "inputAbbreviatedPath" : "\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/less\/config.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/config.less",
+      "outputAbbreviatedPath" : "\/css\/config.css",
+=======
       "inputAbbreviatedPath" : "\/js\/mailpile.js",
       "outputStyle" : 1,
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/mailpile-min.js",
       "fileType" : 64
+    },
+    "\/img\/favicon.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/favicon.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/favicon.png",
+      "initialSize" : 641,
+      "fileType" : 8192
     },
     "\/html\/extract.html" : {
       "ignoreWasSetByUser" : 0,
@@ -293,6 +406,7 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/lists.less",
       "outputAbbreviatedPath" : "\/less\/css\/lists.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -306,11 +420,99 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/img\/favicon.png" : {
+<<<<<<< HEAD
+    "\/img\/logo-color.png" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/logo-color.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/logo-color.png",
+      "initialSize" : 2601,
+      "fileType" : 8192
+    },
+    "\/less\/rebar\/navigation.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/navigation.less",
+      "outputAbbreviatedPath" : "\/less\/css\/navigation.css",
+=======
+    "\/less\/rebar\/base.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/base.less",
+      "outputAbbreviatedPath" : "\/less\/css\/base.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+<<<<<<< HEAD
+    "\/js\/mailpile.js" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/js\/mailpile.js",
+      "outputStyle" : 1,
+      "syntaxCheckerStyle" : 1,
+      "outputAbbreviatedPath" : "\/js\/mailpile-min.js",
+      "fileType" : 64
+    },
+    "\/html\/extract.html" : {
+=======
+    "\/html\/contact_list.html" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
+      "inputAbbreviatedPath" : "\/html\/extract.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/less\/rebar\/lists.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/lists.less",
+      "outputAbbreviatedPath" : "\/less\/css\/lists.css",
+=======
+      "inputAbbreviatedPath" : "\/html\/contact_list.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/less\/default.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/default.less",
+      "outputAbbreviatedPath" : "\/css\/default.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 0,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+    "\/html\/page.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
       "inputAbbreviatedPath" : "\/img\/favicon.png",
       "processed" : 0,
       "outputAbbreviatedPath" : "\/img\/favicon.png",
@@ -321,50 +523,7 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/base.less",
       "outputAbbreviatedPath" : "\/less\/css\/base.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
-    "\/less\/default.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/default.less",
-      "outputAbbreviatedPath" : "\/css\/default.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 0,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
-    "\/html\/contact_list.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/contact_list.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
-    "\/html\/page.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
+=======
       "inputAbbreviatedPath" : "\/html\/page.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
@@ -382,6 +541,7 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app\/credits.less",
       "outputAbbreviatedPath" : "\/less\/css\/credits.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -395,15 +555,17 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/html\/view.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
+<<<<<<< HEAD
+    "\/less\/default.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/default.less",
+      "outputAbbreviatedPath" : "\/css\/default.css",
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/view.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 0,
+      "strictImports" : 0,
+=======
     "\/img\/apple-touch-icon.png" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -416,6 +578,7 @@
       "fileType" : 8192
     },
     "\/js\/jKey\/jquery.jkey.js" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
@@ -435,11 +598,129 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 16
     },
-    "\/html\/search-result-files.html" : {
+    "\/html\/contact_list.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/contact_list.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+<<<<<<< HEAD
+    "\/html\/page.html" : {
+=======
+    "\/less\/rebar\/buttons.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/buttons.less",
+      "outputAbbreviatedPath" : "\/less\/css\/buttons.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/page.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+<<<<<<< HEAD
+    "\/html\/tag.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/tag.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/less\/app\/credits.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/app\/credits.less",
+      "outputAbbreviatedPath" : "\/less\/css\/credits.css",
+=======
+    "\/less\/rebar\/responsive-grid.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/responsive-grid.less",
+      "outputAbbreviatedPath" : "\/less\/css\/responsive-grid.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 0,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+<<<<<<< HEAD
+    "\/html\/view.html" : {
+=======
+    "\/html\/tag_list.html" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
+      "inputAbbreviatedPath" : "\/html\/view.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/img\/apple-touch-icon.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
+      "initialSize" : 1174,
+      "fileType" : 8192
+=======
+      "inputAbbreviatedPath" : "\/html\/tag_list.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+    },
+    "\/img\/logo-252.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/logo-252.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/logo-252.png",
+      "initialSize" : 5034,
+      "fileType" : 8192
+    },
+<<<<<<< HEAD
+    "\/css\/default.css" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 1,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/css\/default.css",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 16
+    },
+    "\/html\/search-result-files.html" : {
+=======
+    "\/js\/jKey\/index.html" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
       "inputAbbreviatedPath" : "\/html\/search-result-files.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
@@ -448,6 +729,16 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/buttons.less",
       "outputAbbreviatedPath" : "\/less\/css\/buttons.css",
+=======
+      "inputAbbreviatedPath" : "\/js\/jKey\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/less\/app\/tablet.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/app\/tablet.less",
+      "outputAbbreviatedPath" : "\/less\/css\/tablet.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -461,6 +752,7 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
     "\/less\/rebar\/responsive-grid.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/responsive-grid.less",
@@ -479,19 +771,33 @@
       "debugStyle" : 0
     },
     "\/html\/tag_list.html" : {
+=======
+    "\/js\/mousetrap.min.js" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
       "inputAbbreviatedPath" : "\/html\/tag_list.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
     "\/img\/logo-252.png" : {
+=======
+      "inputAbbreviatedPath" : "\/js\/mousetrap.min.js",
+      "outputStyle" : 1,
+      "syntaxCheckerStyle" : 1,
+      "outputAbbreviatedPath" : "\/js\/mousetrap.min-min.js",
+      "fileType" : 64
+    },
+    "\/html\/search.html" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
       "inputAbbreviatedPath" : "\/img\/logo-252.png",
       "processed" : 0,
       "outputAbbreviatedPath" : "\/img\/logo-252.png",
@@ -511,6 +817,16 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app\/tablet.less",
       "outputAbbreviatedPath" : "\/less\/css\/tablet.css",
+=======
+      "inputAbbreviatedPath" : "\/html\/search.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/less\/rebar\/clearing.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/clearing.less",
+      "outputAbbreviatedPath" : "\/less\/css\/clearing.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -524,11 +840,16 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
     "\/js\/mousetrap.min.js" : {
+=======
+    "\/html\/compose.html" : {
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
+<<<<<<< HEAD
       "inputAbbreviatedPath" : "\/js\/mousetrap.min.js",
       "outputStyle" : 1,
       "syntaxCheckerStyle" : 1,
@@ -548,24 +869,7 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/clearing.less",
       "outputAbbreviatedPath" : "\/less\/css\/clearing.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
-    "\/html\/compose.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
+=======
       "inputAbbreviatedPath" : "\/html\/compose.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
@@ -574,6 +878,7 @@
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app\/mobile.less",
       "outputAbbreviatedPath" : "\/less\/css\/mobile.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -587,6 +892,9 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
+    "\/html\/compose.html" : {
+=======
     "\/less\/mixins\/elements.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/mixins\/elements.less",
@@ -596,6 +904,36 @@
       "relativeURLS" : 0,
       "ignore" : 1,
       "strictImports" : 0,
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+<<<<<<< HEAD
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/compose.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/less\/app\/mobile.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/app\/mobile.less",
+      "outputAbbreviatedPath" : "\/less\/css\/mobile.css",
+=======
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+    "\/less\/app\/webfonts.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/app\/webfonts.less",
+      "outputAbbreviatedPath" : "\/less\/css\/webfonts.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
       "ignoreWasSetByUser" : 0,
       "shouldRunBless" : 1,
       "hidden" : 0,
@@ -604,6 +942,31 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+<<<<<<< HEAD
+    "\/less\/mixins\/elements.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/mixins\/elements.less",
+      "outputAbbreviatedPath" : "\/less\/css\/elements.css",
+=======
+    "\/less\/app\/backgrounds.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/app\/backgrounds.less",
+      "outputAbbreviatedPath" : "\/less\/css\/backgrounds.css",
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+<<<<<<< HEAD
     "\/less\/app\/backgrounds.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app\/backgrounds.less",
@@ -638,6 +1001,8 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+=======
+>>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
     "\/html\/contact_add.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,

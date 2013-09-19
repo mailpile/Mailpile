@@ -1,9 +1,4 @@
-<nav id="sub-navigation">
-	<ul class="clearfix">
-		<li class="navigation-on"><a href="/_/contact/list/"><span class="navigation-icon icon-notifications"></span>Contacts</a></li>
-		<li><a href="/_/contact/add/"><span class="navigation-icon icon-notifications"></span>New Contact</a></li>
-	</ul>
-</nav>
+{.partial static/default/html/_contact_subnav.html}
 
 <div id="search" class="clearfix">
 	<form id="search-form" action="/_/contact/list/" class="clearfix">
@@ -22,14 +17,14 @@
 	        {.repeated section contacts}
         <tr class="result {even_odd} {.section is_editable}is_editable{.end}
                           {tag_classes}" data-state="normal">
+            <td class="checkbox" valign="top">
+                <input type="checkbox" name="msg_{X-MAILPILE-RID}" value="normal">
+            </td>
             <td class="contact-name">
                 <a href="/_/contact/{EMAIL}/">{FN}</a>
             </td>
             <td class="contact-email">
                 <a href="/_/contact/{EMAIL}/">{EMAIL}</a>
-            </td>
-            <td class="checkbox" valign="top">
-                <input type="checkbox" name="msg_{X-MAILPILE-RID}" value="normal">
             </td>
         </tr>
         {.end}

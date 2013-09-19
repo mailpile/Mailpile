@@ -1,0 +1,21 @@
+<div id="search" class="clearfix">
+	<form id="search-form" action="/" class="clearfix">
+		<span class="icon-search"></span>
+		<input id="qbox" type="text" name="q" placeholder="Custom Search..." value="" />
+		<input type="submit" class="button-primary" value="Search"/>
+		<input type="hidden" name="csrf" value="{csrf}" />
+	</form>
+	<div id="search-params" class="clearfix">
+		<a href="#" class="" id="search-start-time">Start time</a> to 
+		<a href="#" class="" id="search-end-time">Present</a> with
+		<a href="#" id="search-tags">No tags</a> and
+		<a href="#" id="search-all-groups">All groups</a>
+	</div>
+</div>
+
+<div id="bulk-actions" class="clearfix">
+	<a class="bulk-action" href="#add-to-group"><span class="icon-groups"></span> Add to Group</a>
+	<a class="bulk-action" href="#assign-tags"><span class="icon-tag"></span> Assign Tags</a>
+	<a class="bulk-action" href="#delete"><span class="icon-trash"></span> Delete</a>
+	<h5><b><span id="bulk-actions-selected-count">0</span> Messages</b> Selected</h5>
+</div>

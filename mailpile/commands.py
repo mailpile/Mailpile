@@ -29,6 +29,10 @@ class Command:
   SYNOPSIS = None
   TEMPLATE_IDS = ['command']
 
+  HTTP_CALLABLE = ( )
+  HTTP_POST_VARS = { }
+  HTTP_QUERY_VARS = { }
+
   class CommandResult:
     def __init__(self, session, command, template_ids, doc, result):
       self.session = session
@@ -56,7 +60,7 @@ class Command:
 
     def as_html(self):
       return self.session.ui.render_html(self.session.config,
-                                     ['html/%s' % t for t in self.template_ids],
+                                         self.template_ids,
                                          self.as_dict())
 
     def as_json(self):

@@ -331,8 +331,22 @@ class MailIndex(object):
   def l2m(self, line):
     return line.decode('utf-8').split(u'\t')
 
+  # A translation table for message parts stored in the index, consists of
+  # a mapping from unicode ordinals to either another unicode ordinal or
+  # None, to remove a character. By default it removes the ASCII control
+  # characters and replaces tabs and newlines with spaces.
+  NORM_TABLE = dict([(i, None) for i in range(0, 0x20)], **{
+    ord(u'\t'): ord(u' '),
+    ord(u'\r'): ord(u' '),
+    ord(u'\n'): ord(u' '),
+    0x7F: None
+  })
+
   def m2l(self, message):
-    return (u'\t'.join([unicode(p) for p in message])).encode('utf-8')
+    # Normalize the message before saving it so we can be sure that we will
+    # be able to read it back later.
+    parts = [unicode(p).translate(self.NORM_TABLE) for p in message]
+    return (u'\t'.join(parts)).encode('utf-8')
 
   def load(self, session=None):
     self.INDEX = []

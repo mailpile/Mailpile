@@ -19,7 +19,8 @@ import traceback
 import json
 
 from lxml.html.clean import autolink_html
-import jsontemplate
+from jinja2 import Environment, PackageLoader
+from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound, TemplatesNotFound, TemplateAssertionError, UndefinedError
 
 import mailpile.commands
 from mailpile.util import *
@@ -86,6 +87,7 @@ class UserInteraction:
     self.log_level = self.LOG_ALL
     self.interactive = False
     self.time_tracking = [('Main', [])]
+    self.session = None
     self.time_elapsed = 0.0
     self.last_display = [self.LOG_PROGRESS, 0]
     self.render_mode = 'text'
@@ -97,6 +99,9 @@ class UserInteraction:
       'even_odd': 'odd',
       'mailpile_size': 0
     }
+
+  def set_session(self, session):
+    self.session = session
 
   # Logging
   def _display_log(self, text, level=LOG_URGENT):
@@ -244,24 +249,35 @@ class UserInteraction:
     return json.dumps(data, indent=1, cls=NoFailEncoder)
 
   def _html_template(self, config, tpl_names, elems=None):
+    theme = config.data_directory('html_theme')
+    print config.get('path', {})
+    env = Environment(loader=PackageLoader('mailpile', '../%s/html/' % theme),
+                      extensions=['jinja2.ext.i18n', 'jinja2.ext.with_', 'mailpile.jinjaextensions.MailpileCommand'])
+    env.session = self.session
     for tpl_name in tpl_names:
       try:
         fn = '%s.html' % tpl_name
-        return config.open_file('html_template', fn)[1].read().decode('utf-8')
-      except (IOError, OSError, AttributeError):
-        pass
-    if elems:
-      return ('<div class="%s">\n  ' % tpl_names[0].replace('/', '_') +
-              '\n  '.join(['<span class="%s">{%s}</span>' % (e,e)
-                           for e in elems]) +
-              '\n</div>')
-    else:
-      return '{data}'
+        template = env.get_template(fn)
+        return template
+      except (IOError, OSError, AttributeError), e:
+        emsg = "<h1>Template not found: %s</h1>%s\n"
+        return emsg % (fn, e)
+      except (TemplateError, UndefinedError, TemplateSyntaxError, TemplateAssertionError, TemplateNotFound, TemplatesNotFound), e:
+        emsg = "<h1>Template error in %s</h1>\nParsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp></div>"
+        return emsg % (e.name, e.filename, e.message, e.lineno, e.source)
+
   def render_html(self, cfg, tpl_names, data):
     """Render data as HTML"""
-    return jsontemplate.expand(self._html_template(cfg, tpl_names,
-                                                   elems=data.keys()), data,
-                               undefined_str='')
+    template = self._html_template(cfg, tpl_names)
+    alldata = default_dict(cfg)
+    alldata.update(self.html_variables)
+    alldata.update(data)
+    print alldata
+    try:
+      return template.render(alldata)
+    except:
+      return template
+
   def edit_messages(self, emails):
     self.error('Sorry, this UI cannot edit messages.')
 
@@ -295,24 +311,11 @@ class HttpUserInteraction(UserInteraction):
       ('\n%s\n' % ('=' * 79)).join(self.results)
     )
   def _render_html_response(self, config):
-    page = self._html_template(config, ['html/page'],
-                               elems=['results', 'logged'])
-    quiet = Session(config)
-    quiet.ui = SilentInteraction()
-    while page.startswith('{# set'):
-      load, page = page.split('\n', 1)
-      _set, vname, _eq, mode, cmd = load.strip()[3:-2].split(None, 4)
-      cmd, arg = (' ' in cmd) and cmd.split(' ', 1) or (cmd, '')
-      quiet.ui.render_mode = mode
-      result = mailpile.commands.Action(quiet, cmd, arg)
-      self.html_variables[vname] = quiet.ui.display_result(result)
+    if len(self.results) > 0:
+      return self.results[0]
 
-    return jsontemplate.expand(page, default_dict(self.html_variables, {
-      'results': '\n'.join(['<div class="result">%s</div>' % r
-                            for r in self.results]),
-      'logged': '\n'.join(['<p class="ll_%s">%s</p>' % l
-                           for l in self.logged])
-    }), undefined_str='')
+    return ""
+
   def render_response(self, config):
     if self.render_mode == 'json':
       return ('application/json', '[%s]' % ','.join(self.results))

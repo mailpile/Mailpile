@@ -204,6 +204,12 @@ class Search(Command):
   """Search your mail!"""
   ORDER = ('Searching', 0)
   TEMPLATE_IDS = ['search']
+  HTTP_CALLABLE = ('GET', )
+  HTTP_QUERY_VARS = {
+     'q': 'search terms',
+     'order': 'sort order'
+  }
+
   class CommandResult(Command.CommandResult):
     def __init__(self, *args, **kwargs):
       self.fixed_up = False
@@ -256,6 +262,7 @@ class Search(Command):
 class Next(Search):
   """Display next page of results"""
   ORDER = ('Searching', 1)
+  HTTP_CALLABLE = ( )
   def command(self):
     session = self.session
     session.displayed = session.displayed.next_set()
@@ -264,6 +271,7 @@ class Next(Search):
 class Previous(Search):
   """Display previous page of results"""
   ORDER = ('Searching', 2)
+  HTTP_CALLABLE = ( )
   def command(self):
     session = self.session
     session.displayed = session.displayed.previous_set()
@@ -273,6 +281,7 @@ class Order(Search):
   """Sort by: date, from, subject, random or index"""
   ORDER = ('Searching', 3)
   SYNOPSIS = '<terms ...>'
+  HTTP_CALLABLE = ( )
   def command(self):
     session, idx = self.session, self._idx()
     session.order = self.args and self.args[0] or None
@@ -285,6 +294,10 @@ class View(Search):
   """View one or more messages"""
   ORDER = ('Searching', 4)
   TEMPLATE_IDS = ['view'] + Search.TEMPLATE_IDS
+  HTTP_CALLABLE = ('GET', )
+  HTTP_QUERY_VARS = {
+    'mid': 'metadata-ID'
+  }
 
   class RawResult(dict):
     def _decode(self):
@@ -327,6 +340,7 @@ class Extract(Command):
   """Extract attachment(s) to file(s)"""
   ORDER = ('Searching', 5)
   TEMPLATE_IDS = ['extract']
+  HTTP_CALLABLE = ('GET', )
 
   class CommandResult(Command.CommandResult):
     def __init__(self, *args, **kwargs):

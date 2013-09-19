@@ -13,6 +13,7 @@ from urlparse import parse_qs, urlparse
 import mailpile.util
 from mailpile.util import *
 from mailpile.ui import *
+from mailpile.urlmap import UrlMap, UrlRedirectException
 from mailpile.commands import Action
 
 global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
@@ -98,7 +99,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       code, msg = 403, "Access denied"
     else:
       try:
-        tpl = config.get('path', {}).get(self.http_host(), 'html_template')
+        tpl = config.get('path', {}).get(self.http_host(), 'html_theme')
         fpath, fd = config.open_file(tpl, filename)
         mimetype = mimetypes.guess_type(fpath)[0] or "application/octet-stream"
         message = fd.read()
@@ -266,6 +267,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       path = '/Inbox/'
 
     session.ui = HttpUserInteraction(self)
+    session.ui.set_session(session)
 
     # We peek at the ending to configure the UI, but any further parsing of
     # the path and arguments takes place in parse_pqp.

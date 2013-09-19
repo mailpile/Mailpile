@@ -1,0 +1,100 @@
+{# set high_tags = html tag list inbox sent }
+{# set top_tags  = html tag list new starred }
+{# set user_tags = html tag list !drafts !inbox !new !sent !spam !trash }
+{# set low_tags  = html tag list spam trash }
+{# set unread    = html tag list new }
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+	<link rel="stylesheet" href="/_/static/css/default.css" />
+	<link rel="stylesheet" href="/_/static/css/select2.css" />
+
+	<!--[if lt IE 9]>
+		<script src="/_/static/js/html5.js"></script>
+	<![endif]-->
+
+	<!-- Apple Icons -->
+	<link rel="apple-touch-icon" sizes="57x57" href="/_/static/img/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/_/static/img/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="/_/static/img/apple-touch-icon-114x114.png">
+
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="/_/img/favicon.png" />
+	<link rel="icon" type="image/png" href="/_/img/favicon.png" />
+
+	<title>{title} | {name}'s mailpile</title>
+
+</head>
+
+<body>
+
+<div id="header" class="clearfix">
+	<img class="logo" src="/_/static/img/logo-color.svg">
+	<h1>{name}'s<small><b>mail</b>pile of <b>{mailpile_size}</b> emails</small></h1>
+	<nav>
+		<ul>
+			<li><a href="/_/donate/"><span class="icon-donate"></span>Donate</a></li>
+			<li><a href="/_/contact/list/"><span class="icon-user"></span>Contacts</a></li>
+			<li><a href="/_/settings/"><span class="icon-settings"></span>Settings</a></li>
+		</ul>
+	</nav>
+</div>
+
+<div id="container">
+
+	<div id="sidebar">
+		<nav>
+			<ul>
+				<li class="navigation-on">
+					<a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>4 Drafts</small></a>
+				</li>
+				{high_tags|raw}
+				{user_tags|raw}
+				{low_tags|raw}
+			</ul>
+		</nav>
+		<hr>			
+		<nav>
+			<ul>
+				<li><a href="/_/search/has:pgp" class=""><span class="icon-encrypted"></span> Encrypted</a></li>
+				<li><a href="/_/search/att:jpg" class=""><span class="icon-photos"></span> Photos</a></li>
+				<li><a href="/_/search/has:attachment" class=""><span class="icon-files"></span> Files</a></li>
+				<li><a href="/_/search/http" class=""><span class="icon-links"></span> Links</a></li>
+				<li><a href="/_/group/list" class=""><span class="icon-groups"></span> Groups</a></li>
+			</ul>
+		</nav>
+		<hr>
+	</div>
+
+
+	<!-- START CONTENT -->
+	<div id="content">
+		{results|raw}
+		<div id="footer">
+			<a href='http://mailpile.is'>Mailpile</a> is free software made by <a title="Bjarni R. Einarsson" href="http://bre.klaki.net" target="_blank">bre</a>, <a title="Brennan Novak" href="https://brennannovak.com" target="_blank">bnvk</a>, <a href="http://www.smarimccarthy.is/" target="_blank">smári</a> &amp; <a href="https://github.com/pagekite/Mailpile/graphs/contributors" target="_blank">more</a>
+		</div>
+
+		<div id="debug">{logged|raw}</div>
+
+		<div style="display: none; position: fixed; top: 20%; left: 40%; right: 40%; width: 20%; background: #eee; border: 1px solid #ccc;" id="dialog_tag">
+			<form onsubmit="mailpile.go('/'+$('#dialog_tag_input').val() + '/'); return false;">
+				<input type="text" id="dialog_tag_input"/>
+				<input type="submit" value="Go">
+			</form>
+		</div>
+	</div>
+	<!-- END CONTENT -->
+
+	<div class="clearfix"></div>
+
+</div>
+
+<script type="text/javascript" src="/_/static/js/jquery.min.js"></script>
+<script type="text/javascript" src="/_/static/js/select2.min.js"></script>
+<script type="text/javascript" src="/_/static/js/d3.v3.min.js"></script>
+<script type="text/javascript" src="/_/static/js/mousetrap.min.js"></script>
+<script type="text/javascript" src="/_/static/js/mailpile.js"></script>
+</body>
+</html>
