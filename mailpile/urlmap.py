@@ -102,12 +102,12 @@ class UrlMap:
             path_parts.pop(-1)
         elif '.' in path_parts[-1]:
             fn = path_parts.pop(-1)
-            for suffix in ('.json', '.xml', '.vcf', '.html'):
-               if fn.endswith(suffix):
-                   if suffix == '.html':
-                       fmt = fn
-                   else:
-                       fmt = suffix[1:]
+            for suffix in ('.html', '.jhtml'):
+                if fn.endswith(suffix):
+                    fmt = fn
+            for suffix in ('.json', '.xml', '.vcf'):
+                if fn.endswith(suffix):
+                    fmt = suffix[1:]
         return self._command('output', [fmt], method=False)
 
     def _map_root(self, request, path_parts, query_data, post_data):
