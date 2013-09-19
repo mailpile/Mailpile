@@ -31,6 +31,9 @@ class Compose(ReturnsSearchResults):
   """(Continue) Composing an e-mail"""
   ORDER = ('Composing', 0)
   TEMPLATE_IDS = ['compose'] + Search.TEMPLATE_IDS
+  HTTP_CALLABLE = ('GET', )
+  HTTP_QUERY_VARS = { }
+  HTTP_POST_VARS = { }
 
   SYNOPSIS = '<[msg]>'
   def command(self):
@@ -56,9 +59,20 @@ class Compose(ReturnsSearchResults):
 
 
 class Update(ReturnsSearchResults):
-  """Update message from a file"""
+  """Update message from a file or HTTP upload."""
   ORDER = ('Composing', 1)
   TEMPLATE_IDS = ['update'] + Compose.TEMPLATE_IDS
+  HTTP_CALLABLE = ('POST', 'UPDATE')
+  HTTP_QUERY_VARS = { }
+  HTTP_POST_VARS = {
+      'mid': 'metadata-ID',
+      'subject': '..',
+      'from': '..',
+      'to': '..',
+      'cc': '..',
+      'bcc': '..',
+      'body': '..',
+  }
 
   SYNOPSIS = '<msg path/to/f>'
   def command(self):
@@ -78,6 +92,13 @@ class Attach(ReturnsSearchResults):
   """Attach a file to a message"""
   ORDER = ('Composing', 2)
   TEMPLATE_IDS = ['attach'] + Compose.TEMPLATE_IDS
+  HTTP_CALLABLE = ('POST', 'UPDATE')
+  HTTP_QUERY_VARS = { }
+  HTTP_POST_VARS = {
+      'mid': 'metadata-ID',
+      'data': 'file data',
+      'name': 'file name'
+  }
 
   SYNOPSIS = '<msg path/to/f>'
   def command(self):
@@ -115,6 +136,11 @@ class Reply(Compose):
   """Reply(-all) to one or more messages"""
   ORDER = ('Composing', 3)
   TEMPLATE_IDS = ['reply'] + Compose.TEMPLATE_IDS
+  HTTP_CALLABLE = ('GET', )
+  HTTP_QUERY_VARS = {
+      'mid': 'metadata-ID',
+  }
+  HTTP_POST_VARS = { }
 
   SYNOPSIS = '<[all] m1 ...>'
   def command(self):
@@ -174,6 +200,11 @@ class Forward(Compose):
   """Forward messages (and attachments)"""
   ORDER = ('Composing', 4)
   TEMPLATE_IDS = ['forward'] + Compose.TEMPLATE_IDS
+  HTTP_CALLABLE = ('GET', )
+  HTTP_QUERY_VARS = {
+      'mid': 'metadata-ID',
+  }
+  HTTP_POST_VARS = { }
 
   SYNOPSIS = '<[att] m1 ...>'
   def command(self):
@@ -235,6 +266,12 @@ class Mail(ReturnsSearchResults):
   """Mail/bounce a message (to someone)"""
   ORDER = ('Composing', 5)
   TEMPLATE_IDS = ['mail']
+  HTTP_CALLABLE = ('POST', )
+  HTTP_QUERY_VARS = { }
+  HTTP_POST_VARS = {
+      'mid': 'metadata-ID',
+      'to': 'recipient'
+  }
 
   SYNOPSIS = '<msg [email]>'
   def command(self):
