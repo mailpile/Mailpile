@@ -19,7 +19,7 @@ import traceback
 import json
 
 from lxml.html.clean import autolink_html
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, FileSystemLoader
 from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound, TemplatesNotFound, TemplateAssertionError, UndefinedError
 
 import mailpile.commands
@@ -249,9 +249,8 @@ class UserInteraction:
     return json.dumps(data, indent=1, cls=NoFailEncoder)
 
   def _html_template(self, config, tpl_names, elems=None):
-    theme = config.data_directory('html_theme')
-    print config.get('path', {})
-    env = Environment(loader=PackageLoader('mailpile', '../%s/html/' % theme),
+    theme_path = os.path.join(config.data_directory('html_theme'), 'html')
+    env = Environment(loader=FileSystemLoader('mailpile', '%s' % theme_path),
                       extensions=['jinja2.ext.i18n', 'jinja2.ext.with_', 'mailpile.jinjaextensions.MailpileCommand'])
     env.session = self.session
     for tpl_name in tpl_names:
