@@ -60,7 +60,7 @@ class Command:
 
     def as_html(self):
       return self.session.ui.render_html(self.session.config,
-                                     ['html/%s' % t for t in self.template_ids],
+                                         self.template_ids,
                                          self.as_dict())
 
     def as_json(self):

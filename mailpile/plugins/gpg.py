@@ -39,7 +39,7 @@ class GPG(Command):
     keys = []
     try:
       session.ui.mark('Listing available GPG keys')
-      gpg = GnuPG().run(['--list-keys'], create_fhs=['stderr', 'stdout'])
+      gpg = GnuPG().run(['--list-keys', '--fingerprint'], create_fhs=['stderr', 'stdout'])
       keylines = gpg.handles['stdout'].readlines()
       curkey = {}
       for line in keylines:
@@ -82,6 +82,9 @@ class GPG(Command):
           keytype, keyid = args[0].split("/")
           created = args[1]
           curkey["subkeys"].append({"keyid": keyid, "type": keytype, "created": created, "expires": expiry})
+        elif line[0:24] == "      Key fingerprint = ":
+          line = line.strip("      Key fingerprint = ").strip().replace(" ", "")
+          curkey["fingerprint"] = line
       gpg.handles['stderr'].close()
       gpg.handles['stdout'].close()
       gpg.wait()
@@ -157,18 +160,20 @@ class GPG(Command):
   def import_vcards(self):
     session, config, arg = self.session, self.session.config, self.args[0]
     keys = self.filter()
+    vcards = []
     for k in keys:
       for uid in k["uids"]:
         name, handle = uid.split(" <")
         handle = handle.strip(">")
         if handle.lower() not in config.vcards:
           vcard = config.add_vcard(handle, name, 'individual')
-          
-
+          vcard["KEY"] = [["data:application/x-pgp-fingerprint,%s" % k["fingerprint"], []],]
           vcards.append(vcard)
         else:
+          # Get the VCard
           session.ui.warning('Already exists: %s' % handle)
-
+    
+    return vcards
 
   SUBCOMMANDS = {
     'recv': (recv_key, '<key-ID>'),
