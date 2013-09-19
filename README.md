@@ -471,6 +471,7 @@ Contributors:
    * Steinn Steinsson (<https://github.com/steinn>)
    * Dražen Lučanin (<https://github.com/kermit666>)
    * Uli Köhler (<https://github.com/ulikoehler>)
+   * Shartte (<https://github.com/shartte>)
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
