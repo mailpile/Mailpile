@@ -343,9 +343,9 @@ class MailIndex(object):
   })
 
   def m2l(self, message):
-    # Normalize the message before saving it so we can be sure that we will be able to
-    # read it back later.
-    parts = [unicode(p).translate(MailIndex.NORM_TABLE) for p in message]
+    # Normalize the message before saving it so we can be sure that we will
+    # be able to read it back later.
+    parts = [unicode(p).translate(self.NORM_TABLE) for p in message]
     return (u'\t'.join(parts)).encode('utf-8')
 
   def load(self, session=None):
