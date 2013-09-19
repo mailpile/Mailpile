@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-
 {% block content %}
-{% include("_search_nav.html") %}
+{% include("_sub_nav_search.html") %}
 {% include("_search_searchbar.html") %}
 
 <div id="pile-graph" style="display: none; position: relative;">
@@ -26,72 +25,41 @@ text {
         <svg id="pile-graph-canvas-svg"></svg>
     </div>
 </div>
+
 <div id="pile-results">
-<form id="pile-results-form" action="" method="POST">
+  <form id="pile-results-form" action="" method="POST">
     <input type='hidden' name='csrf' value='{csrf}' />
-        <table class="pile-results" id="pile-results"><tbody>
-                {% for message in result.0.messages %}
-                <tr class="result {{message.even_odd}} {% if message.is_editable %}is_editable{% endif %}
-                                  {{message.tag_classes}}" data-state="normal">
-                    {% if message.message %}
-                    <td class="message-body" colspan="2">
-                        {% if message.editing_string %}
-                                <textarea name='@edit_{idx}' cols="72" rows="20">{{message.editing_string}}</textarea>
-                                <input type=submit value='Save'>
-                        {% else %}
-                            
-                            <ul class="message-headers">
-                                <li><b>Date:</b> {{message.date}}</li>
-                                <li><b>From:</b> {{message.from|e}}</li>
-                                <li><b>To:</b> {{message.message.headers.To|e}}</li>
-                                <li><b>Cc:</b> {{message.message.headers.Cc|e}}</li>
-                                <li><b>Subject:</b> {{message.subject}}</li>
-                            </ul>
-                            <div class="message-body">
-                            {% for part in message.message.text_parts %}
-                                    <p class="text-part-{type}">{{part.data|replace("\n", "<br/>")}}</p>
-                            {% endfor %}
-                            {% for part in message.message.html_parts %}
-                                    <p class="html-part-{type}">{{part.data|safe}}</p>
-                            {% endfor %}
-                            </div>
-                            <ul class="message-attachments">
-                            {% for att in message.message.attachments %}
-                                <li><a href="./att:{{att.count}}" type="{{att.mimetype}}">{{att.filename}}</a>({{att.mimetype}} {{att.length}} bytes)</li>
-                            {% endfor %}
-                            </ul>
-                        {% endif %}
-                    </td>
-                    {% else %}
-                    <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
-                        <a href="{{message.url}}{% if message.is_editable %}edit.html{% endif %}">{{message.short_from}}</a>
-                    </td>
-                    <td class="subject">
-                        <a href="{{message.url}}{% if message.is_editable %}edit.html{% endif %}">{{message.subject}}</a>
-                    </td>
-                        
-                    <td class="date" valign="top">
-                        <a href="/_/search/dates:{date}">{{message.friendly_date}}</a>
-                    </td>
-                    <td class="checkbox" valign="top">
-                        <input type="checkbox" name="msg_{idx}" value="normal">
-                    </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-        </tbody></table>
-        <div id="pile-bottom" class="clearfix">
-            <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
-            <div>
-                <h5>{{start}} - {{end}} of {{total}} Messages</h5><br>
-                <a class="change-result-size" href="#">Show Expanded View</a>
-            </div>
-        </div>
-</form>
+    <table class="pile-results" id="pile-results">
+      <tbody>
+        {% for message in result.0.messages %}
+        <tr class="result {{message.even_odd}} {% if message.is_editable %}is_editable{% endif %} {{message.tag_classes}}" data-state="normal">
+        {% if not message.message %}
+         <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
+           <a href="{{message.url}}{% if message.is_editable %}edit.html{% endif %}">{{message.short_from}}</a>
+         </td>
+         <td class="subject">
+           <a href="{{message.url}}{% if message.is_editable %}edit.html{% endif %}">{{message.subject}}</a>
+         </td>
+         <td class="date" valign="top">
+           <a href="/_/search/dates:{date}">{{message.friendly_date}}</a>
+         </td>
+         <td class="checkbox" valign="top">
+           <input type="checkbox" name="msg_{idx}" value="normal">
+         </td>
+         {% endif %}
+       </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    <div id="pile-bottom" class="clearfix">
+      <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
+      <div>
+         <h5>{{start}} - {{end}} of {{total}} Messages</h5><br>
+       <a class="change-result-size" href="#">Show Expanded View</a>
+      </div>
+    </div>
+  </form>
 </div>
 
-<div class="pile-speed">
-    <span class="icon-speed"></span>Searched your <strong>mail</strong>pile in <strong>{{elapsed}} seconds</strong>. Vroom!
-</div>
-
+{% include("_details_search_speed.html") %}
 {% endblock %}

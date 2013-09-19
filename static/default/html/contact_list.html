@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include("_sub_nav_contacts.html") %}
+
+
+<div id="search" class="clearfix">
+	<form id="search-form" action="/_/contact/list/" class="clearfix">
+		<span class="icon-search"></span>
+		<input id="qbox" type="text" name="args" placeholder="Search contacts..." value="{result.query}" />
+		<input type="submit" class="button-primary" value="Search"/>
+		<input type="hidden" name="csrf" value="{csrf}" />
+	</form>
+</div>
+
+<div id="pile-results">
+<form id="pile-results-form" action="" method="POST">
+	<input type='hidden' name='csrf' value='{csrf}' />
+    <table class="pile-results" id="pile-results"><tbody>
+
+        <tr class="result {even_odd} {.section is_editable}is_editable{.end} {tag_classes}" data-state="normal">
+            <td class="checkbox" valign="top">
+                <input type="checkbox" name="msg_{X-MAILPILE-RID}" value="normal">
+            </td>
+            <td class="contact-name">
+                <a href="/_/contact/{EMAIL}/">{FN}</a>
+            </td>
+            <td class="contact-email">
+                <a href="/_/contact/{EMAIL}/">{EMAIL}</a>
+            </td>
+        </tr>
+
+    </tbody></table>
+    <div id="pile-bottom" class="clearfix">
+        <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
+        <div>
+	        <h5>{start} - {end} of {total} Contacts</h5><br>
+	        <a class="change-result-size" href="#">Show Expanded View</a>
+        </div>
+    </div>
+</form>
+</div>
+
+
+{% endblock %}

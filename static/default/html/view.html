@@ -1,75 +1,59 @@
-<nav id="sub-navigation">
-	<ul class="clearfix">
-		<li><a href="#">Archive</a></li>
-		<li><a href="#">Delete</a></li>
-	</ul>
-</nav>
+{% extends "base.html" %}
 
-{.repeated section result}
+{% block content %}
+{% include("_sub_nav_view.html") %}
+
 <table class="pile-results" id="pile-results">
-<tbody>
+  <tbody>
 
-{.repeated section messages}
-{.section message}
-
-<tr class="" data-state="normal">
-  <td class="message-body" colspan="4">
-
-		<!-- Details -->
-    {.section summary}
-		<ul class="message-headers">
-      <li><b>From:</b> {from|html}</li>
-      {.end}
-      {.section headers}
-        {.section To}
-        <li><b>To:</b> {To|html}</li>
-      	{.end}
-      	{.section Cc}
-        <li><b>Cc:</b> {Cc|html}</li>
-      	{.end}
-      {.end}
-      {.section summary}
-      <li><b>Subject:</b> {subject|html}</li>
-    </ul>
-    {.end}
-    <!-- End Details -->
-
-		<!-- Message & Attachments -->
-    <div class="message-body">
-    {.repeated section text_parts}
-      <p class="text-part-{type}">{data|html}</p>
-    {.end}</div>
-
-    <ul class="message-attachments">
-    {.repeated section attachments}
-      <li><a href="./att:{count}" type="{mimetype}">{filename}</a>({mimetype} {length} bytes)</li>
-    {.end}
-    </ul>
-    <!-- End Message & Attachments -->
-
-  </td>
-</tr>  
-
-{.or}
-
-<tr class="result {even_odd} {.section is_editable} is_editable {.end} {tag_classes}" data-state="normal">  
-  <td class="from" title='{.repeated section conv_people} {name} &lt;{email}&gt;{.end}'>
-    <a href="{url}{.section is_editable}edit.html{.end}">{short_from}</a>
-  </td>
-  <td class="subject">
-    <a href="{url}{.section is_editable}edit.html{.end}">{subject}</a>
-  </td>
-  <td class="date" valign="top">
-  	<a href="/_/search/dates:{date}" data-full_date="{date|html}">{friendly_date}</a>
-  </td>
-  <td class="checkbox" valign="top">
-    <input type="checkbox" name="msg_{idx}" value="normal">
-  </td>
-</tr>
-
-  {.end}
-
-{.end}
+    {% for message in result.0.messages %}
+    {% if message.message %}
+		<tr>
+      <td class="message-body" colspan="4">
+      {% if not message.editing_string %}
+        <ul class="message-headers">
+          <li><b>Date:</b> {{message.date}}</li>
+          <li><b>From:</b> {{message.from|e}}</li>
+          <li><b>To:</b> {{message.message.headers.To|e}}</li>
+          <li><b>Cc:</b> {{message.message.headers.Cc|e}}</li>
+          <li><b>Subject:</b> {{message.subject}}</li>
+        </ul>
+       
+       <div class="message-body">
+       {% for part in message.message.text_parts %}
+         <p class="text-part-{type}">{{part.data|replace("\n", "<br/>")}}</p>
+       {% endfor %}
+       {% for part in message.message.html_parts %}
+         <p class="html-part-{type}">{{part.data|safe}}</p>
+       {% endfor %}
+       </div>
+       <ul class="message-attachments">
+       {% for att in message.message.attachments %}
+         <li><a href="./att:{{att.count}}" type="{{att.mimetype}}">{{att.filename}}</a>({{att.mimetype}} {{att.length}} bytes)</li>
+       {% endfor %}
+       </ul>
+     {% endif %}
+     </td>
+   </tr>
+   {% else %}
+   <tr class="result {{message.even_odd}} {% if message.is_editable %}is_editable{% endif %} {{message.tag_classes}}" data-state="normal">
+     <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
+       <a href="{{message.url}}{% if message.is_editable %}edit.html{% endif %}">{{message.short_from}}</a>
+     </td>
+     <td class="subject">
+       <a href="{{message.url}}{% if message.is_editable %}edit.html{% endif %}">{{message.subject}}</a>
+     </td>
+     <td class="date" valign="top">
+       <a href="/_/search/dates:{date}">{{message.friendly_date}}</a>
+     </td>
+     <td class="checkbox" valign="top">
+       <input type="checkbox" name="msg_{idx}" value="normal">
+     </td>
+     {% endif %}
+  </tr>
+  {% endfor %}
 </tbody>
 </table>
-{.end}
+
+{% include("_details_search_speed.html") %}
+{% endblock %}
