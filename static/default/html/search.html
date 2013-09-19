@@ -1,20 +1,8 @@
-<<<<<<< HEAD
-<nav id="sub-navigation">
-	<ul class="clearfix">
-		<li class="navigation-on"><a href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">5</span> New</a></li>
-		<li><a href="#"><span class="navigation-icon icon-later"></span>12 Later</a></li>
-		<li><a href="#"><span class="navigation-icon icon-message"></span><span>2,415</span> Read</a></li>
-		<li id="btn-display-list" class="navigation-on"><a onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span> List</a></li>
-		<li id="btn-display-graph"><a onclick="mailpile.results_graph();"><span class="navigation-icon icon-graph"></span> Graph</a></li>
-	</ul>
-</nav>
-=======
 {% extends "base.html" %}
 
 {% block content %}
 {% include("_search_nav.html") %}
 {% include("_search_searchbar.html") %}
->>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
 
 <div id="pile-graph" style="display: none; position: relative;">
     <style>
@@ -40,38 +28,6 @@ text {
 </div>
 <div id="pile-results">
 <form id="pile-results-form" action="" method="POST">
-<<<<<<< HEAD
-	<input type='hidden' name='csrf' value='{csrf}' />
-  {.repeated section result}
-  <table class="pile-results" id="pile-results">
-  <tbody>
-    {.repeated section messages}
-    <tr class="result {even_odd} {.section is_editable} is_editable {.end} {tag_classes}" data-state="normal">	                
-      <td class="from" title='{.repeated section conv_people} {name} &lt;{email}&gt;{.end}'>
-        <a href="{url}{.section is_editable}edit.html{.end}">{short_from}</a>
-      </td>
-      <td class="subject">
-        <a href="{url}{.section is_editable}edit.html{.end}">{subject}</a>
-      </td>
-      <td class="date" valign="top">
-      	<a href="/_/search/dates:{date}">{friendly_date}</a>
-      </td>
-      <td class="checkbox" valign="top">
-        <input type="checkbox" name="msg_{idx}" value="normal">
-      </td>
-    </tr>
-    {.end}
-  </tbody>
-  </table>
-  <div id="pile-bottom" class="clearfix">
-    <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
-    <div>
-      <h5>{start} - {end} of {total} Messages</h5><br>
-      <a class="change-result-size" href="#">Show Expanded View</a>
-    </div>
-  </div>
-  {.end}
-=======
     <input type='hidden' name='csrf' value='{csrf}' />
         <table class="pile-results" id="pile-results"><tbody>
                 {% for message in result.0.messages %}
@@ -131,7 +87,6 @@ text {
                 <a class="change-result-size" href="#">Show Expanded View</a>
             </div>
         </div>
->>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
 </form>
 </div>
 

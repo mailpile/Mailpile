@@ -3837,11 +3837,7 @@ h5,
 h6 {
   color: #333333;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-<<<<<<< HEAD
   font-weight: bold;
-=======
-  font-weight: normal;
->>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
   letter-spacing: 0px;
 }
 h1 a,
@@ -3900,16 +3896,10 @@ p.lead {
 em {
   font-style: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-<<<<<<< HEAD
 strong,
 b {
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: bold;
-=======
-strong {
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: normal;
->>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
   color: inherit;
 }
 small {
@@ -5318,11 +5308,7 @@ p.text-part-quote {
 }
 #sidebar a {
   display: block;
-<<<<<<< HEAD
   padding: 15px 0px;
-=======
-  padding: 15px 20px;
->>>>>>> 4ff3836932aa76d69853e4c65371a8a4946b43c8
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 18px;
   color: #4d4d4d;
