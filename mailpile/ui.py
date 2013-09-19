@@ -260,19 +260,11 @@ class UserInteraction:
         template = env.get_template(fn)
         return template
       except (IOError, OSError, AttributeError), e:
-        print "Error: %s" % e 
-        pass
+        emsg = "<h1>Template not found: %s</h1>%s\n"
+        return emsg % (fn, e)
       except (TemplateError, UndefinedError, TemplateSyntaxError, TemplateAssertionError, TemplateNotFound, TemplatesNotFound), e:
         emsg = "<h1>Template error in %s</h1>\nParsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp></div>"
         return emsg % (e.name, e.filename, e.message, e.lineno, e.source)
-
-    if elems:
-      return env.from_string('<div class="%s">\n  ' % tpl_names[0].replace('/', '_') +
-              '\n  '.join(['<span class="%s">{%s}</span>' % (e,e)
-                           for e in elems]) +
-              '\n</div>')
-    else:
-      return '{data}'
 
   def render_html(self, cfg, tpl_names, data):
     """Render data as HTML"""
@@ -319,25 +311,6 @@ class HttpUserInteraction(UserInteraction):
       ('\n%s\n' % ('=' * 79)).join(self.results)
     )
   def _render_html_response(self, config):
-    #page = self._html_template(config, ['page'],
-    #                           elems=['results', 'logged'])
-    #quiet = Session(config)
-    #quiet.ui = SilentInteraction()
-    #while page.startswith('{# set'):
-    #  load, page = page.split('\n', 1)
-    #  _set, vname, _eq, mode, cmd = load.strip()[3:-2].split(None, 4)
-    # cmd, arg = (' ' in cmd) and cmd.split(' ', 1) or (cmd, '')
-    #  quiet.ui.render_mode = mode
-    #result = mailpile.commands.Action(quiet, cmd, arg)
-    #return result
-    #  self.html_variables[vname] = quiet.ui.display_result(result)
-
-    #return jsontemplate.expand(page, default_dict(self.html_variables, {
-    #  'results': '\n'.join(['<div class="result">%s</div>' % r
-    #                        for r in self.results]),
-    #  'logged': '\n'.join(['<p class="ll_%s">%s</p>' % l
-    #                        for l in self.logged])
-    #}), undefined_str='')
     if len(self.results) > 0:
       return self.results[0]
 
