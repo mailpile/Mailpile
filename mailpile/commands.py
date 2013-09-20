@@ -68,7 +68,7 @@ class Command:
       #        the fs (ask the UI object) if the requested template exists,
       #        not whether it is hard-coded into the template_ids list.
       if template in self.template_ids:
-        templates = ['html/%s' % template]
+        templates = ['html/%s' % template.rsplit('.', 1)[0]]
       else:
         templates = ['html/%s' % t for t in self.template_ids]
       return self.session.ui.render_html(self.session.config, templates,
