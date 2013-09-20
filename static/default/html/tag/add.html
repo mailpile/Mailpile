@@ -1,22 +1,21 @@
-<div id="pile-results">
-<form id="pile-results-form" action="/_/tag/add/" method="POST">
-        <input type='hidden' name='csrf' value='{csrf}' />
-    <table><tbody>
-        <tr>
-            <td class="contact-name">
-                Tags:
-            </td>
-            <td class="contact-name">
-                <input type="text" name="@contactname" value=""/>
-            </td>
-        </tr>
-        <tr>
-            <td class="contact-name">
-            </td>
-            <td class="contact-name">
-                <input type="submit" value="Add Tag"/>
-            </td>
-        </tr>
-    </tbody></table>
-</form>
+{% extends "layouts/base.html" %}
+
+{% block content %}
+{% include("partials/sub_nav_tags.html") %}
+
+<div id="contact-add" class="content-normal">
+
+  <h3>Tag Info</h3>
+
+  <form id="form-contact-add" action="/_/contact/add/" method="POST">
+    <input type="hidden" name="csrf" value="{csrf}">
+
+      <label>Tag</label>
+      <input type="text" name="@tagname" value="" placeholder="Friends, Family">
+
+      <input type="submit" value="Add"/>
+
+  </form>
 </div>
+
+{% endblock %}

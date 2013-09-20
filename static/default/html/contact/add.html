@@ -3,36 +3,29 @@
 {% block content %}
 {% include("partials/sub_nav_contacts.html") %}
 
+<div id="contact-add" class="content-normal">
 
-<div id="pile-results">
-<form id="pile-results-form" action="/_/contact/add/" method="POST">
-        <input type='hidden' name='csrf' value='{csrf}' />
-    <table><tbody>
-        <tr>
-            <td class="contact-name">
-                Name:
-            </td>
-            <td class="contact-name">
-                <input type="text" name="@contactname" value=""/>
-            </td>
-        </tr>
-        <tr>
-            <td class="contact-name">
-                E-mail:
-            </td>
-            <td class="contact-name">
-                <input type="text" name="@contactemail" value=""/>
-            </td>
-        </tr>
-        <tr>
-            <td class="contact-name">
-            </td>
-            <td class="contact-name">
-                <input type="submit" value="Add contact"/>
-            </td>
-        </tr>
-    </tbody></table>
-</form>
+  <h3>Contact Info</h3>
+
+  <form id="form-contact-add" action="/_/contact/add/" method="GET">
+
+    <input type="hidden" name="csrf" value="{csrf}">
+
+    <label>Name</label>
+    <input type="text" name="@contactname" value="" placeholder="Chelsea Manning">
+
+    <label>E-mail</label>
+    <input type="text" name="@contactemail" value="" placeholder="chelsea@website.com">
+
+    <label>Website</label>
+    <input type="text" name="@contactwebsite" value="" placeholder="http://website.com">
+
+    <label>PGP Key</label>
+    <textarea name="@pgpkey" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----4rcoQYTGVltTC4gTItr2YrFoWRe0sSIrOregxwfKHvu5bIL9lp58zoAOCcoeKonbBCOda6RckZsKRpZ1E49agxZbSMSFk3cpkcCw5/mI10ze4tQbvPw..."></textarea>
+
+    <input type="submit" value="Add"/>
+
+  </form>
 </div>
 
 {% endblock %}

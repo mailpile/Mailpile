@@ -5214,20 +5214,23 @@ p.text-part-quote {
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
   box-sizing: border-box;
+  overflow: hidden;
 }
 #header .logo {
   width: 64px;
   height: 45px;
   display: inline-block;
   position: relative;
-  top: 8px;
+  top: 13px;
   margin-right: 15px;
   left: 20px;
+  float: left;
 }
 #header h1 {
   display: inline-block;
+  float: left;
   position: relative;
-  top: 10px;
+  top: 8px;
   left: 15px;
   line-height: 36px;
   color: #4d4d4d;
@@ -5362,15 +5365,17 @@ p.text-part-quote {
 /* Sub Navigation */
 #sub-navigation {
   width: 100%;
+  height: 60px;
   min-width: 450px;
-  float: right;
   display: block;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
   box-sizing: border-box;
 }
 #sub-navigation ul {
-  margin: 12px;
+  position: relative;
+  top: 10px;
+  left: 10px;
 }
 #sub-navigation a {
   display: block;
@@ -5414,6 +5419,10 @@ p.text-part-quote {
   background: #fbb03b;
   padding: 1px 4px;
   color: #ffffff;
+}
+/* Content */
+div.content-normal {
+  margin: 25px;
 }
 /* Search */
 #search {

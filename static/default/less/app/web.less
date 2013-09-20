@@ -22,6 +22,7 @@
 		background: @grayLight;
 		border-bottom: 1px solid @gray;		
 		box-sizing: border-box;
+		overflow: hidden;
 	}
 	
 	#header .logo {
@@ -29,15 +30,17 @@
 		height: 45px;
 		display: inline-block;
 		position: relative;
-		top: 8px;
+		top: 13px;
 		margin-right: 15px;
 		left: 20px;
+		float: left;
 	}
 	
 	#header h1 {
 		display: inline-block;
+		float: left;
 		position: relative;
-		top: 10px;
+		top: 8px;
 		left: 15px;
 		line-height: 36px;
 		color: @grayDark;
@@ -216,8 +219,8 @@
 
 	#sub-navigation	{
 		width: 100%;
+    height: 60px;
 		min-width: 450px;
-		float: right;
 		display: block;
 		background: @grayLight;
 		border-bottom: 1px solid @gray;
@@ -225,7 +228,9 @@
 	}
 	
 	#sub-navigation ul {
-		margin: 12px;	
+	  position: relative;
+	  top: 10px;
+	  left: 10px; 
 	}
 
 	#sub-navigation a {
@@ -284,6 +289,11 @@
 	}
 	
 
+/* Content */
+
+  div.content-normal {
+    margin: 25px;
+  }
 
 	
 /* Search */
