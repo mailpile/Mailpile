@@ -2,23 +2,6 @@
   "CodeKitInfo" : "This is a CodeKit project configuration file. It is designed to sync project settings across multiple machines. Modifying the contents of this file can be a poor life decision if you don't know what you're doing. This file is not useful unless accompanied by the project that created it in CodeKit. For more information, see: http:\/\/incident57.com\/codekit",
   "creatorBuild" : "8326",
   "files" : {
-    "\/less\/mixins\/shapes.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/mixins\/shapes.less",
-      "outputAbbreviatedPath" : "\/less\/css\/shapes.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
     "\/less\/rebar\/responsive-boxes.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/responsive-boxes.less",
@@ -35,6 +18,15 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
+    },
+    "\/html\/partials\/sub_nav_search.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 1,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/partials\/sub_nav_search.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
     },
     "\/less\/rebar\/typography.less" : {
       "ieCompatibility" : 1,
@@ -62,17 +54,6 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
-    "\/img\/apple-touch-icon-114x114.png" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/img\/apple-touch-icon-114x114.png",
-      "processed" : 0,
-      "outputAbbreviatedPath" : "\/img\/apple-touch-icon-114x114.png",
-      "initialSize" : 2914,
-      "fileType" : 8192
-    },
     "\/less\/rebar\/forms.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/forms.less",
@@ -89,6 +70,17 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
+    },
+    "\/img\/apple-touch-icon-114x114.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/apple-touch-icon-114x114.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/apple-touch-icon-114x114.png",
+      "initialSize" : 2914,
+      "fileType" : 8192
     },
     "\/oldhtml\/contact_add.html" : {
       "ignoreWasSetByUser" : 0,
@@ -190,40 +182,6 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/config.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/config.less",
-      "outputAbbreviatedPath" : "\/css\/config.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
-    "\/less\/mixins\/grid.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/mixins\/grid.less",
-      "outputAbbreviatedPath" : "\/less\/css\/grid.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
     "\/less\/app\/messages.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app\/messages.less",
@@ -284,6 +242,34 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
+    "\/less\/config.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/config.less",
+      "outputAbbreviatedPath" : "\/css\/config.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+    "\/img\/logo-color.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/logo-color.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/logo-color.png",
+      "initialSize" : 2601,
+      "fileType" : 8192
+    },
     "\/less\/rebar\/navigation.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/rebar\/navigation.less",
@@ -332,16 +318,22 @@
       "initialSize" : 641,
       "fileType" : 8192
     },
-    "\/img\/logo-color.png" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
+    "\/less\/mixins\/grid.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/mixins\/grid.less",
+      "outputAbbreviatedPath" : "\/less\/css\/grid.css",
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/img\/logo-color.png",
-      "processed" : 0,
-      "outputAbbreviatedPath" : "\/img\/logo-color.png",
-      "initialSize" : 2601,
-      "fileType" : 8192
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
     },
     "\/less\/rebar\/base.less" : {
       "ieCompatibility" : 1,
@@ -396,21 +388,21 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 16
     },
-    "\/oldhtml\/contact_list.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/oldhtml\/contact_list.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/html\/compose\/index.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/html\/compose\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/oldhtml\/contact_list.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/oldhtml\/contact_list.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -467,6 +459,35 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
+    "\/img\/apple-touch-icon.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
+      "initialSize" : 1174,
+      "fileType" : 8192
+    },
+    "\/html\/partials\/sub_nav_compose.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 1,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/partials\/sub_nav_compose.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/oldhtml\/search.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/oldhtml\/search.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/less\/app\/credits.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app\/credits.less",
@@ -483,26 +504,6 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
-    },
-    "\/img\/apple-touch-icon.png" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
-      "processed" : 0,
-      "outputAbbreviatedPath" : "\/img\/apple-touch-icon.png",
-      "initialSize" : 1174,
-      "fileType" : 8192
-    },
-    "\/oldhtml\/search.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/oldhtml\/search.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/html\/partials\/sub_nav_view.html" : {
       "ignoreWasSetByUser" : 0,
@@ -524,15 +525,6 @@
       "outputAbbreviatedPath" : "\/js\/jKey\/jquery.jkey-min.js",
       "fileType" : 64
     },
-    "\/html\/partials\/sub_nav_compose.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 1,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/partials\/sub_nav_compose.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/css\/default.css" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 1,
@@ -541,23 +533,6 @@
       "inputAbbreviatedPath" : "\/css\/default.css",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 16
-    },
-    "\/less\/rebar\/responsive-grid.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/rebar\/responsive-grid.less",
-      "outputAbbreviatedPath" : "\/less\/css\/responsive-grid.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
     },
     "\/less\/rebar\/buttons.less" : {
       "ieCompatibility" : 1,
@@ -576,6 +551,41 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+    "\/less\/rebar\/responsive-grid.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/responsive-grid.less",
+      "outputAbbreviatedPath" : "\/less\/css\/responsive-grid.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+    "\/oldhtml\/tag_list.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/oldhtml\/tag_list.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/html\/settings\/index.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/settings\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/img\/logo-252.png" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -586,15 +596,6 @@
       "outputAbbreviatedPath" : "\/img\/logo-252.png",
       "initialSize" : 5034,
       "fileType" : 8192
-    },
-    "\/oldhtml\/tag_list.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/oldhtml\/tag_list.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/js\/jKey\/index.html" : {
       "ignoreWasSetByUser" : 0,
@@ -688,15 +689,6 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
-    "\/html\/partials\/search_searchbar.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 1,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/partials\/search_searchbar.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/less\/app\/mobile.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app\/mobile.less",
@@ -713,6 +705,15 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
+    },
+    "\/html\/partials\/search_searchbar.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 1,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/partials\/search_searchbar.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
     },
     "\/oldhtml\/compose.html" : {
       "ignoreWasSetByUser" : 0,
@@ -740,10 +741,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/app\/backgrounds.less" : {
+    "\/less\/app\/webfonts.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/app\/backgrounds.less",
-      "outputAbbreviatedPath" : "\/less\/css\/backgrounds.css",
+      "inputAbbreviatedPath" : "\/less\/app\/webfonts.less",
+      "outputAbbreviatedPath" : "\/less\/css\/webfonts.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -766,10 +767,27 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
-    "\/less\/app\/webfonts.less" : {
+    "\/less\/app\/backgrounds.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/app\/webfonts.less",
-      "outputAbbreviatedPath" : "\/less\/css\/webfonts.css",
+      "inputAbbreviatedPath" : "\/less\/app\/backgrounds.less",
+      "outputAbbreviatedPath" : "\/less\/css\/backgrounds.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+    "\/less\/app\/web.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/app\/web.less",
+      "outputAbbreviatedPath" : "\/less\/css\/web.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -794,10 +812,10 @@
       "outputAbbreviatedPath" : "\/js\/mailpile-min-min.js",
       "fileType" : 64
     },
-    "\/less\/app\/web.less" : {
+    "\/less\/app\/resuable.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/app\/web.less",
-      "outputAbbreviatedPath" : "\/less\/css\/web.css",
+      "inputAbbreviatedPath" : "\/less\/app\/resuable.less",
+      "outputAbbreviatedPath" : "\/less\/css\/resuable.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -811,12 +829,29 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/html\/layouts\/base.html" : {
+    "\/less\/rebar\/separators.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/rebar\/separators.less",
+      "outputAbbreviatedPath" : "\/less\/css\/separators.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
+    "\/oldhtml\/extract.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/layouts\/base.html",
+      "inputAbbreviatedPath" : "\/oldhtml\/extract.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -831,12 +866,12 @@
       "outputAbbreviatedPath" : "\/js\/jKey\/jquery.jkey.min-min.js",
       "fileType" : 64
     },
-    "\/oldhtml\/extract.html" : {
+    "\/html\/contact\/list.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/oldhtml\/extract.html",
+      "inputAbbreviatedPath" : "\/html\/contact\/list.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -868,12 +903,12 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/html\/contact\/list.html" : {
+    "\/html\/layouts\/base.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/contact\/list.html",
+      "inputAbbreviatedPath" : "\/html\/layouts\/base.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -887,23 +922,6 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/jquery.min-min.js",
       "fileType" : 64
-    },
-    "\/less\/rebar\/separators.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/rebar\/separators.less",
-      "outputAbbreviatedPath" : "\/less\/css\/separators.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
     },
     "\/temporary.html" : {
       "ignoreWasSetByUser" : 0,
@@ -943,14 +961,22 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 16
     },
-    "\/html\/partials\/sub_nav_search.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 1,
-      "hidden" : 0,
+    "\/less\/mixins\/shapes.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/mixins\/shapes.less",
+      "outputAbbreviatedPath" : "\/less\/css\/shapes.css",
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/partials\/sub_nav_search.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
     }
   },
   "manualImportLinks" : [

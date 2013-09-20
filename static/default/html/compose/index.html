@@ -6,30 +6,33 @@
 
 <div id="compose">
 
-	<div class="compose-section compose-headers">
-		To: <input type="email" value="">
-	</div>
-	<div class="compose-section compose-headers">
-		Cc: <input type="email" value="">
-	</div>
-	<div class="compose-section compose-headers">
-		Bcc: <input type="email" value="">
-	</div>
-	<div class="compose-section compose-subject">
-		Subject: <input type="text" value="">
-	</div>
-	<div class="compose-section compose-message">
-  	<textarea name="" cols="72" rows="20"></textarea>
-	</div>
-	<div class="compose-section compose-attachments">
-		<span class="icon-attachment"></span> No Attachments
-		
-		<button type="button">Add Attachment</button>
-	</div>
-	<div class="compose-buttons">
-    <button type="submit"><span class="icon-sent"></span> Send</button>
-    <button type="submit"><span class="icon-compose"></span> Save</button>
-	</div>
+  <form id="form-compose" name="compose" action="/" method="POST">
+
+  	<div class="compose-section compose-headers">
+		  <label>To:</label> <input type="email" value="">
+	  </div>
+  	<div class="compose-section compose-headers">
+		  <label>Cc:</label> <input type="email" value="">
+	  </div>
+  	<div class="compose-section compose-headers">
+		  <label>Bcc:</label> <input type="email" value="">
+	  </div>
+  	<div class="compose-section compose-headers">
+		  <label>Subject:</label> <input type="text" value="">
+	  </div>
+  	<div class="compose-section compose-message">
+  	  <textarea name=""></textarea>
+	  </div>
+	  <div class="compose-section compose-attachments">
+		  <span class="icon-attachment"></span> No Attachments
+		  <input type="file" name="add-attachment">
+	  </div>
+  	<div class="compose-buttons">
+      <button type="submit"><span class="icon-sent"></span> Send</button>
+      <button type="submit"><span class="icon-compose"></span> Save</button>
+	  </div>
+ 
+  </form>
  
 </div>
 

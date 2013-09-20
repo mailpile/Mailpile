@@ -34,10 +34,9 @@
 @import "rebar/responsive-boxes.less";
 @import "rebar/clearing.less";
 
-
 /* App */
 @import "app/messages.less";
-
+@import "app/resuable.less";
 
     /* FIXME: Belongs in the .css, here for testing */
     .tag_new_0 .navigation-attention-important {display: none}
@@ -48,6 +47,9 @@
     p.text-part-text {white-space: pre-wrap;}
     p.text-part-quote {white-space: pre-wrap; color: #777; max-height: 5em; overflow: hidden;}
 
+    /* Force Graph */
+    .link { fill: none; stroke: #666; stroke-width: 1.5px; }
+    text { fill: #000; font: 12px sans-serif; pointer-events: none; }
 
 @import "app/web.less";
 @import "app/tablet.less";
