@@ -34,9 +34,11 @@ class Command:
   HTTP_QUERY_VARS = { }
 
   class CommandResult:
-    def __init__(self, session, command, template_ids, doc, result):
+    def __init__(self, session, command, template_ids, doc, result, args=[], kwargs={}):
       self.session = session
       self.command = command
+      self.args = args
+      self.kwargs = kwargs
       self.template_ids = template_ids
       self.doc = doc
       self.result = result
@@ -54,6 +56,9 @@ class Command:
     def as_dict(self):
       return {
         'command': self.command,
+        'command_parts': self.command.split(" "),
+        'args': self.args,
+        'kwargs': self.kwargs,
         'result': self.result,
         'elapsed': '%.3f' % self.session.ui.time_elapsed
       }
@@ -168,7 +173,7 @@ class Command:
     if self.name:
        self.session.ui.finish_command()
     return self.CommandResult(self.session, self.name, self.template_ids,
-                              command.__doc__ or self.__doc__, rv)
+                              command.__doc__ or self.__doc__, rv, self.args, self.data)
 
   def _run(self, *args, **kwargs):
     try:

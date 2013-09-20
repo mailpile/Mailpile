@@ -268,8 +268,8 @@ class UserInteraction:
   def render_html(self, cfg, tpl_names, data):
     """Render data as HTML"""
     template = self._html_template(cfg, tpl_names)
-    alldata = default_dict(cfg)
-    alldata.update(self.html_variables)
+    alldata = default_dict(self.html_variables)
+    alldata["config"] = cfg
     alldata.update(data)
     try:
       return template.render(alldata)
