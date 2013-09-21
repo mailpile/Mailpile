@@ -112,7 +112,7 @@ class UrlMap:
 
     def _map_root(self, request, path_parts, query_data, post_data):
         """Redirects to /in/Inbox/ for now.  (FIXME)"""
-        return [self._command('_redirect', args=['/in/Inbox/'], method=False)]
+        return [UrlRedirect(self.session, 'redirect', arg=['/in/Inbox/'])]
 
     def _map_tag(self, request, path_parts, query_data, post_data):
         """
@@ -304,7 +304,7 @@ class UrlRedirectException(Exception):
         self.url = url
 
 
-class _UrlRedirect(mailpile.commands.Command):
+class UrlRedirect(mailpile.commands.Command):
     """A stub command which just throws UrlRedirectException."""
     ORDER = ('', )
     HTTP_CALLABLE = ()
@@ -313,13 +313,7 @@ class _UrlRedirect(mailpile.commands.Command):
         raise UrlRedirectException(self.args[0])
 
 
-if __name__ != "__main__":
-    # If loaded as a module, register our redirect command
-    try:
-        mailpile.plugins.register_command('_urlrdr', '_redirect', _UrlRedirect)
-    except mailpile.plugins.PluginError:
-        pass
-else:
+if __name__ == "__main__":
     # If run as a python script, print map and run doctests.
     import doctest
     import mailpile.app
