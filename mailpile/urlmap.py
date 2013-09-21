@@ -1,4 +1,5 @@
 from urlparse import parse_qs, urlparse
+from urllib import quote
 
 import mailpile.commands
 
@@ -243,17 +244,67 @@ class UrlMap:
         # Fall back to API-style
         return self._map_api_command(path_parts, query_data, post_data)
 
-    def url_thread(self, message_id):
-        pass
+    def _url(self, url, output='', qs=''):
+        if output and '.' not in output:
+            output = 'as.%s' % output
+        return ''.join([url, output, qs and '?' or '', qs])
 
-    def url_compose(self, message_id):
-        pass
+    def url_thread(self, message_id, output=''):
+        """Map a message to it's short-hand thread URL."""
+        return self._url('/thread/%s/' % message_id, output)
 
-    def url_tag(self, tag_id):
-        pass
+    def url_compose(self, message_id, output=''):
+        """Map a message to it's short-hand editing URL."""
+        return self._url('/compose/%s/' % message_id, output)
 
-    def url_search(self, search_terms):
-        pass
+    def url_tag(self, tag_id, output=''):
+        """
+        Map a tag to it's short-hand URL.
+
+        >>> urlmap.url_tag('Inbox')
+        '/in/Inbox/'
+        >>> urlmap.url_tag('Inbox', output='json')
+        '/in/Inbox/as.json'
+        >>> urlmap.url_tag('1')
+        '/in/Inbox/'
+
+        Unknown tags raise an exception.
+        >>> urlmap.url_tag('99')
+        Traceback (most recent call last):
+            ...
+        ValueError: Unknown tag: 99
+        """
+        if tag_id in self.session.config.get('tag', {}):
+            return self._url('/in/%s/' % self.session.config['tag'][tag_id],
+                             output)
+        elif tag_id in self.session.config.get('tag', {}).values():
+            return self._url('/in/%s/' % tag_id, output)
+        raise ValueError('Unknown tag: %s' % tag_id)
+
+    def url_search(self, search_terms, tag=None, output=''):
+        """
+        Map a search query to it's short-hand URL, using Tag prefixes if
+        there is exactly one tag in the search terms or we have tag context.
+
+        >>> urlmap.url_search(['foo', 'bar', 'baz'])
+        '/search/?q=foo%20bar%20baz'
+        >>> urlmap.url_search(['foo', 'tag:Inbox', 'wtf'], output='json')
+        '/in/Inbox/as.json?q=foo%20wtf'
+        >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], output='xml')
+        '/search/as.xml?q=foo%20tag%3AInbox%20tag%3ANew'
+        >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], tag='Inbox')
+        '/in/Inbox/?q=foo%20tag%3ANew'
+        """
+        tags = tag and [tag] or [t for t in search_terms
+                                         if t.startswith('tag:')]
+        if len(tags) == 1:
+            prefix = self.url_tag(tags[0].replace('tag:', ''))
+            search_terms = [t for t in search_terms
+                                    if t not in tags and
+                                       t.replace('tag:', '') not in tags]
+        else:
+            prefix = '/search/'
+        return self._url(prefix, output, 'q=' + quote(' '.join(search_terms)))
 
     def print_map_markdown(self):
         """Prints the current URL map to stdout as markdown."""
