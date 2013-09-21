@@ -1,7 +1,6 @@
 from urlparse import parse_qs, urlparse
 
 import mailpile.commands
-import mailpile.plugins
 
 
 class UrlMap:
@@ -157,6 +156,26 @@ class UrlMap:
     def _map_RESERVED(self, *args):
         """RESERVED FOR LATER."""
 
+    def _map_api_command(self, path_parts, query_data, post_data, fmt='html'):
+        """Map a path to a command list, prefering the longest match.
+
+        >>> urlmap._map_api_command(['http', 'redir', '...'], {}, {})
+        [<mailpile.commands.Output...>, <...UrlRedirect...>]
+        """
+        output = self._choose_output(path_parts, fmt=fmt)
+        for bp in reversed(range(1, len(path_parts) + 1)):
+            try:
+                return [
+                    output,
+                    self._command('/'.join(path_parts[:bp]),
+                                  args=path_parts[bp:],
+                                  query_data=query_data,
+                                  post_data=post_data)
+                ]
+            except ValueError:
+                pass
+        raise
+
     MAP_API = 'api'
     MAP_PATHS = {
        '':        _map_root,
@@ -210,13 +229,8 @@ class UrlMap:
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:
                 raise ValueError('Unknown API level: %s' % path_parts[2])
-            path_parts = path_parts[3:]
-            return [
-                self._choose_output(path_parts, fmt='json'),
-                self._command(path_parts[0], args=path_parts[1:],
-                                             query_data=query_data,
-                                             post_data=post_data)
-            ]
+            return self._map_api_command(path_parts[3:], query_data, post_data,
+                                         fmt='json')
 
         # For non-API calls, strip prefixes before further processing
         path_parts = path[1:].split('/')
@@ -227,12 +241,7 @@ class UrlMap:
             return method(self, request, path_parts, query_data, post_data)
 
         # Fall back to API-style
-        return [
-            self._choose_output(path_parts),
-            self._command(path_parts[0], args=path_parts[1:],
-                                         query_data=query_data,
-                                         post_data=post_data)
-        ]
+        return self._map_api_command(path_parts, query_data, post_data)
 
     def url_thread(self, message_id):
         pass
@@ -307,7 +316,7 @@ class UrlRedirectException(Exception):
 class UrlRedirect(mailpile.commands.Command):
     """A stub command which just throws UrlRedirectException."""
     ORDER = ('', )
-    HTTP_CALLABLE = ()
+    HTTP_CALLABLE = ('GET', 'POST', 'PUT', 'UPDATE')
 
     def command(self):
         raise UrlRedirectException(self.args[0])
@@ -317,7 +326,12 @@ if __name__ == "__main__":
     # If run as a python script, print map and run doctests.
     import doctest
     import mailpile.app
+    import mailpile.plugins
     import mailpile.ui
+
+    # For the UrlMap._map_api_command test
+    mailpile.plugins.register_command('_t', 'http/redir', UrlRedirect)
+
     session = mailpile.ui.Session(mailpile.app.ConfigManager())
     session.config['tag'] = {
         '0': 'New',
