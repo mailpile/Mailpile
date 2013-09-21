@@ -277,7 +277,7 @@ class UrlMap:
                 print '### %s%s' % (method, method == 'GET' and
                                             ' (also accept POST)' or '')
                 print
-            # FIXME: Subcommands?
+            commands.sort()
             for command in commands:
                 cls, query_vars = command[1], command[1].HTTP_QUERY_VARS
                 if query_vars:
@@ -329,9 +329,6 @@ if __name__ == "__main__":
     import mailpile.plugins
     import mailpile.ui
 
-    # For the UrlMap._map_api_command test
-    mailpile.plugins.register_command('_t', 'http/redir', UrlRedirect)
-
     session = mailpile.ui.Session(mailpile.app.ConfigManager())
     session.config['tag'] = {
         '0': 'New',
@@ -339,6 +336,10 @@ if __name__ == "__main__":
     }
     urlmap = UrlMap(session)
     urlmap.print_map_markdown()
+
+    # For the UrlMap._map_api_command test
+    mailpile.plugins.register_command('_t', 'http/redir', UrlRedirect)
+
     print
     print '<!-- %s -->' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
                                            extraglobs={'urlmap': urlmap,
