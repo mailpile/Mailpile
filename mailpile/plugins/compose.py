@@ -32,7 +32,9 @@ class Compose(ReturnsSearchResults):
   ORDER = ('Composing', 0)
   TEMPLATE_IDS = ['compose'] + Search.TEMPLATE_IDS
   HTTP_CALLABLE = ('GET', )
-  HTTP_QUERY_VARS = { }
+  HTTP_QUERY_VARS = {
+    'mid': 'metadata-ID',
+  }
   HTTP_POST_VARS = { }
 
   SYNOPSIS = '<[msg]>'
@@ -296,9 +298,9 @@ class Mail(ReturnsSearchResults):
     return self._return_search_results(session, idx, sent)
 
 
-mailpile.plugins.register_command('a:', 'attach=',  Attach)
-mailpile.plugins.register_command('c:', 'compose=', Compose)
-mailpile.plugins.register_command('f:', 'forward=', Forward)
-mailpile.plugins.register_command('m:', 'mail=',    Mail)
-mailpile.plugins.register_command('r:', 'reply=',   Reply)
-mailpile.plugins.register_command('u:', 'update=',  Update)
+mailpile.plugins.register_command('c:', 'message/compose=', Compose)
+mailpile.plugins.register_command('r:', 'message/reply=',   Reply)
+mailpile.plugins.register_command('f:', 'message/forward=', Forward)
+mailpile.plugins.register_command('u:', 'message/update=',  Update)
+mailpile.plugins.register_command('m:', 'message/mail=',    Mail)
+mailpile.plugins.register_command('a:', 'message/attach=',  Attach)

@@ -175,7 +175,7 @@ class UrlMap:
                 ]
             except ValueError:
                 pass
-        raise
+        raise ValueError('Unknown command: %s' % '/'.join(path_parts))
 
     MAP_API = 'api'
     MAP_PATHS = {
@@ -221,7 +221,7 @@ class UrlMap:
         Other commands use the command name as the first path component:
         >>> urlmap.map(request, '/search/bjarni', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
-        >>> urlmap.map(request, '/compose/=123/', {}, {})
+        >>> urlmap.map(request, '/message/compose/=123/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.compose.Compose...>]
         """
 
@@ -235,14 +235,14 @@ class UrlMap:
 
         # For non-API calls, strip prefixes before further processing
         path_parts = path[1:].split('/')
-
-        # Check for the registered priority shortcuts
-        if path_parts[0] in self.MAP_PATHS:
-            method = self.MAP_PATHS[path_parts[0]]
-            return method(self, request, path_parts, query_data, post_data)
-
-        # Fall back to API-style
-        return self._map_api_command(path_parts, query_data, post_data)
+        try:
+            return self._map_api_command(path_parts, query_data, post_data)
+        except ValueError:
+            # Finally check for the registered shortcuts
+            if path_parts[0] in self.MAP_PATHS:
+                method = self.MAP_PATHS[path_parts[0]]
+                return method(self, request, path_parts, query_data, post_data)
+            raise
 
     def _url(self, url, output='', qs=''):
         if output and '.' not in output:
@@ -255,7 +255,7 @@ class UrlMap:
 
     def url_compose(self, message_id, output=''):
         """Map a message to it's short-hand editing URL."""
-        return self._url('/compose/%s/' % message_id, output)
+        return self._url('/message/compose/%s/' % message_id, output)
 
     def url_tag(self, tag_id, output=''):
         """
