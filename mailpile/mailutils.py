@@ -240,8 +240,8 @@ def UnorderedPicklable(parent, editable=False):
     def mark_parsed(self, i):
       self.parsed[i] = True
 
-    def __setstate__(self, dict):
-      self.__dict__.update(dict)
+    def __setstate__(self, data):
+      self.__dict__.update(data)
       self.update_toc()
 
     def save(self, session=None, to=None):

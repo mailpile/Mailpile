@@ -384,7 +384,7 @@ class MailIndex(object):
             self.INDEX.append('')
           self.INDEX[pos] = line
           self.MSGIDS[msgid] = pos
-          for msg_ptr in ptrs:
+          for msg_ptr in ptrs.split(','):
             self.PTRS[msg_ptr] = pos
       except ValueError:
         pass
@@ -476,9 +476,10 @@ class MailIndex(object):
         msg_ptrs[i] = msg_ptr
         msg_ptr = None
         break
-
     # Otherwise, this is a new mailbox, record this sighting as well!
-    if msg_ptr: msg_ptrs.append(msg_ptr)
+    if msg_ptr:
+      msg_ptrs.append(msg_ptr)
+
     msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
     self.set_msg_by_idx(msg_idx, msg_info)
 
@@ -548,7 +549,8 @@ class MailIndex(object):
 
       msg_ptr = mbox.get_msg_ptr(idx, i)
       if msg_ptr in self.PTRS:
-        if (ui % 317) == 0: session.ui.mark(parse_status)
+        if (ui % 317) == 0:
+          session.ui.mark(parse_status)
         continue
       else:
         session.ui.mark(parse_status)
@@ -585,13 +587,13 @@ class MailIndex(object):
                                              msg_subject, msg_snippet,
                                              tags)
         self.set_conversation_ids(msg_info[self.MSG_IDX], msg)
+        mbox.mark_parsed(i)
 
         added += 1
         if (added % 1000) == 0:
           GlobalPostingList.Optimize(session, self, quick=True)
 
     if added:
-      mbox.mark_parsed(i)
       mbox.save(session)
     session.ui.mark('%s: Indexed mailbox: %s' % (idx, mailbox_fn))
     return added
@@ -826,7 +828,6 @@ class MailIndex(object):
               '', '', '-1']
 
   def set_msg_by_idx(self, msg_idx, msg_info):
-    self.MODIFIED.add(msg_idx)
     if msg_idx < len(self.INDEX):
       self.INDEX[msg_idx] = self.m2l(msg_info)
     elif msg_idx == len(self.INDEX):
@@ -834,11 +835,12 @@ class MailIndex(object):
     else:
       raise IndexError('%s is outside the index' % msg_idx)
 
+    self.MODIFIED.add(msg_idx)
     if msg_idx in self.CACHE:
       del(self.CACHE[msg_idx])
 
     self.MSGIDS[msg_info[self.MSG_ID]] = msg_idx
-    for msg_ptr in msg_info[self.MSG_PTRS]:
+    for msg_ptr in msg_info[self.MSG_PTRS].split(','):
       self.PTRS[msg_ptr] = msg_idx
 
   def get_conversation(self, msg_info=None, msg_idx=None):
