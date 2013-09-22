@@ -63,9 +63,15 @@ class Command:
         'elapsed': '%.3f' % self.session.ui.time_elapsed
       }
 
-    def as_html(self):
-      return self.session.ui.render_html(self.session.config,
-                                         self.template_ids,
+    def as_html(self, template=None):
+      # FIXME: For optimal designer happiness, we should probably check
+      #        the fs (ask the UI object) if the requested template exists,
+      #        not whether it is hard-coded into the template_ids list.
+      if template in self.template_ids:
+        templates = [template.rsplit('.', 1)[0]]
+      else:
+        templates = self.template_ids
+      return self.session.ui.render_html(self.session.config, templates,
                                          self.as_dict())
 
     def as_json(self):

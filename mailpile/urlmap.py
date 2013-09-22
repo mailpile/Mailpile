@@ -1,7 +1,7 @@
 from urlparse import parse_qs, urlparse
+from urllib import quote
 
 import mailpile.commands
-import mailpile.plugins
 
 
 class UrlMap:
@@ -25,7 +25,7 @@ class UrlMap:
     it is HTML. It is strongly recommended that only the versioned API
     endpoints be used for automation.
     """
-    API_VERSIONS = (20130900, )
+    API_VERSIONS = (0, )
 
     def __init__(self, session):
         self.session = session
@@ -42,7 +42,7 @@ class UrlMap:
         """
         which, value, path = path[1:].split('/', 2)
         query_data[which] = [value]
-        return '/'+path
+        return '/' + path
 
     def _api_commands(self, method=True):
         return [c for c in mailpile.commands.COMMANDS.values()
@@ -61,18 +61,18 @@ class UrlMap:
         ValueError: Unknown command: bogus
         """
         match = [c for c in self._api_commands(method)
-                         if c[0] in (name, name+'=')]
+                         if c[0] in (name, name + '=')]
         if len(match) != 1:
-          raise ValueError('Unknown command: %s' % name)
+            raise ValueError('Unknown command: %s' % name)
         command = match[0][1]
 
         data = {}
         for vlist, src in ((command.HTTP_QUERY_VARS, query_data),
                            (command.HTTP_QUERY_VARS, post_data),
                            (command.HTTP_POST_VARS, post_data)):
-          for var in vlist:
-            if var in src:
-              data[var] = src[var]
+            for var in vlist:
+                if var in src:
+                    data[var] = src[var]
 
         return command(self.session, name, args, data=data)
 
@@ -102,19 +102,18 @@ class UrlMap:
             path_parts.pop(-1)
         elif '.' in path_parts[-1]:
             fn = path_parts.pop(-1)
-            for suffix in ('.json', '.xml', '.vcf', '.html'):
-               if fn.endswith(suffix):
-                   if suffix == '.html':
-                       fmt = fn
-                   else:
-                       fmt = suffix[1:]
+            for suffix in ('.html', '.jhtml'):
+                if fn.endswith(suffix):
+                    fmt = fn
+            for suffix in ('.json', '.xml', '.vcf'):
+                if fn.endswith(suffix):
+                    fmt = suffix[1:]
         return self._command('output', [fmt], method=False)
 
     def _map_root(self, request, path_parts, query_data, post_data):
         """Redirects to /in/Inbox/ for now.  (FIXME)"""
-        return [self._command('_redirect', args=['/in/Inbox/'], method=False)]
+        return [UrlRedirect(self.session, 'redirect', arg=['/in/Inbox/'])]
 
-    # FIXME: This should come from the search plugin
     def _map_tag(self, request, path_parts, query_data, post_data):
         """
         Map /in/TAG_NAME/ to tag searches.
@@ -122,47 +121,71 @@ class UrlMap:
         >>> path = '/in/Inbox/'
         >>> commands = urlmap._map_tag(request, path[1:].split('/'), {}, {})
         >>> commands
-        [<mailpile.plugins.search.Search...>]
-        >>> commands[0].args
+        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+        >>> commands[1].args
         ['tag:1']
         """
+        output = self._choose_output(path_parts)
         tag = '/'.join([p for p in path_parts[1:] if p])
         tag_search = ['tag:%s' % self.session.config.get_tag_id(tag)]
         return [
+            output,
             self._command('search', args=tag_search,
                                     query_data=query_data,
                                     post_data=post_data)
         ]
 
-    # FIXME: This should come from the search plugin
     def _map_thread(self, request, path_parts, query_data, post_data):
         """
-        Map /thread/METADATA_ID/ to view commands.
+        Map /thread/METADATA_ID/... to view or extract commands.
 
         >>> path = '/thread/123/'
         >>> commands = urlmap._map_thread(request, path[1:].split('/'), {}, {})
         >>> commands
-        [<mailpile.plugins.search.View...>]
-        >>> commands[0].args
+        [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
+        >>> commands[1].args
         ['=123']
         """
         message_mid = path_parts[1]
         return [
+            self._choose_output(path_parts),
             self._command('view', args=['=%s' % message_mid],
                                   query_data=query_data,
                                   post_data=post_data)
         ]
 
     def _map_RESERVED(self, *args):
-      """RESERVED FOR LATER."""
+        """RESERVED FOR LATER."""
+
+    def _map_api_command(self, path_parts, query_data, post_data, fmt='html'):
+        """Map a path to a command list, prefering the longest match.
+
+        >>> urlmap._map_api_command(['http', 'redir', '...'], {}, {})
+        [<mailpile.commands.Output...>, <...UrlRedirect...>]
+        """
+        output = self._choose_output(path_parts, fmt=fmt)
+        for bp in reversed(range(1, len(path_parts) + 1)):
+            try:
+                return [
+                    output,
+                    self._command('/'.join(path_parts[:bp]),
+                                  args=path_parts[bp:],
+                                  query_data=query_data,
+                                  post_data=post_data)
+                ]
+            except ValueError:
+                pass
+        raise
 
     MAP_API = 'api'
     MAP_PATHS = {
        '':        _map_root,
        'in':      _map_tag,
        'thread':  _map_thread,
+       'static':  _map_RESERVED,
        'message': _map_RESERVED
     }
+
     def map(self, request, path, query_data, post_data):
         """
         Convert an HTTP request to a list of mailpile.command objects.
@@ -177,13 +200,13 @@ class UrlMap:
         Traceback (most recent call last):
             ...
         ValueError: Unknown API level: 999
-        >>> urlmap.map(request, '/api/20130900/bogus', {}, {})
+        >>> urlmap.map(request, '/api/0/bogus', {}, {})
         Traceback (most recent call last):
             ...
         ValueError: Unknown command: bogus
 
         The root currently just redirects to /in/Inbox/:
-        >>> o, r = urlmap.map(request, '/', {}, {})
+        >>> r = urlmap.map(request, '/', {}, {})[0]
         >>> r, r.args
         (<...UrlRedirect instance at 0x...>, ['/in/Inbox/'])
 
@@ -207,47 +230,90 @@ class UrlMap:
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:
                 raise ValueError('Unknown API level: %s' % path_parts[2])
-            path_parts = path_parts[3:]
-            return [
-                self._choose_output(path_parts, fmt='json'),
-                self._command(path_parts[0], args=path_parts[1:],
-                                             query_data=query_data,
-                                             post_data=post_data)
-            ]
+            return self._map_api_command(path_parts[3:], query_data, post_data,
+                                         fmt='json')
 
         # For non-API calls, strip prefixes before further processing
         path_parts = path[1:].split('/')
-        output = [self._choose_output(path_parts)]
 
         # Check for the registered priority shortcuts
         if path_parts[0] in self.MAP_PATHS:
             method = self.MAP_PATHS[path_parts[0]]
-            return output + method(self, request, path_parts,
-                                         query_data, post_data)
+            return method(self, request, path_parts, query_data, post_data)
 
         # Fall back to API-style
-        return output + [self._command(path_parts[0], args=path_parts[1:],
-                                                      query_data=query_data,
-                                                      post_data=post_data)]
+        return self._map_api_command(path_parts, query_data, post_data)
 
-    def url_thread(self, message_id):
-        pass
+    def _url(self, url, output='', qs=''):
+        if output and '.' not in output:
+            output = 'as.%s' % output
+        return ''.join([url, output, qs and '?' or '', qs])
 
-    def url_compose(self, message_id):
-        pass
+    def url_thread(self, message_id, output=''):
+        """Map a message to it's short-hand thread URL."""
+        return self._url('/thread/%s/' % message_id, output)
 
-    def url_tag(self, tag_id):
-        pass
+    def url_compose(self, message_id, output=''):
+        """Map a message to it's short-hand editing URL."""
+        return self._url('/compose/%s/' % message_id, output)
 
-    def url_search(self, search_terms):
-        pass
+    def url_tag(self, tag_id, output=''):
+        """
+        Map a tag to it's short-hand URL.
+
+        >>> urlmap.url_tag('Inbox')
+        '/in/Inbox/'
+        >>> urlmap.url_tag('Inbox', output='json')
+        '/in/Inbox/as.json'
+        >>> urlmap.url_tag('1')
+        '/in/Inbox/'
+
+        Unknown tags raise an exception.
+        >>> urlmap.url_tag('99')
+        Traceback (most recent call last):
+            ...
+        ValueError: Unknown tag: 99
+        """
+        if tag_id in self.session.config.get('tag', {}):
+            return self._url('/in/%s/' % self.session.config['tag'][tag_id],
+                             output)
+        elif tag_id in self.session.config.get('tag', {}).values():
+            return self._url('/in/%s/' % tag_id, output)
+        raise ValueError('Unknown tag: %s' % tag_id)
+
+    def url_search(self, search_terms, tag=None, output=''):
+        """
+        Map a search query to it's short-hand URL, using Tag prefixes if
+        there is exactly one tag in the search terms or we have tag context.
+
+        >>> urlmap.url_search(['foo', 'bar', 'baz'])
+        '/search/?q=foo%20bar%20baz'
+        >>> urlmap.url_search(['foo', 'tag:Inbox', 'wtf'], output='json')
+        '/in/Inbox/as.json?q=foo%20wtf'
+        >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], output='xml')
+        '/search/as.xml?q=foo%20tag%3AInbox%20tag%3ANew'
+        >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], tag='Inbox')
+        '/in/Inbox/?q=foo%20tag%3ANew'
+        """
+        tags = tag and [tag] or [t for t in search_terms
+                                         if t.startswith('tag:')]
+        if len(tags) == 1:
+            prefix = self.url_tag(tags[0].replace('tag:', ''))
+            search_terms = [t for t in search_terms
+                                    if t not in tags and
+                                       t.replace('tag:', '') not in tags]
+        else:
+            prefix = '/search/'
+        return self._url(prefix, output, 'q=' + quote(' '.join(search_terms)))
 
     def print_map_markdown(self):
         """Prints the current URL map to stdout as markdown."""
         api_version = self.API_VERSIONS[-1]
+
         def cmds(method):
             return sorted([(c[0].replace('=', ''), c[1])
                            for c in self._api_commands(method=method)])
+
         print '# Mailpile URL map (autogenerated by %s)' % __file__
         print
         print '\n'.join([line.strip() for line
@@ -262,12 +328,12 @@ class UrlMap:
                 print '### %s%s' % (method, method == 'GET' and
                                             ' (also accept POST)' or '')
                 print
-            # FIXME: Subcommands?
+            commands.sort()
             for command in commands:
-                cls = command[1]
-                if cls.HTTP_QUERY_VARS:
-                    qs = '?' + '&'.join(['%s=[%s]' % (v, cls.HTTP_QUERY_VARS[v])
-                                         for v in cls.HTTP_QUERY_VARS])
+                cls, query_vars = command[1], command[1].HTTP_QUERY_VARS
+                if query_vars:
+                    qs = '?' + '&'.join(['%s=[%s]' % (v, query_vars[v])
+                                         for v in query_vars])
                 else:
                     qs = ''
                 print '    %s/%s/%s' % (api, command[0], qs)
@@ -282,7 +348,7 @@ class UrlMap:
         for path in sorted(self.MAP_PATHS.keys()):
             doc = self.MAP_PATHS[path].__doc__.strip().split('\n')[0]
             path = ('/%s/' % path).replace('//', '/')
-            print '    %s %s %s' % (path, ' ' * (10-len(path)), doc)
+            print '    %s %s %s' % (path, ' ' * (10 - len(path)), doc)
         print
         print '## Default command URLs (HTML output)'
         print
@@ -298,25 +364,22 @@ class UrlRedirectException(Exception):
         self.url = url
 
 
-class _UrlRedirect(mailpile.commands.Command):
+class UrlRedirect(mailpile.commands.Command):
     """A stub command which just throws UrlRedirectException."""
     ORDER = ('', )
-    HTTP_CALLABLE = ( )
+    HTTP_CALLABLE = ('GET', 'POST', 'PUT', 'UPDATE')
+
     def command(self):
         raise UrlRedirectException(self.args[0])
 
 
-if __name__ != "__main__":
-    # If loaded as a module, register our redirect command
-    try:
-        mailpile.plugins.register_command('_urlrdr', '_redirect', _UrlRedirect)
-    except mailpile.plugins.PluginError:
-        pass
-else:
+if __name__ == "__main__":
     # If run as a python script, print map and run doctests.
     import doctest
     import mailpile.app
+    import mailpile.plugins
     import mailpile.ui
+
     session = mailpile.ui.Session(mailpile.app.ConfigManager())
     session.config['tag'] = {
         '0': 'New',
@@ -324,8 +387,11 @@ else:
     }
     urlmap = UrlMap(session)
     urlmap.print_map_markdown()
+
+    # For the UrlMap._map_api_command test
+    mailpile.plugins.register_command('_t', 'http/redir', UrlRedirect)
+
     print
     print '<!-- %s -->' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
                                            extraglobs={'urlmap': urlmap,
                                                        'request': None}), )
-

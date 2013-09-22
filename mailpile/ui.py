@@ -184,7 +184,7 @@ class UserInteraction:
 
   # Higher level command-related methods
   def _display_result(self, result):
-    sys.stdout.write(result+'\n')
+    sys.stdout.write(unicode(result)+'\n')
   def start_command(self, cmd, args, kwargs):
     self.flush_log()
     self.mark('%s(%s)' % (cmd, ', '.join((args or []) + ['%s' % kwargs])))
@@ -195,8 +195,9 @@ class UserInteraction:
     self._display_log('', level=self.LOG_RESULT)
     if self.render_mode == 'json':
       return self._display_result(result.as_json())
-    elif self.render_mode in ('html', 'jhtml'):
-      return self._display_result(result.as_html())
+    elif self.render_mode.endswith('html'):
+      template = self.render_mode.replace('.jhtml', '.html')
+      return self._display_result(result.as_html(template=template))
     elif self.render_mode == 'xml':
       return self._display_result(result.as_xml())
     elif self.render_mode == 'rss':
@@ -242,7 +243,8 @@ class UserInteraction:
     from json import JSONEncoder
     class NoFailEncoder(JSONEncoder):
       def default(self, obj):
-        if isinstance(obj, (list, dict, str, unicode, int, float, bool, type(None))):
+        if isinstance(obj, (list, dict, str, unicode,
+                            int, float, bool, type(None))):
             return JSONEncoder.default(self, obj)
         return "COMPLEXBLOB"
 
@@ -251,18 +253,25 @@ class UserInteraction:
   def _html_template(self, config, tpl_names, elems=None):
     theme_path = os.path.join(config.data_directory('html_theme'), 'html')
     env = Environment(loader=FileSystemLoader('%s' % theme_path),
-                      extensions=['jinja2.ext.i18n', 'jinja2.ext.with_', 'mailpile.jinjaextensions.MailpileCommand'])
+                      extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
+                                  'mailpile.jinjaextensions.MailpileCommand'])
     env.session = self.session
     for tpl_name in tpl_names:
       try:
         fn = '%s.html' % tpl_name
+        # FIXME(Security): Here we need to sanitize the file name very
+        #                  strictly in case it somehow came from user
+        #                  data.
         template = env.get_template(fn)
         return template
       except (IOError, OSError, AttributeError), e:
         emsg = "<h1>Template not found: %s</h1>%s\n"
         return emsg % (fn, e)
-      except (TemplateError, UndefinedError, TemplateSyntaxError, TemplateAssertionError, TemplateNotFound, TemplatesNotFound), e:
-        emsg = "<h1>Template error in %s</h1>\nParsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp></div>"
+      except (TemplateError, UndefinedError, TemplateSyntaxError,
+              TemplateAssertionError, TemplateNotFound, TemplatesNotFound), e:
+        emsg = ("<h1>Template error in %s</h1>\n"
+                "Parsing template %s: <b>%s</b> on line %s<br/>"
+                "<div><xmp>%s</xmp></div>")
         return emsg % (e.name, e.filename, e.message, e.lineno, e.source)
 
   def render_html(self, cfg, tpl_names, data):
