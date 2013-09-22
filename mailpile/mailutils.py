@@ -294,21 +294,28 @@ class IncrementalIMAPMailbox(UnorderedPicklable(IMAPMailbox)):
 
 
 class IncrementalMaildir(UnorderedPicklable(mailbox.Maildir, editable=True)):
-  """A Maildir class that supports pickling and a few mailpile specifics."""
-  @classmethod
-  def parse_path(cls, fn):
-    if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'cur')):
-      return (fn, )
-    raise ValueError('Not a Maildir: %s' % fn)
+    """A Maildir class that supports pickling and a few mailpile specifics."""
+    @classmethod
+    def parse_path(cls, fn):
+        if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'cur')):
+            return (fn, )
+        raise ValueError('Not a Maildir: %s' % fn)
+
+    def get_msg_ptr(self, idx_id, toc_id):
+        # Maildir filenames can have ':' or ',' in them which separate the
+        # unique part of the name from attributes and varies depending on
+        # what mail clients have done with the mail. The splits strip that
+        # stuff off the ID (github issue #35).
+        return '%s%s' % (idx_id, toc_id.split(',')[0].split(':')[0])
 
 
 class IncrementalMacMaildir(UnorderedPicklable(MacMaildir)):
-  """A Mac Mail.app maildir class that supports pickling etc."""
-  @classmethod
-  def parse_path(cls, fn):
-    if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'Info.plist')):
-      return (fn, )
-    raise ValueError('Not a Mac Mail.app Maildir: %s' % fn)
+    """A Mac Mail.app maildir class that supports pickling etc."""
+    @classmethod
+    def parse_path(cls, fn):
+        if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'Info.plist')):
+            return (fn, )
+        raise ValueError('Not a Mac Mail.app Maildir: %s' % fn)
 
 
 class IncrementalGmvault(IncrementalMaildir):
