@@ -1,6 +1,6 @@
 <nav id="sub-navigation">
   <ul class="clearfix">
-    <li><a href="/_/contact/list/"><span class="navigation-icon icon-user"></span>Contacts</a></li>
-    <li><a href="/_/contact/add/">Add Contact</a></li>
+    <li {% if command == "contact list" %} class="navigation-on" {% endif %}><a href="/_/contact/list/"><span class="navigation-icon icon-user"></span>Contacts</a></li>
+    <li {% if command == "contact add" %} class="navigation-on" {% endif %}><a href="/_/contact/add/">Add Contact</a></li>
   </ul>
 </nav>

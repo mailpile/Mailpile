@@ -5267,8 +5267,8 @@ text {
 #header h1 small {
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   display: block;
-  font-size: 18px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 14px;
 }
 #header nav {
   float: right;

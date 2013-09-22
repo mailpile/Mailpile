@@ -31,14 +31,14 @@
 <body>
 
 <div id="header" class="clearfix">
-	  <img class="logo" src="/_/static/img/logo-color.svg">
+	  <a href=""><img class="logo" src="/_/static/img/logo-color.svg"></a>
 	  <h1>{{name}}'s<small><b>mail</b>pile of <b>{{mailpile_size}}</b> emails</small></h1>
 	<nav>
 		<ul>
-			<li><a href="/_/donate/"><span class="icon-donate"></span>Donate</a></li>
-			<li><a href="/_/tag/list"><span class="icon-tag"></span>Tags</a></li>
 			<li><a href="/_/contact/list/"><span class="icon-user"></span>Contacts</a></li>
+			<li><a href="/_/tag/list"><span class="icon-tag"></span>Tags</a></li>
 			<li><a href="/_/settings/"><span class="icon-settings"></span>Settings</a></li>
+			<li><a href="/_/donate/"><span class="icon-donate"></span>Donate</a></li>
 		</ul>
 	</nav>
 </div>
@@ -48,7 +48,7 @@
 	<div id="sidebar">
 		<nav>
 			<ul>
-				<li><a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>{{mpcommand("tag", "list", "Drafts").result.tags.0.all}} Drafts</small></a></li>
+				<li {% if command == "compose" %} class="navigation-on" {% endif %}><a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>{{mpcommand("tag", "list", "Drafts").result.tags.0.all}} Drafts</small></a></li>
 			</ul>
 			{% for t in high_tags, user_tags, low_tags %}
 			<ul>{% for tag in t.result.tags %}
@@ -76,6 +76,7 @@
 
 	<!-- START CONTENT -->
 	<div id="content">
+
 		{% block content %}
 			{{results}}
 		{% endblock %}
@@ -83,7 +84,15 @@
 			<a href='http://mailpile.is'>Mailpile</a> is free software made by <a title="Bjarni R. Einarsson" href="http://bre.klaki.net" target="_blank">bre</a>, <a title="Brennan Novak" href="https://brennannovak.com" target="_blank">bnvk</a>, <a href="http://www.smarimccarthy.is/" target="_blank">smári</a> &amp; <a href="https://github.com/pagekite/Mailpile/graphs/contributors" target="_blank">more</a>
 		</div>
 
-		<div id="debug">{{logged}}</div>
+		<div id="debug">
+		  <h3>DEBUG</h3>
+      <b>command:</b> {{ command }}<br>
+      <b>command_parts:</b> {{ command_parts }}<br>
+      <b>args:</b> {{ args }}<br>
+      <b>kwargs:</b> {{ kwargs }}
+		
+		  {{logged}}
+		</div>
 
 		<div style="display: none; position: fixed; top: 20%; left: 40%; right: 40%; width: 20%; background: #eee; border: 1px solid #ccc;" id="dialog_tag">
 			<form onsubmit="mailpile.go('/'+$('#dialog_tag_input').val() + '/'); return false;">
