@@ -205,7 +205,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     try:
       commands = UrlMap(session).map(self, method, path,
                                      query_data, post_data)
-      session.ui.display_result([cmd.run() for cmd in commands][-1])
+      results = [cmd.run() for cmd in commands]
+      session.ui.display_result(results[-1])
     except UrlRedirectException, e:
       return self.send_http_redirect(e.url)
     except SuppressHtmlOutput:

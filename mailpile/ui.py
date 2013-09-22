@@ -326,9 +326,9 @@ class HttpUserInteraction(UserInteraction):
   def render_response(self, config):
     if self.render_mode == 'json':
       return ('application/json', '[%s]' % ','.join(self.results))
-    elif self.render_mode == 'jhtml':
+    elif self.render_mode.endswith('.jhtml'):
       return ('application/json', self._render_jhtml_response(config))
-    elif self.render_mode == 'html':
+    elif self.render_mode.endswith('html'):
       return ('text/html', self._render_html_response(config))
     else:
       return ('text/plain', self._render_text_response(config))

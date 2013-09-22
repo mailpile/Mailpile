@@ -386,7 +386,7 @@ class Output(Command):
   SYNOPSIS = "[mode]"
   def command(self):
     self.session.ui.render_mode = self.args and self.args[0] or 'text'
-    return True
+    return {'output': self.session.ui.render_mode}
 
 
 class Help(Command):

@@ -110,6 +110,8 @@ class UrlMap:
             fn = path_parts.pop(-1)
             for suffix in ('.html', '.jhtml'):
                 if fn.endswith(suffix):
+                    # FIXME: We are passing user input here which may
+                    #        have security implications.
                     fmt = fn
             for suffix in ('.json', '.xml', '.vcf'):
                 if fn.endswith(suffix):
@@ -124,10 +126,12 @@ class UrlMap:
         """
         Map /in/TAG_NAME/ to tag searches.
 
-        >>> path = '/in/Inbox/'
+        >>> path = '/in/Inbox/as.json'
         >>> commands = urlmap._map_tag(request, path[1:].split('/'), {}, {})
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+        >>> commands[0].args
+        ['json']
         >>> commands[1].args
         ['tag:1']
         """
@@ -242,10 +246,9 @@ class UrlMap:
             return self._map_api_command(method, path_parts[3:],
                                          query_data, post_data, fmt='json')
 
-        # For non-API calls, strip prefixes before further processing
         path_parts = path[1:].split('/')
         try:
-            return self._map_api_command(method, path_parts,
+            return self._map_api_command(method, path_parts[:],
                                          query_data, post_data)
         except UsageError:
             # Finally check for the registered shortcuts
