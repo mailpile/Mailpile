@@ -44,6 +44,7 @@ try:
     mp.rescan()
 
     # Search for things, there should be exactly one match for each.
+    mp.order('flat-date')
     for search in (['from:wow'],
                    ['agirorn'],
                    ['subject:emerging'],

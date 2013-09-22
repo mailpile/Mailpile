@@ -405,7 +405,7 @@ class Delete(Command):
 mailpile.plugins.register_command('d:', 'delete=',  Delete)
 mailpile.plugins.register_command('e:', 'extract=', Extract)
 mailpile.plugins.register_command('n:', 'next=',    Next)
-mailpile.plugins.register_command('o:', 'order',    Order)
+mailpile.plugins.register_command('o:', 'order=',   Order)
 mailpile.plugins.register_command('p',  'previous', Previous)
 mailpile.plugins.register_command('s:', 'search=',  Search)
 mailpile.plugins.register_command('v:', 'view',     View)
