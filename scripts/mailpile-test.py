@@ -8,6 +8,8 @@
 #
 import os
 import sys
+import traceback
+
 
 # Set up some paths
 mailpile_root = os.path.join(os.path.dirname(__file__), '..')
@@ -26,6 +28,10 @@ try:
     os.system('rm -rf %s' % mailpile_home)
     mp = Mailpile(workdir=mailpile_home)
 
+    def say(stuff):
+        mp._session.ui.mark(stuff)
+        mp._session.ui.reset_marks()
+
     # Set up initial tags and such
     mp.setup()
 
@@ -34,9 +40,26 @@ try:
       mp.add(os.path.join(mailpile_test, mailbox))
     mp.rescan()
 
-    print "\nTests passed, woot!\n"
+    # Rescan AGAIN, so we can test for the presence of duplicates.
+    mp.rescan()
+
+    # Search for things, there should be exactly one match for each.
+    for search in (['from:wow'],
+                   ['agirorn'],
+                   ['subject:emerging'],
+                   ['from:twitter', 'brennan'],
+                   ['dates:2013-09-17', 'feministinn'],
+                   ['att:jpg', 'fimmtudaginn'],
+                   ['subject:Moderation', 'kde-isl']):
+        say('Searching for: %s' % search)
+        results = mp.search(*search)
+        assert(len(results.result) == 1)
+        assert(results.result[0]['count'] == 1)
+
+    say("Tests passed, woot!")
 except:
-    print "\nTests FAILED:\n" 
+    say("Tests FAILED!")
+    print
     traceback.print_exc()
 
 
