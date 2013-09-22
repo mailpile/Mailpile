@@ -4,8 +4,6 @@
 > to accomodate a better UI and better programmatic access. Pull at your
 > own risk! :-)
 
-**Hey, check out our fundraiser! <http://igg.me/at/mailpile>**
-
 Mailpile (<http://www.mailpile.is/>) is a free-as-in-freedom personal
 e-mail searching and indexing tool, largely inspired by Google's popular
 proprietary-but-gratis e-mail service.  It wants to eventually become a
@@ -17,8 +15,8 @@ yet.  It'll tell you that you have mail matching a given search and let
 you sort it, browse threads and read messages... but the user interface and
 message composing/sending functionality is still very immature.  If you just
 want a useful tool and aren't interested in hacking on the code, you should
-probably check back later or [follow @HerraBRE on
-Twitter](https://twitter.com/HerraBRE) and watch for updates.
+probably check back later or [follow @MailpileTeam on
+Twitter](https://twitter.com/MailpileTeam) and watch for updates.
 
 
 ## Requirements ##
@@ -239,9 +237,9 @@ The `tag` command accepts a single tag name, prefixed with a `+` or `-`
 (for adding or removing the tag), followed by a description of messages.
 The message description can be:
 
-  * `all` will affect all messages
-  * `these` will affect currently listed messages
-  * A list of numbers or ranges (`1 2 3 5-10 15`)
+   * `all` will affect all messages
+   * `these` will affect currently listed messages
+   * A list of numbers or ranges (`1 2 3 5-10 15`)
 
 All these are relative to the last search, so `1` is the first result
 of the most recent search and `all` would be all matching messages.
@@ -314,6 +312,8 @@ Mailpile's default HTML templates and Javascript lives in `static/default/`
 
 Miscellaneous documentation is in `doc/`.
 
+Test data lives in `testing/`.
+
 
 ### Internal variables ###
 
@@ -328,27 +328,33 @@ To set a variable to some value either run Mailpile with:
 
 Or alternatively run `./mp` and issue:
 
-    > set variable=value
+    mailpile> set variable=value
 
 after which you need to restart the program for it to take effect
 (Ctrl+D and `./mp`). You can print the value of a variable using:
 
-    > print variable
+    mailpile> print variable
+
+
+### Testing ###
+
+We are slowly migrating the code to use the `doctest` module for
+internal unit tests.
+
+Black-box regression tests can be invoked by running
+`scripts/mailpile-test.py`.  For experimenting and testing, the blackbox
+test script can be run in an interactive mode:
+
+    $ ./scripts/mailpile-test.py -i
 
 
 ### JSON, XML, RSS, ... ###
 
-JSON and XML versions exist for most web-based commands and requests.
+JSON and XML versions exist for most web-based commands and requests
+and most Mailpile functionality is (or will be) accessible over an
+HTTP REST-style API.
 
-For individual e-mails, appending `message.xml` or `message.json` to the
-URL will provide a machine-readable rendering of the parsed message (for
-a raw dump of the undecoded message, request `message.eml`).
-
-For search results, append `feed.xml`, `feed.json` or `feed.rss` to the
-path part of the URL.
-
-For other commands, just append `.xml` or `.json` to the command name
-(e.g. `http://localhost:33411/_/help.xml` is a very useless example).
+Please see `doc/URLS.md` for details.
 
 
 ### Developing using virtualenv ###
@@ -367,15 +373,15 @@ This allows easy, sandboxed usage.
 
 You can build a docker image:
 
-    docker build -t mailpile scripts/docker/
+    $ docker build -t mailpile scripts/docker/
 
 and run it:
 
-    docker run -i -t mailpile
+    $ docker run -i -t mailpile
 
 or enter the container's bash prompt directly:
 
-    docker run -i -t mailpile bash
+    $ docker run -i -t mailpile bash
     
 ## A word on performance ##
 
@@ -404,53 +410,6 @@ e-mails? :-)
 set - but searching for really common terms won't give good results anyway.)
 
 
-## TODO ##
-
-A random laundry list of things I haven't done yet and might accept
-patches for:
-
-   * Delivery mode for adding a single message to the index (SMTP server?)
-   * Spam detection
-   * Improve conversation IDs assignment/threading
-   * New "attributes" for the indexer to facilitate smart searches
-   * Better query parser (terms AND terms) or (terms AND NOT terms), etc.
-   * Support for other mailbox formats
-   * Pseudo-mailbox for indexing pidgin/purple conversation logs
-   * Create a Maildir which GPG encrypts/decrypts its contents (for drafts)
-   * Support POP3/IMAP indexing (IMAP in progress)
-   * A nice Python/XML-RPC API for automation (in progress)
-   * A pretty UI on top of the XML-RPC API, or the HTTP/JSON UI. (in progress)
-   * Packaging improvements
-   * A user-friendly setup wizard which auto-discovers and imports/indexes
-     messages from Thunderbird, Evolution, KMail, Outlook, Mail.app, GMail
-     ... which also grabs metadata like tags and folder structure.
-
-I do not use Evolution, Outlook, Mail.app, or weird mailbox formats, so if
-you want features related to them, patches will speed things up *a lot*.
-
-Note that Mailpile's emphasis is on *speed* and most of the features
-above have already basic designs "in my head".  Chat with me on freenode
-(I am BjarniRunar, and hang out on #mailpile) or
-[Twitter](https://twitter.com/HerraBRE) if you're interested in my take
-on how to implement these things. Or just send a pull request! :-)
-
-
-## Roadmap ##
-
-This is the Mailpile roadmap:
-
-   1. Write Python prototype for indexing and rapidly searching large
-      volumes of e-mail. Define on-disk data formats.
-   2. Add support for GMail-style conversation threading, tags and filters.
-   3. Give it a very basic, ugly web interface, define an XML-RPC API.
-   4. Look for some HTML/Javascript gurus who want to build a nice UI.
-   5. Iterate until awesome.
-   6. Rewrite search engine (using same data formats and same XML-RPC API)
-      in C. If anyone cares - Python might be good enough.
-
-We have passed milestone 2, with work progressing on 3 and 4.
-
-
 ## Credits and License ##
 
 Bjarni R. Einarsson (<http://bre.klaki.net/>) created this!  If you think
@@ -476,5 +435,5 @@ Contributors:
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
 Free Software Foundation or the Apache License 2.0 as published by the Apache
-Software Foundation. See the file COPYING.md for details.
+Software Foundation. See the file `COPYING.md` for details.
 
