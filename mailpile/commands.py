@@ -28,6 +28,7 @@ class Command:
   SUBCOMMANDS = {}
   SYNOPSIS = None
   TEMPLATE_IDS = ['command']
+  RAISES = (UsageError, )
 
   HTTP_CALLABLE = ( )
   HTTP_POST_VARS = { }
@@ -201,7 +202,7 @@ class Command:
           
       self._starting()
       return self._finishing(command, command(self, *args, **kwargs))
-    except UsageError:
+    except self.RAISES:
       raise
     except:
       self._ignore_exception()

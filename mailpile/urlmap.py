@@ -381,6 +381,7 @@ class UrlRedirect(mailpile.commands.Command):
     """A stub command which just throws UrlRedirectException."""
     ORDER = ('', )
     HTTP_CALLABLE = ('GET', 'POST', 'PUT', 'UPDATE')
+    RAISES = (UrlRedirectException, )
 
     def command(self):
         raise UrlRedirectException(self.args[0])
