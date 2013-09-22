@@ -355,9 +355,11 @@ class IncrementalGmvault(IncrementalMaildir):
 class IncrementalMbox(mailbox.mbox):
   """A mbox class that supports pickling and a few mailpile specifics."""
 
-  editable = False
-  last_parsed = 0
-  save_to = None
+  def __init__(self, *args, **kwargs):
+    mailbox.mbox.__init__(self, *args, **kwargs)
+    self.editable = False
+    self.last_parsed = -1  # Must be -1 or first message won't get parsed
+    self.save_to = None
 
   def __getstate__(self):
     odict = self.__dict__.copy()

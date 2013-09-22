@@ -37,7 +37,7 @@ try:
 
     # Add the mailboxes, scan them
     for mailbox in ('tests.mbx', 'Maildir'):
-      mp.add(os.path.join(mailpile_test, mailbox))
+        mp.add(os.path.join(mailpile_test, mailbox))
     mp.rescan()
 
     # Rescan AGAIN, so we can test for the presence of duplicates.
