@@ -69,6 +69,7 @@ if '-i' in sys.argv:
     import code
     import readline
     code.InteractiveConsole(locals=globals()).interact("""
+
 Welcome to the Mailpile test shell. You can interact pythonically with the
 Mailpile object `mp`, or drop to the Mailpile CLI with `mp.Interact()`.
     """)

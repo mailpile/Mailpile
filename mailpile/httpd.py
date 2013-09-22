@@ -24,6 +24,8 @@ DEFAULT_PORT = 33411
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
+  _ERROR_CONTEXT = {'lastq': '', 'csrf': '', 'path': ''},
+
   def http_host(self):
     """Return the current server host, e.g. 'localhost'"""
     #rsplit removes port
@@ -37,6 +39,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   def send_http_response(self, code, msg):
     """Send the HTTP response header"""
     self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
+
+  def send_http_redirect(self, destination):
+    self.send_http_response(302, 'Moved Temporarily')
+    self.wfile.write('Location: %s\r\n\r\n' % destination)
 
   def send_standard_headers(self, header_list=[],
                             cachectrl='private', mimetype='text/html'):
@@ -151,152 +157,65 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         raise ValueError('Unknown content-type')
 
     except (IOError, ValueError), e:
-      r = self.server.session.ui.render_page(config,
-                                   {'lastq': '', 'csrf': '', 'path': ''},
-                                   body='POST geborked: %s' % e,
-                                   title='Internal Error')
+      r = self.server.session.ui.render_page(config, self._ERROR_CONTEXT,
+                                             body='POST geborked: %s' % e,
+                                             title='Internal Error')
       self.send_full_response(r, code=500)
       return None
-    return self.do_GET(post_data=post_data)
+    return self.do_GET(post_data=post_data, method='POST')
 
   def do_HEAD(self):
-    return self.do_GET(suppress_body=True)
+    return self.do_GET(suppress_body=True, method='HEAD')
 
-  def parse_pqp(self, path, query_data, post_data, config):
-    q = post_data.get('lq', query_data.get('q', ['']))[0].strip().decode('utf-8')
+  def do_PUT(self):
+    return self.do_GET(suppress_body=True, method='UPDATE')
 
-    data = {}
-    cmd = ''
-    if path.startswith('/_/'):
-      cmd = path[3:].replace('/', ' ').replace('.json', '').replace('.jhtml', '').replace('.xml', '')
-      cmd += ' ' + query_data.get('args', [''])[0]
-    elif path.startswith('/='):
-      parts = path.split('/')
-      if len(parts) == 4:
-        msg_idx = parts[1]
-        if parts[3] in ('', 'message.xml', 'message.json', 'message.rss'):
-          cmd = ' '.join(['view', msg_idx])
-        elif parts[3] == 'edit.html':
-          edit_key = '@edit_'+msg_idx[1:]
-          if edit_key in post_data:
-            cmd = ' '.join(['update', msg_idx, edit_key])
-          else:
-            cmd = ' '.join(['compose', msg_idx])
-        elif parts[3] == 'message.eml':
-          cmd = ' '.join(['view', 'raw', msg_idx])
-        if parts[3].lower().startswith('cid:'):
-          cmd = ' '.join(['extract', '<%s>' % parts[3][4:], msg_idx])
-        elif parts[3].lower().startswith('att:'):
-          cmd = ' '.join(['extract', '#%s' % parts[3][4:], msg_idx])
-        else:
-          # bogus?
-          pass
-      elif len(parts) == 6:
-        if parts[3] in ('inline', 'inline-preview', 'preview', 'download'):
-          cmd = ' '.join(['extract', parts[3], '#%s' % parts[4], parts[1]])
+  def do_UPDATE(self):
+    return self.do_GET(suppress_body=True, method='UPDATE')
 
-    elif len(path) > 1:
-      parts = path.split('/')[1:]
-      if parts:
-        fn = parts.pop()
-        tid = config.get_tag_id('/'.join(parts))
-        if tid:
-          if q and q[0] != '/':
-            q = 'tag:%s %s' % (tid, q)
-          elif not q:
-            q = 'tag:%s' % tid
-
-    if q:
-      if q[0] == '/':
-        cmd = q[1:]
-      else:
-        tag = ''
-        cmd = ''.join(['search ', tag, q])
-
-    # Default command/argument processing.
-    cmd = post_data.get('cmd', query_data.get('cmd', [cmd]))[0]
-    for pd in post_data:
-      if pd.startswith('@'):
-        data[pd] = post_data[pd][0]
-
-    # Explicit support for a few particular commands
-    if 'add_tag' in post_data or 'rm_tag' in post_data:
-      if 'add_tag' in post_data:
-        fmt = 'tag +%s %s /%s'
-      else:
-        fmt = 'tag -%s %s /%s'
-      msgs = ['='+k[4:] for k in post_data if k.startswith('msg_')]
-      if msgs:
-        for tid in [k[4:] for k in post_data if k.startswith('tag_')]:
-          tname = config.get('tag', {}).get(tid)
-          if tname:
-            cmd = fmt % (tname, ' '.join(msgs), cmd)
-    if 'gpg_recvkey' in post_data:
-      cmd = 'gpgrecv %s /%s' % (post_data.get('gpg_key_id')[0], cmd)
-    for pd in post_data:
-      if pd.startswith('save_') or pd.startswith('mail_'):
-        try:
-          pid = int(pd[5:])
-          msg_idx = post_data.get('save_%d_msg' % pid)[0]
-          if cmd.startswith('compose'):
-            cmd = 'compose =%s' % msg_idx
-          if pd.startswith('mail_'):
-            cmd = 'mail =%s /%s' % (msg_idx, cmd)
-          cmd = 'update =%s @save_%d_data /%s' % (msg_idx, pid, cmd)
-        except ValueError:
-          pass
-
-    return cmd.strip(), data
-
-  def do_GET(self, post_data={}, suppress_body=False):
+  def do_GET(self, post_data={}, suppress_body=False, method='GET'):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     query_data = parse_qs(query)
     path = unquote(path)
 
     # HTTP is stateless, so we create a new session for each request.
     config = self.server.session.config
+
+    # Static things!
+    if path == '/favicon.ico':
+      path = '/static/favicon.ico'
+    if path.startswith('/_/'):
+      path = path[2:]
+    if path.startswith('/static/'):
+      return self.send_file(config, path[len('/static/'):])
+
     session = Session(config)
-
-    if path == "/favicon.ico":
-      path = "/_/static/favicon.ico"
-    if path.startswith("/_/static/"):
-      return self.send_file(config, path.split("/_/static/", 1)[1])
-
-    if not path or path == '/' and not query:
-      # FIXME: This should probably be a login page of some sort.
-      path = '/Inbox/'
-
     session.ui = HttpUserInteraction(self)
     session.ui.set_session(session)
 
-    # We peek at the ending to configure the UI, but any further parsing of
-    # the path and arguments takes place in parse_pqp.
-    if path.endswith('.json'):    session.ui.render_mode = 'json'
-    elif path.endswith('.jhtml'): session.ui.render_mode = 'jhtml'
-    elif path.endswith('.xml'):   session.ui.render_mode = 'xml'
-    elif path.endswith('.rss'):   session.ui.render_mode = 'rss'
-    elif path.endswith('.txt'):   session.ui.render_mode = 'text'
-    else:                         session.ui.render_mode = 'html'
+    idx = session.config.index
+    session.ui.html_variables = {
+      'title': 'Mailpile dummy title',
+      'csrf': self.csrf(),
+      'name': session.config.get('my_from', {1: 'Chelsea Manning'}
+                                 ).values()[0],
+      'mailpile_size': idx and len(idx.INDEX) or 0
+    }
 
     try:
-      cmd, data = self.parse_pqp(path, query_data, post_data, config)
-      idx = session.config.index
-      session.ui.html_variables = {
-        'title': 'Mailpile dummy title',
-        'csrf': 'FIXMEFIXME',
-        'name': session.config.get('my_from', {1: 'Chelsea Manning'}
-                                   ).values()[0],
-        'mailpile_size': idx and len(idx.INDEX) or 0
-      }
-      if cmd:
-        for arg in cmd.split(' /'):
-          args = arg.strip().split()
-          result = Action(session, args[0], ' '.join(args[1:]), data=data)
-          session.ui.display_result(result)
-    except UsageError, e:
-      session.ui.error('%s' % e)
+      commands = UrlMap(session).map(self, method, path,
+                                     query_data, post_data)
+      session.ui.display_result([cmd.run() for cmd in commands][-1])
+    except UrlRedirectException, e:
+      return self.send_http_redirect(e.url)
     except SuppressHtmlOutput:
       return
+    except:
+      e = traceback.format_exc()
+      print e
+      # FIXME: This may be a security risk?
+      self.send_full_response(e, code=500, mimetype='text/plain')
+      return None
 
     mimetype, content = session.ui.render_response(session.config)
     self.send_full_response(content, mimetype=mimetype)

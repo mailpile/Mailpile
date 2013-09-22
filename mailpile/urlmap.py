@@ -2,6 +2,7 @@ from urlparse import parse_qs, urlparse
 from urllib import quote
 
 import mailpile.commands
+from mailpile.util import *
 
 
 class UrlMap:
@@ -44,26 +45,31 @@ class UrlMap:
         query_data[which] = [value]
         return '/' + path
 
-    def _api_commands(self, method=True):
+    def _api_commands(self, method, strict=False):
         return [c for c in mailpile.commands.COMMANDS.values()
-                        if (method in c[1].HTTP_CALLABLE) or not method]
+                        if (not method) or
+                           (method in c[1].HTTP_CALLABLE) or
+                           (not strict and ('GET' in c[1].HTTP_CALLABLE))]
 
     def _command(self, name, args=None, query_data=None, post_data=None,
                              method='GET'):
         """
-        Return an instantiated mailpile.command object or raise a ValueError.
+        Return an instantiated mailpile.command object or raise a UsageError.
 
         >>> urlmap._command('output', args=['html'], method=False)
         <mailpile.commands.Output instance at 0x...>
         >>> urlmap._command('bogus')
         Traceback (most recent call last):
             ...
-        ValueError: Unknown command: bogus
+        UsageError: Unknown command: bogus
         """
-        match = [c for c in self._api_commands(method)
-                         if c[0] in (name, name + '=')]
-        if len(match) != 1:
-            raise ValueError('Unknown command: %s' % name)
+        try:
+            match = [c for c in self._api_commands(method)
+                             if c[0] in (name, name + '=')]
+            if len(match) != 1:
+                raise UsageError('Unknown command: %s' % name)
+        except ValueError, e:
+            raise UsageError(str(e))
         command = match[0][1]
 
         data = {}
@@ -157,10 +163,11 @@ class UrlMap:
     def _map_RESERVED(self, *args):
         """RESERVED FOR LATER."""
 
-    def _map_api_command(self, path_parts, query_data, post_data, fmt='html'):
+    def _map_api_command(self, method, path_parts,
+                               query_data, post_data, fmt='html'):
         """Map a path to a command list, prefering the longest match.
 
-        >>> urlmap._map_api_command(['http', 'redir', '...'], {}, {})
+        >>> urlmap._map_api_command('GET', ['http', 'redir', '...'], {}, {})
         [<mailpile.commands.Output...>, <...UrlRedirect...>]
         """
         output = self._choose_output(path_parts, fmt=fmt)
@@ -171,11 +178,13 @@ class UrlMap:
                     self._command('/'.join(path_parts[:bp]),
                                   args=path_parts[bp:],
                                   query_data=query_data,
-                                  post_data=post_data)
+                                  post_data=post_data,
+                                  method=method)
                 ]
-            except ValueError:
+            except (ValueError, UsageError):
                 pass
-        raise ValueError('Unknown command: %s' % '/'.join(path_parts))
+        raise UsageError('Not available for %s: %s' % (method,
+                                                       '/'.join(path_parts)))
 
     MAP_API = 'api'
     MAP_PATHS = {
@@ -186,42 +195,42 @@ class UrlMap:
        'message': _map_RESERVED
     }
 
-    def map(self, request, path, query_data, post_data):
+    def map(self, request, method, path, query_data, post_data):
         """
         Convert an HTTP request to a list of mailpile.command objects.
 
-        >>> urlmap.map(request, '/in/Inbox/', {}, {})
+        >>> urlmap.map(request, 'GET', '/in/Inbox/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
 
         The /api/ URL space is versioned and provides access to all the
         built-in commands. Requesting the wrong version or a bogus command
         throws exceptions.
-        >>> urlmap.map(request, '/api/999/bogus', {}, {})
+        >>> urlmap.map(request, 'GET', '/api/999/bogus', {}, {})
         Traceback (most recent call last):
             ...
-        ValueError: Unknown API level: 999
-        >>> urlmap.map(request, '/api/0/bogus', {}, {})
+        UsageError: Unknown API level: 999
+        >>> urlmap.map(request, 'GET', '/api/0/bogus', {}, {})
         Traceback (most recent call last):
             ...
-        ValueError: Unknown command: bogus
+        UsageError: Not available for GET: bogus
 
         The root currently just redirects to /in/Inbox/:
-        >>> r = urlmap.map(request, '/', {}, {})[0]
+        >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
         (<...UrlRedirect instance at 0x...>, ['/in/Inbox/'])
 
         Tag searches have an /in/TAGNAME shorthand:
-        >>> urlmap.map(request, '/in/Inbox/', {}, {})
+        >>> urlmap.map(request, 'GET', '/in/Inbox/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
 
         Thread shortcuts are /thread/METADATAID/:
-        >>> urlmap.map(request, '/thread/123/', {}, {})
+        >>> urlmap.map(request, 'GET', '/thread/123/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
 
         Other commands use the command name as the first path component:
-        >>> urlmap.map(request, '/search/bjarni', {}, {})
+        >>> urlmap.map(request, 'GET', '/search/bjarni', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
-        >>> urlmap.map(request, '/message/compose/=123/', {}, {})
+        >>> urlmap.map(request, 'GET', '/message/compose/=123/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.compose.Compose...>]
         """
 
@@ -229,19 +238,20 @@ class UrlMap:
         if path.startswith('/%s/' % self.MAP_API):
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:
-                raise ValueError('Unknown API level: %s' % path_parts[2])
-            return self._map_api_command(path_parts[3:], query_data, post_data,
-                                         fmt='json')
+                raise UsageError('Unknown API level: %s' % path_parts[2])
+            return self._map_api_command(method, path_parts[3:],
+                                         query_data, post_data, fmt='json')
 
         # For non-API calls, strip prefixes before further processing
         path_parts = path[1:].split('/')
         try:
-            return self._map_api_command(path_parts, query_data, post_data)
-        except ValueError:
+            return self._map_api_command(method, path_parts,
+                                         query_data, post_data)
+        except UsageError:
             # Finally check for the registered shortcuts
             if path_parts[0] in self.MAP_PATHS:
-                method = self.MAP_PATHS[path_parts[0]]
-                return method(self, request, path_parts, query_data, post_data)
+                mapper = self.MAP_PATHS[path_parts[0]]
+                return mapper(self, request, path_parts, query_data, post_data)
             raise
 
     def _url(self, url, output='', qs=''):
@@ -312,7 +322,7 @@ class UrlMap:
 
         def cmds(method):
             return sorted([(c[0].replace('=', ''), c[1])
-                           for c in self._api_commands(method=method)])
+                           for c in self._api_commands(method, strict=True)])
 
         print '# Mailpile URL map (autogenerated by %s)' % __file__
         print
