@@ -26,6 +26,7 @@ class SearchResults(dict):
     days_ago = (time.time() - msg_ts) / (24*3600)
     msg_date = datetime.date.fromtimestamp(msg_ts)
     date = '%4.4d-%2.2d-%2.2d' % (msg_date.year, msg_date.month, msg_date.day)
+    urlmap = UrlMap(self.session)
     expl = {
       'idx': info[0],
       'id': info[1],
@@ -37,10 +38,10 @@ class SearchResults(dict):
       'date': date,
       'friendly_date': _friendly_date(days_ago, date),
       'tag_ids': info[7],
-      'url': UrlMap(self.session).url_thread(info[0])
+      'url': urlmap.url_thread(info[0])
     }
-    if info[6]:
-      expl['is_editable'] = True
+    if info[8]:
+      expl['editing_url'] = urlmap.url_compose(info[0])
     return expl
 
   def _prune_msg_tree(self, tree, context=True, parts=False, editable=False):
