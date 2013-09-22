@@ -23,7 +23,7 @@ class Mailpile(object):
         fnc.__doc__ = '%s(%s)  # %s' % (cmd, cls.SYNOPSIS, cls.__doc__)
       else:
         fnc.__doc__ = '%s()  # %s' % (cmd, cls.__doc__)
-      setattr(self, cmd, fnc)
+      setattr(self, cmd.replace('/', '_'), fnc)
 
   def _mk_action(self, cmd):
     if cmd.endswith('='):
