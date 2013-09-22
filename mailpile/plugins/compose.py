@@ -301,8 +301,8 @@ class Mail(ReturnsSearchResults):
 
 
 mailpile.plugins.register_command('c:', 'message/compose=', Compose)
-mailpile.plugins.register_command('r:', 'message/reply=',     Reply)
+mailpile.plugins.register_command('r:', 'message/reply=',   Reply)
 mailpile.plugins.register_command('f:', 'message/forward=', Forward)
-mailpile.plugins.register_command('u:', 'message/update=',    Update)
-mailpile.plugins.register_command('m:', 'message/mail=',        Mail)
-mailpile.plugins.register_command('a:', 'message/attach=',    Attach)
+mailpile.plugins.register_command('u:', 'message/update=',  Update)
+mailpile.plugins.register_command('m:', 'message/mail=',    Mail)
+mailpile.plugins.register_command('a:', 'message/attach=',  Attach)
