@@ -8,21 +8,21 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-	<link rel="stylesheet" href="/_/static/css/default.css" />
-	<link rel="stylesheet" href="/_/static/css/select2.css" />
+	<link rel="stylesheet" href="/static/css/default.css" />
+	<link rel="stylesheet" href="/static/css/select2.css" />
 
 	<!--[if lt IE 9]>
-		<script src="/_/static/js/html5.js"></script>
+		<script src="/static/js/html5.js"></script>
 	<![endif]-->
 
 	<!-- Apple Icons -->
-	<link rel="apple-touch-icon" sizes="57x57" href="/_/static/img/apple-touch-icon.png">
-	<link rel="apple-touch-icon" sizes="72x72" href="/_/static/img/apple-touch-icon-72x72.png">
-	<link rel="apple-touch-icon" sizes="114x114" href="/_/static/img/apple-touch-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="57x57" href="/static/img/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/static/img/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="/static/img/apple-touch-icon-114x114.png">
 
 	<!-- Favicon -->
-	<link rel="shortcut icon" href="/_/img/favicon.png" />
-	<link rel="icon" type="image/png" href="/_/img/favicon.png" />
+	<link rel="shortcut icon" href="/static/img/favicon.png" />
+	<link rel="icon" type="image/png" href="/static/img/favicon.png" />
 
 	<title>{{title}} | {{name}}'s mailpile</title>
 
@@ -31,14 +31,14 @@
 <body>
 
 <div id="header" class="clearfix">
-	  <img class="logo" src="/_/static/img/logo-color.svg">
+	  <img class="logo" src="/static/img/logo-color.svg">
 	  <h1>{{name}}'s<small><b>mail</b>pile of <b>{{mailpile_size}}</b> emails</small></h1>
 	<nav>
 		<ul>
-			<li><a href="/_/donate/"><span class="icon-donate"></span>Donate</a></li>
-			<li><a href="/_/tag/list"><span class="icon-tag"></span>Tags</a></li>
-			<li><a href="/_/contact/list/"><span class="icon-user"></span>Contacts</a></li>
-			<li><a href="/_/settings/"><span class="icon-settings"></span>Settings</a></li>
+			<li><a href="/static/donate/"><span class="icon-donate"></span>Donate</a></li>
+			<li><a href="/tag/list"><span class="icon-tag"></span>Tags</a></li>
+			<li><a href="/contact/list/"><span class="icon-user"></span>Contacts</a></li>
+			<li><a href="/settings/"><span class="icon-settings"></span>Settings</a></li>
 		</ul>
 	</nav>
 </div>
@@ -48,11 +48,11 @@
 	<div id="sidebar">
 		<nav>
 			<ul>
-				<li><a id="button-compose" onclick="compose();return false;" href="/_/compose"><span class="icon-compose"></span> Compose <small>{{mpcommand("tag", "list", "Drafts").result.tags.0.all}} Drafts</small></a></li>
+				<li><a id="button-compose" onclick="compose();return false;" href="/compose"><span class="icon-compose"></span> Compose <small>{{mpcommand("tag", "list", "Drafts").result.tags.0.all}} Drafts</small></a></li>
 			</ul>
 			{% for t in high_tags, user_tags, low_tags %}
 			<ul>{% for tag in t.result.tags %}
-				  <li><a href="/{{tag.name}}/" title="{{tag.all}} emails" class="tag_new_{{tag.new}}"><span class="icon-tag"></span> {{tag.name}}
+				  <li><a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}"><span class="icon-tag"></span> {{tag.name}}
         			<span class='navigation-attention-important'>{{tag.new}}</span>
 			      </a>
   				</li>
@@ -63,11 +63,11 @@
 		<hr>			
 		<nav>
 			<ul>
-				<li><a href="/_/search/has:pgp" class=""><span class="icon-encrypted"></span> Encrypted</a></li>
-				<li><a href="/_/search/att:jpg" class=""><span class="icon-photos"></span> Photos</a></li>
-				<li><a href="/_/search/has:attachment" class=""><span class="icon-files"></span> Files</a></li>
-				<li><a href="/_/search/http" class=""><span class="icon-links"></span> Links</a></li>
-				<li><a href="/_/group/list" class=""><span class="icon-groups"></span> Groups</a></li>
+				<li><a href="/search/has:pgp" class=""><span class="icon-encrypted"></span> Encrypted</a></li>
+				<li><a href="/search/att:jpg" class=""><span class="icon-photos"></span> Photos</a></li>
+				<li><a href="/search/has:attachment" class=""><span class="icon-files"></span> Files</a></li>
+				<li><a href="/search/http" class=""><span class="icon-links"></span> Links</a></li>
+				<li><a href="/group/list" class=""><span class="icon-groups"></span> Groups</a></li>
 			</ul>
 		</nav>
 		<hr>
@@ -98,10 +98,10 @@
 
 </div>
 
-<script type="text/javascript" src="/_/static/js/jquery.min.js"></script>
-<script type="text/javascript" src="/_/static/js/select2.min.js"></script>
-<script type="text/javascript" src="/_/static/js/d3.v3.min.js"></script>
-<script type="text/javascript" src="/_/static/js/mousetrap.min.js"></script>
-<script type="text/javascript" src="/_/static/js/mailpile.js"></script>
+<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/select2.min.js"></script>
+<script type="text/javascript" src="/static/js/d3.v3.min.js"></script>
+<script type="text/javascript" src="/static/js/mousetrap.min.js"></script>
+<script type="text/javascript" src="/static/js/mailpile.js"></script>
 </body>
 </html>

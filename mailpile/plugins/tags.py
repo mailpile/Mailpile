@@ -1,5 +1,6 @@
 import mailpile.plugins
 from mailpile.commands import Command
+from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
 
@@ -102,6 +103,7 @@ class Tag(Command):
       result.append({
         'name': tag,
         'tid': tid,
+        'url': UrlMap(self.session).url_tag(tid),
         'all': int(idx.STATS.get(tid, [0, 0])[0]),
         'new': int(idx.STATS.get(tid, [0, 0])[1]),
         'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])

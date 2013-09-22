@@ -6,6 +6,7 @@ import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.mailutils import Email, ExtractEmails
 from mailpile.search import MailIndex
+from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
 
@@ -34,7 +35,7 @@ class SearchResults(dict):
       'date': date,
       'friendly_date': _friendly_date(days_ago, date),
       'tag_ids': info[5],
-      'url': '/=%s/%s/' % (info[0], info[1]),
+      'url': UrlMap(self.session).url_thread(info[0])
     }
     if info[6]:
       expl['is_editable'] = True
