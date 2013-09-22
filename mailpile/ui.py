@@ -105,19 +105,16 @@ class UserInteraction:
 
   # Logging
   def _display_log(self, text, level=LOG_URGENT):
-    pad = ''
-    if self.last_display[0] in (self.LOG_PROGRESS, ):
-      pad = ' ' * max(0, min(self.MAX_WIDTH, self.MAX_WIDTH-len(text)))
-      sys.stderr.write('\r')
-    elif self.last_display[0] not in (self.LOG_RESULT, ):
+    pad = ' ' * max(0, min(self.MAX_WIDTH, self.MAX_WIDTH-len(text)))
+    if self.last_display[0] not in (self.LOG_PROGRESS, ):
       sys.stderr.write('\n')
     c, w = self.palette.NONE, self.palette.NORMAL
     if level == self.LOG_URGENT: c, w = self.palette.RED, self.palette.BOLD
     elif level == self.LOG_ERROR: c = self.palette.RED
     elif level == self.LOG_WARNING: c = self.palette.YELLOW
     elif level == self.LOG_PROGRESS: c = self.palette.BLUE
-    sys.stderr.write('%s%s' % (self.palette.color(text.encode('utf-8'),
-                                                  color=c, weight=w), pad))
+    sys.stderr.write('%s%s\r' % (self.palette.color(text.encode('utf-8'),
+                                                    color=c, weight=w), pad))
     self.last_display = [level, len(text)]
   def clear_log(self):
     self.log_buffer = []
