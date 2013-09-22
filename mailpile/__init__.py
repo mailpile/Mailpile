@@ -11,8 +11,8 @@ __all__ = ['Mailpile',
 class Mailpile(object):
   """This object provides a simple Python API to Mailpile."""
 
-  def __init__(self, ui=mailpile.ui.UserInteraction):
-    self._config = mailpile.app.ConfigManager()
+  def __init__(self, ui=mailpile.ui.UserInteraction, workdir=None):
+    self._config = mailpile.app.ConfigManager(workdir=workdir)
     self._session = mailpile.ui.Session(self._config)
     self._session.config.load(self._session)
     self._session.main = True

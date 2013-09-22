@@ -251,7 +251,7 @@ class GlobalPostingList(PostingList):
 
   @classmethod
   def SaveFile(cls, session, prefix):
-    return os.path.join(session.config.workdir(), 'kw-journal.dat')
+    return os.path.join(session.config.workdir, 'kw-journal.dat')
 
   @classmethod
   def GetFile(cls, session, sig, mode='r'):
