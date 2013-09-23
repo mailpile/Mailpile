@@ -1,8 +1,13 @@
 # Recipies for stuff
 export PYTHONPATH := .
 
+all:	urlmap dev
+
 dev:
 	@echo export PYTHONPATH=`pwd`
+
+urlmap:
+	@python mailpile/urlmap.py >doc/URLS.md
 
 clean:
 	@rm -vf *.pyc */*.pyc mailpile-tmp.py scripts/breeder.py mailpile.py
