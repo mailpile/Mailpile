@@ -86,7 +86,11 @@ you can use the generic selector below, but it's slower:
 .icon-attachment,
 .icon-ads,
 .icon-connections,
-.icon-themes {
+.icon-themes,
+.icon-circle-check,
+.icon-circle-x,
+.icon-circle-remove,
+.icon-circle-add {
   font-family: 'Mailpile-Interface';
   speak: none;
   font-style: normal;
@@ -206,6 +210,18 @@ you can use the generic selector below, but it's slower:
 }
 .icon-themes:before {
   content: "\e024";
+}
+.icon-circle-check:before {
+  content: "\e025";
+}
+.icon-circle-x:before {
+  content: "\e026";
+}
+.icon-circle-remove:before {
+  content: "\e027";
+}
+.icon-circle-add:before {
+  content: "\e028";
 }
 /* Backgrounds */
 .background-gray {

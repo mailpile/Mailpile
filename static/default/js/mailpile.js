@@ -383,6 +383,25 @@ $(document).ready(function() {
 	if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
 	else {e.value = e.value;}}
 
+
+  /* Compose */
+  $("#compose-to").select2({
+    tags:["red", "green", "blue", "orange", "white", "black", "purple", "cyan", "teal"]
+  });
+  
+  $("#compose-to").on("change", function() { 
+    $("#e15_val").html($("#compose-to").val());
+  });
+
+  $("#compose-to").select2("container").find("ul.select2-choices").sortable({
+    containment: 'parent',
+    start: function() { $("#compose-to").select2("onSortStart"); },
+    update: function() { $("#compose-to").select2("onSortEnd"); }
+  });
+
+  console.log('Wheeee here');
+
+
 });	
 
 
