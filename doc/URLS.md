@@ -21,7 +21,11 @@ endpoints be used for automation.
 
 ### GET (also accept POST)
 
+    /api/0/contact/
+    /api/0/contact/list/
     /api/0/extract/
+    /api/0/group/
+    /api/0/group/list/
     /api/0/message/compose/?mid=[metadata-ID]
     /api/0/message/forward/?mid=[metadata-ID]
     /api/0/message/reply/?mid=[metadata-ID]
@@ -31,6 +35,10 @@ endpoints be used for automation.
 
 ### POST
 
+    /api/0/contact/add/
+    /api/0/contact/remove/
+    /api/0/group/add/
+    /api/0/group/remove/
     /api/0/message/attach/
     ... POST only: data=[file data]&mid=[metadata-ID]&name=[file name]
     /api/0/message/mail/
@@ -40,6 +48,8 @@ endpoints be used for automation.
 
 ### UPDATE
 
+    /api/0/contact/set/
+    /api/0/group/set/
     /api/0/message/attach/
     ... POST only: data=[file data]&mid=[metadata-ID]&name=[file name]
     /api/0/message/update/
@@ -57,7 +67,15 @@ endpoints be used for automation.
 
 ## Default command URLs (HTML output)
 
+    /contact/
+    /contact/add/
+    /contact/list/
+    /contact/remove/
     /extract/
+    /group/
+    /group/add/
+    /group/list/
+    /group/remove/
     /message/attach/
     /message/compose/
     /message/forward/

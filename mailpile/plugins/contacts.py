@@ -179,7 +179,7 @@ class AddContact(AddVCard):
     """Add contacts"""
     KIND = 'individual'
     ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['contact']
+    TEMPLATE_IDS = ['contact/add']
     HTTP_CALLABLE = ('POST', )
 
 
@@ -187,7 +187,7 @@ class SetContact(SetVCard):
     """Add contacts"""
     KIND = 'individual'
     ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['contact']
+    TEMPLATE_IDS = ['contact/set']
     HTTP_CALLABLE = ('UPDATE', )
 
 
@@ -195,7 +195,7 @@ class RemoveContact(RemoveVCard):
     """Add contacts"""
     KIND = 'individual'
     ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['contact']
+    TEMPLATE_IDS = ['contact/remove']
     HTTP_CALLABLE = ('POST', )
 
 
