@@ -4,22 +4,7 @@ from mailpile.mailutils import Email, ExtractEmails
 from mailpile.util import *
 
 
-class VCard(Command):
-    """Add/remove/list/edit vcards"""
-    ORDER = ('Internals', 6)
-    KIND = ''
-    SYNOPSIS = '<nickname>'
-
-    def command(self, save=True):
-        session, config = self.session, self.session.config
-        vcards = []
-        for email in self.args:
-            vcard = config.get_vcard(email)
-            if vcard:
-                vcards.append(vcard)
-            else:
-                session.ui.warning('No such contact: %s' % email)
-        return vcards
+class VCardCommand(Command):
 
     def _fparse(self, fromdata):
         email = ExtractEmails(fromdata)[0]
@@ -41,7 +26,38 @@ class VCard(Command):
     def _pre_delete_vcard(self, vcard):
         pass
 
-    def add_vcards(self):
+    def _format_values(self, key, vals):
+        if key.upper() in ('MEMBER', ):
+            return [['mailto:%s' % e, []] for e in vals]
+        else:
+            return [[e, []] for e in vals]
+
+
+class VCard(VCardCommand):
+    """Add/remove/list/edit vcards"""
+    ORDER = ('Internals', 6)
+    KIND = ''
+    SYNOPSIS = '<nickname>'
+
+    def command(self, save=True):
+        session, config = self.session, self.session.config
+        vcards = []
+        for email in self.args:
+            vcard = config.get_vcard(email)
+            if vcard:
+                vcards.append(vcard)
+            else:
+                session.ui.warning('No such contact: %s' % email)
+        return vcards
+
+
+class AddVCard(VCardCommand):
+    """Add one or more vcards"""
+    ORDER = ('Internals', 6)
+    KIND = ''
+    SYNOPSIS = '<msgs>|<email> = <name>'
+
+    def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
 
         if (len(self.args) > 2
@@ -71,13 +87,14 @@ class VCard(Command):
             return self._error('Nothing to do!')
         return {"contacts": [x.as_mpCard() for x in vcards]}
 
-    def _format_values(self, key, vals):
-        if key.upper() in ('MEMBER', ):
-            return [['mailto:%s' % e, []] for e in vals]
-        else:
-            return [[e, []] for e in vals]
 
-    def set_vcard(self):
+class SetVCard(VCardCommand):
+    """Set vcard variables"""
+    ORDER = ('Internals', 6)
+    KIND = ''
+    SYNOPSIS = '<email> <attr> <value>'
+
+    def command(self):
         session, config = self.session, self.session.config
         handle, var = self.args[0], self.args[1]
         if self.args[2] == '=':
@@ -104,7 +121,14 @@ class VCard(Command):
             self._ignore_exception()
             return self._error('Error setting %s = %s' % (var, val))
 
-    def rm_vcards(self):
+
+class RemoveVCard(VCardCommand):
+    """Delete vcards"""
+    ORDER = ('Internals', 6)
+    KIND = ''
+    SYNOPSIS = '<email>'
+
+    def command(self):
         session, config = self.session, self.session.config
         for handle in self.args:
             vcard = config.get_vcard(handle)
@@ -115,7 +139,14 @@ class VCard(Command):
                 session.ui.error('No such contact: %s' % handle)
         return True
 
-    def find_vcards(self):
+
+class ListVCards(VCardCommand):
+    """Find vcards"""
+    ORDER = ('Internals', 6)
+    KIND = ''
+    SYNOPSIS = '[--full] [<terms>]'
+
+    def command(self):
         session, config = self.session, self.session.config
         if self.args and self.args[0] == '--full':
             self.args.pop(0)
@@ -135,21 +166,55 @@ class VCard(Command):
         ctx["count"] = len(vcards)
         return ctx
 
-    SUBCOMMANDS = {
-        'add':    (add_vcards,  '<msgs>|<email> = <name>'),
-        'set':    (set_vcard,   '<email> <attr> <value>'),
-        'list':   (find_vcards, '[--full] [<terms>]'),
-        'delete': (rm_vcards,   '<email>'),
-    }
-
 
 class Contact(VCard):
-    """Add/remove/list/edit contacts"""
+    """View contacts"""
     KIND = 'individual'
     ORDER = ('Tagging', 3)
-    SYNOPSIS = '<email>'
     TEMPLATE_IDS = ['contact']
+    HTTP_CALLABLE = ('GET', )
 
 
-mailpile.plugins.register_command('C:',     'contact=', Contact)
-mailpile.plugins.register_command('_vcard', 'vcard=',     VCard)
+class AddContact(AddVCard):
+    """Add contacts"""
+    KIND = 'individual'
+    ORDER = ('Tagging', 3)
+    TEMPLATE_IDS = ['contact']
+    HTTP_CALLABLE = ('POST', )
+
+
+class SetContact(SetVCard):
+    """Add contacts"""
+    KIND = 'individual'
+    ORDER = ('Tagging', 3)
+    TEMPLATE_IDS = ['contact']
+    HTTP_CALLABLE = ('UPDATE', )
+
+
+class RemoveContact(RemoveVCard):
+    """Add contacts"""
+    KIND = 'individual'
+    ORDER = ('Tagging', 3)
+    TEMPLATE_IDS = ['contact']
+    HTTP_CALLABLE = ('POST', )
+
+
+class ListContacts(ListVCards):
+    """Find contacts"""
+    KIND = 'individual'
+    ORDER = ('Tagging', 3)
+    TEMPLATE_IDS = ['contact/list']
+    HTTP_CALLABLE = ('GET', )
+
+
+
+mailpile.plugins.register_command('_vcard', 'vcard=',        VCard)
+mailpile.plugins.register_command('_vcadd', 'vcard/add=',    AddVCard)
+mailpile.plugins.register_command('_vcset', 'vcard/set=',    SetVCard)
+mailpile.plugins.register_command('_vcdel', 'vcard/remove=', RemoveVCard)
+mailpile.plugins.register_command('_vclst', 'vcard/list=',   ListVCards)
+mailpile.plugins.register_command('C:',     'contact=',        Contact)
+mailpile.plugins.register_command('_coadd', 'contact/add=',    AddContact)
+mailpile.plugins.register_command('_coset', 'contact/set=',    SetContact)
+mailpile.plugins.register_command('_codel', 'contact/remove=', RemoveContact)
+mailpile.plugins.register_command('_colst', 'contact/list=',   ListContacts)
