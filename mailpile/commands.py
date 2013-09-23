@@ -198,7 +198,8 @@ class Command:
           return Help(self.session, arg=[self.name]).run()
       else:
         for i in range(0, len(self.template_ids)):
-          self.template_ids[i] += '/index'
+          if '/' not in self.template_ids[i]:
+            self.template_ids[i] += '/index'
           
       self._starting()
       return self._finishing(command, command(self, *args, **kwargs))
