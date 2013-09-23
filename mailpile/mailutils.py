@@ -29,6 +29,9 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from platform import system
+from urllib import quote, unquote
+
 from smtplib import SMTP, SMTP_SSL
 
 from mailpile.mailboxes.imap import IMAPMailbox
@@ -213,6 +216,7 @@ def HeaderPrint(message):
 
 def OpenMailbox(fn):
   for mbox_cls in (IncrementalIMAPMailbox,
+                   IncrementalWinMaildir,
                    IncrementalMaildir,
                    IncrementalMacMaildir,
                    IncrementalGmvault):
@@ -257,10 +261,10 @@ def UnorderedPicklable(parent, editable=False):
       self._refresh()
 
     def get_msg_ptr(self, idx, toc_id):
-      return '%s%s' % (idx, toc_id)
+      return '%s%s' % (idx, quote(toc_id))
 
     def get_file_by_ptr(self, msg_ptr):
-      return self.get_file(msg_ptr[MBX_ID_LEN:])
+      return self.get_file(unquote(msg_ptr[MBX_ID_LEN:]))
 
     def get_msg_size(self, toc_id):
       fd = self.get_file(toc_id)
@@ -301,18 +305,21 @@ class IncrementalIMAPMailbox(UnorderedPicklable(IMAPMailbox)):
 
 class IncrementalMaildir(UnorderedPicklable(mailbox.Maildir, editable=True)):
     """A Maildir class that supports pickling and a few mailpile specifics."""
+    supported_platform = None
     @classmethod
     def parse_path(cls, fn):
-        if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'cur')):
+        if (((cls.supported_platform is None) or
+             (cls.supported_platform in system().lower())) and
+                os.path.isdir(fn) and
+                os.path.exists(os.path.join(fn, 'cur'))):
             return (fn, )
         raise ValueError('Not a Maildir: %s' % fn)
 
-    def get_msg_ptr(self, idx_id, toc_id):
-        # Maildir filenames can have ':' or ',' in them which separate the
-        # unique part of the name from attributes and varies depending on
-        # what mail clients have done with the mail. The splits strip that
-        # stuff off the ID (github issue #35).
-        return '%s%s' % (idx_id, toc_id.split(',')[0].split(':')[0])
+
+class IncrementalWinMaildir(IncrementalMaildir):
+    """A Maildir class for Windows (using ! instead of : in filenames)"""
+    supported_platform = 'win'
+    colon = '!'
 
 
 class IncrementalMacMaildir(UnorderedPicklable(MacMaildir)):
