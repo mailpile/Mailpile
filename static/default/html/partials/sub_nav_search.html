@@ -1,8 +1,8 @@
 <nav id="sub-navigation">
 	<ul class="clearfix">
-		<li><a href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">5</span> New</a></li>
-		<li><a href="#"><span class="navigation-icon icon-later"></span>12 Later</a></li>
-		<li><a href="#"><span class="navigation-icon icon-message"></span><span>2,415</span> Read</a></li>
+		<li><a href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-attention-urgent">{{result.0.new}}</span> New</a></li>
+		<li><a href="#"><span class="navigation-icon icon-later"></span>{{result.0.later}} Later</a></li>
+		<li><a href="#"><span class="navigation-icon icon-message"></span><span>{{result.0.read}}</span> Read</a></li>
 		<li id="btn-display-list" class="navigation-on"><a onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span> List</a></li>
 		<li id="btn-display-graph"><a onclick="mailpile.results_graph();"><span class="navigation-icon icon-graph"></span> Graph</a></li>
 	</ul>
