@@ -5,29 +5,52 @@
 
 
 <div id="search" class="clearfix">
-	<form id="search-form" action="/_/contact/list/" class="clearfix">
-		<span class="icon-search"></span>
-		<input id="qbox" type="text" name="args" placeholder="Search contacts..." value="{result.query}" />
-		<input type="submit" class="button-primary" value="Search"/>
-		<input type="hidden" name="csrf" value="{csrf}" />
-	</form>
+    <form id="search-form" action="/_/contact/list/" class="clearfix">
+        <span class="icon-search"></span>
+        <input id="qbox" type="text" name="args" placeholder="Search contacts..." value="{{result.query}}" />
+        <input type="submit" class="button-primary" value="Search"/>
+        <input type="hidden" name="csrf" value="{{csrf}}" />
+    </form>
 </div>
 
-<div id="pile-results">
-<form id="pile-results-form" action="" method="POST">
-	<input type='hidden' name='csrf' value='{csrf}' />
+<div style="clear: both; width: 100%;">
+    <div id="contacts-list" style="width: 500px; float: left; border-right: 1px solid #ccc;">
+    <form id="pile-results-form" action="" method="POST">
+        <input type='hidden' name='csrf' value='{{csrf}}' />
+        <table class="pile-results" id="pile-results"><tbody>
+            {% for contact in result.contacts %}
+            <tr class="result {{even_odd}} {{tag_classes}}{% if contact.KEY %} pgp_found{% endif %}" data-state="normal">
+                <td class="checkbox" valign="top">
+                    <input type="checkbox" name="msg_{{contact['X-MAILPILE-RID']}}" value="normal">
+                </td>
+                <td class="contact-name">
+                    <a href="/_/contact/{{contact.EMAIL}}/">{{contact.FN}}</a>
+                </td>
+                <td class="contact-email">
+                    <a href="/_/contact/{{contact.EMAIL}}/">{{contact.EMAIL}}</a>
+                </td>
+            </tr>
+            {% endfor %}
 
-    <h1>FIXME: Iterate through result set and display contacts.</h1>
+        </tbody></table>
+ 
+    </form>
+    </div>
 
-    <div id="pile-bottom" class="clearfix">
+    <div id="contact-display" style="padding: 5px; float: left;">
+        {% if result.contact %}
+        {% with contact = result.contact %}
+        {% include("contact/_detail.html") %}
+        {% endwith %}
+        {% endif %}
+    </div>
+
+   <div id="pile-bottom" class="clearfix">
         <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
         <div>
-	        <h5>{start} - {end} of {total} Contacts</h5><br>
-	        <a class="change-result-size" href="#">Show Expanded View</a>
+            <h5>{{start}} - {{end}} of {{total}} Contacts</h5><br>
         </div>
     </div>
-</form>
 </div>
-
 
 {% endblock %}
