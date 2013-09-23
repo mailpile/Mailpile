@@ -1,6 +1,6 @@
 <nav id="sub-navigation">
   <ul class="clearfix">
-    <li><a href="/tag/list/"><span class="navigation-icon icon-tag"></span>Tags</a></li>
-    <li><a href="/tag/add/">Add Tag</a></li>
+    <li {% if command == "tag list" %} class="navigation-on" {% endif %}><a href="/tag/list/"><span class="navigation-icon icon-tag"></span>Tags</a></li>
+    <li {% if command == "tag add" %} class="navigation-on" {% endif %}><a href="/tag/add/">Add Tag</a></li>
   </ul>
 </nav>
