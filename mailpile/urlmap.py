@@ -149,7 +149,7 @@ class UrlMap:
         """
         Map /thread/METADATA_ID/... to view or extract commands.
 
-        >>> path = '/thread/123/'
+        >>> path = '/thread/=123/'
         >>> commands = urlmap._map_thread(request, path[1:].split('/'), {}, {})
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
@@ -159,7 +159,7 @@ class UrlMap:
         message_mid = path_parts[1]
         return [
             self._choose_output(path_parts),
-            self._command('view', args=['=%s' % message_mid],
+            self._command('view', args=[message_mid],
                                   query_data=query_data,
                                   post_data=post_data)
         ]
@@ -264,11 +264,11 @@ class UrlMap:
 
     def url_thread(self, message_id, output=''):
         """Map a message to it's short-hand thread URL."""
-        return self._url('/thread/%s/' % message_id, output)
+        return self._url('/thread/=%s/' % message_id, output)
 
     def url_compose(self, message_id, output=''):
         """Map a message to it's short-hand editing URL."""
-        return self._url('/message/compose/%s/' % message_id, output)
+        return self._url('/message/compose/=%s/' % message_id, output)
 
     def url_tag(self, tag_id, output=''):
         """
@@ -368,13 +368,6 @@ class UrlMap:
         for command in sorted(list(set(cmds('GET') + cmds('POST')))):
             print '    /%s/' % (command[0], )
         print
-
-
-class UrlRedirectException(Exception):
-    """An exception indicating we need to redirecting to another URL."""
-    def __init__(self, url):
-        Exception.__init__(self, 'Should redirect to: %s' % url)
-        self.url = url
 
 
 class UrlRedirect(mailpile.commands.Command):

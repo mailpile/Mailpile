@@ -48,7 +48,7 @@
 	<div id="sidebar">
 		<nav>
 			<ul>
-				<li><a id="button-compose" onclick="compose();return false;" href="/compose"><span class="icon-compose"></span> Compose <small>{{mpcommand("tag", "list", "Drafts").result.tags.0.all}} Drafts</small></a></li>
+				<li><a id="button-compose" onclick="compose();return false;" href="/message/compose"><span class="icon-compose"></span> Compose <small>{{mpcommand("tag", "list", "Drafts").result.tags.0.all}} Drafts</small></a></li>
 			</ul>
 			{% for t in high_tags, user_tags, low_tags %}
 			<ul>{% for tag in t.result.tags %}

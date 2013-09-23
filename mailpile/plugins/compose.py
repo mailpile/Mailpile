@@ -8,21 +8,36 @@ import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.mailutils import Email
 from mailpile.search import MailIndex
+from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
 from mailpile.plugins.search import Search, SearchResults
 
 
 class EditableSearchResults(SearchResults):
+    def __init__(self, session, idx, new_messages, **kwargs):
+        SearchResults.__init__(self, session, idx, *kwargs)
+        self.new_messages = new_messages
+
     def _prune_msg_tree(self, *args, **kwargs):
         kwargs['editable'] = True
         return SearchResults._prune_msg_tree(self, *args, **kwargs)
 
 
 class ReturnsSearchResults(Search):
-    def _return_search_results(self, session, idx, emails, expand=None):
+    class CommandResult(Search.CommandResult):
+        def as_html(self, *args, **kwargs):
+            for result in (self.result or []):
+                if result.new_messages:
+                    mid = b36(result.new_messages[0].msg_idx)
+                    url = UrlMap(self.session).url_compose(mid)
+                    raise UrlRedirectException(url)
+            return Search.CommandResult.as_html(self, *args, **kwargs)
+
+    def _return_search_results(self, session, idx, emails,
+                                     expand=None, new=[]):
         session.results = [e.msg_idx for e in emails]
-        session.displayed = EditableSearchResults(session, idx,
+        session.displayed = EditableSearchResults(session, idx, new,
                                                   num=len(emails),
                                                   expand=expand)
         return [session.displayed]
@@ -38,15 +53,13 @@ class Compose(ReturnsSearchResults):
         'mid': 'metadata-ID',
     }
     HTTP_POST_VARS = {}
-
-    _ATT_MIMETYPES = ('application/pgp-signature', )
-    _TEXT_PARTTYPES = ('text', 'quote', 'pgpsignedtext', 'pgpsecuretext',
-                       'pgpverifiedtext')
+    RAISES = (UrlRedirectException, )
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
         if self.args:
             emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+            return self._edit_messages(session, idx, emails, new=False)
         else:
             local_id, lmbox = config.open_local_mailbox(session)
             emails = [Email.Create(idx, local_id, lmbox)]
@@ -56,14 +69,17 @@ class Compose(ReturnsSearchResults):
                             msg_idxs=idxs, conversation=False)
             except (TypeError, ValueError, IndexError):
                 self._ignore_exception()
+            return self._edit_messages(session, idx, emails)
 
-        return self._edit_new_messages(session, idx, emails)
-
-    def _edit_new_messages(self, session, idx, emails):
+    def _edit_messages(self, session, idx, emails, new=True):
         session.ui.edit_messages(emails)
-        session.ui.mark('%d message(s) created as drafts' % len(emails))
+        if new:
+          session.ui.mark('%d message(s) created as drafts' % len(emails))
+        else:
+          session.ui.mark('%d message(s) edited' % len(emails))
         self._idx().save()
-        return self._return_search_results(session, idx, emails, emails)
+        return self._return_search_results(session, idx, emails, emails,
+                                           new=(new and emails))
 
 
 class Update(ReturnsSearchResults):
@@ -140,7 +156,13 @@ class Attach(ReturnsSearchResults):
         return self._return_search_results(session, idx, updated, updated)
 
 
-class Reply(Compose):
+class RelativeCompose(Compose):
+    _ATT_MIMETYPES = ('application/pgp-signature', )
+    _TEXT_PARTTYPES = ('text', 'quote', 'pgpsignedtext', 'pgpsecuretext',
+                       'pgpverifiedtext')
+
+
+class Reply(RelativeCompose):
     """Reply(-all) to one or more messages"""
     ORDER = ('Composing', 3)
     TEMPLATE_IDS = ['reply'] + Compose.TEMPLATE_IDS
@@ -197,12 +219,12 @@ class Reply(Compose):
             except NoFromAddressError:
                 return self._error('You must configure a From address first.')
 
-            return self._edit_new_messages(session, idx, [email])
+            return self._edit_messages(session, idx, [email])
         else:
             return self._error('No message found')
 
 
-class Forward(Compose):
+class Forward(RelativeCompose):
     """Forward messages (and attachments)"""
     ORDER = ('Composing', 4)
     TEMPLATE_IDS = ['forward'] + Compose.TEMPLATE_IDS
@@ -261,7 +283,7 @@ class Forward(Compose):
             except (TypeError, ValueError, IndexError):
                 self._ignore_exception()
 
-            return self._edit_new_messages(session, idx, [email])
+            return self._edit_messages(session, idx, [email])
         else:
             return self._error('No message found')
 

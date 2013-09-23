@@ -746,6 +746,8 @@ def Interact(session):
           session.ui.display_result(Action(session, opt, arg))
         except UsageError, e:
           session.error(unicode(e))
+        except UrlRedirectException, e:
+          session.error('Tried to redirect to: %s' % e.url)
   except EOFError:
     print
 

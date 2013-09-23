@@ -31,14 +31,25 @@ BORING_HEADERS = ('received', 'date',
                   'dkim-signature', 'domainkey-signature', 'received-spf')
 
 
+
 class WorkerError(Exception):
-  pass
+    pass
+
 
 class UsageError(Exception):
-  pass
+    pass
+
 
 class AccessError(Exception):
-  pass
+    pass
+
+
+class UrlRedirectException(Exception):
+    """An exception indicating we need to redirecting to another URL."""
+    def __init__(self, url):
+        Exception.__init__(self, 'Should redirect to: %s' % url)
+        self.url = url
+
 
 def b64c(b): return b.replace('\n', '').replace('=', '').replace('/', '_')
 def b64w(b): return b64c(b).replace('+', '-')
