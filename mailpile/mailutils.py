@@ -579,8 +579,13 @@ class Email(object):
     'cc': 5,
     'bcc': 6,
   }
-  def get_editing_string(self, tree):
-    lines = []
+  def get_editing_strings(self, tree):
+    strings = {
+      'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
+      'attachments': {}
+    }
+    header_lines = []
+    body_lines = []
 
     # We care about header order and such things...
     hdrs = dict([(h.lower(), h) for h in tree['headers'].keys()
@@ -591,18 +596,21 @@ class Email(object):
     keys = hdrs.keys()
     keys.sort(key=lambda k: (self.HEADER_ORDER.get(k, 99), k))
     for hdr in [hdrs[k] for k in keys]:
-      lines.append('%s: %s' % (hdr, tree['headers'].get(hdr, '')))
+      data = tree['headers'].get(hdr, '')
+      if hdr.lower() in ('from', 'to', 'cc', 'bcc', 'subject'):
+        strings[hdr.lower()] = data
+      else:
+        header_lines.append('%s: %s' % (hdr, data))
 
     for att in tree['attachments']:
-      lines.append('Attachment-%s: %s' % (att['count'],
-                                          att['filename'] or '(unnamed)'))
+      strings['attachments'][att['count']] = att['filename'] or '(unnamed)'
 
     # FIXME: Add pseudo-headers for GPG stuff?
 
-    lines.append('')
-    lines.extend([t['data'].strip() for t in tree['text_parts']])
-    lines.append('\n')
-    return '\n'.join(lines)
+    strings['headers'] = header_lines
+    strings['body'] = '\n'.join([t['data'].strip()
+                                 for t in tree['text_parts']])
+    return strings
 
   def make_attachment(self, fn):
     data = open(fn, 'rb').read()
@@ -896,7 +904,7 @@ class Email(object):
 
     if self.is_editable():
       tree['is_editable'] = True
-      tree['editing_string'] = self.get_editing_string(tree)
+      tree['editing_strings'] = self.get_editing_strings(tree)
 
     return tree
 
