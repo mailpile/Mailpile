@@ -219,6 +219,7 @@ class Command:
 
 class Load(Command):
   """Load or reload the metadata index"""
+  SYNOPSIS = (None, 'load', None, None)
   ORDER = ('Internals', 1)
 
   def command(self, reset=True, wait=True, quiet=False):
@@ -227,6 +228,7 @@ class Load(Command):
 
 class Rescan(Command):
   """Scan all mailboxes for new messages"""
+  SYNOPSIS = (None, 'rescan', None, None)
   ORDER = ('Internals', 2)
   SERIALIZE = 'Rescan'
 
@@ -448,7 +450,7 @@ class Help(Command):
         else:
           fmt += ' %s %s '
         text.append(fmt % (c, cmd.replace('=', ''),
-                           args and ('%s' % args) or '',
+                           args and ('%s' % (args, )) or '',
                            (explanation.splitlines() or [''])[0]))
       if 'tags' in self.result:
         text.extend([
@@ -497,7 +499,8 @@ class Help(Command):
         for cls in COMMANDS:
           c, name, url, synopsis = cls.SYNOPSIS[:4]
           if cls.ORDER[0] == grp:
-            cmd_list[c] = (name, synopsis, cls.__doc__, count+cls.ORDER[1])
+            cmd_list[c or '_%s' % name] = (name, synopsis, cls.__doc__,
+                                           count + cls.ORDER[1])
       return {
         'commands': cmd_list,
         'tags': GetCommand('tag/list')(self.session).run(),
@@ -569,7 +572,8 @@ def Action(session, opt, arg, data=None):
   # Tags are commands
   if opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
     s = ['tag:%s' % config.get_tag_id(opt)[0]]
-    return COMMANDS['s:'][1](session, opt, arg=arg, data=data).run(search=s)
+    return GetCommand('search')(session, opt, arg=arg, data=data
+                                ).run(search=s)
 
   # OK, give up!
   raise UsageError('Unknown command: %s' % opt)

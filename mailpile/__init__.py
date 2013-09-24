@@ -18,17 +18,13 @@ class Mailpile(object):
         self._session.config.load(self._session)
         self._session.main = True
         self._ui = self._session.ui = ui()
-        for (cmd, cls) in mailpile.commands.COMMANDS.values():
-            cmd, fnc = self._mk_action(cmd)
-            if cls.SYNOPSIS:
-                fnc.__doc__ = '%s(%s)  # %s' % (cmd, cls.SYNOPSIS, cls.__doc__)
-            else:
-                fnc.__doc__ = '%s()  # %s' % (cmd, cls.__doc__)
-            setattr(self, cmd.replace('/', '_'), fnc)
+        for cls in mailpile.commands.COMMANDS:
+            if cls.SYNOPSIS[1]:
+                cmd, fnc = self._mk_action(cls, *cls.SYNOPSIS)
+                setattr(self, cmd.replace('/', '_'), fnc)
 
-    def _mk_action(self, cmd):
-        if cmd.endswith('='):
-            cmd = cmd[:-1]
+    def _mk_action(self, cls, cc, cmd, url, argspec, *moreargs):
+        if argspec:
 
             def fnc(*args):
                 return mailpile.commands.Action(self._session, cmd, args)
@@ -36,6 +32,8 @@ class Mailpile(object):
 
             def fnc():
                 return mailpile.commands.Action(self._session, cmd, '')
+
+        fnc.__doc__ = '%s(%s)  # %s' % (cmd, argspec or '', cls.__doc__)
         return cmd, fnc
 
     def Interact(self):
