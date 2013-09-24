@@ -61,14 +61,14 @@ def escape_html(t):
   Replace characters that have a special meaning in HTML
   by their entity equivalents. Return the replaced
   string.
-  
+
   >>> escape_html("Hello, Goodbye.")
   'Hello, Goodbye.'
   >>> escape_html("Hello<>World")
   'Hello&lt;&gt;World'
   >>> escape_html("<&>")
   '&lt;&amp;&gt;'
-  
+
   Keyword arguments:
   t -- The string to escape
   """
@@ -78,10 +78,10 @@ def sha1b64(s):
   """
   Apply the SHA1 hash algorithm to a string
   and return the base64-encoded hash value
-  
+
   >>> sha1b64("Hello")
   '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\\n'
-  
+
   Keyword arguments:
   s -- The string to hash
   """
@@ -96,12 +96,12 @@ def sha512b64(s):
   """
   Apply the SHA512 hash algorithm to a string
   and return the base64-encoded hash value
-  
+
   >>> sha512b64("Hello")
   'NhX4DJ0pPtdAJof5SyLVjlKbjMeRb4+sf933+9WvTPd309eVp6AKFr9+fz+5Vh7puq5IDan+ehh2\\nnnGIawPzFQ==\\n'
   >>> sha512b64(u"Hello")
   'NhX4DJ0pPtdAJof5SyLVjlKbjMeRb4+sf933+9WvTPd309eVp6AKFr9+fz+5Vh7puq5IDan+ehh2\\nnnGIawPzFQ==\\n'
-  
+
   Keyword arguments:
   s -- The string to hash
   """
@@ -114,13 +114,13 @@ def sha512b64(s):
 
 def strhash(s, length, obfuscate=None):
   """
-  Create a hash of 
-  
+  Create a hash of
+
   >>> strhash("Hello", 10)
   'hello9_+ei'
   >>> strhash("Goodbye", 5, obfuscate="mysalt")
   'voxpj'
-  
+
   Keyword arguments:
   s -- The string to be hashed
   length -- The length of the hash to create.
@@ -141,14 +141,14 @@ def strhash(s, length, obfuscate=None):
 def b36(number):
   """
   Convert a number to base36
-  
+
   >>> b36(2701)
   '231'
   >>> b36(12345)
   '9IX'
   >>> b36(None)
   '0'
-  
+
   Keyword arguments:
   number -- An integer to convert to base36
   """
@@ -158,6 +158,7 @@ def b36(number):
     number, i = divmod(number, 36)
     base36 = alphabet[i] + base36
   return base36 or alphabet[0]
+
 
 GPG_BEGIN_MESSAGE = '-----BEGIN PGP MESSAGE'
 GPG_END_MESSAGE = '-----END PGP MESSAGE'
@@ -266,7 +267,7 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
   Generates a thumbnail image , which should be a file,
   StringIO, or string, containing a PIL-supported image.
   FIXME: Failure modes unmanaged.
-  
+
   Keyword arguments:
   fileobj -- Either a StringIO instance, a file object or
              a string (containing the image) to
@@ -309,6 +310,37 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
     image.save(output_fd, format=image.format, quality=90)
 
   return image
+
+
+class CleanText:
+    """
+    This is a helper class for aggressively cleaning text, dumbing it
+    down to just ASCII and optionally forbidding some characters.
+
+    >>> CleanText(u'cleanup\xfe', banned='up').clean
+    'clean'
+    >>> str(CleanText(u'c:\\l/e.an', banned=CleanText.FS))
+    'clean'
+    >>> CleanText(u'c_(l e$ a) n!', banned=CleanText.NONALNUM).clean
+    'clean'
+    """
+    FS = ':/.\'\"\\'
+    NONALNUM = [chr(c) for c in (set(range(32, 127)) -
+                                 set(range(ord('0'), ord('9')+1)) -
+                                 set(range(ord('a'), ord('z')+1)) -
+                                 set(range(ord('A'), ord('Z')+1)))]
+
+    def __init__(self, text, banned=''):
+      self.clean = str("".join([i for i in text if ord(i) > 31 and
+                                                   ord(i) < 127 and
+                                                   i not in banned]))
+
+    def __str__(self):
+      return str(self.clean)
+
+    def __unicode__(self):
+      return unicode(self.clean)
+
 
 # If 'python util.py' is executed, start the doctest unittest
 if __name__ == "__main__":
