@@ -21,70 +21,84 @@ endpoints be used for automation.
 
 ### GET (also accept POST)
 
-    /api/0/contact/
-    /api/0/contact/list/
-    /api/0/extract/
-    /api/0/group/
-    /api/0/group/list/
-    /api/0/message/compose/?mid=[metadata-ID]
-    /api/0/message/forward/?mid=[metadata-ID]
-    /api/0/message/reply/?mid=[metadata-ID]
-    /api/0/search/?q=[search terms]&order=[sort order]
-    /api/0/shownetwork/?q=[search terms]&order=[sort order]
-    /api/0/view/?mid=[metadata-ID]
+    /api/0/config/get/        <var>/
+    /api/0/contact/           <nickname>/
+    /api/0/contact/list/      [--full]/[<terms>]/
+    /api/0/help/              [<command-group>|variables]/
+    /api/0/message/           [raw]/<message>/
+                              ?mid=[metadata-ID]
+    /api/0/message/compose/   [<messages>]/
+                              ?mid=[metadata-ID]
+    /api/0/message/delete/    <message>/
+    /api/0/message/extract/   <att>/<message>/[><fn>]/
+    /api/0/message/forward/   [att]/<messages>/
+                              ?mid=[metadata-ID]
+    /api/0/message/reply/     [all]/<messages>/
+                              ?mid=[metadata-ID]
+    /api/0/search/            <terms>/
+                              ?q=[search terms]&order=[sort order]
+    /api/0/tag/list/          [<wanted>|!<wanted>]/[...]/
 
 ### POST
 
-    /api/0/contact/add/
-    /api/0/contact/remove/
-    /api/0/group/add/
-    /api/0/group/remove/
-    /api/0/message/attach/
+    /api/0/contact/add/       <msgs>/
+    /api/0/contact/remove/    <email>/
+    /api/0/contact/set/       <email>/<attr>/<value>/
+    /api/0/message/attach/    <messages>/[<path/to/file>]/
     ... POST only: data=[file data]&mid=[metadata-ID]&name=[file name]
-    /api/0/message/mail/
+    /api/0/message/send/      <messages>/[<emails>]/
     ... POST only: to=[recipients]&mid=[metadata-ID]
-    /api/0/message/update/
+    /api/0/message/update/    <messages>/<path/to/update>/
     ... POST only: body=[..]&from=[..]&cc=[..]&mid=[metadata-ID]&bcc=[..]&to=[..]&subject=[..]
+    /api/0/tag/               <[+|-]tags>/<msgs>/
+    /api/0/tag/add/           <tag>/
+    /api/0/tag/delete/        <tag>/
 
 ### UPDATE
 
-    /api/0/contact/set/
-    /api/0/group/set/
-    /api/0/message/attach/
+    /api/0/contact/set/       <email>/<attr>/<value>/
+    /api/0/message/attach/    <messages>/[<path/to/file>]/
     ... POST only: data=[file data]&mid=[metadata-ID]&name=[file name]
-    /api/0/message/update/
+    /api/0/message/update/    <messages>/<path/to/update>/
     ... POST only: body=[..]&from=[..]&cc=[..]&mid=[metadata-ID]&bcc=[..]&to=[..]&subject=[..]
 
+### DELETE
+
+    /api/0/contact/remove/    <email>/
 
 
 ## Pretty shortcuts (HTML output)
 
     /           Redirects to /in/Inbox/ for now.  (FIXME)
     /in/        Map /in/TAG_NAME/ to tag searches.
-    /message/   RESERVED FOR LATER.
     /static/    RESERVED FOR LATER.
     /thread/    Map /thread/METADATA_ID/... to view or extract commands.
 
 ## Default command URLs (HTML output)
 
+*These accept the same arguments as the API calls above.*
+
+    /config/get/
     /contact/
     /contact/add/
     /contact/list/
     /contact/remove/
-    /extract/
-    /group/
-    /group/add/
-    /group/list/
-    /group/remove/
+    /contact/set/
+    /help/
+    /message/
     /message/attach/
     /message/compose/
+    /message/delete/
+    /message/extract/
     /message/forward/
-    /message/mail/
     /message/reply/
+    /message/send/
     /message/update/
     /search/
-    /shownetwork/
-    /view/
+    /tag/
+    /tag/add/
+    /tag/delete/
+    /tag/list/
 
 
-<!-- TestResults(failed=0, attempted=41) -->
+<!-- TestResults(failed=0, attempted=40) -->

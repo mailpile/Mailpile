@@ -72,7 +72,6 @@ class Command:
       # FIXME: For optimal designer happiness, we should probably check
       #        the fs (ask the UI object) if the requested template exists,
       #        not whether it is hard-coded into the template_ids list.
-      print 'Template is: %s' % template
       if template in (None, 'html', 'as.html'):
         template = 'index'
       tpath = [os.path.join(self.template_id, template.replace('.html', ''))]
