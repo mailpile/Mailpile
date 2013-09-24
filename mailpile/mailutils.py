@@ -569,6 +569,7 @@ class Email(object):
   MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                   'content-transfer-encoding')
   UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
+  MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject')
   HEADER_ORDER = {
     'in-reply-to': -2,
     'references': -1,
@@ -590,14 +591,14 @@ class Email(object):
     # We care about header order and such things...
     hdrs = dict([(h.lower(), h) for h in tree['headers'].keys()
                                 if h.lower() not in self.UNEDITABLE_HEADERS])
-    hdrs['to'] = hdrs.get('to', 'To')
-    hdrs['cc'] = hdrs.get('cc', 'Cc')
-    hdrs['bcc'] = hdrs.get('bcc', 'Bcc')
+    for mandate in self.MANDATORY_HEADERS:
+      hdrs[mandate.lower()] = hdrs.get(mandate.lower(), mandate)
     keys = hdrs.keys()
     keys.sort(key=lambda k: (self.HEADER_ORDER.get(k, 99), k))
+    lowman = [m.lower() for m in self.MANDATORY_HEADERS]
     for hdr in [hdrs[k] for k in keys]:
       data = tree['headers'].get(hdr, '')
-      if hdr.lower() in ('from', 'to', 'cc', 'bcc', 'subject'):
+      if hdr.lower() in lowman:
         strings[hdr.lower()] = data
       else:
         header_lines.append('%s: %s' % (hdr, data))
@@ -607,10 +608,19 @@ class Email(object):
 
     # FIXME: Add pseudo-headers for GPG stuff?
 
-    strings['headers'] = header_lines
+    strings['headers'] = '\n'.join(header_lines)
     strings['body'] = '\n'.join([t['data'].strip()
                                  for t in tree['text_parts']])
     return strings
+
+  def get_editing_string(self, tree):
+    estrings = self.get_editing_strings(tree)
+    bits = [estrings['headers']]
+    for mh in self.MANDATORY_HEADERS:
+      bits.append('%s: %s' % (mh, estrings[mh.lower()]))
+    bits.append('')
+    bits.append(estrings['body'])
+    return '\n'.join(bits)
 
   def make_attachment(self, fn):
     data = open(fn, 'rb').read()

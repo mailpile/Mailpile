@@ -349,7 +349,7 @@ class View(Search):
 
 class Extract(Command):
   """Extract attachment(s) to file(s)"""
-  SYNOPSIS = ('e', 'extract', 'message/extract', '<att> <message> [><fn>]')
+  SYNOPSIS = ('e', 'extract', 'message/download', '<att> <message> [><fn>]')
   ORDER = ('Searching', 5)
 
   class CommandResult(Command.CommandResult):
