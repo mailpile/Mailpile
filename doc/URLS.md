@@ -24,6 +24,7 @@ endpoints be used for automation.
     /api/0/config/get/        <var>/
     /api/0/contact/           <nickname>/
     /api/0/contact/list/      [--full]/[<terms>]/
+    /api/0/filter/list/
     /api/0/help/              [<command-group>|variables]/
     /api/0/message/           [raw]/<message>/
                               ?mid=[metadata-ID]
@@ -50,7 +51,6 @@ endpoints be used for automation.
     ... POST only: to=[recipients]&mid=[metadata-ID]
     /api/0/message/update/    <messages>/<path/to/update>/
     ... POST only: body=[..]&from=[..]&cc=[..]&mid=[metadata-ID]&bcc=[..]&to=[..]&subject=[..]
-    /api/0/tag/               <[+|-]tags>/<msgs>/
     /api/0/tag/add/           <tag>/
     /api/0/tag/delete/        <tag>/
 
@@ -65,6 +65,7 @@ endpoints be used for automation.
 ### DELETE
 
     /api/0/contact/remove/    <email>/
+    /api/0/tag/delete/        <tag>/
 
 
 ## Pretty shortcuts (HTML output)
@@ -84,6 +85,7 @@ endpoints be used for automation.
     /contact/list/
     /contact/remove/
     /contact/set/
+    /filter/list/
     /help/
     /message/
     /message/attach/
@@ -95,7 +97,6 @@ endpoints be used for automation.
     /message/send/
     /message/update/
     /search/
-    /tag/
     /tag/add/
     /tag/delete/
     /tag/list/
