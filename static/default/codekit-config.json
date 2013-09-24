@@ -120,7 +120,7 @@
     },
     "\/js\/jquery.ui.position.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/jquery.ui.position.js",
@@ -470,7 +470,7 @@
     },
     "\/js\/jquery.ui.widget.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/jquery.ui.widget.js",
@@ -525,7 +525,7 @@
     },
     "\/js\/jquery.ui.sortable.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/jquery.ui.sortable.js",
@@ -589,6 +589,17 @@
       "inputAbbreviatedPath" : "\/oldhtml\/tag.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
+    },
+    "\/js\/mailpile-libraries-min.js" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 1,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/js\/mailpile-libraries-min.js",
+      "outputStyle" : 1,
+      "syntaxCheckerStyle" : 1,
+      "outputAbbreviatedPath" : "\/js\/mailpile-libraries-min-min.js",
+      "fileType" : 64
     },
     "\/oldhtml\/tag_list.html" : {
       "ignoreWasSetByUser" : 0,
@@ -664,7 +675,7 @@
     },
     "\/js\/select2.min.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/select2.min.js",
@@ -833,7 +844,7 @@
     },
     "\/js\/jquery.ui.core.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/jquery.ui.core.js",
@@ -887,7 +898,7 @@
     },
     "\/js\/mousetrap.min.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/mousetrap.min.js",
@@ -922,6 +933,15 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+    "\/html\/contact\/index.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/contact\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/oldhtml\/search.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -941,15 +961,6 @@
       "outputAbbreviatedPath" : "\/img\/apple-touch-icon-72x72.png",
       "initialSize" : 1761,
       "fileType" : 8192
-    },
-    "\/html\/contact\/list.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/contact\/list.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/temporary.html" : {
       "ignoreWasSetByUser" : 0,
@@ -980,7 +991,7 @@
     },
     "\/js\/jquery.ui.mouse.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/jquery.ui.mouse.js",
@@ -1046,7 +1057,55 @@
     }
   },
   "manualImportLinks" : [
-
+    {
+      "type" : 1,
+      "position" : 0,
+      "linkedFileAbbreviatedPath" : "\/js\/jquery.ui.core.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 1,
+      "linkedFileAbbreviatedPath" : "\/js\/jquery.ui.widget.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 2,
+      "linkedFileAbbreviatedPath" : "\/js\/jquery.ui.mouse.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 3,
+      "linkedFileAbbreviatedPath" : "\/js\/jquery.ui.position.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 4,
+      "linkedFileAbbreviatedPath" : "\/js\/jquery.ui.sortable.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 5,
+      "linkedFileAbbreviatedPath" : "\/js\/select2.min.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 6,
+      "linkedFileAbbreviatedPath" : "\/js\/mousetrap.min.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    }
   ],
   "projectSettings" : {
     "hamlNoEscapeInAttributes" : 0,

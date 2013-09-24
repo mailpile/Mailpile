@@ -1,6 +1,8 @@
 <nav id="sub-navigation">
   <ul class="clearfix">
-    <li {% if command == "contact list" %} class="navigation-on" {% endif %}><a href="/contact/list/"><span class="navigation-icon icon-user"></span>Contacts</a></li>
-    <li {% if command == "contact add" %} class="navigation-on" {% endif %}><a href="/contact/add/"><span class="navigation-icon icon-circle-add"></span>Add Contact</a></li>
+    <li {% if command == "contact" %} class="navigation-on" {% endif %}><a href="/contact"><span class="navigation-icon icon-user"></span>Contacts</a></li>
+    <li {% if command == "contact/add" %} class="navigation-on" {% endif %}><a href="/contact/add"><span class="navigation-icon icon-circle-add"></span>Add Contact</a></li>
+    <li {% if command == "group" %} class="navigation-on" {% endif %}><a href="/group"><span class="navigation-icon icon-groups"></span>Groups</a></li>
+    <li {% if command == "group/add" %} class="navigation-on" {% endif %}><a href="/group/add"><span class="navigation-icon icon-circle-add"></span>Add Group</a></li>
   </ul>
 </nav>
