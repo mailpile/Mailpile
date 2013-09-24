@@ -88,7 +88,7 @@ class UrlMap:
 
         As a side-effect, the filename component will be removed from the
         path_parts list.
-        >>> path_parts = '/a/b/c.json'.split('/')
+        >>> path_parts = '/a/b/as.json'.split('/')
         >>> command = urlmap._choose_output(path_parts)
         >>> (path_parts, command)
         (['', 'a', 'b'], <mailpile.commands.Output instance at 0x...>)
@@ -101,21 +101,23 @@ class UrlMap:
         (['', 'a', 'b'], <mailpile.commands.Output instance at 0x...>)
         >>> path_parts = '/a/b'.split('/')
         >>> command = urlmap._choose_output(path_parts)
-        >>> (path_parts, command)
-        (['', 'a', 'b'], <mailpile.commands.Output instance at 0x...>)
+        Traceback (most recent call last):
+          ...
+        UsageError: Invalid output format: b
         """
         if len(path_parts) > 1 and not path_parts[-1]:
             path_parts.pop(-1)
-        elif '.' in path_parts[-1]:
+        else:
             fn = path_parts.pop(-1)
             for suffix in ('.html', '.jhtml'):
                 if fn.endswith(suffix):
                     # FIXME: We are passing user input here which may
                     #        have security implications.
-                    fmt = fn
-            for suffix in ('.json', '.xml', '.vcf'):
-                if fn.endswith(suffix):
-                    fmt = suffix[1:]
+                    return self._command('output', [fn], method=False)
+            for suffix in ('as.json', 'as.xml', 'as.vcf'):
+                if fn == suffix:
+                    return self._command('output', [suffix[3:]], method=False)
+            raise UsageError('Invalid output format: %s' % fn)
         return self._command('output', [fmt], method=False)
 
     def _map_root(self, request, path_parts, query_data, post_data):
@@ -171,7 +173,7 @@ class UrlMap:
                                query_data, post_data, fmt='html'):
         """Map a path to a command list, prefering the longest match.
 
-        >>> urlmap._map_api_command('GET', ['http', 'redir', '...'], {}, {})
+        >>> urlmap._map_api_command('GET', ['http', 'redir', ''], {}, {})
         [<mailpile.commands.Output...>, <...UrlRedirect...>]
         """
         output = self._choose_output(path_parts, fmt=fmt)
@@ -209,11 +211,11 @@ class UrlMap:
         The /api/ URL space is versioned and provides access to all the
         built-in commands. Requesting the wrong version or a bogus command
         throws exceptions.
-        >>> urlmap.map(request, 'GET', '/api/999/bogus', {}, {})
+        >>> urlmap.map(request, 'GET', '/api/999/bogus/', {}, {})
         Traceback (most recent call last):
             ...
         UsageError: Unknown API level: 999
-        >>> urlmap.map(request, 'GET', '/api/0/bogus', {}, {})
+        >>> urlmap.map(request, 'GET', '/api/0/bogus/', {}, {})
         Traceback (most recent call last):
             ...
         UsageError: Not available for GET: bogus
@@ -232,7 +234,7 @@ class UrlMap:
         [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
 
         Other commands use the command name as the first path component:
-        >>> urlmap.map(request, 'GET', '/search/bjarni', {}, {})
+        >>> urlmap.map(request, 'GET', '/search/bjarni/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
         >>> urlmap.map(request, 'GET', '/message/compose/=123/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.compose.Compose...>]
