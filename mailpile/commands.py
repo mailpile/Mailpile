@@ -69,13 +69,17 @@ class Command:
       }
 
     def as_html(self, template=None):
-      # FIXME: For optimal designer happiness, we should probably check
-      #        the fs (ask the UI object) if the requested template exists,
-      #        not whether it is hard-coded into the template_ids list.
-      if template in (None, 'html', 'as.html'):
-        template = 'index'
-      tpath = [os.path.join(self.template_id, template.replace('.html', ''))]
-      return self.session.ui.render_html(self.session.config, tpath,
+      path_parts = self.template_id.split('/')
+      if len(path_parts) == 1:
+        path_parts.append('index')
+      if template not in (None, 'html', 'as.html'):
+        # Security: The template request may come from the URL, so we
+        #           sanitize it very aggressively before heading off to
+        #           the filesystem.
+        path_parts[-1] += '-%s' % CleanText(template.replace('.html', ''),
+                                            banned=CleanText.FS)
+      tpath = os.path.join(*path_parts)
+      return self.session.ui.render_html(self.session.config, [tpath],
                                          self.as_dict())
 
     def as_json(self):

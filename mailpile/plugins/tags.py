@@ -45,7 +45,7 @@ class TagCommand(Command):
 
 class Tag(TagCommand):
   """Add or remove tags on a set of messages"""
-  SYNOPSIS = (None, 'tag', 'tag', '<[+|-]tags> <msgs>')
+  SYNOPSIS = (None, 'tag', None, '<[+|-]tags> <msgs>')
   ORDER = ('Tagging', 0)
   HTTP_CALLABLE = ('POST', )
 
@@ -132,7 +132,7 @@ class DeleteTag(TagCommand):
   """Delete a tag"""
   SYNOPSIS = (None, 'tag/delete', 'tag/delete', '<tag>')
   ORDER = ('Tagging', 0)
-  HTTP_CALLABLE = ('POST', )
+  HTTP_CALLABLE = ('POST', 'DELETE')
 
   def command(self):
     session, config = self.session, self.session.config
@@ -158,9 +158,13 @@ class DeleteTag(TagCommand):
 
 
 class Filter(Command):
-  """Add/edit/delete/list auto-tagging rules"""
+  """Add an auto-tagging rule for the active search or given terms."""
+  SYNOPSIS = (None, 'filter', None,
+              '[new|read] [notag] [=<mid>] '
+              '[<terms>] [+<tag>] [-<tag>] [<comment>]')
   ORDER = ('Tagging', 1)
-  SYNOPSIS = '[new|read] [notag] [=ID] [terms] <[+|-]tags ...> [description]'
+  HTTP_CALLABLE = ('POST', )
+
   def command(self):
     args, session, config = self.args, self.session, self.session.config
 
@@ -217,7 +221,14 @@ class Filter(Command):
     else:
       raise Exception('That failed, not sure why?!')
 
-  def rm(self):
+
+class DeleteFilter(Command):
+  """Delete an auto-tagging rule"""
+  SYNOPSIS = (None, 'filter/delete', None, '<filter-id>')
+  ORDER = ('Tagging', 1)
+  HTTP_CALLABLE = ('POST', 'DELETE')
+
+  def command(self):
     session, config = self.session, self.session.config
     if len(self.args) < 1:
       raise UsageError('Delete what?')
@@ -243,10 +254,23 @@ class Filter(Command):
       config.save()
     return True
 
-  def mv(self):
+
+class MoveFilter(Command):
+  """Move an auto-tagging rule"""
+  SYNOPSIS = (None, 'filter/move', None, '<filter-id> <position>')
+  ORDER = ('Tagging', 1)
+  HTTP_CALLABLE = ('POST', 'UPDATE')
+
+  def command(self):
     raise Exception('Unimplemented')
 
-  def ls(self):
+
+class ListFilters(Command):
+  """List all auto-tagging rule"""
+  SYNOPSIS = (None, 'filter/list', 'filter/list', None)
+  ORDER = ('Tagging', 1)
+
+  def command(self):
     results = []
     for fid, trms, tags, cmnt in self.session.config.get_filters(filter_on=None):
       results.append({
@@ -257,12 +281,7 @@ class Filter(Command):
       })
     return results
 
-  SUBCOMMANDS = {
-    'delete': (rm, '<id>'),
-    'move':   (mv, '<id> <pos>'),
-    'list':   (ls, ''),
-  }
-
 
 mailpile.plugins.register_commands(Tag, AddTag, DeleteTag, ListTags)
-mailpile.plugins.register_command('F:', 'filter=', Filter)
+mailpile.plugins.register_commands(Filter, DeleteFilter,
+                                   MoveFilter, ListFilters)

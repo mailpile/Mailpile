@@ -347,7 +347,8 @@ class UrlMap:
             for command in commands:
                 cls = command[1]
                 query_vars = cls.HTTP_QUERY_VARS
-                pos_args = unicode(cls.SYNOPSIS[3]).replace(' ', '/')
+                pos_args = (cls.SYNOPSIS[3] and
+                            unicode(cls.SYNOPSIS[3]).replace(' ', '/') or '')
                 padding = ' ' * (18 - len(command[0]))
                 newline = '\n' + ' ' * (len(api) + len(command[0]) + 6)
                 if query_vars:
