@@ -506,6 +506,17 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
+    "\/css\/select2.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/css\/select2.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/css\/select2.png",
+      "initialSize" : 613,
+      "fileType" : 8192
+    },
     "\/less\/mixins\/animate.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/mixins\/animate.less",
@@ -533,6 +544,17 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/jquery.ui.sortable-min.js",
       "fileType" : 64
+    },
+    "\/css\/select2x2.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/css\/select2x2.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/css\/select2x2.png",
+      "initialSize" : 845,
+      "fileType" : 8192
     },
     "\/oldhtml\/search-result-files.html" : {
       "ignoreWasSetByUser" : 0,
@@ -610,6 +632,15 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
+    "\/oldhtml\/contact_list.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/oldhtml\/contact_list.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/img\/favicon.png" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -621,12 +652,12 @@
       "initialSize" : 641,
       "fileType" : 8192
     },
-    "\/oldhtml\/contact_list.html" : {
+    "\/html\/group\/index.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/oldhtml\/contact_list.html",
+      "inputAbbreviatedPath" : "\/html\/group\/index.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -756,6 +787,15 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/json-template-min.js",
       "fileType" : 64
+    },
+    "\/html\/group\/add.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/group\/add.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
     },
     "\/js\/html5.js" : {
       "ignoreWasSetByUser" : 0,
@@ -933,15 +973,6 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/html\/contact\/index.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/contact\/index.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/oldhtml\/search.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -950,6 +981,23 @@
       "inputAbbreviatedPath" : "\/oldhtml\/search.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
+    },
+    "\/less\/libraries\/select2.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/libraries\/select2.less",
+      "outputAbbreviatedPath" : "\/less\/css\/select2.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 0,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
     },
     "\/img\/apple-touch-icon-72x72.png" : {
       "ignoreWasSetByUser" : 0,
@@ -971,6 +1019,15 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
+    "\/html\/contact\/index.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/contact\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/html\/contact\/add.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -979,15 +1036,6 @@
       "inputAbbreviatedPath" : "\/html\/contact\/add.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
-    },
-    "\/css\/select2.css" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/css\/select2.css",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 16
     },
     "\/js\/jquery.ui.mouse.js" : {
       "ignoreWasSetByUser" : 0,

@@ -9,19 +9,19 @@
   <form id="form-compose" name="compose" action="/" method="POST">
 
   	<div class="compose-section compose-headers">
-		  <label>To:</label> <input id="compose-to" type="email" value="">
+		  <label>To:</label> <input id="compose-to" name="recipients-to" type="text" value="">
 	  </div>
   	<div class="compose-section compose-headers">
-		  <label>Cc:</label> <input id="compose-cc" type="email" value="">
+		  <label>Cc:</label> <input id="compose-cc" name="recipients-cc" type="text" value="">
 	  </div>
   	<div class="compose-section compose-headers">
-		  <label>Bcc:</label> <input id="compose-bcc" type="email" value="">
+		  <label>Bcc:</label> <input id="compose-bcc" name="recipients-bcc" type="text" value="">
 	  </div>
   	<div class="compose-section compose-headers">
-		  <label>Subject:</label> <input type="text" value="">
+		  <label>Subject:</label> <input name="subject" type="text" value="">
 	  </div>
   	<div class="compose-section compose-message">
-  	  <textarea name=""></textarea>
+  	  <textarea name="message"></textarea>
 	  </div>
 	  <div class="compose-section compose-attachments">
 		  <span class="icon-attachment"></span> No Attachments
