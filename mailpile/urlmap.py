@@ -348,12 +348,19 @@ class UrlMap:
                 cls = command[1]
                 query_vars = cls.HTTP_QUERY_VARS
                 pos_args = unicode(cls.SYNOPSIS[3]).replace(' ', '/')
+                padding = ' ' * (18 - len(command[0]))
+                newline = '\n' + ' ' * (len(api) + len(command[0]) + 6)
                 if query_vars:
                     qs = '?' + '&'.join(['%s=[%s]' % (v, query_vars[v])
                                          for v in query_vars])
                 else:
                     qs = ''
-                if pos_args: pos_args = ' ARGS: ' + pos_args + '/'
+                if qs:
+                    qs = '%s%s' % (padding, qs)
+                if pos_args:
+                    pos_args = '%s%s/' % (padding, pos_args)
+                    if qs:
+                         qs = newline + qs
                 print '    %s/%s/%s%s' % (api, command[0], pos_args, qs)
                 if cls.HTTP_POST_VARS:
                     ps = '&'.join(['%s=[%s]' % (v, cls.HTTP_POST_VARS[v])
@@ -369,6 +376,8 @@ class UrlMap:
             print '    %s %s %s' % (path, ' ' * (10 - len(path)), doc)
         print
         print '## Default command URLs (HTML output)'
+        print
+        print '*These accept the same arguments as the API calls above.*'
         print
         for command in sorted(list(set(cmds('GET') + cmds('POST')))):
             print '    /%s/' % (command[0], )

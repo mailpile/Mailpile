@@ -137,7 +137,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     ts = '%x' % int(time.time()/60)
     return '%s-%s' % (ts, b64w(sha1b64('-'.join([self.server.secret, ts]))))
 
-  def do_POST(self):
+  def do_POST(self, method='POST'):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     if path.startswith('/::XMLRPC::/'):
       return SimpleXMLRPCRequestHandler.do_POST(self)
@@ -162,16 +162,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                                              title='Internal Error')
       self.send_full_response(r, code=500)
       return None
-    return self.do_GET(post_data=post_data, method='POST')
-
-  def do_HEAD(self):
-    return self.do_GET(suppress_body=True, method='HEAD')
-
-  def do_PUT(self):
-    return self.do_GET(suppress_body=True, method='UPDATE')
-
-  def do_UPDATE(self):
-    return self.do_GET(suppress_body=True, method='UPDATE')
+    return self.do_GET(post_data=post_data, method=method)
 
   def do_GET(self, post_data={}, suppress_body=False, method='GET'):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
@@ -220,6 +211,15 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     mimetype, content = session.ui.render_response(session.config)
     self.send_full_response(content, mimetype=mimetype)
+
+  def do_PUT(self):
+    return self.do_POST(method='PUT')
+
+  def do_UPDATE(self):
+    return self.do_POST(method='UPDATE')
+
+  def do_HEAD(self):
+    return self.do_GET(suppress_body=True, method='HEAD')
 
   def log_message(self, fmt, *args):
     self.server.session.ui.notify(self.server_url() + ' ' + (fmt % args))

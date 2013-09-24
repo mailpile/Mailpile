@@ -16,10 +16,10 @@ from mailpile.util import *
 
 class Command:
   """Generic command object all others inherit from"""
-  SYNOPSIS = (None,          # CLI shortcode, e.g. A:
-              None,          # CLI shortname, e.g. add
-              'sys/command', # API endpoint, e.g. sys/addmailbox
-              None)          # Positional argument list
+  SYNOPSIS = (None,  # CLI shortcode, e.g. A:
+              None,  # CLI shortname, e.g. add
+              None,  # API endpoint, e.g. sys/addmailbox
+              None)  # Positional argument list
   EXAMPLES = None
   FAILURE = 'Failed: %(name)s %(args)s'
   IS_HELP = False
@@ -72,9 +72,10 @@ class Command:
       # FIXME: For optimal designer happiness, we should probably check
       #        the fs (ask the UI object) if the requested template exists,
       #        not whether it is hard-coded into the template_ids list.
-      if template in (None, 'html'):
+      print 'Template is: %s' % template
+      if template in (None, 'html', 'as.html'):
         template = 'index'
-      tpath = [os.path.join(self.template_id, template)]
+      tpath = [os.path.join(self.template_id, template.replace('.html', ''))]
       return self.session.ui.render_html(self.session.config, tpath,
                                          self.as_dict())
 
@@ -288,7 +289,7 @@ class Optimize(Command):
 
 class UpdateStats(Command):
   """Force statistics update"""
-  SYNOPSIS = (None, 'recount', 'sys/recount', None)
+  SYNOPSIS = (None, 'recount', None, None)
   ORDER = ('Internals', 4)
 
   def command(self):
@@ -316,9 +317,10 @@ class RunWWW(Command):
 
 class ConfigSet(Command):
   """Change a setting"""
-  SYNOPSIS = ('S', 'set', 'config/set', '<var=value>')
+  SYNOPSIS = ('S', 'set', None, '<var=value>')
   ORDER = ('Config', 1)
   SPLIT_ARG = False
+  HTTP_CALLABLE = ('POST', 'UPDATE')
 
   def command(self):
     session, config = self.session, self.session.config
@@ -329,9 +331,10 @@ class ConfigSet(Command):
 
 class ConfigUnset(Command):
   """Reset a setting to the default"""
-  SYNOPSIS = ('U', 'unset', 'config/unset', '<var>')
+  SYNOPSIS = ('U', 'unset', None, '<var>')
   ORDER = ('Config', 2)
   SPLIT_ARG = False
+  HTTP_CALLABLE = ('POST', )
 
   def command(self):
     session, config = self.session, self.session.config
@@ -342,7 +345,7 @@ class ConfigUnset(Command):
 
 class ConfigPrint(Command):
   """Print a setting"""
-  SYNOPSIS = ('P', 'print', 'config/print', '<var>')
+  SYNOPSIS = ('P', 'print', 'config/get', '<var>')
   ORDER = ('Config', 3)
   SPLIT_ARG = False
 
@@ -357,9 +360,10 @@ class ConfigPrint(Command):
 
 class AddMailbox(Command):
   """Add a mailbox"""
-  SYNOPSIS = ('A', 'add', 'config/addmbox', '<path/to/mailbox>')
+  SYNOPSIS = ('A', 'add', None, '<path/to/mailbox>')
   ORDER = ('Config', 4)
   SPLIT_ARG = False
+  HTTP_CALLABLE = ('POST', 'UPDATE')
 
   def command(self):
     session, config, raw_fn = self.session, self.session.config, self.args[0]
@@ -493,7 +497,7 @@ class Help(Command):
             cmd_list[c] = (name, synopsis, cls.__doc__, count+cls.ORDER[1])
       return {
         'commands': cmd_list,
-        'tags': GetCommand('tag list')(self.session).run(),
+        'tags': GetCommand('tag/list')(self.session).run(),
         'index': self._idx()
       }
 

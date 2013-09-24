@@ -10,7 +10,7 @@ class MailpileCommand(Extension):
     def __init__(self, environment):
         Extension.__init__(self, environment)
         self.env = environment
-        environment.globals['mpcommand'] = self._command
+        environment.globals['mailpile'] = self._command
 
     def _command(self, command, *args, **kwargs):
         return Action(self.env.session, command, args, data=kwargs).as_dict()

@@ -6,10 +6,7 @@ from mailpile.util import *
 
 ##[ Commands ]################################################################
 
-class Tag(Command):
-  """Add/remove/list/edit message tags"""
-  ORDER = ('Tagging', 0)
-  TEMPLATE_IDS = ['tag']
+class TagCommand(Command):
 
   class CommandResult(Command.CommandResult):
     def _tags_as_text(self):
@@ -45,7 +42,13 @@ class Tag(Command):
         ('msg_ids' in self.result) and self._tagging_as_text() or '',
       ])
 
-  SYNOPSIS = '<[+|-]tags msgs>'
+
+class Tag(TagCommand):
+  """Add or remove tags on a set of messages"""
+  SYNOPSIS = (None, 'tag', 'tag', '<[+|-]tags> <msgs>')
+  ORDER = ('Tagging', 0)
+  HTTP_CALLABLE = ('POST', )
+
   def command(self, save=True):
     idx = self._idx()
     words = self.args[:]
@@ -77,7 +80,14 @@ class Tag(Command):
 
     return rv
 
-  def add_tag(self):
+
+class AddTag(TagCommand):
+  """Create a new tag"""
+  SYNOPSIS = (None, 'tag/add', 'tag/add', '<tag>')
+  ORDER = ('Tagging', 0)
+  HTTP_CALLABLE = ('POST', )
+
+  def command(self):
     config = self.session.config
     existing = [v.lower() for v in config.get('tag', {}).values()]
     for tag in self.args:
@@ -93,7 +103,13 @@ class Tag(Command):
       self._background('Save config', lambda: config.save())
     return {'added': result}
 
-  def list_tags(self):
+
+class ListTags(TagCommand):
+  """List tags"""
+  SYNOPSIS = (None, 'tag/list', 'tag/list', '[<wanted>|!<wanted>] [...]')
+  ORDER = ('Tagging', 0)
+
+  def command(self):
     result, idx = [], self._idx()
     wanted = [t.lower() for t in self.args if not t.startswith('!')]
     unwanted = [t[1:].lower() for t in self.args if t.startswith('!')]
@@ -111,7 +127,14 @@ class Tag(Command):
     result.sort(key=lambda k: k['name'])
     return {'tags': result}
 
-  def rm_tag(self):
+
+class DeleteTag(TagCommand):
+  """Delete a tag"""
+  SYNOPSIS = (None, 'tag/delete', 'tag/delete', '<tag>')
+  ORDER = ('Tagging', 0)
+  HTTP_CALLABLE = ('POST', )
+
+  def command(self):
     session, config = self.session, self.session.config
     existing = [v.lower() for v in config.get('tag', {}).values()]
     clean_session = mailpile.ui.Session(config)
@@ -132,12 +155,6 @@ class Tag(Command):
     if result:
       config.save()
     return {'removed': result}
-
-  SUBCOMMANDS = {
-    'add':    (add_tag,   '<tag>'),
-    'delete': (rm_tag,    '<tag>'),
-    'list':   (list_tags, ''),
-  }
 
 
 class Filter(Command):
@@ -247,5 +264,5 @@ class Filter(Command):
   }
 
 
-mailpile.plugins.register_command('t:', 'tag=',    Tag)
+mailpile.plugins.register_commands(Tag, AddTag, DeleteTag, ListTags)
 mailpile.plugins.register_command('F:', 'filter=', Filter)

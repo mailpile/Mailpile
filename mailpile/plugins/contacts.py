@@ -35,10 +35,9 @@ class VCardCommand(Command):
 
 class VCard(VCardCommand):
     """Add/remove/list/edit vcards"""
-    SYNOPSIS = (None, 'vcard', 'vcard', '<nickname>')
+    SYNOPSIS = (None, 'vcard', None, '<nickname>')
     ORDER = ('Internals', 6)
     KIND = ''
-    HTTP_CALLABLE = ('POST', )
 
     def command(self, save=True):
         session, config = self.session, self.session.config
@@ -54,10 +53,10 @@ class VCard(VCardCommand):
 
 class AddVCard(VCardCommand):
     """Add one or more vcards"""
-    SYNOPSIS = (None, 'vcard add', 'vcard/add', '<msgs>', '<email> = <name>')
+    SYNOPSIS = (None, 'vcard/add', None, '<msgs>', '<email> = <name>')
     ORDER = ('Internals', 6)
     KIND = ''
-    HTTP_CALLABLE = ('POST', )
+    HTTP_CALLABLE = ('POST', 'PUT')
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
@@ -92,10 +91,10 @@ class AddVCard(VCardCommand):
 
 class SetVCard(VCardCommand):
     """Set vcard variables"""
-    SYNOPSIS = (None, 'vcard set', 'vcard/set', '<email> <attr> <value>')
+    SYNOPSIS = (None, 'vcard/set', None, '<email> <attr> <value>')
     ORDER = ('Internals', 6)
     KIND = ''
-    HTTP_CALLABLE = ('POST', 'UPDATE', )
+    HTTP_CALLABLE = ('POST', 'UPDATE')
 
     def command(self):
         session, config = self.session, self.session.config
@@ -127,10 +126,10 @@ class SetVCard(VCardCommand):
 
 class RemoveVCard(VCardCommand):
     """Delete vcards"""
-    SYNOPSIS = (None, 'vcard remove', 'vcard/remove', '<email>')
+    SYNOPSIS = (None, 'vcard/remove', None, '<email>')
     ORDER = ('Internals', 6)
     KIND = ''
-    HTTP_CALLABLE = ('POST', 'DELETE', )
+    HTTP_CALLABLE = ('POST', 'DELETE')
 
     def command(self):
         session, config = self.session, self.session.config
@@ -146,7 +145,7 @@ class RemoveVCard(VCardCommand):
 
 class ListVCards(VCardCommand):
     """Find vcards"""
-    SYNOPSIS = (None, 'vcard list', 'vcard/list', '[--full] [<terms>]')
+    SYNOPSIS = (None, 'vcard/list', None, '[--full] [<terms>]')
     ORDER = ('Internals', 6)
     KIND = ''
 
@@ -174,9 +173,11 @@ class ListVCards(VCardCommand):
 def ContactVCard(parent):
     """A factory for generating contact commands"""
 
+    synopsis = [(t and t.replace('vcard', 'contact') or t)
+                for t in parent.SYNOPSIS]
+    synopsis[2] = synopsis[1]
     class ContactVCardCommand(parent):
-        SYNOPSIS = tuple([(t and t.replace('vcard', 'contact') or t)
-                          for t in parent.SYNOPSIS])
+        SYNOPSIS = tuple(synopsis)
         KIND = 'individual'
         ORDER = ('Tagging', 3)
 
