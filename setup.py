@@ -17,7 +17,7 @@ setup(
     license="AGPLv3+",
     author="Bjarni R. Einarsson",
     author_email="bre@klaki.net",
-    url="http://themailpile.org/",
+    url="http://www.mailpile.is/",
     description="""Mailpile is a personal tool for searching and indexing e-mail.""",
     long_description="""\
 Mailpile is a tool for building and maintaining a tagging search

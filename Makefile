@@ -10,11 +10,9 @@ urlmap:
 	@python mailpile/urlmap.py >doc/URLS.md
 
 clean:
-	@rm -vf *.pyc */*.pyc mailpile-tmp.py scripts/breeder.py mailpile.py
+	@rm -vf *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py
 	@rm -vf .appver MANIFEST setup.cfg .SELF
 	@rm -vrf *.egg-info build/ mp-virtualenv/ dist/
-	@rm -vf debian/files debian/control debian/copyright debian/changelog
-	@rm -vrf debian/pagekite* debian/python* debian/init.d
 
 virtualenv:
 	virtualenv mp-virtualenv
