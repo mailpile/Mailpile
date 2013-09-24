@@ -1,9 +1,6 @@
 # These are the Mailpile commands, the public "API" we expose for searching,
 # tagging and editing e-mail.
 #
-# Consulte the COMMANDS dict at the bottom of this file for a list of which
-# commands have been defined and what their names and command-line flags are.
-#
 import datetime
 import os
 import os.path
@@ -19,28 +16,33 @@ from mailpile.util import *
 
 class Command:
   """Generic command object all others inherit from"""
+  SYNOPSIS = (None,          # CLI shortcode, e.g. A:
+              None,          # CLI shortname, e.g. add
+              'sys/command', # API endpoint, e.g. sys/addmailbox
+              None)          # Positional argument list
   EXAMPLES = None
   FAILURE = 'Failed: %(name)s %(args)s'
   IS_HELP = False
   ORDER = (None, 0)
   SERIALIZE = False
   SPLIT_ARG = 10000  # A big number!
-  SUBCOMMANDS = {}
-  SYNOPSIS = None
-  TEMPLATE_IDS = ['command']
   RAISES = (UsageError, )
 
-  HTTP_CALLABLE = ( )
+  HTTP_CALLABLE = ('GET', )
   HTTP_POST_VARS = { }
   HTTP_QUERY_VARS = { }
 
+  # Deprecating:
+  SUBCOMMANDS = {}
+
   class CommandResult:
-    def __init__(self, session, command, template_ids, doc, result, args=[], kwargs={}):
+    def __init__(self, session, command, template_id, doc, result,
+                       args=[], kwargs={}):
       self.session = session
       self.command = command
       self.args = args
       self.kwargs = kwargs
-      self.template_ids = template_ids
+      self.template_id = template_id
       self.doc = doc
       self.result = result
 
@@ -51,7 +53,9 @@ class Command:
       if type(self.result) == type(True):
         return '%s: %s' % (self.result and 'Succeeded' or 'Failed', self.doc)
       return unicode(self.result)
+
     __str__ = lambda self: self.as_text()
+
     __unicode__ = lambda self: self.as_text()
 
     def as_dict(self):
@@ -68,11 +72,10 @@ class Command:
       # FIXME: For optimal designer happiness, we should probably check
       #        the fs (ask the UI object) if the requested template exists,
       #        not whether it is hard-coded into the template_ids list.
-      if template in self.template_ids:
-        templates = [template.rsplit('.', 1)[0]]
-      else:
-        templates = self.template_ids
-      return self.session.ui.render_html(self.session.config, templates,
+      if template in (None, 'html'):
+        template = 'index'
+      tpath = [os.path.join(self.template_id, template)]
+      return self.session.ui.render_html(self.session.config, tpath,
                                          self.as_dict())
 
     def as_json(self):
@@ -81,7 +84,6 @@ class Command:
   def __init__(self, session, name=None, arg=None, data=None):
     self.session = session
     self.serialize = self.SERIALIZE
-    self.template_ids = self.TEMPLATE_IDS[:]
     self.name = name
     self.data = data or {}
     self.result = None
@@ -179,28 +181,14 @@ class Command:
   def _finishing(self, command, rv):
     if self.name:
        self.session.ui.finish_command()
-    return self.CommandResult(self.session, self.name, self.template_ids,
-                              command.__doc__ or self.__doc__, rv, self.args, self.data)
+    return self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
+                              command.__doc__ or self.__doc__,
+                              rv, self.args, self.data)
 
   def _run(self, *args, **kwargs):
     try:
       def command(self, *args, **kwargs):
         return self.command(*args, **kwargs)
-      if self.SUBCOMMANDS and self.args and self.args[0] in self.SUBCOMMANDS:
-        subcmd = self.args.pop(0)
-        for i in range(0, len(self.template_ids)):
-          self.template_ids[i] += '/' + subcmd
-        if self.name:
-          self.name += ' ' + subcmd
-        command = self.SUBCOMMANDS[subcmd][0]
-      elif self.SUBCOMMANDS and self.args and self.args[0] == 'help':
-        if not self.IS_HELP:
-          return Help(self.session, arg=[self.name]).run()
-      else:
-        for i in range(0, len(self.template_ids)):
-          if '/' not in self.template_ids[i]:
-            self.template_ids[i] += '/index'
-          
       self._starting()
       return self._finishing(command, command(self, *args, **kwargs))
     except self.RAISES:
@@ -228,6 +216,7 @@ class Command:
 class Load(Command):
   """Load or reload the metadata index"""
   ORDER = ('Internals', 1)
+
   def command(self, reset=True, wait=True, quiet=False):
     return self._idx(reset=reset, wait=wait, quiet=quiet) and True or False
 
@@ -236,6 +225,7 @@ class Rescan(Command):
   """Scan all mailboxes for new messages"""
   ORDER = ('Internals', 2)
   SERIALIZE = 'Rescan'
+
   def command(self):
     session, config = self.session, self.session.config
 
@@ -282,9 +272,10 @@ class Rescan(Command):
 
 class Optimize(Command):
   """Optimize the keyword search index"""
+  SYNOPSIS = (None, 'optimize', None, '[harder]')
   ORDER = ('Internals', 3)
   SERIALIZE = 'Optimize'
-  SYNOPSIS = '[harder]'
+
   def command(self):
     try:
       GlobalPostingList.Optimize(self.session, self._idx(),
@@ -297,7 +288,9 @@ class Optimize(Command):
 
 class UpdateStats(Command):
   """Force statistics update"""
+  SYNOPSIS = (None, 'recount', 'sys/recount', None)
   ORDER = ('Internals', 4)
+
   def command(self):
     session, config = self.session, self.session.config
     idx = config.index
@@ -309,7 +302,9 @@ class UpdateStats(Command):
 
 class RunWWW(Command):
   """Just run the web server"""
+  SYNOPSIS = (None, 'www', None, None)
   ORDER = ('Internals', 5)
+
   def command(self):
     self.session.config.prepare_workers(self.session, daemons=True)
     while not mailpile.util.QUITTING:
@@ -321,9 +316,10 @@ class RunWWW(Command):
 
 class ConfigSet(Command):
   """Change a setting"""
+  SYNOPSIS = ('S', 'set', 'config/set', '<var=value>')
   ORDER = ('Config', 1)
   SPLIT_ARG = False
-  SYNOPSIS = '<var=value>'
+
   def command(self):
     session, config = self.session, self.session.config
     if config.parse_set(session, self.args[0]):
@@ -333,9 +329,10 @@ class ConfigSet(Command):
 
 class ConfigUnset(Command):
   """Reset a setting to the default"""
+  SYNOPSIS = ('U', 'unset', 'config/unset', '<var>')
   ORDER = ('Config', 2)
   SPLIT_ARG = False
-  SYNOPSIS = '<var>'
+
   def command(self):
     session, config = self.session, self.session.config
     if config.parse_unset(session, self.args[0]):
@@ -345,9 +342,10 @@ class ConfigUnset(Command):
 
 class ConfigPrint(Command):
   """Print a setting"""
+  SYNOPSIS = ('P', 'print', 'config/print', '<var>')
   ORDER = ('Config', 3)
   SPLIT_ARG = False
-  SYNOPSIS = '<var>'
+
   def command(self):
     key = self.args[0].strip().lower()
     try:
@@ -359,9 +357,10 @@ class ConfigPrint(Command):
 
 class AddMailbox(Command):
   """Add a mailbox"""
+  SYNOPSIS = ('A', 'add', 'config/addmbox', '<path/to/mailbox>')
   ORDER = ('Config', 4)
   SPLIT_ARG = False
-  SYNOPSIS = '</path/to/mbx>'
+
   def command(self):
     session, config, raw_fn = self.session, self.session.config, self.args[0]
     fn = os.path.expanduser(raw_fn)
@@ -384,8 +383,9 @@ class AddMailbox(Command):
 
 class Output(Command):
   """Choose format for command results."""
+  SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
   ORDER = ('Internals', 7)
-  SYNOPSIS = "[mode]"
+
   def command(self):
     self.session.ui.render_mode = self.args and self.args[0] or 'text'
     return {'output': self.session.ui.render_mode}
@@ -393,10 +393,10 @@ class Output(Command):
 
 class Help(Command):
   """Print help on Mailpile or individual commands."""
+  SYNOPSIS = ('h', 'help', 'help', '[<command-group>|variables]')
   ABOUT = 'This is Mailpile!'
   ORDER = ('Config', 9)
   IS_HELP = True
-  TEMPLATE_IDS = ['help']
 
   class CommandResult(Command.CommandResult):
     def splash_as_text(self):
@@ -461,13 +461,13 @@ class Help(Command):
         ('commands' in self.result) and self.commands_as_text() or '',
       ])
 
-  SYNOPSIS = "[command]"
   def command(self):
     self.session.ui.reset_marks(quiet=True)
     if self.args:
       command = self.args.pop(0)
-      for name, cls in COMMANDS.values():
-        if name.replace('=', '') == command:
+      for cls in COMMANDS:
+        name = cls.SYNOPSIS[1]
+        if name and name == command:
           order = 1
           cmd_list = {'_main': (name, cls.SYNOPSIS, '', order)}
           for cmd in sorted(cls.SUBCOMMANDS.keys()):
@@ -487,14 +487,13 @@ class Help(Command):
       count = 0
       for grp in COMMAND_GROUPS:
         count += 10
-        for c in COMMANDS:
-          name, cls = COMMANDS[c]
-          synopsis = cls.SUBCOMMANDS and '<command ...>' or cls.SYNOPSIS
+        for cls in COMMANDS:
+          c, name, url, synopsis = cls.SYNOPSIS[:4]
           if cls.ORDER[0] == grp:
             cmd_list[c] = (name, synopsis, cls.__doc__, count+cls.ORDER[1])
       return {
         'commands': cmd_list,
-        'tags': COMMANDS['t:'][1](self.session, arg=['list']).run(),
+        'tags': GetCommand('tag list')(self.session).run(),
         'index': self._idx()
       }
 
@@ -532,13 +531,20 @@ class Help(Command):
 
   def _starting(self): pass
   def _finishing(self, command, rv):
-    return self.CommandResult(self.session, self.name, self.template_ids,
+    return self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
                               command.__doc__ or self.__doc__, rv)
 
   SUBCOMMANDS = {
     'variables': (help_vars, ''),
     'splash': (help_splash, ''),
   }
+
+
+def GetCommand(name):
+  match = [c for c in COMMANDS if name in c.SYNOPSIS[:3]]
+  if len(match) == 1:
+    return match[0]
+  return None
 
 
 def Action(session, opt, arg, data=None):
@@ -549,23 +555,12 @@ def Action(session, opt, arg, data=None):
     return Help(session, 'help').run()
 
   # Use the COMMANDS dict by default.
-  if len(opt) == 1:
-    if opt in COMMANDS:
-      return COMMANDS[opt][1](session, opt, arg, data=data).run()
-    elif opt+':' in COMMANDS:
-      return COMMANDS[opt+':'][1](session, opt, arg, data=data).run()
-  for name, cls in COMMANDS.values():
-    if opt == name or opt == name[:-1]:
-      return cls(session, opt, arg, data=data).run()
-
-  # Backwards compatibility
-  if opt == 'addtag':
-    return COMMANDS['t:'][1](session, 'tag', ['add'] + arg.split()).run()
-  elif opt == 'gpgrecv':
-    return COMMANDS['g:'][1](session, 'gpg', ['recv'] + arg.split()).run()
+  command = GetCommand(opt)
+  if command:
+    return command(session, opt, arg, data=data).run()
 
   # Tags are commands
-  elif opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
+  if opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
     s = ['tag:%s' % config.get_tag_id(opt)[0]]
     return COMMANDS['s:'][1](session, opt, arg=arg, data=data).run(search=s)
 
@@ -574,18 +569,10 @@ def Action(session, opt, arg, data=None):
 
 
 # Commands starting with _ don't get single-letter shortcodes...
-COMMANDS = {
-  'A:':     ('add=',     AddMailbox),
-  'h':      ('help',     Help),
-  'P:':     ('print=',   ConfigPrint),
-  'S:':     ('set=',     ConfigSet),
-  'U:':     ('unset=',   ConfigUnset),
-  '_dmode': ('output=',  Output),
-  '_load':  ('load',     Load),
-  '_optim': ('optimize', Optimize),
-  '_resca': ('rescan',   Rescan),
-  '_www':   ('www',      RunWWW),
-  '_recou': ('recount',  UpdateStats)
-}
+COMMANDS = [
+  Optimize, Rescan, RunWWW, UpdateStats,
+  ConfigPrint, ConfigSet, ConfigUnset, AddMailbox,
+  Output, Help
+]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
 

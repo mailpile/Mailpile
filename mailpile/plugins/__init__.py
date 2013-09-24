@@ -67,8 +67,20 @@ def register_search_term(term, function):
 ##[ Pluggable commands ]##################################################
 
 
-def register_command(shortname, longname, cls):
+def register_commands(*args):
     COMMANDS = mailpile.commands.COMMANDS
-    if shortname in COMMANDS or shortname.replace(':', '') in COMMANDS:
-        raise PluginError('Already registered: %s' % shortname)
-    COMMANDS[shortname] = (longname, cls)
+    for cls in args:
+        if cls not in COMMANDS:
+            COMMANDS.append(cls)
+
+
+def register_command(shortcode, name, cls):
+    """Backwards compatibility hack."""
+    print "WARNING: Patching %s into COMMANDS" % cls
+    if shortcode.startswith('_'):
+      shortcode = ''
+    cls.SYNOPSIS = [shortcode.replace(':', ''),
+                    name.replace('=', '').replace('/', ' '),
+                    name.replace('=', ''),
+                    cls.SYNOPSIS]
+    register_commands(cls)

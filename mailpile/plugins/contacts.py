@@ -35,9 +35,10 @@ class VCardCommand(Command):
 
 class VCard(VCardCommand):
     """Add/remove/list/edit vcards"""
+    SYNOPSIS = (None, 'vcard', 'vcard', '<nickname>')
     ORDER = ('Internals', 6)
     KIND = ''
-    SYNOPSIS = '<nickname>'
+    HTTP_CALLABLE = ('POST', )
 
     def command(self, save=True):
         session, config = self.session, self.session.config
@@ -53,9 +54,10 @@ class VCard(VCardCommand):
 
 class AddVCard(VCardCommand):
     """Add one or more vcards"""
+    SYNOPSIS = (None, 'vcard add', 'vcard/add', '<msgs>', '<email> = <name>')
     ORDER = ('Internals', 6)
     KIND = ''
-    SYNOPSIS = '<msgs>|<email> = <name>'
+    HTTP_CALLABLE = ('POST', )
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
@@ -90,9 +92,10 @@ class AddVCard(VCardCommand):
 
 class SetVCard(VCardCommand):
     """Set vcard variables"""
+    SYNOPSIS = (None, 'vcard set', 'vcard/set', '<email> <attr> <value>')
     ORDER = ('Internals', 6)
     KIND = ''
-    SYNOPSIS = '<email> <attr> <value>'
+    HTTP_CALLABLE = ('POST', 'UPDATE', )
 
     def command(self):
         session, config = self.session, self.session.config
@@ -124,9 +127,10 @@ class SetVCard(VCardCommand):
 
 class RemoveVCard(VCardCommand):
     """Delete vcards"""
+    SYNOPSIS = (None, 'vcard remove', 'vcard/remove', '<email>')
     ORDER = ('Internals', 6)
     KIND = ''
-    SYNOPSIS = '<email>'
+    HTTP_CALLABLE = ('POST', 'DELETE', )
 
     def command(self):
         session, config = self.session, self.session.config
@@ -142,9 +146,9 @@ class RemoveVCard(VCardCommand):
 
 class ListVCards(VCardCommand):
     """Find vcards"""
+    SYNOPSIS = (None, 'vcard list', 'vcard/list', '[--full] [<terms>]')
     ORDER = ('Internals', 6)
     KIND = ''
-    SYNOPSIS = '[--full] [<terms>]'
 
     def command(self):
         session, config = self.session, self.session.config
@@ -167,54 +171,39 @@ class ListVCards(VCardCommand):
         return ctx
 
 
-class Contact(VCard):
+def ContactVCard(parent):
+    """A factory for generating contact commands"""
+
+    class ContactVCardCommand(parent):
+        SYNOPSIS = tuple([(t and t.replace('vcard', 'contact') or t)
+                          for t in parent.SYNOPSIS])
+        KIND = 'individual'
+        ORDER = ('Tagging', 3)
+
+    return ContactVCardCommand
+
+
+class Contact(ContactVCard(VCard)):
     """View contacts"""
-    KIND = 'individual'
-    ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['contact']
-    HTTP_CALLABLE = ('GET', )
 
 
-class AddContact(AddVCard):
+class AddContact(ContactVCard(AddVCard)):
     """Add contacts"""
-    KIND = 'individual'
-    ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['contact/add']
-    HTTP_CALLABLE = ('POST', )
 
 
-class SetContact(SetVCard):
-    """Add contacts"""
-    KIND = 'individual'
-    ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['contact/set']
-    HTTP_CALLABLE = ('UPDATE', )
+class SetContact(ContactVCard(SetVCard)):
+    """Set contact variables"""
 
 
-class RemoveContact(RemoveVCard):
-    """Add contacts"""
-    KIND = 'individual'
-    ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['contact/remove']
-    HTTP_CALLABLE = ('POST', )
+class RemoveContact(ContactVCard(RemoveVCard)):
+    """Remove a contact"""
 
 
-class ListContacts(ListVCards):
+class ListContacts(ContactVCard(ListVCards)):
     """Find contacts"""
-    KIND = 'individual'
-    ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['contact/list']
-    HTTP_CALLABLE = ('GET', )
 
 
-
-mailpile.plugins.register_command('_vcard', 'vcard=',        VCard)
-mailpile.plugins.register_command('_vcadd', 'vcard/add=',    AddVCard)
-mailpile.plugins.register_command('_vcset', 'vcard/set=',    SetVCard)
-mailpile.plugins.register_command('_vcdel', 'vcard/remove=', RemoveVCard)
-mailpile.plugins.register_command('_vclst', 'vcard/list=',   ListVCards)
-mailpile.plugins.register_command('C:',     'contact=',        Contact)
-mailpile.plugins.register_command('_coadd', 'contact/add=',    AddContact)
-mailpile.plugins.register_command('_coset', 'contact/set=',    SetContact)
-mailpile.plugins.register_command('_codel', 'contact/remove=', RemoveContact)
-mailpile.plugins.register_command('_colst', 'contact/list=',   ListContacts)
+mailpile.plugins.register_commands(VCard, AddVCard, SetVCard,
+                                   RemoveVCard, ListVCards)
+mailpile.plugins.register_commands(Contact, AddContact, SetContact,
+                                   RemoveContact, ListContacts)

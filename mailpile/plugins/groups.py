@@ -32,6 +32,8 @@ def GroupVCard(parent):
     """A factory for generating group commands"""
 
     class GroupVCardCommand(parent):
+        SYNOPSIS = tuple([(t and t.replace('vcard', 'group') or t)
+                          for t in parent.SYNOPSIS])
         KIND = 'group'
         ORDER = ('Tagging', 4)
 
@@ -62,38 +64,23 @@ def GroupVCard(parent):
 
 class Group(GroupVCard(VCard)):
     """View groups"""
-    TEMPLATE_IDS = ['group']
-    HTTP_CALLABLE = ('GET', )
 
 
 class AddGroup(GroupVCard(AddVCard)):
     """Add groups"""
-    KIND = 'group'
-    ORDER = ('Tagging', 3)
-    TEMPLATE_IDS = ['group/add']
-    HTTP_CALLABLE = ('POST', )
 
 
 class SetGroup(GroupVCard(SetVCard)):
     """Add groups"""
-    TEMPLATE_IDS = ['group/set']
-    HTTP_CALLABLE = ('UPDATE', )
 
 
 class RemoveGroup(GroupVCard(RemoveVCard)):
     """Add groups"""
-    TEMPLATE_IDS = ['group/remove']
-    HTTP_CALLABLE = ('POST', )
 
 
 class ListGroups(GroupVCard(ListVCards)):
     """Find groups"""
-    TEMPLATE_IDS = ['group/list']
-    HTTP_CALLABLE = ('GET', )
 
 
-mailpile.plugins.register_command('G:',     'group=',        Group)
-mailpile.plugins.register_command('_gradd', 'group/add=',    AddGroup)
-mailpile.plugins.register_command('_grset', 'group/set=',    SetGroup)
-mailpile.plugins.register_command('_grdel', 'group/remove=', RemoveGroup)
-mailpile.plugins.register_command('_grlst', 'group/list=',   ListGroups)
+mailpile.plugins.register_commands(Group, AddGroup, SetGroup, RemoveGroup,
+                                   ListGroups)

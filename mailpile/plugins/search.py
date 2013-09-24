@@ -208,8 +208,8 @@ class SearchResults(dict):
 
 class Search(Command):
   """Search your mail!"""
+  SYNOPSIS = ('s', 'search', 'search', '<terms>')
   ORDER = ('Searching', 0)
-  TEMPLATE_IDS = ['search']
   HTTP_CALLABLE = ('GET', )
   HTTP_QUERY_VARS = {
      'q': 'search terms',
@@ -259,35 +259,42 @@ class Search(Command):
     idx.sort_results(session, session.results, how=session.order)
     return session, idx, start
 
-  SYNOPSIS = '<terms ...>'
   def command(self, search=None):
     session, idx, start = self._do_search(search=search)
     session.displayed = SearchResults(session, idx, start=start)
     return [session.displayed]
 
+
 class Next(Search):
   """Display next page of results"""
+  SYNOPSIS = ('n', 'next', None, None)
   ORDER = ('Searching', 1)
   HTTP_CALLABLE = ( )
+
   def command(self):
     session = self.session
     session.displayed = session.displayed.next_set()
     return [session.displayed]
 
+
 class Previous(Search):
   """Display previous page of results"""
+  SYNOPSIS = ('p', 'previous', None, None)
   ORDER = ('Searching', 2)
   HTTP_CALLABLE = ( )
+
   def command(self):
     session = self.session
     session.displayed = session.displayed.previous_set()
     return [session.displayed]
 
+
 class Order(Search):
   """Sort by: date, from, subject, random or index"""
+  SYNOPSIS = ('o', 'order', None, '<how>')
   ORDER = ('Searching', 3)
-  SYNOPSIS = '<terms ...>'
   HTTP_CALLABLE = ( )
+
   def command(self):
     session, idx = self.session, self._idx()
     session.order = self.args and self.args[0] or None
@@ -298,9 +305,8 @@ class Order(Search):
 
 class View(Search):
   """View one or more messages"""
+  SYNOPSIS = ('v', 'view', 'message', '[raw] <message>')
   ORDER = ('Searching', 4)
-  TEMPLATE_IDS = ['view'] + Search.TEMPLATE_IDS
-  HTTP_CALLABLE = ('GET', )
   HTTP_QUERY_VARS = {
     'mid': 'metadata-ID'
   }
@@ -319,7 +325,6 @@ class View(Search):
     def as_html(self, *args, **kwargs):
       return '<pre>%s</pre>' % escape_html(self._decode())
 
-  SYNOPSIS = '<[raw] m1 ...>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
     results = []
@@ -344,9 +349,8 @@ class View(Search):
 
 class Extract(Command):
   """Extract attachment(s) to file(s)"""
+  SYNOPSIS = ('e', 'extract', 'message/extract', '<att> <message> [><fn>]')
   ORDER = ('Searching', 5)
-  TEMPLATE_IDS = ['extract']
-  HTTP_CALLABLE = ('GET', )
 
   class CommandResult(Command.CommandResult):
     def __init__(self, *args, **kwargs):
@@ -365,7 +369,6 @@ class Extract(Command):
     def as_dict(self, *args, **kwargs):
       return Command.CommandResult.as_dict(self._fixup(), *args, **kwargs)
 
-  SYNOPSIS = '<att msg [>fn]>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
 
@@ -395,18 +398,12 @@ class Extract(Command):
 
 class Delete(Command):
   """Delete a message from the index"""
+  SYNOPSIS = ('d', 'delete', 'message/delete', '<message>')
   ORDER = ('Searching', 6)
-  SYNOPSIS = '<msg>'
   def command(self):
     session, config, idx = self.session, self.session.config, self._idx()
     raise Exception('Unimplemented')
 
 
-mailpile.plugins.register_command('d:', 'delete=',  Delete)
-mailpile.plugins.register_command('e:', 'extract=', Extract)
-mailpile.plugins.register_command('n:', 'next=',    Next)
-mailpile.plugins.register_command('o:', 'order=',   Order)
-mailpile.plugins.register_command('p',  'previous', Previous)
-mailpile.plugins.register_command('s:', 'search=',  Search)
-mailpile.plugins.register_command('v:', 'view',     View)
-
+mailpile.plugins.register_commands(Delete, Extract, Next, Order, Previous,
+                                   Search, View)

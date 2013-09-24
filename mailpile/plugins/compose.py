@@ -45,10 +45,8 @@ class ReturnsSearchResults(Search):
 
 class Compose(ReturnsSearchResults):
     """(Continue) Composing an e-mail"""
+    SYNOPSIS = ('C', 'compose', 'message/compose', '[<messages>]')
     ORDER = ('Composing', 0)
-    TEMPLATE_IDS = ['compose'] + Search.TEMPLATE_IDS
-    SYNOPSIS = '<[msg]>'
-    HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
     }
@@ -84,9 +82,8 @@ class Compose(ReturnsSearchResults):
 
 class Update(ReturnsSearchResults):
     """Update message from a file or HTTP upload."""
+    SYNOPSIS = ('u', 'update', 'message/update', '<messages> <path/to/update>')
     ORDER = ('Composing', 1)
-    TEMPLATE_IDS = ['update'] + Compose.TEMPLATE_IDS
-    SYNOPSIS = '<msg path/to/f>'
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
@@ -114,9 +111,8 @@ class Update(ReturnsSearchResults):
 
 class Attach(ReturnsSearchResults):
     """Attach a file to a message"""
+    SYNOPSIS = ('a', 'attach', 'message/attach', '<messages> [<path/to/file>]')
     ORDER = ('Composing', 2)
-    TEMPLATE_IDS = ['attach'] + Compose.TEMPLATE_IDS
-    SYNOPSIS = '<msg path/to/f>'
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
@@ -164,10 +160,8 @@ class RelativeCompose(Compose):
 
 class Reply(RelativeCompose):
     """Reply(-all) to one or more messages"""
+    SYNOPSIS = ('r', 'reply', 'message/reply', '[all] <messages>')
     ORDER = ('Composing', 3)
-    TEMPLATE_IDS = ['reply'] + Compose.TEMPLATE_IDS
-    SYNOPSIS = '<[all] m1 ...>'
-    HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
     }
@@ -226,10 +220,8 @@ class Reply(RelativeCompose):
 
 class Forward(RelativeCompose):
     """Forward messages (and attachments)"""
+    SYNOPSIS = ('f', 'forward', 'message/forward', '[att] <messages>')
     ORDER = ('Composing', 4)
-    TEMPLATE_IDS = ['forward'] + Compose.TEMPLATE_IDS
-    SYNOPSIS = '<[att] m1 ...>'
-    HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
     }
@@ -288,11 +280,10 @@ class Forward(RelativeCompose):
             return self._error('No message found')
 
 
-class Mail(ReturnsSearchResults):
+class Sendit(ReturnsSearchResults):
     """Mail/bounce a message (to someone)"""
+    SYNOPSIS = ('m', 'mail', 'message/send', '<messages> [<emails>]')
     ORDER = ('Composing', 5)
-    TEMPLATE_IDS = ['mail']
-    SYNOPSIS = '<msg [email]>'
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
@@ -323,9 +314,5 @@ class Mail(ReturnsSearchResults):
         return self._return_search_results(session, idx, sent)
 
 
-mailpile.plugins.register_command('c:', 'message/compose=', Compose)
-mailpile.plugins.register_command('r:', 'message/reply=',   Reply)
-mailpile.plugins.register_command('f:', 'message/forward=', Forward)
-mailpile.plugins.register_command('u:', 'message/update=',  Update)
-mailpile.plugins.register_command('m:', 'message/mail=',    Mail)
-mailpile.plugins.register_command('a:', 'message/attach=',  Attach)
+mailpile.plugins.register_commands(Compose, Update, Attach,
+                                   Reply, Forward, Sendit)

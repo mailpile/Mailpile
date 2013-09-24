@@ -781,8 +781,15 @@ def Main(args):
     config.prepare_workers(session)
 
     try:
-      shorta = ''.join([k for k in COMMANDS.keys() if not k[0] == '_'])
-      longa = [v[0] for v in COMMANDS.values()]
+      shorta, longa = '', []
+      for cls in COMMANDS:
+        shortn, longn, urlpath, arglist = cls.SYNOPSIS[:4]
+        if arglist:
+          if shortn: shortn += ':'
+          if longn: longn += '='
+        if shortn: shorta += shortn
+        if longn: longa.append(longn.replace(' ', '_'))
+
       opts, args = getopt.getopt(args, shorta, longa)
       for opt, arg in opts:
         Action(session, opt.replace('-', ''), arg)
