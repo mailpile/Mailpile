@@ -65,7 +65,7 @@ class Command:
       }
 
     def as_html(self, template=None):
-      path_parts = self.template_id.split('/')
+      path_parts = (self.template_id or 'command').split('/')
       if len(path_parts) == 1:
         path_parts.append('index')
       if template not in (None, 'html', 'as.html'):
