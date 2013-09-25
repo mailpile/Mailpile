@@ -73,7 +73,8 @@ class Command:
         #           sanitize it very aggressively before heading off to
         #           the filesystem.
         path_parts[-1] += '-%s' % CleanText(template.replace('.html', ''),
-                                            banned=CleanText.FS)
+                                            banned=CleanText.FS +
+                                                   CleanText.WHITESPACE)
       tpath = os.path.join(*path_parts)
       return self.session.ui.render_html(self.session.config, [tpath],
                                          self.as_dict())

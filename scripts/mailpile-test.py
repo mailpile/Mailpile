@@ -40,6 +40,10 @@ try:
         mp.add(os.path.join(mailpile_test, mailbox))
     mp.rescan()
 
+    # Save and load the index, just for kicks
+    mp._config.index.save()
+    mp._config.index.load()
+
     # Rescan AGAIN, so we can test for the presence of duplicates.
     mp.rescan()
 

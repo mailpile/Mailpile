@@ -93,7 +93,10 @@ def ExtractEmails(string):
         w = w[1:]
       while endcrap.search(w):
         w = w[:-1]
-      emails.append(w)
+      # E-mail addresses are only allowed to contain ASCII
+      # characters, so we just strip everything else away.
+      emails.append(CleanText(w, banned=CleanText.WHITESPACE,
+                                 replace='_').clean)
   return emails
 
 def PrepareMail(email, sender=None, rcpts=None):

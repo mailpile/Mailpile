@@ -21,6 +21,7 @@ import time
 import traceback
 import SocketServer
 from urlparse import parse_qs, urlparse
+from urllib import quote, unquote
 import lxml.html
 
 import mailpile.plugins as plugins
@@ -368,8 +369,8 @@ class MailIndex(object):
           pos = int(pos, 36)
           while len(self.EMAILS) < pos+1:
             self.EMAILS.append('')
-          self.EMAILS[pos] = email
-          self.EMAIL_IDS[email.lower()] = pos
+          self.EMAILS[pos] = unquote(email)
+          self.EMAIL_IDS[unquote(email).lower()] = pos
         elif line:
           words = line.split('\t')
           if len(words) == 10:
@@ -412,7 +413,7 @@ class MailIndex(object):
       fd = gpg_open(self.config.mailindex_file(),
                     self.config.get('gpg_recipient'), 'a')
       for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
-        fd.write('@%s\t%s\n' % (b36(eid), self.EMAILS[eid]))
+        fd.write('@%s\t%s\n' % (b36(eid), quote(self.EMAILS[eid])))
       for pos in mods:
         fd.write(self.INDEX[pos] + '\n')
       fd.close()
@@ -428,7 +429,7 @@ class MailIndex(object):
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
     for eid in range(0, len(self.EMAILS)):
-      fd.write('@%s\t%s\n' % (b36(eid), self.EMAILS[eid]))
+      fd.write('@%s\t%s\n' % (b36(eid), quote(self.EMAILS[eid])))
     for item in self.INDEX:
       fd.write(item + '\n')
     fd.close()
@@ -458,7 +459,11 @@ class MailIndex(object):
   def hdr(self, msg, name, value=None):
     try:
       if value is None and msg:
-        value = msg[name]
+        # Security: RFC822 headers are not allowed to have (unencoded)
+        # non-ascii characters in them, so we just strip them all out
+        # before parsing.
+        # FIXME: This is "safe", but can we be smarter/gentler?
+        value = CleanText(msg[name], replace='_').clean
       decoded = email.header.decode_header(value or '')
       return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
               ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')

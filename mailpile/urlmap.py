@@ -422,8 +422,10 @@ class HelpUrlMap(Command):
         def as_html(self, *args, **kwargs):
             try:
                 from markdown import markdown
-                html = markdown(self.result['urlmap'])
+                html = markdown(str(self.result['urlmap']))
             except:
+                import traceback
+                print traceback.format_exc()
                 html = '<pre>%s</pre>' % escape_html(self.result['urlmap'])
             self.result['markdown'] = html
             return Command.CommandResult.as_html(self, *args, **kwargs)
