@@ -505,7 +505,7 @@ class MailIndex(object):
 
     if nz_dates:
       median = nz_dates[len(nz_dates)/2]
-      if msg_date and abs(msg_date-median) < 7*24*3600:
+      if msg_date and abs(msg_date-median) < 31*24*3600:
         return msg_date
       else:
         session.ui.warning(('=%s/%s using Recieved: instead of Date:'
