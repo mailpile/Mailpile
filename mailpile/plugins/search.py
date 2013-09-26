@@ -130,7 +130,7 @@ class SearchResults(dict):
       count += 1
       msg_info = idx.get_msg_by_idx(mid)
       result = self._explain_msg_summary([
-        msg_info[MailIndex.MSG_IDX],
+        msg_info[MailIndex.MSG_MID],
         msg_info[MailIndex.MSG_ID],
         msg_info[MailIndex.MSG_FROM],
         idx.expand_to_list(msg_info),
@@ -151,7 +151,7 @@ class SearchResults(dict):
 
       result['short_from'] = self._compact(self._names(conv_from), 25)
       result['conv_count'] = len(conv)
-      result['conv_idxs'] = [c[MailIndex.MSG_IDX] for c in conv]
+      result['conv_mids'] = [c[MailIndex.MSG_MID] for c in conv]
       # FIXME: conv_people should look stuff in our contact list
       result['conv_people'] = people = [{
         'email': (ExtractEmails(p) or [''])[0],

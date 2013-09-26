@@ -309,7 +309,7 @@ class GlobalPostingList(PostingList):
 class MailIndex(object):
   """This is a lazily parsing object representing a mailpile index."""
 
-  MSG_IDX     = 0
+  MSG_MID     = 0
   MSG_PTRS    = 1
   MSG_ID      = 2
   MSG_DATE    = 3
@@ -591,7 +591,7 @@ class MailIndex(object):
                                              self.hdr(msg, 'from'), msg_to,
                                              msg_subject, msg_snippet,
                                              tags)
-        self.set_conversation_ids(msg_info[self.MSG_IDX], msg)
+        self.set_conversation_ids(msg_info[self.MSG_MID], msg)
         mbox.mark_parsed(i)
 
         added += 1
@@ -872,13 +872,13 @@ class MailIndex(object):
               msg_info=None, msg_idxs=None, conversation=False):
     pls = GlobalPostingList(session, '%s:tag' % tag_id)
     if msg_info and msg_idxs is None:
-      msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
+      msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
     session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in list(msg_idxs):
       if conversation:
         for reply in self.get_conversation(msg_idx=msg_idx):
-          if reply[self.MSG_IDX]:
-            msg_idxs.add(int(reply[self.MSG_IDX], 36))
+          if reply[self.MSG_MID]:
+            msg_idxs.add(int(reply[self.MSG_MID], 36))
           if msg_idx % 1000 == 0: self.CACHE = {}
     for msg_idx in msg_idxs:
       if msg_idx >= 0 and msg_idx < len(self.INDEX):
@@ -888,7 +888,7 @@ class MailIndex(object):
         msg_info[self.MSG_TAGS] = ','.join(list(tags))
         self.INDEX[msg_idx] = self.m2l(msg_info)
         self.MODIFIED.add(msg_idx)
-        pls.append(msg_info[self.MSG_IDX])
+        pls.append(msg_info[self.MSG_MID])
       if msg_idx % 1000 == 0: self.CACHE = {}
     pls.save()
     self.CACHE = {}
@@ -897,15 +897,15 @@ class MailIndex(object):
                  msg_info=None, msg_idxs=None, conversation=False):
     pls = GlobalPostingList(session, '%s:tag' % tag_id)
     if msg_info and msg_idxs is None:
-      msg_idxs = set([int(msg_info[self.MSG_IDX], 36)])
+      msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
     if not msg_idxs:
       return
     session.ui.mark('Untagging conversations (%s)' % (tag_id, ))
     for msg_idx in list(msg_idxs):
       if conversation:
         for reply in self.get_conversation(msg_idx=msg_idx):
-          if reply[self.MSG_IDX]:
-            msg_idxs.add(int(reply[self.MSG_IDX], 36))
+          if reply[self.MSG_MID]:
+            msg_idxs.add(int(reply[self.MSG_MID], 36))
           if msg_idx % 1000 == 0: self.CACHE = {}
     session.ui.mark('Untagging %d messages (%s)' % (len(msg_idxs), tag_id))
     eids = []
@@ -918,7 +918,7 @@ class MailIndex(object):
           msg_info[self.MSG_TAGS] = ','.join(list(tags))
           self.INDEX[msg_idx] = self.m2l(msg_info)
           self.MODIFIED.add(msg_idx)
-        eids.append(msg_info[self.MSG_IDX])
+        eids.append(msg_info[self.MSG_MID])
       if msg_idx % 1000 == 0: self.CACHE = {}
     pls.remove(eids)
     pls.save()

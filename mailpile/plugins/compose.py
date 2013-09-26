@@ -63,7 +63,7 @@ class Compose(ReturnsSearchResults):
             local_id, lmbox = config.open_local_mailbox(session)
             emails = [Email.Create(idx, local_id, lmbox)]
             try:
-                idxs = [int(e.get_msg_info(idx.MSG_IDX), 36) for e in emails]
+                idxs = [int(e.get_msg_info(idx.MSG_MID), 36) for e in emails]
                 idx.add_tag(session, session.config.get_tag_id('Drafts'),
                             msg_idxs=idxs, conversation=False)
             except (TypeError, ValueError, IndexError):
@@ -205,7 +205,7 @@ class Reply(RelativeCompose):
                                      msg_cc=[r for r in msg_cc if r],
                                      msg_references=[i for i in ref_ids if i])
                 try:
-                    msg_idx = int(email.get_msg_info(idx.MSG_IDX), 36)
+                    msg_idx = int(email.get_msg_info(idx.MSG_MID), 36)
                     idx.add_tag(session, session.config.get_tag_id('Drafts'),
                                 msg_idxs=[msg_idx], conversation=False)
                 except (TypeError, ValueError, IndexError):
@@ -270,7 +270,7 @@ class Forward(RelativeCompose):
                 email.update_from_msg(msg)
 
             try:
-                msg_idx = int(email.get_msg_info(idx.MSG_IDX), 36)
+                msg_idx = int(email.get_msg_info(idx.MSG_MID), 36)
                 idx.add_tag(session, session.config.get_tag_id('Drafts'),
                             msg_idxs=[msg_idx], conversation=False)
             except (TypeError, ValueError, IndexError):
@@ -303,7 +303,7 @@ class Sendit(ReturnsSearchResults):
         sent = []
         for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
             try:
-                msg_idx = email.get_msg_info(idx.MSG_IDX)
+                msg_idx = email.get_msg_info(idx.MSG_MID)
                 SendMail(session, [PrepareMail(email,
                                                rcpts=(bounce_to or None))])
                 Tag(session, arg=['-Drafts', '+Sent', '=%s' % msg_idx]).run()
