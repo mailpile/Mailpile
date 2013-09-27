@@ -107,7 +107,7 @@ class UserInteraction:
   def _debug_log(self, text, level, prefix=''):
     if (self.session and
         self.session.config and
-        self.session.config.get('debug', False)):
+        'log' in self.session.config.get('debug', '')):
       sys.stderr.write('%slog(%s): %s\n' % (prefix, level, text))
   def _display_log(self, text, level=LOG_URGENT):
     pad = ' ' * max(0, min(self.MAX_WIDTH, self.MAX_WIDTH-len(text)))
