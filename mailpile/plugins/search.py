@@ -28,7 +28,7 @@ class SearchResults(dict):
     date = '%4.4d-%2.2d-%2.2d' % (msg_date.year, msg_date.month, msg_date.day)
     urlmap = UrlMap(self.session)
     expl = {
-      'idx': info[0],
+      'mid': info[0],
       'id': info[1],
       'from': info[2],
       'to': info[3],
@@ -125,10 +125,10 @@ class SearchResults(dict):
 
     rv = []
     count = 0
-    expand_ids = [e.msg_idx for e in (expand or [])]
-    for mid in results[start:start+num]:
+    expand_ids = [e.msg_idx_pos for e in (expand or [])]
+    for idx_pos in results[start:start+num]:
       count += 1
-      msg_info = idx.get_msg_by_idx(mid)
+      msg_info = idx.get_msg_at_idx_pos(idx_pos)
       result = self._explain_msg_summary([
         msg_info[MailIndex.MSG_MID],
         msg_info[MailIndex.MSG_ID],
@@ -159,8 +159,8 @@ class SearchResults(dict):
       } for p in list(set(conv_from))]
       people.sort(key=lambda i: i['name']+i['email'])
 
-      if expand and mid in expand_ids:
-        exp_email = expand[expand_ids.index(mid)]
+      if expand and idx_pos in expand_ids:
+        exp_email = expand[expand_ids.index(idx_pos)]
         result['message'] = self._message_details([exp_email])[0]
       rv.append(result)
 
@@ -188,11 +188,11 @@ class SearchResults(dict):
     cfmt = '%%%d.%ds' % (clen, clen)
     text = []
     count = self['start']
-    expand_ids = [e.msg_idx for e in (self.expand or [])]
+    expand_ids = [e.msg_idx_pos for e in (self.expand or [])]
     print 'Wat: %s' % expand_ids
     for m in self['messages']:
       if 'message' in m:
-        exp_email = self.expand[expand_ids.index(int(m['idx'], 36))]
+        exp_email = self.expand[expand_ids.index(int(m['mid'], 36))]
         text.append(exp_email.get_editing_string(exp_email.get_message_tree()))
       else:
         msg_tags = m['tags'] and (' <' + '<'.join(m['tags'])) or ''
@@ -332,14 +332,14 @@ class View(Search):
       raw = self.args.pop(0)
     else:
       raw = False
-    emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-    idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx for e in emails])
+    emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
+    idx.apply_filters(session, '@read', msg_idxs=[e.msg_idx_pos for e in emails])
     for email in emails:
       if raw:
         results.append(self.RawResult({'data': email.get_file().read()}))
       else:
         conv = [int(c[0], 36)
-                for c in idx.get_conversation(msg_idx=email.msg_idx)]
+                for c in idx.get_conversation(msg_idx=email.msg_idx_pos)]
         conv.reverse()
         results.append(SearchResults(session, idx,
                                      results=conv, num=len(conv),
@@ -389,7 +389,7 @@ class Extract(Command):
                                           name_fmt=name_fmt,
                                           mode=mode)
       if info:
-        info['idx'] = email.msg_idx
+        info['idx'] = email.msg_idx_pos
         if fn:
           info['created_file'] = fn
         results.append(info)

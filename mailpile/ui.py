@@ -104,6 +104,11 @@ class UserInteraction:
     self.session = session
 
   # Logging
+  def _debug_log(self, text, level, prefix=''):
+    if (self.session and
+        self.session.config and
+        self.session.config.get('debug', False)):
+      sys.stderr.write('%slog(%s): %s\n' % (prefix, level, text))
   def _display_log(self, text, level=LOG_URGENT):
     pad = ' ' * max(0, min(self.MAX_WIDTH, self.MAX_WIDTH-len(text)))
     if self.last_display[0] not in (self.LOG_PROGRESS, ):
@@ -203,9 +208,9 @@ class UserInteraction:
       return self._display_result(unicode(result))
 
   # Creating output files
-  DEFAULT_DATA_NAME_FMT = '%(msg_idx)s.%(count)s_%(att_name)s.%(att_ext)s'
+  DEFAULT_DATA_NAME_FMT = '%(msg_mid)s.%(count)s_%(att_name)s.%(att_ext)s'
   DEFAULT_DATA_ATTRS = {
-    'msg_idx': 'file',
+    'msg_mid': 'file',
     'mimetype': 'application/octet-stream',
     'att_name': 'unnamed',
     'att_ext': 'dat',
@@ -295,6 +300,7 @@ class HttpUserInteraction(UserInteraction):
 
   # Just buffer up rendered data
   def _display_log(self, text, level=UserInteraction.LOG_URGENT):
+    self._debug_log(text, level, prefix='http/')
     self.logged.append((level, text))
   def _display_result(self, result):
     self.results.append(result)
@@ -340,12 +346,12 @@ class HttpUserInteraction(UserInteraction):
 class BackgroundInteraction(UserInteraction):
   # FIXME: This shouldn't be quite so silent...
   def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-    pass
+    self._debug_log(text, level, prefix='bg/')
 
 
 class SilentInteraction(UserInteraction):
   def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-    pass
+    self._debug_log(text, level, prefix='silent/')
   def _display_result(self, result):
     return result
   def edit_messages(self, emails):
