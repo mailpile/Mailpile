@@ -11,8 +11,9 @@
         <input type="hidden" name="mid" value="{{ m.mid }}">
         <div class="compose-section compose-headers">
             <label>From:</label>
-            <input id="compose-from" name="from" type="text"
-                   value="{{ m.message.editing_strings.from|e }}">
+            <select id="compose-from" name="from"> 
+              <option value="{{ m.message.editing_strings.from|e }}">{{ m.message.editing_strings.from|e }}</option>
+            </select>
         </div>
         <div class="compose-section compose-headers">
             <label>To:</label>

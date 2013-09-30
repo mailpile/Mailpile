@@ -385,90 +385,57 @@ $(document).ready(function() {
 
 
   /* Compose - Adding Recipients */
-  function formatContactResult(state) {
-  
-    console.log(state);
-  
-    if (!state.id) return state.text;
-    // " + state.id.toLowerCase() + "
-    return "<span class='icon-user'></span> &nbsp;" + state.text;
-  }  
+  if ($('#form-compose').length) {
 
-
-  function movieFormatResult(movie) {
-      var markup = "<table class='movie-result'><tr>";
-      if (movie.posters !== undefined && movie.posters.thumbnail !== undefined) {
-          markup += "<td class='movie-image'><img src='" + movie.posters.thumbnail + "'/></td>";
-      }
-      markup += "<td class='movie-info'><div class='movie-title'>" + movie.title + "</div>";
-      if (movie.critics_consensus !== undefined) {
-          markup += "<div class='movie-synopsis'>" + movie.critics_consensus + "</div>";
-      }
-      else if (movie.synopsis !== undefined) {
-          markup += "<div class='movie-synopsis'>" + movie.synopsis + "</div>";
-      }
-      markup += "</td></tr></table>"
-      return markup;
-  }
-
-
-  function movieFormatSelection(movie) {
-      return movie.title;
-  }
-
-  
-  $("#compose-to, #compose-cc, #compose-bcc").select2({
-    ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
-        url: "http://localhost:33411/static/contacts.json",
-        dataType: 'json',
-        results: function (data, page) { // parse the results into the format expected by Select2.
-                   
-          console.log(data[0].result.contacts);
-                        
-          // since we are using custom formatting functions we do not need to alter remote JSON data
-          // return {results: data.movies, more: more};
-          return data[0].result.contacts;
+    $.getJSON('http://localhost:33411/static/contacts.json', function(contacts) {
+        
+      var formatContactResult = function(state) {
+        if (!state.id) return state.text;
+        // " + state.id.toLowerCase() + "
+        return "<span class='icon-user'></span> &nbsp;" + state.text;
+      }          
+        
+      $("#compose-to, #compose-cc, #compose-bcc").select2({
+        tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
+        multiple: true,
+        allowClear: true,
+        placeholder: 'type name or email address',  // Placeholder
+        width: '94%',                               // Width of input element
+        maximumSelectionSize: 50,                   // Limits number of items added
+        tokenSeparators: [",", " - "],
+        formatResult: formatContactResult,
+        formatSelection: formatContactResult,    
+        formatSelectionTooBig: function() {
+          return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
         }
-    },  
-    multiple: true,
-    allowClear: true,
-    placeholder: 'type name or email address',  // Placeholder
-    width: '94%',                               // Width of input element
-    maximumSelectionSize: 50,                   // Limits number of items added
-    tokenSeparators: [",", " - "],
-    formatResult: formatContactResult,
-    formatSelection: formatContactResult,    
-    formatSelectionTooBig: function() {
-      return 'You have added the max number of contacts allowed, to increase go to <a href="#">settings</a>';
-    }
-  });
-  
-  $("#compose-to, #compose-cc, #compose-bcc").on("change", function() { 
-    $("#compose-to_val").html($("#compose-to").val());
-  });
+      });
 
-  $("#compose-to, #compose-cc, #compose-bcc").select2("container").find("ul.select2-choices").sortable({
-    containment: 'parent',
-    start: function() { 
-      $("#compose-to, #compose-cc, #compose-bcc").select2("onSortStart");
-    },
-    update: function() {
-      $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
-    }
-  });
+      $("#compose-to, #compose-cc, #compose-bcc").on("change", function() {
+        $("#compose-to_val").html($("#compose-to").val());
+      });
 
-  console.log('Wheeee here');
+      $("#compose-to, #compose-cc, #compose-bcc").select2("container").find("ul.select2-choices").sortable({
+        containment: 'parent',
+        start: function() { 
+          $("#compose-to, #compose-cc, #compose-bcc").select2("onSortStart");
+        },
+        update: function() {
+          $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
+        }
+      });
+    
+    });
+  }
 
-  
+
 	$('#form-compose').bind('submit', function(e) {
 		e.preventDefault();
 		$.ajax({
-			url			  : '/api/0/message/compose/',
+			url			  : '/api/0/message/send/',
 			type		  : 'POST',
 			data      : $('#form-compose').serialize(),
 			dataType	: 'json',
-		  	success : function(result)
-		  	{							  	
+		  	success : function(result) {							  	
           console.log('Hellooo AJAX town');
           console.log(result);
 		  	}		
