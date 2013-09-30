@@ -6,7 +6,7 @@ python:
   - "3.2"
   - "3.3"
 install:
-  - pip install pep8 pyflakes Jinja2 GnuPGInterface lxml --use-mirrors
+  - pip install pep8 pyflakes Jinja2 lxml http://sourceforge.net/projects/py-gnupg/files/GnuPGInterface/0.3.2/GnuPGInterface-0.3.2.tar.gz --use-mirrors
 # requirements contain uninstallable version "Jinja2==dev", use 2.7.1
 #  - pip install -r requirements.txt --use-mirrors
 script:
