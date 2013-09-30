@@ -679,7 +679,7 @@ class ConfigManager(dict):
     if not config.background:
       # Create a silent background session
       config.background = Session(config)
-      config.background.ui = BackgroundInteraction()
+      config.background.ui = BackgroundInteraction(config)
       config.background.ui.block()
 
     # Start the workers
@@ -769,7 +769,7 @@ def Main(args):
     session = Session(config)
     session.config.load(session)
     session.main = True
-    session.ui = UserInteraction()
+    session.ui = UserInteraction(config)
     if sys.stdout.isatty():
       session.ui.palette = ANSIColors()
   except AccessError, e:

@@ -172,6 +172,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     # HTTP is stateless, so we create a new session for each request.
     config = self.server.session.config
 
+    if 'http' in config.get('debug', ''):
+      sys.stderr.write(('%s: %s qs=%s post=%s\n'
+                        ) % (method, path, query_data, post_data))
+
     # Static things!
     if path == '/favicon.ico':
       path = '/static/favicon.ico'
@@ -181,8 +185,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       return self.send_file(config, path[len('/static/'):])
 
     session = Session(config)
-    session.ui = HttpUserInteraction(self)
-    session.ui.set_session(session)
+    session.ui = HttpUserInteraction(self, config)
 
     idx = session.config.index
     session.ui.html_variables = {

@@ -336,23 +336,30 @@ class CleanText:
     This is a helper class for aggressively cleaning text, dumbing it
     down to just ASCII and optionally forbidding some characters.
 
-    >>> CleanText(u'cleanup\xfe', banned='up').clean
+    >>> CleanText(u'clean up\\xfe', banned='up ').clean
     'clean'
-    >>> str(CleanText(u'c:\\l/e.an', banned=CleanText.FS))
+    >>> CleanText(u'clean\\xfe', replace='_').clean
+    'clean_'
+    >>> CleanText(u'clean\\t').clean
+    'clean\\t'
+    >>> str(CleanText(u'c:\\\\l/e.an', banned=CleanText.FS))
     'clean'
     >>> CleanText(u'c_(l e$ a) n!', banned=CleanText.NONALNUM).clean
     'clean'
     """
     FS = ':/.\'\"\\'
-    NONALNUM = [chr(c) for c in (set(range(32, 127)) -
-                                 set(range(ord('0'), ord('9') + 1)) -
-                                 set(range(ord('a'), ord('z') + 1)) -
-                                 set(range(ord('A'), ord('Z') + 1)))]
+    CRLF = '\r\n'
+    WHITESPACE = '\r\n\t '
+    NONALNUM = ''.join([chr(c) for c in (set(range(32, 127)) -
+                                         set(range(ord('0'), ord('9') + 1)) -
+                                         set(range(ord('a'), ord('z') + 1)) -
+                                         set(range(ord('A'), ord('Z') + 1)))])
 
-    def __init__(self, text, banned=''):
-        self.clean = str("".join([i for i in text if ord(i) > 31 and
-                                                     ord(i) < 127 and
-                                                     i not in banned]))
+    def __init__(self, text, banned='', replace=''):
+        self.clean = str("".join([i if (((ord(i) > 31 and ord(i) < 127) or
+                                         (i in self.WHITESPACE)) and
+                                        i not in banned) else replace
+                                  for i in (text or '')]))
 
     def __str__(self):
         return str(self.clean)

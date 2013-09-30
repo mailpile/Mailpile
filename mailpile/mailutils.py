@@ -93,7 +93,10 @@ def ExtractEmails(string):
         w = w[1:]
       while endcrap.search(w):
         w = w[:-1]
-      emails.append(w)
+      # E-mail addresses are only allowed to contain ASCII
+      # characters, so we just strip everything else away.
+      emails.append(CleanText(w, banned=CleanText.WHITESPACE,
+                                 replace='_').clean)
   return emails
 
 def PrepareMail(email, sender=None, rcpts=None):
@@ -140,13 +143,17 @@ def SendMail(session, from_to_msg_tuples):
     elif (sendmail.startswith('smtp:') or
           sendmail.startswith('smtpssl:') or
           sendmail.startswith('smtptls:')):
-      host, port = sendmail.split(':', 1)[1].rsplit(':', 1)
+      host, port = sendmail.split(':', 1)[1].replace('/', '').rsplit(':', 1)
       smtp_ssl = sendmail.startswith('smtpssl')
       if '@' in host:
         userpass, host = host.rsplit('@', 1)
         user, pwd = userpass.split(':', 1)
       else:
         user = pwd = None
+
+      if 'sendmail' in session.config.get('debug', ''):
+        sys.stderr.write(('SMTP conn to: %s:%s as %s@%s\n'
+                          ) % (host, port, user, pwd))
 
       server = smtp_ssl and SMTP_SSL() or SMTP()
       server.connect(host, int(port))
@@ -260,8 +267,8 @@ def UnorderedPicklable(parent, editable=False):
     def update_toc(self):
       self._refresh()
 
-    def get_msg_ptr(self, idx, toc_id):
-      return '%s%s' % (idx, quote(toc_id))
+    def get_msg_ptr(self, mboxid, toc_id):
+      return '%s%s' % (mboxid, quote(toc_id))
 
     def get_file_by_ptr(self, msg_ptr):
       return self.get_file(unquote(msg_ptr[MBX_ID_LEN:]))
@@ -462,10 +469,10 @@ class IncrementalMbox(mailbox.mbox):
       raise IOError('No data found')
     return b64w(sha1b64(firstKB)[:4])
 
-  def get_msg_ptr(self, idx, toc_id):
+  def get_msg_ptr(self, mboxid, toc_id):
     msg_start = self._toc[toc_id][0]
     msg_size = self.get_msg_size(toc_id)
-    return '%s%s:%s:%s' % (idx,
+    return '%s%s:%s:%s' % (mboxid,
                            b36(msg_start),
                            b36(msg_size),
                            self.get_msg_cs1k(msg_start, msg_size))
@@ -486,15 +493,15 @@ class IncrementalMbox(mailbox.mbox):
 class Email(object):
   """This is a lazy-loading object representing a single email."""
 
-  def __init__(self, idx, msg_idx):
+  def __init__(self, idx, msg_idx_pos):
     self.index = idx
     self.config = idx.config
-    self.msg_idx = msg_idx
+    self.msg_idx_pos = msg_idx_pos
     self.msg_info = None
     self.msg_parsed = None
 
   def msg_mid(self):
-    return b36(self.msg_idx)
+    return b36(self.msg_idx_pos)
 
   @classmethod
   def encoded_hdr(self, msg, hdr, value=None):
@@ -526,7 +533,7 @@ class Email(object):
     return hdr_value
 
   @classmethod
-  def Create(cls, idx, mbx_id, mbx,
+  def Create(cls, idx, mbox_id, mbx,
              msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
              msg_subject=None, msg_text=None, msg_references=None):
     msg = MIMEMultipart()
@@ -557,10 +564,10 @@ class Email(object):
       msg.attach(MIMEText(msg_text, _subtype='plain', _charset=charset))
     msg_key = mbx.add(msg)
     msg_to = []
-    msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbx_id, msg_key),
+    msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbox_id, msg_key),
                                         msg_id, msg_date, msg_from, msg_to,
                                         msg_subj, '', [])
-    idx.set_conversation_ids(msg_info[idx.MSG_IDX], msg)
+    idx.set_conversation_ids(msg_info[idx.MSG_MID], msg)
     return cls(idx, msg_idx)
 
   def is_editable(self):
@@ -706,11 +713,11 @@ class Email(object):
     mbx[ptr[MBX_ID_LEN:]] = newmsg
 
     # Update the in-memory-index with new sender, subject
-    msg_info = self.index.get_msg_by_idx(self.msg_idx)
+    msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
     msg_info[self.index.MSG_SUBJECT] = self.index.hdr(newmsg, 'subject')
     msg_info[self.index.MSG_FROM] = self.index.hdr(newmsg, 'from')
-    self.index.set_msg_by_idx(self.msg_idx, msg_info)
-    self.index.set_conversation_ids(msg_info[self.index.MSG_IDX], newmsg)
+    self.index.set_msg_at_idx_pos(self.msg_idx_pos, msg_info)
+    self.index.set_conversation_ids(msg_info[self.index.MSG_MID], newmsg)
 
     # FIXME: What to do about the search index?  Update?
     self.msg_parsed = None
@@ -718,7 +725,7 @@ class Email(object):
 
   def get_msg_info(self, field):
     if not self.msg_info:
-      self.msg_info = self.index.get_msg_by_idx(self.msg_idx)
+      self.msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
     return self.msg_info[field]
 
   def get_mbox_ptr_and_fd(self):
@@ -749,7 +756,7 @@ class Email(object):
     return HeaderPrint(self.get_msg())
 
   def is_thread(self):
-    return ((self.get_msg_info(self.index.MSG_CONV_ID)) or
+    return ((self.get_msg_info(self.index.MSG_CONV_MID)) or
             (0 < len(self.get_msg_info(self.index.MSG_REPLIES))))
 
   def get(self, field, default=''):
@@ -765,9 +772,9 @@ class Email(object):
 
   def get_msg_summary(self):
     # We do this first to make sure self.msg_info is loaded
-    msg_idx = self.get_msg_info(self.index.MSG_IDX)
+    msg_mid = self.get_msg_info(self.index.MSG_MID)
     return [
-      msg_idx,
+      msg_mid,
       self.get_msg_info(self.index.MSG_ID),
       self.get_msg_info(self.index.MSG_FROM),
       self.index.expand_to_list(self.msg_info),
@@ -800,7 +807,7 @@ class Email(object):
 
         payload = part.get_payload(None, True) or ''
         attributes = {
-          'msg_idx': b36(self.msg_idx),
+          'msg_mid': self.msg_mid(),
           'count': count,
           'length': len(payload),
           'content-id': content_id,
@@ -859,7 +866,7 @@ class Email(object):
       'conversation': [],
     }
 
-    conv_id = self.get_msg_info(self.index.MSG_CONV_ID)
+    conv_id = self.get_msg_info(self.index.MSG_CONV_MID)
     if conv_id:
       conv = Email(self.index, int(conv_id, 36))
       tree['conversation'] = convs = [conv.get_msg_summary()]

@@ -32,8 +32,8 @@ DKIM-Signature: v=1; a=rsa-sha1; d=twitter.com; s=dkim-201303; c=relaxed/relaxed
 X-MSFBL: YnJlQGtsYWtpLm5ldEBzbWYxLWJmbi0yNC1zcjEtRXZlcnl0aGluZy4xODRARXZl
 	cnl0aGluZ0A=
 Date: Mon, 16 Sep 2013 02:19:26 +0000
-From: Twitter <info@twitter.com>
-To: "Bjarni R. Einarsson" <fake@example.com>
+From: =?iso-8859-1?Q?_Test=E9_?= <redacted�_redacted@example.com>,
+To: =?iso-8859-1?Q?_Test=E9_?= <redacted@example.com>, <redacted�_redacted@example.com>,
 Subject: Bjarni R. Einarsson, you have new followers on Twitter!
 MIME-Version: 1.0
 Content-Type: multipart/alternative; 
