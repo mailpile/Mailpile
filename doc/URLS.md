@@ -26,12 +26,16 @@ endpoints be used for automation.
     /api/0/contact/list/      [--full]/[<terms>]/
     /api/0/filter/list/
     /api/0/help/              [<command-group>|variables]/
+    /api/0/help/splash/
+    /api/0/help/urlmap/
+    /api/0/help/variables/
     /api/0/message/           [raw]/<message>/
                               ?mid=[metadata-ID]
     /api/0/message/compose/   [<messages>]/
                               ?mid=[metadata-ID]
+    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
     /api/0/message/delete/    <message>/
-    /api/0/message/extract/   <att>/<message>/[><fn>]/
+    /api/0/message/download/  <att>/<message>/[><fn>]/
     /api/0/message/forward/   [att]/<messages>/
                               ?mid=[metadata-ID]
     /api/0/message/reply/     [all]/<messages>/
@@ -47,10 +51,18 @@ endpoints be used for automation.
     /api/0/contact/set/       <email>/<attr>/<value>/
     /api/0/message/attach/    <messages>/[<path/to/file>]/
     ... POST only: data=[file data]&mid=[metadata-ID]&name=[file name]
+    /api/0/message/compose/   [<messages>]/
+                              ?mid=[metadata-ID]
+    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
+    /api/0/message/forward/   [att]/<messages>/
+                              ?mid=[metadata-ID]
+    /api/0/message/reply/     [all]/<messages>/
+                              ?mid=[metadata-ID]
     /api/0/message/send/      <messages>/[<emails>]/
     ... POST only: to=[recipients]&mid=[metadata-ID]
-    /api/0/message/update/    <messages>/<path/to/update>/
-    ... POST only: body=[..]&from=[..]&cc=[..]&mid=[metadata-ID]&bcc=[..]&to=[..]&subject=[..]
+    /api/0/message/update/    <messages>/<<filename>/
+                              ?mid=[metadata-ID]
+    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
     /api/0/tag/add/           <tag>/
     /api/0/tag/delete/        <tag>/
 
@@ -59,8 +71,16 @@ endpoints be used for automation.
     /api/0/contact/set/       <email>/<attr>/<value>/
     /api/0/message/attach/    <messages>/[<path/to/file>]/
     ... POST only: data=[file data]&mid=[metadata-ID]&name=[file name]
-    /api/0/message/update/    <messages>/<path/to/update>/
-    ... POST only: body=[..]&from=[..]&cc=[..]&mid=[metadata-ID]&bcc=[..]&to=[..]&subject=[..]
+    /api/0/message/compose/   [<messages>]/
+                              ?mid=[metadata-ID]
+    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
+    /api/0/message/forward/   [att]/<messages>/
+                              ?mid=[metadata-ID]
+    /api/0/message/reply/     [all]/<messages>/
+                              ?mid=[metadata-ID]
+    /api/0/message/update/    <messages>/<<filename>/
+                              ?mid=[metadata-ID]
+    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
 
 ### DELETE
 
@@ -87,11 +107,14 @@ endpoints be used for automation.
     /contact/set/
     /filter/list/
     /help/
+    /help/splash/
+    /help/urlmap/
+    /help/variables/
     /message/
     /message/attach/
     /message/compose/
     /message/delete/
-    /message/extract/
+    /message/download/
     /message/forward/
     /message/reply/
     /message/send/
