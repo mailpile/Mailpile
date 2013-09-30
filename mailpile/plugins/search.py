@@ -145,6 +145,10 @@ class SearchResults(dict):
       result['tags'] = sorted([idx.config['tag'].get(t,t)
                                for t in idx.get_tags(msg_info=msg_info)
                                      if 'tag:%s' % t not in terms])
+
+      # FIXME: This is the wrong place for this, these things need to
+      #        be counted globally as part of per-tag metadata otherwise
+      #        the numbers will be wrong and/or performance will break.
       if "New" in result['tags']:
         new += 1
       if "Later" in result['tags']:
@@ -179,6 +183,7 @@ class SearchResults(dict):
     self['count'] = count
     self['end'] = start+count
     self['total'] = total
+    # FIXME: This is the wrong place for this data, see comment above.
     self['new'] = new
     self['read'] = (total - new) - later
     self['later'] = later
