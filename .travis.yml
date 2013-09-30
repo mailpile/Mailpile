@@ -6,8 +6,9 @@ python:
   - "3.2"
   - "3.3"
 install:
-  - pip install pep8 pyflakes --use-mirrors
-  - pip install -r requirements.txt --use-mirrors
+  - pip install pep8 pyflakes Jinja2 GnuPGInterface lxml --use-mirrors
+# requirements contain uninstallable version "Jinja2==dev", use 2.7.1
+#  - pip install -r requirements.txt --use-mirrors
 script:
   - "pyflakes mailpile"
   - "pep8 mailpile"
