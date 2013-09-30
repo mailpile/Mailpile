@@ -80,18 +80,18 @@ class UserInteraction:
   LOG_DEBUG    = 50
   LOG_ALL      = 99
 
-  def __init__(self, log_parent=None):
+  def __init__(self, config, log_parent=None):
     self.log_parent = log_parent
     self.log_buffer = []
     self.log_buffering = False
     self.log_level = self.LOG_ALL
     self.interactive = False
     self.time_tracking = [('Main', [])]
-    self.session = None
     self.time_elapsed = 0.0
     self.last_display = [self.LOG_PROGRESS, 0]
     self.render_mode = 'text'
     self.palette = NoColors()
+    self.config = config
     self.html_variables = {
       'title': 'Mailpile',
       'name': 'Chelsea Manning',
@@ -100,14 +100,9 @@ class UserInteraction:
       'mailpile_size': 0
     }
 
-  def set_session(self, session):
-    self.session = session
-
   # Logging
   def _debug_log(self, text, level, prefix=''):
-    if (self.session and
-        self.session.config and
-        'log' in self.session.config.get('debug', '')):
+    if 'log' in self.config.get('debug', ''):
       sys.stderr.write('%slog(%s): %s\n' % (prefix, level, text))
   def _display_log(self, text, level=LOG_URGENT):
     pad = ' ' * max(0, min(self.MAX_WIDTH, self.MAX_WIDTH-len(text)))
@@ -257,35 +252,47 @@ class UserInteraction:
     env = Environment(loader=FileSystemLoader('%s' % theme_path),
                       extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
                                   'mailpile.jinjaextensions.MailpileCommand'])
-    env.session = self.session
+    env.session = Session(config)
+    env.session.ui = HttpUserInteraction(None, config)
     for tpl_name in tpl_names:
       try:
         fn = '%s.html' % tpl_name
         # FIXME(Security): Here we need to sanitize the file name very
         #                  strictly in case it somehow came from user
         #                  data.
-        template = env.get_template(fn)
-        return template
+        return env.get_template(fn)
       except (IOError, OSError, AttributeError), e:
-        emsg = "<h1>Template not found: %s</h1>%s\n"
-        return emsg % (fn, e)
-      except (TemplateError, UndefinedError, TemplateSyntaxError,
-              TemplateAssertionError, TemplateNotFound, TemplatesNotFound), e:
-        emsg = ("<h1>Template error in %s</h1>\n"
-                "Parsing template %s: <b>%s</b> on line %s<br/>"
-                "<div><xmp>%s</xmp></div>")
-        return emsg % (e.name, e.filename, e.message, e.lineno, e.source)
+        pass
+    return None
 
   def render_html(self, cfg, tpl_names, data):
     """Render data as HTML"""
-    template = self._html_template(cfg, tpl_names)
     alldata = default_dict(self.html_variables)
     alldata["config"] = cfg
     alldata.update(data)
     try:
-      return template.render(alldata)
-    except:
-      return template
+      template = self._html_template(cfg, tpl_names)
+      if template:
+        return template.render(alldata)
+      else:
+        emsg = "<h1>Template not found</h1>\n<p>%s</p><p><b>DATA:</b> %s</p>"
+        return emsg % (' or '.join([escape_html(tn) for tn in tpl_names]),
+                       escape_html('%s' % alldata))
+    except (UndefinedError, ):
+      emsg = ("<h1>Template error</h1>\n"
+              "<pre>%s</pre>\n<p>%s</p><p><b>DATA:</b> %s</p>")
+      return emsg % (escape_html(traceback.format_exc()),
+                     ' or '.join([escape_html(tn) for tn in tpl_names]),
+                     escape_html('%s' % alldata))
+    except (TemplateError, TemplateSyntaxError, TemplateAssertionError,
+            TemplateNotFound, TemplatesNotFound), e:
+      emsg = ("<h1>Template error in %s</h1>\n"
+              "Parsing template %s: <b>%s</b> on line %s<br/>"
+              "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
+      return emsg % tuple([escape_html(v) for v in (e.name, e.filename,
+                                                    e.message, e.lineno,
+                                                    e.source,
+                                                    '%s' % alldata)])
 
   def edit_messages(self, emails):
     self.error('Sorry, this UI cannot edit messages.')
@@ -400,7 +407,7 @@ class Session(object):
     self.searched = []
     self.displayed = (0, 0)
     self.task_results = []
-    self.ui = UserInteraction()
+    self.ui = UserInteraction(config)
 
   def report_task_completed(self, name, result):
     self.wait_lock.acquire()

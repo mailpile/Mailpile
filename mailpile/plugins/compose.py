@@ -6,7 +6,8 @@ import traceback
 
 import mailpile.plugins
 from mailpile.commands import Command
-from mailpile.mailutils import Email
+from mailpile.plugins.tags import Tag
+from mailpile.mailutils import ExtractEmails, Email, PrepareMail, SendMail
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -15,9 +16,10 @@ from mailpile.plugins.search import Search, SearchResults
 
 
 class EditableSearchResults(SearchResults):
-    def __init__(self, session, idx, new_messages, **kwargs):
+    def __init__(self, session, idx, new, sent, **kwargs):
         SearchResults.__init__(self, session, idx, **kwargs)
-        self.new_messages = new_messages
+        self.new_messages = new
+        self.sent_messages = sent
 
     def _prune_msg_tree(self, *args, **kwargs):
         kwargs['editable'] = True
@@ -33,11 +35,15 @@ class CompositionCommand(Search):
         'cc': '..',
         'bcc': '..',
         'body': '..',
+        'send': 'Send the message?',
     }
 
     class CommandResult(Search.CommandResult):
         def as_html(self, *args, **kwargs):
             for result in (self.result or []):
+                if result.sent_messages:
+                    url = UrlMap(self.session).url_sent()
+                    raise UrlRedirectException(url)
                 if result.new_messages:
                     mid = result.new_messages[0].msg_mid()
                     url = UrlMap(self.session).url_compose(mid)
@@ -72,13 +78,13 @@ class CompositionCommand(Search):
 
         return (emails, update_string)
 
-    def _return_search_results(self, session, idx, emails,
-                                     expand=None, new=[]):
+    def _return_search_results(self, emails, expand=None, new=[], sent=[]):
+        session, idx = self.session, self._idx()
         session.results = [e.msg_idx_pos for e in emails]
-        session.displayed = EditableSearchResults(session, idx, new,
+        session.displayed = EditableSearchResults(session, idx, new, sent,
                                                   results=session.results,
                                                   num=len(emails),
-                                                  expand=emails)
+                                                  expand=expand)
         return [session.displayed]
 
 
@@ -93,6 +99,10 @@ class Compose(CompositionCommand):
     HTTP_POST_VARS = CompositionCommand.UPDATE_STRING_DATA
     RAISES = (UrlRedirectException, )
 
+    def _sendit(self):
+        Sendit(self.session, arg=self.args, data=self.data).run()
+        return [self.session.displayed]
+
     def command(self, create=True):
         session, config, idx = self.session, self.session.config, self._idx()
         emails, update_string = self._get_emails_and_update_string(idx)
@@ -102,33 +112,39 @@ class Compose(CompositionCommand):
                 for email in emails:
                     email.update_from_string(update_string)
                 session.ui.notify('%d message(s) updated' % len(emails))
-            return self._edit_messages(session, idx, emails, new=False)
+                if 'send' in self.data:
+                    return self._sendit()
+            return self._edit_messages(emails, new=False)
 
         elif create:
             local_id, lmbox = config.open_local_mailbox(session)
             emails = [Email.Create(idx, local_id, lmbox)]
-            if update_string:
-                for email in emails:
-                    email.update_from_string(update_string)
             try:
                 idxps = [int(e.get_msg_info(idx.MSG_MID), 36) for e in emails]
                 idx.add_tag(session, session.config.get_tag_id('Drafts'),
                             msg_idxs=idxps, conversation=False)
             except (TypeError, ValueError, IndexError):
                 self._ignore_exception()
-            return self._edit_messages(session, idx, emails)
+            if update_string:
+                for email in emails:
+                    email.update_from_string(update_string)
+                if 'send' in self.data:
+                    return self._sendit()
+            return self._edit_messages(emails)
 
         else:
             return self._error('Nothing to do!')
 
-    def _edit_messages(self, session, idx, emails, new=True):
+    def _edit_messages(self, emails, new=True):
+        session, idx = self.session, self._idx()
         session.ui.edit_messages(emails)
         if new:
           session.ui.mark('%d message(s) created as drafts' % len(emails))
         else:
           session.ui.mark('%d message(s) edited' % len(emails))
-        self._idx().save()
-        return self._return_search_results(session, idx, emails, emails,
+        idx.save()
+        return self._return_search_results(emails,
+                                           expand=emails,
                                            new=(new and emails))
 
 
@@ -185,7 +201,7 @@ class Attach(CompositionCommand):
 
         session.ui.notify(('Attached %s to %d messages'
                            ) % (', '.join(files), len(updated)))
-        return self._return_search_results(session, idx, updated, updated)
+        return self._return_search_results(updated, expand=updated)
 
 
 class RelativeCompose(Compose):
@@ -250,7 +266,7 @@ class Reply(RelativeCompose):
             except NoFromAddressError:
                 return self._error('You must configure a From address first.')
 
-            return self._edit_messages(session, idx, [email])
+            return self._edit_messages([email])
         else:
             return self._error('No message found')
 
@@ -313,7 +329,7 @@ class Forward(RelativeCompose):
             except (TypeError, ValueError, IndexError):
                 self._ignore_exception()
 
-            return self._edit_messages(session, idx, [email])
+            return self._edit_messages([email])
         else:
             return self._error('No message found')
 
@@ -335,10 +351,18 @@ class Sendit(CompositionCommand):
         bounce_to = []
         while self.args and '@' in self.args[-1]:
             bounce_to.append(self.args.pop(-1))
+        for rcpt in (self.data.get('to', []) +
+                     self.data.get('cc', []) +
+                     self.data.get('bcc', [])):
+            bounce_to.extend(ExtractEmails(rcpt))
+
+        args = self.args[:]
+        args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
+        mids = self._choose_messages(args)
 
         # Process one at a time so we don't eat too much memory
         sent = []
-        for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
+        for email in [Email(idx, i) for i in mids]:
             try:
                 msg_mid = email.get_msg_info(idx.MSG_MID)
                 SendMail(session, [PrepareMail(email,
@@ -349,7 +373,14 @@ class Sendit(CompositionCommand):
                 session.ui.error('Failed to send %s' % email)
                 self._ignore_exception()
 
-        return self._return_search_results(session, idx, sent)
+        if 'compose' in config.get('debug', ''):
+            sys.stderr.write(('compose/Sendit: Send %s to %s (sent: %s)\n'
+                              ) % (mids, bounce_to or '(header folks)', sent))
+
+        if sent:
+          return self._return_search_results(sent, sent=sent)
+        else:
+          return self._error('Nothing was sent')
 
 
 mailpile.plugins.register_commands(Compose, Update, Attach,

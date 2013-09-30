@@ -297,6 +297,10 @@ class UrlMap:
             return self._url('/in/%s/' % tag_id, output)
         raise ValueError('Unknown tag: %s' % tag_id)
 
+    def url_sent(self, output=''):
+        """Return the URL of the Sent tag"""
+        return self.url_tag('Sent', output=output)
+
     def url_search(self, search_terms, tag=None, output=''):
         """
         Map a search query to it's short-hand URL, using Tag prefixes if

@@ -143,13 +143,17 @@ def SendMail(session, from_to_msg_tuples):
     elif (sendmail.startswith('smtp:') or
           sendmail.startswith('smtpssl:') or
           sendmail.startswith('smtptls:')):
-      host, port = sendmail.split(':', 1)[1].rsplit(':', 1)
+      host, port = sendmail.split(':', 1)[1].replace('/', '').rsplit(':', 1)
       smtp_ssl = sendmail.startswith('smtpssl')
       if '@' in host:
         userpass, host = host.rsplit('@', 1)
         user, pwd = userpass.split(':', 1)
       else:
         user = pwd = None
+
+      if 'sendmail' in session.config.get('debug', ''):
+        sys.stderr.write(('SMTP conn to: %s:%s as %s@%s\n'
+                          ) % (host, port, user, pwd))
 
       server = smtp_ssl and SMTP_SSL() or SMTP()
       server.connect(host, int(port))

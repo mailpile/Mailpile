@@ -185,8 +185,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       return self.send_file(config, path[len('/static/'):])
 
     session = Session(config)
-    session.ui = HttpUserInteraction(self)
-    session.ui.set_session(session)
+    session.ui = HttpUserInteraction(self, config)
 
     idx = session.config.index
     session.ui.html_variables = {

@@ -189,7 +189,6 @@ class SearchResults(dict):
     text = []
     count = self['start']
     expand_ids = [e.msg_idx_pos for e in (self.expand or [])]
-    print 'Wat: %s' % expand_ids
     for m in self['messages']:
       if 'message' in m:
         exp_email = self.expand[expand_ids.index(int(m['mid'], 36))]
@@ -201,6 +200,8 @@ class SearchResults(dict):
                      ) % (count, m['date'], m['short_from'], m['subject'],
                           msg_tags))
       count += 1
+    if not count:
+      text = ['(No messages found)']
     return '\n'.join(text)+'\n'
 
 

@@ -33,7 +33,7 @@ class Command:
 
   class CommandResult:
     def __init__(self, session, command, template_id, doc, result,
-                       args=[], kwargs={}):
+                       args=[], kwargs={}, status=''):
       self.session = session
       self.command = command
       self.args = args
@@ -41,9 +41,10 @@ class Command:
       self.template_id = template_id
       self.doc = doc
       self.result = result
+      self.status = status
 
     def __nonzero__(self):
-      return self.result.__nonzero__()
+      return (self.result and True or False)
 
     def as_text(self):
       if type(self.result) == type(True):
@@ -57,9 +58,9 @@ class Command:
     def as_dict(self):
       return {
         'command': self.command,
-        'command_parts': self.command.split(" "),
         'args': self.args,
         'kwargs': self.kwargs,
+        'status': self.status,
         'result': self.result,
         'elapsed': '%.3f' % self.session.ui.time_elapsed
       }
@@ -182,14 +183,15 @@ class Command:
   def _finishing(self, command, rv):
     if self.name:
        self.session.ui.finish_command()
-    return self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
-                              command.__doc__ or self.__doc__,
-                              rv, self.args, self.data)
+    result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
+                                command.__doc__ or self.__doc__,
+                                rv, self.args, self.data)
+    return result
 
   def _run(self, *args, **kwargs):
+    def command(self, *args, **kwargs):
+      return self.command(*args, **kwargs)
     try:
-      def command(self, *args, **kwargs):
-        return self.command(*args, **kwargs)
       self._starting()
       return self._finishing(command, command(self, *args, **kwargs))
     except self.RAISES:
@@ -384,6 +386,7 @@ class AddMailbox(Command):
                           'mailbox:%s=%s' % (config.nid('mailbox'), fn)):
         self._serialize('Save config', lambda: config.save())
     return True
+
 
 ###############################################################################
 
