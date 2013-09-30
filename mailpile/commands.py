@@ -22,7 +22,6 @@ class Command:
               None)  # Positional argument list
   EXAMPLES = None
   FAILURE = 'Failed: %(name)s %(args)s'
-  IS_HELP = False
   ORDER = (None, 0)
   SERIALIZE = False
   SPLIT_ARG = 10000  # A big number!
@@ -31,9 +30,6 @@ class Command:
   HTTP_CALLABLE = ('GET', )
   HTTP_POST_VARS = { }
   HTTP_QUERY_VARS = { }
-
-  # Deprecating:
-  SUBCOMMANDS = {}
 
   class CommandResult:
     def __init__(self, session, command, template_id, doc, result,
@@ -69,7 +65,7 @@ class Command:
       }
 
     def as_html(self, template=None):
-      path_parts = self.template_id.split('/')
+      path_parts = (self.template_id or 'command').split('/')
       if len(path_parts) == 1:
         path_parts.append('index')
       if template not in (None, 'html', 'as.html'):
@@ -405,9 +401,9 @@ class Help(Command):
   SYNOPSIS = ('h', 'help', 'help', '[<command-group>|variables]')
   ABOUT = 'This is Mailpile!'
   ORDER = ('Config', 9)
-  IS_HELP = True
 
   class CommandResult(Command.CommandResult):
+
     def splash_as_text(self):
       return '\n'.join([
         self.result['splash'],
@@ -416,6 +412,7 @@ class Help(Command):
         'For instructions, type `help`, press <CTRL-D> to quit.',
         ''
       ])
+
     def variables_as_text(self):
       text = []
       for group in self.result['variables']:
@@ -428,6 +425,7 @@ class Help(Command):
                             var['desc']))
         text.append('')
       return '\n'.join(text)
+
     def commands_as_text(self):
       text = ['Commands:']
       last_rank = None
@@ -444,7 +442,7 @@ class Help(Command):
           c = '  '
         else:
           c = '%s|' % c[0]
-        fmt = '    %%s%%-%d.%ds' % (width, width)
+        fmt = '  %%s%%-%d.%ds' % (width, width)
         if explanation:
           fmt += ' %-15.15s %s'
         else:
@@ -476,21 +474,24 @@ class Help(Command):
       command = self.args.pop(0)
       for cls in COMMANDS:
         name = cls.SYNOPSIS[1]
+        width = len(name)
         if name and name == command:
           order = 1
-          cmd_list = {'_main': (name, cls.SYNOPSIS, '', order)}
-          for cmd in sorted(cls.SUBCOMMANDS.keys()):
+          cmd_list = {'_main': (name, cls.SYNOPSIS[3], cls.__doc__, order)}
+          subs = [c for c in COMMANDS if c.SYNOPSIS[1].startswith(name + '/')]
+          for scls in sorted(subs):
+            sc, scmd, surl, ssynopsis = scls.SYNOPSIS[:4]
             order += 1
-            cmd_list['_%s' % cmd] = ('%s' % name,
-                                     '%s %s' % (cmd, cls.SUBCOMMANDS[cmd][1]),
-                                     '', order)
+            cmd_list['_%s' % scmd] = (scmd, ssynopsis, scls.__doc__, order)
+            width = max(len(scmd), width)
           return {
             'pre': cls.__doc__,
             'commands': cmd_list,
-            'width': len(name),
+            'width': width,
             'post': cls.EXAMPLES
           }
       return self._error('Unknown command')
+
     else:
       cmd_list = {}
       count = 0
@@ -498,7 +499,7 @@ class Help(Command):
         count += 10
         for cls in COMMANDS:
           c, name, url, synopsis = cls.SYNOPSIS[:4]
-          if cls.ORDER[0] == grp:
+          if cls.ORDER[0] == grp and '/' not in name:
             cmd_list[c or '_%s' % name] = (name, synopsis, cls.__doc__,
                                            count + cls.ORDER[1])
       return {
@@ -507,7 +508,18 @@ class Help(Command):
         'index': self._idx()
       }
 
-  def help_vars(self):
+  def _starting(self): pass
+  def _finishing(self, command, rv):
+    return self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
+                              command.__doc__ or self.__doc__, rv)
+
+
+class HelpVars(Help):
+  """Print help on Mailpile variables"""
+  SYNOPSIS = (None, 'help/variables', 'help/variables', None)
+  ORDER = ('Config', 9)
+
+  def command(self):
     config = self.session.config
     result = []
     for cat in config.CATEGORIES.keys():
@@ -528,7 +540,13 @@ class Help(Command):
     result.sort(key=lambda k: config.CATEGORIES[k['category']][0])
     return {'variables': result}
 
-  def help_splash(self):
+
+class HelpSplash(Help):
+  """Print Mailpile splash screen"""
+  SYNOPSIS = (None, 'help/splash', 'help/splash', None)
+  ORDER = ('Config', 9)
+
+  def command(self):
     http_worker = self.session.config.http_worker
     if http_worker:
       http_url = 'http://%s:%s/' % http_worker.httpd.sspec
@@ -538,16 +556,6 @@ class Help(Command):
       'splash': self.ABOUT,
       'http_url': http_url,
     }
-
-  def _starting(self): pass
-  def _finishing(self, command, rv):
-    return self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
-                              command.__doc__ or self.__doc__, rv)
-
-  SUBCOMMANDS = {
-    'variables': (help_vars, ''),
-    'splash': (help_splash, ''),
-  }
 
 
 def GetCommand(name):
@@ -583,7 +591,7 @@ def Action(session, opt, arg, data=None):
 COMMANDS = [
   Optimize, Rescan, RunWWW, UpdateStats,
   ConfigPrint, ConfigSet, ConfigUnset, AddMailbox,
-  Output, Help
+  Output, Help, HelpVars, HelpSplash
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
 

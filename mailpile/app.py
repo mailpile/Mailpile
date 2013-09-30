@@ -36,7 +36,7 @@ from urlparse import parse_qs, urlparse
 import lxml.html
 
 import mailpile.util
-from mailpile.commands import COMMANDS, Action, Help, Load, Rescan
+from mailpile.commands import COMMANDS, Action, Help, HelpSplash, Load, Rescan
 from mailpile.vcard import SimpleVCard
 from mailpile.mailutils import *
 from mailpile.httpd import *
@@ -804,7 +804,7 @@ def Main(args):
       session.interactive = session.ui.interactive = True
       config.prepare_workers(session, daemons=True)
       Load(session, '').run(quiet=True)
-      session.ui.display_result(Help(session, 'Help', ['splash']).run())
+      session.ui.display_result(HelpSplash(session, 'help', []).run())
       Interact(session)
 
   except KeyboardInterrupt:

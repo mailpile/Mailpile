@@ -32,6 +32,10 @@
          <li><a href="./att:{{att.count}}" type="{{att.mimetype}}">{{att.filename}}</a>({{att.mimetype}} {{att.length}} bytes)</li>
        {% endfor %}
        </ul>
+     <a href="/message/reply/={{message.idx}}" class="button-secondary"><span class="icon-reply"></span> Reply</a> 
+     <a href="/message/forward/={{message.idx}}" class="button-secondary"><span class="icon-forward"></span> Forward</a> 
+     <a href="/message/archive/={{message.idx}}" class="button-secondary"><span class="icon-archive"></span> Archive</a>
+     <a href="/message/remove/={{message.idx}}" class="button-secondary"><span class="icon-trash"></span> Delete</a>
      {% endif %}
      </td>
    </tr>
