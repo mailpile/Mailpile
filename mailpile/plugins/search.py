@@ -241,16 +241,20 @@ class Search(Command):
     session, idx = self.session, self._idx()
     session.searched = search or []
 
-    if self.args and self.args[0].startswith('@'):
+    args = self.args[:]
+    for q in self.data.get('q', []):
+      args.extend(q.split())
+
+    if args and args[0].startswith('@'):
       try:
-        start = int(self.args.pop(0)[1:])-1
+        start = int(args.pop(0)[1:])-1
       except ValueError:
         raise UsageError('Weird starting point')
     else:
       start = 0
 
     # FIXME: Is this dumb?
-    for arg in self.args:
+    for arg in args:
       if ':' in arg or (arg and arg[0] in ('-', '+')):
         session.searched.append(arg.lower())
       else:
