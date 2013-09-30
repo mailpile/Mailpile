@@ -130,6 +130,8 @@ def PrepareMail(email, sender=None, rcpts=None):
 
 def SendMail(session, from_to_msg_tuples):
   for frm, to, msg in from_to_msg_tuples:
+    if 'sendmail' in session.config.get('debug', ''):
+      sys.stderr.write('SendMail: from %s, to %s\n' % frm, to)
     sm_write = sm_close = lambda: True
     sendmail = session.config.get_sendmail(frm, to).strip()
     session.ui.mark('Connecting to %s' % sendmail)
