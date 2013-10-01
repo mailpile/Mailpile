@@ -32,7 +32,14 @@ class TestUI(MailPileUnittest):
     self.assertEquals(out, ['', ''])
     with capture() as out:
       self.mp._ui.unblock()
-    self.assertEquals(out, ['', '\nurgent                                                                         \r\nresult                                                                         \r\nerror                                                                          \r\nnotify                                                                         \r\nwarning                                                                        \r\nprogress                                                                       \rdebug                                                                          \r\nall                                                                            \r'])
+    self.assertEquals(len(out), 2)
+    self.assertEquals(out[0], '')
+    # Check stripped output
+    output = [x.strip() for x in out[1].split('\r')]
+    self.assertEquals(output, ['urgent', 'result', 'error', 'notify', 'warning', 'progress', 'debug', 'all', ''])
+    # Progress has \r in the end instead of \n
+    progress_str = [x for x in out[1].split('\r\n') if 'progress' in x][0].strip()
+    self.assertEquals(progress_str, ''.join(['progress', ' '*71, '\rdebug']))
 
   def test_ui_clear_log(self):
     self.mp._ui.clear_log()
