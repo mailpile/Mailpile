@@ -29,15 +29,39 @@
 
 <body>
 
+<div id="messages">
+	<div class="error clearfix">
+		<span class="message-text"></span>
+		<abbr title="Close" class="message-close">X</abbr>
+	</div>
+	<div class="warning clearfix">
+		<span class="message-text"></span>
+		<abbr title="Close" class="message-close">X</abbr>
+	</div>
+	<div class="debug clearfix">
+		<span class="message-text"></span>
+		<abbr title="Close" class="message-close">X</abbr>
+	</div>
+	<div class="info clearfix">
+		<span class="message-text"></span>
+		<abbr title="Close" class="message-close">X</abbr>
+	</div>
+	<div class="success clearfix">
+		<span class="message-text"></span>
+		<abbr title="Close" class="message-close">X</abbr>
+	</div>
+</div>
+
 <div id="header" class="clearfix">
-	  <a href=""><img class="logo" src="/static/img/logo-color.svg"></a>
-	  <h1>{{name}}'s<small><b>mail</b>pile of <b>{{mailpile_size}}</b> emails</small></h1>
+  <a href="/"><img class="logo" src="/static/img/logo-color.svg"></a>
+  <h1>{{name}}'s<small><b>mail</b>pile of <b>{{mailpile_size}}</b> emails</small></h1>
 	<nav>
 		<ul>
-			<li><a href="/contact/list/"><span class="icon-user"></span>Contacts</a></li>
-			<li><a href="/tag/list/"><span class="icon-tag"></span>Tags</a></li>
-			<li><a href="/settings/"><span class="icon-settings"></span>Settings</a></li>
-			<li><a href="/static/donate/"><span class="icon-donate"></span>Donate</a></li>
+		  <li><a href="/message/compose/"><span class="icon-compose"></span> Compose</a></li>
+			<li><a href="/contact/list/"><span class="icon-user"></span> Contacts</a></li>
+			<li><a href="/tag/list/"><span class="icon-tag"></span> Tags</a></li>
+			<li><a href="/static/donate/"><span class="icon-donate"></span> Donate</a></li>
+			<li><a href="/settings/"><span class="icon-settings"></span> Settings</a></li>
 		</ul>
 	</nav>
 </div>
@@ -52,9 +76,9 @@
 
 	<div id="sidebar">
 		<nav>
-			<ul>
-				<li {% if command == "message/compose" %} class="navigation-on" {% endif %}><a id="button-compose" onclick="compose();return false;" href="/message/compose/"><span class="icon-compose"></span> Compose <small>{{mailpile("tag/list", "Drafts").result.tags.0.all}} Drafts</small></a></li>
-			</ul>
+      <ul>
+        <li><a href="/in/Drafts"><span class="icon-tag"></span> {{mailpile("tag/list", "Drafts").result.tags.0.all}} Drafts</a></li>
+      </ul>
 			{% for t in high_tags, user_tags, low_tags %}
 			<ul>{% for tag in t.result.tags %}
 				  <li><a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}"><span class="icon-tag"></span> {{tag.name}}

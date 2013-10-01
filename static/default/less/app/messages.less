@@ -1,5 +1,13 @@
 /* Messages - Error, Warning, Debug, Info, Success */
 
+  #messages {
+    width: 100%;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    z-index: 1000;
+  }
+
 	#messages div {
 		margin: 0px;
 		padding: 10px 10px 10px 20px;
@@ -9,6 +17,7 @@
 		color: @white;
 		border-bottom: 1px solid @gray;
 		background-color: @white;
+		display: none;
 	}
 
 	#messages span.message-text {

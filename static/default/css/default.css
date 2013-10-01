@@ -5133,6 +5133,13 @@ label span.form_error {
 }
 /* App */
 /* Messages - Error, Warning, Debug, Info, Success */
+#messages {
+  width: 100%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 1000;
+}
 #messages div {
   margin: 0px;
   padding: 10px 10px 10px 20px;
@@ -5142,6 +5149,7 @@ label span.form_error {
   color: #ffffff;
   border-bottom: 1px solid #b3b3b3;
   background-color: #ffffff;
+  display: none;
 }
 #messages span.message-text {
   width: 90%;
@@ -5860,27 +5868,27 @@ text {
   top: 10px;
   right: 15px;
 }
-#header nav ul {
-  display: inline-block;
-}
 #header nav ul li {
-  display: inline-block;
   float: left;
   margin-left: 30px;
   text-align: center;
 }
-#header nav a {
+#header nav ul li a {
+  width: 100%;
+  height: 100%;
+  display: block;
   font-size: 14px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: #4d4d4d;
 }
-#header nav a:hover {
+#header nav ul li a:hover {
   color: #3a6b8c;
 }
 #header nav ul li a span {
   display: block;
   font-size: 36px;
+  line-height: 36px;
 }
 /* Container */
 #container {

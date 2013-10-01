@@ -15,7 +15,7 @@
 
 /* Header */
 
-	#header { 
+	#header {
 		width: 100%;
 		min-width: 700px;
 		height: 74px;
@@ -60,34 +60,32 @@
 		top: 10px;
 		right: 15px;	
 	}
-
-	#header nav ul {
-		display: inline-block;	
-	}
 	
 	#header nav ul li {
-		display: inline-block;
 		float: left;
 		margin-left: 30px;
 		text-align: center;
 	}
 	
-	#header nav a {
+	#header nav ul li a {
+	  width: 100%;
+	  height: 100%;
+	  display: block;
 		font-size: 14px;
 		font-family: @text-font-family-bold;
 		font-weight: normal;
 		color: @grayDark;
 	}
 	
-	#header nav a:hover {
+	#header nav ul li a:hover {
 		color: @blue;
 	} 
 	
 	#header nav ul li a span {
 		display: block;
 		font-size: 36px;
+		line-height: 36px;
 	}
-	
 	
 	
 /* Container */

@@ -284,8 +284,53 @@ var keybindings = [
 
 var mailpile = new MailPile();
 
+
+var statusMessages = {
+  "success":"Success, you sly dog you, keep killin it with those ladies!",
+  "info":"Hi, hi, hi, I am info update",
+  "debug":"What kind of bug is a debug, is it a poisonous bug?",
+  "warning":"This here be a warnin to yuh, just a warnin mind you!",
+  "error":"Whoa Cowboy, you've mozyed on over to an error that you ain't supposed to have!"    
+}
+
+// Return corresponding height value
+var statusHeaderPadding = function() {
+	if ($('#header').css('position') === 'fixed') {
+		var padding = $('#header').height() + 50;
+	}
+	else {
+		var padding = 0;
+	}
+	console.log(padding);
+	
+	return padding;
+};
+
+var showMessage = function(type) {
+  var message = $('#messages').find('div.' + type);
+  message.find('span.message-text').html(statusMessages[type]),
+  message.fadeIn(function(){
+    // Set Padding Top for #content
+	  $('#header').css('padding-top', statusHeaderPadding());    
+  });
+  return false;
+}
+
+
 // Non-exposed functions: www, setup
 $(document).ready(function() {
+
+
+  /* Messages */
+	$('.message-close').on('click', function() {
+		$(this).parent().fadeOut(function() {
+			// Update Padding Top for #content
+			$('#header').css('padding-top', statusHeaderPadding());
+		});
+	});
+	  
+
+
 
 	/* Hide Various Things */
 	$('#search-params, #bulk-actions').hide();
@@ -379,9 +424,16 @@ $(document).ready(function() {
 
 
 	/* OLD UNUSED STUFF */
-	function focus(eid) {var e = document.getElementById(eid);e.focus();
-	if (e.setSelectionRange) {var l = 2*e.value.length;e.setSelectionRange(l,l)}
-	else {e.value = e.value;}}
+	function focus(eid) {
+	  var e = document.getElementById(eid);e.focus();
+	  
+	  if (e.setSelectionRange) {
+	    var l = 2*e.value.length;e.setSelectionRange(l,l)
+    }
+	  else {
+	    e.value = e.value;
+    }
+  }
 
 
   /* Compose - Adding Recipients */
@@ -423,8 +475,9 @@ $(document).ready(function() {
           $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
         }
       });
-    
+
     });
+
   }
 
 
@@ -435,11 +488,23 @@ $(document).ready(function() {
 			type		  : 'POST',
 			data      : $('#form-compose').serialize(),
 			dataType	: 'json',
-		  	success : function(result) {							  	
+		  	success : function(result) {
+
           console.log('Hellooo AJAX town');
           console.log(result);
-		  	}		
-		});						
+
+          // Set Everything to Empty
+          $('#compose-to, #compose-cc, #compose-bcc').select2('val', '');
+          $('#compose-subject').val('');
+          $('#compose-body').val('');
+          $('#compose-attachments-list').html('');
+
+          // Scroll Up
+
+          // Needs proper state handling from API response
+          showMessage('success');
+		  	}
+		});
 	});
 
 });	

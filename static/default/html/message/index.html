@@ -3,6 +3,8 @@
 {% block content %}
 {% include("partials/sub_nav_view.html") %}
 
+{% if result %}
+
 <table class="pile-results" id="pile-results">
   <tbody>
 
@@ -14,8 +16,9 @@
         <ul class="message-headers">
           <li><b>Date:</b> {{message.date}}</li>
           <li><b>From:</b> {{message.from|e}}</li>
-          <li><b>To:</b> {{message.message.headers.To|e}}</li>
-          <li><b>Cc:</b> {{message.message.headers.Cc|e}}</li>
+          <li><b>To:</b> {% for toaddr in message.to %}<a class="emailaddr" href="/contact/{{toaddr}}/" style="background: #eee; border-radius: 3px; padding: 2px; padding-left: 4px; padding-right: 4px; font-weight: normal;">{{toaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+          <li><b>Cc:</b> {% for ccaddr in message.cc %}<a class="emailaddr" href="/contact/{{ccaddr}}/" style="background: #eee; border-radius: 3px; padding: 2px; padding-left: 4px; padding-right: 4px; font-weight: normal;">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+          <li><b>Bcc:</b> {% for bccaddr in message.bcc %}<a class="emailaddr" href="/contact/{{bccaddr}}/" style="background: #eee; border-radius: 3px; padding: 2px; padding-left: 4px; padding-right: 4px; font-weight: normal;">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
           <li><b>Subject:</b> {{message.subject}}</li>
         </ul>
        
@@ -58,6 +61,16 @@
   {% endfor %}
 </tbody>
 </table>
+
+{% else %}
+
+<div id="error" class="content-normal">
+  <h3>Oops, you've found a quirk!</h3>
+  <p>For some reason, we were unable to find the message you requested. This means the message was either deleted or it is a bug with Mailpile.</p>
+  <p>If you think this is a bug, please file <a href="https://github.com/pagekite/Mailpile/issues" target="_blank">a bug report</a>. Have a good day :)</p>
+</div>
+
+{% endif %}
 
 {% include("partials/details_search_speed.html") %}
 {% endblock %}
