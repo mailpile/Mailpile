@@ -17,13 +17,13 @@
   <form id="pile-results-form" action="" method="POST">
     <input type='hidden' name='csrf' value='{csrf}' />
     <table class="pile-results" id="pile-results">
-      <tbody>
+    <tbody>
       {% for message in result.0.messages %}
       {% if not message.message %}
         {% include("partials/search_item.html") %}
       {% endif %}
       {% endfor %}
-      </tbody>
+    </tbody>
     </table>
     <div id="pile-bottom" class="clearfix">
       <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>

@@ -8,9 +8,9 @@
   <tbody>
     {% for message in result.0.messages %}
     {% if message.message %}
+    {% if not message.editing_string %}
 		<tr>
       <td class="message-body" colspan="4">
-      {% if not message.editing_string %}
       <div class="message-headers">
         <ul>
           <li><b>Date:</b> {{message.date}}</li>
@@ -25,28 +25,31 @@
           <li><b>Subject:</b> {{message.subject}}</li>
         </ul>
       </div>
-      <div class="message-body">
+      <div class="message-body">      
+      {% if message.message.html_parts %}
+      {% for part in message.message.html_parts %}
+         <p class="html-part-{type}">{{part.data|safe}}</p>
+      {% endfor %}
+      {% else %}
       {% for part in message.message.text_parts %}
          <p class="text-part-{type}">{{part.data|replace("\n", "<br/>")}}</p>
        {% endfor %}
-       {% for part in message.message.html_parts %}
-         <p class="html-part-{type}">{{part.data|safe}}</p>
-       {% endfor %}
-       </div>
-       <div class="message-attachments">
-       <ul>
+      {% endif %}
+      </div>
+      <div class="message-attachments">
+      <ul>
          {% for att in message.message.attachments %}
-           <li><a href="./att:{{att.count}}" type="{{att.mimetype}}">{{att.filename}}</a>({{att.mimetype}} {{att.length}} bytes)</li>
+         <li><a href="./att:{{att.count}}" type="{{att.mimetype}}">{{att.filename}}</a>({{att.mimetype}} {{att.length}} bytes)</li>
          {% endfor %}
-         </ul>
-       </div>
-       <a href="/message/reply/={{message.idx}}" class="button-secondary"><span class="icon-reply"></span> Reply</a> 
-       <a href="/message/forward/={{message.idx}}" class="button-secondary"><span class="icon-forward"></span> Forward</a> 
-       <a href="/message/archive/={{message.idx}}" class="button-secondary"><span class="icon-archive"></span> Archive</a>
-       <a href="/message/remove/={{message.idx}}" class="button-secondary"><span class="icon-trash"></span> Delete</a>
-     {% endif %}
-    </td>
+      </ul>
+      </div>
+         <a href="/message/reply/={{message.mid}}" class="button-secondary"><span class="icon-reply"></span> Reply</a> 
+         <a href="/message/forward/={{message.mid}}" class="button-secondary"><span class="icon-forward"></span> Forward</a> 
+         <a href="/message/archive/={{message.mid}}" class="button-secondary"><span class="icon-archive"></span> Archive</a>
+         <a href="/message/remove/={{message.mid}}" class="button-secondary"><span class="icon-trash"></span> Delete</a>
+      </td>
     </tr>
+    {% endif %}
     {% else %}
       {% include("partials/search_item.html") %}
     {% endif %}
@@ -55,10 +58,7 @@
 </table>
 {% include("partials/details_search_speed.html") %}
 {% else %}
-<div id="error" class="content-normal">
-  <h3>Oops, you've found a quirk!</h3>
-  <p>For some reason, we were unable to find the message you requested. This means the message was either deleted or it is a bug with Mailpile.</p>
-  <p>If you think this is a bug, please file <a href="https://github.com/pagekite/Mailpile/issues" target="_blank">a bug report</a>. Have a good day :)</p>
-</div>
+{% set error_title = "message_missing" %}
+{% include("partials/errors_content.html") %}
 {% endif %}
 {% endblock %}

@@ -339,9 +339,11 @@ $(document).ready(function() {
 	$('#qbox').bind("focus", function(key) {	
 		$('#search-params').slideDown('fast');
 	});
+	
 	$('#qbox').bind("blur", function(key) {	
 		$('#search-params').slideUp('fast');
 	});
+	
 	for (item in keybindings) {
 		if (item[1] == "global") {
 			Mousetrap.bindGlobal(item[0], item[2]);
@@ -354,24 +356,18 @@ $(document).ready(function() {
 	$('.bulk-action').on('click', function(e) {
 
 		e.preventDefault();
-		
 		var checkboxes = $('#pile-results input[type=checkbox]');
 		var action = $(this).attr('href');
 		var count = 0;
 		
 		$.each(checkboxes, function() {
-
 			if ($(this).val() === 'selected') {
-				console.log('This is here ' + $(this).attr('name'));
-				
+				console.log('This is here ' + $(this).attr('name'));				
 				count++;
 			}
-			
 		});
 		
-		
 		alert(count + ' items selected to "' + action.replace('#', '') + '"');
-
 	});
 
 
@@ -391,6 +387,7 @@ $(document).ready(function() {
 		.val('selected')
 		.prop('checked', true);	
 	}
+
 
 	var pileActionUnselect = function(item) {
 
@@ -412,28 +409,14 @@ $(document).ready(function() {
 		.prop('checked', false);
 	}
 
-	$('#pile-results').on('click', 'tr', function() {		
-		if ($(this).data('state') === 'selected') {
+	$('#pile-results').on('click', 'tr', function(e) {	
+		if (e.target.href === undefined && $(this).data('state') === 'selected') {
 			pileActionUnselect($(this));
 		}
-		else {
+		else if (e.target.href === undefined) {
 			pileActionSelect($(this));
 		}
 	});
-
-
-
-	/* OLD UNUSED STUFF */
-	function focus(eid) {
-	  var e = document.getElementById(eid);e.focus();
-	  
-	  if (e.setSelectionRange) {
-	    var l = 2*e.value.length;e.setSelectionRange(l,l)
-    }
-	  else {
-	    e.value = e.value;
-    }
-  }
 
 
   /* Compose - Adding Recipients */
