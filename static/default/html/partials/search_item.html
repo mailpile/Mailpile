@@ -6,9 +6,9 @@
     <a href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
   </td>
   <td class="date" valign="top">
-    <a href="/search/dates:{date}">{{message.friendly_date}}</a>
+    <a href="/search/dates:{{message.date}}">{{message.friendly_date}} at {{message.shorttime}}</a>
   </td>
   <td class="checkbox" valign="top">
-    <input type="checkbox" name="msg_{mid}" value="normal">
+    <input type="checkbox" name="msg_{{message.mid}}" value="normal">
   </td>
 </tr>
