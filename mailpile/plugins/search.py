@@ -24,8 +24,8 @@ class SearchResults(dict):
   def _explain_msg_summary(self, info):
     msg_ts = long(info[6], 36)
     days_ago = (time.time() - msg_ts) / (24*3600)
-    msg_date = datetime.date.fromtimestamp(msg_ts)
-    date = '%4.4d-%2.2d-%2.2d' % (msg_date.year, msg_date.month, msg_date.day)
+    msg_date = datetime.datetime.fromtimestamp(msg_ts)
+    date = msg_date.strftime("%Y-%m-%d")
     urlmap = UrlMap(self.session)
     expl = {
       'mid': info[0],
@@ -35,6 +35,8 @@ class SearchResults(dict):
       'subject': info[4],
       'snippet': info[5],
       'timestamp': msg_ts,
+      'shorttime': msg_date.strftime("%H:%M"),
+      'time': msg_date.strftime("%H:%M:%S"),
       'date': date,
       'friendly_date': _friendly_date(days_ago, date),
       'tag_ids': info[7],
@@ -242,7 +244,7 @@ class Search(Command):
       for result in (self.result or []):
         for msg in result.get('messages', []):
           msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
-                                        ['t_%s' % t.lower() for t in msg['tags']])
+                                        ['in_%s' % t.lower() for t in msg['tags']])
       self.fixed_up = True
       return self
     def as_text(self):
