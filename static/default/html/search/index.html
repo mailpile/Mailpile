@@ -18,25 +18,12 @@
     <input type='hidden' name='csrf' value='{csrf}' />
     <table class="pile-results" id="pile-results">
       <tbody>
-        {% for message in result.0.messages %}
-        <tr class="result {{message.even_odd}} {% if message.is_editable %}is_editable{% endif %} {{message.tag_classes}}" data-state="normal">
-        {% if not message.message %}
-         <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
-           <a href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.short_from}}</a>
-         </td>
-         <td class="subject">
-           <a href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
-         </td>
-         <td class="date" valign="top">
-           <a href="/search/dates:{date}">{{message.friendly_date}}</a>
-         </td>
-         <td class="checkbox" valign="top">
-           <input type="checkbox" name="msg_{idx}" value="normal">
-         </td>
-         {% endif %}
-       </tr>
-    {% endfor %}
-    </tbody>
+      {% for message in result.0.messages %}
+      {% if not message.message %}
+        {% include("partials/search_item.html") %}
+      {% endif %}
+      {% endfor %}
+      </tbody>
     </table>
     <div id="pile-bottom" class="clearfix">
       <a href="#" class="button-primary">Previous</a> <a href="#" class="button-primary">Next</a>
