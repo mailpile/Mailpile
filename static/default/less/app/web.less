@@ -102,7 +102,7 @@
 /* Sidebar */
 
 	#sidebar {
-		width: 22%;	
+		width: 20%;	
 		min-width: 225px;
 		display: table-cell;
 		background: @grayLight;
@@ -116,7 +116,7 @@
 	}
 	
 	#sidebar nav ul {
-		margin: 12px;
+		margin: 10px 20px;
 	}
 
 	#sidebar nav ul li {
@@ -139,8 +139,7 @@
 	#sidebar li.navigation-on a small {
 		color: @grayDark;
 	}
-	
-	
+
 	#sidebar a {
 		display: block;
 		padding: 15px 0px;
@@ -166,29 +165,10 @@
 	}
 
 
-	#button-compose span.icon-compose {
-		position: relative;
-		top: 15px;
-		left: 0px;
-	}
-
-	#button-compose small {
-		display: block;
-		font-size: 12px;
-		line-height: 12px;
-		color: @gray;
-		position: relative;
-		top: 5px;
-		left: 35px;
-	}
-
-
-
-
 /* Content */	
 	
 	#content {
-		width: 78%;
+		width: 80%;
 		min-width: 575px;
 		display: table-cell;
 		box-sizing: border-box;
@@ -411,7 +391,7 @@
 	#pile-results {
 		width: 100%;
 	}
-	
+
 	#pile-results tr.result:hover {
 		background: lighten(@yellow, 35%);
 	}
@@ -423,19 +403,33 @@
 		font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 14px;
 	}
-	
+
 	#pile-results td.from {
+	  min-width: 150px;
 		padding-left: 15px;
+		word-break: break-word;
 	}
 	
 	#pile-results td.subject {
-		width: ;
-		overflow: hidden;
+		min-width: 275px;
+		word-break: break-word;		
 	}
-	
-	
+
 	#pile-results tr td a {
 		font-size: 14px;
+		color: @grayDark;
+	}
+	
+	#pile-results tr.in_new td a {
+  	color: @red;
+	}
+
+	#pile-results tr.result-on {
+		background: @grayLight;
+	}
+	
+	#pile-results tr.result-on:hover {
+		background: darken(@grayLight, 5%);
 	}
 	
 
@@ -458,15 +452,6 @@
 	}
 
 
-	// Results
-	#pile-results tr.result-on {
-		background: @grayLight;
-	}
-	
-	#pile-results tr.result-on:hover {
-		background: darken(@grayLight, 5%);
-	}
-
 
 /* Thread */	
 
@@ -478,11 +463,12 @@
   	
 	}
 	
-	
 	.message-attachments {
   	
 	}
-	
+
+
+
 /* File Browser */
 
 	.item-file {

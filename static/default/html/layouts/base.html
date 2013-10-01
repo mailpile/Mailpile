@@ -66,18 +66,11 @@
 	</nav>
 </div>
 
-<ul id="navigation">
-{% for href, id, caption in navigation_bar %}
-  <li><a href="{{ href|e }}">{{ caption|e }}</a> {% if id == active_page %} YOOOOO {% endif %}</li>
-{% endfor %}
-</ul>
-
 <div id="container">
-
 	<div id="sidebar">
 		<nav>
       <ul>
-        <li><a href="/in/Drafts"><span class="icon-tag"></span> {{mailpile("tag/list", "Drafts").result.tags.0.all}} Drafts</a></li>
+        <li><a href="/in/Drafts/"><span class="icon-tag"></span> {{mailpile("tag/list", "Drafts").result.tags.0.all}} Drafts</a></li>
       </ul>
 			{% for t in high_tags, user_tags, low_tags %}
 			<ul>{% for tag in t.result.tags %}
@@ -104,7 +97,6 @@
 
 	<!-- START CONTENT -->
 	<div id="content">
-
 		{% block content %}
 			{{results}}
 		{% endblock %}
@@ -118,7 +110,6 @@
       <b>command_parts:</b> {{ command_parts }}<br>
       <b>args:</b> {{ args }}<br>
       <b>kwargs:</b> {{ kwargs }}
-		
 		  {{logged}}
 		</div>
 
@@ -130,7 +121,6 @@
 		</div>
 	</div>
 	<!-- END CONTENT -->
-
 	<div class="clearfix"></div>
 
 </div>
