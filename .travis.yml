@@ -1,15 +1,10 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
-  - "3.2"
-  - "3.3"
 install:
-  - pip install pep8 pyflakes Jinja2 lxml http://sourceforge.net/projects/py-gnupg/files/GnuPGInterface/0.3.2/GnuPGInterface-0.3.2.tar.gz --use-mirrors
-# requirements contain uninstallable version "Jinja2==dev", use 2.7.1
-#  - pip install -r requirements.txt --use-mirrors
+  - pip install coverage coveralls nose Jinja2==2.7.1 lxml==2.3.2 python-gnupg==0.3.5 --use-mirrors
 script:
-  - "pyflakes mailpile"
-  - "pep8 --ignore=E111,E501,E121 mailpile"
-  - "scripts/mailpile-test.py"
-
+  - "python setup.py install"
+  - "nosetests tests --with-coverage --cover-package=mailpile"
+after_success:
+  - "coveralls"
