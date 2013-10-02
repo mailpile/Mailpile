@@ -218,6 +218,20 @@ def gpg_open(filename, recipient, mode):
     return fd
 
 
+def dict_merge(*dicts):
+    """
+    Merge one or more dicts into one.
+
+    >>> d = dict_merge({'a': 'A'}, {'b': 'B'}, {'c': 'C'})
+    >>> sorted(d.keys()), sorted(d.values())
+    (['a', 'b', 'c'], ['A', 'B', 'C'])
+    """
+    final = {}
+    for d in dicts:
+        final.update(d)
+    return final
+
+
 # Indexing messages is an append-heavy operation, and some files are
 # appended to much more often than others.  This implements a simple
 # LRU cache of file descriptors we are appending to.
