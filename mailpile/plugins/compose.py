@@ -12,7 +12,7 @@ from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
-from mailpile.plugins.search import Search, SearchResults
+from mailpile.plugins.search import Search, SearchResults, View
 
 
 class EditableSearchResults(SearchResults):
@@ -37,18 +37,29 @@ class CompositionCommand(Search):
         'body': '..',
         'send': 'Send the message?',
     }
+    BLANK_TAG = 'Blank'
+    DRAFT_TAG = 'Drafts'
+    SENT_TAG = 'Sent'
 
-    class CommandResult(Search.CommandResult):
-        def as_html(self, *args, **kwargs):
-            for result in (self.result or []):
-                if result.sent_messages:
-                    url = UrlMap(self.session).url_sent()
-                    raise UrlRedirectException(url)
-                if result.new_messages:
-                    mid = result.new_messages[0].msg_mid()
-                    url = UrlMap(self.session).url_compose(mid)
-                    raise UrlRedirectException(url)
-            return Search.CommandResult.as_html(self, *args, **kwargs)
+    def _tag_emails(self, emails, tag):
+        try:
+            idx = self._idx()
+            idx.add_tag(self.session,
+                        self.session.config.get_tag_id(tag),
+                        msg_idxs=[e.msg_idx_pos for e in emails],
+                        conversation=False)
+        except (TypeError, ValueError, IndexError):
+            self._ignore_exception()
+
+    def _untag_emails(self, emails, tag):
+        try:
+            idx = self._idx()
+            idx.remove_tag(self.session,
+                           self.session.config.get_tag_id(tag),
+                           msg_idxs=[e.msg_idx_pos for e in emails],
+                           conversation=False)
+        except (TypeError, ValueError, IndexError):
+            self._ignore_exception()
 
     def _get_emails_and_update_string(self, idx):
         # Split the argument list into files and message IDs
@@ -87,54 +98,6 @@ class CompositionCommand(Search):
                                                   expand=expand)
         return [session.displayed]
 
-
-class Compose(CompositionCommand):
-    """(Continue) Composing an e-mail"""
-    SYNOPSIS = ('C', 'compose', 'message/compose', '[<messages>]')
-    ORDER = ('Composing', 0)
-    HTTP_CALLABLE = ('GET', 'POST', 'UPDATE')
-    HTTP_QUERY_VARS = {
-        'mid': 'metadata-ID',
-    }
-    HTTP_POST_VARS = CompositionCommand.UPDATE_STRING_DATA
-    RAISES = (UrlRedirectException, )
-
-    def _sendit(self):
-        Sendit(self.session, arg=self.args, data=self.data).run()
-        return [self.session.displayed]
-
-    def command(self, create=True):
-        session, config, idx = self.session, self.session.config, self._idx()
-        emails, update_string = self._get_emails_and_update_string(idx)
-
-        if emails:
-            if update_string:
-                for email in emails:
-                    email.update_from_string(update_string)
-                session.ui.notify('%d message(s) updated' % len(emails))
-                if 'send' in self.data:
-                    return self._sendit()
-            return self._edit_messages(emails, new=False)
-
-        elif create:
-            local_id, lmbox = config.open_local_mailbox(session)
-            emails = [Email.Create(idx, local_id, lmbox)]
-            try:
-                idxps = [int(e.get_msg_info(idx.MSG_MID), 36) for e in emails]
-                idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                            msg_idxs=idxps, conversation=False)
-            except (TypeError, ValueError, IndexError):
-                self._ignore_exception()
-            if update_string:
-                for email in emails:
-                    email.update_from_string(update_string)
-                if 'send' in self.data:
-                    return self._sendit()
-            return self._edit_messages(emails)
-
-        else:
-            return self._error('Nothing to do!')
-
     def _edit_messages(self, emails, new=True):
         session, idx = self.session, self._idx()
         session.ui.edit_messages(emails)
@@ -148,17 +111,67 @@ class Compose(CompositionCommand):
                                            new=(new and emails))
 
 
-class Update(Compose):
+class Draft(View):
+    """Edit an existing draft"""
+    SYNOPSIS = ('D', 'draft', 'message/draft', '[<messages>]')
+    ORDER = ('Composing', 0)
+    HTTP_QUERY_VARS = {
+       'mid': 'metadata-ID'
+    }
+
+    # FIXME: This command should raise an error if the message being
+    #        displayed is not editable.
+
+
+class Compose(CompositionCommand):
+    """Create a new blank e-mail for editing"""
+    SYNOPSIS = ('C', 'compose', 'message/compose', None)
+    ORDER = ('Composing', 0)
+    HTTP_CALLABLE = ('POST', )
+    HTTP_POST_VARS = CompositionCommand.UPDATE_STRING_DATA
+
+    def command(self):
+        session, idx = self.session, self._idx()
+        emails, update_string = self._get_emails_and_update_string(idx)
+
+        if emails:
+            return self._error('Please use update for editing messages')
+
+        else:
+            local_id, lmbox = session.config.open_local_mailbox(session)
+            emails = [Email.Create(idx, local_id, lmbox)]
+            if self.BLANK_TAG:
+                self._tag_emails(emails, self.BLANK_TAG)
+            if update_string:
+                for email in emails:
+                    email.update_from_string(update_string)
+            return self._edit_messages(emails, new=True)
+
+
+class Update(CompositionCommand):
     """Update message from a file or HTTP upload."""
     SYNOPSIS = ('u', 'update', 'message/update', '<messages> <<filename>')
     ORDER = ('Composing', 1)
     HTTP_CALLABLE = ('POST', 'UPDATE')
+    HTTP_POST_VARS = CompositionCommand.UPDATE_STRING_DATA
 
-    def command(self):
-        # This actually just falls back to Compose, because Compose
-        # knows how to edit messages directly.
-        # FIXME: Maybe we lose this endpoint?
-        return Compose.command(self, create=False)
+    def command(self, create=True):
+        session, config, idx = self.session, self.session.config, self._idx()
+        emails, update_string = self._get_emails_and_update_string(idx)
+
+        if emails and update_string:
+            print 'HMM: %s / %s' % (self.data, emails)
+            for email in emails:
+                email.update_from_string(update_string)
+            session.ui.notify('%d message(s) updated' % len(emails))
+            if self.BLANK_TAG:
+                self._untag_emails(emails, self.BLANK_TAG)
+            if self.DRAFT_TAG:
+                self._tag_emails(emails, self.DRAFT_TAG)
+            return self._edit_messages(emails, new=False)
+
+        else:
+            return self._error('Nothing to do!')
 
 
 class Attach(CompositionCommand):
@@ -255,13 +268,8 @@ class Reply(RelativeCompose):
                                      msg_to=msg_to,
                                      msg_cc=[r for r in msg_cc if r],
                                      msg_references=[i for i in ref_ids if i])
-                try:
-                    msg_idx_pos = int(email.get_msg_info(idx.MSG_MID), 36)
-                    idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                                msg_idxs=[msg_idx_pos],
-                                conversation=False)
-                except (TypeError, ValueError, IndexError):
-                    self._ignore_exception()
+                if self.BLANK_TAG:
+                    self._tag_emails([email], self.BLANK_TAG)
 
             except NoFromAddressError:
                 return self._error('You must configure a From address first.')
@@ -321,13 +329,8 @@ class Forward(RelativeCompose):
                     msg.attach(att)
                 email.update_from_msg(msg)
 
-            try:
-                msg_idx_pos = int(email.get_msg_info(idx.MSG_MID), 36)
-                idx.add_tag(session, session.config.get_tag_id('Drafts'),
-                            msg_idxs=[msg_idx_pos],
-                            conversation=False)
-            except (TypeError, ValueError, IndexError):
-                self._ignore_exception()
+            if self.BLANK_TAG:
+                self._tag_emails([email], self.BLANK_TAG)
 
             return self._edit_messages([email])
         else:
@@ -367,7 +370,6 @@ class Sendit(CompositionCommand):
                 msg_mid = email.get_msg_info(idx.MSG_MID)
                 SendMail(session, [PrepareMail(email,
                                                rcpts=(bounce_to or None))])
-                Tag(session, arg=['-Drafts', '+Sent', '=%s' % msg_mid]).run()
                 sent.append(email)
             except:
                 session.ui.error('Failed to send %s' % email)
@@ -378,10 +380,17 @@ class Sendit(CompositionCommand):
                               ) % (mids, bounce_to or '(header folks)', sent))
 
         if sent:
-          return self._return_search_results(sent, sent=sent)
+            if self.BLANK_TAG:
+                self._untag_emails(sent, self.BLANK_TAG)
+            if self.DRAFT_TAG:
+                self._untag_emails(sent, self.DRAFT_TAG)
+            if self.SENT_TAG:
+                self._tag_emails(sent, self.SENT_TAG)
+            return self._return_search_results(sent, sent=sent)
         else:
-          return self._error('Nothing was sent')
+            return self._error('Nothing was sent')
 
 
-mailpile.plugins.register_commands(Compose, Update, Attach,
-                                   Reply, Forward, Sendit)
+mailpile.plugins.register_commands(Compose, Reply, Forward, # Create
+                                   Draft, Update, Attach,   # Manipulate
+                                   Sendit)                  # Send

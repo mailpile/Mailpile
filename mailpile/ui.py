@@ -289,10 +289,9 @@ class UserInteraction:
       emsg = ("<h1>Template error in %s</h1>\n"
               "Parsing template %s: <b>%s</b> on line %s<br/>"
               "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
-      return emsg % tuple([escape_html(v) for v in (e.name, e.filename,
-                                                    e.message, e.lineno,
-                                                    e.source,
-                                                    '%s' % alldata)])
+      return emsg % tuple([escape_html(unicode(v))
+                           for v in (e.name, e.filename, e.message,
+                                     e.lineno, e.source, '%s' % alldata)])
 
   def edit_messages(self, emails):
     self.error('Sorry, this UI cannot edit messages.')

@@ -25,7 +25,7 @@ class Command:
   ORDER = (None, 0)
   SERIALIZE = False
   SPLIT_ARG = 10000  # A big number!
-  RAISES = (UsageError, )
+  RAISES = (UsageError, UrlRedirectException)
 
   HTTP_CALLABLE = ('GET', )
   HTTP_POST_VARS = { }
