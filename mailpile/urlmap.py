@@ -9,6 +9,9 @@ from mailpile.util import *
 class BadMethodError(Exception):
   pass
 
+class BadDataError(Exception):
+  pass
+
 
 class UrlMap:
     """
@@ -71,6 +74,10 @@ class UrlMap:
         Traceback (most recent call last):
             ...
         BadMethodError: Invalid method (GET): message/update
+        >>> urlmap._command('message/update', method='POST', query_data={'evil': 1})
+        Traceback (most recent call last):
+            ...
+        BadDataError: Bad variable (evil): message/update
         """
         try:
             match = [c for c in self._api_commands(method, strict=False)
@@ -85,12 +92,26 @@ class UrlMap:
         if method and (method not in command.HTTP_CALLABLE):
             raise BadMethodError('Invalid method (%s): %s' % (method, name))
 
+        if command.HTTP_STRICT_VARS:
+            for var in (post_data or []):
+                if ((var not in command.HTTP_QUERY_VARS) and
+                        (var not in command.HTTP_POST_VARS)):
+                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+            for var in (query_data or []):
+                if var not in command.HTTP_QUERY_VARS:
+                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+        else:
+            for var in command.HTTP_BANNED_VARS:
+                if ((query_data and var in query_data) or
+                        (post_data and var in post_data)):
+                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+
         data = {}
         for vlist, src in ((command.HTTP_QUERY_VARS, query_data),
                            (command.HTTP_QUERY_VARS, post_data),
                            (command.HTTP_POST_VARS, post_data)):
             for var in vlist:
-                if var in src:
+                if src and var in src:
                     data[var] = src[var]
 
         return command(self.session, name, args, data=data)

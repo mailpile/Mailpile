@@ -30,6 +30,8 @@ class Command:
   HTTP_CALLABLE = ('GET', )
   HTTP_POST_VARS = { }
   HTTP_QUERY_VARS = { }
+  HTTP_BANNED_VARS = { }
+  HTTP_STRICT_VARS = True
 
   class CommandResult:
     def __init__(self, session, command, template_id, doc, result,
@@ -394,6 +396,7 @@ class Output(Command):
   """Choose format for command results."""
   SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
   ORDER = ('Internals', 7)
+  HTTP_STRICT_VARS = False
 
   def command(self):
     self.session.ui.render_mode = self.args and self.args[0] or 'text'
