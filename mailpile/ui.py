@@ -283,7 +283,7 @@ class UserInteraction:
               "<pre>%s</pre>\n<p>%s</p><p><b>DATA:</b> %s</p>")
       return emsg % (escape_html(traceback.format_exc()),
                      ' or '.join([escape_html(tn) for tn in tpl_names]),
-                     escape_html('%s' % alldata))
+                     escape_html('%.4096s' % alldata))
     except (TemplateError, TemplateSyntaxError, TemplateAssertionError,
             TemplateNotFound, TemplatesNotFound), e:
       emsg = ("<h1>Template error in %s</h1>\n"
@@ -291,7 +291,8 @@ class UserInteraction:
               "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
       return emsg % tuple([escape_html(unicode(v))
                            for v in (e.name, e.filename, e.message,
-                                     e.lineno, e.source, '%s' % alldata)])
+                                     e.lineno, e.source,
+                                     '%.4096s' % alldata)])
 
   def edit_messages(self, emails):
     self.error('Sorry, this UI cannot edit messages.')

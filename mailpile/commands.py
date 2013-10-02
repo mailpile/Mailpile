@@ -61,7 +61,7 @@ class Command:
       return {
         'command': self.command,
         'args': self.args,
-        'kwargs': self.kwargs,
+        'kwargs': self.kwargs.keys(),
         'status': self.status,
         'result': self.result,
         'elapsed': '%.3f' % self.session.ui.time_elapsed

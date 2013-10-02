@@ -35,7 +35,6 @@ class CompositionCommand(Search):
         'cc': '..',
         'bcc': '..',
         'body': '..',
-        'send': 'Send the message?',
     }
     BLANK_TAG = 'Blank'
     DRAFT_TAG = 'Drafts'
@@ -148,75 +147,6 @@ class Compose(CompositionCommand):
             return self._edit_messages(emails, new=True)
 
 
-class Update(CompositionCommand):
-    """Update message from a file or HTTP upload."""
-    SYNOPSIS = ('u', 'update', 'message/update', '<messages> <<filename>')
-    ORDER = ('Composing', 1)
-    HTTP_CALLABLE = ('POST', 'UPDATE')
-    HTTP_POST_VARS = CompositionCommand.UPDATE_STRING_DATA
-
-    def command(self, create=True):
-        session, config, idx = self.session, self.session.config, self._idx()
-        emails, update_string = self._get_emails_and_update_string(idx)
-
-        if emails and update_string:
-            print 'HMM: %s / %s' % (self.data, emails)
-            for email in emails:
-                email.update_from_string(update_string)
-            session.ui.notify('%d message(s) updated' % len(emails))
-            if self.BLANK_TAG:
-                self._untag_emails(emails, self.BLANK_TAG)
-            if self.DRAFT_TAG:
-                self._tag_emails(emails, self.DRAFT_TAG)
-            return self._edit_messages(emails, new=False)
-
-        else:
-            return self._error('Nothing to do!')
-
-
-class Attach(CompositionCommand):
-    """Attach a file to a message"""
-    SYNOPSIS = ('a', 'attach', 'message/attach', '<messages> [<path/to/file>]')
-    ORDER = ('Composing', 2)
-    HTTP_CALLABLE = ('POST', 'UPDATE')
-    HTTP_QUERY_VARS = {}
-    HTTP_POST_VARS = {
-        'mid': 'metadata-ID',
-        'data': 'file data',
-        'name': 'file name'
-    }
-
-    def command(self):
-        session, idx = self.session, self._idx()
-
-        files = []
-        while os.path.exists(self.args[-1]):
-            files.append(self.args.pop(-1))
-        if not files:
-            return self._error('No files found')
-
-        emails = [Email(idx, i) for i in self._choose_messages(self.args)]
-        if not emails:
-            return self._error('No messages selected')
-
-        # FIXME: Using "say" here is rather lame.
-        updated = []
-        for email in emails:
-            subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
-            try:
-                email.add_attachments(files)
-                updated.append(email)
-            except NotEditableError:
-                session.ui.error('Read-only message: %s' % subject)
-            except:
-                session.ui.error('Error attaching to %s' % subject)
-                self._ignore_exception()
-
-        session.ui.notify(('Attached %s to %d messages'
-                           ) % (', '.join(files), len(updated)))
-        return self._return_search_results(updated, expand=updated)
-
-
 class RelativeCompose(Compose):
     _ATT_MIMETYPES = ('application/pgp-signature', )
     _TEXT_PARTTYPES = ('text', 'quote', 'pgpsignedtext', 'pgpsecuretext',
@@ -224,7 +154,7 @@ class RelativeCompose(Compose):
 
 
 class Reply(RelativeCompose):
-    """Reply(-all) to one or more messages"""
+    """Create reply(-all) drafts to one or more messages"""
     SYNOPSIS = ('r', 'reply', 'message/reply', '[all] <messages>')
     ORDER = ('Composing', 3)
     HTTP_QUERY_VARS = {
@@ -280,7 +210,7 @@ class Reply(RelativeCompose):
 
 
 class Forward(RelativeCompose):
-    """Forward messages (and attachments)"""
+    """Create forwarding drafts of one or more messages"""
     SYNOPSIS = ('f', 'forward', 'message/forward', '[att] <messages>')
     ORDER = ('Composing', 4)
     HTTP_QUERY_VARS = {
@@ -337,6 +267,60 @@ class Forward(RelativeCompose):
             return self._error('No message found')
 
 
+class Attach(CompositionCommand):
+    """Attach a file to a message"""
+    SYNOPSIS = ('a', 'attach', 'message/attach', '<messages> [<path/to/file>]')
+    ORDER = ('Composing', 2)
+    HTTP_CALLABLE = ('POST', 'UPDATE')
+    HTTP_QUERY_VARS = {}
+    HTTP_POST_VARS = {
+        'mid': 'metadata-ID',
+        'file-data': 'file data'
+    }
+
+    def command(self, emails=None):
+        session, idx = self.session, self._idx()
+
+        files = []
+        filedata = {}
+        if 'file-data' in self.data:
+            count = 0
+            for fd in self.data['file-data']:
+                print 'fd: %s' % (dir(fd), )
+                fn = (hasattr(fd, 'filename') and fd.filename
+                                               or 'attach-%d.dat' % count)
+                filedata[fn] = fd
+                files.append(fn)
+                count += 1
+        else:
+            while os.path.exists(self.args[-1]):
+                files.append(self.args.pop(-1))
+
+        if not files:
+            return self._error('No files found')
+
+        if not emails:
+            emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+        if not emails:
+            return self._error('No messages selected')
+
+        updated = []
+        for email in emails:
+            subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
+            try:
+                email.add_attachments(files, filedata=filedata)
+                updated.append(email)
+            except NotEditableError:
+                session.ui.error('Read-only message: %s' % subject)
+            except:
+                session.ui.error('Error attaching to %s' % subject)
+                self._ignore_exception()
+
+        session.ui.notify(('Attached %s to %d messages'
+                           ) % (', '.join(files), len(updated)))
+        return self._return_search_results(updated, expand=updated)
+
+
 class Sendit(CompositionCommand):
     """Mail/bounce a message (to someone)"""
     SYNOPSIS = ('m', 'mail', 'message/send', '<messages> [<emails>]')
@@ -348,7 +332,7 @@ class Sendit(CompositionCommand):
         'to': 'recipients'
     }
 
-    def command(self):
+    def command(self, emails=None):
         session, config, idx = self.session, self.session.config, self._idx()
 
         bounce_to = []
@@ -360,12 +344,14 @@ class Sendit(CompositionCommand):
             bounce_to.extend(ExtractEmails(rcpt))
 
         args = self.args[:]
-        args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
-        mids = self._choose_messages(args)
+        if not emails:
+          args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
+          mids = self._choose_messages(args)
+          emails = [Email(idx, i) for i in mids]
 
         # Process one at a time so we don't eat too much memory
         sent = []
-        for email in [Email(idx, i) for i in mids]:
+        for email in emails:
             try:
                 msg_mid = email.get_msg_info(idx.MSG_MID)
                 SendMail(session, [PrepareMail(email,
@@ -377,7 +363,8 @@ class Sendit(CompositionCommand):
 
         if 'compose' in config.get('debug', ''):
             sys.stderr.write(('compose/Sendit: Send %s to %s (sent: %s)\n'
-                              ) % (mids, bounce_to or '(header folks)', sent))
+                              ) % (len(emails),
+                                   bounce_to or '(header folks)', sent))
 
         if sent:
             if self.BLANK_TAG:
@@ -389,6 +376,44 @@ class Sendit(CompositionCommand):
             return self._return_search_results(sent, sent=sent)
         else:
             return self._error('Nothing was sent')
+
+
+class Update(CompositionCommand):
+    """Update message from a file or HTTP upload."""
+    SYNOPSIS = ('u', 'update', 'message/update', '<messages> <<filename>')
+    ORDER = ('Composing', 1)
+    HTTP_CALLABLE = ('POST', 'UPDATE')
+    HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA,
+                                Attach.HTTP_POST_VARS,
+                                {'send': 'Send the message?',
+                                 'save': 'Save as draft'})
+
+    def command(self, create=True):
+        session, config, idx = self.session, self.session.config, self._idx()
+        emails, update_string = self._get_emails_and_update_string(idx)
+
+        if emails and update_string:
+            for email in emails:
+                email.update_from_string(update_string)
+
+            if (self.data.get('file-data') or [''])[0]:
+                if not Attach(session, data=self.data).command(emails=emails):
+                    return False
+
+            session.ui.notify('%d message(s) updated' % len(emails))
+
+            if 'send' in self.data:
+                return Sendit(session).command(emails=emails)
+            else:
+                if self.BLANK_TAG:
+                     self._untag_emails(emails, self.BLANK_TAG)
+                if self.DRAFT_TAG:
+                     self._tag_emails(emails, self.DRAFT_TAG)
+
+            return self._edit_messages(emails, new=False)
+
+        else:
+            return self._error('Nothing to do!')
 
 
 mailpile.plugins.register_commands(Compose, Reply, Forward, # Create

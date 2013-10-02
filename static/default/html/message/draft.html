@@ -4,10 +4,13 @@
 {% include("partials/sub_nav_compose.html") %}
 
 
+{% if result %}
 <div id="compose">
 
-    {% for m in result.0.messages %}{% if m.message %}
-    <form id="form-compose" method="POST" name="compose" action='/message/update/'>
+  {% for m in result.0.messages %}
+  {% if m.message %}{% if m.message.editing_strings %}
+    <form id="form-compose" name="compose" action="/message/update/"
+          method="POST" enctype="multipart/form-data">
         <input type="hidden" name="mid" value="{{ m.mid }}">
         <div class="compose-section compose-headers">
             <label>From:</label>
@@ -36,7 +39,7 @@
         </div>
         <div class="compose-section compose-attachments">
             <span class="icon-attachment"></span> No Attachments
-            <input type="file" name="add-attachment">
+            <input type="file" name="file-data">
             <ul id="compose-attachments-list"></ul>
         </div>
         <div class="compose-buttons">
@@ -44,7 +47,13 @@
             <button type="submit" name="save" value="save"><span class="icon-compose"></span> Save</button>
         </div>
     </form>
-    {% endif %}{% endfor %}
+  {% else %}
+    {{ mailpile('http/redirect/url_thread', m.mid) }}
+  {% endif %}{% endif %}{% endfor %}
 </div>
+{% else %}
 
+  <h1>Message not found!</h1>
+
+{% endif %}
 {% endblock %}

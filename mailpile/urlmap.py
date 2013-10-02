@@ -1,3 +1,4 @@
+import cgi
 from urlparse import parse_qs, urlparse
 from urllib import quote
 
@@ -11,6 +12,12 @@ class BadMethodError(Exception):
 
 class BadDataError(Exception):
   pass
+
+
+class _FancyString(unicode):
+    def __init__(self, *args):
+        unicode.__init__(self, *args)
+        self.filename = None
 
 
 class UrlMap:
@@ -112,7 +119,13 @@ class UrlMap:
                            (command.HTTP_POST_VARS, post_data)):
             for var in vlist:
                 if src and var in src:
-                    data[var] = src[var]
+                    sdata = src[var]
+                    if isinstance(sdata, cgi.FieldStorage):
+                        data[var] = [_FancyString(sdata.value)]
+                        if hasattr(sdata, 'filename'):
+                            data[var][0].filename = sdata.filename
+                    else:
+                        data[var] = sdata
 
         return command(self.session, name, args, data=data)
 
@@ -458,7 +471,18 @@ class UrlRedirectEdit(Command):
     HTTP_CALLABLE = ( )
 
     def command(self):
-        raise UrlRedirectException(UrlMap(self.session).url_edit(self.args[0]))
+        mid = self.args[0]
+        raise UrlRedirectException(UrlMap(self.session).url_edit(mid))
+
+
+class UrlRedirectThread(Command):
+    """A stub command which just throws UrlRedirectException."""
+    SYNOPSIS = (None, None, 'http/redirect/url_thread', '<mid>')
+    HTTP_CALLABLE = ( )
+
+    def command(self):
+        mid = self.args[0]
+        raise UrlRedirectException(UrlMap(self.session).url_thread(mid))
 
 
 class HelpUrlMap(Command):
@@ -485,8 +509,8 @@ class HelpUrlMap(Command):
 
 
 if __name__ != "__main__":
-    mailpile.plugins.register_commands(HelpUrlMap,
-                                       UrlRedirect, UrlRedirectEdit)
+    mailpile.plugins.register_commands(HelpUrlMap, UrlRedirect,
+                                       UrlRedirectEdit, UrlRedirectThread)
 
 else:
     # If run as a python script, print map and run doctests.
