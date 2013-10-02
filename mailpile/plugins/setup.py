@@ -29,6 +29,7 @@ class Setup(Command):
             Filter(session,
                    arg=['read', '-New', 'Read Mail filter']).run()
 
+        session.config.save()
         return True
 
 
