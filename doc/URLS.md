@@ -31,14 +31,8 @@ endpoints be used for automation.
     /api/0/help/variables/
     /api/0/message/           [raw]/<message>/
                               ?mid=[metadata-ID]
-    /api/0/message/compose/   [<messages>]/
-                              ?mid=[metadata-ID]
-    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
-    /api/0/message/delete/    <message>/
     /api/0/message/download/  <att>/<message>/[><fn>]/
-    /api/0/message/forward/   [att]/<messages>/
-                              ?mid=[metadata-ID]
-    /api/0/message/reply/     [all]/<messages>/
+    /api/0/message/draft/     [<messages>]/
                               ?mid=[metadata-ID]
     /api/0/search/            <terms>/
                               ?q=[search terms]&order=[sort order]
@@ -50,10 +44,9 @@ endpoints be used for automation.
     /api/0/contact/remove/    <email>/
     /api/0/contact/set/       <email>/<attr>/<value>/
     /api/0/message/attach/    <messages>/[<path/to/file>]/
-    ... POST only: data=[file data]&mid=[metadata-ID]&name=[file name]
-    /api/0/message/compose/   [<messages>]/
-                              ?mid=[metadata-ID]
-    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
+    ... POST only: file-data=[file data]&mid=[metadata-ID]
+    /api/0/message/compose/
+    ... POST only: body=[..]&from=[..]&cc=[..]&mid=[metadata-ID]&bcc=[..]&to=[..]&subject=[..]
     /api/0/message/forward/   [att]/<messages>/
                               ?mid=[metadata-ID]
     /api/0/message/reply/     [all]/<messages>/
@@ -61,8 +54,7 @@ endpoints be used for automation.
     /api/0/message/send/      <messages>/[<emails>]/
     ... POST only: to=[recipients]&mid=[metadata-ID]
     /api/0/message/update/    <messages>/<<filename>/
-                              ?mid=[metadata-ID]
-    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
+    ... POST only: body=[..]&to=[..]&file-data=[file data]&save=[Save as draft]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&send=[Send the message?]&bcc=[..]
     /api/0/tag/add/           <tag>/
     /api/0/tag/delete/        <tag>/
 
@@ -70,17 +62,9 @@ endpoints be used for automation.
 
     /api/0/contact/set/       <email>/<attr>/<value>/
     /api/0/message/attach/    <messages>/[<path/to/file>]/
-    ... POST only: data=[file data]&mid=[metadata-ID]&name=[file name]
-    /api/0/message/compose/   [<messages>]/
-                              ?mid=[metadata-ID]
-    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
-    /api/0/message/forward/   [att]/<messages>/
-                              ?mid=[metadata-ID]
-    /api/0/message/reply/     [all]/<messages>/
-                              ?mid=[metadata-ID]
+    ... POST only: file-data=[file data]&mid=[metadata-ID]
     /api/0/message/update/    <messages>/<<filename>/
-                              ?mid=[metadata-ID]
-    ... POST only: body=[..]&to=[..]&from=[..]&cc=[..]&bcc=[..]&mid=[metadata-ID]&send=[Send the message?]&subject=[..]
+    ... POST only: body=[..]&to=[..]&file-data=[file data]&save=[Save as draft]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&send=[Send the message?]&bcc=[..]
 
 ### DELETE
 
@@ -113,8 +97,8 @@ endpoints be used for automation.
     /message/
     /message/attach/
     /message/compose/
-    /message/delete/
     /message/download/
+    /message/draft/
     /message/forward/
     /message/reply/
     /message/send/
@@ -125,4 +109,4 @@ endpoints be used for automation.
     /tag/list/
 
 
-<!-- TestResults(failed=0, attempted=40) -->
+<!-- TestResults(failed=0, attempted=43) -->

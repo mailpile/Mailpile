@@ -27,6 +27,8 @@ class EditableSearchResults(SearchResults):
 
 
 class CompositionCommand(Search):
+    HTTP_QUERY_VARS = { }
+    HTTP_POST_VARS = { }
     UPDATE_STRING_DATA = {
         'mid': 'metadata-ID',
         'subject': '..',
