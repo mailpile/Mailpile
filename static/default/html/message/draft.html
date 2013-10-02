@@ -7,39 +7,37 @@
 <div id="compose">
 
     {% for m in result.0.messages %}{% if m.message %}
-    <form id="form-compose" method="POST" action='/message/update/' name="compose">
+    <form id="form-compose" method="POST" name="compose" action='/message/update/'>
         <input type="hidden" name="mid" value="{{ m.mid }}">
         <div class="compose-section compose-headers">
             <label>From:</label>
-            <input id="compose-from" name="from" type="text"
-                   value="{{ m.message.editing_strings.from|e }}">
+            <select id="compose-from" name="from">
+              <option value="{{ m.message.editing_strings.from|e }}">{{ m.message.editing_strings.from|e }}</option>
+            </select>
         </div>
         <div class="compose-section compose-headers">
             <label>To:</label>
-            <input id="compose-to" name="to" type="text"
-                   value="{{ m.message.editing_strings.to|e }}">
+            <input id="compose-to" name="to" type="text" value="{{ m.message.editing_strings.to|e }}">
         </div>
         <div class="compose-section compose-headers">
             <label>Cc:</label>
-            <input id="compose-cc" name="cc" type="text"
-                   value="{{ m.message.editing_strings.cc|e }}">
+            <input id="compose-cc" name="cc" type="text" value="{{ m.message.editing_strings.cc|e }}">
         </div>
         <div class="compose-section compose-headers">
             <label>Bcc:</label>
-            <input id="compose-bcc" name="bcc" type="text"
-                   value="{{ m.message.editing_strings.bcc|e }}">
+            <input id="compose-bcc" name="bcc" type="text" value="{{ m.message.editing_strings.bcc|e }}">
         </div>
         <div class="compose-section compose-headers">
             <label>Subject:</label>
-            <input name="subject" type="text"
-                   value="{{ m.message.editing_strings.subject }}">
+            <input id="compose-subject" name="subject" type="text" value="{{ m.message.editing_strings.subject }}">
         </div>
         <div class="compose-section compose-message">
-            <textarea name="body">{{ m.message.editing_strings.body }}</textarea>
+            <textarea id="compose-body" name="body">{{ m.message.editing_strings.body }}</textarea>
         </div>
         <div class="compose-section compose-attachments">
             <span class="icon-attachment"></span> No Attachments
             <input type="file" name="add-attachment">
+            <ul id="compose-attachments-list"></ul>
         </div>
         <div class="compose-buttons">
             <button type="submit" name="send" value="send"><span class="icon-sent"></span> Send</button>
