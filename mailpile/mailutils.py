@@ -15,13 +15,13 @@ import email.header
 import email.parser
 import email.utils
 import errno
+import gzip
 import mailbox
 import mimetypes
 import os
-import traceback
 import re
 import rfc822
-import gzip
+import traceback
 
 from email import encoders
 from email.mime.base import MIMEBase
@@ -99,9 +99,9 @@ def ExtractEmails(string):
                                  replace='_').clean)
   return emails
 
-def PrepareMail(email, sender=None, rcpts=None):
+def PrepareMail(mailobj, sender=None, rcpts=None):
   if not sender or not rcpts:
-    tree = email.get_message_tree()
+    tree = mailobj.get_message_tree()
     sender = sender or tree['headers_lc']['from']
     if not rcpts:
       rcpts = ExtractEmails(tree['headers_lc'].get('to', ''))
@@ -113,16 +113,21 @@ def PrepareMail(email, sender=None, rcpts=None):
 
   # Cleanup...
   sender = ExtractEmails(sender)[0]
-  rcpts, rr = [], rcpts
+  rcpts, rr = [sender], rcpts
   for r in rr:
-    rcpts.extend(ExtractEmails(r))
+    for e in ExtractEmails(r):
+      if e not in rcpts:
+        rcpts.append(e)
 
-  msg = email.get_msg()
+  msg = mailobj.get_msg()
 
   # Remove headers we don't want to expose
   for bcc in ('bcc', 'Bcc', 'BCc', 'BCC'):
     if bcc in msg:
-      del msg['bcc']
+      del msg[bcc]
+
+  if 'date' not in msg:
+    msg['Date'] = email.utils.formatdate()
 
   # FIXME: Sign, encrypt, ?
 
