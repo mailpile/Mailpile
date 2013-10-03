@@ -792,9 +792,9 @@ def Main(args):
 
       opts, args = getopt.getopt(args, shorta, longa)
       for opt, arg in opts:
-        Action(session, opt.replace('-', ''), arg)
+        Action(session, opt.replace('-', ''), arg.decode('utf-8'))
       if args:
-        Action(session, args[0], ' '.join(args[1:]))
+        Action(session, args[0], ' '.join(args[1:]).decode('utf-8'))
 
     except (getopt.GetoptError, UsageError), e:
       session.error(e)
