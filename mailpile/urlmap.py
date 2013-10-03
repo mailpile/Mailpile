@@ -14,9 +14,9 @@ class BadDataError(Exception):
   pass
 
 
-class _FancyString(unicode):
+class _FancyString(str):
     def __init__(self, *args):
-        unicode.__init__(self, *args)
+        str.__init__(self, *args)
         self.filename = None
 
 
@@ -222,6 +222,8 @@ class UrlMap:
 
         >>> urlmap._map_api_command('GET', ['message', 'draft', ''], {}, {})
         [<mailpile.commands.Output...>, <...Draft...>]
+        >>> urlmap._map_api_command('POST', ['message', 'update', ''], {}, {})
+        [<mailpile.commands.Output...>, <...Update...>]
         >>> urlmap._map_api_command('GET', ['message', 'update', ''], {}, {})
         Traceback (most recent call last):
             ...
@@ -238,7 +240,7 @@ class UrlMap:
                                   post_data=post_data,
                                   method=method)
                 ]
-            except (ValueError, UsageError):
+            except UsageError:
                 pass
             except BadMethodError:
                 break
