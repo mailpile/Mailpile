@@ -70,21 +70,15 @@
 	<div id="sidebar">
 		<nav>
       <ul>
-        <li><a href="/in/Drafts/"><span class="icon-tag"></span> {{mailpile("tag/list", "Drafts").result.tags.0.all}} Drafts</a></li>
-      </ul>
-			{% for t in high_tags, user_tags, low_tags %}
-			<ul>{% for tag in t.result.tags %}
+        <li><a href="/in/Drafts/"><span class="icon-tag"></span> Drafts <span class="navigation-attention-important">{{mailpile("tag/list", "Drafts").result.tags.0.all}}</span></a></li>
+			  {% for t in high_tags, user_tags, low_tags %}
+			   {% for tag in t.result.tags %}
 				  <li><a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}"><span class="icon-tag"></span> {{tag.name}}
-        			<span class='navigation-attention-important'>{{tag.new}}</span>
+        			<span class="navigation-attention-important">{{tag.new}}</span>
 			      </a>
   				</li>
   				{% endfor %}
-			</ul>
-			{% endfor %}
-		</nav>
-		<hr>			
-		<nav>
-			<ul>
+			  {% endfor %}
 				<li><a href="/search/has:pgp" class=""><span class="icon-encrypted"></span> Encrypted</a></li>
 				<li><a href="/search/att:jpg" class=""><span class="icon-photos"></span> Photos</a></li>
 				<li><a href="/search/has:attachment" class=""><span class="icon-files"></span> Files</a></li>

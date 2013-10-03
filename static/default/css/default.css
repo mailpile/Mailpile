@@ -6052,6 +6052,9 @@ div.content-normal {
 }
 /* Footer */
 #footer {
+  position: relative;
+  bottom: 0px;
+  left: 0px;
   margin: 20px 0;
   font-size: 12px;
   text-align: center;
