@@ -390,11 +390,15 @@
 
 
 
-/* Pile */
+/* Pile Results */
 
 	#pile-results {
 		width: 100%;
 	}
+
+  #pile-results tr.result {
+    background: @white;
+  }
 
 	#pile-results tr.result:hover {
 		background: lighten(@yellow, 35%);
@@ -453,6 +457,28 @@
 	
 	#pile-bottom div a.change-result-size {
 		font-size: 12px;
+	}
+	
+	
+/* Pile & Sidebar	- Drag / Drop */
+
+  .sidebar-tags-drag-hover {
+    background: red;
+  }
+
+  .sidebar-tags-drag-active {
+    background: yellow;
+  }
+
+  .sidebar-tags-drag-highlight {
+    background: green;
+  }	
+	
+	
+	.pile-results-drag {
+  	background: @white;
+  	border: 1px solid @gray;
+  	padding: 5px 10px;
 	}
 
 

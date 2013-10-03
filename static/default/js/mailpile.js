@@ -419,6 +419,37 @@ $(document).ready(function() {
 	});
 
 
+
+  /* Pile - Dragging & Dropping */
+  $('.result, .result-on').draggable({
+    containment: "#container",
+    scroll: false,
+    revert: true,
+    helper: function( event ) {
+      var selected_count = parseInt($('#bulk-actions-selected-count').html());
+      if (selected_count == 0) {
+        drag_count = '1 message</div>';
+      }
+      else {
+        drag_count = selected_count + ' messages';
+      }
+      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + ' to...</div>');
+    }
+  });
+
+  $('li.sidebar-tags').droppable({
+    accept: '#pile-results .result',
+    activeClass: 'sidebar-tags-drag-hover',
+    hoverClass: 'sidebar-tags-drag-active',
+    drop: function(event, ui) {
+      
+      var old_html = $(this).html();
+      $(this).addClass('sidebar-tags-drag-highlight').html('Moved :)');
+      //$(this).delay(2500).html(old_html);
+    }
+  });
+
+
   /* Compose - Adding Recipients */
   if ($('#form-compose').length) {
 
@@ -473,7 +504,6 @@ $(document).ready(function() {
 			dataType	: 'json',
 		  	success : function(result) {
 
-          console.log('Hellooo AJAX town');
           console.log(result);
 
           // Set Everything to Empty
@@ -481,8 +511,6 @@ $(document).ready(function() {
           $('#compose-subject').val('');
           $('#compose-body').val('');
           $('#compose-attachments-list').html('');
-
-          // Scroll Up
 
           // Needs proper state handling from API response
           showMessage('success');

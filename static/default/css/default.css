@@ -73,7 +73,6 @@ you can use the generic selector below, but it's slower:
 .icon-photos,
 .icon-notifications,
 .icon-music,
-.icon-message,
 .icon-logo,
 .icon-links,
 .icon-later,
@@ -95,7 +94,10 @@ you can use the generic selector below, but it's slower:
 .icon-calendar,
 .icon-attachment,
 .icon-archive,
-.icon-ads {
+.icon-ads,
+.icon-graph,
+.icon-inbox,
+.icon-list {
   font-family: 'Mailpile-Interface';
   speak: none;
   font-style: normal;
@@ -174,9 +176,6 @@ you can use the generic selector below, but it's slower:
 .icon-music:before {
   content: "\e016";
 }
-.icon-message:before {
-  content: "\e017";
-}
 .icon-logo:before {
   content: "\e018";
 }
@@ -242,6 +241,15 @@ you can use the generic selector below, but it's slower:
 }
 .icon-ads:before {
   content: "\e02d";
+}
+.icon-graph:before {
+  content: "\e017";
+}
+.icon-inbox:before {
+  content: "\e02e";
+}
+.icon-list:before {
+  content: "\e02f";
 }
 /* Backgrounds */
 .background-gray {
@@ -6147,9 +6155,12 @@ div.content-normal {
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 24px;
 }
-/* Pile */
+/* Pile Results */
 #pile-results {
   width: 100%;
+}
+#pile-results tr.result {
+  background: #ffffff;
 }
 #pile-results tr.result:hover {
   background: #f7f1de;
@@ -6196,6 +6207,21 @@ div.content-normal {
 }
 #pile-bottom div a.change-result-size {
   font-size: 12px;
+}
+/* Pile & Sidebar	- Drag / Drop */
+.sidebar-tags-drag-hover {
+  background: red;
+}
+.sidebar-tags-drag-active {
+  background: yellow;
+}
+.sidebar-tags-drag-highlight {
+  background: green;
+}
+.pile-results-drag {
+  background: #ffffff;
+  border: 1px solid #b3b3b3;
+  padding: 5px 10px;
 }
 /* Thread */.message-headers {
   border-bottom: 1px solid #b3b3b3;
