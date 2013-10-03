@@ -3,8 +3,8 @@
 {% block content %}
 {% include("partials/sub_nav_compose.html") %}
 
-
 {% if result %}
+{% set my_from = mailpile('config/get', 'my_from').result.my_from %}
 <div id="compose">
 
   {% for m in result.0.messages %}
@@ -15,7 +15,11 @@
         <div class="compose-section compose-headers">
             <label>From:</label>
             <select id="compose-from" name="from">
-              <option value="{{ m.message.editing_strings.from|e }}">{{ m.message.editing_strings.from|e }}</option>
+              <option value="{{ m.message.editing_strings.from|e }}" selected>{{ m.message.editing_strings.from|e }}</option>
+              <option value="{{ m.message.editing_strings.from|e }}"> - - - </option>
+              {% for m in my_from %}
+              <option value="{{ my_from[m]|e }} &lt;{{ m|e }}&gt;">{{ my_from[m]|e }} &lt;{{ m|e }}&gt;</option>
+              {% endfor %}
             </select>
         </div>
         <div class="compose-section compose-headers">
