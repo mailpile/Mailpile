@@ -139,12 +139,15 @@ class GnuPG:
     def __init__(self):
         self.gpgbinary = 'gpg'
         self.passphrase = None
-        self.rw = ["r", "w"]
-        self.fds = {"passphrase": True, "command": True, "logger": False, "status": False}
+        self.fds = {"passphrase": True, 
+                    "command": True, 
+                    "logger": False, 
+                    "status": False}
         self.handles = {}
         self.pipes = {}
-        self.needed_fds = ["stdin", "stdout", "stderr"]
+        self.needed_fds = ["stdin", "stdout", "stderr", "status"]
         self.errors = []
+        self.statuscallbacks = {}
 
     def default_errorhandler(self, *error):
         if error != "":
@@ -192,7 +195,9 @@ class GnuPG:
     def parse_keylist(self, keylist, *args):
         """
         >>> g = GnuPG()
-        >>> v = g.parse_keylist("pub:u:4096:1:D5DC2A79C2E4AE92:2010-12-30:::u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:2010-12-30::::::e:")
+        >>> v = g.parse_keylist("pub:u:4096:1:D5DC2A79C2E4AE92:2010-12-30:::\
+u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
+2010-12-30::::::e:")
         >>> v.has_key("D5DC2A79C2E4AE92")
         True
         >>> v["D5DC2A79C2E4AE92"]["size"]
@@ -224,7 +229,9 @@ class GnuPG:
             return (curkey, keys)
 
         def parse_subkey(line, curkey, keys):
-            subkey = {"id": line[4], "size": int(line[2]), "creation-date": line[5], "algorithm": int(line[3])}
+            subkey = {"id": line[4], "size": int(line[2]), 
+                      "creation-date": line[5], 
+                      "algorithm": int(line[3])}
             if line[0] == "ssb":
                 subkey["secret"] = True
             keys[curkey]["subkeys"].append(subkey)            
@@ -254,7 +261,10 @@ class GnuPG:
                 email = line[9]
                 name = ""
                 comment = ""
-            keys[curkey]["uids"].append({"email": email, "name": name, "comment": comment, "creation-date": line[5] })
+            keys[curkey]["uids"].append({"email": email, 
+                                         "name": name, 
+                                         "comment": comment, 
+                                         "creation-date": line[5] })
             return (curkey, keys)
 
         def parse_trust(line, curkey, keys):
@@ -262,7 +272,8 @@ class GnuPG:
             return (curkey, keys)
 
         def parse_signature(line, curkey, keys):
-            sig = {"signer": line[9], "signature-date": line[5], "keyid": line[4], "trust": line[10], "algorithm": line[4]}
+            sig = {"signer": line[9], "signature-date": line[5], 
+                   "keyid": line[4], "trust": line[10], "algorithm": line[4]}
 
             keys[curkey]["signatures"].append(sig)
             return (curkey, keys)
@@ -297,8 +308,12 @@ class GnuPG:
         return keys
 
     def emptycallbackmap():
-        """Utility function for people who are confused about what callbacks exist."""
+        """
+        Utility function for people who are confused about what callbacks 
+        exist.
+        """
         return dict([[x, []] for x in self.needed_fds])
+
 
     def run(self, args=[], callbacks={}, output=None, debug=False):
         """
@@ -378,11 +393,13 @@ class GnuPG:
         >>> g.list_keys()[0]
         0
         """
-        retvals = self.run(["--list-keys", "--fingerprint"], callbacks={"stdout": self.parse_keylist})
+        retvals = self.run(["--list-keys", "--fingerprint"], 
+                           callbacks={"stdout": self.parse_keylist})
         return retvals
 
     def list_sigs(self):
-        self.run(["--list-sigs", "--fingerprint"], callbacks={"stdout": self.parse_keylist})
+        self.run(["--list-sigs", "--fingerprint"], 
+                 callbacks={"stdout": self.parse_keylist})
         return retvals
 
     def list_secret_keys(self):
@@ -391,7 +408,8 @@ class GnuPG:
         >>> g.list_secret_keys()[0]
         0
         """
-        retvals = self.run(["--list-secret-keys", "--fingerprint"], callbacks={"stdout": self.parse_keylist})
+        retvals = self.run(["--list-secret-keys", "--fingerprint"], 
+                           callbacks={"stdout": self.parse_keylist})
         return retvals
 
     def encrypt(self, data, to=[], armor=True):
@@ -406,12 +424,14 @@ class GnuPG:
         for r in to:
             action.append("--recipient")
             action.append(r)
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, output=data)
+        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+                           output=data)
         return retvals[0], retvals[1]["stdout"][0]
 
     def decrypt(self, data, passphrase=None):
         """
-        Note that this test will fail if you don't replace the recipient with one whose key you control.
+        Note that this test will fail if you don't replace the recipient with 
+        one whose key you control.
         >>> g = GnuPG()
         >>> ct = g.encrypt("Hello, World", to=["smari@mailpile.is"])[1]
         >>> g.decrypt(ct)[1]
@@ -420,10 +440,12 @@ class GnuPG:
         if passphrase:
             self.passphrase = passphrase
         action = ["--decrypt"]
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, output=data)
+        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+                           output=data)
         return retvals[0], retvals[1]["stdout"][0]
 
-    def sign(self, data, _from=None, armor=True, detatch=True, clearsign=False, passphrase=None):
+    def sign(self, data, _from=None, armor=True, detatch=True, clearsign=False,
+             passphrase=None):
         """
         >>> g = GnuPG()
         >>> g.sign("Hello, World", _from="smari@mailpile.is")[0]
@@ -443,25 +465,28 @@ class GnuPG:
             action.append("--local-user")
             action.append(_from)
 
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, output=data)
+        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+                           output=data)
         return retvals[0], retvals[1]["stdout"][0]
 
     def verify(self, data, signature=None):
         """
         >>> g = GnuPG()
-        >>> s = g.sign("Hello, World", _from="smari@mailpile.is", clearsign=True)[1]
+        >>> s = g.sign("Hello, World", _from="smari@mailpile.is", 
+            clearsign=True)[1]
         >>> g.verify(s)
         """
-        print "BEFORE: %s" % self.needed_fds
-        self.needed_fds.append("status")
-        print "AFTER: %s" % self.needed_fds
-        retvals = self.run(["--verify"], callbacks={"stderr": self.parse_verify, "status": self.default_output}, output=data, debug=True)
-        self.needed_fds.remove("status")
+        retvals = self.run(["--verify"], 
+                           callbacks={"stderr": self.parse_verify, 
+                                      "status": self.parse_status}, 
+                           output=data)
 
         return retvals[0], retvals[1]["stderr"]
 
-    def sign_encrypt(self, data, _from=None, to=[], armor=True, detatch=True, clearsign=False):
-        retval, signblock = self.sign(data, _from=_from, armor=armor, detatch=detatch, clearsign=clearsign)
+    def sign_encrypt(self, data, _from=None, to=[], armor=True, detatch=True,
+                     clearsign=False):
+        retval, signblock = self.sign(data, _from=_from, armor=armor, 
+                                      detatch=detatch, clearsign=clearsign)
         if detatch:
             # TODO: Deal with detached signature.
             retval, cryptblock = self.encrypt(data, to=to, armor=armor)
