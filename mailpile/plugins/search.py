@@ -43,7 +43,7 @@ class SearchResults(dict):
       'url': urlmap.url_thread(info[0])
     }
     if info[8]:
-      expl['editing_url'] = urlmap.url_compose(info[0])
+      expl['editing_url'] = urlmap.url_edit(info[0])
     return expl
 
   def _prune_msg_tree(self, tree, context=True, parts=False, editable=False):
@@ -418,14 +418,5 @@ class Extract(Command):
     return results
 
 
-class Delete(Command):
-  """Delete a message from the index"""
-  SYNOPSIS = ('d', 'delete', 'message/delete', '<message>')
-  ORDER = ('Searching', 6)
-  def command(self):
-    session, config, idx = self.session, self.session.config, self._idx()
-    raise Exception('Unimplemented')
-
-
-mailpile.plugins.register_commands(Delete, Extract, Next, Order, Previous,
+mailpile.plugins.register_commands(Extract, Next, Order, Previous,
                                    Search, View)

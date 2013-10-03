@@ -631,8 +631,11 @@ class Email(object):
     bits.append(estrings['body'])
     return '\n'.join(bits)
 
-  def make_attachment(self, fn):
-    data = open(fn, 'rb').read()
+  def make_attachment(self, fn, filedata=None):
+    if filedata and fn in filedata:
+      data = filedata[fn]
+    else:
+      data = open(fn, 'rb').read()
     ctype, encoding = mimetypes.guess_type(fn)
     maintype, subtype = (ctype or 'application/octet-stream').split('/', 1)
     if maintype == 'image':
@@ -645,12 +648,12 @@ class Email(object):
                    filename=os.path.basename(fn))
     return att
 
-  def add_attachments(self, filenames):
+  def add_attachments(self, filenames, filedata=None):
     if not self.is_editable():
       raise NotEditableError('Mailbox is read-only.')
     msg = self.get_msg()
     for fn in filenames:
-      msg.attach(self.make_attachment(fn))
+      msg.attach(self.make_attachment(fn, filedata=filedata))
     return self.update_from_msg(msg)
 
   def update_from_string(self, data):

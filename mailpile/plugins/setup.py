@@ -20,7 +20,7 @@ class Setup(Command):
 
         # Create standard tags and filters
         tags = session.config.get('tag', {}).values()
-        for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Sent', 'Trash'):
+        for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Blank', 'Sent', 'Trash'):
             if t not in tags:
                 AddTag(session, arg=[t]).run()
         if 'New' not in tags:
@@ -29,6 +29,7 @@ class Setup(Command):
             Filter(session,
                    arg=['read', '-New', 'Read Mail filter']).run()
 
+        session.config.save()
         return True
 
 

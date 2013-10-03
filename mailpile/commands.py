@@ -25,11 +25,13 @@ class Command:
   ORDER = (None, 0)
   SERIALIZE = False
   SPLIT_ARG = 10000  # A big number!
-  RAISES = (UsageError, )
+  RAISES = (UsageError, UrlRedirectException)
 
   HTTP_CALLABLE = ('GET', )
   HTTP_POST_VARS = { }
   HTTP_QUERY_VARS = { }
+  HTTP_BANNED_VARS = { }
+  HTTP_STRICT_VARS = True
 
   class CommandResult:
     def __init__(self, session, command, template_id, doc, result,
@@ -59,7 +61,7 @@ class Command:
       return {
         'command': self.command,
         'args': self.args,
-        'kwargs': self.kwargs,
+        'kwargs': self.kwargs.keys(),
         'status': self.status,
         'result': self.result,
         'elapsed': '%.3f' % self.session.ui.time_elapsed
@@ -394,6 +396,7 @@ class Output(Command):
   """Choose format for command results."""
   SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
   ORDER = ('Internals', 7)
+  HTTP_STRICT_VARS = False
 
   def command(self):
     self.session.ui.render_mode = self.args and self.args[0] or 'text'

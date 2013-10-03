@@ -148,7 +148,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       clength = int(self.headers.get('content-length'))
       ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
       if ctype == 'multipart/form-data':
-        post_data = cgi.parse_multipart(self.rfile, pdict)
+        post_data = cgi.FieldStorage(
+          fp=self.rfile,
+          headers=self.headers,
+          environ={'REQUEST_METHOD': method,
+                   'CONTENT_TYPE': self.headers['Content-Type']}
+        )
       elif ctype == 'application/x-www-form-urlencoded':
         if clength > 5*1024*1024:
           raise ValueError('OMG, input too big')

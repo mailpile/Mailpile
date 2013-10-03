@@ -1,9 +1,23 @@
+import cgi
 from urlparse import parse_qs, urlparse
 from urllib import quote
 
 from mailpile.commands import Command, COMMANDS
 import mailpile.plugins
 from mailpile.util import *
+
+
+class BadMethodError(Exception):
+  pass
+
+class BadDataError(Exception):
+  pass
+
+
+class _FancyString(unicode):
+    def __init__(self, *args):
+        unicode.__init__(self, *args)
+        self.filename = None
 
 
 class UrlMap:
@@ -63,9 +77,17 @@ class UrlMap:
         Traceback (most recent call last):
             ...
         UsageError: Unknown command: bogus
+        >>> urlmap._command('message/update', method='GET')
+        Traceback (most recent call last):
+            ...
+        BadMethodError: Invalid method (GET): message/update
+        >>> urlmap._command('message/update', method='POST', query_data={'evil': 1})
+        Traceback (most recent call last):
+            ...
+        BadDataError: Bad variable (evil): message/update
         """
         try:
-            match = [c for c in self._api_commands(method)
+            match = [c for c in self._api_commands(method, strict=False)
                              if (method and name == c.SYNOPSIS[2]) or
                                 (not method and name == c.SYNOPSIS[1])]
             if len(match) != 1:
@@ -74,13 +96,36 @@ class UrlMap:
             raise UsageError(str(e))
         command = match[0]
 
+        if method and (method not in command.HTTP_CALLABLE):
+            raise BadMethodError('Invalid method (%s): %s' % (method, name))
+
+        if command.HTTP_STRICT_VARS:
+            for var in (post_data or []):
+                if ((var not in command.HTTP_QUERY_VARS) and
+                        (var not in command.HTTP_POST_VARS)):
+                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+            for var in (query_data or []):
+                if var not in command.HTTP_QUERY_VARS:
+                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+        else:
+            for var in command.HTTP_BANNED_VARS:
+                if ((query_data and var in query_data) or
+                        (post_data and var in post_data)):
+                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+
         data = {}
         for vlist, src in ((command.HTTP_QUERY_VARS, query_data),
                            (command.HTTP_QUERY_VARS, post_data),
                            (command.HTTP_POST_VARS, post_data)):
             for var in vlist:
-                if var in src:
-                    data[var] = src[var]
+                if src and var in src:
+                    sdata = src[var]
+                    if isinstance(sdata, cgi.FieldStorage):
+                        data[var] = [_FancyString(sdata.value)]
+                        if hasattr(sdata, 'filename'):
+                            data[var][0].filename = sdata.filename
+                    else:
+                        data[var] = sdata
 
         return command(self.session, name, args, data=data)
 
@@ -175,8 +220,12 @@ class UrlMap:
                                query_data, post_data, fmt='html'):
         """Map a path to a command list, prefering the longest match.
 
-        >>> urlmap._map_api_command('GET', ['http', 'redir', ''], {}, {})
-        [<mailpile.commands.Output...>, <...UrlRedirect...>]
+        >>> urlmap._map_api_command('GET', ['message', 'draft', ''], {}, {})
+        [<mailpile.commands.Output...>, <...Draft...>]
+        >>> urlmap._map_api_command('GET', ['message', 'update', ''], {}, {})
+        Traceback (most recent call last):
+            ...
+        UsageError: Not available for GET: message/update
         """
         output = self._choose_output(path_parts, fmt=fmt)
         for bp in reversed(range(1, len(path_parts) + 1)):
@@ -191,6 +240,8 @@ class UrlMap:
                 ]
             except (ValueError, UsageError):
                 pass
+            except BadMethodError:
+                break
         raise UsageError('Not available for %s: %s' % (method,
                                                        '/'.join(path_parts)))
 
@@ -237,8 +288,8 @@ class UrlMap:
         Other commands use the command name as the first path component:
         >>> urlmap.map(request, 'GET', '/search/bjarni/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
-        >>> urlmap.map(request, 'GET', '/message/compose/=123/', {}, {})
-        [<mailpile.commands.Output...>, <mailpile.plugins.compose.Compose...>]
+        >>> urlmap.map(request, 'GET', '/message/draft/=123/', {}, {})
+        [<mailpile.commands.Output...>, <mailpile.plugins.compose.Draft...>]
         """
 
         # Check the API first.
@@ -269,9 +320,9 @@ class UrlMap:
         """Map a message to it's short-hand thread URL."""
         return self._url('/thread/=%s/' % message_id, output)
 
-    def url_compose(self, message_id, output=''):
+    def url_edit(self, message_id, output=''):
         """Map a message to it's short-hand editing URL."""
-        return self._url('/message/compose/=%s/' % message_id, output)
+        return self._url('/message/draft/=%s/' % message_id, output)
 
     def url_tag(self, tag_id, output=''):
         """
@@ -407,12 +458,31 @@ class UrlMap:
 
 class UrlRedirect(Command):
     """A stub command which just throws UrlRedirectException."""
-    SYNOPSIS = (None, 'redirect', 'http/redir', '<url>')
-    HTTP_CALLABLE = ('GET', 'POST', 'PUT', 'UPDATE')
-    RAISES = (UrlRedirectException, )
+    SYNOPSIS = (None, None, 'http/redirect', '<url>')
+    HTTP_CALLABLE = ( )
 
     def command(self):
         raise UrlRedirectException(self.args[0])
+
+
+class UrlRedirectEdit(Command):
+    """A stub command which just throws UrlRedirectException."""
+    SYNOPSIS = (None, None, 'http/redirect/url_edit', '<mid>')
+    HTTP_CALLABLE = ( )
+
+    def command(self):
+        mid = self.args[0]
+        raise UrlRedirectException(UrlMap(self.session).url_edit(mid))
+
+
+class UrlRedirectThread(Command):
+    """A stub command which just throws UrlRedirectException."""
+    SYNOPSIS = (None, None, 'http/redirect/url_thread', '<mid>')
+    HTTP_CALLABLE = ( )
+
+    def command(self):
+        mid = self.args[0]
+        raise UrlRedirectException(UrlMap(self.session).url_thread(mid))
 
 
 class HelpUrlMap(Command):
@@ -439,7 +509,8 @@ class HelpUrlMap(Command):
 
 
 if __name__ != "__main__":
-    mailpile.plugins.register_commands(HelpUrlMap)
+    mailpile.plugins.register_commands(HelpUrlMap, UrlRedirect,
+                                       UrlRedirectEdit, UrlRedirectThread)
 
 else:
     # If run as a python script, print map and run doctests.
