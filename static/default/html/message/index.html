@@ -15,12 +15,12 @@
         <ul>
           <li><b>Date:</b> {{message.friendly_date}} at {{message.shorttime}}</li>
           <li><b>From:</b> {{message.from|e}}</li>
-          <li><b>To:</b> {% for toaddr in message.to %}<a class="emailaddr" href="/contact/{{toaddr}}/" style="background: #eee; border-radius: 3px; padding: 2px; padding-left: 4px; padding-right: 4px; font-weight: normal;">{{toaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+          <li><b>To:</b> {% for toaddr in message.to %}<a class="message-email-address" href="/contact/{{toaddr}}/">{{toaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
           {% if message.cc %}
-          <li><b>Cc:</b> {% for ccaddr in message.cc %}<a class="emailaddr" href="/contact/{{ccaddr}}/" style="background: #eee; border-radius: 3px; padding: 2px; padding-left: 4px; padding-right: 4px; font-weight: normal;">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+          <li><b>Cc:</b> {% for ccaddr in message.cc %}<a class="message-email-address" href="/contact/{{ccaddr}}/">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
           {% endif %}
           {% if message.bcc %}
-          <li><b>Bcc:</b> {% for bccaddr in message.bcc %}<a class="emailaddr" href="/contact/{{bccaddr}}/" style="background: #eee; border-radius: 3px; padding: 2px; padding-left: 4px; padding-right: 4px; font-weight: normal;">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+          <li><b>Bcc:</b> {% for bccaddr in message.bcc %}<a class="message-email-address" href="/contact/{{bccaddr}}/">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
           {% endif %}
           <li><b>Subject:</b> {{message.subject}}</li>
         </ul>

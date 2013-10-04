@@ -6251,6 +6251,18 @@ div.content-normal {
 /* Thread */.message-headers {
   border-bottom: 1px solid #b3b3b3;
 }
+.message-email-address {
+  background: #eee;
+  color: #4d4d4d;
+  border-radius: 3px;
+  padding: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
+  font-weight: normal;
+}
+.message-email-address:hover {
+  color: #be2408;
+}
 .message-actions form {
   float: left;
   margin-right: 15px;
