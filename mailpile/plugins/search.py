@@ -362,6 +362,8 @@ class View(Search):
       else:
         conv = [int(c[0], 36)
                 for c in idx.get_conversation(msg_idx=email.msg_idx_pos)]
+        if email.msg_idx_pos not in conv:
+          conv.append(email.msg_idx_pos)
         conv.reverse()
         results.append(SearchResults(session, idx,
                                      results=conv, num=len(conv),
