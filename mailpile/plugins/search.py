@@ -231,7 +231,8 @@ class Search(Command):
   HTTP_CALLABLE = ('GET', )
   HTTP_QUERY_VARS = {
      'q': 'search terms',
-     'order': 'sort order'
+     'order': 'sort order',
+     'pos': 'start position'
   }
 
   class CommandResult(Command.CommandResult):
@@ -257,16 +258,21 @@ class Search(Command):
   def _do_search(self, search=None):
     session, idx = self.session, self._idx()
     session.searched = search or []
-
     args = self.args[:]
+
     for q in self.data.get('q', []):
       args.extend(q.split())
+    for pos in self.data.get('pos', []):
+      args[:0] = ['@%s' % pos]
+    for order in self.data.get('order', []):
+      session.order = order
 
     if args and args[0].startswith('@'):
+      spoint = args.pop(0)[1:]
       try:
-        start = int(args.pop(0)[1:])-1
+        start = int(spoint)-1
       except ValueError:
-        raise UsageError('Weird starting point')
+        raise UsageError('Weird starting point: %s' % spoint)
     else:
       start = 0
 
