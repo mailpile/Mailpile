@@ -64,9 +64,12 @@ try:
         assert(results.result[0]['count'] == 1)
 
     # Make sure we are decoding weird headers correctly
-    from_data = mp.search(*FROM_BRE).result[0]['messages'][0]['from']
-    say('Checking encoding: %s' % from_data)
-    assert('=C3' not in from_data)
+    result_bre = mp.search(*FROM_BRE).result[0]['messages'][0]
+    result_bre = mp.view('=%s' % result_bre['mid']).result[0]['messages'][0]
+    say('Checking encoding: %s' % result_bre['from'])
+    assert('=C3' not in result_bre['from'])
+    say('Checking encoding: %s' % result_bre['message']['headers']['To'])
+    assert('utf' not in result_bre['message']['headers']['To'])
 
     say("Tests passed, woot!")
 except:
