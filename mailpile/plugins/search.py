@@ -231,7 +231,9 @@ class Search(Command):
   HTTP_CALLABLE = ('GET', )
   HTTP_QUERY_VARS = {
      'q': 'search terms',
-     'order': 'sort order'
+     'order': 'sort order',
+     'start': 'start position',
+     'end': 'end position'
   }
 
   class CommandResult(Command.CommandResult):
@@ -257,16 +259,31 @@ class Search(Command):
   def _do_search(self, search=None):
     session, idx = self.session, self._idx()
     session.searched = search or []
-
     args = self.args[:]
+
     for q in self.data.get('q', []):
       args.extend(q.split())
 
+    for order in self.data.get('order', []):
+      session.order = order
+
+    num = int(session.config.get('num_results', 20))
+    d_start = int(self.data.get('start', [0])[0])
+    d_end = int(self.data.get('end', [0])[0])
+    if d_start and d_end:
+      args[:0] = ['@%s' % d_start]
+      num = d_end - d_start + 1
+    elif d_start:
+      args[:0] = ['@%s' % d_start]
+    elif d_end:
+      args[:0] = ['@%s' % (d_end - num + 1)]
+
     if args and args[0].startswith('@'):
+      spoint = args.pop(0)[1:]
       try:
-        start = int(args.pop(0)[1:])-1
+        start = int(spoint)-1
       except ValueError:
-        raise UsageError('Weird starting point')
+        raise UsageError('Weird starting point: %s' % spoint)
     else:
       start = 0
 
@@ -279,11 +296,11 @@ class Search(Command):
 
     session.results = list(idx.search(session, session.searched))
     idx.sort_results(session, session.results, how=session.order)
-    return session, idx, start
+    return session, idx, start, num
 
   def command(self, search=None):
-    session, idx, start = self._do_search(search=search)
-    session.displayed = SearchResults(session, idx, start=start)
+    session, idx, start, num = self._do_search(search=search)
+    session.displayed = SearchResults(session, idx, start=start, num=num)
     return [session.displayed]
 
 
@@ -362,6 +379,8 @@ class View(Search):
       else:
         conv = [int(c[0], 36)
                 for c in idx.get_conversation(msg_idx=email.msg_idx_pos)]
+        if email.msg_idx_pos not in conv:
+          conv.append(email.msg_idx_pos)
         conv.reverse()
         results.append(SearchResults(session, idx,
                                      results=conv, num=len(conv),

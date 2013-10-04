@@ -173,20 +173,23 @@ class UrlMap:
 
     def _map_tag(self, request, path_parts, query_data, post_data):
         """
-        Map /in/TAG_NAME/ to tag searches.
+        Map /in/TAG_NAME/[@<pos>/] to tag searches.
 
-        >>> path = '/in/Inbox/as.json'
+        >>> path = '/in/Inbox/@20/as.json'
         >>> commands = urlmap._map_tag(request, path[1:].split('/'), {}, {})
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
         >>> commands[0].args
         ['json']
         >>> commands[1].args
-        ['tag:1']
+        ['@20', 'tag:1']
         """
         output = self._choose_output(path_parts)
+        pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
         tag = '/'.join([p for p in path_parts[1:] if p])
         tag_search = ['tag:%s' % self.session.config.get_tag_id(tag)]
+        if pos:
+            tag_search[:0] = [pos]
         return [
             output,
             self._command('search', args=tag_search,
