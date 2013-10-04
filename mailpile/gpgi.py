@@ -25,8 +25,111 @@ openpgp_algorithms = {1: "RSA",
                       17: "DSA",
                       20: "Elgamal (encrypt/sign) [COMPROMISED]",
                      }
-# For details on type 20 compromisation, see http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
+# For details on type 20 compromisation, see 
+# http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
 
+# These are detailed in the GnuPG source under doc/DETAILS.
+status_messages = {
+    "ENTER": [],
+    "LEAVE": [],
+    "ABORT": [],
+    "NEWSIG": [],
+    "GOODSIG": ["long_keyid_or_fpr", "username"],
+    "KEYEXPIRED": ["expire_timestamp"],
+    "KEYREVOKED": [],
+    "BADSIG": ["long_keyid_or_fpr", "username"],
+    "ERRSIG": ["long_keyid_or_fpr", "pubkey_algo", "hash_algo", "sig_class", 
+               "timestamp", "rc"],
+    "BADARMOR": [],
+    "TRUST_UNDEFINED": ["error_token"],
+    "TRUST_NEVER": ["error_token"],
+    "TRUST_MARGINAL": ["zero", "validation_model"],
+    "TRUST_FULLY": ["zero", "validation_model"],
+    "TRUST_ULTIMATE": ["zero", "validation_model"],
+    "GET_BOOL": [],
+    "GET_LINE": [],
+    "GET_HIDDEN": [],
+    "GOT_IT": [],
+    "SHM_INFO": [],
+    "SHM_GET": [],
+    "SHM_GET_BOOL": [],
+    "SHM_GET_HIDDEN": [],
+    "NEED_PASSPHRASE": ["long_main_keyid", "long_keyid", 
+                        "keytype", "keylength"],
+    "VALIDSIG": ["fingerprint", "sig_creation_date", "sig_timestamp", 
+                 "expire_timestamp","sig_version", "reserved", "pubkey_algo", 
+                 "hash_algo", "sig_class", "primary_key_fpr"],
+    "SIG_ID": ["radix64_string", "sig_creation_date", "sig_timestamp"],
+    "ENC_TO": ["long_keyid", "keytype", "keylength"],
+    "NODATA": ["what"],
+    "BAD_PASSPHRASE": ["long_keyid"],
+    "NO_PUBKEY": ["long_keyid"],
+    "NO_SECKEY": ["long_keyid"],
+    "NEED_PASSPHRASE_SYM": ["cipher_algo", "s2k_mode", "s2k_hash"],
+    "NEED_PASSPHRASE_PIN": ["card_type", "chvno", "serialno"],
+    "DECRYPTION_FAILED": [],
+    "DECRYPTION_OKAY": [],
+    "MISSING_PASSPHRASE": [],
+    "GOOD_PASSPHRASE": [],
+    "GOODMDC": [],
+    "BADMDC": [],
+    "ERRMDC": [],
+    "IMPORTED": ["long keyid", "username"],
+    "IMPORT_OK": ["reason", "fingerprint"],
+    "IMPORT_PROBLEM": ["reason", "fingerprint"],
+    "IMPORT_CHECK": [],
+    "IMPORT_RES": ["count", "no_user_id", "imported", "imported_rsa", 
+                   "unchanged", "n_uids", "n_subk", "n_sigs", "n_revoc", 
+                   "sec_read", "sec_imported", "sec_dups", "skipped_new_keys",
+                   "not_imported"],
+    "FILE_START": ["what", "filename"],
+    "FILE_DONE": [],
+    "FILE_ERROR": [],
+    "BEGIN_DECRYPTION": ["mdc_method", "sym_algo"],
+    "END_DECRYPTION": [],
+    "BEGIN_ENCRYPTION": [],
+    "END_ENCRYPTION": [],
+    "DELETE_PROBLEM": ["reason_code"],
+    "PROGRESS": ["what", "char", "cur", "total"],
+    "SIG_CREATED": ["type" "pubkey algo", "hash algo", "class", 
+                    "timestamp", "key fpr"],
+    "SESSION_KEY": ["algo:hexdigits"],
+    "NOTATION_NAME" : ["name"],
+    "NOTATION_DATA" : ["string"],
+    "POLICY_URL" : ["string"],
+    "BEGIN_STREAM": [],
+    "END_STREAM": [],
+    "KEY_CREATED": ["type", "fingerprint", "handle"],
+    "KEY_NOT_CREATED": ["handle"],
+    "USERID_HINT": ["long main keyid", "string"],
+    "UNEXPECTED": ["what"],
+    "INV_RECP": ["reason", "requested_recipient"],
+    "INV_SGNR": ["reason", "requested_sender"],
+    "NO_RECP": ["reserved"],
+    "NO_SGNR": ["reserved"],
+    "ALREADY_SIGNED": ["long-keyid"], # Experimental, may disappear
+    "SIGEXPIRED": [], # Deprecated but may crop up; keyexpired overrides
+    "TRUNCATED": ["maxno"],
+    "EXPSIG": ["long_keyid_or_fpr", "username"],
+    "EXPKEYSIG": ["long_keyid_or_fpr", "username"],
+    "REVKEYSIG": ["long_keyid_or_fpr", "username"],
+    "ATTRIBUTE": ["fpr", "octets", "type", "index", 
+                  "count", "timestamp", "expiredate", "flags"],
+    "CARDCTRL": ["what", "serialno"],
+    "PLAINTEXT": ["format", "timestamp", "filename"],
+    "PLAINTEXT_LENGTH": ["length"],
+    "SIG_SUBPACKET": ["type", "flags", "len", "data"],
+    "SC_OP_SUCCESS": ["code"],
+    "SC_OP_FAILURE": ["code"],
+    "BACKUP_KEY_CREATED": ["fingerprint", "fname"],
+    "PKA_TRUST_BAD": ["unknown"],
+    "PKA_TRUST_GOOD": ["unknown"],
+    "BEGIN_SIGNING": [],
+    "ERROR": ["error location", "error code", "more"],
+    "MOUNTPOINT": ["mdc_method", "sym_algo"],
+    "SUCCESS": ["location"],
+    "DECRYPTION_INFO": [],
+}
 
 class GnuPG:
     """
@@ -36,12 +139,15 @@ class GnuPG:
     def __init__(self):
         self.gpgbinary = 'gpg'
         self.passphrase = None
-        self.rw = ["r", "w"]
-        self.fds = {"passphrase": True, "command": True, "logger": False, "status": False}
+        self.fds = {"passphrase": True, 
+                    "command": True, 
+                    "logger": False, 
+                    "status": False}
         self.handles = {}
         self.pipes = {}
-        self.needed_fds = ["stdin", "stdout", "stderr"]
+        self.needed_fds = ["stdin", "stdout", "stderr", "status"]
         self.errors = []
+        self.statuscallbacks = {}
 
     def default_errorhandler(self, *error):
         if error != "":
@@ -50,6 +156,22 @@ class GnuPG:
 
     def default_output(self, output):
         return output
+
+    def parse_status(self, output, *args):
+        status = []
+        lines = output.split("\n")
+        for line in lines:
+            line = line.replace("[GNUPG:] ", "")
+            if line == "":
+                continue
+            elems = line.split(" ")
+            callback_kwargs = dict(zip(status_messages, elems[1:]))
+            if self.statuscallbacks.has_key(elems[0]):
+                for callback in self.statuscallbacks[elems[0]]:
+                    callback(*kwargs)
+            status.append(elems)
+
+        return status
 
     def parse_verify(self, output, *args):
         lines = output.split("\n")
@@ -73,7 +195,9 @@ class GnuPG:
     def parse_keylist(self, keylist, *args):
         """
         >>> g = GnuPG()
-        >>> v = g.parse_keylist("pub:u:4096:1:D5DC2A79C2E4AE92:2010-12-30:::u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:2010-12-30::::::e:")
+        >>> v = g.parse_keylist("pub:u:4096:1:D5DC2A79C2E4AE92:2010-12-30:::\
+u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
+2010-12-30::::::e:")
         >>> v.has_key("D5DC2A79C2E4AE92")
         True
         >>> v["D5DC2A79C2E4AE92"]["size"]
@@ -105,7 +229,9 @@ class GnuPG:
             return (curkey, keys)
 
         def parse_subkey(line, curkey, keys):
-            subkey = {"id": line[4], "size": int(line[2]), "creation-date": line[5], "algorithm": int(line[3])}
+            subkey = {"id": line[4], "size": int(line[2]), 
+                      "creation-date": line[5], 
+                      "algorithm": int(line[3])}
             if line[0] == "ssb":
                 subkey["secret"] = True
             keys[curkey]["subkeys"].append(subkey)            
@@ -135,7 +261,10 @@ class GnuPG:
                 email = line[9]
                 name = ""
                 comment = ""
-            keys[curkey]["uids"].append({"email": email, "name": name, "comment": comment, "creation-date": line[5] })
+            keys[curkey]["uids"].append({"email": email, 
+                                         "name": name, 
+                                         "comment": comment, 
+                                         "creation-date": line[5] })
             return (curkey, keys)
 
         def parse_trust(line, curkey, keys):
@@ -143,7 +272,8 @@ class GnuPG:
             return (curkey, keys)
 
         def parse_signature(line, curkey, keys):
-            sig = {"signer": line[9], "signature-date": line[5], "keyid": line[4], "trust": line[10], "algorithm": line[4]}
+            sig = {"signer": line[9], "signature-date": line[5], 
+                   "keyid": line[4], "trust": line[10], "algorithm": line[4]}
 
             keys[curkey]["signatures"].append(sig)
             return (curkey, keys)
@@ -178,8 +308,12 @@ class GnuPG:
         return keys
 
     def emptycallbackmap():
-        """Utility function for people who are confused about what callbacks exist."""
+        """
+        Utility function for people who are confused about what callbacks 
+        exist.
+        """
         return dict([[x, []] for x in self.needed_fds])
+
 
     def run(self, args=[], callbacks={}, output=None, debug=False):
         """
@@ -192,55 +326,64 @@ class GnuPG:
         args.append("--with-colons")
         args.append("--verbose")
         args.append("--enable-progress-filter")
-        if debug: print "Needed FDs: ", self.needed_fds
+
         for fd in self.fds.keys():
             if fd not in self.needed_fds:
-                if debug: print "Don't need %s" % fd
                 continue
-            if debug: print "Opening fd %s" % fd
             self.pipes[fd] = os.pipe()
-            args.append("--%s-fd=%d" % (fd, self.pipes[fd][not self.fds[fd]]))
-            self.handles[fd] = os.fdopen(self.pipes[fd][self.fds[fd]], self.rw[self.fds[fd]])
-            fcntl.fcntl(self.handles[fd], fcntl.F_SETFD, 0)   # Stay open after execing
-            # Make the descriptor non-blocking
-            flags = fcntl.fcntl(self.handles[fd], fcntl.F_GETFL)
-            fcntl.fcntl(self.handles[fd], fcntl.F_SETFL, flags | os.O_NONBLOCK)
+            if debug: 
+                print "Opening fd %s, fh %d, mode %s" % (fd, 
+                    self.pipes[fd][self.fds[fd]], ["r", "w"][self.fds[fd]])
+            args.append("--%s-fd" % fd)
+            # The remote end of the pipe:
+            args.append("%d" % self.pipes[fd][not self.fds[fd]])
+            fdno = self.pipes[fd][self.fds[fd]]
+            self.handles[fd] = os.fdopen(fdno, ["r", "w"][self.fds[fd]])
+            # Cause file handles to stay open after execing
+            fcntl.fcntl(self.handles[fd], fcntl.F_SETFD, 0)
+            fl = fcntl.fcntl(self.handles[fd], fcntl.F_GETFL)
+            fcntl.fcntl(self.handles[fd], fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
         if debug: print "Running gpg with %s" % args
 
         proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
         self.handles["stdout"] = proc.stdout
         self.handles["stderr"] = proc.stderr
         self.handles["stdin"] = proc.stdin
-        if self.passphrase:
-            self.handles["passphrase"].write(self.passphrase)
-            self.handles["passphrase"].close()
 
         if output:
             self.handles["stdin"].write(output)
             self.handles["stdin"].close()
 
+        if self.passphrase:
+            self.handles["passphrase"].write(self.passphrase)
+            self.handles["passphrase"].close()
+
         retvals = {}
-        while True:
-            r = proc.poll() 
-            for fd in self.needed_fds:
-                if fd in ("stdin", "passphrase"):
-                    continue
+        for fd in self.needed_fds:
+            if fd in ("stdin", "passphrase"):
+                continue
+            if not callbacks.has_key(fd):
+                continue
+            while True:
                 if debug: print "Reading %s" % fd
-                buf = self.handles[fd].read()
-                if not callbacks.has_key(fd):
-                    continue
+
+                try:
+                    buf = self.handles[fd].read()
+                except IOError:
+                    break
+
                 if not retvals.has_key(fd):
                     retvals[fd] = []
-                if buf != "":
-                    if type(callbacks[fd]) == list:
-                        for cb in callbacks[fd]:
-                            retvals[fd].append(cb(buf))
-                    else:
-                        retvals[fd].append(callbacks[fd](buf))
+                if buf == "":
+                    break
 
-            if proc.returncode is not None:
-                break
+                if type(callbacks[fd]) == list:
+                    for cb in callbacks[fd]:
+                        retvals[fd].append(cb(buf))
+                else:
+                    retvals[fd].append(callbacks[fd](buf))
 
         return proc.returncode, retvals
 
@@ -250,11 +393,13 @@ class GnuPG:
         >>> g.list_keys()[0]
         0
         """
-        retvals = self.run(["--list-keys", "--fingerprint"], callbacks={"stdout": self.parse_keylist})
+        retvals = self.run(["--list-keys", "--fingerprint"], 
+                           callbacks={"stdout": self.parse_keylist})
         return retvals
 
     def list_sigs(self):
-        self.run(["--list-sigs", "--fingerprint"], callbacks={"stdout": self.parse_keylist})
+        self.run(["--list-sigs", "--fingerprint"], 
+                 callbacks={"stdout": self.parse_keylist})
         return retvals
 
     def list_secret_keys(self):
@@ -263,7 +408,8 @@ class GnuPG:
         >>> g.list_secret_keys()[0]
         0
         """
-        retvals = self.run(["--list-secret-keys", "--fingerprint"], callbacks={"stdout": self.parse_keylist})
+        retvals = self.run(["--list-secret-keys", "--fingerprint"], 
+                           callbacks={"stdout": self.parse_keylist})
         return retvals
 
     def encrypt(self, data, to=[], armor=True):
@@ -278,12 +424,14 @@ class GnuPG:
         for r in to:
             action.append("--recipient")
             action.append(r)
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, output=data)
+        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+                           output=data)
         return retvals[0], retvals[1]["stdout"][0]
 
     def decrypt(self, data, passphrase=None):
         """
-        Note that this test will fail if you don't replace the recipient with one whose key you control.
+        Note that this test will fail if you don't replace the recipient with 
+        one whose key you control.
         >>> g = GnuPG()
         >>> ct = g.encrypt("Hello, World", to=["smari@mailpile.is"])[1]
         >>> g.decrypt(ct)[1]
@@ -292,10 +440,12 @@ class GnuPG:
         if passphrase:
             self.passphrase = passphrase
         action = ["--decrypt"]
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, output=data)
+        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+                           output=data)
         return retvals[0], retvals[1]["stdout"][0]
 
-    def sign(self, data, _from=None, armor=True, detatch=True, clearsign=False, passphrase=None):
+    def sign(self, data, _from=None, armor=True, detatch=True, clearsign=False,
+             passphrase=None):
         """
         >>> g = GnuPG()
         >>> g.sign("Hello, World", _from="smari@mailpile.is")[0]
@@ -315,25 +465,28 @@ class GnuPG:
             action.append("--local-user")
             action.append(_from)
 
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, output=data)
+        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+                           output=data)
         return retvals[0], retvals[1]["stdout"][0]
 
     def verify(self, data, signature=None):
         """
         >>> g = GnuPG()
-        >>> s = g.sign("Hello, World", _from="smari@mailpile.is", clearsign=True)[1]
+        >>> s = g.sign("Hello, World", _from="smari@mailpile.is", 
+            clearsign=True)[1]
         >>> g.verify(s)
         """
-        print "BEFORE: %s" % self.needed_fds
-        self.needed_fds.append("status")
-        print "AFTER: %s" % self.needed_fds
-        retvals = self.run(["--verify"], callbacks={"stderr": self.parse_verify, "status": self.default_output}, output=data, debug=True)
-        self.needed_fds.remove("status")
+        retvals = self.run(["--verify"], 
+                           callbacks={"stderr": self.parse_verify, 
+                                      "status": self.parse_status}, 
+                           output=data)
 
         return retvals[0], retvals[1]["stderr"]
 
-    def sign_encrypt(self, data, _from=None, to=[], armor=True, detatch=True, clearsign=False):
-        retval, signblock = self.sign(data, _from=_from, armor=armor, detatch=detatch, clearsign=clearsign)
+    def sign_encrypt(self, data, _from=None, to=[], armor=True, detatch=True,
+                     clearsign=False):
+        retval, signblock = self.sign(data, _from=_from, armor=armor, 
+                                      detatch=detatch, clearsign=clearsign)
         if detatch:
             # TODO: Deal with detached signature.
             retval, cryptblock = self.encrypt(data, to=to, armor=armor)
@@ -347,9 +500,9 @@ class GnuPG:
 if __name__ == "__main__":
     g = GnuPG()
     g.verify("Foo")
-    import doctest
-    t = doctest.testmod()
-    if t.failed == 0:
-        print "GPG Interface: All %d tests successful" % (t.attempted)
-    else:
-        print "GPG Interface: %d out of %d tests failed" % (t.failed, t.attempted)
+#    import doctest
+#    t = doctest.testmod()
+#    if t.failed == 0:
+#        print "GPG Interface: All %d tests successful" % (t.attempted)
+#    else:
+#        print "GPG Interface: %d out of %d tests failed" % (t.failed, t.attempted)

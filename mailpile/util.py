@@ -105,7 +105,7 @@ def sha1b64(s):
     return h.digest().encode('base64')
 
 
-def sha512b64(s):
+def sha512b64(*data):
     """
     Apply the SHA512 hash algorithm to a string
     and return the base64-encoded hash value
@@ -119,10 +119,11 @@ def sha512b64(s):
     s -- The string to hash
     """
     h = hashlib.sha512()
-    if type(s) == type(unicode()):
-        h.update(s.encode('utf-8'))
-    else:
-        h.update(s)
+    for s in data:
+        if type(s) == type(unicode()):
+            h.update(s.encode('utf-8'))
+        else:
+            h.update(s)
     return h.digest().encode('base64')
 
 
@@ -144,7 +145,7 @@ def strhash(s, length, obfuscate=None):
                              before hashing
     """
     if obfuscate:
-        hashedStr = b64c(sha512b64('%s%s' % (s, obfuscate)).lower())
+        hashedStr = b64c(sha512b64(s, obfuscate).lower())
     else:  # Don't obfuscate
         hashedStr = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '',
                            s.lower())[:(length - 4)]

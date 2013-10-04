@@ -76,7 +76,7 @@
           {% for tag in t.result.tags %}
           <li class="sidebar-tags">
             <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
-              <span class="icon-{{tag.name.lower()}}"></span> {{tag.name}}
+              <span class="icon-tag icon-{{tag.name.lower()}}"></span> {{tag.name}}
               <span class="navigation-attention-important">{{tag.new}}</span>
             </a>
           </li>
