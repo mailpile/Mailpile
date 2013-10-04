@@ -97,7 +97,9 @@ you can use the generic selector below, but it's slower:
 .icon-ads,
 .icon-graph,
 .icon-inbox,
-.icon-list {
+.icon-list,
+.icon-expand,
+.icon-collapse {
   font-family: 'Mailpile-Interface';
   speak: none;
   font-style: normal;
@@ -250,6 +252,12 @@ you can use the generic selector below, but it's slower:
 }
 .icon-list:before {
   content: "\e02f";
+}
+.icon-expand:before {
+  content: "\e030";
+}
+.icon-collapse:before {
+  content: "\e031";
 }
 /* Backgrounds */
 .background-gray {
@@ -5960,6 +5968,9 @@ text {
   line-height: 18px;
   vertical-align: top;
 }
+#sidebar hr {
+  margin: 20px 0px 0px 0px;
+}
 #sidebar nav ul {
   margin: 10px 20px;
 }
@@ -5991,12 +6002,17 @@ text {
 #sidebar a:active {
   color: #be2408;
 }
-#sidebar a span {
+#sidebar a span.sidebar-icon {
   position: relative;
   top: 3px;
   left: 0px;
-  font-size: 24px;
   margin-right: 4px;
+  font-size: 24px;
+  font-weight: normal;
+}
+#sidebar a span.sidebar-notification {
+  padding: 5px 7px;
+  font-size: 14px;
 }
 /* Content */#content {
   width: 80%;

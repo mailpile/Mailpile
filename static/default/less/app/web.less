@@ -138,6 +138,10 @@
 		vertical-align: top;
 	}
 	
+	#sidebar hr {
+  	margin: 20px 0px 0px 0px;
+	}
+	
 	#sidebar nav ul {
 		margin: 10px 20px;
 	}
@@ -180,13 +184,23 @@
 		color: @red;
 	}	
 	
-	#sidebar a span {
+	#sidebar a span.sidebar-icon {
 		position: relative;
 		top: 3px;
 		left: 0px;
-		font-size: 24px;
 		margin-right: 4px;
+		font-size: 24px;
+		font-weight: normal;
 	}
+
+  #sidebar a span.sidebar-tag {
+    
+  }
+
+  #sidebar a span.sidebar-notification {
+    padding: 5px 7px;
+    font-size: 14px;
+  }
 
 
 /* Content */	

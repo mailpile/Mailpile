@@ -71,13 +71,20 @@
   <div id="sidebar">
     <nav>
       <ul>
-        <li><a href="/in/Drafts/"><span class="icon-compose"></span> Drafts <span class="navigation-attention-important">{{mailpile("tag/list", "Drafts").result.tags.0.all}}</span></a></li>
+        <li>
+        <a href="/in/Drafts/">
+          <span class="sidebar-icon icon-compose"></span>
+          <span class="sidebar-tag">Drafts</span>
+          <span class="sidebar-notification navigation-attention-important">{{mailpile("tag/list", "Drafts").result.tags.0.all}}</span>
+        </a>
+        </li>
         {% for t in high_tags, user_tags, low_tags %}
           {% for tag in t.result.tags %}
           <li class="sidebar-tags">
             <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
-              <span class="icon-{{tag.name.lower()}}"></span> {{tag.name}}
-              <span class="navigation-attention-important">{{tag.new}}</span>
+              <span class="sidebar-icon icon-{{tag.name.lower()}}"></span>
+              <span class="sidebar-tag">{{tag.name}}</span>
+              <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
             </a>
           </li>
           {% endfor %}
@@ -85,11 +92,36 @@
       </ul>
       <hr>
       <ul>
-        <li><a href="/search/has:pgp" class=""><span class="icon-encrypted"></span> Encrypted</a></li>
-        <li><a href="/search/att:jpg" class=""><span class="icon-photos"></span> Photos</a></li>
-        <li><a href="/search/has:attachment" class=""><span class="icon-files"></span> Files</a></li>
-        <li><a href="/search/http" class=""><span class="icon-links"></span> Links</a></li>
-        <li><a href="/group/list" class=""><span class="icon-groups"></span> Groups</a></li>
+        <li>
+          <a href="/search/has:pgp" class="">
+            <span class="sidebar-icon icon-encrypted"></span>
+            <span class="sidebar-tag">Encrypted</span>
+          </a>
+        </li>
+        <li>
+          <a href="/search/att:jpg" class="">
+            <span class="sidebar-icon icon-photos"></span>
+            <span class="sidebar-tag">Photos</span>
+          </a>
+        </li>
+        <li>
+          <a href="/search/has:attachment" class="">
+            <span class="sidebar-icon icon-files"></span>
+            <span class="sidebar-tag">Files</span>
+          </a>
+        </li>
+        <li>
+          <a href="/search/http" class="">
+            <span class="sidebar-icon icon-links"></span>
+            <span class="sidebar-tag">Links</span>
+          </a>
+        </li>
+        <li>
+          <a href="/group/list" class="">
+            <span class="sidebar-icon icon-groups"></span>
+            <span class="sidebar-tag">Groups</span>
+          </a>
+        </li>
       </ul>
     </nav>
     <hr>
