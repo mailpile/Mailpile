@@ -464,7 +464,8 @@ class MailIndex(object):
         # before parsing.
         # FIXME: This is "safe", but can we be smarter/gentler?
         value = CleanText(msg[name], replace='_').clean
-      decoded = email.header.decode_header(value or '')
+      # Note: decode_header does the wrong thing with "quoted" data.
+      decoded = email.header.decode_header((value or '').replace('"', ''))
       return (' '.join([self.try_decode(t[0], t[1]) for t in decoded])
               ).replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')
     except email.errors.HeaderParseError:

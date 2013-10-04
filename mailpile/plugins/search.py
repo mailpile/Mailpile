@@ -226,7 +226,7 @@ class SearchResults(dict):
 
 class Search(Command):
   """Search your mail!"""
-  SYNOPSIS = ('s', 'search', 'search', '<terms>')
+  SYNOPSIS = ('s', 'search', 'search', '[@<start>] <terms>')
   ORDER = ('Searching', 0)
   HTTP_CALLABLE = ('GET', )
   HTTP_QUERY_VARS = {

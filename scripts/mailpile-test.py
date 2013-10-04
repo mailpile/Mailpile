@@ -23,6 +23,8 @@ from mailpile import Mailpile
 
 
 ##[ Black-box test script ]###################################################
+
+FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
 try:
     # First, we set up a pristine Mailpile
     os.system('rm -rf %s' % mailpile_home)
@@ -49,7 +51,7 @@ try:
 
     # Search for things, there should be exactly one match for each.
     mp.order('flat-date')
-    for search in (['from:wow'],
+    for search in (FROM_BRE,
                    ['agirorn'],
                    ['subject:emerging'],
                    ['from:twitter', 'brennan'],
@@ -60,6 +62,11 @@ try:
         results = mp.search(*search)
         assert(len(results.result) == 1)
         assert(results.result[0]['count'] == 1)
+
+    # Make sure we are decoding weird headers correctly
+    from_data = mp.search(*FROM_BRE).result[0]['messages'][0]['from']
+    say('Checking encoding: %s' % from_data)
+    assert('=C3' not in from_data)
 
     say("Tests passed, woot!")
 except:

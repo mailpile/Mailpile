@@ -219,7 +219,7 @@ DomainKey-Signature: a=rsa-sha1; c=nofws; q=dns; s=k1; d=mail71.us2.mcsv.net;
    1Se5MUjYAsZ6WNX+vck=;
 Received: from (127.0.0.1) by mail71.us2.mcsv.net (PowerMTA(TM) v3.5r16) id h6romo174gsk for <bre@example.com>; Mon, 16 Sep 2013 11:54:18 +0000 (envelope-from <bounce-mc.us2_2315386.626585-bre=example.com@mail71.us2.mcsv.net>)
 Subject: =?utf-8?Q?=E2=9C=88=20Northern=20Lights=20Extravaganza=3A=20Iceland=20from=20DKK599=2F=C2=A369=2F=E2=82=AC96?=
-From: =?utf-8?Q?WOW=20club?= <no-reply@example.com>
+From: "=?utf-8?q?Bjarni_R=C3=BAnar_Einarsson?=" <no-reply@example.com>
 Reply-To: =?utf-8?Q?WOW=20club?= <no-reply@example.com>
 To: =?utf-8?Q??= <bre@example.com>
 Date: Mon, 16 Sep 2013 11:54:18 +0000
