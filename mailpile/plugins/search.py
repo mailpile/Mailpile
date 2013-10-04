@@ -232,7 +232,8 @@ class Search(Command):
   HTTP_QUERY_VARS = {
      'q': 'search terms',
      'order': 'sort order',
-     'pos': 'start position'
+     'start': 'start position',
+     'end': 'end position'
   }
 
   class CommandResult(Command.CommandResult):
@@ -262,10 +263,20 @@ class Search(Command):
 
     for q in self.data.get('q', []):
       args.extend(q.split())
-    for pos in self.data.get('pos', []):
-      args[:0] = ['@%s' % pos]
+
     for order in self.data.get('order', []):
       session.order = order
+
+    num = int(session.config.get('num_results', 20))
+    d_start = int(self.data.get('start', [0])[0])
+    d_end = int(self.data.get('end', [0])[0])
+    if d_start and d_end:
+      args[:0] = ['@%s' % d_start]
+      num = d_end - d_start + 1
+    elif d_start:
+      args[:0] = ['@%s' % d_start]
+    elif d_end:
+      args[:0] = ['@%s' % (d_end - num + 1)]
 
     if args and args[0].startswith('@'):
       spoint = args.pop(0)[1:]
@@ -285,11 +296,11 @@ class Search(Command):
 
     session.results = list(idx.search(session, session.searched))
     idx.sort_results(session, session.results, how=session.order)
-    return session, idx, start
+    return session, idx, start, num
 
   def command(self, search=None):
-    session, idx, start = self._do_search(search=search)
-    session.displayed = SearchResults(session, idx, start=start)
+    session, idx, start, num = self._do_search(search=search)
+    session.displayed = SearchResults(session, idx, start=start, num=num)
     return [session.displayed]
 
 
