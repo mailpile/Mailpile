@@ -44,6 +44,16 @@ MailPile.prototype.print = function() {}
 MailPile.prototype.reply = function() {}
 MailPile.prototype.rescan = function() {}
 
+
+MailPile.prototype.compose = function() {
+  var form = $('<form action="' + url + '" method="post">' +
+    '<input type="text" name="api_url" value="' + Return_URL + '" />' +
+    '</form>');
+  $('body').append(form);
+  $(form).submit();
+  console.log('yo here we go');
+}
+
 MailPile.prototype.gpgrecvkey = function(keyid) {
 	console.log("Fetching GPG key 0x" + keyid);
 	mailpile.json_get("gpg recv_key", {}, function(data) {

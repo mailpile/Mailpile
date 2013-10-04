@@ -54,7 +54,11 @@
   <h1>{{name}}'s<small><b>mail</b>pile of <b>{{mailpile_size}}</b> emails</small></h1>
   <nav>
     <ul>
-      <li><a href="/message/compose/"><span class="icon-compose"></span> Compose</a></li>
+      <li>
+        <form action="/message/compose/" method=POST>
+          <button type="submit"><span class="icon-compose"></span>Compose</button>
+        </form>
+      </li>
       <li><a href="/contact/list/"><span class="icon-user"></span> Contacts</a></li>
       <li><a href="/tag/list/"><span class="icon-tag"></span> Tags</a></li>
       <li><a href="/static/donate/"><span class="icon-donate"></span> Donate</a></li>

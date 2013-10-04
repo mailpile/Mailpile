@@ -4058,7 +4058,7 @@ input[type="button"] {
   font-weight: normal !important;
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-  padding: 8px 15px 4px 12px;
+  padding: 8px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -4088,7 +4088,7 @@ input[type="button"] {
   font-weight: normal !important;
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-  padding: 8px 15px 4px 12px;
+  padding: 8px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -4149,7 +4149,7 @@ input[type="button"]:active {
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
   text-decoration: none;
-  padding: 8px 15px 4px 12px;
+  padding: 8px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -4199,7 +4199,7 @@ input[type="button"]:active {
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
   text-decoration: none;
-  padding: 8px 15px 4px 12px;
+  padding: 8px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -4249,7 +4249,7 @@ input[type="button"]:active {
   line-height: normal;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
   text-decoration: none;
-  padding: 8px 15px 4px 12px;
+  padding: 8px 15px;
   display: inline-block;
   cursor: pointer;
   -webkit-box-sizing: border-box;
@@ -5901,7 +5901,7 @@ text {
   margin-left: 30px;
   text-align: center;
 }
-#header nav ul li a {
+#header nav a {
   width: 100%;
   height: 100%;
   display: block;
@@ -5910,10 +5910,30 @@ text {
   font-weight: normal;
   color: #4d4d4d;
 }
-#header nav ul li a:hover {
+#header nav a:hover {
   color: #3a6b8c;
 }
-#header nav ul li a span {
+#header nav a span {
+  display: block;
+  font-size: 36px;
+  line-height: 36px;
+}
+#header nav button {
+  margin: 0px;
+  padding: 0px;
+  font-size: 14px;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 100;
+  color: #4d4d4d !important;
+  text-shadow: 0px 0px 0px;
+  border: 0px;
+  line-height: 24px;
+  background: none;
+}
+#header nav button:hover {
+  color: #3a6b8c !important;
+}
+#header nav button span {
   display: block;
   font-size: 36px;
   line-height: 36px;
@@ -5962,6 +5982,7 @@ text {
   padding: 15px 0px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 18px;
+  font-weight: normal;
   color: #4d4d4d;
 }
 #sidebar a:hover {
@@ -6015,6 +6036,7 @@ text {
   display: block;
   padding: 10px 15px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
   color: #4d4d4d;
 }
 #sub-navigation a:hover,
@@ -6022,12 +6044,15 @@ text {
   color: #be2408;
 }
 #sub-navigation li.navigation-on {
-  background: #b3b3b3;
+  background: #d9d9d9;
   border-radius: 5px;
 }
 #sub-navigation li.navigation-on a {
   cursor: default;
   padding: 10px 15px;
+  color: #ffffff;
+}
+#sub-navigation li.navigation-on a:hover {
   color: #ffffff;
 }
 #sub-navigation ul {
@@ -6225,6 +6250,10 @@ div.content-normal {
 }
 /* Thread */.message-headers {
   border-bottom: 1px solid #b3b3b3;
+}
+.message-actions form {
+  float: left;
+  margin-right: 15px;
 }
 /* File Browser */
 .item-file {

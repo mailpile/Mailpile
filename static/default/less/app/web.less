@@ -67,7 +67,7 @@
 		text-align: center;
 	}
 	
-	#header nav ul li a {
+	#header nav a {
 	  width: 100%;
 	  height: 100%;
 	  display: block;
@@ -77,14 +77,37 @@
 		color: @grayDark;
 	}
 	
-	#header nav ul li a:hover {
+	#header nav a:hover {
 		color: @blue;
 	} 
 	
-	#header nav ul li a span {
+	#header nav a span {
 		display: block;
 		font-size: 36px;
 		line-height: 36px;
+	}
+
+	#header nav button {
+	  margin: 0px;
+	  padding: 0px;
+    font-size: 14px;
+		font-family: @text-font-family-bold;
+		font-weight: 100;
+		color: @grayDark !important;
+		text-shadow: 0px 0px 0px;
+		border: 0px;
+		line-height: 24px;
+  	background: none;
+	}
+	
+	#header nav button:hover {
+		color: @blue !important;
+	} 	
+	
+	#header nav button span {
+		display: block;
+		font-size: 36px;
+		line-height: 36px;  	
 	}
 	
 	
@@ -145,6 +168,7 @@
 		padding: 15px 0px;
 		font-family: @text-font-family-bold;
 		font-size: 18px;
+		font-weight: normal;
 		color: @grayDark;
 	}
 	
@@ -215,6 +239,7 @@
 		display: block;	
 		padding: 10px 15px;
 		font-family: @text-font-family-bold;
+		font-weight: normal;		
 		color: @grayDark;
 	}
 	
@@ -223,7 +248,7 @@
 	}
 
 	#sub-navigation li.navigation-on {
-		background: @gray;
+		background: lighten(@gray, 15%);
 		border-radius: @base-border-radius;		
 	}
 
@@ -232,6 +257,10 @@
 		padding: 10px 15px;
 		color: @white;
 	}	
+
+	#sub-navigation li.navigation-on a:hover {
+    color: @white;
+  }
 	
 	#sub-navigation ul {
 		display: block;
@@ -496,6 +525,11 @@
 	.message-attachments {
   	
 	}
+
+  .message-actions form {
+    float: left;
+    margin-right: 15px;
+  }
 
 
 

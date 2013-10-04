@@ -43,10 +43,20 @@
          {% endfor %}
       </ul>
       </div>
-         <a href="/message/reply/={{message.mid}}/" class="button-secondary"><span class="icon-reply"></span> Reply</a> 
-         <a href="/message/forward/={{message.mid}}/" class="button-secondary"><span class="icon-forward"></span> Forward</a> 
-         <a href="/message/archive/={{message.mid}}/" class="button-secondary"><span class="icon-archive"></span> Archive</a>
-         <a href="/message/remove/={{message.mid}}/" class="button-secondary"><span class="icon-trash"></span> Delete</a>
+      <div class="message-actions">
+        <form action="/message/reply/={{message.mid}}/" method=POST>
+          <button type="submit"><span class="icon-reply"></span> Reply</button>
+        </form>
+        <form action="/message/forward/={{message.mid}}/" method=POST>
+          <button type="submit"><span class="icon-forward"></span> Forward</button>
+        </form>
+        <form action="/message/archive/={{message.mid}}/" method=POST>
+          <button type="submit"><span class="icon-archive"></span> Archive</button>
+        </form>
+        <form action="/message/reply/={{message.mid}}/" method=POST>
+          <button type="submit"><span class="icon-trash"></span> Delete</button>
+        </form>
+      </div>
       </td>
     </tr>
     {% endif %}
