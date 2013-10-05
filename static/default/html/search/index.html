@@ -18,17 +18,21 @@
     <input type='hidden' name='csrf' value='{csrf}' />
     <table class="pile-results" id="pile-results">
     <tbody>
-      {% for message in result.0.messages %}
-      {% if not message.message %}
-        {% include("partials/search_item.html") %}
+      {% if result.0 %}
+        {% for message in result.0.messages %}
+        {% if not message.message %}
+          {% include("partials/search_item.html") %}
+        {% endif %}
+        {% endfor %}
+      {% else %}
+        {{result}}
       {% endif %}
-      {% endfor %}
     </tbody>
     </table>
     <div id="pile-bottom" class="clearfix">
       <a href="#" class="button-primary">Previous</a> <a href="/in/Inbox/@20/" class="button-primary">Next</a>
       <div>
-         <h5>{{start}} - {{end}} of {{total}} Messages</h5><br>
+         <h5>{% if result.0 %}{{result.0.start}} - {{result.0.end}} of {{result.0.total}} Messages{% endif %}</h5><br>
        <a class="change-result-size" href="#">Show Expanded View</a>
       </div>
     </div>
