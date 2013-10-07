@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from datetime import date
-from setuptools import setup
+from setuptools import setup, find_packages
 from mailpile.app import APPVER
 import os
 
@@ -24,7 +24,7 @@ Mailpile is a tool for building and maintaining a tagging search
 engine for a personal collection of e-mail.  It can be used as a
 simple web-mail client.
 """,
-   packages=['mailpile','mailpile.plugins','mailpile.mailboxes'],
+   packages=find_packages(),
    entry_points = {
      'console_scripts': [
        'mailpile = mailpile.__main__:main'
