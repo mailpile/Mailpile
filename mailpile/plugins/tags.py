@@ -162,7 +162,7 @@ class DeleteTag(TagCommand):
 
 
 class Filter(Command):
-  """Add an auto-tagging rule for the active search or given terms."""
+  """Add auto-tag rule for current search or terms"""
   SYNOPSIS = (None, 'filter', None,
               '[new|read] [notag] [=<mid>] '
               '[<terms>] [+<tag>] [-<tag>] [<comment>]')
@@ -260,8 +260,8 @@ class DeleteFilter(Command):
 
 
 class ListFilters(Command):
-  """List all auto-tagging rule"""
-  SYNOPSIS = (None, 'filter/list', 'filter/list', '[<search>]')
+  """List (all) auto-tagging rules"""
+  SYNOPSIS = (None, 'filter/list', 'filter/list', '[<search>|=<id>]')
   ORDER = ('Tagging', 1)
 
   class CommandResult(Command.CommandResult):
