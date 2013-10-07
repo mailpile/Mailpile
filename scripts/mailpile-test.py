@@ -56,6 +56,7 @@ try:
                    ['subject:emerging'],
                    ['from:twitter', 'brennan'],
                    ['dates:2013-09-17', 'feministinn'],
+                   ['mailbox:tests.mbx'] + FROM_BRE,
                    ['att:jpg', 'fimmtudaginn'],
                    ['subject:Moderation', 'kde-isl']):
         say('Searching for: %s' % search)
