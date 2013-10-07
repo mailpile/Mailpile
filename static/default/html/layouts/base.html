@@ -84,7 +84,7 @@
           {% for tag in t.result.tags %}
           <li class="sidebar-tags">
             <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
-              <span class="sidebar-icon icon-{{tag.name.lower()}}"></span>
+              <span class="sidebar-icon icon-tag icon-{{tag.name.lower()}}"></span>
               <span class="sidebar-tag">{{tag.name}}</span>
               {% if tag.new > 0 %}
               <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
