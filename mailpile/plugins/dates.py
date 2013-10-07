@@ -37,7 +37,7 @@ _date_offsets = {
   'today': 0,
   'yesterday': 1
 }
-def search(config, term, hits):
+def search(config, idx, term, hits):
   try:
     word = term.split(':', 1)[1].lower()
     if '..' in term:

@@ -7,7 +7,7 @@ from mailpile.plugins.contacts import *
 
 ##[ Search terms ]############################################################
 
-def search(config, term, hits):
+def search(config, idx, term, hits):
     group = config.vcards.get(term.split(':', 1)[1])
     rt, emails = [], []
     if group and group.kind == 'group':
