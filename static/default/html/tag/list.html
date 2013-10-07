@@ -3,16 +3,24 @@
 {% block content %}
 {% include("partials/sub_nav_tags.html") %}
 
-<div id="tags-list" class="content-normal">
+<div id="tags-list" class="clearfix">
 
-  <h3>Tags: Needs Fixing</h3>
-  <ul>
-    <li><a href="{url}" title="{all} emails" class="tag_new_{new}"
-         ><span class="icon-tag"></span> {name}
-          <span class='navigation-attention-important'>{new}</span>
-        </a>
-    </li>
-  </ul>
+  {% for tag in result.tags %}
+  <div class="tag-card" id="tag-card-{{tag.tid}}">
+    <span class="tag-card-name">{{tag.name}}</span>
+
+    New<br><span class="tag-card-message-new navigation-attention-important">{{tag.new}}</span>    
+    Total<br> <span class="tag-card-message-total">{{tag.all}}</span>
+        
+    <a class="tag-card-message-link" href="{{tag.url}}">View Messages</a>
+  </div>
+  {% endfor %}
+
+  <hr>
+  
+  <p>What is this value: "not": 16513 in the tag object</p>
+
+  
 </div>
 
 {% endblock %}
