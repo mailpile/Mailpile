@@ -75,7 +75,9 @@
         <a href="/in/Drafts/">
           <span class="sidebar-icon icon-compose"></span>
           <span class="sidebar-tag">Drafts</span>
-          <span class="sidebar-notification navigation-attention-important">{{mailpile("tag/list", "Drafts").result.tags.0.all}}</span>
+          {% if mailpile("tag/list", "Drafts").result.tags.0.all > 0 %}
+          <span class="sidebar-notification navigation-attention-important">{{ mailpile("tag/list", "Drafts").result.tags.0.all }}</span>
+          {% endif %}
         </a>
         </li>
         {% for t in high_tags, user_tags, low_tags %}
@@ -84,7 +86,9 @@
             <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
               <span class="sidebar-icon icon-{{tag.name.lower()}}"></span>
               <span class="sidebar-tag">{{tag.name}}</span>
+              {% if tag.new > 0 %}
               <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
+              {% endif %}
             </a>
           </li>
           {% endfor %}

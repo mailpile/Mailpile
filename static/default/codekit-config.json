@@ -73,10 +73,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/rebar\/typography.less" : {
+    "\/less\/mixins\/elements.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/rebar\/typography.less",
-      "outputAbbreviatedPath" : "\/less\/css\/typography.css",
+      "inputAbbreviatedPath" : "\/less\/mixins\/elements.less",
+      "outputAbbreviatedPath" : "\/less\/css\/elements.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -90,10 +90,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/mixins\/elements.less" : {
+    "\/less\/rebar\/typography.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/mixins\/elements.less",
-      "outputAbbreviatedPath" : "\/less\/css\/elements.css",
+      "inputAbbreviatedPath" : "\/less\/rebar\/typography.less",
+      "outputAbbreviatedPath" : "\/less\/css\/typography.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -149,7 +149,7 @@
     },
     "\/js\/jquery.ui.draggable.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/jquery.ui.draggable.js",
@@ -295,7 +295,7 @@
     },
     "\/js\/jquery.ui.droppable.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/jquery.ui.droppable.js",
@@ -483,6 +483,15 @@
       "outputAbbreviatedPath" : "\/js\/jKey\/jquery.jkey.min-min.js",
       "fileType" : 64
     },
+    "\/html\/search\/index.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/search\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/less\/config.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/config.less",
@@ -499,15 +508,6 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
-    },
-    "\/html\/search\/index.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/search\/index.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/less\/app\/mobile.less" : {
       "ieCompatibility" : 1,
@@ -564,15 +564,6 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
-    "\/oldhtml\/page.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/oldhtml\/page.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/css\/select2.png" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -600,6 +591,15 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
+    },
+    "\/oldhtml\/page.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/oldhtml\/page.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
     },
     "\/js\/jquery.ui.sortable.js" : {
       "ignoreWasSetByUser" : 0,
@@ -754,12 +754,12 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/html\/settings\/index.html" : {
+    "\/html\/message\/index.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/settings\/index.html",
+      "inputAbbreviatedPath" : "\/html\/message\/index.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -828,12 +828,12 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/html\/message\/index.html" : {
+    "\/html\/settings\/index.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/message\/index.html",
+      "inputAbbreviatedPath" : "\/html\/settings\/index.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -956,6 +956,15 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
+    "\/html\/partials\/errors_content.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/partials\/errors_content.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/js\/mailpile-libraries.js" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -966,15 +975,6 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/mailpile-libraries-min.js",
       "fileType" : 64
-    },
-    "\/html\/partials\/errors_content.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/partials\/errors_content.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/js\/jquery.ui.core.js" : {
       "ignoreWasSetByUser" : 0,
@@ -1113,15 +1113,6 @@
       "initialSize" : 1761,
       "fileType" : 8192
     },
-    "\/html\/contact\/list.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/contact\/list.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/temporary.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -1137,6 +1128,15 @@
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/html\/contact\/add.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/html\/contact\/list.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/contact\/list.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -1246,13 +1246,27 @@
     {
       "type" : 1,
       "position" : 5,
-      "linkedFileAbbreviatedPath" : "\/js\/select2.min.js",
+      "linkedFileAbbreviatedPath" : "\/js\/jquery.ui.droppable.js",
       "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
       "followForSyntaxChecking" : 1
     },
     {
       "type" : 1,
       "position" : 6,
+      "linkedFileAbbreviatedPath" : "\/js\/jquery.ui.draggable.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 7,
+      "linkedFileAbbreviatedPath" : "\/js\/select2.min.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 8,
       "linkedFileAbbreviatedPath" : "\/js\/mousetrap.min.js",
       "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
       "followForSyntaxChecking" : 1
