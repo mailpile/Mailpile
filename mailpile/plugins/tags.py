@@ -274,13 +274,24 @@ class ListFilters(Command):
   SYNOPSIS = (None, 'filter/list', 'filter/list', None)
   ORDER = ('Tagging', 1)
 
+  class CommandResult(Command.CommandResult):
+    def as_text(self):
+      return '\n'.join([' %3.3s %-20s %-25s %s' % (
+                          r['fid'], r['terms'], r['human_tags'], r['comment']
+                        ) for r in self.result])
+
   def command(self):
     results = []
     for fid, trms, tags, cmnt in self.session.config.get_filters(filter_on=None):
+      human_tags = []
+      for tterm in tags.split():
+        tagname =  self.session.config.get('tag', {}).get(tterm[1:], '(None)')
+        human_tags.append('%s%s' % (tterm[0], tagname))
       results.append({
         'fid': fid,
         'terms': trms,
         'tags': tags,
+        'human_tags': ' '.join(human_tags),
         'comment': cmnt
       })
     return results
