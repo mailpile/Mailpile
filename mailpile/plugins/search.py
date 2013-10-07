@@ -4,7 +4,7 @@ import time
 
 import mailpile.plugins
 from mailpile.commands import Command
-from mailpile.mailutils import Email, ExtractEmails
+from mailpile.mailutils import Email, ExtractEmails, MBX_ID_LEN
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -439,3 +439,25 @@ class Extract(Command):
 
 mailpile.plugins.register_commands(Extract, Next, Order, Previous,
                                    Search, View)
+
+
+##[ Search terms ]############################################################
+
+def mailbox_search(config, idx, term, hits):
+    word = term.split(':', 1)[1].lower()
+    try:
+        mailbox_id = b36(int(word, 36))
+    except ValueError:
+        mailbox_id = None
+
+    mailboxes = config.get('mailbox', {})
+    mailboxes = [m for m in mailboxes if word in mailboxes[m].lower() or
+                                         mailbox_id == m]
+    rt = []
+    for mbox_id in mailboxes:
+       mbox_id = (('0' * MBX_ID_LEN) + mbox_id)[-MBX_ID_LEN:]
+       rt.extend(hits('%s:mailbox' % mbox_id))
+    return rt
+
+
+mailpile.plugins.register_search_term('mailbox', mailbox_search)

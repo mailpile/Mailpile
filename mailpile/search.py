@@ -982,7 +982,7 @@ class MailIndex(object):
           t = term.split(':', 1)
           fnc = plugins.get_search_term(t[0])
           if fnc:
-            rt.extend(fnc(self.config, term, hits))
+            rt.extend(fnc(self.config, self, term, hits))
           else:
             rt.extend(hits('%s:%s' % (t[1], t[0])))
       else:
