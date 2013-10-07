@@ -498,6 +498,27 @@ class ConfigManager(dict):
       local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
     return local_id, self.open_mailbox(session, local_id)
 
+  def filter_swap(self, fid_a, fid_b):
+    tmp = {}
+    for key in ('filter', 'filter_terms', 'filter_tags'):
+      tmp[key] = self[key][fid_a]
+    for key in ('filter', 'filter_terms', 'filter_tags'):
+      self[key][fid_a] = self[key][fid_b]
+    for key in ('filter', 'filter_terms', 'filter_tags'):
+      self[key][fid_b] = tmp[key]
+
+  def filter_move(self, filter_id, filter_new_id):
+    # This just makes sure both exist, will raise of not
+    f1, f2 = self['filter'][filter_id], self['filter'][filter_new_id]
+    forig = int(filter_id, 36)
+    ftarget = int(filter_new_id, 36)
+    if forig > ftarget:
+      for fid in reversed(range(ftarget, forig)):
+        self.filter_swap(b36(fid+1).lower(), b36(fid).lower())
+    else:
+      for fid in range(forig, ftarget):
+        self.filter_swap(b36(fid).lower(), b36(fid+1).lower())
+
   def get_filters(self, filter_on=None):
     filters = self.get('filter', {}).keys()
     filters.sort(key=lambda k: int(k, 36))
