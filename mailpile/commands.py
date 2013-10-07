@@ -372,21 +372,28 @@ class AddMailbox(Command):
   HTTP_CALLABLE = ('POST', 'UPDATE')
 
   def command(self):
-    session, config, raw_fn = self.session, self.session.config, self.args[0]
-    fn = os.path.expanduser(raw_fn)
-    if fn in config.get('mailbox', {}).values():
-      session.ui.warning('Already in the pile: %s' % fn)
-    else:
-      if fn.startswith("imap://"):
-        arg = fn
+    session, config = self.session, self.session.config
+    adding = []
+    for raw_fn in self.args:
+      fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
+      if (raw_fn in config.get('mailbox', {}).values() or
+          fn in config.get('mailbox', {}).values()):
+        session.ui.warning('Already in the pile: %s' % raw_fn)
       else:
-        if os.path.exists(fn):
-          arg = os.path.abspath(fn)
+        if raw_fn.startswith("imap://"):
+          adding.append(raw_fn)
         else:
-          return self._error('No such file/directory: %s' % raw_fn)
+          if os.path.exists(fn):
+            adding.append(fn)
+          else:
+            return self._error('No such file/directory: %s' % raw_fn)
+    added = 0
+    for arg in adding:
       if config.parse_set(session,
-                          'mailbox:%s=%s' % (config.nid('mailbox'), fn)):
-        self._serialize('Save config', lambda: config.save())
+                          'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
+        added += 1
+    if added:
+      self._serialize('Save config', lambda: config.save())
     return True
 
 

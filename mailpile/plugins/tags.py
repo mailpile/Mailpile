@@ -3,6 +3,7 @@ from mailpile.commands import Command
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
+from mailpile.plugins.search import Search
 
 ##[ Commands ]################################################################
 
@@ -23,6 +24,9 @@ class TagCommand(Command):
     def _added_as_text(self):
       return ('Added tags: '
              +', '.join([k['name'] for k in self.result['added']]))
+    def _removed_as_text(self):
+      return ('Removed tags: '
+             +', '.join([k['name'] for k in self.result['removed']]))
     def _tagging_as_text(self):
       what = []
       if self.result['tagged']:
@@ -37,7 +41,7 @@ class TagCommand(Command):
         return 'Failed'
       return ''.join([
         ('added' in self.result) and self._added_as_text() or '',
-        ('removed' in self.result) and self._added_as_text() or '',
+        ('removed' in self.result) and self._removed_as_text() or '',
         ('tags' in self.result) and self._tags_as_text() or '',
         ('msg_ids' in self.result) and self._tagging_as_text() or '',
       ])
@@ -144,7 +148,7 @@ class DeleteTag(TagCommand):
       tag_id = config.get_tag_id(tag)
       if tag_id:
         # FIXME: Update filters too
-        if (COMMANDS['s:'][1](clean_session, arg=['tag:%s' % tag]).run()
+        if (Search(clean_session, arg=['tag:%s' % tag]).run()
         and Tag(clean_session, arg=['-%s' % tag, 'all']).run()
         and config.parse_unset(session, 'tag:%s' % tag_id)):
           result.append({'name': tag, 'tid': tag_id})
