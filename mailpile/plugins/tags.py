@@ -162,7 +162,7 @@ class DeleteTag(TagCommand):
 
 
 class Filter(Command):
-  """Add an auto-tagging rule for the active search or given terms."""
+  """Add auto-tag rule for current search or terms"""
   SYNOPSIS = (None, 'filter', None,
               '[new|read] [notag] [=<mid>] '
               '[<terms>] [+<tag>] [-<tag>] [<comment>]')
@@ -259,31 +259,64 @@ class DeleteFilter(Command):
     return True
 
 
-class MoveFilter(Command):
+class ListFilters(Command):
+  """List (all) auto-tagging rules"""
+  SYNOPSIS = (None, 'filter/list', 'filter/list', '[<search>|=<id>]')
+  ORDER = ('Tagging', 1)
+
+  class CommandResult(Command.CommandResult):
+    def as_text(self):
+      if self.result is False:
+        return unicode(self.result)
+      return '\n'.join([' %3.3s %-20s %-25s %s' % (
+                          r['fid'], r['terms'], r['human_tags'], r['comment']
+                        ) for r in self.result])
+
+  def command(self, want_fid=None):
+    results = []
+    for fid, trms, tags, cmnt in self.session.config.get_filters(filter_on=None):
+      if want_fid and fid != want_fid:
+        continue
+
+      human_tags = []
+      for tterm in tags.split():
+        tagname =  self.session.config.get('tag', {}).get(tterm[1:], '(None)')
+        human_tags.append('%s%s' % (tterm[0], tagname))
+
+      skip = False
+      if self.args and not want_fid:
+        for term in self.args:
+          term = term.lower()
+          if term.startswith('='):
+            if (term[1:] != fid):
+              skip = True
+          elif ((term not in ' '.join(human_tags).lower()) and
+                (term not in trms.lower()) and
+                (term not in cmnt.lower())):
+            skip = True
+      if skip:
+        continue
+
+      results.append({
+        'fid': fid,
+        'terms': trms,
+        'tags': tags,
+        'human_tags': ' '.join(human_tags),
+        'comment': cmnt
+      })
+    return results
+
+
+class MoveFilter(ListFilters):
   """Move an auto-tagging rule"""
   SYNOPSIS = (None, 'filter/move', None, '<filter-id> <position>')
   ORDER = ('Tagging', 1)
   HTTP_CALLABLE = ('POST', 'UPDATE')
 
   def command(self):
-    raise Exception('Unimplemented')
-
-
-class ListFilters(Command):
-  """List all auto-tagging rule"""
-  SYNOPSIS = (None, 'filter/list', 'filter/list', None)
-  ORDER = ('Tagging', 1)
-
-  def command(self):
-    results = []
-    for fid, trms, tags, cmnt in self.session.config.get_filters(filter_on=None):
-      results.append({
-        'fid': fid,
-        'terms': trms,
-        'tags': tags,
-        'comment': cmnt
-      })
-    return results
+    self.session.config.filter_move(self.args[0], self.args[1])
+    self.session.config.save()
+    return ListFilters.command(self, want_fid=self.args[1])
 
 
 mailpile.plugins.register_commands(Tag, AddTag, DeleteTag, ListTags)

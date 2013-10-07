@@ -458,7 +458,10 @@ class Help(Command):
           c = '%s|' % c[0]
         fmt = '  %%s%%-%d.%ds' % (width, width)
         if explanation:
-          fmt += ' %-15.15s %s'
+          if len(args or '') <= 15:
+            fmt += ' %-15.15s %s'
+          else:
+            fmt += ' %%s\n%s %%s' % (' ' * (len(c) + width + 18))
         else:
           fmt += ' %s %s '
         text.append(fmt % (c, cmd.replace('=', ''),
@@ -487,17 +490,18 @@ class Help(Command):
     if self.args:
       command = self.args.pop(0)
       for cls in COMMANDS:
-        name = cls.SYNOPSIS[1]
+        name = cls.SYNOPSIS[1] or cls.SYNOPSIS[2]
         width = len(name)
         if name and name == command:
           order = 1
           cmd_list = {'_main': (name, cls.SYNOPSIS[3], cls.__doc__, order)}
-          subs = [c for c in COMMANDS if c.SYNOPSIS[1].startswith(name + '/')]
+          subs = [c for c in COMMANDS if (c.SYNOPSIS[1] or c.SYNOPSIS[2]
+                                          ).startswith(name + '/')]
           for scls in sorted(subs):
             sc, scmd, surl, ssynopsis = scls.SYNOPSIS[:4]
             order += 1
             cmd_list['_%s' % scmd] = (scmd, ssynopsis, scls.__doc__, order)
-            width = max(len(scmd), width)
+            width = max(len(scmd or surl), width)
           return {
             'pre': cls.__doc__,
             'commands': cmd_list,
