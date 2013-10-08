@@ -1,3 +1,6 @@
+// If no console.log() exists
+if (!window.console) window.console = { log: $.noop, group: $.noop, groupEnd: $.noop, info: $.noop, error: $.noop };
+
 
 Number.prototype.pad = function(size){
 	// Unfortunate padding function....
@@ -508,7 +511,7 @@ $(document).ready(function() {
 	$('#form-compose').bind('submit', function(e) {
 		e.preventDefault();
 		$.ajax({
-			url			  : '/api/0/message/send/',
+			url			  : '/api/0/message/update/send/',
 			type		  : 'POST',
 			data      : $('#form-compose').serialize(),
 			dataType	: 'json',
