@@ -15,6 +15,7 @@ class MailpileCommand(Extension):
         environment.globals['mailpile'] = self._command
         environment.globals['regex_replace'] = self._regex_replace
         environment.globals['friendly_date'] = self._friendly_date
+        environment.filters['friendly_date'] = self._friendly_date
 
     def _command(self, command, *args, **kwargs):
         return Action(self.env.session, command, args, data=kwargs).as_dict()
@@ -24,7 +25,7 @@ class MailpileCommand(Extension):
         return re.sub(find, replace, s)
 
     def _friendly_date(self, timestamp):
-        days_ago = (datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)) / (24*3600)
+        days_ago = (datetime.date.today() - datetime.date.fromtimestamp(timestamp)).days
 
         if days_ago < 1:
             return 'today'
