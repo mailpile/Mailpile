@@ -1,0 +1,58 @@
+[{
+  "args": [],
+  "elapsed": "0.000",
+  "command": "contact/list",
+  "result": {
+    "count": 9,
+    "end": 0,
+    "contacts": [{
+      "name":"Brennan Mailpile",
+      "thumb":"http://website.com/thumbnail.jpg",
+      "emails":[{
+       "address": "bnvk@mailpile.is",
+            "pgp_keys": ["c381bca7","b34dbef2"]
+          },{
+           "address":"hi@brennannovak.com",
+            "pgp_keys": ["ee43gb64"]
+          },{
+            "address":"brennan@reverseproductions.com",
+            "pgp_keys": []
+          }],
+        "bitmessage":["a7f6bde30206ba75668000f56f0fea9a"],
+        "phone": ["+15036622442","+3656126585"],
+        "places": [{
+          "name":"Home",
+          "street":"20 NW 16th Ave. #217",
+          "district":"Nob Hill",
+          "locality":"Portland",
+          "region":"Oregon",
+          "country":"US",
+          "postal":"97209"
+        },{
+          "name":"Mailpile Remote Hackbase",
+          "street":"",
+          "district":"",
+          "locality":"Reykjavík",
+          "region":"",
+          "country":"IS",
+          "postal":"101"
+        }]
+      },{
+      "name":"Smári McCarthy",
+      "thumb":"http://smarimcarthy.is/profile.jpg",
+      "emails":[{
+        "address": "smari@mailpile.is",
+        "pgp_keys": ["a457bb"]
+      },{
+        "address": "smari@immi.com"
+      }]
+    }],
+    "start": 1,
+    "query": "",
+    "total": 0
+  },
+  "kwargs": {},
+  "command_parts": [
+    "contact/list"
+  ]
+}]
