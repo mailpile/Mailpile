@@ -10,16 +10,6 @@ from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
 
-def _friendly_date(days_ago, default):
-  if days_ago < 1:
-    return 'today'
-  elif days_ago < 2:
-    return 'yesterday'
-  elif days_ago < 7:
-    return '%d days ago' % days_ago
-  else:
-    return default
-
 class SearchResults(dict):
   def _explain_msg_summary(self, info):
     msg_ts = long(info[6], 36)
@@ -38,7 +28,6 @@ class SearchResults(dict):
       'shorttime': msg_date.strftime("%H:%M"),
       'time': msg_date.strftime("%H:%M:%S"),
       'date': date,
-      'friendly_date': _friendly_date(days_ago, date),
       'tag_ids': info[7],
       'url': urlmap.url_thread(info[0])
     }
