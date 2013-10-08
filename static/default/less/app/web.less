@@ -271,11 +271,11 @@
 	#sub-navigation li.navigation-on a {
 		cursor: default;
 		padding: 10px 15px;
-		color: @white;
+		color: @grayDark;
 	}	
 
-	#sub-navigation li.navigation-on a:hover {
-    color: @white;
+	#sub-navigation li.navigation-on a:hover, #sub-navigation li.navigation-on a:hover span {
+    color: @grayDark;
   }
 	
 	#sub-navigation ul {
@@ -644,8 +644,11 @@
 /* Tags */
 
   .tag-card {
-    width: 8em;
-    height: 12em;
+    width: 20%;
+    min-width: 175px;
+    height: 38%;
+    min-height: 275px;
+    box-sizing: border-box;
     margin: 2em 0 0 2em;
     padding: 1em;
     float: left;
@@ -660,9 +663,15 @@
     line-height: 24px;
   }
 
+  .tag-card-label {
+    display: block;
+    font-size: 14px;
+    line-height: 14px;
+  }
+
   .tag-card-message-new {
-    font-size: 24px;
-    line-height: 24px;
+    font-size: 21px;
+    line-height: 21px;
   }
 
   .tag-card-message-total {
@@ -672,8 +681,10 @@
   }
   
   .tag-card-message-link {
+    display: block;
     position: relative;
     bottom: 0px;
+    left: 0px;
     font-size: 14px;
   }
   

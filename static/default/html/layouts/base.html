@@ -1,6 +1,6 @@
-{% set high_tags = mailpile("tag/list", "Inbox", "Sent") %}
+{% set high_tags = mailpile("tag/list", "Inbox", "Sent", "Spam", "Trash") %}
 {% set user_tags = mailpile("tag/list", "!Inbox", "!Sent", "!Spam", "!Blank", "!Trash", "!Drafts", "!New") %}
-{% set low_tags = mailpile("tag/list", "Spam", "Trash") %}
+
 {% set top_tags = mailpile("tag/list", "New", "Starred") %}
 {% set unread = mailpile("tag/list", "New") %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -72,26 +72,35 @@
     <nav>
       <ul>
         <li>
-        <a href="/in/Drafts/">
-          <span class="sidebar-icon icon-compose"></span>
-          <span class="sidebar-tag">Drafts</span>
-          {% if mailpile("tag/list", "Drafts").result.tags.0.all > 0 %}
-          <span class="sidebar-notification navigation-attention-important">{{ mailpile("tag/list", "Drafts").result.tags.0.all }}</span>
-          {% endif %}
-        </a>
-        </li>
-        {% for t in high_tags, user_tags, low_tags %}
-          {% for tag in t.result.tags %}
+          <a href="/in/Drafts/">
+            <span class="sidebar-icon icon-compose"></span>
+            <span class="sidebar-tag">Drafts</span>
+            {% if mailpile("tag/list", "Drafts").result.tags.0.all > 0 %}
+            <span class="sidebar-notification navigation-attention-important">{{ mailpile("tag/list", "Drafts").result.tags.0.all }}</span>
+            {% endif %}
+            </a>
+          </li>
+          {% for tag in high_tags.result.tags %}
           <li class="sidebar-tags">
             <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
-              <span class="sidebar-icon icon-tag icon-{{tag.name.lower()}}"></span>
+              <span class="sidebar-icon icon-{{tag.name.lower()}}"></span>
               <span class="sidebar-tag">{{tag.name}}</span>
               {% if tag.new > 0 %}
               <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
               {% endif %}
             </a>
           </li>
-          {% endfor %}
+        {% endfor %}
+        {% for tag in user_tags.result.tags %}
+        <li class="sidebar-tags">
+            <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
+              <span class="sidebar-icon icon-tag"></span>
+              <span class="sidebar-tag">{{tag.name}}</span>
+              {% if tag.new > 0 %}
+              <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
+              {% endif %}
+            </a>        
+        </li>
         {% endfor %}
       </ul>
       <hr>
