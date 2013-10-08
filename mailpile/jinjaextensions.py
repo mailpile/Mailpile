@@ -25,7 +25,8 @@ class MailpileCommand(Extension):
         return re.sub(find, replace, s)
 
     def _friendly_date(self, timestamp):
-        days_ago = (datetime.date.today() - datetime.date.fromtimestamp(timestamp)).days
+        ts = datetime.date.fromtimestamp(timestamp)
+        days_ago = (datetime.date.today() - ts).days
 
         if days_ago < 1:
             return 'today'
@@ -34,4 +35,4 @@ class MailpileCommand(Extension):
         elif days_ago < 7:
             return '%d days ago' % days_ago
         else:
-            return timestamp.strftime("%Y-%m-%d")
+            return ts.strftime("%Y-%m-%d")
