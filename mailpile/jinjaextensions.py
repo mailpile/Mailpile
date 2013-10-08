@@ -24,7 +24,7 @@ class MailpileCommand(Extension):
         return re.sub(find, replace, s)
 
     def _friendly_date(self, timestamp):
-        days_ago = (datetime.datetime() - timestamp) / (24*3600)
+        days_ago = (datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)) / (24*3600)
 
         if days_ago < 1:
             return 'today'
