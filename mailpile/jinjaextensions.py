@@ -14,6 +14,7 @@ class MailpileCommand(Extension):
         self.env = environment
         environment.globals['mailpile'] = self._command
         environment.globals['regex_replace'] = self._regex_replace
+        environment.filters['regex_replace'] = self._regex_replace
         environment.globals['friendly_date'] = self._friendly_date
         environment.filters['friendly_date'] = self._friendly_date
 
