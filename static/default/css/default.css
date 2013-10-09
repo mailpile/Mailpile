@@ -6049,11 +6049,19 @@ text {
 #sub-navigation ul {
   position: relative;
   top: 10px;
-  left: 10px;
+}
+#sub-navigation ul.left {
+  left: 15px;
+}
+#sub-navigation ul.right {
+  right: 15px;
+}
+#sub-navigation ul li {
+  padding: 0px 5px;
 }
 #sub-navigation a {
   display: block;
-  padding: 10px 15px;
+  padding: 10px 10px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: #4d4d4d;
@@ -6068,7 +6076,6 @@ text {
 }
 #sub-navigation li.navigation-on a {
   cursor: default;
-  padding: 10px 15px;
   color: #4d4d4d;
 }
 #sub-navigation li.navigation-on a:hover,
@@ -6084,8 +6091,11 @@ text {
   text-align: center;
 }
 .navigation-icon {
-  margin: 0 8px 0 4px;
+  margin: 0;
   color: #4d4d4d;
+}
+.navigation-text {
+  margin: 0 0 0 8px;
 }
 .navigation-attention-urgent {
   border-radius: 5px;

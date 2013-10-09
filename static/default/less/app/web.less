@@ -248,12 +248,23 @@
 	#sub-navigation ul {
 	  position: relative;
 	  top: 10px;
-	  left: 10px; 
+  }
+	
+	#sub-navigation ul.left {
+	  left: 15px;
+	}
+	
+	#sub-navigation ul.right {
+	  right: 15px;
+	}
+	
+	#sub-navigation ul li {
+    padding: 0px 5px;
 	}
 
 	#sub-navigation a {
 		display: block;	
-		padding: 10px 15px;
+		padding: 10px 10px;
 		font-family: @text-font-family-bold;
 		font-weight: normal;		
 		color: @grayDark;
@@ -270,7 +281,6 @@
 
 	#sub-navigation li.navigation-on a {
 		cursor: default;
-		padding: 10px 15px;
 		color: @grayDark;
 	}	
 
@@ -288,14 +298,15 @@
 		float: left;
 		text-align: center;
 	}	
-	
-
 
 	.navigation-icon {
-		margin: 0 8px 0 4px;
+		margin: 0;
 		color: @grayDark;
 	}
 	
+  .navigation-text {
+    margin: 0 0 0 8px;
+  }
 	
 	.navigation-attention-urgent {
 		border-radius: @base-border-radius;

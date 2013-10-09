@@ -1,7 +1,6 @@
 {% extends "layouts/base.html" %}
 
 {% block content %}
-{% include("partials/sub_nav_compose.html") %}
 
 {% if result %}
 {% set my_from = mailpile('config/get', 'my_from').result.my_from %}

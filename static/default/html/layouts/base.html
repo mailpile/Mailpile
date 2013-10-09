@@ -1,6 +1,5 @@
 {% set high_tags = mailpile("tag/list", "Inbox", "Sent", "Spam", "Trash") %}
 {% set user_tags = mailpile("tag/list", "!Inbox", "!Sent", "!Spam", "!Blank", "!Trash", "!Drafts", "!New") %}
-
 {% set top_tags = mailpile("tag/list", "New", "Starred") %}
 {% set unread = mailpile("tag/list", "New") %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
