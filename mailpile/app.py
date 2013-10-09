@@ -451,11 +451,17 @@ class ConfigManager(dict):
   def clear_mbox_cache(self):
     self.MBOX_CACHE = {}
 
-  def is_editable_message(self, msg_ptrs):
-    for ptr in (msg_ptrs or '').split(','):
+  def is_editable_message(self, msg_info):
+    print 'MSG_INFO=%s' % msg_info
+    for ptr in msg_info[MailIndex.MSG_PTRS].split(','):
       if not self.is_editable_mailbox(ptr[:MBX_ID_LEN]):
         return False
-    return True
+    editable = False
+    for tid in msg_info[MailIndex.MSG_TAGS].split(','):
+      # FIXME: Hard-coded tag names are bad
+      if self.get('tag', {}).get(tid) in ('Drafts', 'Blank'):
+        editable = True
+    return editable
 
   def is_editable_mailbox(self, mailbox_id):
     # FIXME: This may be too narrow?

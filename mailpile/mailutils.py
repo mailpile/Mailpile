@@ -579,7 +579,7 @@ class Email(object):
     return cls(idx, msg_idx)
 
   def is_editable(self):
-    return self.config.is_editable_message(self.get_msg_info(self.index.MSG_PTRS))
+    return self.config.is_editable_message(self.get_msg_info())
 
   MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                   'content-transfer-encoding')
@@ -734,10 +734,13 @@ class Email(object):
     self.msg_parsed = None
     return self
 
-  def get_msg_info(self, field):
+  def get_msg_info(self, field=None):
     if not self.msg_info:
       self.msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
-    return self.msg_info[field]
+    if field is None:
+      return self.msg_info
+    else:
+      return self.msg_info[field]
 
   def get_mbox_ptr_and_fd(self):
     for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
