@@ -65,7 +65,7 @@ class SearchResults(dict):
       results.append(self._prune_msg_tree(tree, context=context))
     return results
 
-  def _name(self, sender, short=True):
+  def _name(self, sender, short=True, full_email=False):
     words = re.sub('["<>]', '', sender).split()
     nomail = [w for w in words if not '@' in w]
     if nomail:
@@ -73,14 +73,20 @@ class SearchResults(dict):
         return nomail[0]
       return ' '.join(nomail)
     elif words:
-      if short:
+      if not full_email:
         return words[0].split('@', 1)[0]
       return words[0]
     return '(nobody)'
 
   def _names(self, senders):
     if len(senders) > 1:
-      return ', '.join([self._name(x) for x in senders])
+      names = {}
+      for sender in senders:
+        sname = self._name(sender)
+        names[sname] = names.get(sname, 0) + 1
+      namelist = names.keys()
+      namelist.sort(key=lambda n: -names[n])
+      return ', '.join(namelist)
     if len(senders) < 1:
       return '(no sender)'
     if senders:
@@ -157,7 +163,7 @@ class SearchResults(dict):
       # FIXME: conv_people should look stuff in our contact list
       result['conv_people'] = people = [{
         'email': (ExtractEmails(p) or [''])[0],
-        'name': self._name(p),
+        'name': self._name(p, short=False),
       } for p in list(set(conv_from))]
       people.sort(key=lambda i: i['name']+i['email'])
 
