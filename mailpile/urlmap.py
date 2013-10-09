@@ -85,6 +85,8 @@ class UrlMap:
         Traceback (most recent call last):
             ...
         BadDataError: Bad variable (evil): message/update
+        >>> urlmap._command('search', args=['html'], query_data={'ui_': 1})
+        <mailpile.plugins.search.Search instance at 0x...>
         """
         try:
             match = [c for c in self._api_commands(method, strict=False)
@@ -102,10 +104,12 @@ class UrlMap:
         if command.HTTP_STRICT_VARS:
             for var in (post_data or []):
                 if ((var not in command.HTTP_QUERY_VARS) and
-                        (var not in command.HTTP_POST_VARS)):
+                        (var not in command.HTTP_POST_VARS) and
+                        (not var.startswith('ui_'))):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
             for var in (query_data or []):
-                if var not in command.HTTP_QUERY_VARS:
+                if (var not in command.HTTP_QUERY_VARS and
+                        (not var.startswith('ui_'))):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
         else:
             for var in command.HTTP_BANNED_VARS:
@@ -114,7 +118,10 @@ class UrlMap:
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
 
         data = {}
-        for vlist, src in ((command.HTTP_QUERY_VARS, query_data),
+        ui_keys = [k for k in ((query_data or {}).keys() +
+                               (post_data or {}).keys()) if k.startswith('ui_')]
+        for vlist, src in ((ui_keys, query_data), (ui_keys, post_data),
+                           (command.HTTP_QUERY_VARS, query_data),
                            (command.HTTP_QUERY_VARS, post_data),
                            (command.HTTP_POST_VARS, post_data)):
             for var in vlist:
@@ -173,7 +180,7 @@ class UrlMap:
 
     def _map_tag(self, request, path_parts, query_data, post_data):
         """
-        Map /in/TAG_NAME/[@<pos>/] to tag searches.
+        Map /in/TAG_NAME/[@<pos>]/ to tag searches.
 
         >>> path = '/in/Inbox/@20/as.json'
         >>> commands = urlmap._map_tag(request, path[1:].split('/'), {}, {})
@@ -185,11 +192,17 @@ class UrlMap:
         ['@20', 'tag:1']
         """
         output = self._choose_output(path_parts)
-        pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
+
+        pos = None
+        while path_parts and (path_parts[-1][0] in ('@', )):
+          pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
+
         tag = '/'.join([p for p in path_parts[1:] if p])
         tag_search = ['tag:%s' % self.session.config.get_tag_id(tag)]
+
         if pos:
             tag_search[:0] = [pos]
+
         return [
             output,
             self._command('search', args=tag_search,

@@ -58,7 +58,7 @@ class Command:
     __unicode__ = lambda self: self.as_text()
 
     def as_dict(self):
-      return {
+      rv = {
         'command': self.command,
         'args': self.args,
         'kwargs': self.kwargs.keys(),
@@ -66,6 +66,9 @@ class Command:
         'result': self.result,
         'elapsed': '%.3f' % self.session.ui.time_elapsed
       }
+      for ui_key in [k for k in self.kwargs.keys() if k.startswith('ui_')]:
+        rv[ui_key] = self.kwargs[ui_key]
+      return rv
 
     def as_html(self, template=None):
       path_parts = (self.template_id or 'command').split('/')
