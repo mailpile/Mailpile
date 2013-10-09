@@ -131,7 +131,7 @@ class SearchResults(dict):
         msg_info[MailIndex.MSG_SNIPPET],
         msg_info[MailIndex.MSG_DATE],
         msg_info[MailIndex.MSG_TAGS].split(','),
-        session.config.is_editable_message(msg_info[MailIndex.MSG_PTRS])
+        session.config.is_editable_message(msg_info)
       ])
       result['tags'] = sorted([idx.config['tag'].get(t,t)
                                for t in idx.get_tags(msg_info=msg_info)
