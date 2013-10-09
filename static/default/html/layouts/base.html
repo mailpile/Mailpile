@@ -80,7 +80,7 @@
             </a>
           </li>
           {% for tag in high_tags.result.tags %}
-          <li class="sidebar-tags">
+          <li class="sidebar-tags-default">
             <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
               <span class="sidebar-icon icon-{{tag.name.lower()}}"></span>
               <span class="sidebar-tag">{{tag.name}}</span>
@@ -90,6 +90,9 @@
             </a>
           </li>
         {% endfor %}
+      </ul>
+      <hr>
+      <ul>
         {% for tag in user_tags.result.tags %}
         <li class="sidebar-tags">
             <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
