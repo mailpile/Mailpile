@@ -297,35 +297,57 @@ var keybindings = [
 
 var mailpile = new MailPile();
 
-
-var statusMessages = {
-  "success":"Success, you sly dog you, keep killin it with those ladies!",
-  "info":"Hi, hi, hi, I am info update",
-  "debug":"What kind of bug is a debug, is it a poisonous bug?",
-  "warning":"This here be a warnin to yuh, just a warnin mind you!",
-  "error":"Whoa Cowboy, you've mozyed on over to an error that you ain't supposed to have!"    
-}
-
-// Return corresponding height value
+// Status Messages
 var statusHeaderPadding = function() {
+
 	if ($('#header').css('position') === 'fixed') {
 		var padding = $('#header').height() + 50;
 	}
 	else {
 		var padding = 0;
 	}
-	console.log(padding);
-	
+
 	return padding;
 };
 
-var showMessage = function(type) {
-  var message = $('#messages').find('div.' + type);
-  message.find('span.message-text').html(statusMessages[type]),
-  message.fadeIn(function(){
+var statusMessage = function(status, message_text, complete, complete_action) {
+
+  var default_messages = {
+    "success" : "Success, we did exactly what you asked.",
+    "info"    : "Here is a basic info update",
+    "debug"   : "What kind of bug is this bug, it's a debug",
+    "warning" : "This here be a warnin to you, just a warnin mind you",
+    "error"   : "Whoa cowboy, you've mozyed on over to an error"
+  }
+
+  var message = $('#messages').find('div.' + status);
+
+  if (message_text == undefined) {
+    message_text = default_messages[status];
+  }
+
+  // Show Message
+  message.find('span.message-text').html(message_text),
+  message.fadeIn(function() {
+
     // Set Padding Top for #content
-	  $('#header').css('padding-top', statusHeaderPadding());    
+	  $('#header').css('padding-top', statusHeaderPadding());
   });
+
+	// Complete Action
+	if (complete == undefined) {
+    
+  }
+	else if (complete == 'hide') {
+		message.delay(5000).fadeOut('normal', function()
+		{
+			message.find('span.message-text').empty();
+		});
+	}
+	else if (options.complete == 'redirect') {
+		setTimeout(function() { window.location.href = complete_action }, 5000);
+	}
+
   return false;
 }
 
@@ -508,28 +530,48 @@ $(document).ready(function() {
   }
 
 
-	$('#form-compose').bind('submit', function(e) {
-		e.preventDefault();
+	$('.compose-action').on('click', function(e) {
+
+    e.preventDefault();
+    var action = $(this).val();
+
+    console.log(action);
+
+	  if (action == 'send') {
+  	  var action_url     = 'update/send/';
+  	  var action_status  = 'success';
+  	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
+	  }
+	  else if (action == 'save') {
+  	  var action_url     = 'update/';
+  	  var action_status  =  'info';
+  	  var action_message = 'Your message was saved';
+	  }
+
 		$.ajax({
-			url			  : '/api/0/message/update/send/',
+			url			  : '/api/0/message/' + action_url,
 			type		  : 'POST',
 			data      : $('#form-compose').serialize(),
 			dataType	: 'json',
 		  	success : function(result) {
 
           console.log(result);
+          
+          if (action == 'send') {
 
-          // Set Everything to Empty
-          $('#compose-to, #compose-cc, #compose-bcc').select2('val', '');
-          $('#compose-subject').val('');
-          $('#compose-body').val('');
-          $('#compose-attachments-list').html('');
+            // Set Everything to Empty
+            $('#compose-to, #compose-cc, #compose-bcc').select2('val', '');
+            $('#compose-subject').val('');
+            $('#compose-body').val('');
+            $('#compose-attachments-list').html('');
+          }
 
           // Needs proper state handling from API response
-          showMessage('success');
+          statusMessage(action_status, action_message);
 		  	}
 		});
 	});
+
 
 });	
 
