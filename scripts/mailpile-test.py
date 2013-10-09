@@ -14,7 +14,9 @@ import traceback
 # Set up some paths
 mailpile_root = os.path.join(os.path.dirname(__file__), '..')
 mailpile_test = os.path.join(mailpile_root, 'testing')
+mailpile_send = os.path.join(mailpile_root, 'scripts', 'test-sendmail.sh')
 mailpile_home = os.path.join(mailpile_test, 'tmp')
+mailpile_sent = os.path.join(mailpile_home, 'sent.mbx')
 
 # Add the root to our import path, import API and standard plugins
 sys.path.append(mailpile_root)
@@ -25,6 +27,7 @@ from mailpile import Mailpile
 ##[ Black-box test script ]###################################################
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
+MY_FROM = 'test@test.com'
 try:
     # First, we set up a pristine Mailpile
     os.system('rm -rf %s' % mailpile_home)
@@ -36,6 +39,11 @@ try:
 
     # Set up initial tags and such
     mp.setup()
+
+    # Configure our fake mail sending setup
+    mp.set('my_from: %s = Test Account' % MY_FROM)
+    mp.set('my_sendmail: %s = |%s' % (MY_FROM, mailpile_send))
+    mp.set('debug = sendmail log compose')
 
     # Add the mailboxes, scan them
     for mailbox in ('tests.mbx', 'Maildir'):
@@ -71,6 +79,38 @@ try:
     assert('=C3' not in result_bre['from'])
     say('Checking encoding: %s' % result_bre['message']['headers']['To'])
     assert('utf' not in result_bre['message']['headers']['To'])
+
+    # Create a message...
+    new_mid = mp.message_compose().result[0]['messages'][0]['mid']
+    assert(mp.search('tag:drafts').result[0]['count'] == 0)
+    assert(mp.search('tag:blank').result[0]['count'] == 1)
+
+    # Edit the message (moves from Blank to Draft, not findable in index)
+    msg_data = {
+      'from': [MY_FROM],
+      'to': [MY_FROM],
+      'mid': [new_mid],
+      'subject': ['This the TESTMSG subject'],
+      'body': ['Hello world!']
+    }
+    mp.message_update(**msg_data)
+    assert(mp.search('tag:drafts').result[0]['count'] == 1)
+    assert(mp.search('tag:blank').result[0]['count'] == 0)
+    assert(mp.search('TESTMSG').result[0]['count'] == 0)
+
+    # Send the message (moves from Draft to Sent, is findable via. search)
+    del msg_data['subject']
+    msg_data['body'] = ['Hello world: thisisauniquestring :)']
+    mp.message_update_send(**msg_data)
+    assert(mp.search('tag:drafts').result[0]['count'] == 0)
+    assert(mp.search('tag:blank').result[0]['count'] == 0)
+    for search in (['tag:sent'],
+                   ['thisisauniquestring'],
+                   ['subject:TESTMSG']):
+        say('Searching for: %s' % search)
+        results = mp.search(*search)
+        assert(len(results.result) == 1)
+        assert(results.result[0]['count'] == 1)
 
     say("Tests passed, woot!")
 except:

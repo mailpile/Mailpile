@@ -19,22 +19,26 @@ class Mailpile(object):
         self._session.config.load(self._session)
         self._session.main = True
         for cls in mailpile.commands.COMMANDS:
-            if cls.SYNOPSIS[1]:
-                cmd, fnc = self._mk_action(cls, *cls.SYNOPSIS)
-                setattr(self, cmd.replace('/', '_'), fnc)
+            names, argspec = cls.SYNOPSIS[1:3], cls.SYNOPSIS[3]
+            if names[0]:
+                setattr(self, *self._mk_action(cls, names[0], argspec))
+            if names[1] and (names[0] != names[1]):
+                setattr(self, *self._mk_action(cls, names[1], argspec))
 
-    def _mk_action(self, cls, cc, cmd, url, argspec, *moreargs):
+    def _mk_action(self, cls, cmd, argspec):
         if argspec:
 
-            def fnc(*args):
-                return mailpile.commands.Action(self._session, cmd, args)
+            def fnc(*args, **kwargs):
+                return mailpile.commands.Action(self._session, cmd, args,
+                                                data=kwargs)
         else:
 
-            def fnc():
-                return mailpile.commands.Action(self._session, cmd, '')
+            def fnc(**kwargs):
+                return mailpile.commands.Action(self._session, cmd, '',
+                                                data=kwargs)
 
         fnc.__doc__ = '%s(%s)  # %s' % (cmd, argspec or '', cls.__doc__)
-        return cmd, fnc
+        return cmd.replace('/', '_'), fnc
 
     def Interact(self):
         return mailpile.app.Interact(self._session)

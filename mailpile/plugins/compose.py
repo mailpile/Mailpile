@@ -62,7 +62,7 @@ class CompositionCommand(Search):
         except (TypeError, ValueError, IndexError):
             self._ignore_exception()
 
-    def _get_emails_and_update_string(self, idx):
+    def _get_email_updates(self, idx, create=False):
         # Split the argument list into files and message IDs
         files = [f[1:].strip() for f in self.args if f.startswith('<')]
         args = [a for a in self.args if not a.startswith('<')]
@@ -72,23 +72,39 @@ class CompositionCommand(Search):
             args.append('=%s' % mid)
         emails = [Email(idx, mid) for mid in self._choose_messages(args)]
 
-        # If we don't have a file, check for posted data
-        if len(files) > 1:
-            return (self._error('Cannot update from multiple files'), None)
-        elif len(files) == 1:
-            update_string = self._read_file_or_data(files[0])
-        elif 'from' in self.data:
-            # No file name, construct an update string from the POST data.
-            update_string = '\n'.join([
-                '\n'.join(['%s: %s' % (s, ', '.join(self.data.get(s, [''])))
-                           for s in ('subject', 'from', 'to', 'cc', 'bcc')]),
-                '',
-                '\n'.join(self.data.get('body', ['']))
-            ])
-        else:
-            update_string = False
+        updates, fofs = [], 0
+        for e in (emails or (create and [None]) or []):
+            # If we don't have a file, check for posted data
+            if len(files) not in (0, 1, len(emails)):
+                return (self._error('Cannot update from multiple files'), None)
+            elif len(files) == 1:
+                updates.append((e, self._read_file_or_data(files[0])))
+            elif files and (len(files) == len(emails)):
+                updates.append((e, self._read_file_or_data(files[fofs])))
+            elif 'from' in self.data:
+                # No file name, construct an update string from the POST data.
+                up = []
+                etree = e and e.get_message_tree() or {}
+                defaults = etree.get('editing_strings', {})
+                for hdr in ('Subject', 'From', 'To', 'Cc', 'Bcc'):
+                     if hdr.lower() in self.data:
+                         data = ', '.join(self.data[hdr.lower()])
+                     else:
+                         data = defaults.get(hdr.lower(), '')
+                     up.append('%s: %s' % (hdr, data))
+                updates.append((e, '\n'.join(up + [
+                    '\n'.join(self.data.get('body', defaults.get('body', '')))
+                ])))
+            fofs += 1
 
-        return (emails, update_string)
+        if 'compose' in self.session.config.get('debug', ''):
+            for e, up in updates:
+                 sys.stderr.write(('compose/update: Update %s with:\n%s\n--\n'
+                                   ) % ((e and e.msg_mid() or '(new'), up))
+            if not updates:
+                 sys.stderr.write('compose/update: No updates!\n')
+
+        return updates
 
     def _return_search_results(self, emails, expand=None, new=[], sent=[]):
         session, idx = self.session, self._idx()
@@ -133,12 +149,13 @@ class Compose(CompositionCommand):
 
     def command(self):
         session, idx = self.session, self._idx()
-        emails, update_string = self._get_emails_and_update_string(idx)
+        email_updates = self._get_email_updates(idx, create=True)
 
-        if emails:
+        if email_updates and email_updates[0][0]:
             return self._error('Please use update for editing messages')
 
         else:
+            update_string = email_updates and email_updates[0][1] or None
             local_id, lmbox = session.config.open_local_mailbox(session)
             emails = [Email.Create(idx, local_id, lmbox)]
             if self.BLANK_TAG:
@@ -375,6 +392,9 @@ class Sendit(CompositionCommand):
                 self._untag_emails(sent, self.DRAFT_TAG)
             if self.SENT_TAG:
                 self._tag_emails(sent, self.SENT_TAG)
+            for email in sent:
+                idx.index_email(self.session, email)
+
             return self._return_search_results(sent, sent=sent)
         else:
             return self._error('Nothing was sent')
@@ -386,31 +406,26 @@ class Update(CompositionCommand):
     ORDER = ('Composing', 1)
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA,
-                                Attach.HTTP_POST_VARS,
-                                {'send': 'Send the message?',
-                                 'save': 'Save as draft'})
+                                Attach.HTTP_POST_VARS)
 
     def command(self, create=True):
         session, config, idx = self.session, self.session.config, self._idx()
-        emails, update_string = self._get_emails_and_update_string(idx)
+        email_updates = self._get_email_updates(idx)
 
-        if emails and update_string:
-            for email in emails:
+        if email_updates:
+            for email, update_string in email_updates:
                 email.update_from_string(update_string)
 
             if (self.data.get('file-data') or [''])[0]:
                 if not Attach(session, data=self.data).command(emails=emails):
                     return False
 
-            session.ui.notify('%d message(s) updated' % len(emails))
-
-            if 'send' in self.data:
-                return Sendit(session).command(emails=emails)
-            else:
-                if self.BLANK_TAG:
-                     self._untag_emails(emails, self.BLANK_TAG)
-                if self.DRAFT_TAG:
-                     self._tag_emails(emails, self.DRAFT_TAG)
+            emails = [e for e, u in email_updates]
+            session.ui.notify('%d message(s) updated' % len(email_updates))
+            if self.BLANK_TAG:
+                 self._untag_emails(emails, self.BLANK_TAG)
+            if self.DRAFT_TAG:
+                 self._tag_emails(emails, self.DRAFT_TAG)
 
             return self._edit_messages(emails, new=False)
 
@@ -418,6 +433,20 @@ class Update(CompositionCommand):
             return self._error('Nothing to do!')
 
 
+class UpdateAndSendit(Sendit):
+    """Update message from an HTTP upload and send."""
+    SYNOPSIS = ('u', None, 'message/update/send', None)
+    HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA,
+                                Sendit.HTTP_POST_VARS,
+                                Attach.HTTP_POST_VARS)
+
+    def command(self, create=True):
+        up = Update(self.session, arg=self.args, data=self.data).command()
+        if not up:
+            return up
+        return Sendit.command(self)
+
+
 mailpile.plugins.register_commands(Compose, Reply, Forward, # Create
                                    Draft, Update, Attach,   # Manipulate
-                                   Sendit)                  # Send
+                                   Sendit, UpdateAndSendit) # Send

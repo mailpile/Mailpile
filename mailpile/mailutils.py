@@ -199,7 +199,7 @@ def SendMail(session, from_to_msg_tuples):
       raise Exception('Invalid sendmail: %s' % sendmail)
 
     session.ui.mark('Preparing message...')
-    string = str(msg)
+    string = msg.as_string(False)
     total = len(string)
     while string:
       sm_write(string[:65536])
