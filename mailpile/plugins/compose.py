@@ -92,7 +92,7 @@ class CompositionCommand(Search):
                      else:
                          data = defaults.get(hdr.lower(), '')
                      up.append('%s: %s' % (hdr, data))
-                updates.append((e, '\n'.join(up + [
+                updates.append((e, '\n'.join(up + ['',
                     '\n'.join(self.data.get('body', defaults.get('body', '')))
                 ])))
             fofs += 1

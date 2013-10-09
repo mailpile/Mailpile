@@ -10,6 +10,7 @@
 ## larger mailbox.
 #
 ###############################################################################
+import copy
 import cPickle
 import email.header
 import email.parser
@@ -119,7 +120,7 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
       if e not in rcpts:
         rcpts.append(e)
 
-  msg = mailobj.get_msg()
+  msg = copy.deepcopy(mailobj.get_msg())
 
   # Remove headers we don't want to expose
   for bcc in ('bcc', 'Bcc', 'BCc', 'BCC'):

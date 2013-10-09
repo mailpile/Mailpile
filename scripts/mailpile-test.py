@@ -33,6 +33,9 @@ try:
     os.system('rm -rf %s' % mailpile_home)
     mp = Mailpile(workdir=mailpile_home)
 
+    def contents(fn):
+        return open(fn, 'r').read()
+
     def say(stuff):
         mp._session.ui.mark(stuff)
         mp._session.ui.reset_marks()
@@ -84,11 +87,13 @@ try:
     new_mid = mp.message_compose().result[0]['messages'][0]['mid']
     assert(mp.search('tag:drafts').result[0]['count'] == 0)
     assert(mp.search('tag:blank').result[0]['count'] == 1)
+    assert(mp.search('tag:sent').result[0]['count'] == 0)
+    assert(not os.path.exists(mailpile_sent))
 
     # Edit the message (moves from Blank to Draft, not findable in index)
     msg_data = {
       'from': [MY_FROM],
-      'to': [MY_FROM],
+      'bcc': ['secret@test.com'],
       'mid': [new_mid],
       'subject': ['This the TESTMSG subject'],
       'body': ['Hello world!']
@@ -97,6 +102,7 @@ try:
     assert(mp.search('tag:drafts').result[0]['count'] == 1)
     assert(mp.search('tag:blank').result[0]['count'] == 0)
     assert(mp.search('TESTMSG').result[0]['count'] == 0)
+    assert(not os.path.exists(mailpile_sent))
 
     # Send the message (moves from Draft to Sent, is findable via. search)
     del msg_data['subject']
@@ -104,13 +110,15 @@ try:
     mp.message_update_send(**msg_data)
     assert(mp.search('tag:drafts').result[0]['count'] == 0)
     assert(mp.search('tag:blank').result[0]['count'] == 0)
+    assert('the TESTMSG subject' in contents(mailpile_sent))
+    assert('thisisauniquestring' in contents(mailpile_sent))
+    assert('secret@test.com' not in contents(mailpile_sent))  # BCC stripped?
     for search in (['tag:sent'],
+                   ['bcc:secret@test.com'],
                    ['thisisauniquestring'],
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
-        results = mp.search(*search)
-        assert(len(results.result) == 1)
-        assert(results.result[0]['count'] == 1)
+        assert(mp.search(*search).result[0]['count'] == 1)
 
     say("Tests passed, woot!")
 except:

@@ -608,14 +608,14 @@ class MailIndex(object):
 
   def index_email(self, session, email):
     mbox_idx = email.get_msg_info(self.MSG_PTRS).split(',')[0][:MBX_ID_LEN]
-    self.index_message(session,
-                       email.msg_mid(),
-                       email.get_msg_info(self.MSG_ID),
-                       email.get_msg(),
-                       long(email.get_msg_info(self.MSG_DATE), 36),
-                       mailbox=mbox_idx,
-                       compact=False,
-                       filter_hooks=[self.filter_keywords])
+    kw, sn = self.index_message(session,
+                                email.msg_mid(),
+                                email.get_msg_info(self.MSG_ID),
+                                email.get_msg(),
+                                long(email.get_msg_info(self.MSG_DATE), 36),
+                                mailbox=mbox_idx,
+                                compact=False,
+                                filter_hooks=[self.filter_keywords])
 
   def set_conversation_ids(self, msg_mid, msg):
     msg_conv_mid = None
