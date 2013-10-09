@@ -494,25 +494,25 @@ class MailIndex(object):
     try:
       if ';' in date_hdr:
         date_hdr = date_hdr.split(';')[-1].strip()
-      msg_date = int(rfc822.mktime_tz(rfc822.parsedate_tz(date_hdr)))
-      if (msg_date > (time.time() + 24*3600)) or (msg_date < 1):
+      msg_ts = long(rfc822.mktime_tz(rfc822.parsedate_tz(date_hdr)))
+      if (msg_ts > (time.time() + 24*3600)) or (msg_ts < 1):
         return None
       else:
-        return msg_date
+        return msg_ts
     except (ValueError, TypeError, OverflowError):
       return None
 
-  def _extract_date(self, session, msg_mid, msg_id, msg, last_date):
+  def _extract_date_ts(self, session, msg_mid, msg_id, msg, last_date):
     """Extract a date, sanity checking against the Received: headers."""
     hdrs = [self.hdr(msg, 'date')] + (msg.get_all('received') or [])
     dates = [self._parse_date(date_hdr) for date_hdr in hdrs]
-    msg_date = dates[0]
+    msg_ts = dates[0]
     nz_dates = sorted([d for d in dates if d])
 
     if nz_dates:
       median = nz_dates[len(nz_dates)/2]
-      if msg_date and abs(msg_date-median) < 31*24*3600:
-        return msg_date
+      if msg_ts and abs(msg_ts-median) < 31*24*3600:
+        return msg_ts
       else:
         session.ui.warning(('=%s/%s using Recieved: instead of Date:'
                             ) % (msg_mid, msg_id))
@@ -524,16 +524,17 @@ class MailIndex(object):
       session.ui.warning('=%s/%s has a bogus date' % (msg_mid, msg_id))
       return last_date + 1
 
-  def scan_mailbox(self, session, idx, mailbox_fn, mailbox_opener):
+  def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener):
     try:
-      mbox = mailbox_opener(session, idx)
+      mbox = mailbox_opener(session, mailbox_idx)
       if mbox.editable:
-        session.ui.mark('%s: Skipped: %s' % (idx, mailbox_fn))
+        session.ui.mark('%s: Skipped: %s' % (mailbox_idx, mailbox_fn))
         return 0
       else:
-        session.ui.mark('%s: Checking: %s' % (idx, mailbox_fn))
+        session.ui.mark('%s: Checking: %s' % (mailbox_idx, mailbox_fn))
     except (IOError, OSError, NoSuchMailboxError), e:
-      session.ui.mark('%s: Error opening: %s (%s)' % (idx, mailbox_fn, e))
+      session.ui.mark(('%s: Error opening: %s (%s)'
+                       ) % (mailbox_idx, mailbox_fn, e))
       return 0
 
     unparsed = mbox.unparsed()
@@ -545,15 +546,16 @@ class MailIndex(object):
 
     snippet_max = session.config.get('snippet_max', 80)
     added = 0
-    msg_date = int(time.time())
+    msg_ts = int(time.time())
     for ui in range(0, len(unparsed)):
       if mailpile.util.QUITTING: break
 
       i = unparsed[ui]
       parse_status = ('%s: Reading your mail: %d%% (%d/%d messages)'
-                      ) % (idx, 100 * ui/len(unparsed), ui, len(unparsed))
+                      ) % (mailbox_idx,
+                           100 * ui/len(unparsed), ui, len(unparsed))
 
-      msg_ptr = mbox.get_msg_ptr(idx, i)
+      msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
       if msg_ptr in self.PTRS:
         if (ui % 317) == 0:
           session.ui.mark(parse_status)
@@ -571,11 +573,11 @@ class MailIndex(object):
         # Add new message!
         msg_mid = b36(len(self.INDEX))
 
-        msg_date = self._extract_date(session, msg_mid, msg_id, msg, msg_date)
+        msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg, msg_ts)
 
         keywords, snippet = self.index_message(session,
-                                               msg_mid, msg_id, msg, msg_date,
-                                               mailbox=idx,
+                                               msg_mid, msg_id, msg, msg_ts,
+                                               mailbox=mailbox_idx,
                                                compact=False,
                                             filter_hooks=[self.filter_keywords])
 
@@ -589,7 +591,7 @@ class MailIndex(object):
                   ExtractEmails(self.hdr(msg, 'bcc')))
 
         msg_idx_pos, msg_info = self.add_new_msg(
-          msg_ptr, msg_id, msg_date, self.hdr(msg, 'from'), msg_to,
+          msg_ptr, msg_id, msg_ts, self.hdr(msg, 'from'), msg_to,
           msg_subject, msg_snippet, tags
         )
         self.set_conversation_ids(msg_info[self.MSG_MID], msg)
@@ -601,8 +603,19 @@ class MailIndex(object):
 
     if added:
       mbox.save(session)
-    session.ui.mark('%s: Indexed mailbox: %s' % (idx, mailbox_fn))
+    session.ui.mark('%s: Indexed mailbox: %s' % (mailbox_idx, mailbox_fn))
     return added
+
+  def index_email(self, session, email):
+    mbox_idx = email.get_msg_info(self.MSG_PTRS).split(',')[0][:MBX_ID_LEN]
+    kw, sn = self.index_message(session,
+                                email.msg_mid(),
+                                email.get_msg_info(self.MSG_ID),
+                                email.get_msg(),
+                                long(email.get_msg_info(self.MSG_DATE), 36),
+                                mailbox=mbox_idx,
+                                compact=False,
+                                filter_hooks=[self.filter_keywords])
 
   def set_conversation_ids(self, msg_mid, msg):
     msg_conv_mid = None
@@ -677,7 +690,7 @@ class MailIndex(object):
     eids = msg_info[self.MSG_TO]
     return [self.EMAILS[int(e, 36)] for e in eids.split(',') if e]
 
-  def add_new_msg(self, msg_ptr, msg_id, msg_date, msg_from, msg_to,
+  def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from, msg_to,
                         msg_subject, msg_snippet, tags):
     msg_idx_pos = len(self.INDEX)
     msg_mid = b36(msg_idx_pos)
@@ -685,7 +698,7 @@ class MailIndex(object):
       msg_mid,                                     # Index ID
       msg_ptr,                                     # Location on disk
       b64c(sha1b64((msg_id or msg_ptr).strip())),  # Message ID
-      b36(msg_date),                               # Date as a UTC timstamp
+      b36(msg_ts),                                 # Date as a UTC timstamp
       msg_from,                                    # From:
       self.compact_to_list(msg_to or []),          # To: / Cc: / Bcc:
       msg_subject,                                 # Subject
@@ -728,7 +741,7 @@ class MailIndex(object):
         else:
           self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
-  def read_message(self, session, msg_mid, msg_id, msg, msg_date,
+  def read_message(self, session, msg_mid, msg_id, msg, msg_ts,
                          mailbox=None):
     keywords = []
     snippet = ''
@@ -799,15 +812,15 @@ class MailIndex(object):
           keywords.extend(['%s:list' % t for t in words])
 
     for extract in plugins.get_meta_kw_extractors():
-      keywords.extend(extract(self, msg_mid, msg, msg_date))
+      keywords.extend(extract(self, msg_mid, msg, msg_ts))
 
     snippet = snippet.replace('\n', ' ').replace('\t', ' ').replace('\r', '')
     return (set(keywords) - STOPLIST), snippet.strip()
 
-  def index_message(self, session, msg_mid, msg_id, msg, msg_date,
+  def index_message(self, session, msg_mid, msg_id, msg, msg_ts,
                     mailbox=None, compact=True, filter_hooks=[]):
     keywords, snippet = self.read_message(session,
-                                          msg_mid, msg_id, msg, msg_date,
+                                          msg_mid, msg_id, msg, msg_ts,
                                           mailbox=mailbox)
 
     for hook in filter_hooks:

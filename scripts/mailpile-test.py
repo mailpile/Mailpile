@@ -14,7 +14,9 @@ import traceback
 # Set up some paths
 mailpile_root = os.path.join(os.path.dirname(__file__), '..')
 mailpile_test = os.path.join(mailpile_root, 'testing')
+mailpile_send = os.path.join(mailpile_root, 'scripts', 'test-sendmail.sh')
 mailpile_home = os.path.join(mailpile_test, 'tmp')
+mailpile_sent = os.path.join(mailpile_home, 'sent.mbx')
 
 # Add the root to our import path, import API and standard plugins
 sys.path.append(mailpile_root)
@@ -25,10 +27,20 @@ from mailpile import Mailpile
 ##[ Black-box test script ]###################################################
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
+MY_FROM = 'test@test.com'
 try:
     # First, we set up a pristine Mailpile
     os.system('rm -rf %s' % mailpile_home)
     mp = Mailpile(workdir=mailpile_home)
+
+    def contents(fn):
+        return open(fn, 'r').read()
+
+    def grep(w, fn):
+        return '\n'.join([l for l in open(fn, 'r').readlines() if w in l])
+
+    def grepv(w, fn):
+        return '\n'.join([l for l in open(fn, 'r').readlines() if w not in l])
 
     def say(stuff):
         mp._session.ui.mark(stuff)
@@ -36,6 +48,11 @@ try:
 
     # Set up initial tags and such
     mp.setup()
+
+    # Configure our fake mail sending setup
+    mp.set('my_from: %s = Test Account' % MY_FROM)
+    mp.set('my_sendmail: %s = |%s -i %%(rcpt)s' % (MY_FROM, mailpile_send))
+    mp.set('debug = sendmail log compose')
 
     # Add the mailboxes, scan them
     for mailbox in ('tests.mbx', 'Maildir'):
@@ -71,6 +88,53 @@ try:
     assert('=C3' not in result_bre['from'])
     say('Checking encoding: %s' % result_bre['message']['headers']['To'])
     assert('utf' not in result_bre['message']['headers']['To'])
+
+    # Create a message...
+    new_mid = mp.message_compose().result[0]['messages'][0]['mid']
+    assert(mp.search('tag:drafts').result[0]['count'] == 0)
+    assert(mp.search('tag:blank').result[0]['count'] == 1)
+    assert(mp.search('tag:sent').result[0]['count'] == 0)
+    assert(not os.path.exists(mailpile_sent))
+
+    # Edit the message (moves from Blank to Draft, not findable in index)
+    msg_data = {
+      'from': [MY_FROM],
+      'bcc': ['secret@test.com'],
+      'mid': [new_mid],
+      'subject': ['This the TESTMSG subject'],
+      'body': ['Hello world!']
+    }
+    mp.message_update(**msg_data)
+    assert(mp.search('tag:drafts').result[0]['count'] == 1)
+    assert(mp.search('tag:blank').result[0]['count'] == 0)
+    assert(mp.search('TESTMSG').result[0]['count'] == 0)
+    assert(not os.path.exists(mailpile_sent))
+
+    # Send the message (moves from Draft to Sent, is findable via. search)
+    del msg_data['subject']
+    msg_data['body'] = ['Hello world: thisisauniquestring :)']
+    mp.message_update_send(**msg_data)
+    assert(mp.search('tag:drafts').result[0]['count'] == 0)
+    assert(mp.search('tag:blank').result[0]['count'] == 0)
+    assert('the TESTMSG subject' in contents(mailpile_sent))
+    assert('thisisauniquestring' in contents(mailpile_sent))
+    assert(MY_FROM in grep('X-Args', mailpile_sent))
+    assert('secret@test.com' in grep('X-Args', mailpile_sent))
+    assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
+    for search in (['tag:sent'],
+                   ['bcc:secret@test.com'],
+                   ['thisisauniquestring'],
+                   ['subject:TESTMSG']):
+        say('Searching for: %s' % search)
+        assert(mp.search(*search).result[0]['count'] == 1)
+    os.remove(mailpile_sent)
+
+    # Test the send method's "bounce" capability
+    mp.message_send(mid=[new_mid], to=['nasty@test.com'])
+    assert('thisisauniquestring' in contents(mailpile_sent))
+    assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
+    assert('-i nasty@test.com' in contents(mailpile_sent))
+    os.remove(mailpile_sent)
 
     say("Tests passed, woot!")
 except:
