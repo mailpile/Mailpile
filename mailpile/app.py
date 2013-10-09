@@ -452,7 +452,6 @@ class ConfigManager(dict):
     self.MBOX_CACHE = {}
 
   def is_editable_message(self, msg_info):
-    print 'MSG_INFO=%s' % msg_info
     for ptr in msg_info[MailIndex.MSG_PTRS].split(','):
       if not self.is_editable_mailbox(ptr[:MBX_ID_LEN]):
         return False
