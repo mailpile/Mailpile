@@ -5,23 +5,25 @@
 
 <div id="tags-list" class="clearfix">
 
-  {% for tag in result.tags %}
-  <div class="tag-card" id="tag-card-{{tag.tid}}">
+  {% for tag in user_tags.result.tags %}
+  <div class="tag-card" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.not}}">
     <span class="tag-card-name">{{tag.name}}</span>
-
-    <span class="tag-card-message-new">New {{tag.new}}</span>    
-    <span class="tag-card-label">Total</span>
-    <span class="tag-card-message-total">{{tag.all}}</span>
-        
+    <div class="tag-card-numbers">
+      <div class="tag-card-stat">      
+        <span class="tag-card-label">Total</span>
+        <span class="tag-card-stat-count">{{tag.all}}</span>
+      </div>
+      <div class="tag-card-stat">
+        {% if tag.new > 0 %}
+        <span class="tag-card-label">New</span>
+        <span class="tag-card-stat-count">{{tag.new}}</span>
+        {% endif %}
+      </div>
+    </div>
     <a class="tag-card-message-link" href="{{tag.url}}">View Messages</a>
   </div>
   {% endfor %}
 
-  <hr>
-  
-  <p>What is this value: "not": 16513 in the tag object</p>
-
-  
 </div>
 
 {% endblock %}

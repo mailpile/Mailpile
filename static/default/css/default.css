@@ -5194,6 +5194,9 @@ label span.form_error {
   float: left;
   text-align: left;
 }
+#messages span.message-text a {
+  color: #b3b3b3;
+}
 #messages abbr.message-close {
   cursor: pointer;
   float: right;
@@ -6340,13 +6343,16 @@ div.content-normal {
   width: 20%;
   min-width: 175px;
   height: 38%;
-  min-height: 275px;
+  min-height: 200px;
   box-sizing: border-box;
   margin: 2em 0 0 2em;
   padding: 1em;
   float: left;
   background: #f2f2f2;
   border: 1px solid #b3b3b3;
+}
+.tag-card:hover {
+  background: #e5e5e5;
 }
 .tag-card-name {
   display: block;
@@ -6356,22 +6362,27 @@ div.content-normal {
 }
 .tag-card-label {
   display: block;
+  font-family: Helvetica, Arial, sans-serif;
+  color: #8d8d8d;
   font-size: 14px;
   line-height: 14px;
 }
-.tag-card-message-new {
-  font-size: 21px;
-  line-height: 21px;
+.tag-card-numbers {
+  min-height: 75px;
+  clear: both;
 }
-.tag-card-message-total {
-  font-size: 48px;
-  line-height: 48px;
+.tag-card-stat {
+  float: left;
+  margin-right: 25px;
+  margin-bottom: 15px;
+}
+.tag-card-stat-count {
   display: block;
+  font-size: 30px;
+  line-height: 30px;
 }
 .tag-card-message-link {
   display: block;
-  position: relative;
-  bottom: 0px;
-  left: 0px;
+  margin-top: 1.75em;
   font-size: 14px;
 }

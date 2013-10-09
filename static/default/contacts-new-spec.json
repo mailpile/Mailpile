@@ -9,15 +9,15 @@
       "name":"Brennan Mailpile",
       "thumb":"http://website.com/thumbnail.jpg",
       "emails":[{
-       "address": "bnvk@mailpile.is",
+        "address": "bnvk@mailpile.is",
             "pgp_keys": ["c381bca7","b34dbef2"]
-          },{
-           "address":"hi@brennannovak.com",
+      },{
+        "address":"hi@brennannovak.com",
             "pgp_keys": ["ee43gb64"]
           },{
             "address":"brennan@reverseproductions.com",
             "pgp_keys": []
-          }],
+      }],
         "bitmessage":["a7f6bde30206ba75668000f56f0fea9a"],
         "phone": ["+15036622442","+3656126585"],
         "places": [{
