@@ -36,6 +36,12 @@ try:
     def contents(fn):
         return open(fn, 'r').read()
 
+    def grep(w, fn):
+        return '\n'.join([l for l in open(fn, 'r').readlines() if w in l])
+
+    def grepv(w, fn):
+        return '\n'.join([l for l in open(fn, 'r').readlines() if w not in l])
+
     def say(stuff):
         mp._session.ui.mark(stuff)
         mp._session.ui.reset_marks()
@@ -45,7 +51,7 @@ try:
 
     # Configure our fake mail sending setup
     mp.set('my_from: %s = Test Account' % MY_FROM)
-    mp.set('my_sendmail: %s = |%s' % (MY_FROM, mailpile_send))
+    mp.set('my_sendmail: %s = |%s -i %%(rcpt)s' % (MY_FROM, mailpile_send))
     mp.set('debug = sendmail log compose')
 
     # Add the mailboxes, scan them
@@ -112,13 +118,23 @@ try:
     assert(mp.search('tag:blank').result[0]['count'] == 0)
     assert('the TESTMSG subject' in contents(mailpile_sent))
     assert('thisisauniquestring' in contents(mailpile_sent))
-    assert('secret@test.com' not in contents(mailpile_sent))  # BCC stripped?
+    assert(MY_FROM in grep('X-Args', mailpile_sent))
+    assert('secret@test.com' in grep('X-Args', mailpile_sent))
+    assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     for search in (['tag:sent'],
                    ['bcc:secret@test.com'],
                    ['thisisauniquestring'],
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
         assert(mp.search(*search).result[0]['count'] == 1)
+    os.remove(mailpile_sent)
+
+    # Test the send method's "bounce" capability
+    mp.message_send(mid=[new_mid], to=['nasty@test.com'])
+    assert('thisisauniquestring' in contents(mailpile_sent))
+    assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
+    assert('-i nasty@test.com' in contents(mailpile_sent))
+    os.remove(mailpile_sent)
 
     say("Tests passed, woot!")
 except:
