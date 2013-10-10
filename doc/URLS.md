@@ -24,7 +24,7 @@ endpoints be used for automation.
     /api/0/config/get/        <var>/
     /api/0/contact/           <nickname>/
     /api/0/contact/list/      [--full]/[<terms>]/
-    /api/0/filter/list/
+    /api/0/filter/list/       [<search>|=<id>]/
     /api/0/help/              [<command-group>|variables]/
     /api/0/help/splash/
     /api/0/help/urlmap/
@@ -34,8 +34,8 @@ endpoints be used for automation.
     /api/0/message/download/  <att>/<message>/[><fn>]/
     /api/0/message/draft/     [<messages>]/
                               ?mid=[metadata-ID]
-    /api/0/search/            <terms>/
-                              ?q=[search terms]&order=[sort order]
+    /api/0/search/            [@<start>]/<terms>/
+                              ?q=[search terms]&start=[start position]&end=[end position]&order=[sort order]
     /api/0/tag/list/          [<wanted>|!<wanted>]/[...]/
 
 ### POST
@@ -54,7 +54,9 @@ endpoints be used for automation.
     /api/0/message/send/      <messages>/[<emails>]/
     ... POST only: to=[recipients]&mid=[metadata-ID]
     /api/0/message/update/    <messages>/<<filename>/
-    ... POST only: body=[..]&to=[..]&file-data=[file data]&save=[Save as draft]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&send=[Send the message?]&bcc=[..]
+    ... POST only: body=[..]&to=[..]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
+    /api/0/message/update/send/
+    ... POST only: body=[..]&to=[recipients]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
     /api/0/tag/add/           <tag>/
     /api/0/tag/delete/        <tag>/
 
@@ -64,7 +66,7 @@ endpoints be used for automation.
     /api/0/message/attach/    <messages>/[<path/to/file>]/
     ... POST only: file-data=[file data]&mid=[metadata-ID]
     /api/0/message/update/    <messages>/<<filename>/
-    ... POST only: body=[..]&to=[..]&file-data=[file data]&save=[Save as draft]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&send=[Send the message?]&bcc=[..]
+    ... POST only: body=[..]&to=[..]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
 
 ### DELETE
 
@@ -75,7 +77,7 @@ endpoints be used for automation.
 ## Pretty shortcuts (HTML output)
 
     /           Redirects to /in/Inbox/ for now.  (FIXME)
-    /in/        Map /in/TAG_NAME/ to tag searches.
+    /in/        Map /in/TAG_NAME/[@<pos>]/ to tag searches.
     /static/    RESERVED FOR LATER.
     /thread/    Map /thread/METADATA_ID/... to view or extract commands.
 
@@ -103,10 +105,11 @@ endpoints be used for automation.
     /message/reply/
     /message/send/
     /message/update/
+    /message/update/send/
     /search/
     /tag/add/
     /tag/delete/
     /tag/list/
 
 
-<!-- TestResults(failed=0, attempted=43) -->
+<!-- TestResults(failed=0, attempted=45) -->
