@@ -3,6 +3,7 @@ from datetime import date
 from setuptools import setup, find_packages
 from mailpile.app import APPVER
 import os
+from glob import glob
 
 try:
   # This borks sdist.
@@ -32,8 +33,10 @@ simple web-mail client.
    packages=find_packages(),
    data_files = data_files,
    entry_points = {
-     'console_scripts': [
-       'mailpile = mailpile.__main__:main'
-     ]
+      'console_scripts': [
+          'mailpile = mailpile.__main__:main'
+      ]
    },
 )
+
+
