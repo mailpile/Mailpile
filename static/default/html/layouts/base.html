@@ -91,13 +91,13 @@
       <ul>
         {% for tag in user_tags.result.tags %}
         <li class="sidebar-tags">
-            <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
-              <span class="sidebar-icon icon-tag"></span>
-              <span class="sidebar-tag">{{tag.name}}</span>
-              {% if tag.new > 0 %}
-              <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
-              {% endif %}
-            </a>        
+          <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
+            <span class="sidebar-icon icon-tag"></span>
+            <span class="sidebar-tag">{{tag.name}}</span>
+            {% if tag.new > 0 %}
+            <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
+            {% endif %}
+          </a>        
         </li>
         {% endfor %}
       </ul>
@@ -148,7 +148,7 @@
     </div>
 
     <div id="debug" class="hide">
-      <h3>DE BUG</h3>
+      <h3>DEBUG</h3>
       <b>command:</b> {{ command }}<br>
       <b>command_parts:</b> {{ command_parts }}<br>
       <b>args:</b> {{ args }}<br>
@@ -156,21 +156,16 @@
       {{logged}}
     </div>
 
-    <div style="display: none; position: fixed; top: 20%; left: 40%; right: 40%; width: 20%; background: #eee; border: 1px solid #ccc;" id="dialog_tag">
-      <form onsubmit="mailpile.go('/'+$('#dialog_tag_input').val() + '/'); return false;">
-        <input type="text" id="dialog_tag_input"/>
-        <input type="submit" value="Go">
-      </form>
-    </div>
   </div>
   <!-- END CONTENT -->
   <div class="clearfix"></div>
 
-</div>
+  </div>
 
-<script type="text/javascript" src="/static/js/jquery.min.js"></script>
-<script type="text/javascript" src="/static/js/mailpile-libraries-min.js"></script>
-<script type="text/javascript" src="/static/js/d3.v3.min.js"></script>
-<script type="text/javascript" src="/static/js/mailpile.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/mailpile-libraries-min.js"></script>
+  <script type="text/javascript" src="/static/js/d3.v3.min.js"></script>
+  <script type="text/javascript" src="/static/js/mailpile.js"></script>
+
 </body>
 </html>

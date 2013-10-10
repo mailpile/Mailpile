@@ -6231,7 +6231,9 @@ div.content-normal {
 #pile-results td.from {
   min-width: 150px;
   padding-left: 15px;
-  word-break: break-word;
+  word-wrap: normal;
+  word-break: normal;
+  overflow-x: hidden;
 }
 #pile-results td.subject {
   min-width: 275px;

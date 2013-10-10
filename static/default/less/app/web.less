@@ -470,7 +470,9 @@
 	#pile-results td.from {
 	  min-width: 150px;
 		padding-left: 15px;
-		word-break: break-word;
+		word-wrap: normal;
+		word-break: normal;
+		overflow-x: hidden;
 	}
 	
 	#pile-results td.subject {
@@ -494,7 +496,6 @@
 	#pile-results tr.result-on:hover {
 		background: darken(@grayLight, 5%);
 	}
-	
 
 	#pile-bottom {
 		margin: 15px;

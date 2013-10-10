@@ -366,6 +366,7 @@ var statusMessage = function(status, message_text, complete, complete_action) {
 $(document).ready(function() {
 
 
+
   /* Messages */
 	$('.message-close').on('click', function() {
 		$(this).parent().fadeOut(function() {
@@ -376,86 +377,34 @@ $(document).ready(function() {
 
 
 
-  /* Pile Result Filtering */
-  var options = {
-    valueNames: ['from', 'to']
-  };
-
-  var featureList = new List('pile-container', options);
-
-	// Sort By Category
+  /* Pile - Inbox - Filtering */
   $('.button-sub-navigation').on('click', function() {
   
     var filter = $(this).data('filter');
+    $('#sub-navigation ul.left li').removeClass('navigation-on');
 
-    if (filter == 'none') {
+    if (filter == 'in_new') {
 
-      featureList.filter();
+      $('#display-new').addClass('navigation-on');
+      $('tr').hide('fast', function(){        
+        $('tr.in_new').show('fast');
+      });
+    }
+    else if (filter == 'in_later') {
+
+      $('#display-later').addClass('navigation-on');
+      $('tr').hide('fast', function(){        
+        $('tr.in_later').show('fast');
+      });
     }
     else {
 
-      featureList.filter(function(item) {
-      
-      console.log(item)
-      /*
-        if (item.values().item_category == category_id) {
-          return true;
-        } 
-        else {
-          return false;
-        }
-      */
-      });
+      $('#display-all').addClass('navigation-on');
+      $('tr.result').show('fast');
     }
     
     return false;		
   });
-
-  	// Sort By User
-	$('#filter_user').change(function() {	
-		var user_id = $(this).val();
-		if (user_id == 'none') {
-	        featureList.filter();
-	    }
-	    else {
-	        featureList.filter(function(item) {
-	            if (item.values().item_user_id == user_id.toString()) {
-	                return true;
-	            }
-	            else {
-	                return false;
-	            }
-	        });
-	    }
-        return false;		
-  	});
-
-  	// Sort By User
-	$('#filter_details').change(function()
-	{	
-		var details = $(this).val();
- 		if (details == 'none') {
-	        featureList.filter();
-	    }
-	    else {
-	        featureList.filter(function(item) {
-	            if (item.values().item_details == details) {
-	                return true;
-	            }
-	            else {
-	                return false;
-	            }
-	        });
-	    }
-        return false;		
-  	});
-
-  	$('#sort_list').change(function() {
-	  	var sort_by = $(this).val();
-	  		  	
-	  	featureList.sort(sort_by, { asc: true });	
-  	});  
-
 
 
 
@@ -579,27 +528,19 @@ $(document).ready(function() {
 
   /* Compose - Button */
   $('#button-compose').on('click', function() {
-
 		$.ajax({
 			url			 : '/api/0/message/compose/',
 			type		 : 'POST',
 			data     : {},
 			dataType : 'json'  
     }).done(function(response) {
-      
         if (response.status == 'success') {
-
-          console.log(response.result.messages[0].mid);
-
-          //window.location.href = '/message/draft/=' + response.result[0].messages[0].mid + '/';
+          window.location.href = '/message/draft/=' + response.result.created + '/';
         }
         else {
-          // Needs proper state handling from API response
           statusMessage(response.status, response.message);
-        }
-      
+        }      
     });
-  
   });
 
 
@@ -610,7 +551,6 @@ $(document).ready(function() {
         
       var formatContactResult = function(state) {
         if (!state.id) return state.text;
-        // " + state.id.toLowerCase() + "
         return "<span class='icon-user'></span> &nbsp;" + state.text;
       }          
         
@@ -642,7 +582,6 @@ $(document).ready(function() {
           $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
         }
       });
-
     });
 
   }
@@ -652,8 +591,6 @@ $(document).ready(function() {
 
     e.preventDefault();
     var action = $(this).val();
-
-    console.log(action);
 
 	  if (action == 'send') {
   	  var action_url     = 'update/send/';
@@ -667,23 +604,19 @@ $(document).ready(function() {
 	  }
 
 		$.ajax({
-			url			  : '/api/0/message/' + action_url,
-			type		  : 'POST',
-			data      : $('#form-compose').serialize(),
-			dataType	: 'json',
-		  	success : function(result) {
+			url			 : '/api/0/message/' + action_url,
+			type		 : 'POST',
+			data     : $('#form-compose').serialize(),
+			dataType : 'json',
+		  success  : function(response) {
 
-          console.log(result);
-          
-          if (action == 'send') {
-            
-            //window.location.href = '/in/Sent/' + 
-
-          }
-
-          // Needs proper state handling from API response
-          statusMessage(action_status, action_message);
-		  	}
+        if (action == 'send' && response.status == 'success') {
+          window.location.href = '/in/Sent/?ui_sent=' + response.result.messages[0].mid
+        }
+        else {
+          statusMessage(response.status, response.message);
+        }
+		  }
 		});
 	});
 

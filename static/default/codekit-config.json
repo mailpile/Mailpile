@@ -73,10 +73,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/mixins\/elements.less" : {
+    "\/less\/rebar\/typography.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/mixins\/elements.less",
-      "outputAbbreviatedPath" : "\/less\/css\/elements.css",
+      "inputAbbreviatedPath" : "\/less\/rebar\/typography.less",
+      "outputAbbreviatedPath" : "\/less\/css\/typography.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -90,10 +90,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/rebar\/typography.less" : {
+    "\/less\/mixins\/elements.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/rebar\/typography.less",
-      "outputAbbreviatedPath" : "\/less\/css\/typography.css",
+      "inputAbbreviatedPath" : "\/less\/mixins\/elements.less",
+      "outputAbbreviatedPath" : "\/less\/css\/elements.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -548,7 +548,7 @@
     },
     "\/js\/list.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/list.js",
@@ -748,15 +748,6 @@
       "initialSize" : 2914,
       "fileType" : 8192
     },
-    "\/html\/message\/index.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/message\/index.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/js\/select2.min.js" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 1,
@@ -767,6 +758,15 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/select2.min-min.js",
       "fileType" : 64
+    },
+    "\/html\/message\/index.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/message\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
     },
     "\/less\/rebar\/separators.less" : {
       "ieCompatibility" : 1,
@@ -895,6 +895,15 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+    "\/html\/partials\/errors_content.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/partials\/errors_content.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/js\/mailpile-libraries.js" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -905,15 +914,6 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/mailpile-libraries-min.js",
       "fileType" : 64
-    },
-    "\/html\/partials\/errors_content.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/partials\/errors_content.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/js\/jquery.ui.core.js" : {
       "ignoreWasSetByUser" : 0,
@@ -1040,15 +1040,6 @@
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/html\/contact\/list.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
-    "\/temporary.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/temporary.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -1180,6 +1171,13 @@
       "type" : 1,
       "position" : 8,
       "linkedFileAbbreviatedPath" : "\/js\/mousetrap.min.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 9,
+      "linkedFileAbbreviatedPath" : "\/js\/list.js",
       "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
       "followForSyntaxChecking" : 1
     }
