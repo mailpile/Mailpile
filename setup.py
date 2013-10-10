@@ -3,6 +3,7 @@ from datetime import date
 from setuptools import setup
 from mailpile.app import APPVER
 import os
+from glob import glob
 
 try:
   # This borks sdist.
@@ -29,11 +30,13 @@ Mailpile is a tool for building and maintaining a tagging search
 engine for a personal collection of e-mail.  It can be used as a
 simple web-mail client.
 """,
-   packages=['mailpile','mailpile.plugins'],
-   data_files = data_files,
-   entry_points = {
+    packages=['mailpile','mailpile.plugins'],
+    data_files = data_files,
+    entry_points = {
      'console_scripts': [
        'mailpile = mailpile.__main__:main'
      ]
-   },
+    },
 )
+
+
