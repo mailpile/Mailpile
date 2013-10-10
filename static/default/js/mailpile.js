@@ -373,7 +373,89 @@ $(document).ready(function() {
 			$('#header').css('padding-top', statusHeaderPadding());
 		});
 	});
-	  
+
+
+
+  /* Pile Result Filtering */
+  var options = {
+    valueNames: ['from', 'to']
+  };
+
+  var featureList = new List('pile-container', options);
+
+	// Sort By Category
+  $('.button-sub-navigation').on('click', function() {
+  
+    var filter = $(this).data('filter');
+
+    if (filter == 'none') {
+
+      featureList.filter();
+    }
+    else {
+
+      featureList.filter(function(item) {
+      
+      console.log(item)
+      /*
+        if (item.values().item_category == category_id) {
+          return true;
+        } 
+        else {
+          return false;
+        }
+      */
+      });
+    }
+    
+    return false;		
+  });
+
+  	// Sort By User
+	$('#filter_user').change(function() {	
+		var user_id = $(this).val();
+		if (user_id == 'none') {
+	        featureList.filter();
+	    }
+	    else {
+	        featureList.filter(function(item) {
+	            if (item.values().item_user_id == user_id.toString()) {
+	                return true;
+	            }
+	            else {
+	                return false;
+	            }
+	        });
+	    }
+        return false;		
+  	});
+
+  	// Sort By User
+	$('#filter_details').change(function()
+	{	
+		var details = $(this).val();
+ 		if (details == 'none') {
+	        featureList.filter();
+	    }
+	    else {
+	        featureList.filter(function(item) {
+	            if (item.values().item_details == details) {
+	                return true;
+	            }
+	            else {
+	                return false;
+	            }
+	        });
+	    }
+        return false;		
+  	});
+
+  	$('#sort_list').change(function() {
+	  	var sort_by = $(this).val();
+	  		  	
+	  	featureList.sort(sort_by, { asc: true });	
+  	});  
+
 
 
 
@@ -503,17 +585,17 @@ $(document).ready(function() {
 			type		 : 'POST',
 			data     : {},
 			dataType : 'json'  
-    }).done(function() {
+    }).done(function(response) {
       
-       console.log(result);
-        
-        if (result == 'send') {
+        if (response.status == 'success') {
 
-          window.location.href = '/in/Sent/';
+          console.log(response.result.messages[0].mid);
+
+          //window.location.href = '/message/draft/=' + response.result[0].messages[0].mid + '/';
         }
         else {
           // Needs proper state handling from API response
-          statusMessage('success');
+          statusMessage(response.status, response.message);
         }
       
     });

@@ -1,12 +1,12 @@
 <tr class="result {{message.even_odd}}{% if message.is_editable %}is_editable{% endif %}{{message.tag_classes}}" data-state="normal">
   <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
-    <a href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.short_from}}</a>
+    <a class="from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.short_from}}</a>
   </td>
   <td class="subject">
-    <a href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
+    <a class="subject" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
   </td>
   <td class="date" valign="top">
-    <a href="/search/dates:{{message.date}}/">{{ message.timestamp|friendly_date }}</a>
+    <a class="date" href="/search/dates:{{message.date}}/">{{ message.timestamp|friendly_date }}</a>
   </td>
   <td class="checkbox" valign="top">
     <input type="checkbox" name="mid" value="{{message.mid}}">

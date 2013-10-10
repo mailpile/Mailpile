@@ -6127,6 +6127,7 @@ div.content-normal {
 }
 /* Search */
 #search {
+  background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
   padding: 10px 20px;
   box-sizing: padding-box;

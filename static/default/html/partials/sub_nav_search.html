@@ -1,10 +1,11 @@
 <nav id="sub-navigation">
 	<ul class="left clearfix">
-		<li class="navigation-on"><a href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-text">?? New</span></a></li>
-		<li><a href="#"><span class="navigation-icon icon-later"></span><span class="navigation-text">?? Later</span></a></li>
-    </ul>
+		<li class="navigation-on"><a class="button-sub-navigation" data-filter="later" href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-text">New</span></a></li>
+		<li><a class="button-sub-navigation" data-filter="later" href="#"><span class="navigation-icon icon-later"></span><span class="navigation-text">Later</span></a></li>
+    <li><a class="button-sub-navigation" data-filter="all" href="#"><span class="navigation-icon icon-inbox"></span><span class="navigation-text">All</span></a>
+  </ul>
 	<ul class="right">
-		<li id="btn-display-list" class="navigation-on"><a href="#" onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span></a></li>
-		<li id="btn-display-graph"><a href="#" onclick="mailpile.results_graph();"><span class="navigation-icon icon-graph"></span></a></li>
-	</ul>
+    <li id="btn-display-list" class="navigation-on"><a href="#" onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span></a></li>
+    <li id="btn-display-graph"><a href="#" onclick="mailpile.results_graph();"><span class="navigation-icon icon-graph"></span></a></li>
+  </ul>
 </nav>

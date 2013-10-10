@@ -1,9 +1,11 @@
 {% extends "layouts/base.html" %}
 {% block content %}
-{% include("partials/sub_nav_search.html") %}
-{% include("partials/search_searchbar.html") %}
+<div id="pile-container">
 
-<div id="pile-graph" style="display: none; position: relative;">
+  {% include("partials/sub_nav_search.html") %}
+  {% include("partials/search_searchbar.html") %}
+
+  <div id="pile-graph" style="display: none; position: relative;">
     <div id="graph-actions" style="position: absolute; top: 10px; right: 20px;" class="clearfix">
         <a style="display: none;" id="btn-compose-message" class="bulk-action" href="#add-to-group"><span class="icon-compose"></span> Compose Message to Selected</a>
         <a style="display: none;" id="btn-found-group" class="bulk-action" href="#add-to-group"><span class="icon-groups"></span> Add Selected to Group</a>
@@ -11,34 +13,36 @@
     <div id="pile-graph-canvas" style="width: 100%; height: 640px;">
         <svg id="pile-graph-canvas-svg"></svg>
     </div>
+  </div>
+
+  <div id="pile-results">
+    {% if result %}
+    <form id="pile-results-form" action="" method="POST">
+      <input type='hidden' name='csrf' value='{csrf}' />
+      <table class="pile-results list" id="pile-results">
+      <tbody>
+      {% for message in result.messages %}
+        {% if not message.message %}
+          {% include("partials/search_item.html") %}
+        {% endif %}
+      {% endfor %}
+      </tbody>
+      </table>
+      <div id="pile-bottom" class="clearfix">
+        <a href="#" class="button-primary">Previous</a> <a href="/in/Inbox/@20/" class="button-primary">Next</a>
+        <div>
+          <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} of {{result.total}} Messages {% elif result.total == 1 %} 1 Message {% else %} No results found {% endif %}</h5><br>
+          <a class="change-result-size" href="#">Show Expanded View</a>
+        </div>
+      </div>
+    </form>
+    {% else %}
+    <div class="add-top add-bottom center">
+      <h2 class="add-top text-center">No Results Found</h2>
+    </div>
+    {% endif %}
+  </div>
 </div>
 
-<div id="pile-results">
-  {% if result %}
-  <form id="pile-results-form" action="" method="POST">
-    <input type='hidden' name='csrf' value='{csrf}' />
-    <table class="pile-results" id="pile-results">
-    <tbody>
-    {% for message in result.messages %}
-      {% if not message.message %}
-        {% include("partials/search_item.html") %}
-      {% endif %}
-    {% endfor %}
-    </tbody>
-    </table>
-    <div id="pile-bottom" class="clearfix">
-      <a href="#" class="button-primary">Previous</a> <a href="/in/Inbox/@20/" class="button-primary">Next</a>
-      <div>
-         <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} of {{result.total}} Messages {% elif result.total == 1 %} 1 Message {% else %} No results found {% endif %}</h5><br>
-         <a class="change-result-size" href="#">Show Expanded View</a>
-      </div>
-    </div>
-  </form>
-  {% else %}
-  <div class="add-top add-bottom center">
-    <h2 class="add-top text-center">No Results Found</h2>
-  </div>
-  {% endif %}
-</div>
-{% include("partials/details_search_speed.html") %}  
+{% include("partials/details_search_speed.html") %}
 {% endblock %}
