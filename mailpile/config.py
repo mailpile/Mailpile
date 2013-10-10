@@ -9,8 +9,17 @@ class InvalidKeyError(ValueError):
     pass
 
 
+def MakeCheck(pcls, rules):
+    class CD(pcls):
+        RULES = rules
+    return CD
+
+
 def RuledContainer(pcls):
-    """Factory for abstract 'container with rules' class."""
+    """
+    Factory for abstract 'container with rules' class. See ConfigDict for
+    details, examples and tests.
+    """
 
     class RC(pcls):
         RULE_COMMENT = 0
@@ -27,6 +36,7 @@ def RuledContainer(pcls):
            'unicode': unicode,
            'False': False, 'false': False,
            'True': True, 'true': True,
+           # TODO: Create 'email' and 'url' and other high level checks
         }
         NAME = 'container'
         RULES = None
@@ -45,6 +55,7 @@ def RuledContainer(pcls):
                 self.name = self.NAME
 
             pcls.__init__(self)
+            self.key = self.name
             self.set_rules(rules)
             self.update(*args, **kwargs)
 
@@ -73,14 +84,34 @@ def RuledContainer(pcls):
 
             name = '%s/%s' % (self.name, key)
             value = rule[self.RULE_DEFAULT]
+
+            if type(check) == dict:
+                check_rule = rule[:]
+                check_rule[self.RULE_DEFAULT] = None
+                check_rule[self.RULE_CHECKER] = MakeCheck(ConfigDict, check)
+                check_rule = {'_any': check_rule}
+            else:
+                check_rule = None
+
             if isinstance(value, dict):
-                pcls.__setitem__(self, key, ConfigDict(_name=name, _rules=value))
+                rule[self.RULE_CHECKER] = False
+                if check_rule:
+                    pcls.__setitem__(self, key, ConfigDict(_name=name,
+                                                           _rules=check_rule))
+                else:
+                    pcls.__setitem__(self, key, ConfigDict(_name=name,
+                                                           _rules=value))
 
             elif isinstance(value, list):
                 rule[self.RULE_CHECKER] = False
-                pcls.__setitem__(self, key, ConfigList(_name=name, _rules={
+                if check_rule:
+                    pcls.__setitem__(self, key, ConfigList(_name=name,
+                                                           _rules=check_rule))
+                else:
+                    pcls.__setitem__(self, key, ConfigList(_name=name,
+                                                           _rules={
                         '_any': [rule[self.RULE_COMMENT], check, None]
-                }))
+                    }))
 
             elif not isinstance(value, (type(None), int, long, bool,
                                         float, str, unicode)):
@@ -97,15 +128,19 @@ def RuledContainer(pcls):
 
         def get(self, key, default=None):
             if key in self:
-                 return pcls.__getitem__(self, key)
+                return pcls.__getitem__(self, key)
             if default is None and key in self.rules:
-                 return self.rules[key][self.RULE_DEFAULT]
+                return self.rules[key][self.RULE_DEFAULT]
             return default
 
         def __getitem__(self, key):
             if key in self.rules:
-                 return self.get(key)
+                return self.get(key)
             return pcls.__getitem__(self, key)
+
+        def __passkey__(self, key, value):
+            if hasattr(value, 'key'):
+                value.key = key
 
         def __setitem__(self, key, value):
             checker = self.get_rule(key)[self.RULE_CHECKER]
@@ -120,12 +155,13 @@ def RuledContainer(pcls):
                 elif isinstance(checker, (type, type(RuledContainer))):
                     try:
                         value = checker(value)
-                    except ValueError:
+                    except (ValueError, TypeError):
                         raise ValueError(('Invalid value for %s/%s: %s'
                                           ) % (self.name, key, value))
                 else:
                     raise Exception(('Unknown constraint for %s/%s: %s'
                                      ) % (self.name, key, checker))
+            self.__passkey__(key, value)
             pcls.__setitem__(self, key, value)
 
     return RC
@@ -142,10 +178,14 @@ class ConfigList(RuledContainer(list)):
     >>> lst.extend([2, '3'])
     >>> lst
     [1, 2, 3]
-    
+
     >>> lst += ['1', '2']
     >>> lst
     [1, 2, 3, 1, 2]
+
+    >>> lst.extend(range(0, 100))
+    >>> lst['c'] == lst[int('c', 36)]
+    True
     """
     def reset(self):
         self.rules = {}
@@ -153,7 +193,11 @@ class ConfigList(RuledContainer(list)):
 
     def append(self, value):
         list.append(self, None)
-        self[len(self)-1] = value
+        try:
+            self[len(self) - 1] = value
+        except:
+            self[len(self) - 1:] = []
+            raise
 
     def extend(self, src):
         for val in src:
@@ -162,6 +206,15 @@ class ConfigList(RuledContainer(list)):
     def __iadd__(self, src):
         self.extend(src)
         return self
+
+    def __passkey__(self, key, value):
+        if hasattr(value, 'key'):
+            value.key = b36(key).lower()
+
+    def __getitem__(self, key):
+        if isinstance(key, (str, unicode)):
+            key = int(key, 36)
+        return list.__getitem__(self, key)
 
     def update(self, *args):
         for l in args:
@@ -180,6 +233,21 @@ class ConfigDict(RuledContainer(dict)):
     a structured way what variables exist, what their legal values are,
     and what their defaults are and what they are for.
 
+    Each variable definition expects three values:
+       1. A human readable description of what the variable is
+       2. A data type / sanity check
+       3. A default value
+
+    If the sanity check is itself a dictionary of rules, values are expected
+    to be dictionaries or lists of items that match the rules defined. This
+    should be used with an empty list or dictionary as a default value.
+
+    Configuration data can be nested by including a dictionary of further
+    rules in place of the default value.
+
+    If the default value is an empty list, it is assumed to be a list of
+    values of the type specified.
+
     Examples:
 
     >>> pot = ConfigDict(_rules={'potatoes': ['How many potatoes?', 'int', 0],
@@ -188,9 +256,11 @@ class ConfigDict(RuledContainer(dict)):
     ...                                         'water': ['Liters', int, 0],
     ...                                         'vodka': ['Liters', int, 12]
     ...                                      }],
+    ...                          'tags': ['Tags', {'c': ['C', int, 0],
+    ...                                            'x': ['X', str, '']}, []],
     ...                          'colors': ['Colors', ('red', 'blue'), []]})
     >>> sorted(pot.keys()), sorted(pot.values())
-    (['colors', 'liquids'], [{...}, []])
+    (['colors', 'liquids', 'tags'], [{...}, [], []])
 
     >>> pot['potatoes'] = pot['liquids']['vodka'] = "123"
     >>> pot['potatoes']
@@ -204,6 +274,14 @@ class ConfigDict(RuledContainer(dict)):
     >>> pot['colors'].extend(['blue', 'red', 'red'])
     >>> pot['colors']
     ['red', 'blue', 'red', 'red']
+
+    >>> pot['tags'].append({'c': '123', 'x': 'woots'})
+    >>> pot['tags'][0]['c']
+    123
+    >>> pot['tags'].append({'z': 'invalid'})
+    Traceback (most recent call last):
+        ...
+    ValueError: Invalid value for config/tags/1: ...
 
     >>> pot['evil'] = 123
     Traceback (most recent call last):
