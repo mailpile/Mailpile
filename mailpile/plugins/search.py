@@ -122,8 +122,6 @@ class SearchResults(dict):
 
     rv = []
     count = 0
-    new = 0
-    later = 0
     expand_ids = [e.msg_idx_pos for e in (expand or [])]
     for idx_pos in results[start:start+num]:
       count += 1
@@ -142,15 +140,6 @@ class SearchResults(dict):
       result['tags'] = sorted([idx.config['tag'].get(t,t)
                                for t in idx.get_tags(msg_info=msg_info)
                                      if 'tag:%s' % t not in terms])
-
-      # FIXME: This is the wrong place for this, these things need to
-      #        be counted globally as part of per-tag metadata otherwise
-      #        the numbers will be wrong and/or performance will break.
-      if "New" in result['tags']:
-        new += 1
-      if "Later" in result['tags']:
-        later += 1
-
       if not expand:
         conv = idx.get_conversation(msg_info)
       else:
@@ -172,18 +161,14 @@ class SearchResults(dict):
         result['message'] = self._message_details([exp_email])[0]
       rv.append(result)
 
-    self._set_values(rv, start, count, len(results), new, later)
+    self._set_values(rv, start, count, len(results))
 
-  def _set_values(self, messages, start, count, total, new=0, later=0):
+  def _set_values(self, messages, start, count, total):
     self['messages'] = messages
     self['start'] = start+1
     self['count'] = count
     self['end'] = start+count
     self['total'] = total
-    # FIXME: This is the wrong place for this data, see comment above.
-    self['new'] = new
-    self['read'] = (total - new) - later
-    self['later'] = later
 
   def __nonzero__(self):
     return (self['count'] != 0)
