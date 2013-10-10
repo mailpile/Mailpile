@@ -35,7 +35,7 @@ class Command:
 
   class CommandResult:
     def __init__(self, session, command, template_id, doc, result,
-                       args=[], kwargs={}, status=''):
+                       args=[], kwargs={}, status='success', message='OK'):
       self.session = session
       self.command = command
       self.args = args
@@ -44,6 +44,7 @@ class Command:
       self.doc = doc
       self.result = result
       self.status = status
+      self.message = message
 
     def __nonzero__(self):
       return (self.result and True or False)
@@ -60,11 +61,12 @@ class Command:
     def as_dict(self):
       rv = {
         'command': self.command,
-        'args': self.args,
-        'kwargs': self.kwargs.keys(),
         'status': self.status,
+        'message': self.message,
         'result': self.result,
-        'elapsed': '%.3f' % self.session.ui.time_elapsed
+        'elapsed': '%.3f' % self.session.ui.time_elapsed,
+#       'args': self.args,
+#       'kwargs': self.kwargs.keys(),
       }
       for ui_key in [k for k in self.kwargs.keys() if k.startswith('ui_')]:
         rv[ui_key] = self.kwargs[ui_key]
@@ -161,6 +163,8 @@ class Command:
     return msg_ids
 
   def _error(self, message):
+    self.status = 'error'
+    self.message = message
     self.session.ui.error(message)
     return False
 
