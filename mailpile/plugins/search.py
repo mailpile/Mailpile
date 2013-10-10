@@ -223,9 +223,10 @@ class Search(Command):
     def _fixup(self):
       if self.fixed_up:
         return self
-      for msg in self.result.get('messages', []):
-        msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
-                                      ['in_%s' % t.lower() for t in msg['tags']])
+      if self.result:
+        for msg in self.result.get('messages', []):
+          msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
+                                        ['in_%s' % t.lower() for t in msg['tags']])
       self.fixed_up = True
       return self
     def as_text(self):

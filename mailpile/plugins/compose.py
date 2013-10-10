@@ -20,6 +20,10 @@ class EditableSearchResults(SearchResults):
         SearchResults.__init__(self, session, idx, **kwargs)
         self.new_messages = new
         self.sent_messages = sent
+        if new:
+          self['created'] = [m.msg_mid() for m in new]
+        if sent:
+          self['sent'] = [m.msg_mid() for m in new]
 
     def _prune_msg_tree(self, *args, **kwargs):
         kwargs['editable'] = True
