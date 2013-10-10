@@ -328,14 +328,18 @@ class HttpUserInteraction(UserInteraction):
       ('\n%s\n' % ('=' * 79)).join(self.results)
     )
   def _render_html_response(self, config):
-    if len(self.results) > 0:
+    if len(self.results) == 1:
       return self.results[0]
-
+    if len(self.results) > 1:
+      raise Exception('FIXME: Multiple results, OMG WTF')
     return ""
 
   def render_response(self, config):
     if self.render_mode == 'json':
-      return ('application/json', '[%s]' % ','.join(self.results))
+      if len(self.results) == 1:
+        return ('application/json', self.results[0])
+      else:
+        return ('application/json', '[%s]' % ','.join(self.results))
     elif self.render_mode.endswith('.jhtml'):
       return ('application/json', self._render_jhtml_response(config))
     elif self.render_mode.endswith('html'):
@@ -349,6 +353,7 @@ class HttpUserInteraction(UserInteraction):
   def print_filters(self, args):
     print args
     return args
+
 
 class BackgroundInteraction(UserInteraction):
   # FIXME: This shouldn't be quite so silent...
