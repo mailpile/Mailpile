@@ -49,12 +49,20 @@ MailPile.prototype.rescan = function() {}
 
 
 MailPile.prototype.compose = function() {
+
   var form = $('<form action="' + url + '" method="post">' +
     '<input type="text" name="api_url" value="' + Return_URL + '" />' +
     '</form>');
   $('body').append(form);
   $(form).submit();
   console.log('yo here we go');
+
+  // Set Everything to Empty
+  $('#compose-to, #compose-cc, #compose-bcc').select2('val', '');
+  $('#compose-subject').val('');
+  $('#compose-body').val('');
+  $('#compose-attachments-list').html('');
+
 }
 
 MailPile.prototype.gpgrecvkey = function(keyid) {
@@ -297,6 +305,8 @@ var keybindings = [
 
 var mailpile = new MailPile();
 
+
+
 // Status Messages
 var statusHeaderPadding = function() {
 
@@ -485,6 +495,32 @@ $(document).ready(function() {
   });
 
 
+  /* Compose - Button */
+  $('#button-compose').on('click', function() {
+
+		$.ajax({
+			url			 : '/api/0/message/compose/',
+			type		 : 'POST',
+			data     : {},
+			dataType : 'json'  
+    }).done(function() {
+      
+       console.log(result);
+        
+        if (result == 'send') {
+
+          window.location.href = '/in/Sent/';
+        }
+        else {
+          // Needs proper state handling from API response
+          statusMessage('success');
+        }
+      
+    });
+  
+  });
+
+
   /* Compose - Adding Recipients */
   if ($('#form-compose').length) {
 
@@ -558,12 +594,9 @@ $(document).ready(function() {
           console.log(result);
           
           if (action == 'send') {
+            
+            //window.location.href = '/in/Sent/' + 
 
-            // Set Everything to Empty
-            $('#compose-to, #compose-cc, #compose-bcc').select2('val', '');
-            $('#compose-subject').val('');
-            $('#compose-body').val('');
-            $('#compose-attachments-list').html('');
           }
 
           // Needs proper state handling from API response
