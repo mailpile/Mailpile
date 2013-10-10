@@ -223,10 +223,9 @@ class Search(Command):
     def _fixup(self):
       if self.fixed_up:
         return self
-      for result in (self.result or []):
-        for msg in result.get('messages', []):
-          msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
-                                        ['in_%s' % t.lower() for t in msg['tags']])
+      for msg in self.result.get('messages', []):
+        msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
+                                      ['in_%s' % t.lower() for t in msg['tags']])
       self.fixed_up = True
       return self
     def as_text(self):
@@ -281,7 +280,7 @@ class Search(Command):
   def command(self, search=None):
     session, idx, start, num = self._do_search(search=search)
     session.displayed = SearchResults(session, idx, start=start, num=num)
-    return [session.displayed]
+    return session.displayed
 
 
 class Next(Search):
@@ -293,7 +292,7 @@ class Next(Search):
   def command(self):
     session = self.session
     session.displayed = session.displayed.next_set()
-    return [session.displayed]
+    return session.displayed
 
 
 class Previous(Search):
@@ -305,7 +304,7 @@ class Previous(Search):
   def command(self):
     session = self.session
     session.displayed = session.displayed.previous_set()
-    return [session.displayed]
+    return session.displayed
 
 
 class Order(Search):
@@ -319,7 +318,7 @@ class Order(Search):
     session.order = self.args and self.args[0] or None
     idx.sort_results(session, session.results, how=session.order)
     session.displayed = SearchResults(session, idx)
-    return [session.displayed]
+    return session.displayed
 
 
 class View(Search):
@@ -365,7 +364,10 @@ class View(Search):
         results.append(SearchResults(session, idx,
                                      results=conv, num=len(conv),
                                      expand=[email]))
-    return results
+    if len(results) == 1:
+      return results[0]
+    else:
+      return results
 
 
 class Extract(Command):
