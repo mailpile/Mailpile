@@ -61,7 +61,7 @@ def RuledContainer(pcls):
                 self.add_rule(key, rule)
 
         def add_rule(self, key, rule):
-            assert(isinstance(rule, list) or isinstance(rule, tuple))
+            assert(isinstance(rule, (list, tuple)))
             rule = list(rule[:])
             self.rules[key] = rule
             check = rule[self.RULE_CHECKER]
@@ -82,13 +82,8 @@ def RuledContainer(pcls):
                         '_any': [rule[self.RULE_COMMENT], check, None]
                 }))
 
-            elif not (isinstance(value, type(None)) or
-                      isinstance(value, int) or
-                      isinstance(value, long) or
-                      isinstance(value, bool) or
-                      isinstance(value, float) or
-                      isinstance(value, str) or
-                      isinstance(value, unicode)):
+            elif not isinstance(value, (type(None), int, long, bool,
+                                        float, str, unicode)):
                 raise TypeError(('Invalid type for default %s = %s'
                                  ) % (name, value))
 
@@ -118,18 +113,19 @@ def RuledContainer(pcls):
                 if checker is False:
                     raise ValueError(('Modifying %s/%s is not allowed'
                                       ) % (self.name, key))
-                for ctype in (list, set, tuple):
-                    if isinstance(checker, ctype) and value not in checker:
+                if isinstance(checker, (list, set, tuple)):
+                    if value not in checker:
                         raise ValueError(('Invalid value for %s/%s: %s'
                                           ) % (self.name, key, value))
-                if (isinstance(checker, type) or
-                        isinstance(checker, type(RuledContainer))):
+                elif isinstance(checker, (type, type(RuledContainer))):
                     try:
-                        if checker not in (list, set, tuple):
-                            value = checker(value)
+                        value = checker(value)
                     except ValueError:
                         raise ValueError(('Invalid value for %s/%s: %s'
                                           ) % (self.name, key, value))
+                else:
+                    raise Exception(('Unknown constraint for %s/%s: %s'
+                                     ) % (self.name, key, checker))
             pcls.__setitem__(self, key, value)
 
     return RC
