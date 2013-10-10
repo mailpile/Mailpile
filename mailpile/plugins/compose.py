@@ -113,7 +113,7 @@ class CompositionCommand(Search):
                                                   results=session.results,
                                                   num=len(emails),
                                                   expand=expand)
-        return [session.displayed]
+        return session.displayed
 
     def _edit_messages(self, emails, new=True):
         session, idx = self.session, self._idx()

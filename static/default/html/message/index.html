@@ -6,7 +6,7 @@
 {% if result %}
 <table class="pile-results" id="pile-results">
   <tbody>
-    {% for message in result.0.messages %}
+    {% for message in result.messages %}
     {% if message.message %}
     {% if not message.editing_string %}
 		<tr>

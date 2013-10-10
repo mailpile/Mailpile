@@ -78,22 +78,21 @@ try:
                    ['subject:Moderation', 'kde-isl']):
         say('Searching for: %s' % search)
         results = mp.search(*search)
-        assert(len(results.result) == 1)
-        assert(results.result[0]['count'] == 1)
+        assert(results.result['count'] == 1)
 
     # Make sure we are decoding weird headers correctly
-    result_bre = mp.search(*FROM_BRE).result[0]['messages'][0]
-    result_bre = mp.view('=%s' % result_bre['mid']).result[0]['messages'][0]
+    result_bre = mp.search(*FROM_BRE).result['messages'][0]
+    result_bre = mp.view('=%s' % result_bre['mid']).result['messages'][0]
     say('Checking encoding: %s' % result_bre['from'])
     assert('=C3' not in result_bre['from'])
     say('Checking encoding: %s' % result_bre['message']['headers']['To'])
     assert('utf' not in result_bre['message']['headers']['To'])
 
     # Create a message...
-    new_mid = mp.message_compose().result[0]['messages'][0]['mid']
-    assert(mp.search('tag:drafts').result[0]['count'] == 0)
-    assert(mp.search('tag:blank').result[0]['count'] == 1)
-    assert(mp.search('tag:sent').result[0]['count'] == 0)
+    new_mid = mp.message_compose().result['messages'][0]['mid']
+    assert(mp.search('tag:drafts').result['count'] == 0)
+    assert(mp.search('tag:blank').result['count'] == 1)
+    assert(mp.search('tag:sent').result['count'] == 0)
     assert(not os.path.exists(mailpile_sent))
 
     # Edit the message (moves from Blank to Draft, not findable in index)
@@ -105,17 +104,17 @@ try:
       'body': ['Hello world!']
     }
     mp.message_update(**msg_data)
-    assert(mp.search('tag:drafts').result[0]['count'] == 1)
-    assert(mp.search('tag:blank').result[0]['count'] == 0)
-    assert(mp.search('TESTMSG').result[0]['count'] == 0)
+    assert(mp.search('tag:drafts').result['count'] == 1)
+    assert(mp.search('tag:blank').result['count'] == 0)
+    assert(mp.search('TESTMSG').result['count'] == 0)
     assert(not os.path.exists(mailpile_sent))
 
     # Send the message (moves from Draft to Sent, is findable via. search)
     del msg_data['subject']
     msg_data['body'] = ['Hello world: thisisauniquestring :)']
     mp.message_update_send(**msg_data)
-    assert(mp.search('tag:drafts').result[0]['count'] == 0)
-    assert(mp.search('tag:blank').result[0]['count'] == 0)
+    assert(mp.search('tag:drafts').result['count'] == 0)
+    assert(mp.search('tag:blank').result['count'] == 0)
     assert('the TESTMSG subject' in contents(mailpile_sent))
     assert('thisisauniquestring' in contents(mailpile_sent))
     assert(MY_FROM in grep('X-Args', mailpile_sent))
@@ -126,7 +125,7 @@ try:
                    ['thisisauniquestring'],
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
-        assert(mp.search(*search).result[0]['count'] == 1)
+        assert(mp.search(*search).result['count'] == 1)
     os.remove(mailpile_sent)
 
     # Test the send method's "bounce" capability

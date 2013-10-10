@@ -5,7 +5,7 @@
 {% set my_from = mailpile('config/get', 'my_from').result.my_from %}
 <div id="compose">
 
-  {% for m in result.0.messages %}
+  {% for m in result.messages %}
   {% if m.message %}{% if m.message.editing_strings %}
     <form id="form-compose" name="compose" action="/message/update/"
           method="POST" enctype="multipart/form-data">
