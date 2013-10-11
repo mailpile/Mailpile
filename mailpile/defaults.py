@@ -1,8 +1,7 @@
-from mailpile.config import PathDict, TagDict, FilterDict
+from mailpile.config import PathDict
 
 
-DEFAULT_CONFIG_RULES = {
-
+CONFIG_RULES = {
     'sys': ['Technical system settings', False,
     {
         'fd_cache_size':  ('Max files kept open at once', int,            500),
@@ -13,13 +12,13 @@ DEFAULT_CONFIG_RULES = {
         'snippet_max':    ('Max length of metadata snippets', int,        250),
         'debug':          ('Debugging flags', str,                         ''),
         'gpg_keyserver':  ('Host:port of GPG key server', str,             ''),
-        'http_host':      ('Listening host for web UI', str,      'localhost'), 
-        'local_mailbox':  ('Local read/write Maildir', str,                ''), 
-        'mailindex_file': ('Metadata index file', str,                     ''), 
-        'postinglist_dir': ('Search index directory', str,                 ''), 
-        'obfuscate_index': ('Key to use to scramble the index', str,       ''), 
-        'mailbox':        ['Mailboxes we index', str,                      []], 
-        'path':           ['Locations of assorted data', PathDict,         []],
+        'http_host':    ('Listening host for web UI', 'hostname', 'localhost'),
+        'local_mailbox':  ('Local read/write Maildir', 'dir',              ''),
+        'mailindex_file': ('Metadata index file', 'file',                  ''),
+        'postinglist_dir': ('Search index directory', 'dir',               ''),
+        'obfuscate_index': ('Key to use to scramble the index', str,       ''),
+        'mailbox':        ['Mailboxes we index', 'path',                   []],
+        'path':           ['Locations of assorted data', PathDict,         {}],
     }],
     'prefs': ["User preferences", False,
     {
@@ -31,13 +30,11 @@ DEFAULT_CONFIG_RULES = {
         'rescan_command':  ('Command run before rescanning', str,          ''),
     }],
     'user': ['User profiles and identities', None, {
-    }],
-    'tag': ['Mailpile tags', TagDict, []],
-    'filter': ['Mailpile filters', FilterDict, []],
+    }]
 }
 
 
 if __name__ == "__main__":
-    import doctest
+    from mailpile.plugins import *
     from mailpile.config import ConfigDict
-    print '%s' % ConfigDict(_rules=DEFAULT_CONFIG_RULES)
+    print '%s' % ConfigDict(_rules=CONFIG_RULES)

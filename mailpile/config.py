@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 import re
 
 from mailpile.util import *
@@ -9,10 +10,143 @@ class InvalidKeyError(ValueError):
     pass
 
 
-def MakeCheck(pcls, rules):
+def _MakeCheck(pcls, rules):
     class CD(pcls):
         RULES = rules
     return CD
+
+
+def _SlugCheck(slug):
+    """
+    Verify that a string is a valid URL slug.
+
+    >>> _SlugCheck('Foobar')
+    'Foobar'
+
+    >>> _SlugCheck('Bad Slug')
+    Traceback (most recent call last):
+        ...
+    ValueError: Invalid URL slug: Bad Slug
+
+    >>> _SlugCheck('Bad/Slug')
+    Traceback (most recent call last):
+        ...
+    ValueError: Invalid URL slug: Bad/Slug
+    """
+    if not slug == CleanText(unicode(slug),
+                             banned=CleanText.WHITESPACE +
+                                     CleanText.NONALNUM).clean:
+        raise ValueError('Invalid URL slug: %s' % slug)
+    return slug
+
+
+def _HostNameCheck(host):
+    """
+    Verify that a string is a valid host-name, return it lowercased.
+
+    >>> _HostNameCheck('foo.BAR.baz')
+    'foo.bar.baz'
+
+    >>> _HostNameCheck('127.0.0.1')
+    '127.0.0.1'
+
+    >>> _HostNameCheck('not/a/hostname')
+    Traceback (most recent call last):
+        ...
+    ValueError: Invalid hostname: not/a/hostname
+    """
+    # FIXME: Check DNS?
+    if not unicode(host) == CleanText(unicode(host),
+                                      banned=CleanText.NONDNS).clean:
+        raise ValueError('Invalid hostname: %s' % host)
+    return str(host).lower()
+
+
+def _B36Check(b36val):
+    """
+    Verify that a string is a valid path base-36 integer.
+
+    >>> _B36Check('aa')
+    'aa'
+
+    >>> _B36Check('.')
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid ...
+    """
+    int(b36val, 36)
+    return str(b36val).lower()
+
+
+
+
+def _PathCheck(path):
+    """
+    Verify that a string is a valid path, make it absolute.
+
+    >>> _PathCheck('/etc/../')
+    '/'
+
+    >>> _PathCheck('/no/such/path')
+    Traceback (most recent call last):
+        ...
+    ValueError: File/directory does not exist: /no/such/path
+    """
+    if not os.path.exists(path):
+        raise ValueError('File/directory does not exist: %s' % path)
+    return os.path.abspath(path)
+
+
+def _FileCheck(path):
+    """
+    Verify that a string is a valid path to a file, make it absolute.
+
+    >>> _FileCheck('/etc/../etc/passwd')
+    '/etc/passwd'
+
+    >>> _FileCheck('/')
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a file: /
+    """
+    path = _PathCheck(path)
+    if not os.path.isfile(path):
+        raise ValueError('Not a file: %s' % path)
+    return path
+
+
+def _DirCheck(path):
+    """
+    Verify that a string is a valid path to a directory, make it absolute.
+
+    >>> _DirCheck('/etc/../')
+    '/'
+
+    >>> _DirCheck('/etc/passwd')
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a directory: /etc/passwd
+    """
+    path = _PathCheck(path)
+    if not os.path.isdir(path):
+        raise ValueError('Not a directory: %s' % path)
+    return path
+
+
+def _NewPathCheck(path):
+    """
+    Verify that a string is a valid path to a directory, make it absolute.
+
+    >>> _NewPathCheck('/magic')
+    '/magic'
+
+    >>> _NewPathCheck('/no/such/path/magic')
+    Traceback (most recent call last):
+        ...
+    ValueError: File/directory does not exist: /no/such/path
+    """
+    _PathCheck(os.path.dirname(path))
+    return os.path.abspath(path)
 
 
 def RuledContainer(pcls):
@@ -27,15 +161,25 @@ def RuledContainer(pcls):
         # Reserved ...
         RULE_DEFAULT = -1
         RULE_CHECK_MAP = {
+           'bool': bool,
+           'b36': _B36Check,
+           'dir': _DirCheck,
+           'directory': _DirCheck,
+           'False': False, 'false': False,
+           'file': _FileCheck,
+           'float': float,
+           'hostname': _HostNameCheck,
            'int': int,
            'long': long,
-           'bool': bool,
-           'float': float,
+           'new file': _NewPathCheck,
+           'new dir': _NewPathCheck,
+           'new directory': _NewPathCheck,
+           'path': _PathCheck,
            str: unicode,
+           'slug': _SlugCheck,
            'str': unicode,
-           'unicode': unicode,
-           'False': False, 'false': False,
            'True': True, 'true': True,
+           'unicode': unicode,
            # TODO: Create 'email' and 'url' and other high level checks
         }
         NAME = 'container'
@@ -88,7 +232,7 @@ def RuledContainer(pcls):
             if type(check) == dict:
                 check_rule = rule[:]
                 check_rule[self.RULE_DEFAULT] = None
-                check_rule[self.RULE_CHECKER] = MakeCheck(ConfigDict, check)
+                check_rule[self.RULE_CHECKER] = _MakeCheck(ConfigDict, check)
                 check_rule = {'_any': check_rule}
             else:
                 check_rule = None
@@ -334,24 +478,9 @@ class ConfigDict(RuledContainer(dict)):
 
 
 class PathDict(ConfigDict):
-    RULES = {}
-
-
-class TagDict(ConfigDict):
-    NAME = 'tag'
     RULES = {
-        'name': ['Human readable tag name', str, ''],
-        'slug': ['Web friendly tag name', str, ''],
-        'icon': ['Icon URI', str, 'tag'],
-        'count': ['Tagged message count', int, 0],
-        'unread': ['Unread message count', int, 0],
-        'template': ['Prefered rendering template', str, 'index.html'],
-        'visibility': ['Display mode for tag', ('pinned', 'hidden'), 'pinned'],
+        '_any': ['Data directory', 'directory', '']
     }
-
-
-class FilterDict(ConfigDict):
-  pass
 
 
 class ConfigManager(dict): 

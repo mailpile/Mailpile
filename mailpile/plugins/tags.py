@@ -5,6 +5,20 @@ from mailpile.util import *
 
 from mailpile.plugins.search import Search
 
+
+##[ Configuration ]###########################################################
+
+mailpile.plugins.register_config_section('tags', ["Tags", {
+    'name': ['Tag name', 'str', ''],
+    'slug': ['URL slug', 'slug', ''],
+}, []])
+
+mailpile.plugins.register_config_variables('sys', {
+    'writable_tags': ['Tags used to mark writable messages', 'b36', []]
+})
+
+
+
 ##[ Commands ]################################################################
 
 class TagCommand(Command):

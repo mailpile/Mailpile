@@ -1,6 +1,7 @@
 # Plugins!
 
 import mailpile.commands
+import mailpile.defaults
 
 # These are the plugins we import by default
 __all__ = ['search', 'tags', 'contacts', 'compose', 'groups', 'dates',
@@ -9,6 +10,36 @@ __all__ = ['search', 'tags', 'contacts', 'compose', 'groups', 'dates',
 
 class PluginError(Exception):
     pass
+
+
+##[ Pluggable configuration ]#################################################
+
+def register_config_variables(*args):
+    args = list(args)
+    rules = args.pop(-1)
+    dest = mailpile.defaults.CONFIG_RULES
+    path = '/'.join(args)
+    for arg in args:
+        dest = dest[arg][-1]
+    for rname, rule in rules.iteritems():
+        if rname in dest:
+            raise PluginError('Variable already exist: %s/%s' % (path, rname))
+        else:
+            dest[rname] = rule
+
+
+def register_config_section(*args):
+    args = list(args)
+    rules = args.pop(-1)
+    rname = args.pop(-1)
+    dest = mailpile.defaults.CONFIG_RULES
+    path = '/'.join(args)
+    for arg in args:
+        dest = dest[arg][-1]
+    if rname in dest:
+        raise PluginError('Section already exist: %s/%s' % (path, rname))
+    else:
+        dest[rname] = rules
 
 
 ##[ Pluggable keyword extractors ]############################################
@@ -65,7 +96,6 @@ def register_search_term(term, function):
 
 
 ##[ Pluggable commands ]##################################################
-
 
 def register_commands(*args):
     COMMANDS = mailpile.commands.COMMANDS
