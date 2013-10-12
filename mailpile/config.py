@@ -206,12 +206,12 @@ def RuledContainer(pcls):
         def __str__(self):
             return json.dumps(self, sort_keys=True, indent=2)
 
-        def reset(self):
+        def _reset(self):
             raise Exception('Override this')
 
         def set_rules(self, rules):
             assert(isinstance(rules, dict))
-            self.reset()
+            self._reset()
             for key, rule in rules.iteritems():
                 self.add_rule(key, rule)
 
@@ -282,6 +282,9 @@ def RuledContainer(pcls):
                 return self.get(key)
             return pcls.__getitem__(self, key)
 
+        def __getattr__(self, attr):
+            return self[attr]
+
         def __passkey__(self, key, value):
             if hasattr(value, 'key'):
                 value.key = key
@@ -331,7 +334,7 @@ class ConfigList(RuledContainer(list)):
     >>> lst['c'] == lst[int('c', 36)]
     True
     """
-    def reset(self):
+    def _reset(self):
         self.rules = {}
         self[:] = []
 
@@ -452,7 +455,7 @@ class ConfigDict(RuledContainer(dict)):
     """
     NAME = 'config'
 
-    def reset(self):
+    def _reset(self):
         self.rules = {}
         for key in self.keys():
             dict.__delitem__(self, key)

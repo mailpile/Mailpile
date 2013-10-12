@@ -9,12 +9,9 @@ The goals for the new configuration system are:
       validity
    
 Code which accomplishes these 3 goals has been written (see
-`mailpile/config.py`). This document is me soliciting feedback on the
-format I came up with for defining the configuration itself - is this
-developer friendly enough?  Is it flexible enough?
-
-Config defintions are written as JSON (or the equivalent Python dicts).
-A variable is defined using a list of three values: [comment,
+`mailpile/config.py`). This document is describes the format used to define
+configuration itself; they are are written as JSON (or the equivalent Python
+dicts).  A variable is defined using a list of three values: [comment,
 type/constraint, default-value].
 
 A fictional example of simple settings:
@@ -76,25 +73,26 @@ type/constraint field:
 
 In the Python code, this structure would be manipulated like so:
 
-    config['tags'].append({
+    # Note: config['tags'] and config.tags are the same thing
+    config.tags.append({
         "name": 'Watever',
         'slug': 'watever'
     })
 
-    config['tagdict']['mytag'] = {
+    config.tagdict['mytag'] = {
         "name": 'Watever',
         'slug': 'watever'
     }
 
 ... would succeed.  However these would throw an exception:
 
-    config['tags'].append({
+    config.tags.append({
         "name": 'Watever',
         'slog': 'watever',
         'bogon': 'invalid crap'
     })
 
-    config['tagdict']['mytag'] = {
+    config.tagdict.mytag'] = {
         "name": 'Watever',
         'slog': 'watever',
         'bogon': 'invalid crap'

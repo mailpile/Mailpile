@@ -37,4 +37,6 @@ CONFIG_RULES = {
 if __name__ == "__main__":
     from mailpile.plugins import *
     from mailpile.config import ConfigDict
-    print '%s' % ConfigDict(_rules=CONFIG_RULES)
+    cfg = ConfigDict(_rules=CONFIG_RULES)
+    assert(cfg.prefs.num_results == 15)
+    print '%s' % cfg
