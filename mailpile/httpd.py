@@ -140,7 +140,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   def do_POST(self, method='POST'):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     if path.startswith('/::XMLRPC::/'):
-      return SimpleXMLRPCRequestHandler.do_POST(self)
+      raise ValueError('XMLRPC has been disabled for now.')
+      #return SimpleXMLRPCRequestHandler.do_POST(self)
 
     config = self.server.session.config
     post_data = { }
