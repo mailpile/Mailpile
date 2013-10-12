@@ -1,13 +1,51 @@
 import copy
+import io
 import json
 import os
 import re
+import ConfigParser
 
+from urllib import quote, unquote
 from mailpile.util import *
 
 
 class InvalidKeyError(ValueError):
     pass
+
+
+class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
+    """
+    This is a ConfigParser that allows embedded comments and safely escapes
+    and encodes/decodes values that include funky characters.
+
+    >>> cecp = CommentedEscapedConfigParser()
+    >>> cecp.readfp(io.BytesIO(str(test_cfg)))
+    >>> cecp.get('config/derp: Herp', 'burp') == test_cfg.derp.burp
+    True
+
+    >>> cecp.items('config/derp: Herp')
+    [(u'burp', u'm\\xe1ny\\nlines\\nof\\nbelching  ')]
+    """
+    def set(self, section, key, value, comment):
+        key = unicode(key).encode('utf-8')
+        section = unicode(section).encode('utf-8')
+        value = quote(unicode(value).encode('utf-8'), safe=' /')
+        if value.endswith(' '):
+            value = value[:-1] + '%20'
+        if comment:
+            pad = ' ' * (25 - len(key) - len(value)) + ' ; '
+            value = '%s%s%s' % (value, pad, comment)
+        return ConfigParser.RawConfigParser.set(self, section, key, value)
+
+    def get(self, section, key):
+        key = unicode(key).encode('utf-8')
+        section = unicode(section).encode('utf-8')
+        value = ConfigParser.RawConfigParser.get(self, section, key)
+        return unquote(value).decode('utf-8')
+
+    def items(self, section):
+        return [(k.decode('utf-8'), unquote(i).decode('utf-8')) for k, i
+                in ConfigParser.RawConfigParser.items(self, section)]
 
 
 def _MakeCheck(pcls, rules):
@@ -35,7 +73,7 @@ def _SlugCheck(slug):
     """
     if not slug == CleanText(unicode(slug),
                              banned=CleanText.WHITESPACE +
-                                     CleanText.NONALNUM).clean:
+                                    CleanText.NONALNUM).clean:
         raise ValueError('Invalid URL slug: %s' % slug)
     return slug
 
@@ -78,8 +116,6 @@ def _B36Check(b36val):
     return str(b36val).lower()
 
 
-
-
 def _PathCheck(path):
     """
     Verify that a string is a valid path, make it absolute.
@@ -92,6 +128,7 @@ def _PathCheck(path):
         ...
     ValueError: File/directory does not exist: /no/such/path
     """
+    path = os.path.expanduser(path)
     if not os.path.exists(path):
         raise ValueError('File/directory does not exist: %s' % path)
     return os.path.abspath(path)
@@ -171,6 +208,7 @@ def RuledContainer(pcls):
            'hostname': _HostNameCheck,
            'int': int,
            'long': long,
+           'multiline': unicode,
            'new file': _NewPathCheck,
            'new dir': _NewPathCheck,
            'new directory': _NewPathCheck,
@@ -186,17 +224,12 @@ def RuledContainer(pcls):
         RULES = None
 
         def __init__(self, *args, **kwargs):
-            if '_rules' in kwargs:
-                rules = kwargs['_rules']
-                del kwargs['_rules']
-            else:
-                rules = self.RULES or {}
-
-            if '_name' in kwargs:
-                self.name = kwargs['_name']
-                del kwargs['_name']
-            else:
-                self.name = self.NAME
+            rules = kwargs.get('_rules', self.RULES or {})
+            self.name = kwargs.get('_name', self.NAME)
+            self.comment = kwargs.get('_comment', None)
+            for kw in ('_rules', '_comment', '_name'):
+                if kw in kwargs:
+                    del kwargs[kw]
 
             pcls.__init__(self)
             self.key = self.name
@@ -204,19 +237,68 @@ def RuledContainer(pcls):
             self.update(*args, **kwargs)
 
         def __str__(self):
-            return json.dumps(self, sort_keys=True, indent=2)
+            return str(self.as_config_bytes())
+            #return json.dumps(self, sort_keys=True, indent=2)
 
-        def _reset(self):
+        def __unicode__(self):
+            return unicode(self.as_config_bytes().decode('utf-8'))
+            #return json.dumps(self, sort_keys=True, indent=2)
+
+        def as_config_bytes(self):
+            of = io.BytesIO()
+            self.as_config().write(of)
+            return of.getvalue()
+
+        def as_config(self, config=None):
+            config = config or CommentedEscapedConfigParser()
+            section = self.name
+            if self.comment:
+                section += ': %s' % self.comment
+            added_section = False
+
+            keys = self.rules.keys()
+            if not keys or '_any' in keys:
+                keys.extend(self.keys())
+            keys = [k for k in sorted(set(keys)) if k != '_any']
+            set_keys = set(self.keys())
+
+            for key in keys:
+                if not hasattr(self[key], 'as_config'):
+                    if key in self.rules:
+                        comment = self.rules[key][self.RULE_COMMENT]
+                    else:
+                        comment = ''
+                    value = unicode(self[key])
+                    if value is not None and value != '':
+                        if key not in set_keys:
+                            key = ';' + key
+                            comment = '(default) ' + comment
+                        if comment:
+                            pad = ' ' * (30 - len(key) - len(value)) + ' ; '
+                        else:
+                            pad = ''
+                        if not added_section:
+                            config.add_section(section)
+                            added_section = True
+                        config.set(section, key, value, comment)
+            for key in keys:
+                if hasattr(self[key], 'as_config'):
+                    self[key].as_config(config=config)
+
+            return config
+
+        def reset(self, rules=True, data=True):
             raise Exception('Override this')
 
         def set_rules(self, rules):
             assert(isinstance(rules, dict))
-            self._reset()
+            self.reset()
             for key, rule in rules.iteritems():
                 self.add_rule(key, rule)
 
         def add_rule(self, key, rule):
             assert(isinstance(rule, (list, tuple)))
+            assert(key == CleanText(key, banned=CleanText.NONVARS).clean)
             rule = list(rule[:])
             self.rules[key] = rule
             check = rule[self.RULE_CHECKER]
@@ -227,6 +309,7 @@ def RuledContainer(pcls):
                 pass
 
             name = '%s/%s' % (self.name, key)
+            comment = rule[self.RULE_COMMENT]
             value = rule[self.RULE_DEFAULT]
 
             if type(check) == dict:
@@ -241,18 +324,22 @@ def RuledContainer(pcls):
                 rule[self.RULE_CHECKER] = False
                 if check_rule:
                     pcls.__setitem__(self, key, ConfigDict(_name=name,
+                                                           _comment=comment,
                                                            _rules=check_rule))
                 else:
                     pcls.__setitem__(self, key, ConfigDict(_name=name,
+                                                           _comment=comment,
                                                            _rules=value))
 
             elif isinstance(value, list):
                 rule[self.RULE_CHECKER] = False
                 if check_rule:
                     pcls.__setitem__(self, key, ConfigList(_name=name,
+                                                           _comment=comment,
                                                            _rules=check_rule))
                 else:
                     pcls.__setitem__(self, key, ConfigList(_name=name,
+                                                           _comment=comment,
                                                            _rules={
                         '_any': [rule[self.RULE_COMMENT], check, None]
                     }))
@@ -285,9 +372,14 @@ def RuledContainer(pcls):
         def __getattr__(self, attr):
             return self[attr]
 
+        def FIXME__setattr__(self, attr, value):
+            if attr in self.rules:
+                self[attr] = value
+
         def __passkey__(self, key, value):
             if hasattr(value, 'key'):
                 value.key = key
+                value.name = '%s/%s' % (self.name, key)
 
         def __setitem__(self, key, value):
             checker = self.get_rule(key)[self.RULE_CHECKER]
@@ -334,9 +426,11 @@ class ConfigList(RuledContainer(list)):
     >>> lst['c'] == lst[int('c', 36)]
     True
     """
-    def _reset(self):
-        self.rules = {}
-        self[:] = []
+    def reset(self, rules=True, data=True):
+        if rules:
+            self.rules = {}
+        if data:
+            self[:] = []
 
     def append(self, value):
         list.append(self, None)
@@ -356,12 +450,17 @@ class ConfigList(RuledContainer(list)):
 
     def __passkey__(self, key, value):
         if hasattr(value, 'key'):
-            value.key = b36(key).lower()
+            key = b36(key).lower()
+            value.key = key
+            value.name = '%s/%s' % (self.name, key)
 
     def __getitem__(self, key):
         if isinstance(key, (str, unicode)):
             key = int(key, 36)
         return list.__getitem__(self, key)
+
+    def keys(self):
+        return [b36(i).lower() for i in range(0, len(self))]
 
     def update(self, *args):
         for l in args:
@@ -455,10 +554,15 @@ class ConfigDict(RuledContainer(dict)):
     """
     NAME = 'config'
 
-    def _reset(self):
-        self.rules = {}
-        for key in self.keys():
-            dict.__delitem__(self, key)
+    def reset(self, rules=True, data=True):
+        if rules:
+            self.rules = {}
+        if data:
+            for key in self.keys():
+                if hasattr(self[key], 'reset'):
+                    self[key].reset()
+                else:
+                    dict.__delitem__(self, key)
 
     def __delitem__(self, key):
         raise UsageError('Deleting keys from %s is not allowed' % self.NAME)
@@ -486,169 +590,70 @@ class PathDict(ConfigDict):
     }
 
 
-class ConfigManager(dict): 
+class ConfigManager(ConfigDict):
+    """
+    This class manages the live global mailpile configuration. This includes
+    the settings themselves, as well as global objects like the index and
+    references to any background worker threads.
+    """
+    DEFAULT_WORKDIR = os.environ.get('MAILPILE_HOME',
+                                     os.path.expanduser('~/.mailpile'))
 
-    MBOX_CACHE = {}
-    RUNNING = {}
-    DEFAULT_PATHS = {
-        'html_theme': 'static/default', 
-        'vcards': 'vcards', 
-    }
+    def __init__(self, workdir=None, rules={}):
+        ConfigDict.__init__(self, _rules=rules)
+        self.workdir = workdir or self.DEFAULT_WORKDIR
+        self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
 
-    CATEGORIES = {
-        'cfg': (3, 'User preferences'), 
-        'prf': (4, 'User profiles and identities'), 
-        'sys': (0, 'Technical system settings'), 
-        'tag': (1, 'Tags and filters'), 
-    }
-    INTS = {
-        'fd_cache_size': ('entries', 'sys', 'Max files kept open at once'), 
-        'history_length': ('lines', 'sys', 'History length, <0 = no save'), 
-        'http_port': ('port', 'sys', 'Listening port for web UI'), 
-        'num_results': ('results', 'cfg', 'Search results per page'), 
-        'postinglist_kb': ('kilobytes', 'sys', 'Posting list target size'), 
-        'rescan_interval': ('seconds', 'cfg', 'New mail check frequency'), 
-        'sort_max': ('results', 'sys', 'Max results we sort "well"'), 
-        'snippet_max': ('characters', 'sys', 'Max size of metadata snippets'), 
-        'gpg_clearsign': ('boolean', 'cfg', 'Inline PGP signatures or attached'), 
-    }
-    STRINGS = {
-        'debug': ('level', 'sys', 'Enable debugging'), 
-        'default_order': ('order', 'cfg', 'Default sort order'), 
-        'gpg_recipient': ('key ID', 'cfg', 'Encrypt local data to ...'), 
-        'gpg_keyserver': ('host:port', 'sys', 'Preferred GPG key server'), 
-        'http_host': ('hostname', 'sys', 'Listening host for web UI'), 
-        'local_mailbox': ('/dir/path', 'sys', 'Local read/write Maildir'), 
-        'mailindex_file': ('/file/path', 'sys', 'Metadata index file'), 
-        'postinglist_dir': ('/dir/path', 'sys', 'Search index directory'), 
-        'rescan_command': ('shell command', 'cfg', 'Command run before rescanning'), 
-        'obfuscate_index': ('key', 'sys', 'Scramble the index using key'), 
-    }
-    DICTS = {
-        'mailbox': ('id=/file/path', 'sys', 'Mailboxes we index'), 
-        'my_from': ('email=name', 'prf', 'Name in From: line'), 
-        'my_sendmail': ('email=method', 'prf', 'How to send mail'), 
-        'filter': ('id=comment', 'tag', 'Human readable description'), 
-        'filter_terms': ('id=terms', 'tag', 'Search terms to match on'), 
-        'filter_tags': ('id=tags', 'tag', 'Tags to add/remove'), 
-        'path': ('ide=/dir/path', 'sys', 'Locations of assorted data'), 
-        'tag': ('id=name', 'tag', 'Mailpile tags'), 
-    }
-    CONFIG_MIGRATE = {
-        'from': 'my_from', 
-        'sendmail': 'my_sendmail'
-    }
-
-    def __init__(self, workdir=None): 
         self.background = None
         self.cron_worker = None
         self.http_worker = None
         self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
+
         self.index = None
         self.vcards = {}
-        self.workdir = workdir or os.environ.get('MAILPILE_HOME', 
-                                                                                         os.path.expanduser('~/.mailpile'))
 
-    def conffile(self): 
-        return os.path.join(self.workdir, 'config.rc')
-
-    def key_string(self, key): 
-        if ': ' in key:
-            key, subkey = key.split(': ', 1)
-        else: 
-            subkey = None
-        if key in self: 
-            if key in self.INTS: 
-                 return '%s = %s (int)' % (key, self.get(key))
-            else: 
-                val = self.get(key)
-                if subkey: 
-                    if subkey in val: 
-                        return '%s: %s = %s' % (key, subkey, val[subkey])
-                    else: 
-                        return '%s: %s is unset' % (key, subkey)
-                else: 
-                    return '%s = %s' % (key, self.get(key))
-        else: 
-            return '%s is unset' % key
-
-    def parse_unset(self, session, arg): 
-        key = arg.strip().lower()
-        if key in self: 
-            del self[key]
-        elif ': ' in key and key.split(':', 1)[0] in self.DICTS:
-            key, subkey = key.split(': ', 1)
-            if key in self and subkey in self[key]: 
-                del self[key][subkey]
-        session.ui.notify(self.key_string(key))
-        return True
-
-    def parse_set(self, session, line): 
-        key, val = [k.strip() for k in line.split('=', 1)]
-        key = key.lower()
-        if ': ' in key:
-            key, subkey = key.split(': ', 1)
-        else: 
-            subkey = None
-        key = self.CONFIG_MIGRATE.get(key, key)
-        if key in self.INTS and subkey is None: 
-            try: 
-                self[key] = int(val)
-            except ValueError: 
-                raise UsageError('%s is not an integer' % val)
-        elif key in self.STRINGS and subkey is None: 
-            self[key] = val
-        elif key in self.DICTS and subkey is not None: 
-            if key not in self: 
-                self[key] = {}
-            self[key][subkey.strip()] = val
-        else: 
-            raise UsageError('Unknown key in config: %s' % key)
-        session.ui.notify(self.key_string(key))
-        return True
-
-    def parse_config(self, session, line): 
-        line = line.strip()
-        if line.startswith('#') or not line: 
-            pass
-        elif '=' in line: 
-            self.parse_set(session, line)
-        else: 
-            raise UsageError('Bad line in config: %s' % line)
-
-    def load(self, session): 
-        if not os.path.exists(self.workdir): 
-            if session: session.ui.notify('Creating: %s' % self.workdir)
+    def _mkworkdir(self):
+        if not os.path.exists(self.workdir):
+            if session:
+                session.ui.notify('Creating: %s' % self.workdir)
             os.mkdir(self.workdir)
-        else: 
-            self.index = None
-            for key in self.INTS.keys() + self.STRINGS.keys() + self.DICTS.keys(): 
-                if key in self: 
-                    del self[key]
-            try: 
-                fd = open(self.conffile(), 'rb')
-                try: 
-                    decrypt_and_parse_lines(fd, lambda l: self.parse_config(session, l))
-                except ValueError: 
-                    pass
-                fd.close()
-            except IOError: 
+
+    def parse_config_lines(self, session, lines, source=None):
+        pass
+
+    def generate_config_file(self, private=False):
+        return ''
+
+    def load(self, session, filename=None):
+        self._mkworkdir()
+        self.index = None
+        self.reset(rules=False, data=True)
+
+        filename = filename or self.conffile
+        lines = []
+        try:
+            fd = open(filename, 'rb')
+            try:
+                decrypt_and_parse_lines(fd, lambda l: lines.append(l))
+            except ValueError:
                 pass
+            fd.close()
+        except IOError:
+            pass
+
+        self.parse_config_lines(session, lines, source=filename)
         self.load_vcards(session)
 
-    def save(self): 
-        if not os.path.exists(self.workdir): 
-            session.ui.notify('Creating: %s' % self.workdir)
-            os.mkdir(self.workdir)
-        fd = gpg_open(self.conffile(), self.get('gpg_recipient'), 'wb')
-        fd.write('# Mailpile autogenerated configuration file\n')
-        for key in sorted(self.keys()): 
-            if key in self.DICTS: 
-                for subkey in sorted(self[key].keys()): 
-                    fd.write(('%s: %s = %s\n' % (key, subkey, self[key][subkey])).encode('utf-8'))
-            else: 
-                fd.write(('%s = %s\n' % (key, self[key])).encode('utf-8'))
+    def save(self, session):
+        self._mkworkdir()
+        fd = gpg_open(self.conffile, self.get('gpg_recipient'), 'wb')
+        fd.write(join(self.generate_config_file(private=True)))
         fd.close()
+
+
+##############################################################################
+
+class outdatedConfigManager(dict):
 
     def nid(self, what): 
         if what not in self or not self[what]: 
@@ -909,7 +914,7 @@ class ConfigManager(dict):
         # Set globals from config first...
         global APPEND_FD_CACHE_SIZE
         APPEND_FD_CACHE_SIZE = config.get('fd_cache_size', 
-                                                                            APPEND_FD_CACHE_SIZE)
+                                          APPEND_FD_CACHE_SIZE)
 
         if not config.background: 
             # Create a silent background session
@@ -950,5 +955,15 @@ class ConfigManager(dict):
 
 if __name__ == "__main__":
     import doctest
+
+    test_cfg = ConfigDict(_rules={
+        'ok': ['La la la', int, 0],
+        'derp': ['Herp', False, {
+            # This tests multiline, unicode values with trailing whitespace
+            'burp': ['Belch', 'str', '']
+        }],
+    })
+    test_cfg.derp['burp'] = u'm\xe1ny\nlines\nof\nbelching  '
+
     print '%s' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
-                                  extraglobs={'request': None}), )
+                                  extraglobs={'test_cfg': test_cfg}), )

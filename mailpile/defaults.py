@@ -1,12 +1,15 @@
+import time
 from mailpile.config import PathDict
 
 
 CONFIG_RULES = {
+    'version': ['Mailpile program version', int, 1],
+    'timestamp': ['Configuration timestamp', int, int(time.time())],
     'sys': ['Technical system settings', False,
     {
         'fd_cache_size':  ('Max files kept open at once', int,            500),
         'history_length': ('History length (lines, <0 = no save)', int,   100),
-        'http_port':      ('Listening port for web UI', int,            33144),
+        'http_port':      ('Listening port for web UI', int,            33411),
         'postinglist_kb': ('Posting list target size in KB', int,          64),
         'sort_max':       ('Max results we sort "well"', int,            2500),
         'snippet_max':    ('Max length of metadata snippets', int,        250),
@@ -18,7 +21,10 @@ CONFIG_RULES = {
         'postinglist_dir': ('Search index directory', 'dir',               ''),
         'obfuscate_index': ('Key to use to scramble the index', str,       ''),
         'mailbox':        ['Mailboxes we index', 'path',                   []],
-        'path':           ['Locations of assorted data', PathDict,         {}],
+        'path':           ['Locations of assorted data', False, {
+             'html_theme': ['Default theme', 'dir',          'static/default'],
+             'vcards':     ['Location of vcards', 'dir',             'vcards'],
+         }],
     }],
     'prefs': ["User preferences", False,
     {
@@ -35,8 +41,17 @@ CONFIG_RULES = {
 
 
 if __name__ == "__main__":
+    import mailpile.defaults
     from mailpile.plugins import *
     from mailpile.config import ConfigDict
-    cfg = ConfigDict(_rules=CONFIG_RULES)
-    assert(cfg.prefs.num_results == 15)
+
+    cfg = ConfigDict(_name='mailpile',
+                     _comment='Default configuration',
+                     _rules=mailpile.defaults.CONFIG_RULES)
+    for tn in range(0, 11):
+        cfg.tags.append({'name': 'Test Tag %s' % tn})
+
+    assert(cfg.tags.a['name'] == 'Test Tag 10')
+    assert(cfg.sys.http_port == 33411)
+
     print '%s' % cfg
