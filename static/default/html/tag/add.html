@@ -1,20 +1,15 @@
-{% extends "layouts/base.html" %}
-
-{% block content %}
-{% include("partials/sub_nav_tags.html") %}
-
-<div id="contact-add" class="content-normal">
+<div id="tag-add" class="content-normal">
 
   <h3>Enter New Tag Info</h3>
-  <form id="form-contact-add" action="/_/contact/add/" method="POST">
+
+  <form id="form-tag-add" action="/api/0/tag/add/" method="POST">
+
     <input type="hidden" name="csrf" value="{csrf}">
 
-      <label>Tag</label>
-      <input type="text" name="@tagname" value="" placeholder="Friends, Family">
+    <label>Tag</label>
+    <input type="text" id="data-tag-add-tag" name="tagname" value="" placeholder="Friends, Family">
 
-      <input type="submit" value="Add"/>
+    <button id="button-form-tag-add" type="submit"><span class="icon-circle-add"></span> Add</button>
 
   </form>
 </div>
-
-{% endblock %}

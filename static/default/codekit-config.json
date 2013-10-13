@@ -147,6 +147,17 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
+    "\/img\/draggable-pattern.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/img\/draggable-pattern.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/img\/draggable-pattern.png",
+      "initialSize" : 197,
+      "fileType" : 8192
+    },
     "\/html\/partials\/sub_nav_tags.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
@@ -373,6 +384,15 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+    "\/html\/message\/forward.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/message\/forward.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/less\/mixins\/shapes.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/mixins\/shapes.less",
@@ -389,15 +409,6 @@
       "outputStyle" : 0,
       "fileType" : 1,
       "debugStyle" : 0
-    },
-    "\/html\/message\/forward.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/message\/forward.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/css\/guide.css" : {
       "ignoreWasSetByUser" : 0,
@@ -748,6 +759,15 @@
       "initialSize" : 2914,
       "fileType" : 8192
     },
+    "\/html\/message\/index.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/message\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/js\/select2.min.js" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 1,
@@ -758,15 +778,6 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/select2.min-min.js",
       "fileType" : 64
-    },
-    "\/html\/message\/index.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/message\/index.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/less\/rebar\/separators.less" : {
       "ieCompatibility" : 1,

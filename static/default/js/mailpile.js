@@ -497,24 +497,27 @@ $(document).ready(function() {
 
 
   /* Pile - Dragging & Dropping */
-  $('.result, .result-on').draggable({
+  $('td.draggable').draggable({
     containment: "#container",
     scroll: false,
     revert: true,
     helper: function( event ) {
+
       var selected_count = parseInt($('#bulk-actions-selected-count').html());
+
       if (selected_count == 0) {
         drag_count = '1 message</div>';
       }
       else {
         drag_count = selected_count + ' messages';
       }
-      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + ' to...</div>');
+
+      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + ' to</div>');
     }
   });
 
   $('li.sidebar-tags').droppable({
-    accept: '#pile-results .result',
+    accept: '#pile-results td.draggable',
     activeClass: 'sidebar-tags-drag-hover',
     hoverClass: 'sidebar-tags-drag-active',
     drop: function(event, ui) {
@@ -527,7 +530,7 @@ $(document).ready(function() {
 
 
   /* Compose - Button */
-  $('#button-compose').on('click', function() {
+  $(document).on('click', '#button-compose', function() {
 		$.ajax({
 			url			 : '/api/0/message/compose/',
 			type		 : 'POST',
@@ -587,41 +590,89 @@ $(document).ready(function() {
   }
 
 
-	$('.compose-action').on('click', function(e) {
-
-    e.preventDefault();
-    var action = $(this).val();
-
-	  if (action == 'send') {
-  	  var action_url     = 'update/send/';
-  	  var action_status  = 'success';
-  	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
-	  }
-	  else if (action == 'save') {
-  	  var action_url     = 'update/';
-  	  var action_status  =  'info';
-  	  var action_message = 'Your message was saved';
-	  }
-
-		$.ajax({
-			url			 : '/api/0/message/' + action_url,
-			type		 : 'POST',
-			data     : $('#form-compose').serialize(),
-			dataType : 'json',
-		  success  : function(response) {
-
-        if (action == 'send' && response.status == 'success') {
-          window.location.href = '/in/Sent/?ui_sent=' + response.result.messages[0].mid
-        }
-        else {
-          statusMessage(response.status, response.message);
-        }
-		  }
-		});
-	});
-
-
 });	
 
 
+$(document).on('click', '.compose-action', function(e) {
+
+  e.preventDefault();
+  var action = $(this).val();
+
+  if (action == 'send') {
+	  var action_url     = 'update/send/';
+	  var action_status  = 'success';
+	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
+  }
+  else if (action == 'save') {
+	  var action_url     = 'update/';
+	  var action_status  =  'info';
+	  var action_message = 'Your message was saved';
+  }
+
+	$.ajax({
+		url			 : '/api/0/message/' + action_url,
+		type		 : 'POST',
+		data     : $('#form-compose').serialize(),
+		dataType : 'json',
+	  success  : function(response) {
+
+      if (action == 'send' && response.status == 'success') {
+        window.location.href = '/in/Sent/?ui_sent=' + response.result.messages[0].mid
+      }
+      else {
+        statusMessage(response.status, response.message);
+      }
+	  }
+	});
+});
+
+
+
+/* Tag - Add */
+$(document).on('click', '#button-tag-add', function(e) {
+	
+	e.preventDefault();
+  var html = $('#template-tag-add').html();
+	
+	$('#tags-list').html(html);
+	
+	$this_nav = $(this);
+  console.log($this_nav);
+
+	$('#sub-navigation').find('ul li').removeClass('navigation-on', function() {
+
+    $this_nav.parent().addClass('navigation-on');
+	});
+
+});
+
+
+
+$(document).on('submit', '#form-tag-add', function(e) {
+
+  e.preventDefault();
+
+  var tag_data = $('#form-tag-add').serialize();
+
+  console.log($(this));
+
+	$.ajax({
+		url			 : $(this).attr('action') + $('#data-tag-add-tag').val() + '/',
+		type		 : 'POST',
+		data     : tag_data,
+		dataType : 'json',
+	  success  : function(response) {
+
+      if (response.status == 'success') {
+
+        console.log(response);
+        //window.location.href = ''
+      }
+      else {
+        statusMessage(response.status, response.message);
+      }
+	  }
+	});
+  
+});
 

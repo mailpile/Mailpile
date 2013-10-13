@@ -2,9 +2,12 @@
 
 	@white: #FFFFFF;
 	@black: #333333;
+	
 	@grayLight: #F2F2F2;
+	@grayMid: #CCCCCC;
 	@gray: #B3B3B3;
 	@grayDark: #4D4D4D;
+	
 	@blue: #3a6b8c;	
 	@brown: #826f69;
 	@yellow: #d4b34e;
@@ -168,26 +171,23 @@
 	}
 
 	.button-border(@border-color) {
-
-		border: 1px solid @border-color, ;
-		border-top: 1px solid (@border-color + #222222);
-		border-left: 1px solid (@border-color + #222222);
-
+		border: 0px solid @border-color, ;
+		border-top: 0px solid (@border-color + #222222);
+		border-left: 0px solid (@border-color + #222222);
 		-moz-border-radius: 4px;
 		-webkit-border-radius: 4px;
 		border-radius: 4px;
 	}
 
 	.button-background(@color-top: #666666, @color-bottom: #333333) {
-
 	  background: @color-top;
 	}
 
-	@button-primary-top: @blue;
-	@button-primary-top-hover: darken(@button-primary-top, 12%);
-	@button-primary-bottom: @blue;
-	@button-primary-bottom-hover: darken(@button-primary-bottom, 12%);
-	@button-primary-color: @white;
+	@button-primary-top: @grayMid;
+	@button-primary-top-hover: @gray;
+	@button-primary-bottom: @grayMid;
+	@button-primary-bottom-hover: @gray;
+	@button-primary-color: @black;
 	@button-primary-shadow: @text-shadow-on-dark;
 	@button-primary-border: @blue;
 	@button-primary-border-hover: @blue;

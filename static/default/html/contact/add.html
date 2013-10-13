@@ -1,13 +1,8 @@
-{% extends "layouts/base.html" %}
-
-{% block content %}
-{% include("partials/sub_nav_contacts.html") %}
-
 <div id="contact-add" class="content-normal">
 
   <h3>Contact Info</h3>
 
-  <form id="form-contact-add" action="/_/contact/add/" method="GET">
+  <form id="form-contact-add" action="/api/0/contact/add/" method="POST">
 
     <input type="hidden" name="csrf" value="{csrf}">
 
@@ -27,5 +22,3 @@
 
   </form>
 </div>
-
-{% endblock %}
