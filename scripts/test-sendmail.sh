@@ -7,6 +7,7 @@ if [ -f "$OUTPUT" ]; then
   echo "X-Args: $@" >> "$OUTPUT"
   cat >>"$OUTPUT"
   echo >>"$OUTPUT"
+  sync
 else
   echo "UGH: $OUTPUT"
   exit 1
