@@ -7,6 +7,7 @@ import ConfigParser
 
 from urllib import quote, unquote
 from mailpile.util import *
+from mailpile.workers import DumbWorker
 
 
 class InvalidKeyError(ValueError):
@@ -244,12 +245,12 @@ def RuledContainer(pcls):
             return unicode(self.as_config_bytes().decode('utf-8'))
             #return json.dumps(self, sort_keys=True, indent=2)
 
-        def as_config_bytes(self):
+        def as_config_bytes(self, private=True):
             of = io.BytesIO()
-            self.as_config().write(of)
+            self.as_config(private=private).write(of)
             return of.getvalue()
 
-        def as_config(self, config=None):
+        def as_config(self, config=None, private=True):
             config = config or CommentedEscapedConfigParser()
             section = self._name
             if self._comment:
@@ -633,10 +634,11 @@ class ConfigManager(ConfigDict):
             os.mkdir(self.workdir)
 
     def parse_config_lines(self, session, lines, source=None):
-        pass
-
-    def generate_config_file(self, private=False):
-        return ''
+        parser = CommentedEscapedConfigParser()
+        parser.readfp(io.BytesIO('\n'.join(lines)))
+        for section in parser.sections():
+            cfgpath = section.split(':')[0]
+            print 'section: %s' % cfgpath
 
     def load(self, session, filename=None):
         self._mkworkdir()
@@ -661,7 +663,7 @@ class ConfigManager(ConfigDict):
     def save(self, session):
         self._mkworkdir()
         fd = gpg_open(self.conffile, self.get('gpg_recipient'), 'wb')
-        fd.write(join(self.generate_config_file(private=True)))
+        fd.write(self.as_config_bytes(private=True))
         fd.close()
 
 
