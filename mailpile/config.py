@@ -369,12 +369,25 @@ def RuledContainer(pcls):
                 return self.get(key)
             return pcls.__getitem__(self, key)
 
-        def __getattr__(self, attr):
-            return self[attr]
+        def __getattr__(self, attr, default=None):
+            try:
+                rules = self.__getattribute__('rules')
+            except AttributeError:
+                rules = {}
+            if attr in rules:
+                return self[attr]
+            else:
+                return self.__getattribute__(attr)
 
-        def FIXME__setattr__(self, attr, value):
-            if attr in self.rules:
-                self[attr] = value
+        def __setattr__(self, attr, value):
+            try:
+              rules = self.__getattribute__('rules')
+            except AttributeError:
+              rules = {}
+            if attr in rules:
+                self.__setitem__(attr, value)
+            else:
+                pcls.__setattr__(self, attr, value)
 
         def __passkey__(self, key, value):
             if hasattr(value, 'key'):
@@ -963,7 +976,7 @@ if __name__ == "__main__":
             'burp': ['Belch', 'str', '']
         }],
     })
-    test_cfg.derp['burp'] = u'm\xe1ny\nlines\nof\nbelching  '
+    test_cfg.derp.burp = u'm\xe1ny\nlines\nof\nbelching  '
 
     print '%s' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
                                   extraglobs={'test_cfg': test_cfg}), )
