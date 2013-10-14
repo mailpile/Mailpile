@@ -12,6 +12,7 @@ urlmap:
 alltests:
 	@python mailpile/config.py
 	@python mailpile/util.py
+	@python mailpile/workers.py
 	@scripts/mailpile-test.py
 
 clean:
