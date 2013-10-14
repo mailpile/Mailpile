@@ -362,9 +362,12 @@ var statusMessage = function(status, message_text, complete, complete_action) {
 }
 
 
+/* Set Default Data */
+$(document).data('view_size', 'comfy');
+
+
 // Non-exposed functions: www, setup
 $(document).ready(function() {
-
 
 
   /* Messages */
@@ -512,7 +515,7 @@ $(document).ready(function() {
         drag_count = selected_count + ' messages';
       }
 
-      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + ' to</div>');
+      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
     }
   });
 
@@ -527,6 +530,34 @@ $(document).ready(function() {
       //$(this).delay(2500).html(old_html);
     }
   });
+  
+  
+  /* Pile - Change Size */
+  $(document).on('click', 'a.change-view-size', function(e) {
+    
+    e.preventDefault();
+    
+    var current_size = $(document).data('view_size');
+    var new_size = $(this).data('view_size');
+    
+    console.log('current: ' + current_size);
+    console.log('new: ' + new_size);
+
+
+    // Update Link Selected
+    $('a.change-view-size').removeClass('view-size-selected');
+    $(this).addClass('view-size-selected');
+    
+
+    // Update View Sizes
+    $('#pile-results').removeClass(current_size).addClass(new_size);
+
+
+    // Data
+    $(document).data('view_size', new_size);
+        
+  });
+  
 
 
   /* Compose - Button */
@@ -647,7 +678,6 @@ $(document).on('click', '#button-tag-add', function(e) {
 });
 
 
-
 $(document).on('submit', '#form-tag-add', function(e) {
 
   e.preventDefault();
@@ -657,7 +687,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
   console.log($(this));
 
 	$.ajax({
-		url			 : $(this).attr('action') + $('#data-tag-add-tag').val() + '/',
+		url			 : $(this).attr('action'),
 		type		 : 'POST',
 		data     : tag_data,
 		dataType : 'json',

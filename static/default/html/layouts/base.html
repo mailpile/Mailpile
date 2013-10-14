@@ -66,7 +66,7 @@
   <div id="sidebar">
     <nav>
       <ul>
-        <li>
+        <li class="sidebar-tags-default">
           <a href="/in/Drafts/">
             <span class="sidebar-icon icon-compose"></span>
             <span class="sidebar-tag">Drafts</span>
@@ -138,15 +138,13 @@
     <hr>
   </div>
 
-  <!-- START CONTENT -->
-  <div id="content">
+  <div id="content" class="clearfix">
     {% block content %}
       {{results}}
     {% endblock %}
     <div id="footer">
       <a href='http://mailpile.is'>Mailpile</a> is free software made by <a title="Bjarni R. Einarsson" href="http://bre.klaki.net" target="_blank">bre</a>, <a title="Brennan Novak" href="https://brennannovak.com" target="_blank">bnvk</a>, <a href="http://www.smarimccarthy.is/" target="_blank">smári</a> &amp; <a href="https://github.com/pagekite/Mailpile/graphs/contributors" target="_blank">more</a>
     </div>
-
     <div id="debug" class="hide">
       <h3>DEBUG</h3>
       <b>command:</b> {{ command }}<br>
@@ -155,12 +153,9 @@
       <b>kwargs:</b> {{ kwargs }}
       {{logged}}
     </div>
-
   </div>
-  <!-- END CONTENT -->
-  <div class="clearfix"></div>
 
-  </div>
+</div>
 
   <script type="text/javascript" src="/static/js/jquery.min.js"></script>
   <script type="text/javascript" src="/static/js/mailpile-libraries-min.js"></script>
