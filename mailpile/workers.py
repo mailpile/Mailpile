@@ -1,6 +1,7 @@
 import threading
 import time
 
+import mailpile.util
 from mailpile.util import *
 
 
