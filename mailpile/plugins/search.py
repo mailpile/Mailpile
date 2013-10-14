@@ -230,7 +230,7 @@ class Search(Command):
       self.fixed_up = True
       return self
     def as_text(self):
-      return '\n'.join([r.as_text() for r in (self.result or [])])
+      return self.result.as_text()
     def as_html(self, *args, **kwargs):
       return Command.CommandResult.as_html(self._fixup(), *args, **kwargs)
     def as_dict(self, *args, **kwargs):

@@ -63,18 +63,28 @@ class TagCommand(Command):
 
 class Tag(TagCommand):
   """Add or remove tags on a set of messages"""
-  SYNOPSIS = (None, 'tag', None, '<[+|-]tags> <msgs>')
+  SYNOPSIS = (None, 'tag', 'tag', '<[+|-]tags> <msgs>')
   ORDER = ('Tagging', 0)
   HTTP_CALLABLE = ('POST', )
+  HTTP_POST_VARS = {
+    'mid': 'message-ids',
+    'add': 'tags',
+    'del': 'tags'
+  }
 
   def command(self, save=True):
     idx = self._idx()
-    words = self.args[:]
-    ops = []
-    while words and words[0][0] in ('-', '+'):
-      ops.append(words.pop(0))
 
-    msg_ids = self._choose_messages(words)
+    if 'mid' in self.data:
+      msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
+      ops = (['+%s' % t for t in self.data.get('add', [])] +
+             ['-%s' % t for t in self.data.get('del', [])])
+    else:
+      words = self.args[:]
+      ops = []
+      while words and words[0][0] in ('-', '+'):
+        ops.append(words.pop(0))
+      msg_ids = self._choose_messages(words)
 
     rv = {'msg_ids': [], 'tagged': [], 'untagged': []}
     rv['msg_ids'] = [b36(i) for i in msg_ids]
@@ -104,17 +114,22 @@ class AddTag(TagCommand):
   SYNOPSIS = (None, 'tag/add', 'tag/add', '<tag>')
   ORDER = ('Tagging', 0)
   HTTP_CALLABLE = ('POST', )
+  HTTP_POST_VARS = {
+      'name': 'tag name',
+      'slug': 'tag slug',
+  }
 
   def command(self):
     config = self.session.config
     existing = [v.lower() for v in config.get('tag', {}).values()]
-    for tag in self.args:
+    creating = (self.args or []) + self.data.get('name', [])
+    for tag in creating:
       if ' ' in tag:
         return self._error('Invalid tag: %s' % tag)
       if tag.lower() in existing:
         return self._error('Tag already exists: %s' % tag)
     result = []
-    for tag in sorted(self.args):
+    for tag in sorted(creating):
       if config.parse_set(self.session, 'tag:%s=%s' % (config.nid('tag'), tag)):
         result.append({'name': tag, 'tid': config.get_tag_id(tag), 'new': 0})
     if result:
@@ -126,11 +141,19 @@ class ListTags(TagCommand):
   """List tags"""
   SYNOPSIS = (None, 'tag/list', 'tag/list', '[<wanted>|!<wanted>] [...]')
   ORDER = ('Tagging', 0)
+  HTTP_QUERY_VARS = {
+    'only': 'tags',
+    'not': 'tags',
+  }
 
   def command(self):
     result, idx = [], self._idx()
+
     wanted = [t.lower() for t in self.args if not t.startswith('!')]
     unwanted = [t[1:].lower() for t in self.args if t.startswith('!')]
+    wanted.extend([t.lower() for t in self.data.get('only', [])])
+    unwanted.extend([t.lower() for t in self.data.get('not', [])])
+
     for tid, tag in self.session.config.get('tag', {}).iteritems():
       if wanted and tag.lower() not in wanted: continue
       if unwanted and tag.lower() in unwanted: continue

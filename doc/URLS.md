@@ -37,6 +37,7 @@ endpoints be used for automation.
     /api/0/search/            [@<start>]/<terms>/
                               ?q=[search terms]&start=[start position]&end=[end position]&order=[sort order]
     /api/0/tag/list/          [<wanted>|!<wanted>]/[...]/
+                              ?not=[tags]&only=[tags]
 
 ### POST
 
@@ -57,7 +58,10 @@ endpoints be used for automation.
     ... POST only: body=[..]&to=[..]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
     /api/0/message/update/send/
     ... POST only: body=[..]&to=[recipients]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
+    /api/0/tag/               <[+|-]tags>/<msgs>/
+    ... POST only: add=[tags]&del=[tags]&mid=[message-ids]
     /api/0/tag/add/           <tag>/
+    ... POST only: name=[tag name]&slug=[tag slug]
     /api/0/tag/delete/        <tag>/
 
 ### UPDATE
@@ -107,6 +111,7 @@ endpoints be used for automation.
     /message/update/
     /message/update/send/
     /search/
+    /tag/
     /tag/add/
     /tag/delete/
     /tag/list/

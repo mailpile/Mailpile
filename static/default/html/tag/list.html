@@ -5,7 +5,8 @@
 
 <div id="tags-list" class="clearfix">
 
-  {% for tag in user_tags.result.tags %}
+  <!-- for tag in user_tags.result.tags -->
+  {% for tag in result.tags %}
   <div class="tag-card" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.not}}">
     <span class="tag-card-name">{{tag.name}}</span>
     <div class="tag-card-numbers">
