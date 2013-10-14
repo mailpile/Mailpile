@@ -117,7 +117,9 @@ class UrlMap:
                         (post_data and var in post_data)):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
 
-        data = {}
+        data = {
+            '_method': method
+        }
         ui_keys = [k for k in ((query_data or {}).keys() +
                                (post_data or {}).keys()) if k.startswith('ui_')]
         for vlist, src in ((ui_keys, query_data), (ui_keys, post_data),
