@@ -19,13 +19,15 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
     This is a ConfigParser that allows embedded comments and safely escapes
     and encodes/decodes values that include funky characters.
 
+    >>> cfg.sys.debug = u'm\\xe1ny\\nlines\\nof\\nbelching  '
     >>> cecp = CommentedEscapedConfigParser()
-    >>> cecp.readfp(io.BytesIO(str(test_cfg)))
-    >>> cecp.get('config/derp: Herp', 'burp') == test_cfg.derp.burp
+    >>> cecp.readfp(io.BytesIO(str(cfg)))
+    >>> cecp.get('config/sys: Technical system settings', 'debug'
+    ...          ) == cfg.sys.debug
     True
 
-    >>> cecp.items('config/derp: Herp')
-    [(u'burp', u'm\\xe1ny\\nlines\\nof\\nbelching  ')]
+    >>> cecp.items('config/sys: Technical system settings')
+    [(u'debug', u'm\\xe1ny\\nlines\\nof\\nbelching  ')]
     """
     def set(self, section, key, value, comment):
         key = unicode(key).encode('utf-8')
@@ -51,7 +53,7 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
 
 def _MakeCheck(pcls, rules):
     class CD(pcls):
-        RULES = rules
+        _RULES = rules
     return CD
 
 
@@ -221,12 +223,12 @@ def RuledContainer(pcls):
            'unicode': unicode,
            # TODO: Create 'email' and 'url' and other high level checks
         }
-        NAME = 'container'
-        RULES = None
+        _NAME = 'container'
+        _RULES = None
 
         def __init__(self, *args, **kwargs):
-            rules = kwargs.get('_rules', self.RULES or {})
-            self._name = kwargs.get('_name', self.NAME)
+            rules = kwargs.get('_rules', self._RULES or {})
+            self._name = kwargs.get('_name', self._NAME)
             self._comment = kwargs.get('_comment', None)
             for kw in ('_rules', '_comment', '_name'):
                 if kw in kwargs:
@@ -351,7 +353,11 @@ def RuledContainer(pcls):
                 raise TypeError(('Invalid type for default %s = %s'
                                  ) % (name, value))
 
+        def __fixkey__(self, key):
+            return key
+
         def get_rule(self, key):
+            key = self.__fixkey__(key)
             if key not in self.rules:
                 if '_any' in self.rules:
                     return self.rules['_any']
@@ -360,6 +366,7 @@ def RuledContainer(pcls):
             return self.rules[key]
 
         def get(self, key, default=None):
+            key = self.__fixkey__(key)
             if key in self:
                 return pcls.__getitem__(self, key)
             if default is None and key in self.rules:
@@ -367,7 +374,8 @@ def RuledContainer(pcls):
             return default
 
         def __getitem__(self, key):
-            if key in self.rules:
+            key = self.__fixkey__(key)
+            if key in self.rules or '_any' in self.rules:
                 return self.get(key)
             return pcls.__getitem__(self, key)
 
@@ -376,7 +384,7 @@ def RuledContainer(pcls):
                 rules = self.__getattribute__('rules')
             except AttributeError:
                 rules = {}
-            if attr in rules:
+            if self.__fixkey__(attr) in rules or '_any' in rules:
                 return self[attr]
             else:
                 return self.__getattribute__(attr)
@@ -386,7 +394,7 @@ def RuledContainer(pcls):
               rules = self.__getattribute__('rules')
             except AttributeError:
               rules = {}
-            if attr in rules:
+            if self.__fixkey__(attr) in rules:
                 self.__setitem__(attr, value)
             else:
                 pcls.__setattr__(self, attr, value)
@@ -397,6 +405,7 @@ def RuledContainer(pcls):
                 value._name = '%s/%s' % (self._name, key)
 
         def __setitem__(self, key, value):
+            key = self.__fixkey__(key)
             checker = self.get_rule(key)[self.RULE_CHECKER]
             if not checker is True:
                 if checker is False:
@@ -464,15 +473,21 @@ class ConfigList(RuledContainer(list)):
         return self
 
     def __passkey__(self, key, value):
-        if hasattr(value, 'key'):
+        if hasattr(value, '_key'):
             key = b36(key).lower()
             value._key = key
             value._name = '%s/%s' % (self._name, key)
 
-    def __getitem__(self, key):
+    def __fixkey__(self, key):
         if isinstance(key, (str, unicode)):
-            key = int(key, 36)
-        return list.__getitem__(self, key)
+            try:
+                key = int(key, 36)
+            except ValueError:
+                pass
+        return key
+
+    def __getitem__(self, key):
+        return list.__getitem__(self, self.__fixkey__(key))
 
     def keys(self):
         return [b36(i).lower() for i in range(0, len(self))]
@@ -567,7 +582,7 @@ class ConfigDict(RuledContainer(dict)):
     >>> isinstance(pot['liquids'], ConfigDict)
     True
     """
-    NAME = 'config'
+    _NAME = 'config'
 
     def reset(self, rules=True, data=True):
         if rules:
@@ -580,7 +595,7 @@ class ConfigDict(RuledContainer(dict)):
                     dict.__delitem__(self, key)
 
     def __delitem__(self, key):
-        raise UsageError('Deleting keys from %s is not allowed' % self.NAME)
+        raise UsageError('Deleting keys from %s is not allowed' % self.name)
 
     def all_keys(self):
         keys = set(self.keys()) | set(self.rules.keys()) - set(['_any'])
@@ -600,7 +615,7 @@ class ConfigDict(RuledContainer(dict)):
 
 
 class PathDict(ConfigDict):
-    RULES = {
+    _RULES = {
         '_any': ['Data directory', 'directory', '']
     }
 
@@ -610,6 +625,10 @@ class ConfigManager(ConfigDict):
     This class manages the live global mailpile configuration. This includes
     the settings themselves, as well as global objects like the index and
     references to any background worker threads.
+
+    >>> cfg.sys.fd_cache_size
+    500
+
     """
     DEFAULT_WORKDIR = os.environ.get('MAILPILE_HOME',
                                      os.path.expanduser('~/.mailpile'))
@@ -633,12 +652,66 @@ class ConfigManager(ConfigDict):
                 session.ui.notify('Creating: %s' % self.workdir)
             os.mkdir(self.workdir)
 
-    def parse_config_lines(self, session, lines, source=None):
+    def parse_config(self, session, data, source='internal'):
+        """
+        Parse a config file fragment. Invalid data will be ignored, but will
+        generate warnings in the session UI. Returns True on a clean parse,
+        False if any of the settings were bogus.
+
+        >>> cfg.parse_config(session, '[config/sys]\\nfd_cache_size = 123\\n')
+        True
+        >>> cfg.sys.fd_cache_size
+        123
+
+        >>> cfg.parse_config(session, '[config/bogus]\\nblabla = bla\\n')
+        False
+        >>> [l[1] for l in session.ui.log_buffer if 'bogus' in l[1]][0]
+        u'Invalid (internal): section config/bogus does not exist'
+
+        >>> cfg.parse_config(session, '[config/sys]\\nhistory_length = 321\\n'
+        ...                                          'bogus_variable = 456\\n')
+        False
+        >>> cfg.sys.history_length
+        321
+        >>> [l[1] for l in session.ui.log_buffer if 'bogus_var' in l[1]][0]
+        u'Invalid (internal): section config/sys, ...
+
+        >>> cfg.parse_config(session, '[config/tags/0]\\nname = TagName\\n')
+        True
+        >>> cfg.tags['0'].name
+        u'TagName'
+        """
         parser = CommentedEscapedConfigParser()
-        parser.readfp(io.BytesIO('\n'.join(lines)))
+        parser.readfp(io.BytesIO(data))
+        okay = True
         for section in parser.sections():
-            cfgpath = section.split(':')[0]
-            print 'section: %s' % cfgpath
+            cfgpath = section.split(':')[0].split('/')[1:]
+            cfg = self
+            for part in cfgpath:
+                if part in cfg:
+                    cfg = cfg[part]
+                elif '_any' in cfg.rules:
+                    if isinstance(cfg, list):
+                        cfg.append({})
+                        cfg = cfg[part]
+                    else:
+                        cfg = cfg[part] = {}
+                else:
+                    if session:
+                        msg = (u'Invalid (%s): section %s does not exist'
+                               ) % (source, section)
+                        session.ui.warning(msg)
+                    okay = False
+            for var, val in okay and parser.items(section) or []:
+                try:
+                    cfg[var] = val
+                except (ValueError, KeyError):
+                    if session:
+                        msg = (u'Invalid (%s): section %s, variable %s'
+                               ) % (source, section, var)
+                        session.ui.warning(msg)
+                    okay = False
+        return okay
 
     def load(self, session, filename=None):
         self._mkworkdir()
@@ -657,7 +730,7 @@ class ConfigManager(ConfigDict):
         except IOError:
             pass
 
-        self.parse_config_lines(session, lines, source=filename)
+        self.parse_config(session, '\n'.join(lines), source=filename)
         self.load_vcards(session)
 
     def save(self, session):
@@ -971,15 +1044,20 @@ class outdatedConfigManager(dict):
 
 if __name__ == "__main__":
     import doctest
+    import mailpile.defaults
+    import mailpile.ui
 
-    test_cfg = ConfigDict(_rules={
-        'key': ['La la la', int, 0],
-        'derp': ['Herp', False, {
-            # This tests multiline, unicode values with trailing whitespace
-            'burp': ['Belch', 'str', '']
-        }],
-    })
-    test_cfg.derp.burp = u'm\xe1ny\nlines\nof\nbelching  '
+    cfg = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
+    session = mailpile.ui.Session(cfg)
+    session.ui.block()
+
+    for tn in range(0, 11):
+        cfg.tags.append({'name': 'Test Tag %s' % tn})
+
+    assert(cfg.tags.a['name'] == 'Test Tag 10')
+    assert(cfg.sys.http_port ==
+           mailpile.defaults.CONFIG_RULES['sys'][-1]['http_port'][-1])
 
     print '%s' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
-                                  extraglobs={'test_cfg': test_cfg}), )
+                                  extraglobs={'cfg': cfg,
+                                              'session': session}), )

@@ -45,13 +45,6 @@ if __name__ == "__main__":
     from mailpile.plugins import *
     from mailpile.config import ConfigDict
 
-    cfg = ConfigDict(_name='mailpile',
-                     _comment='Default configuration',
-                     _rules=mailpile.defaults.CONFIG_RULES)
-    for tn in range(0, 11):
-        cfg.tags.append({'name': 'Test Tag %s' % tn})
-
-    assert(cfg.tags.a['name'] == 'Test Tag 10')
-    assert(cfg.sys.http_port == 33411)
-
-    print '%s' % cfg
+    print '%s' % (ConfigDict(_name='mailpile',
+                             _comment='Default configuration',
+                             _rules=mailpile.defaults.CONFIG_RULES), )
