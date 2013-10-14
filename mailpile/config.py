@@ -225,14 +225,14 @@ def RuledContainer(pcls):
 
         def __init__(self, *args, **kwargs):
             rules = kwargs.get('_rules', self.RULES or {})
-            self.name = kwargs.get('_name', self.NAME)
-            self.comment = kwargs.get('_comment', None)
+            self._name = kwargs.get('_name', self.NAME)
+            self._comment = kwargs.get('_comment', None)
             for kw in ('_rules', '_comment', '_name'):
                 if kw in kwargs:
                     del kwargs[kw]
 
             pcls.__init__(self)
-            self.key = self.name
+            self._key = self._name
             self.set_rules(rules)
             self.update(*args, **kwargs)
 
@@ -251,9 +251,9 @@ def RuledContainer(pcls):
 
         def as_config(self, config=None):
             config = config or CommentedEscapedConfigParser()
-            section = self.name
-            if self.comment:
-                section += ': %s' % self.comment
+            section = self._name
+            if self._comment:
+                section += ': %s' % self._comment
             added_section = False
 
             keys = self.rules.keys()
@@ -299,6 +299,7 @@ def RuledContainer(pcls):
         def add_rule(self, key, rule):
             assert(isinstance(rule, (list, tuple)))
             assert(key == CleanText(key, banned=CleanText.NONVARS).clean)
+            assert(not hasattr(self, key))
             rule = list(rule[:])
             self.rules[key] = rule
             check = rule[self.RULE_CHECKER]
@@ -308,7 +309,7 @@ def RuledContainer(pcls):
             except TypeError:
                 pass
 
-            name = '%s/%s' % (self.name, key)
+            name = '%s/%s' % (self._name, key)
             comment = rule[self.RULE_COMMENT]
             value = rule[self.RULE_DEFAULT]
 
@@ -354,7 +355,7 @@ def RuledContainer(pcls):
                 if '_any' in self.rules:
                     return self.rules['_any']
                 raise InvalidKeyError(('Invalid key for %s: %s'
-                                       ) % (self.name, key))
+                                       ) % (self._name, key))
             return self.rules[key]
 
         def get(self, key, default=None):
@@ -391,28 +392,28 @@ def RuledContainer(pcls):
 
         def __passkey__(self, key, value):
             if hasattr(value, 'key'):
-                value.key = key
-                value.name = '%s/%s' % (self.name, key)
+                value._key = key
+                value._name = '%s/%s' % (self._name, key)
 
         def __setitem__(self, key, value):
             checker = self.get_rule(key)[self.RULE_CHECKER]
             if not checker is True:
                 if checker is False:
                     raise ValueError(('Modifying %s/%s is not allowed'
-                                      ) % (self.name, key))
+                                      ) % (self._name, key))
                 if isinstance(checker, (list, set, tuple)):
                     if value not in checker:
                         raise ValueError(('Invalid value for %s/%s: %s'
-                                          ) % (self.name, key, value))
+                                          ) % (self._name, key, value))
                 elif isinstance(checker, (type, type(RuledContainer))):
                     try:
                         value = checker(value)
                     except (ValueError, TypeError):
                         raise ValueError(('Invalid value for %s/%s: %s'
-                                          ) % (self.name, key, value))
+                                          ) % (self._name, key, value))
                 else:
                     raise Exception(('Unknown constraint for %s/%s: %s'
-                                     ) % (self.name, key, checker))
+                                     ) % (self._name, key, checker))
             self.__passkey__(key, value)
             pcls.__setitem__(self, key, value)
 
@@ -464,8 +465,8 @@ class ConfigList(RuledContainer(list)):
     def __passkey__(self, key, value):
         if hasattr(value, 'key'):
             key = b36(key).lower()
-            value.key = key
-            value.name = '%s/%s' % (self.name, key)
+            value._key = key
+            value._name = '%s/%s' % (self._name, key)
 
     def __getitem__(self, key):
         if isinstance(key, (str, unicode)):
@@ -970,7 +971,7 @@ if __name__ == "__main__":
     import doctest
 
     test_cfg = ConfigDict(_rules={
-        'ok': ['La la la', int, 0],
+        'key': ['La la la', int, 0],
         'derp': ['Herp', False, {
             # This tests multiline, unicode values with trailing whitespace
             'burp': ['Belch', 'str', '']
