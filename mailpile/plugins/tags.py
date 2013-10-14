@@ -141,11 +141,19 @@ class ListTags(TagCommand):
   """List tags"""
   SYNOPSIS = (None, 'tag/list', 'tag/list', '[<wanted>|!<wanted>] [...]')
   ORDER = ('Tagging', 0)
+  HTTP_QUERY_VARS = {
+    'only': 'tags',
+    'not': 'tags',
+  }
 
   def command(self):
     result, idx = [], self._idx()
+
     wanted = [t.lower() for t in self.args if not t.startswith('!')]
     unwanted = [t[1:].lower() for t in self.args if t.startswith('!')]
+    wanted.extend([t.lower() for t in self.data.get('only', [])])
+    unwanted.extend([t.lower() for t in self.data.get('not', [])])
+
     for tid, tag in self.session.config.get('tag', {}).iteritems():
       if wanted and tag.lower() not in wanted: continue
       if unwanted and tag.lower() in unwanted: continue

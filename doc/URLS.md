@@ -37,6 +37,7 @@ endpoints be used for automation.
     /api/0/search/            [@<start>]/<terms>/
                               ?q=[search terms]&start=[start position]&end=[end position]&order=[sort order]
     /api/0/tag/list/          [<wanted>|!<wanted>]/[...]/
+                              ?not=[tags]&only=[tags]
 
 ### POST
 
