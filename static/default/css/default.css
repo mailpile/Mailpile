@@ -5959,9 +5959,6 @@ text {
 }
 /* Sidebar */
 #sidebar {
-  width: 20%;
-  min-width: 200px;
-  max-width: 260px;
   display: table-cell;
   background: #f2f2f2;
   border-right: 1px solid #b3b3b3;
@@ -5969,14 +5966,32 @@ text {
   margin: 0;
   padding: 0px;
   border-spacing: 0px;
-  line-height: 18px;
   vertical-align: top;
+  width: 20%;
+  min-width: 200px;
+  max-width: 260px;
+}
+#sidebar.cozy {
+  width: 18%;
+  min-width: 180px;
+  max-width: 230px;
+}
+#sidebar.snug {
+  width: 16%;
+  min-width: 160px;
+  max-width: 200px;
 }
 #sidebar hr {
   margin: 20px 0px 0px 0px;
 }
 #sidebar nav ul {
   margin: 10px 20px;
+}
+#sidebar.cozy nav ul {
+  margin: 5px 15px;
+}
+#sidebar.snug nav ul {
+  margin: 2px 10px;
 }
 #sidebar li.navigation-on {
   background: #b3b3b3;
@@ -5994,11 +6009,24 @@ text {
 }
 #sidebar a {
   display: block;
-  padding: 15px 0px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 18px;
   font-weight: normal;
   color: #4d4d4d;
+}
+#sidebar a {
+  padding: 15px 0px;
+  font-size: 18px;
+  line-height: 18px;
+}
+#sidebar.cozy a {
+  padding: 10px 0px;
+  font-size: 16px;
+  line-height: 16px;
+}
+#sidebar.snug a {
+  padding: 5px 0px;
+  font-size: 14px;
+  line-height: 14px;
 }
 #sidebar a:hover {
   color: #be2408;
@@ -6025,6 +6053,14 @@ text {
   box-sizing: border-box;
   border-spacing: 10px;
 }
+#content.cozy {
+  width: 82%;
+  min-width: 820px;
+}
+#content.snug {
+  width: 84%;
+  min-width: 640px;
+}
 #content div.pile-speed {
   text-align: center;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -6047,6 +6083,12 @@ text {
   border-bottom: 1px solid #b3b3b3;
   box-sizing: border-box;
 }
+#sub-navigation.cozy {
+  height: 58px;
+}
+#sub-navigation.snug {
+  height: 54px;
+}
 #sub-navigation ul {
   position: relative;
   top: 10px;
@@ -6062,10 +6104,18 @@ text {
 }
 #sub-navigation a {
   display: block;
-  padding: 10px 10px;
+  padding: 10px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: #4d4d4d;
+}
+#sub-navigation.cozy a {
+  padding: 7px;
+  font-size: 16px;
+}
+#sub-navigation.snug a {
+  padding: 5px;
+  font-size: 14px;
 }
 #sub-navigation a:hover,
 #sub-navigation a:hover span.navigation-icon {

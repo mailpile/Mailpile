@@ -17,6 +17,9 @@ function MailPile() {
 	this.keybindings = [];
 	this.commands = [];
 	this.graphselected = [];
+	this.defaults = {
+  	view_size: "comfy"
+	}
 }
 
 MailPile.prototype.keybindings_loadfromserver = function() {
@@ -362,18 +365,32 @@ var statusMessage = function(status, message_text, complete, complete_action) {
 }
 
 
-/* Set Default Data */
-$(document).data('view_size', 'comfy');
-
-
 // Non-exposed functions: www, setup
 $(document).ready(function() {
+
+
+  /* Set Default Data */
+  if (localStorage.getItem('view_size')) {
+
+    $('#sidebar').addClass(localStorage.getItem('view_size'));
+    $('#sub-navigation').addClass(localStorage.getItem('view_size'));
+    $('#pile-results').addClass(localStorage.getItem('view_size'));
+
+    $.each($('a.change-view-size'), function() {
+      if ($(this).data('view_size') == localStorage.getItem('view_size')) {
+        $(this).addClass('view-size-selected');
+      }
+    });
+  }
+  else {
+    localStorage.setItem('view_size', mailpile.defaults.view_size);
+  }
+
 
 
   /* Messages */
 	$('.message-close').on('click', function() {
 		$(this).parent().fadeOut(function() {
-			// Update Padding Top for #content
 			$('#header').css('padding-top', statusHeaderPadding());
 		});
 	});
@@ -531,33 +548,6 @@ $(document).ready(function() {
     }
   });
   
-  
-  /* Pile - Change Size */
-  $(document).on('click', 'a.change-view-size', function(e) {
-    
-    e.preventDefault();
-    
-    var current_size = $(document).data('view_size');
-    var new_size = $(this).data('view_size');
-    
-    console.log('current: ' + current_size);
-    console.log('new: ' + new_size);
-
-
-    // Update Link Selected
-    $('a.change-view-size').removeClass('view-size-selected');
-    $(this).addClass('view-size-selected');
-    
-
-    // Update View Sizes
-    $('#pile-results').removeClass(current_size).addClass(new_size);
-
-
-    // Data
-    $(document).data('view_size', new_size);
-        
-  });
-  
 
 
   /* Compose - Button */
@@ -617,11 +607,39 @@ $(document).ready(function() {
         }
       });
     });
-
   }
 
 
-});	
+});
+
+
+
+/* Pile - Change Size */
+$(document).on('click', 'a.change-view-size', function(e) {
+
+  e.preventDefault();
+
+  var current_size = localStorage.getItem('view_size');
+  var new_size = $(this).data('view_size');
+
+  console.log('current: ' + current_size);
+  console.log('new: ' + new_size);
+
+  // Update Link Selected
+  $('a.change-view-size').removeClass('view-size-selected');
+  $(this).addClass('view-size-selected');
+
+  // Update View Sizes
+  $('#sidebar').removeClass(current_size).addClass(new_size);
+  $('#sub-navigation').removeClass(current_size).addClass(new_size);
+  $('#pile-results').removeClass(current_size).addClass(new_size);
+
+  // Data
+  localStorage.setItem('view_size', new_size);
+
+});
+  
+
 
 
 $(document).on('click', '.compose-action', function(e) {
@@ -681,9 +699,7 @@ $(document).on('click', '#button-tag-add', function(e) {
 $(document).on('submit', '#form-tag-add', function(e) {
 
   e.preventDefault();
-
   var tag_data = $('#form-tag-add').serialize();
-
   console.log($(this));
 
 	$.ajax({
@@ -694,7 +710,6 @@ $(document).on('submit', '#form-tag-add', function(e) {
 	  success  : function(response) {
 
       if (response.status == 'success') {
-
         console.log(response);
         //window.location.href = ''
       }

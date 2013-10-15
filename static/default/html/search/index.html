@@ -17,7 +17,7 @@
   {% if result %}
   <form id="form-pile-results" action="" method="POST">
     <input type='hidden' name='csrf' value='{csrf}' />
-    <table id="pile-results" class="comfy">
+    <table id="pile-results">
     <tbody>
     {% for message in result.messages %}
       {% if not message.message %}
@@ -32,7 +32,7 @@
         <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} of {{result.total}} Messages {% elif result.total == 1 %} 1 Message {% else %} No results found {% endif %}</h5><br>
         <a class="change-view-size" data-view_size="snug" href="#">Snug</a>
         <a class="change-view-size" data-view_size="cozy" href="#">Cozy</a>
-        <a class="change-view-size view-size-selected" data-view_size="comfy" href="#">Comfy</a>
+        <a class="change-view-size" data-view_size="comfy" href="#">Comfy</a>
         <a class="change-view-size" data-view_size="avatar" href="#">Avatar</a>
       </div>
     </div>
