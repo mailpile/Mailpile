@@ -551,6 +551,7 @@ $(document).ready(function() {
 /* Pile */
 
 
+
   /* Filter New */
   $('.button-sub-navigation').on('click', function() {
 
@@ -660,7 +661,7 @@ $(document).ready(function() {
 		  data     : form_data,
 		  dataType : 'json',
 	    success  : function(response) {
-        
+
         statusMessage(response.status, response.message);
 //        if (response.status == 'success') {
           console.log(response);
@@ -767,3 +768,37 @@ $(document).ready(function() {
   	});
     
   });
+
+
+/* **********************************************
+     Begin search.js
+********************************************** */
+
+/* Search */
+
+
+$(document).ready(function() {
+
+
+	/* Hide Various Things */
+	$('#search-params, #bulk-actions').hide();
+
+	/* Search Box */
+	$('#qbox').bind("focus", function(key) {
+		$('#search-params').slideDown('fast');
+	});
+
+	$('#qbox').bind("blur", function(key) {
+		$('#search-params').slideUp('fast');
+	});
+
+	for (item in keybindings) {
+		if (item[1] == "global") {
+			Mousetrap.bindGlobal(item[0], item[2]);
+		} else {
+			Mousetrap.bind(item[0], item[2]);
+		}
+	}
+
+	
+});

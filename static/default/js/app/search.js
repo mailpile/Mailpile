@@ -1,6 +1,9 @@
 /* Search */
 
 
+$(document).ready(function() {
+
+
 	/* Hide Various Things */
 	$('#search-params, #bulk-actions').hide();
 
@@ -20,3 +23,6 @@
 			Mousetrap.bind(item[0], item[2]);
 		}
 	}
+
+	
+});
