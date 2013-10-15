@@ -114,6 +114,8 @@ class SearchResults(dict):
       self._set_values([], 0, 0, 0)
       return
 
+    # FIXME: The search_tags is broken for many search results, needs
+    #        to be rewritten after config refactor.
     self['search_terms'] = terms = session.searched
     self['search_tags'] = [idx.config['tag'].get(t.split(':')[1], t)
                            for t in terms if t.startswith('tag:')]
