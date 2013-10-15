@@ -1,0 +1,387 @@
+/* Web */
+
+	#debug {
+		font-size: 14px;
+		font-family: Helvetica, Arial, sans-serif;
+		text-align: center;
+		color: #666666;
+		line-height: 14px;
+	}
+
+	#debug p {
+		margin: 0px 5px;
+		padding: 0px;
+	}
+
+
+
+/* Header */
+
+	#header {
+		width: 100%;
+		min-width: 700px;
+		height: 74px;
+		background: @grayLight;
+		border-bottom: 1px solid @gray;		
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	
+	#header .logo {
+		width: 64px;
+		height: 45px;
+		display: inline-block;
+		position: relative;
+		top: 13px;
+		margin-right: 15px;
+		left: 20px;
+		float: left;
+	}
+	
+	#header h1 {
+		display: inline-block;
+		float: left;
+		position: relative;
+		top: 8px;
+		left: 15px;
+		line-height: 36px;
+		color: @grayDark;
+		font-weight: normal;		
+	}
+	
+	#header h1 small {
+		font-family: @text-font-family;
+		display: block;
+		font-size: 14px;
+		line-height: 14px;
+	}
+	
+	#header nav {
+		float: right;
+		position: relative;
+		top: 10px;
+		right: 15px;	
+	}
+	
+	#header nav ul li {
+		float: left;
+		margin-left: 30px;
+		text-align: center;
+	}
+	
+	#header nav a {
+	  width: 100%;
+	  height: 100%;
+	  display: block;
+		font-size: 14px;
+		font-family: @text-font-family-bold;
+		font-weight: normal;
+		color: @grayDark;
+	}
+	
+	#header nav a:hover {
+		color: @blue;
+	} 
+	
+	#header nav a span {
+		display: block;
+		font-size: 36px;
+		line-height: 36px;
+	}
+
+	#header nav button {
+	  margin: 0px;
+	  padding: 0px;
+    font-size: 14px;
+		font-family: @text-font-family-bold;
+		font-weight: 100;
+		color: @grayDark !important;
+		text-shadow: 0px 0px 0px;
+		border: 0px;
+		line-height: 24px;
+  	background: none;
+	}
+	
+	#header nav button:hover {
+		color: @blue !important;
+	} 	
+	
+	#header nav button span {
+		display: block;
+		font-size: 36px;
+		line-height: 36px;  	
+	}
+	
+
+	
+/* Container */
+
+	#container {
+		width: 100%;
+		min-width: 800px;
+		display: table;
+		padding: 0;
+		margin: 0;
+	}
+
+
+
+
+/* Content */	
+	
+	#content {
+		width: 80%;
+		min-width: 600px;
+		display: table-cell;
+		box-sizing: border-box;
+		border-spacing:10px;
+	}
+
+  #content.cozy { width: 82%; min-width: 820px; }
+  #content.snug { width: 84%; min-width: 640px; }
+
+
+	#content div.pile-speed {
+		text-align: center;
+		font-family: @text-font-family;
+		color: @gray;
+	}
+
+	#content div.pile-speed span {
+		font-size: 24px;
+		margin-right: 10px;
+		position: relative;
+		top: 3px;
+		left: 0px;
+	}
+
+
+
+
+/* Sub Navigation */
+
+	#sub-navigation	{
+		width: 100%;
+    height: 65px;
+		min-width: 450px;
+		display: block;
+		background: @grayLight;
+		border-bottom: 1px solid @gray;
+		box-sizing: border-box;
+	}
+	
+	#sub-navigation.cozy { height: 58px; }
+	#sub-navigation.snug { height: 54px; }
+
+	#sub-navigation ul {
+	  position: relative;
+	  top: 10px;
+  }
+
+	#sub-navigation ul.left {
+	  left: 15px;
+	}
+
+	#sub-navigation ul.right {
+	  right: 15px;
+	}
+
+	#sub-navigation ul li {
+    padding: 0px 5px;
+	}
+
+	#sub-navigation a {
+		display: block;	
+		padding: 10px;
+		font-family: @text-font-family-bold;
+		font-weight: normal;		
+		color: @grayDark;
+	}
+
+  #sub-navigation.cozy a { padding: 7px; font-size: 16px; }
+  #sub-navigation.snug a { padding: 5px; font-size: 14px; }
+
+
+	#sub-navigation a:hover, #sub-navigation a:hover span.navigation-icon {
+		color: @red;
+	}
+
+	#sub-navigation li.navigation-on {
+		background: lighten(@gray, 15%);
+		border-radius: @base-border-radius;		
+	}
+
+	#sub-navigation li.navigation-on a {
+		cursor: default;
+		color: @grayDark;
+	}	
+
+	#sub-navigation li.navigation-on a:hover, #sub-navigation li.navigation-on a:hover span {
+    color: @grayDark;
+  }
+	
+	#sub-navigation ul {
+		display: block;
+	}
+	
+	#sub-navigation li {
+		display: inline-block;
+		float: left;
+		text-align: center;
+	}	
+
+	.navigation-icon {
+		margin: 0;
+		color: @grayDark;
+	}
+	
+  .navigation-text {
+    margin: 0 0 0 8px;
+  }
+	
+	.notification-urgent {
+		border-radius: @base-border-radius;
+		background: @orangeRed;
+		padding: 1px 4px;
+		color: @white;
+	}
+
+	.notification-important {
+		border-radius: @base-border-radius;	
+		background: @orange;
+		padding: 1px 4px;
+		color: @white;		
+	}
+
+
+
+/* Content */
+
+  div.content-normal {
+    margin: 30px 25px;
+  }
+
+
+
+/* Footer */
+
+	#footer {
+	  position: relative;
+	  bottom: 0px;
+	  left: 0px;
+		margin: 20px 0;
+		font-size: 12px;
+		text-align: center;
+	}
+	
+	#footer a {
+		font-size: 12px;
+	}
+
+
+
+/* Search */
+
+	#search {
+		background: @grayLight;	
+		border-bottom: 1px solid @gray;
+		padding: 10px 20px;
+		box-sizing: padding-box;
+	}
+
+	#search form {
+		margin-bottom: 0px;
+	}
+	
+	#search span.icon-search {
+		position: relative;
+		top: 6px;
+		left: 0px;
+		display: inline-block;
+		font-size: 24px;
+		color: @grayDark;
+	}
+	
+	#search input[type=text] {
+	  .white-form-fields;
+		width: 75%;
+		display: inline-block;
+		font-size: 24px;
+		padding: 0px;
+		margin-bottom: 0px;
+		position: relative;
+		top: 5px;
+		left: 10px;
+	}
+	
+	#search input[type=text]:placeholder {
+    .white-form-fields-placeholder;
+	}
+	
+	#search input[type=text]:focus {
+    .white-form-fields-focus;
+	}
+	
+	#search input[type=submit] {
+		float: right;
+	}
+	
+	#search-params a {
+		padding: 5px 10px;
+		background: @grayLight;
+		color: @grayDark;
+		font-family: @text-font-family-bold;
+		font-size: 14px;
+		border-radius: @base-border-radius;
+		border: 1px solid @gray;
+	}
+	
+	#search-params a:hover {
+		background-color: darken(@grayLight, 15%);
+	}
+
+
+	
+/* Bulk Actions */
+
+	#bulk-actions {
+		border-bottom: 1px solid @gray;
+		color: @grayDark;
+		padding-left: 20px;
+		padding-right: 20px;
+		box-sizing: padding-box;
+	}
+	
+	#bulk-actions a {
+		display: inline-block;
+		margin: 10px 30px 10px 0;
+		color: @grayDark;
+	}
+
+  #bulk-actions.cozy a { margin: 7px 21px 7px 0; font-size: 16px; }
+  #bulk-actions.snug a { margin: 5px 15px 5px 0; font-size: 14px; }
+
+
+	#bulk-actions a:hover {
+		color: @red; 
+	}
+
+	#bulk-actions a span {
+		position: relative;
+		top: 2px;
+		left: 0px;
+	}
+
+	#bulk-actions h5 {
+		float: right;
+		margin-top: 10px;
+		margin-bottom: 10px;
+		color: @grayDark;
+		font-family: @text-font-family-italic;
+		line-height: 24px;
+	}
+
+  #bulk-actions.cozy h5 { margin-top: 9px; margin-bottom: 9px; font-size: 16px; line-height: 21px; }
+  #bulk-actions.snug h5 { margin-top: 8px; margin-bottom: 8px; font-size: 14px; line-height: 18px; }
+
+	

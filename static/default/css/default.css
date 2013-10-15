@@ -283,6 +283,21 @@ you can use the generic selector below, but it's slower:
 .background-gray {
   background: #f2f2f2;
 }
+/* Config - Change the settings in this file change the look and feel of your style */
+/* Colors */
+/* Container */
+/* Base - Margins, Paddings, and Spacings */
+/* Grid */
+/* Body */
+/* Text */
+/* Links */
+/* Headings */
+/* Navigation */
+/* Lists */
+/* Separators */
+/* Buttons */
+/* Forms */
+/* Tables */
 /* Mixins */
 @charset "UTF-8";
 /*
@@ -3724,21 +3739,23 @@ body {
 /*---------------------------------------------------
     Rebar - Grid
   ---------------------------------------------------*/
-/* Config - Change the settings in this file change the look and feel of your style */
-/* Colors */
-/* Container */
-/* Base - Margins, Paddings, and Spacings */
-/* Grid */
-/* Body */
-/* Text */
-/* Links */
-/* Headings */
-/* Navigation */
-/* Lists */
-/* Separators */
-/* Buttons */
-/* Forms */
-/* Tables */
+/* White Form Fields */
+.white-form-fields {
+  border: 0px;
+  outline: none;
+  color: #4d4d4d;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.white-form-fields-placeholder {
+  color: #b3b3b3;
+}
+.white-form-fields-focus {
+  -moz-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  outline: none;
+  color: #4d4d4d;
+}
 /* Rebar - These files reset and style all the basic HTML elements */
 /* #Reset & Basics (Inspired by E. Meyers)
 ================================================== */
@@ -5187,84 +5204,7 @@ label span.form_error {
 .hide {
   display: none;
 }
-/* App */
-/* Messages - Error, Warning, Debug, Info, Success */
-#messages {
-  width: 100%;
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  z-index: 1000;
-}
-#messages div {
-  margin: 0px;
-  padding: 10px 10px 10px 20px;
-  list-style: none;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-  color: #ffffff;
-  border-bottom: 1px solid #b3b3b3;
-  background-color: #ffffff;
-  display: none;
-}
-#messages span.message-text {
-  width: 90%;
-  padding-top: 3px;
-  display: block;
-  float: left;
-  text-align: left;
-}
-#messages span.message-text a {
-  color: #b3b3b3;
-}
-#messages abbr.message-close {
-  cursor: pointer;
-  float: right;
-  display: block;
-  background: #ffffff;
-  color: #333333;
-  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
-  padding: 2px 10px;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 4px;
-}
-#messages abbr.message-close:hover {
-  background: #b3b3b3;
-  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
-}
-#messages .error {
-  background-color: #be2408;
-}
-#messages .warning {
-  background-color: #fbb03b;
-}
-#messages .debug {
-  background-color: #b3b3b3;
-}
-#messages .info {
-  background-color: #3a6b8c;
-}
-#messages .success {
-  background-color: #4b7945;
-}
-/* White Form Fields */
-.white-form-fields {
-  border: 0px;
-  outline: none;
-  color: #4d4d4d;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-.white-form-fields-placeholder {
-  color: #b3b3b3;
-}
-.white-form-fields-focus {
-  -moz-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  outline: none;
-  color: #4d4d4d;
-}
+/* Libraries */
 /*
 Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 */
@@ -5833,6 +5773,67 @@ disabled look for disabled choices in the results dropdown
     background-position: 100% -21px !important;
   }
 }
+/* App */
+/* Messages - Error, Warning, Debug, Info, Success */
+#messages {
+  width: 100%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 1000;
+}
+#messages div {
+  margin: 0px;
+  padding: 10px 10px 10px 20px;
+  list-style: none;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  border-bottom: 1px solid #b3b3b3;
+  background-color: #ffffff;
+  display: none;
+}
+#messages span.message-text {
+  width: 90%;
+  padding-top: 3px;
+  display: block;
+  float: left;
+  text-align: left;
+}
+#messages span.message-text a {
+  color: #b3b3b3;
+}
+#messages abbr.message-close {
+  cursor: pointer;
+  float: right;
+  display: block;
+  background: #ffffff;
+  color: #333333;
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+}
+#messages abbr.message-close:hover {
+  background: #b3b3b3;
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
+}
+#messages .error {
+  background-color: #be2408;
+}
+#messages .warning {
+  background-color: #fbb03b;
+}
+#messages .debug {
+  background-color: #b3b3b3;
+}
+#messages .info {
+  background-color: #3a6b8c;
+}
+#messages .success {
+  background-color: #4b7945;
+}
 /* FIXME: Belongs in the .css, here for testing */
 .tag_new_0 .navigation-attention-important {
   display: none;
@@ -5976,96 +5977,6 @@ text {
   display: table;
   padding: 0;
   margin: 0;
-}
-/* Sidebar */
-#sidebar {
-  display: table-cell;
-  background: #f2f2f2;
-  border-right: 1px solid #b3b3b3;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0px;
-  border-spacing: 0px;
-  vertical-align: top;
-  width: 20%;
-  min-width: 200px;
-  max-width: 260px;
-}
-#sidebar.cozy {
-  width: 18%;
-  min-width: 180px;
-  max-width: 230px;
-}
-#sidebar.snug {
-  width: 16%;
-  min-width: 160px;
-  max-width: 200px;
-}
-#sidebar hr {
-  margin: 20px 0px 0px 0px;
-}
-#sidebar nav ul {
-  margin: 10px 20px;
-}
-#sidebar.cozy nav ul {
-  margin: 5px 15px;
-}
-#sidebar.snug nav ul {
-  margin: 2px 10px;
-}
-#sidebar li.navigation-on {
-  background: #b3b3b3;
-  border-radius: 5px;
-}
-#sidebar li.navigation-on a {
-  cursor: default;
-  color: #ffffff;
-}
-#sidebar li.navigation-on a span {
-  color: #4d4d4d;
-}
-#sidebar li.navigation-on a small {
-  color: #4d4d4d;
-}
-#sidebar a {
-  display: block;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: normal;
-  color: #4d4d4d;
-}
-#sidebar a {
-  padding: 15px 0px;
-  font-size: 18px;
-  line-height: 18px;
-}
-#sidebar.cozy a {
-  padding: 10px 0px;
-  font-size: 16px;
-  line-height: 16px;
-}
-#sidebar.snug a {
-  padding: 5px 0px;
-  font-size: 14px;
-  line-height: 14px;
-}
-#sidebar a:hover {
-  color: #be2408;
-}
-#sidebar a:active {
-  color: #be2408;
-}
-#sidebar a span.sidebar-icon {
-  position: relative;
-  top: 3px;
-  left: 0px;
-  margin-right: 4px;
-  font-size: 24px;
-  font-weight: normal;
-}
-#sidebar a span.sidebar-notification {
-  float: right;
-  padding: 5px 7px;
-  font-size: 14px;
 }
 /* Content */#content {
   width: 80%;
@@ -6303,6 +6214,148 @@ div.content-normal {
   font-size: 14px;
   line-height: 18px;
 }
+/* Sidebar */
+#sidebar {
+  display: table-cell;
+  background: #f2f2f2;
+  border-right: 1px solid #b3b3b3;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0px;
+  border-spacing: 0px;
+  vertical-align: top;
+  width: 20%;
+  min-width: 200px;
+  max-width: 260px;
+}
+#sidebar.cozy {
+  width: 18%;
+  min-width: 180px;
+  max-width: 230px;
+}
+#sidebar.snug {
+  width: 16%;
+  min-width: 160px;
+  max-width: 200px;
+}
+#sidebar hr {
+  margin: 20px 0px 0px 0px;
+}
+#sidebar nav ul {
+  margin: 10px 20px;
+}
+#sidebar.cozy nav ul {
+  margin: 5px 15px;
+}
+#sidebar.snug nav ul {
+  margin: 2px 10px;
+}
+#sidebar li.navigation-on {
+  background: #b3b3b3;
+  border-radius: 5px;
+}
+#sidebar li.navigation-on a {
+  cursor: default;
+  color: #ffffff;
+}
+#sidebar li.navigation-on a span {
+  color: #4d4d4d;
+}
+#sidebar li.navigation-on a small {
+  color: #4d4d4d;
+}
+#sidebar a {
+  display: block;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  color: #4d4d4d;
+}
+#sidebar a {
+  padding: 15px 0px;
+  font-size: 18px;
+  line-height: 18px;
+}
+#sidebar.cozy a {
+  padding: 10px 0px;
+  font-size: 16px;
+  line-height: 16px;
+}
+#sidebar.snug a {
+  padding: 5px 0px;
+  font-size: 14px;
+  line-height: 14px;
+}
+#sidebar a:hover {
+  color: #be2408;
+}
+#sidebar a:active {
+  color: #be2408;
+}
+#sidebar a span.sidebar-icon {
+  position: relative;
+  top: 3px;
+  left: 0px;
+  margin-right: 4px;
+  font-size: 24px;
+  font-weight: normal;
+}
+#sidebar a span.sidebar-notification {
+  float: right;
+  padding: 5px 7px;
+  font-size: 14px;
+}
+/* Sidebar - Drag & Drop */
+.sidebar-tags-draggable {
+  border-radius: 5px;
+}
+.sidebar-tags-draggable-hover .icon-inbox:before,
+.sidebar-tags-draggable-hover .icon-spam:before,
+.sidebar-tags-draggable-hover .icon-trash:before,
+.sidebar-tags-draggable-hover .icon-tag:before {
+  content: "\e032";
+}
+.sidebar-tags-draggable-active {
+  background: #cccccc;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  transition-duration: 0.2s;
+}
+.sidebar-tags-draggable-highlight {
+  background: green;
+  -webkit-transition-duration: 0.4s;
+  -moz-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+}
+/* Compose */
+.compose-headers {
+  height: 30px;
+}
+#compose label {
+  float: left;
+  font-style: normal;
+  font-weight: bold;
+  margin-right: 10px;
+}
+.compose-headers {
+  clear: both;
+}
+.compose-headers input[type=text],
+.compose-headers input[type=email] {
+  float: left;
+  width: 75%;
+  display: inline-block;
+  font-size: 18px;
+  padding: 0px;
+  margin-bottom: 0px;
+}
+.compose-message textarea {
+  width: 100%;
+  min-height: 300px;
+}
+.compose-section {
+  padding: .75em;
+  border-bottom: 1px solid #b3b3b3;
+}
 /* Pile Results */
 #pile-results {
   width: 100%;
@@ -6390,28 +6443,7 @@ div.content-normal {
   background: #cccccc;
   color: #333333;
 }
-/* Pile & Sidebar	- Drag / Drop */
-.sidebar-tags-draggable {
-  border-radius: 5px;
-}
-.sidebar-tags-draggable-hover .icon-inbox:before,
-.sidebar-tags-draggable-hover .icon-spam:before,
-.sidebar-tags-draggable-hover .icon-trash:before,
-.sidebar-tags-draggable-hover .icon-tag:before {
-  content: "\e032";
-}
-.sidebar-tags-draggable-active {
-  background: #cccccc;
-  -webkit-transition-duration: 0.2s;
-  -moz-transition-duration: 0.2s;
-  transition-duration: 0.2s;
-}
-.sidebar-tags-draggable-highlight {
-  background: green;
-  -webkit-transition-duration: 0.4s;
-  -moz-transition-duration: 0.4s;
-  transition-duration: 0.4s;
-}
+/* Pile	- Drag & Drop */
 .pile-results-drag {
   background: #ffffff;
   border: 1px solid #b3b3b3;
@@ -6435,57 +6467,6 @@ div.content-normal {
 .message-actions form {
   float: left;
   margin-right: 15px;
-}
-/* File Browser */
-.item-file {
-  width: 150px;
-  float: left;
-  margin: 25px 25px;
-  padding: 20px;
-  text-align: center;
-}
-.item-file:hover {
-  background: #f2f2f2;
-}
-.item-file-icon {
-  display: block;
-  font-size: 125px;
-  margin-bottom: 10px;
-}
-.item-file-name {
-  font-size: 14px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  line-height: 14px;
-}
-/* Compose */
-.compose-headers {
-  height: 30px;
-}
-#compose label {
-  float: left;
-  font-style: normal;
-  font-weight: bold;
-  margin-right: 10px;
-}
-.compose-headers {
-  clear: both;
-}
-.compose-headers input[type=text],
-.compose-headers input[type=email] {
-  float: left;
-  width: 75%;
-  display: inline-block;
-  font-size: 18px;
-  padding: 0px;
-  margin-bottom: 0px;
-}
-.compose-message textarea {
-  width: 100%;
-  min-height: 300px;
-}
-.compose-section {
-  padding: .75em;
-  border-bottom: 1px solid #b3b3b3;
 }
 /* Tags */
 .tag-card {
@@ -6534,4 +6515,25 @@ div.content-normal {
   display: block;
   margin-top: 1.75em;
   font-size: 14px;
+}
+/* Files Browser */
+.item-file {
+  width: 150px;
+  float: left;
+  margin: 25px 25px;
+  padding: 20px;
+  text-align: center;
+}
+.item-file:hover {
+  background: #f2f2f2;
+}
+.item-file-icon {
+  display: block;
+  font-size: 125px;
+  margin-bottom: 10px;
+}
+.item-file-name {
+  font-size: 14px;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 14px;
 }
