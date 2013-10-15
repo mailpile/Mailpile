@@ -8,7 +8,7 @@
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/mailpile.js",
-      "outputStyle" : 1,
+      "outputStyle" : 0,
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/mailpile-min.js",
       "fileType" : 64
@@ -58,7 +58,7 @@
     },
     "\/js\/app\/pile.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/app\/pile.js",
@@ -84,10 +84,10 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
-    "\/less\/rebar\/typography.less" : {
+    "\/less\/mixins\/elements.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/rebar\/typography.less",
-      "outputAbbreviatedPath" : "\/less\/css\/typography.css",
+      "inputAbbreviatedPath" : "\/less\/mixins\/elements.less",
+      "outputAbbreviatedPath" : "\/less\/css\/elements.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -132,10 +132,10 @@
       "initialSize" : 1174,
       "fileType" : 8192
     },
-    "\/less\/mixins\/elements.less" : {
+    "\/less\/rebar\/typography.less" : {
       "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/mixins\/elements.less",
-      "outputAbbreviatedPath" : "\/less\/css\/elements.css",
+      "inputAbbreviatedPath" : "\/less\/rebar\/typography.less",
+      "outputAbbreviatedPath" : "\/less\/css\/typography.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -197,7 +197,7 @@
     },
     "\/js\/app\/tags.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/app\/tags.js",
@@ -403,7 +403,7 @@
     },
     "\/js\/app\/messages.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/app\/messages.js",
@@ -613,55 +613,10 @@
       "outputAbbreviatedPath" : "\/js\/libraries\/jquery.ui.widget-min.js",
       "fileType" : 64
     },
-    "\/css\/select2x2.png" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/css\/select2x2.png",
-      "processed" : 0,
-      "outputAbbreviatedPath" : "\/css\/select2x2.png",
-      "initialSize" : 845,
-      "fileType" : 8192
-    },
     "\/less\/app-mobile\/global.less" : {
       "ieCompatibility" : 1,
       "inputAbbreviatedPath" : "\/less\/app-mobile\/global.less",
       "outputAbbreviatedPath" : "\/less\/css\/global.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
-    "\/less\/mixins\/animate.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/mixins\/animate.less",
-      "outputAbbreviatedPath" : "\/less\/css\/animate.css",
-      "outputPathIsSetByUser" : 0,
-      "strictUnits" : 0,
-      "relativeURLS" : 0,
-      "ignore" : 1,
-      "strictImports" : 0,
-      "ignoreWasSetByUser" : 0,
-      "shouldRunBless" : 1,
-      "hidden" : 0,
-      "strictMath" : 0,
-      "outputStyle" : 0,
-      "fileType" : 1,
-      "debugStyle" : 0
-    },
-    "\/less\/app-web\/files.less" : {
-      "ieCompatibility" : 1,
-      "inputAbbreviatedPath" : "\/less\/app-web\/files.less",
-      "outputAbbreviatedPath" : "\/less\/css\/files.css",
       "outputPathIsSetByUser" : 0,
       "strictUnits" : 0,
       "relativeURLS" : 0,
@@ -692,6 +647,34 @@
       "fileType" : 1,
       "debugStyle" : 0
     },
+    "\/css\/select2x2.png" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/css\/select2x2.png",
+      "processed" : 0,
+      "outputAbbreviatedPath" : "\/css\/select2x2.png",
+      "initialSize" : 845,
+      "fileType" : 8192
+    },
+    "\/less\/app-web\/files.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/app-web\/files.less",
+      "outputAbbreviatedPath" : "\/less\/css\/files.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
+    },
     "\/html\/partials\/sub_nav_search.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 1,
@@ -700,6 +683,23 @@
       "inputAbbreviatedPath" : "\/html\/partials\/sub_nav_search.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
+    },
+    "\/less\/mixins\/animate.less" : {
+      "ieCompatibility" : 1,
+      "inputAbbreviatedPath" : "\/less\/mixins\/animate.less",
+      "outputAbbreviatedPath" : "\/less\/css\/animate.css",
+      "outputPathIsSetByUser" : 0,
+      "strictUnits" : 0,
+      "relativeURLS" : 0,
+      "ignore" : 1,
+      "strictImports" : 0,
+      "ignoreWasSetByUser" : 0,
+      "shouldRunBless" : 1,
+      "hidden" : 0,
+      "strictMath" : 0,
+      "outputStyle" : 0,
+      "fileType" : 1,
+      "debugStyle" : 0
     },
     "\/index.html" : {
       "ignoreWasSetByUser" : 0,
@@ -888,21 +888,21 @@
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
-    "\/html\/group\/index.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/group\/index.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
-    },
     "\/html\/message\/index.html" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 0,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/html\/message\/index.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
+    "\/html\/group\/index.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/group\/index.html",
       "outputAbbreviatedPath" : "No Output Path",
       "fileType" : 2048
     },
@@ -932,6 +932,17 @@
       "outputStyle" : 1,
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/libraries\/jquery.ui.position-min.js",
+      "fileType" : 64
+    },
+    "\/js\/app\/search.js" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/js\/app\/search.js",
+      "outputStyle" : 1,
+      "syntaxCheckerStyle" : 1,
+      "outputAbbreviatedPath" : "\/js\/app\/search-min.js",
       "fileType" : 64
     },
     "\/less\/app\/webfonts.less" : {
@@ -979,7 +990,7 @@
     },
     "\/js\/app\/compose.js" : {
       "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
+      "ignore" : 1,
       "hidden" : 0,
       "outputPathIsSetByUser" : 0,
       "inputAbbreviatedPath" : "\/js\/app\/compose.js",
@@ -1166,6 +1177,15 @@
       "initialSize" : 1761,
       "fileType" : 8192
     },
+    "\/html\/contact\/list.html" : {
+      "ignoreWasSetByUser" : 0,
+      "ignore" : 0,
+      "hidden" : 0,
+      "outputPathIsSetByUser" : 0,
+      "inputAbbreviatedPath" : "\/html\/contact\/list.html",
+      "outputAbbreviatedPath" : "No Output Path",
+      "fileType" : 2048
+    },
     "\/js\/libraries\/jquery.ui.mouse.js" : {
       "ignoreWasSetByUser" : 0,
       "ignore" : 1,
@@ -1176,15 +1196,6 @@
       "syntaxCheckerStyle" : 1,
       "outputAbbreviatedPath" : "\/js\/libraries\/jquery.ui.mouse-min.js",
       "fileType" : 64
-    },
-    "\/html\/contact\/list.html" : {
-      "ignoreWasSetByUser" : 0,
-      "ignore" : 0,
-      "hidden" : 0,
-      "outputPathIsSetByUser" : 0,
-      "inputAbbreviatedPath" : "\/html\/contact\/list.html",
-      "outputAbbreviatedPath" : "No Output Path",
-      "fileType" : 2048
     },
     "\/html\/contact\/add.html" : {
       "ignoreWasSetByUser" : 0,
@@ -1318,6 +1329,34 @@
       "position" : 10,
       "linkedFileAbbreviatedPath" : "\/js\/plugins\/list.js",
       "baseFileAbbreviatedPath" : "\/js\/mailpile-libraries.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 0,
+      "linkedFileAbbreviatedPath" : "\/js\/app\/messages.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 1,
+      "linkedFileAbbreviatedPath" : "\/js\/app\/compose.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 2,
+      "linkedFileAbbreviatedPath" : "\/js\/app\/pile.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile.js",
+      "followForSyntaxChecking" : 1
+    },
+    {
+      "type" : 1,
+      "position" : 3,
+      "linkedFileAbbreviatedPath" : "\/js\/app\/tags.js",
+      "baseFileAbbreviatedPath" : "\/js\/mailpile.js",
       "followForSyntaxChecking" : 1
     }
   ],

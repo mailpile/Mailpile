@@ -1,7 +1,7 @@
 /* Pile */
 
 
-  /* New Filtering */
+  /* Filter New */
   $('.button-sub-navigation').on('click', function() {
 
     var filter = $(this).data('filter');
@@ -30,27 +30,6 @@
     return false;
   });
 
-
-
-	/* Hide Various Things */
-	$('#search-params, #bulk-actions').hide();
-
-	/* Search Box */
-	$('#qbox').bind("focus", function(key) {
-		$('#search-params').slideDown('fast');
-	});
-
-	$('#qbox').bind("blur", function(key) {
-		$('#search-params').slideUp('fast');
-	});
-
-	for (item in keybindings) {
-		if (item[1] == "global") {
-			Mousetrap.bindGlobal(item[0], item[2]);
-		} else {
-			Mousetrap.bind(item[0], item[2]);
-		}
-	}
 
 
 
@@ -140,6 +119,7 @@
   }
 
 
+
   /* Dragging */
   $('td.draggable').draggable({
     containment: "#container",
@@ -161,6 +141,8 @@
       return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
     }
   });
+
+
 
   /* Dropping */
   $('li.sidebar-tags-draggable').droppable({
