@@ -887,13 +887,16 @@ class MailIndex(object):
     pls = GlobalPostingList(session, '%s:tag' % tag_id)
     if msg_info and msg_idxs is None:
       msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
+    else:
+      msg_idxs = set(msg_idxs)
     session.ui.mark('Tagging %d messages (%s)' % (len(msg_idxs), tag_id))
     for msg_idx in list(msg_idxs):
       if conversation:
         for reply in self.get_conversation(msg_idx=msg_idx):
           if reply[self.MSG_MID]:
             msg_idxs.add(int(reply[self.MSG_MID], 36))
-          if msg_idx % 1000 == 0: self.CACHE = {}
+          if msg_idx % 1000 == 0:
+            self.CACHE = {}
     for msg_idx in msg_idxs:
       if msg_idx >= 0 and msg_idx < len(self.INDEX):
         msg_info = self.get_msg_at_idx_pos(msg_idx)
@@ -912,6 +915,8 @@ class MailIndex(object):
     pls = GlobalPostingList(session, '%s:tag' % tag_id)
     if msg_info and msg_idxs is None:
       msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
+    else:
+      msg_idxs = set(msg_idxs)
     if not msg_idxs:
       return
     session.ui.mark('Untagging conversations (%s)' % (tag_id, ))
