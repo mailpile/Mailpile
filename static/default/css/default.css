@@ -6246,6 +6246,14 @@ div.content-normal {
   margin: 10px 30px 10px 0;
   color: #4d4d4d;
 }
+#bulk-actions.cozy a {
+  margin: 7px 21px 7px 0;
+  font-size: 16px;
+}
+#bulk-actions.snug a {
+  margin: 5px 15px 5px 0;
+  font-size: 14px;
+}
 #bulk-actions a:hover {
   color: #be2408;
 }
@@ -6261,6 +6269,18 @@ div.content-normal {
   color: #4d4d4d;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 24px;
+}
+#bulk-actions.cozy h5 {
+  margin-top: 9px;
+  margin-bottom: 9px;
+  font-size: 16px;
+  line-height: 21px;
+}
+#bulk-actions.snug h5 {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 18px;
 }
 /* Pile Results */
 #pile-results {

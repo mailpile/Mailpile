@@ -374,6 +374,7 @@ $(document).ready(function() {
 
     $('#sidebar').addClass(localStorage.getItem('view_size'));
     $('#sub-navigation').addClass(localStorage.getItem('view_size'));
+    $('#bulk-actions').addClass(localStorage.getItem('view_size'));
     $('#pile-results').addClass(localStorage.getItem('view_size'));
 
     $.each($('a.change-view-size'), function() {
@@ -494,7 +495,7 @@ $(document).ready(function() {
 
 		// Hide Actions
 		if (selected_count < 1) {
-			$('#bulk-actions').slideUp('fast');
+			$('#bulk-actions').slideUp('slow');
 		}
 
 		// Style & Unselect Checkbox
@@ -629,6 +630,7 @@ $(document).on('click', 'a.change-view-size', function(e) {
   // Update View Sizes
   $('#sidebar').removeClass(current_size).addClass(new_size);
   $('#sub-navigation').removeClass(current_size).addClass(new_size);
+  $('#bulk-actions').removeClass(current_size).addClass(new_size);
   $('#pile-results').removeClass(current_size).addClass(new_size);
 
   // Data
