@@ -456,7 +456,7 @@ class Help(Command):
       ckeys.sort(key=lambda k: cmds[k][3])
       for c in ckeys:
         cmd, args, explanation, rank = cmds[c]
-        if not rank: continue
+        if not rank or not cmd: continue
         if last_rank and int(rank/10) != last_rank: text.append('')
         last_rank = int(rank/10)
         if c[0] == '_':
@@ -524,7 +524,7 @@ class Help(Command):
         count += 10
         for cls in COMMANDS:
           c, name, url, synopsis = cls.SYNOPSIS[:4]
-          if cls.ORDER[0] == grp and '/' not in name:
+          if cls.ORDER[0] == grp and '/' not in (name or ''):
             cmd_list[c or '_%s' % name] = (name, synopsis, cls.__doc__,
                                            count + cls.ORDER[1])
       return {
