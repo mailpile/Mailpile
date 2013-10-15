@@ -27,6 +27,7 @@ Mailpile is developed on a Debian 7 system, running:
    * [python-imaging](http://www.pythonware.com/products/pil/) 1.1.7
    * [python-lxml](http://lxml.de/) 2.3.2
    * [python-gnupginterface](http://py-gnupg.sourceforge.net/) 0.3.2
+   * [python-jinja2](http://jinja.pocoo.org/) 2.6
 
 It might work with other versions. :-)
 
