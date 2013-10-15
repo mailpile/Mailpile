@@ -114,7 +114,10 @@ class SearchResults(dict):
       self._set_values([], 0, 0, 0)
       return
 
-    terms = session.searched
+    self['search_terms'] = terms = session.searched
+    self['search_tags'] = [idx.config['tag'].get(t.split(':')[1], t)
+                           for t in terms if t.startswith('tag:')]
+
     num = num or session.config.get('num_results', 20)
     if end: start = end - num
     if start > len(results): start = len(results)
