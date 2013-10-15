@@ -16,7 +16,7 @@ CONFIG_RULES = {
         'debug':          ('Debugging flags', str,                         ''),
         'gpg_keyserver':  ('Host:port of GPG key server', str,             ''),
         'http_host':    ('Listening host for web UI', 'hostname', 'localhost'),
-        'local_mailbox':  ('Local read/write Maildir', 'dir',              ''),
+        'local_mailbox_id': ('Local read/write Maildir', 'b36',            ''),
         'mailindex_file': ('Metadata index file', 'file',                  ''),
         'postinglist_dir': ('Search index directory', 'dir',               ''),
         'obfuscate_index': ('Key to use to scramble the index', str,       ''),
@@ -34,9 +34,14 @@ CONFIG_RULES = {
         'default_order':   ('Default sort order', str,             'rev-date'),
         'gpg_recipient':   ('Encrypt local data to ...', str,              ''),
         'rescan_command':  ('Command run before rescanning', str,          ''),
+        'default_email':   ('Default outgoing e-mail address', 'email',    ''),
     }],
-    'user': ['User profiles and identities', None, {
-    }]
+    'profiles': ['User profiles and personalities', {
+        'name':            ('Account name', 'str', ''),
+        'email':           ('E-mail address', 'email', ''),
+        'signature':       ('Message signature', 'multiline', ''),
+        'route':           ('Outgoing mail route', 'mailroute', ''),
+    }, []]
 }
 
 

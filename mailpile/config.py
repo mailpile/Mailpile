@@ -205,6 +205,7 @@ def RuledContainer(pcls):
            'b36': _B36Check,
            'dir': _DirCheck,
            'directory': _DirCheck,
+           'email': unicode,  # FIXME: Make more strict
            'False': False, 'false': False,
            'file': _FileCheck,
            'float': float,
@@ -212,6 +213,7 @@ def RuledContainer(pcls):
            'int': int,
            'long': long,
            'multiline': unicode,
+           'mailroute': unicode,  # FIXME: Make more strict
            'new file': _NewPathCheck,
            'new dir': _NewPathCheck,
            'new directory': _NewPathCheck,
@@ -438,6 +440,7 @@ class ConfigList(RuledContainer(list)):
 
     >>> lst = ConfigList(_rules={'_any': ['We only like ints', int, 0]})
     >>> lst.append('1')
+    '0'
     >>> lst.extend([2, '3'])
     >>> lst
     [1, 2, 3]
@@ -460,6 +463,7 @@ class ConfigList(RuledContainer(list)):
         list.append(self, None)
         try:
             self[len(self) - 1] = value
+            return b36(len(self) - 1)
         except:
             self[len(self) - 1:] = []
             raise
@@ -547,11 +551,13 @@ class ConfigDict(RuledContainer(dict)):
     99
 
     >>> pot['colors'].append('red')
+    '0'
     >>> pot['colors'].extend(['blue', 'red', 'red'])
     >>> pot['colors']
     ['red', 'blue', 'red', 'red']
 
     >>> pot['tags'].append({'c': '123', 'x': 'woots'})
+    '0'
     >>> pot['tags'][0]['c']
     123
     >>> pot['tags'].append({'z': 'invalid'})
@@ -625,10 +631,6 @@ class ConfigManager(ConfigDict):
     This class manages the live global mailpile configuration. This includes
     the settings themselves, as well as global objects like the index and
     references to any background worker threads.
-
-    >>> cfg.sys.fd_cache_size
-    500
-
     """
     DEFAULT_WORKDIR = os.environ.get('MAILPILE_HOME',
                                      os.path.expanduser('~/.mailpile'))
@@ -645,6 +647,7 @@ class ConfigManager(ConfigDict):
 
         self.index = None
         self.vcards = {}
+        self.mbox_cache = {}
 
     def _mkworkdir(self):
         if not os.path.exists(self.workdir):
@@ -739,72 +742,89 @@ class ConfigManager(ConfigDict):
         fd.write(self.as_config_bytes(private=True))
         fd.close()
 
+    def clear_mbox_cache(self):
+        self.mbox_cache = {}
+
+    def is_editable_message(self, msg_info):
+        for ptr in msg_info[MailIndex.MSG_PTRS].split(', '):
+            if not self.is_editable_mailbox(ptr[: MBX_ID_LEN]):
+                return False
+        editable = False
+        for tid in msg_info[MailIndex.MSG_TAGS].split(', '):
+            try:
+                if tid in self.sys.writable_tags:
+                    editable = True
+            except KeyError:
+                pass
+        return editable
+
+    def is_editable_mailbox(self, mailbox_id):
+        mailbox_id = (mailbox_id is None and -1) or int(mailbox_id, 36)
+        local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'), 36)
+        return (mailbox_id == local_mailbox_id)
+
+    def open_mailbox(self, session, mailbox_id):
+        try:
+            mbx_id = mailbox_id.lower()
+            mfn = self.mailbox[mbx_id]
+            pfn = os.path.join(self.workdir, 'pickled-mailbox.%s' % mbx_id)
+        except KeyError:
+            raise NoSuchMailboxError('No such mailbox: %s' % mbx_id)
+
+        try:
+            if mbx_id in self.mbox_cache:
+                self.mbox_cache[mbx_id].update_toc()
+            else:
+                if session:
+                    session.ui.mark('%s: Updating: %s' % (mbx_id, mfn))
+                    self.mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
+        except:
+            if session:
+                session.ui.mark(('%s: Opening: %s (may take a while)'
+                                 ) % (mbx_id, mfn))
+            mbox = OpenMailbox(mfn)
+            mbox.editable = self.is_editable_mailbox(mbx_id)
+            mbox.save(session, to=pfn)
+            self.mbox_cache[mbx_id] = mbox
+
+        return self.mbox_cache[mbx_id]
+
+    def open_local_mailbox(self, session):
+        local_id = self.sys.get('local_mailbox_id', None)
+        if not local_id:
+            mailbox = os.path.join(self.workdir, 'mail')
+            mbx = IncrementalMaildir(mailbox)
+            local_id = self.sys.mailbox.append(mailbox)
+            local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+            self.sys.local_mailbox_id = local_id
+        else:
+            local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+        return local_id, self.open_mailbox(session, local_id)
+
+    def get_default_profile(self):
+        email = self.prefs.get('default_email', None)
+        for profile in self.profiles:
+            if profile.email == email or not email:
+                self.prefs.default_email = profile.email
+                return profile
+        return {
+            'name': None,
+            'email': email,
+            'signature': None,
+            'route': DEFAULT_SENDMAIL
+        }
+
+    def get_sendmail(self, profile, rcpts='-t'):
+        global DEFAULT_SENDMAIL
+        return profile.route % {
+            'rcpt': ', '.join(rcpts)
+        }
+
+
 
 ##############################################################################
 
 class outdatedConfigManager(dict):
-
-    def nid(self, what): 
-        if what not in self or not self[what]: 
-            return '0'
-        else: 
-            return b36(1+max([int(k, 36) for k in self[what]]))
-
-    def clear_mbox_cache(self): 
-        self.MBOX_CACHE = {}
-
-    def is_editable_message(self, msg_info): 
-        print 'MSG_INFO=%s' % msg_info
-        for ptr in msg_info[MailIndex.MSG_PTRS].split(', '): 
-            if not self.is_editable_mailbox(ptr[: MBX_ID_LEN]):
-                return False
-        editable = False
-        for tid in msg_info[MailIndex.MSG_TAGS].split(', '): 
-            # FIXME: Hard-coded tag names are bad
-            if self.get('tag', {}).get(tid) in ('Drafts', 'Blank'): 
-                editable = True
-        return editable
-
-    def is_editable_mailbox(self, mailbox_id): 
-        # FIXME: This may be too narrow?
-        mailbox_id = (mailbox_id is None and -1) or int(mailbox_id, 36)
-        local_mailbox_id = int(self.get('local_mailbox', 'ZZZZZ'), 36)
-        return (mailbox_id == local_mailbox_id)
-
-    def open_mailbox(self, session, mailbox_id): 
-        pfn = os.path.join(self.workdir, 'pickled-mailbox.%s' % mailbox_id)
-        for mid, mailbox_fn in self.get_mailboxes(): 
-            if int(mid, 36) == int(mailbox_id, 36): 
-                try: 
-                    if mid in self.MBOX_CACHE: 
-                        self.MBOX_CACHE[mid].update_toc()
-                    else: 
-                        if session: 
-                            session.ui.mark(('%s: Updating: %s'
-                                                             ) % (mailbox_id, mailbox_fn))
-                        self.MBOX_CACHE[mid] = cPickle.load(open(pfn, 'r'))
-                except: 
-                    if session: 
-                        session.ui.mark(('%s: Opening: %s (may take a while)'
-                                                         ) % (mailbox_id, mailbox_fn))
-                    mbox = OpenMailbox(mailbox_fn)
-                    mbox.editable = self.is_editable_mailbox(mailbox_id)
-                    mbox.save(session, to=pfn)
-                    self.MBOX_CACHE[mid] = mbox
-                return self.MBOX_CACHE[mid]
-        raise NoSuchMailboxError('No such mailbox: %s' % mailbox_id)
-
-    def open_local_mailbox(self, session): 
-        local_id = self.get('local_mailbox', None)
-        if not local_id: 
-            mailbox = os.path.join(self.workdir, 'mail')
-            mbx = IncrementalMaildir(mailbox)
-            local_id = (('0' * MBX_ID_LEN) + self.nid('mailbox'))[-MBX_ID_LEN: ]
-            self.parse_set(session, 'mailbox: %s=%s' % (local_id, mailbox))
-            self.parse_set(session, 'local_mailbox=%s' % (local_id))
-        else: 
-            local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN: ]
-        return local_id, self.open_mailbox(session, local_id)
 
     def filter_swap(self, fid_a, fid_b): 
         tmp = {}
@@ -839,22 +859,6 @@ class outdatedConfigManager(dict):
                 continue
             flist.append((fid, terms, tags, comment))
         return flist
-
-    def get_from_address(self): 
-        froms = self.get('my_from', {})
-        for f in froms.keys(): 
-            if f.startswith('*'): 
-                return '%s <%s>' % (froms[f], f[1: ])
-        for f in sorted(froms.keys()): 
-            return '%s <%s>' % (froms[f], f)
-        return None
-
-    def get_sendmail(self, sender='default', rcpts='-t'): 
-        global DEFAULT_SENDMAIL
-        sm = self.get('my_sendmail', {})
-        return sm.get(sender, sm.get('default', DEFAULT_SENDMAIL)) % {
-            'rcpt': ', '.join(rcpts)
-        }
 
     def get_mailboxes(self): 
         def fmt_mbxid(k): 
@@ -958,15 +962,15 @@ class outdatedConfigManager(dict):
 
     def history_file(self): 
         return self.get('history_file', 
-                                        os.path.join(self.workdir, 'history'))
+                        os.path.join(self.workdir, 'history'))
 
     def mailindex_file(self): 
         return self.get('mailindex_file', 
-                                        os.path.join(self.workdir, 'mailpile.idx'))
+                        os.path.join(self.workdir, 'mailpile.idx'))
 
     def postinglist_dir(self, prefix): 
         d = self.get('postinglist_dir', 
-                                 os.path.join(self.workdir, 'search'))
+                     os.path.join(self.workdir, 'search'))
         if not os.path.exists(d): os.mkdir(d)
         d = os.path.join(d, prefix and prefix[0] or '_')
         if not os.path.exists(d): os.mkdir(d)
