@@ -146,6 +146,7 @@ def SendMail(session, from_to_msg_tuples):
       proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
       sm_write = proc.stdin.write
       sm_close = proc.stdin.close
+      sm_cleanup = lambda: proc.wait()
       # FIXME: Update session UI with progress info
 
     elif (sendmail.startswith('smtp:') or
@@ -196,6 +197,7 @@ def SendMail(session, from_to_msg_tuples):
 
       sm_write = sender
       sm_close = closer
+      sm_cleanup = lambda: True
     else:
       raise Exception('Invalid sendmail: %s' % sendmail)
 
@@ -208,6 +210,7 @@ def SendMail(session, from_to_msg_tuples):
       session.ui.mark(('Sending message... (%d%%)'
                        ) % (100 * (total-len(string))/total))
     sm_close()
+    sm_cleanup()
     session.ui.mark('Message sent, %d bytes' % total)
 
 
