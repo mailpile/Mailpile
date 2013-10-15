@@ -575,18 +575,30 @@
 
 /* Pile & Sidebar	- Drag / Drop */
 
-  .sidebar-tags-drag-hover {
-    background: red;
+  .sidebar-tags-draggable {
+    border-radius: @base-border-radius;
+  }
+  
+  .sidebar-tags-draggable-hover .icon-inbox:before,
+  .sidebar-tags-draggable-hover .icon-spam:before,
+  .sidebar-tags-draggable-hover .icon-trash:before,
+  .sidebar-tags-draggable-hover .icon-tag:before {
+    content: "\e032";
   }
 
-  .sidebar-tags-drag-active {
-    background: yellow;
+  .sidebar-tags-draggable-active {
+    background: @grayMid;
+	  -webkit-transition-duration: 0.2s;
+	  -moz-transition-duration: 0.2s;
+	  transition-duration: 0.2s;    
   }
 
-  .sidebar-tags-drag-highlight {
+  .sidebar-tags-draggable-highlight {
     background: green;
+	  -webkit-transition-duration: 0.4s;
+	  -moz-transition-duration: 0.4s;
+	  transition-duration: 0.4s;
   }	
-	
 	
 	.pile-results-drag {
   	background: @white;

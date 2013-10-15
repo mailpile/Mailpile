@@ -99,7 +99,12 @@ you can use the generic selector below, but it's slower:
 .icon-inbox,
 .icon-list,
 .icon-expand,
-.icon-collapse {
+.icon-collapse,
+.icon-circle-dotted,
+.icon-arrow-up,
+.icon-arrow-right,
+.icon-arrow-left,
+.icon-arrow-down {
   font-family: 'Mailpile-Interface';
   speak: none;
   font-style: normal;
@@ -258,6 +263,21 @@ you can use the generic selector below, but it's slower:
 }
 .icon-collapse:before {
   content: "\e031";
+}
+.icon-circle-dotted:before {
+  content: "\e032";
+}
+.icon-arrow-up:before {
+  content: "\e033";
+}
+.icon-arrow-right:before {
+  content: "\e034";
+}
+.icon-arrow-left:before {
+  content: "\e035";
+}
+.icon-arrow-down:before {
+  content: "\e036";
 }
 /* Backgrounds */
 .background-gray {
@@ -6371,14 +6391,26 @@ div.content-normal {
   color: #333333;
 }
 /* Pile & Sidebar	- Drag / Drop */
-.sidebar-tags-drag-hover {
-  background: red;
+.sidebar-tags-draggable {
+  border-radius: 5px;
 }
-.sidebar-tags-drag-active {
-  background: yellow;
+.sidebar-tags-draggable-hover .icon-inbox:before,
+.sidebar-tags-draggable-hover .icon-spam:before,
+.sidebar-tags-draggable-hover .icon-trash:before,
+.sidebar-tags-draggable-hover .icon-tag:before {
+  content: "\e032";
 }
-.sidebar-tags-drag-highlight {
+.sidebar-tags-draggable-active {
+  background: #cccccc;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  transition-duration: 0.2s;
+}
+.sidebar-tags-draggable-highlight {
   background: green;
+  -webkit-transition-duration: 0.4s;
+  -moz-transition-duration: 0.4s;
+  transition-duration: 0.4s;
 }
 .pile-results-drag {
   background: #ffffff;

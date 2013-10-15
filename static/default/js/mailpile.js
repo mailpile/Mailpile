@@ -516,16 +516,36 @@ $(document).ready(function() {
 	});
 
 
+  /* Pile - Sorting of Messages */
+  var pileActionTag = function(form_data) {
+
+	  $.ajax({
+		  url			 : '/api/0/tag',
+		  type		 : 'POST',
+		  data     : form_data,
+		  dataType : 'json',
+	    success  : function(response) {
+        statusMessage(response.status, response.message);
+//        if (response.status == 'success') {
+          console.log(response);
+//        }
+	    }
+	  });
+
+  }
+
 
   /* Pile - Dragging & Dropping */
   $('td.draggable').draggable({
     containment: "#container",
     scroll: false,
     revert: true,
-    helper: function( event ) {
+    helper: function(event) {
 
       var selected_count = parseInt($('#bulk-actions-selected-count').html());
-
+      
+      console.log($(this).parent().data('tags'));
+      
       if (selected_count == 0) {
         drag_count = '1 message</div>';
       }
@@ -537,15 +557,27 @@ $(document).ready(function() {
     }
   });
 
-  $('li.sidebar-tags').droppable({
-    accept: '#pile-results td.draggable',
-    activeClass: 'sidebar-tags-drag-hover',
-    hoverClass: 'sidebar-tags-drag-active',
+
+  $('li.sidebar-tags-draggable').droppable({
+    accept: 'td.draggable',
+    activeClass: 'sidebar-tags-draggable-hover',
+    hoverClass: 'sidebar-tags-draggable-active',
+    tolerance: 'pointer',
     drop: function(event, ui) {
-      
+
       var old_html = $(this).html();
-      $(this).addClass('sidebar-tags-drag-highlight').html('Moved :)');
+      $(this).addClass('sidebar-tags-draggable-highlight').html('Moved :)');
+
       //$(this).delay(2500).html(old_html);
+
+      console.log();
+
+      var form_data = {
+        add: '',
+        del: '',
+        mid: ''
+      };
+      
     }
   });
   

@@ -1,4 +1,4 @@
-<tr rel="content" class="result {{message.even_odd}}{% if message.is_editable %}is_editable{% endif %}{{message.tag_classes}}" data-state="normal">
+<tr rel="content" class="result {{message.even_odd}}{% if message.is_editable %}is_editable{% endif %}{{message.tag_classes}}" data-state="normal" data-tags="{{message.tag_classes}}">
   <td class="draggable"></td>
   <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
     <a class="item-from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.short_from}}</a>
