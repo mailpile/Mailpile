@@ -26,15 +26,10 @@
         </ul>
       </div>
       <div class="message-body">      
-      {% if message.message.html_parts %}
-      {% for part in message.message.html_parts %}
-         <p class="html-part-{type}">{{part.data|safe}}</p>
-      {% endfor %}
-      {% else %}
+
       {% for part in message.message.text_parts %}
          <p class="text-part-{type}">{{part.data|replace("\n", "<br/>")}}</p>
        {% endfor %}
-      {% endif %}
       </div>
       <div class="message-attachments">
       <ul>

@@ -6043,6 +6043,7 @@ text {
   font-weight: normal;
 }
 #sidebar a span.sidebar-notification {
+  float: right;
   padding: 5px 7px;
   font-size: 14px;
 }
@@ -6148,13 +6149,13 @@ text {
 .navigation-text {
   margin: 0 0 0 8px;
 }
-.navigation-attention-urgent {
+.notification-urgent {
   border-radius: 5px;
   background: #f15a24;
   padding: 1px 4px;
   color: #ffffff;
 }
-.navigation-attention-important {
+.notification-important {
   border-radius: 5px;
   background: #fbb03b;
   padding: 1px 4px;

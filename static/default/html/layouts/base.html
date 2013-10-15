@@ -71,17 +71,17 @@
             <span class="sidebar-icon icon-compose"></span>
             <span class="sidebar-tag">Drafts</span>
             {% if mailpile("tag/list", "Drafts").result.tags.0.all > 0 %}
-            <span class="sidebar-notification navigation-attention-important">{{ mailpile("tag/list", "Drafts").result.tags.0.all }}</span>
+            <span class="sidebar-notification notification-important">{{ mailpile("tag/list", "Drafts").result.tags.0.all }}</span>
             {% endif %}
             </a>
           </li>
           {% for tag in high_tags.result.tags %}
           <li class="sidebar-tags-default">
-            <a href="{{tag.url}}" title="{{tag.all}} emails" class="tag_new_{{tag.new}}">
+            <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_new_count="{{tag.new}}">
               <span class="sidebar-icon icon-{{tag.name.lower()}}"></span>
               <span class="sidebar-tag">{{tag.name}}</span>
               {% if tag.new > 0 %}
-              <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
+              <span class="sidebar-notification notification-important">{{tag.new}}</span>
               {% endif %}
             </a>
           </li>
@@ -95,7 +95,7 @@
             <span class="sidebar-icon icon-tag"></span>
             <span class="sidebar-tag">{{tag.name}}</span>
             {% if tag.new > 0 %}
-            <span class="sidebar-notification navigation-attention-important">{{tag.new}}</span>
+            <span class="sidebar-notification notification-important">{{tag.new}}</span>
             {% endif %}
           </a>        
         </li>
