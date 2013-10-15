@@ -2,6 +2,8 @@
 {% set user_tags = mailpile("tag/list", "!Inbox", "!Sent", "!Spam", "!Blank", "!Trash", "!Drafts", "!New") %}
 {% set top_tags = mailpile("tag/list", "New", "Starred") %}
 {% set unread = mailpile("tag/list", "New") %}
+{% set drafts = mailpile("tag/list", "Drafts") %}
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -70,8 +72,8 @@
           <a href="/in/Drafts/">
             <span class="sidebar-icon icon-compose"></span>
             <span class="sidebar-tag">Drafts</span>
-            {% if mailpile("tag/list", "Drafts").result.tags.0.all > 0 %}
-            <span class="sidebar-notification notification-important">{{ mailpile("tag/list", "Drafts").result.tags.0.all }}</span>
+            {% if drafts.result.tags and drafts.result.tags.0.all > 0 %}
+            <span class="sidebar-notification notification-important">{{ drafts.result.tags and drafts.result.tags.0.all }}</span>
             {% endif %}
             </a>
           </li>
