@@ -81,9 +81,9 @@
           {% if tag.name == "Sent" %}
           <li class="sidebar-tags-default">
           {% else %}
-          <li class="sidebar-tags-draggable">
+          <li class="sidebar-tags-draggable" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_new_count="{{tag.new}}">
           {% endif %}
-            <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_new_count="{{tag.new}}">
+            <a href="{{tag.url}}" title="{{tag.all}} emails">
               <span class="sidebar-icon icon-{{tag.name.lower()}}"></span>
               <span class="sidebar-tag">{{tag.name}}</span>
               {% if tag.new > 0 %}
@@ -96,8 +96,8 @@
       <hr>
       <ul>
         {% for tag in user_tags.result.tags %}
-        <li class="sidebar-tags-draggable">
-          <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_new_count="{{tag.new}}">
+        <li class="sidebar-tags-draggable" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_new_count="{{tag.new}}">
+          <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag">
             <span class="sidebar-icon icon-tag"></span>
             <span class="sidebar-tag">{{tag.name}}</span>
             {% if tag.new > 0 %}

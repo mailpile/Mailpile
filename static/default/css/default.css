@@ -6316,9 +6316,9 @@ div.content-normal {
 }
 .sidebar-tags-draggable-active {
   background: #cccccc;
-  -webkit-transition-duration: 0.2s;
-  -moz-transition-duration: 0.2s;
-  transition-duration: 0.2s;
+  -webkit-transition-duration: 0.3s;
+  -moz-transition-duration: 0.3s;
+  transition-duration: 0.3s;
 }
 .sidebar-tags-draggable-highlight {
   background: green;

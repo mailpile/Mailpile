@@ -100,22 +100,23 @@
 	});
 
 
+
   /* Pile - Sorting of Messages */
   var pileActionTag = function(form_data) {
 
 	  $.ajax({
-		  url			 : '/api/0/tag',
+		  url			 : '/api/0/tag/',
 		  type		 : 'POST',
 		  data     : form_data,
 		  dataType : 'json',
 	    success  : function(response) {
+        
         statusMessage(response.status, response.message);
 //        if (response.status == 'success') {
           console.log(response);
 //        }
 	    }
 	  });
-
   }
 
 
@@ -128,8 +129,6 @@
     helper: function(event) {
 
       var selected_count = parseInt($('#bulk-actions-selected-count').html());
-
-      console.log($(this).parent().data('tags'));
       
       if (selected_count == 0) {
         drag_count = '1 message</div>';
@@ -152,16 +151,20 @@
     tolerance: 'pointer',
     drop: function(event, ui) {
 
-      var old_html = $(this).html();
-      $(this).addClass('sidebar-tags-draggable-highlight').html('Moved :)');
-
-      console.log();
+      var getDelTag = function() {
+        if ($.url.segment(0) === 'in') {
+          return $.url.segment(1);
+        }
+        return '';
+      }
 
       var form_data = {
-        add: '',
-        del: '',
-        mid: ''
+        add: $(this).data('tag_name'),
+        del: getDelTag,
+        mid: ui.draggable.parent().data('mid')
       };
 
+      pileActionTag(form_data);
+      //$(this).addClass('sidebar-tags-draggable-highlight').html('Moved :)');
     }
   });
