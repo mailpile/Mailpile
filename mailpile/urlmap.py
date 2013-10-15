@@ -101,15 +101,18 @@ class UrlMap:
         if method and (method not in command.HTTP_CALLABLE):
             raise BadMethodError('Invalid method (%s): %s' % (method, name))
 
+        MAGIC_VARS = ('csrf', )
         if command.HTTP_STRICT_VARS:
             for var in (post_data or []):
                 if ((var not in command.HTTP_QUERY_VARS) and
                         (var not in command.HTTP_POST_VARS) and
-                        (not var.startswith('ui_'))):
+                        (not var.startswith('ui_')) and
+                        (var not in SPECIAL_VARS)):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
             for var in (query_data or []):
                 if (var not in command.HTTP_QUERY_VARS and
-                        (not var.startswith('ui_'))):
+                        (not var.startswith('ui_')) and
+                        (var not in SPECIAL_VARS)):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
         else:
             for var in command.HTTP_BANNED_VARS:
