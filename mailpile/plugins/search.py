@@ -26,7 +26,6 @@ class SearchResults(dict):
       'snippet': info[5],
       'timestamp': msg_ts,
       'shorttime': msg_date.strftime("%H:%M"),
-      'time': msg_date.strftime("%H:%M:%S"),
       'date': date,
       'tag_ids': info[7],
       'url': urlmap.url_thread(info[0])
@@ -142,9 +141,12 @@ class SearchResults(dict):
         msg_info[MailIndex.MSG_TAGS].split(','),
         session.config.is_editable_message(msg_info)
       ])
-      result['tags'] = sorted([idx.config['tag'].get(t,t)
-                               for t in idx.get_tags(msg_info=msg_info)
-                                     if 'tag:%s' % t not in terms])
+      # FIXME: This is nice, but doing it in _explain_msg_summary
+      #        would be nicer.
+      result['tags'] = dict([(t, {'name': idx.config['tag'].get(t,t),
+                                  'slug': idx.config['tag'].get(t,t),
+                                  'searched': ('tag:%s' % t in terms)})
+                             for t in idx.get_tags(msg_info=msg_info)])
       if not expand:
         conv = idx.get_conversation(msg_info)
       else:
@@ -228,10 +230,6 @@ class Search(Command):
     def _fixup(self):
       if self.fixed_up:
         return self
-      if self.result:
-        for msg in self.result.get('messages', []):
-          msg['tag_classes'] = ' '.join(['tid_%s' % t for t in msg['tag_ids']] +
-                                        ['in_%s' % t.lower() for t in msg['tags']])
       self.fixed_up = True
       return self
     def as_text(self):
