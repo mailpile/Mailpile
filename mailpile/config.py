@@ -61,8 +61,8 @@ def _SlugCheck(slug):
     """
     Verify that a string is a valid URL slug.
 
-    >>> _SlugCheck('Foobar')
-    'Foobar'
+    >>> _SlugCheck('_Foo-bar.5')
+    '_Foo-bar.5'
 
     >>> _SlugCheck('Bad Slug')
     Traceback (most recent call last):
@@ -75,8 +75,7 @@ def _SlugCheck(slug):
     ValueError: Invalid URL slug: Bad/Slug
     """
     if not slug == CleanText(unicode(slug),
-                             banned=CleanText.WHITESPACE +
-                                    CleanText.NONALNUM).clean:
+                             banned=CleanText.NONDNS).clean:
         raise ValueError('Invalid URL slug: %s' % slug)
     return slug
 
