@@ -7,6 +7,7 @@ import ConfigParser
 
 from urllib import quote, unquote
 from mailpile.util import *
+from mailpile.vcard import SimpleVCard
 from mailpile.workers import DumbWorker
 
 
@@ -684,7 +685,7 @@ class ConfigManager(ConfigDict):
         u'TagName'
         """
         parser = CommentedEscapedConfigParser()
-        parser.readfp(io.BytesIO(data))
+        parser.readfp(io.BytesIO(str(data)))
         okay = True
         for section in parser.sections():
             cfgpath = section.split(':')[0].split('/')[1:]
@@ -737,7 +738,7 @@ class ConfigManager(ConfigDict):
 
     def save(self, session):
         self._mkworkdir()
-        fd = gpg_open(self.conffile, self.get('gpg_recipient'), 'wb')
+        fd = gpg_open(self.conffile, self.prefs.get('gpg_recipient'), 'wb')
         fd.write(self.as_config_bytes(private=True))
         fd.close()
 
@@ -819,155 +820,171 @@ class ConfigManager(ConfigDict):
             'rcpt': ', '.join(rcpts)
         }
 
+    def data_directory(self, ftype, mode='rb', mkdir=False):
+        # This should raise a KeyError if the ftype is unrecognized
+        bpath = self.sys.path.get(ftype)
+        if not bpath.startswith('/'):
+            cpath = os.path.join(self.workdir, bpath)
+            if os.path.exists(cpath) or 'w' in mode:
+                bpath = cpath
+                if mkdir and not os.path.exists(cpath):
+                    os.mkdir(cpath)
+            else:
+                bpath = os.path.join(os.path.dirname(__file__), '..', bpath)
+        return bpath
 
-
-##############################################################################
-
-class outdatedConfigManager(dict):
-
-    def filter_swap(self, fid_a, fid_b): 
-        tmp = {}
-        for key in ('filter', 'filter_terms', 'filter_tags'): 
-            tmp[key] = self[key][fid_a]
-        for key in ('filter', 'filter_terms', 'filter_tags'): 
-            self[key][fid_a] = self[key][fid_b]
-        for key in ('filter', 'filter_terms', 'filter_tags'): 
-            self[key][fid_b] = tmp[key]
-
-    def filter_move(self, filter_id, filter_new_id): 
-        # This just makes sure both exist, will raise of not
-        f1, f2 = self['filter'][filter_id], self['filter'][filter_new_id]
-        forig = int(filter_id, 36)
-        ftarget = int(filter_new_id, 36)
-        if forig > ftarget: 
-            for fid in reversed(range(ftarget, forig)): 
-                self.filter_swap(b36(fid+1).lower(), b36(fid).lower())
-        else: 
-            for fid in range(forig, ftarget): 
-                self.filter_swap(b36(fid).lower(), b36(fid+1).lower())
-
-    def get_filters(self, filter_on=None): 
-        filters = self.get('filter', {}).keys()
-        filters.sort(key=lambda k: int(k, 36))
-        flist = []
-        for fid in filters: 
-            comment = self.get('filter', {}).get(fid, '')
-            terms = unicode(self.get('filter_terms', {}).get(fid, ''))
-            tags = unicode(self.get('filter_tags', {}).get(fid, ''))
-            if filter_on is not None and terms != filter_on: 
-                continue
-            flist.append((fid, terms, tags, comment))
-        return flist
-
-    def get_mailboxes(self): 
-        def fmt_mbxid(k): 
-            k = b36(int(k, 36))
-            if len(k) > MBX_ID_LEN: 
-                raise ValueError('Mailbox ID too large: %s' % k)
-            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN: ]
-        mailboxes = self['mailbox'].keys()
-        mailboxes.sort()
-        return [(fmt_mbxid(k), self['mailbox'][k]) for k in mailboxes]
-
-    def get_tag_id(self, tn): 
-        tn = tn.lower()
-        try: 
-            tid = [t for t in self['tag'] if self['tag'][t].lower() == tn]
-            return tid and tid[0] or None
-        except KeyError: 
-            return None
-
-    def load_vcards(self, session): 
-        try: 
+    def load_vcards(self, session):
+        try:
             vcard_dir = self.data_directory('vcards')
-            for fn in os.listdir(vcard_dir): 
-                try: 
+            for fn in os.listdir(vcard_dir):
+                try:
                     c = SimpleVCard().load(os.path.join(vcard_dir, fn))
-                    c.gpg_recipient = lambda: self.get('gpg_recipient')
+                    c.gpg_recipient = lambda: self.prefs.get('gpg_recipient')
                     self.index_vcard(c)
-                    session.ui.mark('Loaded %s' % c.email)
-                except: 
+                    if session:
+                        session.ui.mark('Loaded %s' % c.email)
+                except:
                     import traceback
                     traceback.print_exc()
-                    session.ui.warning('Failed to load vcard %s' % fn)
-        except OSError: 
+                    if session:
+                        session.ui.warning('Failed to load vcard %s' % fn)
+        except OSError:
             pass
 
-    def index_vcard(self, c): 
-        if c.kind == 'individual': 
-            for email, attrs in c.get('EMAIL', []): 
+    def index_vcard(self, c):
+        if c.kind == 'individual':
+            for email, attrs in c.get('EMAIL', []):
                 self.vcards[email.lower()] = c
-        else: 
-            for handle, attrs in c.get('NICKNAME', []): 
+        else:
+            for handle, attrs in c.get('NICKNAME', []):
                 self.vcards[handle.lower()] = c
         self.vcards[c.random_uid] = c
 
-    def deindex_vcard(self, c): 
-        for email, attrs in c.get('EMAIL', []): 
-            if email.lower() in self.vcards: 
-                if c.kind == 'individual': 
+    def deindex_vcard(self, c):
+        for email, attrs in c.get('EMAIL', []):
+            if email.lower() in self.vcards:
+                if c.kind == 'individual':
                     del self.vcards[email.lower()]
-        for handle, attrs in c.get('NICKNAME', []): 
-            if handle.lower() in self.vcards: 
-                if c.kind != 'individual': 
+        for handle, attrs in c.get('NICKNAME', []):
+            if handle.lower() in self.vcards:
+                if c.kind != 'individual':
                     del self.vcards[handle.lower()]
-        if c.random_uid in self.vcards: 
+        if c.random_uid in self.vcards:
             del self.vcards[c.random_uid]
 
-    def get_vcard(self, email): 
+    def get_vcard(self, email):
         return self.vcards.get(email.lower(), None)
 
-    def find_vcards(self, terms, kinds=['individual']): 
+    def find_vcards(self, terms, kinds=['individual']):
         results, vcards = [], self.vcards
-        if not terms: 
+        if not terms:
             results = [set([vcards[k].random_uid for k in vcards
-                                            if (vcards[k].kind in kinds) or not kinds])]
-        for term in terms: 
+                       if (vcards[k].kind in kinds) or not kinds])]
+        for term in terms:
             term = term.lower()
             results.append(set([vcards[k].random_uid for k in vcards
-                                                    if (term in k or term in vcards[k].fn.lower())
-                                                    and ((vcards[k].kind in kinds) or not kinds)]))
-        while len(results) > 1: 
+                                if (term in k or term in vcards[k].fn.lower())
+                                and ((vcards[k].kind in kinds) or not kinds)]))
+        while len(results) > 1:
             results[0] &= results.pop(-1)
         results = [vcards[c] for c in results[0]]
         results.sort(key=lambda k: k.fn)
         return results
 
-    def add_vcard(self, handle, name=None, kind=None): 
+    def add_vcard(self, handle, name=None, kind=None):
         vcard_dir = self.data_directory('vcards', mode='w', mkdir=True)
         c = SimpleVCard()
         c.filename = os.path.join(vcard_dir, c.random_uid) + '.vcf'
-        c.gpg_recipient = lambda: self.get('gpg_recipient')
-        if kind == 'individual': 
+        c.gpg_recipient = lambda: self.prefs.get('gpg_recipient')
+        if kind == 'individual':
             c.email = handle
-        else: 
+        else:
             c['NICKNAME'] = handle
         if name is not None: c.fn = name
         if kind is not None: c.kind = kind
         self.index_vcard(c)
         return c.save()
 
-    def del_vcard(self, email): 
+    def del_vcard(self, email):
         vcard = self.get_vcard(email)
-        try: 
-            if vcard: 
+        try:
+            if vcard:
                 self.deindex_vcard(vcard)
                 os.remove(vcard.filename)
                 return True
-            else: 
+            else:
                 return False
-        except (OSError, IOError): 
+        except (OSError, IOError):
             return False
 
-    def history_file(self): 
+
+
+
+##############################################################################
+
+class outdatedConfigManager(dict):
+
+    def filter_swap(self, fid_a, fid_b):
+        tmp = {}
+        for key in ('filter', 'filter_terms', 'filter_tags'):
+            tmp[key] = self[key][fid_a]
+        for key in ('filter', 'filter_terms', 'filter_tags'):
+            self[key][fid_a] = self[key][fid_b]
+        for key in ('filter', 'filter_terms', 'filter_tags'):
+            self[key][fid_b] = tmp[key]
+
+    def filter_move(self, filter_id, filter_new_id):
+        # This just makes sure both exist, will raise of not
+        f1, f2 = self['filter'][filter_id], self['filter'][filter_new_id]
+        forig = int(filter_id, 36)
+        ftarget = int(filter_new_id, 36)
+        if forig > ftarget:
+            for fid in reversed(range(ftarget, forig)):
+                self.filter_swap(b36(fid+1).lower(), b36(fid).lower())
+        else:
+            for fid in range(forig, ftarget):
+                self.filter_swap(b36(fid).lower(), b36(fid+1).lower())
+
+    def get_filters(self, filter_on=None):
+        filters = self.get('filter', {}).keys()
+        filters.sort(key=lambda k: int(k, 36))
+        flist = []
+        for fid in filters:
+            comment = self.get('filter', {}).get(fid, '')
+            terms = unicode(self.get('filter_terms', {}).get(fid, ''))
+            tags = unicode(self.get('filter_tags', {}).get(fid, ''))
+            if filter_on is not None and terms != filter_on:
+                continue
+            flist.append((fid, terms, tags, comment))
+        return flist
+
+    def get_mailboxes(self):
+        def fmt_mbxid(k):
+            k = b36(int(k, 36))
+            if len(k) > MBX_ID_LEN:
+                raise ValueError('Mailbox ID too large: %s' % k)
+            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN: ]
+        mailboxes = self['mailbox'].keys()
+        mailboxes.sort()
+        return [(fmt_mbxid(k), self['mailbox'][k]) for k in mailboxes]
+
+    def get_tag_id(self, tn):
+        tn = tn.lower()
+        try:
+            tid = [t for t in self['tag'] if self['tag'][t].lower() == tn]
+            return tid and tid[0] or None
+        except KeyError:
+            return None
+
+    def history_file(self):
         return self.get('history_file', 
                         os.path.join(self.workdir, 'history'))
 
-    def mailindex_file(self): 
+    def mailindex_file(self):
         return self.get('mailindex_file', 
                         os.path.join(self.workdir, 'mailpile.idx'))
 
-    def postinglist_dir(self, prefix): 
+    def postinglist_dir(self, prefix):
         d = self.get('postinglist_dir', 
                      os.path.join(self.workdir, 'search'))
         if not os.path.exists(d): os.mkdir(d)
@@ -975,73 +992,60 @@ class outdatedConfigManager(dict):
         if not os.path.exists(d): os.mkdir(d)
         return d
 
-    def get_index(self, session): 
+    def get_index(self, session):
         if self.index: return self.index
         idx = MailIndex(self)
         idx.load(session)
         self.index = idx
         return idx
 
-    def data_directory(self, ftype, mode='rb', mkdir=False): 
-        # This should raise a KeyError if the ftype is unrecognized
-        bpath = self.get('path', {}).get(ftype) or self.DEFAULT_PATHS[ftype]
-        if not bpath.startswith('/'): 
-            cpath = os.path.join(self.workdir, bpath)
-            if os.path.exists(cpath) or 'w' in mode: 
-                bpath = cpath
-                if mkdir and not os.path.exists(cpath): 
-                    os.mkdir(cpath)
-            else: 
-                bpath = os.path.join(os.path.dirname(__file__), '..', bpath)
-        return bpath
-
-    def open_file(self, ftype, fpath, mode='rb', mkdir=False): 
-        if '..' in fpath: 
+    def open_file(self, ftype, fpath, mode='rb', mkdir=False):
+        if '..' in fpath:
             raise ValueError('Parent paths are not allowed')
         bpath = self.data_directory(ftype, mode=mode, mkdir=mkdir)
         fpath = os.path.join(bpath, fpath)
         return fpath, open(fpath, mode)
 
-    def prepare_workers(config, session, daemons=False): 
+    def prepare_workers(config, session, daemons=False):
         # Set globals from config first...
         global APPEND_FD_CACHE_SIZE
         APPEND_FD_CACHE_SIZE = config.get('fd_cache_size', 
                                           APPEND_FD_CACHE_SIZE)
 
-        if not config.background: 
+        if not config.background:
             # Create a silent background session
             config.background = Session(config)
             config.background.ui = BackgroundInteraction(config)
             config.background.ui.block()
 
         # Start the workers
-        if config.slow_worker == config.dumb_worker: 
+        if config.slow_worker == config.dumb_worker:
             config.slow_worker = Worker('Slow worker', session)
             config.slow_worker.start()
-        if daemons and not config.cron_worker: 
+        if daemons and not config.cron_worker:
             config.cron_worker = Cron('Cron worker', session)
             config.cron_worker.start()
 
             # Schedule periodic rescanning, if requested.
             rescan_interval = config.get('rescan_interval', None)
-            if rescan_interval: 
-                def rescan(): 
-                    if 'rescan' not in config.RUNNING: 
+            if rescan_interval:
+                def rescan():
+                    if 'rescan' not in config.RUNNING:
                         rsc = Rescan(session, 'rescan')
                         rsc.serialize = False
                         config.slow_worker.add_task(None, 'Rescan', rsc.run)
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
-        if daemons and not config.http_worker: 
+        if daemons and not config.http_worker:
             # Start the HTTP worker if requested
             sspec = (config.get('http_host', 'localhost'), 
                              config.get('http_port', DEFAULT_PORT))
-            if sspec[0].lower() != 'disabled' and sspec[1] >= 0: 
+            if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                 config.http_worker = HttpWorker(session, sspec)
                 config.http_worker.start()
 
-    def stop_workers(config): 
-        for w in (config.http_worker, config.slow_worker, config.cron_worker): 
+    def stop_workers(config):
+        for w in (config.http_worker, config.slow_worker, config.cron_worker):
             if w: w.quit()
 
 
