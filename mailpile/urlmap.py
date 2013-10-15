@@ -101,7 +101,9 @@ class UrlMap:
         if method and (method not in command.HTTP_CALLABLE):
             raise BadMethodError('Invalid method (%s): %s' % (method, name))
 
-        MAGIC_VARS = ('csrf', )
+        # FIXME: Move this somewhere smarter
+        SPECIAL_VARS = ('csrf', )
+
         if command.HTTP_STRICT_VARS:
             for var in (post_data or []):
                 if ((var not in command.HTTP_QUERY_VARS) and
