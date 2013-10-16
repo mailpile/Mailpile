@@ -299,10 +299,10 @@ var keybindings = [
 	["g n m",	"normal",	function() { mailpile.go("/_/compose/"); }],
 	["g t",		"normal",	function() { $("#dialog_tag").show(); $("#dialog_tag_input").focus(); return false; }],
 	["esc",		"global",	function() {
-					$("#dialog_tag_input").blur();
-					$("#qbox").blur();
-					$("#dialog_tag").hide();
-				}],
+		$("#dialog_tag_input").blur();
+		$("#qbox").blur();
+    $("#dialog_tag").hide();
+  }],
 ];
 
 

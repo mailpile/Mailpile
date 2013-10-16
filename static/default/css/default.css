@@ -3905,14 +3905,14 @@ body {
 a,
 a:visited {
   font-size: 18px;
-  color: #be2408;
+  color: #a31304;
   font-weight: bold;
   text-decoration: none;
   outline: 0;
 }
 a:hover,
 a:focus {
-  color: #8d1b06;
+  color: #710d03;
   text-decoration: none;
 }
 p a,
@@ -4317,7 +4317,7 @@ input[type="button"]:active {
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   border-radius: 4px;
-  background: #be2408;
+  background: #a31304;
 }
 .button-warning:hover {
   border: 0px solid #3a6b8c;
@@ -4326,7 +4326,7 @@ input[type="button"]:active {
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   border-radius: 4px;
-  background: #5c1104;
+  background: #3f0702;
   text-decoration: none;
 }
 .button-warning:active {
@@ -4336,7 +4336,7 @@ input[type="button"]:active {
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   border-radius: 4px;
-  background: #5c1104;
+  background: #3f0702;
   text-decoration: none;
 }
 /* Icons */
@@ -5824,7 +5824,7 @@ disabled look for disabled choices in the results dropdown
   box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
 }
 #messages .error {
-  background-color: #be2408;
+  background-color: #a31304;
 }
 #messages .warning {
   background-color: #fbb03b;
@@ -5945,9 +5945,15 @@ text {
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: #4d4d4d;
+  -webkit-transition-duration: 0.4s;
+  -moz-transition-duration: 0.4s;
+  transition-duration: 0.4s;
 }
 #header nav a:hover {
   color: #3a6b8c;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  transition-duration: 0.2s;
 }
 #header nav a span {
   display: block;
@@ -6055,7 +6061,7 @@ text {
 }
 #sub-navigation a:hover,
 #sub-navigation a:hover span.navigation-icon {
-  color: #be2408;
+  color: #a31304;
 }
 #sub-navigation li.navigation-on {
   background: #d9d9d9;
@@ -6191,7 +6197,7 @@ div.content-normal {
   font-size: 14px;
 }
 #bulk-actions a:hover {
-  color: #be2408;
+  color: #a31304;
 }
 #bulk-actions a span {
   position: relative;
@@ -6273,6 +6279,9 @@ div.content-normal {
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: #4d4d4d;
+  -webkit-transition-duration: 0.4s;
+  -moz-transition-duration: 0.4s;
+  transition-duration: 0.4s;
 }
 #sidebar a {
   padding: 15px 0px;
@@ -6290,10 +6299,13 @@ div.content-normal {
   line-height: 14px;
 }
 #sidebar a:hover {
-  color: #be2408;
+  color: #a31304;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  transition-duration: 0.2s;
 }
 #sidebar a:active {
-  color: #be2408;
+  color: #a31304;
 }
 #sidebar a span.sidebar-icon {
   position: relative;
@@ -6430,7 +6442,7 @@ div.content-normal {
   background: #cccccc;
   border-radius: 5px;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: normal;
   line-height: 12px;
 }
 #pile-results td.subject {
@@ -6439,10 +6451,11 @@ div.content-normal {
 }
 #pile-results tr td a {
   font-size: 14px;
+  font-weight: normal;
   color: #4d4d4d;
 }
-#pile-results tr.in_new td a {
-  color: #be2408;
+#pile-results tr.in_new a {
+  font-weight: bold;
 }
 #pile-bottom {
   margin: 15px;
@@ -6484,7 +6497,7 @@ div.content-normal {
   font-weight: normal;
 }
 .message-email-address:hover {
-  color: #be2408;
+  color: #a31304;
 }
 .message-actions form {
   float: left;

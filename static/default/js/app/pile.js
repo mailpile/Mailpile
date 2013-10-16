@@ -3,7 +3,7 @@
 
 
   /* Filter New */
-  $('.button-sub-navigation').on('click', function() {
+  $(document).on('click', '.button-sub-navigation', function() {
 
     var filter = $(this).data('filter');
     $('#sub-navigation ul.left li').removeClass('navigation-on');
@@ -35,7 +35,7 @@
 
 
 	/* Bulk Actions */
-	$('.bulk-action').on('click', function(e) {
+	$(document).on('click', '.bulk-action', function(e) {
 
 		e.preventDefault();
 		var checkboxes = $('#pile-results input[type=checkbox]');
@@ -91,7 +91,8 @@
 		.prop('checked', false);
 	}
 
-	$('#pile-results').on('click', 'tr', function(e) {
+
+	$(document).on('click', '#pile-results tr', function(e) {
 		if (e.target.href === undefined && $(this).data('state') === 'selected') {
 			pileActionUnselect($(this));
 		}
@@ -99,26 +100,6 @@
 			pileActionSelect($(this));
 		}
 	});
-
-
-
-  /* Pile - Sorting of Messages */
-  var pileActionTag = function(form_data) {
-
-	  $.ajax({
-		  url			 : '/api/0/tag/',
-		  type		 : 'POST',
-		  data     : form_data,
-		  dataType : 'json',
-	    success  : function(response) {
-
-        statusMessage(response.status, response.message);
-//        if (response.status == 'success') {
-          console.log(response);
-//        }
-	    }
-	  });
-  }
 
 
 
@@ -159,13 +140,36 @@
         return '';
       }
 
+      var getMid = function() {
+        return ui.draggable.parent().data('mid')
+        
+      }
+      
       var form_data = {
         add: $(this).data('tag_name'),
         del: getDelTag,
-        mid: ui.draggable.parent().data('mid')
+        mid: getMid
       };
+      
+      console.log(form_data);
 
-      pileActionTag(form_data);
-      //$(this).addClass('sidebar-tags-draggable-highlight').html('Moved :)');
+/*
+  	  $.ajax({
+  		  url			 : '/api/0/tag/',
+  		  type		 : 'POST',
+  		  data     : form_data,
+  		  dataType : 'json',
+  	    success  : function(response) {
+          
+          if (response.status == 'success') {
+            //$(this).addClass('sidebar-tags-draggable-highlight').html('Moved :)'); 
+            $('#pile-message-' + ui.draggable.parent().data('mid')).fadeOut('fast');
+          } else {
+            statusMessage(response.status, response.message);
+          }
+  	    }
+  	  });
+*/  	  
+  	  
     }
   });
