@@ -7,6 +7,9 @@
 
   #pile-results tr.result {
     background: @white;
+	  -webkit-transition-duration: 0.3s;
+	  -moz-transition-duration: 0.3s;
+	  transition-duration: 0.3s;    
   }
 
 	#pile-results tr.result:hover {
@@ -19,6 +22,9 @@
 	
 	#pile-results tr.result-on:hover {
 		background: lighten(@yellow, 30%);
+	  -webkit-transition-duration: 0.3s;
+	  -moz-transition-duration: 0.3s;
+	  transition-duration: 0.3s;
 	}
 	
   #pile-results tr.result:hover td.draggable, 
@@ -94,6 +100,13 @@
   	font-weight: bold;
 	}
 
+
+  #pile-results a.pile-message-tag {
+    font-weight: bold;
+  }
+
+
+
 	#pile-bottom {
 		margin: 15px;
 	}
@@ -130,3 +143,46 @@
   	border: 1px solid @gray;
   	padding: 5px 10px;
 	}
+
+
+/* Pile - Bulk Actions */
+
+	#bulk-actions {
+		border-bottom: 1px solid @gray;
+		color: @grayDark;
+		padding-left: 20px;
+		padding-right: 20px;
+		box-sizing: padding-box;
+	}
+	
+	#bulk-actions a {
+		display: inline-block;
+		margin: 10px 30px 10px 0;
+		color: @grayDark;
+	}
+
+	#bulk-actions a:hover {
+		color: @red; 
+	}
+
+  #bulk-actions.cozy a { margin: 7px 21px 7px 0; font-size: 16px; }
+  #bulk-actions.snug a { margin: 5px 15px 5px 0; font-size: 14px; }
+
+	#bulk-actions a span {
+		position: relative;
+		top: 2px;
+		left: 0px;
+	}
+
+	#bulk-actions h5 {
+		margin-top: 10px;
+		margin-bottom: 10px;
+		color: @grayDark;
+		font-family: @text-font-family-italic;
+		line-height: 24px;
+	}
+
+  #bulk-actions.cozy h5 { margin-top: 9px; margin-bottom: 9px; font-size: 16px; line-height: 21px; }
+  #bulk-actions.snug h5 { margin-top: 8px; margin-bottom: 8px; font-size: 14px; line-height: 18px; }
+
+	

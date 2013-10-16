@@ -1,10 +1,11 @@
-<tr id="pile-message-{{message.mid}}" class="result {% for tag in message.tags %} in_{{ message.tags[tag].slug.lower() }} {% endfor %}" data-state="normal" data-mid="{{message.mid}}">
+<tr id="pile-message-{{message.mid}}" class="result {% for tag in message.tags %}in_{{ message.tags[tag].slug.lower() }}{% endfor %}" data-state="normal" data-mid="{{message.mid}}">
   <td class="draggable"></td>
   <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
     <a class="item-from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.short_from}}</a>
     {% if message.conv_count > 1 %}<span class="conversation-count">{{ message.conv_count }}</span>{% endif %}
   </td>
-  <td class="subject">
+  <td class="subject">  
+    {% for tag in message.tags %}{% if message.tags[tag].name != "Inbox" and message.tags[tag].name != "New" and message.tags[tag].name != "Drafts" %}<a class="pile-message-tag" href="/in/{{ message.tags[tag].slug }}/">{{ message.tags[tag].name }}</a>{% endif %}{% endfor %} 
     <a class="item-subject" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
   </td>
   <td class="date" valign="top">
