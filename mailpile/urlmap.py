@@ -85,7 +85,8 @@ class UrlMap:
         Traceback (most recent call last):
             ...
         BadDataError: Bad variable (evil): message/update
-        >>> urlmap._command('search', args=['html'], query_data={'ui_': 1})
+        >>> urlmap._command('search', args=['html'],
+        ...                 query_data={'ui_': 1, 'q[]': 'foobar'})
         <mailpile.plugins.search.Search instance at 0x...>
         """
         try:
@@ -106,18 +107,21 @@ class UrlMap:
 
         if command.HTTP_STRICT_VARS:
             for var in (post_data or []):
+                var = var.replace('[]', '')
                 if ((var not in command.HTTP_QUERY_VARS) and
                         (var not in command.HTTP_POST_VARS) and
                         (not var.startswith('ui_')) and
                         (var not in SPECIAL_VARS)):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
             for var in (query_data or []):
+                var = var.replace('[]', '')
                 if (var not in command.HTTP_QUERY_VARS and
                         (not var.startswith('ui_')) and
                         (var not in SPECIAL_VARS)):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
         else:
             for var in command.HTTP_BANNED_VARS:
+                var = var.replace('[]', '')
                 if ((query_data and var in query_data) or
                         (post_data and var in post_data)):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
@@ -132,8 +136,9 @@ class UrlMap:
                            (command.HTTP_QUERY_VARS, post_data),
                            (command.HTTP_POST_VARS, post_data)):
             for var in vlist:
-                if src and var in src:
-                    sdata = src[var]
+                varBB = var+'[]'
+                if src and (var in src or varBB in src):
+                    sdata = (var in src) and src[var] or src[varBB]
                     if isinstance(sdata, cgi.FieldStorage):
                         data[var] = [_FancyString(sdata.value)]
                         if hasattr(sdata, 'filename'):
