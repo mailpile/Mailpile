@@ -6188,6 +6188,9 @@ div.content-normal {
   margin: 10px 30px 10px 0;
   color: #4d4d4d;
 }
+#bulk-actions a:hover {
+  color: #a31304;
+}
 #bulk-actions.cozy a {
   margin: 7px 21px 7px 0;
   font-size: 16px;
@@ -6195,9 +6198,6 @@ div.content-normal {
 #bulk-actions.snug a {
   margin: 5px 15px 5px 0;
   font-size: 14px;
-}
-#bulk-actions a:hover {
-  color: #a31304;
 }
 #bulk-actions a span {
   position: relative;

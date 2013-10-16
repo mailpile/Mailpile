@@ -12,12 +12,12 @@ Number.prototype.pad = function(size){
 
 
 function MailPile() {
-	this.msgcache = [];
-	this.searchcache = [];
-	this.keybindings = [];
-	this.commands = [];
-	this.graphselected = [];
-	this.defaults = {
+	this.search_cache   = [];
+	this.bulk_cache     = [];
+	this.keybindings    = [];
+	this.commands       = [];
+	this.graphselected  = [];
+	this.defaults       = {
   	view_size: "comfy"
 	}
 }
@@ -30,6 +30,18 @@ MailPile.prototype.keybindings_loadfromserver = function() {
 			console.log(key);
 		}
 	});
+}
+
+MailPile.prototype.bulk_cache_add = function(mid) {
+  if (_.indexOf(this.bulk_cache, mid) < 0) {
+    this.bulk_cache.push(mid);
+  }
+};
+
+MailPile.prototype.bulk_cache_remove = function(mid) {
+  if (_.indexOf(this.bulk_cache, mid) > -1) {
+    this.bulk_cache = _.without(this.bulk_cache, mid);
+  }
 }
 
 MailPile.prototype.add = function() {}
@@ -551,6 +563,8 @@ $(document).ready(function() {
 /* Pile */
 
 
+  
+
 
   /* Filter New */
   $(document).on('click', '.button-sub-navigation', function() {
@@ -606,6 +620,9 @@ $(document).ready(function() {
 	/* Result Actions */
 	var pileActionSelect = function(item) {
 
+    // Data Stuffs    
+    mailpile.bulk_cache_add(item.data('mid'));
+
 		// Increment Selected
 		$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
 
@@ -622,6 +639,9 @@ $(document).ready(function() {
 
 
 	var pileActionUnselect = function(item) {
+
+    // Data Stuffs    
+    mailpile.bulk_cache_remove(item.data('mid'));
 
 		// Decrement Selected
 		var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
@@ -689,38 +709,31 @@ $(document).ready(function() {
         }
         return '';
       }
-
-      var getMid = function() {
-        return ui.draggable.parent().data('mid')
-        
-      }
       
-      var form_data = {
-        add: $(this).data('tag_name'),
-        del: getDelTag,
-        mid: getMid
-      };
-      
-      console.log(form_data);
-
-/*
+      // Add MID to Cache    
+      mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
+    
+      // Fire at Willhelm
   	  $.ajax({
   		  url			 : '/api/0/tag/',
   		  type		 : 'POST',
-  		  data     : form_data,
+  		  data     : {
+          add: $(this).data('tag_name'),
+          del: getDelTag,
+          mid: mailpile.bulk_cache
+        },
   		  dataType : 'json',
   	    success  : function(response) {
           
           if (response.status == 'success') {
-            //$(this).addClass('sidebar-tags-draggable-highlight').html('Moved :)'); 
-            $('#pile-message-' + ui.draggable.parent().data('mid')).fadeOut('fast');
+            $.each(mailpile.bulk_cache, function(key, mid) {
+              $('#pile-message-' + mid).fadeOut('fast');
+            });  
           } else {
             statusMessage(response.status, response.message);
           }
   	    }
-  	  });
-*/  	  
-  	  
+  	  });  	  
     }
   });
 

@@ -12,12 +12,12 @@ Number.prototype.pad = function(size){
 
 
 function MailPile() {
-	this.msgcache = [];
-	this.searchcache = [];
-	this.keybindings = [];
-	this.commands = [];
-	this.graphselected = [];
-	this.defaults = {
+	this.search_cache   = [];
+	this.bulk_cache     = [];
+	this.keybindings    = [];
+	this.commands       = [];
+	this.graphselected  = [];
+	this.defaults       = {
   	view_size: "comfy"
 	}
 }
@@ -30,6 +30,18 @@ MailPile.prototype.keybindings_loadfromserver = function() {
 			console.log(key);
 		}
 	});
+}
+
+MailPile.prototype.bulk_cache_add = function(mid) {
+  if (_.indexOf(this.bulk_cache, mid) < 0) {
+    this.bulk_cache.push(mid);
+  }
+};
+
+MailPile.prototype.bulk_cache_remove = function(mid) {
+  if (_.indexOf(this.bulk_cache, mid) > -1) {
+    this.bulk_cache = _.without(this.bulk_cache, mid);
+  }
 }
 
 MailPile.prototype.add = function() {}

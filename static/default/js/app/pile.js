@@ -1,6 +1,8 @@
 /* Pile */
 
 
+  
+
 
   /* Filter New */
   $(document).on('click', '.button-sub-navigation', function() {
@@ -56,6 +58,9 @@
 	/* Result Actions */
 	var pileActionSelect = function(item) {
 
+    // Data Stuffs    
+    mailpile.bulk_cache_add(item.data('mid'));
+
 		// Increment Selected
 		$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
 
@@ -72,6 +77,9 @@
 
 
 	var pileActionUnselect = function(item) {
+
+    // Data Stuffs    
+    mailpile.bulk_cache_remove(item.data('mid'));
 
 		// Decrement Selected
 		var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
@@ -139,37 +147,30 @@
         }
         return '';
       }
-
-      var getMid = function() {
-        return ui.draggable.parent().data('mid')
-        
-      }
       
-      var form_data = {
-        add: $(this).data('tag_name'),
-        del: getDelTag,
-        mid: getMid
-      };
-      
-      console.log(form_data);
-
-/*
+      // Add MID to Cache    
+      mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
+    
+      // Fire at Willhelm
   	  $.ajax({
   		  url			 : '/api/0/tag/',
   		  type		 : 'POST',
-  		  data     : form_data,
+  		  data     : {
+          add: $(this).data('tag_name'),
+          del: getDelTag,
+          mid: mailpile.bulk_cache
+        },
   		  dataType : 'json',
   	    success  : function(response) {
           
           if (response.status == 'success') {
-            //$(this).addClass('sidebar-tags-draggable-highlight').html('Moved :)'); 
-            $('#pile-message-' + ui.draggable.parent().data('mid')).fadeOut('fast');
+            $.each(mailpile.bulk_cache, function(key, mid) {
+              $('#pile-message-' + mid).fadeOut('fast');
+            });  
           } else {
             statusMessage(response.status, response.message);
           }
   	    }
-  	  });
-*/  	  
-  	  
+  	  });  	  
     }
   });
