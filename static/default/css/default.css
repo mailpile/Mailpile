@@ -104,7 +104,8 @@ you can use the generic selector below, but it's slower:
 .icon-arrow-up,
 .icon-arrow-right,
 .icon-arrow-left,
-.icon-arrow-down {
+.icon-arrow-down,
+.icon-conversation {
   font-family: 'Mailpile-Interface';
   speak: none;
   font-style: normal;
@@ -278,6 +279,9 @@ you can use the generic selector below, but it's slower:
 }
 .icon-arrow-down:before {
   content: "\e036";
+}
+.icon-conversation:before {
+  content: "\e037";
 }
 /* Backgrounds */
 .background-gray {
@@ -6410,6 +6414,24 @@ div.content-normal {
   word-wrap: normal;
   word-break: normal;
   overflow-x: hidden;
+}
+#pile-results span.conversation-count {
+  width: 24px;
+  height: 21px;
+  display: inline-block;
+  position: relative;
+  top: -2px;
+  left: 5px;
+  text-align: center;
+  vertical-align: middle;
+  padding-top: 5px;
+  box-sizing: border-box;
+  color: #4d4d4d;
+  background: #cccccc;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 12px;
 }
 #pile-results td.subject {
   min-width: 275px;
