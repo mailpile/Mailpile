@@ -360,30 +360,37 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             self.handles["passphrase"].write(self.passphrase)
             self.handles["passphrase"].close()
 
-        retvals = {}
-        for fd in self.needed_fds:
-            if fd in ("stdin", "passphrase"):
-                continue
-            if not callbacks.has_key(fd):
-                continue
-            while True:
-                if debug: print "Reading %s" % fd
+        while True:
+            try:
+                buf = self.handles["status"].read()
+                self.parse_status(buf)
+            except IOError:
+                break
 
-                try:
-                    buf = self.handles[fd].read()
-                except IOError:
-                    break
+        # retvals = {}
+        # for fd in self.needed_fds:
+        #     if fd in ("stdin", "passphrase"):
+        #         continue
+        #     if not callbacks.has_key(fd):
+        #         continue
+        #     while True:
+        #         if debug: print "Reading %s" % fd
 
-                if not retvals.has_key(fd):
-                    retvals[fd] = []
-                if buf == "":
-                    break
+        #         try:
+        #             buf = self.handles[fd].read()
+        #         except IOError:
+        #             break
 
-                if type(callbacks[fd]) == list:
-                    for cb in callbacks[fd]:
-                        retvals[fd].append(cb(buf))
-                else:
-                    retvals[fd].append(callbacks[fd](buf))
+        #         if not retvals.has_key(fd):
+        #             retvals[fd] = []
+        #         if buf == "":
+        #             break
+
+        #         if type(callbacks[fd]) == list:
+        #             for cb in callbacks[fd]:
+        #                 retvals[fd].append(cb(buf))
+        #         else:
+        #             retvals[fd].append(callbacks[fd](buf))
 
         return proc.returncode, retvals
 
