@@ -163,7 +163,7 @@ MailPile.prototype.json_get = function(cmd, params, callback) {
 	if (cmd == "view") {
 		url = "/=" + params["idx"] + "/" + params["msgid"] + ".json";
 	} else {
-		url = "/api/0/" + cmd + ".json";
+		url = "/api/0/" + cmd;
 	}
 	$.getJSON(url, params, callback);
 }
@@ -221,8 +221,8 @@ MailPile.prototype.results_graph = function() {
 	args = $('#pile-graph-canvas-svg').data("searchterms");
 
 	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
-		graph = graph.result;
-		// console.log(graph);
+		graph = graph.result[0];
+		console.log(graph);
 		var width = 640; // $("#pile-graph-canvas").width();
 		var height = 640; // $("#pile-graph-canvas").height();
 		var force = d3.layout.force()
@@ -330,6 +330,8 @@ $(document).ready(function() {
   /* Set View Size */
   if (localStorage.getItem('view_size')) {
 
+    $('#header').addClass(localStorage.getItem('view_size'));
+    $('#container').addClass(localStorage.getItem('view_size'));
     $('#sidebar').addClass(localStorage.getItem('view_size'));
     $('#sub-navigation').addClass(localStorage.getItem('view_size'));
     $('#bulk-actions').addClass(localStorage.getItem('view_size'));
@@ -372,6 +374,8 @@ $(document).on('click', 'a.change-view-size', function(e) {
   $(this).addClass('view-size-selected');
 
   // Update View Sizes
+  $('#header').removeClass(current_size).addClass(new_size);
+  $('#container').removeClass(current_size).addClass(new_size);
   $('#sidebar').removeClass(current_size).addClass(new_size);
   $('#sub-navigation').removeClass(current_size).addClass(new_size);
   $('#bulk-actions').removeClass(current_size).addClass(new_size);

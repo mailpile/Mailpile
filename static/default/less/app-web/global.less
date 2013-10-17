@@ -31,7 +31,7 @@
 		overflow: hidden;
 	}
 	
-	#header .logo {
+	#header img.logo {
 		width: 64px;
 		height: 45px;
 		display: inline-block;
@@ -41,6 +41,7 @@
 		left: 20px;
 		float: left;
 	}
+	
 	
 	#header h1 {
 		display: inline-block;
@@ -93,35 +94,38 @@
 	  transition-duration: 0.2s;		
 	} 
 	
-	#header nav a span {
-		display: block;
-		font-size: 36px;
-		line-height: 36px;
+	#header span.link-icon { display: block; font-size: 36px; line-height: 36px; }
+  #header span.link-text { font-size: 12px; }
+
+
+	#header.cozy { 
+  	
+  	height: 60px;
+  	
+  	img.logo { height: 36px }
+  	
+  	h1 { font-size: 30px; line-height: 30px; }
+  	
+  	h1 small { display: none; }
+  	
+  	span.link-icon { font-size: 30px;	}
+    span.link-text { display: none; }  	
 	}
 
-	#header nav button {
-	  margin: 0px;
-	  padding: 0px;
-    font-size: 14px;
-		font-family: @text-font-family-bold;
-		font-weight: 100;
-		color: @grayDark !important;
-		text-shadow: 0px 0px 0px;
-		border: 0px;
-		line-height: 24px;
-  	background: none;
-	}
-	
-	#header nav button:hover {
-		color: @blue !important;
-	} 	
-	
-	#header nav button span {
-		display: block;
-		font-size: 36px;
-		line-height: 36px;  	
-	}
-	
+	#header.snug { 
+
+    height: 48px;
+
+    img.logo { height: 30px; }
+
+    h1 { font-size: 24px; line-height: 24px; }
+
+    h1 small { display: none; }
+
+    span.link-icon { font-size: 24px; }
+    span.link-text { display: none; }
+  }
+
 
 	
 /* Container */
@@ -136,8 +140,8 @@
 	  margin-top: 74px;
 	}
 
-
-
+  #container.cozy { top: 60px; margin-top: 60px; }
+  #container.snug { top: 48px; margin-top: 48px; }
 
 /* Content */	
 	

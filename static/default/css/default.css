@@ -5959,7 +5959,7 @@ text {
   box-sizing: border-box;
   overflow: hidden;
 }
-#header .logo {
+#header img.logo {
   width: 64px;
   height: 45px;
   display: inline-block;
@@ -6014,30 +6014,51 @@ text {
   -moz-transition-duration: 0.2s;
   transition-duration: 0.2s;
 }
-#header nav a span {
+#header span.link-icon {
   display: block;
   font-size: 36px;
   line-height: 36px;
 }
-#header nav button {
-  margin: 0px;
-  padding: 0px;
-  font-size: 14px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: 100;
-  color: #4d4d4d !important;
-  text-shadow: 0px 0px 0px;
-  border: 0px;
+#header span.link-text {
+  font-size: 12px;
+}
+#header.cozy {
+  height: 60px;
+}
+#header.cozy img.logo {
+  height: 36px;
+}
+#header.cozy h1 {
+  font-size: 30px;
+  line-height: 30px;
+}
+#header.cozy h1 small {
+  display: none;
+}
+#header.cozy span.link-icon {
+  font-size: 30px;
+}
+#header.cozy span.link-text {
+  display: none;
+}
+#header.snug {
+  height: 48px;
+}
+#header.snug img.logo {
+  height: 30px;
+}
+#header.snug h1 {
+  font-size: 24px;
   line-height: 24px;
-  background: none;
 }
-#header nav button:hover {
-  color: #3a6b8c !important;
+#header.snug h1 small {
+  display: none;
 }
-#header nav button span {
-  display: block;
-  font-size: 36px;
-  line-height: 36px;
+#header.snug span.link-icon {
+  font-size: 24px;
+}
+#header.snug span.link-text {
+  display: none;
 }
 /* Container */
 #container {
@@ -6048,6 +6069,14 @@ text {
   padding: 0;
   margin: 0;
   margin-top: 74px;
+}
+#container.cozy {
+  top: 60px;
+  margin-top: 60px;
+}
+#container.snug {
+  top: 48px;
+  margin-top: 48px;
 }
 /* Content */#content {
   width: 80%;

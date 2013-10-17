@@ -330,6 +330,8 @@ $(document).ready(function() {
   /* Set View Size */
   if (localStorage.getItem('view_size')) {
 
+    $('#header').addClass(localStorage.getItem('view_size'));
+    $('#container').addClass(localStorage.getItem('view_size'));
     $('#sidebar').addClass(localStorage.getItem('view_size'));
     $('#sub-navigation').addClass(localStorage.getItem('view_size'));
     $('#bulk-actions').addClass(localStorage.getItem('view_size'));
@@ -372,6 +374,8 @@ $(document).on('click', 'a.change-view-size', function(e) {
   $(this).addClass('view-size-selected');
 
   // Update View Sizes
+  $('#header').removeClass(current_size).addClass(new_size);
+  $('#container').removeClass(current_size).addClass(new_size);
   $('#sidebar').removeClass(current_size).addClass(new_size);
   $('#sub-navigation').removeClass(current_size).addClass(new_size);
   $('#bulk-actions').removeClass(current_size).addClass(new_size);
