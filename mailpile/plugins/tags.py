@@ -1,4 +1,5 @@
 import mailpile.plugins
+import mailpile.config
 from mailpile.commands import Command
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -17,6 +18,18 @@ mailpile.plugins.register_config_variables('sys', {
     'writable_tags': ['Tags used to mark writable messages', 'b36', []]
 })
 
+def GetTagIDMethod(cfg, tn):
+    tn = tn.lower()
+    try:
+        tid = [t._key for t in cfg.tags if t['slug'].lower() == tn]
+        return tid and tid[0] or None
+    except KeyError:
+        return None
+
+# FIXME: Is this bad form or awesome?  This is used in a few places by
+#        commands.py and search.py, but might be a hint that the plugin
+#        architecture needs a little more polishing.
+mailpile.config.ConfigManager.get_tag_id = GetTagIDMethod
 
 
 ##[ Commands ]################################################################

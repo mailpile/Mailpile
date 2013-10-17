@@ -6,6 +6,8 @@ import re
 import ConfigParser
 
 from urllib import quote, unquote
+
+import mailpile.util
 from mailpile.util import *
 from mailpile.vcard import SimpleVCard
 from mailpile.workers import DumbWorker
@@ -646,8 +648,8 @@ class ConfigManager(ConfigDict):
         self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
 
         self.index = None
-        self.vcards = {}
-        self.mbox_cache = {}
+        self._vcards = {}
+        self._mbox_cache = {}
 
     def _mkworkdir(self):
         if not os.path.exists(self.workdir):
@@ -742,8 +744,8 @@ class ConfigManager(ConfigDict):
         fd.write(self.as_config_bytes(private=True))
         fd.close()
 
-    def clear_mbox_cache(self):
-        self.mbox_cache = {}
+    def clear__mbox_cache(self):
+        self._mbox_cache = {}
 
     def is_editable_message(self, msg_info):
         for ptr in msg_info[MailIndex.MSG_PTRS].split(', '):
@@ -772,12 +774,12 @@ class ConfigManager(ConfigDict):
             raise NoSuchMailboxError('No such mailbox: %s' % mbx_id)
 
         try:
-            if mbx_id in self.mbox_cache:
-                self.mbox_cache[mbx_id].update_toc()
+            if mbx_id in self._mbox_cache:
+                self._mbox_cache[mbx_id].update_toc()
             else:
                 if session:
                     session.ui.mark('%s: Updating: %s' % (mbx_id, mfn))
-                    self.mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
+                    self._mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
         except:
             if session:
                 session.ui.mark(('%s: Opening: %s (may take a while)'
@@ -785,9 +787,9 @@ class ConfigManager(ConfigDict):
             mbox = OpenMailbox(mfn)
             mbox.editable = self.is_editable_mailbox(mbx_id)
             mbox.save(session, to=pfn)
-            self.mbox_cache[mbx_id] = mbox
+            self._mbox_cache[mbx_id] = mbox
 
-        return self.mbox_cache[mbx_id]
+        return self._mbox_cache[mbx_id]
 
     def open_local_mailbox(self, session):
         local_id = self.sys.get('local_mailbox_id', None)
@@ -821,6 +823,14 @@ class ConfigManager(ConfigDict):
         }
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
+        """
+        Return the path to a data directory for a particular type of file
+        data, optionally creating the directory if it is missing.
+
+        >>> p = cfg.data_directory('html_theme', mode='r', mkdir=False)
+        >>> p == os.path.abspath('static/default')
+        True
+        """
         # This should raise a KeyError if the ftype is unrecognized
         bpath = self.sys.path.get(ftype)
         if not bpath.startswith('/'):
@@ -831,7 +841,34 @@ class ConfigManager(ConfigDict):
                     os.mkdir(cpath)
             else:
                 bpath = os.path.join(os.path.dirname(__file__), '..', bpath)
-        return bpath
+        return os.path.abspath(bpath)
+
+    def history_file(self):
+        return os.path.join(self.workdir, 'history')
+
+    def mailindex_file(self):
+        return os.path.join(self.workdir, 'mailpile.idx')
+
+    def postinglist_dir(self, prefix):
+        d = os.path.join(self.workdir, 'search')
+        if not os.path.exists(d): os.mkdir(d)
+        d = os.path.join(d, prefix and prefix[0] or '_')
+        if not os.path.exists(d): os.mkdir(d)
+        return d
+
+    def get_index(self, session):
+        if self.index: return self.index
+        idx = MailIndex(self)
+        idx.load(session)
+        self.index = idx
+        return idx
+
+    def open_file(self, ftype, fpath, mode='rb', mkdir=False):
+        if '..' in fpath:
+            raise ValueError('Parent paths are not allowed')
+        bpath = self.data_directory(ftype, mode=mode, mkdir=mkdir)
+        fpath = os.path.join(bpath, fpath)
+        return fpath, open(fpath, mode)
 
     def load_vcards(self, session):
         try:
@@ -854,29 +891,29 @@ class ConfigManager(ConfigDict):
     def index_vcard(self, c):
         if c.kind == 'individual':
             for email, attrs in c.get('EMAIL', []):
-                self.vcards[email.lower()] = c
+                self._vcards[email.lower()] = c
         else:
             for handle, attrs in c.get('NICKNAME', []):
-                self.vcards[handle.lower()] = c
-        self.vcards[c.random_uid] = c
+                self._vcards[handle.lower()] = c
+        self._vcards[c.random_uid] = c
 
     def deindex_vcard(self, c):
         for email, attrs in c.get('EMAIL', []):
-            if email.lower() in self.vcards:
+            if email.lower() in self._vcards:
                 if c.kind == 'individual':
-                    del self.vcards[email.lower()]
+                    del self._vcards[email.lower()]
         for handle, attrs in c.get('NICKNAME', []):
-            if handle.lower() in self.vcards:
+            if handle.lower() in self._vcards:
                 if c.kind != 'individual':
-                    del self.vcards[handle.lower()]
-        if c.random_uid in self.vcards:
-            del self.vcards[c.random_uid]
+                    del self._vcards[handle.lower()]
+        if c.random_uid in self._vcards:
+            del self._vcards[c.random_uid]
 
     def get_vcard(self, email):
-        return self.vcards.get(email.lower(), None)
+        return self._vcards.get(email.lower(), None)
 
     def find_vcards(self, terms, kinds=['individual']):
-        results, vcards = [], self.vcards
+        results, vcards = [], self._vcards
         if not terms:
             results = [set([vcards[k].random_uid for k in vcards
                        if (vcards[k].kind in kinds) or not kinds])]
@@ -917,7 +954,45 @@ class ConfigManager(ConfigDict):
         except (OSError, IOError):
             return False
 
+    def prepare_workers(config, session, daemons=False):
+        # Set globals from config first...
+        mailpile.util.APPEND_FD_CACHE_SIZE = config.get('fd_cache_size',
+                                                        APPEND_FD_CACHE_SIZE)
 
+        if not config.background:
+            # Create a silent background session
+            config.background = Session(config)
+            config.background.ui = BackgroundInteraction(config)
+            config.background.ui.block()
+
+        # Start the workers
+        if config.slow_worker == config.dumb_worker:
+            config.slow_worker = Worker('Slow worker', session)
+            config.slow_worker.start()
+        if daemons and not config.cron_worker:
+            config.cron_worker = Cron('Cron worker', session)
+            config.cron_worker.start()
+
+            # Schedule periodic rescanning, if requested.
+            rescan_interval = config.prefs.rescan_interval
+            if rescan_interval:
+                def rescan():
+                    if 'rescan' not in config.RUNNING:
+                        rsc = Rescan(session, 'rescan')
+                        rsc.serialize = False
+                        config.slow_worker.add_task(None, 'Rescan', rsc.run)
+                config.cron_worker.add_task('rescan', rescan_interval, rescan)
+
+        if daemons and not config.http_worker:
+            # Start the HTTP worker if requested
+            sspec = (config.sys.http_host, config.sys.http_port)
+            if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
+                config.http_worker = HttpWorker(session, sspec)
+                config.http_worker.start()
+
+    def stop_workers(config):
+        for w in (config.http_worker, config.slow_worker, config.cron_worker):
+            if w: w.quit()
 
 
 ##############################################################################
@@ -967,86 +1042,6 @@ class outdatedConfigManager(dict):
         mailboxes = self['mailbox'].keys()
         mailboxes.sort()
         return [(fmt_mbxid(k), self['mailbox'][k]) for k in mailboxes]
-
-    def get_tag_id(self, tn):
-        tn = tn.lower()
-        try:
-            tid = [t for t in self['tag'] if self['tag'][t].lower() == tn]
-            return tid and tid[0] or None
-        except KeyError:
-            return None
-
-    def history_file(self):
-        return self.get('history_file', 
-                        os.path.join(self.workdir, 'history'))
-
-    def mailindex_file(self):
-        return self.get('mailindex_file', 
-                        os.path.join(self.workdir, 'mailpile.idx'))
-
-    def postinglist_dir(self, prefix):
-        d = self.get('postinglist_dir', 
-                     os.path.join(self.workdir, 'search'))
-        if not os.path.exists(d): os.mkdir(d)
-        d = os.path.join(d, prefix and prefix[0] or '_')
-        if not os.path.exists(d): os.mkdir(d)
-        return d
-
-    def get_index(self, session):
-        if self.index: return self.index
-        idx = MailIndex(self)
-        idx.load(session)
-        self.index = idx
-        return idx
-
-    def open_file(self, ftype, fpath, mode='rb', mkdir=False):
-        if '..' in fpath:
-            raise ValueError('Parent paths are not allowed')
-        bpath = self.data_directory(ftype, mode=mode, mkdir=mkdir)
-        fpath = os.path.join(bpath, fpath)
-        return fpath, open(fpath, mode)
-
-    def prepare_workers(config, session, daemons=False):
-        # Set globals from config first...
-        global APPEND_FD_CACHE_SIZE
-        APPEND_FD_CACHE_SIZE = config.get('fd_cache_size', 
-                                          APPEND_FD_CACHE_SIZE)
-
-        if not config.background:
-            # Create a silent background session
-            config.background = Session(config)
-            config.background.ui = BackgroundInteraction(config)
-            config.background.ui.block()
-
-        # Start the workers
-        if config.slow_worker == config.dumb_worker:
-            config.slow_worker = Worker('Slow worker', session)
-            config.slow_worker.start()
-        if daemons and not config.cron_worker:
-            config.cron_worker = Cron('Cron worker', session)
-            config.cron_worker.start()
-
-            # Schedule periodic rescanning, if requested.
-            rescan_interval = config.get('rescan_interval', None)
-            if rescan_interval:
-                def rescan():
-                    if 'rescan' not in config.RUNNING:
-                        rsc = Rescan(session, 'rescan')
-                        rsc.serialize = False
-                        config.slow_worker.add_task(None, 'Rescan', rsc.run)
-                config.cron_worker.add_task('rescan', rescan_interval, rescan)
-
-        if daemons and not config.http_worker:
-            # Start the HTTP worker if requested
-            sspec = (config.get('http_host', 'localhost'), 
-                             config.get('http_port', DEFAULT_PORT))
-            if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
-                config.http_worker = HttpWorker(session, sspec)
-                config.http_worker.start()
-
-    def stop_workers(config):
-        for w in (config.http_worker, config.slow_worker, config.cron_worker):
-            if w: w.quit()
 
 
 if __name__ == "__main__":

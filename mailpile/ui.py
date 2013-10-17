@@ -356,7 +356,6 @@ class HttpUserInteraction(UserInteraction):
 
 
 class BackgroundInteraction(UserInteraction):
-  # FIXME: This shouldn't be quite so silent...
   def _display_log(self, text, level=UserInteraction.LOG_URGENT):
     self._debug_log(text, level, prefix='bg/')
 
@@ -368,11 +367,6 @@ class SilentInteraction(UserInteraction):
     return result
   def edit_messages(self, emails):
     pass
-
-
-class BackgroundInteraction(SilentInteraction):
-  # FIXME: This shouldn't be quite so silent...
-  pass
 
 
 class RawHttpResponder:

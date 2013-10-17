@@ -36,6 +36,8 @@ endpoints be used for automation.
                               ?mid=[metadata-ID]
     /api/0/search/            [@<start>]/<terms>/
                               ?q=[search terms]&start=[start position]&end=[end position]&order=[sort order]
+    /api/0/shownetwork/       <terms>/
+                              ?q=[search terms]
     /api/0/tag/list/          [<wanted>|!<wanted>]/[...]/
                               ?not=[tags]&only=[tags]
 
@@ -111,6 +113,7 @@ endpoints be used for automation.
     /message/update/
     /message/update/send/
     /search/
+    /shownetwork/
     /tag/
     /tag/add/
     /tag/delete/
