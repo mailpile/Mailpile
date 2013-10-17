@@ -64,11 +64,15 @@ class SearchResults(dict):
       results.append(self._prune_msg_tree(tree, context=context))
     return results
 
+  _NAME_TITLES = ('the', 'mr', 'ms', 'mrs', 'sir', 'dr', 'lord')
+
   def _name(self, sender, short=True, full_email=False):
     words = re.sub('["<>]', '', sender).split()
     nomail = [w for w in words if not '@' in w]
     if nomail:
       if short:
+        if len(nomail) > 1 and nomail[0].lower() in self._NAME_TITLES:
+          return nomail[1]
         return nomail[0]
       return ' '.join(nomail)
     elif words:
