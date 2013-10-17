@@ -221,14 +221,15 @@ MailPile.prototype.results_graph = function() {
 	args = $('#pile-graph-canvas-svg').data("searchterms");
 
 	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
-		graph = graph.result[0];
-		console.log(graph);
-		var width = 640; // $("#pile-graph-canvas").width();
-		var height = 640; // $("#pile-graph-canvas").height();
+		graph = graph.result;
+		// console.log(graph);
+		var width = $("#pile-graph-canvas-svg").parent().width();
+		var height = $("#pile-graph-canvas-svg").parent().height();
 		var force = d3.layout.force()
-	   				.charge(-300)
-	   				.linkDistance(75)
-	   				.size([width, height]);
+					.gravity(0.3)
+					.charge(-150)
+					.linkDistance(40)
+					.size([width *= 2/3, height *= 2/3]);
 
 		var svg = d3.select("#pile-graph-canvas-svg");
 		$("#pile-graph-canvas-svg").empty();
@@ -251,7 +252,8 @@ MailPile.prototype.results_graph = function() {
 			.data(graph.links)
 			.enter().append("line")
 			.attr("class", "link")
-			.style("stroke-width", function(d) { return Math.sqrt(3*d.value); });
+			.style("z-index", "6")
+			.style("stroke-width", function(d) { return Math.log(d.value) + 1; });
 
 		var node = svg.selectAll(".node")
 		      .data(graph.nodes)
@@ -260,16 +262,16 @@ MailPile.prototype.results_graph = function() {
 		      .call(force.drag);
 
 		node.append("circle")
-			.attr("r", 8)
+			.attr("r", 5)
+			.style("z-index", "5")
 		    .style("fill", function(d) { return color("#3a6b8c"); })
 
 	    node.append("text")
 	    	.attr("x", 12)
 	    	.attr("dy", "0.35em")
 	    	.style("opacity", "0.3")
+	    	.style("z-index", "1")
 	    	.text(function(d) { return d.email; });
-
-	    link.append("text").attr("x", 12).attr("dy", ".35em").text(function(d) { return d.type; })
 
 	   	node.on("click", function(d, m, q) {
 	   		// d.attr("toggled", !d.attr("toggled"));
@@ -287,7 +289,7 @@ MailPile.prototype.results_graph = function() {
 			d3.select(node[q][m]).selectAll("text").style("opacity", "1");
 		});
 		node.on("mouseout", function(d, m, q) {
-			d3.select(node[q][m]).selectAll("text").style("opacity", "0.3");
+			d3.select(node[q][m]).selectAll("text").style("opacity", "0.15");
 		});
 
 		force.on("tick", function() {
