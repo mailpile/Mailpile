@@ -163,7 +163,7 @@ MailPile.prototype.json_get = function(cmd, params, callback) {
 	if (cmd == "view") {
 		url = "/=" + params["idx"] + "/" + params["msgid"] + ".json";
 	} else {
-		url = "/_/" + cmd + ".json";
+		url = "/api/0/" + cmd;
 	}
 	$.getJSON(url, params, callback);
 }
@@ -219,8 +219,8 @@ MailPile.prototype.results_graph = function(args) {
 	$('#pile-results').hide();
 	$('#pile-graph').show();
 
-	d3.json("/_/shownetwork.json?args=" + args, function(error, graph) {
-		graph = graph[0].result;
+	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
+		graph = graph.result[0];
 		console.log(graph);
 		var width = 640; // $("#pile-graph-canvas").width();
 		var height = 640; // $("#pile-graph-canvas").height();
