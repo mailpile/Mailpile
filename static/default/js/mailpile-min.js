@@ -213,13 +213,14 @@ MailPile.prototype.focus_search = function() {
 }
 
 
-MailPile.prototype.results_graph = function(args) {
+MailPile.prototype.results_graph = function() {
 	$('#btn-display-graph').addClass('navigation-on');
 	$('#btn-display-list').removeClass('navigation-on');
 	$('#pile-results').hide();
 	$('#pile-graph').show();
+	args = $('#pile-graph-canvas-svg').data("searchterms");
 
-	d3.json("/api/0/shownetwork/?q=" + "Keccak", function(graph) {
+	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
 		graph = graph.result;
 		// console.log(graph);
 		var width = 640; // $("#pile-graph-canvas").width();

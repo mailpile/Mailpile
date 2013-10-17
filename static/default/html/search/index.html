@@ -10,13 +10,13 @@
       <a style="display: none;" id="btn-found-group" class="bulk-action" href="#add-to-group"><span class="icon-groups"></span> Add Selected to Group</a>
   </div>
   <div id="pile-graph-canvas" style="width: 100%; height: 640px;">
-      <svg id="pile-graph-canvas-svg"></svg>
+      <svg id="pile-graph-canvas-svg" data-searchterms="{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"></svg>
   </div>
 </div>
 
   {% if result %}
   <form id="form-pile-results" action="" method="POST">
-    <input type='hidden' name='csrf' value='{csrf}' />
+    <input type='hidden' name='csrf' value='{{csrf}}' />
     <table id="pile-results">
     <tbody>
     {% for message in result.messages %}
