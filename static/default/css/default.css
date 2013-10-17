@@ -4106,7 +4106,7 @@ input[type="button"] {
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  text-shadow: 0px 0px 0px;
   padding: 8px 15px;
   display: inline-block;
   cursor: pointer;
@@ -4136,7 +4136,7 @@ input[type="button"] {
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  text-shadow: 0px 0px 0px;
   padding: 8px 15px;
   display: inline-block;
   cursor: pointer;
@@ -4196,7 +4196,7 @@ input[type="button"]:active {
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  text-shadow: 0px 0px 0px;
   text-decoration: none;
   padding: 8px 15px;
   display: inline-block;
@@ -4246,7 +4246,7 @@ input[type="button"]:active {
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  text-shadow: 0px 0px 0px;
   text-decoration: none;
   padding: 8px 15px;
   display: inline-block;
@@ -4296,7 +4296,7 @@ input[type="button"]:active {
   font-size: 16px;
   font-weight: normal !important;
   line-height: normal;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  text-shadow: 0px 0px 0px;
   text-decoration: none;
   padding: 8px 15px;
   display: inline-block;
@@ -5777,6 +5777,61 @@ disabled look for disabled choices in the results dropdown
     background-position: 100% -21px !important;
   }
 }
+/** initial setup **/
+.nano {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.nano .content {
+  position: absolute;
+  overflow: scroll;
+  overflow-x: hidden;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.nano .content:focus {
+  outline: thin dotted;
+}
+.nano .content::-webkit-scrollbar {
+  visibility: hidden;
+}
+.has-scrollbar .content::-webkit-scrollbar {
+  visibility: visible;
+}
+.nano > .pane {
+  background: rgba(0, 0, 0, 0.25);
+  position: absolute;
+  width: 10px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  visibility: hidden\9;
+  /* Target only IE7 and IE8 with this hack */
+
+  opacity: .01;
+  -webkit-transition: .2s;
+  -moz-transition: .2s;
+  -o-transition: .2s;
+  transition: .2s;
+}
+.nano > .pane > .slider {
+  background: #444;
+  background: rgba(0, 0, 0, 0.5);
+  position: relative;
+  margin: 0 1px;
+}
+.nano:hover > .pane,
+.pane.active,
+.pane.flashed {
+  visibility: visible\9;
+  /* Target only IE7 and IE8 with this hack */
+
+  opacity: 0.99;
+}
 /* App */
 /* Messages - Error, Warning, Debug, Info, Success */
 #messages {
@@ -5892,6 +5947,10 @@ text {
 }
 /* Header */
 #header {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 100;
   width: 100%;
   min-width: 700px;
   height: 74px;
@@ -5941,7 +6000,7 @@ text {
   width: 100%;
   height: 100%;
   display: block;
-  font-size: 14px;
+  font-size: 12px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: normal;
   color: #4d4d4d;
@@ -5984,9 +6043,11 @@ text {
 #container {
   width: 100%;
   min-width: 800px;
+  z-index: 1;
   display: table;
   padding: 0;
   margin: 0;
+  margin-top: 74px;
 }
 /* Content */#content {
   width: 80%;
@@ -6275,6 +6336,12 @@ div.content-normal {
 .sidebar-tags-draggable {
   border-radius: 5px;
 }
+.sidebar-tags-draggable-hover {
+  background: #f2f2f2;
+  -webkit-transition-duration: 0.4s;
+  -moz-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+}
 .sidebar-tags-draggable-hover .icon-inbox:before,
 .sidebar-tags-draggable-hover .icon-spam:before,
 .sidebar-tags-draggable-hover .icon-trash:before,
@@ -6283,9 +6350,9 @@ div.content-normal {
 }
 .sidebar-tags-draggable-active {
   background: #cccccc;
-  -webkit-transition-duration: 0.3s;
-  -moz-transition-duration: 0.3s;
-  transition-duration: 0.3s;
+  -webkit-transition-duration: 0.5s;
+  -moz-transition-duration: 0.5s;
+  transition-duration: 0.5s;
 }
 .sidebar-tags-draggable-highlight {
   background: green;
@@ -6452,6 +6519,25 @@ div.content-normal {
   padding-right: 20px;
   box-sizing: padding-box;
 }
+#bulk-actions h5 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: #4d4d4d;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 24px;
+}
+#bulk-actions.cozy h5 {
+  margin-top: 9px;
+  margin-bottom: 9px;
+  font-size: 16px;
+  line-height: 21px;
+}
+#bulk-actions.snug h5 {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 18px;
+}
 #bulk-actions a {
   display: inline-block;
   margin: 10px 30px 10px 0;
@@ -6472,25 +6558,6 @@ div.content-normal {
   position: relative;
   top: 2px;
   left: 0px;
-}
-#bulk-actions h5 {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  color: #4d4d4d;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  line-height: 24px;
-}
-#bulk-actions.cozy h5 {
-  margin-top: 9px;
-  margin-bottom: 9px;
-  font-size: 16px;
-  line-height: 21px;
-}
-#bulk-actions.snug h5 {
-  margin-top: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  line-height: 18px;
 }
 /* Thread */.message-headers {
   border-bottom: 1px solid #b3b3b3;

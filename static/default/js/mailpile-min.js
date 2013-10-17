@@ -346,6 +346,15 @@ $(document).ready(function() {
   }
 
 
+  
+  // Load Scrollers
+  /*
+  $(".nano").nanoScroller({ 
+    alwaysVisible: true,
+    sliderMinHeight: 40
+  });
+  */
+
 });
 
 
@@ -691,6 +700,9 @@ $(document).ready(function() {
       }
 
       return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
+    },
+    stop: function(event, ui) {
+      console.log('done dragging things');
     }
   });
 
