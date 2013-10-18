@@ -1,8 +1,3 @@
-# FIXME: This command is horribly slow, and demonstrates deficienies in
-#        our current indexing. The search index needs to understand the
-#        social graph natively so this, and other social queries, can be
-#        fast.
-
 import datetime
 import re
 import time
@@ -22,9 +17,6 @@ class NetworkGraph(Search):
   ORDER = ('Searching', 1)
   SYNOPSIS = ('n', 'shownetwork', 'shownetwork', '<terms>')
   HTTP_CALLABLE = ('GET', )
-  HTTP_QUERY_VARS = {
-     'q': 'search terms',
-  }
 
   class CommandResult(Command.CommandResult):
     pass
