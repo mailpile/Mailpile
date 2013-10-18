@@ -187,14 +187,14 @@ class UrlMap:
         return self._command('output', [fmt], method=False)
 
     def _map_root(self, request, path_parts, query_data, post_data):
-        """Redirects to /in/Inbox/ for now.  (FIXME)"""
-        return [UrlRedirect(self.session, 'redirect', arg=['/in/Inbox/'])]
+        """Redirects to /in/inbox/ for now.  (FIXME)"""
+        return [UrlRedirect(self.session, 'redirect', arg=['/in/inbox/'])]
 
     def _map_tag(self, request, path_parts, query_data, post_data):
         """
         Map /in/TAG_NAME/[@<pos>]/ to tag searches.
 
-        >>> path = '/in/Inbox/@20/as.json'
+        >>> path = '/in/inbox/@20/as.json'
         >>> commands = urlmap._map_tag(request, path[1:].split('/'), {}, {})
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
@@ -287,7 +287,7 @@ class UrlMap:
         """
         Convert an HTTP request to a list of mailpile.command objects.
 
-        >>> urlmap.map(request, 'GET', '/in/Inbox/', {}, {})
+        >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
 
         The /api/ URL space is versioned and provides access to all the
@@ -302,13 +302,13 @@ class UrlMap:
             ...
         UsageError: Not available for GET: bogus
 
-        The root currently just redirects to /in/Inbox/:
+        The root currently just redirects to /in/inbox/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
-        (<...UrlRedirect instance at 0x...>, ['/in/Inbox/'])
+        (<...UrlRedirect instance at 0x...>, ['/in/inbox/'])
 
         Tag searches have an /in/TAGNAME shorthand:
-        >>> urlmap.map(request, 'GET', '/in/Inbox/', {}, {})
+        >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
 
         Thread shortcuts are /thread/METADATAID/:
@@ -359,11 +359,11 @@ class UrlMap:
         Map a tag to it's short-hand URL.
 
         >>> urlmap.url_tag('Inbox')
-        '/in/Inbox/'
-        >>> urlmap.url_tag('Inbox', output='json')
-        '/in/Inbox/as.json'
+        '/in/inbox/'
+        >>> urlmap.url_tag('inbox', output='json')
+        '/in/inbox/as.json'
         >>> urlmap.url_tag('1')
-        '/in/Inbox/'
+        '/in/inbox/'
 
         Unknown tags raise an exception.
         >>> urlmap.url_tag('99')
@@ -390,11 +390,11 @@ class UrlMap:
         >>> urlmap.url_search(['foo', 'bar', 'baz'])
         '/search/?q=foo%20bar%20baz'
         >>> urlmap.url_search(['foo', 'tag:Inbox', 'wtf'], output='json')
-        '/in/Inbox/as.json?q=foo%20wtf'
+        '/in/inbox/as.json?q=foo%20wtf'
         >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], output='xml')
         '/search/as.xml?q=foo%20tag%3AInbox%20tag%3ANew'
         >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], tag='Inbox')
-        '/in/Inbox/?q=foo%20tag%3ANew'
+        '/in/inbox/?q=foo%20tag%3ANew'
         """
         tags = tag and [tag] or [t for t in search_terms
                                          if t.startswith('tag:')]
