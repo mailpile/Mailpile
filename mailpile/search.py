@@ -676,7 +676,7 @@ class MailIndex(object):
       msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
       par_idx_pos = int(msg_info[self.MSG_CONV_MID], 36)
 
-      if par_idx_pos != msg_idx_pos:
+      if par_idx_pos == msg_idx_pos:
           # Message is head of thread, chop head off!
           thread = msg_info[self.MSG_REPLIES][:-1].split(',')
           if msg_mid in thread:
