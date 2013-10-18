@@ -645,23 +645,24 @@ class MailIndex(object):
       # FIXME: Is this too aggressive? Make configurable?
       subj = msg_info[self.MSG_SUBJECT].lower().replace('re: ', '')
       date = long(msg_info[self.MSG_DATE], 36)
-      for midx in reversed(range(max(0, msg_idx_pos - 250), msg_idx_pos)):
-        try:
-          m_info = self.get_msg_at_idx_pos(midx)
-          if m_info[self.MSG_SUBJECT].lower().replace('re: ', '') == subj:
-            msg_conv_mid = m_info[self.MSG_CONV_MID]
-            parent = self.get_msg_at_idx_pos(int(msg_conv_mid, 36))
-            replies = parent[self.MSG_REPLIES][:-1].split(',')
-            if len(replies) < 100:
-              if msg_mid not in replies:
-                replies.append(msg_mid)
-              parent[self.MSG_REPLIES] = ','.join(replies)+','
-              self.set_msg_at_idx_pos(int(msg_conv_mid, 36), parent)
+      if subj.strip() != '':
+        for midx in reversed(range(max(0, msg_idx_pos - 250), msg_idx_pos)):
+          try:
+            m_info = self.get_msg_at_idx_pos(midx)
+            if m_info[self.MSG_SUBJECT].lower().replace('re: ', '') == subj:
+              msg_conv_mid = m_info[self.MSG_CONV_MID]
+              parent = self.get_msg_at_idx_pos(int(msg_conv_mid, 36))
+              replies = parent[self.MSG_REPLIES][:-1].split(',')
+              if len(replies) < 100:
+                if msg_mid not in replies:
+                  replies.append(msg_mid)
+                parent[self.MSG_REPLIES] = ','.join(replies)+','
+                self.set_msg_at_idx_pos(int(msg_conv_mid, 36), parent)
+                break
+            if date - long(m_info[self.MSG_DATE], 36) > 5*24*3600:
               break
-          if date - long(m_info[self.MSG_DATE], 36) > 5*24*3600:
-            break
-        except (KeyError, ValueError, IndexError):
-          pass
+          except (KeyError, ValueError, IndexError):
+            pass
 
     if not msg_conv_mid:
       # OK, we are our own conversation root.
