@@ -5,6 +5,10 @@ from commands import Action
 import re
 import datetime
 
+# used for gravatar plugin
+import urllib
+import hashlib
+
 class MailpileCommand(Extension):
     """Run Mailpile Commands, """
     tags = set(['mpcmd'])
@@ -17,6 +21,9 @@ class MailpileCommand(Extension):
         environment.filters['regex_replace'] = self._regex_replace
         environment.globals['friendly_date'] = self._friendly_date
         environment.filters['friendly_date'] = self._friendly_date
+        environment.globals['show_avatar'] = self._show_avatar
+        environment.filters['show_avatar'] = self._show_avatar
+
 
     def _command(self, command, *args, **kwargs):
         return Action(self.env.session, command, args, data=kwargs).as_dict()
@@ -37,3 +44,10 @@ class MailpileCommand(Extension):
             return '%d days ago' % days_ago
         else:
             return ts.strftime("%Y-%m-%d")
+
+    def _show_avatar(self, email, default, size=60):
+
+        gravatar_url = "http://www.gravatar.com/avatar/" + hashlib.md5(email.lower()).hexdigest() + "?"
+        gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
+
+        return gravatar_url
