@@ -134,7 +134,10 @@ class Cron(threading.Thread):
         """
         self.ALIVE = False
         if join:
-            self.join()
+            try:
+                self.join()
+            except RuntimeError:
+                pass
 
 
 class Worker(threading.Thread):
@@ -222,7 +225,10 @@ class Worker(threading.Thread):
     def quit(self, session=None, join=True):
         self.die_soon(session=session)
         if join:
-            self.join()
+            try:
+                self.join()
+            except RuntimeError:
+                pass
 
 
 class DumbWorker(Worker):
