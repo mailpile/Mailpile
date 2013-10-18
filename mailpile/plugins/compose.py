@@ -437,6 +437,28 @@ class Update(CompositionCommand):
             return self._error('Nothing to do!')
 
 
+class UnThread(CompositionCommand):
+    """Remove a message from a thread."""
+    SYNOPSIS = ('u', 'unthread', 'message/unthread', None)
+    HTTP_POST_VARS = {'mid': 'message-id'}
+
+    def command(self):
+        session, config, idx = self.session, self.session.config, self._idx()
+
+        # Message IDs can come from post data
+        args = self.args
+        for mid in self.data.get('mid', []):
+            args.append('=%s' % mid)
+        emails = [Email(idx, mid) for mid in self._choose_messages(args)]
+
+        if emails:
+            for email in emails:
+                idx.unset_conversation_ids(email.msg_mid())
+            return self._return_search_results(emails)
+        else:
+            return self._error('Nothing to do!')
+
+
 class UpdateAndSendit(Sendit):
     """Update message from an HTTP upload and send."""
     SYNOPSIS = ('u', None, 'message/update/send', None)
@@ -453,4 +475,5 @@ class UpdateAndSendit(Sendit):
 
 mailpile.plugins.register_commands(Compose, Reply, Forward, # Create
                                    Draft, Update, Attach,   # Manipulate
+                                   UnThread,                # ...
                                    Sendit, UpdateAndSendit) # Send

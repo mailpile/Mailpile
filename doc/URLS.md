@@ -34,6 +34,8 @@ endpoints be used for automation.
     /api/0/message/download/  <att>/<message>/[><fn>]/
     /api/0/message/draft/     [<messages>]/
                               ?mid=[metadata-ID]
+    /api/0/message/unthread/
+    ... POST only: mid=[message-id]
     /api/0/search/            [@<start>]/<terms>/
                               ?q=[search terms]&start=[start position]&end=[end position]&order=[sort order]
     /api/0/shownetwork/       <terms>/
@@ -110,6 +112,7 @@ endpoints be used for automation.
     /message/forward/
     /message/reply/
     /message/send/
+    /message/unthread/
     /message/update/
     /message/update/send/
     /search/
