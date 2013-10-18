@@ -8,9 +8,12 @@ import ConfigParser
 from urllib import quote, unquote
 
 import mailpile.util
+from mailpile.httpd import HttpWorker
+from mailpile.search import MailIndex
 from mailpile.util import *
+from mailpile.ui import Session, BackgroundInteraction
 from mailpile.vcard import SimpleVCard
-from mailpile.workers import DumbWorker
+from mailpile.workers import Worker, DumbWorker, Cron
 
 
 class InvalidKeyError(ValueError):
@@ -65,7 +68,7 @@ def _SlugCheck(slug):
     Verify that a string is a valid URL slug.
 
     >>> _SlugCheck('_Foo-bar.5')
-    '_Foo-bar.5'
+    '_foo-bar.5'
 
     >>> _SlugCheck('Bad Slug')
     Traceback (most recent call last):
@@ -80,7 +83,7 @@ def _SlugCheck(slug):
     if not slug == CleanText(unicode(slug),
                              banned=CleanText.NONDNS).clean:
         raise ValueError('Invalid URL slug: %s' % slug)
-    return slug
+    return slug.lower()
 
 
 def _HostNameCheck(host):
@@ -369,6 +372,20 @@ def RuledContainer(pcls):
                                        ) % (self._name, key))
             return self.rules[key]
 
+        def walk(self, path, parent=False):
+            if '.' in path:
+                path_parts = path.split('.')
+            else:
+                path_parts = path.split('/')
+            cfg = self
+            if parent:
+                var = path_parts.pop(-1)
+            else:
+                var = None
+            for part in path_parts:
+                cfg = cfg[part]
+            return (parent and (cfg, var) or cfg)
+
         def get(self, key, default=None):
             key = self.__fixkey__(key)
             if key in self:
@@ -408,6 +425,9 @@ def RuledContainer(pcls):
                 value._key = key
                 value._name = '%s/%s' % (self._name, key)
 
+        def __createkey_and_setitem__(self, key, value):
+            pcls.__setitem__(self, key, value)
+
         def __setitem__(self, key, value):
             key = self.__fixkey__(key)
             checker = self.get_rule(key)[self.RULE_CHECKER]
@@ -429,7 +449,7 @@ def RuledContainer(pcls):
                     raise Exception(('Unknown constraint for %s/%s: %s'
                                      ) % (self._name, key, checker))
             self.__passkey__(key, value)
-            pcls.__setitem__(self, key, value)
+            self.__createkey_and_setitem__(key, value)
 
     return RC
 
@@ -460,6 +480,12 @@ class ConfigList(RuledContainer(list)):
             self.rules = {}
         if data:
             self[:] = []
+
+    def __createkey_and_setitem__(self, key, value):
+        if key == len(self):
+            list.append(self, value)
+        else:
+            list.__setitem__(self, key, value)
 
     def append(self, value):
         list.append(self, None)
@@ -552,6 +578,11 @@ class ConfigDict(RuledContainer(dict)):
     >>> pot['carrots']
     99
 
+    >>> pot.walk('liquids.vodka')
+    123
+    >>> pot.walk('liquids/vodka', parent=True)
+    ({...}, 'vodka')
+
     >>> pot['colors'].append('red')
     '0'
     >>> pot['colors'].extend(['blue', 'red', 'red'])
@@ -598,7 +629,7 @@ class ConfigDict(RuledContainer(dict)):
         if data:
             for key in self.keys():
                 if hasattr(self[key], 'reset'):
-                    self[key].reset()
+                    self[key].reset(rules=rules, data=data)
                 else:
                     dict.__delitem__(self, key)
 
@@ -738,7 +769,7 @@ class ConfigManager(ConfigDict):
         self.parse_config(session, '\n'.join(lines), source=filename)
         self.load_vcards(session)
 
-    def save(self, session):
+    def save(self):
         self._mkworkdir()
         fd = gpg_open(self.conffile, self.prefs.get('gpg_recipient'), 'wb')
         fd.write(self.as_config_bytes(private=True))
@@ -1010,6 +1041,7 @@ class ConfigManager(ConfigDict):
 if __name__ == "__main__":
     import doctest
     import mailpile.defaults
+    import mailpile.plugins.tags
     import mailpile.ui
 
     cfg = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
@@ -1022,6 +1054,8 @@ if __name__ == "__main__":
     assert(cfg.tags.a['name'] == 'Test Tag 10')
     assert(cfg.sys.http_port ==
            mailpile.defaults.CONFIG_RULES['sys'][-1]['http_port'][-1])
+    assert(cfg.sys.path.vcards == 'vcards')
+    assert(cfg.walk('sys.path.vcards') == 'vcards')
 
     print '%s' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
                                   extraglobs={'cfg': cfg,
