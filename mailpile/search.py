@@ -671,20 +671,36 @@ class MailIndex(object):
     msg_info[self.MSG_CONV_MID] = msg_conv_mid
     self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
 
-  def unset_conversation_ids(self, msg_mid):
+  def unthread_message(self, msg_mid):
       msg_idx_pos = int(msg_mid, 36)
       msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
-
       par_idx_pos = int(msg_info[self.MSG_CONV_MID], 36)
-      if par_idx_pos == msg_idx_pos:
-          return
 
-      par_info = self.get_msg_at_idx_pos(par_idx_pos)
-      thread = par_info[self.MSG_REPLIES][:-1].split(',')
-      if msg_mid in thread:
-          thread.remove(msg_mid)
-          par_info[self.MSG_REPLIES] = ','.join(thread) + ','
-          self.set_msg_at_idx_pos(par_idx_pos, par_info)
+      if par_idx_pos != msg_idx_pos:
+          # Message is head of thread, chop head off!
+          thread = msg_info[self.MSG_REPLIES][:-1].split(',')
+          if msg_mid in thread:
+              thread.remove(msg_mid)
+              msg_info[self.MSG_REPLIES] = ''
+          if thread and thread[0]:
+              head_mid = thread[0]
+              head_idx_pos = int(head_mid, 36)
+              head_info = self.get_msg_at_idx_pos(head_idx_pos)
+              head_info[self.MSG_REPLIES] = ','.join(thread) + ','
+              self.set_msg_at_idx_pos(head_idx_pos, head_info)
+              for msg_mid in thread:
+                  kid_idx_pos = int(thread[0], 36)
+                  kid_info = self.get_msg_at_idx_pos(head_idx_pos)
+                  kid_info[self.MSG_CONV_MID] = head_mid
+                  kid.set_msg_at_idx_pos(head_idx_pos, head_info)
+      else:
+          # Message is a reply, remove it from thread
+          par_info = self.get_msg_at_idx_pos(par_idx_pos)
+          thread = par_info[self.MSG_REPLIES][:-1].split(',')
+          if msg_mid in thread:
+              thread.remove(msg_mid)
+              par_info[self.MSG_REPLIES] = ','.join(thread) + ','
+              self.set_msg_at_idx_pos(par_idx_pos, par_info)
 
       msg_info[self.MSG_CONV_MID] = msg_mid
       self.set_msg_at_idx_pos(msg_idx_pos, msg_info)

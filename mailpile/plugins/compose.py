@@ -453,7 +453,7 @@ class UnThread(CompositionCommand):
 
         if emails:
             for email in emails:
-                idx.unset_conversation_ids(email.msg_mid())
+                idx.unthread_message(email.msg_mid())
             return self._return_search_results(emails)
         else:
             return self._error('Nothing to do!')
