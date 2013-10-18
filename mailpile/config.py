@@ -747,6 +747,16 @@ class ConfigManager(ConfigDict):
     def clear__mbox_cache(self):
         self._mbox_cache = {}
 
+    def get_mailboxes(self):
+        def fmt_mbxid(k):
+            k = b36(int(k, 36))
+            if len(k) > MBX_ID_LEN:
+                raise ValueError('Mailbox ID too large: %s' % k)
+            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN: ]
+        mailboxes = [fmt_mbxid(k) for k in self.mailbox.keys()]
+        mailboxes.sort()
+        return [(k, self['mailbox'][k]) for k in mailboxes]
+
     def is_editable_message(self, msg_info):
         for ptr in msg_info[MailIndex.MSG_PTRS].split(', '):
             if not self.is_editable_mailbox(ptr[: MBX_ID_LEN]):
@@ -996,53 +1006,6 @@ class ConfigManager(ConfigDict):
 
 
 ##############################################################################
-
-class outdatedConfigManager(dict):
-
-    def filter_swap(self, fid_a, fid_b):
-        tmp = {}
-        for key in ('filter', 'filter_terms', 'filter_tags'):
-            tmp[key] = self[key][fid_a]
-        for key in ('filter', 'filter_terms', 'filter_tags'):
-            self[key][fid_a] = self[key][fid_b]
-        for key in ('filter', 'filter_terms', 'filter_tags'):
-            self[key][fid_b] = tmp[key]
-
-    def filter_move(self, filter_id, filter_new_id):
-        # This just makes sure both exist, will raise of not
-        f1, f2 = self['filter'][filter_id], self['filter'][filter_new_id]
-        forig = int(filter_id, 36)
-        ftarget = int(filter_new_id, 36)
-        if forig > ftarget:
-            for fid in reversed(range(ftarget, forig)):
-                self.filter_swap(b36(fid+1).lower(), b36(fid).lower())
-        else:
-            for fid in range(forig, ftarget):
-                self.filter_swap(b36(fid).lower(), b36(fid+1).lower())
-
-    def get_filters(self, filter_on=None):
-        filters = self.get('filter', {}).keys()
-        filters.sort(key=lambda k: int(k, 36))
-        flist = []
-        for fid in filters:
-            comment = self.get('filter', {}).get(fid, '')
-            terms = unicode(self.get('filter_terms', {}).get(fid, ''))
-            tags = unicode(self.get('filter_tags', {}).get(fid, ''))
-            if filter_on is not None and terms != filter_on:
-                continue
-            flist.append((fid, terms, tags, comment))
-        return flist
-
-    def get_mailboxes(self):
-        def fmt_mbxid(k):
-            k = b36(int(k, 36))
-            if len(k) > MBX_ID_LEN:
-                raise ValueError('Mailbox ID too large: %s' % k)
-            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN: ]
-        mailboxes = self['mailbox'].keys()
-        mailboxes.sort()
-        return [(fmt_mbxid(k), self['mailbox'][k]) for k in mailboxes]
-
 
 if __name__ == "__main__":
     import doctest

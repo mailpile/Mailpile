@@ -12,11 +12,44 @@ from mailpile.plugins.search import Search
 mailpile.plugins.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
     'slug': ['URL slug', 'slug', ''],
+    # FIXME: Add more exciting metadata
+}, []])
+
+mailpile.plugins.register_config_section('filters', ["Filters", {
+    'tags': ['Tag/untag actions', 'str', ''],
+    'terms': ['Search terms', 'str', ''],
+    'comment': ['Human readable description', 'str', ''],
 }, []])
 
 mailpile.plugins.register_config_variables('sys', {
     'writable_tags': ['Tags used to mark writable messages', 'b36', []]
 })
+
+def GetFilters(cfg, filter_on=None):
+    filters = cfg.filters.keys()
+    filters.sort(key=lambda k: int(k, 36))
+    flist = []
+    for fid in filters:
+        terms = cfg.filters[fid]['comment']
+        if filter_on is not None and terms != filter_on:
+            continue
+        flist.append((fid, terms, cfg.filters[fid]['tags'],
+                                  cfg.filters[fid]['comments']))
+    return flist
+
+def MoveFilter(cfg, filter_id, filter_new_id):
+    def swap(f1, f2):
+        tmp = cfg.filters[f1]
+        cfg.filters[f1] = cfg.filters[f2]
+        cfg.filters[f2] = tmp
+    ffrm = int(filter_id, 36)
+    fto = int(filter_new_id, 36)
+    if ffrm > fto:
+        for fid in reversed(range(fto, ffrm)):
+            swap(fid+1, fid)
+    else:
+        for fid in range(ffrm, fto):
+            swap(fid, fid+1)
 
 def GetTagIDMethod(cfg, tn):
     tn = tn.lower()
@@ -30,6 +63,8 @@ def GetTagIDMethod(cfg, tn):
 #        commands.py and search.py, but might be a hint that the plugin
 #        architecture needs a little more polishing.
 mailpile.config.ConfigManager.get_tag_id = GetTagIDMethod
+mailpile.config.ConfigManager.get_filters = GetFilters
+mailpile.config.ConfigManager.filter_move = MoveFilter
 
 
 ##[ Commands ]################################################################
