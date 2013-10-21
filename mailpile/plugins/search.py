@@ -206,7 +206,9 @@ class SearchResults(dict):
         exp_email = self.expand[expand_ids.index(int(m['mid'], 36))]
         text.append(exp_email.get_editing_string(exp_email.get_message_tree()))
       else:
-        msg_tags = m['tags'] and (' <' + '<'.join(m['tags'])) or ''
+        tag_names = [t['name'] for t in m['tags'].values()
+                                     if not t['searched']]
+        msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
         sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
         text.append((cfmt+' %s %-25.25s '+sfmt
                      ) % (count, m['date'], m['short_from'], m['subject'],
