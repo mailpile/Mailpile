@@ -1154,6 +1154,11 @@ class OldConfigLoader:
             except Exception, e:
                 print 'Could not parse (%s): %s' % (e, line)
                 errors += 1
+        for writable in ('Blank', 'Drafts'):
+            if writable not in config.sys.writable_tags:
+                 tid = config.get_tag_id(writable)
+                 if tid:
+                     config.sys.writable_tags.append(tid)
         return (errors == 0)
 
 
