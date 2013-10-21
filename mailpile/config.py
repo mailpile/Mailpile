@@ -1,4 +1,5 @@
 import copy
+import cPickle
 import io
 import json
 import os
@@ -872,6 +873,9 @@ class ConfigManager(ConfigDict):
                     session.ui.mark('%s: Updating: %s' % (mbx_id, mfn))
                 self._mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
         except:
+            if session.config.sys.debug:
+                import traceback
+                traceback.print_exc()
             if session:
                 session.ui.mark(('%s: Opening: %s (may take a while)'
                                  ) % (mbx_id, mfn))
