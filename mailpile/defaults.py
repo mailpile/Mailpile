@@ -14,12 +14,11 @@ CONFIG_RULES = {
         'sort_max':       ('Max results we sort "well"', int,            2500),
         'snippet_max':    ('Max length of metadata snippets', int,        250),
         'debug':          ('Debugging flags', str,                         ''),
-        'gpg_keyserver':  ('Host:port of GPG key server', str,             ''),
+'gpg_keyserver': ('Host:port of PGP keyserver', str, 'pool.sks-keyservers.net'),
         'http_host':    ('Listening host for web UI', 'hostname', 'localhost'),
         'local_mailbox_id': ('Local read/write Maildir', 'b36',            ''),
         'mailindex_file': ('Metadata index file', 'file',                  ''),
         'postinglist_dir': ('Search index directory', 'dir',               ''),
-        'obfuscate_index': ('Key to use to scramble the index', str,       ''),
         'mailbox':        ['Mailboxes we index', 'path',                   []],
         'path':           ['Locations of assorted data', False, {
              'html_theme': ['Default theme', 'dir',          'static/default'],
@@ -33,6 +32,7 @@ CONFIG_RULES = {
         'gpg_clearsign':   ('Inline PGP signatures or attached', bool,  False),
         'default_order':   ('Default sort order', str,             'rev-date'),
         'gpg_recipient':   ('Encrypt local data to ...', str,              ''),
+        'obfuscate_index': ('Key to use to scramble the index', str,       ''),
         'rescan_command':  ('Command run before rescanning', str,          ''),
         'default_email':   ('Default outgoing e-mail address', 'email',    ''),
     }],
@@ -52,4 +52,5 @@ if __name__ == "__main__":
 
     print '%s' % (ConfigDict(_name='mailpile',
                              _comment='Default configuration',
-                             _rules=mailpile.defaults.CONFIG_RULES), )
+                             _rules=mailpile.defaults.CONFIG_RULES
+                             ).as_config_bytes(), )

@@ -1,5 +1,6 @@
 import mailpile.app
 import mailpile.commands
+import mailpile.defaults
 import mailpile.ui
 
 # Load the standard plugins
@@ -13,7 +14,8 @@ class Mailpile(object):
     """This object provides a simple Python API to Mailpile."""
 
     def __init__(self, ui=mailpile.ui.UserInteraction, workdir=None):
-        self._config = mailpile.app.ConfigManager(workdir=workdir)
+        self._config = mailpile.app.ConfigManager(workdir=workdir,
+                                         rules=mailpile.defaults.CONFIG_RULES)
         self._session = mailpile.ui.Session(self._config)
         self._ui = self._session.ui = ui(self._config)
         self._session.config.load(self._session)

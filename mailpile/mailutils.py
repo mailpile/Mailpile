@@ -136,7 +136,7 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
 
 def SendMail(session, from_to_msg_tuples):
   for frm, to, msg in from_to_msg_tuples:
-    if 'sendmail' in session.config.get('debug', ''):
+    if 'sendmail' in session.config.sys.debug:
       sys.stderr.write('SendMail: from %s, to %s\n' % (frm, to))
     sm_write = sm_close = lambda: True
     sendmail = session.config.get_sendmail(frm, to).strip()
@@ -160,7 +160,7 @@ def SendMail(session, from_to_msg_tuples):
       else:
         user = pwd = None
 
-      if 'sendmail' in session.config.get('debug', ''):
+      if 'sendmail' in session.config.sys.debug:
         sys.stderr.write(('SMTP conn to: %s:%s as %s@%s\n'
                           ) % (host, port, user, pwd))
 
@@ -549,7 +549,7 @@ class Email(object):
              msg_subject=None, msg_text=None, msg_references=None):
     msg = MIMEMultipart()
     msg_date = int(time.time())
-    msg_from = msg_from or idx.config.get_from_address()
+    msg_from = msg_from or idx.config.get_profile().get('email', None)
     if not msg_from:
       raise NoFromAddressError()
     msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)

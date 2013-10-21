@@ -9,6 +9,7 @@ from urllib import quote, unquote
 
 import mailpile.util
 from mailpile.httpd import HttpWorker
+from mailpile.mailutils import MBX_ID_LEN, OpenMailbox, IncrementalMaildir
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
@@ -27,7 +28,7 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
 
     >>> cfg.sys.debug = u'm\\xe1ny\\nlines\\nof\\nbelching  '
     >>> cecp = CommentedEscapedConfigParser()
-    >>> cecp.readfp(io.BytesIO(str(cfg)))
+    >>> cecp.readfp(io.BytesIO(cfg.as_config_bytes()))
     >>> cecp.get('config/sys: Technical system settings', 'debug'
     ...          ) == cfg.sys.debug
     True
@@ -247,12 +248,10 @@ def RuledContainer(pcls):
             self.update(*args, **kwargs)
 
         def __str__(self):
-            return str(self.as_config_bytes())
-            #return json.dumps(self, sort_keys=True, indent=2)
+            return json.dumps(self, sort_keys=True, indent=2)
 
         def __unicode__(self):
-            return unicode(self.as_config_bytes().decode('utf-8'))
-            #return json.dumps(self, sort_keys=True, indent=2)
+            return json.dumps(self, sort_keys=True, indent=2)
 
         def as_config_bytes(self, private=True):
             of = io.BytesIO()
@@ -421,7 +420,7 @@ def RuledContainer(pcls):
                 pcls.__setattr__(self, attr, value)
 
         def __passkey__(self, key, value):
-            if hasattr(value, 'key'):
+            if hasattr(value, '_key'):
                 value._key = key
                 value._name = '%s/%s' % (self._name, key)
 
@@ -450,6 +449,14 @@ def RuledContainer(pcls):
                                      ) % (self._name, key, checker))
             self.__passkey__(key, value)
             self.__createkey_and_setitem__(key, value)
+
+        def extend(self, src):
+            for val in src:
+                self.append(val)
+
+        def __iadd__(self, src):
+            self.extend(src)
+            return self
 
     return RC
 
@@ -495,14 +502,6 @@ class ConfigList(RuledContainer(list)):
         except:
             self[len(self) - 1:] = []
             raise
-
-    def extend(self, src):
-        for val in src:
-            self.append(val)
-
-    def __iadd__(self, src):
-        self.extend(src)
-        return self
 
     def __passkey__(self, key, value):
         if hasattr(value, '_key'):
@@ -634,11 +633,24 @@ class ConfigDict(RuledContainer(dict)):
                     dict.__delitem__(self, key)
 
     def __delitem__(self, key):
-        raise UsageError('Deleting keys from %s is not allowed' % self.name)
+        if ('_any' not in self.rules) or (key in self.rules):
+            raise UsageError(('Deleting %s from %s is not allowed'
+                              ) % (key, self._name))
+        else:
+            return dict.__delitem__(self, key)
 
     def all_keys(self):
         keys = set(self.keys()) | set(self.rules.keys()) - set(['_any'])
         return list(keys)
+
+    def append(self, value):
+        """Add to the dict using an autoselected key"""
+        if '_any' in self.rules:
+            nid = b36(max([int(k, 36) for k in self.keys()] + [-1])+1).lower()
+            self[nid] = value
+            return nid
+        else:
+            raise UsageError('Cannot append to fixed dict')
 
     def update(self, *args, **kwargs):
         """Reimplement update, so it goes through our sanity checks."""
@@ -681,8 +693,9 @@ class ConfigManager(ConfigDict):
         self.index = None
         self._vcards = {}
         self._mbox_cache = {}
+        self._running = {}
 
-    def _mkworkdir(self):
+    def _mkworkdir(self, session):
         if not os.path.exists(self.workdir):
             if session:
                 session.ui.notify('Creating: %s' % self.workdir)
@@ -712,9 +725,11 @@ class ConfigManager(ConfigDict):
         >>> [l[1] for l in session.ui.log_buffer if 'bogus_var' in l[1]][0]
         u'Invalid (internal): section config/sys, ...
 
-        >>> cfg.parse_config(session, '[config/tags/0]\\nname = TagName\\n')
+        >>> cfg.parse_config(session, '[config/tags/a]\\nname = TagName\\n')
         True
-        >>> cfg.tags['0'].name
+        >>> cfg.tags['a']._key
+        'a'
+        >>> cfg.tags['a'].name
         u'TagName'
         """
         parser = CommentedEscapedConfigParser()
@@ -729,9 +744,9 @@ class ConfigManager(ConfigDict):
                 elif '_any' in cfg.rules:
                     if isinstance(cfg, list):
                         cfg.append({})
-                        cfg = cfg[part]
                     else:
-                        cfg = cfg[part] = {}
+                        cfg[part] = {}
+                    cfg = cfg[part]
                 else:
                     if session:
                         msg = (u'Invalid (%s): section %s does not exist'
@@ -750,7 +765,7 @@ class ConfigManager(ConfigDict):
         return okay
 
     def load(self, session, filename=None):
-        self._mkworkdir()
+        self._mkworkdir(session)
         self.index = None
         self.reset(rules=False, data=True)
 
@@ -770,7 +785,7 @@ class ConfigManager(ConfigDict):
         self.load_vcards(session)
 
     def save(self):
-        self._mkworkdir()
+        self._mkworkdir(None)
         fd = gpg_open(self.conffile, self.prefs.get('gpg_recipient'), 'wb')
         fd.write(self.as_config_bytes(private=True))
         fd.close()
@@ -809,7 +824,7 @@ class ConfigManager(ConfigDict):
     def open_mailbox(self, session, mailbox_id):
         try:
             mbx_id = mailbox_id.lower()
-            mfn = self.mailbox[mbx_id]
+            mfn = self.sys.mailbox[mbx_id]
             pfn = os.path.join(self.workdir, 'pickled-mailbox.%s' % mbx_id)
         except KeyError:
             raise NoSuchMailboxError('No such mailbox: %s' % mbx_id)
@@ -844,22 +859,22 @@ class ConfigManager(ConfigDict):
             local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
         return local_id, self.open_mailbox(session, local_id)
 
-    def get_default_profile(self):
-        email = self.prefs.get('default_email', None)
+    def get_profile(self, email=None):
+        find = email or self.prefs.get('default_email', None)
         for profile in self.profiles:
-            if profile.email == email or not email:
-                self.prefs.default_email = profile.email
+            if profile.email == find or not find:
+                if not email:
+                    self.prefs.default_email = profile.email
                 return profile
         return {
             'name': None,
-            'email': email,
+            'email': find,
             'signature': None,
             'route': DEFAULT_SENDMAIL
         }
 
-    def get_sendmail(self, profile, rcpts='-t'):
-        global DEFAULT_SENDMAIL
-        return profile.route % {
+    def get_sendmail(self, frm, rcpts='-t'):
+        return self.get_profile(frm)['route'] % {
             'rcpt': ', '.join(rcpts)
         }
 
@@ -1018,7 +1033,7 @@ class ConfigManager(ConfigDict):
             rescan_interval = config.prefs.rescan_interval
             if rescan_interval:
                 def rescan():
-                    if 'rescan' not in config.RUNNING:
+                    if 'rescan' not in config._running:
                         rsc = Rescan(session, 'rescan')
                         rsc.serialize = False
                         config.slow_worker.add_task(None, 'Rescan', rsc.run)

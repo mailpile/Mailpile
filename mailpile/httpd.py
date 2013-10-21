@@ -105,7 +105,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       code, msg = 403, "Access denied"
     else:
       try:
-        tpl = config.get('path', {}).get(self.http_host(), 'html_theme')
+        tpl = config.sys.path.get(self.http_host(), 'html_theme')
         fpath, fd = config.open_file(tpl, filename)
         mimetype = mimetypes.guess_type(fpath)[0] or "application/octet-stream"
         message = fd.read()
@@ -179,7 +179,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     # HTTP is stateless, so we create a new session for each request.
     config = self.server.session.config
 
-    if 'http' in config.get('debug', ''):
+    if 'http' in config.sys.debug:
       sys.stderr.write(('%s: %s qs=%s post=%s\n'
                         ) % (method, path, query_data, post_data))
 

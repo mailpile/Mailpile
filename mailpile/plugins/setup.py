@@ -19,11 +19,12 @@ class Setup(Command):
         session.config.open_local_mailbox(session)
 
         # Create standard tags and filters
-        tags = session.config.get('tag', {}).values()
+        created = []
         for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Blank', 'Sent', 'Trash'):
-            if t not in tags:
+            if not session.config.get_tag_id(t):
                 AddTag(session, arg=[t]).run()
-        if 'New' not in tags:
+                created.append(t)
+        if 'New' in created:
             Filter(session,
                    arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
             Filter(session,

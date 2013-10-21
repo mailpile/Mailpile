@@ -28,24 +28,25 @@ from mailpile import Mailpile
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
 MY_FROM = 'test@test.com'
+
+# First, we set up a pristine Mailpile
+os.system('rm -rf %s' % mailpile_home)
+mp = Mailpile(workdir=mailpile_home)
+
+def contents(fn):
+    return open(fn, 'r').read()
+
+def grep(w, fn):
+    return '\n'.join([l for l in open(fn, 'r').readlines() if w in l])
+
+def grepv(w, fn):
+    return '\n'.join([l for l in open(fn, 'r').readlines() if w not in l])
+
+def say(stuff):
+    mp._session.ui.mark(stuff)
+    mp._session.ui.reset_marks()
+
 try:
-    # First, we set up a pristine Mailpile
-    os.system('rm -rf %s' % mailpile_home)
-    mp = Mailpile(workdir=mailpile_home)
-
-    def contents(fn):
-        return open(fn, 'r').read()
-
-    def grep(w, fn):
-        return '\n'.join([l for l in open(fn, 'r').readlines() if w in l])
-
-    def grepv(w, fn):
-        return '\n'.join([l for l in open(fn, 'r').readlines() if w not in l])
-
-    def say(stuff):
-        mp._session.ui.mark(stuff)
-        mp._session.ui.reset_marks()
-
     # Set up initial tags and such
     mp.setup()
 

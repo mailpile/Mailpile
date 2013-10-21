@@ -371,11 +371,14 @@ class UrlMap:
             ...
         ValueError: Unknown tag: 99
         """
-        if tag_id in self.session.config.get('tag', {}):
-            return self._url('/in/%s/' % self.session.config['tag'][tag_id],
-                             output)
-        elif tag_id in self.session.config.get('tag', {}).values():
-            return self._url('/in/%s/' % tag_id, output)
+        try:
+            tag = self.session.config.tags[tag_id]
+        except (KeyError, IndexError):
+            tag = [t for t in self.session.config.tags
+                           if t.slug == tag_id.lower()]
+            tag = tag and tag[0]
+        if tag:
+            return self._url('/in/%s/' % tag.slug, output)
         raise ValueError('Unknown tag: %s' % tag_id)
 
     def url_sent(self, output=''):
@@ -546,14 +549,18 @@ else:
     # If run as a python script, print map and run doctests.
     import doctest
     import mailpile.app
+    import mailpile.config
+    import mailpile.plugins.tags
+    import mailpile.defaults
     import mailpile.plugins
     import mailpile.ui
 
-    session = mailpile.ui.Session(mailpile.app.ConfigManager())
-    session.config['tag'] = {
-        '0': 'New',
-        '1': 'Inbox'
-    }
+    config = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
+    config.tags.extend([
+        {'name': 'New',   'slug': 'New'},
+        {'name': 'Inbox', 'slug': 'Inbox'},
+    ])
+    session = mailpile.ui.Session(config)
     urlmap = UrlMap(session)
     urlmap.print_map_markdown()
 

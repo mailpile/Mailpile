@@ -101,7 +101,7 @@ class CompositionCommand(Search):
                 ])))
             fofs += 1
 
-        if 'compose' in self.session.config.get('debug', ''):
+        if 'compose' in self.session.config.sys.debug:
             for e, up in updates:
                  sys.stderr.write(('compose/update: Update %s with:\n%s\n--\n'
                                    ) % ((e and e.msg_mid() or '(new'), up))
@@ -384,7 +384,7 @@ class Sendit(CompositionCommand):
                 session.ui.error('Failed to send %s' % email)
                 self._ignore_exception()
 
-        if 'compose' in config.get('debug', ''):
+        if 'compose' in config.sys.debug:
             sys.stderr.write(('compose/Sendit: Send %s to %s (sent: %s)\n'
                               ) % (len(emails),
                                    bounce_to or '(header folks)', sent))
