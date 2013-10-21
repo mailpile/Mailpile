@@ -303,7 +303,7 @@ def RuledContainer(pcls):
                         else:
                             pad = ''
                         if not added_section:
-                            config.add_section(section)
+                            config.add_section(str(section))
                             added_section = True
                         config.set(section, key, value, comment)
             for key in keys:
@@ -655,13 +655,6 @@ class ConfigDict(RuledContainer(dict)):
                     self[key].reset(rules=rules, data=data)
                 else:
                     dict.__delitem__(self, key)
-
-    def __delitem__(self, key):
-        if ('_any' not in self.rules) or (key in self.rules):
-            raise UsageError(('Deleting %s from %s is not allowed'
-                              ) % (key, self._name))
-        else:
-            return dict.__delitem__(self, key)
 
     def all_keys(self):
         keys = set(self.keys()) | set(self.rules.keys()) - set(['_any'])
