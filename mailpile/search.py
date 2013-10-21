@@ -914,7 +914,8 @@ class MailIndex(object):
             in msg_info[self.MSG_REPLIES].split(',') if r]
 
   def get_tags(self, msg_info=None, msg_idx=None):
-    if not msg_info: msg_info = self.get_msg_at_idx_pos(msg_idx)
+    if not msg_info:
+      msg_info = self.get_msg_at_idx_pos(msg_idx)
     return [r for r in msg_info[self.MSG_TAGS].split(',') if r]
 
   def add_tag(self, session, tag_id,

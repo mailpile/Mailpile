@@ -365,11 +365,14 @@ class ConfigSet(Command):
 
     for path, value in ops:
         value = value.strip()
-        cfg, var = config.walk(path.strip(), parent=True)
         if value.startswith('{') or value.startswith('['):
-            cfg[var] = json.loads(value)
-        else:
+            value = json.loads(value)
+        try:
+            cfg, var = config.walk(path.strip(), parent=1)
             cfg[var] = value
+        except IndexError:
+            cfg, v1, v2 = config.walk(path.strip(), parent=2)
+            cfg[v1] = {v2: value}
 
     self._serialize('Save config', lambda: config.save())
     return True
@@ -430,8 +433,8 @@ class AddMailbox(Command):
     adding = []
     for raw_fn in self.args:
       fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
-      if (raw_fn in config.get('mailbox', {}).values() or
-          fn in config.get('mailbox', {}).values()):
+      existing = config.sys.mailbox
+      if raw_fn in existing or fn in existing:
         session.ui.warning('Already in the pile: %s' % raw_fn)
       else:
         if raw_fn.startswith("imap://"):
@@ -441,14 +444,14 @@ class AddMailbox(Command):
             adding.append(fn)
           else:
             return self._error('No such file/directory: %s' % raw_fn)
-    added = 0
+    added = {}
     for arg in adding:
-      if config.parse_set(session,
-                          'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
-        added += 1
+      added[config.sys.mailbox.append(arg)] = arg
     if added:
       self._serialize('Save config', lambda: config.save())
-    return True
+      return {'added': added}
+    else:
+      return True
 
 
 ###############################################################################

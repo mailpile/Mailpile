@@ -121,7 +121,8 @@ class SearchResults(dict):
     # FIXME: The search_tags is broken for many search results, needs
     #        to be rewritten after config refactor.
     self['search_terms'] = terms = session.searched
-    self['search_tags'] = [idx.config['tag'].get(t.split(':')[1], t)
+    self['search_tags'] = [idx.config.tags.get(t.split(':')[1],
+                                               {}).get('slug', t)
                            for t in terms if t.startswith('tag:')]
 
     num = num or session.config.get('num_results', 20)
@@ -148,10 +149,11 @@ class SearchResults(dict):
       ])
       # FIXME: This is nice, but doing it in _explain_msg_summary
       #        would be nicer.
-      result['tags'] = dict([(t, {'name': idx.config['tag'].get(t,t),
-                                  'slug': idx.config['tag'].get(t,t),
-                                  'searched': ('tag:%s' % t in terms)})
-                             for t in idx.get_tags(msg_info=msg_info)])
+      if 'tags' in idx.config:
+        result['tags'] = dict([(t, {'name': idx.config.tags.get(t,t),
+                                    'slug': idx.config.tags.get(t,t),
+                                    'searched': ('tag:%s' % t in terms)})
+                               for t in idx.get_tags(msg_info=msg_info)])
       if not expand:
         conv = idx.get_conversation(msg_info)
       else:
@@ -444,9 +446,9 @@ def mailbox_search(config, idx, term, hits):
     except ValueError:
         mailbox_id = None
 
-    mailboxes = config.get('mailbox', {})
-    mailboxes = [m for m in mailboxes if word in mailboxes[m].lower() or
-                                         mailbox_id == m]
+    mailboxes = [m for m in config.sys.mailbox.keys()
+                         if word in config.sys.mailbox[m].lower() or
+                            mailbox_id == m]
     rt = []
     for mbox_id in mailboxes:
        mbox_id = (('0' * MBX_ID_LEN) + mbox_id)[-MBX_ID_LEN:]

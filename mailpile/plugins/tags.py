@@ -30,11 +30,11 @@ def GetFilters(cfg, filter_on=None):
     filters.sort(key=lambda k: int(k, 36))
     flist = []
     for fid in filters:
-        terms = cfg.filters[fid]['comment']
+        terms = cfg.filters[fid].get('comment', '')
         if filter_on is not None and terms != filter_on:
             continue
-        flist.append((fid, terms, cfg.filters[fid]['tags'],
-                                  cfg.filters[fid]['comments']))
+        flist.append((fid, terms, cfg.filters[fid].get('tags', ''),
+                                  cfg.filters[fid].get('comments', '')))
     return flist
 
 def MoveFilter(cfg, filter_id, filter_new_id):
@@ -275,10 +275,10 @@ class DeleteTag(TagCommand):
     for tag_name in self.args:
       tag = config.get_tag(tag_name)
       if tag:
-        tag_id = tag._key 
+        tag_id = tag._key
         # FIXME: Refuse to delete tag if in use by filters
         rv = (Search(clean_session, arg=['tag:%s' % tag_id]).run() and
-              Tag(clean_session, arg=['-%s' % tag_id, 'all']).run()) 
+              Tag(clean_session, arg=['-%s' % tag_id, 'all']).run())
         if rv:
           del config.tags[tag_id]
           result.append({'name': tag.name, 'tid': tag_id})

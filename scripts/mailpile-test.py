@@ -51,9 +51,10 @@ try:
     mp.setup()
 
     # Configure our fake mail sending setup
-    mp.set('my_from: %s = Test Account' % MY_FROM)
-    mp.set('my_sendmail: %s = |%s -i %%(rcpt)s' % (MY_FROM, mailpile_send))
-    mp.set('debug = sendmail log compose')
+    mp.set('profiles/0/email = %s' % MY_FROM)
+    mp.set('profiles/0/name = Test Account')
+    mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
+    mp.set('sys/debug = sendmail log compose')
 
     # Add the mailboxes, scan them
     for mailbox in ('tests.mbx', 'Maildir'):

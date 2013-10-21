@@ -371,19 +371,24 @@ def RuledContainer(pcls):
                                        ) % (self._name, key))
             return self.rules[key]
 
-        def walk(self, path, parent=False):
+        def walk(self, path, parent=0):
             if '.' in path:
-                path_parts = path.split('.')
+                sep = '.'
             else:
-                path_parts = path.split('/')
+                sep = '/'
+            path_parts = path.split(sep)
             cfg = self
             if parent:
-                var = path_parts.pop(-1)
+                vlist = path_parts[-parent:]
+                path_parts[-parent:] = []
             else:
-                var = None
+                vlist = []
             for part in path_parts:
                 cfg = cfg[part]
-            return (parent and (cfg, var) or cfg)
+            if parent:
+                return tuple([cfg] + vlist)
+            else:
+                return cfg
 
         def get(self, key, default=None):
             key = self.__fixkey__(key)
@@ -522,6 +527,9 @@ class ConfigList(RuledContainer(list)):
 
     def keys(self):
         return [b36(i).lower() for i in range(0, len(self))]
+
+    def values(self):
+        return self[:]
 
     def update(self, *args):
         for l in args:
@@ -790,7 +798,7 @@ class ConfigManager(ConfigDict):
         fd.write(self.as_config_bytes(private=True))
         fd.close()
 
-    def clear__mbox_cache(self):
+    def clear_mbox_cache(self):
         self._mbox_cache = {}
 
     def get_mailboxes(self):
@@ -799,9 +807,9 @@ class ConfigManager(ConfigDict):
             if len(k) > MBX_ID_LEN:
                 raise ValueError('Mailbox ID too large: %s' % k)
             return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN: ]
-        mailboxes = [fmt_mbxid(k) for k in self.mailbox.keys()]
+        mailboxes = [fmt_mbxid(k) for k in self.sys.mailbox.keys()]
         mailboxes.sort()
-        return [(k, self['mailbox'][k]) for k in mailboxes]
+        return [(k, self.sys.mailbox[k]) for k in mailboxes]
 
     def is_editable_message(self, msg_info):
         for ptr in msg_info[MailIndex.MSG_PTRS].split(', '):
@@ -835,7 +843,7 @@ class ConfigManager(ConfigDict):
             else:
                 if session:
                     session.ui.mark('%s: Updating: %s' % (mbx_id, mfn))
-                    self._mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
+                self._mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
         except:
             if session:
                 session.ui.mark(('%s: Opening: %s (may take a while)'
