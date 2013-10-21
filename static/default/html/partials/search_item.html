@@ -1,7 +1,7 @@
 <tr id="pile-message-{{message.mid}}" class="result {% for tag in message.tags %}in_{{ message.tags[tag].slug.lower() }}{% endfor %}" data-state="normal" data-mid="{{message.mid}}">
   <td class="draggable"></td>
   <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
-    <a class="item-avatar" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}"><img src="{{ show_avatar("hi@bnvk.me", "/static/img/avatar-default.png", 48) }}"></a>
+    <a class="item-avatar" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}"><img src="{{ show_avatar(message.from_email, "http://" + http_host + "/static/img/avatar-default.png", 48) }}"></a>
     <a class="item-from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.short_from}}</a>
     {% if message.conv_count > 1 %}<span class="conversation-count">{{ message.conv_count }}</span>{% endif %}
   </td>
