@@ -10,3 +10,4 @@ mp-virtualenv
 .idea
 *.iml
 *.ipr
+static/default/codekit-config.json

@@ -45,7 +45,12 @@ class MailpileCommand(Extension):
         else:
             return ts.strftime("%Y-%m-%d")
 
-    def _show_avatar(self, email, default, size=60):
+    def _show_avatar(self, protocol, host, email, size=60):
+
+        if host == "localhost":
+          default = protocol + "://" + host + "/static/img/avatar-default.png"
+        else:
+          default = "mm"
 
         gravatar_url = "http://www.gravatar.com/avatar/" + hashlib.md5(email.lower()).hexdigest() + "?"
         gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
