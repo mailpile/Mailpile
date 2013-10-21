@@ -792,6 +792,18 @@ class ConfigManager(ConfigDict):
         self.index = None
         self.reset(rules=False, data=True)
 
+        try:
+            ocfg = os.path.join(self.workdir, 'config.rc')
+            ocl = OldConfigLoader(filename=ocfg)
+            if ocl.export(self) and session:
+                session.ui.warning(('WARNING: Imported old config from %s'
+                                    ) % ocfg)
+            elif session:
+                session.ui.warning(('WARNING: Failed to import config from %s'
+                                    ) % ocfg)
+        except:
+            pass
+
         filename = filename or self.conffile
         lines = []
         try:
@@ -1072,6 +1084,80 @@ class ConfigManager(ConfigDict):
     def stop_workers(config):
         for w in (config.http_worker, config.slow_worker, config.cron_worker):
             if w: w.quit()
+
+
+# FIXME: Delete this when it is no longer needed.
+class OldConfigLoader:
+    """
+    Load legacy config data into new config.
+
+    >>> ocl = OldConfigLoader()
+    >>> ocl.lines = ['obfuscate_index = 1234',
+    ...              'tag:0 = Honk/Honk']
+    >>> ocl.export(cfg)
+    True
+    >>> cfg.prefs.obfuscate_index
+    u'1234'
+    >>> cfg.tags['0'].slug
+    'honk/honk'
+    """
+    def __init__(self, filename=None):
+        self.lines = []
+        if filename:
+            try:
+                fd = open(filename, 'rb')
+                try:
+                    decrypt_and_parse_lines(fd, lambda l: self.lines.append(l))
+                except ValueError:
+                    pass
+                fd.close()
+            except IOError:
+                pass
+
+    def parse(self, line):
+        var, value = line.split(' = ', 1)
+        if ':' in var:
+            cat, var = var.split(':', 1)
+        else:
+            cat = None
+        return cat, var, value
+
+    def export(self, config):
+        errors = 0
+        for line in self.lines:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+
+            try:
+                cat, var, val = self.parse(line)
+                if not cat:
+                    for sect in (config.sys, config.prefs):
+                        if var in sect.rules:
+                            sect[var] = val
+                elif cat == 'filter':
+                     config.filters[var] = {'comment': val}
+                elif cat == 'filter_tags':
+                     config.filters[var]['tags'] = val
+                elif cat == 'filter_terms':
+                     config.filters[var]['terms'] = val
+                elif cat == 'mailbox':
+                     config.sys.mailbox[var] = val
+                elif cat == 'my_from':
+                     if not config.get_profile(email=var).get('name'):
+                         config.profiles.append({
+                             'email': var,
+                             'name': val,
+                         })
+                elif cat == 'my_sendmail':
+                     config.get_profile(email=var)['route'] = val
+                elif cat == 'tag':
+                     config.tags[var] = {'name': val, 'slug': val.lower()}
+
+            except Exception, e:
+                print 'Could not parse (%s): %s' % (e, line)
+                errors += 1
+        return (errors == 0)
 
 
 ##############################################################################
