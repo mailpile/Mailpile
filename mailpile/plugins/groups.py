@@ -8,11 +8,11 @@ from mailpile.plugins.contacts import *
 ##[ Search terms ]############################################################
 
 def search(config, idx, term, hits):
-    group = config.vcards.get(term.split(':', 1)[1])
+    group = config._vcards.get(term.split(':', 1)[1])
     rt, emails = [], []
     if group and group.kind == 'group':
         for email, attrs in group.get('EMAIL', []):
-            group = config.vcards.get(email.lower(), None)
+            group = config._vcards.get(email.lower(), None)
             if group:
                 emails.extend([e[0].lower() for e in group.get('EMAIL', [])])
             else:
