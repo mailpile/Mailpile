@@ -373,8 +373,10 @@ class UrlMap:
         """
         try:
             tag = self.session.config.tags[tag_id]
+            if tag is None:
+                raise KeyError('oops')
         except (KeyError, IndexError):
-            tag = [t for t in self.session.config.tags
+            tag = [t for t in self.session.config.tags.values()
                            if t.slug == tag_id.lower()]
             tag = tag and tag[0]
         if tag:
@@ -548,6 +550,7 @@ if __name__ != "__main__":
 else:
     # If run as a python script, print map and run doctests.
     import doctest
+    import sys
     import mailpile.app
     import mailpile.config
     import mailpile.plugins.tags
@@ -567,7 +570,10 @@ else:
     # For the UrlMap._map_api_command test
     mailpile.plugins.register_commands(UrlRedirect)
 
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                              extraglobs={'urlmap': urlmap,
+                                          'request': None})
     print
-    print '<!-- %s -->' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
-                                           extraglobs={'urlmap': urlmap,
-                                                       'request': None}), )
+    print '<!-- %s -->' % (results, )
+    if results.failed:
+        sys.exit(1)

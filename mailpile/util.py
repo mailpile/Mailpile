@@ -395,4 +395,6 @@ class CleanText:
 # If 'python util.py' is executed, start the doctest unittest
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    import sys
+    if doctest.testmod().failed:
+        sys.exit(1)

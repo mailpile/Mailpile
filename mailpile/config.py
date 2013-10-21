@@ -1063,6 +1063,7 @@ class ConfigManager(ConfigDict):
 
 if __name__ == "__main__":
     import doctest
+    import sys
     import mailpile.defaults
     import mailpile.plugins.tags
     import mailpile.ui
@@ -1080,6 +1081,9 @@ if __name__ == "__main__":
     assert(cfg.sys.path.vcards == 'vcards')
     assert(cfg.walk('sys.path.vcards') == 'vcards')
 
-    print '%s' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
-                                  extraglobs={'cfg': cfg,
-                                              'session': session}), )
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                              extraglobs={'cfg': cfg,
+                                          'session': session})
+    print '%s' % (results, )
+    if results.failed:
+        sys.exit(1)

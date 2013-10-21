@@ -22,6 +22,7 @@ endpoints be used for automation.
 ### GET (also accept POST)
 
     /api/0/config/get/        <var>/
+                              ?var=[section.variable]
     /api/0/contact/           <nickname>/
     /api/0/contact/list/      [--full]/[<terms>]/
     /api/0/filter/list/       [<search>|=<id>]/
@@ -84,7 +85,7 @@ endpoints be used for automation.
 
 ## Pretty shortcuts (HTML output)
 
-    /           Redirects to /in/Inbox/ for now.  (FIXME)
+    /           Redirects to /in/inbox/ for now.  (FIXME)
     /in/        Map /in/TAG_NAME/[@<pos>]/ to tag searches.
     /static/    RESERVED FOR LATER.
     /thread/    Map /thread/METADATA_ID/... to view or extract commands.

@@ -248,6 +248,9 @@ class DumbWorker(Worker):
 
 if __name__ == "__main__":
     import doctest
-    junk = {}
-    print '%s' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
-                                  extraglobs={'junk': junk}), )
+    import sys
+    result = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                             extraglobs={'junk': {}})
+    print '%s' % (result, )
+    if result.failed:
+        sys.exit(1)
