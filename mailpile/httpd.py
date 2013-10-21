@@ -201,10 +201,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       'http_hostname': self.http_host(),
       'http_method': method,
       'message_count': (idx and len(idx.INDEX) or 0),
-      'name': session.config.get('my_from', {1: 'Chelsea Manning'}
-                                 ).values()[0],
+      'name': session.config.get_profile().get('name', 'Chelsea Manning'),
       'title': 'Mailpile dummy title',
       'url_protocol': self.headers.get('x-forwarded-proto', 'http'),
+      'mailpile_size': idx and len(idx.INDEX) or 0
     }
 
     try:
