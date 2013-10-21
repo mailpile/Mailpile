@@ -432,9 +432,9 @@ def RuledContainer(pcls):
 
         def __setattr__(self, attr, value):
             try:
-              rules = self.__getattribute__('rules')
+                rules = self.__getattribute__('rules')
             except AttributeError:
-              rules = {}
+                rules = {}
             if self.__fixkey__(attr) in rules:
                 self.__setitem__(attr, value)
             else:
@@ -663,9 +663,9 @@ class ConfigDict(RuledContainer(dict)):
     def append(self, value):
         """Add to the dict using an autoselected key"""
         if '_any' in self.rules:
-            nid = b36(max([int(k, 36) for k in self.keys()] + [-1])+1).lower()
-            self[nid] = value
-            return nid
+            k = b36(max([int(k, 36) for k in self.keys()] + [-1]) + 1).lower()
+            self[k] = value
+            return k
         else:
             raise UsageError('Cannot append to fixed dict')
 
@@ -827,7 +827,7 @@ class ConfigManager(ConfigDict):
             k = b36(int(k, 36))
             if len(k) > MBX_ID_LEN:
                 raise ValueError('Mailbox ID too large: %s' % k)
-            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN: ]
+            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
         mailboxes = [fmt_mbxid(k) for k in self.sys.mailbox.keys()]
         mailboxes.sort()
         return [(k, self.sys.mailbox[k]) for k in mailboxes]
@@ -939,13 +939,16 @@ class ConfigManager(ConfigDict):
 
     def postinglist_dir(self, prefix):
         d = os.path.join(self.workdir, 'search')
-        if not os.path.exists(d): os.mkdir(d)
+        if not os.path.exists(d):
+            os.mkdir(d)
         d = os.path.join(d, prefix and prefix[0] or '_')
-        if not os.path.exists(d): os.mkdir(d)
+        if not os.path.exists(d):
+            os.mkdir(d)
         return d
 
     def get_index(self, session):
-        if self.index: return self.index
+        if self.index:
+            return self.index
         idx = MailIndex(self)
         idx.load(session)
         self.index = idx
@@ -1025,8 +1028,10 @@ class ConfigManager(ConfigDict):
             c.email = handle
         else:
             c['NICKNAME'] = handle
-        if name is not None: c.fn = name
-        if kind is not None: c.kind = kind
+        if name is not None:
+            c.fn = name
+        if kind is not None:
+            c.kind = kind
         self.index_vcard(c)
         return c.save()
 
@@ -1080,7 +1085,8 @@ class ConfigManager(ConfigDict):
 
     def stop_workers(config):
         for w in (config.http_worker, config.slow_worker, config.cron_worker):
-            if w: w.quit()
+            if w:
+                w.quit()
 
 
 # FIXME: Delete this when it is no longer needed.
@@ -1133,32 +1139,32 @@ class OldConfigLoader:
                         if var in sect.rules:
                             sect[var] = val
                 elif cat == 'filter':
-                     config.filters[var] = {'comment': val}
+                    config.filters[var] = {'comment': val}
                 elif cat == 'filter_tags':
-                     config.filters[var]['tags'] = val
+                    config.filters[var]['tags'] = val
                 elif cat == 'filter_terms':
-                     config.filters[var]['terms'] = val
+                    config.filters[var]['terms'] = val
                 elif cat == 'mailbox':
-                     config.sys.mailbox[var] = val
+                    config.sys.mailbox[var] = val
                 elif cat == 'my_from':
-                     if not config.get_profile(email=var).get('name'):
-                         config.profiles.append({
-                             'email': var,
-                             'name': val,
-                         })
+                    if not config.get_profile(email=var).get('name'):
+                        config.profiles.append({
+                            'email': var,
+                            'name': val,
+                        })
                 elif cat == 'my_sendmail':
-                     config.get_profile(email=var)['route'] = val
+                    config.get_profile(email=var)['route'] = val
                 elif cat == 'tag':
-                     config.tags[var] = {'name': val, 'slug': val.lower()}
+                    config.tags[var] = {'name': val, 'slug': val.lower()}
 
             except Exception, e:
                 print 'Could not parse (%s): %s' % (e, line)
                 errors += 1
         for writable in ('Blank', 'Drafts'):
             if writable not in config.sys.writable_tags:
-                 tid = config.get_tag_id(writable)
-                 if tid:
-                     config.sys.writable_tags.append(tid)
+                tid = config.get_tag_id(writable)
+                if tid:
+                    config.sys.writable_tags.append(tid)
         return (errors == 0)
 
 
