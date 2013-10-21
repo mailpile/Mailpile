@@ -150,10 +150,11 @@ class SearchResults(dict):
       # FIXME: This is nice, but doing it in _explain_msg_summary
       #        would be nicer.
       if 'tags' in idx.config:
-        result['tags'] = dict([(t, {'name': idx.config.tags.get(t,t),
-                                    'slug': idx.config.tags.get(t,t),
-                                    'searched': ('tag:%s' % t in terms)})
-                               for t in idx.get_tags(msg_info=msg_info)])
+        result['tags'] = dict([(t, {
+          'name': idx.config.tags.get(t, {}).get('name', t),
+          'slug': idx.config.tags.get(t, {}).get('slug', t),
+          'searched': ('tag:%s' % t in terms)
+        }) for t in idx.get_tags(msg_info=msg_info)])
       if not expand:
         conv = idx.get_conversation(msg_info)
       else:

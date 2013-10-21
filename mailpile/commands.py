@@ -416,7 +416,7 @@ class ConfigPrint(Command):
         for key in (self.args + self.data.get('var', [])):
             result[key] = config.walk(key)
     except KeyError:
-      session.error('No such key: %s' % key)
+      session.ui.error('No such key: %s' % key)
       return False
     return result
 
