@@ -21,6 +21,7 @@ class SearchResults(dict):
       'mid': info[0],
       'id': info[1],
       'from': info[2],
+      'from_email': ', '.join(ExtractEmails(info[2])),
       'to': info[3],
       'subject': info[4],
       'snippet': info[5],
