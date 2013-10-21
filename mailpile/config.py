@@ -17,6 +17,9 @@ from mailpile.vcard import SimpleVCard
 from mailpile.workers import Worker, DumbWorker, Cron
 
 
+DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
+
+
 class InvalidKeyError(ValueError):
     pass
 
