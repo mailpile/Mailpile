@@ -196,14 +196,15 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     idx = session.config.index
     session.ui.html_variables = {
+      'csrf': self.csrf(),
       'http_host': self.headers.get('host', 'localhost'),
       'http_hostname': self.http_host(),
       'http_method': method,
-      'title': 'Mailpile dummy title',
-      'csrf': self.csrf(),
+      'message_count': (idx and len(idx.INDEX) or 0),
       'name': session.config.get('my_from', {1: 'Chelsea Manning'}
                                  ).values()[0],
-      'mailpile_size': idx and len(idx.INDEX) or 0
+      'title': 'Mailpile dummy title',
+      'url_protocol': self.headers.get('x-forwarded-proto', 'http'),
     }
 
     try:
