@@ -1173,11 +1173,12 @@ class OldConfigLoader:
 if __name__ == "__main__":
     import doctest
     import sys
+    import mailpile.config
     import mailpile.defaults
     import mailpile.plugins.tags
     import mailpile.ui
 
-    cfg = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
+    cfg = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
     session = mailpile.ui.Session(cfg)
     session.ui.block()
 
