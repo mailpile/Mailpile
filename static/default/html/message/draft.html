@@ -2,7 +2,7 @@
 {% block content %}
 
 {% if result %}
-{% set my_from = mailpile('config/get', 'my_from').result.my_from %}
+{% set profiles = mailpile('config/get', 'profiles').result.profiles %}
 <div id="compose">
 
   {% for m in result.messages %}
@@ -15,8 +15,8 @@
             <select id="compose-from" name="from">
               <option value="{{ m.message.editing_strings.from|e }}" selected>{{ m.message.editing_strings.from|e }}</option>
               <option value="{{ m.message.editing_strings.from|e }}"> - - - </option>
-              {% for m in my_from %}
-              <option value="{{ my_from[m]|e }} &lt;{{ m|e }}&gt;">{{ my_from[m]|e }} &lt;{{ m|e }}&gt;</option>
+              {% for p in profiles %}
+              <option value="{{ p.name|e }} &lt;{{ p.email|e }}&gt;">{{ p.name|e }} &lt;{{ p.email|e }}&gt;</option>
               {% endfor %}
             </select>
         </div>
