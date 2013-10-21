@@ -82,6 +82,9 @@ try:
         results = mp.search(*search)
         assert(results.result['count'] == 1)
 
+    say('Checking size of inbox')
+    assert(mp.search('tag:inbox').result['count'] == 8)
+
     # Make sure we are decoding weird headers correctly
     result_bre = mp.search(*FROM_BRE).result['messages'][0]
     result_bre = mp.view('=%s' % result_bre['mid']).result['messages'][0]

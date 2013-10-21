@@ -30,7 +30,7 @@ def GetFilters(cfg, filter_on=None):
     filters.sort(key=lambda k: int(k, 36))
     flist = []
     for fid in filters:
-        terms = cfg.filters[fid].get('comment', '')
+        terms = cfg.filters[fid].get('terms', '')
         if filter_on is not None and terms != filter_on:
             continue
         flist.append((fid, terms, cfg.filters[fid].get('tags', ''),
@@ -419,7 +419,8 @@ class ListFilters(Command):
 
       human_tags = []
       for tterm in tags.split():
-        tagname =  self.session.config.get('tag', {}).get(tterm[1:], '(None)')
+        tagname =  self.session.config.tags.get(tterm[1:],
+                                                {}).get('slug', '(None)')
         human_tags.append('%s%s' % (tterm[0], tagname))
 
       skip = False
