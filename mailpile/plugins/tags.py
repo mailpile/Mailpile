@@ -11,7 +11,7 @@ from mailpile.plugins.search import Search
 
 mailpile.plugins.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
-    'slug': ['URL slug', 'slug', ''],
+    'slug': ['URL slug', 'slashslug', ''],
     # FIXME: Add more exciting metadata
 }, {}])
 

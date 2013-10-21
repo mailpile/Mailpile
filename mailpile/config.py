@@ -67,7 +67,7 @@ def _MakeCheck(pcls, rules):
     return CD
 
 
-def _SlugCheck(slug):
+def _SlugCheck(slug, allow=''):
     """
     Verify that a string is a valid URL slug.
 
@@ -85,9 +85,20 @@ def _SlugCheck(slug):
     ValueError: Invalid URL slug: Bad/Slug
     """
     if not slug == CleanText(unicode(slug),
-                             banned=CleanText.NONDNS).clean:
+                             banned=(CleanText.NONDNS.replace(allow, ''))
+                             ).clean:
         raise ValueError('Invalid URL slug: %s' % slug)
     return slug.lower()
+
+
+def _SlashSlugCheck(slug):
+    """
+    Verify that a string is a valid URL slug (slashes allowed).
+
+    >>> _SlashSlugCheck('Okay/Slug')
+    'okay/slug'
+    """
+    return _SlugCheck(slug, allow='/')
 
 
 def _HostNameCheck(host):
@@ -228,6 +239,7 @@ def RuledContainer(pcls):
            'new directory': _NewPathCheck,
            'path': _PathCheck,
            str: unicode,
+           'slashslug': _SlashSlugCheck,
            'slug': _SlugCheck,
            'str': unicode,
            'True': True, 'true': True,
