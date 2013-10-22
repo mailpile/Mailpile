@@ -217,9 +217,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             method == 'GET'):
           commands = UrlMap(session).map(self, method, path+'/',
                                          query_data, post_data)
-          url = path + '/'
+          url = quote(path) + '/'
           if query:
-              path += '?' + query
+              url += '?' + query
           return self.send_http_redirect(url)
         else:
           raise
