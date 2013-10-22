@@ -1128,6 +1128,7 @@ class OldConfigLoader:
 
     def export(self, config):
         errors = 0
+        mailboxes = {}
         for line in self.lines:
             line = line.strip()
             if not line or line.startswith('#'):
@@ -1146,7 +1147,7 @@ class OldConfigLoader:
                 elif cat == 'filter_terms':
                     config.filters[var]['terms'] = val
                 elif cat == 'mailbox':
-                    config.sys.mailbox[var] = val
+                    mailboxes[var] = val
                 elif cat == 'my_from':
                     if not config.get_profile(email=var).get('name'):
                         config.profiles.append({
@@ -1161,6 +1162,12 @@ class OldConfigLoader:
             except Exception, e:
                 print 'Could not parse (%s): %s' % (e, line)
                 errors += 1
+
+        mbox_ids = mailboxes.keys()
+        mbox_ids.sort(key=lambda k: int(k, 36))
+        for mbox_id in mbox_ids:
+            config.sys.mailbox[mbox_id] = mailboxes[mbox_id]
+
         for writable in ('Blank', 'Drafts'):
             if writable not in config.sys.writable_tags:
                 tid = config.get_tag_id(writable)
