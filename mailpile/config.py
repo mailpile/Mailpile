@@ -9,6 +9,7 @@ import ConfigParser
 from urllib import quote, unquote
 
 import mailpile.util
+from mailpile.commands import Rescan
 from mailpile.httpd import HttpWorker
 from mailpile.mailutils import MBX_ID_LEN, OpenMailbox, IncrementalMaildir
 from mailpile.search import MailIndex
