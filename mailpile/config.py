@@ -793,7 +793,7 @@ class ConfigManager(ConfigDict):
             if ocl.export(self) and session:
                 session.ui.warning(('WARNING: Imported old config from %s'
                                     ) % ocfg)
-            elif session:
+            elif ocl.lines and session:
                 session.ui.warning(('WARNING: Failed to import config from %s'
                                     ) % ocfg)
         except:
@@ -1181,7 +1181,7 @@ class OldConfigLoader:
             if tid and tid not in config.sys.writable_tags:
                 config.sys.writable_tags.append(tid)
 
-        return (errors == 0)
+        return self.lines and (errors == 0)
 
 
 ##############################################################################
