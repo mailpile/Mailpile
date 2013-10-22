@@ -6208,63 +6208,6 @@ div.content-normal {
 #footer a {
   font-size: 12px;
 }
-/* Search */
-#search {
-  background: #f2f2f2;
-  border-bottom: 1px solid #b3b3b3;
-  padding: 10px 20px;
-  box-sizing: padding-box;
-}
-#search form {
-  margin-bottom: 0px;
-}
-#search span.icon-search {
-  position: relative;
-  top: 6px;
-  left: 0px;
-  display: inline-block;
-  font-size: 24px;
-  color: #4d4d4d;
-}
-#search input[type=text] {
-  border: 0px;
-  outline: none;
-  color: #4d4d4d;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  width: 75%;
-  display: inline-block;
-  font-size: 24px;
-  padding: 0px;
-  margin-bottom: 0px;
-  position: relative;
-  top: 5px;
-  left: 10px;
-}
-#search input[type=text]:placeholder {
-  color: #b3b3b3;
-}
-#search input[type=text]:focus {
-  -moz-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  outline: none;
-  color: #4d4d4d;
-}
-#search input[type=submit] {
-  float: right;
-}
-#search-params a {
-  padding: 5px 10px;
-  background: #f2f2f2;
-  color: #4d4d4d;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  border-radius: 5px;
-  border: 1px solid #b3b3b3;
-}
-#search-params a:hover {
-  background-color: #cccccc;
-}
 /* Sidebar */
 #sidebar {
   display: table-cell;
@@ -6419,15 +6362,69 @@ div.content-normal {
   padding: .75em;
   border-bottom: 1px solid #b3b3b3;
 }
+/* Search */
+#search {
+  background: #f2f2f2;
+  border-bottom: 1px solid #b3b3b3;
+  padding: 10px 20px;
+  box-sizing: padding-box;
+}
+#search form {
+  margin-bottom: 0px;
+}
+#search span.icon-search {
+  position: relative;
+  top: 6px;
+  left: 0px;
+  display: inline-block;
+  font-size: 24px;
+  color: #4d4d4d;
+}
+#search input[type=text] {
+  border: 0px;
+  outline: none;
+  color: #4d4d4d;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  width: 75%;
+  display: inline-block;
+  font-size: 24px;
+  padding: 0px;
+  margin-bottom: 0px;
+  position: relative;
+  top: 5px;
+  left: 10px;
+}
+#search input[type=text]:placeholder {
+  color: #b3b3b3;
+}
+#search input[type=text]:focus {
+  -moz-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  outline: none;
+  color: #4d4d4d;
+}
+#search input[type=submit] {
+  float: right;
+}
+#search-params a {
+  padding: 5px 10px;
+  background: #f2f2f2;
+  color: #4d4d4d;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #b3b3b3;
+}
+#search-params a:hover {
+  background-color: #cccccc;
+}
 /* Pile Results */
 #pile-results {
   width: 100%;
 }
 #pile-results tr.result {
   background: #ffffff;
-  -webkit-transition-duration: 0.3s;
-  -moz-transition-duration: 0.3s;
-  transition-duration: 0.3s;
 }
 #pile-results tr.result:hover {
   background: #f2f2f2;
@@ -6437,9 +6434,6 @@ div.content-normal {
 }
 #pile-results tr.result-on:hover {
   background: #f2e8c9;
-  -webkit-transition-duration: 0.3s;
-  -moz-transition-duration: 0.3s;
-  transition-duration: 0.3s;
 }
 #pile-results tr.result:hover td.draggable,
 #pile-results tr.result-on:hover td.draggable {
@@ -6447,7 +6441,7 @@ div.content-normal {
   opacity: 0.3;
   filter: alpha(opacity=30);
 }
-#pile-results tr td {
+#pile-results td {
   border-spacing: 0px;
   border-bottom: 1px solid #cccccc;
   font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -6462,7 +6456,7 @@ div.content-normal {
 #pile-results.cozy td {
   padding: 6px;
 }
-#pile-resuts.snug td {
+#pile-results.snug td {
   padding: 2px;
 }
 #pile-results td.draggable {
@@ -6472,6 +6466,26 @@ div.content-normal {
 }
 #pile-results td.draggable:hover {
   cursor: move;
+}
+#pile-results.avatar td.avatar a img {
+  display: block;
+  width: 48px;
+  height: 48px;
+}
+#pile-results.comfy td.avatar a img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+#pile-results.cozy td.avatar a img {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+#pile-results.snug td.avatar a img {
+  display: block;
+  width: 14px;
+  height: 14px;
 }
 #pile-results td.from {
   min-width: 150px;

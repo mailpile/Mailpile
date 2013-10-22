@@ -1,13 +1,20 @@
 <tr id="pile-message-{{message.mid}}" class="result {% for tag in message.tags %}in_{{ message.tags[tag].slug.lower() }}{% endfor %}" data-state="normal" data-mid="{{message.mid}}">
   <td class="draggable"></td>
+  <td class="avatar">
+    <a href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">
+      <img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">
+    </a>
+  </td>
   <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
-    <a class="item-avatar" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}"><img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}"></a>
     <a class="item-from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.short_from}}</a>
-    {{ url_protocol + "://" + http_host + "/static/img/avatar-default.png" }}
     {% if message.conv_count > 1 %}<span class="conversation-count">{{ message.conv_count }}</span>{% endif %}
   </td>
   <td class="subject">  
-    {% for tag in message.tags %}{% if message.tags[tag].name != "Inbox" and message.tags[tag].name != "New" and message.tags[tag].name != "Drafts" %}<a class="pile-message-tag" href="/in/{{ message.tags[tag].slug }}/">{{ message.tags[tag].name }}</a>{% endif %}{% endfor %} 
+    {% for tag in message.tags %}
+      {% if message.tags[tag].name != "Inbox" and message.tags[tag].name != "New" and message.tags[tag].name != "Drafts" %}
+      <a class="pile-message-tag" href="/in/{{ message.tags[tag].slug }}/">{{ message.tags[tag].name }}</a>
+      {% endif %}
+    {% endfor %} 
     <a class="item-subject" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
   </td>
   <td class="date" valign="top">
