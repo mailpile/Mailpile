@@ -797,7 +797,8 @@ class ConfigManager(ConfigDict):
                 session.ui.warning(('WARNING: Failed to import config from %s'
                                     ) % ocfg)
         except:
-            pass
+            import traceback
+            traceback.print_exc()
 
         filename = filename or self.conffile
         lines = []
