@@ -2,208 +2,173 @@ import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.util import *
 
-try:
-  from GnuPGInterface import GnuPG
-except ImportError:
-  GnuPG = None
+from mailpile.gpgi import * 
+
+# Old: Keeping this around for posterity, may be useful again...
+#
+# def import_vcards(self):
+#     session, config, arg = self.session, self.session.config, self.args[0]
+#     keys = self.filter()
+#     vcards = []
+#     for k in keys:
+#         for uid in k["uids"]:
+#             name, handle = uid.split(" <")
+#             handle = handle.strip(">")
+#             if handle.lower() not in config.vcards:
+#                 vcard = config.add_vcard(handle, name, 'individual')
+#                 vcard["KEY"] = [["data:application/x-pgp-fingerprint,%s" % k["fingerprint"], []],]
+#                 vcards.append(vcard)
+#             else:
+#                 # Get the VCard
+#                 session.ui.warning('Already exists: %s' % handle)
+#  
+#     return vcards
 
 
-##[ Commands ]################################################################
+class OpenPGPCheckAddress(Command):
+    ORDER = ('Config', 5)
+    SYNOPSIS = ('', 'pgp/checkaddress', 'pgp/checkaddress', '<address>')
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {
+        'q': 'address',
+    }
 
-class GPG(Command):
-  """GPG commands"""
-  ORDER = ('Config', 5)
-
-  def recv_key(self):
-    """Fetch a PGP public key from a keyserver."""
-
-    session, config, arg = self.session, self.session.config, self.args[0]
-    try:
-      session.ui.mark('Invoking GPG to fetch key %s' % arg)
-      gpg = GnuPG().run(['--utf8-strings',
-                         '--keyserver', config.sys.gpg_keyserver,
-                         '--recv-key', arg], create_fhs=['stderr'])
-      session.ui.debug(gpg.handles['stderr'].read().decode('utf-8'))
-      gpg.handles['stderr'].close()
-      gpg.wait()
-      session.ui.mark('Fetched key %s' % arg)
-    except IOError:
-      return self._error('Failed to fetch key %s' % arg)
-    return True
-
-  def list_keys(self):
-    """Get a list of available PGP public keys."""
-
-    session, config = self.session, self.session.config
-    keys = []
-    try:
-      session.ui.mark('Listing available GPG keys')
-      gpg = GnuPG().run(['--list-keys', '--fingerprint'], create_fhs=['stderr', 'stdout'])
-      keylines = gpg.handles['stdout'].readlines()
-      curkey = {}
-      for line in keylines:
-        if line[0:3] == "pub":
-          if curkey != {}:
-            keys.append(curkey)
-            curkey = {}
-          args = line.split("pub")[1].strip().split(" ")
-          if len(args) == 3:
-            expiry = args[2]
-          else:
-            expiry = None
-          keytype, keyid = args[0].split("/")
-          created = args[1]
-          curkey["subkeys"] = []
-          curkey["uids"] = []
-          curkey["pub"] = {"keyid": keyid, "type": keytype, "created": created, "expires": expiry}
-        elif line[0:3] == "sec":
-          if curkey != {}:
-            keys.append(curkey)
-            curkey = {}
-          args = line.split("pub")[1].strip().split(" ")
-          if len(args) == 3:
-            expiry = args[2]
-          else:
-            expiry = None
-          keytype, keyid = args[0].split("/")
-          created = args[1]
-          curkey["subkeys"] = []
-          curkey["uids"] = []
-          curkey["sec"] = {"keyid": keyid, "type": keytype, "created": created, "expires": expiry}
-        elif line[0:3] == "uid":
-          curkey["uids"].append(line.split("uid")[1].strip())
-        elif line[0:3] == "sub":
-          args = line.split("sub")[1].strip().split(" ")
-          if len(args) == 3:
-            expiry = args[2]
-          else:
-            expiry = None
-          keytype, keyid = args[0].split("/")
-          created = args[1]
-          curkey["subkeys"].append({"keyid": keyid, "type": keytype, "created": created, "expires": expiry})
-        elif line[0:24] == "      Key fingerprint = ":
-          line = line.strip("      Key fingerprint = ").strip().replace(" ", "")
-          curkey["fingerprint"] = line
-      gpg.handles['stderr'].close()
-      gpg.handles['stdout'].close()
-      gpg.wait()
-      return keys
-    except IndexError, e:
-      self._ignore_exception()
-    except IOError:
-      return False
-    return True
+    def command(self):
+        addresses = self.data.get('q', [])
+        g = GnuPG()
+        res = {}
+        for address in addresses:
+            res[address] = g.address_to_keys(address)
+        return res
 
 
-  def fingerprints(self):
-    """Fetch a key's fingerprints and other details."""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    keys = []
-    try:
-      session.ui.mark('Listing available GPG keys')
-      gpg = GnuPG().run(['--fingerprint', arg], create_fhs=['stderr', 'stdout'])
-      keylines = gpg.handles['stdout'].readlines()
-      raise Exception("IMPLEMENT ME!")
-      session.ui.display_gpg_keys(keys)
-    except IOError:
-      return False
-    return True
+class OpenPGPListKeys(Command):
+    ORDER = ('Config', 5)
+    SYNOPSIS = ('', 'pgp/listkeys', 'pgp/listkeys', '[<secret>]')
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {
+       'secret': 'secret keys',
+       'filter': 'filter',
+    }
 
-  def sign(self):
-    """Sign a message."""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    raise Exception("IMPLEMENT ME!")
+    def command(self):
+        def filterrules(x):
+            keyidmatch = x[0] == terms
+            uidmatch = any([y[key].find(terms) != -1 for key in ["name", "email"] for y in x[1]["uids"]])
+            return keyidmatch or uidmatch
 
-  def verify(self):
-    """Verify a signature."""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    raise Exception("IMPLEMENT ME!")
+        secret = self.data.get('secret', [])
+        terms = self.data.get('filter', [])
+        g = GnuPG()
+        try:
+            if len(secret) > 0:
+                keys = g.list_secret_keys()[1]["stdout"][0]
+            else:
+                keys = g.list_keys()[1]["stdout"][0]
+        except Exception, e:
+            print e
 
-  def encrypt(self):
-    """Encrypt a message."""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    raise Exception("IMPLEMENT ME!")
-
-  def decrypt(self):
-    """Decrypt a message."""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    raise Exception("IMPLEMENT ME!")
- 
-  def sign_key(self):
-    """Sign a public key."""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    raise Exception("IMPLEMENT ME!")
-
-  def send_key(self):
-    """Upload a public key to a keyserver."""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    raise Exception("IMPLEMENT ME!")
-
-  def search_keys(self):
-    """Search for a public key on keyservers, by string or key ID"""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    raise Exception("IMPLEMENT ME!")
-
-  def filter_keys(self):
-    """Filter keys in local keychain by search term. Term can either be from a UID or a keyid."""
-    session, config, arg = self.session, self.session.config, self.args[0]
-    keys = self.list_keys()
-
-    def filterrules(x):
-      keyidmatch = x["pub"]["keyid"] == arg
-      uidmatch = any([y.decode("utf-8").find(arg) != -1 for y in x["uids"]])
-      return keyidmatch or uidmatch
-
-    return filter(filterrules, keys)
-
-  def import_vcards(self):
-    session, config, arg = self.session, self.session.config, self.args[0]
-    keys = self.filter()
-    vcards = []
-    for k in keys:
-      for uid in k["uids"]:
-        name, handle = uid.split(" <")
-        handle = handle.strip(">")
-        if handle.lower() not in config.vcards:
-          vcard = config.add_vcard(handle, name, 'individual')
-          vcard["KEY"] = [["data:application/x-pgp-fingerprint,%s" % k["fingerprint"], []],]
-          vcards.append(vcard)
+        if terms != []:
+            terms = " ".join(terms)
+            return filter(filterrules, keys.items())
         else:
-          # Get the VCard
-          session.ui.warning('Already exists: %s' % handle)
-    
-    return vcards
-
-  SUBCOMMANDS = {
-    'recv': (recv_key, '<key-ID>'),
-    'list': (list_keys, ''),
-    'fingerprints': (fingerprints, '<key-ID>'),
-    'sign': (sign, '<msgid>'),
-    'verify': (verify, '<msgid>'),
-    'encrypt': (encrypt, '<msgid>'),
-    'decrypt': (decrypt, '<msgid>'),
-    'signkey': (sign_key, '<key-ID>'),
-    'sendkey': (send_key, '<key-ID>'),
-    'searchkeys': (search_keys, '<string>|<key-ID>'),
-    'filterkeys': (filter_keys, '<string>|<key-ID>'),
-    'importvcards': (import_vcards, '<string>|<key-ID>'),
-  }
-
-  def command(self):
-    session = self.session
-
-    session.ui.mark("GPG Encryption interface. Use subcommands to interact:\n\n")
-    for fun in self.SUBCOMMANDS.items():
-      if fun[1][0].__doc__:
-        session.ui.mark("  %12s %-18s:   %s\n" % (fun[0], fun[1][1], fun[1][0].__doc__))
-      else:
-        session.ui.mark("  %12s %-18s:   Undocumented\n" % (fun[0], fun[1][1]))
-
-    session.ui.mark("")
-    return True
+            return keys
 
 
+class OpenPGPEncrypt(Command):
+    ORDER = ('Config', 5)
+    SYNOPSIS = ('', 'pgp/encrypt', 'pgp/encrypt', '<to> <data> [<sign> <from>]')
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = {
+        'to': 'encrypt messages to',
+        'data': 'the data to encrypt',
+        'sign': 'whether to sign (true/false, default=true)',
+        'from': 'from which key (only if signing)'
+    }
+
+    def command(self):
+        g = GnuPG()
+        to = self.data.get('to', [])
+        data = self.data.get('data', [])
+        sign = self.data.get('sign', ["true"])[0] == "true"
+        fromkey = "".join(self.data.get('from', [])) or None
+        blobs = []
+        for d in data:
+            if sign:
+                blob = g.sign_encrypt(d, fromkey, to)
+                res = 0
+            else:
+                res, blob = g.encrypt(d, to)
+            if res == 0:
+                blobs.append(blob)
+
+        return {"signed": sign, "from": fromkey, "to": to, "ciphertext": blobs}
+
+class OpenPGPDecrypt(Command):
+    ORDER = ('Config', 5)
+    SYNOPSIS = ('', 'pgp/decrypt', 'pgp/decrypt', '<data>')
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = {
+        'data': 'the data to encrypt',
+        'passphrase': 'the passphrase (optional)',
+        'verify': 'whether to verify (true/false/auto, default=auto)'
+    }
+
+    def command(self):
+        g = GnuPG()
+        passphrase = "".join(self.data.get('passphrase', [])) or None
+        data = self.data.get('data', [])
+        blobs = []
+        for d in data:
+            res, blob = g.decrypt(d, passphrase)
+            if res == 0:
+                blobs.append(blob)
+
+        return blobs
 
 
-if GnuPG is not None:
-  mailpile.plugins.register_command('g:', 'gpg', GPG)
+class OpenPGPSign(Command):
+    ORDER = ('Config', 5)
+    SYNOPSIS = ('', 'pgp/sign', 'pgp/sign', '<from> <data>')
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = {
+        'data': 'the data to sign',
+        'from': 'from which key'
+    }
+
+    def command(self):
+        g = GnuPG()
+        data = self.data.get('data', [])
+        fromkey = "".join(self.data.get('from', [])) or None
+        blobs = []
+        for d in data:
+            res, blob = g.sign(d, fromkey, clearsign=True)
+            if res == 0:
+                blobs.append(blob)
+
+        return {"from": fromkey, "ciphertext": blobs}
+
+
+class OpenPGPVerify(Command):
+    ORDER = ('Config', 5)
+    SYNOPSIS = ('', 'pgp/verify', 'pgp/verify', '<data>')
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = {
+        'data': 'the data to verify',
+    }
+
+    def command(self):
+        g = GnuPG()
+        data = self.data.get('data', [])
+        blobs = []
+        for d in data:
+            res, blob = g.verify(d)
+            if res == 0:
+                blobs.append(blob)
+
+        return blobs
+
+
+mailpile.plugins.register_commands(OpenPGPCheckAddress, OpenPGPListKeys, 
+                                   OpenPGPEncrypt, OpenPGPDecrypt, 
+                                   OpenPGPSign, OpenPGPVerify)

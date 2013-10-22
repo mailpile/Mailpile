@@ -6,6 +6,8 @@ import time
 import re
 from subprocess import Popen, PIPE
 
+DEFAULT_SERVER = "pool.sks-keyservers.net"
+
 openpgp_trust = {"-": "Trust not calculated", 
                  "o": "Unknown trust",
                  "q": "Undefined trust",
@@ -278,6 +280,11 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             keys[curkey]["signatures"].append(sig)
             return (curkey, keys)
 
+        def parse_revoke(line, curkey, keys):
+            # FIXME: Do something more to this
+            print line
+            return (curkey, keys)
+
         def parse_unknown(line, curkey, keys):
             print "Unknown line with code '%s'" % line[0]
             return (curkey, keys)
@@ -293,6 +300,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 "sec": parse_privkey,
                 "tru": parse_trust,
                 "sig": parse_signature,
+                "rev": parse_revoke,
                 "uid": parse_uid,
                 "gpg": parse_none,
                }
@@ -323,9 +331,11 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         """
         self.pipes = {}
         args.insert(0, self.gpgbinary)
-        args.append("--with-colons")
-        args.append("--verbose")
-        args.append("--enable-progress-filter")
+        args.insert(1, "--utf8-strings")
+        args.insert(1, "--with-colons")
+        args.insert(1, "--verbose")
+        args.insert(1, "--batch")
+        args.insert(1, "--enable-progress-filter")
 
         for fd in self.fds.keys():
             if fd not in self.needed_fds:
@@ -334,9 +344,9 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             if debug: 
                 print "Opening fd %s, fh %d, mode %s" % (fd, 
                     self.pipes[fd][self.fds[fd]], ["r", "w"][self.fds[fd]])
-            args.append("--%s-fd" % fd)
+            args.insert(1, "--%s-fd" % fd)
             # The remote end of the pipe:
-            args.append("%d" % self.pipes[fd][not self.fds[fd]])
+            args.insert(2, "%d" % self.pipes[fd][not self.fds[fd]])
             fdno = self.pipes[fd][self.fds[fd]]
             self.handles[fd] = os.fdopen(fdno, ["r", "w"][self.fds[fd]])
             # Cause file handles to stay open after execing
@@ -344,7 +354,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             fl = fcntl.fcntl(self.handles[fd], fcntl.F_GETFL)
             fcntl.fcntl(self.handles[fd], fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
-        if debug: print "Running gpg with %s" % args
+        if debug: print "Running gpg as: %s" % " ".join(args)
 
         proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
@@ -360,37 +370,42 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             self.handles["passphrase"].write(self.passphrase)
             self.handles["passphrase"].close()
 
+        retvals = {"status": []}
         while True:
+            proc.poll()
+
             try:
                 buf = self.handles["status"].read()
-                self.parse_status(buf)
+                for res in self.parse_status(buf):
+                    retvals["status"].append(res)
             except IOError:
+                pass
+
+            for fd in ["stdout", "stderr"]:
+                if debug: print "Reading %s" % fd
+
+                try:
+                    buf = self.handles[fd].read().decode("iso-8859-1")
+                except IOError:
+                    continue
+
+                if not callbacks.has_key(fd):
+                    continue
+
+                if not retvals.has_key(fd):
+                    retvals[fd] = []
+
+                if buf == "":
+                    continue
+
+                if type(callbacks[fd]) == list:
+                    for cb in callbacks[fd]:
+                        retvals[fd].append(cb(buf))
+                else:
+                    retvals[fd].append(callbacks[fd](buf))
+
+            if proc.returncode is not None:
                 break
-
-        # retvals = {}
-        # for fd in self.needed_fds:
-        #     if fd in ("stdin", "passphrase"):
-        #         continue
-        #     if not callbacks.has_key(fd):
-        #         continue
-        #     while True:
-        #         if debug: print "Reading %s" % fd
-
-        #         try:
-        #             buf = self.handles[fd].read()
-        #         except IOError:
-        #             break
-
-        #         if not retvals.has_key(fd):
-        #             retvals[fd] = []
-        #         if buf == "":
-        #             break
-
-        #         if type(callbacks[fd]) == list:
-        #             for cb in callbacks[fd]:
-        #                 retvals[fd].append(cb(buf))
-        #         else:
-        #             retvals[fd].append(callbacks[fd](buf))
 
         return proc.returncode, retvals
 
@@ -405,7 +420,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         return retvals
 
     def list_sigs(self):
-        self.run(["--list-sigs", "--fingerprint"], 
+        retvals = self.run(["--list-sigs", "--fingerprint"], 
                  callbacks={"stdout": self.parse_keylist})
         return retvals
 
@@ -419,7 +434,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                            callbacks={"stdout": self.parse_keylist})
         return retvals
 
-    def encrypt(self, data, to=[], armor=True):
+    def encrypt(self, data, tokeys=[], armor=True):
         """
         >>> g = GnuPG()
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
@@ -428,7 +443,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         action = ["--encrypt"]
         if armor:
             action.append("--armor")
-        for r in to:
+        for r in tokeys:
             action.append("--recipient")
             action.append(r)
         retvals = self.run(action, callbacks={"stdout": self.default_output}, 
@@ -449,13 +464,14 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         action = ["--decrypt"]
         retvals = self.run(action, callbacks={"stdout": self.default_output}, 
                            output=data)
+        self.passphrase = None
         return retvals[0], retvals[1]["stdout"][0]
 
-    def sign(self, data, _from=None, armor=True, detatch=True, clearsign=False,
+    def sign(self, data, fromkey=None, armor=True, detatch=True, clearsign=False,
              passphrase=None):
         """
         >>> g = GnuPG()
-        >>> g.sign("Hello, World", _from="smari@mailpile.is")[0]
+        >>> g.sign("Hello, World", fromkey="smari@mailpile.is")[0]
         0
         """
         if passphrase:
@@ -468,12 +484,13 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             action = ["--sign"]
         if armor:
             action.append("--armor")
-        if _from:
+        if fromkey:
             action.append("--local-user")
-            action.append(_from)
+            action.append(fromkey)
 
         retvals = self.run(action, callbacks={"stdout": self.default_output}, 
                            output=data)
+        self.passphrase = None
         return retvals[0], retvals[1]["stdout"][0]
 
     def verify(self, data, signature=None):
@@ -488,28 +505,51 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                                       "status": self.parse_status}, 
                            output=data)
 
-        return retvals[0], retvals[1]["stderr"]
+        return retvals # retvals[0], retvals[1]["stderr"]
 
-    def sign_encrypt(self, data, _from=None, to=[], armor=True, detatch=True,
-                     clearsign=False):
-        retval, signblock = self.sign(data, _from=_from, armor=armor, 
+    def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True, 
+                     detatch=False, clearsign=True):
+        retval, signblock = self.sign(data, fromkey=fromkey, armor=armor, 
                                       detatch=detatch, clearsign=clearsign)
         if detatch:
             # TODO: Deal with detached signature.
-            retval, cryptblock = self.encrypt(data, to=to, armor=armor)
+            retval, cryptblock = self.encrypt(data, tokeys=tokeys, 
+                                              armor=armor)
         else:
-            retval, cryptblock = self.encrypt(signblock, to=to, armor=armor)
+            retval, cryptblock = self.encrypt(signblock, tokeys=tokeys, 
+                                              armor=armor)
 
         return cryptblock
+
+    def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
+        retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
+        return retvals
+
+    def search_key(self, term, keyserver=DEFAULT_SERVER):
+        retvals = self.run(['--keyserver', keyserver, '--search-key', term], debug=True)
+        return retvals
+
+    def address_to_keys(self, address):
+        res = {}
+        v, keys = self.list_keys()
+        for key, props in keys["stdout"][0].iteritems():
+            if any([x["email"] == address for x in props["uids"]]):
+                res[key] = props
+
+        return res
 
 
 
 if __name__ == "__main__":
     g = GnuPG()
-    g.verify("Foo")
-#    import doctest
-#    t = doctest.testmod()
-#    if t.failed == 0:
-#        print "GPG Interface: All %d tests successful" % (t.attempted)
-#    else:
-#        print "GPG Interface: %d out of %d tests failed" % (t.failed, t.attempted)
+    # print g.recv_key("c903bef1")
+
+    # print g.list_secret_keys()
+    print g.address_to_keys("smari@immi.is")
+    # import doctest
+    # t = doctest.testmod()
+    # if t.failed == 0:
+    #     print "GPG Interface: All %d tests successful" % (t.attempted)
+    # else:
+    #     print "GPG Interface: %d out of %d tests failed" % (t.failed, t.attempted)
+
