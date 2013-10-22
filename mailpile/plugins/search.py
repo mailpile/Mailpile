@@ -210,8 +210,8 @@ class SearchResults(dict):
       else:
         tag_names = [t['name'] for t in m['tags'] if not t['searched']]
         msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
-        sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
-        text.append((cfmt+' %s %-25.25s '+sfmt
+        sfmt = '%%-%d.%ds%%s' % (46-(clen+len(msg_tags)),46-(clen+len(msg_tags)))
+        text.append((cfmt+' %s %-20.20s '+sfmt
                      ) % (count, m['date'], m['short_from'], m['subject'],
                           msg_tags))
       count += 1
