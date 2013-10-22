@@ -997,8 +997,8 @@ class MailIndex(object):
     for p in ('', '+', '-'):
       while p+'is:unread' in searchterms:
         searchterms[searchterms.index(p+'is:unread')] = p+'tag:New'
-      for t in [term for term in searchterms if term.startswith(p+'in:')]:
-        searchterms[searchterms.index(t)] = p + 'tag:' + t.split(':', 1)[1]
+      for t in [term for term in searchterms if term.startswith(p+'tag:')]:
+        searchterms[searchterms.index(t)] = p + 'in:' + t.split(':', 1)[1]
 
     # If first term is a negative search, prepend an all:mail
     if searchterms and searchterms[0] and searchterms[0][0] == '-':
@@ -1028,7 +1028,7 @@ class MailIndex(object):
           rt.extend(hits(term[5:]))
         elif term == 'all:mail':
           rt.extend(range(0, len(self.INDEX)))
-        elif term.startswith('tag:'):
+        elif term.startswith('in:'):
           rt.extend(self.search_tag(term, hits))
         else:
           t = term.split(':', 1)

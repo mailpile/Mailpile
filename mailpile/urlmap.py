@@ -201,7 +201,7 @@ class UrlMap:
         >>> commands[0].args
         ['json']
         >>> commands[1].args
-        ['@20', 'tag:1']
+        ['@20', 'in:inbox']
         """
         output = self._choose_output(path_parts)
 
@@ -210,7 +210,7 @@ class UrlMap:
           pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
 
         tag = '/'.join([p for p in path_parts[1:] if p])
-        tag_search = ['tag:%s' % self.session.config.get_tag_id(tag)]
+        tag_search = ['in:%s' % self.session.config.get_tag(tag).slug]
 
         if pos:
             tag_search[:0] = [pos]
