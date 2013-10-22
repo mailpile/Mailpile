@@ -116,7 +116,7 @@ class SearchResults(dict):
     self['search_terms'] = terms = session.searched
     if 'tags' in idx.config:
       self['search_tags'] = [idx.config.get_tag(t.split(':')[1], {})
-                             for t in terms if t.startswith('tag:')]
+                             for t in terms if t.startswith('in:')]
 
     results = results or session.results
     if not results:
