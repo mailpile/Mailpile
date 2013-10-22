@@ -1167,7 +1167,14 @@ class OldConfigLoader:
         mbox_ids = mailboxes.keys()
         mbox_ids.sort(key=lambda k: int(k, 36))
         for mbox_id in mbox_ids:
-            config.sys.mailbox[mbox_id] = mailboxes[mbox_id]
+            mbox_fn = mailboxes[mbox_id]
+            try:
+                nid = '0'
+                while int(nid, 36) != int(mbox_id, 36):
+                    nid = config.sys.mailbox.append('/dev/null')
+                config.sys.mailbox[mbox_id] = mbox_fn
+            except IndexError:
+                print 'Could not assign mailbox:%s = %s' % (mbox_id, mbox_fn)
 
         for writable in ('Blank', 'Drafts'):
             tid = config.get_tag_id(writable)
