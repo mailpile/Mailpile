@@ -212,12 +212,15 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         commands = UrlMap(session).map(self, method, path,
                                        query_data, post_data)
       except UsageError:
-        # FIXME: Make our URLs non-strict about trailing slashes, when
-        # we are NOT in development mode (debug=False). Is this smart?
-        if not path.endswith('/') and not session.config.sys.debug:
+        if (not path.endswith('/') and
+            not session.config.sys.debug and
+            method == 'GET'):
           commands = UrlMap(session).map(self, method, path+'/',
                                          query_data, post_data)
-          session.ui.warning('FIXME: Should redirect w/ trailing slash.')
+          url = path + '/'
+          if query:
+              path += '?' + query
+          return self.send_http_redirect(url)
         else:
           raise
 
