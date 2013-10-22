@@ -84,7 +84,7 @@ mailpile.config.ConfigManager.filter_move = MoveFilter
 class TagCommand(Command):
   def slugify(self, tag_name):
     return CleanText(tag_name.lower().replace(' ', '-'),
-                     banned=CleanText.NONDNS).clean.lower()
+                     banned=CleanText.NONDNS.replace('/', '')).clean.lower()
 
   def finish(self, stats=True, save=True):
     idx = self._idx()
