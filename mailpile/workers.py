@@ -134,7 +134,10 @@ class Cron(threading.Thread):
         """
         self.ALIVE = False
         if join:
-            self.join()
+            try:
+                self.join()
+            except RuntimeError:
+                pass
 
 
 class Worker(threading.Thread):
@@ -222,7 +225,10 @@ class Worker(threading.Thread):
     def quit(self, session=None, join=True):
         self.die_soon(session=session)
         if join:
-            self.join()
+            try:
+                self.join()
+            except RuntimeError:
+                pass
 
 
 class DumbWorker(Worker):
@@ -242,6 +248,9 @@ class DumbWorker(Worker):
 
 if __name__ == "__main__":
     import doctest
-    junk = {}
-    print '%s' % (doctest.testmod(optionflags=doctest.ELLIPSIS,
-                                  extraglobs={'junk': junk}), )
+    import sys
+    result = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                             extraglobs={'junk': {}})
+    print '%s' % (result, )
+    if result.failed:
+        sys.exit(1)

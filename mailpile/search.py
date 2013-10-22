@@ -43,7 +43,7 @@ class PostingList(object):
   def Optimize(cls, session, idx, force=False):
     flush_append_cache()
 
-    postinglist_kb = session.config.get('postinglist_kb', cls.MAX_SIZE)
+    postinglist_kb = session.config.sys.postinglist_kb
 
     # Pass 1: Compact all files that are 90% or more of our target size
     for c in cls.CHARACTERS:
@@ -98,7 +98,7 @@ class PostingList(object):
     fd, fn = cls.GetFile(session, sig, mode='a')
     if (compact
     and (os.path.getsize(os.path.join(config.postinglist_dir(fn), fn)) >
-             (1024*config.get('postinglist_kb', cls.MAX_SIZE))-(cls.HASH_LEN*6))
+             (1024*config.sys.postinglist_kb)-(cls.HASH_LEN*6))
     and (random.randint(0, 50) == 1)):
       # This will compact the files and split out hot-spots, but we only bother
       # "once in a while" when the files are "big".
@@ -113,7 +113,7 @@ class PostingList(object):
 
   @classmethod
   def WordSig(cls, word, config):
-    return strhash(word, cls.HASH_LEN, obfuscate=config.get('obfuscate_index'))
+    return strhash(word, cls.HASH_LEN, obfuscate=config.prefs.obfuscate_index)
 
   @classmethod
   def SaveFile(cls, session, prefix):
@@ -174,7 +174,7 @@ class PostingList(object):
     return ''.join(output)
 
   def compact(self, prefix, output):
-    while (len(output) > 1024*self.config.get('postinglist_kb', self.MAX_SIZE)
+    while (len(output) > 1024*self.config.sys.postinglist_kb
     and    len(prefix) < self.HASH_LEN):
       biggest = self.sig
       for word in self.WORDS:
@@ -411,7 +411,7 @@ class MailIndex(object):
     if mods or len(self.EMAILS) > self.EMAILS_SAVED:
       if session: session.ui.mark("Saving metadata index changes...")
       fd = gpg_open(self.config.mailindex_file(),
-                    self.config.get('gpg_recipient'), 'a')
+                    self.config.prefs.gpg_recipient, 'a')
       for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
         fd.write('@%s\t%s\n' % (b36(eid), quote(self.EMAILS[eid])))
       for pos in mods:
@@ -425,7 +425,7 @@ class MailIndex(object):
     self.MODIFIED = set()
     if session: session.ui.mark("Saving metadata index...")
     fd = gpg_open(self.config.mailindex_file(),
-                  self.config.get('gpg_recipient'), 'w')
+                  self.config.prefs.gpg_recipient, 'w')
     fd.write('# This is the mailpile.py index file.\n')
     fd.write('# We have %d messages!\n' % len(self.INDEX))
     for eid in range(0, len(self.EMAILS)):
@@ -544,7 +544,7 @@ class MailIndex(object):
     if len(self.PTRS.keys()) == 0:
       self.update_ptrs_and_msgids(session)
 
-    snippet_max = session.config.get('snippet_max', 80)
+    snippet_max = session.config.sys.snippet_max
     added = 0
     msg_ts = int(time.time())
     for ui in range(0, len(unparsed)):
@@ -914,7 +914,8 @@ class MailIndex(object):
             in msg_info[self.MSG_REPLIES].split(',') if r]
 
   def get_tags(self, msg_info=None, msg_idx=None):
-    if not msg_info: msg_info = self.get_msg_at_idx_pos(msg_idx)
+    if not msg_info:
+      msg_info = self.get_msg_at_idx_pos(msg_idx)
     return [r for r in msg_info[self.MSG_TAGS].split(',') if r]
 
   def add_tag(self, session, tag_id,
@@ -1062,9 +1063,9 @@ class MailIndex(object):
 
   def sort_results(self, session, results, how=None):
     force = how or False
-    how = how or self.config.get('default_order', 'reverse_date')
+    how = how or self.config.prefs.default_order
     sign = how.startswith('rev') and -1 or 1
-    sort_max = self.config.get('sort_max', 2500)
+    sort_max = self.config.sys.sort_max
     if not results: return
 
     if len(results) > sort_max and not force:
@@ -1124,7 +1125,7 @@ class MailIndex(object):
     self.STATS.update({
       'ALL': [len(self.INDEX), len(new_msgs)]
     })
-    for tid in (update_tags or config.get('tag', {}).keys()):
+    for tid in (update_tags or config.tags.keys()):
       if session: session.ui.mark('Counting messages in tag:%s' % tid)
       hits = GlobalPostingList(session, '%s:tag' % tid).hits()
       self.STATS[tid] = [len(hits), len(hits & new_msgs)]

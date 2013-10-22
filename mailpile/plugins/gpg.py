@@ -20,9 +20,8 @@ class GPG(Command):
     session, config, arg = self.session, self.session.config, self.args[0]
     try:
       session.ui.mark('Invoking GPG to fetch key %s' % arg)
-      keyserver = config.get('gpg_keyserver', 'pool.sks-keyservers.net')
       gpg = GnuPG().run(['--utf8-strings',
-                         '--keyserver', keyserver,
+                         '--keyserver', config.sys.gpg_keyserver,
                          '--recv-key', arg], create_fhs=['stderr'])
       session.ui.debug(gpg.handles['stderr'].read().decode('utf-8'))
       gpg.handles['stderr'].close()

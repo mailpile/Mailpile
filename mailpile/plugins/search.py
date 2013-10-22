@@ -118,11 +118,10 @@ class SearchResults(dict):
       self._set_values([], 0, 0, 0)
       return
 
-    # FIXME: The search_tags is broken for many search results, needs
-    #        to be rewritten after config refactor.
     self['search_terms'] = terms = session.searched
-    self['search_tags'] = [idx.config['tag'].get(t.split(':')[1], t)
-                           for t in terms if t.startswith('tag:')]
+    if 'tags' in idx.config:
+      self['search_tags'] = [idx.config.get_tag(t.split(':')[1], {})
+                             for t in terms if t.startswith('tag:')]
 
     num = num or session.config.get('num_results', 20)
     if end: start = end - num
@@ -148,10 +147,16 @@ class SearchResults(dict):
       ])
       # FIXME: This is nice, but doing it in _explain_msg_summary
       #        would be nicer.
-      result['tags'] = dict([(t, {'name': idx.config['tag'].get(t,t),
-                                  'slug': idx.config['tag'].get(t,t),
-                                  'searched': ('tag:%s' % t in terms)})
-                             for t in idx.get_tags(msg_info=msg_info)])
+      result['tags'] = []
+      if 'tags' in idx.config:
+        searched = [t.get('slug') for t in self['search_tags']]
+        for t in idx.get_tags(msg_info=msg_info):
+          tag = idx.config.get_tag(t)
+          if tag:
+            result['tags'].append(dict_merge(tag, {
+              'searched': (tag['slug'] in searched)
+            }))
+
       if not expand:
         conv = idx.get_conversation(msg_info)
       else:
@@ -183,7 +188,7 @@ class SearchResults(dict):
     self['total'] = total
 
   def __nonzero__(self):
-    return (self['count'] != 0)
+    return True
 
   def next_set(self):
     return SearchResults(self.session, self.idx,
@@ -203,9 +208,10 @@ class SearchResults(dict):
         exp_email = self.expand[expand_ids.index(int(m['mid'], 36))]
         text.append(exp_email.get_editing_string(exp_email.get_message_tree()))
       else:
-        msg_tags = m['tags'] and (' <' + '<'.join(m['tags'])) or ''
-        sfmt = '%%-%d.%ds%%s' % (41-(clen+len(msg_tags)),41-(clen+len(msg_tags)))
-        text.append((cfmt+' %s %-25.25s '+sfmt
+        tag_names = [t['name'] for t in m['tags'] if not t['searched']]
+        msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
+        sfmt = '%%-%d.%ds%%s' % (46-(clen+len(msg_tags)),46-(clen+len(msg_tags)))
+        text.append((cfmt+' %s %-20.20s '+sfmt
                      ) % (count, m['date'], m['short_from'], m['subject'],
                           msg_tags))
       count += 1
@@ -444,9 +450,9 @@ def mailbox_search(config, idx, term, hits):
     except ValueError:
         mailbox_id = None
 
-    mailboxes = config.get('mailbox', {})
-    mailboxes = [m for m in mailboxes if word in mailboxes[m].lower() or
-                                         mailbox_id == m]
+    mailboxes = [m for m in config.sys.mailbox.keys()
+                         if word in config.sys.mailbox[m].lower() or
+                            mailbox_id == m]
     rt = []
     for mbox_id in mailboxes:
        mbox_id = (('0' * MBX_ID_LEN) + mbox_id)[-MBX_ID_LEN:]

@@ -28,31 +28,33 @@ from mailpile import Mailpile
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
 MY_FROM = 'test@test.com'
+
+# First, we set up a pristine Mailpile
+os.system('rm -rf %s' % mailpile_home)
+mp = Mailpile(workdir=mailpile_home)
+
+def contents(fn):
+    return open(fn, 'r').read()
+
+def grep(w, fn):
+    return '\n'.join([l for l in open(fn, 'r').readlines() if w in l])
+
+def grepv(w, fn):
+    return '\n'.join([l for l in open(fn, 'r').readlines() if w not in l])
+
+def say(stuff):
+    mp._session.ui.mark(stuff)
+    mp._session.ui.reset_marks()
+
 try:
-    # First, we set up a pristine Mailpile
-    os.system('rm -rf %s' % mailpile_home)
-    mp = Mailpile(workdir=mailpile_home)
-
-    def contents(fn):
-        return open(fn, 'r').read()
-
-    def grep(w, fn):
-        return '\n'.join([l for l in open(fn, 'r').readlines() if w in l])
-
-    def grepv(w, fn):
-        return '\n'.join([l for l in open(fn, 'r').readlines() if w not in l])
-
-    def say(stuff):
-        mp._session.ui.mark(stuff)
-        mp._session.ui.reset_marks()
-
     # Set up initial tags and such
     mp.setup()
 
     # Configure our fake mail sending setup
-    mp.set('my_from: %s = Test Account' % MY_FROM)
-    mp.set('my_sendmail: %s = |%s -i %%(rcpt)s' % (MY_FROM, mailpile_send))
-    mp.set('debug = sendmail log compose')
+    mp.set('profiles/0/email = %s' % MY_FROM)
+    mp.set('profiles/0/name = Test Account')
+    mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
+    mp.set('sys/debug = sendmail log compose')
 
     # Add the mailboxes, scan them
     for mailbox in ('tests.mbx', 'Maildir'):
@@ -79,6 +81,9 @@ try:
         say('Searching for: %s' % search)
         results = mp.search(*search)
         assert(results.result['count'] == 1)
+
+    say('Checking size of inbox')
+    assert(mp.search('tag:inbox').result['count'] == 8)
 
     # Make sure we are decoding weird headers correctly
     result_bre = mp.search(*FROM_BRE).result['messages'][0]

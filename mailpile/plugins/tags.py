@@ -11,15 +11,15 @@ from mailpile.plugins.search import Search
 
 mailpile.plugins.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
-    'slug': ['URL slug', 'slug', ''],
+    'slug': ['URL slug', 'slashslug', ''],
     # FIXME: Add more exciting metadata
-}, []])
+}, {}])
 
 mailpile.plugins.register_config_section('filters', ["Filters", {
     'tags': ['Tag/untag actions', 'str', ''],
     'terms': ['Search terms', 'str', ''],
     'comment': ['Human readable description', 'str', ''],
-}, []])
+}, {}])
 
 mailpile.plugins.register_config_variables('sys', {
     'writable_tags': ['Tags used to mark writable messages', 'b36', []]
@@ -30,11 +30,11 @@ def GetFilters(cfg, filter_on=None):
     filters.sort(key=lambda k: int(k, 36))
     flist = []
     for fid in filters:
-        terms = cfg.filters[fid]['comment']
+        terms = cfg.filters[fid].get('terms', '')
         if filter_on is not None and terms != filter_on:
             continue
-        flist.append((fid, terms, cfg.filters[fid]['tags'],
-                                  cfg.filters[fid]['comments']))
+        flist.append((fid, terms, cfg.filters[fid].get('tags', ''),
+                                  cfg.filters[fid].get('comments', '')))
     return flist
 
 def MoveFilter(cfg, filter_id, filter_new_id):
@@ -51,18 +51,29 @@ def MoveFilter(cfg, filter_id, filter_new_id):
         for fid in range(ffrm, fto):
             swap(fid, fid+1)
 
-def GetTagIDMethod(cfg, tn):
+def GetTag(cfg, tn, default=None):
     tn = tn.lower()
     try:
-        tid = [t._key for t in cfg.tags if t['slug'].lower() == tn]
-        return tid and tid[0] or None
-    except KeyError:
-        return None
+        if tn in cfg.tags:
+            return cfg.tags[tn]
+    except (KeyError, IndexError):
+        pass
+    tv = cfg.tags.values()
+    tags = ([t for t in tv if t.get('slug', '').lower() == tn] or
+            [t for t in tv if t.get('name', '').lower() == tn])
+    if len(tags) == 1:
+        return tags[0]
+    return default
+
+def GetTagID(cfg, tn):
+    tag = GetTag(cfg, tn)
+    return tag and tag._key or None
 
 # FIXME: Is this bad form or awesome?  This is used in a few places by
 #        commands.py and search.py, but might be a hint that the plugin
 #        architecture needs a little more polishing.
-mailpile.config.ConfigManager.get_tag_id = GetTagIDMethod
+mailpile.config.ConfigManager.get_tag = GetTag
+mailpile.config.ConfigManager.get_tag_id = GetTagID
 mailpile.config.ConfigManager.get_filters = GetFilters
 mailpile.config.ConfigManager.filter_move = MoveFilter
 
@@ -70,43 +81,23 @@ mailpile.config.ConfigManager.filter_move = MoveFilter
 ##[ Commands ]################################################################
 
 class TagCommand(Command):
+  def slugify(self, tag_name):
+    return CleanText(tag_name.lower().replace(' ', '-'),
+                     banned=CleanText.NONDNS).clean.lower()
 
-  class CommandResult(Command.CommandResult):
-    def _tags_as_text(self):
-      tags = self.result['tags']
-      wrap = int(78/23) # FIXME: Magic number
-      text = []
-      for i in range(0, len(tags)):
-        text.append(('%s%5.5s %-18.18s'
-                     ) % ((i%wrap) == 0 and '  ' or '',
-                     '%s' % (tags[i]['new'] or ''),
-                     tags[i]['name'])
-                   + ((i%wrap)==(wrap-1) and '\n' or ''))
-      return ''.join(text)+'\n'
-    def _added_as_text(self):
-      return ('Added tags: '
-             +', '.join([k['name'] for k in self.result['added']]))
-    def _removed_as_text(self):
-      return ('Removed tags: '
-             +', '.join([k['name'] for k in self.result['removed']]))
-    def _tagging_as_text(self):
-      what = []
-      if self.result['tagged']:
-        what.append('Tagged ' +
-                    ', '.join([k['name'] for k in self.result['tagged']]))
-      if self.result['untagged']:
-        what.append('Untagged ' +
-                    ', '.join([k['name'] for k in self.result['untagged']]))
-      return '%s (%d messages)' % (', '.join(what), len(self.result['msg_ids']))
-    def as_text(self):
-      if not self.result:
-        return 'Failed'
-      return ''.join([
-        ('added' in self.result) and self._added_as_text() or '',
-        ('removed' in self.result) and self._removed_as_text() or '',
-        ('tags' in self.result) and self._tags_as_text() or '',
-        ('msg_ids' in self.result) and self._tagging_as_text() or '',
-      ])
+  def finish(self, stats=True, save=True):
+    idx = self._idx()
+    if save:
+      # Background save makes things feel fast!
+      def background():
+        if stats:
+          idx.update_tag_stats(self.session, self.session.config)
+        idx.save_changes()
+        self.session.config.save()
+      self._background('Save index', background)
+    elif stats:
+      idx.update_tag_stats(self.session, self.session.config)
+
 
 
 class Tag(TagCommand):
@@ -119,6 +110,21 @@ class Tag(TagCommand):
     'add': 'tags',
     'del': 'tags'
   }
+
+  class CommandResult(TagCommand.CommandResult):
+    def as_text(self):
+      if not self.result:
+        return 'Failed'
+      if not self.result['msg_ids']:
+        return 'Nothing happened'
+      what = []
+      if self.result['tagged']:
+        what.append('Tagged ' +
+                    ', '.join([k['name'] for k in self.result['tagged']]))
+      if self.result['untagged']:
+        what.append('Untagged ' +
+                    ', '.join([k['name'] for k in self.result['untagged']]))
+      return '%s (%d messages)' % (', '.join(what), len(self.result['msg_ids']))
 
   def command(self, save=True):
     idx = self._idx()
@@ -137,23 +143,16 @@ class Tag(TagCommand):
     rv = {'msg_ids': [], 'tagged': [], 'untagged': []}
     rv['msg_ids'] = [b36(i) for i in msg_ids]
     for op in ops:
-      tag_id = self.session.config.get_tag_id(op[1:])
+      tag = self.session.config.get_tag(op[1:])
+      tag_id = tag._key
       if op[0] == '-':
         idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
-        rv['untagged'].append({'name': op[1:], 'tid': tag_id})
+        rv['untagged'].append(tag)
       else:
         idx.add_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
-        rv['tagged'].append({'name': op[1:], 'tid': tag_id})
+        rv['tagged'].append(tag)
 
-    if save:
-      # Background save makes things feel fast!
-      def background():
-        idx.update_tag_stats(self.session, self.session.config)
-        idx.save_changes()
-      self._background('Save index', background)
-    else:
-      idx.update_tag_stats(self.session, self.session.config)
-
+    self.finish(save=save, stats=True)
     return rv
 
 
@@ -161,28 +160,48 @@ class AddTag(TagCommand):
   """Create a new tag"""
   SYNOPSIS = (None, 'tag/add', 'tag/add', '<tag>')
   ORDER = ('Tagging', 0)
+  SPLIT_ARG = False
   HTTP_CALLABLE = ('POST', )
   HTTP_POST_VARS = {
       'name': 'tag name',
       'slug': 'tag slug',
   }
 
+  class CommandResult(TagCommand.CommandResult):
+    def as_text(self):
+      if not self.result:
+        return 'Failed'
+      if not self.result['added']:
+        return 'Nothing happened'
+      return ('Added tags: ' +
+              ', '.join([k['name'] for k in self.result['added']]))
+
   def command(self):
     config = self.session.config
-    existing = [v.lower() for v in config.get('tag', {}).values()]
-    creating = (self.args or []) + self.data.get('name', [])
-    for tag in creating:
-      if ' ' in tag:
-        return self._error('Invalid tag: %s' % tag)
-      if tag.lower() in existing:
-        return self._error('Tag already exists: %s' % tag)
-    result = []
-    for tag in sorted(creating):
-      if config.parse_set(self.session, 'tag:%s=%s' % (config.nid('tag'), tag)):
-        result.append({'name': tag, 'tid': config.get_tag_id(tag), 'new': 0})
-    if result:
-      self._background('Save config', lambda: config.save())
-    return {'added': result}
+
+    slugs = self.data.get('slug', [])
+    names = self.data.get('name', [])
+    if slugs and len(names) != len(slugs):
+      return self._error('Name/slug pairs do not match')
+    elif names and not slugs:
+      slugs = [self.slugify(n) for n in names]
+    slugs.extend([self.slugify(s) for s in self.args])
+    names.extend(self.args)
+
+    for slug in slugs:
+      if slug != self.slugify(slug):
+        return self._error('Invalid tag slug: %s' % slug)
+
+    for tag in config.tags.values():
+      if tag.slug in slugs:
+        return self._error('Tag already exists: %s/%s' % (tag.slug, tag.name))
+
+    tags = [{'name': n, 'slug': s} for (n, s) in zip(names, slugs)]
+    if tags:
+      config.tags.extend(tags)
+      self.finish(save=True, stats=False)
+
+    return {'added': tags}
 
 
 class ListTags(TagCommand):
@@ -194,6 +213,21 @@ class ListTags(TagCommand):
     'not': 'tags',
   }
 
+  class CommandResult(TagCommand.CommandResult):
+    def as_text(self):
+      if not self.result:
+        return 'Failed'
+      tags = self.result['tags']
+      wrap = int(78/23)  # FIXME: Magic number
+      text = []
+      for i in range(0, len(tags)):
+        text.append(('%s%5.5s %-18.18s'
+                     ) % ((i%wrap) == 0 and '  ' or '',
+                     '%s' % (tags[i]['new'] or ''),
+                     tags[i]['name'])
+                   + ((i%wrap)==(wrap-1) and '\n' or ''))
+      return ''.join(text)+'\n'
+
   def command(self):
     result, idx = [], self._idx()
 
@@ -202,18 +236,19 @@ class ListTags(TagCommand):
     wanted.extend([t.lower() for t in self.data.get('only', [])])
     unwanted.extend([t.lower() for t in self.data.get('not', [])])
 
-    for tid, tag in self.session.config.get('tag', {}).iteritems():
-      if wanted and tag.lower() not in wanted: continue
-      if unwanted and tag.lower() in unwanted: continue
-      result.append({
-        'name': tag,
+    for tag in self.session.config.tags.values():
+      if wanted and tag.slug.lower() not in wanted: continue
+      if unwanted and tag.slug.lower() in unwanted: continue
+      tid = tag._key
+      info = dict_merge(tag, {
         'tid': tid,
         'url': UrlMap(self.session).url_tag(tid),
         'all': int(idx.STATS.get(tid, [0, 0])[0]),
         'new': int(idx.STATS.get(tid, [0, 0])[1]),
         'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
       })
-    result.sort(key=lambda k: k['name'])
+      result.append(info)
+    result.sort(key=lambda k: k['slug'])
     return {'tags': result}
 
 
@@ -223,30 +258,51 @@ class DeleteTag(TagCommand):
   ORDER = ('Tagging', 0)
   HTTP_CALLABLE = ('POST', 'DELETE')
 
+  class CommandResult(TagCommand.CommandResult):
+    def as_text(self):
+      if not self.result:
+        return 'Failed'
+      if not self.result['removed']:
+        return 'Nothing happened'
+      return ('Removed tags: ' +
+              ', '.join([k['name'] for k in self.result['removed']]))
+
   def command(self):
     session, config = self.session, self.session.config
-    existing = [v.lower() for v in config.get('tag', {}).values()]
     clean_session = mailpile.ui.Session(config)
     clean_session.ui = session.ui
     result = []
-    for tag in self.args:
-      tag_id = config.get_tag_id(tag)
-      if tag_id:
-        # FIXME: Update filters too
-        if (Search(clean_session, arg=['tag:%s' % tag]).run()
-        and Tag(clean_session, arg=['-%s' % tag, 'all']).run()
-        and config.parse_unset(session, 'tag:%s' % tag_id)):
-          result.append({'name': tag, 'tid': tag_id})
+    for tag_name in self.args:
+      tag = config.get_tag(tag_name)
+      if tag:
+        tag_id = tag._key
+        # FIXME: Refuse to delete tag if in use by filters
+        rv = (Search(clean_session, arg=['tag:%s' % tag_id]).run() and
+              Tag(clean_session, arg=['-%s' % tag_id, 'all']).run())
+        if rv:
+          del config.tags[tag_id]
+          result.append({'name': tag.name, 'tid': tag_id})
         else:
-          raise Exception('That failed, not sure why?!')
+          raise Exception('That failed: %s' % rv)
       else:
-        self._error('No such tag %s' % tag)
+        self._error('No such tag %s' % tag_name)
     if result:
-      config.save()
+      self.finish(save=True, stats=False)
     return {'removed': result}
 
 
-class Filter(Command):
+
+class FilterCommand(Command):
+  def finish(self):
+    def save_filter():
+      self.session.config.save()
+      if self.session.config.index:
+        self.session.config.index.save_changes()
+      return True
+    self._serialize('Save filter', save_filter)
+
+
+class Filter(FilterCommand):
   """Add auto-tag rule for current search or terms"""
   SYNOPSIS = (None, 'filter', None,
               '[new|read] [notag] [=<mid>] '
@@ -264,7 +320,7 @@ class Filter(Command):
     if args and args[0] and args[0][0] == '=':
       filter_id = args.pop(0)[1:]
     else:
-      filter_id = config.nid('filter')
+      filter_id = None
 
     auto_tag = False
     if 'read' in flags:
@@ -295,23 +351,21 @@ class Filter(Command):
       if not Tag(session, arg=tags + ['all']).run(save=False):
         raise UsageError()
 
-    if (config.parse_set(session, ('filter:%s=%s'
-                                   ) % (filter_id, ' '.join(args)))
-    and config.parse_set(session, ('filter_tags:%s=%s'
-                                   ) % (filter_id, ' '.join(tids)))
-    and config.parse_set(session, ('filter_terms:%s=%s'
-                                   ) % (filter_id, ' '.join(terms)))):
-      def save_filter():
-        config.save()
-        if config.index: config.index.save_changes()
-        return True
-      self._serialize('Save filter', save_filter)
-      return True
+    filter_dict = {
+      'comment': ' '.join(self.args),
+      'terms': ' '.join(terms),
+      'tags': ' '.join(tids)
+    }
+    if filter_id:
+        config.filters[filter_id] = filter_dict
     else:
-      raise Exception('That failed, not sure why?!')
+        config.filters.append(filter_dict)
+
+    self.finish()
+    return True
 
 
-class DeleteFilter(Command):
+class DeleteFilter(FilterCommand):
   """Delete an auto-tagging rule"""
   SYNOPSIS = (None, 'filter/delete', None, '<filter-id>')
   ORDER = ('Tagging', 1)
@@ -340,7 +394,7 @@ class DeleteFilter(Command):
       else:
         session.ui.warning('Failed to remove %s' % fid)
     if removed:
-      config.save()
+      self.finish()
     return True
 
 
@@ -365,7 +419,8 @@ class ListFilters(Command):
 
       human_tags = []
       for tterm in tags.split():
-        tagname =  self.session.config.get('tag', {}).get(tterm[1:], '(None)')
+        tagname =  self.session.config.tags.get(tterm[1:],
+                                                {}).get('slug', '(None)')
         human_tags.append('%s%s' % (tterm[0], tagname))
 
       skip = False
@@ -404,6 +459,6 @@ class MoveFilter(ListFilters):
     return ListFilters.command(self, want_fid=self.args[1])
 
 
-mailpile.plugins.register_commands(Tag, AddTag, DeleteTag, ListTags)
-mailpile.plugins.register_commands(Filter, DeleteFilter,
+mailpile.plugins.register_commands(Tag, AddTag, DeleteTag, ListTags,
+                                   Filter, DeleteFilter,
                                    MoveFilter, ListFilters)

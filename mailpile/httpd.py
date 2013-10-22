@@ -105,7 +105,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       code, msg = 403, "Access denied"
     else:
       try:
-        tpl = config.get('path', {}).get(self.http_host(), 'html_theme')
+        tpl = config.sys.path.get(self.http_host(), 'html_theme')
         fpath, fd = config.open_file(tpl, filename)
         mimetype = mimetypes.guess_type(fpath)[0] or "application/octet-stream"
         message = fd.read()
@@ -179,7 +179,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     # HTTP is stateless, so we create a new session for each request.
     config = self.server.session.config
 
-    if 'http' in config.get('debug', ''):
+    if 'http' in config.sys.debug:
       sys.stderr.write(('%s: %s qs=%s post=%s\n'
                         ) % (method, path, query_data, post_data))
 
@@ -201,15 +201,26 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       'http_hostname': self.http_host(),
       'http_method': method,
       'message_count': (idx and len(idx.INDEX) or 0),
-      'name': session.config.get('my_from', {1: 'Chelsea Manning'}
-                                 ).values()[0],
+      'name': session.config.get_profile().get('name', 'Chelsea Manning'),
       'title': 'Mailpile dummy title',
       'url_protocol': self.headers.get('x-forwarded-proto', 'http'),
+      'mailpile_size': idx and len(idx.INDEX) or 0
     }
 
     try:
-      commands = UrlMap(session).map(self, method, path,
-                                     query_data, post_data)
+      try:
+        commands = UrlMap(session).map(self, method, path,
+                                       query_data, post_data)
+      except UsageError:
+        # FIXME: Make our URLs non-strict about trailing slashes, when
+        # we are NOT in development mode (debug=False). Is this smart?
+        if not path.endswith('/') and not session.config.sys.debug:
+          commands = UrlMap(session).map(self, method, path+'/',
+                                         query_data, post_data)
+          session.ui.warning('FIXME: Should redirect w/ trailing slash.')
+        else:
+          raise
+
       results = [cmd.run() for cmd in commands]
       session.ui.display_result(results[-1])
     except UrlRedirectException, e:
@@ -219,7 +230,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     except:
       e = traceback.format_exc()
       print e
-      # FIXME: This may be a security risk?
+      if not session.config.sys.debug:
+        e = 'Internal error'
       self.send_full_response(e, code=500, mimetype='text/plain')
       return None
 

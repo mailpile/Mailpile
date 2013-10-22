@@ -2,6 +2,7 @@
 # tagging and editing e-mail.
 #
 import datetime
+import json
 import os
 import os.path
 import re
@@ -35,7 +36,7 @@ class Command:
 
   class CommandResult:
     def __init__(self, session, command, template_id, doc, result,
-                       args=[], kwargs={}, status='success', message='OK'):
+                       status, message, args=[], kwargs={}):
       self.session = session
       self.command = command
       self.args = args
@@ -95,6 +96,8 @@ class Command:
     self.serialize = self.SERIALIZE
     self.name = name
     self.data = data or {}
+    self.status = 'success'
+    self.message = 'OK'
     self.result = None
     if type(arg) in (type(list()), type(tuple())):
       self.args = list(arg)
@@ -194,7 +197,8 @@ class Command:
        self.session.ui.finish_command()
     result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
                                 command.__doc__ or self.__doc__,
-                                rv, self.args, self.data)
+                                rv, self.status, self.message,
+                                args=self.args, kwargs=self.data)
     return result
 
   def _run(self, *args, **kwargs):
@@ -244,15 +248,15 @@ class Rescan(Command):
     session, config = self.session, self.session.config
 
     # FIXME: Need a lock here?
-    if 'rescan' in config.RUNNING:
+    if 'rescan' in config._running:
       return True
-    config.RUNNING['rescan'] = True
+    config._running['rescan'] = True
 
     idx = self._idx()
     count = 0
     rv = True
     try:
-      pre_command = config.get('rescan_command', None)
+      pre_command = config.prefs.rescan_command
       if pre_command:
         session.ui.mark('Running: %s' % pre_command)
         subprocess.check_call(pre_command, shell=True)
@@ -279,7 +283,7 @@ class Rescan(Command):
           idx.save_changes(session)
         else:
           idx.save(session)
-      del config.RUNNING['rescan']
+      del config._running['rescan']
       idx.update_tag_stats(session, config)
     return True
 
@@ -308,10 +312,12 @@ class UpdateStats(Command):
   def command(self):
     session, config = self.session, self.session.config
     idx = config.index
-    tags = config.get("tag", {})
-    idx.update_tag_stats(session, config, tags.keys())
-    session.ui.mark("Statistics updated")
-    return True
+    if 'tags' in config:
+      idx.update_tag_stats(session, config, config.tags.keys())
+      session.ui.mark("Statistics updated")
+      return True
+    else:
+      return False
 
 
 class RunWWW(Command):
@@ -330,45 +336,89 @@ class RunWWW(Command):
 
 class ConfigSet(Command):
   """Change a setting"""
-  SYNOPSIS = ('S', 'set', None, '<var=value>')
+  SYNOPSIS = ('S', 'set', None, '<section.variable> <value>')
   ORDER = ('Config', 1)
   SPLIT_ARG = False
   HTTP_CALLABLE = ('POST', 'UPDATE')
+  HTTP_POST_VARS = {
+      'var': 'section.variables',
+      'value': 'new setting'
+  }
 
   def command(self):
-    session, config = self.session, self.session.config
-    if config.parse_set(session, self.args[0]):
-      self._serialize('Save config', lambda: config.save())
+    config = self.session.config
+    args = self.args[:]
+    ops = []
+
+    if 'var' in self.data:
+        ops.extend(zip(self.data['var'], self.data['value']))
+
+    if self.args:
+        arg = ' '.join(self.args)
+        if '=' in arg:
+            # This is backwards compatible with the old 'var = value' syntax.
+            var, value = [s.strip() for s in arg.split('=', 1)]
+            var = var.replace(': ', '.').replace(':', '.').replace(' ', '')
+        else:
+            var, value = arg.split(' ', 1)
+        ops.append((var, value))
+
+    for path, value in ops:
+        value = value.strip()
+        if value.startswith('{') or value.startswith('['):
+            value = json.loads(value)
+        try:
+            cfg, var = config.walk(path.strip(), parent=1)
+            cfg[var] = value
+        except IndexError:
+            cfg, v1, v2 = config.walk(path.strip(), parent=2)
+            cfg[v1] = {v2: value}
+
+    self._serialize('Save config', lambda: config.save())
     return True
 
 
 class ConfigUnset(Command):
-  """Reset a setting to the default"""
+  """Reset one or more settings to their defaults"""
   SYNOPSIS = ('U', 'unset', None, '<var>')
   ORDER = ('Config', 2)
-  SPLIT_ARG = False
   HTTP_CALLABLE = ('POST', )
+  HTTP_POST_VARS = {
+      'var': 'section.variables'
+  }
 
   def command(self):
     session, config = self.session, self.session.config
-    if config.parse_unset(session, self.args[0]):
-      self._serialize('Save config', lambda: config.save())
+    vlist = self.args[:]
+    vlist.extend(self.data.get('var', None) or [])
+    for v in vlist:
+        cfg, vn = config.walk(v, parent=True)
+        if vn in cfg:
+            del cfg[vn]
+    self._serialize('Save config', lambda: config.save())
     return True
 
 
 class ConfigPrint(Command):
-  """Print a setting"""
+  """Print one or more settings"""
   SYNOPSIS = ('P', 'print', 'config/get', '<var>')
   ORDER = ('Config', 3)
   SPLIT_ARG = False
+  HTTP_QUERY_VARS = {
+      'var': 'section.variable'
+  }
 
   def command(self):
-    key = self.args[0].strip().lower()
+    session, config = self.session, self.session.config
+    result = {}
     try:
-      return {key: self.session.config[key]}
+        # FIXME: Are there privacy implications here somewhere?
+        for key in (self.args + self.data.get('var', [])):
+            result[key] = config.walk(key)
     except KeyError:
-      self.session.error('No such key: %s' % key)
+      session.ui.error('No such key: %s' % key)
       return False
+    return result
 
 
 class AddMailbox(Command):
@@ -383,8 +433,8 @@ class AddMailbox(Command):
     adding = []
     for raw_fn in self.args:
       fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
-      if (raw_fn in config.get('mailbox', {}).values() or
-          fn in config.get('mailbox', {}).values()):
+      existing = config.sys.mailbox
+      if raw_fn in existing or fn in existing:
         session.ui.warning('Already in the pile: %s' % raw_fn)
       else:
         if raw_fn.startswith("imap://"):
@@ -394,14 +444,14 @@ class AddMailbox(Command):
             adding.append(fn)
           else:
             return self._error('No such file/directory: %s' % raw_fn)
-    added = 0
+    added = {}
     for arg in adding:
-      if config.parse_set(session,
-                          'mailbox:%s=%s' % (config.nid('mailbox'), arg)):
-        added += 1
+      added[config.sys.mailbox.append(arg)] = arg
     if added:
       self._serialize('Save config', lambda: config.save())
-    return True
+      return {'added': added}
+    else:
+      return True
 
 
 ###############################################################################
@@ -536,7 +586,8 @@ class Help(Command):
   def _starting(self): pass
   def _finishing(self, command, rv):
     return self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
-                              command.__doc__ or self.__doc__, rv)
+                              command.__doc__ or self.__doc__, rv,
+                              self.status, self.message)
 
 
 class HelpVars(Help):
@@ -603,10 +654,10 @@ def Action(session, opt, arg, data=None):
     return command(session, opt, arg, data=data).run()
 
   # Tags are commands
-  if opt.lower() in [t.lower() for t in config.get('tag', {}).values()]:
-    s = ['tag:%s' % config.get_tag_id(opt)[0]]
+  tag = config.get_tag(opt)
+  if tag:
     return GetCommand('search')(session, opt, arg=arg, data=data
-                                ).run(search=s)
+                                ).run(search=['tag:%s' % tag._key])
 
   # OK, give up!
   raise UsageError('Unknown command: %s' % opt)
