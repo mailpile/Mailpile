@@ -113,15 +113,15 @@ class SearchResults(dict):
     self.expand = expand
     self.idx = idx
 
-    results = results or session.results
-    if not results:
-      self._set_values([], 0, 0, 0)
-      return
-
     self['search_terms'] = terms = session.searched
     if 'tags' in idx.config:
       self['search_tags'] = [idx.config.get_tag(t.split(':')[1], {})
                              for t in terms if t.startswith('tag:')]
+
+    results = results or session.results
+    if not results:
+      self._set_values([], 0, 0, 0)
+      return
 
     num = num or session.config.get('num_results', 20)
     if end: start = end - num
