@@ -1150,7 +1150,7 @@ class OldConfigLoader:
                 elif cat == 'mailbox':
                     mailboxes[var] = val
                 elif cat == 'my_from':
-                    if not config.get_profile(email=var).get('name'):
+                    if not config.get_profile(email=var).get('email'):
                         config.profiles.append({
                             'email': var,
                             'name': val,
