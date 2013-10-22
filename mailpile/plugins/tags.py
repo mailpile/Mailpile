@@ -132,8 +132,8 @@ class Tag(TagCommand):
 
     if 'mid' in self.data:
       msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
-      ops = (['+%s' % t for t in self.data.get('add', [])] +
-             ['-%s' % t for t in self.data.get('del', [])])
+      ops = (['+%s' % t for t in self.data.get('add', []) if t] +
+             ['-%s' % t for t in self.data.get('del', []) if t])
     else:
       words = self.args[:]
       ops = []
@@ -145,13 +145,16 @@ class Tag(TagCommand):
     rv['msg_ids'] = [b36(i) for i in msg_ids]
     for op in ops:
       tag = self.session.config.get_tag(op[1:])
-      tag_id = tag._key
-      if op[0] == '-':
-        idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
-        rv['untagged'].append(tag)
+      if tag:
+        tag_id = tag._key
+        if op[0] == '-':
+          idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
+          rv['untagged'].append(tag)
+        else:
+          idx.add_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
+          rv['tagged'].append(tag)
       else:
-        idx.add_tag(self.session, tag_id, msg_idxs=msg_ids, conversation=True)
-        rv['tagged'].append(tag)
+        self.session.ui.warning('Unknown tag: %s' % op)
 
     self.finish(save=save, stats=True)
     return rv
