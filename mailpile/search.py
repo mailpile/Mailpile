@@ -982,7 +982,7 @@ class MailIndex(object):
   def search_tag(self, term, hits):
     t = term.split(':', 1)
     t[1] = self.config.get_tag_id(t[1]) or t[1]
-    return hits('%s:%s' % (t[1], t[0]))
+    return hits('%s:tag' % t[1])
 
   def search(self, session, searchterms, keywords=None):
     if keywords:
@@ -997,10 +997,8 @@ class MailIndex(object):
     for p in ('', '+', '-'):
       while p+'is:unread' in searchterms:
         searchterms[searchterms.index(p+'is:unread')] = p+'tag:New'
-      while p+'in:spam' in searchterms:
-        searchterms[searchterms.index(p+'in:spam')] = p+'tag:Spam'
-      while p+'in:trash' in searchterms:
-        searchterms[searchterms.index(p+'in:trash')] = p+'tag:Trash'
+      for t in [term for term in searchterms if term.startswith(p+'in:')]:
+        searchterms[searchterms.index(t)] = p + 'tag:' + t.split(':', 1)[1]
 
     # If first term is a negative search, prepend an all:mail
     if searchterms and searchterms[0] and searchterms[0][0] == '-':
