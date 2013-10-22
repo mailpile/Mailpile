@@ -1169,10 +1169,10 @@ class OldConfigLoader:
             config.sys.mailbox[mbox_id] = mailboxes[mbox_id]
 
         for writable in ('Blank', 'Drafts'):
-            if writable not in config.sys.writable_tags:
-                tid = config.get_tag_id(writable)
-                if tid:
-                    config.sys.writable_tags.append(tid)
+            tid = config.get_tag_id(writable)
+            if tid and tid not in config.sys.writable_tags:
+                config.sys.writable_tags.append(tid)
+
         return (errors == 0)
 
 
