@@ -150,7 +150,7 @@ class SearchResults(dict):
       result['tags'] = []
       if 'tags' in idx.config:
         searched = [t.get('slug') for t in self['search_tags']]
-        for t in idx.get_tags(msg_info=msg_info):
+        for t in sorted(idx.get_tags(msg_info=msg_info)):
           tag = idx.config.get_tag(t)
           if tag:
             result['tags'].append(dict_merge(tag, {
