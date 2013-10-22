@@ -895,17 +895,18 @@ class ConfigManager(ConfigDict):
 
     def get_profile(self, email=None):
         find = email or self.prefs.get('default_email', None)
-        for profile in self.profiles:
-            if profile.email == find or not find:
-                if not email:
-                    self.prefs.default_email = profile.email
-                return profile
-        return {
+        default_profile = {
             'name': None,
             'email': find,
             'signature': None,
             'route': DEFAULT_SENDMAIL
         }
+        for profile in self.profiles:
+            if profile.email == find or not find:
+                if not email:
+                    self.prefs.default_email = profile.email
+                return dict_merge(default_profile, profile)
+        return default_profile
 
     def get_sendmail(self, frm, rcpts='-t'):
         return self.get_profile(frm)['route'] % {
