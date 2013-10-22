@@ -3,7 +3,7 @@
 		<span class="icon-search"></span>
 		<input id="qbox" class="search" type="text" name="q"
                        placeholder="Custom Search..."
-                       value="{% for t in result.search_terms %}{{ t }} {% endfor %}" />
+                       value="{% for t in result.search_terms %}{{ t|e }} {% endfor %}" />
 		<input type="submit" class="button-primary" value="Search"/>
 	</form>
 	<div id="search-params" class="clearfix">

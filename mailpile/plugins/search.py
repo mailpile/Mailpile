@@ -113,7 +113,8 @@ class SearchResults(dict):
     self.expand = expand
     self.idx = idx
 
-    self['search_terms'] = terms = session.searched
+    self['search_terms'] = terms = [t.decode('utf-8')
+                                    for t in session.searched]
     if 'tags' in idx.config:
       self['search_tags'] = [idx.config.get_tag(t.split(':')[1], {})
                              for t in terms if t.startswith('in:')]
