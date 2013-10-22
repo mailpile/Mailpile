@@ -51,7 +51,7 @@ def MoveFilter(cfg, filter_id, filter_new_id):
         for fid in range(ffrm, fto):
             swap(fid, fid+1)
 
-def GetTag(cfg, tn):
+def GetTag(cfg, tn, default=None):
     tn = tn.lower()
     try:
         if tn in cfg.tags:
@@ -63,7 +63,7 @@ def GetTag(cfg, tn):
             [t for t in tv if t.get('name', '').lower() == tn])
     if len(tags) == 1:
         return tags[0]
-    return None
+    return default
 
 def GetTagID(cfg, tn):
     tag = GetTag(cfg, tn)
