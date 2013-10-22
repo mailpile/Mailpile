@@ -18,9 +18,6 @@ class NetworkGraph(Search):
   SYNOPSIS = ('n', 'shownetwork', 'shownetwork', '<terms>')
   HTTP_CALLABLE = ('GET', )
 
-  class CommandResult(Command.CommandResult):
-    pass
-
   def command(self, search=None):
     session, idx, start, num = self._do_search(search=search)
 
