@@ -81,12 +81,13 @@ class UrlMap:
         Traceback (most recent call last):
             ...
         BadMethodError: Invalid method (GET): message/update
-        >>> urlmap._command('message/update', method='POST', query_data={'evil': 1})
+        >>> urlmap._command('message/update', method='POST',
+        ...                                   query_data={'evil': '1'})
         Traceback (most recent call last):
             ...
         BadDataError: Bad variable (evil): message/update
         >>> urlmap._command('search', args=['html'],
-        ...                 query_data={'ui_': 1, 'q[]': 'foobar'})
+        ...                 query_data={'ui_': '1', 'q[]': 'foobar'})
         <mailpile.plugins.search.Search instance at 0x...>
         """
         try:
@@ -140,11 +141,11 @@ class UrlMap:
                 if src and (var in src or varBB in src):
                     sdata = (var in src) and src[var] or src.get(varBB, '')
                     if isinstance(sdata, cgi.FieldStorage):
-                        data[var] = [_FancyString(sdata.value)]
+                        data[var] = [_FancyString(sdata.value.decode('utf-8'))]
                         if hasattr(sdata, 'filename'):
                             data[var][0].filename = sdata.filename
                     else:
-                        data[var] = sdata
+                        data[var] = [d.decode('utf-8') for d in sdata]
 
         return command(self.session, name, args, data=data)
 
