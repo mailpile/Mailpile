@@ -49,18 +49,23 @@ for you, but if you are importing lots of old mail, you may want to
 postpone the filter definition until after the import (see below), to
 start with a clean slate:
 
-    $ ./mp --set "my_from: yourmail@domain.com = Your name" --setup
+    $ ./mp --setup
+    $ ./mp --set "profiles.0.email = yourmail@domain.com"
+    $ ./mp --set "profiles.0.name = Your Name"
     ...
 
 If you do not have a local working mail server in `/usr/sbin/sendmail`,
 you may also want to configure a default outgoing SMTP server:
 
-    $ ./mp --set "my_sendmail: default = smtp:yourmailserver:25"
+    $ ./mp --set "profiles.0.route = smtp:yourmailserver:25"
     ..
 
 Mailpile does not by default access IMAP or POP3 servers directly, it
 relies on other tools (such as `fetchmail`) to take care of downloading
 new mail.
+
+**Note:** You can add multiple accounts by replacing the `0` in the profile
+variable name with higher numbers.
 
 
 ## Indexing your mail ##
@@ -115,9 +120,9 @@ For example if you want to run the server to be accessible
 from another computer as well, you can run Mailpile
 with:
 
-    $ ./mp --set http_host=0.0.0.0
+    $ ./mp --set sys.http_host=0.0.0.0
 
-Setting `http_host` to `disabled` disables the server.
+Setting `sys.http_host` to `disabled` disables the server.
 
 
 ## Basic use ##
@@ -289,7 +294,7 @@ Alternately, if you have a GPG key and run Mailpile in an environment
 where gpg-agent is available for key management, you can tell Mailpile
 to encrypt its config and data using your key, like so:
 
-    $ ./mp --set "gpg_recipient = youremail@yourdomain.com"
+    $ ./mp --set "prefs.gpg_recipient = youremail@yourdomain.com"
 
 Note that this only encrypts the main index and config file, and only
 works if `gpg` is in your path. The search terms themselves are not
@@ -298,7 +303,7 @@ least in part be derived from the index.  This problem can be mitigated,
 at the cost of some performance, by telling Mailpile to use a one-way
 hash to obfuscate the search terms:
 
-    $ ./mp --set "obfuscate_index = Some RaNdoM LongISH silly SECRET"
+    $ ./mp --set "prefs.obfuscate_index = Some RaNdoM LongISH SECRET"
 
 Note that if you change this setting, whatever has already been indexed
 will "disappear" and become unfindable.  So do this first if you do it
@@ -327,11 +332,11 @@ There are a bunch of variables that can be tweaked. For a complete list:
 
 To set a variable to some value either run Mailpile with:
 
-    $ ./mp --set variable=value
+    $ ./mp --set section.variable=value
 
 Or alternatively run `./mp` and issue:
 
-    mailpile> set variable=value
+    mailpile> set section.variable=value
 
 after which you need to restart the program for it to take effect
 (Ctrl+D and `./mp`). You can print the value of a variable using:
