@@ -24,10 +24,17 @@ class Setup(Command):
             if not session.config.get_tag_id(t):
                 AddTag(session, arg=[t]).run()
                 created.append(t)
+
         for writable in ('Blank', 'Drafts'):
-            if writable not in session.config.sys.writable_tags:
-                 tid = session.config.get_tag_id(writable)
+            tid = session.config.get_tag_id(writable)
+            if tid and tid not in session.config.sys.writable_tags:
                  session.config.sys.writable_tags.append(tid)
+
+        for invisible in ('Trash', 'Spam'):
+            tid = session.config.get_tag_id(invisible)
+            if tid and tid not in session.config.sys.invisible_tags:
+                 session.config.sys.invisible_tags.append(tid)
+
         if 'New' in created:
             Filter(session,
                    arg=['new', '+Inbox', '+New', 'New Mail filter']).run()

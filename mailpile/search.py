@@ -994,19 +994,34 @@ class MailIndex(object):
         return [int(h, 36) for h in GlobalPostingList(session, term).hits()]
 
     # Replace some GMail-compatible terms with what we really use
-    for p in ('', '+', '-'):
-      while p+'is:unread' in searchterms:
-        searchterms[searchterms.index(p+'is:unread')] = p+'tag:New'
-      for t in [term for term in searchterms if term.startswith(p+'tag:')]:
-        searchterms[searchterms.index(t)] = p + 'in:' + t.split(':', 1)[1]
+    if 'tags' in self.config:
+      for p in ('', '+', '-'):
+        while p+'is:unread' in searchterms:
+          searchterms[searchterms.index(p+'is:unread')] = p+'tag:New'
+        for t in [term for term in searchterms if term.startswith(p+'tag:')]:
+          searchterms[searchterms.index(t)] = p + 'in:' + t.split(':', 1)[1]
 
     # If first term is a negative search, prepend an all:mail
     if searchterms and searchterms[0] and searchterms[0][0] == '-':
       searchterms[:0] = ['all:mail']
 
+    # Unless we are searching for invisible things, remove them from
+    # results by default.
+    hidden_terms = []
+    if 'tags' in self.config:
+      invisible = self.config.sys.get('invisible_tags', [])
+      exclude = ['-in:%s' % i for i in invisible]
+      for tid in invisible:
+        tag = self.config.tags[tid]
+        if (('in:%s' % tid) in searchterms or
+            ('in:%s' % tag.name) in searchterms or
+            ('in:%s' % tag.slug) in searchterms):
+          exclude = []
+      hidden_terms.extend(exclude)
+
     if len(self.CACHE.keys()) > 5000: self.CACHE = {}
     r = []
-    for term in searchterms:
+    for term in searchterms + hidden_terms:
       if term in STOPLIST:
         if session:
           session.ui.warning('Ignoring common word: %s' % term)

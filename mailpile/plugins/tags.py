@@ -22,7 +22,8 @@ mailpile.plugins.register_config_section('filters', ["Filters", {
 }, {}])
 
 mailpile.plugins.register_config_variables('sys', {
-    'writable_tags': ['Tags used to mark writable messages', 'b36', []]
+    'writable_tags': ['Tags used to mark writable messages', 'b36', []],
+    'invisible_tags': ['Tags to exclude from searches by default', 'b36', []],
 })
 
 def GetFilters(cfg, filter_on=None):
