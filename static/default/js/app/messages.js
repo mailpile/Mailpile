@@ -1,6 +1,3 @@
-/* Status Messages */
-
-
 var statusHeaderPadding = function() {
 
 	if ($('#header').css('position') === 'fixed') {

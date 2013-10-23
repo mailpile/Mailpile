@@ -221,15 +221,14 @@ MailPile.prototype.results_graph = function() {
 	args = $('#pile-graph-canvas-svg').data("searchterms");
 
 	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
-		graph = graph.result;
-		// console.log(graph);
-		var width = $("#pile-graph-canvas-svg").parent().width();
-		var height = $("#pile-graph-canvas-svg").parent().height();
+		graph = graph.result[0];
+		console.log(graph);
+		var width = 640; // $("#pile-graph-canvas").width();
+		var height = 640; // $("#pile-graph-canvas").height();
 		var force = d3.layout.force()
-					.gravity(0.3)
-					.charge(-150)
-					.linkDistance(40)
-					.size([width *= 2/3, height *= 2/3]);
+	   				.charge(-300)
+	   				.linkDistance(75)
+	   				.size([width, height]);
 
 		var svg = d3.select("#pile-graph-canvas-svg");
 		$("#pile-graph-canvas-svg").empty();
@@ -252,8 +251,7 @@ MailPile.prototype.results_graph = function() {
 			.data(graph.links)
 			.enter().append("line")
 			.attr("class", "link")
-			.style("z-index", "6")
-			.style("stroke-width", function(d) { return Math.log(d.value) + 1; });
+			.style("stroke-width", function(d) { return Math.sqrt(3*d.value); });
 
 		var node = svg.selectAll(".node")
 		      .data(graph.nodes)
@@ -262,16 +260,16 @@ MailPile.prototype.results_graph = function() {
 		      .call(force.drag);
 
 		node.append("circle")
-			.attr("r", 5)
-			.style("z-index", "5")
+			.attr("r", 8)
 		    .style("fill", function(d) { return color("#3a6b8c"); })
 
 	    node.append("text")
 	    	.attr("x", 12)
 	    	.attr("dy", "0.35em")
 	    	.style("opacity", "0.3")
-	    	.style("z-index", "1")
 	    	.text(function(d) { return d.email; });
+
+	    link.append("text").attr("x", 12).attr("dy", ".35em").text(function(d) { return d.type; })
 
 	   	node.on("click", function(d, m, q) {
 	   		// d.attr("toggled", !d.attr("toggled"));
@@ -289,7 +287,7 @@ MailPile.prototype.results_graph = function() {
 			d3.select(node[q][m]).selectAll("text").style("opacity", "1");
 		});
 		node.on("mouseout", function(d, m, q) {
-			d3.select(node[q][m]).selectAll("text").style("opacity", "0.15");
+			d3.select(node[q][m]).selectAll("text").style("opacity", "0.3");
 		});
 
 		force.on("tick", function() {
@@ -397,9 +395,6 @@ $(document).on('click', 'a.change-view-size', function(e) {
      Begin messages.js
 ********************************************** */
 
-/* Status Messages */
-
-
 var statusHeaderPadding = function() {
 
 	if ($('#header').css('position') === 'fixed') {
@@ -472,349 +467,334 @@ $(document).ready(function() {
      Begin compose.js
 ********************************************** */
 
-/* Compose */
+/* Create New Blank Message */
+$(document).on('click', '#button-compose', function() {
+	$.ajax({
+		url			 : '/api/0/message/compose/',
+		type		 : 'POST',
+		data     : {},
+		dataType : 'json'  
+  }).done(function(response) {
+      if (response.status == 'success') {
+        window.location.href = '/message/draft/=' + response.result.created + '/';
+      }
+      else {
+        statusMessage(response.status, response.message);
+      }      
+  });
+});
 
 
-  /* Create New Blank Message */
-  $(document).on('click', '#button-compose', function() {
-		$.ajax({
-			url			 : '/api/0/message/compose/',
-			type		 : 'POST',
-			data     : {},
-			dataType : 'json'  
-    }).done(function(response) {
-        if (response.status == 'success') {
-          window.location.href = '/message/draft/=' + response.result.created + '/';
-        }
-        else {
-          statusMessage(response.status, response.message);
-        }      
+
+/* Adding Recipients */
+if ($('#form-compose').length) {
+
+  $.getJSON('http://localhost:33411/static/contacts.json', function(contacts) {
+      
+    var formatContactResult = function(state) {
+      if (!state.id) return state.text;
+      return "<span class='icon-user'></span> &nbsp;" + state.text;
+    }          
+      
+    $("#compose-to, #compose-cc, #compose-bcc").select2({
+      tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
+      multiple: true,
+      allowClear: true,
+      placeholder: 'type name or email address',  // Placeholder
+      width: '94%',                               // Width of input element
+      maximumSelectionSize: 50,                   // Limits number of items added
+      tokenSeparators: [",", " - "],
+      formatResult: formatContactResult,
+      formatSelection: formatContactResult,    
+      formatSelectionTooBig: function() {
+        return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
+      }
+    });
+
+    $("#compose-to, #compose-cc, #compose-bcc").on("change", function() {
+      $("#compose-to_val").html($("#compose-to").val());
+    });
+
+    $("#compose-to, #compose-cc, #compose-bcc").select2("container").find("ul.select2-choices").sortable({
+      containment: 'parent',
+      start: function() { 
+        $("#compose-to, #compose-cc, #compose-bcc").select2("onSortStart");
+      },
+      update: function() {
+        $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
+      }
     });
   });
+}
 
 
 
-  /* Adding Recipients */
-  if ($('#form-compose').length) {
+/* Send & Save */
+$(document).on('click', '.compose-action', function(e) {
 
-    $.getJSON('http://localhost:33411/static/contacts.json', function(contacts) {
-        
-      var formatContactResult = function(state) {
-        if (!state.id) return state.text;
-        return "<span class='icon-user'></span> &nbsp;" + state.text;
-      }          
-        
-      $("#compose-to, #compose-cc, #compose-bcc").select2({
-        tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
-        multiple: true,
-        allowClear: true,
-        placeholder: 'type name or email address',  // Placeholder
-        width: '94%',                               // Width of input element
-        maximumSelectionSize: 50,                   // Limits number of items added
-        tokenSeparators: [",", " - "],
-        formatResult: formatContactResult,
-        formatSelection: formatContactResult,    
-        formatSelectionTooBig: function() {
-          return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
-        }
-      });
+  e.preventDefault();
+  var action = $(this).val();
 
-      $("#compose-to, #compose-cc, #compose-bcc").on("change", function() {
-        $("#compose-to_val").html($("#compose-to").val());
-      });
-
-      $("#compose-to, #compose-cc, #compose-bcc").select2("container").find("ul.select2-choices").sortable({
-        containment: 'parent',
-        start: function() { 
-          $("#compose-to, #compose-cc, #compose-bcc").select2("onSortStart");
-        },
-        update: function() {
-          $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
-        }
-      });
-    });
+  if (action == 'send') {
+	  var action_url     = 'update/send/';
+	  var action_status  = 'success';
+	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
+  }
+  else if (action == 'save') {
+	  var action_url     = 'update/';
+	  var action_status  =  'info';
+	  var action_message = 'Your message was saved';
   }
 
+	$.ajax({
+		url			 : '/api/0/message/' + action_url,
+		type		 : 'POST',
+		data     : $('#form-compose').serialize(),
+		dataType : 'json',
+	  success  : function(response) {
 
-
-  /* Send & Save */
-  $(document).on('click', '.compose-action', function(e) {
-  
-    e.preventDefault();
-    var action = $(this).val();
-  
-    if (action == 'send') {
-  	  var action_url     = 'update/send/';
-  	  var action_status  = 'success';
-  	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
-    }
-    else if (action == 'save') {
-  	  var action_url     = 'update/';
-  	  var action_status  =  'info';
-  	  var action_message = 'Your message was saved';
-    }
-  
-  	$.ajax({
-  		url			 : '/api/0/message/' + action_url,
-  		type		 : 'POST',
-  		data     : $('#form-compose').serialize(),
-  		dataType : 'json',
-  	  success  : function(response) {
-  
-        if (action == 'send' && response.status == 'success') {
-          window.location.href = '/in/Sent/?ui_sent=' + response.result.messages[0].mid
-        }
-        else {
-          statusMessage(response.status, response.message);
-        }
-  	  }
-  	});
-  });
+      if (action == 'send' && response.status == 'success') {
+        window.location.href = '/in/Sent/?ui_sent=' + response.result.messages[0].mid
+      }
+      else {
+        statusMessage(response.status, response.message);
+      }
+	  }
+	});
+});
 
 
 /* **********************************************
      Begin pile.js
 ********************************************** */
 
-/* Pile */
+/* Filter New */
+$(document).on('click', '.button-sub-navigation', function() {
+
+  var filter = $(this).data('filter');
+  $('#sub-navigation ul.left li').removeClass('navigation-on');
+
+  if (filter == 'in_new') {
+
+    $('#display-new').addClass('navigation-on');
+    $('tr').hide('fast', function() {
+      $('tr.in_new').show('fast');
+    });
+  }
+  else if (filter == 'in_later') {
+
+    $('#display-later').addClass('navigation-on');
+    $('tr').hide('fast', function() {
+      $('tr.in_later').show('fast');
+    });
+  }
+  else {
+
+    $('#display-all').addClass('navigation-on');
+    $('tr.result').show('fast');
+  }
+
+  return false;
+});
 
 
-  
 
 
-  /* Filter New */
-  $(document).on('click', '.button-sub-navigation', function() {
+/* Bulk Actions */
+$(document).on('click', '.bulk-action', function(e) {
 
-    var filter = $(this).data('filter');
-    $('#sub-navigation ul.left li').removeClass('navigation-on');
+	e.preventDefault();
+	var checkboxes = $('#pile-results input[type=checkbox]');
+	var action = $(this).attr('href');
+	var count = 0;
 
-    if (filter == 'in_new') {
+	$.each(checkboxes, function() {
+		if ($(this).val() === 'selected') {
+			console.log('This is here ' + $(this).attr('name'));
+			count++;
+		}
+	});
 
-      $('#display-new').addClass('navigation-on');
-      $('tr').hide('fast', function() {
-        $('tr.in_new').show('fast');
-      });
-    }
-    else if (filter == 'in_later') {
+	alert(count + ' items selected to "' + action.replace('#', '') + '"');
+});
 
-      $('#display-later').addClass('navigation-on');
-      $('tr').hide('fast', function() {
-        $('tr.in_later').show('fast');
-      });
+
+/* Result Actions */
+var pileActionSelect = function(item) {
+
+  // Data Stuffs    
+  mailpile.bulk_cache_add(item.data('mid'));
+
+	// Increment Selected
+	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
+
+	// Show Actions
+	$('#bulk-actions').slideDown('slow');
+
+	// Style & Select Checkbox
+	item.removeClass('result').addClass('result-on')
+	.data('state', 'selected')
+	.find('td.checkbox input[type=checkbox]')
+	.val('selected')
+	.prop('checked', true);
+}
+
+
+var pileActionUnselect = function(item) {
+
+  // Data Stuffs    
+  mailpile.bulk_cache_remove(item.data('mid'));
+
+	// Decrement Selected
+	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
+
+	$('#bulk-actions-selected-count').html(selected_count);
+
+	// Hide Actions
+	if (selected_count < 1) {
+		$('#bulk-actions').slideUp('slow');
+	}
+
+	// Style & Unselect Checkbox
+	item.removeClass('result-on').addClass('result')
+	.data('state', 'normal')
+	.find('td.checkbox input[type=checkbox]')
+	.val('normal')
+	.prop('checked', false);
+}
+
+
+$(document).on('click', '#pile-results tr', function(e) {
+	if (e.target.href === undefined && $(this).data('state') === 'selected') {
+		pileActionUnselect($(this));
+	}
+	else if (e.target.href === undefined) {
+		pileActionSelect($(this));
+	}
+});
+
+
+
+/* Dragging */
+$('td.draggable').draggable({
+  containment: "#container",
+  scroll: false,
+  revert: true,
+  helper: function(event) {
+
+    var selected_count = parseInt($('#bulk-actions-selected-count').html());
+    
+    if (selected_count == 0) {
+      drag_count = '1 message</div>';
     }
     else {
-
-      $('#display-all').addClass('navigation-on');
-      $('tr.result').show('fast');
+      drag_count = selected_count + ' messages';
     }
 
-    return false;
-  });
+    return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
+  },
+  stop: function(event, ui) {
+    console.log('done dragging things');
+  }
+});
 
 
 
+/* Dropping */
+$('li.sidebar-tags-draggable').droppable({
+  accept: 'td.draggable',
+  activeClass: 'sidebar-tags-draggable-hover',
+  hoverClass: 'sidebar-tags-draggable-active',
+  tolerance: 'pointer',
+  drop: function(event, ui) {
 
-	/* Bulk Actions */
-	$(document).on('click', '.bulk-action', function(e) {
-
-		e.preventDefault();
-		var checkboxes = $('#pile-results input[type=checkbox]');
-		var action = $(this).attr('href');
-		var count = 0;
-
-		$.each(checkboxes, function() {
-			if ($(this).val() === 'selected') {
-				console.log('This is here ' + $(this).attr('name'));
-				count++;
-			}
-		});
-
-		alert(count + ' items selected to "' + action.replace('#', '') + '"');
-	});
-
-
-	/* Result Actions */
-	var pileActionSelect = function(item) {
-
-    // Data Stuffs    
-    mailpile.bulk_cache_add(item.data('mid'));
-
-		// Increment Selected
-		$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
-
-		// Show Actions
-		$('#bulk-actions').slideDown('slow');
-
-		// Style & Select Checkbox
-		item.removeClass('result').addClass('result-on')
-		.data('state', 'selected')
-		.find('td.checkbox input[type=checkbox]')
-		.val('selected')
-		.prop('checked', true);
-	}
-
-
-	var pileActionUnselect = function(item) {
-
-    // Data Stuffs    
-    mailpile.bulk_cache_remove(item.data('mid'));
-
-		// Decrement Selected
-		var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
-
-		$('#bulk-actions-selected-count').html(selected_count);
-
-		// Hide Actions
-		if (selected_count < 1) {
-			$('#bulk-actions').slideUp('slow');
-		}
-
-		// Style & Unselect Checkbox
-		item.removeClass('result-on').addClass('result')
-		.data('state', 'normal')
-		.find('td.checkbox input[type=checkbox]')
-		.val('normal')
-		.prop('checked', false);
-	}
-
-
-	$(document).on('click', '#pile-results tr', function(e) {
-		if (e.target.href === undefined && $(this).data('state') === 'selected') {
-			pileActionUnselect($(this));
-		}
-		else if (e.target.href === undefined) {
-			pileActionSelect($(this));
-		}
-	});
-
-
-
-  /* Dragging */
-  $('td.draggable').draggable({
-    containment: "#container",
-    scroll: false,
-    revert: true,
-    helper: function(event) {
-
-      var selected_count = parseInt($('#bulk-actions-selected-count').html());
-      
-      if (selected_count == 0) {
-        drag_count = '1 message</div>';
+    var getDelTag = function() {
+      if ($.url.segment(0) === 'in') {
+        return $.url.segment(1);
       }
-      else {
-        drag_count = selected_count + ' messages';
-      }
-
-      return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
-    },
-    stop: function(event, ui) {
-      console.log('done dragging things');
+      return '';
     }
-  });
-
-
-
-  /* Dropping */
-  $('li.sidebar-tags-draggable').droppable({
-    accept: 'td.draggable',
-    activeClass: 'sidebar-tags-draggable-hover',
-    hoverClass: 'sidebar-tags-draggable-active',
-    tolerance: 'pointer',
-    drop: function(event, ui) {
-
-      var getDelTag = function() {
-        if ($.url.segment(0) === 'in') {
-          return $.url.segment(1);
-        }
-        return '';
-      }
-      
-      // Add MID to Cache    
-      mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
     
-      // Fire at Willhelm
-  	  $.ajax({
-  		  url			 : '/api/0/tag/',
-  		  type		 : 'POST',
-  		  data     : {
-          add: $(this).data('tag_name'),
-          del: getDelTag,
-          mid: mailpile.bulk_cache
-        },
-  		  dataType : 'json',
-  	    success  : function(response) {
-          
-          if (response.status == 'success') {
-            $.each(mailpile.bulk_cache, function(key, mid) {
-              $('#pile-message-' + mid).fadeOut('fast');
-            });  
-          } else {
-            statusMessage(response.status, response.message);
-          }
-  	    }
-  	  });  	  
-    }
-  });
+    // Add MID to Cache    
+    mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
+  
+    // Fire at Willhelm
+	  $.ajax({
+		  url			 : '/api/0/tag/',
+		  type		 : 'POST',
+		  data     : {
+        add: $(this).data('tag_name'),
+        del: getDelTag,
+        mid: mailpile.bulk_cache
+      },
+		  dataType : 'json',
+	    success  : function(response) {
+        
+        if (response.status == 'success') {
+          $.each(mailpile.bulk_cache, function(key, mid) {
+            $('#pile-message-' + mid).fadeOut('fast');
+          });  
+        } else {
+          statusMessage(response.status, response.message);
+        }
+	    }
+	  });  	  
+  }
+});
 
 /* **********************************************
      Begin tags.js
 ********************************************** */
 
-/* Tags */
+/* Show Tag Add Form */
+$(document).on('click', '#button-tag-add', function(e) {
+	
+	e.preventDefault();
+
+	$('#tags-list').hide();
+  $('#tag-add').show();
+	
+	$this_nav = $(this);
+  console.log($this_nav);
+
+  $('#sub-navigation ul li').removeClass('navigation-on');
+  $(this).parent().addClass('navigation-on');
+
+});
 
 
-  /* Show Tag Add Form */
-  $(document).on('click', '#button-tag-add', function(e) {
-  	
-  	e.preventDefault();
-  
-  	$('#tags-list').hide();
-    $('#tag-add').show();
-  	
-  	$this_nav = $(this);
-    console.log($this_nav);
-  
-    $('#sub-navigation ul li').removeClass('navigation-on');
-    $(this).parent().addClass('navigation-on');
-  
-  });
-  
+/* API - Tag Add */  
+$(document).on('submit', '#form-tag-add', function(e) {
 
-  /* API - tag/add */  
-  $(document).on('submit', '#form-tag-add', function(e) {
+  e.preventDefault();
+  var tag_data = $('#form-tag-add').serialize();
+  console.log($(this));
+
+	$.ajax({
+		url			 : $(this).attr('action'),
+		type		 : 'POST',
+		data     : tag_data,
+		dataType : 'json',
+	  success  : function(response) {
+
+      statusMessage(response.status, response.message);
+
+      if (response.status == 'success') {
+        console.log(response);
+        //window.location.href = ''
+      }
+	  }
+	});
   
-    e.preventDefault();
-    var tag_data = $('#form-tag-add').serialize();
-    console.log($(this));
-  
-  	$.ajax({
-  		url			 : $(this).attr('action'),
-  		type		 : 'POST',
-  		data     : tag_data,
-  		dataType : 'json',
-  	  success  : function(response) {
-  
-        statusMessage(response.status, response.message);
-  
-        if (response.status == 'success') {
-          console.log(response);
-          //window.location.href = ''
-        }
-  	  }
-  	});
-    
-  });
+});
 
 
 /* **********************************************
      Begin search.js
 ********************************************** */
 
-/* Search */
-
 
 $(document).ready(function() {
-
 
 	/* Hide Various Things */
 	$('#search-params, #bulk-actions').hide();
@@ -835,6 +815,45 @@ $(document).ready(function() {
 			Mousetrap.bind(item[0], item[2]);
 		}
 	}
-
 	
+});
+
+
+/* **********************************************
+     Begin settings.js
+********************************************** */
+
+/* Profile Add */
+$(document).on('submit', '#form-profile-add', function(e) {
+
+  console.log('here');
+
+  e.preventDefault();
+
+  var profile_data = {
+    profiles: {
+      name : $('#profile-add-name').val(),
+      email: $('#profile-add-email').val(),
+      route: 'smtp://' + $('#profile-add-username').val() + ':' + $('#profile-add-password').val() + '@' + $('#profile-add-server').val() + ':' + $('#profile-add-port').val()
+    }
+  };
+
+  console.log(JSON.stringfy(profile_data));
+/*
+	$.ajax({
+		url			 : '/api/0/settings/add/',
+		type		 : 'POST',
+		data     : profile_data,
+		dataType : 'json',
+	  success  : function(response) {
+
+      statusMessage(response.status, response.message);
+
+      if (response.status == 'success') {
+        console.log(response);
+        //window.location.href = ''
+      }
+	  }
+	});
+  */
 });
