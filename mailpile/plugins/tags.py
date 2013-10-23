@@ -47,10 +47,10 @@ def MoveFilter(cfg, filter_id, filter_new_id):
     fto = int(filter_new_id, 36)
     if ffrm > fto:
         for fid in reversed(range(fto, ffrm)):
-            swap(fid+1, fid)
-    else:
+            swap(b36(fid+1), b36(fid))
+    elif ffrm < fto:
         for fid in range(ffrm, fto):
-            swap(fid, fid+1)
+            swap(b36(fid), b36(fid+1))
 
 def GetTag(cfg, tn, default=None):
     tn = tn.lower()
