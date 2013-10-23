@@ -342,6 +342,7 @@ class RenderPage(Command):
   SYNOPSIS = (None, None, 'page', None)
   ORDER = ('Internals', 6)
   SPLIT_ARG = False
+  HTTP_STRICT_VARS = False
 
   class CommandResult(Command.CommandResult):
       def __init__(self, *args, **kwargs):
@@ -350,7 +351,10 @@ class RenderPage(Command):
               self.template_id += '/' + self.result['path'] + '/index'
 
   def command(self):
-      return {'path': self.args[0]}
+      return {
+         'path': (self.args and self.args[0] or ''),
+         'data': self.data
+      }
 
 
 ##[ Configuration commands ]###################################################
