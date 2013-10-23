@@ -149,11 +149,11 @@ class Tag(TagCommand):
         tag_id = tag._key
         if op[0] == '-':
           idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids,
-                         conversation=('flat' not in self.session.order))
+            conversation=('flat' not in (self.session.order or '')))
           rv['untagged'].append(tag)
         else:
           idx.add_tag(self.session, tag_id, msg_idxs=msg_ids,
-                      conversation=('flat' not in self.session.order))
+            conversation=('flat' not in (self.session.order or '')))
           rv['tagged'].append(tag)
       else:
         self.session.ui.warning('Unknown tag: %s' % op)
