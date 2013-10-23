@@ -345,9 +345,9 @@ class ConfigSet(Command):
   ORDER = ('Config', 1)
   SPLIT_ARG = False
   HTTP_CALLABLE = ('POST', 'UPDATE')
+  HTTP_STRICT_VARS = False
   HTTP_POST_VARS = {
-      'var': 'section.variables',
-      'value': 'new setting'
+      'section.variable': 'value|json-string',
   }
 
   def command(self):
@@ -355,8 +355,10 @@ class ConfigSet(Command):
     args = self.args[:]
     ops = []
 
-    if 'var' in self.data:
-        ops.extend(zip(self.data['var'], self.data['value']))
+    for var in self.data.keys():
+        parts = ('.' in var) and var.split('.') or var.split('/')
+        if parts[0] in config.rules:
+             ops.append((var, self.data[var]))
 
     if self.args:
         arg = ' '.join(self.args)
@@ -389,9 +391,9 @@ class ConfigAdd(Command):
   ORDER = ('Config', 1)
   SPLIT_ARG = False
   HTTP_CALLABLE = ('POST', 'UPDATE')
+  HTTP_STRICT_VARS = False
   HTTP_POST_VARS = {
-      'var': 'section.variables',
-      'value': 'new setting'
+      'section.variable': 'value|json-string',
   }
 
   def command(self):
@@ -399,8 +401,10 @@ class ConfigAdd(Command):
     args = self.args[:]
     ops = []
 
-    if 'var' in self.data:
-        ops.extend(zip(self.data['var'], self.data['value']))
+    for var in self.data.keys():
+        parts = ('.' in var) and var.split('.') or var.split('/')
+        if parts[0] in config.rules:
+             ops.append((var, self.data[var]))
 
     if self.args:
         arg = ' '.join(self.args)
