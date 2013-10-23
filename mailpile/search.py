@@ -1092,8 +1092,11 @@ class MailIndex(object):
     ]:
       if session:
         session.ui.mark('Pre-sorting by %s' % order)
+      o = keys[:]
+      o.sort(key=sorter)
       self.INDEX_SORT[order] = keys[:]
-      self.INDEX_SORT[order].sort(key=sorter)
+      for i in range(0, len(o)):
+          self.INDEX_SORT[order][o[i]] = i
 
   def sort_results(self, session, results, how):
     if not results:
