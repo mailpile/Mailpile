@@ -157,7 +157,7 @@ class SearchResults(dict):
               'searched': (tag['slug'] in searched)
             }))
 
-      if not expand:
+      if not expand and 'flat' not in session.order:
         conv = idx.get_conversation(msg_info)
       else:
         conv = [msg_info]
@@ -291,8 +291,9 @@ class Search(Command):
       else:
         session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
 
+    session.order = session.order or session.config.prefs.default_order
     session.results = list(idx.search(session, session.searched))
-    idx.sort_results(session, session.results, how=session.order)
+    idx.sort_results(session, session.results, session.order)
     return session, idx, start, num
 
   def command(self, search=None):
@@ -334,7 +335,7 @@ class Order(Search):
   def command(self):
     session, idx = self.session, self._idx()
     session.order = self.args and self.args[0] or None
-    idx.sort_results(session, session.results, how=session.order)
+    idx.sort_results(session, session.results, session.order)
     session.displayed = SearchResults(session, idx)
     return session.displayed
 

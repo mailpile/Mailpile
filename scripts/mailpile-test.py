@@ -69,7 +69,7 @@ try:
     mp.rescan()
 
     # Search for things, there should be exactly one match for each.
-    mp.order('flat-date')
+    mp.order('rev-date')
     for search in (FROM_BRE,
                    ['agirorn'],
                    ['subject:emerging'],
@@ -83,6 +83,7 @@ try:
         assert(results.result['count'] == 1)
 
     say('Checking size of inbox')
+    mp.order('flat-date')
     assert(mp.search('tag:inbox').result['count'] == 8)
 
     # Make sure we are decoding weird headers correctly

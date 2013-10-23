@@ -325,6 +325,8 @@ class MailIndex(object):
     self.config = config
     self.STATS = {}
     self.INDEX = []
+    self.INDEX_SORT = {}
+    self.INDEX_CONV = []
     self.PTRS = {}
     self.MSGIDS = {}
     self.EMAILS = []
@@ -355,6 +357,7 @@ class MailIndex(object):
 
   def load(self, session=None):
     self.INDEX = []
+    self.CACHE = {}
     self.PTRS = {}
     self.MSGIDS = {}
     self.EMAILS = []
@@ -402,6 +405,7 @@ class MailIndex(object):
     except IOError:
       if session: session.ui.warning(('Metadata index not found: %s'
                                       ) % self.config.mailindex_file())
+    self.cache_sort_orders(session)
     if session:
       session.ui.mark('Loaded metadata for %d messages' % len(self.INDEX))
     self.EMAILS_SAVED = len(self.EMAILS)
@@ -872,9 +876,12 @@ class MailIndex(object):
 
   def get_msg_at_idx_pos(self, msg_idx):
     try:
-      if msg_idx not in self.CACHE:
-        self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
-      return self.CACHE[msg_idx]
+      rv = self.CACHE.get(msg_idx)
+      if rv is None:
+        if len(self.CACHE) > 20000:
+          self.CACHE = {}
+        rv = self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
+      return rv
     except IndexError:
       return [None, '', None, b36(0),
               '(no sender)', '',
@@ -884,14 +891,20 @@ class MailIndex(object):
   def set_msg_at_idx_pos(self, msg_idx, msg_info):
     if msg_idx < len(self.INDEX):
       self.INDEX[msg_idx] = self.m2l(msg_info)
+      self.INDEX_CONV[msg_idx] = int(msg_info[self.MSG_CONV_MID], 36)
     elif msg_idx == len(self.INDEX):
       self.INDEX.append(self.m2l(msg_info))
+      self.INDEX_CONV.append(int(msg_info[self.MSG_CONV_MID], 36))
     else:
       raise IndexError('%s is outside the index' % msg_idx)
 
     self.MODIFIED.add(msg_idx)
     if msg_idx in self.CACHE:
       del(self.CACHE[msg_idx])
+
+    for order in self.INDEX_SORT:
+      while msg_idx >= len(self.INDEX_SORT[order]):
+        self.INDEX_SORT[order].append(msg_idx)
 
     self.MSGIDS[msg_info[self.MSG_ID]] = msg_idx
     for msg_ptr in msg_info[self.MSG_PTRS].split(','):
@@ -931,8 +944,6 @@ class MailIndex(object):
         for reply in self.get_conversation(msg_idx=msg_idx):
           if reply[self.MSG_MID]:
             msg_idxs.add(int(reply[self.MSG_MID], 36))
-          if msg_idx % 1000 == 0:
-            self.CACHE = {}
     for msg_idx in msg_idxs:
       if msg_idx >= 0 and msg_idx < len(self.INDEX):
         msg_info = self.get_msg_at_idx_pos(msg_idx)
@@ -942,9 +953,7 @@ class MailIndex(object):
         self.INDEX[msg_idx] = self.m2l(msg_info)
         self.MODIFIED.add(msg_idx)
         pls.append(msg_info[self.MSG_MID])
-      if msg_idx % 1000 == 0: self.CACHE = {}
     pls.save()
-    self.CACHE = {}
 
   def remove_tag(self, session, tag_id,
                  msg_info=None, msg_idxs=None, conversation=False):
@@ -961,7 +970,6 @@ class MailIndex(object):
         for reply in self.get_conversation(msg_idx=msg_idx):
           if reply[self.MSG_MID]:
             msg_idxs.add(int(reply[self.MSG_MID], 36))
-          if msg_idx % 1000 == 0: self.CACHE = {}
     session.ui.mark('Untagging %d messages (%s)' % (len(msg_idxs), tag_id))
     eids = []
     for msg_idx in msg_idxs:
@@ -974,10 +982,8 @@ class MailIndex(object):
           self.INDEX[msg_idx] = self.m2l(msg_info)
           self.MODIFIED.add(msg_idx)
         eids.append(msg_info[self.MSG_MID])
-      if msg_idx % 1000 == 0: self.CACHE = {}
     pls.remove(eids)
     pls.save()
-    self.CACHE = {}
 
   def search_tag(self, term, hits):
     t = term.split(':', 1)
@@ -1019,7 +1025,6 @@ class MailIndex(object):
           exclude = []
       hidden_terms.extend(exclude)
 
-    if len(self.CACHE.keys()) > 5000: self.CACHE = {}
     r = []
     for term in searchterms + hidden_terms:
       if term in STOPLIST:
@@ -1074,22 +1079,25 @@ class MailIndex(object):
       session.ui.mark('Found %d results' % len(results))
     return results
 
-  def sort_results(self, session, results, how=None):
-    force = how or False
-    how = how or self.config.prefs.default_order
-    sign = how.startswith('rev') and -1 or 1
-    sort_max = self.config.sys.sort_max
-    if not results: return
+  def cache_sort_orders(self, session):
+    keys = range(0, len(self.INDEX))
+    if session:
+      session.ui.mark('Extracting conversation data')
+    self.INDEX_CONV = [int(self.get_msg_at_idx_pos(r)[self.MSG_CONV_MID], 36)
+                       for r in keys]
+    for order, sorter in [
+      ('date', lambda k: long(self.get_msg_at_idx_pos(k)[self.MSG_DATE], 36)),
+      ('from', lambda k: self.get_msg_at_idx_pos(k)[self.MSG_FROM]),
+      ('subject', lambda k: self.get_msg_at_idx_pos(k)[self.MSG_SUBJECT]),
+    ]:
+      if session:
+        session.ui.mark('Pre-sorting by %s' % order)
+      self.INDEX_SORT[order] = keys[:]
+      self.INDEX_SORT[order].sort(key=sorter)
 
-    if len(results) > sort_max and not force:
-      session.ui.warning(('Over sort_max (%s) results, sorting badly.'
-                          ) % sort_max)
-      results.sort()
-      if sign < 0: results.reverse()
-      leftovers = results[sort_max:]
-      results[sort_max:] = []
-    else:
-      leftovers = []
+  def sort_results(self, session, results, how):
+    if not results:
+      return
 
     session.ui.mark('Sorting messages in %s order...' % how)
     try:
@@ -1100,32 +1108,31 @@ class MailIndex(object):
       elif how.endswith('random'):
         now = time.time()
         results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
-      elif how.endswith('date'):
-        results.sort(key=lambda k: long(self.get_msg_at_idx_pos(k)[self.MSG_DATE], 36))
-      elif how.endswith('from'):
-        results.sort(key=lambda k: self.get_msg_at_idx_pos(k)[self.MSG_FROM])
-      elif how.endswith('subject'):
-        results.sort(key=lambda k: self.get_msg_at_idx_pos(k)[self.MSG_SUBJECT])
       else:
-        session.ui.warning('Unknown sort order: %s' % how)
-        results.extend(leftovers)
-        return False
+        did_sort = False
+        for order in self.INDEX_SORT:
+          if how.endswith(order):
+            results.sort(key=self.INDEX_SORT[order].__getitem__)
+            did_sort = True
+            break
+        if not did_sort:
+          session.ui.warning('Unknown sort order: %s' % how)
+          return False
     except:
+      if session.config.sys.debug:
+        traceback.print_exc()
       session.ui.warning('Sort failed, sorting badly.  Partial index?')
+      results.sort()
 
-    if sign < 0: results.reverse()
+    if how.startswith('rev'):
+      results.reverse()
 
     if 'flat' not in how:
-      conversations = [(r, int(self.get_msg_at_idx_pos(r)[self.MSG_CONV_MID], 36))
-                       for r in results]
-      results[:] = []
-      chash = {}
-      for r, c in conversations:
-        if c not in chash:
-          results.append(r)
-          chash[c] = 1
-
-    results.extend(leftovers)
+      # This filters away all but the first result in each conversation.
+      results.reverse()
+      cset = set(dict([(self.INDEX_CONV[r], r) for r in results]).values())
+      results.reverse()
+      results[:] = filter(cset.__contains__, results)
 
     session.ui.mark('Sorted messages in %s order' % how)
     return True
