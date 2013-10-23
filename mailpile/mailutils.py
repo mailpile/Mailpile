@@ -887,6 +887,10 @@ class Email(object):
     else:
       return filename, attributes
 
+  def get_message_tags(self):
+      tids = self.get_msg_info(self.index.MSG_TAGS).split(',')
+      return [self.config.get_tag(t) for t in tids]
+
   def get_message_tree(self):
     tree = {
       'id': self.get_msg_info(self.index.MSG_ID),
