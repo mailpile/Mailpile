@@ -420,7 +420,7 @@ class ConfigAdd(Command):
     for var in self.data.keys():
         parts = ('.' in var) and var.split('.') or var.split('/')
         if parts[0] in config.rules:
-             ops.append((var, self.data[var]))
+             ops.append((var, self.data[var][0]))
 
     if self.args:
         arg = ' '.join(self.args)

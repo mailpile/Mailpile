@@ -120,6 +120,15 @@ class UrlMap:
                         (not var.startswith('ui_')) and
                         (var not in SPECIAL_VARS)):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
+
+            ui_keys = [k for k in ((query_data or {}).keys() +
+                                   (post_data or {}).keys())
+                               if k.startswith('ui_')]
+            copy_vars = ((ui_keys, query_data),
+                         (ui_keys, post_data),
+                         (command.HTTP_QUERY_VARS, query_data),
+                         (command.HTTP_QUERY_VARS, post_data),
+                         (command.HTTP_POST_VARS, post_data))
         else:
             for var in command.HTTP_BANNED_VARS:
                 var = var.replace('[]', '')
@@ -127,15 +136,13 @@ class UrlMap:
                         (post_data and var in post_data)):
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
 
+            copy_vars = (((query_data or {}).keys(), query_data),
+                         ((post_data or {}).keys(), post_data))
+
         data = {
             '_method': method
         }
-        ui_keys = [k for k in ((query_data or {}).keys() +
-                               (post_data or {}).keys()) if k.startswith('ui_')]
-        for vlist, src in ((ui_keys, query_data), (ui_keys, post_data),
-                           (command.HTTP_QUERY_VARS, query_data),
-                           (command.HTTP_QUERY_VARS, post_data),
-                           (command.HTTP_POST_VARS, post_data)):
+        for vlist, src in copy_vars:
             for var in vlist:
                 varBB = var+'[]'
                 if src and (var in src or varBB in src):
