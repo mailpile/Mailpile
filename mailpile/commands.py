@@ -263,7 +263,10 @@ class Rescan(Command):
         subprocess.check_call(pre_command, shell=True)
       count = 1
       for fid, fpath in config.get_mailboxes():
-        if mailpile.util.QUITTING: break
+        if fpath == '/dev/null':
+          continue
+        if mailpile.util.QUITTING:
+          break
         count += idx.scan_mailbox(session, fid, fpath, config.open_mailbox)
         config.clear_mbox_cache()
         session.ui.mark('\n')
