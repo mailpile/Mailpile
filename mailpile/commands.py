@@ -383,6 +383,46 @@ class ConfigSet(Command):
     return True
 
 
+class ConfigAdd(Command):
+  """Add a new value to a list (or ordered dict) setting"""
+  SYNOPSIS = ('S', 'append', 'settings/add', '<section.variable> <value>')
+  ORDER = ('Config', 1)
+  SPLIT_ARG = False
+  HTTP_CALLABLE = ('POST', 'UPDATE')
+  HTTP_POST_VARS = {
+      'var': 'section.variables',
+      'value': 'new setting'
+  }
+
+  def command(self):
+    config = self.session.config
+    args = self.args[:]
+    ops = []
+
+    if 'var' in self.data:
+        ops.extend(zip(self.data['var'], self.data['value']))
+
+    if self.args:
+        arg = ' '.join(self.args)
+        if '=' in arg:
+            # This is backwards compatible with the old 'var = value' syntax.
+            var, value = [s.strip() for s in arg.split('=', 1)]
+            var = var.replace(': ', '.').replace(':', '.').replace(' ', '')
+        else:
+            var, value = arg.split(' ', 1)
+        ops.append((var, value))
+
+    for path, value in ops:
+        value = value.strip()
+        if value.startswith('{') or value.startswith('['):
+            value = json.loads(value)
+        cfg, var = config.walk(path.strip(), parent=1)
+        cfg[var].append(value)
+
+    self._serialize('Save config', lambda: config.save())
+    return True
+
+
 class ConfigUnset(Command):
   """Reset one or more settings to their defaults"""
   SYNOPSIS = ('U', 'unset', 'settings/unset', '<var>')
@@ -677,7 +717,7 @@ def Action(session, opt, arg, data=None):
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
   Optimize, Rescan, RunWWW, UpdateStats,
-  ConfigPrint, ConfigSet, ConfigUnset, AddMailboxes,
+  ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
   Output, Help, HelpVars, HelpSplash
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

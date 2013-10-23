@@ -71,6 +71,8 @@ endpoints be used for automation.
                               ?from=[from which key]&data=[the data to sign]
     /api/0/pgp/verify/        <data>/
                               ?data=[the data to verify]
+    /api/0/settings/add/      <section.variable>/<value>/
+    ... POST only: var=[section.variables]&value=[new setting]
     /api/0/settings/set/      <section.variable>/<value>/
     ... POST only: var=[section.variables]&value=[new setting]
     /api/0/settings/unset/    <var>/
@@ -88,6 +90,8 @@ endpoints be used for automation.
     ... POST only: file-data=[file data]&mid=[metadata-ID]
     /api/0/message/update/    <messages>/<<filename>/
     ... POST only: body=[..]&to=[..]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
+    /api/0/settings/add/      <section.variable>/<value>/
+    ... POST only: var=[section.variables]&value=[new setting]
     /api/0/settings/set/      <section.variable>/<value>/
     ... POST only: var=[section.variables]&value=[new setting]
 
@@ -131,6 +135,7 @@ endpoints be used for automation.
     /message/update/send/
     /search/
     /settings/
+    /settings/add/
     /settings/set/
     /settings/unset/
     /shownetwork/
