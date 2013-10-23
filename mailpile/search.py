@@ -1014,15 +1014,16 @@ class MailIndex(object):
     # Unless we are searching for invisible things, remove them from
     # results by default.
     hidden_terms = []
-    if 'tags' in self.config:
+    if 'tags' in self.config and (not session or 'all' not in session.order):
       invisible = self.config.sys.get('invisible_tags', [])
       exclude = ['-in:%s' % i for i in invisible]
       for tid in invisible:
         tag = self.config.tags[tid]
-        if (('in:%s' % tid) in searchterms or
-            ('in:%s' % tag.name) in searchterms or
-            ('in:%s' % tag.slug) in searchterms):
-          exclude = []
+        for p in ('in:%s', '+in:%s', '-in:%s'):
+          if ((p % tid) in searchterms or
+              (p % tag.name) in searchterms or
+              (p % tag.slug) in searchterms):
+            exclude = []
       hidden_terms.extend(exclude)
 
     r = []
@@ -1106,7 +1107,7 @@ class MailIndex(object):
     count = len(results)
     session.ui.mark('Sorting %d messages in %s order...' % (count, how))
     try:
-      if how == 'unsorted':
+      if how.endswith('unsorted'):
         pass
       elif how.endswith('index'):
         results.sort()
