@@ -2,7 +2,7 @@
 {% block content %}
 
 {% if result %}
-{% set profiles = mailpile('config/get', 'profiles').result.profiles %}
+{% set profiles = mailpile('settings', 'profiles').result.profiles %}
 <div id="compose">
 
   {% for m in result.messages %}
