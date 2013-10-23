@@ -338,7 +338,7 @@ class RunWWW(Command):
 
 class ConfigSet(Command):
   """Change a setting"""
-  SYNOPSIS = ('S', 'set', None, '<section.variable> <value>')
+  SYNOPSIS = ('S', 'set', 'settings/set', '<section.variable> <value>')
   ORDER = ('Config', 1)
   SPLIT_ARG = False
   HTTP_CALLABLE = ('POST', 'UPDATE')
@@ -382,7 +382,7 @@ class ConfigSet(Command):
 
 class ConfigUnset(Command):
   """Reset one or more settings to their defaults"""
-  SYNOPSIS = ('U', 'unset', None, '<var>')
+  SYNOPSIS = ('U', 'unset', 'settings/unset', '<var>')
   ORDER = ('Config', 2)
   HTTP_CALLABLE = ('POST', )
   HTTP_POST_VARS = {
@@ -403,7 +403,7 @@ class ConfigUnset(Command):
 
 class ConfigPrint(Command):
   """Print one or more settings"""
-  SYNOPSIS = ('P', 'print', 'config/get', '<var>')
+  SYNOPSIS = ('P', 'print', 'settings', '<var>')
   ORDER = ('Config', 3)
   SPLIT_ARG = False
   HTTP_QUERY_VARS = {

@@ -21,8 +21,6 @@ endpoints be used for automation.
 
 ### GET (also accept POST)
 
-    /api/0/config/get/        <var>/
-                              ?var=[section.variable]
     /api/0/contact/           <nickname>/
     /api/0/contact/list/      [--full]/[<terms>]/
     /api/0/filter/list/       [<search>|=<id>]/
@@ -39,6 +37,8 @@ endpoints be used for automation.
     ... POST only: mid=[message-id]
     /api/0/search/            [@<start>]/<terms>/
                               ?q=[search terms]&start=[start position]&end=[end position]&order=[sort order]
+    /api/0/settings/          <var>/
+                              ?var=[section.variable]
     /api/0/shownetwork/       <terms>/
                               ?q=[search terms]&start=[start position]&end=[end position]&order=[sort order]
     /api/0/tag/list/          [<wanted>|!<wanted>]/[...]/
@@ -63,6 +63,18 @@ endpoints be used for automation.
     ... POST only: body=[..]&to=[..]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
     /api/0/message/update/send/
     ... POST only: body=[..]&to=[recipients]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
+    /api/0/pgp/decrypt/       <data>/
+                              ?verify=[whether to verify (true/false/auto, default=auto)]&data=[the data to encrypt]&passphrase=[the passphrase (optional)]
+    /api/0/pgp/encrypt/       <to>/<data>/[<sign>/<from>]/
+                              ?to=[encrypt messages to]&from=[from which key (only if signing)]&data=[the data to encrypt]&sign=[whether to sign (true/false, default=true)]
+    /api/0/pgp/sign/          <from>/<data>/
+                              ?from=[from which key]&data=[the data to sign]
+    /api/0/pgp/verify/        <data>/
+                              ?data=[the data to verify]
+    /api/0/settings/set/      <section.variable>/<value>/
+    ... POST only: var=[section.variables]&value=[new setting]
+    /api/0/settings/unset/    <var>/
+    ... POST only: var=[section.variables]
     /api/0/tag/               <[+|-]tags>/<msgs>/
     ... POST only: add=[tags]&del=[tags]&mid=[message-ids]
     /api/0/tag/add/           <tag>/
@@ -76,6 +88,8 @@ endpoints be used for automation.
     ... POST only: file-data=[file data]&mid=[metadata-ID]
     /api/0/message/update/    <messages>/<<filename>/
     ... POST only: body=[..]&to=[..]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
+    /api/0/settings/set/      <section.variable>/<value>/
+    ... POST only: var=[section.variables]&value=[new setting]
 
 ### DELETE
 
@@ -94,7 +108,6 @@ endpoints be used for automation.
 
 *These accept the same arguments as the API calls above.*
 
-    /config/get/
     /contact/
     /contact/add/
     /contact/list/
@@ -117,6 +130,9 @@ endpoints be used for automation.
     /message/update/
     /message/update/send/
     /search/
+    /settings/
+    /settings/set/
+    /settings/unset/
     /shownetwork/
     /tag/
     /tag/add/
