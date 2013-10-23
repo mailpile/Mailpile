@@ -72,9 +72,9 @@ endpoints be used for automation.
     /api/0/pgp/verify/        <data>/
                               ?data=[the data to verify]
     /api/0/settings/add/      <section.variable>/<value>/
-    ... POST only: var=[section.variables]&value=[new setting]
+    ... POST only: section.variable=[value|json-string]
     /api/0/settings/set/      <section.variable>/<value>/
-    ... POST only: var=[section.variables]&value=[new setting]
+    ... POST only: section.variable=[value|json-string]
     /api/0/settings/unset/    <var>/
     ... POST only: var=[section.variables]
     /api/0/tag/               <[+|-]tags>/<msgs>/
@@ -91,9 +91,9 @@ endpoints be used for automation.
     /api/0/message/update/    <messages>/<<filename>/
     ... POST only: body=[..]&to=[..]&file-data=[file data]&from=[..]&cc=[..]&subject=[..]&mid=[metadata-ID]&bcc=[..]
     /api/0/settings/add/      <section.variable>/<value>/
-    ... POST only: var=[section.variables]&value=[new setting]
+    ... POST only: section.variable=[value|json-string]
     /api/0/settings/set/      <section.variable>/<value>/
-    ... POST only: var=[section.variables]&value=[new setting]
+    ... POST only: section.variable=[value|json-string]
 
 ### DELETE
 
