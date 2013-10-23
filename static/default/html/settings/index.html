@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<div id="settings" class="content-normal">
+  
+  <h3>Your Current Profiles</h3>
+  
+  <ul>
+  {% for p in result.profiles %}
+    <li><strong>{{ p.name|e }}</strong> <br> {{ p.email|e }}<br> {{ p.route|e }}</li>
+  {% endfor %}
+  </ul>
+  <hr>
+
+
+  <h3>Add Profile</h3>
+  <form id="form-profile-add" name="profile-add">  
+    
+    <label>Name</label>
+    <input type="text" name="name" value="" placeholder="Chelsea Manning">
+    
+    <label>Email</label>
+    <input type="text" name="email" value="" placeholder="chelsea@email.com">
+
+    <h5>SMTP Server</h5>
+    <label>Login</label>
+    <input type="text" name="smtp_login" value="" placeholder="username@mailserver.org">
+
+    <label>Password</label>
+    <input type="password" name="smtp_password" value="" placeholder="1234567890">
+  
+    <label>Server</label>
+    <input type="text" name="smtp_server" value="" placeholder="smtp.mailserver.org">
+
+    <label>Port</label>
+    <select name="smtp_port">
+      <option value="25">25</option>
+      <option value="587">587</option>
+      <option value="465">465 (TLS)</option>
+    </select>
+  
+    <button type="submit"><span class="icon-circle-add"></span> Add</button>
+  
+  </form>
+
+
+</div>
+
+{% endblock %}
