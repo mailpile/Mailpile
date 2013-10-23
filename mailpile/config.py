@@ -543,7 +543,10 @@ class ConfigList(RuledContainer(list)):
         return list.__getitem__(self, self.__fixkey__(key))
 
     def keys(self):
-        return [b36(i).lower() for i in range(0, len(self))]
+        def fmt_key(k):
+            f = b36(i).lower()
+            return (len(f) < 4) and ('0000' + f)[-4:] or f
+        return [fmt_key(i) for i in range(0, len(self))]
 
     def values(self):
         return self[:]
@@ -753,6 +756,11 @@ class ConfigManager(ConfigDict):
         parser = CommentedEscapedConfigParser()
         parser.readfp(io.BytesIO(str(data)))
         okay = True
+        def item_sorter(i):
+            try:
+                return (int(i[0], 36), i[1])
+            except:
+                return i
         for section in parser.sections():
             cfgpath = section.split(':')[0].split('/')[1:]
             cfg = self
@@ -771,7 +779,9 @@ class ConfigManager(ConfigDict):
                                ) % (source, section)
                         session.ui.warning(msg)
                     okay = False
-            for var, val in okay and parser.items(section) or []:
+            items = okay and parser.items(section) or []
+            items.sort(key=item_sorter)
+            for var, val in items:
                 try:
                     cfg[var] = val
                 except (ValueError, KeyError):
