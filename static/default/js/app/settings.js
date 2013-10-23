@@ -1,20 +1,24 @@
 /* Profile Add */
 $(document).on('submit', '#form-profile-add', function(e) {
 
-  console.log('here');
-
   e.preventDefault();
+  var smtp_data = $('#profile-add-username').val() + ':' + $('#profile-add-password').val() + '@' + $('#profile-add-server').val() + ':' + $('#profile-add-port').val();
+    
+  if (smtp_data !== ':@:25') {
+    smtp_data = 'smtp://' + smtp_data;
+  }
+  else {
+    smtp_data = 'default';
+  }
 
   var profile_data = {
     profiles: {
       name : $('#profile-add-name').val(),
       email: $('#profile-add-email').val(),
-      route: 'smtp://' + $('#profile-add-username').val() + ':' + $('#profile-add-password').val() + '@' + $('#profile-add-server').val() + ':' + $('#profile-add-port').val()
+      route: smtp_data
     }
   };
 
-  console.log(JSON.stringfy(profile_data));
-/*
 	$.ajax({
 		url			 : '/api/0/settings/add/',
 		type		 : 'POST',
@@ -30,5 +34,5 @@ $(document).on('submit', '#form-profile-add', function(e) {
       }
 	  }
 	});
-  */
+
 });

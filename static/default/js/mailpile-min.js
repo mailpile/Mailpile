@@ -749,45 +749,37 @@ $('li.sidebar-tags-draggable').droppable({
 /* Show Tag Add Form */
 $(document).on('click', '#button-tag-add', function(e) {
 	
-	e.preventDefault();
+  e.preventDefault();
 
-	$('#tags-list').hide();
+  $('#tags-list').hide();
   $('#tag-add').show();
-	
-	$this_nav = $(this);
-  console.log($this_nav);
 
   $('#sub-navigation ul li').removeClass('navigation-on');
   $(this).parent().addClass('navigation-on');
-
 });
 
 
-/* API - Tag Add */  
+/* API - Tag Add */
 $(document).on('submit', '#form-tag-add', function(e) {
 
   e.preventDefault();
   var tag_data = $('#form-tag-add').serialize();
-  console.log($(this));
 
-	$.ajax({
-		url			 : $(this).attr('action'),
-		type		 : 'POST',
-		data     : tag_data,
-		dataType : 'json',
-	  success  : function(response) {
+  $.ajax({
+    url: $(this).attr('action'),
+    type: 'POST',
+    data: tag_data,
+    dataType : 'json',
+    success: function(response) {
 
       statusMessage(response.status, response.message);
 
       if (response.status == 'success') {
         console.log(response);
-        //window.location.href = ''
       }
-	  }
-	});
-  
+    }
+  });
 });
-
 
 /* **********************************************
      Begin search.js
@@ -826,20 +818,24 @@ $(document).ready(function() {
 /* Profile Add */
 $(document).on('submit', '#form-profile-add', function(e) {
 
-  console.log('here');
-
   e.preventDefault();
+  var smtp_data = $('#profile-add-username').val() + ':' + $('#profile-add-password').val() + '@' + $('#profile-add-server').val() + ':' + $('#profile-add-port').val();
+    
+  if (smtp_data !== ':@:25') {
+    smtp_data = 'smtp://' + smtp_data;
+  }
+  else {
+    smtp_data = 'default';
+  }
 
   var profile_data = {
     profiles: {
       name : $('#profile-add-name').val(),
       email: $('#profile-add-email').val(),
-      route: 'smtp://' + $('#profile-add-username').val() + ':' + $('#profile-add-password').val() + '@' + $('#profile-add-server').val() + ':' + $('#profile-add-port').val()
+      route: smtp_data
     }
   };
 
-  console.log(JSON.stringfy(profile_data));
-/*
 	$.ajax({
 		url			 : '/api/0/settings/add/',
 		type		 : 'POST',
@@ -855,5 +851,5 @@ $(document).on('submit', '#form-profile-add', function(e) {
       }
 	  }
 	});
-  */
+
 });
