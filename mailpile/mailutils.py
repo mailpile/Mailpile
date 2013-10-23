@@ -687,7 +687,7 @@ class Email(object):
     if not self.is_editable():
       raise NotEditableError('Mailbox is read-only.')
 
-    newmsg = email.parser.Parser().parsestr(data)
+    newmsg = email.parser.Parser().parsestr(data.encode('utf-8'))
     oldmsg = self.get_msg()
     outmsg = MIMEMultipart()
 
