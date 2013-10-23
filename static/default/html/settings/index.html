@@ -14,34 +14,34 @@
   <hr>
 
 
-  <h3>Add Profile</h3>
-  <form id="form-profile-add" name="profile-add">  
-    
+  <h3>Add New Profile</h3>
+  <form id="form-profile-add" action="/api/0/settings/add/" method="POST">
+
     <label>Name</label>
-    <input type="text" name="name" value="" placeholder="Chelsea Manning">
-    
+    <input type="text" name="name" value="" placeholder="Chelsea Manning" id="profile-add-name">
+
     <label>Email</label>
-    <input type="text" name="email" value="" placeholder="chelsea@email.com">
+    <input type="text" name="email" value="" placeholder="chelsea@email.com" id="profile-add-email">
 
     <h5>SMTP Server</h5>
     <label>Login</label>
-    <input type="text" name="smtp_login" value="" placeholder="username@mailserver.org">
+    <input type="text" name="username" value="" placeholder="username@mailserver.org" id="profile-add-username">
 
     <label>Password</label>
-    <input type="password" name="smtp_password" value="" placeholder="1234567890">
-  
+    <input type="password" name="password" value="" placeholder="1234567890" id="profile-add-password">
+
     <label>Server</label>
-    <input type="text" name="smtp_server" value="" placeholder="smtp.mailserver.org">
+    <input type="text" name="server" value="" placeholder="smtp.mailserver.org" id="profile-add-server">
 
     <label>Port</label>
-    <select name="smtp_port">
+    <select name="smtp-port" id="profile-add-port">
       <option value="25">25</option>
       <option value="587">587</option>
       <option value="465">465 (TLS)</option>
     </select>
-  
-    <button type="submit"><span class="icon-circle-add"></span> Add</button>
-  
+
+    <button id="button-profile-add" type="submit"><span class="icon-circle-add"></span> Add Profile</button>
+
   </form>
 
 
