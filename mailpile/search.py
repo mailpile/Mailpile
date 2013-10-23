@@ -1082,7 +1082,7 @@ class MailIndex(object):
   def cache_sort_orders(self, session):
     keys = range(0, len(self.INDEX))
     if session:
-      session.ui.mark('Extracting conversation data')
+      session.ui.mark('Finding conversations (%d messages)...' % len(keys))
     self.INDEX_CONV = [int(self.get_msg_at_idx_pos(r)[self.MSG_CONV_MID], 36)
                        for r in keys]
     for order, sorter in [
@@ -1091,7 +1091,8 @@ class MailIndex(object):
       ('subject', lambda k: self.get_msg_at_idx_pos(k)[self.MSG_SUBJECT]),
     ]:
       if session:
-        session.ui.mark('Pre-sorting by %s' % order)
+        session.ui.mark(('Sorting %d messages in %s order...'
+                         ) % (len(keys), order))
       o = keys[:]
       o.sort(key=sorter)
       self.INDEX_SORT[order] = keys[:]
@@ -1102,7 +1103,8 @@ class MailIndex(object):
     if not results:
       return
 
-    session.ui.mark('Sorting messages in %s order...' % how)
+    count = len(results)
+    session.ui.mark('Sorting %d messages in %s order...' % (count, how))
     try:
       if how == 'unsorted':
         pass
@@ -1136,8 +1138,11 @@ class MailIndex(object):
       cset = set(dict([(self.INDEX_CONV[r], r) for r in results]).values())
       results.reverse()
       results[:] = filter(cset.__contains__, results)
+      session.ui.mark(('Sorted %d messages by %s, %d conversations'
+                       ) % (count, how, len(results)))
+    else:
+      session.ui.mark('Sorted %d messages in %s order' % (count, how))
 
-    session.ui.mark('Sorted messages in %s order' % how)
     return True
 
   def update_tag_stats(self, session, config, update_tags=None):
