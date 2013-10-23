@@ -57,7 +57,7 @@ start with a clean slate:
 If you do not have a local working mail server in `/usr/sbin/sendmail`,
 you may also want to configure a default outgoing SMTP server:
 
-    $ ./mp --set "profiles.0.route = smtp:yourmailserver:25"
+    $ ./mp --set "profiles.0.route = smtp://postmaster@mailserver.org:password@smtp.mailserver.org:25"
     ..
 
 Mailpile does not by default access IMAP or POP3 servers directly, it
