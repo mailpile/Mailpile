@@ -337,6 +337,22 @@ class RunWWW(Command):
     return True
 
 
+class RenderPage(Command):
+  """Does nothing, for use by semi-static jinja2 pages"""
+  SYNOPSIS = (None, None, 'page', None)
+  ORDER = ('Internals', 6)
+  SPLIT_ARG = False
+
+  class CommandResult(Command.CommandResult):
+      def __init__(self, *args, **kwargs):
+          Command.CommandResult.__init__(self, *args, **kwargs)
+          if self.result and 'path' in self.result:
+              self.template_id += '/' + self.result['path'] + '/index'
+
+  def command(self):
+      return {'path': self.args[0]}
+
+
 ##[ Configuration commands ]###################################################
 
 class ConfigSet(Command):
@@ -720,7 +736,7 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-  Optimize, Rescan, RunWWW, UpdateStats,
+  Optimize, Rescan, RunWWW, UpdateStats, RenderPage,
   ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
   Output, Help, HelpVars, HelpSplash
 ]

@@ -35,6 +35,19 @@ endpoints be used for automation.
                               ?mid=[metadata-ID]
     /api/0/message/unthread/
     ... POST only: mid=[message-id]
+    /api/0/page/
+    /api/0/pgp/checkaddress/  <address>/
+                              ?q=[address]
+    /api/0/pgp/decrypt/       <data>/
+                              ?verify=[whether to verify (true/false/auto, default=auto)]&data=[the data to encrypt]&passphrase=[the passphrase (optional)]
+    /api/0/pgp/encrypt/       <to>/<data>/[<sign>/<from>]/
+                              ?to=[encrypt messages to]&from=[from which key (only if signing)]&data=[the data to encrypt]&sign=[whether to sign (true/false, default=true)]
+    /api/0/pgp/listkeys/      [<secret>]/
+                              ?filter=[filter]&secret=[secret keys]
+    /api/0/pgp/sign/          <from>/<data>/
+                              ?from=[from which key]&data=[the data to sign]
+    /api/0/pgp/verify/        <data>/
+                              ?data=[the data to verify]
     /api/0/search/            [@<start>]/<terms>/
                               ?q=[search terms]&start=[start position]&end=[end position]&order=[sort order]
     /api/0/settings/          <var>/
@@ -133,6 +146,13 @@ endpoints be used for automation.
     /message/unthread/
     /message/update/
     /message/update/send/
+    /page/
+    /pgp/checkaddress/
+    /pgp/decrypt/
+    /pgp/encrypt/
+    /pgp/listkeys/
+    /pgp/sign/
+    /pgp/verify/
     /search/
     /settings/
     /settings/add/
