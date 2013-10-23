@@ -232,6 +232,24 @@ def HeaderPrint(message):
   return b64w(sha1b64('\n'.join(headers))).lower()
 
 
+def IsMailbox(fn):
+  for mbox_cls in (IncrementalIMAPMailbox,
+                   IncrementalWinMaildir,
+                   IncrementalMaildir,
+                   IncrementalMacMaildir,
+                   IncrementalGmvault):
+    try:
+      if mbox_cls.parse_path(fn):
+        return True
+    except:
+      pass
+  try:
+    firstline = open(fn, 'r').readline()
+    return firstline.startswith('From ')
+  except:
+    return False
+
+
 def OpenMailbox(fn):
   for mbox_cls in (IncrementalIMAPMailbox,
                    IncrementalWinMaildir,

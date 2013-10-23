@@ -10,7 +10,8 @@ import traceback
 
 import mailpile.util
 import mailpile.ui
-from mailpile.mailutils import Email, ExtractEmails, NotEditableError, NoFromAddressError, PrepareMail, SendMail
+from mailpile.mailutils import ExtractEmails, NotEditableError, IsMailbox
+from mailpile.mailutils import Email, NoFromAddressError, PrepareMail, SendMail
 from mailpile.search import MailIndex, PostingList, GlobalPostingList
 from mailpile.util import *
 
@@ -422,8 +423,8 @@ class ConfigPrint(Command):
     return result
 
 
-class AddMailbox(Command):
-  """Add a mailbox"""
+class AddMailboxes(Command):
+  """Add one or more mailboxes"""
   SYNOPSIS = ('A', 'add', None, '<path/to/mailbox>')
   ORDER = ('Config', 4)
   SPLIT_ARG = False
@@ -432,19 +433,25 @@ class AddMailbox(Command):
   def command(self):
     session, config = self.session, self.session.config
     adding = []
-    for raw_fn in self.args:
+    existing = config.sys.mailbox
+    paths = self.args[:]
+    while paths:
+      raw_fn = paths.pop(0)
       fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
-      existing = config.sys.mailbox
       if raw_fn in existing or fn in existing:
         session.ui.warning('Already in the pile: %s' % raw_fn)
+      elif raw_fn.startswith("imap://"):
+        adding.append(raw_fn)
+      elif os.path.exists(fn):
+        if IsMailbox(fn):
+          adding.append(fn)
+        elif os.path.isdir(fn):
+          session.ui.mark('Scanning %s for mailboxes' % fn)
+          for f in [f for f in os.listdir(fn) if not f.startswith('.')]:
+            paths.append(os.path.join(fn, f))
       else:
-        if raw_fn.startswith("imap://"):
-          adding.append(raw_fn)
-        else:
-          if os.path.exists(fn):
-            adding.append(fn)
-          else:
-            return self._error('No such file/directory: %s' % raw_fn)
+        return self._error('No such file/directory: %s' % raw_fn)
+
     added = {}
     for arg in adding:
       added[config.sys.mailbox.append(arg)] = arg
@@ -667,7 +674,7 @@ def Action(session, opt, arg, data=None):
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
   Optimize, Rescan, RunWWW, UpdateStats,
-  ConfigPrint, ConfigSet, ConfigUnset, AddMailbox,
+  ConfigPrint, ConfigSet, ConfigUnset, AddMailboxes,
   Output, Help, HelpVars, HelpSplash
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
