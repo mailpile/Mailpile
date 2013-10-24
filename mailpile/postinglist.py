@@ -1,5 +1,7 @@
 import os
+import random
 
+import mailpile.util
 from mailpile.util import *
 
 
