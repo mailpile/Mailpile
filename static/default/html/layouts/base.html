@@ -63,15 +63,27 @@
 </div>
 
 <div id="header" class="clearfix">
-  <a href="/"><img class="logo" src="/static/img/logo-color.svg"></a>
-  <h1>{{name}}<small><b>mail</b>pile of <b>{{mailpile_size}}</b> emails</small></h1>
+  <div id="logo">
+    <object class="logo" data="/static/img/logo.svg">
+		  <img class="logo" src="/static/img/logo.png">
+		</object>
+    <span class="hide">{{name}}<small> mailpile of <b>{{mailpile_size}}</b> emails</small></span>
+  </div>
+  
+  <div id="search">
+    <form id="search-form" action="/search/" class="clearfix">
+		  <input id="qbox" class="search" type="search" name="q" placeholder="search" autocomplete="off" tabindex=1 value="{% for t in result.search_terms %}{{ t|e }} {% endfor %}">
+		  <button type="submit" class="button-primary"><span class="icon-search"></span></button>
+	  </form>
+  </div>
+  
   <nav>
     <ul>
-      <li><a href="#" id="button-compose"><span class="link-icon icon-compose"></span><span class="link-text">Compose</span></a></li>
-      <li><a href="/contact/list/"><span class="link-icon icon-user"></span><span class="link-text">Contacts</span></a></li>
-      <li><a href="/tag/list/"><span class="link-icon icon-tag"></span><span class="link-text">Tags</span></a></li>
-      <li><a href="/static/donate/"><span class="link-icon icon-donate"></span><span class="link-text">Donate</span></a></li>
-      <li><a href="/settings/profiles/"><span class="link-icon icon-settings"></span><span class="link-text">Settings</span></a></li>
+      <li><a href="#" id="button-compose" data-title="Compose"><span class="link-icon icon-compose"></span></a></li>
+      <li><a href="/contact/list/" data-title="Contacts"><span class="link-icon icon-user"></span></a></li>
+      <li><a href="/tag/list/" data-title="Tags"><span class="link-icon icon-tag"></span></a></li>
+      <li><a href="/static/donate/" data-title="Donate"><span class="link-icon icon-donate"></span></a></li>
+      <li><a href="/settings/profiles/" data-title="Settings"><span class="link-icon icon-settings"></span></a></li>
     </ul>
   </nav>
 </div>
@@ -174,10 +186,19 @@
 
 </div>
 
-  <script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
-  <script type="text/javascript" src="/static/js/mailpile-libraries-min.js"></script>
-  <script type="text/javascript" src="/static/js/libraries/d3.v3.min.js"></script>
-  <script type="text/javascript" src="/static/js/mailpile-min.js"></script>
+  
+<div id="search-params" class="clearfix">
+  <ul>
+    <li>Date: <a href="#" class="" id="search-start-time">Start time</a> to <a href="#" class="" id="search-end-time">Present</a></li>
+    <li>With: <a href="#" id="search-tags">No Tags</a></li>
+    <li>And: <a href="#" id="search-all-groups">All groups</a></li>
+  </ul>
+</div>  
+
+<script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/mailpile-libraries-min.js"></script>
+<script type="text/javascript" src="/static/js/libraries/d3.v3.min.js"></script>
+<script type="text/javascript" src="/static/js/mailpile-min.js"></script>
 
 </body>
 </html>

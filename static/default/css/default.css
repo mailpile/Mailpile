@@ -4101,10 +4101,10 @@ button,
 input[type="submit"],
 input[type="reset"],
 input[type="button"] {
-  color: #333333 !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  color: #333333;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: normal !important;
+  font-weight: normal;
   line-height: normal;
   text-shadow: 0px 0px 0px;
   padding: 8px 15px;
@@ -4131,10 +4131,10 @@ input[type="button"] {
 }
 .button:visited,
 .button-primary:visited {
-  color: #333333 !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  color: #333333;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: normal !important;
+  font-weight: normal;
   line-height: normal;
   text-shadow: 0px 0px 0px;
   padding: 8px 15px;
@@ -4191,10 +4191,10 @@ input[type="button"]:active {
 }
 /* Secondary */
 .button-secondary {
-  color: #ffffff !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  color: #ffffff;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: normal !important;
+  font-weight: normal;
   line-height: normal;
   text-shadow: 0px 0px 0px;
   text-decoration: none;
@@ -4241,10 +4241,10 @@ input[type="button"]:active {
 }
 /* Alert */
 .button-alert {
-  color: #ffffff !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  color: #ffffff;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: normal !important;
+  font-weight: normal;
   line-height: normal;
   text-shadow: 0px 0px 0px;
   text-decoration: none;
@@ -4291,10 +4291,10 @@ input[type="button"]:active {
 }
 /* Warning */
 .button-warning {
-  color: #ffffff !important;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  color: #ffffff;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: normal !important;
+  font-weight: normal;
   line-height: normal;
   text-shadow: 0px 0px 0px;
   text-decoration: none;
@@ -5953,43 +5953,26 @@ text {
   z-index: 100;
   width: 100%;
   min-width: 700px;
-  height: 74px;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
   box-sizing: border-box;
   overflow: hidden;
 }
-#header img.logo {
-  width: 64px;
-  height: 45px;
-  display: inline-block;
-  position: relative;
-  top: 13px;
-  margin-right: 15px;
-  left: 20px;
+#logo {
+  width: 20%;
+  min-width: 200px;
+  max-width: 260px;
   float: left;
 }
-#header h1 {
-  display: inline-block;
-  float: left;
-  position: relative;
-  top: 8px;
-  left: 15px;
-  line-height: 36px;
-  color: #4d4d4d;
-  font-weight: normal;
-}
-#header h1 small {
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+#logo .logo {
+  width: 182px;
+  height: 40px;
   display: block;
-  font-size: 14px;
-  line-height: 14px;
+  margin: 15px 0px 15px 15px;
 }
 #header nav {
   float: right;
-  position: relative;
-  top: 10px;
-  right: 15px;
+  margin: 15px 25px 15px 0px;
 }
 #header nav ul li {
   float: left;
@@ -6018,47 +6001,6 @@ text {
   display: block;
   font-size: 36px;
   line-height: 36px;
-}
-#header span.link-text {
-  font-size: 12px;
-}
-#header.cozy {
-  height: 60px;
-}
-#header.cozy img.logo {
-  height: 36px;
-}
-#header.cozy h1 {
-  font-size: 30px;
-  line-height: 30px;
-}
-#header.cozy h1 small {
-  display: none;
-}
-#header.cozy span.link-icon {
-  font-size: 30px;
-}
-#header.cozy span.link-text {
-  display: none;
-}
-#header.snug {
-  height: 48px;
-}
-#header.snug img.logo {
-  height: 30px;
-}
-#header.snug h1 {
-  font-size: 24px;
-  line-height: 24px;
-}
-#header.snug h1 small {
-  display: none;
-}
-#header.snug span.link-icon {
-  font-size: 24px;
-}
-#header.snug span.link-text {
-  display: none;
 }
 /* Container */
 #container {
@@ -6210,6 +6152,9 @@ div.content-normal {
 }
 /* Sidebar */
 #sidebar {
+  width: 20%;
+  min-width: 200px;
+  max-width: 260px;
   display: table-cell;
   background: #f2f2f2;
   border-right: 1px solid #b3b3b3;
@@ -6218,9 +6163,6 @@ div.content-normal {
   padding: 0px;
   border-spacing: 0px;
   vertical-align: top;
-  width: 20%;
-  min-width: 200px;
-  max-width: 260px;
 }
 #sidebar.cozy {
   width: 18%;
@@ -6364,48 +6306,64 @@ div.content-normal {
 }
 /* Search */
 #search {
-  background: #f2f2f2;
-  border-bottom: 1px solid #b3b3b3;
-  padding: 10px 20px;
+  float: left;
+  width: 335px;
+  padding-left: 20px;
   box-sizing: padding-box;
 }
 #search form {
   margin-bottom: 0px;
 }
-#search span.icon-search {
-  position: relative;
-  top: 6px;
-  left: 0px;
-  display: inline-block;
-  font-size: 24px;
-  color: #4d4d4d;
-}
-#search input[type=text] {
+#search #qbox {
   border: 0px;
   outline: none;
   color: #4d4d4d;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   width: 75%;
   display: inline-block;
-  font-size: 24px;
-  padding: 0px;
+  padding: 5px 10px;
   margin-bottom: 0px;
   position: relative;
   top: 5px;
   left: 10px;
+  font-size: 18px;
+  line-height: 18px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border: 1px solid #b3b3b3;
 }
-#search input[type=text]:placeholder {
+#search #qbox:placeholder {
   color: #b3b3b3;
 }
-#search input[type=text]:focus {
+#search #qbox:focus {
   -moz-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   outline: none;
   color: #4d4d4d;
 }
-#search input[type=submit] {
+#search button {
+  background: #3a6b8c;
+  color: #ffffff;
   float: right;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  position: relative;
+  top: 6px;
+  left: 0px;
+  display: inline-block;
+  font-size: 18px;
+}
+#search-params {
+  position: absolute;
+  top: 50px;
+  left: 225px;
+  background: #ffffff;
+  border: 1px solid #b3b3b3;
+  z-index: 1000;
+}
+#search-params li {
+  margin: 15px;
 }
 #search-params a {
   padding: 5px 10px;
