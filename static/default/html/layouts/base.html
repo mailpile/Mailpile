@@ -62,30 +62,29 @@
   </div>
 </div>
 
-<div id="header" class="clearfix">
-  <div id="logo">
+<div id="header" class="topbar">
+  <div class="topbar-logo">
     <object class="logo" data="/static/img/logo.svg">
 		  <img class="logo" src="/static/img/logo.png">
 		</object>
     <span class="hide">{{name}}<small> mailpile of <b>{{mailpile_size}}</b> emails</small></span>
   </div>
-  
-  <div id="search">
-    <form id="search-form" action="/search/" class="clearfix">
-		  <input id="qbox" class="search" type="search" name="q" placeholder="search" autocomplete="off" tabindex=1 value="{% for t in result.search_terms %}{{ t|e }} {% endfor %}">
-		  <button type="submit" class="button-primary"><span class="icon-search"></span></button>
+  <div class="topbar-actions">
+    <form id="form-search" class="form-search clearfix" action="/search/">
+		  <input id="qbox" type="text" name="q" placeholder="search" autocomplete="off" tabindex=1 value="{% for t in result.search_terms %}{{ t|e }} {% endfor %}">
+		  <!-- <a href="#" id="button-search-options"><span class="icon-arrow-down"></span></a> -->
+		  <button type="submit" class="submit"><span class="icon-search"></span></button>
 	  </form>
+    <nav>
+      <ul>
+        <li><a href="#" id="button-compose" data-title="Compose"><span class="link-icon icon-compose"></span></a></li>
+        <li><a href="/contact/list/" data-title="Contacts"><span class="link-icon icon-user"></span></a></li>
+        <li><a href="/tag/list/" data-title="Tags"><span class="link-icon icon-tag"></span></a></li>
+        <li><a href="/static/donate/" data-title="Donate"><span class="link-icon icon-donate"></span></a></li>
+        <li><a href="/settings/profiles/" data-title="Settings"><span class="link-icon icon-settings"></span></a></li>
+      </ul>
+    </nav>
   </div>
-  
-  <nav>
-    <ul>
-      <li><a href="#" id="button-compose" data-title="Compose"><span class="link-icon icon-compose"></span></a></li>
-      <li><a href="/contact/list/" data-title="Contacts"><span class="link-icon icon-user"></span></a></li>
-      <li><a href="/tag/list/" data-title="Tags"><span class="link-icon icon-tag"></span></a></li>
-      <li><a href="/static/donate/" data-title="Donate"><span class="link-icon icon-donate"></span></a></li>
-      <li><a href="/settings/profiles/" data-title="Settings"><span class="link-icon icon-settings"></span></a></li>
-    </ul>
-  </nav>
 </div>
 
 <div id="container">

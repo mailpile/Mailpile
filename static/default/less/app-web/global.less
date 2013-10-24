@@ -14,97 +14,30 @@
 	}
 
 
-
-/* Header */
-
-	#header {
-	  position: fixed;
-	  top: 0px;
-	  left: 0px;
-	  z-index: 100;
-		width: 100%;
-		min-width: 700px;
-		background: @grayLight;
-		border-bottom: 1px solid @gray;		
-		box-sizing: border-box;
-		overflow: hidden;
-	}
-	
-	
-	#logo {
-    width: 20%;  
-    min-width: 200px;
-    max-width: 260px;
-  	float: left;
-	}
-	
-	#logo .logo {
-		width: 182px;
-		height: 40px;
-		display: block;
-		margin: 15px 0px 15px 15px;
-	}
-	
-	#header nav {
-		float: right;
-		margin: 15px 25px 15px 0px;
-	}
-	
-	#header nav ul li {
-		float: left;
-		margin-left: 30px;
-		text-align: center;
-	}
-	
-	#header nav a {
-	  width: 100%;
-	  height: 100%;
-	  display: block;
-		font-size: 12px;
-		font-family: @text-font-family-bold;
-		font-weight: normal;
-		color: @grayDark;
-	  -webkit-transition-duration: 0.4s;
-	  -moz-transition-duration: 0.4s;
-	  transition-duration: 0.4s;		
-	}
-	
-	#header nav a:hover {
-		color: @blue;
-	  -webkit-transition-duration: 0.2s;
-	  -moz-transition-duration: 0.2s;
-	  transition-duration: 0.2s;		
-	} 
-	
-	#header span.link-icon { display: block; font-size: 36px; line-height: 36px; }
-
-
 	
 /* Container */
 
 	#container {
-		width: 100%;
-		min-width: 800px;
-		z-index: 1;
+	  width: 100%;
+		min-width: 825px;
 		display: table;
+		z-index: 1;
 		padding: 0;
 		margin: 0;
-	  margin-top: 74px;
+	  margin-top: 64px;
 	}
 
-  #container.cozy { top: 60px; margin-top: 60px; }
-  #container.snug { top: 48px; margin-top: 48px; }
+  #container.cozy {  }
+  #container.snug {  }
 
 
 
 /* Content */	
 	
 	#content {
-    width: 80%;
-    min-width: 600px;
-		display: table-cell;
+	  min-width: 625px;
+	  display: table-cell;
 		box-sizing: border-box;
-		border-spacing:10px;
 	}
 
   #content.cozy { width: 82%; min-width: 820px; }
@@ -123,104 +56,6 @@
 		position: relative;
 		top: 3px;
 		left: 0px;
-	}
-
-
-
-
-/* Sub Navigation */
-
-	#sub-navigation	{
-		width: 100%;
-    height: 65px;
-		min-width: 450px;
-		display: block;
-		background: @grayLight;
-		border-bottom: 1px solid @gray;
-		box-sizing: border-box;
-	}
-	
-	#sub-navigation.cozy { height: 58px; }
-	#sub-navigation.snug { height: 54px; }
-
-	#sub-navigation ul {
-	  position: relative;
-	  top: 10px;
-  }
-
-	#sub-navigation ul.left {
-	  left: 15px;
-	}
-
-	#sub-navigation ul.right {
-	  right: 15px;
-	}
-
-	#sub-navigation ul li {
-    padding: 0px 5px;
-	}
-
-	#sub-navigation a {
-		display: block;	
-		padding: 10px;
-		font-family: @text-font-family-bold;
-		font-weight: normal;		
-		color: @grayDark;
-	}
-
-  #sub-navigation.cozy a { padding: 7px; font-size: 16px; }
-  #sub-navigation.snug a { padding: 5px; font-size: 14px; }
-
-
-	#sub-navigation a:hover, #sub-navigation a:hover span.navigation-icon {
-		color: @red;
-	}
-
-	#sub-navigation li.navigation-on {
-		background: lighten(@gray, 15%);
-		border-radius: @base-border-radius;		
-	}
-
-	#sub-navigation li.navigation-on a {
-		cursor: default;
-		color: @grayDark;
-	}	
-
-	#sub-navigation li.navigation-on a:hover, #sub-navigation li.navigation-on a:hover span {
-    color: @grayDark;
-  }
-	
-	#sub-navigation ul {
-		display: block;
-	}
-	
-	#sub-navigation li {
-		display: inline-block;
-		float: left;
-		text-align: center;
-	}	
-
-	.navigation-icon {
-		margin: 0;
-		color: @grayDark;
-	}
-	
-  .navigation-text {
-    margin: 0 0 0 8px;
-  }
-	
-	.notification-urgent {
-		border-radius: @base-border-radius;
-		background: @orangeRed;
-		padding: 1px 4px;
-		color: @white;
-	}
-
-	.notification-important {
-		border-radius: @base-border-radius;	
-		background: @orange;
-		padding: 1px 4px;
-		color: @white;		
 	}
 
 

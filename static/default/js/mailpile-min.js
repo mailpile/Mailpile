@@ -792,11 +792,11 @@ $(document).ready(function() {
 	$('#search-params, #bulk-actions').hide();
 
 	/* Search Box */
-	$('#qbox').bind("focus", function(key) {
+	$('#button-search-options').on("click", function(key) {
 		$('#search-params').slideDown('fast');
 	});
 
-	$('#qbox').bind("blur", function(key) {
+	$('#button-search-options').on("blur", function(key) {
 		$('#search-params').slideUp('fast');
 	});
 
