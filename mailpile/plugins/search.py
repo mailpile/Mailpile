@@ -157,7 +157,7 @@ class SearchResults(dict):
               'searched': (tag['slug'] in searched)
             }))
 
-      if not expand and 'flat' not in session.order:
+      if not expand and 'flat' not in (session.order or ''):
         conv = idx.get_conversation(msg_info)
       else:
         conv = [msg_info]
