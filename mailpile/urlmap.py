@@ -8,10 +8,11 @@ from mailpile.util import *
 
 
 class BadMethodError(Exception):
-  pass
+    pass
+
 
 class BadDataError(Exception):
-  pass
+    pass
 
 
 class _FancyString(str):
@@ -144,7 +145,7 @@ class UrlMap:
         }
         for vlist, src in copy_vars:
             for var in vlist:
-                varBB = var+'[]'
+                varBB = var + '[]'
                 if src and (var in src or varBB in src):
                     sdata = (var in src) and src[var] or src.get(varBB, '')
                     if isinstance(sdata, cgi.FieldStorage):
@@ -215,7 +216,7 @@ class UrlMap:
 
         pos = None
         while path_parts and (path_parts[-1][0] in ('@', )):
-          pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
+            pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
 
         tag = '/'.join([p for p in path_parts[1:] if p])
         tag_search = ['in:%s' % self.session.config.get_tag(tag).slug]
@@ -502,7 +503,7 @@ class UrlMap:
 class UrlRedirect(Command):
     """A stub command which just throws UrlRedirectException."""
     SYNOPSIS = (None, None, 'http/redirect', '<url>')
-    HTTP_CALLABLE = ( )
+    HTTP_CALLABLE = ()
 
     def command(self):
         raise UrlRedirectException(self.args[0])
@@ -511,7 +512,7 @@ class UrlRedirect(Command):
 class UrlRedirectEdit(Command):
     """A stub command which just throws UrlRedirectException."""
     SYNOPSIS = (None, None, 'http/redirect/url_edit', '<mid>')
-    HTTP_CALLABLE = ( )
+    HTTP_CALLABLE = ()
 
     def command(self):
         mid = self.args[0]
@@ -521,7 +522,7 @@ class UrlRedirectEdit(Command):
 class UrlRedirectThread(Command):
     """A stub command which just throws UrlRedirectException."""
     SYNOPSIS = (None, None, 'http/redirect/url_thread', '<mid>')
-    HTTP_CALLABLE = ( )
+    HTTP_CALLABLE = ()
 
     def command(self):
         mid = self.args[0]
@@ -566,7 +567,8 @@ else:
     import mailpile.plugins
     import mailpile.ui
 
-    config = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
+    rules = mailpile.defaults.CONFIG_RULES
+    config = mailpile.config.ConfigManager(rules=rules)
     config.tags.extend([
         {'name': 'New',   'slug': 'New'},
         {'name': 'Inbox', 'slug': 'Inbox'},
