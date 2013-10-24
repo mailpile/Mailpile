@@ -1,0 +1,67 @@
+/* Topbar */
+
+	.topbar {
+		width: 100%;
+		height: 64px;
+		display: table;
+	  position: fixed;
+	  top: 0px;
+	  left: 0px;
+	  z-index: 100;
+		min-width: 800px;
+		background: @grayLight;
+		border-bottom: 1px solid @gray;
+		overflow: hidden;
+	}
+
+	.topbar-logo {
+    width: 225px;
+		display: table-cell;
+    box-sizing: border-box;
+	}
+	
+	.topbar-logo object.logo,
+	.topbar-logo img.logo, {
+		width: 182px;
+		height: 40px;
+		display: block;
+		margin: 15px 0px 15px 15px;
+	}
+	
+	.topbar-actions {
+    min-width: 625px;
+		display: table-cell;
+		box-sizing: border-box;  	
+	}
+	
+	.topbar-actions nav {
+		float: right;
+		margin: 15px 25px 15px 0px;
+	}
+	
+	.topbar-actions nav ul li {
+		float: left;
+		margin-left: 30px;
+		text-align: center;
+	}
+	
+	.topbar-actions nav a {
+	  width: 100%;
+	  height: 100%;
+	  display: block;
+		font-weight: normal;
+		color: @grayDark;
+	  -webkit-transition-duration: 0.4s;
+	  -moz-transition-duration: 0.4s;
+	  transition-duration: 0.4s;		
+	}
+	
+	.topbar-actions nav a:hover {
+		color: @blue;
+	  -webkit-transition-duration: 0.2s;
+	  -moz-transition-duration: 0.2s;
+	  transition-duration: 0.2s;		
+	} 
+	
+	.topbar-actions span.link-icon { display: block; font-size: 36px; line-height: 36px; }
+
