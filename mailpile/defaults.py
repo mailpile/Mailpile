@@ -2,6 +2,7 @@ import time
 from mailpile.config import PathDict
 
 
+DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_RULES = {
     'version': ['Mailpile program version', int, 1],
     'timestamp': ['Configuration timestamp', int, int(time.time())],
@@ -35,6 +36,8 @@ CONFIG_RULES = {
         'obfuscate_index': ('Key to use to scramble the index', str,       ''),
         'rescan_command':  ('Command run before rescanning', str,          ''),
         'default_email':   ('Default outgoing e-mail address', 'email',    ''),
+        'default_route':   ('Default outgoing mail route',
+                                                'mailroute', DEFAULT_SENDMAIL),
     }],
     'profiles': ['User profiles and personalities', {
         'name':            ('Account name', 'str', ''),

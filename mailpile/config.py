@@ -19,9 +19,6 @@ from mailpile.vcard import SimpleVCard
 from mailpile.workers import Worker, DumbWorker, Cron
 
 
-DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
-
-
 class InvalidKeyError(ValueError):
     pass
 
@@ -909,7 +906,7 @@ class ConfigManager(ConfigDict):
             'name': None,
             'email': find,
             'signature': None,
-            'route': DEFAULT_SENDMAIL
+            'route': self.prefs.default_route
         }
         for profile in self.profiles:
             if profile.email == find or not find:
