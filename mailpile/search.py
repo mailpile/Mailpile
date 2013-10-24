@@ -850,7 +850,7 @@ class MailIndex(object):
               if session.config.sys.debug:
                 tracekback.print_exc()
               for result in results:
-                if result > len(self.INDEX) or result < 0:
+                if result >= len(self.INDEX) or result < 0:
                   session.ui.error('Bogus message index: %s' % result)
               session.ui.error('Recovering from bogus sort, corrupt index?')
               session.ui.error('Please tell team@mailpile.is !')
