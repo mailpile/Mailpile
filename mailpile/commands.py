@@ -12,7 +12,8 @@ import mailpile.util
 import mailpile.ui
 from mailpile.mailutils import ExtractEmails, NotEditableError, IsMailbox
 from mailpile.mailutils import Email, NoFromAddressError, PrepareMail, SendMail
-from mailpile.search import MailIndex, PostingList, GlobalPostingList
+from mailpile.postinglist import GlobalPostingList
+from mailpile.search import MailIndex
 from mailpile.util import *
 
 
