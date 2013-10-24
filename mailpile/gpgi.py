@@ -4,6 +4,7 @@ import sys
 import fcntl
 import time
 import re
+import tempfile
 from subprocess import Popen, PIPE
 
 DEFAULT_SERVER = "pool.sks-keyservers.net"
@@ -500,12 +501,35 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             clearsign=True)[1]
         >>> g.verify(s)
         """
-        retvals = self.run(["--verify"], 
+        params = ["--verify"]
+        if signature:
+            sig = tempfile.NamedTemporaryFile()
+            sig.write(part.get_payload())
+            sig.flush()
+            params.append(sig.name)
+            params.append("-")
+
+        ret, retvals = self.run(params, 
                            callbacks={"stderr": self.parse_verify, 
                                       "status": self.parse_status}, 
                            output=data)
 
-        return retvals # retvals[0], retvals[1]["stderr"]
+        status = {"signature": "unknown", "from": "", "fromaddr": "", "fingerprint": ""}
+        for line in retvals["status"]:
+            if line[0] == "GOODSIG":
+                status["signature"] = "good"
+                status["from"] = " ".join(line[2:-1]).decode("utf-8")
+                status["fromaddr"] = line[-1].strip("<>")
+            elif line[0] == "BADSIG":
+                status["signature"] = "bad"
+                status["from"] = " ".join(line[2:-1]).decode("utf-8")
+                status["fromaddr"] = line[-1].strip("<>")
+            elif line[0] == "ERRSIG":
+                status["signature"] = "error"
+            elif line[0] == "VALIDSIG":
+                status["fingerprint"] = line[1]
+
+        return status
 
     def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True, 
                      detatch=False, clearsign=True):

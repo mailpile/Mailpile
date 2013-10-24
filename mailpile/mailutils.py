@@ -42,11 +42,8 @@ from lxml.html.clean import Cleaner
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
 
-try:
-  from GnuPGInterface import GnuPG
-  from mailpile.pgpmime import PGPMimeParser
-except ImportError:
-  GnuPG = PGPMimeParser = None
+from gpgi import *
+from mailpile.pgpmime import PGPMimeParser
 
 
 class NotEditableError(ValueError):
@@ -76,7 +73,7 @@ def ParseMessage(fd, pgpmime=True):
       header.append(line)
 
   fd.seek(pos)
-  if GnuPG and pgpmime:
+  if pgpmime:
     message = PGPMimeParser().parse(fd)
   else:
     message = email.parser.Parser().parse(fd)
@@ -1064,7 +1061,7 @@ class Email(object):
     for part in tree['text_parts']:
 
       # Handle signed messages
-      if check_sigs and GnuPG:
+      if check_sigs:
         if part['type'] == 'pgpbeginsigned':
           pgpdata = [part]
         elif part['type'] == 'pgpsignedtext':
@@ -1072,50 +1069,20 @@ class Email(object):
         elif part['type'] == 'pgpsignature':
           pgpdata.append(part)
           try:
+            gpg = GnuPG()
             message = ''.join([p['data'].encode(p['charset']) for p in pgpdata])
-            gpg = GnuPG().run(['--utf8-strings', '--verify'],
-                              create_fhs=['stdin', 'stderr'])
-            gpg.handles['stdin'].write(message)
-            gpg.handles['stdin'].close()
-            result = ''
-            for fh in ('stderr', ):
-              result += gpg.handles[fh].read()
-              gpg.handles[fh].close()
-            gpg.wait()
-            pgpdata[0]['data'] = result.decode('utf-8')+'\n'
-            for p in pgpdata:
-              p['type'] = self.PGP_OK.get(p['type'], p['type'])
-          except IOError:
-            part['data'] += result.decode('utf-8')
-          except:
-            part['data'] += traceback.format_exc()
-          pgpdata = []
+            pgpdata[0]['openpgp_signature'] = gpg.verify(message)
+          except Exception, e:
+            print e
 
-      if decrypt and GnuPG:
+      if decrypt:
         if part['type'] in ('pgpbegin', 'pgptext'):
           pgpdata.append(part)
         elif part['type'] == 'pgpend':
           pgpdata.append(part)
-          try:
-            message = ''.join([p['data'] for p in pgpdata])
-            gpg = GnuPG().run(['--utf8-strings'],
-                              create_fhs=['stdin', 'stdout', 'stderr'])
-            gpg.handles['stdin'].write(message)
-            gpg.handles['stdin'].close()
-            results = {}
-            for fh in ('stderr', 'stdout'):
-              results[fh] = gpg.handles[fh].read()
-              gpg.handles[fh].close()
-            gpg.wait()
-            pgpdata[0]['data'] = results['stderr'].decode('utf-8')+'\n'
-            pgpdata[1]['data'] = self._decode_gpg(message, results['stdout'])
-            for p in pgpdata:
-              p['type'] = self.PGP_OK.get(p['type'], p['type'])
-          except IOError:
-            part['data'] += results['stderr'].decode('utf-8')
-          except:
-            part['data'] += traceback.format_exc()
-          pgpdata = []
+          message = ''.join([p['data'] for p in pgpdata])
+          gpg = GnuPG()
+          pgpdata[0]['data'] = gpg.decrypt(message)
 
     return tree
 

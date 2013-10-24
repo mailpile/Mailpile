@@ -28,8 +28,19 @@
       <div class="message-body">      
 
       {% for part in message.message.text_parts %}
-         <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
-       {% endfor %}
+        {% if part.type == "pgpbeginsigned" %}
+        <div class="pgp_signature_{{part.status.signature}}" style="background: #c0ffc0;">
+          <div class="pgp_signheader" style="background: #90ff90;">
+            {% if part.status.signature == "good"%}Signed by <a href="mailto:{{part.status.fromaddr}}">{{part.status.from}}</a>{% endif %}
+            {% if part.status.signature == "bad"%}Unknown signature from <a href="mailto:{{part.status.fromaddr}}">{{part.status.from}}</a>{% endif %}
+            {% if part.status.signature == "error"%}Signed with unknown key{% endif %}
+          </div>
+        {% elif part.type == "pgpsignature" %}
+        </div>
+        {% else %}
+          <p class="text-part-{type}">{{part.data|replace("\n", "<br/>")}}</p>
+        {% endif %}
+      {% endfor %}
       </div>
       <div class="message-attachments">
       <ul>
