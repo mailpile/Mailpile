@@ -844,7 +844,20 @@ class MailIndex(object):
         did_sort = False
         for order in self.INDEX_SORT:
           if how.endswith(order):
-            results.sort(key=self.INDEX_SORT[order].__getitem__)
+            try:
+              results.sort(key=self.INDEX_SORT[order].__getitem__)
+            except IndexError:
+              if session.config.sys.debug:
+                tracekback.print_exc()
+              for result in results:
+                if result > len(self.INDEX) or result < 0:
+                  session.ui.error('Bogus message index: %s' % result)
+              session.ui.error('Recovering from bogus sort, corrupt index?')
+              session.ui.error('Please tell team@mailpile.is !')
+              clean_results = [r for r in results
+                                       if r >= 0 and r < len(self.INDEX)]
+              clean_results.sort(key=self.INDEX_SORT[order].__getitem__)
+              results[:] = clean_results
             did_sort = True
             break
         if not did_sort:
