@@ -28,7 +28,7 @@
       <div class="message-body">      
 
       {% for part in message.message.text_parts %}
-         <p class="text-part-{type}">{{part.data|replace("\n", "<br/>")}}</p>
+         <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
        {% endfor %}
       </div>
       <div class="message-attachments">
