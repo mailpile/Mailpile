@@ -15,7 +15,7 @@ CONFIG_RULES = {
         'sort_max':       ('Max results we sort "well"', int,            2500),
         'snippet_max':    ('Max length of metadata snippets', int,        250),
         'debug':          ('Debugging flags', str,                         ''),
-'gpg_keyserver': ('Host:port of PGP keyserver', str, 'pool.sks-keyservers.net'),
+'gpg_keyserver':('Host:port of PGP keyserver', str, 'pool.sks-keyservers.net'),
         'http_host':    ('Listening host for web UI', 'hostname', 'localhost'),
         'local_mailbox_id': ('Local read/write Maildir', 'b36',            ''),
         'mailindex_file': ('Metadata index file', 'file',                  ''),

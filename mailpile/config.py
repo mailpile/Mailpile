@@ -753,11 +753,13 @@ class ConfigManager(ConfigDict):
         parser = CommentedEscapedConfigParser()
         parser.readfp(io.BytesIO(str(data)))
         okay = True
+
         def item_sorter(i):
             try:
                 return (int(i[0], 36), i[1])
             except:
                 return i
+
         for section in parser.sections():
             cfgpath = section.split(':')[0].split('/')[1:]
             cfg = self
