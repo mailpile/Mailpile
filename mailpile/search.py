@@ -848,7 +848,7 @@ class MailIndex(object):
               results.sort(key=self.INDEX_SORT[order].__getitem__)
             except IndexError:
               if session.config.sys.debug:
-                tracekback.print_exc()
+                traceback.print_exc()
               for result in results:
                 if result >= len(self.INDEX) or result < 0:
                   session.ui.error('Bogus message index: %s' % result)
