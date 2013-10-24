@@ -430,7 +430,7 @@ var statusMessage = function(status, message_text, complete, complete_action) {
   message.fadeIn(function() {
 
     // Set Padding Top for #content
-	  $('#header').css('padding-top', statusHeaderPadding());
+	  // $('#header').css('padding-top', statusHeaderPadding());
   });
 
 	// Complete Action
@@ -457,7 +457,7 @@ $(document).ready(function() {
   /* Message Close */
 	$('.message-close').on('click', function() {
 		$(this).parent().fadeOut(function() {
-			$('#header').css('padding-top', statusHeaderPadding());
+			//$('#header').css('padding-top', statusHeaderPadding());
 		});
 	});
 
