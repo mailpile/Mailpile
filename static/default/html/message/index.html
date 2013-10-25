@@ -25,21 +25,30 @@
           <li><b>Subject:</b> {{message.subject}}</li>
         </ul>
       </div>
-      <div class="message-body">      
-
+      <div class="message-body">
+      {% set lastpart = "none" %}
       {% for part in message.message.text_parts %}
         {% if part.type == "pgpbeginsigned" %}
-        <div class="pgp_signature_{{part.status.signature}}" style="background: #c0ffc0;">
+        <div class="pgp_signature_{{part.openpgp_data.signature}}" style="background: #c0ffc0;">
           <div class="pgp_signheader" style="background: #90ff90;">
-            {% if part.status.signature == "good"%}Signed by <a href="mailto:{{part.status.fromaddr}}">{{part.status.from}}</a>{% endif %}
-            {% if part.status.signature == "bad"%}Unknown signature from <a href="mailto:{{part.status.fromaddr}}">{{part.status.from}}</a>{% endif %}
-            {% if part.status.signature == "error"%}Signed with unknown key{% endif %}
+            {% if part.openpgp_data.signature == "good"%}Signed by <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
+            {% if part.openpgp_data.signature == "bad"%}Unknown signature from <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
+            {% if part.openpgp_data.signature == "error"%}Signed with unknown key{% endif %}
           </div>
-        {% elif part.type == "pgpsignature" %}
+        {% elif part.type == "pgpbegin" %}
+        <div class="pgp_encrypted_{{part.openpgp_data.decrypted}}" style="background: #c0c0ff;">
+          <div class="pgp_encryptedheader" style="background: #9090ff;">
+            {% if part.openpgp_data.decrypt == "success"%}Successfully decrypted message{% endif %}
+            {% if part.openpgp_data.decrypt == "fail"%}Failed to decrypt message{% endif %}
+          </div>
+        {% elif part.type == "pgpsignature" or part.type == "pgpend" %}
+        </div>
+        {% elif part.type == "text" and lastpart == "pgpsignedtext" %}
         </div>
         {% else %}
-          <p class="text-part-{type}">{{part.data|replace("\n", "<br/>")}}</p>
+          <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
         {% endif %}
+        {% set lastpart = part.type %}
       {% endfor %}
       </div>
       <div class="message-attachments">

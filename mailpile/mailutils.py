@@ -931,10 +931,10 @@ class Email(object):
       if (part.get('content-disposition', 'inline') == 'inline'
       and mimetype in ('text/plain', 'text/html')):
         payload, charset, openpgp = self.decode_payload(part)
-        # FIXME: Do something with the openpgp data!
         if (mimetype == 'text/html' or
             '<html>' in payload or
             '</body>' in payload):
+          print "Adding stuff to pgp tree!"
           tree['html_parts'].append({
             'openpgp_status': openpgp and openpgp[0] or '',
             'openpgp_data': openpgp and openpgp[1] or '',
@@ -942,6 +942,8 @@ class Email(object):
             'type': 'html',
             'data': (payload.strip() and html_cleaner.clean_html(payload)) or ''
           })
+          tree['text_parts'][0]["openpgp_status"] = openpgp and openpgp[0] or ''
+          tree['text_parts'][0]["openpgp_data"] = openpgp and openpgp[1] or ''
         else:
           tree['text_parts'].extend(self.parse_text_part(payload, charset,
                                                          openpgp))
@@ -965,6 +967,7 @@ class Email(object):
     charset = part.get_charset() or 'utf-8'
     payload = part.get_payload(None, True) or ''
     try:
+      print payload
       payload = payload.decode(charset)
     except UnicodeDecodeError:
       try:
@@ -1071,7 +1074,8 @@ class Email(object):
           try:
             gpg = GnuPG()
             message = ''.join([p['data'].encode(p['charset']) for p in pgpdata])
-            pgpdata[0]['openpgp_signature'] = gpg.verify(message)
+            pgpdata[0]['openpgp_data'] = gpg.verify(message)
+            pgpdata[0]['openpgp_status'] = 'signed'
           except Exception, e:
             print e
 
@@ -1082,7 +1086,15 @@ class Email(object):
           pgpdata.append(part)
           message = ''.join([p['data'] for p in pgpdata])
           gpg = GnuPG()
-          pgpdata[0]['data'] = gpg.decrypt(message)
+          res, data = gpg.decrypt(message)
+          if res == 0:
+            pgpdata[1]['data'] = data
+            pgpdata[0]['openpgp_status'] = 'encrypted'
+            pgpdata[0]['openpgp_data'] = {"decrypt": "success"}
+          else:
+            pgpdata[0]['openpgp_status'] = 'encrypted'
+            pgpdata[0]['openpgp_data'] = {"decrypt": "fail"}
+
 
     return tree
 

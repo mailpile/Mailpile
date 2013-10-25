@@ -504,7 +504,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         params = ["--verify"]
         if signature:
             sig = tempfile.NamedTemporaryFile()
-            sig.write(part.get_payload())
+            sig.write(signature)
             sig.flush()
             params.append(sig.name)
             params.append("-")
