@@ -16,7 +16,29 @@ from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
 
 
-class MailIndex(object):
+class SearchResultSet:
+    """
+    Search results!
+    """
+    def __init__(self, idx, terms, results, exclude):
+        self._index = idx
+        self._results = {
+            'raw': set(results),
+        }
+        self._excluded = set(exclude) & set(results)
+        self.terms = set(terms)
+
+    def __len__(self):
+        return len(self._results['raw'])
+
+    def as_set(self, order='raw'):
+        return self._results[order] - self._excluded
+
+    def excluded(self):
+        return self._excluded
+
+
+class MailIndex:
     """This is a lazily parsing object representing a mailpile index."""
 
     MSG_MID = 0
@@ -745,7 +767,7 @@ class MailIndex(object):
         return hits('%s:tag' % t[1])
 
     def search(self, session, searchterms, keywords=None):
-        if keywords:
+        if keywords is not None:
             def hits(term):
                 return [int(h, 36) for h in keywords.get(term, [])]
         else:
@@ -753,6 +775,9 @@ class MailIndex(object):
                 session.ui.mark('Searching for %s' % term)
                 return [int(h, 36) for h
                         in GlobalPostingList(session, term).hits()]
+
+        # Stash the raw search terms
+        raw_terms = searchterms[:]
 
         # Replace some GMail-compatible terms with what we really use
         if 'tags' in self.config:
@@ -769,24 +794,8 @@ class MailIndex(object):
         if searchterms and searchterms[0] and searchterms[0][0] == '-':
             searchterms[:0] = ['all:mail']
 
-        # Unless we are searching for invisible things, remove them from
-        # results by default.
-        hidden_terms = []
-        if ('tags' in self.config and
-                (not session or 'all' not in session.order)):
-            invisible = self.config.sys.get('invisible_tags', [])
-            exclude = ['-in:%s' % i for i in invisible]
-            for tid in invisible:
-                tag = self.config.tags[tid]
-                for p in ('in:%s', '+in:%s', '-in:%s'):
-                    if ((p % tid) in searchterms or
-                            (p % tag.name) in searchterms or
-                            (p % tag.slug) in searchterms):
-                        exclude = []
-            hidden_terms.extend(exclude)
-
         r = []
-        for term in searchterms + hidden_terms:
+        for term in searchterms:
             if term in STOPLIST:
                 if session:
                     session.ui.warning('Ignoring common word: %s' % term)
@@ -830,14 +839,34 @@ class MailIndex(object):
                 else:
                     results &= set(rt)
             # Sometimes the scan gets aborted...
-            if not keywords:
+            if keywords is None:
                 results -= set([len(self.INDEX)])
         else:
             results = set()
 
+        # Unless we are searching for invisible things, remove them from
+        # results by default.
+        exclude = []
+        if (results and (keywords is None) and
+                ('tags' in self.config) and
+                (not session or 'all' not in session.order)):
+            invisible = self.config.sys.get('invisible_tags', [])
+            exclude_terms = ['in:%s' % i for i in invisible]
+            for tid in invisible:
+                tag = self.config.tags[tid]
+                for p in ('in:%s', '+in:%s', '-in:%s'):
+                    if ((p % tid) in searchterms or
+                            (p % tag.name) in searchterms or
+                            (p % tag.slug) in searchterms):
+                        exclude_terms = []
+            for term in exclude_terms:
+                exclude.extend(self.search_tag(term, hits))
+
+        srs = SearchResultSet(self, raw_terms, results, exclude)
         if session:
-            session.ui.mark('Found %d results' % len(results))
-        return results
+            session.ui.mark(('Found %d results (%d suppressed)'
+                             ) % (len(results), len(srs.excluded())))
+        return srs
 
     def cache_sort_orders(self, session):
         keys = range(0, len(self.INDEX))

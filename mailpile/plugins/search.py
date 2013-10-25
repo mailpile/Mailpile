@@ -292,7 +292,7 @@ class Search(Command):
         session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
 
     session.order = session.order or session.config.prefs.default_order
-    session.results = list(idx.search(session, session.searched))
+    session.results = list(idx.search(session, session.searched).as_set())
     idx.sort_results(session, session.results, session.order)
     return session, idx, start, num
 
