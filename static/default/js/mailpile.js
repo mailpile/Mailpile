@@ -221,7 +221,7 @@ MailPile.prototype.results_graph = function() {
 	args = $('#pile-graph-canvas-svg').data("searchterms");
 
 	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
-		graph = graph.result[0];
+		graph = graph.result;
 		console.log(graph);
 		var width = 640; // $("#pile-graph-canvas").width();
 		var height = 640; // $("#pile-graph-canvas").height();

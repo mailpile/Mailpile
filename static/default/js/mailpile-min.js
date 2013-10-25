@@ -221,7 +221,7 @@ MailPile.prototype.results_graph = function() {
 	args = $('#pile-graph-canvas-svg').data("searchterms");
 
 	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
-		graph = graph.result[0];
+		graph = graph.result;
 		console.log(graph);
 		var width = 640; // $("#pile-graph-canvas").width();
 		var height = 640; // $("#pile-graph-canvas").height();
@@ -430,7 +430,7 @@ var statusMessage = function(status, message_text, complete, complete_action) {
   message.fadeIn(function() {
 
     // Set Padding Top for #content
-	  // $('#header').css('padding-top', statusHeaderPadding());
+	  $('#header').css('padding-top', statusHeaderPadding());
   });
 
 	// Complete Action
@@ -457,7 +457,7 @@ $(document).ready(function() {
   /* Message Close */
 	$('.message-close').on('click', function() {
 		$(this).parent().fadeOut(function() {
-			//$('#header').css('padding-top', statusHeaderPadding());
+			$('#header').css('padding-top', statusHeaderPadding());
 		});
 	});
 
@@ -792,11 +792,11 @@ $(document).ready(function() {
 	$('#search-params, #bulk-actions').hide();
 
 	/* Search Box */
-	$('#button-search-options').on("click", function(key) {
+	$('#qbox').bind("focus", function(key) {
 		$('#search-params').slideDown('fast');
 	});
 
-	$('#button-search-options').on("blur", function(key) {
+	$('#qbox').bind("blur", function(key) {
 		$('#search-params').slideUp('fast');
 	});
 
