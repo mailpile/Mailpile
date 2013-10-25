@@ -77,11 +77,11 @@
 	  </form>
     <nav class="topbar-nav">
       <ul>
-        <li {% if command == "message/draft" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" data-title="Compose"><span class="link-icon icon-compose"></span></a></li>
-        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" data-title="Contacts"><span class="link-icon icon-user"></span></a></li>
-        <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" data-title="Tags"><span class="link-icon icon-tag"></span></a></li>
-        <li {% if command == "page" %}class="navigation-on"{% endif %}><a href="/page/donate/" data-title="Donate"><span class="link-icon icon-donate"></span></a></li>
-        <li {% if command == "settings/profies" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" data-title="Settings"><span class="link-icon icon-settings"></span></a></li>
+        <li {% if command == "message/draft" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" title="Compose"><span class="link-icon icon-compose"></span></a></li>
+        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" title="Contacts"><span class="link-icon icon-user"></span></a></li>
+        <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" title="Tags"><span class="link-icon icon-tag"></span></a></li>
+        <li {% if command == "page" %}class="navigation-on"{% endif %}><a href="/page/donate/" title="Donate"><span class="link-icon icon-donate"></span></a></li>
+        <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="Settings"><span class="link-icon icon-settings"></span></a></li>
       </ul>
     </nav>
   </div>
@@ -176,7 +176,6 @@
     <div id="debug" class="hide">
       <h3>DEBUG</h3>
       <b>command:</b> {{ command }}<br>
-      <b>command_parts:</b> {{ command_parts }}<br>
       <b>args:</b> {{ args }}<br>
       <b>kwargs:</b> {{ kwargs }}
       {{logged}}

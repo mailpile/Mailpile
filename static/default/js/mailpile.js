@@ -357,6 +357,40 @@ $(document).ready(function() {
   });
   */
 
+
+
+  $('.topbar-nav a').qtip({ // Grab some elements to apply the tooltip to
+    content: {
+      text: $('.selector').attr('title')
+    },
+    style: {
+      classes: 'qtip-tipsy'
+    },
+    position: {
+      my: 'top center',  // Position my top left...
+      at: 'bottom center' // at the bottom right of...
+     // target: $('.selector') 
+    }
+  });
+
+
+  $('#bulk-actions a').qtip({ // Grab some elements to apply the tooltip to
+    content: {
+      text: $('.selector').attr('title')
+    },
+    style: {
+      classes: 'qtip-tipsy'
+    },
+    position: {
+      my: 'top center',  // Position my top left...
+      at: 'bottom center' // at the bottom right of...
+     // target: $('.selector') 
+    }
+  });
+
+
+
+
 });
 
 

@@ -357,6 +357,40 @@ $(document).ready(function() {
   });
   */
 
+
+
+  $('.topbar-nav a').qtip({ // Grab some elements to apply the tooltip to
+    content: {
+      text: $('.selector').attr('title')
+    },
+    style: {
+      classes: 'qtip-tipsy'
+    },
+    position: {
+      my: 'top center',  // Position my top left...
+      at: 'bottom center' // at the bottom right of...
+     // target: $('.selector') 
+    }
+  });
+
+
+  $('#bulk-actions a').qtip({ // Grab some elements to apply the tooltip to
+    content: {
+      text: $('.selector').attr('title')
+    },
+    style: {
+      classes: 'qtip-tipsy'
+    },
+    position: {
+      my: 'top center',  // Position my top left...
+      at: 'bottom center' // at the bottom right of...
+     // target: $('.selector') 
+    }
+  });
+
+
+
+
 });
 
 
@@ -430,7 +464,7 @@ var statusMessage = function(status, message_text, complete, complete_action) {
   message.fadeIn(function() {
 
     // Set Padding Top for #content
-	  $('#header').css('padding-top', statusHeaderPadding());
+	  // $('#header').css('padding-top', statusHeaderPadding());
   });
 
 	// Complete Action
@@ -457,7 +491,7 @@ $(document).ready(function() {
   /* Message Close */
 	$('.message-close').on('click', function() {
 		$(this).parent().fadeOut(function() {
-			$('#header').css('padding-top', statusHeaderPadding());
+			//$('#header').css('padding-top', statusHeaderPadding());
 		});
 	});
 
@@ -792,11 +826,11 @@ $(document).ready(function() {
 	$('#search-params, #bulk-actions').hide();
 
 	/* Search Box */
-	$('#qbox').bind("focus", function(key) {
+	$('#button-search-options').on("click", function(key) {
 		$('#search-params').slideDown('fast');
 	});
 
-	$('#qbox').bind("blur", function(key) {
+	$('#button-search-options').on("blur", function(key) {
 		$('#search-params').slideUp('fast');
 	});
 
