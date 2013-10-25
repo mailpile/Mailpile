@@ -75,13 +75,13 @@
 		  <!-- <a href="#" id="button-search-options"><span class="icon-arrow-down"></span></a> -->
 		  <button type="submit" class="submit"><span class="icon-search"></span></button>
 	  </form>
-    <nav>
+    <nav class="topbar-nav">
       <ul>
-        <li><a href="#" id="button-compose" data-title="Compose"><span class="link-icon icon-compose"></span></a></li>
-        <li><a href="/contact/list/" data-title="Contacts"><span class="link-icon icon-user"></span></a></li>
-        <li><a href="/tag/list/" data-title="Tags"><span class="link-icon icon-tag"></span></a></li>
-        <li><a href="/static/donate/" data-title="Donate"><span class="link-icon icon-donate"></span></a></li>
-        <li><a href="/settings/profiles/" data-title="Settings"><span class="link-icon icon-settings"></span></a></li>
+        <li {% if command == "message/draft" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" data-title="Compose"><span class="link-icon icon-compose"></span></a></li>
+        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" data-title="Contacts"><span class="link-icon icon-user"></span></a></li>
+        <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" data-title="Tags"><span class="link-icon icon-tag"></span></a></li>
+        <li {% if command == "page" %}class="navigation-on"{% endif %}><a href="/page/donate/" data-title="Donate"><span class="link-icon icon-donate"></span></a></li>
+        <li {% if command == "settings/profies" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" data-title="Settings"><span class="link-icon icon-settings"></span></a></li>
       </ul>
     </nav>
   </div>

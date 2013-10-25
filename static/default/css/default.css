@@ -5858,7 +5858,7 @@ text {
 /* Topbar */
 .topbar {
   width: 100%;
-  height: 64px;
+  height: 62px;
   display: table;
   position: fixed;
   top: 0px;
@@ -5873,48 +5873,119 @@ text {
   width: 225px;
   display: table-cell;
   box-sizing: border-box;
+  vertical-align: middle;
 }
 .topbar-logo object.logo,
 .topbar-logo img.logo {
   width: 182px;
   height: 40px;
   display: block;
-  margin: 15px 0px 15px 15px;
+  margin-left: 15px;
 }
 .topbar-actions {
-  min-width: 625px;
+  min-width: 775px;
   display: table-cell;
   box-sizing: border-box;
+  vertical-align: middle;
 }
-.topbar-actions nav {
-  float: right;
-  margin: 15px 25px 15px 0px;
-}
-.topbar-actions nav ul li {
+.form-search {
+  width: 350px;
+  height: 38px;
   float: left;
-  margin-left: 30px;
+  margin-left: 15px;
+  border-radius: 5px;
+  border: 1px solid #b3b3b3;
+}
+.form-search input {
+  width: 280px;
+  height: 18px;
+  padding: 10px 12px;
+  float: left;
+  font: normal 18px Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  border: 0;
+  background: #ffffff;
+  border-radius: 5px 0 0 5px;
+  color: #cccccc;
+}
+.form-search input:focus {
+  outline: 0;
+  background: #fff;
+  box-shadow: 0 0 1px #4d4d4d inset;
+  color: #4d4d4d;
+}
+.form-search input::-webkit-input-placeholder,
+.form-search input:-moz-placeholder,
+.form-search input:-ms-input-placeholder {
+  color: #999;
+  font-weight: normal;
+  font-style: italic;
+}
+.form-search button {
+  overflow: visible;
+  position: relative;
+  float: right;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  height: 38px;
+  width: 44px;
+  font: bold 18px/40px Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #ffffff;
+  background: #3a6b8c;
+  border-radius: 0 3px 3px 0;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+.form-search button:hover {
+  background: #335d7a;
+}
+.form-search button:active,
+.form-search button:focus {
+  background: #244256;
+  outline: 0;
+}
+.form-search button::-moz-focus-inner {
+  /* remove extra button spacing for Mozilla Firefox */
+
+  border: 0;
+  padding: 0;
+}
+.topbar-nav {
+  float: right;
+  margin-right: 20px;
+}
+.topbar-nav ul:after {
+  clear: both;
+}
+.topbar-nav ul li {
+  float: left;
+  margin-left: 20px;
   text-align: center;
 }
-.topbar-actions nav a {
-  width: 100%;
-  height: 100%;
+.topbar-nav a {
+  width: 32px;
+  height: 32px;
   display: block;
+  margin: 6px 8px;
   font-weight: normal;
   color: #4d4d4d;
   -webkit-transition-duration: 0.4s;
   -moz-transition-duration: 0.4s;
   transition-duration: 0.4s;
 }
-.topbar-actions nav a:hover {
+.topbar-nav a:hover {
   color: #3a6b8c;
   -webkit-transition-duration: 0.2s;
   -moz-transition-duration: 0.2s;
   transition-duration: 0.2s;
 }
-.topbar-actions span.link-icon {
+.topbar-nav span.link-icon {
   display: block;
-  font-size: 36px;
-  line-height: 36px;
+  font-size: 32px;
+  line-height: 32px;
+}
+.topbar-nav .navigation-on {
+  background: #cccccc;
+  border-radius: 5px;
 }
 /* Web */
 #debug {
@@ -5936,10 +6007,10 @@ text {
   z-index: 1;
   padding: 0;
   margin: 0;
-  margin-top: 64px;
+  margin-top: 63px;
 }
 /* Content */#content {
-  min-width: 625px;
+  min-width: 775px;
   display: table-cell;
   box-sizing: border-box;
 }
@@ -6109,7 +6180,7 @@ div.content-normal {
   display: block;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
-  box-sizing: border-box;
+  box-sizing: padding-box;
 }
 #sub-navigation.cozy {
   height: 58px;
@@ -6221,73 +6292,6 @@ div.content-normal {
   border-bottom: 1px solid #b3b3b3;
 }
 /* Search */
-.search {
-  float: left;
-  width: 480px;
-  margin-top: 12px;
-  border: 1px solid red;
-}
-.form-search {
-  width: 390px;
-  float: left;
-  margin-top: 10px;
-  margin-left: 15px;
-  border-radius: 5px;
-  border: 1px solid #b3b3b3;
-}
-.form-search input {
-  width: 316px;
-  height: 20px;
-  padding: 10px 12px;
-  float: left;
-  font: normal 18px Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  border: 0;
-  background: #ffffff;
-  border-radius: 5px 0 0 5px;
-  color: #cccccc;
-}
-.form-search input:focus {
-  outline: 0;
-  background: #fff;
-  box-shadow: 0 0 1px rgba(0, 0, 0, 0.8) inset;
-}
-.form-search input::-webkit-input-placeholder,
-.form-search input:-moz-placeholder,
-.form-search input:-ms-input-placeholder {
-  color: #999;
-  font-weight: normal;
-  font-style: italic;
-}
-/* Form submit button */
-.form-search button {
-  overflow: visible;
-  position: relative;
-  float: right;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  height: 40px;
-  width: 50px;
-  font: bold 15px/40px Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #ffffff;
-  background: #3a6b8c;
-  border-radius: 0 3px 3px 0;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
-}
-.form-search button:hover {
-  background: #244256;
-}
-.form-search button:active,
-.form-search button:focus {
-  background: #152632;
-  outline: 0;
-}
-.form-search button::-moz-focus-inner {
-  /* remove extra button spacing for Mozilla Firefox */
-
-  border: 0;
-  padding: 0;
-}
 #button-search-options {
   background: red;
   display: inline-block;
