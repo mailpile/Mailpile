@@ -123,7 +123,7 @@ class SearchResults(dict):
       self._set_values([], 0, 0, 0)
       return
 
-    num = num or session.config.get('num_results', 20)
+    num = num or session.config.prefs.num_results
     if end: start = end - num
     if start > len(results): start = len(results)
     if start < 0: start = 0
@@ -264,7 +264,7 @@ class Search(Command):
     for order in self.data.get('order', []):
       session.order = order
 
-    num = int(session.config.get('num_results', 20))
+    num = session.config.prefs.num_results
     d_start = int(self.data.get('start', [0])[0])
     d_end = int(self.data.get('end', [0])[0])
     if d_start and d_end:

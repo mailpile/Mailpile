@@ -28,7 +28,7 @@ CONFIG_RULES = {
     }],
     'prefs': ["User preferences", False,
     {
-        'num_results':     ('Search results per page', int,                15),
+        'num_results':     ('Search results per page', int,                20),
         'rescan_interval': ('New mail check frequency', int,                0),
         'gpg_clearsign':   ('Inline PGP signatures or attached', bool,  False),
         'default_order':   ('Default sort order', str,             'rev-date'),
