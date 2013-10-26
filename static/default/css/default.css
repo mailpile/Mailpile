@@ -4064,6 +4064,11 @@ ol li {
 ul li {
   list-style-type: ;
 }
+ul.horizontal li,
+ol.horizontal li {
+  display: inline-block;
+  float: left;
+}
 /* Lines */
 hr {
   border: solid #b3b3b3;
@@ -5754,6 +5759,165 @@ disabled look for disabled choices in the results dropdown
 
   opacity: 0.99;
 }
+/*
+ * qTip2 - Pretty powerful tooltips - v2.1.1
+ * http://qtip2.com
+ *
+ * Copyright (c) 2013 Craig Michael Thompson
+ * Released under the MIT, GPL licenses
+ * http://jquery.org/license
+ *
+ * Date: Thu Jul 11 2013 02:03 GMT+0100+0100
+ * Plugins: None
+ * Styles: None
+ */
+.qtip {
+  position: absolute;
+  left: -28000px;
+  top: -28000px;
+  display: none;
+  max-width: 280px;
+  min-width: 50px;
+  font-size: 10.5px;
+  line-height: 12px;
+  direction: ltr;
+  box-shadow: none;
+  padding: 0;
+}
+/* Opera bug #357 - Incorrect tip position
+	https://github.com/Craga89/qTip2/issues/367 */
+x:-o-prefocus,
+.qtip .qtip-tip {
+  visibility: hidden;
+}
+.qtip .qtip-tip,
+.qtip .qtip-tip .qtip-vml,
+.qtip .qtip-tip canvas {
+  position: absolute;
+  color: #123456;
+  background: transparent;
+  border: 0 dashed transparent;
+}
+.qtip .qtip-tip canvas {
+  top: 0;
+  left: 0;
+}
+.qtip .qtip-tip .qtip-vml {
+  behavior: url(#default#VML);
+  display: inline-block;
+  visibility: visible;
+}
+.qtip-content {
+  position: relative;
+  padding: 5px 9px;
+  overflow: hidden;
+  text-align: left;
+  word-wrap: break-word;
+}
+.qtip-titlebar {
+  position: relative;
+  padding: 5px 35px 5px 10px;
+  overflow: hidden;
+  border-width: 0 0 1px;
+  font-weight: bold;
+}
+.qtip-titlebar + .qtip-content {
+  border-top-width: 0 !important;
+}
+/* Default close button class */
+.qtip-close {
+  position: absolute;
+  right: -9px;
+  top: -9px;
+  cursor: pointer;
+  outline: medium none;
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+}
+.qtip-titlebar .qtip-close {
+  right: 4px;
+  top: 50%;
+  margin-top: -9px;
+}
+* html .qtip-titlebar .qtip-close {
+  top: 16px;
+}
+/* IE fix */
+.qtip-titlebar .ui-icon,
+.qtip-icon .ui-icon {
+  display: block;
+  text-indent: -1000em;
+  direction: ltr;
+}
+.qtip-icon,
+.qtip-icon .ui-icon {
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border-radius: 3px;
+  text-decoration: none;
+}
+.qtip-icon .ui-icon {
+  width: 18px;
+  height: 14px;
+  line-height: 14px;
+  text-align: center;
+  text-indent: 0;
+  font: normal bold 10px/13px Tahoma, sans-serif;
+  color: inherit;
+  background: transparent none no-repeat -100em -100em;
+}
+/* Applied to 'focused' tooltips e.g. most recently displayed/interacted with */
+/* Applied on hover of tooltips i.e. added/removed on mouseenter/mouseleave respectively */
+/* Default tooltip style */
+.qtip-default {
+  border-width: 1px;
+  border-style: solid;
+  border-color: #F1D031;
+  background-color: #FFFFA3;
+  color: #555;
+}
+.qtip-default .qtip-titlebar {
+  background-color: #FFEF93;
+}
+.qtip-default .qtip-icon {
+  border-color: #CCC;
+  background: #F1F1F1;
+  color: #777;
+}
+.qtip-default .qtip-titlebar .qtip-close {
+  border-color: #AAA;
+  color: #111;
+}
+/* Tipsy style */
+.qtip-tipsy {
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3  px;
+  border-radius: 3px;
+  background: black;
+  background: rgba(0, 0, 0, 0.87);
+  color: white;
+  border: 0 solid transparent;
+  font-size: 11px;
+  font-family: 'Lucida Grande', sans-serif;
+  font-weight: bold;
+  line-height: 16px;
+  text-shadow: 0 1px black;
+}
+.qtip-tipsy .qtip-titlebar {
+  padding: 6px 35px 0 10px;
+  background-color: transparent;
+}
+.qtip-tipsy .qtip-content {
+  padding: 6px 10px;
+}
+.qtip-tipsy .qtip-icon {
+  border-color: #222;
+  text-shadow: none;
+}
+.qtip-tipsy .qtip-titlebar .ui-state-hover {
+  border-color: #303030;
+}
 /* App */
 /* Messages - Error, Warning, Debug, Info, Success */
 #messages {
@@ -5814,6 +5978,39 @@ disabled look for disabled choices in the results dropdown
 }
 #messages .success {
   background-color: #4b7945;
+}
+/* Bulk Actions */
+.bulk-actions {
+  border-bottom: 1px solid #b3b3b3;
+  color: #4d4d4d;
+  font-size: 14px;
+  line-height: 14px;
+}
+.bulk-actions div,
+.bulk-actions ul {
+  margin: 10px 15px;
+}
+.bulk-actions li {
+  padding: 0 10px;
+}
+.bulk-actions a {
+  color: #4d4d4d;
+}
+.bulk-actions a:hover {
+  color: #a31304;
+}
+/* Notifications */
+.notification-urgent {
+  border-radius: 5px;
+  background: #f15a24;
+  padding: 1px 4px;
+  color: #ffffff;
+}
+.notification-important {
+  border-radius: 5px;
+  background: #fbb03b;
+  padding: 1px 4px;
+  color: #ffffff;
 }
 /* FIXME: Belongs in the .css, here for testing */
 .tag_new_0 .navigation-attention-important {
@@ -6173,35 +6370,19 @@ div.content-normal {
   transition-duration: 0.4s;
 }
 /* Sub Navigation */
-#sub-navigation {
+.sub-navigation {
   width: 100%;
-  height: 52px;
-  min-width: 450px;
   display: block;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
-  box-sizing: padding-box;
 }
-#sub-navigation.cozy {
-  height: 58px;
+.sub-navigation ul {
+  margin: 10px 15px;
 }
-#sub-navigation.snug {
-  height: 54px;
+.sub-navigation li {
+  padding: 0px 10px;
 }
-#sub-navigation ul {
-  position: relative;
-  top: 18px;
-}
-#sub-navigation ul.left {
-  left: 15px;
-}
-#sub-navigation ul.right {
-  right: 15px;
-}
-#sub-navigation ul li {
-  padding: 0px 5px;
-}
-#sub-navigation a {
+.sub-navigation a {
   display: block;
   padding: 5px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -6209,37 +6390,21 @@ div.content-normal {
   color: #4d4d4d;
   line-height: 14px;
 }
-#sub-navigation.cozy a {
-  padding: 7px;
-  font-size: 16px;
-}
-#sub-navigation.snug a {
-  padding: 5px;
-  font-size: 14px;
-}
-#sub-navigation a:hover,
-#sub-navigation a:hover span.navigation-icon {
+.sub-navigation a:hover,
+.sub-navigation a:hover span.navigation-icon {
   color: #a31304;
 }
-#sub-navigation li.navigation-on {
+.sub-navigation li.navigation-on {
   background: #d9d9d9;
   border-radius: 5px;
 }
-#sub-navigation li.navigation-on a {
+.sub-navigation li.navigation-on a {
   cursor: default;
   color: #4d4d4d;
 }
-#sub-navigation li.navigation-on a:hover,
-#sub-navigation li.navigation-on a:hover span {
+.sub-navigation li.navigation-on a:hover,
+.sub-navigation li.navigation-on a:hover span {
   color: #4d4d4d;
-}
-#sub-navigation ul {
-  display: block;
-}
-#sub-navigation li {
-  display: inline-block;
-  float: left;
-  text-align: center;
 }
 .navigation-icon {
   margin: 0;
@@ -6248,18 +6413,6 @@ div.content-normal {
 }
 .navigation-text {
   margin: 0 0 0 8px;
-}
-.notification-urgent {
-  border-radius: 5px;
-  background: #f15a24;
-  padding: 1px 4px;
-  color: #ffffff;
-}
-.notification-important {
-  border-radius: 5px;
-  background: #fbb03b;
-  padding: 1px 4px;
-  color: #ffffff;
 }
 /* Compose */
 .compose-headers {
@@ -6333,7 +6486,7 @@ div.content-normal {
 #search-params a:hover {
   background-color: #cccccc;
 }
-/* Pile Results */
+/* Pile */
 #pile-results {
   width: 100%;
 }
@@ -6479,54 +6632,6 @@ div.content-normal {
   background: #ffffff;
   border: 1px solid #b3b3b3;
   padding: 5px 10px;
-}
-/* Pile - Bulk Actions */
-#bulk-actions {
-  border-bottom: 1px solid #b3b3b3;
-  color: #4d4d4d;
-  padding-left: 20px;
-  padding-right: 20px;
-  box-sizing: padding-box;
-}
-#bulk-actions h5 {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  color: #4d4d4d;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  line-height: 24px;
-}
-#bulk-actions.cozy h5 {
-  margin-top: 9px;
-  margin-bottom: 9px;
-  font-size: 16px;
-  line-height: 21px;
-}
-#bulk-actions.snug h5 {
-  margin-top: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  line-height: 18px;
-}
-#bulk-actions a {
-  display: inline-block;
-  margin: 10px 30px 10px 0;
-  color: #4d4d4d;
-}
-#bulk-actions a:hover {
-  color: #a31304;
-}
-#bulk-actions.cozy a {
-  margin: 7px 21px 7px 0;
-  font-size: 16px;
-}
-#bulk-actions.snug a {
-  margin: 5px 15px 5px 0;
-  font-size: 14px;
-}
-#bulk-actions a span {
-  position: relative;
-  top: 2px;
-  left: 0px;
 }
 /* Thread */.message-headers {
   border-bottom: 1px solid #b3b3b3;

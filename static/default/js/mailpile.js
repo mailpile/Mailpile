@@ -333,8 +333,6 @@ $(document).ready(function() {
     $('#header').addClass(localStorage.getItem('view_size'));
     $('#container').addClass(localStorage.getItem('view_size'));
     $('#sidebar').addClass(localStorage.getItem('view_size'));
-    $('#sub-navigation').addClass(localStorage.getItem('view_size'));
-    $('#bulk-actions').addClass(localStorage.getItem('view_size'));
     $('#pile-results').addClass(localStorage.getItem('view_size'));
 
     $.each($('a.change-view-size'), function() {
@@ -356,7 +354,6 @@ $(document).ready(function() {
     sliderMinHeight: 40
   });
   */
-
 
 
   $('.topbar-nav a').qtip({ // Grab some elements to apply the tooltip to
@@ -389,8 +386,6 @@ $(document).ready(function() {
   });
 
 
-
-
 });
 
 
@@ -411,8 +406,6 @@ $(document).on('click', 'a.change-view-size', function(e) {
   $('#header').removeClass(current_size).addClass(new_size);
   $('#container').removeClass(current_size).addClass(new_size);
   $('#sidebar').removeClass(current_size).addClass(new_size);
-  $('#sub-navigation').removeClass(current_size).addClass(new_size);
-  $('#bulk-actions').removeClass(current_size).addClass(new_size);
   $('#pile-results').removeClass(current_size).addClass(new_size);
 
   // Data
