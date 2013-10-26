@@ -1926,5 +1926,3 @@ QTIP.defaults = {
 
 ;}));
 }( window, document ));
-
-
