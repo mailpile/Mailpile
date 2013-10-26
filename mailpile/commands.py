@@ -355,11 +355,11 @@ class RenderPage(Command):
             if self.result and 'path' in self.result:
                 self.template_id += '/' + self.result['path'] + '/index'
 
-        def command(self):
-            return {
-                'path': (self.args and self.args[0] or ''),
-                'data': self.data
-            }
+    def command(self):
+        return {
+            'path': (self.args and self.args[0] or ''),
+            'data': self.data
+        }
 
 
 ##[ Configuration commands ]###################################################
