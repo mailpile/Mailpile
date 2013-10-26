@@ -1,36 +1,23 @@
 /* Sub Navigation */
 
-	#sub-navigation	{
+	.sub-navigation	{
 		width: 100%;
-    height: 52px;
 		min-width: 450px;
 		display: block;
 		background: @grayLight;
 		border-bottom: 1px solid @gray;
 		box-sizing: padding-box;
 	}
-	
-	#sub-navigation.cozy { height: 58px; }
-	#sub-navigation.snug { height: 54px; }
 
-	#sub-navigation ul {
-	  position: relative;
-	  top: 18px;
+	.sub-navigation ul {
+	  margin: 10px 15px;
   }
 
-	#sub-navigation ul.left {
-	  left: 15px;
+	.sub-navigation li {
+    padding: 0px 10px;
 	}
 
-	#sub-navigation ul.right {
-	  right: 15px;
-	}
-
-	#sub-navigation ul li {
-    padding: 0px 5px;
-	}
-
-	#sub-navigation a {
+	.sub-navigation a {
 		display: block;	
 		padding: 5px;
 		font-family: @text-font-family-bold;
@@ -39,44 +26,31 @@
 		line-height: 14px;
 	}
 
-  #sub-navigation.cozy a { padding: 7px; font-size: 16px; }
-  #sub-navigation.snug a { padding: 5px; font-size: 14px; }
-
-
-	#sub-navigation a:hover, #sub-navigation a:hover span.navigation-icon {
+	.sub-navigation a:hover, .sub-navigation a:hover span.navigation-icon {
 		color: @red;
 	}
 
-	#sub-navigation li.navigation-on {
+	.sub-navigation li.navigation-on {
 		background: lighten(@gray, 15%);
 		border-radius: @base-border-radius;		
 	}
 
-	#sub-navigation li.navigation-on a {
+	.sub-navigation li.navigation-on a {
 		cursor: default;
 		color: @grayDark;
 	}	
 
-	#sub-navigation li.navigation-on a:hover, #sub-navigation li.navigation-on a:hover span {
+	.sub-navigation li.navigation-on a:hover,
+  .sub-navigation li.navigation-on a:hover span {
     color: @grayDark;
   }
-	
-	#sub-navigation ul {
-		display: block;
-	}
-	
-	#sub-navigation li {
-		display: inline-block;
-		float: left;
-		text-align: center;
-	}	
 
 	.navigation-icon {
 		margin: 0;
 		color: @grayDark;
 		font-weight: normal;
 	}
-	
+
   .navigation-text {
     margin: 0 0 0 8px;
   }
