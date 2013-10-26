@@ -4,6 +4,7 @@ import io
 import json
 import os
 import re
+import socket
 import ConfigParser
 
 from urllib import quote, unquote
@@ -99,12 +100,12 @@ def _SlashSlugCheck(slug):
     """
     return _SlugCheck(slug, allow='/')
 
-def _HostNameCheck(host):
+def _HostNameCheck(host, verifyDNS=True):
     """
     Verify that a string is a valid host-name, return it lowercased.
 
-    >>> _HostNameCheck('foo.BAR.baz')
-    'foo.bar.baz'
+    >>> _HostNameCheck('mailpile.is')
+    'mailpile.is'
 
     >>> _HostNameCheck('127.0.0.1')
     '127.0.0.1'
@@ -127,12 +128,20 @@ def _HostNameCheck(host):
     Traceback (most recent call last):
         ...
     ValueError: Invalid hostname: also!not&a,hostname
+    
+    >>> _HostNameCheck('imprettysurethisdomaindoesnotexist.com')
+    Traceback (most recent call last):
+        ...
+    ValueError: Hostname can't be resolved: imprettysurethisdomaindoesnotexist.com
     """
-    # FIXME: Check DNS, e.g. socket.gethostbyname(..).
-    #        Problem: socket.gethostbyname('fe80::1') doesn't work
     #Check if the to-be-checked hostname contains special chars like !&% etc.
     if any(c in unicode(host) for c in CleanText.NONDNS):
         raise ValueError('Invalid hostname: %s' % host)
+    #Check DNS if it's not an IPv6 (gethostbyname() doesn't support it)
+    if verifyDNS and not ':' in unicode(host):
+        try: socket.gethostbyname(host)
+        except:
+            raise ValueError("Hostname can't be resolved: %s" % host)
     return str(host).lower()
 
 
