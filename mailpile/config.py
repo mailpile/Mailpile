@@ -70,9 +70,18 @@ def _MakeCheck(pcls, rules):
 def _SlugCheck(slug, allow=''):
     """
     Verify that a string is a valid URL slug.
+    
+    Keyword arguments:
+        allow: A set of characters to be allowed, extending the standard charset
 
     >>> _SlugCheck('_Foo-bar.5')
     '_foo-bar.5'
+    
+    >>> _SlugCheck('baz/_Foo-bar.5', '/') #Single-char allow
+    'baz/_foo-bar.5'
+    
+    >>> _SlugCheck('baz)/_Foo-bar.5', '/)') #Multi-char allow
+    'baz)/_foo-bar.5'
 
     >>> _SlugCheck('Bad Slug')
     Traceback (most recent call last):
@@ -84,9 +93,9 @@ def _SlugCheck(slug, allow=''):
         ...
     ValueError: Invalid URL slug: Bad/Slug
     """
-    if not slug == CleanText(unicode(slug),
-                             banned=(CleanText.NONDNS.replace(allow, ''))
-                             ).clean:
+    #Remove all characters from allow param to form a temp string
+    tmp = unicode(slug.translate(None, allow))
+    if any(c in tmp for c in CleanText.NONDNS):
         raise ValueError('Invalid URL slug: %s' % slug)
     return slug.lower()
 
