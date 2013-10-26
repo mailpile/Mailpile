@@ -11,3 +11,5 @@ mp-virtualenv
 *.iml
 *.ipr
 static/default/codekit-config.json
+.*deps
+scripts/less-compiler.mk
