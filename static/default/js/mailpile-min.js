@@ -189,10 +189,18 @@ MailPile.prototype.warning = function(msg) {
 
 
 MailPile.prototype.results_list = function() {
+
+  // Show Sidebar
+  $('#sidebar').show('fast');
+
+  // Navigation
 	$('#btn-display-list').addClass('navigation-on');
 	$('#btn-display-graph').removeClass('navigation-on');
+	
+	// Show & Hide View
 	$('#pile-graph').hide();
 	$('#pile-results').show();
+	$('#form-pile-results').show();
 }
 
 MailPile.prototype.graph_actionbuttons = function() {
@@ -214,17 +222,35 @@ MailPile.prototype.focus_search = function() {
 
 
 MailPile.prototype.results_graph = function() {
+  
+  // Hide Sidebar
+  $('#sidebar').hide('normal');
+  
+  // Change Navigation 
 	$('#btn-display-graph').addClass('navigation-on');
 	$('#btn-display-list').removeClass('navigation-on');
+	
+	// Show & Hide Pile View
 	$('#pile-results').hide();
+	$('#form-pile-results').hide();
 	$('#pile-graph').show();
+
+  // Determine & Set Height
+  var available_height = $(window).height() - ($('#header').height() + $('.sub-navigation').height());
+
+  $('#pile-graph-canvas').height(available_height);
+  $("#pile-graph-canvas-svg").height(available_height);
+
 	args = $('#pile-graph-canvas-svg').data("searchterms");
 
 	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
 		graph = graph.result;
 		console.log(graph);
+    
+    console.log(available_height);
+    				
 		var width = 640; // $("#pile-graph-canvas").width();
-		var height = 640; // $("#pile-graph-canvas").height();
+		var height = available_height;
 		var force = d3.layout.force()
 	   				.charge(-300)
 	   				.linkDistance(75)
@@ -356,25 +382,29 @@ $(document).ready(function() {
   */
 
 
-  $('.topbar-nav a').qtip({ // Grab some elements to apply the tooltip to
-    content: {
-      text: $('.selector').attr('title')
-    },
+  $('.topbar-nav a').qtip({
     style: {
-      classes: 'qtip-tipsy'
+     tip: {
+        corner: 'top center',
+        mimic: 'top left',
+        border: 1,
+        width: 12,
+        height: 12
+      },    
+      classes: ''//'qtip-tipsy'
     },
     position: {
       my: 'top center',  // Position my top left...
       at: 'bottom center' // at the bottom right of...
      // target: $('.selector') 
+    },
+    hide: {
+      event: 'unfocus'
     }
   });
 
 
   $('#bulk-actions a').qtip({ // Grab some elements to apply the tooltip to
-    content: {
-      text: $('.selector').attr('title')
-    },
     style: {
       classes: 'qtip-tipsy'
     },
