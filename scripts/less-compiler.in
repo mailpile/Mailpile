@@ -1,0 +1,8 @@
+static/default/css/default.css: .less-deps
+	(cd static/default/less && \
+            lessc default.less \
+              |perl -npe 's,(libraries|app)/,,g' \
+              |perl -npe 's,/static/,../,g' \
+	    >../css/default.css)
+
+.less-deps: scripts/less-compiler.in \
