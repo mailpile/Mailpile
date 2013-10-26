@@ -1,3 +1,5 @@
+PATH:=$(PATH):/Applications/CodeKit.app/Contents/Resources/engines/less/bin/
+
 static/default/css/default.css: .less-deps
 	@(cd static/default/less && \
             lessc default.less \

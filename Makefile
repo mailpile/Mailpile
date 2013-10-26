@@ -48,7 +48,8 @@ less-loop: less-compiler
 less-compiler:
 	@cp scripts/less-compiler.in scripts/less-compiler.mk
 	@find static/default/less/ -name '*.less' \
-                |sed -e s'/^/\t/' -e 's/$$/\\/' \
+                |perl -npe s'/^/\t/' \
+		|perl -npe 's/$$/\\/' \
                 >>scripts/less-compiler.mk
 	@echo >> scripts/less-compiler.mk
-	@echo '\t@touch .less-deps' >> scripts/less-compiler.mk
+	@perl -e 'print "\t\@touch .less-deps", $/' >> scripts/less-compiler.mk
