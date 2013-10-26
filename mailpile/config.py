@@ -99,7 +99,6 @@ def _SlashSlugCheck(slug):
     """
     return _SlugCheck(slug, allow='/')
 
-
 def _HostNameCheck(host):
     """
     Verify that a string is a valid host-name, return it lowercased.
@@ -109,15 +108,30 @@ def _HostNameCheck(host):
 
     >>> _HostNameCheck('127.0.0.1')
     '127.0.0.1'
+    
+    >>> _HostNameCheck('::1')
+    '::1'
+    
+    >>> _HostNameCheck('2001:db80::cc0d:d8ff:fefd:1c73')
+    '2001:db80::cc0d:d8ff:fefd:1c73'
+    
+    >>> _HostNameCheck('fe80::1')
+    'fe80::1'
 
     >>> _HostNameCheck('not/a/hostname')
     Traceback (most recent call last):
         ...
     ValueError: Invalid hostname: not/a/hostname
+    
+    >>> _HostNameCheck('also!not&a,hostname')
+    Traceback (most recent call last):
+        ...
+    ValueError: Invalid hostname: also!not&a,hostname
     """
-    # FIXME: Check DNS?
-    if not unicode(host) == CleanText(unicode(host),
-                                      banned=CleanText.NONDNS).clean:
+    # FIXME: Check DNS, e.g. socket.gethostbyname(..).
+    #        Problem: socket.gethostbyname('fe80::1') doesn't work
+    #Check if the to-be-checked hostname contains special chars like !&% etc.
+    if any(c in unicode(host) for c in CleanText.NONDNS):
         raise ValueError('Invalid hostname: %s' % host)
     return str(host).lower()
 
