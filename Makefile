@@ -36,7 +36,14 @@ virtualenv:
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
 
 less: less-compiler
-	make -f scripts/less-compiler.mk
+	@make -s -f scripts/less-compiler.mk
+
+less-loop: less-compiler
+	@echo 'Running less compiler every 15 seconds. CTRL+C quits.'
+	@while [ 1 ]; do \
+                make -s less; \
+                sleep 15; \
+        done
 
 less-compiler:
 	@cp scripts/less-compiler.in scripts/less-compiler.mk
