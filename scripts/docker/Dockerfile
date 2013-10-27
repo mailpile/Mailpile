@@ -4,7 +4,7 @@
 
 FROM base
 
-RUN apt-get install -y python-lxml python-gnupginterface git make
+RUN apt-get install -y python-lxml git make
 RUN git clone https://github.com/pagekite/Mailpile.git
 ADD start.sh /start.sh
 
