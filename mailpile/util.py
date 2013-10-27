@@ -93,12 +93,15 @@ def sha1b64(s):
 
     >>> sha1b64("Hello")
     '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\\n'
+    
+    >>> sha1b64(u"Hello")
+    '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\\n'
 
     Keyword arguments:
     s -- The string to hash
     """
     h = hashlib.sha1()
-    if type(s) == type(unicode()):
+    if isinstance(s, unicode):
         h.update(s.encode('utf-8'))
     else:
         h.update(s)
@@ -120,7 +123,7 @@ def sha512b64(*data):
     """
     h = hashlib.sha512()
     for s in data:
-        if type(s) == type(unicode()):
+        if isinstance(s, unicode):
             h.update(s.encode('utf-8'))
         else:
             h.update(s)
