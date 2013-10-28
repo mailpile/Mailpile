@@ -4,6 +4,59 @@ from mailpile.mailutils import Email, ExtractEmails
 from mailpile.util import *
 
 
+class ContactImporter:
+    required_parameters = []
+    optional_parameters = []
+    format_name = ""
+
+    def __init__(self, **kwargs):
+        self.args = kwargs
+
+    def load(self):
+        pass
+
+    def get_contacts(self):
+        return []
+
+    def filter_contacts(self, terms):
+        # We put this in each ContactImporter because sometimes fetching
+        # everything and then filtering might be really slow, and in those
+        # cases there might be a faster way. Example: CardDAV lookup.
+        return []
+
+
+class ContactExporter:
+    required_parameters = []
+    optional_parameters = []
+    format_name = ""
+
+    def __init__(self):
+        self.exporting = []
+
+    def add_contact(self, contact):
+        self.exporting.append(contact)
+
+    def remove_contact(self, contact):
+        self.exporting.remove(contact)
+
+    def save(self):
+        pass
+
+
+class ContactContextProvider:
+    provider_name = ""
+
+    def __init__(self, contact):
+        self.contact = contact
+
+    def get_recent_context(self, max=10):
+        pass
+
+    def get_related_context(self, query, max=10):
+        pass
+
+
+
 class VCardCommand(Command):
 
     def _fparse(self, fromdata):
@@ -204,7 +257,52 @@ class ListContacts(ContactVCard(ListVCards)):
     """Find contacts"""
 
 
+
+class ContactImport(Command):
+    """Import contacts"""
+    SYNOPSIS = (None, 'contact/import', 'contact/import', '[<parameters>]')
+    ORDER = ('Internals', 6)
+    HTTP_CALLABLE = ('GET', )
+
+    def command(self, format, terms=None, **kwargs={}):
+        session, config = self.session, self.session.config
+
+        if not format in mailpile.plugins.CONTACT_IMPORTERS.keys():
+            session.ui.error("No such import format")
+            return False
+
+        importer = mailpile.plugins.CONTACT_IMPORTERS[format]
+
+        if not all([x in kwargs.keys() for x in importer.required_parameters]):
+            session.ui.error("Required paramter missing. Required parameters "
+                + "are: %s" % ", ".join(importer.required_parameters))
+            return False
+
+        allparams = importer.required_parameters + importer.optional_parameters
+
+        if not all([x in allparams for x in kwargs.keys()]):
+            session.ui.error("Unknown parameter passed to importer. Provided %s"
+                + "; but known parameters are: %s" 
+                % (", ".join(kwargs), ", ".join(allparams)))
+            return False
+
+        imp = importer(kwargs)
+        if terms:
+            contacts = imp.filter_contacts(terms)
+        else:
+            contacts = imp.get_contacts()
+
+        for importedcontact in contacts:
+            # Check if contact exists. If yes, then update. Else create.
+            pass
+
+
+
+
+
+
 mailpile.plugins.register_commands(VCard, AddVCard, SetVCard,
                                    RemoveVCard, ListVCards)
 mailpile.plugins.register_commands(Contact, AddContact, SetContact,
                                    RemoveContact, ListContacts)
+mailpile.plugins.register_commands(ContactsImport)
