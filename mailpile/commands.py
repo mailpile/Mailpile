@@ -244,39 +244,50 @@ class Load(Command):
 
 
 class Rescan(Command):
-    """Scan all mailboxes for new messages"""
-    SYNOPSIS = (None, 'rescan', None, None)
+    """Add new messages to index"""
+    SYNOPSIS = (None, 'rescan', None, '[<msgs>]')
     ORDER = ('Internals', 2)
     SERIALIZE = 'Rescan'
 
     def command(self):
         session, config = self.session, self.session.config
+        msg_idxs = self._choose_messages(self.args)
+        if msg_idxs:
+            session.ui.warning('FIXME: rescan messages: %s' % msg_idxs)
+            return False
+        else:
+            return self._rescan_mailboxes(session, config)
 
+    def _rescan_mailboxes(self, session, config):
         # FIXME: Need a lock here?
         if 'rescan' in config._running:
             return True
         config._running['rescan'] = True
 
         idx = self._idx()
-        count = 0
+        msg_count = 0
+        mbox_count = 0
         rv = True
         try:
             pre_command = config.prefs.rescan_command
             if pre_command:
                 session.ui.mark('Running: %s' % pre_command)
                 subprocess.check_call(pre_command, shell=True)
-            count = 1
+            msg_count = 1
             for fid, fpath in config.get_mailboxes():
                 if fpath == '/dev/null':
                     continue
                 if mailpile.util.QUITTING:
                     break
-                count += idx.scan_mailbox(session, fid, fpath,
-                                          config.open_mailbox)
+                count = idx.scan_mailbox(session, fid, fpath,
+                                         config.open_mailbox)
+                if count:
+                    msg_count += count
+                    mbox_count += 1
                 config.clear_mbox_cache()
                 session.ui.mark('\n')
-            count -= 1
-            if count:
+            msg_count -= 1
+            if msg_count:
                 idx.cache_sort_orders(session)
                 if not mailpile.util.QUITTING:
                     GlobalPostingList.Optimize(session, idx, quick=True)
@@ -287,15 +298,16 @@ class Rescan(Command):
             self._ignore_exception()
             return False
         finally:
-            if count:
+            if msg_count:
                 session.ui.mark('\n')
-                if count < 500:
+                if msg_count < 500:
                     idx.save_changes(session)
                 else:
                     idx.save(session)
             del config._running['rescan']
             idx.update_tag_stats(session, config)
-        return True
+        return {'messages': msg_count,
+                'mailboxes': mbox_count}
 
 
 class Optimize(Command):
@@ -306,6 +318,7 @@ class Optimize(Command):
 
     def command(self):
         try:
+            self._idx().save(self.session)
             GlobalPostingList.Optimize(self.session, self._idx(),
                                        force=('harder' in self.args))
             return True
