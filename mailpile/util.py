@@ -60,10 +60,32 @@ class UrlRedirectException(Exception):
 
 
 def b64c(b):
+    """
+    Rewrite a base64 string:
+        - Remove LF and = characters
+        - Replace slashes by underscores
+    
+    >>> b64c("abc123456def")
+    'abc123456def'
+    >>> b64c("\na/=b=c/")
+    'a_bc_'
+    >>> b64c("a+b+c+123+")
+    'a+b+c+123+'
+    """
     return b.replace('\n', '').replace('=', '').replace('/', '_')
 
-
 def b64w(b):
+    """
+    Rewrite a base64 string by replacing
+    "+" by "-" (e.g. for URLs).
+    
+    >>> b64w("abc123456def")
+    'abc123456def'
+    >>> b64w("\na/=b=c/")
+    '\na/=b=c/'
+    >>> b64w("a+b+c+123+")
+    'abc123'
+    """
     return b64c(b).replace('+', '-')
 
 
