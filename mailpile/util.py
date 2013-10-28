@@ -67,7 +67,7 @@ def b64c(b):
     
     >>> b64c("abc123456def")
     'abc123456def'
-    >>> b64c("\na/=b=c/")
+    >>> b64c("\\na/=b=c/")
     'a_bc_'
     >>> b64c("a+b+c+123+")
     'a+b+c+123+'
@@ -81,10 +81,8 @@ def b64w(b):
     
     >>> b64w("abc123456def")
     'abc123456def'
-    >>> b64w("\na/=b=c/")
-    '\na/=b=c/'
     >>> b64w("a+b+c+123+")
-    'abc123'
+    'a-b-c-123-'
     """
     return b64c(b).replace('+', '-')
 
