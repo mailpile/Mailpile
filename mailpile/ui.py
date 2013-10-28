@@ -17,6 +17,7 @@ import re
 import sys
 import traceback
 import json
+from json import JSONEncoder
 
 from lxml.html.clean import autolink_html
 from jinja2 import Environment, FileSystemLoader
@@ -237,7 +238,6 @@ class UserInteraction:
   # Rendering helpers for templating and such
   def render_json(self, data):
     """Render data as JSON"""
-    from json import JSONEncoder
     class NoFailEncoder(JSONEncoder):
       def default(self, obj):
         if isinstance(obj, (list, dict, str, unicode,
@@ -245,7 +245,7 @@ class UserInteraction:
             return JSONEncoder.default(self, obj)
         return "COMPLEXBLOB"
 
-    return json.dumps(data, indent=1, cls=NoFailEncoder)
+    return json.dumps(data, indent=1, cls=NoFailEncoder, sort_keys=True)
 
   def _html_template(self, config, tpl_names, elems=None):
     theme_path = os.path.join(config.data_directory('html_theme'), 'html')
