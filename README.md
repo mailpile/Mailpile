@@ -428,16 +428,16 @@ inspired me to start working on this.
 
 Contributors:
 
-   * Bjarni R. Einasson (<http://bre.klaki.net/>)
-   * Smari McCarthy (<http://www.smarimccarthy.com/>)
-   * Björgvin Ragnarsson (<https://github.com/nifgraup/>)
-   * Brennan Novak (<https://brennannovak.com/>)
-   * Halldór Rúnarsson (<https://github.com/halldor>)
-   * Danx0r (<https://github.com/danx0r>)
-   * Steinn Steinsson (<https://github.com/steinn>)
-   * Dražen Lučanin (<https://github.com/kermit666>)
-   * Uli Köhler (<https://github.com/ulikoehler>)
-   * Shartte (<https://github.com/shartte>)
+- Bjarni R. Einasson (<http://bre.klaki.net/>)
+- Smari McCarthy (<http://www.smarimccarthy.com/>)
+- Björgvin Ragnarsson (<https://github.com/nifgraup/>)
+- Brennan Novak (<https://brennannovak.com/>)
+- Halldór Rúnarsson (<https://github.com/halldor>)
+- Danx0r (<https://github.com/danx0r>)
+- Steinn Steinsson (<https://github.com/steinn>)
+- Dražen Lučanin (<https://github.com/kermit666>)
+- Uli Köhler (<https://github.com/ulikoehler>)
+- Shartte (<https://github.com/shartte>)
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
