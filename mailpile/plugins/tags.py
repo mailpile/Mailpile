@@ -12,7 +12,26 @@ from mailpile.plugins.search import Search
 mailpile.plugins.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
     'slug': ['URL slug', 'slashslug', ''],
-    # FIXME: Add more exciting metadata
+
+    # Functional attributes
+    'type': ['Tag type', ['tag', 'group', 'attribute', 'unread', 'drafts',
+                          # TODO: 'folder', 'shadow',
+                          'trash', 'spam', 'ham'], 'tag'],
+    'hides_flag': ['Does this tag hide messages from searches?', bool, False],
+    'write_flag': ['Does this tag mark messages as writable?', bool, False],
+
+    # Tag display attributes for /in/tag or searching in:tag
+    'template': ['Default tag display template', 'string', 'index'],
+    'search_terms': ['Terms to search for', 'string', 'in:%(slug)s'],
+    'search_order': ['Default search order', 'string', ''],
+
+    # Tag display attributes for search results/lists/UI placement
+    'icon': ['URL to default tag icon', 'url', ''],
+    'label': ['Display as label in results', bool, True],
+    'label_color': ['Color to use in label', 'str', ''],
+    'display': ['Display context in UI', ['priority', 'tag', 'subtag',
+                                          'archive', 'invisible'], 'tag'],
+    'display_order': ['Order in lists', float, 0],
 }, {}])
 
 mailpile.plugins.register_config_section('filters', ["Filters", {
@@ -22,8 +41,8 @@ mailpile.plugins.register_config_section('filters', ["Filters", {
 }, {}])
 
 mailpile.plugins.register_config_variables('sys', {
-    'writable_tags': ['Tags used to mark writable messages', 'b36', []],
-    'invisible_tags': ['Tags to exclude from searches by default', 'b36', []],
+    'writable_tags': ['DEPRECATED', 'str', []],
+    'invisible_tags': ['DEPRECATED', 'str', []],
 })
 
 def GetFilters(cfg, filter_on=None):
@@ -52,28 +71,51 @@ def MoveFilter(cfg, filter_id, filter_new_id):
         for fid in range(ffrm, fto):
             swap(b36(fid), b36(fid+1))
 
+def GetTags(cfg, tn=None, default=None, **kwargs):
+    results = []
+    if tn is not None:
+        # Hack, allow the tn= to be any of: TID, name or slug.
+        tn = tn.lower()
+        try:
+            if tn in cfg.tags:
+                results.append([cfg.tags[tn]._key])
+        except (KeyError, IndexError, AttributeError):
+            pass
+        if not results:
+            tv = cfg.tags.values()
+            tags = ([t._key for t in tv if t.get('slug', '').lower() == tn] or
+                    [t._key for t in tv if t.get('name', '').lower() == tn])
+            results.append(tags)
+
+    if kwargs:
+        tv = cfg.tags.values()
+        for kw in kwargs:
+            want = unicode(kwargs[kw]).lower()
+            results.append([t._key for t in tv
+                            if unicode(t.get(kw, '')).lower() == want])
+
+    if not results:
+        return default
+    else:
+        tags = results.pop(0)
+        for r in results:
+            tags &= r
+        tags = [cfg.tags[t] for t in tags]
+        tags.sort(key=lambda k: k.get('display_order', 0))
+        return tags
+
 def GetTag(cfg, tn, default=None):
-    tn = tn.lower()
-    try:
-        if tn in cfg.tags:
-            return cfg.tags[tn]
-    except (KeyError, IndexError):
-        pass
-    tv = cfg.tags.values()
-    tags = ([t for t in tv if t.get('slug', '').lower() == tn] or
-            [t for t in tv if t.get('name', '').lower() == tn])
-    if len(tags) == 1:
-        return tags[0]
-    return default
+    return GetTags(cfg, tn, default=[default])[0]
 
 def GetTagID(cfg, tn):
-    tag = GetTag(cfg, tn)
-    return tag and tag._key or None
+    tags = GetTags(cfg, name=tn, default=[None])
+    return tags and (len(tags) == 1) and tags[0]._key or None
 
 # FIXME: Is this bad form or awesome?  This is used in a few places by
 #        commands.py and search.py, but might be a hint that the plugin
 #        architecture needs a little more polishing.
 mailpile.config.ConfigManager.get_tag = GetTag
+mailpile.config.ConfigManager.get_tags = GetTags
 mailpile.config.ConfigManager.get_tag_id = GetTagID
 mailpile.config.ConfigManager.get_filters = GetFilters
 mailpile.config.ConfigManager.filter_move = MoveFilter

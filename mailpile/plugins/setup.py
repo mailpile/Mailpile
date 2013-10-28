@@ -24,22 +24,50 @@ class Setup(Command):
             if not session.config.get_tag_id(t):
                 AddTag(session, arg=[t]).run()
                 created.append(t)
-
-        for writable in ('Blank', 'Drafts'):
-            tid = session.config.get_tag_id(writable)
-            if tid and tid not in session.config.sys.writable_tags:
-                 session.config.sys.writable_tags.append(tid)
-
-        for invisible in ('Trash', 'Spam'):
-            tid = session.config.get_tag_id(invisible)
-            if tid and tid not in session.config.sys.invisible_tags:
-                 session.config.sys.invisible_tags.append(tid)
-
+        session.config.get_tag('New').update({
+            'type': 'unread',
+            'label': False,
+            'display': 'invisible'
+        })
+        session.config.get_tag('Blank').update({
+            'type': 'drafts',
+            'write_flag': True,
+        })
+        session.config.get_tag('Drafts').update({
+            'type': 'drafts',
+            'write_flag': True,
+            'display': 'priority',
+            'display_order': 1,
+        })
+        session.config.get_tag('Inbox').update({
+            'display': 'priority',
+            'display_order': 2,
+        })
+        session.config.get_tag('Sent').update({
+            'display': 'priority',
+            'display_order': 3,
+        })
+        session.config.get_tag('Spam').update({
+            'type': 'spam',
+            'hides_flag': True,
+            'display': 'priority',
+            'display_order': 4,
+        })
+        session.config.get_tag('Trash').update({
+            'type': 'trash',
+            'hides_flag': True,
+            'display': 'priority',
+            'display_order': 5,
+        })
         if 'New' in created:
             Filter(session,
                    arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
             Filter(session,
                    arg=['read', '-New', 'Read Mail filter']).run()
+
+        for old in ('invisible_tags', 'writable_tags'):
+            if old in  session.config.sys:
+                del session.config.sys[old]
 
         session.config.save()
         return True

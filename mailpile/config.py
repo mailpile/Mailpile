@@ -243,7 +243,7 @@ def RuledContainer(pcls):
            'str': unicode,
            'True': True, 'true': True,
            'unicode': unicode,
-           # TODO: Create 'email' and 'url' and other high level checks
+           'url': unicode,  # FIXME: Make more strict
         }
         _NAME = 'container'
         _RULES = None
@@ -850,9 +850,9 @@ class ConfigManager(ConfigDict):
         editable = False
         for tid in msg_info[MailIndex.MSG_TAGS].split(', '):
             try:
-                if tid in self.sys.writable_tags:
+                if self.tags and self.tags[tid].write_flag:
                     editable = True
-            except KeyError:
+            except (KeyError, AttributeError):
                 pass
         return editable
 

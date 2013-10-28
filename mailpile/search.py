@@ -850,10 +850,10 @@ class MailIndex:
         if (results and (keywords is None) and
                 ('tags' in self.config) and
                 (not session or 'all' not in session.order)):
-            invisible = self.config.sys.get('invisible_tags', [])
-            exclude_terms = ['in:%s' % i for i in invisible]
-            for tid in invisible:
-                tag = self.config.tags[tid]
+            invisible = self.config.get_tags(hides_flag=True)
+            exclude_terms = ['in:%s' % i._key for i in invisible]
+            for tag in invisible:
+                tid = tag._key
                 for p in ('in:%s', '+in:%s', '-in:%s'):
                     if ((p % tid) in searchterms or
                             (p % tag.name) in searchterms or
