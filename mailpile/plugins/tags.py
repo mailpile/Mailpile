@@ -282,7 +282,7 @@ class ListTags(TagCommand):
             for i in range(0, len(tags)):
                 text.append(('%s%5.5s %-18.18s'
                              ) % ((i % wrap) == 0 and '  ' or '',
-                                  '%s' % (tags[i]['new'] or ''),
+                                  '%s' % (tags[i]['stats']['new'] or ''),
                                   tags[i]['name'])
                             + ((i % wrap) == (wrap - 1) and '\n' or ''))
             return ''.join(text) + '\n'
@@ -299,7 +299,7 @@ class ListTags(TagCommand):
             else:
                 args.append(arg)
         for kw in self.data:
-            if kw not in ('only', 'not'):
+            if kw in self.session.config.tags.rules:
                 search[kw] = self.data[kw]
 
         wanted = [t.lower() for t in args if not t.startswith('!')]
@@ -316,13 +316,17 @@ class ListTags(TagCommand):
             if unwanted and tag.slug.lower() in unwanted:
                 continue
             tid = tag._key
-            info = dict_merge(tag, {
+            info = {
                 'tid': tid,
                 'url': UrlMap(self.session).url_tag(tid),
-                'all': int(idx.STATS.get(tid, [0, 0])[0]),
-                'new': int(idx.STATS.get(tid, [0, 0])[1]),
-                'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
-            })
+                'stats': {
+                    'all': int(idx.STATS.get(tid, [0, 0])[0]),
+                    'new': int(idx.STATS.get(tid, [0, 0])[1]),
+                    'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
+                }
+            }
+            for k in tag.all_keys():
+                info[k] = tag[k]
             result.append(info)
         return {'tags': result}
 
