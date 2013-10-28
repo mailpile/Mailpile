@@ -28,14 +28,14 @@
       <div class="message-body">
       {% set lastpart = "none" %}
       {% for part in message.message.text_parts %}
-        {% if part.type == "pgpbeginsigned" %}
+        {% if part.type == "pgpbeginsigned" and part.openpgp_data %}
         <div class="pgp_signature_{{part.openpgp_data.signature}}" style="background: #c0ffc0;">
           <div class="pgp_signheader" style="background: #90ff90;">
             {% if part.openpgp_data.signature == "good"%}Signed by <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
             {% if part.openpgp_data.signature == "bad"%}Unknown signature from <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
             {% if part.openpgp_data.signature == "error"%}Signed with unknown key{% endif %}
           </div>
-        {% elif part.type == "pgpbegin" %}
+        {% elif part.type == "pgpbegin" and part.openpgp_data %}
         <div class="pgp_encrypted_{{part.openpgp_data.decrypted}}" style="background: #c0c0ff;">
           <div class="pgp_encryptedheader" style="background: #9090ff;">
             {% if part.openpgp_data.decrypt == "success"%}Successfully decrypted message{% endif %}
