@@ -332,7 +332,12 @@ class ListTags(TagCommand):
             for k in tag.all_keys():
                 info[k] = tag[k]
             result.append(info)
-        return {'tags': result}
+        return {
+            'search': search,
+            'wanted': wanted,
+            'unwanted': unwanted,
+            'tags': result
+        }
 
 
 class DeleteTag(TagCommand):
