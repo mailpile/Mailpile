@@ -190,17 +190,22 @@ MailPile.prototype.warning = function(msg) {
 
 MailPile.prototype.results_list = function() {
 
-  // Show Sidebar
-  $('#sidebar').show('fast');
-
   // Navigation
 	$('#btn-display-list').addClass('navigation-on');
 	$('#btn-display-graph').removeClass('navigation-on');
 	
 	// Show & Hide View
-	$('#pile-graph').hide();
-	$('#pile-results').show();
-	$('#form-pile-results').show();
+	$('#pile-graph').hide('fast', function() {
+
+    $('#sidebar').show('normal');
+    $('#form-pile-results').show('normal');
+    $('#pile-results').show('fast');
+    $('.pile-speed').show('normal');
+    $('#footer').show('normal');
+    $('#sidebar').show('normal');
+
+	});
+
 }
 
 MailPile.prototype.graph_actionbuttons = function() {
@@ -228,14 +233,14 @@ MailPile.prototype.results_graph = function() {
 	$('#btn-display-list').removeClass('navigation-on');
 
 	// Show & Hide Pile View
-	$('#pile-results').hide('normal', function() {
+	$('#pile-results').hide('fast', function() {
 
 	  $('#form-pile-results').hide('fast');
     $('.pile-speed').hide('fast');
     $('#footer').hide('fast');
-    $('#sidebar').hide('normal');
+    $('#sidebar').hide('fast');
 
-	  $('#pile-graph').delay(750).show();
+	  $('#pile-graph').hide().delay(1000).show();
 	});
 
   // Determine & Set Height
