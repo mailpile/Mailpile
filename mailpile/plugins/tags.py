@@ -83,8 +83,8 @@ def GetTags(cfg, tn=None, default=None, **kwargs):
             pass
         if not results:
             tv = cfg.tags.values()
-            tags = ([t._key for t in tv if t.get('slug', '').lower() == tn] or
-                    [t._key for t in tv if t.get('name', '').lower() == tn])
+            tags = ([t._key for t in tv if t.slug.lower() == tn] or
+                    [t._key for t in tv if t.name.lower() == tn])
             results.append(tags)
 
     if kwargs:
@@ -92,20 +92,24 @@ def GetTags(cfg, tn=None, default=None, **kwargs):
         for kw in kwargs:
             want = unicode(kwargs[kw]).lower()
             results.append([t._key for t in tv
-                            if unicode(t.get(kw, '')).lower() == want])
+                            if (want == '*' or
+                                unicode(t[kw]).lower() == want)])
 
-    if not results:
+    if (tn or kwargs) and not results:
         return default
     else:
-        tags = results.pop(0)
+        tags = set(cfg.tags.keys())
         for r in results:
-            tags &= r
+            tags &= set(r)
         tags = [cfg.tags[t] for t in tags]
-        tags.sort(key=lambda k: k.get('display_order', 0))
+        if 'display' in kwargs:
+            tags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
+        else:
+            tags.sort(key=lambda k: k.slug)
         return tags
 
 def GetTag(cfg, tn, default=None):
-    return GetTags(cfg, tn, default=[default])[0]
+    return (GetTags(cfg, tn, default=None) or [default])[0]
 
 def GetTagID(cfg, tn):
     tags = GetTags(cfg, name=tn, default=[None])
@@ -256,10 +260,7 @@ class ListTags(TagCommand):
   """List tags"""
   SYNOPSIS = (None, 'tag/list', 'tag/list', '[<wanted>|!<wanted>] [...]')
   ORDER = ('Tagging', 0)
-  HTTP_QUERY_VARS = {
-    'only': 'tags',
-    'not': 'tags',
-  }
+  HTTP_STRICT_VARS = False
 
   class CommandResult(TagCommand.CommandResult):
     def as_text(self):
@@ -279,12 +280,27 @@ class ListTags(TagCommand):
   def command(self):
     result, idx = [], self._idx()
 
-    wanted = [t.lower() for t in self.args if not t.startswith('!')]
-    unwanted = [t[1:].lower() for t in self.args if t.startswith('!')]
+    args = []
+    search = {}
+    for arg in self.args:
+      if '=' in arg:
+        kw, val = arg.split('=', 1)
+        search[kw.strip()] = val.strip()
+      else:
+        args.append(arg)
+    for kw in self.data:
+      if kw not in ('only', 'not'):
+        search[kw] = self.data[kw]
+
+    wanted = [t.lower() for t in args if not t.startswith('!')]
+    unwanted = [t[1:].lower() for t in args if t.startswith('!')]
     wanted.extend([t.lower() for t in self.data.get('only', [])])
     unwanted.extend([t.lower() for t in self.data.get('not', [])])
 
-    for tag in self.session.config.tags.values():
+    if not wanted and not unwanted and not search:
+      search['type'] = 'tag'
+
+    for tag in self.session.config.get_tags(**search):
       if wanted and tag.slug.lower() not in wanted: continue
       if unwanted and tag.slug.lower() in unwanted: continue
       tid = tag._key
@@ -296,7 +312,6 @@ class ListTags(TagCommand):
         'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
       })
       result.append(info)
-    result.sort(key=lambda k: k['slug'])
     return {'tags': result}
 
 
