@@ -23,7 +23,21 @@
 	-webkit-font-smoothing: antialiased;
 }
 
+/* Manually Created Duplications & Weird Cases */
+.icon-drafts {
+	font-family: 'Mailpile-Interface';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
 
+.icon-drafts:before {
+	content: "\e024";
+}
 
 /* Use the following CSS code if you want to have a class per icon */
 /*
@@ -209,4 +223,7 @@ you can use the generic selector below, but it's slower:
 .icon-conversation:before {
 	content: "\e037";
 }
+
+
+
 
