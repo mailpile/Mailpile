@@ -28,9 +28,9 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     'write_flag': ['Does this tag mark messages as writable?', bool, False],
 
     # Tag display attributes for /in/tag or searching in:tag
-    'template': ['Default tag display template', 'string', 'index'],
-    'search_terms': ['Terms to search for', 'string', 'in:%(slug)s'],
-    'search_order': ['Default search order', 'string', ''],
+    'template': ['Default tag display template', 'str', 'index'],
+    'search_terms': ['Terms to search for', 'str', 'in:%(slug)s'],
+    'search_order': ['Default search order', 'str', ''],
 
     # Tag display attributes for search results/lists/UI placement
     'icon': ['URL to default tag icon', 'url', ''],

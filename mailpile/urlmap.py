@@ -218,8 +218,9 @@ class UrlMap:
         while path_parts and (path_parts[-1][0] in ('@', )):
             pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
 
-        tag = '/'.join([p for p in path_parts[1:] if p])
-        tag_search = ['in:%s' % self.session.config.get_tag(tag).slug]
+        tag_slug = '/'.join([p for p in path_parts[1:] if p])
+        tag = self.session.config.get_tag(tag_slug)
+        tag_search = [tag.search_terms % tag]
 
         if pos:
             tag_search[:0] = [pos]
