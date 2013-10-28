@@ -318,6 +318,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 body {
   /* Addresses a small issue in webkit: http://bit.ly/NEdoDq */
+
   -webkit-backface-visibility: hidden;
 }
 .animated {
@@ -3896,6 +3897,7 @@ body {
   color: #333333;
   -webkit-font-smoothing: antialiased;
   /* Fix for webkit rendering */
+
   -webkit-text-size-adjust: 100%;
 }
 /* #Links
@@ -5142,6 +5144,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   position: relative;
   display: inline-block;
   /* inline-block for ie7 */
+
   zoom: 1;
   *display: inline;
   vertical-align: middle;
@@ -5156,12 +5159,16 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 
     More Info : http://www.quirksmode.org/css/box.html
   */
+
   -webkit-box-sizing: border-box;
   /* webkit */
+
   -moz-box-sizing: border-box;
   /* firefox */
+
   box-sizing: border-box;
   /* css3 */
+
 }
 .select2-container .select2-choice {
   display: block;
@@ -5192,6 +5199,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#ffffff', endColorstr = '#eeeeee', GradientType = 0);
     background-image: linear-gradient(top, #fff 0%, #eee 50%);
 */
+
 }
 .select2-container.select2-drop-above .select2-choice {
   border-bottom-color: #aaa;
@@ -5205,6 +5213,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#eeeeee', GradientType=0);
     background-image: linear-gradient(top, #eee 0%, #fff 90%);
 */
+
 }
 .select2-container.select2-allowclear .select2-choice .select2-chosen {
   margin-right: 42px;
@@ -5250,6 +5259,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   width: auto;
   z-index: 9998;
   /* styles required for IE to work */
+
   background-color: #fff;
   opacity: 0;
   filter: alpha(opacity=0);
@@ -5378,6 +5388,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#eeeeee', endColorstr='#ffffff', GradientType=0);
     background-image: linear-gradient(top, #fff 0%, #eee 50%);
 */
+
 }
 .select2-dropdown-open.select2-drop-above .select2-choice,
 .select2-dropdown-open.select2-drop-above .select2-choices {
@@ -5391,6 +5402,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#eeeeee', endColorstr='#ffffff', GradientType=0);
     background-image: linear-gradient(bottom, #fff 0%, #eee 50%);
 */
+
 }
 .select2-dropdown-open .select2-choice .select2-arrow {
   background: transparent;
@@ -5534,6 +5546,7 @@ disabled look for disabled choices in the results dropdown
     background-image: -ms-linear-gradient(top, #eee 1%, #fff 15%);
     background-image: linear-gradient(top, #eee 1%, #fff 15%);
 */
+
 }
 .select2-locked {
   padding: 3px 5px 3px 5px !important;
@@ -5602,6 +5615,7 @@ disabled look for disabled choices in the results dropdown
     background-image: -ms-linear-gradient(top, #f4f4f4 20%, #f0f0f0 50%, #e8e8e8 52%, #eee 100%);
     background-image: linear-gradient(top, #f4f4f4 20%, #f0f0f0 50%, #e8e8e8 52%, #eee 100%);
 */
+
 }
 .select2-container-multi .select2-choices .select2-search-choice .select2-chosen {
   cursor: default;
@@ -5724,6 +5738,7 @@ disabled look for disabled choices in the results dropdown
   bottom: 0;
   visibility: hidden\9;
   /* Target only IE7 and IE8 with this hack */
+
   opacity: .01;
   -webkit-transition: .2s;
   -moz-transition: .2s;
@@ -5741,6 +5756,7 @@ disabled look for disabled choices in the results dropdown
 .pane.flashed {
   visibility: visible\9;
   /* Target only IE7 and IE8 with this hack */
+
   opacity: 0.99;
 }
 /*
@@ -5751,9 +5767,9 @@ disabled look for disabled choices in the results dropdown
  * Released under the MIT, GPL licenses
  * http://jquery.org/license
  *
- * Date: Thu Jul 11 2013 02:03 GMT+0100+0100
- * Plugins: None
- * Styles: None
+ * Date: Thu Oct 17 2013 08:49 UTC+0000
+ * Plugins: tips viewport imagemap svg
+ * Styles: basic css3
  */
 .qtip {
   position: absolute;
@@ -5768,34 +5784,10 @@ disabled look for disabled choices in the results dropdown
   box-shadow: none;
   padding: 0;
 }
-/* Opera bug #357 - Incorrect tip position
-	https://github.com/Craga89/qTip2/issues/367 */
-x:-o-prefocus,
-.qtip .qtip-tip {
-  visibility: hidden;
-}
-.qtip .qtip-tip,
-.qtip .qtip-tip .qtip-vml,
-.qtip .qtip-tip canvas {
-  position: absolute;
-  color: #123456;
-  background: transparent;
-  border: 0 dashed transparent;
-}
-.qtip .qtip-tip canvas {
-  top: 0;
-  left: 0;
-}
-.qtip .qtip-tip .qtip-vml {
-  behavior: url(#default#VML);
-  display: inline-block;
-  visibility: visible;
-}
 .qtip-content {
   position: relative;
-  padding: 5px 9px;
+  padding: 3px 3px;
   overflow: hidden;
-  text-align: left;
   word-wrap: break-word;
 }
 .qtip-titlebar {
@@ -5857,50 +5849,92 @@ x:-o-prefocus,
 .qtip-default {
   border-width: 1px;
   border-style: solid;
-  border-color: #F1D031;
-  background-color: #FFFFA3;
+  border-color: #333;
+  background-color: #333;
   color: #555;
 }
 .qtip-default .qtip-titlebar {
-  background-color: #FFEF93;
+  background-color: #333;
 }
 .qtip-default .qtip-icon {
   border-color: #CCC;
-  background: #F1F1F1;
+  background: #333;
   color: #777;
 }
 .qtip-default .qtip-titlebar .qtip-close {
   border-color: #AAA;
   color: #111;
 }
-/* Tipsy style */
-.qtip-tipsy {
+/* Tipped style */
+.qtip-tipped {
+  border: 0px solid #444;
   -moz-border-radius: 3px;
-  -webkit-border-radius: 3  px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
-  background: black;
-  background: rgba(0, 0, 0, 0.87);
-  color: white;
-  border: 0 solid transparent;
+  background-color: #444;
+  color: #fff;
   font-size: 11px;
-  font-family: 'Lucida Grande', sans-serif;
   font-weight: bold;
-  line-height: 16px;
-  text-shadow: 0 1px black;
+  font-family: Arial;
+  line-height: 14px;
+  padding: 4px 6px;
 }
-.qtip-tipsy .qtip-titlebar {
-  padding: 6px 35px 0 10px;
-  background-color: transparent;
+.qtip-tipped .qtip-titlebar {
+  border-bottom-width: 0;
+  color: white;
+  background: #3A79B8;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#3a79b8), to(#2e629d));
+  background-image: -webkit-linear-gradient(top, #3a79b8, #2e629d);
+  background-image: -moz-linear-gradient(top, #3a79b8, #2e629d);
+  background-image: -ms-linear-gradient(top, #3a79b8, #2e629d);
+  background-image: -o-linear-gradient(top, #3a79b8, #2e629d);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#3a79b8, endColorstr=#2e629d);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#3A79B8,endColorstr=#2E629D)";
 }
-.qtip-tipsy .qtip-content {
-  padding: 6px 10px;
+.qtip-tipped .qtip-content {
+  text-align: center;
 }
-.qtip-tipsy .qtip-icon {
-  border-color: #222;
-  text-shadow: none;
+.qtip-tipped .qtip-icon {
+  border: 2px solid #285589;
+  background: #285589;
 }
-.qtip-tipsy .qtip-titlebar .ui-state-hover {
-  border-color: #303030;
+.qtip-tipped .qtip-icon .ui-icon {
+  background-color: #FBFBFB;
+  color: #555;
+}
+/* IE9 fix - removes all filters */
+.qtip:not(.ie9haxors) div.qtip-content,
+.qtip:not(.ie9haxors) div.qtip-titlebar {
+  filter: none;
+  -ms-filter: none;
+}
+.qtip .qtip-tip {
+  margin: 0 auto;
+  overflow: hidden;
+  z-index: 10;
+}
+/* Opera bug #357 - Incorrect tip position
+https://github.com/Craga89/qTip2/issues/367 */
+x:-o-prefocus,
+.qtip .qtip-tip {
+  visibility: hidden;
+}
+.qtip .qtip-tip,
+.qtip .qtip-tip .qtip-vml,
+.qtip .qtip-tip canvas {
+  position: absolute;
+  color: #123456;
+  background: transparent;
+  border: 0 dashed transparent;
+}
+.qtip .qtip-tip canvas {
+  top: 0;
+  left: 0;
+}
+.qtip .qtip-tip .qtip-vml {
+  behavior: url(#default#VML);
+  display: inline-block;
+  visibility: visible;
 }
 /* App */
 /* Messages - Error, Warning, Debug, Info, Success */
@@ -6126,6 +6160,7 @@ text {
 }
 .form-search button::-moz-focus-inner {
   /* remove extra button spacing for Mozilla Firefox */
+
   border: 0;
   padding: 0;
 }
@@ -6170,6 +6205,10 @@ text {
   background: #cccccc;
   border-radius: 5px;
 }
+.topbar-nav .navigation-on a {
+  color: #4d4d4d;
+  cursor: default;
+}
 /* Web */
 #debug {
   font-size: 14px;
@@ -6192,8 +6231,7 @@ text {
   margin: 0;
   margin-top: 63px;
 }
-/* Content */
-#content {
+/* Content */#content {
   min-width: 775px;
   display: table-cell;
   box-sizing: border-box;
@@ -6491,7 +6529,7 @@ div.content-normal {
 }
 #pile-results tr.result:hover td.draggable,
 #pile-results tr.result-on:hover td.draggable {
-  background: url('../img/draggable-pattern.png'), #ffffff;
+  background: url('/static/img/draggable-pattern.png'), #ffffff;
   opacity: 0.3;
   filter: alpha(opacity=30);
 }
@@ -6501,18 +6539,23 @@ div.content-normal {
   font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   vertical-align: middle;
+  line-height: 14px;
 }
 #pile-results.avatar td {
   padding: 15px;
+  vertical-align: top;
 }
 #pile-results.comfy td {
   padding: 10px;
+  vertical-align: middle;
 }
 #pile-results.cozy td {
   padding: 6px;
+  vertical-align: middle;
 }
 #pile-results.snug td {
   padding: 2px;
+  vertical-align: middle;
 }
 #pile-results td.draggable {
   width: 12px;
@@ -6621,8 +6664,7 @@ div.content-normal {
   border: 1px solid #b3b3b3;
   padding: 5px 10px;
 }
-/* Thread */
-.message-headers {
+/* Thread */.message-headers {
   border-bottom: 1px solid #b3b3b3;
 }
 .message-email-address {

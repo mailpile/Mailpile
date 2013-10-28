@@ -222,24 +222,27 @@ MailPile.prototype.focus_search = function() {
 
 
 MailPile.prototype.results_graph = function() {
-  
-  // Hide Sidebar
-  $('#sidebar').hide('normal');
-  
+
   // Change Navigation 
 	$('#btn-display-graph').addClass('navigation-on');
 	$('#btn-display-list').removeClass('navigation-on');
-	
+
 	// Show & Hide Pile View
-	$('#pile-results').hide();
-	$('#form-pile-results').hide();
-	$('#pile-graph').show();
+	$('#pile-results').hide('normal', function() {
+
+	  $('#form-pile-results').hide('fast');
+    $('.pile-speed').hide('fast');
+    $('#footer').hide('fast');
+    $('#sidebar').hide('normal');
+
+	  $('#pile-graph').delay(750).show();
+	});
 
   // Determine & Set Height
   var available_height = $(window).height() - ($('#header').height() + $('.sub-navigation').height());
 
   $('#pile-graph-canvas').height(available_height);
-  $("#pile-graph-canvas-svg").height(available_height);
+  $("#pile-graph-canvas-svg").attr('height', available_height).height(available_height);
 
 	args = $('#pile-graph-canvas-svg').data("searchterms");
 
@@ -386,32 +389,38 @@ $(document).ready(function() {
     style: {
      tip: {
         corner: 'top center',
-        mimic: 'top left',
-        border: 1,
-        width: 12,
-        height: 12
-      },    
-      classes: ''//'qtip-tipsy'
+        mimic: 'top center',
+        border: 0,
+        width: 10,
+        height: 10
+      },
+      classes: 'qtip-tipped'
     },
     position: {
-      my: 'top center',  // Position my top left...
-      at: 'bottom center' // at the bottom right of...
-     // target: $('.selector') 
+      my: 'top center',
+      at: 'bottom center',
+			viewport: $(window),
+			adjust: {
+				x: 0,  y: 5
+			}
     },
-    hide: {
-      event: 'unfocus'
+    show: {
+      delay: 350
     }
   });
 
 
-  $('#bulk-actions a').qtip({ // Grab some elements to apply the tooltip to
+  $('a.bulk-action').qtip({
     style: {
-      classes: 'qtip-tipsy'
+      classes: 'qtip-tipped'
     },
     position: {
-      my: 'top center',  // Position my top left...
-      at: 'bottom center' // at the bottom right of...
-     // target: $('.selector') 
+      my: 'top center',
+      at: 'bottom center',
+			viewport: $(window),
+			adjust: {
+				x: 0,  y: 5
+			}
     }
   });
 
