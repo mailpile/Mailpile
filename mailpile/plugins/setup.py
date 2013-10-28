@@ -32,6 +32,7 @@ class Setup(Command):
         session.config.get_tag('Blank').update({
             'type': 'drafts',
             'write_flag': True,
+            'display': 'invisible'
         })
         session.config.get_tag('Drafts').update({
             'type': 'drafts',
