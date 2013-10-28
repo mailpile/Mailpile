@@ -13,6 +13,13 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
     'slug': ['URL slug', 'slashslug', ''],
 
+    # Statistics
+    #'stats': ['Tag stats', False, {
+    #    'read': ['Read message count', int, 0],
+    #    'unread': ['Unread message count', int, 0],
+    #    'all': ['Number of messages tagged with this tag', int, 0],
+    #}],
+
     # Functional attributes
     'type': ['Tag type', ['tag', 'group', 'attribute', 'unread', 'drafts',
                           # TODO: 'folder', 'shadow',
@@ -306,9 +313,6 @@ class ListTags(TagCommand):
         unwanted = [t[1:].lower() for t in args if t.startswith('!')]
         wanted.extend([t.lower() for t in self.data.get('only', [])])
         unwanted.extend([t.lower() for t in self.data.get('not', [])])
-
-        if not wanted and not unwanted and not search:
-            search['type'] = 'tag'
 
         for tag in self.session.config.get_tags(**search):
             if wanted and tag.slug.lower() not in wanted:
