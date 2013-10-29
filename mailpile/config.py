@@ -208,6 +208,14 @@ def _NewPathCheck(path):
     return os.path.abspath(path)
 
 
+class IgnoreValue(Exception):
+    pass
+
+
+def _IgnoreCheck(data):
+    raise IgnoreValue()
+
+
 def RuledContainer(pcls):
     """
     Factory for abstract 'container with rules' class. See ConfigDict for
@@ -224,6 +232,7 @@ def RuledContainer(pcls):
            'b36': _B36Check,
            'dir': _DirCheck,
            'directory': _DirCheck,
+           'ignore': _IgnoreCheck,
            'email': unicode,  # FIXME: Make more strict
            'False': False, 'false': False,
            'file': _FileCheck,
@@ -280,9 +289,10 @@ def RuledContainer(pcls):
             added_section = False
 
             keys = self.rules.keys()
+            ignore = self.ignored_keys() | set(['_any'])
             if not keys or '_any' in keys:
                 keys.extend(self.keys())
-            keys = [k for k in sorted(set(keys)) if k != '_any']
+            keys = [k for k in sorted(set(keys)) if k not in ignore]
             set_keys = set(self.keys())
 
             for key in keys:
@@ -385,6 +395,10 @@ def RuledContainer(pcls):
                                        ) % (self._name, key))
             return self.rules[key]
 
+        def ignored_keys(self):
+            return set([k for k in self.rules
+                        if self.rules[k][self.RULE_CHECKER] == _IgnoreCheck])
+
         def walk(self, path, parent=0):
             if '.' in path:
                 sep = '.'
@@ -439,9 +453,18 @@ def RuledContainer(pcls):
                 pcls.__setattr__(self, attr, value)
 
         def __passkey__(self, key, value):
-            if hasattr(value, '_key'):
+            if hasattr(value, '__passkey__'):
                 value._key = key
                 value._name = '%s/%s' % (self._name, key)
+
+        def __passkey_recurse__(self, key, value):
+            if hasattr(value, '__passkey__'):
+                if isinstance(value, (list, tuple)):
+                    for k in range(0, len(value)):
+                        value.__passkey__(value.__fixkey__(k), value[k])
+                elif isinstance(value, dict):
+                    for k in value:
+                        value.__passkey__(value.__fixkey__(k), value[k])
 
         def __createkey_and_setitem__(self, key, value):
             pcls.__setitem__(self, key, value)
@@ -460,6 +483,8 @@ def RuledContainer(pcls):
                 elif isinstance(checker, (type, type(RuledContainer))):
                     try:
                         value = checker(value)
+                    except (IgnoreValue):
+                        return
                     except (ValueError, TypeError):
                         raise ValueError(('Invalid value for %s/%s: %s'
                                           ) % (self._name, key, value))
@@ -468,6 +493,7 @@ def RuledContainer(pcls):
                                      ) % (self._name, key, checker))
             self.__passkey__(key, value)
             self.__createkey_and_setitem__(key, value)
+            self.__passkey_recurse__(key, value)
 
         def extend(self, src):
             for val in src:
@@ -523,7 +549,7 @@ class ConfigList(RuledContainer(list)):
             raise
 
     def __passkey__(self, key, value):
-        if hasattr(value, '_key'):
+        if hasattr(value, '__passkey__'):
             key = b36(key).lower()
             value._key = key
             value._name = '%s/%s' % (self._name, key)
@@ -658,8 +684,8 @@ class ConfigDict(RuledContainer(dict)):
                     dict.__delitem__(self, key)
 
     def all_keys(self):
-        keys = set(self.keys()) | set(self.rules.keys()) - set(['_any'])
-        return list(keys)
+        return list(set(self.keys()) | set(self.rules.keys())
+                    - self.ignored_keys() - set(['_any']))
 
     def append(self, value):
         """Add to the dict using an autoselected key"""
