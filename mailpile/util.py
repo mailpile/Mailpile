@@ -77,7 +77,7 @@ def b64c(b):
 def b64w(b):
     """
     Rewrite a base64 string by replacing
-    "+" by "-" (e.g. for URLs).
+    "+" by "-" (e.g. for URLs). 
     
     >>> b64w("abc123456def")
     'abc123456def'
