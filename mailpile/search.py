@@ -52,7 +52,8 @@ class CachedSearchResultSet(SearchResultSet):
         global SEARCH_RESULT_CACHE
         self.terms = set(terms)
         self._index = idx
-        self._results = SEARCH_RESULT_CACHE.get(self._skey(), {})
+        #self._results = SEARCH_RESULT_CACHE.get(self._skey(), {})
+        self._results = {}
         self._results['_last_used'] = time.time()
 
     def _skey(self):
