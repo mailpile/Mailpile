@@ -282,6 +282,8 @@ class ListTags(TagCommand):
     SYNOPSIS = (None, 'tag/list', 'tag/list', '[<wanted>|!<wanted>] [...]')
     ORDER = ('Tagging', 0)
     HTTP_STRICT_VARS = False
+    HIDE_TAG_METADATA = ('type', 'flag_editable', 'flag_hides',
+                         'search_terms', 'search_order', 'template')
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
@@ -329,7 +331,8 @@ class ListTags(TagCommand):
                 'url': UrlMap(self.session).url_tag(tid),
             }
             for k in tag.all_keys():
-                info[k] = tag[k]
+                if k not in self.HIDE_TAG_METADATA:
+                    info[k] = tag[k]
             info['stats'] = {
                 'all': int(idx.STATS.get(tid, [0, 0])[0]),
                 'new': int(idx.STATS.get(tid, [0, 0])[1]),
