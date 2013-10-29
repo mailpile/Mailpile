@@ -128,7 +128,7 @@ def GetTag(cfg, tn, default=None):
 
 
 def GetTagID(cfg, tn):
-    tags = GetTags(cfg, name=tn, default=[None])
+    tags = GetTags(cfg, tn=tn, default=[None])
     return tags and (len(tags) == 1) and tags[0]._key or None
 
 
