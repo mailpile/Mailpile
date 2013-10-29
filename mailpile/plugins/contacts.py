@@ -56,6 +56,50 @@ class ContactContextProvider:
         pass
 
 
+class ContactFieldValidator:
+    def __init__(self):
+        pass
+
+
+##[ Pluggable contact management ]########################################
+
+CONTACT_IMPORTERS = {}
+CONTACT_EXPORTERS = {}
+CONTACT_FIELD_VALIDATORS = {}
+CONTACT_CONTEXT_PROVIDERS = {}
+
+def register_contact_importer(importer):
+    if not issubclass(importer, ContactImporter):
+        raise PluginError("Plugin must be a ContactImporter")
+    if importer.format_name in CONTACT_IMPORTERS.keys():
+        raise PluginError("Importer for %s already registered" % importer.format_name)
+    CONTACT_IMPORTERS[importer.format_name] = importer
+
+def register_contact_exporter(exporter):
+    if not issubclass(importer, ContactExporter):
+        raise PluginError("Plugin must be a ContactExporter")
+    if exporter.format_name in CONTACT_EXPORTERS.keys():
+        raise PluginError("Exporter for %s already registered" % exporter.format_name)
+    CONTACT_EXPORTERS[exporter.format_name] = exporter
+
+def register_contact_field_validator(field, validator):
+    if not issubclass(importer, ContactFieldValidator):
+        raise PluginError("Plugin must be a ContactFieldValidator")
+    if field in CONTACT_FIELD_VALIDATORS.keys():
+        raise PluginError("Field validator for field %s already registered" % field)
+    CONTACT_FIELD_VALIDATORS[field] = validator
+
+def register_contact_context_provider(provider):
+    if not issubclass(importer, ContactContextProvider):
+        raise PluginError("Plugin must be a ContactContextProvider")
+    if importer.provider_name in CONTACT_CONTEXT_PROVIDERS.keys():
+        raise PluginError("Context provider for %s already registered" % provider.provider_name)
+    CONTACT_CONTEXT_PROVIDERS[provider.provider_name] = provider
+
+
+
+##[ VCards ]########################################
+
 
 class VCardCommand(Command):
 
@@ -264,7 +308,7 @@ class ContactImport(Command):
     ORDER = ('Internals', 6)
     HTTP_CALLABLE = ('GET', )
 
-    def command(self, format, terms=None, **kwargs={}):
+    def command(self, format, terms=None, **kwargs):
         session, config = self.session, self.session.config
 
         if not format in mailpile.plugins.CONTACT_IMPORTERS.keys():
@@ -297,6 +341,14 @@ class ContactImport(Command):
             pass
 
 
+class ContactImporters(Command):
+    """Return a list of contact importers"""
+    SYNOPSIS = (None, 'contact/importers', 'contact/importers', '')
+    ORDER = ('Internals', 6)
+    HTTP_CALLABLE = ('GET', )
+
+    def command(self):
+        return CONTACT_IMPORTERS.keys()
 
 
 
@@ -305,4 +357,4 @@ mailpile.plugins.register_commands(VCard, AddVCard, SetVCard,
                                    RemoveVCard, ListVCards)
 mailpile.plugins.register_commands(Contact, AddContact, SetContact,
                                    RemoveContact, ListContacts)
-mailpile.plugins.register_commands(ContactsImport)
+mailpile.plugins.register_commands(ContactImport, ContactImporters)
