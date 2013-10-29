@@ -39,6 +39,7 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
                                           'archive', 'invisible'], 'tag'],
     'display_order': ['Order in lists', float, 0],
+    'parent': ['ID of parent tag, if any', str, ''],
 
     # Outdated crap
     'hides_flag': ['DEPRECATED', 'ignore', None],
@@ -338,6 +339,12 @@ class ListTags(TagCommand):
                 'new': int(idx.STATS.get(tid, [0, 0])[1]),
                 'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
             }
+            subtags = self.session.config.get_tags(parent=tid)
+            if subtags and '_recursing' not in self.data:
+                info['subtags'] = ListTags(self.session,
+                                           arg=[t.slug for t in subtags],
+                                           data={'_recursing': 1}
+                                           ).run().result['tags']
             result.append(info)
         return {
             'search': search,
