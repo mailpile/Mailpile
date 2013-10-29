@@ -2,13 +2,12 @@
 #coding:utf-8
 
 
-from mailpile.plugins.contact import ContactImporter
+from mailpile.plugins.contacts import ContactImporter, register_contact_importer
 import sys
 import re
 import getopt
 
 from sys import stdin, stdout, stderr
-
 
 
 def hexcmp(x, y):
@@ -21,7 +20,6 @@ def hexcmp(x, y):
 
     except:
         return cmp(x, y)
-
 
 
 class MorkImporter(ContactImporter):
@@ -76,7 +74,7 @@ class MorkImporter(ContactImporter):
     pCellEscape = re.compile(r'((?:\\[\$\0abtnvfr])|(?:\$..))')
     pMindyEscape = re.compile('([\x00-\x1f\x80-\xff\\\\])')
 
-    def escapeMindy(self.match):
+    def escapeMindy(self, match):
         s = match.group()
         if s == '\\': return '\\\\'
         if s == '\0': return '\\0'
@@ -321,14 +319,6 @@ class MorkImporter(ContactImporter):
 
         return results
 
-    def demork(self, data):
-        # Determine the input data type and process accordingly
-        if data.find('<mdb:mork') >= 0:
-            self.inputMork(data)
-            return self.morkToHash()
-        else:
-            return []
-
     def load(self):
         if self.args["filename"] == "-":
             data = self.args.get("data", "")
@@ -349,12 +339,13 @@ class MorkImporter(ContactImporter):
         return filter(lambda x: any([v.find(terms) >= 0 for v in x.values()]) , f)
 
 
+register_contact_importer(MorkImporter)
+
+
 if __name__ == "__main__":
     import json
     filename = sys.argv[1]
 
-    file = open(filename, "rt")
-    data = file.read()
-    file.close()
-
-    print json.dumps(demork(data))
+    m = MorkImporter(filename=filename)
+    m.load()
+    print json.dumps(m.get_contacts(data))
