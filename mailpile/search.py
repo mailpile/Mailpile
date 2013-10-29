@@ -21,21 +21,55 @@ class SearchResultSet:
     Search results!
     """
     def __init__(self, idx, terms, results, exclude):
+        self.terms = set(terms)
         self._index = idx
+        self.set_results(results, exclude)
+
+    def set_results(self, results, exclude):
         self._results = {
             'raw': set(results),
+            'excluded': set(exclude) & set(results)
         }
-        self._excluded = set(exclude) & set(results)
-        self.terms = set(terms)
+        return self
 
     def __len__(self):
-        return len(self._results['raw'])
+        return len(self._results.get('raw', []))
 
     def as_set(self, order='raw'):
-        return self._results[order] - self._excluded
+        return self._results[order] - self._results['excluded']
 
     def excluded(self):
-        return self._excluded
+        return self._results['excluded']
+
+
+SEARCH_RESULT_CACHE = {}
+
+class CachedSearchResultSet(SearchResultSet):
+    """
+    Cached search result.
+    """
+    def __init__(self, idx, terms):
+        global SEARCH_RESULT_CACHE
+        self.terms = set(terms)
+        self._index = idx
+        self._results = SEARCH_RESULT_CACHE.get(self._skey(), {})
+        self._results['_last_used'] = time.time()
+
+    def _skey(self):
+        return ' '.join(self.terms)
+
+    def set_results(self, *args):
+        global SEARCH_RESULT_CACHE
+        SearchResultSet.set_results(self, *args)
+        SEARCH_RESULT_CACHE[self._skey()] = self._results
+        self._results['_last_used'] = time.time()
+        return self
+
+    @classmethod
+    def DropCaches(cls, msg_idxs=None, tags=None):
+        # FIXME: Make this more granular
+        global SEARCH_RESULT_CACHE
+        SEARCH_RESULT_CACHE = {}
 
 
 class MailIndex:
@@ -94,6 +128,7 @@ class MailIndex:
         self.MSGIDS = {}
         self.EMAILS = []
         self.EMAIL_IDS = {}
+        CachedSearchResultSet.DropCaches()
 
         def process_line(line):
             try:
@@ -671,6 +706,7 @@ class MailIndex:
         else:
             raise IndexError('%s is outside the index' % msg_idx)
 
+        CachedSearchResultSet.DropCaches(msg_idxs=[msg_idx])
         self.MODIFIED.add(msg_idx)
         if msg_idx in self.CACHE:
             del(self.CACHE[msg_idx])
@@ -778,6 +814,9 @@ class MailIndex:
 
         # Stash the raw search terms
         raw_terms = searchterms[:]
+        srs = CachedSearchResultSet(self, raw_terms)
+        if len(srs) > 0:
+            return srs
 
         # Replace some GMail-compatible terms with what we really use
         if 'tags' in self.config:
@@ -862,7 +901,7 @@ class MailIndex:
             for term in exclude_terms:
                 exclude.extend(self.search_tag(term, hits))
 
-        srs = SearchResultSet(self, raw_terms, results, exclude)
+        srs.set_results(results, exclude)
         if session:
             session.ui.mark(('Found %d results (%d suppressed)'
                              ) % (len(results), len(srs.excluded())))
