@@ -889,7 +889,7 @@ class MailIndex:
         if (results and (keywords is None) and
                 ('tags' in self.config) and
                 (not session or 'all' not in session.order)):
-            invisible = self.config.get_tags(hides_flag=True)
+            invisible = self.config.get_tags(flag_hides=True)
             exclude_terms = ['in:%s' % i._key for i in invisible]
             for tag in invisible:
                 tid = tag._key

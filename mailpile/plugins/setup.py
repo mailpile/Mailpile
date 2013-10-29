@@ -31,12 +31,12 @@ class Setup(Command):
         })
         session.config.get_tag('Blank').update({
             'type': 'drafts',
-            'write_flag': True,
+            'flag_editable': True,
             'display': 'invisible'
         })
         session.config.get_tag('Drafts').update({
             'type': 'drafts',
-            'write_flag': True,
+            'flag_editable': True,
             'display': 'priority',
             'display_order': 1,
         })
@@ -50,13 +50,13 @@ class Setup(Command):
         })
         session.config.get_tag('Spam').update({
             'type': 'spam',
-            'hides_flag': True,
+            'flag_hides': True,
             'display': 'priority',
             'display_order': 4,
         })
         session.config.get_tag('Trash').update({
             'type': 'trash',
-            'hides_flag': True,
+            'flag_hides': True,
             'display': 'priority',
             'display_order': 5,
         })

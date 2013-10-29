@@ -876,7 +876,7 @@ class ConfigManager(ConfigDict):
         editable = False
         for tid in msg_info[MailIndex.MSG_TAGS].split(', '):
             try:
-                if self.tags and self.tags[tid].write_flag:
+                if self.tags and self.tags[tid].flag_editable:
                     editable = True
             except (KeyError, AttributeError):
                 pass

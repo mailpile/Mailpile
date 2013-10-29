@@ -32,6 +32,7 @@ MY_FROM = 'test@test.com'
 # First, we set up a pristine Mailpile
 os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
+cfg = mp._session.config
 
 def contents(fn):
     return open(fn, 'r').read()

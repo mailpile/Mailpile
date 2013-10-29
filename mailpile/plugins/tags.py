@@ -14,18 +14,18 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     'slug': ['URL slug', 'slashslug', ''],
 
     # Statistics
-    #'stats': ['Tag stats', False, {
-    #    'read': ['Read message count', int, 0],
-    #    'unread': ['Unread message count', int, 0],
-    #    'all': ['Number of messages tagged with this tag', int, 0],
-    #}],
+    'stats': ['Tag stats', False, {
+        'read': ['Read message count', int, 0],
+        'unread': ['Unread message count', int, 0],
+        'all': ['Number of messages tagged with this tag', int, 0],
+    }],
 
     # Functional attributes
     'type': ['Tag type', ['tag', 'group', 'attribute', 'unread', 'drafts',
                           # TODO: 'folder', 'shadow',
                           'trash', 'spam', 'ham'], 'tag'],
-    'hides_flag': ['Does this tag hide messages from searches?', bool, False],
-    'write_flag': ['Does this tag mark messages as writable?', bool, False],
+    'flag_hides': ['Hide tagged messages from searches?', bool, False],
+    'flag_editable': ['Mark tagged messages as editable?', bool, False],
 
     # Tag display attributes for /in/tag or searching in:tag
     'template': ['Default tag display template', 'str', 'index'],
@@ -39,6 +39,10 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
                                           'archive', 'invisible'], 'tag'],
     'display_order': ['Order in lists', float, 0],
+
+    # Outdated crap
+    'hides_flag': ['DEPRECATED', 'ignore', None],
+    'write_flag': ['DEPRECATED', 'ignore', None],
 }, {}])
 
 mailpile.plugins.register_config_section('filters', ["Filters", {
@@ -323,14 +327,14 @@ class ListTags(TagCommand):
             info = {
                 'tid': tid,
                 'url': UrlMap(self.session).url_tag(tid),
-                'stats': {
-                    'all': int(idx.STATS.get(tid, [0, 0])[0]),
-                    'new': int(idx.STATS.get(tid, [0, 0])[1]),
-                    'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
-                }
             }
             for k in tag.all_keys():
                 info[k] = tag[k]
+            info['stats'] = {
+                'all': int(idx.STATS.get(tid, [0, 0])[0]),
+                'new': int(idx.STATS.get(tid, [0, 0])[1]),
+                'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
+            }
             result.append(info)
         return {
             'search': search,
