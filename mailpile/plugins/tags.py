@@ -502,9 +502,9 @@ class ListFilters(Command):
             if self.result is False:
                 return unicode(self.result)
             return '\n'.join([' %3.3s %-20s %-25s %s' % (
-                                  r['fid'], r['terms'],
-                                  r['human_tags'], r['comment']
-                              ) for r in self.result])
+                                    r['fid'], r['terms'],
+                                    r['human_tags'], r['comment']
+                                ) for r in self.result])
 
     def command(self, want_fid=None):
         results = []
