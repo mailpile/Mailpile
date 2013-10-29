@@ -221,6 +221,8 @@ class UrlMap:
         tag_slug = '/'.join([p for p in path_parts[1:] if p])
         tag = self.session.config.get_tag(tag_slug)
         tag_search = [tag.search_terms % tag]
+        if tag.search_order and 'order' not in query_data:
+            query_data['order'] = [tag.search_order]
 
         if pos:
             tag_search[:0] = [pos]
