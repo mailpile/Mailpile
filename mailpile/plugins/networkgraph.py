@@ -59,11 +59,11 @@ class NetworkGraph(Search):
                 else:
                     raise ValueError("Too many links! - This should never happen.")
 
-          if len(nodes) >= 300:
-              # Let's put a hard upper limit on how many nodes we can have, for performance reasons.
-              # There might be a better way to do this though...
-              res["limit_hit"] = True
-              break
+            if len(nodes) >= 300:
+                # Let's put a hard upper limit on how many nodes we can have, for performance reasons.
+                # There might be a better way to do this though...
+                res["limit_hit"] = True
+                break
 
         res["nodes"] = nodes
         res["links"] = links
