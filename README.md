@@ -23,10 +23,10 @@ Twitter](https://twitter.com/MailpileTeam) and watch for updates.
 
 Mailpile is developed on a Debian 7 system, running:
 
-   * [Python](http://python.org) 2.7
-   * [python-imaging](http://www.pythonware.com/products/pil/) 1.1.7
-   * [python-lxml](http://lxml.de/) 2.3.2
-   * [python-jinja2](http://jinja.pocoo.org/) 2.6
+- [Python](http://python.org) 2.7
+- [python-imaging](http://www.pythonware.com/products/pil/) 1.1.7
+- [python-lxml](http://lxml.de/) 2.3.2
+- [python-jinja2](http://jinja.pocoo.org/) 2.6
 
 It might work with other versions. :-)
 
@@ -428,16 +428,16 @@ inspired me to start working on this.
 
 Contributors:
 
-   * Bjarni R. Einasson (<http://bre.klaki.net/>)
-   * Smari McCarthy (<http://www.smarimccarthy.com/>)
-   * Björgvin Ragnarsson (<https://github.com/nifgraup/>)
-   * Brennan Novak (<https://brennannovak.com/>)
-   * Halldór Rúnarsson (<https://github.com/halldor>)
-   * Danx0r (<https://github.com/danx0r>)
-   * Steinn Steinsson (<https://github.com/steinn>)
-   * Dražen Lučanin (<https://github.com/kermit666>)
-   * Uli Köhler (<https://github.com/ulikoehler>)
-   * Shartte (<https://github.com/shartte>)
+- Bjarni R. Einasson (<http://bre.klaki.net/>)
+- Smari McCarthy (<http://www.smarimccarthy.com/>)
+- Björgvin Ragnarsson (<https://github.com/nifgraup/>)
+- Brennan Novak (<https://brennannovak.com/>)
+- Halldór Rúnarsson (<https://github.com/halldor>)
+- Danx0r (<https://github.com/danx0r>)
+- Steinn Steinsson (<https://github.com/steinn>)
+- Dražen Lučanin (<https://github.com/kermit666>)
+- Uli Köhler (<https://github.com/ulikoehler>)
+- Shartte (<https://github.com/shartte>)
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
