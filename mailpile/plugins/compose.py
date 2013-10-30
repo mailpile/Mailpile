@@ -21,9 +21,9 @@ class EditableSearchResults(SearchResults):
         self.new_messages = new
         self.sent_messages = sent
         if new:
-          self['created'] = [m.msg_mid() for m in new]
+            self['created'] = [m.msg_mid() for m in new]
         if sent:
-          self['sent'] = [m.msg_mid() for m in new]
+            self['sent'] = [m.msg_mid() for m in new]
 
     def _prune_msg_tree(self, *args, **kwargs):
         kwargs['editable'] = True
@@ -91,11 +91,11 @@ class CompositionCommand(Search):
                 etree = e and e.get_message_tree() or {}
                 defaults = etree.get('editing_strings', {})
                 for hdr in ('Subject', 'From', 'To', 'Cc', 'Bcc'):
-                     if hdr.lower() in self.data:
-                         data = ', '.join(self.data[hdr.lower()])
-                     else:
-                         data = defaults.get(hdr.lower(), '')
-                     up.append('%s: %s' % (hdr, data))
+                    if hdr.lower() in self.data:
+                        data = ', '.join(self.data[hdr.lower()])
+                    else:
+                        data = defaults.get(hdr.lower(), '')
+                    up.append('%s: %s' % (hdr, data))
                 updates.append((e, '\n'.join(up + ['',
                     '\n'.join(self.data.get('body', defaults.get('body', '')))
                 ])))
@@ -103,10 +103,10 @@ class CompositionCommand(Search):
 
         if 'compose' in self.session.config.sys.debug:
             for e, up in updates:
-                 sys.stderr.write(('compose/update: Update %s with:\n%s\n--\n'
-                                   ) % ((e and e.msg_mid() or '(new'), up))
+                sys.stderr.write(('compose/update: Update %s with:\n%s\n--\n'
+                                  ) % ((e and e.msg_mid() or '(new'), up))
             if not updates:
-                 sys.stderr.write('compose/update: No updates!\n')
+                sys.stderr.write('compose/update: No updates!\n')
 
         return updates
 
@@ -123,9 +123,9 @@ class CompositionCommand(Search):
         session, idx = self.session, self._idx()
         session.ui.edit_messages(emails)
         if new:
-          session.ui.mark('%d message(s) created as drafts' % len(emails))
+            session.ui.mark('%d message(s) created as drafts' % len(emails))
         else:
-          session.ui.mark('%d message(s) edited' % len(emails))
+            session.ui.mark('%d message(s) edited' % len(emails))
         idx.save()
         return self._return_search_results(emails,
                                            expand=emails,
@@ -137,7 +137,7 @@ class Draft(View):
     SYNOPSIS = ('D', 'draft', 'message/draft', '[<messages>]')
     ORDER = ('Composing', 0)
     HTTP_QUERY_VARS = {
-       'mid': 'metadata-ID'
+        'mid': 'metadata-ID'
     }
 
     # FIXME: This command should raise an error if the message being
@@ -368,9 +368,9 @@ class Sendit(CompositionCommand):
 
         args = self.args[:]
         if not emails:
-          args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
-          mids = self._choose_messages(args)
-          emails = [Email(idx, i) for i in mids]
+            args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
+            mids = self._choose_messages(args)
+            emails = [Email(idx, i) for i in mids]
 
         # Process one at a time so we don't eat too much memory
         sent = []
@@ -427,9 +427,9 @@ class Update(CompositionCommand):
             emails = [e for e, u in email_updates]
             session.ui.notify('%d message(s) updated' % len(email_updates))
             if self.BLANK_TAG:
-                 self._untag_emails(emails, self.BLANK_TAG)
+                self._untag_emails(emails, self.BLANK_TAG)
             if self.DRAFT_TAG:
-                 self._tag_emails(emails, self.DRAFT_TAG)
+                self._tag_emails(emails, self.DRAFT_TAG)
 
             return self._edit_messages(emails, new=False)
 
