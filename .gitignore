@@ -13,3 +13,4 @@ mp-virtualenv
 static/default/codekit-config.json
 .*deps
 scripts/less-compiler.mk
+.DS_Store
