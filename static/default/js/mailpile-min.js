@@ -20,6 +20,8 @@ function MailPile() {
   	view_size: "comfy"
 	}
 	this.api = {
+    compose    : "/api/0/message/compose/",
+    contacts   : "'http://localhost:33411/static/contacts.json'",
   	tag        : "/api/0/tag/",
   	search_new : "/api/0/search/?q=in%3Anew"
 	}
@@ -368,9 +370,22 @@ var mailpile = new MailPile();
 // Non-exposed functions: www, setup
 $(document).ready(function() {
 
-  // Update New Count And Such
-  var fun
-  
+  // Update New Count (other stuff in the future)
+  var getNewMessages = function() {    
+      $.ajax({
+		  url			 : mailpile.api.search_new,
+		  type		 : 'GET',
+		  dataType : 'json',
+	    success  : function(response) {
+        if (response.status == 'success') {
+          console.log('new message count: ' + response.result.total);
+          favicon.badge(response.result.total);
+        }
+	    }
+	  }); 
+  }
+
+  // Update Counts  
   setInterval(function() {
     getNewMessages();
   }, 300000);
