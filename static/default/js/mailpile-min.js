@@ -353,6 +353,11 @@ var keybindings = [
 ];
 
 
+var favicon = new Favico({
+    animation:'popFade'
+});
+
+
 var mailpile = new MailPile();
 
 
@@ -429,6 +434,10 @@ $(document).ready(function() {
     }
   });
 
+
+
+  favicon.badge(1);
+  
 
 });
 
