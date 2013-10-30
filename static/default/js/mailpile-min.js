@@ -20,10 +20,18 @@ function MailPile() {
   	view_size: "comfy"
 	}
 	this.api = {
-    compose    : "/api/0/message/compose/",
-    contacts   : "'http://localhost:33411/static/contacts.json'",
-  	tag        : "/api/0/tag/",
-  	search_new : "/api/0/search/?q=in%3Anew"
+    compose      : "/api/0/message/compose/",
+    compose_send : "/api/0/message/update/send/",
+    compose_save : "/api/0/message/update/",
+    contacts     : "http://localhost:33411/static/contacts.json",
+  	tag          : "/api/0/tag/",
+  	tag_add      : "/api/0/tag/add/",
+  	search_new   : "/api/0/search/?q=in%3Anew",
+  	settings_add : "/api/0/settings/add/"
+	}
+	this.urls = {
+  	message_draft : "/message/draft/=",
+  	message_sent  : "/in/Sent/?ui_sent="
 	}
 }
 
@@ -573,13 +581,13 @@ $(document).ready(function() {
 /* Create New Blank Message */
 $(document).on('click', '#button-compose', function() {
 	$.ajax({
-		url			 : '/api/0/message/compose/',
+		url			 : mailpile.api.compose,
 		type		 : 'POST',
 		data     : {},
 		dataType : 'json'  
   }).done(function(response) {
       if (response.status == 'success') {
-        window.location.href = '/message/draft/=' + response.result.created + '/';
+        window.location.href = mailpile.urls.message_draft + response.result.created + '/';
       }
       else {
         statusMessage(response.status, response.message);
@@ -592,7 +600,7 @@ $(document).on('click', '#button-compose', function() {
 /* Adding Recipients */
 if ($('#form-compose').length) {
 
-  $.getJSON('http://localhost:33411/static/contacts.json', function(contacts) {
+  $.getJSON(mailpile.api.contacts, function(contacts) {
       
     var formatContactResult = function(state) {
       if (!state.id) return state.text;
@@ -639,25 +647,25 @@ $(document).on('click', '.compose-action', function(e) {
   var action = $(this).val();
 
   if (action == 'send') {
-	  var action_url     = 'update/send/';
+	  var action_url     = mailpile.api.compose_send;
 	  var action_status  = 'success';
 	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
   }
   else if (action == 'save') {
-	  var action_url     = 'update/';
+	  var action_url     = mailpile.api.compose_save;
 	  var action_status  =  'info';
 	  var action_message = 'Your message was saved';
   }
 
 	$.ajax({
-		url			 : '/api/0/message/' + action_url,
+		url			 : action_url,
 		type		 : 'POST',
 		data     : $('#form-compose').serialize(),
 		dataType : 'json',
 	  success  : function(response) {
 
       if (action == 'send' && response.status == 'success') {
-        window.location.href = '/in/Sent/?ui_sent=' + response.result.messages[0].mid
+        window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid
       }
       else {
         statusMessage(response.status, response.message);
@@ -875,7 +883,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
   var tag_data = $('#form-tag-add').serialize();
 
   $.ajax({
-    url: $(this).attr('action'),
+    url: mailpile.api.tag_add,
     type: 'POST',
     data: tag_data,
     dataType : 'json',
@@ -941,7 +949,7 @@ $(document).on('submit', '#form-profile-add', function(e) {
   }
 
 	$.ajax({
-		url			 : '/api/0/settings/add/',
+		url			 : mailpile.api.settings_add,
 		type		 : 'POST',
 		data     : {profiles: JSON.stringify(profile_data)},
 		dataType : 'json',

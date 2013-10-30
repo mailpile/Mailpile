@@ -18,7 +18,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
   var tag_data = $('#form-tag-add').serialize();
 
   $.ajax({
-    url: $(this).attr('action'),
+    url: mailpile.api.tag_add,
     type: 'POST',
     data: tag_data,
     dataType : 'json',

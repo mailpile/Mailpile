@@ -15,7 +15,7 @@ $(document).on('submit', '#form-profile-add', function(e) {
   }
 
 	$.ajax({
-		url			 : '/api/0/settings/add/',
+		url			 : mailpile.api.settings_add,
 		type		 : 'POST',
 		data     : {profiles: JSON.stringify(profile_data)},
 		dataType : 'json',

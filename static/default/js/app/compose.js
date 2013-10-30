@@ -1,13 +1,13 @@
 /* Create New Blank Message */
 $(document).on('click', '#button-compose', function() {
 	$.ajax({
-		url			 : '/api/0/message/compose/',
+		url			 : mailpile.api.compose,
 		type		 : 'POST',
 		data     : {},
 		dataType : 'json'  
   }).done(function(response) {
       if (response.status == 'success') {
-        window.location.href = '/message/draft/=' + response.result.created + '/';
+        window.location.href = mailpile.urls.message_draft + response.result.created + '/';
       }
       else {
         statusMessage(response.status, response.message);
@@ -20,7 +20,7 @@ $(document).on('click', '#button-compose', function() {
 /* Adding Recipients */
 if ($('#form-compose').length) {
 
-  $.getJSON('http://localhost:33411/static/contacts.json', function(contacts) {
+  $.getJSON(mailpile.api.contacts, function(contacts) {
       
     var formatContactResult = function(state) {
       if (!state.id) return state.text;
@@ -67,25 +67,25 @@ $(document).on('click', '.compose-action', function(e) {
   var action = $(this).val();
 
   if (action == 'send') {
-	  var action_url     = 'update/send/';
+	  var action_url     = mailpile.api.compose_send;
 	  var action_status  = 'success';
 	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
   }
   else if (action == 'save') {
-	  var action_url     = 'update/';
+	  var action_url     = mailpile.api.compose_save;
 	  var action_status  =  'info';
 	  var action_message = 'Your message was saved';
   }
 
 	$.ajax({
-		url			 : '/api/0/message/' + action_url,
+		url			 : action_url,
 		type		 : 'POST',
 		data     : $('#form-compose').serialize(),
 		dataType : 'json',
 	  success  : function(response) {
 
       if (action == 'send' && response.status == 'success') {
-        window.location.href = '/in/Sent/?ui_sent=' + response.result.messages[0].mid
+        window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid
       }
       else {
         statusMessage(response.status, response.message);
