@@ -2,7 +2,8 @@ language: python
 python:
   - "2.7"
 install:
-  - pip install coverage coveralls nose Jinja2==2.7.1 lxml==2.3.2 python-gnupg==0.3.5 --use-mirrors
+  - pip install -r requirements.txt --use-mirrors
+  - pip install coverage coveralls nose --use-mirrors
 script:
   - "python setup.py install"
   - "nosetests tests --with-coverage --cover-package=mailpile"
