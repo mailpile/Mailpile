@@ -10,7 +10,6 @@ Number.prototype.pad = function(size){
 	return s;
 }
 
-
 function MailPile() {
 	this.search_cache   = [];
 	this.bulk_cache     = [];
@@ -19,6 +18,10 @@ function MailPile() {
 	this.graphselected  = [];
 	this.defaults       = {
   	view_size: "comfy"
+	}
+	this.api = {
+  	tag        : "/api/0/tag/",
+  	search_new : "/api/0/search/?q=in%3Anew"
 	}
 }
 
@@ -365,6 +368,15 @@ var mailpile = new MailPile();
 // Non-exposed functions: www, setup
 $(document).ready(function() {
 
+  // Update New Count And Such
+  var fun
+  
+  setInterval(function() {
+    getNewMessages();
+  }, 300000);
+  
+  
+
 
   /* Set View Size */
   if (localStorage.getItem('view_size')) {
@@ -434,10 +446,6 @@ $(document).ready(function() {
     }
   });
 
-
-
-  favicon.badge(1);
-  
 
 });
 

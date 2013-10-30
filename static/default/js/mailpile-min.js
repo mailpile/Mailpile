@@ -10,7 +10,6 @@ Number.prototype.pad = function(size){
 	return s;
 }
 
-
 function MailPile() {
 	this.search_cache   = [];
 	this.bulk_cache     = [];
@@ -19,6 +18,10 @@ function MailPile() {
 	this.graphselected  = [];
 	this.defaults       = {
   	view_size: "comfy"
+	}
+	this.api = {
+  	tag        : "/api/0/tag/",
+  	search_new : "/api/0/search/?q=in%3Anew"
 	}
 }
 
@@ -365,6 +368,15 @@ var mailpile = new MailPile();
 // Non-exposed functions: www, setup
 $(document).ready(function() {
 
+  // Update New Count And Such
+  var fun
+  
+  setInterval(function() {
+    getNewMessages();
+  }, 300000);
+  
+  
+
 
   /* Set View Size */
   if (localStorage.getItem('view_size')) {
@@ -434,10 +446,6 @@ $(document).ready(function() {
     }
   });
 
-
-
-  favicon.badge(1);
-  
 
 });
 
@@ -800,7 +808,7 @@ $('li.sidebar-tags-draggable').droppable({
   
     // Fire at Willhelm
 	  $.ajax({
-		  url			 : '/api/0/tag/',
+		  url			 : mailpile.api.tag,
 		  type		 : 'POST',
 		  data     : {
         add: $(this).data('tag_name'),
@@ -809,11 +817,17 @@ $('li.sidebar-tags-draggable').droppable({
       },
 		  dataType : 'json',
 	    success  : function(response) {
-        
+
         if (response.status == 'success') {
+
+          // Update Pile View
           $.each(mailpile.bulk_cache, function(key, mid) {
             $('#pile-message-' + mid).fadeOut('fast');
-          });  
+          });
+          
+          // Empty Bulk Cache
+          mailpile.bulk_cache = [];
+          
         } else {
           statusMessage(response.status, response.message);
         }

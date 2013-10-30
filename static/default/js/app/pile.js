@@ -150,7 +150,7 @@ $('li.sidebar-tags-draggable').droppable({
   
     // Fire at Willhelm
 	  $.ajax({
-		  url			 : '/api/0/tag/',
+		  url			 : mailpile.api.tag,
 		  type		 : 'POST',
 		  data     : {
         add: $(this).data('tag_name'),
@@ -159,11 +159,17 @@ $('li.sidebar-tags-draggable').droppable({
       },
 		  dataType : 'json',
 	    success  : function(response) {
-        
+
         if (response.status == 'success') {
+
+          // Update Pile View
           $.each(mailpile.bulk_cache, function(key, mid) {
             $('#pile-message-' + mid).fadeOut('fast');
-          });  
+          });
+          
+          // Empty Bulk Cache
+          mailpile.bulk_cache = [];
+          
         } else {
           statusMessage(response.status, response.message);
         }
