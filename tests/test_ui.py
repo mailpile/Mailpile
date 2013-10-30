@@ -13,7 +13,7 @@ class TestUI(MailPileUnittest):
   def test_ui_debug_log_debug_set(self):
     self.mp._ui.clear_log()
     with capture() as out:
-      self.mp.set("debug=log")
+      self.mp.set("sys.debug=log")
       self.mp._ui._debug_log("text", UserInteraction.LOG_ALL, prefix='testprefix')
     self.assertIn("testprefixlog(99): text", ''.join(out))
 

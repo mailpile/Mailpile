@@ -8,9 +8,9 @@ def checkSearch(postinglist_kb, query):
   class TestSearch(object):
     def __init__(self):
       setUp(self)
-      self.mp.set("postinglist_kb=%s" % postinglist_kb)
-      self.mp.set("num_results=50")
-      self.mp.set("default_order=rev-date")
+      self.mp.set("sys.postinglist_kb=%s" % postinglist_kb)
+      self.mp.set("prefs.num_results=50")
+      self.mp.set("prefs.default_order=rev-date")
       results = self.mp.search(*query)
       assert_less(float(results.as_dict()["elapsed"]), 0.2)
   return TestSearch
