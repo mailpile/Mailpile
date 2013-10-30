@@ -32,12 +32,12 @@ class TestCommands(MailPileUnittest):
     self.assertEqual(len(results.result), 1)
 
   def test_add(self):
-    res = self.mp.add("/tmp")
+    res = self.mp.add("tests")
     self.assertEqual(res.as_dict()["result"], True)
 
   def test_add_mailbox_already_in_pile(self):
-    res = self.mp.add("/tmp")
-    res = self.mp.add("/tmp")
+    res = self.mp.add("tests")
+    res = self.mp.add("tests")
     self.assertEqual(res.as_dict()["result"], True)
 
   def test_add_mailbox_no_such_directory(self):
