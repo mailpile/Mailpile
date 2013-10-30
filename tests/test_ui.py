@@ -63,5 +63,5 @@ class TestUI(MailPileUnittest):
       self.mp._ui.render_mode = 'text'
       result = self.mp.rescan()
       self.mp._ui.display_result(result)
-    self.assertEquals(out[0], "Succeeded: Scan all mailboxes for new messages\n")
+    self.assertEquals(out[0], "{'messages': 0, 'mailboxes': 0}\n")
 
