@@ -68,7 +68,7 @@ class NetworkGraph(Search):
         res["nodes"] = nodes
         res["links"] = links
         res["searched"] = session.searched
-        if not res.has_key("limit_hit"):
+        if "limit_hit" not in res:
             res["limit_hit"] = False
         return res
 

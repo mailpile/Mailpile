@@ -129,7 +129,7 @@ class MorkImporter(ContactImporter):
         else:
             rowkey = rowid + "/" + table.scope
 
-        if table.rows.has_key(rowkey):
+        if rowkey in table.rows:
             del table.rows[rowkey]
 
     def addRow (db, table, rowid, cells):
@@ -162,7 +162,7 @@ class MorkImporter(ContactImporter):
         else:
             rowkey = row.id + "/" + table.scope
 
-        if table.rows.has_key(rowkey):
+        if rowkey in table.rows:
             print >>stderr, "ERROR: duplicate rowid/scope %s" % rowkey
             print >>stderr, cells
 
