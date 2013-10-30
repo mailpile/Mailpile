@@ -56,11 +56,6 @@ class TestCommands(MailPileUnittest):
     res = self.mp.help('search')
     self.assertEqual(res.result['pre'], 'Search your mail!')
 
-  def test_help_vars(self):
-    res = self.mp.help_variables()
-    self.assertEqual(len(res.result), 1)
-    self.assertGreater(res.as_text(), 0)
-
   def test_help_splash(self):
     res = self.mp.help_splash()
     self.assertEqual(len(res.result), 2)
