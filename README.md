@@ -5,16 +5,16 @@
 
 #### Who's doing what? ####
 
-   * 2013-10-30: bre: contacts and campaign perks
-   * 2013-10-30: smari: OpenPGP and contacts, updating wiki
-   * 2013-10-30: bnvk: inbox tags, avatar view and navigation state
+- 2013-10-30: bre: contacts and campaign perks
+- 2013-10-30: smari: OpenPGP and contacts, updating wiki
+- 2013-10-30: bnvk: inbox tags, avatar view and navigation state
 
 #### Recent changes ####
 
-   * 2013-10-29: Tag metadata greatly was enhanced (please run
-     `mp --setup` in the Mailpile CLI to update your config).
-   * 2013-10-28: python-gnupginterface is no longer a dependency.
-   * 2013-10-22: New config format live, may break many things.
+- 2013-10-29: Tag metadata greatly was enhanced (please run
+  `mp --setup` in the Mailpile CLI to update your config).
+- 2013-10-28: python-gnupginterface is no longer a dependency.
+- 2013-10-22: New config format live, may break many things.
 
 ---------------------------------------------------------------------------
 
@@ -39,10 +39,10 @@ Twitter](https://twitter.com/MailpileTeam) and watch for updates.
 
 Mailpile is developed on a Debian 7 system, running:
 
-   * [Python](http://python.org) 2.7
-   * [python-imaging](http://www.pythonware.com/products/pil/) 1.1.7
-   * [python-lxml](http://lxml.de/) 2.3.2
-   * [python-jinja2](http://jinja.pocoo.org/) 2.6
+- [Python](http://python.org) 2.7
+- [python-imaging](http://www.pythonware.com/products/pil/) 1.1.7
+- [python-lxml](http://lxml.de/) 2.3.2
+- [python-jinja2](http://jinja.pocoo.org/) 2.6
 
 It might work with other versions. :-)
 
@@ -260,9 +260,9 @@ The `tag` command accepts a single tag name, prefixed with a `+` or `-`
 (for adding or removing the tag), followed by a description of messages.
 The message description can be:
 
-   * `all` will affect all messages
-   * `these` will affect currently listed messages
-   * A list of numbers or ranges (`1 2 3 5-10 15`)
+- `all` will affect all messages
+- `these` will affect currently listed messages
+- A list of numbers or ranges (`1 2 3 5-10 15`)
 
 All these are relative to the last search, so `1` is the first result
 of the most recent search and `all` would be all matching messages.
@@ -444,10 +444,10 @@ inspired me to start working on this.
 
 Contributors:
 
-   * Bjarni R. Einasson (<http://bre.klaki.net/>)
-   * Smari McCarthy (<http://www.smarimccarthy.com/>)
-   * Brennan Novak (<https://brennannovak.com/>)
-   * Lots more, run `git log |grep Author |sort |uniq -c` for a list!
+- Bjarni R. Einasson (<http://bre.klaki.net/>)
+- Smari McCarthy (<http://www.smarimccarthy.com/>)
+- Brennan Novak (<https://brennannovak.com/>)
+- Lots more, run `git log |grep Author |sort |uniq -c` for a list!
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
