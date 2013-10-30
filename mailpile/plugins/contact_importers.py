@@ -3,6 +3,7 @@
 
 
 from mailpile.plugins.contacts import ContactImporter, register_contact_importer
+from mailpile.vcard import CardDAV
 import sys
 import re
 import getopt
@@ -355,7 +356,12 @@ class CardDAVImporter(ContactImporter):
         self.carddav = CardDAV(host, url, port, username, password, protocol)
 
     def get_contacts(self):
-        pass
+        results = []
+        cards = self.carddav.list_vcards()
+        for card in cards:
+            results.append(self.carddav.get_vcard(card))
+
+        return results
 
     def filter_contacts(self, terms):
         pass
