@@ -9,8 +9,7 @@ def checkSearch(query, expected_count=1):
     def __init__(self):
       setUp(self)
       results = self.mp.search(*query)
-      assert_equal(len(results.result), 1)
-      assert_equal(results.result[0]['count'], expected_count)
+      assert_equal(results.result['count'], expected_count)
       assert_less(float(results.as_dict()["elapsed"]), 0.2)
   TestSearch.description = "Searching for %s" % str(query)
   return TestSearch
@@ -18,7 +17,7 @@ def checkSearch(query, expected_count=1):
 
 def test_generator():
   # All mail
-  yield checkSearch(['all:mail'], 4)
+  yield checkSearch(['all:mail'], 5)
   # Full match
   yield checkSearch(['brennan'])
   # Partial match
