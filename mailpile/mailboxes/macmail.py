@@ -11,7 +11,7 @@ class _MacMaildirPartialFile(mailbox._PartialFile):
     def __init__(self, fd):
         length = int(fd.readline().strip())
         start = fd.tell()
-        stop = start+length
+        stop = start + length
         mailbox._PartialFile.__init__(self, fd, start=start, stop=stop)
 
 
