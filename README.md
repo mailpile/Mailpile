@@ -1,8 +1,24 @@
 # Welcome to Mailpile! #
 
-> **NOTE:** Mailpile is currently undergoing heavy refactoring work
-> to accomodate a better UI and better programmatic access. Pull at your
-> own risk! :-)
+> **NOTE:** This is pre-ALPHA quality code! Please expect everything to
+> be broken.
+
+#### Who's doing what? ####
+
+   * **2013-10-30**: bre: contacts and campaign perks
+   * **2013-10-30**: smari: OpenPGP and contacts, updating wiki
+   * **2013-10-30**: bnvk: inbox tags, avatar view and navigation state
+
+#### Recent changes ####
+
+   * **2013-10-29**: Tag metadata greatly was enhanced (please run
+     `mp --setup` in the Mailpile CLI to update your config).
+   * **2013-10-28**: python-gnupginterface is no longer a dependency.
+   * **2013-10-22**: New config format live, may break many things.
+
+---------------------------------------------------------------------------
+
+## Introduction ##
 
 Mailpile (<http://www.mailpile.is/>) is a free-as-in-freedom personal
 e-mail searching and indexing tool, largely inspired by Google's popular
@@ -389,7 +405,7 @@ and run it:
 or enter the container's bash prompt directly:
 
     $ docker run -i -t mailpile bash
-    
+
 ## A word on performance ##
 
 Searching is all about disk seeks.
@@ -430,14 +446,8 @@ Contributors:
 
    * Bjarni R. Einasson (<http://bre.klaki.net/>)
    * Smari McCarthy (<http://www.smarimccarthy.com/>)
-   * Björgvin Ragnarsson (<https://github.com/nifgraup/>)
    * Brennan Novak (<https://brennannovak.com/>)
-   * Halldór Rúnarsson (<https://github.com/halldor>)
-   * Danx0r (<https://github.com/danx0r>)
-   * Steinn Steinsson (<https://github.com/steinn>)
-   * Dražen Lučanin (<https://github.com/kermit666>)
-   * Uli Köhler (<https://github.com/ulikoehler>)
-   * Shartte (<https://github.com/shartte>)
+   * Lots more, run `git log |grep Author |sort |uniq -c` for a list!
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
