@@ -10,7 +10,7 @@
     {% if message.conv_count > 1 %}<span class="conversation-count">{{ message.conv_count }}</span>{% endif %}
   </td>
   <td class="subject">
-    {% for tag in message.tags %}{% if tag.slug != "new" and not tag.searched %}<a class="pile-message-tag" href="/in/{{ tag.slug }}/">{{ tag.name }}</a>{% endif %}{% endfor %}
+    {% for tag in message.tags %}{% if tag.slug != "new" and not tag.searched %}<a class="pile-message-tag" href="{{ tag.url }}/">{{ tag.name }}</a>{% endif %}{% endfor %}
     <a class="item-subject" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
   </td>
   <td class="date" valign="top">

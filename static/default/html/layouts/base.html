@@ -90,7 +90,7 @@
       <ul>
           {% for tag in mailpile("tag/list", "display=priority").result.tags %}
           {% if tag.slug == "drafts" %}
-          <li class="sidebar-tags-default">
+          <li class="sidebar-tags-default" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_new_count="{{tag.stats.new}}">
           {% else %}
           <li class="sidebar-tags-draggable" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_new_count="{{tag.stats.new}}">
           {% endif %}
