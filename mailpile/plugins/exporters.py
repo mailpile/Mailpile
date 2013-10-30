@@ -26,10 +26,10 @@ class ExportMail(Command):
     ORDER = ('Searching', 99)
 
     def export_path(self, mbox_type):
-         if mbox_type == 'mbox':
-             return 'mailpile-%d.mbx' % time.time()
-         else:
-             return 'mailpile-%d'
+        if mbox_type == 'mbox':
+            return 'mailpile-%d.mbx' % time.time()
+        else:
+            return 'mailpile-%d'
 
     def create_mailbox(self, mbox_type, path):
         if mbox_type == 'mbox':
