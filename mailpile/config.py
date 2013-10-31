@@ -4,6 +4,7 @@ import io
 import json
 import os
 import re
+import socket
 import ConfigParser
 
 from urllib import quote, unquote
@@ -69,9 +70,18 @@ def _MakeCheck(pcls, rules):
 def _SlugCheck(slug, allow=''):
     """
     Verify that a string is a valid URL slug.
+    
+    Keyword arguments:
+        allow: A set of characters to be allowed, extending the standard charset
 
     >>> _SlugCheck('_Foo-bar.5')
     '_foo-bar.5'
+    
+    >>> _SlugCheck('baz/_Foo-bar.5', '/') #Single-char allow
+    'baz/_foo-bar.5'
+    
+    >>> _SlugCheck('baz)/_Foo-bar.5', '/)') #Multi-char allow
+    'baz)/_foo-bar.5'
 
     >>> _SlugCheck('Bad Slug')
     Traceback (most recent call last):
@@ -83,9 +93,9 @@ def _SlugCheck(slug, allow=''):
         ...
     ValueError: Invalid URL slug: Bad/Slug
     """
-    if not slug == CleanText(unicode(slug),
-                             banned=(CleanText.NONDNS.replace(allow, ''))
-                             ).clean:
+    #Remove all characters from allow param to form a temp string
+    tmp = unicode(slug.translate(None, allow))
+    if any(c in tmp for c in CleanText.NONDNS):
         raise ValueError('Invalid URL slug: %s' % slug)
     return slug.lower()
 
@@ -99,26 +109,48 @@ def _SlashSlugCheck(slug):
     """
     return _SlugCheck(slug, allow='/')
 
-
-def _HostNameCheck(host):
+def _HostNameCheck(host, verifyDNS=True):
     """
     Verify that a string is a valid host-name, return it lowercased.
 
-    >>> _HostNameCheck('foo.BAR.baz')
-    'foo.bar.baz'
+    >>> _HostNameCheck('mailpile.is')
+    'mailpile.is'
 
     >>> _HostNameCheck('127.0.0.1')
     '127.0.0.1'
+    
+    >>> _HostNameCheck('::1')
+    '::1'
+    
+    >>> _HostNameCheck('2001:db80::cc0d:d8ff:fefd:1c73')
+    '2001:db80::cc0d:d8ff:fefd:1c73'
+    
+    >>> _HostNameCheck('fe80::1')
+    'fe80::1'
 
     >>> _HostNameCheck('not/a/hostname')
     Traceback (most recent call last):
         ...
     ValueError: Invalid hostname: not/a/hostname
+    
+    >>> _HostNameCheck('also!not&a,hostname')
+    Traceback (most recent call last):
+        ...
+    ValueError: Invalid hostname: also!not&a,hostname
+    
+    >>> _HostNameCheck('imprettysurethisdomaindoesnotexist.com')
+    Traceback (most recent call last):
+        ...
+    ValueError: Hostname can't be resolved: imprettysurethisdomaindoesnotexist.com
     """
-    # FIXME: Check DNS?
-    if not unicode(host) == CleanText(unicode(host),
-                                      banned=CleanText.NONDNS).clean:
+    #Check if the to-be-checked hostname contains special chars like !&% etc.
+    if any(c in unicode(host) for c in CleanText.NONDNS):
         raise ValueError('Invalid hostname: %s' % host)
+    #Check DNS if it's not an IPv6 (gethostbyname() doesn't support it)
+    if verifyDNS and not ':' in unicode(host):
+        try: socket.gethostbyname(host)
+        except:
+            raise ValueError("Hostname can't be resolved: %s" % host)
     return str(host).lower()
 
 
