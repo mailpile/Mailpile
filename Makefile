@@ -12,6 +12,7 @@ debian-dev:
 	sudo gem install therubyracer less
 
 docs:
+	test -d doc || ( mkdir doc && cd doc && git clone https://github.com/pagekite/Mailpile.wiki.git )
 	python mailpile/urlmap.py >doc/URLS.md
 	python mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
 
