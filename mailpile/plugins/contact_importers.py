@@ -3,6 +3,7 @@
 
 
 from mailpile.plugins.contacts import ContactImporter, register_contact_importer
+from mailpile.vcard import CardDAV
 import sys
 import re
 import getopt
@@ -339,7 +340,37 @@ class MorkImporter(ContactImporter):
         return filter(lambda x: any([v.find(terms) >= 0 for v in x.values()]) , f)
 
 
+class CardDAVImporter(ContactImporter):
+    required_parameters = ["host", "url"]
+    optional_parameters = ["port", "username", "password", "protocol"]
+    format_name = "CardDAV Server"
+    format_description = "CardDAV HTTP contact server."
+
+    def load(self):
+        host = self.args.get("host")
+        url = self.args.get("url")
+        port = self.args.get("port", None)
+        username = self.args.get("username", None)
+        password = self.args.get("password", None)
+        protocol = self.args.get("protocol", "https")
+        self.carddav = CardDAV(host, url, port, username, password, protocol)
+
+    def get_contacts(self):
+        results = []
+        cards = self.carddav.list_vcards()
+        for card in cards:
+            results.append(self.carddav.get_vcard(card))
+
+        return results
+
+    def filter_contacts(self, terms):
+        pass
+
+
+
+
 register_contact_importer(MorkImporter)
+register_contact_importer(CardDAVImporter)
 
 
 if __name__ == "__main__":
