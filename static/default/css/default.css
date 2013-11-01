@@ -6252,7 +6252,7 @@ text {
 }
 #content.cozy {
   width: 82%;
-  min-width: 820px;
+  min-width: 775px;
 }
 #content.snug {
   width: 84%;
@@ -6554,7 +6554,7 @@ div.content-normal {
   font-size: 14px;
   line-height: 14px;
 }
-#pile-results.avatar td {
+#pile-results.fluffy td {
   padding: 15px;
   vertical-align: top;
 }
@@ -6578,10 +6578,10 @@ div.content-normal {
 #pile-results td.draggable:hover {
   cursor: move;
 }
-#pile-results.avatar td.avatar {
+#pile-results.fluffy td.avatar {
   width: 48px;
 }
-#pile-results.avatar td.avatar a img {
+#pile-results.fluffy td.avatar a img {
   display: block;
   width: 48px;
   height: 48px;
