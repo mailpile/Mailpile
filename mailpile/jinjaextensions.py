@@ -23,6 +23,8 @@ class MailpileCommand(Extension):
         environment.filters['friendly_date'] = self._friendly_date
         environment.globals['show_avatar'] = self._show_avatar
         environment.filters['show_avatar'] = self._show_avatar
+        environment.globals['navigation_on'] = self._navigation_on
+        environment.filters['navigation_on'] = self._navigation_on
 
 
     def _command(self, command, *args, **kwargs):
@@ -56,3 +58,11 @@ class MailpileCommand(Extension):
         gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
 
         return gravatar_url
+
+    def _navigation_on(self, search_tags, slug):
+        if search_tags:
+          for tag in search_tags:
+            if tag.slug == slug:
+              return "navigation-on"
+            else:
+              return ""
