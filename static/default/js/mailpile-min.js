@@ -11,6 +11,7 @@ Number.prototype.pad = function(size){
 }
 
 function MailPile() {
+  this.instance       = {};
 	this.search_cache   = [];
 	this.bulk_cache     = [];
 	this.keybindings    = [];
@@ -33,6 +34,7 @@ function MailPile() {
   	message_draft : "/message/draft/=",
   	message_sent  : "/in/Sent/?ui_sent="
 	}
+	this.plugins = [];
 }
 
 MailPile.prototype.keybindings_loadfromserver = function() {
@@ -239,116 +241,6 @@ MailPile.prototype.focus_search = function() {
 }
 
 
-MailPile.prototype.results_graph = function() {
-
-  // Change Navigation 
-	$('#btn-display-graph').addClass('navigation-on');
-	$('#btn-display-list').removeClass('navigation-on');
-
-	// Show & Hide Pile View
-	$('#pile-results').hide('fast', function() {
-
-	  $('#form-pile-results').hide('fast');
-    $('.pile-speed').hide('fast');
-    $('#footer').hide('fast');
-    $('#sidebar').hide('fast');
-
-	  $('#pile-graph').hide().delay(1000).show();
-	});
-
-  // Determine & Set Height
-  var available_height = $(window).height() - ($('#header').height() + $('.sub-navigation').height());
-
-  $('#pile-graph-canvas').height(available_height);
-  $("#pile-graph-canvas-svg").attr('height', available_height).height(available_height);
-
-	args = $('#pile-graph-canvas-svg').data("searchterms");
-
-	d3.json("/api/0/shownetwork/?q=" + args, function(graph) {
-		graph = graph.result;
-		console.log(graph);
-    
-    console.log(available_height);
-    				
-		var width = 640; // $("#pile-graph-canvas").width();
-		var height = available_height;
-		var force = d3.layout.force()
-	   				.charge(-300)
-	   				.linkDistance(75)
-	   				.size([width, height]);
-
-		var svg = d3.select("#pile-graph-canvas-svg");
-		$("#pile-graph-canvas-svg").empty();
-
-		var color = d3.scale.category20();
-
-		var tooltip = d3.select("body")
-		    .append("div")
-	    	.style("position", "absolute")
-	    	.style("z-index", "10")
-	    	.style("visibility", "hidden")
-	    	.text("a simple tooltip");
-
-		force
-			.nodes(graph.nodes)
-	    	.links(graph.links)
-	    	.start();
-
-		var link = svg.selectAll(".link")
-			.data(graph.links)
-			.enter().append("line")
-			.attr("class", "link")
-			.style("stroke-width", function(d) { return Math.sqrt(3*d.value); });
-
-		var node = svg.selectAll(".node")
-		      .data(graph.nodes)
-			  .enter().append("g")
-		      .attr("class", "node")
-		      .call(force.drag);
-
-		node.append("circle")
-			.attr("r", 8)
-		    .style("fill", function(d) { return color("#3a6b8c"); })
-
-	    node.append("text")
-	    	.attr("x", 12)
-	    	.attr("dy", "0.35em")
-	    	.style("opacity", "0.3")
-	    	.text(function(d) { return d.email; });
-
-	    link.append("text").attr("x", 12).attr("dy", ".35em").text(function(d) { return d.type; })
-
-	   	node.on("click", function(d, m, q) {
-	   		// d.attr("toggled", !d.attr("toggled"));
-	   		// d.style("color", "#f00");
-	   		if (mailpile.graphselected.indexOf(d["email"]) < 0) {
-		   		d3.select(node[q][m]).selectAll("circle").style("fill", "#4b7945");
-		   		mailpile.graphselected.push(d["email"]);
-	   		} else {
-	   			mailpile.graphselected.pop(d["email"]);
-	   			d3.select(node[q][m]).selectAll("circle").style("fill", "#3a6b8c");
-	   		}
-	   		mailpile.graph_actionbuttons();
-	   	});
-		node.on("mouseover", function(d, m, q) {
-			d3.select(node[q][m]).selectAll("text").style("opacity", "1");
-		});
-		node.on("mouseout", function(d, m, q) {
-			d3.select(node[q][m]).selectAll("text").style("opacity", "0.3");
-		});
-
-		force.on("tick", function() {
-			link.attr("x1", function(d) { return d.source.x; })
-			    .attr("y1", function(d) { return d.source.y; })
-			    .attr("x2", function(d) { return d.target.x; })
-			    .attr("y2", function(d) { return d.target.y; });
-
-			node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-		});
-	});
-
-}
-
 
 var keybindings = [
 	["/", 		"normal",	function() { $("#qbox").focus(); return false; }],
@@ -380,7 +272,7 @@ $(document).ready(function() {
 
   // Update New Count (other stuff in the future)
   var getNewMessages = function() {    
-      $.ajax({
+    $.ajax({
 		  url			 : mailpile.api.search_new,
 		  type		 : 'GET',
 		  dataType : 'json',

@@ -108,7 +108,7 @@
       <ul>
         {% for tag in mailpile("tag/list", "display=tag").result.tags %}
         <li class="sidebar-tags-draggable" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_new_count="{{tag.stats.new}}">
-          <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag">
+         <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag">
             <span class="sidebar-icon icon-tag"></span>
             <span class="sidebar-tag">{{tag.name}}</span>
             {% if tag.stats.new > 0 %}
@@ -181,9 +181,16 @@
 </div>  
 
 <script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
-<script type="text/javascript" src="/static/js/mailpile-libraries-min.js"></script>
+<script type="text/javascript" src="/static/js/libraries-min.js"></script>
 <script type="text/javascript" src="/static/js/libraries/d3.v3.min.js"></script>
 <script type="text/javascript" src="/static/js/mailpile-min.js"></script>
-
+<script type="text/javascript">
+mailpile.instance = {
+ "command": "{{ command }}",
+ "args": "{{ args }}",
+ "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
+}
+</script>
+<script type="text/javascript" src="/static/js/plugins-min.js"></script>
 </body>
 </html>
