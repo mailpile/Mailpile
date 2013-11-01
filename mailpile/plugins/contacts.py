@@ -68,38 +68,44 @@ CONTACT_EXPORTERS = {}
 CONTACT_FIELD_VALIDATORS = {}
 CONTACT_CONTEXT_PROVIDERS = {}
 
+
 def register_contact_importer(importer):
     if not issubclass(importer, ContactImporter):
         raise PluginError("Plugin must be a ContactImporter")
     if importer.format_name in CONTACT_IMPORTERS.keys():
-        raise PluginError("Importer for %s already registered" % importer.format_name)
+        raise PluginError("Importer for %s already registered"
+                          % importer.format_name)
     CONTACT_IMPORTERS[importer.format_name] = importer
+
 
 def register_contact_exporter(exporter):
     if not issubclass(importer, ContactExporter):
         raise PluginError("Plugin must be a ContactExporter")
     if exporter.format_name in CONTACT_EXPORTERS.keys():
-        raise PluginError("Exporter for %s already registered" % exporter.format_name)
+        raise PluginError("Exporter for %s already registered"
+                          % exporter.format_name)
     CONTACT_EXPORTERS[exporter.format_name] = exporter
+
 
 def register_contact_field_validator(field, validator):
     if not issubclass(importer, ContactFieldValidator):
         raise PluginError("Plugin must be a ContactFieldValidator")
     if field in CONTACT_FIELD_VALIDATORS.keys():
-        raise PluginError("Field validator for field %s already registered" % field)
+        raise PluginError("Field validator for field %s already registered"
+                          % field)
     CONTACT_FIELD_VALIDATORS[field] = validator
+
 
 def register_contact_context_provider(provider):
     if not issubclass(importer, ContactContextProvider):
         raise PluginError("Plugin must be a ContactContextProvider")
     if importer.provider_name in CONTACT_CONTEXT_PROVIDERS.keys():
-        raise PluginError("Context provider for %s already registered" % provider.provider_name)
+        raise PluginError("Context provider for %s already registered"
+                          % provider.provider_name)
     CONTACT_CONTEXT_PROVIDERS[provider.provider_name] = provider
 
 
-
 ##[ VCards ]########################################
-
 
 class VCardCommand(Command):
 
@@ -269,10 +275,10 @@ class ListVCards(VCardCommand):
 
 def ContactVCard(parent):
     """A factory for generating contact commands"""
-
     synopsis = [(t and t.replace('vcard', 'contact') or t)
                 for t in parent.SYNOPSIS]
     synopsis[2] = synopsis[1]
+
     class ContactVCardCommand(parent):
         SYNOPSIS = tuple(synopsis)
         KIND = 'individual'
@@ -301,7 +307,6 @@ class ListContacts(ContactVCard(ListVCards)):
     """Find contacts"""
 
 
-
 class ContactImport(Command):
     """Import contacts"""
     SYNOPSIS = (None, 'contact/import', 'contact/import', '[<parameters>]')
@@ -325,8 +330,8 @@ class ContactImport(Command):
         allparams = importer.required_parameters + importer.optional_parameters
 
         if not all([x in allparams for x in kwargs.keys()]):
-            session.ui.error("Unknown parameter passed to importer. Provided %s"
-                + "; but known parameters are: %s" 
+            session.ui.error("Unknown parameter passed to importer."
+                + " Provided %s; but known parameters are: %s"
                 % (", ".join(kwargs), ", ".join(allparams)))
             return False
 
@@ -349,8 +354,6 @@ class ContactImporters(Command):
 
     def command(self):
         return CONTACT_IMPORTERS.keys()
-
-
 
 
 mailpile.plugins.register_commands(VCard, AddVCard, SetVCard,
