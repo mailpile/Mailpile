@@ -108,6 +108,7 @@ def register_contact_context_provider(provider):
 ##[ VCards ]########################################
 
 class VCardCommand(Command):
+    VCARD = "vcard"
 
     def _fparse(self, fromdata):
         email = ExtractEmails(fromdata)[0]
@@ -150,7 +151,7 @@ class VCard(VCardCommand):
             if vcard:
                 vcards.append(vcard)
             else:
-                session.ui.warning('No such contact: %s' % email)
+                session.ui.warning('No such %s: %s' % (self.VCARD, email))
         return vcards
 
 
@@ -264,7 +265,7 @@ class ListVCards(VCardCommand):
         #for vcard in vcards:
         #    session.ui.display_vcard(vcard, compact=compact)
         ctx = {}
-        ctx["contacts"] = [x.as_mpCard() for x in vcards]
+        ctx[self.VCARD+'s'] = [x.as_mpCard() for x in vcards]
         ctx["query"] = " ".join(self.args)
         ctx["total"] = len(vcards)
         ctx["start"] = 1
@@ -283,6 +284,7 @@ def ContactVCard(parent):
         SYNOPSIS = tuple(synopsis)
         KIND = 'individual'
         ORDER = ('Tagging', 3)
+        VCARD = "contact"
 
     return ContactVCardCommand
 

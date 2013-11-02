@@ -23,6 +23,7 @@ web: less
 alltests:
 	python mailpile/config.py
 	python mailpile/util.py
+	python mailpile/vcard.py
 	python mailpile/workers.py
 	scripts/mailpile-test.py
 

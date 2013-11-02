@@ -1,5 +1,3 @@
-# This is a very simplistic Contact class based on VCard 4.0
-
 import random
 from mailpile.util import *
 import httplib
@@ -7,7 +5,155 @@ import base64
 from lxml import etree
 
 
+class VCardLine(dict):
+    """
+    This class represents a single line in a VCard file. It knows how
+    to parse the most common "structured" lines into attributes and
+    values and also convert a name, attributes and value into a properly
+    encoded/escaped VCard line.
+
+    For specific values, the object can be initialized directly.
+    >>> vcl = VCardLine(name='fn', value='The Dude')
+    >>> vcl.as_vcardline()
+    'FN:The Dude'
+
+    Alternately, the name and value attributes can be set after the fact.
+    >>> vcl.value = 'Lebowski'
+    >>> vcl.as_vcardline()
+    'FN:Lebowski'
+
+    The object's str() and unicode() methods return the value.
+    >>> print vcl
+    Lebowski
+
+    VCardLine objects can also be initialized by passing in a line of VCard
+    data, which will then be parsed:
+    >>> vcl = VCardLine('FN;TYPE=Nickname:Bjarni')
+    >>> vcl.name
+    u'fn'
+    >>> vcl.value
+    u'Bjarni'
+    >>> vcl.get('type')
+    u'Nickname'
+
+    Note that the as_vcardline() method may return more than one actual line
+    of text, as RFC6350 mandates that lines over 75 characters be wrapped:
+    >>> print VCardLine(name='bogus', value=('B' * 100)+'C').as_vcardline()
+    BOGUS:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+     BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBC
+    """
+    QUOTE_MAP = {
+        "\\": "\\\\",
+        ",": "\\,",
+        ";": "\\;",
+        "\n": "\\n",
+    }
+    QUOTE_RMAP = dict([(v, k) for k, v in QUOTE_MAP.iteritems()])
+
+    def __init__(self, line=None, name=None, value=None):
+        self.name = name
+        self.value = value
+        self.attr = []
+        if line is not None:
+            self.parse(line)
+
+    def parse(self, line):
+        self.name, self.attr, self.value = self.ParseLine(line)
+        for key in self.keys():
+            del self[key]
+        self.update(dict(reversed(self.attr)))
+
+    def __str__(self):
+        return self.value
+
+    def as_vcardline(self):
+        key = self.Quote(self.name.upper())
+        for k, v in self.attr:
+            if v is None:
+                key += ';%s' % (self.Quote(k))
+            else:
+                key += ';%s=%s' % (self.Quote(k), self.Quote(v))
+
+        wrapped, line = '', '%s:%s' % (key, self.Quote(self.value))
+        llen = 0
+        for char in line:
+            char = char.encode('utf-8')
+            clen = len(char)
+            if llen + clen >= 75:
+                wrapped += '\n '
+                llen = 0
+            wrapped += char
+            llen += clen
+
+        return wrapped
+
+    @classmethod
+    def Quote(self, text):
+        """
+        Quote values so they can be safely represented in a VCard.
+
+        >>> print VCardLine.Quote('Comma, semicolon; backslash\\ newline\\n')
+        Comma\\, semicolon\\; backslash\\\\ newline\\n
+        """
+        return unicode(''.join([self.QUOTE_MAP.get(c, c) for c in text]))
+
+    @classmethod
+    def ParseLine(self, text):
+        """
+        Parse a single line, respecting to the VCard (RFC6350) quoting.
+
+        >>> VCardLine.ParseLine('foo:val;ue')
+        (u'foo', [], u'val;ue')
+        >>> VCardLine.ParseLine('foo;BAR;\\\\baz:value')
+        (u'foo', [(u'bar', True), (u'\\\\baz', True)], u'value')
+        >>> VCardLine.ParseLine('FOO;bar=comma\\,semicolon\\;'
+        ...                     'backslash\\\\\\\\:value')
+        (u'foo', [(u'bar', u'comma,semicolon;backslash\\\\')], u'value')
+        """
+        # The parser is a state machine with two main states: quoted or
+        # unquoted data. The unquoted data has three sub-states, to track
+        # which part of the line is being parsed.
+
+        def parse_quoted(char, state, parsed, name, attrs):
+            pair = "\\" + char
+            parsed = parsed[:-1] + self.QUOTE_RMAP.get(pair, pair)
+            return parse_char, state, parsed, name, attrs
+
+        def parse_char(char, state, parsed, name, attrs):
+            if char == "\\":
+                parsed += char
+                return parse_quoted, state, parsed, name, attrs
+            else:
+                if state == 0 and char in (';', ':'):
+                    name = parsed.lower()
+                    parsed = ''
+                    state += (char == ';') and 1 or 2
+                elif state == 1 and char in (';', ':'):
+                    if '=' in parsed:
+                        k, v = parsed.split('=', 1)
+                    else:
+                        k = parsed
+                        v = True
+                    attrs.append((k.lower(), v))
+                    parsed = ''
+                    if char == ':':
+                        state += 1
+                else:
+                    parsed += char
+                return parse_char, state, parsed, name, attrs
+
+        parser, state, parsed, name, attrs = parse_char, 0, '', None, []
+        for char in unicode(text):
+            parser, state, parsed, name, attrs = parser(
+                char, state, parsed, name, attrs)
+
+        return name, attrs, parsed
+
+
 class SimpleVCard(dict):
+    """
+    This is a very simplistic implementation of VCard 4.0.
+    """
     VCARD_OTHER_KEYS = {
         'AGENT': '',
         'CLASS': '',
@@ -150,8 +296,10 @@ class SimpleVCard(dict):
         ])
 
     def load(self, filename=None, data=None):
+        def unwrap(text):
+            return text.replace('\n ', '').replace('\n\t', '')
         if data:
-            lines = [l.strip() for l in data.strip().splitlines()]
+            lines = [l.strip() for l in unwrap(data.strip()).splitlines()]
         else:
             self.filename = filename or self.filename
             lines = []
@@ -159,6 +307,7 @@ class SimpleVCard(dict):
                                     lambda l: lines.append(l.strip()))
             while lines and not lines[-1]:
                 lines.pop(-1)
+            lines = unwrap('\n'.join(lines)).splitlines()
 
         if (not lines.pop(0).upper() == 'BEGIN:VCARD' or
                 not lines.pop(-1).upper() == 'END:VCARD'):
@@ -191,6 +340,7 @@ class SimpleVCard(dict):
             raise ValueError('Save to what file?')
 
 
+# FIXME: Move this into a contact importer plugin
 class DAVClient:
     def __init__(self, host, port=None, username=None, password=None,
                              protocol='https'):
@@ -285,3 +435,12 @@ class CardDAV(DAVClient):
                              if x.text not in ("", None) and
                                 x.text[-3:] == "vcf"]
         return urls
+
+
+if __name__ == "__main__":
+    import doctest
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                              extraglobs={})
+    print '%s' % (results, )
+    if results.failed:
+        sys.exit(1)
