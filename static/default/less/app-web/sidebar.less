@@ -12,78 +12,65 @@
     vertical-align: top;
   }
 
-  #sidebar.cozy { width: 18%; min-width: 180px; max-width: 230px; }
-  #sidebar.snug { width: 16%; min-width: 160px; max-width: 200px; }
+  #sidebar.cozy { width: 215px; }
+  #sidebar.snug { width: 200px; }
 
 	#sidebar hr {
   	margin: 20px 0px 0px 0px;
 	}
 
-  #sidebar        nav ul { margin: 10px 20px; }
-  #sidebar.cozy   nav ul { margin: 5px 15px; }
-  #sidebar.snug   nav ul { margin: 2px 10px; }
+  #sidebar      ul { margin: 12px; }
+  #sidebar.cozy ul { margin: 8px; }
+  #sidebar.snug ul { margin: 8px; }
 
-	
-	#sidebar li.navigation-on {
-		background: @gray;
-		border-radius: @base-border-radius;
-	}
+  #sidebar      li { margin: 5px 0px; padding: 8px 10px 8px 13px; }
+  #sidebar.cozy li { margin: 3px; padding: 5px 6px 5px 8px; }
+  #sidebar.snug li { margin: 0px; padding: 3px 4px 3px 6px; }
 
-	#sidebar li.navigation-on a {
-		cursor: default;		
-		color: @white;
-	}
-
-	#sidebar li.navigation-on a span {
-		color: @grayDark;
-	}
-	
-	#sidebar li.navigation-on a small {
-		color: @grayDark;
-	}
 
 	#sidebar a {
-		display: block;
+	  display: block;
+    width: 175px;
 		font-family: @text-font-family-bold;
 		font-weight: normal;
 		color: @grayDark;
-	  -webkit-transition-duration: 0.4s;
-	  -moz-transition-duration: 0.4s;
-	  transition-duration: 0.4s;		
+    font-size: 18px;
+    line-height: 18px;
+    white-space: nowrap;
+    overflow: hidden;
 	}
 
-	#sidebar        a { padding: 15px 0px; font-size: 18px; line-height: 18px; }
 	#sidebar.cozy   a { padding: 10px 0px; font-size: 16px; line-height: 16px; }
 	#sidebar.snug   a { padding: 5px 0px; font-size: 14px; line-height: 14px; }
 	
-	#sidebar a:hover {
-		color: @red;
-	  -webkit-transition-duration: 0.2s;
-	  -moz-transition-duration: 0.2s;
-	  transition-duration: 0.2s;
-	}
+	#sidebar a:hover  { color: @red; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
+  #sidebar .navigation-on a:hover { color: @grayDark; }
 
-	#sidebar a:active {
-		color: @red;
-	}	
+	#sidebar a:active { color: @red; }	
 	
-	#sidebar a span.sidebar-icon {
-		position: relative;
-		top: 3px;
-		left: 0px;
+	#sidebar span.sidebar-icon {
+	  position: relative;
+	  top: 2px;
+	  left: 0px;
 		margin-right: 4px;
-		font-size: 24px;
 		font-weight: normal;
+		font-size: 21px;
+		line-height: 21px;		
 	}
 
-  #sidebar a span.sidebar-tag { }
+	#sidebar.cozy span.sidebar-icon { font-size: 18px; line-height: 18px; }
+  #sidebar.snug span.sidebar-icon { font-size: 16px; line-height: 16px; }
 
-  #sidebar a span.sidebar-notification {
+  #sidebar span.sidebar-notification {
     float: right;
-    padding: 5px 7px;
-    font-size: 14px;
+    padding: .25em .5em;
+    font-size: 11px;
+    color: @white;
   }
 
+  #sidevar .navigation-on a:hover span.sidebar-notification {
+    color: @white !important;
+  }
 
 
 /* Sidebar - Drag & Drop */
@@ -100,6 +87,7 @@
   }
 
   .sidebar-tags-draggable-hover .icon-inbox:before,
+  .sidebar-tags-draggable-hover .icon-sent:before,
   .sidebar-tags-draggable-hover .icon-spam:before,
   .sidebar-tags-draggable-hover .icon-trash:before,
   .sidebar-tags-draggable-hover .icon-tag:before {
