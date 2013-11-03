@@ -25,6 +25,8 @@ class MailpileCommand(Extension):
         environment.filters['show_avatar'] = self._show_avatar
         environment.globals['navigation_on'] = self._navigation_on
         environment.filters['navigation_on'] = self._navigation_on
+        environment.globals['abbreviate_number'] = self._abbreviate_number
+        environment.filters['abbreviate_number'] = self._abbreviate_number
 
 
     def _command(self, command, *args, **kwargs):
@@ -66,3 +68,7 @@ class MailpileCommand(Extension):
               return "navigation-on"
             else:
               return ""
+
+    def _abbreviate_number(self, number):
+
+      return number
