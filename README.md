@@ -46,7 +46,7 @@ Mailpile is developed on a Debian 7 system, running:
 
 It might work with other versions. :-)
 
-You can either user your OS package manager to install equivalent packages
+You can either use your OS package manager to install equivalent packages
 or use the following command to ask Python to do the work for you:
 
     $ pip install -r requirements.txt
