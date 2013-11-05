@@ -23,8 +23,8 @@
 */
 @font-face {
   font-family: 'Mailpile-300';
-  src: url('../webfonts/Mailpile.eot');
-  src: url('../webfonts/Mailpile.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile.woff') format('font-woff'), url('../webfonts/Mailpile.ttf') format('truetype'), url('../webfonts/Mailpile.svg#wf') format('svg');
+  src: url('../webfonts/Mailpile-Light.eot');
+  src: url('../webfonts/Mailpile-Light.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-Light.woff') format('font-woff'), url('../webfonts/Mailpile-Light.ttf') format('truetype'), url('../webfonts/Mailpile-Light.svg#wf') format('svg');
 }
 @font-face {
   font-family: 'Mailpile-Interface';
@@ -6346,7 +6346,7 @@ div.content-normal {
   font-weight: normal;
   color: #4d4d4d;
   font-size: 18px;
-  line-height: 18px;
+  line-height: 24px;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -6378,8 +6378,8 @@ div.content-normal {
   left: 0px;
   margin-right: 4px;
   font-weight: normal;
-  font-size: 21px;
-  line-height: 21px;
+  font-size: 18px;
+  line-height: 24px;
 }
 #sidebar.cozy span.sidebar-icon {
   font-size: 18px;
