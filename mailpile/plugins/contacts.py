@@ -75,7 +75,7 @@ def register_contact_importer(importer):
     if importer.format_name in CONTACT_IMPORTERS.keys():
         raise PluginError("Importer for %s already registered"
                           % importer.format_name)
-    CONTACT_IMPORTERS[importer.format_name] = importer
+    CONTACT_IMPORTERS[importer.short_name] = importer
 
 
 def register_contact_exporter(exporter):
@@ -84,7 +84,7 @@ def register_contact_exporter(exporter):
     if exporter.format_name in CONTACT_EXPORTERS.keys():
         raise PluginError("Exporter for %s already registered"
                           % exporter.format_name)
-    CONTACT_EXPORTERS[exporter.format_name] = exporter
+    CONTACT_EXPORTERS[exporter.short_name] = exporter
 
 
 def register_contact_field_validator(field, validator):
@@ -353,7 +353,17 @@ class ContactImporters(Command):
     HTTP_CALLABLE = ('GET', )
 
     def command(self):
-        return CONTACT_IMPORTERS.keys()
+        res = []
+        for iname, importer in CONTACT_IMPORTERS.iteritems():
+            r = {}
+            r["short_name"] = iname
+            r["format_name"] = importer.format_name
+            r["format_description"] = importer.format_description
+            r["optional_parameters"] = importer.optional_parameters
+            r["required_parameters"] = importer.required_parameters
+            res.append(r)
+
+        return res
 
 
 mailpile.plugins.register_commands(VCard, AddVCard, SetVCard,

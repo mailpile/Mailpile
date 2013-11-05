@@ -34,6 +34,7 @@ class MorkImporter(ContactImporter):
 
     required_parameters = ["filename"]
     optional_parameters = ["data"]
+    short_name = "mork"
     format_name = "Mork Database"
     format_description = "Thunderbird contacts database format."
 
@@ -343,6 +344,7 @@ class MorkImporter(ContactImporter):
 class CardDAVImporter(ContactImporter):
     required_parameters = ["host", "url"]
     optional_parameters = ["port", "username", "password", "protocol"]
+    short_name = "carddav"
     format_name = "CardDAV Server"
     format_description = "CardDAV HTTP contact server."
 
