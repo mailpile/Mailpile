@@ -5,14 +5,14 @@
 
 #### Who's doing what? ####
 
-- 2013-10-30: bre: contacts and campaign perks
-- 2013-10-30: smari: OpenPGP and contacts, updating wiki
-- 2013-10-30: bnvk: inbox tags, avatar view and navigation state
+- 2013-11-05: bre: fixing bugs in message indexer, contacts API
+- 2013-11-05: smari: OpenPGP and contacts, updating wiki
+- 2013-11-05: bnvk: font tweaking, work on the "fluffy" view
 
 #### Recent changes ####
 
 - 2013-10-29: Tag metadata greatly was enhanced (please run
-  `mp --setup` in the Mailpile CLI to update your config).
+  `mp --setup` or `setup` in the Mailpile CLI to update your config).
 - 2013-10-28: python-gnupginterface is no longer a dependency.
 - 2013-10-22: New config format live, may break many things.
 
