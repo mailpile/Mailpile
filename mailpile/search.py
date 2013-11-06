@@ -307,7 +307,7 @@ class MailIndex:
             session.ui.warning('=%s/%s has a bogus date' % (msg_mid, msg_id))
             return last_date + 1
 
-    def get_msg_id(self, msg):
+    def get_msg_id(self, msg, msg_ptr):
         raw_msg_id = self.hdr(msg, 'message-id')
         if not raw_msg_id:
             # Create a very long pseudo-msgid for messages without a
@@ -320,6 +320,8 @@ class MailIndex:
                                      self.hdr(msg, 'from'),
                                      self.hdr(msg, 'to')])).strip()
         # Fall back to the msg_ptr if all else fails.
+        if not raw_msg_id:
+            print 'WARNING: No proper Message-ID for %s' % msg_ptr
         return b64c(sha1b64((raw_msg_id or msg_ptr).strip()))
 
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener):
@@ -364,7 +366,7 @@ class MailIndex:
 
             # Message new or modified, let's parse it.
             msg = ParseMessage(mbox.get_file(i), pgpmime=False)
-            msg_id = self.get_msg_id(msg)
+            msg_id = self.get_msg_id(msg, msg_ptr)
             if msg_id in self.MSGIDS:
                 self.update_location(session, self.MSGIDS[msg_id], msg_ptr)
                 added += 1

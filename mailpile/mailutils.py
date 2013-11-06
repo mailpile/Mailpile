@@ -601,8 +601,9 @@ class Email(object):
       msg.attach(MIMEText(msg_text, _subtype='plain', _charset=charset))
     msg_key = mbx.add(msg)
     msg_to = []
-    msg_id = idx.get_msg_id(msg)
-    msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbox_id, msg_key),
+    msg_ptr = mbx.get_msg_ptr(mbox_id, msg_key)
+    msg_id = idx.get_msg_id(msg, msg_ptr)
+    msg_idx, msg_info = idx.add_new_msg(msg_ptr,
                                         msg_id, msg_date, msg_from, msg_to,
                                         msg_subj, '', [])
     idx.set_conversation_ids(msg_info[idx.MSG_MID], msg)
