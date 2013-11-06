@@ -13,17 +13,20 @@ class VCardLine(dict):
     encoded/escaped VCard line.
 
     For specific values, the object can be initialized directly.
-    >>> vcl = VCardLine(name='fn', value='The Dude')
+    >>> vcl = VCardLine(name='name', value='The Dude')
     >>> vcl.as_vcardline()
-    'FN:The Dude'
+    'NAME:The Dude'
 
     Alternately, the name and value attributes can be set after the fact.
+    >>> vcl.name = 'FN'
     >>> vcl.value = 'Lebowski'
     >>> vcl.as_vcardline()
     'FN:Lebowski'
 
-    The object's str() and unicode() methods return the value.
+    The object mostly behaves like a read-only dict.
     >>> print vcl
+    {u'fn': u'Lebowski'}
+    >>> print vcl.value
     Lebowski
 
     VCardLine objects can also be initialized by passing in a line of VCard
@@ -51,30 +54,57 @@ class VCardLine(dict):
     QUOTE_RMAP = dict([(v, k) for k, v in QUOTE_MAP.iteritems()])
 
     def __init__(self, line=None, name=None, value=None):
-        self.name = name
-        self.value = value
-        self.attr = []
+        self._name = name and name.lower() or None
+        self._value = value
+        self._attr = []
         if line is not None:
             self.parse(line)
+        else:
+            self._update_dict()
+
+    def set_name(self, value):
+        self._name = unicode(value).lower()
+        self._update_dict()
+
+    def set_value(self, value):
+        self._value = unicode(value)
+        self._update_dict()
+
+    name = property(lambda self: self._name,
+                    lambda self, v: self.set_name(v))
+
+    value = property(lambda self: self._value,
+                     lambda self, v: self.set_value(v))
 
     def parse(self, line):
-        self.name, self.attr, self.value = self.ParseLine(line)
-        for key in self.keys():
-            del self[key]
-        self.update(dict(reversed(self.attr)))
+        self._name, self._attr, self._value = self.ParseLine(line)
+        self._update_dict()
 
-    def __str__(self):
-        return self.value
+    def _update_dict(self):
+        for key in self.keys():
+            dict.__delitem__(self, key)
+        dict.update(self, dict(reversed(self._attr)))
+        if self.name:
+            dict.__setitem__(self, self._name, self._value)
+
+    def __delitem__(self, *args, **kwargs):
+        raise ValueError('This dict is read-only')
+
+    def __setitem__(self, *args, **kwargs):
+        raise ValueError('This dict is read-only')
+
+    def update(self, *args, **kwargs):
+        raise ValueError('This dict is read-only')
 
     def as_vcardline(self):
-        key = self.Quote(self.name.upper())
-        for k, v in self.attr:
+        key = self.Quote(self._name.upper())
+        for k, v in self._attr:
             if v is None:
                 key += ';%s' % (self.Quote(k))
             else:
                 key += ';%s=%s' % (self.Quote(k), self.Quote(v))
 
-        wrapped, line = '', '%s:%s' % (key, self.Quote(self.value))
+        wrapped, line = '', '%s:%s' % (key, self.Quote(self._value))
         llen = 0
         for char in line:
             char = char.encode('utf-8')
