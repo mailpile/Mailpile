@@ -903,7 +903,7 @@ class ConfigManager(ConfigDict):
                     session.ui.mark('%s: Updating: %s' % (mbx_id, mfn))
                 self._mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
         except:
-            if session.config.sys.debug:
+            if self.sys.debug:
                 import traceback
                 traceback.print_exc()
             if session:

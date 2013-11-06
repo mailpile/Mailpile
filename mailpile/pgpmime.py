@@ -66,7 +66,8 @@ class PGPMimeParser(Parser):
                 enc_count, enc_parts = 0, []
 
             elif mimetype == 'multipart/signed':
-                sig_alg = part.get_param('micalg', 'pgp-sha1').split('-')[1].upper()
+                sig_alg = part.get_param('micalg', 'pgp-sha1'
+                                         ).split('-')[-1].upper()
                 sig_count = 1
 
             elif mimetype == 'multipart/encrypted':

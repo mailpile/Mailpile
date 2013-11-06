@@ -934,7 +934,6 @@ class Email(object):
         if (mimetype == 'text/html' or
             '<html>' in payload or
             '</body>' in payload):
-          print "Adding stuff to pgp tree!"
           tree['html_parts'].append({
             'openpgp_status': openpgp and openpgp[0] or '',
             'openpgp_data': openpgp and openpgp[1] or '',
@@ -942,8 +941,11 @@ class Email(object):
             'type': 'html',
             'data': (payload.strip() and html_cleaner.clean_html(payload)) or ''
           })
-          tree['text_parts'][0]["openpgp_status"] = openpgp and openpgp[0] or ''
-          tree['text_parts'][0]["openpgp_data"] = openpgp and openpgp[1] or ''
+          if tree['text_parts']:
+            # FIXME: What is going on here?  This seems bad and wrong.
+            tp0 = tree['text_parts'][0]
+            tp0["openpgp_status"] = openpgp and openpgp[0] or ''
+            tp0["openpgp_data"] = openpgp and openpgp[1] or ''
         else:
           tree['text_parts'].extend(self.parse_text_part(payload, charset,
                                                          openpgp))
