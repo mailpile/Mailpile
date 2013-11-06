@@ -6347,8 +6347,6 @@ div.content-normal {
   color: #4d4d4d;
   font-size: 18px;
   line-height: 24px;
-  white-space: nowrap;
-  overflow: hidden;
 }
 #sidebar.cozy a {
   padding: 10px 0px;
@@ -6388,6 +6386,11 @@ div.content-normal {
 #sidebar.snug span.sidebar-icon {
   font-size: 16px;
   line-height: 16px;
+}
+#sidebar span.sidebar-tag {
+  width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 #sidebar span.sidebar-notification {
   float: right;
@@ -6623,6 +6626,7 @@ div.content-normal {
   word-wrap: normal;
   word-break: normal;
   overflow-x: hidden;
+  white-space: nowrap;
 }
 #pile-results span.conversation-count {
   width: 24px;
@@ -6644,7 +6648,13 @@ div.content-normal {
 }
 #pile-results td.subject {
   min-width: 275px;
+  max-width: 475px;
   word-break: break-word;
+  overflow: hidden;
+  white-space: nowrap;
+}
+#pile-results td.date {
+  white-space: nowrap;
 }
 #pile-results tr td a {
   font-size: 14px;

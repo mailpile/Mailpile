@@ -54,6 +54,7 @@
 		word-wrap: normal;
 		word-break: normal;
 		overflow-x: hidden;
+    white-space: nowrap;		
 	}
 
 
@@ -78,8 +79,15 @@
 
 	#pile-results td.subject {
 		min-width: 275px;
-		word-break: break-word;		
+		max-width: 475px;
+		word-break: break-word;
+		overflow: hidden;
+    white-space: nowrap;		
 	}
+
+  #pile-results td.date {
+    white-space: nowrap;    
+  }
 
 	#pile-results tr td a {
 		font-size: 14px;

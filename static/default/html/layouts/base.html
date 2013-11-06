@@ -108,7 +108,7 @@
         <li class="sidebar-tags-draggable {{ navigation_on(result.search_tags, tag.slug) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
          <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag">
             <span class="sidebar-icon icon-tag"></span>
-            {{tag.name}}
+            <span class="sidebar-tag">{{tag.name}}</span>
             {% if tag.stats.new > 0 %}
             <span class="sidebar-notification notification-important">{{ abbreviate_number(tag.stats.new) }}</span>
             {% endif %}
