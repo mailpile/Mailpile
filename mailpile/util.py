@@ -64,7 +64,7 @@ def b64c(b):
     Rewrite a base64 string:
         - Remove LF and = characters
         - Replace slashes by underscores
-    
+
     >>> b64c("abc123456def")
     'abc123456def'
     >>> b64c("\\na/=b=c/")
@@ -74,11 +74,12 @@ def b64c(b):
     """
     return b.replace('\n', '').replace('=', '').replace('/', '_')
 
+
 def b64w(b):
     """
     Rewrite a base64 string by replacing
-    "+" by "-" (e.g. for URLs). 
-    
+    "+" by "-" (e.g. for URLs).
+
     >>> b64w("abc123456def")
     'abc123456def'
     >>> b64w("a+b+c+123+")
@@ -113,7 +114,7 @@ def sha1b64(s):
 
     >>> sha1b64("Hello")
     '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\\n'
-    
+
     >>> sha1b64(u"Hello")
     '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=\\n'
 
@@ -197,6 +198,30 @@ def b36(number):
         number, i = divmod(number, 36)
         base36 = alphabet[i] + base36
     return base36 or alphabet[0]
+
+
+def friendly_number(number, base=1000, decimals=0, suffix='',
+                            powers=['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']):
+    """
+    Format a number as friendly text, using common suffixes.
+
+    >>> friendly_number(10240)
+    '10k'
+    >>> friendly_number(12341234, decimals=1)
+    '12.3M'
+    >>> friendly_number(1024000000, base=1024, suffix='iB')
+    '976MiB'
+    """
+    count = 0
+    number = float(number)
+    while number > base and count < len(powers):
+        number /= base
+        count += 1
+    if decimals:
+        fmt = '%%.%df%%s%%s' % decimals
+    else:
+        fmt = '%d%s%s'
+    return fmt % (number, powers[count - 1], suffix)
 
 
 GPG_BEGIN_MESSAGE = '-----BEGIN PGP MESSAGE'

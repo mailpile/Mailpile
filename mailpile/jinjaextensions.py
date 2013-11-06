@@ -9,6 +9,9 @@ import datetime
 import urllib
 import hashlib
 
+from mailpile.util import friendly_number
+
+
 class MailpileCommand(Extension):
     """Run Mailpile Commands, """
     tags = set(['mpcmd'])
@@ -21,6 +24,10 @@ class MailpileCommand(Extension):
         environment.filters['regex_replace'] = self._regex_replace
         environment.globals['friendly_date'] = self._friendly_date
         environment.filters['friendly_date'] = self._friendly_date
+        environment.globals['friendly_bytes'] = self._friendly_bytes
+        environment.filters['friendly_bytes'] = self._friendly_bytes
+        environment.globals['friendly_number'] = self._friendly_number
+        environment.filters['friendly_number'] = self._friendly_number
         environment.globals['show_avatar'] = self._show_avatar
         environment.filters['show_avatar'] = self._show_avatar
         environment.globals['navigation_on'] = self._navigation_on
@@ -48,6 +55,15 @@ class MailpileCommand(Extension):
             return '%d days ago' % days_ago
         else:
             return ts.strftime("%Y-%m-%d")
+
+    def _friendly_number(self, number, decimals=0):
+        # See mailpile/util.py:friendly_number if this needs fixing
+        return friendly_number(number, decimals=decimals, base=1000)
+
+    def _friendly_bytes(self, number, decimals=0):
+        # See mailpile/util.py:friendly_number if this needs fixing
+        return friendly_number(number, decimals=decimals,
+                                       base=1024, suffix='B')
 
     def _show_avatar(self, protocol, host, email, size=60):
 
