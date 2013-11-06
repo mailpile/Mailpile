@@ -452,7 +452,8 @@ class IncrementalMbox(mailbox.mbox):
         break
 
     self._file.seek(0, 2)
-    if self._file_length == self._file.tell(): return
+    if self._file_length == self._file.tell():
+      return
 
     self._file.seek(self._toc[self._next_key-1][0])
     line = self._file.readline()
@@ -495,13 +496,20 @@ class IncrementalMbox(mailbox.mbox):
       raise IOError('No data found')
     return b64w(sha1b64(firstKB)[:4])
 
+  def get_msg_cs80b(self, start, max_length):
+    self._file.seek(start, 0)
+    first80B = self._file.read(min(80, max_length))
+    if first80B == '':
+      raise IOError('No data found')
+    return b64w(sha1b64(first80B)[:4])
+
   def get_msg_ptr(self, mboxid, toc_id):
     msg_start = self._toc[toc_id][0]
     msg_size = self.get_msg_size(toc_id)
     return '%s%s:%s:%s' % (mboxid,
                            b36(msg_start),
                            b36(msg_size),
-                           self.get_msg_cs1k(msg_start, msg_size))
+                           self.get_msg_cs80b(msg_start, msg_size))
 
   def get_file_by_ptr(self, msg_ptr):
     parts = msg_ptr[MBX_ID_LEN:].split(':')
@@ -509,9 +517,12 @@ class IncrementalMbox(mailbox.mbox):
     length = int(parts[1], 36)
 
     # Make sure we can actually read the message
-    cs1k = self.get_msg_cs1k(start, length)
-    if len(parts) > 2 and cs1k != parts[2][:4]:
-      raise IOError('Message not found')
+    cs80b = self.get_msg_cs80b(start, length)
+    if len(parts) > 2:
+      cs1k = self.get_msg_cs1k(start, length)
+      cs = parts[2][:4]
+      if (cs1k != cs and cs80b != cs):
+        raise IOError('Message not found')
 
     return mailbox._PartialFile(self._file, start, start+length)
 
@@ -569,7 +580,7 @@ class Email(object):
       raise NoFromAddressError()
     msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
     msg['Date'] = email.utils.formatdate(msg_date)
-    msg['Message-Id'] = msg_id = email.utils.make_msgid('mailpile')
+    msg['Message-Id'] = email.utils.make_msgid('mailpile')
     msg_subj  = (msg_subject or 'New message')
     msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
     if msg_to:
@@ -590,6 +601,7 @@ class Email(object):
       msg.attach(MIMEText(msg_text, _subtype='plain', _charset=charset))
     msg_key = mbx.add(msg)
     msg_to = []
+    msg_id = idx.get_msg_id(msg)
     msg_idx, msg_info = idx.add_new_msg(mbx.get_msg_ptr(mbox_id, msg_key),
                                         msg_id, msg_date, msg_from, msg_to,
                                         msg_subj, '', [])

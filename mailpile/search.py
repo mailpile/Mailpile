@@ -261,7 +261,7 @@ class MailIndex:
 
         # If message was seen in this mailbox before, update the location
         for i in range(0, len(msg_ptrs)):
-            if (msg_ptrs[i][:MBX_ID_LEN] == msg_ptr[:MBX_ID_LEN]):
+            if msg_ptrs[i][:MBX_ID_LEN] == msg_ptr[:MBX_ID_LEN]:
                 msg_ptrs[i] = msg_ptr
                 msg_ptr = None
                 break
@@ -307,6 +307,21 @@ class MailIndex:
             session.ui.warning('=%s/%s has a bogus date' % (msg_mid, msg_id))
             return last_date + 1
 
+    def get_msg_id(self, msg):
+        raw_msg_id = self.hdr(msg, 'message-id')
+        if not raw_msg_id:
+            # Create a very long pseudo-msgid for messages without a
+            # Message-ID. This was a very badly behaved mailer, so if
+            # we create duplicates this way, we are probably only
+            # losing spam. Even then the Received line should save us.
+            raw_msg_id = ('\t'.join([self.hdr(msg, 'date'),
+                                     self.hdr(msg, 'subject'),
+                                     self.hdr(msg, 'received'),
+                                     self.hdr(msg, 'from'),
+                                     self.hdr(msg, 'to')])).strip()
+        # Fall back to the msg_ptr if all else fails.
+        return b64c(sha1b64((raw_msg_id or msg_ptr).strip()))
+
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener):
         try:
             mbox = mailbox_opener(session, mailbox_idx)
@@ -343,14 +358,13 @@ class MailIndex:
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status)
-                continue
+                #FIXME: continue
             else:
                 session.ui.mark(parse_status)
 
             # Message new or modified, let's parse it.
             msg = ParseMessage(mbox.get_file(i), pgpmime=False)
-            msg_id = b64c(sha1b64((self.hdr(msg, 'message-id') or msg_ptr
-                                   ).strip()))
+            msg_id = self.get_msg_id(msg)
             if msg_id in self.MSGIDS:
                 self.update_location(session, self.MSGIDS[msg_id], msg_ptr)
                 added += 1
@@ -528,7 +542,7 @@ class MailIndex:
         msg_info = [
             msg_mid,                                     # Index ID
             msg_ptr,                                     # Location on disk
-            b64c(sha1b64((msg_id or msg_ptr).strip())),  # Message ID
+            msg_id,                                      # Message ID
             b36(msg_ts),                                 # Date as UTC timstamp
             msg_from,                                    # From:
             self.compact_to_list(msg_to or []),          # To: / Cc: / Bcc:
