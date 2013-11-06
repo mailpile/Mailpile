@@ -6372,7 +6372,7 @@ div.content-normal {
 }
 #sidebar span.sidebar-icon {
   position: relative;
-  top: 2px;
+  top: -2px;
   left: 0px;
   margin-right: 4px;
   font-weight: normal;
@@ -6389,13 +6389,15 @@ div.content-normal {
 }
 #sidebar span.sidebar-tag {
   width: 130px;
+  display: inline-block;
   white-space: nowrap;
   overflow: hidden;
 }
 #sidebar span.sidebar-notification {
   float: right;
-  padding: .25em .5em;
+  padding: .6em;
   font-size: 11px;
+  line-height: 11px;
   color: #ffffff;
 }
 #sidevar .navigation-on a:hover span.sidebar-notification {
@@ -6654,6 +6656,8 @@ div.content-normal {
   white-space: nowrap;
 }
 #pile-results td.date {
+  width: 35px;
+  text-align: center;
   white-space: nowrap;
 }
 #pile-results tr td a {

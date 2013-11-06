@@ -32,9 +32,8 @@ class MailpileCommand(Extension):
         environment.filters['show_avatar'] = self._show_avatar
         environment.globals['navigation_on'] = self._navigation_on
         environment.filters['navigation_on'] = self._navigation_on
-        environment.globals['abbreviate_number'] = self._abbreviate_number
-        environment.filters['abbreviate_number'] = self._abbreviate_number
-
+        environment.globals['show_tags'] = self._show_tags
+        environment.filters['show_tags'] = self._show_tags
 
     def _command(self, command, *args, **kwargs):
         return Action(self.env.session, command, args, data=kwargs).as_dict()
@@ -50,11 +49,11 @@ class MailpileCommand(Extension):
         if days_ago < 1:
             return 'today'
         elif days_ago < 2:
-            return 'yesterday'
+            return '%d day' % days_ago
         elif days_ago < 7:
-            return '%d days ago' % days_ago
+            return '%d days' % days_ago
         else:
-            return ts.strftime("%Y-%m-%d")
+            return ts.strftime("%b %d")
 
     def _friendly_number(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing
@@ -85,6 +84,6 @@ class MailpileCommand(Extension):
             else:
               return ""
 
-    def _abbreviate_number(self, number):
-
-      return number
+    def _show_tags(self, search_terms, tags):
+    
+      return

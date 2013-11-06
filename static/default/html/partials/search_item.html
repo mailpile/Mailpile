@@ -10,11 +10,11 @@
     {% if message.conv_count > 1 %}<span class="conversation-count">{{ message.conv_count }}</span>{% endif %}
   </td>
   <td class="subject">
-    {% for tag in message.tags %}{% if tag.slug != "new" and not tag.searched %}<a class="pile-message-tag" href="{{ tag.url }}/">{{ tag.name }}</a>{% endif %}{% endfor %}
+    {% if show_tags(result.search_terms, message.tags) %}<span class="icon-tag"></span>{% for tag in message.tags %}{% if tag.slug != "new" and not tag.searched %}<a class="pile-message-tag" href="/in/{{ tag.slug }}/">{{ tag.name }}</a>{% endif %}{% endfor %}{% endif %}
     <a class="item-subject" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
   </td>
   <td class="date" valign="top">
-    <a class="item-date" href="/search/dates:{{message.date}}/">{{ message.timestamp|friendly_date }}</a>
+    <a href="/search/dates:{{message.date}}/">{{ message.timestamp|friendly_date }}</a>
   </td>
   <td class="checkbox" valign="top">
     <input type="checkbox" name="mid" value="{{message.mid}}">
