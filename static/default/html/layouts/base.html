@@ -96,7 +96,7 @@
               <span class="sidebar-icon icon-{{tag.slug}}"></span>
               {{tag.name}}
               {% if tag.stats.new > 0 %}
-              <span class="sidebar-notification notification-important">{{ abbreviate_number(tag.stats.new) }}</span>
+              <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
               {% endif %}
             </a>
         </li>
@@ -110,7 +110,7 @@
             <span class="sidebar-icon icon-tag"></span>
             <span class="sidebar-tag">{{tag.name}}</span>
             {% if tag.stats.new > 0 %}
-            <span class="sidebar-notification notification-important">{{ abbreviate_number(tag.stats.new) }}</span>
+            <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
             {% endif %}
           </a>        
         </li>
