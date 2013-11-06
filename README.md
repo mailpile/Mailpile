@@ -11,6 +11,7 @@
 
 #### Recent changes ####
 
+- 2013-11-05: CLI hackers: check out `help hacks` and `hacks/pycli`
 - 2013-10-29: Tag metadata greatly was enhanced (please run
   `mp --setup` or `setup` in the Mailpile CLI to update your config).
 - 2013-10-28: python-gnupginterface is no longer a dependency.
