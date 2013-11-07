@@ -15,7 +15,7 @@ from mailpile.mailutils import MBX_ID_LEN, OpenMailbox, IncrementalMaildir
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
-from mailpile.vcard import SimpleVCard
+from mailpile.vcard import SimpleVCard, VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
 
 
@@ -735,7 +735,7 @@ class ConfigManager(ConfigDict):
         self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
 
         self.index = None
-        self._vcards = {}
+        self.vcards = {}
         self._mbox_cache = {}
         self._running = {}
 
@@ -848,7 +848,8 @@ class ConfigManager(ConfigDict):
             pass
 
         self.parse_config(session, '\n'.join(lines), source=filename)
-        self.load_vcards(session)
+        self.vcards = VCardStore(self, self.data_directory('vcards'))
+        self.vcards.load_vcards(session)
 
     def save(self):
         self._mkworkdir(None)
@@ -998,92 +999,6 @@ class ConfigManager(ConfigDict):
         bpath = self.data_directory(ftype, mode=mode, mkdir=mkdir)
         fpath = os.path.join(bpath, fpath)
         return fpath, open(fpath, mode)
-
-    def load_vcards(self, session):
-        try:
-            vcard_dir = self.data_directory('vcards')
-            for fn in os.listdir(vcard_dir):
-                try:
-                    c = SimpleVCard().load(os.path.join(vcard_dir, fn))
-                    c.gpg_recipient = lambda: self.prefs.get('gpg_recipient')
-                    self.index_vcard(c)
-                    if session:
-                        session.ui.mark('Loaded %s' % c.email)
-                except:
-                    import traceback
-                    traceback.print_exc()
-                    if session:
-                        session.ui.warning('Failed to load vcard %s' % fn)
-        except OSError:
-            pass
-
-    def index_vcard(self, c):
-        if c.kind == 'individual':
-            for email, attrs in c.get('EMAIL', []):
-                self._vcards[email.lower()] = c
-        else:
-            for handle, attrs in c.get('NICKNAME', []):
-                self._vcards[handle.lower()] = c
-        self._vcards[c.random_uid] = c
-
-    def deindex_vcard(self, c):
-        for email, attrs in c.get('EMAIL', []):
-            if email.lower() in self._vcards:
-                if c.kind == 'individual':
-                    del self._vcards[email.lower()]
-        for handle, attrs in c.get('NICKNAME', []):
-            if handle.lower() in self._vcards:
-                if c.kind != 'individual':
-                    del self._vcards[handle.lower()]
-        if c.random_uid in self._vcards:
-            del self._vcards[c.random_uid]
-
-    def get_vcard(self, email):
-        return self._vcards.get(email.lower(), None)
-
-    def find_vcards(self, terms, kinds=['individual']):
-        results, vcards = [], self._vcards
-        if not terms:
-            results = [set([vcards[k].random_uid for k in vcards
-                       if (vcards[k].kind in kinds) or not kinds])]
-        for term in terms:
-            term = term.lower()
-            results.append(set([vcards[k].random_uid for k in vcards
-                                if (term in k or term in vcards[k].fn.lower())
-                                and ((vcards[k].kind in kinds) or not kinds)]))
-        while len(results) > 1:
-            results[0] &= results.pop(-1)
-        results = [vcards[c] for c in results[0]]
-        results.sort(key=lambda k: k.fn)
-        return results
-
-    def add_vcard(self, handle, name=None, kind=None):
-        vcard_dir = self.data_directory('vcards', mode='w', mkdir=True)
-        c = SimpleVCard()
-        c.filename = os.path.join(vcard_dir, c.random_uid) + '.vcf'
-        c.gpg_recipient = lambda: self.prefs.get('gpg_recipient')
-        if kind == 'individual':
-            c.email = handle
-        else:
-            c['NICKNAME'] = handle
-        if name is not None:
-            c.fn = name
-        if kind is not None:
-            c.kind = kind
-        self.index_vcard(c)
-        return c.save()
-
-    def del_vcard(self, email):
-        vcard = self.get_vcard(email)
-        try:
-            if vcard:
-                self.deindex_vcard(vcard)
-                os.remove(vcard.filename)
-                return True
-            else:
-                return False
-        except (OSError, IOError):
-            return False
 
     def prepare_workers(config, session, daemons=False):
         # Set globals from config first...
