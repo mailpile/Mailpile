@@ -1,3 +1,4 @@
+import os
 import time
 from mailpile.config import PathDict
 
@@ -22,7 +23,8 @@ CONFIG_RULES = {
         'postinglist_dir': ('Search index directory', 'dir',               ''),
         'mailbox':        ['Mailboxes we index', 'path',                   []],
         'path':           ['Locations of assorted data', False, {
-             'html_theme': ['Default theme', 'dir',          'static/default'],
+             'html_theme': ['Default theme', 'dir',    os.path.join('static',
+                                                                   'default')],
              'vcards':     ['Location of vcards', 'dir',             'vcards'],
          }],
     }],
