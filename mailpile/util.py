@@ -201,10 +201,12 @@ def b36(number):
 
 
 def friendly_number(number, base=1000, decimals=0, suffix='',
-                            powers=['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']):
+                    powers=['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']):
     """
     Format a number as friendly text, using common suffixes.
 
+    >>> friendly_number(102)
+    '102'
     >>> friendly_number(10240)
     '10k'
     >>> friendly_number(12341234, decimals=1)
@@ -221,7 +223,7 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
         fmt = '%%.%df%%s%%s' % decimals
     else:
         fmt = '%d%s%s'
-    return fmt % (number, powers[count - 1], suffix)
+    return fmt % (number, powers[count], suffix)
 
 
 GPG_BEGIN_MESSAGE = '-----BEGIN PGP MESSAGE'
