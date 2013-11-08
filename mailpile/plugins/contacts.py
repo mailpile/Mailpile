@@ -389,6 +389,17 @@ class AddressSearch(VCardCommand):
         'q': 'search terms',
     }
 
+    def _boost_rank(self, term, *matches):
+        boost = 0.0
+        for match in matches:
+            match = match.lower()
+            if term in match:
+                if match.startswith(term):
+                    boost += 25*(float(len(term)) / len(match))
+                else:
+                    boost += 5*(float(len(term)) / len(match))
+        return int(boost)
+
     def _vcard_addresses(self, cfg, terms):
         addresses = []
         for vcard in cfg.vcards.find_vcards(terms, kinds='individual'):
@@ -397,37 +408,64 @@ class AddressSearch(VCardCommand):
                      for k in vcard.get_all('openpgp-key')]
              photos = vcard.get_all('photo')
              for email_vcl in vcard.get_all('email'):
-                 rank = 3.0 + 5*len(keys) + len(photos)
+                 rank = 10.0 + 25*len(keys) + 5*len(photos)
                  for term in terms:
-                     if term in fn.value.lower():
-                         rank += 10*(float(len(term)) / len(fn.value))
-                     if term in email_vcl.value:
-                         rank += 10*(float(len(term)) / len(email_vcl.value))
+                     rank += self._boost_rank(term, fn.value, email_vcl.value)
                  info = {
                      'rank': int(rank),
                      'fn': fn.value,
                      'proto': 'smtp',
                      'address': email_vcl.value,
-                     'keys': [k for k in keys[:1]]
                  }
+                 if keys:
+                     info['keys'] = [k for k in keys[:1]]
                  addresses.append(info)
         return addresses
 
     def _index_addresses(self, cfg, terms, vcard_addresses):
-        existing = dict([(k['address'], k) for k in vcard_addresses])
+        existing = dict([(k['address'].lower(), k) for k in vcard_addresses])
         index = self._idx()
-        # FIXME: 1st, go through the last 100 or so messages and search for
-        #        matching senders or recipients, give medium priority.
-        # FIXME: 2nd, search the social graph for matches, give low priority.
+
+        # 1st, go through the last 1000 or so messages in the index and search
+        # for matching senders or recipients, give medium priority.
+        matches = {}
         addresses = []
+        for msg_idx in range(0, len(index.INDEX))[-1000:]:
+            frm = index.get_msg_at_idx_pos(msg_idx)[index.MSG_FROM]
+            match = True
+            for term in terms:
+                if term not in frm.lower():
+                    match = False
+            if match:
+                matches[frm] = matches.get(frm, 0) + 1
+        for frm in matches:
+            email, fn = self._fparse(frm)
+            boost = min(10, matches[frm])
+            for term in terms:
+                boost += self._boost_rank(term, fn, email)
+
+            if email.lower() in existing:
+                 existing[email.lower()]['rank'] += min(20, boost)
+            else:
+                 info = {
+                     'rank': boost,
+                     'fn': fn,
+                     'proto': 'smtp',
+                     'address': email,
+                 }
+                 existing[email.lower()] = info
+                 addresses.append(info)
+
+        # FIXME: 2nd, search the social graph for matches, give low priority.
+
         return addresses
 
     def command(self):
         session, config = self.session, self.session.config
         if 'q' in self.data:
-            terms = self.data['q']
+            terms = [t.lower() for t in self.data['q']]
         else:
-            terms = self.args
+            terms = [t.lower() for t in self.args]
 
         vcard_addrs = self._vcard_addresses(config, terms)
         index_addrs = self._index_addresses(config, terms, vcard_addrs)
