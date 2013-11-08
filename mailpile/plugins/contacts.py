@@ -258,17 +258,30 @@ class ListVCards(VCardCommand):
     SYNOPSIS = (None, 'vcard/list', None, '[--lines] [<terms>]')
     ORDER = ('Internals', 6)
     KIND = ''
+    HTTP_QUERY_VARS = {
+        'q': 'search terms',
+        'format': 'lines or mpCard (default)'
+    }
 
     def command(self):
         session, config = self.session, self.session.config
         kinds = self.KIND and [self.KIND] or []
-        if self.args and self.args[0] == '--lines':
+
+        if 'format' in self.data:
+            fmt = self.data['format'][0]
+        elif self.args and self.args[0] == '--lines':
             self.args.pop(0)
-            mode = 'lines'
+            fmt = 'lines'
         else:
-            mode = 'mpCard'
-        vcards = config.vcards.find_vcards(self.args, kinds=kinds)
-        return self._vcard_list(vcards, mode=mode, info={
+            fmt = 'mpCard'
+
+        if 'q' in self.data:
+            terms = self.data['q']
+        else:
+            terms = self.args
+
+        vcards = config.vcards.find_vcards(terms, kinds=kinds)
+        return self._vcard_list(vcards, mode=fmt, info={
             'terms': self.args
         })
 
@@ -305,6 +318,7 @@ class RemoveContact(ContactVCard(RemoveVCard)):
 
 
 class ListContacts(ContactVCard(ListVCards)):
+    SYNOPSIS = (None, 'contact/list', 'contact/list', '[--lines] [<terms>]')
     """Find contacts"""
 
 
@@ -367,8 +381,66 @@ class ContactImporters(Command):
         return res
 
 
+class AddressSearch(VCardCommand):
+    """Find addresses (in contacts or mail index)"""
+    SYNOPSIS = (None, 'search/address', 'search/address', '[<terms>]')
+    ORDER = ('Searching', 6)
+    HTTP_QUERY_VARS = {
+        'q': 'search terms',
+    }
+
+    def _vcard_addresses(self, cfg, terms):
+        addresses = []
+        for vcard in cfg.vcards.find_vcards(terms, kinds='individual'):
+             fn = vcard.get('fn')
+             keys = [{'fingerprint': k.value, 'type': 'openpgp'}
+                     for k in vcard.get_all('openpgp-key')]
+             photos = vcard.get_all('photo')
+             for email_vcl in vcard.get_all('email'):
+                 rank = 3.0 + 5*len(keys) + len(photos)
+                 for term in terms:
+                     if term in fn.value.lower():
+                         rank += 10*(float(len(term)) / len(fn.value))
+                     if term in email_vcl.value:
+                         rank += 10*(float(len(term)) / len(email_vcl.value))
+                 info = {
+                     'rank': int(rank),
+                     'fn': fn.value,
+                     'proto': 'smtp',
+                     'address': email_vcl.value,
+                     'keys': [k for k in keys[:1]]
+                 }
+                 addresses.append(info)
+        return addresses
+
+    def _index_addresses(self, cfg, terms, vcard_addresses):
+        existing = dict([(k['address'], k) for k in vcard_addresses])
+        index = self._idx()
+        # FIXME: 1st, go through the last 100 or so messages and search for
+        #        matching senders or recipients, give medium priority.
+        # FIXME: 2nd, search the social graph for matches, give low priority.
+        addresses = []
+        return addresses
+
+    def command(self):
+        session, config = self.session, self.session.config
+        if 'q' in self.data:
+            terms = self.data['q']
+        else:
+            terms = self.args
+
+        vcard_addrs = self._vcard_addresses(config, terms)
+        index_addrs = self._index_addresses(config, terms, vcard_addrs)
+        addresses = vcard_addrs + index_addrs
+        addresses.sort(key=lambda k: -k['rank'])
+        return {
+            'addresses': addresses[:10]
+        }
+
+
 mailpile.plugins.register_commands(VCard, AddVCard, VCardAddLines,
                                    RemoveVCard, ListVCards)
 mailpile.plugins.register_commands(Contact, AddContact, ContactAddLines,
-                                   RemoveContact, ListContacts)
+                                   RemoveContact, ListContacts,
+                                   AddressSearch)
 mailpile.plugins.register_commands(ContactImport, ContactImporters)
