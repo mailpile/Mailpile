@@ -5,12 +5,13 @@
 
 #### Who's doing what? ####
 
-- 2013-11-05: bre: fixing bugs in message indexer, contacts API
-- 2013-11-05: smari: OpenPGP and contacts, updating wiki
-- 2013-11-05: bnvk: font tweaking, work on the "fluffy" view
+- 2013-11-08: bre: Attending FSCONS and meeting with Smari
+- 2013-11-08: smari: Attending FSCONS and meeting with Bjarni
+- 2013-11-08: bnvk: perk design work, compose stuff
 
 #### Recent changes ####
 
+- 2013-11-08: New API endpoint /search/address for to/cc/bcc autocomplete
 - 2013-11-05: CLI hackers: check out `help hacks` and `hacks/pycli`
 - 2013-10-29: Tag metadata greatly was enhanced (please run
   `mp --setup` or `setup` in the Mailpile CLI to update your config).
