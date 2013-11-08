@@ -387,6 +387,7 @@ class AddressSearch(VCardCommand):
     ORDER = ('Searching', 6)
     HTTP_QUERY_VARS = {
         'q': 'search terms',
+        'num': 'number of results'
     }
 
     def _boost_rank(self, term, *matches):
@@ -414,7 +415,7 @@ class AddressSearch(VCardCommand):
                  info = {
                      'rank': int(rank),
                      'fn': fn.value,
-                     'proto': 'smtp',
+                     'protocol': 'smtp',
                      'address': email_vcl.value,
                  }
                  if keys:
@@ -430,7 +431,7 @@ class AddressSearch(VCardCommand):
         # for matching senders or recipients, give medium priority.
         matches = {}
         addresses = []
-        for msg_idx in range(0, len(index.INDEX))[-1000:]:
+        for msg_idx in index.INDEX_SORT['date_fwd'][-2500:]:
             frm = index.get_msg_at_idx_pos(msg_idx)[index.MSG_FROM]
             match = True
             for term in terms:
@@ -466,13 +467,16 @@ class AddressSearch(VCardCommand):
             terms = [t.lower() for t in self.data['q']]
         else:
             terms = [t.lower() for t in self.args]
+        num = int(self.data.get('num', 10))
 
         vcard_addrs = self._vcard_addresses(config, terms)
         index_addrs = self._index_addresses(config, terms, vcard_addrs)
         addresses = vcard_addrs + index_addrs
         addresses.sort(key=lambda k: -k['rank'])
         return {
-            'addresses': addresses[:10]
+            'addresses': addresses[:num],
+            'displayed': min(num, len(addresses)),
+            'total': len(addresses)
         }
 
 

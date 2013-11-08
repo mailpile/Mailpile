@@ -945,6 +945,7 @@ class MailIndex:
             o = keys[:]
             o.sort(key=sorter)
             self.INDEX_SORT[order] = keys[:]
+            self.INDEX_SORT[order+'_fwd'] = o
             for i in range(0, len(o)):
                     self.INDEX_SORT[order][o[i]] = i
 
