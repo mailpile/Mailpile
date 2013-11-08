@@ -52,8 +52,15 @@ or use the following command to ask Python to do the work for you:
 
     $ pip install -r requirements.txt
 
-You also need your e-mail to be in a traditional mbox formatted Unix
-mailbox, a Maildir or a gmvault backup repository.
+Note that installing lxml may require certain C header files that are not
+necessarily included on your machine. For Debian-based distributions, this can
+be fixed by running 
+
+    $ sudo apt-get install libxml2-dev libxslt1-dev
+
+as per [this Stack Overflow answer](http://stackoverflow.com/questions/15759150/src-lxml-etree-defs-h931-fatal-error-libxml-xmlversion-h-no-such-file-or-di).
+You also need your e-mail to be in a traditional mbox formatted
+Unix mailbox, a Maildir or a gmvault backup repository.
 
 
 ## Setting up the basic config ##
