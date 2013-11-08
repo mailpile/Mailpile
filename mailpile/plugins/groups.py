@@ -70,17 +70,17 @@ class AddGroup(GroupVCard(AddVCard)):
     """Add groups"""
 
 
-class SetGroup(GroupVCard(SetVCard)):
-    """Add groups"""
+class GroupAddLines(GroupVCard(VCardAddLines)):
+    """Add lines to a group VCard"""
 
 
 class RemoveGroup(GroupVCard(RemoveVCard)):
-    """Add groups"""
+    """Remove groups"""
 
 
 class ListGroups(GroupVCard(ListVCards)):
     """Find groups"""
 
 
-mailpile.plugins.register_commands(Group, AddGroup, SetGroup, RemoveGroup,
-                                   ListGroups)
+mailpile.plugins.register_commands(Group, AddGroup, GroupAddLines,
+                                   RemoveGroup, ListGroups)

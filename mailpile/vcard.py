@@ -15,9 +15,9 @@ class VCardLine(dict):
     encoded/escaped VCard line.
 
     For specific values, the object can be initialized directly.
-    >>> vcl = VCardLine(name='name', value='The Dude', pref=1)
+    >>> vcl = VCardLine(name='name', value='The Dude', pref=None)
     >>> vcl.as_vcardline()
-    'NAME;PREF=1:The Dude'
+    'NAME;PREF:The Dude'
 
     Alternately, the name and value attributes can be set after the fact.
     >>> vcl.name = 'FN'
@@ -60,12 +60,19 @@ class VCardLine(dict):
         self._name = name and unicode(name).lower() or None
         self._value = unicode(value)
         self._attrs = []
+        self._line_id = 0
         for k in attrs:
-            self._attrs.append((k.lower(), unicode(attrs[k])))
+            self._attrs.append((k.lower(), attrs[k]))
         if line is not None:
             self.parse(line)
         else:
             self._update_dict()
+
+    def set_line_id(self, value):
+        self._line_id = value
+        self._update_dict()
+
+    line_id = property(lambda self: self._line_id, set_line_id)
 
     def set_name(self, value):
         self._name = unicode(value).lower()
@@ -98,6 +105,8 @@ class VCardLine(dict):
         dict.update(self, dict(reversed(self._attrs)))
         if self.name:
             dict.__setitem__(self, self._name, self._value)
+        if self._line_id:
+            dict.__setitem__(self, 'line_id', self._line_id)
 
     def __delitem__(self, *args, **kwargs):
         raise ValueError('This dict is read-only')
@@ -115,7 +124,7 @@ class VCardLine(dict):
             if v is None:
                 key += ';%s' % (self.Quote(k))
             else:
-                key += ';%s=%s' % (self.Quote(k), self.Quote(v))
+                key += ';%s=%s' % (self.Quote(k), self.Quote(unicode(v)))
 
         wrapped, line = '', '%s:%s' % (key, self.Quote(self._value))
         llen = 0
@@ -148,7 +157,7 @@ class VCardLine(dict):
         >>> VCardLine.ParseLine('foo:val;ue')
         (u'foo', [], u'val;ue')
         >>> VCardLine.ParseLine('foo;BAR;\\\\baz:value')
-        (u'foo', [(u'bar', True), (u'\\\\baz', True)], u'value')
+        (u'foo', [(u'bar', None), (u'\\\\baz', None)], u'value')
         >>> VCardLine.ParseLine('FOO;bar=comma\\,semicolon\\;'
         ...                     'backslash\\\\\\\\:value')
         (u'foo', [(u'bar', u'comma,semicolon;backslash\\\\')], u'value')
@@ -176,7 +185,7 @@ class VCardLine(dict):
                         k, v = parsed.split('=', 1)
                     else:
                         k = parsed
-                        v = True
+                        v = None
                     attrs.append((k.lower(), v))
                     parsed = ''
                     if char == ':':
@@ -201,7 +210,7 @@ class SimpleVCard(object):
     >>> vcard = SimpleVCard(VCardLine(name='fn', value='Bjarni'),
     ...                     VCardLine(name='email', value='bre@example.com'),
     ...                     VCardLine(name='email', value='bre2@example.com'),
-    ...                     VCardLine('EMAIL;PREF=1:bre@evil.com'))
+    ...                     VCardLine('EMAIL;TYPE=PREF:bre@evil.com'))
 
     The preferred (or Nth) line of any type can be retrieved using
     the get method. Lines are sorted by (preference, card order).
@@ -298,8 +307,7 @@ class SimpleVCard(object):
         self._lines = []
         if 'data' in kwargs and kwargs['data'] is not None:
             self.load(data=kwargs['data'])
-        for line in lines:
-            self.add(line)
+        self.add(*lines)
 
     def _cardinality(self, vcl):
         if vcl.name.startswith('x-'):
@@ -307,9 +315,25 @@ class SimpleVCard(object):
         else:
             return self.VCARD4_KEYS.get(vcl.name.upper(), [''])[0]
 
-    def add(self, vcl):
+    def remove(self, *line_ids):
         """
-        Add a line to a VCard.
+        Remove one or more lines from the VCard.
+
+        >>> vc = SimpleVCard(VCardLine(name='fn', value='Houdini'))
+        >>> vc.remove(vc.get('fn').line_id)
+        >>> vc.get('fn')
+        Traceback (most recent call last):
+            ...
+        IndexError: ...
+        """
+        for index in range(0, len(self._lines)):
+            vcl = self._lines[index]
+            if vcl and vcl.line_id in line_ids:
+                 self._lines[index] = None
+
+    def add(self, *vcls):
+        """
+        Add one or more lines to a VCard.
 
         >>> vc = SimpleVCard()
         >>> vc.add(VCardLine(name='fn', value='Bjarni'))
@@ -322,21 +346,25 @@ class SimpleVCard(object):
             ...
         ValueError: Not allowed on card: evil
         """
-        cardinality = self._cardinality(vcl)
-        count = len([l for l in self._lines if l.name == vcl.name])
-        if not cardinality:
-            raise ValueError('Not allowed on card: %s' % vcl.name)
-        if cardinality in ('1', '*1'):
-            if count:
-                raise ValueError('Already on card: %s' % vcl.name)
-        self._lines.append(vcl)
+        for vcl in vcls:
+            cardinality = self._cardinality(vcl)
+            count = len([l for l in self._lines if l.name == vcl.name])
+            if not cardinality:
+                raise ValueError('Not allowed on card: %s' % vcl.name)
+            if cardinality in ('1', '*1'):
+                if count:
+                    raise ValueError('Already on card: %s' % vcl.name)
+            self._lines.append(vcl)
+            vcl.line_id = len(self._lines)
 
     def get_all(self, key):
-        return [l for l in self._lines if l.name == key.lower()]
+        return [l for l in self._lines if l and  l.name == key.lower()]
 
     def get(self, key, n=0):
         lines = self.get_all(key)
-        lines.sort(key=lambda l: 1 - int(l.get('pref', 0)))
+        lines.sort(key=lambda l: 1 - (('pref' in l or
+                                       'pref' in l.get('type', '').lower()
+                                      ) and 1 or 0))
         return lines[n]
 
     def as_jCard(self):
@@ -345,8 +373,34 @@ class SimpleVCard(object):
         stream = ["vcardstream", ["vcard", card]]
         return stream
 
+    def _mpcdict(self, vcl):
+        d = {}
+        for k in vcl.keys():
+            if k not in ('line_id', ):
+                if k.startswith('x-mailpile-'):
+                    d[k.replace('x-mailpile-', '')] = vcl[k]
+                else:
+                    d[k] = vcl[k]
+        return d
+ 
+    MPCARD_SINGLETONS = ('fn', 'kind')
+    MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
+
     def as_mpCard(self):
-        return dict([(key, self[key][0][0]) for key in self.order])
+        mpCard = {}
+        self._lines.sort(key=lambda c: 1-(c.get('pref', 0)))
+        for vcl in self._lines:
+            if vcl.name in self.MPCARD_SUPPRESSED:
+                continue
+            name = vcl.name.replace('x-mailpile-', '')
+            if name not in mpCard:
+                if vcl.name in self.MPCARD_SINGLETONS:
+                    mpCard[name] = vcl.value
+                else:
+                    mpCard[name] = [self._mpcdict(vcl)]
+            elif vcl.name not in self.MPCARD_SINGLETONS:
+                mpCard[name].append(self._mpcdict(vcl))
+        return mpCard
 
     def as_vCard(self):
         """
@@ -369,8 +423,11 @@ class SimpleVCard(object):
         self._lines.sort(key=lambda k: (k.name == 'version') and 1 or 2)
 
         return '\n'.join(['BEGIN:VCARD'] +
-                         [l.as_vcardline() for l in self._lines] +
+                         [l.as_vcardline() for l in self._lines if l] +
                          ['END:VCARD'])
+
+    def as_lines(self):
+        return self._lines
 
     def _vcard_get(self, key):
         try:
@@ -383,7 +440,7 @@ class SimpleVCard(object):
         try:
             self.get(key).value = value
         except IndexError:
-            self.add(VCardLine(name=key, value=value, pref=1))
+            self.add(VCardLine(name=key, value=value, pref=None))
 
     nickname = property(lambda self: self._vcard_get('nickname'),
                         lambda self, e: self._vcard_set('nickname', e))
@@ -483,13 +540,13 @@ class VCardStore(dict):
         self.config = config
         self.vcard_dir = vcard_dir
 
-    def _index_vcard(self, card):
+    def index_vcard(self, card):
         attr = (card.kind == 'individual') and 'email' or 'nickname'
         for vcl in card.get_all(attr):
             self[vcl.value.lower()] = card
         self[card.random_uid] = card
 
-    def _deindex_vcard(self, card):
+    def deindex_vcard(self, card):
         attr = (card.kind == 'individual') and 'email' or 'nickname'
         for vcl in card.get_all(attr):
             if vcl.value.lower() in self:
@@ -502,9 +559,9 @@ class VCardStore(dict):
             prefs = self.config.prefs
             for fn in os.listdir(self.vcard_dir):
                 try:
-                    c = SimpleVCard().load(os.path.join(vcard_dir, fn))
+                    c = SimpleVCard().load(os.path.join(self.vcard_dir, fn))
                     c.gpg_recipient = lambda: prefs.get('gpg_recipient')
-                    self._index_vcard(c)
+                    self.index_vcard(c)
                     if session:
                         session.ui.mark('Loaded %s' % c.email)
                 except:
@@ -541,11 +598,11 @@ class VCardStore(dict):
                                          card.random_uid) + '.vcf'
             card.gpg_recipient = lambda: prefs.get('gpg_recipient')
             card.save()
-            self._index_vcard(card)
+            self.index_vcard(card)
 
     def del_vcards(self, *cards):
         for card in cards:
-            self._deindex_vcard(card)
+            self.deindex_vcard(card)
             try:
                 os.remove(card.filename)
             except (OSError, IOError):

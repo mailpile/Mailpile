@@ -1,6 +1,7 @@
 import mailpile.plugins
 from mailpile.commands import Command, Action
 from mailpile.mailutils import Email, ExtractEmails
+from mailpile.vcard import SimpleVCard, VCardLine
 from mailpile.util import *
 
 
@@ -115,8 +116,13 @@ class VCardCommand(Command):
         name = fromdata.replace(email, '').replace('<>', '').strip()
         return email, (name or email)
 
-    def _prepare_new_vcard(self, vcard):
-        pass
+    def _make_new_vcard(self, handle, name):
+        l = [VCardLine(name='fn', value=name),
+             VCardLine(name='kind', value=self.KIND)]
+        if self.KIND == 'individual':
+            return SimpleVCard(VCardLine(name='email', value=handle), *l)
+        else:
+            return SimpleVCard(VCardLine(name='nickname', value=handle), *l)
 
     def _valid_vcard_handle(self, vc_handle):
         return (vc_handle and '@' in vc_handle[1:])
@@ -130,11 +136,17 @@ class VCardCommand(Command):
     def _pre_delete_vcard(self, vcard):
         pass
 
-    def _format_values(self, key, vals):
-        if key.upper() in ('MEMBER', ):
-            return [['mailto:%s' % e, []] for e in vals]
+    def _vcard_list(self, vcards, mode='mpCard', info=None):
+        info = info or {}
+        if mode == 'lines':
+            data = [x.as_lines() for x in vcards]
         else:
-            return [[e, []] for e in vals]
+            data = [x.as_mpCard() for x in vcards]
+        info.update({
+            self.VCARD+'s': data,
+            "count": len(vcards)
+        })
+        return info
 
 
 class VCard(VCardCommand):
@@ -147,7 +159,7 @@ class VCard(VCardCommand):
         session, config = self.session, self.session.config
         vcards = []
         for email in self.args:
-            vcard = config.get_vcard(email)
+            vcard = config.vcards.get_vcard(email)
             if vcard:
                 vcards.append(vcard)
             else:
@@ -183,8 +195,8 @@ class AddVCard(VCardCommand):
             vcards = []
             for handle, name in pairs:
                 if handle.lower() not in config.vcards:
-                    vcard = config.add_vcard(handle, name, self.KIND)
-                    self._prepare_new_vcard(vcard)
+                    vcard = self._make_new_vcard(handle, name)
+                    config.vcards.add_vcard(vcard)
                     vcards.append(vcard)
                 else:
                     session.ui.warning('Already exists: %s' % handle)
@@ -193,39 +205,33 @@ class AddVCard(VCardCommand):
         return {"contacts": [x.as_mpCard() for x in vcards]}
 
 
-class SetVCard(VCardCommand):
-    """Set vcard variables"""
-    SYNOPSIS = (None, 'vcard/set', None, '<email> <attr> <value>')
+class VCardAddLines(VCardCommand):
+    """Add a lines to a VCard"""
+    SYNOPSIS = (None, 'vcard/addline', None, '<email> <lines>')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'UPDATE')
 
     def command(self):
         session, config = self.session, self.session.config
-        handle, var = self.args[0], self.args[1]
-        if self.args[2] == '=':
-            val = ' '.join(self.args[3:])
-        else:
-            val = ' '.join(self.args[2:])
+        handle, var, lines = self.args[0], self.args[1], self.args[2:]
+        vcard = config.vcards.get_vcard(handle)
+        if not vcard:
+            return self._error('%s not found: %s' % (self.VCARD, handle))
+        config.vcards.deindex_vcard(vcard)
         try:
-            vcard = config.get_vcard(handle)
-            if not vcard:
-                return self._error('Contact not found')
-            config.deindex_vcard(vcard)
-            if val:
-                if ',' in val:
-                    vcard[var] = self._format_values(var, val.split(','))
-                else:
-                    vcard[var] = val
-            else:
-                del vcard[var]
+            vcard.add(*[VCardLine(l) for l in lines])
             vcard.save()
-            config.index_vcard(vcard)
-            session.ui.display_vcard(vcard, compact=False)
-            return True
+            return self._vcard_list([vcard], info={
+                'updated': handle,
+                'added': len(lines)
+            })
         except:
+            config.vcards.index_vcard(vcard)
             self._ignore_exception()
             return self._error('Error setting %s = %s' % (var, val))
+        finally:
+            config.vcards.index_vcard(vcard)
 
 
 class RemoveVCard(VCardCommand):
@@ -238,10 +244,10 @@ class RemoveVCard(VCardCommand):
     def command(self):
         session, config = self.session, self.session.config
         for handle in self.args:
-            vcard = config.get_vcard(handle)
+            vcard = config.vcards.get_vcard(handle)
             if vcard:
                 self._pre_delete_vcard(vcard)
-                config.del_vcard(handle)
+                config.vcards.del_vcard(handle)
             else:
                 session.ui.error('No such contact: %s' % handle)
         return True
@@ -249,29 +255,22 @@ class RemoveVCard(VCardCommand):
 
 class ListVCards(VCardCommand):
     """Find vcards"""
-    SYNOPSIS = (None, 'vcard/list', None, '[--full] [<terms>]')
+    SYNOPSIS = (None, 'vcard/list', None, '[--lines] [<terms>]')
     ORDER = ('Internals', 6)
     KIND = ''
 
     def command(self):
         session, config = self.session, self.session.config
-        if self.args and self.args[0] == '--full':
-            self.args.pop(0)
-            compact = False
-        else:
-            compact = True
         kinds = self.KIND and [self.KIND] or []
-        vcards = config.find_vcards(self.args, kinds=kinds)
-        #for vcard in vcards:
-        #    session.ui.display_vcard(vcard, compact=compact)
-        ctx = {}
-        ctx[self.VCARD+'s'] = [x.as_mpCard() for x in vcards]
-        ctx["query"] = " ".join(self.args)
-        ctx["total"] = len(vcards)
-        ctx["start"] = 1
-        ctx["end"] = len(vcards)
-        ctx["count"] = len(vcards)
-        return ctx
+        if self.args and self.args[0] == '--lines':
+            self.args.pop(0)
+            mode = 'lines'
+        else:
+            mode = 'mpCard'
+        vcards = config.vcards.find_vcards(self.args, kinds=kinds)
+        return self._vcard_list(vcards, mode=mode, info={
+            'terms': self.args
+        })
 
 
 def ContactVCard(parent):
@@ -297,7 +296,7 @@ class AddContact(ContactVCard(AddVCard)):
     """Add contacts"""
 
 
-class SetContact(ContactVCard(SetVCard)):
+class ContactAddLines(ContactVCard(VCardAddLines)):
     """Set contact variables"""
 
 
@@ -368,8 +367,8 @@ class ContactImporters(Command):
         return res
 
 
-mailpile.plugins.register_commands(VCard, AddVCard, SetVCard,
+mailpile.plugins.register_commands(VCard, AddVCard, VCardAddLines,
                                    RemoveVCard, ListVCards)
-mailpile.plugins.register_commands(Contact, AddContact, SetContact,
+mailpile.plugins.register_commands(Contact, AddContact, ContactAddLines,
                                    RemoveContact, ListContacts)
 mailpile.plugins.register_commands(ContactImport, ContactImporters)
