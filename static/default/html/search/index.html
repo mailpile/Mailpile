@@ -19,11 +19,13 @@
     <div id="pile-bottom" class="clearfix">
       <a href="#" class="button-primary">Previous</a> <a href="/in/Inbox/@20/" class="button-primary">Next</a>
       <div>
-        <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} of {{result.total}} Messages {% elif result.total == 1 %} 1 Message {% else %} No results found {% endif %}</h5><br>
-        <a class="change-view-size" data-view_size="snug" href="#">Snug</a>
-        <a class="change-view-size" data-view_size="cozy" href="#">Cozy</a>
-        <a class="change-view-size" data-view_size="comfy" href="#">Comfy</a>
-        <a class="change-view-size" data-view_size="fluffy" href="#">Fluffy</a>
+        <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} of {{result.total}} Messages {% elif result.total == 1 %} 1 Message {% else %} No results found {% endif %}</h5>
+        <ul>
+          <li><a class="change-view-size" data-view_size="snug" href="#">Snug</a></li>
+          <li><a class="change-view-size" data-view_size="cozy" href="#">Cozy</a></li>
+          <li><a class="change-view-size" data-view_size="comfy" href="#">Comfy</a></li>
+          <li><a class="change-view-size" data-view_size="fluffy" href="#">Fluffy</a></li>
+        </ul>
       </div>
     </div>
   </form>
