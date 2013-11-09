@@ -982,7 +982,6 @@ class Email(object):
     charset = part.get_charset() or 'utf-8'
     payload = part.get_payload(None, True) or ''
     try:
-      print payload
       payload = payload.decode(charset)
     except UnicodeDecodeError:
       try:

@@ -309,7 +309,6 @@ class Attach(CompositionCommand):
         if 'file-data' in self.data:
             count = 0
             for fd in self.data['file-data']:
-                print 'fd: %s' % (dir(fd), )
                 fn = (hasattr(fd, 'filename') and fd.filename
                                                or 'attach-%d.dat' % count)
                 filedata[fn] = fd

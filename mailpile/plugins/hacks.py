@@ -1,8 +1,9 @@
 import mailpile.plugins
 from mailpile.commands import Command
-from mailpile.mailutils import Email
-from mailpile.search import MailIndex
+from mailpile.mailutils import *
+from mailpile.search import *
 from mailpile.util import *
+from mailpile.vcard import *
 
 
 class Hacks(Command):
@@ -59,15 +60,18 @@ class PyCLI(Hacks):
         from mailpile import Mailpile
         variables = globals()
         variables['session'] = self.session
+        variables['config'] = self.session.config
         variables['mp'] = Mailpile(session=self.session)
-        code.InteractiveConsole(locals=variables).interact("""
-
+        self.session.ui.block()
+        code.InteractiveConsole(locals=variables).interact("""\
 This is Python inside of Mailpile inside of Python.
 
    - The `mp` variable is a Pythonic API to the current pile of mail.
    - The `session` variable is the current UI session.
+   - The `config` variable contains the current configuration.
    - Press CTRL+D to return to the normal CLI.
 """)
+        self.session.ui.unblock()
         return 'That was fun!'
 
 
