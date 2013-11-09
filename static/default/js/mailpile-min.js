@@ -24,7 +24,7 @@ function MailPile() {
     compose      : "/api/0/message/compose/",
     compose_send : "/api/0/message/update/send/",
     compose_save : "/api/0/message/update/",
-    contacts     : "http://localhost:33411/static/contacts.json",
+    contacts     : "/static/contacts.json",
   	tag          : "/api/0/tag/",
   	tag_add      : "/api/0/tag/add/",
   	search_new   : "/api/0/search/?q=in%3Anew",
@@ -489,22 +489,29 @@ $(document).on('click', '#button-compose', function() {
 
 
 
-/* Adding Recipients */
+/* Is Compose Page -  Probably want to abstract this differently */
 if ($('#form-compose').length) {
 
+
+  // Auto Select To: field
+
+
+  // AJAX Load Contacts
   $.getJSON(mailpile.api.contacts, function(contacts) {
-      
+
+
     var formatContactResult = function(state) {
       if (!state.id) return state.text;
       return "<span class='icon-user'></span> &nbsp;" + state.text;
     }          
+
       
     $("#compose-to, #compose-cc, #compose-bcc").select2({
       tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
       multiple: true,
       allowClear: true,
-      placeholder: 'type name or email address',  // Placeholder
-      width: '94%',                               // Width of input element
+      placeholder: 'name or email address',  // Placeholder
+      width: '70%',                               // Width of input element
       maximumSelectionSize: 50,                   // Limits number of items added
       tokenSeparators: [",", " - "],
       formatResult: formatContactResult,
@@ -530,6 +537,13 @@ if ($('#form-compose').length) {
   });
 }
 
+
+$(document).on('click', '.compose-show-field', function(e) {
+  
+  $(this).hide();
+  $('#compose-' + $(this).html().toLowerCase() + '-html').show();
+  
+});
 
 
 /* Send & Save */

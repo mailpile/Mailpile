@@ -1,7 +1,7 @@
 /* Compose */
 
   .compose-headers {
-    height: 30px;
+    min-height: 30px;
   }
 
   #compose label {
@@ -12,16 +12,17 @@
   }
   
   .compose-headers {
+	  border-bottom: 1px solid @grayMid;  
     clear:both;
   }
   
   .compose-headers input[type=text],
   .compose-headers input[type=email] {
     float: left;
-		width: 75%;
+		min-width: 300px;
 		display: inline-block;
-		font-size: 18px;
-		padding: 0px;
+		font-size: 14px;
+		padding: .5em;
 		margin-bottom: 0px;
 	}
 
@@ -34,14 +35,34 @@
 	}
 
   .compose-message textarea {
-    width: 100%;
+    width: 700px;
     min-height: 300px;
+    padding: 1em;
+    border: 1px solid @grayMid;
+    border-radius: @base-border-radius;
+    font-size: 14px;
+    line-height: 21px;
   }
 
   .compose-message textarea:focus {
+    outline: none;
   }
 
 	.compose-section {
 		padding: .75em;
-		border-bottom: 1px solid @gray;
+	}
+	
+	a.compose-show-field {
+	  float: right;
+	  font-family: @text-font-family;
+    font-size: 18px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: bold;
+    color: @grayDark;
+    margin-left: 10px;
+	}
+	
+	#compose-cc-html, #compose-bcc-html {
+  	display: none;
 	}

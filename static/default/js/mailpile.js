@@ -24,7 +24,7 @@ function MailPile() {
     compose      : "/api/0/message/compose/",
     compose_send : "/api/0/message/update/send/",
     compose_save : "/api/0/message/update/",
-    contacts     : "http://localhost:33411/static/contacts.json",
+    contacts     : "/static/contacts.json",
   	tag          : "/api/0/tag/",
   	tag_add      : "/api/0/tag/add/",
   	search_new   : "/api/0/search/?q=in%3Anew",
