@@ -5,8 +5,8 @@
 
 #### Who's doing what? ####
 
-- 2013-11-08: bre: Attending FSCONS and meeting with Smari
-- 2013-11-08: smari: Attending FSCONS and meeting with Bjarni
+- 2013-11-11: bre: Traveling with Smári, working on contacts
+- 2013-11-11: smari: Traveling with Bjarni, working on contacts
 - 2013-11-08: bnvk: perk design work, compose stuff
 
 #### Recent changes ####
@@ -46,22 +46,30 @@ Mailpile is developed on a Debian 7 system, running:
 - [python-lxml](http://lxml.de/) 2.3.2
 - [python-jinja2](http://jinja.pocoo.org/) 2.6
 
-It might work with other versions. :-)
+It might work with other versions, most of these packages can be installed
+directly using `apt-get install`. :-)
 
-You can either use your OS package manager to install equivalent packages
-or use the following command to ask Python to do the work for you:
+You also need your e-mail to be in a traditional mbox formatted
+Unix mailbox, a Maildir or a gmvault backup repository.
+
+### Installing the requirements ###
+
+On Debian, this should work:
+
+    $ sudo apt-get install python-imaging python-jinja2 python-lxml
+
+Alternately (and on other operating systems) you can use Python's PIP
+tool to install the required packages:
 
     $ pip install -r requirements.txt
 
 Note that installing lxml may require certain C header files that are not
 necessarily included on your machine. For Debian-based distributions, this can
-be fixed by running 
+be fixed by running:
 
     $ sudo apt-get install libxml2-dev libxslt1-dev
 
 as per [this Stack Overflow answer](http://stackoverflow.com/questions/15759150/src-lxml-etree-defs-h931-fatal-error-libxml-xmlversion-h-no-such-file-or-di).
-You also need your e-mail to be in a traditional mbox formatted
-Unix mailbox, a Maildir or a gmvault backup repository.
 
 
 ## Setting up the basic config ##
