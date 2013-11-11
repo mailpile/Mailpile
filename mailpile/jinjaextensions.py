@@ -22,8 +22,10 @@ class MailpileCommand(Extension):
         environment.globals['mailpile'] = self._command
         environment.globals['regex_replace'] = self._regex_replace
         environment.filters['regex_replace'] = self._regex_replace
-        environment.globals['friendly_date'] = self._friendly_date
-        environment.filters['friendly_date'] = self._friendly_date
+        environment.globals['elapsed_datetime'] = self._elapsed_datetime
+        environment.filters['elapsed_datetime'] = self._elapsed_datetime
+        environment.globals['friendly_datetime'] = self._friendly_datetime
+        environment.filters['friendly_datetime'] = self._friendly_datetime
         environment.globals['friendly_bytes'] = self._friendly_bytes
         environment.filters['friendly_bytes'] = self._friendly_bytes
         environment.globals['friendly_number'] = self._friendly_number
@@ -42,7 +44,7 @@ class MailpileCommand(Extension):
         """A non-optimal implementation of a regex filter"""
         return re.sub(find, replace, s)
 
-    def _friendly_date(self, timestamp):
+    def _elapsed_datetime(self, timestamp):
         ts = datetime.date.fromtimestamp(timestamp)
         days_ago = (datetime.date.today() - ts).days
 
@@ -54,6 +56,10 @@ class MailpileCommand(Extension):
             return '%d days' % days_ago
         else:
             return ts.strftime("%b %d")
+
+    def _friendly_datetime(self, timestamp):
+        date = datetime.date.fromtimestamp(timestamp)
+        return date.strftime("%b %d, %Y")
 
     def _friendly_number(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing
