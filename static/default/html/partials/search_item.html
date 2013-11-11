@@ -14,7 +14,7 @@
     <a class="item-subject" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
   </td>
   <td class="date" valign="top">
-    <a href="/search/dates:{{message.date}}/">{{ message.timestamp|friendly_date }}</a>
+    <a href="/search/dates:{{message.date}}/">{{ message.timestamp|elapsed_datetime }}</a>
   </td>
   <td class="checkbox" valign="top">
     <input type="checkbox" name="mid" value="{{message.mid}}">

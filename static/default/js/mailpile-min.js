@@ -681,7 +681,7 @@ var pileActionUnselect = function(item) {
 }
 
 
-$(document).on('click', '#pile-results tr', function(e) {
+$(document).on('click', '#pile-results tr.result', function(e) {
 	if (e.target.href === undefined && $(this).data('state') === 'selected') {
 		pileActionUnselect($(this));
 	}
