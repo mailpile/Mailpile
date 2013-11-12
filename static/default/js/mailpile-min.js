@@ -510,7 +510,6 @@ if ($('#form-compose').length) {
       tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
       multiple: true,
       allowClear: true,
-      placeholder: 'name or email address',  // Placeholder
       width: '70%',                               // Width of input element
       maximumSelectionSize: 50,                   // Limits number of items added
       tokenSeparators: [",", " - "],

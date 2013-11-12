@@ -13,7 +13,7 @@
       <div class="message-headers">
         <div class="message-datetime">{{ message.timestamp|friendly_datetime }} at {{ message.shorttime }}</div>
         <ul>
-          <li><b>From:</b> <a class="message-email-address" href="/contact/{{ message.from|e }}"><img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">{{ message.from|e }}</a></li>
+          <li><b>From:</b> <a class="message-email-address" href="/contact/{{ message.from_email|e }}"><img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">{{ message.conv_people[0].name }}</a></li>
           <li><b>To:</b> {% for toaddr in message.to %}<a class="message-email-address" href="/contact/{{toaddr}}/"> <img src="{{ show_avatar(url_protocol, http_host, toaddr, 48) }}"> {{toaddr}}</a>{% if not loop.last %}{% endif %}{% endfor %}</li>
           {% if message.cc %}
           <li><b>Cc:</b> {% for ccaddr in message.cc %}<a class="message-email-address" href="/contact/{{ccaddr}}/">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>

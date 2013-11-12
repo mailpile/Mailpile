@@ -16,17 +16,19 @@
 	}
 	
 	.message-datetime {
+	  font-family: @text-font-family;
   	float: right;
 	}
 	
 	.message-email-address {
 	  display: inline-block;
-	  height: 32px;
-	  background: #eee;
+	  vertical-align: middle;
 	  color: @grayDark;
 	  border-radius: 3px;
 	  padding: 5px;
 	  font-weight: normal;
+	  background: @grayLight;
+	  border: 1px solid @grayMid;
   }
 	
 	.message-email-address:hover {
@@ -34,7 +36,10 @@
   }
 
 	.message-email-address img {
-     width: 32px;
+     width: 24px;
+     height: 24px;
+     margin-right: 5px;
+     display: inline-block;
   }
 
 	.message-body {

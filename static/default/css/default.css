@@ -5618,6 +5618,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   font-size: 1px;
   outline: none;
   background: url('select2.png') right top no-repeat;
+  float: right;
 }
 .select2-container-multi .select2-search-choice-close {
   left: 3px;
@@ -6704,22 +6705,27 @@ a.compose-show-field {
   font-size: 18px;
 }
 .message-datetime {
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   float: right;
 }
 .message-email-address {
   display: inline-block;
-  height: 32px;
-  background: #eee;
+  vertical-align: middle;
   color: #4d4d4d;
   border-radius: 3px;
   padding: 5px;
   font-weight: normal;
+  background: #f2f2f2;
+  border: 1px solid #cccccc;
 }
 .message-email-address:hover {
   color: #a31304;
 }
 .message-email-address img {
-  width: 32px;
+  width: 24px;
+  height: 24px;
+  margin-right: 5px;
+  display: inline-block;
 }
 .message-body {
   padding: 15px;
