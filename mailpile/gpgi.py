@@ -420,9 +420,9 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         >>> g.list_keys()[0]
         0
         """
-        retvals = self.run(["--list-keys", "--fingerprint"], 
+        returncode, retvals = self.run(["--list-keys", "--fingerprint"], 
                            callbacks={"stdout": self.parse_keylist})
-        return retvals
+        return retvals["stdout"][0]
 
     def list_sigs(self):
         retvals = self.run(["--list-sigs", "--fingerprint"], 
