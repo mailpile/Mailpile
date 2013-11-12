@@ -85,8 +85,9 @@ class VCardLine(dict):
     def set_attr(self, attr, value):
         try:
             for av in self._attrs:
-                if a[0] == attr:
-                    a[1] = value
+                if av[0] == attr:
+                    nav = (av[0], value)
+                    av = nav
                     return
             self._attrs.append((attr, value))
         finally:
@@ -539,7 +540,7 @@ class SimpleVCard(object):
                          ['END:VCARD'])
 
     def as_lines(self):
-        return self._lines
+        return [vcl for vcl in self._lines if vcl]
 
     def _vcard_get(self, key):
         try:
@@ -754,7 +755,7 @@ class VCardImporter(VCardPluginClass):
             for email in vcard.get_all('email'):
                 existing = vcard_store.get_vcard(email.value)
                 if existing:
-                    existing.update(self.config.guid, vcard.as_lines())
+                    existing.merge(self.config.guid, vcard.as_lines())
             if existing is None:
                 new_vcard = SimpleVCard()
                 new_vcard.merge(self.config.guid, vcard.as_lines())
