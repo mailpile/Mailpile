@@ -851,12 +851,14 @@ class ConfigManager(ConfigDict):
         self.parse_config(session, '\n'.join(lines), source=filename)
         self.vcards = VCardStore(self, self.data_directory('vcards'))
         self.vcards.load_vcards(session)
+        self.get_i18n_translation()
 
     def save(self):
         self._mkworkdir(None)
         fd = gpg_open(self.conffile, self.prefs.get('gpg_recipient'), 'wb')
         fd.write(self.as_config_bytes(private=True))
         fd.close()
+        self.get_i18n_translation()
 
     def clear_mbox_cache(self):
         self._mbox_cache = {}
@@ -995,13 +997,18 @@ class ConfigManager(ConfigDict):
         return idx
 
     def get_i18n_translation(self):
+        translation = None
         language = self.prefs.language
         if language != "":
-            translation = gettext.translation("mailpile", "locale", [language])
+            translation = gettext.translation("mailpile", "locale", [language], codeset="utf-8")
             if translation:
                 translation.set_output_charset("utf-8")
-                return translation
-        return gettext.translation("mailpile", "locale")
+
+        if not translation:
+            translation = gettext.translation("mailpile", "locale")
+
+        translation.install(unicode=True)
+        return translation
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
