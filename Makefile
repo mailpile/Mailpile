@@ -1,7 +1,7 @@
 # Recipies for stuff
 export PYTHONPATH := .
 
-all:	docs alltests dev web
+all:	docs alltests dev web compilemessages
 
 dev:
 	@echo export PYTHONPATH=`pwd`

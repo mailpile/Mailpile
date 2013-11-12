@@ -1,5 +1,4 @@
 *.pyc
-*.mo
 build/
 dist/
 mailpile.egg-info/
