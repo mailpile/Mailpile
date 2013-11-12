@@ -760,10 +760,12 @@ class VCardImporter(VCardPluginClass):
                 existing = vcard_store.get_vcard(email.value)
                 if existing:
                     existing.merge(self.config.guid, vcard.as_lines())
+                    updated += 1
             if existing is None:
                 new_vcard = SimpleVCard()
                 new_vcard.merge(self.config.guid, vcard.as_lines())
                 vcard_store.add_vcards(new_vcard)
+                updated += 1
         return updated
 
     def get_vcards(self):
