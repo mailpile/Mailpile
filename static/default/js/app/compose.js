@@ -31,7 +31,14 @@ if ($('#form-compose').length) {
     var formatContactResult = function(state) {
       if (!state.id) return state.text;
       return "<span class='icon-user'></span> &nbsp;" + state.text;
-    }          
+    }
+
+    var formatContactSelection = function(state) {
+      if (!state.id) return state.text;
+      return "<span class='icon-compose'></span> &nbsp;" + state.text;
+    }
+
+    $('#compose-to').focus();
 
       
     $("#compose-to, #compose-cc, #compose-bcc").select2({
@@ -40,11 +47,15 @@ if ($('#form-compose').length) {
       allowClear: true,
       width: '70%',                               // Width of input element
       maximumSelectionSize: 50,                   // Limits number of items added
-      tokenSeparators: [",", " - "],
+      tokenSeparators: [","],
       formatResult: formatContactResult,
-      formatSelection: formatContactResult,    
+      formatSelection: formatContactSelection,    
       formatSelectionTooBig: function() {
         return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
+      },
+      selectOnBlur: true,
+      opening: function() {
+        console.log('there times they are a changing');
       }
     });
 
