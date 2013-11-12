@@ -255,14 +255,29 @@ class Rescan(Command):
             session.ui.warning(_('FIXME: rescan messages: %s') % msg_idxs)
             return False
         else:
-            return self._rescan_mailboxes(session, config)
+            # FIXME: Need a lock here?
+            if 'rescan' in config._running:
+                return True
+            config._running['rescan'] = True
+            try:
+                return dict_merge(
+                    self._rescan_vcards(session, config),
+                    self._rescan_mailboxes(session, config)
+                )
+            finally:
+                del config._running['rescan']
+
+    def _rescan_vcards(self, session, config):
+        import mailpile.plugins
+        imported = 0
+        importer_cfgs = config.prefs.vcard.importers
+        for importer in mailpile.plugins.VCARD_IMPORTERS.values():
+            for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
+                imported += importer(session, cfg
+                                     ).import_vcards(session, config.vcards)
+        return {'vcards': imported}
 
     def _rescan_mailboxes(self, session, config):
-        # FIXME: Need a lock here?
-        if 'rescan' in config._running:
-            return True
-        config._running['rescan'] = True
-
         idx = self._idx()
         msg_count = 0
         mbox_count = 0
@@ -295,7 +310,9 @@ class Rescan(Command):
         except (KeyboardInterrupt, subprocess.CalledProcessError), e:
             session.ui.mark(_('Aborted: %s') % e)
             self._ignore_exception()
-            return False
+            return {'aborted': True,
+                    'messages': msg_count,
+                    'mailboxes': mbox_count}
         finally:
             if msg_count:
                 session.ui.mark('\n')
@@ -303,7 +320,6 @@ class Rescan(Command):
                     idx.save_changes(session)
                 else:
                     idx.save(session)
-            del config._running['rescan']
             idx.update_tag_stats(session, config)
         return {'messages': msg_count,
                 'mailboxes': mbox_count}

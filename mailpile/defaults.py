@@ -42,6 +42,12 @@ CONFIG_RULES = {
         'default_route':   (_('Default outgoing mail route'),
                                                 'mailroute', DEFAULT_SENDMAIL),
         'language':        (_('User interface language'), str,                ''),
+        'vcard':           [_("VCard import/export settings"), False,
+        {
+            'importers':   [_("VCard import settings"), False,                {}],
+            'exporters':   [_("VCard export settings"), False,                {}],
+            'context':     [_("VCard context helper settings"), False,        {}],
+        }],
     }],
     'profiles': [_('User profiles and personalities'), {
         'name':            (_('Account name'), 'str', ''),

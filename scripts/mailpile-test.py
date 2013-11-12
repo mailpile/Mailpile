@@ -21,6 +21,7 @@ mailpile_sent = os.path.join(mailpile_home, 'sent.mbx')
 # Add the root to our import path, import API and standard plugins
 sys.path.append(mailpile_root)
 from mailpile.plugins import *
+import mailpile.plugins.demos
 from mailpile import Mailpile
 
 
@@ -56,6 +57,7 @@ try:
     mp.set('profiles/0/name = Test Account')
     mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
     mp.set('sys/debug = sendmail log compose')
+    mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
 
     # Add the mailboxes, scan them
     for mailbox in ('tests.mbx', 'Maildir'):

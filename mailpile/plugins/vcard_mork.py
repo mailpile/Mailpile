@@ -1,14 +1,12 @@
 #!/usr/bin/python
 #coding:utf-8
-
-
-from mailpile.plugins.contacts import ContactImporter, register_contact_importer
-from mailpile.vcard import CardDAV
 import sys
 import re
 import getopt
-
 from sys import stdin, stdout, stderr
+
+import mailpile.plugins
+from mailpile.vcard import *
 
 
 def hexcmp(x, y):
@@ -23,7 +21,7 @@ def hexcmp(x, y):
         return cmp(x, y)
 
 
-class MorkImporter(ContactImporter):
+class MorkImporter(VCardImporter):
     # Based on Demork by Mike Hoye <mhoye@off.net>
     # Which is based on Mindy by Kumaran Santhanam <kumaran@alumni.stanford.org>
     #
@@ -31,12 +29,12 @@ class MorkImporter(ContactImporter):
     #  http://www-archive.mozilla.org/mailnews/arch/mork/primer.txt
     #  http://www.jwz.org/blog/2004/03/when-the-database-worms-eat-into-your-brain/
     #
-
-    required_parameters = ["filename"]
-    optional_parameters = ["data"]
-    short_name = "mork"
-    format_name = "Mork Database"
-    format_description = "Thunderbird contacts database format."
+    fixme_required_parameters = ["filename"]
+    fixme_optional_parameters = ["data"]
+    FORMAT_NAME = "Mork Database"
+    FORMAT_DESCRPTION = "Thunderbird contacts database format."
+    SHORT_NAME = "mork"
+    CONFIG_RULES = {}
 
     class Database:
         def __init__ (self):
@@ -123,7 +121,7 @@ class MorkImporter(ContactImporter):
             return (rowid[:idx], cdict[rowid[idx+2:]])
         else:
             return (rowid, None)
-            
+
     def delRow (db, table, rowid):
         (rowid, scope) = getRowIdScope(rowid, db.cdict)
         if scope:
@@ -169,7 +167,7 @@ class MorkImporter(ContactImporter):
             print >>stderr, cells
 
         table.rows[rowkey] = row
-        
+
     def inputMork(self, data):
         # Remove beginning comment
         pComment = re.compile('//.*')
@@ -341,40 +339,6 @@ class MorkImporter(ContactImporter):
         return filter(lambda x: any([v.find(terms) >= 0 for v in x.values()]) , f)
 
 
-class CardDAVImporter(ContactImporter):
-    required_parameters = ["host", "url"]
-    optional_parameters = ["port", "username", "password", "protocol"]
-    short_name = "carddav"
-    format_name = "CardDAV Server"
-    format_description = "CardDAV HTTP contact server."
-
-    def load(self):
-        host = self.args.get("host")
-        url = self.args.get("url")
-        port = self.args.get("port", None)
-        username = self.args.get("username", None)
-        password = self.args.get("password", None)
-        protocol = self.args.get("protocol", "https")
-        self.carddav = CardDAV(host, url, port, username, password, protocol)
-
-    def get_contacts(self):
-        results = []
-        cards = self.carddav.list_vcards()
-        for card in cards:
-            results.append(self.carddav.get_vcard(card))
-
-        return results
-
-    def filter_contacts(self, terms):
-        pass
-
-
-
-
-register_contact_importer(MorkImporter)
-register_contact_importer(CardDAVImporter)
-
-
 if __name__ == "__main__":
     import json
     filename = sys.argv[1]
@@ -382,3 +346,5 @@ if __name__ == "__main__":
     m = MorkImporter(filename=filename)
     m.load()
     print json.dumps(m.get_contacts(data))
+else:
+    mailpile.plugins.register_vcard_importers(MorkImporter)

@@ -1,8 +1,4 @@
-import base64
-import httplib
 import random
-
-from lxml import etree
 
 from mailpile.util import *
 
@@ -382,7 +378,7 @@ class SimpleVCard(object):
                 else:
                     d[k] = vcl[k]
         return d
- 
+
     MPCARD_SINGLETONS = ('fn', 'kind')
     MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
 
@@ -609,101 +605,65 @@ class VCardStore(dict):
                 pass
 
 
-# FIXME: Move this into a contact importer plugin
-class DAVClient:
-    def __init__(self, host, port=None, username=None, password=None,
-                             protocol='https'):
-        if not port:
-            if protocol == 'https':
-                port = 443
-            elif protocol == 'http':
-                port = 80
-            else:
-                raise Exception("Can't determine port from protocol. "
-                                "Please specifiy a port.")
-        self.cwd = "/"
-        self.baseurl = "%s://%s:%d" % (protocol, host, port)
-        self.host = host
-        self.port = port
-        self.protocol = protocol
-        self.username = username
-        self.password = password
-        if username and password:
-            self.auth = base64.encodestring('%s:%s' % (username, password)
-                                            ).replace('\n', '')
-        else:
-            self.auth = None
+class VCardPluginClass:
+    REQUIRED_PARAMETERS = []
+    OPTIONAL_PARAMETERS = []
+    FORMAT_NAME = None
+    FORMAT_DESCRIPTION = 'VCard Import/Export plugin'
+    SHORT_NAME = None
+    CONFIG_RULES = None
 
-    def request(self, url, method, headers={}, body=""):
-        if self.protocol == "https":
-            req = httplib.HTTPSConnection(self.host, self.port)
-            # FIXME: Verify HTTPS certificate
-        else:
-            req = httplib.HTTPConnection(self.host, self.port)
-
-        req.putrequest(method, url)
-        req.putheader("Host", self.host)
-        req.putheader("User-Agent", "Mailpile")
-        if self.auth:
-            req.putheader("Authorization", "Basic %s" % self.auth)
-
-        for key, value in headers.iteritems():
-            req.putheader(key, value)
-
-        req.endheaders()
-        req.send(body)
-        res = req.getresponse()
-
-        self.last_status = res.status
-        self.last_statusmessage = res.reason
-        self.last_headers = dict(res.getheaders())
-        self.last_body = res.read()
-
-        if self.last_status >= 300:
-            raise Exception(("HTTP %d: %s\n(%s %s)\n>>>%s<<<"
-                             ) % (self.last_status, self.last_statusmessage,
-                                  method, url, self.last_body))
-        return (self.last_status, self.last_statusmessage,
-                self.last_headers, self.last_body)
-
-    def options(self, url):
-        status, msg, header, resbody = self.request(url, "OPTIONS")
-        return header["allow"].split(", ")
+    def __init__(self, session, config):
+        self.session = session
+        self.config = config
+        if not self.config.guid:
+            self.config.guid = 'insert-randomness-here'  # FIXME
 
 
-class CardDAV(DAVClient):
-    def __init__(self, host, url, port=None, username=None,
-                                  password=None, protocol='https'):
-        DAVClient.__init__(self, host, port, username, password, protocol)
-        self.url = url
+class VCardImporter(VCardPluginClass):
 
-        if not self._check_capability():
-            raise Exception("No CardDAV support on server")
+    def import_vcards(self, session, vcard_store):
+        all_vcards = self.get_vcards()
+        updated = 0
+        for vcard in all_vcards:
+            existing = None
+            for email in vcard.get_all('email'):
+                existing = vcard_store.get_vcard(email)
+                if existing:
+                    print 'Updating: %s' % vcard
+            if existing is None:
+                print 'New card: %s' % vcard
+        return updated
 
-    def cd(self, url):
-        self.url = url
+    def get_vcards(self):
+        raise Exception('Please override this function')
 
-    def _check_capability(self):
-        result = self.options(self.url)
-        return "addressbook" in self.last_headers["dav"].split(", ")
 
-    def get_vcard(self, url):
-        status, msg, header, resbody = self.request(url, "GET")
-        card = SimpleVCard()
-        card.load(data=resbody)
-        return card
+class VCardExporter(VCardPluginClass):
 
-    def put_vcard(self, url, vcard):
-        raise Exception('Unimplemented')
+    def __init__(self):
+        self.exporting = []
 
-    def list_vcards(self):
-        stat, msg, hdr, resbody = self.request(self.url, "PROPFIND", {}, {})
-        tr = etree.fromstring(resbody)
-        urls = [x.text for x in tr.xpath("/d:multistatus/d:response/d:href",
-                                         namespaces={"d": "DAV:"})
-                             if x.text not in ("", None) and
-                                x.text[-3:] == "vcf"]
-        return urls
+    def add_contact(self, contact):
+        self.exporting.append(contact)
+
+    def remove_contact(self, contact):
+        self.exporting.remove(contact)
+
+    def save(self):
+        pass
+
+
+class VCardContextProvider(VCardPluginClass):
+
+    def __init__(self, contact):
+        self.contact = contact
+
+    def get_recent_context(self, max=10):
+        pass
+
+    def get_related_context(self, query, max=10):
+        pass
 
 
 if __name__ == "__main__":

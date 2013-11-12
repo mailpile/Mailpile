@@ -2,10 +2,12 @@
 
 import mailpile.commands
 import mailpile.defaults
+import mailpile.vcard
 
 # These are the plugins we import by default
 __all__ = ['search', 'tags', 'contacts', 'compose', 'groups', 'dates',
-           'setup', 'networkgraph', 'exporters', 'contact_importers',
+           'setup', 'networkgraph', 'exporters',
+           'vcard_carddav', 'vcard_gnupg', 'vcard_mork',
            'hacks']
 
 
@@ -96,7 +98,55 @@ def register_search_term(term, function):
     SEARCH_TERMS[term] = function
 
 
-##[ Pluggable commands ]##################################################
+##[ Pluggable vcard functions ]###############################################
+
+VCARD_IMPORTERS = {}
+VCARD_EXPORTERS = {}
+VCARD_CONTEXT_PROVIDERS = {}
+
+
+def _reg_vcard_plugin(what, cfg_sect, plugin_classes, cls, dct):
+    for plugin_class in plugin_classes:
+        if not plugin_class.SHORT_NAME or not plugin_class.FORMAT_NAME:
+            raise PluginError("Please set SHORT_NAME and FORMAT_* attributes!")
+        if not issubclass(plugin_class, cls):
+            raise PluginError("%s must be a %s" % (what, cls))
+        if plugin_class.SHORT_NAME in dct:
+            raise PluginError("%s for %s already registered"
+                              % (what, importer.FORMAT_NAME))
+
+        if plugin_class.CONFIG_RULES:
+            rules = {
+                'guid': ['VCard source UID', str, ''],
+                'description': ['VCard source description', str, '']
+            }
+            rules.update(plugin_class.CONFIG_RULES)
+            register_config_section('prefs', 'vcard', cfg_sect,
+                                    plugin_class.SHORT_NAME,
+            [
+                plugin_class.FORMAT_DESCRIPTION, rules, []
+            ])
+
+        dct[plugin_class.SHORT_NAME] = plugin_class
+
+
+def register_vcard_importers(*importers):
+    _reg_vcard_plugin('Importer', 'importers', importers,
+                      mailpile.vcard.VCardImporter, VCARD_IMPORTERS)
+
+
+def register_contact_exporters(*exporters):
+    _reg_vcard_plugin('Exporter', 'exporters', exporters,
+                      mailpile.vcard.VCardExporter, VCARD_EXPORTERS)
+
+
+def register_contact_context_providers(*providers):
+    _reg_vcard_plugin('Context provider', 'context', providers,
+                      mailpile.vcard.VCardContextProvider,
+                      VCARD_CONTEXT_PROVIDERS)
+
+
+##[ Pluggable commands ]######################################################
 
 def register_commands(*args):
     COMMANDS = mailpile.commands.COMMANDS
