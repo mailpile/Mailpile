@@ -436,7 +436,7 @@ class SimpleVCard(object):
             src_pid = pidmap['pid']
         else:
             pids = [p['pid'] for p in cpm.values()]
-            src_pid = max([int(p) for p in pids]) + 1
+            src_pid = max([int(p) for p in pids] + [0]) + 1
             self.add(VCardLine(name='clientpidmap',
                                value='%s;%s' % (src_pid, src_id)))
             pidmap = cpm[src_pid] = cpm[src_id] = {'lines': []}
@@ -721,6 +721,8 @@ class VCardStore(dict):
                 pass
 
 
+GUID_COUNTER = 0
+
 class VCardPluginClass:
     REQUIRED_PARAMETERS = []
     OPTIONAL_PARAMETERS = []
@@ -729,11 +731,17 @@ class VCardPluginClass:
     SHORT_NAME = None
     CONFIG_RULES = None
 
-    def __init__(self, session, config):
+    def __init__(self, session, config, guid=None):
         self.session = session
         self.config = config
         if not self.config.guid:
-            self.config.guid = 'insert-randomness-here'  # FIXME
+            if not guid:
+                global GUID_COUNTER
+                guid = 'urn:uuid:mp-%s-%x-%x' % (self.SHORT_NAME, time.time(),
+                                                 GUID_COUNTER)
+                GUID_COUNTER += 1
+            self.config.guid = guid
+            self.session.config.save()
 
 
 class VCardImporter(VCardPluginClass):
@@ -744,11 +752,13 @@ class VCardImporter(VCardPluginClass):
         for vcard in all_vcards:
             existing = None
             for email in vcard.get_all('email'):
-                existing = vcard_store.get_vcard(email)
+                existing = vcard_store.get_vcard(email.value)
                 if existing:
-                    print 'Updating: %s' % vcard
+                    existing.update(self.config.guid, vcard.as_lines())
             if existing is None:
-                print 'New card: %s' % vcard
+                new_vcard = SimpleVCard()
+                new_vcard.merge(self.config.guid, vcard.as_lines())
+                vcard_store.add_vcards(new_vcard)
         return updated
 
     def get_vcards(self):

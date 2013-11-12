@@ -849,7 +849,9 @@ class ConfigManager(ConfigDict):
             pass
 
         self.parse_config(session, '\n'.join(lines), source=filename)
-        self.vcards = VCardStore(self, self.data_directory('vcards'))
+        self.vcards = VCardStore(self, self.data_directory('vcards',
+                                                           mode='rw',
+                                                           mkdir=True))
         self.vcards.load_vcards(session)
         self.get_i18n_translation()
 
