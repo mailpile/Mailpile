@@ -82,6 +82,16 @@ class VCardLine(dict):
         self._attrs = value
         self._update_dict()
 
+    def set_attr(self, attr, value):
+        try:
+            for av in self._attrs:
+                if a[0] == attr:
+                    a[1] = value
+                    return
+            self._attrs.append((attr, value))
+        finally:
+            self._update_dict()
+
     name = property(lambda self: self._name,
                     lambda self, v: self.set_name(v))
 
@@ -344,7 +354,7 @@ class SimpleVCard(object):
         """
         for vcl in vcls:
             cardinality = self._cardinality(vcl)
-            count = len([l for l in self._lines if l.name == vcl.name])
+            count = len([l for l in self._lines if l and l.name == vcl.name])
             if not cardinality:
                 raise ValueError('Not allowed on card: %s' % vcl.name)
             if cardinality in ('1', '*1'):
@@ -352,6 +362,112 @@ class SimpleVCard(object):
                     raise ValueError('Already on card: %s' % vcl.name)
             self._lines.append(vcl)
             vcl.line_id = len(self._lines)
+
+    def get_clientpidmap(self):
+        """
+        Return a dictionary representing the CLIENTPIDMAP, grouping VCard
+        lines by data sources.
+
+        >>> vc = SimpleVCard(VCardLine(name='fn', value='Bjarni', pid='1.2'),
+        ...                  VCardLine(name='clientpidmap',
+        ...                            value='1;thisisauid'))
+        >>> vc.get_clientpidmap()['thisisauid']['pid']
+        1
+        >>> vc.get_clientpidmap()[1]['lines'][0][0]
+        2
+        >>> vc.get_clientpidmap()[1]['lines'][0][1].value
+        u'Bjarni'
+        """
+        cpm = {}
+        for pm in self.get_all('clientpidmap'):
+            pid, guid = pm.value.split(';')
+            cpm[guid] = cpm[int(pid)] = {
+                'pid': int(pid),
+                'lines': []
+            }
+        for vcl in self.as_lines():
+            if 'pid' in vcl:
+                pv = [v.split('.', 1) for v in vcl['pid'].split(',')]
+                for pid, version in pv:
+                    cpm[int(pid)]['lines'].append((int(version), vcl))
+        return cpm
+
+    def merge(self, src_id, lines):
+        """
+        Merge a set of VCard lines from a given source into this card.
+
+        >>> vc = SimpleVCard(VCardLine(name='fn', value='Bjarni', pid='1.2'),
+        ...                  VCardLine(name='clientpidmap',
+        ...                            value='1;thisisauid'))
+        >>> vc.merge('thisisauid', [VCardLine(name='fn', value='Bjarni'),
+        ...                         VCardLine(name='x-a', value='b')])
+        >>> vc.get('x-a')['pid']
+        '1.3'
+        >>> vc.get('fn')['pid']
+        '1.2'
+
+        >>> vc.merge('otheruid', [VCardLine(name='x-b', value='c')])
+        >>> vc.get('x-b')['pid']
+        '2.1'
+
+        >>> vc.merge('thisisauid', [VCardLine(name='fn', value='Inrajb')])
+        >>> vc.get('fn')['pid']
+        '1.4'
+        >>> vc.fn
+        u'Inrajb'
+        >>> vc.get('x-a')
+        Traceback (most recent call last):
+           ...
+        IndexError: ...
+
+        >>> print vc.as_vCard()
+        BEGIN:VCARD
+        VERSION:4.0
+        CLIENTPIDMAP:1\\;thisisauid
+        CLIENTPIDMAP:2\\;otheruid
+        X-B;PID=2.1:c
+        FN;PID=1.4:Inrajb
+        END:VCARD
+        """
+        # First, we figure out which CLIENTPIDMAP applies, if any
+        cpm = self.get_clientpidmap()
+        pidmap = cpm.get(src_id)
+        if pidmap:
+            src_pid = pidmap['pid']
+        else:
+            pids = [p['pid'] for p in cpm.values()]
+            src_pid = max([int(p) for p in pids]) + 1
+            self.add(VCardLine(name='clientpidmap',
+                               value='%s;%s' % (src_pid, src_id)))
+            pidmap = cpm[src_pid] = cpm[src_id] = {'lines': []}
+
+        # 1st, iterate through existing lines for this source, removing
+        # all that differ from our input. Remove any input lines which are
+        # identical to those already on this card.
+        this_version = 0
+        for ver, ol in cpm[src_pid]['lines'][:]:
+            this_version = max(ver, this_version)
+            match = [l for l in lines if l
+                                     and l.name == ol.name
+                                     and l.value == ol.value]
+            for l in match:
+                lines.remove(l)
+            if not match:
+                # FIXME: Actually, we should JUST remove our pid and if no
+                #        pids are left, remove the line itself.
+                self.remove(ol.line_id)
+
+        # 2nd, iterate through provided lines and copy them.
+        this_version += 1
+        for vcl in lines:
+            pids = [pid for pid in vcl.get('pid', '').split(',')
+                                if pid and pid.split('.')[0] != src_pid]
+            pids.append('%s.%s' % (src_pid, this_version))
+            vcl.set_attr('pid', ','.join(pids))
+            self.add(vcl)
+
+        # FIXME: 3rd, collapse lines from multiple sources that have
+        #        identical values?
 
     def get_all(self, key):
         return [l for l in self._lines if l and  l.name == key.lower()]
@@ -416,7 +532,7 @@ class SimpleVCard(object):
                 self._lines[:0] = [VCardLine(name=key, value=default)]
 
         # Make sure VERSION is first.
-        self._lines.sort(key=lambda k: (k.name == 'version') and 1 or 2)
+        self._lines.sort(key=lambda k: (k and k.name == 'version') and 1 or 2)
 
         return '\n'.join(['BEGIN:VCARD'] +
                          [l.as_vcardline() for l in self._lines if l] +
