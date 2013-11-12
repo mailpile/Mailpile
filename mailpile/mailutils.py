@@ -134,10 +134,10 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
 def SendMail(session, from_to_msg_tuples):
   for frm, to, msg in from_to_msg_tuples:
     if 'sendmail' in session.config.sys.debug:
-      sys.stderr.write('SendMail: from %s, to %s\n' % (frm, to))
+      sys.stderr.write(_('SendMail: from %s, to %s\n') % (frm, to))
     sm_write = sm_close = lambda: True
     sendmail = session.config.get_sendmail(frm, to).strip()
-    session.ui.mark('Connecting to %s' % sendmail)
+    session.ui.mark(_('Connecting to %s') % sendmail)
     if sendmail.startswith('|'):
       cmd = sendmail[1:].strip().split()
       proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
@@ -158,7 +158,7 @@ def SendMail(session, from_to_msg_tuples):
         user = pwd = None
 
       if 'sendmail' in session.config.sys.debug:
-        sys.stderr.write(('SMTP conn to: %s:%s as %s@%s\n'
+        sys.stderr.write(_('SMTP connection to: %s:%s as %s@%s\n'
                           ) % (host, port, user, pwd))
 
       server = smtp_ssl and SMTP_SSL() or SMTP()
@@ -196,9 +196,9 @@ def SendMail(session, from_to_msg_tuples):
       sm_close = closer
       sm_cleanup = lambda: True
     else:
-      raise Exception('Invalid sendmail: %s' % sendmail)
+      raise Exception(_('Invalid sendmail: %s') % sendmail)
 
-    session.ui.mark('Preparing message...')
+    session.ui.mark(_('Preparing message...'))
     string = msg.as_string(False)
     total = len(string)
     while string:
@@ -208,7 +208,7 @@ def SendMail(session, from_to_msg_tuples):
                        ) % (100 * (total-len(string))/total))
     sm_close()
     sm_cleanup()
-    session.ui.mark('Message sent, %d bytes' % total)
+    session.ui.mark(_('Message sent, %d bytes') % total)
 
 
 MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
@@ -493,14 +493,14 @@ class IncrementalMbox(mailbox.mbox):
     self._file.seek(start, 0)
     firstKB = self._file.read(min(1024, max_length))
     if firstKB == '':
-      raise IOError('No data found')
+      raise IOError(_('No data found'))
     return b64w(sha1b64(firstKB)[:4])
 
   def get_msg_cs80b(self, start, max_length):
     self._file.seek(start, 0)
     first80B = self._file.read(min(80, max_length))
     if first80B == '':
-      raise IOError('No data found')
+      raise IOError(_('No data found'))
     return b64w(sha1b64(first80B)[:4])
 
   def get_msg_ptr(self, mboxid, toc_id):
@@ -522,7 +522,7 @@ class IncrementalMbox(mailbox.mbox):
       cs1k = self.get_msg_cs1k(start, length)
       cs = parts[2][:4]
       if (cs1k != cs and cs80b != cs):
-        raise IOError('Message not found')
+        raise IOError(_('Message not found'))
 
     return mailbox._PartialFile(self._file, start, start+length)
 
@@ -687,7 +687,7 @@ class Email(object):
 
   def add_attachments(self, filenames, filedata=None):
     if not self.is_editable():
-      raise NotEditableError('Mailbox is read-only.')
+      raise NotEditableError(_('Mailbox is read-only.'))
     msg = self.get_msg()
     for fn in filenames:
       msg.attach(self.make_attachment(fn, filedata=filedata))
@@ -695,7 +695,7 @@ class Email(object):
 
   def update_from_string(self, data):
     if not self.is_editable():
-      raise NotEditableError('Mailbox is read-only.')
+      raise NotEditableError(_('Mailbox is read-only.'))
 
     newmsg = email.parser.Parser().parsestr(data.encode('utf-8'))
     oldmsg = self.get_msg()
@@ -749,7 +749,7 @@ class Email(object):
 
   def update_from_msg(self, newmsg):
     if not self.is_editable():
-      raise NotEditableError('Mailbox is read-only.')
+      raise NotEditableError(_('Mailbox is read-only.'))
 
     mbx, ptr, fd = self.get_mbox_ptr_and_fd()
     mbx[ptr[MBX_ID_LEN:]] = newmsg
@@ -794,7 +794,7 @@ class Email(object):
       if fd:
         self.msg_parsed = ParseMessage(fd, pgpmime=pgpmime)
     if not self.msg_parsed:
-      IndexError('Message not found?')
+      IndexError(_('Message not found?'))
     return self.msg_parsed
 
   def get_headerprint(self):
@@ -872,7 +872,7 @@ class Email(object):
         filesize = len(payload)
         if mode.startswith('inline'):
           attributes['data'] = payload
-          session.ui.notify('Extracted attachment %s' % att_id)
+          session.ui.notify(_('Extracted attachment %s') % att_id)
         elif mode.startswith('preview'):
           attributes['thumb'] = True
           attributes['mimetype'] = 'image/jpeg'
@@ -880,19 +880,19 @@ class Email(object):
           filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
                                                   attributes=attributes)
           if thumbnail(payload, fd, height=250):
-            session.ui.notify('Wrote preview to: %s' % filename)
+            session.ui.notify(_('Wrote preview to: %s') % filename)
           else:
-            session.ui.notify('Failed to generate thumbnail')
+            session.ui.notify(_('Failed to generate thumbnail'))
           fd.close()
         else:
           filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
                                                   attributes=attributes)
           fd.write(payload)
           fd.close()
-          session.ui.notify('Wrote attachment to: %s' % filename)
+          session.ui.notify(_('Wrote attachment to: %s') % filename)
         extracted += 1
     if 0 == extracted:
-      session.ui.notify('No attachments found for: %s' % att_id)
+      session.ui.notify(_('No attachments found for: %s') % att_id)
       return None, None
     else:
       return filename, attributes
@@ -988,7 +988,7 @@ class Email(object):
         payload = payload.decode('iso-8859-1')
         charset = 'iso-8859-1'
       except UnicodeDecodeError, e:
-        print 'Decode failed: %s %s' % (charset, e)
+        print _('Decode failed: %s %s') % (charset, e)
     try:
       openpgp = part.openpgp
     except AttributeError:

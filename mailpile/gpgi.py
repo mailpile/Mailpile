@@ -7,26 +7,28 @@ import re
 import tempfile
 from subprocess import Popen, PIPE
 
+def _(x): return x
+
 DEFAULT_SERVER = "pool.sks-keyservers.net"
 
-openpgp_trust = {"-": "Trust not calculated", 
-                 "o": "Unknown trust",
-                 "q": "Undefined trust",
-                 "n": "Never trust",
-                 "m": "Marginally trust",
-                 "f": "Full trust",
-                 "u": "Ultimate trust",
-                 "e": "Expired key, not trusted",
-                 "r": "Revoked key, not trusted",
-                 "d": "Disabled key, not trusted",  # Deprecated flag.
+openpgp_trust = {"-": _("Trust not calculated"), 
+                 "o": _("Unknown trust"),
+                 "q": _("Undefined trust"),
+                 "n": _("Never trust"),
+                 "m": _("Marginally trust"),
+                 "f": _("Full trust"),
+                 "u": _("Ultimate trust"),
+                 "e": _("Expired key, not trusted"),
+                 "r": _("Revoked key, not trusted"),
+                 "d": _("Disabled key, not trusted"),  # Deprecated flag.
                 }
 
-openpgp_algorithms = {1: "RSA",
-                      2: "RSA (encrypt only)",
-                      3: "RSA (sign only)",
-                      16: "Elgamal (encrypt only)",
-                      17: "DSA",
-                      20: "Elgamal (encrypt/sign) [COMPROMISED]",
+openpgp_algorithms = {1: _("RSA"),
+                      2: _("RSA (encrypt only)"),
+                      3: _("RSA (sign only)"),
+                      16: _("Elgamal (encrypt only)"),
+                      17: _("DSA"),
+                      20: _("Elgamal (encrypt/sign) [COMPROMISED]"),
                      }
 # For details on type 20 compromisation, see 
 # http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
@@ -133,6 +135,8 @@ status_messages = {
     "SUCCESS": ["location"],
     "DECRYPTION_INFO": [],
 }
+
+del _
 
 class GnuPG:
     """
