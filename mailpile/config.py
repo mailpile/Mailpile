@@ -20,6 +20,10 @@ from mailpile.vcard import SimpleVCard, VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
 
 
+# i18n helper
+_ = lambda x: x
+
+
 class InvalidKeyError(ValueError):
     pass
 
@@ -1163,6 +1167,9 @@ if __name__ == "__main__":
     import mailpile.plugins.tags
     import mailpile.ui
 
+    # i18n helper
+    mailpile.config._ = _
+
     cfg = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
     session = mailpile.ui.Session(cfg)
     session.ui.block()
@@ -1182,3 +1189,5 @@ if __name__ == "__main__":
     print '%s' % (results, )
     if results.failed:
         sys.exit(1)
+else:
+    del _

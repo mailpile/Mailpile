@@ -2,7 +2,8 @@ import os
 import time
 from mailpile.config import PathDict
 
-def _(x): return x
+# i18n helper
+_ = lambda x: x
 
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_RULES = {
@@ -64,7 +65,10 @@ if __name__ == "__main__":
     from mailpile.plugins import *
     from mailpile.config import ConfigDict
 
+    # Make i18n stuff not break
+    mailpile.config._ = lambda x: x
+
     print '%s' % (ConfigDict(_name='mailpile',
-                             _comment=_('Default configuration'),
+                             _comment='Default configuration',
                              _rules=mailpile.defaults.CONFIG_RULES
                              ).as_config_bytes(), )
