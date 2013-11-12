@@ -2,6 +2,7 @@
 import os
 
 import mailpile.plugins
+from mailpile.gpgi import GnuPG
 from mailpile.vcard import *
 
 # Helper for i18n
@@ -20,7 +21,23 @@ class GnuPGImporter(VCardImporter):
     }
 
     def get_vcards(self):
-        return []
+    	gnupg = GnuPG()
+    	keys = gnupg.list_keys()
+    	results = []
+
+    	for key in keys.values():
+    		vc = SimpleVCard(VCardLine(name="KEY", 
+    			value="data:application/x-pgp-fingerprint,%s" 
+    			% key["fingerprint"]))
+    		for uid in key["uids"]:
+    			if "email" in uid and uid["email"]:
+    				vc.add(VCardLine(name="email", value=uid["email"]))
+    			if "name" in uid and uid["name"]:
+	    			vc.add(VCardLine(name="fn", value=uid["name"]))
+
+	    	results.append(vc)
+
+        return results
 
 
 mailpile.plugins.register_vcard_importers(GnuPGImporter)
