@@ -73,9 +73,9 @@ class MailpileCommand(Extension):
     def _show_avatar(self, protocol, host, email, size=60):
 
         if host == "localhost":
-          default = protocol + "://" + host + "/static/img/avatar-default.png"
+            default = protocol + "://" + host + "/static/img/avatar-default.png"
         else:
-          default = "mm"
+            default = "mm"
 
         gravatar_url = "https://www.gravatar.com/avatar/" + hashlib.md5(email.lower()).hexdigest() + "?"
         gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
