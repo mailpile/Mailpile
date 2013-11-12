@@ -4,9 +4,17 @@
 {% include("partials/sub_nav_contacts.html") %}
 
 <div id="contacts-list" class="clearfix">
-
-  {% if result.contact %}
-
+  {% if result.contacts %}
+  	{% for contact in result.contacts %}
+  	<div>
+  		<img src="{{ show_avatar(url_protocol, http_host, contact.email.0.email, 50) }}" style="float: left;">
+  		<h3>{{contact.fn}}</h3> 
+  		<p><b>E-mail addresses:</b> 
+  			{% for email in contact.email %}<li><a class="message-email-address" href="/contact/{{ email.email|e }}">{{email.email}}</a></li>{% endfor %}
+  		</p>
+  		{% if contact.key %}<p>HAS PGP</p>{% endif %}
+  	</div>
+  	{% endfor %}
   {% endif %}
 
 </div>
