@@ -48,6 +48,9 @@ class DemoVCardImporter(VCardImporter):
 
     def get_vcards(self):
         """Returns just a single contact, based on data from the config."""
+        # Note: It is important to only return one card per (set of)
+        #       e-mail addresses, as internal overwriting may cause
+        #       unexpected results.
         return [SimpleVCard(
             VCardLine(name='fn', value=self.config.name),
             VCardLine(name='email', value=self.config.email)

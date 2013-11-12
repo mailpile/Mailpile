@@ -501,7 +501,7 @@ class SimpleVCard(object):
 
     def as_mpCard(self):
         mpCard = {}
-        self._lines.sort(key=lambda c: 1-(c.get('pref', 0)))
+        self._lines.sort(key=lambda c: 1-(c and c.get('pref') or 0))
         for vcl in self._lines:
             if vcl.name in self.MPCARD_SUPPRESSED:
                 continue
@@ -591,7 +591,7 @@ class SimpleVCard(object):
             self.filename = filename or self.filename
             lines = []
             decrypt_and_parse_lines(open(self.filename, 'rb'),
-                                    lambda l: lines.append(l.strip()))
+                                    lambda l: lines.append(l.rstrip()))
             while lines and not lines[-1]:
                 lines.pop(-1)
             lines = unwrap('\n'.join(lines)).splitlines()
@@ -604,7 +604,11 @@ class SimpleVCard(object):
             raise ValueError('Not a valid VCard')
 
         for line in lines:
-            self.add(VCardLine(line))
+            try:
+                self.add(VCardLine(line))
+            except:
+                print 'Bad data: %s' % lines
+                raise
 
         return self
 

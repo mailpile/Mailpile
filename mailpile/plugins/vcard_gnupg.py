@@ -19,23 +19,35 @@ class GnuPGImporter(VCardImporter):
     CONFIG_RULES = {
         'gpg_home': [_('Location of keyring'), 'path', DEF_GNUPG_HOME],
     }
+    VCL_KEY_FMT = "data:application/x-pgp-fingerprint,%(fingerprint)s"
 
     def get_vcards(self):
-    	gnupg = GnuPG()
-    	keys = gnupg.list_keys()
-    	results = []
-
-    	for key in keys.values():
-    		vc = SimpleVCard(VCardLine(name="KEY", 
-    			value="data:application/x-pgp-fingerprint,%s" 
-    			% key["fingerprint"]))
-    		for uid in key["uids"]:
-    			if "email" in uid and uid["email"]:
-    				vc.add(VCardLine(name="email", value=uid["email"]))
-    			if "name" in uid and uid["name"]:
-	    			vc.add(VCardLine(name="fn", value=uid["name"]))
-
-	    	results.append(vc)
+        gnupg = GnuPG()
+        keys = gnupg.list_keys()
+        results = []
+        vcards = {}
+        for key in keys.values():
+            vcls = [VCardLine(name="KEY",
+                              value=self.VCL_KEY_FMT % key)]
+            card = None
+            emails = []
+            for uid in key["uids"]:
+                if "email" in uid and uid["email"]:
+                    vcls.append(VCardLine(name="email", value=uid["email"]))
+                    card = card or vcards.get(uid['email'])
+                    emails.append(uid["email"])
+                if "name" in uid and uid["name"]:
+                    vcls.append(VCardLine(name="fn", value=uid["name"]))
+            if card:
+                card.add(*vcls)
+            else:
+                # This is us taking care to only create one card for each
+                # set of e-mail addresses.
+                # FIXME: We should still probably dedup lines within the vcard.
+                card = SimpleVCard(*vcls)
+                for email in emails:
+                    vcards[email] = card
+                results.append(card)
 
         return results
 
