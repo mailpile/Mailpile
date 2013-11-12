@@ -11,17 +11,17 @@
     <span class="tag-card-name">{{tag.name}}</span>
     <div class="tag-card-numbers">
       <div class="tag-card-stat">      
-        <span class="tag-card-label">Total</span>
+        <span class="tag-card-label">{{_("Total")}}</span>
         <span class="tag-card-stat-count">{{tag.stats.all}}</span>
       </div>
       <div class="tag-card-stat">
         {% if tag.stats.new > 0 %}
-        <span class="tag-card-label">New</span>
+        <span class="tag-card-label">{{_("New")}}</span>
         <span class="tag-card-stat-count">{{tag.stats.new}}</span>
         {% endif %}
       </div>
     </div>
-    <a class="tag-card-message-link" href="{{tag.url}}">View Messages</a>
+    <a class="tag-card-message-link" href="{{tag.url}}">{{_("View Messages")}}</a>
   </div>
   {% endif %}
   {% endfor %}
@@ -31,7 +31,7 @@
 
 <div id="archived-list" class="clearfix">
 
-  <h3 class="text-center">Archived</h3>
+  <h3 class="text-center">{{_("Archived")}}</h3>
   <hr>
   {% for tag in  result.tags %}
   {% if tag.display == "archive" %}

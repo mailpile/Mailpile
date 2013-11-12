@@ -1,21 +1,21 @@
 <div id="contact-add" class="content-normal">
 
-  <h3>Contact Info</h3>
+  <h3>{{_("Contact Info")}}</h3>
 
   <form id="form-contact-add" action="/api/0/contact/add/" method="POST">
 
     <input type="hidden" name="csrf" value="">
 
-    <label>Name</label>
+    <label>{{_("Name")}}</label>
     <input type="text" name="@contactname" value="" placeholder="Chelsea Manning">
 
-    <label>E-mail</label>
+    <label>{{_("E-mail")}}</label>
     <input type="text" name="@contactemail" value="" placeholder="chelsea@website.com">
 
-    <label>Website</label>
+    <label>{{_("Website")}}</label>
     <input type="text" name="@contactwebsite" value="" placeholder="http://website.com">
 
-    <label>PGP Key</label>
+    <label>{{_("PGP Key")}}</label>
     <textarea name="@pgpkey" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----4rcoQYTGVltTC4gTItr2YrFoWRe0sSIrOregxwfKHvu5bIL9lp58zoAOCcoeKonbBCOda6RckZsKRpZ1E49agxZbSMSFk3cpkcCw5/mI10ze4tQbvPw..."></textarea>
 
     <input type="submit" value="Add"/>

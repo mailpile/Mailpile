@@ -17,19 +17,19 @@
     </tbody>
     </table>
     <div id="pile-bottom" class="clearfix">
-      <a href="#" class="button-primary">Previous</a> <a href="/in/Inbox/@20/" class="button-primary">Next</a>
+      <a href="#" class="button-primary">{{_("Previous")}}</a> <a href="/in/Inbox/@20/" class="button-primary">{{_("Next")}}</a>
       <div>
-        <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} of {{result.total}} Messages {% elif result.total == 1 %} 1 Message {% else %} No results found {% endif %}</h5><br>
-        <a class="change-view-size" data-view_size="snug" href="#">Snug</a>
-        <a class="change-view-size" data-view_size="cozy" href="#">Cozy</a>
-        <a class="change-view-size" data-view_size="comfy" href="#">Comfy</a>
-        <a class="change-view-size" data-view_size="fluffy" href="#">Fluffy</a>
+        <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} {{_("of")}} {{result.total}} {{_("Conversations")}} {% elif result.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5><br>
+        <a class="change-view-size" data-view_size="snug" href="#">{{_("Snug")}}</a>
+        <a class="change-view-size" data-view_size="cozy" href="#">{{_("Cozy")}}</a>
+        <a class="change-view-size" data-view_size="comfy" href="#">{{_("Comfy")}}</a>
+        <a class="change-view-size" data-view_size="fluffy" href="#">{{_("Fluffy")}}</a>
       </div>
     </div>
   </form>
   {% else %}
   <div class="add-top add-bottom center">
-    <h2 class="add-top text-center">No Results Found</h2>
+    <h2 class="add-top text-center">{{_("No Results Found")}}</h2>
   </div>
   {% endif %}
 

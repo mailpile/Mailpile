@@ -1,18 +1,18 @@
 <div id="tag-add" class="content-normal hide">
 
-  <h3>Enter New Tag Info</h3>
+  <h3>{{_("Enter New Tag Info")}}</h3>
 
   <form id="form-tag-add" method="POST">
 
     <input type="hidden" name="csrf" value="">
 
-    <label>Tag</label>
-    <input type="text" id="data-tag-add-tag" name="name" value="" placeholder="Friends & Family">
+    <label>{{_("Tag")}}</label>
+    <input type="text" id="data-tag-add-tag" name="name" value="" placeholder="{{_("Friends & Family")}}">
 
-    <label>Slug</label>
-    <input type="text" id="data-tag-add-slug" name="slug" value="" placeholder="friends-family">
+    <label>{{_("Slug")}}</label>
+    <input type="text" id="data-tag-add-slug" name="slug" value="" placeholder="{{_("friends-family")}}">
 
-    <button type="submit"><span class="icon-circle-add"></span> Add</button>
+    <button type="submit"><span class="icon-circle-add"></span> {{_("Add")}}</button>
 
   </form>
 </div>

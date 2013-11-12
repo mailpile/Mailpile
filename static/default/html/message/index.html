@@ -13,14 +13,16 @@
       <div class="message-headers">
         <div class="message-datetime">{{ message.timestamp|friendly_datetime }} at {{ message.shorttime }}</div>
         <ul>
-          <li><b>From:</b> <a class="message-email-address" href="/contact/{{ message.from_email|e }}"><img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">{{ message.conv_people[0].name }}</a></li>
-          <li><b>To:</b> {% for toaddr in message.to %}<a class="message-email-address" href="/contact/{{toaddr}}/"> <img src="{{ show_avatar(url_protocol, http_host, toaddr, 48) }}"> {{toaddr}}</a>{% if not loop.last %}{% endif %}{% endfor %}</li>
+          <li><b>{{_("Date:")}}</b> {{message.friendly_date}} {{_("at")}} {{message.shorttime}}</li>
+          <li><b>{{_("From:")}}</b> <a class="message-email-address" href="/contact/{{ message.from_email|e }}"><img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">{{ message.conv_people[0].name }}</a></li>
+          <li><b>{{_("To:")}}</b> {% for toaddr in message.to %}<a class="message-email-address" href="/contact/{{toaddr}}/"> <img src="{{ show_avatar(url_protocol, http_host, toaddr, 48) }}"> {{toaddr}}</a>{% if not loop.last %}{% endif %}{% endfor %}</li>
           {% if message.cc %}
-          <li><b>Cc:</b> {% for ccaddr in message.cc %}<a class="message-email-address" href="/contact/{{ccaddr}}/">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+          <li><b>{{_("Cc:")}}</b> {% for ccaddr in message.cc %}<a class="message-email-address" href="/contact/{{ccaddr}}/">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
           {% endif %}
           {% if message.bcc %}
-          <li><b>Bcc:</b> {% for bccaddr in message.bcc %}<a class="message-email-address" href="/contact/{{bccaddr}}/">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+          <li><b>{{_("Bcc:")}}</b> {% for bccaddr in message.bcc %}<a class="message-email-address" href="/contact/{{bccaddr}}/">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
           {% endif %}
+          <li><b>{{_("Subject:")}}</b> {{message.subject}}</li>
         </ul>
       </div>
       <div class="message-body">
@@ -29,15 +31,15 @@
         {% if part.type == "pgpbeginsigned" and part.openpgp_data %}
         <div class="pgp_signature_{{part.openpgp_data.signature}}" style="background: #c0ffc0;">
           <div class="pgp_signheader" style="background: #90ff90;">
-            {% if part.openpgp_data.signature == "good"%}Signed by <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
-            {% if part.openpgp_data.signature == "bad"%}Unknown signature from <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
-            {% if part.openpgp_data.signature == "error"%}Signed with unknown key{% endif %}
+            {% if part.openpgp_data.signature == "good"%}{{_("Signed by")}} <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
+            {% if part.openpgp_data.signature == "bad"%}{{_("Unknown signature from")}} <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
+            {% if part.openpgp_data.signature == "error"%}{{_("Signed with unknown key")}}{% endif %}
           </div>
         {% elif part.type == "pgpbegin" and part.openpgp_data %}
         <div class="pgp_encrypted_{{part.openpgp_data.decrypted}}" style="background: #c0c0ff;">
           <div class="pgp_encryptedheader" style="background: #9090ff;">
-            {% if part.openpgp_data.decrypt == "success"%}Successfully decrypted message{% endif %}
-            {% if part.openpgp_data.decrypt == "fail"%}Failed to decrypt message{% endif %}
+            {% if part.openpgp_data.decrypt == "success"%}{{_("Successfully decrypted message")}}{% endif %}
+            {% if part.openpgp_data.decrypt == "fail"%}{{_("Failed to decrypt message")}}{% endif %}
           </div>
         {% elif part.type == "pgpsignature" or part.type == "pgpend" %}
         </div>
@@ -58,13 +60,13 @@
       </div>
       <div class="message-actions">
         <form action="/message/reply/={{message.mid}}/" method=POST>
-          <button type="submit"><span class="icon-reply"></span> Reply</button>
+          <button type="submit"><span class="icon-reply"></span> {{_("Reply")}}</button>
         </form>
         <form action="/message/reply/={{message.mid}}/" method=POST>
-          <button type="submit"><span class="icon-reply-all"></span> All</button>
+          <button type="submit"><span class="icon-reply-all"></span> {{_("All")}}</button>
         </form>
         <form action="/message/forward/={{message.mid}}/" method=POST>
-          <button type="submit"><span class="icon-forward"></span> Forward</button>
+          <button type="submit"><span class="icon-forward"></span> {{_("Forward")}}</button>
         </form>      
         <button type="submit"><span class="icon-archive"></span></button>
         <button type="submit"><span class="icon-spam"></span></button>

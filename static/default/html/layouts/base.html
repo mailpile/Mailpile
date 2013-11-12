@@ -38,7 +38,7 @@
 <div id="messages">
   <div class="error clearfix">
     <span class="message-text"></span>
-    <abbr title="Close" class="message-close">X</abbr>
+    <abbr title="{{_("Close")}}" class="message-close">X</abbr>
   </div>
   <div class="warning clearfix">
     <span class="message-text"></span>
@@ -63,7 +63,7 @@
     <object class="logo" data="/static/img/logo.svg">
 		  <img class="logo" src="/static/img/logo.png">
 		</object>
-    <span class="hide">{{name}}<small> mailpile of <b>{{mailpile_size}}</b> emails</small></span>
+    <span class="hide">{{_("%(name)s<small> mailpile of <b>%(size)s</b> emails</small>', name=name, size=mailpile_size)}}</span>
   </div>
   <div class="topbar-actions">
     <form id="form-search" class="form-search clearfix" action="/search/">
@@ -73,11 +73,11 @@
 	  </form>
     <nav class="topbar-nav">
       <ul>
-        <li {% if command == "message/draft" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" title="Compose"><span class="link-icon icon-compose"></span></a></li>
-        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" title="Contacts"><span class="link-icon icon-user"></span></a></li>
-        <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" title="Tags"><span class="link-icon icon-tag"></span></a></li>
-        <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="Donate"><span class="link-icon icon-donate"></span></a></li>
-        <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="Settings"><span class="link-icon icon-settings"></span></a></li>
+        <li {% if command == "message/draft" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" title="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a></li>
+        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" title="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a></li>
+        <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" title="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
+        <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
+        <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
       </ul>
     </nav>
   </div>
@@ -92,7 +92,7 @@
         {% else %}
         <li class="sidebar-tags-draggable {{ navigation_on(result.search_tags, tag.slug) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
         {% endif %}
-            <a href="{{tag.url}}" title="{{tag.all}} emails">
+            <a href="{{tag.url}}" title="{{tag.all}} {{_("emails")}}">
               <span class="sidebar-icon icon-{{tag.slug}}"></span>
               {{tag.name}}
               {% if tag.stats.new > 0 %}
@@ -121,31 +121,31 @@
         <li>
           <a href="/search/has:pgp/" class="">
             <span class="sidebar-icon icon-encrypted"></span>
-            <span class="sidebar-tag">Encrypted</span>
+            <span class="sidebar-tag">{{_("Encrypted")}}</span>
           </a>
         </li>
         <li>
           <a href="/search/att:jpg/" class="">
             <span class="sidebar-icon icon-photos"></span>
-            <span class="sidebar-tag">Photos</span>
+            <span class="sidebar-tag">{{_("Photos")}}</span>
           </a>
         </li>
         <li>
           <a href="/search/has:attachment/" class="">
             <span class="sidebar-icon icon-files"></span>
-            <span class="sidebar-tag">Files</span>
+            <span class="sidebar-tag">{{_("Files")}}</span>
           </a>
         </li>
         <li>
           <a href="/search/http/" class="">
             <span class="sidebar-icon icon-links"></span>
-            <span class="sidebar-tag">Links</span>
+            <span class="sidebar-tag">{{_("Links")}}</span>
           </a>
         </li>
         <li>
           <a href="/group/list/" class="">
             <span class="sidebar-icon icon-groups"></span>
-            <span class="sidebar-tag">Groups</span>
+            <span class="sidebar-tag">{{_("Groups")}}</span>
           </a>
         </li>
       </ul>
@@ -157,7 +157,7 @@
       {{results}}
     {% endblock %}
     <div id="footer">
-      <a href='http://mailpile.is'>Mailpile</a> is free software made by <a title="Bjarni R. Einarsson" href="http://bre.klaki.net" target="_blank">bre</a>, <a title="Brennan Novak" href="https://brennannovak.com" target="_blank">bnvk</a>, <a href="http://www.smarimccarthy.is/" target="_blank">smári</a> &amp; <a href="https://github.com/pagekite/Mailpile/graphs/contributors" target="_blank">more</a>
+      <a href='http://mailpile.is'>{{_("Mailpile")}}</a> {{_("is free software made by")}} <a title="Bjarni R. Einarsson" href="http://bre.klaki.net" target="_blank">bre</a>, <a title="Brennan Novak" href="https://brennannovak.com" target="_blank">bnvk</a>, <a href="http://www.smarimccarthy.is/" target="_blank">smári</a> &amp; <a href="https://github.com/pagekite/Mailpile/graphs/contributors" target="_blank">{{_("more")}}</a>
     </div>
     <div id="debug" class="hide">
       <h3>DEBUG</h3>
@@ -172,9 +172,9 @@
 
 <div id="search-params" class="clearfix">
   <ul>
-    <li>Date: <a href="#" class="" id="search-start-time">Start time</a> to <a href="#" class="" id="search-end-time">Present</a></li>
-    <li>With: <a href="#" id="search-tags">No Tags</a></li>
-    <li>And: <a href="#" id="search-all-groups">All groups</a></li>
+    <li>{{_("Date:")}} <a href="#" class="" id="search-start-time">{{_("Start time")}}</a> {{_("to")}} <a href="#" class="" id="search-end-time">{{_("Present")}}</a></li>
+    <li>{{_("With:")}} <a href="#" id="search-tags">{{_("No Tags")}}</a></li>
+    <li>{{_("And:")}} <a href="#" id="search-all-groups">{{_("All groups")}}</a></li>
   </ul>
 </div>  
 
