@@ -9,6 +9,9 @@
 
 import mailpile.plugins
 
+# Helper for i18n
+_ = lambda x: x
+
 
 ##[ Pluggable configuration ]#################################################
 
@@ -35,12 +38,12 @@ class DemoVCardImporter(VCardImporter):
     configuration. This is not particularly useful, but it demonstrates
     how each importer can define (and use) its own settings.
     """
-    FORMAT_NAME = 'Demo Contacts'
-    FORMAT_DESCRPTION = 'This is the demo importer'
+    FORMAT_NAME = _('Demo Contacts')
+    FORMAT_DESCRPTION = _('This is the demo importer')
     SHORT_NAME = 'demo'
     CONFIG_RULES = {
-         'name': ['Contact name', str, 'Mr. Rogers'],
-         'email': ['Contact email', 'email', 'mr@rogers.com']
+         'name': [_('Contact name'), str, 'Mr. Rogers'],
+         'email': [_('Contact email'), 'email', 'mr@rogers.com']
     }
 
     def get_vcards(self):
@@ -60,3 +63,5 @@ mailpile.plugins.register_vcard_importers(DemoVCardImporter)
 
 
 
+# i18n cleanup
+del _

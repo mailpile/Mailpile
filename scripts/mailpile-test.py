@@ -71,6 +71,10 @@ try:
     # Rescan AGAIN, so we can test for the presence of duplicates.
     mp.rescan()
 
+    # Do we have a Mr. Rogers contact?
+    assert(mp.contact('mr@rogers.com').result[0].fn == u'Mr. Rogers')
+    assert(len(mp.contact_list('rogers').result['contacts']) == 1)
+
     # Search for things, there should be exactly one match for each.
     mp.order('rev-date')
     for search in (FROM_BRE,
