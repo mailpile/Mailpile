@@ -140,7 +140,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
   def do_POST(self, method='POST'):
     (scheme, netloc, path, params, query, frag) = urlparse(self.path)
     if path.startswith('/::XMLRPC::/'):
-      raise ValueError('XMLRPC has been disabled for now.')
+      raise ValueError(_('XMLRPC has been disabled for now.'))
       #return SimpleXMLRPCRequestHandler.do_POST(self)
 
     config = self.server.session.config
@@ -158,15 +158,15 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         )
       elif ctype == ue:
         if clength > 5*1024*1024:
-          raise ValueError('OMG, input too big')
+          raise ValueError(_('OMG, input too big'))
         post_data = cgi.parse_qs(self.rfile.read(clength), 1)
       else:
-        raise ValueError('Unknown content-type')
+        raise ValueError(_('Unknown content-type'))
 
     except (IOError, ValueError), e:
       r = self.server.session.ui.render_page(config, self._ERROR_CONTEXT,
                                              body='POST geborked: %s' % e,
-                                             title='Internal Error')
+                                             title=_('Internal Error'))
       self.send_full_response(r, code=500)
       return None
     return self.do_GET(post_data=post_data, method=method)
@@ -234,7 +234,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
       e = traceback.format_exc()
       print e
       if not session.config.sys.debug:
-        e = 'Internal error'
+        e = _('Internal error')
       self.send_full_response(e, code=500, mimetype='text/plain')
       return None
 

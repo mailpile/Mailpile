@@ -87,7 +87,7 @@ def _SlugCheck(slug, allow=''):
     if not slug == CleanText(unicode(slug),
                              banned=(CleanText.NONDNS.replace(allow, ''))
                              ).clean:
-        raise ValueError('Invalid URL slug: %s' % slug)
+        raise ValueError(_('Invalid URL slug: %s') % slug)
     return slug.lower()
 
 
@@ -119,7 +119,7 @@ def _HostNameCheck(host):
     # FIXME: Check DNS?
     if not unicode(host) == CleanText(unicode(host),
                                       banned=CleanText.NONDNS).clean:
-        raise ValueError('Invalid hostname: %s' % host)
+        raise ValueError(_('Invalid hostname: %s') % host)
     return str(host).lower()
 
 
@@ -153,7 +153,7 @@ def _PathCheck(path):
     """
     path = os.path.expanduser(path)
     if not os.path.exists(path):
-        raise ValueError('File/directory does not exist: %s' % path)
+        raise ValueError(_('File/directory does not exist: %s') % path)
     return os.path.abspath(path)
 
 
@@ -171,7 +171,7 @@ def _FileCheck(path):
     """
     path = _PathCheck(path)
     if not os.path.isfile(path):
-        raise ValueError('Not a file: %s' % path)
+        raise ValueError(_('Not a file: %s') % path)
     return path
 
 
@@ -189,7 +189,7 @@ def _DirCheck(path):
     """
     path = _PathCheck(path)
     if not os.path.isdir(path):
-        raise ValueError('Not a directory: %s' % path)
+        raise ValueError(_('Not a directory: %s') % path)
     return path
 
 
@@ -299,7 +299,7 @@ def RuledContainer(pcls):
             for key in keys:
                 if not hasattr(self[key], 'as_config'):
                     if key in self.rules:
-                        comment = self.rules[key][self.RULE_COMMENT]
+                        comment = _(self.rules[key][self.RULE_COMMENT])
                     else:
                         comment = ''
                     value = unicode(self[key])
@@ -322,7 +322,7 @@ def RuledContainer(pcls):
             return config
 
         def reset(self, rules=True, data=True):
-            raise Exception('Override this')
+            raise Exception(_('Override this'))
 
         def set_rules(self, rules):
             assert(isinstance(rules, dict))
@@ -381,7 +381,7 @@ def RuledContainer(pcls):
 
             elif not isinstance(value, (type(None), int, long, bool,
                                         float, str, unicode)):
-                raise TypeError(('Invalid type for default %s = %s'
+                raise TypeError(_('Invalid type for default %s = %s'
                                  ) % (name, value))
 
         def __fixkey__(self, key):
@@ -392,7 +392,7 @@ def RuledContainer(pcls):
             if key not in self.rules:
                 if '_any' in self.rules:
                     return self.rules['_any']
-                raise InvalidKeyError(('Invalid key for %s: %s'
+                raise InvalidKeyError(_('Invalid key for %s: %s'
                                        ) % (self._name, key))
             return self.rules[key]
 
@@ -475,11 +475,11 @@ def RuledContainer(pcls):
             checker = self.get_rule(key)[self.RULE_CHECKER]
             if not checker is True:
                 if checker is False:
-                    raise ValueError(('Modifying %s/%s is not allowed'
+                    raise ValueError(_('Modifying %s/%s is not allowed'
                                       ) % (self._name, key))
                 if isinstance(checker, (list, set, tuple)):
                     if value not in checker:
-                        raise ValueError(('Invalid value for %s/%s: %s'
+                        raise ValueError(_('Invalid value for %s/%s: %s'
                                           ) % (self._name, key, value))
                 elif isinstance(checker, (type, type(RuledContainer))):
                     try:
@@ -487,10 +487,10 @@ def RuledContainer(pcls):
                     except (IgnoreValue):
                         return
                     except (ValueError, TypeError):
-                        raise ValueError(('Invalid value for %s/%s: %s'
+                        raise ValueError(_('Invalid value for %s/%s: %s'
                                           ) % (self._name, key, value))
                 else:
-                    raise Exception(('Unknown constraint for %s/%s: %s'
+                    raise Exception(_('Unknown constraint for %s/%s: %s'
                                      ) % (self._name, key, checker))
             self.__passkey__(key, value)
             self.__createkey_and_setitem__(key, value)
@@ -695,7 +695,7 @@ class ConfigDict(RuledContainer(dict)):
             self[k] = value
             return k
         else:
-            raise UsageError('Cannot append to fixed dict')
+            raise UsageError(_('Cannot append to fixed dict'))
 
     def update(self, *args, **kwargs):
         """Reimplement update, so it goes through our sanity checks."""
@@ -743,7 +743,7 @@ class ConfigManager(ConfigDict):
     def _mkworkdir(self, session):
         if not os.path.exists(self.workdir):
             if session:
-                session.ui.notify('Creating: %s' % self.workdir)
+                session.ui.notify(_('Creating: %s') % self.workdir)
             os.mkdir(self.workdir)
 
     def parse_config(self, session, data, source='internal'):
@@ -801,7 +801,7 @@ class ConfigManager(ConfigDict):
                     cfg = cfg[part]
                 else:
                     if session:
-                        msg = (u'Invalid (%s): section %s does not exist'
+                        msg = _(u'Invalid (%s): section %s does not exist'
                                ) % (source, section)
                         session.ui.warning(msg)
                     okay = False
@@ -812,7 +812,7 @@ class ConfigManager(ConfigDict):
                     cfg[var] = val
                 except (ValueError, KeyError):
                     if session:
-                        msg = (u'Invalid (%s): section %s, variable %s'
+                        msg = _(u'Invalid (%s): section %s, variable %s'
                                ) % (source, section, var)
                         session.ui.warning(msg)
                     okay = False
@@ -827,10 +827,10 @@ class ConfigManager(ConfigDict):
             ocfg = os.path.join(self.workdir, 'config.rc')
             ocl = OldConfigLoader(filename=ocfg)
             if ocl.export(self) and session:
-                session.ui.warning(('WARNING: Imported old config from %s'
+                session.ui.warning(_('WARNING: Imported old config from %s'
                                     ) % ocfg)
             elif ocl.lines and session:
-                session.ui.warning(('WARNING: Failed to import config from %s'
+                session.ui.warning(_('WARNING: Failed to import config from %s'
                                     ) % ocfg)
         except:
             import traceback
@@ -867,7 +867,7 @@ class ConfigManager(ConfigDict):
         def fmt_mbxid(k):
             k = b36(int(k, 36))
             if len(k) > MBX_ID_LEN:
-                raise ValueError('Mailbox ID too large: %s' % k)
+                raise ValueError(_('Mailbox ID too large: %s') % k)
             return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
         mailboxes = [fmt_mbxid(k) for k in self.sys.mailbox.keys()]
         mailboxes.sort()
@@ -897,21 +897,21 @@ class ConfigManager(ConfigDict):
             mfn = self.sys.mailbox[mbx_id]
             pfn = os.path.join(self.workdir, 'pickled-mailbox.%s' % mbx_id)
         except KeyError:
-            raise NoSuchMailboxError('No such mailbox: %s' % mbx_id)
+            raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
 
         try:
             if mbx_id in self._mbox_cache:
                 self._mbox_cache[mbx_id].update_toc()
             else:
                 if session:
-                    session.ui.mark('%s: Updating: %s' % (mbx_id, mfn))
+                    session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
                 self._mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
         except:
             if self.sys.debug:
                 import traceback
                 traceback.print_exc()
             if session:
-                session.ui.mark(('%s: Opening: %s (may take a while)'
+                session.ui.mark(_('%s: Opening: %s (may take a while)'
                                  ) % (mbx_id, mfn))
             mbox = OpenMailbox(mfn)
             mbox.editable = self.is_editable_mailbox(mbx_id)
@@ -1012,7 +1012,7 @@ class ConfigManager(ConfigDict):
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
-            raise ValueError('Parent paths are not allowed')
+            raise ValueError(_('Parent paths are not allowed'))
         bpath = self.data_directory(ftype, mode=mode, mkdir=mkdir)
         fpath = os.path.join(bpath, fpath)
         return fpath, open(fpath, mode)
@@ -1128,7 +1128,7 @@ class OldConfigLoader:
                     config.tags[var] = {'name': val, 'slug': val.lower()}
 
             except Exception, e:
-                print 'Could not parse (%s): %s' % (e, line)
+                print _('Could not parse (%s): %s') % (e, line)
                 errors += 1
 
         mbox_ids = mailboxes.keys()
@@ -1141,7 +1141,7 @@ class OldConfigLoader:
                     nid = config.sys.mailbox.append('/dev/null')
                 config.sys.mailbox[mbox_id] = mbox_fn
             except IndexError:
-                print 'Could not assign mailbox:%s = %s' % (mbox_id, mbox_fn)
+                print _('Could not assign mailbox:%s = %s') % (mbox_id, mbox_fn)
 
         for writable in ('Blank', 'Drafts'):
             tid = config.get_tag_id(writable)

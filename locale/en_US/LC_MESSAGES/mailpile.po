@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-12 10:32+0000\n"
+"POT-Creation-Date: 2013-11-12 12:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,404 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: mailpile/defaults.py:9
+msgid "Mailpile program version"
+msgstr ""
+
+#: mailpile/defaults.py:10
+msgid "Configuration timestamp"
+msgstr ""
+
+#: mailpile/defaults.py:11
+msgid "Technical system settings"
+msgstr ""
+
+#: mailpile/defaults.py:13
+msgid "Max files kept open at once"
+msgstr ""
+
+#: mailpile/defaults.py:14
+msgid "History length (lines, <0 = no save)"
+msgstr ""
+
+#: mailpile/defaults.py:15
+msgid "Listening port for web UI"
+msgstr ""
+
+#: mailpile/defaults.py:16
+msgid "Posting list target size in KB"
+msgstr ""
+
+#: mailpile/defaults.py:17
+msgid "Max results we sort \"well\""
+msgstr ""
+
+#: mailpile/defaults.py:18
+msgid "Max length of metadata snippets"
+msgstr ""
+
+#: mailpile/defaults.py:19
+msgid "Debugging flags"
+msgstr ""
+
+#: mailpile/defaults.py:20
+msgid "Host:port of PGP keyserver"
+msgstr ""
+
+#: mailpile/defaults.py:21
+msgid "Listening host for web UI"
+msgstr ""
+
+#: mailpile/defaults.py:22
+msgid "Local read/write Maildir"
+msgstr ""
+
+#: mailpile/defaults.py:23
+msgid "Metadata index file"
+msgstr ""
+
+#: mailpile/defaults.py:24
+msgid "Search index directory"
+msgstr ""
+
+#: mailpile/defaults.py:25
+msgid "Mailboxes we index"
+msgstr ""
+
+#: mailpile/defaults.py:26
+msgid "Locations of assorted data"
+msgstr ""
+
+#: mailpile/defaults.py:27
+msgid "Default theme"
+msgstr ""
+
+#: mailpile/defaults.py:29
+msgid "Location of vcards"
+msgstr ""
+
+#: mailpile/defaults.py:32
+msgid "User preferences"
+msgstr ""
+
+#: mailpile/defaults.py:34
+msgid "Search results per page"
+msgstr ""
+
+#: mailpile/defaults.py:35
+msgid "New mail check frequency"
+msgstr ""
+
+#: mailpile/defaults.py:36
+msgid "Inline PGP signatures or attached"
+msgstr ""
+
+#: mailpile/defaults.py:37
+msgid "Default sort order"
+msgstr ""
+
+#: mailpile/defaults.py:38
+msgid "Encrypt local data to ..."
+msgstr ""
+
+#: mailpile/defaults.py:39
+msgid "Key to use to scramble the index"
+msgstr ""
+
+#: mailpile/defaults.py:40
+msgid "Command run before rescanning"
+msgstr ""
+
+#: mailpile/defaults.py:41
+msgid "Default outgoing e-mail address"
+msgstr ""
+
+#: mailpile/defaults.py:42
+msgid "Default outgoing mail route"
+msgstr ""
+
+#: mailpile/defaults.py:44
+msgid "User interface language"
+msgstr ""
+
+#: mailpile/defaults.py:46
+msgid "User profiles and personalities"
+msgstr ""
+
+#: mailpile/defaults.py:47
+msgid "Account name"
+msgstr ""
+
+#: mailpile/defaults.py:48
+msgid "E-mail address"
+msgstr ""
+
+#: mailpile/defaults.py:49
+msgid "Message signature"
+msgstr ""
+
+#: mailpile/defaults.py:50
+msgid "Outgoing mail route"
+msgstr ""
+
+#: mailpile/defaults.py:62
+msgid "Default configuration"
+msgstr ""
+
+#: mailpile/config.py:90
+#, python-format
+msgid "Invalid URL slug: %s"
+msgstr ""
+
+#: mailpile/config.py:122
+#, python-format
+msgid "Invalid hostname: %s"
+msgstr ""
+
+#: mailpile/config.py:156
+#, python-format
+msgid "File/directory does not exist: %s"
+msgstr ""
+
+#: mailpile/config.py:174
+#, python-format
+msgid "Not a file: %s"
+msgstr ""
+
+#: mailpile/config.py:192
+#, python-format
+msgid "Not a directory: %s"
+msgstr ""
+
+#: mailpile/config.py:325
+msgid "Override this"
+msgstr ""
+
+#: mailpile/config.py:384
+#, python-format
+msgid "Invalid type for default %s = %s"
+msgstr ""
+
+#: mailpile/config.py:395
+#, python-format
+msgid "Invalid key for %s: %s"
+msgstr ""
+
+#: mailpile/config.py:478
+#, python-format
+msgid "Modifying %s/%s is not allowed"
+msgstr ""
+
+#: mailpile/config.py:482 mailpile/config.py:490
+#, python-format
+msgid "Invalid value for %s/%s: %s"
+msgstr ""
+
+#: mailpile/config.py:493
+#, python-format
+msgid "Unknown constraint for %s/%s: %s"
+msgstr ""
+
+#: mailpile/config.py:698
+msgid "Cannot append to fixed dict"
+msgstr ""
+
+#: mailpile/config.py:746
+#, python-format
+msgid "Creating: %s"
+msgstr ""
+
+#: mailpile/config.py:804
+#, python-format
+msgid "Invalid (%s): section %s does not exist"
+msgstr ""
+
+#: mailpile/config.py:815
+#, python-format
+msgid "Invalid (%s): section %s, variable %s"
+msgstr ""
+
+#: mailpile/config.py:830
+#, python-format
+msgid "WARNING: Imported old config from %s"
+msgstr ""
+
+#: mailpile/config.py:833
+#, python-format
+msgid "WARNING: Failed to import config from %s"
+msgstr ""
+
+#: mailpile/config.py:870
+#, python-format
+msgid "Mailbox ID too large: %s"
+msgstr ""
+
+#: mailpile/config.py:900
+#, python-format
+msgid "No such mailbox: %s"
+msgstr ""
+
+#: mailpile/config.py:907
+#, python-format
+msgid "%s: Updating: %s"
+msgstr ""
+
+#: mailpile/config.py:914
+#, python-format
+msgid "%s: Opening: %s (may take a while)"
+msgstr ""
+
+#: mailpile/config.py:1015
+msgid "Parent paths are not allowed"
+msgstr ""
+
+#: mailpile/config.py:1131
+#, python-format
+msgid "Could not parse (%s): %s"
+msgstr ""
+
+#: mailpile/config.py:1144
+#, python-format
+msgid "Could not assign mailbox:%s = %s"
+msgstr ""
+
+#: mailpile/commands.py:154
+#, python-format
+msgid "ID out of bounds: %s"
+msgstr ""
+
+#: mailpile/commands.py:157 mailpile/commands.py:163 mailpile/commands.py:168
+#, python-format
+msgid "What message is %s?"
+msgstr ""
+
+#: mailpile/commands.py:255
+#, python-format
+msgid "FIXME: rescan messages: %s"
+msgstr ""
+
+#: mailpile/commands.py:273
+#, python-format
+msgid "Running: %s"
+msgstr ""
+
+#: mailpile/commands.py:294
+msgid "Nothing changed"
+msgstr ""
+
+#: mailpile/commands.py:296
+#, python-format
+msgid "Aborted: %s"
+msgstr ""
+
+#: mailpile/commands.py:325
+msgid "Aborted"
+msgstr ""
+
+#: mailpile/commands.py:339
+msgid "Statistics updated"
+msgstr ""
+
+#: mailpile/commands.py:505
+#, python-format
+msgid "No such key: %s"
+msgstr ""
+
+#: mailpile/commands.py:574
+#, python-format
+msgid "The web interface is %s"
+msgstr ""
+
+#: mailpile/commands.py:575
+msgid "disabled."
+msgstr ""
+
+#: mailpile/commands.py:577
+msgid "For instructions, type `help`, press <CTRL-D> to quit."
+msgstr ""
+
+#: mailpile/commands.py:596
+msgid "Commands:"
+msgstr ""
+
+#: mailpile/commands.py:627
+msgid "Tags:  (use a tag as a command to display tagged messages)"
+msgstr ""
+
+#: mailpile/commands.py:635
+msgid "Error"
+msgstr ""
+
+#: mailpile/commands.py:668
+msgid "Unknown command"
+msgstr ""
+
+#: mailpile/commands.py:766
+#, python-format
+msgid "Unknown command: %s"
+msgstr ""
+
+#: mailpile/httpd.py:143
+msgid "XMLRPC has been disabled for now."
+msgstr ""
+
+#: mailpile/httpd.py:161
+msgid "OMG, input too big"
+msgstr ""
+
+#: mailpile/httpd.py:164
+msgid "Unknown content-type"
+msgstr ""
+
+#: mailpile/httpd.py:169
+msgid "Internal Error"
+msgstr ""
+
+#: mailpile/httpd.py:237
+msgid "Internal error"
+msgstr ""
+
+#: mailpile/ui.py:168
+#, python-format
+msgid "Elapsed: %.3fs (%s)"
+msgstr ""
+
+#: mailpile/ui.py:180
+#, python-format
+msgid "Completed %s in %.3fs"
+msgstr ""
+
+#: mailpile/ui.py:279
+#, python-format
+msgid ""
+"<h1>Template not found</h1>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+
+#: mailpile/ui.py:283
+#, python-format
+msgid ""
+"<h1>Template error</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+
+#: mailpile/ui.py:290
+#, python-format
+msgid ""
+"<h1>Template error in %s</h1>\n"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
+msgstr ""
+
+#: mailpile/ui.py:299
+msgid "Sorry, this UI cannot edit messages."
+msgstr ""
+
+#: mailpile/ui.py:335
+msgid "FIXME: Multiple results, OMG WTF"
+msgstr ""
 
 #: static/default/html/page/donate/index.html:7
 msgid "Please Donate To Mailpile"
@@ -27,6 +425,11 @@ msgstr ""
 
 #: static/default/html/page/donate/index.html:11
 msgid "Bitcoin Wallet"
+msgstr ""
+
+#: static/default/html/layouts/base.html:66
+#, python-format
+msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
 msgstr ""
 
 #: static/default/html/layouts/base.html:124
@@ -92,13 +495,6 @@ msgstr ""
 
 #: static/default/html/layouts/base.html:177
 msgid "All groups"
-msgstr ""
-
-#: static/default/html/layouts/base.html:66
-#, python-format
-msgid ""
-"%(name)s<small> mailpile of <b>%(size)s</b> emails</small>', name=name, "
-"size=mailpile_size)}}</span>"
 msgstr ""
 
 #: static/default/html/message/index.html:16

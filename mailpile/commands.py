@@ -16,7 +16,6 @@ from mailpile.postinglist import GlobalPostingList
 from mailpile.search import MailIndex
 from mailpile.util import *
 
-
 class Command:
     """Generic command object all others inherit from"""
     SYNOPSIS = (None,    # CLI shortcode, e.g. A:
@@ -152,21 +151,21 @@ class Command:
                     if msg_id >= 0 and msg_id < len(self._idx().INDEX):
                         msg_ids.add(msg_id)
                     else:
-                        self.session.ui.warning(('ID out of bounds: %s'
+                        self.session.ui.warning((_('ID out of bounds: %s')
                                                  ) % (what[1:], ))
                 except ValueError:
-                    self.session.ui.warning('What message is %s?' % (what, ))
+                    self.session.ui.warning(_('What message is %s?') % (what, ))
             elif '-' in what:
                 try:
                     b, e = what.split('-')
                     msg_ids |= set(self.session.results[int(b) - 1:int(e)])
                 except:
-                    self.session.ui.warning('What message is %s?' % (what, ))
+                    self.session.ui.warning(_('What message is %s?') % (what, ))
             else:
                 try:
                     msg_ids.add(self.session.results[int(what) - 1])
                 except:
-                    self.session.ui.warning('What message is %s?' % (what, ))
+                    self.session.ui.warning(_('What message is %s?') % (what, ))
         return msg_ids
 
     def _error(self, message):
@@ -253,7 +252,7 @@ class Rescan(Command):
         session, config = self.session, self.session.config
         msg_idxs = self._choose_messages(self.args)
         if msg_idxs:
-            session.ui.warning('FIXME: rescan messages: %s' % msg_idxs)
+            session.ui.warning(_('FIXME: rescan messages: %s') % msg_idxs)
             return False
         else:
             return self._rescan_mailboxes(session, config)
@@ -271,7 +270,7 @@ class Rescan(Command):
         try:
             pre_command = config.prefs.rescan_command
             if pre_command:
-                session.ui.mark('Running: %s' % pre_command)
+                session.ui.mark(_('Running: %s') % pre_command)
                 subprocess.check_call(pre_command, shell=True)
             msg_count = 1
             for fid, fpath in config.get_mailboxes():
@@ -292,9 +291,9 @@ class Rescan(Command):
                 if not mailpile.util.QUITTING:
                     GlobalPostingList.Optimize(session, idx, quick=True)
             else:
-                session.ui.mark('Nothing changed')
+                session.ui.mark(_('Nothing changed'))
         except (KeyboardInterrupt, subprocess.CalledProcessError), e:
-            session.ui.mark('Aborted: %s' % e)
+            session.ui.mark(_('Aborted: %s') % e)
             self._ignore_exception()
             return False
         finally:
@@ -323,7 +322,7 @@ class Optimize(Command):
                                        force=('harder' in self.args))
             return True
         except KeyboardInterrupt:
-            self.session.ui.mark('Aborted')
+            self.session.ui.mark(_('Aborted'))
             return False
 
 
@@ -337,7 +336,7 @@ class UpdateStats(Command):
         idx = config.index
         if 'tags' in config:
             idx.update_tag_stats(session, config, config.tags.keys())
-            session.ui.mark("Statistics updated")
+            session.ui.mark(_("Statistics updated"))
             return True
         else:
             return False
@@ -503,7 +502,7 @@ class ConfigPrint(Command):
             for key in (self.args + self.data.get('var', [])):
                 result[key] = config.walk(key)
         except KeyError:
-            session.ui.error('No such key: %s' % key)
+            session.ui.error(_('No such key: %s') % key)
             return False
         return result
 
@@ -564,7 +563,7 @@ class Output(Command):
 class Help(Command):
     """Print help on Mailpile or individual commands."""
     SYNOPSIS = ('h', 'help', 'help', '[<command-group>|variables]')
-    ABOUT = 'This is Mailpile!'
+    ABOUT = ('This is Mailpile!')
     ORDER = ('Config', 9)
 
     class CommandResult(Command.CommandResult):
@@ -572,10 +571,10 @@ class Help(Command):
         def splash_as_text(self):
             return '\n'.join([
                 self.result['splash'],
-                'The web interface is %s' % (self.result['http_url'] or
-                                             'disabled.'),
+                _('The web interface is %s') % (self.result['http_url'] or
+                                             _('disabled.')),
                 '',
-                'For instructions, type `help`, press <CTRL-D> to quit.',
+                _('For instructions, type `help`, press <CTRL-D> to quit.'),
                 ''
             ])
 
@@ -594,7 +593,7 @@ class Help(Command):
             return '\n'.join(text)
 
         def commands_as_text(self):
-            text = ['Commands:']
+            text = [_('Commands:')]
             last_rank = None
             cmds = self.result['commands']
             width = self.result.get('width', 8)
@@ -625,7 +624,7 @@ class Help(Command):
             if 'tags' in self.result:
                 text.extend([
                     '',
-                'Tags:  (use a tag as a command to display tagged messages)',
+                _('Tags:  (use a tag as a command to display tagged messages)'),
                     '',
                     self.result['tags'].as_text()
                 ])
@@ -633,7 +632,7 @@ class Help(Command):
 
         def as_text(self):
             if not self.result:
-                return 'Error'
+                return _('Error')
             return ''.join([
                 ('splash' in self.result) and self.splash_as_text() or '',
               ('variables' in self.result) and self.variables_as_text() or '',
@@ -666,7 +665,7 @@ class Help(Command):
                         'width': width,
                         'post': cls.EXAMPLES
                     }
-            return self._error('Unknown command')
+            return self._error(_('Unknown command'))
 
         else:
             cmd_list = {}
@@ -764,7 +763,7 @@ def Action(session, opt, arg, data=None):
                                     ).run(search=['tag:%s' % tag._key])
 
     # OK, give up!
-    raise UsageError('Unknown command: %s' % opt)
+    raise UsageError(_('Unknown command: %s') % opt)
 
 
 # Commands starting with _ don't get single-letter shortcodes...

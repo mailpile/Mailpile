@@ -165,7 +165,7 @@ class UserInteraction:
     if t:
       self.time_elapsed = elapsed = t[-1][0] - t[0][0]
       if not quiet:
-        self.notify('Elapsed: %.3fs (%s)' % (elapsed, t[-1][1]))
+        self.notify(_('Elapsed: %.3fs (%s)') % (elapsed, t[-1][1]))
       return elapsed
     else:
       return 0
@@ -177,7 +177,7 @@ class UserInteraction:
     elapsed = self.reset_marks(quiet=quiet)
     if len(self.time_tracking) > 1:
       subtask, times = self.time_tracking.pop(0)
-      self.mark('Completed %s in %.3fs' % (subtask, elapsed))
+      self.mark(_('Completed %s in %.3fs') % (subtask, elapsed))
     return elapsed
 
   # Higher level command-related methods
@@ -276,18 +276,18 @@ class UserInteraction:
       if template:
         return template.render(alldata)
       else:
-        emsg = "<h1>Template not found</h1>\n<p>%s</p><p><b>DATA:</b> %s</p>"
+        emsg = _("<h1>Template not found</h1>\n<p>%s</p><p><b>DATA:</b> %s</p>")
         return emsg % (' or '.join([escape_html(tn) for tn in tpl_names]),
                        escape_html('%s' % alldata))
     except (UndefinedError, ):
-      emsg = ("<h1>Template error</h1>\n"
+      emsg = _("<h1>Template error</h1>\n"
               "<pre>%s</pre>\n<p>%s</p><p><b>DATA:</b> %s</p>")
       return emsg % (escape_html(traceback.format_exc()),
                      ' or '.join([escape_html(tn) for tn in tpl_names]),
                      escape_html('%.4096s' % alldata))
     except (TemplateError, TemplateSyntaxError, TemplateAssertionError,
             TemplateNotFound, TemplatesNotFound), e:
-      emsg = ("<h1>Template error in %s</h1>\n"
+      emsg = _("<h1>Template error in %s</h1>\n"
               "Parsing template %s: <b>%s</b> on line %s<br/>"
               "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
       return emsg % tuple([escape_html(unicode(v))
@@ -296,7 +296,7 @@ class UserInteraction:
                                      '%.4096s' % alldata)])
 
   def edit_messages(self, emails):
-    self.error('Sorry, this UI cannot edit messages.')
+    self.error(_('Sorry, this UI cannot edit messages.'))
 
 
 class HttpUserInteraction(UserInteraction):
@@ -332,7 +332,7 @@ class HttpUserInteraction(UserInteraction):
     if len(self.results) == 1:
       return self.results[0]
     if len(self.results) > 1:
-      raise Exception('FIXME: Multiple results, OMG WTF')
+      raise Exception(_('FIXME: Multiple results, OMG WTF'))
     return ""
 
   def render_response(self, config):

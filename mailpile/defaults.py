@@ -2,54 +2,56 @@ import os
 import time
 from mailpile.config import PathDict
 
+def _(x): return x
 
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_RULES = {
-    'version': ['Mailpile program version', int, 1],
-    'timestamp': ['Configuration timestamp', int, int(time.time())],
-    'sys': ['Technical system settings', False,
+    'version': [_('Mailpile program version'), int, 1],
+    'timestamp': [_('Configuration timestamp'), int, int(time.time())],
+    'sys': [_('Technical system settings'), False,
     {
-        'fd_cache_size':  ('Max files kept open at once', int,            500),
-        'history_length': ('History length (lines, <0 = no save)', int,   100),
-        'http_port':      ('Listening port for web UI', int,            33411),
-        'postinglist_kb': ('Posting list target size in KB', int,          64),
-        'sort_max':       ('Max results we sort "well"', int,            2500),
-        'snippet_max':    ('Max length of metadata snippets', int,        250),
-        'debug':          ('Debugging flags', str,                         ''),
-'gpg_keyserver':('Host:port of PGP keyserver', str, 'pool.sks-keyservers.net'),
-        'http_host':    ('Listening host for web UI', 'hostname', 'localhost'),
-        'local_mailbox_id': ('Local read/write Maildir', 'b36',            ''),
-        'mailindex_file': ('Metadata index file', 'file',                  ''),
-        'postinglist_dir': ('Search index directory', 'dir',               ''),
-        'mailbox':        ['Mailboxes we index', 'path',                   []],
-        'path':           ['Locations of assorted data', False, {
-             'html_theme': ['Default theme', 'dir',    os.path.join('static',
+        'fd_cache_size':  (_('Max files kept open at once'), int,            500),
+        'history_length': (_('History length (lines, <0 = no save)'), int,   100),
+        'http_port':      (_('Listening port for web UI'), int,            33411),
+        'postinglist_kb': (_('Posting list target size in KB'), int,          64),
+        'sort_max':       (_('Max results we sort "well"'), int,            2500),
+        'snippet_max':    (_('Max length of metadata snippets'), int,        250),
+        'debug':          (_('Debugging flags'), str,                         ''),
+'gpg_keyserver':(_('Host:port of PGP keyserver'), str, 'pool.sks-keyservers.net'),
+        'http_host':    (_('Listening host for web UI'), 'hostname', 'localhost'),
+        'local_mailbox_id': (_('Local read/write Maildir'), 'b36',            ''),
+        'mailindex_file': (_('Metadata index file'), 'file',                  ''),
+        'postinglist_dir': (_('Search index directory'), 'dir',               ''),
+        'mailbox':        [_('Mailboxes we index'), 'path',                   []],
+        'path':           [_('Locations of assorted data'), False, {
+             'html_theme': [_('Default theme'), 'dir',    os.path.join('static',
                                                                    'default')],
-             'vcards':     ['Location of vcards', 'dir',             'vcards'],
+             'vcards':     [_('Location of vcards'), 'dir',             'vcards'],
          }],
     }],
-    'prefs': ["User preferences", False,
+    'prefs': [_("User preferences"), False,
     {
-        'num_results':     ('Search results per page', int,                20),
-        'rescan_interval': ('New mail check frequency', int,                0),
-        'gpg_clearsign':   ('Inline PGP signatures or attached', bool,  False),
-        'default_order':   ('Default sort order', str,             'rev-date'),
-        'gpg_recipient':   ('Encrypt local data to ...', str,              ''),
-        'obfuscate_index': ('Key to use to scramble the index', str,       ''),
-        'rescan_command':  ('Command run before rescanning', str,          ''),
-        'default_email':   ('Default outgoing e-mail address', 'email',    ''),
-        'default_route':   ('Default outgoing mail route',
+        'num_results':     (_('Search results per page'), int,                20),
+        'rescan_interval': (_('New mail check frequency'), int,                0),
+        'gpg_clearsign':   (_('Inline PGP signatures or attached'), bool,  False),
+        'default_order':   (_('Default sort order'), str,             'rev-date'),
+        'gpg_recipient':   (_('Encrypt local data to ...'), str,              ''),
+        'obfuscate_index': (_('Key to use to scramble the index'), str,       ''),
+        'rescan_command':  (_('Command run before rescanning'), str,          ''),
+        'default_email':   (_('Default outgoing e-mail address'), 'email',    ''),
+        'default_route':   (_('Default outgoing mail route'),
                                                 'mailroute', DEFAULT_SENDMAIL),
-        'language':        ('User interface language', str,                ''),
+        'language':        (_('User interface language'), str,                ''),
     }],
-    'profiles': ['User profiles and personalities', {
-        'name':            ('Account name', 'str', ''),
-        'email':           ('E-mail address', 'email', ''),
-        'signature':       ('Message signature', 'multiline', ''),
-        'route':           ('Outgoing mail route', 'mailroute', ''),
+    'profiles': [_('User profiles and personalities'), {
+        'name':            (_('Account name'), 'str', ''),
+        'email':           (_('E-mail address'), 'email', ''),
+        'signature':       (_('Message signature'), 'multiline', ''),
+        'route':           (_('Outgoing mail route'), 'mailroute', ''),
     }, []]
 }
 
+del _
 
 if __name__ == "__main__":
     import mailpile.defaults
@@ -57,6 +59,6 @@ if __name__ == "__main__":
     from mailpile.config import ConfigDict
 
     print '%s' % (ConfigDict(_name='mailpile',
-                             _comment='Default configuration',
+                             _comment=_('Default configuration'),
                              _rules=mailpile.defaults.CONFIG_RULES
                              ).as_config_bytes(), )
