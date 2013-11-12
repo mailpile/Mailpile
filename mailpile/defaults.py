@@ -40,6 +40,7 @@ CONFIG_RULES = {
         'default_email':   ('Default outgoing e-mail address', 'email',    ''),
         'default_route':   ('Default outgoing mail route',
                                                 'mailroute', DEFAULT_SENDMAIL),
+        'language':        ('User interface language', str,                ''),
     }],
     'profiles': ['User profiles and personalities', {
         'name':            ('Account name', 'str', ''),

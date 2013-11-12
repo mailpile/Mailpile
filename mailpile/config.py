@@ -5,6 +5,7 @@ import json
 import os
 import re
 import ConfigParser
+import gettext
 
 from urllib import quote, unquote
 
@@ -992,6 +993,15 @@ class ConfigManager(ConfigDict):
         idx.load(session)
         self.index = idx
         return idx
+
+    def get_i18n_translation(self):
+        language = self.prefs.language
+        if language != "":
+            translation = gettext.translation("mailpile", "locale", [language])
+            if translation:
+                translation.set_output_charset("utf-8")
+                return translation
+        return gettext.translation("mailpile", "locale")
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
