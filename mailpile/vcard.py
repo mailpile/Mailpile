@@ -503,7 +503,7 @@ class SimpleVCard(object):
         mpCard = {}
         self._lines.sort(key=lambda c: 1-(c and c.get('pref') or 0))
         for vcl in self._lines:
-            if vcl.name in self.MPCARD_SUPPRESSED:
+            if not vcl or vcl.name in self.MPCARD_SUPPRESSED:
                 continue
             name = vcl.name.replace('x-mailpile-', '')
             if name not in mpCard:

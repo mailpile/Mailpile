@@ -38,9 +38,9 @@ class VCardCommand(Command):
     def _vcard_list(self, vcards, mode='mpCard', info=None):
         info = info or {}
         if mode == 'lines':
-            data = [x.as_lines() for x in vcards]
+            data = [x.as_lines() for x in vcards if x]
         else:
-            data = [x.as_mpCard() for x in vcards]
+            data = [x.as_mpCard() for x in vcards if x]
         info.update({
             self.VCARD+'s': data,
             "count": len(vcards)

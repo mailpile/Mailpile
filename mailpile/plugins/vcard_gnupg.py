@@ -37,7 +37,12 @@ class GnuPGImporter(VCardImporter):
                     card = card or vcards.get(uid['email'])
                     emails.append(uid["email"])
                 if "name" in uid and uid["name"]:
-                    vcls.append(VCardLine(name="fn", value=uid["name"]))
+                    try:
+                        # FIXME: Does this work?
+                        name = uid["name"].decode('utf-8')
+                    except:
+                        name = uid["name"]
+                    vcls.append(VCardLine(name="fn", value=name))
             if card:
                 card.add(*vcls)
             else:
