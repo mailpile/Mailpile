@@ -1,3 +1,5 @@
+import os
+
 import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.util import *
@@ -69,6 +71,11 @@ class Setup(Command):
         for old in ('invisible_tags', 'writable_tags'):
             if old in  session.config.sys:
                 del session.config.sys[old]
+
+        gpg_home = os.path.expanduser('~/.gnupg')
+        vcard_importers = session.config.prefs.vcard.importers
+        if os.path.exists(gpg_home) and not vcard_importers.gpg:
+            vcard_importers.gpg.append({'gpg_home': gpg_home})
 
         session.config.save()
         return True
