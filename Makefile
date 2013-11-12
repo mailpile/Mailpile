@@ -59,3 +59,6 @@ less-compiler:
 genmessages:
 	@scripts/make-messages.sh
 
+compilemessages:
+	@scripts/compile-messages.sh
+
