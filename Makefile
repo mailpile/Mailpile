@@ -55,3 +55,7 @@ less-compiler:
                 >>scripts/less-compiler.mk
 	@echo >> scripts/less-compiler.mk
 	@perl -e 'print "\t\@touch .less-deps", $/' >> scripts/less-compiler.mk
+
+genmessages:
+	@scripts/make-messages.sh
+
