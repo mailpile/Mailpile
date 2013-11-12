@@ -1,20 +1,20 @@
-# Mailpile
-# Copyright (C) 2013 The Mailpile Team
-# This file is distributed under the same license as the Mailpile package.
-# Smári McCarthy <smari@mailpile.is>, 2013.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-12 10:09+0000\n"
+"POT-Creation-Date: 2013-11-12 10:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: static/default/html/page/donate/index.html:7
@@ -150,17 +150,12 @@ msgid "Reply"
 msgstr ""
 
 #: static/default/html/message/index.html:66
-msgid "Forward"
+#: static/default/html/partials/sub_nav_search.html:3
+msgid "All"
 msgstr ""
 
 #: static/default/html/message/index.html:69
-#: static/default/html/partials/sub_nav_view.html:3
-msgid "Archive"
-msgstr ""
-
-#: static/default/html/message/index.html:72
-#: static/default/html/partials/sub_nav_view.html:4
-msgid "Delete"
+msgid "Forward"
 msgstr ""
 
 #: static/default/html/message/draft.html:14
@@ -283,10 +278,6 @@ msgstr ""
 msgid "selected"
 msgstr ""
 
-#: static/default/html/partials/sub_nav_view.html:7
-msgid "Show All"
-msgstr ""
-
 #: static/default/html/partials/sub_nav_contacts.html:3
 msgid "Contacts"
 msgstr ""
@@ -299,6 +290,18 @@ msgstr ""
 msgid "Import Contacts"
 msgstr ""
 
+#: static/default/html/partials/sub_nav_message.html:6
+msgid "Archive"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_message.html:7
+msgid "Delete"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_message.html:8
+msgid "Show All"
+msgstr ""
+
 #: static/default/html/partials/errors_content.html:3
 msgid "Oops, you've found a quirk!"
 msgstr ""
@@ -309,11 +312,10 @@ msgid ""
 msgstr ""
 
 #: static/default/html/partials/errors_content.html:5
-msgid "If you think this is a bug, please file a <a href="
-msgstr ""
-
-#: static/default/html/partials/sub_nav_search.html:3
-msgid "All"
+#, python-format
+msgid ""
+"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
+"\">bug report</a>"
 msgstr ""
 
 #: static/default/html/partials/sub_nav_tags.html:3
