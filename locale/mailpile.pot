@@ -1,0 +1,396 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-11-12 10:03+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: static/default/html/page/donate/index.html:7
+msgid "Please Donate To Mailpile"
+msgstr ""
+
+#: static/default/html/page/donate/index.html:11
+msgid "Or you can donate to our"
+msgstr ""
+
+#: static/default/html/page/donate/index.html:11
+msgid "Bitcoin Wallet"
+msgstr ""
+
+#: static/default/html/layouts/base.html:124
+msgid "Encrypted"
+msgstr ""
+
+#: static/default/html/layouts/base.html:130
+msgid "Photos"
+msgstr ""
+
+#: static/default/html/layouts/base.html:136
+msgid "Files"
+msgstr ""
+
+#: static/default/html/layouts/base.html:142
+msgid "Links"
+msgstr ""
+
+#: static/default/html/layouts/base.html:148
+msgid "Groups"
+msgstr ""
+
+#: static/default/html/layouts/base.html:160
+msgid "Mailpile"
+msgstr ""
+
+#: static/default/html/layouts/base.html:160
+msgid "is free software made by"
+msgstr ""
+
+#: static/default/html/layouts/base.html:160
+msgid "more"
+msgstr ""
+
+#: static/default/html/layouts/base.html:175
+#: static/default/html/message/index.html:16
+msgid "Date:"
+msgstr ""
+
+#: static/default/html/layouts/base.html:175
+msgid "Start time"
+msgstr ""
+
+#: static/default/html/layouts/base.html:175
+msgid "to"
+msgstr ""
+
+#: static/default/html/layouts/base.html:175
+msgid "Present"
+msgstr ""
+
+#: static/default/html/layouts/base.html:176
+msgid "With:"
+msgstr ""
+
+#: static/default/html/layouts/base.html:176
+msgid "No Tags"
+msgstr ""
+
+#: static/default/html/layouts/base.html:177
+msgid "And:"
+msgstr ""
+
+#: static/default/html/layouts/base.html:177
+msgid "All groups"
+msgstr ""
+
+#: static/default/html/layouts/base.html:66
+#, python-format
+msgid ""
+"%(name)s<small> mailpile of <b>%(size)s</b> emails</small>', name=name, "
+"size=mailpile_size)}}</span>"
+msgstr ""
+
+#: static/default/html/message/index.html:16
+msgid "at"
+msgstr ""
+
+#: static/default/html/message/index.html:17
+msgid "From:"
+msgstr ""
+
+#: static/default/html/message/index.html:18
+msgid "To:"
+msgstr ""
+
+#: static/default/html/message/index.html:20
+msgid "Cc:"
+msgstr ""
+
+#: static/default/html/message/index.html:23
+msgid "Bcc:"
+msgstr ""
+
+#: static/default/html/message/index.html:25
+msgid "Subject:"
+msgstr ""
+
+#: static/default/html/message/index.html:34
+msgid "Signed by"
+msgstr ""
+
+#: static/default/html/message/index.html:35
+msgid "Unknown signature from"
+msgstr ""
+
+#: static/default/html/message/index.html:36
+msgid "Signed with unknown key"
+msgstr ""
+
+#: static/default/html/message/index.html:41
+msgid "Successfully decrypted message"
+msgstr ""
+
+#: static/default/html/message/index.html:42
+msgid "Failed to decrypt message"
+msgstr ""
+
+#: static/default/html/message/index.html:63
+msgid "Reply"
+msgstr ""
+
+#: static/default/html/message/index.html:66
+msgid "Forward"
+msgstr ""
+
+#: static/default/html/message/index.html:69
+#: static/default/html/partials/sub_nav_view.html:3
+msgid "Archive"
+msgstr ""
+
+#: static/default/html/message/index.html:72
+#: static/default/html/partials/sub_nav_view.html:4
+msgid "Delete"
+msgstr ""
+
+#: static/default/html/message/draft.html:14
+msgid "To"
+msgstr ""
+
+#: static/default/html/message/draft.html:16
+#: static/default/html/message/draft.html:24
+msgid "Bcc"
+msgstr ""
+
+#: static/default/html/message/draft.html:17
+#: static/default/html/message/draft.html:20
+msgid "Cc"
+msgstr ""
+
+#: static/default/html/message/draft.html:28
+msgid "From"
+msgstr ""
+
+#: static/default/html/message/draft.html:38
+msgid "Subject"
+msgstr ""
+
+#: static/default/html/message/draft.html:45
+msgid "No Attachments"
+msgstr ""
+
+#: static/default/html/message/draft.html:50
+msgid "Send"
+msgstr ""
+
+#: static/default/html/message/draft.html:51
+msgid "Save"
+msgstr ""
+
+#: static/default/html/message/draft.html:60
+msgid "Message not found!"
+msgstr ""
+
+#: static/default/html/tag/list.html:14
+msgid "Total"
+msgstr ""
+
+#: static/default/html/tag/list.html:19
+#: static/default/html/partials/sub_nav_search.html:4
+msgid "New"
+msgstr ""
+
+#: static/default/html/tag/list.html:24
+msgid "View Messages"
+msgstr ""
+
+#: static/default/html/tag/list.html:34
+msgid "Archived"
+msgstr ""
+
+#: static/default/html/tag/add.html:3
+msgid "Enter New Tag Info"
+msgstr ""
+
+#: static/default/html/tag/add.html:9
+msgid "Tag"
+msgstr ""
+
+#: static/default/html/tag/add.html:12
+msgid "Slug"
+msgstr ""
+
+#: static/default/html/tag/add.html:15
+msgid "Add"
+msgstr ""
+
+#: static/default/html/settings/index.html:7
+msgid "Your Profiles"
+msgstr ""
+
+#: static/default/html/settings/index.html:17
+msgid "Add New Profile"
+msgstr ""
+
+#: static/default/html/settings/index.html:20
+#: static/default/html/contact/add.html:9
+msgid "Name"
+msgstr ""
+
+#: static/default/html/settings/index.html:23
+msgid "Email"
+msgstr ""
+
+#: static/default/html/settings/index.html:26
+msgid "SMTP Server"
+msgstr ""
+
+#: static/default/html/settings/index.html:27
+msgid "Login"
+msgstr ""
+
+#: static/default/html/settings/index.html:30
+msgid "Password"
+msgstr ""
+
+#: static/default/html/settings/index.html:33
+msgid "Server"
+msgstr ""
+
+#: static/default/html/settings/index.html:36
+msgid "Port"
+msgstr ""
+
+#: static/default/html/settings/index.html:43
+msgid "Add Profile"
+msgstr ""
+
+#: static/default/html/partials/bulk_actions.html:2
+msgid "Messages"
+msgstr ""
+
+#: static/default/html/partials/bulk_actions.html:2
+msgid "selected"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_view.html:7
+msgid "Show All"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_contacts.html:3
+msgid "Contacts"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_contacts.html:4
+msgid "Add Contact"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_contacts.html:5
+msgid "Import Contacts"
+msgstr ""
+
+#: static/default/html/partials/errors_content.html:3
+msgid "Oops, you've found a quirk!"
+msgstr ""
+
+#: static/default/html/partials/errors_content.html:4
+msgid ""
+"We were unable to find the message you requested, perhaps it was deleted?"
+msgstr ""
+
+#: static/default/html/partials/errors_content.html:5
+msgid "If you think this is a bug, please file a <a href="
+msgstr ""
+
+#: static/default/html/partials/sub_nav_search.html:3
+msgid "All"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_tags.html:3
+msgid "Tags"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_tags.html:4
+msgid "Add Tag"
+msgstr ""
+
+#: static/default/html/partials/details_search_speed.html:2
+#, python-format
+msgid ""
+"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
+"strong> seconds."
+msgstr ""
+
+#: static/default/html/partials/details_search_speed.html:2
+msgid "Vroom!"
+msgstr ""
+
+#: static/default/html/search/index.html:20
+msgid "Previous"
+msgstr ""
+
+#: static/default/html/search/index.html:20
+msgid "Next"
+msgstr ""
+
+#: static/default/html/search/index.html:22
+msgid "of"
+msgstr ""
+
+#: static/default/html/search/index.html:22
+msgid "Conversations"
+msgstr ""
+
+#: static/default/html/search/index.html:22
+msgid "1 Conversation"
+msgstr ""
+
+#: static/default/html/search/index.html:22
+msgid "No results found"
+msgstr ""
+
+#: static/default/html/search/index.html:23
+msgid "Snug"
+msgstr ""
+
+#: static/default/html/search/index.html:24
+msgid "Cozy"
+msgstr ""
+
+#: static/default/html/search/index.html:25
+msgid "Comfy"
+msgstr ""
+
+#: static/default/html/search/index.html:26
+msgid "Fluffy"
+msgstr ""
+
+#: static/default/html/search/index.html:32
+msgid "No Results Found"
+msgstr ""
+
+#: static/default/html/contact/add.html:3
+msgid "Contact Info"
+msgstr ""
+
+#: static/default/html/contact/add.html:12
+msgid "E-mail"
+msgstr ""
+
+#: static/default/html/contact/add.html:15
+msgid "Website"
+msgstr ""
+
+#: static/default/html/contact/add.html:18
+msgid "PGP Key"
+msgstr ""
