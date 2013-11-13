@@ -8,6 +8,7 @@ from sys import stdin, stdout, stderr
 import mailpile.plugins
 from mailpile.vcard import *
 
+_ = lambda x: x
 
 def hexcmp(x, y):
     try:
@@ -29,12 +30,12 @@ class MorkImporter(VCardImporter):
     #  http://www-archive.mozilla.org/mailnews/arch/mork/primer.txt
     #  http://www.jwz.org/blog/2004/03/when-the-database-worms-eat-into-your-brain/
     #
-    fixme_required_parameters = ["filename"]
-    fixme_optional_parameters = ["data"]
     FORMAT_NAME = "Mork Database"
     FORMAT_DESCRPTION = "Thunderbird contacts database format."
     SHORT_NAME = "mork"
-    CONFIG_RULES = {}
+    CONFIG_RULES = {
+        'filename': [_('Location of Mork database'), 'path', ""],
+    }
 
     class Database:
         def __init__ (self):
@@ -83,7 +84,7 @@ class MorkImporter(VCardImporter):
         return "\\x%02x" % ord(s)
 
     def encodeMindyValue(self, value):
-        return pMindyEscape.sub(self.escapeMindy, value)
+        return self.pMindyEscape.sub(self.escapeMindy, value)
 
 
     backslash = { '\\\\' : '\\',
@@ -97,33 +98,34 @@ class MorkImporter(VCardImporter):
                   '\\f'  : chr(12),
                   '\\r'  : chr(13) }
 
-    def unescapeMork (match):
+    def unescapeMork(self, match):
         s = match.group()
         if s[0] == '\\':
-            return backslash[s]
+            return self.backslash[s]
         else:
             return chr(int(s[1:], 16))
 
-    def decodeMorkValue (value):
-        global pCellEscape
-        return pCellEscape.sub(unescapeMork, value)
+    def decodeMorkValue(self, value):
+        m = self.pCellEscape.sub(self.unescapeMork, value)
+        m = m.decode("utf-8")
+        return m
 
-    def addToDict (dict, cells):
+    def addToDict(self, dict, cells):
         for cell in cells:
             eq  = cell.find('=')
             key = cell[1:eq]
             val = cell[eq+1:-1]
-            dict[key] = decodeMorkValue(val)
+            dict[key] = self.decodeMorkValue(val)
 
-    def getRowIdScope (rowid, cdict):
+    def getRowIdScope(self, rowid, cdict):
         idx = rowid.find(':')
         if idx > 0:
             return (rowid[:idx], cdict[rowid[idx+2:]])
         else:
             return (rowid, None)
 
-    def delRow (db, table, rowid):
-        (rowid, scope) = getRowIdScope(rowid, db.cdict)
+    def delRow(self, db, table, rowid):
+        (rowid, scope) = self.getRowIdScope(rowid, db.cdict)
         if scope:
             rowkey = rowid + "/" + scope
         else:
@@ -132,24 +134,21 @@ class MorkImporter(VCardImporter):
         if rowkey in table.rows:
             del table.rows[rowkey]
 
-    def addRow (db, table, rowid, cells):
-        global pCellText
-        global pCellOid
-
-        row = Row()
-        row.id, row.scope = getRowIdScope(rowid, db.cdict)
+    def addRow(self, db, table, rowid, cells):
+        row = self.Row()
+        row.id, row.scope = self.getRowIdScope(rowid, db.cdict)
 
         for cell in cells:
-            obj = Cell()
+            obj = self.Cell()
             cell = cell[1:-1]
 
-            match = pCellText.match(cell)
+            match = self.pCellText.match(cell)
             if match:
                 obj.column = db.cdict[match.group(1)]
-                obj.atom   = decodeMorkValue(match.group(2))
+                obj.atom   = self.decodeMorkValue(match.group(2))
 
             else:
-                match = pCellOid.match(cell)
+                match = self.pCellOid.match(cell)
                 if match:
                     obj.column = db.cdict[match.group(1)]
                     obj.atom   = db.adict[match.group(2)]
@@ -182,7 +181,7 @@ class MorkImporter(VCardImporter):
         data = pLine.sub('', data)
 
         # Create a database object
-        db          = Database()
+        db          = self.Database()
 
         # Compile the appropriate regular expressions
         pCell       = re.compile(r'(\(.+?\))')
@@ -221,14 +220,14 @@ class MorkImporter(VCardImporter):
                 # Remove extraneous '(f=iso-8859-1)'
                 if len(m) >= 2 and m[1].find('(f=') == 0:
                     m = m[1:]
-                addToDict(db.cdict, m[1:])
+                self.addToDict(db.cdict, m[1:])
                 continue
 
             # Parse an atom dictionary
             match = pAtomDict.match(sub)
             if match:
                 cells = pCell.findall(match.group())
-                addToDict(db.adict, cells)
+                self.addToDict(db.adict, cells)
                 continue
 
             # Parse a table
@@ -240,7 +239,7 @@ class MorkImporter(VCardImporter):
                     table = db.tables[id]
 
                 except KeyError:
-                    table = Table()
+                    table = self.Table()
                     table.id    = match.group(1)
                     table.scope = db.cdict[match.group(2)]
                     table.kind  = db.cdict[match.group(3)]
@@ -252,13 +251,13 @@ class MorkImporter(VCardImporter):
                     rowid = row[1]
                     if tran and rowid[0] == '-':
                         rowid = rowid[1:]
-                        delRow(db, db.tables[id], rowid)
+                        self.delRow(db, db.tables[id], rowid)
 
                     if tran and row[0] == '-':
                         pass
 
                     else:
-                        addRow(db, db.tables[id], rowid, cells)
+                        self.addRow(db, db.tables[id], rowid, cells)
                 continue
 
             # Transaction support
@@ -274,15 +273,15 @@ class MorkImporter(VCardImporter):
 
             match = pRow.match(sub)
             if match and tran:
-                print >>stderr, "WARNING: using table '1:^80' for dangling row: %s" % match.group()
+                # print >>stderr, "WARNING: using table '1:^80' for dangling row: %s" % match.group()
                 rowid = match.group(2)
                 if rowid[0] == '-':
                     rowid = rowid[1:]
 
                 cells = pCell.findall(match.group(3))
-                delRow(db, db.tables['1:80'], rowid)
+                self.delRow(db, db.tables['1:80'], rowid)
                 if row[0] != '-':
-                    addRow(db, db.tables['1:80'], rowid, cells)
+                    self.addRow(db, db.tables['1:80'], rowid, cells)
                 continue
 
             # Syntax error
@@ -311,33 +310,40 @@ class MorkImporter(VCardImporter):
                 for cell in row.cells:
                     result[cell.column] = cell.atom
                     if cell.column == "PrimaryEmail":
-                        result["email"] = self.encodeMindyValue(cell.atom)
+                        result["email"] = cell.atom
                     elif cell.column == "DisplayName":
-                        result["name"] = self.encodeMindyValue(cell.atom)
-                    # print "n/e: %s:%s" % (result["email"], result["name"])
+                        result["name"] = cell.atom
                 results.append(result)
 
         return results
 
     def load(self):
-        if self.args["filename"] == "-":
-            data = self.args.get("data", "")
-        else:
-            fh = open(filename, "rt")
-            data = fh.read()
+        fh = open(self.config.filename, "r")
+        data = fh.read()
 
         if data.find("<mdb:mork") < 0:
             raise ValueError("Mork file required")
 
         self.inputMork(data)
 
-    def get_contacts(self):
-        return self.morkToHash()
+    def get_vcards(self):
+        self.load()
+        people = self.morkToHash()
+        # print people
 
-    def filter_contacts(self, terms):
-        mh = self.morkToHash()
-        return filter(lambda x: any([v.find(terms) >= 0 for v in x.values()]) , f)
+        results = []
+        vcards = {}
+        for person in people:
+            card = SimpleVCard()
+            if "name" in person:
+                card.add(VCardLine(name="FN", value=person["name"]))
+            if "email" in person:
+                card.add(VCardLine(name="EMAIL", value=person["email"]))
+            results.append(card)
 
+        return results
+
+del _
 
 if __name__ == "__main__":
     import json
@@ -345,6 +351,6 @@ if __name__ == "__main__":
 
     m = MorkImporter(filename=filename)
     m.load()
-    print json.dumps(m.get_contacts(data))
+    print m.get_contacts(data)
 else:
     mailpile.plugins.register_vcard_importers(MorkImporter)
