@@ -510,8 +510,9 @@ if ($('#form-compose').length) {
       return "<span class='icon-compose'></span> &nbsp;" + state.text;
     }
 
-    $('#compose-to').focus();
+ //   $('#compose-to').focus();
 
+    $("#compose-to").select2("open");
       
     $("#compose-to, #compose-cc, #compose-bcc").select2({
       tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
@@ -553,6 +554,19 @@ $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
   $('#compose-' + $(this).html().toLowerCase() + '-html').show();
   
+});
+
+
+/* Subject Field */
+$(window).keyup(function (e) {
+  var code = (e.keyCode ? e.keyCode : e.which);
+  if (code == 9 && $('#compose-subject:focus').length) {
+  }
+});
+
+$(window).on('click', '#compose-subject', function() {
+  this.focus();
+  this.select();
 });
 
 
@@ -879,4 +893,59 @@ $(document).on('submit', '#form-profile-add', function(e) {
 	  }
 	});
 
+});
+
+/* **********************************************
+     Begin contacts.js
+********************************************** */
+
+
+
+var contactActionSelect = function(item) {
+
+  console.log('select things');
+
+  // Data Stuffs    
+  mailpile.bulk_cache_add();
+
+	// Increment Selected
+	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
+
+	// Show Actions
+	$('#bulk-actions').slideDown('slow');
+
+	// Style & Select Checkbox
+	item.removeClass('result').addClass('result-on').data('state', 'selected');
+}
+
+var contactActionUnselect = function(item) {
+
+  console.log('unselect things');
+
+  // Data Stuffs    
+  mailpile.bulk_cache_remove();
+
+	// Decrement Selected
+	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
+
+	$('#bulk-actions-selected-count').html(selected_count);
+
+	// Hide Actions
+	if (selected_count < 1) {
+		$('#bulk-actions').slideUp('slow');
+	}
+
+	// Style & Unselect Checkbox
+	item.removeClass('result-on').addClass('result').data('state', 'normal');
+}
+
+
+
+$(document).on('click', '#contacts-list div.boxy', function(e) {
+	if (e.target.href === undefined && $(this).data('state') === 'selected') {
+		contactActionUnselect($(this));
+	}
+	else if (e.target.href === undefined) {
+		contactActionSelect($(this));
+	}
 });
