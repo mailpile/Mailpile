@@ -12,17 +12,17 @@
         <input type="hidden" name="mid" value="{{ m.mid }}">
         <div class="compose-section compose-headers">
             <label>{{_("To")}}</label>
-            <input id="compose-to" name="to" type="text" tabindex="2" value="{{ m.message.editing_strings.to|e }}">
+            <input id="compose-to" name="to" type="text" tabindex="1" value="{{ m.message.editing_strings.to|e }}">
             <a class="compose-show-field" href="#">{{_("Bcc")}}</a>
             <a class="compose-show-field" href="#">{{_("Cc")}}</a>
         </div>
         <div id="compose-cc-html" class="compose-section compose-headers">
             <label>{{_("Cc")}}</label>
-            <input id="compose-cc" name="cc" type="text" tabindex="3" value="{{ m.message.editing_strings.cc|e }}">
+            <input id="compose-cc" name="cc" type="text" value="{{ m.message.editing_strings.cc|e }}">
         </div>
         <div id="compose-bcc-html" class="compose-section compose-headers">
             <label>{{_("Bcc")}}</label>
-            <input id="compose-bcc" name="bcc" type="text" tabindex="4" value="{{ m.message.editing_strings.bcc|e }}">
+            <input id="compose-bcc" name="bcc" type="text"  value="{{ m.message.editing_strings.bcc|e }}">
         </div>
         <div class="compose-section compose-headers">
             <label>{{_("From")}}</label>
@@ -36,7 +36,7 @@
         </div>        
         <div class="compose-section compose-headers">
             <label>{{_("Subject")}}</label>
-            <input id="compose-subject" name="subject" type="text" value="{{ m.message.editing_strings.subject }}">
+            <input id="compose-subject" name="subject" tabindex="2" type="text" value="{{ m.message.editing_strings.subject }}">
         </div>
         <div class="compose-section compose-message">
             <textarea id="compose-body" name="body">{{ m.message.editing_strings.body }}</textarea>

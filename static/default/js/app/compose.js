@@ -38,8 +38,9 @@ if ($('#form-compose').length) {
       return "<span class='icon-compose'></span> &nbsp;" + state.text;
     }
 
-    $('#compose-to').focus();
+ //   $('#compose-to').focus();
 
+    $("#compose-to").select2("open");
       
     $("#compose-to, #compose-cc, #compose-bcc").select2({
       tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
@@ -81,6 +82,19 @@ $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
   $('#compose-' + $(this).html().toLowerCase() + '-html').show();
   
+});
+
+
+/* Subject Field */
+$(window).keyup(function (e) {
+  var code = (e.keyCode ? e.keyCode : e.which);
+  if (code == 9 && $('#compose-subject:focus').length) {
+  }
+});
+
+$(window).on('click', '#compose-subject', function() {
+  this.focus();
+  this.select();
 });
 
 
