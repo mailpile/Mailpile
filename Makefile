@@ -17,7 +17,7 @@ docs:
 	python mailpile/urlmap.py >doc/URLS.md
 	python mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
 
-web: less
+web: less js
 	@true
 
 alltests:
@@ -36,6 +36,10 @@ clean:
 virtualenv:
 	virtualenv mp-virtualenv
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
+
+js:
+	@cat static/default/js/mailpile.js > static/default/js/mailpile-min.js
+	@find static/default/js/app/ -name "*.js" -exec cat '{}' >> static/default/js/mailpile-min.js
 
 less: less-compiler
 	@make -s -f scripts/less-compiler.mk
