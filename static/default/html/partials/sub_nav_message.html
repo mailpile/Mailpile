@@ -1,6 +1,6 @@
 <nav class="sub-navigation clearfix">
 	<ul class="left horizontal">
-	  <li><span class="icon-conversation"></span> {{result.count}} Message</li>
+	  <li><span class="icon-conversation"></span> {{result.count}}{% if result.count > 1 %}Messages{% else %}Message{% endif %}</li>
 	</ul>
 	<ul class="right horizontal">
 		<li><a href="#"><span class="icon-archive"></span> {{_("Archive")}}</a></li>
