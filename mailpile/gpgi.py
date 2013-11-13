@@ -259,18 +259,31 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             return (curkey, keys)
 
         def parse_uid(line, curkey, keys):
-            matches = re.match("([^\(\)]*)( \((.*)\)){0,1} \<(.*)\>", line[9])
+            matches = re.match("([^\(\)]*){0,1}( \((.*)\)){0,1} (\<(.*)\>){0,1}", line[9])
             if matches:
-                email = matches.groups(0)[3]
+                print matches.groups(0)
+                email = matches.groups(0)[4] or ""
                 comment = matches.groups(0)[2] or ""
-                name = matches.groups(0)[0]
+                name = matches.groups(0)[0] or ""
             else:
+                print line
                 email = line[9]
                 name = ""
                 comment = ""
+
+            try: name = name.decode("utf-8")
+            except UnicodeDecodeError:
+                try: name = name.decode("iso-8859-1")
+                except UnicodeDecodeError: name = name.decode("utf-8", "replace")
+
+            try: comment = comment.decode("utf-8")
+            except UnicodeDecodeError:
+                try: comment = comment.decode("iso-8859-1")
+                except UnicodeDecodeError: comment = comment.decode("utf-8", "replace")
+
             keys[curkey]["uids"].append({"email": email, 
-                                         "name": name, 
-                                         "comment": comment, 
+                                         "name": name,
+                                         "comment": comment,
                                          "creation-date": line[5] })
             return (curkey, keys)
 
@@ -390,7 +403,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 if debug: print "Reading %s" % fd
 
                 try:
-                    buf = self.handles[fd].read().decode("iso-8859-1")
+                    buf = self.handles[fd].read()
                 except IOError:
                     continue
 
