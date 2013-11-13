@@ -1,0 +1,29 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+{% include("partials/sub_nav_contacts.html") %}
+
+<div id="contacts-view" class="content-normal">
+  
+	<a class="contact-avatar" href=""><img src="/static/img/avatar-default.png"></a>
+	<a class="contact-name" href="/contact/">Chelsea Manning</a>
+
+  <label>Emails</label>
+  <ul>
+    <li><a href="#">chelsea@freedom.org</a></li>
+		<li><a href="#">chelseamanning@mailpile.is</a></li>
+  </ul>
+  
+  <label>Phone Numbers</label>
+  <ul>
+    <li><a href="">+1 234 567 8900</a></li>
+  </ul>
+  
+  <label>Addresses</label>
+  <ul>
+    <li></li>
+  </ul>
+  		  
+</div>
+
+{% endblock %}

@@ -332,7 +332,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 body {
   /* Addresses a small issue in webkit: http://bit.ly/NEdoDq */
-
   -webkit-backface-visibility: hidden;
 }
 .animated {
@@ -3911,7 +3910,6 @@ body {
   color: #333333;
   -webkit-font-smoothing: antialiased;
   /* Fix for webkit rendering */
-
   -webkit-text-size-adjust: 100%;
 }
 /* #Links
@@ -4617,7 +4615,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   position: relative;
   display: inline-block;
   /* inline-block for ie7 */
-
   zoom: 1;
   *display: inline;
   vertical-align: middle;
@@ -4632,16 +4629,12 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 
     More Info : http://www.quirksmode.org/css/box.html
   */
-
   -webkit-box-sizing: border-box;
   /* webkit */
-
   -moz-box-sizing: border-box;
   /* firefox */
-
   box-sizing: border-box;
   /* css3 */
-
 }
 .select2-container .select2-choice {
   display: block;
@@ -4672,7 +4665,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#ffffff', endColorstr = '#eeeeee', GradientType = 0);
     background-image: linear-gradient(top, #fff 0%, #eee 50%);
 */
-
 }
 .select2-container.select2-drop-above .select2-choice {
   border-bottom-color: #aaa;
@@ -4686,7 +4678,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#eeeeee', GradientType=0);
     background-image: linear-gradient(top, #eee 0%, #fff 90%);
 */
-
 }
 .select2-container.select2-allowclear .select2-choice .select2-chosen {
   margin-right: 42px;
@@ -4732,7 +4723,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   width: auto;
   z-index: 9998;
   /* styles required for IE to work */
-
   background-color: #fff;
   opacity: 0;
   filter: alpha(opacity=0);
@@ -5183,7 +5173,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   bottom: 0;
   visibility: hidden\9;
   /* Target only IE7 and IE8 with this hack */
-
   opacity: .01;
   -webkit-transition: .2s;
   -moz-transition: .2s;
@@ -5201,7 +5190,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .pane.flashed {
   visibility: visible\9;
   /* Target only IE7 and IE8 with this hack */
-
   opacity: 0.99;
 }
 /*
@@ -5487,6 +5475,9 @@ x:-o-prefocus,
   color: #4d4d4d;
 }
 #contacts-list {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   margin: .5em 0 0 .5em;
 }
 .boxy {
@@ -5653,7 +5644,6 @@ text {
 }
 .form-search button::-moz-focus-inner {
   /* remove extra button spacing for Mozilla Firefox */
-
   border: 0;
   padding: 0;
 }
@@ -5724,7 +5714,8 @@ text {
   margin: 0;
   margin-top: 63px;
 }
-/* Content */#content {
+/* Content */
+#content {
   min-width: 775px;
   display: table-cell;
   box-sizing: border-box;
@@ -6189,7 +6180,8 @@ a.compose-show-field {
   border: 1px solid #b3b3b3;
   padding: 5px 10px;
 }
-/* Message */.message-headers {
+/* Message */
+.message-headers {
   padding: 15px;
   border-bottom: 1px solid #b3b3b3;
   font-size: 18px;
