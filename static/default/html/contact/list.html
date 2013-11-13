@@ -19,13 +19,15 @@
   <div class="boxy">
     <div class="boxy-inner">
   		<div class="clearfix">
-  		<a class="contact-avatar" href=""><img src="{{ show_avatar(url_protocol, http_host, contact.email.0.email, 50) }}"></a>
+  		<a class="contact-avatar" href="">{% if contact.email %}<img src="{{ show_avatar(url_protocol, http_host, contact.email.0.email, 50) }}"></a>{% endif %}
   		<a class="contact-name" href="/contact/">{{ contact.fn }}</a>
   		</div>
   		<b>E-mails:</b>
   		<ul>
   			{% if contact.email %}
-  			<li><a href="/contact/{{ contact.email.0.email|e }}">{{contact.email.0.email}}</a></li>
+  				{% for email in contact.email %}
+	  			<li><a href="/contact/{{ email.email|e }}">{{email.email}}</a></li>
+	  			{% endfor %}
   			{% endif %}
   		{% if contact.key %}<span class="icon-verified"></span> PGP{% endif %}
   		</ul>
