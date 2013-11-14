@@ -34,6 +34,7 @@ import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urlparse import parse_qs, urlparse
 import lxml.html
+import gettext
 
 import mailpile.util
 import mailpile.defaults
@@ -99,6 +100,10 @@ def Interact(session):
 def Main(args):
   re.UNICODE = 1
   re.LOCALE = 1
+
+  # Bootstrap translations until we've loaded everything else
+  translation = gettext.translation("mailpile", "locale")
+  translation.install(unicode=True)
 
   try:
     # Create our global config manager and the default (CLI) session
