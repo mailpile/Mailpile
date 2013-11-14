@@ -5474,7 +5474,8 @@ x:-o-prefocus,
 .navigation-on a:hover span {
   color: #4d4d4d;
 }
-#contacts-list {
+/* Contact - List */
+#contact-list {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -5514,6 +5515,7 @@ x:-o-prefocus,
 .boxy-inner .contact-name {
   font-size: 18px;
 }
+/* Contact - View */
 /* FIXME: Belongs in the .css, here for testing */
 .tag_new_0 .navigation-attention-important {
   display: none;

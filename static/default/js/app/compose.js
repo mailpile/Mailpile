@@ -43,6 +43,20 @@ if ($('#form-compose').length) {
     $("#compose-to").select2("open");
       
     $("#compose-to, #compose-cc, #compose-bcc").select2({
+      ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
+        url: mailpile.api.contacts,
+        dataType: 'json',
+        data: function (term, page) {
+            return {
+                q: term, // search term
+                page_limit: 10
+            };
+        },
+        results: function (data, page) { // parse the results into the format expected by Select2.
+            // since we are using custom formatting functions we do not need to alter remote JSON data
+            return {results: data.movies};
+        }
+      },
       tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
       multiple: true,
       allowClear: true,
