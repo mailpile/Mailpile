@@ -390,7 +390,10 @@ class SimpleVCard(object):
             if 'pid' in vcl:
                 pv = [v.split('.', 1) for v in vcl['pid'].split(',')]
                 for pid, version in pv:
-                    cpm[int(pid)]['lines'].append((int(version), vcl))
+                    try:
+                        cpm[int(pid)]['lines'].append((int(version), vcl))
+                    except KeyError, e:
+                        print "KNOWN BUG IN VERSIONING CODE. [%s] [pid: %s] [cpm: %s]" % (e, pid, cpm)
         return cpm
 
     def merge(self, src_id, lines):
