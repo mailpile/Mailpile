@@ -20,74 +20,84 @@ $(document).on('click', '#button-compose', function() {
 /* Is Compose Page -  Probably want to abstract this differently */
 if ($('#form-compose').length) {
 
-
-  // Auto Select To: field
-
-
-  // AJAX Load Contacts
-  $.getJSON(mailpile.api.contacts, function(contacts) {
-
-
-    var formatContactResult = function(state) {
-      if (!state.id) return state.text;
-      return "<span class='icon-user'></span> &nbsp;" + state.text;
+  var formatComposeId = function(object) {
+    if (object.address != object.fn) {
+      var id = object.fn + ' <' + object.address + '>';
+    } else {
+      var id = object.address;
     }
+    return id;
+  }
 
-    var formatContactSelection = function(state) {
-      if (!state.id) return state.text;
-      return "<span class='icon-compose'></span> &nbsp;" + state.text;
+  var formatComposeResult = function(state) {
+    console.log(state);
+  
+    if (!state.id) {
+      console.log('Here in !state.id'); 
+      return state.fn; 
+    } else {
+      return "<span class='icon-user'></span> &nbsp;" + state.fn;
     }
+  }
 
- //   $('#compose-to').focus();
+  var formatComposeSelection = function(state) {
+    if (!state.id) return state.fn;
+    return "<span class='icon-user'></span> &nbsp;" + state.fn;
+  }
 
-    $("#compose-to").select2("open");
-      
-    $("#compose-to, #compose-cc, #compose-bcc").select2({
-      ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
-        url: mailpile.api.contacts,
-        dataType: 'json',
-        data: function (term, page) {
-            return {
-                q: term, // search term
-                page_limit: 10
-            };
-        },
-        results: function (data, page) { // parse the results into the format expected by Select2.
-            // since we are using custom formatting functions we do not need to alter remote JSON data
-            return {results: data.movies};
-        }
+
+  $("#compose-to, #compose-cc, #compose-bcc").select2({
+    id: formatComposeId,  
+    ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
+      url: mailpile.api.contacts,
+      quietMillis: 1,
+      cache: true,
+      dataType: 'json',
+      data: function(term, page) {
+        return {
+          q: term
+        };
       },
-      tags: contacts[0].result.contacts,          // Load contact list (items in javascrupt array [])
-      multiple: true,
-      allowClear: true,
-      width: '70%',                               // Width of input element
-      maximumSelectionSize: 50,                   // Limits number of items added
-      tokenSeparators: [","],
-      formatResult: formatContactResult,
-      formatSelection: formatContactSelection,    
-      formatSelectionTooBig: function() {
-        return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
-      },
-      selectOnBlur: true,
-      opening: function() {
-        console.log('there times they are a changing');
+      results: function(response, page) {         
+        // parse the results into the format expected by Select2.
+        // since we are using custom formatting functions we do not need to alter remote JSON data
+        return {
+          results: response.result.addresses
+        };
       }
-    });
-
-    $("#compose-to, #compose-cc, #compose-bcc").on("change", function() {
-      $("#compose-to_val").html($("#compose-to").val());
-    });
-
-    $("#compose-to, #compose-cc, #compose-bcc").select2("container").find("ul.select2-choices").sortable({
-      containment: 'parent',
-      start: function() { 
-        $("#compose-to, #compose-cc, #compose-bcc").select2("onSortStart");
-      },
-      update: function() {
-        $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
-      }
-    });
+    },
+    tags: [""],          // Load contact list (items in javascrupt array [])
+    multiple: true,
+    allowClear: true,
+    width: '70%',                               // Width of input element
+    maximumSelectionSize: 50,                   // Limits number of items added
+    tokenSeparators: [","],
+    formatResult: formatComposeResult,
+    formatSelection: formatComposeSelection,    
+    formatSelectionTooBig: function() {
+      return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
+    },
+    selectOnBlur: true,
+    opening: function() {
+      console.log('there times they are a changing');
+    }
   });
+
+  $("#compose-to, #compose-cc, #compose-bcc").on("change", function() {
+    $("#compose-to_val").html($("#compose-to").val());
+  });
+
+  $("#compose-to, #compose-cc, #compose-bcc").select2("container").find("ul.select2-choices").sortable({
+    containment: 'parent',
+    start: function() { 
+      $("#compose-to, #compose-cc, #compose-bcc").select2("onSortStart");
+    },
+    update: function() {
+      $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
+    }
+  });
+
+
 }
 
 
