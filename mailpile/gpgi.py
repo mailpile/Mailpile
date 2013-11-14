@@ -259,7 +259,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             return (curkey, keys)
 
         def parse_uid(line, curkey, keys):
-            matches = re.match("([^\(\)]*){0,1}( \((.*)\)){0,1} (\<(.*)\>){0,1}", line[9])
+            matches = re.match("([^\(\)]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}", line[9])
             if matches:
                 email = matches.groups(0)[4] or ""
                 comment = matches.groups(0)[2] or ""
