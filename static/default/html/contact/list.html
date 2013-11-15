@@ -34,6 +34,21 @@
     </div>
   </div>
   {% endfor %}
+  <div id="pile-bottom" class="clearfix">
+    {% if result.offset > 0 %}
+    <a href="/contact/list/?offset={{result.offset-result.count}}&count={{result.count}}" class="button-primary">{{_("Previous")}}</a>
+    {% endif %}
+    {% if result.offset + result.count < result.total %}
+    <a href="/contact/list/?offset={{result.offset+result.count}}&count={{result.count}}" class="button-primary">{{_("Next")}}</a>
+    {% endif %}
+  <div>
+    <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} {{_("of")}} {{result.total}} {{_("Contacts")}} {% elif result.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5><br>
+    <a class="change-view-size" data-view_size="snug" href="#">{{_("Snug")}}</a>
+    <a class="change-view-size" data-view_size="cozy" href="#">{{_("Cozy")}}</a>
+    <a class="change-view-size" data-view_size="comfy" href="#">{{_("Comfy")}}</a>
+    <a class="change-view-size" data-view_size="fluffy" href="#">{{_("Fluffy")}}</a>
+  </div>
+</div>
 {% endif %}
 </div>
 

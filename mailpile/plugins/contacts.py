@@ -71,7 +71,7 @@ class AddVCard(VCardCommand):
     SYNOPSIS = (None, 'vcard/add', None, '<msgs>', '<email> = <name>')
     ORDER = ('Internals', 6)
     KIND = ''
-    HTTP_CALLABLE = ('POST', 'PUT')
+    HTTP_CALLABLE = ('POST', 'PUT', 'GET')
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
@@ -159,8 +159,12 @@ class ListVCards(VCardCommand):
     KIND = ''
     HTTP_QUERY_VARS = {
         'q': 'search terms',
-        'format': 'lines or mpCard (default)'
+        'format': 'lines or mpCard (default)',
+        'count': 'how many to display (default=40)',
+        'offset': 'skip how many in the display (default=0)',
     }
+    HTTP_CALLABLE = ('GET')
+
 
     def command(self):
         session, config = self.session, self.session.config
@@ -179,9 +183,26 @@ class ListVCards(VCardCommand):
         else:
             terms = self.args
 
+        if 'count' in self.data:
+            count = int(self.data['count'][0])
+        else:
+            count = 120
+
+        if 'offset' in self.data:
+            offset = int(self.data['offset'][0])
+        else:
+            offset = 0
+
         vcards = config.vcards.find_vcards(terms, kinds=kinds)
+        total = len(vcards)
+        vcards = vcards[offset:offset+count]
         return self._vcard_list(vcards, mode=fmt, info={
-            'terms': self.args
+            'terms': self.args,
+            'offset': offset,
+            'count': count,
+            'total': total,
+            'start': offset,
+            'end': offset+count,
         })
 
 
