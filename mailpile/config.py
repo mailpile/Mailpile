@@ -21,7 +21,12 @@ from mailpile.workers import Worker, DumbWorker, Cron
 
 
 # i18n helper
-_ = lambda x: x
+if __name__ == "__main__":
+    translation = gettext.translation("mailpile", "locale")
+    translation.install(unicode=True)
+else:
+    _ = lambda x: x
+
 
 
 class InvalidKeyError(ValueError):
@@ -1166,6 +1171,7 @@ if __name__ == "__main__":
     import mailpile.defaults
     import mailpile.plugins.tags
     import mailpile.ui
+    import gettext
 
     # i18n helper
     mailpile.config._ = _
