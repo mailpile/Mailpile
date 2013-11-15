@@ -324,23 +324,28 @@ class AddressSearch(VCardCommand):
     def _vcard_addresses(self, cfg, terms):
         addresses = []
         for vcard in cfg.vcards.find_vcards(terms, kinds='individual'):
-             fn = vcard.get('fn')
-             keys = [{'fingerprint': k.value, 'type': 'openpgp'}
-                     for k in vcard.get_all('openpgp-key')]
-             photos = vcard.get_all('photo')
-             for email_vcl in vcard.get_all('email'):
-                 rank = 10.0 + 25*len(keys) + 5*len(photos)
-                 for term in terms:
-                     rank += self._boost_rank(term, fn.value, email_vcl.value)
-                 info = {
-                     'rank': int(rank),
-                     'fn': fn.value,
-                     'protocol': 'smtp',
-                     'address': email_vcl.value,
-                 }
-                 if keys:
-                     info['keys'] = [k for k in keys[:1]]
-                 addresses.append(info)
+            fn = vcard.get('fn')
+            keys = []
+            for k in vcard.get_all('KEY'):
+                val = k.value.split("data:")[1]
+                mime, fp = val.split(",")
+                keys.append({'fingerprint': fp, 'type': 'openpgp', 
+                             'mime': mime})
+
+            photos = vcard.get_all('photo')
+            for email_vcl in vcard.get_all('email'):
+                rank = 10.0 + 25*len(keys) + 5*len(photos)
+                for term in terms:
+                    rank += self._boost_rank(term, fn.value, email_vcl.value)
+                info = {
+                    'rank': int(rank),
+                    'fn': fn.value,
+                    'protocol': 'smtp',
+                    'address': email_vcl.value,
+                }
+                if keys:
+                    info['keys'] = [k for k in keys[:1]]
+                addresses.append(info)
         return addresses
 
     def _index_addresses(self, cfg, terms, vcard_addresses):
