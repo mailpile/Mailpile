@@ -22,27 +22,26 @@ if ($('#form-compose').length) {
 
   var formatComposeId = function(object) {
     if (object.address != object.fn) {
-      var id = object.fn + ' <' + object.address + '>';
+      return object.fn + ' <' + object.address + '>';
     } else {
-      var id = object.address;
+      return object.address;
     }
-    return id;
   }
 
   var formatComposeResult = function(state) {
-    console.log(state);
-  
-    if (!state.id) {
-      console.log('Here in !state.id'); 
-      return state.fn; 
-    } else {
-      return "<span class='icon-user'></span> &nbsp;" + state.fn;
-    }
+    var keys = '';
+    if (state.keys != undefined) {
+      keys = '<span class="icon-verified"></span>';
+    }    
+    return '<span class="icon-user"></span><span class="compose-select-name">' + state.fn + keys + '</span><span class="compose-select-address">' + state.address + '</span>';
   }
 
   var formatComposeSelection = function(state) {
-    if (!state.id) return state.fn;
-    return "<span class='icon-user'></span> &nbsp;" + state.fn;
+    var keys = '';
+    if (state.keys != undefined) {
+      keys = '<span class="icon-verified"></span>';
+    }
+    return '<span class="icon-user"></span> ' + state.fn + keys;
   }
 
 
@@ -56,6 +55,8 @@ if ($('#form-compose').length) {
       data: function(term, page) {
         return {
           q: term
+          //count: 120,
+          //offset: 0
         };
       },
       results: function(response, page) {         
@@ -69,9 +70,16 @@ if ($('#form-compose').length) {
     tags: [""],          // Load contact list (items in javascrupt array [])
     multiple: true,
     allowClear: true,
-    width: '70%',                               // Width of input element
+    width: '425',                               // Width of input element
     maximumSelectionSize: 50,                   // Limits number of items added
     tokenSeparators: [","],
+    createSearchChoice: function(term) {
+      console.log('Inside of createSearchChoice');
+      console.log(term);
+      // Need to validate
+      term.fn = term;
+      return term;
+    },
     formatResult: formatComposeResult,
     formatSelection: formatComposeSelection,    
     formatSelectionTooBig: function() {
