@@ -12,7 +12,11 @@ except:
   pass
 
 data_files = []
+#Copy static UI files
 for dir, dirs, files in os.walk('static'):
+    data_files.append((dir, [os.path.join(dir, file_) for file_ in files]))
+#Copy translation files
+for dir, dirs, files in os.walk('locale'):
     data_files.append((dir, [os.path.join(dir, file_) for file_ in files]))
 
 

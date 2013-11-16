@@ -20,6 +20,12 @@ from mailpile.vcard import SimpleVCard, VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
 
 
+def getLocaleDirectory():
+    """Get the gettext translation object, no matter where our CWD is"""
+    # NOTE: MO files are loaded from the directory where the scripts reside in
+    return os.path.join(os.path.dirname(__file__), "..", "locale")
+
+
 class InvalidKeyError(ValueError):
     pass
 
@@ -1074,13 +1080,14 @@ class ConfigManager(ConfigDict):
         trans = None
         if language != "":
             try:
-                trans = translation("mailpile", "locale",
+                trans = translation("mailpile", getLocaleDirectory(),
                                     [language], codeset="utf-8")
             except IOError:
                 if session:
                     session.ui.warning('Failed to load language %s' % language)
         if not trans:
-            trans = translation("mailpile", "locale", codeset='utf-8', fallback=True)
+            trans = translation("mailpile", getLocaleDirectory(),
+                                codeset='utf-8', fallback=True)
             if session and isinstance(trans, NullTranslations):
                 session.ui.warning('Failed to configure i18n. Using fallback.')
 

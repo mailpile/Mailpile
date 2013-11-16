@@ -40,7 +40,7 @@ from gettext import gettext as _
 import mailpile.util
 import mailpile.defaults
 from mailpile.commands import COMMANDS, Action, Help, HelpSplash, Load, Rescan
-from mailpile.config import ConfigManager
+from mailpile.config import ConfigManager, getLocaleDirectory
 from mailpile.vcard import SimpleVCard
 from mailpile.mailutils import *
 from mailpile.httpd import *
@@ -104,7 +104,8 @@ def Main(args):
     re.LOCALE = 1
 
     # Bootstrap translations until we've loaded everything else
-    translation = gettext.translation("mailpile", "locale", fallback=True)
+    translation = gettext.translation("mailpile", getLocaleDirectory(),
+                                      fallback=True)
     translation.install(unicode=True)
 
     try:
