@@ -361,19 +361,24 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   clear: both;
 }
 
-.select2-result-label .icon-user {
-  float: left;
+.select2-result-label .compose-select-avatar {
+  display: inline-block;
   margin-right: 8px;
+}
+
+.select2-result-label .compose-select-avatar .icon-user {
   font-size: 32px;
   line-height: 32px;
 }
 
 .select2-result-label .compose-select-name {
-  float: left;
   display: inline-block;
-  font-family: Helvetica, Arial, sans-serif;
+  margin-top: 0px;
+  padding-top: 0px;
   font-size: 14px;
+  font-weight: bold;
   line-height: 14px;
+  color: @grayDark;
 }
 
 .select2-result-label .icon-verified {
@@ -382,8 +387,10 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 }
 
 .select2-result-label .compose-select-address {
-  float: left;
+  font-family: Helvetica, Arial, sans-serif;  
   font-size: 12px;
+  font-weight: normal;
+  line-height: 12px;
   color: darken(@grayMid, 25%);
 }
 
@@ -547,6 +554,15 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 
 .select2-container-multi .select2-choices .select2-search-choice div {
   left: 3px;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.select2-search-choice .compose-choice-name {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  color: @grayDark;
 }
 
 .select2-search-choice .icon-user {

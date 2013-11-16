@@ -505,7 +505,7 @@ if ($('#form-compose').length) {
     if (state.keys != undefined) {
       keys = '<span class="icon-verified"></span>';
     }    
-    return '<span class="icon-user"></span><span class="compose-select-name">' + state.fn + keys + '</span><span class="compose-select-address">' + state.address + '</span>';
+    return '<span class="compose-select-avatar"><span class="icon-user"></span></span><span class="compose-select-name">' + state.fn + keys + '<br><span class="compose-select-address">' + state.address + '</span></span>';
   }
 
   var formatComposeSelection = function(state) {
@@ -513,7 +513,7 @@ if ($('#form-compose').length) {
     if (state.keys != undefined) {
       keys = '<span class="icon-verified"></span>';
     }
-    return '<span class="icon-user"></span> ' + state.fn + keys;
+    return '<span class="icon-user"></span><span class="compose-choice-name">' + state.fn + keys + '</span>';
   }
 
 
