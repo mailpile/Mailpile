@@ -3,16 +3,15 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-12 15:32+0000\n"
-"PO-Revision-Date: 2013-11-12 20:23+0100\n"
+"PO-Revision-Date: 2013-11-16 00:28+0100\n"
 "Last-Translator: Lazlo Westerhof <hello@lazlo.me>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: nl_NL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -47,7 +46,7 @@ msgstr ""
 
 #: mailpile/defaults.py:18
 msgid "Max results we sort \"well\""
-msgstr ""
+msgstr "Maximale resultaten die we \"goed\" sorteren"
 
 #: mailpile/defaults.py:19
 msgid "Max length of metadata snippets"
@@ -55,7 +54,7 @@ msgstr "Max. lengte van metadata snippers"
 
 #: mailpile/defaults.py:20
 msgid "Debugging flags"
-msgstr ""
+msgstr "Debugging flags"
 
 #: mailpile/defaults.py:21
 msgid "Host:port of PGP keyserver"
@@ -67,7 +66,7 @@ msgstr "Luister host voor web UI"
 
 #: mailpile/defaults.py:23
 msgid "Local read/write Maildir"
-msgstr ""
+msgstr "Lokale lees/schrijf Maildir"
 
 #: mailpile/defaults.py:24
 msgid "Metadata index file"
@@ -83,7 +82,7 @@ msgstr "Mailboxen die we indexeren"
 
 #: mailpile/defaults.py:27
 msgid "Locations of assorted data"
-msgstr ""
+msgstr "Locatie van gesorteerde data"
 
 #: mailpile/defaults.py:28
 msgid "Default theme"
@@ -103,11 +102,11 @@ msgstr "Zoekresultaten per pagina"
 
 #: mailpile/defaults.py:36
 msgid "New mail check frequency"
-msgstr ""
+msgstr "Frequentie nieuwe mail controle"
 
 #: mailpile/defaults.py:37
 msgid "Inline PGP signatures or attached"
-msgstr ""
+msgstr "PGP handtekening inline of bijgevoegd"
 
 #: mailpile/defaults.py:38
 msgid "Default sort order"
@@ -151,7 +150,7 @@ msgstr "VCard exporteer instellingen"
 
 #: mailpile/defaults.py:50
 msgid "VCard context helper settings"
-msgstr ""
+msgstr "VCard context helper instellingen"
 
 #: mailpile/defaults.py:53
 msgid "User profiles and personalities"
@@ -226,11 +225,11 @@ msgstr "Ongeldige waarde voor %s/%s: %s"
 #: mailpile/config.py:497
 #, python-format
 msgid "Unknown constraint for %s/%s: %s"
-msgstr ""
+msgstr "Onbekende beperking voor %s/%s: %s"
 
 #: mailpile/config.py:702
 msgid "Cannot append to fixed dict"
-msgstr ""
+msgstr "Kan niet toevoegen aan woordenboek"
 
 #: mailpile/config.py:750
 #, python-format
@@ -289,7 +288,7 @@ msgstr "Kan niet parsen (%s): %s"
 #: mailpile/config.py:1150
 #, python-format
 msgid "Could not assign mailbox:%s = %s"
-msgstr ""
+msgstr "Kan mailbox niet toewijzen:%s = %s"
 
 #: mailpile/gpgi.py:14
 msgid "Trust not calculated"
@@ -509,22 +508,22 @@ msgstr "Metadata index opslaan"
 
 #: mailpile/search.py:222
 msgid "Updating high level indexes"
-msgstr ""
+msgstr "Bijwerken high level indexes"
 
 #: mailpile/search.py:230
 #, python-format
 msgid "Bogus line: %s"
-msgstr ""
+msgstr "Ongeldige regel: %s"
 
 #: mailpile/search.py:300
 #, python-format
 msgid "=%s/%s using Recieved: instead of Date:"
-msgstr ""
+msgstr "=%s/%s gebruikt Ontvangen: in plaats van Datum:"
 
 #: mailpile/search.py:307
 #, python-format
 msgid "=%s/%s has a bogus date"
-msgstr ""
+msgstr "=%s/%s heeft een ongeldige datum"
 
 #: mailpile/search.py:324
 #, python-format
@@ -559,7 +558,7 @@ msgstr "%s: Geindexeerde mailbox: %s"
 #: mailpile/search.py:621
 #, python-format
 msgid "=%s/%s has bogus HTML."
-msgstr ""
+msgstr "=%s/%s heeft ongeldige HTML."
 
 #: mailpile/search.py:726
 #, python-format
@@ -609,7 +608,7 @@ msgstr "Sorteer %d berichten in %s volgorde"
 
 #: mailpile/search.py:983
 msgid "Recovering from bogus sort, corrupt index?"
-msgstr ""
+msgstr "Herstellen van ongeldige sortering, corrupte index?"
 
 #: mailpile/search.py:984
 msgid "Please tell team@mailpile.is !"
@@ -622,7 +621,7 @@ msgstr "Onbekend sorteervolgorde: %s"
 
 #: mailpile/search.py:998
 msgid "Sort failed, sorting badly. Partial index?"
-msgstr ""
+msgstr "Sorteren mislukt, slecht gesorteerd. Gedeeltelijke index?"
 
 #: mailpile/search.py:1011
 #, python-format
@@ -642,7 +641,7 @@ msgstr "Tellen van berichten in tag:%s"
 #: mailpile/ui.py:168
 #, python-format
 msgid "Elapsed: %.3fs (%s)"
-msgstr ""
+msgstr "Verstreken: %.3fs (%s)"
 
 #: mailpile/ui.py:180
 #, python-format
@@ -680,11 +679,11 @@ msgstr ""
 
 #: mailpile/ui.py:299
 msgid "Sorry, this UI cannot edit messages."
-msgstr ""
+msgstr "Sorry, deze UI kan geen berichten bijwerken."
 
 #: mailpile/ui.py:335
 msgid "FIXME: Multiple results, OMG WTF"
-msgstr ""
+msgstr "FIXME: Meerdere resultaten, OMG WTF"
 
 #: mailpile/mailutils.py:137
 #, python-format
@@ -737,7 +736,7 @@ msgstr "Bericht niet gevonden?"
 #: mailpile/mailutils.py:875
 #, python-format
 msgid "Extracted attachment %s"
-msgstr ""
+msgstr "Uitgepakte bijlage %s"
 
 #: mailpile/mailutils.py:883
 #, python-format
@@ -761,7 +760,7 @@ msgstr "Geen bijlagen gevonden voor: %s"
 #: mailpile/mailutils.py:991
 #, python-format
 msgid "Decode failed: %s %s"
-msgstr ""
+msgstr "Decoderen mislukt: %s %s"
 
 #: static/default/html/page/donate/index.html:7
 msgid "Please Donate To Mailpile"
@@ -827,11 +826,11 @@ msgstr "tot"
 
 #: static/default/html/layouts/base.html:175
 msgid "Present"
-msgstr ""
+msgstr "Huidig"
 
 #: static/default/html/layouts/base.html:176
 msgid "With:"
-msgstr ""
+msgstr "Met:"
 
 #: static/default/html/layouts/base.html:176
 msgid "No Tags"
