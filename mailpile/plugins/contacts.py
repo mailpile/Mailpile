@@ -342,9 +342,11 @@ class AddressSearch(VCardCommand):
                     'fn': fn.value,
                     'protocol': 'smtp',
                     'address': email_vcl.value,
+                    'secure': False
                 }
                 if keys:
                     info['keys'] = [k for k in keys[:1]]
+                    info['secure'] = True
                 addresses.append(info)
         return addresses
 
@@ -352,18 +354,38 @@ class AddressSearch(VCardCommand):
         existing = dict([(k['address'].lower(), k) for k in vcard_addresses])
         index = self._idx()
 
+        # Figure out which tags are invisible so we can skip messages marked
+        # with those tags.
+        invisible = set([t._key for t in cfg.get_tags(flag_hides=True)])
+
         # 1st, go through the last 1000 or so messages in the index and search
         # for matching senders or recipients, give medium priority.
         matches = {}
         addresses = []
         for msg_idx in index.INDEX_SORT['date_fwd'][-2500:]:
-            frm = index.get_msg_at_idx_pos(msg_idx)[index.MSG_FROM]
+            msg_info = index.get_msg_at_idx_pos(msg_idx)
+            tags = set(msg_info[index.MSG_TAGS].split(','))
+            frm = msg_info[index.MSG_FROM]
+            match = not (tags & invisible)
+            if match:
+                for term in terms:
+                    if term not in frm.lower():
+                        match = False
+            if match:
+                matches[frm] = matches.get(frm, 0) + 1
+            if len(matches) > 1000:
+                break
+
+        # FIXME: 2nd, search the social graph for matches, give low priority.
+        for frm in index.EMAILS:
             match = True
             for term in terms:
                 if term not in frm.lower():
                     match = False
             if match:
                 matches[frm] = matches.get(frm, 0) + 1
+
+        # Assign info & scores!
         for frm in matches:
             email, fn = self._fparse(frm)
             boost = min(10, matches[frm])
@@ -378,11 +400,10 @@ class AddressSearch(VCardCommand):
                      'fn': fn,
                      'proto': 'smtp',
                      'address': email,
+                     'secure': False
                  }
                  existing[email.lower()] = info
                  addresses.append(info)
-
-        # FIXME: 2nd, search the social graph for matches, give low priority.
 
         return addresses
 
