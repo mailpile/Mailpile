@@ -244,12 +244,15 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None, '[<msgs>]')
+    SYNOPSIS = (None, 'rescan', None, '[vcards|<msgs>]')
     ORDER = ('Internals', 2)
     SERIALIZE = 'Rescan'
 
     def command(self):
         session, config = self.session, self.session.config
+        if self.args and self.args[0] == 'vcards':
+            return self._rescan_vcards(session, config)
+
         msg_idxs = self._choose_messages(self.args)
         if msg_idxs:
             session.ui.warning(_('FIXME: rescan messages: %s') % msg_idxs)
