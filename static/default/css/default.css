@@ -6021,6 +6021,7 @@ a.compose-show-field {
 }
 .compose-subject input[type=text] {
   border: 0px;
+  background: transparent;
   margin: 0px;
   padding: 8px 4px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -6035,6 +6036,9 @@ a.compose-show-field {
 }
 .message-privacy-state.icon-unencrypted {
   color: #b3b3b3;
+}
+.message-privacy-state.icon-encrypted {
+  color: #4b7945;
 }
 /* Message */
 .compose-message textarea {

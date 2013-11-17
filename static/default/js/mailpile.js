@@ -383,7 +383,34 @@ $(document).ready(function() {
     },
     show: {
       delay: 50
-    }
+    },
+    events: {
+      show: function(event, api) {
+
+        $('.compose-to').css('background-color', '#fbb03b');
+        $('.compose-cc').css('background-color', '#fbb03b');           
+        $('.compose-bcc').css('background-color', '#fbb03b');
+        $('.compose-from').css('background-color', '#fbb03b');
+        $('.compose-subject').css('background-color', '#fbb03b');
+
+        $('.compose-message').css('background-color', '#a2d699');
+        $('.compose-attachments').css('background-color', '#a2d699');
+
+        console.log('Checking this out'); 
+      },
+      hide: function(event, api) {
+
+        $('.compose-to').css('background-color', '#ffffff');
+        $('.compose-cc').css('background-color', '#ffffff');           
+        $('.compose-bcc').css('background-color', '#ffffff');
+        $('.compose-from').css('background-color', '#ffffff');
+        $('.compose-subject').css('background-color', '#ffffff');
+
+        $('.compose-message').css('background-color', '#ffffff');
+        $('.compose-attachments').css('background-color', '#ffffff');
+        
+      }
+    }    
   });
 
 

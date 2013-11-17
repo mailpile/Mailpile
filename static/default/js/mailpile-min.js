@@ -383,7 +383,34 @@ $(document).ready(function() {
     },
     show: {
       delay: 50
-    }
+    },
+    events: {
+      show: function(event, api) {
+
+        $('.compose-to').css('background-color', '#fbb03b');
+        $('.compose-cc').css('background-color', '#fbb03b');           
+        $('.compose-bcc').css('background-color', '#fbb03b');
+        $('.compose-from').css('background-color', '#fbb03b');
+        $('.compose-subject').css('background-color', '#fbb03b');
+
+        $('.compose-message').css('background-color', '#a2d699');
+        $('.compose-attachments').css('background-color', '#a2d699');
+
+        console.log('Checking this out'); 
+      },
+      hide: function(event, api) {
+
+        $('.compose-to').css('background-color', '#ffffff');
+        $('.compose-cc').css('background-color', '#ffffff');           
+        $('.compose-bcc').css('background-color', '#ffffff');
+        $('.compose-from').css('background-color', '#ffffff');
+        $('.compose-subject').css('background-color', '#ffffff');
+
+        $('.compose-message').css('background-color', '#ffffff');
+        $('.compose-attachments').css('background-color', '#ffffff');
+        
+      }
+    }    
   });
 
 
@@ -520,6 +547,18 @@ if ($('#form-compose').length) {
   // Reset tabindex for To: field
   $('#qbox').attr('tabindex', '');
 
+  var composeContactSelected = function(contact) {
+
+    if (contact.object.keys != undefined) {
+      
+      console.log('Whee keys ' + contact.object.keys[0].fingerprint); 
+    
+      $('.message-privacy-state').attr('title', 'The Message (green) Is Encrypted. The subject & contacts (organge) are not').removeClass('icon-unencrypted').addClass('icon-encrypted animated pulse');
+      
+    } else {
+    
+    }
+  }
 
   var formatComposeId = function(object) {
     if (object.address != object.fn) {
@@ -546,7 +585,7 @@ if ($('#form-compose').length) {
   }
 
 
-  $("#compose-to, #compose-cc, #compose-bcc").select2({
+  $('#compose-to, #compose-cc, #compose-bcc').select2({
     id: formatComposeId,  
     ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
       url: mailpile.api.contacts,
@@ -571,7 +610,9 @@ if ($('#form-compose').length) {
     tags: [""],          // Load contact list (items in javascrupt array [])
     multiple: true,
     allowClear: true,
-    width: '600',                               // Width of input element
+//    openOnEnter: true,
+//    closeOnSelect: false,
+    width: '600',     
     maximumSelectionSize: 50,                   // Limits number of items added
     tokenSeparators: [","],
     createSearchChoice: function(term) {
@@ -586,11 +627,21 @@ if ($('#form-compose').length) {
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
     },
-    selectOnBlur: true,
-    opening: function() {
-      console.log('there times they are a changing');
-    }
+    formatNoMatches: function() {
+      return 'No contacts found, <a href="#" onclick="javascript:alert(\'Will be an Add New Contact modal\');">add new contact</a>';
+    },
+    selectOnBlur: true
   });
+  
+  $('#compose-to').on('change', function(){}).on('select2-selecting', function(e) {
+    
+    composeContactSelected(e)
+    console.log('Come on my unencrypted selector ' + e.val);
+  }).on('select2-removed', function(e) {
+    
+    console.log('Bring out the nukes ' + e.val);
+  });
+  
 
   $("#compose-to, #compose-cc, #compose-bcc").on("change", function() {
     $("#compose-to_val").html($("#compose-to").val());
