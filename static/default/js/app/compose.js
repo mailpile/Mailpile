@@ -29,7 +29,9 @@ if ($('#form-compose').length) {
       
       console.log('Whee keys ' + contact.object.keys[0].fingerprint); 
     
-      $('.message-privacy-state').attr('title', 'The Message (green) Is Encrypted. The subject & contacts (organge) are not').removeClass('icon-unencrypted').addClass('icon-encrypted animated pulse');
+      $('.message-privacy-state').attr('title', 'The message is encrypted. The recipients & subject are not');
+      $('.message-privacy-state').removeClass('icon-unencrypted').addClass('icon-encrypted');
+      $('.message-privacy-state').parent().addClass('bounce');
       
     } else {
     
@@ -85,12 +87,13 @@ if ($('#form-compose').length) {
     },
     tags: [""],          // Load contact list (items in javascrupt array [])
     multiple: true,
-    allowClear: true,
+//    allowClear: true,
 //    openOnEnter: true,
 //    closeOnSelect: false,
     width: '600',     
     maximumSelectionSize: 50,                   // Limits number of items added
     tokenSeparators: [","],
+/*  
     createSearchChoice: function(term) {
       console.log('Inside of createSearchChoice');
       console.log(term);
@@ -98,14 +101,17 @@ if ($('#form-compose').length) {
       term.fn = term;
       return term;
     },
+*/
     formatResult: formatComposeResult,
     formatSelection: formatComposeSelection,    
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
     },
+/*
     formatNoMatches: function() {
       return 'No contacts found, <a href="#" onclick="javascript:alert(\'Will be an Add New Contact modal\');">add new contact</a>';
     },
+*/
     selectOnBlur: true
   });
   
