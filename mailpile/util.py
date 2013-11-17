@@ -107,6 +107,16 @@ def escape_html(t):
     return cgi.escape(t)
 
 
+def _hash(cls, data):
+    h = cls()
+    for s in data:
+        if isinstance(s, unicode):
+            h.update(s.encode('utf-8'))
+        else:
+            h.update(s)
+    return h
+
+
 def sha1b64(s):
     """
     Apply the SHA1 hash algorithm to a string
@@ -121,12 +131,7 @@ def sha1b64(s):
     Keyword arguments:
     s -- The string to hash
     """
-    h = hashlib.sha1()
-    if isinstance(s, unicode):
-        h.update(s.encode('utf-8'))
-    else:
-        h.update(s)
-    return h.digest().encode('base64')
+    return _hash(hashlib.sha1, [s]).digest().encode('base64')
 
 
 def sha512b64(*data):
@@ -142,13 +147,11 @@ def sha512b64(*data):
     Keyword arguments:
     s -- The string to hash
     """
-    h = hashlib.sha512()
-    for s in data:
-        if isinstance(s, unicode):
-            h.update(s.encode('utf-8'))
-        else:
-            h.update(s)
-    return h.digest().encode('base64')
+    return _hash(hashlib.sha512, data).digest().encode('base64')
+
+
+def md5_hex(*data):
+    return _hash(hashlib.md5, data).hexdigest()
 
 
 def strhash(s, length, obfuscate=None):
