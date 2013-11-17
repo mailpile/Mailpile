@@ -362,6 +362,31 @@ $(document).ready(function() {
   });
 
 
+  $('.message-privacy-state').qtip({
+    style: {
+     tip: {
+        corner: 'right center',
+        mimic: 'right center',
+        border: 0,
+        width: 10,
+        height: 10
+      },
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'right center',
+      at: 'left center',
+			viewport: $(window),
+			adjust: {
+				x: -5,  y: 0
+			}
+    },
+    show: {
+      delay: 50
+    }
+  });
+
+
 });
 
 
@@ -492,6 +517,10 @@ $(document).on('click', '#button-compose', function() {
 /* Is Compose Page -  Probably want to abstract this differently */
 if ($('#form-compose').length) {
 
+  // Reset tabindex for To: field
+  $('#qbox').attr('tabindex', '');
+
+
   var formatComposeId = function(object) {
     if (object.address != object.fn) {
       return object.fn + ' <' + object.address + '>';
@@ -542,7 +571,7 @@ if ($('#form-compose').length) {
     tags: [""],          // Load contact list (items in javascrupt array [])
     multiple: true,
     allowClear: true,
-    width: '425',                               // Width of input element
+    width: '600',                               // Width of input element
     maximumSelectionSize: 50,                   // Limits number of items added
     tokenSeparators: [","],
     createSearchChoice: function(term) {
@@ -577,10 +606,9 @@ if ($('#form-compose').length) {
     }
   });
 
-
 }
 
-
+/* Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   
   $(this).hide();

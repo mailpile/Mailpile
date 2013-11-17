@@ -5974,12 +5974,17 @@ div.content-normal {
 /* Compose */
 .compose-headers {
   min-height: 30px;
+  padding: .75em;
 }
 #compose label {
   float: left;
   font-style: normal;
   font-weight: bold;
   margin-right: 10px;
+}
+.compose-cell {
+  display: table-cell;
+  vertical-align: middle;
 }
 .compose-headers {
   border-bottom: 1px solid #cccccc;
@@ -5994,21 +5999,6 @@ div.content-normal {
   padding: .5em;
   margin-bottom: 0px;
 }
-.compose-message textarea {
-  width: 700px;
-  min-height: 300px;
-  padding: 1em;
-  border: 1px solid #cccccc;
-  border-radius: 5px;
-  font-size: 14px;
-  line-height: 21px;
-}
-.compose-message textarea:focus {
-  outline: none;
-}
-.compose-section {
-  padding: .75em;
-}
 a.compose-show-field {
   float: right;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -6022,6 +6012,45 @@ a.compose-show-field {
 #compose-cc-html,
 #compose-bcc-html {
   display: none;
+}
+/* Subject */
+.compose-subject {
+  width: 100%;
+  display: table;
+  vertical-align: middle;
+}
+.compose-subject input[type=text] {
+  border: 0px;
+  margin: 0px;
+  padding: 8px 4px;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+}
+.compose-subject input[type=text]:focus {
+  outline: none;
+}
+.compose-subject .message-privacy-state {
+  font-size: 24px;
+  line-height: 24px;
+}
+.message-privacy-state.icon-unencrypted {
+  color: #b3b3b3;
+}
+/* Message */
+.compose-message textarea {
+  width: 700px;
+  min-height: 300px;
+  padding: 1em;
+  border: 0px solid #cccccc;
+  border-radius: 5px;
+  font-size: 14px;
+  line-height: 21px;
+}
+.compose-message textarea:focus {
+  outline: none;
+}
+.compose-attachments {
+  padding: .5em 1.25em;
 }
 /* Search */
 #button-search-options {

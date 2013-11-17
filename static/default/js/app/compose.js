@@ -20,6 +20,10 @@ $(document).on('click', '#button-compose', function() {
 /* Is Compose Page -  Probably want to abstract this differently */
 if ($('#form-compose').length) {
 
+  // Reset tabindex for To: field
+  $('#qbox').attr('tabindex', '');
+
+
   var formatComposeId = function(object) {
     if (object.address != object.fn) {
       return object.fn + ' <' + object.address + '>';
@@ -70,7 +74,7 @@ if ($('#form-compose').length) {
     tags: [""],          // Load contact list (items in javascrupt array [])
     multiple: true,
     allowClear: true,
-    width: '425',                               // Width of input element
+    width: '600',                               // Width of input element
     maximumSelectionSize: 50,                   // Limits number of items added
     tokenSeparators: [","],
     createSearchChoice: function(term) {
@@ -105,10 +109,9 @@ if ($('#form-compose').length) {
     }
   });
 
-
 }
 
-
+/* Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   
   $(this).hide();

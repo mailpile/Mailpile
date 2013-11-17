@@ -362,6 +362,31 @@ $(document).ready(function() {
   });
 
 
+  $('.message-privacy-state').qtip({
+    style: {
+     tip: {
+        corner: 'right center',
+        mimic: 'right center',
+        border: 0,
+        width: 10,
+        height: 10
+      },
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'right center',
+      at: 'left center',
+			viewport: $(window),
+			adjust: {
+				x: -5,  y: 0
+			}
+    },
+    show: {
+      delay: 50
+    }
+  });
+
+
 });
 
 
