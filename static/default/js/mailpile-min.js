@@ -616,8 +616,7 @@ if ($('#form-compose').length) {
 //    closeOnSelect: false,
     width: '600',     
     maximumSelectionSize: 50,                   // Limits number of items added
-    tokenSeparators: [","],
-/*  
+    tokenSeparators: [",", " "],
     createSearchChoice: function(term) {
       console.log('Inside of createSearchChoice');
       console.log(term);
@@ -625,7 +624,6 @@ if ($('#form-compose').length) {
       term.fn = term;
       return term;
     },
-*/
     formatResult: formatComposeResult,
     formatSelection: formatComposeSelection,    
     formatSelectionTooBig: function() {
@@ -639,13 +637,25 @@ if ($('#form-compose').length) {
     selectOnBlur: true
   });
   
-  $('#compose-to').on('change', function(){}).on('select2-selecting', function(e) {
+  $('#compose-to').on('change', function(){
+    
+  }).on('select2-selecting', function(e) {
     
     composeContactSelected(e)
-    console.log('Come on my unencrypted selector ' + e.val);
+    console.log('Selecting ' + e.val);
+
+  }).on('select2-removing', function(e) {
+    
+    console.log('Removing ' + e.val);
+
   }).on('select2-removed', function(e) {
     
-    console.log('Bring out the nukes ' + e.val);
+    console.log('Removed ' + e.val);
+
+  }).on('select2-blur', function(){
+
+    console.log('Blur ' + e.val);
+
   });
   
 

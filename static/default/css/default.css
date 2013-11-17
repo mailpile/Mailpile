@@ -6215,9 +6215,23 @@ a.compose-show-field {
 #pile-results td.subject {
   min-width: 275px;
   max-width: 475px;
-  word-break: break-word;
   overflow: hidden;
+}
+#pile-results td.subject a {
+  word-break: break-word;
   white-space: nowrap;
+}
+#pile-results.fluffy span.item-snippet {
+  display: inline;
+}
+#pile-results.comfy span.item-snippet {
+  display: none;
+}
+#pile-results.cozy span.item-snippet {
+  display: none;
+}
+#pile-results.snug span.item-snippet {
+  display: none;
 }
 #pile-results td.date {
   width: 35px;
