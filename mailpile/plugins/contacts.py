@@ -42,7 +42,7 @@ class VCardCommand(Command):
         else:
             data = [x.as_mpCard() for x in vcards if x]
         info.update({
-            self.VCARD+'s': data,
+            self.VCARD + 's': data,
             "count": len(vcards)
         })
         return info
@@ -63,7 +63,10 @@ class VCard(VCardCommand):
                 vcards.append(vcard)
             else:
                 session.ui.warning('No such %s: %s' % (self.VCARD, email))
-        return vcards
+        if len(vcards) == 1:
+            return {"contact": vcards[0].as_mpCard()}
+        else:
+            return {"contacts": [x.as_mpCard() for x in vcards]}
 
 
 class AddVCard(VCardCommand):
@@ -165,7 +168,6 @@ class ListVCards(VCardCommand):
     }
     HTTP_CALLABLE = ('GET')
 
-
     def command(self):
         session, config = self.session, self.session.config
         kinds = self.KIND and [self.KIND] or []
@@ -195,14 +197,14 @@ class ListVCards(VCardCommand):
 
         vcards = config.vcards.find_vcards(terms, kinds=kinds)
         total = len(vcards)
-        vcards = vcards[offset:offset+count]
+        vcards = vcards[offset:offset + count]
         return self._vcard_list(vcards, mode=fmt, info={
             'terms': self.args,
             'offset': offset,
             'count': count,
             'total': total,
             'start': offset,
-            'end': offset+count,
+            'end': offset + count,
         })
 
 
@@ -223,6 +225,7 @@ def ContactVCard(parent):
 
 class Contact(ContactVCard(VCard)):
     """View contacts"""
+    SYNOPSIS = (None, 'contact', 'contact', '[<email>]')
 
 
 class AddContact(ContactVCard(AddVCard)):
@@ -316,9 +319,9 @@ class AddressSearch(VCardCommand):
             match = match.lower()
             if term in match:
                 if match.startswith(term):
-                    boost += 25*(float(len(term)) / len(match))
+                    boost += 25 * (float(len(term)) / len(match))
                 else:
-                    boost += 5*(float(len(term)) / len(match))
+                    boost += 5 * (float(len(term)) / len(match))
         return int(boost)
 
     def _vcard_addresses(self, cfg, terms):
@@ -329,12 +332,12 @@ class AddressSearch(VCardCommand):
             for k in vcard.get_all('KEY'):
                 val = k.value.split("data:")[1]
                 mime, fp = val.split(",")
-                keys.append({'fingerprint': fp, 'type': 'openpgp', 
+                keys.append({'fingerprint': fp, 'type': 'openpgp',
                              'mime': mime})
 
             photos = vcard.get_all('photo')
             for email_vcl in vcard.get_all('email'):
-                rank = 10.0 + 25*len(keys) + 5*len(photos)
+                rank = 10.0 + 25 * len(keys) + 5 * len(photos)
                 for term in terms:
                     rank += self._boost_rank(term, fn.value, email_vcl.value)
                 info = {
@@ -396,21 +399,21 @@ class AddressSearch(VCardCommand):
                 boost += self._boost_rank(term, fn, email)
 
             if not email or '@' not in email:
-                 # FIXME: This may not be the right thing for alternate
-                 #        message transports.
-                 pass
+                # FIXME: This may not be the right thing for alternate
+                #        message transports.
+                pass
             elif email.lower() in existing:
-                 existing[email.lower()]['rank'] += min(20, boost)
+                existing[email.lower()]['rank'] += min(20, boost)
             else:
-                 info = {
-                     'rank': boost,
-                     'fn': fn,
-                     'proto': 'smtp',
-                     'address': email,
-                     'secure': False
-                 }
-                 existing[email.lower()] = info
-                 addresses.append(info)
+                info = {
+                    'rank': boost,
+                    'fn': fn,
+                    'proto': 'smtp',
+                    'address': email,
+                    'secure': False
+                }
+                existing[email.lower()] = info
+                addresses.append(info)
 
         return addresses
 
