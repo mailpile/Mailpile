@@ -1,0 +1,1130 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Mailpile Alpha\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-11-12 15:32+0000\n"
+"PO-Revision-Date: 2013-11-18 20:22+0400\n"
+"Last-Translator: Mohamed Kayali <blockchain@riseup.net>\n"
+"Language-Team: Mailpile <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.7\n"
+"Language: ar_EG\n"
+
+#: mailpile/defaults.py:10
+msgid "Mailpile program version"
+msgstr "إصدار البرنامج"
+
+#: mailpile/defaults.py:11
+msgid "Configuration timestamp"
+msgstr ""
+
+#: mailpile/defaults.py:12
+msgid "Technical system settings"
+msgstr "إعدادات النظام التقنية"
+
+#: mailpile/defaults.py:14
+msgid "Max files kept open at once"
+msgstr "العدد الأقصى من الملفات المفتوحة دفعة واحدة"
+
+#: mailpile/defaults.py:15
+msgid "History length (lines, <0 = no save)"
+msgstr "طول الملف تسجيل الرسائل"
+
+#: mailpile/defaults.py:16
+msgid "Listening port for web UI"
+msgstr "منفذ الاستماع لUI على شبكة الإنترنت"
+
+#: mailpile/defaults.py:17
+msgid "Posting list target size in KB"
+msgstr ""
+
+#: mailpile/defaults.py:18
+msgid "Max results we sort \"well\""
+msgstr ""
+
+#: mailpile/defaults.py:19
+msgid "Max length of metadata snippets"
+msgstr ""
+
+#: mailpile/defaults.py:20
+msgid "Debugging flags"
+msgstr ""
+
+#: mailpile/defaults.py:21
+msgid "Host:port of PGP keyserver"
+msgstr ""
+
+#: mailpile/defaults.py:22
+msgid "Listening host for web UI"
+msgstr ""
+
+#: mailpile/defaults.py:23
+msgid "Local read/write Maildir"
+msgstr ""
+
+#: mailpile/defaults.py:24
+msgid "Metadata index file"
+msgstr ""
+
+#: mailpile/defaults.py:25
+msgid "Search index directory"
+msgstr ""
+
+#: mailpile/defaults.py:26
+msgid "Mailboxes we index"
+msgstr ""
+
+#: mailpile/defaults.py:27
+msgid "Locations of assorted data"
+msgstr ""
+
+#: mailpile/defaults.py:28
+msgid "Default theme"
+msgstr ""
+
+#: mailpile/defaults.py:30
+msgid "Location of vcards"
+msgstr ""
+
+#: mailpile/defaults.py:33
+msgid "User preferences"
+msgstr "إعدادات المستخدم"
+
+#: mailpile/defaults.py:35
+msgid "Search results per page"
+msgstr "عدد نتائج البحث في كل صفحة"
+
+#: mailpile/defaults.py:36
+msgid "New mail check frequency"
+msgstr "توقيت التحقق من البريد الإلكتروني الجديد"
+
+#: mailpile/defaults.py:37
+msgid "Inline PGP signatures or attached"
+msgstr ""
+
+#: mailpile/defaults.py:38
+msgid "Default sort order"
+msgstr ""
+
+#: mailpile/defaults.py:39
+msgid "Encrypt local data to ..."
+msgstr "تشفير البيانات المحلية في"
+
+#: mailpile/defaults.py:40
+msgid "Key to use to scramble the index"
+msgstr "مفتاح استخدامه لتغيير الفهرس"
+
+#: mailpile/defaults.py:41
+msgid "Command run before rescanning"
+msgstr ""
+
+#: mailpile/defaults.py:42
+msgid "Default outgoing e-mail address"
+msgstr "عنوان البريد الإلكتروني الصادر"
+
+#: mailpile/defaults.py:43
+msgid "Default outgoing mail route"
+msgstr ""
+
+#: mailpile/defaults.py:45
+msgid "User interface language"
+msgstr ""
+
+#: mailpile/defaults.py:46
+msgid "VCard import/export settings"
+msgstr ""
+
+#: mailpile/defaults.py:48
+msgid "VCard import settings"
+msgstr ""
+
+#: mailpile/defaults.py:49
+msgid "VCard export settings"
+msgstr ""
+
+#: mailpile/defaults.py:50
+msgid "VCard context helper settings"
+msgstr ""
+
+#: mailpile/defaults.py:53
+msgid "User profiles and personalities"
+msgstr ""
+
+#: mailpile/defaults.py:54
+msgid "Account name"
+msgstr "اسم الحساب"
+
+#: mailpile/defaults.py:55
+msgid "E-mail address"
+msgstr "عنوان البريد الإلكتروني"
+
+#: mailpile/defaults.py:56
+msgid "Message signature"
+msgstr "توقيع الرسالة"
+
+#: mailpile/defaults.py:57
+msgid "Outgoing mail route"
+msgstr ""
+
+#: mailpile/config.py:94
+#, python-format
+msgid "Invalid URL slug: %s"
+msgstr ""
+
+#: mailpile/config.py:126
+#, python-format
+msgid "Invalid hostname: %s"
+msgstr "اسم المضيف غير صالح: %s"
+
+#: mailpile/config.py:160
+#, python-format
+msgid "File/directory does not exist: %s"
+msgstr "الملف غير موجود: %s"
+
+#: mailpile/config.py:178
+#, python-format
+msgid "Not a file: %s"
+msgstr "ليس ملف: %s"
+
+#: mailpile/config.py:196
+#, python-format
+msgid "Not a directory: %s"
+msgstr "ليس ملف: %s"
+
+#: mailpile/config.py:329
+msgid "Override this"
+msgstr "تجاوز هذا"
+
+#: mailpile/config.py:388
+#, python-format
+msgid "Invalid type for default %s = %s"
+msgstr ""
+
+#: mailpile/config.py:399
+#, python-format
+msgid "Invalid key for %s: %s"
+msgstr ""
+
+#: mailpile/config.py:482
+#, python-format
+msgid "Modifying %s/%s is not allowed"
+msgstr ""
+
+#: mailpile/config.py:486 mailpile/config.py:494
+#, python-format
+msgid "Invalid value for %s/%s: %s"
+msgstr ""
+
+#: mailpile/config.py:497
+#, python-format
+msgid "Unknown constraint for %s/%s: %s"
+msgstr ""
+
+#: mailpile/config.py:702
+msgid "Cannot append to fixed dict"
+msgstr ""
+
+#: mailpile/config.py:750
+#, python-format
+msgid "Creating: %s"
+msgstr ""
+
+#: mailpile/config.py:808
+#, python-format
+msgid "Invalid (%s): section %s does not exist"
+msgstr ""
+
+#: mailpile/config.py:819
+#, python-format
+msgid "Invalid (%s): section %s, variable %s"
+msgstr ""
+
+#: mailpile/config.py:834
+#, python-format
+msgid "WARNING: Imported old config from %s"
+msgstr ""
+
+#: mailpile/config.py:837
+#, python-format
+msgid "WARNING: Failed to import config from %s"
+msgstr ""
+
+#: mailpile/config.py:876
+#, python-format
+msgid "Mailbox ID too large: %s"
+msgstr ""
+
+#: mailpile/config.py:906
+#, python-format
+msgid "No such mailbox: %s"
+msgstr ""
+
+#: mailpile/config.py:913
+#, python-format
+msgid "%s: Updating: %s"
+msgstr ""
+
+#: mailpile/config.py:920
+#, python-format
+msgid "%s: Opening: %s (may take a while)"
+msgstr ""
+
+#: mailpile/config.py:1021
+msgid "Parent paths are not allowed"
+msgstr ""
+
+#: mailpile/config.py:1137
+#, python-format
+msgid "Could not parse (%s): %s"
+msgstr ""
+
+#: mailpile/config.py:1150
+#, python-format
+msgid "Could not assign mailbox:%s = %s"
+msgstr ""
+
+#: mailpile/gpgi.py:14
+msgid "Trust not calculated"
+msgstr ""
+
+#: mailpile/gpgi.py:15
+msgid "Unknown trust"
+msgstr ""
+
+#: mailpile/gpgi.py:16
+msgid "Undefined trust"
+msgstr ""
+
+#: mailpile/gpgi.py:17
+msgid "Never trust"
+msgstr "لا تثق أبدا"
+
+#: mailpile/gpgi.py:18
+msgid "Marginally trust"
+msgstr "الثقة جزئيا"
+
+#: mailpile/gpgi.py:19
+msgid "Full trust"
+msgstr "الثقة الكاملة"
+
+#: mailpile/gpgi.py:20
+msgid "Ultimate trust"
+msgstr "الثقة الرئيسية"
+
+#: mailpile/gpgi.py:21
+msgid "Expired key, not trusted"
+msgstr "المفتاح انتهت صلاحيته, غير موثوق"
+
+#: mailpile/gpgi.py:22
+msgid "Revoked key, not trusted"
+msgstr "المفتاح سحب، غير موثوق به"
+
+#: mailpile/gpgi.py:23
+msgid "Disabled key, not trusted"
+msgstr "المفتاح معطل، غير موثوق به"
+
+#: mailpile/gpgi.py:26
+msgid "RSA"
+msgstr "RSA"
+
+#: mailpile/gpgi.py:27
+msgid "RSA (encrypt only)"
+msgstr "RSA (تشفير فقط)"
+
+#: mailpile/gpgi.py:28
+msgid "RSA (sign only)"
+msgstr "RSA (توقيع فقط)"
+
+#: mailpile/gpgi.py:29
+msgid "Elgamal (encrypt only)"
+msgstr "Elgamal (تشفير فقط)"
+
+#: mailpile/gpgi.py:30
+msgid "DSA"
+msgstr "DSA"
+
+#: mailpile/gpgi.py:31
+msgid "Elgamal (encrypt/sign) [COMPROMISED]"
+msgstr ""
+
+#: mailpile/commands.py:154
+#, python-format
+msgid "ID out of bounds: %s"
+msgstr ""
+
+#: mailpile/commands.py:157 mailpile/commands.py:163 mailpile/commands.py:168
+#, python-format
+msgid "What message is %s?"
+msgstr ""
+
+#: mailpile/commands.py:255
+#, python-format
+msgid "FIXME: rescan messages: %s"
+msgstr ""
+
+#: mailpile/commands.py:288
+#, python-format
+msgid "Running: %s"
+msgstr ""
+
+#: mailpile/commands.py:309
+msgid "Nothing changed"
+msgstr ""
+
+#: mailpile/commands.py:311
+#, python-format
+msgid "Aborted: %s"
+msgstr ""
+
+#: mailpile/commands.py:341
+msgid "Aborted"
+msgstr ""
+
+#: mailpile/commands.py:355
+msgid "Statistics updated"
+msgstr ""
+
+#: mailpile/commands.py:521
+#, python-format
+msgid "No such key: %s"
+msgstr ""
+
+#: mailpile/commands.py:590
+#, python-format
+msgid "The web interface is %s"
+msgstr ""
+
+#: mailpile/commands.py:591
+msgid "disabled."
+msgstr ""
+
+#: mailpile/commands.py:593
+msgid "For instructions, type `help`, press <CTRL-D> to quit."
+msgstr ""
+
+#: mailpile/commands.py:612
+msgid "Commands:"
+msgstr ""
+
+#: mailpile/commands.py:643
+msgid "Tags:  (use a tag as a command to display tagged messages)"
+msgstr ""
+
+#: mailpile/commands.py:651
+msgid "Error"
+msgstr ""
+
+#: mailpile/commands.py:684
+msgid "Unknown command"
+msgstr ""
+
+#: mailpile/commands.py:782
+#, python-format
+msgid "Unknown command: %s"
+msgstr ""
+
+#: mailpile/plugins/demos.py:41
+msgid "Demo Contacts"
+msgstr ""
+
+#: mailpile/plugins/demos.py:42
+msgid "This is the demo importer"
+msgstr ""
+
+#: mailpile/plugins/demos.py:45
+msgid "Contact name"
+msgstr ""
+
+#: mailpile/plugins/demos.py:46
+msgid "Contact email"
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:17
+msgid "Import contacts from GnuPG keyring"
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:20
+msgid "Location of keyring"
+msgstr ""
+
+#: mailpile/httpd.py:143
+msgid "XMLRPC has been disabled for now."
+msgstr ""
+
+#: mailpile/httpd.py:161
+msgid "OMG, input too big"
+msgstr ""
+
+#: mailpile/httpd.py:164
+msgid "Unknown content-type"
+msgstr ""
+
+#: mailpile/httpd.py:169
+msgid "Internal Error"
+msgstr ""
+
+#: mailpile/httpd.py:237
+msgid "Internal error"
+msgstr ""
+
+#: mailpile/search.py:168
+msgid "Loading metadata index..."
+msgstr ""
+
+#: mailpile/search.py:180
+#, python-format
+msgid "Metadata index not found: %s"
+msgstr ""
+
+#: mailpile/search.py:184
+#, python-format
+msgid "Loaded metadata, %d messages"
+msgstr ""
+
+#: mailpile/search.py:191
+msgid "Saving metadata index changes..."
+msgstr ""
+
+#: mailpile/search.py:201
+msgid "Saved metadata index changes"
+msgstr ""
+
+#: mailpile/search.py:207
+msgid "Saving metadata index..."
+msgstr ""
+
+#: mailpile/search.py:219
+msgid "Saved metadata index"
+msgstr ""
+
+#: mailpile/search.py:222
+msgid "Updating high level indexes"
+msgstr ""
+
+#: mailpile/search.py:230
+#, python-format
+msgid "Bogus line: %s"
+msgstr ""
+
+#: mailpile/search.py:300
+#, python-format
+msgid "=%s/%s using Recieved: instead of Date:"
+msgstr ""
+
+#: mailpile/search.py:307
+#, python-format
+msgid "=%s/%s has a bogus date"
+msgstr ""
+
+#: mailpile/search.py:324
+#, python-format
+msgid "WARNING: No proper Message-ID for %s"
+msgstr ""
+
+#: mailpile/search.py:331
+#, python-format
+msgid "%s: Skipped: %s"
+msgstr ""
+
+#: mailpile/search.py:335
+#, python-format
+msgid "%s: Checking: %s"
+msgstr ""
+
+#: mailpile/search.py:338
+#, python-format
+msgid "%s: Error opening: %s (%s)"
+msgstr ""
+
+#: mailpile/search.py:357
+#, python-format
+msgid "%s: Reading your mail: %d%% (%d/%d messages)"
+msgstr ""
+
+#: mailpile/search.py:412
+#, python-format
+msgid "%s: Indexed mailbox: %s"
+msgstr ""
+
+#: mailpile/search.py:621
+#, python-format
+msgid "=%s/%s has bogus HTML."
+msgstr ""
+
+#: mailpile/search.py:726
+#, python-format
+msgid "%s is outside the index"
+msgstr ""
+
+#: mailpile/search.py:769
+#, python-format
+msgid "Tagging %d messages (%s)"
+msgstr ""
+
+#: mailpile/search.py:796
+#, python-format
+msgid "Untagging conversations (%s)"
+msgstr ""
+
+#: mailpile/search.py:802
+#, python-format
+msgid "Untagging %d messages (%s)"
+msgstr ""
+
+#: mailpile/search.py:830
+#, python-format
+msgid "Searching for %s"
+msgstr ""
+
+#: mailpile/search.py:859
+#, python-format
+msgid "Ignoring common word: %s"
+msgstr ""
+
+#: mailpile/search.py:925
+#, python-format
+msgid "Found %d results (%d suppressed)"
+msgstr ""
+
+#: mailpile/search.py:932
+#, python-format
+msgid "Finding conversations (%d messages)..."
+msgstr ""
+
+#: mailpile/search.py:945 mailpile/search.py:959
+#, python-format
+msgid "Sorting %d messages in %s order..."
+msgstr ""
+
+#: mailpile/search.py:983
+msgid "Recovering from bogus sort, corrupt index?"
+msgstr ""
+
+#: mailpile/search.py:984
+msgid "Please tell team@mailpile.is !"
+msgstr ""
+
+#: mailpile/search.py:993
+#, python-format
+msgid "Unknown sort order: %s"
+msgstr ""
+
+#: mailpile/search.py:998
+msgid "Sort failed, sorting badly. Partial index?"
+msgstr ""
+
+#: mailpile/search.py:1011
+#, python-format
+msgid "Sorted %d messages by %s, %d conversations"
+msgstr ""
+
+#: mailpile/search.py:1014
+#, python-format
+msgid "Sorted %d messages in %s order"
+msgstr ""
+
+#: mailpile/search.py:1029
+#, python-format
+msgid "Counting messages in tag:%s"
+msgstr ""
+
+#: mailpile/ui.py:168
+#, python-format
+msgid "Elapsed: %.3fs (%s)"
+msgstr ""
+
+#: mailpile/ui.py:180
+#, python-format
+msgid "Completed %s in %.3fs"
+msgstr ""
+
+#: mailpile/ui.py:279
+#, python-format
+msgid ""
+"<h1>Template not found</h1>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+
+#: mailpile/ui.py:283
+#, python-format
+msgid ""
+"<h1>Template error</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+
+#: mailpile/ui.py:290
+#, python-format
+msgid ""
+"<h1>Template error in %s</h1>\n"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
+msgstr ""
+
+#: mailpile/ui.py:299
+msgid "Sorry, this UI cannot edit messages."
+msgstr ""
+
+#: mailpile/ui.py:335
+msgid "FIXME: Multiple results, OMG WTF"
+msgstr ""
+
+#: mailpile/mailutils.py:137
+#, python-format
+msgid "SendMail: from %s, to %s\n"
+msgstr ""
+
+#: mailpile/mailutils.py:140
+#, python-format
+msgid "Connecting to %s"
+msgstr ""
+
+#: mailpile/mailutils.py:161
+#, python-format
+msgid "SMTP connection to: %s:%s as %s@%s\n"
+msgstr ""
+
+#: mailpile/mailutils.py:199
+#, python-format
+msgid "Invalid sendmail: %s"
+msgstr ""
+
+#: mailpile/mailutils.py:201
+msgid "Preparing message..."
+msgstr ""
+
+#: mailpile/mailutils.py:211
+#, python-format
+msgid "Message sent, %d bytes"
+msgstr ""
+
+#: mailpile/mailutils.py:496 mailpile/mailutils.py:503
+msgid "No data found"
+msgstr ""
+
+#: mailpile/mailutils.py:525
+msgid "Message not found"
+msgstr ""
+
+#: mailpile/mailutils.py:690 mailpile/mailutils.py:698
+#: mailpile/mailutils.py:752
+msgid "Mailbox is read-only."
+msgstr ""
+
+#: mailpile/mailutils.py:797
+msgid "Message not found?"
+msgstr ""
+
+#: mailpile/mailutils.py:875
+#, python-format
+msgid "Extracted attachment %s"
+msgstr ""
+
+#: mailpile/mailutils.py:883
+#, python-format
+msgid "Wrote preview to: %s"
+msgstr ""
+
+#: mailpile/mailutils.py:885
+msgid "Failed to generate thumbnail"
+msgstr ""
+
+#: mailpile/mailutils.py:892
+#, python-format
+msgid "Wrote attachment to: %s"
+msgstr ""
+
+#: mailpile/mailutils.py:895
+#, python-format
+msgid "No attachments found for: %s"
+msgstr ""
+
+#: mailpile/mailutils.py:991
+#, python-format
+msgid "Decode failed: %s %s"
+msgstr ""
+
+#: static/default/html/page/donate/index.html:7
+msgid "Please Donate To Mailpile"
+msgstr ""
+
+#: static/default/html/page/donate/index.html:11
+msgid "Or you can donate to our"
+msgstr ""
+
+#: static/default/html/page/donate/index.html:11
+msgid "Bitcoin Wallet"
+msgstr ""
+
+#: static/default/html/layouts/base.html:66
+#, python-format
+msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
+msgstr ""
+
+#: static/default/html/layouts/base.html:124
+msgid "Encrypted"
+msgstr ""
+
+#: static/default/html/layouts/base.html:130
+msgid "Photos"
+msgstr ""
+
+#: static/default/html/layouts/base.html:136
+msgid "Files"
+msgstr ""
+
+#: static/default/html/layouts/base.html:142
+msgid "Links"
+msgstr ""
+
+#: static/default/html/layouts/base.html:148
+msgid "Groups"
+msgstr ""
+
+#: static/default/html/layouts/base.html:160
+msgid "Mailpile"
+msgstr ""
+
+#: static/default/html/layouts/base.html:160
+msgid "is free software made by"
+msgstr ""
+
+#: static/default/html/layouts/base.html:160
+msgid "more"
+msgstr ""
+
+#: static/default/html/layouts/base.html:175
+#: static/default/html/message/index.html:16
+msgid "Date:"
+msgstr ""
+
+#: static/default/html/layouts/base.html:175
+msgid "Start time"
+msgstr ""
+
+#: static/default/html/layouts/base.html:175
+msgid "to"
+msgstr ""
+
+#: static/default/html/layouts/base.html:175
+msgid "Present"
+msgstr ""
+
+#: static/default/html/layouts/base.html:176
+msgid "With:"
+msgstr ""
+
+#: static/default/html/layouts/base.html:176
+msgid "No Tags"
+msgstr ""
+
+#: static/default/html/layouts/base.html:177
+msgid "And:"
+msgstr ""
+
+#: static/default/html/layouts/base.html:177
+msgid "All groups"
+msgstr ""
+
+#: static/default/html/message/index.html:16
+msgid "at"
+msgstr ""
+
+#: static/default/html/message/index.html:17
+msgid "From:"
+msgstr ""
+
+#: static/default/html/message/index.html:18
+msgid "To:"
+msgstr ""
+
+#: static/default/html/message/index.html:20
+msgid "Cc:"
+msgstr ""
+
+#: static/default/html/message/index.html:23
+msgid "Bcc:"
+msgstr ""
+
+#: static/default/html/message/index.html:25
+msgid "Subject:"
+msgstr ""
+
+#: static/default/html/message/index.html:34
+msgid "Signed by"
+msgstr ""
+
+#: static/default/html/message/index.html:35
+msgid "Unknown signature from"
+msgstr ""
+
+#: static/default/html/message/index.html:36
+msgid "Signed with unknown key"
+msgstr ""
+
+#: static/default/html/message/index.html:41
+msgid "Successfully decrypted message"
+msgstr ""
+
+#: static/default/html/message/index.html:42
+msgid "Failed to decrypt message"
+msgstr ""
+
+#: static/default/html/message/index.html:63
+msgid "Reply"
+msgstr ""
+
+#: static/default/html/message/index.html:66
+#: static/default/html/partials/sub_nav_search.html:3
+msgid "All"
+msgstr ""
+
+#: static/default/html/message/index.html:69
+msgid "Forward"
+msgstr ""
+
+#: static/default/html/message/draft.html:14
+msgid "To"
+msgstr ""
+
+#: static/default/html/message/draft.html:16
+#: static/default/html/message/draft.html:24
+msgid "Bcc"
+msgstr ""
+
+#: static/default/html/message/draft.html:17
+#: static/default/html/message/draft.html:20
+msgid "Cc"
+msgstr ""
+
+#: static/default/html/message/draft.html:28
+msgid "From"
+msgstr ""
+
+#: static/default/html/message/draft.html:38
+msgid "Subject"
+msgstr ""
+
+#: static/default/html/message/draft.html:45
+msgid "No Attachments"
+msgstr ""
+
+#: static/default/html/message/draft.html:50
+msgid "Send"
+msgstr ""
+
+#: static/default/html/message/draft.html:51
+msgid "Save"
+msgstr ""
+
+#: static/default/html/message/draft.html:60
+msgid "Message not found!"
+msgstr ""
+
+#: static/default/html/tag/list.html:14
+msgid "Total"
+msgstr ""
+
+#: static/default/html/tag/list.html:19
+#: static/default/html/partials/sub_nav_search.html:4
+msgid "New"
+msgstr ""
+
+#: static/default/html/tag/list.html:24
+msgid "View Messages"
+msgstr ""
+
+#: static/default/html/tag/list.html:34
+msgid "Archived"
+msgstr ""
+
+#: static/default/html/tag/add.html:3
+msgid "Enter New Tag Info"
+msgstr ""
+
+#: static/default/html/tag/add.html:9
+msgid "Tag"
+msgstr ""
+
+#: static/default/html/tag/add.html:12
+msgid "Slug"
+msgstr ""
+
+#: static/default/html/tag/add.html:15
+msgid "Add"
+msgstr ""
+
+#: static/default/html/settings/index.html:7
+msgid "Your Profiles"
+msgstr ""
+
+#: static/default/html/settings/index.html:17
+msgid "Add New Profile"
+msgstr ""
+
+#: static/default/html/settings/index.html:20
+#: static/default/html/contact/add.html:9
+msgid "Name"
+msgstr ""
+
+#: static/default/html/settings/index.html:23
+msgid "Email"
+msgstr ""
+
+#: static/default/html/settings/index.html:26
+msgid "SMTP Server"
+msgstr ""
+
+#: static/default/html/settings/index.html:27
+msgid "Login"
+msgstr ""
+
+#: static/default/html/settings/index.html:30
+msgid "Password"
+msgstr ""
+
+#: static/default/html/settings/index.html:33
+msgid "Server"
+msgstr ""
+
+#: static/default/html/settings/index.html:36
+msgid "Port"
+msgstr ""
+
+#: static/default/html/settings/index.html:43
+msgid "Add Profile"
+msgstr ""
+
+#: static/default/html/partials/bulk_actions.html:2
+msgid "Messages"
+msgstr ""
+
+#: static/default/html/partials/bulk_actions.html:2
+msgid "selected"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_contacts.html:3
+msgid "Contacts"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_contacts.html:4
+msgid "Add Contact"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_contacts.html:5
+msgid "Import Contacts"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_message.html:6
+msgid "Archive"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_message.html:7
+msgid "Delete"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_message.html:8
+msgid "Show All"
+msgstr ""
+
+#: static/default/html/partials/errors_content.html:3
+msgid "Oops, you've found a quirk!"
+msgstr ""
+
+#: static/default/html/partials/errors_content.html:4
+msgid ""
+"We were unable to find the message you requested, perhaps it was deleted?"
+msgstr ""
+
+#: static/default/html/partials/errors_content.html:5
+#, python-format
+msgid ""
+"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
+"\">bug report</a>"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_tags.html:3
+msgid "Tags"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_tags.html:4
+msgid "Add Tag"
+msgstr ""
+
+#: static/default/html/partials/details_search_speed.html:2
+#, python-format
+msgid ""
+"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
+"strong> seconds."
+msgstr ""
+
+#: static/default/html/partials/details_search_speed.html:2
+msgid "Vroom!"
+msgstr ""
+
+#: static/default/html/search/index.html:20
+msgid "Previous"
+msgstr ""
+
+#: static/default/html/search/index.html:20
+msgid "Next"
+msgstr ""
+
+#: static/default/html/search/index.html:22
+msgid "of"
+msgstr ""
+
+#: static/default/html/search/index.html:22
+msgid "Conversations"
+msgstr ""
+
+#: static/default/html/search/index.html:22
+msgid "1 Conversation"
+msgstr ""
+
+#: static/default/html/search/index.html:22
+msgid "No results found"
+msgstr ""
+
+#: static/default/html/search/index.html:23
+msgid "Snug"
+msgstr ""
+
+#: static/default/html/search/index.html:24
+msgid "Cozy"
+msgstr ""
+
+#: static/default/html/search/index.html:25
+msgid "Comfy"
+msgstr ""
+
+#: static/default/html/search/index.html:26
+msgid "Fluffy"
+msgstr ""
+
+#: static/default/html/search/index.html:32
+msgid "No Results Found"
+msgstr ""
+
+#: static/default/html/contact/add.html:3
+msgid "Contact Info"
+msgstr ""
+
+#: static/default/html/contact/add.html:12
+msgid "E-mail"
+msgstr ""
+
+#: static/default/html/contact/add.html:15
+msgid "Website"
+msgstr ""
+
+#: static/default/html/contact/add.html:18
+msgid "PGP Key"
+msgstr ""
