@@ -505,7 +505,7 @@ class SimpleVCard(object):
     def as_mpCard(self):
         mpCard = {}
         self._lines.sort(key=lambda c: (1-(c and c.get('pref') or 0),
-                                        c.name, c.value))
+                                        c and c.name, c and c.value))
         ln = lv = None
         for vcl in self._lines:
             if not vcl or vcl.name in self.MPCARD_SUPPRESSED:
