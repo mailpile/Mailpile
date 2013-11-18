@@ -76,6 +76,41 @@ def _MakeCheck(pcls, rules):
     return CD
 
 
+def _BoolCheck(value):
+    """
+    Convert common yes/no strings into booleal values.
+
+    >>> _BoolCheck('yes')
+    True
+    >>> _BoolCheck('no')
+    False
+
+    >>> _BoolCheck('true')
+    True
+    >>> _BoolCheck('false')
+    False
+
+    >>> _BoolCheck('on')
+    True
+    >>> _BoolCheck('off')
+    False
+
+    >>> _BoolCheck('wiggle')
+    Traceback (most recent call last):
+        ...
+    ValueError: Invalid boolean: wiggle
+    """
+    if value in (True, False):
+        return value
+    if value.lower() in ('1', 'true', 'yes', 'on',
+                         _('true'), _('yes'), _('on')):
+        return True
+    if value.lower() in ('0', 'false', 'no', 'off',
+                         _('false'), _('no'), _('off')):
+        return False
+    raise ValueError(_('Invalid boolean: %s') % value)
+
+
 def _SlugCheck(slug, allow=''):
     """
     Verify that a string is a valid URL slug.
@@ -238,7 +273,8 @@ def RuledContainer(pcls):
         # Reserved ...
         RULE_DEFAULT = -1
         RULE_CHECK_MAP = {
-           'bool': bool,
+           bool: _BoolCheck,
+           'bool': _BoolCheck,
            'b36': _B36Check,
            'dir': _DirCheck,
            'directory': _DirCheck,
