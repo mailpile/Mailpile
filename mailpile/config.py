@@ -22,12 +22,15 @@ from mailpile.workers import Worker, DumbWorker, Cron
 
 # i18n helper
 if __name__ == "__main__":
-    translation = gettext.translation("mailpile", "locale")
+    translation = gettext.translation("mailpile", getLocaleDirectory())
     translation.install(unicode=True)
 else:
     _ = lambda x: x
 
-
+def getLocaleDirectory():
+    """Get the gettext translation object, no matter where our CWD is"""
+    # NOTE: MO files are loaded from the directory where the scripts reside in
+    return os.path.join(os.path.dirname(__file__), "..", "locale")
 
 class InvalidKeyError(ValueError):
     pass
@@ -1012,12 +1015,12 @@ class ConfigManager(ConfigDict):
         translation = None
         language = self.prefs.language
         if language != "":
-            translation = gettext.translation("mailpile", "locale", [language], codeset="utf-8")
+            translation = gettext.translation("mailpile", getLocaleDirectory(), [language], codeset="utf-8")
             if translation:
                 translation.set_output_charset("utf-8")
 
         if not translation:
-            translation = gettext.translation("mailpile", "locale")
+            translation = gettext.translation("mailpile", getLocaleDirectory())
 
         translation.install(unicode=True)
         return translation
