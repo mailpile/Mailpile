@@ -504,9 +504,13 @@ class SimpleVCard(object):
 
     def as_mpCard(self):
         mpCard = {}
-        self._lines.sort(key=lambda c: 1-(c and c.get('pref') or 0))
+        self._lines.sort(key=lambda c: (1-(c and c.get('pref') or 0),
+                                        c.name, c.value))
+        ln = lv = None
         for vcl in self._lines:
             if not vcl or vcl.name in self.MPCARD_SUPPRESSED:
+                continue
+            if ln == vcl.name and lv == vcl.value:
                 continue
             name = vcl.name.replace('x-mailpile-', '')
             if name not in mpCard:
@@ -516,6 +520,7 @@ class SimpleVCard(object):
                     mpCard[name] = [self._mpcdict(vcl)]
             elif vcl.name not in self.MPCARD_SINGLETONS:
                 mpCard[name].append(self._mpcdict(vcl))
+            ln, lv = vcl.name, vcl.value
         return mpCard
 
     def as_vCard(self):
