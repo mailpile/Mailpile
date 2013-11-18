@@ -17,6 +17,8 @@ class GravatarImporter(VCardImporter):
     This importer will pull contact details down from a central server,
     using the Gravatar JSON API and caching thumbnail data locally.
 
+    For details, see https://secure.gravatar.com/site/implement/
+
     The importer will only pull down a few contacts at a time, to limit
     the impact on Gravatar's servers and prevent network traffic from
     stalling the rescan process too much.
@@ -25,7 +27,7 @@ class GravatarImporter(VCardImporter):
     FORMAT_DESCRIPTION = _('Import contact info from a Gravatar server')
     SHORT_NAME = 'gravatar'
     CONFIG_RULES = {
-        'active': [_('Enable this importer'), bool, False],
+        'active': [_('Enable this importer'), bool, True],
         'interval': [_('Minimum days between refreshing'), 'int', 7],
         'batch': [_('Max batch size per update'), 'int', 30],
         'default': [_('Default thumbnail style'), str, 'retro'],

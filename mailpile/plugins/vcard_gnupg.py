@@ -17,11 +17,15 @@ class GnuPGImporter(VCardImporter):
     FORMAT_DESCRIPTION = _('Import contacts from GnuPG keyring')
     SHORT_NAME = 'gpg'
     CONFIG_RULES = {
+        'active': [_('Enable this importer'), bool, True],
         'gpg_home': [_('Location of keyring'), 'path', DEF_GNUPG_HOME],
     }
     VCL_KEY_FMT = "data:application/x-pgp-fingerprint,%(fingerprint)s"
 
     def get_vcards(self):
+        if not self.config.active:
+            return []
+
         gnupg = GnuPG()
         keys = gnupg.list_keys()
         results = []

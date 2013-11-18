@@ -57,7 +57,15 @@ try:
     mp.set('profiles/0/name = Test Account')
     mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
     mp.set('sys/debug = sendmail log compose')
+
+    # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
+    mp.set('prefs/vcard/importers/gravatar/0/active = false')
+    mp.set('prefs/vcard/importers/gpg/0/active = false')
+
+    # Make sure that actually worked
+    assert(not mp._config.prefs.vcard.importers.gpg[0].active)
+    assert(not mp._config.prefs.vcard.importers.gravatar[0].active)
 
     # Add the mailboxes, scan them
     for mailbox in ('tests.mbx', 'Maildir'):

@@ -42,15 +42,24 @@ class DemoVCardImporter(VCardImporter):
     FORMAT_DESCRPTION = _('This is the demo importer')
     SHORT_NAME = 'demo'
     CONFIG_RULES = {
+         'active': [_('Activate demo importer'), bool, True],
          'name': [_('Contact name'), str, 'Mr. Rogers'],
          'email': [_('Contact email'), 'email', 'mr@rogers.com']
     }
 
     def get_vcards(self):
         """Returns just a single contact, based on data from the config."""
-        # Note: It is important to only return one card per (set of)
-        #       e-mail addresses, as internal overwriting may cause
-        #       unexpected results.
+        # Notes to implementors:
+        #
+        #  - It is important to only return one card per (set of)
+        #    e-mail addresses, as internal overwriting may cause
+        #    unexpected results.
+        #  - If data is to be deleted from the contact list, it
+        #    is important to return a VCard for that e-mail address
+        #    which has the relevant data removed.
+        #
+        if not self.config.active:
+            return []
         return [SimpleVCard(
             VCardLine(name='fn', value=self.config.name),
             VCardLine(name='email', value=self.config.email)
