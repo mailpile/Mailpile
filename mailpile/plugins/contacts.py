@@ -344,6 +344,8 @@ class AddressSearch(VCardCommand):
                     'address': email_vcl.value,
                     'secure': False
                 }
+                if photos:
+                    info['photo'] = photos[0].value
                 if keys:
                     info['keys'] = [k for k in keys[:1]]
                     info['secure'] = True
