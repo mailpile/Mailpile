@@ -48,7 +48,6 @@ class GnuPGImporter(VCardImporter):
             else:
                 # This is us taking care to only create one card for each
                 # set of e-mail addresses.
-                # FIXME: We should still probably dedup lines within the vcard.
                 card = SimpleVCard(*vcls)
                 for email in emails:
                     vcards[email] = card
