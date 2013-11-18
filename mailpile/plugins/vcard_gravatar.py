@@ -29,6 +29,7 @@ class GravatarImporter(VCardImporter):
         'interval': [_('Minimum days between refreshing'), 'int', 7],
         'batch': [_('Max batch size per update'), 'int', 30],
         'default': [_('Default thumbnail style'), str, 'retro'],
+        'rating': [_('Preferred thumbnail rating'), ['g','pg','r','x'], 'g'],
         'size': [_('Preferred thumbnail size'), 'int', 80],
         'url': [_('Gravatar server URL'), 'url', 'https://en.gravatar.com'],
     }
@@ -76,10 +77,11 @@ class GravatarImporter(VCardImporter):
                 digest = md5_hex(vcl.value.lower())
                 try:
                     if not img:
-                        img = _get('%s/avatar/%s.jpg?s=%s&d=404' % (
+                        img = _get('%s/avatar/%s.jpg?s=%s&r=%s&d=404' % (
                                        self.config.url,
                                        digest,
-                                       self.config.size
+                                       self.config.size,
+                                       self.config.rating
                                    ))
                     if not json: 
                         json = _get('%s/%s.json' % (self.config.url, digest))
