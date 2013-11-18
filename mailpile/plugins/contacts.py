@@ -310,7 +310,8 @@ class AddressSearch(VCardCommand):
     ORDER = ('Searching', 6)
     HTTP_QUERY_VARS = {
         'q': 'search terms',
-        'num': 'number of results'
+        'count': 'number of results',
+        'offset': 'offset results'
     }
 
     def _boost_rank(self, term, *matches):
@@ -423,16 +424,22 @@ class AddressSearch(VCardCommand):
             terms = [t.lower() for t in self.data['q']]
         else:
             terms = [t.lower() for t in self.args]
-        num = int(self.data.get('num', 10))
+        count = int(self.data.get('count', 10))
+        offset = int(self.data.get('offset', 0))
 
         vcard_addrs = self._vcard_addresses(config, terms)
         index_addrs = self._index_addresses(config, terms, vcard_addrs)
         addresses = vcard_addrs + index_addrs
         addresses.sort(key=lambda k: -k['rank'])
         return {
-            'addresses': addresses[:num],
-            'displayed': min(num, len(addresses)),
-            'total': len(addresses)
+            'addresses': addresses[offset:offset+count],
+            'displayed': min(count, len(addresses)),
+            'total': len(addresses),
+            'offset': offset,
+            'count': count,
+            'total': total,
+            'start': offset,
+            'end': offset+count,
         }
 
 
