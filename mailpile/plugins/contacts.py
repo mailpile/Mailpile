@@ -388,11 +388,16 @@ class AddressSearch(VCardCommand):
         # Assign info & scores!
         for frm in matches:
             email, fn = self._fparse(frm)
+
             boost = min(10, matches[frm])
             for term in terms:
                 boost += self._boost_rank(term, fn, email)
 
-            if email.lower() in existing:
+            if not email or '@' not in email:
+                 # FIXME: This may not be the right thing for alternate
+                 #        message transports.
+                 pass
+            elif email.lower() in existing:
                  existing[email.lower()]['rank'] += min(20, boost)
             else:
                  info = {
