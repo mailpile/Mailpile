@@ -9,7 +9,7 @@ import datetime
 import urllib
 import hashlib
 
-from mailpile.util import friendly_number
+from mailpile.util import friendly_number, md5_hex
 
 
 class MailpileCommand(Extension):
@@ -77,7 +77,7 @@ class MailpileCommand(Extension):
         else:
             default = "mm"
 
-        digest = hashlib.md5(email.lower().encode('utf-8')).hexdigest()
+        digest = md5_hex(email.lower())
         gravatar_url = "https://www.gravatar.com/avatar/" + digest + "?"
         gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
 

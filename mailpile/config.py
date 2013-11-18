@@ -261,6 +261,7 @@ def RuledContainer(pcls):
            'slug': _SlugCheck,
            'str': unicode,
            'True': True, 'true': True,
+           'timestamp': long,
            'unicode': unicode,
            'url': unicode,  # FIXME: Make more strict
         }
