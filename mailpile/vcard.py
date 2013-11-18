@@ -427,10 +427,10 @@ class SimpleVCard(object):
         >>> print vc.as_vCard()
         BEGIN:VCARD
         VERSION:4.0
-        CLIENTPIDMAP:1\\;thisisauid
         CLIENTPIDMAP:2\\;otheruid
-        X-B;PID=2.1:c
+        CLIENTPIDMAP:1\\;thisisauid
         FN;PID=1.4:Inrajb
+        X-B;PID=2.1:c
         END:VCARD
         """
         # First, we figure out which CLIENTPIDMAP applies, if any
@@ -503,10 +503,8 @@ class SimpleVCard(object):
     MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
 
     def as_mpCard(self):
-        mpCard = {}
-        self._lines.sort(key=lambda c: (1-(c and c.get('pref') or 0),
-                                        c and c.name, c and c.value))
-        ln = lv = None
+        mpCard, ln, lv = {}, None, None
+        self._sort_lines()
         for vcl in self._lines:
             if not vcl or vcl.name in self.MPCARD_SUPPRESSED:
                 continue
@@ -522,6 +520,12 @@ class SimpleVCard(object):
                 mpCard[name].append(self._mpcdict(vcl))
             ln, lv = vcl.name, vcl.value
         return mpCard
+
+    def _sort_lines(self):
+        self._lines.sort(key=lambda k: ((k and k.name == 'version') and 1 or 2,
+                                         k and k.name,
+                                         k and len(k.value),
+                                         k and k.value))
 
     def as_vCard(self):
         """
@@ -540,14 +544,15 @@ class SimpleVCard(object):
                 default = self.VCARD4_KEYS[key][2]
                 self._lines[:0] = [VCardLine(name=key, value=default)]
 
-        # Make sure VERSION is first.
-        self._lines.sort(key=lambda k: (k and k.name == 'version') and 1 or 2)
+        # Make sure VERSION is first, order is stable.
+        self._sort_lines()
 
         return '\n'.join(['BEGIN:VCARD'] +
                          [l.as_vcardline() for l in self._lines if l] +
                          ['END:VCARD'])
 
     def as_lines(self):
+        self._sort_lines()
         return [vcl for vcl in self._lines if vcl]
 
     def _vcard_get(self, key):
