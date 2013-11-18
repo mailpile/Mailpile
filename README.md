@@ -5,12 +5,13 @@
 
 #### Who's doing what? ####
 
-- 2013-11-11: bre: Traveling with Smári, working on contacts
-- 2013-11-11: smari: Traveling with Bjarni, working on contacts
-- 2013-11-08: bnvk: perk design work, compose stuff
+- 2013-11-18: bre: Hacking on search/address and gravatar sync
+- 2013-11-12: smari: Internationalization work!
+- 2013-11-18: bnvk: Tweaking the compose UI
 
 #### Recent changes ####
 
+- 2013-11-18: Run `setup` and `rescan` to enable GPG and gravatar importers
 - 2013-11-08: New API endpoint /search/address for to/cc/bcc autocomplete
 - 2013-11-05: CLI hackers: check out `help hacks` and `hacks/pycli`
 - 2013-10-29: Tag metadata greatly was enhanced (please run
