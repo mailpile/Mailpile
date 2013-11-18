@@ -15,7 +15,7 @@ _ = lambda x: x
 class GravatarImporter(VCardImporter):
     """
     This importer will pull contact details down from a central server,
-    the Gravatar JSON API and caching thumbnail data locally.
+    using the Gravatar JSON API and caching thumbnail data locally.
 
     The importer will only pull down a few contacts at a time, to limit
     the impact on Gravatar's servers and prevent network traffic from
@@ -38,7 +38,12 @@ class GravatarImporter(VCardImporter):
 
     def _want_update(self):
         def _jittery_time():
-            return time.time() + random.randrange(-3600, 3600)
+            # This introduces 5 hours of jitter into the time check below,
+            # biased towards extending the delay by an average of 1.5 hours
+            # each time. This is mostly done to spread out the load on the
+            # Gravatar server over time, as to begin with all contacts will
+            # be checked at roughly the same time.
+            return time.time() + random.randrange(-14400, 3600)
 
         want = []
         vcards = self.session.config.vcards
