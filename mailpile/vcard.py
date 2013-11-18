@@ -756,20 +756,22 @@ class VCardImporter(VCardPluginClass):
 
     def import_vcards(self, session, vcard_store):
         all_vcards = self.get_vcards()
-        updated = 0
+        updated = []
         for vcard in all_vcards:
             existing = None
             for email in vcard.get_all('email'):
                 existing = vcard_store.get_vcard(email.value)
                 if existing:
                     existing.merge(self.config.guid, vcard.as_lines())
-                    updated += 1
+                    updated.append(existing)
             if existing is None:
                 new_vcard = SimpleVCard()
                 new_vcard.merge(self.config.guid, vcard.as_lines())
                 vcard_store.add_vcards(new_vcard)
-                updated += 1
-        return updated
+                updated.append(new_vcard)
+        for vcard in set(updated):
+            vcard.save()
+        return len(updated)
 
     def get_vcards(self):
         raise Exception('Please override this function')

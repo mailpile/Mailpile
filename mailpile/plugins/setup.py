@@ -72,8 +72,12 @@ class Setup(Command):
             if old in  session.config.sys:
                 del session.config.sys[old]
 
-        gpg_home = os.path.expanduser('~/.gnupg')
         vcard_importers = session.config.prefs.vcard.importers
+
+        if not vcard_importers.gravatar:
+            vcard_importers.gravatar.append({'active': True})
+
+        gpg_home = os.path.expanduser('~/.gnupg')
         if os.path.exists(gpg_home) and not vcard_importers.gpg:
             vcard_importers.gpg.append({'gpg_home': gpg_home})
 

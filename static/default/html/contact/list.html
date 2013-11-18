@@ -19,7 +19,7 @@
   <div class="boxy">
     <div class="boxy-inner">
   		<div class="clearfix">
-  		<a class="contact-avatar" href="">{% if contact.email %}<img src="{{ show_avatar(url_protocol, http_host, contact.email.0.email, 50) }}"></a>{% endif %}
+                <a class="contact-avatar" href="">{% if contact.photo %}<img width=50 src="{{contact.photo.0.photo}}">{% elif contact.email %}<img src="{{ show_avatar(url_protocol, http_host, contact.email.0.email, 50) }}">{% endif %}</a>
   		<a class="contact-name" href="/contact/">{{ contact.fn }}</a>
   		</div>
   		<b>E-mails:</b>

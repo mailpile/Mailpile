@@ -7,7 +7,7 @@ import mailpile.vcard
 # These are the plugins we import by default
 __all__ = ['search', 'tags', 'contacts', 'compose', 'groups', 'dates',
            'setup', 'networkgraph', 'exporters',
-           'vcard_carddav', 'vcard_gnupg', 'vcard_mork',
+           'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
            'hacks']
 
 
