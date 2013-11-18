@@ -5,7 +5,7 @@ import json
 import os
 import re
 import ConfigParser
-import gettext
+from gettext import translation, gettext
 
 from urllib import quote, unquote
 
@@ -21,12 +21,7 @@ from mailpile.workers import Worker, DumbWorker, Cron
 
 
 # i18n helper
-if __name__ == "__main__":
-    translation = gettext.translation("mailpile", "locale")
-    translation.install(unicode=True)
-else:
-    _ = lambda x: x
-
+_ = gettext
 
 
 class InvalidKeyError(ValueError):
@@ -847,8 +842,8 @@ class ConfigManager(ConfigDict):
                     cfg = cfg[part]
                 else:
                     if session:
-                        msg = _(u'Invalid (%s): section %s does not exist'
-                               ) % (source, section)
+                        msg = gettext(u'Invalid (%s): section %s does not '
+                                       'exist') % (source, section)
                         session.ui.warning(msg)
                     okay = False
             items = okay and parser.items(section) or []
@@ -858,8 +853,8 @@ class ConfigManager(ConfigDict):
                     cfg[var] = val
                 except (ValueError, KeyError):
                     if session:
-                        msg = _(u'Invalid (%s): section %s, variable %s'
-                               ) % (source, section, var)
+                        msg = gettext(u'Invalid (%s): section %s, variable %s'
+                                      ) % (source, section, var)
                         session.ui.warning(msg)
                     okay = False
         return okay
@@ -1045,18 +1040,19 @@ class ConfigManager(ConfigDict):
         return idx
 
     def get_i18n_translation(self):
-        translation = None
         language = self.prefs.language
+        trans = None
         if language != "":
-            translation = gettext.translation("mailpile", "locale", [language], codeset="utf-8")
-            if translation:
-                translation.set_output_charset("utf-8")
+            trans = translation("mailpile", "locale",
+                                [language], codeset="utf-8")
+            if trans:
+                trans.set_output_charset("utf-8")
 
-        if not translation:
-            translation = gettext.translation("mailpile", "locale")
+        if not trans:
+            trans = translation("mailpile", "locale")
 
-        translation.install(unicode=True)
-        return translation
+        trans.install(unicode=True)
+        return trans
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
@@ -1208,10 +1204,8 @@ if __name__ == "__main__":
     import mailpile.defaults
     import mailpile.plugins.tags
     import mailpile.ui
-    import gettext
 
-    # i18n helper
-    mailpile.config._ = _
+    translation("mailpile", "locale").install(unicode=True)
 
     cfg = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
     session = mailpile.ui.Session(cfg)
@@ -1232,5 +1226,3 @@ if __name__ == "__main__":
     print '%s' % (results, )
     if results.failed:
         sys.exit(1)
-else:
-    del _
