@@ -109,12 +109,13 @@ class UserInteraction:
     pad = ' ' * max(0, min(self.MAX_WIDTH, self.MAX_WIDTH-len(unicode(text))))
     if self.last_display[0] not in (self.LOG_PROGRESS, ):
       sys.stderr.write('\n')
-    c, w = self.palette.NONE, self.palette.NORMAL
+    c, w, clip = self.palette.NONE, self.palette.NORMAL, 1000
     if level == self.LOG_URGENT: c, w = self.palette.RED, self.palette.BOLD
     elif level == self.LOG_ERROR: c = self.palette.RED
     elif level == self.LOG_WARNING: c = self.palette.YELLOW
-    elif level == self.LOG_PROGRESS: c = self.palette.BLUE
-    sys.stderr.write('%s%s\r' % (self.palette.color(unicode(text).encode('utf-8'),
+    elif level == self.LOG_PROGRESS: c, clip = self.palette.BLUE, 78
+    sys.stderr.write('%s%s\r' % (self.palette.color(unicode(text[:clip]
+                                                            ).encode('utf-8'),
                                                     color=c, weight=w), pad))
     if level == self.LOG_ERROR:
       sys.stderr.write('\n')
