@@ -92,7 +92,7 @@ class GravatarImporter(VCardImporter):
             if json:
                 pass  # FIXME: parse the JSON
 
-            if self.config.default and not img:
+            if (self.config.default != '404') and not img:
                 try:
                     img = _get('%s/avatar/%s.jpg?s=%s&d=%s' % (
                                    self.config.url,
