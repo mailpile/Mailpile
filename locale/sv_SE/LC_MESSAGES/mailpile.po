@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-12 15:32+0000\n"
-"PO-Revision-Date: 2013-11-13 20:05+0100\n"
+"PO-Revision-Date: 2013-11-19 09:56+0100\n"
 "Last-Translator: Anton Strömkvist <teun@lutic.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -19,7 +19,7 @@ msgstr ""
 
 #: mailpile/defaults.py:10
 msgid "Mailpile program version"
-msgstr "Mailpile programversion"
+msgstr "Mailpiles programversion"
 
 #: mailpile/defaults.py:11
 msgid "Configuration timestamp"
@@ -35,15 +35,16 @@ msgstr "Max antal filer öppna på samma gång"
 
 #: mailpile/defaults.py:15
 msgid "History length (lines, <0 = no save)"
-msgstr "Längd på historik (rader, <0 = sparas ej"
+msgstr "Historiklängd (rader, <0 = sparas ej"
 
 #: mailpile/defaults.py:16
 msgid "Listening port for web UI"
 msgstr "Lyssningsport för webbgränssnitt"
 
 #: mailpile/defaults.py:17
+#, fuzzy
 msgid "Posting list target size in KB"
-msgstr ""
+msgstr "Postar listmålstorlek i KB"
 
 #: mailpile/defaults.py:18
 msgid "Max results we sort \"well\""
@@ -59,7 +60,7 @@ msgstr "Felsökningsflaggor"
 
 #: mailpile/defaults.py:21
 msgid "Host:port of PGP keyserver"
-msgstr "Värd:port för PGP nyckelserver"
+msgstr "Värd:port för PGP-nyckelserver"
 
 #: mailpile/defaults.py:22
 msgid "Listening host for web UI"
@@ -75,13 +76,14 @@ msgstr "Metadata indexfil"
 
 #: mailpile/defaults.py:25
 msgid "Search index directory"
-msgstr "Sökindexkatalog"
+msgstr "Sök indexkatalog"
 
 #: mailpile/defaults.py:26
 msgid "Mailboxes we index"
 msgstr "Mailboxar vi indexerar"
 
 #: mailpile/defaults.py:27
+#, fuzzy
 msgid "Locations of assorted data"
 msgstr "Platser för blandad data"
 
@@ -90,6 +92,7 @@ msgid "Default theme"
 msgstr "Standardtema"
 
 #: mailpile/defaults.py:30
+#, fuzzy
 msgid "Location of vcards"
 msgstr "Plats för visitkort"
 
@@ -107,7 +110,7 @@ msgstr "Kontrollfrekvens för nya mail"
 
 #: mailpile/defaults.py:37
 msgid "Inline PGP signatures or attached"
-msgstr "PGP signaturer i text eller som bilaga"
+msgstr "PGP-signaturer i text eller som bilaga"
 
 #: mailpile/defaults.py:38
 msgid "Default sort order"
@@ -131,11 +134,11 @@ msgstr "Standard avsändaradress"
 
 #: mailpile/defaults.py:43
 msgid "Default outgoing mail route"
-msgstr "Standard utgående mailväg"
+msgstr "Standardväg för utgående mail"
 
 #: mailpile/defaults.py:45
 msgid "User interface language"
-msgstr "Spräk för användargränssnitt"
+msgstr "Språk för användargränssnitt"
 
 #: mailpile/defaults.py:46
 msgid "VCard import/export settings"
@@ -150,6 +153,7 @@ msgid "VCard export settings"
 msgstr "VCard exportinställningar"
 
 #: mailpile/defaults.py:50
+#, fuzzy
 msgid "VCard context helper settings"
 msgstr "VCard kontexthjälpinställningar"
 
@@ -171,12 +175,13 @@ msgstr "Meddelandesignatur"
 
 #: mailpile/defaults.py:57
 msgid "Outgoing mail route"
-msgstr "Utgående mailväg"
+msgstr "Väg för ugående mail"
 
+# Could not find a translation for slug that made sense (I found 'snail' and 'explosion') so I guess the Swedish language has to adapt.
 #: mailpile/config.py:94
-#, python-format
+#, fuzzy, python-format
 msgid "Invalid URL slug: %s"
-msgstr ""
+msgstr "Ogiltig URL slug: %s"
 
 #: mailpile/config.py:126
 #, python-format
@@ -199,6 +204,7 @@ msgid "Not a directory: %s"
 msgstr "Inte en mapp: %s"
 
 #: mailpile/config.py:329
+#, fuzzy
 msgid "Override this"
 msgstr "Skriv över detta"
 
@@ -277,6 +283,7 @@ msgid "%s: Opening: %s (may take a while)"
 msgstr "%s: Öppnar: %s (kan ta en stund)"
 
 #: mailpile/config.py:1021
+#, fuzzy
 msgid "Parent paths are not allowed"
 msgstr "Modersökvägar är inte tillåtna"
 
@@ -357,7 +364,7 @@ msgstr "Elgamal (kryptera/signera) [ÄVENTYRAD]"
 #: mailpile/commands.py:154
 #, python-format
 msgid "ID out of bounds: %s"
-msgstr "IDt är för långt: %s"
+msgstr "ID:t är för långt: %s"
 
 #: mailpile/commands.py:157 mailpile/commands.py:163 mailpile/commands.py:168
 #, python-format
@@ -367,7 +374,7 @@ msgstr "Vilket medelande är %s?"
 #: mailpile/commands.py:255
 #, python-format
 msgid "FIXME: rescan messages: %s"
-msgstr "FIXAMIG: omskanna meddelanden: %s"
+msgstr "FIXAMIG: skanna om meddelanden: %s"
 
 #: mailpile/commands.py:288
 #, python-format
@@ -449,9 +456,10 @@ msgstr "Kontaktadress"
 
 #: mailpile/plugins/vcard_gnupg.py:17
 msgid "Import contacts from GnuPG keyring"
-msgstr "Importera kontakter från GnuPG nyckelring"
+msgstr "Importera kontakter från GnuPG-nyckelring"
 
 #: mailpile/plugins/vcard_gnupg.py:20
+#, fuzzy
 msgid "Location of keyring"
 msgstr "Plats för nyckelring"
 
@@ -517,7 +525,7 @@ msgstr "Felaktig rad: %s"
 #: mailpile/search.py:300
 #, python-format
 msgid "=%s/%s using Recieved: instead of Date:"
-msgstr "%s/%s använder Mottagna: istället för Datum:"
+msgstr "%s/%s använder Mottaget: istället för Datum:"
 
 #: mailpile/search.py:307
 #, python-format
@@ -602,7 +610,7 @@ msgstr "Hittar konversationer (%d meddelanden)..."
 #: mailpile/search.py:945 mailpile/search.py:959
 #, python-format
 msgid "Sorting %d messages in %s order..."
-msgstr "Sorterar %d meddelanden i %sordning..."
+msgstr "Sorterar %d meddelanden i %s ordning..."
 
 #: mailpile/search.py:983
 msgid "Recovering from bogus sort, corrupt index?"
@@ -610,7 +618,7 @@ msgstr "Återställer från felaktig sortering, korrupterat index?"
 
 #: mailpile/search.py:984
 msgid "Please tell team@mailpile.is !"
-msgstr "Var vänlig och säg till team@mialpile.is !"
+msgstr "Var vänlig och kontakta team@mialpile.is !"
 
 #: mailpile/search.py:993
 #, python-format
@@ -618,6 +626,7 @@ msgid "Unknown sort order: %s"
 msgstr "Okänd sorteringsordning: %s"
 
 #: mailpile/search.py:998
+#, fuzzy
 msgid "Sort failed, sorting badly. Partial index?"
 msgstr "Sortering misslyckades, sorterar dåligt. Partiell index?"
 
@@ -629,7 +638,7 @@ msgstr "Sorterade %d meddelanden från %s, %d konversationer"
 #: mailpile/search.py:1014
 #, python-format
 msgid "Sorted %d messages in %s order"
-msgstr "Sorterade %d meddelanden i %sordning"
+msgstr "Sorterade %d meddelanden i %s ordning"
 
 #: mailpile/search.py:1029
 #, python-format
@@ -732,9 +741,9 @@ msgid "Message not found?"
 msgstr "Meddelandet hittades inte?"
 
 #: mailpile/mailutils.py:875
-#, python-format
+#, fuzzy, python-format
 msgid "Extracted attachment %s"
-msgstr "Tog ut bilaga %s"
+msgstr "Extraherade bilaga %s"
 
 #: mailpile/mailutils.py:883
 #, python-format
@@ -746,7 +755,7 @@ msgid "Failed to generate thumbnail"
 msgstr "Misslyckades med att generera ikon"
 
 #: mailpile/mailutils.py:892
-#, python-format
+#, fuzzy, python-format
 msgid "Wrote attachment to: %s"
 msgstr "Skrev bilaga till: %s"
 
@@ -773,7 +782,7 @@ msgid "Bitcoin Wallet"
 msgstr "Bitcoinplånbok"
 
 #: static/default/html/layouts/base.html:66
-#, python-format
+#, fuzzy, python-format
 msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
 msgstr "%(name)s<small> mailpile av <b>%(size)s</b> email</small>"
 
@@ -923,7 +932,7 @@ msgstr "Ämne"
 
 #: static/default/html/message/draft.html:45
 msgid "No Attachments"
-msgstr "Inga bilagor"
+msgstr "Inga Bilagor"
 
 #: static/default/html/message/draft.html:50
 msgid "Send"
@@ -937,6 +946,8 @@ msgstr "Spara"
 msgid "Message not found!"
 msgstr "Meddelandet hittades inte!"
 
+# Could be "Totalt"
+# Check context.
 #: static/default/html/tag/list.html:14
 msgid "Total"
 msgstr "Total"
@@ -962,13 +973,15 @@ msgstr "Infoga Ny Tagg Information"
 msgid "Tag"
 msgstr "Tagg"
 
+# Could not find a translation for slug that made sense (I found 'snail' and 'explosion') so I guess the Swedish language has to adapt.
 #: static/default/html/tag/add.html:12
+#, fuzzy
 msgid "Slug"
-msgstr ""
+msgstr "Slug"
 
 #: static/default/html/tag/add.html:15
 msgid "Add"
-msgstr "Lägg till"
+msgstr "Lägg Till"
 
 #: static/default/html/settings/index.html:7
 msgid "Your Profiles"
@@ -989,7 +1002,7 @@ msgstr "Email"
 
 #: static/default/html/settings/index.html:26
 msgid "SMTP Server"
-msgstr "SMTP Server"
+msgstr "SMTP-server"
 
 #: static/default/html/settings/index.html:27
 msgid "Login"
@@ -1015,9 +1028,10 @@ msgstr "Lägg Till Profil"
 msgid "Messages"
 msgstr "Meddelanden"
 
+# "markerad" if it's singular.
 #: static/default/html/partials/bulk_actions.html:2
 msgid "selected"
-msgstr "markerad"
+msgstr "markerade"
 
 #: static/default/html/partials/sub_nav_contacts.html:3
 msgid "Contacts"
@@ -1051,7 +1065,8 @@ msgstr "Oj, nu gick något snett!"
 msgid ""
 "We were unable to find the message you requested, perhaps it was deleted?"
 msgstr ""
-"Vi lyckades inte hitta meddelandet du efterfrågade, kanske det blev raderat?"
+"Vi lyckades inte hitta meddelandet du efterfrågade, kanske det blivit "
+"raderat?"
 
 #: static/default/html/partials/errors_content.html:5
 #, python-format
@@ -1108,18 +1123,22 @@ msgid "No results found"
 msgstr "Inga resultat hittades"
 
 #: static/default/html/search/index.html:23
+#, fuzzy
 msgid "Snug"
 msgstr "Nätt"
 
 #: static/default/html/search/index.html:24
+#, fuzzy
 msgid "Cozy"
 msgstr "Mysig"
 
 #: static/default/html/search/index.html:25
+#, fuzzy
 msgid "Comfy"
 msgstr "Bekväm"
 
 #: static/default/html/search/index.html:26
+#, fuzzy
 msgid "Fluffy"
 msgstr "Rymlig"
 
@@ -1141,4 +1160,4 @@ msgstr "Hemsida"
 
 #: static/default/html/contact/add.html:18
 msgid "PGP Key"
-msgstr "PGP Nyckel"
+msgstr "PGP-nyckel"
