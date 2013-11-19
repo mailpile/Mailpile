@@ -35,7 +35,7 @@ if ($('#form-compose').length) {
   }
 
   var formatComposeId = function(object) {
-    if (object.address != object.fn) {
+    if (object.fn != "" && object.address != object.fn) {
       return object.fn + ' <' + object.address + '>';
     } else {
       return object.address;
@@ -63,7 +63,7 @@ if ($('#form-compose').length) {
     if (state.secure) {
       secure = '<span class="icon-verified"></span>';
     }
-    return avatar + '<span class="compose-choice-name">' + state.fn + secure + '</span>';
+    return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + state.fn + secure + '</span>';
   }
 
   var closeMenu = function() {
@@ -95,14 +95,14 @@ if ($('#form-compose').length) {
     allowClear: true,
     width: '90%',
     minimumInputLength: 1,
-    maximumSelectionSize: 50,
-    tokenSeparators: [","],
+    maximumSelectionSize: 200,
+    tokenSeparators: [",", ";"],
     createSearchChoice: function(term) {
-      console.log('Inside of createSearchChoice');
-      console.log(term);
-      // Need to validate
-      term.fn = term;
-      return term;
+      // Check if we have an RFC5322 compliant e-mail address:
+      if (term.match(/(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
+        return {"id": term, "fn": term, "address": term};
+      }
+      return null;
     },
     formatResult: formatComposeResult,
     formatSelection: formatComposeSelection,
@@ -113,15 +113,15 @@ if ($('#form-compose').length) {
     selectOnBlur: true
   });
 
-  $('#compose-to').on('change', function() {
+  $('#compose-to').on('change', function(e) {
     }).on('select2-selecting', function(e) {
-      composeContactSelected(e)
+      composeContactSelected(e);
       console.log('Selecting ' + e.val);
     }).on('select2-removing', function(e) {
       console.log('Removing ' + e.val);
     }).on('select2-removed', function(e) {
       console.log('Removed ' + e.val);
-    }).on('select2-blur', function(){
+    }).on('select2-blur', function(e){
       console.log('Blur ' + e.val);
   });
 
