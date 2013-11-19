@@ -258,8 +258,10 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             curkey, keys = parse_pubkey(line, curkey, keys)
             return (curkey, keys)
 
+        UID_PARSE_RE = "([^\(\<]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}"
+
         def parse_uid(line, curkey, keys):
-            matches = re.match("([^\(\)]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}", line[9])
+            matches = re.match(UID_PARSE_RE, line[9])
             if matches:
                 email = matches.groups(0)[4] or ""
                 comment = matches.groups(0)[2] or ""
@@ -269,15 +271,21 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 name = ""
                 comment = ""
 
-            try: name = name.decode("utf-8")
+            try:
+                name = name.decode("utf-8")
             except UnicodeDecodeError:
-                try: name = name.decode("iso-8859-1")
-                except UnicodeDecodeError: name = name.decode("utf-8", "replace")
+                try:
+                    name = name.decode("iso-8859-1")
+                except UnicodeDecodeError:
+                    name = name.decode("utf-8", "replace")
 
-            try: comment = comment.decode("utf-8")
+            try:
+                comment = comment.decode("utf-8")
             except UnicodeDecodeError:
-                try: comment = comment.decode("iso-8859-1")
-                except UnicodeDecodeError: comment = comment.decode("utf-8", "replace")
+                try:
+                    comment = comment.decode("iso-8859-1")
+                except UnicodeDecodeError:
+                    comment = comment.decode("utf-8", "replace")
 
             keys[curkey]["uids"].append({"email": email, 
                                          "name": name,
@@ -570,8 +578,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def address_to_keys(self, address):
         res = {}
-        v, keys = self.list_keys()
-        for key, props in keys["stdout"][0].iteritems():
+        keys = self.list_keys()
+        for key, props in keys.iteritems():
             if any([x["email"] == address for x in props["uids"]]):
                 res[key] = props
 

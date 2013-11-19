@@ -84,7 +84,8 @@ def ParseMessage(fd, pgpmime=True):
 def ExtractEmails(string):
   emails = []
   startcrap = re.compile('^[\'\"<(]')
-  endcrap = re.compile('[\'\">)]$')
+  endcrap = re.compile('[\'\">);]$')
+  string = string.replace('<', ' <').replace('(', ' (')
   for w in [sw.strip() for sw in re.compile('[,\s]+').split(string)]:
     if '@' in w:
       while startcrap.search(w):
