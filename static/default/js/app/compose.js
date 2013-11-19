@@ -4,14 +4,14 @@ $(document).on('click', '#button-compose', function() {
 		url			 : mailpile.api.compose,
 		type		 : 'POST',
 		data     : {},
-		dataType : 'json'  
+		dataType : 'json'
   }).done(function(response) {
       if (response.status == 'success') {
         window.location.href = mailpile.urls.message_draft + response.result.created + '/';
       }
       else {
         statusMessage(response.status, response.message);
-      }      
+      }
   });
 });
 
@@ -23,18 +23,14 @@ if ($('#form-compose').length) {
   // Reset tabindex for To: field
   $('#qbox').attr('tabindex', '');
 
-  var composeContactSelected = function(contact) {
 
-    if (contact.object.keys != undefined) {
-      
-      console.log('Whee keys ' + contact.object.keys[0].fingerprint); 
-    
+  var composeContactSelected = function(contact) {
+    if (contact.object.secure) {
+      console.log('Whee keys ' + contact.object.keys[0].fingerprint);
       $('.message-privacy-state').attr('title', 'The message is encrypted. The recipients & subject are not');
       $('.message-privacy-state').removeClass('icon-unencrypted').addClass('icon-encrypted');
       $('.message-privacy-state').parent().addClass('bounce');
-      
     } else {
-    
     }
   }
 
@@ -47,24 +43,36 @@ if ($('#form-compose').length) {
   }
 
   var formatComposeResult = function(state) {
-    var keys = '';
-    if (state.keys != undefined) {
-      keys = '<span class="icon-verified"></span>';
+    var avatar = '<span class="icon-user"></span>';
+    var secure = '';
+    if (state.photo) {
+      avatar = '<img src="' + state.photo + '">';
     }    
-    return '<span class="compose-select-avatar"><span class="icon-user"></span></span><span class="compose-select-name">' + state.fn + keys + '<br><span class="compose-select-address">' + state.address + '</span></span>';
+    if (state.secure) {
+      secure = '<span class="icon-verified"></span>';
+    }
+    return '<span class="compose-select-avatar">' + avatar + '</span><span class="compose-select-name">' + state.fn + secure + '<br><span class="compose-select-address">' + state.address + '</span></span>';
   }
 
   var formatComposeSelection = function(state) {
-    var keys = '';
-    if (state.keys != undefined) {
-      keys = '<span class="icon-verified"></span>';
+    var avatar = '<span class="icon-user"></span>';
+    var secure = '';
+    if (state.photo) {
+      avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
     }
-    return '<span class="icon-user"></span><span class="compose-choice-name">' + state.fn + keys + '</span>';
+    if (state.secure) {
+      secure = '<span class="icon-verified"></span>';
+    }
+    return avatar + '<span class="compose-choice-name">' + state.fn + secure + '</span>';
   }
 
+  var closeMenu = function() {
+    console.log($('#compose-to').val());
+    $('#compose-to').select2("close");
+  }
 
   $('#compose-to, #compose-cc, #compose-bcc').select2({
-    id: formatComposeId,  
+    id: formatComposeId,
     ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
       url: mailpile.api.contacts,
       quietMillis: 1,
@@ -73,11 +81,9 @@ if ($('#form-compose').length) {
       data: function(term, page) {
         return {
           q: term
-          //count: 120,
-          //offset: 0
         };
       },
-      results: function(response, page) {         
+      results: function(response, page) {
         // parse the results into the format expected by Select2.
         // since we are using custom formatting functions we do not need to alter remote JSON data
         return {
@@ -85,14 +91,12 @@ if ($('#form-compose').length) {
         };
       }
     },
-    tags: [""],          // Load contact list (items in javascrupt array [])
     multiple: true,
-//    allowClear: true,
-//    openOnEnter: true,
-//    closeOnSelect: false,
-    width: '600',     
-    maximumSelectionSize: 50,                   // Limits number of items added
-    tokenSeparators: [",", " "],
+    allowClear: true,
+    width: '90%',
+    minimumInputLength: 1,
+    maximumSelectionSize: 50,
+    tokenSeparators: [","],
     createSearchChoice: function(term) {
       console.log('Inside of createSearchChoice');
       console.log(term);
@@ -101,62 +105,33 @@ if ($('#form-compose').length) {
       return term;
     },
     formatResult: formatComposeResult,
-    formatSelection: formatComposeSelection,    
+    formatSelection: formatComposeSelection,
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
     },
-/*
-    formatNoMatches: function() {
-      return 'No contacts found, <a href="#" onclick="javascript:alert(\'Will be an Add New Contact modal\');">add new contact</a>';
-    },
-*/
+//    formatNoMatches: closeMenu,
     selectOnBlur: true
   });
-  
-  $('#compose-to').on('change', function(){
-    
-  }).on('select2-selecting', function(e) {
-    
-    composeContactSelected(e)
-    console.log('Selecting ' + e.val);
 
-  }).on('select2-removing', function(e) {
-    
-    console.log('Removing ' + e.val);
-
-  }).on('select2-removed', function(e) {
-    
-    console.log('Removed ' + e.val);
-
-  }).on('select2-blur', function(){
-
-    console.log('Blur ' + e.val);
-
-  });
-  
-
-  $("#compose-to, #compose-cc, #compose-bcc").on("change", function() {
-    $("#compose-to_val").html($("#compose-to").val());
+  $('#compose-to').on('change', function() {
+    }).on('select2-selecting', function(e) {
+      composeContactSelected(e)
+      console.log('Selecting ' + e.val);
+    }).on('select2-removing', function(e) {
+      console.log('Removing ' + e.val);
+    }).on('select2-removed', function(e) {
+      console.log('Removed ' + e.val);
+    }).on('select2-blur', function(){
+      console.log('Blur ' + e.val);
   });
 
-  $("#compose-to, #compose-cc, #compose-bcc").select2("container").find("ul.select2-choices").sortable({
-    containment: 'parent',
-    start: function() { 
-      $("#compose-to, #compose-cc, #compose-bcc").select2("onSortStart");
-    },
-    update: function() {
-      $("#compose-to, #compose-cc, #compose-bcc").select2("onSortEnd");
-    }
-  });
 
 }
 
 /* Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
-  
   $(this).hide();
   $('#compose-' + $(this).html().toLowerCase() + '-html').show();
-  
 });
 
 

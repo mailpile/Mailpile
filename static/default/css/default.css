@@ -4925,6 +4925,10 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   display: inline-block;
   margin-right: 8px;
 }
+.select2-result-label .compose-select-avatar img {
+  width: 32px;
+  height: 32px;
+}
 .select2-result-label .compose-select-avatar .icon-user {
   font-size: 32px;
   line-height: 32px;
@@ -5079,14 +5083,25 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 }
 .select2-container-multi .select2-choices .select2-search-choice div {
   left: 3px;
-  display: table-cell;
+  display: table;
   vertical-align: middle;
 }
 .select2-search-choice .compose-choice-name {
+  display: table-cell;
+  vertical-align: middle;
   font-size: 14px;
   font-weight: bold;
   line-height: 14px;
   color: #4d4d4d;
+}
+.select2-search-choice .avatar {
+  display: table-cell;
+  vertical-align: middle;
+  padding-right: 4px;
+}
+.select2-search-choice .avatar img {
+  width: 24px;
+  height: 24px;
 }
 .select2-search-choice .icon-user {
   margin-right: 8px;
