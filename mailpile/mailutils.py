@@ -626,7 +626,8 @@ class Email(object):
     'cc': 5,
     'bcc': 6,
   }
-  def get_editing_strings(self, tree):
+  def get_editing_strings(self, tree=None):
+    tree = tree or self.get_message_tree()
     strings = {
       'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
       'attachments': {}

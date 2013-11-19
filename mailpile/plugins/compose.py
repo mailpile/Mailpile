@@ -66,7 +66,9 @@ class CompositionCommand(Search):
         except (TypeError, ValueError, IndexError):
             self._ignore_exception()
 
-    def _get_email_updates(self, idx, create=False):
+    UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc')
+
+    def _get_email_updates(self, idx, emails=None):
         # Split the argument list into files and message IDs
         files = [f[1:].strip() for f in self.args if f.startswith('<')]
         args = [a for a in self.args if not a.startswith('<')]
@@ -74,8 +76,11 @@ class CompositionCommand(Search):
         # Message IDs can come from post data
         for mid in self.data.get('mid', []):
             args.append('=%s' % mid)
-        emails = [Email(idx, mid) for mid in self._choose_messages(args)]
+        emails = emails or [Email(idx, mid)
+                            for mid in self._choose_messages(args)]
 
+        update_header_set = (set(self.data.keys()) &
+                             set([k.lower() for k in self.UPDATE_HEADERS]))
         updates, fofs = [], 0
         for e in (emails or (create and [None]) or []):
             # If we don't have a file, check for posted data
@@ -85,12 +90,12 @@ class CompositionCommand(Search):
                 updates.append((e, self._read_file_or_data(files[0])))
             elif files and (len(files) == len(emails)):
                 updates.append((e, self._read_file_or_data(files[fofs])))
-            elif 'from' in self.data:
+            elif update_header_set:
                 # No file name, construct an update string from the POST data.
                 up = []
                 etree = e and e.get_message_tree() or {}
                 defaults = etree.get('editing_strings', {})
-                for hdr in ('Subject', 'From', 'To', 'Cc', 'Bcc'):
+                for hdr in self.UPDATE_HEADERS:
                     if hdr.lower() in self.data:
                         data = ', '.join(self.data[hdr.lower()])
                     else:
@@ -99,6 +104,8 @@ class CompositionCommand(Search):
                 updates.append((e, '\n'.join(up + ['',
                     '\n'.join(self.data.get('body', defaults.get('body', '')))
                 ])))
+            elif 'compose' in self.session.config.sys.debug:
+                sys.stderr.write('Doing nothing with %s' % update_header_set)
             fofs += 1
 
         if 'compose' in self.session.config.sys.debug:
@@ -152,22 +159,22 @@ class Compose(CompositionCommand):
     HTTP_POST_VARS = CompositionCommand.UPDATE_STRING_DATA
 
     def command(self):
-        session, idx = self.session, self._idx()
-        email_updates = self._get_email_updates(idx, create=True)
-
-        if email_updates and email_updates[0][0]:
+        if 'mid' in self.data:
             return self._error('Please use update for editing messages')
 
-        else:
-            update_string = email_updates and email_updates[0][1] or None
-            local_id, lmbox = session.config.open_local_mailbox(session)
-            emails = [Email.Create(idx, local_id, lmbox)]
-            if self.BLANK_TAG:
-                self._tag_emails(emails, self.BLANK_TAG)
+        session, idx = self.session, self._idx()
+        local_id, lmbox = session.config.open_local_mailbox(session)
+        emails = [Email.Create(idx, local_id, lmbox)]
+
+        if self.BLANK_TAG:
+            self._tag_emails(emails, self.BLANK_TAG)
+
+        for email in emails:
+            update_string = self._get_email_updates(idx, [email])[0][1]
             if update_string:
-                for email in emails:
-                    email.update_from_string(update_string)
-            return self._edit_messages(emails, new=True)
+                email.update_from_string(update_string)
+
+        return self._edit_messages(emails, new=True)
 
 
 class RelativeCompose(Compose):
