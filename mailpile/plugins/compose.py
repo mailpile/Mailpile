@@ -170,7 +170,8 @@ class Compose(CompositionCommand):
             self._tag_emails(emails, self.BLANK_TAG)
 
         for email in emails:
-            update_string = self._get_email_updates(idx, [email])[0][1]
+            email_updates = self._get_email_updates(idx, [email])
+            update_string = email_updates and email_updates[0][1]
             if update_string:
                 email.update_from_string(update_string)
 
