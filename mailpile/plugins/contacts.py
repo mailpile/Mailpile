@@ -326,7 +326,7 @@ class AddressSearch(VCardCommand):
         return int(boost)
 
     def _vcard_addresses(self, cfg, terms):
-        addresses = []
+        addresses = {}
         for vcard in cfg.vcards.find_vcards(terms, kinds='individual'):
             fn = vcard.get('fn')
             keys = []
@@ -338,23 +338,30 @@ class AddressSearch(VCardCommand):
 
             photos = vcard.get_all('photo')
             for email_vcl in vcard.get_all('email'):
+                info = addresses.get(email_vcl.value)
+                if not info:
+                    info = {
+                        'rank': 0,
+                        'fn': fn.value,
+                        'protocol': 'smtp',
+                        'address': email_vcl.value,
+                        'secure': False
+                    }
+                addresses[email_vcl.value] = info
+
                 rank = 10.0 + 25 * len(keys) + 5 * len(photos)
                 for term in terms:
                     rank += self._boost_rank(term, fn.value, email_vcl.value)
-                info = {
-                    'rank': int(rank),
-                    'fn': fn.value,
-                    'protocol': 'smtp',
-                    'address': email_vcl.value,
-                    'secure': False
-                }
-                if photos:
+                info['rank'] += int(rank)
+
+                if photos and 'photos' not in info:
                     info['photo'] = photos[0].value
-                if keys:
+
+                if keys and 'keys' not in info:
                     info['keys'] = [k for k in keys[:1]]
                     info['secure'] = True
-                addresses.append(info)
-        return addresses
+
+        return addresses.values()
 
     def _index_addresses(self, cfg, terms, vcard_addresses):
         existing = dict([(k['address'].lower(), k) for k in vcard_addresses])
