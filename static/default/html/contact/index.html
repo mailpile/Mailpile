@@ -5,24 +5,27 @@
 
 <div id="contacts-view" class="content-normal">
   
-	<a class="contact-avatar" href=""><img src="/static/img/avatar-default.png"></a>
-	<a class="contact-name" href="/contact/">Chelsea Manning</a>
+{% if result.contact %}
 
-  <label>Emails</label>
+  <div class="clearfix">
+    {% if result.contact.photo %}<img class="left" width="80" src="{{ result.contact.photo.0.photo}}">{% elif contact.email %}<img src="{{ show_avatar(url_protocol, http_host, result.contact.email.0.email, 80) }}">{% endif %}</a>
+    <h2 class="left">{{ result.contact.fn }}</h2>
+  </div>
+  <hr>
+ 
+  <h4>Emails</h4>
   <ul>
-    <li><a href="#">chelsea@freedom.org</a></li>
-		<li><a href="#">chelseamanning@mailpile.is</a></li>
-  </ul>
-  
-  <label>Phone Numbers</label>
-  <ul>
-    <li><a href="">+1 234 567 8900</a></li>
+  {% if result.contact.email %}
+    {% for email in result.contact.email %}
+    <li><a class="compose-to-email" href="/contact/{{ email.email|e }}">{{email.email}}</a></li>
+    {% endfor %}
+  {% endif %}
   </ul>
 
-  <label>Addresses</label>
-  <ul>
-    <li></li>
-  </ul>
+{% else %}
+
+
+{% endif %}
 
 </div>
 
