@@ -17,6 +17,7 @@ var contactActionSelect = function(item) {
 	item.removeClass('result').addClass('result-on').data('state', 'selected');
 }
 
+
 var contactActionUnselect = function(item) {
 
   console.log('unselect things');
@@ -47,4 +48,12 @@ $(document).on('click', '#contacts-list div.boxy', function(e) {
 	else if (e.target.href === undefined) {
 		contactActionSelect($(this));
 	}
+});
+
+
+$(document).on('click', '.compose-to-email', function(e) {
+  e.preventDefault();
+  mailpile.compose({
+    to: $(this).data('email')
+  });
 });

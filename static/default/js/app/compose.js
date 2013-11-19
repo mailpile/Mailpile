@@ -1,20 +1,8 @@
 /* Create New Blank Message */
-$(document).on('click', '#button-compose', function() {
-	$.ajax({
-		url			 : mailpile.api.compose,
-		type		 : 'POST',
-		data     : {},
-		dataType : 'json'
-  }).done(function(response) {
-      if (response.status == 'success') {
-        window.location.href = mailpile.urls.message_draft + response.result.created + '/';
-      }
-      else {
-        statusMessage(response.status, response.message);
-      }
-  });
+$(document).on('click', '#button-compose', function(e) {
+	e.preventDefault();
+	mailpile.compose();
 });
-
 
 
 /* Is Compose Page -  Probably want to abstract this differently */
