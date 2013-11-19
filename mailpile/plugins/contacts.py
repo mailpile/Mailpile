@@ -427,23 +427,20 @@ class AddressSearch(VCardCommand):
         count = int(self.data.get('count', 10))
         offset = int(self.data.get('offset', 0))
 
-        try:
-            vcard_addrs = self._vcard_addresses(config, terms)
-            index_addrs = self._index_addresses(config, terms, vcard_addrs)
-            addresses = vcard_addrs + index_addrs
-            addresses.sort(key=lambda k: -k['rank'])
-            return {
-                'addresses': addresses[offset:offset+count],
-                'displayed': min(count, len(addresses)),
-                'total': len(addresses),
-                'offset': offset,
-                'count': count,
-                'start': offset,
-                'end': offset+count,
-            }
-        except Exception, e:
-            print e
-            return {}
+        vcard_addrs = self._vcard_addresses(config, terms)
+        index_addrs = self._index_addresses(config, terms, vcard_addrs)
+        addresses = vcard_addrs + index_addrs
+        addresses.sort(key=lambda k: -k['rank'])
+        total = len(addresses)
+        return {
+            'addresses': addresses[offset:min(offset+count, total)],
+            'displayed': min(count, total),
+            'total': total,
+            'offset': offset,
+            'count': count,
+            'start': offset,
+            'end': offset+count,
+        }
 
 
 mailpile.plugins.register_commands(VCard, AddVCard, VCardAddLines,
