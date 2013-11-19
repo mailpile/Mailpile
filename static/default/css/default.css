@@ -4564,19 +4564,19 @@ input::-moz-focus-inner {
   margin-top: 0 !important;
 }
 .half-top {
-  margin-top: 10px !important;
+  margin-top: 20px !important;
 }
 .add-top {
-  margin-top: 45px !important;
+  margin-top: 30px !important;
 }
 .remove-bottom {
   margin-bottom: 0 !important;
 }
 .half-bottom {
-  margin-bottom: 10px !important;
+  margin-bottom: 20px !important;
 }
 .add-bottom {
-  margin-bottom: 45px !important;
+  margin-bottom: 30px !important;
 }
 /* Centering */
 .left {
@@ -5037,6 +5037,9 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   list-style: none;
 }
 .select2-container-multi .select2-choices .select2-search-field {
+  min-width: 200px;
+  display: inline-block;
+  width: 200px;
   margin: 0;
   padding: 0;
   white-space: nowrap;
