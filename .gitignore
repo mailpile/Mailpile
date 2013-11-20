@@ -15,3 +15,5 @@ scripts/less-compiler.mk
 .DS_Store
 static/default/plugins/
 doc/
+*.swp
+.vagrant
