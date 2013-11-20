@@ -1,6 +1,6 @@
 import mailpile.plugins
 from mailpile.commands import Command, Action
-from mailpile.mailutils import Email, ExtractEmails
+from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.vcard import SimpleVCard, VCardLine
 from mailpile.util import *
 
@@ -9,11 +9,6 @@ from mailpile.util import *
 
 class VCardCommand(Command):
     VCARD = "vcard"
-
-    def _fparse(self, fromdata):
-        email = ExtractEmails(fromdata)[0]
-        name = fromdata.replace(email, '').replace('<>', '').strip()
-        return email, (name or email)
 
     def _make_new_vcard(self, handle, name):
         l = [VCardLine(name='fn', value=name),
@@ -29,7 +24,7 @@ class VCardCommand(Command):
     def _add_from_messages(self):
         pairs, idx = [], self._idx()
         for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
-            pairs.append(self._fparse(email.get_msg_info(idx.MSG_FROM)))
+            pairs.append(ExtractEmailAndName(email.get_msg_info(idx.MSG_FROM)))
         return pairs
 
     def _pre_delete_vcard(self, vcard):
@@ -400,7 +395,7 @@ class AddressSearch(VCardCommand):
 
         # Assign info & scores!
         for frm in matches:
-            email, fn = self._fparse(frm)
+            email, fn = ExtractEmailAndName(frm)
 
             boost = min(10, matches[frm])
             for term in terms:

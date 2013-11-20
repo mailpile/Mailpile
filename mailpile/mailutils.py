@@ -81,6 +81,15 @@ def ParseMessage(fd, pgpmime=True):
   message.raw_header = header
   return message
 
+def ExtractEmailAndName(string):
+  email = (ExtractEmails(string) or [''])[0]
+  name = (string.replace(email, '')
+                .replace('<>', '')
+                .replace('"', '')
+                .replace('(', '')
+                .replace(')', '')).strip()
+  return email, (name or email)
+
 def ExtractEmails(string):
   emails = []
   startcrap = re.compile('^[\'\"<(]')

@@ -433,6 +433,9 @@ class SimpleVCard(object):
         X-B;PID=2.1:c
         END:VCARD
         """
+        if not lines:
+            return
+
         # First, we figure out which CLIENTPIDMAP applies, if any
         cpm = self.get_clientpidmap()
         pidmap = cpm.get(src_id)
@@ -444,6 +447,23 @@ class SimpleVCard(object):
             self.add(VCardLine(name='clientpidmap',
                                value='%s;%s' % (src_pid, src_id)))
             pidmap = cpm[src_pid] = cpm[src_id] = {'lines': []}
+
+        # Deduplicate the lines, but give them a rank if they are repeated
+        lines.sort(key=lambda k: (k.name, k.value))
+        dedup = [lines[0]]
+        rank = 0
+        def rankit(rank):
+            if rank:
+                dedup[-1].set_attr('x-rank', rank)
+        for line in lines[1:]:
+            if dedup[-1].name == line.name and dedup[-1].value == line.value:
+                rank += 1
+            else:
+                rankit(rank)
+                rank = 0
+                dedup.append(line)
+        rankit(rank)
+        lines = dedup
 
         # 1st, iterate through existing lines for this source, removing
         # all that differ from our input. Remove any input lines which are
@@ -478,9 +498,10 @@ class SimpleVCard(object):
 
     def get(self, key, n=0):
         lines = self.get_all(key)
-        lines.sort(key=lambda l: 1 - (('pref' in l or
+        lines.sort(key=lambda l: 1 - int(l.get('x-rank', 0)) or
+                                     (('pref' in l or
                                        'pref' in l.get('type', '').lower()
-                                      ) and 1 or 0))
+                                      ) and 100 or 0))
         return lines[n]
 
     def as_jCard(self):
@@ -774,6 +795,9 @@ class VCardImporter(VCardPluginClass):
                 if existing:
                     existing.merge(self.config.guid, vcard.as_lines())
                     updated.append(existing)
+                if session.config and session.config.index:
+                    session.config.index.update_email(email.value,
+                                                      name=vcard.fn)
             if existing is None:
                 new_vcard = SimpleVCard()
                 new_vcard.merge(self.config.guid, vcard.as_lines())

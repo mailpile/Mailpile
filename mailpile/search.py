@@ -11,7 +11,8 @@ import mailpile.plugins as plugins
 import mailpile.util
 from mailpile.util import *
 from mailpile.mailutils import MBX_ID_LEN, NoSuchMailboxError
-from mailpile.mailutils import ExtractEmails, ParseMessage, HeaderPrint
+from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
+from mailpile.mailutils import ParseMessage, HeaderPrint
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
 
@@ -141,8 +142,9 @@ class MailIndex:
                     pos = int(pos, 36)
                     while len(self.EMAILS) < pos + 1:
                         self.EMAILS.append('')
-                    self.EMAILS[pos] = unquote(email)
-                    self.EMAIL_IDS[unquote(email).lower()] = pos
+                    unquoted_email = unquote(email).decode('utf-8')
+                    self.EMAILS[pos] = unquoted_email
+                    self.EMAIL_IDS[unquoted_email.split()[0].lower()] = pos
                 elif line:
                     words = line.split('\t')
                     # FIXME: Delete this old crap.
@@ -192,7 +194,8 @@ class MailIndex:
             fd = gpg_open(self.config.mailindex_file(),
                           self.config.prefs.gpg_recipient, 'a')
             for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
-                fd.write('@%s\t%s\n' % (b36(eid), quote(self.EMAILS[eid])))
+                quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
             for pos in mods:
                 fd.write(self.INDEX[pos] + '\n')
             fd.close()
@@ -210,7 +213,8 @@ class MailIndex:
         fd.write('# This is the mailpile.py index file.\n')
         fd.write('# We have %d messages!\n' % len(self.INDEX))
         for eid in range(0, len(self.EMAILS)):
-            fd.write('@%s\t%s\n' % (b36(eid), quote(self.EMAILS[eid])))
+            quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+            fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
         for item in self.INDEX:
             fd.write(item + '\n')
         fd.close()
@@ -519,12 +523,18 @@ class MailIndex:
         msg_info[self.MSG_CONV_MID] = msg_mid
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
 
-    def _add_email(self, email):
-        eid = len(self.EMAILS)
-        self.EMAILS.append(email)
+    def _add_email(self, email, name=None, eid=None):
+        if eid is None:
+            eid = len(self.EMAILS)
+            self.EMAILS.append('')
+        self.EMAILS[eid] = '%s (%s)' % (email, name or email)
         self.EMAIL_IDS[email.lower()] = eid
         # FIXME: This needs to get written out...
         return eid
+
+    def update_email(self, email, name=None):
+        eid = self.EMAIL_IDS.get(email.lower())
+        return self._add_email(email, name=name, eid=eid)
 
     def compact_to_list(self, msg_to):
         eids = []
@@ -556,6 +566,9 @@ class MailIndex:
             '',                                          # No replies for now
             msg_mid                                      # Conversation ID
         ]
+        email, fn = ExtractEmailAndName(msg_from)
+        if email and fn:
+            self.update_email(email, name=fn)
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
         return msg_idx_pos, msg_info
 
