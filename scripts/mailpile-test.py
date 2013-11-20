@@ -67,6 +67,11 @@ try:
     assert(not mp._config.prefs.vcard.importers.gpg[0].active)
     assert(not mp._config.prefs.vcard.importers.gravatar[0].active)
 
+    # Do we have a Mr. Rogers contact?
+    mp.rescan('vcards')
+    assert(mp.contact('mr@rogers.com').result['contact']['fn'] == u'Mr. Rogers')
+    assert(len(mp.contact_list('rogers').result['contacts']) == 1)
+
     # Add the mailboxes, scan them
     for mailbox in ('tests.mbx', 'Maildir'):
         mp.add(os.path.join(mailpile_test, mailbox))
@@ -78,10 +83,6 @@ try:
 
     # Rescan AGAIN, so we can test for the presence of duplicates.
     mp.rescan()
-
-    # Do we have a Mr. Rogers contact?
-    assert(mp.contact('mr@rogers.com').result[0].fn == u'Mr. Rogers')
-    assert(len(mp.contact_list('rogers').result['contacts']) == 1)
 
     # Search for things, there should be exactly one match for each.
     mp.order('rev-date')
