@@ -1,0 +1,12 @@
+This is a rough log of how much RAM Mailpile is using
+in various configurations. Just so we can keep track
+of things!
+
+Please measure by checking the RES column of top right
+after restarting the app and divide by the number of
+messages indexed.
+
+      Date  Messages  Bytes/MSG   Who?
+----------  --------  ---------  -----
+2013-11-20     75000       1398    bre
+
