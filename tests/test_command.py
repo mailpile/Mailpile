@@ -1,6 +1,7 @@
 import unittest
-from generic_mailpile import MailPileUnittest
 import mailpile
+
+from tests import MailPileUnittest
 
 
 class TestCommands(MailPileUnittest):
@@ -79,7 +80,9 @@ class TestCommandResult(MailPileUnittest):
 
     def test_command_result_as_text_for_boolean_result(self):
         res = self.mp.rescan()
-        self.assertEquals(res.as_text(), "{'messages': 0, 'mailboxes': 0}")
+        self.assertEquals(res.result['messages'], 0)
+        self.assertEquals(res.result['mailboxes'], 0)
+        self.assertEquals(res.result['vcards'], 0)
 
     def test_command_result_non_zero(self):
         res = self.mp.help_splash()

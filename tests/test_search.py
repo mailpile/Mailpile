@@ -1,12 +1,13 @@
 import unittest
-from generic_mailpile import MailPileUnittest, setUp
 from nose.tools import assert_equal, assert_less
+
+from tests import get_shared_mailpile
 
 
 def checkSearch(query, expected_count=1):
     class TestSearch(object):
         def __init__(self):
-            setUp(self)
+            self.mp = get_shared_mailpile()
             results = self.mp.search(*query)
             assert_equal(results.result['count'], expected_count)
             assert_less(float(results.as_dict()["elapsed"]), 0.2)
