@@ -498,10 +498,10 @@ class SimpleVCard(object):
 
     def get(self, key, n=0):
         lines = self.get_all(key)
-        lines.sort(key=lambda l: 1 - int(l.get('x-rank', 0)) or
-                                     (('pref' in l or
-                                       'pref' in l.get('type', '').lower()
-                                      ) and 100 or 0))
+        lines.sort(key=lambda l: 1 - (int(l.get('x-rank', 0)) or
+                                      (('pref' in l or
+                                        'pref' in l.get('type', '').lower()
+                                       ) and 100 or 0)))
         return lines[n]
 
     def as_jCard(self):
