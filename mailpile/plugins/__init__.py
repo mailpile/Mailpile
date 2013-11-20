@@ -153,17 +153,3 @@ def register_commands(*args):
     for cls in args:
         if cls not in COMMANDS:
             COMMANDS.append(cls)
-
-
-def register_command(shortcode, name, cls):
-    """Backwards compatibility hack."""
-    import sys
-    sys.stderr.write("WARNING: Patching %s into COMMANDS\n" % cls)
-    if shortcode.startswith('_'):
-      shortcode = ''
-    cls.SYNOPSIS = [shortcode.replace(':', ''),
-                    name.replace('=', ''),
-                    None,
-                    cls.SYNOPSIS]
-    register_commands(cls)
-
