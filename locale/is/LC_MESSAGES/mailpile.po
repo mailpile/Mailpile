@@ -3,19 +3,19 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-12 15:32+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2013-11-20 02:28+0100\n"
+"Last-Translator: Jón Levy <zazen@riseup.net>\n"
 "Language-Team: Icelandic <translations-is@mailpile.is>\n"
 "Language: is\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.7\n"
 
 #: mailpile/defaults.py:10
 msgid "Mailpile program version"
@@ -27,7 +27,7 @@ msgstr "Tímasetning stillinga"
 
 #: mailpile/defaults.py:12
 msgid "Technical system settings"
-msgstr ""
+msgstr "Tæknilega stillingar"
 
 #: mailpile/defaults.py:14
 msgid "Max files kept open at once"
@@ -35,11 +35,11 @@ msgstr "Hámarksfjöldi skráa sem mega vera opin í einu"
 
 #: mailpile/defaults.py:15
 msgid "History length (lines, <0 = no save)"
-msgstr ""
+msgstr "Notkunartími  (lines, <0 = no save)"
 
 #: mailpile/defaults.py:16
 msgid "Listening port for web UI"
-msgstr ""
+msgstr "Hlustunargátt fyrir vefviðmót"
 
 #: mailpile/defaults.py:17
 msgid "Posting list target size in KB"
@@ -51,7 +51,7 @@ msgstr ""
 
 #: mailpile/defaults.py:19
 msgid "Max length of metadata snippets"
-msgstr ""
+msgstr "Hámarkslengd gagnaupplýsinga (meta)"
 
 #: mailpile/defaults.py:20
 msgid "Debugging flags"
@@ -59,67 +59,67 @@ msgstr ""
 
 #: mailpile/defaults.py:21
 msgid "Host:port of PGP keyserver"
-msgstr ""
+msgstr "Vefþjónn:gátt á PGP lyklaþjóni"
 
 #: mailpile/defaults.py:22
 msgid "Listening host for web UI"
-msgstr ""
+msgstr "Tölvan sem talar við vefviðmótið"
 
 #: mailpile/defaults.py:23
 msgid "Local read/write Maildir"
-msgstr ""
+msgstr "Slóð á Maildir skrá til að sækja og setja inn póst"
 
 #: mailpile/defaults.py:24
 msgid "Metadata index file"
-msgstr ""
+msgstr "Atriðaskrá með fylgigögnum (meta)"
 
 #: mailpile/defaults.py:25
 msgid "Search index directory"
-msgstr ""
+msgstr "Slóð á atriðaorðaskrá"
 
 #: mailpile/defaults.py:26
 msgid "Mailboxes we index"
-msgstr ""
+msgstr "Við búum til atriðaskrá (index) úr þessum pósthólfum"
 
 #: mailpile/defaults.py:27
 msgid "Locations of assorted data"
-msgstr ""
+msgstr "Slóð á flokkuð gögn"
 
 #: mailpile/defaults.py:28
 msgid "Default theme"
-msgstr ""
+msgstr "Sjálfvalið útlit"
 
 #: mailpile/defaults.py:30
 msgid "Location of vcards"
-msgstr ""
+msgstr "Slóð á tengiliðaskrá (vcards)"
 
 #: mailpile/defaults.py:33
 msgid "User preferences"
-msgstr ""
+msgstr "Notendastillingar"
 
 #: mailpile/defaults.py:35
 msgid "Search results per page"
-msgstr ""
+msgstr "Fjöldi pósta í leitarniðurstöðum"
 
 #: mailpile/defaults.py:36
 msgid "New mail check frequency"
-msgstr ""
+msgstr "Athuga eftir nýjum pósti"
 
 #: mailpile/defaults.py:37
 msgid "Inline PGP signatures or attached"
-msgstr ""
+msgstr "PGP undirskriftir með texta eða sem viðhengi"
 
 #: mailpile/defaults.py:38
 msgid "Default sort order"
-msgstr ""
+msgstr "Sjálfgefin niðurröðun"
 
 #: mailpile/defaults.py:39
 msgid "Encrypt local data to ..."
-msgstr ""
+msgstr "Dulkóða póst í ..."
 
 #: mailpile/defaults.py:40
 msgid "Key to use to scramble the index"
-msgstr ""
+msgstr "Lykill til að hrista upp í atriðaskránni"
 
 #: mailpile/defaults.py:41
 msgid "Command run before rescanning"
@@ -127,27 +127,27 @@ msgstr ""
 
 #: mailpile/defaults.py:42
 msgid "Default outgoing e-mail address"
-msgstr ""
+msgstr "Sjálfgefið netfang til að senda póst"
 
 #: mailpile/defaults.py:43
 msgid "Default outgoing mail route"
-msgstr ""
+msgstr "Leiðin sem pósturinn fer"
 
 #: mailpile/defaults.py:45
 msgid "User interface language"
-msgstr ""
+msgstr "Tungumál á vefviðmóti"
 
 #: mailpile/defaults.py:46
 msgid "VCard import/export settings"
-msgstr ""
+msgstr "VCard út/inn stillingar"
 
 #: mailpile/defaults.py:48
 msgid "VCard import settings"
-msgstr ""
+msgstr "Stillingar á VCard innflutningi"
 
 #: mailpile/defaults.py:49
 msgid "VCard export settings"
-msgstr ""
+msgstr "Stillingar á VCard útflutningi"
 
 #: mailpile/defaults.py:50
 msgid "VCard context helper settings"
@@ -155,72 +155,74 @@ msgstr ""
 
 #: mailpile/defaults.py:53
 msgid "User profiles and personalities"
-msgstr ""
+msgstr "Notendaupplýsingar og annað persónulegt"
 
 #: mailpile/defaults.py:54
 msgid "Account name"
-msgstr ""
+msgstr "Heiti á pósthólfi"
 
 #: mailpile/defaults.py:55
+#, fuzzy
 msgid "E-mail address"
-msgstr ""
+msgstr "Netfang"
 
 #: mailpile/defaults.py:56
+#, fuzzy
 msgid "Message signature"
-msgstr ""
+msgstr "Póstur"
 
 #: mailpile/defaults.py:57
 msgid "Outgoing mail route"
-msgstr ""
+msgstr "Leið "
 
 #: mailpile/config.py:94
 #, python-format
 msgid "Invalid URL slug: %s"
-msgstr ""
+msgstr "Hnittinn texti fyrir óvirkar slóðir: %s"
 
 #: mailpile/config.py:126
 #, python-format
 msgid "Invalid hostname: %s"
-msgstr ""
+msgstr "Nafnið á vefþjóninum er ekki rétt: %s"
 
 #: mailpile/config.py:160
 #, python-format
 msgid "File/directory does not exist: %s"
-msgstr ""
+msgstr "Skrá/mappa er ekki til: %s"
 
 #: mailpile/config.py:178
 #, python-format
 msgid "Not a file: %s"
-msgstr ""
+msgstr "Þetta er ekki skrá: %s"
 
 #: mailpile/config.py:196
 #, python-format
 msgid "Not a directory: %s"
-msgstr ""
+msgstr "Þetta er ekki mappa: %s"
 
 #: mailpile/config.py:329
 msgid "Override this"
-msgstr ""
+msgstr "Traðka á þessu"
 
 #: mailpile/config.py:388
 #, python-format
 msgid "Invalid type for default %s = %s"
-msgstr ""
+msgstr "Röng típa fyrir sjálfgefið %s = %s"
 
 #: mailpile/config.py:399
 #, python-format
 msgid "Invalid key for %s: %s"
-msgstr ""
+msgstr "Rangur lykill fyrir %s: %s"
 
 #: mailpile/config.py:482
 #, python-format
 msgid "Modifying %s/%s is not allowed"
-msgstr ""
+msgstr "Það er ekki í lagi að breyta %s/%s"
 
 #: mailpile/config.py:486 mailpile/config.py:494
 #, python-format
 msgid "Invalid value for %s/%s: %s"
-msgstr ""
+msgstr "Rangt gildi fyrir %s/%s: %s"
 
 #: mailpile/config.py:497
 #, fuzzy, python-format
@@ -229,70 +231,70 @@ msgstr "Óþekkt skipun: %s"
 
 #: mailpile/config.py:702
 msgid "Cannot append to fixed dict"
-msgstr ""
+msgstr "Það er ekki hægt að bæta við lokaðan lista (dict)"
 
 #: mailpile/config.py:750
 #, python-format
 msgid "Creating: %s"
-msgstr ""
+msgstr "Bý til: %s"
 
 #: mailpile/config.py:808
-#, python-format
+#, fuzzy, python-format
 msgid "Invalid (%s): section %s does not exist"
-msgstr ""
+msgstr "Vitleysa (%s): %s er ekki til"
 
 #: mailpile/config.py:819
-#, python-format
+#, fuzzy, python-format
 msgid "Invalid (%s): section %s, variable %s"
-msgstr ""
+msgstr "Vitleysa (%s): section %s, breyta %s"
 
 #: mailpile/config.py:834
 #, python-format
 msgid "WARNING: Imported old config from %s"
-msgstr ""
+msgstr "VIÐVÖRUN: Sótti gamlar stillingar frá %s"
 
 #: mailpile/config.py:837
 #, python-format
 msgid "WARNING: Failed to import config from %s"
-msgstr ""
+msgstr "VIÐVÖRUN: Tókst ekki að sækja stillingar frá %s"
 
 #: mailpile/config.py:876
 #, python-format
 msgid "Mailbox ID too large: %s"
-msgstr ""
+msgstr "Pósthólf auðkenni (ID) of stórt: %s"
 
 #: mailpile/config.py:906
 #, python-format
 msgid "No such mailbox: %s"
-msgstr ""
+msgstr "Þetta pósthólf er bara ekki til: %s"
 
 #: mailpile/config.py:913
 #, python-format
 msgid "%s: Updating: %s"
-msgstr ""
+msgstr "%s: Uppfæri: %s"
 
 #: mailpile/config.py:920
 #, python-format
 msgid "%s: Opening: %s (may take a while)"
-msgstr ""
+msgstr "%s: Opna: %s (gæti tekið langan tíma)"
 
 #: mailpile/config.py:1021
 msgid "Parent paths are not allowed"
-msgstr ""
+msgstr "Yfirslóðir eru ekki leyfðar"
 
 #: mailpile/config.py:1137
 #, python-format
 msgid "Could not parse (%s): %s"
-msgstr ""
+msgstr "Gat ekki unnið mig í gegnum (%s): %s"
 
 #: mailpile/config.py:1150
 #, python-format
 msgid "Could not assign mailbox:%s = %s"
-msgstr ""
+msgstr "Gat ekki tengt pósthólf: %s = %s"
 
 #: mailpile/gpgi.py:14
 msgid "Trust not calculated"
-msgstr ""
+msgstr "Traust hefur ekki verið mælt"
 
 #: mailpile/gpgi.py:15
 #, fuzzy
@@ -301,64 +303,64 @@ msgstr "Óþekkt skipun: %s"
 
 #: mailpile/gpgi.py:16
 msgid "Undefined trust"
-msgstr ""
+msgstr "Óskilgreint traust"
 
 #: mailpile/gpgi.py:17
 msgid "Never trust"
-msgstr ""
+msgstr "Aldrei að treysta"
 
 #: mailpile/gpgi.py:18
 msgid "Marginally trust"
-msgstr ""
+msgstr "Hæpið traust"
 
 #: mailpile/gpgi.py:19
 msgid "Full trust"
-msgstr ""
+msgstr "Fullt traust"
 
 #: mailpile/gpgi.py:20
 msgid "Ultimate trust"
-msgstr ""
+msgstr "Allgjört traust"
 
 #: mailpile/gpgi.py:21
 msgid "Expired key, not trusted"
-msgstr ""
+msgstr "Lykill útrunninn, ótreystandi"
 
 #: mailpile/gpgi.py:22
 msgid "Revoked key, not trusted"
-msgstr ""
+msgstr "Endurvakinn lykill, ótreystandi"
 
 #: mailpile/gpgi.py:23
 msgid "Disabled key, not trusted"
-msgstr ""
+msgstr "Lykill gerður óvirkur, ótreystandi"
 
 #: mailpile/gpgi.py:26
 msgid "RSA"
-msgstr ""
+msgstr "RSA"
 
 #: mailpile/gpgi.py:27
 msgid "RSA (encrypt only)"
-msgstr ""
+msgstr "RSA (eingöngu dulkóðun)"
 
 #: mailpile/gpgi.py:28
 msgid "RSA (sign only)"
-msgstr ""
+msgstr "RSA (eingöngu undirskrift)"
 
 #: mailpile/gpgi.py:29
 msgid "Elgamal (encrypt only)"
-msgstr ""
+msgstr "Elgamal (eingöngu dulkóðun)"
 
 #: mailpile/gpgi.py:30
 msgid "DSA"
-msgstr ""
+msgstr "DSA"
 
 #: mailpile/gpgi.py:31
 msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr ""
+msgstr "Elgamal (dulkóða/kvitta) [ÓTRAUSTVEKJANDI]"
 
 #: mailpile/commands.py:154
 #, python-format
 msgid "ID out of bounds: %s"
-msgstr ""
+msgstr "Auðkenni út fyrir mörk: %s"
 
 #: mailpile/commands.py:157 mailpile/commands.py:163 mailpile/commands.py:168
 #, python-format
@@ -433,20 +435,23 @@ msgid "Unknown command: %s"
 msgstr "Óþekkt skipun: %s"
 
 #: mailpile/plugins/demos.py:41
+#, fuzzy
 msgid "Demo Contacts"
-msgstr ""
+msgstr "Flytja inn tengiliði"
 
 #: mailpile/plugins/demos.py:42
 msgid "This is the demo importer"
 msgstr ""
 
 #: mailpile/plugins/demos.py:45
+#, fuzzy
 msgid "Contact name"
-msgstr ""
+msgstr "Upplýsingar um tengilið"
 
 #: mailpile/plugins/demos.py:46
+#, fuzzy
 msgid "Contact email"
-msgstr ""
+msgstr "Tengiliðir"
 
 #: mailpile/plugins/vcard_gnupg.py:17
 msgid "Import contacts from GnuPG keyring"
@@ -482,9 +487,9 @@ msgid "Loading metadata index..."
 msgstr ""
 
 #: mailpile/search.py:180
-#, python-format
+#, fuzzy, python-format
 msgid "Metadata index not found: %s"
-msgstr ""
+msgstr "Enginn póstur fannst!"
 
 #: mailpile/search.py:184
 #, python-format
@@ -611,8 +616,9 @@ msgid "Recovering from bogus sort, corrupt index?"
 msgstr ""
 
 #: mailpile/search.py:984
+#, fuzzy
 msgid "Please tell team@mailpile.is !"
-msgstr ""
+msgstr "Láttu af hendi rakna til Mailpile"
 
 #: mailpile/search.py:993
 #, fuzzy, python-format
@@ -704,17 +710,19 @@ msgid "Preparing message..."
 msgstr ""
 
 #: mailpile/mailutils.py:211
-#, python-format
+#, fuzzy, python-format
 msgid "Message sent, %d bytes"
-msgstr ""
+msgstr "Enginn póstur fannst!"
 
 #: mailpile/mailutils.py:496 mailpile/mailutils.py:503
+#, fuzzy
 msgid "No data found"
-msgstr ""
+msgstr "Ekkert fannst"
 
 #: mailpile/mailutils.py:525
+#, fuzzy
 msgid "Message not found"
-msgstr ""
+msgstr "Enginn póstur fannst!"
 
 #: mailpile/mailutils.py:690 mailpile/mailutils.py:698
 #: mailpile/mailutils.py:752
@@ -722,8 +730,9 @@ msgid "Mailbox is read-only."
 msgstr ""
 
 #: mailpile/mailutils.py:797
+#, fuzzy
 msgid "Message not found?"
-msgstr ""
+msgstr "Enginn póstur fannst!"
 
 #: mailpile/mailutils.py:875
 #, python-format
@@ -736,18 +745,19 @@ msgid "Wrote preview to: %s"
 msgstr ""
 
 #: mailpile/mailutils.py:885
+#, fuzzy
 msgid "Failed to generate thumbnail"
-msgstr ""
+msgstr "Ekki tókst að afkóða póstinn"
 
 #: mailpile/mailutils.py:892
-#, python-format
+#, fuzzy, python-format
 msgid "Wrote attachment to: %s"
-msgstr ""
+msgstr "Engin viðhengi"
 
 #: mailpile/mailutils.py:895
-#, python-format
+#, fuzzy, python-format
 msgid "No attachments found for: %s"
-msgstr ""
+msgstr "Engin viðhengi"
 
 #: mailpile/mailutils.py:991
 #, python-format
@@ -756,310 +766,314 @@ msgstr ""
 
 #: static/default/html/page/donate/index.html:7
 msgid "Please Donate To Mailpile"
-msgstr ""
+msgstr "Láttu af hendi rakna til Mailpile"
 
 #: static/default/html/page/donate/index.html:11
 msgid "Or you can donate to our"
-msgstr ""
+msgstr "Þú getur líka sett aur í"
 
 #: static/default/html/page/donate/index.html:11
 msgid "Bitcoin Wallet"
-msgstr ""
+msgstr "Bitcoin veskið okkar."
 
 #: static/default/html/layouts/base.html:66
-#, python-format
+#, fuzzy, python-format
 msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
 msgstr ""
+"%(name)s<small> haugur af <b>%(size)s</b> pósti</small>', name=name, "
+"size=mailpile_size)}}</span>"
 
 #: static/default/html/layouts/base.html:124
 msgid "Encrypted"
-msgstr ""
+msgstr "Dulkóðað"
 
 #: static/default/html/layouts/base.html:130
 msgid "Photos"
-msgstr ""
+msgstr "Myndir"
 
 #: static/default/html/layouts/base.html:136
 msgid "Files"
-msgstr ""
+msgstr "Skrár"
 
 #: static/default/html/layouts/base.html:142
 msgid "Links"
-msgstr ""
+msgstr "Hlekkir"
 
 #: static/default/html/layouts/base.html:148
 msgid "Groups"
-msgstr ""
+msgstr "Hópar"
 
 #: static/default/html/layouts/base.html:160
 msgid "Mailpile"
-msgstr ""
+msgstr "Mailpile"
 
 #: static/default/html/layouts/base.html:160
 msgid "is free software made by"
-msgstr ""
+msgstr "er frír hugbúnaður búinn til af"
 
 #: static/default/html/layouts/base.html:160
 msgid "more"
-msgstr ""
+msgstr "meira"
 
 #: static/default/html/layouts/base.html:175
 #: static/default/html/message/index.html:16
 msgid "Date:"
-msgstr ""
+msgstr "Dagsetning:"
 
 #: static/default/html/layouts/base.html:175
 msgid "Start time"
-msgstr ""
+msgstr "Upphafstími"
 
 #: static/default/html/layouts/base.html:175
 msgid "to"
-msgstr ""
+msgstr "til"
 
 #: static/default/html/layouts/base.html:175
 msgid "Present"
-msgstr ""
+msgstr "Til staðar"
 
 #: static/default/html/layouts/base.html:176
 msgid "With:"
-msgstr ""
+msgstr "Með:"
 
 #: static/default/html/layouts/base.html:176
 msgid "No Tags"
-msgstr ""
+msgstr "Engir merkimiðar"
 
 #: static/default/html/layouts/base.html:177
 msgid "And:"
-msgstr ""
+msgstr "Og:"
 
 #: static/default/html/layouts/base.html:177
 msgid "All groups"
-msgstr ""
+msgstr "Allir hópar"
 
 #: static/default/html/message/index.html:16
 msgid "at"
-msgstr ""
+msgstr "hjá"
 
 #: static/default/html/message/index.html:17
 msgid "From:"
-msgstr ""
+msgstr "Frá:"
 
 #: static/default/html/message/index.html:18
 msgid "To:"
-msgstr ""
+msgstr "Til:"
 
 #: static/default/html/message/index.html:20
 msgid "Cc:"
-msgstr ""
+msgstr "Cc:"
 
 #: static/default/html/message/index.html:23
 msgid "Bcc:"
-msgstr ""
+msgstr "Bcc:"
 
 #: static/default/html/message/index.html:25
 msgid "Subject:"
-msgstr ""
+msgstr "Titill"
 
 #: static/default/html/message/index.html:34
 msgid "Signed by"
-msgstr ""
+msgstr "Rafræn undirskrift "
 
 #: static/default/html/message/index.html:35
 msgid "Unknown signature from"
-msgstr ""
+msgstr "Óþekkt rafræn undirskrift frá"
 
 #: static/default/html/message/index.html:36
 msgid "Signed with unknown key"
-msgstr ""
+msgstr "Undirskrift með óþekktum lykli"
 
 #: static/default/html/message/index.html:41
 msgid "Successfully decrypted message"
-msgstr ""
+msgstr "Afkóðun"
 
 #: static/default/html/message/index.html:42
 msgid "Failed to decrypt message"
-msgstr ""
+msgstr "Ekki tókst að afkóða póstinn"
 
 #: static/default/html/message/index.html:63
 msgid "Reply"
-msgstr ""
+msgstr "Svara"
 
 #: static/default/html/message/index.html:66
 #: static/default/html/partials/sub_nav_search.html:3
 msgid "All"
-msgstr ""
+msgstr "Allt"
 
 #: static/default/html/message/index.html:69
 msgid "Forward"
-msgstr ""
+msgstr "Áframsenda"
 
 #: static/default/html/message/draft.html:14
 msgid "To"
-msgstr ""
+msgstr "Til"
 
 #: static/default/html/message/draft.html:16
 #: static/default/html/message/draft.html:24
 msgid "Bcc"
-msgstr ""
+msgstr "Blint afrit"
 
 #: static/default/html/message/draft.html:17
 #: static/default/html/message/draft.html:20
 msgid "Cc"
-msgstr ""
+msgstr "Afrit"
 
 #: static/default/html/message/draft.html:28
 msgid "From"
-msgstr ""
+msgstr "Frá"
 
 #: static/default/html/message/draft.html:38
 msgid "Subject"
-msgstr ""
+msgstr "Titill"
 
 #: static/default/html/message/draft.html:45
 msgid "No Attachments"
-msgstr ""
+msgstr "Engin viðhengi"
 
 #: static/default/html/message/draft.html:50
 msgid "Send"
-msgstr ""
+msgstr "Senda"
 
 #: static/default/html/message/draft.html:51
 msgid "Save"
-msgstr ""
+msgstr "Vista"
 
 #: static/default/html/message/draft.html:60
 msgid "Message not found!"
-msgstr ""
+msgstr "Enginn póstur fannst!"
 
 #: static/default/html/tag/list.html:14
 msgid "Total"
-msgstr ""
+msgstr "Samtals"
 
 #: static/default/html/tag/list.html:19
 #: static/default/html/partials/sub_nav_search.html:4
 msgid "New"
-msgstr ""
+msgstr "Nýtt"
 
 #: static/default/html/tag/list.html:24
 msgid "View Messages"
-msgstr ""
+msgstr "Skoða póst"
 
 #: static/default/html/tag/list.html:34
 msgid "Archived"
-msgstr ""
+msgstr "Geymt"
 
 #: static/default/html/tag/add.html:3
 msgid "Enter New Tag Info"
-msgstr ""
+msgstr "Veldu nýtt heiti á merkimiðann"
 
 #: static/default/html/tag/add.html:9
 msgid "Tag"
-msgstr ""
+msgstr "Merkimiði"
 
 #: static/default/html/tag/add.html:12
 msgid "Slug"
-msgstr ""
+msgstr "í vinnslu"
 
 #: static/default/html/tag/add.html:15
 msgid "Add"
-msgstr ""
+msgstr "Bæta við"
 
 #: static/default/html/settings/index.html:7
 msgid "Your Profiles"
-msgstr ""
+msgstr "Þínir prófílar"
 
 #: static/default/html/settings/index.html:17
 msgid "Add New Profile"
-msgstr ""
+msgstr "Bæta við prófíl"
 
 #: static/default/html/settings/index.html:20
 #: static/default/html/contact/add.html:9
 msgid "Name"
-msgstr ""
+msgstr "Nafn"
 
 #: static/default/html/settings/index.html:23
 msgid "Email"
-msgstr ""
+msgstr "Netfang"
 
 #: static/default/html/settings/index.html:26
 msgid "SMTP Server"
-msgstr ""
+msgstr "SMTP póstþjónn"
 
 #: static/default/html/settings/index.html:27
 msgid "Login"
-msgstr ""
+msgstr "Innskráning"
 
 #: static/default/html/settings/index.html:30
 msgid "Password"
-msgstr ""
+msgstr "Lykilorð"
 
 #: static/default/html/settings/index.html:33
 msgid "Server"
-msgstr ""
+msgstr "Póstþjónn"
 
 #: static/default/html/settings/index.html:36
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: static/default/html/settings/index.html:43
 msgid "Add Profile"
-msgstr ""
+msgstr "Bæta við prófíl"
 
 #: static/default/html/partials/bulk_actions.html:2
 msgid "Messages"
-msgstr ""
+msgstr "Póstur"
 
 #: static/default/html/partials/bulk_actions.html:2
 msgid "selected"
-msgstr ""
+msgstr "valið"
 
 #: static/default/html/partials/sub_nav_contacts.html:3
 msgid "Contacts"
-msgstr ""
+msgstr "Tengiliðir"
 
 #: static/default/html/partials/sub_nav_contacts.html:4
 msgid "Add Contact"
-msgstr ""
+msgstr "Bæta við tengilið"
 
 #: static/default/html/partials/sub_nav_contacts.html:5
 msgid "Import Contacts"
-msgstr ""
+msgstr "Flytja inn tengiliði"
 
 #: static/default/html/partials/sub_nav_message.html:6
 msgid "Archive"
-msgstr ""
+msgstr "Geyma"
 
 #: static/default/html/partials/sub_nav_message.html:7
 msgid "Delete"
-msgstr ""
+msgstr "Eyða"
 
 #: static/default/html/partials/sub_nav_message.html:8
 msgid "Show All"
-msgstr ""
+msgstr "Sýna allt"
 
 #: static/default/html/partials/errors_content.html:3
 msgid "Oops, you've found a quirk!"
-msgstr ""
+msgstr "Úps, það gerðist eitthvað sem átti ekki að gerast!"
 
 #: static/default/html/partials/errors_content.html:4
 msgid ""
 "We were unable to find the message you requested, perhaps it was deleted?"
 msgstr ""
+"Við fundum ekki póstinn sem þú leitaðir eftir, ertu viss um að honum hafi "
+"ekki verið eytt?"
 
 #: static/default/html/partials/errors_content.html:5
-#, python-format
+#, fuzzy, python-format
 msgid ""
 "If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
 "\">bug report</a>"
-msgstr ""
+msgstr "Ef þú heldur að þetta sé villa, þá geturðu sent inn <a href="
 
 #: static/default/html/partials/sub_nav_tags.html:3
 msgid "Tags"
-msgstr ""
+msgstr "Merkimiðar"
 
 #: static/default/html/partials/sub_nav_tags.html:4
 msgid "Add Tag"
-msgstr ""
+msgstr "Nýr merkimiði"
 
 #: static/default/html/partials/details_search_speed.html:2
 #, python-format
@@ -1067,67 +1081,69 @@ msgid ""
 "Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
 "strong> seconds."
 msgstr ""
+"Leitaði að <strong>%(number)s</strong> póstum á <strong>%(elapsed)s</strong> "
+"sekúndum."
 
 #: static/default/html/partials/details_search_speed.html:2
 msgid "Vroom!"
-msgstr ""
+msgstr "Vrúúúm!"
 
 #: static/default/html/search/index.html:20
 msgid "Previous"
-msgstr ""
+msgstr "Fyrri"
 
 #: static/default/html/search/index.html:20
 msgid "Next"
-msgstr ""
+msgstr "Næsta"
 
 #: static/default/html/search/index.html:22
 msgid "of"
-msgstr ""
+msgstr "af"
 
 #: static/default/html/search/index.html:22
 msgid "Conversations"
-msgstr ""
+msgstr "Umræður"
 
 #: static/default/html/search/index.html:22
 msgid "1 Conversation"
-msgstr ""
+msgstr "1 Umræða"
 
 #: static/default/html/search/index.html:22
 msgid "No results found"
-msgstr ""
+msgstr "Ekkert fannst"
 
 #: static/default/html/search/index.html:23
 msgid "Snug"
-msgstr ""
+msgstr "Þröngt"
 
 #: static/default/html/search/index.html:24
 msgid "Cozy"
-msgstr ""
+msgstr "Kósí"
 
 #: static/default/html/search/index.html:25
 msgid "Comfy"
-msgstr ""
+msgstr "Notalegt"
 
 #: static/default/html/search/index.html:26
 msgid "Fluffy"
-msgstr ""
+msgstr "Mjúkt"
 
 #: static/default/html/search/index.html:32
 msgid "No Results Found"
-msgstr ""
+msgstr "Ekkert fannst"
 
 #: static/default/html/contact/add.html:3
 msgid "Contact Info"
-msgstr ""
+msgstr "Upplýsingar um tengilið"
 
 #: static/default/html/contact/add.html:12
 msgid "E-mail"
-msgstr ""
+msgstr "Netfang"
 
 #: static/default/html/contact/add.html:15
 msgid "Website"
-msgstr ""
+msgstr "Vefsíða"
 
 #: static/default/html/contact/add.html:18
 msgid "PGP Key"
-msgstr ""
+msgstr "PGP lykill"
