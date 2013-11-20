@@ -1,5 +1,7 @@
 # Welcome to Mailpile! #
 
+[![Build Status](https://secure.travis-ci.org/pagekite/Mailpile.png?branch=master)](http://travis-ci.org/pagekite/Mailpile)
+
 > **NOTE:** This is pre-ALPHA quality code! Please expect everything to
 > be broken.
 
