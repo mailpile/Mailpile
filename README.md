@@ -5,8 +5,8 @@
 
 #### Who's doing what? ####
 
-- 2013-11-18: bre: Hacking on search/address and gravatar sync
-- 2013-11-12: smari: Internationalization work!
+- 2013-11-20: bre: Nose tests, social graph and contact searching
+- 2013-11-20: smari: Travis CI and documentation
 - 2013-11-18: bnvk: Tweaking the compose UI
 
 #### Recent changes ####
