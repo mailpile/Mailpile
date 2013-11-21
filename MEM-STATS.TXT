@@ -8,5 +8,5 @@ messages indexed.
 
       Date  Messages  Bytes/MSG   Who?
 ----------  --------  ---------  -----
-2013-11-20     75000       1398    bre
+2013-11-20     73149       1433    bre
 
