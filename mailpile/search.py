@@ -332,11 +332,11 @@ class MailIndex:
         try:
             mbox = mailbox_opener(session, mailbox_idx)
             if mbox.editable:
-                session.ui.mark(_('%s: Skipped: %s') 
+                session.ui.mark(_('%s: Skipped: %s')
                     % (mailbox_idx, mailbox_fn))
                 return 0
             else:
-                session.ui.mark(_('%s: Checking: %s') 
+                session.ui.mark(_('%s: Checking: %s')
                     % (mailbox_idx, mailbox_fn))
         except (IOError, OSError, NoSuchMailboxError), e:
             session.ui.mark(_('%s: Error opening: %s (%s)'
@@ -366,7 +366,7 @@ class MailIndex:
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status)
-                #FIXME: continue
+                continue
             else:
                 session.ui.mark(parse_status)
 
