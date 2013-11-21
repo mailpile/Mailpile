@@ -20,10 +20,12 @@
       <a href="#" class="button-primary">{{_("Previous")}}</a> <a href="/in/Inbox/@20/" class="button-primary">{{_("Next")}}</a>
       <div>
         <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} {{_("of")}} {{result.total}} {{_("Conversations")}} {% elif result.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5><br>
-        <a class="change-view-size" data-view_size="snug" href="#">{{_("Snug")}}</a>
-        <a class="change-view-size" data-view_size="cozy" href="#">{{_("Cozy")}}</a>
-        <a class="change-view-size" data-view_size="comfy" href="#">{{_("Comfy")}}</a>
-        <a class="change-view-size" data-view_size="fluffy" href="#">{{_("Fluffy")}}</a>
+        <ul>
+          <li><a class="change-view-size" data-view_size="snug" href="#">Snug</a></li>
+          <li><a class="change-view-size" data-view_size="cozy" href="#">Cozy</a></li>
+          <li><a class="change-view-size" data-view_size="comfy" href="#">Comfy</a></li>
+          <li><a class="change-view-size" data-view_size="fluffy" href="#">Fluffy</a></li>
+        </ul>
       </div>
     </div>
   </form>
