@@ -53,7 +53,17 @@
       <div class="message-attachments">
       <ul>
          {% for att in message.message.attachments %}
-         <li><a href="./att:{{att.count}}" type="{{att.mimetype}}">{{att.filename}}</a>({{att.mimetype}} {{att.length}} bytes)</li>
+         <div style='display: inline-block; text-align: center; margin: 10px;'>
+            <a href="/message/download/={{message.mid}}/part:{{att.count}}/"
+               type="{{att.mimetype}}">
+               {% if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
+               <img src="/message/download/preview/={{message.mid}}/part:{{att.count}}/"
+                    style='margin: 0 2px; max-height: 80px'><br />
+               {% endif %}
+               {{att.filename}}<br />
+               <small>({{att.length|friendly_bytes}})</small>
+            </a>
+         </div>
          {% endfor %}
       </ul>
       </div>

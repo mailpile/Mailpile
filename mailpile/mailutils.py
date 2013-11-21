@@ -873,7 +873,7 @@ class Email(object):
     count = 0
     extracted = 0
     filename, attributes = '', {}
-    for part in msg.walk():
+    for part in (msg.walk() if msg else []):
       mimetype = part.get_content_type()
       if mimetype.startswith('multipart/'):
         continue
@@ -881,8 +881,10 @@ class Email(object):
       content_id = part.get('content-id', '')
       pfn = part.get_filename() or ''
       count += 1
+
       if (('*' == att_id)
       or  ('#%s' % count == att_id)
+      or  ('part:%s' % count == att_id)
       or  (content_id == att_id)
       or  (mimetype == att_id)
       or  (pfn.lower().endswith('.%s' % att_id))
@@ -904,9 +906,6 @@ class Email(object):
         if mimetype:
           attributes['mimetype'] = mimetype
 
-        # FIXME: If we are asked for a preview, we should modify the payload
-        #        to be a thumbnail of some sort.
-
         filesize = len(payload)
         if mode.startswith('inline'):
           attributes['data'] = payload
@@ -926,8 +925,8 @@ class Email(object):
           filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
                                                   attributes=attributes)
           fd.write(payload)
-          fd.close()
           session.ui.notify(_('Wrote attachment to: %s') % filename)
+          fd.close()
         extracted += 1
     if 0 == extracted:
       session.ui.notify(_('No attachments found for: %s') % att_id)

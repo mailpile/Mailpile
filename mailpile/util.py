@@ -366,9 +366,8 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
         # right attachment to that filename...
         return None
 
-    #Ensure the source image is either a file-like object or a StringIO
-    if (not isinstance(fileobj, StringIO.StringIO) and
-            not isinstance(fileobj, file)):
+    # Ensure the source image is either a file-like object or a StringIO
+    if (not isinstance(fileobj, (file, StringIO.StringIO))):
         fileobj = StringIO.StringIO(fileobj)
 
     image = Image.open(fileobj)

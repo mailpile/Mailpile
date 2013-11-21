@@ -376,6 +376,7 @@ class SilentInteraction(UserInteraction):
 class RawHttpResponder:
 
   def __init__(self, request, attributes={}):
+    self.raised = False
     self.request = request
     #
     # FIXME: Security risks here, untrusted content may find its way into
@@ -395,7 +396,9 @@ class RawHttpResponder:
     self.request.wfile.write(data)
 
   def close(self):
-    raise SuppressHtmlOutput()
+    if not self.raised:
+      self.raised = True
+      raise SuppressHtmlOutput()
 
 
 class Session(object):

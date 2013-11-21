@@ -8,6 +8,7 @@ from mailpile.mailutils import Email, ExtractEmails, MBX_ID_LEN
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
+from mailpile.ui import SuppressHtmlOutput
 
 
 class SearchResults(dict):
@@ -411,8 +412,9 @@ class View(Search):
 
 class Extract(Command):
     """Extract attachment(s) to file(s)"""
-    SYNOPSIS = ('e', 'extract', 'message/download', '<att> <message> [><fn>]')
+    SYNOPSIS = ('e', 'extract', 'message/download', '<msgs> <att> [><fn>]')
     ORDER = ('Searching', 5)
+    RAISES = (SuppressHtmlOutput, )
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -439,23 +441,28 @@ class Extract(Command):
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
+        mode = 'download'
+        name_fmt = None
 
         if self.args[0] in ('inline', 'inline-preview', 'preview', 'download'):
             mode = self.args.pop(0)
-        else:
-            mode = 'download'
-        cid = self.args.pop(0)
+
         if len(self.args) > 0 and self.args[-1].startswith('>'):
             name_fmt = self.args.pop(-1)[1:]
-        else:
-            name_fmt = None
 
-        emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+        if self.args[0].startswith('#') or self.args[0].startswith('part:'):
+            cid = self.args.pop(0)
+        else:
+            cid = self.args.pop(-1)
+
+        eids = self._choose_messages(self.args)
+        print 'Download %s from %s as %s/%s' % (cid, eids, mode, name_fmt)
+
+        emails = [Email(idx, i) for i in eids]
         results = []
-        for email in emails:
-            fn, info = email.extract_attachment(session, cid,
-                                                name_fmt=name_fmt,
-                                                mode=mode)
+        for e in emails:
+            fn, info = e.extract_attachment(session, cid, name_fmt=name_fmt,
+                                                          mode=mode)
             if info:
                 info['idx'] = email.msg_idx_pos
                 if fn:
