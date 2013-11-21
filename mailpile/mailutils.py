@@ -499,9 +499,9 @@ class IncrementalMbox(mailbox.mbox):
           self._next_key += 1
           break
       self._file_length = fd.tell()
-      self.save(None)
     finally:
       self._lock.release()
+    self.save(None)
 
   def save(self, session=None, to=None):
     if to:
