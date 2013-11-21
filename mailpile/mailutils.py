@@ -22,6 +22,7 @@ import mimetypes
 import os
 import re
 import rfc822
+import threading
 import traceback
 
 from email import encoders
@@ -416,26 +417,36 @@ class IncrementalMbox(mailbox.mbox):
     self.editable = False
     self.last_parsed = -1  # Must be -1 or first message won't get parsed
     self.save_to = None
+    self._lock = threading.Lock()
 
   def __getstate__(self):
     odict = self.__dict__.copy()
     # Pickle can't handle file objects.
     del odict['_file']
+    del odict['_lock']
     return odict
+
+  def _get_fd(self):
+    return open(self._path, 'rb+')
 
   def __setstate__(self, dict):
     self.__dict__.update(dict)
+    self._lock = threading.Lock()
+    self._lock.acquire()
     try:
-      if not os.path.exists(self._path):
-        raise NoSuchMailboxError(self._path)
-      self._file = open(self._path, 'rb+')
-    except IOError, e:
-      if e.errno == errno.ENOENT:
-        raise NoSuchMailboxError(self._path)
-      elif e.errno == errno.EACCES:
-        self._file = open(self._path, 'rb')
-      else:
-        raise
+      try:
+        if not os.path.exists(self._path):
+          raise NoSuchMailboxError(self._path)
+        self._file = self._get_fd()
+      except IOError, e:
+        if e.errno == errno.ENOENT:
+          raise NoSuchMailboxError(self._path)
+        elif e.errno == errno.EACCES:
+          self._file = self._get_fd()
+        else:
+          raise
+    finally:
+      self._lock.release()
     self.update_toc()
 
   def unparsed(self):
@@ -445,73 +456,86 @@ class IncrementalMbox(mailbox.mbox):
     self.last_parsed = i
 
   def update_toc(self):
-    # FIXME: Does this break on zero-length mailboxes?
-
-    # Scan for incomplete entries in the toc, so they can get fixed.
-    for i in sorted(self._toc.keys()):
-      if i > 0 and self._toc[i][0] is None:
-        self._file_length = self._toc[i-1][0]
-        self._next_key = i-1
-        del self._toc[i-1]
-        del self._toc[i]
-        break
-      elif self._toc[i][0] and not self._toc[i][1]:
-        self._file_length = self._toc[i][0]
-        self._next_key = i
-        del self._toc[i]
-        break
-
-    self._file.seek(0, 2)
-    if self._file_length == self._file.tell():
-      return
-
-    self._file.seek(self._toc[self._next_key-1][0])
-    line = self._file.readline()
-    if not line.startswith('From '):
-      raise IOError("Mailbox has been modified")
-
-    self._file.seek(self._file_length-len(os.linesep))
-    start = None
-    while True:
-      line_pos = self._file.tell()
-      line = self._file.readline()
-      if line.startswith('From '):
-        if start:
-          self._toc[self._next_key] = (start, line_pos - len(os.linesep))
+    self._lock.acquire()
+    try:
+      # FIXME: Does this break on zero-length mailboxes?
+  
+      # Scan for incomplete entries in the toc, so they can get fixed.
+      for i in sorted(self._toc.keys()):
+        if i > 0 and self._toc[i][0] is None:
+          self._file_length = self._toc[i-1][0]
+          self._next_key = i-1
+          del self._toc[i-1]
+          del self._toc[i]
+          break
+        elif self._toc[i][0] and not self._toc[i][1]:
+          self._file_length = self._toc[i][0]
+          self._next_key = i
+          del self._toc[i]
+          break
+  
+      fd = self._file
+      self._file.seek(0, 2)
+      if self._file_length == fd.tell():
+        return
+  
+      fd.seek(self._toc[self._next_key-1][0])
+      line = fd.readline()
+      if not line.startswith('From '):
+        raise IOError("Mailbox has been modified")
+  
+      fd.seek(self._file_length-len(os.linesep))
+      start = None
+      while True:
+        line_pos = fd.tell()
+        line = fd.readline()
+        if line.startswith('From '):
+          if start:
+            self._toc[self._next_key] = (start, line_pos - len(os.linesep))
+            self._next_key += 1
+          start = line_pos
+        elif line == '':
+          self._toc[self._next_key] = (start, line_pos)
           self._next_key += 1
-        start = line_pos
-      elif line == '':
-        self._toc[self._next_key] = (start, line_pos)
-        self._next_key += 1
-        break
-    self._file_length = self._file.tell()
-    self.save(None)
+          break
+      self._file_length = fd.tell()
+      self.save(None)
+    finally:
+      self._lock.release()
 
   def save(self, session=None, to=None):
     if to:
       self.save_to = to
     if self.save_to and len(self) > 0:
-      if session: session.ui.mark('Saving state to %s' % self.save_to)
-      fd = open(self.save_to, 'w')
-      cPickle.dump(self, fd)
-      fd.close()
+      self._lock.acquire()
+      try:
+        if session: session.ui.mark('Saving state to %s' % self.save_to)
+        fd = open(self.save_to, 'w')
+        cPickle.dump(self, fd)
+        fd.close()
+      finally:
+        self._lock.release()
 
   def get_msg_size(self, toc_id):
     return self._toc[toc_id][1] - self._toc[toc_id][0]
 
+  def get_msg_cs(self, start, cs_size, max_length):
+    self._lock.acquire()
+    try:
+      fd = self._file
+      fd.seek(start, 0)
+      firstKB = fd.read(min(cs_size, max_length))
+      if firstKB == '':
+        raise IOError(_('No data found'))
+      return b64w(sha1b64(firstKB)[:4])
+    finally:
+      self._lock.release()
+
   def get_msg_cs1k(self, start, max_length):
-    self._file.seek(start, 0)
-    firstKB = self._file.read(min(1024, max_length))
-    if firstKB == '':
-      raise IOError(_('No data found'))
-    return b64w(sha1b64(firstKB)[:4])
+    return self.get_msg_cs(start, 1024, max_length)
 
   def get_msg_cs80b(self, start, max_length):
-    self._file.seek(start, 0)
-    first80B = self._file.read(min(80, max_length))
-    if first80B == '':
-      raise IOError(_('No data found'))
-    return b64w(sha1b64(first80B)[:4])
+    return self.get_msg_cs(start, 80, max_length)
 
   def get_msg_ptr(self, mboxid, toc_id):
     msg_start = self._toc[toc_id][0]
@@ -534,7 +558,10 @@ class IncrementalMbox(mailbox.mbox):
       if (cs1k != cs and cs80b != cs):
         raise IOError(_('Message not found'))
 
-    return mailbox._PartialFile(self._file, start, start+length)
+    # We duplicate the file descriptor here, in case other threads are
+    # accessing the same mailbox and moving it around, or in case we have
+    # multiple PartialFile objects in flight at once.
+    return mailbox._PartialFile(self._get_fd(), start, start + length)
 
 
 class Email(object):
