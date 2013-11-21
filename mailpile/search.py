@@ -102,6 +102,9 @@ class MailIndex:
         self.CACHE = {}
         self.MODIFIED = set()
         self.EMAILS_SAVED = 0
+        self.html_cleaner = lxml.html.clean.Cleaner(
+            comments=True, remove_unknown_tags=True, page_structure=True,
+            style=True)
 
     def l2m(self, line):
         return line.decode('utf-8').split(u'\t')
@@ -628,8 +631,8 @@ class MailIndex:
                 _loader(part)
                 if len(payload[0]) > 3:
                     try:
-                        textpart = lxml.html.fromstring(payload[0]
-                                                        ).text_content()
+                        clean_payload = self.html_cleaner.clean_html(payload[0])
+                        textpart = lxml.html.fromstring(clean_payload).text_content()
                     except:
                         session.ui.warning(_('=%s/%s has bogus HTML.'
                                             ) % (msg_mid, msg_id))
