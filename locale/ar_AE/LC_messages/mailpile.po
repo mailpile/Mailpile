@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Mailpile Alpha\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-12 15:32+0000\n"
-"PO-Revision-Date: 2013-11-18 20:22+0400\n"
+"PO-Revision-Date: 2013-11-22 18:39+0400\n"
 "Last-Translator: Mohamed Kayali <blockchain@riseup.net>\n"
 "Language-Team: Mailpile <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -87,7 +87,7 @@ msgstr ""
 
 #: mailpile/defaults.py:28
 msgid "Default theme"
-msgstr ""
+msgstr "طراز  الأصلي"
 
 #: mailpile/defaults.py:30
 msgid "Location of vcards"
@@ -111,7 +111,7 @@ msgstr ""
 
 #: mailpile/defaults.py:38
 msgid "Default sort order"
-msgstr ""
+msgstr "ترتيب الفرز الأصلي"
 
 #: mailpile/defaults.py:39
 msgid "Encrypt local data to ..."
@@ -135,7 +135,7 @@ msgstr ""
 
 #: mailpile/defaults.py:45
 msgid "User interface language"
-msgstr ""
+msgstr "لغة واجهة المستخدم"
 
 #: mailpile/defaults.py:46
 msgid "VCard import/export settings"
@@ -179,7 +179,7 @@ msgid "Invalid URL slug: %s"
 msgstr ""
 
 #: mailpile/config.py:126
-#, python-format
+#, fuzzy, python-format
 msgid "Invalid hostname: %s"
 msgstr "اسم المضيف غير صالح: %s"
 
@@ -296,11 +296,11 @@ msgstr ""
 
 #: mailpile/gpgi.py:15
 msgid "Unknown trust"
-msgstr ""
+msgstr "الثقة مجهولة"
 
 #: mailpile/gpgi.py:16
 msgid "Undefined trust"
-msgstr ""
+msgstr "الثقة غير معرفة"
 
 #: mailpile/gpgi.py:17
 msgid "Never trust"
@@ -385,11 +385,12 @@ msgstr ""
 
 #: mailpile/commands.py:341
 msgid "Aborted"
-msgstr ""
+msgstr "تم إحباط"
 
 #: mailpile/commands.py:355
+#, fuzzy
 msgid "Statistics updated"
-msgstr ""
+msgstr "تحديث الإحصاءات"
 
 #: mailpile/commands.py:521
 #, python-format
@@ -419,7 +420,7 @@ msgstr ""
 
 #: mailpile/commands.py:651
 msgid "Error"
-msgstr ""
+msgstr "خطأ"
 
 #: mailpile/commands.py:684
 msgid "Unknown command"
@@ -468,11 +469,11 @@ msgstr ""
 
 #: mailpile/httpd.py:169
 msgid "Internal Error"
-msgstr ""
+msgstr "خطأ داخلي"
 
 #: mailpile/httpd.py:237
 msgid "Internal error"
-msgstr ""
+msgstr "خطأ داخلي"
 
 #: mailpile/search.py:168
 msgid "Loading metadata index..."
@@ -707,11 +708,11 @@ msgstr ""
 
 #: mailpile/mailutils.py:496 mailpile/mailutils.py:503
 msgid "No data found"
-msgstr ""
+msgstr "لا توجد بيانات"
 
 #: mailpile/mailutils.py:525
 msgid "Message not found"
-msgstr ""
+msgstr "لم يتم العثور على الرسالة"
 
 #: mailpile/mailutils.py:690 mailpile/mailutils.py:698
 #: mailpile/mailutils.py:752
@@ -734,7 +735,7 @@ msgstr ""
 
 #: mailpile/mailutils.py:885
 msgid "Failed to generate thumbnail"
-msgstr ""
+msgstr "فشل لإنشاء الصورة المصغرة"
 
 #: mailpile/mailutils.py:892
 #, python-format
@@ -753,15 +754,15 @@ msgstr ""
 
 #: static/default/html/page/donate/index.html:7
 msgid "Please Donate To Mailpile"
-msgstr ""
+msgstr "Mailpileيرجى تبرع  ل"
 
 #: static/default/html/page/donate/index.html:11
 msgid "Or you can donate to our"
-msgstr ""
+msgstr "أو يمكنك التبرع ل"
 
 #: static/default/html/page/donate/index.html:11
 msgid "Bitcoin Wallet"
-msgstr ""
+msgstr "(Bitcoin) محفظة"
 
 #: static/default/html/layouts/base.html:66
 #, python-format
@@ -770,35 +771,36 @@ msgstr ""
 
 #: static/default/html/layouts/base.html:124
 msgid "Encrypted"
-msgstr ""
+msgstr "مشفرة"
 
 #: static/default/html/layouts/base.html:130
 msgid "Photos"
-msgstr ""
+msgstr "صور"
 
 #: static/default/html/layouts/base.html:136
 msgid "Files"
-msgstr ""
+msgstr "ملفات"
 
 #: static/default/html/layouts/base.html:142
+#, fuzzy
 msgid "Links"
-msgstr ""
+msgstr "وصلات"
 
 #: static/default/html/layouts/base.html:148
 msgid "Groups"
-msgstr ""
+msgstr "مجموعات"
 
 #: static/default/html/layouts/base.html:160
 msgid "Mailpile"
-msgstr ""
+msgstr "Mailpile"
 
 #: static/default/html/layouts/base.html:160
 msgid "is free software made by"
-msgstr ""
+msgstr "هو برنامج مجاني كتبه"
 
 #: static/default/html/layouts/base.html:160
 msgid "more"
-msgstr ""
+msgstr "أكثر"
 
 #: static/default/html/layouts/base.html:175
 #: static/default/html/message/index.html:16
@@ -807,19 +809,19 @@ msgstr ""
 
 #: static/default/html/layouts/base.html:175
 msgid "Start time"
-msgstr ""
+msgstr "وقت البدء"
 
 #: static/default/html/layouts/base.html:175
 msgid "to"
-msgstr ""
+msgstr "إلى"
 
 #: static/default/html/layouts/base.html:175
 msgid "Present"
-msgstr ""
+msgstr "الحاضر"
 
 #: static/default/html/layouts/base.html:176
 msgid "With:"
-msgstr ""
+msgstr "مع:"
 
 #: static/default/html/layouts/base.html:176
 msgid "No Tags"
@@ -839,27 +841,27 @@ msgstr ""
 
 #: static/default/html/message/index.html:17
 msgid "From:"
-msgstr ""
+msgstr "من:"
 
 #: static/default/html/message/index.html:18
 msgid "To:"
-msgstr ""
+msgstr "إلى:"
 
 #: static/default/html/message/index.html:20
 msgid "Cc:"
-msgstr ""
+msgstr "نسخة إلى:"
 
 #: static/default/html/message/index.html:23
 msgid "Bcc:"
-msgstr ""
+msgstr "نسخة مخفية:"
 
 #: static/default/html/message/index.html:25
 msgid "Subject:"
-msgstr ""
+msgstr "الموضوع:"
 
 #: static/default/html/message/index.html:34
 msgid "Signed by"
-msgstr ""
+msgstr "وقعه"
 
 #: static/default/html/message/index.html:35
 msgid "Unknown signature from"
@@ -879,12 +881,12 @@ msgstr ""
 
 #: static/default/html/message/index.html:63
 msgid "Reply"
-msgstr ""
+msgstr "رد"
 
 #: static/default/html/message/index.html:66
 #: static/default/html/partials/sub_nav_search.html:3
 msgid "All"
-msgstr ""
+msgstr "جميع"
 
 #: static/default/html/message/index.html:69
 msgid "Forward"
@@ -892,58 +894,59 @@ msgstr ""
 
 #: static/default/html/message/draft.html:14
 msgid "To"
-msgstr ""
+msgstr "إلى"
 
 #: static/default/html/message/draft.html:16
 #: static/default/html/message/draft.html:24
 msgid "Bcc"
-msgstr ""
+msgstr "نسخة مخفية"
 
 #: static/default/html/message/draft.html:17
 #: static/default/html/message/draft.html:20
 msgid "Cc"
-msgstr ""
+msgstr "نسخة"
 
 #: static/default/html/message/draft.html:28
 msgid "From"
-msgstr ""
+msgstr "من"
 
 #: static/default/html/message/draft.html:38
 msgid "Subject"
-msgstr ""
+msgstr "الموضوع"
 
 #: static/default/html/message/draft.html:45
+#, fuzzy
 msgid "No Attachments"
-msgstr ""
+msgstr "بدون  ملفات مرفقت"
 
 #: static/default/html/message/draft.html:50
 msgid "Send"
-msgstr ""
+msgstr "إرسال"
 
 #: static/default/html/message/draft.html:51
 msgid "Save"
-msgstr ""
+msgstr "حفظ"
 
 #: static/default/html/message/draft.html:60
 msgid "Message not found!"
-msgstr ""
+msgstr "لم يتم العثور على الرسالة"
 
 #: static/default/html/tag/list.html:14
 msgid "Total"
-msgstr ""
+msgstr "مجموع"
 
 #: static/default/html/tag/list.html:19
 #: static/default/html/partials/sub_nav_search.html:4
 msgid "New"
-msgstr ""
+msgstr "جديد"
 
 #: static/default/html/tag/list.html:24
 msgid "View Messages"
-msgstr ""
+msgstr "عرض الرسائل"
 
 #: static/default/html/tag/list.html:34
 msgid "Archived"
-msgstr ""
+msgstr "المؤرشفة"
 
 #: static/default/html/tag/add.html:3
 msgid "Enter New Tag Info"
@@ -959,7 +962,7 @@ msgstr ""
 
 #: static/default/html/tag/add.html:15
 msgid "Add"
-msgstr ""
+msgstr "إضافة"
 
 #: static/default/html/settings/index.html:7
 msgid "Your Profiles"
@@ -972,27 +975,27 @@ msgstr ""
 #: static/default/html/settings/index.html:20
 #: static/default/html/contact/add.html:9
 msgid "Name"
-msgstr ""
+msgstr "اسم"
 
 #: static/default/html/settings/index.html:23
 msgid "Email"
-msgstr ""
+msgstr "البريد الإلكتروني"
 
 #: static/default/html/settings/index.html:26
 msgid "SMTP Server"
-msgstr ""
+msgstr "خادم SMTP"
 
 #: static/default/html/settings/index.html:27
 msgid "Login"
-msgstr ""
+msgstr "دخول"
 
 #: static/default/html/settings/index.html:30
 msgid "Password"
-msgstr ""
+msgstr "كلمة السر"
 
 #: static/default/html/settings/index.html:33
 msgid "Server"
-msgstr ""
+msgstr "الخادم"
 
 #: static/default/html/settings/index.html:36
 msgid "Port"
@@ -1004,11 +1007,11 @@ msgstr ""
 
 #: static/default/html/partials/bulk_actions.html:2
 msgid "Messages"
-msgstr ""
+msgstr "الرسائل"
 
 #: static/default/html/partials/bulk_actions.html:2
 msgid "selected"
-msgstr ""
+msgstr "مختار"
 
 #: static/default/html/partials/sub_nav_contacts.html:3
 msgid "Contacts"
@@ -1024,15 +1027,15 @@ msgstr ""
 
 #: static/default/html/partials/sub_nav_message.html:6
 msgid "Archive"
-msgstr ""
+msgstr "أرشفة"
 
 #: static/default/html/partials/sub_nav_message.html:7
 msgid "Delete"
-msgstr ""
+msgstr "حذف"
 
 #: static/default/html/partials/sub_nav_message.html:8
 msgid "Show All"
-msgstr ""
+msgstr "عرض كل"
 
 #: static/default/html/partials/errors_content.html:3
 msgid "Oops, you've found a quirk!"
@@ -1041,7 +1044,7 @@ msgstr ""
 #: static/default/html/partials/errors_content.html:4
 msgid ""
 "We were unable to find the message you requested, perhaps it was deleted?"
-msgstr ""
+msgstr "لم نتمكن من العثور على الرسالة التي طلب منا، ربما تم حذفها؟"
 
 #: static/default/html/partials/errors_content.html:5
 #, python-format
@@ -1071,60 +1074,64 @@ msgstr ""
 
 #: static/default/html/search/index.html:20
 msgid "Previous"
-msgstr ""
+msgstr "السابقة"
 
 #: static/default/html/search/index.html:20
 msgid "Next"
-msgstr ""
+msgstr "التالي"
 
 #: static/default/html/search/index.html:22
 msgid "of"
-msgstr ""
+msgstr "من"
 
 #: static/default/html/search/index.html:22
 msgid "Conversations"
-msgstr ""
+msgstr "المحادثات"
 
 #: static/default/html/search/index.html:22
 msgid "1 Conversation"
-msgstr ""
+msgstr "محادثة واحدة"
 
 #: static/default/html/search/index.html:22
 msgid "No results found"
-msgstr ""
+msgstr "لا توجد نتائج"
 
 #: static/default/html/search/index.html:23
+#, fuzzy
 msgid "Snug"
-msgstr ""
+msgstr "صغير "
 
 #: static/default/html/search/index.html:24
+#, fuzzy
 msgid "Cozy"
-msgstr ""
+msgstr "متوسط"
 
 #: static/default/html/search/index.html:25
+#, fuzzy
 msgid "Comfy"
-msgstr ""
+msgstr "كبير"
 
 #: static/default/html/search/index.html:26
+#, fuzzy
 msgid "Fluffy"
-msgstr ""
+msgstr "كبير جدا"
 
 #: static/default/html/search/index.html:32
 msgid "No Results Found"
-msgstr ""
+msgstr "لا توجد نتائج"
 
 #: static/default/html/contact/add.html:3
 msgid "Contact Info"
-msgstr ""
+msgstr "معلومات الاتصال"
 
 #: static/default/html/contact/add.html:12
 msgid "E-mail"
-msgstr ""
+msgstr "البريد الإلكتروني"
 
 #: static/default/html/contact/add.html:15
 msgid "Website"
-msgstr ""
+msgstr "الموقع الالكتروني"
 
 #: static/default/html/contact/add.html:18
 msgid "PGP Key"
-msgstr ""
+msgstr "مفتاح (PGP)"
