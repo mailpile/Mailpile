@@ -269,7 +269,7 @@ class GlobalPostingList(PostingList):
     @classmethod
     def _Optimize(cls, session, idx, force=False, lazy=False, quick=False):
         count = 0
-        if not lazy or len(GLOBAL_POSTING_LIST) > 10240:
+        if not lazy or len(GLOBAL_POSTING_LIST) > 20480:
             keys = sorted(GLOBAL_POSTING_LIST.keys())
             pls = GlobalPostingList(session, '')
             for sig in keys:
