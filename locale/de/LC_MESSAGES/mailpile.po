@@ -537,7 +537,7 @@ msgstr "%s: Übersprungen: %s"
 #: mailpile/search.py:335
 #, python-format
 msgid "%s: Checking: %s"
-msgstr "%S: Prüfe %s"
+msgstr "%s: Prüfe %s"
 
 #: mailpile/search.py:338
 #, python-format
