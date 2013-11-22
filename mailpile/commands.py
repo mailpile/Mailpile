@@ -244,14 +244,17 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None, '[vcards|<msgs>]')
+    SYNOPSIS = (None, 'rescan', None, '[all|vcards|<msgs>]')
     ORDER = ('Internals', 2)
     SERIALIZE = 'Rescan'
 
     def command(self):
         session, config = self.session, self.session.config
-        if self.args and self.args[0] == 'vcards':
+
+        if self.args and self.args[0].lower() == 'vcards':
             return self._rescan_vcards(session, config)
+        elif self.args and self.args[0].lower() == 'all':
+            self.args.pop(0)
 
         msg_idxs = self._choose_messages(self.args)
         if msg_idxs:

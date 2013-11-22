@@ -110,7 +110,7 @@ Mailpile will create and use a folder in your home directory named
 
 A simple test run might look like so:
 
-    $ ./mp --add /var/spool/mail/YOURNAME --rescan
+    $ ./mp --add /var/spool/mail/YOURNAME --rescan all
 
 The program prints details of its progress as it runs.  Note that just
 opening the mailbox may take quite a while if it is large enough (it
