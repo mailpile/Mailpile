@@ -348,6 +348,18 @@ def cached_open(filename, mode):
         APPEND_FD_CACHE_LOCK.release()
 
 
+def play_nice_with_threads():
+    """
+    Long-running batch jobs should call this now and then to pause
+    their activities if there are other threads that would like to
+    run. This is a bit of a hack!
+    """
+    delay = max(0, 0.01 * (threading.activeCount()-2))
+    if delay:
+        time.sleep(delay)
+    return delay
+
+
 def thumbnail(fileobj, output_fd, height=None, width=None):
     """
     Generates a thumbnail image , which should be a file,

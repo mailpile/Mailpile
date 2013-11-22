@@ -35,6 +35,7 @@ class PostingList(object):
                 filesize = os.path.getsize(os.path.join(postinglist_dir, fn))
                 if force or (filesize > 900 * postinglist_kb):
                     session.ui.mark('Pass 1: Compacting >%s<' % fn)
+                    play_nice_with_threads()
                     try:
                         GLOBAL_POSTING_LOCK.acquire()
                         # FIXME: Remove invalid and deleted messages from
@@ -59,6 +60,7 @@ class PostingList(object):
                 size += os.path.getsize(os.path.join(postinglist_dir, fnp))
                 if (size < (1024 * postinglist_kb - (cls.HASH_LEN * 6))):
                     session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
+                    play_nice_with_threads()
                     try:
                         GLOBAL_POSTING_LOCK.acquire()
                         fd = cached_open(os.path.join(postinglist_dir,
@@ -270,7 +272,8 @@ class GlobalPostingList(PostingList):
         count = 0
         keys = sorted(GLOBAL_POSTING_LIST.keys())
         for sig in keys:
-            if (count % 50) == 0:
+            if (count % 25) == 0:
+                play_nice_with_threads()
                 session.ui.mark(('Updating search index... %d%% (%s)'
                                  ) % (count * 100 / len(keys), sig))
             pls._migrate(sig, compact=quick)

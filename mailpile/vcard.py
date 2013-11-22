@@ -803,8 +803,10 @@ class VCardImporter(VCardPluginClass):
                 new_vcard.merge(self.config.guid, vcard.as_lines())
                 vcard_store.add_vcards(new_vcard)
                 updated.append(new_vcard)
+                play_nice_with_threads()
         for vcard in set(updated):
             vcard.save()
+            play_nice_with_threads()
         return len(updated)
 
     def get_vcards(self):

@@ -366,9 +366,11 @@ class MailIndex:
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status)
+                    play_nice_with_threads()
                 continue
             else:
                 session.ui.mark(parse_status)
+                play_nice_with_threads()
 
             # Message new or modified, let's parse it.
             msg = ParseMessage(mbox.get_file(i), pgpmime=False)
@@ -383,6 +385,7 @@ class MailIndex:
                 msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg,
                                                         msg_ts)
 
+                play_nice_with_threads()
                 keywords, snippet = self.index_message(session,
                                                        msg_mid, msg_id,
                                                        msg, msg_ts,
@@ -962,10 +965,14 @@ class MailIndex:
             if session:
                 session.ui.mark(_('Sorting %d messages in %s order...'
                                  ) % (len(keys), order))
+
+            play_nice_with_threads()
             o = keys[:]
             o.sort(key=lambda k: sorter(self, k))
             self.INDEX_SORT[order] = keys[:]
             self.INDEX_SORT[order+'_fwd'] = o
+
+            play_nice_with_threads()
             for i in range(0, len(o)):
                     self.INDEX_SORT[order][o[i]] = i
 

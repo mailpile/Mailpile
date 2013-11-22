@@ -251,6 +251,13 @@ class Rescan(Command):
     def command(self):
         session, config = self.session, self.session.config
 
+        delay = play_nice_with_threads()
+        if delay > 0:
+            session.ui.notify((
+                _('Note: periodic delay is %ss, run from shell to '
+                  'speed up: mp --rescan=...')
+            ) % delay)
+
         if self.args and self.args[0].lower() == 'vcards':
             return self._rescan_vcards(session, config)
         elif self.args and self.args[0].lower() == 'all':
