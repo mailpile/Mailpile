@@ -411,8 +411,8 @@ class MailIndex:
                 mbox.mark_parsed(i)
 
                 added += 1
-                if (added % 1000) == 0:
-                    GlobalPostingList.Optimize(session, self, quick=True)
+                GlobalPostingList.Optimize(session, self,
+                                           lazy=True, quick=True)
 
         if added:
             mbox.save(session)

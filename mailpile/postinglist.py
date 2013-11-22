@@ -267,18 +267,19 @@ GLOBAL_GPL_LOCK = threading.Lock()
 class GlobalPostingList(PostingList):
 
     @classmethod
-    def _Optimize(cls, session, idx, force=False, quick=False):
-        pls = GlobalPostingList(session, '')
+    def _Optimize(cls, session, idx, force=False, lazy=False, quick=False):
         count = 0
-        keys = sorted(GLOBAL_POSTING_LIST.keys())
-        for sig in keys:
-            if (count % 25) == 0:
-                play_nice_with_threads()
-                session.ui.mark(('Updating search index... %d%% (%s)'
-                                 ) % (count * 100 / len(keys), sig))
-            pls._migrate(sig, compact=quick)
-            count += 1
-        pls.save()
+        if not lazy or len(GLOBAL_POSTING_LIST) > 10240:
+            keys = sorted(GLOBAL_POSTING_LIST.keys())
+            pls = GlobalPostingList(session, '')
+            for sig in keys:
+                if (count % 25) == 0:
+                    play_nice_with_threads()
+                    session.ui.mark(('Updating search index... %d%% (%s)'
+                                     ) % (count * 100 / len(keys), sig))
+                pls._migrate(sig, compact=quick)
+                count += 1
+            pls.save()
 
         if quick:
             return count
