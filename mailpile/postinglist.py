@@ -260,6 +260,8 @@ class PostingList(object):
             self.lock.release()
 
 
+GLOBAL_GPL_LOCK = threading.Lock()
+
 class GlobalPostingList(PostingList):
 
     @classmethod
@@ -293,17 +295,25 @@ class GlobalPostingList(PostingList):
             return (None, 'kw-journal.dat')
 
     @classmethod
-    def Append(cls, session, word, mail_ids, compact=True):
-        super(GlobalPostingList, cls).Append(session, word, mail_ids,
-                                             compact=compact)
+    def _Append(cls, session, word, mail_ids, compact=True):
+        super(GlobalPostingList, cls)._Append(session, word, mail_ids,
+                                              compact=compact)
         global GLOBAL_POSTING_LIST
-        sig = cls.WordSig(word, session.config)
-        if GLOBAL_POSTING_LIST is None:
-            GLOBAL_POSTING_LIST = {}
-        if sig not in GLOBAL_POSTING_LIST:
-            GLOBAL_POSTING_LIST[sig] = set()
-        for mail_id in mail_ids:
-            GLOBAL_POSTING_LIST[sig].add(mail_id)
+        GLOBAL_GPL_LOCK.acquire()
+        try:
+            sig = cls.WordSig(word, session.config)
+            if GLOBAL_POSTING_LIST is None:
+                GLOBAL_POSTING_LIST = {}
+            if sig not in GLOBAL_POSTING_LIST:
+                GLOBAL_POSTING_LIST[sig] = set()
+            for mail_id in mail_ids:
+                GLOBAL_POSTING_LIST[sig].add(mail_id)
+        finally:
+            GLOBAL_GPL_LOCK.release()
+
+    def __init__(self, *args, **kwargs):
+        PostingList.__init__(self, *args, **kwargs)
+        self.lock = GLOBAL_GPL_LOCK
 
     def _fmt_file(self, prefix):
         return PostingList._fmt_file(self, 'ALL')
