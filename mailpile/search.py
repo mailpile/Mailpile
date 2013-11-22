@@ -939,26 +939,31 @@ class MailIndex:
                              ) % (len(results), len(srs.excluded())))
         return srs
 
-    def cache_sort_orders(self, session):
+    CACHED_SORT_ORDERS = [
+        ('date', True,
+         lambda s, k: long(s.get_msg_at_idx_pos(k)[s.MSG_DATE], 36)),
+        # FIXME: The following are effectively disabled for now
+        ('from', False,
+         lambda s, k: s.get_msg_at_idx_pos(k)[s.MSG_FROM]),
+        ('subject', False,
+        lambda s, k: s.get_msg_at_idx_pos(k)[s.MSG_SUBJECT]),
+    ]
+
+    def cache_sort_orders(self, session, wanted=None):
         keys = range(0, len(self.INDEX))
         if session:
             session.ui.mark(_('Finding conversations (%d messages)...'
                              ) % len(keys))
         self.INDEX_CONV = [int(self.get_msg_at_idx_pos(r)[self.MSG_CONV_MID],
                                36) for r in keys]
-        for order, sorter in [
-            ('date',
-             lambda k: long(self.get_msg_at_idx_pos(k)[self.MSG_DATE], 36)),
-            ('from',
-             lambda k: self.get_msg_at_idx_pos(k)[self.MSG_FROM]),
-            ('subject',
-             lambda k: self.get_msg_at_idx_pos(k)[self.MSG_SUBJECT]),
-        ]:
+        for order, by_default, sorter in self.CACHED_SORT_ORDERS:
+            if (not by_default) and not (wanted and order in wanted):
+                continue
             if session:
                 session.ui.mark(_('Sorting %d messages in %s order...'
                                  ) % (len(keys), order))
             o = keys[:]
-            o.sort(key=sorter)
+            o.sort(key=lambda k: sorter(self, k))
             self.INDEX_SORT[order] = keys[:]
             self.INDEX_SORT[order+'_fwd'] = o
             for i in range(0, len(o)):
