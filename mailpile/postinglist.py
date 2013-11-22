@@ -273,7 +273,7 @@ class GlobalPostingList(PostingList):
             if (count % 50) == 0:
                 session.ui.mark(('Updating search index... %d%% (%s)'
                                  ) % (count * 100 / len(keys), sig))
-            pls.migrate(sig, compact=quick)
+            pls._migrate(sig, compact=quick)
             count += 1
         pls.save()
 
@@ -330,7 +330,7 @@ class GlobalPostingList(PostingList):
             PostingList.load(self)
             GLOBAL_POSTING_LIST = self.WORDS
 
-    def migrate(self, sig=None, compact=True):
+    def _migrate(self, sig=None, compact=True):
         self.lock.acquire()
         try:
             sig = sig or self.sig
