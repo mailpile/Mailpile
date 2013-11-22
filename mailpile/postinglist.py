@@ -35,9 +35,13 @@ class PostingList(object):
                 filesize = os.path.getsize(os.path.join(postinglist_dir, fn))
                 if force or (filesize > 900 * postinglist_kb):
                     session.ui.mark('Pass 1: Compacting >%s<' % fn)
-                    # FIXME: Remove invalid and deleted messages from
-                    #        posting lists.
-                    cls(session, fn, sig=fn).save()
+                    try:
+                        GLOBAL_POSTING_LOCK.acquire()
+                        # FIXME: Remove invalid and deleted messages from
+                        #        posting lists.
+                        cls(session, fn, sig=fn).save()
+                    finally:
+                        GLOBAL_POSTING_LOCK.release()
 
         # Pass 2: While mergable pair exists: merge them!
         flush_append_cache()
@@ -55,9 +59,12 @@ class PostingList(object):
                 size += os.path.getsize(os.path.join(postinglist_dir, fnp))
                 if (size < (1024 * postinglist_kb - (cls.HASH_LEN * 6))):
                     session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
-                    fd = cached_open(os.path.join(postinglist_dir, fn), 'r')
-                    fdp = cached_open(os.path.join(postinglist_dir, fnp), 'a')
                     try:
+                        GLOBAL_POSTING_LOCK.acquire()
+                        fd = cached_open(os.path.join(postinglist_dir,
+                                                      fn), 'r')
+                        fdp = cached_open(os.path.join(postinglist_dir,
+                                                       fnp), 'a')
                         for line in fd:
                             fdp.write(line)
                     except:
@@ -66,6 +73,7 @@ class PostingList(object):
                     finally:
                         fd.close()
                         os.remove(os.path.join(postinglist_dir, fn))
+                        GLOBAL_POSTING_LOCK.release()
 
         flush_append_cache()
         filecount = 0
