@@ -6289,6 +6289,12 @@ a.compose-show-field {
   background: #cccccc;
   color: #333333;
 }
+#pile-bottom ul {
+  clear: both;
+}
+#pile-bottom ul > li {
+  display: inline;
+}
 /* Pile	- Drag & Drop */
 .pile-results-drag {
   background: #ffffff;

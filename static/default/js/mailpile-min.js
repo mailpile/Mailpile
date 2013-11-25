@@ -1,14 +1,17 @@
-// If no console.log() exists
+// Make console.log not crash JS browsers that don't support it
 if (!window.console) window.console = { log: $.noop, group: $.noop, groupEnd: $.noop, info: $.noop, error: $.noop };
 
 
-Number.prototype.pad = function(size){
+Number.prototype.pad = function(size) {
 	// Unfortunate padding function....
-	if(typeof(size) !== "number"){size = 2;}
+	if(typeof(size) !== "number"){
+    size = 2;
+  }
 	var s = String(this);
 	while (s.length < size) s = "0" + s;
 	return s;
 }
+
 
 function MailPile() {
   this.instance       = {};
@@ -37,6 +40,21 @@ function MailPile() {
 	this.plugins = [];
 }
 
+
+MailPile.prototype.bulk_cache_add = function(mid) {
+  if (_.indexOf(this.bulk_cache, mid) < 0) {
+    this.bulk_cache.push(mid);
+  }
+};
+
+
+MailPile.prototype.bulk_cache_remove = function(mid) {
+  if (_.indexOf(this.bulk_cache, mid) > -1) {
+    this.bulk_cache = _.without(this.bulk_cache, mid);
+  }
+}
+
+
 MailPile.prototype.keybindings_loadfromserver = function() {
 	var that = this;
 	this.json_get("help", {}, function(data) {
@@ -46,200 +64,6 @@ MailPile.prototype.keybindings_loadfromserver = function() {
 		}
 	});
 }
-
-MailPile.prototype.bulk_cache_add = function(mid) {
-  if (_.indexOf(this.bulk_cache, mid) < 0) {
-    this.bulk_cache.push(mid);
-  }
-};
-
-MailPile.prototype.bulk_cache_remove = function(mid) {
-  if (_.indexOf(this.bulk_cache, mid) > -1) {
-    this.bulk_cache = _.without(this.bulk_cache, mid);
-  }
-}
-
-MailPile.prototype.attach = function() {}
-
-MailPile.prototype.compose = function(data) {
-
-  $.ajax({
-    url      : mailpile.api.compose,
-    type     : 'POST',
-    data     : data,
-    dataType : 'json'
-  })
-  .done(function(response) {
-
-    if (response.status == 'success') {
-      window.location.href = mailpile.urls.message_draft + response.result.created + '/';
-    } else {
-      statusMessage(response.status, response.message);
-    }
-  });
-}
-
-MailPile.prototype.delete = function() {}
-MailPile.prototype.extract = function() {}
-MailPile.prototype.filter = function() {}
-MailPile.prototype.help = function() {}
-MailPile.prototype.load = function() {}
-MailPile.prototype.mail = function() {}
-MailPile.prototype.forward = function() {}
-MailPile.prototype.next = function() {}
-MailPile.prototype.order = function() {}
-MailPile.prototype.optimize = function() {}
-MailPile.prototype.previous = function() {}
-MailPile.prototype.print = function() {}
-MailPile.prototype.reply = function() {}
-MailPile.prototype.rescan = function() {}
-
-
-MailPile.prototype.gpgrecvkey = function(keyid) {
-	console.log("Fetching GPG key 0x" + keyid);
-	mailpile.json_get("gpg recv_key", {}, function(data) {
-		console.log("Fetch command execed for GPG key 0x" + keyid + ", resulting in:");
-		console.log(data);
-	});
-}
-
-MailPile.prototype.gpglistkeys = function() {
-	mailpile.json_get("gpg list", {}, function(data) {
-		$("#content").append('<div class="dialog" id="gpgkeylist"></div>');
-		for (k in data.results) {
-			key = data.results[k]
-			$("#gpgkeylist").append("<li>Key: " + key.uids[0].replace("<", "&lt;").replace(">", "&gt;") + ": " + key.pub.keyid + "</li>");
-		}
-	});
-}
-
-MailPile.prototype.search = function(q) {
-	var that = this;
-	$("#qbox").val(q);
-	this.json_get("search", {"q": q}, function(data) {
-		if ($("#results").length == 0) {
-			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
-		}
-		$("#results tbody").empty();
-		for (var i = 0; i < data.results.length; i++) {
-			msg_info = data.results[i];
-			msg_tags = data.results[i].tags;
-			d = new Date(msg_info.date*1000)
-			zpymd = d.getFullYear() + "-" + (d.getMonth()+1).pad(2) + "-" + d.getDate().pad(2);
-			ymd = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
-			taghrefs = msg_tags.map(function(e){ return '<a onclick="mailpile.search(\'\\' + e + '\')">' + e + '</a>'}).join(" ");
-			tr = $('<tr class="result"></tr>');
-			tr.addClass((i%2==0)?"even":"odd");
-			tr.append('<td class="checkbox"><input type="checkbox" name="msg_' + msg_info.id + '"/></td>');
-			tr.append('<td class="from"><a href="' + msg_info.url + '">' + msg_info.from + '</a></td>');
-			tr.append('<td class="subject"><a href="' + msg_info.url + '">' + msg_info.subject + '</a></td>');
-			tr.append('<td class="tags">' + taghrefs + '</td>');
-			tr.append('<td class="date"><a onclick="mailpile.search(\'date:' + ymd + '\');">' + zpymd + '</a></td>');
-			$("#results tbody").append(tr);
-		}
-		that.loglines(data.chatter);
-	});
-}
-
-MailPile.prototype.go = function(q) {
-	console.log("Going to ", q);
-	window.location.href = q;
-}
-
-MailPile.prototype.set = function(key, value) {
-	var that = this;
-	this.json_get("set", {"args": key + "=" + value}, function(data) {
-		if (data.status == "ok") {
-			that.notice("Success: " + data.loglines[0]);
-		} else if (data.status == "error") {
-			this.error(data.loglines[0]);
-		}
-	});
-}
-
-MailPile.prototype.tag = function(msgids, tags) {}
-MailPile.prototype.addtag = function(tagname) {}
-MailPile.prototype.unset = function() {}
-MailPile.prototype.update = function() {}
-
-MailPile.prototype.view = function(idx, msgid) {
-	var that = this;
-	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
-		if ($("#results").length == 0) {
-			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
-		}
-		$("#results").empty();
-		$that.loglines(data.chatter);
-	})
-}
-
-MailPile.prototype.json_get = function(cmd, params, callback) {
-	var url;
-	if (cmd == "view") {
-		url = "/=" + params["idx"] + "/" + params["msgid"] + ".json";
-	} else {
-		url = "/api/0/" + cmd;
-	}
-	$.getJSON(url, params, callback);
-}
-
-MailPile.prototype.loglines = function(text) {
-	$("#loglines").empty();
-	for (var i = 0; i < text.length; i++) {
-		$("#loglines").append(text[i] + "\n");
-	}
-}
-
-MailPile.prototype.notice = function(msg) {
-	console.log("NOTICE: " + msg);
-}
-
-MailPile.prototype.error = function(msg) {
-	console.log("ERROR: " + msg);
-}
-
-MailPile.prototype.warning = function(msg) {
-	console.log("WARNING: " + msg);
-}
-
-
-MailPile.prototype.results_list = function() {
-
-  // Navigation
-	$('#btn-display-list').addClass('navigation-on');
-	$('#btn-display-graph').removeClass('navigation-on');
-	
-	// Show & Hide View
-	$('#pile-graph').hide('fast', function() {
-
-    $('#sidebar').show('normal');
-    $('#form-pile-results').show('normal');
-    $('#pile-results').show('fast');
-    $('.pile-speed').show('normal');
-    $('#footer').show('normal');
-    $('#sidebar').show('normal');
-
-	});
-
-}
-
-MailPile.prototype.graph_actionbuttons = function() {
-	if (this.graphselected.length >= 1) {
-		$("#btn-compose-message").show();
-	} else {
-		$("#btn-compose-message").hide();
-	}
-	if (this.graphselected.length >= 2) {
-		$("#btn-found-group").show();
-	} else {
-		$("#btn-found-group").hide();
-	}
-}
-
-MailPile.prototype.focus_search = function() {
-	$("#qbox").focus(); return false;
-}
-
 
 
 var keybindings = [
@@ -258,14 +82,9 @@ var keybindings = [
 ];
 
 
-var favicon = new Favico({
-    animation:'popFade'
-});
-
-
 var mailpile = new MailPile();
 
-
+var favicon = new Favico({animation:'popFade'});
 
 // Non-exposed functions: www, setup
 $(document).ready(function() {
@@ -311,15 +130,14 @@ $(document).ready(function() {
     localStorage.setItem('view_size', mailpile.defaults.view_size);
   }
 
-  
+
   // Load Scrollers
   /*
-  $(".nano").nanoScroller({ 
+  $(".nano").nanoScroller({
     alwaysVisible: true,
     sliderMinHeight: 40
   });
   */
-
 
 });
 
@@ -354,7 +172,7 @@ $(document).on('click', 'a.change-view-size', function(e) {
 
 
 /* **********************************************
-     Begin messages.js
+     Begin notifications.js
 ********************************************** */
 
 var statusHeaderPadding = function() {
@@ -368,7 +186,6 @@ var statusHeaderPadding = function() {
 
 	return padding;
 };
-
 
 
 var statusMessage = function(status, message_text, complete, complete_action) {
@@ -426,8 +243,176 @@ $(document).ready(function() {
 });
 
 /* **********************************************
+     Begin tooltips.js
+********************************************** */
+
+// Non-exposed functions: www, setup
+$(document).ready(function() {
+
+  $('.topbar-nav a').qtip({
+    style: {
+     tip: {
+        corner: 'top center',
+        mimic: 'top center',
+        border: 0,
+        width: 10,
+        height: 10
+      },
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'top center',
+      at: 'bottom center',
+			viewport: $(window),
+			adjust: {
+				x: 0,  y: 5
+			}
+    },
+    show: {
+      delay: 350
+    }
+  });
+
+
+  $('a.bulk-action').qtip({
+    style: {
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'top center',
+      at: 'bottom center',
+			viewport: $(window),
+			adjust: {
+				x: 0,  y: 5
+			}
+    }
+  });
+
+
+  $('.message-privacy-state').qtip({
+    style: {
+     tip: {
+        corner: 'right center',
+        mimic: 'right center',
+        border: 0,
+        width: 10,
+        height: 10
+      },
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'right center',
+      at: 'left center',
+			viewport: $(window),
+			adjust: {
+				x: -5,  y: 0
+			}
+    },
+    show: {
+      delay: 50
+    },
+    events: {
+      show: function(event, api) {
+
+        $('.compose-to').css('background-color', '#fbb03b');
+        $('.compose-cc').css('background-color', '#fbb03b');           
+        $('.compose-bcc').css('background-color', '#fbb03b');
+        $('.compose-from').css('background-color', '#fbb03b');
+        $('.compose-subject').css('background-color', '#fbb03b');
+
+        $('.compose-message').css('background-color', '#a2d699');
+        $('.compose-attachments').css('background-color', '#a2d699');
+
+        console.log('Checking this out'); 
+      },
+      hide: function(event, api) {
+
+        $('.compose-to').css('background-color', '#ffffff');
+        $('.compose-cc').css('background-color', '#ffffff');           
+        $('.compose-bcc').css('background-color', '#ffffff');
+        $('.compose-from').css('background-color', '#ffffff');
+        $('.compose-subject').css('background-color', '#ffffff');
+
+        $('.compose-message').css('background-color', '#ffffff');
+        $('.compose-attachments').css('background-color', '#ffffff');
+        
+      }
+    }
+  });
+
+
+  $('.compose-to-email').qtip({
+    content: {
+      text: 'Email This Address'
+    },
+    style: {
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'bottom center',
+      at: 'top center',
+			viewport: $(window),
+			adjust: {
+				x: 0,  y: 0
+			}
+    },
+    show: {
+      delay: 500
+    }
+  });
+  
+
+});
+
+/* **********************************************
+     Begin gpg.js
+********************************************** */
+
+MailPile.prototype.gpgrecvkey = function(keyid) {
+	console.log("Fetching GPG key 0x" + keyid);
+	mailpile.json_get("gpg recv_key", {}, function(data) {
+		console.log("Fetch command execed for GPG key 0x" + keyid + ", resulting in:");
+		console.log(data);
+	});
+}
+
+MailPile.prototype.gpglistkeys = function() {
+	mailpile.json_get("gpg list", {}, function(data) {
+		$("#content").append('<div class="dialog" id="gpgkeylist"></div>');
+		for (k in data.results) {
+			key = data.results[k]
+			$("#gpgkeylist").append("<li>Key: " + key.uids[0].replace("<", "&lt;").replace(">", "&gt;") + ": " + key.pub.keyid + "</li>");
+		}
+	});
+}
+
+/* **********************************************
      Begin compose.js
 ********************************************** */
+
+/* Generate New Draft MID */
+MailPile.prototype.compose = function(data) {
+
+  $.ajax({
+    url      : mailpile.api.compose,
+    type     : 'POST',
+    data     : data,
+    dataType : 'json'
+  })
+  .done(function(response) {
+
+    if (response.status == 'success') {
+      window.location.href = mailpile.urls.message_draft + response.result.created + '/';
+    } else {
+      statusMessage(response.status, response.message);
+    }
+  });
+}
+
+
+/* Add Attachment */
+MailPile.prototype.attach = function() {}
+
 
 /* Create New Blank Message */
 $(document).on('click', '#button-compose', function(e) {
@@ -454,7 +439,7 @@ if ($('#form-compose').length) {
   }
 
   var formatComposeId = function(object) {
-    if (object.address != object.fn) {
+    if (object.fn != "" && object.address != object.fn) {
       return object.fn + ' <' + object.address + '>';
     } else {
       return object.address;
@@ -482,7 +467,7 @@ if ($('#form-compose').length) {
     if (state.secure) {
       secure = '<span class="icon-verified"></span>';
     }
-    return avatar + '<span class="compose-choice-name">' + state.fn + secure + '</span>';
+    return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + state.fn + secure + '</span>';
   }
 
   var closeMenu = function() {
@@ -512,38 +497,37 @@ if ($('#form-compose').length) {
     },
     multiple: true,
     allowClear: true,
-    width: '90%',
+    width: '450px',
     minimumInputLength: 1,
-    maximumSelectionSize: 50,
-    tokenSeparators: [","],
+    minimumResultsForSearch: -1,
+    maximumSelectionSize: 200,
+    tokenSeparators: [",", ";"],
     createSearchChoice: function(term) {
-      console.log('Inside of createSearchChoice');
-      console.log(term);
-      // Need to validate
-      term.fn = term;
-      return term;
+      // Check if we have an RFC5322 compliant e-mail address:
+      if (term.match(/(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
+        return {"id": term, "fn": term, "address": term};
+      }
+      return null;
     },
     formatResult: formatComposeResult,
     formatSelection: formatComposeSelection,
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
     },
-//    formatNoMatches: closeMenu,
     selectOnBlur: true
   });
 
-  $('#compose-to').on('change', function() {
+  $('#compose-to').on('change', function(e) {
     }).on('select2-selecting', function(e) {
-      composeContactSelected(e)
+      composeContactSelected(e);
       console.log('Selecting ' + e.val);
     }).on('select2-removing', function(e) {
       console.log('Removing ' + e.val);
     }).on('select2-removed', function(e) {
       console.log('Removed ' + e.val);
-    }).on('select2-blur', function(){
+    }).on('select2-blur', function(e){
       console.log('Blur ' + e.val);
   });
-
 
 }
 
@@ -555,15 +539,15 @@ $(document).on('click', '.compose-show-field', function(e) {
 
 
 /* Subject Field */
-$(window).keyup(function (e) {
+$('#compose-from').keyup(function (e) {
   var code = (e.keyCode ? e.keyCode : e.which);
-  if (code == 9 && $('#compose-subject:focus').length) {
+  if (code == 9 && $('#compose-subject:focus').val() == '') {
   }
 });
 
-$(window).on('click', '#compose-subject', function() {
-  this.focus();
-  this.select();
+$('#compose-subject').on('focus', function() {
+  //this.focus();
+  //this.select();
 });
 
 
@@ -592,7 +576,7 @@ $(document).on('click', '.compose-action', function(e) {
 	  success  : function(response) {
 
       if (action == 'send' && response.status == 'success') {
-        window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid
+        window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid;
       }
       else {
         statusMessage(response.status, response.message);
@@ -790,6 +774,10 @@ $('li.sidebar-tags-draggable').droppable({
      Begin tags.js
 ********************************************** */
 
+MailPile.prototype.tag = function(msgids, tags) {}
+MailPile.prototype.addtag = function(tagname) {}
+
+
 /* Show Tag Add Form */
 $(document).on('click', '#button-tag-add', function(e) {
 	
@@ -818,7 +806,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
 
       statusMessage(response.status, response.message);
 
-      if (response.status == 'success') {
+      if (response.status === 'success') {
         console.log(response);
       }
     }
@@ -828,6 +816,58 @@ $(document).on('submit', '#form-tag-add', function(e) {
 /* **********************************************
      Begin search.js
 ********************************************** */
+
+MailPile.prototype.search = function(q) {
+	var that = this;
+	$("#qbox").val(q);
+	this.json_get("search", {"q": q}, function(data) {
+		if ($("#results").length == 0) {
+			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		}
+		$("#results tbody").empty();
+		for (var i = 0; i < data.results.length; i++) {
+			msg_info = data.results[i];
+			msg_tags = data.results[i].tags;
+			d = new Date(msg_info.date*1000)
+			zpymd = d.getFullYear() + "-" + (d.getMonth()+1).pad(2) + "-" + d.getDate().pad(2);
+			ymd = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+			taghrefs = msg_tags.map(function(e){ return '<a onclick="mailpile.search(\'\\' + e + '\')">' + e + '</a>'}).join(" ");
+			tr = $('<tr class="result"></tr>');
+			tr.addClass((i%2==0)?"even":"odd");
+			tr.append('<td class="checkbox"><input type="checkbox" name="msg_' + msg_info.id + '"/></td>');
+			tr.append('<td class="from"><a href="' + msg_info.url + '">' + msg_info.from + '</a></td>');
+			tr.append('<td class="subject"><a href="' + msg_info.url + '">' + msg_info.subject + '</a></td>');
+			tr.append('<td class="tags">' + taghrefs + '</td>');
+			tr.append('<td class="date"><a onclick="mailpile.search(\'date:' + ymd + '\');">' + zpymd + '</a></td>');
+			$("#results tbody").append(tr);
+		}
+		that.loglines(data.chatter);
+	});
+}
+
+
+MailPile.prototype.focus_search = function() {
+	$("#qbox").focus(); return false;
+}
+
+
+MailPile.prototype.results_list = function() {
+
+  // Navigation
+	$('#btn-display-list').addClass('navigation-on');
+	$('#btn-display-graph').removeClass('navigation-on');
+	
+	// Show & Hide View
+	$('#pile-graph').hide('fast', function() {
+
+    $('#sidebar').show('normal');
+    $('#form-pile-results').show('normal');
+    $('#pile-results').show('fast');
+    $('.pile-speed').show('normal');
+    $('#footer').show('normal');
+    $('#sidebar').show('normal');
+	});
+}
 
 
 $(document).ready(function() {
@@ -856,6 +896,83 @@ $(document).ready(function() {
 
 
 /* **********************************************
+     Begin thread.js
+********************************************** */
+
+MailPile.prototype.view = function(idx, msgid) {
+	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
+		if ($("#results").length === 0) {
+			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		}
+		$("#results").empty();
+	});
+};
+
+/* **********************************************
+     Begin contacts.js
+********************************************** */
+
+
+
+var contactActionSelect = function(item) {
+
+  console.log('select things');
+
+  // Data Stuffs    
+  mailpile.bulk_cache_add();
+
+	// Increment Selected
+	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
+
+	// Show Actions
+	$('#bulk-actions').slideDown('slow');
+
+	// Style & Select Checkbox
+	item.removeClass('result').addClass('result-on').data('state', 'selected');
+};
+
+
+var contactActionUnselect = function(item) {
+
+  console.log('unselect things');
+
+  // Data Stuffs    
+  mailpile.bulk_cache_remove();
+
+	// Decrement Selected
+	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
+
+	$('#bulk-actions-selected-count').html(selected_count);
+
+	// Hide Actions
+	if (selected_count < 1) {
+		$('#bulk-actions').slideUp('slow');
+	}
+
+	// Style & Unselect Checkbox
+	item.removeClass('result-on').addClass('result').data('state', 'normal');
+};
+
+
+
+$(document).on('click', '#contacts-list div.boxy', function(e) {
+	if (e.target.href === undefined && $(this).data('state') === 'selected') {
+		contactActionUnselect($(this));
+	}
+	else if (e.target.href === undefined) {
+		contactActionSelect($(this));
+	}
+});
+
+
+$(document).on('click', '.compose-to-email', function(e) {
+  e.preventDefault();
+  mailpile.compose({
+    to: $(this).data('email')
+  });
+});
+
+/* **********************************************
      Begin settings.js
 ********************************************** */
 
@@ -865,8 +982,8 @@ $(document).on('submit', '#form-profile-add', function(e) {
   e.preventDefault();
 
   var profile_data = {
-      name : $('#profile-add-name').val(),
-      email: $('#profile-add-email').val()
+    name : $('#profile-add-name').val(),
+    email: $('#profile-add-email').val()
   };
 
   var smtp_route = $('#profile-add-username').val() + ':' + $('#profile-add-password').val() + '@' + $('#profile-add-server').val() + ':' + $('#profile-add-port').val();
@@ -876,18 +993,17 @@ $(document).on('submit', '#form-profile-add', function(e) {
   }
 
 	$.ajax({
-		url			 : mailpile.api.settings_add,
-		type		 : 'POST',
+    url      : mailpile.api.settings_add,
+		type     : 'POST',
 		data     : {profiles: JSON.stringify(profile_data)},
 		dataType : 'json',
-	  success  : function(response) {
+    success  : function(response) {
 
       statusMessage(response.status, response.message);
-
-      if (response.status == 'success') {
+      if (response.status === 'success') {
         console.log(response);
       }
-	  }
+    }
 	});
 
 });

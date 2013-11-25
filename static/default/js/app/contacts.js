@@ -15,7 +15,7 @@ var contactActionSelect = function(item) {
 
 	// Style & Select Checkbox
 	item.removeClass('result').addClass('result-on').data('state', 'selected');
-}
+};
 
 
 var contactActionUnselect = function(item) {
@@ -37,7 +37,7 @@ var contactActionUnselect = function(item) {
 
 	// Style & Unselect Checkbox
 	item.removeClass('result-on').addClass('result').data('state', 'normal');
-}
+};
 
 
 

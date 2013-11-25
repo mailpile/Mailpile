@@ -12,7 +12,7 @@
   <td class="subject">
     {% if show_tags(result.search_terms, message.tags) %}<span class="icon-tag"></span>{% for tag in message.tags %}{% if tag.slug != "new" and not tag.searched %}<a class="pile-message-tag" href="/in/{{ tag.slug }}/">{{ tag.name }}</a>{% endif %}{% endfor %}{% endif %}
     <a class="item-subject" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
-    <span class="item-snippet">{{ message.snippet }}</span>
+    <span class="item-snippet">{{ message.snippet|e }}</span>
   </td>
   <td class="date" valign="top">
     <a href="/search/dates:{{message.date}}/">{{ message.timestamp|elapsed_datetime }}</a>

@@ -1,3 +1,7 @@
+MailPile.prototype.tag = function(msgids, tags) {}
+MailPile.prototype.addtag = function(tagname) {}
+
+
 /* Show Tag Add Form */
 $(document).on('click', '#button-tag-add', function(e) {
 	
@@ -26,7 +30,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
 
       statusMessage(response.status, response.message);
 
-      if (response.status == 'success') {
+      if (response.status === 'success') {
         console.log(response);
       }
     }

@@ -13,6 +13,7 @@ $.each(plugins_hack, function(key, plugin){
     // Add To Config
     mailpile.plugins.push(result);
     
+    // Load Plugin View According to Current Command View
     var view_index = _.indexOf(result.views, mailpile.instance.command);
 
     if (view_index > -1) {
@@ -25,7 +26,6 @@ $.each(plugins_hack, function(key, plugin){
 	      }
 	    });   
     }
-    
   });
 
 });
@@ -146,4 +146,19 @@ MailPile.prototype.results_graph = function() {
 		});
 	});
 
+}
+
+
+MailPile.prototype.graph_actionbuttons = function() {
+
+	if (this.graphselected.length >= 1) {
+		$("#btn-compose-message").show();
+	} else {
+		$("#btn-compose-message").hide();
+	}
+	if (this.graphselected.length >= 2) {
+		$("#btn-found-group").show();
+	} else {
+		$("#btn-found-group").hide();
+	}
 }

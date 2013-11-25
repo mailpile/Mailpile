@@ -1,3 +1,27 @@
+/* Generate New Draft MID */
+MailPile.prototype.compose = function(data) {
+
+  $.ajax({
+    url      : mailpile.api.compose,
+    type     : 'POST',
+    data     : data,
+    dataType : 'json'
+  })
+  .done(function(response) {
+
+    if (response.status == 'success') {
+      window.location.href = mailpile.urls.message_draft + response.result.created + '/';
+    } else {
+      statusMessage(response.status, response.message);
+    }
+  });
+}
+
+
+/* Add Attachment */
+MailPile.prototype.attach = function() {}
+
+
 /* Create New Blank Message */
 $(document).on('click', '#button-compose', function(e) {
 	e.preventDefault();
@@ -81,8 +105,9 @@ if ($('#form-compose').length) {
     },
     multiple: true,
     allowClear: true,
-    width: '90%',
+    width: '450px',
     minimumInputLength: 1,
+    minimumResultsForSearch: -1,
     maximumSelectionSize: 200,
     tokenSeparators: [",", ";"],
     createSearchChoice: function(term) {
@@ -97,7 +122,6 @@ if ($('#form-compose').length) {
     formatSelectionTooBig: function() {
       return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
     },
-//    formatNoMatches: closeMenu,
     selectOnBlur: true
   });
 
@@ -113,7 +137,6 @@ if ($('#form-compose').length) {
       console.log('Blur ' + e.val);
   });
 
-
 }
 
 /* Show Cc, Bcc */
@@ -124,15 +147,15 @@ $(document).on('click', '.compose-show-field', function(e) {
 
 
 /* Subject Field */
-$(window).keyup(function (e) {
+$('#compose-from').keyup(function (e) {
   var code = (e.keyCode ? e.keyCode : e.which);
-  if (code == 9 && $('#compose-subject:focus').length) {
+  if (code == 9 && $('#compose-subject:focus').val() == '') {
   }
 });
 
-$(window).on('click', '#compose-subject', function() {
-  this.focus();
-  this.select();
+$('#compose-subject').on('focus', function() {
+  //this.focus();
+  //this.select();
 });
 
 
@@ -161,7 +184,7 @@ $(document).on('click', '.compose-action', function(e) {
 	  success  : function(response) {
 
       if (action == 'send' && response.status == 'success') {
-        window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid
+        window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid;
       }
       else {
         statusMessage(response.status, response.message);
