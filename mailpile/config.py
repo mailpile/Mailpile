@@ -890,11 +890,12 @@ class ConfigManager(ConfigDict):
             pass
 
         self.parse_config(session, '\n'.join(lines), source=filename)
+        self.get_i18n_translation(session)
+
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
                                                            mkdir=True))
         self.vcards.load_vcards(session)
-        self.get_i18n_translation()
 
     def save(self):
         self._mkworkdir(None)
@@ -1039,19 +1040,25 @@ class ConfigManager(ConfigDict):
         self.index = idx
         return idx
 
-    def get_i18n_translation(self):
+    def get_i18n_translation(self, session=None):
         language = self.prefs.language
         trans = None
         if language != "":
-            trans = translation("mailpile", "locale",
-                                [language], codeset="utf-8")
-            if trans:
-                trans.set_output_charset("utf-8")
-
+            try:
+                trans = translation("mailpile", "locale",
+                                    [language], codeset="utf-8")
+            except IOError:
+                if session:
+                    session.ui.warning('Failed to load language %s' % language)
         if not trans:
-            trans = translation("mailpile", "locale")
-
-        trans.install(unicode=True)
+            try:
+                trans = translation("mailpile", "locale", codeset='utf-8')
+            except IOError:
+                if session:
+                    session.ui.warning('Failed to configure i18n')
+        if trans:
+            trans.set_output_charset("utf-8")
+            trans.install(unicode=True)
         return trans
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
