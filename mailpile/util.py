@@ -204,11 +204,13 @@ def b36(number):
     Keyword arguments:
     number -- An integer to convert to base36
     """
-    base36 = ''
+    if not number:
+        return B36_ALPHABET[0]
+    base36 = []
     while number:
         number, i = divmod(number, 36)
-        base36 = B36_ALPHABET[i] + base36
-    return base36 or B36_ALPHABET[0]
+        base36.append(B36_ALPHABET[i])
+    return ''.join(reversed(base36))
 
 
 def friendly_number(number, base=1000, decimals=0, suffix='',
