@@ -169,13 +169,171 @@ $(document).on('click', 'a.change-view-size', function(e) {
 
 
 
+/* Profile Add */
+$(document).on('submit', '#form-profile-add', function(e) {
+
+  e.preventDefault();
+
+  var profile_data = {
+    name : $('#profile-add-name').val(),
+    email: $('#profile-add-email').val()
+  };
+
+  var smtp_route = $('#profile-add-username').val() + ':' + $('#profile-add-password').val() + '@' + $('#profile-add-server').val() + ':' + $('#profile-add-port').val();
+
+  if (smtp_route !== ':@:25') {
+    profile_data.route = 'smtp://' + smtp_route;
+  }
+
+	$.ajax({
+    url      : mailpile.api.settings_add,
+		type     : 'POST',
+		data     : {profiles: JSON.stringify(profile_data)},
+		dataType : 'json',
+    success  : function(response) {
+
+      statusMessage(response.status, response.message);
+      if (response.status === 'success') {
+        console.log(response);
+      }
+    }
+	});
+
+});MailPile.prototype.search = function(q) {
+	var that = this;
+	$("#qbox").val(q);
+	this.json_get("search", {"q": q}, function(data) {
+		if ($("#results").length == 0) {
+			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
+		}
+		$("#results tbody").empty();
+		for (var i = 0; i < data.results.length; i++) {
+			msg_info = data.results[i];
+			msg_tags = data.results[i].tags;
+			d = new Date(msg_info.date*1000)
+			zpymd = d.getFullYear() + "-" + (d.getMonth()+1).pad(2) + "-" + d.getDate().pad(2);
+			ymd = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+			taghrefs = msg_tags.map(function(e){ return '<a onclick="mailpile.search(\'\\' + e + '\')">' + e + '</a>'}).join(" ");
+			tr = $('<tr class="result"></tr>');
+			tr.addClass((i%2==0)?"even":"odd");
+			tr.append('<td class="checkbox"><input type="checkbox" name="msg_' + msg_info.id + '"/></td>');
+			tr.append('<td class="from"><a href="' + msg_info.url + '">' + msg_info.from + '</a></td>');
+			tr.append('<td class="subject"><a href="' + msg_info.url + '">' + msg_info.subject + '</a></td>');
+			tr.append('<td class="tags">' + taghrefs + '</td>');
+			tr.append('<td class="date"><a onclick="mailpile.search(\'date:' + ymd + '\');">' + zpymd + '</a></td>');
+			$("#results tbody").append(tr);
+		}
+		that.loglines(data.chatter);
+	});
+}
 
 
-/* **********************************************
-     Begin notifications.js
-********************************************** */
+MailPile.prototype.focus_search = function() {
+	$("#qbox").focus(); return false;
+}
 
-var statusHeaderPadding = function() {
+
+MailPile.prototype.results_list = function() {
+
+  // Navigation
+	$('#btn-display-list').addClass('navigation-on');
+	$('#btn-display-graph').removeClass('navigation-on');
+	
+	// Show & Hide View
+	$('#pile-graph').hide('fast', function() {
+
+    $('#sidebar').show('normal');
+    $('#form-pile-results').show('normal');
+    $('#pile-results').show('fast');
+    $('.pile-speed').show('normal');
+    $('#footer').show('normal');
+    $('#sidebar').show('normal');
+	});
+}
+
+
+$(document).ready(function() {
+
+	/* Hide Various Things */
+	$('#search-params, #bulk-actions').hide();
+
+	/* Search Box */
+	$('#button-search-options').on("click", function(key) {
+		$('#search-params').slideDown('fast');
+	});
+
+	$('#button-search-options').on("blur", function(key) {
+		$('#search-params').slideUp('fast');
+	});
+
+	for (item in keybindings) {
+		if (item[1] == "global") {
+			Mousetrap.bindGlobal(item[0], item[2]);
+		} else {
+			Mousetrap.bind(item[0], item[2]);
+		}
+	}
+	
+});
+
+
+var contactActionSelect = function(item) {
+
+  console.log('select things');
+
+  // Data Stuffs    
+  mailpile.bulk_cache_add();
+
+	// Increment Selected
+	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
+
+	// Show Actions
+	$('#bulk-actions').slideDown('slow');
+
+	// Style & Select Checkbox
+	item.removeClass('result').addClass('result-on').data('state', 'selected');
+};
+
+
+var contactActionUnselect = function(item) {
+
+  console.log('unselect things');
+
+  // Data Stuffs    
+  mailpile.bulk_cache_remove();
+
+	// Decrement Selected
+	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
+
+	$('#bulk-actions-selected-count').html(selected_count);
+
+	// Hide Actions
+	if (selected_count < 1) {
+		$('#bulk-actions').slideUp('slow');
+	}
+
+	// Style & Unselect Checkbox
+	item.removeClass('result-on').addClass('result').data('state', 'normal');
+};
+
+
+
+$(document).on('click', '#contacts-list div.boxy', function(e) {
+	if (e.target.href === undefined && $(this).data('state') === 'selected') {
+		contactActionUnselect($(this));
+	}
+	else if (e.target.href === undefined) {
+		contactActionSelect($(this));
+	}
+});
+
+
+$(document).on('click', '.compose-to-email', function(e) {
+  e.preventDefault();
+  mailpile.compose({
+    to: $(this).data('email')
+  });
+});var statusHeaderPadding = function() {
 
 	if ($('#header').css('position') === 'fixed') {
 		var padding = $('#header').height() + 50;
@@ -240,13 +398,238 @@ $(document).ready(function() {
 		});
 	});
 
+});MailPile.prototype.tag = function(msgids, tags) {}
+MailPile.prototype.addtag = function(tagname) {}
+
+
+/* Show Tag Add Form */
+$(document).on('click', '#button-tag-add', function(e) {
+	
+  e.preventDefault();
+
+  $('#tags-list').hide();
+  $('#tag-add').show();
+
+  $('#sub-navigation ul li').removeClass('navigation-on');
+  $(this).parent().addClass('navigation-on');
 });
 
-/* **********************************************
-     Begin tooltips.js
-********************************************** */
 
-// Non-exposed functions: www, setup
+/* API - Tag Add */
+$(document).on('submit', '#form-tag-add', function(e) {
+
+  e.preventDefault();
+  var tag_data = $('#form-tag-add').serialize();
+
+  $.ajax({
+    url: mailpile.api.tag_add,
+    type: 'POST',
+    data: tag_data,
+    dataType : 'json',
+    success: function(response) {
+
+      statusMessage(response.status, response.message);
+
+      if (response.status === 'success') {
+        console.log(response);
+      }
+    }
+  });
+});MailPile.prototype.gpgrecvkey = function(keyid) {
+	console.log("Fetching GPG key 0x" + keyid);
+	mailpile.json_get("gpg recv_key", {}, function(data) {
+		console.log("Fetch command execed for GPG key 0x" + keyid + ", resulting in:");
+		console.log(data);
+	});
+}
+
+MailPile.prototype.gpglistkeys = function() {
+	mailpile.json_get("gpg list", {}, function(data) {
+		$("#content").append('<div class="dialog" id="gpgkeylist"></div>');
+		for (k in data.results) {
+			key = data.results[k]
+			$("#gpgkeylist").append("<li>Key: " + key.uids[0].replace("<", "&lt;").replace(">", "&gt;") + ": " + key.pub.keyid + "</li>");
+		}
+	});
+}/* Filter New */
+$(document).on('click', '.button-sub-navigation', function() {
+
+  var filter = $(this).data('filter');
+  $('#sub-navigation ul.left li').removeClass('navigation-on');
+
+  if (filter == 'in_new') {
+
+    $('#display-new').addClass('navigation-on');
+    $('tr').hide('fast', function() {
+      $('tr.in_new').show('fast');
+    });
+  }
+  else if (filter == 'in_later') {
+
+    $('#display-later').addClass('navigation-on');
+    $('tr').hide('fast', function() {
+      $('tr.in_later').show('fast');
+    });
+  }
+  else {
+
+    $('#display-all').addClass('navigation-on');
+    $('tr.result').show('fast');
+  }
+
+  return false;
+});
+
+
+
+
+/* Bulk Actions */
+$(document).on('click', '.bulk-action', function(e) {
+
+	e.preventDefault();
+	var checkboxes = $('#pile-results input[type=checkbox]');
+	var action = $(this).attr('href');
+	var count = 0;
+
+	$.each(checkboxes, function() {
+		if ($(this).val() === 'selected') {
+			console.log('This is here ' + $(this).attr('name'));
+			count++;
+		}
+	});
+
+	alert(count + ' items selected to "' + action.replace('#', '') + '"');
+});
+
+
+/* Result Actions */
+var pileActionSelect = function(item) {
+
+  // Data Stuffs    
+  mailpile.bulk_cache_add(item.data('mid'));
+
+	// Increment Selected
+	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
+
+	// Show Actions
+	$('#bulk-actions').slideDown('slow');
+
+	// Style & Select Checkbox
+	item.removeClass('result').addClass('result-on')
+	.data('state', 'selected')
+	.find('td.checkbox input[type=checkbox]')
+	.val('selected')
+	.prop('checked', true);
+}
+
+
+var pileActionUnselect = function(item) {
+
+  // Data Stuffs    
+  mailpile.bulk_cache_remove(item.data('mid'));
+
+	// Decrement Selected
+	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
+
+	$('#bulk-actions-selected-count').html(selected_count);
+
+	// Hide Actions
+	if (selected_count < 1) {
+		$('#bulk-actions').slideUp('slow');
+	}
+
+	// Style & Unselect Checkbox
+	item.removeClass('result-on').addClass('result')
+	.data('state', 'normal')
+	.find('td.checkbox input[type=checkbox]')
+	.val('normal')
+	.prop('checked', false);
+}
+
+
+$(document).on('click', '#pile-results tr.result', function(e) {
+	if (e.target.href === undefined && $(this).data('state') === 'selected') {
+		pileActionUnselect($(this));
+	}
+	else if (e.target.href === undefined) {
+		pileActionSelect($(this));
+	}
+});
+
+
+
+/* Dragging */
+$('td.draggable').draggable({
+  containment: "#container",
+  scroll: false,
+  revert: true,
+  helper: function(event) {
+
+    var selected_count = parseInt($('#bulk-actions-selected-count').html());
+    
+    if (selected_count == 0) {
+      drag_count = '1 message</div>';
+    }
+    else {
+      drag_count = selected_count + ' messages';
+    }
+
+    return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
+  },
+  stop: function(event, ui) {
+    console.log('done dragging things');
+  }
+});
+
+
+
+/* Dropping */
+$('li.sidebar-tags-draggable').droppable({
+  accept: 'td.draggable',
+  activeClass: 'sidebar-tags-draggable-hover',
+  hoverClass: 'sidebar-tags-draggable-active',
+  tolerance: 'pointer',
+  drop: function(event, ui) {
+
+    var getDelTag = function() {
+      if ($.url.segment(0) === 'in') {
+        return $.url.segment(1);
+      }
+      return '';
+    }
+    
+    // Add MID to Cache    
+    mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
+  
+    // Fire at Willhelm
+	  $.ajax({
+		  url			 : mailpile.api.tag,
+		  type		 : 'POST',
+		  data     : {
+        add: $(this).data('tag_name'),
+        del: getDelTag,
+        mid: mailpile.bulk_cache
+      },
+		  dataType : 'json',
+	    success  : function(response) {
+
+        if (response.status == 'success') {
+
+          // Update Pile View
+          $.each(mailpile.bulk_cache, function(key, mid) {
+            $('#pile-message-' + mid).fadeOut('fast');
+          });
+          
+          // Empty Bulk Cache
+          mailpile.bulk_cache = [];
+          
+        } else {
+          statusMessage(response.status, response.message);
+        }
+	    }
+	  });  	  
+  }
+});// Non-exposed functions: www, setup
 $(document).ready(function() {
 
   $('.topbar-nav a').qtip({
@@ -362,35 +745,7 @@ $(document).ready(function() {
   });
   
 
-});
-
-/* **********************************************
-     Begin gpg.js
-********************************************** */
-
-MailPile.prototype.gpgrecvkey = function(keyid) {
-	console.log("Fetching GPG key 0x" + keyid);
-	mailpile.json_get("gpg recv_key", {}, function(data) {
-		console.log("Fetch command execed for GPG key 0x" + keyid + ", resulting in:");
-		console.log(data);
-	});
-}
-
-MailPile.prototype.gpglistkeys = function() {
-	mailpile.json_get("gpg list", {}, function(data) {
-		$("#content").append('<div class="dialog" id="gpgkeylist"></div>');
-		for (k in data.results) {
-			key = data.results[k]
-			$("#gpgkeylist").append("<li>Key: " + key.uids[0].replace("<", "&lt;").replace(">", "&gt;") + ": " + key.pub.keyid + "</li>");
-		}
-	});
-}
-
-/* **********************************************
-     Begin compose.js
-********************************************** */
-
-/* Generate New Draft MID */
+});/* Generate New Draft MID */
 MailPile.prototype.compose = function(data) {
 
   $.ajax({
@@ -584,321 +939,6 @@ $(document).on('click', '.compose-action', function(e) {
 	  }
 	});
 });
-
-
-/* **********************************************
-     Begin pile.js
-********************************************** */
-
-/* Filter New */
-$(document).on('click', '.button-sub-navigation', function() {
-
-  var filter = $(this).data('filter');
-  $('#sub-navigation ul.left li').removeClass('navigation-on');
-
-  if (filter == 'in_new') {
-
-    $('#display-new').addClass('navigation-on');
-    $('tr').hide('fast', function() {
-      $('tr.in_new').show('fast');
-    });
-  }
-  else if (filter == 'in_later') {
-
-    $('#display-later').addClass('navigation-on');
-    $('tr').hide('fast', function() {
-      $('tr.in_later').show('fast');
-    });
-  }
-  else {
-
-    $('#display-all').addClass('navigation-on');
-    $('tr.result').show('fast');
-  }
-
-  return false;
-});
-
-
-
-
-/* Bulk Actions */
-$(document).on('click', '.bulk-action', function(e) {
-
-	e.preventDefault();
-	var checkboxes = $('#pile-results input[type=checkbox]');
-	var action = $(this).attr('href');
-	var count = 0;
-
-	$.each(checkboxes, function() {
-		if ($(this).val() === 'selected') {
-			console.log('This is here ' + $(this).attr('name'));
-			count++;
-		}
-	});
-
-	alert(count + ' items selected to "' + action.replace('#', '') + '"');
-});
-
-
-/* Result Actions */
-var pileActionSelect = function(item) {
-
-  // Data Stuffs    
-  mailpile.bulk_cache_add(item.data('mid'));
-
-	// Increment Selected
-	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
-
-	// Show Actions
-	$('#bulk-actions').slideDown('slow');
-
-	// Style & Select Checkbox
-	item.removeClass('result').addClass('result-on')
-	.data('state', 'selected')
-	.find('td.checkbox input[type=checkbox]')
-	.val('selected')
-	.prop('checked', true);
-}
-
-
-var pileActionUnselect = function(item) {
-
-  // Data Stuffs    
-  mailpile.bulk_cache_remove(item.data('mid'));
-
-	// Decrement Selected
-	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
-
-	$('#bulk-actions-selected-count').html(selected_count);
-
-	// Hide Actions
-	if (selected_count < 1) {
-		$('#bulk-actions').slideUp('slow');
-	}
-
-	// Style & Unselect Checkbox
-	item.removeClass('result-on').addClass('result')
-	.data('state', 'normal')
-	.find('td.checkbox input[type=checkbox]')
-	.val('normal')
-	.prop('checked', false);
-}
-
-
-$(document).on('click', '#pile-results tr.result', function(e) {
-	if (e.target.href === undefined && $(this).data('state') === 'selected') {
-		pileActionUnselect($(this));
-	}
-	else if (e.target.href === undefined) {
-		pileActionSelect($(this));
-	}
-});
-
-
-
-/* Dragging */
-$('td.draggable').draggable({
-  containment: "#container",
-  scroll: false,
-  revert: true,
-  helper: function(event) {
-
-    var selected_count = parseInt($('#bulk-actions-selected-count').html());
-    
-    if (selected_count == 0) {
-      drag_count = '1 message</div>';
-    }
-    else {
-      drag_count = selected_count + ' messages';
-    }
-
-    return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
-  },
-  stop: function(event, ui) {
-    console.log('done dragging things');
-  }
-});
-
-
-
-/* Dropping */
-$('li.sidebar-tags-draggable').droppable({
-  accept: 'td.draggable',
-  activeClass: 'sidebar-tags-draggable-hover',
-  hoverClass: 'sidebar-tags-draggable-active',
-  tolerance: 'pointer',
-  drop: function(event, ui) {
-
-    var getDelTag = function() {
-      if ($.url.segment(0) === 'in') {
-        return $.url.segment(1);
-      }
-      return '';
-    }
-    
-    // Add MID to Cache    
-    mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
-  
-    // Fire at Willhelm
-	  $.ajax({
-		  url			 : mailpile.api.tag,
-		  type		 : 'POST',
-		  data     : {
-        add: $(this).data('tag_name'),
-        del: getDelTag,
-        mid: mailpile.bulk_cache
-      },
-		  dataType : 'json',
-	    success  : function(response) {
-
-        if (response.status == 'success') {
-
-          // Update Pile View
-          $.each(mailpile.bulk_cache, function(key, mid) {
-            $('#pile-message-' + mid).fadeOut('fast');
-          });
-          
-          // Empty Bulk Cache
-          mailpile.bulk_cache = [];
-          
-        } else {
-          statusMessage(response.status, response.message);
-        }
-	    }
-	  });  	  
-  }
-});
-
-/* **********************************************
-     Begin tags.js
-********************************************** */
-
-MailPile.prototype.tag = function(msgids, tags) {}
-MailPile.prototype.addtag = function(tagname) {}
-
-
-/* Show Tag Add Form */
-$(document).on('click', '#button-tag-add', function(e) {
-	
-  e.preventDefault();
-
-  $('#tags-list').hide();
-  $('#tag-add').show();
-
-  $('#sub-navigation ul li').removeClass('navigation-on');
-  $(this).parent().addClass('navigation-on');
-});
-
-
-/* API - Tag Add */
-$(document).on('submit', '#form-tag-add', function(e) {
-
-  e.preventDefault();
-  var tag_data = $('#form-tag-add').serialize();
-
-  $.ajax({
-    url: mailpile.api.tag_add,
-    type: 'POST',
-    data: tag_data,
-    dataType : 'json',
-    success: function(response) {
-
-      statusMessage(response.status, response.message);
-
-      if (response.status === 'success') {
-        console.log(response);
-      }
-    }
-  });
-});
-
-/* **********************************************
-     Begin search.js
-********************************************** */
-
-MailPile.prototype.search = function(q) {
-	var that = this;
-	$("#qbox").val(q);
-	this.json_get("search", {"q": q}, function(data) {
-		if ($("#results").length == 0) {
-			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
-		}
-		$("#results tbody").empty();
-		for (var i = 0; i < data.results.length; i++) {
-			msg_info = data.results[i];
-			msg_tags = data.results[i].tags;
-			d = new Date(msg_info.date*1000)
-			zpymd = d.getFullYear() + "-" + (d.getMonth()+1).pad(2) + "-" + d.getDate().pad(2);
-			ymd = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
-			taghrefs = msg_tags.map(function(e){ return '<a onclick="mailpile.search(\'\\' + e + '\')">' + e + '</a>'}).join(" ");
-			tr = $('<tr class="result"></tr>');
-			tr.addClass((i%2==0)?"even":"odd");
-			tr.append('<td class="checkbox"><input type="checkbox" name="msg_' + msg_info.id + '"/></td>');
-			tr.append('<td class="from"><a href="' + msg_info.url + '">' + msg_info.from + '</a></td>');
-			tr.append('<td class="subject"><a href="' + msg_info.url + '">' + msg_info.subject + '</a></td>');
-			tr.append('<td class="tags">' + taghrefs + '</td>');
-			tr.append('<td class="date"><a onclick="mailpile.search(\'date:' + ymd + '\');">' + zpymd + '</a></td>');
-			$("#results tbody").append(tr);
-		}
-		that.loglines(data.chatter);
-	});
-}
-
-
-MailPile.prototype.focus_search = function() {
-	$("#qbox").focus(); return false;
-}
-
-
-MailPile.prototype.results_list = function() {
-
-  // Navigation
-	$('#btn-display-list').addClass('navigation-on');
-	$('#btn-display-graph').removeClass('navigation-on');
-	
-	// Show & Hide View
-	$('#pile-graph').hide('fast', function() {
-
-    $('#sidebar').show('normal');
-    $('#form-pile-results').show('normal');
-    $('#pile-results').show('fast');
-    $('.pile-speed').show('normal');
-    $('#footer').show('normal');
-    $('#sidebar').show('normal');
-	});
-}
-
-
-$(document).ready(function() {
-
-	/* Hide Various Things */
-	$('#search-params, #bulk-actions').hide();
-
-	/* Search Box */
-	$('#button-search-options').on("click", function(key) {
-		$('#search-params').slideDown('fast');
-	});
-
-	$('#button-search-options').on("blur", function(key) {
-		$('#search-params').slideUp('fast');
-	});
-
-	for (item in keybindings) {
-		if (item[1] == "global") {
-			Mousetrap.bindGlobal(item[0], item[2]);
-		} else {
-			Mousetrap.bind(item[0], item[2]);
-		}
-	}
-	
-});
-
-
-/* **********************************************
-     Begin thread.js
-********************************************** */
-
 MailPile.prototype.view = function(idx, msgid) {
 	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
 		if ($("#results").length === 0) {
@@ -907,103 +947,3 @@ MailPile.prototype.view = function(idx, msgid) {
 		$("#results").empty();
 	});
 };
-
-/* **********************************************
-     Begin contacts.js
-********************************************** */
-
-
-
-var contactActionSelect = function(item) {
-
-  console.log('select things');
-
-  // Data Stuffs    
-  mailpile.bulk_cache_add();
-
-	// Increment Selected
-	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
-
-	// Show Actions
-	$('#bulk-actions').slideDown('slow');
-
-	// Style & Select Checkbox
-	item.removeClass('result').addClass('result-on').data('state', 'selected');
-};
-
-
-var contactActionUnselect = function(item) {
-
-  console.log('unselect things');
-
-  // Data Stuffs    
-  mailpile.bulk_cache_remove();
-
-	// Decrement Selected
-	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
-
-	$('#bulk-actions-selected-count').html(selected_count);
-
-	// Hide Actions
-	if (selected_count < 1) {
-		$('#bulk-actions').slideUp('slow');
-	}
-
-	// Style & Unselect Checkbox
-	item.removeClass('result-on').addClass('result').data('state', 'normal');
-};
-
-
-
-$(document).on('click', '#contacts-list div.boxy', function(e) {
-	if (e.target.href === undefined && $(this).data('state') === 'selected') {
-		contactActionUnselect($(this));
-	}
-	else if (e.target.href === undefined) {
-		contactActionSelect($(this));
-	}
-});
-
-
-$(document).on('click', '.compose-to-email', function(e) {
-  e.preventDefault();
-  mailpile.compose({
-    to: $(this).data('email')
-  });
-});
-
-/* **********************************************
-     Begin settings.js
-********************************************** */
-
-/* Profile Add */
-$(document).on('submit', '#form-profile-add', function(e) {
-
-  e.preventDefault();
-
-  var profile_data = {
-    name : $('#profile-add-name').val(),
-    email: $('#profile-add-email').val()
-  };
-
-  var smtp_route = $('#profile-add-username').val() + ':' + $('#profile-add-password').val() + '@' + $('#profile-add-server').val() + ':' + $('#profile-add-port').val();
-
-  if (smtp_route !== ':@:25') {
-    profile_data.route = 'smtp://' + smtp_route;
-  }
-
-	$.ajax({
-    url      : mailpile.api.settings_add,
-		type     : 'POST',
-		data     : {profiles: JSON.stringify(profile_data)},
-		dataType : 'json',
-    success  : function(response) {
-
-      statusMessage(response.status, response.message);
-      if (response.status === 'success') {
-        console.log(response);
-      }
-    }
-	});
-
-});
