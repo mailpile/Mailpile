@@ -8,7 +8,7 @@
 {% if result.contact %}
 
   <div class="clearfix">
-    {% if result.contact.photo %}<img class="left" width="80" src="{{ result.contact.photo.0.photo}}">{% elif contact.email %}<img src="{{ show_avatar(url_protocol, http_host, result.contact.email.0.email, 80) }}">{% endif %}</a>
+    <img class="left" width="80" src="{% if result.contact.photo %}{{ result.contact.photo.0.photo}}{% elif result.contact.email %}{{ show_avatar(url_protocol, http_host, result.contact.email.0.email, 80) }}{% endif %}">
     <h2 class="left">{{ result.contact.fn }}</h2>
   </div>
   <hr>
@@ -20,6 +20,22 @@
     <li><a class="compose-to-email" href="/contact/{{ email.email|e }}">{{email.email}}</a></li>
     {% endfor %}
   {% endif %}
+  </ul>
+
+  <h4>Statistics</h4>
+  <ul>
+    <li>Messages sent to this contact: {{result.sent_messages}}</li>
+    <li>Messages received from this contact: {{result.received_messages}}</li>
+    {% if result.last_contact_to %}
+    <li>Last contacted on: <a href="{{result.last_contact_to_msg_url}}">{{result.last_contact_to}}</a></li>
+    {% else %}
+    <li>You've never contacted this contact.</li>
+    {% endif %}
+    {% if result.last_contact_from %}
+    <li>Last contacted you on <a href="{{result.last_contact_from_msg_url}}">{{friendly_datetime(result.last_contact_from)}}</a></li>
+    {% else %}
+    <li>You've never been contacted by this contact.</li>
+    {% endif %}
   </ul>
 
 {% else %}
