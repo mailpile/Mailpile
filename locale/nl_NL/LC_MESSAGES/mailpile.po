@@ -18,11 +18,11 @@ msgstr ""
 
 #: mailpile/defaults.py:10
 msgid "Mailpile program version"
-msgstr "Mailpile programma versie"
+msgstr "Mailpile programmaversie"
 
 #: mailpile/defaults.py:11
 msgid "Configuration timestamp"
-msgstr "Configuratie tijd"
+msgstr "Configuratietijd"
 
 #: mailpile/defaults.py:12
 msgid "Technical system settings"
@@ -34,11 +34,11 @@ msgstr "Max. aantal bestanden tegelijk open"
 
 #: mailpile/defaults.py:15
 msgid "History length (lines, <0 = no save)"
-msgstr "Geschiedenis lengte (regels, <0 = geen opslag)"
+msgstr "Geschiedenislengte (regels, <0 = geen opslag)"
 
 #: mailpile/defaults.py:16
 msgid "Listening port for web UI"
-msgstr "Luisterpoort voor web UI"
+msgstr "Luisterpoort voor web-UI"
 
 #: mailpile/defaults.py:17
 msgid "Posting list target size in KB"
@@ -50,31 +50,31 @@ msgstr "Maximale resultaten die we \"goed\" sorteren"
 
 #: mailpile/defaults.py:19
 msgid "Max length of metadata snippets"
-msgstr "Max. lengte van metadata snippers"
+msgstr "Max. lengte van metadatasnippers"
 
 #: mailpile/defaults.py:20
 msgid "Debugging flags"
-msgstr "Debugging flags"
+msgstr "Debugvlaggen"
 
 #: mailpile/defaults.py:21
 msgid "Host:port of PGP keyserver"
-msgstr "Host:poort van PGP sleutelserver"
+msgstr "Host:poort van PGP-sleutelserver"
 
 #: mailpile/defaults.py:22
 msgid "Listening host for web UI"
-msgstr "Luister host voor web UI"
+msgstr "Luisterhost voor web-UI"
 
 #: mailpile/defaults.py:23
 msgid "Local read/write Maildir"
-msgstr "Lokale lees/schrijf Maildir"
+msgstr "Lokale lees-schrijf-Maildir"
 
 #: mailpile/defaults.py:24
 msgid "Metadata index file"
-msgstr "Metadata index bestand"
+msgstr "Metadata-indexbestand"
 
 #: mailpile/defaults.py:25
 msgid "Search index directory"
-msgstr "Zoekindex map"
+msgstr "Zoekindexmap"
 
 #: mailpile/defaults.py:26
 msgid "Mailboxes we index"
@@ -86,7 +86,7 @@ msgstr "Locatie van gesorteerde data"
 
 #: mailpile/defaults.py:28
 msgid "Default theme"
-msgstr "Standaard thema"
+msgstr "Standaardthema"
 
 #: mailpile/defaults.py:30
 msgid "Location of vcards"
@@ -102,15 +102,15 @@ msgstr "Zoekresultaten per pagina"
 
 #: mailpile/defaults.py:36
 msgid "New mail check frequency"
-msgstr "Frequentie nieuwe mail controle"
+msgstr "Frequentie controle nieuwe mail"
 
 #: mailpile/defaults.py:37
 msgid "Inline PGP signatures or attached"
-msgstr "PGP handtekening inline of bijgevoegd"
+msgstr "PGP-handtekening inline of bijgevoegd"
 
 #: mailpile/defaults.py:38
 msgid "Default sort order"
-msgstr "Standaard sorteervolgorde"
+msgstr "Standaardsorteervolgorde"
 
 #: mailpile/defaults.py:39
 msgid "Encrypt local data to ..."
@@ -126,31 +126,31 @@ msgstr "Commando uitvoeren voor herscannen"
 
 #: mailpile/defaults.py:42
 msgid "Default outgoing e-mail address"
-msgstr "Standaard uitgaande e-mail adres"
+msgstr "Standaarduitgaande e-mailadres"
 
 #: mailpile/defaults.py:43
 msgid "Default outgoing mail route"
-msgstr "Standaard uitgaande mail route"
+msgstr "Standaarduitgaande mailroute"
 
 #: mailpile/defaults.py:45
 msgid "User interface language"
-msgstr "Gebruikersinterface taal"
+msgstr "Gebruikersinterfacetaal"
 
 #: mailpile/defaults.py:46
 msgid "VCard import/export settings"
-msgstr "VCard importeer/exporteer instellingen"
+msgstr "VCard-importeer-exporteerinstellingen"
 
 #: mailpile/defaults.py:48
 msgid "VCard import settings"
-msgstr "VCard importeer instellingen"
+msgstr "VCard-importeerinstellingen"
 
 #: mailpile/defaults.py:49
 msgid "VCard export settings"
-msgstr "VCard exporteer instellingen"
+msgstr "VCard-exporteerinstellingen"
 
 #: mailpile/defaults.py:50
 msgid "VCard context helper settings"
-msgstr "VCard context helper instellingen"
+msgstr "VCard-context-helper-instellingen"
 
 #: mailpile/defaults.py:53
 msgid "User profiles and personalities"
@@ -162,25 +162,25 @@ msgstr "Accountnaam"
 
 #: mailpile/defaults.py:55
 msgid "E-mail address"
-msgstr "E-mail adres"
+msgstr "E-mailadres"
 
 #: mailpile/defaults.py:56
 msgid "Message signature"
-msgstr "Berciht handtekening"
+msgstr "Berichthandtekening"
 
 #: mailpile/defaults.py:57
 msgid "Outgoing mail route"
-msgstr "Uitgaande mail route"
+msgstr "Uitgaande mailroute"
 
 #: mailpile/config.py:94
 #, python-format
 msgid "Invalid URL slug: %s"
-msgstr "Ongeldige URL slug: %s"
+msgstr "Ongeldige URL-slug: %s"
 
 #: mailpile/config.py:126
 #, python-format
 msgid "Invalid hostname: %s"
-msgstr "Ongeldige hostnaamL %s"
+msgstr "Ongeldige hostnaam: %s"
 
 #: mailpile/config.py:160
 #, python-format
@@ -249,7 +249,7 @@ msgstr "Ongeldige (%s): sectie %s, variabel %s"
 #: mailpile/config.py:834
 #, python-format
 msgid "WARNING: Imported old config from %s"
-msgstr "WAARSCHUWING: Oude configuratie geimporteerd van %s"
+msgstr "WAARSCHUWING: Oude configuratie geïmporteerd van %s"
 
 #: mailpile/config.py:837
 #, python-format
@@ -259,12 +259,12 @@ msgstr "WAARSCHUWING: Importeren configuratie mislukt van %s"
 #: mailpile/config.py:876
 #, python-format
 msgid "Mailbox ID too large: %s"
-msgstr "Mailbox ID te groot: %s"
+msgstr "Mailbox-ID te groot: %s"
 
 #: mailpile/config.py:906
 #, python-format
 msgid "No such mailbox: %s"
-msgstr "Niet bestaande mailbox: %s"
+msgstr "Nietbestaande mailbox: %s"
 
 #: mailpile/config.py:913
 #, python-format
@@ -278,7 +278,7 @@ msgstr "%s: Openen: %s (dit kan even duren)"
 
 #: mailpile/config.py:1021
 msgid "Parent paths are not allowed"
-msgstr ""
+msgstr "Bovenliggende paden zijn niet toegestaan"
 
 #: mailpile/config.py:1137
 #, python-format
@@ -378,7 +378,7 @@ msgstr "Uitvoeren: %s"
 
 #: mailpile/commands.py:309
 msgid "Nothing changed"
-msgstr "Niks veranderd"
+msgstr "Niets veranderd"
 
 #: mailpile/commands.py:311
 #, python-format
@@ -438,19 +438,19 @@ msgstr "Demo Contacten"
 
 #: mailpile/plugins/demos.py:42
 msgid "This is the demo importer"
-msgstr "Dit is de demo importeerder"
+msgstr "Dit is de demo-importeerder"
 
 #: mailpile/plugins/demos.py:45
 msgid "Contact name"
-msgstr "Contact naam"
+msgstr "Naam contact"
 
 #: mailpile/plugins/demos.py:46
 msgid "Contact email"
-msgstr "Contact e-mail"
+msgstr "E-mail contact"
 
 #: mailpile/plugins/vcard_gnupg.py:17
 msgid "Import contacts from GnuPG keyring"
-msgstr "Importeer contacten uit GPG sleutelbos"
+msgstr "Importeer contacten uit GPG-sleutelbos"
 
 #: mailpile/plugins/vcard_gnupg.py:20
 msgid "Location of keyring"
@@ -478,12 +478,12 @@ msgstr "Interne fout"
 
 #: mailpile/search.py:168
 msgid "Loading metadata index..."
-msgstr "Metadata index laden..."
+msgstr "Metadata-index laden..."
 
 #: mailpile/search.py:180
 #, python-format
 msgid "Metadata index not found: %s"
-msgstr "Metadata index  niet gevonden: %s"
+msgstr "Metadata-index  niet gevonden: %s"
 
 #: mailpile/search.py:184
 #, python-format
@@ -492,19 +492,19 @@ msgstr "Metadata geladen, %d berichten"
 
 #: mailpile/search.py:191
 msgid "Saving metadata index changes..."
-msgstr "Metadata index wijzgingen opslaan..."
+msgstr "Metadata-indexwijzgingen opslaan..."
 
 #: mailpile/search.py:201
 msgid "Saved metadata index changes"
-msgstr "Metadata index wijzgingen opslaan"
+msgstr "Metadata-indexwijzgingen opgeslagen"
 
 #: mailpile/search.py:207
 msgid "Saving metadata index..."
-msgstr "Metadata index opslaan..."
+msgstr "Metadata-index opslaan..."
 
 #: mailpile/search.py:219
 msgid "Saved metadata index"
-msgstr "Metadata index opslaan"
+msgstr "Metadata-index opslaan"
 
 #: mailpile/search.py:222
 msgid "Updating high level indexes"
@@ -553,7 +553,7 @@ msgstr "%s: Lezen van je e-mail: %d%% (%d/%d berichten)"
 #: mailpile/search.py:412
 #, python-format
 msgid "%s: Indexed mailbox: %s"
-msgstr "%s: Geindexeerde mailbox: %s"
+msgstr "%s: Geïndexeerde mailbox: %s"
 
 #: mailpile/search.py:621
 #, python-format
@@ -617,7 +617,7 @@ msgstr "Laat weten aan team@mailpile.is !"
 #: mailpile/search.py:993
 #, python-format
 msgid "Unknown sort order: %s"
-msgstr "Onbekend sorteervolgorde: %s"
+msgstr "Onbekende sorteervolgorde: %s"
 
 #: mailpile/search.py:998
 msgid "Sort failed, sorting badly. Partial index?"
@@ -664,7 +664,7 @@ msgid ""
 "<pre>%s</pre>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
 msgstr ""
-"<h1>Template fout</h1>\n"
+"<h1>Templatefout</h1>\n"
 "<pre>%s</pre>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
 
@@ -698,12 +698,12 @@ msgstr "Verbinden met %s"
 #: mailpile/mailutils.py:161
 #, python-format
 msgid "SMTP connection to: %s:%s as %s@%s\n"
-msgstr "SMTP verbinding met: %s:%s as %s@%s\n"
+msgstr "SMTP-verbinding met: %s:%s as %s@%s\n"
 
 #: mailpile/mailutils.py:199
 #, python-format
 msgid "Invalid sendmail: %s"
-msgstr "Invalide sendmail: %s"
+msgstr "Ongeldige sendmail: %s"
 
 #: mailpile/mailutils.py:201
 msgid "Preparing message..."
@@ -745,7 +745,7 @@ msgstr "Voorvertoning weggeschreven naar: %s"
 
 #: mailpile/mailutils.py:885
 msgid "Failed to generate thumbnail"
-msgstr "Genereren "
+msgstr "Genereren miniatuurafbeelding mislukt"
 
 #: mailpile/mailutils.py:892
 #, python-format
@@ -768,11 +768,11 @@ msgstr "Doneer aan Mailpile"
 
 #: static/default/html/page/donate/index.html:11
 msgid "Or you can donate to our"
-msgstr "Of je kan donderen aan onze"
+msgstr "Of je kunt doneren aan onze"
 
 #: static/default/html/page/donate/index.html:11
 msgid "Bitcoin Wallet"
-msgstr "Bitcoin Portemonnee"
+msgstr "Bitcoinportemonnee"
 
 #: static/default/html/layouts/base.html:66
 #, python-format
@@ -958,7 +958,7 @@ msgstr "Gearchiveerd"
 
 #: static/default/html/tag/add.html:3
 msgid "Enter New Tag Info"
-msgstr "Voer nieuwe tag info in"
+msgstr "Voer nieuwe tag-info in"
 
 #: static/default/html/tag/add.html:9
 msgid "Tag"
@@ -1121,11 +1121,11 @@ msgstr "Geen resultaten gevonden"
 
 #: static/default/html/contact/add.html:3
 msgid "Contact Info"
-msgstr "Contact informatie"
+msgstr "Contactinformatie"
 
 #: static/default/html/contact/add.html:12
 msgid "E-mail"
-msgstr "E/mail"
+msgstr "E-mail"
 
 #: static/default/html/contact/add.html:15
 msgid "Website"
@@ -1133,4 +1133,4 @@ msgstr "Website"
 
 #: static/default/html/contact/add.html:18
 msgid "PGP Key"
-msgstr "PGP sleutel"
+msgstr "PGP-sleutel"
