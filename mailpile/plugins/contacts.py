@@ -230,25 +230,22 @@ class Contact(ContactVCard(VCard)):
         contact["last_contact_from"] = 10000000000000
         contact["last_contact_to"] = 10000000000000
 
-        try:
-            for email in contact["contact"]["email"]:
-                s = Action(self.session, "search", ["in:Sent", "to:%s" % (email["email"])]).as_dict()
-                print "TO: ", s
-                contact["sent_messages"] += s["result"]["total"]
-                for msg in s["result"]["messages"]:
-                    if msg["timestamp"] < contact["last_contact_to"]:
-                        contact["last_contact_to"] = msg["timestamp"]
-                        contact["last_contact_to_msg_url"] = msg["url"]
+        for email in contact["contact"]["email"]:
+            s = Action(self.session, "search", ["in:Sent", "to:%s" % (email["email"])]).as_dict()
+            print "TO: ", s
+            contact["sent_messages"] += s["result"]["total"]
+            for msg in s["result"]["messages"]:
+                if msg["timestamp"] < contact["last_contact_to"]:
+                    contact["last_contact_to"] = msg["timestamp"]
+                    contact["last_contact_to_msg_url"] = msg["url"]
 
-                s = Action(self.session, "search", ["from:%s" % (email["email"])]).as_dict()
-                print "FROM: ", s
-                contact["received_messages"] += s["result"]["total"]
-                for msg in s["result"]["messages"]:
-                    if msg["timestamp"] < contact["last_contact_from"]:
-                        contact["last_contact_from"] = msg["timestamp"]
-                        contact["last_contact_from_msg_url"] = msg["url"]
-        except Exception, e:
-            print "ERROR:", e
+            s = Action(self.session, "search", ["from:%s" % (email["email"])]).as_dict()
+            print "FROM: ", s
+            contact["received_messages"] += s["result"]["total"]
+            for msg in s["result"]["messages"]:
+                if msg["timestamp"] < contact["last_contact_from"]:
+                    contact["last_contact_from"] = msg["timestamp"]
+                    contact["last_contact_from_msg_url"] = msg["url"]
 
         if contact["last_contact_to"] == 10000000000000:
             contact["last_contact_to"] = False
