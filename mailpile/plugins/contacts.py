@@ -231,14 +231,16 @@ class Contact(ContactVCard(VCard)):
         contact["last_contact_to"] = 10000000000000
 
         for email in contact["contact"]["email"]:
-            s = Action(self.session, "search", ["in:Sent", "to:%s" % (email["email"])]).as_dict()
+            s = Action(self.session, "search", 
+                       ["in:Sent", "to:%s" % (email["email"])]).as_dict()
             contact["sent_messages"] += s["result"]["total"]
             for msg in s["result"]["messages"]:
                 if msg["timestamp"] < contact["last_contact_to"]:
                     contact["last_contact_to"] = msg["timestamp"]
                     contact["last_contact_to_msg_url"] = msg["url"]
 
-            s = Action(self.session, "search", ["from:%s" % (email["email"])]).as_dict()
+            s = Action(self.session, "search", 
+                       ["from:%s" % (email["email"])]).as_dict()
             contact["received_messages"] += s["result"]["total"]
             for msg in s["result"]["messages"]:
                 if msg["timestamp"] < contact["last_contact_from"]:
