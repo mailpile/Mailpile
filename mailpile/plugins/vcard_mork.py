@@ -312,7 +312,7 @@ class MorkImporter(VCardImporter):
                     if cell.column == "PrimaryEmail":
                         result["email"] = cell.atom
                     elif cell.column == "DisplayName":
-                        result["name"] = cell.atom
+                        result["name"] = cell.atom.strip("'")
                 results.append(result)
 
         return results
