@@ -40,6 +40,16 @@ BORING_HEADERS = ('received', 'date',
                   'content-type', 'content-disposition', 'mime-version',
                   'dkim-signature', 'domainkey-signature', 'received-spf')
 
+B64C_STRIP = '\n='
+
+B64C_TRANSLATE = string.maketrans('/', '_')
+
+B64W_TRANSLATE = string.maketrans('/+', '_-')
+
+STRHASH_RE = re.compile('[^0-9a-z]+')
+
+B36_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
 
 class WorkerError(Exception):
     pass
@@ -60,9 +70,6 @@ class UrlRedirectException(Exception):
         self.url = url
 
 
-B64C_STRIP = '\n='
-B64C_TRANSLATE = string.maketrans('/', '_')
-
 def b64c(b):
     """
     Rewrite a base64 string:
@@ -78,8 +85,6 @@ def b64c(b):
     """
     return string.translate(b, B64C_TRANSLATE, B64C_STRIP)
 
-
-B64W_TRANSLATE = string.maketrans('/+', '_-')
 
 def b64w(b):
     """
@@ -160,8 +165,6 @@ def md5_hex(*data):
     return _hash(hashlib.md5, data).hexdigest()
 
 
-STRHASH_RE = re.compile('[^0-9a-z]+')
-
 def strhash(s, length, obfuscate=None):
     """
     Create a hash of
@@ -187,8 +190,6 @@ def strhash(s, length, obfuscate=None):
             hashedStr += b64c(sha1b64(s)).lower()
     return hashedStr[:length]
 
-
-B36_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 def b36(number):
     """
@@ -364,7 +365,7 @@ def play_nice_with_threads():
     their activities if there are other threads that would like to
     run. This is a bit of a hack!
     """
-    delay = max(0, 0.01 * (threading.activeCount()-2))
+    delay = max(0, 0.01 * (threading.activeCount() - 2))
     if delay:
         time.sleep(delay)
     return delay
