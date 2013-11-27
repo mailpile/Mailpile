@@ -9,6 +9,7 @@ import re
 import subprocess
 import os
 import sys
+import string
 import tempfile
 import threading
 import time
@@ -59,6 +60,9 @@ class UrlRedirectException(Exception):
         self.url = url
 
 
+B64C_STRIP = '\n='
+B64C_TRANSLATE = string.maketrans('/', '_')
+
 def b64c(b):
     """
     Rewrite a base64 string:
@@ -72,8 +76,10 @@ def b64c(b):
     >>> b64c("a+b+c+123+")
     'a+b+c+123+'
     """
-    return b.replace('\n', '').replace('=', '').replace('/', '_')
+    return string.translate(b, B64C_TRANSLATE, B64C_STRIP)
 
+
+B64W_TRANSLATE = string.maketrans('/+', '_-')
 
 def b64w(b):
     """
@@ -85,7 +91,7 @@ def b64w(b):
     >>> b64w("a+b+c+123+")
     'a-b-c-123-'
     """
-    return b64c(b).replace('+', '-')
+    return string.translate(b, B64W_TRANSLATE, B64C_STRIP)
 
 
 def escape_html(t):
@@ -154,6 +160,8 @@ def md5_hex(*data):
     return _hash(hashlib.md5, data).hexdigest()
 
 
+STRHASH_RE = re.compile('[^0-9a-z]+')
+
 def strhash(s, length, obfuscate=None):
     """
     Create a hash of
@@ -174,12 +182,13 @@ def strhash(s, length, obfuscate=None):
     if obfuscate:
         hashedStr = b64c(sha512b64(s, obfuscate).lower())
     else:  # Don't obfuscate
-        hashedStr = re.sub('[^0123456789abcdefghijklmnopqrstuvwxyz]+', '',
-                           s.lower())[:(length - 4)]
+        hashedStr = re.sub(STRHASH_RE, '', s.lower())[:(length - 4)]
         while len(hashedStr) < length:
             hashedStr += b64c(sha1b64(s)).lower()
     return hashedStr[:length]
 
+
+B36_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 def b36(number):
     """
@@ -195,12 +204,11 @@ def b36(number):
     Keyword arguments:
     number -- An integer to convert to base36
     """
-    alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     base36 = ''
     while number:
         number, i = divmod(number, 36)
-        base36 = alphabet[i] + base36
-    return base36 or alphabet[0]
+        base36 = B36_ALPHABET[i] + base36
+    return base36 or B36_ALPHABET[0]
 
 
 def friendly_number(number, base=1000, decimals=0, suffix='',
