@@ -465,7 +465,7 @@ inspired me to start working on this.
 Contributors:
 
 - Bjarni R. Einasson (<http://bre.klaki.net/>)
-- Smari McCarthy (<http://www.smarimccarthy.com/>)
+- Smari McCarthy (<http://www.smarimccarthy.is/>)
 - Brennan Novak (<https://brennannovak.com/>)
 - Lots more, run `git log |grep Author |sort |uniq -c` for a list!
 
