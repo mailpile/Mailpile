@@ -102,7 +102,7 @@ def Main(args):
   re.LOCALE = 1
 
   # Bootstrap translations until we've loaded everything else
-  translation = gettext.translation("mailpile", "locale")
+  translation = gettext.translation("mailpile", "locale", fallback=True)
   translation.install(unicode=True)
 
   try:
