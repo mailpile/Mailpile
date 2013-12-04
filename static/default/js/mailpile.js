@@ -109,26 +109,23 @@ $(document).ready(function() {
   setInterval(function() {
     getNewMessages();
   }, 300000);
-  
 
 
   /* Set View Size */
-  if (localStorage.getItem('view_size')) {
-
-    $('#header').addClass(localStorage.getItem('view_size'));
-    $('#container').addClass(localStorage.getItem('view_size'));
-    $('#sidebar').addClass(localStorage.getItem('view_size'));
-    $('#pile-results').addClass(localStorage.getItem('view_size'));
-
-    $.each($('a.change-view-size'), function() {
-      if ($(this).data('view_size') == localStorage.getItem('view_size')) {
-        $(this).addClass('view-size-selected');
-      }
-    });
-  }
-  else {
+  if (!localStorage.getItem('view_size')) {
     localStorage.setItem('view_size', mailpile.defaults.view_size);
   }
+
+  $('#header').addClass(localStorage.getItem('view_size'));
+  $('#container').addClass(localStorage.getItem('view_size'));
+  $('#sidebar').addClass(localStorage.getItem('view_size'));
+  $('#pile-results').addClass(localStorage.getItem('view_size'));
+
+  $.each($('a.change-view-size'), function() {
+    if ($(this).data('view_size') == localStorage.getItem('view_size')) {
+      $(this).addClass('view-size-selected');
+    }
+  });
 
 
   // Load Scrollers
