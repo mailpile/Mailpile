@@ -17,3 +17,5 @@ static/default/plugins/
 doc/
 *.swp
 .vagrant
+.coverage
+testing/tmp
