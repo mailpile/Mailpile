@@ -18,4 +18,4 @@ doc/
 *.swp
 .vagrant
 .coverage
-testing/
+testing/tmp
