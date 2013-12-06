@@ -20,19 +20,43 @@
   	float: right;
 	}
 	
-	.message-email-address {
-	  display: inline-block;
-	  vertical-align: middle;
-	  color: @grayDark;
-	  border-radius: 3px;
-	  margin: 0 5px;
-	  padding: 0px;
-	  padding-right: 5px;
-	  font-weight: normal;
-	  background: @grayLight;
-	  border: 1px solid @grayMid;
-          max-height: 24px;
-  }
+    .message-address-prefix {
+        display: table-cell;
+        position: relative;
+        padding-top: 4px;
+        left: 0px;
+        text-align: right;
+        width: 50px;
+        font-weight: 500;
+        vertical-align: top;
+    }
+
+    .message-address-suffix {
+        display: table-cell;
+        position: relative;
+        right: 0px;
+        margin-bottom: 5px;
+    }
+
+    .message-address-container {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        display: table;
+    }
+
+    .message-email-address {
+      display: inline-block;
+      vertical-align: top;
+      line-height: 25px;
+      color: #4d4d4d;
+      border-radius: 3px;
+      margin: 0 3px 3px;
+      padding: 0px 5px 0px 0px;
+      font-weight: normal;
+      background: #f2f2f2;
+      border: 1px solid #cccccc;
+      max-height: 24px;
+    }
 	
 	.message-email-address:hover {
     color: @red;

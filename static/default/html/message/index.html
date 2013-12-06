@@ -13,16 +13,41 @@
       <div class="message-headers">
         <h3>{{result.messages[0].subject}}</h3> 
         <div class="message-datetime">{{ message.timestamp|friendly_datetime }} at {{ message.shorttime }}</div>
-        <ul>
-          <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{ message.from_email|e }}"><img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">{{ message.conv_people[0].name }}</a></li>
-          <li><b>{{_("To")}}</b> {% for toaddr in message.to %}<a class="message-email-address" href="/contact/{{toaddr}}/"> <img src="{{ show_avatar(url_protocol, http_host, toaddr, 48) }}"> {{toaddr}}</a>{% if not loop.last %}{% endif %}{% endfor %}</li>
+
+          <div class="message-address-container">
+              <div class="message-address-prefix">{{_("From")}}</div>
+              <div class="message-address-suffix">
+                <a class="message-email-address" href="/contact/{{ message.from_email|e }}"><img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">{{ message.conv_people[0].name }}</a>
+              </div>
+          </div>
+          <div class="message-address-container">
+              <div class="message-address-prefix">{{_("To")}}</div>
+              <div class="message-address-suffix">
+              {% for toaddr in message.to %}
+                <a class="message-email-address" href="/contact/{{toaddr}}/"> <img src="{{ show_avatar(url_protocol, http_host, toaddr, 48) }}"> {{toaddr}}</a>{% if not loop.last %}{% endif %}
+              {% endfor %}
+              </div>
+          </div>
           {% if message.cc %}
-          <li><b>{{_("Cc")}}</b> {% for ccaddr in message.cc %}<a class="message-email-address" href="/contact/{{ccaddr}}/">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+            <div class="message-address-container">
+              <div class="message-address-prefix">{{_("Cc")}}</div>
+              <div class="message-address-suffix">
+              {% for ccaddr in message.cc %}
+                <a class="message-email-address" href="/contact/{{ccaddr}}/">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}
+              {% endfor %}
+              </div>
+            </div>
           {% endif %}
           {% if message.bcc %}
-          <li><b>{{_("Bcc")}}</b> {% for bccaddr in message.bcc %}<a class="message-email-address" href="/contact/{{bccaddr}}/">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+            <div class="message-address-container">
+              <div class="message-address-prefix">{{_("Bcc")}}</div>
+              <div class="message-address-suffix">
+              {% for bccaddr in message.bcc %}
+                <a class="message-email-address" href="/contact/{{bccaddr}}/">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}
+              {% endfor %}
+              </div>
+            </div>
           {% endif %}
-        </ul>
       </div>
       <div class="message-body">
       {% set lastpart = "none" %}
