@@ -366,7 +366,7 @@ def RuledContainer(pcls):
             return config
 
         def reset(self, rules=True, data=True):
-            raise Exception(_('Override this'))
+            raise Exception(_('Please override this method'))
 
         def set_rules(self, rules):
             assert(isinstance(rules, dict))
@@ -425,8 +425,8 @@ def RuledContainer(pcls):
 
             elif not isinstance(value, (type(None), int, long, bool,
                                         float, str, unicode)):
-                raise TypeError(_('Invalid type for default %s = %s'
-                                 ) % (name, value))
+                raise TypeError(_('Invalid type "%s" for key "%s" (value: %s)'
+                                 ) % (type(value), name, repr(value)))
 
         def __fixkey__(self, key):
             return key
