@@ -301,7 +301,7 @@ class MailIndex:
             if msg_ts and abs(msg_ts - median) < 31 * 24 * 3600:
                 return msg_ts
             else:
-                session.ui.warning(_('=%s/%s using Recieved: instead of Date:'
+                session.ui.warning(_('=%s/%s using Received: instead of Date:'
                                     ) % (msg_mid, msg_id))
                 return median
         else:
@@ -963,8 +963,8 @@ class MailIndex:
             if (not by_default) and not (wanted and order in wanted):
                 continue
             if session:
-                session.ui.mark(_('Sorting %d messages in %s order...'
-                                 ) % (len(keys), order))
+                session.ui.mark(_('Sorting %d messages by %s...'
+                                 ) % (len(keys), _(order)))
 
             play_nice_with_threads()
             o = keys[:]
@@ -981,7 +981,7 @@ class MailIndex:
             return
 
         count = len(results)
-        session.ui.mark(_('Sorting %d messages in %s order...') % (count, how))
+        session.ui.mark(_('Sorting %d messages by %s...') % (count, _(how)))
         try:
             if how.endswith('unsorted'):
                 pass
@@ -1036,7 +1036,7 @@ class MailIndex:
             session.ui.mark(_('Sorted %d messages by %s, %d conversations'
                              ) % (count, how, len(results)))
         else:
-            session.ui.mark(_('Sorted %d messages in %s order') % (count, how))
+            session.ui.mark(_('Sorted %d messages by %s') % (count, _(how)))
 
         return True
 
@@ -1051,7 +1051,7 @@ class MailIndex:
         })
         for tid in (update_tags or config.tags.keys()):
             if session:
-                session.ui.mark(_('Counting messages in tag:%s') % tid)
+                session.ui.mark(_('Counting messages in tag: %s...') % tid)
             hits = GlobalPostingList(session, '%s:tag' % tid).hits()
             self.STATS[tid] = [len(hits), len(hits & new_msgs)]
 

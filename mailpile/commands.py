@@ -151,7 +151,7 @@ class Command:
                     if msg_id >= 0 and msg_id < len(self._idx().INDEX):
                         msg_ids.add(msg_id)
                     else:
-                        self.session.ui.warning((_('ID out of bounds: %s')
+                        self.session.ui.warning((_('No such ID: %s')
                                                  ) % (what[1:], ))
                 except ValueError:
                     self.session.ui.warning(_('What message is %s?') % (what, ))
@@ -598,12 +598,16 @@ class Help(Command):
     class CommandResult(Command.CommandResult):
 
         def splash_as_text(self):
+            if self.result['http_url']:
+                web_interface = _('The Web interface address is: %s') % \
+                        self.result['http_url']
+            else:
+                web_interface = _('The Web interface is disabled.')
             return '\n'.join([
                 self.result['splash'],
-                _('The web interface is %s') % (self.result['http_url'] or
-                                             _('disabled.')),
+                web_interface,
                 '',
-                _('For instructions, type `help`, press <CTRL-D> to quit.'),
+                _('Type `help` for instructions or press <Ctrl-d> to quit.'),
                 ''
             ])
 

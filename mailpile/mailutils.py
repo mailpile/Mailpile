@@ -207,7 +207,7 @@ def SendMail(session, from_to_msg_tuples):
       sm_close = closer
       sm_cleanup = lambda: True
     else:
-      raise Exception(_('Invalid sendmail: %s') % sendmail)
+      raise Exception(_('Invalid sendmail command/SMTP server: %s') % sendmail)
 
     session.ui.mark(_('Preparing message...'))
     string = msg.as_string(False)
@@ -459,7 +459,7 @@ class IncrementalMbox(mailbox.mbox):
     self._lock.acquire()
     try:
       # FIXME: Does this break on zero-length mailboxes?
-  
+
       # Scan for incomplete entries in the toc, so they can get fixed.
       for i in sorted(self._toc.keys()):
         if i > 0 and self._toc[i][0] is None:
@@ -473,17 +473,17 @@ class IncrementalMbox(mailbox.mbox):
           self._next_key = i
           del self._toc[i]
           break
-  
+
       fd = self._file
       self._file.seek(0, 2)
       if self._file_length == fd.tell():
         return
-  
+
       fd.seek(self._toc[self._next_key-1][0])
       line = fd.readline()
       if not line.startswith('From '):
         raise IOError("Mailbox has been modified")
-  
+
       fd.seek(self._file_length-len(os.linesep))
       start = None
       while True:
