@@ -157,8 +157,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                    'CONTENT_TYPE': self.headers['Content-Type']}
         )
       elif ctype == ue:
-        if clength > 5*1024*1024:
-          raise ValueError(_('OMG, input too big'))
+        max_content_length = 5 * 1024 * 1024 # TODO: add to config
+        if clength > max_content_length:
+          raise ValueError(_('Content-Length too big (maximum: %s)') % \
+                           max_content_length)
         post_data = cgi.parse_qs(self.rfile.read(clength), 1)
       else:
         raise ValueError(_('Unknown content-type'))
