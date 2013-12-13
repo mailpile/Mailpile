@@ -25,10 +25,6 @@ class EditableSearchResults(SearchResults):
         if sent:
             self['sent'] = [m.msg_mid() for m in new]
 
-    def _prune_msg_tree(self, *args, **kwargs):
-        kwargs['editable'] = True
-        return SearchResults._prune_msg_tree(self, *args, **kwargs)
-
 
 class CompositionCommand(Search):
     HTTP_QUERY_VARS = { }
@@ -123,7 +119,7 @@ class CompositionCommand(Search):
         session.displayed = EditableSearchResults(session, idx, new, sent,
                                                   results=session.results,
                                                   num=len(emails),
-                                                  expand=expand)
+                                                  emails=expand)
         return session.displayed
 
     def _edit_messages(self, emails, new=True):

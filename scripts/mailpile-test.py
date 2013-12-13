@@ -96,25 +96,32 @@ try:
                    ['subject:Moderation', 'kde-isl']):
         say('Searching for: %s' % search)
         results = mp.search(*search)
-        assert(results.result['count'] == 1)
+        assert(results.result['stats']['count'] == 1)
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['count'] == 8)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 8)
 
     # Make sure we are decoding weird headers correctly
-    result_bre = mp.search(*FROM_BRE).result['messages'][0]
-    result_bre = mp.view('=%s' % result_bre['mid']).result['messages'][0]
-    say('Checking encoding: %s' % result_bre['from'])
-    assert('=C3' not in result_bre['from'])
-    say('Checking encoding: %s' % result_bre['message']['headers']['To'])
-    assert('utf' not in result_bre['message']['headers']['To'])
+    search_bre = mp.search(*FROM_BRE).result
+    result_bre = search_bre['data']['metadata'][search_bre['threads'][0]]
+    view_bre = mp.view('=%s' % result_bre['mid']).result
+    metadata_bre = view_bre['data']['metadata'][view_bre['threads'][0]]
+    message_bre = view_bre['data']['message'][view_bre['threads'][0]]
+    say('Checking encoding: %s' % metadata_bre['from'])
+    assert('=C3' not in metadata_bre['from']['name'])
+    assert('=C3' not in metadata_bre['from']['email'])
+    for key, val in message_bre['header_list']:
+      if key.lower() not in ('from' ,'to', 'cc'):
+        continue
+      say('Checking encoding: %s: %s' % (key, val))
+      assert('utf' not in val)
 
     # Create a message...
-    new_mid = mp.message_compose().result['messages'][0]['mid']
-    assert(mp.search('tag:drafts').result['count'] == 0)
-    assert(mp.search('tag:blank').result['count'] == 1)
-    assert(mp.search('tag:sent').result['count'] == 0)
+    new_mid = mp.message_compose().result['threads'][0]
+    assert(mp.search('tag:drafts').result['stats']['count'] == 0)
+    assert(mp.search('tag:blank').result['stats']['count'] == 1)
+    assert(mp.search('tag:sent').result['stats']['count'] == 0)
     assert(not os.path.exists(mailpile_sent))
 
     # Edit the message (moves from Blank to Draft, not findable in index)
@@ -126,17 +133,17 @@ try:
       'body': ['Hello world!']
     }
     mp.message_update(**msg_data)
-    assert(mp.search('tag:drafts').result['count'] == 1)
-    assert(mp.search('tag:blank').result['count'] == 0)
-    assert(mp.search('TESTMSG').result['count'] == 0)
+    assert(mp.search('tag:drafts').result['stats']['count'] == 1)
+    assert(mp.search('tag:blank').result['stats']['count'] == 0)
+    assert(mp.search('TESTMSG').result['stats']['count'] == 0)
     assert(not os.path.exists(mailpile_sent))
 
     # Send the message (moves from Draft to Sent, is findable via. search)
     del msg_data['subject']
     msg_data['body'] = ['Hello world: thisisauniquestring :)']
     mp.message_update_send(**msg_data)
-    assert(mp.search('tag:drafts').result['count'] == 0)
-    assert(mp.search('tag:blank').result['count'] == 0)
+    assert(mp.search('tag:drafts').result['stats']['count'] == 0)
+    assert(mp.search('tag:blank').result['stats']['count'] == 0)
     assert('the TESTMSG subject' in contents(mailpile_sent))
     assert('thisisauniquestring' in contents(mailpile_sent))
     assert(MY_FROM in grep('X-Args', mailpile_sent))
@@ -147,7 +154,7 @@ try:
                    ['thisisauniquestring'],
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
-        assert(mp.search(*search).result['count'] == 1)
+        assert(mp.search(*search).result['stats']['count'] == 1)
     os.remove(mailpile_sent)
 
     # Test the send method's "bounce" capability

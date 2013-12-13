@@ -16,9 +16,10 @@
         <h3>{{metadata.subject|e}}</h3> 
         <div class="message-datetime">{{metadata.timestamp|friendly_datetime}} at {{metadata.shorttime}}</div>
         <ul>
-          <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{metadata.from.email|e}}"><img src="{{show_avatar(url_protocol, http_host, metadata.from.email, 48)}}">{{metadata.from.name|e}}</a></li>
-          <!-- FIXME: Here below,, we need a django filter to extract the e-mail
-                      address. We could also use metadata.to_eids, but that does
+          <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{metadata.from.email|e}}/"><img src="{{show_avatar(url_protocol, http_host, metadata.from.email, 48)}}">{{metadata.from.name|e}}</a></li>
+          <!-- FIXME: Here below, we need a django filter to extract the e-mail
+                      addresses and iterate through multiple values in a single
+                      header. We could also use metadata.to_eids, but that does
                       not differentiate between to/cc. Maybe we want an
                       intermediate header summary in the result JSON? -->
           {% for header in ("To", "Cc", "Bcc") %}{%

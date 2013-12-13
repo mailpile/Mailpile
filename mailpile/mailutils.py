@@ -1029,7 +1029,7 @@ class Email(object):
     if self.is_editable():
       if not want or 'editing_strings' in want:
         tree['editing_strings'] = self.get_editing_strings(tree)
-      if 'editing_string' in want:
+      if not want or 'editing_string' in want:
         tree['editing_string'] = self.get_editing_string(tree)
 
     return tree
