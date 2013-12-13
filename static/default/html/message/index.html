@@ -1,32 +1,38 @@
 {% extends "layouts/base.html" %}
 {% block content %}
 {% if result %}
-{% include("partials/sub_nav_message.html") %}
 
+{% include("partials/sub_nav_message.html") %}
 <table class="pile-results" id="pile-results">
-  <tbody>
-    {% for message in result.messages %}
-    {% if message.message %}
-    {% if not message.editing_string %}
-		<tr>
+  <tbody>{%
+    for mid in result.threads %}{%
+     if mid in result.data.message %}{%
+       set metadata = result.data.metadata[mid] %}{%
+       set message = result.data.message[mid] %}{%
+       if not message.editing_string %}
+    <tr>
       <td class="message-body" colspan="6">
       <div class="message-headers">
-        <h3>{{result.messages[0].subject}}</h3> 
-        <div class="message-datetime">{{ message.timestamp|friendly_datetime }} at {{ message.shorttime }}</div>
+        <h3>{{metadata.subject|e}}</h3> 
+        <div class="message-datetime">{{metadata.timestamp|friendly_datetime}} at {{metadata.shorttime}}</div>
         <ul>
-          <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{ message.from_email|e }}"><img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">{{ message.conv_people[0].name }}</a></li>
-          <li><b>{{_("To")}}</b> {% for toaddr in message.to %}<a class="message-email-address" href="/contact/{{toaddr}}/"> <img src="{{ show_avatar(url_protocol, http_host, toaddr, 48) }}"> {{toaddr}}</a>{% if not loop.last %}{% endif %}{% endfor %}</li>
-          {% if message.cc %}
-          <li><b>{{_("Cc")}}</b> {% for ccaddr in message.cc %}<a class="message-email-address" href="/contact/{{ccaddr}}/">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
-          {% endif %}
-          {% if message.bcc %}
-          <li><b>{{_("Bcc")}}</b> {% for bccaddr in message.bcc %}<a class="message-email-address" href="/contact/{{bccaddr}}/">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
-          {% endif %}
+          <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{metadata.from.email|e}}"><img src="{{show_avatar(url_protocol, http_host, metadata.from.email, 48)}}">{{metadata.from.name|e}}</a></li>
+          <!-- FIXME: Here below,, we need a django filter to extract the e-mail
+                      address. We could also use metadata.to_eids, but that does
+                      not differentiate between to/cc. Maybe we want an
+                      intermediate header summary in the result JSON? -->
+          {% for header in ("To", "Cc", "Bcc") %}{%
+              for hdr, val in message.header_list %}{%
+               if hdr.lower() == header.lower() %}
+            <li><b>{{_(header)}}</b> <a class="message-email-address" href="/contact/FIXME/"> <img src="{{show_avatar(url_protocol, http_host, 'FIXME', 48)}}"> {{val|e}}</a></li>
+            {% endif
+           %}{% endfor
+          %}{% endfor %}
         </ul>
       </div>
       <div class="message-body">
       {% set lastpart = "none" %}
-      {% for part in message.message.text_parts %}
+      {% for part in message.text_parts %}
         {% if part.type == "pgpbeginsigned" and part.openpgp_data %}
         <div class="pgp_signature_{{part.openpgp_data.signature}}" style="background: #c0ffc0;">
           <div class="pgp_signheader" style="background: #90ff90;">
@@ -52,7 +58,7 @@
       </div>
       <div class="message-attachments">
       <ul>
-         {% for att in message.message.attachments %}
+         {% for att in message.attachments %}
          <div style='display: inline-block; text-align: center; margin: 10px;'>
             <a href="/message/download/={{message.mid}}/part:{{att.count}}/"
                type="{{att.mimetype}}">
@@ -68,13 +74,13 @@
       </ul>
       </div>
       <div class="message-actions">
-        <form action="/message/reply/={{message.mid}}/" method=POST>
+        <form action="/message/reply/={{mid}}/" method=POST>
           <button type="submit"><span class="icon-reply"></span> {{_("Reply")}}</button>
         </form>
-        <form action="/message/reply/={{message.mid}}/" method=POST>
+        <form action="/message/reply/={{mid}}/" method=POST>
           <button type="submit"><span class="icon-reply-all"></span> {{_("All")}}</button>
         </form>
-        <form action="/message/forward/={{message.mid}}/" method=POST>
+        <form action="/message/forward/={{mid}}/" method=POST>
           <button type="submit"><span class="icon-forward"></span> {{_("Forward")}}</button>
         </form>      
         <button type="submit"><span class="icon-archive"></span></button>
@@ -84,11 +90,11 @@
       </td>
     </tr>
     {% endif %}
-    {% else %}
-      {% include("partials/search_item.html") %}
-    {% endif %}
+   {% else %}
+    {% include("partials/search_item.html") %}
+   {% endif %}
   {% endfor %}
-</tbody>
+  </tbody>
 </table>
 {% include("partials/details_search_speed.html") %}
 {% else %}

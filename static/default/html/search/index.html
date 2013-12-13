@@ -9,17 +9,16 @@
     <input type='hidden' name='csrf' value='{{csrf}}' />
     <table id="pile-results">
     <tbody>
-    {% for message in result.messages %}
-      {% if not message.message %}
-        {% include("partials/search_item.html") %}
-      {% endif %}
+    {% for mid in result.threads %}
+      {% include("partials/search_item.html") %}
     {% endfor %}
     </tbody>
     </table>
     <div id="pile-bottom" class="clearfix">
       <a href="#" class="button-primary">{{_("Previous")}}</a> <a href="/in/Inbox/@20/" class="button-primary">{{_("Next")}}</a>
       <div>
-        <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} {{_("of")}} {{result.total}} {{_("Conversations")}} {% elif result.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5><br>
+        {% set stats = result.stats %}
+        <h5>{% if stats.total > 1 %}{{stats.start}} - {{stats.end}} {{_("of")}} {{stats.total}} {{_("Conversations")}} {% elif stats.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5><br>
         <ul>
           <li><a class="change-view-size" data-view_size="snug" href="#">Snug</a></li>
           <li><a class="change-view-size" data-view_size="cozy" href="#">Cozy</a></li>

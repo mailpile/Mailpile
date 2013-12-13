@@ -7,14 +7,17 @@ import os
 import os.path
 import re
 import traceback
+import time
 
 import mailpile.util
 import mailpile.ui
-from mailpile.mailutils import ExtractEmails, NotEditableError, IsMailbox
+from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
+from mailpile.mailutils import NotEditableError, IsMailbox
 from mailpile.mailutils import Email, NoFromAddressError, PrepareMail, SendMail
 from mailpile.postinglist import GlobalPostingList
 from mailpile.search import MailIndex
 from mailpile.util import *
+
 
 class Command:
     """Generic command object all others inherit from"""
@@ -229,6 +232,308 @@ class Command:
 
     def command(self):
         return None
+
+
+##[ Shared basic Search Result class]#########################################
+
+class SearchResults(dict):
+
+    _NAME_TITLES = ('the', 'mr', 'ms', 'mrs', 'sir', 'dr', 'lord')
+
+    def _name(self, sender, short=True, full_email=False):
+        words = re.sub('["<>]', '', sender).split()
+        nomail = [w for w in words if not '@' in w]
+        if nomail:
+            if short:
+                if len(nomail) > 1 and nomail[0].lower() in self._NAME_TITLES:
+                    return nomail[1]
+                return nomail[0]
+            return ' '.join(nomail)
+        elif words:
+            if not full_email:
+                return words[0].split('@', 1)[0]
+            return words[0]
+        return '(nobody)'
+
+    def _names(self, senders):
+        if len(senders) > 1:
+            names = {}
+            for sender in senders:
+                sname = self._name(sender)
+                names[sname] = names.get(sname, 0) + 1
+            namelist = names.keys()
+            namelist.sort(key=lambda n: -names[n])
+            return ', '.join(namelist)
+        if len(senders) < 1:
+            return '(no sender)'
+        if senders:
+            return self._name(senders[0], short=False)
+        return ''
+
+    def _compact(self, namelist, maxlen):
+        l = len(namelist)
+        while l > maxlen:
+            namelist = re.sub(', *[^, \.]+, *', ',,', namelist, 1)
+            if l == len(namelist):
+                break
+            l = len(namelist)
+        namelist = re.sub(',,,+, *', ' .. ', namelist, 1)
+        return namelist
+
+    def _unused_legacy_code_for_looking_at(self):
+            # FIXME: This is nice, but doing it in _explain_msg_summary
+            #                would be nicer.
+            result['tags'] = []
+            if 'tags' in idx.config:
+                searched = [t.get('slug') for t in self['search_tags']]
+                for t in sorted(idx.get_tags(msg_info=msg_info)):
+                    tag = idx.config.get_tag(t)
+                    if tag:
+                        result['tags'].append(dict_merge(tag, {
+                            'searched': (tag['slug'] in searched)
+                        }))
+
+            if not expand and 'flat' not in (session.order or ''):
+                conv = idx.get_conversation(msg_info)
+            else:
+                conv = [msg_info]
+            conv_from = [c[MailIndex.MSG_FROM] for c in conv]
+
+            result['short_from'] = self._compact(self._names(conv_from), 25)
+            result['conv_count'] = len(conv)
+            result['conv_mids'] = [c[MailIndex.MSG_MID] for c in conv]
+            # FIXME: conv_people should look stuff in our contact list
+            result['conv_people'] = people = [{
+                'email': (ExtractEmails(p) or [''])[0],
+                'name': self._name(p, short=False),
+            } for p in list(set(conv_from))]
+            people.sort(key=lambda i: i['name'] + i['email'])
+
+            if expand and idx_pos in expand_ids:
+                exp_email = expand[expand_ids.index(idx_pos)]
+                result['message'] = self._message_details([exp_email])[0]
+            rv.append(result)
+
+    def _metadata(self, msg_info):
+        import mailpile.urlmap
+        nz = lambda l: [v for v in l if v]
+        msg_ts = long(msg_info[MailIndex.MSG_DATE], 36)
+        msg_date = datetime.datetime.fromtimestamp(msg_ts)
+        um = mailpile.urlmap.UrlMap(self.session)
+        fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
+        expl = {
+            'mid': msg_info[MailIndex.MSG_MID],
+            'id': msg_info[MailIndex.MSG_ID],
+            'from': {
+                'name': fn,
+                'email': fe,
+            },
+            'urls': {
+                'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
+            },
+            'timestamp': msg_ts,
+            'tag_tids': self._msg_tags(msg_info),
+            'to_eids': self._msg_people(msg_info, no_from=True),
+            'thread_mid': msg_info[MailIndex.MSG_CONV_MID],
+            'subject': msg_info[MailIndex.MSG_SUBJECT],
+            'body': {
+                'snippet': msg_info[MailIndex.MSG_SNIPPET],
+            },
+            'flags': {
+            }
+        }
+
+        # Support rich snippets
+        if expl['body']['snippet'].startswith('{'):
+            try:
+                expl['body'] = json.loads(expl['body']['snippet'])
+            except ValueError:
+                pass
+
+        # Misc flags
+        if [e for e in self.idx.config.profiles
+                    if e.email.lower() == fe.lower()]:
+            expl['flags']['from_me'] = True;
+        tag_types = [self.idx.config.get_tag(t).type for t in expl['tag_tids']]
+        for t in ('trash', 'spam', 'ham', 'drafts'):
+            if t in tag_types:
+                expl['flags'][t] = True;
+        # FIXME: Is message signed or encrypted?
+
+        # Extra behavior for editable messages
+        if 'drafts' in expl['flags']:
+            if self.idx.config.is_editable_message(msg_info):
+                expl['urls']['editing'] = um.url_edit(expl['mid'])
+            else:
+                del expl['drafts']
+
+        return expl
+
+    def _msg_people(self, msg_info, no_from=False):
+        cids = set([t for t in msg_info[MailIndex.MSG_TO].split(',') if t])
+        if not no_from:
+            frm = (ExtractEmails(msg_info[MailIndex.MSG_FROM]) or [''])[0]
+            if frm:
+                cids.add(b36(self.idx.EMAIL_IDS[frm.lower()]))
+        return sorted(list(cids))
+
+    def _person(self, cid):
+        e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
+        return {
+            'name': n,
+            'email': e,
+            # FIXME: Augment with data from the address book
+        }
+
+    def _msg_tags(self, msg_info):
+        tids = [t for t in msg_info[MailIndex.MSG_TAGS].split(',') if t]
+        return tids
+
+    def _tag(self, tid):
+        return self.session.config.get_tag(tid)
+
+    def _thread(self, thread_mid):
+        msg_info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
+        thread = [i for i in msg_info[MailIndex.MSG_REPLIES].split(',') if i]
+        return thread
+
+    WANT_MSG_TREE = ('attachments', 'html_parts', 'text_parts', 'header_list',
+                     'editing_strings')
+    PRUNE_MSG_TREE = ('headers', ) # Added by editing_strings
+
+    def _prune_msg_tree(self, tree):
+        for k in tree.keys():
+            if k not in self.WANT_MSG_TREE or k in self.PRUNE_MSG_TREE:
+                del tree[k]
+        return tree
+
+    def _message(self, email):
+        tree = email.get_message_tree(want=email.WANT_MSG_TREE_PGP +
+                                           self.WANT_MSG_TREE)
+        email.evaluate_pgp(tree, decrypt=True)
+        return self._prune_msg_tree(tree)
+
+    def __init__(self, session, idx,
+                 results=None, start=0, end=None, num=None,
+                 emails=None, people=None,
+                 suppress_data=False, full_threads=True):
+        dict.__init__(self)
+        self.session = session
+        self.people = people
+        self.emails = emails
+        self.idx = idx
+
+        results = results or session.results or []
+        num = num or session.config.prefs.num_results
+        if end:
+                    start = end - num
+        if start > len(results):
+            start = len(results)
+        if start < 0:
+            start = 0
+        threads = [b36(r) for r in results[start:start + num]]
+
+        self.update({
+            'stats': {
+                'count': len(threads),
+                'start': start + 1,
+                'end': start + num,
+                'total': len(results),
+            },
+            'search_terms': session.searched,
+            'people': [],
+            'threads': threads,
+        })
+        if 'tags' in self.session.config:
+            self.update({
+                'search_tags': [idx.config.get_tag(t.split(':')[1], {})
+                                for t in session.searched
+                                      if t.startswith('in:')],
+            })
+
+        if suppress_data or not results:
+            return
+
+        self.update({
+            'data': {
+                'person': {},
+                'metadata': {},
+                'message': {},
+                'thread': {}
+            }
+        })
+        if 'tags' in self.session.config:
+            self['data']['tag'] = {}
+
+        idxs = results[start:start + num]
+        while idxs:
+            idx_pos = idxs.pop(0)
+            msg_info = idx.get_msg_at_idx_pos(idx_pos)
+
+            # Populate data.metadata
+            self['data']['metadata'][b36(idx_pos)] = self._metadata(msg_info)
+
+            # Populate data.thread
+            thread_mid = msg_info[idx.MSG_CONV_MID]
+            if thread_mid not in self['data']['thread']:
+                thread = self._thread(thread_mid)
+                self['data']['thread'][thread_mid] = thread
+                if full_threads:
+                     idxs.extend([int(t, 36) for t in thread
+                                  if t not in self['data']['metadata']])
+
+            # Populate data.person
+            for cid in self._msg_people(msg_info):
+                if cid not in self['data']['person']:
+                    self['data']['person'][cid] = self._person(cid)
+
+            # Populate data.tag
+            if 'tags' in self.session.config:
+                for tid in self._msg_tags(msg_info):
+                    if tid not in self['data']['tag']:
+                        self['data']['tag'][tid] = self._tag(tid)
+
+        for e in emails or []:
+            idx_pos = e.msg_idx_pos
+            mid = b36(idx_pos)
+            if mid in self['data']['metadata']:
+                self['data']['message'][mid] = self._message(e)
+
+    def __nonzero__(self):
+        return True
+
+    def next_set(self):
+        return SearchResults(self.session, self.idx,
+                             start=self['start'] - 1 + self['count'])
+
+    def previous_set(self):
+        return SearchResults(self.session, self.idx,
+                             end=self['start'] - 1)
+
+    def as_text(self):
+        clen = max(3, len('%d' % len(self.session.results)))
+        cfmt = '%%%d.%ds' % (clen, clen)
+        text = []
+        count = self['start']
+        expand_ids = [e.msg_idx_pos for e in (self.emails or [])]
+        for m in self['messages']:
+            if 'message' in m:
+                exp_email = self.emails[expand_ids.index(int(m['mid'], 36))]
+                text.append(exp_email.get_editing_string(
+                                exp_email.get_message_tree()))
+            else:
+                tag_names = [t['name'] for t in m['tags'] if not t['searched']]
+                msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
+                sfmt = '%%-%d.%ds%%s' % (46 - (clen + len(msg_tags)),
+                                         46 - (clen + len(msg_tags)))
+                text.append((cfmt + ' %s %-20.20s ' + sfmt
+                             ) % (count,
+                                  m['date'], m['short_from'], m['subject'],
+                                  msg_tags))
+            count += 1
+        if not count:
+            text = ['(No messages found)']
+        return '\n'.join(text) + '\n'
 
 
 ##[ Internals ]###############################################################

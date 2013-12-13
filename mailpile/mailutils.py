@@ -459,7 +459,7 @@ class IncrementalMbox(mailbox.mbox):
     self._lock.acquire()
     try:
       # FIXME: Does this break on zero-length mailboxes?
-  
+
       # Scan for incomplete entries in the toc, so they can get fixed.
       for i in sorted(self._toc.keys()):
         if i > 0 and self._toc[i][0] is None:
@@ -473,17 +473,17 @@ class IncrementalMbox(mailbox.mbox):
           self._next_key = i
           del self._toc[i]
           break
-  
+
       fd = self._file
       self._file.seek(0, 2)
       if self._file_length == fd.tell():
         return
-  
+
       fd.seek(self._toc[self._next_key-1][0])
       line = fd.readline()
       if not line.startswith('From '):
         raise IOError("Mailbox has been modified")
-  
+
       fd.seek(self._file_length-len(os.linesep))
       start = None
       while True:
@@ -938,37 +938,53 @@ class Email(object):
       tids = self.get_msg_info(self.index.MSG_TAGS).split(',')
       return [self.config.get_tag(t) for t in tids]
 
-  def get_message_tree(self):
+  def get_message_tree(self, want=None):
+    msg = self.get_msg()
     tree = {
-      'id': self.get_msg_info(self.index.MSG_ID),
-      'tags': self.get_msg_info(self.index.MSG_TAGS).split(','),
-      'summary': self.get_msg_summary(),
-      'headers': {},
-      'headers_lc': {},
-      'attributes': {},
-      'text_parts': [],
-      'html_parts': [],
-      'attachments': [],
-      'conversation': [],
+      'id': self.get_msg_info(self.index.MSG_ID)
     }
 
-    conv_id = self.get_msg_info(self.index.MSG_CONV_MID)
-    if conv_id:
-      conv = Email(self.index, int(conv_id, 36))
-      tree['conversation'] = convs = [conv.get_msg_summary()]
-      for rid in conv.get_msg_info(self.index.MSG_REPLIES).split(','):
-        if rid:
-          convs.append(Email(self.index, int(rid, 36)).get_msg_summary())
+    for p in 'text_parts', 'html_parts', 'attachments':
+        if want is None or p in want:
+            tree[p] = []
+
+    if want is None or 'summary' in want:
+      tree['summary'] = self.get_msg_summary()
+
+    if want is None or 'tags' in want:
+      tree['tags'] = self.get_msg_info(self.index.MSG_TAGS).split(',')
+
+    if want is None or 'conversation' in want:
+      tree['conversation'] = {}
+      conv_id = self.get_msg_info(self.index.MSG_CONV_MID)
+      if conv_id:
+        conv = Email(self.index, int(conv_id, 36))
+        tree['conversation'] = convs = [conv.get_msg_summary()]
+        for rid in conv.get_msg_info(self.index.MSG_REPLIES).split(','):
+          if rid:
+            convs.append(Email(self.index, int(rid, 36)).get_msg_summary())
+
+
+    if (want is None or 'headers' in want
+                     or 'editing_string' in want
+                     or 'editing_strings' in want):
+      tree['headers'] = {}
+      for hdr in msg.keys():
+        tree['headers'][hdr] = self.index.hdr(msg, hdr)
+
+    if want is None or 'headers_lc' in want:
+      tree['headers_lc'] = {}
+      for hdr in msg.keys():
+        tree['headers_lc'][hdr.lower()] = self.index.hdr(msg, hdr)
+
+    if want is None or 'header_list' in want:
+      tree['header_list'] = [(k, self.index.hdr(msg, k, value=v))
+                             for k, v in msg.items()]
 
     # FIXME: Decide if this is strict enough or too strict...?
     html_cleaner = Cleaner(page_structure=True, meta=True, links=True,
                            javascript=True, scripts=True, frames=True,
                            embedded=True, safe_attrs_only=True)
-
-    msg = self.get_msg()
-    for hdr in msg.keys():
-      tree['headers'][hdr] = self.index.hdr(msg, hdr)
-      tree['headers_lc'][hdr.lower()] = self.index.hdr(msg, hdr)
 
     # Note: count algorithm must match that used in extract_attachment above
     count = 0
@@ -984,22 +1000,23 @@ class Email(object):
         if (mimetype == 'text/html' or
             '<html>' in payload or
             '</body>' in payload):
-          tree['html_parts'].append({
-            'openpgp_status': openpgp and openpgp[0] or '',
-            'openpgp_data': openpgp and openpgp[1] or '',
-            'charset': charset,
-            'type': 'html',
-            'data': (payload.strip() and html_cleaner.clean_html(payload)) or ''
-          })
+          if want is None or 'html_parts' in want:
+            tree['html_parts'].append({
+              'openpgp_status': openpgp and openpgp[0] or '',
+              'openpgp_data': openpgp and openpgp[1] or '',
+              'charset': charset,
+              'type': 'html',
+              'data': (payload.strip() and html_cleaner.clean_html(payload)) or ''
+            })
           if tree['text_parts']:
             # FIXME: What is going on here?  This seems bad and wrong.
             tp0 = tree['text_parts'][0]
             tp0["openpgp_status"] = openpgp and openpgp[0] or ''
             tp0["openpgp_data"] = openpgp and openpgp[1] or ''
-        else:
+        elif want is None or 'text_parts' in want:
           tree['text_parts'].extend(self.parse_text_part(payload, charset,
                                                          openpgp))
-      else:
+      elif want is None or 'attachments' in want:
         tree['attachments'].append({
           'mimetype': mimetype,
           'count': count,
@@ -1010,8 +1027,10 @@ class Email(object):
         })
 
     if self.is_editable():
-      tree['is_editable'] = True
-      tree['editing_strings'] = self.get_editing_strings(tree)
+      if not want or 'editing_strings' in want:
+        tree['editing_strings'] = self.get_editing_strings(tree)
+      if 'editing_string' in want:
+        tree['editing_string'] = self.get_editing_string(tree)
 
     return tree
 
@@ -1102,6 +1121,7 @@ class Email(object):
 
     return 'body', 'text'
 
+  WANT_MSG_TREE_PGP = ('text_parts',)
   PGP_OK = {
     'pgpbeginsigned': 'pgpbeginverified',
     'pgpsignedtext': 'pgpverifiedtext',
@@ -1111,6 +1131,9 @@ class Email(object):
     'pgpend': 'pgpverification',
   }
   def evaluate_pgp(self, tree, check_sigs=True, decrypt=False):
+    if 'text_parts' not in tree:
+      return tree
+
     pgpdata = []
     for part in tree['text_parts']:
 
@@ -1145,7 +1168,6 @@ class Email(object):
           else:
             pgpdata[0]['openpgp_status'] = 'encrypted'
             pgpdata[0]['openpgp_data'] = {"decrypt": "fail"}
-
 
     return tree
 
