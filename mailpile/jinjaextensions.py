@@ -9,7 +9,7 @@ import datetime
 import urllib
 import hashlib
 
-from mailpile.util import friendly_number, md5_hex
+from mailpile.util import *
 
 
 class MailpileCommand(Extension):
@@ -45,21 +45,12 @@ class MailpileCommand(Extension):
         return re.sub(find, replace, s)
 
     def _elapsed_datetime(self, timestamp):
-        ts = datetime.date.fromtimestamp(timestamp)
-        days_ago = (datetime.date.today() - ts).days
-
-        if days_ago < 1:
-            return 'today'
-        elif days_ago < 2:
-            return '%d day' % days_ago
-        elif days_ago < 7:
-            return '%d days' % days_ago
-        else:
-            return ts.strftime("%b %d")
+        # See mailpile/util.py:elapsed_datetime if this needs fixing
+        return elapsed_datetime(timestamp)
 
     def _friendly_datetime(self, timestamp):
-        date = datetime.date.fromtimestamp(timestamp)
-        return date.strftime("%b %d, %Y")
+        # See mailpile/util.py:friendly_datetime if this needs fixing
+        return friendly_datetime(timestamp)
 
     def _friendly_number(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing

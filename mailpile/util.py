@@ -3,6 +3,7 @@
 # Misc. utility functions for Mailpile.
 #
 import cgi
+import datetime
 import hashlib
 import locale
 import re
@@ -213,6 +214,26 @@ def b36(number):
         base36.append(B36_ALPHABET[i])
     return ''.join(reversed(base36))
 
+
+def elapsed_datetime(timestamp):
+    """
+    Return "X days ago" style relative dates for recent dates.
+    """
+    ts = datetime.date.fromtimestamp(timestamp)
+    days_ago = (datetime.date.today() - ts).days
+
+    if days_ago < 1:
+        return _('today')
+    elif days_ago < 2:
+        return _('%d day') % days_ago
+    elif days_ago < 7:
+        return _('%d days') % days_ago
+    else:
+        return ts.strftime("%b %d")
+
+def friendly_datetime(self, timestamp):
+    date = datetime.date.fromtimestamp(timestamp)
+    return date.strftime("%b %d, %Y")
 
 def friendly_number(number, base=1000, decimals=0, suffix='',
                     powers=['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']):
