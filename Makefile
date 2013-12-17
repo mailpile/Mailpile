@@ -12,20 +12,22 @@ debian-dev:
 	sudo gem install therubyracer less
 
 docs:
-	test -d doc || \
+	@test -d doc || \
            git clone https://github.com/pagekite/Mailpile.wiki.git doc
-	python mailpile/urlmap.py >doc/URLS.md
-	python mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
+	@python mailpile/urlmap.py >doc/URLS.md
+	@ls -l doc/URLS.md
+	@python mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
+	@ls -l doc/defaults.cfg
 
 web: less js
 	@true
 
 alltests:
-	python mailpile/config.py
-	python mailpile/util.py
-	python mailpile/vcard.py
-	python mailpile/workers.py
-	scripts/mailpile-test.py
+	@python mailpile/config.py
+	@python mailpile/util.py
+	@python mailpile/vcard.py
+	@python mailpile/workers.py
+	@nosetests tests
 
 clean:
 	@rm -vf *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py
