@@ -9,7 +9,7 @@ def checkSearch(query, expected_count=1):
         def __init__(self):
             self.mp = get_shared_mailpile()
             results = self.mp.search(*query)
-            assert_equal(results.result['count'], expected_count)
+            assert_equal(results.result['stats']['count'], expected_count)
             assert_less(float(results.as_dict()["elapsed"]), 0.2)
     TestSearch.description = "Searching for %s" % str(query)
     return TestSearch

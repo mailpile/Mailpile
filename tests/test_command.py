@@ -25,12 +25,12 @@ class TestCommands(MailPileUnittest):
     def test_set(self):
         self.mp.set("prefs.num_results=1")
         results = self.mp.search("twitter")
-        self.assertEqual(results.result['count'], 1)
+        self.assertEqual(results.result['stats']['count'], 1)
 
     def test_unset(self):
         self.mp.unset("prefs.num_results")
         results = self.mp.search("twitter")
-        self.assertEqual(results.result['count'], 2)
+        self.assertEqual(results.result['stats']['count'], 2)
 
     def test_add(self):
         res = self.mp.add("tests")
