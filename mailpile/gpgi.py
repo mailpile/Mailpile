@@ -528,7 +528,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         self.passphrase = None
 
         encryption_info = EncryptionInfo()
-        print retvals
+        encryption_info["protocol"] = "openpgp"
 
         if ["DECRYPTION_FAILED"] in retvals[1]["status"]:
             encryption_info["missing_keys"] = [x[1] for x in retvals[1]["status"] if x[0] == "NO_SECKEY"]
@@ -539,7 +539,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             text = ""
         else:
             encryption_info["status"] = "decrypted"
-            text = retvals[1]["stdout"][0]
+            text = retvals[1]["stdout"][0].decode("utf-8")
 
         return encryption_info, text
 
@@ -589,22 +589,45 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                                       "status": self.parse_status}, 
                            output=data)
 
-        status = {"signature": "unknown", "from": "", "fromaddr": "", "fingerprint": ""}
+        signature_info = SignatureInfo()
+        print retvals["status"]
         for line in retvals["status"]:
             if line[0] == "GOODSIG":
-                status["signature"] = "good"
-                status["from"] = " ".join(line[2:-1]).decode("utf-8")
-                status["fromaddr"] = line[-1].strip("<>")
+                signature_info["status"] = "good"
+                signature_info["name"] = " ".join(line[2:-1]).decode("utf-8")
+                signature_info["email"] = line[-1].strip("<>")
             elif line[0] == "BADSIG":
-                status["signature"] = "bad"
-                status["from"] = " ".join(line[2:-1]).decode("utf-8")
-                status["fromaddr"] = line[-1].strip("<>")
+                signature_info["status"] = "invalid"
+                signature_info["name"] = " ".join(line[2:-1]).decode("utf-8")
+                signature_info["email"] = line[-1].strip("<>")
             elif line[0] == "ERRSIG":
-                status["signature"] = "error"
+                signature_info["status"] = "error"
+                signature_info["keyinfo"] = line[1]
+                signature_info["timestamp"] = int(line[5])
+            elif line[0] == "EXPKEYSIG":
+                signature_info["trust"] = "expired"
+                signature_info["name"] = " ".join(line[2:-1]).decode("utf-8")
+                signature_info["email"] = line[-1].strip("<>")
+            elif line[0] in ["KEYEXPIRED", "SIGEXPIRED"]:
+                signature_info["trust"] = "expired"
+            elif line[0] == "REVKEYSIG":
+                signature_info["trust"] = "revoked"                
+                signature_info["name"] = " ".join(line[2:-1]).decode("utf-8")
+                signature_info["email"] = line[-1].strip("<>")
+            elif line[0] == "KEYREVOKED":
+                signature_info["trust"] = "revoked"
             elif line[0] == "VALIDSIG":
-                status["fingerprint"] = line[1]
+                # FIXME: determine trust level, between new, unverified, verified, untrusted.
+                # hardcoded to unverified for now.
+                signature_info["status"] = "good"
+                signature_info["trust"] = "unverified"
+                signature_info["keyinfo"] = line[1]
+                signature_info["timestamp"] = int(line[3])
+            elif line[0] == "NO_PUBKEY":
+                signature_info["status"] = "unknown"
+                signature_info["trust"] = "untrusted"
 
-        return status
+        return signature_info
 
     def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True, 
                      detatch=False, clearsign=True):
@@ -652,14 +675,15 @@ class PGPMimeParser(Parser):
                 msg = '\r\n'.join(sig_parts[0].as_string().splitlines(False))+'\r\n'
 
                 result = None
-                gpg = GnuPG()
-                status = gpg.verify(msg, sig)
-                print status
+                print "Checking MIME signature..."
 
+                gpg = GnuPG()
+                signature_info = gpg.verify(msg, sig)
+
+                part.signature_info = signature_info
                 for sig_part in sig_parts:
-                    print "sig_part: ", dir(sig_part), type(sig_part)
-                    sig_part.openpgp = ("signed", status)
-                    part.openpgp = ("signed", status)
+                    print "Adding signature info from signature to part. Siginfo = %s" % signature_info
+                    sig_part.signature_info = signature_info
 
                 # Reset!
                 sig_count, sig_parts = 0, []
@@ -670,6 +694,7 @@ class PGPMimeParser(Parser):
 
             elif enc_count > 0 and (mimetype == 'application/octet-stream'):
                 # FIXME: Decrypt and parse!
+                print "MIME Decryption!"
                 crypt = tempfile.NamedTemporaryFile()
                 crypt.write(part.get_payload())
                 crypt.flush()
@@ -678,20 +703,17 @@ class PGPMimeParser(Parser):
                 result = None
                 gpg = GnuPG()
                 encryption_info, text = gpg.decrypt(msg)
-                if encryption_info["status"] == "decrypted":
-                    summary = ('decrypted', text)
-                else:
-                    summary = ('encrypted', text)
+
                 s = StringIO.StringIO()
                 s.write(result)
                 m = Parser().parse(s)
                 m = Message()
                 m.set_payload(text)
                 part.set_payload([m])
-                part.openpgp = summary
+                part.encryption_info = encryption_info
 
                 for enc_part in enc_parts:
-                    enc_part.openpgp = summary
+                    enc_part.encryption_info = encryption_info
 
                 # Reset!
                 enc_count, enc_parts = 0, []

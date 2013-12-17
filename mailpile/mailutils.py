@@ -43,7 +43,7 @@ from lxml.html.clean import Cleaner
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
 
-from gpgi import PGPMimeParser, GnuPG
+from gpgi import PGPMimeParser, GnuPG, EncryptionInfo, SignatureInfo
 
 
 class NotEditableError(ValueError):
@@ -964,7 +964,6 @@ class Email(object):
                     if rid:
                         convs.append(Email(self.index, int(rid, 36)).get_msg_summary())
 
-
         if (want is None or 'headers' in want
                          or 'editing_string' in want
                          or 'editing_strings' in want):
@@ -996,14 +995,14 @@ class Email(object):
             count += 1
             if (part.get('content-disposition', 'inline') == 'inline'
             and mimetype in ('text/plain', 'text/html')):
-                payload, charset, openpgp = self.decode_payload(part)
+                payload, charset, encryption_info, signature_info = self.decode_payload(part)
                 if (mimetype == 'text/html' or
                       '<html>' in payload or
                       '</body>' in payload):
                     if want is None or 'html_parts' in want:
                         tree['html_parts'].append({
-                            'openpgp_status': openpgp and openpgp[0] or '',
-                            'openpgp_data': openpgp and openpgp[1] or '',
+                            'encryption_info': encryption_info,
+                            'signature_info': signature_info,
                             'charset': charset,
                             'type': 'html',
                             'data': (payload.strip() and html_cleaner.clean_html(payload)) or ''
@@ -1011,11 +1010,12 @@ class Email(object):
                     if tree['text_parts']:
                         # FIXME: What is going on here?  This seems bad and wrong.
                         tp0 = tree['text_parts'][0]
-                        tp0["openpgp_status"] = openpgp and openpgp[0] or ''
-                        tp0["openpgp_data"] = openpgp and openpgp[1] or ''
+                        tp0["encryption_info"] = encryption_info
+                        tp0["signature_info"] = signature_info
                 elif want is None or 'text_parts' in want:
                     tree['text_parts'].extend(self.parse_text_part(payload, charset,
-                                                                   openpgp))
+                                                                   encryption_info,
+                                                                   signature_info))
             elif want is None or 'attachments' in want:
                 tree['attachments'].append({
                     'mimetype': mimetype,
@@ -1046,33 +1046,33 @@ class Email(object):
             except UnicodeDecodeError, e:
                 print _('Decode failed: %s %s') % (charset, e)
         try:
-            openpgp = part.openpgp
+            encryption_info = part.encryption_info
         except AttributeError:
-            openpgp = None
-        return payload, charset, openpgp
+            encryption_info = EncryptionInfo()
+        try:
+            signature_info = part.signature_info
+        except AttributeError:
+            signature_info = SignatureInfo()
+        return payload, charset, encryption_info, signature_info
 
-    def parse_text_part(self, data, charset, openpgp):
+    def parse_text_part(self, data, charset, encryption_info, signature_info):
         current = {
             'type': 'bogus',
-            'charset': charset
+            'charset': charset,
+            'encryption_info': encryption_info,
+            'signature_info': signature_info,
         }
         parse = []
-        if openpgp:
-            parse.append({
-                'type': 'pgpbegin%s' % openpgp[0],
-                'data': openpgp[1],
-                'charset': charset
-            })
         block = 'body'
         for line in data.splitlines(True):
             block, ltype = self.parse_line_type(line, block)
             if ltype != current['type']:
-                if openpgp:
-                    ltype = 'pgp%stext' % openpgp[0]
                 current = {
                     'type': ltype,
                     'data': '',
-                    'charset': charset
+                    'charset': charset,
+                    'encryption_info': encryption_info,
+                    'signature_info': signature_info,
                 }
                 parse.append(current)
             current['data'] += line
@@ -1138,6 +1138,13 @@ class Email(object):
         for part in tree['text_parts']:
 
             # Handle signed messages
+            if 'signature_info' not in part:
+                print "adding signature info..."
+                print part.keys()
+                part['signature_info'] = SignatureInfo()
+            else:
+                print "found signature info..."
+
             if check_sigs:
                 if part['type'] == 'pgpbeginsigned':
                     pgpdata = [part]
@@ -1148,12 +1155,15 @@ class Email(object):
                     try:
                         gpg = GnuPG()
                         message = ''.join([p['data'].encode(p['charset']) for p in pgpdata])
-                        pgpdata[0]['openpgp_data'] = gpg.verify(message)
-                        pgpdata[0]['openpgp_status'] = 'signed'
+                        pgpdata[1]['signature_info'] = gpg.verify(message)
+                        pgpdata[0]['data'] = ''
+                        pgpdata[2]['data'] = ''
                     except Exception, e:
                         print e
 
+            part['encryption_info'] = EncryptionInfo()
             if decrypt:
+                print "None-MIME decryption!"
                 if part['type'] in ('pgpbegin', 'pgptext'):
                     pgpdata.append(part)
                 elif part['type'] == 'pgpend':
@@ -1161,11 +1171,11 @@ class Email(object):
                     message = ''.join([p['data'] for p in pgpdata])
                     gpg = GnuPG()
                     encryption_info, text = gpg.decrypt(message)
-                    pgpdata[0]['encryption_info'] = encryption_info
+                    pgpdata[1]['encryption_info'] = encryption_info
                     if encryption_info["status"] == "decrypted":
                         pgpdata[1]['data'] = text
-            else:
-                pgpdata[0]["encryption_info"] = EncryptionInfo()
+                    pgpdata[0]['data'] = ""
+                    pgpdata[2]['data'] = ""
 
         return tree
 
