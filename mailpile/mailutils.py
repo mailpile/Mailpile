@@ -1159,14 +1159,12 @@ class Email(object):
           pgpdata.append(part)
           message = ''.join([p['data'] for p in pgpdata])
           gpg = GnuPG()
-          res, data = gpg.decrypt(message)
-          if res == 0:
-            pgpdata[1]['data'] = data
-            pgpdata[0]['openpgp_status'] = 'encrypted'
-            pgpdata[0]['openpgp_data'] = {"decrypt": "success"}
-          else:
-            pgpdata[0]['openpgp_status'] = 'encrypted'
-            pgpdata[0]['openpgp_data'] = {"decrypt": "fail"}
+          encryption_info, text = gpg.decrypt(message)
+          pgpdata[0]['encryption_info'] = encryption_info
+          if encryption_info["status"] == "decrypted":
+            pgpdata[1]['data'] = text
+      else:
+        pgpdata[0]["encryption_info"] = EncryptionInfo()
 
     return tree
 

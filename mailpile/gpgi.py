@@ -141,6 +141,40 @@ status_messages = {
 
 del _
 
+class EncryptionInfo(dict):
+    "Contains informatin about the encryption status of a MIME part"
+    def __init__(self):
+        self["protocol"] = ""
+        self["status"] = "none"
+        self["description"] = ""
+        self["have_keys"] = []
+        self["missing_keys"] = []
+
+    def __setitem__(self, item, value):
+        if item == "status":
+            assert(value in ["none", "decrypted", "missingkey", "error"])
+        dict.__setitem__(self, item, value)
+
+
+class SignatureInfo(dict):
+    "Contains informatin about the signature status of a MIME part"
+    def __init__(self):
+        self["protocol"] = ""
+        self["status"] = "none"
+        self["description"] = ""
+        self["from"] = ""
+        self["fromaddr"] = ""
+        self["timestamp"] = 0
+        self["trust"] = "untrusted"
+
+    def __setitem__(self, item, value):
+        if item == "status":
+            assert(value in ["none", "invalid", "unknown", "good", "error"])
+        elif item == "trust":
+            assert(value in ["new", "unverified", "verified", "untrusted", "expired", "revoked"])
+        dict.__setitem__(self, item, value)
+
+
 class GnuPG:
     """
     Wrap GnuPG and make all functionality feel Pythonic.
@@ -483,7 +517,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         one whose key you control.
         >>> g = GnuPG()
         >>> ct = g.encrypt("Hello, World", to=["smari@mailpile.is"])[1]
-        >>> g.decrypt(ct)[1]
+        >>> g.decrypt(ct)["text"]
         'Hello, World'
         """
         if passphrase:
@@ -492,7 +526,22 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         retvals = self.run(action, callbacks={"stdout": self.default_output}, 
                            output=data)
         self.passphrase = None
-        return retvals[0], retvals[1]["stdout"][0]
+
+        encryption_info = EncryptionInfo()
+        print retvals
+
+        if ["DECRYPTION_FAILED"] in retvals[1]["status"]:
+            encryption_info["missing_keys"] = [x[1] for x in retvals[1]["status"] if x[0] == "NO_SECKEY"]
+            if encryption_info["missing_keys"] == []:
+                encryption_info["status"] = "error"
+            else:
+                encryption_info["status"] = "missingkey"
+            text = ""
+        else:
+            encryption_info["status"] = "decrypted"
+            text = retvals[1]["stdout"][0]
+
+        return encryption_info, text
 
     def sign(self, data, fromkey=None, armor=True, detatch=True, clearsign=False,
              passphrase=None):
