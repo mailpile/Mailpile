@@ -231,9 +231,11 @@ def elapsed_datetime(timestamp):
     else:
         return ts.strftime("%b %d")
 
-def friendly_datetime(self, timestamp):
+
+def friendly_datetime(timestamp):
     date = datetime.date.fromtimestamp(timestamp)
     return date.strftime("%b %d, %Y")
+
 
 def friendly_number(number, base=1000, decimals=0, suffix='',
                     powers=['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']):
