@@ -918,11 +918,11 @@ class ConfigManager(ConfigDict):
         return [(k, self.sys.mailbox[k]) for k in mailboxes]
 
     def is_editable_message(self, msg_info):
-        for ptr in msg_info[MailIndex.MSG_PTRS].split(', '):
+        for ptr in msg_info[MailIndex.MSG_PTRS].split(','):
             if not self.is_editable_mailbox(ptr[: MBX_ID_LEN]):
                 return False
         editable = False
-        for tid in msg_info[MailIndex.MSG_TAGS].split(', '):
+        for tid in msg_info[MailIndex.MSG_TAGS].split(','):
             try:
                 if self.tags and self.tags[tid].flag_editable:
                     editable = True
