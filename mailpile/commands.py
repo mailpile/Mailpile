@@ -389,8 +389,8 @@ class SearchResults(dict):
         tids = [t for t in msg_info[MailIndex.MSG_TAGS].split(',') if t]
         return tids
 
-    def _tag(self, tid):
-        return self.session.config.get_tag(tid)
+    def _tag(self, tid, attributes={}):
+        return dict_merge(self.session.config.get_tag(tid), attributes)
 
     def _thread(self, thread_mid):
         msg_info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
@@ -445,11 +445,15 @@ class SearchResults(dict):
             'threads': threads,
         })
         if 'tags' in self.session.config:
+            search_tags = [idx.config.get_tag(t.split(':')[1], {})
+                           for t in session.searched if t.startswith('in:')]
+            search_tag_ids = [t._key for t in search_tags if 'stats' in t]
+            print '%s' % search_tag_ids
             self.update({
-                'search_tags': [idx.config.get_tag(t.split(':')[1], {})
-                                for t in session.searched
-                                      if t.startswith('in:')],
+                'search_tag_ids': search_tag_ids,
             })
+        else:
+            search_tag_ids = []
 
         if suppress_data or not results:
             return
@@ -463,7 +467,10 @@ class SearchResults(dict):
             }
         })
         if 'tags' in self.session.config:
-            self['data']['tag'] = {}
+            th = self['data']['tag'] = {}
+            for tid in search_tag_ids:
+                if tid not in th:
+                    th[tid] = self._tag(tid, {'searched': True})
 
         idxs = results[start:start + num]
         while idxs:
@@ -514,22 +521,24 @@ class SearchResults(dict):
         clen = max(3, len('%d' % len(self.session.results)))
         cfmt = '%%%d.%ds' % (clen, clen)
         text = []
-        count = self['start']
+        count = self['stats']['start']
         expand_ids = [e.msg_idx_pos for e in (self.emails or [])]
-        for m in self['messages']:
-            if 'message' in m:
-                exp_email = self.emails[expand_ids.index(int(m['mid'], 36))]
+        for mid in self['threads']:
+            if mid in self['data'].get('message', {}):
+                exp_email = self.emails[expand_ids.index(int(mid, 36))]
                 text.append(exp_email.get_editing_string(
                                 exp_email.get_message_tree()))
             else:
-                tag_names = [t['name'] for t in m['tags'] if not t['searched']]
+                m = self['data']['metadata'][mid]
+                tags = [self['data']['tag'][t] for t in m['tag_tids']]
+                tag_names = [t['name'] for t in tags if 'searched' not in t]
                 msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
-                sfmt = '%%-%d.%ds%%s' % (46 - (clen + len(msg_tags)),
-                                         46 - (clen + len(msg_tags)))
-                text.append((cfmt + ' %s %-20.20s ' + sfmt
+                sfmt = '%%-%d.%ds%%s' % (47 - (clen + len(msg_tags)),
+                                         47 - (clen + len(msg_tags)))
+                text.append((cfmt + ' %-22.22s ' + sfmt + '%7s'
                              ) % (count,
-                                  m['date'], m['short_from'], m['subject'],
-                                  msg_tags))
+                                  m['from']['name'], m['subject'], msg_tags,
+                                  elapsed_datetime(m['timestamp'])))
             count += 1
         if not count:
             text = ['(No messages found)']
