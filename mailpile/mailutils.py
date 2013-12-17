@@ -43,53 +43,52 @@ from lxml.html.clean import Cleaner
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
 
-from gpgi import *
-from mailpile.pgpmime import PGPMimeParser
+from gpgi import PGPMimeParser, GnuPG
 
 
 class NotEditableError(ValueError):
-  pass
+    pass
 
 class NoFromAddressError(ValueError):
-  pass
+    pass
 
 class NoRecipientError(ValueError):
-  pass
+    pass
 
 class InsecureSmtpError(ValueError):
-  pass
+    pass
 
 class NoSuchMailboxError(OSError):
-  pass
+    pass
 
 
 def ParseMessage(fd, pgpmime=True):
-  pos = fd.tell()
-  header = [fd.readline()]
-  while header[-1] not in ('', '\n', '\r\n'):
-    line = fd.readline()
-    if line.startswith(' ') or line.startswith('\t'):
-      header[-1] += line
+    pos = fd.tell()
+    header = [fd.readline()]
+    while header[-1] not in ('', '\n', '\r\n'):
+        line = fd.readline()
+        if line.startswith(' ') or line.startswith('\t'):
+            header[-1] += line
+        else:
+            header.append(line)
+
+    fd.seek(pos)
+    if pgpmime:
+        message = PGPMimeParser().parse(fd)
     else:
-      header.append(line)
+        message = email.parser.Parser().parse(fd)
 
-  fd.seek(pos)
-  if pgpmime:
-    message = PGPMimeParser().parse(fd)
-  else:
-    message = email.parser.Parser().parse(fd)
-
-  message.raw_header = header
-  return message
+    message.raw_header = header
+    return message
 
 def ExtractEmailAndName(string):
-  email = (ExtractEmails(string) or [''])[0]
-  name = (string.replace(email, '')
-                .replace('<>', '')
-                .replace('"', '')
-                .replace('(', '')
-                .replace(')', '')).strip()
-  return email, (name or email)
+    email = (ExtractEmails(string) or [''])[0]
+    name = (string.replace(email, '')
+                   .replace('<>', '')
+                   .replace('"', '')
+                   .replace('(', '')
+                   .replace(')', '')).strip()
+    return email, (name or email)
 
 def ExtractEmails(string):
   emails = []
