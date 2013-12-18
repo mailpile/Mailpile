@@ -9,7 +9,4 @@ sys.path.append(
 
 from mailpile.app import Main
 
-# Load the standard plugins
-from mailpile.plugins import *
-
 Main(sys.argv[1:])

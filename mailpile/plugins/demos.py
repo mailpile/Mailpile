@@ -69,9 +69,17 @@ class DemoVCardImporter(VCardImporter):
 mailpile.plugins.register_vcard_importers(DemoVCardImporter)
 
 
-##[ Pluggable commands ]######################################################
+##[ Pluggable cron jobs ]#####################################################
 
-# FIXME
+def TickJob(session):
+    session.ui.notify('Tick!')
+
+
+mailpile.plugins.register_fast_periodic_job('tick-05', 5, TickJob)
+mailpile.plugins.register_slow_periodic_job('tick-15', 15, TickJob)
+
+
+##[ Pluggable commands ]######################################################
 
 
 

@@ -2,10 +2,12 @@ import os
 import time
 from mailpile.config import PathDict
 
+
 # i18n helper
 _ = lambda x: x
 
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
+CONFIG_PLUGINS = []
 CONFIG_RULES = {
     'version': [_('Mailpile program version'), int, 1],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
@@ -24,6 +26,7 @@ CONFIG_RULES = {
         'mailindex_file': (_('Metadata index file'), 'file',                  ''),
         'postinglist_dir': (_('Search index directory'), 'dir',               ''),
         'mailbox':        [_('Mailboxes we index'), 'path',                   []],
+        'plugins':        [_('Plugins to load on startup'), CONFIG_PLUGINS,   []],
         'path':           [_('Locations of assorted data'), False, {
              'html_theme': [_('Default theme'), 'dir',    os.path.join('static',
                                                                    'default')],

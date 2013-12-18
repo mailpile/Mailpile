@@ -18,9 +18,8 @@ mailpile_send = os.path.join(mailpile_root, 'scripts', 'test-sendmail.sh')
 mailpile_home = os.path.join(mailpile_test, 'tmp')
 mailpile_sent = os.path.join(mailpile_home, 'sent.mbx')
 
-# Add the root to our import path, import API and standard plugins
+# Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
-from mailpile.plugins import *
 import mailpile.plugins.demos
 from mailpile import Mailpile
 
@@ -33,7 +32,7 @@ MY_FROM = 'test@test.com'
 # First, we set up a pristine Mailpile
 os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
-cfg = mp._session.config
+cfg = config = mp._session.config
 
 def contents(fn):
     return open(fn, 'r').read()
@@ -181,6 +180,7 @@ if '-i' in sys.argv:
 Welcome to the Mailpile test shell. You can interact pythonically with the
 Mailpile object `mp`, or drop to the Mailpile CLI with `mp.Interact()`.
     """)
+    config.stop_workers()
 
 
 ##[ Cleanup ]#################################################################

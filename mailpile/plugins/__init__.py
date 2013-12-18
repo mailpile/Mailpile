@@ -1,14 +1,53 @@
 # Plugins!
+import imp
+import os
+import sys
 
 import mailpile.commands
 import mailpile.defaults
 import mailpile.vcard
 
-# These are the plugins we import by default
-__all__ = ['search', 'tags', 'contacts', 'compose', 'groups', 'dates',
-           'setup_magic', 'networkgraph', 'exporters',
-           'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
-           'hacks']
+
+##[ Plugin discovery ]########################################################
+
+# These are the plugins we ship/import by default
+__all__ = BUILTIN = [
+    'search', 'tags', 'contacts', 'compose', 'groups', 'dates',
+    'setup_magic', 'networkgraph', 'exporters',
+    'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
+    'hacks'
+]
+
+# These are plugins which we consider required
+REQUIRED = [
+    'search', 'tags', 'contacts', 'compose', 'groups', 'setup_magic'
+]
+DISCOVERED = {}
+
+
+def Discover(paths):
+    plugins = BUILTIN[:]
+    for pdir in paths:
+        pass  # FIXME: Should scan the plugin directory for more!
+    return plugins
+
+
+def Load(plugin_name):
+    full_name = 'mailpile.plugins.%s' % plugin_name
+    if full_name in sys.modules:
+        return
+
+    if plugin_name in BUILTIN:
+        full_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                 '%s.py' % plugin_name)
+    else:
+        full_path = DISCOVERED.get(plugin_name)
+
+    if not full_path:
+        raise PluginError('No load path known for %s' % plugin_name)
+
+    sys.modules[full_name] = imp.new_module(full_name)
+    exec open(full_name, 'r').read() in sys.modules[full_name].__dict__
 
 
 class PluginError(Exception):
@@ -144,6 +183,22 @@ def register_contact_context_providers(*providers):
     _reg_vcard_plugin('Context provider', 'context', providers,
                       mailpile.vcard.VCardContextProvider,
                       VCARD_CONTEXT_PROVIDERS)
+
+
+##[ Pluggable cron jobs ]#####################################################
+
+FAST_PERIODIC_JOBS = {}
+SLOW_PERIODIC_JOBS = {}
+
+
+def register_fast_periodic_job(name, period, callback):
+    global FAST_PERIODIC_JOBS
+    FAST_PERIODIC_JOBS[name] = (period, callback)
+
+
+def register_slow_periodic_job(name, period, callback):
+    global SLOW_PERIODIC_JOBS
+    SLOW_PERIODIC_JOBS[name] = (period, callback)
 
 
 ##[ Pluggable commands ]######################################################

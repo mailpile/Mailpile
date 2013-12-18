@@ -9,7 +9,6 @@ from gettext import translation, gettext, NullTranslations
 
 from urllib import quote, unquote
 
-import mailpile.util
 from mailpile.commands import Rescan
 from mailpile.httpd import HttpWorker
 from mailpile.mailutils import MBX_ID_LEN, OpenMailbox, IncrementalMaildir
@@ -889,13 +888,33 @@ class ConfigManager(ConfigDict):
         except IOError:
             pass
 
+        # Discover plugins and update the config rule
+        import mailpile.plugins
+        pds = [os.path.join(self.workdir, 'plugins')]
+        self.sys.plugins.rules['_any'][1] = mailpile.plugins.Discover(pds)
+
+        # Parse the config twice, first to figure out which plugins to load,
+        # and again after loading all the plugins.
         self.parse_config(session, '\n'.join(lines), source=filename)
+        if len(self.sys.plugins) == 0:
+            self.sys.plugins.extend(mailpile.plugins.BUILTIN)
+        self.load_plugins(session)
+        self.parse_config(session, '\n'.join(lines), source=filename)
+
+        # Enable translations
         self.get_i18n_translation(session)
 
+        # Load VCards
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
                                                            mkdir=True))
         self.vcards.load_vcards(session)
+
+    def load_plugins(self, session):
+        import mailpile.plugins
+        for plugin in set(mailpile.plugins.REQUIRED + self.sys.plugins):
+            mailpile.plugins.Load(plugin)
+        self.prepare_workers(session)
 
     def save(self):
         self._mkworkdir(None)
@@ -903,6 +922,7 @@ class ConfigManager(ConfigDict):
         fd.write(self.as_config_bytes(private=True))
         fd.close()
         self.get_i18n_translation()
+        self.prepare_workers()
 
     def clear_mbox_cache(self):
         self._mbox_cache = {}
@@ -1067,40 +1087,53 @@ class ConfigManager(ConfigDict):
         fpath = os.path.join(bpath, fpath)
         return fpath, open(fpath, mode)
 
-    def prepare_workers(config, session, daemons=False):
+    def prepare_workers(config, session=None, daemons=False):
         # Set globals from config first...
+        import mailpile.util
         mailpile.util.APPEND_FD_CACHE_SIZE = config.sys.fd_cache_size
 
+        # Make sure we have a silent background session
         if not config.background:
-            # Create a silent background session
             config.background = Session(config)
             config.background.ui = BackgroundInteraction(config)
             config.background.ui.block()
 
         # Start the workers
-        if config.slow_worker == config.dumb_worker:
-            config.slow_worker = Worker('Slow worker', session)
-            config.slow_worker.start()
-        if daemons and not config.cron_worker:
-            config.cron_worker = Cron('Cron worker', session)
-            config.cron_worker.start()
+        if daemons:
+            if config.slow_worker == config.dumb_worker:
+                config.slow_worker = Worker('Slow worker', session)
+                config.slow_worker.start()
+            if not config.cron_worker:
+                config.cron_worker = Cron('Cron worker', session)
+                config.cron_worker.start()
+            if not config.http_worker:
+                # Start the HTTP worker if requested
+                sspec = (config.sys.http_host, config.sys.http_port)
+                if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
+                    config.http_worker = HttpWorker(session, sspec)
+                    config.http_worker.start()
 
+        # Update the cron jobs, if necessary
+        if config.cron_worker:
             # Schedule periodic rescanning, if requested.
             rescan_interval = config.prefs.rescan_interval
             if rescan_interval:
                 def rescan():
                     if 'rescan' not in config._running:
-                        rsc = Rescan(session, 'rescan')
+                        rsc = Rescan(session or config.background, 'rescan')
                         rsc.serialize = False
                         config.slow_worker.add_task(None, 'Rescan', rsc.run)
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
-        if daemons and not config.http_worker:
-            # Start the HTTP worker if requested
-            sspec = (config.sys.http_host, config.sys.http_port)
-            if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
-                config.http_worker = HttpWorker(session, sspec)
-                config.http_worker.start()
+            # Schedule plugin jobs
+            import mailpile.plugins
+            for job, (i, f) in mailpile.plugins.FAST_PERIODIC_JOBS.iteritems():
+                config.cron_worker.add_task(job, i, lambda: f(session))
+            for job, (i, f) in mailpile.plugins.SLOW_PERIODIC_JOBS.iteritems():
+                def wrap():
+                    config.slow_worker.add_task(None, job, lambda: f(session))
+                config.cron_worker.add_task(job, i, wrap)
+
 
     def stop_workers(config):
         for w in (config.http_worker, config.slow_worker, config.cron_worker):
