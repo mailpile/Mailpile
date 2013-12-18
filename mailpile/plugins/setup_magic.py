@@ -22,7 +22,8 @@ class Setup(Command):
 
         # Create standard tags and filters
         created = []
-        for t in ('New', 'Inbox', 'Spam', 'Drafts', 'Blank', 'Sent', 'Trash'):
+        for t in ('New', 'Inbox', 'Outbox', 'Spam', 'Drafts', 'Blank',
+                  'Sent', 'Trash'):
             if not session.config.get_tag_id(t):
                 AddTag(session, arg=[t]).run()
                 created.append(t)
@@ -32,7 +33,7 @@ class Setup(Command):
             'display': 'invisible'
         })
         session.config.get_tag('Blank').update({
-            'type': 'drafts',
+            'type': 'blank',
             'flag_editable': True,
             'display': 'invisible'
         })
@@ -46,21 +47,27 @@ class Setup(Command):
             'display': 'priority',
             'display_order': 2,
         })
-        session.config.get_tag('Sent').update({
+        session.config.get_tag('Outbox').update({
+            'type': 'outbox',
             'display': 'priority',
             'display_order': 3,
+        })
+        session.config.get_tag('Sent').update({
+            'type': 'sent',
+            'display': 'priority',
+            'display_order': 4,
         })
         session.config.get_tag('Spam').update({
             'type': 'spam',
             'flag_hides': True,
             'display': 'priority',
-            'display_order': 4,
+            'display_order': 5,
         })
         session.config.get_tag('Trash').update({
             'type': 'trash',
             'flag_hides': True,
             'display': 'priority',
-            'display_order': 5,
+            'display_order': 6,
         })
         if 'New' in created:
             Filter(session,

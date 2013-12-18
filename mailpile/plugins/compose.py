@@ -38,9 +38,6 @@ class CompositionCommand(Search):
         'bcc': '..',
         'body': '..',
     }
-    BLANK_TAG = 'Blank'
-    DRAFT_TAG = 'Drafts'
-    SENT_TAG = 'Sent'
 
     def _tag_emails(self, emails, tag):
         try:
@@ -61,6 +58,25 @@ class CompositionCommand(Search):
                            conversation=False)
         except (TypeError, ValueError, IndexError):
             self._ignore_exception()
+
+    def _tagger(self, emails, untag, **kwargs):
+        tag = self.session.config.get_tags(**kwargs)
+        if tag and untag:
+            return self._untag_emails(emails, tag[0]._key)
+        elif tag:
+            return self._tag_emails(emails, tag[0]._key)
+
+    def _tag_blank(self, emails, untag=False):
+        return self._tagger(emails, untag, type='blank')
+
+    def _tag_drafts(self, emails, untag=False):
+        return self._tagger(emails, untag, type='drafts')
+
+    def _tag_outbox(self, emails, untag=False):
+        return self._tagger(emails, untag, type='outbox')
+
+    def _tag_sent(self, emails, untag=False):
+        return self._tagger(emails, untag, type='sent')
 
     UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc')
 
@@ -162,9 +178,7 @@ class Compose(CompositionCommand):
         local_id, lmbox = session.config.open_local_mailbox(session)
         emails = [Email.Create(idx, local_id, lmbox)]
 
-        if self.BLANK_TAG:
-            self._tag_emails(emails, self.BLANK_TAG)
-
+        self._tag_blank(emails)
         for email in emails:
             email_updates = self._get_email_updates(idx, [email])
             update_string = email_updates and email_updates[0][1]
@@ -225,8 +239,7 @@ class Reply(RelativeCompose):
                                      msg_to=msg_to,
                                      msg_cc=[r for r in msg_cc if r],
                                      msg_references=[i for i in ref_ids if i])
-                if self.BLANK_TAG:
-                    self._tag_emails([email], self.BLANK_TAG)
+                self._tag_blank([email])
 
             except NoFromAddressError:
                 return self._error('You must configure a From address first.')
@@ -286,9 +299,7 @@ class Forward(RelativeCompose):
                     msg.attach(att)
                 email.update_from_msg(msg)
 
-            if self.BLANK_TAG:
-                self._tag_emails([email], self.BLANK_TAG)
-
+            self._tag_blank([email])
             return self._edit_messages([email])
         else:
             return self._error('No message found')
@@ -393,12 +404,10 @@ class Sendit(CompositionCommand):
                                    bounce_to or '(header folks)', sent))
 
         if sent:
-            if self.BLANK_TAG:
-                self._untag_emails(sent, self.BLANK_TAG)
-            if self.DRAFT_TAG:
-                self._untag_emails(sent, self.DRAFT_TAG)
-            if self.SENT_TAG:
-                self._tag_emails(sent, self.SENT_TAG)
+            self._tag_sent(sent)
+            self._tag_outbox(sent, untag=True)
+            self._tag_drafts(sent, untag=True)
+            self._tag_blank(sent, untag=True)
             for email in sent:
                 idx.index_email(self.session, email)
 
@@ -415,7 +424,7 @@ class Update(CompositionCommand):
     HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA,
                                 Attach.HTTP_POST_VARS)
 
-    def command(self, create=True):
+    def command(self, create=True, outbox=False):
         session, config, idx = self.session, self.session.config, self._idx()
         email_updates = self._get_email_updates(idx)
 
@@ -429,20 +438,22 @@ class Update(CompositionCommand):
 
             emails = [e for e, u in email_updates]
             session.ui.notify('%d message(s) updated' % len(email_updates))
-            if self.BLANK_TAG:
-                self._untag_emails(emails, self.BLANK_TAG)
-            if self.DRAFT_TAG:
-                self._tag_emails(emails, self.DRAFT_TAG)
 
-            return self._edit_messages(emails, new=False)
+            self._tag_blank(emails, untag=True)
+            self._tag_drafts(emails, untag=outbox)
+            self._tag_outbox(emails, untag=(not outbox))
 
+            if outbox:
+                return self._return_search_results(emails, sent=emails)
+            else:
+                return self._edit_messages(emails, new=False)
         else:
             return self._error('Nothing to do!')
 
 
 class UnThread(CompositionCommand):
     """Remove a message from a thread."""
-    SYNOPSIS = ('u', 'unthread', 'message/unthread', None)
+    SYNOPSIS = (None, 'unthread', 'message/unthread', None)
     HTTP_POST_VARS = {'mid': 'message-id'}
 
     def command(self):
@@ -462,21 +473,40 @@ class UnThread(CompositionCommand):
             return self._error('Nothing to do!')
 
 
-class UpdateAndSendit(Sendit):
-    """Update message from an HTTP upload and send."""
-    SYNOPSIS = ('u', None, 'message/update/send', None)
-    HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA,
-                                Sendit.HTTP_POST_VARS,
-                                Attach.HTTP_POST_VARS)
+class UpdateAndSendit(Update):
+    """Update message from an HTTP upload and move to outbox."""
+    SYNOPSIS = (None, None, 'message/update/send', None)
 
-    def command(self, create=True):
-        up = Update(self.session, arg=self.args, data=self.data).command()
-        if not up:
-            return up
-        return Sendit.command(self)
+    def command(self, create=True, outbox=True):
+        return Update.command(self, create=create, outbox=outbox)
 
 
+class EmptyOutbox(Command):
+    """Try to empty the outbox."""
+    SYNOPSIS = (None, 'sendmail', None, None)
+
+    @classmethod
+    def sendmail(cls, session):
+        cfg, idx = session.config, session.config.index
+        session.order = 'flat'
+        messages = []
+        for tag in cfg.get_tags(type='outbox'):
+            search = ['in:%s' % tag._key]
+            for msg_idx_pos in idx.search(session, search).as_set():
+                messages.append('=%s' % b36(msg_idx_pos))
+        if messages:
+            return Sendit(session, arg=messages).run()
+        else:
+            return True
+
+    def command(self):
+        return self.sendmail(self.session)
+
+
+mailpile.plugins.register_slow_periodic_job('sendmail', 15,
+                                            EmptyOutbox.sendmail)
 mailpile.plugins.register_commands(Compose, Reply, Forward, # Create
                                    Draft, Update, Attach,   # Manipulate
                                    UnThread,                # ...
-                                   Sendit, UpdateAndSendit) # Send
+                                   Sendit, UpdateAndSendit, # Send
+                                   EmptyOutbox)             # ...

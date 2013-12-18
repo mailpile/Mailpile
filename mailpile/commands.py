@@ -314,6 +314,16 @@ class SearchResults(dict):
                 result['message'] = self._message_details([exp_email])[0]
             rv.append(result)
 
+    TAG_TYPE_FLAG_MAP = {
+        'trash': 'trash',
+        'spam': 'spam',
+        'ham': 'ham',
+        'drafts': 'draft',
+        'blank': 'draft',
+        'sent': 'from_me',
+        'outbox': 'from_me'
+    }
+
     def _metadata(self, msg_info):
         import mailpile.urlmap
         nz = lambda l: [v for v in l if v]
@@ -355,17 +365,18 @@ class SearchResults(dict):
                     if e.email.lower() == fe.lower()]:
             expl['flags']['from_me'] = True;
         tag_types = [self.idx.config.get_tag(t).type for t in expl['tag_tids']]
-        for t in ('trash', 'spam', 'ham', 'drafts'):
+        for t in self.TAG_TYPE_FLAG_MAP:
             if t in tag_types:
-                expl['flags'][t] = True;
+                expl['flags'][self.TAG_TYPE_FLAG_MAP[t]] = True;
+
         # FIXME: Is message signed or encrypted?
 
         # Extra behavior for editable messages
-        if 'drafts' in expl['flags']:
+        if 'draft' in expl['flags']:
             if self.idx.config.is_editable_message(msg_info):
                 expl['urls']['editing'] = um.url_edit(expl['mid'])
             else:
-                del expl['drafts']
+                del expl['flags']['draft']
 
         return expl
 

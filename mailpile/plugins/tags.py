@@ -21,7 +21,8 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     }],
 
     # Functional attributes
-    'type': ['Tag type', ['tag', 'group', 'attribute', 'unread', 'drafts',
+    'type': ['Tag type', ['tag', 'group', 'attribute', 'unread',
+                          'drafts', 'blank', 'outbox', 'sent',
                           # TODO: 'folder', 'shadow',
                           'trash', 'spam', 'ham'], 'tag'],
     'flag_hides': ['Hide tagged messages from searches?', bool, False],
