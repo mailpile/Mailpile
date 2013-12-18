@@ -7,8 +7,8 @@
 
 #### Who's doing what? ####
 
-- 2013-11-20: bre: Nose tests, social graph and contact searching
-- 2013-11-20: smari: Travis CI and documentation
+- 2013-12-18: bre: Outbox, plugin API for periodic events
+- 2013-12-18: smari: PGP decryption & signature verification
 - 2013-11-18: bnvk: Tweaking the compose UI
 
 #### Recent changes ####
