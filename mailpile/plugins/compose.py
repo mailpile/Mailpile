@@ -488,7 +488,7 @@ class EmptyOutbox(Command):
     @classmethod
     def sendmail(cls, session):
         cfg, idx = session.config, session.config.index
-        session.order = 'flat'
+        session.order = 'flat-index'
         messages = []
         for tag in cfg.get_tags(type='outbox'):
             search = ['in:%s' % tag._key]

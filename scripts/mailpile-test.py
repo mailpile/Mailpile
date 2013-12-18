@@ -141,6 +141,7 @@ try:
     del msg_data['subject']
     msg_data['body'] = ['Hello world: thisisauniquestring :)']
     mp.message_update_send(**msg_data)
+    mp.sendmail()
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
     assert(mp.search('tag:blank').result['stats']['count'] == 0)
     assert('the TESTMSG subject' in contents(mailpile_sent))
@@ -158,6 +159,7 @@ try:
 
     # Test the send method's "bounce" capability
     mp.message_send(mid=[new_mid], to=['nasty@test.com'])
+    mp.sendmail()
     assert('thisisauniquestring' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
