@@ -102,25 +102,26 @@ class Cron(threading.Thread):
             self.lock.release()
             #Execute the tasks
             for name, task in tasksToBeExecuted:
-                    # Set last_executed
-                    self.schedule[name][3] = time.time()
-                    task()
+                # Set last_executed
+                self.schedule[name][3] = time.time()
+                task()
 
             # Some tasks take longer than others, so use the time before
             # executing tasks as reference for the delay
             sleepTime = self.sleep
             delay = time.time() - now + sleepTime
 
-            # Sleep for max. 1 sec to react to the quit
-            #    signal in time
+            # Sleep for max. 1 sec to react to the quit signal in time
             while delay > 0 and self.ALIVE:
                 # self.sleep might change during loop (if tasks are modified)
-                # In that case, just check if any tasks need to be executed
+                # In that case, just wake up and check if any tasks need
+                # to be executed
                 if self.sleep != sleepTime:
-                        delay -= (sleepTime - self.sleep)  # old-new
-                # Sleep for max 1 second to check self.ALIVE
-                time.sleep(max(0, min(1, delay)))
-                delay -= 1
+                    delay = 0
+                else:
+                    # Sleep for max 1 second to check self.ALIVE
+                    time.sleep(max(0, min(1, delay)))
+                    delay -= 1
 
     def quit(self, session=None, join=True):
         """
