@@ -989,8 +989,13 @@ class Email(object):
         count = 0
         for part in msg.walk():
             mimetype = part.get_content_type()
-            if mimetype.startswith('multipart/'):
+            if mimetype.startswith('multipart/') or mimetype == "application/pgp-encrypted":
                 continue
+            try:
+                if mimetype == "application/octet-stream" and part.cryptedcontainer == True:
+                    continue
+            except:
+                pass
 
             count += 1
             if (part.get('content-disposition', 'inline') == 'inline'
@@ -1045,14 +1050,17 @@ class Email(object):
                 charset = 'iso-8859-1'
             except UnicodeDecodeError, e:
                 print _('Decode failed: %s %s') % (charset, e)
+
         try:
             encryption_info = part.encryption_info
         except AttributeError:
             encryption_info = EncryptionInfo()
+
         try:
             signature_info = part.signature_info
         except AttributeError:
             signature_info = SignatureInfo()
+
         return payload, charset, encryption_info, signature_info
 
     def parse_text_part(self, data, charset, encryption_info, signature_info):
@@ -1139,11 +1147,7 @@ class Email(object):
 
             # Handle signed messages
             if 'signature_info' not in part:
-                print "adding signature info..."
-                print part.keys()
                 part['signature_info'] = SignatureInfo()
-            else:
-                print "found signature info..."
 
             if check_sigs:
                 if part['type'] == 'pgpbeginsigned':
@@ -1161,9 +1165,10 @@ class Email(object):
                     except Exception, e:
                         print e
 
-            part['encryption_info'] = EncryptionInfo()
+            if "encryption_info" not in part:
+                part['encryption_info'] = EncryptionInfo()
+
             if decrypt:
-                print "None-MIME decryption!"
                 if part['type'] in ('pgpbegin', 'pgptext'):
                     pgpdata.append(part)
                 elif part['type'] == 'pgpend':
@@ -1174,6 +1179,7 @@ class Email(object):
                     pgpdata[1]['encryption_info'] = encryption_info
                     if encryption_info["status"] == "decrypted":
                         pgpdata[1]['data'] = text
+
                     pgpdata[0]['data'] = ""
                     pgpdata[2]['data'] = ""
 

@@ -526,20 +526,26 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         retvals = self.run(action, callbacks={"stdout": self.default_output}, 
                            output=data)
         self.passphrase = None
-
+        
         encryption_info = EncryptionInfo()
         encryption_info["protocol"] = "openpgp"
 
-        if ["DECRYPTION_FAILED"] in retvals[1]["status"]:
-            encryption_info["missing_keys"] = [x[1] for x in retvals[1]["status"] if x[0] == "NO_SECKEY"]
-            if encryption_info["missing_keys"] == []:
-                encryption_info["status"] = "error"
-            else:
-                encryption_info["status"] = "missingkey"
-            text = ""
-        else:
-            encryption_info["status"] = "decrypted"
-            text = retvals[1]["stdout"][0].decode("utf-8")
+        for line in retvals[1]["status"]:
+            if line[0] == "DECRYPTION_FAILED":
+                encryption_info["missing_keys"] = [x[1] for x in retvals[1]["status"] if x[0] == "NO_SECKEY"]
+                if encryption_info["missing_keys"] == []:
+                    encryption_info["status"] = "error"
+                else:
+                    encryption_info["status"] = "missingkey"
+                text = ""
+            elif line[0] == "DECRYPTION_OKAY":
+                encryption_info["status"] = "decrypted"
+                text = retvals[1]["stdout"][0].decode("utf-8")
+            elif line[0] == "ENC_TO" and line[1] not in encryption_info["have_keys"]:
+                encryption_info["have_keys"].append(line[1])
+            elif line[0] == "NO_SECKEY":
+                encryption_info["missing_keys"].append(line[1])
+                encryption_info["have_keys"].remove(line[1])
 
         return encryption_info, text
 
@@ -590,7 +596,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                            output=data)
 
         signature_info = SignatureInfo()
-        print retvals["status"]
         for line in retvals["status"]:
             if line[0] == "GOODSIG":
                 signature_info["status"] = "good"
@@ -626,6 +631,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             elif line[0] == "NO_PUBKEY":
                 signature_info["status"] = "unknown"
                 signature_info["trust"] = "untrusted"
+            elif line[0] in ["TRUST_ULTIMATE", "TRUST_FULLY"]:
+                signature_info["trust"] = "verified"
 
         return signature_info
 
@@ -674,15 +681,11 @@ class PGPMimeParser(Parser):
                 sig = part.get_payload()
                 msg = '\r\n'.join(sig_parts[0].as_string().splitlines(False))+'\r\n'
 
-                result = None
-                print "Checking MIME signature..."
-
                 gpg = GnuPG()
                 signature_info = gpg.verify(msg, sig)
 
                 part.signature_info = signature_info
                 for sig_part in sig_parts:
-                    print "Adding signature info from signature to part. Siginfo = %s" % signature_info
                     sig_part.signature_info = signature_info
 
                 # Reset!
@@ -692,38 +695,33 @@ class PGPMimeParser(Parser):
                 sig_parts.append(part)
                 sig_count += 1
 
-            elif enc_count > 0 and (mimetype == 'application/octet-stream'):
-                # FIXME: Decrypt and parse!
-                print "MIME Decryption!"
+            if enc_count > 0 and (mimetype == 'application/octet-stream'):
                 crypt = tempfile.NamedTemporaryFile()
                 crypt.write(part.get_payload())
                 crypt.flush()
                 msg = '\r\n'.join(part.as_string().splitlines(False))+'\r\n'
 
-                result = None
                 gpg = GnuPG()
-                encryption_info, text = gpg.decrypt(msg)
+                encryption_info, plaintext = gpg.decrypt(msg)
 
                 s = StringIO.StringIO()
-                s.write(result)
+                s.write(plaintext)
+                s.seek(0)
                 m = Parser().parse(s)
-                m = Message()
-                m.set_payload(text)
-                part.set_payload([m])
                 part.encryption_info = encryption_info
-
-                for enc_part in enc_parts:
-                    enc_part.encryption_info = encryption_info
+                part.cryptedcontainer = True
+                m.encryption_info = encryption_info
+                part.set_payload([m])
 
                 # Reset!
-                enc_count, enc_parts = 0, []
+                enc_count = 0
 
-            elif mimetype == 'multipart/signed':
+            if mimetype == 'multipart/signed':
                 sig_alg = part.get_param('micalg', 'pgp-sha1'
                                          ).split('-')[-1].upper()
                 sig_count = 1
 
-            elif mimetype == 'multipart/encrypted':
+            if mimetype == 'multipart/encrypted':
                 enc_count = 1
 
     def parse(self, fp, headersonly=False):
