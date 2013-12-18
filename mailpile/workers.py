@@ -43,12 +43,12 @@ class Cron(threading.Thread):
         """
         self.lock.acquire()
         try:
-                self.schedule[name] = [name, interval, task, time.time()]
-                self.sleep = 1
-                self.__recalculateSleep()
+            self.schedule[name] = [name, interval, task, time.time()]
+            self.sleep = 1
+            self.__recalculateSleep()
         finally:
-                #Not releasing the lock will block the entire cron thread
-                self.lock.release()
+            # Not releasing the lock will block the entire cron thread
+            self.lock.release()
 
     def __recalculateSleep(self):
         """
@@ -61,7 +61,7 @@ class Cron(threading.Thread):
         for i in range(2, 61):  # i = second
             # Check if any scheduled task intervals are != 0 mod i
             filteredTasks = [True for task in self.schedule.values()
-                                           if int(task[1]) % i != 0]
+                             if int(task[1]) % i != 0]
             # We can sleep for i seconds if i divides all intervals
             if (len(filteredTasks) == 0):
                 self.sleep = i
@@ -102,13 +102,12 @@ class Cron(threading.Thread):
             self.lock.release()
             #Execute the tasks
             for name, task in tasksToBeExecuted:
-                    #Set last_executed
+                    # Set last_executed
                     self.schedule[name][3] = time.time()
                     task()
 
-            # Some tasks take longer than others,
-            #    so use the time before executing tasks
-            #    as reference for the delay
+            # Some tasks take longer than others, so use the time before
+            # executing tasks as reference for the delay
             sleepTime = self.sleep
             delay = time.time() - now + sleepTime
 
@@ -120,7 +119,7 @@ class Cron(threading.Thread):
                 if self.sleep != sleepTime:
                         delay -= (sleepTime - self.sleep)  # old-new
                 # Sleep for max 1 second to check self.ALIVE
-                time.sleep(min(1, delay))
+                time.sleep(max(0, min(1, delay)))
                 delay -= 1
 
     def quit(self, session=None, join=True):
