@@ -228,14 +228,19 @@ def elapsed_datetime(timestamp):
         return _('%d day') % days_ago
     elif days_ago < 7:
         return _('%d days') % days_ago
-    else:
+    elif days_ago < 366:
         return ts.strftime("%b %d")
+    else:
+        return ts.strftime("%b %d %Y")
 
 
 def friendly_datetime(timestamp):
     date = datetime.date.fromtimestamp(timestamp)
     return date.strftime("%b %d, %Y")
 
+def friendly_time(timestamp):
+    date = datetime.datetime.fromtimestamp(timestamp)
+    return date.strftime("%H:%M")
 
 def friendly_number(number, base=1000, decimals=0, suffix='',
                     powers=['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']):

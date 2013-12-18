@@ -22,10 +22,6 @@ class MailpileCommand(Extension):
         environment.globals['mailpile'] = self._command
         environment.globals['regex_replace'] = self._regex_replace
         environment.filters['regex_replace'] = self._regex_replace
-        environment.globals['elapsed_datetime'] = self._elapsed_datetime
-        environment.filters['elapsed_datetime'] = self._elapsed_datetime
-        environment.globals['friendly_datetime'] = self._friendly_datetime
-        environment.filters['friendly_datetime'] = self._friendly_datetime
         environment.globals['friendly_bytes'] = self._friendly_bytes
         environment.filters['friendly_bytes'] = self._friendly_bytes
         environment.globals['friendly_number'] = self._friendly_number
@@ -37,20 +33,21 @@ class MailpileCommand(Extension):
         environment.globals['show_tags'] = self._show_tags
         environment.filters['show_tags'] = self._show_tags
 
+        # See utils.py for these functions:
+        environment.globals['elapsed_datetime'] = elapsed_datetime
+        environment.filters['elapsed_datetime'] = elapsed_datetime
+        environment.globals['friendly_datetime'] = friendly_datetime
+        environment.filters['friendly_datetime'] = friendly_datetime
+        environment.globals['friendly_time'] = friendly_time
+        environment.filters['friendly_time'] = friendly_time
+
+
     def _command(self, command, *args, **kwargs):
         return Action(self.env.session, command, args, data=kwargs).as_dict()
 
     def _regex_replace(self, s, find, replace):
         """A non-optimal implementation of a regex filter"""
         return re.sub(find, replace, s)
-
-    def _elapsed_datetime(self, timestamp):
-        # See mailpile/util.py:elapsed_datetime if this needs fixing
-        return elapsed_datetime(timestamp)
-
-    def _friendly_datetime(self, timestamp):
-        # See mailpile/util.py:friendly_datetime if this needs fixing
-        return friendly_datetime(timestamp)
 
     def _friendly_number(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing
