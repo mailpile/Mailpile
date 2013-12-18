@@ -14,7 +14,7 @@
       <td class="message-body" colspan="6">
       <div class="message-headers">
         <h3>{{metadata.subject|e}}</h3> 
-        <div class="message-datetime">{{metadata.timestamp|friendly_datetime}} at {{metadata.shorttime}}</div>
+        <div class="message-datetime">{{metadata.timestamp|friendly_datetime}} at {{metadata.timestamp|friendly_time}}</div>
         <ul>
           <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{metadata.from.email|e}}/"><img src="{{show_avatar(url_protocol, http_host, metadata.from.email, 48)}}">{{metadata.from.name|e}}</a></li>
           <!-- FIXME: Here below, we need a django filter to extract the e-mail
@@ -35,20 +35,20 @@
       {% for part in message.text_parts %}
         {% if part.data == "" %}
         {% else %}
-        <div class="pgp_encrypted_{{part.encryption_info.status}}">
-          <div class="pgp_encryptedheader" style="background: #9090ff;">
-            {% if part.encryption_info.status == "none"%}{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}{% endif %}
-            {% if part.encryption_info.status == "decrypted"%}{{_("Successfully decrypted message")}}{% endif %}
-            {% if part.encryption_info.status == "missingkey"%}{{_("You do not have any of the private keys that will decrypt this message")}}{% endif %}
-            {% if part.encryption_info.status == "error"%}{{_("Failed to decrypt message")}}{% endif %}
+        <div class="pgp_encrypted_{{part.encryption_info.status}}" style="position: relative;">
+          <div class="pgp_encryptedheader" style="position: absolute; right: 40px; top: -90px;">
+            {% if part.encryption_info.status == "none"%}<span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span>{% endif %}
+            {% if part.encryption_info.status == "decrypted"%}<span class="icon-encrypted" title="{{_("Successfully decrypted message")}}"></span>{% endif %}
+            {% if part.encryption_info.status == "missingkey"%}<span class="icon-encrypted" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span>{% endif %}
+            {% if part.encryption_info.status == "error"%}<span class="icon-unencrypted" title="{{_("Failed to decrypt message")}}"></span>{% endif %}
           </div>
-          <div class="pgp_signature_{{part.signature_info.status}}">
-            <div class="pgp_signheader" style="background: #90ff90;">
-              {% if part.signature_info.status == "none"%}{{_("Warning: This message was not digitally signed. It may have been forged or altered.")}}{% endif %}
-              {% if part.signature_info.status == "good"%}{{_("Signed by")}} <a href="/contact/{{part.signature_info.email}}">{{part.signature_info.name}}</a>{% endif %}
-              {% if part.signature_info.status == "invalid"%}{{_("Unknown signature from")}} <a href="/contact/{{part.signature_info.email}}">{{part.signature_info.name}}</a>{% endif %}
-              {% if part.signature_info.status == "unknown"%}{{_("Signed with unknown key")}} (<a href="#">{{_("Search for key")}}</a>){% endif %}
-              {% if part.signature_info.status == "error"%}{{_("Signature error")}}{% endif %}
+          <div class="pgp_signature_{{part.signature_info.status}}" style="position: relative;">
+            <div class="pgp_signheader" style="position: absolute; right: 20px; top: -90px;">
+              {% if part.signature_info.status == "none"%}<span class="icon-unverified" title="{{_("Warning: This message was not digitally signed. It may have been forged or altered.")}}"></span>{% endif %}
+              {% if part.signature_info.status == "good"%}<a href="/contact/{{part.signature_info.email}}"><span class="icon-verified" title="{{_("Signed by")}} {{part.signature_info.name}}"></span></a>{% endif %}
+              {% if part.signature_info.status == "invalid"%}<a href="/contact/{{part.signature_info.email}}"><span class="icon-unverified" title="{{_("Unknown signature from")}} {{part.signature_info.name}}"></span></a>{% endif %}
+              {% if part.signature_info.status == "unknown"%}<span class="icon-unverified" title="{{_("Signed with unknown key")}}"></span>{% endif %}
+              {% if part.signature_info.status == "error"%}<span class="icon-unverified" title="{{_("Signature error")}}"></span>{% endif %}
             </div>
             <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
           </div>
