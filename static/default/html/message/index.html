@@ -32,29 +32,28 @@
         </ul>
       </div>
       <div class="message-body">
-      {% set lastpart = "none" %}
       {% for part in message.text_parts %}
-        {% if part.type == "pgpbeginsigned" and part.openpgp_data %}
-        <div class="pgp_signature_{{part.openpgp_data.signature}}" style="background: #c0ffc0;">
-          <div class="pgp_signheader" style="background: #90ff90;">
-            {% if part.openpgp_data.signature == "good"%}{{_("Signed by")}} <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
-            {% if part.openpgp_data.signature == "bad"%}{{_("Unknown signature from")}} <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
-            {% if part.openpgp_data.signature == "error"%}{{_("Signed with unknown key")}}{% endif %}
-          </div>
-        {% elif part.type == "pgpbegin" and part.openpgp_data %}
-        <div class="pgp_encrypted_{{part.openpgp_data.decrypted}}" style="background: #c0c0ff;">
-          <div class="pgp_encryptedheader" style="background: #9090ff;">
-            {% if part.openpgp_data.decrypt == "success"%}{{_("Successfully decrypted message")}}{% endif %}
-            {% if part.openpgp_data.decrypt == "fail"%}{{_("Failed to decrypt message")}}{% endif %}
-          </div>
-        {% elif part.type == "pgpsignature" or part.type == "pgpend" %}
-        </div>
-        {% elif part.type == "text" and lastpart == "pgpsignedtext" %}
-        </div>
+        {% if part.data == "" %}
         {% else %}
-          <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
+        <div class="pgp_encrypted_{{part.encryption_info.status}}">
+          <div class="pgp_encryptedheader" style="background: #9090ff;">
+            {% if part.encryption_info.status == "none"%}{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}{% endif %}
+            {% if part.encryption_info.status == "decrypted"%}{{_("Successfully decrypted message")}}{% endif %}
+            {% if part.encryption_info.status == "missingkey"%}{{_("You do not have any of the private keys that will decrypt this message")}}{% endif %}
+            {% if part.encryption_info.status == "error"%}{{_("Failed to decrypt message")}}{% endif %}
+          </div>
+          <div class="pgp_signature_{{part.signature_info.status}}">
+            <div class="pgp_signheader" style="background: #90ff90;">
+              {% if part.signature_info.status == "none"%}{{_("Warning: This message was not digitally signed. It may have been forged or altered.")}}{% endif %}
+              {% if part.signature_info.status == "good"%}{{_("Signed by")}} <a href="/contact/{{part.signature_info.email}}">{{part.signature_info.name}}</a>{% endif %}
+              {% if part.signature_info.status == "invalid"%}{{_("Unknown signature from")}} <a href="/contact/{{part.signature_info.email}}">{{part.signature_info.name}}</a>{% endif %}
+              {% if part.signature_info.status == "unknown"%}{{_("Signed with unknown key")}} (<a href="#">{{_("Search for key")}}</a>){% endif %}
+              {% if part.signature_info.status == "error"%}{{_("Signature error")}}{% endif %}
+            </div>
+            <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
+          </div>
+        </div>
         {% endif %}
-        {% set lastpart = part.type %}
       {% endfor %}
       </div>
       <div class="message-attachments">
@@ -62,7 +61,7 @@
          {% for att in message.attachments %}
          <div style='display: inline-block; text-align: center; margin: 10px;'>
             <a href="/message/download/={{message.mid}}/part:{{att.count}}/"
-               type="{{att.mimetype}}">
+               type="{{att.mimetype}}" title="{{att.mimetype}} @ {{att.length|friendly_bytes}}">
                {% if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
                <img src="/message/download/preview/={{message.mid}}/part:{{att.count}}/"
                     style='margin: 0 2px; max-height: 80px'><br />
