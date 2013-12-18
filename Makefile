@@ -7,7 +7,7 @@ dev:
 	@echo export PYTHONPATH=`pwd`
 
 debian-dev:
-	sudo apt-get install python-imaging python-lxml python-jinja2 \
+	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
 	                     rubygems ruby-dev yui-compressor python-nose
 	sudo gem install therubyracer less
 
