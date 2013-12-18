@@ -86,8 +86,8 @@ def search(config, idx, term, hits):
             _adjust(start)
 
         rt = []
-        for term in terms:
-            rt.extend(hits(term))
+        for t in terms:
+            rt.extend(hits(t))
         return rt
     except:
         raise ValueError('Invalid date range: %s' % term)
