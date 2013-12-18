@@ -526,7 +526,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         retvals = self.run(action, callbacks={"stdout": self.default_output}, 
                            output=data)
         self.passphrase = None
-        
+
         encryption_info = EncryptionInfo()
         encryption_info["protocol"] = "openpgp"
 
@@ -704,14 +704,15 @@ class PGPMimeParser(Parser):
                 gpg = GnuPG()
                 encryption_info, plaintext = gpg.decrypt(msg)
 
-                s = StringIO.StringIO()
-                s.write(plaintext)
-                s.seek(0)
-                m = Parser().parse(s)
-                part.encryption_info = encryption_info
-                part.cryptedcontainer = True
-                m.encryption_info = encryption_info
-                part.set_payload([m])
+                if encryption_info["status"] == "decrypted":
+                    s = StringIO.StringIO()
+                    s.write(plaintext)
+                    s.seek(0)
+                    m = Parser().parse(s)
+                    part.encryption_info = encryption_info
+                    part.cryptedcontainer = True
+                    m.encryption_info = encryption_info
+                    part.set_payload([m])
 
                 # Reset!
                 enc_count = 0

@@ -989,6 +989,7 @@ class Email(object):
         count = 0
         for part in msg.walk():
             mimetype = part.get_content_type()
+            print "Walking mime %s" % mimetype
             if mimetype.startswith('multipart/') or mimetype == "application/pgp-encrypted":
                 continue
             try:
@@ -1179,9 +1180,8 @@ class Email(object):
                     pgpdata[1]['encryption_info'] = encryption_info
                     if encryption_info["status"] == "decrypted":
                         pgpdata[1]['data'] = text
-
-                    pgpdata[0]['data'] = ""
-                    pgpdata[2]['data'] = ""
+                        pgpdata[0]['data'] = ""
+                        pgpdata[2]['data'] = ""
 
         return tree
 
