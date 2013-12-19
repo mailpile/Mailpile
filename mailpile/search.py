@@ -859,7 +859,7 @@ class MailIndex:
             if len(srs) > 0:
                 return srs
         else:
-            srs = SearchResultSet(self, raw_terms)
+            srs = SearchResultSet(self, raw_terms, [], [])
 
         # Choose how we are going to search
         if keywords is not None:
