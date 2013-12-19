@@ -1,5 +1,6 @@
 import threading
 import time
+from gettext import gettext as _
 
 import mailpile.util
 from mailpile.util import *

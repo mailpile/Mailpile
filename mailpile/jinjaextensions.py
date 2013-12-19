@@ -1,14 +1,13 @@
+import datetime
+import hashlib
+import re
+import urllib
+from gettext import gettext as _
 from jinja2 import nodes
 from jinja2.ext import Extension
 from jinja2.utils import contextfunction, import_string, Markup
-from commands import Action
-import re
-import datetime
 
-# used for gravatar plugin
-import urllib
-import hashlib
-
+from mailpile.commands import Action
 from mailpile.util import *
 
 

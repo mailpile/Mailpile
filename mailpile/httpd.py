@@ -6,6 +6,7 @@ import mimetypes
 import os
 import socket
 import SocketServer
+from gettext import gettext as _
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urllib import quote, unquote
 from urlparse import parse_qs, urlparse

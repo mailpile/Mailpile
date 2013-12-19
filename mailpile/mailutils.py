@@ -24,26 +24,25 @@ import re
 import rfc822
 import threading
 import traceback
-
+from gettext import gettext as _
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-from platform import system
-from urllib import quote, unquote
-
-from smtplib import SMTP, SMTP_SSL
-
+from lxml.html.clean import Cleaner
 from mailpile.mailboxes.imap import IMAPMailbox
 from mailpile.mailboxes.macmail import MacMaildir
 from mailpile.util import *
-from lxml.html.clean import Cleaner
+from platform import system
+from smtplib import SMTP, SMTP_SSL
+from urllib import quote, unquote
+
+from mailpile.gpgi import PGPMimeParser, GnuPG
+from mailpile.gpgi import EncryptionInfo, SignatureInfo
+
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
-
-from gpgi import PGPMimeParser, GnuPG, EncryptionInfo, SignatureInfo
 
 
 class NotEditableError(ValueError):

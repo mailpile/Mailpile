@@ -35,6 +35,7 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urlparse import parse_qs, urlparse
 import lxml.html
 import gettext
+from gettext import gettext as _
 
 import mailpile.util
 import mailpile.defaults

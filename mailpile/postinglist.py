@@ -1,6 +1,7 @@
 import os
 import random
 import threading
+from gettext import gettext as _
 
 import mailpile.util
 from mailpile.util import *

@@ -8,6 +8,7 @@ import os.path
 import re
 import traceback
 import time
+from gettext import gettext as _
 
 import mailpile.util
 import mailpile.ui

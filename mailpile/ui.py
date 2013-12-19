@@ -9,7 +9,6 @@
 # HTML, JSON, etc.).
 #
 ###############################################################################
-from collections import defaultdict
 import datetime
 import os
 import random
@@ -17,11 +16,12 @@ import re
 import sys
 import traceback
 import json
+from collections import defaultdict
+from gettext import gettext as _
 from json import JSONEncoder
-
-from lxml.html.clean import autolink_html
 from jinja2 import Environment, FileSystemLoader
 from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound, TemplatesNotFound, TemplateAssertionError, UndefinedError
+from lxml.html.clean import autolink_html
 
 import mailpile.commands
 from mailpile.util import *

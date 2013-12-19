@@ -1,6 +1,7 @@
 import mailbox
 import os
 import time
+from gettext import gettext as _
 
 import mailpile.plugins
 import mailpile.config

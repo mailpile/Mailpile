@@ -6,6 +6,7 @@ import os
 import re
 import ConfigParser
 from gettext import translation, gettext, NullTranslations
+from gettext import gettext as _
 
 from urllib import quote, unquote
 
@@ -17,10 +18,6 @@ from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
 from mailpile.vcard import SimpleVCard, VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
-
-
-# i18n helper
-_ = gettext
 
 
 class InvalidKeyError(ValueError):
@@ -841,8 +838,8 @@ class ConfigManager(ConfigDict):
                     cfg = cfg[part]
                 else:
                     if session:
-                        msg = gettext(u'Invalid (%s): section %s does not '
-                                       'exist') % (source, section)
+                        msg = _(u'Invalid (%s): section %s does not '
+                                 'exist') % (source, section)
                         session.ui.warning(msg)
                     okay = False
             items = okay and parser.items(section) or []
@@ -852,8 +849,8 @@ class ConfigManager(ConfigDict):
                     cfg[var] = val
                 except (ValueError, KeyError):
                     if session:
-                        msg = gettext(u'Invalid (%s): section %s, variable %s'
-                                      ) % (source, section, var)
+                        msg = _(u'Invalid (%s): section %s, variable %s'
+                                ) % (source, section, var)
                         session.ui.warning(msg)
                     okay = False
         return okay
@@ -1254,8 +1251,6 @@ if __name__ == "__main__":
     import mailpile.defaults
     import mailpile.plugins.tags
     import mailpile.ui
-
-    translation("mailpile", "locale").install(unicode=True)
 
     cfg = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
     session = mailpile.ui.Session(cfg)

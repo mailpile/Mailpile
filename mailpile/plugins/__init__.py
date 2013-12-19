@@ -2,6 +2,7 @@
 import imp
 import os
 import sys
+from gettext import gettext as _
 
 import mailpile.commands
 import mailpile.defaults

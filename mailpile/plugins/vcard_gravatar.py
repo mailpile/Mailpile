@@ -2,14 +2,12 @@
 import os
 import random
 import time
+from gettext import gettext as _
 from urllib2 import urlopen
 
 import mailpile.plugins
 from mailpile.util import *
 from mailpile.vcard import *
-
-# Helper for i18n
-_ = lambda x: x
 
 
 class GravatarImporter(VCardImporter):
@@ -123,4 +121,3 @@ class GravatarImporter(VCardImporter):
 
 
 mailpile.plugins.register_vcard_importers(GravatarImporter)
-del _

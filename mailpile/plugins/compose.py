@@ -3,6 +3,7 @@ import os
 import os.path
 import re
 import traceback
+from gettext import gettext as _
 
 import mailpile.plugins
 from mailpile.commands import Command
@@ -13,9 +14,6 @@ from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
 from mailpile.plugins.search import Search, SearchResults, View
-
-# i18n helper
-_ = lambda x: x
 
 
 class EditableSearchResults(SearchResults):
@@ -518,4 +516,3 @@ mailpile.plugins.register_commands(Compose, Reply, Forward, # Create
                                    UnThread,                # ...
                                    Sendit, UpdateAndSendit, # Send
                                    EmptyOutbox)             # ...
-del _

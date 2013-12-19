@@ -1,6 +1,7 @@
 import datetime
 import re
 import time
+from gettext import gettext as _
 
 import mailpile.plugins
 from mailpile.commands import Command
@@ -9,7 +10,6 @@ from mailpile.search import MailIndex
 from mailpile.util import *
 
 from mailpile.plugins.search import Search
-
 
 
 class NetworkGraph(Search):

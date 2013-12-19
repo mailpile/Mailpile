@@ -1,4 +1,5 @@
 import cgi
+from gettext import gettext as _
 from urlparse import parse_qs, urlparse
 from urllib import quote
 

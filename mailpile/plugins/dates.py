@@ -1,5 +1,7 @@
 import time
 import datetime
+from gettext import gettext as _
+
 import mailpile.plugins
 
 
@@ -91,6 +93,7 @@ def search(config, idx, term, hits):
         return rt
     except:
         raise ValueError('Invalid date range: %s' % term)
+
 
 mailpile.plugins.register_search_term('dates', search)
 mailpile.plugins.register_search_term('date', search)

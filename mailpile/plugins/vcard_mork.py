@@ -3,12 +3,12 @@
 import sys
 import re
 import getopt
+from gettext import gettext as _
 from sys import stdin, stdout, stderr
 
 import mailpile.plugins
 from mailpile.vcard import *
 
-_ = lambda x: x
 
 def hexcmp(x, y):
     try:
@@ -343,7 +343,6 @@ class MorkImporter(VCardImporter):
 
         return results
 
-del _
 
 if __name__ == "__main__":
     import json

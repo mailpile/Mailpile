@@ -1,3 +1,5 @@
+from gettext import gettext as _
+
 import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.mailutils import *
@@ -64,8 +66,6 @@ class PyCLI(Hacks):
         variables['mp'] = Mailpile(session=self.session)
 
         self.session.ui.block()
-        global _
-        savedash = _
         code.InteractiveConsole(locals=variables).interact("""\
 This is Python inside of Mailpile inside of Python.
 
@@ -74,7 +74,6 @@ This is Python inside of Mailpile inside of Python.
    - The `config` variable contains the current configuration.
    - Press CTRL+D to return to the normal CLI.
 """)
-        _ = savedash
         self.session.ui.unblock()
 
         return 'That was fun!'

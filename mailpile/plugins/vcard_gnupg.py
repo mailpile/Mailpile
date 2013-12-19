@@ -1,12 +1,11 @@
 #coding:utf-8
 import os
+from gettext import gettext as _
 
 import mailpile.plugins
 from mailpile.gpgi import GnuPG
 from mailpile.vcard import *
 
-# Helper for i18n
-_ = lambda x: x
 
 # User default GnuPG key file
 DEF_GNUPG_HOME = os.path.expanduser('~/.gnupg')
@@ -57,4 +56,3 @@ class GnuPGImporter(VCardImporter):
 
 
 mailpile.plugins.register_vcard_importers(GnuPGImporter)
-del _

@@ -15,6 +15,7 @@ import tempfile
 import threading
 import time
 import StringIO
+from gettext import gettext as _
 
 try:
     import Image

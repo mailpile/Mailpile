@@ -4,13 +4,13 @@ import sys
 import fcntl
 import time
 import re
+import StringIO
 import tempfile
-from subprocess import Popen, PIPE
 from email.parser import Parser
 from email.message import Message
-import StringIO
+from gettext import gettext as _
+from subprocess import Popen, PIPE
 
-def _(x): return x
 
 DEFAULT_SERVER = "pool.sks-keyservers.net"
 
@@ -731,9 +731,6 @@ class PGPMimeParser(Parser):
         return message
 
 
-
-
-
 if __name__ == "__main__":
     g = GnuPG()
     # print g.recv_key("c903bef1")
@@ -746,4 +743,3 @@ if __name__ == "__main__":
     #     print "GPG Interface: All %d tests successful" % (t.attempted)
     # else:
     #     print "GPG Interface: %d out of %d tests failed" % (t.failed, t.attempted)
-

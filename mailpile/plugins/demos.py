@@ -7,10 +7,8 @@
 #
 # Happy hacking!
 
+from gettext import gettext as _
 import mailpile.plugins
-
-# Helper for i18n
-_ = lambda x: x
 
 
 ##[ Pluggable configuration ]#################################################
@@ -93,7 +91,4 @@ mailpile.plugins.register_slow_periodic_job('tick-15', 15, TickJob)
 
 ##[ Pluggable commands ]######################################################
 
-
-
-# i18n cleanup
-del _
+# FIXME

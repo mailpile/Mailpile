@@ -1,4 +1,5 @@
 import random
+from gettext import gettext as _
 
 from mailpile.util import *
 

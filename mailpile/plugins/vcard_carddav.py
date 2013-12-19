@@ -4,6 +4,7 @@ import httplib
 import sys
 import re
 import getopt
+from gettext import gettext as _
 from lxml import etree
 
 import mailpile.plugins

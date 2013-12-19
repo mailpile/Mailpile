@@ -1,3 +1,5 @@
+from gettext import gettext as _
+
 import mailpile.app
 import mailpile.commands
 import mailpile.defaults
