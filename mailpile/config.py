@@ -1127,12 +1127,17 @@ class ConfigManager(ConfigDict):
 
             # Schedule plugin jobs
             import mailpile.plugins
+            def interval(i):
+                if isinstance(i, (str, unicode)):
+                    i = config.walk(i)
+                return int(i)
             for job, (i, f) in mailpile.plugins.FAST_PERIODIC_JOBS.iteritems():
-                config.cron_worker.add_task(job, i, lambda: f(session))
+                config.cron_worker.add_task(job, interval(i),
+                                            lambda: f(session))
             for job, (i, f) in mailpile.plugins.SLOW_PERIODIC_JOBS.iteritems():
                 def wrap():
                     config.slow_worker.add_task(None, job, lambda: f(session))
-                config.cron_worker.add_task(job, i, wrap)
+                config.cron_worker.add_task(job, interval(i), wrap)
 
 
     def stop_workers(config):

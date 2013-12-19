@@ -72,10 +72,22 @@ mailpile.plugins.register_vcard_importers(DemoVCardImporter)
 ##[ Pluggable cron jobs ]#####################################################
 
 def TickJob(session):
+    """
+    This is a very minimal cron job - just a function that runs within
+    a session.
+
+    Note that generally it is a better pattern to create a Command which
+    is then invoked by the cron job, so power users can access the
+    functionality directly.  It is also a good idea to make the interval
+    configurable by registering a setting and referencing that instead of
+    a fixed number.  See compose.py for an example of how this is done.
+    """
     session.ui.notify('Tick!')
 
 
-mailpile.plugins.register_fast_periodic_job('tick-05', 5, TickJob)
+mailpile.plugins.register_fast_periodic_job('tick-05',  # Job name
+                                            5,          # Interval in seconds
+                                            TickJob)    # Callback
 mailpile.plugins.register_slow_periodic_job('tick-15', 15, TickJob)
 
 

@@ -14,6 +14,9 @@ from mailpile.util import *
 
 from mailpile.plugins.search import Search, SearchResults, View
 
+# i18n helper
+_ = lambda x: x
+
 
 class EditableSearchResults(SearchResults):
     def __init__(self, session, idx, new, sent, **kwargs):
@@ -503,10 +506,16 @@ class EmptyOutbox(Command):
         return self.sendmail(self.session)
 
 
-mailpile.plugins.register_slow_periodic_job('sendmail', 15,
+mailpile.plugins.register_config_variables('prefs', {
+    'empty_outbox_interval': [_('Delay between attempts to send mail'),
+                              int, 90]
+})
+mailpile.plugins.register_slow_periodic_job('sendmail',
+                                            'prefs.empty_outbox_interval',
                                             EmptyOutbox.sendmail)
 mailpile.plugins.register_commands(Compose, Reply, Forward, # Create
                                    Draft, Update, Attach,   # Manipulate
                                    UnThread,                # ...
                                    Sendit, UpdateAndSendit, # Send
                                    EmptyOutbox)             # ...
+del _
