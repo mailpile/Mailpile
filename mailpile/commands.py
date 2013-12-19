@@ -460,7 +460,6 @@ class SearchResults(dict):
             search_tags = [idx.config.get_tag(t.split(':')[1], {})
                            for t in session.searched if t.startswith('in:')]
             search_tag_ids = [t._key for t in search_tags if 'stats' in t]
-            print '%s' % search_tag_ids
             self.update({
                 'search_tag_ids': search_tag_ids,
             })
@@ -544,6 +543,7 @@ class SearchResults(dict):
                 m = self['data']['metadata'][mid]
                 tags = [self['data']['tag'][t] for t in m['tag_tids']]
                 tag_names = [t['name'] for t in tags if 'searched' not in t]
+                tag_names.sort()
                 msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
                 sfmt = '%%-%d.%ds%%s' % (47 - (clen + len(msg_tags)),
                                          47 - (clen + len(msg_tags)))
