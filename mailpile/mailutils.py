@@ -825,6 +825,11 @@ class Email(object):
     def get_file(self):
         return self.get_mbox_ptr_and_fd()[2]
 
+    def get_msg_size(self):
+        mbox, ptr, fd = self.get_mbox_ptr_and_fd()
+        fd.seek(0, 2)
+        return fd.tell()
+
     def get_msg(self, pgpmime=True):
         if not self.msg_parsed:
             fd = self.get_file()

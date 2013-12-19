@@ -381,7 +381,9 @@ class MailIndex:
                 play_nice_with_threads()
 
             # Message new or modified, let's parse it.
-            msg = ParseMessage(mbox.get_file(i), pgpmime=False)
+            msg_fd = mbox.get_file(i)
+            msg = ParseMessage(msg_fd, pgpmime=False)
+            msg_size = msg_fd.tell()
             msg_id = self.get_msg_id(msg, msg_ptr)
             if msg_id in self.MSGIDS:
                 self.update_location(session, self.MSGIDS[msg_id], msg_ptr)
@@ -396,7 +398,7 @@ class MailIndex:
                 play_nice_with_threads()
                 keywords, snippet = self.index_message(session,
                                                        msg_mid, msg_id,
-                                                       msg, msg_ts,
+                                                       msg, msg_size, msg_ts,
                                                        mailbox=mailbox_idx,
                                                        compact=False,
                                            filter_hooks=[self.filter_keywords])
@@ -433,6 +435,7 @@ class MailIndex:
                                     email.msg_mid(),
                                     email.get_msg_info(self.MSG_ID),
                                     email.get_msg(),
+                                    email.get_msg_size(),
                                    long(email.get_msg_info(self.MSG_DATE), 36),
                                     mailbox=mbox_idx,
                                     compact=False,
@@ -617,7 +620,7 @@ class MailIndex:
                 else:
                     self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
-    def read_message(self, session, msg_mid, msg_id, msg, msg_ts,
+    def read_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
                                     mailbox=None):
         keywords = []
         snippet = ''
@@ -700,16 +703,17 @@ class MailIndex:
                     keywords.extend(['%s:list' % t for t in words])
 
         for extract in plugins.get_meta_kw_extractors():
-            keywords.extend(extract(self, msg_mid, msg, msg_ts))
+            keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts))
 
         snippet = snippet.replace('\n', ' '
                                   ).replace('\t', ' ').replace('\r', '')
         return (set(keywords) - STOPLIST), snippet.strip()
 
-    def index_message(self, session, msg_mid, msg_id, msg, msg_ts,
+    def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
                             mailbox=None, compact=True, filter_hooks=[]):
         keywords, snippet = self.read_message(session,
-                                              msg_mid, msg_id, msg, msg_ts,
+                                              msg_mid, msg_id, msg,
+                                              msg_size, msg_ts,
                                               mailbox=mailbox)
 
         for hook in filter_hooks:
