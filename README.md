@@ -7,12 +7,13 @@
 
 #### Who's doing what? ####
 
-- 2013-12-18: bre: Outbox, plugin API for periodic events
+- 2013-12-19: bre: Bugfixes, search-by-size, preparing for antispam work
 - 2013-12-18: smari: PGP decryption & signature verification
 - 2013-11-18: bnvk: Tweaking the compose UI
 
 #### Recent changes ####
 
+- 2013-12-19: Run `setup` to enable the new Outbox for sending
 - 2013-11-18: Run `setup` and `rescan` to enable GPG and gravatar importers
 - 2013-11-08: New API endpoint /search/address for to/cc/bcc autocomplete
 - 2013-11-05: CLI hackers: check out `help hacks` and `hacks/pycli`
