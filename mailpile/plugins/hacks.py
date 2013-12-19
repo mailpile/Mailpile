@@ -60,11 +60,13 @@ class PyCLI(Hacks):
         import code
         import readline
         from mailpile import Mailpile
+
         variables = globals()
         variables['session'] = self.session
         variables['config'] = self.session.config
         variables['mp'] = Mailpile(session=self.session)
 
+        self.session.config.stop_workers()
         self.session.ui.block()
         code.InteractiveConsole(locals=variables).interact("""\
 This is Python inside of Mailpile inside of Python.
@@ -75,6 +77,7 @@ This is Python inside of Mailpile inside of Python.
    - Press CTRL+D to return to the normal CLI.
 """)
         self.session.ui.unblock()
+        self.session.config.prepare_workers(self.session, daemons=True)
 
         return 'That was fun!'
 

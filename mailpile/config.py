@@ -1118,14 +1118,16 @@ class ConfigManager(ConfigDict):
 
         # Update the cron jobs, if necessary
         if config.cron_worker:
+            session = session or config.background
+
             # Schedule periodic rescanning, if requested.
             rescan_interval = config.prefs.rescan_interval
             if rescan_interval:
                 def rescan():
                     if 'rescan' not in config._running:
-                        rsc = Rescan(session or config.background, 'rescan')
+                        rsc = Rescan(session, 'rescan')
                         rsc.serialize = False
-                        config.slow_worker.add_task(None, 'Rescan', rsc.run)
+                        config.slow_worker.add_task(session, 'Rescan', rsc.run)
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
             # Schedule plugin jobs
@@ -1139,14 +1141,18 @@ class ConfigManager(ConfigDict):
                                             lambda: f(session))
             for job, (i, f) in mailpile.plugins.SLOW_PERIODIC_JOBS.iteritems():
                 def wrap():
-                    config.slow_worker.add_task(None, job, lambda: f(session))
+                    config.slow_worker.add_task(session, job,
+                                                lambda: f(session))
                 config.cron_worker.add_task(job, interval(i), wrap)
 
 
     def stop_workers(config):
-        for w in (config.http_worker, config.slow_worker, config.cron_worker):
-            if w:
-                w.quit()
+        for wait in (False, True):
+            for w in (config.http_worker,
+                      config.slow_worker,
+                      config.cron_worker):
+                if w:
+                    w.quit(join=wait)
 
 
 # FIXME: Delete this when it is no longer needed.

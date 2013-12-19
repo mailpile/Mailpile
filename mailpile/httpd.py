@@ -271,7 +271,8 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
       SimpleXMLRPCServer.finish_request(self, request, client_address)
     except socket.error:
       pass
-    if mailpile.util.QUITTING: self.shutdown()
+    if mailpile.util.QUITTING:
+      self.shutdown()
 
 
 class HttpWorker(threading.Thread):
@@ -283,8 +284,7 @@ class HttpWorker(threading.Thread):
   def run(self):
     self.httpd.serve_forever()
 
-  def quit(self):
-    if self.httpd: self.httpd.shutdown()
+  def quit(self, join=False):
+    if self.httpd:
+      self.httpd.shutdown()
     self.httpd = None
-
-
