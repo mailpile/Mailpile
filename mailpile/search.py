@@ -53,8 +53,7 @@ class CachedSearchResultSet(SearchResultSet):
         global SEARCH_RESULT_CACHE
         self.terms = set(terms)
         self._index = idx
-        #self._results = SEARCH_RESULT_CACHE.get(self._skey(), {})
-        self._results = {}
+        self._results = SEARCH_RESULT_CACHE.get(self._skey(), {})
         self._results['_last_used'] = time.time()
 
     def _skey(self):
@@ -469,7 +468,8 @@ class MailIndex:
         if not msg_conv_mid:
             # Can we do plain GMail style subject-based threading?
             # FIXME: Is this too aggressive? Make configurable?
-            subj = msg_info[self.MSG_SUBJECT].lower().replace('re: ', '')
+            subj = msg_info[self.MSG_SUBJECT].lower()
+            subj = subj.replace('re: ', '').replace('fwd: ', '')
             date = long(msg_info[self.MSG_DATE], 36)
             if subj.strip() != '':
                 for midx in reversed(range(max(0, msg_idx_pos - 250),
@@ -789,6 +789,7 @@ class MailIndex:
 
     def add_tag(self, session, tag_id,
                             msg_info=None, msg_idxs=None, conversation=False):
+        CachedSearchResultSet.DropCaches()
         pls = GlobalPostingList(session, '%s:tag' % tag_id)
         if msg_info and msg_idxs is None:
             msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
@@ -814,6 +815,7 @@ class MailIndex:
 
     def remove_tag(self, session, tag_id,
                    msg_info=None, msg_idxs=None, conversation=False):
+        CachedSearchResultSet.DropCaches()
         pls = GlobalPostingList(session, '%s:tag' % tag_id)
         if msg_info and msg_idxs is None:
             msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
@@ -850,6 +852,16 @@ class MailIndex:
         return hits('%s:tag' % t[1])
 
     def search(self, session, searchterms, keywords=None):
+        # Stash the raw search terms, decide if this is cached or not
+        raw_terms = searchterms[:]
+        if keywords is None:
+            srs = CachedSearchResultSet(self, raw_terms)
+            if len(srs) > 0:
+                return srs
+        else:
+            srs = SearchResultSet(self, raw_terms)
+
+        # Choose how we are going to search
         if keywords is not None:
             def hits(term):
                 return [int(h, 36) for h in keywords.get(term, [])]
@@ -858,12 +870,6 @@ class MailIndex:
                 session.ui.mark(_('Searching for %s') % term)
                 return [int(h, 36) for h
                         in GlobalPostingList(session, term).hits()]
-
-        # Stash the raw search terms
-        raw_terms = searchterms[:]
-        srs = CachedSearchResultSet(self, raw_terms)
-        if len(srs) > 0:
-            return srs
 
         # Replace some GMail-compatible terms with what we really use
         if 'tags' in self.config:
@@ -898,7 +904,6 @@ class MailIndex:
             term = term.lower()
 
             if ':' in term:
-                # FIXME: Make search words pluggable!
                 if term.startswith('body:'):
                     rt.extend(hits(term[5:]))
                 elif term == 'all:mail':
@@ -945,8 +950,11 @@ class MailIndex:
                             (p % tag.name) in searchterms or
                             (p % tag.slug) in searchterms):
                         exclude_terms = []
-            for term in exclude_terms:
-                exclude.extend(self.search_tag(term, hits))
+            if len(exclude_terms) > 1:
+                exclude_terms = ([exclude_terms[0]] +
+                                 ['+%s' % e for e in exclude_terms[1:]])
+            # Recursing to pull the excluded terms from cache as well
+            exclude = self.search(session, exclude_terms).as_set()
 
         srs.set_results(results, exclude)
         if session:
