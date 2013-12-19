@@ -301,6 +301,21 @@ def decrypt_and_parse_lines(fd, parser):
     return size
 
 
+def backup_file(filename, backups=5, min_age_delta=0):
+    if os.path.exists(filename):
+        if os.stat(filename).st_mtime >= time.time() - min_age_delta:
+            return
+
+        for ver in reversed(range(1, backups)):
+            bf = '%s.%d' % (filename, ver)
+            if os.path.exists(bf):
+                nbf = '%s.%d' % (filename, ver+1)
+                if os.path.exists(nbf):
+                    os.remove(nbf)
+                os.rename(bf, nbf)
+        os.rename(filename, '%s.1' % filename)
+
+
 def gpg_open(filename, recipient, mode):
     fd = open(filename, mode)
     if recipient and ('a' in mode or 'w' in mode):

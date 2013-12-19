@@ -918,9 +918,15 @@ class ConfigManager(ConfigDict):
 
     def save(self):
         self._mkworkdir(None)
-        fd = gpg_open(self.conffile, self.prefs.get('gpg_recipient'), 'wb')
+        newfile = '%s.new' % self.conffile
+        fd = gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb')
         fd.write(self.as_config_bytes(private=True))
         fd.close()
+
+        # Keep the last 5 config files around... just in case.
+        backup_file(self.conffile, backups=5, min_age_delta=10)
+        os.rename(newfile, self.conffile)
+
         self.get_i18n_translation()
         self.prepare_workers()
 
