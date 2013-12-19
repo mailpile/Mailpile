@@ -938,7 +938,7 @@ class MailIndex:
         # Unless we are searching for invisible things, remove them from
         # results by default.
         exclude = []
-        order = order or session.order
+        order = order or (session and session.order) or 'flat-index'
         if (results and (keywords is None) and
                 ('tags' in self.config) and
                 (not session or 'all' not in order)):
