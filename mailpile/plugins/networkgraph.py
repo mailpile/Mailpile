@@ -15,7 +15,7 @@ from mailpile.plugins.search import Search
 class NetworkGraph(Search):
     """Get a graph of the network in the current search results."""
     ORDER = ('Searching', 1)
-    SYNOPSIS = ('n', 'shownetwork', 'shownetwork', '<terms>')
+    SYNOPSIS = (None, 'shownetwork', 'shownetwork', '<terms>')
     HTTP_CALLABLE = ('GET', )
 
     def command(self, search=None):

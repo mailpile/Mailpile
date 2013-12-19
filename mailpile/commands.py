@@ -521,12 +521,14 @@ class SearchResults(dict):
         return True
 
     def next_set(self):
+        stats = self['stats']
         return SearchResults(self.session, self.idx,
-                             start=self['start'] - 1 + self['count'])
+                             start=stats['start'] - 1 + stats['count'])
 
     def previous_set(self):
+        stats = self['stats']
         return SearchResults(self.session, self.idx,
-                             end=self['start'] - 1)
+                             end=stats['start'] - 1)
 
     def as_text(self):
         clen = max(3, len('%d' % len(self.session.results)))
