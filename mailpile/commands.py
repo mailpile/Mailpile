@@ -612,8 +612,9 @@ class Rescan(Command):
         importer_cfgs = config.prefs.vcard.importers
         for importer in mailpile.plugins.VCARD_IMPORTERS.values():
             for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
-                imported += importer(session, cfg
-                                     ).import_vcards(session, config.vcards)
+                if cfg:
+                    imp = importer(session, cfg)
+                    imported += imp.import_vcards(session, config.vcards)
         return {'vcards': imported}
 
     def _rescan_mailboxes(self, session, config):

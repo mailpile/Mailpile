@@ -10,6 +10,8 @@ import mailpile.plugins
 
 def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
     """Create a search term with the floored log2 size of the message."""
+    if msg_size <= 0:
+        return []
     return ['%s:ln2sz' % int(math.log(msg_size, 2))]
 
 mailpile.plugins.register_meta_kw_extractor('sizes', meta_kw_extractor)

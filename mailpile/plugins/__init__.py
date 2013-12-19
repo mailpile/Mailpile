@@ -150,7 +150,8 @@ VCARD_CONTEXT_PROVIDERS = {}
 def _reg_vcard_plugin(what, cfg_sect, plugin_classes, cls, dct):
     for plugin_class in plugin_classes:
         if not plugin_class.SHORT_NAME or not plugin_class.FORMAT_NAME:
-            raise PluginError("Please set SHORT_NAME and FORMAT_* attributes!")
+            raise PluginError("Please set SHORT_NAME "
+                              "and FORMAT_* attributes!")
         if not issubclass(plugin_class, cls):
             raise PluginError("%s must be a %s" % (what, cls))
         if plugin_class.SHORT_NAME in dct:

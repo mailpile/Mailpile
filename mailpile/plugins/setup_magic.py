@@ -87,7 +87,8 @@ class Setup(Command):
 
         gpg_home = os.path.expanduser('~/.gnupg')
         if os.path.exists(gpg_home) and not vcard_importers.gpg:
-            vcard_importers.gpg.append({'gpg_home': gpg_home})
+            vcard_importers.gpg.append({'active': True,
+                                        'gpg_home': gpg_home})
 
         session.config.save()
         return True
