@@ -489,11 +489,11 @@ class EmptyOutbox(Command):
     @classmethod
     def sendmail(cls, session):
         cfg, idx = session.config, session.config.index
-        session.order = 'flat-index'
         messages = []
         for tag in cfg.get_tags(type='outbox'):
             search = ['in:%s' % tag._key]
-            for msg_idx_pos in idx.search(session, search).as_set():
+            for msg_idx_pos in idx.search(session, search,
+                                          order='flat-index').as_set():
                 messages.append('=%s' % b36(msg_idx_pos))
         if messages:
             return Sendit(session, arg=messages).run()

@@ -851,7 +851,7 @@ class MailIndex:
         t[1] = self.config.get_tag_id(t[1]) or t[1]
         return hits('%s:tag' % t[1])
 
-    def search(self, session, searchterms, keywords=None):
+    def search(self, session, searchterms, keywords=None, order=None):
         # Stash the raw search terms, decide if this is cached or not
         raw_terms = searchterms[:]
         if keywords is None:
@@ -938,9 +938,10 @@ class MailIndex:
         # Unless we are searching for invisible things, remove them from
         # results by default.
         exclude = []
+        order = order or session.order
         if (results and (keywords is None) and
                 ('tags' in self.config) and
-                (not session or 'all' not in session.order)):
+                (not session or 'all' not in order)):
             invisible = self.config.get_tags(flag_hides=True)
             exclude_terms = ['in:%s' % i._key for i in invisible]
             for tag in invisible:
