@@ -93,16 +93,17 @@ var pileActionUnselect = function(item) {
 	.prop('checked', false);
 }
 
-
 $(document).on('click', '#pile-results tr.result', function(e) {
-	if (e.target.href === undefined && $(this).data('state') === 'selected') {
-		pileActionUnselect($(this));
-	}
-	else if (e.target.href === undefined) {
+	if (e.target.href === undefined && $(this).data('state') !== 'selected') {
 		pileActionSelect($(this));
 	}
 });
 
+$(document).on('click', '#pile-results tr.result-on', function(e) {
+	if (e.target.href === undefined && $(this).data('state') === 'selected') {
+		pileActionUnselect($(this));
+	}
+});
 
 
 /* Dragging */
