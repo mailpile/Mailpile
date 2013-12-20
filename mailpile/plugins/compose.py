@@ -245,6 +245,12 @@ class Reply(RelativeCompose):
             except NoFromAddressError:
                 return self._error('You must configure a From address first.')
 
+            # Behavior tracking
+            if 'tags' in config:
+                for tag in config.get_tags(type='replied'):
+                    idx.add_tag(session, tag._key,
+                                msg_idxs=[m.msg_idx_pos for m in refs])
+
             return self._edit_messages([email])
         else:
             return self._error('No message found')
@@ -299,6 +305,12 @@ class Forward(RelativeCompose):
                 for att in msg_atts:
                     msg.attach(att)
                 email.update_from_msg(msg)
+
+            # Behavior tracking
+            if 'tags' in config:
+                for tag in config.get_tags(type='replied'):
+                    idx.add_tag(session, tag._key,
+                                msg_idxs=[m.msg_idx_pos for m in refs])
 
             self._tag_blank([email])
             return self._edit_messages([email])

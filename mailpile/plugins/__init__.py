@@ -140,6 +140,24 @@ def register_search_term(term, function):
     SEARCH_TERMS[term] = function
 
 
+##[ Pluggable keyword filters ]###############################################
+
+FILTER_HOOKS_PRE = {}
+FILTER_HOOKS_POST = {}
+
+
+def filter_hooks(hooks):
+    return FILTER_HOOKS_PRE.values() + hooks + FILTER_HOOKS_POST.values()
+
+
+def register_filter_hook_pre(name, hook):
+    FILTER_HOOKS_PRE[name] = hook
+
+
+def register_filter_hook_post(name, hook):
+    FILTER_HOOKS_POST[name] = hook
+
+
 ##[ Pluggable vcard functions ]###############################################
 
 VCARD_IMPORTERS = {}

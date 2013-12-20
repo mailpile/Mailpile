@@ -23,10 +23,13 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     }],
 
     # Functional attributes
-    'type': ['Tag type', ['tag', 'group', 'attribute', 'unread',
-                          'drafts', 'blank', 'outbox', 'sent',
-                          # TODO: 'folder', 'shadow',
-                          'trash', 'spam', 'ham'], 'tag'],
+    'type': ['Tag type', [
+        'tag', 'group', 'attribute', 'unread',
+        # Maybe TODO: 'folder', 'shadow',
+        'drafts', 'blank', 'outbox', 'sent',     # composing and sending
+        'replied', 'tagged', 'read', 'ham',      # behavior tracking tags
+        'trash', 'spam'                          # junk mail tags
+    ], 'tag'],
     'flag_hides': ['Hide tagged messages from searches?', bool, False],
     'flag_editable': ['Mark tagged messages as editable?', bool, False],
 
@@ -197,7 +200,7 @@ class Tag(TagCommand):
             return '%s (%d messages)' % (', '.join(what),
                                          len(self.result['msg_ids']))
 
-    def command(self, save=True):
+    def command(self, save=True, auto=False):
         idx = self._idx()
 
         if 'mid' in self.data:
@@ -217,14 +220,18 @@ class Tag(TagCommand):
             tag = self.session.config.get_tag(op[1:])
             if tag:
                 tag_id = tag._key
+                conversation = ('flat' not in (self.session.order or ''))
                 if op[0] == '-':
                     idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids,
-                       conversation=('flat' not in (self.session.order or '')))
+                                   conversation=conversation)
                     rv['untagged'].append(tag)
                 else:
                     idx.add_tag(self.session, tag_id, msg_idxs=msg_ids,
-                       conversation=('flat' not in (self.session.order or '')))
+                                conversation=conversation)
                     rv['tagged'].append(tag)
+                # Record behavior
+                for t in self.session.config.get_tags(type='tagged'):
+                    idx.add_tag(self.session, t._key, msg_idxs=msg_ids)
             else:
                 self.session.ui.warning('Unknown tag: %s' % op)
 
@@ -408,9 +415,9 @@ class FilterCommand(Command):
 
 class Filter(FilterCommand):
     """Add auto-tag rule for current search or terms"""
-    SYNOPSIS = (None, 'filter', None,
-                            '[new|read] [notag] [=<mid>] '
-                            '[<terms>] [+<tag>] [-<tag>] [<comment>]')
+    SYNOPSIS = (None, 'filter', None, '[new|read] [notag] [=<mid>] '
+                                      '[<terms>] [+<tag>] [-<tag>] '
+                                      '[<comment>]')
     ORDER = ('Tagging', 1)
     HTTP_CALLABLE = ('POST', )
 
@@ -461,9 +468,9 @@ class Filter(FilterCommand):
             'tags': ' '.join(tids)
         }
         if filter_id:
-                config.filters[filter_id] = filter_dict
+            config.filters[filter_id] = filter_dict
         else:
-                config.filters.append(filter_dict)
+            config.filters.append(filter_dict)
 
         self.finish()
         return True

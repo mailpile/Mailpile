@@ -3,7 +3,7 @@ from gettext import gettext as _
 import mailpile.plugins
 from mailpile.commands import Command
 
-from mailpile.plugins.tags import Tag, Filter
+from mailpile.plugins.tags import AddTag, DeleteTag, Filter
 from mailpile.plugins.contacts import *
 
 
@@ -48,7 +48,7 @@ def GroupVCard(parent):
 
         def _prepare_new_vcard(self, vcard):
             session, handle = self.session, vcard.nickname
-            return (Tag(session, arg=['add', handle]).run() and
+            return (AddTag(session, arg=[handle]).run() and
                     Filter(session, arg=['add', 'group:%s' % handle,
                                          '+%s' % handle, vcard.fn]).run())
 
@@ -59,7 +59,7 @@ def GroupVCard(parent):
             session, handle = self.session, vcard.nickname
             return (Filter(session, arg=['delete',
                                          'group:%s' % handle]).run() and
-                    Tag(session, arg=['delete', handle]).run())
+                    DeleteTag(session, arg=[handle]).run())
 
     return GroupVCardCommand
 

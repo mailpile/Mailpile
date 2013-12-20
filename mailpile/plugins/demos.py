@@ -23,7 +23,14 @@ import mailpile.plugins
 
 ##[ Pluggable search terms ]##################################################
 
+# Pluggable search terms allow plugins to enhance the behavior of the
+# search engine in various ways. Examples of basic enhanced search terms
+# are the date: and size: keywords, which accept human-friendly ranges
+# and input, and convert those to a list of "low level" keywords to
+# actually search for.
+
 # FIXME
+
 
 
 ##[ Pluggable vcard functions ]###############################################

@@ -16,6 +16,59 @@ class Setup(Command):
     SYNOPSIS = (None, 'setup', None, None)
     ORDER = ('Internals', 0)
 
+    TAGS = {
+        'New': {
+            'type': 'unread',
+            'label': False,
+            'display': 'invisible'
+        },
+        'Inbox': {
+            'display': 'priority',
+            'display_order': 2,
+        },
+        'Blank': {
+            'type': 'blank',
+            'flag_editable': True,
+            'display': 'invisible'
+        },
+        'Drafts': {
+            'type': 'drafts',
+            'flag_editable': True,
+            'display': 'priority',
+            'display_order': 1,
+        },
+        'Outbox': {
+            'type': 'outbox',
+            'display': 'priority',
+            'display_order': 3,
+        },
+        'Sent': {
+            'type': 'sent',
+            'display': 'priority',
+            'display_order': 4,
+        },
+        'Spam': {
+            'type': 'spam',
+            'flag_hides': True,
+            'display': 'priority',
+            'display_order': 5,
+        },
+        'Trash': {
+            'type': 'trash',
+            'flag_hides': True,
+            'display': 'priority',
+            'display_order': 6,
+        },
+        # These are internal tags, used for tracking user actions on
+        # messages, as input for machine learning algorithms. These get
+        # automatically added, and may be automatically removed as well
+        # to keep the working sets reasonably small.
+        'mp_rpl': {'type': 'replied', 'label': False, 'display': 'invisible'},
+        'mp_tag': {'type': 'tagged', 'label': False, 'display': 'invisible'},
+        'mp_read': {'type': 'read', 'label': False, 'display': 'invisible'},
+        'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible'},
+    }
+
     def command(self):
         session = self.session
 
@@ -24,61 +77,17 @@ class Setup(Command):
 
         # Create standard tags and filters
         created = []
-        for t in ('New', 'Inbox', 'Outbox', 'Spam', 'Drafts', 'Blank',
-                  'Sent', 'Trash'):
+        for t in self.TAGS:
             if not session.config.get_tag_id(t):
                 AddTag(session, arg=[t]).run()
                 created.append(t)
-        session.config.get_tag('New').update({
-            'type': 'unread',
-            'label': False,
-            'display': 'invisible'
-        })
-        session.config.get_tag('Blank').update({
-            'type': 'blank',
-            'flag_editable': True,
-            'display': 'invisible'
-        })
-        session.config.get_tag('Drafts').update({
-            'type': 'drafts',
-            'flag_editable': True,
-            'display': 'priority',
-            'display_order': 1,
-        })
-        session.config.get_tag('Inbox').update({
-            'display': 'priority',
-            'display_order': 2,
-        })
-        session.config.get_tag('Outbox').update({
-            'type': 'outbox',
-            'display': 'priority',
-            'display_order': 3,
-        })
-        session.config.get_tag('Sent').update({
-            'type': 'sent',
-            'display': 'priority',
-            'display_order': 4,
-        })
-        session.config.get_tag('Spam').update({
-            'type': 'spam',
-            'flag_hides': True,
-            'display': 'priority',
-            'display_order': 5,
-        })
-        session.config.get_tag('Trash').update({
-            'type': 'trash',
-            'flag_hides': True,
-            'display': 'priority',
-            'display_order': 6,
-        })
+            session.config.get_tag(t).update(self.TAGS[t])
         if 'New' in created:
             Filter(session,
                    arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
-            Filter(session,
-                   arg=['read', '-New', 'Read Mail filter']).run()
 
         for old in ('invisible_tags', 'writable_tags'):
-            if old in  session.config.sys:
+            if old in session.config.sys:
                 del session.config.sys[old]
 
         vcard_importers = session.config.prefs.vcard.importers

@@ -171,8 +171,17 @@ class View(Search):
         else:
             raw = False
         emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
+        msg_idxs = [e.msg_idx_pos for e in emails]
+
+        if 'tags' in config:
+            for tag in config.get_tags(type='unread'):
+                idx.remove_tag(session, tag._key, msg_idxs=msg_idxs)
+            for tag in config.get_tags(type='read'):
+                idx.add_tag(session, tag._key, msg_idxs=msg_idxs)
+
         idx.apply_filters(session, '@read',
                           msg_idxs=[e.msg_idx_pos for e in emails])
+
         for email in emails:
             if raw:
                 results.append(self.RawResult({

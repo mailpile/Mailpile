@@ -395,12 +395,13 @@ class MailIndex:
                                                         msg_ts)
 
                 play_nice_with_threads()
-                keywords, snippet = self.index_message(session,
-                                                       msg_mid, msg_id,
-                                                       msg, msg_size, msg_ts,
-                                                       mailbox=mailbox_idx,
-                                                       compact=False,
-                                           filter_hooks=[self.filter_keywords])
+                keywords, snippet = self.index_message(
+                    session,
+                    msg_mid, msg_id, msg, msg_size, msg_ts,
+                    mailbox=mailbox_idx,
+                    compact=False,
+                    filter_hooks=plugins.filter_hooks([self.filter_keywords])
+                )
 
                 msg_subject = self.hdr(msg, 'subject')
                 msg_snippet = snippet[:max(0, snippet_max - len(msg_subject))]
@@ -720,6 +721,8 @@ class MailIndex:
             keywords = hook(session, msg_mid, msg, keywords)
 
         for word in keywords:
+            if word.startswith('__'):
+                continue
             try:
                 GlobalPostingList.Append(session, word, [msg_mid],
                                          compact=compact)
@@ -788,7 +791,7 @@ class MailIndex:
         return [r for r in msg_info[self.MSG_TAGS].split(',') if r]
 
     def add_tag(self, session, tag_id,
-                            msg_info=None, msg_idxs=None, conversation=False):
+                msg_info=None, msg_idxs=None, conversation=False):
         CachedSearchResultSet.DropCaches()
         pls = GlobalPostingList(session, '%s:tag' % tag_id)
         if msg_info and msg_idxs is None:
