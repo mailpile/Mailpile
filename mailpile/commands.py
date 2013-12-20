@@ -544,13 +544,15 @@ class SearchResults(dict):
             else:
                 m = self['data']['metadata'][mid]
                 tags = [self['data']['tag'][t] for t in m['tag_tids']]
-                tag_names = [t['name'] for t in tags if 'searched' not in t]
+                tag_names = [t['name'] for t in tags
+                             if 'searched' not in t and t.get('label')]
+                tag_new = [t for t in tags if t.get('type') == 'unread']
                 tag_names.sort()
                 msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
-                sfmt = '%%-%d.%ds%%s' % (47 - (clen + len(msg_tags)),
-                                         47 - (clen + len(msg_tags)))
-                text.append((cfmt + ' %-22.22s ' + sfmt + '%7s'
-                             ) % (count,
+                sfmt = '%%-%d.%ds%%s' % (46 - (clen + len(msg_tags)),
+                                         46 - (clen + len(msg_tags)))
+                text.append((cfmt + ' %s%-22.22s ' + sfmt + '%7s'
+                             ) % (count, tag_new and '*' or ' ',
                                   m['from']['name'], m['subject'], msg_tags,
                                   elapsed_datetime(m['timestamp'])))
             count += 1
