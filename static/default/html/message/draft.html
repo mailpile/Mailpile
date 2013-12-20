@@ -14,6 +14,10 @@
     <div class="compose-headers compose-to">
         <label>{{_("To")}}</label>
         <input id="compose-to" name="to" type="text" tabindex="1" value="{{message.editing_strings.to|e}}">
+        <div class="compose-cell" style="float: right">
+          <a class="compose-show-field" href="#">{{_("Bcc")}}</a>
+          <a class="compose-show-field" href="#">{{_("Cc")}}</a>
+        </div>
     </div>
     <div id="compose-cc-html" class="compose-headers compose-cc">
       <label>{{_("Cc")}}</label>
@@ -33,10 +37,6 @@
           <option value="{{p.name|e}} &lt;{{p.email|e}}&gt;">{{p.name|e}} &lt;{{p.email|e}}&gt;</option>
           {% endfor %}
         </select>
-      </div>
-      <div class="compose-cell">
-        <a class="compose-show-field" href="#">{{_("Bcc")}}</a>
-        <a class="compose-show-field" href="#">{{_("Cc")}}</a>
       </div>
     </div>        
     <div class="compose-headers compose-subject">
