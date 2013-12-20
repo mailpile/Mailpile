@@ -4,6 +4,7 @@ from gettext import gettext as _
 import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.util import *
+from mailpile.gpgi import GnuPG
 
 from mailpile.plugins.tags import AddTag, Filter
 
@@ -89,6 +90,39 @@ class Setup(Command):
         if os.path.exists(gpg_home) and not vcard_importers.gpg:
             vcard_importers.gpg.append({'active': True,
                                         'gpg_home': gpg_home})
+
+        # Assumption: If you already have secret keys, you want to 
+        #             use the associated addresses for your e-mail.
+        #             If you don't already have secret keys, you should have
+        #             one made for you, if GnuPG is available.
+        #             If GnuPG is not available, you should be warned.
+        gnupg = GnuPG()
+        if gnupg.is_available():
+            keys = gnupg.list_secret_keys()
+            if len(keys) == 0:
+                # FIXME: Start background process generating a key once a user
+                #        has supplied a name and e-mail address.
+                pass
+            else:
+                for key, details in keys.iteritems():
+                    for uid in details["uids"]:
+                        if "email" not in uid or uid["email"] == "":
+                            continue
+
+                        if uid["email"] in [x["email"] 
+                                            for x in session.config.profiles]:
+                            # Don't set up the same e-mail address twice.
+                            continue
+
+                        # FIXME: Add route discovery mechanism.
+                        profile = {
+                            "email": uid["email"],
+                            "name": uid["name"],
+                        }
+                        session.config.profiles.append(profile)
+        else:
+            # FIXME: Alert the user to the fact that PGP was not discovered
+            pass
 
         session.config.save()
         return True
