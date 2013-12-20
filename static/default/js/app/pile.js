@@ -29,34 +29,67 @@ $(document).on('click', '.button-sub-navigation', function() {
 
 
 
+/* Tag Add Ajax */
+var pileAjaxTag = function(tag_add) {
 
-/* Bulk Actions */
+  $.ajax({
+	  url			 : mailpile.api.tag,
+	  type		 : 'POST',
+	  data     : {
+      add: tag_add,
+      mid: mailpile.bulk_cache
+    },
+	  dataType : 'json',
+    success  : function(response) {
+
+      if (response.status == 'success') {
+
+        // Update Pile View
+        $.each(mailpile.bulk_cache, function(key, mid) {
+          $('#pile-message-' + mid).fadeOut('fast');
+        });
+        
+        // Empty Bulk Cache
+        mailpile.bulk_cache = [];
+        
+      } else {
+        statusMessage(response.status, response.message);
+      }
+    }
+  });
+
+}
+
+
+/* Bulk Action Link */
 $(document).on('click', '.bulk-action', function(e) {
 
 	e.preventDefault();
-	var checkboxes = $('#pile-results input[type=checkbox]');
-	var action = $(this).attr('href');
-	var count = 0;
+	var action = $(this).data('action');
 
-	$.each(checkboxes, function() {
-		if ($(this).val() === 'selected') {
-			console.log('This is here ' + $(this).attr('name'));
-			count++;
-		}
-	});
+	alert(mailpile.bulk_cache.length + ' items to ' + action);
 
-	alert(count + ' items selected to "' + action.replace('#', '') + '"');
+  if (action == 'later' || action == 'archive' || action == 'trash') {
+    pileAjaxTag(action);
+  }
+  else if (action == 'add-to-group') {
+    
+  }
+  else if (action == 'assign-tags') {
+    
+  }
+
 });
 
 
 /* Result Actions */
 var pileActionSelect = function(item) {
 
-  // Data Stuffs    
+  // Add To Data Model
   mailpile.bulk_cache_add(item.data('mid'));
 
 	// Increment Selected
-	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
+	$('#bulk-actions-selected-count').html(mailpile.bulk_cache.length);
 
 	// Show Actions
 	$('#bulk-actions').slideDown('slow');
@@ -69,19 +102,16 @@ var pileActionSelect = function(item) {
 	.prop('checked', true);
 }
 
-
 var pileActionUnselect = function(item) {
 
-  // Data Stuffs    
+  // Remove From Data Model
   mailpile.bulk_cache_remove(item.data('mid'));
 
 	// Decrement Selected
-	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
-
-	$('#bulk-actions-selected-count').html(selected_count);
+	$('#bulk-actions-selected-count').html(mailpile.bulk_cache.length);
 
 	// Hide Actions
-	if (selected_count < 1) {
+	if (mailpile.bulk_cache.length < 1) {
 		$('#bulk-actions').slideUp('slow');
 	}
 
@@ -93,6 +123,9 @@ var pileActionUnselect = function(item) {
 	.prop('checked', false);
 }
 
+
+
+/* Select & Unselect Pile Items */
 $(document).on('click', '#pile-results tr.result', function(e) {
 	if (e.target.href === undefined && $(this).data('state') !== 'selected') {
 		pileActionSelect($(this));
@@ -106,7 +139,8 @@ $(document).on('click', '#pile-results tr.result-on', function(e) {
 });
 
 
-/* Dragging */
+
+/* Dragging & Dropping From Pile */
 $('td.draggable').draggable({
   containment: "#container",
   scroll: false,
@@ -114,7 +148,7 @@ $('td.draggable').draggable({
   helper: function(event) {
 
     var selected_count = parseInt($('#bulk-actions-selected-count').html());
-    
+
     if (selected_count == 0) {
       drag_count = '1 message</div>';
     }
@@ -129,9 +163,6 @@ $('td.draggable').draggable({
   }
 });
 
-
-
-/* Dropping */
 $('li.sidebar-tags-draggable').droppable({
   accept: 'td.draggable',
   activeClass: 'sidebar-tags-draggable-hover',
