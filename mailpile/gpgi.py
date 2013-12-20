@@ -509,14 +509,14 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         >>> g.list_keys()[0]
         0
         """
-        returncode, retvals = self.run(["--list-keys", "--fingerprint"], 
+        retvals = self.run(["--list-keys", "--fingerprint"], 
                            callbacks={"stdout": self.parse_keylist})
-        return retvals["stdout"][0]
+        return retvals[1]["stdout"][0]
 
     def list_sigs(self):
         retvals = self.run(["--list-sigs", "--fingerprint"], 
                  callbacks={"stdout": self.parse_keylist})
-        return retvals
+        return retvals[1]["stdout"][0]
 
     def list_secret_keys(self):
         """
@@ -526,7 +526,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         """
         retvals = self.run(["--list-secret-keys", "--fingerprint"], 
                            callbacks={"stdout": self.parse_keylist})
-        return retvals
+        return retvals[1]["stdout"][0]
 
     def encrypt(self, data, tokeys=[], armor=True):
         """
