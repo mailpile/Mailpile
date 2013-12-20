@@ -332,7 +332,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 body {
   /* Addresses a small issue in webkit: http://bit.ly/NEdoDq */
-
   -webkit-backface-visibility: hidden;
 }
 .animated {
@@ -3911,7 +3910,6 @@ body {
   color: #333333;
   -webkit-font-smoothing: antialiased;
   /* Fix for webkit rendering */
-
   -webkit-text-size-adjust: 100%;
 }
 /* #Links
@@ -4617,7 +4615,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   position: relative;
   display: inline-block;
   /* inline-block for ie7 */
-
   zoom: 1;
   *display: inline;
   vertical-align: middle;
@@ -4632,16 +4629,12 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 
     More Info : http://www.quirksmode.org/css/box.html
   */
-
   -webkit-box-sizing: border-box;
   /* webkit */
-
   -moz-box-sizing: border-box;
   /* firefox */
-
   box-sizing: border-box;
   /* css3 */
-
 }
 .select2-container .select2-choice {
   display: block;
@@ -4672,7 +4665,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#ffffff', endColorstr = '#eeeeee', GradientType = 0);
     background-image: linear-gradient(top, #fff 0%, #eee 50%);
 */
-
 }
 .select2-container.select2-drop-above .select2-choice {
   border-bottom-color: #aaa;
@@ -4686,7 +4678,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#eeeeee', GradientType=0);
     background-image: linear-gradient(top, #eee 0%, #fff 90%);
 */
-
 }
 .select2-container.select2-allowclear .select2-choice .select2-chosen {
   margin-right: 42px;
@@ -4732,7 +4723,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   width: auto;
   z-index: 9998;
   /* styles required for IE to work */
-
   background-color: #fff;
   opacity: 0;
   filter: alpha(opacity=0);
@@ -5246,7 +5236,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   bottom: 0;
   visibility: hidden\9;
   /* Target only IE7 and IE8 with this hack */
-
   opacity: .01;
   -webkit-transition: .2s;
   -moz-transition: .2s;
@@ -5264,7 +5253,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .pane.flashed {
   visibility: visible\9;
   /* Target only IE7 and IE8 with this hack */
-
   opacity: 0.99;
 }
 /*
@@ -5721,7 +5709,6 @@ text {
 }
 .form-search button::-moz-focus-inner {
   /* remove extra button spacing for Mozilla Firefox */
-
   border: 0;
   padding: 0;
 }
@@ -5792,7 +5779,8 @@ text {
   margin: 0;
   margin-top: 63px;
 }
-/* Content */#content {
+/* Content */
+#content {
   min-width: 775px;
   display: table-cell;
   box-sizing: border-box;
@@ -6146,7 +6134,7 @@ a.compose-show-field {
 }
 #pile-results tr.result:hover td.draggable,
 #pile-results tr.result-on:hover td.draggable {
-  background: url('../img/draggable-pattern.png'), #ffffff;
+  background: url('/static/img/draggable-pattern.png'), #ffffff;
   opacity: 0.3;
   filter: alpha(opacity=30);
 }
@@ -6313,7 +6301,88 @@ a.compose-show-field {
   border: 1px solid #b3b3b3;
   padding: 5px 10px;
 }
-/* Message */.message-headers {
+/* Message */
+#thread-title {
+  padding: 10px 15px;
+  background: #f2f2f2;
+  border-bottom: 1px solid #b3b3b3;
+}
+#thread-title h1 {
+  margin: 0px;
+  padding: 0px;
+  font-size: 24px;
+  font-weight: bold;
+}
+#thread-title ul li {
+  margin-right: 15px;
+}
+#thread-title ul a {
+  color: #b3b3b3;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+}
+#thread-title ul a:hover {
+  color: #4d4d4d;
+}
+#thread-messages .icon-encrypted,
+#thread-reply .icon-encrypted {
+  color: #4b7945;
+}
+#thread-messages .icon-unencrypted,
+#thread-reply .icon-unencrypted {
+  color: #fbb03b;
+}
+.thread-item {
+  padding: 10px 15px;
+  border-bottom: 1px solid #b3b3b3;
+}
+.thread-item-from {
+  display: inline-block;
+}
+.thread-item-from a.avatar {
+  float: left;
+  margin-right: 5px;
+}
+.thread-item-from a.avatar img {
+  width: 48px;
+}
+.thread-item-from a.name {
+  color: #4d4d4d;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 21px;
+}
+.thread-item-from span.icon {
+  float: left;
+  font-size: 14px;
+}
+.thread-item-details span.datetime {
+  font-size: 14px;
+  font-weight: bold;
+}
+.thread-item-text {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+}
+#thread-reply {
+  padding: 10px 15px;
+  background: #f2f2f2;
+  border-top: 1px solid #b3b3b3;
+}
+#reply-textarea {
+  width: 96%;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  font-size: 14px;
+  line-height: 18px;
+}
+#reply-textarea:focus {
+  outline: none;
+  border: 1px solid #b3b3b3;
+}
+.message-headers {
   padding: 15px;
   border-bottom: 1px solid #b3b3b3;
   font-size: 18px;
