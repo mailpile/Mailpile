@@ -1,0 +1,161 @@
+/* Message */	
+
+  #thread-title {
+    padding: 10px 15px;
+    background: @grayLight;
+    border-bottom: 1px solid @gray;
+  }
+
+  #thread-title h1 {
+    margin: 0px;
+    padding: 0px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  #thread-title ul li {
+    margin-right: 15px;
+  }
+
+  #thread-title ul a {
+    color: @gray;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+  }
+
+  #thread-title ul a:hover {
+    color: @grayDark;
+  }
+
+  #thread-messages .icon-encrypted,
+  #thread-reply    .icon-encrypted { color: @green; }
+  #thread-messages .icon-unencrypted,
+  #thread-reply    .icon-unencrypted { color: @orange; }
+
+
+  .thread-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid @gray;
+  }
+
+  .thread-item-from {
+    display: inline-block;
+  }
+
+  .thread-item-from a.avatar {
+    float: left;
+    margin-right: 5px;
+  }
+  
+  .thread-item-from a.avatar img {
+    width: 48px;
+  }
+  
+  .thread-item-from a.name {
+    color: @grayDark;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 21px;
+  }
+
+  .thread-item-from span.icon {
+    float: left;
+    font-size: 14px;
+  }
+
+
+  .thread-item-details span.datetime {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .thread-item-text {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+
+  #thread-reply {
+    padding: 10px 15px;
+    background: @grayLight;
+    border-top: 1px solid @gray;
+  }
+
+  #reply-textarea {
+    width: 96%;
+    padding: 10px;
+    border: 1px solid @grayMid;
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  #reply-textarea:focus {
+    outline: none;
+    border: 1px solid @gray;
+  }
+
+
+
+
+
+  .message-headers {
+	  padding: 15px;  
+    border-bottom: 1px solid @gray;
+    font-size: 18px;
+    line-height: 18px;
+  }	
+	
+	.message-headers li {
+  	margin-bottom: 10px;
+	}
+	
+	.message-headers a {
+  	font-size: 18px;
+	}
+	
+	.message-datetime {
+	  font-family: @text-font-family;
+  	float: right;
+	}
+	
+	.message-email-address {
+	  display: inline-block;
+	  vertical-align: middle;
+	  color: @grayDark;
+	  border-radius: 3px;
+	  margin: 0 5px;
+	  padding: 0px;
+	  padding-right: 5px;
+	  font-weight: normal;
+	  background: @grayLight;
+	  border: 1px solid @grayMid;
+          max-height: 24px;
+  }
+	
+	.message-email-address:hover {
+    color: @red;
+  }
+
+	.message-email-address img {
+     width: 24px;
+     height: 24px;
+     margin-right: 5px;
+     display: inline-block;
+  }
+
+	.message-body {
+	  padding: 15px;
+  	font-size: 14px;
+  	line-height: 18px;
+	}
+	
+	.message-attachments {
+  	
+	}
+
+  .message-actions form {
+    float: left;
+    margin-right: 15px;
+  }
