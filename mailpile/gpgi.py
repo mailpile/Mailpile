@@ -181,6 +181,7 @@ class GnuPG:
     """
 
     def __init__(self):
+        self.available = None
         self.gpgbinary = 'gpg'
         self.passphrase = None
         self.fds = {"passphrase": True, 
@@ -469,6 +470,15 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 break
 
         return proc.returncode, retvals
+
+    def is_available(self):
+        try:
+            retvals = self.run(["--version"])
+            self.available = True
+        except OSError:
+            self.available = False
+
+        return self.available
 
     def list_keys(self):
         """
