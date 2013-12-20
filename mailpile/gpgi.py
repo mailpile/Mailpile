@@ -480,6 +480,29 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
         return self.available
 
+    def gen_key(self, name, email, passphrase):
+        # FIXME: Allow for selection of alternative keyring
+        #        Syntax:
+        #        %%pubring mypubring.pgp
+        #        %%secring mysecring.pgp
+        
+        batchjob = """
+            %%echo starting keygen
+            Key-Type: RSA
+            Key-Length: 4096
+            Subkey-Type: RSA
+            Subkey-Length: 4096
+            Name-Real: %(name)s
+            Name-Email: %(email)s
+            Expire-Date: 0
+            Passphrase: %(passphrase)s
+            %%commit
+            %%echo done
+        """ % {"name": name, "email": email, "passphrase": passphrase}
+
+        returncode, retvals = self.run(["--gen-key"], output=batchjob)
+        return returncode, retvals
+
     def list_keys(self):
         """
         >>> g = GnuPG()
