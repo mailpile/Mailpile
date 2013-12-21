@@ -305,6 +305,7 @@ def RuledContainer(pcls):
 
             pcls.__init__(self)
             self._key = self._name
+            self._rules_source = rules
             self.set_rules(rules)
             self.update(*args, **kwargs)
 
@@ -860,19 +861,6 @@ class ConfigManager(ConfigDict):
         self.index = None
         self.reset(rules=False, data=True)
 
-        try:
-            ocfg = os.path.join(self.workdir, 'config.rc')
-            ocl = OldConfigLoader(filename=ocfg)
-            if ocl.export(self) and session:
-                session.ui.warning(_('WARNING: Imported old config from %s'
-                                    ) % ocfg)
-            elif ocl.lines and session:
-                session.ui.warning(_('WARNING: Failed to import config from %s'
-                                    ) % ocfg)
-        except:
-            import traceback
-            traceback.print_exc()
-
         filename = filename or self.conffile
         lines = []
         try:
@@ -888,14 +876,18 @@ class ConfigManager(ConfigDict):
         # Discover plugins and update the config rule
         import mailpile.plugins
         pds = [os.path.join(self.workdir, 'plugins')]
-        self.sys.plugins.rules['_any'][1] = mailpile.plugins.Discover(pds)
+        pds = mailpile.plugins.Discover(pds)
+        self.sys.plugins.rules['_any'][1] = pds
 
-        # Parse the config twice, first to figure out which plugins to load,
-        # and again after loading all the plugins.
-        self.parse_config(session, '\n'.join(lines), source=filename)
+        # Parse once (silently), to figure out which plugins to load...
+        self.parse_config(None, '\n'.join(lines), source=filename)
         if len(self.sys.plugins) == 0:
-            self.sys.plugins.extend(mailpile.plugins.BUILTIN)
+            self.sys.plugins.extend(mailpile.plugins.__all__)
         self.load_plugins(session)
+
+        # Now all the plugins are loaded, reset and parse again!
+        self.set_rules(self._rules_source)
+        self.sys.plugins.rules['_any'][1] = pds
         self.parse_config(session, '\n'.join(lines), source=filename)
 
         # Enable translations
@@ -910,6 +902,7 @@ class ConfigManager(ConfigDict):
     def load_plugins(self, session):
         import mailpile.plugins
         for plugin in set(mailpile.plugins.REQUIRED + self.sys.plugins):
+            session.ui.mark(_('Loading plugin: %s') % plugin)
             mailpile.plugins.Load(plugin)
         self.prepare_workers(session)
 
@@ -1153,99 +1146,6 @@ class ConfigManager(ConfigDict):
                       config.cron_worker):
                 if w:
                     w.quit(join=wait)
-
-
-# FIXME: Delete this when it is no longer needed.
-class OldConfigLoader:
-    """
-    Load legacy config data into new config.
-
-    >>> ocl = OldConfigLoader()
-    >>> ocl.lines = ['obfuscate_index = 1234',
-    ...              'tag:0 = Honk/Honk']
-    >>> ocl.export(cfg)
-    True
-    >>> cfg.prefs.obfuscate_index
-    u'1234'
-    >>> cfg.tags['0'].slug
-    'honk/honk'
-    """
-    def __init__(self, filename=None):
-        self.lines = []
-        if filename:
-            try:
-                fd = open(filename, 'rb')
-                try:
-                    decrypt_and_parse_lines(fd, lambda l: self.lines.append(l))
-                except ValueError:
-                    pass
-                fd.close()
-            except IOError:
-                pass
-
-    def parse(self, line):
-        var, value = line.split(' = ', 1)
-        if ':' in var:
-            cat, var = var.split(':', 1)
-        else:
-            cat = None
-        return cat, var, value
-
-    def export(self, config):
-        errors = 0
-        mailboxes = {}
-        for line in self.lines:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-
-            try:
-                cat, var, val = self.parse(line)
-                if not cat:
-                    for sect in (config.sys, config.prefs):
-                        if var in sect.rules:
-                            sect[var] = val
-                elif cat == 'filter':
-                    config.filters[var] = {'comment': val}
-                elif cat == 'filter_tags':
-                    config.filters[var]['tags'] = val
-                elif cat == 'filter_terms':
-                    config.filters[var]['terms'] = val
-                elif cat == 'mailbox':
-                    mailboxes[var] = val
-                elif cat == 'my_from':
-                    if not config.get_profile(email=var).get('email'):
-                        config.profiles.append({
-                            'email': var,
-                            'name': val,
-                        })
-                elif cat == 'my_sendmail':
-                    config.get_profile(email=var)['route'] = val
-                elif cat == 'tag':
-                    config.tags[var] = {'name': val, 'slug': val.lower()}
-
-            except Exception, e:
-                print _('Could not parse (%s): %s') % (e, line)
-                errors += 1
-
-        mbox_ids = mailboxes.keys()
-        mbox_ids.sort(key=lambda k: int(k, 36))
-        for mbox_id in mbox_ids:
-            mbox_fn = mailboxes[mbox_id]
-            try:
-                nid = '0'
-                while int(nid, 36) != int(mbox_id, 36):
-                    nid = config.sys.mailbox.append('/dev/null')
-                config.sys.mailbox[mbox_id] = mbox_fn
-            except IndexError:
-                print _('Could not assign mailbox:%s = %s') % (mbox_id, mbox_fn)
-
-        for writable in ('Blank', 'Drafts'):
-            tid = config.get_tag_id(writable)
-            if tid and tid not in config.sys.writable_tags:
-                config.sys.writable_tags.append(tid)
-
-        return self.lines and (errors == 0)
 
 
 ##############################################################################

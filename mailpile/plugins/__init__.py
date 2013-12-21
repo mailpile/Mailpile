@@ -1,5 +1,4 @@
 # Plugins!
-import imp
 import os
 import sys
 from gettext import gettext as _
@@ -12,13 +11,16 @@ import mailpile.vcard
 ##[ Plugin discovery ]########################################################
 
 # These are the plugins we ship/import by default
-__all__ = BUILTIN = [
+__all__ = [
     'search', 'tags', 'contacts', 'compose', 'groups',
     'dates', 'sizes',
     'setup_magic', 'networkgraph', 'exporters',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
     'hacks'
 ]
+BUILTIN = (__all__[:] + [
+    'spambayes'
+])
 
 # These are plugins which we consider required
 REQUIRED = [
@@ -49,8 +51,9 @@ def Load(plugin_name):
     if not full_path:
         raise PluginError('No load path known for %s' % plugin_name)
 
-    sys.modules[full_name] = imp.new_module(full_name)
-    exec open(full_name, 'r').read() in sys.modules[full_name].__dict__
+    sys.path = [os.path.dirname(full_path)] + sys.path
+    __import__(full_name, globals(), locals(), [], 0)
+    sys.path.pop(0)
 
 
 class PluginError(Exception):
@@ -147,7 +150,9 @@ FILTER_HOOKS_POST = {}
 
 
 def filter_hooks(hooks):
-    return FILTER_HOOKS_PRE.values() + hooks + FILTER_HOOKS_POST.values()
+    return ([FILTER_HOOKS_PRE[k] for k in sorted(FILTER_HOOKS_PRE.keys())]
+            + hooks +
+            [FILTER_HOOKS_POST[k] for k in sorted(FILTER_HOOKS_POST.keys())])
 
 
 def register_filter_hook_pre(name, hook):

@@ -5,8 +5,6 @@ import mailpile.commands
 import mailpile.defaults
 import mailpile.ui
 
-# Load the standard plugins
-from mailpile.plugins import *
 
 __all__ = ['Mailpile',
            "app", "commands", "plugins", "mailutils", "search", "ui", "util"]
