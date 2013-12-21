@@ -11,7 +11,6 @@
 #
 ###############################################################################
 import copy
-import cPickle
 import email.header
 import email.parser
 import email.utils
@@ -278,7 +277,7 @@ def UnorderedPicklable(parent, editable=False):
         def __init__(self, *args, **kwargs):
             parent.__init__(self, *args, **kwargs)
             self.editable = editable
-            self.save_to = None
+            self._save_to = None
             self.parsed = {}
 
         def unparsed(self):
@@ -291,14 +290,20 @@ def UnorderedPicklable(parent, editable=False):
             self.__dict__.update(data)
             self.update_toc()
 
-        def save(self, session=None, to=None):
-            if to:
-                self.save_to = to
-            if self.save_to and len(self) > 0:
-                if session: session.ui.mark('Saving state to %s' % self.save_to)
-                fd = open(self.save_to, 'w')
-                cPickle.dump(self, fd)
-                fd.close()
+        def __getstate__(self):
+            odict = self.__dict__.copy()
+            # Pickle can't handle function objects.
+            del odict['_save_to']
+            return odict
+
+        def save(self, session=None, to=None, pickler=None):
+            if to and pickler:
+                self._save_to = (pickler, to)
+            if self._save_to and len(self) > 0:
+                pickler, fn = self._save_to
+                if session:
+                    session.ui.mark('Saving %s state to %s' % (self, fn))
+                pickler(self, fn)
 
         def update_toc(self):
             self._refresh()
@@ -335,8 +340,9 @@ class IncrementalIMAPMailbox(UnorderedPicklable(IMAPMailbox)):
 
     def __getstate__(self):
         odict = self.__dict__.copy()
-        # Pickle can't handle file objects.
+        # Pickle can't handle file and function objects.
         del odict['_mailbox']
+        del odict['_save_to']
         return odict
 
     def get_msg_size(self, toc_id):
@@ -415,7 +421,7 @@ class IncrementalMbox(mailbox.mbox):
         mailbox.mbox.__init__(self, *args, **kwargs)
         self.editable = False
         self.last_parsed = -1  # Must be -1 or first message won't get parsed
-        self.save_to = None
+        self._save_to = None
         self._lock = threading.Lock()
 
     def __getstate__(self):
@@ -423,6 +429,7 @@ class IncrementalMbox(mailbox.mbox):
         # Pickle can't handle file objects.
         del odict['_file']
         del odict['_lock']
+        del odict['_save_to']
         return odict
 
     def _get_fd(self):
@@ -502,16 +509,16 @@ class IncrementalMbox(mailbox.mbox):
             self._lock.release()
         self.save(None)
 
-    def save(self, session=None, to=None):
-        if to:
-            self.save_to = to
-        if self.save_to and len(self) > 0:
+    def save(self, session=None, to=None, pickler=None):
+        if to and pickler:
+            self._save_to = (pickler, to)
+        if self._save_to and len(self) > 0:
             self._lock.acquire()
             try:
-                if session: session.ui.mark('Saving state to %s' % self.save_to)
-                fd = open(self.save_to, 'w')
-                cPickle.dump(self, fd)
-                fd.close()
+                pickler, fn = self._save_to
+                if session:
+                    session.ui.mark('Saving %s state to %s' % (self, fn))
+                pickler(self, fn)
             finally:
                 self._lock.release()
 

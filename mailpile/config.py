@@ -951,11 +951,21 @@ class ConfigManager(ConfigDict):
         local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'), 36)
         return (mailbox_id == local_mailbox_id)
 
+    def load_pickle(self, pfn):
+        # FIXME: We should encrypt/decrypt our pickles.
+        return cPickle.load(open(os.path.join(self.workdir, pfn), 'r'))
+
+    def save_pickle(self, obj, pfn):
+        # FIXME: We should encrypt/decrypt our pickles.
+        fd = open(os.path.join(self.workdir, pfn), 'wb')
+        cPickle.dump(obj, fd)
+        fd.close()
+
     def open_mailbox(self, session, mailbox_id):
         try:
             mbx_id = mailbox_id.lower()
             mfn = self.sys.mailbox[mbx_id]
-            pfn = os.path.join(self.workdir, 'pickled-mailbox.%s' % mbx_id)
+            pfn = 'pickled-mailbox.%s' % mbx_id
         except KeyError:
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
 
@@ -965,7 +975,7 @@ class ConfigManager(ConfigDict):
             else:
                 if session:
                     session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
-                self._mbox_cache[mbx_id] = cPickle.load(open(pfn, 'r'))
+                self._mbox_cache[mbx_id] = self.load_pickle(pfn)
         except:
             if self.sys.debug:
                 import traceback
@@ -975,7 +985,9 @@ class ConfigManager(ConfigDict):
                                  ) % (mbx_id, mfn))
             mbox = OpenMailbox(mfn)
             mbox.editable = self.is_editable_mailbox(mbx_id)
-            mbox.save(session, to=pfn)
+            mbox.save(session,
+                      to=pfn,
+                      pickler=lambda o, f: self.save_pickle(o, f))
             self._mbox_cache[mbx_id] = mbox
 
         return self._mbox_cache[mbx_id]
