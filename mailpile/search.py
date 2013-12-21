@@ -308,7 +308,7 @@ class MailIndex:
             if msg_ts and abs(msg_ts - median) < 31 * 24 * 3600:
                 return msg_ts
             else:
-                session.ui.warning(_('=%s/%s using Recieved: instead of Date:'
+                session.ui.warning(_('=%s/%s using Received: instead of Date:'
                                     ) % (msg_mid, msg_id))
                 return median
         else:
