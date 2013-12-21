@@ -2,22 +2,25 @@
 
   #sidebar {
     width: 225px;
-	  display: table-cell;    
     background: @grayLight;
     border-right: 1px solid @gray;
+    position: fixed;
     box-sizing: border-box;
     margin: 0;
     padding: 0px;
     border-spacing:0px;
     vertical-align: top;
+    top: 62px;
+    bottom: 0;
+    overflow-y: auto;
   }
 
   #sidebar.cozy { width: 215px; }
   #sidebar.snug { width: 200px; }
 
-	#sidebar hr {
-  	margin: 20px 0px 0px 0px;
-	}
+  #sidebar hr {
+    margin: 20px 0px 0px 0px;
+  }
 
   #sidebar      ul { margin: 12px; }
   #sidebar.cozy ul { margin: 8px; }
@@ -28,35 +31,35 @@
   #sidebar.snug li { margin: 0px; padding: 3px 4px 3px 6px; }
 
 
-	#sidebar a {
-	  display: block;
+  #sidebar a {
+    display: block;
     width: 175px;
-		font-family: @text-font-family-bold;
-		font-weight: normal;
-		color: @grayDark;
+    font-family: @text-font-family-bold;
+    font-weight: normal;
+    color: @grayDark;
     font-size: 18px;
     line-height: 24px;
   }
 
-	#sidebar.cozy   a { padding: 10px 0px; font-size: 16px; line-height: 16px; }
-	#sidebar.snug   a { padding: 5px 0px; font-size: 14px; line-height: 14px; }
-	
-	#sidebar a:hover  { color: @red; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
+  #sidebar.cozy   a { padding: 10px 0px; font-size: 16px; line-height: 16px; }
+  #sidebar.snug   a { padding: 5px 0px; font-size: 14px; line-height: 14px; }
+  
+  #sidebar a:hover  { color: @red; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
   #sidebar .navigation-on a:hover { color: @grayDark; }
 
-	#sidebar a:active { color: @red; }	
-	
-	#sidebar span.sidebar-icon {
-	  position: relative;
-	  top: -2px;
-	  left: 0px;
-		margin-right: 4px;
-		font-weight: normal;
-		font-size: 18px;
-		line-height: 24px;		
-	}
+  #sidebar a:active { color: @red; }  
+  
+  #sidebar span.sidebar-icon {
+    position: relative;
+    top: -2px;
+    left: 0px;
+    margin-right: 4px;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 24px;    
+  }
 
-	#sidebar.cozy span.sidebar-icon { font-size: 18px; line-height: 18px; }
+  #sidebar.cozy span.sidebar-icon { font-size: 18px; line-height: 18px; }
   #sidebar.snug span.sidebar-icon { font-size: 16px; line-height: 16px; }
 
   #sidebar span.sidebar-tag {
@@ -64,7 +67,7 @@
     display: inline-block;
     white-space: nowrap;
     overflow: hidden;
-	}
+  }
 
   #sidebar span.sidebar-notification {
     float: right;
@@ -87,9 +90,9 @@
 
   .sidebar-tags-draggable-hover {
     background: @grayLight;
-	  -webkit-transition-duration: 0.4s;
-	  -moz-transition-duration: 0.4s;
-	  transition-duration: 0.4s;	    
+    -webkit-transition-duration: 0.4s;
+    -moz-transition-duration: 0.4s;
+    transition-duration: 0.4s;      
   }
 
   .sidebar-tags-draggable-hover .icon-inbox:before,
@@ -102,14 +105,14 @@
 
   .sidebar-tags-draggable-active {
     background: @grayMid;
-	  -webkit-transition-duration: 0.5s;
-	  -moz-transition-duration: 0.5s;
-	  transition-duration: 0.5s;    
+    -webkit-transition-duration: 0.5s;
+    -moz-transition-duration: 0.5s;
+    transition-duration: 0.5s;    
   }
 
   .sidebar-tags-draggable-highlight {
     background: green;
-	  -webkit-transition-duration: 0.4s;
-	  -moz-transition-duration: 0.4s;
-	  transition-duration: 0.4s;
-  }	  
+    -webkit-transition-duration: 0.4s;
+    -moz-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+  }    
