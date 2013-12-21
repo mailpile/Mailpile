@@ -601,7 +601,7 @@ msgstr ""
 
 #: mailpile/search.py:304
 #, python-format
-msgid "=%s/%s using Recieved: instead of Date:"
+msgid "=%s/%s using Received: instead of Date:"
 msgstr ""
 
 #: mailpile/search.py:311
