@@ -6301,7 +6301,16 @@ a.compose-show-field {
   border: 1px solid #b3b3b3;
   padding: 5px 10px;
 }
-/* Message */
+/* Thread */
+#thread-messages .icon-encrypted,
+#thread-reply .icon-encrypted {
+  color: #4b7945;
+}
+#thread-messages .icon-unencrypted,
+#thread-reply .icon-unencrypted {
+  color: #fbb03b;
+}
+/* Thread Title */
 #thread-title {
   padding: 10px 15px;
   background: #f2f2f2;
@@ -6325,16 +6334,9 @@ a.compose-show-field {
 #thread-title ul a:hover {
   color: #4d4d4d;
 }
-#thread-messages .icon-encrypted,
-#thread-reply .icon-encrypted {
-  color: #4b7945;
-}
-#thread-messages .icon-unencrypted,
-#thread-reply .icon-unencrypted {
-  color: #fbb03b;
-}
+/* Thread Items */
 .thread-item {
-  padding: 10px 15px;
+  padding: 10px 15px 15px 15px;
   border-bottom: 1px solid #b3b3b3;
 }
 .thread-item-from {
@@ -6358,14 +6360,35 @@ a.compose-show-field {
   font-size: 14px;
 }
 .thread-item-details span.datetime {
+  display: block;
+  text-align: right;
   font-size: 14px;
   font-weight: bold;
+  color: #b3b3b3;
+  line-height: 21px;
+}
+.thread-item-details span.datetime.message {
+  color: #4d4d4d;
+}
+.thread-item-details a.thread-show-message {
+  display: block;
+  margin-top: 3px;
+  text-align: right;
+  color: #b3b3b3;
+  font-size: 12px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  line-height: 14px;
+}
+.thread-item-details a.thread-show-message:hover {
+  color: #4d4d4d;
 }
 .thread-item-text {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 18px;
 }
+/* Thread Reply */
 #thread-reply {
   padding: 10px 15px;
   background: #f2f2f2;
@@ -6381,6 +6404,9 @@ a.compose-show-field {
 #reply-textarea:focus {
   outline: none;
   border: 1px solid #b3b3b3;
+}
+#reply-options li {
+  margin-left: 25px;
 }
 .message-headers {
   padding: 15px;

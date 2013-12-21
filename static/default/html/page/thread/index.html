@@ -12,10 +12,10 @@
 <div class="bulk-actions clearfix">
   <div class="left">4 of 13 Messages</div>
   <ul class="horizontal right">
-	  <li><a class="bulk-action" href="#" data-action="later" title="{{_("Move to Later")}}"><span class="icon-later"></span></a></li>
-	  <li><a class="bulk-action" href="#" data-action="assign-tags" title="{{_("Assign Tags")}}"><span class="icon-tag"></span></a></li>
-	  <li><a class="bulk-action" href="#" data-action="archive" title="{{_("Archive Selection")}}"><span class="icon-archive"></span></a></li>
-	  <li><a class="bulk-action" href="#" data-action="trash" title="{{_("Delete Selection")}}"><span class="icon-trash"></span></a></li>
+	  <li><a class="bulk-action" href="#" data-action="later" title="{{_("Move Whole Thread to Later")}}"><span class="icon-later"></span></a></li>
+	  <li><a class="bulk-action" href="#" data-action="assign-tags" title="{{_("Assign Tags to Thread")}}"><span class="icon-tag"></span></a></li>
+	  <li><a class="bulk-action" href="#" data-action="archive" title="{{_("Archive Whole Thread")}}"><span class="icon-archive"></span></a></li>
+	  <li><a class="bulk-action" href="#" data-action="trash" title="{{_("Delete Whole Thread")}}"><span class="icon-trash"></span></a></li>
   </ul>  
 </div>
 <div id="thread-messages">
@@ -29,7 +29,7 @@
     </div>
     <div class="thread-item-details right">
       <span class="datetime">Nov 8, 2012</span>
-      <a href="#">Show <span class="icon-eye"></span></a>
+      <a class="thread-show-message" href="#">Show <span class="icon-archive"></span></a>
     </div>
     </div>
     
@@ -39,12 +39,12 @@
     
   </div>
   
-  <div id="">
-    <ul class="horizontal">
-      <li><a href=""><span class="icon-checkmark"></span> To Do</a></li>
-      <li><a href=""><span class="icon-forward"></span> Forward</a></li>
-      <li><a href=""><span class="icon-move"></span> Move</a></li>
-      <li><a href=""><span class="icon-trash"></span> Trash</a></li>
+  <div id="thread-message-actions">
+    <ul class="bulk-actions horizontal">
+      <li><a href="#"><span class="icon-checkmark"></span> To Do</a></li>
+      <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
+      <li><a href="#"><span class="icon-move"></span> Move</a></li>
+      <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
     </ul>
   </div>
   
