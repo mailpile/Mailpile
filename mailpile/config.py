@@ -817,7 +817,6 @@ class ConfigManager(ConfigDict):
         """
         parser = CommentedEscapedConfigParser()
         parser.readfp(io.BytesIO(str(data)))
-        okay = True
 
         def item_sorter(i):
             try:
@@ -825,7 +824,9 @@ class ConfigManager(ConfigDict):
             except:
                 return i
 
+        all_okay = True
         for section in parser.sections():
+            okay = True
             cfgpath = section.split(':')[0].split('/')[1:]
             cfg = self
             for part in cfgpath:
@@ -842,7 +843,7 @@ class ConfigManager(ConfigDict):
                         msg = _(u'Invalid (%s): section %s does not '
                                  'exist') % (source, section)
                         session.ui.warning(msg)
-                    okay = False
+                    all_okay = okay = False
             items = okay and parser.items(section) or []
             items.sort(key=item_sorter)
             for var, val in items:
@@ -853,8 +854,8 @@ class ConfigManager(ConfigDict):
                         msg = _(u'Invalid (%s): section %s, variable %s'
                                 ) % (source, section, var)
                         session.ui.warning(msg)
-                    okay = False
-        return okay
+                    all_okay = okay = False
+        return all_okay
 
     def load(self, session, filename=None):
         self._mkworkdir(session)
@@ -901,7 +902,8 @@ class ConfigManager(ConfigDict):
 
     def load_plugins(self, session):
         import mailpile.plugins
-        for plugin in set(mailpile.plugins.REQUIRED + self.sys.plugins):
+        plugin_list = set(mailpile.plugins.REQUIRED + self.sys.plugins)
+        for plugin in plugin_list:
             session.ui.mark(_('Loading plugin: %s') % plugin)
             mailpile.plugins.Load(plugin)
         self.prepare_workers(session)

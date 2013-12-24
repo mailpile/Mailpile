@@ -288,6 +288,7 @@ def UnorderedPicklable(parent, editable=False):
 
         def __setstate__(self, data):
             self.__dict__.update(data)
+            self._save_to = None
             self.update_toc()
 
         def __getstate__(self):
@@ -439,6 +440,7 @@ class IncrementalMbox(mailbox.mbox):
         self.__dict__.update(dict)
         self._lock = threading.Lock()
         self._lock.acquire()
+        self._save_to = None
         try:
             try:
                 if not os.path.exists(self._path):

@@ -144,8 +144,8 @@ class Command:
             all_words.extend(word.split(','))
         for what in all_words:
             if what.lower() == 'these':
-                b = self.session.displayed['start'] - 1
-                c = self.session.displayed['count']
+                b = self.session.displayed['stats']['start'] - 1
+                c = self.session.displayed['stats']['count']
                 msg_ids |= set(self.session.results[b:b + c])
             elif what.lower() == 'all':
                 msg_ids |= set(self.session.results)
