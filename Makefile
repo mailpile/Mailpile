@@ -8,7 +8,8 @@ dev:
 
 debian-dev:
 	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
-	                     rubygems ruby-dev yui-compressor python-nose
+	                     rubygems ruby-dev yui-compressor python-nose \
+	                     spambayes
 	sudo gem install therubyracer less
 
 docs:

@@ -35,12 +35,15 @@ WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                          ':\"|;\'\\\<\>\?,\.\/\-]{2,}')
 
 STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
-                'has', 'http', 'in', 'is', 'it', 'mailto', 'og', 'or',
-                're', 'so', 'the', 'to', 'was'])
+                'has', 'http', 'https', 'i', 'in', 'is', 'it',
+                'mailto', 'me',
+                'og', 'or', 're', 'so', 'the', 'to', 'was', 'you'])
 
 BORING_HEADERS = ('received', 'date',
                   'content-type', 'content-disposition', 'mime-version',
                   'dkim-signature', 'domainkey-signature', 'received-spf')
+
+EXPECTED_HEADERS = ('from', 'to', 'subject', 'date')
 
 B64C_STRIP = '\n='
 
