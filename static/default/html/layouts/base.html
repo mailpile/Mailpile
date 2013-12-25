@@ -32,6 +32,29 @@
 
   <title>{{title}} | {{name}}'s mailpile</title>
 
+<script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/libraries-min.js"></script>
+<script type="text/javascript" src="/static/js/libraries/d3.v3.min.js"></script>
+<script type="text/javascript" src="/static/js/mailpile.js"></script>
+<script type="text/javascript" src="/static/js/app/notifications.js"></script>
+<script type="text/javascript" src="/static/js/app/tooltips.js"></script>
+<script type="text/javascript" src="/static/js/app/gpg.js"></script>
+<script type="text/javascript" src="/static/js/app/compose.js"></script>
+<script type="text/javascript" src="/static/js/app/pile.js"></script>
+<script type="text/javascript" src="/static/js/app/search.js"></script>
+<script type="text/javascript" src="/static/js/app/thread.js"></script>
+<script type="text/javascript" src="/static/js/app/contacts.js"></script>
+<script type="text/javascript" src="/static/js/app/tags.js"></script>
+<script type="text/javascript" src="/static/js/app/settings.js"></script>
+<script type="text/javascript">
+mailpile.instance = {
+ "command": "{{ command }}",
+ "args": "{{ args }}",
+ "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
+}
+</script>
+<script type="text/javascript" src="/static/js/plugins-min.js"></script>
+
 </head>
 <body>
 
@@ -177,29 +200,6 @@
     <li>{{_("And:")}} <a href="#" id="search-all-groups">{{_("All groups")}}</a></li>
   </ul>
 </div>  
-
-<script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
-<script type="text/javascript" src="/static/js/libraries-min.js"></script>
-<script type="text/javascript" src="/static/js/libraries/d3.v3.min.js"></script>
-<script type="text/javascript" src="/static/js/mailpile.js"></script>
-<script type="text/javascript" src="/static/js/app/notifications.js"></script>
-<script type="text/javascript" src="/static/js/app/tooltips.js"></script>
-<script type="text/javascript" src="/static/js/app/gpg.js"></script>
-<script type="text/javascript" src="/static/js/app/compose.js"></script>
-<script type="text/javascript" src="/static/js/app/pile.js"></script>
-<script type="text/javascript" src="/static/js/app/search.js"></script>
-<script type="text/javascript" src="/static/js/app/thread.js"></script>
-<script type="text/javascript" src="/static/js/app/contacts.js"></script>
-<script type="text/javascript" src="/static/js/app/tags.js"></script>
-<script type="text/javascript" src="/static/js/app/settings.js"></script>
-<script type="text/javascript">
-mailpile.instance = {
- "command": "{{ command }}",
- "args": "{{ args }}",
- "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
-}
-</script>
-<script type="text/javascript" src="/static/js/plugins-min.js"></script>
 
 </body>
 </html>

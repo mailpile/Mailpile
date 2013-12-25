@@ -107,14 +107,19 @@
 /* Thread Reply */
 
   #thread-reply {
+    min-height: 225px;
     padding: 10px 15px;
     background: @grayLight;
     border-top: 1px solid @gray;
   }
 
+  #thread-reply-actions {
+    padding: 10px;    
+  }
+
   #reply-textarea {
-    width: 96%;
     padding: 10px;
+    width: 100%;
     border: 1px solid @grayMid;
     font-size: 14px;
     line-height: 18px;
@@ -125,9 +130,13 @@
     border: 1px solid @gray;
   }
 
-
   #reply-options li {
     margin-left: 25px;
+  }
+
+
+  #thread-reply-details {
+    display: none;
   }
 
 

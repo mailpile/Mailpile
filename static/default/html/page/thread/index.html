@@ -22,28 +22,51 @@
 
   <div class="thread-item">
     <div class="clearfix">
-    <div class="thread-item-from left">
-      <a href="" class="avatar"><img src="/static/img/avatar-default.png"></a>
-      <a href="" class="name">You</a>
-      <span class="icon icon-encrypted"></span>
+      <div class="thread-item-from left">
+        <a href="" class="avatar"><img src="/static/img/avatar-default.png"></a>
+        <a href="" class="name">You</a>
+        <span class="icon icon-encrypted"></span>
+      </div>
+      <div class="thread-item-details right">
+        <span class="datetime">Nov 8, 2012</span>
+        <a class="thread-show-message" href="#">Show <span class="icon-archive"></span></a>
+      </div>
     </div>
-    <div class="thread-item-details right">
-      <span class="datetime">Nov 8, 2012</span>
-      <a class="thread-show-message" href="#">Show <span class="icon-archive"></span></a>
-    </div>
-    </div>
-    
     <div class="thread-item-text">
       Yo buddy. I’m doing pretty good- just living it up here in Iceland, ya know mi pitchfork Austin Pinterest forage put a bird on it. Etsy small batch beard cred. Fingerstache YOLO swag, mixtape McSweeney's pirate ship book shop...
     </div>
-    
   </div>
-  
-  <div id="thread-message-actions">
-    <ul class="bulk-actions horizontal">
+
+  <div class="thread-item">
+    <div class="clearfix">
+      <div class="thread-item-from left">
+        <a href="" class="avatar"><img src="/static/img/avatar-default.png"></a>
+        <a href="" class="name">Ian Nelson</a>
+        <span class="icon icon-encrypted"></span>
+      </div>
+      <div class="thread-item-details right">
+        <span class="datetime">Nov 8, 2012</span>
+        <a class="thread-show-message" href="#">Show <span class="icon-archive"></span></a>
+      </div>
+    </div>
+    <div class="thread-item-text">
+      Yo buddy. I’m doing pretty good- just living it up here in Iceland, ya know mi pitchfork Austin Pinterest forage put a bird on it. Etsy small batch beard cred. Fingerstache YOLO swag, mixtape McSweeney's pirate ship book shop...
+    </div>
+  </div>
+
+  <div id="thread-message-actions" class="bulk-actions clearfix">
+    <ul class="horizontal">
       <li><a href="#"><span class="icon-checkmark"></span> To Do</a></li>
       <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
-      <li><a href="#"><span class="icon-move"></span> Move</a></li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
+        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
+          <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Move to Inbox</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Move to Trash</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Remove from Thread</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
+        </ul>
+      </li>
       <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
     </ul>
   </div>
@@ -52,27 +75,114 @@
 <div id="thread-reply" class="clearfix">
 
   <div class="clearfix">
-  <div class="left">
-    <img src="/static/img/avatar-default.png">
-    You <span class="icon-arrow-down"></span>
-    <span>hi@brennannovak.com</span>
+    <ul class="left">
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" id="reply-from" href="#">
+          <img src="/static/img/avatar-default.png">
+          You <span class="icon-arrow-left"></span>
+          <span>hi@brennannovak.com</span>
+        </a>
+        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-from">
+          {% for p in result.profiles %}
+          <li role="presentation"><a href="#">
+            <img src="/static/img/avatar-default.png">
+            {{ p.name|e }}
+            <span>{{ p.email|e }}</span> {{ p.route|e }}</a>
+          </li>
+          {% endfor %} 
+          <li role="presentation"><a href="#">
+            <img src="/static/img/avatar-default.png">
+            You <span class="icon-arrow-left"></span>
+            <span>hi@brennannovak.com</span></a>
+          </li>
+          <li role="presentation"><a href="#">
+            <img src="/static/img/avatar-default.png">
+            Work <span class="icon-arrow-left"></span>
+            <span>bnvk@mailpile.is</span></a>
+          </li>
+          <li role="presentation"><a href="#">
+            <img src="/static/img/avatar-default.png">
+            Reverse <span class="icon-arrow-left"></span>
+            <span>brennan@reverseproductions.com</span></a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <ul id="reply-options" class="horizontal right">
+      <li><a href="#"><span class="icon-unencrypted"></span> Partially Secure</a></li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-arrow-right"></span> Send <span id="reply-datetime-display">Immediately</span></a>
+        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="immediately" href="#">Immediately</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="1" href="#">1 hr</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2" href="#">3 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="6" href="#">6 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="12" href="#">12 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="24" href="#">1 day</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="48" href="#">2 days</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="168" href="#">1 week</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="336" href="#">2 weeks</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="672" href="#">1 month</a></li>
+        </ul>     
+      </li>
+      <li><a id="reply-show-details" href="#"><span class="icon-compose"></span> Details</a></li>
+    </ul>
   </div>
 
-  <ul id="reply-options" class="horizontal right">
-    <li><a href="#"><span class="icon-unencrypted"></span> Partially Secure</a></li>
-    <li><a href="#"><span class="icon-arrow-down"></span> Send Immediately</a></li>
-    <li><a href="#"><span class="icon-compose"></span> Details</a></li>
-  </ul>
+  <div id="thread-reply-details">
+    
+    <div>
+      To <a class="message-email-address" href="/contact/name@email.com/"><img src="/static/img/avatar-default.png">Ian Nelson</a>
+         <input id="compose-to" name="to" type="text" tabindex="1" value="">
+
+    </div>
+    
+    <div>
+      <input type="text" placeholder="{{_("New Subject")}}">
+    </div>
+    
   </div>
 
-  <textarea id="reply-textarea" placeholder="Your reply..."></textarea>
+  <div id="thread-reply-actions">
+    <textarea id="reply-textarea" placeholder="{{_("Your reply...")}}"></textarea>
 
-  <div class="left">
-    <a href="#"><span class="icon-attachment"></span> Attach Something</a>
-  </div>
+    <a class="left" href="#"><span class="icon-attachment"></span> Attach Something</a>
   
-  <button class="right" type="submit"><span class="icon-reply"></span> Reply</button>
+    <button class="right" type="submit"><span class="icon-reply"></span> Reply</button>
+  </div>
 
 </div>
+
+<script src="/static/js/libraries/bootstrap-dropdown.js"></script>
+<script>
+
+/* Might Move to Global Location / Abstraction */
+$(document).on('click', '.dropdown-toggle', function() {
+  console.log('toggle da bizzle');
+  $(this).find('.icon-arrow-right').removeClass('icon-arrow-right').addClass('icon-arrow-down');
+});
+
+/* Pick Send Date */
+$(document).on('click', '.pick-send-datetime', function(e) {
+
+  console.log($(this).data('datetime'));
+
+  if ($(this).data('datetime') == 'immediately') {
+    $('#reply-datetime-display').html($(this).html());
+  }
+  else {
+    $('#reply-datetime-display').html('in ' + $(this).html());
+  }
+
+  $('#reply-datetime span.icon').removeClass('icon-arrow-down').addClass('icon-arrow-right');
+
+});
+
+
+$(document).on('click', '#reply-show-details', function(e) {
+  $('#thread-reply-details').slideDown('fast');
+});
+
+</script>
 
 {% endblock %}
