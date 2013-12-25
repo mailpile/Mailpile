@@ -44,6 +44,7 @@ def LoadClassifier(config, match_tag):
             config.autotag_sb[match_tag] = config.load_pickle(cfn)
         except IOError:
             config.autotag_sb[match_tag] = Classifier()
+            config.autotag_sb[match_tag].trained = False
             SaveClassifier(config, match_tag)
         config.autotag_sb[match_tag].setup()
     return config.autotag_sb[match_tag]
@@ -155,6 +156,7 @@ class Retrain(AutoTagCommand):
 
                 # Start with a fresh classifier
                 bayes = Classifier()
+                bayes.trained = True
                 count_all = 0
                 for tset, mset, srch, which in yn:
                     count = 0
@@ -190,8 +192,9 @@ class Classify(AutoTagCommand):
             for asb in config.prefs.autotag_sb:
                 asb_tag = config.get_tag(asb.match_tag)
                 bayes = config.load_sb_classifier(asb_tag._key)
-                prob, evidence = bayes.chi2_spamprob(kws, evidence=True)
-                result[asb_tag._key] = (prob, evidence)
+                if bayes.trained:
+                    prob, evidence = bayes.chi2_spamprob(kws, evidence=True)
+                    result[asb_tag._key] = (prob, evidence)
         return results
 
     def command(self):
@@ -249,6 +252,8 @@ def filter_hook(session, msg_mid, msg, keywords):
         try:
             asb_tag = config.get_tag(asb.match_tag)
             bayes = config.load_sb_classifier(asb_tag._key)
+            if not bayes.trained:
+                continue
             score = bayes.chi2_spamprob(keywords)
             if score > (1 - asb.threshold):
                 if 'autotag' in config.sys.debug:

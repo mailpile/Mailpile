@@ -230,8 +230,9 @@ class Tag(TagCommand):
                                 conversation=conversation)
                     rv['tagged'].append(tag)
                 # Record behavior
-                for t in self.session.config.get_tags(type='tagged'):
-                    idx.add_tag(self.session, t._key, msg_idxs=msg_ids)
+                if len(msg_ids) < 30:
+                    for t in self.session.config.get_tags(type='tagged'):
+                        idx.add_tag(self.session, t._key, msg_idxs=msg_ids)
             else:
                 self.session.ui.warning('Unknown tag: %s' % op)
 
