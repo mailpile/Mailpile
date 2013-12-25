@@ -2,6 +2,7 @@ import os
 from gettext import gettext as _
 
 import mailpile.plugins
+from mailpile.plugins import __all__ as PLUGINS
 from mailpile.commands import Command
 from mailpile.util import *
 from mailpile.gpgi import GnuPG
@@ -53,6 +54,13 @@ class Setup(Command):
             'display': 'priority',
             'display_order': 5,
         },
+        'MaybeSpam': {
+            'display': 'invisible',
+        },
+        'Ham': {
+            'type': 'ham',
+            'display': 'invisible',
+        },
         'Trash': {
             'type': 'trash',
             'flag_hides': True,
@@ -86,12 +94,22 @@ class Setup(Command):
             Filter(session,
                    arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
 
-        for old in ('invisible_tags', 'writable_tags'):
-            if old in session.config.sys:
-                del session.config.sys[old]
+        # Import all the basic plugins
+        for plugin in PLUGINS:
+            if plugin not in session.config.sys.plugins:
+                session.config.sys.plugins.append(plugin)
+        try:
+            # If spambayes is not installed, this will fail
+            import mailpile.plugins.autotag_sb
+            if 'autotag_sb' not in session.config.sys.plugins:
+                session.config.sys.plugins.append('autotag_sb')
+        except ImportError:
+            session.ui.warning(_('Please install spambayes '
+                                 'for super awesome spam filtering'))
+        session.config.save()
+        session.config.load(session)
 
         vcard_importers = session.config.prefs.vcard.importers
-
         if not vcard_importers.gravatar:
             vcard_importers.gravatar.append({'active': True})
 
@@ -132,6 +150,14 @@ class Setup(Command):
         else:
             # FIXME: Alert the user to the fact that PGP was not discovered
             pass
+
+        if ('autotag_sb' in session.config.sys.plugins and
+                len(session.config.prefs.autotag_sb) == 0):
+            session.config.prefs.autotag_sb.append({
+                'match_tag': 'spam',
+                'unsure_tag': 'maybespam',
+            })
+            session.config.prefs.autotag_sb[0].exclude_tags[0] = 'ham'
 
         session.config.save()
         return True
