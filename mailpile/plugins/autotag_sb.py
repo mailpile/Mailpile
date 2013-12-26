@@ -31,17 +31,19 @@ mailpile.plugins.register_config_section('prefs', 'autotag_sb', ["Spambayes",
 
 
 def SaveClassifier(config, match_tag):
-    config.save_pickle(config.autotag_sb[match_tag],
-                       'autotag_sb.%s' % match_tag)
+    if config.autotag_sb[match_tag].trained:
+        config.save_pickle(config.autotag_sb[match_tag],
+                           'pickled-autotag_sb.%s' % match_tag)
 
 
 def LoadClassifier(config, match_tag):
     if not hasattr(config, 'autotag_sb'):
         config.autotag_sb = {}
     if match_tag not in config.autotag_sb:
-        cfn = 'autotag_sb.%s' % match_tag
+        cfn = 'pickled-autotag_sb.%s' % match_tag
         try:
             config.autotag_sb[match_tag] = config.load_pickle(cfn)
+            config.autotag_sb[match_tag].trained = True
         except IOError:
             config.autotag_sb[match_tag] = Classifier()
             config.autotag_sb[match_tag].trained = False
@@ -62,14 +64,19 @@ class AutoTagCommand(Command):
 
     def _get_keywords(self, e):
         idx = self._idx()
-        kws, snippet = idx.read_message(self.session,
-            e.msg_mid(),
-            e.get_msg_info(field=idx.MSG_ID),
-            e.get_msg(),
-            e.get_msg_size(),
-            int(e.get_msg_info(field=idx.MSG_DATE), 36)
-        )
-        return kws
+        if not hasattr(self, 'rcache'):
+            self.rcache = {}
+        mid = e.msg_mid()
+        if mid not in self.rcache:
+            kws, snippet = idx.read_message(self.session,
+                mid,
+                e.get_msg_info(field=idx.MSG_ID),
+                e.get_msg(),
+                e.get_msg_size(),
+                int(e.get_msg_info(field=idx.MSG_DATE), 36)
+            )
+            self.rcache[mid] = kws
+        return self.rcache[mid]
 
 
 #   - Add a command for retraining a particular tag, or all tags.
@@ -111,6 +118,7 @@ class Retrain(AutoTagCommand):
                                 ) % (len(interest[ttype]), ttype))
 
         retrained = []
+        count_all = 0
         for asb in config.prefs.autotag_sb:
             asb_tag = config.get_tag(asb.match_tag)
             if asb_tag and asb_tag._key in tids:
@@ -118,7 +126,7 @@ class Retrain(AutoTagCommand):
 
                 yn = [(set(), set(), 'in:%s' % asb_tag.slug, True),
                       (set(), set(), '-in:%s' % asb_tag.slug, False)]
-                
+
                 # Get the current message sets: tagged and untagged messages
                 # excluding trash.
                 for tset, mset, srch, which in yn:
@@ -134,8 +142,8 @@ class Retrain(AutoTagCommand):
                         interest[etag._key] = idx.search(session, srch
                                                          ).as_set()
                     interesting.append(etag._key)
-                interesting.extend(['replied', 'read', 'tagged'])
-           
+                interesting.extend(['replied', 'read', 'tagged', None])
+
                 # Go through the interest types in order of preference and
                 # while we still lack training data, add to the training set.
                 for ttype in interesting:
@@ -156,8 +164,6 @@ class Retrain(AutoTagCommand):
 
                 # Start with a fresh classifier
                 bayes = Classifier()
-                bayes.trained = True
-                count_all = 0
                 for tset, mset, srch, which in yn:
                     count = 0
                     for msg_idx in tset:
@@ -170,6 +176,7 @@ class Retrain(AutoTagCommand):
                         bayes.learn(self._get_keywords(e), which)
 
                 # We got this far without crashing, so save the result.
+                bayes.trained = True
                 config.autotag_sb[asb_tag._key] = bayes
                 config.save_sb_classifier(asb_tag._key)
                 retrained.append(asb_tag.name)
@@ -186,11 +193,19 @@ class Classify(AutoTagCommand):
     def _classify(self, emails):
         session, config, idx = self.session, self.session.config, self._idx()
         results = {}
+        unknown = []
         for e in emails:
             kws = self._get_keywords(e)
             result = results[e.msg_mid()] = {}
             for asb in config.prefs.autotag_sb:
+                if not asb.match_tag:
+                    continue
+                    continue
                 asb_tag = config.get_tag(asb.match_tag)
+                if not asb_tag and asb.match_tag not in unknown:
+                    session.ui.error(_('Unknown tag: %s') % asb.match_tag)
+                    unknown.append(asb.match_tag)
+                    continue
                 bayes = config.load_sb_classifier(asb_tag._key)
                 if bayes.trained:
                     prob, evidence = bayes.chi2_spamprob(kws, evidence=True)
@@ -215,6 +230,8 @@ class AutoTag(Classify):
         for mid in scores:
             for asb in config.prefs.autotag_sb:
                 asb_tag = config.get_tag(asb.match_tag)
+                if not asb_tag:
+                    continue
                 score = scores[mid].get(asb_tag._key, (0, ))[0]
 
                 if score > (1.0 - asb.threshold):
