@@ -415,7 +415,8 @@ class UrlMap:
         '/in/inbox/?q=foo%20tag%3ANew'
         """
         tags = tag and [tag] or [t for t in search_terms
-                                         if t.startswith('tag:')]
+                                         if t.startswith('tag:') or
+                                            t.startswith('in:')]
         if len(tags) == 1:
             prefix = self.url_tag(tags[0].replace('tag:', ''))
             search_terms = [t for t in search_terms

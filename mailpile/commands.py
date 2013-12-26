@@ -545,7 +545,7 @@ class SearchResults(dict):
                 m = self['data']['metadata'][mid]
                 tags = [self['data']['tag'][t] for t in m['tag_tids']]
                 tag_names = [t['name'] for t in tags
-                             if 'searched' not in t and t.get('label')]
+                             if 'searched' not in t and t.get('label', True)]
                 tag_new = [t for t in tags if t.get('type') == 'unread']
                 tag_names.sort()
                 msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
@@ -977,6 +977,7 @@ class Help(Command):
                     else:
                         fmt += ' %%s\n%s %%s' % (' ' * (len(c) + width + 18))
                 else:
+                    explanation = ''
                     fmt += ' %s %s '
                 text.append(fmt % (c, cmd.replace('=', ''),
                                    args and ('%s' % (args, )) or '',
@@ -1120,7 +1121,7 @@ def Action(session, opt, arg, data=None):
     tag = config.get_tag(opt)
     if tag:
         return GetCommand('search')(session, opt, arg=arg, data=data
-                                    ).run(search=['tag:%s' % tag._key])
+                                    ).run(search=['in:%s' % tag._key])
 
     # OK, give up!
     raise UsageError(_('Unknown command: %s') % opt)

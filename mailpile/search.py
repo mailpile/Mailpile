@@ -795,12 +795,14 @@ class MailIndex:
 
     def add_tag(self, session, tag_id,
                 msg_info=None, msg_idxs=None, conversation=False):
-        CachedSearchResultSet.DropCaches()
         pls = GlobalPostingList(session, '%s:tag' % tag_id)
         if msg_info and msg_idxs is None:
             msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
         else:
             msg_idxs = set(msg_idxs)
+        if not msg_idxs:
+            return
+        CachedSearchResultSet.DropCaches()
         session.ui.mark(_('Tagging %d messages (%s)') % (len(msg_idxs), tag_id))
         for msg_idx in list(msg_idxs):
             if conversation:
@@ -821,7 +823,6 @@ class MailIndex:
 
     def remove_tag(self, session, tag_id,
                    msg_info=None, msg_idxs=None, conversation=False):
-        CachedSearchResultSet.DropCaches()
         pls = GlobalPostingList(session, '%s:tag' % tag_id)
         if msg_info and msg_idxs is None:
             msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
@@ -829,6 +830,7 @@ class MailIndex:
             msg_idxs = set(msg_idxs)
         if not msg_idxs:
             return
+        CachedSearchResultSet.DropCaches()
         session.ui.mark(_('Untagging conversations (%s)') % (tag_id, ))
         for msg_idx in list(msg_idxs):
             if conversation:
