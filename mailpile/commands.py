@@ -385,7 +385,10 @@ class SearchResults(dict):
         if not no_from:
             frm = (ExtractEmails(msg_info[MailIndex.MSG_FROM]) or [''])[0]
             if frm:
-                cids.add(b36(self.idx.EMAIL_IDS[frm.lower()]))
+                try:
+                    cids.add(b36(self.idx.EMAIL_IDS[frm.lower()]))
+                except KeyError:
+                    cids.add(b36(self.idx._add_email(frm)))
         return sorted(list(cids))
 
     def _person(self, cid):
