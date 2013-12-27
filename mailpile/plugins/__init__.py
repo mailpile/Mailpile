@@ -235,3 +235,76 @@ def register_commands(*args):
     for cls in args:
         if cls not in COMMANDS:
             COMMANDS.append(cls)
+
+##[ Pluggable UI elements ]###################################################
+
+UICLASSES = []
+DISPLAY_MODES = {}
+DISPLAY_ACTIONS = {}
+SELECTION_ACTIONS = {}
+ACTIVITIES = []
+
+def register_uiclass(uiclass):
+    if uiclass not in UICLASSES:
+        UICLASSES.append(uiclass)
+        DISPLAY_ACTIONS[uiclass] = []
+        DISPLAY_MODES[uiclass] = []
+        SELECTION_ACTIONS[uiclass] = []
+
+def register_display_mode(uiclass, name, jsaction, text, url="#", icon=None):
+    assert(uiclass in DISPLAY_MODES)
+    if name not in [x.name for x in DISPLAY_MODES[uiclass]]:
+        DISPLAY_MODES[uiclass].append({
+            "name": name, 
+            "jsaction": jsaction, 
+            "url": url,
+            "text": text,
+            "icon": icon
+        })
+
+def register_display_action(uiclass, name, jsaction, text, url="#", icon=None):
+    assert(uiclass in DISPLAY_ACTIONS)
+    if name not in [x.name for x in DISPLAY_ACTIONS[uiclass]]:
+        DISPLAY_ACTIONS[uiclass].append({
+            "name": name, 
+            "jsaction": jsaction, 
+            "url": url,
+            "text": text,
+            "icon": icon
+        })
+
+def register_selection_action(uiclass, name, jsaction, text, url="#", icon=None):
+    assert(uiclass in SELECTION_ACTIONS)
+    if name not in [x.name for x in SELECTION_ACTIONS[uiclass]]:
+        SELECTION_ACTIONS[uiclass].append({
+            "name": name, 
+            "jsaction": jsaction, 
+            "url": url,
+            "text": text,
+            "icon": icon
+        })
+
+def register_activity(name, jsaction, icon, url="#"):
+    if name not in [x.name for x in ACTIVITIES]:
+        ACTIVITIES.append({
+            "name": name, 
+            "jsaction": jsaction, 
+            "url": url,
+            "icon": icon,
+            "text": text
+        })
+
+def get_activities():
+    return ACTIVITIES
+
+def get_selection_actions(uiclass):
+    return SELECTION_ACTIONS[uiclass]
+
+def get_display_actions(uiclass):
+    return DISPLAY_ACTIONS[uiclass]
+
+def get_display_modes(uiclass):
+    return DISPLAY_MODES[uiclass]
+
+for cl in ["search", "thread", "contact", "tag"]:
+    register_uiclass(cl)

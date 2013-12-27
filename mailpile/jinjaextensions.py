@@ -9,6 +9,7 @@ from jinja2.utils import contextfunction, import_string, Markup
 
 from mailpile.commands import Action
 from mailpile.util import *
+from mailpile.plugins import get_activities, get_selection_actions, get_display_actions, get_display_modes
 
 
 class MailpileCommand(Extension):
@@ -39,6 +40,12 @@ class MailpileCommand(Extension):
         environment.filters['friendly_datetime'] = friendly_datetime
         environment.globals['friendly_time'] = friendly_time
         environment.filters['friendly_time'] = friendly_time
+
+        # See plugins/__init__.py for these functions:
+        environment.globals['get_activities'] = get_activities
+        environment.globals['get_selection_actions'] = get_selection_actions
+        environment.globals['get_display_actions'] = get_display_actions
+        environment.globals['get_display_modes'] = get_display_modes
 
 
     def _command(self, command, *args, **kwargs):
