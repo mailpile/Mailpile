@@ -1,7 +1,7 @@
 {% if mid in result.data.message %}{% set message = result.data.message[mid] %}{% else %}{% set message = None %}{% endif %}
 {% set metadata = result.data.metadata[mid] %}
 {% set thread = result.data.thread[metadata.thread_id] %}
-<tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_ids %} in_{{result.data.tags[tid].slug}}{% endfor %}" data-state="normal" data-mid="{{mid}}">
+<tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_tids %} in_{{result.data.tag[tid].slug}}{% endfor %}" data-state="normal" data-mid="{{mid}}">
   <td class="draggable"></td>
   <td class="avatar">
     <a href="{% if metadata.urls.editing %}{{metadata.urls.editing}}{% else %}{{metadata.urls.thread}}{% endif %}">
