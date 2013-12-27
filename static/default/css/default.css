@@ -29,22 +29,207 @@
 @font-face {
   font-family: 'Mailpile-Interface';
   src: url('../webfonts/Mailpile-Interface.eot');
-  src: url('../webfonts/Mailpile-Interface.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-Interface.woff') format('font-woff'), url('../webfonts/Mailpile-Interface.ttf') format('truetype'), url('../webfonts/Mailpile-Interface.svg#Mailpile-Interface') format('svg');
+  src: url('../webfonts/Mailpile-Interface.eot?#iefix') format('embedded-opentype'), url('../webfonts/Mailpile-Interface.ttf') format('truetype'), url('../webfonts/Mailpile-Interface.woff') format('woff'), url('../webfonts/Mailpile-Interface.svg#Mailpile-Interface') format('svg');
   font-weight: normal;
   font-style: normal;
 }
-/* Use the following CSS code if you want to use data attributes for inserting your icons */
-[data-icon]:before {
+[class^="icon-"],
+[class*=" icon-"] {
   font-family: 'Mailpile-Interface';
-  content: attr(data-icon);
   speak: none;
+  font-style: normal;
   font-weight: normal;
   font-variant: normal;
   text-transform: none;
   line-height: 1;
+  /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-/* Manually Created Duplications & Weird Cases */
+.icon-zip:before {
+  content: "\e600";
+}
+.icon-video:before {
+  content: "\e601";
+}
+.icon-verified:before {
+  content: "\e602";
+}
+.icon-user:before {
+  content: "\e603";
+}
+.icon-unverified:before {
+  content: "\e604";
+}
+.icon-unknown:before {
+  content: "\e605";
+}
+.icon-unencrypted:before {
+  content: "\e606";
+}
+.icon-trash:before {
+  content: "\e607";
+}
+.icon-themes:before {
+  content: "\e608";
+}
+.icon-tag:before {
+  content: "\e609";
+}
+.icon-spreadsheet:before {
+  content: "\e60a";
+}
+.icon-speed:before {
+  content: "\e60b";
+}
+.icon-spam:before {
+  content: "\e60c";
+}
+.icon-settings:before {
+  content: "\e60d";
+}
+.icon-sent:before {
+  content: "\e60e";
+}
+.icon-search:before {
+  content: "\e60f";
+}
+.icon-rss:before {
+  content: "\e610";
+}
+.icon-reply:before {
+  content: "\e611";
+}
+.icon-reply-all:before {
+  content: "\e612";
+}
+.icon-privacy:before {
+  content: "\e613";
+}
+.icon-photos:before {
+  content: "\e614";
+}
+.icon-outbox:before {
+  content: "\e615";
+}
+.icon-notifications:before {
+  content: "\e616";
+}
+.icon-music:before {
+  content: "\e617";
+}
+.icon-move:before {
+  content: "\e618";
+}
+.icon-logo:before {
+  content: "\e619";
+}
+.icon-list:before {
+  content: "\e61a";
+}
+.icon-links:before {
+  content: "\e61b";
+}
+.icon-later:before {
+  content: "\e61c";
+}
+.icon-key:before {
+  content: "\e61d";
+}
+.icon-inbox:before {
+  content: "\e61e";
+}
+.icon-image:before {
+  content: "\e61f";
+}
+.icon-hosting:before {
+  content: "\e620";
+}
+.icon-groups:before {
+  content: "\e621";
+}
+.icon-graph:before {
+  content: "\e622";
+}
+.icon-forward:before {
+  content: "\e623";
+}
+.icon-files:before {
+  content: "\e624";
+}
+.icon-eye:before {
+  content: "\e625";
+}
+.icon-expand:before {
+  content: "\e626";
+}
+.icon-encrypted:before {
+  content: "\e627";
+}
+.icon-donate:before {
+  content: "\e628";
+}
+.icon-conversation:before {
+  content: "\e629";
+}
+.icon-connections:before {
+  content: "\e62a";
+}
+.icon-compose:before {
+  content: "\e62b";
+}
+.icon-collapse:before {
+  content: "\e62c";
+}
+.icon-code:before {
+  content: "\e62d";
+}
+.icon-circle-x:before {
+  content: "\e62e";
+}
+.icon-circle-remove:before {
+  content: "\e62f";
+}
+.icon-circle-dotted:before {
+  content: "\e630";
+}
+.icon-circle-check:before {
+  content: "\e631";
+}
+.icon-circle-add:before {
+  content: "\e632";
+}
+.icon-checkmark:before {
+  content: "\e633";
+}
+.icon-calendar:before {
+  content: "\e634";
+}
+.icon-attachment:before {
+  content: "\e635";
+}
+.icon-arrow-up:before {
+  content: "\e636";
+}
+.icon-arrow-right:before {
+  content: "\e637";
+}
+.icon-arrow-left:before {
+  content: "\e638";
+}
+.icon-arrow-down:before {
+  content: "\e639";
+}
+.icon-archive:before {
+  content: "\e63a";
+}
+.icon-ads:before {
+  content: "\e63b";
+}
+/* 
+   CUSTOM HACKS 
+   Manually Created Duplications & Weird Cases
+*/
 .icon-drafts {
   font-family: 'Mailpile-Interface';
   speak: none;
@@ -56,246 +241,7 @@
   -webkit-font-smoothing: antialiased;
 }
 .icon-drafts:before {
-  content: "\e024";
-}
-/* Use the following CSS code if you want to have a class per icon */
-/*
-Instead of a list of all class selectors,
-you can use the generic selector below, but it's slower:
-[class*="icon-"] {
-*/
-.icon-zip,
-.icon-video,
-.icon-verified,
-.icon-user,
-.icon-unverified,
-.icon-unknown,
-.icon-unencrypted,
-.icon-trash,
-.icon-themes,
-.icon-tag,
-.icon-spreadsheet,
-.icon-speed,
-.icon-spam,
-.icon-settings,
-.icon-sent,
-.icon-search,
-.icon-rss,
-.icon-reply,
-.icon-reply-all,
-.icon-privacy,
-.icon-photos,
-.icon-notifications,
-.icon-music,
-.icon-logo,
-.icon-links,
-.icon-later,
-.icon-key,
-.icon-image,
-.icon-hosting,
-.icon-groups,
-.icon-forward,
-.icon-files,
-.icon-encrypted,
-.icon-donate,
-.icon-connections,
-.icon-compose,
-.icon-code,
-.icon-circle-x,
-.icon-circle-remove,
-.icon-circle-check,
-.icon-circle-add,
-.icon-calendar,
-.icon-attachment,
-.icon-archive,
-.icon-ads,
-.icon-graph,
-.icon-inbox,
-.icon-list,
-.icon-expand,
-.icon-collapse,
-.icon-circle-dotted,
-.icon-arrow-up,
-.icon-arrow-right,
-.icon-arrow-left,
-.icon-arrow-down,
-.icon-conversation {
-  font-family: 'Mailpile-Interface';
-  speak: none;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-}
-.icon-zip:before {
-  content: "\e000";
-}
-.icon-video:before {
-  content: "\e001";
-}
-.icon-verified:before {
-  content: "\e002";
-}
-.icon-user:before {
-  content: "\e003";
-}
-.icon-unverified:before {
-  content: "\e004";
-}
-.icon-unknown:before {
-  content: "\e005";
-}
-.icon-unencrypted:before {
-  content: "\e006";
-}
-.icon-trash:before {
-  content: "\e007";
-}
-.icon-themes:before {
-  content: "\e008";
-}
-.icon-tag:before {
-  content: "\e009";
-}
-.icon-spreadsheet:before {
-  content: "\e00a";
-}
-.icon-speed:before {
-  content: "\e00b";
-}
-.icon-spam:before {
-  content: "\e00c";
-}
-.icon-settings:before {
-  content: "\e00d";
-}
-.icon-sent:before {
-  content: "\e00e";
-}
-.icon-search:before {
-  content: "\e00f";
-}
-.icon-rss:before {
-  content: "\e010";
-}
-.icon-reply:before {
-  content: "\e011";
-}
-.icon-reply-all:before {
-  content: "\e012";
-}
-.icon-privacy:before {
-  content: "\e013";
-}
-.icon-photos:before {
-  content: "\e014";
-}
-.icon-notifications:before {
-  content: "\e015";
-}
-.icon-music:before {
-  content: "\e016";
-}
-.icon-logo:before {
-  content: "\e018";
-}
-.icon-links:before {
-  content: "\e019";
-}
-.icon-later:before {
-  content: "\e01a";
-}
-.icon-key:before {
-  content: "\e01b";
-}
-.icon-image:before {
-  content: "\e01c";
-}
-.icon-hosting:before {
-  content: "\e01d";
-}
-.icon-groups:before {
-  content: "\e01e";
-}
-.icon-forward:before {
-  content: "\e01f";
-}
-.icon-files:before {
-  content: "\e020";
-}
-.icon-encrypted:before {
-  content: "\e021";
-}
-.icon-donate:before {
-  content: "\e022";
-}
-.icon-connections:before {
-  content: "\e023";
-}
-.icon-compose:before {
-  content: "\e024";
-}
-.icon-code:before {
-  content: "\e025";
-}
-.icon-circle-x:before {
-  content: "\e026";
-}
-.icon-circle-remove:before {
-  content: "\e027";
-}
-.icon-circle-check:before {
-  content: "\e028";
-}
-.icon-circle-add:before {
-  content: "\e029";
-}
-.icon-calendar:before {
-  content: "\e02a";
-}
-.icon-attachment:before {
-  content: "\e02b";
-}
-.icon-archive:before {
-  content: "\e02c";
-}
-.icon-ads:before {
-  content: "\e02d";
-}
-.icon-graph:before {
-  content: "\e017";
-}
-.icon-inbox:before {
-  content: "\e02e";
-}
-.icon-list:before {
-  content: "\e02f";
-}
-.icon-expand:before {
-  content: "\e030";
-}
-.icon-collapse:before {
-  content: "\e031";
-}
-.icon-circle-dotted:before {
-  content: "\e032";
-}
-.icon-arrow-up:before {
-  content: "\e033";
-}
-.icon-arrow-right:before {
-  content: "\e034";
-}
-.icon-arrow-left:before {
-  content: "\e035";
-}
-.icon-arrow-down:before {
-  content: "\e036";
-}
-.icon-conversation:before {
-  content: "\e037";
+  content: "\e62b";
 }
 /* Backgrounds */
 .background-gray {
