@@ -29,6 +29,7 @@ from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from lxml.html.clean import Cleaner
 from mailpile.mailboxes.imap import IMAPMailbox
 from mailpile.mailboxes.macmail import MacMaildir
@@ -135,7 +136,43 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
     if 'date' not in msg:
         msg['Date'] = email.utils.formatdate()
 
-    # FIXME: Sign, encrypt, ?
+    # Sign and encrypt
+    signatureopt = bool(int(tree['headers_lc'].get('do_sign', 0)))
+    encryptopt = bool(int(tree['headers_lc'].get('do_encrypt', 0)))
+    gnupg = GnuPG()
+    if signatureopt:
+        signingstring = re.sub("[\r]{1}[\n]{0}", "\r\n", msg.get_payload()[0].as_string())
+        # print ">>>%s<<<" % signingstring.replace("\r", "<CR>").replace("\n", "<LF>")
+
+        signature = gnupg.sign(signingstring, fromkey=sender, armor=True)
+        # TODO: Create attachment, attach signature.
+        if signature[0] == 0:
+            # sigblock = MIMEMultipart(_subtype="signed", protocol="application/pgp-signature")
+            # sigblock.attach(msg)
+            msg.set_type("multipart/signed")
+            msg.set_param("micalg", "pgp-sha1") # need to find this!
+            msg.set_param("protocol", "application/pgp-signature")
+            sigblock = MIMEText(str(signature[1]), _charset=None)
+            sigblock.set_type("application/pgp-signature")
+            sigblock.set_param("name", "signature.asc")
+            sigblock.add_header("Content-Description", "OpenPGP digital signature")
+            sigblock.add_header("Content-Disposition", "attachment; filename=\"signature.asc\"")
+            msg.attach(sigblock)
+        else:
+            # Raise stink about signing having failed.
+            pass
+        #print signature
+
+    #if encryptopt:
+    #    encrypt_to = tree['headers_lc'].get('encrypt_to')
+    #    newmsg = gnupg.encrypt(msg.as_string(), encrypt_to)
+    #    # TODO: Replace unencrypted message
+
+    # When a mail has been signed or encrypted, it should be saved as such.
+
+    del(msg["do_sign"])
+    del(msg["do_encrypt"])
+    del(msg["encrypt_to"])
 
     return (sender, set(rcpts), msg)
 
