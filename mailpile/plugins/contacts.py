@@ -366,11 +366,9 @@ class AddressSearch(VCardCommand):
                 info = addresses.get(email_vcl.value) or {}
                 info.update(AddressInfo(email_vcl.value, fn.value, vcard=vcard))
                 addresses[email_vcl.value] = info
-
-                rank = 10.0 + 25 * len(keys) + 5 * len(photos)
                 for term in terms:
-                    rank += self._boost_rank(term, fn.value, email_vcl.value)
-                info['rank'] += int(rank)
+                    info['rank'] += self._boost_rank(term, fn.value,
+                                                     email_vcl.value)
 
         return addresses.values()
 

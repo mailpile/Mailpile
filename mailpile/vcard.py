@@ -681,6 +681,8 @@ def AddressInfo(addr, fn, vcard=None, rank=0, proto='smtp', secure=False):
         if photos:
             info['photo'] = photos[0].value
 
+        info['rank'] += 10.0 + 25 * len(keys) + 5 * len(photos)
+
     return info
 
 
