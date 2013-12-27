@@ -24,16 +24,21 @@ _size_units = {
     't': 40,
     'g': 30,
     'm': 20,
-    'k': 10
+    'k': 10,
+    'b': 0
 }
 
-
-def _mk_logsize(size):
+_range_keywords = [
+    '..',
+    '-',
+    'to'
+]
+def _mk_logsize(size, default_unit = 0):
     unit = 0
     size = size.lower()
-    if size.endswith('b'):
-        size = size[:-1]
-    if size[-1] in _size_units:
+    if size[-1].isdigit(): # ends with a number
+        unit = default_unit
+    elif size[-1] in _size_units:
         unit = _size_units[size[-1]]
         size = size[:-1]
     try:
@@ -45,12 +50,21 @@ def _mk_logsize(size):
 def search(config, idx, term, hits):
     try:
         word = term.split(':', 1)[1].lower()
-        if '..' in term:
-            start, end = word.split('..')
+
+        for range_keyword in _range_keywords:
+            if range_keyword in term:
+                start, end = word.split(range_keyword)
+                break
         else:
             start = end = word
+        
+        # if no unit is setup in the start term, use the size from the end term 
+        end_unit_size = end.lower()[-1]
+        end_unit = 0
+        if end_unit_size in _size_units:
+            end_unit = _size_units[end_unit_size]
 
-        start = _mk_logsize(start)
+        start = _mk_logsize(start, end_unit)
         end = _mk_logsize(end)
         terms = ['%s:ln2sz' % sz for sz in range(start, end+1)]
 
