@@ -74,3 +74,4 @@ class NetworkGraph(Search):
 
 
 mailpile.plugins.register_commands(NetworkGraph)
+mailpile.plugins.register_display_mode("search", "graph", "mailpile.results_graph();", "Graph", url="#", icon="graph")
