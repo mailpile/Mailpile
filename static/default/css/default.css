@@ -6083,6 +6083,9 @@ div.content-normal {
 #sidebar a:active {
   color: #a31304;
 }
+#sidebar a.sidebar-tag {
+  position: relative;
+}
 #sidebar span.sidebar-icon {
   position: relative;
   top: -2px;
@@ -6105,7 +6108,6 @@ div.content-normal {
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
-  position: relative;
 }
 #sidebar span.sidebar-notification {
   float: right;
@@ -6113,7 +6115,8 @@ div.content-normal {
   font-size: 11px;
   line-height: 11px;
   color: #ffffff;
-  position: relative;
+  position: absolute;
+  right: 0px;
 }
 #sidevar .navigation-on a:hover span.sidebar-notification {
   color: #ffffff !important;
