@@ -244,7 +244,7 @@ class AddTag(TagCommand):
     """Create a new tag"""
     SYNOPSIS = (None, 'tag/add', 'tag/add', '<tag>')
     ORDER = ('Tagging', 0)
-    SPLIT_ARG = False
+    SPLIT_ARG = 10000
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {
             'name': 'tag name',
