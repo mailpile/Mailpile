@@ -3,7 +3,7 @@ from gettext import gettext as _
 import mailpile.plugins
 from mailpile.commands import Command, Action
 from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
-from mailpile.vcard import SimpleVCard, VCardLine
+from mailpile.vcard import SimpleVCard, VCardLine, AddressInfo
 from mailpile.util import *
 
 
@@ -362,37 +362,15 @@ class AddressSearch(VCardCommand):
         addresses = {}
         for vcard in cfg.vcards.find_vcards(terms, kinds='individual'):
             fn = vcard.get('fn')
-            keys = []
-            for k in vcard.get_all('KEY'):
-                val = k.value.split("data:")[1]
-                mime, fp = val.split(",")
-                keys.append({'fingerprint': fp, 'type': 'openpgp',
-                             'mime': mime})
-
-            photos = vcard.get_all('photo')
             for email_vcl in vcard.get_all('email'):
-                info = addresses.get(email_vcl.value)
-                if not info:
-                    info = {
-                        'rank': 0,
-                        'fn': fn.value,
-                        'protocol': 'smtp',
-                        'address': email_vcl.value,
-                        'secure': False
-                    }
+                info = addresses.get(email_vcl.value) or {}
+                info.update(AddressInfo(email_vcl.value, fn.value, vcard=vcard))
                 addresses[email_vcl.value] = info
 
                 rank = 10.0 + 25 * len(keys) + 5 * len(photos)
                 for term in terms:
                     rank += self._boost_rank(term, fn.value, email_vcl.value)
                 info['rank'] += int(rank)
-
-                if photos and 'photos' not in info:
-                    info['photo'] = photos[0].value
-
-                if keys and 'keys' not in info:
-                    info['keys'] = [k for k in keys[:1]]
-                    info['secure'] = True
 
         return addresses.values()
 
@@ -446,13 +424,7 @@ class AddressSearch(VCardCommand):
             elif email.lower() in existing:
                 existing[email.lower()]['rank'] += min(20, boost)
             else:
-                info = {
-                    'rank': boost,
-                    'fn': fn,
-                    'proto': 'smtp',
-                    'address': email,
-                    'secure': False
-                }
+                info = AddressInfo(email, fn)
                 existing[email.lower()] = info
                 addresses.append(info)
 

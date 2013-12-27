@@ -5,13 +5,15 @@
   <td class="draggable"></td>
   <td class="avatar">
     <a href="{% if metadata.urls.editing %}{{metadata.urls.editing}}{% else %}{{metadata.urls.thread}}{% endif %}">
-      <img src="{{ show_avatar(url_protocol, http_host, metadata.from.email, 48) }}">
+      {% if metadata.from.photo %}<img src="{{metadata.from.photo}}">
+      {% else %}<img src="/static/img/avatar-default.png">
+      {% endif %}
     </a>
   </td>
-  <td class="from" title='{{metadata.from.name|e}} &lt;{{metadata.from.email|e}}&gt;
-{% for tmid in thread %}{% set f = metadata[tmid].from %}{{f.name|e}} &lt;{{f.email|e}}&gt;
+  <td class="from" title='{{metadata.from.fn|e}} &lt;{{metadata.from.address|e}}&gt;
+{% for tmid in thread %}{% set f = metadata[tmid].from %}{{f.fn|e}} &lt;{{f.address|e}}&gt;
 {% endfor %}'>
-    <a class="item-from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{metadata.urls.thread}}{% endif %}">{{metadata.from.name|e}}</a>
+    <a class="item-from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{metadata.urls.thread}}{% endif %}">{{metadata.from.fn|e}}</a>
     {% if thread|length > 1 %}<span class="conversation-count">{{thread|length}}</span>{% endif %}
   </td>
   <td class="subject">

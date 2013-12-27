@@ -17,7 +17,7 @@
         <h3>{{metadata.subject|e}}</h3> 
         <div class="message-datetime">{{metadata.timestamp|friendly_datetime}} at {{metadata.timestamp|friendly_time}}</div>
         <ul>
-          <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{metadata.from.email|e}}/"><img src="{{show_avatar(url_protocol, http_host, metadata.from.email, 48)}}">{{metadata.from.name|e}}</a></li>
+          <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{metadata.from.address|e}}/"><img src="{% if metadata.from.photo %}{{metadata.from.photo}}{% else %}/static/img/avatar-default.png{% endif %}">{{metadata.from.fn|e}}</a></li>
           <!-- FIXME: Here below, we need a django filter to extract the e-mail
                       addresses and iterate through multiple values in a single
                       header. We could also use metadata.to_eids, but that does

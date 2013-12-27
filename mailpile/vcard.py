@@ -659,6 +659,31 @@ class SimpleVCard(object):
             raise ValueError('Save to what file?')
 
 
+def AddressInfo(addr, fn, vcard=None, rank=0, proto='smtp', secure=False):
+    info = {
+        'fn': fn,
+        'address': addr,
+        'rank': rank,
+        'secure': secure,
+        'protocol': proto
+    }
+    if vcard:
+        keys = []
+        for k in vcard.get_all('KEY'):
+            val = k.value.split("data:")[1]
+            mime, fp = val.split(",")
+            keys.append({'fingerprint': fp, 'type': 'openpgp', 'mime': mime})
+        if keys:
+            info['keys'] = [k for k in keys[:1]]
+            info['secure'] = True
+
+        photos = vcard.get_all('photo')
+        if photos:
+            info['photo'] = photos[0].value
+
+    return info
+
+
 class VCardStore(dict):
     """
     This is a disk-backed in-memory collection of VCards.

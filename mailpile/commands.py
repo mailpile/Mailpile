@@ -18,6 +18,7 @@ from mailpile.mailutils import Email, NoFromAddressError, PrepareMail, SendMail
 from mailpile.postinglist import GlobalPostingList
 from mailpile.search import MailIndex
 from mailpile.util import *
+from mailpile.vcard import AddressInfo
 
 
 class Command:
@@ -332,13 +333,11 @@ class SearchResults(dict):
         msg_date = datetime.datetime.fromtimestamp(msg_ts)
         um = mailpile.urlmap.UrlMap(self.session)
         fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
+        fvcard = self.session.config.vcards.get_vcard(fe)
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
-            'from': {
-                'name': fn,
-                'email': fe,
-            },
+            'from': AddressInfo(fe, fn, vcard=fvcard),
             'urls': {
                 'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
             },
@@ -391,11 +390,8 @@ class SearchResults(dict):
 
     def _person(self, cid):
         e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
-        return {
-            'name': n,
-            'email': e,
-            # FIXME: Augment with data from the address book
-        }
+        vcard = self.session.config.vcards.get_vcard(e)
+        return AddressInfo(e, n, vcard=vcard)
 
     def _msg_tags(self, msg_info):
         tids = [t for t in msg_info[MailIndex.MSG_TAGS].split(',') if t]
