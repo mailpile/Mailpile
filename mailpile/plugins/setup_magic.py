@@ -152,12 +152,14 @@ class Setup(Command):
             pass
 
         if ('autotag_sb' in session.config.sys.plugins and
-                len(session.config.prefs.autotag_sb) == 0):
-            session.config.prefs.autotag_sb.append({
+                len(session.config.prefs.autotag) == 0):
+            session.config.prefs.autotag.append({
                 'match_tag': 'spam',
                 'unsure_tag': 'maybespam',
+                'tagger': 'spambayes',
+                'trainer': 'spambayes'
             })
-            session.config.prefs.autotag_sb[0].exclude_tags[0] = 'ham'
+            session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
 
         session.config.save()
         return True
