@@ -552,7 +552,7 @@ class SearchResults(dict):
                                          46 - (clen + len(msg_tags)))
                 text.append((cfmt + ' %s%-22.22s ' + sfmt + '%7s'
                              ) % (count, tag_new and '*' or ' ',
-                                  m['from']['name'], m['subject'], msg_tags,
+                                  m['from']['fn'], m['subject'], msg_tags,
                                   elapsed_datetime(m['timestamp'])))
             count += 1
         if not count:
