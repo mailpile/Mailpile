@@ -109,7 +109,6 @@ $(document).ready(function() {
   setInterval(function() {
     getNewMessages();
   }, 300000);
-  
 
 
   /* Set View Size */

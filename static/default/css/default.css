@@ -4889,7 +4889,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   line-height: 14px;
   color: #4d4d4d;
 }
-.select2-result-label .icon-verified {
+.select2-result-label .icon-encrypted {
   color: #4b7945;
   margin-left: 8px;
 }
@@ -5056,7 +5056,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-search-choice .icon-user {
   margin-right: 8px;
 }
-.select2-search-choice .icon-verified {
+.select2-search-choice .icon-encrypted {
   color: #4b7945;
   margin-left: 8px;
 }
@@ -6105,6 +6105,7 @@ div.content-normal {
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
+  position: relative;
 }
 #sidebar span.sidebar-notification {
   float: right;
@@ -6112,6 +6113,7 @@ div.content-normal {
   font-size: 11px;
   line-height: 11px;
   color: #ffffff;
+  position: relative;
 }
 #sidevar .navigation-on a:hover span.sidebar-notification {
   color: #ffffff !important;
