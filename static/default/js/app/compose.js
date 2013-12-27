@@ -32,7 +32,7 @@ $(document).on('click', '#button-compose', function(e) {
 /* Compose Page */
 
 // Reset tabindex for To: field
-$('#qbox').attr('tabindex', '-1');
+$('#search-query').attr('tabindex', '-1');
 
 
 var composeContactSelected = function(contact) {

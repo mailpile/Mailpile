@@ -1,6 +1,6 @@
 MailPile.prototype.search = function(q) {
 	var that = this;
-	$("#qbox").val(q);
+	$("#search-query").val(q);
 	this.json_get("search", {"q": q}, function(data) {
 		if ($("#results").length == 0) {
 			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');

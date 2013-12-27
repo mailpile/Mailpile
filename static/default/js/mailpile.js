@@ -67,7 +67,7 @@ MailPile.prototype.keybindings_loadfromserver = function() {
 
 
 var keybindings = [
-	["/", 		"normal",	function() { $("#qbox").focus(); return false; }],
+	["/", 		"normal",	function() { $("#search-query").focus(); return false; }],
 	["C", 		"normal",	function() { mailpile.go("/_/compose/"); }],
 	["g i", 	"normal",	function() { mailpile.go("/Inbox/"); }],
 	["g c", 	"normal",	function() { mailpile.go("/_/contact/list/"); }],
