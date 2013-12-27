@@ -35,6 +35,7 @@ if ($('#form-compose').length) {
   // Reset tabindex for To: field
   $('#qbox').attr('tabindex', '');
 
+console.log('here we go');
 
   var composeContactSelected = function(contact) {
     if (contact.object.secure) {
