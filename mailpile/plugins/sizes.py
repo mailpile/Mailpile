@@ -30,14 +30,18 @@ _size_units = {
 
 _range_keywords = [
     '..',
-    '-',
-    'to'
+    '-'
 ]
-def _mk_logsize(size, default_unit = 0):
+def _mk_logsize(size, default_unit=0):
+    if not size:
+        return 0
     unit = 0
     size = size.lower()
-    if size[-1].isdigit(): # ends with a number
+    if size[-1].isdigit():  # ends with a number
         unit = default_unit
+    elif len(size) >= 2 and size[-2] in _size_units and size[-1] == 'b':
+        unit = _size_units[size[-2]]
+        size = size[:-2]
     elif size[-1] in _size_units:
         unit = _size_units[size[-1]]
         size = size[:-1]
@@ -57,8 +61,8 @@ def search(config, idx, term, hits):
                 break
         else:
             start = end = word
-        
-        # if no unit is setup in the start term, use the size from the end term 
+
+        # if no unit is setup in the start term, use the unit from the end term
         end_unit_size = end.lower()[-1]
         end_unit = 0
         if end_unit_size in _size_units:
