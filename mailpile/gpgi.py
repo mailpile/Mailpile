@@ -526,7 +526,10 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         """
         retvals = self.run(["--list-secret-keys", "--fingerprint"], 
                            callbacks={"stdout": self.parse_keylist})
-        return retvals[1]["stdout"][0]
+        if retvals[1]["stdout"]:
+            return retvals[1]["stdout"][0]
+        else:
+            return []
 
     def encrypt(self, data, tokeys=[], armor=True):
         """
