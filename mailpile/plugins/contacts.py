@@ -237,7 +237,7 @@ class Contact(ContactVCard(VCard)):
                        ["in:Sent", "to:%s" % (email["email"])]).as_dict()
             contact["sent_messages"] += s["result"]["stats"]["total"]
             for mid in s["result"]["threads"]:
-                msg = s["data"]["metadata"][mid]
+                msg = s["result"]["data"]["metadata"][mid]
                 if msg["timestamp"] < contact["last_contact_to"]:
                     contact["last_contact_to"] = msg["timestamp"]
                     contact["last_contact_to_msg_url"] = msg["urls"]["thread"]
@@ -246,7 +246,7 @@ class Contact(ContactVCard(VCard)):
                        ["from:%s" % (email["email"])]).as_dict()
             contact["received_messages"] += s["result"]["stats"]["total"]
             for mid in s["result"]["threads"]:
-                msg = s["data"]["metadata"][mid]
+                msg = s["result"]["data"]["metadata"][mid]
                 if msg["timestamp"] < contact["last_contact_from"]:
                     contact["last_contact_from"] = msg["timestamp"]
                     contact["last_contact_from_msg_url"] = msg["urls"]["thread"]
