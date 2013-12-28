@@ -108,8 +108,8 @@ try:
     metadata_bre = view_bre['data']['metadata'][view_bre['threads'][0]]
     message_bre = view_bre['data']['message'][view_bre['threads'][0]]
     say('Checking encoding: %s' % metadata_bre['from'])
-    assert('=C3' not in metadata_bre['from']['name'])
-    assert('=C3' not in metadata_bre['from']['email'])
+    assert('=C3' not in metadata_bre['from']['fn'])
+    assert('=C3' not in metadata_bre['from']['address'])
     for key, val in message_bre['header_list']:
       if key.lower() not in ('from' ,'to', 'cc'):
         continue
