@@ -13,7 +13,8 @@
     <input type="hidden" name="mid" value="{{mid}}">
     <div class="compose-headers compose-to">
         <label>{{_("To")}}</label>
-        <input id="compose-to" name="to" type="text" tabindex="1" value="{{message.editing_strings.to|e}}">
+        <input id="compose-to" name="to" type="text" tabindex="1"
+               value="{{message.editing_strings.to|e}}">
         <div class="compose-cell" style="float: right">
           <a class="compose-show-field" href="#">{{_("Bcc")}}</a>
           <a class="compose-show-field" href="#">{{_("Cc")}}</a>
@@ -41,7 +42,13 @@
     </div>        
     <div class="compose-headers compose-subject">
       <div class="compose-cell">
-        <input id="compose-subject" name="subject" tabindex="3" type="text" placeholder="{{_("Subject")}}" value="{{message.editing_strings.subject}}">
+        <input id="compose-subject" name="subject" tabindex="3" type="text"
+        {% if message.editing_strings.subject == _("New message") %}
+               placeholder="{{message.editing_strings.subject}}"
+               value=""
+        {% else %}
+               value="{{message.editing_strings.subject}}"
+        {% endif %}>
       </div>
       <div class="compose-cell animated">
         <span class="message-privacy-state icon-unencrypted" title="This message is not encrypted"></span>
