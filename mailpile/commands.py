@@ -578,7 +578,7 @@ class Rescan(Command):
     SERIALIZE = 'Rescan'
 
     def command(self):
-        session, config = self.session, self.session.config
+        session, config, idx = self.session, self.session.config, self._idx()
 
         delay = play_nice_with_threads()
         if delay > 0:
@@ -595,7 +595,11 @@ class Rescan(Command):
         msg_idxs = self._choose_messages(self.args)
         if msg_idxs:
             session.ui.warning(_('FIXME: rescan messages: %s') % msg_idxs)
-            return False
+            for msg_idx_pos in msg_idxs:
+                e = Email(idx, msg_idx_pos)
+                session.ui.mark('Re-indexing %s' % e.msg_mid())
+                idx.index_email(self.session, e)
+            return {'messages': len(msg_idxs)}
         else:
             # FIXME: Need a lock here?
             if 'rescan' in config._running:

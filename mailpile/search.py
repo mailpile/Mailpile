@@ -12,7 +12,7 @@ import mailpile.util
 from mailpile.util import *
 from mailpile.mailutils import MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
-from mailpile.mailutils import ParseMessage, HeaderPrint
+from mailpile.mailutils import Email, ParseMessage, HeaderPrint
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
 
@@ -381,7 +381,8 @@ class MailIndex:
 
             # Message new or modified, let's parse it.
             msg_fd = mbox.get_file(i)
-            msg = ParseMessage(msg_fd, pgpmime=False)
+            msg = ParseMessage(msg_fd,
+                               pgpmime=session.config.prefs.index_encrypted)
             msg_size = msg_fd.tell()
             msg_id = self.get_msg_id(msg, msg_ptr)
             if msg_id in self.MSGIDS:
@@ -665,11 +666,15 @@ class MailIndex:
             if textpart:
                 # FIXME: Does this lowercase non-ASCII characters correctly?
                 # FIXME: What about encrypted content?
-                keywords.extend(re.findall(WORD_REGEXP, textpart.lower()))
                 # FIXME: Do this better.
                 if ('-----BEGIN PGP' in textpart and
                         '-----END PGP' in textpart):
                     keywords.append('pgp:has')
+                    if '-----BEGIN PGP ENCRYPTED' in textpart:
+                        keywords.append('pgp-encrypted-text:has')
+                    else:
+                        keywords.append('pgp-signed-text:has')
+                keywords.extend(re.findall(WORD_REGEXP, textpart.lower()))
                 for extract in plugins.get_text_kw_extractors():
                     keywords.extend(extract(self, msg, ctype,
                                             lambda: textpart))
@@ -680,6 +685,19 @@ class MailIndex:
             for extract in plugins.get_data_kw_extractors():
                 keywords.extend(extract(self, msg, ctype, att, part,
                                         lambda: _loader(part)))
+
+        if (session.config.prefs.index_encrypted and
+                'pgp-encrypted-text:has' in keywords):
+            e = Email(None, -1)
+            e.msg_parsed = msg
+            e.msg_info = ['' for i in range(0, 11)]
+            tree = e.get_message_tree(want=['text_parts'])
+            for text in [t['data'] for t in tree['text_parts']]:
+                print 'OOO, INLINE PGP, PARSING, WOOT'
+                keywords.extend(re.findall(WORD_REGEXP, text.lower()))
+                for extract in plugins.get_text_kw_extractors():
+                    keywords.extend(extract(self, msg, 'text/plain',
+                                            lambda: text))
 
         keywords.append('%s:id' % msg_id)
         keywords.extend(re.findall(WORD_REGEXP,
