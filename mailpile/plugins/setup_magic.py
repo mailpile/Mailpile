@@ -93,6 +93,7 @@ class Setup(Command):
         if 'New' in created:
             Filter(session,
                    arg=['new', '+Inbox', '+New', 'New Mail filter']).run()
+            session.ui.notify(_('Created default tags'))
 
         # Import all the basic plugins
         for plugin in PLUGINS:
@@ -103,6 +104,7 @@ class Setup(Command):
             import mailpile.plugins.autotag_sb
             if 'autotag_sb' not in session.config.sys.plugins:
                 session.config.sys.plugins.append('autotag_sb')
+                session.ui.notify(_('Enabling spambayes autotagger'))
         except ImportError:
             session.ui.warning(_('Please install spambayes '
                                  'for super awesome spam filtering'))
@@ -112,11 +114,23 @@ class Setup(Command):
         vcard_importers = session.config.prefs.vcard.importers
         if not vcard_importers.gravatar:
             vcard_importers.gravatar.append({'active': True})
+            session.ui.notify(_('Enabling gravatar image importer'))
 
         gpg_home = os.path.expanduser('~/.gnupg')
         if os.path.exists(gpg_home) and not vcard_importers.gpg:
             vcard_importers.gpg.append({'active': True,
                                         'gpg_home': gpg_home})
+            session.ui.notify(_('Importing contacts from GPG keyring'))
+
+        if ('autotag_sb' in session.config.sys.plugins and
+                len(session.config.prefs.autotag) == 0):
+            session.config.prefs.autotag.append({
+                'match_tag': 'spam',
+                'unsure_tag': 'maybespam',
+                'tagger': 'spambayes',
+                'trainer': 'spambayes'
+            })
+            session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
 
         # Assumption: If you already have secret keys, you want to 
         #             use the associated addresses for your e-mail.
@@ -147,19 +161,22 @@ class Setup(Command):
                             "name": uid["name"],
                         }
                         session.config.profiles.append(profile)
+                    if not session.config.prefs.gpg_recipient:
+                        session.config.prefs.gpg_recipient = key
+                        session.ui.notify(_('Encrypting config to %s') % key)
         else:
-            # FIXME: Alert the user to the fact that PGP was not discovered
-            pass
+            session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 
-        if ('autotag_sb' in session.config.sys.plugins and
-                len(session.config.prefs.autotag) == 0):
-            session.config.prefs.autotag.append({
-                'match_tag': 'spam',
-                'unsure_tag': 'maybespam',
-                'tagger': 'spambayes',
-                'trainer': 'spambayes'
-            })
-            session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
+        if (session.config.prefs.gpg_recipient
+               and not self._idx().INDEX
+               and not session.config.prefs.obfuscate_index):
+            randcrap = sha512b64(open('/dev/urandom').read(1024),
+                                 session.config.prefs.gpg_recipient,
+                                 '%s' % time.time())
+            session.config.prefs.obfuscate_index = randcrap
+            session.config.prefs.index_encrypted = True
+            session.ui.notify(_('Obfuscating search index and enabling '
+                                'indexing of encrypted e-mail. '))
 
         session.config.save()
         return True

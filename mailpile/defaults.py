@@ -44,6 +44,8 @@ CONFIG_RULES = {
         'default_order':   (_('Default sort order'), str,          'rev-date'),
         'gpg_recipient':   (_('Encrypt local data to ...'), str,           ''),
         'obfuscate_index': (_('Key to use to scramble the index'), str,    ''),
+        'index_encrypted': (_('Make encrypted content searchable'),
+                            bool, False),
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'),
