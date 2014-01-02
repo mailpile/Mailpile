@@ -421,7 +421,7 @@ You can build a docker image:
 
 and run it:
 
-    $ docker run -i -t mailpile
+    $ docker run -i -t -p 33411:33411 mailpile
 
 or enter the container's bash prompt directly:
 
