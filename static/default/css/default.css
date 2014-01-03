@@ -3864,14 +3864,14 @@ body {
 a,
 a:visited {
   font-size: 14px;
-  color: #a31304;
+  color: #4d4d4d;
   font-weight: bold;
   text-decoration: none;
   outline: 0;
 }
 a:hover,
 a:focus {
-  color: #710d03;
+  color: #a31304;
   text-decoration: none;
 }
 p a,
@@ -5768,6 +5768,21 @@ x:-o-prefocus,
   font-size: 18px;
 }
 /* Contact - View */
+#contact-view {
+  margin-bottom: 100px;
+}
+#contact-view .contact-avatar {
+  display: block;
+  margin-right: 20px;
+}
+#contact-view .contact-name {
+  margin-bottom: 5px;
+}
+#contact-view .contact-subname {
+  display: block;
+  float: left;
+  color: #b3b3b3;
+}
 /* FIXME: Belongs in the .css, here for testing */
 .tag_new_0 .navigation-attention-important {
   display: none;
@@ -6497,10 +6512,12 @@ a.compose-show-field {
 }
 /* Thread */
 #thread-messages .icon-encrypted,
+#thread-message .icon-encrypted,
 #thread-reply .icon-encrypted {
   color: #4b7945;
 }
 #thread-messages .icon-unencrypted,
+#thread-message .icon-unencrypted,
 #thread-reply .icon-unencrypted {
   color: #fbb03b;
 }
@@ -6530,10 +6547,11 @@ a.compose-show-field {
 }
 /* Thread Items */
 .thread-item {
-  padding: 10px 15px 15px 15px;
   border-bottom: 1px solid #b3b3b3;
 }
 .thread-item-from {
+  margin-top: 10px;
+  margin-left: 15px;
   display: inline-block;
 }
 .thread-item-from a.avatar {
@@ -6552,6 +6570,10 @@ a.compose-show-field {
 .thread-item-from span.icon {
   float: left;
   font-size: 14px;
+}
+.thread-item-details {
+  margin-top: 10px;
+  margin-right: 15px;
 }
 .thread-item-details span.datetime {
   display: block;
@@ -6578,9 +6600,21 @@ a.compose-show-field {
   color: #4d4d4d;
 }
 .thread-item-text {
+  margin-left: 15px;
+  margin-right: 15px;
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 18px;
+}
+#thread-message {
+  border-bottom: 1px solid #b3b3b3;
+}
+.thread-item-encrypted-data {
+  font-size: 11px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  color: #4b7945;
+  text-transform: uppercase;
 }
 /* Thread Reply */
 #thread-reply {
