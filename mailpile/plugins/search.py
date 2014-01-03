@@ -40,7 +40,10 @@ class Search(Command):
 
         def as_text(self):
             if self.result:
-                return self.result.as_text()
+                if isinstance(self.result, (list, set)):
+                    return '\n'.join([r.as_text() for r in self.result])
+                else:
+                    return self.result.as_text()
             else:
                 return 'No results'
 
