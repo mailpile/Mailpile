@@ -77,8 +77,13 @@ try:
     mp.rescan()
 
     # Save and load the index, just for kicks
-    mp._config.index.save()
-    mp._config.index.load()
+    messages = len(mp._config.index.INDEX)
+    assert(messages > 5)
+    mp._config.index.save(mp._session)
+    mp._session.ui.reset_marks()
+    mp._config.index.load(mp._session)
+    mp._session.ui.reset_marks()
+    assert(len(mp._config.index.INDEX) == messages)
 
     # Rescan AGAIN, so we can test for the presence of duplicates.
     mp.rescan()
