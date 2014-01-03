@@ -505,7 +505,7 @@ class SearchResults(dict):
         text = []
         count = self['stats']['start']
         expand_ids = [e.msg_idx_pos for e in (self.emails or [])]
-        addresses = self['data']['addresses']
+        addresses = self.get('data', {}).get('addresses', {})
         for mid in self['thread_ids']:
             if mid in self['data'].get('message', {}):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
@@ -523,7 +523,7 @@ class SearchResults(dict):
                                          46 - (clen + len(msg_tags)))
                 text.append((cfmt + ' %s%-22.22s ' + sfmt + '%7s'
                              ) % (count, tag_new and '*' or ' ',
-                                  addresses[m['from_aid']]['fn'],
+                                  addresses.get(m['from_aid'], {}).get('fn'),
                                   m['subject'], msg_tags,
                                   elapsed_datetime(m['timestamp'])))
             count += 1
