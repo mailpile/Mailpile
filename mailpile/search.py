@@ -1021,7 +1021,7 @@ class MailIndex:
 
             play_nice_with_threads()
             for i in range(0, len(o)):
-                    self.INDEX_SORT[order][o[i]] = i
+                self.INDEX_SORT[order][o[i]] = i
 
     def sort_results(self, session, results, how):
         if not results:
