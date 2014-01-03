@@ -9,6 +9,7 @@
     <li><a href=""><span class="icon-unencrypted"></span> Partially Secure</a></li>
   </ul>
 </div>
+
 <div class="bulk-actions clearfix">
   <div class="left">4 of 13 Messages</div>
   <ul class="horizontal right">
@@ -18,8 +19,8 @@
 	  <li><a class="bulk-action" href="#" data-action="trash" title="{{_("Delete Whole Thread")}}"><span class="icon-trash"></span></a></li>
   </ul>  
 </div>
-<div id="thread-messages">
 
+<div id="thread-messages">
   <div class="thread-item">
     <div class="clearfix">
       <div class="thread-item-from left">
@@ -29,14 +30,13 @@
       </div>
       <div class="thread-item-details right">
         <span class="datetime">Nov 8, 2012</span>
-        <a class="thread-show-message" href="#">Show <span class="icon-archive"></span></a>
+        <a class="thread-show-message" href="#">Show <span class="icon-eye"></span></a>
       </div>
     </div>
     <div class="thread-item-text">
       Yo buddy. I’m doing pretty good- just living it up here in Iceland, ya know mi pitchfork Austin Pinterest forage put a bird on it. Etsy small batch beard cred. Fingerstache YOLO swag, mixtape McSweeney's pirate ship book shop...
     </div>
   </div>
-
   <div class="thread-item">
     <div class="clearfix">
       <div class="thread-item-from left">
@@ -46,32 +46,56 @@
       </div>
       <div class="thread-item-details right">
         <span class="datetime">Nov 8, 2012</span>
-        <a class="thread-show-message" href="#">Show <span class="icon-archive"></span></a>
+        <a class="thread-show-message" href="#">Show <span class="icon-eye"></span></a>
       </div>
     </div>
     <div class="thread-item-text">
       Yo buddy. I’m doing pretty good- just living it up here in Iceland, ya know mi pitchfork Austin Pinterest forage put a bird on it. Etsy small batch beard cred. Fingerstache YOLO swag, mixtape McSweeney's pirate ship book shop...
     </div>
+  </div>  
+</div>
+
+<div id="thread-message">
+  <div class="clearfix">
+    <div class="thread-item-from left">
+      <a href="" class="avatar"><img src="/static/img/avatar-default.png"></a>
+      <a href="" class="name">Johnny B. Goode</a>
+      <span class="icon icon-unencrypted"></span>
+    </div>
+    <div class="thread-item-details right">
+      <span class="datetime">Nov 8, 2012</span>
+    </div>
   </div>
 
-  <div id="thread-message-actions" class="bulk-actions clearfix">
-    <ul class="horizontal">
-      <li><a href="#"><span class="icon-checkmark"></span> To Do</a></li>
-      <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
-      <li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
-        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
-          <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Move to Inbox</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Move to Trash</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Remove from Thread</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
-        </ul>
-      </li>
-      <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
-    </ul>
+  <div class="thread-item-text">
+    <!-- Non Encrypted Text -->
+    <p>Hey, buddy  How’s it going over there in Ice-o-land? Are you ever planning on coming back to the USA? I hope so as I am missing ya quite fierce amigo. Sustainable church-key Schlitz Godard. Flannel ennui master cleanse +1 Pinterest. Farm-to-table Portland +1, Echo Park fingerstache ennui tousled photo booth single-origin coffee hella 8-bit. Odd Future next level hoodie keffiyeh, art party meh stumptown. Organic jean shorts street art, semiotics polaroid Wes Anderson forage bicycle rights. Lo-fi fashion axe kitsch, selfies pitchfork PBR direct trade Banksy kale chips blog asymmetrical twee actually blue bottle. Blue bottle yr selfies tousled, tofu mixtape helvetica authentic typewriter wolf YOLO gastropub sartorial thundercats narwhal.</p>
+
+    <!-- Encrypted Text -->
+    <div class="thread-item-encrypted-data"><span class="icon-encrypted"></span> Encrypted</div>
+    <p>Pop-up Cosby sweater Marfa, put a bird on it sriracha asymmetrical Truffaut. Vice keffiyeh intelligentsia Odd Future, wolf PBR occupy 90's vinyl banh mi pitchfork Austin Pinterest forage put a bird on it. Etsy small batch beard cred. Fingerstache YOLO swag, mixtape McSweeney's leggings single-origin coffee retro banh mi synth wayfarers yr ennui. High Life occupy hoodie tattooed. Lomo jean shorts cliche, intelligentsia disrupt organic four loko kitsch cred ethical sartorial 90's Vice. Street art bicycle rights cray photo booth 90's mlkshk, mustache!</p>
   </div>
   
 </div>
+
+<div id="thread-message-actions" class="bulk-actions clearfix">
+  <ul class="horizontal left">
+    <li><a href="#"><span class="icon-checkmark"></span> To Do</a></li>
+    <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
+      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Move to Inbox</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Move to Trash</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Remove from Thread</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
+      </ul>
+    </li>
+    <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
+  </ul>
+</div>
+
+<!--
 <div id="thread-reply" class="clearfix">
 
   <div class="clearfix">
@@ -130,28 +154,24 @@
   </div>
 
   <div id="thread-reply-details">
-    
     <div>
       To <a class="message-email-address" href="/contact/name@email.com/"><img src="/static/img/avatar-default.png">Ian Nelson</a>
          <input id="compose-to" name="to" type="text" tabindex="1" value="">
-
     </div>
-    
     <div>
       <input type="text" placeholder="{{_("New Subject")}}">
     </div>
-    
   </div>
 
   <div id="thread-reply-actions">
     <textarea id="reply-textarea" placeholder="{{_("Your reply...")}}"></textarea>
-
     <a class="left" href="#"><span class="icon-attachment"></span> Attach Something</a>
-  
     <button class="right" type="submit"><span class="icon-reply"></span> Reply</button>
   </div>
 
 </div>
+-->
+
 
 <script src="/static/js/libraries/bootstrap-dropdown.js"></script>
 <script>
