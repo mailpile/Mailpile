@@ -304,7 +304,8 @@ class SearchResults(dict):
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
-            'from_aid': list(self._msg_addresses(msg_info, no_to=True))[0],
+            'from_aid': (list(self._msg_addresses(msg_info, no_to=True))
+                         or [''])[0],
             'to_aids': self._msg_addresses(msg_info, no_from=True),
             'tag_tids': self._msg_tags(msg_info),
             'thread_mid': msg_info[MailIndex.MSG_CONV_MID],

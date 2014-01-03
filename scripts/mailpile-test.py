@@ -108,13 +108,14 @@ try:
 
     # Make sure we are decoding weird headers correctly
     search_bre = mp.search(*FROM_BRE).result
-    result_bre = search_bre['data']['metadata'][search_bre['threads'][0]]
+    result_bre = search_bre['data']['metadata'][search_bre['thread_ids'][0]]
     view_bre = mp.view('=%s' % result_bre['mid']).result
-    metadata_bre = view_bre['data']['metadata'][view_bre['threads'][0]]
-    message_bre = view_bre['data']['message'][view_bre['threads'][0]]
-    say('Checking encoding: %s' % metadata_bre['from'])
-    assert('=C3' not in metadata_bre['from']['fn'])
-    assert('=C3' not in metadata_bre['from']['address'])
+    metadata_bre = view_bre['data']['metadata'][view_bre['thread_ids'][0]]
+    message_bre = view_bre['data']['messages'][view_bre['thread_ids'][0]]
+    from_bre = search_bre['data']['addresses'][metadata_bre['from_aid']]
+    say('Checking encoding: %s' % from_bre)
+    assert('=C3' not in from_bre['fn'])
+    assert('=C3' not in from_bre['address'])
     for key, val in message_bre['header_list']:
       if key.lower() not in ('from' ,'to', 'cc'):
         continue
@@ -122,7 +123,7 @@ try:
       assert('utf' not in val)
 
     # Create a message...
-    new_mid = mp.message_compose().result['threads'][0]
+    new_mid = mp.message_compose().result['thread_ids'][0]
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
     assert(mp.search('tag:blank').result['stats']['count'] == 1)
     assert(mp.search('tag:sent').result['stats']['count'] == 0)
@@ -168,7 +169,6 @@ try:
     assert('thisisauniquestring' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
-    os.remove(mailpile_sent)
 
     say("Tests passed, woot!")
 except:
