@@ -1,24 +1,51 @@
-{% if mid in result.data.message %}{% set message = result.data.message[mid] %}{% else %}{% set message = None %}{% endif %}
-{% set metadata = result.data.metadata[mid] %}
-{% set thread = result.data.thread[metadata.thread_id] %}
-<tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_tids %} in_{{result.data.tag[tid].slug}}{% endfor %}" data-state="normal" data-mid="{{mid}}">
+{%    if mid in result.data.message
+%}{%    set message = result.data.message[mid]
+%}{%  else
+%}{%    set message = None
+%}{%  endif
+%}{%  set metadata = result.data.metadata[mid]
+%}{%  set thread = result.data.threads[metadata.thread_id]
+%}{%  set from = result.data.addresses[metadata.from_aid]
+%}{%  if metadata.urls.editing
+%}{%    set url = metadata.urls.editing
+%}{%  else
+%}{%    set url = metadata.urls.thread
+%}{%  endif
+%}{%  if from.photo
+%}{%    set photo = from.photo
+%}{%  else
+%}{%    set photo = '/static/img/avatar-default.png'
+%}{%  endif
+%}
+<tr id="pile-message-{{mid}}"
+    class="result{% for tid in metadata.tag_tids
+                      %} in_{{result.data.tags[tid].slug}}{%
+                    endfor %}"
+    data-state="normal" data-mid="{{mid}}">
   <td class="draggable"></td>
   <td class="avatar">
-    <a href="{% if metadata.urls.editing %}{{metadata.urls.editing}}{% else %}{{metadata.urls.thread}}{% endif %}">
-      {% if metadata.from.photo %}<img src="{{metadata.from.photo}}">
-      {% else %}<img src="/static/img/avatar-default.png">
-      {% endif %}
-    </a>
+    <a href="{{url}}"><img src="{{photo}}"></a>
   </td>
-  <td class="from" title='{{metadata.from.fn|e}} &lt;{{metadata.from.address|e}}&gt;
-{% for tmid in thread %}{% set f = metadata[tmid].from %}{{f.fn|e}} &lt;{{f.address|e}}&gt;
+  <td class="from" title='{{from.fn|e}} &lt;{{from.address|e}}&gt;
+{%   for tmid in thread
+%}{%
+        set f = result.data.addresses[metadata[tmid].from_aid]
+     %}{{f.fn|e}} &lt;{{f.address|e}}&gt;
 {% endfor %}'>
-    <a class="item-from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{metadata.urls.thread}}{% endif %}">{{metadata.from.fn|e}}</a>
+    <a class="item-from" href="{{url}}">{{from.fn|e}}</a>
     {% if thread|length > 1 %}<span class="conversation-count">{{thread|length}}</span>{% endif %}
   </td>
   <td class="subject">
-    {% if show_tags(result.search_terms, metadata.tag_ids) %}<span class="icon-tag"></span>{% for tid in metadata.tag_ids %}{% set tag = result.data.tag[tid] %}{% if tag.slug != "new" and not tag.searched %}<a class="pile-message-tag" href="/in/{{ tag.slug }}/">{{ tag.name }}</a>{% endif %}{% endfor %}{% endif %}
-    <a class="item-subject" href="{% if metadata.urls.editing %}{{metadata.urls.editing}}{% else %}{{metadata.urls.thread}}{% endif %}">{{metadata.subject|e}}</a>
+    {% if show_tags(result.search_terms, metadata.tag_ids)
+       %}<span class="icon-tag"></span>{%
+         for tid in metadata.tag_ids
+%}{%       set tag = result.data.tags[tid]
+%}{%       if tag.slug != "new" and not tag.searched
+           %}<a class="pile-message-tag" href="/in/{{tag.slug}}/">{{tag.name|e}}</a>{%
+           endif
+%}{%     endfor
+%}{%   endif %}
+    <a class="item-subject" href="{{url}}">{{metadata.subject|e}}</a>
     <span class="item-snippet">{{metadata.snippet|e}}</span>
   </td>
   <td class="date" valign="top">
