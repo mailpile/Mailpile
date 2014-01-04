@@ -61,21 +61,16 @@ class MailpileCommand(Extension):
 
     def _friendly_bytes(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing
-        return friendly_number(number, decimals=decimals,
-                                       base=1024, suffix='B')
+        return friendly_number(number, decimals=decimals, base=1024, suffix='B')
 
-    def _show_avatar(self, protocol, host, email, size=60):
+    def _show_avatar(self, contact):
 
-        if host == "localhost":
-            default = protocol + "://" + host + "/static/img/avatar-default.png"
-        else:
-            default = "mm"
+      if "photo" in contact:
+        photo = contact['photo']
+      else:
+        photo = '/static/img/avatar-default.png'
 
-        digest = md5_hex(email.lower())
-        gravatar_url = "https://www.gravatar.com/avatar/" + digest + "?"
-        gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
-
-        return gravatar_url
+      return photo
 
     def _navigation_on(self, search_tags, slug):
         if search_tags:

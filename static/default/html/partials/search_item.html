@@ -24,7 +24,7 @@
     data-state="normal" data-mid="{{mid}}">
   <td class="draggable"></td>
   <td class="avatar">
-    <a href="{{url}}"><img src="{{photo}}"></a>
+    <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
   </td>
   <td class="from" title='{{from.fn|e}} &lt;{{from.address|e}}&gt;
 {%   for tmid in thread

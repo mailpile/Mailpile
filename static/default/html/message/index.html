@@ -1,8 +1,8 @@
 {% extends "layouts/base.html" %}
 {% block content %}
-{%   if result
-%}{%   include("partials/sub_nav_message.html")
-%}
+{% if result %}
+
+
 <table class="pile-results" id="pile-results">
   <tbody>
 {%     for mid in result.thread_ids
@@ -10,27 +10,22 @@
 %}{%       set metadata = result.data.metadata[mid]
 %}{%       set message = result.data.messages[mid]
 %}{%       set from = result.data.addresses[metadata.from_aid]
-%}{%       if from.photo
-%}{%         set photo = from.photo
-%}{%       else
-%}{%         set photo = '/static/img/avatar-default.png'
-%}{%       endif
 %}{%       if not message.editing_string
 %}
     <tr>
       <td class="message-body" colspan="6">
       <div class="message-headers">
         <h3>{{metadata.subject|e}}</h3>
-        <div class="message-datetime"
-             >{{metadata.timestamp|friendly_datetime}} at
-              {{metadata.timestamp|friendly_time}}</div>
+        <div class="message-datetime">
+          {{metadata.timestamp|friendly_datetime}} at {{metadata.timestamp|friendly_time}}
+        </div>
         <ul>
-          <li><b>{{_("From")}}</b>
-              <a class="message-email-address"
-                 href="/contact/{{from.address|e}}/"
-                 ><img src="{{photo}}">{{from.fn|e}}</a></li>{#
-
-    FIXME: Here below, we need a django filter to extract the e-mail
+          <li>
+            <b>{{_("From")}}</b>
+            <a class="message-email-address" href="/contact/{{from.address|e}}/">
+            <img src="{{ show_avatar(from) }}">{{from.fn|e}}</a>
+          </li>
+{#         FIXME: Here below, we need a django filter to extract the e-mail
            addresses and iterate through multiple values in a single
            header. We could also use metadata.to_eids, but that does
            not differentiate between to/cc. Maybe we want an
@@ -40,15 +35,17 @@
 %}{%             for hdr, val in message.header_list
 %}{%               if hdr.lower() == header.lower()
 %}
-            <li><b>{{_(header)}}</b>
-                <a class="message-email-address" href="/contact/FIXME/">
-                  <img src="{{show_avatar(url_protocol, http_host, 'FIXME', 48)}}">
-                  {{val|e}}</a></li>
+            <li>
+              <b>{{_(header)}}</b>
+              <a class="message-email-address" href="/contact/FIXME/"><img src="{{ show_avatar(from) }}">{{val|e}}</a>
+            </li>
 {%                 endif
 %}{%             endfor
 %}{%           endfor %}{# for header ... #}
         </ul>
       </div>
+      
+      
       <div class="message-body">
 {%             for part in message.text_parts
 %}{%             if part.data == ""

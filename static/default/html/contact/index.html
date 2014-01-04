@@ -8,7 +8,7 @@
 {% if result.contact %}
 
   <div class="clearfix">
-    <img class="contact-avatar left" width="80" src="{% if result.contact.photo %}{{ result.contact.photo.0.photo}}{% elif result.contact.email %}{{ show_avatar(url_protocol, http_host, result.contact.email.0.email, 80) }}{% endif %}">
+    <img class="contact-avatar left" width="80" src="{{ show_avatar(result.contact.photo.0) }}">
     <h2  class="contact-name ">{{ result.contact.fn }}</h2>
     <h5 class="contact-subname">Hey, that's you :)</h5>
   </div>
