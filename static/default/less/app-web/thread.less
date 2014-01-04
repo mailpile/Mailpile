@@ -11,7 +11,8 @@
 /* Thread Title */	
 
   #thread-title {
-    padding: 10px 15px;
+    text-align: center;
+    padding: 10px 0;
     background: @grayLight;
     border-bottom: 1px solid @gray;
   }
@@ -21,6 +22,11 @@
     padding: 0px;
     font-size: 24px;
     font-weight: bold;
+  }
+
+  #thread-title ul {
+    display: inline-block;
+    margin: 0 auto;
   }
 
   #thread-title ul li {
@@ -41,19 +47,39 @@
 
 /* Thread Items */
 
-  .thread-item {
+  .thread-snippet {
     border-bottom: 1px solid @gray;
   }
 
+  .thread-snippet:hover {
+    background: @grayLight;
+    cursor: pointer;
+  }
+
+  .thread-snippet:hover .feedback-expand {
+    display: block;
+  }
+
+  .thread-line-subject {
+    
+  }
+
+  .thread-item-metadata {
+    width: 100%;
+    display: table;
+  }
+
   .thread-item-from {
-    margin-top: 10px;
-    margin-left: 15px;
-    display: inline-block;
+    min-width: 175px;
+    max-width: 200px;
+    display: table-cell;
+    padding-top: 15px;
+    padding-left: 15px;
   }
 
   .thread-item-from a.avatar {
     float: left;
-    margin-right: 5px;
+    margin-right: 7px;
   }
   
   .thread-item-from a.avatar img {
@@ -61,10 +87,13 @@
   }
   
   .thread-item-from a.name {
+    display: block;
+    margin-top: 0px;
+    margin-bottom: 5px;
     color: @grayDark;
     font-size: 18px;
     font-weight: bold;
-    line-height: 21px;
+    line-height: 18px;
   }
 
   .thread-item-from span.icon {
@@ -73,53 +102,52 @@
   }
 
   .thread-item-details {
-    margin-top: 10px;
-    margin-right: 15px;
+    width: 200px;
+    display: table-cell;
+    vertical-align: top;
+    text-align: right;    
+    padding-top: 15px;
+    padding-right: 15px;
   }
 
   .thread-item-details span.datetime {
     display: block;
+    margin-bottom: 5px;
     text-align: right;
     font-size: 14px;
     font-weight: bold;
     color: @gray;
-    line-height: 21px;
+    line-height: 14px;
   }
 
   .thread-item-details span.datetime.message {
     color: @grayDark;
   }
 
-  .thread-item-details a.thread-show-message {
-    display: block;
-    margin-top: 3px;
-    text-align: right;
+  .feedback-expand {
+    display: none;
     color: @gray;
-    font-size: 12px;
     font-family: Helvetica, Arial, sans-serif;
+    font-size: 11px;
     font-weight: normal;
-    line-height: 14px;    
+    line-height: 12px;
   }
   
-  .thread-item-details a.thread-show-message:hover {
-    color: @grayDark;
-  }
-
   .thread-item-text {
     margin-left:15px;
     margin-right: 15px;
+    margin-bottom: 10px;
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 18px;
   }
 
-
   #thread-message {
-  
     border-bottom: 1px solid @gray;
   }
 
-  .thread-item-encrypted-data {
+  .thread-item-data-encrypted {
+    margin-bottom: 10px;
     font-size: 11px;
     font-family: Helvetica, Arial, sans-serif;
     font-weight: bold;

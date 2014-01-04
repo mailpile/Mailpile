@@ -21,73 +21,79 @@
 </div>
 
 <div id="thread-messages">
-  <div class="thread-item">
-    <div class="clearfix">
-      <div class="thread-item-from left">
+
+  <div class="thread-snippet" data-mid="E3W">
+    <div class="thread-item-metadata clearfix">
+      <div class="thread-item-from">
         <a href="" class="avatar"><img src="/static/img/avatar-default.png"></a>
         <a href="" class="name">You</a>
         <span class="icon icon-encrypted"></span>
       </div>
-      <div class="thread-item-details right">
+      <div class="thread-item-details">
         <span class="datetime">Nov 8, 2012</span>
-        <a class="thread-show-message" href="#">Show <span class="icon-eye"></span></a>
+        <span class="feedback-expand">Expand Message</span>
       </div>
     </div>
     <div class="thread-item-text">
       Yo buddy. I’m doing pretty good- just living it up here in Iceland, ya know mi pitchfork Austin Pinterest forage put a bird on it. Etsy small batch beard cred. Fingerstache YOLO swag, mixtape McSweeney's pirate ship book shop...
     </div>
   </div>
-  <div class="thread-item">
-    <div class="clearfix">
-      <div class="thread-item-from left">
+
+  <div class="thread-line-subject"></div>
+
+  <div class="thread-snippet" data-mid="E34">
+    <div class="thread-item-metadata clearfix">
+      <div class="thread-item-from">
         <a href="" class="avatar"><img src="/static/img/avatar-default.png"></a>
         <a href="" class="name">Ian Nelson</a>
         <span class="icon icon-encrypted"></span>
       </div>
-      <div class="thread-item-details right">
+      <div class="thread-item-details">
         <span class="datetime">Nov 8, 2012</span>
-        <a class="thread-show-message" href="#">Show <span class="icon-eye"></span></a>
+        <span class="feedback-expand">Expand Message</span>
       </div>
     </div>
     <div class="thread-item-text">
       Yo buddy. I’m doing pretty good- just living it up here in Iceland, ya know mi pitchfork Austin Pinterest forage put a bird on it. Etsy small batch beard cred. Fingerstache YOLO swag, mixtape McSweeney's pirate ship book shop...
     </div>
-  </div>  
+  </div>
+
 </div>
 
 <div id="thread-message">
-  <div class="clearfix">
-    <div class="thread-item-from left">
+  <div class="thread-item-metadata clearfix">
+    <div class="thread-item-from">
       <a href="" class="avatar"><img src="/static/img/avatar-default.png"></a>
       <a href="" class="name">Johnny B. Goode</a>
       <span class="icon icon-unencrypted"></span>
     </div>
-    <div class="thread-item-details right">
+    <div class="thread-item-details">
       <span class="datetime">Nov 8, 2012</span>
     </div>
   </div>
-
+  <!-- Non Encrypted Text -->
   <div class="thread-item-text">
-    <!-- Non Encrypted Text -->
-    <p>Hey, buddy  How’s it going over there in Ice-o-land? Are you ever planning on coming back to the USA? I hope so as I am missing ya quite fierce amigo. Sustainable church-key Schlitz Godard. Flannel ennui master cleanse +1 Pinterest. Farm-to-table Portland +1, Echo Park fingerstache ennui tousled photo booth single-origin coffee hella 8-bit. Odd Future next level hoodie keffiyeh, art party meh stumptown. Organic jean shorts street art, semiotics polaroid Wes Anderson forage bicycle rights. Lo-fi fashion axe kitsch, selfies pitchfork PBR direct trade Banksy kale chips blog asymmetrical twee actually blue bottle. Blue bottle yr selfies tousled, tofu mixtape helvetica authentic typewriter wolf YOLO gastropub sartorial thundercats narwhal.</p>
-
-    <!-- Encrypted Text -->
-    <div class="thread-item-encrypted-data"><span class="icon-encrypted"></span> Encrypted</div>
+    Hey, buddy  How’s it going over there in Ice-o-land? Are you ever planning on coming back to the USA? I hope so as I am missing ya quite fierce amigo. Sustainable church-key Schlitz Godard. Flannel ennui master cleanse +1 Pinterest. Farm-to-table Portland +1, Echo Park fingerstache ennui tousled photo booth single-origin coffee hella 8-bit. Odd Future next level hoodie keffiyeh, art party meh stumptown. Organic jean shorts street art, semiotics polaroid Wes Anderson forage bicycle rights. Lo-fi fashion axe kitsch, selfies pitchfork PBR direct trade Banksy kale chips blog asymmetrical twee actually blue bottle. Blue bottle yr selfies tousled, tofu mixtape helvetica authentic typewriter wolf YOLO gastropub sartorial thundercats narwhal.
+  </div>
+  <!-- Encrypted Text -->
+  <div class="thread-item-text">
+    <div class="thread-item-data-encrypted">
+      <span class="icon-encrypted"></span> Encrypted
+    </div>
     <p>Pop-up Cosby sweater Marfa, put a bird on it sriracha asymmetrical Truffaut. Vice keffiyeh intelligentsia Odd Future, wolf PBR occupy 90's vinyl banh mi pitchfork Austin Pinterest forage put a bird on it. Etsy small batch beard cred. Fingerstache YOLO swag, mixtape McSweeney's leggings single-origin coffee retro banh mi synth wayfarers yr ennui. High Life occupy hoodie tattooed. Lomo jean shorts cliche, intelligentsia disrupt organic four loko kitsch cred ethical sartorial 90's Vice. Street art bicycle rights cray photo booth 90's mlkshk, mustache!</p>
   </div>
-  
 </div>
 
-<div id="thread-message-actions" class="bulk-actions clearfix">
+<div id="thread-message-actions" class="bulk-actions clearfix" data-mid="E36">
   <ul class="horizontal left">
     <li><a href="#"><span class="icon-checkmark"></span> To Do</a></li>
     <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Move to Inbox</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Move to Trash</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Remove from Thread</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> Move to Inbox</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-trash"></span> Move to Trash</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> Remove from Thread</a></li>
         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
       </ul>
     </li>
@@ -176,16 +182,23 @@
 <script src="/static/js/libraries/bootstrap-dropdown.js"></script>
 <script>
 
+/* Expand Snippet */
+$(document).on('click', '.thread-snippet', function() {
+  
+  alert('FIXME: Will load full message with mid: ' + $(this).data('mid'));
+  
+});
+
+
 /* Might Move to Global Location / Abstraction */
 $(document).on('click', '.dropdown-toggle', function() {
   console.log('toggle da bizzle');
   $(this).find('.icon-arrow-right').removeClass('icon-arrow-right').addClass('icon-arrow-down');
 });
 
+
 /* Pick Send Date */
 $(document).on('click', '.pick-send-datetime', function(e) {
-
-  console.log($(this).data('datetime'));
 
   if ($(this).data('datetime') == 'immediately') {
     $('#reply-datetime-display').html($(this).html());
