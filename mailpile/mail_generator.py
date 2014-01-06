@@ -15,7 +15,7 @@ from cStringIO import StringIO
 from email.header import Header
 
 UNDERSCORE = '_'
-NL = '\r\n'
+NL = '\n'
 
 fcre = re.compile(r'^From ', re.MULTILINE)
 
@@ -39,7 +39,7 @@ class Generator:
     # Public interface
     #
 
-    def __init__(self, outfp, mangle_from_=True, maxheaderlen=78):
+    def __init__(self, outfp, mangle_from_=True, maxheaderlen=78, linesep=None):
         """Create the generator for message flattening.
 
         outfp is the output file-like object for writing the message to.  It
@@ -59,12 +59,13 @@ class Generator:
         self._fp = outfp
         self._mangle_from_ = mangle_from_
         self._maxheaderlen = maxheaderlen
+        self._NL = linesep or NL
 
     def write(self, s):
         # Just delegate to the file object
         self._fp.write(s)
 
-    def flatten(self, msg, unixfrom=False):
+    def flatten(self, msg, unixfrom=False, linesep=None):
         """Print the message object tree rooted at msg to the output file
         specified when the Generator instance was created.
 
@@ -73,13 +74,18 @@ class Generator:
         has no From_ delimiter, a `standard' one is crafted.  By default, this
         is False to inhibit the printing of any From_ delimiter.
 
+        linesep specifies the characters used to indicate a new line in the
+        output. The default value is LF (not the standard CRLF).
+
         Note that for subobjects, no From_ line is printed.
         """
+        if linesep:
+            self._NL = linesep
         if unixfrom:
             ufrom = msg.get_unixfrom()
             if not ufrom:
                 ufrom = 'From nobody ' + time.ctime(time.time())
-            print >> self._fp, ufrom, NL,
+            print >> self._fp, ufrom, self._NL,
         self._write(msg)
 
     def clone(self, fp):
@@ -142,10 +148,11 @@ class Generator:
             print >> self._fp, '%s:' % h,
             if self._maxheaderlen == 0:
                 # Explicit no-wrapping
-                print >> self._fp, v, NL,
+                print >> self._fp, v, self._NL,
             elif isinstance(v, Header):
                 # Header instances know what to do
-                print >> self._fp, v.encode().replace('\n', NL), NL,
+                hdr = v.encode().replace('\n', self._NL)
+                print >> self._fp, hdr, self._NL,
             elif _is8bitstring(v):
                 # If we have raw 8bit data in a byte string, we have no idea
                 # what the encoding is.  There is no safe way to split this
@@ -153,7 +160,7 @@ class Generator:
                 # ascii split, but if it's multibyte then we could break the
                 # string.  There's no way to know so the least harm seems to
                 # be to not split the string and risk it being too long.
-                print >> self._fp, v, NL,
+                print >> self._fp, v, self._NL,
             else:
                 # Header's got lots of smarts, so use it.  Note that this is
                 # fundamentally broken though because we lose idempotency when
@@ -161,10 +168,10 @@ class Generator:
                 # continued with spaces.  This was reversedly broken before we
                 # fixed bug 1974.  Either way, we lose.
                 hdr = Header(v, maxlinelen=self._maxheaderlen, header_name=h
-                             ).encode()
-                print >> self._fp, hdr.replace('\n', NL), NL,
+                             ).encode().replace('\n', self._NL)
+                print >> self._fp, hdr, self._NL,
         # A blank line always separates headers from body
-        print >> self._fp, NL,
+        print >> self._fp, self._NL,
 
     #
     # Handlers for writing types and subtypes
@@ -201,14 +208,14 @@ class Generator:
         for part in subparts:
             s = StringIO()
             g = self.clone(s)
-            g.flatten(part, unixfrom=False)
+            g.flatten(part, unixfrom=False, linesep=self._NL)
             msgtexts.append(s.getvalue())
         # BAW: What about boundaries that are wrapped in double-quotes?
         boundary = msg.get_boundary()
         if not boundary:
             # Create a boundary that doesn't appear in any of the
             # message texts.
-            alltext = NL.join(msgtexts)
+            alltext = self._NL.join(msgtexts)
             boundary = _make_boundary(alltext)
             msg.set_boundary(boundary)
         # If there's a preamble, write it out, with a trailing CRLF
@@ -217,9 +224,9 @@ class Generator:
                 preamble = fcre.sub('>From ', msg.preamble)
             else:
                 preamble = msg.preamble
-            print >> self._fp, preamble, NL,
+            print >> self._fp, preamble, self._NL,
         # dash-boundary transport-padding CRLF
-        print >> self._fp, '--' + boundary, NL,
+        print >> self._fp, '--' + boundary, self._NL,
         # body-part
         if msgtexts:
             self._fp.write(msgtexts.pop(0))
@@ -228,13 +235,13 @@ class Generator:
         # --> CRLF body-part
         for body_part in msgtexts:
             # delimiter transport-padding CRLF
-            print >> self._fp, '\n--' + boundary, NL,
+            print >> self._fp, self._NL + '--' + boundary, self._NL,
             # body-part
             self._fp.write(body_part)
         # close-delimiter transport-padding
-        self._fp.write('\n--' + boundary + '--')
+        self._fp.write(self._NL + '--' + boundary + '--')
         if msg.epilogue is not None:
-            print >> self._fp, NL,
+            print >> self._fp, self._NL,
             if self._mangle_from_:
                 epilogue = fcre.sub('>From ', msg.epilogue)
             else:
@@ -260,18 +267,18 @@ class Generator:
         for part in msg.get_payload():
             s = StringIO()
             g = self.clone(s)
-            g.flatten(part, unixfrom=False)
+            g.flatten(part, unixfrom=False, linesep=self._NL)
             text = s.getvalue()
-            lines = text.split('\n')
+            lines = text.split(self._NL)
             # Strip off the unnecessary trailing empty line
             if lines and lines[-1] == '':
-                blocks.append(NL.join(lines[:-1]))
+                blocks.append(self._NL.join(lines[:-1]))
             else:
                 blocks.append(text)
         # Now join all the blocks with an empty line.  This has the lovely
         # effect of separating each block with an empty line, but not adding
         # an extra one after the last one.
-        self._fp.write(NL.join(blocks))
+        self._fp.write(self._NL.join(blocks))
 
     def _handle_message(self, msg):
         s = StringIO()
@@ -287,7 +294,7 @@ class Generator:
         # in that case we just emit the string body.
         payload = msg.get_payload()
         if isinstance(payload, list):
-            g.flatten(msg.get_payload(0), unixfrom=False)
+            g.flatten(msg.get_payload(0), unixfrom=False, linesep=self._NL)
             payload = s.getvalue()
         self._fp.write(payload)
 
@@ -301,7 +308,8 @@ class DecodedGenerator(Generator):
     Like the Generator base class, except that non-text parts are substituted
     with a format string representing the part.
     """
-    def __init__(self, outfp, mangle_from_=True, maxheaderlen=78, fmt=None):
+    def __init__(self, outfp, mangle_from_=True, maxheaderlen=78, fmt=None,
+                              linesep=None):
         """Like Generator.__init__() except that an additional optional
         argument is allowed.
 
@@ -323,7 +331,7 @@ class DecodedGenerator(Generator):
 
         [Non-text (%(type)s) part of message omitted, filename %(filename)s]
         """
-        Generator.__init__(self, outfp, mangle_from_, maxheaderlen)
+        Generator.__init__(self, outfp, mangle_from_, maxheaderlen, linesep)
         if fmt is None:
             self._fmt = _FMT
         else:
@@ -333,7 +341,7 @@ class DecodedGenerator(Generator):
         for part in msg.walk():
             maintype = part.get_content_maintype()
             if maintype == 'text':
-                print >> self, part.get_payload(decode=True), NL,
+                print >> self, part.get_payload(decode=True), self._NL,
             elif maintype == 'multipart':
                 # Just skip this
                 pass
@@ -347,7 +355,7 @@ class DecodedGenerator(Generator):
                                             '[no description]'),
                     'encoding'   : part.get('Content-Transfer-Encoding',
                                             '[no encoding]'),
-                    }, NL,
+                    }, self._NL,
 
 
 

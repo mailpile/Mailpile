@@ -112,7 +112,7 @@ def ExtractEmails(string):
 
 def MessageAsString(part, unixfrom=False):
     buf = StringIO.StringIO()
-    Generator(buf).flatten(part, unixfrom=unixfrom)
+    Generator(buf).flatten(part, unixfrom=unixfrom, linesep='\r\n')
     return buf.getvalue()
 
 
