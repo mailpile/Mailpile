@@ -392,6 +392,10 @@ class MailIndex:
                 # Add new message!
                 msg_mid = b36(len(self.INDEX))
 
+                if 'rescan' in session.config.sys.debug:
+                    session.ui.debug(('Reading message %s=%s/%s (%d bytes)'
+                                      ) % (msg_mid, mailbox_idx, i, msg_size))
+
                 msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg,
                                                         msg_ts)
 
