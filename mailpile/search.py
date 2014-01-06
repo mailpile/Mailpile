@@ -380,6 +380,8 @@ class MailIndex:
                 play_nice_with_threads()
 
             # Message new or modified, let's parse it.
+            if 'rescan' in session.config.sys.debug:
+                session.ui.debug('Reading message %s/%s' % (mailbox_idx, i))
             msg_fd = mbox.get_file(i)
             msg = ParseMessage(msg_fd,
                                pgpmime=session.config.prefs.index_encrypted)
@@ -391,10 +393,6 @@ class MailIndex:
             else:
                 # Add new message!
                 msg_mid = b36(len(self.INDEX))
-
-                if 'rescan' in session.config.sys.debug:
-                    session.ui.debug(('Reading message %s=%s/%s (%d bytes)'
-                                      ) % (msg_mid, mailbox_idx, i, msg_size))
 
                 msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg,
                                                         msg_ts)
