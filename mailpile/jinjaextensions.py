@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import re
 import urllib
+import json
 from gettext import gettext as _
 from jinja2 import nodes
 from jinja2.ext import Extension
@@ -32,6 +33,8 @@ class MailpileCommand(Extension):
         environment.filters['navigation_on'] = self._navigation_on
         environment.globals['show_tags'] = self._show_tags
         environment.filters['show_tags'] = self._show_tags
+        environment.globals['message_encryption_status'] = self._message_encryption_status
+        environment.filters['message_encryption_status'] = self._message_encryption_status
 
         # See utils.py for these functions:
         environment.globals['elapsed_datetime'] = elapsed_datetime
@@ -82,4 +85,24 @@ class MailpileCommand(Extension):
 
     def _show_tags(self, search_terms, tags):
     
-      return
+      return ""
+
+    def _message_encryption_status(self, message_parts):
+
+      state = "unencrypted"
+      count = 0
+
+      for part in message_parts:
+        if 'encryption_info' in part:
+          if part["encryption_info"]['status'] == "decrypted":
+            count += 1
+            state = "encrypted"
+          elif part["encryption_info"]['status'] == "missingkey":
+            count += 1
+            state = "missingkey"
+          elif part["encryption_info"]['status'] == "error":
+            state = "error"
+          else:
+            count += 0
+
+      return state
