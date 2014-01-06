@@ -2,124 +2,164 @@
 {% block content %}
 {% if result %}
 
+  {% set start_mid = result.thread_ids[-1] %}
+  {% set start_subject = result.data.metadata[start_mid].subject %}
 
-<table class="pile-results" id="pile-results">
-  <tbody>
-{%     for mid in result.thread_ids
-%}{%     if mid in result.data.messages
-%}{%       set metadata = result.data.metadata[mid]
-%}{%       set message = result.data.messages[mid]
-%}{%       set from = result.data.addresses[metadata.from_aid]
-%}{%       if not message.editing_string
-%}
-    <tr>
-      <td class="message-body" colspan="6">
-      <div class="message-headers">
-        <h3>{{metadata.subject|e}}</h3>
-        <div class="message-datetime">
-          {{metadata.timestamp|friendly_datetime}} at {{metadata.timestamp|friendly_time}}
-        </div>
-        <ul>
-          <li>
-            <b>{{_("From")}}</b>
-            <a class="message-email-address" href="/contact/{{from.address|e}}/">
-            <img src="{{ show_avatar(from) }}">{{from.fn|e}}</a>
-          </li>
-{#         FIXME: Here below, we need a django filter to extract the e-mail
-           addresses and iterate through multiple values in a single
-           header. We could also use metadata.to_eids, but that does
-           not differentiate between to/cc. Maybe we want an
-           intermediate header summary in the result JSON?
+<div id="thread-title" class="clearfix">
+  <h1>{{ start_subject }}</h1>
+  <ul class="horizontal">
+    <li><a class="thread-show-people" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
+    <li><a class="thread-show-security" href="#"><span class="icon-unencrypted"></span> Partially Secure</a></li>
+  </ul>
+</div>
 
-#}{%           for header in ("To", "Cc", "Bcc")
-%}{%             for hdr, val in message.header_list
-%}{%               if hdr.lower() == header.lower()
-%}
-            <li>
-              <b>{{_(header)}}</b>
-              <a class="message-email-address" href="/contact/FIXME/"><img src="{{ show_avatar(from) }}">{{val|e}}</a>
-            </li>
-{%                 endif
-%}{%             endfor
-%}{%           endfor %}{# for header ... #}
-        </ul>
-      </div>
-      
-      
-      <div class="message-body">
-{%             for part in message.text_parts
-%}{%             if part.data == ""
-%}{%             else
-%}
-        <div class="pgp_encrypted_{{part.encryption_info.status}}" style="position: relative;">
-          <div class="pgp_encryptedheader" style="position: absolute; right: 40px; top: -90px;">
-            {% if part.encryption_info.status == "none"%}<span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span>{% endif %}
-            {% if part.encryption_info.status == "decrypted"%}<span class="icon-encrypted" title="{{_("Successfully decrypted message")}}"></span>{% endif %}
-            {% if part.encryption_info.status == "missingkey"%}<span class="icon-encrypted" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span>{% endif %}
-            {% if part.encryption_info.status == "error"%}<span class="icon-unencrypted" title="{{_("Failed to decrypt message")}}"></span>{% endif %}
+<div class="bulk-actions clearfix">
+  <div class="left">{{ result.data.metadata|length }} {{_("Messages")}}</div>
+  <ul class="horizontal right">
+	  <li><a class="bulk-action" href="#" data-action="later" title="{{_("Move Whole Thread to Later")}}"><span class="icon-later"></span></a></li>
+	  <li><a class="bulk-action" href="#" data-action="assign-tags" title="{{_("Assign Tags to Thread")}}"><span class="icon-tag"></span></a></li>
+	  <li><a class="bulk-action" href="#" data-action="archive" title="{{_("Archive Whole Thread")}}"><span class="icon-archive"></span></a></li>
+	  <li><a class="bulk-action" href="#" data-action="trash" title="{{_("Delete Whole Thread")}}"><span class="icon-trash"></span></a></li>
+  </ul>  
+</div>
+
+<div id="thread-messages">
+
+{% for mid in result.thread_ids %}
+  {% set metadata = result.data.metadata[mid] %}
+  {% set message  = result.data.messages[mid] %}
+  {% set from     = result.data.addresses[metadata.from_aid] %}
+
+  {% if mid in result.data.messages %}
+  {% if not message.editing_string %}
+
+  <!-- FIXME: make subject line show differing subjects {{ metadata.subject|e }} -->    
+  <div class="thread-message">
+
+    {% set show_encryption = true %}
+    {% include("partials/thread_item_metadata.html") %}
+
+    <div class="message-headers">
+    From
+      <a class="message-email-address" href="/contact/{{from.address|e}}/">
+      <img src="{{ show_avatar(from) }}">{{from.fn|e}}</a>
+      <!--    
+      FIXME: Here below, we need a django filter to extract the e-mail
+      addresses and iterate through multiple values in a single
+      header. We could also use metadata.to_eids, but that does
+      not differentiate between to/cc. Maybe we want an
+      intermediate header summary in the result JSON? 
+      -->
+    {% for header in ("To", "Cc", "Bcc") %}
+      {% for hdr, val in message.header_list %}
+        {% if hdr.lower() == header.lower() %}
+        {{_(header)}}
+        <a class="message-email-address" href="/contact/FIXME/"><img src="{{ show_avatar(result.data.addresses[metadata.from_aid]) }}">{{val|e}}</a>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+    </div>
+        
+    {% for part in message.text_parts %}
+      {% if part.data == "" %}
+      <em>Message is empty</em>
+      {% else %}
+
+      <div class="thread-item-text text-part-{{part.type}}">     
+        <div class="pgp_encrypted_{{part.encryption_info.status}}">
+          <div class="pgp_encryptedheader">
+            {% if part.encryption_info.status == "none" %}<span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span>{% endif %}
+            {% if part.encryption_info.status == "decrypted" %}<span class="icon-encrypted" title="{{_("Successfully decrypted message")}}"></span>{% endif %}
+            {% if part.encryption_info.status == "missingkey" %}<span class="icon-encrypted" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span>{% endif %}
+            {% if part.encryption_info.status == "error" %}<span class="icon-unencrypted" title="{{_("Failed to decrypt message")}}"></span>{% endif %}
           </div>
-          <div class="pgp_signature_{{part.signature_info.status}}" style="position: relative;">
-            <div class="pgp_signheader" style="position: absolute; right: 20px; top: -90px;">
-              {% if part.signature_info.status == "none"%}<span class="icon-unverified" title="{{_("Warning: This message was not digitally signed. It may have been forged or altered.")}}"></span>{% endif %}
-              {% if part.signature_info.status == "good"%}<a href="/contact/{{part.signature_info.email}}"><span class="icon-verified" title="{{_("Signed by")}} {{part.signature_info.name}}"></span></a>{% endif %}
-              {% if part.signature_info.status == "invalid"%}<a href="/contact/{{part.signature_info.email}}"><span class="icon-unverified" title="{{_("Unknown signature from")}} {{part.signature_info.name}}"></span></a>{% endif %}
-              {% if part.signature_info.status == "unknown"%}<span class="icon-unverified" title="{{_("Signed with unknown key")}}"></span>{% endif %}
-              {% if part.signature_info.status == "error"%}<span class="icon-unverified" title="{{_("Signature error")}}"></span>{% endif %}
-            </div>
-            <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
+        <div class="pgp_signature_{{part.signature_info.status}}">
+          <div class="pgp_signheader">
+            {% if part.signature_info.status == "none" %}<span class="icon-unverified" title="{{_("Warning: This message was not digitally signed. It may have been forged or altered.")}}"></span>{% endif %}
+            {% if part.signature_info.status == "good" %}<a href="/contact/{{part.signature_info.email}}"><span class="icon-verified" title="{{_("Signed by")}} {{part.signature_info.name}}"></span></a>{% endif %}
+            {% if part.signature_info.status == "invalid" %}<a href="/contact/{{part.signature_info.email}}"><span class="icon-unverified" title="{{_("Unknown signature from")}} {{part.signature_info.name}}"></span></a>{% endif %}
+            {% if part.signature_info.status == "unknown" %}<span class="icon-unverified" title="{{_("Signed with unknown key")}}"></span>{% endif %}
+            {% if part.signature_info.status == "error" %}<span class="icon-unverified" title="{{_("Signature error")}}"></span>{% endif %}
           </div>
         </div>
-{%               endif
-%}{%           endfor %}{# for part ... #}
+        {{ part.data|e|urlize }}
       </div>
-      <div class="message-attachments">
-      <ul>
-{%             for att in message.attachments
-%}
-         <div style='display: inline-block; text-align: center; margin: 10px;'>
-            <a href="/message/download/={{message.mid}}/part:{{att.count}}/"
-               type="{{att.mimetype}}" title="{{att.mimetype}} @ {{att.length|friendly_bytes}}">
-{%               if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
-               <img src="/message/download/preview/={{message.mid}}/part:{{att.count}}/"
-                    style='margin: 0 2px; max-height: 80px'><br />
-{%               endif %}
-               {{att.filename}}<br />
-               <small>({{att.length|friendly_bytes}})</small>
-            </a>
-         </div>
-{%             endfor %}{# for att ... #}
+
+      {% endif %}
+    {% endfor %}
+    </div>
+
+    <div class="message-attachments">
+    <ul>
+      {% for att in message.attachments %}
+      <div style='display: inline-block; text-align: center; margin: 10px;'>
+        <a href="/message/download/={{message.mid}}/part:{{att.count}}/" type="{{att.mimetype}}" title="{{att.mimetype}} @ {{att.length|friendly_bytes}}">
+        {% if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
+          <img src="/message/download/preview/={{message.mid}}/part:{{att.count}}/" style='margin: 0 2px; max-height: 80px'><br />
+        {% endif %}
+          {{att.filename}}<br />
+          <small>({{att.length|friendly_bytes}})</small>
+        </a>
+      </div>
+      {% endfor %}
+    </ul>
+    </div>
+    
+    <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="E36">
+      <ul class="horizontal left">
+        <li><a href="#"><span class="icon-checkmark"></span> To Do</a></li>
+        <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
+          <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> Move to Inbox</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> Flag as Spam</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> Remove from Thread</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
+          </ul>
+        </li>
+        <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
       </ul>
+    </div>
+
+    <div class="message-actions">
+      <form action="/message/reply/={{mid}}/" method=POST>
+        <button type="submit"><span class="icon-reply"></span> {{_("Reply")}}</button>
+      </form>
+      <form action="/message/reply/={{mid}}/" method=POST>
+        <button type="submit"><span class="icon-reply-all"></span> {{_("All")}}</button>
+      </form>
+      <form action="/message/forward/={{mid}}/" method=POST>
+        <button type="submit"><span class="icon-forward"></span> {{_("Forward")}}</button>
+      </form>
+      <button type="submit"><span class="icon-archive"></span></button>
+      <button type="submit"><span class="icon-spam"></span></button>
+      <button type="submit"><span class="icon-trash"></span></button>
+    </div>
+    
+  {% include("partials/compose.html") %}    
+
+  {% endif %}
+
+  {# if not message.editing... #}
+  {% else %}
+
+    <div class="thread-snippet" data-mid="{{ mid }}">
+      {% set show_encryption = false %}
+      {% include("partials/thread_item_metadata.html") %}
+      <div class="thread-item-text">
+        {{ metadata.body.snippet }}
       </div>
-      <div class="message-actions">
-        <form action="/message/reply/={{mid}}/" method=POST>
-          <button type="submit"><span class="icon-reply"></span>
-                  {{_("Reply")}}</button>
-        </form>
-        <form action="/message/reply/={{mid}}/" method=POST>
-          <button type="submit"><span class="icon-reply-all"></span>
-                  {{_("All")}}</button>
-        </form>
-        <form action="/message/forward/={{mid}}/" method=POST>
-          <button type="submit"><span class="icon-forward"></span>
-                  {{_("Forward")}}</button>
-        </form>
-        <button type="submit"><span class="icon-archive"></span></button>
-        <button type="submit"><span class="icon-spam"></span></button>
-        <button type="submit"><span class="icon-trash"></span></button>
-      </div>
-      </td>
-    </tr>
-{%         endif %}{# if not message.editing...
-#}{%     else
-%}{%       include("partials/search_item.html")
-%}{%     endif
-%}{%   endfor %}{# for mid ...
-#}
-  </tbody>
-</table>
-{%     include("partials/details_search_speed.html")
-%}{% else
-%}{%   set error_title = "message_missing"
-%}{%   include("partials/errors_content.html")
-%}{% endif  %}{# if result #}
+    </div>
+
+  {% endif %}
+  {% endfor %}{# for mid ... #}
+  </div>
+
+  {% include("partials/details_search_speed.html") %}
+  
+  {% else %}
+    {% set error_title = "message_missing" %}
+    {% include("partials/errors_content.html") %}
+  {% endif  %}{# if result #}
 {% endblock %}

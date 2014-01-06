@@ -6,13 +6,16 @@
   #thread-messages .icon-unencrypted,
   #thread-message  .icon-unencrypted,
   #thread-reply    .icon-unencrypted { color: @orange; }
+  #thread-messages .icon-unencrypted,
+  #thread-message  .icon-unencrypted,
+  #thread-reply    .icon-unencrypted { color: @grayMid; }
 
 
 /* Thread Title */	
 
   #thread-title {
     text-align: center;
-    padding: 10px 0;
+    padding: 10px 0 5px 0;
     background: @grayLight;
     border-bottom: 1px solid @gray;
   }
@@ -60,6 +63,10 @@
     display: block;
   }
 
+  .thread-message {
+    border-bottom: 1px solid @gray;
+  }
+
   .thread-line-subject {
     
   }
@@ -79,11 +86,11 @@
 
   .thread-item-from a.avatar {
     float: left;
-    margin-right: 7px;
+    margin-right: 10px;
   }
   
   .thread-item-from a.avatar img {
-    width: 48px;
+    width: 45px;
   }
   
   .thread-item-from a.name {
@@ -134,6 +141,7 @@
   }
   
   .thread-item-text {
+    max-width: 90%;
     margin-left:15px;
     margin-right: 15px;
     margin-bottom: 10px;
@@ -142,9 +150,6 @@
     line-height: 18px;
   }
 
-  #thread-message {
-    border-bottom: 1px solid @gray;
-  }
 
   .thread-item-data-encrypted {
     margin-bottom: 10px;
