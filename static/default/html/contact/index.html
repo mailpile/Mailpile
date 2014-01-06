@@ -3,13 +3,14 @@
 {% block content %}
 {% include("partials/sub_nav_contacts.html") %}
 
-<div id="contacts-view" class="content-normal">
+<div id="contact-view" class="content-normal">
   
 {% if result.contact %}
 
   <div class="clearfix">
-    <img class="left" width="80" src="{% if result.contact.photo %}{{ result.contact.photo.0.photo}}{% elif result.contact.email %}{{ show_avatar(url_protocol, http_host, result.contact.email.0.email, 80) }}{% endif %}">
-    <h2 class="left">{{ result.contact.fn }}</h2>
+    <img class="contact-avatar left" width="80" src="{% if result.contact.photo %}{{ result.contact.photo.0.photo}}{% elif result.contact.email %}{{ show_avatar(url_protocol, http_host, result.contact.email.0.email, 80) }}{% endif %}">
+    <h2  class="contact-name ">{{ result.contact.fn }}</h2>
+    <h5 class="contact-subname">Hey, that's you :)</h5>
   </div>
   <hr>
  
@@ -21,8 +22,9 @@
     {% endfor %}
   {% endif %}
   </ul>
+  <hr>
 
-  <h4>Statistics</h4>
+  <h4>Stats</h4>
   <ul>
     <li>Messages sent to this contact: {{result.sent_messages}}</li>
     <li>Messages received from this contact: {{result.received_messages}}</li>
@@ -37,6 +39,7 @@
     <li>You've never been contacted by this contact.</li>
     {% endif %}
   </ul>
+  <hr>
 
 {% else %}
 

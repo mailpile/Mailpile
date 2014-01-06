@@ -246,10 +246,13 @@ class UrlMap:
         >>> commands[1].args
         ['=123']
         """
-        message_mid = path_parts[1]
+        message_mids, i = [], 1
+        while path_parts[i].startswith('='):
+            message_mids.append(path_parts[i])
+            i += 1
         return [
             self._choose_output(path_parts),
-            self._command('message', args=[message_mid],
+            self._command('message', args=message_mids,
                                      query_data=query_data,
                                      post_data=post_data)
         ]

@@ -282,40 +282,6 @@ class SearchResults(dict):
         namelist = re.sub(',,,+, *', ' .. ', namelist, 1)
         return namelist
 
-    def _unused_legacy_code_for_looking_at(self):
-            # FIXME: This is nice, but doing it in _explain_msg_summary
-            #                would be nicer.
-            result['tags'] = []
-            if 'tags' in idx.config:
-                searched = [t.get('slug') for t in self['search_tags']]
-                for t in sorted(idx.get_tags(msg_info=msg_info)):
-                    tag = idx.config.get_tag(t)
-                    if tag:
-                        result['tags'].append(dict_merge(tag, {
-                            'searched': (tag['slug'] in searched)
-                        }))
-
-            if not expand and 'flat' not in (session.order or ''):
-                conv = idx.get_conversation(msg_info)
-            else:
-                conv = [msg_info]
-            conv_from = [c[MailIndex.MSG_FROM] for c in conv]
-
-            result['short_from'] = self._compact(self._names(conv_from), 25)
-            result['conv_count'] = len(conv)
-            result['conv_mids'] = [c[MailIndex.MSG_MID] for c in conv]
-            # FIXME: conv_people should look stuff in our contact list
-            result['conv_people'] = people = [{
-                'email': (ExtractEmails(p) or [''])[0],
-                'name': self._name(p, short=False),
-            } for p in list(set(conv_from))]
-            people.sort(key=lambda i: i['name'] + i['email'])
-
-            if expand and idx_pos in expand_ids:
-                exp_email = expand[expand_ids.index(idx_pos)]
-                result['message'] = self._message_details([exp_email])[0]
-            rv.append(result)
-
     TAG_TYPE_FLAG_MAP = {
         'trash': 'trash',
         'spam': 'spam',
@@ -337,17 +303,18 @@ class SearchResults(dict):
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
-            'from': AddressInfo(fe, fn, vcard=fvcard),
-            'urls': {
-                'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
-            },
             'timestamp': msg_ts,
+            'from_aid': (list(self._msg_addresses(msg_info, no_to=True))
+                         or [''])[0],
+            'to_aids': self._msg_addresses(msg_info, no_from=True),
             'tag_tids': self._msg_tags(msg_info),
-            'to_eids': self._msg_people(msg_info, no_from=True),
             'thread_mid': msg_info[MailIndex.MSG_CONV_MID],
             'subject': msg_info[MailIndex.MSG_SUBJECT],
             'body': {
                 'snippet': msg_info[MailIndex.MSG_SNIPPET],
+            },
+            'urls': {
+                'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
             },
             'flags': {
             }
@@ -380,8 +347,11 @@ class SearchResults(dict):
 
         return expl
 
-    def _msg_people(self, msg_info, no_from=False):
-        cids = set([t for t in msg_info[MailIndex.MSG_TO].split(',') if t])
+    def _msg_addresses(self, msg_info, no_from=False, no_to=False):
+        if no_to:
+            cids = set()
+        else:
+            cids = set([t for t in msg_info[MailIndex.MSG_TO].split(',') if t])
         if not no_from:
             frm = (ExtractEmails(msg_info[MailIndex.MSG_FROM]) or [''])[0]
             if frm:
@@ -391,7 +361,7 @@ class SearchResults(dict):
                     cids.add(b36(self.idx._add_email(frm)))
         return sorted(list(cids))
 
-    def _person(self, cid):
+    def _address(self, cid):
         e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
         vcard = self.session.config.vcards.get_vcard(e)
         return AddressInfo(e, n, vcard=vcard)
@@ -452,8 +422,8 @@ class SearchResults(dict):
                 'total': len(results),
             },
             'search_terms': session.searched,
-            'people': [],
-            'threads': threads,
+            'address_ids': [],
+            'thread_ids': threads,
         })
         if 'tags' in self.session.config:
             search_tags = [idx.config.get_tag(t.split(':')[1], {})
@@ -470,14 +440,14 @@ class SearchResults(dict):
 
         self.update({
             'data': {
-                'person': {},
+                'addresses': {},
                 'metadata': {},
-                'message': {},
-                'thread': {}
+                'messages': {},
+                'threads': {}
             }
         })
         if 'tags' in self.session.config:
-            th = self['data']['tag'] = {}
+            th = self['data']['tags'] = {}
             for tid in search_tag_ids:
                 if tid not in th:
                     th[tid] = self._tag(tid, {'searched': True})
@@ -492,29 +462,29 @@ class SearchResults(dict):
 
             # Populate data.thread
             thread_mid = msg_info[idx.MSG_CONV_MID]
-            if thread_mid not in self['data']['thread']:
+            if thread_mid not in self['data']['threads']:
                 thread = self._thread(thread_mid)
-                self['data']['thread'][thread_mid] = thread
+                self['data']['threads'][thread_mid] = thread
                 if full_threads:
                      idxs.extend([int(t, 36) for t in thread
                                   if t not in self['data']['metadata']])
 
             # Populate data.person
-            for cid in self._msg_people(msg_info):
-                if cid not in self['data']['person']:
-                    self['data']['person'][cid] = self._person(cid)
+            for cid in self._msg_addresses(msg_info):
+                if cid not in self['data']['addresses']:
+                    self['data']['addresses'][cid] = self._address(cid)
 
             # Populate data.tag
             if 'tags' in self.session.config:
                 for tid in self._msg_tags(msg_info):
-                    if tid not in self['data']['tag']:
-                        self['data']['tag'][tid] = self._tag(tid)
+                    if tid not in self['data']['tags']:
+                        self['data']['tags'][tid] = self._tag(tid)
 
         for e in emails or []:
             idx_pos = e.msg_idx_pos
             mid = b36(idx_pos)
             if mid in self['data']['metadata']:
-                self['data']['message'][mid] = self._message(e)
+                self['data']['messages'][mid] = self._message(e)
 
     def __nonzero__(self):
         return True
@@ -535,14 +505,15 @@ class SearchResults(dict):
         text = []
         count = self['stats']['start']
         expand_ids = [e.msg_idx_pos for e in (self.emails or [])]
-        for mid in self['threads']:
+        addresses = self.get('data', {}).get('addresses', {})
+        for mid in self['thread_ids']:
             if mid in self['data'].get('message', {}):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
                 text.append(exp_email.get_editing_string(
                                 exp_email.get_message_tree()))
             else:
                 m = self['data']['metadata'][mid]
-                tags = [self['data']['tag'][t] for t in m['tag_tids']]
+                tags = [self['data']['tags'][t] for t in m['tag_tids']]
                 tag_names = [t['name'] for t in tags
                              if 'searched' not in t and t.get('label', True)]
                 tag_new = [t for t in tags if t.get('type') == 'unread']
@@ -552,7 +523,8 @@ class SearchResults(dict):
                                          46 - (clen + len(msg_tags)))
                 text.append((cfmt + ' %s%-22.22s ' + sfmt + '%7s'
                              ) % (count, tag_new and '*' or ' ',
-                                  m['from']['fn'], m['subject'], msg_tags,
+                                  addresses.get(m['from_aid'], {}).get('fn'),
+                                  m['subject'], msg_tags,
                                   elapsed_datetime(m['timestamp'])))
             count += 1
         if not count:

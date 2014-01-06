@@ -1,41 +1,59 @@
 {% extends "layouts/base.html" %}
 {% block content %}
-{% if result %}
-
-{% include("partials/sub_nav_message.html") %}
-
+{%   if result
+%}{%   include("partials/sub_nav_message.html")
+%}
 <table class="pile-results" id="pile-results">
-  <tbody>{%
-    for mid in result.threads %}{%
-     if mid in result.data.message %}{%
-       set metadata = result.data.metadata[mid] %}{%
-       set message = result.data.message[mid] %}{%
-       if not message.editing_string %}
+  <tbody>
+{%     for mid in result.thread_ids
+%}{%     if mid in result.data.messages
+%}{%       set metadata = result.data.metadata[mid]
+%}{%       set message = result.data.messages[mid]
+%}{%       set from = result.data.addresses[metadata.from_aid]
+%}{%       if from.photo
+%}{%         set photo = from.photo
+%}{%       else
+%}{%         set photo = '/static/img/avatar-default.png'
+%}{%       endif
+%}{%       if not message.editing_string
+%}
     <tr>
       <td class="message-body" colspan="6">
       <div class="message-headers">
-        <h3>{{metadata.subject|e}}</h3> 
-        <div class="message-datetime">{{metadata.timestamp|friendly_datetime}} at {{metadata.timestamp|friendly_time}}</div>
+        <h3>{{metadata.subject|e}}</h3>
+        <div class="message-datetime"
+             >{{metadata.timestamp|friendly_datetime}} at
+              {{metadata.timestamp|friendly_time}}</div>
         <ul>
-          <li><b>{{_("From")}}</b> <a class="message-email-address" href="/contact/{{metadata.from.address|e}}/"><img src="{% if metadata.from.photo %}{{metadata.from.photo}}{% else %}/static/img/avatar-default.png{% endif %}">{{metadata.from.fn|e}}</a></li>
-          <!-- FIXME: Here below, we need a django filter to extract the e-mail
-                      addresses and iterate through multiple values in a single
-                      header. We could also use metadata.to_eids, but that does
-                      not differentiate between to/cc. Maybe we want an
-                      intermediate header summary in the result JSON? -->
-          {% for header in ("To", "Cc", "Bcc") %}{%
-              for hdr, val in message.header_list %}{%
-               if hdr.lower() == header.lower() %}
-            <li><b>{{_(header)}}</b> <a class="message-email-address" href="/contact/FIXME/"> <img src="{{show_avatar(url_protocol, http_host, 'FIXME', 48)}}"> {{val|e}}</a></li>
-            {% endif
-           %}{% endfor
-          %}{% endfor %}
+          <li><b>{{_("From")}}</b>
+              <a class="message-email-address"
+                 href="/contact/{{from.address|e}}/"
+                 ><img src="{{photo}}">{{from.fn|e}}</a></li>{#
+
+    FIXME: Here below, we need a django filter to extract the e-mail
+           addresses and iterate through multiple values in a single
+           header. We could also use metadata.to_eids, but that does
+           not differentiate between to/cc. Maybe we want an
+           intermediate header summary in the result JSON?
+
+#}{%           for header in ("To", "Cc", "Bcc")
+%}{%             for hdr, val in message.header_list
+%}{%               if hdr.lower() == header.lower()
+%}
+            <li><b>{{_(header)}}</b>
+                <a class="message-email-address" href="/contact/FIXME/">
+                  <img src="{{show_avatar(url_protocol, http_host, 'FIXME', 48)}}">
+                  {{val|e}}</a></li>
+{%                 endif
+%}{%             endfor
+%}{%           endfor %}{# for header ... #}
         </ul>
       </div>
       <div class="message-body">
-      {% for part in message.text_parts %}
-        {% if part.data == "" %}
-        {% else %}
+{%             for part in message.text_parts
+%}{%             if part.data == ""
+%}{%             else
+%}
         <div class="pgp_encrypted_{{part.encryption_info.status}}" style="position: relative;">
           <div class="pgp_encryptedheader" style="position: absolute; right: 40px; top: -90px;">
             {% if part.encryption_info.status == "none"%}<span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span>{% endif %}
@@ -54,52 +72,57 @@
             <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
           </div>
         </div>
-        {% endif %}
-      {% endfor %}
+{%               endif
+%}{%           endfor %}{# for part ... #}
       </div>
       <div class="message-attachments">
       <ul>
-         {% for att in message.attachments %}
+{%             for att in message.attachments
+%}
          <div style='display: inline-block; text-align: center; margin: 10px;'>
             <a href="/message/download/={{message.mid}}/part:{{att.count}}/"
                type="{{att.mimetype}}" title="{{att.mimetype}} @ {{att.length|friendly_bytes}}">
-               {% if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
+{%               if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
                <img src="/message/download/preview/={{message.mid}}/part:{{att.count}}/"
                     style='margin: 0 2px; max-height: 80px'><br />
-               {% endif %}
+{%               endif %}
                {{att.filename}}<br />
                <small>({{att.length|friendly_bytes}})</small>
             </a>
          </div>
-         {% endfor %}
+{%             endfor %}{# for att ... #}
       </ul>
       </div>
       <div class="message-actions">
         <form action="/message/reply/={{mid}}/" method=POST>
-          <button type="submit"><span class="icon-reply"></span> {{_("Reply")}}</button>
+          <button type="submit"><span class="icon-reply"></span>
+                  {{_("Reply")}}</button>
         </form>
         <form action="/message/reply/={{mid}}/" method=POST>
-          <button type="submit"><span class="icon-reply-all"></span> {{_("All")}}</button>
+          <button type="submit"><span class="icon-reply-all"></span>
+                  {{_("All")}}</button>
         </form>
         <form action="/message/forward/={{mid}}/" method=POST>
-          <button type="submit"><span class="icon-forward"></span> {{_("Forward")}}</button>
-        </form>      
+          <button type="submit"><span class="icon-forward"></span>
+                  {{_("Forward")}}</button>
+        </form>
         <button type="submit"><span class="icon-archive"></span></button>
         <button type="submit"><span class="icon-spam"></span></button>
         <button type="submit"><span class="icon-trash"></span></button>
       </div>
       </td>
     </tr>
-    {% endif %}
-   {% else %}
-    {% include("partials/search_item.html") %}
-   {% endif %}
-  {% endfor %}
+{%         endif %}{# if not message.editing...
+#}{%     else
+%}{%       include("partials/search_item.html")
+%}{%     endif
+%}{%   endfor %}{# for mid ...
+#}
   </tbody>
 </table>
-{% include("partials/details_search_speed.html") %}
-{% else %}
-  {% set error_title = "message_missing" %}
-  {% include("partials/errors_content.html") %}
-{% endif %}
+{%     include("partials/details_search_speed.html")
+%}{% else
+%}{%   set error_title = "message_missing"
+%}{%   include("partials/errors_content.html")
+%}{% endif  %}{# if result #}
 {% endblock %}

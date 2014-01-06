@@ -21,6 +21,7 @@ import mimetypes
 import os
 import re
 import rfc822
+import StringIO
 import threading
 import traceback
 from gettext import gettext as _
@@ -40,6 +41,7 @@ from urllib import quote, unquote
 
 from mailpile.gpgi import PGPMimeParser, GnuPG
 from mailpile.gpgi import EncryptionInfo, SignatureInfo
+from mailpile.mail_generator import Generator
 
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
@@ -89,6 +91,7 @@ def ExtractEmailAndName(string):
                    .replace(')', '')).strip()
     return email, (name or email)
 
+
 def ExtractEmails(string):
     emails = []
     startcrap = re.compile('^[\'\"<(]')
@@ -105,6 +108,13 @@ def ExtractEmails(string):
           emails.append(CleanText(w, banned=CleanText.WHITESPACE,
                                      replace='_').clean)
     return emails
+
+
+def MessageAsString(part, unixfrom=False):
+    buf = StringIO.StringIO()
+    Generator(buf).flatten(part, unixfrom=unixfrom, linesep='\r\n')
+    return buf.getvalue()
+
 
 def PrepareMail(mailobj, sender=None, rcpts=None):
     if not sender or not rcpts:
@@ -141,7 +151,8 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
     encryptopt = bool(int(tree['headers_lc'].get('do_encrypt', 0)))
     gnupg = GnuPG()
     if signatureopt:
-        signingstring = re.sub("[\r]{1}[\n]{0}", "\r\n", msg.get_payload()[0].as_string())
+        signingstring = MessageAsString(msg)
+        #signingstring = re.sub("[\r]{1}[\n]{0}", "\r\n", msg.get_payload()[0].as_string())
         # print ">>>%s<<<" % signingstring.replace("\r", "<CR>").replace("\n", "<LF>")
 
         signature = gnupg.sign(signingstring, fromkey=sender, armor=True)
@@ -245,7 +256,7 @@ def SendMail(session, from_to_msg_tuples):
             raise Exception(_('Invalid sendmail: %s') % sendmail)
 
         session.ui.mark(_('Preparing message...'))
-        string = msg.as_string(False)
+        string = MessageAsString(msg)  #msg.as_string(False)
         total = len(string)
         while string:
             sm_write(string[:65536])

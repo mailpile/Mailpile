@@ -1,6 +1,5 @@
 {% extends "layouts/base.html" %}
 {% block content %}
-
 {% include("partials/sub_nav_search.html") %}
 {% include("partials/bulk_actions.html") %}
 
@@ -9,7 +8,7 @@
     <input type='hidden' name='csrf' value='{{csrf}}' />
     <table id="pile-results">
     <tbody>
-    {% for mid in result.threads %}
+    {% for mid in result.thread_ids %}
       {% include("partials/search_item.html") %}
     {% endfor %}
     </tbody>

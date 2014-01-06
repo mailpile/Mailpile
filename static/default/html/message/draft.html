@@ -1,14 +1,15 @@
 {% extends "layouts/base.html" %}
 {% block content %}
-
-{% if result %}
-{% set profiles = mailpile('settings', 'profiles').result.profiles %}
+{%   if result
+%}{%   set profiles = mailpile('settings', 'profiles').result.profiles
+%}
 
 <div id="compose">
- {% for mid in result.threads %}{%
-     set message = result.data.message.get(mid) %}{%
-     set metadata = result.data.metadata[mid] %}{%
-     if message and metadata.flags.draft %}
+ {%    for mid in result.thread_ids
+%}{%     set message = result.data.messages.get(mid)
+%}{%     set metadata = result.data.metadata[mid]
+%}{%     if message and metadata.flags.draft
+%}
   <form id="form-compose" name="compose" action="/message/update/" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="mid" value="{{mid}}">
     <div class="compose-headers compose-to">
@@ -22,11 +23,13 @@
     </div>
     <div id="compose-cc-html" class="compose-headers compose-cc">
       <label>{{_("Cc")}}</label>
-      <input id="compose-cc" name="cc" type="text" value="{{message.editing_strings.cc|e}}">
+      <input id="compose-cc" name="cc" type="text"
+             value="{{message.editing_strings.cc|e}}">
     </div>
     <div id="compose-bcc-html" class="compose-headers compose-bcc">
       <label>{{_("Bcc")}}</label>
-      <input id="compose-bcc" name="bcc" type="text"  value="{{message.editing_strings.bcc|e}}">
+      <input id="compose-bcc" name="bcc" type="text"
+             value="{{message.editing_strings.bcc|e}}">
     </div>
     <div class="compose-headers compose-from">
       <div class="compose-cell">
@@ -39,7 +42,7 @@
           {% endfor %}
         </select>
       </div>
-    </div>        
+    </div>
     <div class="compose-headers compose-subject">
       <div class="compose-cell">
         <input id="compose-subject" name="subject" tabindex="3" type="text"
@@ -51,11 +54,14 @@
         {% endif %}>
       </div>
       <div class="compose-cell animated">
-        <span class="message-privacy-state icon-unencrypted" title="This message is not encrypted"></span>
+        <span class="message-privacy-state icon-unencrypted"
+              title="This message is not encrypted"></span>
       </div>
     </div>
     <div class="compose-message">
-      <textarea id="compose-body" tabindex="4" name="body" placeholder="{{_("Your message...")}}">{{message.editing_strings.body}}</textarea>
+      <textarea id="compose-body" tabindex="4" name="body"
+                placeholder="{{_("Your message...")}}"
+                >{{message.editing_strings.body}}</textarea>
     </div>
     <div class="compose-attachments">
       <span class="icon-attachment"></span> {{_("No Attachments")}}
@@ -63,17 +69,21 @@
       <ul id="compose-attachments-list"></ul>
     </div>
     <div class="content-normal">
-      <button class="compose-action" type="submit" name="send" value="send"><span class="icon-sent"></span> {{_("Send")}}</button>
-      <button class="compose-action" type="submit" name="save" value="save"><span class="icon-compose"></span> {{_("Save")}}</button>
+      <button class="compose-action" type="submit" name="send" value="send"
+              ><span class="icon-sent"></span> {{_("Send")}}</button>
+      <button class="compose-action" type="submit" name="save" value="save"
+              ><span class="icon-compose"></span> {{_("Save")}}</button>
     </div>
   </form>
-  {% else %}
-    {#{{mailpile('http/redirect/url_thread', mid)}}#}
-  {% endif %}{% endfor %}
+  {%     else
+%}{#       {{mailpile('http/redirect/url_thread', mid)}}
+#}{%     endif
+%}{%   endfor %}{# for mid ... #}
 </div>
-{% else %}
 
-  <h1>{{_("Message not found!")}}</h1>
+{%   else %}{# if result #}
 
-{% endif %}
+<h1>{{_("Message not found!")}}</h1>
+
+{%   endif  %}{# if result #}
 {% endblock %}

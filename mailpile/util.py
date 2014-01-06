@@ -320,13 +320,26 @@ def backup_file(filename, backups=5, min_age_delta=0):
         os.rename(filename, '%s.1' % filename)
 
 
+class GpgWriter(object):
+    def __init__(self, gpg):
+        self.fd = gpg.stdin
+        self.gpg = gpg
+
+    def write(self, data):
+        self.fd.write(data)
+
+    def close(self):
+        self.fd.close()
+        self.gpg.wait()
+
+
 def gpg_open(filename, recipient, mode):
     fd = open(filename, mode)
     if recipient and ('a' in mode or 'w' in mode):
         gpg = subprocess.Popen(['gpg', '--batch', '-aer', recipient],
                                stdin=subprocess.PIPE,
                                stdout=fd)
-        return gpg.stdin
+        return GpgWriter(gpg)
     return fd
 
 

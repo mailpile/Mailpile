@@ -849,7 +849,7 @@ class ConfigManager(ConfigDict):
             for var, val in items:
                 try:
                     cfg[var] = val
-                except (ValueError, KeyError):
+                except (ValueError, KeyError, IndexError):
                     if session:
                         msg = _(u'Invalid (%s): section %s, variable %s'
                                 ) % (source, section, var)

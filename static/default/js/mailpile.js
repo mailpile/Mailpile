@@ -138,6 +138,10 @@ $(document).ready(function() {
   });
   */
 
+  if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() === undefined) {
+    $('#sidebar-tag-outbox').hide();
+  }
+
 });
 
 
