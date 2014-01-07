@@ -660,10 +660,12 @@ def AddressInfo(addr, fn, vcard=None, rank=0, proto='smtp', secure=False):
         'fn': fn,
         'address': addr,
         'rank': rank,
-        'secure': secure,
-        'protocol': proto
+        'protocol': proto,
+        'flags': {}
     }
     if vcard:
+        info['flags']['contact'] = True
+
         keys = []
         for k in vcard.get_all('KEY'):
             val = k.value.split("data:")[1]
@@ -671,7 +673,7 @@ def AddressInfo(addr, fn, vcard=None, rank=0, proto='smtp', secure=False):
             keys.append({'fingerprint': fp, 'type': 'openpgp', 'mime': mime})
         if keys:
             info['keys'] = [k for k in keys[:1]]
-            info['secure'] = True
+            info['flags']['secure'] = True
 
         photos = vcard.get_all('photo')
         if photos:
