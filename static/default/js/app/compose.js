@@ -36,7 +36,7 @@ $('#search-query').attr('tabindex', '-1');
 
 
 var composeContactSelected = function(contact) {
-  if (contact.object.secure) {
+  if (contact.object.flags.secure) {
     console.log('Whee keys ' + contact.object.keys[0].fingerprint);
     $('.message-privacy-state').attr('title', 'The message is encrypted. The recipients & subject are not');
     $('.message-privacy-state').removeClass('icon-unencrypted').addClass('icon-encrypted');
@@ -58,8 +58,8 @@ var formatComposeResult = function(state) {
   var secure = '';
   if (state.photo) {
     avatar = '<img src="' + state.photo + '">';
-  }    
-  if (state.secure) {
+  }      
+  if (state.flags.secure) {
     secure = '<span class="icon-encrypted"></span>';
   }
   return '<span class="compose-select-avatar">' + avatar + '</span><span class="compose-select-name">' + state.fn + secure + '<br><span class="compose-select-address">' + state.address + '</span></span>';
@@ -71,7 +71,7 @@ var formatComposeSelection = function(state) {
   if (state.photo) {
     avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
   }
-  if (state.secure) {
+  if (state.flags.secure) {
     secure = '<span class="icon-encrypted"></span>';
   }
   return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + state.fn + secure + '</span>';
@@ -110,9 +110,9 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
   createSearchChoice: function(term) {
     // Check if we have an RFC5322 compliant e-mail address:
     if (term.match(/(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
-      return {"id": term, "fn": term, "address": term};
+      return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
     } else {
-      return {"id": term, "fn": term, "address": term};
+      return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
       console.log('Yo duder: ' + term)
     }
   },
