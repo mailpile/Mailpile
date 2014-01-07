@@ -116,7 +116,7 @@ class Command:
         else:
             self.args = []
 
-    def _idx(self, reset=False, wait=True, wait_all=False, quiet=False):
+    def _idx(self, reset=False, wait=True, wait_all=True, quiet=False):
         session, config = self.session, self.session.config
         if not reset and config.index:
             return config.index
@@ -551,8 +551,11 @@ class Load(Command):
     SYNOPSIS = (None, 'load', None, None)
     ORDER = ('Internals', 1)
 
-    def command(self, reset=True, wait=True, quiet=False):
-        return self._idx(reset=reset, wait=wait, quiet=quiet) and True or False
+    def command(self, reset=True, wait=True, wait_all=False, quiet=False):
+        return self._idx(reset=reset,
+                         wait=wait,
+                         wait_all=wait_all,
+                         quiet=quiet) and True or False
 
 
 class Rescan(Command):
