@@ -39,48 +39,33 @@
     {% set show_encryption = true %}
     {% include("partials/thread_item_metadata.html") %}
 
-    <div class="message-headers">
-    From
-      <a class="message-email-address" href="/contact/{{from.address|e}}/">
-      <img src="{{ show_avatar(from) }}">{{from.fn|e}}</a>
-      <!--    
-      FIXME: Here below, we need a django filter to extract the e-mail
-      addresses and iterate through multiple values in a single
-      header. We could also use metadata.to_eids, but that does
-      not differentiate between to/cc. Maybe we want an
-      intermediate header summary in the result JSON? 
-      -->
+    <!--    
+    FIXME: Here below, we need a django filter to extract the e-mail
+    addresses and iterate through multiple values in a single
+    header. We could also use metadata.to_eids, but that does
+    not differentiate between to/cc. Maybe we want an
+    intermediate header summary in the result JSON? 
+    -->
     {% for header in ("To", "Cc", "Bcc") %}
       {% for hdr, val in message.header_list %}
         {% if hdr.lower() == header.lower() %}
         {{_(header)}}
-        <a class="message-email-address" href="/contact/FIXME/"><img src="{{ show_avatar(result.data.addresses[metadata.from_aid]) }}">{{val|e}}</a>
+        <a class="message-email-address" href="/contact/FIXME/"><img src="{{ show_avatar(result.data.addresses[metadata.to_aid]) }}">{{val|e}}</a>
         {% endif %}
       {% endfor %}
     {% endfor %}
-    </div>
+
         
     {% for part in message.text_parts %}
-      {% if part.data == "" %}
-      <em>Message is empty</em>
-      {% else %}
-
+      {% if part.data != "" %}
       <div class="thread-item-text text-part-{{part.type}}">     
-        <div class="pgp_encrypted_{{part.encryption_info.status}}">
-          <div class="pgp_encryptedheader">
-            {% if part.encryption_info.status == "none" %}<span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span>{% endif %}
-            {% if part.encryption_info.status == "decrypted" %}<span class="icon-encrypted" title="{{_("Successfully decrypted message")}}"></span>{% endif %}
-            {% if part.encryption_info.status == "missingkey" %}<span class="icon-encrypted" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span>{% endif %}
+        <div class="thread-item-data-encrypted pgp_encrypted_{{part.encryption_info.status}}">
+            {% if part.encryption_info.status == "none" %}
+            <span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span> Not Encrypted
+            {% endif %}
+            {% if part.encryption_info.status == "decrypted" %}<span class="icon-encrypted" title="{{_("Successfully decrypted message")}}"></span> Decrypted{% endif %}
+            {% if part.encryption_info.status == "missingkey" %}<span class="icon-key" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span> Missing Key{% endif %}
             {% if part.encryption_info.status == "error" %}<span class="icon-unencrypted" title="{{_("Failed to decrypt message")}}"></span>{% endif %}
-          </div>
-        <div class="pgp_signature_{{part.signature_info.status}}">
-          <div class="pgp_signheader">
-            {% if part.signature_info.status == "none" %}<span class="icon-unverified" title="{{_("Warning: This message was not digitally signed. It may have been forged or altered.")}}"></span>{% endif %}
-            {% if part.signature_info.status == "good" %}<a href="/contact/{{part.signature_info.email}}"><span class="icon-verified" title="{{_("Signed by")}} {{part.signature_info.name}}"></span></a>{% endif %}
-            {% if part.signature_info.status == "invalid" %}<a href="/contact/{{part.signature_info.email}}"><span class="icon-unverified" title="{{_("Unknown signature from")}} {{part.signature_info.name}}"></span></a>{% endif %}
-            {% if part.signature_info.status == "unknown" %}<span class="icon-unverified" title="{{_("Signed with unknown key")}}"></span>{% endif %}
-            {% if part.signature_info.status == "error" %}<span class="icon-unverified" title="{{_("Signature error")}}"></span>{% endif %}
-          </div>
         </div>
         {{ part.data|e|urlize }}
       </div>
@@ -121,21 +106,6 @@
         <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
       </ul>
     </div>
-
-    <div class="message-actions">
-      <form action="/message/reply/={{mid}}/" method=POST>
-        <button type="submit"><span class="icon-reply"></span> {{_("Reply")}}</button>
-      </form>
-      <form action="/message/reply/={{mid}}/" method=POST>
-        <button type="submit"><span class="icon-reply-all"></span> {{_("All")}}</button>
-      </form>
-      <form action="/message/forward/={{mid}}/" method=POST>
-        <button type="submit"><span class="icon-forward"></span> {{_("Forward")}}</button>
-      </form>
-      <button type="submit"><span class="icon-archive"></span></button>
-      <button type="submit"><span class="icon-spam"></span></button>
-      <button type="submit"><span class="icon-trash"></span></button>
-    </div>
     
   {% include("partials/compose.html") %}    
 
@@ -155,8 +125,6 @@
   {% endif %}
   {% endfor %}{# for mid ... #}
   </div>
-
-  {% include("partials/details_search_speed.html") %}
   
   {% else %}
     {% set error_title = "message_missing" %}

@@ -5977,7 +5977,6 @@ text {
 #container {
   width: 100%;
   min-width: 825px;
-  display: table;
   z-index: 1;
   padding: 0;
   margin: 0;
@@ -5986,7 +5985,7 @@ text {
 /* Content */
 #content {
   min-width: 775px;
-  display: table-cell;
+  margin-left: 225px;
   box-sizing: border-box;
 }
 #content.cozy {
@@ -6028,14 +6027,17 @@ div.content-normal {
 /* Sidebar */
 #sidebar {
   width: 225px;
-  display: table-cell;
   background: #f2f2f2;
   border-right: 1px solid #b3b3b3;
+  position: fixed;
   box-sizing: border-box;
   margin: 0;
   padding: 0px;
   border-spacing: 0px;
   vertical-align: top;
+  top: 62px;
+  bottom: 0;
+  overflow-y: auto;
 }
 #sidebar.cozy {
   width: 215px;
@@ -6197,6 +6199,42 @@ div.content-normal {
 }
 .navigation-text {
   margin: 0 0 0 8px;
+}
+/* Compose - New */
+.compose-from-avatar {
+  width: 45px;
+}
+.compose-from-address {
+  color: #b3b3b3;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+}
+#thread-reply {
+  min-height: 225px;
+  padding: 10px 15px;
+  background: #f2f2f2;
+}
+#thread-reply-actions {
+  padding: 10px;
+}
+#reply-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 18px;
+}
+#reply-textarea:focus {
+  outline: none;
+  border: 1px solid #b3b3b3;
+}
+#reply-options li {
+  margin-left: 25px;
+}
+#thread-reply-details {
+  display: none;
 }
 /* Compose */
 .compose-headers {
@@ -6644,49 +6682,6 @@ a.compose-show-field {
   font-weight: bold;
   color: #4b7945;
   text-transform: uppercase;
-}
-/* Thread Reply */
-#thread-reply {
-  min-height: 225px;
-  padding: 10px 15px;
-  background: #f2f2f2;
-  border-top: 1px solid #b3b3b3;
-}
-#thread-reply-actions {
-  padding: 10px;
-}
-#reply-textarea {
-  padding: 10px;
-  width: 100%;
-  border: 1px solid #cccccc;
-  font-size: 14px;
-  line-height: 18px;
-}
-#reply-textarea:focus {
-  outline: none;
-  border: 1px solid #b3b3b3;
-}
-#reply-options li {
-  margin-left: 25px;
-}
-#thread-reply-details {
-  display: none;
-}
-.message-headers {
-  padding: 15px;
-  border-bottom: 1px solid #b3b3b3;
-  font-size: 18px;
-  line-height: 18px;
-}
-.message-headers li {
-  margin-bottom: 10px;
-}
-.message-headers a {
-  font-size: 18px;
-}
-.message-datetime {
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  float: right;
 }
 .message-email-address {
   display: inline-block;
