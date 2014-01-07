@@ -116,27 +116,39 @@ class Command:
         else:
             self.args = []
 
-    def _idx(self, reset=False, wait=True, quiet=False):
+    def _idx(self, reset=False, wait=True, wait_all=False, quiet=False):
         session, config = self.session, self.session.config
         if not reset and config.index:
             return config.index
 
-        def __do_load():
+        def __do_load1():
             if reset:
                 config.index = None
                 session.results = []
                 session.searched = []
                 session.displayed = {'start': 1, 'count': 0}
             idx = config.get_index(session)
-            idx.update_tag_stats(session, config)
             if not wait:
                 session.ui.reset_marks(quiet=quiet)
-            return idx
         if wait:
-            return config.slow_worker.do(session, 'Load', __do_load)
+            rv = config.slow_worker.do(session, 'Load', __do_load1)
         else:
-            config.slow_worker.add_task(session, 'Load', __do_load)
-            return None
+            config.slow_worker.add_task(session, 'Load', __do_load1)
+            rv = None
+
+        def __do_load2():
+            idx = config.get_index(session)
+            idx.update_tag_stats(session, config)
+            config.vcards.load_vcards(session)
+            if not wait_all:
+                session.ui.reset_marks(quiet=quiet)
+            return idx
+        if wait_all:
+            config.slow_worker.do(session, 'Load2', __do_load2)
+        else:
+            config.slow_worker.add_task(session, 'Load2', __do_load2)
+
+        return rv
 
     def _choose_messages(self, words):
         msg_ids = set()

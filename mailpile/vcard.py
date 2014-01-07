@@ -633,17 +633,13 @@ class SimpleVCard(object):
         else:
             raise ValueError('Need data or a filename!')
 
-        if (not lines.pop(0).upper() == 'BEGIN:VCARD' or
+        if (not len(lines) >= 2 or
+                not lines.pop(0).upper() == 'BEGIN:VCARD' or
                 not lines.pop(-1).upper() == 'END:VCARD'):
-            print '%s' % lines
-            raise ValueError('Not a valid VCard')
+            raise ValueError('Not a valid VCard: %s' % '\n'.join(lines))
 
         for line in lines:
-            try:
-                self.add(VCardLine(line))
-            except:
-                print 'Bad data: %s' % lines
-                raise
+            self.add(VCardLine(line))
 
         return self
 
@@ -744,9 +740,10 @@ class VCardStore(dict):
                     if session:
                         session.ui.mark('Loaded %s' % c.email)
                 except:
-                    import traceback
-                    traceback.print_exc()
                     if session:
+                        if 'vcard' in self.config.sys.debug:
+                            import traceback
+                            traceback.print_exc()
                         session.ui.warning('Failed to load vcard %s' % fn)
         except OSError:
             pass

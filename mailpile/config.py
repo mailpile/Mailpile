@@ -898,7 +898,6 @@ class ConfigManager(ConfigDict):
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
                                                            mkdir=True))
-        self.vcards.load_vcards(session)
 
     def load_plugins(self, session):
         import mailpile.plugins
