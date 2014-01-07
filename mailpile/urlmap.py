@@ -571,6 +571,8 @@ else:
     import mailpile.app
     import mailpile.config
     import mailpile.plugins.tags
+    import mailpile.plugins.search
+    import mailpile.plugins.compose
     import mailpile.defaults
     import mailpile.plugins
     import mailpile.ui
