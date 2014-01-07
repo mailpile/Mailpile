@@ -242,6 +242,8 @@ UICLASSES = []
 DISPLAY_MODES = {}
 DISPLAY_ACTIONS = {}
 SELECTION_ACTIONS = {}
+ASSETS = {"javascript": [], "stylesheet": []}
+BODY_BLOCKS = {}
 ACTIVITIES = []
 
 def register_uiclass(uiclass):
@@ -250,6 +252,7 @@ def register_uiclass(uiclass):
         DISPLAY_ACTIONS[uiclass] = []
         DISPLAY_MODES[uiclass] = []
         SELECTION_ACTIONS[uiclass] = []
+        BODY_BLOCKS[uiclass] = []
 
 def register_display_mode(uiclass, name, jsaction, text, url="#", icon=None):
     assert(uiclass in DISPLAY_MODES)
@@ -294,6 +297,24 @@ def register_activity(name, jsaction, icon, url="#"):
             "text": text
         })
 
+def register_asset(assettype, name):
+    assert(assettype in ASSETS)
+    if name not in ASSETS[assettype]:
+        ASSETS[assettype].append(name)
+
+def get_assets(assettype):
+    assert(assettype in ASSETS)
+    return ASSETS[assettype]
+
+def register_body_block(uiclass, name):
+    assert(uiclass in UICLASSES)
+    if name not in BODY_BLOCKS[uiclass]:
+        BODY_BLOCKS[uiclass].append(name)
+
+def get_body_blocks(uiclass):
+    assert(uiclass in UICLASSES)
+    return BODY_BLOCKS[uiclass]
+
 def get_activities():
     return ACTIVITIES
 
@@ -306,5 +327,5 @@ def get_display_actions(uiclass):
 def get_display_modes(uiclass):
     return DISPLAY_MODES[uiclass]
 
-for cl in ["search", "thread", "contact", "tag"]:
+for cl in ["base", "search", "thread", "contact", "tag"]:
     register_uiclass(cl)

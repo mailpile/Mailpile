@@ -18,6 +18,8 @@
 ---------------------------------------------------------------------------- -->
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <link rel="stylesheet" href="/static/css/default.css" />
+  {% for asset in get_assets("stylesheet") %}<link rel="stylesheet" href="{{asset}}"/>
+  {% endfor %}
   <!--[if lt IE 9]>
     <script src="/static/js/html5.js"></script>
   <![endif]-->
@@ -187,6 +189,8 @@
 <script type="text/javascript" src="/static/js/app/contacts.js"></script>
 <script type="text/javascript" src="/static/js/app/tags.js"></script>
 <script type="text/javascript" src="/static/js/app/settings.js"></script>
+{% for asset in get_assets("javascript") %}<link rel="stylesheet" href="{{asset}}"/>
+{% endfor %}
 <script type="text/javascript">
 mailpile.instance = {
  "command": "{{ command }}",

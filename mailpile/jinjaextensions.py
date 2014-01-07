@@ -10,7 +10,7 @@ from jinja2.utils import contextfunction, import_string, Markup
 
 from mailpile.commands import Action
 from mailpile.util import *
-from mailpile.plugins import get_activities, get_selection_actions, get_display_actions, get_display_modes
+from mailpile.plugins import get_activities, get_selection_actions, get_display_actions, get_display_modes, get_assets, get_body_blocks
 
 
 class MailpileCommand(Extension):
@@ -49,6 +49,8 @@ class MailpileCommand(Extension):
         environment.globals['get_selection_actions'] = get_selection_actions
         environment.globals['get_display_actions'] = get_display_actions
         environment.globals['get_display_modes'] = get_display_modes
+        environment.globals['get_assets'] = get_assets
+        environment.globals['get_body_blocks'] = get_body_blocks
 
 
     def _command(self, command, *args, **kwargs):
