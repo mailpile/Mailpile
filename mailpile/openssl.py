@@ -10,7 +10,7 @@ def genkey(self, filename, magic):
     Nice utility, Bob!
     """
     h = sha512()
-    h.update(":%s:%s:" % (filename, magic))
+    h.update(":%s:%s:" % (os.path.basename(filename), magic))
     return h.hexdigest()
 
 
