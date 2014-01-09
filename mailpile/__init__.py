@@ -13,19 +13,20 @@ __all__ = ['Mailpile',
 class Mailpile(object):
     """This object provides a simple Python API to Mailpile."""
 
-    def __init__(self, ui=mailpile.ui.UserInteraction,
-                       workdir=None,
-                       session=None):
+    def __init__(self,
+                 ui=mailpile.ui.UserInteraction,
+                 workdir=None,
+                 session=None):
         if not session:
-          self._config = mailpile.app.ConfigManager(workdir=workdir,
-                                         rules=mailpile.defaults.CONFIG_RULES)
-          self._session = mailpile.ui.Session(self._config)
-          self._ui = self._session.ui = ui(self._config)
-          self._session.config.load(self._session)
-          self._session.main = True
+            self._config = mailpile.app.ConfigManager(
+                workdir=workdir, rules=mailpile.defaults.CONFIG_RULES)
+            self._session = mailpile.ui.Session(self._config)
+            self._ui = self._session.ui = ui(self._config)
+            self._session.config.load(self._session)
+            self._session.main = True
         else:
-          self._session = session
-          self._config = session.config
+            self._session = session
+            self._config = session.config
 
         for cls in mailpile.commands.COMMANDS:
             names, argspec = cls.SYNOPSIS[1:3], cls.SYNOPSIS[3]

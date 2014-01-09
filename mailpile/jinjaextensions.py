@@ -10,7 +10,9 @@ from jinja2.utils import contextfunction, import_string, Markup
 
 from mailpile.commands import Action
 from mailpile.util import *
-from mailpile.plugins import get_activities, get_selection_actions, get_display_actions, get_display_modes, get_assets, get_body_blocks
+from mailpile.plugins import get_activities, get_selection_actions
+from mailpile.plugins import get_display_actions, get_display_modes
+from mailpile.plugins import get_assets, get_body_blocks
 
 
 class MailpileCommand(Extension):
@@ -33,8 +35,10 @@ class MailpileCommand(Extension):
         environment.filters['navigation_on'] = self._navigation_on
         environment.globals['show_tags'] = self._show_tags
         environment.filters['show_tags'] = self._show_tags
-        environment.globals['message_encryption_status'] = self._message_encryption_status
-        environment.filters['message_encryption_status'] = self._message_encryption_status
+        environment.globals['message_encryption_status'
+                            ] = self._message_encryption_status
+        environment.filters['message_encryption_status'
+                            ] = self._message_encryption_status
 
         # See utils.py for these functions:
         environment.globals['elapsed_datetime'] = elapsed_datetime
@@ -52,7 +56,6 @@ class MailpileCommand(Extension):
         environment.globals['get_assets'] = get_assets
         environment.globals['get_body_blocks'] = get_body_blocks
 
-
     def _command(self, command, *args, **kwargs):
         return Action(self.env.session, command, args, data=kwargs).as_dict()
 
@@ -66,45 +69,40 @@ class MailpileCommand(Extension):
 
     def _friendly_bytes(self, number, decimals=0):
         # See mailpile/util.py:friendly_number if this needs fixing
-        return friendly_number(number, decimals=decimals, base=1024, suffix='B')
+        return friendly_number(number,
+                               decimals=decimals, base=1024, suffix='B')
 
     def _show_avatar(self, contact):
-
-      if "photo" in contact:
-        photo = contact['photo']
-      else:
-        photo = '/static/img/avatar-default.png'
-
-      return photo
+        if "photo" in contact:
+            photo = contact['photo']
+        else:
+            photo = '/static/img/avatar-default.png'
+        return photo
 
     def _navigation_on(self, search_tags, slug):
         if search_tags:
-          for tag in search_tags:
-            if tag.slug == slug:
-              return "navigation-on"
-            else:
-              return ""
+            for tag in search_tags:
+                if tag.slug == slug:
+                    return "navigation-on"
+                else:
+                    return ""
 
     def _show_tags(self, search_terms, tags):
-    
-      return ""
+        return ""
 
     def _message_encryption_status(self, message_parts):
-
-      state = "unencrypted"
-      count = 0
-
-      for part in message_parts:
-        if 'encryption_info' in part:
-          if part["encryption_info"]['status'] == "decrypted":
-            count += 1
-            state = "encrypted"
-          elif part["encryption_info"]['status'] == "missingkey":
-            count += 1
-            state = "missingkey"
-          elif part["encryption_info"]['status'] == "error":
-            state = "error"
-          else:
-            count += 0
-
-      return state
+        state = "unencrypted"
+        count = 0
+        for part in message_parts:
+            if 'encryption_info' in part:
+                if part["encryption_info"]['status'] == "decrypted":
+                    count += 1
+                    state = "encrypted"
+                elif part["encryption_info"]['status'] == "missingkey":
+                    count += 1
+                    state = "missingkey"
+                elif part["encryption_info"]['status'] == "error":
+                    state = "error"
+                else:
+                    count += 0
+        return state

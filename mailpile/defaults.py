@@ -10,10 +10,9 @@ CONFIG_PLUGINS = []
 CONFIG_RULES = {
     'version': [_('Mailpile program version'), int, 1],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
-    'sys': [_('Technical system settings'), False,
-    {
+    'sys': [_('Technical system settings'), False, {
         'fd_cache_size':  (_('Max files kept open at once'), int,         500),
-        'history_length': (_('History length (lines, <0 = no save)'), int,100),
+        'history_length': (_('History length (lines, <0=no save)'), int,  100),
         'http_port':      (_('Listening port for web UI'), int,         33411),
         'postinglist_kb': (_('Posting list target size in KB'), int,       64),
         'sort_max':       (_('Max results we sort "well"'), int,         2500),
@@ -30,13 +29,12 @@ CONFIG_RULES = {
         'plugins':        [_('Plugins to load on startup'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {
-             'html_theme': [_('Default theme'),
-                            'dir', os.path.join('static', 'default')],
-             'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
-         }],
+            'html_theme': [_('Default theme'),
+                           'dir', os.path.join('static', 'default')],
+            'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
+        }],
     }],
-    'prefs': [_("User preferences"), False,
-    {
+    'prefs': [_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),
         'rescan_interval': (_('New mail check frequency'), int,             0),
         'gpg_clearsign':   (_('Inline PGP signatures or attached'),
@@ -51,8 +49,7 @@ CONFIG_RULES = {
         'default_route':   (_('Default outgoing mail route'),
                             'mailroute', DEFAULT_SENDMAIL),
         'language':        (_('User interface language'), str,             ''),
-        'vcard':           [_("VCard import/export settings"), False,
-        {
+        'vcard':           [_("VCard import/export settings"), False, {
             'importers':   [_("VCard import settings"), False,             {}],
             'exporters':   [_("VCard export settings"), False,             {}],
             'context':     [_("VCard context helper settings"), False,     {}],

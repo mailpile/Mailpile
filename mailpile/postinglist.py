@@ -91,9 +91,10 @@ class PostingList(object):
         sig = sig or cls.WordSig(word, config)
         fd, fn = cls.GetFile(session, sig, mode='a')
         if (compact
-        and (os.path.getsize(os.path.join(config.postinglist_dir(fn), fn))
-                > (1024 * config.sys.postinglist_kb) - (cls.HASH_LEN * 6))
-        and (random.randint(0, 50) == 1)):
+                and (os.path.getsize(os.path.join(config.postinglist_dir(fn),
+                     fn)) > ((1024 * config.sys.postinglist_kb) -
+                             (cls.HASH_LEN * 6)))
+                and (random.randint(0, 50) == 1)):
             # This will compact the files and split out hot-spots, but we
             # only bother "once in a while" when the files are "big".
             fd.close()
@@ -186,7 +187,7 @@ class PostingList(object):
         for word in self.WORDS.keys():
             data = self.WORDS.get(word, [])
             if ((prefix == 'ALL' or word.startswith(prefix))
-            and len(data) > 0):
+                    and len(data) > 0):
                 output.append(('%s\t%s\n'
                                ) % (word, '\t'.join(['%s' % x for x in data])))
         return ''.join(output)
@@ -265,6 +266,7 @@ class PostingList(object):
 
 GLOBAL_GPL_LOCK = threading.Lock()
 
+
 class GlobalPostingList(PostingList):
 
     @classmethod
@@ -341,7 +343,7 @@ class GlobalPostingList(PostingList):
             sig = sig or self.sig
             if sig in self.WORDS and len(self.WORDS[sig]) > 0:
                 PostingList.Append(self.session, sig, self.WORDS[sig],
-                                                      sig=sig, compact=compact)
+                                   sig=sig, compact=compact)
                 del self.WORDS[sig]
         finally:
             self.lock.release()

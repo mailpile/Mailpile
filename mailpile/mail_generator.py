@@ -1,5 +1,9 @@
 # Copyright (C) 2001-2010 Python Software Foundation
 # Contact: email-sig@python.org
+#
+# Updated/forked January 2014 by Bjarni R. Einarsson <bre@mailpile.is>
+# to match the python 3.x email.generator CRLF control API (linesep=...).
+#
 
 """Classes to generate plain text from a message object tree."""
 
@@ -19,6 +23,7 @@ NL = '\n'
 
 fcre = re.compile(r'^From ', re.MULTILINE)
 
+
 def _is8bitstring(s):
     if isinstance(s, str):
         try:
@@ -28,7 +33,6 @@ def _is8bitstring(s):
     return False
 
 
-
 class Generator:
     """Generates output from a Message object tree.
 
@@ -39,7 +43,8 @@ class Generator:
     # Public interface
     #
 
-    def __init__(self, outfp, mangle_from_=True, maxheaderlen=78, linesep=None):
+    def __init__(self, outfp,
+                 mangle_from_=True, maxheaderlen=78, linesep=None):
         """Create the generator for message flattening.
 
         outfp is the output file-like object for writing the message to.  It
@@ -299,8 +304,8 @@ class Generator:
         self._fp.write(payload)
 
 
-
 _FMT = '[Non-text (%(type)s) part of message omitted, filename %(filename)s]'
+
 
 class DecodedGenerator(Generator):
     """Generates a text representation of a message.
@@ -308,8 +313,8 @@ class DecodedGenerator(Generator):
     Like the Generator base class, except that non-text parts are substituted
     with a format string representing the part.
     """
-    def __init__(self, outfp, mangle_from_=True, maxheaderlen=78, fmt=None,
-                              linesep=None):
+    def __init__(self, outfp,
+                 mangle_from_=True, maxheaderlen=78, fmt=None, linesep=None):
         """Like Generator.__init__() except that an additional optional
         argument is allowed.
 
@@ -347,21 +352,21 @@ class DecodedGenerator(Generator):
                 pass
             else:
                 print >> self, self._fmt % {
-                    'type'       : part.get_content_type(),
-                    'maintype'   : part.get_content_maintype(),
-                    'subtype'    : part.get_content_subtype(),
-                    'filename'   : part.get_filename('[no filename]'),
+                    'type': part.get_content_type(),
+                    'maintype': part.get_content_maintype(),
+                    'subtype': part.get_content_subtype(),
+                    'filename': part.get_filename('[no filename]'),
                     'description': part.get('Content-Description',
                                             '[no description]'),
-                    'encoding'   : part.get('Content-Transfer-Encoding',
-                                            '[no encoding]'),
+                    'encoding': part.get('Content-Transfer-Encoding',
+                                         '[no encoding]'),
                     }, self._NL,
 
 
-
 # Helper
 _width = len(repr(sys.maxint-1))
 _fmt = '%%0%dd' % _width
+
 
 def _make_boundary(text=None):
     # Craft a random boundary.  If text is given, ensure that the chosen

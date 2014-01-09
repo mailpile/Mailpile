@@ -45,6 +45,7 @@ class SearchResultSet:
 
 SEARCH_RESULT_CACHE = {}
 
+
 class CachedSearchResultSet(SearchResultSet):
     """
     Cached search result.
@@ -179,10 +180,11 @@ class MailIndex:
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
-                                    ) % self.config.mailindex_file())
+                                     ) % self.config.mailindex_file())
         self.cache_sort_orders(session)
         if session:
-            session.ui.mark(_('Loaded metadata, %d messages') % len(self.INDEX))
+            session.ui.mark(_('Loaded metadata, %d messages'
+                              ) % len(self.INDEX))
         self.EMAILS_SAVED = len(self.EMAILS)
 
     def save_changes(self, session=None):
@@ -309,13 +311,14 @@ class MailIndex:
                 return msg_ts
             else:
                 session.ui.warning(_('=%s/%s using Received: instead of Date:'
-                                    ) % (msg_mid, msg_id))
+                                     ) % (msg_mid, msg_id))
                 return median
         else:
             # If the above fails, we assume the messages in the mailbox are in
             # chronological order and just add 1 second to the date of the last
             # message if date parsing fails for some reason.
-            session.ui.warning(_('=%s/%s has a bogus date') % (msg_mid, msg_id))
+            session.ui.warning(_('=%s/%s has a bogus date'
+                                 ) % (msg_mid, msg_id))
             return last_date + 1
 
     def get_msg_id(self, msg, msg_ptr):
@@ -339,15 +342,15 @@ class MailIndex:
         try:
             mbox = mailbox_opener(session, mailbox_idx)
             if mbox.editable:
-                session.ui.mark(_('%s: Skipped: %s')
-                    % (mailbox_idx, mailbox_fn))
+                session.ui.mark(_('%s: Skipped: %s'
+                                  ) % (mailbox_idx, mailbox_fn))
                 return 0
             else:
-                session.ui.mark(_('%s: Checking: %s')
-                    % (mailbox_idx, mailbox_fn))
+                session.ui.mark(_('%s: Checking: %s'
+                                  ) % (mailbox_idx, mailbox_fn))
         except (IOError, OSError, NoSuchMailboxError), e:
             session.ui.mark(_('%s: Error opening: %s (%s)'
-                             ) % (mailbox_idx, mailbox_fn, e))
+                              ) % (mailbox_idx, mailbox_fn, e))
             return 0
 
         unparsed = mbox.unparsed()
@@ -366,8 +369,9 @@ class MailIndex:
 
             i = unparsed[ui]
             parse_status = _('%s: Reading your mail: %d%% (%d/%d messages)'
-                            ) % (mailbox_idx,
-                                 100 * ui / len(unparsed), ui, len(unparsed))
+                             ) % (mailbox_idx,
+                                  100 * ui / len(unparsed),
+                                  ui, len(unparsed))
 
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
             if msg_ptr in self.PTRS:
@@ -394,8 +398,8 @@ class MailIndex:
                 # Add new message!
                 msg_mid = b36(len(self.INDEX))
 
-                msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg,
-                                                        msg_ts)
+                msg_ts = self._extract_date_ts(session,
+                                               msg_mid, msg_id, msg, msg_ts)
 
                 play_nice_with_threads()
                 keywords, snippet = self.index_message(
@@ -410,7 +414,7 @@ class MailIndex:
                 msg_snippet = snippet[:max(0, snippet_max - len(msg_subject))]
 
                 tags = [k.split(':')[0] for k in keywords
-                                              if k.endswith(':tag')]
+                        if k.endswith(':tag')]
 
                 msg_to = (ExtractEmails(self.hdr(msg, 'to')) +
                           ExtractEmails(self.hdr(msg, 'cc')) +
@@ -429,7 +433,8 @@ class MailIndex:
 
         if added:
             mbox.save(session)
-        session.ui.mark(_('%s: Indexed mailbox: %s') % (mailbox_idx, mailbox_fn))
+        session.ui.mark(_('%s: Indexed mailbox: %s'
+                          ) % (mailbox_idx, mailbox_fn))
         return added
 
     def index_email(self, session, email):
@@ -439,7 +444,8 @@ class MailIndex:
                                     email.get_msg_info(self.MSG_ID),
                                     email.get_msg(),
                                     email.get_msg_size(),
-                                   long(email.get_msg_info(self.MSG_DATE), 36),
+                                    long(email.get_msg_info(self.MSG_DATE),
+                                         36),
                                     mailbox=mbox_idx,
                                     compact=False,
                                     filter_hooks=[self.filter_keywords])
@@ -448,7 +454,7 @@ class MailIndex:
         msg_conv_mid = None
         refs = set((self.hdr(msg, 'references') + ' ' +
                     self.hdr(msg, 'in-reply-to')
-                   ).replace(',', ' ').strip().split())
+                    ).replace(',', ' ').strip().split())
         for ref_id in [b64c(sha1b64(r)) for r in refs]:
             try:
                 # Get conversation ID ...
@@ -568,7 +574,7 @@ class MailIndex:
         return [self.EMAILS[int(e, 36)] for e in eids.split(',') if e]
 
     def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from, msg_to,
-                          msg_subject, msg_snippet, tags):
+                    msg_subject, msg_snippet, tags):
         msg_idx_pos = len(self.INDEX)
         msg_mid = b36(msg_idx_pos)
         msg_info = [
@@ -616,7 +622,7 @@ class MailIndex:
         if not msg_idxs:
             return
         for fid, trms, tags, c in session.config.get_filters(
-                                                     filter_on=filter_on):
+                filter_on=filter_on):
             for t in tags.split():
                 tag_id = t[1:].split(':')[0]
                 if t[0] == '-':
@@ -625,7 +631,7 @@ class MailIndex:
                     self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
     def read_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
-                                    mailbox=None):
+                     mailbox=None):
         keywords = []
         snippet = ''
         payload = [None]
@@ -650,7 +656,7 @@ class MailIndex:
                                                         ).text_content()
                     except:
                         session.ui.warning(_('=%s/%s has bogus HTML.'
-                                            ) % (msg_mid, msg_id))
+                                             ) % (msg_mid, msg_id))
                         textpart = payload[0]
                 else:
                     textpart = payload[0]
@@ -734,7 +740,7 @@ class MailIndex:
         return (set(keywords) - STOPLIST), snippet.strip()
 
     def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
-                            mailbox=None, compact=True, filter_hooks=[]):
+                      mailbox=None, compact=True, filter_hooks=[]):
         keywords, snippet = self.read_message(session,
                                               msg_mid, msg_id, msg,
                                               msg_size, msg_ts,
@@ -765,9 +771,9 @@ class MailIndex:
             return rv
         except IndexError:
             return [None, '', None, b36(0),
-                            '(no sender)', '',
-                            '(not in index: %s)' % msg_idx, '',
-                            '', '', '-1']
+                    '(no sender)', '',
+                    '(not in index: %s)' % msg_idx, '',
+                    '', '', '-1']
 
     def set_msg_at_idx_pos(self, msg_idx, msg_info):
         if msg_idx < len(self.INDEX):
@@ -823,7 +829,8 @@ class MailIndex:
         if not msg_idxs:
             return
         CachedSearchResultSet.DropCaches()
-        session.ui.mark(_('Tagging %d messages (%s)') % (len(msg_idxs), tag_id))
+        session.ui.mark(_('Tagging %d messages (%s)'
+                          ) % (len(msg_idxs), tag_id))
         for msg_idx in list(msg_idxs):
             if conversation:
                 for reply in self.get_conversation(msg_idx=msg_idx):
@@ -833,7 +840,7 @@ class MailIndex:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
                 msg_info = self.get_msg_at_idx_pos(msg_idx)
                 tags = set([r for r in msg_info[self.MSG_TAGS].split(',')
-                                    if r])
+                            if r])
                 tags.add(tag_id)
                 msg_info[self.MSG_TAGS] = ','.join(list(tags))
                 self.INDEX[msg_idx] = self.m2l(msg_info)
@@ -858,13 +865,13 @@ class MailIndex:
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
         session.ui.mark(_('Untagging %d messages (%s)') % (len(msg_idxs),
-                                                        tag_id))
+                                                           tag_id))
         eids = []
         for msg_idx in msg_idxs:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
                 msg_info = self.get_msg_at_idx_pos(msg_idx)
                 tags = set([r for r in msg_info[self.MSG_TAGS].split(',')
-                                    if r])
+                            if r])
                 if tag_id in tags:
                     tags.remove(tag_id)
                     msg_info[self.MSG_TAGS] = ','.join(list(tags))
@@ -906,7 +913,7 @@ class MailIndex:
                     where = searchterms.index(p + 'is:unread')
                     searchterms[where] = p + 'tag:New'
                 for t in [term for term in searchterms
-                                        if term.startswith(p + 'tag:')]:
+                          if term.startswith(p + 'tag:')]:
                     where = searchterms.index(t)
                     searchterms[where] = p + 'in:' + t.split(':', 1)[1]
 
@@ -988,7 +995,7 @@ class MailIndex:
         srs.set_results(results, exclude)
         if session:
             session.ui.mark(_('Found %d results (%d suppressed)'
-                             ) % (len(results), len(srs.excluded())))
+                              ) % (len(results), len(srs.excluded())))
         return srs
 
     CACHED_SORT_ORDERS = [
@@ -998,14 +1005,14 @@ class MailIndex:
         ('from', False,
          lambda s, k: s.get_msg_at_idx_pos(k)[s.MSG_FROM]),
         ('subject', False,
-        lambda s, k: s.get_msg_at_idx_pos(k)[s.MSG_SUBJECT]),
+         lambda s, k: s.get_msg_at_idx_pos(k)[s.MSG_SUBJECT]),
     ]
 
     def cache_sort_orders(self, session, wanted=None):
         keys = range(0, len(self.INDEX))
         if session:
             session.ui.mark(_('Finding conversations (%d messages)...'
-                             ) % len(keys))
+                              ) % len(keys))
         self.INDEX_CONV = [int(self.get_msg_at_idx_pos(r)[self.MSG_CONV_MID],
                                36) for r in keys]
         for order, by_default, sorter in self.CACHED_SORT_ORDERS:
@@ -1013,7 +1020,7 @@ class MailIndex:
                 continue
             if session:
                 session.ui.mark(_('Sorting %d messages by %s...'
-                                 ) % (len(keys), _(order)))
+                                  ) % (len(keys), _(order)))
 
             play_nice_with_threads()
             o = keys[:]
@@ -1053,8 +1060,9 @@ class MailIndex:
                             for result in results:
                                 if result >= len(self.INDEX) or result < 0:
                                     say(('Bogus message index: %s'
-                                        ) % result)
-                            say(_('Recovering from bogus sort, corrupt index?'))
+                                         ) % result)
+                            say(_('Recovering from bogus sort, '
+                                  'corrupt index?'))
                             say(_('Please tell team@mailpile.is !'))
                             clean_results = [r for r in results
                                              if r >= 0 and r < len(self.INDEX)]
@@ -1083,7 +1091,7 @@ class MailIndex:
             results.reverse()
             results[:] = filter(cset.__contains__, results)
             session.ui.mark(_('Sorted %d messages by %s, %d conversations'
-                             ) % (count, how, len(results)))
+                              ) % (count, how, len(results)))
         else:
             session.ui.mark(_('Sorted %d messages by %s') % (count, _(how)))
 
@@ -1094,7 +1102,7 @@ class MailIndex:
         new_tid = config.get_tag_id('new')
         new_msgs = (new_tid and GlobalPostingList(session,
                                                   '%s:tag' % new_tid).hits()
-                             or set([]))
+                    or set([]))
         self.STATS.update({
             'ALL': [len(self.INDEX), len(new_msgs)]
         })
