@@ -1,18 +1,10 @@
 import os
 import sys
 import random
-from hashlib import sha512
 from subprocess import Popen, PIPE
 from datetime import datetime
 
-def genkey(secret, salt):
-    """
-    Generate keys for files based on host key and filename. 
-    Nice utility, Bob!
-    """
-    h = sha512()
-    h.update(":%s:%s:" % (secret, salt))
-    return h.hexdigest()
+from mailpile.util import sha512b64 as genkey
 
 
 class SymmetricEncrypter:
@@ -37,7 +29,8 @@ class SymmetricEncrypter:
         self.pipes = {}
         args.insert(0, self.binary)
 
-        if debug: print "Running openssl as: %s" % " ".join(args)
+        if debug:
+            print "Running openssl as: %s" % " ".join(args)
 
         proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
@@ -65,62 +58,49 @@ class SymmetricEncrypter:
 
         return proc.returncode, retvals
 
-
     def encrypt(self, data, cipher=None):
         # TODO: Make keys get passed through files or environment
         if not cipher:
             cipher = self.defaultcipher
-        salt = sha512(str(random.getrandbits(512))).hexdigest()[:32]
+        salt = genkey(str(random.getrandbits(512)))[:32]
         enckey = genkey(self.secret, salt)
-        params = ["enc", "-e", "-a", "-%s" % cipher, 
-                  "-pass", "pass:%s" % enckey,
-                 ]
+        params = ["enc", "-e", "-a", "-%s" % cipher,
+                  "-pass", "pass:%s" % enckey]
         retval, res = self.run(params, output=data)
         ret = "%s\ncipher: %s\nsalt: %s\n\n%s\n%s" % (
             self.beginblock, cipher, salt, res["stdout"], self.endblock)
         return ret
 
-
     def decrypt(self, data):
         # TODO: Make keys get passed through files or environment
-        cipher = self.defaultcipher
-        salt = None
-
         try:
             head, enc, tail = data.split("\n\n")
-            head = head.split("\n")
+            head = [h.strip() for h in head.split("\n")]
         except:
-            head, enc, tail = data.split("\r\n\r\n")
-            head = head.split("\r\n")
+            try:
+                head, enc, tail = data.split("\r\n\r\n")
+                head = [h.strip() for h in head.split("\r\n")]
+            except:
+                raise ValueError("Not a valid OpenSSL encrypted block.")
 
-        if (head[0].strip() == self.beginblock
-                and tail.strip() == self.endblock):
-            del(head[0])
-            while head:
-                line = head.pop(0)
-                if line == "":
-                    break
-                try:
-                    key, value = line.split(": ")
-                except:
-                    raise ValueError("Message contained invalid parameter.")
-
-                if key == "cipher":
-                    cipher = value.strip()
-                elif key == "salt":
-                    salt = value.strip()
-                else:
-                    raise ValueError("Message contained invalid parameter.")
-        else:
+        if (not head or not enc or not tail
+                or head[0] != self.beginblock
+                or tail.strip() != self.endblock):
             raise ValueError("Not a valid OpenSSL encrypted block.")
 
+        try:
+            headers = dict([l.split(': ', 1) for l in head[1:]])
+        except:
+            raise ValueError("Message contained invalid parameter.")
+
+        cipher = headers.get('cipher', self.defaultcipher)
+        salt = headers.get('salt')
         if not salt:
             raise ValueError("Encryption salt not known.")
 
         enckey = genkey(self.secret, salt)
-        params = ["enc", "-d", "-a", "-%s" % cipher, 
-                  "-pass", "pass:%s" % enckey,
-                 ]
+        params = ["enc", "-d", "-a", "-%s" % cipher,
+                  "-pass", "pass:%s" % enckey]
         retval, res = self.run(params, output=enc)
         return res["stdout"]
 
@@ -145,7 +125,7 @@ class EncryptedFile(object):
 
 if __name__ == "__main__":
     s = SymmetricEncrypter("d3944bfea1e882dfc2e4878fa8905c6a2c")
-    teststr = "Hello! This is a longish thing."
+    teststr = "Hello! This is a longish thing." * 50
     testpass = "kukalabbi"
     if teststr == s.decrypt(s.encrypt(teststr)):
         print "Basic decryption worked"
@@ -158,10 +138,10 @@ if __name__ == "__main__":
     t0 = datetime.now()
     enc = s.encrypt(teststr)
     print "Speed test:"
-    for i in range(10000):
+    for i in range(5000):
         s.decrypt(enc)
-        if i % 100 == 0:
-            print "\r %-3d%% %s>" % (int(i / 100.0), "-" * (i//200)),
+        if i % 50 == 0:
+            print "\r %-3d%% %s>" % (int(i / 50.0), "-" * (i//100)),
             sys.stdout.flush()
     t1 = datetime.now()
-    print "\n10000 decrypt operations took %s" % (t1-t0)
+    print "\n5000 decrypt ops took %s => %s/op" % ((t1-t0), (t1-t0)/5000)
