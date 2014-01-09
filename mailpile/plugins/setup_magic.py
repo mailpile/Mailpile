@@ -168,7 +168,7 @@ class Setup(Command):
             session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 
         if (session.config.prefs.gpg_recipient
-               and not self._idx().INDEX
+               and not (self._idx() and self._idx().INDEX)
                and not session.config.prefs.obfuscate_index):
             randcrap = sha512b64(open('/dev/urandom').read(1024),
                                  session.config.prefs.gpg_recipient,
