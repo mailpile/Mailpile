@@ -310,14 +310,11 @@ class SearchResults(dict):
         msg_ts = long(msg_info[MailIndex.MSG_DATE], 36)
         msg_date = datetime.datetime.fromtimestamp(msg_ts)
         um = mailpile.urlmap.UrlMap(self.session)
-        fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
-        fvcard = self.session.config.vcards.get_vcard(fe)
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
-            'from_aid': (list(self._msg_addresses(msg_info, no_to=True))
-                         or [''])[0],
+            'from_aid': (self._msg_addresses(msg_info, no_to=True) or [''])[0],
             'to_aids': self._msg_addresses(msg_info, no_from=True),
             'tag_tids': self._msg_tags(msg_info),
             'thread_mid': msg_info[MailIndex.MSG_CONV_MID],
@@ -340,6 +337,7 @@ class SearchResults(dict):
                 pass
 
         # Misc flags
+        fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
         if [e for e in self.idx.config.profiles
                     if e.email.lower() == fe.lower()]:
             expl['flags']['from_me'] = True;
@@ -365,12 +363,12 @@ class SearchResults(dict):
         else:
             cids = set([t for t in msg_info[MailIndex.MSG_TO].split(',') if t])
         if not no_from:
-            frm = (ExtractEmails(msg_info[MailIndex.MSG_FROM]) or [''])[0]
-            if frm:
+            fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
+            if fe:
                 try:
-                    cids.add(b36(self.idx.EMAIL_IDS[frm.lower()]))
+                    cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
                 except KeyError:
-                    cids.add(b36(self.idx._add_email(frm)))
+                    cids.add(b36(self.idx._add_email(fe, name=fn)))
         return sorted(list(cids))
 
     def _address(self, cid):

@@ -6,6 +6,9 @@
 %}{%  set metadata = result.data.metadata[mid]
 %}{%  set thread = result.data.threads[metadata.thread_id]
 %}{%  set from = result.data.addresses[metadata.from_aid]
+%}{%  if not from
+%}{%    set from = {'fn': 'Unknown sender'}
+%}{%  endif
 %}{%  if metadata.urls.editing
 %}{%    set url = metadata.urls.editing
 %}{%  else
