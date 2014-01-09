@@ -157,15 +157,6 @@ class EncryptedFile(object):
         self.fd.close()
 
 
-def detect_encryption(filename):
-    fh = open(filename, "r")
-    firstline = fh.readline()
-    if firstline == "-----BEGIN PGP MESSAGE-----\n":
-        return "gpg"
-    if firstline == "-----BEGIN OPENSSL MESSAGE-----\n":
-        return "openssl"
-
-
 if __name__ == "__main__":
     s = SymmetricEncrypter("d3944bfea1e882dfc2e4878fa8905c6a2c")
     teststr = "Hello! This is a longish thing."
