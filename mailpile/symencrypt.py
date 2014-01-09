@@ -99,23 +99,32 @@ class SymmetricEncrypter:
         # TODO: Make keys get passed through files or environment
         cipher = self.defaultcipher
         salt = None
-        enc = data.split("\n")
-        if enc[0].strip() == self.beginblock \
-            and enc[-1].strip() == self.endblock:
-            del(enc[0])
-            del(enc[-1])
-            while True:
-                if enc[0] == "":
+
+        try:
+            head, enc, tail = data.split("\n\n")
+            head = head.split("\n")
+        except:
+            head, enc, tail = data.split("\r\n\r\n")
+            head = head.split("\r\n")
+
+        if (head[0].strip() == self.beginblock
+                and tail.strip() == self.endblock):
+            del(head[0])
+            while head:
+                line = head.pop(0)
+                if line == "":
                     break
-                key, value = enc[0].split(": ")
+                try:
+                    key, value = line.split(": ")
+                except:
+                    raise ValueError("Message contained invalid parameter.")
+
                 if key == "cipher":
                     cipher = value.strip()
                 elif key == "salt":
                     salt = value.strip()
                 else:
                     raise ValueError("Message contained invalid parameter.")
-                del(enc[0])
-            enc = "\n".join(enc).lstrip()
         else:
             raise ValueError("Not a valid OpenSSL encrypted block.")
 
