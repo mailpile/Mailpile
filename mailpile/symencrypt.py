@@ -1,6 +1,5 @@
 import os
 import sys
-import tempfile
 import random
 from hashlib import sha512
 from subprocess import Popen, PIPE
@@ -53,18 +52,14 @@ class SymmetricEncrypter:
         retvals = dict([(fd, "") for fd in self.fds])
         while True:
             proc.poll()
-
             for fd in self.fds:
                 try:
                     buf = self.handles[fd].read()
                 except IOError:
                     continue
-
                 if buf == "":
                     continue
-
                 retvals[fd] += buf
-
             if proc.returncode is not None:
                 break
 
@@ -77,21 +72,12 @@ class SymmetricEncrypter:
             cipher = self.defaultcipher
         salt = sha512(str(random.getrandbits(512))).hexdigest()[:32]
         enckey = genkey(self.secret, salt)
-        inbuf = tempfile.NamedTemporaryFile()
-        inbuf.write(data)
-        inbuf.flush()
-        outbuf = tempfile.NamedTemporaryFile()
         params = ["enc", "-e", "-a", "-%s" % cipher, 
                   "-pass", "pass:%s" % enckey,
-                  "-in", inbuf.name, 
-                  "-out", outbuf.name, 
                  ]
-        self.run(params)
-        res = outbuf.read()
-        inbuf.close()
-        outbuf.close()
+        retval, res = self.run(params, output=data)
         ret = "%s\ncipher: %s\nsalt: %s\n\n%s\n%s" % (
-            self.beginblock, cipher, salt, res, self.endblock)
+            self.beginblock, cipher, salt, res["stdout"], self.endblock)
         return ret
 
 
@@ -132,20 +118,11 @@ class SymmetricEncrypter:
             raise ValueError("Encryption salt not known.")
 
         enckey = genkey(self.secret, salt)
-        inbuf = tempfile.NamedTemporaryFile()
-        inbuf.write(enc)
-        inbuf.flush()
-        outbuf = tempfile.NamedTemporaryFile()
         params = ["enc", "-d", "-a", "-%s" % cipher, 
                   "-pass", "pass:%s" % enckey,
-                  "-in", inbuf.name, 
-                  "-out", outbuf.name, 
                  ]
-        self.run(params)
-        res = outbuf.read()
-        inbuf.close()
-        outbuf.close()
-        return res
+        retval, res = self.run(params, output=enc)
+        return res["stdout"]
 
 
 class EncryptedFile(object):
