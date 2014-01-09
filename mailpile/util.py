@@ -242,9 +242,11 @@ def friendly_datetime(timestamp):
     date = datetime.date.fromtimestamp(timestamp)
     return date.strftime("%b %d, %Y")
 
+
 def friendly_time(timestamp):
     date = datetime.datetime.fromtimestamp(timestamp)
     return date.strftime("%H:%M")
+
 
 def friendly_number(number, base=1000, decimals=0, suffix='',
                     powers=['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']):
@@ -283,9 +285,9 @@ def decrypt_gpg(lines, fd):
             break
 
     gpg = subprocess.Popen(['gpg', '--batch'],
-                                                 stdin=subprocess.PIPE,
-                                                 stderr=subprocess.PIPE,
-                                                 stdout=subprocess.PIPE)
+                           stdin=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
+                           stdout=subprocess.PIPE)
     lines = gpg.communicate(input=''.join(lines))[0].splitlines(True)
     if gpg.wait() != 0:
         raise AccessError("GPG was unable to decrypt the data.")

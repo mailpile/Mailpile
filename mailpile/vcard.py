@@ -337,7 +337,7 @@ class SimpleVCard(object):
         for index in range(0, len(self._lines)):
             vcl = self._lines[index]
             if vcl and vcl.line_id in line_ids:
-                 self._lines[index] = None
+                self._lines[index] = None
 
     def add(self, *vcls):
         """
@@ -394,7 +394,8 @@ class SimpleVCard(object):
                     try:
                         cpm[int(pid)]['lines'].append((int(version), vcl))
                     except KeyError, e:
-                        print "KNOWN BUG IN VERSIONING CODE. [%s] [pid: %s] [cpm: %s]" % (e, pid, cpm)
+                        print ("KNOWN BUG IN VERSIONING CODE. "
+                               "[%s] [pid: %s] [cpm: %s]") % (e, pid, cpm)
         return cpm
 
     def merge(self, src_id, lines):
@@ -453,9 +454,11 @@ class SimpleVCard(object):
         lines.sort(key=lambda k: (k.name, k.value))
         dedup = [lines[0]]
         rank = 0
+
         def rankit(rank):
             if rank:
                 dedup[-1].set_attr('x-rank', rank)
+
         for line in lines[1:]:
             if dedup[-1].name == line.name and dedup[-1].value == line.value:
                 rank += 1
@@ -472,9 +475,9 @@ class SimpleVCard(object):
         this_version = 0
         for ver, ol in cpm[src_pid]['lines'][:]:
             this_version = max(ver, this_version)
-            match = [l for l in lines if l
-                                     and l.name == ol.name
-                                     and l.value == ol.value]
+            match = [l for l in lines if (l
+                                          and l.name == ol.name
+                                          and l.value == ol.value)]
             for l in match:
                 lines.remove(l)
             if not match:
@@ -486,7 +489,7 @@ class SimpleVCard(object):
         this_version += 1
         for vcl in lines:
             pids = [pid for pid in vcl.get('pid', '').split(',')
-                                if pid and pid.split('.')[0] != src_pid]
+                    if pid and pid.split('.')[0] != src_pid]
             pids.append('%s.%s' % (src_pid, this_version))
             vcl.set_attr('pid', ','.join(pids))
             self.add(vcl)
@@ -495,14 +498,14 @@ class SimpleVCard(object):
         #        identical values?
 
     def get_all(self, key):
-        return [l for l in self._lines if l and  l.name == key.lower()]
+        return [l for l in self._lines if l and l.name == key.lower()]
 
     def get(self, key, n=0):
         lines = self.get_all(key)
         lines.sort(key=lambda l: 1 - (int(l.get('x-rank', 0)) or
                                       (('pref' in l or
                                         'pref' in l.get('type', '').lower()
-                                       ) and 100 or 0)))
+                                        ) and 100 or 0)))
         return lines[n]
 
     def as_jCard(self):
@@ -545,9 +548,9 @@ class SimpleVCard(object):
 
     def _sort_lines(self):
         self._lines.sort(key=lambda k: ((k and k.name == 'version') and 1 or 2,
-                                         k and k.name,
-                                         k and len(k.value),
-                                         k and k.value))
+                                        k and k.name,
+                                        k and len(k.value),
+                                        k and k.value))
 
     def as_vCard(self):
         """
@@ -788,6 +791,7 @@ class VCardStore(dict):
 
 
 GUID_COUNTER = 0
+
 
 class VCardPluginClass:
     REQUIRED_PARAMETERS = []

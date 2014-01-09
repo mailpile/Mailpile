@@ -42,7 +42,7 @@ class Command:
 
     class CommandResult:
         def __init__(self, session, command, template_id, doc, result,
-                           status, message, args=[], kwargs={}):
+                     status, message, args=[], kwargs={}):
             self.session = session
             self.command = command
             self.args = args
@@ -75,7 +75,7 @@ class Command:
                 'elapsed': '%.3f' % self.session.ui.time_elapsed,
             }
             for ui_key in [k for k in self.kwargs.keys()
-                                   if k.startswith('ui_')]:
+                           if k.startswith('ui_')]:
                 rv[ui_key] = self.kwargs[ui_key]
             return rv
 
@@ -88,8 +88,8 @@ class Command:
                 #           sanitize it very aggressively before heading off to
                 #           the filesystem.
                 clean_tpl = CleanText(template.replace('.html', ''),
-                                      banned=CleanText.FS +
-                                             CleanText.WHITESPACE)
+                                      banned=(CleanText.FS +
+                                              CleanText.WHITESPACE))
                 path_parts[-1] += '-%s' % clean_tpl
             tpath = os.path.join(*path_parts)
             return self.session.ui.render_html(self.session.config, [tpath],
@@ -171,18 +171,21 @@ class Command:
                         self.session.ui.warning((_('No such ID: %s')
                                                  ) % (what[1:], ))
                 except ValueError:
-                    self.session.ui.warning(_('What message is %s?') % (what, ))
+                    self.session.ui.warning(_('What message is %s?'
+                                              ) % (what, ))
             elif '-' in what:
                 try:
                     b, e = what.split('-')
                     msg_ids |= set(self.session.results[int(b) - 1:int(e)])
                 except:
-                    self.session.ui.warning(_('What message is %s?') % (what, ))
+                    self.session.ui.warning(_('What message is %s?'
+                                              ) % (what, ))
             else:
                 try:
                     msg_ids.add(self.session.results[int(what) - 1])
                 except:
-                    self.session.ui.warning(_('What message is %s?') % (what, ))
+                    self.session.ui.warning(_('What message is %s?'
+                                              ) % (what, ))
         return msg_ids
 
     def _error(self, message):
@@ -338,13 +341,13 @@ class SearchResults(dict):
 
         # Misc flags
         fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
-        if [e for e in self.idx.config.profiles
-                    if e.email.lower() == fe.lower()]:
-            expl['flags']['from_me'] = True;
+        if [e for e in self.idx.config.profiles if (e.email.lower()
+                                                    == fe.lower())]:
+            expl['flags']['from_me'] = True
         tag_types = [self.idx.config.get_tag(t).type for t in expl['tag_tids']]
         for t in self.TAG_TYPE_FLAG_MAP:
             if t in tag_types:
-                expl['flags'][self.TAG_TYPE_FLAG_MAP[t]] = True;
+                expl['flags'][self.TAG_TYPE_FLAG_MAP[t]] = True
 
         # FIXME: Is message signed or encrypted?
 
@@ -390,7 +393,7 @@ class SearchResults(dict):
 
     WANT_MSG_TREE = ('attachments', 'html_parts', 'text_parts', 'header_list',
                      'editing_strings')
-    PRUNE_MSG_TREE = ('headers', ) # Added by editing_strings
+    PRUNE_MSG_TREE = ('headers', )  # Added by editing_strings
 
     def _prune_msg_tree(self, tree):
         for k in tree.keys():
@@ -399,8 +402,8 @@ class SearchResults(dict):
         return tree
 
     def _message(self, email):
-        tree = email.get_message_tree(want=email.WANT_MSG_TREE_PGP +
-                                           self.WANT_MSG_TREE)
+        tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
+                                            self.WANT_MSG_TREE))
         email.evaluate_pgp(tree, decrypt=True)
         return self._prune_msg_tree(tree)
 
@@ -476,8 +479,8 @@ class SearchResults(dict):
                 thread = self._thread(thread_mid)
                 self['data']['threads'][thread_mid] = thread
                 if full_threads:
-                     idxs.extend([int(t, 36) for t in thread
-                                  if t not in self['data']['metadata']])
+                    idxs.extend([int(t, 36) for t in thread
+                                 if t not in self['data']['metadata']])
 
             # Populate data.person
             for cid in self._msg_addresses(msg_info):
@@ -519,8 +522,8 @@ class SearchResults(dict):
         for mid in self['thread_ids']:
             if mid in self['data'].get('message', {}):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
-                text.append(exp_email.get_editing_string(
-                                exp_email.get_message_tree()))
+                msg_tree = exp_email.get_message_tree()
+                text.append(exp_email.get_editing_string(msg_tree))
             else:
                 m = self['data']['metadata'][mid]
                 tags = [self['data']['tags'][t] for t in m['tag_tids']]
@@ -732,7 +735,7 @@ class ConfigSet(Command):
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_STRICT_VARS = False
     HTTP_POST_VARS = {
-       'section.variable': 'value|json-string',
+        'section.variable': 'value|json-string',
     }
 
     def command(self):
@@ -880,7 +883,7 @@ class AddMailboxes(Command):
                 elif os.path.isdir(fn):
                     session.ui.mark('Scanning %s for mailboxes' % fn)
                     for f in [f for f in os.listdir(fn)
-                                      if not f.startswith('.')]:
+                              if not f.startswith('.')]:
                         paths.append(os.path.join(fn, f))
             else:
                 return self._error('No such file/directory: %s' % raw_fn)
@@ -918,8 +921,8 @@ class Help(Command):
 
         def splash_as_text(self):
             if self.result['http_url']:
-                web_interface = _('The Web interface address is: %s') % \
-                        self.result['http_url']
+                web_interface = _('The Web interface address is: %s'
+                                  ) % self.result['http_url']
             else:
                 web_interface = _('The Web interface is disabled.')
             return '\n'.join([
@@ -937,9 +940,9 @@ class Help(Command):
                 for var in group['variables']:
                     sep = ('=' in var['type']) and ': ' or ' = '
                     text.append(('  %-35s %s'
-                                 ) % ('%s%s<%s>' % (var['var'], sep,
-                                                    var['type'].replace('=',
-                                                                    '> = <')),
+                                 ) % (('%s%s<%s>'
+                                       ) % (var['var'], sep,
+                                            var['type'].replace('=', '> = <')),
                                       var['desc']))
                 text.append('')
             return '\n'.join(text)
@@ -977,7 +980,8 @@ class Help(Command):
             if 'tags' in self.result:
                 text.extend([
                     '',
-                _('Tags:  (use a tag as a command to display tagged messages)'),
+                    _('Tags:  (use a tag as a command to display tagged '
+                      'messages)'),
                     '',
                     self.result['tags'].as_text()
                 ])
@@ -988,7 +992,8 @@ class Help(Command):
                 return _('Error')
             return ''.join([
                 ('splash' in self.result) and self.splash_as_text() or '',
-              ('variables' in self.result) and self.variables_as_text() or '',
+                (('variables' in self.result) and self.variables_as_text()
+                 or ''),
                 ('commands' in self.result) and self.commands_as_text() or '',
             ])
 
@@ -1004,8 +1009,8 @@ class Help(Command):
                     cmd_list = {'_main': (name, cls.SYNOPSIS[3],
                                           cls.__doc__, order)}
                     subs = [c for c in COMMANDS
-                                    if (c.SYNOPSIS[1] or c.SYNOPSIS[2]
-                                        ).startswith(name + '/')]
+                            if (c.SYNOPSIS[1] or c.SYNOPSIS[2]
+                                ).startswith(name + '/')]
                     for scls in sorted(subs):
                         sc, scmd, surl, ssynopsis = scls.SYNOPSIS[:4]
                         order += 1

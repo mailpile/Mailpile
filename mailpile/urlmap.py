@@ -64,12 +64,12 @@ class UrlMap:
 
     def _api_commands(self, method, strict=False):
         return [c for c in COMMANDS
-                        if (not method) or
-                           (c.SYNOPSIS[2] and (method in c.HTTP_CALLABLE or
-                                               not strict))]
+                if ((not method)
+                    or (c.SYNOPSIS[2] and (method in c.HTTP_CALLABLE
+                                           or not strict)))]
 
-    def _command(self, name, args=None, query_data=None, post_data=None,
-                             method='GET'):
+    def _command(self, name,
+                 args=None, query_data=None, post_data=None, method='GET'):
         """
         Return an instantiated mailpile.command object or raise a UsageError.
 
@@ -94,8 +94,8 @@ class UrlMap:
         """
         try:
             match = [c for c in self._api_commands(method, strict=False)
-                             if (method and name == c.SYNOPSIS[2]) or
-                                (not method and name == c.SYNOPSIS[1])]
+                     if ((method and name == c.SYNOPSIS[2]) or
+                         (not method and name == c.SYNOPSIS[1]))]
             if len(match) != 1:
                 raise UsageError('Unknown command: %s' % name)
         except ValueError, e:
@@ -125,7 +125,7 @@ class UrlMap:
 
             ui_keys = [k for k in ((query_data or {}).keys() +
                                    (post_data or {}).keys())
-                               if k.startswith('ui_')]
+                       if k.startswith('ui_')]
             copy_vars = ((ui_keys, query_data),
                          (ui_keys, post_data),
                          (command.HTTP_QUERY_VARS, query_data),
@@ -230,9 +230,10 @@ class UrlMap:
 
         return [
             output,
-            self._command('search', args=tag_search,
-                                    query_data=query_data,
-                                    post_data=post_data)
+            self._command('search',
+                          args=tag_search,
+                          query_data=query_data,
+                          post_data=post_data)
         ]
 
     def _map_thread(self, request, path_parts, query_data, post_data):
@@ -252,16 +253,17 @@ class UrlMap:
             i += 1
         return [
             self._choose_output(path_parts),
-            self._command('message', args=message_mids,
-                                     query_data=query_data,
-                                     post_data=post_data)
+            self._command('message',
+                          args=message_mids,
+                          query_data=query_data,
+                          post_data=post_data)
         ]
 
     def _map_RESERVED(self, *args):
         """RESERVED FOR LATER."""
 
     def _map_api_command(self, method, path_parts,
-                               query_data, post_data, fmt='html'):
+                         query_data, post_data, fmt='html'):
         """Map a path to a command list, prefering the longest match.
 
         >>> urlmap._map_api_command('GET', ['message', 'draft', ''], {}, {})
@@ -293,10 +295,10 @@ class UrlMap:
 
     MAP_API = 'api'
     MAP_PATHS = {
-       '':        _map_root,
-       'in':      _map_tag,
-       'thread':  _map_thread,
-       'static':  _map_RESERVED,
+        '': _map_root,
+        'in': _map_tag,
+        'thread': _map_thread,
+        'static': _map_RESERVED,
     }
 
     def map(self, request, method, path, query_data, post_data):
@@ -393,7 +395,7 @@ class UrlMap:
                 raise KeyError('oops')
         except (KeyError, IndexError):
             tag = [t for t in self.session.config.tags.values()
-                           if t.slug == tag_id.lower()]
+                   if t.slug == tag_id.lower()]
             tag = tag and tag[0]
         if tag:
             return self._url('/in/%s/' % tag.slug, output)
@@ -418,13 +420,13 @@ class UrlMap:
         '/in/inbox/?q=foo%20tag%3ANew'
         """
         tags = tag and [tag] or [t for t in search_terms
-                                         if t.startswith('tag:') or
-                                            t.startswith('in:')]
+                                 if (t.startswith('tag:') or
+                                     t.startswith('in:'))]
         if len(tags) == 1:
             prefix = self.url_tag(tags[0].replace('tag:', ''))
             search_terms = [t for t in search_terms
-                                    if t not in tags and
-                                       t.replace('tag:', '') not in tags]
+                            if (t not in tags and
+                                t.replace('tag:', '') not in tags)]
         else:
             prefix = '/search/'
         return self._url(prefix, output, 'q=' + quote(' '.join(search_terms)))
@@ -454,7 +456,7 @@ class UrlMap:
             if commands:
                 text.extend([
                     '### %s%s' % (method, method == 'GET' and
-                                          ' (also accept POST)' or ''),
+                                  ' (also accept POST)' or ''),
                     '',
                 ])
             commands.sort()
