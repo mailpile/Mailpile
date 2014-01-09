@@ -162,12 +162,13 @@ class TagCommand(Command):
         if save:
             # Background save makes things feel fast!
             def background():
-                if stats:
-                    idx.update_tag_stats(self.session, self.session.config)
-                idx.save_changes()
+                if idx:
+                    if stats:
+                        idx.update_tag_stats(self.session, self.session.config)
+                    idx.save_changes()
                 self.session.config.save()
             self._background('Save index', background)
-        elif stats:
+        elif stats and idx:
             idx.update_tag_stats(self.session, self.session.config)
 
 
