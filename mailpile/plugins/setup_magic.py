@@ -132,7 +132,7 @@ class Setup(Command):
             })
             session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
 
-        # Assumption: If you already have secret keys, you want to 
+        # Assumption: If you already have secret keys, you want to
         #             use the associated addresses for your e-mail.
         #             If you don't already have secret keys, you should have
         #             one made for you, if GnuPG is available.
@@ -150,7 +150,7 @@ class Setup(Command):
                         if "email" not in uid or uid["email"] == "":
                             continue
 
-                        if uid["email"] in [x["email"] 
+                        if uid["email"] in [x["email"]
                                             for x in session.config.profiles]:
                             # Don't set up the same e-mail address twice.
                             continue
@@ -168,8 +168,8 @@ class Setup(Command):
             session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 
         if (session.config.prefs.gpg_recipient
-               and not (self._idx() and self._idx().INDEX)
-               and not session.config.prefs.obfuscate_index):
+                and not (self._idx() and self._idx().INDEX)
+                and not session.config.prefs.obfuscate_index):
             randcrap = sha512b64(open('/dev/urandom').read(1024),
                                  session.config.prefs.gpg_recipient,
                                  '%s' % time.time())

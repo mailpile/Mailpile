@@ -14,8 +14,10 @@ def hexcmp(x, y):
     try:
         a = int(x, 16)
         b = int(y, 16)
-        if a < b:  return -1
-        if a > b:  return 1
+        if a < b:
+            return -1
+        if a > b:
+            return 1
         return 0
 
     except:
@@ -38,65 +40,67 @@ class MorkImporter(VCardImporter):
     }
 
     class Database:
-        def __init__ (self):
+        def __init__(self):
             self.cdict = {}
             self.adict = {}
             self.tables = {}
 
     class Table:
-        def __init__ (self):
+        def __init__(self):
             self.id = None
             self.scope = None
             self.kind = None
             self.rows = {}
 
     class Row:
-        def __init__ (self):
+        def __init__(self):
             self.id = None
             self.scope = None
             self.cells = []
 
     class Cell:
-        def __init__ (self):
+        def __init__(self):
             self.column = None
             self.atom = None
 
-
     def escapeData(self, match):
         return match.group() \
-                   .replace('\\\\n', '$0A') \
-                   .replace('\\)', '$29') \
-                   .replace('>', '$3E') \
-                   .replace('}', '$7D') \
-                   .replace(']', '$5D')
+            .replace('\\\\n', '$0A') \
+            .replace('\\)', '$29') \
+            .replace('>', '$3E') \
+            .replace('}', '$7D') \
+            .replace(']', '$5D')
 
-    pCellText   = re.compile(r'\^(.+?)=(.*)')
-    pCellOid    = re.compile(r'\^(.+?)\^(.+)')
+    pCellText = re.compile(r'\^(.+?)=(.*)')
+    pCellOid = re.compile(r'\^(.+?)\^(.+)')
     pCellEscape = re.compile(r'((?:\\[\$\0abtnvfr])|(?:\$..))')
     pMindyEscape = re.compile('([\x00-\x1f\x80-\xff\\\\])')
 
     def escapeMindy(self, match):
         s = match.group()
-        if s == '\\': return '\\\\'
-        if s == '\0': return '\\0'
-        if s == '\r': return '\\r'
-        if s == '\n': return '\\n'
+        if s == '\\':
+            return '\\\\'
+        if s == '\0':
+            return '\\0'
+        if s == '\r':
+            return '\\r'
+        if s == '\n':
+            return '\\n'
         return "\\x%02x" % ord(s)
 
     def encodeMindyValue(self, value):
         return self.pMindyEscape.sub(self.escapeMindy, value)
 
-
-    backslash = { '\\\\' : '\\',
-                  '\\$'  : '$',
-                  '\\0'  : chr(0),
-                  '\\a'  : chr(7),
-                  '\\b'  : chr(8),
-                  '\\t'  : chr(9),
-                  '\\n'  : chr(10),
-                  '\\v'  : chr(11),
-                  '\\f'  : chr(12),
-                  '\\r'  : chr(13) }
+    backslash = {'\\\\': '\\',
+                 '\\$': '$',
+                 '\\0': chr(0),
+                 '\\a': chr(7),
+                 '\\b': chr(8),
+                 '\\t': chr(9),
+                 '\\n': chr(10),
+                 '\\v': chr(11),
+                 '\\f': chr(12),
+                 '\\r': chr(13)}
 
     def unescapeMork(self, match):
         s = match.group()
@@ -112,7 +116,7 @@ class MorkImporter(VCardImporter):
 
     def addToDict(self, dict, cells):
         for cell in cells:
-            eq  = cell.find('=')
+            eq = cell.find('=')
             key = cell[1:eq]
             val = cell[eq+1:-1]
             dict[key] = self.decodeMorkValue(val)
@@ -145,13 +149,13 @@ class MorkImporter(VCardImporter):
             match = self.pCellText.match(cell)
             if match:
                 obj.column = db.cdict[match.group(1)]
-                obj.atom   = self.decodeMorkValue(match.group(2))
+                obj.atom = self.decodeMorkValue(match.group(2))
 
             else:
                 match = self.pCellOid.match(cell)
                 if match:
                     obj.column = db.cdict[match.group(1)]
-                    obj.atom   = db.adict[match.group(2)]
+                    obj.atom = db.adict[match.group(2)]
 
             if obj.column and obj.atom:
                 row.cells.append(obj)
@@ -181,30 +185,34 @@ class MorkImporter(VCardImporter):
         data = pLine.sub('', data)
 
         # Create a database object
-        db          = self.Database()
+        db = self.Database()
 
         # Compile the appropriate regular expressions
-        pCell       = re.compile(r'(\(.+?\))')
-        pSpace      = re.compile(r'\s+')
-        pColumnDict = re.compile(r'<\s*<\(a=c\)>\s*(?:\/\/)?\s*(\(.+?\))\s*>')
-        pAtomDict   = re.compile(r'<\s*(\(.+?\))\s*>')
-        pTable      = re.compile(r'\{-?(\d+):\^(..)\s*\{\(k\^(..):c\)\(s=9u?\)\s*(.*?)\}\s*(.+?)\}')
-        pRow        = re.compile(r'(-?)\s*\[(.+?)((\(.+?\)\s*)*)\]')
+        pCell = re.compile(r'(\(.+?\))')
+        pSpace = re.compile(r'\s+')
+        pColumnDict = re.compile(r'<\s*<\(a=c\)>\s*(?:\/\/)?\s*'
+                                 '(\(.+?\))\s*>')
+        pAtomDict = re.compile(r'<\s*(\(.+?\))\s*>')
+        pTable = re.compile(r'\{-?(\d+):\^(..)\s*\{\(k\^(..):c\)'
+                            '\(s=9u?\)\s*(.*?)\}\s*(.+?)\}')
+        pRow = re.compile(r'(-?)\s*\[(.+?)((\(.+?\)\s*)*)\]')
 
-        pTranBegin  = re.compile(r'@\$\$\{.+?\{\@')
-        pTranEnd    = re.compile(r'@\$\$\}.+?\}\@')
+        pTranBegin = re.compile(r'@\$\$\{.+?\{\@')
+        pTranEnd = re.compile(r'@\$\$\}.+?\}\@')
 
         # Escape all '%)>}]' characters within () cells
         data = pCell.sub(self.escapeData, data)
 
         # Iterate through the data
-        index  = 0
+        index = 0
         length = len(data)
-        match  = None
-        tran   = 0
+        match = None
+        tran = 0
         while True:
-            if match:  index += match.span()[1]
-            if index >= length:  break
+            if match:
+                index += match.span()[1]
+            if index >= length:
+                break
             sub = data[index:]
 
             # Skip whitespace
@@ -240,9 +248,9 @@ class MorkImporter(VCardImporter):
 
                 except KeyError:
                     table = self.Table()
-                    table.id    = match.group(1)
+                    table.id = match.group(1)
                     table.scope = db.cdict[match.group(2)]
-                    table.kind  = db.cdict[match.group(3)]
+                    table.kind = db.cdict[match.group(3)]
                     db.tables[id] = table
 
                 rows = pRow.findall(match.group())
@@ -273,7 +281,8 @@ class MorkImporter(VCardImporter):
 
             match = pRow.match(sub)
             if match and tran:
-                # print >>stderr, "WARNING: using table '1:^80' for dangling row: %s" % match.group()
+                # print >>stderr, ("WARNING: using table '1:^80' "
+                #                  "for dangling row: %s") % match.group()
                 rowid = match.group(2)
                 if rowid[0] == '-':
                     rowid = rowid[1:]
@@ -301,10 +310,10 @@ class MorkImporter(VCardImporter):
         tables = self.db.tables.keys()
         tables.sort(hexcmp)
 
-        for table in [ self.db.tables[k] for k in tables ]:
+        for table in [self.db.tables[k] for k in tables]:
             rows = table.rows.keys()
             rows.sort(hexcmp)
-            for row in [ table.rows[k] for k in rows ]:
+            for row in [table.rows[k] for k in rows]:
                 email = name = ""
                 result = {}
                 for cell in row.cells:

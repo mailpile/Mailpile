@@ -26,8 +26,8 @@ class SpamBayesTagger(mailpile.plugins.autotag.Trainer):
         elif score > at_config.threshold:
             want = None
         else:
-            want = False 
-        return (want, score) #evidence)
+            want = False
+        return (want, score)
 
 
 class SpamBayesTrainer(mailpile.plugins.autotag.Trainer):

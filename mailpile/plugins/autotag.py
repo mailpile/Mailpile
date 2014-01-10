@@ -21,17 +21,18 @@ from mailpile.util import *
 TAGGERS = {}
 TRAINERS = {}
 
-mailpile.plugins.register_config_section('prefs', 'autotag', ["Auto-tagging",
-{
-    'match_tag': ['Tag we are adding to automatically', str, ''],
-    'unsure_tag': ['If unsure, add to this tag', str, ''],
-    'exclude_tags': ['Tags on messages we should never match (ham)', str, []],
-    'ignore_kws': ['Ignore messages with these keywords', str, []],
-    'corpus_size': ['How many messages do we train on?', int, 1000],
-    'threshold': ['Size of the sure/unsure ranges', float, 0.1],
-    'tagger': ['Internal class name or |shell command', str, ''],
-    'trainer': ['Internal class name or |shell commant', str, ''],
-}, []])
+mailpile.plugins.register_config_section(
+    'prefs', 'autotag', ["Auto-tagging", {
+        'match_tag': ['Tag we are adding to automatically', str, ''],
+        'unsure_tag': ['If unsure, add to this tag', str, ''],
+        'exclude_tags': ['Tags on messages we should never match (ham)',
+                         str, []],
+        'ignore_kws': ['Ignore messages with these keywords', str, []],
+        'corpus_size': ['How many messages do we train on?', int, 1000],
+        'threshold': ['Size of the sure/unsure ranges', float, 0.1],
+        'tagger': ['Internal class name or |shell command', str, ''],
+        'trainer': ['Internal class name or |shell commant', str, ''],
+    }, []])
 
 
 def at_identify(at_config):
@@ -86,8 +87,8 @@ def LoadAutoTagger(config, at_config):
     return config.autotag[aid]
 
 
-mailpile.config.ConfigManager.load_auto_tagger = LoadAutoTagger;
-mailpile.config.ConfigManager.save_auto_tagger = SaveAutoTagger;
+mailpile.config.ConfigManager.load_auto_tagger = LoadAutoTagger
+mailpile.config.ConfigManager.save_auto_tagger = SaveAutoTagger
 
 
 ##[ Internal classes ]########################################################
@@ -129,13 +130,13 @@ class AutoTagCommand(Command):
             self.rcache = {}
         mid = e.msg_mid()
         if mid not in self.rcache:
-            kws, snippet = idx.read_message(self.session,
+            kws, snippet = idx.read_message(
+                self.session,
                 mid,
                 e.get_msg_info(field=idx.MSG_ID),
                 e.get_msg(),
                 e.get_msg_size(),
-                int(e.get_msg_info(field=idx.MSG_DATE), 36)
-            )
+                int(e.get_msg_info(field=idx.MSG_DATE), 36))
             self.rcache[mid] = kws
         return self.rcache[mid]
 

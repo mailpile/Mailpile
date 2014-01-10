@@ -21,10 +21,10 @@ class Search(Command):
     ORDER = ('Searching', 0)
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
-         'q': 'search terms',
-         'order': 'sort order',
-         'start': 'start position',
-         'end': 'end position'
+        'q': 'search terms',
+        'order': 'sort order',
+        'start': 'start position',
+        'end': 'end position'
     }
 
     class CommandResult(Command.CommandResult):
@@ -256,8 +256,9 @@ class Extract(Command):
         emails = [Email(idx, i) for i in eids]
         results = []
         for e in emails:
-            fn, info = e.extract_attachment(session, cid, name_fmt=name_fmt,
-                                                          mode=mode)
+            fn, info = e.extract_attachment(session, cid,
+                                            name_fmt=name_fmt,
+                                            mode=mode)
             if info:
                 info['idx'] = email.msg_idx_pos
                 if fn:
@@ -280,8 +281,7 @@ def mailbox_search(config, idx, term, hits):
         mailbox_id = None
 
     mailboxes = [m for m in config.sys.mailbox.keys()
-                         if word in config.sys.mailbox[m].lower() or
-                            mailbox_id == m]
+                 if word in config.sys.mailbox[m].lower() or mailbox_id == m]
     rt = []
     for mbox_id in mailboxes:
         mbox_id = (('0' * MBX_ID_LEN) + mbox_id)[-MBX_ID_LEN:]

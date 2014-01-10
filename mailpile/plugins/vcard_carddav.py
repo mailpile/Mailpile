@@ -13,8 +13,8 @@ from mailpile.util import *
 
 
 class DAVClient:
-    def __init__(self, host, port=None, username=None, password=None,
-                             protocol='https'):
+    def __init__(self, host,
+                 port=None, username=None, password=None, protocol='https'):
         if not port:
             if protocol == 'https':
                 port = 443
@@ -74,8 +74,8 @@ class DAVClient:
 
 
 class CardDAV(DAVClient):
-    def __init__(self, host, url, port=None, username=None,
-                                  password=None, protocol='https'):
+    def __init__(self, host, url,
+                 port=None, username=None, password=None, protocol='https'):
         DAVClient.__init__(self, host, port, username, password, protocol)
         self.url = url
 
@@ -103,8 +103,7 @@ class CardDAV(DAVClient):
         tr = etree.fromstring(resbody)
         urls = [x.text for x in tr.xpath("/d:multistatus/d:response/d:href",
                                          namespaces={"d": "DAV:"})
-                             if x.text not in ("", None) and
-                                x.text[-3:] == "vcf"]
+                if x.text not in ("", None) and x.text[-3:] == "vcf"]
         return urls
 
 

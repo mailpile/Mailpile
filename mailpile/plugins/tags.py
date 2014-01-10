@@ -72,8 +72,9 @@ def GetFilters(cfg, filter_on=None):
         terms = cfg.filters[fid].get('terms', '')
         if filter_on is not None and terms != filter_on:
             continue
-        flist.append((fid, terms, cfg.filters[fid].get('tags', ''),
-                                  cfg.filters[fid].get('comments', '')))
+        flist.append((fid, terms,
+                      cfg.filters[fid].get('tags', ''),
+                      cfg.filters[fid].get('comments', '')))
     return flist
 
 
@@ -248,8 +249,8 @@ class AddTag(TagCommand):
     SPLIT_ARG = False
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = {
-            'name': 'tag name',
-            'slug': 'tag slug',
+        'name': 'tag name',
+        'slug': 'tag slug',
     }
 
     class CommandResult(TagCommand.CommandResult):
@@ -501,8 +502,8 @@ class DeleteFilter(FilterCommand):
 
         for fid in self.args:
             if (config.parse_unset(session, 'filter:%s' % fid)
-            and config.parse_unset(session, 'filter_tags:%s' % fid)
-            and config.parse_unset(session, 'filter_terms:%s' % fid)):
+                    and config.parse_unset(session, 'filter_tags:%s' % fid)
+                    and config.parse_unset(session, 'filter_terms:%s' % fid)):
                 removed += 1
             else:
                 session.ui.warning('Failed to remove %s' % fid)
@@ -520,10 +521,10 @@ class ListFilters(Command):
         def as_text(self):
             if self.result is False:
                 return unicode(self.result)
-            return '\n'.join([' %3.3s %-20s %-25s %s' % (
-                                    r['fid'], r['terms'],
-                                    r['human_tags'], r['comment']
-                                ) for r in self.result])
+            return '\n'.join([(' %3.3s %-20s %-25s %s'
+                               ) % (r['fid'], r['terms'],
+                                    r['human_tags'], r['comment'])
+                              for r in self.result])
 
     def command(self, want_fid=None):
         results = []
@@ -534,8 +535,8 @@ class ListFilters(Command):
 
             human_tags = []
             for tterm in tags.split():
-                tagname = self.session.config.tags.get(tterm[1:],
-                                                      {}).get('slug', '(None)')
+                tagname = self.session.config.tags.get(
+                    tterm[1:], {}).get('slug', '(None)')
                 human_tags.append('%s%s' % (tterm[0], tagname))
 
             skip = False
@@ -545,9 +546,9 @@ class ListFilters(Command):
                     if term.startswith('='):
                         if (term[1:] != fid):
                             skip = True
-                    elif ((term not in ' '.join(human_tags).lower()) and
-                                (term not in trms.lower()) and
-                                (term not in cmnt.lower())):
+                    elif ((term not in ' '.join(human_tags).lower())
+                            and (term not in trms.lower())
+                            and (term not in cmnt.lower())):
                         skip = True
             if skip:
                 continue
