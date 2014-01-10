@@ -304,7 +304,9 @@ class SearchResults(dict):
         'drafts': 'draft',
         'blank': 'draft',
         'sent': 'from_me',
-        'outbox': 'from_me'
+        'outbox': 'from_me',
+        'replied': 'replied',
+        'fwded': 'forwarded'
     }
 
     def _metadata(self, msg_info):
