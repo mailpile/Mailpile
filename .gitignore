@@ -19,3 +19,4 @@ doc/
 .vagrant
 .coverage
 testing/tmp
+testing/gpg-keyring/random_seed
