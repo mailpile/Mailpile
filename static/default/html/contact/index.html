@@ -41,8 +41,24 @@
   </ul>
   <hr>  
 
+  <h4><span class="icon-inbox"></span> Conversations</h4>
+  
+  {% set contact_search = "email:" + result.contact.email.0.email %}
+  {% set contact_messages = mailpile("search", contact_search).result %}
+
+  {% if contact_messages %}
+  <ul>
+    {% for mid in contact_messages.thread_ids %}
+      <li><a href="/thread/={{ mid }}/">{{ contact_messages.data.metadata[mid].subject }} ({{ contact_messages.data.threads[mid]|length }})</a></li>
+    {% endfor %}  
+  </ul>
+  {% endif %}
+  
+
 {% else %}
 
+    {% set error_title = "contact_missing" %}
+    {% include("partials/errors_content.html") %}
 
 {% endif %}
 
