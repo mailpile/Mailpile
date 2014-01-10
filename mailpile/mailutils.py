@@ -68,22 +68,10 @@ class NoSuchMailboxError(OSError):
 
 
 def ParseMessage(fd, pgpmime=True):
-    pos = fd.tell()
-    header = [fd.readline()]
-    while header[-1] not in ('', '\n', '\r\n'):
-        line = fd.readline()
-        if line.startswith(' ') or line.startswith('\t'):
-            header[-1] += line
-        else:
-            header.append(line)
-
-    fd.seek(pos)
     if pgpmime:
         message = PGPMimeParser().parse(fd)
     else:
         message = email.parser.Parser().parse(fd)
-
-    message.raw_header = header
     return message
 
 
@@ -285,18 +273,28 @@ MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
 DULL_HEADERS = ('in-reply-to', 'references')
 
 
-def HeaderPrint(message):
-    """Generate a fingerprint from message headers which identifies the MUA."""
-    # FIXME: This is wrong.
-    headers = message.keys()
+def HeaderPrintHeaders(message):
+    """Extract message headers which identify the MUA."""
+    headers = [k for k, v in message.items()]
 
+    # The idea here, is that MTAs will probably either prepend or append
+    # headers, not insert them in the middle. So we strip things off the
+    # top and bottom of the header until we see something we are pretty
+    # comes from the MUA itself.
     while headers and headers[0].lower() not in MUA_HEADERS:
         headers.pop(0)
     while headers and headers[-1].lower() not in MUA_HEADERS:
         headers.pop(-1)
-    headers = [h for h in headers if h.lower() not in DULL_HEADERS]
 
-    return b64w(sha1b64('\n'.join(headers))).lower()
+    # Finally, we return the "non-dull" headers, the ones we think will
+    # uniquely identify this particular mailer and won't vary too much
+    # from message-to-message.
+    return [h for h in headers if h.lower() not in DULL_HEADERS]
+
+
+def HeaderPrint(message):
+    """Generate a fingerprint from message headers which identifies the MUA."""
+    return b64w(sha1b64('\n'.join(HeaderPrintHeaders(message)))).lower()
 
 
 def IsMailbox(fn):

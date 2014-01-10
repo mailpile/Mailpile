@@ -64,6 +64,7 @@ class PyCLI(Hacks):
         variables = globals()
         variables['session'] = self.session
         variables['config'] = self.session.config
+        variables['index'] = self.session.config.index
         variables['mp'] = Mailpile(session=self.session)
 
         self.session.config.stop_workers()

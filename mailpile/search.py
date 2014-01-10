@@ -714,7 +714,7 @@ class MailIndex:
                                    self.hdr(msg, 'from').lower()))
         if mailbox:
             keywords.append('%s:mailbox' % mailbox.lower())
-        keywords.append('%s:hprint' % HeaderPrint(msg))
+        keywords.append('%s:hp' % HeaderPrint(msg))
 
         for key in msg.keys():
             key_lower = key.lower()
