@@ -26,9 +26,9 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     'type': ['Tag type', [
         'tag', 'group', 'attribute', 'unread',
         # Maybe TODO: 'folder', 'shadow',
-        'drafts', 'blank', 'outbox', 'sent',     # composing and sending
-        'replied', 'tagged', 'read', 'ham',      # behavior tracking tags
-        'trash', 'spam'                          # junk mail tags
+        'drafts', 'blank', 'outbox', 'sent',          # composing and sending
+        'replied', 'fwded', 'tagged', 'read', 'ham',  # behavior tracking tags
+        'trash', 'spam'                               # junk mail tags
     ], 'tag'],
     'flag_hides': ['Hide tagged messages from searches?', bool, False],
     'flag_editable': ['Mark tagged messages as editable?', bool, False],

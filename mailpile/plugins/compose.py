@@ -310,7 +310,7 @@ class Forward(RelativeCompose):
 
             # Behavior tracking
             if 'tags' in config:
-                for tag in config.get_tags(type='replied'):
+                for tag in config.get_tags(type='fwded'):
                     idx.add_tag(session, tag._key,
                                 msg_idxs=[m.msg_idx_pos for m in refs])
 

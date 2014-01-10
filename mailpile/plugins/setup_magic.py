@@ -72,6 +72,7 @@ class Setup(Command):
         # automatically added, and may be automatically removed as well
         # to keep the working sets reasonably small.
         'mp_rpl': {'type': 'replied', 'label': False, 'display': 'invisible'},
+        'mp_fwd': {'type': 'fwded', 'label': False, 'display': 'invisible'},
         'mp_tag': {'type': 'tagged', 'label': False, 'display': 'invisible'},
         'mp_read': {'type': 'read', 'label': False, 'display': 'invisible'},
         'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible'},

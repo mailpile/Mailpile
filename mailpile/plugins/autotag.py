@@ -163,7 +163,7 @@ class Retrain(AutoTagCommand):
         #
         no_trash = ['-in:%s' % t._key for t in config.get_tags(type='trash')]
         interest = {}
-        for ttype in ('replied', 'read', 'tagged'):
+        for ttype in ('replied', 'fwded', 'read', 'tagged'):
             interest[ttype] = set()
             for tag in config.get_tags(type=ttype):
                 interest[ttype] |= idx.search(session,
@@ -197,7 +197,8 @@ class Retrain(AutoTagCommand):
                         interest[etag._key] = idx.search(session, srch
                                                          ).as_set()
                     interesting.append(etag._key)
-                interesting.extend(['replied', 'read', 'tagged', None])
+                interesting.extend(['replied', 'fwded', 'read', 'tagged',
+                                    None])
 
                 # Go through the interest types in order of preference and
                 # while we still lack training data, add to the training set.
