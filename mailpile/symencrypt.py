@@ -10,6 +10,9 @@ class SymmetricEncrypter:
     """
     Symmetric encryption/decryption. Currently wraps OpenSSL's command line.
     """
+    beginblock = "-----BEGIN MAILPILE ENCRYPTED DATA-----"
+    endblock = "-----END MAILPILE ENCRYPTED DATA-----"
+    defaultcipher = "aes-256-gcm"
 
     def __init__(self, secret=None):
         self.available = None
@@ -19,9 +22,6 @@ class SymmetricEncrypter:
         self.fds = ["stdout", "stderr"]
         self.errors = []
         self.statuscallbacks = {}
-        self.defaultcipher = "aes-256-gcm"
-        self.beginblock = "-----BEGIN MAILPILE ENCRYPTED DATA-----"
-        self.endblock = "-----END MAILPILE ENCRYPTED DATA-----"
         self.secret = secret
 
     def run(self, args=[], output=None, passphrase=None, debug=False):
@@ -106,6 +106,15 @@ class SymmetricEncrypter:
                  ]
         retval, res = self.run(params, output=enc, passphrase=enckey)
         return res["stdout"]
+
+    def decrypt_fd(self, lines, fd):
+        for line in fd:
+            lines.append(line)
+            if line.startswith(GPG_END_MESSAGE):
+                break
+
+        ret = self.decrypt("".join(lines))
+        return ret.split("\n")
 
 
 class EncryptedFile(object):

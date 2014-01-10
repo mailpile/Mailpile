@@ -174,7 +174,7 @@ class PostingList(object):
         if fd:
             try:
                 self.lock.acquire()
-                self.size = decrypt_and_parse_lines(fd, self._parse_line)
+                self.size = decrypt_and_parse_lines(fd, self._parse_line, self.config)
             except ValueError:
                 pass
             finally:

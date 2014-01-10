@@ -629,7 +629,7 @@ class SimpleVCard(object):
             self.filename = filename or self.filename
             lines = []
             decrypt_and_parse_lines(open(self.filename, 'rb'),
-                                    lambda l: lines.append(l.rstrip()))
+                                    lambda l: lines.append(l.rstrip()), self.config)
             while lines and not lines[-1]:
                 lines.pop(-1)
             lines = unwrap('\n'.join(lines)).splitlines()
