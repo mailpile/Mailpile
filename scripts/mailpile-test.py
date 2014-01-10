@@ -190,19 +190,7 @@ except:
 ##[ Interactive mode ]########################################################
 
 if '-i' in sys.argv:
-    import code
-    import readline
-    variables = globals()
-    variables['session'] = mp._session
-    variables['config'] = mp._session.config
-    variables['index'] = mp._session.config.index
-    code.InteractiveConsole(locals=variables).interact("""
-
-Welcome to the Mailpile test shell. You can interact pythonically with the
-Mailpile object `mp`, or enable the built-in HTTP server and the Mailpile
-CLI by running `mp.Interact()`.
-    """)
-    config.stop_workers()
+    mp.Interact()
 
 
 ##[ Cleanup ]#################################################################
