@@ -204,21 +204,50 @@
   .pgp-encryption-error .thread-item-encryption-line { border-bottom: 1px solid @red; }
 
 
-  .thread-item-text {
-    max-width: 90%;
-    margin-left: 20px;
-    margin-right: 15px;
-    margin-bottom: 10px;
+  .font-style-item-text() {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 18px;
     white-space: pre-wrap;
   }
 
+  .thread-item-text {
+    max-width: 90%;
+    margin-left: 20px;
+    margin-right: 15px;
+    margin-bottom: 10px;
+    .font-style-item-text()
+  }
+
   .thread-item-text a {
     color: @black;
     font-weight: bold;
   }
+	
+	.thread-item-quote {
+	  max-width: 90%;
+  	margin-left: 20px;
+  	margin-bottom: 15px;
+    .font-style-item-text()
+	}
+	
+	.thread-item-quote-show {
+	  display: inline-block;
+    padding: 2px 5px;
+  	border: 1px solid @grayMid;
+  	color: @grayDark;
+  	cursor: pointer;
+  	font-size: 18px;
+  	line-height: 14px;
+	}
+	
+  .thread-item-quote-show:hover {
+    background: @grayLight;
+  }
+	
+	.thread-item-quote-text {
+  	display: none;
+	}
 	
 
 	

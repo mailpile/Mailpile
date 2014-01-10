@@ -54,8 +54,7 @@
     </div>
 
     {% for part in message.text_parts %}
-      <b> Index: {{ loop.index }}</b> <br>
-      {% if ((part.data != "") and (part.type == "pgptext")) %}
+      {% if (part.data != "") and (part.type == "pgptext") %}
       <div class="thread-item-encryption text-part-{{ part.type }} pgp-encryption-{{ part.encryption_info.status }} clearfix">
         <div class="thread-item-encryption-info left" data-name="cats">
           {% if part.encryption_info.status == "none" %}
@@ -73,17 +72,14 @@
         </div>
         <div class="thread-item-encryption-line left"></div>
       </div>
-      <div class="thread-item-text">
-        {{ part.data|e|urlize }}
-      </div>
+      <div class="thread-item-text">{{ part.data|e|urlize }}</div>
       {% elif part.type == "text" %}
-      <div class="thread-item-text">
-        {{ part.data|e|urlize }}
-      </div>
+      <div class="thread-item-text">{{ part.data|e|urlize }}</div>
       {% elif part.type == "quote" %}
-      DOGS DOGS DOGS!!!
+      <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div>
+        <div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div>
+      </div>
       {% endif %}
-      
     {% endfor %}
     </div>
 

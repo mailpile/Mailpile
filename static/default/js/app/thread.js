@@ -25,11 +25,20 @@ $(document).on('click', '.show-thread-message-metadata-details', function() {
   $('#metadata-details-' + $(this).parent().parent().parent().data('mid')).fadeIn();
 });
 
+
+
 /* Thread - Expand Snippet */
 $(document).on('click', '#thread-messages div.thread-snippet', function(e) {  
   if (e.target.href === undefined) {
     alert('FIXME: Will load full message with mid: ' + $(this).data('mid'));
   }
+});
+
+/* Thread - Message Quote Show */
+$(document).on('click', '.thread-item-quote-show', function() {
+  var quote_id = $(this).data('quote_id');
+  var quote_text = $('#message-quote-text-' + quote_id).html();
+  $('#message-quote-' + quote_id).html(quote_text);
 });
 
 

@@ -6785,6 +6785,30 @@ a.compose-show-field {
   color: #333333;
   font-weight: bold;
 }
+.thread-item-quote {
+  max-width: 90%;
+  margin-left: 20px;
+  margin-bottom: 15px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+  white-space: pre-wrap;
+}
+.thread-item-quote-show {
+  display: inline-block;
+  padding: 2px 5px;
+  border: 1px solid #cccccc;
+  color: #4d4d4d;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 14px;
+}
+.thread-item-quote-show:hover {
+  background: #f2f2f2;
+}
+.thread-item-quote-text {
+  display: none;
+}
 /* Tags */
 .tag-card {
   width: 20%;
