@@ -2381,3 +2381,349 @@ a>.</p>
 </html>
 --_----------=_MCPart_2065307511--
 
+From bre@slinky  Fri Jan 10 15:32:16 2014
+Return-Path: <bre@slinky>
+X-Original-To: bre@slinky
+Delivered-To: bre@slinky
+Received: by slinky (Postfix, from userid 1000)
+	id DBB6A462C7; Fri, 10 Jan 2014 15:32:15 +0000 (GMT)
+Date: Fri, 10 Jan 2014 15:32:15 +0000
+From: Bjarni Runar Einarsson <bre@slinky>
+To: Bjarni Runar Einarsson <bre@slinky>
+Subject: Testing encryption
+Message-ID: <20140110153215.GA12247@slinky>
+MIME-Version: 1.0
+Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";
+	boundary="3V7upXqbjpZ4EhLz"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.21 (2010-09-15)
+Content-Length: 956
+Lines: 28
+
+
+--3V7upXqbjpZ4EhLz
+Content-Type: application/pgp-encrypted
+Content-Disposition: attachment
+
+Version: 1
+
+--3V7upXqbjpZ4EhLz
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="msg.asc"
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+
+hIwDPobfLEGaNZgBBADRFKHhXFgLhMfQgEgFtGal1yxy4Up+TJTp9JcnxudA1cR0
+lpK02mHowJ8dsKTPIEa21Z5bLjVmkF1tPMZt5HbrmoD9U25GPSsvIZ6yDB8tX1F9
+tl1pNEy+kKWh/XvuK8yXAbuG00KPuFfl6om1eeKlJVwFtJ9b9HmkZZUckiZCgtLA
+eAFIoV9OLe/HJrkofuvYmQk/k+K4+f7oDJ9i6VpdD1j3G+nQ/L3iH0dJeXq8vIhl
+swpByx+fxEjUHL4sFoZ9UocPoqVnXllMDIi0O5pAuCquauPEc7gwjrmbyU8wHAyC
+sXbAFU0K60dVMdQ8+crYAPnaENjxxMN4Y4h1gYVfTD6fPRjgd9u3Fm6qAdH+hpb0
+cMaqdBOcDNxklcZYxdFXpPWj3zUZMDH+b0wsVzpk3snL9dUOteuSX568w4N9p66V
+NepwSnpZc42+tpphGso0dNK1A11CSmfbdpwCb88w5jt5NIcjt/anu704ViRhxQmO
+H9+os+AeAmbJeGfZe5AbTYW+nTjuW2tYz+IY9u7MyHBKjVvLXHhwMRC6mxtSD7sE
+B20WcSPIvkc5vjC1ydcGKe8T6OlLmwN1Jg==
+=n4kr
+-----END PGP MESSAGE-----
+
+--3V7upXqbjpZ4EhLz--
+
+From bre@slinky  Fri Jan 10 15:32:54 2014
+Return-Path: <bre@slinky>
+X-Original-To: bre@slinky
+Delivered-To: bre@slinky
+Received: by slinky (Postfix, from userid 1000)
+	id CD259462C7; Fri, 10 Jan 2014 15:32:54 +0000 (GMT)
+Date: Fri, 10 Jan 2014 15:32:54 +0000
+From: Bjarni Runar Einarsson <bre@slinky>
+To: Bjarni Runar Einarsson <bre@slinky>
+Subject: Testing signatures
+Message-ID: <20140110153254.GB12247@slinky>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="MW5yreqqjyrRcusr"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.21 (2010-09-15)
+Status: RO
+Content-Length: 524
+Lines: 23
+
+
+--MW5yreqqjyrRcusr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+This should be a signed message, hello world!
+
+La la la.
+
+
+--MW5yreqqjyrRcusr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+
+iF4EAREIAAYFAlLQEqYACgkQyX+Mu/zuJ9uv7QD8CoJdy8WOV3K9V1bq4eA20Pi2
+3OyhpkKwTxqnIzg2MPYA/14AcCr4XGZnsv82kT3swgwp4OUaly4INrI0ZF4c9PSK
+=E6Dj
+-----END PGP SIGNATURE-----
+
+--MW5yreqqjyrRcusr--
+
+From bounce+300849.3b3-team+testing=mailpile.is@mailgun.org  Fri Jan 10 15:46:41 2014
+Return-Path: <bounce+300849.3b3-team+testing=mailpile.is@mailgun.org>
+X-Original-To: team+testing@mailpile.is
+Delivered-To: mailpile@mailpile.is
+Received: by mailpile.is (Postfix)
+	id CCD9E62B43; Fri, 10 Jan 2014 15:46:41 +0000 (GMT)
+Delivered-To: team+testing@mailpile.is
+X-Greylist: delayed 649 seconds by postgrey-1.34 at mailpile.is; Fri, 10 Jan 2014 15:46:41 GMT
+Received: from mail-luna33.mailgun.org (unknown [173.193.210.33])
+	by mailpile.is (Postfix) with ESMTP id 8D02962B41
+	for <team+testing@mailpile.is>; Fri, 10 Jan 2014 15:46:41 +0000 (GMT)
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mailgun.org; q=dns/txt; s=mg;
+ t=1389368791; h=Content-Type: Subject: Mime-Version: From: Date:
+ Content-Transfer-Encoding: Message-Id: Content-Description: To: Sender;
+ bh=w9y0jpP3J9rFxp3YhCYyRUXNifnnXT2jbUyFAnCMQiM=; b=RRzKTgZXbqLdg49QzdkIwNNA9iNeHAs/Emv7+n+iQjWTFgeYgqN8b4uU/1MFxmtt3XIipUMv
+ fAXhAfmHW0R/0Xw3/kStof67LqkfIZGqnFlMFqkv6s7JKp/rKZE21RuSEqbrzVKABj3LuhgV
+ BBp1OdEr3nQr2Si5c2ywwzFCdWs=
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=mailgun.org; s=mg; q=dns;
+ h=Content-Type: Subject: Mime-Version: From: Date:
+ Content-Transfer-Encoding: Message-Id: Content-Description: To: Sender;
+ b=GMWCrZncXf33IJPX9NSgzlxGoj8x6nxX+SOil7QY+dOTAbyEkkopiZmQ2EpR1p9kirIS6T
+ rCyReqHR+Vtix03T18AlxYTTN7m1nakzH5BFkoS1ioE39Qta0QvQeoYSZVcdCC2CXPJYK6Vk
+ L1oNnPj+Z0/e9eg7tGZVscNjHG2JA=
+Received: from [192.168.1.94] (dsl-ls-105-150.du.vortex.is
+ [213.190.105.150]) by mxa.mailgun.org with ESMTP id 52d0136b.7721378-in3;
+ Fri, 10 Jan 2014 15:36:11 -0000 (UTC)
+Content-Type: multipart/encrypted; boundary="Apple-Mail=_C42BC4E0-7957-4A17-83D3-1DC7E8F0D09C"; protocol="application/pgp-encrypted"
+Subject: Email That Is Encrypted
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+X-Pgp-Agent: GPGMail (null)
+From: Brennan Novak <hi@brennannovak.com>
+Date: Fri, 10 Jan 2014 15:36:04 +0000
+Content-Transfer-Encoding: 7bit
+Message-Id: <E8E0E57A-CA67-4929-BEF3-8A45F9CB77B9@brennannovak.com>
+Content-Description: OpenPGP encrypted message
+To: team+testing@mailpile.is
+X-Mailer: Apple Mail (2.1827)
+X-Mailgun-Sid: WyI5OTA5MyIsICJ0ZWFtK3Rlc3RpbmdAbWFpbHBpbGUuaXMiLCAiM2IzIl0=
+Sender: hi@brennannovak.com
+Content-Length: 1980
+Lines: 44
+
+--Apple-Mail=_C42BC4E0-7957-4A17-83D3-1DC7E8F0D09C
+Content-Transfer-Encoding: 7bit
+Content-Type: application/pgp-encrypted
+Content-Description: PGP/MIME Versions Identification
+
+Version: 1
+
+--Apple-Mail=_C42BC4E0-7957-4A17-83D3-1DC7E8F0D09C
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename=encrypted.asc
+Content-Type: application/octet-stream;
+	name=encrypted.asc
+Content-Description: OpenPGP encrypted message
+
+-----BEGIN PGP MESSAGE-----
+Comment: GPGTools - https://gpgtools.org
+
+hQEMA7oNcZ+2CxZ7AQf/RHWq8dwnMbVMQ2Jneq4awHBh4vj/gLtMz416snP/cVjs
+DQT+DYBIbt5DiocO+1UR2MuDGGWem4zxoLfMBIKJ1XFzWtNMtNj03GZpLMEtXSRW
+84t2AdjcOm+Dz1RjKxzDiqNeM/1LBW80LXwKXMYhCaaOlo1hv92ZyiCDzrJ76198
+tB4qxycsjOpdA2gnALtdD7WTtUFkgk/nRJctJi4rKoOQQ5AsAaOVKuk7UiVT8a+n
+04DyvOY0ugzgGuNK7Y5Sd8p9+SPc5XFyRl6S9PPi3Uol/jvwo0bzzpQH4F01Krld
+FEEtR8y0Zpn9ceK+0P5ZpWnI2K/Co9S+tytpsiYAo4SMAz6G3yxBmjWYAQP/d0yq
+ce7S4yLJLEIbvlQ1UOXTkHUJO3zrzgMTEu1GSKqUTZcqxhNz7kGITod7GQm5EKEY
+IWKdPzYrk6lfCjtZp6ffki7q8kVJ+Sb4jppVZcEAEiT01YuC/po8zBqkh9xnB1+3
+FwnS5aLhSRq45J1tNoq8I+JexBHbEtgj4Z0olmjS6QH7hAtXiiw15INwirqCNeAX
++BQXMypknxYAOnjofGvIhw1CJRfWKFH7uXAr6knkMg0PrVhEGunxZzYr0NfsKc3Z
+KDY5QFkDhAvxXjOCEne5Z+OkHYB3kaWW4+fRYhI8OS39J3y5CzOxEE2w/R6BwB+2
+T1VvRadI4qz07pqwi8h9ABCOGHiC8xmZTv+P6zGib9WVdeGQ7shQVQ21AtraTW8S
+TfH0RwaMJ6EBckefoUFBKVG+9+P4NtXFPvPAkHPTl1H6opfeAUrZq/bp6IXELWWc
+3C00r0WEz1RNx96YIRVZnHxXO933xINVGsmnEWOcFfVWkeMGmKE7U0sTIk2+yORb
+FvMTMviK/G0KdSz8QCJLfo3wEj85oDrYLAuKqaU96J4I6W9GhgYfe+2PIr9BRAKk
+XSYX1sjdrWC85lRh1mQ2+aeAJPn+no2Iu/vUEspltBOMpPGdyVHmhYOgZAmlKaTG
+RX12lskzKj1c/NWeVAggp1ZQwNwWJDwQepybR7OygY01qdSKWAu7FS+HO91BLMvs
+ulM9Er3W9o/Lw/WJil0lJZdC0ec2dAXhBBTrLUz40Q21XoKJl4qZfkomH9w8qezq
+jFTbr78Qrnk2IB25dKYleiKf7mLkmWbBsAq05UNVQW8Q5iqvxVkMPsXpTizt5xX2
+lDsALoR6Uizh/R5nzPrYYBMBl2D0XbLSb+3PF8Vf7TDu3CGI1RZuwzckp5rdSxMn
+kyUUNUYz92VwRH7/fWrIPk0M8ZTe71vw07ob9IRs8x4RrtpFSsSZ6tdCJlYl5bzY
+a4I/uYMdvUgx839B1NdbWA==
+=7ar8
+-----END PGP MESSAGE-----
+
+--Apple-Mail=_C42BC4E0-7957-4A17-83D3-1DC7E8F0D09C--
+
+From bounce+300849.3b3-team+testing=mailpile.is@mailgun.org  Fri Jan 10 15:46:43 2014
+Return-Path: <bounce+300849.3b3-team+testing=mailpile.is@mailgun.org>
+X-Original-To: team+testing@mailpile.is
+Delivered-To: mailpile@mailpile.is
+Received: by mailpile.is (Postfix)
+	id CF83F62B41; Fri, 10 Jan 2014 15:46:41 +0000 (GMT)
+Delivered-To: team+testing@mailpile.is
+Received: from mail-luna33.mailgun.org (unknown [173.193.210.33])
+	by mailpile.is (Postfix) with ESMTP id 9238062B42
+	for <team+testing@mailpile.is>; Fri, 10 Jan 2014 15:46:41 +0000 (GMT)
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mailgun.org; q=dns/txt; s=mg;
+ t=1389368791; h=From: Content-Type: Subject: Message-Id: Date: To:
+ Mime-Version: Sender; bh=5PW2doCUCt4awqmrAOdtv5U3UOSJkdD6BXc8cX8/27w=;
+ b=SGS2ac4EiHOjiL0bLxrbh5mltPINh7olvHPfImlZmEZHfyAnz+y03JTCQDKdJKixtcVvIoD2
+ 4uo7J0g0q2BEOQFxOlWKneod0JkwdtDvXilmfr6zQuytjRU+Og5R07vE4Fhh14Pq5Jps8Sq8
+ XrLcIB/GqJUrTC0V2rAGGeshg84=
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=mailgun.org; s=mg; q=dns;
+ h=From: Content-Type: Subject: Message-Id: Date: To: Mime-Version:
+ Sender;
+ b=JIPVJtH6RS2uUOk6/YM9FgftGLZL4EPN++401Dh0TWXP820Em+HXpAnKlPT8DzJQjki0Id
+ LOjaYvvE+8VyClld28k2HCMP82uGDi3/6G5O9t7rQTDCfwQoil7mDkuU7MbYvyyMduLRqoWi
+ YImsHshiwVl793tcrFZs3PTK2/1to=
+Received: from [192.168.1.94] (dsl-ls-105-150.du.vortex.is
+ [213.190.105.150]) by mxa.mailgun.org with ESMTP id 52d01345.67bcf80-in2;
+ Fri, 10 Jan 2014 15:35:33 -0000 (UTC)
+From: Brennan Novak <hi@brennannovak.com>
+Content-Type: multipart/signed; boundary="Apple-Mail=_D07FF770-A934-422D-9AE3-53E5CF4BF1D6"; protocol="application/pgp-signature"; micalg="pgp-sha512"
+Subject: Email That Is Signed
+Message-Id: <5D16ABA3-6E8D-4B09-9D75-62C933C6C485@brennannovak.com>
+Date: Fri, 10 Jan 2014 15:35:29 +0000
+To: team+testing@mailpile.is
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+X-Mailer: Apple Mail (2.1827)
+X-Mailgun-Sid: WyI5OTA5MyIsICJ0ZWFtK3Rlc3RpbmdAbWFpbHBpbGUuaXMiLCAiM2IzIl0=
+Sender: hi@brennannovak.com
+Content-Length: 4192
+Lines: 93
+
+--Apple-Mail=_D07FF770-A934-422D-9AE3-53E5CF4BF1D6
+Content-Type: multipart/alternative;
+	boundary="Apple-Mail=_E6D99D2A-4B4C-4D4A-8B34-46853042D7F9"
+
+
+--Apple-Mail=_E6D99D2A-4B4C-4D4A-8B34-46853042D7F9
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=us-ascii
+
+Yo Bjarni, 
+
+Brennan here, sending this message to ya for testing purposes only!!!
+
+This message has a signature, but is not encrypted.
+
+Cheers,
+
+BN
+
+
+--Apple-Mail=_E6D99D2A-4B4C-4D4A-8B34-46853042D7F9
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=us-ascii
+
+<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html =
+charset=3Dus-ascii"></head><body style=3D"word-wrap: break-word; =
+-webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">Yo =
+Bjarni,&nbsp;<div><br></div><div>Brennan here, sending this message to =
+ya for testing purposes only!!!</div><div><br></div><div>This message =
+has a signature, but is not encrypted.</div><br><div =
+apple-content-edited=3D"true">
+<div style=3D"color: rgb(0, 0, 0); font-family: Helvetica;  font-style: =
+normal; font-variant: normal; font-weight: normal; letter-spacing: =
+normal; line-height: normal; orphans: 2; text-align: -webkit-auto; =
+text-indent: 0px; text-transform: none; white-space: normal; widows: 2; =
+word-spacing: 0px; -webkit-text-size-adjust: auto; =
+-webkit-text-stroke-width: 0px; word-wrap: break-word; =
+-webkit-nbsp-mode: space; -webkit-line-break: after-white-space; "><div =
+style=3D"color: rgb(0, 0, 0); font-family: Helvetica;  font-style: =
+normal; font-variant: normal; font-weight: normal; letter-spacing: =
+normal; line-height: normal; orphans: 2; text-align: -webkit-auto; =
+text-indent: 0px; text-transform: none; white-space: normal; widows: 2; =
+word-spacing: 0px; -webkit-text-size-adjust: auto; =
+-webkit-text-stroke-width: 0px; word-wrap: break-word; =
+-webkit-nbsp-mode: space; -webkit-line-break: after-white-space; "><div =
+style=3D"color: rgb(0, 0, 0); font-family: Helvetica;  font-style: =
+normal; font-variant: normal; font-weight: normal; letter-spacing: =
+normal; line-height: normal; orphans: 2; text-align: -webkit-auto; =
+text-indent: 0px; text-transform: none; white-space: normal; widows: 2; =
+word-spacing: 0px; -webkit-text-size-adjust: auto; =
+-webkit-text-stroke-width: 0px; word-wrap: break-word; =
+-webkit-nbsp-mode: space; -webkit-line-break: after-white-space; "><div =
+style=3D"color: rgb(0, 0, 0); font-family: Helvetica;  font-style: =
+normal; font-variant: normal; font-weight: normal; letter-spacing: =
+normal; line-height: normal; orphans: 2; text-align: -webkit-auto; =
+text-indent: 0px; text-transform: none; white-space: normal; widows: 2; =
+word-spacing: 0px; -webkit-text-size-adjust: auto; =
+-webkit-text-stroke-width: 0px; word-wrap: break-word; =
+-webkit-nbsp-mode: space; -webkit-line-break: after-white-space; =
+"><div>Cheers,</div><div><br></div><div>BN</div><div><br></div></div></div=
+></div></div></div></body></html>=
+
+--Apple-Mail=_E6D99D2A-4B4C-4D4A-8B34-46853042D7F9--
+
+--Apple-Mail=_D07FF770-A934-422D-9AE3-53E5CF4BF1D6
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename=signature.asc
+Content-Type: application/pgp-signature;
+	name=signature.asc
+Content-Description: Message signed with OpenPGP using GPGMail
+
+-----BEGIN PGP SIGNATURE-----
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAEBCgAGBQJS0BNBAAoJELgSf1EkRiQh+JQQAIh2aIfWNPQupHM27NW1p8Hl
+Cuiw9Vsf04k+Zr/FTZQhNuE/UWG45XpHmsm7C3oQnz6PU/BTh+MRzb2r61SkBQDq
+1RqMPnwJOqdiao34DVifmORHPJSHIpRSmANex2bOMxpah2Dac+1qfU42DMFN6w6c
+qR8kuKz9uod13e60FrLVzvmP7XmcbxlQEFhjB/evGUzi097jhpkqIbUWgyjNwdw/
+8VwgIR9dS85xBkrFigFOXBf85OmwctthAkiWwwzyxhvit+dueHELgF20HJjZsNS9
+q8SLbuhC1tG6bx2xFOX0/MXr7028UTLcxlSozW6I+h0jvYQ03RdWohqnOnzg5DDZ
+K1n8VdygW0jtufjjk5+61x5waRZ0UMZWJfLzF2jZwT3V8+Oeke57zmKKm/qB+vtT
+NbnJILcP30klEZPnkNJsi2L9ZacBHe5MgvXEo6dRXE9n20zhQBwGSRmMl/zHQleF
+DW2RZhOgJUc1YO6ogjmTtsuOxe3UsyfC9QuvAzUqI1b1Alc8LcrbH63eUc1gAJSG
+YD5k+TMJpEzZeIg1KcLiCXhgu4z/NptMCjG+EnZYqlCUJvI/E7z3oezbc4IMwgWA
+wdgo2BnAw2QmkHdQDP+/2XhMc661ms3/77Y2rdE3PoZodfzelJZl4IhZpBTSnWsq
+h4U0yea2S7khSE92tO1f
+=YkzP
+-----END PGP SIGNATURE-----
+
+--Apple-Mail=_D07FF770-A934-422D-9AE3-53E5CF4BF1D6--
+
+From bre@slinky  Fri Jan 10 15:53:36 2014
+Return-Path: <bre@slinky>
+X-Original-To: bre@slinky
+Delivered-To: bre@slinky
+Received: by slinky (Postfix, from userid 1000)
+	id E7871462C7; Fri, 10 Jan 2014 15:53:35 +0000 (GMT)
+Date: Fri, 10 Jan 2014 15:53:35 +0000
+From: Bjarni Runar Einarsson <bre@slinky>
+To: Bjarni Runar Einarsson <bre@slinky>
+Subject: Inline encryption test
+Message-ID: <20140110155335.GA12916@slinky>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.21 (2010-09-15)
+Content-Length: 585
+Lines: 16
+
+This is a message which is partially encrypted, and partially not.
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+
+hIwDPobfLEGaNZgBBACQ7h3M2n3V8IkjW7WNC0o9ZhTd5ggtmIm3JlD5BMtGnB3l
+eL0JDNeQdW6gKiws+K7JnvniknhVRKqVVJF+XpASaxfcS1J52Fb+mrYng8lwUVFd
+OlHBJIMMf6wluHLLd0S1xhLibuC77+Rh4hg2hR790heecURlxyTVSRWb5c3YL9J8
+AQaLY3qsSSsb2foi9ASMU256rvm8dWcsLqsWBXwNgRgEASZT3lmCPhx6y1+s5zzv
+ZF/lsOc0ssOOs6aOCdcLlU1e7swmDUI60Dteo2kgpQgtDIDQxa7e5J5/2Pd/BYN4
+YIC3qNe8fqErjT5dm/UJHBRd8H8hMREbBhlGGw==
+=tKWd
+-----END PGP MESSAGE-----
+
+Yay, that is so neat and cool and funky and awesome.
+
+

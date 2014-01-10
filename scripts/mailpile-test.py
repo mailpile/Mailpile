@@ -16,7 +16,11 @@ mailpile_root = os.path.join(os.path.dirname(__file__), '..')
 mailpile_test = os.path.join(mailpile_root, 'testing')
 mailpile_send = os.path.join(mailpile_root, 'scripts', 'test-sendmail.sh')
 mailpile_home = os.path.join(mailpile_test, 'tmp')
+mailpile_gpgh = os.path.join(mailpile_test, 'gpg-keyring')
 mailpile_sent = os.path.join(mailpile_home, 'sent.mbx')
+
+# Set the GNUGPHOME variable to our test key
+os.environ['GNUPGHOME'] = mailpile_gpgh
 
 # Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
@@ -110,7 +114,7 @@ try:
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['stats']['count'] == 8)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 13)
 
     # Make sure we are decoding weird headers correctly
     search_bre = mp.search(*FROM_BRE).result
