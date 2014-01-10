@@ -1,9 +1,8 @@
 {% extends "layouts/base.html" %}
 {% block content %}
 {% if result %}
-
-  {% set start_mid = result.thread_ids[-1] %}
-  {% set start_subject = result.data.metadata[start_mid].subject %}
+{% set start_mid     = result.thread_ids[-1] %}
+{% set start_subject = result.data.metadata[start_mid].subject %}
 
 <div id="thread-title" class="clearfix">
   <h1>{{ start_subject }}</h1>
@@ -24,12 +23,10 @@
 </div>
 
 <div id="thread-messages">
-
 {% for mid in result.thread_ids %}
   {% set metadata = result.data.metadata[mid] %}
   {% set message  = result.data.messages[mid] %}
   {% set from     = result.data.addresses[metadata.from_aid] %}
-
   {% if mid in result.data.messages %}
   {% if not message.editing_string %}
 
@@ -38,7 +35,6 @@
 
     {% set show_encryption = true %}
     {% include("partials/thread_item_metadata.html") %}
-
     <!--    
     FIXME: Here below, we need a django filter to extract the e-mail
     addresses and iterate through multiple values in a single
@@ -55,21 +51,23 @@
       {% endfor %}
     {% endfor %}
 
-        
     {% for part in message.text_parts %}
       {% if part.data != "" %}
-      <div class="thread-item-text text-part-{{part.type}}">     
-        <div class="thread-item-data-encrypted pgp_encrypted_{{part.encryption_info.status}}">
-            {% if part.encryption_info.status == "none" %}
-            <span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span> Not Encrypted
-            {% endif %}
-            {% if part.encryption_info.status == "decrypted" %}<span class="icon-encrypted" title="{{_("Successfully decrypted message")}}"></span> Decrypted{% endif %}
-            {% if part.encryption_info.status == "missingkey" %}<span class="icon-key" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span> Missing Key{% endif %}
-            {% if part.encryption_info.status == "error" %}<span class="icon-unencrypted" title="{{_("Failed to decrypt message")}}"></span>{% endif %}
-        </div>
-        {{ part.data|e|urlize }}
+      <div class="thread-item-data-encrypted text-part-{{ part.type }} pgp_encrypted_{{ part.encryption_info.status }}">
+        {% if part.encryption_info.status == "none" %}
+        <span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span> Not Encrypted
+        {% endif %}
+        {% if part.encryption_info.status == "decrypted" %}
+        <span class="icon-encrypted" title="{{_("Successfully decrypted message")}}"></span> Decrypted
+        {% endif %}
+        {% if part.encryption_info.status == "missingkey" %}
+        <span class="icon-key" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span> Missing Key
+        {% endif %}
+        {% if part.encryption_info.status == "error" %}
+        <span class="icon-unencrypted" title="{{_("Failed to decrypt message")}}"></span>
+        {% endif %}
       </div>
-
+      <div class="thread-item-text">{{ part.data|e|urlize }}</div>
       {% endif %}
     {% endfor %}
     </div>
@@ -77,22 +75,21 @@
     <div class="message-attachments">
     <ul>
       {% for att in message.attachments %}
-      <div style='display: inline-block; text-align: center; margin: 10px;'>
-        <a href="/message/download/={{message.mid}}/part:{{att.count}}/" type="{{att.mimetype}}" title="{{att.mimetype}} @ {{att.length|friendly_bytes}}">
+      <li>
+        <a href="/message/download/={{message.mid}}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">
         {% if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
-          <img src="/message/download/preview/={{message.mid}}/part:{{att.count}}/" style='margin: 0 2px; max-height: 80px'><br />
+          <img src="/message/download/preview/={{ message.mid }}/part:{{ att.count }}/"><br />
         {% endif %}
-          {{att.filename}}<br />
-          <small>({{att.length|friendly_bytes}})</small>
+          {{ att.filename }}<br />
+          <small>{{ att.length|friendly_bytes }}</small>
         </a>
-      </div>
+      </li>
       {% endfor %}
     </ul>
     </div>
-    
+
     <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="E36">
       <ul class="horizontal left">
-        <li><a href="#"><span class="icon-checkmark"></span> To Do</a></li>
         <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
         <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
@@ -106,26 +103,21 @@
         <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
       </ul>
     </div>
-    
-  {% include("partials/compose.html") %}    
-
+    {% include("partials/compose.html") %}
   {% endif %}
 
-  {# if not message.editing... #}
-  {% else %}
+  {% else %}{# if not message.editing... #}
 
     <div class="thread-snippet" data-mid="{{ mid }}">
       {% set show_encryption = false %}
       {% include("partials/thread_item_metadata.html") %}
-      <div class="thread-item-text">
-        {{ metadata.body.snippet }}
-      </div>
+      <div class="thread-item-text">{{ metadata.body.snippet }}</div>
     </div>
 
   {% endif %}
   {% endfor %}{# for mid ... #}
   </div>
-  
+
   {% else %}
     {% set error_title = "message_missing" %}
     {% include("partials/errors_content.html") %}

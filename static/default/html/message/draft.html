@@ -71,14 +71,15 @@
     </div>
   </form>
   {% else %}
-    {# {{mailpile('http/redirect/url_thread', mid)}} #}
+    {{ mailpile('http/redirect/url_thread', mid) }}
   {% endif %}
-{% endfor %}{# for mid ... #}
+{% endfor %}
 </div>
 
 {% else %}{# if result #}
 
-  <h1>{{_("Message not found!")}}</h1>
+  {% set error_title = "message_missing" %}
+  {% include("partials/errors_content.html") %}
 
 {% endif %}{# if result #}
 {% endblock %}

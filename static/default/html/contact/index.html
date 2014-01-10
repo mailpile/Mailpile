@@ -26,8 +26,8 @@
 
   <h4>Stats</h4>
   <ul>
-    <li>Messages sent to this contact: {{result.sent_messages}}</li>
-    <li>Messages received from this contact: {{result.received_messages}}</li>
+    <li>Messages sent to contact: {{result.sent_messages}}</li>
+    <li>Messages received from contact: {{result.received_messages}}</li>
     {% if result.last_contact_to %}
     <li>Last contacted on: <a href="{{result.last_contact_to_msg_url}}">{{result.last_contact_to}}</a></li>
     {% else %}
@@ -39,7 +39,7 @@
     <li>You've never been contacted by this contact.</li>
     {% endif %}
   </ul>
-  <hr>
+  <hr>  
 
 {% else %}
 
