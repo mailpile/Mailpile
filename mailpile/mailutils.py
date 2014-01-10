@@ -50,14 +50,18 @@ MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
 class NotEditableError(ValueError):
     pass
 
+
 class NoFromAddressError(ValueError):
     pass
+
 
 class NoRecipientError(ValueError):
     pass
 
+
 class InsecureSmtpError(ValueError):
     pass
+
 
 class NoSuchMailboxError(OSError):
     pass
@@ -82,13 +86,15 @@ def ParseMessage(fd, pgpmime=True):
     message.raw_header = header
     return message
 
+
 def ExtractEmailAndName(string):
     email = (ExtractEmails(string) or [''])[0]
-    name = (string.replace(email, '')
-                   .replace('<>', '')
-                   .replace('"', '')
-                   .replace('(', '')
-                   .replace(')', '')).strip()
+    name = (string
+            .replace(email, '')
+            .replace('<>', '')
+            .replace('"', '')
+            .replace('(', '')
+            .replace(')', '')).strip()
     return email, (name or email)
 
 
@@ -99,14 +105,15 @@ def ExtractEmails(string):
     string = string.replace('<', ' <').replace('(', ' (')
     for w in [sw.strip() for sw in re.compile('[,\s]+').split(string)]:
         if '@' in w:
-          while startcrap.search(w):
-              w = w[1:]
-          while endcrap.search(w):
-              w = w[:-1]
-          # E-mail addresses are only allowed to contain ASCII
-          # characters, so we just strip everything else away.
-          emails.append(CleanText(w, banned=CleanText.WHITESPACE,
-                                     replace='_').clean)
+            while startcrap.search(w):
+                w = w[1:]
+            while endcrap.search(w):
+                w = w[:-1]
+            # E-mail addresses are only allowed to contain ASCII
+            # characters, so we just strip everything else away.
+            emails.append(CleanText(w,
+                                    banned=CleanText.WHITESPACE,
+                                    replace='_').clean)
     return emails
 
 
@@ -152,22 +159,23 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
     gnupg = GnuPG()
     if signatureopt:
         signingstring = MessageAsString(msg)
-        #signingstring = re.sub("[\r]{1}[\n]{0}", "\r\n", msg.get_payload()[0].as_string())
-        # print ">>>%s<<<" % signingstring.replace("\r", "<CR>").replace("\n", "<LF>")
-
         signature = gnupg.sign(signingstring, fromkey=sender, armor=True)
-        # TODO: Create attachment, attach signature.
+
+        # FIXME: Create attachment, attach signature.
         if signature[0] == 0:
-            # sigblock = MIMEMultipart(_subtype="signed", protocol="application/pgp-signature")
+            # sigblock = MIMEMultipart(_subtype="signed",
+            #                          protocol="application/pgp-signature")
             # sigblock.attach(msg)
             msg.set_type("multipart/signed")
-            msg.set_param("micalg", "pgp-sha1") # need to find this!
+            msg.set_param("micalg", "pgp-sha1")  # need to find this!
             msg.set_param("protocol", "application/pgp-signature")
             sigblock = MIMEText(str(signature[1]), _charset=None)
             sigblock.set_type("application/pgp-signature")
             sigblock.set_param("name", "signature.asc")
-            sigblock.add_header("Content-Description", "OpenPGP digital signature")
-            sigblock.add_header("Content-Disposition", "attachment; filename=\"signature.asc\"")
+            sigblock.add_header("Content-Description",
+                                "OpenPGP digital signature")
+            sigblock.add_header("Content-Disposition",
+                                "attachment; filename=\"signature.asc\"")
             msg.attach(sigblock)
         else:
             # Raise stink about signing having failed.
@@ -206,7 +214,8 @@ def SendMail(session, from_to_msg_tuples):
         elif (sendmail.startswith('smtp:') or
               sendmail.startswith('smtpssl:') or
               sendmail.startswith('smtptls:')):
-            host, port = sendmail.split(':', 1)[1].replace('/', '').rsplit(':', 1)
+            host, port = sendmail.split(':', 1
+                                        )[1].replace('/', '').rsplit(':', 1)
             smtp_ssl = sendmail.startswith('smtpssl')
             if '@' in host:
                 userpass, host = host.rsplit('@', 1)
@@ -216,7 +225,7 @@ def SendMail(session, from_to_msg_tuples):
 
             if 'sendmail' in session.config.sys.debug:
                 sys.stderr.write(_('SMTP connection to: %s:%s as %s@%s\n'
-                                  ) % (host, port, user, pwd))
+                                   ) % (host, port, user, pwd))
 
             server = smtp_ssl and SMTP_SSL() or SMTP()
             server.connect(host, int(port))
@@ -257,7 +266,7 @@ def SendMail(session, from_to_msg_tuples):
                               ) % sendmail)
 
         session.ui.mark(_('Preparing message...'))
-        string = MessageAsString(msg)  #msg.as_string(False)
+        string = MessageAsString(msg)
         total = len(string)
         while string:
             sm_write(string[:65536])
@@ -270,13 +279,16 @@ def SendMail(session, from_to_msg_tuples):
 
 
 MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
-               'mime-version','content-disposition', 'content-type',
+               'mime-version', 'content-disposition', 'content-type',
                'user-agent', 'list-id', 'list-subscribe', 'list-unsubscribe',
                'x-ms-tnef-correlator', 'x-ms-has-attach')
 DULL_HEADERS = ('in-reply-to', 'references')
+
+
 def HeaderPrint(message):
     """Generate a fingerprint from message headers which identifies the MUA."""
-    headers = message.keys() #[x.split(':', 1)[0] for x in message.raw_header]
+    # FIXME: This is wrong.
+    headers = message.keys()
 
     while headers and headers[0].lower() not in MUA_HEADERS:
         headers.pop(0)
@@ -405,6 +417,7 @@ class IncrementalIMAPMailbox(UnorderedPicklable(IMAPMailbox)):
 class IncrementalMaildir(UnorderedPicklable(mailbox.Maildir, editable=True)):
     """A Maildir class that supports pickling and a few mailpile specifics."""
     supported_platform = None
+
     @classmethod
     def parse_path(cls, fn):
         if (((cls.supported_platform is None) or
@@ -425,7 +438,8 @@ class IncrementalMacMaildir(UnorderedPicklable(MacMaildir)):
     """A Mac Mail.app maildir class that supports pickling etc."""
     @classmethod
     def parse_path(cls, fn):
-        if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'Info.plist')):
+        if (os.path.isdir(fn)
+                and os.path.exists(os.path.join(fn, 'Info.plist'))):
             return (fn, )
         raise ValueError('Not a Mac Mail.app Maildir: %s' % fn)
 
@@ -441,9 +455,8 @@ class IncrementalGmvault(IncrementalMaildir):
 
     def __init__(self, dirname, factory=rfc822.Message, create=True):
         IncrementalMaildir.__init__(self, dirname, factory, create)
-
-        self._paths = { 'db': os.path.join(self._path, 'db') }
-        self._toc_mtimes = { 'db': 0}
+        self._paths = {'db': os.path.join(self._path, 'db')}
+        self._toc_mtimes = {'db': 0}
 
     def get_file(self, key):
         """Return a file-like representation or raise a KeyError."""
@@ -460,7 +473,9 @@ class IncrementalGmvault(IncrementalMaildir):
         self._toc = {}
         for path in self._paths:
             for dirpath, dirnames, filenames in os.walk(self._paths[path]):
-                for filename in [f for f in filenames if f.endswith(".eml.gz") or f.endswith(".eml")]:
+                for filename in [f for f in filenames
+                                 if f.endswith(".eml.gz")
+                                 or f.endswith(".eml")]:
                     self._toc[filename] = os.path.join(dirpath, filename)
 
 
@@ -493,7 +508,7 @@ class IncrementalMbox(mailbox.mbox):
         try:
             try:
                 if not os.path.exists(self._path):
-                   raise NoSuchMailboxError(self._path)
+                    raise NoSuchMailboxError(self._path)
                 self._file = self._get_fd()
             except IOError, e:
                 if e.errno == errno.ENOENT:
@@ -548,7 +563,8 @@ class IncrementalMbox(mailbox.mbox):
                 line = fd.readline()
                 if line.startswith('From '):
                     if start:
-                        self._toc[self._next_key] = (start, line_pos - len(os.linesep))
+                        self._toc[self._next_key] = (
+                            start, line_pos - len(os.linesep))
                         self._next_key += 1
                     start = line_pos
                 elif line == '':
@@ -659,8 +675,8 @@ class Email(object):
                         addrs.append(email.header.make_header(part).encode())
                 hdr_value = ', '.join(addrs)
             else:
-              parts = [(hdr_value, 'utf-8')]
-              hdr_value = email.header.make_header(parts).encode()
+                parts = [(hdr_value, 'utf-8')]
+                hdr_value = email.header.make_header(parts).encode()
         return hdr_value
 
     @classmethod
@@ -675,14 +691,17 @@ class Email(object):
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
         msg['Date'] = email.utils.formatdate(msg_date)
         msg['Message-Id'] = email.utils.make_msgid('mailpile')
-        msg_subj  = (msg_subject or 'New message')
+        msg_subj = (msg_subject or 'New message')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
         if msg_to:
-            msg['To'] = cls.encoded_hdr(None, 'to', value=', '.join(set(msg_to)))
+            msg['To'] = cls.encoded_hdr(None, 'to',
+                                        value=', '.join(set(msg_to)))
         if msg_cc:
-            msg['Cc'] = cls.encoded_hdr(None, 'cc', value=', '.join(set(msg_cc)))
+            msg['Cc'] = cls.encoded_hdr(None, 'cc',
+                                        value=', '.join(set(msg_cc)))
         if msg_bcc:
-            msg['Bcc'] = cls.encoded_hdr(None, 'bcc', value=', '.join(set(msg_bcc)))
+            msg['Bcc'] = cls.encoded_hdr(None, 'bcc',
+                                         value=', '.join(set(msg_bcc)))
         if msg_references:
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
@@ -720,6 +739,7 @@ class Email(object):
         'cc': 5,
         'bcc': 6,
     }
+
     def get_editing_strings(self, tree=None):
         tree = tree or self.get_message_tree()
         strings = {
@@ -731,7 +751,7 @@ class Email(object):
 
         # We care about header order and such things...
         hdrs = dict([(h.lower(), h) for h in tree['headers'].keys()
-                                    if h.lower() not in self.UNEDITABLE_HEADERS])
+                     if h.lower() not in self.UNEDITABLE_HEADERS])
         for mandate in self.MANDATORY_HEADERS:
             hdrs[mandate.lower()] = hdrs.get(mandate.lower(), mandate)
         keys = hdrs.keys()
@@ -745,7 +765,8 @@ class Email(object):
                 header_lines.append('%s: %s' % (hdr, data))
 
         for att in tree['attachments']:
-            strings['attachments'][att['count']] = att['filename'] or '(unnamed)'
+            strings['attachments'][att['count']] = (att['filename']
+                                                    or '(unnamed)')
 
         # FIXME: Add pseudo-headers for GPG stuff?
 
@@ -808,7 +829,7 @@ class Email(object):
         # Copy over the uneditable headers from the old message
         for hdr in oldmsg.keys():
             if ((hdr.lower() not in self.MIME_HEADERS)
-            and (hdr.lower() in self.UNEDITABLE_HEADERS)):
+                    and (hdr.lower() in self.UNEDITABLE_HEADERS)):
                 outmsg[hdr] = oldmsg[hdr]
 
         # Copy the message text
@@ -822,13 +843,15 @@ class Email(object):
         # FIXME: Use markdown and template to generate fancy HTML part
 
         # Copy the attachments we are keeping
-        attachments = [h for h in newmsg.keys() if h.startswith('Attachment-')]
+        attachments = [h for h in newmsg.keys()
+                       if h.startswith('Attachment-')]
         if attachments:
             oldtree = self.get_message_tree()
             for att in oldtree['attachments']:
                 hdr = 'Attachment-%s' % att['count']
                 if hdr in attachments:
-                    # FIXME: Update the filename to match whatever the user typed
+                    # FIXME: Update the filename to match whatever
+                    #        the user typed
                     outmsg.attach(att['part'])
                     attachments.remove(hdr)
 
@@ -837,7 +860,7 @@ class Email(object):
             try:
                 outmsg.attach(self.make_attachment(newmsg[hdr]))
             except:
-                pass # FIXME: Warn user that failed...
+                pass  # FIXME: Warn user that failed...
 
         # Save result back to mailbox
         return self.update_from_msg(outmsg)
@@ -930,7 +953,8 @@ class Email(object):
             self.is_editable()
         ]
 
-    def extract_attachment(self, session, att_id, name_fmt=None, mode='download'):
+    def extract_attachment(self, session, att_id,
+                           name_fmt=None, mode='download'):
         msg = self.get_msg()
         count = 0
         extracted = 0
@@ -945,12 +969,12 @@ class Email(object):
             count += 1
 
             if (('*' == att_id)
-            or  ('#%s' % count == att_id)
-            or  ('part:%s' % count == att_id)
-            or  (content_id == att_id)
-            or  (mimetype == att_id)
-            or  (pfn.lower().endswith('.%s' % att_id))
-            or  (pfn == att_id)):
+                    or ('#%s' % count == att_id)
+                    or ('part:%s' % count == att_id)
+                    or (content_id == att_id)
+                    or (mimetype == att_id)
+                    or (pfn.lower().endswith('.%s' % att_id))
+                    or (pfn == att_id)):
 
                 payload = part.get_payload(None, True) or ''
                 attributes = {
@@ -976,16 +1000,16 @@ class Email(object):
                     attributes['thumb'] = True
                     attributes['mimetype'] = 'image/jpeg'
                     attributes['disposition'] = 'inline'
-                    filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
-                                                            attributes=attributes)
+                    filename, fd = session.ui.open_for_data(
+                        name_fmt=name_fmt, attributes=attributes)
                     if thumbnail(payload, fd, height=250):
                         session.ui.notify(_('Wrote preview to: %s') % filename)
                     else:
                         session.ui.notify(_('Failed to generate thumbnail'))
                     fd.close()
                 else:
-                    filename, fd = session.ui.open_for_data(name_fmt=name_fmt,
-                                                            attributes=attributes)
+                    filename, fd = session.ui.open_for_data(
+                        name_fmt=name_fmt, attributes=attributes)
                     fd.write(payload)
                     session.ui.notify(_('Wrote attachment to: %s') % filename)
                     fd.close()
@@ -1022,13 +1046,16 @@ class Email(object):
             if conv_id:
                 conv = Email(self.index, int(conv_id, 36))
                 tree['conversation'] = convs = [conv.get_msg_summary()]
-                for rid in conv.get_msg_info(self.index.MSG_REPLIES).split(','):
+                for rid in conv.get_msg_info(self.index.MSG_REPLIES
+                                             ).split(','):
                     if rid:
-                        convs.append(Email(self.index, int(rid, 36)).get_msg_summary())
+                        convs.append(Email(self.index, int(rid, 36)
+                                           ).get_msg_summary())
 
-        if (want is None or 'headers' in want
-                         or 'editing_string' in want
-                         or 'editing_strings' in want):
+        if (want is None
+                or 'headers' in want
+                or 'editing_string' in want
+                or 'editing_strings' in want):
             tree['headers'] = {}
             for hdr in msg.keys():
                 tree['headers'][hdr] = self.index.hdr(msg, hdr)
@@ -1047,43 +1074,49 @@ class Email(object):
                                javascript=True, scripts=True, frames=True,
                                embedded=True, safe_attrs_only=True)
 
-        # Note: count algorithm must match that used in extract_attachment above
+        # Note: count algorithm must match that used in extract_attachment
+        #       above
         count = 0
         for part in msg.walk():
             mimetype = part.get_content_type()
             print "Walking mime %s" % mimetype
-            if mimetype.startswith('multipart/') or mimetype == "application/pgp-encrypted":
+            if (mimetype.startswith('multipart/')
+                    or mimetype == "application/pgp-encrypted"):
                 continue
             try:
-                if mimetype == "application/octet-stream" and part.cryptedcontainer == True:
+                if (mimetype == "application/octet-stream"
+                        and part.cryptedcontainer is True):
                     continue
             except:
                 pass
 
             count += 1
             if (part.get('content-disposition', 'inline') == 'inline'
-            and mimetype in ('text/plain', 'text/html')):
-                payload, charset, encryption_info, signature_info = self.decode_payload(part)
-                if (mimetype == 'text/html' or
-                      '<html>' in payload or
-                      '</body>' in payload):
+                    and mimetype in ('text/plain', 'text/html')):
+                (payload, charset, encryption_info, signature_info
+                 ) = self.decode_payload(part)
+                if (mimetype == 'text/html'
+                        or '<html>' in payload
+                        or '</body>' in payload):
                     if want is None or 'html_parts' in want:
                         tree['html_parts'].append({
                             'encryption_info': encryption_info,
                             'signature_info': signature_info,
                             'charset': charset,
                             'type': 'html',
-                            'data': (payload.strip() and html_cleaner.clean_html(payload)) or ''
+                            'data': ((payload.strip()
+                                      and html_cleaner.clean_html(payload))
+                                     or '')
                         })
                     if tree['text_parts']:
-                        # FIXME: What is going on here?  This seems bad and wrong.
+                        # FIXME: What is going on here?
+                        #        This seems bad and wrong.
                         tp0 = tree['text_parts'][0]
                         tp0["encryption_info"] = encryption_info
                         tp0["signature_info"] = signature_info
                 elif want is None or 'text_parts' in want:
-                    tree['text_parts'].extend(self.parse_text_part(payload, charset,
-                                                                   encryption_info,
-                                                                   signature_info))
+                    tree['text_parts'].extend(self.parse_text_part(
+                        payload, charset, encryption_info, signature_info))
             elif want is None or 'attachments' in want:
                 tree['attachments'].append({
                     'mimetype': mimetype,
@@ -1194,13 +1227,14 @@ class Email(object):
 
     WANT_MSG_TREE_PGP = ('text_parts',)
     PGP_OK = {
-      'pgpbeginsigned': 'pgpbeginverified',
-      'pgpsignedtext': 'pgpverifiedtext',
-      'pgpsignature': 'pgpverification',
-      'pgpbegin': 'pgpbeginverified',
-      'pgptext': 'pgpsecuretext',
-      'pgpend': 'pgpverification',
+        'pgpbeginsigned': 'pgpbeginverified',
+        'pgpsignedtext': 'pgpverifiedtext',
+        'pgpsignature': 'pgpverification',
+        'pgpbegin': 'pgpbeginverified',
+        'pgptext': 'pgpsecuretext',
+        'pgpend': 'pgpverification',
     }
+
     def evaluate_pgp(self, tree, check_sigs=True, decrypt=False):
         if 'text_parts' not in tree:
             return tree
@@ -1221,7 +1255,8 @@ class Email(object):
                     pgpdata.append(part)
                     try:
                         gpg = GnuPG()
-                        message = ''.join([p['data'].encode(p['charset']) for p in pgpdata])
+                        message = ''.join([p['data'].encode(p['charset'])
+                                           for p in pgpdata])
                         pgpdata[1]['signature_info'] = gpg.verify(message)
                         pgpdata[0]['data'] = ''
                         pgpdata[2]['data'] = ''
@@ -1253,4 +1288,3 @@ class Email(object):
             if line.startswith('charset:'):
                 return decrypted.decode(line.split()[1])
         return decrypted.decode('utf-8')
-

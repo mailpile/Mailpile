@@ -13,7 +13,9 @@ class IMAPMailbox(Mailbox):
 
     As of now only get_* is implemented.
     """
-    def __init__(self, host, port=993, user=None, password=None, mailbox=None, use_ssl=True, factory=None):
+    def __init__(self, host,
+                 port=993, user=None, password=None, mailbox=None,
+                 use_ssl=True, factory=None):
         """Initialize a Mailbox instance."""
         if use_ssl:
             self._mailbox = IMAP4_SSL(host, port)

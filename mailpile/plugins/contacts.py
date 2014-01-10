@@ -77,8 +77,8 @@ class AddVCard(VCardCommand):
         session, config, idx = self.session, self.session.config, self._idx()
 
         if (len(self.args) > 2
-        and self.args[1] == '='
-        and self._valid_vcard_handle(self.args[0])):
+                and self.args[1] == '='
+                and self._valid_vcard_handle(self.args[0])):
             pairs = [(self.args[0], ' '.join(self.args[2:]))]
         elif self.data:
             if "@contactname" in self.data and "@contactemail" in self.data:
@@ -233,7 +233,7 @@ class Contact(ContactVCard(VCard)):
         contact["last_contact_to"] = 10000000000000
 
         for email in contact["contact"]["email"]:
-            s = Action(self.session, "search", 
+            s = Action(self.session, "search",
                        ["in:Sent", "to:%s" % (email["email"])]).as_dict()
             contact["sent_messages"] += s["result"]["stats"]["total"]
             for mid in s["result"]["thread_ids"]:
@@ -242,14 +242,15 @@ class Contact(ContactVCard(VCard)):
                     contact["last_contact_to"] = msg["timestamp"]
                     contact["last_contact_to_msg_url"] = msg["urls"]["thread"]
 
-            s = Action(self.session, "search", 
+            s = Action(self.session, "search",
                        ["from:%s" % (email["email"])]).as_dict()
             contact["received_messages"] += s["result"]["stats"]["total"]
             for mid in s["result"]["thread_ids"]:
                 msg = s["result"]["data"]["metadata"][mid]
                 if msg["timestamp"] < contact["last_contact_from"]:
                     contact["last_contact_from"] = msg["timestamp"]
-                    contact["last_contact_from_msg_url"] = msg["urls"]["thread"]
+                    contact["last_contact_from_msg_url"
+                            ] = msg["urls"]["thread"]
 
         if contact["last_contact_to"] == 10000000000000:
             contact["last_contact_to"] = False
@@ -260,6 +261,7 @@ class Contact(ContactVCard(VCard)):
             contact["last_contact_from_msg_url"] = ""
 
         return contact
+
 
 class AddContact(ContactVCard(AddVCard)):
     """Add contacts"""
@@ -294,16 +296,18 @@ class ContactImport(Command):
         importer = mailpile.plugins.CONTACT_IMPORTERS[format]
 
         if not all([x in kwargs.keys() for x in importer.required_parameters]):
-            session.ui.error("Required paramter missing. Required parameters "
-                + "are: %s" % ", ".join(importer.required_parameters))
+            session.ui.error(
+                _("Required paramter missing. Required parameters "
+                  "are: %s") % ", ".join(importer.required_parameters))
             return False
 
         allparams = importer.required_parameters + importer.optional_parameters
 
         if not all([x in allparams for x in kwargs.keys()]):
-            session.ui.error("Unknown parameter passed to importer."
-                + " Provided %s; but known parameters are: %s"
-                % (", ".join(kwargs), ", ".join(allparams)))
+            session.ui.error(
+                _("Unknown parameter passed to importer. "
+                  "Provided %s; but known parameters are: %s"
+                  ) % (", ".join(kwargs), ", ".join(allparams)))
             return False
 
         imp = importer(kwargs)
@@ -364,7 +368,8 @@ class AddressSearch(VCardCommand):
             fn = vcard.get('fn')
             for email_vcl in vcard.get_all('email'):
                 info = addresses.get(email_vcl.value) or {}
-                info.update(AddressInfo(email_vcl.value, fn.value, vcard=vcard))
+                info.update(AddressInfo(email_vcl.value, fn.value,
+                                        vcard=vcard))
                 addresses[email_vcl.value] = info
                 for term in terms:
                     info['rank'] += self._boost_rank(term, fn.value,

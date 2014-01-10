@@ -48,16 +48,15 @@ var pileAjaxTag = function(tag_add) {
         $.each(mailpile.bulk_cache, function(key, mid) {
           $('#pile-message-' + mid).fadeOut('fast');
         });
-        
+
         // Empty Bulk Cache
         mailpile.bulk_cache = [];
-        
+
       } else {
-        statusMessage(response.status, response.message);
+        mailpile.notification(response.status, response.message);
       }
     }
   });
-
 }
 
 
@@ -78,7 +77,6 @@ $(document).on('click', '.bulk-action', function(e) {
   else if (action == 'assign-tags') {
     
   }
-
 });
 
 
@@ -176,10 +174,10 @@ $('li.sidebar-tags-draggable').droppable({
       }
       return '';
     }
-    
-    // Add MID to Cache    
+
+    // Add MID to Cache
     mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
-  
+
     // Fire at Willhelm
 	  $.ajax({
 		  url			 : mailpile.api.tag,
@@ -198,14 +196,14 @@ $('li.sidebar-tags-draggable').droppable({
           $.each(mailpile.bulk_cache, function(key, mid) {
             $('#pile-message-' + mid).fadeOut('fast');
           });
-          
+
           // Empty Bulk Cache
           mailpile.bulk_cache = [];
-          
+
         } else {
-          statusMessage(response.status, response.message);
+          mailpile.notification(response.status, response.message);
         }
 	    }
-	  });  	  
+	  });
   }
 });

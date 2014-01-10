@@ -192,7 +192,7 @@ $(document).on('submit', '#form-profile-add', function(e) {
 		dataType : 'json',
     success  : function(response) {
 
-      statusMessage(response.status, response.message);
+      mailpile.notification(response.status, response.message);
       if (response.status === 'success') {
         console.log(response);
       }
@@ -428,7 +428,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
     dataType : 'json',
     success: function(response) {
 
-      statusMessage(response.status, response.message);
+      mailpile.notification(response.status, response.message);
 
       if (response.status === 'success') {
         console.log(response);
@@ -624,7 +624,7 @@ $('li.sidebar-tags-draggable').droppable({
           mailpile.bulk_cache = [];
           
         } else {
-          statusMessage(response.status, response.message);
+          mailpile.notification(response.status, response.message);
         }
 	    }
 	  });  	  
@@ -759,7 +759,7 @@ MailPile.prototype.compose = function(data) {
     if (response.status == 'success') {
       window.location.href = mailpile.urls.message_draft + response.result.created + '/';
     } else {
-      statusMessage(response.status, response.message);
+      mailpile.notification(response.status, response.message);
     }
   });
 }
@@ -934,7 +934,7 @@ $(document).on('click', '.compose-action', function(e) {
         window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid;
       }
       else {
-        statusMessage(response.status, response.message);
+        mailpile.notification(response.status, response.message);
       }
 	  }
 	});

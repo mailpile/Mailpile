@@ -34,18 +34,23 @@ os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
 cfg = config = mp._session.config
 
+
 def contents(fn):
     return open(fn, 'r').read()
+
 
 def grep(w, fn):
     return '\n'.join([l for l in open(fn, 'r').readlines() if w in l])
 
+
 def grepv(w, fn):
     return '\n'.join([l for l in open(fn, 'r').readlines() if w not in l])
+
 
 def say(stuff):
     mp._session.ui.mark(stuff)
     mp._session.ui.reset_marks()
+
 
 try:
     # Set up initial tags and such
@@ -68,7 +73,8 @@ try:
 
     # Do we have a Mr. Rogers contact?
     mp.rescan('vcards')
-    assert(mp.contact('mr@rogers.com').result['contact']['fn'] == u'Mr. Rogers')
+    assert(mp.contact('mr@rogers.com'
+                      ).result['contact']['fn'] == u'Mr. Rogers')
     assert(len(mp.contact_list('rogers').result['contacts']) == 1)
 
     # Add the mailboxes, scan them
@@ -117,10 +123,10 @@ try:
     assert('=C3' not in from_bre['fn'])
     assert('=C3' not in from_bre['address'])
     for key, val in message_bre['header_list']:
-      if key.lower() not in ('from' ,'to', 'cc'):
-        continue
-      say('Checking encoding: %s: %s' % (key, val))
-      assert('utf' not in val)
+        if key.lower() not in ('from', 'to', 'cc'):
+            continue
+        say('Checking encoding: %s: %s' % (key, val))
+        assert('utf' not in val)
 
     # Create a message...
     new_mid = mp.message_compose().result['thread_ids'][0]
@@ -131,11 +137,11 @@ try:
 
     # Edit the message (moves from Blank to Draft, not findable in index)
     msg_data = {
-      'from': [MY_FROM],
-      'bcc': ['secret@test.com'],
-      'mid': [new_mid],
-      'subject': ['This the TESTMSG subject'],
-      'body': ['Hello world!']
+        'from': [MY_FROM],
+        'bcc': ['secret@test.com'],
+        'mid': [new_mid],
+        'subject': ['This the TESTMSG subject'],
+        'body': ['Hello world!']
     }
     mp.message_update(**msg_data)
     assert(mp.search('tag:drafts').result['stats']['count'] == 1)

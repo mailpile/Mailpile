@@ -31,14 +31,18 @@ def _adjust(d):
         d[0] += 1
         d[1] -= 12
 
+
 def _mk_date(ts):
     mdate = datetime.date.fromtimestamp(ts)
     return '%d-%d-%d' % (mdate.year, mdate.month, mdate.day)
+
 
 _date_offsets = {
     'today': 0,
     'yesterday': 1
 }
+
+
 def search(config, idx, term, hits):
     try:
         word = term.split(':', 1)[1].lower()

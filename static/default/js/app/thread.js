@@ -20,9 +20,10 @@ $(document).on('click', '.thread-show-security', function() {
 })
 
 /* Thread - Expand Snippet */
-$(document).on('click', '.thread-snippet', function() {
-  
-  alert('FIXME: Will load full message with mid: ' + $(this).data('mid'));
+$(document).on('click', '#thread-messages div.thread-snippet', function(e) {  
+  if (e.target.href === undefined) {
+    alert('FIXME: Will load full message with mid: ' + $(this).data('mid'));
+  }
 });
 
 

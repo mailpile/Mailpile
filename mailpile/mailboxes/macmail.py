@@ -29,7 +29,8 @@ class MacMaildir(mailbox.Mailbox):
         mailbox.Mailbox.__init__(self, dirname, factory, create)
         if not os.path.exists(self._path):
             if create:
-                raise NotImplemented("Why would we support creation of silly mailboxes?")
+                raise NotImplemented("Why would we support creation of "
+                                     "silly mailboxes?")
             else:
                 raise mailbox.NoSuchMailboxError(self._path)
 

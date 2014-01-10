@@ -1,13 +1,13 @@
     <div class="thread-item-metadata clearfix">
       <div class="thread-item-from">
-        <a href="" class="avatar" title="{{_("From")}}"><img src="{{ show_avatar(from) }}"></a>
-        <a href="" class="name" title="{{_("From")}}">{{from.fn|e}}</a>
+        <a href="{{ contact_url(from) }}" class="avatar" title="{{_("From")}}"><img src="{{ show_avatar(from) }}"></a>
+        <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}">{{ from.fn|e }}</a>
         {% if show_encryption %}
         <span class="icon icon-{{ message_encryption_status(message.text_parts) }}"></span>
         {% endif %}
       </div>
       <div class="thread-item-details">
-        <span class="datetime">{{ metadata.timestamp|friendly_datetime }} at {{ metadata.timestamp|friendly_time }}</span>
+        <a class="datetime" href="{{ metadata.urls.thread }}">{{ metadata.timestamp|friendly_datetime }} at {{ metadata.timestamp|friendly_time }}</a>
         <span class="feedback-expand">Expand Message</span>
       </div>
     </div>

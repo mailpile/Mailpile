@@ -28,8 +28,8 @@ class EditableSearchResults(SearchResults):
 
 
 class CompositionCommand(Search):
-    HTTP_QUERY_VARS = { }
-    HTTP_POST_VARS = { }
+    HTTP_QUERY_VARS = {}
+    HTTP_POST_VARS = {}
     UPDATE_STRING_DATA = {
         'mid': 'metadata-ID',
         'subject': '..',
@@ -114,9 +114,11 @@ class CompositionCommand(Search):
                     else:
                         data = defaults.get(hdr.lower(), '')
                     up.append('%s: %s' % (hdr, data))
-                updates.append((e, '\n'.join(up + ['',
-                    '\n'.join(self.data.get('body', defaults.get('body', '')))
-                ])))
+                updates.append((e, '\n'.join(
+                    up +
+                    ['', '\n'.join(self.data.get('body',
+                                                 defaults.get('body', '')))]
+                )))
             elif 'compose' in self.session.config.sys.debug:
                 sys.stderr.write('Doing nothing with %s' % update_header_set)
             fofs += 1
@@ -228,8 +230,8 @@ class Reply(RelativeCompose):
             for t in trees:
                 # FIXME: Templates/settings for how we quote replies?
                 text = (('%s wrote:\n' % t['headers_lc']['from']) +
-                         ''.join([p['data'] for p in t['text_parts']
-                                  if p['type'] in self._TEXT_PARTTYPES]))
+                        ''.join([p['data'] for p in t['text_parts']
+                                 if p['type'] in self._TEXT_PARTTYPES]))
                 msg_bodies.append(text.replace('\n', '\n> '))
 
             local_id, lmbox = config.open_local_mailbox(session)
@@ -308,7 +310,7 @@ class Forward(RelativeCompose):
 
             # Behavior tracking
             if 'tags' in config:
-                for tag in config.get_tags(type='replied'):
+                for tag in config.get_tags(type='fwded'):
                     idx.add_tag(session, tag._key,
                                 msg_idxs=[m.msg_idx_pos for m in refs])
 
@@ -337,8 +339,8 @@ class Attach(CompositionCommand):
         if 'file-data' in self.data:
             count = 0
             for fd in self.data['file-data']:
-                fn = (hasattr(fd, 'filename') and fd.filename
-                                               or 'attach-%d.dat' % count)
+                fn = (hasattr(fd, 'filename')
+                      and fd.filename or 'attach-%d.dat' % count)
                 filedata[fn] = fd
                 files.append(fn)
                 count += 1
@@ -523,8 +525,8 @@ mailpile.plugins.register_config_variables('prefs', {
 mailpile.plugins.register_slow_periodic_job('sendmail',
                                             'prefs.empty_outbox_interval',
                                             EmptyOutbox.sendmail)
-mailpile.plugins.register_commands(Compose, Reply, Forward, # Create
-                                   Draft, Update, Attach,   # Manipulate
-                                   UnThread,                # ...
-                                   Sendit, UpdateAndSendit, # Send
-                                   EmptyOutbox)             # ...
+mailpile.plugins.register_commands(Compose, Reply, Forward,  # Create
+                                   Draft, Update, Attach,    # Manipulate
+                                   UnThread,                 # ...
+                                   Sendit, UpdateAndSendit,  # Send
+                                   EmptyOutbox)              # ...

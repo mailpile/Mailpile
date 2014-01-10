@@ -56,7 +56,7 @@ class TestUI(MailPileUnittest):
                                        'debug', 'all', ''])
             # Progress has \r in the end instead of \n
             progress_str = [x for x in out[1].split('\r\n')
-                                    if 'progress' in x][0].strip()
+                            if 'progress' in x][0].strip()
             self.assertEquals(progress_str,
                               ''.join(['progress', ' ' * 71, '\rdebug']))
         finally:

@@ -21,7 +21,7 @@ class GravatarImporter(VCardImporter):
     the impact on Gravatar's servers and prevent network traffic from
     stalling the rescan process too much.
     """
-    FORMAT_NAME = 'Gravatar' 
+    FORMAT_NAME = 'Gravatar'
     FORMAT_DESCRIPTION = _('Import contact info from a Gravatar server')
     SHORT_NAME = 'gravatar'
     CONFIG_RULES = {
@@ -29,7 +29,8 @@ class GravatarImporter(VCardImporter):
         'interval': [_('Minimum days between refreshing'), 'int', 7],
         'batch': [_('Max batch size per update'), 'int', 30],
         'default': [_('Default thumbnail style'), str, 'retro'],
-        'rating': [_('Preferred thumbnail rating'), ['g','pg','r','x'], 'g'],
+        'rating': [_('Preferred thumbnail rating'),
+                   ['g', 'pg', 'r', 'x'], 'g'],
         'size': [_('Preferred thumbnail size'), 'int', 80],
         'url': [_('Gravatar server URL'), 'url', 'https://en.gravatar.com'],
     }
@@ -82,13 +83,12 @@ class GravatarImporter(VCardImporter):
                 digest = md5_hex(vcl.value.lower())
                 try:
                     if not img:
-                        img = _get('%s/avatar/%s.jpg?s=%s&r=%s&d=404' % (
-                                       self.config.url,
-                                       digest,
-                                       self.config.size,
-                                       self.config.rating
-                                   ))
-                    if not json: 
+                        img = _get(('%s/avatar/%s.jpg?s=%s&r=%s&d=404'
+                                    ) % (self.config.url,
+                                         digest,
+                                         self.config.size,
+                                         self.config.rating))
+                    if not json:
                         json = _get('%s/%s.json' % (self.config.url, digest))
                         email = vcl.value
                 except IOError:
@@ -99,12 +99,11 @@ class GravatarImporter(VCardImporter):
 
             if (self.config.default != '404') and not img:
                 try:
-                    img = _get('%s/avatar/%s.jpg?s=%s&d=%s' % (
-                                   self.config.url,
-                                   md5_hex(email.lower()),
-                                   self.config.size,
-                                   self.config.default
-                               ))
+                    img = _get(('%s/avatar/%s.jpg?s=%s&d=%s'
+                                ) % (self.config.url,
+                                     md5_hex(email.lower()),
+                                     self.config.size,
+                                     self.config.default))
                 except IOError:
                     pass
 

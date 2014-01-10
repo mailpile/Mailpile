@@ -26,8 +26,8 @@
   {% set f = result.data.addresses[metadata[tmid].from_aid] %}
   {{f.fn|e}} &lt;{{f.address|e}}&gt;
 {% endfor %}'>
-    <a class="item-from" href="{{url}}">{{from.fn|e}}</a>
-    {% if thread|length > 1 %}<span class="conversation-count">{{thread|length}}</span>{% endif %}
+    <a class="item-from" href="{{url}}">{{ from.fn|e }}</a>
+    {% if thread|length > 1 %}<span class="conversation-count">{{ thread|length }}</span>{% endif %}
   </td>
   <td class="subject">
     {% if show_tags(result.search_terms, metadata.tag_ids) %}

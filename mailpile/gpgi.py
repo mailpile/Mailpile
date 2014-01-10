@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 
 DEFAULT_SERVER = "pool.sks-keyservers.net"
 
-openpgp_trust = {"-": _("Trust not calculated"), 
+openpgp_trust = {"-": _("Trust not calculated"),
                  "o": _("Unknown trust"),
                  "q": _("Undefined trust"),
                  "n": _("Never trust"),
@@ -22,18 +22,16 @@ openpgp_trust = {"-": _("Trust not calculated"),
                  "f": _("Full trust"),
                  "u": _("Ultimate trust"),
                  "e": _("Expired key, not trusted"),
-                 "r": _("Revoked key, not trusted"),
                  "d": _("Disabled key, not trusted"),  # Deprecated flag.
-                }
+                 "r": _("Revoked key, not trusted")}
 
 openpgp_algorithms = {1: _("RSA"),
                       2: _("RSA (encrypt only)"),
                       3: _("RSA (sign only)"),
                       16: _("Elgamal (encrypt only)"),
                       17: _("DSA"),
-                      20: _("Elgamal (encrypt/sign) [COMPROMISED]"),
-                     }
-# For details on type 20 compromisation, see 
+                      20: _("Elgamal (encrypt/sign) [COMPROMISED]")}
+# For details on type 20 compromisation, see
 # http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
 
 # These are detailed in the GnuPG source under doc/DETAILS.
@@ -46,7 +44,7 @@ status_messages = {
     "KEYEXPIRED": ["expire_timestamp"],
     "KEYREVOKED": [],
     "BADSIG": ["long_keyid_or_fpr", "username"],
-    "ERRSIG": ["long_keyid_or_fpr", "pubkey_algo", "hash_algo", "sig_class", 
+    "ERRSIG": ["long_keyid_or_fpr", "pubkey_algo", "hash_algo", "sig_class",
                "timestamp", "rc"],
     "BADARMOR": [],
     "TRUST_UNDEFINED": ["error_token"],
@@ -62,10 +60,10 @@ status_messages = {
     "SHM_GET": [],
     "SHM_GET_BOOL": [],
     "SHM_GET_HIDDEN": [],
-    "NEED_PASSPHRASE": ["long_main_keyid", "long_keyid", 
+    "NEED_PASSPHRASE": ["long_main_keyid", "long_keyid",
                         "keytype", "keylength"],
-    "VALIDSIG": ["fingerprint", "sig_creation_date", "sig_timestamp", 
-                 "expire_timestamp","sig_version", "reserved", "pubkey_algo", 
+    "VALIDSIG": ["fingerprint", "sig_creation_date", "sig_timestamp",
+                 "expire_timestamp", "sig_version", "reserved", "pubkey_algo",
                  "hash_algo", "sig_class", "primary_key_fpr"],
     "SIG_ID": ["radix64_string", "sig_creation_date", "sig_timestamp"],
     "ENC_TO": ["long_keyid", "keytype", "keylength"],
@@ -86,8 +84,8 @@ status_messages = {
     "IMPORT_OK": ["reason", "fingerprint"],
     "IMPORT_PROBLEM": ["reason", "fingerprint"],
     "IMPORT_CHECK": [],
-    "IMPORT_RES": ["count", "no_user_id", "imported", "imported_rsa", 
-                   "unchanged", "n_uids", "n_subk", "n_sigs", "n_revoc", 
+    "IMPORT_RES": ["count", "no_user_id", "imported", "imported_rsa",
+                   "unchanged", "n_uids", "n_subk", "n_sigs", "n_revoc",
                    "sec_read", "sec_imported", "sec_dups", "skipped_new_keys",
                    "not_imported"],
     "FILE_START": ["what", "filename"],
@@ -99,12 +97,12 @@ status_messages = {
     "END_ENCRYPTION": [],
     "DELETE_PROBLEM": ["reason_code"],
     "PROGRESS": ["what", "char", "cur", "total"],
-    "SIG_CREATED": ["type" "pubkey algo", "hash algo", "class", 
+    "SIG_CREATED": ["type" "pubkey algo", "hash algo", "class",
                     "timestamp", "key fpr"],
     "SESSION_KEY": ["algo:hexdigits"],
-    "NOTATION_NAME" : ["name"],
-    "NOTATION_DATA" : ["string"],
-    "POLICY_URL" : ["string"],
+    "NOTATION_NAME": ["name"],
+    "NOTATION_DATA": ["string"],
+    "POLICY_URL": ["string"],
     "BEGIN_STREAM": [],
     "END_STREAM": [],
     "KEY_CREATED": ["type", "fingerprint", "handle"],
@@ -115,13 +113,13 @@ status_messages = {
     "INV_SGNR": ["reason", "requested_sender"],
     "NO_RECP": ["reserved"],
     "NO_SGNR": ["reserved"],
-    "ALREADY_SIGNED": ["long-keyid"], # Experimental, may disappear
-    "SIGEXPIRED": [], # Deprecated but may crop up; keyexpired overrides
+    "ALREADY_SIGNED": ["long-keyid"],  # Experimental, may disappear
+    "SIGEXPIRED": [],  # Deprecated but may crop up; keyexpired overrides
     "TRUNCATED": ["maxno"],
     "EXPSIG": ["long_keyid_or_fpr", "username"],
     "EXPKEYSIG": ["long_keyid_or_fpr", "username"],
     "REVKEYSIG": ["long_keyid_or_fpr", "username"],
-    "ATTRIBUTE": ["fpr", "octets", "type", "index", 
+    "ATTRIBUTE": ["fpr", "octets", "type", "index",
                   "count", "timestamp", "expiredate", "flags"],
     "CARDCTRL": ["what", "serialno"],
     "PLAINTEXT": ["format", "timestamp", "filename"],
@@ -139,7 +137,6 @@ status_messages = {
     "DECRYPTION_INFO": [],
 }
 
-del _
 
 class EncryptionInfo(dict):
     "Contains informatin about the encryption status of a MIME part"
@@ -171,7 +168,8 @@ class SignatureInfo(dict):
         if item == "status":
             assert(value in ["none", "invalid", "unknown", "good", "error"])
         elif item == "trust":
-            assert(value in ["new", "unverified", "verified", "untrusted", "expired", "revoked"])
+            assert(value in ["new", "unverified", "verified", "untrusted",
+                             "expired", "revoked"])
         dict.__setitem__(self, item, value)
 
 
@@ -184,9 +182,9 @@ class GnuPG:
         self.available = None
         self.gpgbinary = 'gpg'
         self.passphrase = None
-        self.fds = {"passphrase": True, 
-                    "command": True, 
-                    "logger": False, 
+        self.fds = {"passphrase": True,
+                    "command": True,
+                    "logger": False,
                     "status": False}
         self.handles = {}
         self.pipes = {}
@@ -211,7 +209,7 @@ class GnuPG:
                 continue
             elems = line.split(" ")
             callback_kwargs = dict(zip(status_messages, elems[1:]))
-            if self.statuscallbacks.has_key(elems[0]):
+            if elems[0] in self.statuscallbacks:
                 for callback in self.statuscallbacks[elems[0]]:
                     callback(*kwargs)
             status.append(elems)
@@ -226,8 +224,7 @@ class GnuPG:
                "signer": "",
                "ok": None,
                "version": "",
-               "hash": ""
-              }
+               "hash": ""}
 
         if "no valid OpenPGP data found" in lines[0]:
             sig["ok"] = False
@@ -274,12 +271,12 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             return (curkey, keys)
 
         def parse_subkey(line, curkey, keys):
-            subkey = {"id": line[4], "size": int(line[2]), 
-                      "creation-date": line[5], 
+            subkey = {"id": line[4], "size": int(line[2]),
+                      "creation-date": line[5],
                       "algorithm": int(line[3])}
             if line[0] == "ssb":
                 subkey["secret"] = True
-            keys[curkey]["subkeys"].append(subkey)            
+            keys[curkey]["subkeys"].append(subkey)
             return (curkey, keys)
 
         def parse_fingerprint(line, curkey, keys):
@@ -325,10 +322,10 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 except UnicodeDecodeError:
                     comment = comment.decode("utf-8", "replace")
 
-            keys[curkey]["uids"].append({"email": email, 
+            keys[curkey]["uids"].append({"email": email,
                                          "name": name,
                                          "comment": comment,
-                                         "creation-date": line[5] })
+                                         "creation-date": line[5]})
             return (curkey, keys)
 
         def parse_trust(line, curkey, keys):
@@ -336,7 +333,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             return (curkey, keys)
 
         def parse_signature(line, curkey, keys):
-            sig = {"signer": line[9], "signature-date": line[5], 
+            sig = {"signer": line[9], "signature-date": line[5],
                    "keyid": line[4], "trust": line[10], "algorithm": line[4]}
 
             keys[curkey]["signatures"].append(sig)
@@ -364,8 +361,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 "sig": parse_signature,
                 "rev": parse_revoke,
                 "uid": parse_uid,
-                "gpg": parse_none,
-               }
+                "gpg": parse_none}
 
         lines = keylist.split("\n")
         for line in lines:
@@ -379,11 +375,10 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def emptycallbackmap():
         """
-        Utility function for people who are confused about what callbacks 
+        Utility function for people who are confused about what callbacks
         exist.
         """
         return dict([[x, []] for x in self.needed_fds])
-
 
     def run(self, args=[], callbacks={}, output=None, debug=False):
         """
@@ -403,9 +398,11 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             if fd not in self.needed_fds:
                 continue
             self.pipes[fd] = os.pipe()
-            if debug: 
-                print "Opening fd %s, fh %d, mode %s" % (fd, 
-                    self.pipes[fd][self.fds[fd]], ["r", "w"][self.fds[fd]])
+            if debug:
+                print ("Opening fd %s, fh %d, mode %s"
+                       ) % (fd,
+                            self.pipes[fd][self.fds[fd]],
+                            ["r", "w"][self.fds[fd]])
             args.insert(1, "--%s-fd" % fd)
             # The remote end of the pipe:
             args.insert(2, "%d" % self.pipes[fd][not self.fds[fd]])
@@ -416,7 +413,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             fl = fcntl.fcntl(self.handles[fd], fcntl.F_GETFL)
             fcntl.fcntl(self.handles[fd], fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
-        if debug: print "Running gpg as: %s" % " ".join(args)
+        if debug:
+            print "Running gpg as: %s" % " ".join(args)
 
         proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
@@ -444,17 +442,18 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 pass
 
             for fd in ["stdout", "stderr"]:
-                if debug: print "Reading %s" % fd
+                if debug:
+                    print "Reading %s" % fd
 
                 try:
                     buf = self.handles[fd].read()
                 except IOError:
                     continue
 
-                if not callbacks.has_key(fd):
+                if fd not in callbacks:
                     continue
 
-                if not retvals.has_key(fd):
+                if fd not in retvals:
                     retvals[fd] = []
 
                 if buf == "":
@@ -485,7 +484,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         #        Syntax:
         #        %%pubring mypubring.pgp
         #        %%secring mysecring.pgp
-        
+
         batchjob = """
             %%echo starting keygen
             Key-Type: RSA
@@ -509,13 +508,13 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         >>> g.list_keys()[0]
         0
         """
-        retvals = self.run(["--list-keys", "--fingerprint"], 
+        retvals = self.run(["--list-keys", "--fingerprint"],
                            callbacks={"stdout": self.parse_keylist})
         return retvals[1]["stdout"][0]
 
     def list_sigs(self):
-        retvals = self.run(["--list-sigs", "--fingerprint"], 
-                 callbacks={"stdout": self.parse_keylist})
+        retvals = self.run(["--list-sigs", "--fingerprint"],
+                           callbacks={"stdout": self.parse_keylist})
         return retvals[1]["stdout"][0]
 
     def list_secret_keys(self):
@@ -524,7 +523,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         >>> g.list_secret_keys()[0]
         0
         """
-        retvals = self.run(["--list-secret-keys", "--fingerprint"], 
+        retvals = self.run(["--list-secret-keys", "--fingerprint"],
                            callbacks={"stdout": self.parse_keylist})
         if retvals[1]["stdout"]:
             return retvals[1]["stdout"][0]
@@ -543,13 +542,13 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         for r in tokeys:
             action.append("--recipient")
             action.append(r)
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+        retvals = self.run(action, callbacks={"stdout": self.default_output},
                            output=data)
         return retvals[0], retvals[1]["stdout"][0]
 
     def decrypt(self, data, passphrase=None):
         """
-        Note that this test will fail if you don't replace the recipient with 
+        Note that this test will fail if you don't replace the recipient with
         one whose key you control.
         >>> g = GnuPG()
         >>> ct = g.encrypt("Hello, World", to=["smari@mailpile.is"])[1]
@@ -559,7 +558,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         if passphrase:
             self.passphrase = passphrase
         action = ["--decrypt"]
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+        retvals = self.run(action, callbacks={"stdout": self.default_output},
                            output=data)
         self.passphrase = None
 
@@ -568,7 +567,9 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
         for line in retvals[1]["status"]:
             if line[0] == "DECRYPTION_FAILED":
-                encryption_info["missing_keys"] = [x[1] for x in retvals[1]["status"] if x[0] == "NO_SECKEY"]
+                encryption_info["missing_keys"] = [x[1] for x
+                                                   in retvals[1]["status"]
+                                                   if x[0] == "NO_SECKEY"]
                 if encryption_info["missing_keys"] == []:
                     encryption_info["status"] = "error"
                 else:
@@ -577,7 +578,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             elif line[0] == "DECRYPTION_OKAY":
                 encryption_info["status"] = "decrypted"
                 text = retvals[1]["stdout"][0].decode("utf-8")
-            elif line[0] == "ENC_TO" and line[1] not in encryption_info["have_keys"]:
+            elif (line[0] == "ENC_TO"
+                    and line[1] not in encryption_info["have_keys"]):
                 encryption_info["have_keys"].append(line[1])
             elif line[0] == "NO_SECKEY":
                 encryption_info["missing_keys"].append(line[1])
@@ -585,7 +587,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
         return encryption_info, text
 
-    def sign(self, data, fromkey=None, armor=True, detatch=True, clearsign=False,
+    def sign(self, data,
+             fromkey=None, armor=True, detatch=True, clearsign=False,
              passphrase=None):
         """
         >>> g = GnuPG()
@@ -606,7 +609,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             action.append("--local-user")
             action.append(fromkey)
 
-        retvals = self.run(action, callbacks={"stdout": self.default_output}, 
+        retvals = self.run(action, callbacks={"stdout": self.default_output},
                            output=data)
         self.passphrase = None
         return retvals[0], retvals[1]["stdout"][0]
@@ -614,7 +617,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
     def verify(self, data, signature=None):
         """
         >>> g = GnuPG()
-        >>> s = g.sign("Hello, World", _from="smari@mailpile.is", 
+        >>> s = g.sign("Hello, World", _from="smari@mailpile.is",
             clearsign=True)[1]
         >>> g.verify(s)
         """
@@ -626,10 +629,10 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             params.append(sig.name)
             params.append("-")
 
-        ret, retvals = self.run(params, 
-                           callbacks={"stderr": self.parse_verify, 
-                                      "status": self.parse_status}, 
-                           output=data)
+        ret, retvals = self.run(params,
+                                callbacks={"stderr": self.parse_verify,
+                                           "status": self.parse_status},
+                                output=data)
 
         signature_info = SignatureInfo()
         for line in retvals["status"]:
@@ -652,14 +655,15 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             elif line[0] in ["KEYEXPIRED", "SIGEXPIRED"]:
                 signature_info["trust"] = "expired"
             elif line[0] == "REVKEYSIG":
-                signature_info["trust"] = "revoked"                
+                signature_info["trust"] = "revoked"
                 signature_info["name"] = " ".join(line[2:-1]).decode("utf-8")
                 signature_info["email"] = line[-1].strip("<>")
             elif line[0] == "KEYREVOKED":
                 signature_info["trust"] = "revoked"
             elif line[0] == "VALIDSIG":
-                # FIXME: determine trust level, between new, unverified, verified, untrusted.
-                # hardcoded to unverified for now.
+                # FIXME: determine trust level, between new, unverified,
+                #        verified, untrusted.
+                # FIXME: Hardcoded to unverified for now.
                 signature_info["status"] = "good"
                 signature_info["trust"] = "unverified"
                 signature_info["keyinfo"] = line[1]
@@ -672,16 +676,16 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
         return signature_info
 
-    def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True, 
+    def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True,
                      detatch=False, clearsign=True):
-        retval, signblock = self.sign(data, fromkey=fromkey, armor=armor, 
+        retval, signblock = self.sign(data, fromkey=fromkey, armor=armor,
                                       detatch=detatch, clearsign=clearsign)
         if detatch:
             # TODO: Deal with detached signature.
-            retval, cryptblock = self.encrypt(data, tokeys=tokeys, 
+            retval, cryptblock = self.encrypt(data, tokeys=tokeys,
                                               armor=armor)
         else:
-            retval, cryptblock = self.encrypt(signblock, tokeys=tokeys, 
+            retval, cryptblock = self.encrypt(signblock, tokeys=tokeys,
                                               armor=armor)
 
         return cryptblock
@@ -691,7 +695,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         return retvals
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
-        retvals = self.run(['--keyserver', keyserver, '--search-key', term], debug=True)
+        retvals = self.run(['--keyserver', keyserver,
+                            '--search-key', term], debug=True)
         return retvals
 
     def address_to_keys(self, address):
@@ -704,7 +709,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         return res
 
 
-
 class PGPMimeParser(Parser):
 
     def parse_pgpmime(self, message):
@@ -715,7 +719,8 @@ class PGPMimeParser(Parser):
             mimetype = part.get_content_type()
             if (sig_count > 1) and (mimetype == 'application/pgp-signature'):
                 sig = part.get_payload()
-                msg = '\r\n'.join(sig_parts[0].as_string().splitlines(False))+'\r\n'
+                msg = ('\r\n'.join(sig_parts[0].as_string().splitlines(False))
+                       + '\r\n')
 
                 gpg = GnuPG()
                 signature_info = gpg.verify(msg, sig)
@@ -778,4 +783,5 @@ if __name__ == "__main__":
     # if t.failed == 0:
     #     print "GPG Interface: All %d tests successful" % (t.attempted)
     # else:
-    #     print "GPG Interface: %d out of %d tests failed" % (t.failed, t.attempted)
+    #     print ("GPG Interface: %d out of %d tests failed"
+    #            ) % (t.failed, t.attempted)

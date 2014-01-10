@@ -187,11 +187,9 @@ def _reg_vcard_plugin(what, cfg_sect, plugin_classes, cls, dct):
                 'description': ['VCard source description', str, '']
             }
             rules.update(plugin_class.CONFIG_RULES)
-            register_config_section('prefs', 'vcard', cfg_sect,
-                                    plugin_class.SHORT_NAME,
-            [
-                plugin_class.FORMAT_DESCRIPTION, rules, []
-            ])
+            register_config_section(
+                'prefs', 'vcard', cfg_sect, plugin_class.SHORT_NAME,
+                [plugin_class.FORMAT_DESCRIPTION, rules, []])
 
         dct[plugin_class.SHORT_NAME] = plugin_class
 
@@ -236,6 +234,7 @@ def register_commands(*args):
         if cls not in COMMANDS:
             COMMANDS.append(cls)
 
+
 ##[ Pluggable UI elements ]###################################################
 
 UICLASSES = []
@@ -246,6 +245,7 @@ ASSETS = {"javascript": [], "stylesheet": []}
 BODY_BLOCKS = {}
 ACTIVITIES = []
 
+
 def register_uiclass(uiclass):
     if uiclass not in UICLASSES:
         UICLASSES.append(uiclass)
@@ -254,78 +254,94 @@ def register_uiclass(uiclass):
         SELECTION_ACTIONS[uiclass] = []
         BODY_BLOCKS[uiclass] = []
 
-def register_display_mode(uiclass, name, jsaction, text, url="#", icon=None):
+
+def register_display_mode(uiclass, name, jsaction, text,
+                          url="#", icon=None):
     assert(uiclass in DISPLAY_MODES)
     if name not in [x.name for x in DISPLAY_MODES[uiclass]]:
         DISPLAY_MODES[uiclass].append({
-            "name": name, 
-            "jsaction": jsaction, 
+            "name": name,
+            "jsaction": jsaction,
             "url": url,
             "text": text,
             "icon": icon
         })
 
-def register_display_action(uiclass, name, jsaction, text, url="#", icon=None):
+
+def register_display_action(uiclass, name, jsaction, text,
+                            url="#", icon=None):
     assert(uiclass in DISPLAY_ACTIONS)
     if name not in [x.name for x in DISPLAY_ACTIONS[uiclass]]:
         DISPLAY_ACTIONS[uiclass].append({
-            "name": name, 
-            "jsaction": jsaction, 
+            "name": name,
+            "jsaction": jsaction,
             "url": url,
             "text": text,
             "icon": icon
         })
 
-def register_selection_action(uiclass, name, jsaction, text, url="#", icon=None):
+
+def register_selection_action(uiclass, name, jsaction, text,
+                              url="#", icon=None):
     assert(uiclass in SELECTION_ACTIONS)
     if name not in [x.name for x in SELECTION_ACTIONS[uiclass]]:
         SELECTION_ACTIONS[uiclass].append({
-            "name": name, 
-            "jsaction": jsaction, 
+            "name": name,
+            "jsaction": jsaction,
             "url": url,
             "text": text,
             "icon": icon
         })
+
 
 def register_activity(name, jsaction, icon, url="#"):
     if name not in [x.name for x in ACTIVITIES]:
         ACTIVITIES.append({
-            "name": name, 
-            "jsaction": jsaction, 
+            "name": name,
+            "jsaction": jsaction,
             "url": url,
             "icon": icon,
             "text": text
         })
+
 
 def register_asset(assettype, name):
     assert(assettype in ASSETS)
     if name not in ASSETS[assettype]:
         ASSETS[assettype].append(name)
 
+
 def get_assets(assettype):
     assert(assettype in ASSETS)
     return ASSETS[assettype]
+
 
 def register_body_block(uiclass, name):
     assert(uiclass in UICLASSES)
     if name not in BODY_BLOCKS[uiclass]:
         BODY_BLOCKS[uiclass].append(name)
 
+
 def get_body_blocks(uiclass):
     assert(uiclass in UICLASSES)
     return BODY_BLOCKS[uiclass]
 
+
 def get_activities():
     return ACTIVITIES
+
 
 def get_selection_actions(uiclass):
     return SELECTION_ACTIONS[uiclass]
 
+
 def get_display_actions(uiclass):
     return DISPLAY_ACTIONS[uiclass]
 
+
 def get_display_modes(uiclass):
     return DISPLAY_MODES[uiclass]
+
 
 for cl in ["base", "search", "thread", "contact", "tag"]:
     register_uiclass(cl)

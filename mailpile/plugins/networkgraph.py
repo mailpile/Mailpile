@@ -28,7 +28,8 @@ class NetworkGraph(Search):
         for messageid in session.results:
             msg = self._idx().get_msg_at_idx_pos(messageid)
             msgfrom = msg[self._idx().MSG_FROM]
-            msgto = [self._idx().EMAILS[int(x, 36)] for x in msg[self._idx().MSG_TO].split(",") if x != ""]
+            msgto = [self._idx().EMAILS[int(x, 36)]
+                     for x in msg[self._idx().MSG_TO].split(",") if x != ""]
             m = re.match("((.*) ){0,1}\<(.*)\>", msgfrom)
             if m:
                 name = m.groups(0)[1]
@@ -39,7 +40,8 @@ class NetworkGraph(Search):
 
             if email not in [m["email"] for m in nodes]:
                 n = {"email": email}
-                if name: n["name"] = name
+                if name:
+                    n["name"] = name
                 nodes.append(n)
 
             for address in msgto:
@@ -53,14 +55,18 @@ class NetworkGraph(Search):
                 index = curnodes.index(address)
                 link = [m for m in searchspace if m["target"] == index]
                 if len(link) == 0:
-                    links.append({"source": fromid, "target": index, "value": 1})
+                    links.append({"source": fromid,
+                                  "target": index,
+                                  "value": 1})
                 elif len(link) == 1:
                     link[0]["value"] += 1
                 else:
-                    raise ValueError("Too many links! - This should never happen.")
+                    raise ValueError("Too many links! - This should never "
+                                     "happen.")
 
             if len(nodes) >= 300:
-                # Let's put a hard upper limit on how many nodes we can have, for performance reasons.
+                # Let's put a hard upper limit on how many nodes we can
+                # have, for performance reasons.
                 # There might be a better way to do this though...
                 res["limit_hit"] = True
                 break
@@ -74,4 +80,7 @@ class NetworkGraph(Search):
 
 
 mailpile.plugins.register_commands(NetworkGraph)
-mailpile.plugins.register_display_mode("search", "graph", "mailpile.results_graph();", "Graph", url="#", icon="graph")
+mailpile.plugins.register_display_mode("search", "graph",
+                                       "mailpile.results_graph();",
+                                       "Graph",
+                                       url="#", icon="graph")

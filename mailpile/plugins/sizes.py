@@ -27,11 +27,12 @@ _size_units = {
     'k': 10,
     'b': 0
 }
-
 _range_keywords = [
     '..',
     '-'
 ]
+
+
 def _mk_logsize(size, default_unit=0):
     if not size:
         return 0

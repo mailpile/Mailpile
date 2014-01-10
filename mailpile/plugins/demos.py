@@ -32,7 +32,6 @@ import mailpile.plugins
 # FIXME
 
 
-
 ##[ Pluggable vcard functions ]###############################################
 from mailpile.vcard import *
 
@@ -47,9 +46,9 @@ class DemoVCardImporter(VCardImporter):
     FORMAT_DESCRPTION = _('This is the demo importer')
     SHORT_NAME = 'demo'
     CONFIG_RULES = {
-         'active': [_('Activate demo importer'), bool, True],
-         'name': [_('Contact name'), str, 'Mr. Rogers'],
-         'email': [_('Contact email'), 'email', 'mr@rogers.com']
+        'active': [_('Activate demo importer'), bool, True],
+        'name': [_('Contact name'), str, 'Mr. Rogers'],
+        'email': [_('Contact email'), 'email', 'mr@rogers.com']
     }
 
     def get_vcards(self):

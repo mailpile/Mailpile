@@ -270,33 +270,33 @@ def RuledContainer(pcls):
         # Reserved ...
         RULE_DEFAULT = -1
         RULE_CHECK_MAP = {
-           bool: _BoolCheck,
-           'bool': _BoolCheck,
-           'b36': _B36Check,
-           'dir': _DirCheck,
-           'directory': _DirCheck,
-           'ignore': _IgnoreCheck,
-           'email': unicode,  # FIXME: Make more strict
-           'False': False, 'false': False,
-           'file': _FileCheck,
-           'float': float,
-           'hostname': _HostNameCheck,
-           'int': int,
-           'long': long,
-           'multiline': unicode,
-           'mailroute': unicode,  # FIXME: Make more strict
-           'new file': _NewPathCheck,
-           'new dir': _NewPathCheck,
-           'new directory': _NewPathCheck,
-           'path': _PathCheck,
-           str: unicode,
-           'slashslug': _SlashSlugCheck,
-           'slug': _SlugCheck,
-           'str': unicode,
-           'True': True, 'true': True,
-           'timestamp': long,
-           'unicode': unicode,
-           'url': unicode,  # FIXME: Make more strict
+            bool: _BoolCheck,
+            'bool': _BoolCheck,
+            'b36': _B36Check,
+            'dir': _DirCheck,
+            'directory': _DirCheck,
+            'ignore': _IgnoreCheck,
+            'email': unicode,  # FIXME: Make more strict
+            'False': False, 'false': False,
+            'file': _FileCheck,
+            'float': float,
+            'hostname': _HostNameCheck,
+            'int': int,
+            'long': long,
+            'multiline': unicode,
+            'mailroute': unicode,  # FIXME: Make more strict
+            'new file': _NewPathCheck,
+            'new dir': _NewPathCheck,
+            'new directory': _NewPathCheck,
+            'path': _PathCheck,
+            str: unicode,
+            'slashslug': _SlashSlugCheck,
+            'slug': _SlugCheck,
+            'str': unicode,
+            'True': True, 'true': True,
+            'timestamp': long,
+            'unicode': unicode,
+            'url': unicode,  # FIXME: Make more strict
         }
         _NAME = 'container'
         _RULES = None
@@ -417,16 +417,17 @@ def RuledContainer(pcls):
                                                            _comment=comment,
                                                            _rules=check_rule))
                 else:
-                    pcls.__setitem__(self, key, ConfigList(_name=name,
-                                                           _comment=comment,
-                                                           _rules={
-                        '_any': [rule[self.RULE_COMMENT], check, None]
-                    }))
+                    pcls.__setitem__(self, key, ConfigList(
+                        _name=name,
+                        _comment=comment,
+                        _rules={
+                            '_any': [rule[self.RULE_COMMENT], check, None]
+                        }))
 
             elif not isinstance(value, (type(None), int, long, bool,
                                         float, str, unicode)):
                 raise TypeError(_('Invalid type "%s" for key "%s" (value: %s)'
-                                 ) % (type(value), name, repr(value)))
+                                  ) % (type(value), name, repr(value)))
 
         def __fixkey__(self, key):
             return key
@@ -437,7 +438,7 @@ def RuledContainer(pcls):
                 if '_any' in self.rules:
                     return self.rules['_any']
                 raise InvalidKeyError(_('Invalid key for %s: %s'
-                                       ) % (self._name, key))
+                                        ) % (self._name, key))
             return self.rules[key]
 
         def ignored_keys(self):
@@ -520,11 +521,11 @@ def RuledContainer(pcls):
             if not checker is True:
                 if checker is False:
                     raise ValueError(_('Modifying %s/%s is not allowed'
-                                      ) % (self._name, key))
+                                       ) % (self._name, key))
                 if isinstance(checker, (list, set, tuple)):
                     if value not in checker:
                         raise ValueError(_('Invalid value for %s/%s: %s'
-                                          ) % (self._name, key, value))
+                                           ) % (self._name, key, value))
                 elif isinstance(checker, (type, type(RuledContainer))):
                     try:
                         value = checker(value)
@@ -532,10 +533,10 @@ def RuledContainer(pcls):
                         return
                     except (ValueError, TypeError):
                         raise ValueError(_('Invalid value for %s/%s: %s'
-                                          ) % (self._name, key, value))
+                                           ) % (self._name, key, value))
                 else:
                     raise Exception(_('Unknown constraint for %s/%s: %s'
-                                     ) % (self._name, key, checker))
+                                      ) % (self._name, key, checker))
             self.__passkey__(key, value)
             self.__createkey_and_setitem__(key, value)
             self.__passkey_recurse__(key, value)
@@ -804,7 +805,7 @@ class ConfigManager(ConfigDict):
         >>> cfg.parse_config(session, '[config/bogus]\\nblabla = bla\\n')
         False
         >>> [l[1] for l in session.ui.log_buffer if 'bogus' in l[1]][0]
-        u'Invalid (internal): section config/bogus does not exist'
+        'Invalid (internal): section config/bogus does not exist'
 
         >>> cfg.parse_config(session, '[config/sys]\\nhistory_length = 321\\n'
         ...                                          'bogus_variable = 456\\n')
@@ -846,8 +847,8 @@ class ConfigManager(ConfigDict):
                     cfg = cfg[part]
                 else:
                     if session:
-                        msg = _(u'Invalid (%s): section %s does not '
-                                 'exist') % (source, section)
+                        msg = _('Invalid (%s): section %s does not '
+                                'exist') % (source, section)
                         session.ui.warning(msg)
                     all_okay = okay = False
             items = okay and parser.items(section) or []
@@ -989,7 +990,7 @@ class ConfigManager(ConfigDict):
                 traceback.print_exc()
             if session:
                 session.ui.mark(_('%s: Opening: %s (may take a while)'
-                                 ) % (mbx_id, mfn))
+                                  ) % (mbx_id, mfn))
             mbox = OpenMailbox(mfn)
             mbox.editable = self.is_editable_mailbox(mbx_id)
             mbox.save(session,
@@ -1145,10 +1146,12 @@ class ConfigManager(ConfigDict):
 
             # Schedule plugin jobs
             import mailpile.plugins
+
             def interval(i):
                 if isinstance(i, (str, unicode)):
                     i = config.walk(i)
                 return int(i)
+
             for job, (i, f) in mailpile.plugins.FAST_PERIODIC_JOBS.iteritems():
                 config.cron_worker.add_task(job, interval(i),
                                             lambda: f(session))
@@ -1157,7 +1160,6 @@ class ConfigManager(ConfigDict):
                     config.slow_worker.add_task(session, job,
                                                 lambda: f(session))
                 config.cron_worker.add_task(job, interval(i), wrap)
-
 
     def stop_workers(config):
         for wait in (False, True):
