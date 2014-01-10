@@ -5,6 +5,7 @@ from hashlib import sha512
 from subprocess import Popen, PIPE
 from datetime import datetime
 
+
 def genkey(secret, salt):
     """
     Generate keys for files based on host key and filename. 
@@ -33,17 +34,27 @@ class SymmetricEncrypter:
         self.endblock = "-----END MAILPILE ENCRYPTED DATA-----"
         self.secret = secret
 
-    def run(self, args=[], output=None, debug=False):
+    def run(self, args=[], output=None, passphrase=None, debug=False):
         self.pipes = {}
         args.insert(0, self.binary)
 
         if debug: print "Running openssl as: %s" % " ".join(args)
+
+        if "fd:?" in args and passphrase:
+            pipe = os.pipe()
+            passphrase_fd = pipe[1]
+            self.handles["passphrase"] = os.fdopen(passphrase_fd, "w")
+            args[args.index("fd:?")] = "fd:%d" % passphrase_fd
 
         proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
         self.handles["stdout"] = proc.stdout
         self.handles["stderr"] = proc.stderr
         self.handles["stdin"] = proc.stdin
+
+        if passphrase:
+            self.handles["passphrase"].write(passphrase)
+            self.handles["passphrase"].close()
 
         if output:
             self.handles["stdin"].write(output)
@@ -73,9 +84,9 @@ class SymmetricEncrypter:
         salt = sha512(str(random.getrandbits(512))).hexdigest()[:32]
         enckey = genkey(self.secret, salt)
         params = ["enc", "-e", "-a", "-%s" % cipher, 
-                  "-pass", "pass:%s" % enckey,
+                  "-pass", "fd:?",
                  ]
-        retval, res = self.run(params, output=data)
+        retval, res = self.run(params, output=data, passphrase=enckey)
         ret = "%s\ncipher: %s\nsalt: %s\n\n%s\n%s" % (
             self.beginblock, cipher, salt, res["stdout"], self.endblock)
         return ret
@@ -93,6 +104,7 @@ class SymmetricEncrypter:
             head, enc, tail = data.split("\r\n\r\n")
             head = head.split("\r\n")
 
+        enc += "\n"
         if (head[0].strip() == self.beginblock
                 and tail.strip() == self.endblock):
             del(head[0])
@@ -119,9 +131,9 @@ class SymmetricEncrypter:
 
         enckey = genkey(self.secret, salt)
         params = ["enc", "-d", "-a", "-%s" % cipher, 
-                  "-pass", "pass:%s" % enckey,
+                  "-pass", "fd:?",
                  ]
-        retval, res = self.run(params, output=enc)
+        retval, res = self.run(params, output=enc, passphrase=enckey)
         return res["stdout"]
 
 
@@ -146,14 +158,12 @@ class EncryptedFile(object):
 if __name__ == "__main__":
     s = SymmetricEncrypter("d3944bfea1e882dfc2e4878fa8905c6a2c")
     teststr = "Hello! This is a longish thing."
-    testpass = "kukalabbi"
+    print "Example encrypted format:"
+    print s.encrypt(teststr)
     if teststr == s.decrypt(s.encrypt(teststr)):
         print "Basic decryption worked"
     else:
         print "Encryption test failed"
-
-    print "Example encrypted format:"
-    print s.encrypt(teststr)
 
     t0 = datetime.now()
     enc = s.encrypt(teststr)
