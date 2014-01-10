@@ -106,6 +106,8 @@
   .thread-item-from span.icon {
     float: left;
     font-size: 14px;
+    color: @grayMid;
+    cursor: pointer;
   }
 
   .thread-item-details {
@@ -140,32 +142,13 @@
     line-height: 12px;
   }
   
-  .thread-item-text {
-    max-width: 90%;
-    margin-left: 20px;
-    margin-right: 15px;
-    margin-bottom: 10px;
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    line-height: 18px;
-    white-space: pre-wrap;
+  .thread-item-metadata-details {
+    display: none;
+    padding-bottom: 15px;
+    border-bottom: 1px solid @gray;
   }
-
-
-  .thread-item-data-encrypted {
-    margin-left: 20px;
-    margin-bottom: 10px;
-    font-size: 11px;
-    font-family: Helvetica, Arial, sans-serif;
-    font-weight: bold;
-    color: @green;
-    text-transform: uppercase;
-  }
-
-
-
-
-	
+  
+  
 	.message-email-address {
 	  display: inline-block;
 	  vertical-align: middle;
@@ -191,17 +174,54 @@
      display: inline-block;
   }
 
-	.message-body {
-	  padding: 15px;
-  	font-size: 14px;
-  	line-height: 18px;
-	}
+  .thread-item-encryption {
+    width: 96%;
+    margin-top: 10px;
+    margin-left: 20px;
+    margin-bottom: 0px;
+  }
+
+  .thread-item-encryption-info {  }
+  .thread-item-encryption-info .icon { font-size: 14px; }
+  .thread-item-encryption-info .text { font-size: 12px; font-family: Helvetica, Arial, sans-serif; font-weight: bold; text-transform: uppercase; }
+
+  .thread-item-encryption-line { width: 85%; position: relative; top: 14px; left: 10px;
+    opacity: 0;
+    transition: opacity .35s ease-in-out;
+    -moz-transition: opacity .35s ease-in-out;
+    -webkit-transition: opacity .35s ease-in-out;  
+  }
+
+  .thread-item-encryption-info:hover + .thread-item-encryption-line { opacity: 1;  }
+
+  .pgp-encryption-none       { color: @grayMid; }
+  .pgp-encryption-none .thread-item-encryption-line { border-bottom: 1px solid @grayMid; }
+  .pgp-encryption-decrypted  { color: @green; }
+  .pgp-encryption-decrypted .thread-item-encryption-line { border-bottom: 1px solid @green; }
+  .pgp-encryption-missingkey { color: @red; }
+  .pgp-encryption-missingkey .thread-item-encryption-line { border-bottom: 1px solid @red; }
+  .pgp-encryption-error      { color: @red; }
+  .pgp-encryption-error .thread-item-encryption-line { border-bottom: 1px solid @red; }
+
+
+  .thread-item-text {
+    max-width: 90%;
+    margin-left: 20px;
+    margin-right: 15px;
+    margin-bottom: 10px;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 18px;
+    white-space: pre-wrap;
+  }
+
+  .thread-item-text a {
+    color: @black;
+    font-weight: bold;
+  }
 	
-	.message-attachments {
+
+	
+	.thread-message-attachments {
   	
 	}
-
-  .message-actions form {
-    float: left;
-    margin-right: 15px;
-  }

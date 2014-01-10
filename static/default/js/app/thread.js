@@ -8,16 +8,22 @@ MailPile.prototype.view = function(idx, msgid) {
 };
 
 /* Thread - Show People In Conversation */
-$(document).on('click', '.thread-show-people', function() {
+$(document).on('click', '.show-thread-people', function() {
 
   alert('FIXME: Show all people in conversation');
 });
 
 /* Thread - Show Security */
-$(document).on('click', '.thread-show-security', function() {
+$(document).on('click', '.show-thread-security', function() {
   
   alert('FIXME: Show details about security of thread');
-})
+});
+
+/* Thread - Show Metadata Info */
+$(document).on('click', '.show-thread-message-metadata-details', function() {
+    
+  $('#metadata-details-' + $(this).parent().parent().parent().data('mid')).fadeIn();
+});
 
 /* Thread - Expand Snippet */
 $(document).on('click', '#thread-messages div.thread-snippet', function(e) {  

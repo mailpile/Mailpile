@@ -7,8 +7,8 @@
 <div id="thread-title" class="clearfix">
   <h1>{{ start_subject }}</h1>
   <ul class="horizontal">
-    <li><a class="thread-show-people" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
-    <li><a class="thread-show-security" href="#"><span class="icon-unencrypted"></span> Partially Secure</a></li>
+    <li><a class="show-thread-people" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
+    <li><a class="show-thread-security" href="#"><span class="icon-unencrypted"></span> Partially Secure</a></li>
   </ul>
 </div>
 
@@ -31,7 +31,7 @@
   {% if not message.editing_string %}
 
   <!-- FIXME: make subject line show differing subjects {{ metadata.subject|e }} -->    
-  <div class="thread-message">
+  <div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}">
 
     {% set show_encryption = true %}
     {% include("partials/thread_item_metadata.html") %}
@@ -42,6 +42,7 @@
     not differentiate between to/cc. Maybe we want an
     intermediate header summary in the result JSON? 
     -->
+    <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
     {% for header in ("To", "Cc", "Bcc") %}
       {% for hdr, val in message.header_list %}
         {% if hdr.lower() == header.lower() %}
@@ -50,29 +51,43 @@
         {% endif %}
       {% endfor %}
     {% endfor %}
+    </div>
 
     {% for part in message.text_parts %}
-      {% if part.data != "" %}
-      <div class="thread-item-data-encrypted text-part-{{ part.type }} pgp_encrypted_{{ part.encryption_info.status }}">
-        {% if part.encryption_info.status == "none" %}
-        <span class="icon-unencrypted" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span> Not Encrypted
-        {% endif %}
-        {% if part.encryption_info.status == "decrypted" %}
-        <span class="icon-encrypted" title="{{_("Successfully decrypted message")}}"></span> Decrypted
-        {% endif %}
-        {% if part.encryption_info.status == "missingkey" %}
-        <span class="icon-key" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span> Missing Key
-        {% endif %}
-        {% if part.encryption_info.status == "error" %}
-        <span class="icon-unencrypted" title="{{_("Failed to decrypt message")}}"></span>
-        {% endif %}
+      <b> Index: {{ loop.index }}</b> <br>
+      {% if ((part.data != "") and (part.type == "pgptext")) %}
+      <div class="thread-item-encryption text-part-{{ part.type }} pgp-encryption-{{ part.encryption_info.status }} clearfix">
+        <div class="thread-item-encryption-info left" data-name="cats">
+          {% if part.encryption_info.status == "none" %}
+          <span class="icon icon-lock-open" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span> <span class="text">Not Encrypted</span>
+          {% endif %}
+          {% if part.encryption_info.status == "decrypted" %}
+          <span class="icon icon-lock-open" title="{{_("Successfully decrypted message")}}"></span> <span class="text">Encrypted</span>
+          {% endif %}
+          {% if part.encryption_info.status == "missingkey" %}
+          <span class="icon icon-lock-error" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span> <span class="text">Missing Key</span>
+          {% endif %}
+          {% if part.encryption_info.status == "error" %}
+          <span class="icon icon-lock-error" title="{{_("Failed to decrypt message")}}"></span> <span class="text">Error</span>
+          {% endif %}
+        </div>
+        <div class="thread-item-encryption-line left"></div>
       </div>
-      <div class="thread-item-text">{{ part.data|e|urlize }}</div>
+      <div class="thread-item-text">
+        {{ part.data|e|urlize }}
+      </div>
+      {% elif part.type == "text" %}
+      <div class="thread-item-text">
+        {{ part.data|e|urlize }}
+      </div>
+      {% elif part.type == "quote" %}
+      DOGS DOGS DOGS!!!
       {% endif %}
+      
     {% endfor %}
     </div>
 
-    <div class="message-attachments">
+    <div class="thread-message-attachments">
     <ul>
       {% for att in message.attachments %}
       <li>

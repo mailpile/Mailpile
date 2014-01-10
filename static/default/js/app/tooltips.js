@@ -1,6 +1,7 @@
 // Non-exposed functions: www, setup
 $(document).ready(function() {
 
+
   $('.topbar-nav a').qtip({
     style: {
      tip: {
@@ -110,6 +111,30 @@ $(document).ready(function() {
     },
     show: {
       delay: 500
+    }
+  });
+  
+  
+  $('.thread-item-encryption-info').qtip({
+    content: {
+      text: $(this).data('name')
+    },
+    style: {
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'bottom center',
+      at: 'top left',
+			viewport: $(window),
+			adjust: {
+				x: 25,  y: 0
+			}
+    },
+    show: {
+      delay: 250
+    },
+    hide: {
+      delay: 250
     }
   });
   

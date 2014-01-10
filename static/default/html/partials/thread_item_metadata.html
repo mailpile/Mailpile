@@ -5,9 +5,10 @@
         {% if show_encryption %}
         <span class="icon icon-{{ message_encryption_status(message.text_parts) }}"></span>
         {% endif %}
+        <span class="show-thread-message-metadata-details icon icon-circle-info"></span>
       </div>
       <div class="thread-item-details">
         <a class="datetime" href="{{ metadata.urls.thread }}">{{ metadata.timestamp|friendly_datetime }} at {{ metadata.timestamp|friendly_time }}</a>
-        <span class="feedback-expand">Expand Message</span>
+        <span class="feedback-expand"><span class="icon-expand"></span> {{_("Expand Message")}}</span>
       </div>
     </div>
