@@ -4,6 +4,7 @@ import mailpile.app
 import mailpile.commands
 import mailpile.defaults
 import mailpile.ui
+import mailpile.util
 
 
 __all__ = ['Mailpile',
@@ -51,4 +52,12 @@ class Mailpile(object):
         return cmd.replace('/', '_'), fnc
 
     def Interact(self):
-        return mailpile.app.Interact(self._session)
+        mailpile.util.QUITTING = False
+        self._session.interactive = self._session.ui.interactive = True
+        self._session.config.prepare_workers(self._session, daemons=True)
+
+        mailpile.app.Interact(self._session)
+
+        mailpile.util.QUITTING = True
+        self._session.config.stop_workers()
+        self._session.interactive = self._session.ui.interactive = False
