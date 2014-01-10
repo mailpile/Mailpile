@@ -12,7 +12,7 @@ MailPile.prototype.compose = function(data) {
     if (response.status == 'success') {
       window.location.href = mailpile.urls.message_draft + response.result.created + '/';
     } else {
-      statusMessage(response.status, response.message);
+      mailpile.notification(response.status, response.message);
     }
   });
 }
@@ -37,7 +37,6 @@ $('#search-query').attr('tabindex', '-1');
 
 var composeContactSelected = function(contact) {
   if (contact.object.flags.secure) {
-    console.log('Whee keys ' + contact.object.keys[0].fingerprint);
     $('.message-privacy-state').attr('title', 'The message is encrypted. The recipients & subject are not');
     $('.message-privacy-state').removeClass('icon-unencrypted').addClass('icon-encrypted');
     $('.message-privacy-state').parent().addClass('bounce');
@@ -113,7 +112,6 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
       return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
     } else {
       return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
-      console.log('Yo duder: ' + term)
     }
   },
   formatResult: formatComposeResult,
@@ -188,7 +186,7 @@ $(document).on('click', '.compose-action', function(e) {
         window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid;
       }
       else {
-        statusMessage(response.status, response.message);
+        mailpile.notification(response.status, response.message);
       }
 	  }
 	});

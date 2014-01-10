@@ -1,17 +1,4 @@
-var statusHeaderPadding = function() {
-
-	if ($('#header').css('position') === 'fixed') {
-		var padding = $('#header').height() + 50;
-	}
-	else {
-		var padding = 0;
-	}
-
-	return padding;
-};
-
-
-var statusMessage = function(status, message_text, complete, complete_action) {
+MailPile.prototype.notification = function(status, message_text, complete, complete_action) {
 
   var default_messages = {
     "success" : "Success, we did exactly what you asked.",
@@ -30,9 +17,6 @@ var statusMessage = function(status, message_text, complete, complete_action) {
   // Show Message
   message.find('span.message-text').html(message_text),
   message.fadeIn(function() {
-
-    // Set Padding Top for #content
-	  // $('#header').css('padding-top', statusHeaderPadding());
   });
 
 	// Complete Action
@@ -54,7 +38,6 @@ var statusMessage = function(status, message_text, complete, complete_action) {
 
 
 $(document).ready(function() {
-
 
   /* Message Close */
 	$('.message-close').on('click', function() {

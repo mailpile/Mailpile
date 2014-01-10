@@ -28,7 +28,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
     dataType : 'json',
     success: function(response) {
 
-      statusMessage(response.status, response.message);
+      mailpile.notification(response.status, response.message);
 
       if (response.status === 'success') {
         console.log(response);
