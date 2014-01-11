@@ -178,19 +178,9 @@ class MailIndex:
 
                     self.INDEX[pos] = line
                     self.MSGIDS[words[self.MSG_ID]] = pos
-
+                    self.update_msg_tags(pos, words)
                     for msg_ptr in words[self.MSG_PTRS].split(','):
                         self.PTRS[msg_ptr] = pos
-
-                    tags = set([t for t in words[self.MSG_TAGS].split(',')
-                                if t])
-                    if pos + 1 < len(self.INDEX):
-                        for tid in (set(self.TAGS.keys()) - tags):
-                            self.TAGS[tid] -= set([pos])
-                    for tid in tags:
-                        if tid not in self.TAGS:
-                            self.TAGS[tid] = set()
-                        self.TAGS[tid].add(pos)
 
             except ValueError:
                 pass
@@ -215,6 +205,15 @@ class MailIndex:
             session.ui.mark(_('Loaded metadata, %d messages'
                               ) % len(self.INDEX))
         self.EMAILS_SAVED = len(self.EMAILS)
+
+    def update_msg_tags(self, msg_idx_pos, msg_info):
+        tags = set([t for t in msg_info[self.MSG_TAGS].split(',') if t])
+        for tid in (set(self.TAGS.keys()) - tags):
+            self.TAGS[tid] -= set([msg_idx_pos])
+        for tid in tags:
+            if tid not in self.TAGS:
+                self.TAGS[tid] = set()
+            self.TAGS[tid].add(msg_idx_pos)
 
     def save_changes(self, session=None):
         mods, self.MODIFIED = self.MODIFIED, set()
@@ -827,6 +826,7 @@ class MailIndex:
         self.MSGIDS[msg_info[self.MSG_ID]] = msg_idx
         for msg_ptr in msg_info[self.MSG_PTRS].split(','):
             self.PTRS[msg_ptr] = msg_idx
+        self.update_msg_tags(msg_idx, msg_info)
 
     def get_conversation(self, msg_info=None, msg_idx=None):
         if not msg_info:
