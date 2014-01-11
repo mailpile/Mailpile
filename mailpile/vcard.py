@@ -1,6 +1,7 @@
 import random
 from gettext import gettext as _
 
+import mailpile.util
 from mailpile.util import *
 
 
@@ -739,6 +740,8 @@ class VCardStore(dict):
         try:
             prefs = self.config.prefs
             for fn in os.listdir(self.vcard_dir):
+                if mailpile.utils.QUITTING:
+                    return
                 try:
                     c = SimpleVCard().load(os.path.join(self.vcard_dir, fn),
                                            config=(session and session.config))
