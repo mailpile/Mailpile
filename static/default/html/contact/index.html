@@ -4,17 +4,26 @@
 {% include("partials/sub_nav_contacts.html") %}
 
 <div id="contact-view" class="content-normal">
-  
 {% if result.contact %}
+  
+  {% set profiles = mailpile('settings', 'profiles').result.profiles %}
 
   <div class="clearfix">
     <img class="contact-avatar left" width="80" src="{{ show_avatar(result.contact.photo.0) }}">
     <h2  class="contact-name ">{{ result.contact.fn }}</h2>
-    <h5 class="contact-subname">Hey, that's you :)</h5>
+    {% if result.contact.email %}
+    {% for profile in profiles %}
+      {% for email in result.contact.email %}
+      {% if profile.email == email.email %}
+      <h5 class="contact-subname">{{_("Hey that's you")}} :)</h5>
+      {% endif %}
+      {% endfor %}
+    {% endfor %}    
+    {% endif %}
   </div>
   <hr>
  
-  <h4>Emails</h4>
+  <h4>Addresses</h4>
   <ul>
   {% if result.contact.email %}
     {% for email in result.contact.email %}
@@ -44,12 +53,12 @@
   <h4><span class="icon-inbox"></span> Conversations</h4>
   
   {% set contact_search = "email:" + result.contact.email.0.email %}
-  {% set contact_messages = mailpile("search", contact_search).result %}
-
-  {% if contact_messages %}
+  {% set conversations = mailpile("search", contact_search).result %}
+  {% if conversations %}
   <ul>
-    {% for mid in contact_messages.thread_ids %}
-      <li><a href="/thread/={{ mid }}/">{{ contact_messages.data.metadata[mid].subject }} ({{ contact_messages.data.threads[mid]|length }})</a></li>
+    {% for mid in conversations.thread_ids %}
+      {% set thread_mid = conversations.data.metadata[mid].thread_mid %}
+      <li><a href="/thread/={{ mid }}/">{{ conversations.data.metadata[mid].subject }} ({{ conversations.data.threads[thread_mid]|length }})</a></li>
     {% endfor %}  
   </ul>
   {% endif %}
