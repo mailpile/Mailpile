@@ -23,7 +23,7 @@ docs:
 web: less js
 	@true
 
-alltests:
+alltests: docs
 	@python mailpile/config.py
 	@python mailpile/util.py
 	@python mailpile/vcard.py
