@@ -320,12 +320,14 @@ class SearchResults(dict):
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
             'from_aid': (self._msg_addresses(msg_info, no_to=True) or [''])[0],
-            'to_aids': self._msg_addresses(msg_info, no_from=True),
+            'to_aids': self._msg_addresses(msg_info, no_from=True, no_cc=True),
+            'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
+            'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
             'tag_tids': self._msg_tags(msg_info),
-            'thread_mid': msg_info[MailIndex.MSG_CONV_MID],
+            'thread_mid': msg_info[MailIndex.MSG_THREAD_MID],
             'subject': msg_info[MailIndex.MSG_SUBJECT],
             'body': {
-                'snippet': msg_info[MailIndex.MSG_SNIPPET],
+                'snippet': msg_info[MailIndex.MSG_BODY],
             },
             'urls': {
                 'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
@@ -362,11 +364,16 @@ class SearchResults(dict):
 
         return expl
 
-    def _msg_addresses(self, msg_info, no_from=False, no_to=False):
+    def _msg_addresses(self, msg_info,
+                       no_from=False, no_to=False, no_cc=False):
         if no_to:
             cids = set()
         else:
-            cids = set([t for t in msg_info[MailIndex.MSG_TO].split(',') if t])
+            to = [t for t in msg_info[MailIndex.MSG_TO].split(',') if t]
+            cids = set(to)
+        if not no_cc:
+            cc = [t for t in msg_info[MailIndex.MSG_CC].split(',') if t]
+            cids |= set(cc)
         if not no_from:
             fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
             if fe:
@@ -476,7 +483,7 @@ class SearchResults(dict):
             self['data']['metadata'][b36(idx_pos)] = self._metadata(msg_info)
 
             # Populate data.thread
-            thread_mid = msg_info[idx.MSG_CONV_MID]
+            thread_mid = msg_info[idx.MSG_THREAD_MID]
             if thread_mid not in self['data']['threads']:
                 thread = self._thread(thread_mid)
                 self['data']['threads'][thread_mid] = thread

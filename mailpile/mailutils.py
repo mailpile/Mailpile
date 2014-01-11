@@ -711,11 +711,11 @@ class Email(object):
                 charset = 'utf-8'
             msg.attach(MIMEText(msg_text, _subtype='plain', _charset=charset))
         msg_key = mbx.add(msg)
-        msg_to = []
+        msg_to = msg_cc = []
         msg_ptr = mbx.get_msg_ptr(mbox_id, msg_key)
         msg_id = idx.get_msg_id(msg, msg_ptr)
-        msg_idx, msg_info = idx.add_new_msg(msg_ptr,
-                                            msg_id, msg_date, msg_from, msg_to,
+        msg_idx, msg_info = idx.add_new_msg(msg_ptr, msg_id, msg_date,
+                                            msg_from, msg_to, msg_cc, 0,
                                             msg_subj, '', [])
         idx.set_conversation_ids(msg_info[idx.MSG_MID], msg)
         return cls(idx, msg_idx)
@@ -922,7 +922,7 @@ class Email(object):
         return HeaderPrint(self.get_msg())
 
     def is_thread(self):
-        return ((self.get_msg_info(self.index.MSG_CONV_MID)) or
+        return ((self.get_msg_info(self.index.MSG_THREAD_MID)) or
                 (0 < len(self.get_msg_info(self.index.MSG_REPLIES))))
 
     def get(self, field, default=''):
@@ -945,7 +945,7 @@ class Email(object):
             self.get_msg_info(self.index.MSG_FROM),
             self.index.expand_to_list(self.msg_info),
             self.get_msg_info(self.index.MSG_SUBJECT),
-            self.get_msg_info(self.index.MSG_SNIPPET),
+            self.get_msg_info(self.index.MSG_BODY),
             self.get_msg_info(self.index.MSG_DATE),
             self.get_msg_info(self.index.MSG_TAGS).split(','),
             self.is_editable()
@@ -1040,7 +1040,7 @@ class Email(object):
 
         if want is None or 'conversation' in want:
             tree['conversation'] = {}
-            conv_id = self.get_msg_info(self.index.MSG_CONV_MID)
+            conv_id = self.get_msg_info(self.index.MSG_THREAD_MID)
             if conv_id:
                 conv = Email(self.index, int(conv_id, 36))
                 tree['conversation'] = convs = [conv.get_msg_summary()]

@@ -83,18 +83,26 @@ class MailIndex:
     MSG_DATE = 3
     MSG_FROM = 4
     MSG_TO = 5
-    MSG_SUBJECT = 6
-    MSG_SNIPPET = 7
-    MSG_TAGS = 8
-    MSG_REPLIES = 9
-    MSG_CONV_MID = 10
+    MSG_CC = 6
+    MSG_KB = 7
+    MSG_SUBJECT = 8
+    MSG_BODY = 9
+    MSG_TAGS = 10
+    MSG_REPLIES = 11
+    MSG_THREAD_MID = 12
+
+    MSG_FIELDS_V1 = 11
+    MSG_FIELDS_V2 = 13
+
+    BOGUS_METADATA = [None, '', None, '0', '(no sender)', '', '', '0',
+                      '(not in index)', '', '', '', '-1']
 
     def __init__(self, config):
         self.config = config
         self.STATS = {}
         self.INDEX = []
         self.INDEX_SORT = {}
-        self.INDEX_CONV = []
+        self.INDEX_THR = []
         self.PTRS = {}
         self.MSGIDS = {}
         self.EMAILS = []
@@ -147,15 +155,24 @@ class MailIndex:
                     self.EMAIL_IDS[unquoted_email.split()[0].lower()] = pos
                 elif line:
                     words = line.split('\t')
-                    # FIXME: Delete this old crap.
-                    if len(words) == 10:
-                        # This is an old index file, reorder it!
-                        pos, p, unused, msgid, d, f, s, t, r, c = words
-                        ptrs = ','.join(['0' + ptr for ptr in p.split(',')])
-                        line = '\t'.join([pos, ptrs, msgid, d, f, '',
-                                          s, '', t, r, c])
-                    else:
-                        pos, ptrs, msgid = words[:3]
+
+                    # Migration: converting old metadata into new!
+                    if len(words) != self.MSG_FIELDS_V2:
+
+                        # V1 -> V2 adds MSG_CC and MSG_KB
+                        if len(words) == self.MSG_FIELDS_V1:
+                            words[self.MSG_CC:self.MSG_CC] = ['']
+                            words[self.MSG_KB:self.MSG_KB] = ['0']
+
+                        # Add V2 -> V3 here, etc. etc.
+
+                        if len(words) == self.MSG_FIELDS_V2:
+                            line = '\t'.join(words)
+                        else:
+                            raise Exception(_('Your metadata index is either '
+                                              'too old, too new or corrupt!'))
+
+                    pos, ptrs, msgid = words[:3]
                     pos = int(pos, 36)
                     while len(self.INDEX) < pos + 1:
                         self.INDEX.append('')
@@ -235,7 +252,7 @@ class MailIndex:
         session.ui.mark(_('Updating high level indexes'))
         for offset in range(0, len(self.INDEX)):
             message = self.l2m(self.INDEX[offset])
-            if len(message) > self.MSG_CONV_MID:
+            if len(message) == self.MSG_FIELDS_V2:
                 self.MSGIDS[message[self.MSG_ID]] = offset
                 for msg_ptr in message[self.MSG_PTRS].split(','):
                     self.PTRS[msg_ptr] = offset
@@ -416,13 +433,14 @@ class MailIndex:
                 tags = [k.split(':')[0] for k in keywords
                         if k.endswith(':tag')]
 
-                msg_to = (ExtractEmails(self.hdr(msg, 'to')) +
-                          ExtractEmails(self.hdr(msg, 'cc')) +
+                msg_to = ExtractEmails(self.hdr(msg, 'to'))
+                msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
                           ExtractEmails(self.hdr(msg, 'bcc')))
 
                 msg_idx_pos, msg_info = self.add_new_msg(
-                    msg_ptr, msg_id, msg_ts, self.hdr(msg, 'from'), msg_to,
-                    msg_subject, msg_snippet, tags
+                    msg_ptr, msg_id, msg_ts, self.hdr(msg, 'from'),
+                    msg_to, msg_cc, msg_size, msg_subject, msg_snippet,
+                    tags
                 )
                 self.set_conversation_ids(msg_info[self.MSG_MID], msg)
                 mbox.mark_parsed(i)
@@ -451,7 +469,7 @@ class MailIndex:
                                     filter_hooks=[self.filter_keywords])
 
     def set_conversation_ids(self, msg_mid, msg):
-        msg_conv_mid = None
+        msg_thr_mid = None
         refs = set((self.hdr(msg, 'references') + ' ' +
                     self.hdr(msg, 'in-reply-to')
                     ).replace(',', ' ').strip().split())
@@ -459,15 +477,15 @@ class MailIndex:
             try:
                 # Get conversation ID ...
                 ref_idx_pos = self.MSGIDS[ref_id]
-                msg_conv_mid = self.get_msg_at_idx_pos(ref_idx_pos
-                                                       )[self.MSG_CONV_MID]
+                msg_thr_mid = self.get_msg_at_idx_pos(ref_idx_pos
+                                                      )[self.MSG_THREAD_MID]
                 # Update root of conversation thread
-                parent = self.get_msg_at_idx_pos(int(msg_conv_mid, 36))
+                parent = self.get_msg_at_idx_pos(int(msg_thr_mid, 36))
                 replies = parent[self.MSG_REPLIES][:-1].split(',')
                 if msg_mid not in replies:
                     replies.append(msg_mid)
                 parent[self.MSG_REPLIES] = ','.join(replies) + ','
-                self.set_msg_at_idx_pos(int(msg_conv_mid, 36), parent)
+                self.set_msg_at_idx_pos(int(msg_thr_mid, 36), parent)
                 break
             except (KeyError, ValueError, IndexError):
                 pass
@@ -475,7 +493,7 @@ class MailIndex:
         msg_idx_pos = int(msg_mid, 36)
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
 
-        if not msg_conv_mid:
+        if not msg_thr_mid:
             # Can we do plain GMail style subject-based threading?
             # FIXME: Is this too aggressive? Make configurable?
             subj = msg_info[self.MSG_SUBJECT].lower()
@@ -488,8 +506,8 @@ class MailIndex:
                         m_info = self.get_msg_at_idx_pos(midx)
                         if m_info[self.MSG_SUBJECT
                                   ].lower().replace('re: ', '') == subj:
-                            msg_conv_mid = m_info[self.MSG_CONV_MID]
-                            parent = self.get_msg_at_idx_pos(int(msg_conv_mid,
+                            msg_thr_mid = m_info[self.MSG_THREAD_MID]
+                            parent = self.get_msg_at_idx_pos(int(msg_thr_mid,
                                                                  36))
                             replies = parent[self.MSG_REPLIES][:-1].split(',')
                             if len(replies) < 100:
@@ -497,7 +515,7 @@ class MailIndex:
                                     replies.append(msg_mid)
                                 parent[self.MSG_REPLIES] = (','.join(replies)
                                                             + ',')
-                                self.set_msg_at_idx_pos(int(msg_conv_mid, 36),
+                                self.set_msg_at_idx_pos(int(msg_thr_mid, 36),
                                                         parent)
                                 break
                         if date - long(m_info[self.MSG_DATE],
@@ -506,17 +524,17 @@ class MailIndex:
                     except (KeyError, ValueError, IndexError):
                         pass
 
-        if not msg_conv_mid:
+        if not msg_thr_mid:
             # OK, we are our own conversation root.
-            msg_conv_mid = msg_mid
+            msg_thr_mid = msg_mid
 
-        msg_info[self.MSG_CONV_MID] = msg_conv_mid
+        msg_info[self.MSG_THREAD_MID] = msg_thr_mid
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
 
     def unthread_message(self, msg_mid):
         msg_idx_pos = int(msg_mid, 36)
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
-        par_idx_pos = int(msg_info[self.MSG_CONV_MID], 36)
+        par_idx_pos = int(msg_info[self.MSG_THREAD_MID], 36)
 
         if par_idx_pos == msg_idx_pos:
             # Message is head of thread, chop head off!
@@ -533,7 +551,7 @@ class MailIndex:
                 for msg_mid in thread:
                     kid_idx_pos = int(thread[0], 36)
                     kid_info = self.get_msg_at_idx_pos(head_idx_pos)
-                    kid_info[self.MSG_CONV_MID] = head_mid
+                    kid_info[self.MSG_THREAD_MID] = head_mid
                     kid.set_msg_at_idx_pos(head_idx_pos, head_info)
         else:
             # Message is a reply, remove it from thread
@@ -544,7 +562,7 @@ class MailIndex:
                 par_info[self.MSG_REPLIES] = ','.join(thread) + ','
                 self.set_msg_at_idx_pos(par_idx_pos, par_info)
 
-        msg_info[self.MSG_CONV_MID] = msg_mid
+        msg_info[self.MSG_THREAD_MID] = msg_mid
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
 
     def _add_email(self, email, name=None, eid=None):
@@ -573,8 +591,9 @@ class MailIndex:
         eids = msg_info[self.MSG_TO]
         return [self.EMAILS[int(e, 36)] for e in eids.split(',') if e]
 
-    def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from, msg_to,
-                    msg_subject, msg_snippet, tags):
+    def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from,
+                    msg_to, msg_cc, msg_bytes, msg_subject, msg_snippet,
+                    tags):
         msg_idx_pos = len(self.INDEX)
         msg_mid = b36(msg_idx_pos)
         msg_info = [
@@ -583,8 +602,10 @@ class MailIndex:
             msg_id,                                      # Message ID
             b36(msg_ts),                                 # Date as UTC timstamp
             msg_from,                                    # From:
-            self.compact_to_list(msg_to or []),          # To: / Cc: / Bcc:
-            msg_subject,                                 # Subject
+            self.compact_to_list(msg_to or []),          # To:
+            self.compact_to_list(msg_cc or []),          # Cc:
+            b36(msg_bytes // 1024),                      # KB
+            msg_subject,                                 # Subject:
             msg_snippet,                                 # Snippet
             ','.join(tags),                              # Initial tags
             '',                                          # No replies for now
@@ -698,7 +719,7 @@ class MailIndex:
                 'pgp-encrypted-text:has' in keywords):
             e = Email(None, -1)
             e.msg_parsed = msg
-            e.msg_info = ['' for i in range(0, 11)]
+            e.msg_info = ['' for i in range(0, self.MSG_FIELDS_V2)]
             tree = e.get_message_tree(want=['text_parts'])
             for text in [t['data'] for t in tree['text_parts']]:
                 print 'OOO, INLINE PGP, PARSING, WOOT'
@@ -770,18 +791,15 @@ class MailIndex:
                 rv = self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
             return rv
         except IndexError:
-            return [None, '', None, b36(0),
-                    '(no sender)', '',
-                    '(not in index: %s)' % msg_idx, '',
-                    '', '', '-1']
+            return self.BOGUS_METADATA[:]
 
     def set_msg_at_idx_pos(self, msg_idx, msg_info):
         if msg_idx < len(self.INDEX):
             self.INDEX[msg_idx] = self.m2l(msg_info)
-            self.INDEX_CONV[msg_idx] = int(msg_info[self.MSG_CONV_MID], 36)
+            self.INDEX_THR[msg_idx] = int(msg_info[self.MSG_THREAD_MID], 36)
         elif msg_idx == len(self.INDEX):
             self.INDEX.append(self.m2l(msg_info))
-            self.INDEX_CONV.append(int(msg_info[self.MSG_CONV_MID], 36))
+            self.INDEX_THR.append(int(msg_info[self.MSG_THREAD_MID], 36))
         else:
             raise IndexError(_('%s is outside the index') % msg_idx)
 
@@ -801,7 +819,7 @@ class MailIndex:
     def get_conversation(self, msg_info=None, msg_idx=None):
         if not msg_info:
             msg_info = self.get_msg_at_idx_pos(msg_idx)
-        conv_mid = msg_info[self.MSG_CONV_MID]
+        conv_mid = msg_info[self.MSG_THREAD_MID]
         if conv_mid:
             return ([self.get_msg_at_idx_pos(int(conv_mid, 36))] +
                     self.get_replies(msg_idx=int(conv_mid, 36)))
@@ -1013,8 +1031,8 @@ class MailIndex:
         if session:
             session.ui.mark(_('Finding conversations (%d messages)...'
                               ) % len(keys))
-        self.INDEX_CONV = [int(self.get_msg_at_idx_pos(r)[self.MSG_CONV_MID],
-                               36) for r in keys]
+        self.INDEX_THR = [int(self.get_msg_at_idx_pos(r)[self.MSG_THREAD_MID],
+                              36) for r in keys]
         for order, by_default, sorter in self.CACHED_SORT_ORDERS:
             if (not by_default) and not (wanted and order in wanted):
                 continue
@@ -1086,7 +1104,7 @@ class MailIndex:
         if 'flat' not in how:
             # This filters away all but the first result in each conversation.
             results.reverse()
-            cset = set(dict([(self.INDEX_CONV[r], r)
+            cset = set(dict([(self.INDEX_THR[r], r)
                              for r in results]).values())
             results.reverse()
             results[:] = filter(cset.__contains__, results)
