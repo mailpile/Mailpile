@@ -99,11 +99,11 @@ class MailIndex:
 
     def __init__(self, config):
         self.config = config
-        self.STATS = {}
         self.INDEX = []
         self.INDEX_SORT = {}
         self.INDEX_THR = []
         self.PTRS = {}
+        self.TAGS = {}
         self.MSGIDS = {}
         self.EMAILS = []
         self.EMAIL_IDS = {}
@@ -172,14 +172,26 @@ class MailIndex:
                             raise Exception(_('Your metadata index is either '
                                               'too old, too new or corrupt!'))
 
-                    pos, ptrs, msgid = words[:3]
-                    pos = int(pos, 36)
+                    pos = int(words[self.MSG_MID], 36)
                     while len(self.INDEX) < pos + 1:
                         self.INDEX.append('')
+
                     self.INDEX[pos] = line
-                    self.MSGIDS[msgid] = pos
-                    for msg_ptr in ptrs.split(','):
+                    self.MSGIDS[words[self.MSG_ID]] = pos
+
+                    for msg_ptr in words[self.MSG_PTRS].split(','):
                         self.PTRS[msg_ptr] = pos
+
+                    tags = set([t for t in words[self.MSG_TAGS].split(',')
+                                if t])
+                    if pos + 1 < len(self.INDEX):
+                        for tid in (set(self.TAGS.keys()) - tags):
+                            self.TAGS[tid] -= set([pos])
+                    for tid in tags:
+                        if tid not in self.TAGS:
+                            self.TAGS[tid] = set()
+                        self.TAGS[tid].add(pos)
+
             except ValueError:
                 pass
 
@@ -431,7 +443,7 @@ class MailIndex:
                 msg_snippet = snippet[:max(0, snippet_max - len(msg_subject))]
 
                 tags = [k.split(':')[0] for k in keywords
-                        if k.endswith(':tag')]
+                        if k.endswith(':in') or k.endswith(':tag')]
 
                 msg_to = ExtractEmails(self.hdr(msg, 'to'))
                 msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
@@ -628,7 +640,7 @@ class MailIndex:
                     len(self.search(None, terms.split(),
                                     keywords=keywordmap)) > 0):
                 for t in tags.split():
-                    kw = '%s:tag' % t[1:]
+                    kw = '%s:in' % t[1:]
                     if t[0] == '-':
                         if kw in keywordmap:
                             del keywordmap[kw]
@@ -839,7 +851,6 @@ class MailIndex:
 
     def add_tag(self, session, tag_id,
                 msg_info=None, msg_idxs=None, conversation=False):
-        pls = GlobalPostingList(session, '%s:tag' % tag_id)
         if msg_info and msg_idxs is None:
             msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
         else:
@@ -854,6 +865,7 @@ class MailIndex:
                 for reply in self.get_conversation(msg_idx=msg_idx):
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
+        eids = set()
         for msg_idx in msg_idxs:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
                 msg_info = self.get_msg_at_idx_pos(msg_idx)
@@ -863,12 +875,14 @@ class MailIndex:
                 msg_info[self.MSG_TAGS] = ','.join(list(tags))
                 self.INDEX[msg_idx] = self.m2l(msg_info)
                 self.MODIFIED.add(msg_idx)
-                pls.append(msg_info[self.MSG_MID])
-        pls.save()
+                eids.add(msg_idx)
+        if tag_id in self.TAGS:
+            self.TAGS[tag_id] |= eids
+        elif eids:
+            self.TAGS[tag_id] = eids
 
     def remove_tag(self, session, tag_id,
                    msg_info=None, msg_idxs=None, conversation=False):
-        pls = GlobalPostingList(session, '%s:tag' % tag_id)
         if msg_info and msg_idxs is None:
             msg_idxs = set([int(msg_info[self.MSG_MID], 36)])
         else:
@@ -884,7 +898,7 @@ class MailIndex:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
         session.ui.mark(_('Untagging %d messages (%s)') % (len(msg_idxs),
                                                            tag_id))
-        eids = []
+        eids = set()
         for msg_idx in msg_idxs:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
                 msg_info = self.get_msg_at_idx_pos(msg_idx)
@@ -895,14 +909,14 @@ class MailIndex:
                     msg_info[self.MSG_TAGS] = ','.join(list(tags))
                     self.INDEX[msg_idx] = self.m2l(msg_info)
                     self.MODIFIED.add(msg_idx)
-                eids.append(msg_info[self.MSG_MID])
-        pls.remove(eids)
-        pls.save()
+                eids.add(msg_idx)
+        if tag_id in self.TAGS:
+            self.TAGS[tag_id] -= eids
 
     def search_tag(self, term, hits):
         t = term.split(':', 1)
         t[1] = self.config.get_tag_id(t[1]) or t[1]
-        return hits('%s:tag' % t[1])
+        return hits('%s:in' % t[1])
 
     def search(self, session, searchterms, keywords=None, order=None):
         # Stash the raw search terms, decide if this is cached or not
@@ -920,16 +934,21 @@ class MailIndex:
                 return [int(h, 36) for h in keywords.get(term, [])]
         else:
             def hits(term):
-                session.ui.mark(_('Searching for %s') % term)
-                return [int(h, 36) for h
-                        in GlobalPostingList(session, term).hits()]
+                if term.endswith(':in'):
+                    return self.TAGS.get(term.rsplit(':', 1)[0], [])
+                else:
+                    session.ui.mark(_('Searching for %s') % term)
+                    return [int(h, 36) for h
+                            in GlobalPostingList(session, term).hits()]
 
         # Replace some GMail-compatible terms with what we really use
         if 'tags' in self.config:
             for p in ('', '+', '-'):
                 while p + 'is:unread' in searchterms:
                     where = searchterms.index(p + 'is:unread')
-                    searchterms[where] = p + 'tag:New'
+                    new = session.config.get_tags(type='unread')
+                    if new:
+                        searchterms[where] = p + 'in:%s' % new[0].slug
                 for t in [term for term in searchterms
                           if term.startswith(p + 'tag:')]:
                     where = searchterms.index(t)
@@ -1114,20 +1133,3 @@ class MailIndex:
             session.ui.mark(_('Sorted %d messages by %s') % (count, _(how)))
 
         return True
-
-    def update_tag_stats(self, session, config, update_tags=None):
-        session = session or Session(config)
-        new_tid = config.get_tag_id('new')
-        new_msgs = (new_tid and GlobalPostingList(session,
-                                                  '%s:tag' % new_tid).hits()
-                    or set([]))
-        self.STATS.update({
-            'ALL': [len(self.INDEX), len(new_msgs)]
-        })
-        for tid in (update_tags or config.tags.keys()):
-            if session:
-                session.ui.mark(_('Counting messages in tag: %s...') % tid)
-            hits = GlobalPostingList(session, '%s:tag' % tid).hits()
-            self.STATS[tid] = [len(hits), len(hits & new_msgs)]
-
-        return self.STATS

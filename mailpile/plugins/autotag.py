@@ -338,14 +338,14 @@ def filter_hook(session, msg_mid, msg, keywords):
                 if 'autotag' in config.sys.debug:
                     session.ui.debug(('Autotagging %s with %s (w=%s, i=%s)'
                                       ) % (msg_mid, at_tag.name, want, info))
-                keywords.add('%s:tag' % at_tag._key)
+                keywords.add('%s:in' % at_tag._key)
             elif at_config.unsure_tag and want is None:
                 unsure_tag = config.get_tag(at_config.unsure_tag)
                 if 'autotag' in config.sys.debug:
                     session.ui.debug(('Autotagging %s with %s (w=%s, i=%s)'
                                       ) % (msg_mid, unsure_tag.name,
                                            want, info))
-                keywords.add('%s:tag' % unsure_tag._key)
+                keywords.add('%s:in' % unsure_tag._key)
         except (KeyError, AttributeError, ValueError):
             pass
 

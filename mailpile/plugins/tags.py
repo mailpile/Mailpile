@@ -15,13 +15,6 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
     'slug': ['URL slug', 'slashslug', ''],
 
-    # Statistics
-    'stats': ['Tag stats', False, {
-        'read': ['Read message count', int, 0],
-        'unread': ['Unread message count', int, 0],
-        'all': ['Number of messages tagged with this tag', int, 0],
-    }],
-
     # Functional attributes
     'type': ['Tag type', [
         'tag', 'group', 'attribute', 'unread',
@@ -158,19 +151,15 @@ class TagCommand(Command):
                          banned=CleanText.NONDNS.replace('/', '')
                          ).clean.lower()
 
-    def finish(self, stats=True, save=True):
+    def finish(self, save=True):
         idx = self._idx()
         if save:
             # Background save makes things feel fast!
             def background():
                 if idx:
-                    if stats:
-                        idx.update_tag_stats(self.session, self.session.config)
                     idx.save_changes()
                 self.session.config.save()
             self._background('Save index', background)
-        elif stats and idx:
-            idx.update_tag_stats(self.session, self.session.config)
 
 
 class Tag(TagCommand):
@@ -193,11 +182,13 @@ class Tag(TagCommand):
             what = []
             if self.result['tagged']:
                 what.append('Tagged ' +
-                            ', '.join([k['name'] for k
+                            ', '.join(['%s=%s' % (k['name'], k._key)
+                                       for k
                                        in self.result['tagged']]))
             if self.result['untagged']:
                 what.append('Untagged ' +
-                            ', '.join([k['name'] for k
+                            ', '.join(['%s=%s' % (k['name'], k._key)
+                                       for k
                                        in self.result['untagged']]))
             return '%s (%d messages)' % (', '.join(what),
                                          len(self.result['msg_ids']))
@@ -238,7 +229,7 @@ class Tag(TagCommand):
             else:
                 self.session.ui.warning('Unknown tag: %s' % op)
 
-        self.finish(save=save, stats=True)
+        self.finish(save=save)
         return rv
 
 
@@ -286,7 +277,7 @@ class AddTag(TagCommand):
         tags = [{'name': n, 'slug': s} for (n, s) in zip(names, slugs)]
         if tags:
             config.tags.extend(tags)
-            self.finish(save=True, stats=False)
+            self.finish(save=True)
 
         return {'added': tags}
 
@@ -334,6 +325,10 @@ class ListTags(TagCommand):
         wanted.extend([t.lower() for t in self.data.get('only', [])])
         unwanted.extend([t.lower() for t in self.data.get('not', [])])
 
+        unread_messages = set()
+        for tag in self.session.config.get_tags(type='unread'):
+            unread_messages |= idx.TAGS.get(tag._key, set())
+
         for tag in self.session.config.get_tags(**search):
             if wanted and tag.slug.lower() not in wanted:
                 continue
@@ -347,10 +342,11 @@ class ListTags(TagCommand):
             for k in tag.all_keys():
                 if k not in self.HIDE_TAG_METADATA:
                     info[k] = tag[k]
+            stats_all = len(idx.TAGS.get(tid, []))
             info['stats'] = {
-                'all': int(idx.STATS.get(tid, [0, 0])[0]),
-                'new': int(idx.STATS.get(tid, [0, 0])[1]),
-                'not': len(idx.INDEX) - int(idx.STATS.get(tid, [0, 0])[0])
+                'all': stats_all,
+                'new': len(idx.TAGS.get(tid, set()) & unread_messages),
+                'not': len(idx.INDEX) - stats_all
             }
             subtags = self.session.config.get_tags(parent=tid)
             if subtags and '_recursing' not in self.data:
@@ -402,7 +398,7 @@ class DeleteTag(TagCommand):
             else:
                 self._error('No such tag %s' % tag_name)
         if result:
-            self.finish(save=True, stats=False)
+            self.finish(save=True)
         return {'removed': result}
 
 

@@ -138,7 +138,6 @@ class Command:
 
         def __do_load2():
             idx = config.get_index(session)
-            idx.update_tag_stats(session, config)
             config.vcards.load_vcards(session)
             if not wait_all:
                 session.ui.reset_marks(quiet=quiet)
@@ -449,8 +448,9 @@ class SearchResults(dict):
         })
         if 'tags' in self.session.config:
             search_tags = [idx.config.get_tag(t.split(':')[1], {})
-                           for t in session.searched if t.startswith('in:')]
-            search_tag_ids = [t._key for t in search_tags if 'stats' in t]
+                           for t in session.searched
+                           if t.startswith('in:') or t.startswith('tag:')]
+            search_tag_ids = [t._key for t in search_tags if t]
             self.update({
                 'search_tag_ids': search_tag_ids,
             })
@@ -664,7 +664,6 @@ class Rescan(Command):
                     idx.save_changes(session)
                 else:
                     idx.save(session)
-            idx.update_tag_stats(session, config)
         return {'messages': msg_count,
                 'mailboxes': mbox_count}
 
@@ -683,22 +682,6 @@ class Optimize(Command):
             return True
         except KeyboardInterrupt:
             self.session.ui.mark(_('Aborted'))
-            return False
-
-
-class UpdateStats(Command):
-    """Force statistics update"""
-    SYNOPSIS = (None, 'recount', None, None)
-    ORDER = ('Internals', 4)
-
-    def command(self):
-        session, config = self.session, self.session.config
-        idx = config.index
-        if 'tags' in config:
-            idx.update_tag_stats(session, config, config.tags.keys())
-            session.ui.mark(_("Statistics updated"))
-            return True
-        else:
             return False
 
 
@@ -1135,7 +1118,7 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, UpdateStats, RenderPage,
+    Optimize, Rescan, RunWWW, RenderPage,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     Output, Help, HelpVars, HelpSplash
 ]

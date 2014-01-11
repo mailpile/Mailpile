@@ -18,10 +18,6 @@ class TestCommands(MailPileUnittest):
         res = self.mp.optimize()
         self.assertEqual(res.as_dict()["result"], True)
 
-    def test_recount(self):
-        res = self.mp.recount()
-        self.assertEqual(res.as_dict()["result"], True)
-
     def test_set(self):
         self.mp.set("prefs.num_results=1")
         results = self.mp.search("twitter")

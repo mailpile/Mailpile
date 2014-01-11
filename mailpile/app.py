@@ -162,6 +162,8 @@ def Main(args):
     finally:
         mailpile.util.QUITTING = True
         config.stop_workers()
+        if config.index:
+            config.index.save_changes()
 
 if __name__ == "__main__":
     Main(sys.argv[1:])

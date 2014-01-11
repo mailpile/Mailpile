@@ -414,19 +414,23 @@ class UrlMap:
         '/search/?q=foo%20bar%20baz'
         >>> urlmap.url_search(['foo', 'tag:Inbox', 'wtf'], output='json')
         '/in/inbox/as.json?q=foo%20wtf'
-        >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], output='xml')
-        '/search/as.xml?q=foo%20tag%3AInbox%20tag%3ANew'
-        >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], tag='Inbox')
-        '/in/inbox/?q=foo%20tag%3ANew'
+        >>> urlmap.url_search(['foo', 'in:Inbox', 'wtf'], output='json')
+        '/in/inbox/as.json?q=foo%20wtf'
+        >>> urlmap.url_search(['foo', 'in:Inbox', 'tag:New'], output='xml')
+        '/search/as.xml?q=foo%20in%3AInbox%20tag%3ANew'
+        >>> urlmap.url_search(['foo', 'tag:Inbox', 'in:New'], tag='Inbox')
+        '/in/inbox/?q=foo%20in%3ANew'
         """
         tags = tag and [tag] or [t for t in search_terms
                                  if (t.startswith('tag:') or
                                      t.startswith('in:'))]
         if len(tags) == 1:
-            prefix = self.url_tag(tags[0].replace('tag:', ''))
+            prefix = self.url_tag(
+                tags[0].replace('tag:', '').replace('in:', ''))
             search_terms = [t for t in search_terms
                             if (t not in tags and
-                                t.replace('tag:', '') not in tags)]
+                                t.replace('tag:', '').replace('in:', '')
+                                not in tags)]
         else:
             prefix = '/search/'
         return self._url(prefix, output, 'q=' + quote(' '.join(search_terms)))
