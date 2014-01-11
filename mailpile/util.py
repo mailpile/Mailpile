@@ -295,19 +295,20 @@ def decrypt_gpg(lines, fd):
     return lines
 
 
-from symencrypt import SymmetricEncrypter
-
 def decrypt_and_parse_lines(fd, parser, config):
+    import symencrypt
     size = 0
     for line in fd:
         size += len(line)
         if line.startswith(GPG_BEGIN_MESSAGE):
             for line in decrypt_gpg([line], fd):
                 parser(line.decode('utf-8'))
-        elif line.startswith(SymmetricEncrypter.beginblock):
+        elif line.startswith(symencrypt.SymmetricEncrypter.beginblock):
             if not config:
-                raise ValueError("Symmetric decryption is not available without config.")
-            for line in SymmetricEncrypter(config.sys.secret).decrypt_fd([line], fd):
+                raise ValueError(_("Symmetric decryption is not available "
+                                   "without config."))
+            for line in symencrypt.SymmetricEncrypter(
+                    config.sys.secret).decrypt_fd([line], fd):
                 parser(line.decode('utf-8'))
         else:
             parser(line.decode('utf-8'))

@@ -117,3 +117,4 @@ class MailpileCommand(Extension):
             url = "/contact/add/" + person['address'] + "/"
 
         return url
+

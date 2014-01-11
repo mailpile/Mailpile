@@ -6,6 +6,7 @@ from subprocess import Popen, PIPE
 from datetime import datetime
 from util import sha512b64 as genkey
 
+
 class SymmetricEncrypter:
     """
     Symmetric encryption/decryption. Currently wraps OpenSSL's command line.
@@ -66,9 +67,8 @@ class SymmetricEncrypter:
             cipher = self.defaultcipher
         nonce = genkey(str(random.getrandbits(512)))[:32].strip()
         enckey = genkey(self.secret, nonce)[:32].strip()
-        params = ["enc", "-e", "-a", "-%s" % cipher, 
-                  "-pass", "stdin",
-                 ]
+        params = ["enc", "-e", "-a", "-%s" % cipher,
+                  "-pass", "stdin"]
         retval, res = self.run(params, output=data, passphrase=enckey)
         ret = "%s\ncipher: %s\nnonce: %s\n\n%s\n%s" % (
             self.beginblock, cipher, nonce, res["stdout"], self.endblock)
@@ -101,9 +101,8 @@ class SymmetricEncrypter:
             raise ValueError("Encryption nonce not known.")
 
         enckey = genkey(self.secret, nonce)[:32].strip()
-        params = ["enc", "-d", "-a", "-%s" % cipher, 
-                  "-pass", "stdin",
-                 ]
+        params = ["enc", "-d", "-a", "-%s" % cipher,
+                  "-pass", "stdin"]
         retval, res = self.run(params, output=enc, passphrase=enckey)
         return res["stdout"]
 
