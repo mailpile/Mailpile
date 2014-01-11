@@ -399,7 +399,8 @@ def cached_open(filename, mode):
         if mode == 'a':
             fd = None
             if filename in APPEND_FD_CACHE:
-                APPEND_FD_CACHE_ORDER.remove(filename)
+                while filename in APPEND_FD_CACHE_ORDER:
+                    APPEND_FD_CACHE_ORDER.remove(filename)
                 fd = APPEND_FD_CACHE[filename]
             if not fd or fd.closed:
                 if len(APPEND_FD_CACHE) > APPEND_FD_CACHE_SIZE:
@@ -413,8 +414,8 @@ def cached_open(filename, mode):
             APPEND_FD_CACHE_ORDER.append(filename)
             return fd
         else:
-            if filename in APPEND_FD_CACHE:
-                fd = APPEND_FD_CACHE[filename]
+            fd = APPEND_FD_CACHE.get(filename)
+            if fd:
                 try:
                     if 'w' in mode or '+' in mode:
                         del APPEND_FD_CACHE[filename]
