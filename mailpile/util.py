@@ -393,6 +393,7 @@ def flush_append_cache(ratio=1, count=None, lock=True):
             APPEND_FD_CACHE_LOCK.release()
 
 
+
 def cached_open(filename, mode):
     try:
         APPEND_FD_CACHE_LOCK.acquire()
@@ -408,7 +409,7 @@ def cached_open(filename, mode):
                 try:
                     fd = APPEND_FD_CACHE[filename] = open(filename, 'a')
                 except (IOError, OSError):
-                    # Too many open files?    Close a bunch and try again.
+                    # Too many open files?  Close a bunch and try again.
                     flush_append_cache(ratio=0.3, lock=False)
                     fd = APPEND_FD_CACHE[filename] = open(filename, 'a')
             APPEND_FD_CACHE_ORDER.append(filename)
@@ -425,7 +426,12 @@ def cached_open(filename, mode):
                         fd.flush()
                 except (ValueError, IOError):
                     pass
-            return open(filename, mode)
+            try:
+                return open(filename, mode)
+            except (IOError, OSError):
+                # Too many open files?  Close a bunch and try again.
+                flush_append_cache(ratio=0.3, lock=False)
+                return open(filename, mode)
     finally:
         APPEND_FD_CACHE_LOCK.release()
 
