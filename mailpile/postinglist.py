@@ -62,6 +62,7 @@ class PostingList(object):
                 if (size < (1024 * postinglist_kb - (cls.HASH_LEN * 6))):
                     session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
                     play_nice_with_threads()
+                    fd = None
                     try:
                         GLOBAL_POSTING_LOCK.acquire()
                         fd = cached_open(os.path.join(postinglist_dir,
@@ -74,7 +75,8 @@ class PostingList(object):
                         flush_append_cache()
                         raise
                     finally:
-                        fd.close()
+                        if fd:
+                            fd.close()
                         os.remove(os.path.join(postinglist_dir, fn))
                         GLOBAL_POSTING_LOCK.release()
 
@@ -222,6 +224,7 @@ class PostingList(object):
                 self.session.ui.mark('Writing %d bytes to %s' % (len(output),
                                                                  outfile))
                 if output:
+                    fd = None
                     try:
                         fd = cached_open(outfile, mode)
                         fd.write(output)
