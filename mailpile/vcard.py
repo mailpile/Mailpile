@@ -616,7 +616,7 @@ class SimpleVCard(object):
 
     random_uid = property(_random_uid)
 
-    def load(self, filename=None, data=None):
+    def load(self, filename=None, data=None, config=None):
         """
         Load VCard lines from a file on disk or data in memory.
         """
@@ -630,7 +630,7 @@ class SimpleVCard(object):
             lines = []
             decrypt_and_parse_lines(open(self.filename, 'rb'),
                                     lambda l: lines.append(l.rstrip()),
-                                    self.config)
+                                    config)
             while lines and not lines[-1]:
                 lines.pop(-1)
             lines = unwrap('\n'.join(lines)).splitlines()
@@ -740,7 +740,8 @@ class VCardStore(dict):
             prefs = self.config.prefs
             for fn in os.listdir(self.vcard_dir):
                 try:
-                    c = SimpleVCard().load(os.path.join(self.vcard_dir, fn))
+                    c = SimpleVCard().load(os.path.join(self.vcard_dir, fn),
+                                           config=(session and session.config))
                     c.gpg_recipient = lambda: prefs.get('gpg_recipient')
                     self.index_vcard(c)
                     if session:
