@@ -80,7 +80,7 @@
     <nav class="topbar-nav">
       <ul>
         <li {% if command == "message/draft" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" title="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a></li>
-        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" title="{{_("Contacts")}}"><span class="link-icon icon-groups"></span></a></li>
+        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" title="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a></li>
         <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" title="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
         <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
         <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
@@ -94,9 +94,9 @@
       <ul>
         {% for tag in mailpile("tag/list", "display=priority").result.tags %}
         {% if tag.slug == "drafts" %}
-        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-default {{ navigation_on(result.search_tags, tag.slug) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-default {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
         {% else %}
-        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tags, tag.slug) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
         {% endif %}
             <a href="{{tag.url}}" title="{{tag.all}} {{_("emails")}}" class="sidebar-tag">
               <span class="sidebar-icon icon-{{tag.slug}}"></span>
@@ -111,7 +111,7 @@
       <hr>
       <ul>
         {% for tag in mailpile("tag/list", "display=tag").result.tags %}
-        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tags, tag.slug) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
          <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag">
             <span class="sidebar-icon icon-tag"></span>
             <span class="sidebar-tag">{{tag.name}}</span>

@@ -81,10 +81,10 @@ class MailpileCommand(Extension):
             photo = '/static/img/avatar-default.png'
         return photo
 
-    def _navigation_on(self, search_tags, slug):
-        if search_tags:
-            for tag in search_tags:
-                if tag.slug == slug:
+    def _navigation_on(self, search_tag_ids, on_tid):
+        if search_tag_ids:
+            for tid in search_tag_ids:
+                if tid == on_tid:
                     return "navigation-on"
                 else:
                     return ""
