@@ -12,7 +12,12 @@
     <label>{{_("Slug")}}</label>
     <input type="text" id="data-tag-add-slug" name="slug" value="" placeholder="{{_("friends-family")}}">
 
-<!--
+    <label>{{_("Display")}}</label>
+    <select name="display">
+      <option value="tag">{{_("Tag")}}</option>
+      <option value="archive">{{_("Archive")}}</option>
+    </select>
+
     <label>{{_("Parent")}}</label>
     <select name="parent">
       <option value="">-------- {{_("none")}} --------</option>
@@ -22,7 +27,6 @@
       {% endif %}    
     {% endfor %}
     </select>
--->
 
     <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
 

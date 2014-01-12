@@ -4,13 +4,13 @@ MailPile.prototype.addtag = function(tagname) {}
 
 /* Show Tag Add Form */
 $(document).on('click', '#button-tag-add', function(e) {
-	
-  e.preventDefault();
 
+  e.preventDefault();
   $('#tags-list').hide();
+  $('#tags-archived-list').hide();
   $('#tag-add').show();
 
-  $('#sub-navigation ul li').removeClass('navigation-on');
+  $('.sub-navigation ul li').removeClass('navigation-on');
   $(this).parent().addClass('navigation-on');
 });
 

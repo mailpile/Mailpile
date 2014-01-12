@@ -4,7 +4,6 @@
 {% include("partials/sub_nav_tags.html") %}
 
 <div id="tags-list" class="clearfix">
-
   {% for tag in result.tags %}
   {% if tag.display == "tag" %}
   <div class="tag-card" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.stats.not}}">
@@ -30,22 +29,18 @@
   </div>
   {% endif %}
   {% endfor %}
-
 </div>
 
-
-<div id="archived-list" class="clearfix">
-
+<div id="tags-archived-list" class="clearfix">
   <h3 class="text-center">{{_("Archived")}}</h3>
   <hr>
-  {% for tag in  result.tags %}
+  {% for tag in result.tags %}
   {% if tag.display == "archive" %}
   <div class="tag-card" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.stats.not}}">
     {{tag.name}}
   </div>
   {% endif %}
   {% endfor %}
-
 </div>
 
 {% include("tag/add.html") %}
