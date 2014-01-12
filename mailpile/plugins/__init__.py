@@ -258,7 +258,7 @@ def register_uiclass(uiclass):
 def register_display_mode(uiclass, name, jsaction, text,
                           url="#", icon=None):
     assert(uiclass in DISPLAY_MODES)
-    if name not in [x.name for x in DISPLAY_MODES[uiclass]]:
+    if name not in [x["name"] for x in DISPLAY_MODES[uiclass]]:
         DISPLAY_MODES[uiclass].append({
             "name": name,
             "jsaction": jsaction,
@@ -271,7 +271,7 @@ def register_display_mode(uiclass, name, jsaction, text,
 def register_display_action(uiclass, name, jsaction, text,
                             url="#", icon=None):
     assert(uiclass in DISPLAY_ACTIONS)
-    if name not in [x.name for x in DISPLAY_ACTIONS[uiclass]]:
+    if name not in [x["name"] for x in DISPLAY_ACTIONS[uiclass]]:
         DISPLAY_ACTIONS[uiclass].append({
             "name": name,
             "jsaction": jsaction,
@@ -284,7 +284,7 @@ def register_display_action(uiclass, name, jsaction, text,
 def register_selection_action(uiclass, name, jsaction, text,
                               url="#", icon=None):
     assert(uiclass in SELECTION_ACTIONS)
-    if name not in [x.name for x in SELECTION_ACTIONS[uiclass]]:
+    if name not in [x["name"] for x in SELECTION_ACTIONS[uiclass]]:
         SELECTION_ACTIONS[uiclass].append({
             "name": name,
             "jsaction": jsaction,
@@ -295,7 +295,7 @@ def register_selection_action(uiclass, name, jsaction, text,
 
 
 def register_activity(name, jsaction, icon, url="#"):
-    if name not in [x.name for x in ACTIVITIES]:
+    if name not in [x["name"] for x in ACTIVITIES]:
         ACTIVITIES.append({
             "name": name,
             "jsaction": jsaction,
