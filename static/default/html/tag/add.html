@@ -1,6 +1,6 @@
 <div id="tag-add" class="content-normal hide">
 
-  <h3>{{_("Enter New Tag Info")}}</h3>
+  <h3>{{_("Add New Tag")}}</h3>
 
   <form id="form-tag-add" class="standard" method="POST">
 
@@ -11,6 +11,18 @@
 
     <label>{{_("Slug")}}</label>
     <input type="text" id="data-tag-add-slug" name="slug" value="" placeholder="{{_("friends-family")}}">
+
+<!--
+    <label>{{_("Parent")}}</label>
+    <select name="parent">
+      <option value="">-------- {{_("none")}} --------</option>
+    {% for tag in result.tags %}
+      {% if tag.display == "tag" %}
+      <option value="{{tag.tid}}">{{tag.name}}</option>
+      {% endif %}    
+    {% endfor %}
+    </select>
+-->
 
     <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
 
