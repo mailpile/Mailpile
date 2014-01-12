@@ -53,9 +53,6 @@ MailPile.prototype.results_list = function() {
 
 $(document).ready(function() {
 
-	/* Hide Various Things */
-	$('#search-params, #bulk-actions').hide();
-
 	/* Search Box */
 	$('#button-search-options').on("click", function(key) {
 		$('#search-params').slideDown('fast');
