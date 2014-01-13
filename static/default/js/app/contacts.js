@@ -1,3 +1,16 @@
+MailPile.prototype.contact = function(msgids, tags) {}
+MailPile.prototype.addcontact = function(tagname) {}
+
+/* Show Contact Add Form */
+$(document).on('click', '#button-contact-add', function(e) {
+
+  e.preventDefault();
+  $('#contacts-list').hide();
+  $('#contact-add').show();
+
+  $('.sub-navigation ul li').removeClass('navigation-on');
+  $(this).parent().addClass('navigation-on');
+});
 
 
 var contactActionSelect = function(item) {
