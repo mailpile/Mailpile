@@ -14,6 +14,7 @@
 /* Thread Title */	
 
   #thread-title {
+    width: 100%;
     text-align: center;
     padding: 10px 0 5px 0;
     background: @grayLight;
@@ -50,6 +51,11 @@
 
 /* Thread Items */
 
+  #thread-messages {
+    width: 100%;
+    overflow-y: auto;
+  }
+
   .thread-snippet {
     border-bottom: 1px solid @gray;
   }
@@ -74,6 +80,8 @@
   .thread-item-metadata {
     width: 100%;
     display: table;
+    margin: 0px;
+    padding: 0px;
   }
 
   .thread-item-from {
@@ -175,17 +183,17 @@
   }
 
   .thread-item-encryption {
-    width: 96%;
+    width: 95%;
     margin-top: 10px;
     margin-left: 20px;
     margin-bottom: 0px;
   }
 
-  .thread-item-encryption-info {  }
+  .thread-item-encryption-info { }
   .thread-item-encryption-info .icon { font-size: 14px; }
   .thread-item-encryption-info .text { font-size: 12px; font-family: Helvetica, Arial, sans-serif; font-weight: bold; text-transform: uppercase; }
 
-  .thread-item-encryption-line { width: 85%; position: relative; top: 14px; left: 10px;
+  .thread-item-encryption-line { width: 80%; position: relative; top: 14px; left: 10px;
     opacity: 0;
     transition: opacity .35s ease-in-out;
     -moz-transition: opacity .35s ease-in-out;
@@ -195,13 +203,13 @@
   .thread-item-encryption-info:hover + .thread-item-encryption-line { opacity: 1;  }
 
   .pgp-encryption-none       { color: @grayMid; }
-  .pgp-encryption-none .thread-item-encryption-line { border-bottom: 1px solid @grayMid; }
+  .pgp-encryption-none .thread-item-encryption-line { border-bottom: 2px solid @grayMid; }
   .pgp-encryption-decrypted  { color: @green; }
-  .pgp-encryption-decrypted .thread-item-encryption-line { border-bottom: 1px solid @green; }
+  .pgp-encryption-decrypted .thread-item-encryption-line { border-bottom: 2px solid @green; }
   .pgp-encryption-missingkey { color: @red; }
-  .pgp-encryption-missingkey .thread-item-encryption-line { border-bottom: 1px solid @red; }
+  .pgp-encryption-missingkey .thread-item-encryption-line { border-bottom: 2px solid @red; }
   .pgp-encryption-error      { color: @red; }
-  .pgp-encryption-error .thread-item-encryption-line { border-bottom: 1px solid @red; }
+  .pgp-encryption-error .thread-item-encryption-line { border-bottom: 2px solid @red; }
 
 
   .font-style-item-text() {

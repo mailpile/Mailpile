@@ -8,14 +8,16 @@
   <h1>{{ start_subject }}</h1>
   <ul class="horizontal">
     <li><a class="show-thread-people" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
-    <li><a class="show-thread-security" href="#"><span class="icon-unencrypted"></span> Partially Secure</a></li>
+    <li><a class="show-thread-security" href="#"><span class="icon-lock-open"></span> Partially Secure</a></li>
   </ul>
 </div>
 
 <div class="bulk-actions clearfix">
   <div class="left">{{ result.data.metadata|length }} {{_("Messages")}}</div>
   <ul class="horizontal right">
+<!-- FIXME
 	  <li><a class="bulk-action" href="#" data-action="later" title="{{_("Move Whole Thread to Later")}}"><span class="icon-later"></span></a></li>
+-->
 	  <li><a class="bulk-action" href="#" data-action="assign-tags" title="{{_("Assign Tags to Thread")}}"><span class="icon-tag"></span></a></li>
 	  <li><a class="bulk-action" href="#" data-action="archive" title="{{_("Archive Whole Thread")}}"><span class="icon-archive"></span></a></li>
 	  <li><a class="bulk-action" href="#" data-action="trash" title="{{_("Delete Whole Thread")}}"><span class="icon-trash"></span></a></li>
@@ -87,7 +89,7 @@
       {% for att in message.attachments %}
       <li>
         <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">
-        {% if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
+        {% if att.mimetype in ('image/jpg', 'image/jpeg', 'image/png', 'image/gif') %}
           <img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"><br />
         {% endif %}
           {{ att.filename }}<br />

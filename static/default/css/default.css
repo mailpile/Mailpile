@@ -5465,8 +5465,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   overflow: hidden;
   z-index: 10;
 }
-/* Opera bug #357 - Incorrect tip position
-https://github.com/Craga89/qTip2/issues/367 */
+/* Opera bug #357 - Incorrect tip position https://github.com/Craga89/qTip2/issues/367 */
 x:-o-prefocus,
 .qtip .qtip-tip {
   visibility: hidden;
@@ -6303,16 +6302,16 @@ div.content-normal {
   font-size: 12px;
   font-weight: normal;
 }
-#thread-reply {
+#compose-box {
   min-height: 225px;
   padding: 10px 15px;
   background: #f2f2f2;
 }
-#thread-reply-actions {
+#compose-box-actions {
   padding: 10px;
 }
 #reply-textarea {
-  width: 100%;
+  width: 90%;
   padding: 10px;
   border: 1px solid #cccccc;
   border-radius: 3px;
@@ -6326,7 +6325,7 @@ div.content-normal {
 #reply-options li {
   margin-left: 25px;
 }
-#thread-reply-details {
+#compose-box-details {
   display: none;
 }
 /* Compose */
@@ -6659,6 +6658,7 @@ a.compose-show-field {
 }
 /* Thread Title */
 #thread-title {
+  width: 100%;
   text-align: center;
   padding: 10px 0 5px 0;
   background: #f2f2f2;
@@ -6687,6 +6687,10 @@ a.compose-show-field {
   color: #4d4d4d;
 }
 /* Thread Items */
+#thread-messages {
+  width: 100%;
+  overflow-y: auto;
+}
 .thread-snippet {
   border-bottom: 1px solid #b3b3b3;
 }
@@ -6703,6 +6707,8 @@ a.compose-show-field {
 .thread-item-metadata {
   width: 100%;
   display: table;
+  margin: 0px;
+  padding: 0px;
 }
 .thread-item-from {
   min-width: 175px;
@@ -6789,7 +6795,7 @@ a.compose-show-field {
   display: inline-block;
 }
 .thread-item-encryption {
-  width: 96%;
+  width: 95%;
   margin-top: 10px;
   margin-left: 20px;
   margin-bottom: 0px;
@@ -6804,7 +6810,7 @@ a.compose-show-field {
   text-transform: uppercase;
 }
 .thread-item-encryption-line {
-  width: 85%;
+  width: 80%;
   position: relative;
   top: 14px;
   left: 10px;
@@ -6820,25 +6826,25 @@ a.compose-show-field {
   color: #cccccc;
 }
 .pgp-encryption-none .thread-item-encryption-line {
-  border-bottom: 1px solid #cccccc;
+  border-bottom: 2px solid #cccccc;
 }
 .pgp-encryption-decrypted {
   color: #4b7945;
 }
 .pgp-encryption-decrypted .thread-item-encryption-line {
-  border-bottom: 1px solid #4b7945;
+  border-bottom: 2px solid #4b7945;
 }
 .pgp-encryption-missingkey {
   color: #a31304;
 }
 .pgp-encryption-missingkey .thread-item-encryption-line {
-  border-bottom: 1px solid #a31304;
+  border-bottom: 2px solid #a31304;
 }
 .pgp-encryption-error {
   color: #a31304;
 }
 .pgp-encryption-error .thread-item-encryption-line {
-  border-bottom: 1px solid #a31304;
+  border-bottom: 2px solid #a31304;
 }
 .thread-item-text {
   max-width: 90%;
