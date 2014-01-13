@@ -28,6 +28,15 @@
     {% endfor %}
     </select>
 
+    <label>{{_("Template")}}</label>
+    <select name="template">
+      <option value="default">{{_("Default")}}</option>
+    </select>
+
+    <label>{{_("Search Terms")}}</label>
+    <textarea name="search_terms" placeholder="in:inbox"></textarea>
+
+
     <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
 
   </form>

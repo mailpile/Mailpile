@@ -5465,7 +5465,8 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   overflow: hidden;
   z-index: 10;
 }
-/* Opera bug #357 - Incorrect tip position https://github.com/Craga89/qTip2/issues/367 */
+/* Opera bug #357 - Incorrect tip position
+https://github.com/Craga89/qTip2/issues/367 */
 x:-o-prefocus,
 .qtip .qtip-tip {
   visibility: hidden;
@@ -6300,12 +6301,12 @@ div.content-normal {
   font-size: 12px;
   font-weight: normal;
 }
-#compose-box {
+#thread-reply {
   min-height: 225px;
   padding: 10px 15px;
   background: #f2f2f2;
 }
-#compose-box-actions {
+#thread-reply-actions {
   padding: 10px;
 }
 #reply-textarea {
@@ -6323,7 +6324,7 @@ div.content-normal {
 #reply-options li {
   margin-left: 25px;
 }
-#compose-box-details {
+#thread-reply-details {
   display: none;
 }
 /* Compose */
