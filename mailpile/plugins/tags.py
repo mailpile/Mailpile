@@ -242,7 +242,17 @@ class AddTag(TagCommand):
     HTTP_POST_VARS = {
         'name': 'tag name',
         'slug': 'tag slug',
+        # Optional initial attributes of tags
+        'icon': 'tag icon',
+        'label': 'display as label in search results, or not',
+        'label_color': 'label color',
+        'display': 'tag display type',
+        'template': 'tag template type',
+        'search_terms': 'magic search terms associated with this tag',
+        'parent': 'parent tag ID',
     }
+    OPTIONAL_VARS = ['icon', 'label', 'label_color', 'display', 'template',
+                     'search_terms', 'parent']
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
@@ -275,6 +285,11 @@ class AddTag(TagCommand):
                                                                   tag.name))
 
         tags = [{'name': n, 'slug': s} for (n, s) in zip(names, slugs)]
+        for v in self.OPTIONAL_VARS:
+            for i in range(0, len(tags)):
+                vlist = self.data.get(v, [])
+                if len(vlist) > i and vlist[i]:
+                    tags[i][v] = vlist[i]
         if tags:
             config.tags.extend(tags)
             self.finish(save=True)
