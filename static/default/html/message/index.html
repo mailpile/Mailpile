@@ -86,9 +86,9 @@
     <ul>
       {% for att in message.attachments %}
       <li>
-        <a href="/message/download/={{message.mid}}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">
+        <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">
         {% if att.mimetype in ('image/jpeg', 'image/png', 'image/gif') %}
-          <img src="/message/download/preview/={{ message.mid }}/part:{{ att.count }}/"><br />
+          <img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"><br />
         {% endif %}
           {{ att.filename }}<br />
           <small>{{ att.length|friendly_bytes }}</small>
