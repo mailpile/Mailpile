@@ -76,8 +76,7 @@
       {% elif part.type == "text" %}
       <div class="thread-item-text">{{ part.data|e|urlize }}</div>
       {% elif part.type == "quote" %}
-      <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div>
-        <div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div>
+      <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div>
       </div>
       {% endif %}
     {% endfor %}

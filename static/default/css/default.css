@@ -6098,7 +6098,6 @@ text {
 #content {
   min-width: 775px;
   margin-left: 225px;
-  box-sizing: border-box;
 }
 #content div.pile-speed {
   text-align: center;
@@ -6114,6 +6113,7 @@ text {
 }
 /* Content */
 div.content-normal {
+  position: relative;
   margin: 30px 25px;
 }
 /* Footer */
@@ -6157,15 +6157,15 @@ div.content-normal {
 }
 #sidebar li {
   margin: 5px 0px;
-  padding: 8px 10px 8px 13px;
+  padding: 7px 10px;
 }
 #sidebar.cozy li {
-  margin: 3px;
-  padding: 5px 6px 5px 8px;
+  margin: 3px 0px;
+  padding: 5px 10px;
 }
 #sidebar.snug li {
-  margin: 0px;
-  padding: 3px 4px 3px 6px;
+  margin: 0px 0px;
+  padding: 3px 10px;
 }
 #sidebar a {
   display: block;
@@ -6226,9 +6226,11 @@ div.content-normal {
 }
 #sidebar span.sidebar-notification {
   float: right;
-  padding: .6em;
+  padding: 5px;
   font-size: 11px;
+  font-weight: bold;
   line-height: 11px;
+  letter-spacing: -1px;
   color: #ffffff;
   position: absolute;
   right: 0px;
@@ -6847,6 +6849,7 @@ a.compose-show-field {
   font-size: 14px;
   line-height: 18px;
   white-space: pre-wrap;
+  color: #333333;
 }
 .thread-item-text a {
   color: #333333;
@@ -6860,6 +6863,7 @@ a.compose-show-field {
   font-size: 14px;
   line-height: 18px;
   white-space: pre-wrap;
+  color: #808080;
 }
 .thread-item-quote-show {
   display: inline-block;
