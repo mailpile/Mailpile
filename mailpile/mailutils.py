@@ -195,6 +195,15 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
 
     # Cleanup...
     sender = ExtractEmails(sender)[0]
+    try:
+        gnupg = GnuPG()
+        seckeys = dict([(x["email"], y["fingerprint"]) 
+                        for y in gnupg.list_secret_keys().values() 
+                        for x in y["uids"]])
+        senderid = seckeys[sender]
+    except:
+        senderid = None
+
     rcpts, rr = [sender], rcpts
     for r in rr:
         for e in ExtractEmails(r):
@@ -210,6 +219,9 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
 
     if 'date' not in msg:
         msg['Date'] = email.utils.formatdate()
+
+    if senderid:
+        msg["OpenPGP"] = "id=%s; preference=signencrypt" % senderid
 
     # Sign and encrypt
     signatureopt = bool(int(tree['headers_lc'].get('do_sign', 0)))
