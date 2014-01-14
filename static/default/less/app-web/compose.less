@@ -22,8 +22,9 @@
     padding: 10px;    
   }
 
-  #reply-textarea {
+  #compose-subject {
     width: 90%;
+    margin-bottom: 10px;
     padding: 10px;
     border: 1px solid @grayMid;
     border-radius: 3px;
@@ -31,17 +32,27 @@
     line-height: 18px;
   }
 
-  #reply-textarea:focus {
+  #compose-text {
+    width: 90%;
+    min-height: 54px;
+    padding: 10px;
+    border: 1px solid @grayMid;
+    border-radius: 3px;
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  #compose-subject:focus, #compose-text:focus {
     outline: none;
     border: 1px solid @gray;
   }
 
-  #reply-options li {
+  #compose-options li {
     margin-left: 25px;
   }
 
 
-  #compose-box-details {
+  #compose-details {
     display: none;
   }
 

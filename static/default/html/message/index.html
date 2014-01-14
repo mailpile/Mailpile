@@ -3,6 +3,7 @@
 {% if result %}
 {% set start_mid     = result.thread_ids[-1] %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
+{% set profiles      = mailpile('settings', 'profiles').result.profiles %}
 
 <div id="thread-title" class="clearfix">
   <h1>{{ start_subject }}</h1>
@@ -34,25 +35,18 @@
 
   <!-- FIXME: make subject line show differing subjects {{ metadata.subject|e }} -->    
   <div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}">
-
     {% set show_encryption = true %}
     {% include("partials/thread_item_metadata.html") %}
-    <!--    
-    FIXME: Here below, we need a django filter to extract the e-mail
-    addresses and iterate through multiple values in a single
-    header. We could also use metadata.to_eids, but that does
-    not differentiate between to/cc. Maybe we want an
-    intermediate header summary in the result JSON? 
-    -->
     <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
-    {% for header in ("To", "Cc", "Bcc") %}
-      {% for hdr, val in message.header_list %}
-        {% if hdr.lower() == header.lower() %}
-        {{_(header)}}
-        <a class="message-email-address" href="/contact/FIXME/"><img src="{{ show_avatar(result.data.addresses[metadata.to_aid]) }}">{{val|e}}</a>
-        {% endif %}
+    <ul>
+      {% for to_aid in metadata.to_aids %}
+      {% set person = result.data.addresses[to_aid] %}
+      <li>
+        <a href="{{ contact_url(person) }}" data-address="{{person.address}}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" data-address="{{person.address}}">{{ contact_name(profiles, person) }}</a>
+      </li>
       {% endfor %}
-    {% endfor %}
+    </ul>
     </div>
 
     {% for part in message.text_parts %}
@@ -128,7 +122,21 @@
 
   {% endif %}
   {% endfor %}{# for mid ... #}
-  </div>
+</div>
+
+<div id="thread-people">
+  <h3>{{_("People in Conversation")}}</h3>
+  <ul>
+    {% for aid in result.data.addresses %}
+    {% set person = result.data.addresses[aid] %}
+    <li>
+      <a href="{{ contact_url(person) }}"><img src="{{ show_avatar(person) }}"></a>
+      <a href="{{ contact_url(person) }}"> {{person.fn}}</a>
+      <a href=""><span class="icon-compose"></span> {{person.address}}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
 
   {% else %}
     {% set error_title = "message_missing" %}

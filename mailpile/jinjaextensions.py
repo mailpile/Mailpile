@@ -41,6 +41,8 @@ class MailpileCommand(Extension):
                             ] = self._message_encryption_status
         environment.globals['contact_url'] = self._contact_url
         environment.filters['contact_url'] = self._contact_url
+        environment.globals['contact_name'] = self._contact_name
+        environment.filters['contact_name'] = self._contact_name
 
         # See utils.py for these functions:
         environment.globals['elapsed_datetime'] = elapsed_datetime
@@ -110,11 +112,15 @@ class MailpileCommand(Extension):
         return state
 
     def _contact_url(self, person):
-
         if 'contact' in person['flags']:
             url = "/contact/" + person['address'] + "/"
         else:
             url = "/contact/add/" + person['address'] + "/"
-
         return url
 
+    def _contact_name(self, profiles, person):
+        name = person['fn']
+        for profile in profiles:
+            if profile['email'] == person['address']:
+                name = "You"
+        return name

@@ -65,6 +65,7 @@ $(document).on('click', '.pick-send-datetime', function(e) {
 
 
 /* Compose - Details */
-$(document).on('click', '#reply-show-details', function(e) {
-  $('#thread-reply-details').slideDown('fast');
+$(document).on('click', '#compose-show-details', function(e) {
+  e.preventDefault();
+  $('#compose-details').slideDown('fast');
 });
