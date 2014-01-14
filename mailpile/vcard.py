@@ -740,7 +740,7 @@ class VCardStore(dict):
         try:
             prefs = self.config.prefs
             for fn in os.listdir(self.vcard_dir):
-                if mailpile.utils.QUITTING:
+                if mailpile.util.QUITTING:
                     return
                 try:
                     c = SimpleVCard().load(os.path.join(self.vcard_dir, fn),
