@@ -39,8 +39,7 @@ from platform import system
 from smtplib import SMTP, SMTP_SSL
 from urllib import quote, unquote
 
-from mailpile.gpgi import PGPMimeParser, GnuPG
-from mailpile.gpgi import EncryptionInfo, SignatureInfo
+from mailpile.gpgi import GnuPG, EncryptionInfo, SignatureInfo
 from mailpile.mail_generator import Generator
 
 
@@ -67,11 +66,82 @@ class NoSuchMailboxError(OSError):
     pass
 
 
-def ParseMessage(fd, pgpmime=True):
-    if pgpmime:
-        message = PGPMimeParser().parse(fd)
+def UnwrapMimeCrypto(part, si=None, ei=None):
+    """
+    This method will replace encrypted and signed parts with their
+    contents and set part attributes describing the security properties
+    instead.
+    """
+    part.signature_info = si or SignatureInfo()
+    part.encryption_info = ei or EncryptionInfo()
+    mimetype = part.get_content_type()
+    if part.is_multipart():
+
+        # FIXME: Check the protocol. PGP? Something else?
+        # FIXME: This is where we add hooks for other MIME encryption
+        #        schemes, so route to callbacks by protocol.
+
+        if mimetype == 'multipart/signed':
+            gpg = GnuPG()
+            boundary = part.get_boundary()
+            payload, signature = part.get_payload()
+
+            # The Python get_payload() method likes to rewrite headers,
+            # which breaks signature verification. So we manually parse
+            # out the raw payload here.
+            head, raw_payload, junk = part.as_string(
+                ).replace('\r\n', '\n').split('\n--%s\n' % boundary, 2)
+
+            part.signature_info = gpg.verify(
+                gpg.pgpmime_normalize(raw_payload),
+                signature.get_payload())
+
+            # Reparent the contents up, removing the signature wrapper
+            part.set_payload(payload.get_payload())
+            for h in payload.keys():
+                del part[h]
+            for h, v in payload.items():
+                part.add_header(h, v)
+
+        elif mimetype == 'multipart/encrypted':
+            gpg = GnuPG()
+            preamble, payload = part.get_payload()
+            (part.signature_info, part.encryption_info, decrypted
+             ) = gpg.decrypt(payload.as_string())
+
+            if part.encryption_info['status'] == 'decrypted':
+                newpart = email.parser.Parser().parse(
+                    StringIO.StringIO(decrypted))
+
+                # Reparent the contents up, removing the encryption wrapper
+                part.set_payload(newpart.get_payload())
+                for h in newpart.keys():
+                    del part[h]
+                for h, v in newpart.items():
+                    part.add_header(h, v)
+
+        # If we are still multipart after the above shenanigans, recurse
+        # into our subparts and unwrap them too.
+        if part.is_multipart():
+            for subpart in part.get_payload():
+                UnwrapMimeCrypto(subpart,
+                                 si=part.signature_info,
+                                 ei=part.encryption_info)
+
     else:
-        message = email.parser.Parser().parse(fd)
+        # FIXME: This is where we would handle cryptoschemes that don't
+        #        appear as multipart/...
+        pass
+
+
+def ParseMessage(fd, pgpmime=True):
+    message = email.parser.Parser().parse(fd)
+    if pgpmime:
+        UnwrapMimeCrypto(message)
+    else:
+        for part in message.walk():
+            part.signature_info = SignatureInfo()
+            part.encryption_info = EncryptionInfo()
     return message
 
 
@@ -1077,7 +1147,6 @@ class Email(object):
         count = 0
         for part in msg.walk():
             mimetype = part.get_content_type()
-            print "Walking mime %s" % mimetype
             if (mimetype.startswith('multipart/')
                     or mimetype == "application/pgp-encrypted"):
                 continue
@@ -1271,7 +1340,7 @@ class Email(object):
                     pgpdata.append(part)
                     message = ''.join([p['data'] for p in pgpdata])
                     gpg = GnuPG()
-                    encryption_info, text = gpg.decrypt(message)
+                    si, encryption_info, text = gpg.decrypt(message)
                     pgpdata[1]['encryption_info'] = encryption_info
                     if encryption_info["status"] == "decrypted":
                         pgpdata[1]['data'] = text

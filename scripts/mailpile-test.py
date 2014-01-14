@@ -107,7 +107,15 @@ try:
                    ['dates:2013-09-17', 'feministinn'],
                    ['mailbox:tests.mbx'] + FROM_BRE,
                    ['att:jpg', 'fimmtudaginn'],
-                   ['subject:Moderation', 'kde-isl']):
+                   ['subject:Moderation', 'kde-isl'],
+                   ['from:bjarni', 'subject:testing', 'subject:encryption',
+                    'should', 'encrypted', 'message'],
+                   ['from:bjarni', 'subject:inline', 'subject:encryption'],
+                   ['from:bjarni', 'subject:signatures'],
+                   ['from:brennan', 'subject:signed'],
+                   ['from:brennan', 'subject:encrypted',
+                    'testing', 'purposes', 'only'],
+                   ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
         assert(results.result['stats']['count'] == 1)
@@ -115,6 +123,8 @@ try:
     say('Checking size of inbox')
     mp.order('flat-date')
     assert(mp.search('tag:inbox').result['stats']['count'] == 13)
+
+    say('FIXME: Make sure message signatures verified')
 
     # Make sure we are decoding weird headers correctly
     search_bre = mp.search(*FROM_BRE).result
