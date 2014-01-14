@@ -123,4 +123,5 @@ class MailpileCommand(Extension):
         for profile in profiles:
             if profile['email'] == person['address']:
                 name = "You"
+                break
         return name
