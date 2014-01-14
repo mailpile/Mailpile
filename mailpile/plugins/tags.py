@@ -349,6 +349,13 @@ class ListTags(TagCommand):
                 continue
             if unwanted and tag.slug.lower() in unwanted:
                 continue
+
+            # Hide invisible tags by default, any search terms at all will
+            # disable this behavior
+            if (not wanted and not unwanted and not search
+                    and tag.display == 'invisible'):
+                continue
+
             tid = tag._key
             info = {
                 'tid': tid,

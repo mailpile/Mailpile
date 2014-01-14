@@ -5,7 +5,7 @@ import mailpile.plugins
 from mailpile.plugins import __all__ as PLUGINS
 from mailpile.commands import Command
 from mailpile.util import *
-from mailpile.gpgi import GnuPG
+from mailpile.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 
 from mailpile.plugins.tags import AddTag, Filter
 
@@ -91,6 +91,18 @@ class Setup(Command):
                 AddTag(session, arg=[t]).run()
                 created.append(t)
             session.config.get_tag(t).update(self.TAGS[t])
+        for stype, statuses in (('sig', SignatureInfo.LEGAL_STATUSES),
+                                ('enc', EncryptionInfo.LEGAL_STATUSES)):
+            for status in statuses:
+                tagname = 'mp_%s-%s' % (stype, status)
+                if not session.config.get_tag_id(tagname):
+                    AddTag(session, arg=[tagname]).run()
+                    created.append(tagname)
+                session.config.get_tag(tagname).update({
+                    'type': 'attribute',
+                    'display': 'invisible',
+                    'label': False,
+                })
         if 'New' in created:
             Filter(session,
                    arg=['new', '+Inbox', '+New', 'New Mail filter']).run()

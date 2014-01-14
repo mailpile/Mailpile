@@ -110,12 +110,12 @@ try:
                    ['att:jpg', 'fimmtudaginn'],
                    ['subject:Moderation', 'kde-isl'],
                    ['from:bjarni', 'subject:testing', 'subject:encryption',
-                    'should', 'encrypted', 'message'],
+                    'should', 'encrypted', 'message', 'tag:mp_enc-decrypted'],
                    ['from:bjarni', 'subject:inline', 'subject:encryption'],
                    ['from:bjarni', 'subject:signatures'],
                    ['from:brennan', 'subject:signed'],
                    ['from:brennan', 'subject:encrypted',
-                    'testing', 'purposes', 'only'],
+                    'testing', 'purposes', 'only', 'tag:mp_enc-decrypted'],
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)

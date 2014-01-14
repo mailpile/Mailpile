@@ -13,7 +13,7 @@ import mailpile.vcard
 # These are the plugins we ship/import by default
 __all__ = [
     'search', 'tags', 'contacts', 'compose', 'groups',
-    'dates', 'sizes', 'autotag',
+    'dates', 'sizes', 'autotag', 'cryptostate',
     'setup_magic', 'networkgraph', 'exporters',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
     'hacks'
@@ -25,7 +25,7 @@ BUILTIN = (__all__[:] + [
 # These are plugins which we consider required
 REQUIRED = [
     'search', 'tags', 'contacts', 'compose', 'groups', 'setup_magic',
-    'dates', 'sizes'
+    'dates', 'sizes', 'cryptostate'
 ]
 DISCOVERED = {}
 

@@ -147,9 +147,14 @@ class EncryptionInfo(dict):
         self["have_keys"] = []
         self["missing_keys"] = []
 
+    LEGAL_STATUSES = ["none",
+                      "partial-decrypted", "decrypted",
+                      "partial-missingkey", "missingkey",
+                      "partial-error", "error"]
+
     def __setitem__(self, item, value):
         if item == "status":
-            assert(value in ["none", "decrypted", "missingkey", "error"])
+            assert(value in self.LEGAL_STATUSES)
         dict.__setitem__(self, item, value)
 
 
@@ -164,12 +169,19 @@ class SignatureInfo(dict):
         self["timestamp"] = 0
         self["trust"] = "untrusted"
 
+    LEGAL_STATUSES = ["none",
+                      "partial-invalid", "invalid",
+                      "partial-unknown", "unknown",
+                      "partial-good", "good",
+                      "partial-error", "error"]
+    LEGAL_TRUSTS = ["new", "unverified", "verified", "untrusted",
+                    "expired", "revoked"]
+
     def __setitem__(self, item, value):
         if item == "status":
-            assert(value in ["none", "invalid", "unknown", "good", "error"])
+            assert(value in self.LEGAL_STATUSES)
         elif item == "trust":
-            assert(value in ["new", "unverified", "verified", "untrusted",
-                             "expired", "revoked"])
+            assert(value in self.LEGAL_TRUSTS)
         dict.__setitem__(self, item, value)
 
 
