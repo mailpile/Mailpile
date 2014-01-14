@@ -120,17 +120,20 @@ class EncryptedFile(object):
     def __init__(self, filename, secret, mode="w"):
         self.encrypter = SymmetricEncrypter(secret)
         self.filename = filename
-        self.fd = open(fd, mode)
+        self.fd = open(filename, mode)
+        self.data = ""
 
     def write(self, data):
-        enc = self.encrypter.encrypt(data)
-        self.fd.write(enc)
+        self.data += data
 
     def read(self):
         enc = self.fd.readlines()
         data = self.encrypter.decrypt(enc)
+        return data
 
     def close(self):
+        enc = self.encrypter.encrypt(self.data)
+        self.fd.write(enc)
         self.fd.close()
 
 
