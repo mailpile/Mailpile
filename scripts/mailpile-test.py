@@ -31,7 +31,7 @@ from mailpile import Mailpile
 ##[ Black-box test script ]###################################################
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
-MY_FROM = 'test@test.com'
+MY_FROM = 'team+testing@mailpile.is'
 
 # First, we set up a pristine Mailpile
 os.system('rm -rf %s' % mailpile_home)
@@ -65,6 +65,7 @@ try:
     mp.set('profiles/0/name = Test Account')
     mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
     mp.set('sys/debug = sendmail log compose')
+    mp.set('prefs/openpgp_header = encrypt')
 
     # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
@@ -187,6 +188,8 @@ try:
     mp.message_send(mid=[new_mid], to=['nasty@test.com'])
     mp.sendmail()
     assert('thisisauniquestring' in contents(mailpile_sent))
+    assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
+    assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
 

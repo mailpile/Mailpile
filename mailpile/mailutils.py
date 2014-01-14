@@ -181,7 +181,7 @@ def MessageAsString(part, unixfrom=False):
     return buf.getvalue()
 
 
-def PrepareMail(mailobj, sender=None, rcpts=None):
+def PrepareMail(config, mailobj, sender=None, rcpts=None):
     if not sender or not rcpts:
         tree = mailobj.get_message_tree()
         sender = sender or tree['headers_lc']['from']
@@ -195,14 +195,16 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
 
     # Cleanup...
     sender = ExtractEmails(sender)[0]
-    try:
-        gnupg = GnuPG()
-        seckeys = dict([(x["email"], y["fingerprint"]) 
-                        for y in gnupg.list_secret_keys().values() 
-                        for x in y["uids"]])
-        senderid = seckeys[sender]
-    except:
-        senderid = None
+    sender_keyid = None
+    if config.prefs.openpgp_header:
+        try:
+            gnupg = GnuPG()
+            seckeys = dict([(x["email"], y["fingerprint"])
+                            for y in gnupg.list_secret_keys().values()
+                            for x in y["uids"]])
+            sender_keyid = seckeys[sender]
+        except:
+            pass
 
     rcpts, rr = [sender], rcpts
     for r in rr:
@@ -220,8 +222,9 @@ def PrepareMail(mailobj, sender=None, rcpts=None):
     if 'date' not in msg:
         msg['Date'] = email.utils.formatdate()
 
-    if senderid:
-        msg["OpenPGP"] = "id=%s; preference=signencrypt" % senderid
+    if sender_keyid and config.prefs.openpgp_header:
+        msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
+                                                   config.prefs.openpgp_header)
 
     # Sign and encrypt
     signatureopt = bool(int(tree['headers_lc'].get('do_sign', 0)))

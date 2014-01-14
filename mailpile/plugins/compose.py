@@ -406,7 +406,7 @@ class Sendit(CompositionCommand):
         for email in emails:
             try:
                 msg_mid = email.get_msg_info(idx.MSG_MID)
-                SendMail(session, [PrepareMail(email,
+                SendMail(session, [PrepareMail(config, email,
                                                rcpts=(bounce_to or None))])
                 sent.append(email)
             except:
