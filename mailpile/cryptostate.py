@@ -6,7 +6,7 @@ STATE_CONTEXT_ID = 0
 
 class CryptoInfo(dict):
     """Base class for crypto-info classes"""
-    KEYS = ["protocol", "uid", "status", "description"]
+    KEYS = ["protocol", "context", "status", "description"]
     STATUSES = ["none", "partial-error", "error"]
     DEFAULTS = {"status": "none"}
 
