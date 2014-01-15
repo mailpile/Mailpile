@@ -35,10 +35,14 @@ class MailpileCommand(Extension):
         environment.filters['navigation_on'] = self._navigation_on
         environment.globals['show_tags'] = self._show_tags
         environment.filters['show_tags'] = self._show_tags
-        environment.globals['message_encryption_status'
-                            ] = self._message_encryption_status
-        environment.filters['message_encryption_status'
-                            ] = self._message_encryption_status
+        environment.globals['message_signature_classes'
+                            ] = self._message_signature_classes
+        environment.filters['message_signature_classes'
+                            ] = self._message_signature_classes
+        environment.globals['message_encryption_classes'
+                            ] = self._message_encryption_classes
+        environment.filters['message_encryption_classes'
+                            ] = self._message_encryption_classes
         environment.globals['contact_url'] = self._contact_url
         environment.filters['contact_url'] = self._contact_url
         environment.globals['contact_name'] = self._contact_name
@@ -94,21 +98,38 @@ class MailpileCommand(Extension):
     def _show_tags(self, search_terms, tags):
         return ""
 
-    def _message_encryption_status(self, message_parts):
-        state = "unencrypted"
-        count = 0
-        for part in message_parts:
-            if 'encryption_info' in part:
-                if part["encryption_info"]['status'] == "decrypted":
-                    count += 1
-                    state = "encrypted"
-                elif part["encryption_info"]['status'] == "missingkey":
-                    count += 1
-                    state = "missingkey"
-                elif part["encryption_info"]['status'] == "error":
-                    state = "error"
-                else:
-                    count += 0
+    def _message_signature_classes(self, status):    
+        if status == "none":
+            state = "icon-signature-none"
+        elif status in ("error", "invalid", "revoked"):
+            status = "crypto-color-red icon-signature-" + status
+        elif status in ("expired", "unknown"):
+            state = "crypto-color-orange icon-signature-" + status
+        elif status == "unverified":
+            state = "crypto-color-blue icon-signature-unverified"
+        elif status == "verified":
+            state = "crypto-color-green icon-signature-verified"
+        elif status.startswith("mixed-"):
+            state = "crypto-color-blue icon-signature-unknown"
+        else:
+            state = "icon-signature-none"      
+        return state
+
+    def _message_encryption_classes(self, status):
+        if status == "none":
+            state = "icon-lock-open"
+        elif status == "decrypted":
+            state = "crypto-color-green icon-lock-closed"
+        elif status == "missingkey":
+            state = "crypto-color-red icon-lock-closed"
+        elif status == "error":
+            state = "crypto-color-red icon-lock-error"
+        elif status == "partial-decrypted":
+            state = "crypto-color-orange icon-lock-open"
+        elif status.startswith("mixed-"):
+            state = "crypto-color-orange icon-lock-open"
+        else:
+            state = "icon-lock-open"
         return state
 
     def _contact_url(self, person):
