@@ -1,7 +1,7 @@
 # Common crypto state and structure
 
 
-STATE_UID = 0
+STATE_CONTEXT_ID = 0
 
 
 class CryptoInfo(dict):
@@ -16,10 +16,10 @@ class CryptoInfo(dict):
         if partial and not self["status"].startswith("partial-"):
             self["status"] = "partial-%s" % self["status"]
 
-        global STATE_UID
-        self["uid"] = STATE_UID
-        STATE_UID += 1
-        STATE_UID %= 1000
+        global STATE_CONTEXT_ID
+        self["context"] = STATE_CONTEXT_ID
+        STATE_CONTEXT_ID += 1
+        STATE_CONTEXT_ID %= 1000
 
     def __setitem__(self, item, value):
         assert(item in self.KEYS)
