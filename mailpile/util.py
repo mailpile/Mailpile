@@ -303,10 +303,10 @@ def decrypt_and_parse_lines(fd, parser, config):
         if line.startswith(GPG_BEGIN_MESSAGE):
             for line in decrypt_gpg([line], fd):
                 parser(line.decode('utf-8'))
-        elif line.startswith(symencrypt.SymmetricEncrypter.beginblock):
-            if not config:
+        elif line.startswith(symencrypt.SymmetricEncrypter.BEGIN_DATA):
+            if not config or not config.prefs.obfuscate_index:
                 raise ValueError(_("Symmetric decryption is not available "
-                                   "without config."))
+                                   "without config and key."))
             for line in symencrypt.SymmetricEncrypter(
                     config.prefs.obfuscate_index).decrypt_fd([line], fd):
                 parser(line.decode('utf-8'))

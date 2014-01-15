@@ -11,9 +11,9 @@ class SymmetricEncrypter:
     """
     Symmetric encryption/decryption. Currently wraps OpenSSL's command line.
     """
-    beginblock = "-----BEGIN MAILPILE ENCRYPTED DATA-----"
-    endblock = "-----END MAILPILE ENCRYPTED DATA-----"
-    defaultcipher = "aes-256-gcm"
+    BEGIN_DATA = "-----BEGIN MAILPILE ENCRYPTED DATA-----"
+    END_DATA = "-----END MAILPILE ENCRYPTED DATA-----"
+    DEFAULT_CIPHER = "aes-256-gcm"
 
     def __init__(self, secret=None):
         self.available = None
@@ -64,14 +64,14 @@ class SymmetricEncrypter:
 
     def encrypt(self, data, cipher=None):
         if not cipher:
-            cipher = self.defaultcipher
+            cipher = self.DEFAULT_CIPHER
         nonce = genkey(str(random.getrandbits(512)))[:32].strip()
         enckey = genkey(self.secret, nonce)[:32].strip()
         params = ["enc", "-e", "-a", "-%s" % cipher,
                   "-pass", "stdin"]
         retval, res = self.run(params, output=data, passphrase=enckey)
         ret = "%s\ncipher: %s\nnonce: %s\n\n%s\n%s" % (
-            self.beginblock, cipher, nonce, res["stdout"], self.endblock)
+            self.BEGIN_DATA, cipher, nonce, res["stdout"], self.END_DATA)
         return ret
 
     def decrypt(self, data):
@@ -86,8 +86,8 @@ class SymmetricEncrypter:
                 raise ValueError("Not a valid OpenSSL encrypted block.")
 
         if (not head or not enc or not tail
-                or head[0] != self.beginblock
-                or tail.strip() != self.endblock):
+                or head[0] != self.BEGIN_DATA
+                or tail.strip() != self.END_DATA):
             raise ValueError("Not a valid OpenSSL encrypted block.")
 
         try:
@@ -95,21 +95,20 @@ class SymmetricEncrypter:
         except:
             raise ValueError("Message contained invalid parameter.")
 
-        cipher = headers.get('cipher', self.defaultcipher)
+        cipher = headers.get('cipher', self.DEFAULT_CIPHER)
         nonce = headers.get('nonce')
         if not nonce:
             raise ValueError("Encryption nonce not known.")
 
         enckey = genkey(self.secret, nonce)[:32].strip()
-        params = ["enc", "-d", "-a", "-%s" % cipher,
-                  "-pass", "stdin"]
+        params = ["enc", "-d", "-a", "-%s" % cipher, "-pass", "stdin"]
         retval, res = self.run(params, output=enc, passphrase=enckey)
         return res["stdout"]
 
     def decrypt_fd(self, lines, fd):
         for line in fd:
             lines.append(line)
-            if line.startswith(self.endblock):
+            if line.startswith(self.END_DATA):
                 break
 
         ret = self.decrypt("".join(lines))
@@ -127,13 +126,10 @@ class EncryptedFile(object):
         self.data += data
 
     def read(self):
-        enc = self.fd.readlines()
-        data = self.encrypter.decrypt(enc)
-        return data
+        return self.encrypter.decrypt(self.fd.read())
 
     def close(self):
-        enc = self.encrypter.encrypt(self.data)
-        self.fd.write(enc)
+        self.fd.write(self.encrypter.encrypt(self.data))
         self.fd.close()
 
 

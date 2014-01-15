@@ -962,13 +962,33 @@ class ConfigManager(ConfigDict):
         return (mailbox_id == local_mailbox_id)
 
     def load_pickle(self, pfn):
-        # FIXME: We should encrypt/decrypt our pickles.
-        return cPickle.load(open(os.path.join(self.workdir, pfn), 'r'))
+        fd = None
+        try:
+            fd = open(os.path.join(self.workdir, pfn), 'r')
+            if self.prefs.obfuscate_index:
+                lines = []
+                decrypt_and_parse_lines(fd, lambda l: lines.append(l), self)
+                return cPickle.loads(str('\n'.join(lines)))
+            else:
+                return cPickle.load(fd)
+        finally:
+            if fd:
+                fd.close()
 
     def save_pickle(self, obj, pfn):
-        # FIXME: We should encrypt/decrypt our pickles.
-        fd = open(os.path.join(self.workdir, pfn), 'wb')
-        cPickle.dump(obj, fd)
+        if self.prefs.obfuscate_index and not True:
+            # FIXME: Encryption disabled for now, openssl hangs.
+            from mailpile.symencrypt import EncryptedFile
+            fd = EncryptedFile(os.path.join(self.workdir, pfn),
+                               self.prefs.obfuscate_index,
+                               mode='wb')
+        else:
+            fd = open(os.path.join(self.workdir, pfn), 'wb')
+
+        # We deliberately use protocol 0, which is compatible with text
+        # mode file I/O. This allows the decrypt_and_parse_lines logic
+        # in load_pickle to operate without a hitch.
+        cPickle.dump(obj, fd, protocol=0)
         fd.close()
 
     def open_mailbox(self, session, mailbox_id):

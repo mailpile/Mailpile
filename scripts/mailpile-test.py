@@ -206,6 +206,8 @@ except:
 ##[ Interactive mode ]########################################################
 
 if '-i' in sys.argv:
+    mp.set('prefs/vcard/importers/gravatar/0/active = true')
+    mp.set('prefs/vcard/importers/gpg/0/active = true')
     mp.Interact()
 
 
