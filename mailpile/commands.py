@@ -355,9 +355,11 @@ class SearchResults(dict):
         # Check tags for signs of encryption or signatures
         tag_slugs = [self.idx.config.get_tag(t).slug for t in expl['tag_tids']]
         for t in tag_slugs:
-            if (not t.endswith('-none') and
-                    (t.startswith('mp_sig') or t.startswith('mp_enc'))):
-                expl['flags'][t[3:]] = True
+            if not t.endswith('-none'):
+                if t.startswith('mp_sig'):
+                    expl['flags']['signature'] = t[7:]
+                elif t.startswith('mp_enc'):
+                    expl['flags']['encryption'] = t[7:]
 
         # Extra behavior for editable messages
         if 'draft' in expl['flags']:
