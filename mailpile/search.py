@@ -705,15 +705,13 @@ class MailIndex:
 
             if textpart:
                 # FIXME: Does this lowercase non-ASCII characters correctly?
-                # FIXME: What about encrypted content?
-                # FIXME: Do this better!
-                if ('-----BEGIN PGP' in textpart and
-                        '\n-----END PGP' in textpart):
-                    keywords.append('pgp:has')
                 keywords.extend(re.findall(WORD_REGEXP, textpart.lower()))
-                for extract in plugins.get_text_kw_extractors():
-                    keywords.extend(extract(self, msg, ctype,
-                                            lambda: textpart))
+
+                # NOTE: As a side effect here, the cryptostate plugin will
+                #       add a 'crypto:has' keyword which we check for below
+                #       before performing further processing.
+                for kwe in plugins.get_text_kw_extractors():
+                    keywords.extend(kwe(self, msg, ctype, textpart))
 
                 if len(snippet) < 1024:
                     snippet += ' ' + textpart
@@ -722,7 +720,7 @@ class MailIndex:
                 keywords.extend(extract(self, msg, ctype, att, part,
                                         lambda: _loader(part)))
 
-        if 'pgp:has' in keywords:
+        if 'crypto:has' in keywords:
             e = Email(self, -1)
             e.msg_parsed = msg
             e.msg_info = self.BOGUS_METADATA[:]
@@ -738,9 +736,8 @@ class MailIndex:
             if session.config.prefs.index_encrypted:
                 for text in [t['data'] for t in tree['text_parts']]:
                     keywords.extend(re.findall(WORD_REGEXP, text.lower()))
-                    for extract in plugins.get_text_kw_extractors():
-                        keywords.extend(extract(self, msg, 'text/plain',
-                                                lambda: text))
+                    for kwe in plugins.get_text_kw_extractors():
+                        keywords.extend(kwe(self, msg, 'text/plain', text))
 
         keywords.append('%s:id' % msg_id)
         keywords.extend(re.findall(WORD_REGEXP,

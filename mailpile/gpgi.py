@@ -503,7 +503,11 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         """
         def __init__(rp):
             rp.signature_info = SignatureInfo()
+            rp.signature_info["protocol"] = "openpgp"
+
             rp.encryption_info = EncryptionInfo()
+            rp.encryption_info["protocol"] = "openpgp"
+
             rp.plaintext = ""
 
         def parse(rp, retvals):
@@ -613,7 +617,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         self.passphrase = None
 
         rp = self.ResultParser().parse(retvals)
-        rp.encryption_info["protocol"] = "openpgp"
 
         return rp.signature_info, rp.encryption_info, rp.plaintext
 

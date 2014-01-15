@@ -109,7 +109,7 @@ class SymmetricEncrypter:
     def decrypt_fd(self, lines, fd):
         for line in fd:
             lines.append(line)
-            if line.startswith(GPG_END_MESSAGE):
+            if line.startswith(self.endblock):
                 break
 
         ret = self.decrypt("".join(lines))

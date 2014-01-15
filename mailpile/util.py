@@ -308,7 +308,7 @@ def decrypt_and_parse_lines(fd, parser, config):
                 raise ValueError(_("Symmetric decryption is not available "
                                    "without config."))
             for line in symencrypt.SymmetricEncrypter(
-                    config.sys.secret).decrypt_fd([line], fd):
+                    config.prefs.obfuscate_index).decrypt_fd([line], fd):
                 parser(line.decode('utf-8'))
         else:
             parser(line.decode('utf-8'))
