@@ -112,7 +112,7 @@ try:
                    ['from:bjarni', 'subject:testing', 'subject:encryption',
                     'should', 'encrypted', 'message', 'tag:mp_enc-decrypted'],
                    ['from:bjarni', 'subject:inline', 'subject:encryption',
-                    'grand', 'tag:mp_enc-partial-decrypted'],
+                    'grand', 'tag:mp_enc-mixed-decrypted'],
                    ['from:bjarni', 'subject:signatures',
                     'tag:mp_sig-unverified'],
                    ['from:brennan', 'subject:encrypted',

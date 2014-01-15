@@ -1353,18 +1353,13 @@ class Email(object):
                         pgpdata[2]['data'] = ""
 
             # Bubbling up!
-            if si or ei and 'crypto' not in tree:
+            if (si or ei) and 'crypto' not in tree:
                 tree['crypto'] = {'signature': SignatureInfo(),
                                   'encryption': EncryptionInfo()}
             if si:
-                tc, s = tree['crypto'], 'signature'
-                if tc[s]['status'] == 'none' and si['status'] != 'none':
-                    tc[s] = SignatureInfo(copy=si, partial=True)
-                    tc[s]['status'] = 'partial-%s' % si['status']
+                tree['crypto']['signature'].mix(si)
             if ei:
-                tc, e = tree['crypto'], 'encryption'
-                if tc[e]['status'] == 'none' and ei['status'] != 'none':
-                    tc[e] = EncryptionInfo(copy=ei, partial=True)
+                tree['crypto']['encryption'].mix(ei)
 
         # Cleanup, remove empty 'crypto': {} blocks.
         for part in tree['text_parts']:
