@@ -3,7 +3,6 @@ from gettext import gettext as _
 
 import mailpile.util
 from mailpile.util import *
-from symencrypt import EncryptedFile
 
 
 class VCardLine(dict):
@@ -651,17 +650,14 @@ class SimpleVCard(object):
 
     def save(self, filename=None, gpg_recipient=None):
         filename = filename or self.filename
-        if not filename:
+        if filename:
+            gpg_recipient = gpg_recipient or self.gpg_recipient()
+            fd = gpg_open(filename, gpg_recipient, 'wb')
+            fd.write(self.as_vCard())
+            fd.close()
+            return self
+        else:
             raise ValueError('Save to what file?')
-
-        fd = EncryptedFile(filename, "w")
-        fd.write(self.as_vCard())
-        fd.close()
-        # gpg_recipient = gpg_recipient or self.gpg_recipient()
-        # fd = gpg_open(filename, gpg_recipient, 'wb')
-        # fd.write(self.as_vCard())
-        # fd.close()
-        return self
 
 
 def AddressInfo(addr, fn, vcard=None, rank=0, proto='smtp', secure=False):
