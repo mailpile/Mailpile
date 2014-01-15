@@ -49,20 +49,34 @@
     </ul>
     </div>
 
+    {% set last_enc_uid = message.crypto.encryption.uid %}
+    {% set last_sig_uid = message.crypto.signature.uid %}
     {% for part in message.text_parts %}
-      {% if (part.data != "") and (part.type == "pgptext") %}
-      <div class="thread-item-encryption text-part-{{ part.type }} pgp-encryption-{{ part.encryption_info.status }} clearfix">
+      {#
+       # Parts which do not have their own crypto attribute inherit from the
+       # message itself.
+       #}
+      {% set crypto = part.crypto or message.crypto %}
+      {#
+       # Watch for changes to the uid which is present in each encryption and
+       # signature section - if either has changed, then we have moved from
+       # one security context to the next, and need to let the user know.
+       #}
+      {% if (part.data != "") and ((crypto.encryption.uid != last_enc_uid) or (crypto.signature.uid != last_sig_uid)) %}
+      {% set last_enc_uid = crypto.encryption.uid %}
+      {% set last_sig_uid = crypto.signature.uid %}
+      <div class="thread-item-encryption text-part-{{ part.type }} pgp-encryption-{{ crypto.encryption.status }} clearfix">
         <div class="thread-item-encryption-info left" data-name="cats">
-          {% if part.encryption_info.status == "none" %}
+          {% if crypto.encryption.status in ("none", "partial-decrypted", "partial-missingkey", "partial-error") %}
           <span class="icon icon-lock-open" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span> <span class="text">Not Encrypted</span>
           {% endif %}
-          {% if part.encryption_info.status == "decrypted" %}
+          {% if crypto.encryption.status == "decrypted" %}
           <span class="icon icon-lock-open" title="{{_("Successfully decrypted message")}}"></span> <span class="text">Encrypted</span>
           {% endif %}
-          {% if part.encryption_info.status == "missingkey" %}
+          {% if crypto.encryption.status == "missingkey" %}
           <span class="icon icon-lock-error" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span> <span class="text">Missing Key</span>
           {% endif %}
-          {% if part.encryption_info.status == "error" %}
+          {% if crypto.encryption.status == "error" %}
           <span class="icon icon-lock-error" title="{{_("Failed to decrypt message")}}"></span> <span class="text">Error</span>
           {% endif %}
         </div>

@@ -11,6 +11,8 @@ from email.message import Message
 from gettext import gettext as _
 from subprocess import Popen, PIPE
 
+from mailpile.cryptostate import *
+
 
 DEFAULT_SERVER = "pool.sks-keyservers.net"
 
@@ -136,53 +138,6 @@ status_messages = {
     "SUCCESS": ["location"],
     "DECRYPTION_INFO": [],
 }
-
-
-class EncryptionInfo(dict):
-    "Contains informatin about the encryption status of a MIME part"
-    def __init__(self):
-        self["protocol"] = ""
-        self["status"] = "none"
-        self["description"] = ""
-        self["have_keys"] = []
-        self["missing_keys"] = []
-
-    LEGAL_STATUSES = ["none",
-                      "partial-decrypted", "decrypted",
-                      "partial-missingkey", "missingkey",
-                      "partial-error", "error"]
-
-    def __setitem__(self, item, value):
-        if item == "status":
-            assert(value in self.LEGAL_STATUSES)
-        dict.__setitem__(self, item, value)
-
-
-class SignatureInfo(dict):
-    "Contains informatin about the signature status of a MIME part"
-    def __init__(self):
-        self["protocol"] = ""
-        self["status"] = "none"
-        self["description"] = ""
-        self["from"] = ""
-        self["fromaddr"] = ""
-        self["timestamp"] = 0
-        self["trust"] = "untrusted"
-
-    LEGAL_STATUSES = ["none",
-                      "partial-invalid", "invalid",
-                      "partial-unknown", "unknown",
-                      "partial-good", "good",
-                      "partial-error", "error"]
-    LEGAL_TRUSTS = ["new", "unverified", "verified", "untrusted",
-                    "expired", "revoked"]
-
-    def __setitem__(self, item, value):
-        if item == "status":
-            assert(value in self.LEGAL_STATUSES)
-        elif item == "trust":
-            assert(value in self.LEGAL_TRUSTS)
-        dict.__setitem__(self, item, value)
 
 
 class GnuPG:
@@ -549,72 +504,95 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         def __init__(rp):
             rp.signature_info = SignatureInfo()
             rp.encryption_info = EncryptionInfo()
-            rp.plaintext = None
+            rp.plaintext = ""
 
         def parse(rp, retvals):
             signature_info = rp.signature_info
             encryption_info = rp.encryption_info
+            from mailpile.mailutils import ExtractEmailAndName
 
-            for line in retvals[1]["status"]:
-                if line[0] == "DECRYPTION_FAILED":
-                    encryption_info["missing_keys"] = [x[1] for x
-                                                       in retvals[1]["status"]
-                                                       if x[0] == "NO_SECKEY"]
-                    if encryption_info["missing_keys"] == []:
-                        encryption_info["status"] = "error"
-                    else:
+            # First pass, set some initial state.
+            for data in retvals[1]["status"]:
+                keyword = data[0]
+
+                if keyword == "DECRYPTION_FAILED":
+                    missing = [x[1] for x in retvals[1]["status"]
+                               if x[0] == "NO_SECKEY"]
+                    if missing:
                         encryption_info["status"] = "missingkey"
-                    rp.plaintext = ""
-                elif line[0] == "DECRYPTION_OKAY":
+                        encryption_info["missing_keys"] = missing
+                    else:
+                        encryption_info["status"] = "error"
+
+                elif keyword == "DECRYPTION_OKAY":
                     encryption_info["status"] = "decrypted"
                     rp.plaintext = retvals[1]["stdout"][0].decode("utf-8")
-                elif (line[0] == "ENC_TO"
-                        and line[1] not in encryption_info["have_keys"]):
-                    encryption_info["have_keys"].append(line[1])
-                elif line[0] == "NO_SECKEY":
-                    encryption_info["missing_keys"].append(line[1])
-                    encryption_info["have_keys"].remove(line[1])
-                elif line[0] == "GOODSIG":
-                    signature_info["status"] = "good"
-                    signature_info["name"] = " ".join(line[2:-1]
-                                                      ).decode("utf-8")
-                    signature_info["email"] = line[-1].strip("<>")
-                elif line[0] == "BADSIG":
-                    signature_info["status"] = "invalid"
-                    signature_info["name"] = " ".join(line[2:-1]
-                                                      ).decode("utf-8")
-                    signature_info["email"] = line[-1].strip("<>")
-                elif line[0] == "ERRSIG":
-                    signature_info["status"] = "error"
-                    signature_info["keyinfo"] = line[1]
-                    signature_info["timestamp"] = int(line[5])
-                elif line[0] == "EXPKEYSIG":
-                    signature_info["trust"] = "expired"
-                    signature_info["name"] = " ".join(line[2:-1]
-                                                      ).decode("utf-8")
-                    signature_info["email"] = line[-1].strip("<>")
-                elif line[0] in ["KEYEXPIRED", "SIGEXPIRED"]:
-                    signature_info["trust"] = "expired"
-                elif line[0] == "REVKEYSIG":
-                    signature_info["trust"] = "revoked"
-                    signature_info["name"] = " ".join(line[2:-1]
-                                                      ).decode("utf-8")
-                    signature_info["email"] = line[-1].strip("<>")
-                elif line[0] == "KEYREVOKED":
-                    signature_info["trust"] = "revoked"
-                elif line[0] == "VALIDSIG":
-                    # FIXME: determine trust level, between new, unverified,
+
+                elif keyword == "ENC_TO":
+                    keylist = encryption_info.get("have_keys", [])
+                    if data[0] not in keylist:
+                        keylist.append(data[1])
+                    encryption_info["have_keys"] = keylist
+
+                elif signature_info["status"] == "none":
+                    # Only one of these will ever be emitted per key, use
+                    # this to set initial state. We may end up revising
+                    # the status depending on more info later.
+                    if keyword in ("GOODSIG", "BADSIG"):
+                        email, fn = ExtractEmailAndName(
+                            " ".join(data[2:]).decode('utf-8'))
+                        signature_info["name"] = fn
+                        signature_info["email"] = email
+                        signature_info["status"] = ((keyword == "GOODSIG")
+                                                    and "unverified"
+                                                    or "invalid")
+                    elif keyword == "ERRSIG":
+                        signature_info["status"] = "error"
+                        signature_info["keyinfo"] = data[1]
+                        signature_info["timestamp"] = int(data[5])
+
+            # Second pass, this may update/mutate the state set above
+            for data in retvals[1]["status"]:
+                keyword = data[0]
+
+                if keyword == "NO_SECKEY":
+                    if "missing_keys" not in encryption_info:
+                        encryption_info["missing_keys"] = [data[1]]
+                    else:
+                        encryption_info["missing_keys"].append(data[1])
+                    try:
+                        encryption_info["have_keys"].remove(data[1])
+                    except (KeyError, ValueError):
+                        pass
+
+                elif keyword == "VALIDSIG":
+                    # FIXME: Determine trust level, between new, unverified,
                     #        verified, untrusted.
-                    # FIXME: Hardcoded to unverified for now.
-                    signature_info["status"] = "good"
-                    signature_info["trust"] = "unverified"
-                    signature_info["keyinfo"] = line[1]
-                    signature_info["timestamp"] = int(line[3])
-                elif line[0] == "NO_PUBKEY":
+                    signature_info["keyinfo"] = data[1]
+                    signature_info["timestamp"] = int(data[3])
+
+                elif keyword in ("EXPKEYSIG", "REVKEYSIG"):
+                    email, fn = ExtractEmailAndName(
+                        " ".join(data[2:]).decode('utf-8'))
+                    signature_info["name"] = fn
+                    signature_info["email"] = email
+                    signature_info["status"] = ((keyword == "EXPKEYSIG")
+                                                and "expired"
+                                                or "revoked")
+
+              # FIXME: This appears to be spammy. Is my key borked, or
+              #        is GnuPG being stupid?
+              #
+              # elif keyword == "KEYEXPIRED":  # Ignoring: SIGEXPIRED
+              #     signature_info["status"] = "expired"
+                elif keyword == "KEYREVOKED":
+                    signature_info["status"] = "revoked"
+                elif keyword == "NO_PUBKEY":
                     signature_info["status"] = "unknown"
-                    signature_info["trust"] = "untrusted"
-                elif line[0] in ["TRUST_ULTIMATE", "TRUST_FULLY"]:
-                    signature_info["trust"] = "verified"
+
+                elif keyword in ["TRUST_ULTIMATE", "TRUST_FULLY"]:
+                    if signature_info["status"] == "unverified":
+                        signature_info["status"] = "verified"
 
             return rp
 

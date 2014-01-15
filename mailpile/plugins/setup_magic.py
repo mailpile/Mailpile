@@ -91,8 +91,8 @@ class Setup(Command):
                 AddTag(session, arg=[t]).run()
                 created.append(t)
             session.config.get_tag(t).update(self.TAGS[t])
-        for stype, statuses in (('sig', SignatureInfo.LEGAL_STATUSES),
-                                ('enc', EncryptionInfo.LEGAL_STATUSES)):
+        for stype, statuses in (('sig', SignatureInfo.STATUSES),
+                                ('enc', EncryptionInfo.STATUSES)):
             for status in statuses:
                 tagname = 'mp_%s-%s' % (stype, status)
                 if not session.config.get_tag_id(tagname):

@@ -352,7 +352,12 @@ class SearchResults(dict):
             if t in tag_types:
                 expl['flags'][self.TAG_TYPE_FLAG_MAP[t]] = True
 
-        # FIXME: Is message signed or encrypted?
+        # Check tags for signs of encryption or signatures
+        tag_slugs = [self.idx.config.get_tag(t).slug for t in expl['tag_tids']]
+        for t in tag_slugs:
+            if (not t.endswith('-none') and
+                    (t.startswith('mp_sig') or t.startswith('mp_enc'))):
+                expl['flags'][t[3:]] = True
 
         # Extra behavior for editable messages
         if 'draft' in expl['flags']:
@@ -400,7 +405,7 @@ class SearchResults(dict):
         return thread
 
     WANT_MSG_TREE = ('attachments', 'html_parts', 'text_parts', 'header_list',
-                     'editing_strings', 'signature_info', 'encryption_info')
+                     'editing_strings', 'crypto')
     PRUNE_MSG_TREE = ('headers', )  # Added by editing_strings
 
     def _prune_msg_tree(self, tree):

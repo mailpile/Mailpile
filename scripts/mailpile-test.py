@@ -111,11 +111,14 @@ try:
                    ['subject:Moderation', 'kde-isl'],
                    ['from:bjarni', 'subject:testing', 'subject:encryption',
                     'should', 'encrypted', 'message', 'tag:mp_enc-decrypted'],
-                   ['from:bjarni', 'subject:inline', 'subject:encryption'],
-                   ['from:bjarni', 'subject:signatures'],
-                   ['from:brennan', 'subject:signed'],
+                   ['from:bjarni', 'subject:inline', 'subject:encryption',
+                    'grand', 'tag:mp_enc-partial-decrypted'],
+                   ['from:bjarni', 'subject:signatures',
+                    'tag:mp_sig-unverified'],
                    ['from:brennan', 'subject:encrypted',
                     'testing', 'purposes', 'only', 'tag:mp_enc-decrypted'],
+                   ['from:brennan', 'subject:signed',
+                    'tag:mp_sig-unverified'],
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)

@@ -706,14 +706,10 @@ class MailIndex:
             if textpart:
                 # FIXME: Does this lowercase non-ASCII characters correctly?
                 # FIXME: What about encrypted content?
-                # FIXME: Do this better.
+                # FIXME: Do this better!
                 if ('-----BEGIN PGP' in textpart and
-                        '-----END PGP' in textpart):
+                        '\n-----END PGP' in textpart):
                     keywords.append('pgp:has')
-                    if '-----BEGIN PGP ENCRYPTED' in textpart:
-                        keywords.append('pgp-encrypted-text:has')
-                    else:
-                        keywords.append('pgp-signed-text:has')
                 keywords.extend(re.findall(WORD_REGEXP, textpart.lower()))
                 for extract in plugins.get_text_kw_extractors():
                     keywords.extend(extract(self, msg, ctype,
@@ -726,18 +722,25 @@ class MailIndex:
                 keywords.extend(extract(self, msg, ctype, att, part,
                                         lambda: _loader(part)))
 
-        if (session.config.prefs.index_encrypted and
-                'pgp-encrypted-text:has' in keywords):
-            e = Email(None, -1)
+        if 'pgp:has' in keywords:
+            e = Email(self, -1)
             e.msg_parsed = msg
-            e.msg_info = ['' for i in range(0, self.MSG_FIELDS_V2)]
-            tree = e.get_message_tree(want=['text_parts'])
-            for text in [t['data'] for t in tree['text_parts']]:
-                print 'OOO, INLINE PGP, PARSING, WOOT'
-                keywords.extend(re.findall(WORD_REGEXP, text.lower()))
-                for extract in plugins.get_text_kw_extractors():
-                    keywords.extend(extract(self, msg, 'text/plain',
-                                            lambda: text))
+            e.msg_info = self.BOGUS_METADATA[:]
+            tree = e.get_message_tree(want=(e.WANT_MSG_TREE_PGP +
+                                            ('text_parts', )))
+
+            # Look for inline PGP parts, update our status if found
+            e.evaluate_pgp(tree, decrypt=session.config.prefs.index_encrypted)
+            msg.signature_info = tree['crypto']['signature']
+            msg.encryption_info = tree['crypto']['encryption']
+
+            # Index the contents, if configured to do so
+            if session.config.prefs.index_encrypted:
+                for text in [t['data'] for t in tree['text_parts']]:
+                    keywords.extend(re.findall(WORD_REGEXP, text.lower()))
+                    for extract in plugins.get_text_kw_extractors():
+                        keywords.extend(extract(self, msg, 'text/plain',
+                                                lambda: text))
 
         keywords.append('%s:id' % msg_id)
         keywords.extend(re.findall(WORD_REGEXP,

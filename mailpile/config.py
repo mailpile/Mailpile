@@ -955,7 +955,9 @@ class ConfigManager(ConfigDict):
         return editable
 
     def is_editable_mailbox(self, mailbox_id):
-        mailbox_id = (mailbox_id is None and -1) or int(mailbox_id, 36)
+        mailbox_id = ((mailbox_id is None and -1) or
+                      (mailbox_id == '' and -1) or
+                      int(mailbox_id, 36))
         local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'), 36)
         return (mailbox_id == local_mailbox_id)
 

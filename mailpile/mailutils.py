@@ -39,7 +39,8 @@ from platform import system
 from smtplib import SMTP, SMTP_SSL
 from urllib import quote, unquote
 
-from mailpile.gpgi import GnuPG, EncryptionInfo, SignatureInfo
+from mailpile.gpgi import GnuPG
+from mailpile.cryptostate import EncryptionInfo, SignatureInfo
 from mailpile.mail_generator import Generator
 
 
@@ -1175,16 +1176,13 @@ class Email(object):
             count += 1
             if (part.get('content-disposition', 'inline') == 'inline'
                     and mimetype in ('text/plain', 'text/html')):
-                (payload, charset, encryption_info, signature_info
-                 ) = self.decode_payload(part)
+                payload, charset = self.decode_payload(part)
 
                 if (mimetype == 'text/html'
                         or '<html>' in payload
                         or '</body>' in payload):
                     if want is None or 'html_parts' in want:
                         tree['html_parts'].append({
-                            'encryption_info': encryption_info,
-                            'signature_info': signature_info,
                             'charset': charset,
                             'type': 'html',
                             'data': ((payload.strip()
@@ -1192,8 +1190,7 @@ class Email(object):
                                      or '')
                         })
                 elif want is None or 'text_parts' in want:
-                    text_parts = self.parse_text_part(
-                        payload, charset, encryption_info, signature_info)
+                    text_parts = self.parse_text_part(payload, charset)
                     if want is None or 'text_parts' in want:
                         tree['text_parts'].extend(text_parts)
 
@@ -1213,11 +1210,13 @@ class Email(object):
             if not want or 'editing_string' in want:
                 tree['editing_string'] = self.get_editing_string(tree)
 
-        if want is None or 'encryption_info' in want:
-            tree['encryption_info'] = msg.encryption_info
-
-        if want is None or 'signature_info' in want:
-            tree['signature_info'] = msg.signature_info
+        if want is None or 'crypto' in want:
+            if 'crypto' not in tree:
+                tree['crypto'] = {'encryption': msg.encryption_info,
+                                  'signature': msg.signature_info}
+            else:
+                tree['crypto']['encryption'] = msg.encryption_info
+                tree['crypto']['signature'] = msg.signature_info
 
         return tree
 
@@ -1233,24 +1232,12 @@ class Email(object):
             except UnicodeDecodeError, e:
                 print _('Decode failed: %s %s') % (charset, e)
 
-        try:
-            encryption_info = part.encryption_info
-        except AttributeError:
-            encryption_info = EncryptionInfo()
+        return payload, charset
 
-        try:
-            signature_info = part.signature_info
-        except AttributeError:
-            signature_info = SignatureInfo()
-
-        return payload, charset, encryption_info, signature_info
-
-    def parse_text_part(self, data, charset, encryption_info, signature_info):
+    def parse_text_part(self, data, charset):
         current = {
             'type': 'bogus',
             'charset': charset,
-            'encryption_info': encryption_info,
-            'signature_info': signature_info,
         }
         parse = []
         block = 'body'
@@ -1261,8 +1248,6 @@ class Email(object):
                     'type': ltype,
                     'data': '',
                     'charset': charset,
-                    'encryption_info': encryption_info,
-                    'signature_info': signature_info,
                 }
                 parse.append(current)
             current['data'] += line
@@ -1311,7 +1296,7 @@ class Email(object):
 
         return 'body', 'text'
 
-    WANT_MSG_TREE_PGP = ('text_parts',)
+    WANT_MSG_TREE_PGP = ('text_parts', 'crypto')
     PGP_OK = {
         'pgpbeginsigned': 'pgpbeginverified',
         'pgpsignedtext': 'pgpverifiedtext',
@@ -1327,12 +1312,8 @@ class Email(object):
 
         pgpdata = []
         for part in tree['text_parts']:
-
-            # Handle signed messages
-            if 'signature_info' not in part:
-                part['signature_info'] = SignatureInfo()
-            if 'signature_info' not in tree:
-                tree['signature_info'] = SignatureInfo()
+            if 'crypto' not in part:
+                part['crypto'] = {}
 
             ei = si = None
             if check_sigs:
@@ -1346,17 +1327,13 @@ class Email(object):
                         gpg = GnuPG()
                         message = ''.join([p['data'].encode(p['charset'])
                                            for p in pgpdata])
-                        si = pgpdata[1]['signature_info'] = gpg.verify(message)
+                        si = pgpdata[1]['crypto']['signature'
+                                                  ] = gpg.verify(message)
                         pgpdata[0]['data'] = ''
                         pgpdata[2]['data'] = ''
 
                     except Exception, e:
                         print e
-
-            if "encryption_info" not in part:
-                part['encryption_info'] = EncryptionInfo()
-            if "encryption_info" not in tree:
-                tree['encryption_info'] = EncryptionInfo()
 
             if decrypt:
                 if part['type'] in ('pgpbegin', 'pgptext'):
@@ -1368,26 +1345,31 @@ class Email(object):
                     (signature_info, encryption_info, text
                      ) = gpg.decrypt(''.join([p['data'] for p in pgpdata]))
 
-                    ei = pgpdata[1]['encryption_info'] = encryption_info
-                    si = pgpdata[1]['signature_info'] = signature_info
+                    ei = pgpdata[1]['crypto']['encryption'] = encryption_info
+                    si = pgpdata[1]['crypto']['signature'] = signature_info
                     if encryption_info["status"] == "decrypted":
                         pgpdata[1]['data'] = text
                         pgpdata[0]['data'] = ""
                         pgpdata[2]['data'] = ""
 
             # Bubbling up!
+            if si or ei and 'crypto' not in tree:
+                tree['crypto'] = {'signature': SignatureInfo(),
+                                  'encryption': EncryptionInfo()}
             if si:
-                if (tree['signature_info']['status'] == 'none'
-                        and si['status'] != 'none'):
-                    tree['signature_info'] = copy.copy(si)
-                    tree['signature_info']['status'
-                        ] = 'partial-%s' % si['status']
+                tc, s = tree['crypto'], 'signature'
+                if tc[s]['status'] == 'none' and si['status'] != 'none':
+                    tc[s] = SignatureInfo(copy=si, partial=True)
+                    tc[s]['status'] = 'partial-%s' % si['status']
             if ei:
-                if (tree['encryption_info']['status'] == 'none'
-                        and ei['status'] != 'none'):
-                    tree['encryption_info'] = copy.copy(ei)
-                    tree['encryption_info']['status'
-                        ] = 'partial-%s' % ei['status']
+                tc, e = tree['crypto'], 'encryption'
+                if tc[e]['status'] == 'none' and ei['status'] != 'none':
+                    tc[e] = EncryptionInfo(copy=ei, partial=True)
+
+        # Cleanup, remove empty 'crypto': {} blocks.
+        for part in tree['text_parts']:
+            if not part['crypto']:
+                del part['crypto']
 
         return tree
 
