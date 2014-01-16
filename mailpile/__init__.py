@@ -54,13 +54,12 @@ class Mailpile(object):
     def Interact(self):
         mailpile.util.QUITTING = False
         self._session.interactive = self._session.ui.interactive = True
-        self._session.config.prepare_workers(self._session, daemons=True)
-
         try:
+            self._session.config.prepare_workers(self._session, daemons=True)
             mailpile.app.Interact(self._session)
         except KeyboardInterrupt:
             pass
-
-        mailpile.util.QUITTING = True
-        self._session.config.stop_workers()
-        self._session.interactive = self._session.ui.interactive = False
+        finally:
+            mailpile.util.QUITTING = True
+            self._session.config.stop_workers()
+            self._session.interactive = self._session.ui.interactive = False
