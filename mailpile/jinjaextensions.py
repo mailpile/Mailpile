@@ -98,39 +98,87 @@ class MailpileCommand(Extension):
     def _show_tags(self, search_terms, tags):
         return ""
 
-    def _message_signature_classes(self, status):    
+    def _message_signature_classes(self, status):
         if status == "none":
-            state = "icon-signature-none"
-        elif status in ("error", "invalid", "revoked"):
-            status = "crypto-color-red icon-signature-" + status
-        elif status in ("expired", "unknown"):
-            state = "crypto-color-orange icon-signature-" + status
+            classes = "crypto-color-gray icon-signature-none"
+            text = _("No Signature")
+            message = _("There is no signature on this message")
+        elif status == "error":
+            classes = "crypto-color-red icon-signature-" + status
+            text = _("Error")
+            message = _("There was some weird error with"
+                      "this signature")
+        elif status == "invalid":
+            classes = "crypto-color-red icon-signature-" + status
+            text = _("Invalid")
+            message = _("The signature was invalid or bad")
+        elif status == "revoked":
+            classes = "crypto-color-red icon-signature-" + status
+            text = _("Revoked")
+            message = _("Watch out, the signature was made with"
+                      "a key that has been revoked")
+        elif status == "expired":
+            classes = "crypto-color-red icon-signature-" + status
+            text = _("Expired")
+            message = _("The signature was made with an expired key")
+        elif status == "unknown":
+            classes = "crypto-color-orange icon-signature-" + status
+            text = _("Unknown")
+            message = _("the signature was made with an unknown key,"
+                      "so we can't verify it")
         elif status == "unverified":
-            state = "crypto-color-blue icon-signature-unverified"
+            classes = "crypto-color-blue icon-signature-unverified"
+            text = _("Unverified")
+            message = _("The signature was good, and came from a key"
+                      "that isn't verified")
         elif status == "verified":
-            state = "crypto-color-green icon-signature-verified"
+            classes = "crypto-color-green icon-signature-verified"
+            text = _("Verified")
+            message = _("The signature was good, and came from a"
+                      "verified key, w00t!")
         elif status.startswith("mixed-"):
-            state = "crypto-color-blue icon-signature-unknown"
+            classes = "crypto-color-blue icon-signature-unknown"
+            text = _("Mixed")
+            message = _("There was mixed signatures on this message")
         else:
-            state = "icon-signature-none"      
-        return state
+            classes = "crypto-color-gray icon-signature-none"
+            text = _("Unknown")
+            message = _("There is some unknown thing wrong with"
+                      "this encryption")
+        return classes
 
     def _message_encryption_classes(self, status):
         if status == "none":
-            state = "icon-lock-open"
+            classes = "crypto-color-gray icon-lock-open"
+            text = _("Not Encrypted")
+            message = _("This message was not encrypted."
+                      "It may have been intercepted en route to"
+                      "you and read by an"
+                      "unauthorized party.")
         elif status == "decrypted":
-            state = "crypto-color-green icon-lock-closed"
+            classes = "crypto-color-green icon-lock-closed"
+            text = _("Encrypted")
+            message = _("This was encrypted, but we successfully"
+                      "decrypted the message")
         elif status == "missingkey":
-            state = "crypto-color-red icon-lock-closed"
+            classes = "crypto-color-red icon-lock-closed"
+            text = _("Missing Key")
+            message = _("You do not have any of the private keys that will"
+                      "decrypt this message")
         elif status == "error":
-            state = "crypto-color-red icon-lock-error"
-        elif status == "partial-decrypted":
-            state = "crypto-color-orange icon-lock-open"
+            classes = "crypto-color-red icon-lock-error"
+            text = _("Error")
+            message = _("We failed to decrypt message and are unsure why")
         elif status.startswith("mixed-"):
-            state = "crypto-color-orange icon-lock-open"
+            classes = "crypto-color-orange icon-lock-open"
+            text = _("Mixed")
+            message = _("Message contains mixed types of encryption")
         else:
-            state = "icon-lock-open"
-        return state
+            classes = "crypto-color-gray icon-lock-open"
+            text = _("Unknown")
+            messaage = _("There is some unknown thing wrong with"
+                      "this encryption")
+        return classes
 
     def _contact_url(self, person):
         if 'contact' in person['flags']:
