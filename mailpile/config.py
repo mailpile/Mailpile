@@ -978,7 +978,7 @@ class ConfigManager(ConfigDict):
     def save_pickle(self, obj, pfn):
         if self.prefs.obfuscate_index and not True:
             # FIXME: Encryption disabled for now, openssl hangs.
-            from mailpile.symencrypt import EncryptedFile
+            from mailpile.crypto.symencrypt import EncryptedFile
             fd = EncryptedFile(os.path.join(self.workdir, pfn),
                                self.prefs.obfuscate_index,
                                mode='wb')

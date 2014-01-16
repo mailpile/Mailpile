@@ -4,7 +4,8 @@ import fcntl
 import random
 from subprocess import Popen, PIPE
 from datetime import datetime
-from util import sha512b64 as genkey
+
+from mailpile.util import sha512b64 as genkey
 
 
 class SymmetricEncrypter:

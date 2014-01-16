@@ -39,8 +39,8 @@ from platform import system
 from smtplib import SMTP, SMTP_SSL
 from urllib import quote, unquote
 
-from mailpile.gpgi import GnuPG
-from mailpile.cryptostate import EncryptionInfo, SignatureInfo
+from mailpile.crypto.gpgi import GnuPG
+from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.mail_generator import Generator
 
 

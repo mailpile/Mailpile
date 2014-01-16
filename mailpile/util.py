@@ -296,7 +296,7 @@ def decrypt_gpg(lines, fd):
 
 
 def decrypt_and_parse_lines(fd, parser, config):
-    import symencrypt
+    import mailpile.crypto.symencrypt as symencrypt
     size = 0
     for line in fd:
         size += len(line)

@@ -11,7 +11,7 @@ from email.message import Message
 from gettext import gettext as _
 from subprocess import Popen, PIPE
 
-from mailpile.cryptostate import *
+from mailpile.crypto.state import *
 
 
 DEFAULT_SERVER = "pool.sks-keyservers.net"

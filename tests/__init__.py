@@ -10,6 +10,7 @@ import mailpile
 from mailpile.ui import SilentInteraction
 
 # Pull in all the standard plugins, plus the demos.
+from mailpile.mailboxes import *
 from mailpile.plugins import *
 import mailpile.plugins.demos
 

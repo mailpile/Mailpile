@@ -3,7 +3,7 @@ import os
 from gettext import gettext as _
 
 import mailpile.plugins
-from mailpile.gpgi import GnuPG
+from mailpile.crypto.gpgi import GnuPG
 from mailpile.vcard import *
 
 

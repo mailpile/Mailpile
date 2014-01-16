@@ -4,8 +4,8 @@ from gettext import gettext as _
 import mailpile.plugins
 from mailpile.plugins import __all__ as PLUGINS
 from mailpile.commands import Command
+from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.util import *
-from mailpile.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 
 from mailpile.plugins.tags import AddTag, Filter
 
