@@ -882,19 +882,33 @@ class Email(object):
 
         return tree
 
-    def decode_payload(self, part):
-        charset = part.get_charset() or 'utf-8'
-        payload = part.get_payload(None, True) or ''
-        try:
-            payload = payload.decode(charset)
-        except UnicodeDecodeError:
-            try:
-                payload = payload.decode('iso-8859-1')
-                charset = 'iso-8859-1'
-            except UnicodeDecodeError, e:
-                print _('Decode failed: %s %s') % (charset, e)
+    # FIXME: This should be configurable by the user, depending on where
+    #        he lives and what kind of e-mail he gets.
+    CHARSET_PRIORITY_LIST = ['utf-8', 'iso-8859-1']
 
-        return payload, charset
+    def decode_text(self, payload, charset='utf-8', binary=True):
+        if charset:
+            charsets = [charset]
+        else:
+            charsets = self.CHARSET_PRIORITY_LIST
+
+        for charset in charsets:
+            try:
+                payload = payload.decode(charset)
+                return payload, charset
+            except UnicodeDecodeError:
+                pass
+
+        print _('Decode failed: %s %s') % (charset, e)
+        if binary:
+            return payload, '8bit'
+        else:
+            return _('[Binary data suppressed]\n'), 'utf-8'
+
+    def decode_payload(self, part):
+        charset = part.get_charset() or None
+        payload = part.get_payload(None, True) or ''
+        return self.decode_text(payload, charset=charset)
 
     def parse_text_part(self, data, charset):
         current = {
@@ -1006,6 +1020,11 @@ class Email(object):
                     gpg = GnuPG()
                     (signature_info, encryption_info, text
                      ) = gpg.decrypt(''.join([p['data'] for p in pgpdata]))
+
+                    # FIXME: If the data is binary, we should provide some
+                    #        sort of download link or maybe leave the PGP
+                    #        blob entirely intact, undecoded.
+                    text, charset = self.decode_text(text, binary=False)
 
                     ei = pgpdata[1]['crypto']['encryption'] = encryption_info
                     si = pgpdata[1]['crypto']['signature'] = signature_info

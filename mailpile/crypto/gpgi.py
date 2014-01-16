@@ -530,7 +530,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
                 elif keyword == "DECRYPTION_OKAY":
                     encryption_info["status"] = "decrypted"
-                    rp.plaintext = retvals[1]["stdout"][0].decode("utf-8")
+                    rp.plaintext = retvals[1]["stdout"][0]
 
                 elif keyword == "ENC_TO":
                     keylist = encryption_info.get("have_keys", [])
