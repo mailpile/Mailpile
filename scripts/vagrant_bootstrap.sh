@@ -6,7 +6,9 @@ AS_VAGRANT='sudo -u vagrant'
 
 echo 'Running bootstrap for Vagrant'
 echo '.. installing python libraries'
+apt-get update
 apt-get install -y python-imaging python-jinja2 python-lxml libxml2-dev libxslt1-dev
+ln -s /usr/bin/python2.7 /usr/bin/python2
 
 cd $MAILPILE_PATH
 
