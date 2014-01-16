@@ -295,23 +295,30 @@ def decrypt_gpg(lines, fd):
     return lines
 
 
-def decrypt_and_parse_lines(fd, parser, config):
+def decrypt_and_parse_lines(fd, parser, config, newlines=False):
     import mailpile.crypto.symencrypt as symencrypt
+    if not newlines:
+        _parser = lambda l: parser(l.rstrip('\r\n'))
+    else:
+        _parser = parser
     size = 0
-    for line in fd:
+    while True:
+        line = fd.readline(102400)
+        if line == '':
+            break
         size += len(line)
         if line.startswith(GPG_BEGIN_MESSAGE):
             for line in decrypt_gpg([line], fd):
-                parser(line.decode('utf-8'))
+                _parser(line.decode('utf-8'))
         elif line.startswith(symencrypt.SymmetricEncrypter.BEGIN_DATA):
             if not config or not config.prefs.obfuscate_index:
                 raise ValueError(_("Symmetric decryption is not available "
                                    "without config and key."))
             for line in symencrypt.SymmetricEncrypter(
                     config.prefs.obfuscate_index).decrypt_fd([line], fd):
-                parser(line.decode('utf-8'))
+                _parser(line.decode('utf-8'))
         else:
-            parser(line.decode('utf-8'))
+            _parser(line.decode('utf-8'))
     return size
 
 

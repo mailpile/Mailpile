@@ -967,8 +967,9 @@ class ConfigManager(ConfigDict):
             fd = open(os.path.join(self.workdir, pfn), 'r')
             if self.prefs.obfuscate_index:
                 lines = []
-                decrypt_and_parse_lines(fd, lambda l: lines.append(l), self)
-                return cPickle.loads(str('\n'.join(lines)))
+                decrypt_and_parse_lines(fd, lambda l: lines.append(l), self,
+                                        newlines=True)
+                return cPickle.loads(str(''.join(lines)))
             else:
                 return cPickle.load(fd)
         finally:
