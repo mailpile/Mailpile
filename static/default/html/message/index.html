@@ -25,69 +25,88 @@
   </ul>  
 </div>
 
+<!-- Macros (used by Jinja for repeating HTML) -->
+{% macro render_thread_metadata(metadata, from, profiles, crypto=false) -%}
+<div class="thread-item-metadata clearfix">
+  <div class="thread-item-from">
+    <a href="{{ contact_url(from) }}" class="avatar" title="{{_("From")}}"><img src="{{ show_avatar(from) }}"></a>
+    <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}">{{ contact_name(profiles, from) }}</a>
+    {% if crypto %}
+    <span class="icon {{ message_signature_classes(crypto.signature.status) }}"></span>
+    <span class="icon {{ message_encryption_classes(crypto.encryption.status) }}"></span>
+    {% else %}
+    <span class="icon {{ message_signature_classes(metadata.crypto.signature) }}"></span>
+    <span class="icon {{ message_encryption_classes(metadata.crypto.encryption) }}"></span>
+    {% endif %}
+    <span class="show-thread-message-metadata-details icon icon-circle-info"></span>
+  </div>
+  <div class="thread-item-details">
+    <a class="datetime" href="{{ metadata.urls.thread }}">{{ metadata.timestamp|friendly_datetime }} at {{ metadata.timestamp|friendly_time }}</a>
+    <span class="feedback-expand"><span class="icon-expand"></span> {{_("Expand Message")}}</span>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro render_contact_item(person, profiles) -%}
+<li class="thread-item-metadata-contact">
+  <a href="{{ contact_url(person) }}" title="{{person.address}}"><img src="{{ show_avatar(person) }}"></a>
+  <a href="{{ contact_url(person) }}" title="{{person.address}}">{{ contact_name(profiles, person) }}</a>
+</li>
+{%- endmacro %}
+
 <div id="thread-messages">
 {% for mid in result.thread_ids %}
   {% set metadata = result.data.metadata[mid] %}
   {% set message  = result.data.messages[mid] %}
-  {% set from     = result.data.addresses[metadata.from_aid] %}
   {% if mid in result.data.messages %}
   {% if not message.editing_string %}
 
-  <!-- FIXME: make subject line show differing subjects {{ metadata.subject|e }} -->    
+  <!-- FIXME: make subject line show differing subjects {{ metadata.subject|e }} -->
   <div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}">
-    {% set show_encryption = true %}
-    {% include("partials/thread_item_metadata.html") %}
+    {{ render_thread_metadata(metadata, result.data.addresses[metadata.from_aid], profiles, message.crypto) }}
     <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
-    <ul>
-      {% for to_aid in metadata.to_aids %}
-      {% set person = result.data.addresses[to_aid] %}
-      <li>
-        <a href="{{ contact_url(person) }}" data-address="{{person.address}}"><img src="{{ show_avatar(person) }}"></a>
-        <a href="{{ contact_url(person) }}" data-address="{{person.address}}">{{ contact_name(profiles, person) }}</a>
-      </li>
-      {% endfor %}
-    </ul>
+      <ul class="clearfix">
+        <li>To:</li>
+        {% for to_aid in metadata.to_aids %}
+        {{ render_contact_item(result.data.addresses[to_aid], profiles) }}
+        {% endfor %}
+      </ul>
+      <ul class="clearfix">
+      {% if metadata.cc_aids %}
+        <li>Cc:</li>
+        {% for cc_aid in metadata.cc_aids %}
+        {{ render_contact_item(result.data.addresses[cc_aid], profiles) }}
+        {% endfor %}
+      {% endif %}
+      </ul>
     </div>
 
-    {% set last_enc_uid = message.crypto.encryption.uid %}
-    {% set last_sig_uid = message.crypto.signature.uid %}
+    {% set last_enc_context = message.crypto.encryption.context %}
+    {% set last_sig_context = message.crypto.signature.context %}
     {% for part in message.text_parts %}
-      {#
-       # Parts which do not have their own crypto attribute inherit from the
-       # message itself.
-       #}
+      {# Parts that do not have own crypto attribute inherit from message itself #}
       {% set crypto = part.crypto or message.crypto %}
       {#
-       # Watch for changes to the uid which is present in each encryption and
+       # Watch for changes to the "context" which is present in each encryption and
        # signature section - if either has changed, then we have moved from
        # one security context to the next, and need to let the user know.
        #}
-      {% if (part.data != "") and ((crypto.encryption.uid != last_enc_uid) or (crypto.signature.uid != last_sig_uid)) %}
-      {% set last_enc_uid = crypto.encryption.uid %}
-      {% set last_sig_uid = crypto.signature.uid %}
-      <div class="thread-item-encryption text-part-{{ part.type }} pgp-encryption-{{ crypto.encryption.status }} clearfix">
-        <div class="thread-item-encryption-info left" data-name="cats">
-          {% if crypto.encryption.status in ("none", "partial-decrypted", "partial-missingkey", "partial-error") %}
-          <span class="icon icon-lock-open" title="{{_("Warning: This message was not encrypted. It may have been intercepted en route to you and read by an unauthorized party.")}}"></span> <span class="text">Not Encrypted</span>
-          {% endif %}
-          {% if crypto.encryption.status == "decrypted" %}
-          <span class="icon icon-lock-open" title="{{_("Successfully decrypted message")}}"></span> <span class="text">Encrypted</span>
-          {% endif %}
-          {% if crypto.encryption.status == "missingkey" %}
-          <span class="icon icon-lock-error" title="{{_("You do not have any of the private keys that will decrypt this message")}}"></span> <span class="text">Missing Key</span>
-          {% endif %}
-          {% if crypto.encryption.status == "error" %}
-          <span class="icon icon-lock-error" title="{{_("Failed to decrypt message")}}"></span> <span class="text">Error</span>
-          {% endif %}
+      {% if (part.data != "") %}
+      <div class="thread-item-crypto clearfix">
+        <div class="thread-item-crypto-info left" data-name="cats">
+          {% if crypto.encryption %}
+            <span class="icon {{ message_encryption_classes(crypto.encryption.status) }}" title=""></span> <span class="text">Not Encrypted</span>
+          {% else %}
+            No ENC
+          {% endif %}        
         </div>
-        <div class="thread-item-encryption-line left"></div>
+        <div class="thread-item-crypto-line left"></div>
       </div>
       <div class="thread-item-text">{{ part.data|e|urlize }}</div>
       {% elif part.type == "text" %}
       <div class="thread-item-text">{{ part.data|e|urlize }}</div>
       {% elif part.type == "quote" %}
-      <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div>
-      </div>
+      <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div></div>
       {% endif %}
     {% endfor %}
     </div>
@@ -125,14 +144,12 @@
     </div>
     {% include("partials/compose.html") %}
   {% endif %}
-
   {% else %}{# if not message.editing... #}
 
-    <div class="thread-snippet" data-mid="{{ mid }}">
-      {% set show_encryption = false %}
-      {% include("partials/thread_item_metadata.html") %}
-      <div class="thread-item-text">{{ metadata.body.snippet }}</div>
-    </div>
+  <div class="thread-snippet" data-mid="{{ mid }}">
+    {{ render_thread_metadata(metadata, result.data.addresses[metadata.from_aid], profiles) }}
+    <div class="thread-item-text">{{ metadata.body.snippet }}</div>
+  </div>
 
   {% endif %}
   {% endfor %}{# for mid ... #}

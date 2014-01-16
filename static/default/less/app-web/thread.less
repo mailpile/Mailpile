@@ -1,14 +1,10 @@
 /* Thread */
 
-  #thread-messages .icon-encrypted,
-  #thread-message  .icon-encrypted,
-  #thread-reply    .icon-encrypted { color: @green; }
-  #thread-messages .icon-unencrypted,
-  #thread-message  .icon-unencrypted,
-  #thread-reply    .icon-unencrypted { color: @orange; }
-  #thread-messages .icon-unencrypted,
-  #thread-message  .icon-unencrypted,
-  #thread-reply    .icon-unencrypted { color: @grayMid; }
+  .crypto-color-gray   { color: @grayMid; }
+  .crypto-color-red    { color: #be1e2d; }
+  .crypto-color-orange { color: #f7931d; }
+  .crypto-color-blue   { color: #1b75bb; }
+  .crypto-color-green  { color: #006738; }
 
 
 /* Thread Title */	
@@ -47,6 +43,7 @@
   #thread-title ul a:hover {
     color: @grayDark;
   }
+
 
 
 /* Thread Items */
@@ -104,7 +101,7 @@
   .thread-item-from a.name {
     display: block;
     margin-top: 0px;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     color: @grayDark;
     font-size: 18px;
     font-weight: bold;
@@ -113,10 +110,14 @@
 
   .thread-item-from span.icon {
     float: left;
+    margin-right: 10px;
     font-size: 14px;
-    color: @grayMid;
     cursor: pointer;
   }
+
+
+  .icon-circle-info { color: @grayMid; }
+
 
   .thread-item-details {
     width: 200px;
@@ -149,67 +150,82 @@
     font-weight: normal;
     line-height: 12px;
   }
-  
+
   .thread-item-metadata-details {
     display: none;
-    padding-bottom: 15px;
-    border-bottom: 1px solid @gray;
+    margin-bottom: 25px;
+    border-bottom: 1px solid @grayMid;
+  }
+
+  .thread-item-metadata-details ul {
+    margin: 10px 0px 15px 20px;
+  }
+
+  .thread-item-metadata-details ul li {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+    font-size: 14px;
+    font-weight: normal;   
+    line-height: 14px;
   }
   
-  
-	.message-email-address {
-	  display: inline-block;
-	  vertical-align: middle;
+  .thread-item-metadata-contact {
 	  color: @grayDark;
-	  border-radius: 3px;
-	  margin: 0 5px;
-	  padding: 0px;
-	  padding-right: 5px;
-	  font-weight: normal;
-	  background: @grayLight;
-	  border: 1px solid @grayMid;
-          max-height: 24px;
+	  display: table;
   }
-	
-	.message-email-address:hover {
+
+  .thread-item-metadata-contact a {
+    font-size: 14px;
+    line-height: 14px;
+    display: table-cell;
+    vertical-align: middle;
+    padding-right: 5px;
+  }
+
+	.thread-item-metadata-contact a:hover {
     color: @red;
   }
 
-	.message-email-address img {
-     width: 24px;
-     height: 24px;
-     margin-right: 5px;
-     display: inline-block;
+	.thread-item-metadata-contact a img {
+     width: 21px;
+     height: 21px;
+     padding-right: 5px;
   }
 
-  .thread-item-encryption {
+  .thread-item-crypto {
     width: 95%;
     margin-top: 10px;
     margin-left: 20px;
     margin-bottom: 0px;
   }
 
-  .thread-item-encryption-info { }
-  .thread-item-encryption-info .icon { font-size: 14px; }
-  .thread-item-encryption-info .text { font-size: 12px; font-family: Helvetica, Arial, sans-serif; font-weight: bold; text-transform: uppercase; }
+  .thread-item-crypto-info       {  }
+  .thread-item-crypto-info .icon { font-size: 14px; }
+  .thread-item-crypto-info .text { font-size: 12px; font-family: Helvetica, Arial, sans-serif; font-weight: bold; text-transform: uppercase; }
 
-  .thread-item-encryption-line { width: 80%; position: relative; top: 14px; left: 10px;
+  .thread-item-crypto-line { 
+    width: 80%;
+    position: relative;
+    top: 14px;
+    left: 10px;
     opacity: 0;
     transition: opacity .35s ease-in-out;
     -moz-transition: opacity .35s ease-in-out;
     -webkit-transition: opacity .35s ease-in-out;  
   }
 
-  .thread-item-encryption-info:hover + .thread-item-encryption-line { opacity: 1;  }
+  .thread-item-crypto-info:hover + .thread-item-crypto-line { opacity: 1;  }
 
   .pgp-encryption-none       { color: @grayMid; }
-  .pgp-encryption-none .thread-item-encryption-line { border-bottom: 2px solid @grayMid; }
+  .pgp-encryption-none .thread-item-crypto-line { border-bottom: 2px solid @grayMid; }
   .pgp-encryption-decrypted  { color: @green; }
-  .pgp-encryption-decrypted .thread-item-encryption-line { border-bottom: 2px solid @green; }
+  .pgp-encryption-decrypted .thread-item-crypto-line { border-bottom: 2px solid @green; }
   .pgp-encryption-missingkey { color: @red; }
-  .pgp-encryption-missingkey .thread-item-encryption-line { border-bottom: 2px solid @red; }
+  .pgp-encryption-missingkey .thread-item-crypto-line { border-bottom: 2px solid @red; }
   .pgp-encryption-error      { color: @red; }
-  .pgp-encryption-error .thread-item-encryption-line { border-bottom: 2px solid @red; }
+  .pgp-encryption-error .thread-item-crypto-line { border-bottom: 2px solid @red; }
+
 
 
   .font-style-item-text() {
@@ -233,13 +249,13 @@
     font-weight: bold;
   }
 	
-	.thread-item-quote {
-	  max-width: 90%;
+  .thread-item-quote {
+    max-width: 90%;
   	margin-left: 20px;
   	margin-bottom: 15px;
     .font-style-item-text();
     color: lighten(@black, 30%);
-	}
+   }
 	
 	.thread-item-quote-show {
 	  display: inline-block;
@@ -258,9 +274,19 @@
 	.thread-item-quote-text {
   	display: none;
 	}
-	
 
-	
+
+
+/* Thread Message Attachments */
+
 	.thread-message-attachments {
   	
 	}
+	
+
+
+/* Thread People */
+
+  #thread-people {
+    display: none;
+  }	
