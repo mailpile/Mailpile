@@ -1,2 +1,3 @@
 lxml==2.3.2
 git+https://github.com/mitsuhiko/jinja2.git#egg=Jinja2
+spambayes==1.1b1
