@@ -12,7 +12,7 @@ from urllib import quote, unquote
 
 from mailpile.commands import Rescan
 from mailpile.httpd import HttpWorker
-from mailpile.mailutils import MBX_ID_LEN, OpenMailbox, IncrementalMaildir
+from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
@@ -1026,7 +1026,7 @@ class ConfigManager(ConfigDict):
         local_id = self.sys.get('local_mailbox_id', None)
         if not local_id:
             mailbox = os.path.join(self.workdir, 'mail')
-            mbx = IncrementalMaildir(mailbox)
+            mbx = maildir.MailpileMailbox(mailbox)
             local_id = self.sys.mailbox.append(mailbox)
             local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
             self.sys.local_mailbox_id = local_id

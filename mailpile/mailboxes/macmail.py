@@ -6,6 +6,9 @@ import rfc822
 import time
 import errno
 
+import mailpile.mailboxes
+from mailpile.mailboxes import UnorderedPicklable
+
 
 class _MacMaildirPartialFile(mailbox._PartialFile):
     def __init__(self, fd):
@@ -121,3 +124,16 @@ class MacMaildir(mailbox.Mailbox):
     def get_file(self, key):
         f = open(os.path.join(self._mailroot, self._lookup(key)), 'r')
         return _MacMaildirPartialFile(f)
+
+
+class MailpileMailbox(UnorderedPicklable(MacMaildir)):
+    """A Mac Mail.app maildir class that supports pickling etc."""
+    @classmethod
+    def parse_path(cls, fn):
+        if (os.path.isdir(fn)
+                and os.path.exists(os.path.join(fn, 'Info.plist'))):
+            return (fn, )
+        raise ValueError('Not a Mac Mail.app Maildir: %s' % fn)
+
+
+mailpile.mailboxes.register(50, MailpileMailbox)

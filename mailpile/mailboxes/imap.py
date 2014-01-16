@@ -6,6 +6,9 @@ except ImportError:
 from imaplib import IMAP4, IMAP4_SSL
 from mailbox import Mailbox, Message
 
+import mailpile.mailboxes
+from mailpile.mailboxes import UnorderedPicklable
+
 
 class IMAPMailbox(Mailbox):
     """
@@ -101,3 +104,36 @@ class IMAPMailbox(Mailbox):
 
     # Whether each message must end in a newline
     _append_newline = False
+
+
+class MailpileMailbox(UnorderedPicklable(IMAPMailbox)):
+    @classmethod
+    def parse_path(cls, path):
+        if path.startswith("imap://"):
+            url = path[7:]
+            try:
+                serverpart, mailbox = url.split("/")
+            except ValueError:
+                serverpart = url
+                mailbox = None
+            userpart, server = serverpart.split("@")
+            user, password = userpart.split(":")
+            # WARNING: Order must match IMAPMailbox.__init__(...)
+            return (server, 993, user, password)
+        raise ValueError('Not an IMAP url: %s' % path)
+
+    def __getstate__(self):
+        odict = self.__dict__.copy()
+        # Pickle can't handle file and function objects.
+        del odict['_mailbox']
+        del odict['_save_to']
+        return odict
+
+    def get_msg_size(self, toc_id):
+        # FIXME: We should make this less horrible.
+        fd = self.get_file(toc_id)
+        fd.seek(0, 2)
+        return fd.tell()
+
+
+mailpile.mailboxes.register(10, MailpileMailbox)

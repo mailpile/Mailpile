@@ -12,8 +12,9 @@ from gettext import gettext as _
 
 import mailpile.util
 import mailpile.ui
+from mailpile.mailboxes import IsMailbox
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
-from mailpile.mailutils import NotEditableError, IsMailbox
+from mailpile.mailutils import NotEditableError
 from mailpile.mailutils import Email, NoFromAddressError, PrepareMail, SendMail
 from mailpile.postinglist import GlobalPostingList
 from mailpile.search import MailIndex

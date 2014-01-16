@@ -42,6 +42,7 @@ import mailpile.defaults
 from mailpile.commands import COMMANDS, Action, Help, HelpSplash, Load, Rescan
 from mailpile.config import ConfigManager, getLocaleDirectory
 from mailpile.vcard import SimpleVCard
+from mailpile.mailboxes import *
 from mailpile.mailutils import *
 from mailpile.httpd import *
 from mailpile.search import *
