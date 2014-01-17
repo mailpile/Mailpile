@@ -747,12 +747,16 @@ class Email(object):
                     attributes['thumb'] = True
                     attributes['mimetype'] = 'image/jpeg'
                     attributes['disposition'] = 'inline'
-                    filename, fd = session.ui.open_for_data(
-                        name_fmt=name_fmt, attributes=attributes)
-                    if thumbnail(payload, fd, height=250):
+                    thumb = StringIO.StringIO()
+                    if thumbnail(payload, thumb, height=250):
                         session.ui.notify(_('Wrote preview to: %s') % filename)
+                        attributes['length'] = thumb.tell()
                     else:
                         session.ui.notify(_('Failed to generate thumbnail'))
+                    filename, fd = session.ui.open_for_data(
+                        name_fmt=name_fmt, attributes=attributes)
+                    thumb.seek(0)
+                    fd.write(thumb.read())
                     fd.close()
                 else:
                     filename, fd = session.ui.open_for_data(
