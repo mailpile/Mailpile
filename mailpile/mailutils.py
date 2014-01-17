@@ -216,7 +216,7 @@ def PrepareMail(config, mailobj, sender=None, rcpts=None):
     msg = copy.deepcopy(mailobj.get_msg())
 
     # Remove headers we don't want to expose
-    for bcc in ('bcc', 'Bcc', 'BCc', 'BCC'):
+    for bcc in ('bcc', 'Bcc', 'BCc', 'BCC', 'BcC', 'bcC'):
         if bcc in msg:
             del msg[bcc]
 
@@ -521,7 +521,8 @@ class Email(object):
                                      for t in tree['text_parts']])
         return strings
 
-    def get_editing_string(self, tree):
+    def get_editing_string(self, tree=None):
+        tree = tree or self.get_message_tree()
         estrings = self.get_editing_strings(tree)
         bits = [estrings['headers']]
         for mh in self.MANDATORY_HEADERS:

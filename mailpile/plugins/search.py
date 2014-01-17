@@ -166,16 +166,9 @@ class View(Search):
         def as_html(self, *args, **kwargs):
             return '<pre>%s</pre>' % escape_html(self._decode())
 
-    def command(self):
+    def _side_effects(self, emails):
         session, config, idx = self.session, self.session.config, self._idx()
-        results = []
-        if self.args and self.args[0].lower() == 'raw':
-            raw = self.args.pop(0)
-        else:
-            raw = False
-        emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
         msg_idxs = [e.msg_idx_pos for e in emails]
-
         if 'tags' in config:
             for tag in config.get_tags(type='unread'):
                 idx.remove_tag(session, tag._key, msg_idxs=msg_idxs)
@@ -184,6 +177,21 @@ class View(Search):
 
         idx.apply_filters(session, '@read',
                           msg_idxs=[e.msg_idx_pos for e in emails])
+        return None
+
+    def command(self):
+        session, config, idx = self.session, self.session.config, self._idx()
+        results = []
+        if self.args and self.args[0].lower() == 'raw':
+            raw = self.args.pop(0)
+        else:
+            raw = False
+        emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
+
+        rv = self._side_effects(emails)
+        if rv != None:
+            # This is here so derived classes can do funky things.
+            return rv
 
         for email in emails:
             if raw:

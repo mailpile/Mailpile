@@ -14,6 +14,7 @@ import os
 import random
 import re
 import sys
+import tempfile
 import traceback
 import json
 from collections import defaultdict
@@ -331,7 +332,26 @@ class UserInteraction:
                                            '%.4096s' % alldata)])
 
     def edit_messages(self, emails):
-        self.error(_('Sorry, this UI cannot edit messages.'))
+        sep = '-' * 79 + '\n'
+        edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
+
+        tf = tempfile.NamedTemporaryFile()
+        tf.write(edit_this)
+        tf.flush()
+        os.system('%s %s' % (os.getenv('VISUAL', default='vi'), tf.name))
+        tf.seek(0, 0)
+        edited = tf.read()
+        tf.close()
+
+        if edited == edit_this:
+            return False
+
+        updates = [t.strip() for t in edited.split(sep)]
+        if len(updates) != len(emails):
+            raise ValueError(_('Number of edit messages does not match!'))
+        for i in range(0, len(updates)):
+            emails[i].update_from_string(updates[i])
+        return True
 
 
 class HttpUserInteraction(UserInteraction):
@@ -387,7 +407,7 @@ class HttpUserInteraction(UserInteraction):
             return ('text/plain', self._render_text_response(config))
 
     def edit_messages(self, emails):
-        pass
+        return False
 
     def print_filters(self, args):
         print args
@@ -398,6 +418,9 @@ class BackgroundInteraction(UserInteraction):
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
         self._debug_log(text, level, prefix='bg/')
 
+    def edit_messages(self, emails):
+        return False
+
 
 class SilentInteraction(UserInteraction):
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
@@ -407,7 +430,7 @@ class SilentInteraction(UserInteraction):
         return result
 
     def edit_messages(self, emails):
-        pass
+        return False
 
 
 class RawHttpResponder:

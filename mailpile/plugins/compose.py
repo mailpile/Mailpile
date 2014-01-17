@@ -27,7 +27,51 @@ class EditableSearchResults(SearchResults):
             self['sent'] = [m.msg_mid() for m in new]
 
 
-class CompositionCommand(Search):
+def AddComposeMethods(cls):
+    class newcls(cls):
+        def _tag_emails(self, emails, tag):
+            try:
+                idx = self._idx()
+                idx.add_tag(self.session,
+                            self.session.config.get_tag_id(tag),
+                            msg_idxs=[e.msg_idx_pos for e in emails],
+                            conversation=False)
+            except (TypeError, ValueError, IndexError):
+                self._ignore_exception()
+
+        def _untag_emails(self, emails, tag):
+            try:
+                idx = self._idx()
+                idx.remove_tag(self.session,
+                               self.session.config.get_tag_id(tag),
+                               msg_idxs=[e.msg_idx_pos for e in emails],
+                               conversation=False)
+            except (TypeError, ValueError, IndexError):
+                self._ignore_exception()
+
+        def _tagger(self, emails, untag, **kwargs):
+            tag = self.session.config.get_tags(**kwargs)
+            if tag and untag:
+                return self._untag_emails(emails, tag[0]._key)
+            elif tag:
+                return self._tag_emails(emails, tag[0]._key)
+
+        def _tag_blank(self, emails, untag=False):
+            return self._tagger(emails, untag, type='blank')
+
+        def _tag_drafts(self, emails, untag=False):
+            return self._tagger(emails, untag, type='drafts')
+
+        def _tag_outbox(self, emails, untag=False):
+            return self._tagger(emails, untag, type='outbox')
+
+        def _tag_sent(self, emails, untag=False):
+            return self._tagger(emails, untag, type='sent')
+
+    return newcls
+
+
+class CompositionCommand(AddComposeMethods(Search)):
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {}
     UPDATE_STRING_DATA = {
@@ -39,45 +83,6 @@ class CompositionCommand(Search):
         'bcc': '..',
         'body': '..',
     }
-
-    def _tag_emails(self, emails, tag):
-        try:
-            idx = self._idx()
-            idx.add_tag(self.session,
-                        self.session.config.get_tag_id(tag),
-                        msg_idxs=[e.msg_idx_pos for e in emails],
-                        conversation=False)
-        except (TypeError, ValueError, IndexError):
-            self._ignore_exception()
-
-    def _untag_emails(self, emails, tag):
-        try:
-            idx = self._idx()
-            idx.remove_tag(self.session,
-                           self.session.config.get_tag_id(tag),
-                           msg_idxs=[e.msg_idx_pos for e in emails],
-                           conversation=False)
-        except (TypeError, ValueError, IndexError):
-            self._ignore_exception()
-
-    def _tagger(self, emails, untag, **kwargs):
-        tag = self.session.config.get_tags(**kwargs)
-        if tag and untag:
-            return self._untag_emails(emails, tag[0]._key)
-        elif tag:
-            return self._tag_emails(emails, tag[0]._key)
-
-    def _tag_blank(self, emails, untag=False):
-        return self._tagger(emails, untag, type='blank')
-
-    def _tag_drafts(self, emails, untag=False):
-        return self._tagger(emails, untag, type='drafts')
-
-    def _tag_outbox(self, emails, untag=False):
-        return self._tagger(emails, untag, type='outbox')
-
-    def _tag_sent(self, emails, untag=False):
-        return self._tagger(emails, untag, type='sent')
 
     UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc')
 
@@ -141,22 +146,26 @@ class CompositionCommand(Search):
                                                   emails=expand)
         return session.displayed
 
-    def _edit_messages(self, emails, new=True):
+    def _edit_messages(self, emails, new=True, tag=True):
         session, idx = self.session, self._idx()
-        session.ui.edit_messages(emails)
-        if new:
-            session.ui.mark('%d message(s) created as drafts' % len(emails))
-        else:
+        if session.ui.edit_messages(emails) or not new:
+            if tag:
+                self._tag_blank(emails, untag=True)
+                self._tag_drafts(emails)
             session.ui.mark('%d message(s) edited' % len(emails))
+        else:
+            if tag:
+                self._tag_blank(emails)
+            session.ui.mark('%d message(s) created' % len(emails))
         idx.save()
         return self._return_search_results(emails,
                                            expand=emails,
                                            new=(new and emails))
 
 
-class Draft(View):
+class Draft(AddComposeMethods(View)):
     """Edit an existing draft"""
-    SYNOPSIS = ('D', 'draft', 'message/draft', '[<messages>]')
+    SYNOPSIS = ('E', 'edit', 'message/draft', '[<messages>]')
     ORDER = ('Composing', 0)
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID'
@@ -164,6 +173,22 @@ class Draft(View):
 
     # FIXME: This command should raise an error if the message being
     #        displayed is not editable.
+
+    def _side_effects(self, emails):
+        session, idx = self.session, self._idx()
+        try:
+            if session.ui.edit_messages(emails):
+                self._tag_blank(emails, untag=True)
+                self._tag_drafts(emails)
+                idx.save()
+                session.ui.mark('%d message(s) edited' % len(emails))
+            else:
+                session.ui.mark('%d message(s) unchanged' % len(emails))
+        except:
+            # FIXME: Shutup
+            import traceback
+            traceback.print_exc()
+        return None
 
 
 class Compose(CompositionCommand):
@@ -181,7 +206,6 @@ class Compose(CompositionCommand):
         local_id, lmbox = session.config.open_local_mailbox(session)
         emails = [Email.Create(idx, local_id, lmbox)]
 
-        self._tag_blank(emails)
         for email in emails:
             email_updates = self._get_email_updates(idx, [email])
             update_string = email_updates and email_updates[0][1]
@@ -242,7 +266,6 @@ class Reply(RelativeCompose):
                                      msg_to=msg_to,
                                      msg_cc=[r for r in msg_cc if r],
                                      msg_references=[i for i in ref_ids if i])
-                self._tag_blank([email])
 
             except NoFromAddressError:
                 return self._error('You must configure a From address first.')
@@ -314,7 +337,6 @@ class Forward(RelativeCompose):
                     idx.add_tag(session, tag._key,
                                 msg_idxs=[m.msg_idx_pos for m in refs])
 
-            self._tag_blank([email])
             return self._edit_messages([email])
         else:
             return self._error('No message found')
@@ -461,7 +483,7 @@ class Update(CompositionCommand):
             if outbox:
                 return self._return_search_results(emails, sent=emails)
             else:
-                return self._edit_messages(emails, new=False)
+                return self._edit_messages(emails, new=False, tag=False)
         else:
             return self._error('Nothing to do!')
 
