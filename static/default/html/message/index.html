@@ -71,42 +71,59 @@
         {{ render_contact_item(result.data.addresses[to_aid], profiles) }}
         {% endfor %}
       </ul>
-      <ul class="clearfix">
       {% if metadata.cc_aids %}
+      <ul class="clearfix">
         <li>Cc:</li>
         {% for cc_aid in metadata.cc_aids %}
         {{ render_contact_item(result.data.addresses[cc_aid], profiles) }}
         {% endfor %}
-      {% endif %}
       </ul>
+      {% endif %}
+      {% if metadata.bcc_aids %}
+      <ul class="clearfix">
+        <li>Bcc:</li>
+        {% for bcc_aid in metadata.bcc_aids %}
+        {{ render_contact_item(result.data.addresses[bcc_aid], profiles) }}
+        {% endfor %}
+      </ul>
+      {% endif %}
     </div>
 
     {% set last_enc_context = message.crypto.encryption.context %}
     {% set last_sig_context = message.crypto.signature.context %}
     {% for part in message.text_parts %}
       {# Parts that do not have own crypto attribute inherit from message itself #}
-      {% set crypto = part.crypto or message.crypto %}
       {#
        # Watch for changes to the "context" which is present in each encryption and
        # signature section - if either has changed, then we have moved from
        # one security context to the next, and need to let the user know.
        #}
       {% if (part.data != "") %}
+      {% if part.crypto %}
       <div class="thread-item-crypto clearfix">
         <div class="thread-item-crypto-info left" data-name="cats">
-          {% if crypto.encryption %}
-            <span class="icon {{ message_encryption_classes(crypto.encryption.status) }}" title=""></span> <span class="text">Not Encrypted</span>
-          {% else %}
-            No ENC
-          {% endif %}        
+          {% if part.crypto.encryption %}
+            {% if part.crypto.encryption.context != last_enc_context %}
+            {% set last_enc_context = part.crypto.encryption.context %}
+            <span class="icon {{ message_encryption_classes(part.crypto.encryption.status) }}" title=""></span> <span class="text">Not Encrypted</span>
+            {% endif %}
+          {% endif %}
+          {% if part.crypto.signature %}
+            {% if part.crypto.signature.context != last_sig_context %}
+            {% set last_sig_context = part.crypto.signature.context %}
+            <span class="icon {{ message_signature_classes(part.crypto.signature.status) }}" title=""></span> <span class="text">No Signature</span>
+            {% endif %}
+          {% endif %}
         </div>
         <div class="thread-item-crypto-line left"></div>
       </div>
-      <div class="thread-item-text">{{ part.data|e|urlize }}</div>
-      {% elif part.type == "text" %}
+      {% endif %} 
+
+      {% if part.type in ("text", "pgpsignedtext") %}
       <div class="thread-item-text">{{ part.data|e|urlize }}</div>
       {% elif part.type == "quote" %}
       <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div></div>
+      {% endif %}
       {% endif %}
     {% endfor %}
     </div>
