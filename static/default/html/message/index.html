@@ -32,11 +32,11 @@
     <a href="{{ contact_url(from) }}" class="avatar" title="{{_("From")}}"><img src="{{ show_avatar(from) }}"></a>
     <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}">{{ contact_name(profiles, from) }}</a>
     {% if crypto %}
-    <span class="icon {{ message_signature_classes(crypto.signature.status) }}"></span>
-    <span class="icon {{ message_encryption_classes(crypto.encryption.status) }}"></span>
+    <span class="icon {{ show_message_signature(crypto.signature.status) }}"></span>
+    <span class="icon {{ show_message_encryption(crypto.encryption.status) }}"></span>
     {% else %}
-    <span class="icon {{ message_signature_classes(metadata.crypto.signature) }}"></span>
-    <span class="icon {{ message_encryption_classes(metadata.crypto.encryption) }}"></span>
+    <span class="icon {{ show_message_signature(metadata.crypto.signature) }}"></span>
+    <span class="icon {{ show_message_encryption(metadata.crypto.encryption) }}"></span>
     {% endif %}
     <span class="show-thread-message-metadata-details icon icon-circle-info"></span>
   </div>
@@ -105,13 +105,13 @@
           {% if part.crypto.encryption %}
             {% if part.crypto.encryption.context != last_enc_context %}
             {% set last_enc_context = part.crypto.encryption.context %}
-            <span class="icon {{ message_encryption_classes(part.crypto.encryption.status) }}" title=""></span> <span class="text">Not Encrypted</span>
+            <span class="icon {{ show_message_encryption(part.crypto.encryption.status) }}" title=""></span> <span class="text">Not Encrypted</span>
             {% endif %}
           {% endif %}
           {% if part.crypto.signature %}
             {% if part.crypto.signature.context != last_sig_context %}
             {% set last_sig_context = part.crypto.signature.context %}
-            <span class="icon {{ message_signature_classes(part.crypto.signature.status) }}" title=""></span> <span class="text">No Signature</span>
+            <span class="icon {{ show_message_signature(part.crypto.signature.status) }}" title=""></span> <span class="text">No Signature</span>
             {% endif %}
           {% endif %}
         </div>

@@ -35,14 +35,14 @@ class MailpileCommand(Extension):
         environment.filters['navigation_on'] = self._navigation_on
         environment.globals['show_tags'] = self._show_tags
         environment.filters['show_tags'] = self._show_tags
-        environment.globals['message_signature_classes'
-                            ] = self._message_signature_classes
-        environment.filters['message_signature_classes'
-                            ] = self._message_signature_classes
-        environment.globals['message_encryption_classes'
-                            ] = self._message_encryption_classes
-        environment.filters['message_encryption_classes'
-                            ] = self._message_encryption_classes
+        environment.globals['show_message_signature'
+                            ] = self._show_message_signature
+        environment.filters['show_message_signature'
+                            ] = self._show_message_signature
+        environment.globals['show_message_encryption'
+                            ] = self._show_message_encryption
+        environment.filters['show_message_encryption'
+                            ] = self._show_message_encryption
         environment.globals['contact_url'] = self._contact_url
         environment.filters['contact_url'] = self._contact_url
         environment.globals['contact_name'] = self._contact_name
@@ -98,7 +98,7 @@ class MailpileCommand(Extension):
     def _show_tags(self, search_terms, tags):
         return ""
 
-    def _message_signature_classes(self, status):
+    def _show_message_signature(self, status):
         if status == "none":
             classes = "crypto-color-gray icon-signature-none"
             text = _("No Signature")
@@ -147,7 +147,7 @@ class MailpileCommand(Extension):
                       "this encryption")
         return classes
 
-    def _message_encryption_classes(self, status):
+    def _show_message_encryption(self, status):
         if status == "none":
             classes = "crypto-color-gray icon-lock-open"
             text = _("Not Encrypted")
