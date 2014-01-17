@@ -217,7 +217,7 @@ class Extract(Command):
     """Extract attachment(s) to file(s)"""
     SYNOPSIS = ('e', 'extract', 'message/download', '<msgs> <att> [><fn>]')
     ORDER = ('Searching', 5)
-    RAISES = (SuppressHtmlOutput, )
+    RAISES = (SuppressHtmlOutput, UrlRedirectException)
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):

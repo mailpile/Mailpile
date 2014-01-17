@@ -751,13 +751,14 @@ class Email(object):
                     if thumbnail(payload, thumb, height=250):
                         session.ui.notify(_('Wrote preview to: %s') % filename)
                         attributes['length'] = thumb.tell()
+                        filename, fd = session.ui.open_for_data(
+                            name_fmt=name_fmt, attributes=attributes)
+                        thumb.seek(0)
+                        fd.write(thumb.read())
+                        fd.close()
                     else:
                         session.ui.notify(_('Failed to generate thumbnail'))
-                    filename, fd = session.ui.open_for_data(
-                        name_fmt=name_fmt, attributes=attributes)
-                    thumb.seek(0)
-                    fd.write(thumb.read())
-                    fd.close()
+                        raise UrlRedirectException('/static/img/image-default.png')
                 else:
                     filename, fd = session.ui.open_for_data(
                         name_fmt=name_fmt, attributes=attributes)
