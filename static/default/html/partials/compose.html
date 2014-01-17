@@ -1,3 +1,4 @@
+{% set profiles = mailpile('settings', 'profiles').result.profiles %}
 <div id="compose-box" class="clearfix">
   <div class="clearfix">
     <ul class="left">
@@ -5,10 +6,9 @@
         <a class="dropdown-toggle" data-toggle="dropdown" id="reply-from" href="#">
           <img class="compose-from-avatar" src="/static/img/avatar-default.png">
           You <span class="icon-arrow-left"></span>
-          <span class="compose-from-address">hi@brennannovak.com</span>
+          <span class="compose-from-address">{{profiles[0].address}}</span>
         </a>
         <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-from">
-          {% set profiles = mailpile('settings', 'profiles').result.profiles %}
           {% for profile in profiles %}
           <li role="presentation"><a href="#">
             <img src="/static/img/avatar-default.png">
@@ -21,7 +21,7 @@
     </ul>
     <ul id="compose-options" class="horizontal right">
       <li><a id="" href="#"><input type="checkbox" checked=""> Quote</a></li>
-      <li><a href="#"><span class="icon-unencrypted"></span> Partially Secure</a></li>
+      <li><a href="#"><span class="icon-lock-open"></span> Partially Secure</a></li>
       <li class="dropdown">
         <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-arrow-right"></span> Send <span id="reply-datetime-display">Immediately</span></a>
         <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">

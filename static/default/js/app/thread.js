@@ -49,6 +49,37 @@ $(document).on('click', '.dropdown-toggle', function() {
 });
 
 
+/* Thread Tooltips */
+$(document).ready(function() {
+
+  
+  $('.thread-item-encryption-info').qtip({
+    content: {
+      text: $(this).data('name')
+    },
+    style: {
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'bottom center',
+      at: 'top left',
+			viewport: $(window),
+			adjust: {
+				x: 25,  y: 0
+			}
+    },
+    show: {
+      delay: 250
+    },
+    hide: {
+      delay: 250
+    }
+  });
+
+
+});
+
+
 /* Compose - Pick Send Date */
 $(document).on('click', '.pick-send-datetime', function(e) {
 
