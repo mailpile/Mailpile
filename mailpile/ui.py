@@ -332,6 +332,9 @@ class UserInteraction:
                                            '%.4096s' % alldata)])
 
     def edit_messages(self, emails):
+        if not self.interactive:
+            return False
+
         sep = '-' * 79 + '\n'
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
 

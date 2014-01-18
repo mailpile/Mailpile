@@ -154,8 +154,6 @@ class CompositionCommand(AddComposeMethods(Search)):
                 self._tag_drafts(emails)
             session.ui.mark('%d message(s) edited' % len(emails))
         else:
-            if tag:
-                self._tag_blank(emails)
             session.ui.mark('%d message(s) created' % len(emails))
         idx.save()
         return self._return_search_results(emails,
@@ -177,7 +175,9 @@ class Draft(AddComposeMethods(View)):
     def _side_effects(self, emails):
         session, idx = self.session, self._idx()
         try:
-            if session.ui.edit_messages(emails):
+            if not emails:
+                session.ui.mark('No messages!')
+            elif session.ui.edit_messages(emails):
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
                 idx.save()
@@ -212,6 +212,7 @@ class Compose(CompositionCommand):
             if update_string:
                 email.update_from_string(update_string)
 
+        self._tag_blank(emails)
         return self._edit_messages(emails, new=True)
 
 
@@ -276,6 +277,7 @@ class Reply(RelativeCompose):
                     idx.add_tag(session, tag._key,
                                 msg_idxs=[m.msg_idx_pos for m in refs])
 
+            self._tag_blank([email])
             return self._edit_messages([email])
         else:
             return self._error('No message found')
@@ -337,6 +339,7 @@ class Forward(RelativeCompose):
                     idx.add_tag(session, tag._key,
                                 msg_idxs=[m.msg_idx_pos for m in refs])
 
+            self._tag_blank([email])
             return self._edit_messages([email])
         else:
             return self._error('No message found')
