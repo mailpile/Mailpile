@@ -1,26 +1,12 @@
-#
-## Dear hackers!
-##
-## It would be great to have more mailbox classes.  They should be derived
-## from or implement the same interfaces as Python's native mailboxes, with
-## the additional constraint that they support pickling and unpickling using
-## cPickle.  The mailbox class is also responsible for generating and parsing
-## a "pointer" which should be a short as possible while still encoding the
-## info required to locate this message and this message only within the
-## larger mailbox.
-#
-###############################################################################
 import copy
 import email.header
 import email.parser
 import email.utils
 import errno
-import gzip
 import mailbox
 import mimetypes
 import os
 import re
-import rfc822
 import StringIO
 import threading
 import traceback
@@ -32,8 +18,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from lxml.html.clean import Cleaner
-from mailpile.mailboxes.imap import IMAPMailbox
-from mailpile.mailboxes.macmail import MacMaildir
 from mailpile.util import *
 from platform import system
 from smtplib import SMTP, SMTP_SSL
@@ -104,6 +88,12 @@ def UnwrapMimeCrypto(part, si=None, ei=None):
             for h, v in payload.items():
                 part.add_header(h, v)
 
+            # Try again, in case we just unwrapped another layer
+            # of multipart/something.
+            return UnwrapMimeCrypto(part,
+                                    si=part.signature_info,
+                                    ei=part.encryption_info)
+
         elif mimetype == 'multipart/encrypted':
             gpg = GnuPG()
             preamble, payload = part.get_payload()
@@ -120,6 +110,12 @@ def UnwrapMimeCrypto(part, si=None, ei=None):
                     del part[h]
                 for h, v in newpart.items():
                     part.add_header(h, v)
+
+                # Try again, in case we just unwrapped another layer
+                # of multipart/something.
+                return UnwrapMimeCrypto(part,
+                                        si=part.signature_info,
+                                        ei=part.encryption_info)
 
         # If we are still multipart after the above shenanigans, recurse
         # into our subparts and unwrap them too.

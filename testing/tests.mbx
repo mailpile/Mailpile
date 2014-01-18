@@ -2728,3 +2728,84 @@ YIC3qNe8fqErjT5dm/UJHBRd8H8hMREbBhlGGw==
 Yay, that is so neat and cool and funky and awesome.
 
 
+From barnaby@waterpigs.co.uk  Fri Jan 17 17:28:01 2014
+Return-Path: <barnaby@waterpigs.co.uk>
+X-Original-To: team+testing@mailpile.is
+Delivered-To: mailpile@mailpile.is
+Received: by mailpile.is (Postfix)
+	id 1AC816A94A; Fri, 17 Jan 2014 17:28:01 +0000 (GMT)
+Delivered-To: team+testing@mailpile.is
+X-Greylist: delayed 465 seconds by postgrey-1.34 at mailpile.is; Fri, 17 Jan 2014 17:28:01 GMT
+Received: from csmtp12.one.com (csmtp12.one.com [195.47.247.112])
+	by mailpile.is (Postfix) with ESMTPS id 06F596A949
+	for <team+testing@mailpile.is>; Fri, 17 Jan 2014 17:28:01 +0000 (GMT)
+Received: from [192.168.43.206] (mobile-out-229-219.siminn.is [194.105.229.219])
+	by csmtp12.one.com (Postfix) with ESMTPA id DF89F4000B957
+	for <team+testing@mailpile.is>; Fri, 17 Jan 2014 17:19:56 +0000 (UTC)
+Received: from [192.168.43.206] (mobile-out-229-219.siminn.is [194.105.229.219])
+	(using TLSv1 with cipher AES128-SHA)
+	by 0.0.0.0:587 (trex/4.8.87);
+	Fri, 17 Jan 2014 17:19:58 GMT
+Content-Type: multipart/encrypted; boundary="Apple-Mail=_FEEA9815-A6CE-42D3-B415-492B16ADEBAD"; protocol="application/pgp-encrypted";
+Subject: PGP Testing Email
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+X-Pgp-Agent: GPGMail (null)
+From: Barnaby Walters <barnaby@waterpigs.co.uk>
+Date: Fri, 17 Jan 2014 17:19:50 +0000
+Content-Transfer-Encoding: 7bit
+Message-Id: <52906F15-18A6-456A-A442-97667D27E4C0@waterpigs.co.uk>
+Content-Description: OpenPGP encrypted message
+To: team+testing@mailpile.is
+X-Mailer: Apple Mail (2.1827)
+Content-Length: 2224
+Lines: 48
+
+This is an OpenPGP/MIME encrypted message (RFC 2440 and 3156)
+--Apple-Mail=_FEEA9815-A6CE-42D3-B415-492B16ADEBAD
+Content-Transfer-Encoding: 7bit
+Content-Type: application/pgp-encrypted
+Content-Description: PGP/MIME Versions Identification
+
+Version: 1
+
+--Apple-Mail=_FEEA9815-A6CE-42D3-B415-492B16ADEBAD
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename=encrypted.asc
+Content-Type: application/octet-stream;
+	name=encrypted.asc
+Content-Description: OpenPGP encrypted message
+
+-----BEGIN PGP MESSAGE-----
+Comment: GPGTools - http://gpgtools.org
+
+hQEMA46GztMrK7tlAQgArcg/CefSxYhTpURlCL66KVU3kD1BZRuFT6i2nrwwOnHh
+xKob+M2ywcNIykAKqWhI8QEfAT7ZsSocSrDM5JFNV4zCYl7NFYzqOuWfluioxbRU
+SQpm74VSEvpELRi4S66wiKi6xMSnThZhjHxEIGNCRK3WTzgeooMHu3ZsJEnZoqsV
+sB++w94Q0Dc8o2aRiEu79QY5icBEZVsaHWC5fP7xmLOkb/8KjlK9Lx0cKVTloQrK
+f/3Xt1C1cqZix2gT5o/ph4WYOh8G3ChHDs4urE5cMpoIvh5SU2jWpm9s1ybFzFXb
+Uv3L0TR2vO6t3YkFoKFB6uuQDBzt0F3Pc/n1v6UN04SMAz6G3yxBmjWYAQP/QGc0
+oJJisIE+1vqFzl1soB2V94132lCzZYxUXfhCN3rA1Dv7ebuaC2sax+3t7eM48gsG
+y7TFr8oY9UsRf4s2k7zzqTCZporqLakBclVp3r2CEUGR2a43ONaGKtDMq++aODqH
+q9ZWayMsTulh7lr3SOLHamRJ0QfQ4jYCLOOtW4DS6QHTx70MUC3hxdoeerwsqXRI
+asvkRQswjCjXsx0Cc8+9WCY+kzc4jkX+HnIecfKiblZMo8v7o12mnrBZ6jOse3m4
+O6OhEgDphTKIrDNAUcOsbNdwdUl5TgHxu3FqgukwTFgIREalnzaApYoN7mWMF6pY
+CWQDFNG8P+BlSl4f1ZC3w5lXcUIZ+aXp11LE6cdIyhPtX+ZbWf3QUHGgJZI+uFUJ
+i9FRK+30FN1hjBcSqdqaBQ7aRAjjQ48eGf9IM0xjPgi70yJ/zEE0Uo60+8Df+hLv
++YVmmvrE9Tb9478/5JYL6XS9X4Vv2ezChmrN6S2d+RB2SH7E3Lb8O37MMOxqTYBN
+5STJjCiPqmi223ZRYpns4gu81EFbC0SctU9+YvZnP7Jo4/JH5cjFuOtxpN7QZrb+
+dz+Z8D2a/6SXn8kRcHi4BfyG+UMLgk8q6QMKBZ2nH/VjFQo6zcBtf7VmSLKd2pPp
+HMGMy9lg71P3xkrjIYk89WRAZr9o6eKwECCxX7nVSF+eIjztfcPc7LS0ZZJ6zqDs
+4IUTjTmgnRr6psFFP/BNzZhiz1pEEMMHzhjas1hl0agZJrN1VQzGCEBlEUMozbOS
+nRaeT2MAkNeyy5715Cghf3IrQB3Zeu2NUoAc3tlyHqSyvw9ed5cWpje9YaEP7JU7
+ZtWnrGqtT2HpMqZTdW/LwCYrwIK2i8GPb0skM5KkiXdUBaG+UE2E9wpoIZJBKbuh
+vJIGwOs9shZGI+TG2wOoQ8nEqYRY4u6HyTVhlc0pcq9NSnQDtUkaosCbL9hJC8IT
+BnrcfkBU6+p6bjgWMyg9kalBoeByAff6HlX6N6z0OpEjt8DpOjRkHob3bRK7TuwB
+mt1PpraeojiurY0mtPAY4fqyNeGoy6tqf+OExRf7YXnxcT3cTMNkrUVhzKrilO9/
+8FmY/KtDp2hdM7a3WuG/CmOKFq4tyXuoyzLooweMan1iAj903SASM75jQ+Y23fsf
+gGcS1XaPCA==
+=GrUC
+-----END PGP MESSAGE-----
+
+--Apple-Mail=_FEEA9815-A6CE-42D3-B415-492B16ADEBAD--
+

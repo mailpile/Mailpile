@@ -119,6 +119,8 @@ try:
                     'testing', 'purposes', 'only', 'tag:mp_enc-decrypted'],
                    ['from:brennan', 'subject:signed',
                     'tag:mp_sig-unverified'],
+                   ['from:barnaby', 'subject:testing', 'soup',
+                    'tag:mp_sig-unknown', 'tag:mp_enc-decrypted'],
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
@@ -126,7 +128,7 @@ try:
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['stats']['count'] == 13)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 14)
 
     say('FIXME: Make sure message signatures verified')
 
