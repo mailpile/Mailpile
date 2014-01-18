@@ -99,49 +99,46 @@
        # one security context to the next, and need to let the user know.
        #}
       {% if (part.data != "") %}
-      {% if part.crypto %}
-      <div class="thread-item-crypto clearfix">
-        <div class="thread-item-crypto-info left" data-name="cats">
-          {% if part.crypto.encryption %}
-            {% if part.crypto.encryption.context != last_enc_context %}
-            {% set last_enc_context = part.crypto.encryption.context %}
-            <span class="icon {{ show_message_encryption(part.crypto.encryption.status) }}" title=""></span> <span class="text">Not Encrypted</span>
+        {% if part.crypto %}
+        <div class="thread-item-crypto clearfix">
+          <div class="thread-item-crypto-info left" data-name="cats">
+            {% if part.crypto.encryption %}
+              {% if part.crypto.encryption.context != last_enc_context %}
+              {% set last_enc_context = part.crypto.encryption.context %}
+              <span class="icon {{ show_message_encryption(part.crypto.encryption.status) }}" title=""></span> <span class="text">Not Encrypted</span>
+              {% endif %}
             {% endif %}
-          {% endif %}
-          {% if part.crypto.signature %}
-            {% if part.crypto.signature.context != last_sig_context %}
-            {% set last_sig_context = part.crypto.signature.context %}
-            <span class="icon {{ show_message_signature(part.crypto.signature.status) }}" title=""></span> <span class="text">No Signature</span>
+            {% if part.crypto.signature %}
+              {% if part.crypto.signature.context != last_sig_context %}
+              {% set last_sig_context = part.crypto.signature.context %}
+              <span class="icon {{ show_message_signature(part.crypto.signature.status) }}" title=""></span> <span class="text">No Signature</span>
+              {% endif %}
             {% endif %}
-          {% endif %}
+          </div>
+          <div class="thread-item-crypto-line left"></div>
         </div>
-        <div class="thread-item-crypto-line left"></div>
-      </div>
-      {% endif %} 
+        {% endif %} 
 
-      {% if part.type in ("text", "pgpsignedtext") %}
-      <div class="thread-item-text">{{ part.data|e|urlize }}</div>
-      {% elif part.type == "quote" %}
-      <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div></div>
-      {% endif %}
+        {% if part.type in ("text", "pgpsignedtext") %}
+        <div class="thread-item-text">{{ part.data|e|urlize }}</div>
+        {% elif part.type == "quote" %}
+        <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div></div>
+        {% endif %}
       {% endif %}
     {% endfor %}
-    </div>
-
     <div class="thread-message-attachments">
-    <ul>
+    <ul class="clearfix">
       {% for att in message.attachments %}
       <li>
-        <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">
-        {% if att.mimetype in ('image/jpg', 'image/jpeg', 'image/png', 'image/gif') %}
-          <img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"><br />
-        {% endif %}
-          {{ att.filename }}<br />
-          <small>{{ att.length|friendly_bytes }}</small>
-        </a>
+      {% if att.mimetype in ('image/jpg', 'image/jpeg', 'image/png', 'image/gif') %}
+        <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+      {% endif %}
+        <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">{{ att.filename }}<small>{{ att.length|friendly_bytes }}</small></a>
       </li>
       {% endfor %}
     </ul>
+    </div>
+
     </div>
 
     <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="E36">
