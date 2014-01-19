@@ -901,7 +901,6 @@ class Email(object):
             except UnicodeDecodeError:
                 pass
 
-        print _('Decode failed: %s %s') % (charset, e)
         if binary:
             return payload, '8bit'
         else:
