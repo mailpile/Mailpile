@@ -2,7 +2,7 @@
 
   <h3>{{_("Add New Contact")}}</h3>
 
-  <form id="form-contact-add" class="standard" method="POST">
+  <form id="form-contact-add" class="standard" method="POST" action="/contact/add/">
 
     <input type="hidden" name="csrf" value="">
 
@@ -12,6 +12,12 @@
     <label>{{_("E-mail")}}</label>
     <input type="text" name="@contactemail" value="" placeholder="chelsea@manning.com">
 
+    <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+
+  </form>
+
+{#
+  <form id="form-contact-details" class="standard" method="POST" onsubmit="">
     <label>{{_("Website")}}</label>
     <input type="text" name="@contactwebsite" value="" placeholder="http://website.com">
 
@@ -22,7 +28,7 @@
     <label>{{_("PGP Key")}}</label>
     <textarea name="@pgpkey" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----4rcoQYTGVltTC4gTItr2YrFoWRe0sSIrOregxwfKHvu5bIL9lp58zoAOCcoeKonbBCOda6RckZsKRpZ1E49agxZbSMSFk3cpkcCw5/mI10ze4tQbvPw..."></textarea>
 
-    <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
-
+    <button type="submit"><span class="icon-plus"></span> {{_("Update contact")}}</button>
   </form>
+#}
 </div>

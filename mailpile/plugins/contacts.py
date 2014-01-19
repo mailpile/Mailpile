@@ -72,6 +72,10 @@ class AddVCard(VCardCommand):
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'PUT', 'GET')
+    HTTP_QUERY_VARS = {
+        '@contactemail': 'e-mail address',
+        '@contactname': 'Contact name',
+    }
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
