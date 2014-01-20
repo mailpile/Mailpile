@@ -116,10 +116,11 @@ class MimeWrapper:
     CONTAINER_PARAMS = ()
     CRYTPO_CLASS = None
 
-    def __init__(self, config, sender=None, recipients=None):
+    def __init__(self, config, cleaner=None, sender=None, recipients=None):
         self.config = config
         self.crypto = self.CRYPTO_CLASS()
         self.sender = sender
+        self.cleaner = cleaner
         self.recipients = recipients or []
         self.container = MIMEMultipart()
         self.container.set_type(self.CONTAINER_TYPE)
@@ -128,6 +129,8 @@ class MimeWrapper:
 
     def attach(self, part):
         self.container.attach(part)
+        if self.cleaner:
+            self.cleaner(part)
         del part['MIME-Version']
         return self
 

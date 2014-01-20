@@ -8,6 +8,7 @@
 #
 import os
 import sys
+import time
 import traceback
 
 
@@ -67,7 +68,7 @@ try:
     mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
     mp.set('sys/debug = sendmail log compose')
     mp.set('prefs/openpgp_header = encrypt')
-    mp.set('prefs/crypto_policy = openpgp-sign-encrypt')
+    mp.set('prefs/crypto_policy = openpgp-sign')
 
     # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
@@ -191,6 +192,10 @@ try:
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
         assert(mp.search(*search).result['stats']['count'] == 1)
+    assert('thisisauniquestring' in contents(mailpile_sent))
+    assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
+    assert('; preference=encrypt' in contents(mailpile_sent))
+    assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     os.remove(mailpile_sent)
 
     # Test the send method's "bounce" capability

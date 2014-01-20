@@ -9,7 +9,7 @@ import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.crypto.state import *
 from mailpile.plugins.tags import Tag
-from mailpile.mailutils import ExtractEmails, Email, PrepareMail, SendMail
+from mailpile.mailutils import ExtractEmails, Email, PrepareMessage, SendMail
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -87,7 +87,7 @@ class CompositionCommand(AddComposeMethods(Search)):
 
     UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc')
 
-    def _get_email_updates(self, idx, emails=None):
+    def _get_email_updates(self, idx, create=False, noneok=False, emails=None):
         # Split the argument list into files and message IDs
         files = [f[1:].strip() for f in self.args if f.startswith('<')]
         args = [a for a in self.args if not a.startswith('<')]
@@ -125,6 +125,8 @@ class CompositionCommand(AddComposeMethods(Search)):
                     ['', '\n'.join(self.data.get('body',
                                                  defaults.get('body', '')))]
                 )))
+            elif noneok:
+                updates.append((e, None))
             elif 'compose' in self.session.config.sys.debug:
                 sys.stderr.write('Doing nothing with %s' % update_header_set)
             fofs += 1
@@ -208,7 +210,9 @@ class Compose(CompositionCommand):
         emails = [Email.Create(idx, local_id, lmbox)]
 
         for email in emails:
-            email_updates = self._get_email_updates(idx, [email])
+            email_updates = self._get_email_updates(idx,
+                                                    emails=[email],
+                                                    create=True)
             update_string = email_updates and email_updates[0][1]
             if update_string:
                 email.update_from_string(update_string)
@@ -401,7 +405,7 @@ class Attach(CompositionCommand):
 
 class Sendit(CompositionCommand):
     """Mail/bounce a message (to someone)"""
-    SYNOPSIS = ('m', 'mail', 'message/send', '<messages> [<emails>]')
+    SYNOPSIS = (None, 'bounce', 'message/send', '<messages> [<emails>]')
     ORDER = ('Composing', 5)
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {}
@@ -432,8 +436,9 @@ class Sendit(CompositionCommand):
         for email in emails:
             try:
                 msg_mid = email.get_msg_info(idx.MSG_MID)
-                SendMail(session, [PrepareMail(config, email,
-                                               rcpts=(bounce_to or None))])
+                SendMail(session, [PrepareMessage(config,
+                                                  email.get_msg(pgpmime=False),
+                                                  rcpts=(bounce_to or None))])
                 sent.append(email)
             except KeyLookupError, kle:
                 session.ui.error(_('Keys not found for: %s' % kle.missing))
@@ -470,15 +475,17 @@ class Update(CompositionCommand):
 
     def command(self, create=True, outbox=False):
         session, config, idx = self.session, self.session.config, self._idx()
-        email_updates = self._get_email_updates(idx)
+        email_updates = self._get_email_updates(idx,
+                                                create=create,
+                                                noneok=outbox)
 
         if email_updates:
-            for email, update_string in email_updates:
-                email.update_from_string(update_string)
-
             if (self.data.get('file-data') or [''])[0]:
                 if not Attach(session, data=self.data).command(emails=emails):
                     return False
+
+            for email, update_string in email_updates:
+                email.update_from_string(update_string, final=outbox)
 
             emails = [e for e, u in email_updates]
             session.ui.notify('%d message(s) updated' % len(email_updates))
@@ -519,7 +526,7 @@ class UnThread(CompositionCommand):
 
 class UpdateAndSendit(Update):
     """Update message from an HTTP upload and move to outbox."""
-    SYNOPSIS = (None, None, 'message/update/send', None)
+    SYNOPSIS = ('m', 'mail', 'message/update/send', None)
 
     def command(self, create=True, outbox=True):
         return Update.command(self, create=create, outbox=outbox)

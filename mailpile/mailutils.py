@@ -106,22 +106,68 @@ def MessageAsString(part, unixfrom=False):
     return buf.getvalue()
 
 
-def PrepareMail(config, mailobj, sender=None, rcpts=None):
-    if not sender or not rcpts:
-        tree = mailobj.get_message_tree()
-        sender = sender or tree['headers_lc']['from']
-        if not rcpts:
-            rcpts = ExtractEmails(tree['headers_lc'].get('to', ''),
-                                  strip_keys=False)
-            rcpts += ExtractEmails(tree['headers_lc'].get('cc', ''),
-                                   strip_keys=False)
-            rcpts += ExtractEmails(tree['headers_lc'].get('bcc', ''),
-                                   strip_keys=False)
-            if not rcpts:
-                raise NoRecipientError()
-            rcpts += [sender]
+def CleanMessage(config, msg):
+    replacements = []
+    for key, value in msg.items():
+        lkey = key.lower()
 
-    # Cleanup...
+        # Remove headers we don't want to expose
+        if (lkey.startswith('x-mp-internal-') or
+                lkey in ('bcc', 'encryption')):
+            replacements.append((key, None))
+
+        # Strip the #key part off any e-mail addresses:
+        elif lkey in ('to', 'from', 'cc'):
+            if '#' in value:
+                replacements.append((key, re.sub(
+                    r'(@[^<>\s#]+)#[a-fxA-F0-9]+([>,\s]|$)', r'\1\2', value)))
+
+    for key, val in replacements:
+        del msg[key]
+    for key, val in replacements:
+        if val:
+            msg[key] = val
+
+    return msg
+
+
+def PrepareMessage(config, msg, sender=None, rcpts=None):
+    msg = copy.deepcopy(msg)
+
+    # Short circuit if this message has already been prepared.
+    if 'x-mp-internal-sender' in msg and 'x-mp-internal-rcpts' in msg:
+        return (sender or msg['x-mp-internal-sender'],
+                rcpts or [r.strip()
+                          for r in msg['x-mp-internal-rcpts'].split(',')],
+                msg)
+
+    crypto_policy = config.prefs.crypto_policy.lower()
+    rcpts = rcpts or []
+
+    # Iterate through headers to figure out what we want to do...
+    need_rcpts = not rcpts
+    for hdr, val in msg.items():
+        lhdr = hdr.lower()
+        if lhdr == 'from':
+            sender = sender or val
+        elif lhdr == 'encryption':
+            crypto_policy = val.lower()
+        elif need_rcpts and lhdr in ('to', 'cc', 'bcc'):
+            rcpts += ExtractEmails(val, strip_keys=False)
+
+    # Are we sane?
+    if not sender:
+        raise NoFromAddressError()
+    if not rcpts:
+        raise NoRecipientError()
+
+    # Are we encrypting? Signing?
+    if crypto_policy == 'default':
+        crypto_policy = config.prefs.crypto_policy
+
+    # This is the BCC hack that Brennan hates!
+    rcpts += [sender]
+
     sender = ExtractEmails(sender, strip_keys=False)[0]
     sender_keyid = None
     if config.prefs.openpgp_header:
@@ -140,14 +186,7 @@ def PrepareMail(config, mailobj, sender=None, rcpts=None):
             if e not in rcpts:
                 rcpts.append(e)
 
-    msg = copy.deepcopy(mailobj.get_msg())
-
-    # Remove headers we don't want to expose
-    for bcc in ('bcc', 'Bcc', 'BCc', 'BCC', 'BcC', 'bcC',
-                'Encryption', 'encryption'):
-        if bcc in msg:
-            del msg[bcc]
-
+    # Add headers we require
     if 'date' not in msg:
         msg['Date'] = email.utils.formatdate()
 
@@ -155,34 +194,26 @@ def PrepareMail(config, mailobj, sender=None, rcpts=None):
         msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
                                                    config.prefs.openpgp_header)
 
-    # Sign and encrypt
-    crypto_policy = tree['headers_lc'].get('encryption',
-                                           config.prefs.crypto_policy).lower()
-    if crypto_policy == 'default':
-        crypto_policy = config.prefs.crypto_policy
-
     if 'openpgp' in crypto_policy:
 
         # FIXME: Make a more efficient sign+encrypt wrapper
 
+        cleaner = lambda m: CleanMessage(config, m)
         if 'sign' in crypto_policy:
-            wrapper = OpenPGPMimeSigningWrapper(config,
-                                                sender=sender,
-                                                recipients=rcpts)
-            msg = wrapper.wrap(msg)
-
+            msg = OpenPGPMimeSigningWrapper(config,
+                                            sender=sender,
+                                            cleaner=cleaner,
+                                            recipients=rcpts).wrap(msg)
         if 'encrypt' in crypto_policy:
-            wrapper = OpenPGPMimeEncryptingWrapper(config,
-                                                   sender=sender,
-                                                   recipients=rcpts)
-            msg = wrapper.wrap(msg)
-
-    # When a mail has been signed or encrypted, it should be saved as such.
-    # Hmm. Probably probably!
-    # We should at the very least make a note that this happened.
-    # Per draft logs?
+            msg = OpenPGPMimeEncryptingWrapper(config,
+                                               sender=sender,
+                                               cleaner=cleaner,
+                                               recipients=rcpts).wrap(msg)
 
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
+    msg['x-mp-internal-readonly'] = str(int(time.time()))
+    msg['x-mp-internal-sender'] = sender
+    msg['x-mp-internal-rcpts'] = ', '.join(rcpts)
     return (sender, rcpts, msg)
 
 
@@ -256,13 +287,13 @@ def SendMail(session, from_to_msg_tuples):
                               ) % sendmail)
 
         session.ui.mark(_('Preparing message...'))
-        string = MessageAsString(msg)
-        total = len(string)
-        while string:
-            sm_write(string[:65536])
-            string = string[65536:]
+        msg_string = MessageAsString(CleanMessage(session.config, msg))
+        total = len(msg_string)
+        while msg_string:
+            sm_write(msg_string[:20480])
+            msg_string = msg_string[20480:]
             session.ui.mark(('Sending message... (%d%%)'
-                             ) % (100 * (total-len(string))/total))
+                             ) % (100 * (total-len(msg_string))/total))
         sm_close()
         sm_cleanup()
         session.ui.mark(_('Message sent, %d bytes') % total)
@@ -472,67 +503,78 @@ class Email(object):
         if not self.is_editable():
             raise NotEditableError(_('Mailbox is read-only.'))
         msg = self.get_msg()
+        if 'x-mp-internal-readonly' in msg:
+            raise NotEditableError(_('Message is read-only.'))
         for fn in filenames:
             msg.attach(self.make_attachment(fn, filedata=filedata))
         return self.update_from_msg(msg)
 
-    def update_from_string(self, data):
+    def update_from_string(self, data, final=False):
         if not self.is_editable():
             raise NotEditableError(_('Mailbox is read-only.'))
 
-        newmsg = email.parser.Parser().parsestr(data.encode('utf-8'))
         oldmsg = self.get_msg()
-        outmsg = MIMEMultipart()
+        if 'x-mp-internal-readonly' in oldmsg:
+            raise NotEditableError(_('Message is read-only.'))
 
-        # Copy over editable headers from the input string, skipping blanks
-        for hdr in newmsg.keys():
-            if hdr.startswith('Attachment-'):
-                pass
-            else:
-                encoded_hdr = self.encoded_hdr(newmsg, hdr)
-                if len(encoded_hdr.strip()) > 0:
-                    outmsg[hdr] = encoded_hdr
+        if not data:
+            outmsg = oldmsg
 
-        # Copy over the uneditable headers from the old message
-        for hdr in oldmsg.keys():
-            if ((hdr.lower() not in self.MIME_HEADERS)
-                    and (hdr.lower() in self.UNEDITABLE_HEADERS)):
-                outmsg[hdr] = oldmsg[hdr]
+        else:
+            newmsg = email.parser.Parser().parsestr(data.encode('utf-8'))
+            outmsg = MIMEMultipart()
 
-        # Copy the message text
-        new_body = newmsg.get_payload().decode('utf-8')
-        try:
-            new_body.encode('us-ascii')
-            charset = 'us-ascii'
-        except:
-            charset = 'utf-8'
-        textbody = MIMEText(new_body, _subtype='plain', _charset=charset)
-        outmsg.attach(textbody)
-        del textbody['MIME-Version']
+            # Copy over editable headers from the input string, skipping blanks
+            for hdr in newmsg.keys():
+                if hdr.startswith('Attachment-'):
+                    pass
+                else:
+                    encoded_hdr = self.encoded_hdr(newmsg, hdr)
+                    if len(encoded_hdr.strip()) > 0:
+                        outmsg[hdr] = encoded_hdr
 
-        # FIXME: Use markdown and template to generate fancy HTML part
+            # Copy over the uneditable headers from the old message
+            for hdr in oldmsg.keys():
+                if ((hdr.lower() not in self.MIME_HEADERS)
+                        and (hdr.lower() in self.UNEDITABLE_HEADERS)):
+                    outmsg[hdr] = oldmsg[hdr]
 
-        # Copy the attachments we are keeping
-        attachments = [h for h in newmsg.keys()
-                       if h.startswith('Attachment-')]
-        if attachments:
-            oldtree = self.get_message_tree()
-            for att in oldtree['attachments']:
-                hdr = 'Attachment-%s' % att['count']
-                if hdr in attachments:
-                    # FIXME: Update the filename to match whatever
-                    #        the user typed
-                    outmsg.attach(att['part'])
-                    attachments.remove(hdr)
-
-        # Attach some new files?
-        for hdr in attachments:
+            # Copy the message text
+            new_body = newmsg.get_payload().decode('utf-8')
             try:
-                outmsg.attach(self.make_attachment(newmsg[hdr]))
+                new_body.encode('us-ascii')
+                charset = 'us-ascii'
             except:
-                pass  # FIXME: Warn user that failed...
+                charset = 'utf-8'
+            textbody = MIMEText(new_body, _subtype='plain', _charset=charset)
+            outmsg.attach(textbody)
+            del textbody['MIME-Version']
+
+            # FIXME: Use markdown and template to generate fancy HTML part
+
+            # Copy the attachments we are keeping
+            attachments = [h for h in newmsg.keys()
+                           if h.startswith('Attachment-')]
+            if attachments:
+                oldtree = self.get_message_tree()
+                for att in oldtree['attachments']:
+                    hdr = 'Attachment-%s' % att['count']
+                    if hdr in attachments:
+                        # FIXME: Update the filename to match whatever
+                        #        the user typed
+                        outmsg.attach(att['part'])
+                        attachments.remove(hdr)
+
+            # Attach some new files?
+            for hdr in attachments:
+                try:
+                    outmsg.attach(self.make_attachment(newmsg[hdr]))
+                except:
+                    pass  # FIXME: Warn user that failed...
 
         # Save result back to mailbox
+        if final:
+            sender, rcpts, outmsg = PrepareMessage(self.config, outmsg)
         return self.update_from_msg(outmsg)
 
     def update_from_msg(self, newmsg):
