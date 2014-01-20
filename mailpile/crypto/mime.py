@@ -5,7 +5,7 @@ import StringIO
 import email.parser
 
 from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
 
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.mail_generator import Generator
@@ -159,8 +159,7 @@ class MimeSigningWrapper(MimeWrapper):
     def __init__(self, *args, **kwargs):
         MimeWrapper.__init__(self, *args, **kwargs)
 
-        self.sigblock = MIMEText('', _charset=None)
-        self.sigblock.set_type(self.SIGNATURE_TYPE)
+        self.sigblock = MIMEBase(*self.SIGNATURE_TYPE.split('/'))
         self.sigblock.set_param("name", "signature.asc")
         for h, v in (("Content-Description", self.SIGNATURE_DESC),
                      ("Content-Disposition",
@@ -192,14 +191,12 @@ class MimeEncryptingWrapper(MimeWrapper):
     def __init__(self, *args, **kwargs):
         MimeWrapper.__init__(self, *args, **kwargs)
 
-        self.version = MIMEText('Version: %s\n' % self.ENCRYPTION_VERSION,
-                                _charset=None)
-        self.version.set_type(self.ENCRYPTION_TYPE)
+        self.version = MIMEBase(*self.ENCRYPTION_TYPE.split('/'))
+        self.version.set_payload('Version: %s\n' % self.ENCRYPTION_VERSION)
         for h, v in (("Content-Disposition", "attachment"), ):
             self.version.add_header(h, v)
 
-        self.enc_data = MIMEText('', _charset=None)
-        self.enc_data.set_type("application/octet-stream")
+        self.enc_data = MIMEBase('application', 'octet-stream')
         for h, v in (("Content-Disposition",
                       "attachment; filename=\"msg.asc\""), ):
             self.enc_data.add_header(h, v)
@@ -209,7 +206,12 @@ class MimeEncryptingWrapper(MimeWrapper):
 
     def wrap(self, msg):
         MimeWrapper.wrap(self, msg)
+
+        del msg['MIME-Version']
+        if self.cleaner:
+            self.cleaner(msg)
         message_text = Normalize(self.flatten(msg))
+
         to_keys = set(self.get_keys(self.recipients + [self.sender]))
         status, enc = self.crypto.encrypt(message_text,
                                           tokeys=to_keys, armor=True)
