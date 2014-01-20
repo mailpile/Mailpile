@@ -1,20 +1,10 @@
-<div id="contact-add" class="content-normal hide">
+{% extends "layouts/base.html" %}
+{% block content %}
 
-  <h3>{{_("Add New Contact")}}</h3>
+<div id="contact-add" class="content-normal">
 
-  <form id="form-contact-add" class="standard" method="POST" action="/contact/add/">
-
-    <input type="hidden" name="csrf" value="">
-
-    <label>{{_("Name")}}</label>
-    <input type="text" name="@contactname" value="" placeholder="Chelsea Manning">
-
-    <label>{{_("E-mail")}}</label>
-    <input type="text" name="@contactemail" value="" placeholder="chelsea@manning.com">
-
-    <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
-
-  </form>
+{% include("partials/contact_add.html") %}
+{% endblock %}
 
 {#
   <form id="form-contact-details" class="standard" method="POST" onsubmit="">

@@ -1,0 +1,13 @@
+<h3>{{_("Add New Contact")}}</h3>
+
+<form id="form-contact-add" class="standard" method="POST" action="/contact/add/">
+	<input type="hidden" name="csrf" value="">
+
+	<label>{{_("Name")}}</label>
+	<input type="text" name="@contactname" value="" placeholder="Chelsea Manning">
+
+	<label>{{_("E-mail")}}</label>
+	<input type="text" name="@contactemail" value="" placeholder="chelsea@manning.com">
+
+	<button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+</form>
