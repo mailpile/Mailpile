@@ -41,15 +41,18 @@ class Command:
 
     class CommandResult:
         def __init__(self, session, command, template_id, doc, result,
-                     status, message, args=[], kwargs={}):
+                     status, message, args=[], kwargs={}, error_info={}):
             self.session = session
             self.command = command
-            self.args = args
-            self.kwargs = kwargs
+            self.args = args[:]
+            self.kwargs = {}
+            self.kwargs.update(kwargs)
             self.template_id = template_id
             self.doc = doc
             self.result = result
             self.status = status
+            self.error_info = {}
+            self.error_info.update(error_info)
             self.message = message
 
         def __nonzero__(self):
@@ -73,6 +76,8 @@ class Command:
                 'result': self.result,
                 'elapsed': '%.3f' % self.session.ui.time_elapsed,
             }
+            if self.error_info:
+                rv['error'] = self.error_info
             for ui_key in [k for k in self.kwargs.keys()
                            if k.startswith('ui_')]:
                 rv[ui_key] = self.kwargs[ui_key]
@@ -104,6 +109,7 @@ class Command:
         self.data = data or {}
         self.status = 'success'
         self.message = 'OK'
+        self.error_info = {}
         self.result = None
         if type(arg) in (type(list()), type(tuple())):
             self.args = list(arg)
@@ -187,9 +193,10 @@ class Command:
                                               ) % (what, ))
         return msg_ids
 
-    def _error(self, message):
+    def _error(self, message, info={}):
         self.status = 'error'
         self.message = message
+        self.error_info.update(info)
         self.session.ui.error(message)
         return False
 
@@ -220,7 +227,9 @@ class Command:
         result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
                                     command.__doc__ or self.__doc__,
                                     rv, self.status, self.message,
-                                    args=self.args, kwargs=self.data)
+                                    args=self.args,
+                                    kwargs=self.data,
+                                    error_info=self.error_info)
         return result
 
     def _run(self, *args, **kwargs):

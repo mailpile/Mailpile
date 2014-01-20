@@ -140,10 +140,12 @@ class CompositionCommand(AddComposeMethods(Search)):
 
         return updates
 
-    def _return_search_results(self, emails, expand=None, new=[], sent=[]):
+    def _return_search_results(self, emails,
+                               expand=None, new=[], sent=[]):
         session, idx = self.session, self._idx()
         session.results = [e.msg_idx_pos for e in emails]
-        session.displayed = EditableSearchResults(session, idx, new, sent,
+        session.displayed = EditableSearchResults(session, idx,
+                                                  new, sent,
                                                   results=session.results,
                                                   num=len(emails),
                                                   emails=expand)
@@ -433,6 +435,7 @@ class Sendit(CompositionCommand):
 
         # Process one at a time so we don't eat too much memory
         sent = []
+        missing_keys = []
         for email in emails:
             try:
                 msg_mid = email.get_msg_info(idx.MSG_MID)
@@ -441,7 +444,7 @@ class Sendit(CompositionCommand):
                                                   rcpts=(bounce_to or None))])
                 sent.append(email)
             except KeyLookupError, kle:
-                session.ui.error(_('Keys not found for: %s' % kle.missing))
+                missing_keys.extend(kle.missing)
                 self._ignore_exception()
             except:
                 session.ui.error('Failed to send %s' % email)
@@ -452,6 +455,8 @@ class Sendit(CompositionCommand):
                               ) % (len(emails),
                                    bounce_to or '(header folks)', sent))
 
+        if missing_keys:
+            self.error_info['missing_keys'] = missing_keys
         if sent:
             self._tag_sent(sent)
             self._tag_outbox(sent, untag=True)
@@ -479,7 +484,9 @@ class Update(CompositionCommand):
                                                 create=create,
                                                 noneok=outbox)
 
-        if email_updates:
+        if not email_updates:
+            return self._error('Nothing to do!')
+        try:
             if (self.data.get('file-data') or [''])[0]:
                 if not Attach(session, data=self.data).command(emails=emails):
                     return False
@@ -498,8 +505,9 @@ class Update(CompositionCommand):
                 return self._return_search_results(emails, sent=emails)
             else:
                 return self._edit_messages(emails, new=False, tag=False)
-        else:
-            return self._error('Nothing to do!')
+        except KeyLookupError, kle:
+            return self._error('Missing encryption keys',
+                               info={'missing_keys': kle.missing})
 
 
 class UnThread(CompositionCommand):
