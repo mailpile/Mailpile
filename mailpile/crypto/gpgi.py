@@ -12,6 +12,7 @@ from gettext import gettext as _
 from subprocess import Popen, PIPE
 
 from mailpile.crypto.state import *
+from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 
 
 DEFAULT_SERVER = "pool.sks-keyservers.net"
@@ -717,8 +718,69 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
         return res
 
-    def pgpmime_normalize(self, payload):
-        return re.sub(r'\r?\n', '\r\n', payload)
+
+def GetKeys(gnupg, config, people):
+    keys = []
+    missing = []
+
+    # First, we go to the contact database and get a list of keys.
+    for person in set(people):
+        if '#' in person:
+            keys.append(person.rsplit('#', 1)[1])
+        else:
+            vcard = config.vcards.get_vcard(person)
+            if vcard:
+                # FIXME: Rather than get_all, we should give the vcard the
+                #        option of providing us with its favorite key.
+                lines = [vcl for vcl in vcard.get_all('KEY')
+                         if vcl.value.startswith('data:application'
+                                                 '/x-pgp-fingerprint,')]
+                if len(lines) == 1:
+                    keys.append(lines[0].value.split(',', 1)[1])
+                else:
+                    missing.append(person)
+            else:
+                missing.append(person)
+
+    # FIXME: This doesn't really feel scalable...
+    all_keys = gnupg.list_keys()
+    for key in all_keys.values():
+        for uid in key["uids"]:
+            if uid["email"] in missing:
+                missing.remove(uid["email"])
+                keys.append(key["fingerprint"])
+
+    # Next, we go make sure all those keys are really in our keychain.
+    fprints = [k["fingerprint"] for k in all_keys.values()]
+    for key in keys:
+        if key not in keys and key not in fprints:
+            missing.append(key)
+
+    if missing:
+        raise KeyLookupError(_('Keys missing or ambiguous for %s'
+                               ) % ', '.join(missing), missing)
+    return keys
+
+
+class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
+    CRYPTO_CLASS = GnuPG
+    CONTAINER_PARAMS = (('micalg', 'pgp-sha1'),
+                        ('protocol', 'application/pgp-signature'))
+    SIGNATURE_TYPE = 'application/pgp-signature'
+    SIGNATURE_DESC = 'OpenPGP Digital Signature'
+
+    def get_keys(self, who):
+        return GetKeys(self.crypto, self.config, who)
+
+
+class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
+    CRYPTO_CLASS = GnuPG
+    CONTAINER_PARAMS = (('protocol', 'application/pgp-encrypted'), )
+    ENCRYPTION_TYPE = 'application/pgp-encrypted'
+    ENCRYPTION_VERSION = 1
+
+    def get_keys(self, who):
+        return GetKeys(self.crypto, self.config, who)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ from gettext import gettext as _
 
 import mailpile.plugins
 from mailpile.commands import Command
+from mailpile.crypto.state import *
 from mailpile.plugins.tags import Tag
 from mailpile.mailutils import ExtractEmails, Email, PrepareMail, SendMail
 from mailpile.search import MailIndex
@@ -434,6 +435,9 @@ class Sendit(CompositionCommand):
                 SendMail(session, [PrepareMail(config, email,
                                                rcpts=(bounce_to or None))])
                 sent.append(email)
+            except KeyLookupError, kle:
+                session.ui.error(_('Keys not found for: %s' % kle.missing))
+                self._ignore_exception()
             except:
                 session.ui.error('Failed to send %s' % email)
                 self._ignore_exception()

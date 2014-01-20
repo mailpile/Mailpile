@@ -4,6 +4,12 @@
 STATE_CONTEXT_ID = 0
 
 
+class KeyLookupError(ValueError):
+    def __init__(self, message, missing):
+        ValueError.__init__(self, message)
+        self.missing = missing
+
+
 class CryptoInfo(dict):
     """Base class for crypto-info classes"""
     KEYS = ["protocol", "context", "status", "description"]

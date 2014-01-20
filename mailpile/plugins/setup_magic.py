@@ -177,6 +177,8 @@ class Setup(Command):
                     if not session.config.prefs.gpg_recipient:
                         session.config.prefs.gpg_recipient = key
                         session.ui.notify(_('Encrypting config to %s') % key)
+                    if session.config.prefs.crypto_policy == 'none':
+                        session.config.prefs.crypto_policy = 'openpgp-sign'
         else:
             session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 

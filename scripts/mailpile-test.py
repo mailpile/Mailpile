@@ -32,6 +32,7 @@ from mailpile import Mailpile
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
 MY_FROM = 'team+testing@mailpile.is'
+MY_KEYID = '0x7848252F'
 
 # First, we set up a pristine Mailpile
 os.system('rm -rf %s' % mailpile_home)
@@ -66,6 +67,7 @@ try:
     mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
     mp.set('sys/debug = sendmail log compose')
     mp.set('prefs/openpgp_header = encrypt')
+    mp.set('prefs/crypto_policy = openpgp-sign-encrypt')
 
     # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
@@ -158,7 +160,8 @@ try:
     # Edit the message (moves from Blank to Draft, not findable in index)
     msg_data = {
         'from': [MY_FROM],
-        'bcc': ['secret@test.com'],
+        'to': ['%s#%s' % (MY_FROM, MY_KEYID)],
+        'bcc': ['secret@test.com#%s' % MY_KEYID],
         'mid': [new_mid],
         'subject': ['This the TESTMSG subject'],
         'body': ['Hello world!']
@@ -178,6 +181,7 @@ try:
     assert(mp.search('tag:blank').result['stats']['count'] == 0)
     assert('the TESTMSG subject' in contents(mailpile_sent))
     assert('thisisauniquestring' in contents(mailpile_sent))
+    assert(MY_KEYID not in contents(mailpile_sent))
     assert(MY_FROM in grep('X-Args', mailpile_sent))
     assert('secret@test.com' in grep('X-Args', mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))

@@ -721,6 +721,7 @@ class VCardStore(dict):
         dict.__init__(self)
         self.config = config
         self.vcard_dir = vcard_dir
+        self.loaded = False
 
     def index_vcard(self, card):
         attr = (card.kind == 'individual') and 'email' or 'nickname'
@@ -737,7 +738,10 @@ class VCardStore(dict):
             del self[card.random_uid]
 
     def load_vcards(self, session=None):
+        if self.loaded:
+            return
         try:
+            self.loaded = True
             prefs = self.config.prefs
             for fn in os.listdir(self.vcard_dir):
                 if mailpile.util.QUITTING:

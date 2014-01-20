@@ -24,6 +24,9 @@ from smtplib import SMTP, SMTP_SSL
 from urllib import quote, unquote
 
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
+from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
+from mailpile.crypto.mime import UnwrapMimeCrypto
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.mail_generator import Generator
 
@@ -51,95 +54,39 @@ class NoSuchMailboxError(OSError):
     pass
 
 
-def UnwrapMimeCrypto(part, si=None, ei=None):
-    """
-    This method will replace encrypted and signed parts with their
-    contents and set part attributes describing the security properties
-    instead.
-    """
-    part.signature_info = si or SignatureInfo()
-    part.encryption_info = ei or EncryptionInfo()
-    mimetype = part.get_content_type()
-    if part.is_multipart():
-
-        # FIXME: Check the protocol. PGP? Something else?
-        # FIXME: This is where we add hooks for other MIME encryption
-        #        schemes, so route to callbacks by protocol.
-
-        if mimetype == 'multipart/signed':
-            gpg = GnuPG()
-            boundary = part.get_boundary()
-            payload, signature = part.get_payload()
-
-            # The Python get_payload() method likes to rewrite headers,
-            # which breaks signature verification. So we manually parse
-            # out the raw payload here.
-            head, raw_payload, junk = part.as_string(
-                ).replace('\r\n', '\n').split('\n--%s\n' % boundary, 2)
-
-            part.signature_info = gpg.verify(
-                gpg.pgpmime_normalize(raw_payload),
-                signature.get_payload())
-
-            # Reparent the contents up, removing the signature wrapper
-            part.set_payload(payload.get_payload())
-            for h in payload.keys():
-                del part[h]
-            for h, v in payload.items():
-                part.add_header(h, v)
-
-            # Try again, in case we just unwrapped another layer
-            # of multipart/something.
-            return UnwrapMimeCrypto(part,
-                                    si=part.signature_info,
-                                    ei=part.encryption_info)
-
-        elif mimetype == 'multipart/encrypted':
-            gpg = GnuPG()
-            preamble, payload = part.get_payload()
-            (part.signature_info, part.encryption_info, decrypted
-             ) = gpg.decrypt(payload.as_string())
-
-            if part.encryption_info['status'] == 'decrypted':
-                newpart = email.parser.Parser().parse(
-                    StringIO.StringIO(decrypted))
-
-                # Reparent the contents up, removing the encryption wrapper
-                part.set_payload(newpart.get_payload())
-                for h in newpart.keys():
-                    del part[h]
-                for h, v in newpart.items():
-                    part.add_header(h, v)
-
-                # Try again, in case we just unwrapped another layer
-                # of multipart/something.
-                return UnwrapMimeCrypto(part,
-                                        si=part.signature_info,
-                                        ei=part.encryption_info)
-
-        # If we are still multipart after the above shenanigans, recurse
-        # into our subparts and unwrap them too.
-        if part.is_multipart():
-            for subpart in part.get_payload():
-                UnwrapMimeCrypto(subpart,
-                                 si=part.signature_info,
-                                 ei=part.encryption_info)
-
-    else:
-        # FIXME: This is where we would handle cryptoschemes that don't
-        #        appear as multipart/...
-        pass
-
-
 def ParseMessage(fd, pgpmime=True):
     message = email.parser.Parser().parse(fd)
-    if pgpmime:
-        UnwrapMimeCrypto(message)
+    if pgpmime and GnuPG:
+        UnwrapMimeCrypto(message, protocols={
+            'openpgp': GnuPG
+        })
     else:
         for part in message.walk():
             part.signature_info = SignatureInfo()
             part.encryption_info = EncryptionInfo()
     return message
+
+
+def ExtractEmails(string, strip_keys=True):
+    emails = []
+    startcrap = re.compile('^[\'\"<(]')
+    endcrap = re.compile('[\'\">);]$')
+    string = string.replace('<', ' <').replace('(', ' (')
+    for w in [sw.strip() for sw in re.compile('[,\s]+').split(string)]:
+        atpos = w.find('@')
+        if atpos >= 0:
+            while startcrap.search(w):
+                w = w[1:]
+            while endcrap.search(w):
+                w = w[:-1]
+            if strip_keys and '#' in w[atpos:]:
+                w = w[:atpos] + w[atpos:].split('#', 1)[0]
+            # E-mail addresses are only allowed to contain ASCII
+            # characters, so we just strip everything else away.
+            emails.append(CleanText(w,
+                                    banned=CleanText.WHITESPACE,
+                                    replace='_').clean)
+    return emails
 
 
 def ExtractEmailAndName(string):
@@ -153,25 +100,6 @@ def ExtractEmailAndName(string):
     return email, (name or email)
 
 
-def ExtractEmails(string):
-    emails = []
-    startcrap = re.compile('^[\'\"<(]')
-    endcrap = re.compile('[\'\">);]$')
-    string = string.replace('<', ' <').replace('(', ' (')
-    for w in [sw.strip() for sw in re.compile('[,\s]+').split(string)]:
-        if '@' in w:
-            while startcrap.search(w):
-                w = w[1:]
-            while endcrap.search(w):
-                w = w[:-1]
-            # E-mail addresses are only allowed to contain ASCII
-            # characters, so we just strip everything else away.
-            emails.append(CleanText(w,
-                                    banned=CleanText.WHITESPACE,
-                                    replace='_').clean)
-    return emails
-
-
 def MessageAsString(part, unixfrom=False):
     buf = StringIO.StringIO()
     Generator(buf).flatten(part, unixfrom=unixfrom, linesep='\r\n')
@@ -183,15 +111,18 @@ def PrepareMail(config, mailobj, sender=None, rcpts=None):
         tree = mailobj.get_message_tree()
         sender = sender or tree['headers_lc']['from']
         if not rcpts:
-            rcpts = ExtractEmails(tree['headers_lc'].get('to', ''))
-            rcpts += ExtractEmails(tree['headers_lc'].get('cc', ''))
-            rcpts += ExtractEmails(tree['headers_lc'].get('bcc', ''))
+            rcpts = ExtractEmails(tree['headers_lc'].get('to', ''),
+                                  strip_keys=False)
+            rcpts += ExtractEmails(tree['headers_lc'].get('cc', ''),
+                                   strip_keys=False)
+            rcpts += ExtractEmails(tree['headers_lc'].get('bcc', ''),
+                                   strip_keys=False)
             if not rcpts:
                 raise NoRecipientError()
             rcpts += [sender]
 
     # Cleanup...
-    sender = ExtractEmails(sender)[0]
+    sender = ExtractEmails(sender, strip_keys=False)[0]
     sender_keyid = None
     if config.prefs.openpgp_header:
         try:
@@ -205,14 +136,15 @@ def PrepareMail(config, mailobj, sender=None, rcpts=None):
 
     rcpts, rr = [sender], rcpts
     for r in rr:
-        for e in ExtractEmails(r):
+        for e in ExtractEmails(r, strip_keys=False):
             if e not in rcpts:
                 rcpts.append(e)
 
     msg = copy.deepcopy(mailobj.get_msg())
 
     # Remove headers we don't want to expose
-    for bcc in ('bcc', 'Bcc', 'BCc', 'BCC', 'BcC', 'bcC'):
+    for bcc in ('bcc', 'Bcc', 'BCc', 'BCC', 'BcC', 'bcC',
+                'Encryption', 'encryption'):
         if bcc in msg:
             del msg[bcc]
 
@@ -224,46 +156,34 @@ def PrepareMail(config, mailobj, sender=None, rcpts=None):
                                                    config.prefs.openpgp_header)
 
     # Sign and encrypt
-    signatureopt = bool(int(tree['headers_lc'].get('do_sign', 0)))
-    encryptopt = bool(int(tree['headers_lc'].get('do_encrypt', 0)))
-    gnupg = GnuPG()
-    if signatureopt:
-        signingstring = MessageAsString(msg)
-        signature = gnupg.sign(signingstring, fromkey=sender, armor=True)
+    crypto_policy = tree['headers_lc'].get('encryption',
+                                           config.prefs.crypto_policy).lower()
+    if crypto_policy == 'default':
+        crypto_policy = config.prefs.crypto_policy
 
-        # FIXME: Create attachment, attach signature.
-        if signature[0] == 0:
-            # sigblock = MIMEMultipart(_subtype="signed",
-            #                          protocol="application/pgp-signature")
-            # sigblock.attach(msg)
-            msg.set_type("multipart/signed")
-            msg.set_param("micalg", "pgp-sha1")  # need to find this!
-            msg.set_param("protocol", "application/pgp-signature")
-            sigblock = MIMEText(str(signature[1]), _charset=None)
-            sigblock.set_type("application/pgp-signature")
-            sigblock.set_param("name", "signature.asc")
-            sigblock.add_header("Content-Description",
-                                "OpenPGP digital signature")
-            sigblock.add_header("Content-Disposition",
-                                "attachment; filename=\"signature.asc\"")
-            msg.attach(sigblock)
-        else:
-            # Raise stink about signing having failed.
-            pass
-        #print signature
+    if 'openpgp' in crypto_policy:
 
-    #if encryptopt:
-    #    encrypt_to = tree['headers_lc'].get('encrypt_to')
-    #    newmsg = gnupg.encrypt(msg.as_string(), encrypt_to)
-    #    # TODO: Replace unencrypted message
+        # FIXME: Make a more efficient sign+encrypt wrapper
+
+        if 'sign' in crypto_policy:
+            wrapper = OpenPGPMimeSigningWrapper(config,
+                                                sender=sender,
+                                                recipients=rcpts)
+            msg = wrapper.wrap(msg)
+
+        if 'encrypt' in crypto_policy:
+            wrapper = OpenPGPMimeEncryptingWrapper(config,
+                                                   sender=sender,
+                                                   recipients=rcpts)
+            msg = wrapper.wrap(msg)
 
     # When a mail has been signed or encrypted, it should be saved as such.
+    # Hmm. Probably probably!
+    # We should at the very least make a note that this happened.
+    # Per draft logs?
 
-    del(msg["do_sign"])
-    del(msg["do_encrypt"])
-    del(msg["encrypt_to"])
-
-    return (sender, set(rcpts), msg)
+    rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
+    return (sender, rcpts, msg)
 
 
 def SendMail(session, from_to_msg_tuples):
@@ -453,7 +373,9 @@ class Email(object):
                 charset = 'us-ascii'
             except:
                 charset = 'utf-8'
-            msg.attach(MIMEText(msg_text, _subtype='plain', _charset=charset))
+            textpart = MIMEText(msg_text, _subtype='plain', _charset=charset)
+            msg.attach(textpart)
+            del textpart['MIME-Version']
         msg_key = mbx.add(msg)
         msg_to = msg_cc = []
         msg_ptr = mbx.get_msg_ptr(mbox_id, msg_key)
@@ -470,7 +392,7 @@ class Email(object):
     MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                     'content-transfer-encoding')
     UNEDITABLE_HEADERS = ('message-id', ) + MIME_HEADERS
-    MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject')
+    MANDATORY_HEADERS = ('From', 'To', 'Cc', 'Bcc', 'Subject', 'Encryption')
     HEADER_ORDER = {
         'in-reply-to': -2,
         'references': -1,
@@ -480,13 +402,14 @@ class Email(object):
         'to': 4,
         'cc': 5,
         'bcc': 6,
+        'encryption': 99,
     }
 
     def get_editing_strings(self, tree=None):
         tree = tree or self.get_message_tree()
         strings = {
             'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '',
-            'attachments': {}
+            'encryption': '', 'attachments': {}
         }
         header_lines = []
         body_lines = []
@@ -510,7 +433,8 @@ class Email(object):
             strings['attachments'][att['count']] = (att['filename']
                                                     or '(unnamed)')
 
-        # FIXME: Add pseudo-headers for GPG stuff?
+        if not strings['encryption']:
+            strings['encryption'] = self.config.prefs.crypto_policy
 
         strings['headers'] = '\n'.join(header_lines)
         strings['body'] = '\n'.join([t['data'].strip()
@@ -582,7 +506,10 @@ class Email(object):
             charset = 'us-ascii'
         except:
             charset = 'utf-8'
-        outmsg.attach(MIMEText(new_body, _subtype='plain', _charset=charset))
+        textbody = MIMEText(new_body, _subtype='plain', _charset=charset)
+        outmsg.attach(textbody)
+        del textbody['MIME-Version']
+
         # FIXME: Use markdown and template to generate fancy HTML part
 
         # Copy the attachments we are keeping

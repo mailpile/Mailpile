@@ -43,6 +43,8 @@ CONFIG_RULES = {
         'openpgp_header':  (_('Advertise GPG preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
                             'signencrypt'),
+        'crypto_policy':   (_('Default encryption policy for outgoing mail'),
+                            str, 'none'),
         'default_order':   (_('Default sort order'), str,          'rev-date'),
         'obfuscate_index': (_('Key to use to scramble the index'), str,    ''),
         'index_encrypted': (_('Make encrypted content searchable'),
