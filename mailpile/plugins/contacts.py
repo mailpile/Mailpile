@@ -86,8 +86,8 @@ class AddVCard(VCardCommand):
             pairs = [(self.args[0], ' '.join(self.args[2:]))]
         elif self.data:
             if "@contactname" in self.data and "@contactemail" in self.data:
-                pairs = [(self.data["@contactemail"],
-                          self.data["@contactname"])]
+                pairs = [(self.data["@contactemail"][0],
+                          self.data["@contactname"][0])]
             elif "contactnames" in self.data and "contactemails" in self.data:
                 pairs = zip(self.data["contactemails"],
                             self.data["contactnames"])
@@ -98,8 +98,8 @@ class AddVCard(VCardCommand):
             vcards = []
             for handle, name in pairs:
                 if handle.lower() not in config.vcards:
-                    vcard = self._make_new_vcard(handle, name)
-                    config.vcards.add_vcard(vcard)
+                    vcard = self._make_new_vcard(handle.lower(), name)
+                    config.vcards.index_vcard(vcard)
                     vcards.append(vcard)
                 else:
                     session.ui.warning('Already exists: %s' % handle)
