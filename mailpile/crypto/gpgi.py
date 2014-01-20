@@ -649,7 +649,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
         0
         """
-        action = ["--encrypt"]
+        action = ["--encrypt", "--yes", "--expert", "--trust-model", "always"]
         if armor:
             action.append("--armor")
         for r in tokeys:

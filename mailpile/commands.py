@@ -120,6 +120,11 @@ class Command:
         if not reset and config.index:
             return config.index
 
+        def __do_load2():
+            config.vcards.load_vcards(session)
+            if not wait_all:
+                session.ui.reset_marks(quiet=quiet)
+
         def __do_load1():
             if reset:
                 config.index = None
@@ -127,23 +132,19 @@ class Command:
                 session.searched = []
                 session.displayed = {'start': 1, 'count': 0}
             idx = config.get_index(session)
+            if wait_all:
+                __do_load2()
             if not wait:
                 session.ui.reset_marks(quiet=quiet)
+            return idx
+
         if wait:
             rv = config.slow_worker.do(session, 'Load', __do_load1)
         else:
             config.slow_worker.add_task(session, 'Load', __do_load1)
             rv = None
 
-        def __do_load2():
-            idx = config.get_index(session)
-            config.vcards.load_vcards(session)
-            if not wait_all:
-                session.ui.reset_marks(quiet=quiet)
-            return idx
-        if wait_all:
-            config.slow_worker.do(session, 'Load2', __do_load2)
-        else:
+        if not wait_all:
             config.slow_worker.add_task(session, 'Load2', __do_load2)
 
         return rv
