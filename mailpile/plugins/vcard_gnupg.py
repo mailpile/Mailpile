@@ -42,9 +42,9 @@ class GnuPGImporter(VCardImporter):
                 if "name" in uid and uid["name"]:
                     name = uid["name"]
                     vcls.append(VCardLine(name="fn", value=name))
-            if card:
+            if card and emails:
                 card.add(*vcls)
-            else:
+            elif emails:
                 # This is us taking care to only create one card for each
                 # set of e-mail addresses.
                 card = SimpleVCard(*vcls)

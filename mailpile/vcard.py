@@ -752,7 +752,7 @@ class VCardStore(dict):
                     c.gpg_recipient = lambda: prefs.get('gpg_recipient')
                     self.index_vcard(c)
                     if session:
-                        session.ui.mark('Loaded %s' % c.email)
+                        session.ui.mark('Loaded %s from %s' % (c.email, fn))
                 except:
                     if session:
                         if 'vcard' in self.config.sys.debug:
