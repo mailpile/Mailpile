@@ -887,20 +887,42 @@ class Email(object):
         }
         parse = []
         block = 'body'
+        clines = []
         for line in data.splitlines(True):
             block, ltype = self.parse_line_type(line, block)
             if ltype != current['type']:
+
+                # This is not great, it's a hack to move the preamble
+                # before a quote section into the quote itself.
+                if ltype == 'quote' and clines and '@' in clines[-1]:
+                    current['data'] = ''.join(clines[:-1])
+                    clines = clines[-1:]
+                elif (ltype == 'quote' and len(clines) > 2
+                        and '@' in clines[-2] and '' == clines[-1].strip()):
+                    current['data'] = ''.join(clines[:-2])
+                    clines = clines[-2:]
+                else:
+                    clines = []
+
                 current = {
                     'type': ltype,
-                    'data': '',
+                    'data': ''.join(clines),
                     'charset': charset,
                 }
                 parse.append(current)
             current['data'] += line
+            clines.append(line)
         return parse
 
     def parse_line_type(self, line, block):
-        # FIXME: Detect PGP blocks, forwarded messages, signatures, ...
+        # FIXME: Detect forwarded messages, ...
+
+        if block in ('body', 'quote') and line in ('-- \n', '-- \r\n'):
+            return 'signature', 'signature'
+
+        if block == 'signature':
+            return 'signature', 'signature'
+
         stripped = line.rstrip()
 
         if stripped == '-----BEGIN PGP SIGNED MESSAGE-----':
@@ -937,7 +959,7 @@ class Email(object):
         if block == 'quote':
             if stripped == '':
                 return 'quote', 'quote'
-        if line.startswith('>') or stripped.endswith(' wrote:'):
+        if line.startswith('>'):
             return 'quote', 'quote'
 
         return 'body', 'text'

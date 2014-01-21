@@ -123,6 +123,8 @@
         <div class="thread-item-text">{{ part.data|e|urlize }}</div>
         {% elif part.type == "quote" %}
         <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div></div>
+        {% elif part.type == "signature" %}
+        <div class="thread-item-signature" id="message-signature-{{mid}}-{{loop.index}}"><div class="thread-item-signature-show" data-signature_id="{{mid}}-{{loop.index}}">&nbsp;--&nbsp;</div><div class="thread-item-signature-text" id="message-signature-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div></div>
         {% endif %}
       {% endif %}
     {% endfor %}
