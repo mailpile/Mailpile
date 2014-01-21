@@ -38,7 +38,7 @@
 <script type="text/javascript" src="/static/js/libraries-min.js"></script>
 <script type="text/javascript" src="/static/js/libraries/d3.v3.min.js"></script>
 <script type="text/javascript" src="/static/js/libraries/bootstrap-dropdown.js"></script>
-
+<script type="text/javascript" src="/static/js/libraries/jquery.nanoscroller.js"></script>
 </head>
 <body>
 
@@ -88,83 +88,86 @@
     </nav>
   </div>
 </div>
-<div id="container">
-  <div id="sidebar">
-    <nav>
-      <ul>
-        {% for tag in mailpile("tag/list", "display=priority").result.tags %}
-        {% if tag.slug == "drafts" %}
-        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-default {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
-        {% else %}
-        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
-        {% endif %}
-            <a href="{{tag.url}}" title="{{tag.all}} {{_("emails")}}" class="sidebar-tag">
-              <span class="sidebar-icon icon-{{tag.slug}}"></span>
-              <span class="sidebar-tag">{{tag.name}}</span>
-              {% if tag.stats.new > 0 %}
-              <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
-              {% endif %}
-            </a>
-        </li>
-        {% endfor %}
-      </ul>
-      <hr>
-      <ul>
-        {% for tag in mailpile("tag/list", "display=tag").result.tags %}
-        <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
-         <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag">
-            <span class="sidebar-icon icon-tag"></span>
+<div id="sidebar">
+  <nav>
+    <ul>
+      {% for tag in mailpile("tag/list", "display=priority").result.tags %}
+      {% if tag.slug == "drafts" %}
+      <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-default {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+      {% else %}
+      <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+      {% endif %}
+          <a href="{{tag.url}}" title="{{tag.all}} {{_("emails")}}" class="sidebar-tag">
+            <span class="sidebar-icon icon-{{tag.slug}}"></span>
             <span class="sidebar-tag">{{tag.name}}</span>
             {% if tag.stats.new > 0 %}
             <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
             {% endif %}
-          </a>        
-        </li>
-        {% endfor %}
-      </ul>
-      <hr>
-      <ul>
-        <li>
-          <a href="/search/att:jpg/" class="">
-            <span class="sidebar-icon icon-photos"></span>
-            <span class="sidebar-tag">{{_("Photos")}}</span>
           </a>
-        </li>
-        <li>
-          <a href="/search/has:attachment/" class="">
-            <span class="sidebar-icon icon-files"></span>
-            <span class="sidebar-tag">{{_("Files")}}</span>
-          </a>
-        </li>
-        <li>
-          <a href="/search/http/" class="">
-            <span class="sidebar-icon icon-links"></span>
-            <span class="sidebar-tag">{{_("Links")}}</span>
-          </a>
-        </li>
-        <li>
-          <a href="/group/list/" class="">
-            <span class="sidebar-icon icon-groups"></span>
-            <span class="sidebar-tag">{{_("Groups")}}</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
-  </div>
+      </li>
+      {% endfor %}
+    </ul>
+    <hr>
+    <ul>
+      {% for tag in mailpile("tag/list", "display=tag").result.tags %}
+      <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+       <a href="{{tag.url}}" title="{{tag.all}} emails" class="sidebar-tag">
+          <span class="sidebar-icon icon-tag"></span>
+          <span class="sidebar-tag">{{tag.name}}</span>
+          {% if tag.stats.new > 0 %}
+          <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
+          {% endif %}
+        </a>        
+      </li>
+      {% endfor %}
+    </ul>
+    <hr>
+    <ul>
+      <li>
+        <a href="/search/att:jpg/" class="">
+          <span class="sidebar-icon icon-photos"></span>
+          <span class="sidebar-tag">{{_("Photos")}}</span>
+        </a>
+      </li>
+      <li>
+        <a href="/search/has:attachment/" class="">
+          <span class="sidebar-icon icon-files"></span>
+          <span class="sidebar-tag">{{_("Files")}}</span>
+        </a>
+      </li>
+      <li>
+        <a href="/search/http/" class="">
+          <span class="sidebar-icon icon-links"></span>
+          <span class="sidebar-tag">{{_("Links")}}</span>
+        </a>
+      </li>
+      <li>
+        <a href="/group/list/" class="">
+          <span class="sidebar-icon icon-groups"></span>
+          <span class="sidebar-tag">{{_("Groups")}}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
 
-  <div id="content" class="clearfix">  
-    {% block content %}
-      {{results}}
-    {% endblock %}
-    <div id="debug" class="hide">
-      <h3>DEBUG</h3>
-      <b>command:</b> {{ command }}<br>
-      <b>args:</b> {{ args }}<br>
-      <b>kwargs:</b> {{ kwargs }}
-      {{logged}}
-    </div>
+<div id="content" class="clearfix">
+  <div id="content-tools">
+  {% include("partials/tools_search.html") %}
   </div>
+  <div id="content-view">
+  {% block content %}
+    {{results}}
+  {% endblock %}
+  </div>
+</div>
 
+<div id="debug" class="hide">
+  <h3>DEBUG</h3>
+  <b>command:</b> {{ command }}<br>
+  <b>args:</b> {{ args }}<br>
+  <b>kwargs:</b> {{ kwargs }}
+  {{logged}}
 </div>
 
 <div id="search-params" class="clearfix hide">
