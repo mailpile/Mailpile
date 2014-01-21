@@ -339,11 +339,11 @@ class UserInteraction:
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
 
         tf = tempfile.NamedTemporaryFile()
-        tf.write(edit_this)
+        tf.write(edit_this.encode('utf-8'))
         tf.flush()
         os.system('%s %s' % (os.getenv('VISUAL', default='vi'), tf.name))
         tf.seek(0, 0)
-        edited = tf.read()
+        edited = tf.read().decode('utf-8')
         tf.close()
 
         if edited == edit_this:
