@@ -14,11 +14,14 @@
 
 #}
 {% set found_editable = [] %}
+{% set found_requested = [] %}
 {% for mid in result.thread_ids %}
   {% set message = result.data.messages.get(mid) %}
   {% set metadata = result.data.metadata[mid] %}
-  {% if message and metadata.flags.draft %}
-    {% do found_editable.append(mid) %}
+  {% if message %}
+    {% do found_requested.append(mid) %}
+    {% if metadata.flags.draft %}
+      {% do found_editable.append(mid) %}
   <form id="form-compose" name="compose" action="/message/update/" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="mid" value="{{mid}}">
     <div class="compose-headers compose-to">
@@ -79,12 +82,13 @@
       </button>
     </div>
   </form>
+    {% endif %}
   {% endif %}
 {% endfor %}
 </div>
 
-{% if not found_editable %}
-  {{ mailpile('http/redirect/url_thread', result.thread_ids[0]) }}
+{% if found_requested and not found_editable %}
+  {{ mailpile('http/redirect/url_thread', found_requested[0]) }}
 {% endif %}
 
 {% else %}{# if result #}
