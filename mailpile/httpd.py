@@ -25,6 +25,35 @@ DEFAULT_PORT = 33411
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
+    # We always recognize these extensions, no matter what the Python
+    # mimetype module thinks.
+    _MIMETYPE_MAP = dict([(ext, 'text/plain') for ext in (
+        'c', 'cfg', 'conf', 'cpp', 'csv', 'h', 'hpp', 'log', 'md', 'me',
+        'py', 'rb', 'rc', 'txt'
+    )] + [(ext, 'application/x-font') for ext in (
+        'pfa', 'pfb', 'gsf', 'pcf'
+    )] + [
+        ('css', 'text/css'),
+        ('eot', 'application/vnd.ms-fontobject'),
+        ('gif', 'image/gif'),
+        ('html', 'text/html'),
+        ('htm', 'text/html'),
+        ('ico', 'image/x-icon'),
+        ('jpg', 'image/jpeg'),
+        ('jpeg', 'image/jpeg'),
+        ('js', 'text/javascript'),
+        ('json', 'application/json'),
+        ('otf', 'font/otf'),
+        ('png', 'image/png'),
+        ('rss', 'application/rss+xml'),
+        ('tif', 'image/tiff'),
+        ('tiff', 'image/tiff'),
+        ('ttf', 'font/ttf'),
+        ('svg', 'image/svg+xml'),
+        ('svgz', 'image/svg+xml'),
+        ('woff', 'application/font-woff'),
+    ])
+
     _ERROR_CONTEXT = {'lastq': '', 'csrf': '', 'path': ''},
 
     def http_host(self):
@@ -106,6 +135,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if not suppress_body:
             self.wfile.write(message or '')
 
+    def guess_mimetype(self, fpath):
+        ext = os.path.basename(fpath).rsplit('.')[-1]
+        return (self._MIMETYPE_MAP.get(ext.lower()) or
+                mimetypes.guess_type(fpath, strict=False)[0] or
+                'application/octet-stream')
+
     def send_file(self, config, filename):
         # FIXME: Do we need more security checks?
         if '..' in filename:
@@ -114,8 +149,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             try:
                 tpl = config.sys.path.get(self.http_host(), 'html_theme')
                 fpath, fd = config.open_file(tpl, filename)
-                mimetype = (mimetypes.guess_type(fpath)[0] or
-                            'application/octet-stream')
+                mimetype = self.guess_mimetype(fpath)
                 message = fd.read()
                 fd.close()
                 code, msg = 200, "OK"
