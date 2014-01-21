@@ -97,6 +97,8 @@ class MailIndex:
     BOGUS_METADATA = [None, '', None, '0', '(no sender)', '', '', '0',
                       '(not in index)', '', '', '', '-1']
 
+    MAX_INCREMENTAL_SAVES = 25
+
     def __init__(self, config):
         self.config = config
         self.INDEX = []
@@ -110,6 +112,7 @@ class MailIndex:
         self.CACHE = {}
         self.MODIFIED = set()
         self.EMAILS_SAVED = 0
+        self._saved_changes = 0
 
     def l2m(self, line):
         return line.decode('utf-8').split(u'\t')
@@ -218,6 +221,9 @@ class MailIndex:
     def save_changes(self, session=None):
         mods, self.MODIFIED = self.MODIFIED, set()
         if mods or len(self.EMAILS) > self.EMAILS_SAVED:
+            if self._saved_changes >= self.MAX_INCREMENTAL_SAVES:
+                return self.save(session=session)
+
             if session:
                 session.ui.mark(_("Saving metadata index changes..."))
             fd = gpg_open(self.config.mailindex_file(),
@@ -232,6 +238,7 @@ class MailIndex:
             if session:
                 session.ui.mark(_("Saved metadata index changes"))
             self.EMAILS_SAVED = len(self.EMAILS)
+            self._saved_changes += 1
 
     def save(self, session=None):
         self.MODIFIED = set()
@@ -256,6 +263,7 @@ class MailIndex:
         os.rename(newfile, idxfile)
 
         flush_append_cache()
+        self._saved_changes = 0
         if session:
             session.ui.mark(_("Saved metadata index"))
 
