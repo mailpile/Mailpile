@@ -114,7 +114,7 @@ class MailpileCommand(Extension):
             classes = "crypto-color-red icon-signature-" + status
             text = _("Error")
             message = _("There was some weird error with"
-                      "this signature")
+                        "this signature")
         elif status == "invalid":
             classes = "crypto-color-red icon-signature-" + status
             text = _("Invalid")
@@ -123,7 +123,7 @@ class MailpileCommand(Extension):
             classes = "crypto-color-red icon-signature-" + status
             text = _("Revoked")
             message = _("Watch out, the signature was made with"
-                      "a key that has been revoked")
+                        "a key that has been revoked")
         elif status == "expired":
             classes = "crypto-color-red icon-signature-" + status
             text = _("Expired")
@@ -132,17 +132,17 @@ class MailpileCommand(Extension):
             classes = "crypto-color-orange icon-signature-" + status
             text = _("Unknown")
             message = _("the signature was made with an unknown key,"
-                      "so we can't verify it")
+                        "so we can't verify it")
         elif status == "unverified":
             classes = "crypto-color-blue icon-signature-unverified"
             text = _("Unverified")
             message = _("The signature was good, and came from a key"
-                      "that isn't verified")
+                        "that isn't verified")
         elif status == "verified":
             classes = "crypto-color-green icon-signature-verified"
             text = _("Verified")
             message = _("The signature was good, and came from a"
-                      "verified key, w00t!")
+                        "verified key, w00t!")
         elif status.startswith("mixed-"):
             classes = "crypto-color-blue icon-signature-unknown"
             text = _("Mixed")
@@ -166,19 +166,19 @@ class MailpileCommand(Extension):
             classes = "crypto-color-gray icon-lock-open"
             text = _("Not Encrypted")
             message = _("This message was not encrypted."
-                      "It may have been intercepted en route to"
-                      "you and read by an"
-                      "unauthorized party.")
+                        "It may have been intercepted en route to"
+                        "you and read by an"
+                        "unauthorized party.")
         elif status == "decrypted":
             classes = "crypto-color-green icon-lock-closed"
             text = _("Encrypted")
             message = _("This was encrypted, but we successfully"
-                      "decrypted the message")
+                        "decrypted the message")
         elif status == "missingkey":
             classes = "crypto-color-red icon-lock-closed"
             text = _("Missing Key")
             message = _("You do not have any of the private keys that will"
-                      "decrypt this message")
+                        "decrypt this message")
         elif status == "error":
             classes = "crypto-color-red icon-lock-error"
             text = _("Error")
@@ -191,7 +191,7 @@ class MailpileCommand(Extension):
             classes = "crypto-color-gray icon-lock-open"
             text = _("Unknown")
             messaage = _("There is some unknown thing wrong with"
-                      "this encryption")
+                         "this encryption")
         return classes
 
     def _contact_url(self, person):
