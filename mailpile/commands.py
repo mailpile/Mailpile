@@ -327,7 +327,8 @@ class SearchResults(dict):
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
-            'from_aid': (self._msg_addresses(msg_info, no_to=True) or [''])[0],
+            'from_aid': (self._msg_addresses(msg_info, no_to=True, no_cc=True)
+                         or [''])[0],
             'to_aids': self._msg_addresses(msg_info, no_from=True, no_cc=True),
             'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
             'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
