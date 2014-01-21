@@ -4,10 +4,21 @@
 {% set profiles = mailpile('settings', 'profiles').result.profiles %}
 
 <div id="compose">
+{# Note: this code follows the pattern described on the following
+         stackexchange link, collecting information about how the loop
+         and inner IF-statements went into the found_editable list, so
+         that can influence the final processing and not redirect if
+         we found anything at all editable!
+
+  * https://stackoverflow.com/questions/4870346/can-a-jinja-variables-scope-extend-beyond-in-an-inner-block
+
+#}
+{% set found_editable = [] %}
 {% for mid in result.thread_ids %}
   {% set message = result.data.messages.get(mid) %}
   {% set metadata = result.data.metadata[mid] %}
   {% if message and metadata.flags.draft %}
+    {% do found_editable.append(mid) %}
   <form id="form-compose" name="compose" action="/message/update/" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="mid" value="{{mid}}">
     <div class="compose-headers compose-to">
@@ -68,11 +79,13 @@
       </button>
     </div>
   </form>
-  {% else %}
-    {{ mailpile('http/redirect/url_thread', mid) }}
   {% endif %}
 {% endfor %}
 </div>
+
+{% if not found_editable %}
+  {{ mailpile('http/redirect/url_thread', result.thread_ids[0]) }}
+{% endif %}
 
 {% else %}{# if result #}
 

@@ -284,6 +284,7 @@ class UserInteraction:
         env = Environment(loader=FileSystemLoader('%s' % theme_path),
                           extensions=[
                               'jinja2.ext.i18n', 'jinja2.ext.with_',
+                              'jinja2.ext.do',
                               'mailpile.jinjaextensions.MailpileCommand'])
         env.install_gettext_translations(config.get_i18n_translation(),
                                          newstyle=True)
