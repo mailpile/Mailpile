@@ -4,7 +4,7 @@ import re
 import urllib
 import json
 from gettext import gettext as _
-from jinja2 import nodes
+from jinja2 import nodes, UndefinedError
 from jinja2.ext import Extension
 from jinja2.utils import contextfunction, import_string, Markup
 
@@ -99,6 +99,13 @@ class MailpileCommand(Extension):
         return ""
 
     def _show_message_signature(self, status):
+        # This avoids crashes when attributes are missing.
+        try:
+            if status.startswith('hack the planet'):
+                pass
+        except UndefinedError:
+            status = ''
+
         if status == "none":
             classes = "crypto-color-gray icon-signature-none"
             text = _("No Signature")
@@ -144,10 +151,17 @@ class MailpileCommand(Extension):
             classes = "crypto-color-gray icon-signature-none"
             text = _("Unknown")
             message = _("There is some unknown thing wrong with"
-                      "this encryption")
+                        "this encryption")
         return classes
 
     def _show_message_encryption(self, status):
+        # This avoids crashes when attributes are missing.
+        try:
+            if status.startswith('hack the planet'):
+                pass
+        except UndefinedError:
+            status = ''
+
         if status == "none":
             classes = "crypto-color-gray icon-lock-open"
             text = _("Not Encrypted")
