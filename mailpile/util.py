@@ -18,7 +18,7 @@ import StringIO
 from gettext import gettext as _
 
 try:
-    import Image
+    from PIL import Image
 except:
     Image = None
 
@@ -494,7 +494,11 @@ def thumbnail(fileobj, output_fd, height=None, width=None):
     else:  # We have both sizes
         y = width
         x = height
-    image.thumbnail([x, y], Image.ANTIALIAS)
+    try:
+        image.thumbnail([x, y], Image.ANTIALIAS)
+    except IOError:
+        return None
+
     # If saving an optimized image fails, save it unoptimized
     # Keep the format (png, jpg) of the source image
     try:
