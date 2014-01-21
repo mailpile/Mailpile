@@ -1,11 +1,8 @@
 {% extends "layouts/base.html" %}
-
 {% block content %}
-{% include("partials/sub_nav_contacts.html") %}
 
 <div id="contact-view" class="content-normal">
-{% if result.contact %}
-  
+{% if result.contact %}  
   {% set profiles = mailpile('settings', 'profiles').result.profiles %}
 
   <div class="clearfix">
@@ -65,8 +62,7 @@
       <li><a href="/thread/={{ mid }}/">{{ conversations.data.metadata[mid].subject }} ({{ conversations.data.threads[thread_mid]|length }})</a></li>
     {% endfor %}  
   </ul>
-  {% endif %}
-  
+  {% endif %} 
 
 {% else %}
 

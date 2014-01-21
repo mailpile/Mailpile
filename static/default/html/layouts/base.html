@@ -153,7 +153,13 @@
 
 <div id="content" class="clearfix">
   <div id="content-tools">
-  {% include("partials/tools_search.html") %}
+  {% if command == "search" %}
+    {% include("partials/tools_search.html") %}
+  {% elif command in ("contact", "contact/list", "contact/add") %}
+    {% include("partials/tools_contacts.html") %}
+  {% elif command in ("tag", "tag/list", "tag/add") %}
+    {% include("partials/tools_tags.html") %}
+  {% endif %}
   </div>
   <div id="content-view">
   {% block content %}

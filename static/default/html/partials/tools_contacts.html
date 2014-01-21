@@ -1,0 +1,14 @@
+<nav class="sub-navigation clearfix">
+	<ul class="left horizontal">
+    <li {% if command == "contact/list/" %} class="navigation-on" {% endif %}><a id="button-contact-list" href="/contact/list"><span class="navigation-icon icon-user"></span>{{_("Contacts")}}</a></li>
+    <li {% if command == "contact/add/" %} class="navigation-on" {% endif %}><a id="button-contact-add" href="#contact-add"><span class="navigation-icon icon-plus"></span>{{_("Add Contact")}}</a></li>
+<!-- <li {% if command == "contact/import" %} class="navigation-on" {% endif %}><a href="/contact/import/"><span class="navigation-icon icon-plus"></span>{{_("Import Contacts")}}</a></li> -->
+  </ul>
+</nav>
+<div class="bulk-actions clearfix">
+	<div class="left">
+	  <b><span id="bulk-actions-selected-count"></span> {{_("Contacts")}}</b> {{_("selected")}}
+  </div>
+  <ul class="horizontal right">
+  </ul>
+</div>

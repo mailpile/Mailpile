@@ -1,20 +1,7 @@
 {% extends "layouts/base.html" %}
-
 {% block content %}
-{% include("partials/sub_nav_contacts.html") %}
-
-<style type="text/css">
-  
-  #contacts-list {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-  
-</style>
 
 <div id="contacts-list" class="clearfix">
-
 {% if result.contacts %}
   {% for contact in result.contacts %}
   <div class="boxy">

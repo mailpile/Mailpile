@@ -1,0 +1,13 @@
+<nav class="sub-navigation clearfix">
+	<ul class="left horizontal">
+    <li {% if command == "tag/list/" %} class="navigation-on" {% endif %}><a id="button-tag-list" href="/tag/list/"><span class="navigation-icon icon-tag"></span>{{_("Tags")}}</a></li>
+    <li {% if command == "tag/add/" %} class="navigation-on" {% endif %}><a id="button-tag-add" href="#tag-add"><span class="navigation-icon icon-plus"></span> {{_("Add Tag")}}</a></li>
+  </ul>
+</nav>
+<div class="bulk-actions clearfix">
+	<div class="left">
+	  <b><span id="bulk-actions-selected-count"></span> {{_("Tags")}}</b> {{_("selected")}}
+  </div>
+  <ul class="horizontal right">
+  </ul>
+</div>
