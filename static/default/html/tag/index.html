@@ -1,9 +1,53 @@
 {% extends "layouts/base.html" %}
-
+{% set tag = result.tags.0 %}
 {% block content %}
+<div id="tags-settings" class="clearfix">
+  	<div class="clearfix">
+	    <h2 class="contact-name "><span class="icon-tag"></span> {{ tag.name }}</h2>
+	</div>
 
-Hállo, this will be tag info view :)
+  <form id="form-tag-add" class="standard" method="POST">
 
+    <input type="hidden" name="csrf" value="">
+
+    <label>{{_("Tag")}}</label>
+    <input type="text" id="data-tag-add-tag" name="name" value="{{tag.name}}" placeholder="{{_("Friends & Family")}}">
+
+    <label>{{_("Slug")}}</label>
+    <input type="text" id="data-tag-add-slug" name="slug" value="{{tag.slug}}" placeholder="{{_("friends-family")}}">
+
+    <label>{{_("Display")}}</label>
+    <select name="display">
+      <option value="tag"{% if tag.value=="tag"%} checked{% endif %}>{{_("Tag")}}</option>
+      <option value="priority"{% if tag.value=="priority"%} checked{% endif %}>{{_("Priority Tag")}}</option>
+      <option value="archive"{% if tag.value=="archive"%} checked{% endif %}>{{_("Archive")}}</option>
+      <option value="invisible"{% if tag.value=="invisible"%} checked{% endif %}>{{_("Invisible")}}</option>
+    </select>
+
+    <label>{{_("Parent")}}</label>
+    <select name="parent">
+      <option value="">-------- {{_("none")}} --------</option>
+    {% for ptag in config.tags %}
+	  {% set ptag = config.tags[ptag] %}
+      {% if ptag.display == "tag" %}
+      <option value="{{ptag.tid}}"{% if tag.parent==ptag.tid%} checked{% endif %}>{{ptag.name}}</option>
+      {% endif %}    
+    {% endfor %}
+    </select>
+
+    <label>{{_("Template")}}</label>
+    <select name="template">
+      <option value="default">{{_("Default")}}</option>
+    </select>
+
+    <label>{{_("Search Terms")}}</label>
+    <textarea name="search_terms" placeholder="in:inbox"></textarea>
+
+	</select>
+
+	<button type="submit"><span class="icon-plus"></span> {{_("Save tag")}}</button>
+</form>
+</div>
 {% endblock %}
 
 

@@ -1,3 +1,6 @@
+{% if result.tags|length == 1 %}
+{% include "tag/index.html"%}
+{% else %}
 {% extends "layouts/base.html" %}
 {% block content %}
 
@@ -23,7 +26,7 @@
       </div>
     </div>
     <a class="tag-card-message-link" href="{{tag.url}}"><span class="icon-inbox"></span> {{_("View Messages")}}</a>
-    <a href="/tag/{{tag.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a>
+    <a href="/tag/list/{{tag.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a>
   </div>
   {% endif %}
   {% endfor %}
@@ -44,3 +47,4 @@
 {% include("tag/add.html") %}
 
 {% endblock %}
+{% endif %}
