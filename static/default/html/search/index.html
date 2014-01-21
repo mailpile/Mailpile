@@ -1,6 +1,5 @@
 {% extends "layouts/base.html" %}
 {% block content %}
-
 {% if result %}
 <form id="form-pile-results" action="" method="POST">
   <input type='hidden' name='csrf' value='{{csrf}}' />
@@ -30,8 +29,5 @@
   <h2 class="add-top text-center">{{_("No Results Found")}}</h2>
 </div>
 {% endif %}
-
-{% include("partials/details_search_speed.html") %}
-
-
+  {% include("partials/details_search_speed.html") %}
 {% endblock %}

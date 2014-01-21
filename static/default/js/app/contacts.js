@@ -23,8 +23,6 @@ var contactActionSelect = function(item) {
 	// Increment Selected
 	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
 
-	// Show Actions
-	$('#bulk-actions').slideDown('slow');
 
 	// Style & Select Checkbox
 	item.removeClass('result').addClass('result-on').data('state', 'selected');
@@ -45,7 +43,7 @@ var contactActionUnselect = function(item) {
 
 	// Hide Actions
 	if (selected_count < 1) {
-		$('#bulk-actions').slideUp('slow');
+
 	}
 
 	// Style & Unselect Checkbox

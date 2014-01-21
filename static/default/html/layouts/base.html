@@ -159,6 +159,8 @@
     {% include("partials/tools_contacts.html") %}
   {% elif command in ("tag", "tag/list", "tag/add") %}
     {% include("partials/tools_tags.html") %}
+  {% elif command == "message" %}
+    {% include("partials/tools_message.html") %}
   {% endif %}
   </div>
   <div id="content-view">

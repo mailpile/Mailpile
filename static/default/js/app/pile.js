@@ -89,9 +89,6 @@ var pileActionSelect = function(item) {
 	// Increment Selected
 	$('#bulk-actions-selected-count').html(mailpile.bulk_cache.length);
 
-	// Show Actions
-	$('#bulk-actions').slideDown('slow');
-
 	// Style & Select Checkbox
 	item.removeClass('result').addClass('result-on')
 	.data('state', 'selected')
@@ -110,7 +107,7 @@ var pileActionUnselect = function(item) {
 
 	// Hide Actions
 	if (mailpile.bulk_cache.length < 1) {
-		$('#bulk-actions').slideUp('slow');
+
 	}
 
 	// Style & Unselect Checkbox

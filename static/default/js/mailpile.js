@@ -128,13 +128,30 @@ $(document).ready(function() {
   });
 
 
-  // Load Scrollers
-  /*
-  $(".nano").nanoScroller({
-    alwaysVisible: true,
-    sliderMinHeight: 40
-  });
-  */
+  // Dynamic CSS Reiszing
+  $('body').css('overflow', 'hidden');
+
+
+  // Set Tools & Title
+  var content_width = $(window).width() - $('#sidebar').width();
+  var sidebar_height = $('#sidebar').height();
+  var content_tools_height = $('#content-tools').height();
+
+  $('.sub-navigation').width(content_width);
+  $('#thread-title').width(content_width);
+
+
+  // Set Content View
+  $('#content-view').css('height', sidebar_height).css('top', content_tools_height);
+  
+
+  // Resize on Drag
+  window.onresize = function(event) {
+    var new_content_width = $(window).width() - $('#sidebar').width();
+    $('.sub-navigation').width(new_content_width);
+  }
+
+
 
   if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() === undefined) {
     $('#sidebar-tag-outbox').hide();

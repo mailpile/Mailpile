@@ -5,26 +5,6 @@
 {% set start_subject = result.data.metadata[start_mid].subject %}
 {% set profiles      = mailpile('settings', 'profiles').result.profiles %}
 
-<div id="thread-title" class="clearfix">
-  <h1>{{ start_subject }}</h1>
-  <ul class="horizontal">
-    <li><a class="show-thread-people" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
-    <li><a class="show-thread-security" href="#"><span class="icon-lock-open"></span> Partially Secure</a></li>
-  </ul>
-</div>
-
-<div class="bulk-actions clearfix">
-  <div class="left">{{ result.data.metadata|length }} {{_("Messages")}}</div>
-  <ul class="horizontal right">
-<!-- FIXME
-	  <li><a class="bulk-action" href="#" data-action="later" title="{{_("Move Whole Thread to Later")}}"><span class="icon-later"></span></a></li>
--->
-	  <li><a class="bulk-action" href="#" data-action="assign-tags" title="{{_("Assign Tags to Thread")}}"><span class="icon-tag"></span></a></li>
-	  <li><a class="bulk-action" href="#" data-action="archive" title="{{_("Archive Whole Thread")}}"><span class="icon-archive"></span></a></li>
-	  <li><a class="bulk-action" href="#" data-action="trash" title="{{_("Delete Whole Thread")}}"><span class="icon-trash"></span></a></li>
-  </ul>  
-</div>
-
 <!-- Macros (used by Jinja for repeating HTML) -->
 {% macro render_thread_metadata(metadata, from, profiles, crypto=false) -%}
 <div class="thread-item-metadata clearfix">
@@ -169,7 +149,6 @@
 
   {% endif %}
   {% endfor %}{# for mid ... #}
-</div>
 
 <div id="thread-people">
   <h3>{{_("People in Conversation")}}</h3>
@@ -185,8 +164,11 @@
   </ul>
 </div>
 
+</div>
+
   {% else %}
     {% set error_title = "message_missing" %}
     {% include("partials/errors_content.html") %}
   {% endif  %}{# if result #}
+
 {% endblock %}
