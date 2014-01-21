@@ -1,6 +1,128 @@
-/* Web */
+/* Content */	
+	
+	#content {
+	  min-width: 775px;
+	  margin-top: 63px;	  
+    margin-left: 225px;
+	}
+
+  #content-tools {
+    min-height: 80px;
+    position: fixed;
+    z-index: 10; 
+  }
+
+/* Sub Navigation */
+
+	.sub-navigation	{
+		width: 100%;
+		height: 45px;
+		display: block;
+		background: @grayLight;
+		border-bottom: 1px solid @gray;
+		box-sizing: border-box;
+	}
+
+	.sub-navigation ul {
+	  margin: 10px 15px;
+  }
+
+	.sub-navigation li {
+    padding: 0px 10px;
+	}
+
+	.sub-navigation a {
+		display: block;	
+		padding: 5px;
+		font-family: @text-font-family-bold;
+		font-weight: normal;		
+		color: @grayDark;
+		line-height: 14px;
+	}
+
+	.sub-navigation a:hover, .sub-navigation a:hover span.navigation-icon {
+		color: @red;
+	}
+
+	.navigation-icon {
+		margin: 0;
+		color: @grayDark;
+		font-weight: normal;
+	}
+
+  .navigation-text {
+    margin: 0 0 0 8px;
+  }
+
+
+/* Bulk Actions */
+
+	.bulk-actions {
+    position: relative;
+    top: 0px;
+    left: 0px;
+	  background: @white;
+		border-bottom: 1px solid @gray;
+		box-sizing: border-box;
+		color: @grayDark;
+		font-size: 14px;
+		line-height: 14px;
+	}
+
+  .bulk-actions div,
+  .bulk-actions ul {
+		margin: 10px 15px;
+  }
+
+  .bulk-actions li {
+    padding: 0 10px;
+  }
+
+	.bulk-actions a {
+		color: @grayDark;
+	}
+
+	.bulk-actions a:hover {
+		color: @red;
+	}
+
+
+
+/* Content View */
+
+  #content-view {
+    position: relative;
+    top: 80px;
+    min-height: 500px;
+    overflow-y: auto;
+    z-index: 5;
+  }
+
+	#content-view div.pile-speed {
+		text-align: center;
+		font-family: @text-font-family;
+		color: @gray;
+	}
+
+	#content-view div.pile-speed span {
+		font-size: 24px;
+		margin-right: 10px;
+		position: relative;
+		top: 3px;
+		left: 0px;
+	}
+
+  div.content-normal {
+    position: relative;
+    margin: 30px 25px;
+  }
+
+
+
+/* Debug */
 
 	#debug {
+	  width: 100%;
 		font-size: 14px;
 		font-family: Helvetica, Arial, sans-serif;
 		text-align: center;
@@ -11,67 +133,5 @@
 	#debug p {
 		margin: 0px 5px;
 		padding: 0px;
-	}
-
-
-	
-/* Container */
-
-	#container {
-	  width: 100%;
-		min-width: 825px;
-		z-index: 1;
-		padding: 0;
-		margin: 0;
-	  margin-top: 63px;
-	}
-
-
-
-/* Content */	
-	
-	#content {
-	  min-width: 775px;
-    margin-left: 225px; 
-	}
-
-	#content div.pile-speed {
-		text-align: center;
-		font-family: @text-font-family;
-		color: @gray;
-	}
-
-	#content div.pile-speed span {
-		font-size: 24px;
-		margin-right: 10px;
-		position: relative;
-		top: 3px;
-		left: 0px;
-	}
-
-
-
-/* Content */
-
-  div.content-normal {
-    position: relative;
-    margin: 30px 25px;
-  }
-
-
-
-/* Footer */
-
-	#footer {
-	  position: relative;
-	  bottom: 0px;
-	  left: 0px;
-		margin: 20px 0;
-		font-size: 12px;
-		text-align: center;
-	}
-	
-	#footer a {
-		font-size: 12px;
 	}
 
