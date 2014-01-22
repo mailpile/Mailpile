@@ -417,6 +417,15 @@ class SearchResults(dict):
     def _thread(self, thread_mid):
         msg_info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
         thread = [i for i in msg_info[MailIndex.MSG_REPLIES].split(',') if i]
+
+        # FIXME: This is a hack, the indexer should just keep things
+        #        in the right order on rescan. Fixing threading is a bigger
+        #        problem though, so we do this for now.
+        def thread_sort_key(idx):
+            info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
+            return int(info[self.idx.MSG_DATE], 36)
+        thread.sort(key=thread_sort_key)
+
         return thread
 
     WANT_MSG_TREE = ('attachments', 'html_parts', 'text_parts', 'header_list',
