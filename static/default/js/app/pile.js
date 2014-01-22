@@ -138,6 +138,7 @@ $(document).on('click', '#pile-results tr.result-on', function(e) {
 /* Dragging & Dropping From Pile */
 $('td.draggable').draggable({
   containment: "#container",
+  appendTo: 'body',
   scroll: false,
   revert: true,
   helper: function(event) {
