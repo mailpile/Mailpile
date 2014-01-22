@@ -29,8 +29,12 @@ class Search(Command):
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
+            Command.CommandResult.__init__(self, *args, **kwargs)
             self.fixed_up = False
-            return Command.CommandResult.__init__(self, *args, **kwargs)
+            if isinstance(self.result, dict):
+                self.message = self.result['summary']
+            elif isinstance(self.result, list):
+                self.message = ', '.join([r['summary'] for r in self.result])
 
         def _fixup(self):
             if self.fixed_up:
@@ -189,7 +193,7 @@ class View(Search):
         emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
 
         rv = self._side_effects(emails)
-        if rv != None:
+        if rv is not None:
             # This is here so derived classes can do funky things.
             return rv
 

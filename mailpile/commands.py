@@ -89,15 +89,17 @@ class Command:
                 path_parts.append('index')
             if template not in (None, 'html', 'as.html'):
                 # Security: The template request may come from the URL, so we
-                #           sanitize it very aggressively before heading off to
-                #           the filesystem.
+                #           sanitize it very aggressively before heading off
+                #           to the filesystem.
                 clean_tpl = CleanText(template.replace('.html', ''),
                                       banned=(CleanText.FS +
                                               CleanText.WHITESPACE))
                 path_parts[-1] += '-%s' % clean_tpl
             tpath = os.path.join(*path_parts)
+            data = self.as_dict()
+            data['title'] = self.message
             return self.session.ui.render_html(self.session.config, [tpath],
-                                               self.as_dict())
+                                               data)
 
         def as_json(self):
             return self.session.ui.render_json(self.as_dict())
@@ -108,7 +110,7 @@ class Command:
         self.name = name
         self.data = data or {}
         self.status = 'success'
-        self.message = 'OK'
+        self.message = name
         self.error_info = {}
         self.result = None
         if type(arg) in (type(list()), type(tuple())):
@@ -195,7 +197,7 @@ class Command:
 
     def _error(self, message, info={}):
         self.status = 'error'
-        self.message = message
+        self.message = '%s error: %s' % (self.name, message)
         self.error_info.update(info)
         self.session.ui.error(message)
         return False
@@ -446,7 +448,7 @@ class SearchResults(dict):
         results = results or session.results or []
         num = num or session.config.prefs.num_results
         if end:
-                    start = end - num
+            start = end - num
         if start > len(results):
             start = len(results)
         if start < 0:
@@ -454,6 +456,7 @@ class SearchResults(dict):
         threads = [b36(r) for r in results[start:start + num]]
 
         self.update({
+            'summary': _('Search: %s') % ' '.join(session.searched),
             'stats': {
                 'count': len(threads),
                 'start': start + 1,
@@ -472,6 +475,9 @@ class SearchResults(dict):
             self.update({
                 'search_tag_ids': search_tag_ids,
             })
+            if search_tag_ids:
+                self['summary'] = ' & '.join([t.name for t
+                                              in search_tags if t])
         else:
             search_tag_ids = []
 
@@ -519,6 +525,9 @@ class SearchResults(dict):
                 for tid in self._msg_tags(msg_info):
                     if tid not in self['data']['tags']:
                         self['data']['tags'][tid] = self._tag(tid)
+
+        if emails and len(emails) == 1:
+            self['summary'] = emails[0].get_msg_info(MailIndex.MSG_SUBJECT)
 
         for e in emails or []:
             idx_pos = e.msg_idx_pos
