@@ -1,4 +1,5 @@
 {% extends "layouts/base.html" %}
+
 {% block content %}
 
 <!-- Macros (used by Jinja for repeating HTML) -->
@@ -35,6 +36,8 @@
 {% set start_mid     = result.thread_ids[-1] %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
 {% set profiles      = mailpile('settings', 'profiles').result.profiles %}
+
+
 
 <div id="thread-messages">
 {% for mid in result.thread_ids %}
@@ -171,3 +174,6 @@
 {% endif  %}{# if result #}
 
 {% endblock %}
+
+{% block title %}{{ result.data.metadata[result.thread_ids[-1]].subject }}{% endblock %}
+
