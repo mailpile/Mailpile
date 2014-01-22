@@ -64,6 +64,12 @@ class MailpileCommand(Extension):
         environment.globals['get_assets'] = get_assets
         environment.globals['get_body_blocks'] = get_body_blocks
 
+        # This is a worse versin of urlencode, but without it we require
+        # Jinja 2.7, which isn't apt-get installable.
+        environment.globals['urlencode'] = self._urlencode
+        environment.filters['urlencode'] = self._urlencode
+
+
     def _command(self, command, *args, **kwargs):
         return Action(self.env.session, command, args, data=kwargs).as_dict()
 
@@ -208,3 +214,8 @@ class MailpileCommand(Extension):
                 name = _('You')
                 break
         return name
+
+    def _urlencode(self, s):
+        if type(s) == 'Markup':
+            s = s.unescape()
+        return Markup(urllib.quote_plus(s.encode('utf-8')))
