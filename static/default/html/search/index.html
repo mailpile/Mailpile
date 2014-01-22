@@ -11,16 +11,16 @@
   </tbody>
   </table>
   <div id="pile-bottom" class="clearfix">
-    {% set searchterms = result.search_terms|join('+') %}
+    {% set searchterms = result.search_terms|join(' ') %}
     {% if result.stats.start > 1 %}
     {% set newstart = result.stats.start-result.stats.count %}
     {% set newend = newstart+result.stats.count %}
-    <a href="/search/?q={{searchterms}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Previous")}}</a>
+    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Previous")}}</a>
     {% endif %}
     {% if result.stats.start + result.stats.count < result.stats.total %}
     {% set newstart = result.stats.start+result.stats.count %}
     {% set newend = newstart+result.stats.count %}
-    <a href="/search/?q={{searchterms}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Next")}}</a>
+    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Next")}}</a>
     {% endif %}
     <div>
       {% set stats = result.stats %}
