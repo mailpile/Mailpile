@@ -6556,7 +6556,13 @@ a.compose-show-field {
   font-weight: bold;
 }
 #pile-results a.pile-message-tag {
-  font-weight: bold;
+  font-weight: normal;
+  background: #b3b3b3;
+  border-radius: 5px;
+  font-size: 70%;
+  padding: 2px;
+  float: right;
+  margin-left: 3px;
 }
 /* Pile Bottom */
 #pile-bottom {
