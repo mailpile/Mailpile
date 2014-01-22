@@ -207,7 +207,15 @@ class View(Search):
                         in idx.get_conversation(msg_idx=email.msg_idx_pos)]
                 if email.msg_idx_pos not in conv:
                     conv.append(email.msg_idx_pos)
-                conv.reverse()
+
+                # FIXME: This is a hack. The indexer should just keep things
+                #        in the right order on rescan. Fixing threading is a
+                #        bigger problem though, so we do this for now.
+                def sort_conv_key(msg_idx_pos):
+                    info = idx.get_msg_at_idx_pos(msg_idx_pos)
+                    return -int(info[idx.MSG_DATE], 36)
+                conv.sort(key=sort_conv_key)
+
                 results.append(SearchResults(session, idx,
                                              results=conv, num=len(conv),
                                              emails=[email]))
