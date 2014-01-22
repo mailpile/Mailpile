@@ -77,6 +77,18 @@ $(document).ready(function() {
   });
 
 
+  // Thread Scroll to Message
+  if (location.href.split("thread/=")[1]) {
+    var thread = location.href.split("thread/=")[1]
+    var thread_id = thread.substring(0, thread.length - 1);    
+    var msg_top_pos = $('#message-' + thread_id).position().top;
+    $('#content-view').scrollTop( msg_top_pos - 150);
+    setTimeout(function(){
+      $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
+    }, 50)
+  }
+
+
 });
 
 
