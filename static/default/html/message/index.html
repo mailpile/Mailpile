@@ -1,9 +1,5 @@
 {% extends "layouts/base.html" %}
 {% block content %}
-{% if result %}
-{% set start_mid     = result.thread_ids[-1] %}
-{% set start_subject = result.data.metadata[start_mid].subject %}
-{% set profiles      = mailpile('settings', 'profiles').result.profiles %}
 
 <!-- Macros (used by Jinja for repeating HTML) -->
 {% macro render_thread_metadata(metadata, from, profiles, crypto=false) -%}
@@ -33,6 +29,12 @@
   <a href="{{ contact_url(person) }}" title="{{person.address}}">{{ contact_name(profiles, person) }}</a>
 </li>
 {%- endmacro %}
+
+
+{% if result %}
+{% set start_mid     = result.thread_ids[-1] %}
+{% set start_subject = result.data.metadata[start_mid].subject %}
+{% set profiles      = mailpile('settings', 'profiles').result.profiles %}
 
 <div id="thread-messages">
 {% for mid in result.thread_ids %}
@@ -109,18 +111,16 @@
       {% endif %}
     {% endfor %}
     <div class="thread-message-attachments">
-    <ul class="clearfix">
-      {% for att in message.attachments %}
-      <li>
-      {% if att.mimetype in ('image/jpg', 'image/jpeg', 'image/png', 'image/gif') %}
-        <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
-      {% endif %}
-        <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">{{ att.filename }}<small>{{ att.length|friendly_bytes }}</small></a>
-      </li>
-      {% endfor %}
-    </ul>
-    </div>
-
+      <ul class="clearfix">
+        {% for att in message.attachments %}
+        <li>
+        {% if att.mimetype in ('image/jpg', 'image/jpeg', 'image/png', 'image/gif') %}
+          <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+        {% endif %}
+          <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">{{ att.filename }}<small>{{ att.length|friendly_bytes }}</small></a>
+        </li>
+        {% endfor %}
+      </ul>
     </div>
 
     <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="E36">
@@ -149,6 +149,7 @@
 
   {% endif %}
   {% endfor %}{# for mid ... #}
+</div>
 
 <div id="thread-people">
   <h3>{{_("People in Conversation")}}</h3>
@@ -164,11 +165,9 @@
   </ul>
 </div>
 
-</div>
-
-  {% else %}
-    {% set error_title = "message_missing" %}
-    {% include("partials/errors_content.html") %}
-  {% endif  %}{# if result #}
+{% else %}
+  {% set error_title = "message_missing" %}
+  {% include("partials/errors_content.html") %}
+{% endif  %}{# if result #}
 
 {% endblock %}

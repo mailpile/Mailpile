@@ -148,7 +148,8 @@ $(document).ready(function() {
   // Resize on Drag
   window.onresize = function(event) {
     var new_content_width = $(window).width() - $('#sidebar').width();
-    $('.sub-navigation').width(new_content_width);
+    $('.sub-navigation, .bulk-actions').width(new_content_width);
+    
   }
 
 
