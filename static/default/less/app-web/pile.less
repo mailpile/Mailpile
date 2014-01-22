@@ -7,13 +7,6 @@
 	#pile-results tr.result-on       { background: lighten(@yellow, 35%); }
 	#pile-results tr.result-on:hover { background: lighten(@yellow, 30%); }
 	
-  #pile-results tr.result:hover    td.draggable, 
-  #pile-results tr.result-on:hover td.draggable {
-    background: url('/static/img/draggable-pattern.png'), rgba(255,255,255,1);
-    opacity: 0.3;
-    filter:alpha(opacity=30);
-  }
-
 	#pile-results td {
     padding: 10px;
     vertical-align: middle;	
@@ -96,7 +89,6 @@
   #pile-results.comfy  span.item-snippet { display: none; }
   #pile-results.cozy   span.item-snippet { display: none; }
   #pile-results.snug   span.item-snippet { display: none; }
-
   
 
   #pile-results td.date {
@@ -123,6 +115,8 @@
 
 
 
+/* Pile Bottom */
+
 	#pile-bottom {
 		margin: 15px;
 	}
@@ -136,8 +130,6 @@
 		float: right;
 		text-align: right;
 	}
-
-
 	
 	#pile-bottom a.change-view-size {
 		font-size: 12px;
@@ -160,7 +152,32 @@
   }
 
 
+/* Pile Speed */
+
+	#pile-speed {
+	  margin-bottom: 50px;
+		text-align: center;
+		font-family: @text-font-family;
+		color: @gray;
+	}
+
+	#pile-speed span {
+		font-size: 24px;
+		margin-right: 10px;
+		position: relative;
+		top: 3px;
+		left: 0px;
+	}
+
+
 /* Pile	- Drag & Drop */
+	
+  #pile-results tr.result:hover    td.draggable, 
+  #pile-results tr.result-on:hover td.draggable {
+    background: url('/static/img/draggable-pattern.png'), rgba(255,255,255,1);
+    opacity: 0.3;
+    filter:alpha(opacity=30);
+  }	
 	
 	.pile-results-drag {
   	background: @white;

@@ -2,9 +2,18 @@
 	<ul class="left horizontal">
     <li id="display-all" class="navigation-on"><a class="button-sub-navigation" data-filter="all" href="#"><span class="navigation-icon icon-inbox"></span><span class="navigation-text">{{_("All")}}</span></a>
 		<li id="display-new"><a class="button-sub-navigation" data-filter="in_new" href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-text">{{_("New")}}</span></a></li>
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon-eye"></span> {{_("Display")}}</a>
+      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
+        <li role="presentation"><a class="change-view-size" data-view_size="snug" href="#">{{_("Snug")}}</a></li>
+        <li role="presentation"><a class="change-view-size" data-view_size="cozy" href="#">{{_("Cozy")}}</a></li>
+        <li role="presentation"><a class="change-view-size" data-view_size="comfy" href="#">{{_("Comfy")}}</a></li>
+        <li role="presentation"><a class="change-view-size" data-view_size="fluffy" href="#">{{_("Detailed")}}</a></li>
+      </ul>
+    </li>
 	{% for mode in get_display_actions("search") %}
 		<li id="display-{{mode.name}}"><a href="{{mode.url}}" onclick="{{mode.jsaction}}">{% if mode.icon %}<span class="navigation-icon icon-{{mode.icon}}" title="{{mode.text}}"></span>{% else %}{{mode.text}}{% endif %}</a></li>
-	{% endfor %}
+	{% endfor %}    
   </ul>
 	<ul class="right horizontal">
     <li id="btn-display-list" class="navigation-on"><a href="#" onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span></a></li>
