@@ -6019,7 +6019,6 @@ x:-o-prefocus,
   margin-left: 225px;
 }
 #content-tools {
-  min-height: 45px;
   position: fixed;
   z-index: 10;
 }
@@ -6085,6 +6084,7 @@ x:-o-prefocus,
 }
 /* Content View */
 #content-view {
+  background: #f2f2f2;
   position: relative;
   top: 80px;
   min-height: 500px;
@@ -6695,6 +6695,7 @@ a.compose-show-field {
 }
 /* Thread Items */
 .thread-snippet {
+  background: #ffffff;
   border-bottom: 1px solid #b3b3b3;
 }
 .thread-snippet:hover {
@@ -6705,6 +6706,7 @@ a.compose-show-field {
   display: block;
 }
 .thread-message {
+  background: #ffffff;
   border-bottom: 1px solid #b3b3b3;
 }
 .thread-item-metadata {
@@ -6923,6 +6925,11 @@ a.compose-show-field {
   display: block;
   font-size: 12px;
   font-weight: normal;
+}
+/* Thread Message Actions */
+#thread-message-actions {
+  border-top: 1px solid #b3b3b3;
+  border-bottom: 0px;
 }
 /* Thread People */
 #thread-people {

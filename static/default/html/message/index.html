@@ -1,8 +1,7 @@
 {% extends "layouts/base.html" %}
-
 {% block content %}
 
-<!-- Macros (used by Jinja for repeating HTML) -->
+{# Macros (used by Jinja for repeating HTML) #}
 {% macro render_thread_metadata(metadata, from, profiles, crypto=false) -%}
 <div class="thread-item-metadata clearfix">
   <div class="thread-item-from">
@@ -31,16 +30,12 @@
 </li>
 {%- endmacro %}
 
-
 {% if result %}
 {% set start_mid     = result.thread_ids[-1] %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
 {% set profiles      = mailpile('settings', 'profiles').result.profiles %}
 
-
-
-<div id="thread-messages">
-{% for mid in result.thread_ids %}
+{% for mid in result.thread_ids|reverse %}
   {% set metadata = result.data.metadata[mid] %}
   {% set message  = result.data.messages[mid] %}
   {% if mid in result.data.messages %}
@@ -126,7 +121,7 @@
       </ul>
     </div>
 
-    <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="E36">
+    <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="{{mid}}">
       <ul class="horizontal left">
         <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
         <li class="dropdown">
@@ -141,7 +136,9 @@
         <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
       </ul>
     </div>
-    {% include("partials/compose.html") %}
+  </div>
+  {% include("partials/compose.html") %}
+
   {% endif %}
   {% else %}{# if not message.editing... #}
 
@@ -152,21 +149,21 @@
 
   {% endif %}
   {% endfor %}{# for mid ... #}
-</div>
 
-<div id="thread-people">
-  <h3>{{_("People in Conversation")}}</h3>
-  <ul>
-    {% for aid in result.data.addresses %}
-    {% set person = result.data.addresses[aid] %}
-    <li>
-      <a href="{{ contact_url(person) }}"><img src="{{ show_avatar(person) }}"></a>
-      <a href="{{ contact_url(person) }}"> {{person.fn}}</a>
-      <a href=""><span class="icon-compose"></span> {{person.address}}</a>
-    </li>
-    {% endfor %}
-  </ul>
-</div>
+
+  <div id="thread-people">
+    <h3>{{_("People in Conversation")}}</h3>
+    <ul>
+      {% for aid in result.data.addresses %}
+      {% set person = result.data.addresses[aid] %}
+      <li>
+        <a href="{{ contact_url(person) }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}"> {{person.fn}}</a>
+        <a href=""><span class="icon-compose"></span> {{person.address}}</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
 
 {% else %}
   {% set error_title = "message_missing" %}
