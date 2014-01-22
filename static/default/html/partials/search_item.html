@@ -4,7 +4,7 @@
 %}{%    set message = None
 %}{%  endif
 %}{%  set metadata = result.data.metadata[mid]
-%}{%  set thread = result.data.threads[metadata.thread_id]
+%}{%  set thread = result.data.threads[metadata.thread_mid]
 %}{%  set from = result.data.addresses[metadata.from_aid]
 %}{%  if not from
 %}{%    set from = {'fn': 'Unknown sender'}
@@ -22,21 +22,21 @@
   </td>
   <td class="from" title='
 {{from.fn|e}} &lt;{{from.address|e}}&gt;
-{% for tmid in thread %}
+{#% for tmid in thread %}
   {% set f = result.data.addresses[metadata[tmid].from_aid] %}
   {{f.fn|e}} &lt;{{f.address|e}}&gt;
-{% endfor %}'>
+{% endfor %#}'>
     <a class="item-from" href="{{url}}">{{ from.fn|e }}</a>
     {% if thread|length > 1 %}<span class="conversation-count">{{ thread|length }}</span>{% endif %}
   </td>
   <td class="subject">
     {% if show_tags(result.search_terms, metadata.tag_ids) %}
-    <span class="icon-tag"></span>
-    {% for tid in metadata.tag_ids %}
+    {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
-        {% if tag.slug != "new" and not tag.searched %}
-        <a class="pile-message-tag" href="/in/{{tag.slug}}/">{{tag.name|e}}</a>
-        {% endif %}
+      {% if tag.label != "" and tag.slug != "new" and not tag.searched and tag.type != "attribute" and tag.type != "tagged" %}
+      <a class="pile-message-tag" href="/in/{{tag.slug}}/"><span class="icon-tag"></span>
+{{tag.name|e}}</a>
+      {% endif %}
       {% endfor %}
     {% endif %}
     <a class="item-subject" href="{{url}}">{{metadata.subject|e}}</a>

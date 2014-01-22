@@ -102,7 +102,7 @@ class MailpileCommand(Extension):
                     return ""
 
     def _show_tags(self, search_terms, tags):
-        return ""
+        return True
 
     def _show_message_signature(self, status):
         # This avoids crashes when attributes are missing.
