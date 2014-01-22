@@ -5790,31 +5790,6 @@ x:-o-prefocus,
 #messages .success {
   background-color: #4b7945;
 }
-/* Bulk Actions */
-.bulk-actions {
-  position: relative;
-  top: 0px;
-  left: 0px;
-  background: #ffffff;
-  border-bottom: 1px solid #b3b3b3;
-  box-sizing: border-box;
-  color: #4d4d4d;
-  font-size: 14px;
-  line-height: 14px;
-}
-.bulk-actions div,
-.bulk-actions ul {
-  margin: 10px 15px;
-}
-.bulk-actions li {
-  padding: 0 10px;
-}
-.bulk-actions a {
-  color: #4d4d4d;
-}
-.bulk-actions a:hover {
-  color: #a31304;
-}
 /* Notifications */
 .notification-urgent {
   border-radius: 5px;
@@ -5899,46 +5874,6 @@ x:-o-prefocus,
   float: left;
   color: #b3b3b3;
 }
-/* FIXME: Belongs in the .css, here for testing */
-.tag_new_0 .navigation-attention-important {
-  display: none;
-}
-#debug {
-  padding: 0;
-  margin: 1em;
-  text-align: right;
-  line-height: 1em;
-  font-size: 0.75em;
-}
-tr.message-body {
-  margin-top: -1em;
-}
-div.message-body {
-  margin-top: 1em;
-}
-#debug {
-  white-space: pre-wrap;
-}
-p.text-part-text {
-  white-space: pre-wrap;
-}
-p.text-part-quote {
-  white-space: pre-wrap;
-  color: #777;
-  max-height: 5em;
-  overflow: hidden;
-}
-/* Force Graph */
-.link {
-  fill: none;
-  stroke: #666;
-  stroke-width: 1.5px;
-}
-text {
-  fill: #000;
-  font: 12px sans-serif;
-  pointer-events: none;
-}
 /* Topbar */
 .topbar {
   width: 100%;
@@ -5951,6 +5886,7 @@ text {
   min-width: 800px;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
+  box-sizing: border-box;
 }
 .topbar-logo {
   width: 225px;
@@ -6079,18 +6015,18 @@ text {
 /* Content */
 #content {
   min-width: 775px;
-  margin-top: 63px;
+  margin-top: 62px;
   margin-left: 225px;
 }
 #content-tools {
-  min-height: 80px;
+  min-height: 45px;
   position: fixed;
   z-index: 10;
 }
 /* Sub Navigation */
 .sub-navigation {
   width: 100%;
-  height: 45px;
+  min-height: 45px;
   display: block;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
@@ -6154,18 +6090,6 @@ text {
   min-height: 500px;
   overflow-y: auto;
   z-index: 5;
-}
-#content-view div.pile-speed {
-  text-align: center;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #b3b3b3;
-}
-#content-view div.pile-speed span {
-  font-size: 24px;
-  margin-right: 10px;
-  position: relative;
-  top: 3px;
-  left: 0px;
 }
 div.content-normal {
   position: relative;
@@ -6316,41 +6240,6 @@ div.content-normal {
   -moz-transition-duration: 0.4s;
   transition-duration: 0.4s;
 }
-/* Sub Navigation */
-.sub-navigation {
-  width: 100%;
-  height: 45px;
-  display: block;
-  background: #f2f2f2;
-  border-bottom: 1px solid #b3b3b3;
-  box-sizing: border-box;
-}
-.sub-navigation ul {
-  margin: 10px 15px;
-}
-.sub-navigation li {
-  padding: 0px 10px;
-}
-.sub-navigation a {
-  display: block;
-  padding: 5px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: normal;
-  color: #4d4d4d;
-  line-height: 14px;
-}
-.sub-navigation a:hover,
-.sub-navigation a:hover span.navigation-icon {
-  color: #a31304;
-}
-.navigation-icon {
-  margin: 0;
-  color: #4d4d4d;
-  font-weight: normal;
-}
-.navigation-text {
-  margin: 0 0 0 8px;
-}
 /* Compose - New */
 .compose-from-avatar {
   width: 45px;
@@ -6397,6 +6286,39 @@ div.content-normal {
 }
 #compose-details {
   display: none;
+}
+/* Compose - Select2 Classes */
+.select2-result-label .compose-select-avatar {
+  display: inline-block;
+  margin-right: 8px;
+}
+.select2-result-label .compose-select-avatar img {
+  width: 32px;
+  height: 32px;
+}
+.select2-result-label .compose-select-avatar .icon-user {
+  font-size: 32px;
+  line-height: 32px;
+}
+.select2-result-label .compose-select-name {
+  display: inline-block;
+  margin-top: 0px;
+  padding-top: 0px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  color: #4d4d4d;
+}
+.select2-result-label .icon-lock-closed {
+  color: #4b7945;
+  margin-left: 5px;
+}
+.select2-result-label .compose-select-address {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 12px;
+  color: #8c8c8c;
 }
 /* Compose */
 .compose-headers {
@@ -6461,10 +6383,10 @@ a.compose-show-field {
   font-size: 24px;
   line-height: 24px;
 }
-.message-privacy-state.icon-unencrypted {
+.message-privacy-state.icon-lock-closed {
   color: #b3b3b3;
 }
-.message-privacy-state.icon-encrypted {
+.message-privacy-state.icon-lock-closed {
   color: #4b7945;
 }
 /* Message */
@@ -6540,12 +6462,6 @@ a.compose-show-field {
 }
 #pile-results tr.result-on:hover {
   background: #f2e8c9;
-}
-#pile-results tr.result:hover td.draggable,
-#pile-results tr.result-on:hover td.draggable {
-  background: url('/static/img/draggable-pattern.png'), #ffffff;
-  opacity: 0.3;
-  filter: alpha(opacity=30);
 }
 #pile-results td {
   padding: 10px;
@@ -6680,6 +6596,7 @@ a.compose-show-field {
 #pile-results a.pile-message-tag {
   font-weight: bold;
 }
+/* Pile Bottom */
 #pile-bottom {
   margin: 15px;
 }
@@ -6707,7 +6624,27 @@ a.compose-show-field {
 #pile-bottom ul > li {
   display: inline;
 }
+/* Pile Speed */
+#pile-speed {
+  margin-bottom: 50px;
+  text-align: center;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #b3b3b3;
+}
+#pile-speed span {
+  font-size: 24px;
+  margin-right: 10px;
+  position: relative;
+  top: 3px;
+  left: 0px;
+}
 /* Pile	- Drag & Drop */
+#pile-results tr.result:hover td.draggable,
+#pile-results tr.result-on:hover td.draggable {
+  background: url('/static/img/draggable-pattern.png'), #ffffff;
+  opacity: 0.3;
+  filter: alpha(opacity=30);
+}
 .pile-results-drag {
   background: #ffffff;
   border: 1px solid #b3b3b3;
@@ -6731,12 +6668,8 @@ a.compose-show-field {
 }
 /* Thread Title */
 #thread-title {
-  width: 100%;
-  display: block;
   text-align: center;
   padding: 10px 0 5px 0;
-  background: #f2f2f2;
-  border-bottom: 1px solid #b3b3b3;
 }
 #thread-title h1 {
   margin: 0px;
@@ -6761,10 +6694,6 @@ a.compose-show-field {
   color: #4d4d4d;
 }
 /* Thread Items */
-#thread-messages {
-  width: 100%;
-  overflow-y: auto;
-}
 .thread-snippet {
   border-bottom: 1px solid #b3b3b3;
 }

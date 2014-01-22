@@ -129,23 +129,21 @@ $(document).ready(function() {
 
 
   // Dynamic CSS Reiszing
-  $('body').css('overflow', 'hidden');
-
-
-  // Set Tools & Title
-  var content_width = $(window).width() - $('#sidebar').width();
+  var content_width  = $(window).width() - $('#sidebar').width();
+  var content_height = $(window).height() - $('#topbar').height();
   var sidebar_height = $('#sidebar').height();
   var content_tools_height = $('#content-tools').height();
+  var fix_content_view_height = sidebar_height - content_tools_height;
 
   $('.sub-navigation').width(content_width);
   $('#thread-title').width(content_width);
 
-
   // Set Content View
-  $('#content-view').css('height', sidebar_height).css('top', content_tools_height);
+  $('#content-view').css('height', fix_content_view_height).css('top', content_tools_height);
+  
   
 
-  // Resize on Drag
+  // Resize Elements on Drag
   window.onresize = function(event) {
     var new_content_width = $(window).width() - $('#sidebar').width();
     $('.sub-navigation, .bulk-actions').width(new_content_width);
