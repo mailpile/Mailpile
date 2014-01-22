@@ -190,7 +190,7 @@ class UrlMap:
                     # FIXME: We are passing user input here which may
                     #        have security implications.
                     return self._command('output', [fn], method=False)
-            for suffix in ('as.json', 'as.xml', 'as.vcf'):
+            for suffix in ('as.json', 'as.xml', 'as.vcf', 'as.txt', 'as.text'):
                 if fn == suffix:
                     return self._command('output', [suffix[3:]], method=False)
             raise UsageError('Invalid output format: %s' % fn)
@@ -367,6 +367,10 @@ class UrlMap:
     def url_thread(self, message_id, output=''):
         """Map a message to it's short-hand thread URL."""
         return self._url('/thread/=%s/' % message_id, output)
+
+    def url_source(self, message_id, output=''):
+        """Map a message to it's raw message source URL."""
+        return self._url('/message/raw/=%s/as.text' % message_id, output)
 
     def url_edit(self, message_id, output=''):
         """Map a message to it's short-hand editing URL."""

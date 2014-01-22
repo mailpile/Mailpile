@@ -342,6 +342,7 @@ class SearchResults(dict):
             },
             'urls': {
                 'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
+                'source': um.url_source(msg_info[MailIndex.MSG_MID]),
             },
             'flags': {
             },
@@ -453,8 +454,8 @@ class SearchResults(dict):
         self.people = people
         self.emails = emails
         self.idx = idx
+        results = self.results = results or session.results or []
 
-        results = results or session.results or []
         num = num or session.config.prefs.num_results
         if end:
             start = end - num
@@ -539,10 +540,15 @@ class SearchResults(dict):
             self['summary'] = emails[0].get_msg_info(MailIndex.MSG_SUBJECT)
 
         for e in emails or []:
-            idx_pos = e.msg_idx_pos
-            mid = b36(idx_pos)
-            if mid in self['data']['metadata']:
-                self['data']['messages'][mid] = self._message(e)
+            self.add_email(e)
+
+    def add_email(self, e):
+        if e not in self.emails:
+            self.emails.append(e)
+        idx_pos = e.msg_idx_pos
+        mid = b36(idx_pos)
+        if mid in self['data']['metadata']:
+            self['data']['messages'][mid] = self._message(e)
 
     def __nonzero__(self):
         return True

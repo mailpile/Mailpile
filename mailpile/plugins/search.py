@@ -157,10 +157,10 @@ class View(Search):
     class RawResult(dict):
         def _decode(self):
             try:
-                return self['data'].decode('utf-8')
+                return self['source'].decode('utf-8')
             except UnicodeDecodeError:
                 try:
-                    return self['data'].decode('iso-8859-1')
+                    return self['source'].decode('iso-8859-1')
                 except:
                     return '(MAILPILE FAILED TO DECODE MESSAGE)'
 
@@ -199,10 +199,20 @@ class View(Search):
 
         for email in emails:
             if raw:
+                subject = email.get_msg_info(idx.MSG_SUBJECT)
                 results.append(self.RawResult({
-                    'data': email.get_file().read()
+                    'summary': _('Raw message: %s') % subject,
+                    'source': email.get_file().read()
                 }))
             else:
+                old_result = None
+                for result in results:
+                    if email.msg_idx_pos in result.results:
+                        old_result = result
+                if old_result:
+                   old_result.add_email(email)
+                   continue
+
                 conv = [int(c[0], 36) for c
                         in idx.get_conversation(msg_idx=email.msg_idx_pos)]
                 if email.msg_idx_pos not in conv:
