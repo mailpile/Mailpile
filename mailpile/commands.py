@@ -476,6 +476,7 @@ class SearchResults(dict):
             },
             'search_terms': session.searched,
             'address_ids': [],
+            'message_ids': [],
             'thread_ids': threads,
         })
         if 'tags' in self.session.config:
@@ -550,6 +551,8 @@ class SearchResults(dict):
         mid = b36(idx_pos)
         if mid in self['data']['metadata']:
             self['data']['messages'][mid] = self._message(e)
+        if mid not in self['message_ids']:
+            self['message_ids'].append(mid)
 
     def __nonzero__(self):
         return True

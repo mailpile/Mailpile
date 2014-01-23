@@ -418,7 +418,8 @@ class Email(object):
         msg_idx, msg_info = idx.add_new_msg(msg_ptr, msg_id, msg_date,
                                             msg_from, msg_to, msg_cc, 0,
                                             msg_subj, '', [])
-        idx.set_conversation_ids(msg_info[idx.MSG_MID], msg)
+        idx.set_conversation_ids(msg_info[idx.MSG_MID], msg,
+                                 subject_threading=False)
         return cls(idx, msg_idx)
 
     def is_editable(self):

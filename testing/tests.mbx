@@ -230,6 +230,7 @@ X-campaignid: mailchimpcfa47c79110f45a8f68fab75b.db82fef684
 X-Report-Abuse: Please report abuse for this campaign here: http://www.mailchimp.com/abuse/abuse.phtml?u=cfa47c79110f45a8f68fab75b&id=db82fef684&e=1f1636935c
 X-MC-User: cfa47c79110f45a8f68fab75b
 x-accounttype: pd
+In-Reply-To: <201309160027.r8G0R3Ag013323@example.com>
 List-Unsubscribe: <mailto:unsubscribe-cfa5b-db84-15c@mailin1.us2.mcsv.net?subject=unsubscribe>, <http://example.us2.list-manage.com/unsubscribe?u=cfa75b&id=994&e=1f1c&c=db4>
 Sender: "WOW club" <no-reply=example.com@mail71.us2.mcsv.net>
 x-mcda: FALSE
@@ -2752,6 +2753,8 @@ Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
 X-Pgp-Agent: GPGMail (null)
 From: Barnaby Walters <barnaby@waterpigs.co.uk>
 Date: Fri, 17 Jan 2014 17:19:50 +0000
+References: <201309160027.r8G0R3Ag013323@example.com>,
+ <cfa47c79110f45a8f68fab75b1f1636935c.20130916115400@mail71.us2.mcsv.net>
 Content-Transfer-Encoding: 7bit
 Message-Id: <52906F15-18A6-456A-A442-97667D27E4C0@waterpigs.co.uk>
 Content-Description: OpenPGP encrypted message

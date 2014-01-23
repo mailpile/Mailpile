@@ -136,12 +136,18 @@ try:
 
     say('FIXME: Make sure message signatures verified')
 
-    # Make sure we are decoding weird headers correctly
+    # Load up a message and take a look at it...
     search_bre = mp.search(*FROM_BRE).result
     result_bre = search_bre['data']['metadata'][search_bre['thread_ids'][0]]
     view_bre = mp.view('=%s' % result_bre['mid']).result
-    metadata_bre = view_bre['data']['metadata'][view_bre['thread_ids'][0]]
-    message_bre = view_bre['data']['messages'][view_bre['thread_ids'][0]]
+
+    # Make sure message threading is working (there are message-ids and
+    # references in the test data).
+    assert(len(view_bre['thread_ids']) == 3)
+
+    # Make sure we are decoding weird headers correctly
+    metadata_bre = view_bre['data']['metadata'][view_bre['message_ids'][0]]
+    message_bre = view_bre['data']['messages'][view_bre['message_ids'][0]]
     from_bre = search_bre['data']['addresses'][metadata_bre['from_aid']]
     say('Checking encoding: %s' % from_bre)
     assert('=C3' not in from_bre['fn'])

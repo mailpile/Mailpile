@@ -357,6 +357,9 @@ class MailIndex:
                                  ) % (msg_mid, msg_id))
             return last_date + 1
 
+    def encode_msg_id(self, msg_id):
+        return b64c(sha1b64(msg_id.strip()))
+
     def get_msg_id(self, msg, msg_ptr):
         raw_msg_id = self.hdr(msg, 'message-id')
         if not raw_msg_id:
@@ -372,7 +375,7 @@ class MailIndex:
         # Fall back to the msg_ptr if all else fails.
         if not raw_msg_id:
             print _('WARNING: No proper Message-ID for %s') % msg_ptr
-        return b64c(sha1b64((raw_msg_id or msg_ptr).strip()))
+        return self.encode_msg_id(raw_msg_id or msg_ptr)
 
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener):
         try:
@@ -499,12 +502,12 @@ class MailIndex:
                                     filter_hooks=[self.filter_keywords])
         self.set_msg_at_idx_pos(email.msg_idx_pos, msg_info)
 
-    def set_conversation_ids(self, msg_mid, msg):
+    def set_conversation_ids(self, msg_mid, msg, subject_threading=True):
         msg_thr_mid = None
         refs = set((self.hdr(msg, 'references') + ' ' +
                     self.hdr(msg, 'in-reply-to')
                     ).replace(',', ' ').strip().split())
-        for ref_id in [b64c(sha1b64(r)) for r in refs]:
+        for ref_id in [self.encode_msg_id(r) for r in refs if r]:
             try:
                 # Get conversation ID ...
                 ref_idx_pos = self.MSGIDS[ref_id]
@@ -524,7 +527,7 @@ class MailIndex:
         msg_idx_pos = int(msg_mid, 36)
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
 
-        if not msg_thr_mid:
+        if subject_threading and not msg_thr_mid and not refs:
             # Can we do plain GMail style subject-based threading?
             # FIXME: Is this too aggressive? Make configurable?
             subj = msg_info[self.MSG_SUBJECT].lower()
