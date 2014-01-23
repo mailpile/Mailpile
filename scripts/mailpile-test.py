@@ -33,6 +33,7 @@ from mailpile import Mailpile
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
 MY_FROM = 'team+testing@mailpile.is'
+MY_NAME = 'Mailpile Team'
 MY_KEYID = '0x7848252F'
 
 # First, we set up a pristine Mailpile
@@ -64,7 +65,7 @@ try:
 
     # Configure our fake mail sending setup
     mp.set('profiles/0/email = %s' % MY_FROM)
-    mp.set('profiles/0/name = Test Account')
+    mp.set('profiles/0/name = %s' % MY_NAME)
     mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
     mp.set('sys/debug = sendmail log compose')
     mp.set('prefs/openpgp_header = encrypt')
@@ -160,7 +161,6 @@ try:
 
     # Edit the message (moves from Blank to Draft, not findable in index)
     msg_data = {
-        'from': [MY_FROM],
         'to': ['%s#%s' % (MY_FROM, MY_KEYID)],
         'bcc': ['secret@test.com#%s' % MY_KEYID],
         'mid': [new_mid],
@@ -189,6 +189,7 @@ try:
     for search in (['tag:sent'],
                    ['bcc:secret@test.com'],
                    ['thisisauniquestring'],
+                   ['thisisauniquestring'] + MY_FROM.split(),
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
         assert(mp.search(*search).result['stats']['count'] == 1)

@@ -378,7 +378,11 @@ class Email(object):
                msg_subject=None, msg_text=None, msg_references=None):
         msg = MIMEMultipart()
         msg_date = int(time.time())
-        msg_from = msg_from or idx.config.get_profile().get('email', None)
+        if not msg_from:
+            msg_from = idx.config.get_profile().get('email', None)
+            from_name = idx.config.get_profile().get('name', None)
+            if msg_from and from_name:
+                msg_from = '%s <%s>' % (from_name, msg_from)
         if not msg_from:
             raise NoFromAddressError()
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
