@@ -25,7 +25,7 @@ CONFIG_RULES = {
         'local_mailbox_id': (_('Local read/write Maildir'), 'b36',         ''),
         'mailindex_file': (_('Metadata index file'), 'file',               ''),
         'postinglist_dir': (_('Search index directory'), 'dir',            ''),
-        'mailbox':        [_('Mailboxes we index'), 'path',                []],
+        'mailbox':        [_('Mailboxes we index'), 'str',                 []],
         'plugins':        [_('Plugins to load on startup'),
                            CONFIG_PLUGINS, []],
         'path':           [_('Locations of assorted data'), False, {

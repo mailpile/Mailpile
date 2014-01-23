@@ -616,7 +616,7 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None, '[all|vcards|<msgs>]')
+    SYNOPSIS = (None, 'rescan', None, '[all|vcards|mailboxes|<msgs>]')
     ORDER = ('Internals', 2)
     SERIALIZE = 'Rescan'
 
@@ -632,6 +632,8 @@ class Rescan(Command):
 
         if self.args and self.args[0].lower() == 'vcards':
             return self._rescan_vcards(session, config)
+        elif self.args and self.args[0].lower() == 'mailboxes':
+            return self._rescan_mailboxes(session, config)
         elif self.args and self.args[0].lower() == 'all':
             self.args.pop(0)
 
@@ -682,8 +684,13 @@ class Rescan(Command):
                     continue
                 if mailpile.util.QUITTING:
                     break
-                count = idx.scan_mailbox(session, fid, fpath,
-                                         config.open_mailbox)
+                try:
+                    count = idx.scan_mailbox(session, fid, fpath,
+                                             config.open_mailbox)
+                except ValueError:
+                    session.ui.warning(_('Failed to rescan: %s') % fpath)
+                    count = 0
+
                 if count:
                     msg_count += count
                     mbox_count += 1
