@@ -1,4 +1,4 @@
-<!doctype html>
+{% if not html_in_json %}<!doctype html>
 <!--[if lt IE 7]><html class="no-js ie6 oldie" lang="en"> <![endif]-->
 <!--[if IE 7]><html class="no-js ie7 oldie" lang="en"> <![endif]-->
 <!--[if IE 8]><html class="no-js ie8 oldie" lang="en"> <![endif]-->
@@ -117,7 +117,7 @@
           {% if tag.stats.new > 0 %}
           <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
           {% endif %}
-        </a>        
+        </a>
       </li>
       {% endfor %}
     </ul>
@@ -163,11 +163,17 @@
     {% include("partials/tools_message.html") %}
   {% endif %}
   </div>
-  <div id="content-view">
-  {% block content %}
-    {{results}}
-  {% endblock %}
-  </div>
+  <div id="content-view">{% endif %}{#
+
+    This is the end of the first "if not html_in_json" section, which
+    simply skips all the boilerplate HTML so snippets can be injected
+    using innerHTML. Sub-templates may also need to check for this variable.
+
+  #}{% block content %}{{results}}{% endblock %}{#
+
+    Boilerplate starts again, continues until /html.
+
+  #}{% if not html_in_json %}</div>
 </div>
 
 <div id="debug" class="hide">
@@ -185,7 +191,7 @@
     <li><span class="icon-groups"></span> {{_("In")}} <a href="#" id="search-all-groups">{{_("All Groups")}}</a></li>
     <li><span class="icon-user"></span> {{_("And")}} <a href="#" id="search-tags">{{_("All Contacts")}}</a></li>
   </ul>
-</div>  
+</div>
 
 <script type="text/javascript" src="/static/js/mailpile.js"></script>
 <script type="text/javascript" src="/static/js/app/notifications.js"></script>
@@ -210,4 +216,4 @@ mailpile.instance = {
 <script type="text/javascript" src="/static/js/plugins-min.js"></script>
 
 </body>
-</html>
+</html>{% endif %}{# html_in_json #}

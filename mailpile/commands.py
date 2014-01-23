@@ -98,6 +98,7 @@ class Command:
             tpath = os.path.join(*path_parts)
             data = self.as_dict()
             data['title'] = self.message
+            data['html_in_json'] = 'jhtml' in self.session.ui.render_mode
             return self.session.ui.render_html(self.session.config, [tpath],
                                                data)
 
