@@ -475,17 +475,29 @@ class MailIndex:
         return added
 
     def index_email(self, session, email):
-        mbox_idx = email.get_msg_info(self.MSG_PTRS).split(',')[0][:MBX_ID_LEN]
+        msg = email.get_msg()
+        msg_info = email.get_msg_info()
+        mbox_idx = msg_info[self.MSG_PTRS].split(',')[0][:MBX_ID_LEN]
+
+        msg_to = ExtractEmails(self.hdr(msg, 'to'))
+        msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
+                  ExtractEmails(self.hdr(msg, 'bcc')))
+
+        msg_info[self.MSG_FROM] = self.hdr(msg, 'from')
+        msg_info[self.MSG_SUBJECT] = self.hdr(msg, 'subject')
+        msg_info[self.MSG_TO] = self.compact_to_list(msg_to or [])
+        msg_info[self.MSG_CC] = self.compact_to_list(msg_cc or [])
+
         kw, sn = self.index_message(session,
                                     email.msg_mid(),
-                                    email.get_msg_info(self.MSG_ID),
-                                    email.get_msg(),
+                                    msg_info[self.MSG_ID],
+                                    msg,
                                     email.get_msg_size(),
-                                    long(email.get_msg_info(self.MSG_DATE),
-                                         36),
+                                    long(msg_info[self.MSG_DATE], 36),
                                     mailbox=mbox_idx,
                                     compact=False,
                                     filter_hooks=[self.filter_keywords])
+        self.set_msg_at_idx_pos(email.msg_idx_pos, msg_info)
 
     def set_conversation_ids(self, msg_mid, msg):
         msg_thr_mid = None

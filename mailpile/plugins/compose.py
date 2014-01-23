@@ -153,7 +153,7 @@ class CompositionCommand(AddComposeMethods(Search)):
 
     def _edit_messages(self, emails, new=True, tag=True):
         session, idx = self.session, self._idx()
-        if session.ui.edit_messages(emails) or not new:
+        if session.ui.edit_messages(session, emails) or not new:
             if tag:
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
@@ -182,7 +182,7 @@ class Draft(AddComposeMethods(View)):
         try:
             if not emails:
                 session.ui.mark('No messages!')
-            elif session.ui.edit_messages(emails):
+            elif session.ui.edit_messages(session, emails):
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
                 idx.save()
@@ -217,7 +217,7 @@ class Compose(CompositionCommand):
                                                     create=True)
             update_string = email_updates and email_updates[0][1]
             if update_string:
-                email.update_from_string(update_string)
+                email.update_from_string(session, update_string)
 
         self._tag_blank(emails)
         return self._edit_messages(emails, new=True)
@@ -338,7 +338,7 @@ class Forward(RelativeCompose):
                 msg = email.get_msg()
                 for att in msg_atts:
                     msg.attach(att)
-                email.update_from_msg(msg)
+                email.update_from_msg(session, msg)
 
             # Behavior tracking
             if 'tags' in config:
@@ -392,7 +392,7 @@ class Attach(CompositionCommand):
         for email in emails:
             subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
             try:
-                email.add_attachments(files, filedata=filedata)
+                email.add_attachments(session, files, filedata=filedata)
                 updated.append(email)
             except NotEditableError:
                 session.ui.error('Read-only message: %s' % subject)
@@ -492,7 +492,7 @@ class Update(CompositionCommand):
                     return False
 
             for email, update_string in email_updates:
-                email.update_from_string(update_string, final=outbox)
+                email.update_from_string(session, update_string, final=outbox)
 
             emails = [e for e, u in email_updates]
             session.ui.notify('%d message(s) updated' % len(email_updates))

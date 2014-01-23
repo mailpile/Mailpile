@@ -499,7 +499,7 @@ class Email(object):
                        filename=os.path.basename(fn))
         return att
 
-    def add_attachments(self, filenames, filedata=None):
+    def add_attachments(self, session, filenames, filedata=None):
         if not self.is_editable():
             raise NotEditableError(_('Mailbox is read-only.'))
         msg = self.get_msg()
@@ -507,9 +507,9 @@ class Email(object):
             raise NotEditableError(_('Message is read-only.'))
         for fn in filenames:
             msg.attach(self.make_attachment(fn, filedata=filedata))
-        return self.update_from_msg(msg)
+        return self.update_from_msg(session, msg)
 
-    def update_from_string(self, data, final=False):
+    def update_from_string(self, session, data, final=False):
         if not self.is_editable():
             raise NotEditableError(_('Mailbox is read-only.'))
 
@@ -575,23 +575,20 @@ class Email(object):
         # Save result back to mailbox
         if final:
             sender, rcpts, outmsg = PrepareMessage(self.config, outmsg)
-        return self.update_from_msg(outmsg)
+        return self.update_from_msg(session, outmsg)
 
-    def update_from_msg(self, newmsg):
+    def update_from_msg(self, session, newmsg):
         if not self.is_editable():
             raise NotEditableError(_('Mailbox is read-only.'))
 
         mbx, ptr, fd = self.get_mbox_ptr_and_fd()
         mbx[ptr[MBX_ID_LEN:]] = newmsg
 
-        # Update the in-memory-index with new sender, subject
-        msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
-        msg_info[self.index.MSG_SUBJECT] = self.index.hdr(newmsg, 'subject')
-        msg_info[self.index.MSG_FROM] = self.index.hdr(newmsg, 'from')
-        self.index.set_msg_at_idx_pos(self.msg_idx_pos, msg_info)
-        self.index.set_conversation_ids(msg_info[self.index.MSG_MID], newmsg)
+        # FIXME: We should DELETE the old version from the index first.
 
-        # FIXME: What to do about the search index?  Update?
+        # Update the in-memory-index
+        self.index.index_email(session, Email(self.index, self.msg_idx_pos))
+
         self.msg_parsed = None
         return self
 

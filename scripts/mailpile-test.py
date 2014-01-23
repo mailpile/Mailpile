@@ -170,7 +170,7 @@ try:
     mp.message_update(**msg_data)
     assert(mp.search('tag:drafts').result['stats']['count'] == 1)
     assert(mp.search('tag:blank').result['stats']['count'] == 0)
-    assert(mp.search('TESTMSG').result['stats']['count'] == 0)
+    assert(mp.search('TESTMSG').result['stats']['count'] == 1)
     assert(not os.path.exists(mailpile_sent))
 
     # Send the message (moves from Draft to Sent, is findable via. search)

@@ -332,7 +332,7 @@ class UserInteraction:
                                            e.lineno, e.source,
                                            '%.4096s' % alldata)])
 
-    def edit_messages(self, emails):
+    def edit_messages(self, session, emails):
         if not self.interactive:
             return False
 
@@ -354,7 +354,7 @@ class UserInteraction:
         if len(updates) != len(emails):
             raise ValueError(_('Number of edit messages does not match!'))
         for i in range(0, len(updates)):
-            emails[i].update_from_string(updates[i])
+            emails[i].update_from_string(session, updates[i])
         return True
 
 
@@ -410,7 +410,7 @@ class HttpUserInteraction(UserInteraction):
         else:
             return ('text/plain', self._render_text_response(config))
 
-    def edit_messages(self, emails):
+    def edit_messages(self, session, emails):
         return False
 
     def print_filters(self, args):
@@ -422,7 +422,7 @@ class BackgroundInteraction(UserInteraction):
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
         self._debug_log(text, level, prefix='bg/')
 
-    def edit_messages(self, emails):
+    def edit_messages(self, session, emails):
         return False
 
 
@@ -433,7 +433,7 @@ class SilentInteraction(UserInteraction):
     def _display_result(self, result):
         return result
 
-    def edit_messages(self, emails):
+    def edit_messages(self, session, emails):
         return False
 
 
