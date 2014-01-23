@@ -9,7 +9,7 @@ MailPile.prototype.compose = function(data) {
   })
   .done(function(response) {
 
-    if (response.status == 'success') {
+    if (response.status === 'success') {
       window.location.href = mailpile.urls.message_draft + response.result.created + '/';
     } else {
       mailpile.notification(response.status, response.message);
@@ -38,14 +38,14 @@ $('#search-query').attr('tabindex', '-1');
 var composeContactSelected = function(contact) {
   if (contact.object.flags.secure) {
     $('.message-privacy-state').attr('title', 'The message is encrypted. The recipients & subject are not');
-    $('.message-privacy-state').removeClass('icon-unencrypted').addClass('icon-encrypted');
+    $('.message-privacy-state').removeClass('icon-lock-closed').addClass('icon-encrypted');
     $('.message-privacy-state').parent().addClass('bounce');
   } else {
   }
 }
 
 var formatComposeId = function(object) {
-  if (object.fn != "" && object.address != object.fn) {
+  if (object.fn !== "" && object.address !== object.fn) {
     return object.fn + ' <' + object.address + '>';
   } else {
     return object.address;
@@ -59,7 +59,7 @@ var formatComposeResult = function(state) {
     avatar = '<img src="' + state.photo + '">';
   }      
   if (state.flags.secure) {
-    secure = '<span class="icon-encrypted"></span>';
+    secure = '<span class="icon-lock-closed"></span>';
   }
   return '<span class="compose-select-avatar">' + avatar + '</span><span class="compose-select-name">' + state.fn + secure + '<br><span class="compose-select-address">' + state.address + '</span></span>';
 }
@@ -71,7 +71,7 @@ var formatComposeSelection = function(state) {
     avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
   }
   if (state.flags.secure) {
-    secure = '<span class="icon-encrypted"></span>';
+    secure = '<span class="icon-lock-closed"></span>';
   }
   return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + state.fn + secure + '</span>';
 }
@@ -148,7 +148,7 @@ $(document).on('click', '.compose-show-field', function(e) {
 /* Subject Field */
 $('#compose-from').keyup(function (e) {
   var code = (e.keyCode ? e.keyCode : e.which);
-  if (code == 9 && $('#compose-subject:focus').val() == '') {
+  if (code === 9 && $('#compose-subject:focus').val() === '') {
   }
 });
 
@@ -164,7 +164,7 @@ $(document).on('click', '.compose-action', function(e) {
   e.preventDefault();
   var action = $(this).val();
 
-  if (action == 'send') {
+  if (action === 'send') {
 	  var action_url     = mailpile.api.compose_send;
 	  var action_status  = 'success';
 	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
@@ -181,13 +181,12 @@ $(document).on('click', '.compose-action', function(e) {
 		data     : $('#form-compose').serialize(),
 		dataType : 'json',
 	  success  : function(response) {
-
-      if (action == 'send' && response.status == 'success') {
+      if (action === 'send' && response.status === 'success') {
         window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid;
       }
       else {
         mailpile.notification(response.status, response.message);
       }
-	  }
+    }
 	});
 });
