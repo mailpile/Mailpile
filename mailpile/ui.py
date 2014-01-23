@@ -223,7 +223,10 @@ class UserInteraction:
         if self.render_mode == 'json':
             return self._display_result(result.as_json())
         elif self.render_mode.endswith('html'):
-            template = self.render_mode.replace('.jhtml', '.html')
+            if self.render_mode in ('html', 'jhtml'):
+                template = 'html'
+            else:
+                template = self.render_mode.replace('.jhtml', '.html')
             return self._display_result(result.as_html(template=template))
         elif self.render_mode == 'xml':
             return self._display_result(result.as_xml())
