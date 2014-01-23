@@ -1,7 +1,7 @@
 {% extends "layouts/base.html" %}
 {% block content %}
 
-{# Macros (used by Jinja for repeating HTML) #}
+{# Macros are simple methods used by Jinja for repeating HTML blocks #}
 {% macro render_thread_metadata(metadata, from, profiles, crypto=false) -%}
 <div class="thread-item-metadata clearfix">
   <div class="thread-item-from">
@@ -25,8 +25,12 @@
 
 {% macro render_contact_item(person, profiles) -%}
 <li class="thread-item-metadata-contact">
+  {% if person %}
   <a href="{{ contact_url(person) }}" title="{{person.address}}"><img src="{{ show_avatar(person) }}"></a>
   <a href="{{ contact_url(person) }}" title="{{person.address}}">{{ contact_name(profiles, person) }}</a>
+  {% else %}
+  No
+  {% endif %}
 </li>
 {%- endmacro %}
 
@@ -47,9 +51,13 @@
       <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
         <ul class="clearfix">
           <li>To:</li>
-          {% for to_aid in metadata.to_aids %}
-          {{ render_contact_item(result.data.addresses[to_aid], profiles) }}
-          {% endfor %}
+          {% if metadata.to_aids %}
+            {% for to_aid in metadata.to_aids %}
+            {{ render_contact_item(result.data.addresses[to_aid], profiles) }}
+            {% endfor %}
+          {% else %}
+            <li>{{_("No Recipients")}} :(</li>
+          {% endif %}
         </ul>
         {% if metadata.cc_aids %}
         <ul class="clearfix">
@@ -137,12 +145,10 @@
         </ul>
       </div>
     </div>
-    {% set from = result.data.addresses[metadata.from_aid] %}
-    {% set to = result.data.addresses[metadata.to_aids.0] %}
-    
-    <!-- FIXME: the 'from' field needs to go through profiles and check FROM: {{ from.address }} --- TO: {{ to.address }} -->
+
+    <!-- FIXME: the 'from' field needs to go through profiles and check  -->
     {% set compose = "no" %}
-    {% set editing_strings = { 'from': to.address, 'to': from.address, 'cc': '', 'bcc': '', 'subject': '', 'body': '' } %}
+    {% set editing_strings = { 'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '', 'body': '' } %}
     {% include("partials/compose.html") %}
     {% endif %}
 
