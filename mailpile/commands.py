@@ -341,15 +341,20 @@ class SearchResults(dict):
             'body': {
                 'snippet': msg_info[MailIndex.MSG_BODY],
             },
-            'urls': {
-                'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
-                'source': um.url_source(msg_info[MailIndex.MSG_MID]),
-            },
             'flags': {
             },
             'crypto': {
             }
         }
+
+        # Ephemeral messages do not have URLs
+        if ':' not in msg_info[MailIndex.MSG_MID]:
+            expl['urls'] = {
+                'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
+                'source': um.url_source(msg_info[MailIndex.MSG_MID]),
+            }
+        else:
+            expl['flags']['ephemeral'] = True
 
         # Support rich snippets
         if expl['body']['snippet'].startswith('{'):
@@ -464,7 +469,12 @@ class SearchResults(dict):
             start = len(results)
         if start < 0:
             start = 0
-        threads = [b36(r) for r in results[start:start + num]]
+
+        try:
+            threads = [b36(r) for r in results[start:start + num]]
+        except TypeError:
+            results = threads = []
+            start = end = 0
 
         self.update({
             'summary': _('Search: %s') % ' '.join(session.searched),
@@ -493,7 +503,7 @@ class SearchResults(dict):
         else:
             search_tag_ids = []
 
-        if suppress_data or not results:
+        if suppress_data or (not results and not emails):
             return
 
         self.update({
@@ -514,29 +524,8 @@ class SearchResults(dict):
         while idxs:
             idx_pos = idxs.pop(0)
             msg_info = idx.get_msg_at_idx_pos(idx_pos)
-
-            # Populate data.metadata
-            self['data']['metadata'][b36(idx_pos)] = self._metadata(msg_info)
-
-            # Populate data.thread
-            thread_mid = msg_info[idx.MSG_THREAD_MID]
-            if thread_mid not in self['data']['threads']:
-                thread = self._thread(thread_mid)
-                self['data']['threads'][thread_mid] = thread
-                if full_threads:
-                    idxs.extend([int(t, 36) for t in thread
-                                 if t not in self['data']['metadata']])
-
-            # Populate data.person
-            for cid in self._msg_addresses(msg_info):
-                if cid not in self['data']['addresses']:
-                    self['data']['addresses'][cid] = self._address(cid)
-
-            # Populate data.tag
-            if 'tags' in self.session.config:
-                for tid in self._msg_tags(msg_info):
-                    if tid not in self['data']['tags']:
-                        self['data']['tags'][tid] = self._tag(tid)
+            self.add_msg_info(b36(idx_pos), msg_info,
+                              full_threads=full_threads, idxs=idxs)
 
         if emails and len(emails) == 1:
             self['summary'] = emails[0].get_msg_info(MailIndex.MSG_SUBJECT)
@@ -544,12 +533,36 @@ class SearchResults(dict):
         for e in emails or []:
             self.add_email(e)
 
+    def add_msg_info(self, mid, msg_info, full_threads=False, idxs=None):
+        # Populate data.metadata
+        self['data']['metadata'][mid] = self._metadata(msg_info)
+
+        # Populate data.thread
+        thread_mid = msg_info[self.idx.MSG_THREAD_MID]
+        if thread_mid not in self['data']['threads']:
+            thread = self._thread(thread_mid)
+            self['data']['threads'][thread_mid] = thread
+            if full_threads and idxs:
+                idxs.extend([int(t, 36) for t in thread
+                             if t not in self['data']['metadata']])
+
+        # Populate data.person
+        for cid in self._msg_addresses(msg_info):
+            if cid not in self['data']['addresses']:
+                self['data']['addresses'][cid] = self._address(cid)
+
+        # Populate data.tag
+        if 'tags' in self.session.config:
+            for tid in self._msg_tags(msg_info):
+                if tid not in self['data']['tags']:
+                    self['data']['tags'][tid] = self._tag(tid)
+
     def add_email(self, e):
         if e not in self.emails:
             self.emails.append(e)
-        idx_pos = e.msg_idx_pos
-        mid = b36(idx_pos)
-        if mid in self['data']['metadata']:
+        mid = e.msg_mid()
+        self.add_msg_info(mid, e.get_msg_info())
+        if mid not in self['data']['messages']:
             self['data']['messages'][mid] = self._message(e)
         if mid not in self['message_ids']:
             self['message_ids'].append(mid)

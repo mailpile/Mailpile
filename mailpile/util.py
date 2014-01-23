@@ -210,7 +210,7 @@ def b36(number):
     Keyword arguments:
     number -- An integer to convert to base36
     """
-    if not number:
+    if not number or number < 0:
         return B36_ALPHABET[0]
     base36 = []
     while number:

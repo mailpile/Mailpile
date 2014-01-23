@@ -141,9 +141,12 @@ class CompositionCommand(AddComposeMethods(Search)):
         return updates
 
     def _return_search_results(self, emails,
-                               expand=None, new=[], sent=[]):
+                               expand=None, new=[], sent=[], ephemeral=False):
         session, idx = self.session, self._idx()
-        session.results = [e.msg_idx_pos for e in emails]
+        if not ephemeral:
+            session.results = [e.msg_idx_pos for e in emails]
+        else:
+            session.results = ephemeral
         session.displayed = EditableSearchResults(session, idx,
                                                   new, sent,
                                                   results=session.results,
@@ -151,9 +154,10 @@ class CompositionCommand(AddComposeMethods(Search)):
                                                   emails=expand)
         return session.displayed
 
-    def _edit_messages(self, emails, new=True, tag=True):
+    def _edit_messages(self, emails, new=True, tag=True, ephemeral=False):
         session, idx = self.session, self._idx()
-        if session.ui.edit_messages(session, emails) or not new:
+        if (not ephemeral and
+                (session.ui.edit_messages(session, emails) or not new)):
             if tag:
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
@@ -163,7 +167,8 @@ class CompositionCommand(AddComposeMethods(Search)):
         idx.save()
         return self._return_search_results(emails,
                                            expand=emails,
-                                           new=(new and emails))
+                                           new=(new and emails),
+                                           ephemeral=ephemeral)
 
 
 class Draft(AddComposeMethods(View)):
@@ -198,7 +203,7 @@ class Draft(AddComposeMethods(View)):
 
 class Compose(CompositionCommand):
     """Create a new blank e-mail for editing"""
-    SYNOPSIS = ('C', 'compose', 'message/compose', None)
+    SYNOPSIS = ('C', 'compose', 'message/compose', "[ephemeral]")
     ORDER = ('Composing', 0)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = CompositionCommand.UPDATE_STRING_DATA
@@ -207,20 +212,29 @@ class Compose(CompositionCommand):
         if 'mid' in self.data:
             return self._error('Please use update for editing messages')
 
+        ephemeral = (self.args and "ephemeral" in self.args)
         session, idx = self.session, self._idx()
-        local_id, lmbox = session.config.open_local_mailbox(session)
-        emails = [Email.Create(idx, local_id, lmbox)]
 
-        for email in emails:
-            email_updates = self._get_email_updates(idx,
-                                                    emails=[email],
-                                                    create=True)
-            update_string = email_updates and email_updates[0][1]
-            if update_string:
-                email.update_from_string(session, update_string)
+        if not ephemeral:
+            local_id, lmbox = session.config.open_local_mailbox(session)
+        else:
+            local_id, lmbox = -1, None
+            ephemeral = ['new:mail']
 
-        self._tag_blank(emails)
-        return self._edit_messages(emails, new=True)
+        email = Email.Create(idx, local_id, lmbox,
+                             save=(not ephemeral),
+                             ephemeral_mid=ephemeral and ephemeral[0])
+
+        email_updates = self._get_email_updates(idx,
+                                                emails=[email],
+                                                create=True)
+        update_string = email_updates and email_updates[0][1]
+        if update_string:
+            email.update_from_string(session, update_string)
+
+        if not ephemeral:
+            self._tag_blank([email])
+        return self._edit_messages([email], ephemeral=ephemeral, new=True)
 
 
 class RelativeCompose(Compose):
@@ -231,7 +245,7 @@ class RelativeCompose(Compose):
 
 class Reply(RelativeCompose):
     """Create reply(-all) drafts to one or more messages"""
-    SYNOPSIS = ('r', 'reply', 'message/reply', '[all] <messages>')
+    SYNOPSIS = ('r', 'reply', 'message/reply', '[all|ephemeral] <messages>')
     ORDER = ('Composing', 3)
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
@@ -241,10 +255,15 @@ class Reply(RelativeCompose):
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
 
-        if self.args and self.args[0].lower() == 'all':
-            reply_all = self.args.pop(0) or True
-        else:
-            reply_all = False
+        reply_all = False
+        ephemeral = False
+        while self.args:
+            if self.args[0].lower() == 'all':
+                reply_all = self.args.pop(0) or True
+            elif self.args[0].lower() == 'ephemeral':
+                ephemeral = self.args.pop(0) or True
+            else:
+                break
 
         refs = [Email(idx, i) for i in self._choose_messages(self.args)]
         if refs:
@@ -266,33 +285,43 @@ class Reply(RelativeCompose):
                                  if p['type'] in self._TEXT_PARTTYPES]))
                 msg_bodies.append(text.replace('\n', '\n> '))
 
-            local_id, lmbox = config.open_local_mailbox(session)
+            if not ephemeral:
+                local_id, lmbox = config.open_local_mailbox(session)
+            else:
+                local_id, lmbox = -1, None
+                if reply_all:
+                    ephemeral = ['reply-all:%s' % refs[0].msg_mid()]
+                else:
+                    ephemeral = ['reply:%s' % refs[0].msg_mid()]
             try:
                 email = Email.Create(idx, local_id, lmbox,
                                      msg_text='\n\n'.join(msg_bodies),
                                      msg_subject=('Re: %s' % ref_subjs[-1]),
                                      msg_to=msg_to,
                                      msg_cc=[r for r in msg_cc if r],
-                                     msg_references=[i for i in ref_ids if i])
+                                     msg_references=[i for i in ref_ids if i],
+                                     save=(not ephemeral),
+                                     ephemeral_mid=ephemeral and ephemeral[0])
 
             except NoFromAddressError:
                 return self._error('You must configure a From address first.')
 
-            # Behavior tracking
-            if 'tags' in config:
+            if not ephemeral and 'tags' in config:
+                # Behavior tracking
                 for tag in config.get_tags(type='replied'):
                     idx.add_tag(session, tag._key,
                                 msg_idxs=[m.msg_idx_pos for m in refs])
+                # Composition flow
+                self._tag_blank([email])
 
-            self._tag_blank([email])
-            return self._edit_messages([email])
+            return self._edit_messages([email], ephemeral=ephemeral)
         else:
             return self._error('No message found')
 
 
 class Forward(RelativeCompose):
     """Create forwarding drafts of one or more messages"""
-    SYNOPSIS = ('f', 'forward', 'message/forward', '[att] <messages>')
+    SYNOPSIS = ('f', 'forward', 'message/forward', '[att|ephemeral] <messages>')
     ORDER = ('Composing', 4)
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
@@ -302,10 +331,18 @@ class Forward(RelativeCompose):
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
 
-        if self.args and self.args[0].lower().startswith('att'):
-            with_atts = self.args.pop(0) or True
-        else:
-            with_atts = False
+        with_atts = False
+        ephemeral = False
+        while self.args:
+            if self.args[0].lower() == 'att':
+                with_atts = self.args.pop(0) or True
+            elif self.args[0].lower() == 'ephemeral':
+                ephemeral = self.args.pop(0) or True
+            else:
+                break
+        if ephemeral and with_atts:
+            raise UsageError(_('Sorry, ephemeral messages cannot have '
+                               'attachments at this time.'))
 
         refs = [Email(idx, i) for i in self._choose_messages(self.args)]
         if refs:
@@ -330,24 +367,34 @@ class Forward(RelativeCompose):
                         if att['mimetype'] not in self._ATT_MIMETYPES:
                             msg_atts.append(att['part'])
 
-            local_id, lmbox = config.open_local_mailbox(session)
+            if not ephemeral:
+                local_id, lmbox = config.open_local_mailbox(session)
+            else:
+                local_id, lmbox = -1, None
+                if msg_atts:
+                    ephemeral = ['forward-att:%s' % refs[0].msg_mid()]
+                else:
+                    ephemeral = ['forward:%s' % refs[0].msg_mid()]
             email = Email.Create(idx, local_id, lmbox,
                                  msg_text='\n\n'.join(msg_bodies),
-                                 msg_subject=('Fwd: %s' % ref_subjs[-1]))
+                                 msg_subject=('Fwd: %s' % ref_subjs[-1]),
+                                 save=(not ephemeral),
+                                 ephemeral_mid=ephemeral and ephemeral[0])
             if msg_atts:
                 msg = email.get_msg()
                 for att in msg_atts:
                     msg.attach(att)
                 email.update_from_msg(session, msg)
 
-            # Behavior tracking
-            if 'tags' in config:
+            if not ephemeral and 'tags' in config:
+                # Behavior tracking
                 for tag in config.get_tags(type='fwded'):
                     idx.add_tag(session, tag._key,
                                 msg_idxs=[m.msg_idx_pos for m in refs])
+                # Composition flow
+                self._tag_blank([email])
 
-            self._tag_blank([email])
-            return self._edit_messages([email])
+            return self._edit_messages([email], ephemeral=ephemeral)
         else:
             return self._error('No message found')
 

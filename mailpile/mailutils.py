@@ -333,15 +333,17 @@ def HeaderPrint(message):
 class Email(object):
     """This is a lazy-loading object representing a single email."""
 
-    def __init__(self, idx, msg_idx_pos):
+    def __init__(self, idx, msg_idx_pos,
+                 msg_parsed=None, msg_info=None, ephemeral_mid=None):
         self.index = idx
         self.config = idx.config
         self.msg_idx_pos = msg_idx_pos
-        self.msg_info = None
-        self.msg_parsed = None
+        self.ephemeral_mid = ephemeral_mid
+        self.msg_info = msg_info
+        self.msg_parsed = msg_parsed
 
     def msg_mid(self):
-        return b36(self.msg_idx_pos)
+        return self.ephemeral_mid or b36(self.msg_idx_pos)
 
     @classmethod
     def encoded_hdr(self, msg, hdr, value=None):
@@ -375,9 +377,12 @@ class Email(object):
     @classmethod
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
-               msg_subject=None, msg_text=None, msg_references=None):
+               msg_subject=None, msg_text=None, msg_references=None,
+               save=True, ephemeral_mid='not:saved'):
         msg = MIMEMultipart()
-        msg_date = int(time.time())
+        msg.signature_info = SignatureInfo()
+        msg.encryption_info = EncryptionInfo()
+        msg_ts = int(time.time())
         if not msg_from:
             msg_from = idx.config.get_profile().get('email', None)
             from_name = idx.config.get_profile().get('name', None)
@@ -386,7 +391,7 @@ class Email(object):
         if not msg_from:
             raise NoFromAddressError()
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
-        msg['Date'] = email.utils.formatdate(msg_date)
+        msg['Date'] = email.utils.formatdate(msg_ts)
         msg['Message-Id'] = email.utils.make_msgid('mailpile')
         msg_subj = (msg_subject or 'New message')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
@@ -409,21 +414,38 @@ class Email(object):
             except:
                 charset = 'utf-8'
             textpart = MIMEText(msg_text, _subtype='plain', _charset=charset)
+            textpart.signature_info = SignatureInfo()
+            textpart.encryption_info = EncryptionInfo()
             msg.attach(textpart)
             del textpart['MIME-Version']
-        msg_key = mbx.add(msg)
-        msg_to = msg_cc = []
-        msg_ptr = mbx.get_msg_ptr(mbox_id, msg_key)
-        msg_id = idx.get_msg_id(msg, msg_ptr)
-        msg_idx, msg_info = idx.add_new_msg(msg_ptr, msg_id, msg_date,
-                                            msg_from, msg_to, msg_cc, 0,
-                                            msg_subj, '', [])
-        idx.set_conversation_ids(msg_info[idx.MSG_MID], msg,
-                                 subject_threading=False)
-        return cls(idx, msg_idx)
+
+        if save:
+            msg_key = mbx.add(msg)
+            msg_to = msg_cc = []
+            msg_ptr = mbx.get_msg_ptr(mbox_id, msg_key)
+            msg_id = idx.get_msg_id(msg, msg_ptr)
+            msg_idx, msg_info = idx.add_new_msg(msg_ptr, msg_id, msg_ts,
+                                                msg_from, msg_to, msg_cc, 0,
+                                                msg_subj, '', [])
+            idx.set_conversation_ids(msg_info[idx.MSG_MID], msg,
+                                     subject_threading=False)
+            return cls(idx, msg_idx)
+        else:
+            msg_info = idx.edit_msg_info(idx.BOGUS_METADATA[:],
+                                         msg_mid=ephemeral_mid or '',
+                                         msg_id=msg['Message-ID'],
+                                         msg_ts=msg_ts,
+                                         msg_subject=msg_subj,
+                                         msg_from=msg_from,
+                                         msg_to=msg_to,
+                                         msg_cc=msg_cc)
+            return cls(idx, -1,
+                       msg_parsed=msg, msg_info=msg_info,
+                       ephemeral_mid=ephemeral_mid)
 
     def is_editable(self):
-        return self.config.is_editable_message(self.get_msg_info())
+        return (self.ephemeral_mid or
+                self.config.is_editable_message(self.get_msg_info()))
 
     MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                     'content-transfer-encoding')
@@ -869,7 +891,7 @@ class Email(object):
             try:
                 payload = payload.decode(charset)
                 return payload, charset
-            except UnicodeDecodeError:
+            except (UnicodeDecodeError, TypeError):
                 pass
 
         if binary:

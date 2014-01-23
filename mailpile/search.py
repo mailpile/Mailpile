@@ -477,6 +477,28 @@ class MailIndex:
                           ) % (mailbox_idx, mailbox_fn))
         return added
 
+    def edit_msg_info(self, msg_info,
+                      msg_mid=None, raw_msg_id=None, msg_id=None,
+                      msg_from=None, msg_subject=None, msg_ts=None,
+                      msg_to=None, msg_cc=None):
+        if msg_mid:
+            msg_info[self.MSG_MID] = msg_mid
+        if raw_msg_id:
+            msg_info[self.MSG_ID] = self.encode_msg_id(raw_msg_id)
+        if msg_id:
+            msg_info[self.MSG_ID] = msg_id
+        if msg_from:
+            msg_info[self.MSG_FROM] = msg_from
+        if msg_subject:
+            msg_info[self.MSG_SUBJECT] = msg_subject
+        if msg_ts:
+            msg_info[self.MSG_DATE] = b36(msg_ts)
+        if msg_to is not None:
+            msg_info[self.MSG_TO] = self.compact_to_list(msg_to or [])
+        if msg_cc is not None:
+            msg_info[self.MSG_CC] = self.compact_to_list(msg_cc or [])
+        return msg_info
+
     def index_email(self, session, email):
         msg = email.get_msg()
         msg_info = email.get_msg_info()
@@ -486,10 +508,11 @@ class MailIndex:
         msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
                   ExtractEmails(self.hdr(msg, 'bcc')))
 
-        msg_info[self.MSG_FROM] = self.hdr(msg, 'from')
-        msg_info[self.MSG_SUBJECT] = self.hdr(msg, 'subject')
-        msg_info[self.MSG_TO] = self.compact_to_list(msg_to or [])
-        msg_info[self.MSG_CC] = self.compact_to_list(msg_cc or [])
+        self.edit_msg_info(msg_info,
+                           msg_from=self.hdr(msg, 'from'),
+                           msg_subject=self.hdr(msg, 'subject'),
+                           msg_to=msg_to,
+                           msg_cc=msg_cc)
 
         kw, sn = self.index_message(session,
                                     email.msg_mid(),
@@ -630,6 +653,7 @@ class MailIndex:
                     tags):
         msg_idx_pos = len(self.INDEX)
         msg_mid = b36(msg_idx_pos)
+        # FIXME: Refactor this to use edit_msg_info.
         msg_info = [
             msg_mid,                                     # Index ID
             msg_ptr,                                     # Location on disk
