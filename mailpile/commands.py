@@ -633,7 +633,6 @@ class Rescan(Command):
 
         msg_idxs = self._choose_messages(self.args)
         if msg_idxs:
-            session.ui.warning(_('FIXME: rescan messages: %s') % msg_idxs)
             for msg_idx_pos in msg_idxs:
                 e = Email(idx, msg_idx_pos)
                 session.ui.mark('Re-indexing %s' % e.msg_mid())

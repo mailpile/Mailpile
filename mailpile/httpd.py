@@ -232,6 +232,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if 'http' in config.sys.debug:
             sys.stderr.write(('%s: %s qs = %s post = %s\n'
                               ) % (method, path, query_data, post_data))
+        if 'httpdata' in config.sys.debug:
+            self.wfile = DebugFileWrapper(sys.stderr, self.wfile)
 
         # Static things!
         if path == '/favicon.ico':

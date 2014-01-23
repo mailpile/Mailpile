@@ -555,6 +555,40 @@ class CleanText:
         return unicode(self.clean)
 
 
+def HideBinary(text):
+    try:
+        text.decode('utf-8')
+        return text
+    except UnicodeDecodeError:
+        return '[BINARY DATA, %d BYTES]' % len(text)
+
+
+class DebugFileWrapper(object):
+    def __init__(self, dbg, fd):
+        self.fd = fd
+        self.dbg = dbg
+
+    def __getattribute__(self, name):
+        if name in ('fd', 'dbg', 'write', 'flush', 'close'):
+            return object.__getattribute__(self, name)
+        else:
+            self.dbg.write('==(%d.%s)\n' % (self.fd.fileno(), name))
+            return object.__getattribute__(self.fd, name)
+
+    def write(self, data, *args, **kwargs):
+        self.dbg.write('<=(%d.write)= %s\n' % (self.fd.fileno(),
+                                               HideBinary(data).rstrip()))
+        return self.fd.write(data, *args, **kwargs)
+
+    def flush(self, *args, **kwargs):
+        self.dbg.write('==(%d.flush)\n' % self.fd.fileno())
+        return self.fd.flush(*args, **kwargs)
+
+    def close(self, *args, **kwargs):
+        self.dbg.write('==(%d.close)\n' % self.fd.fileno())
+        return self.fd.close(*args, **kwargs)
+
+
 # If 'python util.py' is executed, start the doctest unittest
 if __name__ == "__main__":
     import doctest
