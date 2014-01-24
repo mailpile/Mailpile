@@ -419,7 +419,7 @@ class SearchResults(dict):
         return tids
 
     def _tag(self, tid, attributes={}):
-        return dict_merge(self.session.config.get_tag(tid), attributes)
+        return dict_merge(self.session.config.get_tag_info(tid), attributes)
 
     def _thread(self, thread_mid):
         msg_info = self.idx.get_msg_at_idx_pos(int(thread_mid, 36))
@@ -596,7 +596,9 @@ class SearchResults(dict):
                 m = self['data']['metadata'][mid]
                 tags = [self['data']['tags'][t] for t in m['tag_tids']]
                 tag_names = [t['name'] for t in tags
-                             if 'searched' not in t and t.get('label', True)]
+                             if 'searched' not in t
+                             and t.get('label', True)
+                             and t.get('display', '') != 'invisible']
                 tag_new = [t for t in tags if t.get('type') == 'unread']
                 tag_names.sort()
                 msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''

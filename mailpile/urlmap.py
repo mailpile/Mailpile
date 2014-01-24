@@ -45,7 +45,8 @@ class UrlMap:
     """
     API_VERSIONS = (0, )
 
-    def __init__(self, session):
+    def __init__(self, session=None, config=None):
+        self.config = config or session.config
         self.session = session
 
     def _prefix_to_query(self, path, query_data, post_data):
@@ -220,7 +221,7 @@ class UrlMap:
             pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
 
         tag_slug = '/'.join([p for p in path_parts[1:] if p])
-        tag = self.session.config.get_tag(tag_slug)
+        tag = self.config.get_tag(tag_slug)
         tag_search = [tag.search_terms % tag] if tag is not None else [""]
         if tag is not None and tag.search_order and 'order' not in query_data:
             query_data['order'] = [tag.search_order]
@@ -394,11 +395,11 @@ class UrlMap:
         ValueError: Unknown tag: 99
         """
         try:
-            tag = self.session.config.tags[tag_id]
+            tag = self.config.tags[tag_id]
             if tag is None:
                 raise KeyError('oops')
         except (KeyError, IndexError):
-            tag = [t for t in self.session.config.tags.values()
+            tag = [t for t in self.config.tags.values()
                    if t.slug == tag_id.lower()]
             tag = tag and tag[0]
         if tag:
