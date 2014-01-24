@@ -7,20 +7,19 @@
 
 #### Who's doing what? ####
 
-- 2013-12-19: bre: Bugfixes, search-by-size, preparing for antispam work
-- 2013-12-18: smari: PGP decryption & signature verification
-- 2013-11-18: bnvk: Tweaking the compose UI
+- 2014-01-23: bre: Implemented new "empheral"
+- 2014-01-22: bvnk: Moved to using single compose.html partial for thread & New
+- 2014-01-22: smari: fixing numerous lil bugs & nagging things
+
 
 #### Recent changes ####
 
+- 2013-12-19: bre: Bugfixes, search-by-size, preparing for antispam work
+- 2013-12-18: smari: PGP decryption & signature verification
+- 2013-11-18: bnvk: Tweaking the compose UI
 - 2013-12-19: Run `setup` to enable the new Outbox for sending
 - 2013-11-18: Run `setup` and `rescan` to enable GPG and gravatar importers
-- 2013-11-08: New API endpoint /search/address for to/cc/bcc autocomplete
-- 2013-11-05: CLI hackers: check out `help hacks` and `hacks/pycli`
-- 2013-10-29: Tag metadata greatly was enhanced (please run
-  `mp --setup` or `setup` in the Mailpile CLI to update your config).
-- 2013-10-28: python-gnupginterface is no longer a dependency.
-- 2013-10-22: New config format live, may break many things.
+- 2014-11-08: New API endpoint /search/address for to/cc/bcc autocomplete
 
 ---------------------------------------------------------------------------
 
