@@ -25,12 +25,8 @@
 
 {% macro render_contact_item(person, profiles) -%}
 <li class="thread-item-metadata-contact">
-  {% if person %}
   <a href="{{ contact_url(person) }}" title="{{person.address}}"><img src="{{ show_avatar(person) }}"></a>
   <a href="{{ contact_url(person) }}" title="{{person.address}}">{{ contact_name(profiles, person) }}</a>
-  {% else %}
-  No
-  {% endif %}
 </li>
 {%- endmacro %}
 
@@ -128,7 +124,6 @@
           {% endfor %}
         </ul>
       </div>
-  
       <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="{{mid}}">
         <ul class="horizontal left">
           <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
@@ -145,23 +140,23 @@
         </ul>
       </div>
     </div>
-
-    <!-- FIXME: the 'from' field needs to go through profiles and check  -->
-    {% set compose = "no" %}
-    {% set editing_strings = { 'from': '', 'to': '', 'cc': '', 'bcc': '', 'subject': '', 'body': '' } %}
+    {% set compose = mailpile('message/reply', 'all', 'ephemeral', mid).result %}
+    {% if compose %}
+    {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
     {% include("partials/compose.html") %}
+    {% else %}
+    {{_("Could Not Render Composer")}}
+    {% endif%}
+    
     {% endif %}
 
   {% else %}{# if not message.editing #}
-
   <div class="thread-snippet" data-mid="{{ mid }}">
     {{ render_thread_metadata(metadata, result.data.addresses[metadata.from_aid], profiles) }}
     <div class="thread-item-text">{{ metadata.body.snippet }}</div>
   </div>
-
   {% endif %}
   {% endfor %}{# for mid ... #}
-
 
   <div id="thread-people">
     <h3>{{_("People in Conversation")}}</h3>
