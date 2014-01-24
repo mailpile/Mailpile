@@ -30,133 +30,85 @@
 </li>
 {%- endmacro %}
 
+{# Has A Result #}
 {% if result %}
 {% set start_mid     = result.thread_ids[-1] %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
 {% set profiles      = mailpile('settings', 'profiles').result.profiles %}
 
+{# 
+    UGLY HACK  showed_composer = [] 
+    we are setting a list called showed_composer 
+    to keep track of MIDs so we know when to show the Composer
+    with partially compose draft inside OR load Composer with
+    new ephermal draft
+#}
+{% set showed_composer = [] %}
 {% for mid in result.thread_ids|reverse %}
+
   {% set metadata = result.data.metadata[mid] %}
   {% set message  = result.data.messages[mid] %}
-  {% if mid in result.data.messages %}
-    {% if not message.editing_string %}
-  
-    <!-- FIXME: make subject line show differing subjects {{ metadata.subject|e }} -->
-    <div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}">
-      {{ render_thread_metadata(metadata, result.data.addresses[metadata.from_aid], profiles, message.crypto) }}
-      <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
-        <ul class="clearfix">
-          <li>To:</li>
-          {% if metadata.to_aids %}
-            {% for to_aid in metadata.to_aids %}
-            {{ render_contact_item(result.data.addresses[to_aid], profiles) }}
-            {% endfor %}
-          {% else %}
-            <li>{{_("No Recipients")}} :(</li>
-          {% endif %}
-        </ul>
-        {% if metadata.cc_aids %}
-        <ul class="clearfix">
-          <li>Cc:</li>
-          {% for cc_aid in metadata.cc_aids %}
-          {{ render_contact_item(result.data.addresses[cc_aid], profiles) }}
-          {% endfor %}
-        </ul>
-        {% endif %}
-        {% if metadata.bcc_aids %}
-        <ul class="clearfix">
-          <li>Bcc:</li>
-          {% for bcc_aid in metadata.bcc_aids %}
-          {{ render_contact_item(result.data.addresses[bcc_aid], profiles) }}
-          {% endfor %}
-        </ul>
-        {% endif %}
-      </div>
-  
-      {% set last_enc_context = message.crypto.encryption.context %}
-      {% set last_sig_context = message.crypto.signature.context %}
-      {% for part in message.text_parts %}
-        {# Parts that do not have own crypto attribute inherit from message itself #}
-        {#
-         # Watch for changes to the "context" which is present in each encryption and
-         # signature section - if either has changed, then we have moved from
-         # one security context to the next, and need to let the user know.
-         #}
-        {% if (part.data != "") %}
-          {% if part.crypto %}
-          <div class="thread-item-crypto clearfix">
-            <div class="thread-item-crypto-info left" data-name="cats">
-              {% if part.crypto.encryption %}
-                {% if part.crypto.encryption.context != last_enc_context %}
-                {% set last_enc_context = part.crypto.encryption.context %}
-                <span class="icon {{ show_message_encryption(part.crypto.encryption.status) }}" title=""></span> <span class="text">Not Encrypted</span>
-                {% endif %}
-              {% endif %}
-              {% if part.crypto.signature %}
-                {% if part.crypto.signature.context != last_sig_context %}
-                {% set last_sig_context = part.crypto.signature.context %}
-                <span class="icon {{ show_message_signature(part.crypto.signature.status) }}" title=""></span> <span class="text">No Signature</span>
-                {% endif %}
-              {% endif %}
-            </div>
-            <div class="thread-item-crypto-line left"></div>
-          </div>
-          {% endif %} 
-  
-          {% if part.type in ("text", "pgpsignedtext") %}
-          <div class="thread-item-text">{{ part.data|e|urlize }}</div>
-          {% elif part.type == "quote" %}
-          <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}"><div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div></div>
-          {% elif part.type == "signature" %}
-          <div class="thread-item-signature" id="message-signature-{{mid}}-{{loop.index}}"><div class="thread-item-signature-show" data-signature_id="{{mid}}-{{loop.index}}">&nbsp;--&nbsp;</div><div class="thread-item-signature-text" id="message-signature-text-{{mid}}-{{loop.index}}">{{ part.data|e|urlize }}</div></div>
-          {% endif %}
-        {% endif %}
-      {% endfor %}
-      <div class="thread-message-attachments">
-        <ul class="clearfix">
-          {% for att in message.attachments %}
-          <li>
-          {% if att.mimetype in ('image/jpg', 'image/jpeg', 'image/png', 'image/gif') %}
-            <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
-          {% endif %}
-            <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">{{ att.filename }}<small>{{ att.length|friendly_bytes }}</small></a>
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
-      <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="{{mid}}">
-        <ul class="horizontal left">
-          <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
-          <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
-            <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
-              <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> Move to Inbox</a></li>
-              <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> Flag as Spam</a></li>
-              <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> Remove from Thread</a></li>
-              <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
-            </ul>
-          </li>
-          <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
-        </ul>
-      </div>
-    </div>
-    {% set compose = mailpile('message/reply', 'all', 'ephemeral', mid).result %}
-    {% if compose %}
-    {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
-    {% include("partials/compose.html") %}
-    {% else %}
-    {{_("Could Not Render Composer")}}
-    {% endif%}
-    
-    {% endif %}
 
-  {% else %}{# if not message.editing #}
+  {# Determine Is A Message #}
+  {% if mid in result.data.messages %}
+
+    {# Show: Composer #}
+    {% if "editing_string" in message %}
+
+      {% set editing_strings = message.editing_strings %}
+      {% include("partials/compose.html") %}
+
+    {# Show: Message and Composer #}
+    {% else %}
+
+      {# Show : Message #}
+      {% include("partials/thread_message.html") %}
+
+      {# Check If Not Replied #}
+      {% if metadata.flags.replied != true %}
+
+        {# Check If Has Not Showed Composer #}
+        {% if not showed_composer %}
+          {% do showed_composer.append(mid) %}
+
+          {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}
+          {% if compose %}
+          {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
+          {% include("partials/compose.html") %}
+          {% else %}
+          {{_("Could Not Render Composer")}}
+          {% endif %}
+
+        {% endif %}{# End Not Showed Composer #}
+
+      {% endif %}{# End Is Not Replied #}
+
+    {% endif %}{# End Message / Reply #}
+
+  {# Is Message & Draft #}
+  {% elif metadata.flags.draft == true %}
+
+      {% if not showed_composer %}
+        {% do showed_composer.append(mid) %}
+      
+        {% set compose = mailpile('message/draft', '='+mid).result %}
+        {% if compose %}
+        {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
+        {% include("partials/compose.html") %}
+        {% else %}
+        {{_("Could Not Render Composer")}}
+        {% endif%}
+
+      {% endif %}
+
+  {% else %}{# Show snippet #}
   <div class="thread-snippet" data-mid="{{ mid }}">
     {{ render_thread_metadata(metadata, result.data.addresses[metadata.from_aid], profiles) }}
     <div class="thread-item-text">{{ metadata.body.snippet }}</div>
   </div>
-  {% endif %}
-  {% endfor %}{# for mid ... #}
+  {% endif %}{# End if mid #}
+
+{% endfor %}{# End for loop #}
 
   <div id="thread-people">
     <h3>{{_("People in Conversation")}}</h3>
@@ -172,7 +124,7 @@
     </ul>
   </div>
 
-{% else %}
+{% else %}{# No Result, Show Error #}
   {% set error_title = "message_missing" %}
   {% include("partials/errors_content.html") %}
 {% endif  %}{# if result #}
