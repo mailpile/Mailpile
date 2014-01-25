@@ -494,9 +494,9 @@ class Email(object):
         if not strings['encryption']:
             strings['encryption'] = self.config.prefs.crypto_policy
 
-        strings['headers'] = '\n'.join(header_lines)
-        strings['body'] = '\n'.join([t['data'].strip()
-                                     for t in tree['text_parts']])
+        strings['headers'] = '\n'.join(header_lines).replace('\r\n', '\n')
+        strings['body'] = (''.join([t['data'] for t in tree['text_parts']])
+                           ).replace('\r\n', '\n')
         return strings
 
     def get_editing_string(self, tree=None):

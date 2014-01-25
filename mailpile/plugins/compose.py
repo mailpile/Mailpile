@@ -314,7 +314,7 @@ class Reply(RelativeCompose):
             text = (('%s wrote:\n' % t['headers_lc']['from']) +
                     ''.join([p['data'] for p in t['text_parts']
                              if p['type'] in cls._TEXT_PARTTYPES]))
-            msg_bodies.append(text.replace('\n', '\n> '))
+            msg_bodies.append('\n\n' + text.replace('\n', '\n> '))
 
         if not ephemeral:
             local_id, lmbox = session.config.open_local_mailbox(session)
