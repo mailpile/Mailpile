@@ -425,9 +425,17 @@ class MailIndex:
             # Message new or modified, let's parse it.
             if 'rescan' in session.config.sys.debug:
                 session.ui.debug('Reading message %s/%s' % (mailbox_idx, i))
-            msg_fd = mbox.get_file(i)
-            msg = ParseMessage(msg_fd,
-                               pgpmime=session.config.prefs.index_encrypted)
+            try:
+                msg_fd = mbox.get_file(i)
+                msg = ParseMessage(msg_fd,
+                                   pgpmime=session.config.prefs.index_encrypted)
+            except (IOError, OSError, ValueError, IndexError, KeyError):
+                if session.config.sys.debug:
+                    traceback.print_exc()
+                session.ui.warning(('Reading message %s/%s FAILED, skipping'
+                                    ) % (mailbox_idx, i))
+                continue
+
             msg_size = msg_fd.tell()
             msg_id = self.get_msg_id(msg, msg_ptr)
             if msg_id in self.MSGIDS:

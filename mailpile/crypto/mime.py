@@ -43,38 +43,48 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None):
         crypto_cls = protocols['openpgp']
 
         if mimetype == 'multipart/signed':
-            gpg = crypto_cls()
-            boundary = part.get_boundary()
-            payload, signature = part.get_payload()
+            try:
+                gpg = crypto_cls()
+                boundary = part.get_boundary()
+                payload, signature = part.get_payload()
 
-            # The Python get_payload() method likes to rewrite headers,
-            # which breaks signature verification. So we manually parse
-            # out the raw payload here.
-            head, raw_payload, junk = part.as_string(
-                ).replace('\r\n', '\n').split('\n--%s\n' % boundary, 2)
+                # The Python get_payload() method likes to rewrite headers,
+                # which breaks signature verification. So we manually parse
+                # out the raw payload here.
+                head, raw_payload, junk = part.as_string(
+                    ).replace('\r\n', '\n').split('\n--%s\n' % boundary, 2)
 
-            part.signature_info = gpg.verify(
-                Normalize(raw_payload), signature.get_payload())
+                part.signature_info = gpg.verify(
+                    Normalize(raw_payload), signature.get_payload())
 
-            # Reparent the contents up, removing the signature wrapper
-            part.set_payload(payload.get_payload())
-            for h in payload.keys():
-                del part[h]
-            for h, v in payload.items():
-                part.add_header(h, v)
+                # Reparent the contents up, removing the signature wrapper
+                part.set_payload(payload.get_payload())
+                for h in payload.keys():
+                    del part[h]
+                for h, v in payload.items():
+                    part.add_header(h, v)
 
-            # Try again, in case we just unwrapped another layer
-            # of multipart/something.
-            return UnwrapMimeCrypto(part,
-                                    protocols=protocols,
-                                    si=part.signature_info,
-                                    ei=part.encryption_info)
+                # Try again, in case we just unwrapped another layer
+                # of multipart/something.
+                return UnwrapMimeCrypto(part,
+                                        protocols=protocols,
+                                        si=part.signature_info,
+                                        ei=part.encryption_info)
+
+            except (IOError, OSError, ValueError, IndexError, KeyError):
+                part.signature_info = SignatureInfo()
+                part.signature_info["status"] = "error"
 
         elif mimetype == 'multipart/encrypted':
-            gpg = crypto_cls()
-            preamble, payload = part.get_payload()
-            (part.signature_info, part.encryption_info, decrypted
-             ) = gpg.decrypt(payload.as_string())
+            try:
+                gpg = crypto_cls()
+                preamble, payload = part.get_payload()
+
+                (part.signature_info, part.encryption_info, decrypted
+                 ) = gpg.decrypt(payload.as_string())
+            except (IOError, OSError, ValueError, IndexError, KeyError):
+                part.encryption_info = EncryptionInfo()
+                part.encryption_info["status"] = "error"
 
             if part.encryption_info['status'] == 'decrypted':
                 newpart = email.parser.Parser().parse(
