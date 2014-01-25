@@ -148,7 +148,7 @@ try:
     # Make sure we are decoding weird headers correctly
     metadata_bre = view_bre['data']['metadata'][view_bre['message_ids'][0]]
     message_bre = view_bre['data']['messages'][view_bre['message_ids'][0]]
-    from_bre = search_bre['data']['addresses'][metadata_bre['from_aid']]
+    from_bre = search_bre['data']['addresses'][metadata_bre['from']['aid']]
     say('Checking encoding: %s' % from_bre)
     assert('=C3' not in from_bre['fn'])
     assert('=C3' not in from_bre['address'])

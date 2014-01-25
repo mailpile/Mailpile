@@ -486,8 +486,8 @@ class MailIndex:
         return added
 
     def edit_msg_info(self, msg_info,
-                      msg_mid=None, raw_msg_id=None, msg_id=None,
-                      msg_from=None, msg_subject=None, msg_ts=None,
+                      msg_mid=None, raw_msg_id=None, msg_id=None, msg_ts=None,
+                      msg_from=None, msg_subject=None, msg_body=None,
                       msg_to=None, msg_cc=None):
         if msg_mid:
             msg_info[self.MSG_MID] = msg_mid
@@ -495,12 +495,14 @@ class MailIndex:
             msg_info[self.MSG_ID] = self.encode_msg_id(raw_msg_id)
         if msg_id:
             msg_info[self.MSG_ID] = msg_id
+        if msg_ts:
+            msg_info[self.MSG_DATE] = b36(msg_ts)
         if msg_from:
             msg_info[self.MSG_FROM] = msg_from
         if msg_subject:
             msg_info[self.MSG_SUBJECT] = msg_subject
-        if msg_ts:
-            msg_info[self.MSG_DATE] = b36(msg_ts)
+        if msg_body:
+            msg_info[self.MSG_BODY] = msg_body
         if msg_to is not None:
             msg_info[self.MSG_TO] = self.compact_to_list(msg_to or [])
         if msg_cc is not None:
@@ -512,15 +514,11 @@ class MailIndex:
         msg_info = email.get_msg_info()
         mbox_idx = msg_info[self.MSG_PTRS].split(',')[0][:MBX_ID_LEN]
 
+        msg_subj = self.hdr(msg, 'subject')
         msg_to = ExtractEmails(self.hdr(msg, 'to'))
         msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
                   ExtractEmails(self.hdr(msg, 'bcc')))
 
-        self.edit_msg_info(msg_info,
-                           msg_from=self.hdr(msg, 'from'),
-                           msg_subject=self.hdr(msg, 'subject'),
-                           msg_to=msg_to,
-                           msg_cc=msg_cc)
 
         kw, sn = self.index_message(session,
                                     email.msg_mid(),
@@ -531,6 +529,15 @@ class MailIndex:
                                     mailbox=mbox_idx,
                                     compact=False,
                                     filter_hooks=[self.filter_keywords])
+
+        snippet_max = session.config.sys.snippet_max
+        self.edit_msg_info(msg_info,
+                           msg_from=self.hdr(msg, 'from'),
+                           msg_to=msg_to,
+                           msg_cc=msg_cc,
+                           msg_subject=msg_subj,
+                           msg_body=sn[:max(0, snippet_max - len(msg_subj))])
+
         self.set_msg_at_idx_pos(email.msg_idx_pos, msg_info)
 
     def set_conversation_ids(self, msg_mid, msg, subject_threading=True):

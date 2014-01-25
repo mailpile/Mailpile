@@ -56,7 +56,7 @@ mailpile.plugins.register_config_variables('sys', {
     'invisible_tags': ['DEPRECATED', 'str', []],
 })
 
-INFO_HIDES_TAG_METADATA = ('type', 'flag_editable', 'flag_hides',
+INFO_HIDES_TAG_METADATA = ('flag_editable', 'flag_hides',
                            'search_terms', 'search_order', 'template')
 
 
