@@ -40,10 +40,10 @@ def IsMailbox(fn):
     return False
 
 
-def OpenMailbox(fn):
+def OpenMailbox(fn, create=False):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
-            return mbox_cls(*mbox_cls.parse_path(fn))
+            return mbox_cls(*mbox_cls.parse_path(fn, create=create))
         except:
             pass
     raise ValueError('Not a mailbox: %s' % fn)

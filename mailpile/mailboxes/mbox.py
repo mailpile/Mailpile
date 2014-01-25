@@ -11,12 +11,14 @@ class MailpileMailbox(mailbox.mbox):
     """A mbox class that supports pickling and a few mailpile specifics."""
 
     @classmethod
-    def parse_path(cls, fn):
+    def parse_path(cls, fn, create=False):
         try:
             firstline = open(fn, 'r').readline()
             if firstline.startswith('From '):
                 return (fn, )
         except:
+            if create and not os.path.exists(fn):
+                return (fn, )
             pass
         raise ValueError('Not an mbox: %s' % fn)
 

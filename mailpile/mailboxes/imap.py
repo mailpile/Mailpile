@@ -108,7 +108,7 @@ class IMAPMailbox(Mailbox):
 
 class MailpileMailbox(UnorderedPicklable(IMAPMailbox)):
     @classmethod
-    def parse_path(cls, path):
+    def parse_path(cls, path, create=False):
         if path.startswith("imap://"):
             url = path[7:]
             try:

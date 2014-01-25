@@ -10,11 +10,12 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     supported_platform = None
 
     @classmethod
-    def parse_path(cls, fn):
+    def parse_path(cls, fn, create=False):
         if (((cls.supported_platform is None) or
              (cls.supported_platform in system().lower())) and
-                os.path.isdir(fn) and
-                os.path.exists(os.path.join(fn, 'cur'))):
+                ((os.path.isdir(fn) and
+                  os.path.exists(os.path.join(fn, 'cur'))) or
+                 (create and not os.path.exists(fn)))):
             return (fn, )
         raise ValueError('Not a Maildir: %s' % fn)
 

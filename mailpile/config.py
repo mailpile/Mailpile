@@ -1014,8 +1014,9 @@ class ConfigManager(ConfigDict):
             if session:
                 session.ui.mark(_('%s: Opening: %s (may take a while)'
                                   ) % (mbx_id, mfn))
-            mbox = OpenMailbox(mfn)
-            mbox.editable = self.is_editable_mailbox(mbx_id)
+            editable = self.is_editable_mailbox(mbx_id)
+            mbox = OpenMailbox(mfn, create=editable)
+            mbox.editable = editable
             mbox.save(session,
                       to=pfn,
                       pickler=lambda o, f: self.save_pickle(o, f))

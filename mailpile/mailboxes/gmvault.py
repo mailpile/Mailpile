@@ -10,7 +10,7 @@ class MailpileMailbox(maildir.MailpileMailbox):
     """A Gmvault class that supports pickling and a few mailpile specifics."""
 
     @classmethod
-    def parse_path(cls, fn):
+    def parse_path(cls, fn, create=False):
         if os.path.isdir(fn) and os.path.exists(os.path.join(fn, 'db')):
             return (fn, )
         raise ValueError('Not a Gmvault: %s' % fn)
