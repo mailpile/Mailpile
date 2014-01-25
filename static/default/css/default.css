@@ -6693,28 +6693,38 @@ a.compose-show-field {
   margin: 0px;
   padding: 0px;
 }
+.thread-item-from-avatar {
+  width: 50px;
+  display: table-cell;
+  padding-top: 15px;
+  padding-left: 15px;
+  vertical-align: top;
+  text-align: left;
+}
+.thread-item-from-avatar a img {
+  width: 45px;
+}
 .thread-item-from {
   min-width: 175px;
   max-width: 200px;
   display: table-cell;
   padding-top: 15px;
   padding-left: 15px;
-}
-.thread-item-from a.avatar {
-  float: left;
-  margin-right: 10px;
-}
-.thread-item-from a.avatar img {
-  width: 45px;
+  vertical-align: text-top;
+  text-align: left;
 }
 .thread-item-from a.name {
-  display: block;
+  display: inline-block;
   margin-top: 0px;
   margin-bottom: 8px;
+  padding-top: 0px;
   color: #4d4d4d;
   font-size: 18px;
   font-weight: bold;
   line-height: 18px;
+}
+.thread-item-metadata-icons {
+  display: block;
 }
 .thread-item-from span.icon {
   float: left;

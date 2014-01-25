@@ -201,6 +201,28 @@ $(document).on('click', '.compose-action', function(e) {
 });
 
 
+/* Compose - Pick Send Date */
+$(document).on('click', '.pick-send-datetime', function(e) {
+
+  if ($(this).data('datetime') == 'immediately') {
+    $('#reply-datetime-display').html($(this).html());
+  }
+  else {
+    $('#reply-datetime-display').html('in ' + $(this).html());
+  }
+
+  $('#reply-datetime span.icon').removeClass('icon-arrow-down').addClass('icon-arrow-right');
+
+});
+
+
+/* Compose - Details */
+$(document).on('click', '#compose-show-details', function(e) {
+  e.preventDefault();
+  $('#compose-details').slideDown('fast');
+});
+
+
 $(document).ready(function() {
 
   

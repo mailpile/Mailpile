@@ -7,10 +7,19 @@ MailPile.prototype.view = function(idx, msgid) {
 	});
 };
 
-MailPile.prototype.render_thread_reply = function(result) {
+MailPile.prototype.render_thread_message = function(mid) {
   
-  console.log('inside render_thread_reply');
-  console.log(result);
+  $.ajax({
+    url			 : mailpile.api.message + mid + "/as.jhtml",
+    type		 : 'GET',
+    dataType : 'json',
+    success  : function(response) {
+      if (response.results) {
+        console.log(response.results[0]);
+        $('#snippet-' + mid).html('FIXME: Should replace #snippet-' + mid + ' with full message but is getborked');//replaceWith(response.results[0]);
+      }
+    }
+  });
 
 };
 
@@ -28,18 +37,18 @@ $(document).on('click', '.show-thread-security', function() {
 
 /* Thread - Show Metadata Info */
 $(document).on('click', '.show-thread-message-metadata-details', function() {
-    
-  $('#metadata-details-' + $(this).parent().parent().parent().data('mid')).fadeIn();
+  $('#metadata-details-' + $(this).parent().parent().parent().parent().data('mid')).fadeIn();
 });
-
 
 
 /* Thread - Expand Snippet */
-$(document).on('click', '#thread-messages div.thread-snippet', function(e) {  
-  if (e.target.href === undefined) {
-    alert('FIXME: Will load full message with mid: ' + $(this).data('mid'));
+$(document).on('click', 'div.thread-snippet', function(e) {  
+  var mid = $(this).data('mid');
+  if (e.target.href === undefined && $(e.target).data('expand') !== 'no') {
+    mailpile.render_thread_message(mid);
   }
 });
+
 
 /* Thread - Message Quote Show */
 $(document).on('click', '.thread-item-quote-show', function() {
@@ -86,8 +95,7 @@ $(document).ready(function() {
 
   // Thread Scroll to Message
   if (location.href.split("thread/=")[1]) {
-    var thread = location.href.split("thread/=")[1]
-    var thread_id = thread.substring(0, thread.length - 1);    
+    var thread_id = location.href.split("thread/=")[1].split("/")[0];
     var msg_top_pos = $('#message-' + thread_id).position().top;
     $('#content-view').scrollTop(msg_top_pos - 150);
     setTimeout(function(){
@@ -98,24 +106,3 @@ $(document).ready(function() {
 
 });
 
-
-/* Compose - Pick Send Date */
-$(document).on('click', '.pick-send-datetime', function(e) {
-
-  if ($(this).data('datetime') == 'immediately') {
-    $('#reply-datetime-display').html($(this).html());
-  }
-  else {
-    $('#reply-datetime-display').html('in ' + $(this).html());
-  }
-
-  $('#reply-datetime span.icon').removeClass('icon-arrow-down').addClass('icon-arrow-right');
-
-});
-
-
-/* Compose - Details */
-$(document).on('click', '#compose-show-details', function(e) {
-  e.preventDefault();
-  $('#compose-details').slideDown('fast');
-});

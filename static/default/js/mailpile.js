@@ -28,6 +28,7 @@ function MailPile() {
     compose_send : "/api/0/message/update/send/",
     compose_save : "/api/0/message/update/",
     contacts     : "/api/0/search/address/",
+    message      : "/api/0/message/=",
   	tag          : "/api/0/tag/",
   	tag_add      : "/api/0/tag/add/",
   	search_new   : "/api/0/search/?q=in%3Anew",
