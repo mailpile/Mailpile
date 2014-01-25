@@ -71,7 +71,11 @@ class MailpileCommand(Extension):
 
 
     def _command(self, command, *args, **kwargs):
-        return Action(self.env.session, command, args, data=kwargs).as_dict()
+        rv = Action(self.env.session, command, args, data=kwargs).as_dict()
+        if 'jinja' in self.env.session.config.sys.debug:
+            sys.stderr.write('mailpile(%s, %s, %s) -> %s' % (
+                command, args, kwargs, rv))
+        return rv
 
     def _regex_replace(self, s, find, replace):
         """A non-optimal implementation of a regex filter"""
