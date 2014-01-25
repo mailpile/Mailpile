@@ -28,7 +28,7 @@ MailPile.prototype.search = function(q) {
 
 
 MailPile.prototype.focus_search = function() {
-	$("#qbox").focus(); return false;
+	$("#search-query").focus(); return false;
 }
 
 
@@ -50,6 +50,9 @@ MailPile.prototype.results_list = function() {
 	});
 }
 
+$(document).on('click', '#search-query', function() {
+  $(this).select();  
+});
 
 $(document).ready(function() {
 
