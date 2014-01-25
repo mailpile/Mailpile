@@ -329,12 +329,17 @@ class SearchResults(dict):
         msg_ts = long(msg_info[MailIndex.MSG_DATE], 36)
         msg_date = datetime.datetime.fromtimestamp(msg_ts)
         um = mailpile.urlmap.UrlMap(self.session)
+        fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
-            'from_aid': (self._msg_addresses(msg_info, no_to=True, no_cc=True)
-                         or [''])[0],
+            'from': {
+                'email': fe,
+                'fn': fn,
+                'aid': (self._msg_addresses(msg_info, no_to=True, no_cc=True)
+                        or [''])[0],
+            },
             'to_aids': self._msg_addresses(msg_info, no_from=True, no_cc=True),
             'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
             'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
@@ -367,7 +372,6 @@ class SearchResults(dict):
                 pass
 
         # Misc flags
-        fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
         if [e for e in self.idx.config.profiles if (e.email.lower()
                                                     == fe.lower())]:
             expl['flags']['from_me'] = True
@@ -609,7 +613,7 @@ class SearchResults(dict):
                                          46 - (clen + len(msg_tags)))
                 text.append((cfmt + ' %s%-22.22s ' + sfmt + '%7s'
                              ) % (count, tag_new and '*' or ' ',
-                                  addresses.get(m['from_aid'], {}).get('fn'),
+                                  m['from'].get('fn') or m['from']['email'],
                                   m['subject'], msg_tags,
                                   elapsed_datetime(m['timestamp'])))
             count += 1

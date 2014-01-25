@@ -104,7 +104,7 @@
 
   {% else %}{# Show snippet #}
   <div class="thread-snippet" data-mid="{{ mid }}">
-    {{ render_thread_metadata(metadata, result.data.addresses[metadata.from_aid], profiles) }}
+    {{ render_thread_metadata(metadata, result.data.addresses[metadata.from.aid], profiles) }}
     <div class="thread-item-text">{{ metadata.body.snippet }}</div>
   </div>
   {% endif %}{# End if mid #}

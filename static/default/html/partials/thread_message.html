@@ -1,6 +1,6 @@
 <!-- FIXME: make subject line show differing subjects {{ metadata.subject|e }} -->
 <div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}">
-  {{ render_thread_metadata(metadata, result.data.addresses[metadata.from_aid], profiles, message.crypto) }}
+  {{ render_thread_metadata(metadata, result.data.addresses[metadata.from.aid], profiles, message.crypto) }}
   <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
     <ul class="clearfix">
       <li>To:</li>

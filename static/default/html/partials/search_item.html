@@ -5,9 +5,9 @@
 %}{%  endif
 %}{%  set metadata = result.data.metadata[mid]
 %}{%  set thread = result.data.threads[metadata.thread_mid]
-%}{%  set from = result.data.addresses[metadata.from_aid]
+%}{%  set from = result.data.addresses[metadata.from.aid]
 %}{%  if not from
-%}{%    set from = {'fn': 'Unknown sender'}
+%}{%    set from = {'fn': 'Unknown sender', 'email': ''}
 %}{%  endif
 %}{%  if metadata.urls.editing
 %}{%    set url = metadata.urls.editing
@@ -23,7 +23,7 @@
   <td class="from" title='
 {{from.fn|e}} &lt;{{from.address|e}}&gt;
 {#% for tmid in thread %}
-  {% set f = result.data.addresses[metadata[tmid].from_aid] %}
+  {% set f = result.data.addresses[metadata[tmid].from.aid] %}
   {{f.fn|e}} &lt;{{f.address|e}}&gt;
 {% endfor %#}'>
     <a class="item-from" href="{{url}}">{{ from.fn|e }}</a>
