@@ -5069,7 +5069,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   white-space: nowrap;
 }
 .select2-container-multi .select2-choices .select2-search-field input {
-  padding: 5px;
+  padding: 10px;
   margin: 1px 0;
   font-family: sans-serif;
   font-size: 100%;
@@ -5078,6 +5078,8 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   border: 0;
   -webkit-box-shadow: none;
   box-shadow: none;
+  border-radius: 4px;
+  border: 1px solid #cccccc;
   background: #ffffff;
 }
 .select2-container-multi .select2-choices .select2-search-field input.select2-active {
@@ -6251,6 +6253,12 @@ div.content-normal {
   min-height: 225px;
   padding: 10px 15px;
 }
+#form-compose label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: normal;
+}
 .compose-from-avatar {
   width: 45px;
 }
@@ -6265,7 +6273,7 @@ div.content-normal {
   margin-bottom: 10px;
   padding: 10px;
   border: 1px solid #cccccc;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 14px;
   line-height: 18px;
 }
@@ -6274,7 +6282,7 @@ div.content-normal {
   min-height: 54px;
   padding: 10px;
   border: 1px solid #cccccc;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 14px;
   line-height: 18px;
 }
@@ -6288,8 +6296,7 @@ div.content-normal {
 }
 /* Compose */
 .compose-headers {
-  min-height: 30px;
-  padding: .75em;
+  padding: .75em 0;
 }
 #compose label {
   float: left;
@@ -6301,15 +6308,17 @@ div.content-normal {
   display: table-cell;
   vertical-align: middle;
 }
-.compose-headers input[type=text],
-.compose-headers input[type=email] {
-  float: left;
-  min-width: 300px;
-  display: inline-block;
-  font-size: 14px;
-  padding: .5em;
-  margin-bottom: 0px;
-}
+/*  
+  .compose-headers input[type=text],
+  .compose-headers input[type=email] {
+    float: left;
+		min-width: 100px;
+		display: inline-block;
+		font-size: 14px;
+		padding: 10;
+		margin-bottom: 0px;
+	}
+*/
 a.compose-show-field {
   float: right;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -6556,6 +6565,7 @@ a.compose-show-field {
   font-weight: bold;
 }
 #pile-results a.pile-message-tag {
+  font-weight: bold;
   font-weight: normal;
   background: #b3b3b3;
   border-radius: 5px;

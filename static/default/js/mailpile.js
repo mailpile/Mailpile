@@ -35,7 +35,7 @@ function MailPile() {
 	}
 	this.urls = {
   	message_draft : "/message/draft/=",
-  	message_sent  : "/in/Sent/?ui_sent="
+  	message_sent  : "/thread/="
 	}
 	this.plugins = [];
 }

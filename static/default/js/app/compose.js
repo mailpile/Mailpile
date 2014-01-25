@@ -31,14 +31,12 @@ $(document).on('click', '#button-compose', function(e) {
 
 /* Compose Page */
 
-// Reset tabindex for To: field
-$('#search-query').attr('tabindex', '-1');
 
 
 var composeContactSelected = function(contact) {
   if (contact.object.flags.secure) {
     $('.message-privacy-state').attr('title', 'The message is encrypted. The recipients & subject are not');
-    $('.message-privacy-state').removeClass('icon-lock-closed').addClass('icon-encrypted');
+    $('.message-privacy-state').removeClass('icon-lock-open').addClass('icon-lock-closed');
     $('.message-privacy-state').parent().addClass('bounce');
   } else {
   }
@@ -101,10 +99,11 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
   },
   multiple: true,
   allowClear: true,
-  width: '450px',
+  width: '100%',
   minimumInputLength: 1,
   minimumResultsForSearch: -1,
-  maximumSelectionSize: 200,
+  placeholder: 'type to add contacts',
+  maximumSelectionSize: 100,
   tokenSeparators: [",", ";"],
   createSearchChoice: function(term) {
     // Check if we have an RFC5322 compliant e-mail address:
@@ -124,16 +123,16 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
 
 
 $('#compose-to').on('change', function(e) {
-    console.log('Cha cha changes');
+    //console.log('Cha cha changes');
   }).on('select2-selecting', function(e) {
     composeContactSelected(e);
     console.log('Selecting ' + e.val);
   }).on('select2-removing', function(e) {
-    console.log('Removing ' + e.val);
+    //console.log('Removing ' + e.val);
   }).on('select2-removed', function(e) {
     console.log('Removed ' + e.val);
   }).on('select2-blur', function(e){
-    console.log('Blur ' + e.val);
+    //console.log('Blur ' + e.val);
 });
 
 
@@ -174,6 +173,11 @@ $(document).on('click', '.compose-action', function(e) {
 	  var action_status  =  'info';
 	  var action_message = 'Your message was saved';
   }
+  else if (action == 'reply') {
+	  var action_url     = mailpile.api.compose_send;
+	  var action_status  =  'success';
+	  var action_message = 'Your reply was sent';
+  }
 
 	$.ajax({
 		url			 : action_url,
@@ -181,8 +185,13 @@ $(document).on('click', '.compose-action', function(e) {
 		data     : $('#form-compose').serialize(),
 		dataType : 'json',
 	  success  : function(response) {
-      if (action === 'send' && response.status === 'success') {
-        window.location.href = mailpile.urls.message_sent + response.result.messages[0].mid;
+	    // Is A New Message (or Forward)
+      if (action === 'send' && response.status === 'success') {    
+        window.location.href = mailpile.urls.message_sent + response.result.thread_ids[0] + "/";
+      }
+      // Is Thread Reply
+      else if (action === 'reply') {
+        mailpile.render_thread_reply(response.result);
       }
       else {
         mailpile.notification(response.status, response.message);
@@ -190,3 +199,15 @@ $(document).on('click', '.compose-action', function(e) {
     }
 	});
 });
+
+
+$(document).ready(function() {
+
+  
+  // Reset tabindex for To: field
+  $('#search-query').attr('tabindex', '-1');
+      
+
+  
+});
+

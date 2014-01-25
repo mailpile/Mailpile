@@ -7,6 +7,13 @@ MailPile.prototype.view = function(idx, msgid) {
 	});
 };
 
+MailPile.prototype.render_thread_reply = function(result) {
+  
+  console.log('inside render_thread_reply');
+  console.log(result);
+
+};
+
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
 

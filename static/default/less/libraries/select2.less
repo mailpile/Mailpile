@@ -306,7 +306,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 }
 
 .select2-dropdown-open .select2-choice .select2-arrow {
-    background: transparent;
+    background: red;
     border-left: none;
     filter: none;
 }
@@ -357,47 +357,9 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   clear: both;
 }
 
-.select2-result-label .compose-select-avatar {
-  display: inline-block;
-  margin-right: 8px;
-}
-
-.select2-result-label .compose-select-avatar img {
-  width: 32px;
-  height: 32px;
-}
-
-.select2-result-label .compose-select-avatar .icon-user {
-  font-size: 32px;
-  line-height: 32px;
-}
-
-.select2-result-label .compose-select-name {
-  display: inline-block;
-  margin-top: 0px;
-  padding-top: 0px;
-  font-size: 14px;
-  font-weight: bold;
-  line-height: 14px;
-  color: @grayDark;
-}
-
-.select2-result-label .icon-encrypted {
-  color: @green;
-  margin-left: 8px;
-}
-
-.select2-result-label .compose-select-address {
-  font-family: Helvetica, Arial, sans-serif;  
-  font-size: 12px;
-  font-weight: normal;
-  line-height: 12px;
-  color: darken(@grayMid, 25%);
-}
-
 
 .select2-results .select2-highlighted {
-    background: @grayLight;
+    background: @grayLight; // BG: Dropdown Item - Hover
     color: @black;
 }
 
@@ -407,7 +369,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 }
 
 .select2-results .select2-highlighted em {
-    background: transparent;
+    background: red; // transparent;
 }
 
 .select2-results .select2-highlighted ul {
@@ -503,16 +465,15 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-container-multi .select2-choices .select2-search-field {
     min-width: 200px;
     display: inline-block; 
-    width: 200px;    
+    width: 200px;    // SIZE: Main white dropdown list
     margin: 0;
     padding: 0;
     white-space: nowrap;
 }
 
 .select2-container-multi .select2-choices .select2-search-field input {
-    padding: 5px;
+    padding: 10px;
     margin: 1px 0;
-
     font-family: sans-serif;
     font-size: 100%;
     color: #666;
@@ -520,8 +481,11 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     border: 0;
     -webkit-box-shadow: none;
     box-shadow: none;
-    background: transparent !important;
+    border-radius: 4px;
+    border: 1px solid @grayMid;
+    background: @white; // BG: Input Field (waiting state)
 }
+
 
 .select2-container-multi .select2-choices .select2-search-field input.select2-active {
     background: #fff url('select2-spinner.gif') no-repeat 100% !important;
@@ -549,11 +513,11 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
        -moz-user-select: none;
         -ms-user-select: none;
             user-select: none;
-    background: @grayLight;
+    background: @grayLight; // BG: Item Selected
 }
 
 .select2-container-multi .select2-choices .select2-search-choice:hover {
-  background: darken(@grayLight, 5%);
+  background: darken(@grayLight, 5%); // BG: Item Select - Hover
 }
 
 .select2-container-multi .select2-choices .select2-search-choice div {
@@ -561,36 +525,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   display: table;
   vertical-align: middle;
 }
-
-.select2-search-choice .compose-choice-name {
-  display: table-cell;
-  vertical-align: middle;
-  font-size: 14px;
-  font-weight: bold;
-  line-height: 14px;
-  color: @grayDark;
-}
-
-.select2-search-choice .avatar {
-  display: table-cell;
-  vertical-align: middle;
-  padding-right: 4px;
-}
-
-.select2-search-choice .avatar img {
-  width: 24px;
-  height: 24px;
-}
-
-.select2-search-choice .icon-user {
-  margin-right: 8px;
-}
-
-.select2-search-choice .icon-encrypted {
-  color: @green;
-  margin-left: 8px;
-}
-
 
 .select2-container-multi .select2-choices .select2-search-choice .select2-chosen {
     cursor: default;
@@ -642,7 +576,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 }
 
 .select2-container-multi.select2-container-disabled .select2-choices .select2-search-choice .select2-search-choice-close {    display: none;
-    background: none;
+    background: red; // none;
 }
 /* end multiselect */
 
@@ -678,6 +612,8 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
     height: 100px;
     overflow: scroll;
 }
+
+
 /* Retina-ize icons */
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-resolution: 144dpi)  {
@@ -689,4 +625,75 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   .select2-search input {
       background-position: 100% -21px !important;
   }
+}
+
+
+
+/* Compose - Custom Styles */
+
+.select2-result-label .compose-select-avatar {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.select2-result-label .compose-select-avatar img {
+  width: 32px;
+  height: 32px;
+}
+
+.select2-result-label .compose-select-avatar .icon-user {
+  font-size: 32px;
+  line-height: 32px;
+}
+
+.select2-result-label .compose-select-name {
+  display: inline-block;
+  margin-top: 0px;
+  padding-top: 0px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  color: @grayDark;
+}
+
+.select2-result-label .icon-lock-closed {
+  color: @green;
+  margin-left: 8px;
+}
+
+.select2-result-label .compose-select-address {
+  font-family: Helvetica, Arial, sans-serif;  
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 12px;
+  color: darken(@grayMid, 25%);
+}
+
+.select2-search-choice .compose-choice-name {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  color: @grayDark;
+}
+
+.select2-search-choice .avatar {
+  display: table-cell;
+  vertical-align: middle;
+  padding-right: 4px;
+}
+
+.select2-search-choice .avatar img {
+  width: 24px;
+  height: 24px;
+}
+
+.select2-search-choice .icon-user {
+  margin-right: 8px;
+}
+
+.select2-search-choice .icon-lock-closed {
+  color: @green;
+  margin-left: 8px;
 }
