@@ -73,10 +73,11 @@
 
           {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}
           {% if compose %}
-          {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
-          {% include("partials/compose.html") %}
+            {% set mid = compose.message_ids.0 %}
+            {% set editing_strings = compose.data.messages[mid].editing_strings %}
+            {% include("partials/compose.html") %}
           {% else %}
-          {{_("Could Not Render Composer")}}
+            {{_("Could Not Render Composer")}}
           {% endif %}
 
         {% endif %}{# End Not Showed Composer #}

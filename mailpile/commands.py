@@ -158,7 +158,7 @@ class Command:
 
         return rv
 
-    def _choose_messages(self, words):
+    def _choose_messages(self, words, allow_ephemeral=False):
         msg_ids = set()
         all_words = []
         for word in words:
@@ -179,8 +179,11 @@ class Command:
                         self.session.ui.warning((_('No such ID: %s')
                                                  ) % (what[1:], ))
                 except ValueError:
-                    self.session.ui.warning(_('What message is %s?'
-                                              ) % (what, ))
+                    if allow_ephemeral and ':' in what:
+                        msg_ids.add(what[1:])
+                    else:
+                        self.session.ui.warning(_('What message is %s?'
+                                                  ) % (what, ))
             elif '-' in what:
                 try:
                     b, e = what.split('-')

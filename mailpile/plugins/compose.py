@@ -10,6 +10,7 @@ from mailpile.commands import Command
 from mailpile.crypto.state import *
 from mailpile.plugins.tags import Tag
 from mailpile.mailutils import ExtractEmails, Email, PrepareMessage, SendMail
+from mailpile.mailutils import NoFromAddressError
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -69,6 +70,40 @@ def AddComposeMethods(cls):
         def _tag_sent(self, emails, untag=False):
             return self._tagger(emails, untag, type='sent')
 
+        def _track_action(self, action_type, refs):
+            session, idx = self.session, self._idx()
+            for tag in session.config.get_tags(type=action_type):
+                idx.add_tag(session, tag._key,
+                            msg_idxs=[m.msg_idx_pos for m in refs])
+
+        def _actualize_ephemeral(self, ephemeral_mid):
+            if isinstance(ephemeral_mid, int):
+                # Not actually ephemeral, just return a normal Email
+                return Email(self._idx(), ephemeral_mid)
+
+            etype, mid = ephemeral_mid.split(':')
+            etype = etype.lower()
+
+            if etype in ('forward', 'forward-att'):
+                refs = [Email(self._idx(), int(mid, 36))]
+                e = Forward.CreateForward(self._idx(), self.session, refs,
+                                          with_atts=('att' in etype))[0]
+                self._track_action('fwded', refs)
+
+            elif etype in ('reply', 'reply-all'):
+                refs = [Email(self._idx(), int(mid, 36))]
+                e = Reply.CreateReply(self._idx(), self.session, refs,
+                                      reply_all=('all' in etype))[0]
+                self._track_action('replied', refs)
+
+            else:
+                e = Compose.CreateMessage(self._idx(), self.session)[0]
+
+            self._tag_blank([e])
+            self.session.ui.debug('Actualized: %s' % e.msg_mid())
+
+            return Email(self._idx(), e.msg_idx_pos)
+
     return newcls
 
 
@@ -83,6 +118,7 @@ class CompositionCommand(AddComposeMethods(Search)):
         'cc': '..',
         'bcc': '..',
         'body': '..',
+        'encryption': '..',
     }
 
     UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc')
@@ -95,8 +131,8 @@ class CompositionCommand(AddComposeMethods(Search)):
         # Message IDs can come from post data
         for mid in self.data.get('mid', []):
             args.append('=%s' % mid)
-        emails = emails or [Email(idx, mid)
-                            for mid in self._choose_messages(args)]
+        emails = emails or [self._actualize_ephemeral(mid) for mid in
+                            self._choose_messages(args, allow_ephemeral=True)]
 
         update_header_set = (set(self.data.keys()) &
                              set([k.lower() for k in self.UPDATE_HEADERS]))
@@ -208,23 +244,27 @@ class Compose(CompositionCommand):
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = CompositionCommand.UPDATE_STRING_DATA
 
-    def command(self):
-        if 'mid' in self.data:
-            return self._error('Please use update for editing messages')
-
-        ephemeral = (self.args and "ephemeral" in self.args)
-        session, idx = self.session, self._idx()
-
+    @classmethod
+    def CreateMessage(cls, idx, session, ephemeral=False):
         if not ephemeral:
             local_id, lmbox = session.config.open_local_mailbox(session)
         else:
             local_id, lmbox = -1, None
             ephemeral = ['new:mail']
-
-        email = Email.Create(idx, local_id, lmbox,
+        return (Email.Create(idx, local_id, lmbox,
                              save=(not ephemeral),
-                             ephemeral_mid=ephemeral and ephemeral[0])
+                             ephemeral_mid=ephemeral and ephemeral[0]),
+                ephemeral)
 
+    def command(self):
+        if 'mid' in self.data:
+            return self._error('Please use update for editing messages')
+
+        session, idx = self.session, self._idx()
+        ephemeral = (self.args and "ephemeral" in self.args)
+
+        email, ephemeral = self.CreateMessage(idx, session,
+                                              ephemeral=ephemeral)
         email_updates = self._get_email_updates(idx,
                                                 emails=[email],
                                                 create=True)
@@ -252,6 +292,49 @@ class Reply(RelativeCompose):
     }
     HTTP_POST_VARS = {}
 
+    @classmethod
+    def CreateReply(cls, idx, session, refs,
+                    reply_all=False, ephemeral=False):
+        trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True)
+                 for m in refs]
+
+        ref_ids = [t['headers_lc'].get('message-id') for t in trees]
+        ref_subjs = [t['headers_lc'].get('subject') for t in trees]
+        msg_to = [t['headers_lc'].get('reply-to', t['headers_lc']['from'])
+                  for t in trees]
+
+        msg_cc = []
+        if reply_all:
+            msg_cc += [t['headers_lc'].get('to', '') for t in trees]
+            msg_cc += [t['headers_lc'].get('cc', '') for t in trees]
+
+        msg_bodies = []
+        for t in trees:
+            # FIXME: Templates/settings for how we quote replies?
+            text = (('%s wrote:\n' % t['headers_lc']['from']) +
+                    ''.join([p['data'] for p in t['text_parts']
+                             if p['type'] in cls._TEXT_PARTTYPES]))
+            msg_bodies.append(text.replace('\n', '\n> '))
+
+        if not ephemeral:
+            local_id, lmbox = session.config.open_local_mailbox(session)
+        else:
+            local_id, lmbox = -1, None
+            if reply_all:
+                ephemeral = ['reply-all:%s' % refs[0].msg_mid()]
+            else:
+                ephemeral = ['reply:%s' % refs[0].msg_mid()]
+
+        return (Email.Create(idx, local_id, lmbox,
+                             msg_text='\n\n'.join(msg_bodies),
+                             msg_subject=('Re: %s' % ref_subjs[-1]),
+                             msg_to=msg_to,
+                             msg_cc=[r for r in msg_cc if r],
+                             msg_references=[i for i in ref_ids if i],
+                             save=(not ephemeral),
+                             ephemeral_mid=ephemeral and ephemeral[0]),
+                ephemeral)
+
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
 
@@ -267,51 +350,15 @@ class Reply(RelativeCompose):
 
         refs = [Email(idx, i) for i in self._choose_messages(self.args)]
         if refs:
-            trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True)
-                     for m in refs]
-            ref_ids = [t['headers_lc'].get('message-id') for t in trees]
-            ref_subjs = [t['headers_lc'].get('subject') for t in trees]
-            msg_to = [t['headers_lc'].get('reply-to', t['headers_lc']['from'])
-                      for t in trees]
-            msg_cc = []
-            if reply_all:
-                msg_cc += [t['headers_lc'].get('to', '') for t in trees]
-                msg_cc += [t['headers_lc'].get('cc', '') for t in trees]
-            msg_bodies = []
-            for t in trees:
-                # FIXME: Templates/settings for how we quote replies?
-                text = (('%s wrote:\n' % t['headers_lc']['from']) +
-                        ''.join([p['data'] for p in t['text_parts']
-                                 if p['type'] in self._TEXT_PARTTYPES]))
-                msg_bodies.append(text.replace('\n', '\n> '))
-
-            if not ephemeral:
-                local_id, lmbox = config.open_local_mailbox(session)
-            else:
-                local_id, lmbox = -1, None
-                if reply_all:
-                    ephemeral = ['reply-all:%s' % refs[0].msg_mid()]
-                else:
-                    ephemeral = ['reply:%s' % refs[0].msg_mid()]
             try:
-                email = Email.Create(idx, local_id, lmbox,
-                                     msg_text='\n\n'.join(msg_bodies),
-                                     msg_subject=('Re: %s' % ref_subjs[-1]),
-                                     msg_to=msg_to,
-                                     msg_cc=[r for r in msg_cc if r],
-                                     msg_references=[i for i in ref_ids if i],
-                                     save=(not ephemeral),
-                                     ephemeral_mid=ephemeral and ephemeral[0])
-
+                email, ephemeral = self.CreateReply(idx, session, refs,
+                                                    reply_all=reply_all,
+                                                    ephemeral=ephemeral)
             except NoFromAddressError:
                 return self._error('You must configure a From address first.')
 
-            if not ephemeral and 'tags' in config:
-                # Behavior tracking
-                for tag in config.get_tags(type='replied'):
-                    idx.add_tag(session, tag._key,
-                                msg_idxs=[m.msg_idx_pos for m in refs])
-                # Composition flow
+            if not ephemeral:
+                self._track_action('replied', refs)
                 self._tag_blank([email])
 
             return self._edit_messages([email], ephemeral=ephemeral)
@@ -327,6 +374,53 @@ class Forward(RelativeCompose):
         'mid': 'metadata-ID',
     }
     HTTP_POST_VARS = {}
+
+    @classmethod
+    def CreateForward(cls, idx, session, refs,
+                      with_atts=False, ephemeral=False):
+        trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True)
+                 for m in refs]
+        ref_subjs = [t['headers_lc']['subject'] for t in trees]
+        msg_bodies = []
+        msg_atts = []
+        for t in trees:
+            # FIXME: Templates/settings for how we quote forwards?
+            text = '-------- Original Message --------\n'
+            for h in ('Date', 'Subject', 'From', 'To'):
+                v = t['headers_lc'].get(h.lower(), None)
+                if v:
+                    text += '%s: %s\n' % (h, v)
+            text += '\n'
+            text += ''.join([p['data'] for p in t['text_parts']
+                             if p['type'] in self._TEXT_PARTTYPES])
+            msg_bodies.append(text)
+            if with_atts:
+                for att in t['attachments']:
+                    if att['mimetype'] not in self._ATT_MIMETYPES:
+                        msg_atts.append(att['part'])
+
+        if not ephemeral:
+            local_id, lmbox = session.config.open_local_mailbox(session)
+        else:
+            local_id, lmbox = -1, None
+            if msg_atts:
+                ephemeral = ['forward-att:%s' % refs[0].msg_mid()]
+            else:
+                ephemeral = ['forward:%s' % refs[0].msg_mid()]
+
+        email = Email.Create(idx, local_id, lmbox,
+                             msg_text='\n\n'.join(msg_bodies),
+                             msg_subject=('Fwd: %s' % ref_subjs[-1]),
+                             save=(not ephemeral),
+                             ephemeral_mid=ephemeral and ephemeral[0])
+
+        if msg_atts:
+            msg = email.get_msg()
+            for att in msg_atts:
+                msg.attach(att)
+            email.update_from_msg(session, msg)
+
+        return email, ephemeral
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
@@ -346,52 +440,12 @@ class Forward(RelativeCompose):
 
         refs = [Email(idx, i) for i in self._choose_messages(self.args)]
         if refs:
-            trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True)
-                     for m in refs]
-            ref_subjs = [t['headers_lc']['subject'] for t in trees]
-            msg_bodies = []
-            msg_atts = []
-            for t in trees:
-                # FIXME: Templates/settings for how we quote forwards?
-                text = '-------- Original Message --------\n'
-                for h in ('Date', 'Subject', 'From', 'To'):
-                    v = t['headers_lc'].get(h.lower(), None)
-                    if v:
-                        text += '%s: %s\n' % (h, v)
-                text += '\n'
-                text += ''.join([p['data'] for p in t['text_parts']
-                                 if p['type'] in self._TEXT_PARTTYPES])
-                msg_bodies.append(text)
-                if with_atts:
-                    for att in t['attachments']:
-                        if att['mimetype'] not in self._ATT_MIMETYPES:
-                            msg_atts.append(att['part'])
+            email, ephemeral = self.CreateReply(idx, session, refs,
+                                                with_atts=with_atts,
+                                                ephemeral=ephemeral)
 
             if not ephemeral:
-                local_id, lmbox = config.open_local_mailbox(session)
-            else:
-                local_id, lmbox = -1, None
-                if msg_atts:
-                    ephemeral = ['forward-att:%s' % refs[0].msg_mid()]
-                else:
-                    ephemeral = ['forward:%s' % refs[0].msg_mid()]
-            email = Email.Create(idx, local_id, lmbox,
-                                 msg_text='\n\n'.join(msg_bodies),
-                                 msg_subject=('Fwd: %s' % ref_subjs[-1]),
-                                 save=(not ephemeral),
-                                 ephemeral_mid=ephemeral and ephemeral[0])
-            if msg_atts:
-                msg = email.get_msg()
-                for att in msg_atts:
-                    msg.attach(att)
-                email.update_from_msg(session, msg)
-
-            if not ephemeral and 'tags' in config:
-                # Behavior tracking
-                for tag in config.get_tags(type='fwded'):
-                    idx.add_tag(session, tag._key,
-                                msg_idxs=[m.msg_idx_pos for m in refs])
-                # Composition flow
+                self._track_action('fwded', refs)
                 self._tag_blank([email])
 
             return self._edit_messages([email], ephemeral=ephemeral)
@@ -431,7 +485,8 @@ class Attach(CompositionCommand):
             return self._error('No files found')
 
         if not emails:
-            emails = [Email(idx, i) for i in self._choose_messages(self.args)]
+            emails = [self._actualize_ephemeral(i) for i in
+                      self._choose_messages(self.args, allow_ephemeral=True)]
         if not emails:
             return self._error('No messages selected')
 
