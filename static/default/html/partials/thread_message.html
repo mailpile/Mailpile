@@ -1,22 +1,32 @@
-<!-- FIXME: make subject line show differing subjects {{ metadata.subject|e }} -->
-<div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}">
-  {{ render_thread_metadata(metadata, result.data.addresses[metadata.from.aid], profiles, message.crypto) }}
+<div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}"> 
+
+  {% set from = result.data.addresses[metadata.from.aid] %}
+  {% include("partials/thread_metadata.html") %}
+        
   <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
     <ul class="clearfix">
       <li>To:</li>
       {% if metadata.to_aids %}
-        {% for to_aid in metadata.to_aids %}
-        {{ render_contact_item(result.data.addresses[to_aid], profiles) }}
-        {% endfor %}
+      {% for to_aid in metadata.to_aids %}
+      {% set person = result.data.addresses[to_aid] %}
+      <li class="thread-item-metadata-contact">
+        <a href="{{ contact_url(person) }}" title="{{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{ person.address }}">{{ contact_name(profiles, person) }}</a>
+      </li>
+      {% endfor %}
       {% else %}
-        <li>{{_("No Recipients")}} :(</li>
+      <li>{{_("No Recipients")}} :(</li>
       {% endif %}
     </ul>
     {% if metadata.cc_aids %}
     <ul class="clearfix">
       <li>Cc:</li>
       {% for cc_aid in metadata.cc_aids %}
-      {{ render_contact_item(result.data.addresses[cc_aid], profiles) }}
+      {% set person = result.data.addresses[cc_aid] %}
+      <li class="thread-item-metadata-contact">
+        <a href="{{ contact_url(person) }}" title="{{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{ person.address }}">{{ contact_name(profiles, person) }}</a>
+      </li>
       {% endfor %}
     </ul>
     {% endif %}
@@ -24,12 +34,16 @@
     <ul class="clearfix">
       <li>Bcc:</li>
       {% for bcc_aid in metadata.bcc_aids %}
-      {{ render_contact_item(result.data.addresses[bcc_aid], profiles) }}
+      {% set person = result.data.addresses[bcc_aid] %}
+      <li class="thread-item-metadata-contact">
+        <a href="{{ contact_url(person) }}" title="{{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{ person.address }}">{{ contact_name(profiles, person) }}</a>
+      </li>
       {% endfor %}
     </ul>
     {% endif %}
   </div>
-
+  
   {% set last_enc_context = message.crypto.encryption.context %}
   {% set last_sig_context = message.crypto.signature.context %}
   {% for part in message.text_parts %}
@@ -59,7 +73,7 @@
         <div class="thread-item-crypto-line left"></div>
       </div>
       {% endif %} 
-
+  
       {% if part.type in ("text", "pgpsignedtext") %}
       <div class="thread-item-text">{{ part.data|e|urlize }}</div>
       {% elif part.type == "quote" %}
@@ -96,4 +110,5 @@
       <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
     </ul>
   </div>
+
 </div>

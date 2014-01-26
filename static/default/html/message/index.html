@@ -1,45 +1,10 @@
 {% extends "layouts/base.html" %}
 {% block content %}
 
-{# Macros are simple methods used by Jinja for repeating HTML blocks #}
-{% macro render_thread_metadata(metadata, from, profiles, crypto=false) -%}
-<div class="thread-item-metadata clearfix">
-  <div class="thread-item-from-avatar">
-    <a href="{{ contact_url(from) }}" title="{{_("From")}}"><img src="{{ show_avatar(from) }}"></a>
-  </div>
-  <div class="thread-item-from">
-    <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}">{{ contact_name(profiles, from) }}</a>
-    <div class="thread-item-metadata-icons">
-      {% if crypto %}
-      <span class="icon {{ show_message_signature(crypto.signature.status) }}" data-expand="no"></span>
-      <span class="icon {{ show_message_encryption(crypto.encryption.status) }}" data-expand="no"></span>
-      {% else %}
-      <span class="icon {{ show_message_signature(metadata.crypto.signature) }}" data-expand="no"></span>
-      <span class="icon {{ show_message_encryption(metadata.crypto.encryption) }}" data-expand="no"></span>
-      {% endif %}
-      <span class="show-thread-message-metadata-details icon icon-circle-info" data-expand="no"></span>
-    </div>
-  </div>
-  <div class="thread-item-details">
-    <a class="datetime" href="{{ metadata.urls.thread }}">{{ metadata.timestamp|friendly_datetime }} at {{ metadata.timestamp|friendly_time }}</a>
-    <span class="feedback-expand"><span class="icon-expand"></span> {{_("Expand Message")}}</span>
-  </div>
-</div>
-{%- endmacro %}
-
-{% macro render_contact_item(person, profiles) -%}
-<li class="thread-item-metadata-contact">
-  <a href="{{ contact_url(person) }}" title="{{person.address}}"><img src="{{ show_avatar(person) }}"></a>
-  <a href="{{ contact_url(person) }}" title="{{person.address}}">{{ contact_name(profiles, person) }}</a>
-</li>
-{%- endmacro %}
-
-{# Has A Result #}
 {% if result %}
 {% set start_mid     = result.thread_ids[-1] %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
 {% set profiles      = mailpile('settings', 'profiles').result.profiles %}
-
 {# 
     UGLY HACK  showed_composer = [] 
     we are setting a list called showed_composer 
@@ -66,6 +31,8 @@
     {% else %}
 
       {# Show : Message #}
+      {# FIXME: make subject line show differing subjects {{ metadata.subject|e }} #}
+
       {% include("partials/thread_message.html") %}
 
       {# Check If Not Replied #}
@@ -94,8 +61,8 @@
   {% elif metadata.flags.draft == true %}
 
       {% if not showed_composer %}
+
         {% do showed_composer.append(mid) %}
-      
         {% set compose = mailpile('message/draft', '='+mid).result %}
         {% if compose %}
         {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
@@ -108,7 +75,8 @@
 
   {% else %}{# Show snippet #}
   <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
-    {{ render_thread_metadata(metadata, result.data.addresses[metadata.from.aid], profiles) }}
+    {% set from = result.data.addresses[metadata.from.aid] %}
+    {% include("partials/thread_metadata.html") %}
     <div class="thread-item-text">{{ metadata.body.snippet }}</div>
   </div>
   {% endif %}{# End if mid #}
