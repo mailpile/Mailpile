@@ -29,33 +29,15 @@ $(document).on('click', '#button-compose', function(e) {
 
 
 /* Compose Page */
-
-
-
-var composeContactSelected = function(contact) {
-  if (contact.object.flags.secure) {
-    $('.message-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
-    $('.message-crypto-encryption span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
-    $('.message-crypto-encryption span.text').html($('.message-crypto-encryption').data('crypto_encrypt'));
-    $('.message-crypto-encryption').addClass('bounce');
-
-    $('#compose-encryption').val('openpgp-sign-encrypt');
-  } else {
-    $('.message-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
-    $('.message-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
-    $('.message-crypto-encryption span.text').html($('.message-crypto-encryption').data('crypto_cannot_encrypt'));
-    $('.message-crypto-encryption').addClass('bounce');
-
-    $('#compose-encryption').val('openpgp-sign');
-  }
-}
-
-
 var formatComposeId = function(object) {
+  var key = '';
+  if (object.flags.secure) {
+    key = '#' + object.keys[0].fingerprint;
+  }
   if (object.fn !== "" && object.address !== object.fn) {
-    return object.fn + ' <' + object.address + '>';
+    return object.fn + ' <' + object.address + key + '>';
   } else {
-    return object.address;
+    return object.address + key;
   }
 }
 
@@ -98,16 +80,21 @@ var loadExistingEmails = function(addresses) {
 
     // Check for Name & Value
     function analyzeRecipient(address) {
-      var check = address.match(/([^<]+)\s<(.*)>/);
-      if (check) {      
-        return {"id": check[2], "fn": check[1], "address": check[2], "flags": { "secure" : false }};
+      var check = address.match(/([^<]+?)\s<(.+?)(#[a-zA-Z0-9]+)?>/);
+      var secure = false;
+      console.log(check)
+      if (check) {
+        if (check[3]) {
+          secure = true;
+        }
+        return {"id": check[2], "fn": check[1], "address": check[2], "keys": [check[3]], "flags": { "secure" : secure } };        
       } else {
-        return {"id": addresses, "fn": addresses, "address": addresses, "flags": { "secure" : false }};
+        return {"id": addresses, "fn": addresses, "address": addresses, "flags": { "secure" : secure }};
       }
     }
 
     // Check for Multiple Addresses
-    var multiple = addresses.split(", ");
+    var multiple = addresses.split(/, */);
 
     if (multiple.length > 1) {
       $.each(multiple, function(key, value){
@@ -120,6 +107,35 @@ var loadExistingEmails = function(addresses) {
 
     return existing;
   }
+}
+
+var composeContactSelected = function(contact) {
+
+  $('#compose-to').val();
+
+  // Is Secure
+  if (contact.object.flags.secure) {
+    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
+    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_encrypt'));
+    $('.compose-crypto-encryption').addClass('encrypted bounce');
+
+    // Set Form Value
+    $('#compose-encryption').val('openpgp-sign-encrypt');
+  } else {
+    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
+    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_cannot_encrypt'));
+    $('.compose-crypto-encryption').removeClass('encrypted partial').addClass('none bounce');
+
+    // Set Form Value
+    $('#compose-encryption').val('openpgp-sign');
+  }
+  
+  // Remove State
+  setTimeout(function() { 
+    $('.compose-crypto-encryption').removeClass('bounce'); 
+  }, 1000);
 }
 
 $('#compose-to').select2({
@@ -161,7 +177,7 @@ $('#compose-to').select2({
   formatSelectionTooBig: function() {
     return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
   },
-  selectOnBlur: true 
+  selectOnBlur: true
 });
 
 // Load Existing
@@ -177,6 +193,9 @@ $('#compose-to').on('change', function(e) {
     //console.log('Removing ' + e.val);
   }).on('select2-removed', function(e) {
     console.log('Removed ' + e.val);
+    
+    $('#compose-to').val();
+    
   }).on('select2-blur', function(e){
     //console.log('Blur ' + e.val);
 });
@@ -278,7 +297,7 @@ $(document).ready(function() {
   };
   
   // Show Crypto Tooltips
-  $('.message-crypto-encryption').qtip({
+  $('.compose-crypto-encryption').qtip({
     style: {
      tip: {
         corner: 'right center',
