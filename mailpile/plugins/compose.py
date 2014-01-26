@@ -121,7 +121,7 @@ class CompositionCommand(AddComposeMethods(Search)):
         'encryption': '..',
     }
 
-    UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc')
+    UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc', 'Encryption')
 
     def _get_email_updates(self, idx, create=False, noneok=False, emails=None):
         # Split the argument list into files and message IDs
