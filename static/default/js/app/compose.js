@@ -6,8 +6,7 @@ MailPile.prototype.compose = function(data) {
     type     : 'POST',
     data     : data,
     dataType : 'json'
-  })
-  .done(function(response) {
+  }).done(function(response) {
 
     if (response.status === 'success') {
       window.location.href = mailpile.urls.message_draft + response.result.created + '/';
@@ -35,12 +34,22 @@ $(document).on('click', '#button-compose', function(e) {
 
 var composeContactSelected = function(contact) {
   if (contact.object.flags.secure) {
-    $('.message-privacy-state').attr('title', 'The message is encrypted. The recipients & subject are not');
-    $('.message-privacy-state').removeClass('icon-lock-open').addClass('icon-lock-closed');
-    $('.message-privacy-state').parent().addClass('bounce');
+    $('.message-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.message-crypto-encryption span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
+    $('.message-crypto-encryption span.text').html($('.message-crypto-encryption').data('crypto_encrypt'));
+    $('.message-crypto-encryption').addClass('bounce');
+
+    $('#compose-encryption').val('openpgp-sign-encrypt');
   } else {
+    $('.message-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.message-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
+    $('.message-crypto-encryption span.text').html($('.message-crypto-encryption').data('crypto_cannot_encrypt'));
+    $('.message-crypto-encryption').addClass('bounce');
+
+    $('#compose-encryption').val('openpgp-sign');
   }
 }
+
 
 var formatComposeId = function(object) {
   if (object.fn !== "" && object.address !== object.fn) {
@@ -52,34 +61,68 @@ var formatComposeId = function(object) {
 
 var formatComposeResult = function(state) {
   var avatar = '<span class="icon-user"></span>';
-  var secure = '';
+  var secure = '<span class="icon-blank"></span>';
   if (state.photo) {
     avatar = '<img src="' + state.photo + '">';
   }      
   if (state.flags.secure) {
     secure = '<span class="icon-lock-closed"></span>';
   }
-  return '<span class="compose-select-avatar">' + avatar + '</span><span class="compose-select-name">' + state.fn + secure + '<br><span class="compose-select-address">' + state.address + '</span></span>';
+  return '<span class="compose-select-avatar">' + avatar + '</span>\
+          <span class="compose-select-name">' + state.fn + secure + '<br>\
+          <span class="compose-select-address">' + state.address + '</span>\
+          </span>';
 }
 
 var formatComposeSelection = function(state) {
   var avatar = '<span class="icon-user"></span>';
-  var secure = '';
+  var name   = state.fn;
+  var secure = '<span class="icon-blank"></span>';
   if (state.photo) {
     avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
+  }
+  if (!state.fn) {
+    name = state.address; 
   }
   if (state.flags.secure) {
     secure = '<span class="icon-lock-closed"></span>';
   }
-  return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + state.fn + secure + '</span>';
+  return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + name + secure + '</span>';
 }
 
-var closeMenu = function() {
-  $('#compose-to').select2("close");
+var loadExistingEmails = function(addresses) {
+
+  var existing = [];
+
+  if (addresses) {
+
+    // Check for Name & Value
+    function analyzeRecipient(address) {
+      var check = address.match(/([^<]+)\s<(.*)>/);
+      if (check) {      
+        return {"id": check[2], "fn": check[1], "address": check[2], "flags": { "secure" : false }};
+      } else {
+        return {"id": addresses, "fn": addresses, "address": addresses, "flags": { "secure" : false }};
+      }
+    }
+
+    // Check for Multiple Addresses
+    var multiple = addresses.split(", ");
+
+    if (multiple.length > 1) {
+      $.each(multiple, function(key, value){
+        analyzeRecipient(value);      
+        existing.push(analyzeRecipient(value));
+      });
+    } else {
+      existing.push(analyzeRecipient(multiple[0]));
+    }
+
+    return existing;
+  }
 }
 
-
-$('#compose-to, #compose-cc, #compose-bcc').select2({
+$('#compose-to').select2({
   id: formatComposeId,
   ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
     url: mailpile.api.contacts,
@@ -121,6 +164,9 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
   selectOnBlur: true 
 });
 
+// Load Existing
+$('#compose-to').select2('data', loadExistingEmails($('#compose-to').val()));
+
 
 $('#compose-to').on('change', function(e) {
     //console.log('Cha cha changes');
@@ -141,6 +187,9 @@ $('#compose-to').on('change', function(e) {
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
   $('#compose-' + $(this).html().toLowerCase() + '-html').show();
+  if ($(this).html().toLowerCase() == 'cc') {
+    $('#compose-bcc-show').detach().appendTo("#compose-cc-html label");
+  }
 });
 
 
@@ -151,13 +200,8 @@ $('#compose-from').keyup(function (e) {
   }
 });
 
-$('#compose-subject').on('focus', function() {
-  //this.focus();
-  //this.select();
-});
 
-
-/* Send & Save */
+/* Send, Save, Reply */
 $(document).on('click', '.compose-action', function(e) {
 
   e.preventDefault();
@@ -191,11 +235,14 @@ $(document).on('click', '.compose-action', function(e) {
       }
       // Is Thread Reply
       else if (action === 'reply') {
-        mailpile.render_thread_reply(response.result);
+        mailpile.render_thread_message(response.result);
       }
       else {
         mailpile.notification(response.status, response.message);
       }
+    },
+    error: function() {
+      mailpile.notification('error', 'Could not ' + action + ' your message');      
     }
 	});
 });
@@ -225,11 +272,59 @@ $(document).on('click', '#compose-show-details', function(e) {
 
 $(document).ready(function() {
 
-  
   // Reset tabindex for To: field
-  $('#search-query').attr('tabindex', '-1');
-      
-
+  if (location.href.split("draft/=")[1]) {
+    $('#search-query').attr('tabindex', '-1');
+  };
   
-});
+  // Show Crypto Tooltips
+  $('.message-crypto-encryption').qtip({
+    style: {
+     tip: {
+        corner: 'right center',
+        mimic: 'right center',
+        border: 0,
+        width: 10,
+        height: 10
+      },
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'right center',
+      at: 'left center',
+			viewport: $(window),
+			adjust: {
+				x: -5,  y: 0
+			}
+    },
+    show: {
+      delay: 50
+    },
+    events: {
+      show: function(event, api) {
 
+        $('.compose-to').css('background-color', '#fbb03b');
+        $('.compose-cc').css('background-color', '#fbb03b');           
+        $('.compose-bcc').css('background-color', '#fbb03b');
+        $('.compose-from').css('background-color', '#fbb03b');
+        $('.compose-subject').css('background-color', '#fbb03b');
+
+        $('.compose-message').css('background-color', '#a2d699');
+        $('.compose-attachments').css('background-color', '#a2d699');
+      },
+      hide: function(event, api) {
+
+        $('.compose-to').css('background-color', '#ffffff');
+        $('.compose-cc').css('background-color', '#ffffff');           
+        $('.compose-bcc').css('background-color', '#ffffff');
+        $('.compose-from').css('background-color', '#ffffff');
+        $('.compose-subject').css('background-color', '#ffffff');
+
+        $('.compose-message').css('background-color', '#ffffff');
+        $('.compose-attachments').css('background-color', '#ffffff');
+        
+      }
+    }
+  });  
+
+});
