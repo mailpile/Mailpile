@@ -10,14 +10,16 @@ MailPile.prototype.view = function(idx, msgid) {
 MailPile.prototype.render_thread_message = function(mid) {
   
   $.ajax({
-    url			 : mailpile.api.message + mid + "/as.jhtml",
+    url			 : mailpile.api.message + mid + "/single.jhtml",
     type		 : 'GET',
     dataType : 'json',
     success  : function(response) {
       if (response.results) {
-        console.log(response.results[0]);
-        $('#snippet-' + mid).html('FIXME: Should replace #snippet-' + mid + ' with full message but is getborked');//replaceWith(response.results[0]);
+        $('#snippet-' + mid).replaceWith(response.results[0]);
       }
+    },
+    error: function() {
+      mailpile.notification('error', 'Could not retrieve message');
     }
   });
 
@@ -69,10 +71,7 @@ $(document).on('click', '.dropdown-toggle', function() {
 $(document).ready(function() {
 
   
-  $('.thread-item-encryption-info').qtip({
-    content: {
-      text: $(this).data('name')
-    },
+  $('.thread-item-crypto-info').qtip({
     style: {
       classes: 'qtip-tipped'
     },
