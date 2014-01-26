@@ -407,11 +407,12 @@ class Email(object):
         if msg_references:
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
+
         if msg_text:
             try:
                 msg_text.encode('us-ascii')
                 charset = 'us-ascii'
-            except:
+            except UnicodeEncodeError:
                 charset = 'utf-8'
             textpart = MIMEText(msg_text, _subtype='plain', _charset=charset)
             textpart.signature_info = SignatureInfo()
@@ -483,20 +484,27 @@ class Email(object):
         for hdr in [hdrs[k] for k in keys]:
             data = tree['headers'].get(hdr, '')
             if hdr.lower() in lowman:
-                strings[hdr.lower()] = data
+                strings[hdr.lower()] = unicode(data)
             else:
-                header_lines.append('%s: %s' % (hdr, data))
+                header_lines.append(unicode('%s: %s' % (hdr, data)))
 
         for att in tree['attachments']:
             strings['attachments'][att['count']] = (att['filename']
                                                     or '(unnamed)')
 
         if not strings['encryption']:
-            strings['encryption'] = self.config.prefs.crypto_policy
+            strings['encryption'] = unicode(self.config.prefs.crypto_policy)
+
+        def _fixup(t):
+            try:
+                return unicode(t)
+            except UnicodeDecodeError:
+                return t.decode('utf-8')
 
         strings['headers'] = '\n'.join(header_lines).replace('\r\n', '\n')
-        strings['body'] = (''.join([t['data'] for t in tree['text_parts']])
-                           ).replace('\r\n', '\n')
+        strings['body'] = unicode(''.join([_fixup(t['data'])
+                                           for t in tree['text_parts']])
+                                  ).replace('\r\n', '\n')
         return strings
 
     def get_editing_string(self, tree=None):
