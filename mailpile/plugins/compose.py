@@ -200,7 +200,7 @@ class CompositionCommand(AddComposeMethods(Search)):
             session.ui.mark('%d message(s) edited' % len(emails))
         else:
             session.ui.mark('%d message(s) created' % len(emails))
-        idx.save()
+        idx.save_changes()
         return self._return_search_results(emails,
                                            expand=emails,
                                            new=(new and emails),
@@ -226,7 +226,7 @@ class Draft(AddComposeMethods(View)):
             elif session.ui.edit_messages(session, emails):
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
-                idx.save()
+                idx.save_changes()
                 session.ui.mark('%d message(s) edited' % len(emails))
             else:
                 session.ui.mark('%d message(s) unchanged' % len(emails))

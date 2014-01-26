@@ -3,6 +3,7 @@ import lxml.html
 import re
 import rfc822
 import time
+import threading
 import traceback
 from gettext import gettext as _
 from urllib import quote, unquote
@@ -113,6 +114,7 @@ class MailIndex:
         self.MODIFIED = set()
         self.EMAILS_SAVED = 0
         self._saved_changes = 0
+        self._lock = threading.Lock()
 
     def l2m(self, line):
         return line.decode('utf-8').split(u'\t')
@@ -191,6 +193,7 @@ class MailIndex:
         if session:
             session.ui.mark(_('Loading metadata index...'))
         try:
+            self._lock.acquire()
             fd = open(self.config.mailindex_file(), 'r')
             for line in fd:
                 if line.startswith(GPG_BEGIN_MESSAGE):
@@ -203,6 +206,9 @@ class MailIndex:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
                                      ) % self.config.mailindex_file())
+        finally:
+            self._lock.release()
+
         self.cache_sort_orders(session)
         if session:
             session.ui.mark(_('Loaded metadata, %d messages'
@@ -219,53 +225,61 @@ class MailIndex:
             self.TAGS[tid].add(msg_idx_pos)
 
     def save_changes(self, session=None):
-        mods, self.MODIFIED = self.MODIFIED, set()
-        if mods or len(self.EMAILS) > self.EMAILS_SAVED:
-            if self._saved_changes >= self.MAX_INCREMENTAL_SAVES:
-                return self.save(session=session)
+        try:
+            self._lock.acquire()
+            mods, self.MODIFIED = self.MODIFIED, set()
+            if mods or len(self.EMAILS) > self.EMAILS_SAVED:
+                if self._saved_changes >= self.MAX_INCREMENTAL_SAVES:
+                    return self.save(session=session)
 
-            if session:
-                session.ui.mark(_("Saving metadata index changes..."))
-            fd = gpg_open(self.config.mailindex_file(),
-                          self.config.prefs.gpg_recipient, 'a')
-            for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
-                quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-            for pos in mods:
-                fd.write(self.INDEX[pos] + '\n')
-            fd.close()
-            flush_append_cache()
-            if session:
-                session.ui.mark(_("Saved metadata index changes"))
-            self.EMAILS_SAVED = len(self.EMAILS)
-            self._saved_changes += 1
+                if session:
+                    session.ui.mark(_("Saving metadata index changes..."))
+                fd = gpg_open(self.config.mailindex_file(),
+                              self.config.prefs.gpg_recipient, 'a')
+                for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
+                    quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                    fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
+                for pos in mods:
+                    fd.write(self.INDEX[pos] + '\n')
+                fd.close()
+                flush_append_cache()
+                if session:
+                    session.ui.mark(_("Saved metadata index changes"))
+                self.EMAILS_SAVED = len(self.EMAILS)
+                self._saved_changes += 1
+        finally:
+             self._lock.release()
 
     def save(self, session=None):
-        self.MODIFIED = set()
-        if session:
-            session.ui.mark(_("Saving metadata index..."))
+        try:
+            self._lock.acquire()
+            self.MODIFIED = set()
+            if session:
+                session.ui.mark(_("Saving metadata index..."))
 
-        idxfile = self.config.mailindex_file()
-        newfile = '%s.new' % idxfile
+            idxfile = self.config.mailindex_file()
+            newfile = '%s.new' % idxfile
 
-        fd = gpg_open(newfile, self.config.prefs.gpg_recipient, 'w')
-        fd.write('# This is the mailpile.py index file.\n')
-        fd.write('# We have %d messages!\n' % len(self.INDEX))
-        for eid in range(0, len(self.EMAILS)):
-            quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-            fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-        for item in self.INDEX:
-            fd.write(item + '\n')
-        fd.close()
+            fd = gpg_open(newfile, self.config.prefs.gpg_recipient, 'w')
+            fd.write('# This is the mailpile.py index file.\n')
+            fd.write('# We have %d messages!\n' % len(self.INDEX))
+            for eid in range(0, len(self.EMAILS)):
+                quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
+            for item in self.INDEX:
+                fd.write(item + '\n')
+            fd.close()
 
-        # Keep the last 5 index files around... just in case.
-        backup_file(idxfile, backups=5, min_age_delta=10)
-        os.rename(newfile, idxfile)
+            # Keep the last 5 index files around... just in case.
+            backup_file(idxfile, backups=5, min_age_delta=10)
+            os.rename(newfile, idxfile)
 
-        flush_append_cache()
-        self._saved_changes = 0
-        if session:
-            session.ui.mark(_("Saved metadata index"))
+            flush_append_cache()
+            self._saved_changes = 0
+            if session:
+                session.ui.mark(_("Saved metadata index"))
+        finally:
+            self._lock.release()
 
     def update_ptrs_and_msgids(self, session):
         session.ui.mark(_('Updating high level indexes'))
@@ -1108,28 +1122,33 @@ class MailIndex:
     ]
 
     def cache_sort_orders(self, session, wanted=None):
-        keys = range(0, len(self.INDEX))
-        if session:
-            session.ui.mark(_('Finding conversations (%d messages)...'
-                              ) % len(keys))
-        self.INDEX_THR = [int(self.get_msg_at_idx_pos(r)[self.MSG_THREAD_MID],
-                              36) for r in keys]
-        for order, by_default, sorter in self.CACHED_SORT_ORDERS:
-            if (not by_default) and not (wanted and order in wanted):
-                continue
+        try:
+            self._lock.acquire()
+            keys = range(0, len(self.INDEX))
             if session:
-                session.ui.mark(_('Sorting %d messages by %s...'
-                                  ) % (len(keys), _(order)))
+                session.ui.mark(_('Finding conversations (%d messages)...'
+                                  ) % len(keys))
+            self.INDEX_THR = [
+                int(self.get_msg_at_idx_pos(r)[self.MSG_THREAD_MID], 36)
+                for r in keys]
+            for order, by_default, sorter in self.CACHED_SORT_ORDERS:
+                if (not by_default) and not (wanted and order in wanted):
+                    continue
+                if session:
+                    session.ui.mark(_('Sorting %d messages by %s...'
+                                      ) % (len(keys), _(order)))
 
-            play_nice_with_threads()
-            o = keys[:]
-            o.sort(key=lambda k: sorter(self, k))
-            self.INDEX_SORT[order] = keys[:]
-            self.INDEX_SORT[order+'_fwd'] = o
+                play_nice_with_threads()
+                o = keys[:]
+                o.sort(key=lambda k: sorter(self, k))
+                self.INDEX_SORT[order] = keys[:]
+                self.INDEX_SORT[order+'_fwd'] = o
 
-            play_nice_with_threads()
-            for i in range(0, len(o)):
-                self.INDEX_SORT[order][o[i]] = i
+                play_nice_with_threads()
+                for i in range(0, len(o)):
+                    self.INDEX_SORT[order][o[i]] = i
+        finally:
+            self._lock.release()
 
     def sort_results(self, session, results, how):
         if not results:
