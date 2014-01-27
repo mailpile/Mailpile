@@ -1,4 +1,6 @@
-/* Compose - New */
+/* Compose */
+
+  @compose-max-width: 800px;
 
   #form-compose {
     min-height: 225px;
@@ -7,10 +9,76 @@
 
   #form-compose label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     font-size: 14px;
     font-weight: normal;
   }
+
+  #form-compose label a {
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  #form-compose label a:hover {
+    color: @red;
+  }  
+
+  #compose-options li {
+    margin-left: 25px;
+  }
+
+
+
+/* Compose - Crypto */
+
+  .compose-crypto-signature:hover {
+    cursor: pointer;
+  }
+
+  .compose-crypto-signature.none {
+    color: @gray;
+  }
+  .compose-crypto-signature.signed {
+    color: @blue;
+  }
+  .compose-crypto-signature.error {
+    color: @red;
+  }
+
+  .compose-crypto-encryption.none {
+    color: @gray;
+  }
+  .compose-crypto-encryption.none {
+    color: @gray;
+  }  
+  .compose-crypto-encryption.partial {
+    color: @orange;
+  }
+  .compose-crypto-encryption.encrypted {
+    color: @green;
+  }
+  .compose-crypto-encryption.error {
+   color: @red;
+  }
+
+
+
+/* Compose - Headers */
+
+  .compose-headers {
+    max-width: @compose-max-width;
+		padding: 10px 0 0 0;    
+  }
+
+	a.compose-show-field {
+	  font-family: @text-font-family;
+    font-size: 18px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: bold;
+    color: @grayDark;
+    margin-left: 10px;
+	}
 
   .compose-from-avatar {
     width: 45px;
@@ -24,142 +92,61 @@
   }
 
 
-  #compose-subject {
-    width: 90%;
+
+/* Compose - Subject & Message */
+
+  .compose-subject input[type=text] {
+    width: 100%;
     margin-bottom: 10px;
     padding: 10px;
     border: 1px solid @grayMid;
     border-radius: 4px;
+    box-sizing: border-box;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 18px;
   }
 
-  #compose-text {
-    width: 90%;
-    min-height: 54px;
+  .compose-message textarea {
+    width: @compose-max-width;
+    min-height: 100px;
     padding: 10px;
     border: 1px solid @grayMid;
     border-radius: 4px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;    
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 18px;
   }
 
-  #compose-subject:focus, #compose-text:focus {
+  .compose-subject input[type=text]:focus, .compose-message textarea:focus {
     outline: none;
     border: 1px solid @gray;
-  }
-
-  #compose-options li {
-    margin-left: 25px;
-  }
-
-
-  #compose-details {
-
-
-  }
-
-
-
-
-
-
-
-/* Compose */
-
-  .compose-headers {
-		padding: .75em 0;    
-  }
-
-  #compose label {
-    float: left;
-    font-style: normal;
-    font-weight: bold;
-    margin-right: 10px;
-  }
-
-  .compose-cell {
-    display: table-cell;
-    vertical-align: middle;
+    box-shadow: 0 0 3px @gray;
+    -moz-box-shadow: 0 0 3px @gray;
+    -webkit-box-shadow: 0 0 3px @gray;
   }
   
-/*  
-  .compose-headers input[type=text],
-  .compose-headers input[type=email] {
-    float: left;
-		min-width: 100px;
-		display: inline-block;
-		font-size: 14px;
-		padding: 10;
-		margin-bottom: 0px;
-	}
-*/
-
-	a.compose-show-field {
-	  float: right;
-	  font-family: @text-font-family;
-    font-size: 18px;
-    font-style: normal;
-    font-variant: normal;
-    font-weight: bold;
-    color: @grayDark;
-    margin-left: 10px;
-	}
-	
-	#compose-cc-html, #compose-bcc-html {
-  	display: none;
-	}
 
 
-  /* Subject */
-  .compose-subject {
-    width: 100%;
-    display: table;
-    vertical-align: middle;
+/* Compose - Actions */
+
+ .compose-actions {
+    width: @compose-max-width;
+
   }
-
-  .compose-subject input[type=text] {
-    border: 0px;
-    background: transparent;
-    margin: 0px;
-    padding: 8px 4px;
-    font-family: @text-font-family;
-    font-size: 18px;
-  }
-
-  .compose-subject input[type=text]:focus {
-    outline: none;
-  }
-
-  .compose-subject .message-privacy-state {
-    font-size: 24px;
-    line-height: 24px;
-  }
-
-  .message-privacy-state.icon-lock-closed {
-    color: @gray;
-  }
-
-  .message-privacy-state.icon-lock-closed {
-    color: @green;
-  }
-
-
-  /* Message */
-  .compose-message textarea {
-    width: 700px;
-    min-height: 300px;
-    padding: 1em;
-    border: 0px solid @grayMid;
-    border-radius: @base-border-radius;
-    font-size: 14px;
-    line-height: 21px;
-  }
-
-  .compose-message textarea:focus {
-    outline: none;
-  }
+ 
   
   .compose-attachments {
-    padding: .5em 1.25em;
+    
+  }
+  
+  .compose-buttons {
+    text-align: right;  
+  }
+  
+  .compose-buttons button {
+    margin-left: 10px;
   }

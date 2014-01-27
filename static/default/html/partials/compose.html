@@ -1,6 +1,8 @@
 <form id="form-compose" class="clearfix">
-  <input type="hidden" name="mid" value="{{mid}}">
-  <input type="hidden" name="encryption" value="{{editing_strings.encryption}}">
+  <input id="compose-mid" type="hidden" name="mid" value="{{mid}}">
+  <input id="compose-pgp" type="hidden" name="pgp-state" value="{{editing_strings.encryption}}">
+  <input id="compose-signature" type="hidden" name="signature" value="">
+  <input id="compose-encryption" type="hidden" name="encryption" value="">
   <div class="compose-basic">
 <!-- FIXME: Add nice pretty dropdown
     <ul class="left">
@@ -30,20 +32,21 @@
       <option value="{{p.name|e}} &lt;{{p.email|e}}&gt;">{{p.name|e}} &lt;{{p.email|e}}&gt;</option>
       {% endfor %}
     </select>
-
     <ul id="compose-options" class="horizontal right">
-      {% if compose == "no" %}
-      <li><a id="" href="#"><input type="checkbox" checked=""> Quote</a></li>
+      {% if command == "message" %}
+      <li><a id="#compose-apply-quote" href="#"><input type="checkbox" checked="checked"> Quote</a></li>
       {% endif %}
-      <li class="message-crypto-signature"
-          data-crypto_no_sign="{{_("Not Signed")}}">
-        <span class="icon-signature-verified"></span> Verified</li>
-      <li class="message-crypto-state"
+      <li class="compose-crypto-signature signed animated"
+          data-crypto_not_signed="{{_("Not Signed")}}"
+          data-crypto_signed_error="{{_("Signature Error")}}"
+          data-crypto_signed="{{_("Signed")}}">
+        <span class="icon icon-signature-verified"></span> <span class="text">{{_("Signed")}}</span></li>
+      <li class="compose-crypto-encryption none animated"
           data-crypto_none="{{_("Not Encrypted")}}"
-          data-crypto_encrypt="{{_("Not Encrypted")}}"
-          data-crypto_sign_encrypt="{{_("Sign Encrypted")}}"
-          data-crypto_cannot_encrypt="{{_("Can Not Encrypt")}}">
-      <span class="icon icon-lock-open"></span> Encrypted</li>
+          data-crypto_encrypt="{{_("Encrypted")}}"
+          data-crypto_partial_encrypt="{{_("Partially Encrypted")}}"
+          data-crypto_encrypt_error="{{_("Error Encrypting")}}">
+        <span class="icon icon-lock-open"></span> <span class="text">{{_("Not Encrypted")}}</span></li>
 <!-- FIXME: Add ability to delay sending of an email
       <li class="dropdown">
         <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-arrow-right"></span> Send <span id="reply-datetime-display">Immediately</span></a>
@@ -60,51 +63,55 @@
           <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="672" href="#">1 month</a></li>
         </ul>
       </li> -->
+      {% if command == "message" %}
       <li><a id="compose-show-details" class="{% if compose == "yes" %}navigation-on{% endif %}" href="#"><span class="icon-compose"></span> Details</a></li>
+      {% endif %}
     </ul>
   </div>
-
-  <div id="compose-details" class="hide">
-    <div class="compose-cell">
-      <label>{{_("To")}}</label>
+  <div id="compose-details" class="{% if command == "message" %}hide{% endif %}">
+    <div class="compose-headers">
+      <label>
+        {{_("To")}}
+        <a id="compose-cc-show" class="compose-show-field" href="#">{{_("Cc")}}</a>
+        <a id="compose-bcc-show" class="compose-show-field" href="#">{{_("Bcc")}}</a>
+      </label>
+      <input id="compose-to" name="to" type="text" tabindex="1" value="{{editing_strings.to|e}}">
     </div>
-    <div class="compose" style="float: right">
-      <a class="compose-show-field" href="#">{{_("Bcc")}}</a>
-      <a class="compose-show-field" href="#">{{_("Cc")}}</a>
-    </div>
-    <div class="compose-headers compose-to">
-        <input id="compose-to" name="to" type="text" tabindex="1" value="{{editing_strings.to|e}}">
-    </div>
-    <div id="compose-cc-html" class="compose-headers compose-cc">
+    <div id="compose-cc-html" class="compose-headers compose-cc hide">
       <label>{{_("Cc")}}</label>
       <input id="compose-cc" name="cc" type="text" value="{{editing_strings.cc|e}}">
     </div>
-    <div id="compose-bcc-html" class="compose-headers compose-bcc">
+    <div id="compose-bcc-html" class="compose-headers compose-bcc hide">
       <label>{{_("Bcc")}}</label>
       <input id="compose-bcc" name="bcc" type="text" value="{{editing_strings.bcc|e}}">
     </div>
-    <div>
+    <div class="compose-headers compose-subject">
       <label>{{_("Subject")}}</label>
       <input id="compose-subject" name="subject" tabindex="3" type="text" placeholder="{{_("New Subject")}}" value="{{editing_strings.subject}}">
     </div>
   </div>
-
-  <div id="compose-actions">
+  <div class="compose-message">
     <label>{{_("Message")}}</label>
-    <textarea id="compose-text" name="body" tabindex="4" placeholder="{{_("Your reply...")}}">{{editing_strings.body}}</textarea>
-    <a class="left" href="#"><span class="icon-attachment"></span> Attach Something</a>
-    <button class="compose-action" type="submit" name="save" value="save">
-      <span class="icon-compose"></span> {{_("Save")}}
-    </button>
-    {% if compose == "yes" %}
-    <button class="compose-action" type="submit" name="send" value="send">
-      <span class="icon-sent"></span> {{_("Send")}}
-    </button>
-    {% else %}
-    <button class="compose-action right" type="submit" name="reply" value="reply">
-      <span class="icon-reply"></span> {{_("Reply")}}
-    </button>    
-    {% endif %}
+    <textarea id="compose-text" name="body" tabindex="4" onkeyup="this.style.height='18px'; this.style.height = this.scrollHeight + 6 + 'px';" placeholder="{{_("Your reply...")}}">{{editing_strings.body}}</textarea>  
+  </div>
+  <div class="compose-actions clearfix">
+    <div class="compose-attachments left">
+      <a class="left" href="#"><span class="icon-attachment"></span> Attach Something</a>
+    </div>
+    <div class="compose-buttons right">
+      <button class="compose-action" type="submit" name="save" value="save">
+        <span class="icon-compose"></span> {{_("Save")}}
+      </button>
+      {% if command == "message" %}
+      <button class="compose-action right" type="submit" name="reply" value="reply">
+        <span class="icon-reply"></span> {{_("Reply")}}
+      </button>  
+      {% else %}
+      <button class="compose-action" type="submit" name="send" value="send">
+        <span class="icon-sent"></span> {{_("Send")}}
+      </button>
+      {% endif %}
+    </div>
   </div>
 
 </form>

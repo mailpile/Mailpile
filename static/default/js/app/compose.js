@@ -16,130 +16,187 @@ MailPile.prototype.compose = function(data) {
   });
 }
 
+/* Composer - Crypto */
+MailPile.prototype.compose_load_crypto_states = function() {
+  var signature = mailpile.compose_determine_signature();
+  mailpile.compose_render_signature(signature);
 
-/* Add Attachment */
-MailPile.prototype.attach = function() {}
+  var encryption = mailpile.compose_determine_encryption();
+  mailpile.compose_render_encryption(encryption);
+};
 
-
-/* Create New Blank Message */
-$(document).on('click', '#button-compose', function(e) {
-	e.preventDefault();
-	mailpile.compose();
-});
-
-
-/* Compose Page */
-var formatComposeId = function(object) {
-  var key = '';
-  if (object.flags.secure) {
-    key = '#' + object.keys[0].fingerprint;
-  }
-  if (object.fn !== "" && object.address !== object.fn) {
-    return object.fn + ' <' + object.address + key + '>';
+MailPile.prototype.compose_determine_signature = function() {
+  if ($('#compose-signature').val() === '') {
+    if ($.inArray($('#compose-pgp').val(), ['openpgp-sign', 'openpgp-sign-encrypt']) > -1) {
+      var status = 'sign';
+    } else {
+      var status = 'none';
+    }
   } else {
-    return object.address + key;
+    var status = $('#compose-signature').val();
+  }
+
+  return status;
+};
+
+MailPile.prototype.compose_render_signature = function(status) {
+
+  if (status === 'sign') {
+    $('.compose-crypto-signature').attr('title', 'This message is signed by your key');
+    $('.compose-crypto-signature span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
+    $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_signed'));
+    $('.compose-crypto-signature').removeClass('none').addClass('signed bounce');
+
+  } else if (status === 'none') {
+    $('.compose-crypto-signature').attr('title', 'This message is not signed by your key');
+    $('.compose-crypto-signature span.icon').removeClass('icon-signature-verified').addClass('icon-signature-none');
+    $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_not_signed'));
+    $('.compose-crypto-signature').removeClass('signed').addClass('none bounce');
+
+  } else {
+    $('.compose-crypto-signature').attr('title', 'Error accesing your key');
+    $('.compose-crypto-signature span.icon').removeClass('icon-signature-none icon-signature-verified').addClass('icon-signature-error');
+    $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_signed_error'));
+    $('.compose-crypto-signature').removeClass('none').addClass('error bounce');
+  }
+
+  // Set Form Value
+  if ($('#compose-signature').val() !== status) {
+
+    $('.compose-crypto-signature').addClass('bounce');
+    $('#compose-signature').val(status);
+
+    // Remove Animation
+    setTimeout(function() {
+      $('.compose-crypto-signature').removeClass('bounce');
+    }, 1000);
+  }
+};
+
+MailPile.prototype.compose_determine_encryption = function(contact) {
+
+  var status = 'none';
+  var addresses  = $('#compose-to').val() + ', ' + $('#compose-cc').val() + ', ' + $('#compose-bcc').val();
+  var recipients = addresses.split(/, */);
+
+  if (contact) {
+    recipients.push(contact);
+  }
+
+  var count_total = 0;
+  var count_secure = 0;
+    
+  $.each(recipients, function(key, value){  
+    if (value) {
+      count_total++;
+      var check = mailpile.compose_analyze_address(value);
+      if (check.flags.secure) {
+        count_secure++;
+      }
+    }
+  });
+
+  if (count_secure === count_total && count_secure !== 0) {
+    status = 'encrypt';
+  }
+  else if (count_secure < count_total && count_secure > 0) {
+    status = 'partial';
+  }
+
+  console.log('secure: ' + count_secure + ' total: ' + count_total);
+  return status;
+};
+
+MailPile.prototype.compose_render_encryption = function(status) {
+
+  if (status == 'encrypt') {
+    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
+    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_encrypt'));
+    $('.compose-crypto-encryption').removeClass('none error partial').addClass('encrypted');
+
+  } else if (status === 'partial') {
+    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
+    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_partial_encrypt'));
+    $('.compose-crypto-encryption').removeClass('none encrypted error').addClass('partial');
+
+  } else if (status === 'none') {
+    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
+    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_none'));
+    $('.compose-crypto-encryption').removeClass('encrypted partial error').addClass('none');
+
+  } else {
+    $('.compose-crypto-encryption').attr('title', 'Error prepping this message for encryption');
+    $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open icon-lock-closed').addClass('icon-lock-error');
+    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_cannot_encrypt'));
+    $('.compose-crypto-encryption').removeClass('encrypted partial none').addClass('error');
+  }
+
+  // Set Form Value
+  if ($('#compose-encryption').val() !== status) {
+
+    $('.compose-crypto-encryption').addClass('bounce');
+    $('#compose-encryption').val(status);
+
+    // Remove Animation
+    setTimeout(function() {
+      $('.compose-crypto-encryption').removeClass('bounce');
+    }, 1000);
+  }
+};
+
+
+/* Composer - To, Cc, Bcc */
+MailPile.prototype.compose_analyze_address = function(address) {
+  var check = address.match(/([^<]+?)\s<(.+?)(#[a-zA-Z0-9]+)?>/);
+  if (check) {
+    if (check[3]) {
+      return {"id": check[2], "fn": $.trim(check[1]), "address": check[2], "keys": [{ "fingerprint": check[3].substring(1) }], "flags": { "secure" : true } };
+    }
+    return {"id": check[2], "fn": $.trim(check[1]), "address": check[2], "flags": { "secure" : false } };
+  } else {
+    return {"id": address, "fn": address, "address": address, "flags": { "secure" : false }};
   }
 }
 
-var formatComposeResult = function(state) {
-  var avatar = '<span class="icon-user"></span>';
-  var secure = '<span class="icon-blank"></span>';
-  if (state.photo) {
-    avatar = '<img src="' + state.photo + '">';
-  }      
-  if (state.flags.secure) {
-    secure = '<span class="icon-lock-closed"></span>';
-  }
-  return '<span class="compose-select-avatar">' + avatar + '</span>\
-          <span class="compose-select-name">' + state.fn + secure + '<br>\
-          <span class="compose-select-address">' + state.address + '</span>\
-          </span>';
-}
-
-var formatComposeSelection = function(state) {
-  var avatar = '<span class="icon-user"></span>';
-  var name   = state.fn;
-  var secure = '<span class="icon-blank"></span>';
-  if (state.photo) {
-    avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
-  }
-  if (!state.fn) {
-    name = state.address; 
-  }
-  if (state.flags.secure) {
-    secure = '<span class="icon-lock-closed"></span>';
-  }
-  return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + name + secure + '</span>';
-}
-
-var loadExistingEmails = function(addresses) {
+MailPile.prototype.compose_analyze_recipients = function(addresses) {
 
   var existing = [];
 
+  // Is Valid & Has Multiple
   if (addresses) {
 
-    // Check for Name & Value
-    function analyzeRecipient(address) {
-      var check = address.match(/([^<]+?)\s<(.+?)(#[a-zA-Z0-9]+)?>/);
-      var secure = false;
-      console.log(check)
-      if (check) {
-        if (check[3]) {
-          secure = true;
-        }
-        return {"id": check[2], "fn": check[1], "address": check[2], "keys": [check[3]], "flags": { "secure" : secure } };        
-      } else {
-        return {"id": addresses, "fn": addresses, "address": addresses, "flags": { "secure" : secure }};
-      }
-    }
-
-    // Check for Multiple Addresses
     var multiple = addresses.split(/, */);
 
     if (multiple.length > 1) {
       $.each(multiple, function(key, value){
-        analyzeRecipient(value);      
-        existing.push(analyzeRecipient(value));
+        existing.push(mailpile.compose_analyze_address(value));
       });
     } else {
-      existing.push(analyzeRecipient(multiple[0]));
+      existing.push(mailpile.compose_analyze_address(multiple[0]));
     }
 
     return existing;
   }
 }
 
-var composeContactSelected = function(contact) {
 
-  $('#compose-to').val();
-
-  // Is Secure
-  if (contact.object.flags.secure) {
-    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
-    $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
-    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_encrypt'));
-    $('.compose-crypto-encryption').addClass('encrypted bounce');
-
-    // Set Form Value
-    $('#compose-encryption').val('openpgp-sign-encrypt');
-  } else {
-    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
-    $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
-    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_cannot_encrypt'));
-    $('.compose-crypto-encryption').removeClass('encrypted partial').addClass('none bounce');
-
-    // Set Form Value
-    $('#compose-encryption').val('openpgp-sign');
-  }
-  
-  // Remove State
-  setTimeout(function() { 
-    $('.compose-crypto-encryption').removeClass('bounce'); 
-  }, 1000);
-}
-
-$('#compose-to').select2({
-  id: formatComposeId,
+$('#compose-to, #compose-cc, #compose-bcc').select2({
+  id: function(object) {
+    if (object.flags.secure) {
+      address = object.address + '#' + object.keys[0].fingerprint;
+    }
+    else {
+      address = object.address;
+    }
+    if (object.fn !== "" && object.address !== object.fn) {
+      return object.fn + ' <' + address + '>';
+    } else {
+      return address;
+    }
+  },
   ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
     url: mailpile.api.contacts,
     quietMillis: 1,
@@ -150,7 +207,7 @@ $('#compose-to').select2({
         q: term
       };
     },
-    results: function(response, page) {  // parse the results into the format expected by Select2
+    results: function(response, page) { // parse the results into the format expected by Select2
       return {
         results: response.result.addresses
       };
@@ -161,48 +218,99 @@ $('#compose-to').select2({
   width: '100%',
   minimumInputLength: 1,
   minimumResultsForSearch: -1,
-  placeholder: 'type to add contacts',
+  placeholder: 'Type to add contacts',
   maximumSelectionSize: 100,
-  tokenSeparators: [",", ";"],
+  tokenSeparators: [", ", ";"],
   createSearchChoice: function(term) {
-    // Check if we have an RFC5322 compliant e-mail address:
+    // Check if we have an RFC5322 compliant e-mail address
     if (term.match(/(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
       return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
+    // FIXME: handle invalid email addresses with UI feedback
     } else {
       return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
     }
   },
-  formatResult: formatComposeResult,
-  formatSelection: formatComposeSelection,
+  formatResult: function(state) {
+    var avatar = '<span class="icon-user"></span>';
+    var secure = '<span class="icon-blank"></span>';
+    if (state.photo) {
+      avatar = '<img src="' + state.photo + '">';
+    }
+    if (state.flags.secure) {
+      secure = '<span class="icon-lock-closed"></span>';
+    }
+    return '<span class="compose-select-avatar">' + avatar + '</span>\
+            <span class="compose-select-name">' + state.fn + secure + '<br>\
+            <span class="compose-select-address">' + state.address + '</span>\
+            </span>';
+  },
+  formatSelection: function(state) {
+    var avatar = '<span class="icon-user"></span>';
+    var name   = state.fn;
+    var secure = '<span class="icon-blank"></span>';
+
+    if (state.photo) {
+      avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
+    }
+    if (!state.fn) {
+      name = state.address; 
+    }
+    if (state.flags.secure) {
+      secure = '<span class="icon-lock-closed"></span>';
+    }
+    return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + name + secure + '</span>';
+  },
   formatSelectionTooBig: function() {
     return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
   },
   selectOnBlur: true
 });
 
+
 // Load Existing
-$('#compose-to').select2('data', loadExistingEmails($('#compose-to').val()));
+$('#compose-to').select2('data', mailpile.compose_analyze_recipients($('#compose-to').val()));
+$('#compose-cc').select2('data', mailpile.compose_analyze_recipients($('#compose-cc').val()));
+$('#compose-bcc').select2('data', mailpile.compose_analyze_recipients($('#compose-bcc').val()));
 
 
-$('#compose-to').on('change', function(e) {
-    //console.log('Cha cha changes');
-  }).on('select2-selecting', function(e) {
-    composeContactSelected(e);
-    console.log('Selecting ' + e.val);
-  }).on('select2-removing', function(e) {
-    //console.log('Removing ' + e.val);
+// Selection
+$('#compose-to, #compose-cc, #compose-bcc').on('select2-selecting', function(e) {
+    var status = mailpile.compose_determine_encryption(e.val);
+    mailpile.compose_render_encryption(status);
   }).on('select2-removed', function(e) {
-    console.log('Removed ' + e.val);
-    
-    $('#compose-to').val();
-    
-  }).on('select2-blur', function(e){
-    //console.log('Blur ' + e.val);
+    var status = mailpile.compose_determine_encryption();
+    mailpile.compose_render_encryption(status);
 });
 
 
+/* Composer - Add Attachment */
+MailPile.prototype.attach = function() {}
 
-/* Show Cc, Bcc */
+
+
+/* Compose - Create New Blank Message */
+$(document).on('click', '#button-compose', function(e) {
+	e.preventDefault();
+	mailpile.compose();
+});
+
+
+/* Compose - Change Signature Status */
+$(document).on('click', '.compose-crypto-signature', function() {
+  var status = mailpile.compose_determine_signature();
+  var change = '';
+
+  if (status == 'sign') {
+    change = 'none';
+  } else {
+    change = 'sign';
+  }
+
+  mailpile.compose_render_signature(change);
+});
+
+
+/* Compose - Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
   $('#compose-' + $(this).html().toLowerCase() + '-html').show();
@@ -212,7 +320,7 @@ $(document).on('click', '.compose-show-field', function(e) {
 });
 
 
-/* Subject Field */
+/* Compose - Subject Field */
 $('#compose-from').keyup(function (e) {
   var code = (e.keyCode ? e.keyCode : e.which);
   if (code === 9 && $('#compose-subject:focus').val() === '') {
@@ -220,7 +328,7 @@ $('#compose-from').keyup(function (e) {
 });
 
 
-/* Send, Save, Reply */
+/* Compose - Send, Save, Reply */
 $(document).on('click', '.compose-action', function(e) {
 
   e.preventDefault();
@@ -278,7 +386,6 @@ $(document).on('click', '.pick-send-datetime', function(e) {
   }
 
   $('#reply-datetime span.icon').removeClass('icon-arrow-down').addClass('icon-arrow-right');
-
 });
 
 
@@ -291,13 +398,18 @@ $(document).on('click', '#compose-show-details', function(e) {
 
 $(document).ready(function() {
 
-  // Reset tabindex for To: field
+  // Is Drafts
   if (location.href.split("draft/=")[1]) {
-    $('#search-query').attr('tabindex', '-1');
+
+    // Reset tabindex for To: field
+    $('#search-query').attr('tabindex', '-1');    
   };
-  
+
+  // Load Crypto States
+  mailpile.compose_load_crypto_states();
+
   // Show Crypto Tooltips
-  $('.compose-crypto-encryption').qtip({
+  $('.compose-crypto-signatureeee').qtip({
     style: {
      tip: {
         corner: 'right center',
@@ -341,9 +453,8 @@ $(document).ready(function() {
 
         $('.compose-message').css('background-color', '#ffffff');
         $('.compose-attachments').css('background-color', '#ffffff');
-        
       }
     }
-  });  
+  });
 
 });

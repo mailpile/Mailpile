@@ -4679,12 +4679,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-drop,
 .select2-search,
 .select2-search input {
-  /*
-    Force border-box so that % widths fit the parent
-    container without overlap because of margin/padding.
-
-    More Info : http://www.quirksmode.org/css/box.html
-  */
   -webkit-box-sizing: border-box;
   /* webkit */
   -moz-box-sizing: border-box;
@@ -4698,11 +4692,11 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   padding: 0 0 0 8px;
   overflow: hidden;
   position: relative;
-  border: 1px solid #aaa;
   white-space: nowrap;
   line-height: 26px;
   color: #444;
   text-decoration: none;
+  border: 1px solid #aaa;
   border-radius: 4px;
   background-clip: padding-box;
   -webkit-touch-callout: none;
@@ -4712,28 +4706,10 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   -ms-user-select: none;
   user-select: none;
   background-color: #fff;
-  /*
-    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #eee), color-stop(0.5, #fff));
-    background-image: -webkit-linear-gradient(center bottom, #eee 0%, #fff 50%);
-    background-image: -moz-linear-gradient(center bottom, #eee 0%, #fff 50%);
-    background-image: -o-linear-gradient(bottom, #eee 0%, #fff 50%);
-    background-image: -ms-linear-gradient(top, #fff 0%, #eee 50%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#ffffff', endColorstr = '#eeeeee', GradientType = 0);
-    background-image: linear-gradient(top, #fff 0%, #eee 50%);
-*/
 }
 .select2-container.select2-drop-above .select2-choice {
   border-bottom-color: #aaa;
   border-radius: 0 0 4px 4px;
-  /*
-    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #eee), color-stop(0.9, #fff));
-    background-image: -webkit-linear-gradient(center bottom, #eee 0%, #fff 90%);
-    background-image: -moz-linear-gradient(center bottom, #eee 0%, #fff 90%);
-    background-image: -o-linear-gradient(bottom, #eee 0%, #fff 90%);
-    background-image: -ms-linear-gradient(top, #eee 0%, #fff 90%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#eeeeee', GradientType=0);
-    background-image: linear-gradient(top, #eee 0%, #fff 90%);
-*/
 }
 .select2-container.select2-allowclear .select2-choice .select2-chosen {
   margin-right: 42px;
@@ -4778,7 +4754,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   height: auto;
   width: auto;
   z-index: 9998;
-  /* styles required for IE to work */
   background-color: #fff;
   opacity: 0;
   filter: alpha(opacity=0);
@@ -4828,13 +4803,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   border-radius: 0 4px 4px 0;
   background-clip: padding-box;
   background: #ccc;
-  background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #cccccc), color-stop(0.6, #eeeeee));
-  background-image: -webkit-linear-gradient(center bottom, #cccccc 0%, #eeeeee 60%);
-  background-image: -moz-linear-gradient(center bottom, #cccccc 0%, #eeeeee 60%);
-  background-image: -o-linear-gradient(bottom, #cccccc 0%, #eeeeee 60%);
-  background-image: -ms-linear-gradient(top, #cccccc 0%, #eeeeee 60%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#eeeeee', endColorstr='#cccccc', GradientType=0);
-  background-image: linear-gradient(top, #cccccc 0%, #eeeeee 60%);
 }
 .select2-container .select2-choice .select2-arrow b {
   display: block;
@@ -4857,11 +4825,11 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   width: 100%;
   height: auto !important;
   min-height: 26px;
-  padding: 4px 20px 4px 5px;
+  padding: 4px 5px;
   margin: 0;
   outline: 0;
-  font-family: sans-serif;
-  font-size: 1em;
+  font-family: Helvetica, arial, sans-serif;
+  font-size: 14px;
   border: 0px;
   border-radius: 0;
   -webkit-box-shadow: none;
@@ -4898,25 +4866,11 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   background-color: #eee;
-  background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #ffffff), color-stop(0.5, #eeeeee));
-  background-image: -webkit-linear-gradient(center bottom, #ffffff 0%, #eeeeee 50%);
-  background-image: -moz-linear-gradient(center bottom, #ffffff 0%, #eeeeee 50%);
-  background-image: -o-linear-gradient(bottom, #ffffff 0%, #eeeeee 50%);
-  background-image: -ms-linear-gradient(top, #ffffff 0%, #eeeeee 50%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#eeeeee', endColorstr='#ffffff', GradientType=0);
-  background-image: linear-gradient(top, #ffffff 0%, #eeeeee 50%);
 }
 .select2-dropdown-open.select2-drop-above .select2-choice,
 .select2-dropdown-open.select2-drop-above .select2-choices {
   border: 1px solid #cccccc;
   border-top-color: transparent;
-  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #ffffff), color-stop(0.5, #eeeeee));
-  background-image: -webkit-linear-gradient(center top, #ffffff 0%, #eeeeee 50%);
-  background-image: -moz-linear-gradient(center top, #ffffff 0%, #eeeeee 50%);
-  background-image: -o-linear-gradient(top, #ffffff 0%, #eeeeee 50%);
-  background-image: -ms-linear-gradient(bottom, #ffffff 0%, #eeeeee 50%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#eeeeee', endColorstr='#ffffff', GradientType=0);
-  background-image: linear-gradient(bottom, #ffffff 0%, #eeeeee 50%);
 }
 .select2-dropdown-open .select2-choice .select2-arrow {
   background: red;
@@ -4995,8 +4949,12 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-results .select2-no-results,
 .select2-results .select2-searching,
 .select2-results .select2-selection-limit {
-  background: #f4f4f4;
+  background: #f2f2f2;
   display: list-item;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  padding: 5px 10px;
+  color: #4d4d4d;
 }
 /* disabled look for disabled choices in the results dropdown */
 .select2-results .select2-disabled.select2-highlighted {
@@ -5051,9 +5009,13 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 }
 .select2-container-multi .select2-choices {
   min-height: 26px;
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  padding: 3px;
 }
 .select2-container-multi.select2-container-active .select2-choices {
-  border: 0px;
+  border: 1px solid #b3b3b3;
   outline: none;
 }
 .select2-container-multi .select2-choices li {
@@ -5071,16 +5033,15 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-container-multi .select2-choices .select2-search-field input {
   padding: 10px;
   margin: 1px 0;
-  font-family: sans-serif;
-  font-size: 100%;
+  font-family: Helvetica, arial, sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 18px;
   color: #666;
   outline: 0;
   border: 0;
   -webkit-box-shadow: none;
-  box-shadow: none;
-  border-radius: 4px;
-  border: 1px solid #cccccc;
-  background: #ffffff;
+  background: transparent;
 }
 .select2-container-multi .select2-choices .select2-search-field input.select2-active {
   background: #ffffff url('select2-spinner.gif') no-repeat 100% !important;
@@ -5091,7 +5052,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 /* Choices - Selected */
 .select2-container-multi .select2-choices .select2-search-choice {
   padding: 3px 20px 3px 5px;
-  margin: 3px 0 3px 5px;
+  margin: 5px;
   position: relative;
   line-height: 13px;
   color: #333;
@@ -5191,7 +5152,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   overflow: scroll;
 }
 /* Retina-ize icons */
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-resolution: 144dpi) {
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-resolution: 144dppx) {
   .select2-search input,
   .select2-search-choice-close,
   .select2-container .select2-choice abbr,
@@ -5248,14 +5209,21 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-search-choice .avatar {
   display: table-cell;
   vertical-align: middle;
-  padding-right: 4px;
+  padding-right: 10px;
 }
 .select2-search-choice .avatar img {
   width: 24px;
   height: 24px;
 }
 .select2-search-choice .icon-user {
-  margin-right: 8px;
+  font-size: 24px;
+  line-height: 24px;
+  margin-right: 10px;
+}
+.select2-search-choice .icon-blank {
+  width: 0px;
+  height: 14px;
+  display: inline-block;
 }
 .select2-search-choice .icon-lock-closed {
   color: #4b7945;
@@ -6248,16 +6216,68 @@ div.content-normal {
   -moz-transition-duration: 0.4s;
   transition-duration: 0.4s;
 }
-/* Compose - New */
+/* Compose */
 #form-compose {
   min-height: 225px;
   padding: 10px 15px;
 }
 #form-compose label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
   font-size: 14px;
   font-weight: normal;
+}
+#form-compose label a {
+  font-size: 14px;
+  font-weight: normal;
+}
+#form-compose label a:hover {
+  color: #a31304;
+}
+#compose-options li {
+  margin-left: 25px;
+}
+/* Compose - Crypto */
+.compose-crypto-signature:hover {
+  cursor: pointer;
+}
+.compose-crypto-signature.none {
+  color: #b3b3b3;
+}
+.compose-crypto-signature.signed {
+  color: #3a6b8c;
+}
+.compose-crypto-signature.error {
+  color: #a31304;
+}
+.compose-crypto-encryption.none {
+  color: #b3b3b3;
+}
+.compose-crypto-encryption.none {
+  color: #b3b3b3;
+}
+.compose-crypto-encryption.partial {
+  color: #fbb03b;
+}
+.compose-crypto-encryption.encrypted {
+  color: #4b7945;
+}
+.compose-crypto-encryption.error {
+  color: #a31304;
+}
+/* Compose - Headers */
+.compose-headers {
+  max-width: 800px;
+  padding: 10px 0 0 0;
+}
+a.compose-show-field {
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  color: #4d4d4d;
+  margin-left: 10px;
 }
 .compose-from-avatar {
   width: 45px;
@@ -6268,113 +6288,48 @@ div.content-normal {
   font-size: 12px;
   font-weight: normal;
 }
-#compose-subject {
-  width: 90%;
+/* Compose - Subject & Message */
+.compose-subject input[type=text] {
+  width: 100%;
   margin-bottom: 10px;
   padding: 10px;
   border: 1px solid #cccccc;
   border-radius: 4px;
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 18px;
 }
-#compose-text {
-  width: 90%;
-  min-height: 54px;
+.compose-message textarea {
+  width: 800px;
+  min-height: 100px;
   padding: 10px;
   border: 1px solid #cccccc;
   border-radius: 4px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 18px;
 }
-#compose-subject:focus,
-#compose-text:focus {
-  outline: none;
-  border: 1px solid #b3b3b3;
-}
-#compose-options li {
-  margin-left: 25px;
-}
-/* Compose */
-.compose-headers {
-  padding: .75em 0;
-}
-#compose label {
-  float: left;
-  font-style: normal;
-  font-weight: bold;
-  margin-right: 10px;
-}
-.compose-cell {
-  display: table-cell;
-  vertical-align: middle;
-}
-/*  
-  .compose-headers input[type=text],
-  .compose-headers input[type=email] {
-    float: left;
-		min-width: 100px;
-		display: inline-block;
-		font-size: 14px;
-		padding: 10;
-		margin-bottom: 0px;
-	}
-*/
-a.compose-show-field {
-  float: right;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 18px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: bold;
-  color: #4d4d4d;
-  margin-left: 10px;
-}
-#compose-cc-html,
-#compose-bcc-html {
-  display: none;
-}
-/* Subject */
-.compose-subject {
-  width: 100%;
-  display: table;
-  vertical-align: middle;
-}
-.compose-subject input[type=text] {
-  border: 0px;
-  background: transparent;
-  margin: 0px;
-  padding: 8px 4px;
-  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 18px;
-}
-.compose-subject input[type=text]:focus {
-  outline: none;
-}
-.compose-subject .message-privacy-state {
-  font-size: 24px;
-  line-height: 24px;
-}
-.message-privacy-state.icon-lock-closed {
-  color: #b3b3b3;
-}
-.message-privacy-state.icon-lock-closed {
-  color: #4b7945;
-}
-/* Message */
-.compose-message textarea {
-  width: 700px;
-  min-height: 300px;
-  padding: 1em;
-  border: 0px solid #cccccc;
-  border-radius: 5px;
-  font-size: 14px;
-  line-height: 21px;
-}
+.compose-subject input[type=text]:focus,
 .compose-message textarea:focus {
   outline: none;
+  border: 1px solid #b3b3b3;
+  box-shadow: 0 0 3px #b3b3b3;
+  -moz-box-shadow: 0 0 3px #b3b3b3;
+  -webkit-box-shadow: 0 0 3px #b3b3b3;
 }
-.compose-attachments {
-  padding: .5em 1.25em;
+/* Compose - Actions */
+.compose-actions {
+  width: 800px;
+}
+.compose-buttons {
+  text-align: right;
+}
+.compose-buttons button {
+  margin-left: 10px;
 }
 /* Search */
 #button-search-options {

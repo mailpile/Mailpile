@@ -3,7 +3,6 @@
 {% if result %}
 {% set profiles = mailpile('settings', 'profiles').result.profiles %}
 
-  <div class="compose">
   {# Note: this code follows the pattern described on the following
            stackexchange link, collecting information about how the loop
            and inner IF-statements went into the found_editable list, so
@@ -21,15 +20,12 @@
       {% do found_requested.append(mid) %}
       {% if metadata.flags.draft %}
         {% do found_editable.append(mid) %}
-
-        {% set compose = "yes" %}
+        {% set composer_view = "draft" %}
         {% set editing_strings = message.editing_strings %}
         {% include("partials/compose.html") %}
-
       {% endif %}
     {% endif %}
   {% endfor %}
-  </div>
   
   {% if found_requested and not found_editable %}
     {{ mailpile('http/redirect/url_thread', found_requested[0]) }}
