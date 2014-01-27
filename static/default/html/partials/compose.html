@@ -1,8 +1,8 @@
 <form id="form-compose" class="clearfix">
   <input id="compose-mid" type="hidden" name="mid" value="{{mid}}">
-  <input id="compose-pgp" type="hidden" name="pgp-state" value="{{editing_strings.encryption}}">
-  <input id="compose-signature" type="hidden" name="signature" value="">
-  <input id="compose-encryption" type="hidden" name="encryption" value="">
+  <input id="compose-crypto" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
+  <input id="compose-signature" type="hidden" value="">
+  <input id="compose-encryption" type="hidden" value="">
   <div class="compose-basic">
 <!-- FIXME: Add nice pretty dropdown
     <ul class="left">
@@ -42,9 +42,9 @@
           data-crypto_signed="{{_("Signed")}}">
         <span class="icon icon-signature-verified"></span> <span class="text">{{_("Signed")}}</span></li>
       <li class="compose-crypto-encryption none animated"
-          data-crypto_none="{{_("Not Encrypted")}}"
+          data-crypto_none="{{_("None")}}"
           data-crypto_encrypt="{{_("Encrypted")}}"
-          data-crypto_partial_encrypt="{{_("Partially Encrypted")}}"
+          data-crypto_partial_encrypt="{{_("Can't Encrypt")}}"
           data-crypto_encrypt_error="{{_("Error Encrypting")}}">
         <span class="icon icon-lock-open"></span> <span class="text">{{_("Not Encrypted")}}</span></li>
 <!-- FIXME: Add ability to delay sending of an email

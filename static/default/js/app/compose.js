@@ -18,12 +18,46 @@ MailPile.prototype.compose = function(data) {
 
 /* Composer - Crypto */
 MailPile.prototype.compose_load_crypto_states = function() {
-  var signature = mailpile.compose_determine_signature();
-  mailpile.compose_render_signature(signature);
 
-  var encryption = mailpile.compose_determine_encryption();
+  var state = $('#compose-crypto').val();
+  var signature = 'none';
+  var encryption = 'none';
+
+  if (state.match(/sign/)) {
+    signature = 'sign';
+  }
+  if (state.match(/sign/)) {
+    encryption = 'encrypt';
+  }
+
+  mailpile.compose_render_signature(signature);
   mailpile.compose_render_encryption(encryption);
 };
+
+MailPile.prototype.compose_set_crypto_state = function() {
+  
+  // Returns: none, openpgp-sign, openpgp-encrypt and openpgp-sign-encrypt
+  var state = 'none';
+  var signature = $('#compose-signature').val();
+  var encryption = $('#compose-encryption').val();
+
+  if (signature == 'sign' && encryption == 'encrypt') {
+    state = 'openpgp-sign-encrypt'; 
+  }
+  else if (signature == 'sign') {
+    state = 'opengpg-sign';
+  }
+  else if (encryption == 'encrypt') {
+    state = 'openpgp-encrypt';
+  }
+  else {
+    state = 'none';
+  }
+
+  $('#compose-crypto').val(state);
+
+  return state;
+}
 
 MailPile.prototype.compose_determine_signature = function() {
   if ($('#compose-signature').val() === '') {
@@ -70,6 +104,8 @@ MailPile.prototype.compose_render_signature = function(status) {
     setTimeout(function() {
       $('.compose-crypto-signature').removeClass('bounce');
     }, 1000);
+
+    this.compose_set_crypto_state();
   }
 };
 
@@ -143,6 +179,8 @@ MailPile.prototype.compose_render_encryption = function(status) {
     setTimeout(function() {
       $('.compose-crypto-encryption').removeClass('bounce');
     }, 1000);
+    
+    this.compose_set_crypto_state();
   }
 };
 
