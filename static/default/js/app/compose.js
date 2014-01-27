@@ -103,7 +103,6 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
     status = 'partial';
   }
 
-  console.log('secure: ' + count_secure + ' total: ' + count_total);
   return status;
 };
 
@@ -267,6 +266,50 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
 });
 
 
+$('#compose-to, #compose-cc, #compose-bcc').select2({
+  id: formatComposeId,
+  ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
+    url: mailpile.api.contacts,
+    quietMillis: 1,
+    cache: true,
+    dataType: 'json',
+    data: function(term, page) {
+      return {
+        q: term
+      };
+    },
+    results: function(response, page) {
+      // parse the results into the format expected by Select2.
+      // since we are using custom formatting functions we do not need to alter remote JSON data
+      return {
+        results: response.result.addresses
+      };
+    }
+  },
+  multiple: true,
+  allowClear: true,
+  width: '450px',
+  minimumInputLength: 0,
+  minimumResultsForSearch: -1,
+  maximumSelectionSize: 200,
+  tokenSeparators: [",", ";"],
+  createSearchChoice: function(term) {
+    // Check if we have an RFC5322 compliant e-mail address:
+    if (term.match(/(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
+      return {"id": term, "fn": term, "address": term};
+    }
+    return null;
+  },
+  formatResult: formatComposeResult,
+  formatSelection: formatComposeSelection,
+  formatSelectionTooBig: function() {
+    return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
+  },
+  selectOnBlur: true
+});
+
+
+
 // Load Existing
 $('#compose-to').select2('data', mailpile.compose_analyze_recipients($('#compose-to').val()));
 $('#compose-cc').select2('data', mailpile.compose_analyze_recipients($('#compose-cc').val()));
@@ -285,7 +328,6 @@ $('#compose-to, #compose-cc, #compose-bcc').on('select2-selecting', function(e) 
 
 /* Composer - Add Attachment */
 MailPile.prototype.attach = function() {}
-
 
 
 /* Compose - Create New Blank Message */

@@ -4679,6 +4679,15 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-drop,
 .select2-search,
 .select2-search input {
+<<<<<<< Updated upstream
+=======
+  /*
+    Force border-box so that % widths fit the parent
+    container without overlap because of margin/padding.
+
+    More Info : http://www.quirksmode.org/css/box.html
+  */
+>>>>>>> Stashed changes
   -webkit-box-sizing: border-box;
   /* webkit */
   -moz-box-sizing: border-box;
@@ -4706,10 +4715,34 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   -ms-user-select: none;
   user-select: none;
   background-color: #fff;
+<<<<<<< Updated upstream
+=======
+  /*
+    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #eee), color-stop(0.5, #fff));
+    background-image: -webkit-linear-gradient(center bottom, #eee 0%, #fff 50%);
+    background-image: -moz-linear-gradient(center bottom, #eee 0%, #fff 50%);
+    background-image: -o-linear-gradient(bottom, #eee 0%, #fff 50%);
+    background-image: -ms-linear-gradient(top, #fff 0%, #eee 50%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#ffffff', endColorstr = '#eeeeee', GradientType = 0);
+    background-image: linear-gradient(top, #fff 0%, #eee 50%);
+*/
+>>>>>>> Stashed changes
 }
 .select2-container.select2-drop-above .select2-choice {
   border-bottom-color: #aaa;
   border-radius: 0 0 4px 4px;
+<<<<<<< Updated upstream
+=======
+  /*
+    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #eee), color-stop(0.9, #fff));
+    background-image: -webkit-linear-gradient(center bottom, #eee 0%, #fff 90%);
+    background-image: -moz-linear-gradient(center bottom, #eee 0%, #fff 90%);
+    background-image: -o-linear-gradient(bottom, #eee 0%, #fff 90%);
+    background-image: -ms-linear-gradient(top, #eee 0%, #fff 90%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#eeeeee', GradientType=0);
+    background-image: linear-gradient(top, #eee 0%, #fff 90%);
+*/
+>>>>>>> Stashed changes
 }
 .select2-container.select2-allowclear .select2-choice .select2-chosen {
   margin-right: 42px;
@@ -4754,6 +4787,10 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   height: auto;
   width: auto;
   z-index: 9998;
+<<<<<<< Updated upstream
+=======
+  /* styles required for IE to work */
+>>>>>>> Stashed changes
   background-color: #fff;
   opacity: 0;
   filter: alpha(opacity=0);
@@ -4931,6 +4968,41 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   height: 36px;
   clear: both;
 }
+<<<<<<< Updated upstream
+=======
+.select2-result-label .compose-select-avatar {
+  display: inline-block;
+  margin-right: 8px;
+}
+.select2-result-label .compose-select-avatar img {
+  width: 32px;
+  height: 32px;
+}
+.select2-result-label .compose-select-avatar .icon-user {
+  font-size: 32px;
+  line-height: 32px;
+}
+.select2-result-label .compose-select-name {
+  display: inline-block;
+  margin-top: 0px;
+  padding-top: 0px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  color: #4d4d4d;
+}
+.select2-result-label .icon-key {
+  color: #4b7945;
+  margin-left: 8px;
+}
+.select2-result-label .compose-select-address {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 12px;
+  color: #8c8c8c;
+}
+>>>>>>> Stashed changes
 .select2-results .select2-highlighted {
   background: #f2f2f2;
   color: #333333;
@@ -5076,6 +5148,33 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   display: table;
   vertical-align: middle;
 }
+<<<<<<< Updated upstream
+=======
+.select2-search-choice .compose-choice-name {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  color: #4d4d4d;
+}
+.select2-search-choice .avatar {
+  display: table-cell;
+  vertical-align: middle;
+  padding-right: 4px;
+}
+.select2-search-choice .avatar img {
+  width: 24px;
+  height: 24px;
+}
+.select2-search-choice .icon-user {
+  margin-right: 8px;
+}
+.select2-search-choice .icon-key {
+  color: #4b7945;
+  margin-left: 8px;
+}
+>>>>>>> Stashed changes
 .select2-container-multi .select2-choices .select2-search-choice .select2-chosen {
   cursor: default;
 }
@@ -5997,10 +6096,24 @@ x:-o-prefocus,
 /* Sub Navigation */
 .sub-navigation {
   width: 100%;
+<<<<<<< Updated upstream
   min-height: 45px;
   display: block;
   background: #f2f2f2;
   border-bottom: 1px solid #b3b3b3;
+=======
+  min-width: 825px;
+  display: table;
+  z-index: 1;
+  padding: 0;
+  margin: 0;
+  margin-top: 63px;
+}
+/* Content */
+#content {
+  min-width: 775px;
+  display: table-cell;
+>>>>>>> Stashed changes
   box-sizing: border-box;
 }
 .sub-navigation ul {
@@ -6389,6 +6502,15 @@ a.compose-show-field {
 #pile-results tr.result-on:hover {
   background: #f2e8c9;
 }
+<<<<<<< Updated upstream
+=======
+#pile-results tr.result:hover td.draggable,
+#pile-results tr.result-on:hover td.draggable {
+  background: url('/static/img/draggable-pattern.png'), #ffffff;
+  opacity: 0.3;
+  filter: alpha(opacity=30);
+}
+>>>>>>> Stashed changes
 #pile-results td {
   padding: 10px;
   vertical-align: middle;
@@ -6583,6 +6705,7 @@ a.compose-show-field {
   border: 1px solid #b3b3b3;
   padding: 5px 10px;
 }
+<<<<<<< Updated upstream
 /* Thread */
 .crypto-color-gray {
   color: #cccccc;
@@ -6629,6 +6752,11 @@ a.compose-show-field {
 /* Thread Items */
 .thread-snippet {
   background: #ffffff;
+=======
+/* Message */
+.message-headers {
+  padding: 15px;
+>>>>>>> Stashed changes
   border-bottom: 1px solid #b3b3b3;
 }
 .thread-snippet:hover {
