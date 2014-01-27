@@ -2,77 +2,99 @@
 
 [![Build Status](https://secure.travis-ci.org/pagekite/Mailpile.png?branch=master)](http://travis-ci.org/pagekite/Mailpile)
 
-> **NOTE:** This is pre-ALPHA quality code! Please expect everything to
-> be broken.
-
 #### Who's doing what? ####
 
-- 2014-01-23: bre: Implemented new "empheral"
-- 2014-01-22: bvnk: Moved to using single compose.html partial for thread & New
-- 2014-01-22: smari: fixing numerous lil bugs & nagging things
-
+- 2014-01-27: bre: Prepping the alpha release
+- 2014-01-27: bvnk: Prepping the alpha release
+- 2014-01-27: smari: Prepping the alpha release
 
 #### Recent changes ####
 
+- 2013-01-24: bre/bnvk: Encrypting and signing outgoing mail works
+- 2013-01-15: bre: Make message crypto searchable and visible in metadata
 - 2013-12-19: bre: Bugfixes, search-by-size, preparing for antispam work
 - 2013-12-18: smari: PGP decryption & signature verification
 - 2013-11-18: bnvk: Tweaking the compose UI
-- 2013-12-19: Run `setup` to enable the new Outbox for sending
-- 2013-11-18: Run `setup` and `rescan` to enable GPG and gravatar importers
-- 2014-11-08: New API endpoint /search/address for to/cc/bcc autocomplete
 
 ---------------------------------------------------------------------------
 
 ## Introduction ##
 
-Mailpile (<http://www.mailpile.is/>) is a free-as-in-freedom personal
-e-mail searching and indexing tool, largely inspired by Google's popular
-proprietary-but-gratis e-mail service.  It wants to eventually become a
-fast and flexible back-end for awesome personal mail clients, including
-webmail.
+Mailpile (<https://www.mailpile.is/>) is a modern, fast web-mail client with
+user-friendly encryption and privacy features. The development of Mailpile
+is funded by [a large community of backers](https://www.mailpile.is/#community)
+and all code related to the project is and will be released under an OSI
+approved Free Software license.
 
-**WARNING:**  Mailpile is still experimental and isn't actually very useful
-yet.  It'll tell you that you have mail matching a given search and let
-you sort it, browse threads and read messages... but the user interface and
-message composing/sending functionality is still very immature.  If you just
-want a useful tool and aren't interested in hacking on the code, you should
-probably check back later or [follow @MailpileTeam on
+Mailpile places great emphasis on providing a clean, elegant user interface
+and pleasant user experience. In particular, Mailpile aims to make it easy
+and convenient to receive and send PGP encrypted or signed e-mail.
+
+Mailpile's primary user interface is web-based, but it also has a basic
+command-line interface and an API for developers. Using web technology for
+the interface allows Mailpile to function both as a local desktop
+application (accessed by visiting `localhost` in the browser) or a remote
+web-mail on a personal server or VPS.
+
+The core of Mailpile is a fast search engine, custom written to deal
+with large volumes of e-mail on consumer hardware. The search engine
+allows e-mail to be organized using tags (similar to GMail's labels) and
+the application can be configured to automatically tag incoming mail
+either based on static rules or bayesian classifiers.
+
+**Note:** We are currently at an early alpha state of development, so if you
+just want a useful tool and aren't interested in hacking on the code, you
+should probably check back later or [follow @MailpileTeam on
 Twitter](https://twitter.com/MailpileTeam) and watch for updates.
 
 
-## Requirements ##
+### Trying Mailpile
 
-Mailpile is developed on a Debian 7 system, running:
+We (PLAN TO: WORK IS IN PROGRESS) have live demos up and running [on our
+website](https://www.mailpile.is/demos/). If you are curiout about what
+Mailpile looks like, please feel free to check it out.
 
-- [Python](http://python.org) 2.7
-- [python-imaging](http://www.pythonware.com/products/pil/) 1.1.7
-- [python-lxml](http://lxml.de/) 2.3.2
-- [python-jinja2](http://jinja.pocoo.org/) 2.6
 
-It might work with other versions, most of these packages can be installed
-directly using `apt-get install`. :-)
+### Installing Mailpile
 
-You also need your e-mail to be in a traditional mbox formatted
-Unix mailbox, a Maildir or a gmvault backup repository.
+Note that Mailpile is still in early development and is not suitable
+for production or end-user use. However, developers are encouraged to
+give it a try and even help us find bugs, fix them and develop new
+features.
 
-### Installing the requirements ###
+Please see [the wiki for
+details](https://github.com/pagekite/Mailpile/wiki/Getting-started).
 
-On Debian, this should work:
 
-    $ sudo apt-get install python-imaging python-jinja2 python-lxml
+## Credits and License ##
 
-Alternately (and on other operating systems) you can use Python's PIP
-tool to install the required packages:
+Bjarni R. Einarsson (<http://bre.klaki.net/>) created this!  If you think
+it's neat, you should also check out PageKite: <https://pagekite.net/>
 
-    $ pip install -r requirements.txt
+The GMail guys get mad props for creating the best webmail service out
+there.  Wishing the Free Software world had something like it is what
+inspired me to start working on this.
 
-Note that installing lxml may require certain C header files that are not
-necessarily included on your machine. For Debian-based distributions, this can
-be fixed by running:
+Contributors:
 
-    $ sudo apt-get install libxml2-dev libxslt1-dev
+- Bjarni R. Einasson (<http://bre.klaki.net/>)
+- Smari McCarthy (<http://www.smarimccarthy.is/>)
+- Brennan Novak (<https://brennannovak.com/>)
+- Lots more, run `git log |grep Author |sort |uniq -c` for a list!
 
-as per [this Stack Overflow answer](http://stackoverflow.com/questions/15759150/src-lxml-etree-defs-h931-fatal-error-libxml-xmlversion-h-no-such-file-or-di).
+And of course, we couldn't do this without [our community of
+backers]().
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of either the GNU Affero General Public License as published by the
+Free Software Foundation or the Apache License 2.0 as published by the Apache
+Software Foundation. See the file `COPYING.md` for details.
+
+
+
+-----------------------------------------------------------------------------
+
+# Migrating this!
 
 
 ## Setting up the basic config ##
@@ -400,32 +422,6 @@ HTTP REST-style API.
 Please see `doc/URLS.md` for details.
 
 
-### Developing using virtualenv ###
-
-The `Makefile` includes a recipe for setting up a virtualenv for use
-with Mailpile:
-
-    $ make virtualenv
-    $ source mp-virtualenv/bin/activate
-    $ mailpile
-
-This allows easy, sandboxed usage.
-
-
-### Developing using docker ###
-
-You can build a docker image:
-
-    $ docker build -t mailpile scripts/docker/
-
-and run it:
-
-    $ docker run -i -t -p 33411:33411 mailpile
-
-or enter the container's bash prompt directly:
-
-    $ docker run -i -t mailpile bash
-
 ## A word on performance ##
 
 Searching is all about disk seeks.
@@ -452,25 +448,4 @@ e-mails? :-)
 (Caveat: Really common terms will take longer due to the size of the result
 set - but searching for really common terms won't give good results anyway.)
 
-
-## Credits and License ##
-
-Bjarni R. Einarsson (<http://bre.klaki.net/>) created this!  If you think
-it's neat, you should also check out PageKite: <https://pagekite.net/>
-
-The GMail guys get mad props for creating the best webmail service out
-there.  Wishing the Free Software world had something like it is what
-inspired me to start working on this.
-
-Contributors:
-
-- Bjarni R. Einasson (<http://bre.klaki.net/>)
-- Smari McCarthy (<http://www.smarimccarthy.is/>)
-- Brennan Novak (<https://brennannovak.com/>)
-- Lots more, run `git log |grep Author |sort |uniq -c` for a list!
-
-This program is free software: you can redistribute it and/or modify it under
-the terms of either the GNU Affero General Public License as published by the
-Free Software Foundation or the Apache License 2.0 as published by the Apache
-Software Foundation. See the file `COPYING.md` for details.
 
