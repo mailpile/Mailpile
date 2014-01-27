@@ -157,6 +157,7 @@ class MimeWrapper:
             hl = h.lower()
             if not hl.startswith('content-') and not hl.startswith('mime-'):
                 self.container[h] = msg[h]
+                del msg[h]
         return self.container
 
 
