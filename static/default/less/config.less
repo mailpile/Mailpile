@@ -254,24 +254,63 @@
 	@table-line-height: 18px;
 
 
+/* Bootstrap */
+
+  @caret-width-base:          4px;
+  @caret-width-large:         5px;
+  
+  @zindex-navbar:            1000;
+  @zindex-dropdown:          1000;
+  @zindex-popover:           1010;
+  @zindex-tooltip:           1030;
+  @zindex-navbar-fixed:      1030;
+  @zindex-modal-background:  1040;
+  @zindex-modal:             1050;
+
+  @font-size-base: @text-font-size;
+  @font-size-small: 12px;
+
+  @border-radius-base: @base-border-radius;
+
+  @line-height-base: @base-line-height;
+  
+  @grid-float-breakpoint: 768px;
+  @grid-float-breakpoint-max: (@grid-float-breakpoint - 1);
+  
 
 /* Bootstrap - Dropdown */
 
-
-  @zindexDropdown:                10;
-  @dropdownDividerTop:            10px;
-  @dropdownDividerBottom:         10px;
-  @dropdownBackground:            @white;
-  @dropdownBorder:                rgba(0,0,0,.2);
-  @dropdownDividerTop:            #e5e5e5;
-  @dropdownDividerBottom:         @white;
-
-  @dropdownLinkColor:             @grayDark;
-  @dropdownLinkColorHover:        @white;
-  @dropdownLinkColorActive:       @white;
-
-  @dropdownLinkBackgroundHover:   @grayDark;
-  @dropdownLinkBackgroundActive:  @red;
+  @dropdown-bg:                    @white;
+  @dropdown-border:                rgba(0,0,0,.15);
+  @dropdown-fallback-border:       @grayMid;
+  @dropdown-divider-bg:            @grayMid;  
+  @dropdown-link-color:            @grayDark;
+  @dropdown-link-hover-color:      @white;
+  @dropdown-link-hover-bg:         @grayDark;
+  @dropdown-link-active-color:     @red;
+  @dropdown-link-active-bg:        @grayDark;
+  @dropdown-link-disabled-color:   @grayLight;
+  @dropdown-header-color:          @grayLight;  
+  @dropdown-caret-color:           @grayDark;
 
 
+/* Bootstrap - Modal */
 
+  @zindex-modal:                  1050;
+  @zindex-modal-background:       1040;
+  
+  @modal-inner-padding:           20px;  
+  @modal-title-padding:           15px;
+  @modal-title-line-height:       1.428571429;  
+  @modal-content-bg:              #fff;
+  @modal-content-border-color:    rgba(0,0,0,.2);
+  @modal-content-fallback-border-color: #999;
+  
+  @modal-backdrop-bg:             #000;
+  @modal-backdrop-opacity:        .5;
+  @modal-header-border-color:     #e5e5e5;
+  @modal-footer-border-color:     @modal-header-border-color;
+  
+  @modal-lg:                      900px;
+  @modal-md:                      600px;
+  @modal-sm:                      300px;
