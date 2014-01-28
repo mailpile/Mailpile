@@ -103,7 +103,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 
 .select2-drop {
     width: 100%;
-    margin-top: -1px;
+    margin-top: -3px;
     position: absolute;
     z-index: 9999;
     top: 100%;
@@ -213,7 +213,6 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-container-active .select2-choices {
     border: 1px solid @grayMid;
     outline: none;
-
 }
 
 .select2-dropdown-open .select2-choice {
@@ -242,14 +241,19 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 
 /* Results - The drop down selection box */
 .select2-results {
-    max-height: 200px;
+    max-height: 215px;
     padding: 0;
     margin: 0;
     position: relative;
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    border: 1px solid @grayMid; // FIXME: a border causes hovering on border to erase user inputed data
+    border-top: 0px;
+    border-left: 1px solid @gray; // FIXME: a border causes hovering on border to erase user inputed data
+    border-right: 1px solid @gray;
+    border-bottom: 1px solid @gray; 
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;   
 }
 
 .select2-results ul.select2-result-sub {
@@ -306,10 +310,11 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
 .select2-results .select2-no-results,
 .select2-results .select2-searching,
 .select2-results .select2-selection-limit {
-    background: @grayLight;
+    background: @white;
     display: list-item;
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
+    font-style: italic;
     padding: 5px 10px;
     color: @grayDark;
 }

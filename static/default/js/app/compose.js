@@ -60,6 +60,7 @@ MailPile.prototype.compose_set_crypto_state = function() {
 }
 
 MailPile.prototype.compose_determine_signature = function() {
+
   if ($('#compose-signature').val() === '') {
     if ($.inArray($('#compose-pgp').val(), ['openpgp-sign', 'openpgp-sign-encrypt']) > -1) {
       var status = 'sign';
