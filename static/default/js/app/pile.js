@@ -1,87 +1,5 @@
-/* Filter New */
-$(document).on('click', '.button-sub-navigation', function() {
-
-  var filter = $(this).data('filter');
-  $('#sub-navigation ul.left li').removeClass('navigation-on');
-
-  if (filter == 'in_new') {
-
-    $('#display-new').addClass('navigation-on');
-    $('tr').hide('fast', function() {
-      $('tr.in_new').show('fast');
-    });
-  }
-  else if (filter == 'in_later') {
-
-    $('#display-later').addClass('navigation-on');
-    $('tr').hide('fast', function() {
-      $('tr.in_later').show('fast');
-    });
-  }
-  else {
-
-    $('#display-all').addClass('navigation-on');
-    $('tr.result').show('fast');
-  }
-
-  return false;
-});
-
-
-
-/* Tag Add Ajax */
-var pileAjaxTag = function(tag_add) {
-
-  $.ajax({
-	  url			 : mailpile.api.tag,
-	  type		 : 'POST',
-	  data     : {
-      add: tag_add,
-      mid: mailpile.bulk_cache
-    },
-	  dataType : 'json',
-    success  : function(response) {
-
-      if (response.status == 'success') {
-
-        // Update Pile View
-        $.each(mailpile.bulk_cache, function(key, mid) {
-          $('#pile-message-' + mid).fadeOut('fast');
-        });
-
-        // Empty Bulk Cache
-        mailpile.bulk_cache = [];
-
-      } else {
-        mailpile.notification(response.status, response.message);
-      }
-    }
-  });
-}
-
-
-/* Bulk Action Link */
-$(document).on('click', '.bulk-action', function(e) {
-
-	e.preventDefault();
-	var action = $(this).data('action');
-
-	alert(mailpile.bulk_cache.length + ' items to ' + action);
-
-  if (action == 'later' || action == 'archive' || action == 'trash') {
-    pileAjaxTag(action);
-  }
-  else if (action == 'add-to-group') {
-    
-  }
-  else if (action == 'assign-tags') {
-    
-  }
-});
-
-
-/* Result Actions */
-var pileActionSelect = function(item) {
+/* Pile - Action Select */
+MailPile.prototype.pile_action_select = function(item) {
 
   // Add To Data Model
   mailpile.bulk_cache_add(item.data('mid'));
@@ -95,9 +13,11 @@ var pileActionSelect = function(item) {
 	.find('td.checkbox input[type=checkbox]')
 	.val('selected')
 	.prop('checked', true);
-}
+};
 
-var pileActionUnselect = function(item) {
+
+/* Pile - Action Unselect */
+MailPile.prototype.pile_action_unselect = function(item) {
 
   // Remove From Data Model
   mailpile.bulk_cache_remove(item.data('mid'));
@@ -116,23 +36,60 @@ var pileActionUnselect = function(item) {
 	.find('td.checkbox input[type=checkbox]')
 	.val('normal')
 	.prop('checked', false);
-}
+};
 
+
+/* Pile - Bulk Action Link */
+$(document).on('click', '.bulk-action', function(e) {
+
+	e.preventDefault();
+	var action = $(this).data('action');
+
+//	alert(mailpile.bulk_cache.length + ' items to ' + action);
+
+  if (action == 'later' || action == 'archive' || action == 'trash') {
+
+    var delete_tag = '';
+
+    if ($.url.segment(0) === 'in') {
+     delete_tag = $.url.segment(1);
+    }
+
+    // Add / Delete
+    mailpile.tag_add_delete(action, delete_tag, mailpile.bulk_cache, function() {
+
+      // Update Pile View
+      $.each(mailpile.bulk_cache, function(key, mid) {
+        $('#pile-message-' + mid).fadeOut('fast');
+      });
+
+      // Empty Bulk Cache
+      mailpile.bulk_cache = [];
+    });   
+  }
+  else if (action == 'add-to-group') {
+    
+    // Open Modal or dropdown with options
+  }
+  else if (action == 'assign-tags') {
+
+    // Open Modal with selection options
+  }
+});
 
 
 /* Select & Unselect Pile Items */
 $(document).on('click', '#pile-results tr.result', function(e) {
 	if (e.target.href === undefined && $(this).data('state') !== 'selected') {
-		pileActionSelect($(this));
+		mailpile.pile_action_select($(this));
 	}
 });
 
 $(document).on('click', '#pile-results tr.result-on', function(e) {
 	if (e.target.href === undefined && $(this).data('state') === 'selected') {
-		pileActionUnselect($(this));
+		mailpile.pile_action_unselect($(this));
 	}
 });
-
 
 
 /* Dragging & Dropping From Pile */
@@ -155,9 +112,10 @@ $('td.draggable').draggable({
     return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
   },
   stop: function(event, ui) {
-    console.log('done dragging things');
+    //console.log('done dragging things');
   }
 });
+
 
 $('li.sidebar-tags-draggable').droppable({
   accept: 'td.draggable',
@@ -166,42 +124,26 @@ $('li.sidebar-tags-draggable').droppable({
   tolerance: 'pointer',
   drop: function(event, ui) {
 
-    var getDelTag = function() {
-      if ($.url.segment(0) === 'in') {
-        return $.url.segment(1);
-      }
-      return '';
+    var delete_tag = '';
+
+    if ($.url.segment(0) === 'in') {
+     delete_tag = $.url.segment(1);
     }
 
     // Add MID to Cache
     mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
 
-    // Fire at Willhelm
-	  $.ajax({
-		  url			 : mailpile.api.tag,
-		  type		 : 'POST',
-		  data     : {
-        add: $(this).data('tag_name'),
-        del: getDelTag,
-        mid: mailpile.bulk_cache
-      },
-		  dataType : 'json',
-	    success  : function(response) {
+    // Add / Delete
+    mailpile.tag_add_delete($(this).data('tag_name'), delete_tag, mailpile.bulk_cache, function() {
 
-        if (response.status == 'success') {
+      // Update Pile View
+      $.each(mailpile.bulk_cache, function(key, mid) {
+        $('#pile-message-' + mid).fadeOut('fast');
+      });
 
-          // Update Pile View
-          $.each(mailpile.bulk_cache, function(key, mid) {
-            $('#pile-message-' + mid).fadeOut('fast');
-          });
-
-          // Empty Bulk Cache
-          mailpile.bulk_cache = [];
-
-        } else {
-          mailpile.notification(response.status, response.message);
-        }
-	    }
-	  });
+      // Empty Bulk Cache
+      mailpile.bulk_cache = [];
+    });
+ 
   }
 });

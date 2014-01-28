@@ -1,5 +1,55 @@
 MailPile.prototype.tag = function(msgids, tags) {}
-MailPile.prototype.addtag = function(tagname) {}
+
+MailPile.prototype.tag_add = function(tagname) {}
+
+/* Pile - Tag Add */
+MailPile.prototype.tag_add = function(tag_add, mids, complete) {
+
+  $.ajax({
+	  url			 : mailpile.api.tag,
+	  type		 : 'POST',
+	  data     : {
+      add: tag_add,
+      mid: mids
+    },
+	  dataType : 'json',
+    success  : function(response) {
+
+      if (response.status == 'success') {
+
+       complete();
+
+      } else {
+        mailpile.notification(response.status, response.message);
+      }
+    }
+  });
+};
+
+
+MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
+  
+	  $.ajax({
+	  url			 : mailpile.api.tag,
+	  type		 : 'POST',
+	  data     : {
+      add: tag_add,
+      del: tag_del,
+      mid: mids
+    },
+	  dataType : 'json',
+    success  : function(response) {
+
+      if (response.status == 'success') {
+
+        complete();
+
+      } else {
+        mailpile.notification(response.status, response.message);
+      }
+    }
+  });
+};
 
 
 /* Show Tag Add Form */
