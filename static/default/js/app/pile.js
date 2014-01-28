@@ -38,6 +38,47 @@ MailPile.prototype.pile_action_unselect = function(item) {
 	.prop('checked', false);
 };
 
+/* Pile - Display */
+MailPile.prototype.pile_display = function(current, change) {
+
+  if (change) {
+    $('#sidebar').removeClass(current).addClass(change);
+    $('#pile-results').removeClass(current).addClass(change);
+  } else {
+    $('#sidebar').addClass(current);
+    $('#pile-results').addClass(current);
+  }
+  
+  setTimeout(function() {
+
+    $('#sidebar').fadeIn('fast');
+    $('#pile-results').fadeIn('fast');
+  }, 250);
+  
+}
+
+/* Pile - Bulk Select / Unselect All */
+$(document).on('click', '#pile-select-all-action', function(e) {
+
+  var checkboxes = $('#pile-results input[type=checkbox]');
+
+  if ($(this).attr('checked') === undefined) {
+
+    $.each(checkboxes, function() {      
+      mailpile.pile_action_select($(this).parent().parent());
+    });
+
+    $(this).attr('checked','checked');
+
+  } else {
+
+    $.each(checkboxes, function() {
+      mailpile.pile_action_unselect($(this).parent().parent());
+    });
+
+    $(this).removeAttr('checked');
+  }
+});
 
 /* Pile - Bulk Action Link */
 $(document).on('click', '.bulk-action', function(e) {
@@ -78,10 +119,12 @@ $(document).on('click', '.bulk-action', function(e) {
 });
 
 
-/* Select & Unselect Pile Items */
+/* Pile - Select & Unselect Items */
 $(document).on('click', '#pile-results tr.result', function(e) {
 	if (e.target.href === undefined && $(this).data('state') !== 'selected') {
 		mailpile.pile_action_select($(this));
+		console.log($(this));
+		
 	}
 });
 
@@ -89,6 +132,25 @@ $(document).on('click', '#pile-results tr.result-on', function(e) {
 	if (e.target.href === undefined && $(this).data('state') === 'selected') {
 		mailpile.pile_action_unselect($(this));
 	}
+});
+
+
+/* Pile - Change Display Size */
+$(document).on('click', 'a.change-view-size', function(e) {
+
+  e.preventDefault();
+  var current_size = localStorage.getItem('view_size');
+  var change_size = $(this).data('view_size');
+
+  // Update Link Selected
+  $('a.change-view-size').removeClass('view-size-selected');
+  $(this).addClass('view-size-selected');
+
+  // Update View Sizes
+  mailpile.pile_display(current_size, change_size);
+
+  // Data
+  localStorage.setItem('view_size', change_size);
 });
 
 
@@ -144,6 +206,23 @@ $('li.sidebar-tags-draggable').droppable({
       // Empty Bulk Cache
       mailpile.bulk_cache = [];
     });
- 
   }
+});
+
+
+$(document).ready(function() {
+
+  if (!localStorage.getItem('view_size')) {
+    localStorage.setItem('view_size', mailpile.defaults.view_size);
+  }
+
+  mailpile.pile_display(localStorage.getItem('view_size'));
+
+  // Display Select
+  $.each($('a.change-view-size'), function() {
+    if ($(this).data('view_size') == localStorage.getItem('view_size')) {
+      $(this).addClass('view-size-selected');
+    }
+  });
+
 });
