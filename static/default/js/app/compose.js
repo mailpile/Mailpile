@@ -26,9 +26,11 @@ MailPile.prototype.compose_load_crypto_states = function() {
   if (state.match(/sign/)) {
     signature = 'sign';
   }
-  if (state.match(/sign/)) {
+  if (state.match(/encrypt/)) {
     encryption = 'encrypt';
   }
+
+  console.log(signature + ' ' + encryption);
 
   mailpile.compose_render_signature(signature);
   mailpile.compose_render_encryption(encryption);
