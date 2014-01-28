@@ -148,19 +148,19 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
 MailPile.prototype.compose_render_encryption = function(status) {
 
   if (status == 'encrypt') {
-    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption').attr('title', 'This message is & attachments are encrypted. The recipients & subject are not');
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_encrypt'));
     $('.compose-crypto-encryption').removeClass('none error partial').addClass('encrypted');
 
   } else if (status === 'partial') {
-    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption').attr('title', 'This message cannot be encrypted because you do not have keys for one or more recipients');
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_partial_encrypt'));
     $('.compose-crypto-encryption').removeClass('none encrypted error').addClass('partial');
 
   } else if (status === 'none') {
-    $('.compose-crypto-encryption').attr('title', 'This message is encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption').attr('title', 'This message is not encrypted');
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_none'));
     $('.compose-crypto-encryption').removeClass('encrypted partial error').addClass('none');
@@ -441,14 +441,46 @@ $(document).ready(function() {
   if (location.href.split("draft/=")[1]) {
 
     // Reset tabindex for To: field
-    $('#search-query').attr('tabindex', '-1');    
+    $('#search-query').attr('tabindex', '-1');
   };
 
-  // Load Crypto States
-  mailpile.compose_load_crypto_states();
+  // Is Drafts or Thread
+  if (location.href.split("draft/=")[1] || location.href.split("thread/=")[1]) {
+
+    // Load Crypto States
+    mailpile.compose_load_crypto_states();
+  }
 
   // Show Crypto Tooltips
-  $('.compose-crypto-signatureeee').qtip({
+  $('.compose-crypto-signature').qtip({
+    style: {
+     tip: {
+        corner: 'right center',
+        mimic: 'right center',
+        border: 0,
+        width: 10,
+        height: 10
+      },
+      classes: 'qtip-tipped'
+    },
+    position: {
+      my: 'right center',
+      at: 'left center',
+			viewport: $(window),
+			adjust: {
+				x: -5,  y: 0
+			}
+    },
+    show: {
+      delay: 50
+    },
+    events: {
+      show: function(event, api) {
+      }
+    }
+  });
+
+  $('.compose-crypto-encryption').qtip({
     style: {
      tip: {
         corner: 'right center',
@@ -473,25 +505,25 @@ $(document).ready(function() {
     events: {
       show: function(event, api) {
 
-        $('.compose-to').css('background-color', '#fbb03b');
-        $('.compose-cc').css('background-color', '#fbb03b');           
-        $('.compose-bcc').css('background-color', '#fbb03b');
-        $('.compose-from').css('background-color', '#fbb03b');
-        $('.compose-subject').css('background-color', '#fbb03b');
+        $('#s2id_compose-to .select2-choices').css('border-color', '#fbb03b');
+        $('#s2id_compose-cc .select2-choices').css('border-color', '#fbb03b');           
+        $('#s2id_compose-bcc .select2-choices').css('border-color', '#fbb03b');
+        $('.compose-from').css('border-color', '#fbb03b');
+        $('.compose-subject input[type=text]').css('border-color', '#fbb03b');
 
-        $('.compose-message').css('background-color', '#a2d699');
-        $('.compose-attachments').css('background-color', '#a2d699');
+        $('.compose-message textarea').css('border-color', '#a2d699');
+        $('.compose-attachments').css('border-color', '1px solid #a2d699');
       },
       hide: function(event, api) {
 
-        $('.compose-to').css('background-color', '#ffffff');
-        $('.compose-cc').css('background-color', '#ffffff');           
-        $('.compose-bcc').css('background-color', '#ffffff');
+        $('#s2id_compose-to .select2-choices').css('border-color', '#CCCCCC');
+        $('#s2id_compose-cc .select2-choices').css('border-color', '#CCCCCC');           
+        $('#s2id_compose-bcc .select2-choices').css('border-color', '#CCCCCC');
         $('.compose-from').css('background-color', '#ffffff');
-        $('.compose-subject').css('background-color', '#ffffff');
+        $('.compose-subject input[type=text]').css('border-color', '#CCCCCC');
 
-        $('.compose-message').css('background-color', '#ffffff');
-        $('.compose-attachments').css('background-color', '#ffffff');
+        $('.compose-message textarea').css('border-color', '#CCCCCC');
+        $('.compose-attachments').css('border-color', '#F2F2F2');
       }
     }
   });
