@@ -1,7 +1,7 @@
 APPVER = "0.0.0+github"
 ABOUT = """\
-Mailpile.py          a tool          Copyright 2011-2013, Bjarni R. Einarsson
-               for searching and                      <http://bre.klaki.net/>
+Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
+               for searching and                   <https://www.mailpile.is/>
            organizing piles of e-mail
 
 This program is free software: you can redistribute it and/or modify it under
