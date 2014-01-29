@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-06 01:20+0400\n"
-"PO-Revision-Date: 2013-11-16 00:28+0100\n"
+"POT-Creation-Date: 2013-12-06 01:18+0400\n"
+"PO-Revision-Date: 2014-01-29 09:53+0100\n"
 "Last-Translator: Lazlo Westerhof <hello@lazlo.me>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: nl_NL\n"
@@ -28,9 +28,8 @@ msgstr "Welk bericht is %s?"
 
 #: mailpile/commands.py:257
 #, python-format
-msgid ""
-"Note: periodic delay is %ss, run from shell to speed up: mp --rescan=..."
-msgstr ""
+msgid "Note: periodic delay is %ss, run from shell to speed up: mp --rescan=..."
+msgstr "Opmerking: periodieke vertraging is %ss, draai vanuit de shell om te versnellen: mp --rescan=..."
 
 #: mailpile/commands.py:268
 #, python-format
@@ -83,8 +82,7 @@ msgstr "Commando's:"
 
 #: mailpile/commands.py:656
 msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr ""
-"Tags: (gebruik een tag als commando om getagde berichten weer te geven)"
+msgstr "Tags: (gebruik een tag als commando om getagde berichten weer te geven)"
 
 #: mailpile/commands.py:664
 msgid "Error"
@@ -101,43 +99,42 @@ msgstr "Onbekend commando: %s"
 
 #: mailpile/config.py:101
 msgid "true"
-msgstr ""
+msgstr "waar"
 
 #: mailpile/config.py:101
 msgid "yes"
-msgstr ""
+msgstr "ja"
 
 #: mailpile/config.py:101
 msgid "on"
-msgstr ""
+msgstr "aan"
 
 #: mailpile/config.py:104
 msgid "false"
-msgstr ""
+msgstr "onwaar"
 
 #: mailpile/config.py:104
 msgid "no"
-msgstr ""
+msgstr "nee"
 
 #: mailpile/config.py:104
-#, fuzzy
 msgid "off"
-msgstr "van"
+msgstr "uit"
 
 #: mailpile/config.py:106
-#, fuzzy, python-format
+#, python-format
 msgid "Invalid boolean: %s"
-msgstr "Ongeldige hostnaamL %s"
+msgstr "Ongeldige boolean: %s"
 
 #: mailpile/config.py:129
 #, python-format
 msgid "Invalid URL slug: %s"
-msgstr "Ongeldige URL slug: %s"
+msgstr "Ongeldige URL-slug: %s"
 
 #: mailpile/config.py:161
 #, python-format
 msgid "Invalid hostname: %s"
-msgstr "Ongeldige hostnaamL %s"
+msgstr "Ongeldige hostnaam: %s"
 
 #: mailpile/config.py:195
 #, python-format
@@ -205,7 +202,7 @@ msgstr "Ongeldige (%s): sectie %s, variabel %s"
 #: mailpile/config.py:871
 #, python-format
 msgid "WARNING: Imported old config from %s"
-msgstr "WAARSCHUWING: Oude configuratie geimporteerd van %s"
+msgstr "WAARSCHUWING: Oude configuratie geïmporteerd van %s"
 
 #: mailpile/config.py:874
 #, python-format
@@ -215,12 +212,12 @@ msgstr "WAARSCHUWING: Importeren configuratie mislukt van %s"
 #: mailpile/config.py:914
 #, python-format
 msgid "Mailbox ID too large: %s"
-msgstr "Mailbox ID te groot: %s"
+msgstr "Mailbox-ID te groot: %s"
 
 #: mailpile/config.py:944
 #, python-format
 msgid "No such mailbox: %s"
-msgstr "Niet bestaande mailbox: %s"
+msgstr "Nietbestaande mailbox: %s"
 
 #: mailpile/config.py:951
 #, python-format
@@ -234,7 +231,7 @@ msgstr "%s: Openen: %s (dit kan even duren)"
 
 #: mailpile/config.py:1065
 msgid "Parent paths are not allowed"
-msgstr ""
+msgstr "Bovenliggende paden zijn niet toegestaan"
 
 #: mailpile/config.py:1181
 #, python-format
@@ -248,11 +245,11 @@ msgstr "Kan mailbox niet toewijzen:%s = %s"
 
 #: mailpile/defaults.py:10
 msgid "Mailpile program version"
-msgstr "Mailpile programma versie"
+msgstr "Mailpile programmaversie"
 
 #: mailpile/defaults.py:11
 msgid "Configuration timestamp"
-msgstr "Configuratie tijd"
+msgstr "Configuratietijd"
 
 #: mailpile/defaults.py:12
 msgid "Technical system settings"
@@ -264,11 +261,11 @@ msgstr "Max. aantal bestanden tegelijk open"
 
 #: mailpile/defaults.py:15
 msgid "History length (lines, <0 = no save)"
-msgstr "Geschiedenis lengte (regels, <0 = geen opslag)"
+msgstr "Geschiedenislengte (regels, <0 = geen opslag)"
 
 #: mailpile/defaults.py:16
 msgid "Listening port for web UI"
-msgstr "Luisterpoort voor web UI"
+msgstr "Luisterpoort voor web-UI"
 
 #: mailpile/defaults.py:17
 msgid "Posting list target size in KB"
@@ -280,31 +277,31 @@ msgstr "Maximale resultaten die we \"goed\" sorteren"
 
 #: mailpile/defaults.py:19
 msgid "Max length of metadata snippets"
-msgstr "Max. lengte van metadata snippers"
+msgstr "Max. lengte van metadatasnippers"
 
 #: mailpile/defaults.py:20
 msgid "Debugging flags"
-msgstr "Debugging flags"
+msgstr "Debugvlaggen"
 
 #: mailpile/defaults.py:21
 msgid "Host:port of PGP keyserver"
-msgstr "Host:poort van PGP sleutelserver"
+msgstr "Host:poort van PGP-sleutelserver"
 
 #: mailpile/defaults.py:22
 msgid "Listening host for web UI"
-msgstr "Luister host voor web UI"
+msgstr "Luisterhost voor web-UI"
 
 #: mailpile/defaults.py:23
 msgid "Local read/write Maildir"
-msgstr "Lokale lees/schrijf Maildir"
+msgstr "Lokale lees-schrijf Maildir"
 
 #: mailpile/defaults.py:24
 msgid "Metadata index file"
-msgstr "Metadata index bestand"
+msgstr "Metadata-indexbestand"
 
 #: mailpile/defaults.py:25
 msgid "Search index directory"
-msgstr "Zoekindex map"
+msgstr "Zoekindexmap"
 
 #: mailpile/defaults.py:26
 msgid "Mailboxes we index"
@@ -316,7 +313,7 @@ msgstr "Locatie van gesorteerde data"
 
 #: mailpile/defaults.py:28
 msgid "Default theme"
-msgstr "Standaard thema"
+msgstr "Standaardthema"
 
 #: mailpile/defaults.py:30
 msgid "Location of vcards"
@@ -332,15 +329,15 @@ msgstr "Zoekresultaten per pagina"
 
 #: mailpile/defaults.py:36
 msgid "New mail check frequency"
-msgstr "Frequentie nieuwe mail controle"
+msgstr "Frequentie controle nieuwe mail"
 
 #: mailpile/defaults.py:37
 msgid "Inline PGP signatures or attached"
-msgstr "PGP handtekening inline of bijgevoegd"
+msgstr "PGP-handtekening inline of bijgevoegd"
 
 #: mailpile/defaults.py:38
 msgid "Default sort order"
-msgstr "Standaard sorteervolgorde"
+msgstr "Standaardsorteervolgorde"
 
 #: mailpile/defaults.py:39
 msgid "Encrypt local data to ..."
@@ -356,15 +353,15 @@ msgstr "Commando uitvoeren voor herscannen"
 
 #: mailpile/defaults.py:42
 msgid "Default outgoing e-mail address"
-msgstr "Standaard uitgaande e-mail adres"
+msgstr "Standaard uitgaande e-mailadres"
 
 #: mailpile/defaults.py:43
 msgid "Default outgoing mail route"
-msgstr "Standaard uitgaande mail route"
+msgstr "Standaard uitgaande mailroute"
 
 #: mailpile/defaults.py:45
 msgid "User interface language"
-msgstr "Gebruikersinterface taal"
+msgstr "Gebruikersinterfacetaal"
 
 #: mailpile/defaults.py:46
 msgid "VCard import/export settings"
@@ -372,15 +369,15 @@ msgstr "VCard importeer/exporteer instellingen"
 
 #: mailpile/defaults.py:48
 msgid "VCard import settings"
-msgstr "VCard importeer instellingen"
+msgstr "VCard-importeerinstellingen"
 
 #: mailpile/defaults.py:49
 msgid "VCard export settings"
-msgstr "VCard exporteer instellingen"
+msgstr "VCard-exporteerinstellingen"
 
 #: mailpile/defaults.py:50
 msgid "VCard context helper settings"
-msgstr "VCard context helper instellingen"
+msgstr "VCard-context-helperinstellingen"
 
 #: mailpile/defaults.py:53
 msgid "User profiles and personalities"
@@ -392,15 +389,15 @@ msgstr "Accountnaam"
 
 #: mailpile/defaults.py:55
 msgid "E-mail address"
-msgstr "E-mail adres"
+msgstr "E-mailadres"
 
 #: mailpile/defaults.py:56
 msgid "Message signature"
-msgstr "Berciht handtekening"
+msgstr "Berichthandtekening"
 
 #: mailpile/defaults.py:57
 msgid "Outgoing mail route"
-msgstr "Uitgaande mail route"
+msgstr "Uitgaande mailroute"
 
 #: mailpile/gpgi.py:14
 msgid "Trust not calculated"
@@ -412,7 +409,7 @@ msgstr "Onbekend vertrouwen"
 
 #: mailpile/gpgi.py:16
 msgid "Undefined trust"
-msgstr "Onbekend vertrouwen"
+msgstr "Ongedefinieerd vertrouwen"
 
 #: mailpile/gpgi.py:17
 msgid "Never trust"
@@ -476,7 +473,7 @@ msgstr "OMG, invoer te groot"
 
 #: mailpile/httpd.py:164
 msgid "Unknown content-type"
-msgstr "Onbekend bestandstype"
+msgstr "Onbekend inhoudstype"
 
 #: mailpile/httpd.py:169
 msgid "Internal Error"
@@ -523,8 +520,7 @@ msgstr "Geen data gevonden"
 msgid "Message not found"
 msgstr "Bericht niet gevonden"
 
-#: mailpile/mailutils.py:728 mailpile/mailutils.py:736
-#: mailpile/mailutils.py:790
+#: mailpile/mailutils.py:728 mailpile/mailutils.py:736 mailpile/mailutils.py:790
 msgid "Mailbox is read-only."
 msgstr "Mailbox is alleen-lezen."
 
@@ -563,12 +559,12 @@ msgstr "Decoderen mislukt: %s %s"
 
 #: mailpile/search.py:170
 msgid "Loading metadata index..."
-msgstr "Metadata index laden..."
+msgstr "Metadata-index laden..."
 
 #: mailpile/search.py:182
 #, python-format
 msgid "Metadata index not found: %s"
-msgstr "Metadata index  niet gevonden: %s"
+msgstr "Metadata-index  niet gevonden: %s"
 
 #: mailpile/search.py:186
 #, python-format
@@ -577,23 +573,23 @@ msgstr "Metadata geladen, %d berichten"
 
 #: mailpile/search.py:193
 msgid "Saving metadata index changes..."
-msgstr "Metadata index wijzgingen opslaan..."
+msgstr "Metadata-indexwijzgingen opslaan..."
 
 #: mailpile/search.py:204
 msgid "Saved metadata index changes"
-msgstr "Metadata index wijzgingen opslaan"
+msgstr "Metadata-indexwijzgingen opgeslagen"
 
 #: mailpile/search.py:210
 msgid "Saving metadata index..."
-msgstr "Metadata index opslaan..."
+msgstr "Metadata-index opslaan..."
 
 #: mailpile/search.py:223
 msgid "Saved metadata index"
-msgstr "Metadata index opslaan"
+msgstr "Metadata-index opgeslagen"
 
 #: mailpile/search.py:226
 msgid "Updating high level indexes"
-msgstr "Bijwerken high level indexes"
+msgstr "Bijwerken high-level indexes"
 
 #: mailpile/search.py:234
 #, python-format
@@ -638,7 +634,7 @@ msgstr "%s: Lezen van je e-mail: %d%% (%d/%d berichten)"
 #: mailpile/search.py:419
 #, python-format
 msgid "%s: Indexed mailbox: %s"
-msgstr "%s: Geindexeerde mailbox: %s"
+msgstr "%s: Geïndexeerde mailbox: %s"
 
 #: mailpile/search.py:637
 #, python-format
@@ -701,7 +697,7 @@ msgstr "Laat weten aan team@mailpile.is !"
 #: mailpile/search.py:1018
 #, python-format
 msgid "Unknown sort order: %s"
-msgstr "Onbekend sorteervolgorde: %s"
+msgstr "Onbekende sorteervolgorde: %s"
 
 #: mailpile/search.py:1023
 msgid "Sort failed, sorting badly. Partial index?"
@@ -748,7 +744,7 @@ msgid ""
 "<pre>%s</pre>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
 msgstr ""
-"<h1>Template fout</h1>\n"
+"<h1>Templatefout</h1>\n"
 "<pre>%s</pre>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
 
@@ -756,12 +752,10 @@ msgstr ""
 #, python-format
 msgid ""
 "<h1>Template error in %s</h1>\n"
-"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</"
-"xmp><hr><p><b>DATA:</b> %s</p></div>"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
 msgstr ""
-"<h1>Template fout in %s</h1>\n"
-"Parsen van template %s: <b>%s</b> op regel %s<br/><div><xmp>%s</"
-"xmp><hr><p><b>DATA:</b> %s</p></div>"
+"<h1>Templatefout in %s</h1>\n"
+"Parsen van template %s: <b>%s</b> op regel %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
 
 #: mailpile/ui.py:302
 msgid "Sorry, this UI cannot edit messages."
@@ -777,50 +771,47 @@ msgstr "Demo Contacten"
 
 #: mailpile/plugins/demos.py:42
 msgid "This is the demo importer"
-msgstr "Dit is de demo importeerder"
+msgstr "Dit is de demo-importeerder"
 
 #: mailpile/plugins/demos.py:45
-#, fuzzy
 msgid "Activate demo importer"
-msgstr "Dit is de demo importeerder"
+msgstr "Activeer demo importeerder"
 
 #: mailpile/plugins/demos.py:46
 msgid "Contact name"
-msgstr "Contact naam"
+msgstr "Naam contact"
 
 #: mailpile/plugins/demos.py:47
 msgid "Contact email"
-msgstr "Contact e-mail"
+msgstr "E-mail contact"
 
 #: mailpile/plugins/vcard_gnupg.py:17
 msgid "Import contacts from GnuPG keyring"
-msgstr "Importeer contacten uit GPG sleutelbos"
+msgstr "Importeer contacten uit GPG-sleutelbos"
 
 #: mailpile/plugins/vcard_gnupg.py:20 mailpile/plugins/vcard_gravatar.py:30
 msgid "Enable this importer"
-msgstr ""
+msgstr "Deze importeerder inschakelen"
 
 #: mailpile/plugins/vcard_gnupg.py:21
 msgid "Location of keyring"
 msgstr "Locatie van sleutelbos"
 
 #: mailpile/plugins/vcard_gravatar.py:27
-#, fuzzy
 msgid "Import contact info from a Gravatar server"
-msgstr "Importeer contacten uit GPG sleutelbos"
+msgstr "Importeer contactinformatie van een Gravatar server"
 
 #: mailpile/plugins/vcard_gravatar.py:31
 msgid "Minimum days between refreshing"
-msgstr ""
+msgstr "Minimum dagen tussen verversen"
 
 #: mailpile/plugins/vcard_gravatar.py:32
 msgid "Max batch size per update"
 msgstr ""
 
 #: mailpile/plugins/vcard_gravatar.py:33
-#, fuzzy
 msgid "Default thumbnail style"
-msgstr "Standaard thema"
+msgstr "Standaard miniatuurafbeeldingthema"
 
 #: mailpile/plugins/vcard_gravatar.py:34
 msgid "Preferred thumbnail rating"
@@ -828,29 +819,27 @@ msgstr ""
 
 #: mailpile/plugins/vcard_gravatar.py:35
 msgid "Preferred thumbnail size"
-msgstr ""
+msgstr "Voorkeursgrootte miniatuurafbeelding"
 
 #: mailpile/plugins/vcard_gravatar.py:36
 msgid "Gravatar server URL"
-msgstr ""
+msgstr "Gravatar server URL"
 
 #: mailpile/plugins/vcard_mork.py:37
-#, fuzzy
 msgid "Location of Mork database"
-msgstr "Locatie van gesorteerde data"
+msgstr "Locatie van Mork datatabase"
 
 #: static/default/html/contact/add.html:3
 msgid "Contact Info"
-msgstr "Contact informatie"
+msgstr "Contactinformatie"
 
-#: static/default/html/contact/add.html:9
-#: static/default/html/settings/index.html:20
+#: static/default/html/contact/add.html:9 static/default/html/settings/index.html:20
 msgid "Name"
 msgstr "Naam"
 
 #: static/default/html/contact/add.html:12
 msgid "E-mail"
-msgstr "E/mail"
+msgstr "E-mail"
 
 #: static/default/html/contact/add.html:15
 msgid "Website"
@@ -858,36 +847,29 @@ msgstr "Website"
 
 #: static/default/html/contact/add.html:18
 msgid "PGP Key"
-msgstr "PGP sleutel"
+msgstr "PGP-sleutel"
 
-#: static/default/html/contact/list.html:41
-#: static/default/html/search/index.html:20
+#: static/default/html/contact/list.html:41 static/default/html/search/index.html:20
 msgid "Previous"
 msgstr "Vorige"
 
-#: static/default/html/contact/list.html:44
-#: static/default/html/search/index.html:20
+#: static/default/html/contact/list.html:44 static/default/html/search/index.html:20
 msgid "Next"
 msgstr "Volgende"
 
-#: static/default/html/contact/list.html:47
-#: static/default/html/search/index.html:22
+#: static/default/html/contact/list.html:47 static/default/html/search/index.html:22
 msgid "of"
 msgstr "van"
 
-#: static/default/html/contact/list.html:47
-#: static/default/html/layouts/base.html:77
-#: static/default/html/partials/sub_nav_contacts.html:3
+#: static/default/html/contact/list.html:47 static/default/html/layouts/base.html:77 static/default/html/partials/sub_nav_contacts.html:3
 msgid "Contacts"
 msgstr "Contacten"
 
-#: static/default/html/contact/list.html:47
-#: static/default/html/search/index.html:22
+#: static/default/html/contact/list.html:47 static/default/html/search/index.html:22
 msgid "1 Conversation"
 msgstr "1 Conversatie"
 
-#: static/default/html/contact/list.html:47
-#: static/default/html/search/index.html:22
+#: static/default/html/contact/list.html:47 static/default/html/search/index.html:22
 msgid "No results found"
 msgstr "Geen resultaten gevonden"
 
@@ -909,7 +891,7 @@ msgstr "Donzig"
 
 #: static/default/html/layouts/base.html:41
 msgid "Close"
-msgstr ""
+msgstr "Sluiten"
 
 #: static/default/html/layouts/base.html:66
 #, python-format
@@ -918,26 +900,23 @@ msgstr "%(name)s<small> mailpile van <b>%(size)s</b> e-mails</small>"
 
 #: static/default/html/layouts/base.html:76
 msgid "Compose"
-msgstr ""
+msgstr "Opstellen"
 
-#: static/default/html/layouts/base.html:78
-#: static/default/html/partials/sub_nav_tags.html:3
+#: static/default/html/layouts/base.html:78 static/default/html/partials/sub_nav_tags.html:3
 msgid "Tags"
 msgstr "Tags"
 
 #: static/default/html/layouts/base.html:79
 msgid "Donate"
-msgstr ""
+msgstr "Doneren"
 
 #: static/default/html/layouts/base.html:80
-#, fuzzy
 msgid "Settings"
-msgstr "Aanmaken: %s"
+msgstr "Instellingen"
 
 #: static/default/html/layouts/base.html:95
-#, fuzzy
 msgid "emails"
-msgstr "E-mail"
+msgstr "e-mails"
 
 #: static/default/html/layouts/base.html:124
 msgid "Encrypted"
@@ -1003,25 +982,19 @@ msgstr "En:"
 msgid "All groups"
 msgstr "Alle groepen"
 
-#: static/default/html/message/draft.html:14
-#: static/default/html/message/index.html:18
+#: static/default/html/message/draft.html:14 static/default/html/message/index.html:18
 msgid "To"
 msgstr "Aan:"
 
-#: static/default/html/message/draft.html:18
-#: static/default/html/message/draft.html:38
-#: static/default/html/message/index.html:20
+#: static/default/html/message/draft.html:18 static/default/html/message/draft.html:38 static/default/html/message/index.html:20
 msgid "Cc"
 msgstr "Cc"
 
-#: static/default/html/message/draft.html:22
-#: static/default/html/message/draft.html:37
-#: static/default/html/message/index.html:23
+#: static/default/html/message/draft.html:22 static/default/html/message/draft.html:37 static/default/html/message/index.html:23
 msgid "Bcc"
 msgstr "Bcc"
 
-#: static/default/html/message/draft.html:27
-#: static/default/html/message/index.html:17
+#: static/default/html/message/draft.html:27 static/default/html/message/index.html:17
 msgid "From"
 msgstr "Van"
 
@@ -1030,9 +1003,8 @@ msgid "Subject"
 msgstr "Onderwerp"
 
 #: static/default/html/message/draft.html:50
-#, fuzzy
 msgid "Your message..."
-msgstr "Bericht voorbereiden..."
+msgstr "Je bericht..."
 
 #: static/default/html/message/draft.html:53
 msgid "No Attachments"
@@ -1074,8 +1046,7 @@ msgstr "Bericht ontsleutelen mislukt"
 msgid "Reply"
 msgstr "Reageer"
 
-#: static/default/html/message/index.html:75
-#: static/default/html/partials/sub_nav_search.html:3
+#: static/default/html/message/index.html:75 static/default/html/partials/sub_nav_search.html:3
 msgid "All"
 msgstr "Alle"
 
@@ -1089,11 +1060,11 @@ msgstr "Doneer aan Mailpile"
 
 #: static/default/html/page/donate/index.html:15
 msgid "Or you can donate to our"
-msgstr "Of je kan donderen aan onze"
+msgstr "Of je kan doneren aan onze"
 
 #: static/default/html/page/donate/index.html:15
 msgid "Bitcoin Wallet"
-msgstr "Bitcoin Portemonnee"
+msgstr "Bitcoinportemonnee"
 
 #: static/default/html/partials/bulk_actions.html:2
 msgid "Messages"
@@ -1105,11 +1076,11 @@ msgstr "geselecteerd"
 
 #: static/default/html/partials/bulk_actions.html:4
 msgid "Move to Later"
-msgstr ""
+msgstr "Verplaats naar Later"
 
 #: static/default/html/partials/bulk_actions.html:5
 msgid "Move to Group"
-msgstr ""
+msgstr "Verplaats naar Groep"
 
 #: static/default/html/partials/bulk_actions.html:6
 msgid "Assign Tags"
@@ -1117,20 +1088,16 @@ msgstr ""
 
 #: static/default/html/partials/bulk_actions.html:7
 msgid "Archive Selection"
-msgstr ""
+msgstr "Archiveer Selectie"
 
 #: static/default/html/partials/bulk_actions.html:8
 msgid "Delete Selection"
-msgstr ""
+msgstr "Verwijder Selectie"
 
 #: static/default/html/partials/details_search_speed.html:2
 #, python-format
-msgid ""
-"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
-"strong> seconds."
-msgstr ""
-"<strong>%(number)s</strong> berichten doorzocht in <strong>%(elapsed)s</"
-"strong> seconden."
+msgid "Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds."
+msgstr "<strong>%(number)s</strong> berichten doorzocht in <strong>%(elapsed)s</strong> seconden."
 
 #: static/default/html/partials/details_search_speed.html:2
 msgid "Vroom!"
@@ -1141,19 +1108,13 @@ msgid "Oops, you've found a quirk!"
 msgstr "Oeps, je hebt een foutje gevonden!"
 
 #: static/default/html/partials/errors_content.html:4
-msgid ""
-"We were unable to find the message you requested, perhaps it was deleted?"
-msgstr ""
-"We konden het opgevraagde bericht niet vinden, is het misschien verwijderd?"
+msgid "We were unable to find the message you requested, perhaps it was deleted?"
+msgstr "We konden het opgevraagde bericht niet vinden, is het misschien verwijderd?"
 
 #: static/default/html/partials/errors_content.html:5
 #, python-format
-msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
-"\">bug report</a>"
-msgstr ""
-"Als je denkt dat dit een bug is, open dan een <a href=\"%(url)s\" target="
-"\"_blank\">bug report</a>"
+msgid "If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank\">bug report</a>"
+msgstr "Als je denkt dat dit een bug is, open dan een <a href=\"%(url)s\" target=\"_blank\">bug report</a>"
 
 #: static/default/html/partials/sub_nav_contacts.html:4
 msgid "Add Contact"
@@ -1175,8 +1136,7 @@ msgstr "Verwijderen"
 msgid "Show All"
 msgstr "Alle tonen"
 
-#: static/default/html/partials/sub_nav_search.html:4
-#: static/default/html/tag/list.html:19
+#: static/default/html/partials/sub_nav_search.html:4 static/default/html/tag/list.html:19
 msgid "New"
 msgstr "Nieuw"
 
@@ -1202,7 +1162,7 @@ msgstr "Voeg nieuw profiel toe"
 
 #: static/default/html/settings/index.html:21
 msgid "Chelsea Manning"
-msgstr ""
+msgstr "Chelsea Manning"
 
 #: static/default/html/settings/index.html:23
 msgid "Email"
@@ -1210,7 +1170,7 @@ msgstr "E-mail"
 
 #: static/default/html/settings/index.html:24
 msgid "chelsea@email.com"
-msgstr ""
+msgstr "chelsea@email.com"
 
 #: static/default/html/settings/index.html:26
 msgid "SMTP Server"
@@ -1222,7 +1182,7 @@ msgstr "Gebruikersnaam"
 
 #: static/default/html/settings/index.html:28
 msgid "username@mailserver.org"
-msgstr ""
+msgstr "username@mailserver.org"
 
 #: static/default/html/settings/index.html:30
 msgid "Password"
@@ -1234,7 +1194,7 @@ msgstr "Server"
 
 #: static/default/html/settings/index.html:34
 msgid "smtp.mailserver.org"
-msgstr ""
+msgstr "smtp.mailserver.org"
 
 #: static/default/html/settings/index.html:36
 msgid "Port"
@@ -1246,7 +1206,7 @@ msgstr "Profiel toevoegen"
 
 #: static/default/html/tag/add.html:3
 msgid "Enter New Tag Info"
-msgstr "Voer nieuwe tag info in"
+msgstr "Voer nieuwe tag-info in"
 
 #: static/default/html/tag/add.html:9
 msgid "Tag"
@@ -1254,7 +1214,7 @@ msgstr "Tag"
 
 #: static/default/html/tag/add.html:10
 msgid "Friends & Family"
-msgstr ""
+msgstr "Vrienden & Familie"
 
 #: static/default/html/tag/add.html:12
 msgid "Slug"
@@ -1262,7 +1222,7 @@ msgstr "Slug"
 
 #: static/default/html/tag/add.html:13
 msgid "friends-family"
-msgstr ""
+msgstr "vrienden-familie"
 
 #: static/default/html/tag/add.html:15
 msgid "Add"
@@ -1280,20 +1240,3 @@ msgstr "Bekijk berichten"
 msgid "Archived"
 msgstr "Gearchiveerd"
 
-#~ msgid "at"
-#~ msgstr "op"
-
-#~ msgid "From:"
-#~ msgstr "Van:"
-
-#~ msgid "To:"
-#~ msgstr "Aan:"
-
-#~ msgid "Cc:"
-#~ msgstr "Cc:"
-
-#~ msgid "Bcc:"
-#~ msgstr "Bcc:"
-
-#~ msgid "Subject:"
-#~ msgstr "Onderwerp:"
