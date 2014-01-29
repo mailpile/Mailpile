@@ -1,12 +1,3 @@
-MailPile.prototype.view = function(idx, msgid) {
-	this.json_get("view", {"idx": idx, "msgid": msgid}, function(data) {
-		if ($("#results").length === 0) {
-			$("#content").prepend('<table id="results" class="results"><tbody></tbody></table>');
-		}
-		$("#results").empty();
-	});
-};
-
 MailPile.prototype.render_thread_message = function(mid) {
   
   $.ajax({
@@ -22,13 +13,66 @@ MailPile.prototype.render_thread_message = function(mid) {
       mailpile.notification('error', 'Could not retrieve message');
     }
   });
-
 };
+
+MailPile.prototype.thread_initialize_tooltips = function() {
+
+  $('.thread-item-crypto-info').qtip({
+    content: {
+      title: false,
+      text: function(event, api) {
+        var html = '<div>\
+          <h4 class="' + $(this).data('crypto_color') + '">\
+            <span class="' + $(this).data('crypto_icon') + '"></span>' + $(this).attr('title') + '\
+          </h4>\
+          <p>' + $(this).data('crypto_message') + '</p>\
+          </div>';
+        return html;
+      }
+    },
+    style: {
+      classes: 'qtip-thread-crypto',
+      tip: {
+        corner: 'bottom center',
+        mimic: 'bottom center',
+        border: 0,
+        width: 10,
+        height: 10
+      }
+    },
+    position: {
+      my: 'bottom center',
+      at: 'top left',
+			viewport: $(window),
+			adjust: {
+				x: 7,  y: -4
+			}
+    },
+    show: {
+      delay: 150
+    },
+    hide: {
+      delay: 250
+    }
+  });
+};
+
 
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
 
-  alert('FIXME: Show all people in conversation');
+ //alert('FIXME: Show all people in conversation');
+ var options = {
+   backdrop: true,
+   keyboard: true,
+   show: true,
+   remote: false
+ };
+
+ $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
+ $('#modal-full .modal-body').html($('#thread-people').html());
+ $('#modal-full').modal(options);
+
 });
 
 /* Thread - Show Security */
@@ -62,7 +106,6 @@ $(document).on('click', '.thread-item-quote-show', function() {
 
 /* Thread - Might Move to Global Location / Abstraction */
 $(document).on('click', '.dropdown-toggle', function() {
-  console.log('toggle da bizzle');
   $(this).find('.icon-arrow-right').removeClass('icon-arrow-right').addClass('icon-arrow-down');
 });
 
@@ -70,38 +113,18 @@ $(document).on('click', '.dropdown-toggle', function() {
 /* Thread Tooltips */
 $(document).ready(function() {
 
-  
-  $('.thread-item-crypto-info').qtip({
-    style: {
-      classes: 'qtip-tipped'
-    },
-    position: {
-      my: 'bottom center',
-      at: 'top left',
-			viewport: $(window),
-			adjust: {
-				x: 25,  y: 0
-			}
-    },
-    show: {
-      delay: 250
-    },
-    hide: {
-      delay: 250
-    }
-  });
-
-
   // Thread Scroll to Message
   if (location.href.split("thread/=")[1]) {
+    
     var thread_id = location.href.split("thread/=")[1].split("/")[0];
     var msg_top_pos = $('#message-' + thread_id).position().top;
     $('#content-view').scrollTop(msg_top_pos - 150);
     setTimeout(function(){
       $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
-    }, 50)
+    }, 50);
+    
+    mailpile.thread_initialize_tooltips();
   }
-
 
 });
 

@@ -5,13 +5,10 @@
   <div class="thread-item-from">
     <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}">{{ contact_name(profiles, from) }}</a>
     <div class="thread-item-metadata-icons">
-      {% if crypto %}
-      <span class="icon {{ show_message_signature(crypto.signature.status) }}" data-expand="no"></span>
-      <span class="icon {{ show_message_encryption(crypto.encryption.status) }}" data-expand="no"></span>
-      {% else %}
-      <span class="icon {{ show_message_signature(metadata.crypto.signature) }}" data-expand="no"></span>
-      <span class="icon {{ show_message_encryption(metadata.crypto.encryption) }}" data-expand="no"></span>
-      {% endif %}
+    {% set signature = show_message_signature(metadata.crypto.signature) %}
+    {% set encryption = show_message_encryption(metadata.crypto.encryption) %}
+      <span class="thread-item-crypto-info icon {{ signature.color + ' ' + signature.icon }}" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}" data-expand="no"></span>
+      <span class="thread-item-crypto-info icon {{ encryption.color + ' ' + encryption.icon }}" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}" data-expand="no"></span>
       <span class="show-thread-message-metadata-details icon icon-circle-info" data-expand="no"></span>
     </div>
   </div>
