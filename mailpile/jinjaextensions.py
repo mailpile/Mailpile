@@ -69,7 +69,6 @@ class MailpileCommand(Extension):
         environment.globals['urlencode'] = self._urlencode
         environment.filters['urlencode'] = self._urlencode
 
-
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -108,6 +107,58 @@ class MailpileCommand(Extension):
     def _show_tags(self, search_terms, tags):
         return True
 
+    _DEFAULT_SIGNATURE = [
+            "crypto-color-gray",
+            "icon-signature-none",
+            _("Unknown"),
+            _("There is something unknown or wrong with this signature")]
+    _STATUS_SIGNATURE = {
+        "none": [
+            "crypto-color-gray",
+            "icon-signature-none",
+            _("No Signature"),
+            _("This message contains no signature, which means it could "
+              "have come from anyone, not necessarily the real sender")],
+        "error": [
+            "crypto-color-red",
+            "icon-signature-error",
+            _("Error"),
+            _("There was a weird error with this signature")],
+        "invalid": [
+            "crypto-color-red",
+            "icon-signature-invalid",
+            _("Invalid"),
+            _("The signature was invalid or bad")],
+        "revoked": [
+            "crypto-color-red",
+            "icon-signature-revoked",
+            _("Revoked"),
+            _("Watch out, the signature was made with a key that has been"
+              "revoked- this is not a good thing")],
+        "expired": [
+            "crypto-color-red",
+            "icon-signature-expired",
+            _("Expired"),
+            _("The signature was made with an expired key")],
+        "unknown": [
+            "crypto-color-orange",
+            "icon-signature-unknown",
+            _("Unknown"),
+            _("the signature was made with an unknown key, so we can not "
+              "verify it")],
+        "unverified": [
+            "crypto-color-blue",
+            "icon-signature-unverified",
+            _("Unverified"),
+            _("The signature was good but it came from a key that is not "
+              "verified yet")],
+        "verified": [
+            "crypto-color-green",
+            "icon-signature-verified",
+            _("Verified"),
+            _("The signature was good and came from a verified key, w00t!")]
+    }
+
     def _show_message_signature(self, status):
         # This avoids crashes when attributes are missing.
         try:
@@ -116,53 +167,49 @@ class MailpileCommand(Extension):
         except UndefinedError:
             status = ''
 
-        if status == "none":
-            classes = "crypto-color-gray icon-signature-none"
-            text = _("No Signature")
-            message = _("There is no signature on this message")
-        elif status == "error":
-            classes = "crypto-color-red icon-signature-" + status
-            text = _("Error")
-            message = _("There was some weird error with"
-                        "this signature")
-        elif status == "invalid":
-            classes = "crypto-color-red icon-signature-" + status
-            text = _("Invalid")
-            message = _("The signature was invalid or bad")
-        elif status == "revoked":
-            classes = "crypto-color-red icon-signature-" + status
-            text = _("Revoked")
-            message = _("Watch out, the signature was made with"
-                        "a key that has been revoked")
-        elif status == "expired":
-            classes = "crypto-color-red icon-signature-" + status
-            text = _("Expired")
-            message = _("The signature was made with an expired key")
-        elif status == "unknown":
-            classes = "crypto-color-orange icon-signature-" + status
-            text = _("Unknown")
-            message = _("the signature was made with an unknown key,"
-                        "so we can't verify it")
-        elif status == "unverified":
-            classes = "crypto-color-blue icon-signature-unverified"
-            text = _("Unverified")
-            message = _("The signature was good, and came from a key"
-                        "that isn't verified")
-        elif status == "verified":
-            classes = "crypto-color-green icon-signature-verified"
-            text = _("Verified")
-            message = _("The signature was good, and came from a"
-                        "verified key, w00t!")
-        elif status.startswith("mixed-"):
-            classes = "crypto-color-blue icon-signature-unknown"
-            text = _("Mixed")
-            message = _("There was mixed signatures on this message")
-        else:
-            classes = "crypto-color-gray icon-signature-none"
-            text = _("Unknown")
-            message = _("There is some unknown thing wrong with"
-                        "this encryption")
-        return classes
+        #elif status.startswith("mixed-"):
+        #    "crypto-color-blue icon-signature-unknown"
+        #    _("Mixed")
+        #    _("There was mixed signatures on this message")
+
+        color, icon, text, message = self._STATUS_SIGNATURE.get(status, self._DEFAULT_SIGNATURE)
+
+        return {
+            'color': color,
+            'icon': icon,
+            'text': text,
+            'message': message
+        }
+
+    _DEFAULT_ENCRYPTION = [
+        "crypto-color-gray",
+        "icon-lock-open",
+        _("Unknown"),
+        _("There is some unknown thing wrong with this encryption")]
+    _STATUS_ENCRYPTION = {
+        "none": [
+            "crypto-color-gray",
+            "icon-lock-open",
+            _("Not Encrypted"),
+            _("This message was not encrypted. It may have been intercepted en route to "
+              "you and read by an unauthorized party.")],
+        "decrypted": [
+            "crypto-color-green",
+            "icon-lock-closed",
+            _("Encrypted"),
+            _("This message was encrypted, but we were successfully able to decrypt it. "
+              "Great job being secure")],
+        "missingkey": [
+            "crypto-color-red",
+            "icon-lock-closed",
+            _("Missing Key"),
+            _("You do not have any of the private keys that will decrypt this message")],
+        "error": [
+            "crypto-color-red",
+            "icon-lock-error",
+            _("Error"),
+            _("We failed to decrypt message and are unsure why")]
+    }
 
     def _show_message_encryption(self, status):
         # This avoids crashes when attributes are missing.
@@ -172,36 +219,20 @@ class MailpileCommand(Extension):
         except UndefinedError:
             status = ''
 
-        if status == "none":
-            classes = "crypto-color-gray icon-lock-open"
-            text = _("Not Encrypted")
-            message = _("This message was not encrypted."
-                        "It may have been intercepted en route to"
-                        "you and read by an"
-                        "unauthorized party.")
-        elif status == "decrypted":
-            classes = "crypto-color-green icon-lock-closed"
-            text = _("Encrypted")
-            message = _("This was encrypted, but we successfully"
-                        "decrypted the message")
-        elif status == "missingkey":
-            classes = "crypto-color-red icon-lock-closed"
-            text = _("Missing Key")
-            message = _("You do not have any of the private keys that will"
-                        "decrypt this message")
-        elif status == "error":
-            classes = "crypto-color-red icon-lock-error"
-            text = _("Error")
-            message = _("We failed to decrypt message and are unsure why")
-        elif status.startswith("mixed-"):
-            classes = "crypto-color-orange icon-lock-open"
-            text = _("Mixed")
-            message = _("Message contains mixed types of encryption")
-        else:
-            classes = "crypto-color-gray icon-lock-open"
-            text = _("Unknown")
-            messaage = _("There is some unknown thing wrong with"
-                         "this encryption")
+        #elif status.startswith("mixed-"):
+        #    classes = "crypto-color-orange icon-lock-open"
+        #    text = _("Mixed")
+        #    message = _("Message contains mixed types of encryption")
+
+        color, icon, text, message = self._STATUS_ENCRYPTION.get(status, self._DEFAULT_ENCRYPTION)
+
+        return {
+            'color': color,
+            'icon': icon,
+            'text': text,
+            'message': message
+        }
+
         return classes
 
     def _contact_url(self, person):
