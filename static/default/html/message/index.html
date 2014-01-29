@@ -72,19 +72,19 @@
   </div>
   {% endif %}{# End if mid #}
 {% endfor %}{# End for loop #}
-<div id="thread-people">
-  <h3>{{_("People in Conversation")}}</h3>
+<div id="thread-people" class="hide" data-modal_title="{{_("People in Conversation")}}">
   <ul>
     {% for aid in result.data.addresses %}
     {% set person = result.data.addresses[aid] %}
     <li>
-      <a href="{{ contact_url(person) }}"><img src="{{ show_avatar(person) }}"></a>
-      <a href="{{ contact_url(person) }}"> {{person.fn}}</a>
-      <a href=""><span class="icon-compose"></span> {{person.address}}</a>
+      <a class="contact-conversation-avatar" href="{{ contact_url(person) }}"><img src="{{ show_avatar(person) }}"></a>
+      <a class="contact-conversation-name" href="{{ contact_url(person) }}"> <h4>{{person.fn}}</h4></a>
+      <a class="contact-conversation-address" href=""><span class="icon-compose"></span> {{person.address}}</a>
     </li>
     {% endfor %}
   </ul>
 </div>
+
 {% else %}{# No Result, Show Error #}
   {% set error_title = "message_missing" %}
   {% include("partials/errors_content.html") %}

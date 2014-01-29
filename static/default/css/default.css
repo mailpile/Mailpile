@@ -5826,7 +5826,7 @@ x:-o-prefocus,
   margin: .5em 0 0 .5em;
 }
 .boxy {
-  background-color: #f2f2f2;
+  background: #ffffff;
   border: 1px solid #cccccc;
   width: 22%;
   padding-bottom: 20%;
@@ -5836,7 +5836,7 @@ x:-o-prefocus,
   display: block;
 }
 .boxy:hover {
-  background-color: rgba(200, 200, 200, 0.75);
+  background: #f2f2f2;
 }
 .boxy-inner {
   position: absolute;
@@ -5877,6 +5877,25 @@ x:-o-prefocus,
   display: block;
   float: left;
   color: #b3b3b3;
+}
+/* Contacts - Conversation */
+.contact-conversation-avatar {
+  width: 45px;
+  display: inline-block;
+}
+.contact-conversation-name {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 18px;
+}
+.contact-conversation-address {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: normal;
+  font-family: Helvetica, Arial, sans-serif;
+  line-height: 14px;
+  color: #cccccc;
 }
 /* Topbar */
 .topbar {
@@ -6064,6 +6083,7 @@ x:-o-prefocus,
 }
 /* Bulk Actions */
 .bulk-actions {
+  height: 38px;
   position: relative;
   top: 0px;
   left: 0px;
@@ -6081,6 +6101,9 @@ x:-o-prefocus,
 .bulk-actions li {
   padding: 0 10px;
 }
+.bulk-actions ul.right {
+  text-align: right;
+}
 .bulk-actions a {
   color: #4d4d4d;
 }
@@ -6090,6 +6113,9 @@ x:-o-prefocus,
 .bulk-actions a span.icon {
   font-size: 16px;
   line-height: 16px;
+}
+.bulk-actions li.hide {
+  visibility: hidden;
 }
 /* Content View */
 #content-view {
@@ -6915,10 +6941,6 @@ a.compose-show-field {
 #thread-message-actions {
   border-top: 1px solid #b3b3b3;
   border-bottom: 0px;
-}
-/* Thread People */
-#thread-people {
-  display: none;
 }
 /* Thread - Crypto Tooltips */
 .qtip-thread-crypto {

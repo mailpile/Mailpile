@@ -34,11 +34,9 @@
 
   <title>{% block title %}{{title}}{% endblock %} | {{name}}'s mailpile</title>
 
-<script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
-<script type="text/javascript" src="/static/js/libraries-min.js"></script>
-<script type="text/javascript" src="/static/js/libraries/d3.v3.min.js"></script>
-<script type="text/javascript" src="/static/js/libraries/dropdown.js"></script>
-<script type="text/javascript" src="/static/js/libraries/modal.js"></script>
+  <script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/libraries-min.js"></script>
+  <script type="text/javascript" src="/static/js/libraries/d3.v3.min.js"></script>
 </head>
 <body>
 
@@ -163,18 +161,31 @@
     {% include("partials/tools_message.html") %}
   {% endif %}
   </div>
-  <div id="content-view">{% endif %}{#
-
+  <div id="content-view">{% endif %}
+  {#
     This is the end of the first "if not html_in_json" section, which
     simply skips all the boilerplate HTML so snippets can be injected
     using innerHTML. Sub-templates may also need to check for this variable.
-
   #}{% block content %}{{results}}{% endblock %}{#
 
     Boilerplate starts again, continues until /html.
-
   #}{% if not html_in_json %}</div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="modal-full" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        Here be some sweet sweet sounds :P
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 <div id="debug" class="hide">
   <h3>DEBUG</h3>
@@ -194,6 +205,17 @@
 </div>
 
 <script type="text/javascript" src="/static/js/mailpile.js"></script>
+<script type="text/javascript">
+mailpile.instance = {
+ "command": "{{ command }}",
+ "args": "{{ args }}",
+ "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
+}
+
+// Set View Size
+$('#sidebar').hide();
+$('#pile-results').hide();
+</script>
 <script type="text/javascript" src="/static/js/app/notifications.js"></script>
 <script type="text/javascript" src="/static/js/app/tooltips.js"></script>
 <script type="text/javascript" src="/static/js/app/gpg.js"></script>
@@ -206,13 +228,6 @@
 <script type="text/javascript" src="/static/js/app/settings.js"></script>
 {% for asset in get_assets("javascript") %}<link rel="stylesheet" href="{{asset}}"/>
 {% endfor %}
-<script type="text/javascript">
-mailpile.instance = {
- "command": "{{ command }}",
- "args": "{{ args }}",
- "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
-}
-</script>
 <script type="text/javascript" src="/static/js/plugins-min.js"></script>
 
 </body>
