@@ -59,7 +59,7 @@ def say(stuff):
     mp._session.ui.reset_marks()
 
 
-try:
+def do_setup():
     # Set up initial tags and such
     mp.setup()
 
@@ -80,15 +80,18 @@ try:
     assert(not mp._config.prefs.vcard.importers.gpg[0].active)
     assert(not mp._config.prefs.vcard.importers.gravatar[0].active)
 
+    # Add the mailboxes, scan them
+    for mailbox in ('tests.mbx', 'Maildir'):
+        mp.add(os.path.join(mailpile_test, mailbox))
+
+def test_vcards():
     # Do we have a Mr. Rogers contact?
     mp.rescan('vcards')
     assert(mp.contact('mr@rogers.com'
                       ).result['contact']['fn'] == u'Mr. Rogers')
     assert(len(mp.contact_list('rogers').result['contacts']) == 1)
 
-    # Add the mailboxes, scan them
-    for mailbox in ('tests.mbx', 'Maildir'):
-        mp.add(os.path.join(mailpile_test, mailbox))
+def test_load_save_rescan():
     mp.rescan()
 
     # Save and load the index, just for kicks
@@ -136,6 +139,7 @@ try:
 
     say('FIXME: Make sure message signatures verified')
 
+def test_message_data():
     # Load up a message and take a look at it...
     search_bre = mp.search(*FROM_BRE).result
     result_bre = search_bre['data']['metadata'][search_bre['thread_ids'][0]]
@@ -158,6 +162,7 @@ try:
         say('Checking encoding: %s: %s' % (key, val))
         assert('utf' not in val)
 
+def test_composition():
     # Create a message...
     new_mid = mp.message_compose().result['thread_ids'][0]
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
@@ -214,7 +219,16 @@ try:
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
 
-    say("Tests passed, woot!")
+try:
+    do_setup()
+    if '-n' in sys.argv:
+        say("Skipping tests...")
+    else:
+        test_vcards()
+        test_load_save_rescan()
+        test_message_data()
+        test_composition()
+        say("Tests passed, woot!")
 except:
     say("Tests FAILED!")
     print
