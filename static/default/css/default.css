@@ -6283,6 +6283,9 @@ div.content-normal {
 .compose-crypto-signature.error {
   color: #a31304;
 }
+.compose-crypto-encryption:hover {
+  cursor: pointer;
+}
 .compose-crypto-encryption.none {
   color: #b3b3b3;
 }

@@ -349,6 +349,23 @@ $(document).on('click', '.compose-crypto-signature', function() {
 });
 
 
+/* Compose - Change Encryption Status */
+$(document).on('click', '.compose-crypto-encryption', function() {
+  var status = mailpile.compose_determine_encryption();
+  var change = '';
+
+  if (status == 'encrypt') {
+    change = 'none';
+  } else {
+    change = 'encrypt';
+  }
+
+  console.log('clicked ' + status);
+
+  mailpile.compose_render_encryption(change);
+});
+
+
 /* Compose - Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
