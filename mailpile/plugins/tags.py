@@ -146,7 +146,7 @@ def GetTagInfo(cfg, tn, stats=False, unread=None):
     for k in tag.all_keys():
         if k not in INFO_HIDES_TAG_METADATA:
             info[k] = tag[k]
-    if stats and unread:
+    if stats and (unread is not None):
         stats_all = len(cfg.index.TAGS.get(tid, []))
         info['stats'] = {
             'all': stats_all,
