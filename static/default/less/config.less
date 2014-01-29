@@ -271,11 +271,17 @@
   @font-size-small: 12px;
 
   @border-radius-base: @base-border-radius;
+  @border-radius-large: @base-border-radius;
 
   @line-height-base: @base-line-height;
-  
+  @line-height-computed: floor((@text-font-size * @base-line-height)); // ~20px
+
+  @screen-sm:                 768px;  
+  @screen-sm-min:             @screen-sm;
+
   @grid-float-breakpoint: 768px;
   @grid-float-breakpoint-max: (@grid-float-breakpoint - 1);
+    
   
 
 /* Bootstrap - Dropdown */
@@ -303,12 +309,12 @@
   @modal-title-padding:           15px;
   @modal-title-line-height:       1.428571429;  
   @modal-content-bg:              #fff;
-  @modal-content-border-color:    rgba(0,0,0,.2);
+  @modal-content-border-color:    @grayMid;
   @modal-content-fallback-border-color: #999;
   
   @modal-backdrop-bg:             #000;
   @modal-backdrop-opacity:        .5;
-  @modal-header-border-color:     #e5e5e5;
+  @modal-header-border-color:     @grayMid;
   @modal-footer-border-color:     @modal-header-border-color;
   
   @modal-lg:                      900px;
