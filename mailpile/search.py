@@ -501,7 +501,7 @@ class MailIndex:
     def edit_msg_info(self, msg_info,
                       msg_mid=None, raw_msg_id=None, msg_id=None, msg_ts=None,
                       msg_from=None, msg_subject=None, msg_body=None,
-                      msg_to=None, msg_cc=None):
+                      msg_to=None, msg_cc=None, msg_tags=None):
         if msg_mid:
             msg_info[self.MSG_MID] = msg_mid
         if raw_msg_id:
@@ -520,6 +520,8 @@ class MailIndex:
             msg_info[self.MSG_TO] = self.compact_to_list(msg_to or [])
         if msg_cc is not None:
             msg_info[self.MSG_CC] = self.compact_to_list(msg_cc or [])
+        if msg_tags is not None:
+            msg_info[self.MSG_TAGS] = ','.join(msg_tags or [])
         return msg_info
 
     def index_email(self, session, email):
@@ -542,6 +544,9 @@ class MailIndex:
                                     compact=False,
                                     filter_hooks=[self.filter_keywords])
 
+        tags = [k.split(':')[0] for k in kw
+                if k.endswith(':in') or k.endswith(':tag')]
+
         snippet_max = session.config.sys.snippet_max
         self.edit_msg_info(msg_info,
                            msg_from=self.hdr(msg, 'from'),
@@ -551,6 +556,17 @@ class MailIndex:
                            msg_body=sn[:max(0, snippet_max - len(msg_subj))])
 
         self.set_msg_at_idx_pos(email.msg_idx_pos, msg_info)
+
+        # Reset the internal tags on this message
+        for tag_id in [t for t in msg_info[self.MSG_TAGS].split(',') if t]:
+            tag = session.config.get_tag(tag_id)
+            if tag and tag.slug.startswith('mp_'):
+                self.remove_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
+
+        # Add normal tags implied by a rescan
+        print 'Applying %s' % tags
+        for tag_id in tags:
+            self.add_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
 
     def set_conversation_ids(self, msg_mid, msg, subject_threading=True):
         msg_thr_mid = None
