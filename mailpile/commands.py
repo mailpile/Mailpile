@@ -815,7 +815,7 @@ class ConfigSet(Command):
         ops = []
 
         if config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
+            self.session.ui.warning(_('In lockdown, doing nothing.'))
             return False
 
         for var in self.data.keys():
@@ -865,7 +865,7 @@ class ConfigAdd(Command):
         ops = []
 
         if config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
+            self.session.ui.warning(_('In lockdown, doing nothing.'))
             return False
 
         for var in self.data.keys():
@@ -957,7 +957,7 @@ class AddMailboxes(Command):
 
         if config.sys.lockdown:
             session.ui.warning(_('In lockdown, doing nothing.'))
-            paths = []
+            return False
 
         while paths:
             raw_fn = paths.pop(0)
