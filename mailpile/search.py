@@ -225,13 +225,12 @@ class MailIndex:
             self.TAGS[tid].add(msg_idx_pos)
 
     def save_changes(self, session=None):
-        try:
-            self._lock.acquire()
-            mods, self.MODIFIED = self.MODIFIED, set()
-            if mods or len(self.EMAILS) > self.EMAILS_SAVED:
-                if self._saved_changes >= self.MAX_INCREMENTAL_SAVES:
-                    return self.save(session=session)
-
+        mods, self.MODIFIED = self.MODIFIED, set()
+        if mods or len(self.EMAILS) > self.EMAILS_SAVED:
+            if self._saved_changes >= self.MAX_INCREMENTAL_SAVES:
+                return self.save(session=session)
+            try:
+                self._lock.acquire()
                 if session:
                     session.ui.mark(_("Saving metadata index changes..."))
                 fd = gpg_open(self.config.mailindex_file(),
@@ -247,8 +246,8 @@ class MailIndex:
                     session.ui.mark(_("Saved metadata index changes"))
                 self.EMAILS_SAVED = len(self.EMAILS)
                 self._saved_changes += 1
-        finally:
-             self._lock.release()
+            finally:
+                self._lock.release()
 
     def save(self, session=None):
         try:
@@ -442,7 +441,7 @@ class MailIndex:
             try:
                 msg_fd = mbox.get_file(i)
                 msg = ParseMessage(msg_fd,
-                                   pgpmime=session.config.prefs.index_encrypted)
+                    pgpmime=session.config.prefs.index_encrypted)
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 if session.config.sys.debug:
                     traceback.print_exc()
@@ -532,7 +531,6 @@ class MailIndex:
         msg_to = ExtractEmails(self.hdr(msg, 'to'))
         msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
                   ExtractEmails(self.hdr(msg, 'bcc')))
-
 
         kw, sn = self.index_message(session,
                                     email.msg_mid(),

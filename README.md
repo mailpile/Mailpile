@@ -51,7 +51,7 @@ Twitter](https://twitter.com/MailpileTeam) and watch for updates.
 ### Trying Mailpile
 
 We (PLAN TO: WORK IS IN PROGRESS) have live demos up and running [on our
-website](https://www.mailpile.is/demos/). If you are curiout about what
+website](https://www.mailpile.is/demos/). If you are curious about what
 Mailpile looks like, please feel free to check it out.
 
 
