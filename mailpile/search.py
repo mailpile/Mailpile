@@ -852,7 +852,7 @@ class MailIndex:
                     keywords.extend(['%s:list' % t for t in words])
         for key in EXPECTED_HEADERS:
             if not msg[key]:
-                keywords.append('missing:%s' % key)
+                keywords.append('%s:missing' % key)
 
         for extract in plugins.get_meta_kw_extractors():
             keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts))
