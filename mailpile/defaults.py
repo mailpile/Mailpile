@@ -33,6 +33,7 @@ CONFIG_RULES = {
                            'dir', os.path.join('static', 'default')],
             'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
         }],
+        'lockdown':       [_('Demo mode, disallow changes'), bool,      False],
     }],
     'prefs': [_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),

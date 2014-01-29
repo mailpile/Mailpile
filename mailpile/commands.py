@@ -645,6 +645,10 @@ class Rescan(Command):
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
 
+        if config.sys.lockdown:
+            session.ui.warning(_('In lockdown, doing nothing.'))
+            return False
+
         delay = play_nice_with_threads()
         if delay > 0:
             session.ui.notify((
@@ -810,6 +814,10 @@ class ConfigSet(Command):
         args = self.args[:]
         ops = []
 
+        if config.sys.lockdown:
+            session.ui.warning(_('In lockdown, doing nothing.'))
+            return False
+
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
             if parts[0] in config.rules:
@@ -856,6 +864,10 @@ class ConfigAdd(Command):
         args = self.args[:]
         ops = []
 
+        if config.sys.lockdown:
+            session.ui.warning(_('In lockdown, doing nothing.'))
+            return False
+
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
             if parts[0] in config.rules:
@@ -893,6 +905,11 @@ class ConfigUnset(Command):
 
     def command(self):
         session, config = self.session, self.session.config
+
+        if config.sys.lockdown:
+            session.ui.warning(_('In lockdown, doing nothing.'))
+            return False
+
         vlist = self.args[:]
         vlist.extend(self.data.get('var', None) or [])
         for v in vlist:
@@ -937,6 +954,11 @@ class AddMailboxes(Command):
         adding = []
         existing = config.sys.mailbox
         paths = self.args[:]
+
+        if config.sys.lockdown:
+            session.ui.warning(_('In lockdown, doing nothing.'))
+            paths = []
+
         while paths:
             raw_fn = paths.pop(0)
             fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))

@@ -81,6 +81,10 @@ class Setup(Command):
     def command(self):
         session = self.session
 
+        if session.config.sys.lockdown:
+            session.ui.warning(_('In lockdown, doing nothing.'))
+            return False
+
         # Create local mailboxes
         session.config.open_local_mailbox(session)
 
