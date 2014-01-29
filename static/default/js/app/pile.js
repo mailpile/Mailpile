@@ -5,7 +5,13 @@ MailPile.prototype.pile_action_select = function(item) {
   mailpile.bulk_cache_add(item.data('mid'));
 
 	// Increment Selected
-	$('#bulk-actions-selected-count').html(mailpile.bulk_cache.length);
+	if (mailpile.bulk_cache.length === 1) {
+    var message = '<span id="bulk-actions-selected-count">1</span> ' + $('#bulk-actions-message').data('bulk_selected');
+    $('#bulk-actions-message').html(message);
+    mailpile.show_bulk_actions($('.bulk-actions').find('li.hide'));
+	} else {
+	  $('#bulk-actions-selected-count').html(mailpile.bulk_cache.length);
+  }
 
 	// Style & Select Checkbox
 	item.removeClass('result').addClass('result-on')
@@ -26,8 +32,10 @@ MailPile.prototype.pile_action_unselect = function(item) {
 	$('#bulk-actions-selected-count').html(mailpile.bulk_cache.length);
 
 	// Hide Actions
-	if (mailpile.bulk_cache.length < 1) {
-
+	if (mailpile.bulk_cache.length < 1) { 
+    var message = $('#bulk-actions-message').data('bulk_selected_none');
+    $('#bulk-actions-message').html(message);
+    mailpile.hide_bulk_actions($('.bulk-actions').find('li.hide'));
 	}
 
 	// Style & Unselect Checkbox
@@ -122,9 +130,7 @@ $(document).on('click', '.bulk-action', function(e) {
 /* Pile - Select & Unselect Items */
 $(document).on('click', '#pile-results tr.result', function(e) {
 	if (e.target.href === undefined && $(this).data('state') !== 'selected') {
-		mailpile.pile_action_select($(this));
-		console.log($(this));
-		
+		mailpile.pile_action_select($(this));		
 	}
 });
 
