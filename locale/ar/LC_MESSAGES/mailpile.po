@@ -3,655 +3,655 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Lazlo <transifex@lazlo.me>, 2013
+# cafenoir, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-12 15:32+0000\n"
-"PO-Revision-Date: 2013-11-20 10:29+0000\n"
-"Last-Translator: Lazlo <transifex@lazlo.me>\n"
-"Language-Team: Dutch (Netherlands) (http://www.transifex.com/projects/p/mailpile/language/nl_NL/)\n"
+"PO-Revision-Date: 2013-11-29 12:24+0000\n"
+"Last-Translator: cafenoir\n"
+"Language-Team: Arabic (http://www.transifex.com/projects/p/mailpile/language/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: nl_NL\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
 #: mailpile/defaults.py:10
 msgid "Mailpile program version"
-msgstr "Mailpile programma versie"
+msgstr "إصدار برنامج مايل بايل Mailpile"
 
 #: mailpile/defaults.py:11
 msgid "Configuration timestamp"
-msgstr "Configuratie tijd"
+msgstr "الطابع الزمني للتهيئة"
 
 #: mailpile/defaults.py:12
 msgid "Technical system settings"
-msgstr "Technische systeeminstellingen"
+msgstr "إعدادات النظام التقنية"
 
 #: mailpile/defaults.py:14
 msgid "Max files kept open at once"
-msgstr "Max. aantal bestanden tegelijk open"
+msgstr "العدد الأقصى للملفات المفتوحة في نفس الوقت"
 
 #: mailpile/defaults.py:15
 msgid "History length (lines, <0 = no save)"
-msgstr "Geschiedenis lengte (regels, <0 = geen opslag)"
+msgstr "طول قائمة المحفوظات (خطوط, <0 = بدون حفظ)"
 
 #: mailpile/defaults.py:16
 msgid "Listening port for web UI"
-msgstr "Luisterpoort voor web UI"
+msgstr "منفذ الاستماع لواجهة المستخدم على شبكة الإنترنت"
 
 #: mailpile/defaults.py:17
 msgid "Posting list target size in KB"
-msgstr ""
+msgstr "جار لصق الحجم الهدف لللائحة بالكيلو بايت KB"
 
 #: mailpile/defaults.py:18
 msgid "Max results we sort \"well\""
-msgstr "Maximale resultaten die we \"goed\" sorteren"
+msgstr "الحد الأقصى للنتائج التي نصنفها بشكل \"جيد\""
 
 #: mailpile/defaults.py:19
 msgid "Max length of metadata snippets"
-msgstr "Max. lengte van metadata snippers"
+msgstr "الحد الأقصى لطول مقتطفات البيانات الوصفية"
 
 #: mailpile/defaults.py:20
 msgid "Debugging flags"
-msgstr "Debugging flags"
+msgstr "أعلام التصحيح"
 
 #: mailpile/defaults.py:21
 msgid "Host:port of PGP keyserver"
-msgstr "Host:poort van PGP sleutelserver"
+msgstr "المضيف:المنفذ الخاص بمزود مفتاح بي جي بي PGP"
 
 #: mailpile/defaults.py:22
 msgid "Listening host for web UI"
-msgstr "Luister host voor web UI"
+msgstr "المضيف المستمع لواجهة المستخدم على شبكة الإنترنت"
 
 #: mailpile/defaults.py:23
 msgid "Local read/write Maildir"
-msgstr "Lokale lees/schrijf Maildir"
+msgstr "قراءة/كتابة محلية لمجلد البريد Maildir"
 
 #: mailpile/defaults.py:24
 msgid "Metadata index file"
-msgstr "Metadata index bestand"
+msgstr "ملف فهرس البيانات الوصفية"
 
 #: mailpile/defaults.py:25
 msgid "Search index directory"
-msgstr "Zoekindex map"
+msgstr "بحث دليل المؤشر"
 
 #: mailpile/defaults.py:26
 msgid "Mailboxes we index"
-msgstr "Mailboxen die we indexeren"
+msgstr "صناديق البريد المفهرسة"
 
 #: mailpile/defaults.py:27
 msgid "Locations of assorted data"
-msgstr "Locatie van gesorteerde data"
+msgstr "مواقع البيانات المصنفة"
 
 #: mailpile/defaults.py:28
 msgid "Default theme"
-msgstr "Standaard thema"
+msgstr "الطراز المفترض"
 
 #: mailpile/defaults.py:30
 msgid "Location of vcards"
-msgstr "Locatie van vcards"
+msgstr "موقع بطاقات الأعمال الالكترونية"
 
 #: mailpile/defaults.py:33
 msgid "User preferences"
-msgstr "Gebruikersvoorkeuren"
+msgstr "تفضيلات المستخدم"
 
 #: mailpile/defaults.py:35
 msgid "Search results per page"
-msgstr "Zoekresultaten per pagina"
+msgstr "عدد نتائج البحث في الصفحة الوحدة"
 
 #: mailpile/defaults.py:36
 msgid "New mail check frequency"
-msgstr "Frequentie nieuwe mail controle"
+msgstr "وتيرة التحقق من البريد الجديد"
 
 #: mailpile/defaults.py:37
 msgid "Inline PGP signatures or attached"
-msgstr "PGP handtekening inline of bijgevoegd"
+msgstr "إمضاء بي جي بي (PGP) مضمن أو مرفق"
 
 #: mailpile/defaults.py:38
 msgid "Default sort order"
-msgstr "Standaard sorteervolgorde"
+msgstr "ترتيب التصنيف الافتراضي"
 
 #: mailpile/defaults.py:39
 msgid "Encrypt local data to ..."
-msgstr "Versleutel lokale data naar ..."
+msgstr "قم بتشفير البيانات المحلية إلى..."
 
 #: mailpile/defaults.py:40
 msgid "Key to use to scramble the index"
-msgstr "Sleutel te gebruiken om de index te husselen"
+msgstr "المفتاح المستخدم لبعثرة الفهرس"
 
 #: mailpile/defaults.py:41
 msgid "Command run before rescanning"
-msgstr "Commando uitvoeren voor herscannen"
+msgstr "الأمر المنفذ قبل إعادة المسح"
 
 #: mailpile/defaults.py:42
 msgid "Default outgoing e-mail address"
-msgstr "Standaard uitgaande e-mail adres"
+msgstr "عنوان البريد الإلكتروني الصادر المفترض"
 
 #: mailpile/defaults.py:43
 msgid "Default outgoing mail route"
-msgstr "Standaard uitgaande mail route"
+msgstr "المسار المفترض للبريد الصادر"
 
 #: mailpile/defaults.py:45
 msgid "User interface language"
-msgstr "Gebruikersinterface taal"
+msgstr "لغة واجهة المستخدم"
 
 #: mailpile/defaults.py:46
 msgid "VCard import/export settings"
-msgstr "VCard importeer/exporteer instellingen"
+msgstr "إعدادات استيراد/تصدير بطاقة العمل الالكترونية"
 
 #: mailpile/defaults.py:48
 msgid "VCard import settings"
-msgstr "VCard importeer instellingen"
+msgstr "استيراد بطاقة العمل الالكترونية"
 
 #: mailpile/defaults.py:49
 msgid "VCard export settings"
-msgstr "VCard exporteer instellingen"
+msgstr "تصدير بطاقة العمل الالكترونية"
 
 #: mailpile/defaults.py:50
 msgid "VCard context helper settings"
-msgstr "VCard context helper instellingen"
+msgstr "إعدادات مساعد السياق لبطاقة العمل الالكترونية"
 
 #: mailpile/defaults.py:53
 msgid "User profiles and personalities"
-msgstr "Gebruikersprofielen en persoonlijkheden"
+msgstr "ملفات تعريف المستخدمين وشخصياتهم"
 
 #: mailpile/defaults.py:54
 msgid "Account name"
-msgstr "Accountnaam"
+msgstr "إسم الحساب"
 
 #: mailpile/defaults.py:55
 msgid "E-mail address"
-msgstr "E-mail adres"
+msgstr "عنوان البريد الالكتروني"
 
 #: mailpile/defaults.py:56
 msgid "Message signature"
-msgstr "Berciht handtekening"
+msgstr "إمضاء الرسالة"
 
 #: mailpile/defaults.py:57
 msgid "Outgoing mail route"
-msgstr "Uitgaande mail route"
+msgstr "مسار البريد الصادر"
 
 #: mailpile/config.py:94
 #, python-format
 msgid "Invalid URL slug: %s"
-msgstr "Ongeldige URL slug: %s"
+msgstr "عنوان الانترنت (مسار المورد المنمط) غير صالح: %s"
 
 #: mailpile/config.py:126
 #, python-format
 msgid "Invalid hostname: %s"
-msgstr "Ongeldige hostnaamL %s"
+msgstr "اسم المضيف غير صالح: %s"
 
 #: mailpile/config.py:160
 #, python-format
 msgid "File/directory does not exist: %s"
-msgstr "Bestand/map bestaat niet: %s"
+msgstr "الملف/المجلد غير موجود: %s"
 
 #: mailpile/config.py:178
 #, python-format
 msgid "Not a file: %s"
-msgstr "Niet een bestand: %s"
+msgstr "%s ليس ملفا"
 
 #: mailpile/config.py:196
 #, python-format
 msgid "Not a directory: %s"
-msgstr "Niet een map: %s"
+msgstr "%s ليس مجلد"
 
 #: mailpile/config.py:329
 msgid "Override this"
-msgstr "Overschrijf dit"
+msgstr "تجاوز عن هذه"
 
 #: mailpile/config.py:388
 #, python-format
 msgid "Invalid type for default %s = %s"
-msgstr "Ongeldig type voor standaard %s = %s"
+msgstr "نوع غير صالح ل%s المفترض = %s"
 
 #: mailpile/config.py:399
 #, python-format
 msgid "Invalid key for %s: %s"
-msgstr "Ongeldige sleutel voor %s: %s"
+msgstr "مفتاح %s غير صالح: %s"
 
 #: mailpile/config.py:482
 #, python-format
 msgid "Modifying %s/%s is not allowed"
-msgstr "Aanpassen van %s/%s is niet toegestaan"
+msgstr "تعديل %s/%s غير مسموح"
 
 #: mailpile/config.py:486 mailpile/config.py:494
 #, python-format
 msgid "Invalid value for %s/%s: %s"
-msgstr "Ongeldige waarde voor %s/%s: %s"
+msgstr "قيمة %s/%s غير صالحة: %s"
 
 #: mailpile/config.py:497
 #, python-format
 msgid "Unknown constraint for %s/%s: %s"
-msgstr "Onbekende beperking voor %s/%s: %s"
+msgstr "تقييد %s/%s غير معروف: %s"
 
 #: mailpile/config.py:702
 msgid "Cannot append to fixed dict"
-msgstr "Kan niet toevoegen aan woordenboek"
+msgstr "لا يمكن الإلحاق إلى القاموس الثابت"
 
 #: mailpile/config.py:750
 #, python-format
 msgid "Creating: %s"
-msgstr "Aanmaken: %s"
+msgstr "جار إنشاء: %s"
 
 #: mailpile/config.py:808
 #, python-format
 msgid "Invalid (%s): section %s does not exist"
-msgstr "Ongeldige (%s): sectie %s bestaat niet"
+msgstr "(%s) غير صالح: المقطع %s غير موجود"
 
 #: mailpile/config.py:819
 #, python-format
 msgid "Invalid (%s): section %s, variable %s"
-msgstr "Ongeldige (%s): sectie %s, variabel %s"
+msgstr "(%s) غير صالح: القسم %s، المتغير %s"
 
 #: mailpile/config.py:834
 #, python-format
 msgid "WARNING: Imported old config from %s"
-msgstr "WAARSCHUWING: Oude configuratie geimporteerd van %s"
+msgstr "تحذير: استوردت التشكيلة القديمة من %s"
 
 #: mailpile/config.py:837
 #, python-format
 msgid "WARNING: Failed to import config from %s"
-msgstr "WAARSCHUWING: Importeren configuratie mislukt van %s"
+msgstr "تحذير: فشل استيراد التشكيلة من %s"
 
 #: mailpile/config.py:876
 #, python-format
 msgid "Mailbox ID too large: %s"
-msgstr "Mailbox ID te groot: %s"
+msgstr "تعريف صندوق البريد كبير جدا: %s"
 
 #: mailpile/config.py:906
 #, python-format
 msgid "No such mailbox: %s"
-msgstr "Niet bestaande mailbox: %s"
+msgstr "لا يوجد هكذا صندوق بريد: %s"
 
 #: mailpile/config.py:913
 #, python-format
 msgid "%s: Updating: %s"
-msgstr "%s: Bijwerken: %s"
+msgstr "%s: جار تحديث: %s"
 
 #: mailpile/config.py:920
 #, python-format
 msgid "%s: Opening: %s (may take a while)"
-msgstr "%s: Openen: %s (dit kan even duren)"
+msgstr "%s: جار فتح: %s (قد يستغرق بعض الوقت)"
 
 #: mailpile/config.py:1021
 msgid "Parent paths are not allowed"
-msgstr ""
+msgstr "مسارات الأصل غير مسموحة"
 
 #: mailpile/config.py:1137
 #, python-format
 msgid "Could not parse (%s): %s"
-msgstr "Kan niet parsen (%s): %s"
+msgstr "لم يتمكن من تحليل (%s): %s"
 
 #: mailpile/config.py:1150
 #, python-format
 msgid "Could not assign mailbox:%s = %s"
-msgstr "Kan mailbox niet toewijzen:%s = %s"
+msgstr "لم يتمكن من تخصيص صندوق البريد: %s = %s"
 
 #: mailpile/gpgi.py:14
 msgid "Trust not calculated"
-msgstr "Vertrouwen is niet berekend"
+msgstr "الثقة غير مدروسة"
 
 #: mailpile/gpgi.py:15
 msgid "Unknown trust"
-msgstr "Onbekend vertrouwen"
+msgstr "ثقة غير معروفة"
 
 #: mailpile/gpgi.py:16
 msgid "Undefined trust"
-msgstr "Onbekend vertrouwen"
+msgstr "ثقة غير محددة"
 
 #: mailpile/gpgi.py:17
 msgid "Never trust"
-msgstr "Nooit vertrouwen"
+msgstr "لا تثق مطلقا"
 
 #: mailpile/gpgi.py:18
 msgid "Marginally trust"
-msgstr "Gedeeltelijk vertrouwen"
+msgstr "ثق بشكل هامشي"
 
 #: mailpile/gpgi.py:19
 msgid "Full trust"
-msgstr "Volledig vertrouwen"
+msgstr "ثقة كاملة"
 
 #: mailpile/gpgi.py:20
 msgid "Ultimate trust"
-msgstr "Ultiem vertrouwen"
+msgstr "ثقة مطلقة"
 
 #: mailpile/gpgi.py:21
 msgid "Expired key, not trusted"
-msgstr "Verlopen sleutel, niet vertrouwd"
+msgstr "مفتاح منته الصلاحية، غير موثوق به"
 
 #: mailpile/gpgi.py:22
 msgid "Revoked key, not trusted"
-msgstr "Ingetrokken sleutel, niet vertrouwd"
+msgstr "مفتاح ملغى، غير موثوق به"
 
 #: mailpile/gpgi.py:23
 msgid "Disabled key, not trusted"
-msgstr "Uitgeschakele sleutel, niet vertrouwd"
+msgstr "مفتاح معطل، غير موثوق به"
 
 #: mailpile/gpgi.py:26
 msgid "RSA"
-msgstr "RSA"
+msgstr "آر أس إيه RSA"
 
 #: mailpile/gpgi.py:27
 msgid "RSA (encrypt only)"
-msgstr "RSA (enkel versleutelen)"
+msgstr "آر إس إيه RSA (شفّر فقط)"
 
 #: mailpile/gpgi.py:28
 msgid "RSA (sign only)"
-msgstr "RSA (enkel ondertekenen)"
+msgstr "آر إس إيه RSA (وقّع فقط)"
 
 #: mailpile/gpgi.py:29
 msgid "Elgamal (encrypt only)"
-msgstr "Elgamal (enkel versleutelen)"
+msgstr "الجمل (شفّر فقط)"
 
 #: mailpile/gpgi.py:30
 msgid "DSA"
-msgstr "DSA"
+msgstr "خوارزمية التوقيع الإلكتروني دي أس آي DSA"
 
 #: mailpile/gpgi.py:31
 msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr "Elgamal (versleutelen/ondertekenen) [GECOMPROMITTEERD]"
+msgstr "الجمل (شفّر/وقّع) [مفضوح]"
 
 #: mailpile/commands.py:154
 #, python-format
 msgid "ID out of bounds: %s"
-msgstr "ID buiten bereik: %s"
+msgstr "التعريف خارج الحدود: %s"
 
 #: mailpile/commands.py:157 mailpile/commands.py:163 mailpile/commands.py:168
 #, python-format
 msgid "What message is %s?"
-msgstr "Welk bericht is %s?"
+msgstr "ما هي الرسالة %s؟"
 
 #: mailpile/commands.py:255
 #, python-format
 msgid "FIXME: rescan messages: %s"
-msgstr "FIXME: berichten herscannen: %s"
+msgstr "قم بإصلاحي: أعد مسح الرسائل: %s"
 
 #: mailpile/commands.py:288
 #, python-format
 msgid "Running: %s"
-msgstr "Uitvoeren: %s"
+msgstr "جار تنفيذ: %s"
 
 #: mailpile/commands.py:309
 msgid "Nothing changed"
-msgstr "Niks veranderd"
+msgstr "لم يتم أية تعديلات"
 
 #: mailpile/commands.py:311
 #, python-format
 msgid "Aborted: %s"
-msgstr "Afgebroken: %s"
+msgstr "ألغيت: %s"
 
 #: mailpile/commands.py:341
 msgid "Aborted"
-msgstr "Afgebroken"
+msgstr "ألغيت"
 
 #: mailpile/commands.py:355
 msgid "Statistics updated"
-msgstr "Statistieken bijwerken"
+msgstr "تم تحديث الاحصاءات"
 
 #: mailpile/commands.py:521
 #, python-format
 msgid "No such key: %s"
-msgstr "Sleutel onbekend: %s"
+msgstr "لا يوجد هكذا مفتاح: %s"
 
 #: mailpile/commands.py:590
 #, python-format
 msgid "The web interface is %s"
-msgstr "De webinterface is %s"
+msgstr "واجهة شبكة الانترنت هي %s"
 
 #: mailpile/commands.py:591
 msgid "disabled."
-msgstr "uitgeschakeld."
+msgstr "معطل."
 
 #: mailpile/commands.py:593
 msgid "For instructions, type `help`, press <CTRL-D> to quit."
-msgstr "Voor instructies, type `help`, druk <CTRL-D> om te stoppen."
+msgstr "للتعليمات، أكتب `مساعدة`، أضغط <CTRL-D> للخروج."
 
 #: mailpile/commands.py:612
 msgid "Commands:"
-msgstr "Commando's:"
+msgstr "الأوامر:"
 
 #: mailpile/commands.py:643
 msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr "Tags: (gebruik een tag als commando om getagde berichten weer te geven)"
+msgstr "سمات: (استعمل وسم كأمر لإظهار الرسائل الموسومة)"
 
 #: mailpile/commands.py:651
 msgid "Error"
-msgstr "Fout"
+msgstr "خطأ"
 
 #: mailpile/commands.py:684
 msgid "Unknown command"
-msgstr "Onbekend commando"
+msgstr "الأمر غير معروف"
 
 #: mailpile/commands.py:782
 #, python-format
 msgid "Unknown command: %s"
-msgstr "Onbekend commando: %s"
+msgstr "الأمر غير معروف: %s"
 
 #: mailpile/plugins/demos.py:41
 msgid "Demo Contacts"
-msgstr "Demo Contacten"
+msgstr "جهات إتصال إيضاحية"
 
 #: mailpile/plugins/demos.py:42
 msgid "This is the demo importer"
-msgstr "Dit is de demo importeerder"
+msgstr "هذا مستورد إيضاحي"
 
 #: mailpile/plugins/demos.py:45
 msgid "Contact name"
-msgstr "Contact naam"
+msgstr "اسم جهة الاتصال"
 
 #: mailpile/plugins/demos.py:46
 msgid "Contact email"
-msgstr "Contact e-mail"
+msgstr "عنوان بريد جهة الاتصال"
 
 #: mailpile/plugins/vcard_gnupg.py:17
 msgid "Import contacts from GnuPG keyring"
-msgstr "Importeer contacten uit GPG sleutelbos"
+msgstr "استيراد جهات الاتصال من حلقة مفاتيح نيو بي جي GnuPG"
 
 #: mailpile/plugins/vcard_gnupg.py:20
 msgid "Location of keyring"
-msgstr "Locatie van sleutelbos"
+msgstr "موقع حلقة المفاتيح"
 
 #: mailpile/httpd.py:143
 msgid "XMLRPC has been disabled for now."
-msgstr "XMLRPC is voor nu uitgeschakeld."
+msgstr "تم تعطيل اكس أم ال-أر بيه سي XMLRPC للوقت الراهن"
 
 #: mailpile/httpd.py:161
 msgid "OMG, input too big"
-msgstr "OMG, invoer te groot"
+msgstr "يا إلهي، الدخل كبير جدا"
 
 #: mailpile/httpd.py:164
 msgid "Unknown content-type"
-msgstr "Onbekend bestandstype"
+msgstr "نوع المحتوى غير معروف"
 
 #: mailpile/httpd.py:169
 msgid "Internal Error"
-msgstr "Interne Fout"
+msgstr "خطأ داخلي"
 
 #: mailpile/httpd.py:237
 msgid "Internal error"
-msgstr "Interne fout"
+msgstr "خطأ داخلي"
 
 #: mailpile/search.py:168
 msgid "Loading metadata index..."
-msgstr "Metadata index laden..."
+msgstr "جار تحميل فهرس البيانات الوصفية..."
 
 #: mailpile/search.py:180
 #, python-format
 msgid "Metadata index not found: %s"
-msgstr "Metadata index  niet gevonden: %s"
+msgstr "فهرس البيانات الوصفية غير موجود: %s"
 
 #: mailpile/search.py:184
 #, python-format
 msgid "Loaded metadata, %d messages"
-msgstr "Metadata geladen, %d berichten"
+msgstr "تم تحميل البيانات الوصفية، %d رسائل"
 
 #: mailpile/search.py:191
 msgid "Saving metadata index changes..."
-msgstr "Metadata index wijzgingen opslaan..."
+msgstr "جار حفظ تغييرات فهرس البيانات الوصفية..."
 
 #: mailpile/search.py:201
 msgid "Saved metadata index changes"
-msgstr "Metadata index wijzgingen opslaan"
+msgstr "تم حفظ تغييرات فهرس البيانات الوصفية"
 
 #: mailpile/search.py:207
 msgid "Saving metadata index..."
-msgstr "Metadata index opslaan..."
+msgstr "جار حفظ فهرس البيانات الرقمية..."
 
 #: mailpile/search.py:219
 msgid "Saved metadata index"
-msgstr "Metadata index opslaan"
+msgstr "تم حفظ فهرس البيانات الوصفية"
 
 #: mailpile/search.py:222
 msgid "Updating high level indexes"
-msgstr "Bijwerken high level indexes"
+msgstr "جار تحديث الفهارس العالية المستوى"
 
 #: mailpile/search.py:230
 #, python-format
 msgid "Bogus line: %s"
-msgstr "Ongeldige regel: %s"
+msgstr "خط زائف: %s"
 
 #: mailpile/search.py:300
 #, python-format
 msgid "=%s/%s using Recieved: instead of Date:"
-msgstr "=%s/%s gebruikt Ontvangen: in plaats van Datum:"
+msgstr "=%s/%s جار إستخدام وقت الاستلام: بدلا من التاريخ:"
 
 #: mailpile/search.py:307
 #, python-format
 msgid "=%s/%s has a bogus date"
-msgstr "=%s/%s heeft een ongeldige datum"
+msgstr "=%s/%s لديه تاريخ زائف"
 
 #: mailpile/search.py:324
 #, python-format
 msgid "WARNING: No proper Message-ID for %s"
-msgstr "WAARSCHUWING: Geen geldige Message-ID voor %s"
+msgstr "تحذير: لا يوجد تعريف رسالة لائق ل%s"
 
 #: mailpile/search.py:331
 #, python-format
 msgid "%s: Skipped: %s"
-msgstr "%s: Overgeslagen: %s"
+msgstr "%s: تخطي: %s"
 
 #: mailpile/search.py:335
 #, python-format
 msgid "%s: Checking: %s"
-msgstr "%s: Controleren: %s"
+msgstr "%s: جار فحص: %s"
 
 #: mailpile/search.py:338
 #, python-format
 msgid "%s: Error opening: %s (%s)"
-msgstr "%s: Fout tijdens openen: %s (%s)"
+msgstr "%s: خطأ عند فتح: %s (%s)"
 
 #: mailpile/search.py:357
 #, python-format
 msgid "%s: Reading your mail: %d%% (%d/%d messages)"
-msgstr "%s: Lezen van je e-mail: %d%% (%d/%d berichten)"
+msgstr "%s: جار قراءة بريدك: %d%% (%d/%d رسائل)"
 
 #: mailpile/search.py:412
 #, python-format
 msgid "%s: Indexed mailbox: %s"
-msgstr "%s: Geindexeerde mailbox: %s"
+msgstr "%s: تم فهرسة صندوق البريد: %s"
 
 #: mailpile/search.py:621
 #, python-format
 msgid "=%s/%s has bogus HTML."
-msgstr "=%s/%s heeft ongeldige HTML."
+msgstr "= =%s/%s فيه إتش تي إم إل HTML زائفة."
 
 #: mailpile/search.py:726
 #, python-format
 msgid "%s is outside the index"
-msgstr "%s is buiten de index"
+msgstr "%s خارج الفهرس"
 
 #: mailpile/search.py:769
 #, python-format
 msgid "Tagging %d messages (%s)"
-msgstr "Taggen van %d berichten (%s)"
+msgstr "جار وسم %d رسائل (%s)"
 
 #: mailpile/search.py:796
 #, python-format
 msgid "Untagging conversations (%s)"
-msgstr "Verwijderen tags conversaties (%s)"
+msgstr "جار إلغاء وسم المحادثات (%s)"
 
 #: mailpile/search.py:802
 #, python-format
 msgid "Untagging %d messages (%s)"
-msgstr "Verwijderen tags %d berichten (%s)"
+msgstr "جار إلغاء وسم %d رسائل (%s)"
 
 #: mailpile/search.py:830
 #, python-format
 msgid "Searching for %s"
-msgstr "Zoeken naar %s"
+msgstr "جار البحث عن %s"
 
 #: mailpile/search.py:859
 #, python-format
 msgid "Ignoring common word: %s"
-msgstr "Algemeen woord negeren: %s"
+msgstr "متجاهلا الكلمة الشائعة: %s"
 
 #: mailpile/search.py:925
 #, python-format
 msgid "Found %d results (%d suppressed)"
-msgstr "%d resultaten gevoden (%d achtergehouden)"
+msgstr "وجد %d نتيجة (%d أخفيت)"
 
 #: mailpile/search.py:932
 #, python-format
 msgid "Finding conversations (%d messages)..."
-msgstr "Conversaties zoeken (%d berichten)..."
+msgstr "جار إيجاد المحادثات (%d رسائل)"
 
 #: mailpile/search.py:945 mailpile/search.py:959
 #, python-format
 msgid "Sorting %d messages in %s order..."
-msgstr "Sorteer %d berichten in %s volgorde"
+msgstr "جار تصنيف %d رسائل حسب الترتيب %s..."
 
 #: mailpile/search.py:983
 msgid "Recovering from bogus sort, corrupt index?"
-msgstr "Herstellen van ongeldige sortering, corrupte index?"
+msgstr "جار الاسترداد من تصنيف زائف، فهرس فاسد؟"
 
 #: mailpile/search.py:984
 msgid "Please tell team@mailpile.is !"
-msgstr "Laat weten aan team@mailpile.is !"
+msgstr "الرجاء إخبار team@mailpile.is !"
 
 #: mailpile/search.py:993
 #, python-format
 msgid "Unknown sort order: %s"
-msgstr "Onbekend sorteervolgorde: %s"
+msgstr "نظام التصنيف غير معروف: %s"
 
 #: mailpile/search.py:998
 msgid "Sort failed, sorting badly. Partial index?"
-msgstr "Sorteren mislukt, slecht gesorteerd. Gedeeltelijke index?"
+msgstr "فشل التصنيف، جار التصنيف بشكل سيئ. فهرس جزئي؟"
 
 #: mailpile/search.py:1011
 #, python-format
 msgid "Sorted %d messages by %s, %d conversations"
-msgstr "%d berichten gesorteerd volgens %s, %d conversaties"
+msgstr "تم تصنيف %d رسائل حسب %s، %d محادثات"
 
 #: mailpile/search.py:1014
 #, python-format
 msgid "Sorted %d messages in %s order"
-msgstr "%d berichten gesorteerd in %s volgorde"
+msgstr "تم تصنيف %d رسالة حسب الترتيب %s"
 
 #: mailpile/search.py:1029
 #, python-format
 msgid "Counting messages in tag:%s"
-msgstr "Tellen van berichten in tag:%s"
+msgstr "جار تعداد الرسائل ذات الوسم: %s"
 
 #: mailpile/ui.py:168
 #, python-format
 msgid "Elapsed: %.3fs (%s)"
-msgstr "Verstreken: %.3fs (%s)"
+msgstr "قد مضى: %.3fs (%s)"
 
 #: mailpile/ui.py:180
 #, python-format
 msgid "Completed %s in %.3fs"
-msgstr "Afgerond %s in %.3fs"
+msgstr "تم إنهاء %s في %.3fs"
 
 #: mailpile/ui.py:279
 #, python-format
 msgid ""
 "<h1>Template not found</h1>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
-msgstr "<h1>Template niet gevonden</h1>\n<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr "<h1>لم يتم العثور على النموذج</h1>\n<p>%s</p><p><b>البيانات:</b> %s</p>"
 
 #: mailpile/ui.py:283
 #, python-format
@@ -659,472 +659,472 @@ msgid ""
 "<h1>Template error</h1>\n"
 "<pre>%s</pre>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
-msgstr "<h1>Template fout</h1>\n<pre>%s</pre>\n<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr "<h1>خطأ في النموذج</h1>\n<pre>%s</pre>\n<p>%s</p><p><b>البيانات:</b> %s</p>"
 
 #: mailpile/ui.py:290
 #, python-format
 msgid ""
 "<h1>Template error in %s</h1>\n"
 "Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
-msgstr "<h1>Template fout in %s</h1>\nParsen van template %s: <b>%s</b> op regel %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
+msgstr "<h1>خطأ في النموذج في %s</h1>\nخلال تحليل النموذج %s: <b>%s</b> في السطر %s<br/><div><xmp>%s</xmp><hr><p><b>البيانات:</b> %s</p></div>"
 
 #: mailpile/ui.py:299
 msgid "Sorry, this UI cannot edit messages."
-msgstr "Sorry, deze UI kan geen berichten bijwerken."
+msgstr "عذرا، هذه الواجهة لا تسمح بتنقيح الرسائل."
 
 #: mailpile/ui.py:335
 msgid "FIXME: Multiple results, OMG WTF"
-msgstr "FIXME: Meerdere resultaten, OMG WTF"
+msgstr "قم بإصلاحي: نتائج متعددة، يا إلهي."
 
 #: mailpile/mailutils.py:137
 #, python-format
 msgid "SendMail: from %s, to %s\n"
-msgstr "SendMail: van %s, naar %s\n"
+msgstr "إرسال بريد: من %s،  إلى %s\n"
 
 #: mailpile/mailutils.py:140
 #, python-format
 msgid "Connecting to %s"
-msgstr "Verbinden met %s"
+msgstr "جار الاتصال بـ %s"
 
 #: mailpile/mailutils.py:161
 #, python-format
 msgid "SMTP connection to: %s:%s as %s@%s\n"
-msgstr "SMTP verbinding met: %s:%s as %s@%s\n"
+msgstr "إتصال أس أم تي بي SMTP إلى: %s:%s كـ %s@%s\n"
 
 #: mailpile/mailutils.py:199
 #, python-format
 msgid "Invalid sendmail: %s"
-msgstr "Invalide sendmail: %s"
+msgstr "أمر إرسال البريد غير صالح: %s"
 
 #: mailpile/mailutils.py:201
 msgid "Preparing message..."
-msgstr "Bericht voorbereiden..."
+msgstr "جار تهيئة الرسائل..."
 
 #: mailpile/mailutils.py:211
 #, python-format
 msgid "Message sent, %d bytes"
-msgstr "Berciht verzonden, %d bytes"
+msgstr "تم إرسال الرسالة، %d بايت"
 
 #: mailpile/mailutils.py:496 mailpile/mailutils.py:503
 msgid "No data found"
-msgstr "Geen data gevonden"
+msgstr "لا يوجد بيانات"
 
 #: mailpile/mailutils.py:525
 msgid "Message not found"
-msgstr "Bericht niet gevonden"
+msgstr "الرسالة غير موجودة"
 
 #: mailpile/mailutils.py:690 mailpile/mailutils.py:698
 #: mailpile/mailutils.py:752
 msgid "Mailbox is read-only."
-msgstr "Mailbox is alleen-lezen."
+msgstr "صندوق البريد للقراءة فقط."
 
 #: mailpile/mailutils.py:797
 msgid "Message not found?"
-msgstr "Bericht niet gevonden?"
+msgstr "الرسالة غير موجودة؟"
 
 #: mailpile/mailutils.py:875
 #, python-format
 msgid "Extracted attachment %s"
-msgstr "Uitgepakte bijlage %s"
+msgstr "تم استخلاص المرفق %s"
 
 #: mailpile/mailutils.py:883
 #, python-format
 msgid "Wrote preview to: %s"
-msgstr "Voorvertoning weggeschreven naar: %s"
+msgstr "تم كتابة المعاينة على: %s"
 
 #: mailpile/mailutils.py:885
 msgid "Failed to generate thumbnail"
-msgstr "Genereren "
+msgstr "فشل في تكوين صورة مصغرة"
 
 #: mailpile/mailutils.py:892
 #, python-format
 msgid "Wrote attachment to: %s"
-msgstr "Bijlage weggeschreven naar: %s"
+msgstr "تم كتابة المرفق إلى: %s"
 
 #: mailpile/mailutils.py:895
 #, python-format
 msgid "No attachments found for: %s"
-msgstr "Geen bijlagen gevonden voor: %s"
+msgstr "لا يوجد مرفقات لـ: %s"
 
 #: mailpile/mailutils.py:991
 #, python-format
 msgid "Decode failed: %s %s"
-msgstr "Decoderen mislukt: %s %s"
+msgstr "فشل في حل الشفرة: %s %s"
 
 #: static/default/html/page/donate/index.html:7
 msgid "Please Donate To Mailpile"
-msgstr "Doneer aan Mailpile"
+msgstr "الرجاء التبرع إلى مايل بايل Mailpile"
 
 #: static/default/html/page/donate/index.html:11
 msgid "Or you can donate to our"
-msgstr "Of je kan donderen aan onze"
+msgstr "أو بامكانك التبرع إلى"
 
 #: static/default/html/page/donate/index.html:11
 msgid "Bitcoin Wallet"
-msgstr "Bitcoin Portemonnee"
+msgstr "محفظة بت كوين"
 
 #: static/default/html/layouts/base.html:66
 #, python-format
 msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
-msgstr "%(name)s<small> mailpile van <b>%(size)s</b> e-mails</small>"
+msgstr "%(name)s<small> مايل بايل Mailpile لـ<b>%(size)s</b> رسائل بريدية </small>"
 
 #: static/default/html/layouts/base.html:124
 msgid "Encrypted"
-msgstr "Versleuteld"
+msgstr "مشفرة"
 
 #: static/default/html/layouts/base.html:130
 msgid "Photos"
-msgstr "Foto's"
+msgstr "صور"
 
 #: static/default/html/layouts/base.html:136
 msgid "Files"
-msgstr "Bestanden"
+msgstr "ملفات"
 
 #: static/default/html/layouts/base.html:142
 msgid "Links"
-msgstr "Links"
+msgstr "وصلات"
 
 #: static/default/html/layouts/base.html:148
 msgid "Groups"
-msgstr "Groepen"
+msgstr "مجموعات"
 
 #: static/default/html/layouts/base.html:160
 msgid "Mailpile"
-msgstr "Mailpile"
+msgstr "مايل بايل Mailpile"
 
 #: static/default/html/layouts/base.html:160
 msgid "is free software made by"
-msgstr "is vrije software gemaakt door"
+msgstr "هو برمجيات حرة صنعها"
 
 #: static/default/html/layouts/base.html:160
 msgid "more"
-msgstr "meer"
+msgstr "مزيد"
 
 #: static/default/html/layouts/base.html:175
 #: static/default/html/message/index.html:16
 msgid "Date:"
-msgstr "Datum:"
+msgstr "تاريخ:"
 
 #: static/default/html/layouts/base.html:175
 msgid "Start time"
-msgstr "Begintijd"
+msgstr "وقت البدء"
 
 #: static/default/html/layouts/base.html:175
 msgid "to"
-msgstr "tot"
+msgstr "إلى"
 
 #: static/default/html/layouts/base.html:175
 msgid "Present"
-msgstr "Huidig"
+msgstr "حاضر"
 
 #: static/default/html/layouts/base.html:176
 msgid "With:"
-msgstr "Met:"
+msgstr "مع:"
 
 #: static/default/html/layouts/base.html:176
 msgid "No Tags"
-msgstr "Geen Tags"
+msgstr "بدون سمات"
 
 #: static/default/html/layouts/base.html:177
 msgid "And:"
-msgstr "En:"
+msgstr "و:"
 
 #: static/default/html/layouts/base.html:177
 msgid "All groups"
-msgstr "Alle groepen"
+msgstr "كل المجموعات"
 
 #: static/default/html/message/index.html:16
 msgid "at"
-msgstr "op"
+msgstr "عند"
 
 #: static/default/html/message/index.html:17
 msgid "From:"
-msgstr "Van:"
+msgstr "من:"
 
 #: static/default/html/message/index.html:18
 msgid "To:"
-msgstr "Aan:"
+msgstr "إلى:"
 
 #: static/default/html/message/index.html:20
 msgid "Cc:"
-msgstr "Cc:"
+msgstr "نسخة:"
 
 #: static/default/html/message/index.html:23
 msgid "Bcc:"
-msgstr "Bcc:"
+msgstr "نسخة مخفية الوجهة:"
 
 #: static/default/html/message/index.html:25
 msgid "Subject:"
-msgstr "Onderwerp:"
+msgstr "موضوع:"
 
 #: static/default/html/message/index.html:34
 msgid "Signed by"
-msgstr "Ondertekend door"
+msgstr "وقعه: "
 
 #: static/default/html/message/index.html:35
 msgid "Unknown signature from"
-msgstr "Onbekende handtekening van"
+msgstr "توقيع غير معروف من"
 
 #: static/default/html/message/index.html:36
 msgid "Signed with unknown key"
-msgstr "Ondertekend met onbekende sleutel"
+msgstr "موقع بمفتاح غير معروف"
 
 #: static/default/html/message/index.html:41
 msgid "Successfully decrypted message"
-msgstr "Bericht succesvol ontsleuteld"
+msgstr "تم فك تشفير الرسالة بنجاح"
 
 #: static/default/html/message/index.html:42
 msgid "Failed to decrypt message"
-msgstr "Bericht ontsleutelen mislukt"
+msgstr "فشل في فك تشفير الرسالة"
 
 #: static/default/html/message/index.html:63
 msgid "Reply"
-msgstr "Reageer"
+msgstr "إجابة"
 
 #: static/default/html/message/index.html:66
 #: static/default/html/partials/sub_nav_search.html:3
 msgid "All"
-msgstr "Alle"
+msgstr "الكل"
 
 #: static/default/html/message/index.html:69
 msgid "Forward"
-msgstr "Doorsturen"
+msgstr "إعادة توجيه"
 
 #: static/default/html/message/draft.html:14
 msgid "To"
-msgstr "Aan:"
+msgstr "إلى:"
 
 #: static/default/html/message/draft.html:16
 #: static/default/html/message/draft.html:24
 msgid "Bcc"
-msgstr "Bcc"
+msgstr "نسخة مخفية الوجهة"
 
 #: static/default/html/message/draft.html:17
 #: static/default/html/message/draft.html:20
 msgid "Cc"
-msgstr "Cc"
+msgstr "نسخة"
 
 #: static/default/html/message/draft.html:28
 msgid "From"
-msgstr "Van"
+msgstr "من"
 
 #: static/default/html/message/draft.html:38
 msgid "Subject"
-msgstr "Onderwerp"
+msgstr "موضوع"
 
 #: static/default/html/message/draft.html:45
 msgid "No Attachments"
-msgstr "Geen bijlagen"
+msgstr "بدون مرفقات"
 
 #: static/default/html/message/draft.html:50
 msgid "Send"
-msgstr "Verzend"
+msgstr "إرسال"
 
 #: static/default/html/message/draft.html:51
 msgid "Save"
-msgstr "Bewaar"
+msgstr "حفظ"
 
 #: static/default/html/message/draft.html:60
 msgid "Message not found!"
-msgstr "Bericht niet gevonden!"
+msgstr "الرسالة غير موجودة"
 
 #: static/default/html/tag/list.html:14
 msgid "Total"
-msgstr "Totaal"
+msgstr "المجموع الكلي"
 
 #: static/default/html/tag/list.html:19
 #: static/default/html/partials/sub_nav_search.html:4
 msgid "New"
-msgstr "Nieuw"
+msgstr "رسالة جديدة"
 
 #: static/default/html/tag/list.html:24
 msgid "View Messages"
-msgstr "Bekijk berichten"
+msgstr "إظهار الرسائل"
 
 #: static/default/html/tag/list.html:34
 msgid "Archived"
-msgstr "Gearchiveerd"
+msgstr "الأرشيف"
 
 #: static/default/html/tag/add.html:3
 msgid "Enter New Tag Info"
-msgstr "Voer nieuwe tag info in"
+msgstr "أدخل معلومات وسم جديد"
 
 #: static/default/html/tag/add.html:9
 msgid "Tag"
-msgstr "Tag"
+msgstr "وسم"
 
 #: static/default/html/tag/add.html:12
 msgid "Slug"
-msgstr "Slug"
+msgstr "رصاصة"
 
 #: static/default/html/tag/add.html:15
 msgid "Add"
-msgstr "Toevoegen"
+msgstr "إضافة"
 
 #: static/default/html/settings/index.html:7
 msgid "Your Profiles"
-msgstr "Je profielen"
+msgstr "ملف تعريف المستخدم خاصتك"
 
 #: static/default/html/settings/index.html:17
 msgid "Add New Profile"
-msgstr "Voeg nieuw profiel toe"
+msgstr "إضافة ملف تعريف مستخدم جديد"
 
 #: static/default/html/settings/index.html:20
 #: static/default/html/contact/add.html:9
 msgid "Name"
-msgstr "Naam"
+msgstr "الإسم"
 
 #: static/default/html/settings/index.html:23
 msgid "Email"
-msgstr "E-mail"
+msgstr "عنوان البريد الالكتروني"
 
 #: static/default/html/settings/index.html:26
 msgid "SMTP Server"
-msgstr "SMTP-server"
+msgstr "مزود أس أم تي بي"
 
 #: static/default/html/settings/index.html:27
 msgid "Login"
-msgstr "Gebruikersnaam"
+msgstr "تسجيل دخول"
 
 #: static/default/html/settings/index.html:30
 msgid "Password"
-msgstr "Wachtwoord"
+msgstr "كلمة المرور"
 
 #: static/default/html/settings/index.html:33
 msgid "Server"
-msgstr "Server"
+msgstr "مزود"
 
 #: static/default/html/settings/index.html:36
 msgid "Port"
-msgstr "Poort"
+msgstr "منفذ الاستماع"
 
 #: static/default/html/settings/index.html:43
 msgid "Add Profile"
-msgstr "Profiel toevoegen"
+msgstr "إضافة ملف تعريف مستخدم"
 
 #: static/default/html/partials/bulk_actions.html:2
 msgid "Messages"
-msgstr "Berichten"
+msgstr "رسائل"
 
 #: static/default/html/partials/bulk_actions.html:2
 msgid "selected"
-msgstr "geselecteerd"
+msgstr "مختارة"
 
 #: static/default/html/partials/sub_nav_contacts.html:3
 msgid "Contacts"
-msgstr "Contacten"
+msgstr "جهات الاتصال"
 
 #: static/default/html/partials/sub_nav_contacts.html:4
 msgid "Add Contact"
-msgstr "Contact toevoegen"
+msgstr "إضافة جهة إتصال"
 
 #: static/default/html/partials/sub_nav_contacts.html:5
 msgid "Import Contacts"
-msgstr "Contacten importeren"
+msgstr "استيراد جهات إتصال"
 
 #: static/default/html/partials/sub_nav_message.html:6
 msgid "Archive"
-msgstr "Archief"
+msgstr "أرشفة"
 
 #: static/default/html/partials/sub_nav_message.html:7
 msgid "Delete"
-msgstr "Verwijderen"
+msgstr "حذف"
 
 #: static/default/html/partials/sub_nav_message.html:8
 msgid "Show All"
-msgstr "Alle tonen"
+msgstr "إظهار الكل"
 
 #: static/default/html/partials/errors_content.html:3
 msgid "Oops, you've found a quirk!"
-msgstr "Oeps, je hebt een foutje gevonden!"
+msgstr "للأسف، لقد صادفت خاصية غريبة!"
 
 #: static/default/html/partials/errors_content.html:4
 msgid ""
 "We were unable to find the message you requested, perhaps it was deleted?"
-msgstr "We konden het opgevraagde bericht niet vinden, is het misschien verwijderd?"
+msgstr "لم نتمكن من إيجاد الرسالة التي طلبت، ربما تم حذفها؟"
 
 #: static/default/html/partials/errors_content.html:5
 #, python-format
 msgid ""
 "If you think this is a bug, please file a <a href=\"%(url)s\" "
 "target=\"_blank\">bug report</a>"
-msgstr "Als je denkt dat dit een bug is, open dan een <a href=\"%(url)s\" target=\"_blank\">bug report</a>"
+msgstr "إذا كنت تعتقد أن هذه شائبة في البرنامج، الرجاء تقديم <a href=\"%(url)s\" target=\"_blank\"> تقرير شائبة</a>"
 
 #: static/default/html/partials/sub_nav_tags.html:3
 msgid "Tags"
-msgstr "Tags"
+msgstr "سمات"
 
 #: static/default/html/partials/sub_nav_tags.html:4
 msgid "Add Tag"
-msgstr "Tag toevoegen"
+msgstr "إضافة سمة"
 
 #: static/default/html/partials/details_search_speed.html:2
 #, python-format
 msgid ""
 "Searched <strong>%(number)s</strong> messages in "
 "<strong>%(elapsed)s</strong> seconds."
-msgstr "<strong>%(number)s</strong> berichten doorzocht in <strong>%(elapsed)s</strong> seconden."
+msgstr "تم البحث عبر <strong>%(number)s</strong> رسائل في <strong>%(elapsed)s</strong> ثوان."
 
 #: static/default/html/partials/details_search_speed.html:2
 msgid "Vroom!"
-msgstr "Vroem!"
+msgstr "فرووم!"
 
 #: static/default/html/search/index.html:20
 msgid "Previous"
-msgstr "Vorige"
+msgstr "السابق"
 
 #: static/default/html/search/index.html:20
 msgid "Next"
-msgstr "Volgende"
+msgstr "التالي"
 
 #: static/default/html/search/index.html:22
 msgid "of"
-msgstr "van"
+msgstr "من"
 
 #: static/default/html/search/index.html:22
 msgid "Conversations"
-msgstr "Conversaties"
+msgstr "محادثات"
 
 #: static/default/html/search/index.html:22
 msgid "1 Conversation"
-msgstr "1 Conversatie"
+msgstr "محادثة عدد 1"
 
 #: static/default/html/search/index.html:22
 msgid "No results found"
-msgstr "Geen resultaten gevonden"
+msgstr "لا يوجد نتائج مطابقة"
 
 #: static/default/html/search/index.html:23
 msgid "Snug"
-msgstr "Knus"
+msgstr "مرصوص"
 
 #: static/default/html/search/index.html:24
 msgid "Cozy"
-msgstr "Aangenaam"
+msgstr "مريح"
 
 #: static/default/html/search/index.html:25
 msgid "Comfy"
-msgstr "Gezellig"
+msgstr "وثير"
 
 #: static/default/html/search/index.html:26
 msgid "Fluffy"
-msgstr "Donzig"
+msgstr "منفوش"
 
 #: static/default/html/search/index.html:32
 msgid "No Results Found"
-msgstr "Geen resultaten gevonden"
+msgstr "لا يوجد نتائج مطابقة"
 
 #: static/default/html/contact/add.html:3
 msgid "Contact Info"
-msgstr "Contact informatie"
+msgstr "معلومات الاتصال"
 
 #: static/default/html/contact/add.html:12
 msgid "E-mail"
-msgstr "E/mail"
+msgstr "عنوان البريد الالكتروني"
 
 #: static/default/html/contact/add.html:15
 msgid "Website"
-msgstr "Website"
+msgstr "عنوان الموقع الالكتروني "
 
 #: static/default/html/contact/add.html:18
 msgid "PGP Key"
-msgstr "PGP sleutel"
+msgstr "مفتاح بي جي بي"
