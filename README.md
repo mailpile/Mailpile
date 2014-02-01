@@ -83,7 +83,7 @@ Contributors:
 - Lots more, run `git log |grep Author |sort |uniq -c` for a list!
 
 And of course, we couldn't do this without [our community of
-backers]().
+backers](https://www.mailpile.is/#community).
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
