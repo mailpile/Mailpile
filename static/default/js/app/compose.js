@@ -452,6 +452,18 @@ $(document).on('click', '#compose-show-details', function(e) {
 });
 
 
+/* Compose - Sent To Email */
+$(document).on('click', '.compose-to-email', function(e) {
+  e.preventDefault();
+/*
+  mailpile.compose({
+    to: $(this).data('email')
+  });
+*/
+  alert('FIXME: Create New Blank Message To Address');
+});
+
+
 $(document).ready(function() {
 
   // Is Drafts
