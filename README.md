@@ -80,7 +80,7 @@ Contributors:
 - Bjarni R. Einasson (<http://bre.klaki.net/>)
 - Smari McCarthy (<http://www.smarimccarthy.is/>)
 - Brennan Novak (<https://brennannovak.com/>)
-- Lots more, run `git log |grep Author |sort |uniq -c` for a list!
+- Lots more, run `git shortlog -s` for a list! (Or see the list [on Github](https://github.com/pagekite/Mailpile/graphs/contributors).)
 
 And of course, we couldn't do this without [our community of
 backers]().
