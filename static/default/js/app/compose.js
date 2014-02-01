@@ -351,16 +351,16 @@ $(document).on('click', '.compose-crypto-signature', function() {
 
 /* Compose - Change Encryption Status */
 $(document).on('click', '.compose-crypto-encryption', function() {
-  var status = mailpile.compose_determine_encryption();
+  var status = $('#compose-encryption').val();
   var change = '';
 
   if (status == 'encrypt') {
     change = 'none';
   } else {
-    change = 'encrypt';
+    if (mailpile.compose_determine_encryption() == "encrypt") {
+      change = 'encrypt';
+    }
   }
-
-  console.log('clicked ' + status);
 
   mailpile.compose_render_encryption(change);
 });
