@@ -1146,24 +1146,26 @@ class HelpVars(Help):
     ORDER = ('Config', 9)
 
     def command(self):
-        config = self.session.config
+        config = self.session.config.rules
         result = []
-        for cat in config.CATEGORIES.keys():
+        for cat in config.keys():
             variables = []
-            for what in config.INTS, config.STRINGS, config.DICTS:
-                for ii, i in what.iteritems():
-                    variables.append({
-                        'var': ii,
-                        'type': i[0],
-                        'desc': i[2]
-                    })
+            for what in config['sys'], config['profiles'], config['prefs']:
+                if what[2]:
+                    for ii, i in what[2].iteritems():
+                        variables.append({
+                            'var': ii,
+                            'type': str(i[1]),
+                            'desc': i[0]
+                        })
+
             variables.sort(key=lambda k: k['var'])
             result.append({
                 'category': cat,
-                'name': config.CATEGORIES[cat][1],
+                'name': config[cat][0],
                 'variables': variables
             })
-        result.sort(key=lambda k: config.CATEGORIES[k['category']][0])
+        result.sort(key=lambda k: config[k['category']][0])
         return {'variables': result}
 
 
