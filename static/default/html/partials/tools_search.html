@@ -1,7 +1,7 @@
 <nav class="sub-navigation clearfix">
 	<ul class="left horizontal">
     <li id="display-all" class="navigation-on"><a class="button-sub-navigation" data-filter="all" href="#"><span class="navigation-icon icon-inbox"></span><span class="navigation-text">{{_("All")}}</span></a>
-		<li id="display-new"><a class="button-sub-navigation" data-filter="in_new" href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-text">{{_("New")}}</span></a></li>
+		<li id="display-unread"><a class="button-sub-navigation" data-filter="in_unread" href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-text">{{_("Unread")}}</span></a></li>
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="navigation-icon icon-eye"></span> {{_("Display")}}</a>
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="display-density">
@@ -15,11 +15,12 @@
 		<li id="display-{{mode.name}}"><a href="{{mode.url}}" onclick="{{mode.jsaction}}">{% if mode.icon %}<span class="navigation-icon icon-{{mode.icon}}" title="{{mode.text}}"></span>{% else %}{{mode.text}}{% endif %}</a></li>
 	{% endfor %}    
   </ul>
+<!--  
 	<ul class="right horizontal">
     <li id="btn-display-list" class="navigation-on"><a href="#" onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span></a></li>
 	{% for mode in get_display_modes("search") %}
 	<li id="btn-display-{{mode.name}}"><a href="{{mode.url}}" onclick="{{mode.jsaction}}">{% if mode.icon %}<span class="navigation-icon icon-{{mode.icon}}" title="{{mode.text}}"></span>{% else %}{{mode.text}}{% endif %}</a></li>
-	{% endfor %}
+	{% endfor %} -->
   </ul>
 </nav>
 <div class="bulk-actions clearfix">
