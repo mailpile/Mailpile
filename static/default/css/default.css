@@ -5178,6 +5178,9 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   }
 }
 /* Compose - Custom Styles */
+.select2-hidden-accessible {
+  visibility: hidden;
+}
 .select2-result-label .compose-select-avatar {
   display: inline-block;
   margin-right: 8px;
@@ -6150,7 +6153,7 @@ div.content-normal {
   display: block;
   width: 175px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: normal;
+  font-weight: bold;
   color: #4d4d4d;
   font-size: 18px;
   line-height: 18px;
@@ -6363,11 +6366,18 @@ a.compose-show-field {
   margin-left: 10px;
 }
 /* Contact - List */
-#contact-list {
+#contacts-list {
   width: 100%;
   height: 100%;
-  overflow: hidden;
-  margin: .5em 0 0 .5em;
+}
+#contacts-list .compose-to-email {
+  font-family: Helvetica, Arial, sans-serif !important;
+  color: #4d4d4d;
+}
+#contacts-list .contact-details {
+  font-family: Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  color: #b3b3b3;
 }
 /* Contact - View */
 #contact-view {
@@ -6597,13 +6607,7 @@ a.compose-show-field {
 }
 #pile-results a.pile-message-tag {
   font-weight: bold;
-  font-weight: normal;
-  background: #b3b3b3;
-  border-radius: 5px;
-  font-size: 70%;
-  padding: 2px;
-  float: right;
-  margin-left: 3px;
+  margin-right: 5px;
 }
 /* Pile Bottom */
 #pile-bottom {
@@ -6959,6 +6963,9 @@ a.compose-show-field {
   border-radius: 4px;
   background: #ffffff;
   padding: 10px 15px;
+  -moz-box-shadow: 3px 3px 5px 0px #b3b3b3;
+  -webkit-box-shadow: 3px 3px 5px 0px #b3b3b3;
+  box-shadow: 3px 3px 5px 0px #b3b3b3;
 }
 .qtip-thread-crypto .qtip-content h4 {
   text-align: center;
@@ -6986,6 +6993,12 @@ a.compose-show-field {
   color: #555;
 }
 /* Tags */
+#tags-list {
+  margin-bottom: 25px;
+}
+#tags-archived-list {
+  margin-bottom: 25px;
+}
 .tag-card {
   width: 20%;
   min-width: 175px;
