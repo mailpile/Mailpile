@@ -44,9 +44,6 @@ $(document).ready(function() {
 
 
   $('.compose-to-email').qtip({
-    content: {
-      text: 'Email This Address'
-    },
     style: {
       classes: 'qtip-tipped'
     },

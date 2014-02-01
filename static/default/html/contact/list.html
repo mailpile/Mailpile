@@ -14,9 +14,10 @@
   		<b>{% if contact.key %}<span class="icon-lock-closed"></span>{% endif %} {{_("Emails")}}</b>
   		<ul>
   			{% if contact.email %}
-  				{% for email in contact.email %}
-	  			<li><a class="" href="/contact/{{ email.email|e }}/">{{email.email}}</a></li>
-	  			{% endfor %}
+	  			<li><a class="compose-to-email" data-email="{{ contact.email.0.email }}" title="{{_("Compose Email To This Address") }}" href="/contact/{{ contact.email.0.email|e }}/">{{ contact.email.0.email }}</a></li>
+  			{% endif %}
+  			{% if contact.email|length > 1 %}
+          <li class="contact-details"> {{ contact.email|length }} {{_("More Address")}}</li>
   			{% endif %}
   		</ul>
     </div>

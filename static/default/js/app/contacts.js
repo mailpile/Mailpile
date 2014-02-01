@@ -15,8 +15,6 @@ $(document).on('click', '#button-contact-add', function(e) {
 
 var contactActionSelect = function(item) {
 
-  console.log('select things');
-
   // Data Stuffs    
   mailpile.bulk_cache_add();
 
@@ -30,8 +28,6 @@ var contactActionSelect = function(item) {
 
 
 var contactActionUnselect = function(item) {
-
-  console.log('unselect things');
 
   // Data Stuffs    
   mailpile.bulk_cache_remove();
@@ -51,7 +47,6 @@ var contactActionUnselect = function(item) {
 };
 
 
-
 $(document).on('click', '#contacts-list div.boxy', function(e) {
 	if (e.target.href === undefined && $(this).data('state') === 'selected') {
 		contactActionUnselect($(this));
@@ -59,12 +54,4 @@ $(document).on('click', '#contacts-list div.boxy', function(e) {
 	else if (e.target.href === undefined) {
 		contactActionSelect($(this));
 	}
-});
-
-
-$(document).on('click', '.compose-to-email', function(e) {
-  e.preventDefault();
-  mailpile.compose({
-    to: $(this).data('email')
-  });
 });
