@@ -255,5 +255,42 @@ $(document).ready(function() {
       $(this).addClass('view-size-selected');
     }
   });
+  
+  $('.pile-message-tag').qtip({
+    content: {
+      title: false,
+      text: function(event, api) {
+        var html = '<div>\
+          <h4 class="text-center">' + $(this).data('tag_name') + '\</h4>\
+          <p><a class="button-primary" href="' + $(this).data('tag_url') + '"><span class="icon-links"></span> Browse This Tag</a></p>\
+          </div>';
+        return html;
+      }
+    },
+    style: {
+      classes: 'qtip-thread-crypto',
+      tip: {
+        corner: 'bottom center',
+        mimic: 'bottom center',
+        border: 0,
+        width: 10,
+        height: 10
+      }
+    },
+    position: {
+      my: 'bottom center',
+      at: 'top left',
+			viewport: $(window),
+			adjust: {
+				x: 7,  y: -4
+			}
+    },
+    show: {
+      delay: 150
+    },
+    hide: {
+      delay: 1000
+    }
+  });  
 
 });

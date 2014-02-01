@@ -20,11 +20,7 @@
   <td class="avatar">
     <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
   </td>
-  <td class="from" title='{{metadata.from.fn|e}} &lt;{{from.address|e}}&gt;
-{#% for tmid in thread %}
-  {% set f = result.data.addresses[metadata[tmid].from.aid] %}
-  {{f.fn|e}} &lt;{{f.address|e}}&gt;
-{% endfor %#}'>
+  <td class="from" title='{{metadata.from.fn|e}} &lt;{{from.address|e}}&gt;'>
     <a class="item-from" href="{{url}}">{{ metadata.from.fn|e }}</a>
     {% if thread|length > 1 %}<span class="conversation-count">{{ thread|length }}</span>{% endif %}
   </td>
@@ -33,8 +29,7 @@
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
-      <a class="pile-message-tag" href="{{tag.url}}"><span class="icon-tag"></span>
-{{tag.name|e}}</a>
+      <a class="pile-message-tag" href="{{url}}" data-tag_name="{{tag.name|e}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"><span class="icon-tag"></span> {{tag.name|e}}</a>
       {% endif %}
       {% endfor %}
     {% endif %}
