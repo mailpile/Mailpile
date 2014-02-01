@@ -3,7 +3,7 @@
   <input id="compose-crypto" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
   <input id="compose-signature" type="hidden" value="">
   <input id="compose-encryption" type="hidden" value="">
-  <div class="compose-basic">
+  <div class="compose-basic clearfix">
 <!-- FIXME: Add nice pretty dropdown
     <ul class="left">
       <li class="dropdown">
@@ -34,7 +34,7 @@
     </select>
     <ul id="compose-options" class="horizontal right">
       {% if command == "message" %}
-      <li><a id="#compose-apply-quote" href="#"><input type="checkbox" checked="checked"> Quote</a></li>
+      <!-- <li><a id="#compose-apply-quote" href="#"><input type="checkbox" checked="checked"> Quote</a></li> -->
       {% endif %}
       <li class="compose-crypto-signature signed animated"
           data-crypto_not_signed="{{_("Not Signed")}}"
@@ -96,14 +96,14 @@
   </div>
   <div class="compose-actions clearfix">
     <div class="compose-attachments left">
-      <a class="left" href="#"><span class="icon-attachment"></span> Attach Something</a>
+      <!-- <a href="#"><span class="icon-attachment"></span> Attach Something</a> -->
     </div>
     <div class="compose-buttons right">
       <button class="compose-action" type="submit" name="save" value="save">
         <span class="icon-compose"></span> {{_("Save")}}
       </button>
       {% if command == "message" %}
-      <button class="compose-action right" type="submit" name="reply" value="reply">
+      <button class="compose-action" type="submit" name="reply" value="reply">
         <span class="icon-reply"></span> {{_("Reply")}}
       </button>  
       {% else %}

@@ -418,7 +418,8 @@ $(document).on('click', '.compose-action', function(e) {
       }
       // Is Thread Reply
       else if (action === 'reply') {
-        mailpile.render_thread_message(response.result);
+          mailpile.notification(response.status, response.message);
+//        mailpile.render_thread_message(response.result);
       }
       else {
         mailpile.notification(response.status, response.message);
