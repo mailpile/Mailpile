@@ -11,14 +11,13 @@
         <a class="contact-avatar" href="/contact/{{ contact.email.0.email }}/">{% if contact.photo %}<img width=50 src="{{contact.photo.0.photo}}">{% elif contact.email %}<img src="/static/img/avatar-default.png">{% endif %}</a>
   		  <a class="contact-name" href="/contact/{{ contact.email.0.email }}/">{{ contact.fn }}</a>{% endif %}
   		</div>
-  		<b>E-mails:</b>
+  		<b>{% if contact.key %}<span class="icon-lock-closed"></span>{% endif %} {{_("Emails")}}</b>
   		<ul>
   			{% if contact.email %}
   				{% for email in contact.email %}
-	  			<li><a href="/contact/{{ email.email|e }}">{{email.email}}</a></li>
+	  			<li><a class="" href="/contact/{{ email.email|e }}/">{{email.email}}</a></li>
 	  			{% endfor %}
   			{% endif %}
-  		{% if contact.key %}<span class="icon-verified"></span> PGP{% endif %}
   		</ul>
     </div>
   </div>

@@ -7,33 +7,35 @@
 <div id="tags-list" class="clearfix">
   {% for tag in result.tags %}
   {% if tag.display == "tag" %}
-  <div class="tag-card" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.stats.not}}">
-    <a class="tag-card-name" href="{{tag.url}}">{{tag.name}}</a>
-    <div class="tag-card-numbers">
-      <div class="tag-card-stat">
-        <span class="tag-card-label">{{_("Total")}}</span>
-        <span class="tag-card-stat-count">{{tag.stats.all}}</span>
+  <div class="boxy" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.stats.not}}">
+    <div class="boxy-inner">
+      <a class="tag-card-name" href="{{tag.url}}">{{tag.name}}</a>
+      <div class="tag-card-numbers">
+        <div class="tag-card-stat">
+          <span class="tag-card-label">{{_("Total")}}</span>
+          <span class="tag-card-stat-count">{{tag.stats.all}}</span>
+        </div>
+        <div class="tag-card-stat">
+          {% if tag.stats.new > 0 %}
+          <span class="tag-card-label">{{_("New")}}</span>
+          <span class="tag-card-stat-count">{{tag.stats.new}}</span>
+          {% endif %}
+        </div>
+        <div class="tag-card-view">
+          <span class="tag-card-label">{{_("Display")}}</span>
+          <span class="icon-list"></span>
+        </div>
       </div>
-      <div class="tag-card-stat">
-        {% if tag.stats.new > 0 %}
-        <span class="tag-card-label">{{_("New")}}</span>
-        <span class="tag-card-stat-count">{{tag.stats.new}}</span>
-        {% endif %}
-      </div>
-      <div class="tag-card-view">
-        <span class="tag-card-label">{{_("View")}}</span>
-        <span class="icon-list"></span>
-      </div>
+      <a class="tag-card-message-link" href="{{tag.url}}"><span class="icon-inbox"></span> {{_("Messages")}}</a>
+      <a class="tag-card-message-link" href="/tag/list/{{tag.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a>
     </div>
-    <a class="tag-card-message-link" href="{{tag.url}}"><span class="icon-inbox"></span> {{_("View Messages")}}</a>
-    <a href="/tag/list/{{tag.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a>
   </div>
   {% endif %}
   {% endfor %}
 </div>
 
 <div id="tags-archived-list" class="clearfix">
-  <h3 class="text-center">{{_("Archived")}}</h3>
+  <h3 class="text-center"><span class="icon-archive"></span> {{_("Archived")}}</h3>
   <hr>
   {% for tag in result.tags %}
   {% if tag.display == "archive" %}
