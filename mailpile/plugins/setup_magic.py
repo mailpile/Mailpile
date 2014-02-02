@@ -1,5 +1,6 @@
 import os
 from gettext import gettext as _
+from datetime import date 
 
 import mailpile.plugins
 from mailpile.plugins import __all__ as PLUGINS
@@ -163,6 +164,10 @@ class Setup(Command):
                 pass
             else:
                 for key, details in keys.iteritems():
+                    # Ignore revoked/expired keys.
+                    if "revocation-date" in details and details["revocation-date"] <= date.today().strftime("%Y-%m-%d"):
+                        continue
+
                     for uid in details["uids"]:
                         if "email" not in uid or uid["email"] == "":
                             continue
