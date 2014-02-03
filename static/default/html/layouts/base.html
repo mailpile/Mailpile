@@ -34,8 +34,8 @@
 
   <title>{% block title %}{{title}}{% endblock %} | {{name}}'s mailpile</title>
 
-  <script type="text/javascript" src="/static/js/libraries/jquery.min.js"></script>
-  <script type="text/javascript" src="/static/js/libraries-min.js"></script>
+  <script src="/static/js/libraries/jquery.min.js"></script>
+  <script src="/static/js/libraries-min.js"></script>
 </head>
 <body>
 
@@ -203,8 +203,8 @@
   </ul>
 </div>
 
-<script type="text/javascript" src="/static/js/mailpile-min.js"></script>
-<script type="text/javascript">
+<script src="/static/js/mailpile-min.js"></script>
+<script>
 mailpile.instance = {
  "command": "{{ command }}",
  "args": "{{ args }}",
@@ -216,16 +216,16 @@ $('#sidebar').hide();
 $('#pile-results').hide();
 </script>
 <!--
-<script type="text/javascript" src="/static/js/app/notifications.js"></script>
-<script type="text/javascript" src="/static/js/app/tooltips.js"></script>
-<script type="text/javascript" src="/static/js/app/gpg.js"></script>
-<script type="text/javascript" src="/static/js/app/compose.js"></script>
-<script type="text/javascript" src="/static/js/app/pile.js"></script>
-<script type="text/javascript" src="/static/js/app/search.js"></script>
-<script type="text/javascript" src="/static/js/app/thread.js"></script>
-<script type="text/javascript" src="/static/js/app/contacts.js"></script>
-<script type="text/javascript" src="/static/js/app/tags.js"></script>
-<script type="text/javascript" src="/static/js/app/settings.js"></script>
+<script src="/static/js/app/notifications.js"></script>
+<script src="/static/js/app/tooltips.js"></script>
+<script src="/static/js/app/gpg.js"></script>
+<script src="/static/js/app/compose.js"></script>
+<script src="/static/js/app/pile.js"></script>
+<script src="/static/js/app/search.js"></script>
+<script src="/static/js/app/thread.js"></script>
+<script src="/static/js/app/contacts.js"></script>
+<script src="/static/js/app/tags.js"></script>
+<script src="/static/js/app/settings.js"></script>
 -->
 </body>
 </html>{% endif %}{# html_in_json #}
