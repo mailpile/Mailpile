@@ -20,8 +20,8 @@
   <td class="avatar">
     <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
   </td>
-  <td class="from" title='{{metadata.from.fn|e}} &lt;{{from.address|e}}&gt;'>
-    <a class="item-from" href="{{url}}">{{ metadata.from.fn|e }}</a>
+  <td class="from" title='{{metadata.from.fn}} &lt;{{from.address}}&gt;'>
+    <a class="item-from" href="{{url}}">{{ metadata.from.fn }}</a>
     {% if thread|length > 1 %}<span class="conversation-count">{{ thread|length }}</span>{% endif %}
   </td>
   <td class="subject">
@@ -29,12 +29,12 @@
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
-      <a class="pile-message-tag" href="{{url}}" data-tag_name="{{tag.name|e}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"><span class="icon-tag"></span> {{tag.name|e}}</a>
+      <a class="pile-message-tag" href="{{url}}" data-tag_name="{{tag.name}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"><span class="icon-tag"></span> {{tag.name}}</a>
       {% endif %}
       {% endfor %}
     {% endif %}
-    <a class="item-subject" href="{{url}}">{{metadata.subject|e}}</a>
-    <span class="item-snippet">{{metadata.snippet|e}}</span>
+    <a class="item-subject" href="{{url}}">{{metadata.subject}}</a>
+    <span class="item-snippet">{{metadata.snippet}}</span>
   </td>
   <td class="date" valign="top">
     <a href="/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
