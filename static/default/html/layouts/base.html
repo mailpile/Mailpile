@@ -1,4 +1,4 @@
-{% if not html_in_json %}<!doctype html>
+{% if not embedded_in_json %}<!doctype html>
 <!--[if lt IE 7]><html class="no-js ie6 oldie" lang="en"> <![endif]-->
 <!--[if IE 7]><html class="no-js ie7 oldie" lang="en"> <![endif]-->
 <!--[if IE 8]><html class="no-js ie8 oldie" lang="en"> <![endif]-->
@@ -162,13 +162,13 @@
   </div>
   <div id="content-view">{% endif %}
   {#
-    This is the end of the first "if not html_in_json" section, which
+    This is the end of the first "if not embedded_in_json" section, which
     simply skips all the boilerplate HTML so snippets can be injected
     using innerHTML. Sub-templates may also need to check for this variable.
   #}{% block content %}{{results}}{% endblock %}{#
 
     Boilerplate starts again, continues until /html.
-  #}{% if not html_in_json %}</div>
+  #}{% if not embedded_in_json %}</div>
 </div>
 
 <!-- Modal -->
@@ -228,4 +228,4 @@ $('#pile-results').hide();
 <script src="/static/js/app/settings.js"></script>
 -->
 </body>
-</html>{% endif %}{# html_in_json #}
+</html>{% endif %}{# embedded_in_json #}

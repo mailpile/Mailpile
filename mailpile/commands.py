@@ -83,27 +83,50 @@ class Command:
                 rv[ui_key] = self.kwargs[ui_key]
             return rv
 
+        def as_json(self):
+            return self.session.ui.render_json(self.as_dict())
+
         def as_html(self, template=None):
+            return self.as_template('html', template)
+
+        def as_js(self, template=None):
+            return self.as_template('js', template)
+
+        def as_css(self, template=None):
+            return self.as_template('css', template)
+
+        def as_rss(self, template=None):
+            return self.as_template('rss', template)
+
+        def as_xml(self, template=None):
+            return self.as_template('xml', template)
+
+        def as_txt(self, template=None):
+            return self.as_template('txt', template)
+
+        def as_template(self, etype, template=None):
             path_parts = (self.template_id or 'command').split('/')
             if len(path_parts) == 1:
                 path_parts.append('index')
-            if template not in (None, 'html', 'as.html'):
+            if template not in (None, 'as.' + etype):
                 # Security: The template request may come from the URL, so we
                 #           sanitize it very aggressively before heading off
                 #           to the filesystem.
-                clean_tpl = CleanText(template.replace('.html', ''),
+                clean_tpl = CleanText(template.replace('.%s' % etype, ''),
                                       banned=(CleanText.FS +
                                               CleanText.WHITESPACE))
                 path_parts[-1] += '-%s' % clean_tpl
             tpath = os.path.join(*path_parts)
             data = self.as_dict()
             data['title'] = self.message
-            data['html_in_json'] = 'jhtml' in self.session.ui.render_mode
-            return self.session.ui.render_html(self.session.config, [tpath],
-                                               data)
 
-        def as_json(self):
-            return self.session.ui.render_json(self.as_dict())
+            data['embedded_in_json'] = False
+            for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
+                if self.session.ui.render_mode.endswith(e):
+                    data['embedded_in_json'] = True
+
+            return self.session.ui.render_web(self.session.config, [tpath],
+                                              etype, data)
 
     def __init__(self, session, name=None, arg=None, data=None):
         self.session = session

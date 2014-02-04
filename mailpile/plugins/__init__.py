@@ -16,7 +16,7 @@ __all__ = [
     'dates', 'sizes', 'autotag', 'cryptostate',
     'setup_magic', 'networkgraph', 'exporters',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
-    'hacks'
+    'hacks', 'html_magic',
 ]
 BUILTIN = (__all__[:] + [
     'autotag_sb'
@@ -25,7 +25,7 @@ BUILTIN = (__all__[:] + [
 # These are plugins which we consider required
 REQUIRED = [
     'search', 'tags', 'contacts', 'compose', 'groups', 'setup_magic',
-    'dates', 'sizes', 'cryptostate'
+    'dates', 'sizes', 'cryptostate', 'html_magic'
 ]
 DISCOVERED = {}
 

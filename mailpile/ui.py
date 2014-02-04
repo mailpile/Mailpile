@@ -222,18 +222,16 @@ class UserInteraction:
         self._display_log('', level=self.LOG_RESULT)
         if self.render_mode == 'json':
             return self._display_result(result.as_json())
-        elif self.render_mode.endswith('html'):
-            if self.render_mode in ('html', 'jhtml'):
-                template = 'html'
-            else:
-                template = self.render_mode.replace('.jhtml', '.html')
-            return self._display_result(result.as_html(template=template))
-        elif self.render_mode == 'xml':
-            return self._display_result(result.as_xml())
-        elif self.render_mode == 'rss':
-            return self._display_result(result.as_rss())
-        else:
-            return self._display_result(unicode(result))
+        for suffix in ('css', 'html', 'js', 'rss', 'txt', 'xml'):
+            if self.render_mode.endswith(suffix):
+                if self.render_mode in (suffix, 'j' + suffix):
+                    template = 'as.' + suffix
+                else:
+                    template = self.render_mode.replace('.j' + suffix,
+                                                        '.' + suffix)
+                return self._display_result(
+                    result.as_template(suffix, template=template))
+        return self._display_result(unicode(result))
 
     # Creating output files
     DEFAULT_DATA_NAME_FMT = '%(msg_mid)s.%(count)s_%(att_name)s.%(att_ext)s'
@@ -282,7 +280,8 @@ class UserInteraction:
 
         return json.dumps(data, indent=1, cls=NoFailEncoder, sort_keys=True)
 
-    def _html_template(self, config, tpl_names, elems=None):
+    def _web_template(self, config, tpl_names, elems=None, ext='html'):
+        # FIXME: would be nice to rename html folder to web
         theme_path = os.path.join(config.data_directory('html_theme'), 'html')
         env = Environment(loader=FileSystemLoader('%s' % theme_path),
                           autoescape=True,
@@ -296,7 +295,7 @@ class UserInteraction:
         env.session.ui = HttpUserInteraction(None, config)
         for tpl_name in tpl_names:
             try:
-                fn = '%s.html' % tpl_name
+                fn = '%s.%s' % (tpl_name, ext)
                 # FIXME(Security): Here we need to sanitize the file name
                 #                  very strictly in case it somehow came
                 #                  from user data.
@@ -305,13 +304,13 @@ class UserInteraction:
                 pass
         return None
 
-    def render_html(self, cfg, tpl_names, data):
+    def render_web(self, cfg, tpl_names, ext, data):
         """Render data as HTML"""
         alldata = default_dict(self.html_variables)
         alldata["config"] = cfg
         alldata.update(data)
         try:
-            template = self._html_template(cfg, tpl_names)
+            template = self._web_template(cfg, tpl_names, ext=ext)
             if template:
                 return template.render(alldata)
             else:
@@ -382,19 +381,22 @@ class HttpUserInteraction(UserInteraction):
         return 'HTTP Client', RawHttpResponder(self.request, attributes)
 
     # Render to HTML/JSON/...
-    def _render_jhtml_response(self, config):
+    def _render_jembed_response(self, config):
         return json.dumps(default_dict(self.html_variables, {
             'results': self.results,
             'logged': self.logged,
         }))
 
-    def _render_text_response(self, config):
-        return '%s\n%s' % (
-            '\n'.join([l[1] for l in self.logged]),
-            ('\n%s\n' % ('=' * 79)).join(self.results)
-        )
+    def _render_text_responses(self, config):
+        if config.sys.debug:
+            return '%s\n%s' % (
+                '\n'.join([l[1] for l in self.logged]),
+                ('\n%s\n' % ('=' * 79)).join(self.results)
+            )
+        else:
+            return ('\n%s\n' % ('=' * 79)).join(self.results)
 
-    def _render_html_response(self, config):
+    def _render_single_response(self, config):
         if len(self.results) == 1:
             return self.results[0]
         if len(self.results) > 1:
@@ -407,12 +409,24 @@ class HttpUserInteraction(UserInteraction):
                 return ('application/json', self.results[0])
             else:
                 return ('application/json', '[%s]' % ','.join(self.results))
-        elif self.render_mode.endswith('.jhtml'):
-            return ('application/json', self._render_jhtml_response(config))
+        elif self.render_mode.split('.')[-1] in ('jcss', 'jhtml', 'jjs',
+                                                 'jrss', 'jtxt', 'jxml'):
+            return ('application/json', self._render_jembed_response(config))
         elif self.render_mode.endswith('html'):
-            return ('text/html', self._render_html_response(config))
+            return ('text/html', self._render_single_response(config))
+        elif self.render_mode.endswith('js'):
+            return ('text/javascript', self._render_single_response(config))
+        elif self.render_mode.endswith('css'):
+            return ('text/css', self._render_single_response(config))
+        elif self.render_mode.endswith('txt'):
+            return ('text/plain', self._render_single_response(config))
+        elif self.render_mode.endswith('rss'):
+            return ('application/rss+xml',
+                    self._render_single_response(config))
+        elif self.render_mode.endswith('xml'):
+            return ('application/xml', self._render_single_response(config))
         else:
-            return ('text/plain', self._render_text_response(config))
+            return ('text/plain', self._render_text_responses(config))
 
     def edit_messages(self, session, emails):
         return False
@@ -456,11 +470,16 @@ class RawHttpResponder:
         disposition = attributes.get('disposition', 'attachment')
         length = attributes['length']
         request.send_http_response(200, 'OK')
-        request.send_standard_headers(header_list=[
+        headers = [
             ('Content-Length', length),
-            ('Content-Disposition',
-             '%s; filename="%s"' % (disposition, filename))
-        ], mimetype=mimetype)
+        ]
+        if disposition and filename:
+            headers.append(('Content-Disposition',
+                            '%s; filename="%s"' % (disposition, filename)))
+        elif disposition:
+            headers.append(('Content-Disposition', disposition))
+        request.send_standard_headers(header_list=headers,
+                                      mimetype=mimetype)
 
     def write(self, data):
         self.request.wfile.write(data)
