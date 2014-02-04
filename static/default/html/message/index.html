@@ -31,7 +31,7 @@
     {% else %}
 
       {# Show : Message #}
-      {# FIXME: make subject line show differing subjects {{ metadata.subject|e }} #}
+      {# FIXME: make subject line show differing subjects {{ metadata.subject }} #}
       {% include("partials/thread_message.html") %}
 
       {# Check If Not Replied #}

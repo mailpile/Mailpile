@@ -28,7 +28,7 @@
   <ul>
   {% if result.contact.email %}
     {% for email in result.contact.email %}
-    <li><a class="compose-to-email" href="/contact/{{ email.email|e }}">{{email.email}}</a></li>
+    <li><a class="compose-to-email" href="/contact/{{ email.email }}">{{email.email}}</a></li>
     {% endfor %}
   {% endif %}
   </ul>

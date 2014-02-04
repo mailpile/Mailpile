@@ -219,6 +219,12 @@ def test_composition():
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
 
+def test_html():
+    mp.output("jhtml")
+    assert('&lt;bang&gt;' in '%s' % mp.search('in:inbox').as_html())
+    mp.output("text")
+
+
 try:
     do_setup()
     if '-n' in sys.argv:
@@ -227,6 +233,7 @@ try:
         test_vcards()
         test_load_save_rescan()
         test_message_data()
+        test_html()
         test_composition()
         say("Tests passed, woot!")
 except:

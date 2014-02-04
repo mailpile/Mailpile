@@ -71,7 +71,7 @@
   </div>
   <div class="topbar-actions">
     <form id="form-search" class="form-search clearfix" action="/search/">
-		  <input id="search-query" type="text" name="q" placeholder="search" autocomplete="off" tabindex=1 value="{% for t in result.search_terms %}{{ t|e }} {% endfor %}">
+		  <input id="search-query" type="text" name="q" placeholder="search" autocomplete="off" tabindex=1 value="{% for t in result.search_terms %}{{ t }} {% endfor %}">
 		  <button type="submit" class="submit"><span class="icon-search"></span></button>
 	  </form>
     <nav class="topbar-nav">
