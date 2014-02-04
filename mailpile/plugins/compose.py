@@ -27,6 +27,7 @@ class EditableSearchResults(SearchResults):
             self['created'] = [m.msg_mid() for m in new]
         if sent:
             self['sent'] = [m.msg_mid() for m in new]
+            self['summary'] = _('Sent: %s') % self['summary']
 
 
 def AddComposeMethods(cls):
@@ -140,7 +141,8 @@ class CompositionCommand(AddComposeMethods(Search)):
         for e in (emails or (create and [None]) or []):
             # If we don't have a file, check for posted data
             if len(files) not in (0, 1, len(emails)):
-                return (self._error('Cannot update from multiple files'), None)
+                return (self._error(_('Cannot update from multiple files')),
+                        None)
             elif len(files) == 1:
                 updates.append((e, self._read_file_or_data(files[0])))
             elif files and (len(files) == len(emails)):
@@ -197,9 +199,10 @@ class CompositionCommand(AddComposeMethods(Search)):
             if tag:
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
-            session.ui.mark('%d message(s) edited' % len(emails))
+            self.message = _('%d message(s) edited') % len(emails)
         else:
-            session.ui.mark('%d message(s) created' % len(emails))
+            self.message = _('%d message(s) created') % len(emails)
+        session.ui.mark(self.message)
         idx.save_changes()
         return self._return_search_results(emails,
                                            expand=emails,
@@ -222,14 +225,15 @@ class Draft(AddComposeMethods(View)):
         session, idx = self.session, self._idx()
         try:
             if not emails:
-                session.ui.mark('No messages!')
+                session.ui.mark(_('No messages!'))
             elif session.ui.edit_messages(session, emails):
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
                 idx.save_changes()
-                session.ui.mark('%d message(s) edited' % len(emails))
+                self.message = _('%d message(s) edited') % len(emails)
             else:
-                session.ui.mark('%d message(s) unchanged' % len(emails))
+                self.message = _('%d message(s) unchanged') % len(emails)
+            session.ui.mark(self.message)
         except:
             # FIXME: Shutup
             import traceback
@@ -258,7 +262,7 @@ class Compose(CompositionCommand):
 
     def command(self):
         if 'mid' in self.data:
-            return self._error('Please use update for editing messages')
+            return self._error(_('Please use update for editing messages'))
 
         session, idx = self.session, self._idx()
         ephemeral = (self.args and "ephemeral" in self.args)
@@ -311,7 +315,7 @@ class Reply(RelativeCompose):
         msg_bodies = []
         for t in trees:
             # FIXME: Templates/settings for how we quote replies?
-            text = (('%s wrote:\n' % t['headers_lc']['from']) +
+            text = ((_('%s wrote:') % t['headers_lc']['from']) + '\n' +
                     ''.join([p['data'] for p in t['text_parts']
                              if p['type'] in cls._TEXT_PARTTYPES]))
             msg_bodies.append('\n\n' + text.replace('\n', '\n> '))
@@ -355,7 +359,8 @@ class Reply(RelativeCompose):
                                                     reply_all=reply_all,
                                                     ephemeral=ephemeral)
             except NoFromAddressError:
-                return self._error('You must configure a From address first.')
+                return self._error(_('You must configure a '
+                                     'From address first.'))
 
             if not ephemeral:
                 self._track_action('replied', refs)
@@ -363,7 +368,7 @@ class Reply(RelativeCompose):
 
             return self._edit_messages([email], ephemeral=ephemeral)
         else:
-            return self._error('No message found')
+            return self._error(_('No message found'))
 
 
 class Forward(RelativeCompose):
@@ -450,7 +455,7 @@ class Forward(RelativeCompose):
 
             return self._edit_messages([email], ephemeral=ephemeral)
         else:
-            return self._error('No message found')
+            return self._error(_('No message found'))
 
 
 class Attach(CompositionCommand):
@@ -482,13 +487,13 @@ class Attach(CompositionCommand):
                 files.append(self.args.pop(-1))
 
         if not files:
-            return self._error('No files found')
+            return self._error(_('No files found'))
 
         if not emails:
             emails = [self._actualize_ephemeral(i) for i in
                       self._choose_messages(self.args, allow_ephemeral=True)]
         if not emails:
-            return self._error('No messages selected')
+            return self._error(_('No messages selected'))
 
         updated = []
         for email in emails:
@@ -497,13 +502,14 @@ class Attach(CompositionCommand):
                 email.add_attachments(session, files, filedata=filedata)
                 updated.append(email)
             except NotEditableError:
-                session.ui.error('Read-only message: %s' % subject)
+                session.ui.error(_('Read-only message: %s') % subject)
             except:
-                session.ui.error('Error attaching to %s' % subject)
+                session.ui.error(_('Error attaching to %s') % subject)
                 self._ignore_exception()
 
-        session.ui.notify(('Attached %s to %d messages'
-                           ) % (', '.join(files), len(updated)))
+        self.message = _('Attached %s to %d messages'
+                         ) % (', '.join(files), len(updated))
+        session.ui.notify(self.message)
         return self._return_search_results(updated, expand=updated)
 
 
@@ -549,7 +555,7 @@ class Sendit(CompositionCommand):
                 missing_keys.extend(kle.missing)
                 self._ignore_exception()
             except:
-                session.ui.error('Failed to send %s' % email)
+                session.ui.error(_('Failed to send %s') % email)
                 self._ignore_exception()
 
         if 'compose' in config.sys.debug:
@@ -569,7 +575,7 @@ class Sendit(CompositionCommand):
 
             return self._return_search_results(sent, sent=sent)
         else:
-            return self._error('Nothing was sent')
+            return self._error(_('Nothing was sent'))
 
 
 class Update(CompositionCommand):
@@ -587,7 +593,7 @@ class Update(CompositionCommand):
                                                 noneok=outbox)
 
         if not email_updates:
-            return self._error('Nothing to do!')
+            return self._error(_('Nothing to do!'))
         try:
             if (self.data.get('file-data') or [''])[0]:
                 if not Attach(session, data=self.data).command(emails=emails):
@@ -597,7 +603,7 @@ class Update(CompositionCommand):
                 email.update_from_string(session, update_string, final=outbox)
 
             emails = [e for e, u in email_updates]
-            session.ui.notify('%d message(s) updated' % len(email_updates))
+            session.ui.notify(_('%d message(s) updated') % len(email_updates))
 
             self._tag_blank(emails, untag=True)
             self._tag_drafts(emails, untag=outbox)
@@ -608,7 +614,7 @@ class Update(CompositionCommand):
             else:
                 return self._edit_messages(emails, new=False, tag=False)
         except KeyLookupError, kle:
-            return self._error('Missing encryption keys',
+            return self._error(_('Missing encryption keys'),
                                info={'missing_keys': kle.missing})
 
 
@@ -631,7 +637,7 @@ class UnThread(CompositionCommand):
                 idx.unthread_message(email.msg_mid())
             return self._return_search_results(emails)
         else:
-            return self._error('Nothing to do!')
+            return self._error(_('Nothing to do!'))
 
 
 class UpdateAndSendit(Update):

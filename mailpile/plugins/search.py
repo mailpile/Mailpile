@@ -49,7 +49,7 @@ class Search(Command):
                 else:
                     return self.result.as_text()
             else:
-                return 'No results'
+                return _('No results')
 
         def as_html(self, *args, **kwargs):
             return Command.CommandResult.as_html(self._fixup(),
@@ -86,7 +86,7 @@ class Search(Command):
             try:
                 start = int(spoint) - 1
             except ValueError:
-                raise UsageError('Weird starting point: %s' % spoint)
+                raise UsageError(_('Weird starting point: %s') % spoint)
         else:
             start = 0
 

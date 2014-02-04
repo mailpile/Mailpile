@@ -199,9 +199,11 @@ class Command:
                                               ) % (what, ))
         return msg_ids
 
-    def _error(self, message, info={}):
+    def _error(self, message, info={}, prefix=None):
         self.status = 'error'
-        self.message = '%s error: %s' % (self.name, message)
+        self.message = '%s%s' % ((prefix is None)
+                                 and ('%s error: ' % self.name) or prefix,
+                                 message)
         self.error_info.update(info)
         self.session.ui.error(message)
         return False
