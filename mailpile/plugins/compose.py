@@ -9,8 +9,8 @@ import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.crypto.state import *
 from mailpile.plugins.tags import Tag
-from mailpile.mailutils import ExtractEmails, Email, PrepareMessage, SendMail
-from mailpile.mailutils import NoFromAddressError
+from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
+from mailpile.mailutils import NoFromAddressError, PrepareMessage, SendMail
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -297,6 +297,17 @@ class Reply(RelativeCompose):
     HTTP_POST_VARS = {}
 
     @classmethod
+    def _add_gpg_key(cls, idx, session, addr):
+        fe, fn = ExtractEmailAndName(addr)
+        vcard = session.config.vcards.get_vcard(fe)
+        if vcard:
+            keys = vcard.get_all('KEY')
+            if keys:
+                mime, fp = keys[0].value.split('data:')[1].split(',', 1)
+                return "%s <%s#%s>" % (fn, fe, fp)
+        return "%s <%s>" % (fn, fe)
+
+    @classmethod
     def CreateReply(cls, idx, session, refs,
                     reply_all=False, ephemeral=False):
         trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True)
@@ -304,13 +315,19 @@ class Reply(RelativeCompose):
 
         ref_ids = [t['headers_lc'].get('message-id') for t in trees]
         ref_subjs = [t['headers_lc'].get('subject') for t in trees]
-        msg_to = [t['headers_lc'].get('reply-to', t['headers_lc']['from'])
-                  for t in trees]
+        msg_to = [cls._add_gpg_key(idx, session,
+            t['headers_lc'].get('reply-to', t['headers_lc']['from']))
+            for t in trees]
 
-        msg_cc = []
+        msg_cc_raw = []
         if reply_all:
-            msg_cc += [t['headers_lc'].get('to', '') for t in trees]
-            msg_cc += [t['headers_lc'].get('cc', '') for t in trees]
+            msg_cc_raw += [t['headers_lc'].get('to', '') for t in trees]
+            msg_cc_raw += [t['headers_lc'].get('cc', '') for t in trees]
+        msg_cc = []
+        for hdr in msg_cc_raw:
+            for addr in [a.strip() for a in hdr.split(',')]:
+                if addr:
+                    msg_cc.append(cls._add_gpg_key(idx, session, a))
 
         msg_bodies = []
         for t in trees:
