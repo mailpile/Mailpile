@@ -36,6 +36,7 @@
 
   <script src="/static/js/libraries/jquery.min.js"></script>
   <script src="/static/js/libraries-min.js"></script>
+
 </head>
 <body>
 
@@ -210,7 +211,6 @@ mailpile.instance = {
  "args": "{{ args }}",
  "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
 }
-
 // Set View Size
 $('#sidebar').hide();
 $('#pile-results').hide();
