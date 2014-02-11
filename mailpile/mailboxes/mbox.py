@@ -98,19 +98,19 @@ class MailpileMailbox(mailbox.mbox):
 
             fd.seek(self._file_length-len(os.linesep))
             start = None
-            while True:
-                line_pos = fd.tell()
-                line = fd.readline()
+            line_pos = fd.tell()
+            line = fd.readline()
+            while line != '':
                 if line.startswith('From '):
                     if start:
                         self._toc[self._next_key] = (
                             start, line_pos - len(os.linesep))
                         self._next_key += 1
                     start = line_pos
-                elif line == '':
-                    self._toc[self._next_key] = (start, line_pos)
-                    self._next_key += 1
-                    break
+                line_pos = fd.tell()
+                line = fd.readline()
+            self._toc[self._next_key] = (start, line_pos)
+            self._next_key += 1
             self._file_length = fd.tell()
         finally:
             self._lock.release()
