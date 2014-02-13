@@ -1,3 +1,4 @@
+import mailbox
 import os
 import gzip
 import rfc822
