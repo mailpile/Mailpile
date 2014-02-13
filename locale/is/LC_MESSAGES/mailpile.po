@@ -9,18 +9,17 @@ msgstr ""
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-02-13 13:32+0000\n"
 "PO-Revision-Date: 2013-11-20 02:28+0100\n"
-"Last-Translator: Jón Levy <zazen@riseup.net>\n"
+"Last-Translator: Páll Hilmarsson <pallih@gogn.in>\n"
 "Language-Team: Icelandic <translations-is@mailpile.is>\n"
 "Language: is\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.7\n"
 
 #: mailpile/commands.py:202
 #, fuzzy, python-format
 msgid "No such ID: %s"
-msgstr "Þetta pósthólf er bara ekki til: %s"
+msgstr "Þetta pósthólf er ekki til: %s"
 
 #: mailpile/commands.py:208 mailpile/commands.py:215 mailpile/commands.py:221
 #, python-format
@@ -56,7 +55,7 @@ msgstr "Ekki tókst að afkóða póstinn"
 
 #: mailpile/commands.py:757
 msgid "Nothing changed"
-msgstr "Ekkert breyttist"
+msgstr "Engar breytingar"
 
 #: mailpile/commands.py:759
 #, python-format
@@ -141,7 +140,7 @@ msgstr "Nafnið á þjóninum er ekki rétt: %s"
 #: mailpile/config.py:131
 #, python-format
 msgid "Invalid URL slug: %s"
-msgstr "Hnittinn texti fyrir óvirkar slóðir: %s"
+msgstr "Þessi slóð er ekki gild: %s"
 
 #: mailpile/config.py:163
 #, python-format
@@ -315,7 +314,7 @@ msgstr "Slóð á flokkuð gögn"
 
 #: mailpile/defaults.py:32
 msgid "Default theme"
-msgstr "Sjálfvalið útlit"
+msgstr "Sjálfgefið útlit"
 
 #: mailpile/defaults.py:34
 msgid "Location of vcards"
@@ -844,7 +843,7 @@ msgstr ""
 
 #: mailpile/crypto/gpgi.py:20
 msgid "Trust not calculated"
-msgstr "Traust hefur ekki verið mælt"
+msgstr "Traust hefur ekki verið skilgreint"
 
 #: mailpile/crypto/gpgi.py:21
 msgid "Unknown trust"
@@ -868,7 +867,7 @@ msgstr "Fullt traust"
 
 #: mailpile/crypto/gpgi.py:26
 msgid "Ultimate trust"
-msgstr "Allgjört traust"
+msgstr "Algjört traust"
 
 #: mailpile/crypto/gpgi.py:27
 msgid "Expired key, not trusted"
@@ -892,7 +891,7 @@ msgstr "RSA (eingöngu dulkóðun)"
 
 #: mailpile/crypto/gpgi.py:33
 msgid "RSA (sign only)"
-msgstr "RSA (eingöngu undirskrift)"
+msgstr "RSA (eingöngu undirritun)"
 
 #: mailpile/crypto/gpgi.py:34
 msgid "Elgamal (encrypt only)"
@@ -904,7 +903,7 @@ msgstr "DSA"
 
 #: mailpile/crypto/gpgi.py:36
 msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr "Elgamal (dulkóða/kvitta) [ÓTRAUSTVEKJANDI]"
+msgstr "Elgamal (dulkóða/undirrita) [ÓTRAUSTVEKJANDI]"
 
 #: mailpile/crypto/gpgi.py:760
 #, python-format
@@ -1031,7 +1030,7 @@ msgstr "Ekki tókst að afkóða póstinn"
 #: mailpile/plugins/compose.py:575
 #, fuzzy, python-format
 msgid "Failed to send %s"
-msgstr "Ekki tókst að afkóða póstinn"
+msgstr "Ekki tókst að senda %s"
 
 #: mailpile/plugins/compose.py:595
 #, fuzzy
@@ -1163,7 +1162,7 @@ msgstr ""
 #: mailpile/plugins/vcard_gravatar.py:31
 #, fuzzy
 msgid "Default thumbnail style"
-msgstr "Sjálfvalið útlit"
+msgstr "Sjálfgefið útlit"
 
 #: mailpile/plugins/vcard_gravatar.py:32
 msgid "Preferred thumbnail rating"
@@ -1184,7 +1183,7 @@ msgstr "Slóð á flokkuð gögn"
 
 #: static/default/html/contact/index.html:19
 msgid "Hey that's you"
-msgstr ""
+msgstr "Þú!"
 
 #: static/default/html/contact/list.html:14
 #, fuzzy
@@ -1254,13 +1253,13 @@ msgstr "Merkimiðar"
 
 #: static/default/html/layouts/base.html:83
 msgid "Donate"
-msgstr ""
+msgstr "Styrkja"
 
 #: static/default/html/layouts/base.html:84
 #: static/default/html/tag/list.html:30
 #, fuzzy
 msgid "Settings"
-msgstr "Bý til: %s"
+msgstr "Stillingar"
 
 #: static/default/html/layouts/base.html:98
 #, fuzzy
@@ -1335,7 +1334,7 @@ msgstr "Tengiliðir"
 #: static/default/html/page/donate/index.html:7
 #, fuzzy
 msgid "Donate To Mailpile"
-msgstr "Láttu af hendi rakna til Mailpile"
+msgstr "Styrktu Mailpile"
 
 #: static/default/html/page/donate/index.html:15
 msgid "Or you can donate to our"
@@ -1360,7 +1359,7 @@ msgstr "fleirum"
 #: static/default/html/partials/compose.html:40
 #, fuzzy
 msgid "Not Signed"
-msgstr "Rafræn undirskrift "
+msgstr "Ekki undirritað rafrænt"
 
 #: static/default/html/partials/compose.html:41
 msgid "Signature Error"
@@ -1370,7 +1369,7 @@ msgstr ""
 #: static/default/html/partials/compose.html:43
 #, fuzzy
 msgid "Signed"
-msgstr "Rafræn undirskrift "
+msgstr "Undirrtiað rafrænt"
 
 #: static/default/html/partials/compose.html:45
 msgid "None"
@@ -1379,11 +1378,11 @@ msgstr ""
 #: static/default/html/partials/compose.html:47
 #, fuzzy
 msgid "Can't Encrypt"
-msgstr "Dulkóðað"
+msgstr "Get ekki dulkóðað"
 
 #: static/default/html/partials/compose.html:48
 msgid "Error Encrypting"
-msgstr ""
+msgstr "Villa við dulkóðun"
 
 #: static/default/html/partials/compose.html:74
 msgid "To"
@@ -1415,7 +1414,7 @@ msgstr "Póstur"
 
 #: static/default/html/partials/compose.html:95
 msgid "Your reply..."
-msgstr ""
+msgstr "Skilaboðin þín..."
 
 #: static/default/html/partials/compose.html:103
 msgid "Save"
@@ -1451,7 +1450,7 @@ msgstr "Bæta við"
 #: static/default/html/partials/errors_content.html:3
 #, fuzzy
 msgid "Oops, You've Found a Quirk"
-msgstr "Úps, það gerðist eitthvað sem átti ekki að gerast!"
+msgstr "Úps, eitthvað gerðist sem átti ekki að gerast!"
 
 #: static/default/html/partials/errors_content.html:4
 msgid ""
@@ -1480,12 +1479,12 @@ msgid ""
 "If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
 "\">bug report</a>"
 msgstr ""
-"Ef þú heldur að þetta sé villa í forritunu, endilega <a href=\"%(url)s\" "
+"Ef þú heldur að þetta sé villa í forritinu, endilega <a href=\"%(url)s\" "
 "target=\"_blank\">sendu inn villuskýrslu</a>"
 
 #: static/default/html/partials/thread_message.html:17
 msgid "No Recipients"
-msgstr ""
+msgstr "Engir viðtakendur"
 
 #: static/default/html/partials/thread_metadata.html:17
 #, fuzzy
@@ -1541,7 +1540,7 @@ msgstr "Allt"
 
 #: static/default/html/partials/tools_search.html:4
 msgid "Unread"
-msgstr ""
+msgstr "Ólesið"
 
 #: static/default/html/partials/tools_search.html:6
 #: static/default/html/tag/add.html:15 static/default/html/tag/index.html:19
@@ -1717,7 +1716,7 @@ msgstr ""
 #: static/default/html/tag/add.html:33 static/default/html/tag/index.html:40
 #, fuzzy
 msgid "Default"
-msgstr "Sjálfvalið útlit"
+msgstr "Sjálfgefið útlit"
 
 #: static/default/html/tag/add.html:36 static/default/html/tag/index.html:43
 msgid "Search Terms"
