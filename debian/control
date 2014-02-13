@@ -3,11 +3,11 @@ Maintainer: Mailpile <team@mailpile.is>
 Section: misc
 Priority: optional
 Standards-Version: 3.9.2
-Build-Depends: debhelper (>= 8), python (>= 2.7), python-lxml (>= 2.3.2), python-imaging (>= 1.1.7)
+Build-Depends: debhelper (>= 8), python (>= 2.7), python-lxml (>= 2.3.2), python-imaging (>= 1.1.7), python-jinja2
 X-Python-Version: >= 2.6
 
 Package: mailpile
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-lxml (>= 2.3.2), python-imaging (>= 1.1.7)
+Depends: ${python:Depends}, ${misc:Depends}, python-lxml (>= 2.3.2), python-imaging (>= 1.1.7), python-jinja2
 Homepage: http://www.mailpile.is
 Description: Mailpile
