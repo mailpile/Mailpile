@@ -39,6 +39,11 @@ simple web-mail client.
 """,
     packages=find_packages(),
     data_files=data_files,
+    install_requires=[
+        'lxml==2.3.2',
+        'jinja2',
+        'spambayes==1.1b1'
+        ],
     entry_points={
         'console_scripts': [
             'mailpile = mailpile.__main__:main'
