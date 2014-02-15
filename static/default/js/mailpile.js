@@ -79,24 +79,41 @@ MailPile.prototype.get_new_messages = function(actions) {
 MailPile.prototype.render = function() {
 
   // Dynamic CSS Reiszing
-  var content_width  = $(window).width() - $('#sidebar').width();
-  var content_height = $(window).height() - $('#topbar').height();
-  var sidebar_height = $('#sidebar').height();
-  var content_tools_height = $('#content-tools').height();
-  var fix_content_view_height = sidebar_height - content_tools_height;
+  var dynamic_sizing = function() {
 
-  $('.sub-navigation').width(content_width);
-  $('#thread-title').width(content_width);
+    var sidebar_height = $('#sidebar').height();
 
-  // Set Content View
-  $('#content-view').css('height', fix_content_view_height).css('top', content_tools_height);
+    // Is Tablet or Mobile
+    if ($(window).width() < 1024) {
+      var sidebar_width = 0;
+    }
+    else {
+      var sidebar_width = 225;
+    }
+
+    var content_width  = $(window).width() - sidebar_width;
+    var content_height = $(window).height() - 62;
+    var content_tools_height = $('#content-tools').height();
+    var fix_content_view_height = sidebar_height - content_tools_height;
+  
+    $('.sub-navigation').width(content_width);
+    $('#thread-title').width(content_width);
+  
+    // Set Content View
+    $('#content-view').css('height', fix_content_view_height).css('top', content_tools_height);
+
+    var new_content_width = $(window).width() - sidebar_width;
+    $('.sub-navigation, .bulk-actions').width(new_content_width);
+  };
+
+  dynamic_sizing();
 
   // Resize Elements on Drag
   window.onresize = function(event) {
-    var new_content_width = $(window).width() - $('#sidebar').width();
-    $('.sub-navigation, .bulk-actions').width(new_content_width);
-  }
+    dynamic_sizing();
+  };
 
+  // Hide Mailboxes
   if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() === undefined) {
     $('#sidebar-tag-outbox').hide();
   }
