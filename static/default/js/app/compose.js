@@ -369,10 +369,14 @@ $(document).on('click', '.compose-crypto-encryption', function() {
 /* Compose - Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
-  $('#compose-' + $(this).html().toLowerCase() + '-html').show();
-  if ($(this).html().toLowerCase() == 'cc') {
-    $('#compose-bcc-show').detach().appendTo("#compose-cc-html label");
-  }
+  var field = $(this).text().toLowerCase();
+  $('#compose-' + field + '-html').show().removeClass('hide');
+});
+
+$(document).on('click', '.compose-hide-field', function(e) {
+  var field = $(this).attr('href').substr(1);
+  $('#compose-' + field + '-html').hide().addClass('hide');
+  $('#compose-' + field + '-show').fadeIn('fast');
 });
 
 
