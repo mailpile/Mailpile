@@ -85,6 +85,19 @@
   </ul>
 </div>
 
+<div id="thread-tags" class="hide" data-modal_title="{{_("Tags in Conversation")}}">
+  <ul>
+    {% for tid in result.data.tags %}
+    {% set tag = result.data.tags[tid] %}
+    {% if tag.type == 'tag' %}
+    <li>
+      <a class="" href="{{ tag.url }}"><span class="icon-tag"></span> <h4>{{ tag.name }}</h4></a>
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+
 {% else %}{# No Result, Show Error #}
   {% set error_title = "message_missing" %}
   {% include("partials/errors_content.html") %}

@@ -1,8 +1,10 @@
 <div id="thread-title" class="sub-navigation clearfix">
   <h1>{% if result.data.metadata[result.thread_ids[-1]].subject %}{{ result.data.metadata[result.thread_ids[-1]].subject }}{% else %}{{_('No Subject')}}{% endif %}</h1>
   <ul class="horizontal">
+    <li><a href="#"><span class="icon-inbox"></span> {{ result.data.metadata|length }} {{_("Messages")}}</a></li>
     <li><a class="show-thread-people" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-user"></span> {{ result.data.addresses|length }} {{_("People")}}</a></li>
     <!-- <li><a class="show-thread-security" href="#"><span class="icon-lock-open"></span> Partially Secure</a></li> -->
+    <li><a class="show-thread-tags" data-toggle="modal" data-target="#myModal" href="#"><span class="icon-tag"></span> {{_("Tags")}}</a></li>
   </ul>
 </div>
 <!--
