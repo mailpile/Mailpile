@@ -15,7 +15,26 @@ function MailPile() {
   this.instance       = {};
 	this.search_cache   = [];
 	this.bulk_cache     = [];
-	this.keybindings    = [];
+	this.keybindings    = [
+  	["normal", "/",      function() { 
+  	  $("#search-query").focus(); return false;
+    }],
+  	["normal", "c",      function() { mailpile.compose(); }],
+  	["normal", "g i",    function() { mailpile.go("/in/inbox/"); }],
+  	["normal", "g c",    function() { mailpile.go("/contact/list/"); }],
+  	["normal", "g n c",  function() { mailpile.go("/contact/add/"); }],
+  	["normal", "g n m",  function() { mailpile.go("/compose/"); }],
+  	["normal", "g t",    function() { 
+  	  $("#dialog_tag").show(); $("#dialog_tag_input").focus(); return false; 
+    }],
+    ["global", "esc",    function() {
+  		
+  		// Add Form Fields
+  		$('#search-query').blur();
+  		$('#compose-subject').blur();
+      $('#compose-text').blur();
+    }]
+  ];
 	this.commands       = [];
 	this.graphselected  = [];
 	this.defaults       = {
@@ -37,6 +56,10 @@ function MailPile() {
   	message_sent  : "/thread/="
 	}
 	this.plugins = [];
+};
+
+MailPile.prototype.go = function(url) {
+  window.location.href = url;
 };
 
 MailPile.prototype.bulk_cache_add = function(mid) {
@@ -113,26 +136,22 @@ MailPile.prototype.render = function() {
     dynamic_sizing();
   };
 
-  // Hide Mailboxes
-  if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() === undefined) {
-    $('#sidebar-tag-outbox').hide();
+  // Show Mailboxes
+  if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() !== undefined) {
+    $('#sidebar-tag-outbox').show();
   }
-};
 
-var keybindings = [
-	["/", 		"normal",	function() { $("#search-query").focus(); return false; }],
-	["C", 		"normal",	function() { mailpile.compose(); }],
-	["g i", 	"normal",	function() { mailpile.go("/Inbox/"); }],
-	["g c", 	"normal",	function() { mailpile.go("/_/contact/list/"); }],
-	["g n c", 	"normal",	function() { mailpile.go("/_/contact/add/"); }],
-	["g n m",	"normal",	function() { mailpile.go("/_/compose/"); }],
-	["g t",		"normal",	function() { $("#dialog_tag").show(); $("#dialog_tag_input").focus(); return false; }],
-	["esc",		"global",	function() {
-		$("#dialog_tag_input").blur();
-		$("#qbox").blur();
-    $("#dialog_tag").hide();
-  }],
-];
+  // Mousetrap Keybindings
+	for (item in mailpile.keybindings) {
+	  var keybinding = mailpile.keybindings[item];
+		if (keybinding[0] == "global") {
+			Mousetrap.bindGlobal(keybinding[1], keybinding[2]);
+		} else {
+      Mousetrap.bind(keybinding[1], keybinding[2]);
+		}
+	}
+
+};
 
 var mailpile = new MailPile();
 var favicon = new Favico({animation:'popFade'});
