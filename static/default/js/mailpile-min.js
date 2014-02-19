@@ -15,7 +15,26 @@ function MailPile() {
   this.instance       = {};
 	this.search_cache   = [];
 	this.bulk_cache     = [];
-	this.keybindings    = [];
+	this.keybindings    = [
+  	["normal", "/",      function() { 
+  	  $("#search-query").focus(); return false;
+    }],
+  	["normal", "c",      function() { mailpile.compose(); }],
+  	["normal", "g i",    function() { mailpile.go("/in/inbox/"); }],
+  	["normal", "g c",    function() { mailpile.go("/contact/list/"); }],
+  	["normal", "g n c",  function() { mailpile.go("/contact/add/"); }],
+  	["normal", "g n m",  function() { mailpile.go("/compose/"); }],
+  	["normal", "g t",    function() { 
+  	  $("#dialog_tag").show(); $("#dialog_tag_input").focus(); return false; 
+    }],
+    ["global", "esc",    function() {
+  		
+  		// Add Form Fields
+  		$('#search-query').blur();
+  		$('#compose-subject').blur();
+      $('#compose-text').blur();
+    }]
+  ];
 	this.commands       = [];
 	this.graphselected  = [];
 	this.defaults       = {
@@ -37,6 +56,10 @@ function MailPile() {
   	message_sent  : "/thread/="
 	}
 	this.plugins = [];
+};
+
+MailPile.prototype.go = function(url) {
+  window.location.href = url;
 };
 
 MailPile.prototype.bulk_cache_add = function(mid) {
@@ -79,43 +102,56 @@ MailPile.prototype.get_new_messages = function(actions) {
 MailPile.prototype.render = function() {
 
   // Dynamic CSS Reiszing
-  var content_width  = $(window).width() - $('#sidebar').width();
-  var content_height = $(window).height() - $('#topbar').height();
-  var sidebar_height = $('#sidebar').height();
-  var content_tools_height = $('#content-tools').height();
-  var fix_content_view_height = sidebar_height - content_tools_height;
+  var dynamic_sizing = function() {
 
-  $('.sub-navigation').width(content_width);
-  $('#thread-title').width(content_width);
+    var sidebar_height = $('#sidebar').height();
 
-  // Set Content View
-  $('#content-view').css('height', fix_content_view_height).css('top', content_tools_height);
+    // Is Tablet or Mobile
+    if ($(window).width() < 1024) {
+      var sidebar_width = 0;
+    }
+    else {
+      var sidebar_width = 225;
+    }
+
+    var content_width  = $(window).width() - sidebar_width;
+    var content_height = $(window).height() - 62;
+    var content_tools_height = $('#content-tools').height();
+    var fix_content_view_height = sidebar_height - content_tools_height;
+  
+    $('.sub-navigation').width(content_width);
+    $('#thread-title').width(content_width);
+  
+    // Set Content View
+    $('#content-view').css('height', fix_content_view_height).css('top', content_tools_height);
+
+    var new_content_width = $(window).width() - sidebar_width;
+    $('.sub-navigation, .bulk-actions').width(new_content_width);
+  };
+
+  dynamic_sizing();
 
   // Resize Elements on Drag
   window.onresize = function(event) {
-    var new_content_width = $(window).width() - $('#sidebar').width();
-    $('.sub-navigation, .bulk-actions').width(new_content_width);
+    dynamic_sizing();
+  };
+
+  // Show Mailboxes
+  if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() !== undefined) {
+    $('#sidebar-tag-outbox').show();
   }
 
-  if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() === undefined) {
-    $('#sidebar-tag-outbox').hide();
-  }
+  // Mousetrap Keybindings
+	for (item in mailpile.keybindings) {
+	  var keybinding = mailpile.keybindings[item];
+		if (keybinding[0] == "global") {
+			Mousetrap.bindGlobal(keybinding[1], keybinding[2]);
+		} else {
+      Mousetrap.bind(keybinding[1], keybinding[2]);
+		}
+	}
+
 };
-
-var keybindings = [
-	["/", 		"normal",	function() { $("#search-query").focus(); return false; }],
-	["C", 		"normal",	function() { mailpile.compose(); }],
-	["g i", 	"normal",	function() { mailpile.go("/Inbox/"); }],
-	["g c", 	"normal",	function() { mailpile.go("/_/contact/list/"); }],
-	["g n c", 	"normal",	function() { mailpile.go("/_/contact/add/"); }],
-	["g n m",	"normal",	function() { mailpile.go("/_/compose/"); }],
-	["g t",		"normal",	function() { $("#dialog_tag").show(); $("#dialog_tag_input").focus(); return false; }],
-	["esc",		"global",	function() {
-		$("#dialog_tag_input").blur();
-		$("#qbox").blur();
-    $("#dialog_tag").hide();
-  }],
-];
 
 var mailpile = new MailPile();
 var favicon = new Favico({animation:'popFade'});
@@ -642,10 +678,14 @@ $(document).on('click', '.compose-crypto-encryption', function() {
 /* Compose - Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
-  $('#compose-' + $(this).html().toLowerCase() + '-html').show();
-  if ($(this).html().toLowerCase() == 'cc') {
-    $('#compose-bcc-show').detach().appendTo("#compose-cc-html label");
-  }
+  var field = $(this).text().toLowerCase();
+  $('#compose-' + field + '-html').show().removeClass('hide');
+});
+
+$(document).on('click', '.compose-hide-field', function(e) {
+  var field = $(this).attr('href').substr(1);
+  $('#compose-' + field + '-html').hide().addClass('hide');
+  $('#compose-' + field + '-show').fadeIn('fast');
 });
 
 
@@ -1181,12 +1221,10 @@ MailPile.prototype.results_list = function() {
 	// Show & Hide View
 	$('#pile-graph').hide('fast', function() {
 
-    $('#sidebar').show('normal');
     $('#form-pile-results').show('normal');
     $('#pile-results').show('fast');
     $('.pile-speed').show('normal');
     $('#footer').show('normal');
-    $('#sidebar').show('normal');
 	});
 }
 
@@ -1204,14 +1242,6 @@ $(document).ready(function() {
 	$('#button-search-options').on("blur", function(key) {
 		$('#search-params').slideUp('fast');
 	});
-
-	for (item in keybindings) {
-		if (item[1] == "global") {
-			Mousetrap.bindGlobal(item[0], item[2]);
-		} else {
-			Mousetrap.bind(item[0], item[2]);
-		}
-	}
 	
 });
 
@@ -1294,7 +1324,21 @@ $(document).on('click', '.show-thread-people', function() {
  $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
  $('#modal-full .modal-body').html($('#thread-people').html());
  $('#modal-full').modal(options);
+});
 
+/* Thread - Show Tags In Converstation */
+$(document).on('click', '.show-thread-tags', function() {
+
+ var options = {
+   backdrop: true,
+   keyboard: true,
+   show: true,
+   remote: false
+ };
+
+ $('#modal-full .modal-title').html($('#thread-tags').data('modal_title'));
+ $('#modal-full .modal-body').html($('#thread-tags').html());
+ $('#modal-full').modal(options);
 });
 
 /* Thread - Show Security */
@@ -1332,19 +1376,61 @@ $(document).on('click', '.dropdown-toggle', function() {
 });
 
 
+/* Thread - Add / Update Contact From Signature */
+$(document).on('mouseenter', '.thread-item-signature', function() {
+
+  /* Validate "is this a signature" by weights
+  *   - Contains same name as in From field
+  *   - Has Emails
+  *   - Has URLs (does URL match email domain)
+  *   - Has Phone numbers
+  *   - Has Street addresses
+  */
+  
+  var id = $(this).attr('id');
+  var mid = $(this).attr('id').split('-')[2];
+
+  // FIXME: make this determine "Add" or "Update" Contact
+  $('#' + id).prepend('<button id="signature-contact-'+ mid +'" class="button-signature-contact"><span class="icon-user"></span> Add</button>').addClass('thread-item-signature-hover');
+
+}).on('mouseleave', '.thread-item-signature', function() {
+
+  var id = $(this).attr('id');
+  var mid = $(this).attr('id').split('-')[2];
+  $('#signature-contact-'+ mid).remove();
+  $('#' + id).removeClass('thread-item-signature-hover');
+
+});
+
+$(document).on('click', '.button-signature-contact', function() {
+
+ var options = {
+   backdrop: true,
+   keyboard: true,
+   show: true,
+   remote: false
+ };
+
+ $('#modal-full .modal-title').html('Add To Contacts');
+ $('#modal-full .modal-body').html('Eventually this feature will auto extract Names, Emails, URLs, Phone Numbers, and Addresses and prepopulate form fields to make contact management easier. Hang in there, its coming ;)');
+ $('#modal-full').modal(options);
+});
+
+
+
 /* Thread Tooltips */
 $(document).ready(function() {
 
   // Thread Scroll to Message
   if (location.href.split("thread/=")[1]) {
-    
+
     var thread_id = location.href.split("thread/=")[1].split("/")[0];
     var msg_top_pos = $('#message-' + thread_id).position().top;
     $('#content-view').scrollTop(msg_top_pos - 150);
     setTimeout(function(){
       $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
     }, 50);
-    
+
     mailpile.thread_initialize_tooltips();
   }
 
