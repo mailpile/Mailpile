@@ -12,7 +12,7 @@ from urllib import quote, unquote
 
 from mailpile.commands import Rescan
 from mailpile.httpd import HttpWorker
-from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir
+from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir, NoSuchMailboxError
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction

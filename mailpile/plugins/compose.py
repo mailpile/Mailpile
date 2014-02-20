@@ -9,7 +9,7 @@ import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.crypto.state import *
 from mailpile.plugins.tags import Tag
-from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
+from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email, NotEditableError
 from mailpile.mailutils import NoFromAddressError, PrepareMessage, SendMail
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
@@ -414,11 +414,11 @@ class Forward(RelativeCompose):
                     text += '%s: %s\n' % (h, v)
             text += '\n'
             text += ''.join([p['data'] for p in t['text_parts']
-                             if p['type'] in self._TEXT_PARTTYPES])
+                             if p['type'] in cls._TEXT_PARTTYPES])
             msg_bodies.append(text)
             if with_atts:
                 for att in t['attachments']:
-                    if att['mimetype'] not in self._ATT_MIMETYPES:
+                    if att['mimetype'] not in cls._ATT_MIMETYPES:
                         msg_atts.append(att['part'])
 
         if not ephemeral:
