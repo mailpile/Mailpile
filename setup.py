@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 from datetime import date
 from setuptools import setup, find_packages
-from mailpile.app import APPVER
+from mailpile.defaults import APPVER
 import os
 from glob import glob
 

@@ -1,3 +1,15 @@
+APPVER = "0.1.0"
+ABOUT = """\
+Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
+               for searching and                   <https://www.mailpile.is/>
+           organizing piles of e-mail
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of either the GNU Affero General Public License as published by the
+Free Software Foundation or the Apache License 2.0 as published by the Apache
+Software Foundation. See the file COPYING.md for details.
+"""
+#############################################################################
 import os
 import time
 from gettext import gettext as _
@@ -8,7 +20,7 @@ from mailpile.config import PathDict
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
-    'version': [_('Mailpile program version'), int, 1],
+    'version': [_('Mailpile program version'), str, APPVER],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'sys': [_('Technical system settings'), False, {
         'fd_cache_size':  (_('Max files kept open at once'), int,         500),

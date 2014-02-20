@@ -23,7 +23,6 @@ from json import JSONEncoder
 from jinja2 import Environment, FileSystemLoader
 from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound
 from jinja2 import TemplatesNotFound, TemplateAssertionError, UndefinedError
-from lxml.html.clean import autolink_html
 
 import mailpile.commands
 from mailpile.util import *
