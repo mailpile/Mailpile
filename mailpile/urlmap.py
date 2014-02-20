@@ -593,6 +593,7 @@ else:
     import mailpile.plugins.tags
     import mailpile.plugins.search
     import mailpile.plugins.compose
+    import mailpile.plugins.contacts
     import mailpile.defaults
     import mailpile.plugins
     import mailpile.ui

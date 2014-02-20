@@ -80,6 +80,9 @@ class AddVCard(VCardCommand):
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
 
+        # FIXME: This method SHOULD NOT make changes on GET.
+        #        It shouldn't really allow GET at all.
+
         if (len(self.args) > 2
                 and self.args[1] == '='
                 and self._valid_vcard_handle(self.args[0])):
