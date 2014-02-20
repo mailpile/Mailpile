@@ -1,32 +1,257 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # ChocolatEn <kalcija@gmail.com>, 2013-2014
 msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-12 15:32+0000\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-02-13 13:32+0000\n"
 "PO-Revision-Date: 2014-01-07 21:21+0000\n"
 "Last-Translator: ChocolatEn <kalcija@gmail.com>\n"
-"Language-Team: Latvian (http://www.transifex.com/projects/p/mailpile/language/lv/)\n"
+"Language-Team: Latvian (http://www.transifex.com/projects/p/mailpile/"
+"language/lv/)\n"
+"Language: lv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: lv\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : "
+"2);\n"
 
-#: mailpile/defaults.py:10
+#: mailpile/commands.py:202
+#, fuzzy, python-format
+msgid "No such ID: %s"
+msgstr "Tāda pasta kastīte neeksistē: %s"
+
+#: mailpile/commands.py:208 mailpile/commands.py:215 mailpile/commands.py:221
+#, python-format
+msgid "What message is %s?"
+msgstr ""
+
+#: mailpile/commands.py:512
+#, fuzzy, python-format
+msgid "Search: %s"
+msgstr "Meklē %s"
+
+#: mailpile/commands.py:674 mailpile/commands.py:843 mailpile/commands.py:893
+#: mailpile/commands.py:935 mailpile/commands.py:984
+#: mailpile/plugins/setup_magic.py:85
+msgid "In lockdown, doing nothing."
+msgstr ""
+
+#: mailpile/commands.py:680
+#, python-format
+msgid ""
+"Note: periodic delay is %ss, run from shell to speed up: mp --rescan=..."
+msgstr ""
+
+#: mailpile/commands.py:730
+#, python-format
+msgid "Running: %s"
+msgstr "Darbojas: %s"
+
+#: mailpile/commands.py:742
+#, fuzzy, python-format
+msgid "Failed to rescan: %s"
+msgstr "Neizdevās atšifrēt ziņu"
+
+#: mailpile/commands.py:757
+msgid "Nothing changed"
+msgstr "Nekas nemainījās"
+
+#: mailpile/commands.py:759
+#, python-format
+msgid "Aborted: %s"
+msgstr "Atcelts: %s"
+
+#: mailpile/commands.py:788
+msgid "Aborted"
+msgstr "Atcelts"
+
+#: mailpile/commands.py:965
+#, python-format
+msgid "No such key: %s"
+msgstr ""
+
+#: mailpile/commands.py:1038
+#, python-format
+msgid "The Web interface address is: %s"
+msgstr ""
+
+#: mailpile/commands.py:1041
+msgid "The Web interface is disabled."
+msgstr ""
+
+#: mailpile/commands.py:1046
+msgid "Type `help` for instructions or press <Ctrl-d> to quit."
+msgstr ""
+
+#: mailpile/commands.py:1065
+msgid "Commands:"
+msgstr "Komandas:"
+
+#: mailpile/commands.py:1097
+msgid "Tags:  (use a tag as a command to display tagged messages)"
+msgstr ""
+
+#: mailpile/commands.py:1106 mailpile/jinjaextensions.py:125
+#: mailpile/jinjaextensions.py:210
+msgid "Error"
+msgstr "Kļūda"
+
+#: mailpile/commands.py:1140
+msgid "Unknown command"
+msgstr "Neatpazīta komanda"
+
+#: mailpile/commands.py:1238
+#, python-format
+msgid "Unknown command: %s"
+msgstr "Neatpazīta komanda: %s"
+
+#: mailpile/config.py:103
+msgid "true"
+msgstr ""
+
+#: mailpile/config.py:103
+msgid "yes"
+msgstr ""
+
+#: mailpile/config.py:103
+msgid "on"
+msgstr ""
+
+#: mailpile/config.py:106
+msgid "false"
+msgstr ""
+
+#: mailpile/config.py:106
+msgid "no"
+msgstr ""
+
+#: mailpile/config.py:106
+#, fuzzy
+msgid "off"
+msgstr "no"
+
+#: mailpile/config.py:108
+#, fuzzy, python-format
+msgid "Invalid boolean: %s"
+msgstr "Nederīga atslēga priekš %s: %s"
+
+#: mailpile/config.py:131
+#, python-format
+msgid "Invalid URL slug: %s"
+msgstr ""
+
+#: mailpile/config.py:163
+#, python-format
+msgid "Invalid hostname: %s"
+msgstr ""
+
+#: mailpile/config.py:197
+#, python-format
+msgid "File/directory does not exist: %s"
+msgstr "Fails/direktorija neeksistē: %s"
+
+#: mailpile/config.py:215
+#, python-format
+msgid "Not a file: %s"
+msgstr "Nav fails: %s"
+
+#: mailpile/config.py:233
+#, python-format
+msgid "Not a directory: %s"
+msgstr ""
+
+#: mailpile/config.py:369
+#, fuzzy
+msgid "Please override this method"
+msgstr "Pārrakstīt šo"
+
+#: mailpile/config.py:429
+#, fuzzy, python-format
+msgid "Invalid type \"%s\" for key \"%s\" (value: %s)"
+msgstr "Nederīga atslēga priekš %s: %s"
+
+#: mailpile/config.py:440
+#, python-format
+msgid "Invalid key for %s: %s"
+msgstr "Nederīga atslēga priekš %s: %s"
+
+#: mailpile/config.py:523
+#, python-format
+msgid "Modifying %s/%s is not allowed"
+msgstr "Labošana %s/%s nav atļauta"
+
+#: mailpile/config.py:527 mailpile/config.py:535
+#, python-format
+msgid "Invalid value for %s/%s: %s"
+msgstr ""
+
+#: mailpile/config.py:538
+#, python-format
+msgid "Unknown constraint for %s/%s: %s"
+msgstr ""
+
+#: mailpile/config.py:743
+msgid "Cannot append to fixed dict"
+msgstr ""
+
+#: mailpile/config.py:791
+#, python-format
+msgid "Creating: %s"
+msgstr "Rada: %s"
+
+#: mailpile/config.py:850
+#, python-format
+msgid "Invalid (%s): section %s does not exist"
+msgstr ""
+
+#: mailpile/config.py:861
+#, python-format
+msgid "Invalid (%s): section %s, variable %s"
+msgstr ""
+
+#: mailpile/config.py:913
+#, python-format
+msgid "Loading plugin: %s"
+msgstr ""
+
+#: mailpile/config.py:938
+#, python-format
+msgid "Mailbox ID too large: %s"
+msgstr "Mailbox ID pārāk liels: %s"
+
+#: mailpile/config.py:1001
+#, python-format
+msgid "No such mailbox: %s"
+msgstr "Tāda pasta kastīte neeksistē: %s"
+
+#: mailpile/config.py:1008
+#, python-format
+msgid "%s: Updating: %s"
+msgstr "%s: Tiek atjaunināts: %s"
+
+#: mailpile/config.py:1015
+#, python-format
+msgid "%s: Opening: %s (may take a while)"
+msgstr "%s: Tiek atvērts: %s (tas var prasīt zināmu laiku)"
+
+#: mailpile/config.py:1126
+msgid "Parent paths are not allowed"
+msgstr ""
+
+#: mailpile/defaults.py:11
 msgid "Mailpile program version"
 msgstr "Mailpile programmas versija"
 
-#: mailpile/defaults.py:11
+#: mailpile/defaults.py:12
 msgid "Configuration timestamp"
 msgstr "Konfigurācijas laika zīmogs"
 
-#: mailpile/defaults.py:12
+#: mailpile/defaults.py:13
 msgid "Technical system settings"
 msgstr "Tehniskās sistēmas iestatījumi"
 
@@ -35,7 +260,8 @@ msgid "Max files kept open at once"
 msgstr "Maksimālais failu skaits atvērts vienlaikus"
 
 #: mailpile/defaults.py:15
-msgid "History length (lines, <0 = no save)"
+#, fuzzy
+msgid "History length (lines, <0=no save)"
 msgstr "Vēstures garums (lines, <0 = no save)"
 
 #: mailpile/defaults.py:16
@@ -62,598 +288,521 @@ msgstr ""
 msgid "Host:port of PGP keyserver"
 msgstr ""
 
-#: mailpile/defaults.py:22
+#: mailpile/defaults.py:23
 msgid "Listening host for web UI"
 msgstr ""
 
-#: mailpile/defaults.py:23
+#: mailpile/defaults.py:25
 msgid "Local read/write Maildir"
 msgstr ""
 
-#: mailpile/defaults.py:24
+#: mailpile/defaults.py:26
 msgid "Metadata index file"
 msgstr "Indeksa faila metadati"
 
-#: mailpile/defaults.py:25
+#: mailpile/defaults.py:27
 msgid "Search index directory"
 msgstr ""
 
-#: mailpile/defaults.py:26
+#: mailpile/defaults.py:28
 msgid "Mailboxes we index"
 msgstr "Pasta kastītes, kuras mēs indeksējam"
 
-#: mailpile/defaults.py:27
+#: mailpile/defaults.py:29
+msgid "Plugins to load on startup"
+msgstr ""
+
+#: mailpile/defaults.py:31
 msgid "Locations of assorted data"
 msgstr ""
 
-#: mailpile/defaults.py:28
+#: mailpile/defaults.py:32
 msgid "Default theme"
 msgstr "Galvenā tēma"
 
-#: mailpile/defaults.py:30
+#: mailpile/defaults.py:34
 msgid "Location of vcards"
 msgstr ""
 
-#: mailpile/defaults.py:33
-msgid "User preferences"
-msgstr "Lietotāja iestatījumi"
-
-#: mailpile/defaults.py:35
-msgid "Search results per page"
-msgstr ""
-
 #: mailpile/defaults.py:36
-msgid "New mail check frequency"
-msgstr ""
-
-#: mailpile/defaults.py:37
-msgid "Inline PGP signatures or attached"
+msgid "Demo mode, disallow changes"
 msgstr ""
 
 #: mailpile/defaults.py:38
-msgid "Default sort order"
-msgstr ""
+msgid "User preferences"
+msgstr "Lietotāja iestatījumi"
 
 #: mailpile/defaults.py:39
-msgid "Encrypt local data to ..."
+msgid "Search results per page"
 msgstr ""
 
 #: mailpile/defaults.py:40
-msgid "Key to use to scramble the index"
+msgid "New mail check frequency"
 msgstr ""
 
 #: mailpile/defaults.py:41
-msgid "Command run before rescanning"
-msgstr ""
-
-#: mailpile/defaults.py:42
-msgid "Default outgoing e-mail address"
+msgid "Inline PGP signatures or attached"
 msgstr ""
 
 #: mailpile/defaults.py:43
-msgid "Default outgoing mail route"
+msgid "Encrypt local data to ..."
 msgstr ""
 
-#: mailpile/defaults.py:45
-msgid "User interface language"
+#: mailpile/defaults.py:44
+msgid "Advertise GPG preferences in a header?"
 msgstr ""
 
-#: mailpile/defaults.py:46
-msgid "VCard import/export settings"
-msgstr ""
-
-#: mailpile/defaults.py:48
-msgid "VCard import settings"
+#: mailpile/defaults.py:47
+msgid "Default encryption policy for outgoing mail"
 msgstr ""
 
 #: mailpile/defaults.py:49
-msgid "VCard export settings"
+msgid "Default sort order"
 msgstr ""
 
 #: mailpile/defaults.py:50
-msgid "VCard context helper settings"
+msgid "Key to use to scramble the index"
+msgstr ""
+
+#: mailpile/defaults.py:51
+msgid "Make encrypted content searchable"
 msgstr ""
 
 #: mailpile/defaults.py:53
+msgid "Command run before rescanning"
+msgstr ""
+
+#: mailpile/defaults.py:54
+msgid "Default outgoing e-mail address"
+msgstr ""
+
+#: mailpile/defaults.py:55
+msgid "Default outgoing mail route"
+msgstr ""
+
+#: mailpile/defaults.py:57
+msgid "User interface language"
+msgstr ""
+
+#: mailpile/defaults.py:58
+msgid "VCard import/export settings"
+msgstr ""
+
+#: mailpile/defaults.py:59
+msgid "VCard import settings"
+msgstr ""
+
+#: mailpile/defaults.py:60
+msgid "VCard export settings"
+msgstr ""
+
+#: mailpile/defaults.py:61
+msgid "VCard context helper settings"
+msgstr ""
+
+#: mailpile/defaults.py:64
 msgid "User profiles and personalities"
 msgstr "Lietotāja profils un personas"
 
-#: mailpile/defaults.py:54
+#: mailpile/defaults.py:65
 msgid "Account name"
 msgstr "Konta nosaukums"
 
-#: mailpile/defaults.py:55
+#: mailpile/defaults.py:66
 msgid "E-mail address"
 msgstr "E-pasta adrese"
 
-#: mailpile/defaults.py:56
+#: mailpile/defaults.py:67
 msgid "Message signature"
 msgstr "Ziņas paraksts"
 
-#: mailpile/defaults.py:57
+#: mailpile/defaults.py:68
 msgid "Outgoing mail route"
 msgstr "Izejošā e-pasta ceļš"
 
-#: mailpile/config.py:94
-#, python-format
-msgid "Invalid URL slug: %s"
-msgstr ""
-
-#: mailpile/config.py:126
-#, python-format
-msgid "Invalid hostname: %s"
-msgstr ""
-
-#: mailpile/config.py:160
-#, python-format
-msgid "File/directory does not exist: %s"
-msgstr "Fails/direktorija neeksistē: %s"
-
-#: mailpile/config.py:178
-#, python-format
-msgid "Not a file: %s"
-msgstr "Nav fails: %s"
-
-#: mailpile/config.py:196
-#, python-format
-msgid "Not a directory: %s"
-msgstr ""
-
-#: mailpile/config.py:329
-msgid "Override this"
-msgstr "Pārrakstīt šo"
-
-#: mailpile/config.py:388
-#, python-format
-msgid "Invalid type for default %s = %s"
-msgstr ""
-
-#: mailpile/config.py:399
-#, python-format
-msgid "Invalid key for %s: %s"
-msgstr "Nederīga atslēga priekš %s: %s"
-
-#: mailpile/config.py:482
-#, python-format
-msgid "Modifying %s/%s is not allowed"
-msgstr "Labošana %s/%s nav atļauta"
-
-#: mailpile/config.py:486 mailpile/config.py:494
-#, python-format
-msgid "Invalid value for %s/%s: %s"
-msgstr ""
-
-#: mailpile/config.py:497
-#, python-format
-msgid "Unknown constraint for %s/%s: %s"
-msgstr ""
-
-#: mailpile/config.py:702
-msgid "Cannot append to fixed dict"
-msgstr ""
-
-#: mailpile/config.py:750
-#, python-format
-msgid "Creating: %s"
-msgstr "Rada: %s"
-
-#: mailpile/config.py:808
-#, python-format
-msgid "Invalid (%s): section %s does not exist"
-msgstr ""
-
-#: mailpile/config.py:819
-#, python-format
-msgid "Invalid (%s): section %s, variable %s"
-msgstr ""
-
-#: mailpile/config.py:834
-#, python-format
-msgid "WARNING: Imported old config from %s"
-msgstr "BRĪDINĀJUMS: Importēti veci iestatījumi no %s"
-
-#: mailpile/config.py:837
-#, python-format
-msgid "WARNING: Failed to import config from %s"
-msgstr "BRĪDINĀJUMS: Neizdevās importēt iestatījumus no %s"
-
-#: mailpile/config.py:876
-#, python-format
-msgid "Mailbox ID too large: %s"
-msgstr "Mailbox ID pārāk liels: %s"
-
-#: mailpile/config.py:906
-#, python-format
-msgid "No such mailbox: %s"
-msgstr "Tāda pasta kastīte neeksistē: %s"
-
-#: mailpile/config.py:913
-#, python-format
-msgid "%s: Updating: %s"
-msgstr "%s: Tiek atjaunināts: %s"
-
-#: mailpile/config.py:920
-#, python-format
-msgid "%s: Opening: %s (may take a while)"
-msgstr "%s: Tiek atvērts: %s (tas var prasīt zināmu laiku)"
-
-#: mailpile/config.py:1021
-msgid "Parent paths are not allowed"
-msgstr ""
-
-#: mailpile/config.py:1137
-#, python-format
-msgid "Could not parse (%s): %s"
-msgstr ""
-
-#: mailpile/config.py:1150
-#, python-format
-msgid "Could not assign mailbox:%s = %s"
-msgstr ""
-
-#: mailpile/gpgi.py:14
-msgid "Trust not calculated"
-msgstr "Uzticības līmenis nav aprēķināts"
-
-#: mailpile/gpgi.py:15
-msgid "Unknown trust"
-msgstr ""
-
-#: mailpile/gpgi.py:16
-msgid "Undefined trust"
-msgstr ""
-
-#: mailpile/gpgi.py:17
-msgid "Never trust"
-msgstr "Nekad neuzticēties"
-
-#: mailpile/gpgi.py:18
-msgid "Marginally trust"
-msgstr ""
-
-#: mailpile/gpgi.py:19
-msgid "Full trust"
-msgstr "Pilna uzticicamība"
-
-#: mailpile/gpgi.py:20
-msgid "Ultimate trust"
-msgstr "Pilnīga uzticamība"
-
-#: mailpile/gpgi.py:21
-msgid "Expired key, not trusted"
-msgstr "Atslēgai beidzies derīguma termiņš, tai nevar uzticēties."
-
-#: mailpile/gpgi.py:22
-msgid "Revoked key, not trusted"
-msgstr ""
-
-#: mailpile/gpgi.py:23
-msgid "Disabled key, not trusted"
-msgstr ""
-
-#: mailpile/gpgi.py:26
-msgid "RSA"
-msgstr "RSA"
-
-#: mailpile/gpgi.py:27
-msgid "RSA (encrypt only)"
-msgstr "RSA (tikai šifrēšana)"
-
-#: mailpile/gpgi.py:28
-msgid "RSA (sign only)"
-msgstr "RSA (tikai parakstīšana)"
-
-#: mailpile/gpgi.py:29
-msgid "Elgamal (encrypt only)"
-msgstr "Elgamal (tikai šifrēšana)"
-
-#: mailpile/gpgi.py:30
-msgid "DSA"
-msgstr "DSA"
-
-#: mailpile/gpgi.py:31
-msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr ""
-
-#: mailpile/commands.py:154
-#, python-format
-msgid "ID out of bounds: %s"
-msgstr ""
-
-#: mailpile/commands.py:157 mailpile/commands.py:163 mailpile/commands.py:168
-#, python-format
-msgid "What message is %s?"
-msgstr ""
-
-#: mailpile/commands.py:255
-#, python-format
-msgid "FIXME: rescan messages: %s"
-msgstr ""
-
-#: mailpile/commands.py:288
-#, python-format
-msgid "Running: %s"
-msgstr "Darbojas: %s"
-
-#: mailpile/commands.py:309
-msgid "Nothing changed"
-msgstr "Nekas nemainījās"
-
-#: mailpile/commands.py:311
-#, python-format
-msgid "Aborted: %s"
-msgstr "Atcelts: %s"
-
-#: mailpile/commands.py:341
-msgid "Aborted"
-msgstr "Atcelts"
-
-#: mailpile/commands.py:355
-msgid "Statistics updated"
-msgstr "Statistika atjaunota"
-
-#: mailpile/commands.py:521
-#, python-format
-msgid "No such key: %s"
-msgstr ""
-
-#: mailpile/commands.py:590
-#, python-format
-msgid "The web interface is %s"
-msgstr ""
-
-#: mailpile/commands.py:591
-msgid "disabled."
-msgstr "atslēgts."
-
-#: mailpile/commands.py:593
-msgid "For instructions, type `help`, press <CTRL-D> to quit."
-msgstr ""
-
-#: mailpile/commands.py:612
-msgid "Commands:"
-msgstr "Komandas:"
-
-#: mailpile/commands.py:643
-msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr ""
-
-#: mailpile/commands.py:651
-msgid "Error"
-msgstr "Kļūda"
-
-#: mailpile/commands.py:684
-msgid "Unknown command"
-msgstr "Neatpazīta komanda"
-
-#: mailpile/commands.py:782
-#, python-format
-msgid "Unknown command: %s"
-msgstr "Neatpazīta komanda: %s"
-
-#: mailpile/plugins/demos.py:41
-msgid "Demo Contacts"
-msgstr "Izmēģinājuma Kontakti"
-
-#: mailpile/plugins/demos.py:42
-msgid "This is the demo importer"
-msgstr "Šis ir izmēģinājuma imports"
-
-#: mailpile/plugins/demos.py:45
-msgid "Contact name"
-msgstr "Kontakta vārds"
-
-#: mailpile/plugins/demos.py:46
-msgid "Contact email"
-msgstr "Kontakta e-pasts"
-
-#: mailpile/plugins/vcard_gnupg.py:17
-msgid "Import contacts from GnuPG keyring"
-msgstr ""
-
-#: mailpile/plugins/vcard_gnupg.py:20
-msgid "Location of keyring"
-msgstr ""
-
-#: mailpile/httpd.py:143
+#: mailpile/httpd.py:191
 msgid "XMLRPC has been disabled for now."
 msgstr "XMLRPC ir atspējots"
 
-#: mailpile/httpd.py:161
+#: mailpile/httpd.py:210
 msgid "OMG, input too big"
 msgstr "OMG, ievade ir par lielu"
 
-#: mailpile/httpd.py:164
+#: mailpile/httpd.py:213
 msgid "Unknown content-type"
 msgstr "Nezināms satura veids"
 
-#: mailpile/httpd.py:169
+#: mailpile/httpd.py:219
 msgid "Internal Error"
 msgstr ""
 
-#: mailpile/httpd.py:237
+#: mailpile/httpd.py:290
 msgid "Internal error"
 msgstr ""
 
-#: mailpile/search.py:168
+#: mailpile/jinjaextensions.py:113 mailpile/jinjaextensions.py:146
+#: mailpile/jinjaextensions.py:187
+#, fuzzy
+msgid "Unknown"
+msgstr "Neatpazīta komanda"
+
+#: mailpile/jinjaextensions.py:114
+msgid "There is something unknown or wrong with this signature"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:119
+#, fuzzy
+msgid "No Signature"
+msgstr "Ziņas paraksts"
+
+#: mailpile/jinjaextensions.py:120
+msgid ""
+"This message contains no signature, which means it could have come from "
+"anyone, not necessarily the real sender"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:126
+msgid "There was a weird error with this signature"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:130
+msgid "Invalid"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:131
+msgid "The signature was invalid or bad"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:135
+msgid "Revoked"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:136
+msgid ""
+"Watch out, the signature was made with a key that has beenrevoked- this is "
+"not a good thing"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:141
+msgid "Expired"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:142
+msgid "The signature was made with an expired key"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:147
+msgid "the signature was made with an unknown key, so we can not verify it"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:152
+msgid "Unverified"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:153
+msgid "The signature was good but it came from a key that is not verified yet"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:158
+msgid "Verified"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:159
+msgid "The signature was good and came from a verified key, w00t!"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:188
+msgid "There is some unknown thing wrong with this encryption"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:193
+#: static/default/html/partials/compose.html:49
+#, fuzzy
+msgid "Not Encrypted"
+msgstr "Šifrēts"
+
+#: mailpile/jinjaextensions.py:194
+msgid ""
+"This message was not encrypted. It may have been intercepted en route to you "
+"and read by an unauthorized party."
+msgstr ""
+
+#: mailpile/jinjaextensions.py:199
+#: static/default/html/partials/compose.html:46
+msgid "Encrypted"
+msgstr "Šifrēts"
+
+#: mailpile/jinjaextensions.py:200
+msgid ""
+"This message was encrypted, but we were successfully able to decrypt it. "
+"Great job being secure"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:205
+msgid "Missing Key"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:206
+msgid "You do not have any of the private keys that will decrypt this message"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:211
+#, fuzzy
+msgid "We failed to decrypt message and are unsure why"
+msgstr "Neizdevās atšifrēt ziņu"
+
+#: mailpile/jinjaextensions.py:249
+msgid "You"
+msgstr ""
+
+#: mailpile/mailutils.py:223
+#, python-format
+msgid "SendMail: from %s, to %s\n"
+msgstr ""
+
+#: mailpile/mailutils.py:226
+#, python-format
+msgid "Connecting to %s"
+msgstr ""
+
+#: mailpile/mailutils.py:248
+#, python-format
+msgid "SMTP connection to: %s:%s as %s@%s\n"
+msgstr ""
+
+#: mailpile/mailutils.py:286
+#, python-format
+msgid "Invalid sendmail command/SMTP server: %s"
+msgstr ""
+
+#: mailpile/mailutils.py:289
+msgid "Preparing message..."
+msgstr "Sagatavo ziņu..."
+
+#: mailpile/mailutils.py:299
+#, python-format
+msgid "Message sent, %d bytes"
+msgstr "Ziņa nosūtīta, %d biti"
+
+#: mailpile/mailutils.py:539 mailpile/mailutils.py:549
+#: mailpile/mailutils.py:617
+msgid "Mailbox is read-only."
+msgstr ""
+
+#: mailpile/mailutils.py:542 mailpile/mailutils.py:553
+msgid "Message is read-only."
+msgstr ""
+
+#: mailpile/mailutils.py:664
+msgid "Message not found?"
+msgstr "Ziņa nav atrasta?"
+
+#: mailpile/mailutils.py:742
+#, python-format
+msgid "Extracted attachment %s"
+msgstr ""
+
+#: mailpile/mailutils.py:749
+#, python-format
+msgid "Wrote preview to: %s"
+msgstr "Uzrakstīt priekšskatījumu: %s"
+
+#: mailpile/mailutils.py:757
+msgid "Failed to generate thumbnail"
+msgstr ""
+
+#: mailpile/mailutils.py:763
+#, python-format
+msgid "Wrote attachment to: %s"
+msgstr "Uzrakstīt pielikumu: %s"
+
+#: mailpile/mailutils.py:767
+#, python-format
+msgid "No attachments found for: %s"
+msgstr "Nav atrasti pielikumi priekš: %s"
+
+#: mailpile/mailutils.py:908
+msgid "[Binary data suppressed]\n"
+msgstr ""
+
+#: mailpile/search.py:177
+msgid "Your metadata index is either too old, too new or corrupt!"
+msgstr ""
+
+#: mailpile/search.py:194
 msgid "Loading metadata index..."
 msgstr ""
 
-#: mailpile/search.py:180
+#: mailpile/search.py:207
 #, python-format
 msgid "Metadata index not found: %s"
 msgstr ""
 
-#: mailpile/search.py:184
+#: mailpile/search.py:214
 #, python-format
 msgid "Loaded metadata, %d messages"
 msgstr ""
 
-#: mailpile/search.py:191
+#: mailpile/search.py:235
 msgid "Saving metadata index changes..."
 msgstr ""
 
-#: mailpile/search.py:201
+#: mailpile/search.py:246
 msgid "Saved metadata index changes"
 msgstr ""
 
-#: mailpile/search.py:207
+#: mailpile/search.py:257
 msgid "Saving metadata index..."
 msgstr ""
 
-#: mailpile/search.py:219
+#: mailpile/search.py:279
 msgid "Saved metadata index"
 msgstr ""
 
-#: mailpile/search.py:222
+#: mailpile/search.py:284
 msgid "Updating high level indexes"
 msgstr ""
 
-#: mailpile/search.py:230
+#: mailpile/search.py:292
 #, python-format
 msgid "Bogus line: %s"
 msgstr ""
 
-#: mailpile/search.py:300
+#: mailpile/search.py:362
 #, python-format
-msgid "=%s/%s using Recieved: instead of Date:"
+msgid "=%s/%s using Received: instead of Date:"
 msgstr ""
 
-#: mailpile/search.py:307
+#: mailpile/search.py:369
 #, python-format
 msgid "=%s/%s has a bogus date"
 msgstr ""
 
-#: mailpile/search.py:324
+#: mailpile/search.py:390
 #, python-format
 msgid "WARNING: No proper Message-ID for %s"
 msgstr ""
 
-#: mailpile/search.py:331
+#: mailpile/search.py:397
 #, python-format
 msgid "%s: Skipped: %s"
 msgstr "%s: Izlaists: %s"
 
-#: mailpile/search.py:335
+#: mailpile/search.py:401
 #, python-format
 msgid "%s: Checking: %s"
 msgstr "%s: Pārbauda: %s"
 
-#: mailpile/search.py:338
+#: mailpile/search.py:404
 #, python-format
 msgid "%s: Error opening: %s (%s)"
 msgstr "%s: Kļūda atverot: %s (%s)"
 
-#: mailpile/search.py:357
+#: mailpile/search.py:423
 #, python-format
 msgid "%s: Reading your mail: %d%% (%d/%d messages)"
 msgstr ""
 
-#: mailpile/search.py:412
+#: mailpile/search.py:497
 #, python-format
 msgid "%s: Indexed mailbox: %s"
 msgstr ""
 
-#: mailpile/search.py:621
+#: mailpile/search.py:780
 #, python-format
 msgid "=%s/%s has bogus HTML."
 msgstr ""
 
-#: mailpile/search.py:726
+#: mailpile/search.py:905
 #, python-format
 msgid "%s is outside the index"
 msgstr ""
 
-#: mailpile/search.py:769
+#: mailpile/search.py:951
 #, python-format
 msgid "Tagging %d messages (%s)"
 msgstr ""
 
-#: mailpile/search.py:796
+#: mailpile/search.py:983
 #, python-format
 msgid "Untagging conversations (%s)"
 msgstr ""
 
-#: mailpile/search.py:802
+#: mailpile/search.py:989
 #, python-format
 msgid "Untagging %d messages (%s)"
 msgstr ""
 
-#: mailpile/search.py:830
+#: mailpile/search.py:1030
 #, python-format
 msgid "Searching for %s"
 msgstr "Meklē %s"
 
-#: mailpile/search.py:859
+#: mailpile/search.py:1055
 #, python-format
 msgid "Ignoring common word: %s"
 msgstr ""
 
-#: mailpile/search.py:925
+#: mailpile/search.py:1124
 #, python-format
 msgid "Found %d results (%d suppressed)"
 msgstr ""
 
-#: mailpile/search.py:932
+#: mailpile/search.py:1143
 #, python-format
 msgid "Finding conversations (%d messages)..."
 msgstr ""
 
-#: mailpile/search.py:945 mailpile/search.py:959
-#, python-format
-msgid "Sorting %d messages in %s order..."
-msgstr ""
+#: mailpile/search.py:1152 mailpile/search.py:1172
+#, fuzzy, python-format
+msgid "Sorting %d messages by %s..."
+msgstr "Sagatavo ziņu..."
 
-#: mailpile/search.py:983
+#: mailpile/search.py:1196
 msgid "Recovering from bogus sort, corrupt index?"
 msgstr ""
 
-#: mailpile/search.py:984
+#: mailpile/search.py:1198
 msgid "Please tell team@mailpile.is !"
 msgstr "Lūdzu ziņojiet team@mailpile.is !"
 
-#: mailpile/search.py:993
+#: mailpile/search.py:1207
 #, python-format
 msgid "Unknown sort order: %s"
 msgstr ""
 
-#: mailpile/search.py:998
+#: mailpile/search.py:1212
 msgid "Sort failed, sorting badly. Partial index?"
 msgstr ""
 
-#: mailpile/search.py:1011
+#: mailpile/search.py:1225
 #, python-format
 msgid "Sorted %d messages by %s, %d conversations"
 msgstr ""
 
-#: mailpile/search.py:1014
+#: mailpile/search.py:1228
 #, python-format
-msgid "Sorted %d messages in %s order"
+msgid "Sorted %d messages by %s"
 msgstr ""
 
-#: mailpile/search.py:1029
-#, python-format
-msgid "Counting messages in tag:%s"
-msgstr ""
-
-#: mailpile/ui.py:168
+#: mailpile/ui.py:192
 #, python-format
 msgid "Elapsed: %.3fs (%s)"
 msgstr ""
 
-#: mailpile/ui.py:180
+#: mailpile/ui.py:206
 #, python-format
 msgid "Completed %s in %.3fs"
 msgstr "Pabeigts %s %.3fs"
 
-#: mailpile/ui.py:279
+#: mailpile/ui.py:317
 #, python-format
 msgid ""
 "<h1>Template not found</h1>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
 msgstr ""
 
-#: mailpile/ui.py:283
+#: mailpile/ui.py:323
 #, python-format
 msgid ""
 "<h1>Template error</h1>\n"
@@ -661,305 +810,819 @@ msgid ""
 "<p>%s</p><p><b>DATA:</b> %s</p>"
 msgstr ""
 
-#: mailpile/ui.py:290
+#: mailpile/ui.py:330
 #, python-format
 msgid ""
 "<h1>Template error in %s</h1>\n"
-"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
 msgstr ""
 
-#: mailpile/ui.py:299
-msgid "Sorry, this UI cannot edit messages."
+#: mailpile/ui.py:358
+msgid "Number of edit messages does not match!"
 msgstr ""
 
-#: mailpile/ui.py:335
+#: mailpile/ui.py:403
 msgid "FIXME: Multiple results, OMG WTF"
 msgstr ""
 
-#: mailpile/mailutils.py:137
-#, python-format
-msgid "SendMail: from %s, to %s\n"
+#: mailpile/util.py:230
+msgid "today"
 msgstr ""
 
-#: mailpile/mailutils.py:140
+#: mailpile/util.py:232
 #, python-format
-msgid "Connecting to %s"
+msgid "%d day"
 msgstr ""
 
-#: mailpile/mailutils.py:161
+#: mailpile/util.py:234
 #, python-format
-msgid "SMTP connection to: %s:%s as %s@%s\n"
+msgid "%d days"
 msgstr ""
 
-#: mailpile/mailutils.py:199
-#, python-format
-msgid "Invalid sendmail: %s"
+#: mailpile/util.py:315
+msgid "Symmetric decryption is not available without config and key."
 msgstr ""
 
-#: mailpile/mailutils.py:201
-msgid "Preparing message..."
-msgstr "Sagatavo ziņu..."
+#: mailpile/crypto/gpgi.py:20
+msgid "Trust not calculated"
+msgstr "Uzticības līmenis nav aprēķināts"
 
-#: mailpile/mailutils.py:211
+#: mailpile/crypto/gpgi.py:21
+msgid "Unknown trust"
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:22
+msgid "Undefined trust"
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:23
+msgid "Never trust"
+msgstr "Nekad neuzticēties"
+
+#: mailpile/crypto/gpgi.py:24
+msgid "Marginally trust"
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:25
+msgid "Full trust"
+msgstr "Pilna uzticicamība"
+
+#: mailpile/crypto/gpgi.py:26
+msgid "Ultimate trust"
+msgstr "Pilnīga uzticamība"
+
+#: mailpile/crypto/gpgi.py:27
+msgid "Expired key, not trusted"
+msgstr "Atslēgai beidzies derīguma termiņš, tai nevar uzticēties."
+
+#: mailpile/crypto/gpgi.py:28
+msgid "Disabled key, not trusted"
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:29
+msgid "Revoked key, not trusted"
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:31
+msgid "RSA"
+msgstr "RSA"
+
+#: mailpile/crypto/gpgi.py:32
+msgid "RSA (encrypt only)"
+msgstr "RSA (tikai šifrēšana)"
+
+#: mailpile/crypto/gpgi.py:33
+msgid "RSA (sign only)"
+msgstr "RSA (tikai parakstīšana)"
+
+#: mailpile/crypto/gpgi.py:34
+msgid "Elgamal (encrypt only)"
+msgstr "Elgamal (tikai šifrēšana)"
+
+#: mailpile/crypto/gpgi.py:35
+msgid "DSA"
+msgstr "DSA"
+
+#: mailpile/crypto/gpgi.py:36
+msgid "Elgamal (encrypt/sign) [COMPROMISED]"
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:760
 #, python-format
-msgid "Message sent, %d bytes"
-msgstr "Ziņa nosūtīta, %d biti"
+msgid "Keys missing or ambiguous for %s"
+msgstr ""
 
-#: mailpile/mailutils.py:496 mailpile/mailutils.py:503
+#: mailpile/crypto/mime.py:193 mailpile/crypto/mime.py:233
+#, fuzzy
+msgid "Failed to sign message!"
+msgstr "Neizdevās atšifrēt ziņu"
+
+#: mailpile/mailboxes/mbox.py:97
+#, fuzzy
+msgid "Mailbox has been modified"
+msgstr "Pasta kastītes, kuras mēs indeksējam"
+
+#: mailpile/mailboxes/mbox.py:127
+#, python-format
+msgid "Saving %s state to %s"
+msgstr ""
+
+#: mailpile/mailboxes/mbox.py:142
 msgid "No data found"
 msgstr "Pieprasītie dati netika atrasti"
 
-#: mailpile/mailutils.py:525
+#: mailpile/mailboxes/mbox.py:172
 msgid "Message not found"
 msgstr "Ziņa nav atrasta"
 
-#: mailpile/mailutils.py:690 mailpile/mailutils.py:698
-#: mailpile/mailutils.py:752
-msgid "Mailbox is read-only."
+#: mailpile/plugins/autotag.py:152
+msgid "Retraining SpamBayes autotaggers"
 msgstr ""
 
-#: mailpile/mailutils.py:797
-msgid "Message not found?"
-msgstr "Ziņa nav atrasta?"
-
-#: mailpile/mailutils.py:875
+#: mailpile/plugins/autotag.py:172
 #, python-format
-msgid "Extracted attachment %s"
+msgid "Have %d interesting %s messages"
 msgstr ""
 
-#: mailpile/mailutils.py:883
+#: mailpile/plugins/autotag.py:243
 #, python-format
-msgid "Wrote preview to: %s"
-msgstr "Uzrakstīt priekšskatījumu: %s"
-
-#: mailpile/mailutils.py:885
-msgid "Failed to generate thumbnail"
+msgid "Retrained SpamBayes auto-tagging for %s"
 msgstr ""
 
-#: mailpile/mailutils.py:892
+#: mailpile/plugins/autotag.py:264
+#, fuzzy, python-format
+msgid "Unknown tag: %s"
+msgstr "Neatpazīta komanda: %s"
+
+#: mailpile/plugins/compose.py:30
+#, fuzzy, python-format
+msgid "Sent: %s"
+msgstr "Rada: %s"
+
+#: mailpile/plugins/compose.py:144
+msgid "Cannot update from multiple files"
+msgstr ""
+
+#: mailpile/plugins/compose.py:202 mailpile/plugins/compose.py:233
 #, python-format
-msgid "Wrote attachment to: %s"
+msgid "%d message(s) edited"
+msgstr ""
+
+#: mailpile/plugins/compose.py:204
+#, python-format
+msgid "%d message(s) created"
+msgstr ""
+
+#: mailpile/plugins/compose.py:228
+#, fuzzy
+msgid "No messages!"
+msgstr "Ziņas"
+
+#: mailpile/plugins/compose.py:235
+#, python-format
+msgid "%d message(s) unchanged"
+msgstr ""
+
+#: mailpile/plugins/compose.py:265
+msgid "Please use update for editing messages"
+msgstr ""
+
+#: mailpile/plugins/compose.py:335
+#, python-format
+msgid "%s wrote:"
+msgstr ""
+
+#: mailpile/plugins/compose.py:379
+msgid "You must configure a From address first."
+msgstr ""
+
+#: mailpile/plugins/compose.py:388 mailpile/plugins/compose.py:475
+#, fuzzy
+msgid "No message found"
+msgstr "Nav atrasti rezultāti"
+
+#: mailpile/plugins/compose.py:460
+msgid "Sorry, ephemeral messages cannot have attachments at this time."
+msgstr ""
+
+#: mailpile/plugins/compose.py:507
+#, fuzzy
+msgid "No files found"
+msgstr "Nav atrasti rezultāti"
+
+#: mailpile/plugins/compose.py:513
+msgid "No messages selected"
+msgstr ""
+
+#: mailpile/plugins/compose.py:522
+#, python-format
+msgid "Read-only message: %s"
+msgstr ""
+
+#: mailpile/plugins/compose.py:524
+#, fuzzy, python-format
+msgid "Error attaching to %s"
 msgstr "Uzrakstīt pielikumu: %s"
 
-#: mailpile/mailutils.py:895
+#: mailpile/plugins/compose.py:527
+#, fuzzy, python-format
+msgid "Attached %s to %d messages"
+msgstr "Neizdevās atšifrēt ziņu"
+
+#: mailpile/plugins/compose.py:575
+#, fuzzy, python-format
+msgid "Failed to send %s"
+msgstr "Neizdevās atšifrēt ziņu"
+
+#: mailpile/plugins/compose.py:595
+#, fuzzy
+msgid "Nothing was sent"
+msgstr "Nekas nemainījās"
+
+#: mailpile/plugins/compose.py:613 mailpile/plugins/compose.py:657
+#, fuzzy
+msgid "Nothing to do!"
+msgstr "Nekas nemainījās"
+
+#: mailpile/plugins/compose.py:623
 #, python-format
-msgid "No attachments found for: %s"
-msgstr "Nav atrasti pielikumi priekš: %s"
+msgid "%d message(s) updated"
+msgstr ""
 
-#: mailpile/mailutils.py:991
+#: mailpile/plugins/compose.py:634
+msgid "Missing encryption keys"
+msgstr ""
+
+#: mailpile/plugins/compose.py:691
+msgid "Delay between attempts to send mail"
+msgstr ""
+
+#: mailpile/plugins/contacts.py:304
 #, python-format
-msgid "Decode failed: %s %s"
-msgstr "Atšifēšana neizdevās: %s %s"
+msgid "Required paramter missing. Required parameters are: %s"
+msgstr ""
 
-#: static/default/html/page/donate/index.html:7
-msgid "Please Donate To Mailpile"
-msgstr "Lūdzu Ziedojiet Mailpile"
+#: mailpile/plugins/contacts.py:312
+#, python-format
+msgid ""
+"Unknown parameter passed to importer. Provided %s; but known parameters are: "
+"%s"
+msgstr ""
 
-#: static/default/html/page/donate/index.html:11
-msgid "Or you can donate to our"
-msgstr "Vai arī jūs variet ziedot mūsu"
+#: mailpile/plugins/demos.py:45
+msgid "Demo Contacts"
+msgstr "Izmēģinājuma Kontakti"
 
-#: static/default/html/page/donate/index.html:11
-msgid "Bitcoin Wallet"
-msgstr "Bitcoin Maks"
+#: mailpile/plugins/demos.py:46
+msgid "This is the demo importer"
+msgstr "Šis ir izmēģinājuma imports"
 
-#: static/default/html/layouts/base.html:66
+#: mailpile/plugins/demos.py:49
+#, fuzzy
+msgid "Activate demo importer"
+msgstr "Šis ir izmēģinājuma imports"
+
+#: mailpile/plugins/demos.py:50
+msgid "Contact name"
+msgstr "Kontakta vārds"
+
+#: mailpile/plugins/demos.py:51
+msgid "Contact email"
+msgstr "Kontakta e-pasts"
+
+#: mailpile/plugins/search.py:52
+#, fuzzy
+msgid "No results"
+msgstr "Nav atrasti rezultāti"
+
+#: mailpile/plugins/search.py:89
+#, python-format
+msgid "Weird starting point: %s"
+msgstr ""
+
+#: mailpile/plugins/search.py:204
+#, fuzzy, python-format
+msgid "Raw message: %s"
+msgstr "Aplūkot Ziņas"
+
+#: mailpile/plugins/setup_magic.py:113
+msgid "Created default tags"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:124
+msgid "Enabling spambayes autotagger"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:126
+msgid "Please install spambayes for super awesome spam filtering"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:134
+msgid "Enabling gravatar image importer"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:140
+msgid "Importing contacts from GPG keyring"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:183
+#, python-format
+msgid "Encrypting config to %s"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:187
+msgid "Oh no, PGP/GPG support is unavailable!"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:197
+msgid "Obfuscating search index and enabling indexing of encrypted e-mail. "
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:16
+msgid "Import contacts from GnuPG keyring"
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:19 mailpile/plugins/vcard_gravatar.py:28
+msgid "Enable this importer"
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:20
+msgid "Location of keyring"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:25
+msgid "Import contact info from a Gravatar server"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:29
+msgid "Minimum days between refreshing"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:30
+msgid "Max batch size per update"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:31
+#, fuzzy
+msgid "Default thumbnail style"
+msgstr "Galvenā tēma"
+
+#: mailpile/plugins/vcard_gravatar.py:32
+msgid "Preferred thumbnail rating"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:34
+msgid "Preferred thumbnail size"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:35
+msgid "Gravatar server URL"
+msgstr ""
+
+#: mailpile/plugins/vcard_mork.py:39
+msgid "Location of Mork database"
+msgstr ""
+
+#: static/default/html/contact/index.html:19
+msgid "Hey that's you"
+msgstr ""
+
+#: static/default/html/contact/list.html:14
+#, fuzzy
+msgid "Emails"
+msgstr "E-pasts"
+
+#: static/default/html/contact/list.html:17
+msgid "Compose Email To This Address"
+msgstr ""
+
+#: static/default/html/contact/list.html:20
+msgid "More Address"
+msgstr ""
+
+#: static/default/html/contact/list.html:28
+#: static/default/html/search/index.html:16
+msgid "Previous"
+msgstr "Iepriekšējie"
+
+#: static/default/html/contact/list.html:31
+#: static/default/html/search/index.html:21
+msgid "Next"
+msgstr "Nākamie"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "of"
+msgstr "no"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/contact/list.html:44
+#: static/default/html/layouts/base.html:81
+#: static/default/html/partials/tools_contacts.html:3
+#: static/default/html/partials/tools_contacts.html:11
+msgid "Contacts"
+msgstr "Kontakti"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "1 Conversation"
+msgstr "1 Saruna"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "No results found"
+msgstr "Nav atrasti rezultāti"
+
+#: static/default/html/layouts/base.html:46
+msgid "Close"
+msgstr ""
+
+#: static/default/html/layouts/base.html:71
 #, python-format
 msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
 msgstr "%(name)s<small> mailpile no <b>%(size)s</b> e-pastiem</small>"
 
-#: static/default/html/layouts/base.html:124
-msgid "Encrypted"
-msgstr "Šifrēts"
+#: static/default/html/layouts/base.html:80
+msgid "Compose"
+msgstr ""
 
-#: static/default/html/layouts/base.html:130
+#: static/default/html/layouts/base.html:82
+#: static/default/html/partials/tools_tags.html:3
+#: static/default/html/partials/tools_tags.html:10
+#: static/default/html/tag/list.html:54
+msgid "Tags"
+msgstr ""
+
+#: static/default/html/layouts/base.html:83
+msgid "Donate"
+msgstr ""
+
+#: static/default/html/layouts/base.html:84
+#: static/default/html/tag/list.html:30
+#, fuzzy
+msgid "Settings"
+msgstr "Rada: %s"
+
+#: static/default/html/layouts/base.html:98
+#, fuzzy
+msgid "emails"
+msgstr "E-pasts"
+
+#: static/default/html/layouts/base.html:127
 msgid "Photos"
 msgstr "Fotogrāfijas"
 
-#: static/default/html/layouts/base.html:136
+#: static/default/html/layouts/base.html:133
 msgid "Files"
 msgstr "Faili"
 
-#: static/default/html/layouts/base.html:142
+#: static/default/html/layouts/base.html:139
 msgid "Links"
 msgstr "Saites"
 
-#: static/default/html/layouts/base.html:148
+#: static/default/html/layouts/base.html:145
 msgid "Groups"
 msgstr "Grupas"
 
-#: static/default/html/layouts/base.html:160
-msgid "Mailpile"
-msgstr "Mailpile"
-
-#: static/default/html/layouts/base.html:160
-msgid "is free software made by"
-msgstr "ir bezmaksas programmatūra, kuru radīja"
-
-#: static/default/html/layouts/base.html:160
-msgid "more"
-msgstr "vairāk"
-
-#: static/default/html/layouts/base.html:175
-#: static/default/html/message/index.html:16
-msgid "Date:"
-msgstr "Datums:"
-
-#: static/default/html/layouts/base.html:175
-msgid "Start time"
-msgstr "Starta laiks"
-
-#: static/default/html/layouts/base.html:175
-msgid "to"
-msgstr "kam"
-
-#: static/default/html/layouts/base.html:175
-msgid "Present"
-msgstr "Pašreizējs"
-
-#: static/default/html/layouts/base.html:176
-msgid "With:"
-msgstr "Ar:"
-
-#: static/default/html/layouts/base.html:176
-msgid "No Tags"
-msgstr ""
-
-#: static/default/html/layouts/base.html:177
-msgid "And:"
-msgstr "Un:"
-
-#: static/default/html/layouts/base.html:177
-msgid "All groups"
-msgstr "Visām grupām:"
-
-#: static/default/html/message/index.html:16
-msgid "at"
-msgstr ""
-
-#: static/default/html/message/index.html:17
-msgid "From:"
-msgstr "No:"
-
-#: static/default/html/message/index.html:18
-msgid "To:"
-msgstr "Kam:"
-
-#: static/default/html/message/index.html:20
-msgid "Cc:"
-msgstr "Cc:"
-
-#: static/default/html/message/index.html:23
-msgid "Bcc:"
-msgstr "Bcc:"
-
-#: static/default/html/message/index.html:25
-msgid "Subject:"
-msgstr "Tēma:"
-
-#: static/default/html/message/index.html:34
-msgid "Signed by"
-msgstr "Parakstīja"
-
-#: static/default/html/message/index.html:35
-msgid "Unknown signature from"
-msgstr "Nezināms paraksts no"
-
-#: static/default/html/message/index.html:36
-msgid "Signed with unknown key"
-msgstr "Parakstīts ar nezināmu atslēgu"
-
-#: static/default/html/message/index.html:41
-msgid "Successfully decrypted message"
-msgstr "Ziņa tika veiksmīgi atšifrēta"
-
-#: static/default/html/message/index.html:42
-msgid "Failed to decrypt message"
-msgstr "Neizdevās atšifrēt ziņu"
-
-#: static/default/html/message/index.html:63
-msgid "Reply"
-msgstr "Atbildēt"
-
-#: static/default/html/message/index.html:66
-#: static/default/html/partials/sub_nav_search.html:3
-msgid "All"
-msgstr "Visiem"
-
-#: static/default/html/message/index.html:69
-msgid "Forward"
-msgstr "Pārsūtīt"
-
-#: static/default/html/message/draft.html:14
-msgid "To"
-msgstr "Kam"
-
-#: static/default/html/message/draft.html:16
-#: static/default/html/message/draft.html:24
-msgid "Bcc"
-msgstr "Bcc"
-
-#: static/default/html/message/draft.html:17
-#: static/default/html/message/draft.html:20
-msgid "Cc"
-msgstr "Cc"
-
-#: static/default/html/message/draft.html:28
+#: static/default/html/layouts/base.html:200
+#: static/default/html/partials/compose.html:27
+#: static/default/html/partials/thread_metadata.html:3
+#: static/default/html/partials/thread_metadata.html:6
 msgid "From"
 msgstr "No"
 
-#: static/default/html/message/draft.html:38
+#: static/default/html/layouts/base.html:200
+#, fuzzy
+msgid "Start Date"
+msgstr "Starta laiks"
+
+#: static/default/html/layouts/base.html:200
+msgid "to"
+msgstr "kam"
+
+#: static/default/html/layouts/base.html:200
+msgid "Present"
+msgstr "Pašreizējs"
+
+#: static/default/html/layouts/base.html:201
+#, fuzzy
+msgid "With"
+msgstr "Ar:"
+
+#: static/default/html/layouts/base.html:201
+msgid "No Tags"
+msgstr ""
+
+#: static/default/html/layouts/base.html:202
+msgid "In"
+msgstr ""
+
+#: static/default/html/layouts/base.html:202
+#, fuzzy
+msgid "All Groups"
+msgstr "Visām grupām:"
+
+#: static/default/html/layouts/base.html:203
+#, fuzzy
+msgid "And"
+msgstr "Un:"
+
+#: static/default/html/layouts/base.html:203
+#, fuzzy
+msgid "All Contacts"
+msgstr "Kontakti"
+
+#: static/default/html/page/donate/index.html:2
+#: static/default/html/page/donate/index.html:7
+#, fuzzy
+msgid "Donate To Mailpile"
+msgstr "Lūdzu Ziedojiet Mailpile"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Or you can donate to our"
+msgstr "Vai arī jūs variet ziedot mūsu"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Bitcoin Wallet"
+msgstr "Bitcoin Maks"
+
+#: static/default/html/page/donate/index.html:22
+msgid "Mailpile"
+msgstr "Mailpile"
+
+#: static/default/html/page/donate/index.html:22
+msgid "is free software made by"
+msgstr "ir bezmaksas programmatūra, kuru radīja"
+
+#: static/default/html/page/donate/index.html:22
+msgid "more"
+msgstr "vairāk"
+
+#: static/default/html/partials/compose.html:40
+#, fuzzy
+msgid "Not Signed"
+msgstr "Parakstīja"
+
+#: static/default/html/partials/compose.html:41
+msgid "Signature Error"
+msgstr ""
+
+#: static/default/html/partials/compose.html:42
+#: static/default/html/partials/compose.html:43
+#, fuzzy
+msgid "Signed"
+msgstr "Parakstīja"
+
+#: static/default/html/partials/compose.html:45
+msgid "None"
+msgstr ""
+
+#: static/default/html/partials/compose.html:47
+#, fuzzy
+msgid "Can't Encrypt"
+msgstr "Šifrēts"
+
+#: static/default/html/partials/compose.html:48
+msgid "Error Encrypting"
+msgstr ""
+
+#: static/default/html/partials/compose.html:74
+msgid "To"
+msgstr "Kam"
+
+#: static/default/html/partials/compose.html:75
+#: static/default/html/partials/compose.html:81
+msgid "Cc"
+msgstr "Cc"
+
+#: static/default/html/partials/compose.html:76
+#: static/default/html/partials/compose.html:85
+msgid "Bcc"
+msgstr "Bcc"
+
+#: static/default/html/partials/compose.html:89
 msgid "Subject"
 msgstr "Tēma"
 
-#: static/default/html/message/draft.html:45
-msgid "No Attachments"
-msgstr "Nav Pielikumu"
+#: static/default/html/partials/compose.html:90
+#, fuzzy
+msgid "New Subject"
+msgstr "Tēma"
 
-#: static/default/html/message/draft.html:50
-msgid "Send"
-msgstr "Nosūtīt"
+#: static/default/html/partials/compose.html:94
+#, fuzzy
+msgid "Message"
+msgstr "Ziņas"
 
-#: static/default/html/message/draft.html:51
+#: static/default/html/partials/compose.html:95
+msgid "Your reply..."
+msgstr ""
+
+#: static/default/html/partials/compose.html:103
 msgid "Save"
 msgstr "Saglabāt"
 
-#: static/default/html/message/draft.html:60
-msgid "Message not found!"
-msgstr "Ziņa nav atrasta!"
+#: static/default/html/partials/compose.html:107
+msgid "Reply"
+msgstr "Atbildēt"
 
-#: static/default/html/tag/list.html:14
-msgid "Total"
-msgstr "Kopējais"
+#: static/default/html/partials/compose.html:111
+msgid "Send"
+msgstr "Nosūtīt"
 
-#: static/default/html/tag/list.html:19
-#: static/default/html/partials/sub_nav_search.html:4
-msgid "New"
-msgstr "Jauni"
+#: static/default/html/partials/contact_add.html:1
+#, fuzzy
+msgid "Add New Contact"
+msgstr "Pievienot Kontaktu"
 
-#: static/default/html/tag/list.html:24
-msgid "View Messages"
-msgstr "Aplūkot Ziņas"
+#: static/default/html/partials/contact_add.html:6
+#: static/default/html/settings/index.html:20
+msgid "Name"
+msgstr "Vārds"
 
-#: static/default/html/tag/list.html:34
-msgid "Archived"
-msgstr "Arhivēti"
+#: static/default/html/partials/contact_add.html:9
+msgid "E-mail"
+msgstr "E-pasts"
 
-#: static/default/html/tag/add.html:3
-msgid "Enter New Tag Info"
-msgstr ""
-
-#: static/default/html/tag/add.html:9
-msgid "Tag"
-msgstr ""
-
-#: static/default/html/tag/add.html:12
-msgid "Slug"
-msgstr ""
-
-#: static/default/html/tag/add.html:15
+#: static/default/html/partials/contact_add.html:12
+#: static/default/html/tag/add.html:40
 msgid "Add"
 msgstr "Pievienot"
+
+#: static/default/html/partials/errors_content.html:3
+#, fuzzy
+msgid "Oops, You've Found a Quirk"
+msgstr "Oops, Jūs atradāt kļūdu!"
+
+#: static/default/html/partials/errors_content.html:4
+msgid ""
+"We were unable to find the message you requested, perhaps it was deleted?"
+msgstr ""
+"Mēs nevarējām atrast ziņu, kuru jūs pieprasījāt. Varbūt tā ir izdzēsta?"
+
+#: static/default/html/partials/errors_content.html:6
+#, fuzzy
+msgid "Contact Missing"
+msgstr "Kontakti"
+
+#: static/default/html/partials/errors_content.html:7
+#, fuzzy
+msgid ""
+"We were unable to find the contact you requested, perhaps it was typed (or "
+"linked to) incorrectly?"
+msgstr ""
+"Mēs nevarējām atrast ziņu, kuru jūs pieprasījāt. Varbūt tā ir izdzēsta?"
+
+#: static/default/html/partials/errors_content.html:9
+#, python-format
+msgid ""
+"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
+"\">bug report</a>"
+msgstr ""
+"Ja jūs uzskatiet, ka tā ir kļūda, lūdzu nosūtiet <a href=\"%(url)s\" target="
+"\"_blank\">kļūdas iesniegumu</a>"
+
+#: static/default/html/partials/thread_message.html:17
+msgid "No Recipients"
+msgstr ""
+
+#: static/default/html/partials/thread_metadata.html:17
+#, fuzzy
+msgid "Expand Message"
+msgstr "Ziņas"
+
+#: static/default/html/partials/tools_contacts.html:4
+msgid "Add Contact"
+msgstr "Pievienot Kontaktu"
+
+#: static/default/html/partials/tools_contacts.html:5
+msgid "Import Contacts"
+msgstr "Importēt Kontaktus"
+
+#: static/default/html/partials/tools_contacts.html:11
+#: static/default/html/partials/tools_tags.html:10
+msgid "selected"
+msgstr "iezīmētie"
+
+#: static/default/html/partials/tools_message.html:2
+#, fuzzy
+msgid "No Subject"
+msgstr "Tēma"
+
+#: static/default/html/partials/tools_message.html:4
+msgid "People"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:10
+#: static/default/html/tag/list.html:29
+msgid "Messages"
+msgstr "Ziņas"
+
+#: static/default/html/partials/tools_message.html:12
+msgid "Move Whole Thread to Later"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:13
+msgid "Assign Tags to Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:14
+msgid "Archive Whole Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:15
+msgid "Delete Whole Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:3
+msgid "All"
+msgstr "Visiem"
+
+#: static/default/html/partials/tools_search.html:4
+msgid "Unread"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:6
+#: static/default/html/tag/add.html:15 static/default/html/tag/index.html:19
+#: static/default/html/tag/list.html:24
+msgid "Display"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:8
+msgid "Snug"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:9
+msgid "Cozy"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:10
+msgid "Comfy"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:11
+msgid "Detailed"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:27
+#, fuzzy
+msgid "Messages Selected"
+msgstr "Ziņas"
+
+#: static/default/html/partials/tools_search.html:27
+#: static/default/html/partials/tools_search.html:28
+msgid "Click message or checkbox to select"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:32
+msgid "Move to Later"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:33
+msgid "Move to Group"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:34
+msgid "Assign Tags"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:36
+msgid "Archive Selection"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:38
+msgid "Untag"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:40
+msgid "Delete Selection"
+msgstr ""
+
+#: static/default/html/partials/tools_tags.html:4
+msgid "Add Tag"
+msgstr ""
+
+#: static/default/html/search/index.html:25
+msgid "Conversations"
+msgstr "Sarunas"
+
+#: static/default/html/search/index.html:30
+msgid "No Results Found"
+msgstr "Nav Atrasti Rezultāti"
+
+#: static/default/html/search/index.html:34
+#, python-format
+msgid ""
+"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
+"strong> seconds."
+msgstr ""
+"Pārmeklēja <strong>%(number)s</strong> ziņas <strong>%(elapsed)s</strong> "
+"sekundēs."
+
+#: static/default/html/search/index.html:34
+msgid "Vroom!"
+msgstr "Vroom!"
 
 #: static/default/html/settings/index.html:7
 msgid "Your Profiles"
@@ -969,14 +1632,17 @@ msgstr "Tavi Profili"
 msgid "Add New Profile"
 msgstr "Pievienot Jaunu Profilu"
 
-#: static/default/html/settings/index.html:20
-#: static/default/html/contact/add.html:9
-msgid "Name"
-msgstr "Vārds"
+#: static/default/html/settings/index.html:21
+msgid "Chelsea Manning"
+msgstr ""
 
 #: static/default/html/settings/index.html:23
 msgid "Email"
 msgstr "E-pasts"
+
+#: static/default/html/settings/index.html:24
+msgid "chelsea@email.com"
+msgstr ""
 
 #: static/default/html/settings/index.html:26
 msgid "SMTP Server"
@@ -986,6 +1652,10 @@ msgstr "SMTP Serveris"
 msgid "Login"
 msgstr "Lietotājvārds"
 
+#: static/default/html/settings/index.html:28
+msgid "username@mailserver.org"
+msgstr ""
+
 #: static/default/html/settings/index.html:30
 msgid "Password"
 msgstr "Parole"
@@ -993,6 +1663,10 @@ msgstr "Parole"
 #: static/default/html/settings/index.html:33
 msgid "Server"
 msgstr "Serveris"
+
+#: static/default/html/settings/index.html:34
+msgid "smtp.mailserver.org"
+msgstr ""
 
 #: static/default/html/settings/index.html:36
 msgid "Port"
@@ -1002,129 +1676,142 @@ msgstr "Ports"
 msgid "Add Profile"
 msgstr "Pievienot Profilu"
 
-#: static/default/html/partials/bulk_actions.html:2
-msgid "Messages"
-msgstr "Ziņas"
+#: static/default/html/tag/add.html:3
+#, fuzzy
+msgid "Add New Tag"
+msgstr "Pievienot Jaunu Profilu"
 
-#: static/default/html/partials/bulk_actions.html:2
-msgid "selected"
-msgstr "iezīmētie"
+#: static/default/html/tag/add.html:9 static/default/html/tag/add.html:17
+#: static/default/html/tag/index.html:13 static/default/html/tag/index.html:21
+msgid "Tag"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_contacts.html:3
-msgid "Contacts"
-msgstr "Kontakti"
+#: static/default/html/tag/add.html:10 static/default/html/tag/index.html:14
+msgid "Friends & Family"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_contacts.html:4
-msgid "Add Contact"
-msgstr "Pievienot Kontaktu"
+#: static/default/html/tag/add.html:12 static/default/html/tag/index.html:16
+msgid "Slug"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_contacts.html:5
-msgid "Import Contacts"
-msgstr "Importēt Kontaktus"
+#: static/default/html/tag/add.html:13 static/default/html/tag/index.html:17
+msgid "friends-family"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_message.html:6
+#: static/default/html/tag/add.html:18 static/default/html/tag/index.html:23
 msgid "Archive"
 msgstr "Arhīvs"
 
-#: static/default/html/partials/sub_nav_message.html:7
-msgid "Delete"
-msgstr "Izdzēst"
-
-#: static/default/html/partials/sub_nav_message.html:8
-msgid "Show All"
-msgstr "Parādīt Visus"
-
-#: static/default/html/partials/errors_content.html:3
-msgid "Oops, you've found a quirk!"
-msgstr "Oops, Jūs atradāt kļūdu!"
-
-#: static/default/html/partials/errors_content.html:4
-msgid ""
-"We were unable to find the message you requested, perhaps it was deleted?"
-msgstr "Mēs nevarējām atrast ziņu, kuru jūs pieprasījāt. Varbūt tā ir izdzēsta?"
-
-#: static/default/html/partials/errors_content.html:5
-#, python-format
-msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" "
-"target=\"_blank\">bug report</a>"
-msgstr "Ja jūs uzskatiet, ka tā ir kļūda, lūdzu nosūtiet <a href=\"%(url)s\" target=\"_blank\">kļūdas iesniegumu</a>"
-
-#: static/default/html/partials/sub_nav_tags.html:3
-msgid "Tags"
+#: static/default/html/tag/add.html:21 static/default/html/tag/index.html:27
+msgid "Parent"
 msgstr ""
 
-#: static/default/html/partials/sub_nav_tags.html:4
-msgid "Add Tag"
+#: static/default/html/tag/add.html:23 static/default/html/tag/index.html:29
+msgid "none"
 msgstr ""
 
-#: static/default/html/partials/details_search_speed.html:2
-#, python-format
-msgid ""
-"Searched <strong>%(number)s</strong> messages in "
-"<strong>%(elapsed)s</strong> seconds."
-msgstr "Pārmeklēja <strong>%(number)s</strong> ziņas <strong>%(elapsed)s</strong> sekundēs."
-
-#: static/default/html/partials/details_search_speed.html:2
-msgid "Vroom!"
-msgstr "Vroom!"
-
-#: static/default/html/search/index.html:20
-msgid "Previous"
-msgstr "Iepriekšējie"
-
-#: static/default/html/search/index.html:20
-msgid "Next"
-msgstr "Nākamie"
-
-#: static/default/html/search/index.html:22
-msgid "of"
-msgstr "no"
-
-#: static/default/html/search/index.html:22
-msgid "Conversations"
-msgstr "Sarunas"
-
-#: static/default/html/search/index.html:22
-msgid "1 Conversation"
-msgstr "1 Saruna"
-
-#: static/default/html/search/index.html:22
-msgid "No results found"
-msgstr "Nav atrasti rezultāti"
-
-#: static/default/html/search/index.html:23
-msgid "Snug"
+#: static/default/html/tag/add.html:31 static/default/html/tag/index.html:38
+msgid "Template"
 msgstr ""
 
-#: static/default/html/search/index.html:24
-msgid "Cozy"
+#: static/default/html/tag/add.html:33 static/default/html/tag/index.html:40
+#, fuzzy
+msgid "Default"
+msgstr "Galvenā tēma"
+
+#: static/default/html/tag/add.html:36 static/default/html/tag/index.html:43
+#, fuzzy
+msgid "Search Terms"
+msgstr "Meklē %s"
+
+#: static/default/html/tag/index.html:22
+msgid "Priority Tag"
 msgstr ""
 
-#: static/default/html/search/index.html:25
-msgid "Comfy"
+#: static/default/html/tag/index.html:24
+msgid "Invisible"
 msgstr ""
 
-#: static/default/html/search/index.html:26
-msgid "Fluffy"
-msgstr ""
+#: static/default/html/tag/index.html:48
+#, fuzzy
+msgid "Save tag"
+msgstr "Saglabāt"
 
-#: static/default/html/search/index.html:32
-msgid "No Results Found"
-msgstr "Nav Atrasti Rezultāti"
+#: static/default/html/tag/list.html:13
+msgid "Total"
+msgstr "Kopējais"
 
-#: static/default/html/contact/add.html:3
-msgid "Contact Info"
-msgstr "Kontakta Informācija"
+#: static/default/html/tag/list.html:18
+msgid "New"
+msgstr "Jauni"
 
-#: static/default/html/contact/add.html:12
-msgid "E-mail"
-msgstr "E-pasts"
+#: static/default/html/tag/list.html:44
+#, fuzzy
+msgid "Archived Tags"
+msgstr "Arhivēti"
 
-#: static/default/html/contact/add.html:15
-msgid "Website"
-msgstr "Mājas lapa"
+#~ msgid "WARNING: Imported old config from %s"
+#~ msgstr "BRĪDINĀJUMS: Importēti veci iestatījumi no %s"
 
-#: static/default/html/contact/add.html:18
-msgid "PGP Key"
-msgstr "PGP Atslēga"
+#~ msgid "WARNING: Failed to import config from %s"
+#~ msgstr "BRĪDINĀJUMS: Neizdevās importēt iestatījumus no %s"
+
+#~ msgid "Statistics updated"
+#~ msgstr "Statistika atjaunota"
+
+#~ msgid "disabled."
+#~ msgstr "atslēgts."
+
+#~ msgid "Decode failed: %s %s"
+#~ msgstr "Atšifēšana neizdevās: %s %s"
+
+#~ msgid "Date:"
+#~ msgstr "Datums:"
+
+#~ msgid "From:"
+#~ msgstr "No:"
+
+#~ msgid "To:"
+#~ msgstr "Kam:"
+
+#~ msgid "Cc:"
+#~ msgstr "Cc:"
+
+#~ msgid "Bcc:"
+#~ msgstr "Bcc:"
+
+#~ msgid "Subject:"
+#~ msgstr "Tēma:"
+
+#~ msgid "Unknown signature from"
+#~ msgstr "Nezināms paraksts no"
+
+#~ msgid "Signed with unknown key"
+#~ msgstr "Parakstīts ar nezināmu atslēgu"
+
+#~ msgid "Successfully decrypted message"
+#~ msgstr "Ziņa tika veiksmīgi atšifrēta"
+
+#~ msgid "Forward"
+#~ msgstr "Pārsūtīt"
+
+#~ msgid "No Attachments"
+#~ msgstr "Nav Pielikumu"
+
+#~ msgid "Message not found!"
+#~ msgstr "Ziņa nav atrasta!"
+
+#~ msgid "Delete"
+#~ msgstr "Izdzēst"
+
+#~ msgid "Show All"
+#~ msgstr "Parādīt Visus"
+
+#~ msgid "Contact Info"
+#~ msgstr "Kontakta Informācija"
+
+#~ msgid "Website"
+#~ msgstr "Mājas lapa"
+
+#~ msgid "PGP Key"
+#~ msgstr "PGP Atslēga"
