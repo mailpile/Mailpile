@@ -77,7 +77,7 @@ inspired me to start working on this.
 
 Contributors:
 
-- Bjarni R. Einasson (<http://bre.klaki.net/>)
+- Bjarni R. Einarsson (<http://bre.klaki.net/>)
 - Smari McCarthy (<http://www.smarimccarthy.is/>)
 - Brennan Novak (<https://brennannovak.com/>)
 - Lots more, run `git shortlog -s` for a list! (Or see the list [on Github](https://github.com/pagekite/Mailpile/graphs/contributors).)
