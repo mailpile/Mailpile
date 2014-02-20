@@ -1,18 +1,15 @@
 {% extends "layouts/base.html" %}
-
 {% block content %}
 
 <div id="settings" class="content-normal">
   
   <h3>{{_("Your Profiles")}}</h3>
-  
   <ul>
   {% for p in result.profiles %}
     <li><strong>{{ p.name }}</strong> <br> {{ p.email }}<br> {{ p.route }}</li>
   {% endfor %}
   </ul>
   <hr>
-
 
   <h3>{{_("Add New Profile")}}</h3>
   <form id="form-profile-add" class="standard" action="/api/0/settings/add/" method="POST">
@@ -47,4 +44,4 @@
 
 </div>
 
-{% endblock %}
+{% endblock %}{% block title %}{{_("Profiles")}} | {{_("Settings")}}{% endblock %}

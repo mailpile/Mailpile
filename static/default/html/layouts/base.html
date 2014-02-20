@@ -187,6 +187,8 @@
     {% include("partials/tools_contacts.html") %}
   {% elif command in ("tag", "tag/list", "tag/add") %}
     {% include("partials/tools_tags.html") %}
+  {% elif command in ("settings") %}
+    {% include("partials/tools_settings.html") %}
   {% elif command == "message" %}
     {% include("partials/tools_message.html") %}
   {% endif %}
