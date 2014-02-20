@@ -41,6 +41,10 @@
       {% endfor %}
     </ul>
     {% endif %}
+    <ul class="clearfix">
+      <li>Show:</li>
+      <li><a href="/message/raw/={{ mid }}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
+    </ul>
   </div>
   
   {% set last_enc_context = message.crypto.encryption.context %}
