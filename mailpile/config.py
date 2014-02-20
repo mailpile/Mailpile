@@ -779,6 +779,7 @@ class ConfigManager(ConfigDict):
         self.cron_worker = None
         self.http_worker = None
         self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
+        self.other_workers = []
 
         self.index = None
         self.vcards = {}
@@ -1153,6 +1154,12 @@ class ConfigManager(ConfigDict):
                 if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                     config.http_worker = HttpWorker(session, sspec)
                     config.http_worker.start()
+            if not config.other_workers:
+                import mailpile.plugins
+                for worker in mailpile.plugins.WORKERS:
+                    w = worker(session)
+                    w.start()
+                    config.other_workers.append(w)
 
         # Update the cron jobs, if necessary
         if config.cron_worker:
@@ -1187,11 +1194,12 @@ class ConfigManager(ConfigDict):
 
     def stop_workers(config):
         for wait in (False, True):
-            for w in (config.http_worker,
+            for w in [config.http_worker,
                       config.slow_worker,
-                      config.cron_worker):
+                      config.cron_worker] + config.other_workers:
                 if w:
                     w.quit(join=wait)
+        config.other_workers = []
 
 
 ##############################################################################

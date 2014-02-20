@@ -218,12 +218,27 @@ SLOW_PERIODIC_JOBS = {}
 
 def register_fast_periodic_job(name, period, callback):
     global FAST_PERIODIC_JOBS
+    # FIXME: complain about duplicates?
     FAST_PERIODIC_JOBS[name] = (period, callback)
 
 
 def register_slow_periodic_job(name, period, callback):
     global SLOW_PERIODIC_JOBS
+    # FIXME: complain about duplicates?
     SLOW_PERIODIC_JOBS[name] = (period, callback)
+
+
+##[ Pluggable background worker threads ]####################################
+
+WORKERS = []
+
+
+def register_worker(thread_obj):
+    global WORKERS
+    assert(hasattr(thread_obj, 'start'))
+    assert(hasattr(thread_obj, 'quit'))
+    # FIXME: complain about duplicates?
+    WORKERS.append(thread_obj)
 
 
 ##[ Pluggable commands ]######################################################
