@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2013-12-06 01:20+0400\n"
-"PO-Revision-Date: 2014-02-20 18:23+0530\n"
+"PO-Revision-Date: 2014-02-21 11:28+0530\n"
 "Last-Translator: Akhil <akhilkrishnans@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -20,14 +20,14 @@ msgstr ""
 #: mailpile/commands.py:154
 #, python-format
 msgid "ID out of bounds: %s"
-msgstr ""
+msgstr "ഐഡിയുടെ വലിപ്പം കൂടിപ്പോയ്: %s"
 
 #: mailpile/commands.py:157
 #: mailpile/commands.py:163
 #: mailpile/commands.py:168
 #, python-format
 msgid "What message is %s?"
-msgstr ""
+msgstr " %s എന്ത് സന്ദേശമാണ്?"
 
 #: mailpile/commands.py:257
 #, python-format
@@ -42,7 +42,7 @@ msgstr ""
 #: mailpile/commands.py:301
 #, python-format
 msgid "Running: %s"
-msgstr ""
+msgstr "പ്രവർത്തിക്കുന്നു: %s"
 
 #: mailpile/commands.py:322
 msgid "Nothing changed"
@@ -51,7 +51,7 @@ msgstr "മാറ്റമൊന്നുമില്ല"
 #: mailpile/commands.py:324
 #, python-format
 msgid "Aborted: %s"
-msgstr ""
+msgstr "റദ്ദാക്കി: %s"
 
 #: mailpile/commands.py:354
 msgid "Aborted"
@@ -64,12 +64,12 @@ msgstr "അവസ്ഥ നവീകരിച്ചു"
 #: mailpile/commands.py:534
 #, python-format
 msgid "No such key: %s"
-msgstr ""
+msgstr "അങ്ങനെയൊരു ചാവി ഇല്ല: %s"
 
 #: mailpile/commands.py:603
 #, python-format
 msgid "The web interface is %s"
-msgstr ""
+msgstr "വെബ്‌സമ്പർക്കമുഖം %s ആണ്"
 
 #: mailpile/commands.py:604
 msgid "disabled."
@@ -93,7 +93,7 @@ msgstr "പിശക്"
 
 #: mailpile/commands.py:697
 msgid "Unknown command"
-msgstr ""
+msgstr "ആജ്ഞ മനസ്സിലായില്ല"
 
 #: mailpile/commands.py:795
 #, python-format
@@ -127,7 +127,7 @@ msgstr "ഓഫ്"
 #: mailpile/config.py:106
 #, python-format
 msgid "Invalid boolean: %s"
-msgstr ""
+msgstr "അസാധുവായ മൂല്യം: %s"
 
 #: mailpile/config.py:129
 #, python-format
@@ -147,16 +147,16 @@ msgstr ""
 #: mailpile/config.py:213
 #, python-format
 msgid "Not a file: %s"
-msgstr ""
+msgstr "അങ്ങനെയൊരു പ്രമാണമില്ല: %s"
 
 #: mailpile/config.py:231
 #, python-format
 msgid "Not a directory: %s"
-msgstr ""
+msgstr "അങ്ങനെയൊരു അറയില്ല: %s"
 
 #: mailpile/config.py:366
 msgid "Override this"
-msgstr ""
+msgstr "ഇതിനെ മറികടക്കൂ"
 
 #: mailpile/config.py:425
 #, python-format
@@ -191,7 +191,7 @@ msgstr ""
 #: mailpile/config.py:787
 #, python-format
 msgid "Creating: %s"
-msgstr ""
+msgstr "നിർമ്മിക്കുന്നു: %s"
 
 #: mailpile/config.py:845
 #, python-format
@@ -216,22 +216,22 @@ msgstr ""
 #: mailpile/config.py:914
 #, python-format
 msgid "Mailbox ID too large: %s"
-msgstr ""
+msgstr "സന്ദേശപ്പെട്ടി വളരെ വലുതാണ്: %s"
 
 #: mailpile/config.py:944
 #, python-format
 msgid "No such mailbox: %s"
-msgstr ""
+msgstr "അങ്ങനെയൊരു സന്ദേശപ്പെട്ടിയില്ല: %s"
 
 #: mailpile/config.py:951
 #, python-format
 msgid "%s: Updating: %s"
-msgstr ""
+msgstr "%s: നവീകരിക്കുന്നു:  %s"
 
 #: mailpile/config.py:958
 #, python-format
 msgid "%s: Opening: %s (may take a while)"
-msgstr ""
+msgstr "%s: തുറക്കുന്നു: %s (അൽപം സമയമെടുക്കാം)"
 
 #: mailpile/config.py:1065
 msgid "Parent paths are not allowed"
@@ -317,35 +317,35 @@ msgstr ""
 
 #: mailpile/defaults.py:28
 msgid "Default theme"
-msgstr ""
+msgstr "സ്വതേയുള്ള പശ്ചാത്തലം"
 
 #: mailpile/defaults.py:30
 msgid "Location of vcards"
-msgstr ""
+msgstr "വികാർഡുകളുടെ സ്ഥാനം"
 
 #: mailpile/defaults.py:33
 msgid "User preferences"
-msgstr ""
+msgstr "ഉപയോക്തൃ മുൻഗണനകൾ"
 
 #: mailpile/defaults.py:35
 msgid "Search results per page"
-msgstr ""
+msgstr "ഓരോ താളിലേയും തിരച്ചിൽ ഫലങ്ങൾ"
 
 #: mailpile/defaults.py:36
 msgid "New mail check frequency"
-msgstr ""
+msgstr "പുതിയ ഈമെയിൽ തിരയാനുള്ള ഇടവേള"
 
 #: mailpile/defaults.py:37
 msgid "Inline PGP signatures or attached"
-msgstr ""
+msgstr "ഇൻലൈനായി PGP ഒപ്പ് വേണോ അതോ സന്ദേശത്തിനൊപ്പം കൂട്ടിക്കെട്ടണമോ"
 
 #: mailpile/defaults.py:38
 msgid "Default sort order"
-msgstr ""
+msgstr "സ്വതേയുള്ള തരംതിരിക്കൽ ക്രമം"
 
 #: mailpile/defaults.py:39
 msgid "Encrypt local data to ..."
-msgstr ""
+msgstr "ലോക്കൽ ഡാറ്റ എങ്ക്രിപ്റ്റ് ചെയ്ത്"
 
 #: mailpile/defaults.py:40
 msgid "Key to use to scramble the index"
@@ -389,83 +389,83 @@ msgstr ""
 
 #: mailpile/defaults.py:54
 msgid "Account name"
-msgstr ""
+msgstr "അംഗത്വ നാമം"
 
 #: mailpile/defaults.py:55
 msgid "E-mail address"
-msgstr ""
+msgstr "ഈമെയിൽ വിലാസം"
 
 #: mailpile/defaults.py:56
 msgid "Message signature"
-msgstr ""
+msgstr "സന്ദേശത്തിലെ ഒപ്പ്"
 
 #: mailpile/defaults.py:57
 msgid "Outgoing mail route"
-msgstr ""
+msgstr "പുറത്തേക്ക് മെയിൽ പോകേണ്ട വഴി"
 
 #: mailpile/gpgi.py:14
 msgid "Trust not calculated"
-msgstr ""
+msgstr "വിശ്വാസത്തെപ്പറ്റി കണക്കുകൂട്ടിയിട്ടില്ല"
 
 #: mailpile/gpgi.py:15
 msgid "Unknown trust"
-msgstr ""
+msgstr "വിശ്വാസത്തെപ്പറ്റി വലിയപിടിയില്ല"
 
 #: mailpile/gpgi.py:16
 msgid "Undefined trust"
-msgstr ""
+msgstr "വിശ്വാസത്തെപ്പറ്റി നിർവ്വചനമൊന്നുമില്ല"
 
 #: mailpile/gpgi.py:17
 msgid "Never trust"
-msgstr ""
+msgstr "ഒരിക്കലും വിശ്വസിക്കരുത്"
 
 #: mailpile/gpgi.py:18
 msgid "Marginally trust"
-msgstr ""
+msgstr "കുറേയൊക്കെ വിശ്വസിക്കാം"
 
 #: mailpile/gpgi.py:19
 msgid "Full trust"
-msgstr ""
+msgstr "പൂർണ്ണമായും വിശ്വസിക്കുക"
 
 #: mailpile/gpgi.py:20
 msgid "Ultimate trust"
-msgstr ""
+msgstr "ഉറപ്പായും വിശ്വസിക്കാം"
 
 #: mailpile/gpgi.py:21
 msgid "Expired key, not trusted"
-msgstr ""
+msgstr "ചാവി അസാധു, വിശ്വസിക്കരുത്"
 
 #: mailpile/gpgi.py:22
 msgid "Revoked key, not trusted"
-msgstr ""
+msgstr "പിൻവലിച്ച ചാവി, വിശ്വസിക്കരുത്"
 
 #: mailpile/gpgi.py:23
 msgid "Disabled key, not trusted"
-msgstr ""
+msgstr "നിർജ്ജീവമാക്കിയ ചാവി, വിശ്വസിക്കരുത്"
 
 #: mailpile/gpgi.py:26
 msgid "RSA"
-msgstr ""
+msgstr "RSA"
 
 #: mailpile/gpgi.py:27
 msgid "RSA (encrypt only)"
-msgstr ""
+msgstr "RSA (രഹസ്യകോഡാക്കൽ മാത്രം)"
 
 #: mailpile/gpgi.py:28
 msgid "RSA (sign only)"
-msgstr ""
+msgstr "RSA (ഒപ്പ് മാത്രം)"
 
 #: mailpile/gpgi.py:29
 msgid "Elgamal (encrypt only)"
-msgstr ""
+msgstr "Elgamal (രഹസ്യകോഡാക്കൽ മാത്രം)"
 
 #: mailpile/gpgi.py:30
 msgid "DSA"
-msgstr ""
+msgstr "DSA"
 
 #: mailpile/gpgi.py:31
 msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr ""
+msgstr "Elgamal (രഹസ്യകോഡാക്കലും ഒപ്പുവയ്ക്കലും) [സുരക്ഷിതമല്ല]"
 
 #: mailpile/httpd.py:143
 msgid "XMLRPC has been disabled for now."
@@ -473,29 +473,29 @@ msgstr ""
 
 #: mailpile/httpd.py:161
 msgid "OMG, input too big"
-msgstr ""
+msgstr "ദൈവമേ, ഉള്ളടക്കം വളരെ വലുതാണ്"
 
 #: mailpile/httpd.py:164
 msgid "Unknown content-type"
-msgstr ""
+msgstr "ഉള്ളടക്കം എന്താണെന്ന് മനസ്സിലാകുന്നില്ല"
 
 #: mailpile/httpd.py:169
 msgid "Internal Error"
-msgstr ""
+msgstr "ആന്തരിക പിശക്"
 
 #: mailpile/httpd.py:237
 msgid "Internal error"
-msgstr ""
+msgstr "ആന്തരിക പിശക്"
 
 #: mailpile/mailutils.py:148
 #, python-format
 msgid "SendMail: from %s, to %s\n"
-msgstr ""
+msgstr "അയച്ച സന്ദേശം: %s ൽ നിന്നും %s ന്"
 
 #: mailpile/mailutils.py:151
 #, python-format
 msgid "Connecting to %s"
-msgstr ""
+msgstr "%s മായി ബന്ധിപ്പിക്കുന്നു"
 
 #: mailpile/mailutils.py:172
 #, python-format
@@ -505,34 +505,34 @@ msgstr ""
 #: mailpile/mailutils.py:210
 #, python-format
 msgid "Invalid sendmail: %s"
-msgstr ""
+msgstr "സാധുവല്ലാത്ത സന്ദേശം"
 
 #: mailpile/mailutils.py:212
 msgid "Preparing message..."
-msgstr ""
+msgstr "സന്ദേശം തയ്യാറാക്കുന്നു"
 
 #: mailpile/mailutils.py:222
 #, python-format
 msgid "Message sent, %d bytes"
-msgstr ""
+msgstr "സന്ദേശം അയച്ചു, %d  ബൈറ്റുകൾ"
 
 #: mailpile/mailutils.py:529
 msgid "No data found"
-msgstr ""
+msgstr "ഉള്ളടക്കമൊന്നും കണ്ടെത്താനായില്ല"
 
 #: mailpile/mailutils.py:559
 msgid "Message not found"
-msgstr ""
+msgstr "സന്ദേശമൊന്നും കണ്ടെത്താനായില്ല"
 
 #: mailpile/mailutils.py:728
 #: mailpile/mailutils.py:736
 #: mailpile/mailutils.py:790
 msgid "Mailbox is read-only."
-msgstr ""
+msgstr "സന്ദേശപ്പെട്ടി വായിക്കാൻ മാത്രമേ കഴിയുകയുള്ളൂ"
 
 #: mailpile/mailutils.py:835
 msgid "Message not found?"
-msgstr ""
+msgstr "സന്ദേശം കണ്ടെത്താനായില്ല?"
 
 #: mailpile/mailutils.py:912
 #, python-format
@@ -542,11 +542,11 @@ msgstr ""
 #: mailpile/mailutils.py:920
 #, python-format
 msgid "Wrote preview to: %s"
-msgstr ""
+msgstr "തിരനോട്ടം %s ലേക്ക് എഴുതി"
 
 #: mailpile/mailutils.py:922
 msgid "Failed to generate thumbnail"
-msgstr ""
+msgstr "തിരച്ചിത്രം നിർമ്മിക്കുന്നതിൽ പരാജയപ്പെട്ടു"
 
 #: mailpile/mailutils.py:928
 #, python-format
@@ -556,16 +556,16 @@ msgstr ""
 #: mailpile/mailutils.py:932
 #, python-format
 msgid "No attachments found for: %s"
-msgstr ""
+msgstr "%s നായി കൂട്ടിച്ചേർക്കലുകളൊന്നും കണ്ടില്ല"
 
 #: mailpile/mailutils.py:1028
 #, python-format
 msgid "Decode failed: %s %s"
-msgstr ""
+msgstr "ഡീക്കോഡിങ്ങ് പരാജയപ്പെട്ടു: %s %s"
 
 #: mailpile/search.py:170
 msgid "Loading metadata index..."
-msgstr ""
+msgstr "മെറ്റഡാറ്റയുടെ സൂചിക എടുക്കുന്നു"
 
 #: mailpile/search.py:182
 #, python-format
@@ -575,23 +575,23 @@ msgstr ""
 #: mailpile/search.py:186
 #, python-format
 msgid "Loaded metadata, %d messages"
-msgstr ""
+msgstr "മെറ്റാഡാറ്റ ലോഡ് ചെയ്തു. %d  സന്ദേശങ്ങൾ"
 
 #: mailpile/search.py:193
 msgid "Saving metadata index changes..."
-msgstr ""
+msgstr "മെറ്റാഡാറ്റയുടെ സൂചികയിലെ മാറ്റങ്ങൾ സംരക്ഷിക്കുന്നു"
 
 #: mailpile/search.py:204
 msgid "Saved metadata index changes"
-msgstr ""
+msgstr "സംരക്ഷിച്ച മെറ്റാഡാറ്റയുടെ സൂചികയിലെ മാറ്റങ്ങൾ"
 
 #: mailpile/search.py:210
 msgid "Saving metadata index..."
-msgstr ""
+msgstr "മെറ്റാഡാറ്റയുടെ സൂചിക സംരക്ഷിക്കുന്നു"
 
 #: mailpile/search.py:223
 msgid "Saved metadata index"
-msgstr ""
+msgstr "സംരക്ഷിച്ച മെറ്റാഡാറ്റയുടെ സൂചിക"
 
 #: mailpile/search.py:226
 msgid "Updating high level indexes"
@@ -728,12 +728,12 @@ msgstr ""
 #: mailpile/ui.py:171
 #, python-format
 msgid "Elapsed: %.3fs (%s)"
-msgstr ""
+msgstr "സമയം അധികരിച്ചു: %.3fs (%s)"
 
 #: mailpile/ui.py:183
 #, python-format
 msgid "Completed %s in %.3fs"
-msgstr ""
+msgstr "പൂർത്തിയായി:  %s %.3fs ൽ"
 
 #: mailpile/ui.py:282
 #, python-format
@@ -767,23 +767,23 @@ msgstr ""
 
 #: mailpile/plugins/demos.py:41
 msgid "Demo Contacts"
-msgstr ""
+msgstr "പരീക്ഷണാർത്ഥമുള്ള സമ്പർക്കങ്ങൾ"
 
 #: mailpile/plugins/demos.py:42
 msgid "This is the demo importer"
-msgstr ""
+msgstr "പരീക്ഷണാർത്ഥമുള്ള ഇറക്കുമതിക്കാരൻ"
 
 #: mailpile/plugins/demos.py:45
 msgid "Activate demo importer"
-msgstr ""
+msgstr "പരീക്ഷണാർത്ഥമുള്ള ഇറക്കുമതിക്കാരനെ സജീവമാക്കുക"
 
 #: mailpile/plugins/demos.py:46
 msgid "Contact name"
-msgstr ""
+msgstr "ബന്ധപ്പെടാനുള്ള പേര്"
 
 #: mailpile/plugins/demos.py:47
 msgid "Contact email"
-msgstr ""
+msgstr "ബന്ധപ്പെടാനുള്ള ഈമെയിൽ"
 
 #: mailpile/plugins/vcard_gnupg.py:17
 msgid "Import contacts from GnuPG keyring"
@@ -792,11 +792,11 @@ msgstr ""
 #: mailpile/plugins/vcard_gnupg.py:20
 #: mailpile/plugins/vcard_gravatar.py:30
 msgid "Enable this importer"
-msgstr ""
+msgstr "ഇറക്കുമതിക്കാരനെ സജീവമാക്കുക"
 
 #: mailpile/plugins/vcard_gnupg.py:21
 msgid "Location of keyring"
-msgstr ""
+msgstr "ചാവിക്കൂട്ടത്തിന്റെ സ്ഥാനം"
 
 #: mailpile/plugins/vcard_gravatar.py:27
 msgid "Import contact info from a Gravatar server"
@@ -828,7 +828,7 @@ msgstr ""
 
 #: mailpile/plugins/vcard_mork.py:37
 msgid "Location of Mork database"
-msgstr ""
+msgstr "മോർക്ക് ഡാറ്റാബേസിന്റെ സ്ഥാനം"
 
 #: static/default/html/contact/add.html:3
 msgid "Contact Info"
@@ -864,27 +864,27 @@ msgstr "അടുത്തത്"
 #: static/default/html/contact/list.html:47
 #: static/default/html/search/index.html:22
 msgid "of"
-msgstr ""
+msgstr "ഉം"
 
 #: static/default/html/contact/list.html:47
 #: static/default/html/layouts/base.html:77
 #: static/default/html/partials/sub_nav_contacts.html:3
 msgid "Contacts"
-msgstr ""
+msgstr "സമ്പർക്കങ്ങൾ"
 
 #: static/default/html/contact/list.html:47
 #: static/default/html/search/index.html:22
 msgid "1 Conversation"
-msgstr ""
+msgstr "ഒരു സന്ദേശം"
 
 #: static/default/html/contact/list.html:47
 #: static/default/html/search/index.html:22
 msgid "No results found"
-msgstr ""
+msgstr "ഫലങ്ങളൊന്നും കണ്ടില്ല"
 
 #: static/default/html/contact/list.html:48
 msgid "Snug"
-msgstr ""
+msgstr "അലസം"
 
 #: static/default/html/contact/list.html:49
 msgid "Cozy"
@@ -900,7 +900,7 @@ msgstr ""
 
 #: static/default/html/layouts/base.html:41
 msgid "Close"
-msgstr ""
+msgstr "അടയ്ക്കുക"
 
 #: static/default/html/layouts/base.html:66
 #, python-format
