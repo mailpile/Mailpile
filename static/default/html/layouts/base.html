@@ -97,17 +97,17 @@
   </div>
   <div class="topbar-actions">
     <form id="form-search" class="form-search clearfix" action="/search/">
-		  <input id="search-query" type="text" name="q" placeholder="search" autocomplete="off" tabindex=1 value="{% for t in result.search_terms %}{{ t }} {% endfor %}">
+		  <input id="search-query" type="text" name="q" placeholder="search" autocomplete="off" tabindex=1 alt="{{_("Search")}}" value="{% for t in result.search_terms %}{{ t }} {% endfor %}">
 		  <button type="submit" class="submit"><span class="icon-search"></span></button>
 	  </form>
     <nav class="topbar-nav">
       <ul>
         <li class="nav-search"><a href="#" title="{{_("Search")}}"><span class="link-icon icon-search"></span></a></li>
-        <li {% if command == "message/draft" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" title="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a></li>
-        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" title="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a></li>
-        <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" title="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
-        <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
-        <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
+        <li {% if command == "message/draft" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a></li>
+        <li {% if command == "contact/list" %}class="navigation-on"{% endif %}><a href="/contact/list/" title="{{_("Contacts")}}" alt="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a></li>
+        <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
+        <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
+        <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}" alt="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
       </ul>
     </nav>
   </div>

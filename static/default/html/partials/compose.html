@@ -77,45 +77,45 @@
         <a id="compose-cc-show" class="compose-show-field" href="#">{{_("Cc")}}</a>
         <a id="compose-bcc-show" class="compose-show-field" href="#">{{_("Bcc")}}</a>
       </label>
-      <input id="compose-to" name="to" type="text" tabindex="1" value="{{editing_strings.to}}">
+      <input id="compose-to" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
     </div>
     <div id="compose-cc-html" class="compose-headers compose-cc hide">
       <label class="left">{{_("Cc")}}</label>
       <label class="right">
         <a href="#cc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
       </label>
-      <input id="compose-cc" name="cc" type="text" value="{{editing_strings.cc}}">
+      <input id="compose-cc" name="cc" type="text" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
     </div>
     <div id="compose-bcc-html" class="compose-headers compose-bcc hide">
       <label class="left">{{_("Bcc")}}</label>
       <label class="right">
         <a href="#bcc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
       </label>
-      <input id="compose-bcc" name="bcc" type="text" value="{{editing_strings.bcc}}">
+      <input id="compose-bcc" name="bcc" type="text" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
     </div>
     <div class="compose-headers compose-subject">
       <label>{{_("Subject")}}</label>
-      <input id="compose-subject" name="subject" tabindex="3" type="text" placeholder="{{_("New Subject")}}" value="{{editing_strings.subject}}">
+      <input id="compose-subject" name="subject" tabindex="3" type="text" placeholder="{{_("Subject")}}" alt="{{_("Subject")}}" value="{{editing_strings.subject}}">
     </div>
   </div>
   <div class="compose-message">
     <label>{{_("Message")}}</label>
-    <textarea id="compose-text" name="body" tabindex="4" onkeyup="this.style.height='18px'; this.style.height = this.scrollHeight + 6 + 'px';" placeholder="{{_("Your reply...")}}">{{editing_strings.body}}</textarea>  
+    <textarea id="compose-text" name="body" tabindex="4" onkeyup="this.style.height='18px'; this.style.height = this.scrollHeight + 6 + 'px';" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
   </div>
   <div class="compose-actions clearfix">
     <div class="compose-attachments left">
       <!-- <a href="#"><span class="icon-attachment"></span> Attach Something</a> -->
     </div>
     <div class="compose-buttons right">
-      <button class="compose-action" type="submit" name="save" value="save">
+      <button class="compose-action" type="submit" name="save" value="save" alt="{{_("Save")}}">
         <span class="icon-compose"></span> {{_("Save")}}
       </button>
       {% if command == "message" %}
-      <button class="compose-action" type="submit" name="reply" value="reply">
+      <button class="compose-action" type="submit" name="reply" value="reply" alt="{{_("Reply")}}">
         <span class="icon-reply"></span> {{_("Reply")}}
       </button>  
       {% else %}
-      <button class="compose-action" type="submit" name="send" value="send">
+      <button class="compose-action" type="submit" name="send" value="send" alt="{{_("Send")}}">
         <span class="icon-sent"></span> {{_("Send")}}
       </button>
       {% endif %}
