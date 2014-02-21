@@ -9,8 +9,10 @@ import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.crypto.state import *
 from mailpile.plugins.tags import Tag
-from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email, NotEditableError
-from mailpile.mailutils import NoFromAddressError, PrepareMessage, SendMail
+from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
+from mailpile.mailutils import NotEditableError
+from mailpile.mailutils import NoFromAddressError, PrepareMessage
+from mailpile.smtpclient import SendMail
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -564,11 +566,15 @@ class Sendit(CompositionCommand):
         for email in emails:
             try:
                 msg_mid = email.get_msg_info(idx.MSG_MID)
+                # FIXME: We are failing to capture error states with sufficient
+                #        granularity, messages may be delivered to some
+                #        recipients but not all...
                 SendMail(session, [PrepareMessage(config,
                                                   email.get_msg(pgpmime=False),
                                                   rcpts=(bounce_to or None))])
                 sent.append(email)
             except KeyLookupError, kle:
+                session.ui.warning(_('Missing keys %s') % kle.missing)
                 missing_keys.extend(kle.missing)
                 self._ignore_exception()
             except:

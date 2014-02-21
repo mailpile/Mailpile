@@ -10,6 +10,19 @@ from gettext import gettext as _
 
 from urllib import quote, unquote
 
+try:
+    import ssl
+except ImportError:
+    ssl = None
+
+try:
+    import sockschain as socks
+except ImportError:
+    try:
+        import socks
+    except ImportError:
+        socks = None
+
 from mailpile.commands import Rescan
 from mailpile.httpd import HttpWorker
 from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir, NoSuchMailboxError
@@ -1052,7 +1065,10 @@ class ConfigManager(ConfigDict):
                 return dict_merge(default_profile, profile)
         return default_profile
 
-    def get_sendmail(self, frm, rcpts='-t'):
+    def get_sendmail(self, frm, rcpts=['-t']):
+        if len(rcpts) == 1:
+            if rcpts[0].lower().endswith('.onion'):
+                return 'smtorp:%s:25' % rcpts[0].split('@')[-1]
         return self.get_profile(frm)['route'] % {
             'rcpt': ', '.join(rcpts)
         }
@@ -1100,6 +1116,12 @@ class ConfigManager(ConfigDict):
         idx.load(session)
         self.index = idx
         return idx
+
+    def get_tor_socket(self):
+        if socks:
+            socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5,
+                                  'localhost', 9050, True)
+        return socks.socksocket
 
     def get_i18n_translation(self, session=None):
         language = self.prefs.language
