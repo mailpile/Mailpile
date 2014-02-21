@@ -16,7 +16,7 @@ __all__ = [
     'dates', 'sizes', 'autotag', 'cryptostate',
     'setup_magic', 'networkgraph', 'exporters',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
-    'hacks', 'html_magic',
+    'hacks', 'html_magic', 'smtp_server'
 ]
 BUILTIN = (__all__[:] + [
     'autotag_sb'
