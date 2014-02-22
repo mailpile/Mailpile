@@ -12,7 +12,7 @@ from mailpile.plugins.tags import Tag
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.mailutils import NotEditableError
 from mailpile.mailutils import NoFromAddressError, PrepareMessage
-from mailpile.smtpclient import SendMail
+from mailpile.smtp_client import SendMail
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *

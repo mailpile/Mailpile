@@ -875,7 +875,7 @@ class ConfigSet(Command):
 
 class ConfigAdd(Command):
     """Add a new value to a list (or ordered dict) setting"""
-    SYNOPSIS = ('S', 'append', 'settings/add', '<section.variable> <value>')
+    SYNOPSIS = (None, 'append', 'settings/add', '<section.variable> <value>')
     ORDER = ('Config', 1)
     SPLIT_ARG = False
     HTTP_CALLABLE = ('POST', 'UPDATE')
