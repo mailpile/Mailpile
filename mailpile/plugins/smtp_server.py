@@ -1,4 +1,5 @@
 import asyncore
+import email.parser
 import smtpd
 import threading
 import traceback
@@ -7,6 +8,7 @@ from gettext import gettext as _
 import mailpile.plugins
 import mailpile.config
 from mailpile.commands import Command
+from mailpile.mailutils import Email
 from mailpile.util import *
 
 
@@ -60,11 +62,22 @@ class SMTPServer(smtpd.SMTPServer):
         # We can assume that the mailfrom and rcpttos have checked out
         # and this message is indeed intended for us. Spool it to disk
         # and add to the index!
-        # FIXME FIXME FIXME
-        print '=====[ We Have Mail! ]========================================='
-        print '%s' % data
-        print '==============================================================='
-        return None
+        session, config = self.session, self.session.config
+        blank_tid = config.get_tags(type='blank')[0]._key
+        idx = config.index
+        try:
+            message = email.parser.Parser().parsestr(data)
+            lid, lmbox = config.open_local_mailbox(session)
+            e = Email.Create(idx, lid, lmbox, ephemeral_mid=False)
+            idx.add_tag(session, blank_tid, msg_idxs=[e.msg_idx_pos],
+                        conversation=False)
+            e.update_from_msg(session, message)
+            idx.remove_tag(session, blank_tid, msg_idxs=[e.msg_idx_pos],
+                           conversation=False)
+            return None
+        except:
+            traceback.print_exc()
+            return '400 Oops wtf'
 
 
 class SMTPWorker(threading.Thread):
