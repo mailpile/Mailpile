@@ -37,15 +37,22 @@
       <!-- <li><a id="#compose-apply-quote" href="#"><input type="checkbox" checked="checked"> Quote</a></li> -->
       {% endif %}
       <li class="compose-crypto-signature signed animated"
+          data-crypto_signed="{{_("Signed")}}"
           data-crypto_not_signed="{{_("Not Signed")}}"
           data-crypto_signed_error="{{_("Signature Error")}}"
-          data-crypto_signed="{{_("Signed")}}">
+          data-crypto_title_signed="{{_("This message will be signed with your key")}}"          
+          data-crypto_title_not_signed="{{_("This message will not be signed with your key")}}"
+          data-crypto_title_signed_error="{{_("Error accesing your key")}}">
         <span class="icon icon-signature-verified"></span> <span class="text">{{_("Signed")}}</span></li>
       <li class="compose-crypto-encryption none animated"
           data-crypto_none="{{_("None")}}"
           data-crypto_encrypt="{{_("Encrypted")}}"
-          data-crypto_partial_encrypt="{{_("Can't Encrypt")}}"
-          data-crypto_encrypt_error="{{_("Error Encrypting")}}">
+          data-crypto_cant_encrypt="{{_("Can't Encrypt")}}"
+          data-crypto_encrypt_error="{{_("Error Encrypting")}}"
+          data-crypto_title_none="{{_("This message and metadata will not be encrypted")}}"
+          data-crypto_title_encrypt="{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")}}"
+          data-crypto_title_cannot_encrypt="{{_("This message cannot be encrypted because you do not have keys for one or more recipients")}}"
+          data-crypto_title_encrypt_error="{{_("There was an error prepping this message for encryption")}}">
         <span class="icon icon-lock-open"></span> <span class="text">{{_("Not Encrypted")}}</span></li>
 <!-- FIXME: Add ability to delay sending of an email
       <li class="dropdown">

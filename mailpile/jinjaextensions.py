@@ -116,7 +116,7 @@ class MailpileCommand(Extension):
         "none": [
             "crypto-color-gray",
             "icon-signature-none",
-            _("No Signature"),
+            _("Not Signed"),
             _("This message contains no signature, which means it could "
               "have come from anyone, not necessarily the real sender")],
         "error": [
