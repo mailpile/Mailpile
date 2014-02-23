@@ -11,7 +11,7 @@
     {% else %}
       <img class="contact-avatar left" width="80" src="{{ show_avatar("") }}">
     {% endif %}
-    <h2  class="contact-name ">{{ result.contact.fn }}</h2>
+    <h2  class="contact-name ">{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}</h2>
     {% if result.contact.email %}
     {% for profile in profiles %}
       {% for email in result.contact.email %}
@@ -77,3 +77,4 @@
 </div>
 
 {% endblock %}
+{% block title %}{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}{% endblock %}

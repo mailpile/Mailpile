@@ -49,7 +49,8 @@
   {% endfor %}
 </div>
 
-{% include("tag/add.html") %}
+{% include("partials/tag_add.html") %}
 
-{% endblock %}{% block title %}{{_("Tags")}}{% endblock %}
+{% endblock %}
+{% block title %}{{_("Tags")}}{% endblock %}
 {% endif %}
