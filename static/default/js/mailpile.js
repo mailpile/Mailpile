@@ -16,23 +16,20 @@ function MailPile() {
 	this.search_cache   = [];
 	this.bulk_cache     = [];
 	this.keybindings    = [
-  	["normal", "/",      function() { 
-  	  $("#search-query").focus(); return false;
-    }],
+  	["normal", "/",      function() { $("#search-query").focus(); return false; }],
   	["normal", "c",      function() { mailpile.compose(); }],
   	["normal", "g i",    function() { mailpile.go("/in/inbox/"); }],
+  	["normal", "g d",    function() { mailpile.go("/in/drafts/"); }],
   	["normal", "g c",    function() { mailpile.go("/contact/list/"); }],
   	["normal", "g n c",  function() { mailpile.go("/contact/add/"); }],
-  	["normal", "g n m",  function() { mailpile.go("/compose/"); }],
-  	["normal", "g t",    function() { 
-  	  $("#dialog_tag").show(); $("#dialog_tag_input").focus(); return false; 
-    }],
+  	["normal", "g t",    function() { mailpile.go("/tag/list/"); }],
+  	["normal", "g n t",  function() { mailpile.go("/tag/add/"); }],
+  	["normal", "g s",    function() { mailpile.go("/settings/profiles/"); }],
     ["global", "esc",    function() {
-  		
+
   		// Add Form Fields
-  		$('#search-query').blur();
-  		$('#compose-subject').blur();
-      $('#compose-text').blur();
+  		$('input[type=text]').blur();
+  		$('textarea').blur();
     }]
   ];
 	this.commands       = [];
