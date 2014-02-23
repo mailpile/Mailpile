@@ -307,7 +307,7 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
     if (state.flags.secure) {
       secure = '<span class="icon-lock-closed"></span>';
     }
-    return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + name + secure + '</span>';
+    return avatar + '<span class="compose-choice-name" title="' + name + ' &lt;' + state.address + '&gt;" alt="' + name + ' &lt;' + state.address + '&gt;">' + name + secure + '</span>';
   },
   formatSelectionTooBig: function() {
     return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
