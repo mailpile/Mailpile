@@ -13,7 +13,7 @@ import mailpile.vcard
 # These are the plugins we ship/import by default
 __all__ = [
     'search', 'tags', 'contacts', 'compose', 'groups',
-    'dates', 'sizes', 'autotag', 'cryptostate',
+    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_utils',
     'setup_magic', 'networkgraph', 'exporters',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
     'hacks', 'html_magic', 'smtp_server'

@@ -704,10 +704,10 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         return cryptblock
 
     def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
-        retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid], 
-            callbacks={"stdout": lambda x: x}, debug=True)
-        print retvals
-        return retvals
+        retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
+        print retvals[1]["status"]
+        return [x for x in retvals[1]["status"] 
+                  if x[0] in ("IMPORTED", "IMPORT_OK", "IMPORT_PROBLEM")]
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
