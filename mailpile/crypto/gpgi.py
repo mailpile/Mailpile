@@ -140,6 +140,8 @@ status_messages = {
     "DECRYPTION_INFO": [],
 }
 
+UID_PARSE_RE = "([^\(\<]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}"
+
 
 class GnuPG:
     """
@@ -260,8 +262,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         def parse_privkey(line, curkey, keys):
             curkey, keys = parse_pubkey(line, curkey, keys)
             return (curkey, keys)
-
-        UID_PARSE_RE = "([^\(\<]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}"
 
         def parse_uid(line, curkey, keys):
             matches = re.match(UID_PARSE_RE, line[9])
@@ -706,8 +706,45 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
-                            '--search-key', term], debug=True)
-        return retvals
+                            '--search-key', term], callbacks={"stdout": lambda x: x}, debug=True)
+        results = {}
+        lines = [x.split(":") for x in retvals[1]["stdout"][0].strip().split("\n")]
+        curpub = None
+        for line in lines:
+            if line[0] == "info":
+                pass
+            elif line[0] == "pub":
+                curpub = line[1]
+                results[curpub] = {"created": line[4], "keysize": line[3], "uids": []}
+            elif line[0] == "uid":
+                matches = re.match(UID_PARSE_RE, line[1])
+                if matches:
+                    email = matches.groups(0)[4] or ""
+                    comment = matches.groups(0)[2] or ""
+                    name = matches.groups(0)[0] or ""
+                else:
+                    email = line[9]
+                    name = ""
+                    comment = ""
+
+                try:
+                    name = name.decode("utf-8")
+                except UnicodeDecodeError:
+                    try:
+                        name = name.decode("iso-8859-1")
+                    except UnicodeDecodeError:
+                        name = name.decode("utf-8", "replace")
+
+                try:
+                    comment = comment.decode("utf-8")
+                except UnicodeDecodeError:
+                    try:
+                        comment = comment.decode("iso-8859-1")
+                    except UnicodeDecodeError:
+                        comment = comment.decode("utf-8", "replace")
+
+                results[curpub]["uids"].append({"name": name, "email": email, "comment": comment})
+        return results
 
     def address_to_keys(self, address):
         res = {}
