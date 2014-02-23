@@ -1,0 +1,1260 @@
+# MailPile Malayalam Locale
+# Copyright (C) 2014
+# This file is distributed under the same license as the PACKAGE package.
+# Akhilan <mail@akhilan.in>, 2014
+#
+# Last Edited : Akhilan <mail@akhilan.in>, 2014
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2013-12-06 01:20+0400\n"
+"PO-Revision-Date: 2014-02-21 11:28+0530\n"
+"Last-Translator: Akhil <akhilkrishnans@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: mailpile/commands.py:154
+#, python-format
+msgid "ID out of bounds: %s"
+msgstr "ഐഡിയുടെ വലിപ്പം കൂടിപ്പോയ്: %s"
+
+#: mailpile/commands.py:157
+#: mailpile/commands.py:163
+#: mailpile/commands.py:168
+#, python-format
+msgid "What message is %s?"
+msgstr " %s എന്ത് സന്ദേശമാണ്?"
+
+#: mailpile/commands.py:257
+#, python-format
+msgid "Note: periodic delay is %ss, run from shell to speed up: mp --rescan=..."
+msgstr ""
+
+#: mailpile/commands.py:268
+#, python-format
+msgid "FIXME: rescan messages: %s"
+msgstr ""
+
+#: mailpile/commands.py:301
+#, python-format
+msgid "Running: %s"
+msgstr "പ്രവർത്തിക്കുന്നു: %s"
+
+#: mailpile/commands.py:322
+msgid "Nothing changed"
+msgstr "മാറ്റമൊന്നുമില്ല"
+
+#: mailpile/commands.py:324
+#, python-format
+msgid "Aborted: %s"
+msgstr "റദ്ദാക്കി: %s"
+
+#: mailpile/commands.py:354
+msgid "Aborted"
+msgstr "ഇല്ലാതാക്കി"
+
+#: mailpile/commands.py:368
+msgid "Statistics updated"
+msgstr "അവസ്ഥ നവീകരിച്ചു"
+
+#: mailpile/commands.py:534
+#, python-format
+msgid "No such key: %s"
+msgstr "അങ്ങനെയൊരു ചാവി ഇല്ല: %s"
+
+#: mailpile/commands.py:603
+#, python-format
+msgid "The web interface is %s"
+msgstr "വെബ്‌സമ്പർക്കമുഖം %s ആണ്"
+
+#: mailpile/commands.py:604
+msgid "disabled."
+msgstr "പ്രവർത്തിക്കാതാക്കി"
+
+#: mailpile/commands.py:606
+msgid "For instructions, type `help`, press <CTRL-D> to quit."
+msgstr ""
+
+#: mailpile/commands.py:625
+msgid "Commands:"
+msgstr "നിർദ്ദേശങ്ങൾ"
+
+#: mailpile/commands.py:656
+msgid "Tags:  (use a tag as a command to display tagged messages)"
+msgstr ""
+
+#: mailpile/commands.py:664
+msgid "Error"
+msgstr "പിശക്"
+
+#: mailpile/commands.py:697
+msgid "Unknown command"
+msgstr "ആജ്ഞ മനസ്സിലായില്ല"
+
+#: mailpile/commands.py:795
+#, python-format
+msgid "Unknown command: %s"
+msgstr ""
+
+#: mailpile/config.py:101
+msgid "true"
+msgstr "ശരി"
+
+#: mailpile/config.py:101
+msgid "yes"
+msgstr "അതെ"
+
+#: mailpile/config.py:101
+msgid "on"
+msgstr "ഓൺ"
+
+#: mailpile/config.py:104
+msgid "false"
+msgstr "തെറ്റ്"
+
+#: mailpile/config.py:104
+msgid "no"
+msgstr "അല്ല"
+
+#: mailpile/config.py:104
+msgid "off"
+msgstr "ഓഫ്"
+
+#: mailpile/config.py:106
+#, python-format
+msgid "Invalid boolean: %s"
+msgstr "അസാധുവായ മൂല്യം: %s"
+
+#: mailpile/config.py:129
+#, python-format
+msgid "Invalid URL slug: %s"
+msgstr ""
+
+#: mailpile/config.py:161
+#, python-format
+msgid "Invalid hostname: %s"
+msgstr ""
+
+#: mailpile/config.py:195
+#, python-format
+msgid "File/directory does not exist: %s"
+msgstr ""
+
+#: mailpile/config.py:213
+#, python-format
+msgid "Not a file: %s"
+msgstr "അങ്ങനെയൊരു പ്രമാണമില്ല: %s"
+
+#: mailpile/config.py:231
+#, python-format
+msgid "Not a directory: %s"
+msgstr "അങ്ങനെയൊരു അറയില്ല: %s"
+
+#: mailpile/config.py:366
+msgid "Override this"
+msgstr "ഇതിനെ മറികടക്കൂ"
+
+#: mailpile/config.py:425
+#, python-format
+msgid "Invalid type for default %s = %s"
+msgstr ""
+
+#: mailpile/config.py:436
+#, python-format
+msgid "Invalid key for %s: %s"
+msgstr ""
+
+#: mailpile/config.py:519
+#, python-format
+msgid "Modifying %s/%s is not allowed"
+msgstr ""
+
+#: mailpile/config.py:523
+#: mailpile/config.py:531
+#, python-format
+msgid "Invalid value for %s/%s: %s"
+msgstr ""
+
+#: mailpile/config.py:534
+#, python-format
+msgid "Unknown constraint for %s/%s: %s"
+msgstr ""
+
+#: mailpile/config.py:739
+msgid "Cannot append to fixed dict"
+msgstr ""
+
+#: mailpile/config.py:787
+#, python-format
+msgid "Creating: %s"
+msgstr "നിർമ്മിക്കുന്നു: %s"
+
+#: mailpile/config.py:845
+#, python-format
+msgid "Invalid (%s): section %s does not exist"
+msgstr ""
+
+#: mailpile/config.py:856
+#, python-format
+msgid "Invalid (%s): section %s, variable %s"
+msgstr ""
+
+#: mailpile/config.py:871
+#, python-format
+msgid "WARNING: Imported old config from %s"
+msgstr ""
+
+#: mailpile/config.py:874
+#, python-format
+msgid "WARNING: Failed to import config from %s"
+msgstr ""
+
+#: mailpile/config.py:914
+#, python-format
+msgid "Mailbox ID too large: %s"
+msgstr "സന്ദേശപ്പെട്ടി വളരെ വലുതാണ്: %s"
+
+#: mailpile/config.py:944
+#, python-format
+msgid "No such mailbox: %s"
+msgstr "അങ്ങനെയൊരു സന്ദേശപ്പെട്ടിയില്ല: %s"
+
+#: mailpile/config.py:951
+#, python-format
+msgid "%s: Updating: %s"
+msgstr "%s: നവീകരിക്കുന്നു:  %s"
+
+#: mailpile/config.py:958
+#, python-format
+msgid "%s: Opening: %s (may take a while)"
+msgstr "%s: തുറക്കുന്നു: %s (അൽപം സമയമെടുക്കാം)"
+
+#: mailpile/config.py:1065
+msgid "Parent paths are not allowed"
+msgstr ""
+
+#: mailpile/config.py:1181
+#, python-format
+msgid "Could not parse (%s): %s"
+msgstr ""
+
+#: mailpile/config.py:1194
+#, python-format
+msgid "Could not assign mailbox:%s = %s"
+msgstr ""
+
+#: mailpile/defaults.py:10
+msgid "Mailpile program version"
+msgstr ""
+
+#: mailpile/defaults.py:11
+msgid "Configuration timestamp"
+msgstr ""
+
+#: mailpile/defaults.py:12
+msgid "Technical system settings"
+msgstr ""
+
+#: mailpile/defaults.py:14
+msgid "Max files kept open at once"
+msgstr ""
+
+#: mailpile/defaults.py:15
+msgid "History length (lines, <0 = no save)"
+msgstr ""
+
+#: mailpile/defaults.py:16
+msgid "Listening port for web UI"
+msgstr ""
+
+#: mailpile/defaults.py:17
+msgid "Posting list target size in KB"
+msgstr ""
+
+#: mailpile/defaults.py:18
+msgid "Max results we sort \"well\""
+msgstr ""
+
+#: mailpile/defaults.py:19
+msgid "Max length of metadata snippets"
+msgstr ""
+
+#: mailpile/defaults.py:20
+msgid "Debugging flags"
+msgstr ""
+
+#: mailpile/defaults.py:21
+msgid "Host:port of PGP keyserver"
+msgstr ""
+
+#: mailpile/defaults.py:22
+msgid "Listening host for web UI"
+msgstr ""
+
+#: mailpile/defaults.py:23
+msgid "Local read/write Maildir"
+msgstr ""
+
+#: mailpile/defaults.py:24
+msgid "Metadata index file"
+msgstr ""
+
+#: mailpile/defaults.py:25
+msgid "Search index directory"
+msgstr ""
+
+#: mailpile/defaults.py:26
+msgid "Mailboxes we index"
+msgstr ""
+
+#: mailpile/defaults.py:27
+msgid "Locations of assorted data"
+msgstr ""
+
+#: mailpile/defaults.py:28
+msgid "Default theme"
+msgstr "സ്വതേയുള്ള പശ്ചാത്തലം"
+
+#: mailpile/defaults.py:30
+msgid "Location of vcards"
+msgstr "വികാർഡുകളുടെ സ്ഥാനം"
+
+#: mailpile/defaults.py:33
+msgid "User preferences"
+msgstr "ഉപയോക്തൃ മുൻഗണനകൾ"
+
+#: mailpile/defaults.py:35
+msgid "Search results per page"
+msgstr "ഓരോ താളിലേയും തിരച്ചിൽ ഫലങ്ങൾ"
+
+#: mailpile/defaults.py:36
+msgid "New mail check frequency"
+msgstr "പുതിയ ഈമെയിൽ തിരയാനുള്ള ഇടവേള"
+
+#: mailpile/defaults.py:37
+msgid "Inline PGP signatures or attached"
+msgstr "ഇൻലൈനായി PGP ഒപ്പ് വേണോ അതോ സന്ദേശത്തിനൊപ്പം കൂട്ടിക്കെട്ടണമോ"
+
+#: mailpile/defaults.py:38
+msgid "Default sort order"
+msgstr "സ്വതേയുള്ള തരംതിരിക്കൽ ക്രമം"
+
+#: mailpile/defaults.py:39
+msgid "Encrypt local data to ..."
+msgstr "ലോക്കൽ ഡാറ്റ എങ്ക്രിപ്റ്റ് ചെയ്ത്"
+
+#: mailpile/defaults.py:40
+msgid "Key to use to scramble the index"
+msgstr ""
+
+#: mailpile/defaults.py:41
+msgid "Command run before rescanning"
+msgstr ""
+
+#: mailpile/defaults.py:42
+msgid "Default outgoing e-mail address"
+msgstr ""
+
+#: mailpile/defaults.py:43
+msgid "Default outgoing mail route"
+msgstr ""
+
+#: mailpile/defaults.py:45
+msgid "User interface language"
+msgstr ""
+
+#: mailpile/defaults.py:46
+msgid "VCard import/export settings"
+msgstr ""
+
+#: mailpile/defaults.py:48
+msgid "VCard import settings"
+msgstr ""
+
+#: mailpile/defaults.py:49
+msgid "VCard export settings"
+msgstr ""
+
+#: mailpile/defaults.py:50
+msgid "VCard context helper settings"
+msgstr ""
+
+#: mailpile/defaults.py:53
+msgid "User profiles and personalities"
+msgstr ""
+
+#: mailpile/defaults.py:54
+msgid "Account name"
+msgstr "അംഗത്വ നാമം"
+
+#: mailpile/defaults.py:55
+msgid "E-mail address"
+msgstr "ഈമെയിൽ വിലാസം"
+
+#: mailpile/defaults.py:56
+msgid "Message signature"
+msgstr "സന്ദേശത്തിലെ ഒപ്പ്"
+
+#: mailpile/defaults.py:57
+msgid "Outgoing mail route"
+msgstr "പുറത്തേക്ക് മെയിൽ പോകേണ്ട വഴി"
+
+#: mailpile/gpgi.py:14
+msgid "Trust not calculated"
+msgstr "വിശ്വാസത്തെപ്പറ്റി കണക്കുകൂട്ടിയിട്ടില്ല"
+
+#: mailpile/gpgi.py:15
+msgid "Unknown trust"
+msgstr "വിശ്വാസത്തെപ്പറ്റി വലിയപിടിയില്ല"
+
+#: mailpile/gpgi.py:16
+msgid "Undefined trust"
+msgstr "വിശ്വാസത്തെപ്പറ്റി നിർവ്വചനമൊന്നുമില്ല"
+
+#: mailpile/gpgi.py:17
+msgid "Never trust"
+msgstr "ഒരിക്കലും വിശ്വസിക്കരുത്"
+
+#: mailpile/gpgi.py:18
+msgid "Marginally trust"
+msgstr "കുറേയൊക്കെ വിശ്വസിക്കാം"
+
+#: mailpile/gpgi.py:19
+msgid "Full trust"
+msgstr "പൂർണ്ണമായും വിശ്വസിക്കുക"
+
+#: mailpile/gpgi.py:20
+msgid "Ultimate trust"
+msgstr "ഉറപ്പായും വിശ്വസിക്കാം"
+
+#: mailpile/gpgi.py:21
+msgid "Expired key, not trusted"
+msgstr "ചാവി അസാധു, വിശ്വസിക്കരുത്"
+
+#: mailpile/gpgi.py:22
+msgid "Revoked key, not trusted"
+msgstr "പിൻവലിച്ച ചാവി, വിശ്വസിക്കരുത്"
+
+#: mailpile/gpgi.py:23
+msgid "Disabled key, not trusted"
+msgstr "നിർജ്ജീവമാക്കിയ ചാവി, വിശ്വസിക്കരുത്"
+
+#: mailpile/gpgi.py:26
+msgid "RSA"
+msgstr "RSA"
+
+#: mailpile/gpgi.py:27
+msgid "RSA (encrypt only)"
+msgstr "RSA (രഹസ്യകോഡാക്കൽ മാത്രം)"
+
+#: mailpile/gpgi.py:28
+msgid "RSA (sign only)"
+msgstr "RSA (ഒപ്പ് മാത്രം)"
+
+#: mailpile/gpgi.py:29
+msgid "Elgamal (encrypt only)"
+msgstr "Elgamal (രഹസ്യകോഡാക്കൽ മാത്രം)"
+
+#: mailpile/gpgi.py:30
+msgid "DSA"
+msgstr "DSA"
+
+#: mailpile/gpgi.py:31
+msgid "Elgamal (encrypt/sign) [COMPROMISED]"
+msgstr "Elgamal (രഹസ്യകോഡാക്കലും ഒപ്പുവയ്ക്കലും) [സുരക്ഷിതമല്ല]"
+
+#: mailpile/httpd.py:143
+msgid "XMLRPC has been disabled for now."
+msgstr ""
+
+#: mailpile/httpd.py:161
+msgid "OMG, input too big"
+msgstr "ദൈവമേ, ഉള്ളടക്കം വളരെ വലുതാണ്"
+
+#: mailpile/httpd.py:164
+msgid "Unknown content-type"
+msgstr "ഉള്ളടക്കം എന്താണെന്ന് മനസ്സിലാകുന്നില്ല"
+
+#: mailpile/httpd.py:169
+msgid "Internal Error"
+msgstr "ആന്തരിക പിശക്"
+
+#: mailpile/httpd.py:237
+msgid "Internal error"
+msgstr "ആന്തരിക പിശക്"
+
+#: mailpile/mailutils.py:148
+#, python-format
+msgid "SendMail: from %s, to %s\n"
+msgstr "അയച്ച സന്ദേശം: %s ൽ നിന്നും %s ന്"
+
+#: mailpile/mailutils.py:151
+#, python-format
+msgid "Connecting to %s"
+msgstr "%s മായി ബന്ധിപ്പിക്കുന്നു"
+
+#: mailpile/mailutils.py:172
+#, python-format
+msgid "SMTP connection to: %s:%s as %s@%s\n"
+msgstr ""
+
+#: mailpile/mailutils.py:210
+#, python-format
+msgid "Invalid sendmail: %s"
+msgstr "സാധുവല്ലാത്ത സന്ദേശം"
+
+#: mailpile/mailutils.py:212
+msgid "Preparing message..."
+msgstr "സന്ദേശം തയ്യാറാക്കുന്നു"
+
+#: mailpile/mailutils.py:222
+#, python-format
+msgid "Message sent, %d bytes"
+msgstr "സന്ദേശം അയച്ചു, %d  ബൈറ്റുകൾ"
+
+#: mailpile/mailutils.py:529
+msgid "No data found"
+msgstr "ഉള്ളടക്കമൊന്നും കണ്ടെത്താനായില്ല"
+
+#: mailpile/mailutils.py:559
+msgid "Message not found"
+msgstr "സന്ദേശമൊന്നും കണ്ടെത്താനായില്ല"
+
+#: mailpile/mailutils.py:728
+#: mailpile/mailutils.py:736
+#: mailpile/mailutils.py:790
+msgid "Mailbox is read-only."
+msgstr "സന്ദേശപ്പെട്ടി വായിക്കാൻ മാത്രമേ കഴിയുകയുള്ളൂ"
+
+#: mailpile/mailutils.py:835
+msgid "Message not found?"
+msgstr "സന്ദേശം കണ്ടെത്താനായില്ല?"
+
+#: mailpile/mailutils.py:912
+#, python-format
+msgid "Extracted attachment %s"
+msgstr ""
+
+#: mailpile/mailutils.py:920
+#, python-format
+msgid "Wrote preview to: %s"
+msgstr "തിരനോട്ടം %s ലേക്ക് എഴുതി"
+
+#: mailpile/mailutils.py:922
+msgid "Failed to generate thumbnail"
+msgstr "തിരച്ചിത്രം നിർമ്മിക്കുന്നതിൽ പരാജയപ്പെട്ടു"
+
+#: mailpile/mailutils.py:928
+#, python-format
+msgid "Wrote attachment to: %s"
+msgstr ""
+
+#: mailpile/mailutils.py:932
+#, python-format
+msgid "No attachments found for: %s"
+msgstr "%s നായി കൂട്ടിച്ചേർക്കലുകളൊന്നും കണ്ടില്ല"
+
+#: mailpile/mailutils.py:1028
+#, python-format
+msgid "Decode failed: %s %s"
+msgstr "ഡീക്കോഡിങ്ങ് പരാജയപ്പെട്ടു: %s %s"
+
+#: mailpile/search.py:170
+msgid "Loading metadata index..."
+msgstr "മെറ്റഡാറ്റയുടെ സൂചിക എടുക്കുന്നു"
+
+#: mailpile/search.py:182
+#, python-format
+msgid "Metadata index not found: %s"
+msgstr ""
+
+#: mailpile/search.py:186
+#, python-format
+msgid "Loaded metadata, %d messages"
+msgstr "മെറ്റാഡാറ്റ ലോഡ് ചെയ്തു. %d  സന്ദേശങ്ങൾ"
+
+#: mailpile/search.py:193
+msgid "Saving metadata index changes..."
+msgstr "മെറ്റാഡാറ്റയുടെ സൂചികയിലെ മാറ്റങ്ങൾ സംരക്ഷിക്കുന്നു"
+
+#: mailpile/search.py:204
+msgid "Saved metadata index changes"
+msgstr "സംരക്ഷിച്ച മെറ്റാഡാറ്റയുടെ സൂചികയിലെ മാറ്റങ്ങൾ"
+
+#: mailpile/search.py:210
+msgid "Saving metadata index..."
+msgstr "മെറ്റാഡാറ്റയുടെ സൂചിക സംരക്ഷിക്കുന്നു"
+
+#: mailpile/search.py:223
+msgid "Saved metadata index"
+msgstr "സംരക്ഷിച്ച മെറ്റാഡാറ്റയുടെ സൂചിക"
+
+#: mailpile/search.py:226
+msgid "Updating high level indexes"
+msgstr ""
+
+#: mailpile/search.py:234
+#, python-format
+msgid "Bogus line: %s"
+msgstr ""
+
+#: mailpile/search.py:304
+#, python-format
+msgid "=%s/%s using Recieved: instead of Date:"
+msgstr ""
+
+#: mailpile/search.py:311
+#, python-format
+msgid "=%s/%s has a bogus date"
+msgstr ""
+
+#: mailpile/search.py:328
+#, python-format
+msgid "WARNING: No proper Message-ID for %s"
+msgstr ""
+
+#: mailpile/search.py:335
+#, python-format
+msgid "%s: Skipped: %s"
+msgstr ""
+
+#: mailpile/search.py:339
+#, python-format
+msgid "%s: Checking: %s"
+msgstr ""
+
+#: mailpile/search.py:342
+#, python-format
+msgid "%s: Error opening: %s (%s)"
+msgstr ""
+
+#: mailpile/search.py:361
+#, python-format
+msgid "%s: Reading your mail: %d%% (%d/%d messages)"
+msgstr ""
+
+#: mailpile/search.py:419
+#, python-format
+msgid "%s: Indexed mailbox: %s"
+msgstr ""
+
+#: mailpile/search.py:637
+#, python-format
+msgid "=%s/%s has bogus HTML."
+msgstr ""
+
+#: mailpile/search.py:742
+#, python-format
+msgid "%s is outside the index"
+msgstr ""
+
+#: mailpile/search.py:785
+#, python-format
+msgid "Tagging %d messages (%s)"
+msgstr ""
+
+#: mailpile/search.py:812
+#, python-format
+msgid "Untagging conversations (%s)"
+msgstr ""
+
+#: mailpile/search.py:818
+#, python-format
+msgid "Untagging %d messages (%s)"
+msgstr ""
+
+#: mailpile/search.py:846
+#, python-format
+msgid "Searching for %s"
+msgstr ""
+
+#: mailpile/search.py:875
+#, python-format
+msgid "Ignoring common word: %s"
+msgstr ""
+
+#: mailpile/search.py:941
+#, python-format
+msgid "Found %d results (%d suppressed)"
+msgstr ""
+
+#: mailpile/search.py:958
+#, python-format
+msgid "Finding conversations (%d messages)..."
+msgstr ""
+
+#: mailpile/search.py:966
+#: mailpile/search.py:984
+#, python-format
+msgid "Sorting %d messages in %s order..."
+msgstr ""
+
+#: mailpile/search.py:1008
+msgid "Recovering from bogus sort, corrupt index?"
+msgstr ""
+
+#: mailpile/search.py:1009
+msgid "Please tell team@mailpile.is !"
+msgstr ""
+
+#: mailpile/search.py:1018
+#, python-format
+msgid "Unknown sort order: %s"
+msgstr ""
+
+#: mailpile/search.py:1023
+msgid "Sort failed, sorting badly. Partial index?"
+msgstr ""
+
+#: mailpile/search.py:1036
+#, python-format
+msgid "Sorted %d messages by %s, %d conversations"
+msgstr ""
+
+#: mailpile/search.py:1039
+#, python-format
+msgid "Sorted %d messages in %s order"
+msgstr ""
+
+#: mailpile/search.py:1054
+#, python-format
+msgid "Counting messages in tag:%s"
+msgstr ""
+
+#: mailpile/ui.py:171
+#, python-format
+msgid "Elapsed: %.3fs (%s)"
+msgstr "സമയം അധികരിച്ചു: %.3fs (%s)"
+
+#: mailpile/ui.py:183
+#, python-format
+msgid "Completed %s in %.3fs"
+msgstr "പൂർത്തിയായി:  %s %.3fs ൽ"
+
+#: mailpile/ui.py:282
+#, python-format
+msgid ""
+"<h1>Template not found</h1>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+
+#: mailpile/ui.py:286
+#, python-format
+msgid ""
+"<h1>Template error</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+
+#: mailpile/ui.py:293
+#, python-format
+msgid ""
+"<h1>Template error in %s</h1>\n"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
+msgstr ""
+
+#: mailpile/ui.py:302
+msgid "Sorry, this UI cannot edit messages."
+msgstr ""
+
+#: mailpile/ui.py:338
+msgid "FIXME: Multiple results, OMG WTF"
+msgstr ""
+
+#: mailpile/plugins/demos.py:41
+msgid "Demo Contacts"
+msgstr "പരീക്ഷണാർത്ഥമുള്ള സമ്പർക്കങ്ങൾ"
+
+#: mailpile/plugins/demos.py:42
+msgid "This is the demo importer"
+msgstr "പരീക്ഷണാർത്ഥമുള്ള ഇറക്കുമതിക്കാരൻ"
+
+#: mailpile/plugins/demos.py:45
+msgid "Activate demo importer"
+msgstr "പരീക്ഷണാർത്ഥമുള്ള ഇറക്കുമതിക്കാരനെ സജീവമാക്കുക"
+
+#: mailpile/plugins/demos.py:46
+msgid "Contact name"
+msgstr "ബന്ധപ്പെടാനുള്ള പേര്"
+
+#: mailpile/plugins/demos.py:47
+msgid "Contact email"
+msgstr "ബന്ധപ്പെടാനുള്ള ഈമെയിൽ"
+
+#: mailpile/plugins/vcard_gnupg.py:17
+msgid "Import contacts from GnuPG keyring"
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:20
+#: mailpile/plugins/vcard_gravatar.py:30
+msgid "Enable this importer"
+msgstr "ഇറക്കുമതിക്കാരനെ സജീവമാക്കുക"
+
+#: mailpile/plugins/vcard_gnupg.py:21
+msgid "Location of keyring"
+msgstr "ചാവിക്കൂട്ടത്തിന്റെ സ്ഥാനം"
+
+#: mailpile/plugins/vcard_gravatar.py:27
+msgid "Import contact info from a Gravatar server"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:31
+msgid "Minimum days between refreshing"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:32
+msgid "Max batch size per update"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:33
+msgid "Default thumbnail style"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:34
+msgid "Preferred thumbnail rating"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:35
+msgid "Preferred thumbnail size"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:36
+msgid "Gravatar server URL"
+msgstr ""
+
+#: mailpile/plugins/vcard_mork.py:37
+msgid "Location of Mork database"
+msgstr "മോർക്ക് ഡാറ്റാബേസിന്റെ സ്ഥാനം"
+
+#: static/default/html/contact/add.html:3
+msgid "Contact Info"
+msgstr "ബന്ധപ്പെടാനുള്ള വിവരം"
+
+#: static/default/html/contact/add.html:9
+#: static/default/html/settings/index.html:20
+msgid "Name"
+msgstr "പേര്"
+
+#: static/default/html/contact/add.html:12
+msgid "E-mail"
+msgstr "ഈമെയിൽ"
+
+#: static/default/html/contact/add.html:15
+msgid "Website"
+msgstr "വെബ്‌സൈറ്റ്"
+
+#: static/default/html/contact/add.html:18
+msgid "PGP Key"
+msgstr "പിജിപി ചാവി"
+
+#: static/default/html/contact/list.html:41
+#: static/default/html/search/index.html:20
+msgid "Previous"
+msgstr "മുൻപത്തേത്"
+
+#: static/default/html/contact/list.html:44
+#: static/default/html/search/index.html:20
+msgid "Next"
+msgstr "അടുത്തത്"
+
+#: static/default/html/contact/list.html:47
+#: static/default/html/search/index.html:22
+msgid "of"
+msgstr "ഉം"
+
+#: static/default/html/contact/list.html:47
+#: static/default/html/layouts/base.html:77
+#: static/default/html/partials/sub_nav_contacts.html:3
+msgid "Contacts"
+msgstr "സമ്പർക്കങ്ങൾ"
+
+#: static/default/html/contact/list.html:47
+#: static/default/html/search/index.html:22
+msgid "1 Conversation"
+msgstr "ഒരു സന്ദേശം"
+
+#: static/default/html/contact/list.html:47
+#: static/default/html/search/index.html:22
+msgid "No results found"
+msgstr "ഫലങ്ങളൊന്നും കണ്ടില്ല"
+
+#: static/default/html/contact/list.html:48
+msgid "Snug"
+msgstr "അലസം"
+
+#: static/default/html/contact/list.html:49
+msgid "Cozy"
+msgstr ""
+
+#: static/default/html/contact/list.html:50
+msgid "Comfy"
+msgstr ""
+
+#: static/default/html/contact/list.html:51
+msgid "Fluffy"
+msgstr ""
+
+#: static/default/html/layouts/base.html:41
+msgid "Close"
+msgstr "അടയ്ക്കുക"
+
+#: static/default/html/layouts/base.html:66
+#, python-format
+msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
+msgstr ""
+
+#: static/default/html/layouts/base.html:76
+msgid "Compose"
+msgstr "രചിക്കുക"
+
+#: static/default/html/layouts/base.html:78
+#: static/default/html/partials/sub_nav_tags.html:3
+msgid "Tags"
+msgstr "നാടകൾ"
+
+#: static/default/html/layouts/base.html:79
+msgid "Donate"
+msgstr "സംഭാവന"
+
+#: static/default/html/layouts/base.html:80
+msgid "Settings"
+msgstr "ക്രമീകരണങ്ങൾ"
+
+#: static/default/html/layouts/base.html:95
+msgid "emails"
+msgstr "ഈമെയിലുകൾ"
+
+#: static/default/html/layouts/base.html:124
+msgid "Encrypted"
+msgstr "രഹസ്യമാക്കിയത്"
+
+#: static/default/html/layouts/base.html:130
+msgid "Photos"
+msgstr "ചിത്രങ്ങൾ"
+
+#: static/default/html/layouts/base.html:136
+msgid "Files"
+msgstr "പ്രമാണങ്ങൾ"
+
+#: static/default/html/layouts/base.html:142
+msgid "Links"
+msgstr "കണ്ണികൾ"
+
+#: static/default/html/layouts/base.html:148
+msgid "Groups"
+msgstr "കൂട്ടങ്ങൾ"
+
+#: static/default/html/layouts/base.html:160
+msgid "Mailpile"
+msgstr "മെയിൽപൈൽ"
+
+#: static/default/html/layouts/base.html:160
+msgid "is free software made by"
+msgstr "ഒരു സ്വതന്ത്രസോഫ്റ്റ്‌വെയറാണ്. ഇത് നിർമ്മിച്ചത്"
+
+#: static/default/html/layouts/base.html:160
+msgid "more"
+msgstr "കൂടുതൽ"
+
+#: static/default/html/layouts/base.html:175
+msgid "Date:"
+msgstr "തീയ്യതി"
+
+#: static/default/html/layouts/base.html:175
+msgid "Start time"
+msgstr "തുടക്കം"
+
+#: static/default/html/layouts/base.html:175
+msgid "to"
+msgstr "മുതൽ"
+
+#: static/default/html/layouts/base.html:175
+msgid "Present"
+msgstr "ഇപ്പോൾ വരെ"
+
+#: static/default/html/layouts/base.html:176
+msgid "With:"
+msgstr "ഒപ്പം"
+
+#: static/default/html/layouts/base.html:176
+msgid "No Tags"
+msgstr "നാടകളൊന്നുമില്ല"
+
+#: static/default/html/layouts/base.html:177
+msgid "And:"
+msgstr "ഒപ്പം: "
+
+#: static/default/html/layouts/base.html:177
+msgid "All groups"
+msgstr "എല്ലാ കൂട്ടങ്ങളും"
+
+#: static/default/html/message/draft.html:14
+#: static/default/html/message/index.html:18
+msgid "To"
+msgstr "അയയ്ക്കുന്നത്"
+
+#: static/default/html/message/draft.html:18
+#: static/default/html/message/draft.html:38
+#: static/default/html/message/index.html:20
+msgid "Cc"
+msgstr "പകർപ്പ്"
+
+#: static/default/html/message/draft.html:22
+#: static/default/html/message/draft.html:37
+#: static/default/html/message/index.html:23
+msgid "Bcc"
+msgstr "മറ്റാരും അറിയാത്ത പകർപ്പ്"
+
+#: static/default/html/message/draft.html:27
+#: static/default/html/message/index.html:17
+msgid "From"
+msgstr "അയച്ചത്"
+
+#: static/default/html/message/draft.html:43
+msgid "Subject"
+msgstr "വിഷയം"
+
+#: static/default/html/message/draft.html:50
+msgid "Your message..."
+msgstr "നിങ്ങളുടെ സന്ദേശം"
+
+#: static/default/html/message/draft.html:53
+msgid "No Attachments"
+msgstr "കൂട്ടിയോജിപ്പുകളൊന്നുമില്ല"
+
+#: static/default/html/message/draft.html:58
+msgid "Send"
+msgstr "അയയ്ക്കുക"
+
+#: static/default/html/message/draft.html:59
+msgid "Save"
+msgstr "സംരക്ഷിക്കുക"
+
+#: static/default/html/message/draft.html:68
+msgid "Message not found!"
+msgstr "സന്ദേശം കണ്ടത്താനായില്ല!"
+
+#: static/default/html/message/index.html:33
+msgid "Signed by"
+msgstr "ഒപ്പിട്ടത് "
+
+#: static/default/html/message/index.html:34
+msgid "Unknown signature from"
+msgstr "ആരുടെ ഒപ്പാണെന്നറിയില്ല "
+
+#: static/default/html/message/index.html:35
+msgid "Signed with unknown key"
+msgstr "തിരിച്ചറിയാത്ത ചാവിയോടു കൂടിയ സന്ദേശം"
+
+#: static/default/html/message/index.html:40
+msgid "Successfully decrypted message"
+msgstr "യഥാർത്ഥ സന്ദേശം വീണ്ടെടുത്തു"
+
+#: static/default/html/message/index.html:41
+msgid "Failed to decrypt message"
+msgstr "യഥാർത്ഥ സന്ദേശം വീണ്ടെടുക്കാൻ കഴിഞ്ഞില്ല"
+
+#: static/default/html/message/index.html:72
+msgid "Reply"
+msgstr "മറുപടി"
+
+#: static/default/html/message/index.html:75
+#: static/default/html/partials/sub_nav_search.html:3
+msgid "All"
+msgstr "എല്ലാവർക്കും"
+
+#: static/default/html/message/index.html:78
+msgid "Forward"
+msgstr "കൈമാറുക"
+
+#: static/default/html/page/donate/index.html:7
+msgid "Please Donate To Mailpile"
+msgstr ""
+
+#: static/default/html/page/donate/index.html:15
+msgid "Or you can donate to our"
+msgstr "അല്ലെങ്കിൽ ഞങ്ങൾക്ക് സംഭാവന നൽകാം"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Bitcoin Wallet"
+msgstr "ബിറ്റ്‌കോയിൻ പെട്ടി"
+
+#: static/default/html/partials/bulk_actions.html:2
+msgid "Messages"
+msgstr "സന്ദേശങ്ങൾ"
+
+#: static/default/html/partials/bulk_actions.html:2
+msgid "selected"
+msgstr "തിരഞ്ഞെടുത്തത്"
+
+#: static/default/html/partials/bulk_actions.html:4
+msgid "Move to Later"
+msgstr "പിന്നത്തേക്ക് മാറ്റുക"
+
+#: static/default/html/partials/bulk_actions.html:5
+msgid "Move to Group"
+msgstr "ഒരു കൂട്ടത്തിലേക്ക് മാറ്റുക"
+
+#: static/default/html/partials/bulk_actions.html:6
+msgid "Assign Tags"
+msgstr "നാട ചേർക്കുക"
+
+#: static/default/html/partials/bulk_actions.html:7
+msgid "Archive Selection"
+msgstr "തിരഞ്ഞെടുത്തത് സംഭരിക്കുക"
+
+#: static/default/html/partials/bulk_actions.html:8
+msgid "Delete Selection"
+msgstr "തിരഞ്ഞെടുത്തത് ഇല്ലാതാക്കുക"
+
+#: static/default/html/partials/details_search_speed.html:2
+#, python-format
+msgid "Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds."
+msgstr ""
+
+#: static/default/html/partials/details_search_speed.html:2
+msgid "Vroom!"
+msgstr "വ്രൂം"
+
+#: static/default/html/partials/errors_content.html:3
+msgid "Oops, you've found a quirk!"
+msgstr ""
+
+#: static/default/html/partials/errors_content.html:4
+msgid "We were unable to find the message you requested, perhaps it was deleted?"
+msgstr ""
+
+#: static/default/html/partials/errors_content.html:5
+#, python-format
+msgid "If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank\">bug report</a>"
+msgstr ""
+
+#: static/default/html/partials/sub_nav_contacts.html:4
+msgid "Add Contact"
+msgstr "സമ്പർക്കം ചേർക്കുക"
+
+#: static/default/html/partials/sub_nav_contacts.html:5
+msgid "Import Contacts"
+msgstr "സമ്പർക്കങ്ങൾ ഇറക്കുമതി ചെയ്യുക"
+
+#: static/default/html/partials/sub_nav_message.html:6
+msgid "Archive"
+msgstr "സംഭരിക്കുക"
+
+#: static/default/html/partials/sub_nav_message.html:7
+msgid "Delete"
+msgstr "ഇല്ലാതാക്കുക"
+
+#: static/default/html/partials/sub_nav_message.html:8
+msgid "Show All"
+msgstr "എല്ലാം കാണിക്കുക"
+
+#: static/default/html/partials/sub_nav_search.html:4
+#: static/default/html/tag/list.html:19
+msgid "New"
+msgstr "പുതിയ"
+
+#: static/default/html/partials/sub_nav_tags.html:4
+msgid "Add Tag"
+msgstr "നാട ചേർക്കുക"
+
+#: static/default/html/search/index.html:22
+msgid "Conversations"
+msgstr "സംഭാഷണങ്ങൾ"
+
+#: static/default/html/search/index.html:34
+msgid "No Results Found"
+msgstr "ഫലങ്ങളൊന്നുമില്ല"
+
+#: static/default/html/settings/index.html:7
+msgid "Your Profiles"
+msgstr "നിങ്ങളുടെ പ്രൊഫൈൽ"
+
+#: static/default/html/settings/index.html:17
+msgid "Add New Profile"
+msgstr "പുതിയ ഒരു പ്രൊഫൈൽ ചേർക്കുക"
+
+#: static/default/html/settings/index.html:21
+msgid "Chelsea Manning"
+msgstr "ചെൽസെ മാനിങ്ങ്"
+
+#: static/default/html/settings/index.html:23
+msgid "Email"
+msgstr "ഈമെയിൽ"
+
+#: static/default/html/settings/index.html:24
+msgid "chelsea@email.com"
+msgstr "chelsea@email.com"
+
+#: static/default/html/settings/index.html:26
+msgid "SMTP Server"
+msgstr "എസ്‌എംടിപി സെർവ്വർ"
+
+#: static/default/html/settings/index.html:27
+msgid "Login"
+msgstr "പ്രവേശനം"
+
+#: static/default/html/settings/index.html:28
+msgid "username@mailserver.org"
+msgstr "username@mailserver.org"
+
+#: static/default/html/settings/index.html:30
+msgid "Password"
+msgstr "രഹസ്യവാക്ക്"
+
+#: static/default/html/settings/index.html:33
+msgid "Server"
+msgstr "സെർവ്വർ"
+
+#: static/default/html/settings/index.html:34
+msgid "smtp.mailserver.org"
+msgstr "smtp.mailserver.org"
+
+#: static/default/html/settings/index.html:36
+msgid "Port"
+msgstr "പോർട്ട്"
+
+#: static/default/html/settings/index.html:43
+msgid "Add Profile"
+msgstr "ഒരു പ്രൊഫൈൽ ചേർക്കുക"
+
+#: static/default/html/tag/add.html:3
+msgid "Enter New Tag Info"
+msgstr "പുതിയ നാടയുടെ വിവരം"
+
+#: static/default/html/tag/add.html:9
+msgid "Tag"
+msgstr "തിരുകുക"
+
+#: static/default/html/tag/add.html:10
+msgid "Friends & Family"
+msgstr "സുഹൃത്തുക്കളും ബന്ധുക്കളും"
+
+#: static/default/html/tag/add.html:12
+msgid "Slug"
+msgstr "അലസം"
+
+#: static/default/html/tag/add.html:13
+msgid "friends-family"
+msgstr "സുഹൃത്തുക്കളും ബന്ധുക്കളും"
+
+#: static/default/html/tag/add.html:15
+msgid "Add"
+msgstr "ചേർക്കുക"
+
+#: static/default/html/tag/list.html:14
+msgid "Total"
+msgstr "ആകെ"
+
+#: static/default/html/tag/list.html:24
+msgid "View Messages"
+msgstr "സന്ദേശങ്ങൾ കാണുക"
+
+#: static/default/html/tag/list.html:34
+msgid "Archived"
+msgstr "ശേഖരിക്കപ്പെട്ടത്"
+
