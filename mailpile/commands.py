@@ -120,10 +120,10 @@ class Command:
             data = self.as_dict()
             data['title'] = self.message
 
-            data['embedded_in_json'] = False
+            data['render_mode'] = 'full'
             for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
                 if self.session.ui.render_mode.endswith(e):
-                    data['embedded_in_json'] = True
+                    data['render_mode'] = 'content'
 
             return self.session.ui.render_web(self.session.config, [tpath],
                                               etype, data)
