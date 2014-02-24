@@ -291,6 +291,6 @@ $(document).ready(function() {
     hide: {
       delay: 1000
     }
-  });  
+  });
 
 });

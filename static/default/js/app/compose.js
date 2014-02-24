@@ -462,7 +462,14 @@ $(document).on('click', '.pick-send-datetime', function(e) {
 /* Compose - Details */
 $(document).on('click', '#compose-show-details', function(e) {
   e.preventDefault();
-  $('#compose-details').slideDown('fast');
+  
+  if ($('#compose-details').hasClass('hide')) {
+    $(this).addClass('navigation-on');
+    $('#compose-details').slideDown('fast').removeClass('hide');
+  } else {
+    $(this).removeClass('navigation-on');
+    $('#compose-details').slideUp('fast').addClass('hide');
+  }
 });
 
 

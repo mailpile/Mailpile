@@ -1,6 +1,8 @@
-{% extends "layouts/base.html" %}
-{% block content %}
+{% extends "layouts/" + render_mode + ".html" %}
 
+{% block title %}{% if result.data.metadata[result.thread_ids[-1]].subject %}{{ result.data.metadata[result.thread_ids[-1]].subject }}{% else %}{{_("No Subject")}}{% endif %}{% endblock %}
+
+{% block content %}
 {% if result %}
 {% set start_mid     = result.thread_ids[-1] %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
@@ -103,4 +105,3 @@
   {% include("partials/errors_content.html") %}
 {% endif  %}{# if result #}
 {% endblock %}
-{% block title %}{% if result.data.metadata[result.thread_ids[-1]].subject %}{{ result.data.metadata[result.thread_ids[-1]].subject }}{% else %}{{_("No Subject")}}{% endif %}{% endblock %}

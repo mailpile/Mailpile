@@ -1,6 +1,6 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}{% endblock %}
 {% block content %}
-
 <div id="contact-view" class="content-normal">
 {% if result.contact %}  
   {% set profiles = mailpile('settings', 'profiles').result.profiles %}
@@ -75,6 +75,4 @@
 <div id="contact-add" class="content-normal hide">
 {% include("partials/contact_add.html") %}
 </div>
-
 {% endblock %}
-{% block title %}{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}{% endblock %}

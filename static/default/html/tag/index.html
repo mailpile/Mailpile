@@ -1,5 +1,6 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
 {% set tag = result.tags.0 %}
+{% block title %}{{ tag.name }} | {{_("Tags")}} {% endblock %}
 {% block content %}
 <div id="tags-settings" class="content-normal clearfix">
   <div class="clearfix">
@@ -49,5 +50,3 @@
 </form>
 </div>
 {% endblock %}
-{% block title %}{{ tag.name }} | {{_("Tags")}} {% endblock %}
-

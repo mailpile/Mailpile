@@ -1,6 +1,6 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Contacts")}}{% endblock %}
 {% block content %}
-
 <div id="contacts-list" class="clearfix">
 {% if result.contacts %}
   {% for contact in result.contacts %}
@@ -44,6 +44,5 @@
 <div id="contact-add" class="content-normal hide">
 {% include("partials/contact_add.html") %}
 </div>
-
-{% endblock %}{% block title %}{{_("Contacts")}}{% endblock %}
+{% endblock %}
 

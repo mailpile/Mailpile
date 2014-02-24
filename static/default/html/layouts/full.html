@@ -1,4 +1,4 @@
-{% if render_mode == 'full' %}<!doctype html>
+<!doctype html>
 <!--[if lt IE 7]><html class="no-js ie6 oldie" lang="en"> <![endif]-->
 <!--[if IE 7]><html class="no-js ie7 oldie" lang="en"> <![endif]-->
 <!--[if IE 8]><html class="no-js ie8 oldie" lang="en"> <![endif]-->
@@ -32,7 +32,7 @@
   <link rel="shortcut icon" href="/static/img/favicon.png" />
   <link rel="icon" type="image/png" href="/static/img/favicon.png" />
 
-  <title>{% block title %}{{title}}{% endblock %} | {{name}}'s mailpile</title>
+  <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name}}'s mailpile</title>
 
   <script src="/static/js/libraries/jquery.min.js"></script>
   <script src="/static/js/libraries-min.js"></script>
@@ -181,6 +181,7 @@
 
 <div id="content" class="clearfix">
   <div id="content-tools">
+  {% if result %}
   {% if command == "search" %}
     {% include("partials/tools_search.html") %}
   {% elif command in ("contact", "contact/list", "contact/add") %}
@@ -192,16 +193,11 @@
   {% elif command == "message" %}
     {% include("partials/tools_message.html") %}
   {% endif %}
+  {% endif %}
   </div>
-  <div id="content-view">{% endif %}
-  {#
-    This is the end of the first "if render_mode == ..." section, which
-    simply skips all the boilerplate HTML so snippets can be injected
-    using innerHTML. Sub-templates may also need to check for this variable.
-  #}{% block content %}{{results}}{% endblock %}{#
-
-    Boilerplate starts again, continues until /html.
-  #}{% if render_mode == 'full' %}</div>
+  <div id="content-view">
+    {% block content %}{{results}}{% endblock %}
+  </div>
 </div>
 
 <!-- Modal -->
@@ -257,4 +253,4 @@ $('#pile-results').hide();
 <script src="/static/js/app/tags.js"></script>
 <script src="/static/js/app/settings.js"></script>
 </body>
-</html>{% endif %}{# render_mode == 'full' #}
+</html>
