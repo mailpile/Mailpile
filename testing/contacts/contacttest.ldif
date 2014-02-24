@@ -1,0 +1,19 @@
+dn: cn=Douglas Adams,mail=Douglas@douglasadams.com
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+objectclass: mozillaAbPersonObsolete
+givenName: Douglas
+sn: Adams
+cn: Douglas Adams
+mail: Douglas@douglasadams.com
+modifytimestamp: 0Z
+mozillaNickname: Douglas_adams
+homePhone: (858) 555-0042
+mobile: (858) 555-4200
+street: 42 some street
+l: some city
+postalCode: 00042
+c: England
+workurl: http://www.douglasadams.com
