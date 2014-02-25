@@ -330,6 +330,7 @@ if __name__ == "__main__":
      es.write(data)
      es.finish()
      fn = '/tmp/%s.aes' % es.outer_md5sum
+     open(fn, 'wb').write('junk')  # Make sure overwriting works
      es.save(fn)
 
      # Decryption test!
