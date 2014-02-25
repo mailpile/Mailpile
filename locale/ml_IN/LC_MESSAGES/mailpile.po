@@ -490,7 +490,7 @@ msgstr "ആന്തരിക പിശക്"
 #: mailpile/mailutils.py:148
 #, python-format
 msgid "SendMail: from %s, to %s\n"
-msgstr "അയച്ച സന്ദേശം: %s ൽ നിന്നും %s ന്"
+msgstr "അയച്ച സന്ദേശം: %s ൽ നിന്നും %s ന്\n"
 
 #: mailpile/mailutils.py:151
 #, python-format
