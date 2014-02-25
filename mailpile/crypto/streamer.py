@@ -40,6 +40,7 @@ class IOFilter(threading.Thread):
             data = os.read(self.pipe[0], 4096)
             if len(data) == 0:
                 self.fd.flush()
+                self.callback(None)
                 return
             else:
                 self.fd.write(self.callback(data))
@@ -49,6 +50,7 @@ class IOFilter(threading.Thread):
             data = self.fd.read(4096)
             if len(data) == 0:
                 os.close(self.pipe[1])
+                self.callback(None)
                 return
             else:
                 os.write(self.pipe[1], self.callback(data))
@@ -82,6 +84,7 @@ class InputCoprocess:
     This class will stream data from an external coprocess.
     """
     def __init__(self, command, input_fd):
+        self.retval = None
         self.proc = Popen(command,
                           bufsize=0, stdin=input_fd, stdout=PIPE,
                           close_fds=True)
@@ -90,8 +93,10 @@ class InputCoprocess:
         return self.proc.stdout.read(*args)
 
     def close(self):
-        self.proc.stdout.close()
-        return self.proc.wait()
+        if self.retval is None:
+            self.proc.stdout.close()
+            self.retval = self.proc.wait()
+        return self.retval
 
 
 class EncryptingStreamer(OutputCoprocess):
@@ -102,7 +107,10 @@ class EncryptingStreamer(OutputCoprocess):
     """
     BEGIN_DATA = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
     END_DATA = "-----END MAILPILE ENCRYPTED DATA-----\n"
-    DEFAULT_CIPHER = "aes-256-gcm"
+
+    # We would prefer AES-256-GCM, but unfortunately openssl does not
+    # (yet) behave well with it.
+    DEFAULT_CIPHER = "aes-256-cbc"
 
     def __init__(self, key, dir=None, cipher=None):
         self.tempfile = NamedTemporaryFile(dir=dir, delete=False)
@@ -129,7 +137,6 @@ class EncryptingStreamer(OutputCoprocess):
             self._write_postamble()
             self.fd.close()
             self.md5filter.join()
-            self.outer_md5sum = self.outer_md5.hexdigest()
             self.tempfile.seek(0, 0)
 
     def close(self):
@@ -141,9 +148,13 @@ class EncryptingStreamer(OutputCoprocess):
         os.rename(self.tempfile.name, filename)
 
     def _outer_md5_callback(self, data):
-        # We calculate the MD5 sum as if the data used the CRLF linefeed
-        # convention, whether it's actually using that or not.
-        self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
+        if data is None:
+            # EOF...
+            self.outer_md5sum = self.outer_md5.hexdigest()
+        else:
+            # We calculate the MD5 sum as if the data used the CRLF linefeed
+            # convention, whether it's actually using that or not.
+            self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
         return data
 
     def _mutate_key(self, key):
@@ -178,7 +189,7 @@ class DecryptingStreamer(InputCoprocess):
     """
     BEGIN_DATA = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
     END_DATA = "-----END MAILPILE ENCRYPTED DATA-----\n"
-    DEFAULT_CIPHER = "aes-256-gcm"
+    DEFAULT_CIPHER = "aes-256-cbc"
 
     STATE_BEGIN = 0
     STATE_HEADER = 1
@@ -187,7 +198,6 @@ class DecryptingStreamer(InputCoprocess):
     STATE_ERROR = -1
 
     def __init__(self, key, fd, md5sum=None, cipher=None):
-                
         self.expected_outer_md5sum = md5sum
         self.outer_md5 = hashlib.md5()
         self.data_filter = IOFilter(fd, self._read_data)
@@ -196,15 +206,30 @@ class DecryptingStreamer(InputCoprocess):
         self.buffered = ''
         self.key = key
 
-        InputCoprocess.__init__(self, self._mk_command(),
-                                self.data_filter.reader())
+        # Start reading our data...
+        self.startup_lock = threading.Lock()
+        self.startup_lock.acquire()
+        self.read_fd = self.data_filter.reader()
+
+        # Once the header has been processed (_read_data() will release the
+        # lock), fork out our coprocess.
+        self.startup_lock.acquire()
+        InputCoprocess.__init__(self, self._mk_command(), self.read_fd)
+        self.startup_lock = None
 
     def verify(self):
+        if self.close() != 0:
+            return False
         if not self.expected_outer_md5sum:
             return False
         return (self.expected_outer_md5sum == self.outer_md5.hexdigest())
 
     def _read_data(self, data):
+        if data is None:
+            if self.state in (self.STATE_BEGIN, self.STATE_HEADER):
+                self.startup_lock.release()
+            return ''
+
         self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
 
         if self.state == self.STATE_BEGIN:
@@ -228,8 +253,10 @@ class DecryptingStreamer(InputCoprocess):
                 mutated = self._mutate_key(self.key, nonce)
                 data = '\n'.join((mutated, data))
                 self.state = self.STATE_DATA
+                self.startup_lock.release()
             else:
                 self.state = self.STATE_ERROR 
+                self.startup_lock.release()
 
         if self.state == self.STATE_DATA:
             if '\n\n-' in data:
@@ -255,7 +282,7 @@ if __name__ == "__main__":
     
      bc = [0]
      def counter(data):
-         bc[0] += len(data)
+         bc[0] += len(data or '')
          return data
 
      # Test the IOFilter in write mode
@@ -264,7 +291,7 @@ if __name__ == "__main__":
      fd.write('Hello world!')
      fd.close()
      iof.join()
-     assert(open('/tmp/iofilter.out', 'r').read() == 'Hello world!')
+     assert(open('/tmp/iofilter.tmp', 'r').read() == 'Hello world!')
      assert(bc[0] == 12)
 
      # Test the IOFilter in read mode
