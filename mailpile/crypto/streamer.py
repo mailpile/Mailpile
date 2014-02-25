@@ -16,6 +16,8 @@ class IOFilter(threading.Thread):
     This class will wrap a filehandle and spawn a background thread to
     filter either the input or output.
     """
+    BLOCKSIZE = 8192
+
     def __init__(self, fd, callback):
         threading.Thread.__init__(self)
         self.fd = fd
@@ -37,20 +39,20 @@ class IOFilter(threading.Thread):
 
     def _do_write(self):
         while True:
-            data = os.read(self.pipe[0], 4096)
+            data = os.read(self.pipe[0], self.BLOCKSIZE)
             if len(data) == 0:
+                self.fd.write(self.callback(None))
                 self.fd.flush()
-                self.callback(None)
                 return
             else:
                 self.fd.write(self.callback(data))
 
     def _do_read(self):
         while True:
-            data = self.fd.read(4096)
+            data = self.fd.read(self.BLOCKSIZE)
             if len(data) == 0:
+                os.write(self.pipe[1], self.callback(None))
                 os.close(self.pipe[1])
-                self.callback(None)
                 return
             else:
                 os.write(self.pipe[1], self.callback(data))
@@ -62,41 +64,49 @@ class IOFilter(threading.Thread):
             self._do_read()
 
 
-class OutputCoprocess:
+class IOCoprocess:
+    def __init__(self, command, fd):
+        self._retval = None
+        if command:
+            self._proc, self._fd = self._popen(command, fd)
+        else:
+            self._proc, self._fd = None, fd
+
+    def close(self, *args):
+        if self._retval is None:
+            self._fd.close(*args)
+            if self._proc:
+                self._retval = self._proc.wait()
+                self._proc = None
+            else:
+                self._retval = 0
+        return self._retval
+
+
+class OutputCoprocess(IOCoprocess):
     """
     This class will stream data to an external coprocess.
     """
-    def __init__(self, command, dest_fd):
-        self.proc = Popen(command,
-                          bufsize=0, stdin=PIPE, stdout=dest_fd,
-                          close_fds=True)
+    def _popen(self, command, fd):
+         proc = Popen(command,
+                      bufsize=0, stdin=PIPE, stdout=fd, close_fds=True)
+         return proc, proc.stdin
 
-    def write(self, data):
-        return self.proc.stdin.write(data)
-
-    def close(self):
-        self.proc.stdin.close()
-        return self.proc.wait()
+    def write(self, *args):
+        return self._fd.write(*args)
 
 
-class InputCoprocess:
+class InputCoprocess(IOCoprocess):
     """
     This class will stream data from an external coprocess.
     """
-    def __init__(self, command, input_fd):
-        self.retval = None
-        self.proc = Popen(command,
-                          bufsize=0, stdin=input_fd, stdout=PIPE,
-                          close_fds=True)
+    def _popen(self, command, fd):
+        proc = Popen(command,
+                     bufsize=0, stdin=fd, stdout=PIPE, close_fds=True)
+        return proc, proc.stdout
 
     def read(self, *args):
-        return self.proc.stdout.read(*args)
-
-    def close(self):
-        if self.retval is None:
-            self.proc.stdout.close()
-            self.retval = self.proc.wait()
-        return self.retval
+        return self._fd.read(*args)
 
 
 class EncryptingStreamer(OutputCoprocess):
@@ -151,11 +161,12 @@ class EncryptingStreamer(OutputCoprocess):
         if data is None:
             # EOF...
             self.outer_md5sum = self.outer_md5.hexdigest()
+            return ''
         else:
             # We calculate the MD5 sum as if the data used the CRLF linefeed
             # convention, whether it's actually using that or not.
             self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
-        return data
+            return data
 
     def _mutate_key(self, key):
         nonce = genkey(str(random.getrandbits(512)))[:32].strip()
@@ -187,14 +198,15 @@ class DecryptingStreamer(InputCoprocess):
     be streamed to a named temporary file on disk, which can then be
     read back or linked to a final location.
     """
-    BEGIN_DATA = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
-    END_DATA = "-----END MAILPILE ENCRYPTED DATA-----\n"
+    BEGIN_MED = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
+    END_MED = "-----END MAILPILE ENCRYPTED DATA-----\n"
     DEFAULT_CIPHER = "aes-256-cbc"
 
     STATE_BEGIN = 0
     STATE_HEADER = 1
     STATE_DATA = 2
-    STATE_END = 3
+    STATE_RAW_DATA = 3
+    STATE_END = 4
     STATE_ERROR = -1
 
     def __init__(self, key, fd, md5sum=None, cipher=None):
@@ -227,36 +239,45 @@ class DecryptingStreamer(InputCoprocess):
     def _read_data(self, data):
         if data is None:
             if self.state in (self.STATE_BEGIN, self.STATE_HEADER):
+                self.state = self.STATE_RAW_DATA
                 self.startup_lock.release()
+                data, self.buffered = self.buffered, ''
+                return data
             return ''
 
         self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
 
+        if self.state == self.STATE_RAW_DATA:
+            return data
+
         if self.state == self.STATE_BEGIN:
             self.buffered += data
-            if '\r\n\r\n' in self.buffered:
-                header, data = self.buffered.split('\r\n\r\n', 1)
-                headlines = header.strip().split('\r\n')
-                self.state = self.STATE_HEADER
-            elif '\n\n' in self.buffered:
-                header, data = self.buffered.split('\n\n', 1)
-                headlines = header.strip().split('\n')
-                self.state = self.STATE_HEADER
+            if len(self.buffered) >= len(self.BEGIN_MED):
+                if not self.buffered.startswith(self.BEGIN_MED):
+                    self.state = self.STATE_RAW_DATA
+                    self.startup_lock.release()
+                    return self.buffered
+                if '\r\n\r\n' in self.buffered:
+                    header, data = self.buffered.split('\r\n\r\n', 1)
+                    headlines = header.strip().split('\r\n')
+                    self.state = self.STATE_HEADER
+                elif '\n\n' in self.buffered:
+                    header, data = self.buffered.split('\n\n', 1)
+                    headlines = header.strip().split('\n')
+                    self.state = self.STATE_HEADER
+                else:
+                    return ''
             else:
                 return ''
 
         if self.state == self.STATE_HEADER:
-            if header.startswith(self.BEGIN_DATA):
-                headers = dict([l.split(': ', 1) for l in headlines[1:]])
-                self.cipher = headers.get('cipher', self.cipher)
-                nonce = headers.get('nonce')
-                mutated = self._mutate_key(self.key, nonce)
-                data = '\n'.join((mutated, data))
-                self.state = self.STATE_DATA
-                self.startup_lock.release()
-            else:
-                self.state = self.STATE_ERROR 
-                self.startup_lock.release()
+            headers = dict([l.split(': ', 1) for l in headlines[1:]])
+            self.cipher = headers.get('cipher', self.cipher)
+            nonce = headers.get('nonce')
+            mutated = self._mutate_key(self.key, nonce)
+            data = '\n'.join((mutated, data))
+            self.state = self.STATE_DATA
+            self.startup_lock.release()
 
         if self.state == self.STATE_DATA:
             if '\n\n-' in data:
@@ -274,6 +295,8 @@ class DecryptingStreamer(InputCoprocess):
         return genkey(key, nonce)[:32].strip()
 
     def _mk_command(self):
+        if self.state == self.STATE_RAW_DATA:
+            return None
         return ["openssl", "enc", "-d", "-a", "-%s" % self.cipher,
                 "-pass", "stdin"]
 
@@ -283,7 +306,7 @@ if __name__ == "__main__":
      bc = [0]
      def counter(data):
          bc[0] += len(data or '')
-         return data
+         return data or ''
 
      # Test the IOFilter in write mode
      iof = IOFilter(open('/tmp/iofilter.tmp', 'w'), counter)
@@ -301,9 +324,6 @@ if __name__ == "__main__":
      assert(data == 'Hello world!')
      assert(bc[0] == 12)
 
-     # Cleanup
-     os.unlink('/tmp/iofilter.tmp')
-
      # Encryption test
      data = 'Hello world! This is great!\nHooray, lalalalla!\n'
      es = EncryptingStreamer('test key', dir='/tmp')
@@ -318,5 +338,13 @@ if __name__ == "__main__":
      new_data = ds.read()
      assert(ds.verify())
      assert(data == new_data)
- 
+
+     # Null decryption test, md5 verification only
+     ds = DecryptingStreamer('test key', open('/tmp/iofilter.tmp', 'rb'),
+                             md5sum='86fb269d190d2c85f6e0468ceca42a20')
+     assert('Hello world!' == ds.read())
+     assert(ds.verify())
+
+     # Cleanup
+     os.unlink('/tmp/iofilter.tmp')
      os.unlink(fn)
