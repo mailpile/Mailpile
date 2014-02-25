@@ -66,6 +66,7 @@ class IOFilter(threading.Thread):
 
 class IOCoprocess:
     def __init__(self, command, fd):
+        self.stderr = ''
         self._retval = None
         if command:
             self._proc, self._fd = self._popen(command, fd)
@@ -76,6 +77,7 @@ class IOCoprocess:
         if self._retval is None:
             self._fd.close(*args)
             if self._proc:
+                self.stderr = self._proc.stderr.read()
                 self._retval = self._proc.wait()
                 self._proc = None
             else:
@@ -88,8 +90,8 @@ class OutputCoprocess(IOCoprocess):
     This class will stream data to an external coprocess.
     """
     def _popen(self, command, fd):
-         proc = Popen(command,
-                      bufsize=0, stdin=PIPE, stdout=fd, close_fds=True)
+         proc = Popen(command, stdin=PIPE, stderr=PIPE, stdout=fd,
+                      bufsize=0, close_fds=True)
          return proc, proc.stdin
 
     def write(self, *args):
@@ -101,8 +103,8 @@ class InputCoprocess(IOCoprocess):
     This class will stream data from an external coprocess.
     """
     def _popen(self, command, fd):
-        proc = Popen(command,
-                     bufsize=0, stdin=fd, stdout=PIPE, close_fds=True)
+        proc = Popen(command, stdin=fd, stderr=PIPE, stdout=PIPE,
+                     bufsize=0, close_fds=True)
         return proc, proc.stdout
 
     def read(self, *args):
@@ -194,10 +196,9 @@ class EncryptingStreamer(OutputCoprocess):
 
 class DecryptingStreamer(InputCoprocess):
     """
-    This class creates a coprocess for decrypting data. The data will
-    be streamed to a named temporary file on disk, which can then be
-    read back or linked to a final location.
+    This class creates a coprocess for decrypting data.
     """
+    BEGIN_PGP = "-----BEGIN PGP MESSAGE-----"
     BEGIN_MED = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
     END_MED = "-----END MAILPILE ENCRYPTED DATA-----\n"
     DEFAULT_CIPHER = "aes-256-cbc"
@@ -205,8 +206,9 @@ class DecryptingStreamer(InputCoprocess):
     STATE_BEGIN = 0
     STATE_HEADER = 1
     STATE_DATA = 2
-    STATE_RAW_DATA = 3
-    STATE_END = 4
+    STATE_END = 3
+    STATE_RAW_DATA = 4
+    STATE_PGP_DATA = 5
     STATE_ERROR = -1
 
     def __init__(self, key, fd, md5sum=None, cipher=None):
@@ -252,6 +254,11 @@ class DecryptingStreamer(InputCoprocess):
 
         if self.state == self.STATE_BEGIN:
             self.buffered += data
+            if (len(self.buffered) >= len(self.BEGIN_PGP)
+                    and self.buffered.startswith(self.BEGIN_PGP)):
+                self.state = self.STATE_PGP_DATA
+                self.startup_lock.release()
+                return self.buffered
             if len(self.buffered) >= len(self.BEGIN_MED):
                 if not self.buffered.startswith(self.BEGIN_MED):
                     self.state = self.STATE_RAW_DATA
@@ -297,6 +304,8 @@ class DecryptingStreamer(InputCoprocess):
     def _mk_command(self):
         if self.state == self.STATE_RAW_DATA:
             return None
+        elif self.state == self.STATE_PGP_DATA:
+            return ["gpg", "--batch"]
         return ["openssl", "enc", "-d", "-a", "-%s" % self.cipher,
                 "-pass", "stdin"]
 
