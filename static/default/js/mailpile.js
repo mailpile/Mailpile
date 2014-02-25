@@ -115,15 +115,15 @@ MailPile.prototype.render = function() {
     var content_height = $(window).height() - 62;
     var content_tools_height = $('#content-tools').height();
     var fix_content_view_height = sidebar_height - content_tools_height;
+    var new_content_width = $(window).width() - sidebar_width;
   
+    $('#content-tools').css('position', 'fixed')
     $('.sub-navigation').width(content_width);
     $('#thread-title').width(content_width);
   
     // Set Content View
-    $('#content-view').css('height', fix_content_view_height).css('top', content_tools_height);
-
-    var new_content_width = $(window).width() - sidebar_width;
-    $('.sub-navigation, .bulk-actions').width(new_content_width);
+    $('#content-tools, .sub-navigation, .bulk-actions').width(new_content_width);
+    $('#content-view').css({'height': fix_content_view_height, 'top': content_tools_height});
   };
 
   dynamic_sizing();
