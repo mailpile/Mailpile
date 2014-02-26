@@ -148,7 +148,7 @@ def parse_uid(uidstr):
         comment = matches.groups(0)[2] or ""
         name = matches.groups(0)[0] or ""
     else:
-        email = ""
+        email = uidstr
         name = ""
         comment = ""
 
