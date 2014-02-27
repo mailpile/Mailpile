@@ -116,7 +116,11 @@ class Next(Search):
 
     def command(self):
         session = self.session
-        session.displayed = session.displayed.next_set()
+        try:
+            session.displayed = session.displayed.next_set()
+        except:
+            session.ui.error(_("You must perform a search before requesting the next page."))
+            return False
         return session.displayed
 
 
@@ -128,7 +132,11 @@ class Previous(Search):
 
     def command(self):
         session = self.session
-        session.displayed = session.displayed.previous_set()
+        try:
+            session.displayed = session.displayed.previous_set()
+        except:
+            session.ui.error(_("You must perform a search before requesting the previous page."))
+            return False
         return session.displayed
 
 
