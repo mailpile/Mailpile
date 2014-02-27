@@ -118,7 +118,7 @@ class Next(Search):
         session = self.session
         try:
             session.displayed = session.displayed.next_set()
-        except:
+        except AttributeError:
             session.ui.error(_("You must perform a search before requesting the next page."))
             return False
         return session.displayed
@@ -134,7 +134,7 @@ class Previous(Search):
         session = self.session
         try:
             session.displayed = session.displayed.previous_set()
-        except:
+        except AttributeError:
             session.ui.error(_("You must perform a search before requesting the previous page."))
             return False
         return session.displayed
