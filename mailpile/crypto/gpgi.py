@@ -6,6 +6,7 @@ import time
 import re
 import StringIO
 import tempfile
+import select
 from email.parser import Parser
 from email.message import Message
 from gettext import gettext as _
@@ -392,53 +393,75 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         self.handles["stdout"] = proc.stdout
         self.handles["stderr"] = proc.stderr
         self.handles["stdin"] = proc.stdin
+        rhandles = dict([(h, k) for (k, h) in self.handles.items()])
+        for fd in self.handles.keys():
+            fl = fcntl.fcntl(self.handles[fd], fcntl.F_GETFL)
+            fcntl.fcntl(self.handles[fd], fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
+        readwrite = dict(self.fds)
+        readwrite["stdout"] = False
+        readwrite["stderr"] = False
+        readwrite["stdin"] = True
+
+        rlist = [h for (k, h) in self.handles.items() if not readwrite.get(k, False)]
+        wlist = [h for (k, h) in self.handles.items() if readwrite.get(k, False)]
+
+        buffers = {}
         if output:
-            self.handles["stdin"].write(output)
-            self.handles["stdin"].close()
-
+            buffers["stdin"] = output
         if self.passphrase:
-            self.handles["passphrase"].write(self.passphrase)
-            self.handles["passphrase"].close()
+            buffers["passphrase"] = self.passphrase
+        CHUNKSIZE = 1024
 
-        retvals = {"status": []}
-        while True:
+        while (rlist or wlist) and proc.returncode is None:
+            rrlist, rwlist, rxlist = select.select(rlist, wlist, rlist+wlist, 0.02)
+            for fd in rrlist:
+                k = rhandles.get(fd)
+                if not k:
+                    continue
+                b = buffers.get(k, '')
+                if debug:
+                    print "Reading from handle '%s'" % (k,)
+                chunk = self.handles[k].read(CHUNKSIZE)
+                if not chunk:
+                    rlist = [h for h in rlist if h != fd]
+                    fd.close()
+                buffers[k] = b + chunk
+            for fd in rwlist:
+                k = rhandles.get(fd)
+                if not k:
+                    continue
+                b = buffers.get(k, '')
+                chunk = b[:CHUNKSIZE]
+                buffers[k] = b[CHUNKSIZE:]
+                if debug:
+                    print "Writing to handle '%s'" % (k,)
+                self.handles[k].write(chunk)
+                if not buffers[k]:
+                    wlist = [h for h in wlist if h != fd]
+                    fd.close()
             proc.poll()
 
-            try:
-                buf = self.handles["status"].read()
-                for res in self.parse_status(buf):
-                    retvals["status"].append(res)
-            except IOError:
-                pass
+        retvals = {"status": []}
+        if buffers.get("status", ""):
+            for res in self.parse_status(buffers["status"]):
+                retvals["status"].append(res)
+        for fd in ["stdout", "stderr"]:
+            if fd not in callbacks:
+                continue
+            if fd not in retvals:
+                retvals[fd] = []
+            if buffers.get(fd, "") == "":
+                continue
+            buf = buffers[fd]
+            if isinstance(callbacks[fd], list):
+                for cb in callbacks[fd]:
+                    retvals[fd].append(cb(buf))
+            else:
+                retvals[fd].append(callbacks[fd](buf))
 
-            for fd in ["stdout", "stderr"]:
-                if debug:
-                    print "Reading %s" % fd
-
-                try:
-                    buf = self.handles[fd].read()
-                except IOError:
-                    continue
-
-                if fd not in callbacks:
-                    continue
-
-                if fd not in retvals:
-                    retvals[fd] = []
-
-                if buf == "":
-                    continue
-
-                if type(callbacks[fd]) == list:
-                    for cb in callbacks[fd]:
-                        retvals[fd].append(cb(buf))
-                else:
-                    retvals[fd].append(callbacks[fd](buf))
-
-            if proc.returncode is not None:
-                break
-
+        while proc.returncode is None:
+            proc.poll()
         return proc.returncode, retvals
 
     def is_available(self):
