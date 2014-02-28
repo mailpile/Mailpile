@@ -44,6 +44,7 @@ function MailPile() {
     contacts     : "/api/0/search/address/",
     message      : "/api/0/message/=",
   	tag          : "/api/0/tag/",
+  	tag_list     : "/api/0/tag/list/",
   	tag_add      : "/api/0/tag/add/",
   	search_new   : "/api/0/search/?q=in%3Anew",
   	settings_add : "/api/0/settings/add/"
@@ -152,6 +153,9 @@ MailPile.prototype.render = function() {
 
 var mailpile = new MailPile();
 var favicon = new Favico({animation:'popFade'});
+
+// Underscore _template()
+
 
 // Non-exposed functions: www, setup
 $(document).ready(function() {
