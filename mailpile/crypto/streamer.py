@@ -133,13 +133,14 @@ class ChecksummingStreamer(OutputCoprocess):
         return None
 
     def finish(self):
-        if not self.finished:
-            self.finished = True
-            OutputCoprocess.close(self)
-            self._write_postamble()
-            self.fd.close()
-            self.md5filter.join()
-            self.tempfile.seek(0, 0)
+        if self.finished:
+            return
+        self.finished = True
+        OutputCoprocess.close(self)
+        self._write_postamble()
+        self.fd.close()
+        self.md5filter.join()
+        self.tempfile.seek(0, 0)
 
     def close(self):
         self.finish()

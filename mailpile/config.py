@@ -25,7 +25,8 @@ except ImportError:
 
 from mailpile.commands import Rescan
 from mailpile.httpd import HttpWorker
-from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir, NoSuchMailboxError
+from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, NoSuchMailboxError
+from mailpile.mailboxes import wervd
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
@@ -988,15 +989,17 @@ class ConfigManager(ConfigDict):
                 fd.close()
 
     def save_pickle(self, obj, pfn):
-        if self.prefs.obfuscate_index:
-            from mailpile.crypto.streamer import EncryptingStreamer
-            fd = EncryptingStreamer(self.prefs.obfuscate_index,
-                                    dir=self.workdir)
-            cPickle.dump(obj, fd, protocol=0)
-            fd.save(os.path.join(self.workdir, pfn))
-        else:
-            fd = open(os.path.join(self.workdir, pfn), 'wb')
-            cPickle.dump(obj, fd, protocol=0)
+        try:
+            if self.prefs.obfuscate_index:
+                from mailpile.crypto.streamer import EncryptingStreamer
+                fd = EncryptingStreamer(self.prefs.obfuscate_index,
+                                        dir=self.workdir)
+                cPickle.dump(obj, fd, protocol=0)
+                fd.save(os.path.join(self.workdir, pfn))
+            else:
+                fd = open(os.path.join(self.workdir, pfn), 'wb')
+                cPickle.dump(obj, fd, protocol=0)
+        finally:
             fd.close()
 
     def open_mailbox(self, session, mailbox_id):
@@ -1029,13 +1032,18 @@ class ConfigManager(ConfigDict):
                       pickler=lambda o, f: self.save_pickle(o, f))
             self._mbox_cache[mbx_id] = mbox
 
+        # Always set this, it can't be pickled
+        self._mbox_cache[mbx_id]._encryption_key_func = \
+            lambda: self.prefs.obfuscate_index
+
         return self._mbox_cache[mbx_id]
 
     def open_local_mailbox(self, session):
         local_id = self.sys.get('local_mailbox_id', None)
         if not local_id:
             mailbox = os.path.join(self.workdir, 'mail')
-            mbx = maildir.MailpileMailbox(mailbox)
+            mbx = wervd.MailpileMailbox(mailbox)
+            mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
             local_id = self.sys.mailbox.append(mailbox)
             local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
             self.sys.local_mailbox_id = local_id

@@ -57,6 +57,7 @@ def UnorderedPicklable(parent, editable=False):
             parent.__init__(self, *args, **kwargs)
             self.editable = editable
             self._save_to = None
+            self._encryption_key_func = lambda: None
             self.parsed = {}
 
         def unparsed(self):
@@ -68,12 +69,14 @@ def UnorderedPicklable(parent, editable=False):
         def __setstate__(self, data):
             self.__dict__.update(data)
             self._save_to = None
+            self._encryption_key_func = lambda: None
             self.update_toc()
 
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
             del odict['_save_to']
+            del odict['_encryption_key_func']
             return odict
 
         def save(self, session=None, to=None, pickler=None):

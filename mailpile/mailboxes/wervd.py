@@ -2,6 +2,7 @@ import email.generator
 import email.message
 import mailbox
 import os
+import StringIO
 from gettext import gettext as _
 
 import mailpile.mailboxes
@@ -27,7 +28,6 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     def __init__(self, *args, **kwargs):
         mailbox.Maildir.__init__(self, *args, **kwargs)
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
-        self.encryption_key_func = lambda: None
 
     def remove(self, key):
         # FIXME: Remove all the copies of this message!
@@ -39,41 +39,68 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
         for t in [k for k in self._toc.keys() if '.' in k]:
             del self._toc[t]
 
-    def get_message(self, key, enc_key=None):
+    def _get_fd(self, key):
+        fd = open(os.path.join(self._path, self._lookup(key)), 'rb')
+        key = self._encryption_key_func()
+        if key:
+            fd = DecryptingStreamer(key, fd)
+        return fd
+
+    def get_message(self, key):
         """Return a Message representation or raise a KeyError."""
-        pass 
+        fd = self._get_fd(key)
+        try:
+            if self._factory:
+                return self._factory(fd)
+            else:
+                return mailbox.MaildirMessage(fd)
+        finally:
+            fd.close()
+
+    def get_string(self, key):
+        try:
+            fd = self._get_fd(key)
+            return fd.read()
+        finally:
+            fd.close()
+
+    def get_file(self, key):
+        return StringIO.StringIO(self.get_string(key))
 
     def add(self, message, copies=1):
         """Add message and return assigned key."""
-        key = self.encryption_key_func()
-        if key:
-            es = EncryptingStreamer(key, dir=os.path.join(self._path, 'tmp'))
-        else:
-            es = ChecksummingStreamer(dir=os.path.join(self._path, 'tmp'))
-        self._dump_message(message, es)
-        es.finish()
+        key = self._encryption_key_func()
+        try:
+            if key:
+                es = EncryptingStreamer(key,
+                                        dir=os.path.join(self._path, 'tmp'))
+            else:
+                es = ChecksummingStreamer(dir=os.path.join(self._path, 'tmp'))
+            self._dump_message(message, es)
+            es.finish()
 
-        # We are using the MD5 to detect file system corruption, not in a
-        # security context - so using as little as 40 bits should be fine.
-        saved = False
-        key = None
-        for l in range(10, len(es.outer_md5sum)):
-            key = es.outer_md5sum[:l]
-            fn = os.path.join(self._path, 'new', key)
-            if not os.path.exists(fn):
-                es.save(fn)
-                saved = True
-                self._toc[key] = os.path.join('new', key)
-                break
-        if not saved:
-            raise mailbox.ExternalClashError(_('Could not find a filename '
-                                               'for the message.'))
+            # We are using the MD5 to detect file system corruption, not in a
+            # security context - so using as little as 40 bits should be fine.
+            saved = False
+            key = None
+            for l in range(10, len(es.outer_md5sum)):
+                key = es.outer_md5sum[:l]
+                fn = os.path.join(self._path, 'new', key)
+                if not os.path.exists(fn):
+                    es.save(fn)
+                    saved = self._toc[key] = os.path.join('new', key)
+                    break
+            if not saved:
+                raise mailbox.ExternalClashError(_('Could not find a filename '
+                                                   'for the message.'))
 
-        for cpn in range(1, copies):
-            fn = os.path.join(self._path, 'new', '%s.%s' % (key, cpn))
-            es.save_copy(mailbox._create_carefully(fn))
+            for cpn in range(1, copies):
+                fn = os.path.join(self._path, 'new', '%s.%s' % (key, cpn))
+                es.save_copy(mailbox._create_carefully(fn))
 
-        return key
+            return key
+        finally:
+            es.close()
 
     def _dump_message(self, message, target):
         if isinstance(message, email.message.Message):
