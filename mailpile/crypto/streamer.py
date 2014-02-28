@@ -111,36 +111,25 @@ class InputCoprocess(IOCoprocess):
         return self._fd.read(*args)
 
 
-class EncryptingStreamer(OutputCoprocess):
+class ChecksummingStreamer(OutputCoprocess):
     """
-    This class creates a coprocess for encrypting data. The data will
-    be streamed to a named temporary file on disk, which can then be
-    read back or linked to a final location.
+    This checksums and streams data a named temporary file on disk, which
+    can then be read back or linked to a final location.
     """
-    BEGIN_DATA = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
-    END_DATA = "-----END MAILPILE ENCRYPTED DATA-----\n"
-
-    # We would prefer AES-256-GCM, but unfortunately openssl does not
-    # (yet) behave well with it.
-    DEFAULT_CIPHER = "aes-256-cbc"
-
-    def __init__(self, key, dir=None, cipher=None):
+    def __init__(self, dir=None):
         self.tempfile = NamedTemporaryFile(dir=dir, delete=False)
-        self.cipher = cipher or self.DEFAULT_CIPHER
-        self.nonce, self.key = self._mutate_key(key)
 
-        self.inner_md5 = hashlib.md5()
+        self.outer_md5sum = None
         self.outer_md5 = hashlib.md5()
         self.md5filter = IOFilter(self.tempfile, self._outer_md5_callback)
         self.fd = self.md5filter.writer()
 
-        self.outer_md5sum = None
-        self.inner_md5sum = None
-
         self.finished = False
         self._write_preamble()
         OutputCoprocess.__init__(self, self._mk_command(), self.fd)
-        self._send_key()
+
+    def _mk_command(self):
+        return None
 
     def finish(self):
         if not self.finished:
@@ -169,6 +158,32 @@ class EncryptingStreamer(OutputCoprocess):
             # convention, whether it's actually using that or not.
             self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
             return data
+
+    def _write_preamble(self):
+        pass
+
+    def _write_postamble(self):
+        pass
+
+
+class EncryptingStreamer(ChecksummingStreamer):
+    """
+    This class creates a coprocess for encrypting data. The data will
+    be streamed to a named temporary file on disk, which can then be
+    read back or linked to a final location.
+    """
+    BEGIN_DATA = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
+    END_DATA = "-----END MAILPILE ENCRYPTED DATA-----\n"
+
+    # We would prefer AES-256-GCM, but unfortunately openssl does not
+    # (yet) behave well with it.
+    DEFAULT_CIPHER = "aes-256-cbc"
+
+    def __init__(self, key, dir=None, cipher=None):
+        self.cipher = cipher or self.DEFAULT_CIPHER
+        self.nonce, self.key = self._mutate_key(key)
+        ChecksummingStreamer.__init__(self, dir=dir)
+        self._send_key()
 
     def _mutate_key(self, key):
         nonce = genkey(str(random.getrandbits(512)))[:32].strip()
@@ -311,7 +326,7 @@ class DecryptingStreamer(InputCoprocess):
 
 
 if __name__ == "__main__":
-    
+
      bc = [0]
      def counter(data):
          bc[0] += len(data or '')
