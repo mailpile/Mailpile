@@ -13,6 +13,7 @@ class GPGKeySearch(Command):
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/searchkey', 'crypto/gpg/searchkey', '<terms>')
     HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {'q': 'search terms'}
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -23,7 +24,7 @@ class GPGKeySearch(Command):
 
     def command(self):
         args = self.args[:]
-        for q in self.data.get('terms', []):
+        for q in self.data.get('q', []):
             args.extend(q.split())
 
         print "Querying PGP keyservers for: '%s'" % " ".join(args)
@@ -35,6 +36,8 @@ class GPGKeyReceive(Command):
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/receivekey', 'crypto/gpg/receivekey', '<keyid>')
     HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {'keyid': 'ID of key to fetch'}
+
 
     def command(self):
         keyid = self.data.get("keyid", self.args[0])
