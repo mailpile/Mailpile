@@ -27,7 +27,6 @@ class GPGKeySearch(Command):
         for q in self.data.get('q', []):
             args.extend(q.split())
 
-        print "Querying PGP keyservers for: '%s'" % " ".join(args)
         g = GnuPG()
         return g.search_key(" ".join(args))
 
@@ -35,7 +34,7 @@ class GPGKeyReceive(Command):
     """Fetch a GPG Key."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/receivekey', 'crypto/gpg/receivekey', '<keyid>')
-    HTTP_CALLABLE = ('GET', )
+    HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {'keyid': 'ID of key to fetch'}
 
 
