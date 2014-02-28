@@ -124,6 +124,7 @@ class ChecksummingStreamer(OutputCoprocess):
         self.md5filter = IOFilter(self.tempfile, self._outer_md5_callback)
         self.fd = self.md5filter.writer()
 
+        self.saved = False
         self.finished = False
         self._write_preamble()
         OutputCoprocess.__init__(self, self._mk_command(), self.fd)
@@ -145,8 +146,22 @@ class ChecksummingStreamer(OutputCoprocess):
         self.tempfile.close()
 
     def save(self, filename):
-        self.close()
-        os.rename(self.tempfile.name, filename)
+        if not self.saved:
+            # 1st save just renames the tempfile
+            self.finish()
+            os.rename(self.tempfile.name, filename)
+            self.saved = True
+        else:
+            # 2nd save creates a copy
+            self.save_copy(open(filename, 'wb'))
+
+    def save_copy(self, ofd):
+        self.tempfile.seek(0, 0)
+        data = self.tempfile.read(4096)
+        while data != '':
+            ofd.write(data)
+            data = self.tempfile.read(4096)
+        ofd.close()
 
     def _outer_md5_callback(self, data):
         if data is None:
