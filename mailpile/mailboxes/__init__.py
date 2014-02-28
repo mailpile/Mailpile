@@ -11,7 +11,7 @@
 from urllib import quote, unquote
 
 
-__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail',
+__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'wervd',
            'MBX_ID_LEN',
            'NoSuchMailboxError', 'IsMailbox', 'OpenMailbox']
 
