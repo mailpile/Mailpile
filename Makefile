@@ -14,7 +14,7 @@ debian-dev:
 
 docs:
 	@test -d doc || \
-           git clone https://github.com/pagekite/Mailpile.wiki.git doc
+           git submodule update --remote
 	@python mailpile/urlmap.py >doc/URLS.md
 	@ls -l doc/URLS.md
 	@python mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
