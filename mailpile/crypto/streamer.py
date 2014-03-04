@@ -146,10 +146,11 @@ class ChecksummingStreamer(OutputCoprocess):
         self.finish()
         self.tempfile.close()
 
-    def save(self, filename):
+    def save(self, filename, finish=True):
+        if finish:
+            self.finish()
         if not self.saved:
             # 1st save just renames the tempfile
-            self.finish()
             os.rename(self.tempfile.name, filename)
             self.saved = True
         else:
