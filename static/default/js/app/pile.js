@@ -170,7 +170,7 @@ $(document).on('submit', '#form-tag-picker', function(e) {
       };
 
       var tag_link_html = _.template(tag_link_template, tag_link_data);
-      $('#pile-message-' + mid + ' td.subject').prepend(tag_link_html;
+      $('#pile-message-' + mid + ' td.subject').prepend(tag_link_html);
     });
 
     // Clean Caches and hide Modal
