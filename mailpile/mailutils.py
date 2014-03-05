@@ -825,7 +825,7 @@ class Email(object):
             return _('[Binary data suppressed]\n'), 'utf-8'
 
     def decode_payload(self, part):
-        charset = part.get_charset() or None
+        charset = part.get_content_charset() or None
         payload = part.get_payload(None, True) or ''
         return self.decode_text(payload, charset=charset)
 

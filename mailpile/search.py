@@ -760,7 +760,7 @@ class MailIndex:
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
-            charset = part.get_charset() or 'iso-8859-1'
+            charset = part.get_content_charset() or 'iso-8859-1'
 
             def _loader(p):
                 if payload[0] is None:
