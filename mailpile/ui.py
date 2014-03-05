@@ -324,8 +324,14 @@ class UserInteraction:
             return emsg % (escape_html(traceback.format_exc()),
                            ' or '.join([escape_html(tn) for tn in tpl_names]),
                            escape_html('%.4096s' % alldata))
-        except (TemplateError, TemplateSyntaxError, TemplateAssertionError,
-                TemplateNotFound, TemplatesNotFound), e:
+        except (TemplateNotFound, TemplatesNotFound), e:
+            emsg = _("<h1>Template not found in %s</h1>\n"
+                     "<b>%s</b><br/>"
+                     "<div><hr><p><b>DATA:</b> %s</p></div>")
+            return emsg % tuple([escape_html(unicode(v))
+                                 for v in (e.name, e.message,
+                                           '%.4096s' % alldata)])
+        except (TemplateError, TemplateSyntaxError, TemplateAssertionError, ), e:
             emsg = _("<h1>Template error in %s</h1>\n"
                      "Parsing template %s: <b>%s</b> on line %s<br/>"
                      "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
