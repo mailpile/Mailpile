@@ -16,6 +16,8 @@
 	@orangeRed: #F15A24;
 	@red: #a31304;
 
+  @colorSelect: lighten(@yellow, 35%);
+  @colorSelectHover: lighten(@yellow, 30%);
 
 /* Container */
 
@@ -270,8 +272,8 @@
   @font-size-base: @text-font-size;
   @font-size-small: 12px;
 
-  @border-radius-base: @base-border-radius;
-  @border-radius-large: @base-border-radius;
+  @border-radius-base: 4px;
+  @border-radius-large: 4px;
 
   @line-height-base: @base-line-height;
   @line-height-computed: floor((@text-font-size * @base-line-height)); // ~20px
@@ -304,15 +306,15 @@
 
   @zindex-modal:                  1050;
   @zindex-modal-background:       1040;
-  
+
   @modal-inner-padding:           20px;  
   @modal-title-padding:           15px;
   @modal-title-line-height:       1.428571429;  
-  @modal-content-bg:              #fff;
+  @modal-content-bg:              @white;
   @modal-content-border-color:    @grayMid;
-  @modal-content-fallback-border-color: #999;
+  @modal-content-fallback-border-color: @white;
   
-  @modal-backdrop-bg:             #000;
+  @modal-backdrop-bg:             @black;
   @modal-backdrop-opacity:        .5;
   @modal-header-border-color:     @grayMid;
   @modal-footer-border-color:     @modal-header-border-color;
