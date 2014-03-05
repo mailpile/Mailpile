@@ -39,9 +39,13 @@ class GPGKeyReceive(Command):
 
 
     def command(self):
-        keyid = self.data.get("keyid", self.args[0])
+        keyid = self.data.get("keyid", self.args)
         g = GnuPG()
-        return g.recv_key(keyid)
+        res = []
+        for key in keyid:
+            res.append(g.recv_key(key))
+
+        return res
 
 
 mailpile.plugins.register_commands(GPGKeySearch)
