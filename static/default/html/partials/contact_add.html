@@ -1,13 +1,37 @@
 <h3>{{_("Add New Contact")}}</h3>
 
-<form id="form-contact-add" class="standard" method="POST" action="/contact/add/">
-	<input type="hidden" name="csrf" value="">
+<form id="form-contact-add" class="standard" method="POST">
 
-	<label>{{_("Name")}}</label>
-	<input type="text" name="@contactname" value="" placeholder="Chelsea Manning">
+  <fieldset class="contact-add-fields">
+  	<input type="hidden" name="csrf" value="">
+	  <label>{{_("Name")}}</label>
+  	<input type="text" name="@contactname" data-type="name" class="contact-add-name" value="" placeholder="Chelsea Manning">
+	  <label>{{_("E-mail")}}</label>
+  	<input type="text" name="@contactemail" data-type="email" class="contact-add-email" value="" placeholder="chelsea@manning.com">
+    <div id="contact-add-key"></div>
+    <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+  </fieldset>
 
-	<label>{{_("E-mail")}}</label>
-	<input type="text" name="@contactemail" value="" placeholder="chelsea@manning.com">
+  <div class="contact-add-search-keyserver">
+    <div id="contact-search-keyserver-input"></div>
+    <div id="contact-search-keyserver-result"></div>
+  </div>
 
-	<button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
 </form>
+
+<script id="template-search-keyserver" type="text/template">
+  <label>{{_("Search for encryption keys matching:")}}</label>
+  <p id="contact-search-keyserver-query"><b><%= query %></b></p>
+  <p><a href="#" class="button-primary" id="button-contact-search-keyserver" data-searching="{{_('Searching keyservers')}}" data-query="<%= query %>" data-complete="{{_('Results for:')}}"><span class="icon-search"></span> {{_("Go")}}</a></p>
+</script>
+
+<script id="template-search-keyserver-item" type="text/template">
+  <li class="contact-add-search-item" data-keyid="<%= keyid %>">
+    <span class="name"><%= name %></span>
+    <span class="email"><span class="icon-inbox"></span> <%= email %></span>
+    <span class="key"><span class="icon-key"></span> {{_("Key")}}: <%= keyid %></span>
+    <span class="created">{{_("Created")}} <%= created %></span>
+    <span class="keysize">{{_("Key Size")}} <%= keysize %></span>
+    <span class="keytype">{{_("Key Type")}} <%= keytype %></span>
+  </li>
+</script>
