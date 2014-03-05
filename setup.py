@@ -1,9 +1,14 @@
 #!/usr/bin/env python2
 from datetime import date
 from setuptools import setup, find_packages
-from mailpile.defaults import APPVER
 import os
+import re
 from glob import glob
+
+APPVER = (
+    line.strip() for line in open('mailpile/defaults.py', 'r')
+    if re.match(r'^APPVER\s*=', line)
+).next().split('"')[1]
 
 try:
     # This borks sdist.
