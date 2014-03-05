@@ -32,9 +32,9 @@ class Search(Command):
             Command.CommandResult.__init__(self, *args, **kwargs)
             self.fixed_up = False
             if isinstance(self.result, dict):
-                self.message = self.result['summary']
+                self.message = self.result.get('summary', '')
             elif isinstance(self.result, list):
-                self.message = ', '.join([r['summary'] for r in self.result])
+                self.message = ', '.join([r.get('summary', '') for r in self.result])
 
         def _fixup(self):
             if self.fixed_up:
