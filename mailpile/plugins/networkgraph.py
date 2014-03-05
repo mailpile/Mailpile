@@ -84,3 +84,6 @@ mailpile.plugins.register_display_mode("search", "graph",
                                        "mailpile.results_graph();",
                                        "Graph",
                                        url="#", icon="graph")
+mailpile.plugins.register_asset("javascript", "js/libraries/d3.v3.min.js")
+mailpile.plugins.register_asset("javascript", "plugins/force-grapher/force-grapher.js")
+mailpile.plugins.register_asset("content-view_block", "force-grapher/search.html")
