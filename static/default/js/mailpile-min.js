@@ -44,6 +44,7 @@ function MailPile() {
     contacts     : "/api/0/search/address/",
     message      : "/api/0/message/=",
   	tag          : "/api/0/tag/",
+  	tag_list     : "/api/0/tag/list/",
   	tag_add      : "/api/0/tag/add/",
   	search_new   : "/api/0/search/?q=in%3Anew",
   	settings_add : "/api/0/settings/add/"
@@ -115,15 +116,15 @@ MailPile.prototype.render = function() {
     var content_height = $(window).height() - 62;
     var content_tools_height = $('#content-tools').height();
     var fix_content_view_height = sidebar_height - content_tools_height;
+    var new_content_width = $(window).width() - sidebar_width;
   
+    $('#content-tools').css('position', 'fixed')
     $('.sub-navigation').width(content_width);
     $('#thread-title').width(content_width);
   
     // Set Content View
-    $('#content-view').css('height', fix_content_view_height).css('top', content_tools_height);
-
-    var new_content_width = $(window).width() - sidebar_width;
-    $('.sub-navigation, .bulk-actions').width(new_content_width);
+    $('#content-tools, .sub-navigation, .bulk-actions').width(new_content_width);
+    $('#content-view').css({'height': fix_content_view_height, 'top': content_tools_height});
   };
 
   dynamic_sizing();
@@ -152,6 +153,9 @@ MailPile.prototype.render = function() {
 
 var mailpile = new MailPile();
 var favicon = new Favico({animation:'popFade'});
+
+// Underscore _template()
+
 
 // Non-exposed functions: www, setup
 $(document).ready(function() {
@@ -1028,9 +1032,32 @@ $(document).on('click', '.bulk-action', function(e) {
 
     // Open Modal or dropdown with options
   }
-  else if (action == 'assign-tags') {
+  else if (action == 'tag') {
 
     // Open Modal with selection options
+    mailpile.tag_list(function(result) {
+
+      var tags_html = '';
+      var archive_html = '';
+
+      $.each(result.tags, function(key, value) {
+
+        console.log(value.display);
+
+        if (value.display === 'tag') {
+          tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';          
+        }
+        else if (value.display === 'archive') {
+          archive_html += '<li class="checkbox-item-picker"><input type="checkbox"> ' + value.name + '</li>';
+        }
+
+      });
+
+      var modal_html = $("#modal-tag-picker").html();
+
+      $('#modal-full').html(_.template(modal_html, { tags: tags_html, archive: archive_html }));
+      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+    });
   }
 });
 
@@ -1536,17 +1563,109 @@ $(document).on('click', '#contacts-list div.boxy', function(e) {
 });
 
 
+$(document).on('blur', '.contact-add-name, .contact-add-email', function(e) {
+  if ($(this).val() !== '') {
+    var search_query  = $('.contact-add-name').val() + ' ' + $('.contact-add-email').val();
+    var search_button = _.template($('#template-search-keyserver').html(), { query: search_query });
+    $('#contact-search-keyserver-input').html(search_button);
+  }
+});
+
+
+$(document).on('click', '#button-contact-search-keyserver', function(e) {
+  e.preventDefault();
+
+  // Update Querying UI Feedback
+  $(this).hide();
+  $('#contact-search-keyserver-query').hide();
+  $('#contact-search-keyserver-input label').html($(this).data('searching'));
+  $('#contact-search-keyserver-result').html('<img src="/static/css/select2-spinner.gif">');
+
+  var search_complete = $(this).data('complete');
+  var search_query = $(this).data('query');
+
+  $.ajax({
+    url      : '/api/0/crypto/gpg/searchkey/?q=' + search_query,
+    type     : 'GET',
+    dataType : 'json',
+    success  : function(response) {
+      if (response.status === 'success' && _.isEmpty(response.result) === false) {
+
+        // Update Title
+        $('#contact-search-keyserver-input label').html(_.size(response.result) + ' ' + search_complete + ' ' + search_query);
+
+        // Build Results
+        var items = '';
+        var item_html = $('#template-search-keyserver-item').html();
+
+        $.each(response.result, function(keyid, object) {
+          $.each(object.uids, function(key, value) {
+            items += _.template(item_html, { 
+              keyid: keyid,
+              keysize: object.keysize,
+              keytype: object.keytype,
+              created: object.created,
+              name: value.name, 
+              email: value.email
+            });
+          });
+        });
+
+        // Display Results
+        $('#contact-search-keyserver-result').html('<ul>' + items + '</ul>');
+      }
+      else if (response.status === 'success' && _.isEmpty(response.result) === true) {
+        $('#contact-search-keyserver-input label').html('<p>No keys found</p>');
+      }
+    }
+  });
+});
+
+$(document).on('click', '.contact-add-search-item', function() {
+
+  var key_data = { keyid: $(this).data('keyid') };
+
+  $('#contact-search-keyserver-input').html('');
+  $('#contact-search-keyserver-result').html('');
+
+  $.ajax({
+    url      : '/api/0/crypto/gpg/receivekey/',
+    type     : 'POST',
+    data     : key_data,
+    dataType : 'json',
+    success  : function(response) {
+      $('#contact-add-key').html('<span class="icon-key"></span> PGP Key: ' + key_data.keyid);
+      if (response.status === 'success') {
+        $('#contact-search-keyserver-result').html('w00t, something here will happen with this key: ' + response.result);
+      } else {
+        $('#contact-search-keyserver-result').html('Oopsie daisy something is wrotten in Denmark :(');
+      }
+    }
+  });  
+});
+
+
 /* **********************************************
      Begin tags.js
 ********************************************** */
 
-MailPile.prototype.tag = function(msgids, tags) {}
+MailPile.prototype.tag = function(msgids, tags) {};
 
-MailPile.prototype.tag_add = function(tagname) {}
+MailPile.prototype.tag_list = function(complete) {
+  $.ajax({
+    url      : mailpile.api.tag_list,
+    type     : 'GET',
+    dataType : 'json',
+    success  : function(response) {
+      if (response.status === 'success') {
+        complete(response.result);
+      }
+    }
+  });
+};
 
 /* Pile - Tag Add */
 MailPile.prototype.tag_add = function(tag_add, mids, complete) {
-
   $.ajax({
 	  url			 : mailpile.api.tag,
 	  type		 : 'POST',
@@ -1556,11 +1675,8 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
     },
 	  dataType : 'json',
     success  : function(response) {
-
       if (response.status == 'success') {
-
        complete();
-
       } else {
         mailpile.notification(response.status, response.message);
       }
@@ -1570,8 +1686,7 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
 
 
 MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
-  
-	  $.ajax({
+  $.ajax({
 	  url			 : mailpile.api.tag,
 	  type		 : 'POST',
 	  data     : {
@@ -1581,11 +1696,8 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
     },
 	  dataType : 'json',
     success  : function(response) {
-
       if (response.status == 'success') {
-
         complete();
-
       } else {
         mailpile.notification(response.status, response.message);
       }

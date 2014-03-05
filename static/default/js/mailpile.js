@@ -14,7 +14,9 @@ Number.prototype.pad = function(size) {
 function MailPile() {
   this.instance       = {};
 	this.search_cache   = [];
-	this.bulk_cache     = [];
+	this.messages_cache = [];
+	this.tags_cache     = [];
+	this.contacts_cache = [];
 	this.keybindings    = [
   	["normal", "/",      function() { $("#search-query").focus(); return false; }],
   	["normal", "c",      function() { mailpile.compose(); }],
@@ -26,8 +28,6 @@ function MailPile() {
   	["normal", "g n t",  function() { mailpile.go("/tag/add/"); }],
   	["normal", "g s",    function() { mailpile.go("/settings/profiles/"); }],
     ["global", "esc",    function() {
-
-  		// Add Form Fields
   		$('input[type=text]').blur();
   		$('textarea').blur();
     }]
@@ -60,15 +60,15 @@ MailPile.prototype.go = function(url) {
   window.location.href = url;
 };
 
-MailPile.prototype.bulk_cache_add = function(mid) {
-  if (_.indexOf(this.bulk_cache, mid) < 0) {
-    this.bulk_cache.push(mid);
+MailPile.prototype.bulk_cache_add = function(type, value) {
+  if (_.indexOf(this[type], value) < 0) {
+    this[type].push(value);
   }
 };
 
-MailPile.prototype.bulk_cache_remove = function(mid) {
-  if (_.indexOf(this.bulk_cache, mid) > -1) {
-    this.bulk_cache = _.without(this.bulk_cache, mid);
+MailPile.prototype.bulk_cache_remove = function(type, value) {
+  if (_.indexOf(this[type], value) > -1) {
+    this[type] = _.without(this[type], value);
   }
 };
 
