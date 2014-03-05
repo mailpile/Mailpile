@@ -282,7 +282,9 @@ class UserInteraction:
     def _web_template(self, config, tpl_names, elems=None, ext='html'):
         # FIXME: would be nice to rename html folder to web
         theme_path = os.path.join(config.data_directory('html_theme'), 'html')
-        env = Environment(loader=FileSystemLoader('%s' % theme_path),
+        plugin_path = os.path.join(config.data_directory('html_theme'), 'plugins')
+        templatepaths = [theme_path, plugin_path]
+        env = Environment(loader=FileSystemLoader(templatepaths),
                           autoescape=True,
                           extensions=[
                               'jinja2.ext.i18n', 'jinja2.ext.with_',

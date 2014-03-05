@@ -256,7 +256,7 @@ UICLASSES = []
 DISPLAY_MODES = {}
 DISPLAY_ACTIONS = {}
 SELECTION_ACTIONS = {}
-ASSETS = {"javascript": [], "stylesheet": []}
+ASSETS = {"javascript": [], "stylesheet": [], "content-view_block": []}
 BODY_BLOCKS = {}
 ACTIVITIES = []
 
