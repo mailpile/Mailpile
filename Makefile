@@ -8,8 +8,12 @@ dev:
 
 debian-dev:
 	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
-	                     rubygems ruby-dev yui-compressor python-nose \
-	                     spambayes
+	                     ruby-dev yui-compressor python-nose spambayes
+	if [ "$(shell cat /etc/debian_version)" = "jessie/sid"  ]; then\
+		 sudo apt-get install rubygems-integration;\
+	else \
+		sudo apt-get install rubygems; \
+	fi
 	sudo gem install therubyracer less
 
 docs:
@@ -68,4 +72,3 @@ genmessages:
 
 compilemessages:
 	@scripts/compile-messages.sh
-
