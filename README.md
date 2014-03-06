@@ -4,12 +4,15 @@
 
 #### Who's doing what? ####
 
-- 2014-01-27: bre: Prepping the alpha release
-- 2014-01-27: bvnk: Prepping the alpha release
-- 2014-01-27: smari: Prepping the alpha release
+- 2014-03-06: bre: Event logging / handling
+- 2014-03-06: bvnk: Contacts & crypto UX
+- 2014-03-06: smari: PM / issues
 
 #### Recent changes ####
 
+- 2014-01-27: bre: Prepping the alpha release
+- 2014-01-27: bvnk: Prepping the alpha release
+- 2014-01-27: smari: Prepping the alpha release
 - 2013-01-24: bre/bnvk: Encrypting and signing outgoing mail works
 - 2013-01-15: bre: Make message crypto searchable and visible in metadata
 - 2013-12-19: bre: Bugfixes, search-by-size, preparing for antispam work
