@@ -237,6 +237,8 @@ class Tag(TagCommand):
             tag = self.session.config.get_tag(op[1:])
             if tag:
                 tag_id = tag._key
+                tag = tag.copy()
+                tag["tid"] = tag_id
                 conversation = ('flat' not in (self.session.order or ''))
                 if op[0] == '-':
                     idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids,

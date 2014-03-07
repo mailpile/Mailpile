@@ -5,6 +5,7 @@
   #form-compose {
     min-height: 225px;
     padding: 10px 15px;
+    background: @grayLight;
   }
 
   #form-compose label {
@@ -22,10 +23,19 @@
   #form-compose label a:hover {
     color: @red;
   }
+  
+  #form-compose label span,
+  #form-compose label a.compose-hide-field {
+    color: @gray;
+  }
 
   #compose-from {
     float: left;
-    margin-bottom: 10px;
+    height: 32px;
+    background-color: #fafafa;
+    border-color: #cccccc;
+    border-radius: 5px;
+    font-size: 12px;
   }
 
   #compose-options {
@@ -45,7 +55,6 @@
   .compose-crypto-signature:hover {
     cursor: pointer;
   }
-
   .compose-crypto-signature.none {
     color: @gray;
   }
@@ -55,18 +64,17 @@
   .compose-crypto-signature.error {
     color: @red;
   }
-  
+
   .compose-crypto-encryption:hover {
     cursor: pointer;
   }  
-
   .compose-crypto-encryption.none {
     color: @gray;
   }
   .compose-crypto-encryption.none {
     color: @gray;
   }  
-  .compose-crypto-encryption.partial {
+  .compose-crypto-encryption.cannot {
     color: @orange;
   }
   .compose-crypto-encryption.encrypted {
@@ -128,7 +136,7 @@
     padding: 10px;
     border: 1px solid @grayMid;
     border-radius: 4px;
-    -webkit-box-sizing: border-box;
+ //   -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;    
     font-family: Helvetica, Arial, sans-serif;
@@ -141,7 +149,7 @@
     border: 1px solid @gray;
     box-shadow: 0 0 3px @gray;
     -moz-box-shadow: 0 0 3px @gray;
-    -webkit-box-shadow: 0 0 3px @gray;
+//    -webkit-box-shadow: 0 0 3px @gray;
   }
 
 

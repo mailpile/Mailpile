@@ -10,9 +10,22 @@ from gettext import gettext as _
 
 from urllib import quote, unquote
 
+try:
+    import ssl
+except ImportError:
+    ssl = None
+
+try:
+    import sockschain as socks
+except ImportError:
+    try:
+        import socks
+    except ImportError:
+        socks = None
+
 from mailpile.commands import Rescan
 from mailpile.httpd import HttpWorker
-from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir
+from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir, NoSuchMailboxError
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
@@ -779,6 +792,7 @@ class ConfigManager(ConfigDict):
         self.cron_worker = None
         self.http_worker = None
         self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
+        self.other_workers = []
 
         self.index = None
         self.vcards = {}
@@ -964,33 +978,26 @@ class ConfigManager(ConfigDict):
     def load_pickle(self, pfn):
         fd = None
         try:
-            fd = open(os.path.join(self.workdir, pfn), 'r')
+            fd = open(os.path.join(self.workdir, pfn), 'rb')
             if self.prefs.obfuscate_index:
-                lines = []
-                decrypt_and_parse_lines(fd, lambda l: lines.append(l), self,
-                                        newlines=True)
-                return cPickle.loads(str(''.join(lines)))
-            else:
-                return cPickle.load(fd)
+                from mailpile.crypto.streamer import DecryptingStreamer
+                fd = DecryptingStreamer(self.prefs.obfuscate_index, fd)
+            return cPickle.loads(fd.read())
         finally:
             if fd:
                 fd.close()
 
     def save_pickle(self, obj, pfn):
-        if self.prefs.obfuscate_index and not True:
-            # FIXME: Encryption disabled for now, openssl hangs.
-            from mailpile.crypto.symencrypt import EncryptedFile
-            fd = EncryptedFile(os.path.join(self.workdir, pfn),
-                               self.prefs.obfuscate_index,
-                               mode='wb')
+        if self.prefs.obfuscate_index:
+            from mailpile.crypto.streamer import EncryptingStreamer
+            fd = EncryptingStreamer(self.prefs.obfuscate_index,
+                                    dir=self.workdir)
+            cPickle.dump(obj, fd, protocol=0)
+            fd.save(os.path.join(self.workdir, pfn))
         else:
             fd = open(os.path.join(self.workdir, pfn), 'wb')
-
-        # We deliberately use protocol 0, which is compatible with text
-        # mode file I/O. This allows the decrypt_and_parse_lines logic
-        # in load_pickle to operate without a hitch.
-        cPickle.dump(obj, fd, protocol=0)
-        fd.close()
+            cPickle.dump(obj, fd, protocol=0)
+            fd.close()
 
     def open_mailbox(self, session, mailbox_id):
         try:
@@ -1051,7 +1058,10 @@ class ConfigManager(ConfigDict):
                 return dict_merge(default_profile, profile)
         return default_profile
 
-    def get_sendmail(self, frm, rcpts='-t'):
+    def get_sendmail(self, frm, rcpts=['-t']):
+        if len(rcpts) == 1:
+            if rcpts[0].lower().endswith('.onion'):
+                return 'smtorp:%s:25' % rcpts[0].split('@')[-1]
         return self.get_profile(frm)['route'] % {
             'rcpt': ', '.join(rcpts)
         }
@@ -1099,6 +1109,12 @@ class ConfigManager(ConfigDict):
         idx.load(session)
         self.index = idx
         return idx
+
+    def get_tor_socket(self):
+        if socks:
+            socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5,
+                                  'localhost', 9050, True)
+        return socks.socksocket
 
     def get_i18n_translation(self, session=None):
         language = self.prefs.language
@@ -1153,6 +1169,12 @@ class ConfigManager(ConfigDict):
                 if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                     config.http_worker = HttpWorker(session, sspec)
                     config.http_worker.start()
+            if not config.other_workers:
+                import mailpile.plugins
+                for worker in mailpile.plugins.WORKERS:
+                    w = worker(session)
+                    w.start()
+                    config.other_workers.append(w)
 
         # Update the cron jobs, if necessary
         if config.cron_worker:
@@ -1187,11 +1209,12 @@ class ConfigManager(ConfigDict):
 
     def stop_workers(config):
         for wait in (False, True):
-            for w in (config.http_worker,
+            for w in [config.http_worker,
                       config.slow_worker,
-                      config.cron_worker):
+                      config.cron_worker] + config.other_workers:
                 if w:
                     w.quit(join=wait)
+        config.other_workers = []
 
 
 ##############################################################################

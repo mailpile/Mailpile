@@ -41,12 +41,10 @@ MailPile.prototype.results_list = function() {
 	// Show & Hide View
 	$('#pile-graph').hide('fast', function() {
 
-    $('#sidebar').show('normal');
     $('#form-pile-results').show('normal');
     $('#pile-results').show('fast');
     $('.pile-speed').show('normal');
     $('#footer').show('normal');
-    $('#sidebar').show('normal');
 	});
 }
 
@@ -64,13 +62,5 @@ $(document).ready(function() {
 	$('#button-search-options').on("blur", function(key) {
 		$('#search-params').slideUp('fast');
 	});
-
-	for (item in keybindings) {
-		if (item[1] == "global") {
-			Mousetrap.bindGlobal(item[0], item[2]);
-		} else {
-			Mousetrap.bind(item[0], item[2]);
-		}
-	}
 	
 });

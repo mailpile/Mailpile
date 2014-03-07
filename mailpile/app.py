@@ -1,56 +1,22 @@
-APPVER = "0.0.0+github"
-ABOUT = """\
-Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
-               for searching and                   <https://www.mailpile.is/>
-           organizing piles of e-mail
-
-This program is free software: you can redistribute it and/or modify it under
-the terms of either the GNU Affero General Public License as published by the
-Free Software Foundation or the Apache License 2.0 as published by the Apache
-Software Foundation. See the file COPYING.md for details.
-"""
-###############################################################################
-import cgi
-import codecs
-import datetime
-import email.parser
 import getopt
-import hashlib
-import locale
-import mailbox
-import os
-import cPickle
-import random
-import re
-import rfc822
-import socket
-import struct
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import SocketServer
-from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
-from urlparse import parse_qs, urlparse
-import lxml.html
 import gettext
+import locale
+import os
+import sys
 from gettext import gettext as _
 
 import mailpile.util
 import mailpile.defaults
 from mailpile.commands import COMMANDS, Action, Help, HelpSplash, Load, Rescan
 from mailpile.config import ConfigManager, getLocaleDirectory
-from mailpile.vcard import SimpleVCard
-from mailpile.mailboxes import *
-from mailpile.mailutils import *
-from mailpile.httpd import *
-from mailpile.search import *
-from mailpile.ui import *
+from mailpile.ui import ANSIColors, Session, UserInteraction
 from mailpile.util import *
-from mailpile.workers import *
 
-Help.ABOUT = ABOUT
+# This makes sure mailbox "plugins" get loaded... has to go somewhere?
+from mailpile.mailboxes import *
+
+# This is also a bit silly, should be somewhere else?
+Help.ABOUT = mailpile.defaults.ABOUT
 
 
 ##[ Main ]####################################################################
@@ -165,6 +131,7 @@ def Main(args):
         config.stop_workers()
         if config.index:
             config.index.save_changes()
+
 
 if __name__ == "__main__":
     Main(sys.argv[1:])

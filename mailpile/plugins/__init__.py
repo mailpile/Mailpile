@@ -13,10 +13,10 @@ import mailpile.vcard
 # These are the plugins we ship/import by default
 __all__ = [
     'search', 'tags', 'contacts', 'compose', 'groups',
-    'dates', 'sizes', 'autotag', 'cryptostate',
-    'setup_magic', 'networkgraph', 'exporters',
+    'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_utils',
+    'setup_magic', 'exporters',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
-    'hacks'
+    'hacks', 'html_magic', 'smtp_server'
 ]
 BUILTIN = (__all__[:] + [
     'autotag_sb'
@@ -25,7 +25,7 @@ BUILTIN = (__all__[:] + [
 # These are plugins which we consider required
 REQUIRED = [
     'search', 'tags', 'contacts', 'compose', 'groups', 'setup_magic',
-    'dates', 'sizes', 'cryptostate'
+    'dates', 'sizes', 'cryptostate', 'html_magic'
 ]
 DISCOVERED = {}
 
@@ -218,12 +218,27 @@ SLOW_PERIODIC_JOBS = {}
 
 def register_fast_periodic_job(name, period, callback):
     global FAST_PERIODIC_JOBS
+    # FIXME: complain about duplicates?
     FAST_PERIODIC_JOBS[name] = (period, callback)
 
 
 def register_slow_periodic_job(name, period, callback):
     global SLOW_PERIODIC_JOBS
+    # FIXME: complain about duplicates?
     SLOW_PERIODIC_JOBS[name] = (period, callback)
+
+
+##[ Pluggable background worker threads ]####################################
+
+WORKERS = []
+
+
+def register_worker(thread_obj):
+    global WORKERS
+    assert(hasattr(thread_obj, 'start'))
+    assert(hasattr(thread_obj, 'quit'))
+    # FIXME: complain about duplicates?
+    WORKERS.append(thread_obj)
 
 
 ##[ Pluggable commands ]######################################################
@@ -241,7 +256,7 @@ UICLASSES = []
 DISPLAY_MODES = {}
 DISPLAY_ACTIONS = {}
 SELECTION_ACTIONS = {}
-ASSETS = {"javascript": [], "stylesheet": []}
+ASSETS = {"javascript": [], "stylesheet": [], "content-view_block": []}
 BODY_BLOCKS = {}
 ACTIVITIES = []
 

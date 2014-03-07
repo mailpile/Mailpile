@@ -1,9 +1,14 @@
 #!/usr/bin/env python2
 from datetime import date
 from setuptools import setup, find_packages
-from mailpile.app import APPVER
 import os
+import re
 from glob import glob
+
+APPVER = (
+    line.strip() for line in open('mailpile/defaults.py', 'r')
+    if re.match(r'^APPVER\s*=', line)
+).next().split('"')[1]
 
 try:
     # This borks sdist.
@@ -39,6 +44,11 @@ simple web-mail client.
 """,
     packages=find_packages(),
     data_files=data_files,
+    install_requires=[
+        'lxml>=2.3.2',
+        'jinja2',
+        'spambayes>=1.1b1'
+        ],
     entry_points={
         'console_scripts': [
             'mailpile = mailpile.__main__:main'

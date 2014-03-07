@@ -6,6 +6,7 @@ import time
 import re
 import StringIO
 import tempfile
+import select
 from email.parser import Parser
 from email.message import Message
 from gettext import gettext as _
@@ -148,7 +149,7 @@ def parse_uid(uidstr):
         comment = matches.groups(0)[2] or ""
         name = matches.groups(0)[0] or ""
     else:
-        email = line[9]
+        email = uidstr
         name = ""
         comment = ""
 
@@ -365,81 +366,121 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         args.insert(1, "--batch")
         args.insert(1, "--enable-progress-filter")
 
-        for fd in self.fds.keys():
-            if fd not in self.needed_fds:
-                continue
-            self.pipes[fd] = os.pipe()
-            if debug:
-                print ("Opening fd %s, fh %d, mode %s"
-                       ) % (fd,
-                            self.pipes[fd][self.fds[fd]],
-                            ["r", "w"][self.fds[fd]])
-            args.insert(1, "--%s-fd" % fd)
-            # The remote end of the pipe:
-            args.insert(2, "%d" % self.pipes[fd][not self.fds[fd]])
-            fdno = self.pipes[fd][self.fds[fd]]
-            self.handles[fd] = os.fdopen(fdno, ["r", "w"][self.fds[fd]])
-            # Cause file handles to stay open after execing
-            fcntl.fcntl(self.handles[fd], fcntl.F_SETFD, 0)
-            fl = fcntl.fcntl(self.handles[fd], fcntl.F_GETFL)
-            fcntl.fcntl(self.handles[fd], fcntl.F_SETFL, fl | os.O_NONBLOCK)
-
-        if debug:
-            print "Running gpg as: %s" % " ".join(args)
-
-        proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-
-        self.handles["stdout"] = proc.stdout
-        self.handles["stderr"] = proc.stderr
-        self.handles["stdin"] = proc.stdin
-
-        if output:
-            self.handles["stdin"].write(output)
-            self.handles["stdin"].close()
-
-        if self.passphrase:
-            self.handles["passphrase"].write(self.passphrase)
-            self.handles["passphrase"].close()
-
-        retvals = {"status": []}
-        while True:
-            proc.poll()
-
-            try:
-                buf = self.handles["status"].read()
-                for res in self.parse_status(buf):
-                    retvals["status"].append(res)
-            except IOError:
-                pass
-
-            for fd in ["stdout", "stderr"]:
-                if debug:
-                    print "Reading %s" % fd
-
-                try:
-                    buf = self.handles[fd].read()
-                except IOError:
+        try:
+            for fd in self.fds.keys():
+                if fd not in self.needed_fds:
                     continue
+                self.pipes[fd] = os.pipe()
+                if debug:
+                    print ("Opening fd %s, fh %d, mode %s"
+                           ) % (fd,
+                                self.pipes[fd][self.fds[fd]],
+                                ["r", "w"][self.fds[fd]])
+                args.insert(1, "--%s-fd" % fd)
+                # The remote end of the pipe:
+                args.insert(2, "%d" % self.pipes[fd][not self.fds[fd]])
+                fdno = self.pipes[fd][self.fds[fd]]
+                self.handles[fd] = os.fdopen(fdno, ["r", "w"][self.fds[fd]])
+                # Cause file handles to stay open after execing
+                fcntl.fcntl(self.handles[fd], fcntl.F_SETFD, 0)
+                fl = fcntl.fcntl(self.handles[fd], fcntl.F_GETFL)
+                fcntl.fcntl(self.handles[fd], fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
+            if debug:
+                print "Running gpg as: %s" % " ".join(args)
+
+            proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+            self.handles["stdout"] = proc.stdout
+            self.handles["stderr"] = proc.stderr
+            self.handles["stdin"] = proc.stdin
+            rhandles = dict([(h, k) for (k, h) in self.handles.items()])
+            for fd in self.handles.keys():
+                fl = fcntl.fcntl(self.handles[fd], fcntl.F_GETFL)
+                fcntl.fcntl(self.handles[fd], fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+            readwrite = dict(self.fds)
+            readwrite["stdout"] = False
+            readwrite["stderr"] = False
+            readwrite["stdin"] = True
+
+            rlist = [h for (k, h) in self.handles.items() if not readwrite.get(k, False)]
+            wlist = [h for (k, h) in self.handles.items() if readwrite.get(k, False)]
+
+            buffers = {}
+            if output:
+                buffers["stdin"] = output
+            if self.passphrase:
+                buffers["passphrase"] = self.passphrase
+            CHUNKSIZE = 1024
+
+            while (rlist or wlist):
+                rrlist, rwlist, rxlist = select.select(rlist, wlist, rlist+wlist, 0.02)
+                for fd in rrlist:
+                    k = rhandles.get(fd)
+                    if not k:
+                        continue
+                    b = buffers.get(k, '')
+                    if debug:
+                        print "Reading from handle '%s'" % (k,)
+                    chunk = self.handles[k].read(CHUNKSIZE)
+                    if not chunk:
+                        rlist = [h for h in rlist if h != fd]
+                        fd.close()
+                    buffers[k] = b + chunk
+                if proc.returncode is not None and not rrlist:
+                    break
+                for fd in rwlist:
+                    k = rhandles.get(fd)
+                    if not k:
+                        continue
+                    b = buffers.get(k, '')
+                    chunk = b[:CHUNKSIZE]
+                    buffers[k] = b[CHUNKSIZE:]
+                    if debug:
+                        print "Writing to handle '%s'" % (k,)
+                    self.handles[k].write(chunk)
+                    if not buffers[k]:
+                        wlist = [h for h in wlist if h != fd]
+                        fd.close()
+                proc.poll()
+
+            retvals = {"status": []}
+            if buffers.get("status", ""):
+                for res in self.parse_status(buffers["status"]):
+                    retvals["status"].append(res)
+            for fd in ["stdout", "stderr"]:
                 if fd not in callbacks:
                     continue
-
                 if fd not in retvals:
                     retvals[fd] = []
-
-                if buf == "":
+                if buffers.get(fd, "") == "":
+                    retvals[fd].append("")
                     continue
-
-                if type(callbacks[fd]) == list:
+                buf = buffers[fd]
+                if isinstance(callbacks[fd], list):
                     for cb in callbacks[fd]:
                         retvals[fd].append(cb(buf))
                 else:
                     retvals[fd].append(callbacks[fd](buf))
 
-            if proc.returncode is not None:
-                break
-
-        return proc.returncode, retvals
+            while proc.returncode is None:
+                proc.poll()
+            return proc.returncode, retvals
+        finally:
+            for fds in self.pipes.values():
+                for fd in fds:
+                    try:
+                        os.close(fd)
+                    except OSError:
+                        pass
+            self.pipes = {}
+            for fd in self.handles.values():
+                try:
+                    fd.close()
+                except Exception:
+                    pass
+            self.handles = {}
 
     def is_available(self):
         try:
@@ -705,9 +746,69 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
+<<<<<<< HEAD
         print retvals[1]["status"]
         return [x for x in retvals[1]["status"] 
                   if x[0] in ("IMPORTED", "IMPORT_OK", "IMPORT_PROBLEM")]
+=======
+        res = {"imported": [], "updated": [], "failed": []}
+        for x in retvals[1]["status"]:
+            if x[0] == "IMPORTED":
+                res["imported"].append({
+                    "keyid": keyid, 
+                    "fingerprint": x[1], 
+                    "username": x[2]
+                })
+            elif x[0] == "IMPORT_OK":
+                reasons = {
+                    "0": "unchanged",
+                    "1": "new key",
+                    "2": "new user IDs",
+                    "4": "new signatures",
+                    "8": "new subkeys",
+                    "16": "contains private key",
+                }
+                res["updated"].append({
+                    "keyid": keyid, 
+                    "details": int(x[1]),
+                    "details_text": reasons[x[1]],
+                    "fingerprint": x[2],
+                })
+            elif x[0] == "IMPORT_PROBLEM":
+                reasons = {
+                    "0": "no reason given",
+                    "1": "invalid certificate",
+                    "2": "issuer certificate missing",
+                    "3": "certificate chain too long",
+                    "4": "error storing certificate",
+                }
+                res["failed"].append({
+                    "keyid": keyid,
+                    "details": int(x[1]),
+                    "details_text": reasons[x[1]],
+                    "fingerprint": x[2]
+                })
+            elif x[0] == "IMPORT_RES":
+                res["results"] = {
+                    "count": int(x[1]),
+                    "no_userids": int(x[2]),
+                    "imported": int(x[3]),
+                    "imported_rsa": int(x[4]),
+                    "unchanged": int(x[5]),
+                    "num_uids": int(x[6]),
+                    "num_subkeys": int(x[7]),
+                    "num_signatures": int(x[8]),
+                    "num_revoked": int(x[9]),
+                    "sec_read": int(x[10]),
+                    "sec_imported": int(x[11]),
+                    "sec_dups": int(x[12]),
+                    "skipped_new_keys": int(x[13]),
+                    "not_imported": int(x[14]),
+                }
+
+
+        return res
+>>>>>>> 5a6cc129469ed590d98e9c19af509dbc7dc7bfd1
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
@@ -732,7 +833,11 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                                                 "comment": comment})
         return results
 
+<<<<<<< HEAD
      def address_to_keys(self, address):
+=======
+    def address_to_keys(self, address):
+>>>>>>> 5a6cc129469ed590d98e9c19af509dbc7dc7bfd1
         res = {}
         keys = self.list_keys()
         for key, props in keys.iteritems():

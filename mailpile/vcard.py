@@ -311,7 +311,8 @@ class SimpleVCard(object):
     VCARD4_REQUIRED = ('VERSION', 'FN')
 
     def __init__(self, *lines, **kwargs):
-        self.gpg_recipient = lambda self: None
+        self.gpg_recipient = lambda: None
+        self.encryption_key = lambda: None
         self.filename = None
         self._lines = []
         if 'data' in kwargs and kwargs['data'] is not None:
@@ -621,23 +622,22 @@ class SimpleVCard(object):
         """
         Load VCard lines from a file on disk or data in memory.
         """
-        def unwrap(text):
-            return text.replace('\n ', '').replace('\n\t', '')
-
         if data:
-            lines = [l.strip() for l in unwrap(data.strip()).splitlines()]
+            pass
         elif filename:
+            from mailpile.crypto.streamer import DecryptingStreamer
             self.filename = filename or self.filename
-            lines = []
-            decrypt_and_parse_lines(open(self.filename, 'rb'),
-                                    lambda l: lines.append(l.rstrip()),
-                                    config)
-            while lines and not lines[-1]:
-                lines.pop(-1)
-            lines = unwrap('\n'.join(lines)).splitlines()
+            data = DecryptingStreamer(config.prefs.obfuscate_index,
+                                      open(self.filename, 'rb')
+                                      ).read().decode('utf-8')
         else:
             raise ValueError('Need data or a filename!')
 
+        def unwrap(text):
+            # This undoes the VCard standard line wrapping
+            return text.replace('\n ', '').replace('\n\t', '')
+
+        lines = [l.strip() for l in unwrap(data.strip()).splitlines()]
         if (not len(lines) >= 2 or
                 not lines.pop(0).upper() == 'BEGIN:VCARD' or
                 not lines.pop(-1).upper() == 'END:VCARD'):
@@ -648,13 +648,21 @@ class SimpleVCard(object):
 
         return self
 
-    def save(self, filename=None, gpg_recipient=None):
+    def save(self, filename=None, gpg_recipient=None, encryption_key=None):
         filename = filename or self.filename
         if filename:
             gpg_recipient = gpg_recipient or self.gpg_recipient()
-            fd = gpg_open(filename, gpg_recipient, 'wb')
-            fd.write(self.as_vCard())
-            fd.close()
+            encryption_key = encryption_key or self.encryption_key()
+            if encryption_key:
+                from mailpile.crypto.streamer import EncryptingStreamer
+                es = EncryptingStreamer(encryption_key,
+                                        dir=os.path.dirname(filename))
+                es.write(self.as_vCard())
+                es.save(filename)
+            else:
+                fd = gpg_open(filename, gpg_recipient, 'wb')
+                fd.write(self.as_vCard())
+                fd.close()
             return self
         else:
             raise ValueError('Save to what file?')
@@ -750,6 +758,7 @@ class VCardStore(dict):
                     c = SimpleVCard().load(os.path.join(self.vcard_dir, fn),
                                            config=(session and session.config))
                     c.gpg_recipient = lambda: prefs.get('gpg_recipient')
+                    c.encryption_key = lambda: prefs.get('obfuscate_index')
                     self.index_vcard(c)
                     if session:
                         session.ui.mark('Loaded %s from %s' % (c.email, fn))
@@ -787,6 +796,7 @@ class VCardStore(dict):
             card.filename = os.path.join(self.vcard_dir,
                                          card.random_uid) + '.vcf'
             card.gpg_recipient = lambda: prefs.get('gpg_recipient')
+            card.encryption_key = lambda: prefs.get('obfuscate_index')
             card.save()
             self.index_vcard(card)
 

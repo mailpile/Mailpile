@@ -79,19 +79,22 @@ MailPile.prototype.compose_determine_signature = function() {
 MailPile.prototype.compose_render_signature = function(status) {
 
   if (status === 'sign') {
-    $('.compose-crypto-signature').attr('title', 'This message is signed by your key');
+    $('.compose-crypto-signature').data('crypto_color', 'crypto-color-blue');  
+    $('.compose-crypto-signature').attr('title', $('.compose-crypto-signature').data('crypto_title_signed'));
     $('.compose-crypto-signature span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
     $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_signed'));
     $('.compose-crypto-signature').removeClass('none').addClass('signed bounce');
 
   } else if (status === 'none') {
-    $('.compose-crypto-signature').attr('title', 'This message is not signed by your key');
+    $('.compose-crypto-signature').data('crypto_color', 'crypto-color-gray');  
+    $('.compose-crypto-signature').attr('title', $('.compose-crypto-signature').data('crypto_title_not_signed'));
     $('.compose-crypto-signature span.icon').removeClass('icon-signature-verified').addClass('icon-signature-none');
     $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_not_signed'));
     $('.compose-crypto-signature').removeClass('signed').addClass('none bounce');
 
   } else {
-    $('.compose-crypto-signature').attr('title', 'Error accesing your key');
+    $('.compose-crypto-signature').data('crypto_color', 'crypto-color-red');
+    $('.compose-crypto-signature').attr('title', $('.compose-crypto-signature').data('crypto_title_signed_error'));
     $('.compose-crypto-signature span.icon').removeClass('icon-signature-none icon-signature-verified').addClass('icon-signature-error');
     $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_signed_error'));
     $('.compose-crypto-signature').removeClass('none').addClass('error bounce');
@@ -139,7 +142,7 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
     status = 'encrypt';
   }
   else if (count_secure < count_total && count_secure > 0) {
-    status = 'partial';
+    status = 'cannot';
   }
 
   return status;
@@ -147,29 +150,35 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
 
 MailPile.prototype.compose_render_encryption = function(status) {
 
+console.log(status);
+
   if (status == 'encrypt') {
-    $('.compose-crypto-encryption').attr('title', 'This message is & attachments are encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-green');
+    $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_encrypt'));
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_encrypt'));
-    $('.compose-crypto-encryption').removeClass('none error partial').addClass('encrypted');
+    $('.compose-crypto-encryption').removeClass('none error cannot').addClass('encrypted');
 
-  } else if (status === 'partial') {
-    $('.compose-crypto-encryption').attr('title', 'This message cannot be encrypted because you do not have keys for one or more recipients');
+  } else if (status === 'cannot') {
+    $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-orange');
+    $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_cannot_encrypt'));
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
-    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_partial_encrypt'));
-    $('.compose-crypto-encryption').removeClass('none encrypted error').addClass('partial');
+    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_cannot_encrypt'));
+    $('.compose-crypto-encryption').removeClass('none encrypted error').addClass('cannot');
 
   } else if (status === 'none') {
-    $('.compose-crypto-encryption').attr('title', 'This message is not encrypted');
+    $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-gray');
+    $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_none'));
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_none'));
-    $('.compose-crypto-encryption').removeClass('encrypted partial error').addClass('none');
+    $('.compose-crypto-encryption').removeClass('encrypted cannot error').addClass('none');
 
   } else {
-    $('.compose-crypto-encryption').attr('title', 'Error prepping this message for encryption');
+    $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-red');
+    $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_encrypt_error'));
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open icon-lock-closed').addClass('icon-lock-error');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_cannot_encrypt'));
-    $('.compose-crypto-encryption').removeClass('encrypted partial none').addClass('error');
+    $('.compose-crypto-encryption').removeClass('encrypted cannot none').addClass('error');
   }
 
   // Set Form Value
@@ -298,7 +307,7 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
     if (state.flags.secure) {
       secure = '<span class="icon-lock-closed"></span>';
     }
-    return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + name + secure + '</span>';
+    return avatar + '<span class="compose-choice-name" title="' + name + ' &lt;' + state.address + '&gt;" alt="' + name + ' &lt;' + state.address + '&gt;">' + name + secure + '</span>';
   },
   formatSelectionTooBig: function() {
     return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
@@ -369,10 +378,14 @@ $(document).on('click', '.compose-crypto-encryption', function() {
 /* Compose - Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
-  $('#compose-' + $(this).html().toLowerCase() + '-html').show();
-  if ($(this).html().toLowerCase() == 'cc') {
-    $('#compose-bcc-show').detach().appendTo("#compose-cc-html label");
-  }
+  var field = $(this).text().toLowerCase();
+  $('#compose-' + field + '-html').show().removeClass('hide');
+});
+
+$(document).on('click', '.compose-hide-field', function(e) {
+  var field = $(this).attr('href').substr(1);
+  $('#compose-' + field + '-html').hide().addClass('hide');
+  $('#compose-' + field + '-show').fadeIn('fast');
 });
 
 
@@ -449,7 +462,14 @@ $(document).on('click', '.pick-send-datetime', function(e) {
 /* Compose - Details */
 $(document).on('click', '#compose-show-details', function(e) {
   e.preventDefault();
-  $('#compose-details').slideDown('fast');
+  
+  if ($('#compose-details').hasClass('hide')) {
+    $(this).addClass('navigation-on');
+    $('#compose-details').slideDown('fast').removeClass('hide');
+  } else {
+    $(this).removeClass('navigation-on');
+    $('#compose-details').slideUp('fast').addClass('hide');
+  }
 });
 
 
@@ -483,6 +503,16 @@ $(document).ready(function() {
 
   // Show Crypto Tooltips
   $('.compose-crypto-signature').qtip({
+    content: {
+      title: false,
+      text: function(event, api) {
+        var html = '<div>\
+          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html() + '</h4>\
+          <p>' + $(this).attr('title') + '</p>\
+          </div>';
+        return html;
+      }
+    },  
     style: {
      tip: {
         corner: 'right center',
@@ -491,7 +521,7 @@ $(document).ready(function() {
         width: 10,
         height: 10
       },
-      classes: 'qtip-tipped'
+      classes: 'qtip-thread-crypto'
     },
     position: {
       my: 'right center',
@@ -511,6 +541,16 @@ $(document).ready(function() {
   });
 
   $('.compose-crypto-encryption').qtip({
+    content: {
+      title: false,
+      text: function(event, api) {
+        var html = '<div>\
+          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html() + '</h4>\
+          <p>' + $(this).attr('title') + '</p>\
+          </div>';
+        return html;
+      }
+    },
     style: {
      tip: {
         corner: 'right center',
@@ -519,7 +559,7 @@ $(document).ready(function() {
         width: 10,
         height: 10
       },
-      classes: 'qtip-tipped'
+      classes: 'qtip-thread-crypto'
     },
     position: {
       my: 'right center',
@@ -535,20 +575,22 @@ $(document).ready(function() {
     events: {
       show: function(event, api) {
 
-        $('#s2id_compose-to .select2-choices').css('border-color', '#fbb03b');
-        $('#s2id_compose-cc .select2-choices').css('border-color', '#fbb03b');           
-        $('#s2id_compose-bcc .select2-choices').css('border-color', '#fbb03b');
+        $('.select2-choices').css('border-color', '#fbb03b');
         $('.compose-from').css('border-color', '#fbb03b');
         $('.compose-subject input[type=text]').css('border-color', '#fbb03b');
 
-        $('.compose-message textarea').css('border-color', '#a2d699');
-        $('.compose-attachments').css('border-color', '1px solid #a2d699');
+        if ($('#compose-encryption').val() === 'encrypt') {
+          var encrypt_color = '#a2d699';
+        } else {
+          var encrypt_color = '#fbb03b';
+        }
+
+        $('.compose-message textarea').css('border-color', encrypt_color);
+        $('.compose-attachments').css('border-color', encrypt_color);
       },
       hide: function(event, api) {
 
-        $('#s2id_compose-to .select2-choices').css('border-color', '#CCCCCC');
-        $('#s2id_compose-cc .select2-choices').css('border-color', '#CCCCCC');           
-        $('#s2id_compose-bcc .select2-choices').css('border-color', '#CCCCCC');
+        $('.select2-choices').css('border-color', '#CCCCCC');
         $('.compose-from').css('background-color', '#ffffff');
         $('.compose-subject input[type=text]').css('border-color', '#CCCCCC');
 

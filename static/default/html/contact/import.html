@@ -1,5 +1,5 @@
-{% extends "layouts/base.html" %}
-
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Import Contacts")}}{% endblock %}
 {% block content %}
 <div id="contact-add" class="content-normal">
 

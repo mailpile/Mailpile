@@ -32,9 +32,9 @@ class Search(Command):
             Command.CommandResult.__init__(self, *args, **kwargs)
             self.fixed_up = False
             if isinstance(self.result, dict):
-                self.message = self.result['summary']
+                self.message = self.result.get('summary', '')
             elif isinstance(self.result, list):
-                self.message = ', '.join([r['summary'] for r in self.result])
+                self.message = ', '.join([r.get('summary', '') for r in self.result])
 
         def _fixup(self):
             if self.fixed_up:
@@ -116,7 +116,11 @@ class Next(Search):
 
     def command(self):
         session = self.session
-        session.displayed = session.displayed.next_set()
+        try:
+            session.displayed = session.displayed.next_set()
+        except AttributeError:
+            session.ui.error(_("You must perform a search before requesting the next page."))
+            return False
         return session.displayed
 
 
@@ -128,7 +132,11 @@ class Previous(Search):
 
     def command(self):
         session = self.session
-        session.displayed = session.displayed.previous_set()
+        try:
+            session.displayed = session.displayed.previous_set()
+        except AttributeError:
+            session.ui.error(_("You must perform a search before requesting the previous page."))
+            return False
         return session.displayed
 
 

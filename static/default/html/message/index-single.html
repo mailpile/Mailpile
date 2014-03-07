@@ -1,6 +1,5 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
-
 {% if result %}
   {% set profiles = mailpile('settings', 'profiles').result.profiles %}
   {% set showed_composer = [] %}

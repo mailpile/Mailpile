@@ -10,7 +10,9 @@ from mailpile.commands import Command
 from mailpile.crypto.state import *
 from mailpile.plugins.tags import Tag
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
-from mailpile.mailutils import NoFromAddressError, PrepareMessage, SendMail
+from mailpile.mailutils import NotEditableError
+from mailpile.mailutils import NoFromAddressError, PrepareMessage
+from mailpile.smtp_client import SendMail
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -414,11 +416,11 @@ class Forward(RelativeCompose):
                     text += '%s: %s\n' % (h, v)
             text += '\n'
             text += ''.join([p['data'] for p in t['text_parts']
-                             if p['type'] in self._TEXT_PARTTYPES])
+                             if p['type'] in cls._TEXT_PARTTYPES])
             msg_bodies.append(text)
             if with_atts:
                 for att in t['attachments']:
-                    if att['mimetype'] not in self._ATT_MIMETYPES:
+                    if att['mimetype'] not in cls._ATT_MIMETYPES:
                         msg_atts.append(att['part'])
 
         if not ephemeral:
@@ -564,11 +566,15 @@ class Sendit(CompositionCommand):
         for email in emails:
             try:
                 msg_mid = email.get_msg_info(idx.MSG_MID)
+                # FIXME: We are failing to capture error states with sufficient
+                #        granularity, messages may be delivered to some
+                #        recipients but not all...
                 SendMail(session, [PrepareMessage(config,
                                                   email.get_msg(pgpmime=False),
                                                   rcpts=(bounce_to or None))])
                 sent.append(email)
             except KeyLookupError, kle:
+                session.ui.warning(_('Missing keys %s') % kle.missing)
                 missing_keys.extend(kle.missing)
                 self._ignore_exception()
             except:

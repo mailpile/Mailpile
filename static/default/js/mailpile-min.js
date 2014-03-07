@@ -15,7 +15,23 @@ function MailPile() {
   this.instance       = {};
 	this.search_cache   = [];
 	this.bulk_cache     = [];
-	this.keybindings    = [];
+	this.keybindings    = [
+  	["normal", "/",      function() { $("#search-query").focus(); return false; }],
+  	["normal", "c",      function() { mailpile.compose(); }],
+  	["normal", "g i",    function() { mailpile.go("/in/inbox/"); }],
+  	["normal", "g d",    function() { mailpile.go("/in/drafts/"); }],
+  	["normal", "g c",    function() { mailpile.go("/contact/list/"); }],
+  	["normal", "g n c",  function() { mailpile.go("/contact/add/"); }],
+  	["normal", "g t",    function() { mailpile.go("/tag/list/"); }],
+  	["normal", "g n t",  function() { mailpile.go("/tag/add/"); }],
+  	["normal", "g s",    function() { mailpile.go("/settings/profiles/"); }],
+    ["global", "esc",    function() {
+
+  		// Add Form Fields
+  		$('input[type=text]').blur();
+  		$('textarea').blur();
+    }]
+  ];
 	this.commands       = [];
 	this.graphselected  = [];
 	this.defaults       = {
@@ -28,6 +44,7 @@ function MailPile() {
     contacts     : "/api/0/search/address/",
     message      : "/api/0/message/=",
   	tag          : "/api/0/tag/",
+  	tag_list     : "/api/0/tag/list/",
   	tag_add      : "/api/0/tag/add/",
   	search_new   : "/api/0/search/?q=in%3Anew",
   	settings_add : "/api/0/settings/add/"
@@ -37,6 +54,10 @@ function MailPile() {
   	message_sent  : "/thread/="
 	}
 	this.plugins = [];
+};
+
+MailPile.prototype.go = function(url) {
+  window.location.href = url;
 };
 
 MailPile.prototype.bulk_cache_add = function(mid) {
@@ -79,46 +100,62 @@ MailPile.prototype.get_new_messages = function(actions) {
 MailPile.prototype.render = function() {
 
   // Dynamic CSS Reiszing
-  var content_width  = $(window).width() - $('#sidebar').width();
-  var content_height = $(window).height() - $('#topbar').height();
-  var sidebar_height = $('#sidebar').height();
-  var content_tools_height = $('#content-tools').height();
-  var fix_content_view_height = sidebar_height - content_tools_height;
+  var dynamic_sizing = function() {
 
-  $('.sub-navigation').width(content_width);
-  $('#thread-title').width(content_width);
+    var sidebar_height = $('#sidebar').height();
 
-  // Set Content View
-  $('#content-view').css('height', fix_content_view_height).css('top', content_tools_height);
+    // Is Tablet or Mobile
+    if ($(window).width() < 1024) {
+      var sidebar_width = 0;
+    }
+    else {
+      var sidebar_width = 225;
+    }
+
+    var content_width  = $(window).width() - sidebar_width;
+    var content_height = $(window).height() - 62;
+    var content_tools_height = $('#content-tools').height();
+    var fix_content_view_height = sidebar_height - content_tools_height;
+    var new_content_width = $(window).width() - sidebar_width;
+  
+    $('#content-tools').css('position', 'fixed')
+    $('.sub-navigation').width(content_width);
+    $('#thread-title').width(content_width);
+  
+    // Set Content View
+    $('#content-tools, .sub-navigation, .bulk-actions').width(new_content_width);
+    $('#content-view').css({'height': fix_content_view_height, 'top': content_tools_height});
+  };
+
+  dynamic_sizing();
 
   // Resize Elements on Drag
   window.onresize = function(event) {
-    var new_content_width = $(window).width() - $('#sidebar').width();
-    $('.sub-navigation, .bulk-actions').width(new_content_width);
+    dynamic_sizing();
+  };
+
+  // Show Mailboxes
+  if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() !== undefined) {
+    $('#sidebar-tag-outbox').show();
   }
 
-  if ($('#sidebar-tag-outbox').find('span.sidebar-notification').html() === undefined) {
-    $('#sidebar-tag-outbox').hide();
-  }
+  // Mousetrap Keybindings
+	for (item in mailpile.keybindings) {
+	  var keybinding = mailpile.keybindings[item];
+		if (keybinding[0] == "global") {
+			Mousetrap.bindGlobal(keybinding[1], keybinding[2]);
+		} else {
+      Mousetrap.bind(keybinding[1], keybinding[2]);
+		}
+	}
+
 };
-
-var keybindings = [
-	["/", 		"normal",	function() { $("#search-query").focus(); return false; }],
-	["C", 		"normal",	function() { mailpile.compose(); }],
-	["g i", 	"normal",	function() { mailpile.go("/Inbox/"); }],
-	["g c", 	"normal",	function() { mailpile.go("/_/contact/list/"); }],
-	["g n c", 	"normal",	function() { mailpile.go("/_/contact/add/"); }],
-	["g n m",	"normal",	function() { mailpile.go("/_/compose/"); }],
-	["g t",		"normal",	function() { $("#dialog_tag").show(); $("#dialog_tag_input").focus(); return false; }],
-	["esc",		"global",	function() {
-		$("#dialog_tag_input").blur();
-		$("#qbox").blur();
-    $("#dialog_tag").hide();
-  }],
-];
 
 var mailpile = new MailPile();
 var favicon = new Favico({animation:'popFade'});
+
+// Underscore _template()
+
 
 // Non-exposed functions: www, setup
 $(document).ready(function() {
@@ -352,19 +389,22 @@ MailPile.prototype.compose_determine_signature = function() {
 MailPile.prototype.compose_render_signature = function(status) {
 
   if (status === 'sign') {
-    $('.compose-crypto-signature').attr('title', 'This message is signed by your key');
+    $('.compose-crypto-signature').data('crypto_color', 'crypto-color-blue');  
+    $('.compose-crypto-signature').attr('title', $('.compose-crypto-signature').data('crypto_title_signed'));
     $('.compose-crypto-signature span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
     $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_signed'));
     $('.compose-crypto-signature').removeClass('none').addClass('signed bounce');
 
   } else if (status === 'none') {
-    $('.compose-crypto-signature').attr('title', 'This message is not signed by your key');
+    $('.compose-crypto-signature').data('crypto_color', 'crypto-color-gray');  
+    $('.compose-crypto-signature').attr('title', $('.compose-crypto-signature').data('crypto_title_not_signed'));
     $('.compose-crypto-signature span.icon').removeClass('icon-signature-verified').addClass('icon-signature-none');
     $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_not_signed'));
     $('.compose-crypto-signature').removeClass('signed').addClass('none bounce');
 
   } else {
-    $('.compose-crypto-signature').attr('title', 'Error accesing your key');
+    $('.compose-crypto-signature').data('crypto_color', 'crypto-color-red');
+    $('.compose-crypto-signature').attr('title', $('.compose-crypto-signature').data('crypto_title_signed_error'));
     $('.compose-crypto-signature span.icon').removeClass('icon-signature-none icon-signature-verified').addClass('icon-signature-error');
     $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_signed_error'));
     $('.compose-crypto-signature').removeClass('none').addClass('error bounce');
@@ -412,7 +452,7 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
     status = 'encrypt';
   }
   else if (count_secure < count_total && count_secure > 0) {
-    status = 'partial';
+    status = 'cannot';
   }
 
   return status;
@@ -420,29 +460,35 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
 
 MailPile.prototype.compose_render_encryption = function(status) {
 
+console.log(status);
+
   if (status == 'encrypt') {
-    $('.compose-crypto-encryption').attr('title', 'This message is & attachments are encrypted. The recipients & subject are not');
+    $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-green');
+    $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_encrypt'));
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open').addClass('icon-lock-closed');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_encrypt'));
-    $('.compose-crypto-encryption').removeClass('none error partial').addClass('encrypted');
+    $('.compose-crypto-encryption').removeClass('none error cannot').addClass('encrypted');
 
-  } else if (status === 'partial') {
-    $('.compose-crypto-encryption').attr('title', 'This message cannot be encrypted because you do not have keys for one or more recipients');
+  } else if (status === 'cannot') {
+    $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-orange');
+    $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_cannot_encrypt'));
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
-    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_partial_encrypt'));
-    $('.compose-crypto-encryption').removeClass('none encrypted error').addClass('partial');
+    $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_cannot_encrypt'));
+    $('.compose-crypto-encryption').removeClass('none encrypted error').addClass('cannot');
 
   } else if (status === 'none') {
-    $('.compose-crypto-encryption').attr('title', 'This message is not encrypted');
+    $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-gray');
+    $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_none'));
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_none'));
-    $('.compose-crypto-encryption').removeClass('encrypted partial error').addClass('none');
+    $('.compose-crypto-encryption').removeClass('encrypted cannot error').addClass('none');
 
   } else {
-    $('.compose-crypto-encryption').attr('title', 'Error prepping this message for encryption');
+    $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-red');
+    $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_encrypt_error'));
     $('.compose-crypto-encryption span.icon').removeClass('icon-lock-open icon-lock-closed').addClass('icon-lock-error');
     $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_cannot_encrypt'));
-    $('.compose-crypto-encryption').removeClass('encrypted partial none').addClass('error');
+    $('.compose-crypto-encryption').removeClass('encrypted cannot none').addClass('error');
   }
 
   // Set Form Value
@@ -571,7 +617,7 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
     if (state.flags.secure) {
       secure = '<span class="icon-lock-closed"></span>';
     }
-    return avatar + '<span class="compose-choice-name" title="' + state.address + '">' + name + secure + '</span>';
+    return avatar + '<span class="compose-choice-name" title="' + name + ' &lt;' + state.address + '&gt;" alt="' + name + ' &lt;' + state.address + '&gt;">' + name + secure + '</span>';
   },
   formatSelectionTooBig: function() {
     return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
@@ -642,10 +688,14 @@ $(document).on('click', '.compose-crypto-encryption', function() {
 /* Compose - Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
-  $('#compose-' + $(this).html().toLowerCase() + '-html').show();
-  if ($(this).html().toLowerCase() == 'cc') {
-    $('#compose-bcc-show').detach().appendTo("#compose-cc-html label");
-  }
+  var field = $(this).text().toLowerCase();
+  $('#compose-' + field + '-html').show().removeClass('hide');
+});
+
+$(document).on('click', '.compose-hide-field', function(e) {
+  var field = $(this).attr('href').substr(1);
+  $('#compose-' + field + '-html').hide().addClass('hide');
+  $('#compose-' + field + '-show').fadeIn('fast');
 });
 
 
@@ -722,7 +772,14 @@ $(document).on('click', '.pick-send-datetime', function(e) {
 /* Compose - Details */
 $(document).on('click', '#compose-show-details', function(e) {
   e.preventDefault();
-  $('#compose-details').slideDown('fast');
+  
+  if ($('#compose-details').hasClass('hide')) {
+    $(this).addClass('navigation-on');
+    $('#compose-details').slideDown('fast').removeClass('hide');
+  } else {
+    $(this).removeClass('navigation-on');
+    $('#compose-details').slideUp('fast').addClass('hide');
+  }
 });
 
 
@@ -756,6 +813,16 @@ $(document).ready(function() {
 
   // Show Crypto Tooltips
   $('.compose-crypto-signature').qtip({
+    content: {
+      title: false,
+      text: function(event, api) {
+        var html = '<div>\
+          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html() + '</h4>\
+          <p>' + $(this).attr('title') + '</p>\
+          </div>';
+        return html;
+      }
+    },  
     style: {
      tip: {
         corner: 'right center',
@@ -764,7 +831,7 @@ $(document).ready(function() {
         width: 10,
         height: 10
       },
-      classes: 'qtip-tipped'
+      classes: 'qtip-thread-crypto'
     },
     position: {
       my: 'right center',
@@ -784,6 +851,16 @@ $(document).ready(function() {
   });
 
   $('.compose-crypto-encryption').qtip({
+    content: {
+      title: false,
+      text: function(event, api) {
+        var html = '<div>\
+          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html() + '</h4>\
+          <p>' + $(this).attr('title') + '</p>\
+          </div>';
+        return html;
+      }
+    },
     style: {
      tip: {
         corner: 'right center',
@@ -792,7 +869,7 @@ $(document).ready(function() {
         width: 10,
         height: 10
       },
-      classes: 'qtip-tipped'
+      classes: 'qtip-thread-crypto'
     },
     position: {
       my: 'right center',
@@ -808,20 +885,22 @@ $(document).ready(function() {
     events: {
       show: function(event, api) {
 
-        $('#s2id_compose-to .select2-choices').css('border-color', '#fbb03b');
-        $('#s2id_compose-cc .select2-choices').css('border-color', '#fbb03b');           
-        $('#s2id_compose-bcc .select2-choices').css('border-color', '#fbb03b');
+        $('.select2-choices').css('border-color', '#fbb03b');
         $('.compose-from').css('border-color', '#fbb03b');
         $('.compose-subject input[type=text]').css('border-color', '#fbb03b');
 
-        $('.compose-message textarea').css('border-color', '#a2d699');
-        $('.compose-attachments').css('border-color', '1px solid #a2d699');
+        if ($('#compose-encryption').val() === 'encrypt') {
+          var encrypt_color = '#a2d699';
+        } else {
+          var encrypt_color = '#fbb03b';
+        }
+
+        $('.compose-message textarea').css('border-color', encrypt_color);
+        $('.compose-attachments').css('border-color', encrypt_color);
       },
       hide: function(event, api) {
 
-        $('#s2id_compose-to .select2-choices').css('border-color', '#CCCCCC');
-        $('#s2id_compose-cc .select2-choices').css('border-color', '#CCCCCC');           
-        $('#s2id_compose-bcc .select2-choices').css('border-color', '#CCCCCC');
+        $('.select2-choices').css('border-color', '#CCCCCC');
         $('.compose-from').css('background-color', '#ffffff');
         $('.compose-subject input[type=text]').css('border-color', '#CCCCCC');
 
@@ -953,9 +1032,32 @@ $(document).on('click', '.bulk-action', function(e) {
 
     // Open Modal or dropdown with options
   }
-  else if (action == 'assign-tags') {
+  else if (action == 'tag') {
 
     // Open Modal with selection options
+    mailpile.tag_list(function(result) {
+
+      var tags_html = '';
+      var archive_html = '';
+
+      $.each(result.tags, function(key, value) {
+
+        console.log(value.display);
+
+        if (value.display === 'tag') {
+          tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';          
+        }
+        else if (value.display === 'archive') {
+          archive_html += '<li class="checkbox-item-picker"><input type="checkbox"> ' + value.name + '</li>';
+        }
+
+      });
+
+      var modal_html = $("#modal-tag-picker").html();
+
+      $('#modal-full').html(_.template(modal_html, { tags: tags_html, archive: archive_html }));
+      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+    });
   }
 });
 
@@ -1130,7 +1232,7 @@ $(document).ready(function() {
     hide: {
       delay: 1000
     }
-  });  
+  });
 
 });
 
@@ -1181,12 +1283,10 @@ MailPile.prototype.results_list = function() {
 	// Show & Hide View
 	$('#pile-graph').hide('fast', function() {
 
-    $('#sidebar').show('normal');
     $('#form-pile-results').show('normal');
     $('#pile-results').show('fast');
     $('.pile-speed').show('normal');
     $('#footer').show('normal');
-    $('#sidebar').show('normal');
 	});
 }
 
@@ -1204,14 +1304,6 @@ $(document).ready(function() {
 	$('#button-search-options').on("blur", function(key) {
 		$('#search-params').slideUp('fast');
 	});
-
-	for (item in keybindings) {
-		if (item[1] == "global") {
-			Mousetrap.bindGlobal(item[0], item[2]);
-		} else {
-			Mousetrap.bind(item[0], item[2]);
-		}
-	}
 	
 });
 
@@ -1294,7 +1386,21 @@ $(document).on('click', '.show-thread-people', function() {
  $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
  $('#modal-full .modal-body').html($('#thread-people').html());
  $('#modal-full').modal(options);
+});
 
+/* Thread - Show Tags In Converstation */
+$(document).on('click', '.show-thread-tags', function() {
+
+ var options = {
+   backdrop: true,
+   keyboard: true,
+   show: true,
+   remote: false
+ };
+
+ $('#modal-full .modal-title').html($('#thread-tags').data('modal_title'));
+ $('#modal-full .modal-body').html($('#thread-tags').html());
+ $('#modal-full').modal(options);
 });
 
 /* Thread - Show Security */
@@ -1332,19 +1438,61 @@ $(document).on('click', '.dropdown-toggle', function() {
 });
 
 
+/* Thread - Add / Update Contact From Signature */
+$(document).on('mouseenter', '.thread-item-signature', function() {
+
+  /* Validate "is this a signature" by weights
+  *   - Contains same name as in From field
+  *   - Has Emails
+  *   - Has URLs (does URL match email domain)
+  *   - Has Phone numbers
+  *   - Has Street addresses
+  */
+  
+  var id = $(this).attr('id');
+  var mid = $(this).attr('id').split('-')[2];
+
+  // FIXME: make this determine "Add" or "Update" Contact
+  $('#' + id).prepend('<button id="signature-contact-'+ mid +'" class="button-signature-contact"><span class="icon-user"></span> Add</button>').addClass('thread-item-signature-hover');
+
+}).on('mouseleave', '.thread-item-signature', function() {
+
+  var id = $(this).attr('id');
+  var mid = $(this).attr('id').split('-')[2];
+  $('#signature-contact-'+ mid).remove();
+  $('#' + id).removeClass('thread-item-signature-hover');
+
+});
+
+$(document).on('click', '.button-signature-contact', function() {
+
+ var options = {
+   backdrop: true,
+   keyboard: true,
+   show: true,
+   remote: false
+ };
+
+ $('#modal-full .modal-title').html('Add To Contacts');
+ $('#modal-full .modal-body').html('Eventually this feature will auto extract Names, Emails, URLs, Phone Numbers, and Addresses and prepopulate form fields to make contact management easier. Hang in there, its coming ;)');
+ $('#modal-full').modal(options);
+});
+
+
+
 /* Thread Tooltips */
 $(document).ready(function() {
 
   // Thread Scroll to Message
   if (location.href.split("thread/=")[1]) {
-    
+
     var thread_id = location.href.split("thread/=")[1].split("/")[0];
     var msg_top_pos = $('#message-' + thread_id).position().top;
     $('#content-view').scrollTop(msg_top_pos - 150);
     setTimeout(function(){
       $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
     }, 50);
-    
+
     mailpile.thread_initialize_tooltips();
   }
 
@@ -1415,17 +1563,109 @@ $(document).on('click', '#contacts-list div.boxy', function(e) {
 });
 
 
+$(document).on('blur', '.contact-add-name, .contact-add-email', function(e) {
+  if ($(this).val() !== '') {
+    var search_query  = $('.contact-add-name').val() + ' ' + $('.contact-add-email').val();
+    var search_button = _.template($('#template-search-keyserver').html(), { query: search_query });
+    $('#contact-search-keyserver-input').html(search_button);
+  }
+});
+
+
+$(document).on('click', '#button-contact-search-keyserver', function(e) {
+  e.preventDefault();
+
+  // Update Querying UI Feedback
+  $(this).hide();
+  $('#contact-search-keyserver-query').hide();
+  $('#contact-search-keyserver-input label').html($(this).data('searching'));
+  $('#contact-search-keyserver-result').html('<img src="/static/css/select2-spinner.gif">');
+
+  var search_complete = $(this).data('complete');
+  var search_query = $(this).data('query');
+
+  $.ajax({
+    url      : '/api/0/crypto/gpg/searchkey/?q=' + search_query,
+    type     : 'GET',
+    dataType : 'json',
+    success  : function(response) {
+      if (response.status === 'success' && _.isEmpty(response.result) === false) {
+
+        // Update Title
+        $('#contact-search-keyserver-input label').html(_.size(response.result) + ' ' + search_complete + ' ' + search_query);
+
+        // Build Results
+        var items = '';
+        var item_html = $('#template-search-keyserver-item').html();
+
+        $.each(response.result, function(keyid, object) {
+          $.each(object.uids, function(key, value) {
+            items += _.template(item_html, { 
+              keyid: keyid,
+              keysize: object.keysize,
+              keytype: object.keytype,
+              created: object.created,
+              name: value.name, 
+              email: value.email
+            });
+          });
+        });
+
+        // Display Results
+        $('#contact-search-keyserver-result').html('<ul>' + items + '</ul>');
+      }
+      else if (response.status === 'success' && _.isEmpty(response.result) === true) {
+        $('#contact-search-keyserver-input label').html('<p>No keys found</p>');
+      }
+    }
+  });
+});
+
+$(document).on('click', '.contact-add-search-item', function() {
+
+  var key_data = { keyid: $(this).data('keyid') };
+
+  $('#contact-search-keyserver-input').html('');
+  $('#contact-search-keyserver-result').html('');
+
+  $.ajax({
+    url      : '/api/0/crypto/gpg/receivekey/',
+    type     : 'POST',
+    data     : key_data,
+    dataType : 'json',
+    success  : function(response) {
+      $('#contact-add-key').html('<span class="icon-key"></span> PGP Key: ' + key_data.keyid);
+      if (response.status === 'success') {
+        $('#contact-search-keyserver-result').html('w00t, something here will happen with this key: ' + response.result);
+      } else {
+        $('#contact-search-keyserver-result').html('Oopsie daisy something is wrotten in Denmark :(');
+      }
+    }
+  });  
+});
+
+
 /* **********************************************
      Begin tags.js
 ********************************************** */
 
-MailPile.prototype.tag = function(msgids, tags) {}
+MailPile.prototype.tag = function(msgids, tags) {};
 
-MailPile.prototype.tag_add = function(tagname) {}
+MailPile.prototype.tag_list = function(complete) {
+  $.ajax({
+    url      : mailpile.api.tag_list,
+    type     : 'GET',
+    dataType : 'json',
+    success  : function(response) {
+      if (response.status === 'success') {
+        complete(response.result);
+      }
+    }
+  });
+};
 
 /* Pile - Tag Add */
 MailPile.prototype.tag_add = function(tag_add, mids, complete) {
-
   $.ajax({
 	  url			 : mailpile.api.tag,
 	  type		 : 'POST',
@@ -1435,11 +1675,8 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
     },
 	  dataType : 'json',
     success  : function(response) {
-
       if (response.status == 'success') {
-
        complete();
-
       } else {
         mailpile.notification(response.status, response.message);
       }
@@ -1449,8 +1686,7 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
 
 
 MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
-  
-	  $.ajax({
+  $.ajax({
 	  url			 : mailpile.api.tag,
 	  type		 : 'POST',
 	  data     : {
@@ -1460,11 +1696,8 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
     },
 	  dataType : 'json',
     success  : function(response) {
-
       if (response.status == 'success') {
-
         complete();
-
       } else {
         mailpile.notification(response.status, response.message);
       }

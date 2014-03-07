@@ -1,9 +1,11 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
+{% if result.tags.0 %}
 {% set tag = result.tags.0 %}
+{% block title %}{{ tag.name }} | {{_("Tags")}} {% endblock %}
 {% block content %}
-<div id="tags-settings" class="clearfix">
-  	<div class="clearfix">
-	    <h2 class="contact-name "><span class="icon-tag"></span> {{ tag.name }}</h2>
+<div id="tags-settings" class="content-normal clearfix">
+  <div class="clearfix">
+    <h2 class="contact-name "><span class="icon-tag"></span> {{ tag.name }}</h2>
 	</div>
 
   <form id="form-tag-add" class="standard" method="POST">
@@ -45,9 +47,12 @@
 
 	</select>
 
-	<button type="submit"><span class="icon-plus"></span> {{_("Save tag")}}</button>
+	<button type="submit"><span class="icon-checkmark"></span> {{_("Save Tag")}}</button>
 </form>
 </div>
 {% endblock %}
 
-
+{% else %}
+    {% set error_title = "tag_missing" %}
+    {% include("partials/errors_content.html") %}
+{% endif %}

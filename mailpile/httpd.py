@@ -272,7 +272,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                                                    query_data, post_data)
                     url = quote(path) + '/'
                     if query:
-                            url += '?' + query
+                        url += '?' + query
                     return self.send_http_redirect(url)
                 else:
                     raise

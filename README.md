@@ -4,12 +4,15 @@
 
 #### Who's doing what? ####
 
-- 2014-01-27: bre: Prepping the alpha release
-- 2014-01-27: bvnk: Prepping the alpha release
-- 2014-01-27: smari: Prepping the alpha release
+- 2014-03-06: bre: Event logging / handling
+- 2014-03-06: bvnk: Contacts & crypto UX
+- 2014-03-06: smari: PM / issues
 
 #### Recent changes ####
 
+- 2014-01-27: bre: Prepping the alpha release
+- 2014-01-27: bvnk: Prepping the alpha release
+- 2014-01-27: smari: Prepping the alpha release
 - 2013-01-24: bre/bnvk: Encrypting and signing outgoing mail works
 - 2013-01-15: bre: Make message crypto searchable and visible in metadata
 - 2013-12-19: bre: Bugfixes, search-by-size, preparing for antispam work
@@ -77,13 +80,13 @@ inspired me to start working on this.
 
 Contributors:
 
-- Bjarni R. Einasson (<http://bre.klaki.net/>)
+- Bjarni R. Einarsson (<http://bre.klaki.net/>)
 - Smari McCarthy (<http://www.smarimccarthy.is/>)
 - Brennan Novak (<https://brennannovak.com/>)
-- Lots more, run `git log |grep Author |sort |uniq -c` for a list!
+- Lots more, run `git shortlog -s` for a list! (Or see the list [on Github](https://github.com/pagekite/Mailpile/graphs/contributors).)
 
 And of course, we couldn't do this without [our community of
-backers]().
+backers](https://www.mailpile.is/#community).
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the

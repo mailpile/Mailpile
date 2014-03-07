@@ -1,7 +1,8 @@
 {% if result.tags|length == 1 %}
 {% include "tag/index.html"%}
 {% else %}
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Tags")}}{% endblock %}
 {% block content %}
 
 {% macro render_tag(tag) -%}  
@@ -49,7 +50,7 @@
   {% endfor %}
 </div>
 
-{% include("tag/add.html") %}
+{% include("partials/tag_add.html") %}
 
-{% endblock %}{% block title %}{{_("Tags")}}{% endblock %}
+{% endblock %}
 {% endif %}

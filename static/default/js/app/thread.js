@@ -72,7 +72,21 @@ $(document).on('click', '.show-thread-people', function() {
  $('#modal-full .modal-title').html($('#thread-people').data('modal_title'));
  $('#modal-full .modal-body').html($('#thread-people').html());
  $('#modal-full').modal(options);
+});
 
+/* Thread - Show Tags In Converstation */
+$(document).on('click', '.show-thread-tags', function() {
+
+ var options = {
+   backdrop: true,
+   keyboard: true,
+   show: true,
+   remote: false
+ };
+
+ $('#modal-full .modal-title').html($('#thread-tags').data('modal_title'));
+ $('#modal-full .modal-body').html($('#thread-tags').html());
+ $('#modal-full').modal(options);
 });
 
 /* Thread - Show Security */
@@ -110,19 +124,61 @@ $(document).on('click', '.dropdown-toggle', function() {
 });
 
 
+/* Thread - Add / Update Contact From Signature */
+$(document).on('mouseenter', '.thread-item-signature', function() {
+
+  /* Validate "is this a signature" by weights
+  *   - Contains same name as in From field
+  *   - Has Emails
+  *   - Has URLs (does URL match email domain)
+  *   - Has Phone numbers
+  *   - Has Street addresses
+  */
+  
+  var id = $(this).attr('id');
+  var mid = $(this).attr('id').split('-')[2];
+
+  // FIXME: make this determine "Add" or "Update" Contact
+  $('#' + id).prepend('<button id="signature-contact-'+ mid +'" class="button-signature-contact"><span class="icon-user"></span> Add</button>').addClass('thread-item-signature-hover');
+
+}).on('mouseleave', '.thread-item-signature', function() {
+
+  var id = $(this).attr('id');
+  var mid = $(this).attr('id').split('-')[2];
+  $('#signature-contact-'+ mid).remove();
+  $('#' + id).removeClass('thread-item-signature-hover');
+
+});
+
+$(document).on('click', '.button-signature-contact', function() {
+
+ var options = {
+   backdrop: true,
+   keyboard: true,
+   show: true,
+   remote: false
+ };
+
+ $('#modal-full .modal-title').html('Add To Contacts');
+ $('#modal-full .modal-body').html('Eventually this feature will auto extract Names, Emails, URLs, Phone Numbers, and Addresses and prepopulate form fields to make contact management easier. Hang in there, its coming ;)');
+ $('#modal-full').modal(options);
+});
+
+
+
 /* Thread Tooltips */
 $(document).ready(function() {
 
   // Thread Scroll to Message
   if (location.href.split("thread/=")[1]) {
-    
+
     var thread_id = location.href.split("thread/=")[1].split("/")[0];
     var msg_top_pos = $('#message-' + thread_id).position().top;
     $('#content-view').scrollTop(msg_top_pos - 150);
     setTimeout(function(){
       $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
     }, 50);
-    
+
     mailpile.thread_initialize_tooltips();
   }
 

@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
 {% if result %}
   <table id="pile-results">
@@ -25,12 +25,18 @@
       <h5>{% if stats.total > 1 %}{{stats.start}} - {{stats.end}} {{_("of")}} {{stats.total}} {{_("Conversations")}} {% elif stats.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5><br>
     </div>
   </div>
+  <div id="pile-speed">
+    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
+  </div>  
 {% else %}
   <div class="add-top add-bottom center">
     <h2 class="add-top text-center">{{_("No Results Found")}}</h2>
   </div>
 {% endif %}
-<div id="pile-speed">
-  <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
-</div>
+{% include("partials/modal_tag_picker.html") %}
+<script id="template-search-pile-tags-link" type="text/template">
+  <a class="pile-message-tag" href="/thread/=<%= mid %>/" data-tag_name="<%= name %>" data-tag_url="/in/<%= slug %>/" data-tag_tid="<%= tid %>">
+    <span class="icon-tag"></span> <%= name %>
+  </a>
+</script>
 {% endblock %}

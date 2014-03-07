@@ -159,6 +159,13 @@ class UrlMap:
 
         return command(self.session, name, args, data=data)
 
+    OUTPUT_SUFFIXES = ['.css', '.html', '.js',  '.json', '.rss', '.txt',
+                       '.text', '.vcf', '.xml',
+                       # These are the template-based ones which can
+                       # be embedded in JSON.
+                       '.jcss', '.jhtml', '.jjs', '.jrss', '.jtxt',
+                       '.jxml']
+
     def _choose_output(self, path_parts, fmt='html'):
         """
         Return an output command based on the URL filename component.
@@ -186,14 +193,16 @@ class UrlMap:
             path_parts.pop(-1)
         else:
             fn = path_parts.pop(-1)
-            for suffix in ('.html', '.jhtml'):
+            for suffix in self.OUTPUT_SUFFIXES:
+                if suffix == '.' + fn:
+                    return self._command('output', [suffix[1:]], method=False)
                 if fn.endswith(suffix):
-                    # FIXME: We are passing user input here which may
-                    #        have security implications.
-                    return self._command('output', [fn], method=False)
-            for suffix in ('as.json', 'as.xml', 'as.vcf', 'as.txt', 'as.text'):
-                if fn == suffix:
-                    return self._command('output', [suffix[3:]], method=False)
+                    if fn == 'as' + suffix:
+                        return self._command('output', [fn[3:]], method=False)
+                    else:
+                        # FIXME: We are passing user input here which may
+                        #        have security implications.
+                        return self._command('output', [fn], method=False)
             raise UsageError('Invalid output format: %s' % fn)
         return self._command('output', [fmt], method=False)
 
@@ -584,6 +593,7 @@ else:
     import mailpile.plugins.tags
     import mailpile.plugins.search
     import mailpile.plugins.compose
+    import mailpile.plugins.contacts
     import mailpile.defaults
     import mailpile.plugins
     import mailpile.ui

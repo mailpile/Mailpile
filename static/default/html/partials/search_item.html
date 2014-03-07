@@ -33,7 +33,7 @@
       {% endif %}
       {% endfor %}
     {% endif %}
-    <a class="item-subject" href="{{url}}">{{metadata.subject}}</a>
+    <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{metadata.subject}}{% else %}({{_("No Subject")}}){% endif %}</a>
     <span class="item-snippet">{{metadata.snippet}}</span>
   </td>
   <td class="date" valign="top">

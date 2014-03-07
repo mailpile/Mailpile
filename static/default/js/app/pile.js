@@ -2,15 +2,15 @@
 MailPile.prototype.pile_action_select = function(item) {
 
   // Add To Data Model
-  mailpile.bulk_cache_add(item.data('mid'));
+  mailpile.bulk_cache_add('messages_cache', item.data('mid'));
 
 	// Increment Selected
-	if (mailpile.bulk_cache.length === 1) {
+	if (mailpile.messages_cache.length === 1) {
     var message = '<span id="bulk-actions-selected-count">1</span> ' + $('#bulk-actions-message').data('bulk_selected');
     $('#bulk-actions-message').html(message);
     mailpile.show_bulk_actions($('.bulk-actions').find('li.hide'));
 	} else {
-	  $('#bulk-actions-selected-count').html(mailpile.bulk_cache.length);
+	  $('#bulk-actions-selected-count').html(mailpile.messages_cache.length);
   }
 
 	// Style & Select Checkbox
@@ -26,13 +26,13 @@ MailPile.prototype.pile_action_select = function(item) {
 MailPile.prototype.pile_action_unselect = function(item) {
 
   // Remove From Data Model
-  mailpile.bulk_cache_remove(item.data('mid'));
+  mailpile.bulk_cache_remove('messages_cache', item.data('mid'));
 
 	// Decrement Selected
-	$('#bulk-actions-selected-count').html(mailpile.bulk_cache.length);
+	$('#bulk-actions-selected-count').html(mailpile.messages_cache.length);
 
 	// Hide Actions
-	if (mailpile.bulk_cache.length < 1) { 
+	if (mailpile.messages_cache.length < 1) { 
     var message = $('#bulk-actions-message').data('bulk_selected_none');
     $('#bulk-actions-message').html(message);
     mailpile.hide_bulk_actions($('.bulk-actions').find('li.hide'));
@@ -81,42 +81,6 @@ $(document).on('click', '#pile-select-all-action', function(e) {
       mailpile.pile_action_unselect($(this).parent().parent());
     });
     $(this).removeAttr('checked');
-  }
-});
-
-/* Pile - Bulk Action Link */
-$(document).on('click', '.bulk-action', function(e) {
-
-	e.preventDefault();
-	var action = $(this).data('action');
-
-  if (action == 'later' || action == 'archive' || action == 'trash') {
-
-    var delete_tag = '';
-
-    if ($.url.segment(0) === 'in') {
-     delete_tag = $.url.segment(1);
-    }
-
-    // Add / Delete
-    mailpile.tag_add_delete(action, delete_tag, mailpile.bulk_cache, function() {
-
-      // Update Pile View
-      $.each(mailpile.bulk_cache, function(key, mid) {
-        $('#pile-message-' + mid).fadeOut('fast');
-      });
-
-      // Empty Bulk Cache
-      mailpile.bulk_cache = [];
-    });
-  }
-  else if (action == 'add-to-group') {
-
-    // Open Modal or dropdown with options
-  }
-  else if (action == 'assign-tags') {
-
-    // Open Modal with selection options
   }
 });
 
@@ -185,6 +149,39 @@ $(document).on('click', 'a.change-view-size', function(e) {
 });
 
 
+$(document).on('submit', '#form-tag-picker', function(e) {
+
+  e.preventDefault();
+
+  var tags_add = $('#form-tag-picker').serialize();
+
+  // Send Result
+  mailpile.tag_add(mailpile.tags_cache, mailpile.messages_cache, function(result) {
+
+    var tag_link_template = $('#template-search-pile-tags-link').html();
+    
+    $.each(result.msg_ids, function(key, mid) {
+
+      tag_link_data = { 
+        mid: mid,
+        tid: 'BB',
+        name: reult.tagged,
+        slug: 'asdad'
+      };
+
+      var tag_link_html = _.template(tag_link_template, tag_link_data);
+      $('#pile-message-' + mid + ' td.subject').prepend(tag_link_html);
+    });
+
+    // Clean Caches and hide Modal
+    mailpile.messages_cache = [];
+    mailpile.tags_cache = [];
+    $('#modal-full').modal('hide');
+  });
+
+});
+
+
 /* Dragging & Dropping From Pile */
 $('td.draggable').draggable({
   containment: "#container",
@@ -197,8 +194,7 @@ $('td.draggable').draggable({
 
     if (selected_count == 0) {
       drag_count = '1 message</div>';
-    }
-    else {
+    } else {
       drag_count = selected_count + ' messages';
     }
 
@@ -227,15 +223,15 @@ $('li.sidebar-tags-draggable').droppable({
     mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
 
     // Add / Delete
-    mailpile.tag_add_delete($(this).data('tag_name'), delete_tag, mailpile.bulk_cache, function() {
+    mailpile.tag_add_delete($(this).data('tag_name'), delete_tag, mailpile.messages_cache, function() {
 
       // Update Pile View
-      $.each(mailpile.bulk_cache, function(key, mid) {
+      $.each(mailpile.messages_cache, function(key, mid) {
         $('#pile-message-' + mid).fadeOut('fast');
       });
 
       // Empty Bulk Cache
-      mailpile.bulk_cache = [];
+      mailpile.messages_cache = [];
     });
   }
 });
@@ -291,6 +287,6 @@ $(document).ready(function() {
     hide: {
       delay: 1000
     }
-  });  
+  });
 
 });

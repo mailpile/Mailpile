@@ -72,11 +72,10 @@
     width: 100%;
     display: table;
     margin: 0px;
-    padding: 0px;
   }
 
   .thread-item-from-avatar {
-    width: 50px;
+    width: 45px;
     display: table-cell;
     padding-top: 15px;
     padding-left: 15px;
@@ -92,7 +91,7 @@
     min-width: 175px;
     max-width: 200px;
     display: table-cell;
-    padding-top: 15px;
+    padding-top: 13px;
     padding-left: 15px;
     vertical-align: text-top;
     text-align: left;
@@ -236,13 +235,15 @@
     font-size: 16px;
     line-height: 18px;
     white-space: pre-wrap;
+    word-wrap:break-word;
   }
 
   .thread-item-text {
     max-width: 90%;
+    margin-top: 5px;
     margin-left: 20px;
     margin-right: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     .font-style-item-text();
     color: @black;
   }
@@ -279,6 +280,24 @@
   	display: none;
 	}
 
+  .thread-item-signature {
+    display: inline-block;
+  	margin-left: 20px;
+  	margin-bottom: 15px;
+  	padding: 10px;
+    .font-style-item-text();
+    border: 1px solid @white;
+   }
+
+  .thread-item-signature-hover {
+    background: @grayLight;
+    border-radius: 7px;
+    border: 1px solid @grayMid;
+  }
+
+  .button-signature-contact {
+    float: right;
+  }
 
 
 /* Thread Message Attachments */

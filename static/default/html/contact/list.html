@@ -1,6 +1,6 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Contacts")}}{% endblock %}
 {% block content %}
-
 <div id="contacts-list" class="clearfix">
 {% if result.contacts %}
   {% for contact in result.contacts %}
@@ -11,10 +11,14 @@
         <a class="contact-avatar" href="/contact/{{ contact.email.0.email }}/">{% if contact.photo %}<img width=50 src="{{contact.photo.0.photo}}">{% elif contact.email %}<img src="/static/img/avatar-default.png">{% endif %}</a>
         <a class="contact-name" href="/contact/{{ contact.email.0.email }}/">{{ contact.fn }}</a>{% endif %}
       </div>
-      <b>{% if contact.key %}<span class="icon-lock-closed"></span>{% endif %} {{_("Emails")}}</b>
+      <b>{% if contact.key %}{% endif %} <span class="icon-lock-closed"></span> {{_("Emails")}}</b>
       <ul>
         {% if contact.email %}
-          <li><a class="compose-to-email" data-email="{{ contact.email.0.email }}" title="{{_("Compose Email To This Address") }}" href="/contact/{{ contact.email.0.email }}/">{{ contact.email.0.email }}</a></li>
+          <li>
+            <a class="compose-to-email" data-email="{{ contact.email.0.email }}" title="{{_("Compose Email To This Address") }}" href="/contact/{{ contact.email.0.email }}/">
+              {{ contact.email.0.email }}
+            </a>
+          </li>
         {% endif %}
         {% if contact.email|length > 1 %}
           <li class="contact-details"> {{ contact.email|length }} {{_("More Address")}}</li>
@@ -40,6 +44,5 @@
 <div id="contact-add" class="content-normal hide">
 {% include("partials/contact_add.html") %}
 </div>
-
-{% endblock %}{% block title %}{{_("Contacts")}}{% endblock %}
+{% endblock %}
 

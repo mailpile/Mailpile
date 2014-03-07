@@ -15,18 +15,28 @@
 	}
 
 	.topbar-logo {
-    width: 225px;
+    width: 67px;
 		display: table-cell;
     box-sizing: border-box;
     vertical-align: middle;
 	}
 	
-	.topbar-logo object.logo,
-	.topbar-logo img.logo, {
-		width: 182px;
-		height: 40px;
+	.topbar-logo #svg_logo {
 		display: block;
     margin-left: 15px;
+	}
+
+	.topbar-logo-name {
+    width: 157px;
+    height: 40px;
+		display: table-cell;
+    box-sizing: border-box;
+    vertical-align: middle;
+	}
+
+	.topbar-logo-name #svg_logo_name {
+		display: block;
+    margin-left: 10px;
 	}
 	
 	.topbar-actions {
@@ -158,4 +168,8 @@
   .topbar-nav .navigation-on a {
     color: @grayDark;
     cursor: default;
+  }
+  
+  .topbar-nav .nav-search {
+    display: none;
   }

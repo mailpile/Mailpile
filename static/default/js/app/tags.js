@@ -1,10 +1,20 @@
-MailPile.prototype.tag = function(msgids, tags) {}
+MailPile.prototype.tag = function(msgids, tags) {};
 
-MailPile.prototype.tag_add = function(tagname) {}
+MailPile.prototype.tag_list = function(complete) {
+  $.ajax({
+    url      : mailpile.api.tag_list,
+    type     : 'GET',
+    dataType : 'json',
+    success  : function(response) {
+      if (response.status === 'success') {
+        complete(response.result);
+      }
+    }
+  });
+};
 
 /* Pile - Tag Add */
 MailPile.prototype.tag_add = function(tag_add, mids, complete) {
-
   $.ajax({
 	  url			 : mailpile.api.tag,
 	  type		 : 'POST',
@@ -14,11 +24,8 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
     },
 	  dataType : 'json',
     success  : function(response) {
-
       if (response.status == 'success') {
-
-       complete();
-
+       complete(response);
       } else {
         mailpile.notification(response.status, response.message);
       }
@@ -28,8 +35,7 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
 
 
 MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
-  
-	  $.ajax({
+  $.ajax({
 	  url			 : mailpile.api.tag,
 	  type		 : 'POST',
 	  data     : {
@@ -39,11 +45,8 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
     },
 	  dataType : 'json',
     success  : function(response) {
-
       if (response.status == 'success') {
-
         complete();
-
       } else {
         mailpile.notification(response.status, response.message);
       }
