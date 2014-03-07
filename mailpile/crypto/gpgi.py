@@ -555,7 +555,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         for x in retvals[1]["status"]:
             if x[0] == "IMPORTED":
                 res["imported"].append({
-                    "keyid": keyid,
                     "fingerprint": x[1],
                     "username": x[2]
                 })
