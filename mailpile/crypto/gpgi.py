@@ -835,6 +835,14 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                                                 "comment": comment})
         return results
 
+ def delete_key(self, fingerprint):
+         """                                                                   
+         >>> g = GnuPG()                                                       
+         >>> g.delkey(keyid)[1]                                                
+         """
+         retvals = self.run(["--delete-secret-and-public-key", "--fingerprint"])
+         return retvals[1]["status"]
+
 
    def address_to_keys(self, address):
         res = {}
