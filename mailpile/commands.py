@@ -587,7 +587,7 @@ class SearchResults(dict):
         if 'tags' in self.session.config:
             for tid in self._msg_tags(msg_info):
                 if tid not in self['data']['tags']:
-                    self['data']['tags'][tid] = self._tag(tid)
+                    self['data']['tags'][tid] = self._tag(tid, {"searched": False})
 
     def add_email(self, e):
         if e not in self.emails:
