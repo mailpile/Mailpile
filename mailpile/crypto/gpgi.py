@@ -542,7 +542,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         else:
             return []
 
-    def delete_key(self, keyid):
+    def delete_key(self, fingerprint):
         """                                                                   
         >>> g = GnuPG()                                                       
         >>> g.delkey(keyid)[1]                                                
