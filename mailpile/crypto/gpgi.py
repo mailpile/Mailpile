@@ -542,6 +542,14 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         else:
             return []
 
+    def delete_key(self, keyid):
+        """                                                                   
+        >>> g = GnuPG()                                                       
+        >>> g.delkey(keyid)[1]                                                
+        """
+        retvals = self.run(["--delete-secret-and-public-key", "--fingerprint"])
+        return retvals[1]["status"]
+
     class ResultParser:
         """
         Parse the GPG response into EncryptionInfo and SignatureInfo.
@@ -746,11 +754,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
-<<<<<<< HEAD
-        print retvals[1]["status"]
-        return [x for x in retvals[1]["status"] 
-                  if x[0] in ("IMPORTED", "IMPORT_OK", "IMPORT_PROBLEM")]
-=======
         res = {"imported": [], "updated": [], "failed": []}
         for x in retvals[1]["status"]:
             if x[0] == "IMPORTED":
@@ -808,7 +811,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
 
         return res
->>>>>>> 5a6cc129469ed590d98e9c19af509dbc7dc7bfd1
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
@@ -833,11 +835,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                                                 "comment": comment})
         return results
 
-<<<<<<< HEAD
-     def address_to_keys(self, address):
-=======
-    def address_to_keys(self, address):
->>>>>>> 5a6cc129469ed590d98e9c19af509dbc7dc7bfd1
+
+   def address_to_keys(self, address):
         res = {}
         keys = self.list_keys()
         for key, props in keys.iteritems():
