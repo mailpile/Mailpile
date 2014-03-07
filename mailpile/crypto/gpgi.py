@@ -542,6 +542,20 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         else:
             return []
 
+    def import_keys(self, key_data=None, key_file=None):
+        """
+        Imports gpg keys from a file object or string.
+        """
+        if key_data and not key_file:
+            key_file = StringIO(key_data)
+
+        retvals = self.run(["--import", key_file])
+        key_file.close()
+        print retvals[1]["status"]
+        return [x for x in retvals[1]["status"]
+                if x[0] in ("IMPORTED", "IMPORT_OK", "IMPORT_PROBLEM")]
+
+
     class ResultParser:
         """
         Parse the GPG response into EncryptionInfo and SignatureInfo.
