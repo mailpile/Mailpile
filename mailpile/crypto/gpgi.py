@@ -140,6 +140,36 @@ status_messages = {
     "DECRYPTION_INFO": [],
 }
 
+UID_PARSE_RE = "([^\(\<]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}"
+def parse_uid(uidstr):
+    matches = re.match(UID_PARSE_RE, uidstr)
+    if matches:
+        email = matches.groups(0)[4] or ""
+        comment = matches.groups(0)[2] or ""
+        name = matches.groups(0)[0] or ""
+    else:
+        email = line[9]
+        name = ""
+        comment = ""
+
+    try:
+        name = name.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            name = name.decode("iso-8859-1")
+        except UnicodeDecodeError:
+            name = name.decode("utf-8", "replace")
+
+    try:
+        comment = comment.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            comment = comment.decode("iso-8859-1")
+        except UnicodeDecodeError:
+            comment = comment.decode("utf-8", "replace")
+
+    return email, name, comment
+
 
 class GnuPG:
     """
@@ -235,7 +265,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             if line[6] != "":
                 keys[line[4]]["revocation-date"] = line[5]
             curkey = line[4]
-            curkey, keys = parse_uid(line, curkey, keys)
+            curkey, keys = parse_uidline(line, curkey, keys)
             return (curkey, keys)
 
         def parse_subkey(line, curkey, keys):
@@ -261,35 +291,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             curkey, keys = parse_pubkey(line, curkey, keys)
             return (curkey, keys)
 
-        UID_PARSE_RE = "([^\(\<]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}"
-
-        def parse_uid(line, curkey, keys):
-            matches = re.match(UID_PARSE_RE, line[9])
-            if matches:
-                email = matches.groups(0)[4] or ""
-                comment = matches.groups(0)[2] or ""
-                name = matches.groups(0)[0] or ""
-            else:
-                email = line[9]
-                name = ""
-                comment = ""
-
-            try:
-                name = name.decode("utf-8")
-            except UnicodeDecodeError:
-                try:
-                    name = name.decode("iso-8859-1")
-                except UnicodeDecodeError:
-                    name = name.decode("utf-8", "replace")
-
-            try:
-                comment = comment.decode("utf-8")
-            except UnicodeDecodeError:
-                try:
-                    comment = comment.decode("iso-8859-1")
-                except UnicodeDecodeError:
-                    comment = comment.decode("utf-8", "replace")
-
+        def parse_uidline(line, curkey, keys):
+            email, name, comment = parse_uid(line[9])
             keys[curkey]["uids"].append({"email": email,
                                          "name": name,
                                          "comment": comment,
@@ -328,7 +331,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 "tru": parse_trust,
                 "sig": parse_signature,
                 "rev": parse_revoke,
-                "uid": parse_uid,
+                "uid": parse_uidline,
                 "gpg": parse_none}
 
         lines = keylist.split("\n")
@@ -702,12 +705,42 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
-        return retvals
+        print retvals[1]["status"]
+        return [x for x in retvals[1]["status"] 
+                  if x[0] in ("IMPORTED", "IMPORT_OK", "IMPORT_PROBLEM")]
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
-                            '--search-key', term], debug=True)
-        return retvals
+                            '--search-key', term], 
+                            callbacks={"stdout": lambda x: x})[1]["stdout"][0]
+        results = {}
+        lines = [x.split(":") for x in retvals.strip().split("\n")]
+        curpub = None
+        for line in lines:
+            if line[0] == "info":
+                pass
+            elif line[0] == "pub":
+                curpub = line[1]
+                results[curpub] = {"created": line[4], 
+                                   "keytype": openpgp_algorithms[int(line[2])], 
+                                   "keysize": line[3], 
+                                   "uids": []}
+            elif line[0] == "uid":
+                email, name, comment = parse_uid(line[1])
+                results[curpub]["uids"].append({"name": name, 
+                                                "email": email, 
+                                                "comment": comment})
+        return results
+
+    def delete_key(self, keyid):
+        """
+        >>> g = GnuPG()
+        >>> g.delkey(keyid)[1]
+        """
+        
+        retvals = self.run(["--delete-secret-and-public-key", "--fingerprint"])
+        return retvals[1]["status"]
+
 
     def address_to_keys(self, address):
         res = {}
