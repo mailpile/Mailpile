@@ -1027,7 +1027,7 @@ class Output(Command):
 
 class Help(Command):
     """Print help on Mailpile or individual commands."""
-    SYNOPSIS = ('h', 'help', 'help', '[<command-group>|variables]')
+    SYNOPSIS = ('h', 'help', 'help', '[<command-group>]')
     ABOUT = ('This is Mailpile!')
     ORDER = ('Config', 9)
 
@@ -1168,27 +1168,30 @@ class Help(Command):
 class HelpVars(Help):
     """Print help on Mailpile variables"""
     SYNOPSIS = (None, 'help/variables', 'help/variables', None)
+    ABOUT = ('The available mailpile variables')
     ORDER = ('Config', 9)
 
     def command(self):
-        config = self.session.config
+        config = self.session.config.rules
         result = []
-        for cat in config.CATEGORIES.keys():
+        categories = ["sys", "prefs", "profiles"]
+        for cat in categories:
             variables = []
-            for what in config.INTS, config.STRINGS, config.DICTS:
-                for ii, i in what.iteritems():
+            what = config[cat]
+            if isinstance(what[2], dict):
+                for ii, i in what[2].iteritems():
                     variables.append({
                         'var': ii,
-                        'type': i[0],
-                        'desc': i[2]
+                        'type': str(i[1]),
+                        'desc': i[0]
                     })
             variables.sort(key=lambda k: k['var'])
             result.append({
                 'category': cat,
-                'name': config.CATEGORIES[cat][1],
+                'name': config[cat][0],
                 'variables': variables
             })
-        result.sort(key=lambda k: config.CATEGORIES[k['category']][0])
+        result.sort(key=lambda k: config[k['category']][0])
         return {'variables': result}
 
 
