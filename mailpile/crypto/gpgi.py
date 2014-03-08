@@ -604,6 +604,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                     "skipped_new_keys": int(x[13]),
                     "not_imported": int(x[14]),
                 }
+                }
 
 
     class ResultParser:
