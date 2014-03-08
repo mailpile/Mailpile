@@ -19,19 +19,19 @@ debian-dev:
 docs:
 	@test -d doc || \
            git submodule update --remote
-	@python mailpile/urlmap.py >doc/URLS.md
+	@python2 mailpile/urlmap.py >doc/URLS.md
 	@ls -l doc/URLS.md
-	@python mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
+	@python2 mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
 	@ls -l doc/defaults.cfg
 
 web: less js
 	@true
 
 alltests: docs
-	@python mailpile/config.py
-	@python mailpile/util.py
-	@python mailpile/vcard.py
-	@python mailpile/workers.py
+	@python2 mailpile/config.py
+	@python2 mailpile/util.py
+	@python2 mailpile/vcard.py
+	@python2 mailpile/workers.py
 	@nosetests tests
 
 clean:
@@ -41,7 +41,7 @@ clean:
 	@rm -vrf *.egg-info build/ mp-virtualenv/ dist/
 
 virtualenv:
-	virtualenv mp-virtualenv
+	virtualenv -p python2 mp-virtualenv
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
 
 js:
