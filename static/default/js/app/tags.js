@@ -25,7 +25,7 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
 	  dataType : 'json',
     success  : function(response) {
       if (response.status == 'success') {
-       complete(response);
+       complete(response.result);
       } else {
         mailpile.notification(response.status, response.message);
       }
@@ -46,7 +46,7 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
 	  dataType : 'json',
     success  : function(response) {
       if (response.status == 'success') {
-        complete();
+        complete(response.result);
       } else {
         mailpile.notification(response.status, response.message);
       }

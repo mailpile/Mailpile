@@ -25,6 +25,7 @@
     {% if thread|length > 1 %}<span class="conversation-count">{{ thread|length }}</span>{% endif %}
   </td>
   <td class="subject">
+    <span class="item-tags">
     {% if has_label_tags(result.data.tags, metadata.tag_tids) %}
     <span class="icon-tag"></span>
     {% for tid in metadata.tag_tids %}
@@ -34,6 +35,7 @@
       {% endif %}
     {% endfor %}
     {% endif %}
+    </span>
     <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{metadata.subject}}{% else %}({{_("No Subject")}}){% endif %}</a>
     <span class="item-snippet">{{metadata.snippet}}</span>
   </td>
