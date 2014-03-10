@@ -11,6 +11,11 @@ from mailpile.plugins.search import Search
 
 ##[ Configuration ]###########################################################
 
+FILTER_TYPES = ('user',      # These are the default, user-created filters
+                'incoming',  # These filters are only applied to new messages
+                'system',    # Mailpile core internal filters
+                'plugin')    # Filters created by plugins
+
 mailpile.plugins.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
     'slug': ['URL slug', 'slashslug', ''],
@@ -49,6 +54,7 @@ mailpile.plugins.register_config_section('filters', ["Filters", {
     'tags': ['Tag/untag actions', 'str', ''],
     'terms': ['Search terms', 'str', ''],
     'comment': ['Human readable description', 'str', ''],
+    'type': ['Filter type', FILTER_TYPES, FILTER_TYPES[0]],
 }, {}])
 
 mailpile.plugins.register_config_variables('sys', {
@@ -60,17 +66,22 @@ INFO_HIDES_TAG_METADATA = ('flag_editable', 'flag_hides',
                            'search_terms', 'search_order', 'template')
 
 
-def GetFilters(cfg, filter_on=None):
+def GetFilters(cfg, filter_on=None, types=FILTER_TYPES[:1]):
     filters = cfg.filters.keys()
     filters.sort(key=lambda k: int(k, 36))
     flist = []
+    tset = set(types)
     for fid in filters:
         terms = cfg.filters[fid].get('terms', '')
+        ftype = cfg.filters[fid]['type']
+        if not (set([ftype, 'any', 'all', None]) & tset):
+            continue
         if filter_on is not None and terms != filter_on:
             continue
         flist.append((fid, terms,
                       cfg.filters[fid].get('tags', ''),
-                      cfg.filters[fid].get('comments', '')))
+                      cfg.filters[fid].get('comment', ''),
+                      ftype))
     return flist
 
 
@@ -206,13 +217,11 @@ class Tag(TagCommand):
             what = []
             if self.result['tagged']:
                 what.append('Tagged ' +
-                            ', '.join(['%s=%s' % (k['name'], k._key)
-                                       for k
+                            ', '.join([k['name'] for k
                                        in self.result['tagged']]))
             if self.result['untagged']:
                 what.append('Untagged ' +
-                            ', '.join(['%s=%s' % (k['name'], k._key)
-                                       for k
+                            ', '.join([k['name'] for k
                                        in self.result['untagged']]))
             return '%s (%d messages)' % (', '.join(what),
                                          len(self.result['msg_ids']))
@@ -468,6 +477,11 @@ class Filter(FilterCommand):
         else:
             filter_id = None
 
+        if args and args[0] and args[0][0] == '@':
+            filter_type = args.pop(0)[1:]
+        else:
+            filter_type = FILTER_TYPES[0]
+
         auto_tag = False
         if 'read' in flags:
             terms = ['@read']
@@ -500,7 +514,8 @@ class Filter(FilterCommand):
         filter_dict = {
             'comment': ' '.join(self.args),
             'terms': ' '.join(terms),
-            'tags': ' '.join(tids)
+            'tags': ' '.join(tids),
+            'type': filter_type
         }
         if filter_id:
             config.filters[filter_id] = filter_dict
@@ -546,22 +561,23 @@ class DeleteFilter(FilterCommand):
 
 class ListFilters(Command):
     """List (all) auto-tagging rules"""
-    SYNOPSIS = (None, 'filter/list', 'filter/list', '[<search>|=<id>]')
+    SYNOPSIS = (None, 'filter/list', 'filter/list', '[<search>|=<id>|@<type>]')
     ORDER = ('Tagging', 1)
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
             if self.result is False:
                 return unicode(self.result)
-            return '\n'.join([(' %3.3s %-20s %-25s %s'
-                               ) % (r['fid'], r['terms'],
-                                    r['human_tags'], r['comment'])
+            return '\n'.join([('%3.3s %-10s %-18s %-18s %s'
+                               ) % (r['fid'], r['type'],
+                                    r['terms'], r['human_tags'], r['comment'])
                               for r in self.result])
 
     def command(self, want_fid=None):
         results = []
-        for (fid, trms, tags, cmnt
-             ) in self.session.config.get_filters(filter_on=None):
+        for (fid, trms, tags, cmnt, ftype
+             ) in self.session.config.get_filters(filter_on=None,
+                                                  types=['all']):
             if want_fid and fid != want_fid:
                 continue
 
@@ -578,6 +594,9 @@ class ListFilters(Command):
                     if term.startswith('='):
                         if (term[1:] != fid):
                             skip = True
+                    elif term.startswith('@'):
+                        if (term[1:] != ftype):
+                            skip = True
                     elif ((term not in ' '.join(human_tags).lower())
                             and (term not in trms.lower())
                             and (term not in cmnt.lower())):
@@ -590,7 +609,8 @@ class ListFilters(Command):
                 'terms': trms,
                 'tags': tags,
                 'human_tags': ' '.join(human_tags),
-                'comment': cmnt
+                'comment': cmnt,
+                'type': ftype
             })
         return results
 

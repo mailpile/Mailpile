@@ -324,7 +324,7 @@ mailpile.plugins.register_commands(Retrain, Classify, AutoTag)
 
 ##[ Keywords ]################################################################
 
-def filter_hook(session, msg_mid, msg, keywords):
+def filter_hook(session, msg_mid, msg, keywords, is_new=True):
     """Classify this message."""
     config = session.config
     for at_config in config.prefs.autotag:

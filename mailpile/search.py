@@ -467,7 +467,8 @@ class MailIndex:
                     msg_mid, msg_id, msg, msg_size, msg_ts,
                     mailbox=mailbox_idx,
                     compact=False,
-                    filter_hooks=plugins.filter_hooks([self.filter_keywords])
+                    filter_hooks=plugins.filter_hooks([self.filter_keywords]),
+                    is_new=True
                 )
 
                 msg_subject = self.hdr(msg, 'subject')
@@ -534,6 +535,7 @@ class MailIndex:
         msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
                   ExtractEmails(self.hdr(msg, 'bcc')))
 
+        filters = plugins.filter_hooks([self.filter_keywords])
         kw, sn = self.index_message(session,
                                     email.msg_mid(),
                                     msg_info[self.MSG_ID],
@@ -542,7 +544,8 @@ class MailIndex:
                                     long(msg_info[self.MSG_DATE], 36),
                                     mailbox=mbox_idx,
                                     compact=False,
-                                    filter_hooks=[self.filter_keywords])
+                                    filter_hooks=filters,
+                                    is_new=False)
 
         tags = [k.split(':')[0] for k in kw
                 if k.endswith(':in') or k.endswith(':tag')]
@@ -564,7 +567,6 @@ class MailIndex:
                 self.remove_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
 
         # Add normal tags implied by a rescan
-        print 'Applying %s' % tags
         for tag_id in tags:
             self.add_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
 
@@ -718,23 +720,29 @@ class MailIndex:
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
         return msg_idx_pos, msg_info
 
-    def filter_keywords(self, session, msg_mid, msg, keywords):
+    def filter_keywords(self, session, msg_mid, msg, keywords, is_new=True):
         keywordmap = {}
         msg_idx_list = [msg_mid]
         for kw in keywords:
-            keywordmap[kw] = msg_idx_list
+            keywordmap[unicode(kw)] = msg_idx_list
 
-        for fid, terms, tags, comment in session.config.get_filters():
+        import mailpile.plugins.tags
+        ftypes = set(mailpile.plugins.tags.FILTER_TYPES)
+        if not is_new:
+            ftypes -= set(['incoming'])
+
+        for (fid, terms, tags, comment, ftype
+                ) in session.config.get_filters(types=ftypes):
             if (terms == '*' or
                     len(self.search(None, terms.split(),
                                     keywords=keywordmap)) > 0):
                 for t in tags.split():
-                    kw = '%s:in' % t[1:]
-                    if t[0] == '-':
+                    for fmt in ('%s:in', '%s:tag'):
+                        kw = unicode(fmt % t[1:])
                         if kw in keywordmap:
                             del keywordmap[kw]
-                    else:
-                        keywordmap[kw] = msg_idx_list
+                    if t[0] != '-':
+                        keywordmap[unicode('%s:in' % t[1:])] = msg_idx_list
 
         return set(keywordmap.keys())
 
@@ -862,14 +870,15 @@ class MailIndex:
         return (set(keywords) - STOPLIST), snippet.strip()
 
     def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
-                      mailbox=None, compact=True, filter_hooks=[]):
+                      mailbox=None, compact=True, filter_hooks=[],
+                      is_new=True):
         keywords, snippet = self.read_message(session,
                                               msg_mid, msg_id, msg,
                                               msg_size, msg_ts,
                                               mailbox=mailbox)
 
         for hook in filter_hooks:
-            keywords = hook(session, msg_mid, msg, keywords)
+            keywords = hook(session, msg_mid, msg, keywords, is_new=is_new)
 
         for word in keywords:
             if (word.startswith('__') or
