@@ -67,7 +67,7 @@ def do_setup():
     mp.set('profiles/0/email = %s' % MY_FROM)
     mp.set('profiles/0/name = %s' % MY_NAME)
     mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
-    mp.set('sys/debug = sendmail log compose')
+    mp.set('sys/debug = rescan sendmail log compose')
     mp.set('prefs/openpgp_header = encrypt')
     mp.set('prefs/crypto_policy = openpgp-sign')
 
@@ -80,9 +80,16 @@ def do_setup():
     assert(not mp._config.prefs.vcard.importers.gpg[0].active)
     assert(not mp._config.prefs.vcard.importers.gravatar[0].active)
 
-    # Add the mailboxes, scan them
-    for mailbox in ('tests.mbx', 'Maildir'):
+    # Copy the test Maildir...
+    for mailbox in ('Maildir', 'Maildir2'):
+        path = os.path.join(mailpile_home, mailbox)
+        os.system('cp -va %s/Maildir %s' % (mailpile_test, path))
+
+    # Add the test mailboxes
+    for mailbox in ('tests.mbx', ):
         mp.add(os.path.join(mailpile_test, mailbox))
+    mp.add(os.path.join(mailpile_home, 'Maildir'))
+
 
 def test_vcards():
     # Do we have a Mr. Rogers contact?
@@ -103,7 +110,10 @@ def test_load_save_rescan():
     mp._session.ui.reset_marks()
     assert(len(mp._config.index.INDEX) == messages)
 
-    # Rescan AGAIN, so we can test for the presence of duplicates.
+    # Rescan AGAIN, so we can test for the presence of duplicates and
+    # verify that the move-detection code actually works.
+    os.system('rm -f %s/Maildir/*/*' % mailpile_home)
+    mp.add(os.path.join(mailpile_home, 'Maildir2'))
     mp.rescan()
 
     # Search for things, there should be exactly one match for each.
@@ -141,6 +151,15 @@ def test_load_save_rescan():
 
 def test_message_data():
     # Load up a message and take a look at it...
+    search_md = mp.search('subject:emerging').result
+    result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
+    view_md = mp.view('=%s' % result_md['mid']).result
+
+    # That loaded?
+    message_md = view_md['data']['messages'][result_md['mid']]
+    assert('athygli' in message_md['text_parts'][0]['data'])
+
+    # Load up another message and take a look at it...
     search_bre = mp.search(*FROM_BRE).result
     result_bre = search_bre['data']['metadata'][search_bre['thread_ids'][0]]
     view_bre = mp.view('=%s' % result_bre['mid']).result
