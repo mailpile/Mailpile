@@ -34,7 +34,7 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
     for tname in (enc | sig):
         tag = index.config.get_tags(slug=tname)
         if tag:
-            kw.add('%s:tag' % tag[0]._key)
+            kw.add('%s:in' % tag[0]._key)
 
     return list(kw)
 

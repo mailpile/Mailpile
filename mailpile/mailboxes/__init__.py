@@ -75,8 +75,9 @@ def UnorderedPicklable(parent, editable=False):
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
-            del odict['_save_to']
-            del odict['_encryption_key_func']
+            for dk in ('_save_to', '_encryption_key_func'):
+                if dk in odict:
+                    del odict[dk]
             return odict
 
         def save(self, session=None, to=None, pickler=None):

@@ -872,7 +872,9 @@ class MailIndex:
             keywords = hook(session, msg_mid, msg, keywords)
 
         for word in keywords:
-            if word.startswith('__'):
+            if (word.startswith('__') or
+                    # Tags are now handled outside the posting lists
+                    word.endswith(':tag') or word.endswith(':in')):
                 continue
             try:
                 GlobalPostingList.Append(session, word, [msg_mid],
