@@ -86,7 +86,6 @@ class EventLog(object):
         # Internals...
         self._lock = threading.Lock()
         self._log_fd = None
-        self._open_log()
 
     def _save_filename(self):
         return os.path.join(self.logdir, self._log_start_id)
@@ -104,7 +103,7 @@ class EventLog(object):
             self._log_fd = EncryptingStreamer(enc_key, dir=self.logdir)
             self._log_fd.save(self._save_filename(), finish=False)
         else:
-            self._log_fd = open(self._save_filename(), 'w')
+            self._log_fd = open(self._save_filename(), 'w', 0)
 
         # Write any incomplete events to the new file
         for e in self.incomplete():
@@ -147,6 +146,8 @@ class EventLog(object):
         """Log an Event object."""
         self._lock.acquire()
         try:
+            if not self._log_fd:
+                self._open_log()
             self._log_fd.write('%s\n' % event)
             self.events[event.event_id] = event
             self._logged += 1
