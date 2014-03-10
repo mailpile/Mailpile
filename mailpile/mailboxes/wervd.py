@@ -58,11 +58,13 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
             fd.close()
 
     def get_string(self, key):
+        fd = None
         try:
             fd = self._get_fd(key)
             return fd.read()
         finally:
-            fd.close()
+            if fd:
+                fd.close()
 
     def get_file(self, key):
         return StringIO.StringIO(self.get_string(key))

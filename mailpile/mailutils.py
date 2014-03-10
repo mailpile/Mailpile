@@ -567,7 +567,7 @@ class Email(object):
                 return mbox, msg_ptr, fd
             except (IOError, OSError, KeyError):
                 # FIXME: If this pointer is wrong, should we fix the index?
-                print '%s not in %s' % (msg_ptr, self)
+                print 'WARNING: %s not found' % msg_ptr
         return None, None, None
 
     def get_file(self):
