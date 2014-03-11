@@ -62,7 +62,20 @@
       <li><a href="/thread/={{ mid }}/">{{ conversations.data.metadata[mid].subject }} ({{ conversations.data.threads[thread_mid]|length }})</a></li>
     {% endfor %}  
   </ul>
-  {% endif %} 
+  {% endif %}
+  <hr>
+
+  <h4>Properties</h4>
+
+  <ul>
+    <li>{{_("Crypto Policy")}}:
+    <select id="crypto-policy">
+        {% for policy in ['default', 'none', 'sign', 'encrypt'] %}
+          <option value="{{ policy }}" {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected" {% endif %}>{{ _(policy) }}</option>
+        {% endfor %}
+    </select>
+    </li>
+  </ul>
 
 {% else %}
 

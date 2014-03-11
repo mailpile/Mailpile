@@ -526,7 +526,7 @@ class SimpleVCard(object):
                     d[k] = vcl[k]
         return d
 
-    MPCARD_SINGLETONS = ('fn', 'kind')
+    MPCARD_SINGLETONS = ('fn', 'kind', 'x-mailpile-crypto-policy')
     MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
 
     def as_mpCard(self):

@@ -24,6 +24,11 @@
           <li class="contact-details"> {{ contact.email|length }} {{_("More Address")}}</li>
         {% endif %}
       </ul>
+    {% if contact['crypto-policy'] %}
+      <b class="contact-details">{{_("Crypto Policy")}}: {{ contact['crypto-policy'] }}</b>
+    {% else %}
+      <b class="contact-details">{{_("Crypto Policy")}}: {{ _("default") }}</b>
+    {% endif %}
     </div>
   </div>
   {% endfor %}

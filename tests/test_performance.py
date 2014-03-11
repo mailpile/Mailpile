@@ -7,7 +7,7 @@ from tests import get_shared_mailpile, MailPileUnittest
 def checkSearch(postinglist_kb, query):
     class TestSearch(object):
         def __init__(self):
-            self.mp = get_shared_mailpile()
+            self.mp = get_shared_mailpile()[0]
             self.mp.set("sys.postinglist_kb=%s" % postinglist_kb)
             self.mp.set("prefs.num_results=50")
             self.mp.set("prefs.default_order=rev-date")
