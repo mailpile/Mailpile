@@ -7,7 +7,7 @@ from tests import get_shared_mailpile
 def checkSearch(query, expected_count=1):
     class TestSearch(object):
         def __init__(self):
-            self.mp = get_shared_mailpile()
+            self.mp = get_shared_mailpile()[0]
             results = self.mp.search(*query)
             assert_equal(results.result['stats']['count'], expected_count)
             assert_less(float(results.as_dict()["elapsed"]), 0.2)
@@ -17,7 +17,7 @@ def checkSearch(query, expected_count=1):
 
 def test_generator():
     # All mail
-    yield checkSearch(['all:mail'], 4)
+    yield checkSearch(['all:mail'], 6)
     # Full match
     yield checkSearch(['brennan'])
     # Partial match
@@ -38,3 +38,4 @@ def test_generator():
     yield checkSearch(['brennan', 'from:twitter'])
     # Not found
     yield checkSearch(['subject:Moderation', 'kde-isl'], 0)
+    yield checkSearch(['has:crypto'], 2)
