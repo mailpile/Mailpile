@@ -2,6 +2,7 @@ import contextlib
 import os
 import random
 import shutil
+import stat
 import sys
 import unittest
 from cStringIO import StringIO
@@ -35,25 +36,40 @@ TAGS = {
 }
 
 
-def _initialize_mailpile_for_testing(MP, test_data):
+def _initialize_mailpile_for_testing(workdir, test_data):
+    config = mailpile.app.ConfigManager(workdir=workdir, rules=mailpile.defaults.CONFIG_RULES)
+    config.sys.http_port = random.randint(40000, 45000)
+    session = mailpile.ui.Session(config)
+    session.config.load(session)
+    session.main = True
+    ui = session.ui = SilentInteraction(config)
+
+    mp = mailpile.Mailpile(session=session)
+    session.config.plugins.load('demos')
+    mp.set('prefs.index_encrypted=true')
+
     # Add some mail, scan it.
-    MP._config.sys.http_port = random.randint(40000, 45000)
-    session = MP._session
     # Create local mailboxes
     session.config.open_local_mailbox(session)
     for t in TAGS:
-        AddTag(MP._session, arg=[t]).run(save=False)
+        AddTag(session, arg=[t]).run(save=False)
         session.config.get_tag(t).update(TAGS[t])
     Filter(session, arg=['new', '@incoming', '+Inbox', '+New', 'Incoming mail filter']).run(save=False)
-    #    MP.setup()
-    MP.add(test_data)
-    MP.rescan()
+
+    mp.add(test_data)
+    mp.rescan()
+
+    return mp, session, config, ui
 
 
 def get_shared_mailpile():
     global MP
     if MP is not None:
         return MP
+
+    # force usage of test keyring whenever the test mailpile instance is used
+    os.chmod(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'), stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR)
+    change_gnupg_home(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'))
 
     workdir = get_mailpile_root()
     tmpdir = os.path.join(workdir, 'testing', 'tmp')
@@ -67,23 +83,7 @@ def get_shared_mailpile():
     sys.stderr.write('Preparing shared Mailpile test environment, '
                      'please wait. 8-)\n')
 
-    MP = mailpile.Mailpile(workdir=workdir, ui=SilentInteraction)
-    config = mailpile.app.ConfigManager(workdir=tmpdir, rules=mailpile.defaults.CONFIG_RULES)
-    session = mailpile.ui.Session(config)
-    session.config.load(session)
-    session.main = True
-    ui = session.ui = SilentInteraction(config)
-
-    mp = mailpile.Mailpile(session=session)
-	MP._session.config.plugins.load('demos')
-    mp.set('prefs.index_encrypted=true')
-
-    # Add some mail, scan it.
-    _initialize_mailpile_for_testing(MP, test_data)
-    mp.add(test_data)
-    mp.rescan()
-
-    MP = mp, session, config, ui
+    MP = _initialize_mailpile_for_testing(tmpdir, test_data)
 
     return MP
 
@@ -107,5 +107,4 @@ class MailPileUnittest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        change_gnupg_home(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'), 'test')
         (cls.mp, cls.session, cls.config, cls.ui) = get_shared_mailpile()
