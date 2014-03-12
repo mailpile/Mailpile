@@ -139,7 +139,7 @@ class MailpileSeleniumTest(MailPileUnittest):
 
     @classmethod
     def _get_mailpile_sspec(cls):
-        config = get_shared_mailpile()._config
+        (_, _, config, _) = get_shared_mailpile()
         return (config.sys.http_host, config.sys.http_port)
 
     @classmethod
@@ -149,9 +149,7 @@ class MailpileSeleniumTest(MailPileUnittest):
     @classmethod
     def _start_web_server(cls):
         if not MailpileSeleniumTest.http_worker:
-            mp = get_shared_mailpile()
-            session = mp._session
-            config = mp._config
+            (mp, session, config, _) = get_shared_mailpile()
             sspec = MailpileSeleniumTest._get_mailpile_sspec()
             MailpileSeleniumTest.http_worker = config.http_worker = HttpWorker(session, sspec)
             config.http_worker.start()
@@ -180,7 +178,7 @@ class MailpileSeleniumTest(MailPileUnittest):
     @classmethod
     def _stop_web_server(cls):
         if MailpileSeleniumTest.http_worker:
-            mp = get_shared_mailpile()
+            (mp, _, config, _) = get_shared_mailpile()
             mp._config.http_worker = None
             MailpileSeleniumTest.http_worker.quit()
             MailpileSeleniumTest.http_worker = MailpileSeleniumTest.http_worker = None

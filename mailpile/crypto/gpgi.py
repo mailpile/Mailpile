@@ -943,10 +943,9 @@ class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
         return GetKeys(self.crypto, self.config, who)
 
 
-def change_gnupg_home(path, passphrase):
-    global GNUPG_HOMEDIR, GNUPG_PASSPHRASE
+def change_gnupg_home(path):
+    global GNUPG_HOMEDIR
     GNUPG_HOMEDIR = path
-    GNUPG_PASSPHRASE = passphrase
 
 
 if __name__ == "__main__":

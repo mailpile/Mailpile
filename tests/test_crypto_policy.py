@@ -47,13 +47,13 @@ class UpdateCryptoPolicyForUserTest(CryptoPolicyBaseTest):
         for policy in ['anything', 'else']:
             res = self.mp.crypto_policy_set('test@test.local', policy).as_dict()
             self.assertEqual('error', res['status'])
-            self.assertEqual('crypto_policy/set error: Policy has to be one of none|sign|encrypt|default',
+            self.assertEqual('Policy has to be one of none|sign|encrypt|sign-encrypt|default',
                              res['message'])
 
     def test_vcard_has_to_exist(self):
         res = self.mp.crypto_policy_set('test@test.local', 'sign').as_dict()
         self.assertEqual('error', res['status'])
-        self.assertEqual('crypto_policy/set error: No vcard for email test@test.local!', res['message'])
+        self.assertEqual('No vcard for email test@test.local!', res['message'])
 
     def test_vcard_is_updated(self):
         vcard = self._add_vcard('Test', 'test@test.local')
@@ -73,7 +73,7 @@ class CryptoPolicyForUserTest(CryptoPolicyBaseTest):
     def test_no_email_provided(self):
         res = self.mp.crypto_policy().as_dict()
         self.assertEqual('error', res['status'])
-        self.assertEqual('crypto_policy error: Please provide a single email address!', res['message'])
+        self.assertEqual('Please provide a single email address!', res['message'])
 
     def test_no_msg_with_email_(self):
         res = self.mp.crypto_policy('undefined@test.local').as_dict()
