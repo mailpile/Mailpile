@@ -9,6 +9,7 @@ from gettext import translation, gettext, NullTranslations
 from gettext import gettext as _
 
 from urllib import quote, unquote
+from mailpile.crypto.streamer import DecryptingStreamer
 
 try:
     import ssl
@@ -977,16 +978,12 @@ class ConfigManager(ConfigDict):
         return (mailbox_id == local_mailbox_id)
 
     def load_pickle(self, pfn):
-        fd = None
-        try:
-            fd = open(os.path.join(self.workdir, pfn), 'rb')
+        with open(os.path.join(self.workdir, pfn), 'rb') as fd:
             if self.prefs.obfuscate_index:
-                from mailpile.crypto.streamer import DecryptingStreamer
-                fd = DecryptingStreamer(self.prefs.obfuscate_index, fd)
-            return cPickle.loads(fd.read())
-        finally:
-            if fd:
-                fd.close()
+                return cPickle.load(fd.read())
+            else:
+                with DecryptingStreamer(self.prefs.obfuscate_index, fd) as streamer:
+                    return cPickle.load(streamer.read())
 
     def save_pickle(self, obj, pfn):
         try:

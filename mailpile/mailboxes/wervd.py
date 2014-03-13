@@ -98,7 +98,8 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
             for cpn in range(1, copies):
                 fn = os.path.join(self._path, 'new', '%s.%s' % (key, cpn))
-                es.save_copy(mailbox._create_carefully(fn))
+                with mailbox._create_carefully(fn) as ofd:
+                    es.save_copy(ofd)
 
             return key
         finally:

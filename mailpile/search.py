@@ -194,14 +194,13 @@ class MailIndex:
             session.ui.mark(_('Loading metadata index...'))
         try:
             self._lock.acquire()
-            fd = open(self.config.mailindex_file(), 'r')
-            for line in fd:
-                if line.startswith(GPG_BEGIN_MESSAGE):
-                    for line in decrypt_gpg([line], fd):
+            with open(self.config.mailindex_file(), 'r') as fd:
+                for line in fd:
+                    if line.startswith(GPG_BEGIN_MESSAGE):
+                        for line in decrypt_gpg([line], fd):
+                            process_line(line)
+                    else:
                         process_line(line)
-                else:
-                    process_line(line)
-            fd.close()
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
@@ -233,14 +232,13 @@ class MailIndex:
                 self._lock.acquire()
                 if session:
                     session.ui.mark(_("Saving metadata index changes..."))
-                fd = gpg_open(self.config.mailindex_file(),
-                              self.config.prefs.gpg_recipient, 'a')
-                for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
-                    quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                    fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-                for pos in mods:
-                    fd.write(self.INDEX[pos] + '\n')
-                fd.close()
+                with gpg_open(self.config.mailindex_file(),
+                              self.config.prefs.gpg_recipient, 'a') as fd:
+                    for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
+                        quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                        fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
+                    for pos in mods:
+                        fd.write(self.INDEX[pos] + '\n')
                 if session:
                     session.ui.mark(_("Saved metadata index changes"))
                 self.EMAILS_SAVED = len(self.EMAILS)
