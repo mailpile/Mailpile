@@ -1155,7 +1155,6 @@ class ConfigManager(ConfigDict):
     def prepare_workers(config, session=None, daemons=False):
         # Set globals from config first...
         import mailpile.util
-        mailpile.util.APPEND_FD_CACHE_SIZE = config.sys.fd_cache_size
 
         # Make sure we have a silent background session
         if not config.background:

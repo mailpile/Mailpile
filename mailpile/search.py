@@ -241,7 +241,6 @@ class MailIndex:
                 for pos in mods:
                     fd.write(self.INDEX[pos] + '\n')
                 fd.close()
-                flush_append_cache()
                 if session:
                     session.ui.mark(_("Saved metadata index changes"))
                 self.EMAILS_SAVED = len(self.EMAILS)
@@ -259,21 +258,19 @@ class MailIndex:
             idxfile = self.config.mailindex_file()
             newfile = '%s.new' % idxfile
 
-            fd = gpg_open(newfile, self.config.prefs.gpg_recipient, 'w')
-            fd.write('# This is the mailpile.py index file.\n')
-            fd.write('# We have %d messages!\n' % len(self.INDEX))
-            for eid in range(0, len(self.EMAILS)):
-                quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-            for item in self.INDEX:
-                fd.write(item + '\n')
-            fd.close()
+            with gpg_open(newfile, self.config.prefs.gpg_recipient, 'w') as fd:
+                fd.write('# This is the mailpile.py index file.\n')
+                fd.write('# We have %d messages!\n' % len(self.INDEX))
+                for eid in range(0, len(self.EMAILS)):
+                    quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                    fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
+                for item in self.INDEX:
+                    fd.write(item + '\n')
 
             # Keep the last 5 index files around... just in case.
             backup_file(idxfile, backups=5, min_age_delta=10)
             os.rename(newfile, idxfile)
 
-            flush_append_cache()
             self._saved_changes = 0
             if session:
                 session.ui.mark(_("Saved metadata index"))
