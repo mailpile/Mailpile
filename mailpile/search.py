@@ -754,7 +754,7 @@ class MailIndex:
             msg_idxs = [int(mid, 36) for mid in msg_mids]
         if not msg_idxs:
             return
-        for fid, trms, tags, c in session.config.get_filters(
+        for fid, trms, tags, c, t in session.config.get_filters(
                 filter_on=filter_on):
             for t in tags.split():
                 tag_id = t[1:].split(':')[0]
