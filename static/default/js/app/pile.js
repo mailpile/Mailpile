@@ -239,7 +239,7 @@ $('li.sidebar-tags-draggable').droppable({
     }
 
     // Add MID to Cache
-    mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
+    mailpile.bulk_cache_add('messages_cache', ui.draggable.parent().data('mid'));
 
     // Add / Delete
     mailpile.tag_add_delete($(this).data('tag_name'), delete_tag, mailpile.messages_cache, function() {
