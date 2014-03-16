@@ -57,6 +57,16 @@ class IOFilter(threading.Thread):
             else:
                 os.write(self.pipe[1], self.callback(data))
 
+    def close(self):
+        self._close_pipe_fd(self.pipe[0])
+        self._close_pipe_fd(self.pipe[1])
+
+    def _close_pipe_fd(self, pipe_fd):
+        try:
+            os.close(pipe_fd)
+        except OSError:
+            pass
+
     def run(self):
         if self.writing is True:
             self._do_write()
@@ -140,6 +150,7 @@ class ChecksummingStreamer(OutputCoprocess):
         self._write_postamble()
         self.fd.close()
         self.md5filter.join()
+        self.md5filter.close()
         self.tempfile.seek(0, 0)
 
     def close(self):
@@ -155,7 +166,8 @@ class ChecksummingStreamer(OutputCoprocess):
             self.saved = True
         else:
             # 2nd save creates a copy
-            self.save_copy(open(filename, 'wb'))
+            with open(filename, 'wb') as out:
+                self.save_copy(out)
 
     def save_copy(self, ofd):
         self.tempfile.seek(0, 0)
@@ -163,7 +175,6 @@ class ChecksummingStreamer(OutputCoprocess):
         while data != '':
             ofd.write(data)
             data = self.tempfile.read(4096)
-        ofd.close()
 
     def _outer_md5_callback(self, data):
         if data is None:
@@ -201,6 +212,12 @@ class EncryptingStreamer(ChecksummingStreamer):
         self.nonce, self.key = self._mutate_key(key)
         ChecksummingStreamer.__init__(self, dir=dir)
         self._send_key()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def _mutate_key(self, key):
         nonce = genkey(str(random.getrandbits(512)))[:32].strip()
@@ -262,6 +279,12 @@ class DecryptingStreamer(InputCoprocess):
         self.startup_lock.acquire()
         InputCoprocess.__init__(self, self._mk_command(), self.read_fd)
         self.startup_lock = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def verify(self):
         if self.close() != 0:

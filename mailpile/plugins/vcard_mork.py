@@ -327,13 +327,13 @@ class MorkImporter(VCardImporter):
         return results
 
     def load(self):
-        fh = open(self.config.filename, "r")
-        data = fh.read()
+        with open(self.config.filename, "r") as fh:
+            data = fh.read()
 
-        if data.find("<mdb:mork") < 0:
-            raise ValueError("Mork file required")
+            if data.find("<mdb:mork") < 0:
+                raise ValueError("Mork file required")
 
-        self.inputMork(data)
+            self.inputMork(data)
 
     def get_vcards(self):
         self.load()

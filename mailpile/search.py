@@ -194,14 +194,13 @@ class MailIndex:
             session.ui.mark(_('Loading metadata index...'))
         try:
             self._lock.acquire()
-            fd = open(self.config.mailindex_file(), 'r')
-            for line in fd:
-                if line.startswith(GPG_BEGIN_MESSAGE):
-                    for line in decrypt_gpg([line], fd):
+            with open(self.config.mailindex_file(), 'r') as fd:
+                for line in fd:
+                    if line.startswith(GPG_BEGIN_MESSAGE):
+                        for line in decrypt_gpg([line], fd):
+                            process_line(line)
+                    else:
                         process_line(line)
-                else:
-                    process_line(line)
-            fd.close()
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
@@ -233,15 +232,13 @@ class MailIndex:
                 self._lock.acquire()
                 if session:
                     session.ui.mark(_("Saving metadata index changes..."))
-                fd = gpg_open(self.config.mailindex_file(),
-                              self.config.prefs.gpg_recipient, 'a')
-                for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
-                    quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                    fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-                for pos in mods:
-                    fd.write(self.INDEX[pos] + '\n')
-                fd.close()
-                flush_append_cache()
+                with gpg_open(self.config.mailindex_file(),
+                              self.config.prefs.gpg_recipient, 'a') as fd:
+                    for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
+                        quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                        fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
+                    for pos in mods:
+                        fd.write(self.INDEX[pos] + '\n')
                 if session:
                     session.ui.mark(_("Saved metadata index changes"))
                 self.EMAILS_SAVED = len(self.EMAILS)
@@ -259,21 +256,19 @@ class MailIndex:
             idxfile = self.config.mailindex_file()
             newfile = '%s.new' % idxfile
 
-            fd = gpg_open(newfile, self.config.prefs.gpg_recipient, 'w')
-            fd.write('# This is the mailpile.py index file.\n')
-            fd.write('# We have %d messages!\n' % len(self.INDEX))
-            for eid in range(0, len(self.EMAILS)):
-                quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-            for item in self.INDEX:
-                fd.write(item + '\n')
-            fd.close()
+            with gpg_open(newfile, self.config.prefs.gpg_recipient, 'w') as fd:
+                fd.write('# This is the mailpile.py index file.\n')
+                fd.write('# We have %d messages!\n' % len(self.INDEX))
+                for eid in range(0, len(self.EMAILS)):
+                    quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                    fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
+                for item in self.INDEX:
+                    fd.write(item + '\n')
 
             # Keep the last 5 index files around... just in case.
             backup_file(idxfile, backups=5, min_age_delta=10)
             os.rename(newfile, idxfile)
 
-            flush_append_cache()
             self._saved_changes = 0
             if session:
                 session.ui.mark(_("Saved metadata index"))

@@ -23,7 +23,6 @@ except:
     Image = None
 
 
-global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING
 
 
@@ -342,6 +341,13 @@ class GpgWriter(object):
         self.fd = gpg.stdin
         self.gpg = gpg
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
     def write(self, data):
         self.fd.write(data)
 
@@ -372,75 +378,6 @@ def dict_merge(*dicts):
     for d in dicts:
         final.update(d)
     return final
-
-
-# Indexing messages is an append-heavy operation, and some files are
-# appended to much more often than others.  This implements a simple
-# LRU cache of file descriptors we are appending to.
-APPEND_FD_CACHE = {}
-APPEND_FD_CACHE_SIZE = 500
-APPEND_FD_CACHE_ORDER = []
-APPEND_FD_CACHE_LOCK = threading.Lock()
-
-
-def flush_append_cache(ratio=1, count=None, lock=True):
-    try:
-        if lock:
-            APPEND_FD_CACHE_LOCK.acquire()
-        drop = count or int(ratio * len(APPEND_FD_CACHE_ORDER))
-        for fn in APPEND_FD_CACHE_ORDER[:drop]:
-            try:
-                APPEND_FD_CACHE[fn].close()
-                del APPEND_FD_CACHE[fn]
-            except KeyError:
-                pass
-        APPEND_FD_CACHE_ORDER[:drop] = []
-    finally:
-        if lock:
-            APPEND_FD_CACHE_LOCK.release()
-
-
-
-def cached_open(filename, mode):
-    try:
-        APPEND_FD_CACHE_LOCK.acquire()
-        if mode == 'a':
-            fd = None
-            if filename in APPEND_FD_CACHE:
-                while filename in APPEND_FD_CACHE_ORDER:
-                    APPEND_FD_CACHE_ORDER.remove(filename)
-                fd = APPEND_FD_CACHE[filename]
-            if not fd or fd.closed:
-                if len(APPEND_FD_CACHE) > APPEND_FD_CACHE_SIZE:
-                    flush_append_cache(count=1, lock=False)
-                try:
-                    fd = APPEND_FD_CACHE[filename] = open(filename, 'a')
-                except (IOError, OSError):
-                    # Too many open files?  Close a bunch and try again.
-                    flush_append_cache(ratio=0.3, lock=False)
-                    fd = APPEND_FD_CACHE[filename] = open(filename, 'a')
-            APPEND_FD_CACHE_ORDER.append(filename)
-            return fd
-        else:
-            fd = APPEND_FD_CACHE.get(filename)
-            if fd:
-                try:
-                    if 'w' in mode or '+' in mode:
-                        del APPEND_FD_CACHE[filename]
-                        APPEND_FD_CACHE_ORDER.remove(filename)
-                        fd.close()
-                    else:
-                        fd.flush()
-                except (ValueError, IOError):
-                    pass
-            try:
-                return open(filename, mode)
-            except (IOError, OSError):
-                # Too many open files?  Close a bunch and try again.
-                flush_append_cache(ratio=0.3, lock=False)
-                return open(filename, mode)
-    finally:
-        APPEND_FD_CACHE_LOCK.release()
 
 
 def play_nice_with_threads():
