@@ -47,6 +47,30 @@ class GPGKeyReceive(Command):
 
         return res
 
+class GPGKeyImport(Command):
+    """Import a GPG Key."""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/importkey', 'crypto/gpg/importkey',
+                '<key_file>')
+    HTTP_CALLABLE = ('POST', )
+    HTTP_QUERY_VARS = {'key_data': 'Contents of public key to be imported',
+                       'key_file': 'Location of file containing the public key'}
+
+    def command(self):
+        print len(self.args)
+        print self.data
+        key_data = ""
+        if len(self.args) != 0:
+            key_file = self.data.get("key_file", self.args[0])
+            with  open(key_file) as file:
+                key_data = file.read()
+        if "key_data" in self.data:
+            key_data = self.data.get("key_data")
+        elif "key_file" in self.data:
+            pass
+        g = GnuPG()
+        return g.import_keys(key_data)
 
 mailpile.plugins.register_commands(GPGKeySearch)
 mailpile.plugins.register_commands(GPGKeyReceive)
+mailpile.plugins.register_commands(GPGKeyImport)
