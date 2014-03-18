@@ -1,5 +1,5 @@
 /* Pile - Bulk Action Link */
-$(document).on('click', '.bulk-action-tag', function(e) {
+$(document).on('click', '.bulk-action-tag', '.bulk-action-untag', function(e) {
 
   // Open Modal with selection options
   mailpile.tag_list(function(result) {
@@ -51,4 +51,22 @@ $(document).on('click', '.bulk-action-add-to-group', function(e) {
   var modal_html = $("#modal-group-editor").html();
   $('#modal-full').html(_.template(modal_html, {}));
   $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+});
+
+// Mark Unread
+$(document).on('click', '.bulk-action-unread', function() {
+    mailpile.tag_add_delete('new', mailpile.tags_cache, mailpile.messages_cache, function(result) {
+
+      // Empty Bulk Cache
+      mailpile.bulk_cache = [];
+    });
+});
+
+// Mark Read
+$(document).on('click', '.bulk-action-read', function() {
+    mailpile.tag_add_delete(mailpile.tags_cache, 'new', mailpile.messages_cache, function(result) {
+
+      // Empty Bulk Cache
+      mailpile.bulk_cache = [];
+    });
 });
