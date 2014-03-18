@@ -549,13 +549,12 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         if key_data and not key_file:
             key_file = StringIO(key_data)
 
-        retvals = self.run(["--import", output=key_file.read()])
+        retvals = self.run(["--import"], output=key_file.read())
         key_file.close()
         print retvals[1]["status"]
         for x in retvals[1]["status"]:
             if x[0] == "IMPORTED":
                 res["imported"].append({
-                    "keyid": keyid,
                     "fingerprint": x[1],
                     "username": x[2]
                 })
@@ -569,7 +568,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                     "16": "contains private key",
                 }
                 res["updated"].append({
-                    "keyid": keyid,
                     "details": int(x[1]),
                     "details_text": reasons[x[1]],
                     "fingerprint": x[2],
@@ -583,7 +581,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                     "4": "error storing certificate",
                 }
                 res["failed"].append({
-                    "keyid": keyid,
                     "details": int(x[1]),
                     "details_text": reasons[x[1]],
                     "fingerprint": x[2]
@@ -605,6 +602,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                     "skipped_new_keys": int(x[13]),
                     "not_imported": int(x[14]),
                 }
+        return res
 
 
     class ResultParser:
