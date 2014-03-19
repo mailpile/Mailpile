@@ -24,7 +24,7 @@ class GPGKeySearch(Command):
                 return _("No results")
 
     def command(self):
-        args = self.args[:]
+        args = list(self.args)
         for q in self.data.get('q', []):
             args.extend(q.split())
 

@@ -234,7 +234,7 @@ class Tag(TagCommand):
             ops = (['+%s' % t for t in self.data.get('add', []) if t] +
                    ['-%s' % t for t in self.data.get('del', []) if t])
         else:
-            words = self.args[:]
+            words = list(self.args)
             ops = []
             while words and words[0][0] in ('-', '+'):
                 ops.append(words.pop(0))
@@ -466,7 +466,8 @@ class Filter(FilterCommand):
     HTTP_CALLABLE = ('POST', )
 
     def command(self):
-        args, session, config = self.args, self.session, self.session.config
+        session, config = self.session, self.session.config
+        args = list(self.args)
 
         flags = []
         while args and args[0] in ('add', 'set', 'new', 'read', 'notag'):
@@ -512,7 +513,7 @@ class Filter(FilterCommand):
                 raise UsageError()
 
         filter_dict = {
-            'comment': ' '.join(self.args),
+            'comment': ' '.join(args),
             'terms': ' '.join(terms),
             'tags': ' '.join(tids),
             'type': filter_type
@@ -540,14 +541,15 @@ class DeleteFilter(FilterCommand):
         removed = 0
         filters = config.get('filter', {})
         filter_terms = config.get('filter_terms', {})
-        for fid in self.args[:]:
+        args = list(self.args)
+        for fid in self.args:
             if fid not in filters:
                 match = [f for f in filters if filter_terms[f] == fid]
                 if match:
-                    self.args.remove(fid)
-                    self.args.extend(match)
+                    args.remove(fid)
+                    args.extend(match)
 
-        for fid in self.args:
+        for fid in args:
             if (config.parse_unset(session, 'filter:%s' % fid)
                     and config.parse_unset(session, 'filter_tags:%s' % fid)
                     and config.parse_unset(session, 'filter_terms:%s' % fid)):

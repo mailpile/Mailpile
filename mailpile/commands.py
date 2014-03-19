@@ -44,7 +44,7 @@ class Command:
                      status, message, args=[], kwargs={}, error_info={}):
             self.session = session
             self.command = command
-            self.args = args[:]
+            self.args = tuple(args)
             self.kwargs = {}
             self.kwargs.update(kwargs)
             self.template_id = template_id
@@ -131,21 +131,22 @@ class Command:
     def __init__(self, session, name=None, arg=None, data=None):
         self.session = session
         self.serialize = self.SERIALIZE
-        self.name = name
+        self.name = self.SYNOPSIS[1] or self.SYNOPSIS[2] or name
         self.data = data or {}
         self.status = 'success'
         self.message = name
         self.error_info = {}
         self.result = None
         if type(arg) in (type(list()), type(tuple())):
-            self.args = list(arg)
+            self.args = tuple(arg)
         elif arg:
             if self.SPLIT_ARG:
-                self.args = arg.split(' ', self.SPLIT_ARG)
+                self.args = tuple(arg.split(' ', self.SPLIT_ARG))
             else:
-                self.args = [arg]
+                self.args = (arg, )
         else:
-            self.args = []
+            self.args = tuple()
+        self._create_event()
 
     def _idx(self, reset=False, wait=True, wait_all=True, quiet=False):
         session, config = self.session, self.session.config
@@ -836,7 +837,7 @@ class ConfigSet(Command):
 
     def command(self):
         config = self.session.config
-        args = self.args[:]
+        args = list(self.args)
         ops = []
 
         if config.sys.lockdown:
@@ -886,7 +887,6 @@ class ConfigAdd(Command):
 
     def command(self):
         config = self.session.config
-        args = self.args[:]
         ops = []
 
         if config.sys.lockdown:
@@ -935,7 +935,7 @@ class ConfigUnset(Command):
             session.ui.warning(_('In lockdown, doing nothing.'))
             return False
 
-        vlist = self.args[:]
+        vlist = list(self.args)
         vlist.extend(self.data.get('var', None) or [])
         for v in vlist:
             cfg, vn = config.walk(v, parent=True)
@@ -978,7 +978,7 @@ class AddMailboxes(Command):
         session, config = self.session, self.session.config
         adding = []
         existing = config.sys.mailbox
-        paths = self.args[:]
+        paths = list(self.args)
 
         if config.sys.lockdown:
             session.ui.warning(_('In lockdown, doing nothing.'))
@@ -1114,7 +1114,7 @@ class Help(Command):
     def command(self):
         self.session.ui.reset_marks(quiet=True)
         if self.args:
-            command = self.args.pop(0)
+            command = self.args[0]
             for cls in COMMANDS:
                 name = cls.SYNOPSIS[1] or cls.SYNOPSIS[2]
                 width = len(name)

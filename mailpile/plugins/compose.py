@@ -363,15 +363,16 @@ class Reply(RelativeCompose):
 
         reply_all = False
         ephemeral = False
-        while self.args:
-            if self.args[0].lower() == 'all':
-                reply_all = self.args.pop(0) or True
-            elif self.args[0].lower() == 'ephemeral':
-                ephemeral = self.args.pop(0) or True
+        args = list(self.args)
+        while args:
+            if args[0].lower() == 'all':
+                reply_all = args.pop(0) or True
+            elif args[0].lower() == 'ephemeral':
+                ephemeral = args.pop(0) or True
             else:
                 break
 
-        refs = [Email(idx, i) for i in self._choose_messages(self.args)]
+        refs = [Email(idx, i) for i in self._choose_messages(args)]
         if refs:
             try:
                 email, ephemeral = self.CreateReply(idx, session, refs,
@@ -451,18 +452,19 @@ class Forward(RelativeCompose):
 
         with_atts = False
         ephemeral = False
-        while self.args:
-            if self.args[0].lower() == 'att':
-                with_atts = self.args.pop(0) or True
-            elif self.args[0].lower() == 'ephemeral':
-                ephemeral = self.args.pop(0) or True
+        args = list(self.args)
+        while args:
+            if args[0].lower() == 'att':
+                with_atts = args.pop(0) or True
+            elif args[0].lower() == 'ephemeral':
+                ephemeral = args.pop(0) or True
             else:
                 break
         if ephemeral and with_atts:
             raise UsageError(_('Sorry, ephemeral messages cannot have '
                                'attachments at this time.'))
 
-        refs = [Email(idx, i) for i in self._choose_messages(self.args)]
+        refs = [Email(idx, i) for i in self._choose_messages(args)]
         if refs:
             email, ephemeral = self.CreateReply(idx, session, refs,
                                                 with_atts=with_atts,
@@ -490,6 +492,7 @@ class Attach(CompositionCommand):
 
     def command(self, emails=None):
         session, idx = self.session, self._idx()
+        args = list(self.args)
 
         files = []
         filedata = {}
@@ -502,15 +505,15 @@ class Attach(CompositionCommand):
                 files.append(fn)
                 count += 1
         else:
-            while os.path.exists(self.args[-1]):
-                files.append(self.args.pop(-1))
+            while os.path.exists(args[-1]):
+                files.append(args.pop(-1))
 
         if not files:
             return self._error(_('No files found'))
 
         if not emails:
             emails = [self._actualize_ephemeral(i) for i in
-                      self._choose_messages(self.args, allow_ephemeral=True)]
+                      self._choose_messages(args, allow_ephemeral=True)]
         if not emails:
             return self._error(_('No messages selected'))
 
@@ -545,16 +548,16 @@ class Sendit(CompositionCommand):
 
     def command(self, emails=None):
         session, config, idx = self.session, self.session.config, self._idx()
+        args = list(self.args)
 
         bounce_to = []
-        while self.args and '@' in self.args[-1]:
-            bounce_to.append(self.args.pop(-1))
+        while args and '@' in args[-1]:
+            bounce_to.append(args.pop(-1))
         for rcpt in (self.data.get('to', []) +
                      self.data.get('cc', []) +
                      self.data.get('bcc', [])):
             bounce_to.extend(ExtractEmails(rcpt))
 
-        args = self.args[:]
         if not emails:
             args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
             mids = self._choose_messages(args)
