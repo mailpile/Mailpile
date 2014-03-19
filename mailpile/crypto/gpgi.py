@@ -345,6 +345,62 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
         return keys
 
+    def parse_import(self, output, *args):
+        res = {"imported": [], "updated": [], "failed": []}
+        print "FOO>", output
+        for x in output:
+            if x[0] == "IMPORTED":
+                res["imported"].append({
+                    "fingerprint": x[1], 
+                    "username": x[2]
+                })
+            elif x[0] == "IMPORT_OK":
+                reasons = {
+                    "0": "unchanged",
+                    "1": "new key",
+                    "2": "new user IDs",
+                    "4": "new signatures",
+                    "8": "new subkeys",
+                    "16": "contains private key",
+                }
+                res["updated"].append({
+                    "details": int(x[1]),
+                    "details_text": reasons[x[1]],
+                    "fingerprint": x[2],
+                })
+            elif x[0] == "IMPORT_PROBLEM":
+                reasons = {
+                    "0": "no reason given",
+                    "1": "invalid certificate",
+                    "2": "issuer certificate missing",
+                    "3": "certificate chain too long",
+                    "4": "error storing certificate",
+                }
+                res["failed"].append({
+                    "details": int(x[1]),
+                    "details_text": reasons[x[1]],
+                    "fingerprint": x[2]
+                })
+            elif x[0] == "IMPORT_RES":
+                res["results"] = {
+                    "count": int(x[1]),
+                    "no_userids": int(x[2]),
+                    "imported": int(x[3]),
+                    "imported_rsa": int(x[4]),
+                    "unchanged": int(x[5]),
+                    "num_uids": int(x[6]),
+                    "num_subkeys": int(x[7]),
+                    "num_signatures": int(x[8]),
+                    "num_revoked": int(x[9]),
+                    "sec_read": int(x[10]),
+                    "sec_imported": int(x[11]),
+                    "sec_dups": int(x[12]),
+                    "skipped_new_keys": int(x[13]),
+                    "not_imported": int(x[14]),
+                }
+        print "BAR>", res
+        return res
+
     def emptycallbackmap():
         """
         Utility function for people who are confused about what callbacks
@@ -547,59 +603,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         Imports gpg keys from a file object or string.
         """
         retvals = self.run(["--import"], output=key_data)
-        res = {"imported": [], "updated": [], "failed": []}
-        for x in retvals[1]["status"]:
-            if x[0] == "IMPORTED":
-                res["imported"].append({
-                    "fingerprint": x[1],
-                    "username": x[2]
-                })
-            elif x[0] == "IMPORT_OK":
-                reasons = {
-                    "0": "unchanged",
-                    "1": "new key",
-                    "2": "new user IDs",
-                    "4": "new signatures",
-                    "8": "new subkeys",
-                    "16": "contains private key",
-                }
-                res["updated"].append({
-                    "details": int(x[1]),
-                    "details_text": reasons[x[1]],
-                    "fingerprint": x[2],
-                })
-            elif x[0] == "IMPORT_PROBLEM":
-                reasons = {
-                    "0": "no reason given",
-                    "1": "invalid certificate",
-                    "2": "issuer certificate missing",
-                    "3": "certificate chain too long",
-                    "4": "error storing certificate",
-                }
-                res["failed"].append({
-                    "details": int(x[1]),
-                    "details_text": reasons[x[1]],
-                    "fingerprint": x[2]
-                })
-            elif x[0] == "IMPORT_RES":
-                res["results"] = {
-                    "count": int(x[1]),
-                    "no_userids": int(x[2]),
-                    "imported": int(x[3]),
-                    "imported_rsa": int(x[4]),
-                    "unchanged": int(x[5]),
-                    "num_uids": int(x[6]),
-                    "num_subkeys": int(x[7]),
-                    "num_signatures": int(x[8]),
-                    "num_revoked": int(x[9]),
-                    "sec_read": int(x[10]),
-                    "sec_imported": int(x[11]),
-                    "sec_dups": int(x[12]),
-                    "skipped_new_keys": int(x[13]),
-                    "not_imported": int(x[14]),
-                }
-        return res
-
+        return self.parse_import(retvals[1]["status"])
 
     class ResultParser:
         """
@@ -740,8 +744,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             params.append("-")
 
         ret, retvals = self.run(params,
-                                callbacks={"stderr": self.parse_verify,
-                                           "status": self.parse_status},
+                                callbacks={"stderr": self.parse_verify},
                                 output=data)
 
         return self.ResultParser().parse([None, retvals]).signature_info
@@ -805,63 +808,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
-        res = {"imported": [], "updated": [], "failed": []}
-        for x in retvals[1]["status"]:
-            if x[0] == "IMPORTED":
-                res["imported"].append({
-                    "keyid": keyid, 
-                    "fingerprint": x[1], 
-                    "username": x[2]
-                })
-            elif x[0] == "IMPORT_OK":
-                reasons = {
-                    "0": "unchanged",
-                    "1": "new key",
-                    "2": "new user IDs",
-                    "4": "new signatures",
-                    "8": "new subkeys",
-                    "16": "contains private key",
-                }
-                res["updated"].append({
-                    "keyid": keyid, 
-                    "details": int(x[1]),
-                    "details_text": reasons[x[1]],
-                    "fingerprint": x[2],
-                })
-            elif x[0] == "IMPORT_PROBLEM":
-                reasons = {
-                    "0": "no reason given",
-                    "1": "invalid certificate",
-                    "2": "issuer certificate missing",
-                    "3": "certificate chain too long",
-                    "4": "error storing certificate",
-                }
-                res["failed"].append({
-                    "keyid": keyid,
-                    "details": int(x[1]),
-                    "details_text": reasons[x[1]],
-                    "fingerprint": x[2]
-                })
-            elif x[0] == "IMPORT_RES":
-                res["results"] = {
-                    "count": int(x[1]),
-                    "no_userids": int(x[2]),
-                    "imported": int(x[3]),
-                    "imported_rsa": int(x[4]),
-                    "unchanged": int(x[5]),
-                    "num_uids": int(x[6]),
-                    "num_subkeys": int(x[7]),
-                    "num_signatures": int(x[8]),
-                    "num_revoked": int(x[9]),
-                    "sec_read": int(x[10]),
-                    "sec_imported": int(x[11]),
-                    "sec_dups": int(x[12]),
-                    "skipped_new_keys": int(x[13]),
-                    "not_imported": int(x[14]),
-                }
-
-
-        return res
+        return self.parse_import(retvals[1]["status"])
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
