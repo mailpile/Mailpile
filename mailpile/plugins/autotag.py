@@ -324,7 +324,7 @@ mailpile.plugins.register_commands(Retrain, Classify, AutoTag)
 
 ##[ Keywords ]################################################################
 
-def filter_hook(session, msg_mid, msg, keywords):
+def filter_hook(session, msg_mid, msg, keywords, is_new=True):
     """Classify this message."""
     config = session.config
     for at_config in config.prefs.autotag:
@@ -355,4 +355,4 @@ def filter_hook(session, msg_mid, msg, keywords):
 # We add a filter pre-hook with a high (late) priority.  Late priority to
 # maximize the amount of data we are feeding to the classifier, but a
 # pre-hook so normal filter rules will override the autotagging.
-mailpile.plugins.register_filter_hook_post('90-autotag', filter_hook)
+mailpile.plugins.register_filter_hook_pre('90-autotag', filter_hook)

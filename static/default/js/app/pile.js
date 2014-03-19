@@ -152,25 +152,44 @@ $(document).on('click', 'a.change-view-size', function(e) {
 $(document).on('submit', '#form-tag-picker', function(e) {
 
   e.preventDefault();
+  var action = $("button:focus").data('action');
 
-  var tags_add = $('#form-tag-picker').serialize();
+  if (action == 'add') { 
+    mailpile.tags_cache;
+  }
+  else if (action === 'remove') {
+    var tags_add = $('#form-tag-picker').serialize();
+  }
 
   // Send Result
   mailpile.tag_add(mailpile.tags_cache, mailpile.messages_cache, function(result) {
 
     var tag_link_template = $('#template-search-pile-tags-link').html();
-    
+
     $.each(result.msg_ids, function(key, mid) {
 
-      tag_link_data = { 
-        mid: mid,
-        tid: 'BB',
-        name: reult.tagged,
-        slug: 'asdad'
-      };
+      // Assign selector to minimize load on traversing DOM
+      $item = $('#pile-message-' + mid + ' td.subject span.item-tags'); 
 
-      var tag_link_html = _.template(tag_link_template, tag_link_data);
-      $('#pile-message-' + mid + ' td.subject').prepend(tag_link_html);
+      // Add Icon
+      if ($item.find('span.icon-tag').length < 1) {
+        $item.html('<span class="icon-tag"></span>');
+      }
+
+      // Add Tags
+      $.each(result.tagged, function(key, tag) {
+        tag.mid = mid;
+        $item.append(_.template(tag_link_template, tag));
+      });
+
+      // Remove Tags
+      $.each(result.untagged, function(key, untag) {
+        console.log('performing UNTAG on: ' + untag);
+        if ($('#pile-message-tag-' + mid + '-' + tid).length) {
+          $('#pile-message-tag-' + mid + '-' + tid).remove();
+        };
+      });      
+
     });
 
     // Clean Caches and hide Modal
@@ -220,7 +239,7 @@ $('li.sidebar-tags-draggable').droppable({
     }
 
     // Add MID to Cache
-    mailpile.bulk_cache_add(ui.draggable.parent().data('mid'));
+    mailpile.bulk_cache_add('messages_cache', ui.draggable.parent().data('mid'));
 
     // Add / Delete
     mailpile.tag_add_delete($(this).data('tag_name'), delete_tag, mailpile.messages_cache, function() {

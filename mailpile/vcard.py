@@ -627,9 +627,10 @@ class SimpleVCard(object):
         elif filename:
             from mailpile.crypto.streamer import DecryptingStreamer
             self.filename = filename or self.filename
-            data = DecryptingStreamer(config.prefs.obfuscate_index,
-                                      open(self.filename, 'rb')
-                                      ).read().decode('utf-8')
+            with open(self.filename, 'rb') as fd:
+                with DecryptingStreamer(config.prefs.obfuscate_index,
+                                        fd) as streamer:
+                    data = streamer.read().decode('utf-8')
         else:
             raise ValueError('Need data or a filename!')
 
@@ -655,14 +656,13 @@ class SimpleVCard(object):
             encryption_key = encryption_key or self.encryption_key()
             if encryption_key:
                 from mailpile.crypto.streamer import EncryptingStreamer
-                es = EncryptingStreamer(encryption_key,
-                                        dir=os.path.dirname(filename))
-                es.write(self.as_vCard())
-                es.save(filename)
+                with EncryptingStreamer(encryption_key,
+                                        dir=os.path.dirname(filename)) as es:
+                    es.write(self.as_vCard())
+                    es.save(filename)
             else:
-                fd = gpg_open(filename, gpg_recipient, 'wb')
-                fd.write(self.as_vCard())
-                fd.close()
+                with gpg_open(filename, gpg_recipient, 'wb') as gpg:
+                    gpg.write(self.as_vCard())
             return self
         else:
             raise ValueError('Save to what file?')

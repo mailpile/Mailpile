@@ -9,6 +9,7 @@ from gettext import translation, gettext, NullTranslations
 from gettext import gettext as _
 
 from urllib import quote, unquote
+from mailpile.crypto.streamer import DecryptingStreamer
 
 try:
     import ssl
@@ -25,7 +26,8 @@ except ImportError:
 
 from mailpile.commands import Rescan
 from mailpile.httpd import HttpWorker
-from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir, NoSuchMailboxError
+from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, NoSuchMailboxError
+from mailpile.mailboxes import wervd
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
@@ -976,27 +978,25 @@ class ConfigManager(ConfigDict):
         return (mailbox_id == local_mailbox_id)
 
     def load_pickle(self, pfn):
-        fd = None
-        try:
-            fd = open(os.path.join(self.workdir, pfn), 'rb')
+        with open(os.path.join(self.workdir, pfn), 'rb') as fd:
             if self.prefs.obfuscate_index:
-                from mailpile.crypto.streamer import DecryptingStreamer
-                fd = DecryptingStreamer(self.prefs.obfuscate_index, fd)
-            return cPickle.loads(fd.read())
-        finally:
-            if fd:
-                fd.close()
+                return cPickle.load(fd.read())
+            else:
+                with DecryptingStreamer(self.prefs.obfuscate_index, fd) as streamer:
+                    return cPickle.load(streamer.read())
 
     def save_pickle(self, obj, pfn):
-        if self.prefs.obfuscate_index:
-            from mailpile.crypto.streamer import EncryptingStreamer
-            fd = EncryptingStreamer(self.prefs.obfuscate_index,
-                                    dir=self.workdir)
-            cPickle.dump(obj, fd, protocol=0)
-            fd.save(os.path.join(self.workdir, pfn))
-        else:
-            fd = open(os.path.join(self.workdir, pfn), 'wb')
-            cPickle.dump(obj, fd, protocol=0)
+        try:
+            if self.prefs.obfuscate_index:
+                from mailpile.crypto.streamer import EncryptingStreamer
+                fd = EncryptingStreamer(self.prefs.obfuscate_index,
+                                        dir=self.workdir)
+                cPickle.dump(obj, fd, protocol=0)
+                fd.save(os.path.join(self.workdir, pfn))
+            else:
+                fd = open(os.path.join(self.workdir, pfn), 'wb')
+                cPickle.dump(obj, fd, protocol=0)
+        finally:
             fd.close()
 
     def open_mailbox(self, session, mailbox_id):
@@ -1029,13 +1029,18 @@ class ConfigManager(ConfigDict):
                       pickler=lambda o, f: self.save_pickle(o, f))
             self._mbox_cache[mbx_id] = mbox
 
+        # Always set this, it can't be pickled
+        self._mbox_cache[mbx_id]._encryption_key_func = \
+            lambda: self.prefs.obfuscate_index
+
         return self._mbox_cache[mbx_id]
 
     def open_local_mailbox(self, session):
         local_id = self.sys.get('local_mailbox_id', None)
         if not local_id:
             mailbox = os.path.join(self.workdir, 'mail')
-            mbx = maildir.MailpileMailbox(mailbox)
+            mbx = wervd.MailpileMailbox(mailbox)
+            mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
             local_id = self.sys.mailbox.append(mailbox)
             local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
             self.sys.local_mailbox_id = local_id
@@ -1147,7 +1152,6 @@ class ConfigManager(ConfigDict):
     def prepare_workers(config, session=None, daemons=False):
         # Set globals from config first...
         import mailpile.util
-        mailpile.util.APPEND_FD_CACHE_SIZE = config.sys.fd_cache_size
 
         # Make sure we have a silent background session
         if not config.background:

@@ -34,9 +34,8 @@
   </div>
 {% endif %}
 {% include("partials/modal_tag_picker.html") %}
+{% include("partials/modal_group_editor.html") %}
 <script id="template-search-pile-tags-link" type="text/template">
-  <a class="pile-message-tag" href="/thread/=<%= mid %>/" data-tag_name="<%= name %>" data-tag_url="/in/<%= slug %>/" data-tag_tid="<%= tid %>">
-    <span class="icon-tag"></span> <%= name %>
-  </a>
+  <a class="pile-message-tag" id="pile-message-tag-<%= mid %>-<%= tid %>" href="/thread/=<%= mid %>/" data-tag_name="<%= name %>" data-tag_url="/in/<%= slug %>/" data-tag_tid="<%= tid %>"><%= name %></a>
 </script>
 {% endblock %}

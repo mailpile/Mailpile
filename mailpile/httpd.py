@@ -17,7 +17,6 @@ from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import *
 
-global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
 
 DEFAULT_PORT = 33411

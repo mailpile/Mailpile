@@ -534,11 +534,17 @@ class Email(object):
             raise NotEditableError(_('Mailbox is read-only.'))
 
         mbx, ptr, fd = self.get_mbox_ptr_and_fd()
-        mbx[ptr[MBX_ID_LEN:]] = newmsg
 
+        # OK, adding to the mailbox worked
+        newptr = ptr[:MBX_ID_LEN] + mbx.add(newmsg)
+
+        # Remove the old message...
+        mbx.remove(ptr[MBX_ID_LEN:])
         # FIXME: We should DELETE the old version from the index first.
 
         # Update the in-memory-index
+        self.msg_info[self.index.MSG_PTRS] = newptr
+        self.index.set_msg_at_idx_pos(self.msg_idx_pos, self.msg_info)
         self.index.index_email(session, Email(self.index, self.msg_idx_pos))
 
         self.msg_parsed = None
@@ -559,9 +565,9 @@ class Email(object):
                 fd = mbox.get_file_by_ptr(msg_ptr)
                 # FIXME: How do we know we have the right message?
                 return mbox, msg_ptr, fd
-            except (IOError, OSError):
+            except (IOError, OSError, KeyError):
                 # FIXME: If this pointer is wrong, should we fix the index?
-                print '%s not in %s' % (msg_ptr, self)
+                print 'WARNING: %s not found' % msg_ptr
         return None, None, None
 
     def get_file(self):

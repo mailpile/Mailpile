@@ -23,8 +23,6 @@ class PostingList(object):
 
     @classmethod
     def _Optimize(cls, session, idx, force=False):
-        flush_append_cache()
-
         postinglist_kb = session.config.sys.postinglist_kb
 
         # Pass 1: Compact all files that are 90% or more of our target size
@@ -46,7 +44,6 @@ class PostingList(object):
                         GLOBAL_POSTING_LOCK.release()
 
         # Pass 2: While mergable pair exists: merge them!
-        flush_append_cache()
         for c in cls.CHARACTERS:
             postinglist_dir = session.config.postinglist_dir(c)
             files = [n for n in os.listdir(postinglist_dir) if len(n) > 1]
@@ -62,25 +59,16 @@ class PostingList(object):
                 if (size < (1024 * postinglist_kb - (cls.HASH_LEN * 6))):
                     session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
                     play_nice_with_threads()
-                    fd = None
                     try:
                         GLOBAL_POSTING_LOCK.acquire()
-                        fd = cached_open(os.path.join(postinglist_dir,
-                                                      fn), 'r')
-                        fdp = cached_open(os.path.join(postinglist_dir,
-                                                       fnp), 'a')
-                        for line in fd:
-                            fdp.write(line)
-                    except:
-                        flush_append_cache()
-                        raise
+                        with open(os.path.join(postinglist_dir, fn), 'r') as fd, \
+                                open(os.path.join(postinglist_dir, fnp), 'a') as fdp:
+                            for line in fd:
+                                fdp.write(line)
                     finally:
-                        if fd:
-                            fd.close()
                         os.remove(os.path.join(postinglist_dir, fn))
                         GLOBAL_POSTING_LOCK.release()
 
-        flush_append_cache()
         filecount = 0
         for c in cls.CHARACTERS:
             filecount += len(os.listdir(session.config.postinglist_dir(c)))
@@ -92,21 +80,25 @@ class PostingList(object):
         config = session.config
         sig = sig or cls.WordSig(word, config)
         fd, fn = cls.GetFile(session, sig, mode='a')
-        if (compact
-                and (os.path.getsize(os.path.join(config.postinglist_dir(fn),
-                     fn)) > ((1024 * config.sys.postinglist_kb) -
-                             (cls.HASH_LEN * 6)))
-                and (random.randint(0, 50) == 1)):
-            # This will compact the files and split out hot-spots, but we
-            # only bother "once in a while" when the files are "big".
-            fd.close()
-            pls = cls(session, word, sig=sig)
-            for mail_id in mail_ids:
-                pls.append(mail_id)
-            pls.save()
-        else:
-            # Quick and dirty append is the default.
-            fd.write('%s\t%s\n' % (sig, '\t'.join(mail_ids)))
+        try:
+            if (compact
+                    and (os.path.getsize(os.path.join(config.postinglist_dir(fn),
+                         fn)) > ((1024 * config.sys.postinglist_kb) -
+                                 (cls.HASH_LEN * 6)))
+                    and (random.randint(0, 50) == 1)):
+                # This will compact the files and split out hot-spots, but we
+                # only bother "once in a while" when the files are "big".
+                fd.close()
+                pls = cls(session, word, sig=sig)
+                for mail_id in mail_ids:
+                    pls.append(mail_id)
+                pls.save()
+            else:
+                # Quick and dirty append is the default.
+                fd.write('%s\t%s\n' % (sig, '\t'.join(mail_ids)))
+        finally:
+            if not fd.closed:
+                fd.close()
 
     @classmethod
     def Lock(cls, lock, method, *args, **kwargs):
@@ -140,7 +132,7 @@ class PostingList(object):
             fn = cls.SaveFile(session, sig)
             try:
                 if os.path.exists(fn):
-                    return (cached_open(fn, mode), sig)
+                    return (open(fn, mode), sig)
             except (IOError, OSError):
                 pass
 
@@ -150,7 +142,7 @@ class PostingList(object):
                 if 'r' in mode:
                     return (None, sig)
                 else:
-                    return (cached_open(fn, mode), sig)
+                    return (open(fn, mode), sig)
         # Not reached
         return (None, None)
 
@@ -224,17 +216,11 @@ class PostingList(object):
                 self.session.ui.mark('Writing %d bytes to %s' % (len(output),
                                                                  outfile))
                 if output:
-                    fd = None
-                    try:
-                        fd = cached_open(outfile, mode)
+                    with open(outfile, mode) as fd:
                         fd.write(output)
                         return len(output)
-                    finally:
-                        if mode != 'a' and fd:
-                            fd.close()
                 elif os.path.exists(outfile):
                     os.remove(outfile)
-                    flush_append_cache()
             except:
                 self.session.ui.warning('%s' % (sys.exc_info(), ))
             return 0
@@ -302,7 +288,7 @@ class GlobalPostingList(PostingList):
     @classmethod
     def GetFile(cls, session, sig, mode='r'):
         try:
-            return (cached_open(cls.SaveFile(session, sig), mode),
+            return (open(cls.SaveFile(session, sig), mode),
                     'kw-journal.dat')
         except (IOError, OSError):
             return (None, 'kw-journal.dat')

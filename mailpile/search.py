@@ -194,14 +194,13 @@ class MailIndex:
             session.ui.mark(_('Loading metadata index...'))
         try:
             self._lock.acquire()
-            fd = open(self.config.mailindex_file(), 'r')
-            for line in fd:
-                if line.startswith(GPG_BEGIN_MESSAGE):
-                    for line in decrypt_gpg([line], fd):
+            with open(self.config.mailindex_file(), 'r') as fd:
+                for line in fd:
+                    if line.startswith(GPG_BEGIN_MESSAGE):
+                        for line in decrypt_gpg([line], fd):
+                            process_line(line)
+                    else:
                         process_line(line)
-                else:
-                    process_line(line)
-            fd.close()
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
@@ -233,15 +232,13 @@ class MailIndex:
                 self._lock.acquire()
                 if session:
                     session.ui.mark(_("Saving metadata index changes..."))
-                fd = gpg_open(self.config.mailindex_file(),
-                              self.config.prefs.gpg_recipient, 'a')
-                for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
-                    quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                    fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-                for pos in mods:
-                    fd.write(self.INDEX[pos] + '\n')
-                fd.close()
-                flush_append_cache()
+                with gpg_open(self.config.mailindex_file(),
+                              self.config.prefs.gpg_recipient, 'a') as fd:
+                    for eid in range(self.EMAILS_SAVED, len(self.EMAILS)):
+                        quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                        fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
+                    for pos in mods:
+                        fd.write(self.INDEX[pos] + '\n')
                 if session:
                     session.ui.mark(_("Saved metadata index changes"))
                 self.EMAILS_SAVED = len(self.EMAILS)
@@ -259,21 +256,19 @@ class MailIndex:
             idxfile = self.config.mailindex_file()
             newfile = '%s.new' % idxfile
 
-            fd = gpg_open(newfile, self.config.prefs.gpg_recipient, 'w')
-            fd.write('# This is the mailpile.py index file.\n')
-            fd.write('# We have %d messages!\n' % len(self.INDEX))
-            for eid in range(0, len(self.EMAILS)):
-                quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-            for item in self.INDEX:
-                fd.write(item + '\n')
-            fd.close()
+            with gpg_open(newfile, self.config.prefs.gpg_recipient, 'w') as fd:
+                fd.write('# This is the mailpile.py index file.\n')
+                fd.write('# We have %d messages!\n' % len(self.INDEX))
+                for eid in range(0, len(self.EMAILS)):
+                    quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                    fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
+                for item in self.INDEX:
+                    fd.write(item + '\n')
 
             # Keep the last 5 index files around... just in case.
             backup_file(idxfile, backups=5, min_age_delta=10)
             os.rename(newfile, idxfile)
 
-            flush_append_cache()
             self._saved_changes = 0
             if session:
                 session.ui.mark(_("Saved metadata index"))
@@ -317,6 +312,9 @@ class MailIndex:
             return ''
 
     def update_location(self, session, msg_idx_pos, msg_ptr):
+        if 'rescan' in session.config.sys.debug:
+            session.ui.debug('Moved? %s -> %s' % (msg_idx_pos, msg_ptr))
+
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
         msg_ptrs = msg_info[self.MSG_PTRS].split(',')
         self.PTRS[msg_ptr] = msg_idx_pos
@@ -467,7 +465,8 @@ class MailIndex:
                     msg_mid, msg_id, msg, msg_size, msg_ts,
                     mailbox=mailbox_idx,
                     compact=False,
-                    filter_hooks=plugins.filter_hooks([self.filter_keywords])
+                    filter_hooks=plugins.filter_hooks([self.filter_keywords]),
+                    is_new=True
                 )
 
                 msg_subject = self.hdr(msg, 'subject')
@@ -534,6 +533,7 @@ class MailIndex:
         msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
                   ExtractEmails(self.hdr(msg, 'bcc')))
 
+        filters = plugins.filter_hooks([self.filter_keywords])
         kw, sn = self.index_message(session,
                                     email.msg_mid(),
                                     msg_info[self.MSG_ID],
@@ -542,7 +542,8 @@ class MailIndex:
                                     long(msg_info[self.MSG_DATE], 36),
                                     mailbox=mbox_idx,
                                     compact=False,
-                                    filter_hooks=[self.filter_keywords])
+                                    filter_hooks=filters,
+                                    is_new=False)
 
         tags = [k.split(':')[0] for k in kw
                 if k.endswith(':in') or k.endswith(':tag')]
@@ -564,7 +565,6 @@ class MailIndex:
                 self.remove_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
 
         # Add normal tags implied by a rescan
-        print 'Applying %s' % tags
         for tag_id in tags:
             self.add_tag(session, tag_id, msg_idxs=[email.msg_idx_pos])
 
@@ -718,23 +718,29 @@ class MailIndex:
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
         return msg_idx_pos, msg_info
 
-    def filter_keywords(self, session, msg_mid, msg, keywords):
+    def filter_keywords(self, session, msg_mid, msg, keywords, is_new=True):
         keywordmap = {}
         msg_idx_list = [msg_mid]
         for kw in keywords:
-            keywordmap[kw] = msg_idx_list
+            keywordmap[unicode(kw)] = msg_idx_list
 
-        for fid, terms, tags, comment in session.config.get_filters():
+        import mailpile.plugins.tags
+        ftypes = set(mailpile.plugins.tags.FILTER_TYPES)
+        if not is_new:
+            ftypes -= set(['incoming'])
+
+        for (fid, terms, tags, comment, ftype
+                ) in session.config.get_filters(types=ftypes):
             if (terms == '*' or
                     len(self.search(None, terms.split(),
                                     keywords=keywordmap)) > 0):
                 for t in tags.split():
-                    kw = '%s:in' % t[1:]
-                    if t[0] == '-':
+                    for fmt in ('%s:in', '%s:tag'):
+                        kw = unicode(fmt % t[1:])
                         if kw in keywordmap:
                             del keywordmap[kw]
-                    else:
-                        keywordmap[kw] = msg_idx_list
+                    if t[0] != '-':
+                        keywordmap[unicode('%s:in' % t[1:])] = msg_idx_list
 
         return set(keywordmap.keys())
 
@@ -743,7 +749,7 @@ class MailIndex:
             msg_idxs = [int(mid, 36) for mid in msg_mids]
         if not msg_idxs:
             return
-        for fid, trms, tags, c in session.config.get_filters(
+        for fid, trms, tags, c, t in session.config.get_filters(
                 filter_on=filter_on):
             for t in tags.split():
                 tag_id = t[1:].split(':')[0]
@@ -862,17 +868,20 @@ class MailIndex:
         return (set(keywords) - STOPLIST), snippet.strip()
 
     def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
-                      mailbox=None, compact=True, filter_hooks=[]):
+                      mailbox=None, compact=True, filter_hooks=[],
+                      is_new=True):
         keywords, snippet = self.read_message(session,
                                               msg_mid, msg_id, msg,
                                               msg_size, msg_ts,
                                               mailbox=mailbox)
 
         for hook in filter_hooks:
-            keywords = hook(session, msg_mid, msg, keywords)
+            keywords = hook(session, msg_mid, msg, keywords, is_new=is_new)
 
         for word in keywords:
-            if word.startswith('__'):
+            if (word.startswith('__') or
+                    # Tags are now handled outside the posting lists
+                    word.endswith(':tag') or word.endswith(':in')):
                 continue
             try:
                 GlobalPostingList.Append(session, word, [msg_mid],

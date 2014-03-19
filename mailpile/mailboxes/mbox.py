@@ -27,6 +27,7 @@ class MailpileMailbox(mailbox.mbox):
         self.editable = False
         self.last_parsed = -1  # Must be -1 or first message won't get parsed
         self._save_to = None
+        self._encryption_key_func = lambda: None
         self._lock = threading.Lock()
 
     def __getstate__(self):
@@ -35,6 +36,7 @@ class MailpileMailbox(mailbox.mbox):
         del odict['_file']
         del odict['_lock']
         del odict['_save_to']
+        del odict['_encryption_key_func']
         return odict
 
     def _get_fd(self):
@@ -45,6 +47,7 @@ class MailpileMailbox(mailbox.mbox):
         self._lock = threading.Lock()
         self._lock.acquire()
         self._save_to = None
+        self._encryption_key_func = lambda: None
         try:
             try:
                 if not os.path.exists(self._path):

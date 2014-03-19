@@ -33,8 +33,8 @@ class MailpileCommand(Extension):
         environment.filters['show_avatar'] = self._show_avatar
         environment.globals['navigation_on'] = self._navigation_on
         environment.filters['navigation_on'] = self._navigation_on
-        environment.globals['show_tags'] = self._show_tags
-        environment.filters['show_tags'] = self._show_tags
+        environment.globals['has_label_tags'] = self._has_label_tags
+        environment.filters['has_label_tags'] = self._has_label_tags
         environment.globals['show_message_signature'
                             ] = self._show_message_signature
         environment.filters['show_message_signature'
@@ -104,8 +104,12 @@ class MailpileCommand(Extension):
                 else:
                     return ""
 
-    def _show_tags(self, search_terms, tags):
-        return True
+    def _has_label_tags(self, tags, tag_tids):
+        count = 0
+        for tid in tag_tids:
+            if tags[tid]["label"] and not tags[tid]["searched"]:
+                count += 1
+        return count
 
     _DEFAULT_SIGNATURE = [
             "crypto-color-gray",

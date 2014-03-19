@@ -27,7 +27,7 @@ $(document).ready(function() {
   });
 
 
-  $('a.bulk-action').qtip({
+  $('.bulk-actions ul li a').qtip({
     style: {
       classes: 'qtip-tipped'
     },

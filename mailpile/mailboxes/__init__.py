@@ -11,7 +11,7 @@
 from urllib import quote, unquote
 
 
-__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail',
+__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'wervd',
            'MBX_ID_LEN',
            'NoSuchMailboxError', 'IsMailbox', 'OpenMailbox']
 
@@ -57,6 +57,7 @@ def UnorderedPicklable(parent, editable=False):
             parent.__init__(self, *args, **kwargs)
             self.editable = editable
             self._save_to = None
+            self._encryption_key_func = lambda: None
             self.parsed = {}
 
         def unparsed(self):
@@ -68,12 +69,15 @@ def UnorderedPicklable(parent, editable=False):
         def __setstate__(self, data):
             self.__dict__.update(data)
             self._save_to = None
+            self._encryption_key_func = lambda: None
             self.update_toc()
 
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
-            del odict['_save_to']
+            for dk in ('_save_to', '_encryption_key_func'):
+                if dk in odict:
+                    del odict[dk]
             return odict
 
         def save(self, session=None, to=None, pickler=None):

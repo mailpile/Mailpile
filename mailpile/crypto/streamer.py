@@ -57,6 +57,16 @@ class IOFilter(threading.Thread):
             else:
                 os.write(self.pipe[1], self.callback(data))
 
+    def close(self):
+        self._close_pipe_fd(self.pipe[0])
+        self._close_pipe_fd(self.pipe[1])
+
+    def _close_pipe_fd(self, pipe_fd):
+        try:
+            os.close(pipe_fd)
+        except OSError:
+            pass
+
     def run(self):
         if self.writing is True:
             self._do_write()
@@ -111,7 +121,80 @@ class InputCoprocess(IOCoprocess):
         return self._fd.read(*args)
 
 
-class EncryptingStreamer(OutputCoprocess):
+class ChecksummingStreamer(OutputCoprocess):
+    """
+    This checksums and streams data a named temporary file on disk, which
+    can then be read back or linked to a final location.
+    """
+    def __init__(self, dir=None):
+        self.tempfile = NamedTemporaryFile(dir=dir, delete=False)
+
+        self.outer_md5sum = None
+        self.outer_md5 = hashlib.md5()
+        self.md5filter = IOFilter(self.tempfile, self._outer_md5_callback)
+        self.fd = self.md5filter.writer()
+
+        self.saved = False
+        self.finished = False
+        self._write_preamble()
+        OutputCoprocess.__init__(self, self._mk_command(), self.fd)
+
+    def _mk_command(self):
+        return None
+
+    def finish(self):
+        if self.finished:
+            return
+        self.finished = True
+        OutputCoprocess.close(self)
+        self._write_postamble()
+        self.fd.close()
+        self.md5filter.join()
+        self.md5filter.close()
+        self.tempfile.seek(0, 0)
+
+    def close(self):
+        self.finish()
+        self.tempfile.close()
+
+    def save(self, filename, finish=True):
+        if finish:
+            self.finish()
+        if not self.saved:
+            # 1st save just renames the tempfile
+            os.rename(self.tempfile.name, filename)
+            self.saved = True
+        else:
+            # 2nd save creates a copy
+            with open(filename, 'wb') as out:
+                self.save_copy(out)
+
+    def save_copy(self, ofd):
+        self.tempfile.seek(0, 0)
+        data = self.tempfile.read(4096)
+        while data != '':
+            ofd.write(data)
+            data = self.tempfile.read(4096)
+
+    def _outer_md5_callback(self, data):
+        if data is None:
+            # EOF...
+            self.outer_md5sum = self.outer_md5.hexdigest()
+            return ''
+        else:
+            # We calculate the MD5 sum as if the data used the CRLF linefeed
+            # convention, whether it's actually using that or not.
+            self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
+            return data
+
+    def _write_preamble(self):
+        pass
+
+    def _write_postamble(self):
+        pass
+
+
+class EncryptingStreamer(ChecksummingStreamer):
     """
     This class creates a coprocess for encrypting data. The data will
     be streamed to a named temporary file on disk, which can then be
@@ -125,50 +208,16 @@ class EncryptingStreamer(OutputCoprocess):
     DEFAULT_CIPHER = "aes-256-cbc"
 
     def __init__(self, key, dir=None, cipher=None):
-        self.tempfile = NamedTemporaryFile(dir=dir, delete=False)
         self.cipher = cipher or self.DEFAULT_CIPHER
         self.nonce, self.key = self._mutate_key(key)
-
-        self.inner_md5 = hashlib.md5()
-        self.outer_md5 = hashlib.md5()
-        self.md5filter = IOFilter(self.tempfile, self._outer_md5_callback)
-        self.fd = self.md5filter.writer()
-
-        self.outer_md5sum = None
-        self.inner_md5sum = None
-
-        self.finished = False
-        self._write_preamble()
-        OutputCoprocess.__init__(self, self._mk_command(), self.fd)
+        ChecksummingStreamer.__init__(self, dir=dir)
         self._send_key()
 
-    def finish(self):
-        if not self.finished:
-            self.finished = True
-            OutputCoprocess.close(self)
-            self._write_postamble()
-            self.fd.close()
-            self.md5filter.join()
-            self.tempfile.seek(0, 0)
+    def __enter__(self):
+        return self
 
-    def close(self):
-        self.finish()
-        self.tempfile.close()
-
-    def save(self, filename):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-        os.rename(self.tempfile.name, filename)
-
-    def _outer_md5_callback(self, data):
-        if data is None:
-            # EOF...
-            self.outer_md5sum = self.outer_md5.hexdigest()
-            return ''
-        else:
-            # We calculate the MD5 sum as if the data used the CRLF linefeed
-            # convention, whether it's actually using that or not.
-            self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
-            return data
 
     def _mutate_key(self, key):
         nonce = genkey(str(random.getrandbits(512)))[:32].strip()
@@ -230,6 +279,12 @@ class DecryptingStreamer(InputCoprocess):
         self.startup_lock.acquire()
         InputCoprocess.__init__(self, self._mk_command(), self.read_fd)
         self.startup_lock = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def verify(self):
         if self.close() != 0:
@@ -311,7 +366,7 @@ class DecryptingStreamer(InputCoprocess):
 
 
 if __name__ == "__main__":
-    
+
      bc = [0]
      def counter(data):
          bc[0] += len(data or '')

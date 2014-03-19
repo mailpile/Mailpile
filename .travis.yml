@@ -9,3 +9,4 @@ script:
   - "nosetests tests --with-coverage --cover-package=mailpile"
 after_success:
   - "coveralls"
+
