@@ -347,7 +347,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def parse_import(self, output, *args):
         res = {"imported": [], "updated": [], "failed": []}
-        print "FOO>", output
         for x in output:
             if x[0] == "IMPORTED":
                 res["imported"].append({
@@ -398,7 +397,6 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                     "skipped_new_keys": int(x[13]),
                     "not_imported": int(x[14]),
                 }
-        print "BAR>", res
         return res
 
     def emptycallbackmap():
