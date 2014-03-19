@@ -92,8 +92,8 @@ class NicknymGetKey(Command):
         if len(self.args) > 2:
             server = self.args[2]
 
-        n = Nicknym()
-        n.get_key(address, keytype, server)
+        n = Nicknym(self.session.config)
+        return n.get_key(address, keytype, server)
 
 class NicknymRefreshKeys(Command):
     """Get a key from a nickserver"""
@@ -103,8 +103,9 @@ class NicknymRefreshKeys(Command):
     HTTP_CALLABLE = ('POST',)
 
     def command(self):
-        n = Nicknym()
+        n = Nicknym(self.config)
         n.refresh_keys()
+        return True
 
 mailpile.plugins.register_commands(GPGKeySearch)
 mailpile.plugins.register_commands(GPGKeyReceive)

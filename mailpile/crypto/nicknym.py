@@ -29,7 +29,7 @@ class Nicknym:
 		"""
 		result, signature = self._nickserver_get_key(address, keytype, server)
 		if self._verify_result(result, signature):
-			self._import_key(result, keytype)
+			return self._import_key(result, keytype)
 		return False
 
 	def refresh_keys(self):
@@ -71,7 +71,7 @@ class Nicknym:
 			g = GnuPG()
 			res = g.import_keys(result[keytype])
 			if len(res["updated"]):
-				self._managed_keys_add(address, keytype)
+				self._managed_keys_add(result["address"], keytype)
 			return res
 		else:
 			# We currently only support OpenPGP keys
