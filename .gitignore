@@ -20,4 +20,4 @@ static/default/plugins/
 testing/tmp
 testing/gpg-keyring/random_seed
 ghostdriver.log
-bower_components/
+static/default/bower_components/
