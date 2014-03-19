@@ -47,6 +47,7 @@ function MailPile() {
   	tag_list     : "/api/0/tag/list/",
   	tag_add      : "/api/0/tag/add/",
   	search_new   : "/api/0/search/?q=in%3Anew",
+    search       : "/api/0/search/",
   	settings_add : "/api/0/settings/add/"
 	}
 	this.urls = {
@@ -150,6 +151,18 @@ MailPile.prototype.render = function() {
 	}
 
 };
+
+MailPile.prototype.command = function(command, data, method, callback) {
+  if (method != "GET" && method != "POST") {
+    method = "GET";
+  }
+  $.ajax({
+    url      : command,
+    type     : method,
+    dataType : 'json',
+    success  : callback,
+  });
+}
 
 var mailpile = new MailPile();
 var favicon = new Favico({animation:'popFade'});
