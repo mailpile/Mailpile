@@ -103,7 +103,7 @@ class NicknymRefreshKeys(Command):
     HTTP_CALLABLE = ('POST',)
 
     def command(self):
-        n = Nicknym(self.config)
+        n = Nicknym(self.session.config)
         n.refresh_keys()
         return True
 
