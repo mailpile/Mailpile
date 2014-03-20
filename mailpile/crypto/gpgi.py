@@ -599,6 +599,10 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
     def import_keys(self, key_data=None):
         """
         Imports gpg keys from a file object or string.
+        >>> key_data = open("testing/pub.key").read()
+        >>> g = GnuPG()
+        >>> g.import_keys(key_data)
+        {'failed': [], 'updated': [{'details_text': 'unchanged', 'details': 0, 'fingerprint': '08A650B8E2CBC1B02297915DC65626EED13C70DA'}], 'imported': [], 'results': {'sec_dups': 0, 'unchanged': 1, 'num_uids': 0, 'skipped_new_keys': 0, 'no_userids': 0, 'num_signatures': 0, 'num_revoked': 0, 'sec_imported': 0, 'sec_read': 0, 'not_imported': 0, 'count': 1, 'imported_rsa': 0, 'imported': 0, 'num_subkeys': 0}}
         """
         retvals = self.run(["--import"], output=key_data)
         return self.parse_import(retvals[1]["status"])
