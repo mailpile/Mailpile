@@ -32,7 +32,7 @@ alltests: docs
 	@python2 mailpile/util.py
 	@python2 mailpile/vcard.py
 	@python2 mailpile/workers.py
-	@nosetests tests
+	@nosetests --with-doctest
 
 clean:
 	@rm -vf *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py
