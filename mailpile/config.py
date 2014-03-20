@@ -25,6 +25,7 @@ except ImportError:
         socks = None
 
 from mailpile.commands import Rescan
+from mailpile.eventlog import EventLog
 from mailpile.httpd import HttpWorker
 from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, NoSuchMailboxError
 from mailpile.mailboxes import wervd
@@ -796,6 +797,7 @@ class ConfigManager(ConfigDict):
         self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
         self.other_workers = []
 
+        self.event_log = None
         self.index = None
         self.vcards = {}
         self._mbox_cache = {}
@@ -913,6 +915,13 @@ class ConfigManager(ConfigDict):
         self.set_rules(self._rules_source)
         self.sys.plugins.rules['_any'][1] = pds
         self.parse_config(session, '\n'.join(lines), source=filename)
+
+        # Open event log
+        self.event_log = EventLog(self.data_directory('event_log',
+                                                      mode='rw', mkdir=True),
+                                  # FIXME: Disbled encryption for now
+                                  lambda: False and self.prefs.obfuscate_index
+                                  ).load()
 
         # Enable translations
         self.get_i18n_translation(session)

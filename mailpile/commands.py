@@ -1,6 +1,7 @@
 # These are the Mailpile commands, the public "API" we expose for searching,
 # tagging and editing e-mail.
 #
+import copy
 import datetime
 import json
 import os
@@ -12,6 +13,7 @@ from gettext import gettext as _
 
 import mailpile.util
 import mailpile.ui
+from mailpile.eventlog import Event
 from mailpile.mailboxes import IsMailbox
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.postinglist import GlobalPostingList
@@ -33,6 +35,12 @@ class Command:
     SPLIT_ARG = 10000  # A big number!
     RAISES = (UsageError, UrlRedirectException)
 
+    # Event logging settings
+    LOG_PROGRESS = False
+    LOG_STARTING = '%(name)s: Starting'
+    LOG_FINISHED = '%(name)s: %(message)s'
+
+    # HTTP settings (note: security!)
     HTTP_CALLABLE = ('GET', )
     HTTP_POST_VARS = {}
     HTTP_QUERY_VARS = {}
@@ -249,19 +257,54 @@ class Command:
         session, config = self.session, self.session.config
         return config.slow_worker.add_task(session, name, function)
 
+    def _update_event_state(self, state, log=False):
+        self.event.flags = state
+        self.event.data['elapsed'] = int(1000 * (time.time()-self._start_time))
+        if log or self.LOG_PROGRESS:
+            self.session.config.event_log.log_event(self.event)
+
     def _starting(self):
+        self._start_time = time.time()
+        self._update_event_state(Event.RUNNING)
         if self.name:
             self.session.ui.start_command(self.name, self.args, self.data)
+
+    def _fmt_msg(self, message):
+        return message % {'name': self.name,
+                          'status': self.status or '',
+                          'message': self.message or ''}
+
+    def _create_event(self):
+        private_data = {}
+        if self.data:
+            private_data['data'] = copy.copy(self.data)
+        if self.args:
+            private_data['args'] = copy.copy(self.args)
+
+        self.event = Event(source=self,
+                           message=self._fmt_msg(self.LOG_STARTING),
+                           data={},
+                           private_data=private_data)
 
     def _finishing(self, command, rv):
         if self.name:
             self.session.ui.finish_command()
+
         result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
                                     command.__doc__ or self.__doc__,
                                     rv, self.status, self.message,
                                     args=self.args,
                                     kwargs=self.data,
                                     error_info=self.error_info)
+
+        # Update the event!
+        if self.message:
+            self.event.message = self.message
+        if self.error_info:
+            self.event.private_data['error_info'] = self.error_info
+        self.event.message = self._fmt_msg(self.LOG_FINISHED)
+        self._update_event_state(Event.COMPLETE, log=True)
+
         return result
 
     def _run(self, *args, **kwargs):
@@ -588,7 +631,8 @@ class SearchResults(dict):
         if 'tags' in self.session.config:
             for tid in self._msg_tags(msg_info):
                 if tid not in self['data']['tags']:
-                    self['data']['tags'][tid] = self._tag(tid, {"searched": False})
+                    self['data']['tags'][tid] = self._tag(tid,
+                                                          {"searched": False})
 
     def add_email(self, e):
         if e not in self.emails:
@@ -667,6 +711,7 @@ class Rescan(Command):
     SYNOPSIS = (None, 'rescan', None, '[all|vcards|mailboxes|<msgs>]')
     ORDER = ('Internals', 2)
     SERIALIZE = 'Rescan'
+    LOG_PROGRESS = True
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()

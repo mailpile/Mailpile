@@ -17,6 +17,7 @@ class Setup(Command):
     """Perform initial setup"""
     SYNOPSIS = (None, 'setup', None, None)
     ORDER = ('Internals', 0)
+    LOG_PROGRESS = True
 
     TAGS = {
         'New': {

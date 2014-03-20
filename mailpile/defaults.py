@@ -44,6 +44,7 @@ CONFIG_RULES = {
             'html_theme': [_('Default theme'),
                            'dir', os.path.join('static', 'default')],
             'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
+            'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
         'lockdown':       [_('Demo mode, disallow changes'), bool,      False],
     }],

@@ -18,6 +18,7 @@ class Hacks(Command):
 class FixIndex(Hacks):
     """Do various things to try and fix broken indexes"""
     SYNOPSIS = (None, 'hacks/fixindex', None, None)
+    LOG_PROGRESS = True
 
     def command(self):
         session, index = self.session, self._idx()
@@ -55,6 +56,7 @@ class FixIndex(Hacks):
 class PyCLI(Hacks):
     """Launch a Python REPL"""
     SYNOPSIS = (None, 'hacks/pycli', None, None)
+    LOG_PROGRESS = True
 
     def command(self):
         import code
