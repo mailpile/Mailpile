@@ -15,7 +15,7 @@ debian-dev:
 	else \
 		sudo apt-get install rubygems; \
 	fi
-	sudo pip install selenium>=2.40.0
+	sudo pip install 'selenium>=2.40.0'
 	sudo gem install therubyracer less
 
 docs:
