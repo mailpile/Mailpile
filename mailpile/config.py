@@ -980,10 +980,12 @@ class ConfigManager(ConfigDict):
     def load_pickle(self, pfn):
         with open(os.path.join(self.workdir, pfn), 'rb') as fd:
             if self.prefs.obfuscate_index:
-                return cPickle.load(fd.read())
+                from mailpile.crypto.streamer import DecryptingStreamer
+                with DecryptingStreamer(self.prefs.obfuscate_index,
+                                        fd) as streamer:
+                    return cPickle.loads(streamer.read())
             else:
-                with DecryptingStreamer(self.prefs.obfuscate_index, fd) as streamer:
-                    return cPickle.load(streamer.read())
+                return cPickle.loads(fd.read())
 
     def save_pickle(self, obj, pfn):
         try:
