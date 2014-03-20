@@ -16,7 +16,7 @@ debian-dev:
 		sudo apt-get install rubygems; \
 	fi
 	sudo pip install 'selenium>=2.40.0'
-	sudo gem install therubyracer less
+	which lessc >/dev/null || sudo gem install therubyracer less
 
 docs:
 	@test -d doc || \
