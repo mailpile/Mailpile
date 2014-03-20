@@ -542,12 +542,12 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         else:
             return []
 
-    def delete_key(self, fingerprint):
+    def delete_key(self, keyid):
         """                                                                   
         >>> g = GnuPG()                                                       
         >>> g.delkey(keyid)[1]                                                
         """
-        retvals = self.run(["--delete-secret-and-public-key", "--fingerprint"])
+        retvals = self.run(["--delete-public-key --yes", keyid])
         return retvals[1]["status"]
 
     class ResultParser:
