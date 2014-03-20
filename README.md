@@ -1,6 +1,6 @@
 # Welcome to Mailpile! #
 
-[![Build Status](https://secure.travis-ci.org/pagekite/Mailpile.png?branch=master)](http://travis-ci.org/pagekite/Mailpile)
+[![Build Status](https://img.shields.io/travis/pagekite/Mailpile/master.svg)](https://travis-ci.org/pagekite/Mailpile)
 
 #### Who's doing what? ####
 
