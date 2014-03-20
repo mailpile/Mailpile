@@ -1,6 +1,8 @@
 import unittest
 import mailpile
 
+from mailpile.commands import Action as action
+
 from tests import MailPileUnittest
 
 
@@ -101,6 +103,24 @@ class TestTagging(MailPileUnittest):
     def test_addtag(self):
         pass
 
+
+class TestGPG(MailPileUnittest):
+    def test_key_search(self):
+        pass
+
+    def test_key_receive(self):
+        pass
+
+    def test_key_import(self):
+        m = mailpile.Mailpile()
+        res = action(m._session, "crypto/gpg/importkey", 'testing/pub.key')
+        self.assertEqual(res.result["results"]["count"] , 1)
+
+    def test_nicknym_get_key(self):
+        pass
+
+    def test_nicknym_refresh_key(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
