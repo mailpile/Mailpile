@@ -6,6 +6,7 @@ import json
 import os
 import os.path
 import re
+import shlex
 import traceback
 import time
 from gettext import gettext as _
@@ -141,7 +142,7 @@ class Command:
             self.args = list(arg)
         elif arg:
             if self.SPLIT_ARG:
-                self.args = arg.split(' ', self.SPLIT_ARG)
+                self.args = shlex.split(arg)[:self.SPLIT_ARG]
             else:
                 self.args = [arg]
         else:
