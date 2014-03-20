@@ -1004,7 +1004,7 @@ class ConfigPrint(Command):
         result = {}
         try:
             # FIXME: Are there privacy implications here somewhere?
-            for key in (self.args + self.data.get('var', [])):
+            for key in (self.args + tuple(self.data.get('var', []))):
                 result[key] = config.walk(key)
         except KeyError:
             session.ui.error(_('No such key: %s') % key)
