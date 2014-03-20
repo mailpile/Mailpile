@@ -1,5 +1,6 @@
 import contextlib
 import os
+import random
 import shutil
 import sys
 import unittest
@@ -38,6 +39,7 @@ def get_shared_mailpile():
     MP = mailpile.Mailpile(workdir=workdir, ui=SilentInteraction)
 
     # Add some mail, scan it.
+    MP._config.sys.http_port = random.randint(40000, 45000)
     MP.add(test_data)
     MP.rescan()
     return MP
