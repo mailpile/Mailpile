@@ -219,9 +219,9 @@ class UrlMap:
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
         >>> commands[0].args
-        ['json']
+        ('json',)
         >>> commands[1].args
-        ['@20', 'in:inbox']
+        ('@20', 'in:inbox')
         """
         output = self._choose_output(path_parts)
 
@@ -255,7 +255,7 @@ class UrlMap:
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
         >>> commands[1].args
-        ['=123']
+        ('=123',)
         """
         message_mids, i = [], 1
         while path_parts[i].startswith('='):
@@ -333,7 +333,7 @@ class UrlMap:
         The root currently just redirects to /in/inbox/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
-        (<...UrlRedirect instance at 0x...>, ['/in/inbox/'])
+        (<...UrlRedirect instance at 0x...>, ('/in/inbox/',))
 
         Tag searches have an /in/TAGNAME shorthand:
         >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
