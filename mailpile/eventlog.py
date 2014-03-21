@@ -29,14 +29,21 @@ def NewEventId():
         EVENT_COUNTER_LOCK.release()
 
 
+def _ClassName(obj):
+    if isinstance(obj, str):
+        return obj
+    else:
+        return str(obj.__class__)
+
+
 class Event(object):
     """
     This is a single event in the event log. Actual interpretation and
     rendering of events should be handled by the respective source class.
     """
     RUNNING = 'R'
-    COMPLETE = 'C'
-    INCOMPLETE = 'I'
+    COMPLETE = 'c'
+    INCOMPLETE = 'i'
     FUTURE = 'F'
 
     # For now these live here, we may templatize this later.
@@ -51,21 +58,15 @@ class Event(object):
     def Parse(cls, json_string):
         return cls(*json.loads(json_string))
 
-    def _classname(self, obj):
-        if isinstance(obj, str):
-            return obj
-        else:
-            return str(obj.__class__)
-
     def __init__(self,
-                 ts=None, event_id=None, message='', flags='C',
+                 ts=None, event_id=None, flags='C', message='',
                  source=None, data={}, private_data={}):
         self._data = [
             '',
             event_id or NewEventId(),
-            message,
             flags,
-            self._classname(source),
+            message,
+            _ClassName(source),
             data,
             private_data,
         ]
@@ -97,10 +98,10 @@ class Event(object):
     date = property(lambda s: s._data[0], lambda s, v: s._set_ts(v))
     ts = property(lambda s: s._ts, lambda s, v: s._set_ts(v))
     event_id = property(lambda s: s._data[1], lambda s, v: s._set(1, v))
-    message = property(lambda s: s._data[2], lambda s, v: s._set(2, v))
-    flags = property(lambda s: s._data[3], lambda s, v: s._set(3, v))
+    flags = property(lambda s: s._data[2], lambda s, v: s._set(2, v))
+    message = property(lambda s: s._data[3], lambda s, v: s._set(3, v))
     source = property(lambda s: s._data[4],
-                      lambda s, v: s._set(4, self._classname(v)))
+                      lambda s, v: s._set(4, _ClassName(v)))
     data = property(lambda s: s._data[5], lambda s, v: s._set(5, v))
     private_data = property(lambda s: s._data[6], lambda s, v: s._set(6, v))
     source_class = property(_get_source_class)
@@ -197,6 +198,15 @@ class EventLog(object):
             self.purge_old_logfiles()
 
     def _match(self, event, filters):
+        for kw, rule in filters.iteritems():
+            if kw == 'source' and event.source != _ClassName(rule):
+                return False
+            elif (kw.startswith('data_')
+                    and event.data.get(kw[5:]) != rule):
+                return False
+            elif (kw.startswith('private_data_')
+                    and event.data.get(kw[13:]) != rule):
+                return False
         return True
 
     def _list_logfiles(self):
