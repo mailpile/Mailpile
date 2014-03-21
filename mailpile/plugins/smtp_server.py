@@ -17,7 +17,7 @@ from mailpile.util import *
 mailpile.plugins.register_config_section(
     'sys', 'smtpd', [_('SMTP Daemon'), False, {
         'host': (_('Listening host for SMTP daemon'), 'hostname', 'localhost'),
-        'port': (_('Listening port for SMTP daemon'), int, 33412),
+        'port': (_('Listening port for SMTP daemon'), int, 0),
     }])
 
 
@@ -88,10 +88,11 @@ class SMTPWorker(threading.Thread):
 
     def run(self):
         cfg = self.session.config.sys.smtpd
-        server = SMTPServer(self.session, (cfg.host, cfg.port))
-        while not self.quitting:
-            asyncore.poll(timeout=1.0)
-        asyncore.close_all()
+        if cfg.host and cfg.port:
+            server = SMTPServer(self.session, (cfg.host, cfg.port))
+            while not self.quitting:
+                asyncore.poll(timeout=1.0)
+            asyncore.close_all()
 
     def quit(self, join=True):
         self.quitting = True
