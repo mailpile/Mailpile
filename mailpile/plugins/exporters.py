@@ -43,15 +43,16 @@ class ExportMail(Command):
         session, config, idx = self.session, self.session.config, self._idx()
         mbox_type = config.prefs.export_format
 
-        if self.args and ':' in self.args[-1]:
-            mbox_type, path = self.args.pop(-1).split(':', 1)
+        args = list(self.args)
+        if args and ':' in args[-1]:
+            mbox_type, path = args.pop(-1).split(':', 1)
         else:
             path = self.export_path(mbox_type)
 
         if os.path.exists(path):
             return self._error('Already exists: %s' % path)
 
-        msg_idxs = self._choose_messages(self.args)
+        msg_idxs = self._choose_messages(args)
         if not msg_idxs:
             session.ui.warning('No messages selected')
             return False

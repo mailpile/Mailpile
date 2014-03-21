@@ -62,7 +62,7 @@ class Search(Command):
     def _do_search(self, search=None):
         session, idx = self.session, self._idx()
         session.searched = search or []
-        args = self.args[:]
+        args = list(self.args)
 
         for q in self.data.get('q', []):
             args.extend(q.split())
@@ -194,11 +194,12 @@ class View(Search):
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
         results = []
-        if self.args and self.args[0].lower() == 'raw':
-            raw = self.args.pop(0)
+        args = list(self.args)
+        if args and args[0].lower() == 'raw':
+            raw = args.pop(0)
         else:
             raw = False
-        emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
+        emails = [Email(idx, mid) for mid in self._choose_messages(args)]
 
         rv = self._side_effects(emails)
         if rv is not None:
@@ -277,18 +278,19 @@ class Extract(Command):
         mode = 'download'
         name_fmt = None
 
-        if self.args[0] in ('inline', 'inline-preview', 'preview', 'download'):
-            mode = self.args.pop(0)
+        args = list(self.args)
+        if args[0] in ('inline', 'inline-preview', 'preview', 'download'):
+            mode = args.pop(0)
 
-        if len(self.args) > 0 and self.args[-1].startswith('>'):
-            name_fmt = self.args.pop(-1)[1:]
+        if len(args) > 0 and args[-1].startswith('>'):
+            name_fmt = args.pop(-1)[1:]
 
-        if self.args[0].startswith('#') or self.args[0].startswith('part:'):
-            cid = self.args.pop(0)
+        if args[0].startswith('#') or args[0].startswith('part:'):
+            cid = args.pop(0)
         else:
-            cid = self.args.pop(-1)
+            cid = args.pop(-1)
 
-        eids = self._choose_messages(self.args)
+        eids = self._choose_messages(args)
         print 'Download %s from %s as %s/%s' % (cid, eids, mode, name_fmt)
 
         emails = [Email(idx, i) for i in eids]

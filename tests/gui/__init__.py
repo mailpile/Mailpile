@@ -1,5 +1,6 @@
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException, NoSuchElementException
+from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import NoSuchElementException
 
 from mailpile.httpd import HttpWorker
 from tests import MailPileUnittest, get_shared_mailpile
@@ -28,19 +29,25 @@ class SeleniumScreenshotOnExceptionAspecter(type):
 
     def __new__(mcs, name, bases, dict):
         for key, value in dict.items():
-            if hasattr(value, "__call__") and key != "__metaclass__" and key.startswith('test'):
-                dict[key] = SeleniumScreenshotOnExceptionAspecter.wrap_method(value)
-        return super(SeleniumScreenshotOnExceptionAspecter, mcs).__new__(mcs, name, bases, dict)
+            if (hasattr(value, "__call__")
+                    and key != "__metaclass__"
+                    and key.startswith('test')):
+                dict[key] = SeleniumScreenshotOnExceptionAspecter.wrap_method(
+                    value)
+        return super(SeleniumScreenshotOnExceptionAspecter,
+                     mcs).__new__(mcs, name, bases, dict)
 
     @classmethod
     def wrap_method(mcs, method):
         """Wraps method with a screenshot on exception aspect."""
-        # method name has to start with test, otherwise unittest runner won't detect it
+        # method name has to start with test, otherwise unittest runner
+        # won't detect it
         def test_call_wrapper_method(*args, **kw):
             """The wrapper method
 
               Notes:
-                The method name has to start with *test*, otherwise the unittest runner won't detect is as a test method
+                The method name has to start with *test*, otherwise the
+                unittest runner won't detect is as a test method
 
               Args:
                 *args: Variable argument list of original method
@@ -86,7 +93,6 @@ class MailpileSeleniumTest(MailPileUnittest):
     __metaclass__ = SeleniumScreenshotOnExceptionAspecter
 
     DRIVER = None
-    MAILPILE_URL = 'http://localhost:33411/'
 
     def __init__(self, *args, **kwargs):
         MailPileUnittest.__init__(self, *args, **kwargs)
@@ -102,11 +108,20 @@ class MailpileSeleniumTest(MailPileUnittest):
         pass
 
     @classmethod
+    def _get_mailpile_sspec(cls):
+        config = get_shared_mailpile()._config
+        return (config.sys.http_host, config.sys.http_port)
+
+    @classmethod
+    def _get_mailpile_url(cls):
+        return 'http://%s:%s/' % cls._get_mailpile_sspec()
+
+    @classmethod
     def _start_web_server(cls):
         mp = get_shared_mailpile()
-        config = mp._config
         session = mp._session
-        sspec = (config.sys.http_host, config.sys.http_port)
+        config = mp._config
+        sspec = cls._get_mailpile_sspec()
         cls.http_worker = config.http_worker = HttpWorker(session, sspec)
         config.http_worker.start()
 
@@ -133,11 +148,10 @@ class MailpileSeleniumTest(MailPileUnittest):
 
     @classmethod
     def _stop_web_server(cls):
-            mp = get_shared_mailpile()
-            config = mp._config
-            config.http_worker = None
-            cls.http_worker.quit()
-            cls.http_worker = None
+        mp = get_shared_mailpile()
+        mp._config.http_worker = None
+        cls.http_worker.quit()
+        cls.http_worker = None
 
     @classmethod
     def tearDownClass(cls):
@@ -145,7 +159,7 @@ class MailpileSeleniumTest(MailPileUnittest):
         cls._stop_selenium_driver()
 
     def go_to_mailpile_home(self):
-        self.driver.get(MailpileSeleniumTest.MAILPILE_URL)
+        self.driver.get(self._get_mailpile_url())
 
     def take_screenshot(self, filename):
         try:
@@ -158,7 +172,8 @@ class MailpileSeleniumTest(MailPileUnittest):
             out.write(self.driver.page_source.encode('utf8'))
 
     def navigate_to(self, name):
-        contacts = self.driver.find_element_by_xpath('//a[@alt="%s"]/span' % name)
+        contacts = self.driver.find_element_by_xpath(
+            '//a[@alt="%s"]/span' % name)
         self.assertTrue(contacts.is_displayed())
         contacts.click()
 

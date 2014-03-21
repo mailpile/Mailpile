@@ -175,11 +175,12 @@ class ListVCards(VCardCommand):
     def command(self):
         session, config = self.session, self.session.config
         kinds = self.KIND and [self.KIND] or []
+        args = list(self.args)
 
         if 'format' in self.data:
             fmt = self.data['format'][0]
-        elif self.args and self.args[0] == '--lines':
-            self.args.pop(0)
+        elif args and args[0] == '--lines':
+            args.pop(0)
             fmt = 'lines'
         else:
             fmt = 'mpCard'
@@ -187,7 +188,7 @@ class ListVCards(VCardCommand):
         if 'q' in self.data:
             terms = self.data['q']
         else:
-            terms = self.args
+            terms = args
 
         if 'count' in self.data:
             count = int(self.data['count'][0])
@@ -203,7 +204,7 @@ class ListVCards(VCardCommand):
         total = len(vcards)
         vcards = vcards[offset:offset + count]
         return self._vcard_list(vcards, mode=fmt, info={
-            'terms': self.args,
+            'terms': args,
             'offset': offset,
             'count': count,
             'total': total,

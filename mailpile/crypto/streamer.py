@@ -25,6 +25,12 @@ class IOFilter(threading.Thread):
         self.writing = None
         self.pipe = os.pipe()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def writer(self):
         if self.writing is None:
             self.writing = True
@@ -74,7 +80,7 @@ class IOFilter(threading.Thread):
             self._do_read()
 
 
-class IOCoprocess:
+class IOCoprocess(object):
     def __init__(self, command, fd):
         self.stderr = ''
         self._retval = None
@@ -82,6 +88,12 @@ class IOCoprocess:
             self._proc, self._fd = self._popen(command, fd)
         else:
             self._proc, self._fd = None, fd
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def close(self, *args):
         if self._retval is None:
@@ -213,12 +225,6 @@ class EncryptingStreamer(ChecksummingStreamer):
         ChecksummingStreamer.__init__(self, dir=dir)
         self._send_key()
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
     def _mutate_key(self, key):
         nonce = genkey(str(random.getrandbits(512)))[:32].strip()
         return nonce, genkey(key, nonce)[:32].strip()
@@ -279,12 +285,6 @@ class DecryptingStreamer(InputCoprocess):
         self.startup_lock.acquire()
         InputCoprocess.__init__(self, self._mk_command(), self.read_fd)
         self.startup_lock = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
 
     def verify(self):
         if self.close() != 0:

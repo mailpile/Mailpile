@@ -211,7 +211,9 @@ class UserInteraction:
 
     def start_command(self, cmd, args, kwargs):
         self.flush_log()
-        self.mark('%s(%s)' % (cmd, ', '.join((args or []) + ['%s' % kwargs])))
+        self.mark(('%s(%s)'
+                   ) % (cmd, ', '.join((args or tuple()) +
+                                       ('%s' % kwargs, ))))
 
     def finish_command(self):
         self.reset_marks()

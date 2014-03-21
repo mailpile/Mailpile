@@ -15,8 +15,8 @@ debian-dev:
 	else \
 		sudo apt-get install rubygems; \
 	fi
-	sudo pip install selenium>=2.40.0
-	sudo gem install therubyracer less
+	sudo pip install 'selenium>=2.40.0'
+	which lessc >/dev/null || sudo gem install therubyracer less
 
 docs:
 	@test -d doc || \
@@ -34,7 +34,7 @@ alltests: docs
 	@python2 mailpile/util.py
 	@python2 mailpile/vcard.py
 	@python2 mailpile/workers.py
-	@nosetests --with-doctest
+	@nosetests
 
 clean:
 	@rm -vf *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py

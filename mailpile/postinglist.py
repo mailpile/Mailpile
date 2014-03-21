@@ -13,6 +13,15 @@ GLOBAL_POSTING_LOCK = threading.Lock()
 GLOBAL_OPTIMIZE_LOCK = threading.Lock()
 
 
+# FIXME: Create a tiny cache for PostingList objects, so we can start
+#        encrypting them.  We should have a read-cache of moderate size,
+# and a one-element write cache which only writes to disk when a PostingList
+# gets evicted OR the cache in its entirety is flushed. Due to how keywords
+# are grouped into posting lists and the fact that they are flushed to
+# disk in sorted order, this should be enough to group everything together
+# that can actually be grouped.
+
+
 class PostingList(object):
     """A posting list is a map of search terms to message IDs."""
 
@@ -158,9 +167,11 @@ class PostingList(object):
     def _parse_line(self, line):
         words = line.strip().split('\t')
         if len(words) > 1:
-            if words[0] not in self.WORDS:
-                self.WORDS[words[0]] = set()
-            self.WORDS[words[0]] |= set(words[1:])
+            wset = set(words[1:])
+            if words[0] in self.WORDS:
+                self.WORDS[words[0]] |= wset
+            else:
+                self.WORDS[words[0]] = wset
 
     def load(self):
         self.size = 0
@@ -264,7 +275,7 @@ class GlobalPostingList(PostingList):
         count = 0
         global GLOBAL_POSTING_LIST
         if (GLOBAL_POSTING_LIST
-                and (not lazy or len(GLOBAL_POSTING_LIST) > 20480)):
+                and (not lazy or len(GLOBAL_POSTING_LIST) > 40*1024)):
             keys = sorted(GLOBAL_POSTING_LIST.keys())
             pls = GlobalPostingList(session, '')
             for sig in keys:
@@ -272,6 +283,9 @@ class GlobalPostingList(PostingList):
                     play_nice_with_threads()
                     session.ui.mark(('Updating search index... %d%% (%s)'
                                      ) % (count * 100 / len(keys), sig))
+                # If we're doing a full optimize later, we disable the
+                # compaction here. Otherwise it follows the normal
+                # rules (compacts as necessary).
                 pls._migrate(sig, compact=quick)
                 count += 1
             pls.save()
