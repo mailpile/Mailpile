@@ -58,7 +58,7 @@ class Events(Command):
                 time.sleep(self.GATHER_TIME)
 
         result = [e.as_dict() for e in events[-limit:]]
-        self.message = _('Found %d events' % len(result))
+        self.message = _('Found %d events') % len(result)
         return result
 
 
