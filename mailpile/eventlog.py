@@ -81,7 +81,7 @@ class Event(object):
         elif isinstance(ts, (str, unicode)):
             self._ts = int(mktime_tz(parsedate_tz(ts)))
         else:
-            self._ts = int(ts)
+            self._ts = float(ts)
         self._data[0] = formatdate(self._ts)
 
     def _set(self, col, value):
@@ -156,11 +156,22 @@ class EventLog(object):
         self.encryption_key_func = encryption_key_func
         self.rollover = rollover
 
-        self.events = {}
+        self._events = {}
 
         # Internals...
+        self._waiter = threading.Condition()
         self._lock = threading.Lock()
         self._log_fd = None
+
+    def _notify_waiters(self):
+        self._waiter.acquire()
+        self._waiter.notifyAll()
+        self._waiter.release()
+
+    def wait(self, timeout=None):
+        self._waiter.acquire()
+        self._waiter.wait(timeout)
+        self._waiter.release()
 
     def _save_filename(self):
         return os.path.join(self.logdir, self._log_start_id)
@@ -193,21 +204,9 @@ class EventLog(object):
             kept_events = {}
             for e in self.incomplete():
                 kept_events[e.event_id] = e
-            self.events = kept_events
+            self._events = kept_events
             self._open_log()
             self.purge_old_logfiles()
-
-    def _match(self, event, filters):
-        for kw, rule in filters.iteritems():
-            if kw == 'source' and event.source != _ClassName(rule):
-                return False
-            elif (kw.startswith('data_')
-                    and event.data.get(kw[5:]) != rule):
-                return False
-            elif (kw.startswith('private_data_')
-                    and event.data.get(kw[13:]) != rule):
-                return False
-        return True
 
     def _list_logfiles(self):
         return sorted([l for l in os.listdir(self.logdir)
@@ -219,7 +218,7 @@ class EventLog(object):
         events.sort(key=lambda ev: ev.ts)
         for event in events:
             self._log_fd.write('%s\n' % event)
-            self.events[event.event_id] = event
+            self._events[event.event_id] = event
 
     def _load_logfile(self, lfn):
         enc_key = self.encryption_key_func()
@@ -233,16 +232,46 @@ class EventLog(object):
                 for line in lines.splitlines():
                     event = Event.Parse(line)
                     if Event.COMPLETE in event.flags:
-                        if event.event_id in self.events:
-                            del self.events[event.event_id]
+                        if event.event_id in self._events:
+                            del self._events[event.event_id]
                     else:
-                        self.events[event.event_id] = event
-        self._save_events(self.events.values())
+                        self._events[event.event_id] = event
+        self._save_events(self._events.values())
+
+    def _match(self, event, filters):
+        for kw, rule in filters.iteritems():
+            if kw.endswith('!'):
+                truth, okw, kw = False, kw, kw[:-1]
+            else:
+                truth, okw = True, kw
+            if kw == 'source':
+                if truth != (event.source == _ClassName(rule)):
+                    return False
+            elif kw == 'flag':
+                if truth != (rule in event.flags):
+                    return False
+            elif kw == 'flags':
+                if truth != (event.flags == rule):
+                    return False
+            elif kw == 'since':
+                if truth != (event.ts >= float(rule)):
+                    return False
+            elif kw.startswith('data_'):
+                if truth != (str(event.data.get(kw[5:])) == str(rule)):
+                    return False
+            elif kw.startswith('private_data_'):
+                if truth != (str(event.data.get(kw[13:])) == str(rule)):
+                    return False
+            else:
+                # Unknown keywords match nothing...
+                print 'Unknown keyword: `%s=%s`' % (okw, rule)
+                return False
+        return True
 
     def incomplete(self, **filters):
         """Return all the incomplete events, in order."""
-        for ek in sorted(self.events.keys()):
-            e = self.events.get(ek, None)
+        for ek in sorted(self._events.keys()):
+            e = self._events.get(ek, None)
             if (e is not None and
                     Event.COMPLETE not in e.flags and
                     self._match(e, filters)):
@@ -250,12 +279,15 @@ class EventLog(object):
 
     def since(self, ts, **filters):
         """Return all events since a given time, in order."""
-        for ek in sorted(self.events.keys()):
-            e = self.events.get(ek, None)
+        for ek in sorted(self._events.keys()):
+            e = self._events.get(ek, None)
             if (e is not None and
                     e.ts >= ts and
                     self._match(e, filters)):
                 yield e
+
+    def events(self, **filters):
+        return self.since(0, **filters)
 
     def log_event(self, event):
         """Log an Event object."""
@@ -264,6 +296,7 @@ class EventLog(object):
             self._save_events([event])
             self._logged += 1
             self._maybe_rotate_log()
+            self._notify_waiters()
         finally:
             self._lock.release()
         return event
