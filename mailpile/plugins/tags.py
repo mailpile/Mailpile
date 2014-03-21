@@ -298,7 +298,7 @@ class AddTag(TagCommand):
             return ('Added tags: ' +
                     ', '.join([k['name'] for k in self.result['added']]))
 
-    def command(self):
+    def command(self, save=True):
         config = self.session.config
 
         slugs = self.data.get('slug', [])
@@ -327,7 +327,7 @@ class AddTag(TagCommand):
                     tags[i][v] = vlist[i]
         if tags:
             config.tags.extend(tags)
-            self.finish(save=True)
+            self.finish(save=save)
 
         return {'added': tags}
 
@@ -448,13 +448,14 @@ class DeleteTag(TagCommand):
 
 
 class FilterCommand(Command):
-    def finish(self):
+    def finish(self, save=True):
         def save_filter():
             self.session.config.save()
             if self.session.config.index:
                 self.session.config.index.save_changes()
             return True
-        self._serialize('Save filter', save_filter)
+        if save:
+            self._serialize('Save filter', save_filter)
 
 
 class Filter(FilterCommand):
@@ -465,7 +466,7 @@ class Filter(FilterCommand):
     ORDER = ('Tagging', 1)
     HTTP_CALLABLE = ('POST', )
 
-    def command(self):
+    def command(self, save=True):
         session, config = self.session, self.session.config
         args = list(self.args)
 
@@ -523,7 +524,7 @@ class Filter(FilterCommand):
         else:
             config.filters.append(filter_dict)
 
-        self.finish()
+        self.finish(save=save)
         return True
 
 

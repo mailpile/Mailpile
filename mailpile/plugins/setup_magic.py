@@ -94,7 +94,7 @@ class Setup(Command):
         created = []
         for t in self.TAGS:
             if not session.config.get_tag_id(t):
-                AddTag(session, arg=[t]).run()
+                AddTag(session, arg=[t]).run(save=False)
                 created.append(t)
             session.config.get_tag(t).update(self.TAGS[t])
         for stype, statuses in (('sig', SignatureInfo.STATUSES),
@@ -102,17 +102,18 @@ class Setup(Command):
             for status in statuses:
                 tagname = 'mp_%s-%s' % (stype, status)
                 if not session.config.get_tag_id(tagname):
-                    AddTag(session, arg=[tagname]).run()
+                    AddTag(session, arg=[tagname]).run(save=False)
                     created.append(tagname)
                 session.config.get_tag(tagname).update({
                     'type': 'attribute',
                     'display': 'invisible',
                     'label': False,
                 })
+
         if 'New' in created:
             Filter(session,
                    arg=['new', '@incoming', '+Inbox', '+New',
-                        'Incoming mail filter']).run()
+                        'Incoming mail filter']).run(save=False)
             session.ui.notify(_('Created default tags'))
 
         # Import all the basic plugins

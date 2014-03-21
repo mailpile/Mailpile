@@ -64,12 +64,12 @@ def do_setup():
     mp.setup()
 
     # Configure our fake mail sending setup
-    mp.set('profiles/0/email = %s' % MY_FROM)
-    mp.set('profiles/0/name = %s' % MY_NAME)
-    mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
-    mp.set('sys/debug = rescan sendmail log compose')
-    mp.set('prefs/openpgp_header = encrypt')
-    mp.set('prefs/crypto_policy = openpgp-sign')
+    config.profiles['0'].email = MY_FROM
+    config.profiles['0'].name = MY_NAME
+    config.profiles['0'].route = '|%s -i %%(rcpt)s' % mailpile_send
+    config.sys.debug = 'rescan sendmail log compose'
+    config.prefs.openpgp_header = 'encrypt'
+    config.prefs.crypto_policy = 'openpgp-sign'
 
     # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
