@@ -66,7 +66,6 @@ def do_setup():
     # Configure our fake mail sending setup
     config.profiles['0'].email = MY_FROM
     config.profiles['0'].name = MY_NAME
-    config.profiles['0'].route = '|%s -i %%(rcpt)s' % mailpile_send
     config.sys.debug = 'rescan sendmail log compose'
     config.prefs.openpgp_header = 'encrypt'
     config.prefs.crypto_policy = 'openpgp-sign'
@@ -207,9 +206,28 @@ def test_composition():
     del msg_data['subject']
     msg_data['body'] = ['Hello world: thisisauniquestring :)']
     mp.message_update_send(**msg_data)
-    mp.sendmail()
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
     assert(mp.search('tag:blank').result['stats']['count'] == 0)
+
+    # First attempt to send should fail & record failure to event log
+    config.profiles['0'].route = '|/no/such/file'
+    mp.sendmail()
+    events = mp.events('source=mailpile.plugins.compose.Sendit',
+                       'data_mid=%s' % new_mid).result
+    assert(len(events) == 1)
+    assert(events[0]['flags'] == 'i')
+    assert(len(mp.events('incomplete').result) == 1)
+
+    # Second attempt should succeed!
+    config.profiles['0'].route = '|%s -i %%(rcpt)s' % mailpile_send
+    mp.sendmail()
+    events = mp.events('source=mailpile.plugins.compose.Sendit',
+                       'data_mid=%s' % new_mid).result
+    assert(len(events) == 1)
+    assert(events[0]['flags'] == 'c')
+    assert(len(mp.events('incomplete').result) == 0)
+
+    # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
     assert('thisisauniquestring' in contents(mailpile_sent))
     assert(MY_KEYID not in contents(mailpile_sent))

@@ -30,8 +30,8 @@ def NewEventId():
 
 
 def _ClassName(obj):
-    if isinstance(obj, str):
-        return obj
+    if isinstance(obj, (str, unicode)):
+        return str(obj)
     else:
         return str(obj.__class__)
 
@@ -227,7 +227,7 @@ class EventLog(object):
                 lines = fd.read()
             else:
                 with DecryptingStreamer(enc_key, fd) as streamer:
-                    lines = fd.read()
+                    lines = streamer.read()
             if lines:
                 for line in lines.splitlines():
                     event = Event.Parse(line)
@@ -317,11 +317,12 @@ class EventLog(object):
         self._lock.acquire()
         try:
             self._open_log()
-            for lf in self._list_logfiles()[-1:]:
+            for lf in self._list_logfiles()[-4:]:
                 try:
                     self._load_logfile(lf)
                 except (OSError, IOError):
-                    pass
+                    import traceback
+                    traceback.print_exc()
             return self
         finally:
             self._lock.release()

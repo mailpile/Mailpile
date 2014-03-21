@@ -1,3 +1,4 @@
+import random
 import smtplib
 import socket
 import subprocess
@@ -5,6 +6,7 @@ import sys
 
 from mailpile.config import ssl, socks
 from mailpile.mailutils import CleanMessage, MessageAsString
+from mailpile.eventlog import Event
 
 
 def _AddSocksHooks(cls, SSL=False):
@@ -42,31 +44,62 @@ else:
     SMTP_SSL = SMTP
 
 
-def _RouteTuples(session, from_to_msg_tuples):
+def _RouteTuples(session, from_to_msg_ev_tuples):
     tuples = []
-    for frm, to, msg in from_to_msg_tuples:
+    for frm, to, msg, events in from_to_msg_ev_tuples:
         dest = {}
         for recipient in to:
-            route = session.config.get_sendmail(frm, [recipient]).strip()
-            dest[route] = dest.get(route, [])
-            dest[route].append(recipient)
+            # If any of the events thinks this message has been delivered,
+            # then don't try to send it again.
+            frm_to = '>'.join([frm, recipient])
+            for ev in events:
+                if ev.private_data.get(frm_to, False):
+                    recipient = None
+                    break
+            if recipient:
+                route = session.config.get_sendmail(frm, [recipient]).strip()
+                dest[route] = dest.get(route, [])
+                dest[route].append(recipient)
         for route in dest:
-            tuples.append((frm, route, dest[route], msg))
+            tuples.append((frm, route, dest[route], msg, events))
     return tuples
 
 
-def SendMail(session, from_to_msg_tuples):
+def SendMail(session, from_to_msg_ev_tuples):
+    routes = _RouteTuples(session, from_to_msg_ev_tuples)
 
-    # FIXME: We need to handle the case where we are retrying a message
-    #        that we could not deliver before. Some of the tuples may
-    # have been delivered already, and some not.  #eventlog
+    # Randomize order of routes, so we don't always try the broken
+    # one first. Any failure will bail out, but we do keep track of
+    # our successes via. the event, so eventually everything sendable
+    # should get sent.
+    routes.sort(key=lambda k: random.randint(0, 10))
 
-    for frm, sendmail, to, msg in _RouteTuples(session, from_to_msg_tuples):
+    # Update initial event state before we go through and start
+    # trying to deliver stuff.
+    for frm, sendmail, to, msg, events in routes:
+        for ev in events:
+            for rcpt in to:
+                ev.private_data['>'.join([frm, rcpt])] = False
+    for ev in events:
+        ev.data['recipients'] = len(ev.private_data.keys())
+        ev.data['delivered'] = len([k for k in ev.private_data
+                                    if ev.private_data[k]])
+
+    def mark(msg):
+        for ev in events:
+            ev.flags = Event.RUNNING
+            ev.message = msg
+            session.config.event_log.log_event(ev)
+        session.ui.mark(msg)
+
+    # Do the actual delivering...
+    for frm, sendmail, to, msg, events in routes:
+
         if 'sendmail' in session.config.sys.debug:
             sys.stderr.write(_('SendMail: from %s, to %s via %s\n'
                                ) % (frm, to, sendmail))
         sm_write = sm_close = lambda: True
-        session.ui.mark(_('Connecting to %s') % sendmail)
+        mark(_('Connecting to %s') % sendmail)
 
         if sendmail.startswith('|'):
             cmd = sendmail[1:].strip().split()
@@ -75,6 +108,9 @@ def SendMail(session, from_to_msg_tuples):
             sm_close = proc.stdin.close
             sm_cleanup = lambda: proc.wait()
             # FIXME: Update session UI with progress info
+            for ev in events:
+                ev.data['proto'] = 'subprocess'
+                ev.data['command'] = cmd[0]
 
         elif (sendmail.startswith('smtp:') or
               sendmail.startswith('smtorp:') or
@@ -89,6 +125,11 @@ def SendMail(session, from_to_msg_tuples):
                 user, pwd = userpass.split(':', 1)
             else:
                 user = pwd = None
+
+            for ev in events:
+                ev.data['proto'] = proto
+                ev.data['host'] = host
+                ev.data['auth'] = bool(user and pwd)
 
             if 'sendmail' in session.config.sys.debug:
                 sys.stderr.write(_('SMTP connection to: %s:%s as %s@%s\n'
@@ -136,14 +177,20 @@ def SendMail(session, from_to_msg_tuples):
             raise Exception(_('Invalid sendmail command/SMTP server: %s'
                               ) % sendmail)
 
-        session.ui.mark(_('Preparing message...'))
+        mark(_('Preparing message...'))
         msg_string = MessageAsString(CleanMessage(session.config, msg))
         total = len(msg_string)
         while msg_string:
             sm_write(msg_string[:20480])
             msg_string = msg_string[20480:]
-            session.ui.mark(('Sending message... (%d%%)'
-                             ) % (100 * (total-len(msg_string))/total))
+            mark(('Sending message... (%d%%)'
+                  ) % (100 * (total-len(msg_string))/total))
         sm_close()
         sm_cleanup()
-        session.ui.mark(_('Message sent, %d bytes') % total)
+        for ev in events:
+            for rcpt in to:
+                ev.private_data['>'.join([frm, rcpt])] = True
+            ev.data['bytes'] = total
+            ev.data['delivered'] = len([k for k in ev.private_data
+                                        if ev.private_data[k]])
+        mark(_('Message sent, %d bytes') % total)

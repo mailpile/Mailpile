@@ -8,6 +8,7 @@ from gettext import gettext as _
 import mailpile.plugins
 from mailpile.commands import Command
 from mailpile.crypto.state import *
+from mailpile.eventlog import Event
 from mailpile.plugins.tags import Tag
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.mailutils import NotEditableError
@@ -567,21 +568,55 @@ class Sendit(CompositionCommand):
         sent = []
         missing_keys = []
         for email in emails:
+            events = []
             try:
                 msg_mid = email.get_msg_info(idx.MSG_MID)
-                # FIXME: We are failing to capture error states with sufficient
-                #        granularity, messages may be delivered to some
-                #        recipients but not all...
+
+                # This is a unique sending-ID. This goes in the public (meant
+                # for debugging help) section of the event-log, so we take
+                # care to not reveal details about the message or recipients.
+                msg_sid = sha1b64(email.get_msg_info(idx.MSG_ID),
+                                  *sorted(bounce_to))[:8]
+
+                # We load up any incomplete events for sending this message
+                # to this set of recipients. If nothing is in flight, create
+                # a new event for tracking this operation.
+                events = list(config.event_log.incomplete(source=self,
+                                                          data_mid=msg_mid,
+                                                          data_sid=msg_sid))
+                if not events:
+                    events.append(config.event_log.log(
+                        source=self,
+                        flags=Event.RUNNING,
+                        message=_('Sending message'),
+                        data={'mid': msg_mid, 'sid': msg_sid}))
+
                 SendMail(session, [PrepareMessage(config,
                                                   email.get_msg(pgpmime=False),
-                                                  rcpts=(bounce_to or None))])
+                                                  rcpts=(bounce_to or None),
+                                                  events=events)])
+                for ev in events:
+                    ev.flags = Event.COMPLETE
+                    config.event_log.log_event(ev)
                 sent.append(email)
             except KeyLookupError, kle:
-                session.ui.warning(_('Missing keys %s') % kle.missing)
+                # This is fatal, we don't retry
+                message = _('Missing keys %s') % kle.missing
+                for ev in events:
+                    ev.flags = Event.COMPLETE
+                    ev.message = message
+                    config.event_log.log_event(ev)
+                session.ui.warning(message)
                 missing_keys.extend(kle.missing)
                 self._ignore_exception()
             except:
-                session.ui.error(_('Failed to send %s') % email)
+                # We want to try that again!
+                message = _('Failed to send %s') % email
+                for ev in events:
+                    ev.flags = Event.INCOMPLETE
+                    ev.message = message
+                    config.event_log.log_event(ev)
+                session.ui.error(message)
                 self._ignore_exception()
 
         if 'compose' in config.sys.debug:

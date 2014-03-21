@@ -130,7 +130,7 @@ def CleanMessage(config, msg):
     return msg
 
 
-def PrepareMessage(config, msg, sender=None, rcpts=None):
+def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     msg = copy.deepcopy(msg)
 
     # Short circuit if this message has already been prepared.
@@ -138,7 +138,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None):
         return (sender or msg['x-mp-internal-sender'],
                 rcpts or [r.strip()
                           for r in msg['x-mp-internal-rcpts'].split(',')],
-                msg)
+                msg,
+                events)
 
     crypto_policy = config.prefs.crypto_policy.lower()
     rcpts = rcpts or []
@@ -213,7 +214,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None):
     msg['x-mp-internal-readonly'] = str(int(time.time()))
     msg['x-mp-internal-sender'] = sender
     msg['x-mp-internal-rcpts'] = ', '.join(rcpts)
-    return (sender, rcpts, msg)
+    return (sender, rcpts, msg, events)
 
 
 MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
@@ -526,7 +527,7 @@ class Email(object):
 
         # Save result back to mailbox
         if final:
-            sender, rcpts, outmsg = PrepareMessage(self.config, outmsg)
+            sender, rcpts, outmsg, ev = PrepareMessage(self.config, outmsg)
         return self.update_from_msg(session, outmsg)
 
     def update_from_msg(self, session, newmsg):

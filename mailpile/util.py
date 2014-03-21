@@ -132,7 +132,7 @@ def _hash(cls, data):
     return h
 
 
-def sha1b64(s):
+def sha1b64(*data):
     """
     Apply the SHA1 hash algorithm to a string
     and return the base64-encoded hash value
@@ -146,7 +146,7 @@ def sha1b64(s):
     Keyword arguments:
     s -- The string to hash
     """
-    return _hash(hashlib.sha1, [s]).digest().encode('base64')
+    return _hash(hashlib.sha1, data).digest().encode('base64')
 
 
 def sha512b64(*data):
