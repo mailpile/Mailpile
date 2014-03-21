@@ -715,6 +715,7 @@ class Rescan(Command):
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
+        args = list(self.args)
 
         if config.sys.lockdown:
             session.ui.warning(_('In lockdown, doing nothing.'))
@@ -727,14 +728,14 @@ class Rescan(Command):
                   'speed up: mp --rescan=...')
             ) % delay)
 
-        if self.args and self.args[0].lower() == 'vcards':
+        if args and args[0].lower() == 'vcards':
             return self._rescan_vcards(session, config)
-        elif self.args and self.args[0].lower() == 'mailboxes':
+        elif args and args[0].lower() == 'mailboxes':
             return self._rescan_mailboxes(session, config)
-        elif self.args and self.args[0].lower() == 'all':
-            self.args.pop(0)
+        elif args and args[0].lower() == 'all':
+            args.pop(0)
 
-        msg_idxs = self._choose_messages(self.args)
+        msg_idxs = self._choose_messages(args)
         if msg_idxs:
             for msg_idx_pos in msg_idxs:
                 e = Email(idx, msg_idx_pos)
