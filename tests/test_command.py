@@ -106,14 +106,17 @@ class TestTagging(MailPileUnittest):
 
 class TestGPG(MailPileUnittest):
     def test_key_search(self):
-        pass
+        res = action(self.mp._session, "crypto/gpg/searchkey", "D13C70DA")
+        email = res.result["D13C70DA"]["uids"][0]["email"]
+        self.assertEqual(email, "smari@mailpile.is")
 
     def test_key_receive(self):
-        pass
+        res = action(self.mp._session, "crypto/gpg/receivekey","D13C70DA")
+        self.assertEqual(res.result[0]["updated"][0]["fingerprint"],
+                         "08A650B8E2CBC1B02297915DC65626EED13C70DA")
 
     def test_key_import(self):
-        m = mailpile.Mailpile()
-        res = action(m._session, "crypto/gpg/importkey", 'testing/pub.key')
+        res = action(self.mp._session, "crypto/gpg/importkey", 'testing/pub.key')
         self.assertEqual(res.result["results"]["count"] , 1)
 
     def test_nicknym_get_key(self):
