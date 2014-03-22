@@ -149,7 +149,7 @@ class Command:
         self.serialize = self.SERIALIZE
         self.name = self.SYNOPSIS[1] or self.SYNOPSIS[2] or name
         self.data = data or {}
-        self.status = 'success'
+        self.status = 'unknown'
         self.message = name
         self.error_info = {}
         self.result = None
@@ -239,14 +239,30 @@ class Command:
                                               ) % (what, ))
         return msg_ids
 
-    def _error(self, message, info={}, prefix=None):
+    def _error(self, message, info=None):
         self.status = 'error'
-        self.message = '%s%s' % ((prefix is None)
-                                 and ('%s error: ' % self.name) or prefix,
-                                 message)
-        self.error_info.update(info)
-        self.session.ui.error(message)
+        self.message = message
+
+        ui_message = _('%s error: %s') % (self.name, message)
+        if info:
+            self.error_info.update(info)
+            details = ' '.join(['%s=%s' % (k, info[k]) for k in info])
+            ui_message += ' (%s)' % details
+        self.session.ui.mark(self.name)
+        self.session.ui.reset_marks()
+        self.session.ui.error(ui_message)
+
         return False
+
+    def _success(self, message, result=True):
+        self.status = 'success'
+        self.message = message
+
+        ui_message = _('%s: %s') % (self.name, message)
+        self.session.ui.mark(ui_message)
+        self.session.ui.reset_marks()
+
+        return result
 
     def _read_file_or_data(self, fn):
         if fn in self.data:
@@ -297,6 +313,12 @@ class Command:
     def _finishing(self, command, rv):
         if self.name:
             self.session.ui.finish_command()
+
+        # FIXME: Remove this when stuff is up to date
+        if self.status == 'unknown':
+            self.session.ui.warning('FIXME: %s should return '
+                                    'self._success(...)' % self.__class__)
+            self.status = 'success'
 
         result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
                                     command.__doc__ or self.__doc__,
@@ -708,10 +730,13 @@ class Load(Command):
     ORDER = ('Internals', 1)
 
     def command(self, reset=True, wait=True, wait_all=False, quiet=False):
-        return self._idx(reset=reset,
-                         wait=wait,
-                         wait_all=wait_all,
-                         quiet=quiet) and True or False
+        if self._idx(reset=reset,
+                     wait=wait,
+                     wait_all=wait_all,
+                     quiet=quiet):
+            return self._success(_('Loaded metadata index'))
+        else:
+            return self._error(_('Failed to loaded metadata index'))
 
 
 class Rescan(Command):
@@ -726,8 +751,7 @@ class Rescan(Command):
         args = list(self.args)
 
         if config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
         delay = play_nice_with_threads()
         if delay > 0:
@@ -749,17 +773,24 @@ class Rescan(Command):
                 e = Email(idx, msg_idx_pos)
                 session.ui.mark('Re-indexing %s' % e.msg_mid())
                 idx.index_email(self.session, e)
-            return {'messages': len(msg_idxs)}
+            return self._success(_('Indexed %d messages') % len(msg_idxs),
+                                 result={'messages': len(msg_idxs)})
+
         else:
             # FIXME: Need a lock here?
             if 'rescan' in config._running:
-                return True
+                return self._success(_('Rescan already in progress'))
             config._running['rescan'] = True
             try:
-                return dict_merge(
-                    self._rescan_vcards(session, config),
-                    self._rescan_mailboxes(session, config)
-                )
+                results = {}
+                results.update(self._rescan_vcards(session, config))
+                results.update(self._rescan_mailboxes(session, config))
+                if 'aborted' in results:
+                    raise KeyboardInterrupt()
+                return self._success(_('Rescanned vcards and mailboxes'),
+                                     result=results)
+            except (KeyboardInterrupt), e:
+                return self._error(_('User aborted'), info=results)
             finally:
                 del config._running['rescan']
 
@@ -811,8 +842,6 @@ class Rescan(Command):
             else:
                 session.ui.mark(_('Nothing changed'))
         except (KeyboardInterrupt, subprocess.CalledProcessError), e:
-            session.ui.mark(_('Aborted: %s') % e)
-            self._ignore_exception()
             return {'aborted': True,
                     'messages': msg_count,
                     'mailboxes': mbox_count}
@@ -838,10 +867,9 @@ class Optimize(Command):
             self._idx().save(self.session)
             GlobalPostingList.Optimize(self.session, self._idx(),
                                        force=('harder' in self.args))
-            return True
+            return self._success(_('Optimized search engine'))
         except KeyboardInterrupt:
-            self.session.ui.mark(_('Aborted'))
-            return False
+            return self._error(_('Aborted'))
 
 
 class RunWWW(Command):
@@ -853,7 +881,7 @@ class RunWWW(Command):
         self.session.config.prepare_workers(self.session, daemons=True)
         while not mailpile.util.QUITTING:
             time.sleep(1)
-        return True
+        return self_success(_('Started the web server'))
 
 
 class RenderPage(Command):
@@ -870,10 +898,10 @@ class RenderPage(Command):
                 self.template_id += '/' + self.result['path'] + '/index'
 
     def command(self):
-        return {
+        return self._success(_('Rendered the page'), result={
             'path': (self.args and self.args[0] or ''),
             'data': self.data
-        }
+        })
 
 
 ##[ Configuration commands ]###################################################
@@ -895,8 +923,7 @@ class ConfigSet(Command):
         ops = []
 
         if config.sys.lockdown:
-            self.session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
@@ -913,6 +940,7 @@ class ConfigSet(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        updated = {}
         for path, value in ops:
             value = value.strip()
             if value.startswith('{') or value.startswith('['):
@@ -920,12 +948,13 @@ class ConfigSet(Command):
             try:
                 cfg, var = config.walk(path.strip(), parent=1)
                 cfg[var] = value
+                updated[path] = value
             except IndexError:
                 cfg, v1, v2 = config.walk(path.strip(), parent=2)
                 cfg[v1] = {v2: value}
 
         self._serialize('Save config', lambda: config.save())
-        return True
+        return self._success(_('Updated your settings'), result=updated)
 
 
 class ConfigAdd(Command):
@@ -944,8 +973,7 @@ class ConfigAdd(Command):
         ops = []
 
         if config.sys.lockdown:
-            self.session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
@@ -962,15 +990,17 @@ class ConfigAdd(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        updated = {}
         for path, value in ops:
             value = value.strip()
             if value.startswith('{') or value.startswith('['):
                 value = json.loads(value)
             cfg, var = config.walk(path.strip(), parent=1)
             cfg[var].append(value)
+            updated[path] = value
 
         self._serialize('Save config', lambda: config.save())
-        return True
+        return self._success(_('Updated your settings'), result=updated)
 
 
 class ConfigUnset(Command):
@@ -986,16 +1016,18 @@ class ConfigUnset(Command):
         session, config = self.session, self.session.config
 
         if config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
+        updated = []
         vlist = list(self.args) + (self.data.get('var', None) or [])
         for v in vlist:
             cfg, vn = config.walk(v, parent=True)
             if vn in cfg:
                 del cfg[vn]
+                updated.append(v)
+
         self._serialize('Save config', lambda: config.save())
-        return True
+        return self._success(_('Reset to default values'), result=updated)
 
 
 class ConfigPrint(Command):
@@ -1009,17 +1041,17 @@ class ConfigPrint(Command):
     def command(self):
         session, config = self.session, self.session.config
         result = {}
+        invalid = []
         # FIXME: Are there privacy implications here somewhere?
         for key in (self.args + tuple(self.data.get('var', []))):
             try:
                 result[key] = config.walk(key)
             except KeyError:
-                self.error_info[key] = _('Unknown setting')
-        if self.error_info:
-            session.ui.error(_('No such keys: %s') % self.error_info.keys())
-            return False
+                invalid.append(key)
+        if invalid:
+            return self._error(_('Invalid keys'), info={'keys': invalid})
         else:
-            return result
+            return self._success(_('Displayed settings'), result=result)
 
 
 class AddMailboxes(Command):
@@ -1029,6 +1061,8 @@ class AddMailboxes(Command):
     SPLIT_ARG = False
     HTTP_CALLABLE = ('POST', 'UPDATE')
 
+    MAX_PATHS = 50000
+
     def command(self):
         session, config = self.session, self.session.config
         adding = []
@@ -1036,35 +1070,49 @@ class AddMailboxes(Command):
         paths = list(self.args)
 
         if config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
-        while paths:
-            raw_fn = paths.pop(0)
-            fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
-            if raw_fn in existing or fn in existing:
-                session.ui.warning('Already in the pile: %s' % raw_fn)
-            elif raw_fn.startswith("imap://"):
-                adding.append(raw_fn)
-            elif os.path.exists(fn):
-                if IsMailbox(fn):
-                    adding.append(fn)
-                elif os.path.isdir(fn):
-                    session.ui.mark('Scanning %s for mailboxes' % fn)
-                    for f in [f for f in os.listdir(fn)
-                              if not f.startswith('.')]:
-                        paths.append(os.path.join(fn, f))
-            else:
-                return self._error('No such file/directory: %s' % raw_fn)
+        try:
+            while paths:
+                raw_fn = paths.pop(0)
+                fn = os.path.normpath(os.path.expanduser(raw_fn))
+                fn = os.path.abspath(fn)
+                if raw_fn in existing or fn in existing:
+                    session.ui.warning('Already in the pile: %s' % raw_fn)
+                elif raw_fn.startswith("imap://"):
+                    adding.append(raw_fn)
+                elif os.path.exists(fn):
+                    if IsMailbox(fn):
+                        adding.append(fn)
+                    elif os.path.isdir(fn):
+                        session.ui.mark('Scanning %s for mailboxes' % fn)
+                        try:
+                            for f in [f for f in os.listdir(fn)
+                                      if not f.startswith('.')]:
+                                paths.append(os.path.join(fn, f))
+                                if len(paths) > self.MAX_PATHS:
+                                    return self._error(_('Too many files'))
+                        except OSError:
+                            if raw_fn in self.args:
+                                return self._error(_('Failed to read: %s'
+                                                     ) % raw_fn)
+                    elif raw_fn in self.args:
+                        return self._error(_('Not a mailbox: %s') % raw_fn)
+                elif raw_fn in self.args:
+                    return self._error(_('No such file or directory: %s'
+                                         ) % raw_fn)
+        except KeyboardInterrupt:
+            return self._error(_('User aborted'))
 
         added = {}
         for arg in adding:
             added[config.sys.mailbox.append(arg)] = arg
         if added:
             self._serialize('Save config', lambda: config.save())
-            return {'added': added}
+            return self._success(_('Added %d mailboxes') % len(added),
+                                 result={'added': added})
         else:
-            return True
+            return self._success(_('Nothing was added'))
 
 
 ###############################################################################
@@ -1076,8 +1124,9 @@ class Output(Command):
     HTTP_STRICT_VARS = False
 
     def command(self):
-        self.session.ui.render_mode = self.args and self.args[0] or 'text'
-        return {'output': self.session.ui.render_mode}
+        m = self.session.ui.render_mode = self.args and self.args[0] or 'text'
+        return self._success(_('Set output mode to: %s') % m,
+                             result={'output': m})
 
 
 class Help(Command):
@@ -1186,12 +1235,12 @@ class Help(Command):
                         cmd_list['_%s' % scmd] = (scmd, ssynopsis,
                                                   scls.__doc__, order)
                         width = max(len(scmd or surl), width)
-                    return {
+                    return self._success(_('Displayed help'), result={
                         'pre': cls.__doc__,
                         'commands': cmd_list,
                         'width': width,
                         'post': cls.EXAMPLES
-                    }
+                    })
             return self._error(_('Unknown command'))
 
         else:
@@ -1205,11 +1254,11 @@ class Help(Command):
                         cmd_list[c or '_%s' % name] = (name, synopsis,
                                                        cls.__doc__,
                                                        count + cls.ORDER[1])
-            return {
+            return self._success(_('Displayed help'), result={
                 'commands': cmd_list,
                 'tags': GetCommand('tag/list')(self.session).run(),
                 'index': self._idx()
-            }
+            })
 
     def _starting(self):
         pass
@@ -1247,7 +1296,8 @@ class HelpVars(Help):
                 'variables': variables
             })
         result.sort(key=lambda k: config[k['category']][0])
-        return {'variables': result}
+        return self._success(_('Displayed variables'),
+                             result={'variables': result})
 
 
 class HelpSplash(Help):
@@ -1261,10 +1311,10 @@ class HelpSplash(Help):
             http_url = 'http://%s:%s/' % http_worker.httpd.sspec
         else:
             http_url = ''
-        return {
+        return self._success(_('Displayed welcome message'), result={
             'splash': self.ABOUT,
             'http_url': http_url,
-        }
+        })
 
 
 def GetCommand(name):

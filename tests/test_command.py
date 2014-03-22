@@ -9,7 +9,7 @@ from tests import MailPileUnittest
 class TestCommands(MailPileUnittest):
     def test_index(self):
         res = self.mp.rescan()
-        self.assertEqual(res.as_dict()["message"], 'rescan')
+        self.assertEqual(res.as_dict()["status"], 'success')
 
     def test_search(self):
         # A random search must return results in less than 0.2 seconds.

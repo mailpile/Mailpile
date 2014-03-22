@@ -88,7 +88,10 @@ class TestUI(MailPileUnittest):
                 self.mp._ui.render_mode = 'text'
                 result = self.mp.rescan()
                 self.mp._ui.display_result(result)
-            self.assertEquals(out[0],
-                              "{'messages': 0, 'vcards': 0, 'mailboxes': 0}\n")
+            self.assertEquals(out[0], ('{\n'
+                                       '    "mailboxes": 0, \n'
+                                       '    "messages": 0, \n'
+                                       '    "vcards": 0\n'
+                                       '}\n'))
         finally:
             self.mp._ui = old_ui

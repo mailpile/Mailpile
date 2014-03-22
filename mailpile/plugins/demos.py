@@ -97,4 +97,32 @@ mailpile.plugins.register_slow_periodic_job('tick-15', 15, TickJob)
 
 ##[ Pluggable commands ]######################################################
 
-# FIXME
+from mailpile.commands import Command
+from mailpile.util import md5_hex
+
+
+class md5sumCommand(Command):
+    """This command calculates MD5 sums"""
+    SYNOPSIS = (None, 'md5sum', 'md5sum', '[<data to hash>]')
+    SPLIT_ARG = False
+
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = {
+       'data': 'Data to hash'
+    }
+
+    def command(self):
+        if 'data' in self.data:
+            data = self.data['data']
+        else:
+            data = ''.join(self.args)
+
+        if 'gross' in data or not data:
+            return self._error(_('I refuse to work with empty or gross data'),
+                               info={'data': data})
+
+        return self._success(_('I hashed your data for you, yay!'),
+                             result=md5_hex(data))
+
+
+mailpile.plugins.register_commands(md5sumCommand)

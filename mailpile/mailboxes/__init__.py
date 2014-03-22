@@ -35,6 +35,8 @@ def IsMailbox(fn):
         try:
             if mbox_cls.parse_path(fn):
                 return True
+        except KeyboardInterrupt:
+            raise
         except:
             pass
     return False
@@ -44,6 +46,8 @@ def OpenMailbox(fn, create=False):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
             return mbox_cls(*mbox_cls.parse_path(fn, create=create))
+        except KeyboardInterrupt:
+            raise
         except:
             pass
     raise ValueError('Not a mailbox: %s' % fn)
