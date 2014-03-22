@@ -68,9 +68,17 @@ class Command:
 
         def as_text(self):
             if isinstance(self.result, bool):
-                return '%s: %s' % (self.result and 'Succeeded' or 'Failed',
-                                   self.doc)
-            return unicode(self.result)
+                happy = '%s: %s' % (self.result and _('OK') or _('Failed'),
+                                    self.message or self.doc)
+                if not self.result and self.error_info:
+                    return '%s\n%s' % (happy, json.dumps(self.error_info,
+                                                         indent=4))
+                else:
+                    return happy
+            elif isinstance(self.result, (dict, list, tuple)):
+                return json.dumps(self.result, indent=4, sort_keys=True)
+            else:
+                return unicode(self.result)
 
         __str__ = lambda self: self.as_text()
 
@@ -981,8 +989,7 @@ class ConfigUnset(Command):
             session.ui.warning(_('In lockdown, doing nothing.'))
             return False
 
-        vlist = list(self.args)
-        vlist.extend(self.data.get('var', None) or [])
+        vlist = list(self.args) + (self.data.get('var', None) or [])
         for v in vlist:
             cfg, vn = config.walk(v, parent=True)
             if vn in cfg:
@@ -995,7 +1002,6 @@ class ConfigPrint(Command):
     """Print one or more settings"""
     SYNOPSIS = ('P', 'print', 'settings', '<var>')
     ORDER = ('Config', 3)
-    SPLIT_ARG = False
     HTTP_QUERY_VARS = {
         'var': 'section.variable'
     }
@@ -1003,14 +1009,17 @@ class ConfigPrint(Command):
     def command(self):
         session, config = self.session, self.session.config
         result = {}
-        try:
-            # FIXME: Are there privacy implications here somewhere?
-            for key in (self.args + tuple(self.data.get('var', []))):
+        # FIXME: Are there privacy implications here somewhere?
+        for key in (self.args + tuple(self.data.get('var', []))):
+            try:
                 result[key] = config.walk(key)
-        except KeyError:
-            session.ui.error(_('No such key: %s') % key)
+            except KeyError:
+                self.error_info[key] = _('Unknown setting')
+        if self.error_info:
+            session.ui.error(_('No such keys: %s') % self.error_info.keys())
             return False
-        return result
+        else:
+            return result
 
 
 class AddMailboxes(Command):
