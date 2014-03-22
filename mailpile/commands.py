@@ -321,8 +321,8 @@ class Command:
 
         # FIXME: Remove this when stuff is up to date
         if self.status == 'unknown':
-            self.session.ui.warning('FIXME: %s should return '
-                                    'self._success(...)' % self.__class__)
+            self.session.ui.warning('FIXME: %s should use self._success'
+                                    ' etc. (issue #383)' % self.__class__)
             self.status = 'success'
 
         result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
