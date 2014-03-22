@@ -85,4 +85,31 @@ This is Python inside of Mailpile inside of Python.
         return 'That was fun!'
 
 
-mailpile.plugins.register_commands(Hacks, FixIndex, PyCLI)
+class ViewMetadata(Hacks):
+    """Display the raw metadata for a message"""
+    SYNOPSIS = (None, 'hacks/metadata', None, '[<message>]')
+
+    def _explain(self, i):
+        idx = self._idx()
+        info = idx.get_msg_at_idx_pos(i)
+        return {
+            'mid': info[idx.MSG_MID],
+            'ptrs': info[idx.MSG_PTRS],
+            'id': info[idx.MSG_ID],
+            'date': info[idx.MSG_DATE],
+            'from': info[idx.MSG_FROM],
+            'to': info[idx.MSG_TO],
+            'cc': info[idx.MSG_CC],
+            'kb': info[idx.MSG_KB],
+            'subject': info[idx.MSG_SUBJECT],
+            'body': info[idx.MSG_BODY],
+            'tags': info[idx.MSG_TAGS],
+            'replies': info[idx.MSG_REPLIES],
+            'thread_mid': info[idx.MSG_THREAD_MID],
+        }
+
+    def command(self):
+        return [self._explain(i) for i in self._choose_messages(self.args)]
+
+
+mailpile.plugins.register_commands(Hacks, FixIndex, PyCLI, ViewMetadata)
