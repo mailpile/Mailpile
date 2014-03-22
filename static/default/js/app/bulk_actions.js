@@ -1,6 +1,8 @@
 /* Pile - Bulk Action Link */
 $(document).on('click', '.bulk-action-tag', '.bulk-action-untag', function(e) {
 
+	e.preventDefault();
+
   // Open Modal with selection options
   mailpile.tag_list(function(result) {
 
@@ -9,7 +11,7 @@ $(document).on('click', '.bulk-action-tag', '.bulk-action-untag', function(e) {
 
     $.each(result.tags, function(key, value) {
       if (value.display === 'tag') {
-        tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';          
+        tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
       }
       else if (value.display === 'archive') {
         archive_html += '<li class="checkbox-item-picker"><input type="checkbox"> ' + value.name + '</li>';
@@ -26,7 +28,7 @@ $(document).on('click', '.bulk-action-tag', '.bulk-action-untag', function(e) {
 $(document).on('click', '.bulk-action-later, .bulk-action-archive, .bulk-action-trash', function(e) {
 
 	e.preventDefault();
-	var action = $(this).attr('class').replace('bulk-action-', '')
+	var action = $(this).attr('class').replace('bulk-action-', '');
   var delete_tag = '';
 
   if ($.url.segment(0) === 'in') {
@@ -56,7 +58,9 @@ $(document).on('click', '.bulk-action-add-to-group', function(e) {
 // Mark Unread
 $(document).on('click', '.bulk-action-unread', function() {
     mailpile.tag_add_delete('new', mailpile.tags_cache, mailpile.messages_cache, function(result) {
-
+      $.each(mailpile.messages_cache, function(key, mid) {
+        $('#pile-message-' + mid).addClass('in_new');
+      });
       // Empty Bulk Cache
       mailpile.bulk_cache = [];
     });
@@ -65,7 +69,9 @@ $(document).on('click', '.bulk-action-unread', function() {
 // Mark Read
 $(document).on('click', '.bulk-action-read', function() {
     mailpile.tag_add_delete(mailpile.tags_cache, 'new', mailpile.messages_cache, function(result) {
-
+      $.each(mailpile.messages_cache, function(key, mid) {
+        $('#pile-message-' + mid).removeClass('in_new');
+      });
       // Empty Bulk Cache
       mailpile.bulk_cache = [];
     });
