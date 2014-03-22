@@ -36,6 +36,7 @@ class Command:
     RAISES = (UsageError, UrlRedirectException)
 
     # Event logging settings
+    LOG_NOTHING = False
     LOG_PROGRESS = False
     LOG_STARTING = '%(name)s: Starting'
     LOG_FINISHED = '%(name)s: %(message)s'
@@ -284,7 +285,11 @@ class Command:
     def _update_event_state(self, state, log=False):
         self.event.flags = state
         self.event.data['elapsed'] = int(1000 * (time.time()-self._start_time))
-        if log or self.LOG_PROGRESS:
+
+        if (log or self.LOG_PROGRESS) and not self.LOG_NOTHING:
+            ui = str(self.session.ui.__class__).replace('mailpile.', '.')
+            self.event.data['ui'] = ui
+            self.event.data['output'] = self.session.ui.render_mode
             self.session.config.event_log.log_event(self.event)
 
     def _starting(self):
@@ -1122,6 +1127,7 @@ class Output(Command):
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
     ORDER = ('Internals', 7)
     HTTP_STRICT_VARS = False
+    LOG_NOTHING = True
 
     def command(self):
         m = self.session.ui.render_mode = self.args and self.args[0] or 'text'

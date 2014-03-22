@@ -33,7 +33,7 @@ def _ClassName(obj):
     if isinstance(obj, (str, unicode)):
         return str(obj)
     else:
-        return str(obj.__class__)
+        return str(obj.__class__).replace('mailpile.', '.')
 
 
 class Event(object):
@@ -92,6 +92,8 @@ class Event(object):
         module_name, class_name = CleanText(self.source,
                                             banned=CleanText.NONDNS
                                             ).clean.rsplit('.', 1)
+        if module_name.startswith('.'):
+            module_name = 'mailpile' + module_name
         module = __import__(module_name, globals(), locals(), class_name)
         return getattr(module, class_name)
 
