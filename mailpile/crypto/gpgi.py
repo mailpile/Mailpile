@@ -1,5 +1,6 @@
 #coding:utf-8
 import os
+import string
 import sys
 import fcntl
 import time
@@ -17,6 +18,7 @@ from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 
 
 DEFAULT_SERVER = "pool.sks-keyservers.net"
+GPG_KEYID_LENGTH = 8
 
 openpgp_trust = {"-": _("Trust not calculated"),
                  "o": _("Unknown trust"),
@@ -814,7 +816,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
-                            '--search-key', term], 
+                            '--search-key', self._escape_hex_keyid_term(term)],
                             callbacks={"stdout": lambda x: x})[1]["stdout"][0]
         results = {}
         lines = [x.split(":") for x in retvals.strip().split("\n")]
@@ -843,6 +845,24 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 res[key] = props
 
         return res
+
+    def _escape_hex_keyid_term(self, term):
+        """Prepends a 0x to hexadecimal key ids, e.g. D13C70DA is converted to 0xD13C70DA.
+
+            This is necessary because version 1 and 2 of GnuPG show a different behavior here,
+            version 1 allows to search without 0x while version 2 requires 0x in front of the key id.
+        """
+        is_hex_keyid = False
+        if len(term) == GPG_KEYID_LENGTH:
+            hex_digits = set(string.hexdigits)
+            is_hex_keyid = all(c in hex_digits for c in term)
+
+        if is_hex_keyid:
+            return '0x%s' % term
+        else:
+            return term
+
+
 
 
 def GetKeys(gnupg, config, people):
