@@ -222,11 +222,22 @@ def elapsed_datetime(timestamp):
     """
     Return "X days ago" style relative dates for recent dates.
     """
-    ts = datetime.date.fromtimestamp(timestamp)
-    days_ago = (datetime.date.today() - ts).days
+    ts = datetime.datetime.fromtimestamp(timestamp)
+    elapsed = datetime.datetime.today() - ts
+    days_ago = elapsed.days
+    hours_ago, remainder = divmod(elapsed.seconds, 3600)
+    minutes_ago, seconds_ago = divmod(remainder, 60)
 
     if days_ago < 1:
-        return _('today')
+        if hours_ago < 1:
+            if minutes_ago < 5:
+                return _('just now')
+            elif minutes_ago >= 5:
+                return _('%d minutes') % minutes_ago
+        elif hours_ago < 2:
+            return _('%d hour') % hours_ago
+        else:
+            return _('%d hours') % hours_ago
     elif days_ago < 2:
         return _('%d day') % days_ago
     elif days_ago < 7:
