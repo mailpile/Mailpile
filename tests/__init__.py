@@ -8,6 +8,7 @@ from cStringIO import StringIO
 
 # Mailpile core
 import mailpile
+from mailpile.plugins.tags import AddTag, Filter
 from mailpile.ui import SilentInteraction
 
 # Pull in all the standard plugins, plus the demos.
@@ -16,6 +17,33 @@ from mailpile.plugins import *
 
 
 MP = None
+
+TAGS = {
+    'New': {
+        'type': 'unread',
+        'label': False,
+        'display': 'invisible'
+    },
+    'Inbox': {
+        'display': 'priority',
+        'display_order': 2,
+    }
+}
+
+
+def _initialize_mailpile_for_testing(MP, test_data):
+    # Add some mail, scan it.
+    MP._config.sys.http_port = random.randint(40000, 45000)
+    session = MP._session
+    # Create local mailboxes
+    session.config.open_local_mailbox(session)
+    for t in TAGS:
+        AddTag(MP._session, arg=[t]).run(save=False)
+        session.config.get_tag(t).update(TAGS[t])
+    Filter(session, arg=['new', '@incoming', '+Inbox', '+New', 'Incoming mail filter']).run(save=False)
+    #    MP.setup()
+    MP.add(test_data)
+    MP.rescan()
 
 
 def get_shared_mailpile():
@@ -38,10 +66,7 @@ def get_shared_mailpile():
     MP = mailpile.Mailpile(workdir=workdir, ui=SilentInteraction)
     MP._session.config.plugins.load('demos')
 
-    # Add some mail, scan it.
-    MP._config.sys.http_port = random.randint(40000, 45000)
-    MP.add(test_data)
-    MP.rescan()
+    _initialize_mailpile_for_testing(MP, test_data)
     return MP
 
 
