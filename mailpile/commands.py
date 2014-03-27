@@ -715,7 +715,7 @@ class SearchResults(dict):
                 m = self['data']['metadata'][mid]
                 tags = [self['data']['tags'][t] for t in m['tag_tids']]
                 tag_names = [t['name'] for t in tags
-                             if 'searched' not in t
+                             if not t.get('searched', False)
                              and t.get('label', True)
                              and t.get('display', '') != 'invisible']
                 tag_new = [t for t in tags if t.get('type') == 'unread']
