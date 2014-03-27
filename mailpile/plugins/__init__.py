@@ -1,4 +1,6 @@
 # Plugins!
+import imp
+import json
 import os
 import sys
 from gettext import gettext as _
@@ -10,6 +12,7 @@ import mailpile.vcard
 
 ##[ Plugin discovery ]########################################################
 
+
 # These are the plugins we ship/import by default
 __all__ = [
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
@@ -18,42 +21,106 @@ __all__ = [
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
     'hacks', 'html_magic', 'smtp_server'
 ]
-BUILTIN = (__all__[:] + [
-    'autotag_sb'
-])
-
-# These are plugins which we consider required
-REQUIRED = [
-    'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
-    'dates', 'sizes', 'cryptostate', 'setup_magic', 'html_magic'
-]
-DISCOVERED = {}
 
 
-def Discover(paths):
-    plugins = BUILTIN[:]
-    for pdir in paths:
-        pass  # FIXME: Should scan the plugin directory for more!
-    return plugins
+class PluginManager(object):
+    """
+    Manage importing and loading of plugins. Note that this class is
+    effectively a singleton, as it works entirely with globals within
+    the mailpile.plugins module.
+    """
+    DEFAULT = __all__
+    BUILTIN = (DEFAULT + [
+        'autotag_sb'
+    ])
 
+    # These are plugins which we consider required
+    REQUIRED = [
+        'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
+        'dates', 'sizes', 'cryptostate', 'setup_magic', 'html_magic'
+    ]
+    DISCOVERED = {}
 
-def Load(plugin_name):
-    full_name = 'mailpile.plugins.%s' % plugin_name
-    if full_name in sys.modules:
-        return
+    def _listdir(self, path):
+        try:
+            return [d for d in os.listdir(path) if not d.startswith('.')]
+        except OSError:
+            return []
 
-    if plugin_name in BUILTIN:
-        full_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                 '%s.py' % plugin_name)
-    else:
-        full_path = DISCOVERED.get(plugin_name)
+    def discover(self, paths, update=False):
+        """
+        Scan the plugin directories for plugins we could load.
+        This updates the global PluginManager state and returns the
+        PluginManager itself (for chaining).
+        """
+        plugins = self.BUILTIN[:]
+        for pdir in paths:
+            for subdir in self._listdir(pdir):
+                pname = subdir.lower()
+                if pname in self.BUILTIN:
+                    print 'Cannot overwrite built-in plugin: %s' % pname
+                    continue
+                if pname in self.DISCOVERED and not update:
+                    # FIXME: this is lame
+                    print 'Ignoring duplicate plugin: %s' % pname
+                    continue
+                try:
+                    plug_path = os.path.join(pdir, subdir)
+                    with open(os.path.join(plug_path, 'manifest.json')) as mfd:
+                        manifest = json.load(mfd)
+                        assert(manifest.get('name') == subdir)
+                        # FIXME: Need more sanity checks
+                        self.DISCOVERED[pname] = (plug_path, manifest)
+                except (OSError, IOError):
+                    pass
 
-    if not full_path:
-        raise PluginError('No load path known for %s' % plugin_name)
+        return self
 
-    sys.path = [os.path.dirname(full_path)] + sys.path
-    __import__(full_name, globals(), locals(), [], 0)
-    sys.path.pop(0)
+    def available(self):
+        return self.BUILTIN[:] + self.DISCOVERED.keys()
+
+    def _import(self, full_name, full_path):
+        parent = full_name.rsplit('.', 1)[0]
+        if parent not in sys.modules:
+            sys.modules[parent] = imp.new_module(parent)
+        sys.modules[full_name] = imp.new_module(full_name)
+        with open(full_path, 'r') as mfd:
+            exec mfd.read() in sys.modules[full_name].__dict__
+
+    def load(self, plugin_name):
+        full_name = 'mailpile.plugins.%s' % plugin_name
+        if full_name in sys.modules:
+            return
+
+        if plugin_name in self.BUILTIN:
+            # The builtins are just normal Python code with their
+            # manifest declared as a variable.
+            module = __import__(full_name)
+            try:
+                manifest = module.MANIFEST
+            except AttributeError:
+                manifest = None
+
+        else:
+            dirname, manifest = self.DISCOVERED.get(plugin_name)
+
+            # Load the Python requested by the manifest.json
+            files = manifest.get('files', {}).get('python', [])
+            files.sort(key=lambda f: len(f))
+            for filename in files:
+                path = os.path.join(dirname, filename)
+                if filename == '.':
+                    self._import(full_name, dirname)
+                elif filename.endswith('.py'):
+                    subname = filename[:-3].replace('/', '.')
+                elif os.path.isdir(path):
+                    subname = filename.replace('/', '.')
+                else:
+                    continue
+                self._import('.'.join([full_name, subname]), path)
+
+        # FIXME: Register all the hooks and commands and things described
+        # in the manifest.
 
 
 class PluginError(Exception):

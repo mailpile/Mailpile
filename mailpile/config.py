@@ -899,21 +899,25 @@ class ConfigManager(ConfigDict):
         except IOError:
             pass
 
-        # Discover plugins and update the config rule
+        # Discover plugins and update the config rule to match
         import mailpile.plugins
-        pds = [os.path.join(self.workdir, 'plugins')]
-        pds = mailpile.plugins.Discover(pds)
-        self.sys.plugins.rules['_any'][1] = pds
+        self.plugins = mailpile.plugins.PluginManager().discover([
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         '..', 'plugins'),
+            os.path.join(self.workdir, 'plugins')
+        ])
+        self.sys.plugins.rules['_any'][1] = self.plugins.available()
 
         # Parse once (silently), to figure out which plugins to load...
         self.parse_config(None, '\n'.join(lines), source=filename)
+
         if len(self.sys.plugins) == 0:
-            self.sys.plugins.extend(mailpile.plugins.__all__)
+            self.sys.plugins.extend(self.plugins.DEFAULT)
         self.load_plugins(session)
 
         # Now all the plugins are loaded, reset and parse again!
         self.set_rules(self._rules_source)
-        self.sys.plugins.rules['_any'][1] = pds
+        self.sys.plugins.rules['_any'][1] = self.plugins.available()
         self.parse_config(session, '\n'.join(lines), source=filename)
 
         # Open event log
@@ -933,10 +937,10 @@ class ConfigManager(ConfigDict):
 
     def load_plugins(self, session):
         import mailpile.plugins
-        plugin_list = set(mailpile.plugins.REQUIRED + self.sys.plugins)
+        plugin_list = set(self.plugins.REQUIRED + self.sys.plugins)
         for plugin in plugin_list:
             session.ui.mark(_('Loading plugin: %s') % plugin)
-            mailpile.plugins.Load(plugin)
+            self.plugins.load(plugin)
         self.prepare_workers(session)
 
     def save(self):

@@ -25,7 +25,6 @@ os.environ['GNUPGHOME'] = mailpile_gpgh
 
 # Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
-import mailpile.plugins.demos
 from mailpile import Mailpile
 
 
@@ -40,6 +39,7 @@ MY_KEYID = '0x7848252F'
 os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
 cfg = config = mp._session.config
+cfg.plugins.load('demos')
 
 
 def contents(fn):

@@ -1,0 +1,48 @@
+{
+    "name": "demos",
+    "author": "The Mailpile Team <team@mailpile.is>",
+
+    "files": {
+        "python": ["demos.py"]
+    },
+
+    "config": {
+        "sections": [],
+        "variables": {
+            "sys": {
+                "md5sum_blacklist": ["Words hated by the md5sum command",
+                                     "str", "gross"]
+            }
+        }
+    },
+
+    "commands": [
+        {
+            "class": "demos.md5sumCommand",
+            "url": "md5sum",
+            "name": "md5sum"
+        }
+    ],
+
+    "keyword_extractors": [
+    ],
+    "search_terms": [
+    ],
+    "filters": {
+        "pre": [],
+        "post": []
+    },
+    "contacts": {
+        "importers": [],
+        "exporters": [],
+        "context": []
+    },
+    "threads": [
+        "MyWorker"
+    ],
+    "activities": [],
+    "display_modes": [],
+    "display_actions": [],
+    "selection_actions": [],
+    "assets": []
+}

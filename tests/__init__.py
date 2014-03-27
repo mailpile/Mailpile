@@ -13,7 +13,6 @@ from mailpile.ui import SilentInteraction
 # Pull in all the standard plugins, plus the demos.
 from mailpile.mailboxes import *
 from mailpile.plugins import *
-import mailpile.plugins.demos
 
 
 MP = None
@@ -37,6 +36,7 @@ def get_shared_mailpile():
                      'please wait. 8-)\n')
 
     MP = mailpile.Mailpile(workdir=workdir, ui=SilentInteraction)
+    MP._session.config.plugins.load('demos')
 
     # Add some mail, scan it.
     MP._config.sys.http_port = random.randint(40000, 45000)
