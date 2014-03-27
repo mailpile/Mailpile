@@ -20,7 +20,6 @@ import json
 from collections import defaultdict
 from gettext import gettext as _
 from json import JSONEncoder
-from jinja2 import Environment, FileSystemLoader
 from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound
 from jinja2 import TemplatesNotFound, TemplateAssertionError, UndefinedError
 
@@ -294,18 +293,7 @@ class UserInteraction:
         return json.dumps(data, indent=1, cls=NoFailEncoder, sort_keys=True)
 
     def _web_template(self, config, tpl_names, elems=None, ext='html'):
-        # FIXME: would be nice to rename html folder to web
-        theme_path = os.path.join(config.data_directory('html_theme'), 'html')
-        plugin_path = os.path.join(config.data_directory('html_theme'), 'plugins')
-        templatepaths = [theme_path, plugin_path]
-        env = Environment(loader=FileSystemLoader(templatepaths),
-                          autoescape=True,
-                          extensions=[
-                              'jinja2.ext.i18n', 'jinja2.ext.with_',
-                              'jinja2.ext.do',
-                              'mailpile.jinjaextensions.MailpileCommand'])
-        env.install_gettext_translations(config.get_i18n_translation(),
-                                         newstyle=True)
+        env = config.jinja_env
         env.session = Session(config)
         env.session.ui = HttpUserInteraction(None, config)
         for tpl_name in tpl_names:

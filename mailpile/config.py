@@ -8,6 +8,8 @@ import ConfigParser
 from gettext import translation, gettext, NullTranslations
 from gettext import gettext as _
 
+from jinja2 import Environment, BaseLoader, FileSystemLoader
+
 from urllib import quote, unquote
 from mailpile.crypto.streamer import DecryptingStreamer
 
@@ -797,6 +799,8 @@ class ConfigManager(ConfigDict):
         self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
         self.other_workers = []
 
+        self.jinja_env = None
+
         self.event_log = None
         self.index = None
         self.vcards = {}
@@ -928,7 +932,20 @@ class ConfigManager(ConfigDict):
                                   ).load()
 
         # Enable translations
-        self.get_i18n_translation(session)
+        translation = self.get_i18n_translation(session)
+
+        # Configure jinja2
+        # FIXME: would be nice to rename html folder to web
+        theme_path = os.path.join(self.data_directory('html_theme'), 'html')
+        self.jinja_env = Environment(
+            loader=FileSystemLoader([theme_path]),
+            autoescape=True,
+            extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
+                        'jinja2.ext.do',
+                        'mailpile.jinjaextensions.MailpileCommand']
+        )
+        self.jinja_env.install_gettext_translations(translation,
+                                                    newstyle=True)
 
         # Load VCards
         self.vcards = VCardStore(self, self.data_directory('vcards',
