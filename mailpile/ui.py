@@ -174,35 +174,46 @@ class UserInteraction:
     debug = lambda self, msg: self.log(self.LOG_DEBUG, msg)
 
     # Progress indication and performance tracking
-    times = property(lambda self: self.time_tracking[0][1])
+    times = property(lambda self: self.time_tracking[-1][1])
 
-    def mark(self, action, percent=None):
+    def mark(self, action=None, percent=None):
         """Note that we are about to perform an action."""
+        if not action:
+            action = self.times and self.times[-1][1] or 'mark'
         self.progress(action)
         self.times.append((time.time(), action))
 
-    def reset_marks(self, quiet=False):
-        """This sequence of actions is complete."""
+    def report_marks(self, quiet=False, details=False):
         t = self.times
-        self.times = []
         if t:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
                 self.notify(_('Elapsed: %.3fs (%s)') % (elapsed, t[-1][1]))
+                if True or details:
+                    for i in range(0, len(self.times)-1):
+                        e = t[i+1][0] - t[i][0]
+                        self.notify(' -> %.3fs (%s)' % (e, t[i][1]))
             return elapsed
-        else:
-            return 0
+        return 0
 
-    def mark_push(self, subtask):
-        """We are beginnning a sub-sequence we want to track separately."""
-        self.time_tracking[:0] = [(subtask, [])]
+    def reset_marks(self, mark=True, quiet=False, details=False):
+        """This sequence of actions is complete."""
+        if self.times and mark:
+            self.mark()
+        elapsed = self.report_marks(quiet=quiet, details=details)
+        self.times[:] = []
+        return elapsed
 
-    def mark_pop(self, quiet=False):
-        """Sub-task completed."""
-        elapsed = self.reset_marks(quiet=quiet)
+    def push_marks(self, subtask):
+        """Start tracking a new sub-task."""
+        self.time_tracking.append((subtask, []))
+
+    def pop_marks(self, name=None, quiet=True):
+        """Sub-task ended!"""
+        elapsed = self.report_marks(quiet=quiet)
         if len(self.time_tracking) > 1:
-            subtask, times = self.time_tracking.pop(0)
-            self.mark(_('Completed %s in %.3fs') % (subtask, elapsed))
+            if not name or (self.time_tracking[-1][0] == name):
+                self.time_tracking.pop(-1)
         return elapsed
 
     # Higher level command-related methods
@@ -211,12 +222,13 @@ class UserInteraction:
 
     def start_command(self, cmd, args, kwargs):
         self.flush_log()
+        self.push_marks(cmd)
         self.mark(('%s(%s)'
                    ) % (cmd, ', '.join((args or tuple()) +
                                        ('%s' % kwargs, ))))
 
-    def finish_command(self):
-        self.reset_marks()
+    def finish_command(self, cmd):
+        self.pop_marks(name=cmd)
 
     def display_result(self, result):
         """Render command result objects to the user"""

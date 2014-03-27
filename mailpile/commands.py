@@ -174,7 +174,7 @@ class Command:
         def __do_load2():
             config.vcards.load_vcards(session)
             if not wait_all:
-                session.ui.reset_marks(quiet=quiet)
+                session.ui.report_marks(quiet=quiet)
 
         def __do_load1():
             if reset:
@@ -186,11 +186,12 @@ class Command:
             if wait_all:
                 __do_load2()
             if not wait:
-                session.ui.reset_marks(quiet=quiet)
+                session.ui.report_marks(quiet=quiet)
             return idx
 
         if wait:
             rv = config.slow_worker.do(session, 'Load', __do_load1)
+            session.ui.reset_marks(quiet=quiet)
         else:
             config.slow_worker.add_task(session, 'Load', __do_load1)
             rv = None
@@ -251,7 +252,6 @@ class Command:
             details = ' '.join(['%s=%s' % (k, info[k]) for k in info])
             ui_message += ' (%s)' % details
         self.session.ui.mark(self.name)
-        self.session.ui.reset_marks()
         self.session.ui.error(ui_message)
 
         return False
@@ -262,7 +262,6 @@ class Command:
 
         ui_message = _('%s: %s') % (self.name, message)
         self.session.ui.mark(ui_message)
-        self.session.ui.reset_marks()
 
         return result
 
@@ -317,15 +316,13 @@ class Command:
                            private_data=private_data)
 
     def _finishing(self, command, rv):
-        if self.name:
-            self.session.ui.finish_command()
-
         # FIXME: Remove this when stuff is up to date
         if self.status == 'unknown':
             self.session.ui.warning('FIXME: %s should use self._success'
                                     ' etc. (issue #383)' % self.__class__)
             self.status = 'success'
 
+        self.session.ui.mark(_('Generating result'))
         result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
                                     command.__doc__ or self.__doc__,
                                     rv, self.status, self.message,
@@ -341,6 +338,10 @@ class Command:
         self.event.message = self._fmt_msg(self.LOG_FINISHED)
         self._update_event_state(Event.COMPLETE, log=True)
 
+        self.session.ui.mark(self.event.message)
+        self.session.ui.report_marks(details=self.session.config.sys.debug)
+        if self.name:
+            self.session.ui.finish_command(self.name)
         return result
 
     def _run(self, *args, **kwargs):
