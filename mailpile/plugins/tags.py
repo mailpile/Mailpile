@@ -1,22 +1,26 @@
 from gettext import gettext as _
 
-import mailpile.plugins
 import mailpile.config
 from mailpile.commands import Command
+from mailpile.plugins import PluginManager
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
 from mailpile.plugins.search import Search
 
 
+_plugin_manager = PluginManager(builtin=True)
+
+
 ##[ Configuration ]###########################################################
+
 
 FILTER_TYPES = ('user',      # These are the default, user-created filters
                 'incoming',  # These filters are only applied to new messages
                 'system',    # Mailpile core internal filters
                 'plugin')    # Filters created by plugins
 
-mailpile.plugins.register_config_section('tags', ["Tags", {
+_plugin_manager.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
     'slug': ['URL slug', 'slashslug', ''],
 
@@ -50,14 +54,14 @@ mailpile.plugins.register_config_section('tags', ["Tags", {
     'write_flag': ['DEPRECATED', 'ignore', None],
 }, {}])
 
-mailpile.plugins.register_config_section('filters', ["Filters", {
+_plugin_manager.register_config_section('filters', ["Filters", {
     'tags': ['Tag/untag actions', 'str', ''],
     'terms': ['Search terms', 'str', ''],
     'comment': ['Human readable description', 'str', ''],
     'type': ['Filter type', FILTER_TYPES, FILTER_TYPES[0]],
 }, {}])
 
-mailpile.plugins.register_config_variables('sys', {
+_plugin_manager.register_config_variables('sys', {
     'writable_tags': ['DEPRECATED', 'str', []],
     'invisible_tags': ['DEPRECATED', 'str', []],
 })
@@ -630,6 +634,6 @@ class MoveFilter(ListFilters):
         return ListFilters.command(self, want_fid=self.args[1])
 
 
-mailpile.plugins.register_commands(Tag, AddTag, DeleteTag, ListTags,
-                                   Filter, DeleteFilter,
-                                   MoveFilter, ListFilters)
+_plugin_manager.register_commands(Tag, AddTag, DeleteTag, ListTags,
+                                  Filter, DeleteFilter,
+                                  MoveFilter, ListFilters)

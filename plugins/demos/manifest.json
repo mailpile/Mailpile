@@ -1,3 +1,10 @@
+# This is a Mailpile plugin manifest, describing the `demos` plugin.
+#
+# NOTE: The Mailpile plugin manifest format is JSON, with the optional
+#       extension that comments are allowed.  Comments must be on lines of
+#       their own and begin with a '#' character optionally preceded by
+#       some whitespace.  No other comment styles are supported.
+#
 {
     "name": "demos",
     "author": "The Mailpile Team <team@mailpile.is>",
@@ -7,7 +14,7 @@
     },
 
     "config": {
-        "sections": [],
+        "sections": {},
         "variables": {
             "sys": {
                 "md5sum_blacklist": ["Words hated by the md5sum command",
@@ -16,6 +23,7 @@
         }
     },
 
+    # These are our Python-related hooks
     "commands": [
         {
             "class": "demos.md5sumCommand",
@@ -23,7 +31,15 @@
             "name": "md5sum"
         }
     ],
-
+    "contacts": {
+        "importers": ["demos.DemoVCardImporter"],
+        "exporters": [],
+        "context": []
+    },
+    "periodic_jobs": {
+        "fast": {"interval": 5, "class": "demos.TickJob"},
+        "slow": {"interval": 15, "class": "demos.TickJob"}
+    },
     "keyword_extractors": [
     ],
     "search_terms": [
@@ -32,14 +48,10 @@
         "pre": [],
         "post": []
     },
-    "contacts": {
-        "importers": [],
-        "exporters": [],
-        "context": []
-    },
     "threads": [
         "MyWorker"
     ],
+
     "activities": [],
     "display_modes": [],
     "display_actions": [],

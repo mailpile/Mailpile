@@ -3,14 +3,17 @@ import re
 import time
 from gettext import gettext as _
 
-import mailpile.plugins
 from mailpile.commands import Command, SearchResults
 from mailpile.mailutils import Email, MBX_ID_LEN
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
+from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import SuppressHtmlOutput
+
+
+_plugin_manager = PluginManager(builtin=True)
 
 
 ##[ Commands ]################################################################
@@ -307,8 +310,8 @@ class Extract(Command):
         return results
 
 
-mailpile.plugins.register_commands(Extract, Next, Order, Previous,
-                                   Search, View)
+_plugin_manager.register_commands(Extract, Next, Order, Previous,
+                                  Search, View)
 
 
 ##[ Search terms ]############################################################
@@ -329,4 +332,4 @@ def mailbox_search(config, idx, term, hits):
     return rt
 
 
-mailpile.plugins.register_search_term('mailbox', mailbox_search)
+_plugin_manager.register_search_term('mailbox', mailbox_search)

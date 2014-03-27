@@ -900,8 +900,8 @@ class ConfigManager(ConfigDict):
             pass
 
         # Discover plugins and update the config rule to match
-        import mailpile.plugins
-        self.plugins = mailpile.plugins.PluginManager().discover([
+        from mailpile.plugins import PluginManager
+        self.plugins = PluginManager().discover([
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
                          '..', 'plugins'),
             os.path.join(self.workdir, 'plugins')
@@ -936,8 +936,8 @@ class ConfigManager(ConfigDict):
                                                            mkdir=True))
 
     def load_plugins(self, session):
-        import mailpile.plugins
-        plugin_list = set(self.plugins.REQUIRED + self.sys.plugins)
+        from mailpile.plugins import PluginManager
+        plugin_list = set(PluginManager.REQUIRED + self.sys.plugins)
         for plugin in plugin_list:
             session.ui.mark(_('Loading plugin: %s') % plugin)
             self.plugins.load(plugin)
@@ -1189,8 +1189,8 @@ class ConfigManager(ConfigDict):
                     config.http_worker = HttpWorker(session, sspec)
                     config.http_worker.start()
             if not config.other_workers:
-                import mailpile.plugins
-                for worker in mailpile.plugins.WORKERS:
+                from mailpile.plugins import PluginManager
+                for worker in PluginManager.WORKERS:
                     w = worker(session)
                     w.start()
                     config.other_workers.append(w)
@@ -1210,17 +1210,17 @@ class ConfigManager(ConfigDict):
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
             # Schedule plugin jobs
-            import mailpile.plugins
+            from mailpile.plugins import PluginManager
 
             def interval(i):
                 if isinstance(i, (str, unicode)):
                     i = config.walk(i)
                 return int(i)
 
-            for job, (i, f) in mailpile.plugins.FAST_PERIODIC_JOBS.iteritems():
+            for job, (i, f) in PluginManager.FAST_PERIODIC_JOBS.iteritems():
                 config.cron_worker.add_task(job, interval(i),
                                             lambda: f(session))
-            for job, (i, f) in mailpile.plugins.SLOW_PERIODIC_JOBS.iteritems():
+            for job, (i, f) in PluginManager.SLOW_PERIODIC_JOBS.iteritems():
                 def wrap():
                     config.slow_worker.add_task(session, job,
                                                 lambda: f(session))

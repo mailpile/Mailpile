@@ -8,7 +8,7 @@
 # Happy hacking!
 
 from gettext import gettext as _
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 
 
 ##[ Pluggable configuration ]#################################################
@@ -70,9 +70,6 @@ class DemoVCardImporter(VCardImporter):
         )]
 
 
-mailpile.plugins.register_vcard_importers(DemoVCardImporter)
-
-
 ##[ Pluggable cron jobs ]#####################################################
 
 def TickJob(session):
@@ -89,10 +86,10 @@ def TickJob(session):
     session.ui.notify('Tick!')
 
 
-mailpile.plugins.register_fast_periodic_job('tick-05',  # Job name
-                                            5,          # Interval in seconds
-                                            TickJob)    # Callback
-mailpile.plugins.register_slow_periodic_job('tick-15', 15, TickJob)
+#PluginManager().register_fast_periodic_job('tick-05',  # Job name
+#                                            5,          # Interval in seconds
+#                                            TickJob)    # Callback
+#PluginManager().register_slow_periodic_job('tick-15', 15, TickJob)
 
 
 ##[ Pluggable commands ]######################################################
@@ -103,9 +100,8 @@ from mailpile.util import md5_hex
 
 class md5sumCommand(Command):
     """This command calculates MD5 sums"""
-    SYNOPSIS = (None, 'md5sum', 'md5sum', '[<data to hash>]')
+    SYNOPSIS_ARGS = '[<data to hash>]'
     SPLIT_ARG = False
-
     HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = {
        'data': 'Data to hash'
@@ -117,12 +113,11 @@ class md5sumCommand(Command):
         else:
             data = ''.join(self.args)
 
-        if 'gross' in data or not data:
-            return self._error(_('I refuse to work with empty or gross data'),
-                               info={'data': data})
+        for gross in self.session.config.sys.md5sum_blacklist.split():
+            if gross in data or not data:
+                return self._error(_('I refuse to work with empty '
+                                     'or gross data'),
+                                   info={'data': data})
 
         return self._success(_('I hashed your data for you, yay!'),
                              result=md5_hex(data))
-
-
-mailpile.plugins.register_commands(md5sumCommand)

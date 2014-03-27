@@ -8,14 +8,17 @@ import traceback
 from gettext import gettext as _
 from urllib import quote, unquote
 
-import mailpile.plugins as plugins
 import mailpile.util
 from mailpile.util import *
+from mailpile.plugins import PluginManager
 from mailpile.mailutils import MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import Email, ParseMessage, HeaderPrint
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
+
+
+_plugins = PluginManager()
 
 
 class SearchResultSet:
@@ -465,7 +468,7 @@ class MailIndex:
                     msg_mid, msg_id, msg, msg_size, msg_ts,
                     mailbox=mailbox_idx,
                     compact=False,
-                    filter_hooks=plugins.filter_hooks([self.filter_keywords]),
+                    filter_hooks=_plugins.get_filter_hooks([self.filter_keywords]),
                     is_new=True
                 )
 
@@ -533,7 +536,7 @@ class MailIndex:
         msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
                   ExtractEmails(self.hdr(msg, 'bcc')))
 
-        filters = plugins.filter_hooks([self.filter_keywords])
+        filters = _plugins.get_filter_hooks([self.filter_keywords])
         kw, sn = self.index_message(session,
                                     email.msg_mid(),
                                     msg_info[self.MSG_ID],
@@ -806,13 +809,13 @@ class MailIndex:
                 # NOTE: As a side effect here, the cryptostate plugin will
                 #       add a 'crypto:has' keyword which we check for below
                 #       before performing further processing.
-                for kwe in plugins.get_text_kw_extractors():
+                for kwe in _plugins.get_text_kw_extractors():
                     keywords.extend(kwe(self, msg, ctype, textpart))
 
                 if len(snippet) < 1024:
                     snippet += ' ' + textpart
 
-            for extract in plugins.get_data_kw_extractors():
+            for extract in _plugins.get_data_kw_extractors():
                 keywords.extend(extract(self, msg, ctype, att, part,
                                         lambda: _loader(part)))
 
@@ -832,7 +835,7 @@ class MailIndex:
             if session.config.prefs.index_encrypted:
                 for text in [t['data'] for t in tree['text_parts']]:
                     keywords.extend(re.findall(WORD_REGEXP, text.lower()))
-                    for kwe in plugins.get_text_kw_extractors():
+                    for kwe in _plugins.get_text_kw_extractors():
                         keywords.extend(kwe(self, msg, 'text/plain', text))
 
         keywords.append('%s:id' % msg_id)
@@ -860,7 +863,7 @@ class MailIndex:
             if not msg[key]:
                 keywords.append('%s:missing' % key)
 
-        for extract in plugins.get_meta_kw_extractors():
+        for extract in _plugins.get_meta_kw_extractors():
             keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts))
 
         snippet = snippet.replace('\n', ' '
@@ -1083,7 +1086,7 @@ class MailIndex:
                     rt.extend(self.search_tag(term, hits))
                 else:
                     t = term.split(':', 1)
-                    fnc = plugins.get_search_term(t[0])
+                    fnc = _plugins.get_search_term(t[0])
                     if fnc:
                         rt.extend(fnc(self.config, self, term, hits))
                     else:

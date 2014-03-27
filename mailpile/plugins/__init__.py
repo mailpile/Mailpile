@@ -1,5 +1,6 @@
 # Plugins!
 import imp
+import inspect
 import json
 import os
 import sys
@@ -23,6 +24,10 @@ __all__ = [
 ]
 
 
+class PluginError(Exception):
+    pass
+
+
 class PluginManager(object):
     """
     Manage importing and loading of plugins. Note that this class is
@@ -41,11 +46,21 @@ class PluginManager(object):
     ]
     DISCOVERED = {}
 
+    def __init__(self, plugin_name=None, builtin=False, deprecated=False):
+        self.loading_plugin = plugin_name
+        self.loading_builtin = plugin_name and builtin
+        self.builtin = builtin
+        self.deprecated = deprecated
+
     def _listdir(self, path):
         try:
             return [d for d in os.listdir(path) if not d.startswith('.')]
         except OSError:
             return []
+
+    def _uncomment(self, json_data):
+        return '\n'.join([l for l in json_data.splitlines()
+                          if not l.strip().startswith('#')])
 
     def discover(self, paths, update=False):
         """
@@ -67,7 +82,7 @@ class PluginManager(object):
                 try:
                     plug_path = os.path.join(pdir, subdir)
                     with open(os.path.join(plug_path, 'manifest.json')) as mfd:
-                        manifest = json.load(mfd)
+                        manifest = json.loads(self._uncomment(mfd.read()))
                         assert(manifest.get('name') == subdir)
                         # FIXME: Need more sanity checks
                         self.DISCOVERED[pname] = (plug_path, manifest)
@@ -84,346 +99,450 @@ class PluginManager(object):
         if parent not in sys.modules:
             sys.modules[parent] = imp.new_module(parent)
         sys.modules[full_name] = imp.new_module(full_name)
+        sys.modules[full_name].__file__ = full_path
         with open(full_path, 'r') as mfd:
             exec mfd.read() in sys.modules[full_name].__dict__
 
-    def load(self, plugin_name):
+    def _load(self, plugin_name):
         full_name = 'mailpile.plugins.%s' % plugin_name
         if full_name in sys.modules:
             return
 
+        self.loading_plugin = full_name
         if plugin_name in self.BUILTIN:
-            # The builtins are just normal Python code with their
-            # manifest declared as a variable.
+            # The builtins are just normal Python code. If they have a
+            # manifest, they'll invoke process_manifest themselves.
+            self.loading_builtin = True
             module = __import__(full_name)
-            try:
-                manifest = module.MANIFEST
-            except AttributeError:
-                manifest = None
 
         else:
             dirname, manifest = self.DISCOVERED.get(plugin_name)
+            self.loading_builtin = False
 
             # Load the Python requested by the manifest.json
             files = manifest.get('files', {}).get('python', [])
             files.sort(key=lambda f: len(f))
-            for filename in files:
-                path = os.path.join(dirname, filename)
-                if filename == '.':
-                    self._import(full_name, dirname)
-                elif filename.endswith('.py'):
-                    subname = filename[:-3].replace('/', '.')
-                elif os.path.isdir(path):
-                    subname = filename.replace('/', '.')
-                else:
-                    continue
-                self._import('.'.join([full_name, subname]), path)
+            try:
+                for filename in files:
+                    path = os.path.join(dirname, filename)
+                    if filename == '.':
+                        self._import(full_name, dirname)
+                    elif filename.endswith('.py'):
+                        subname = filename[:-3].replace('/', '.')
+                    elif os.path.isdir(path):
+                        subname = filename.replace('/', '.')
+                    else:
+                        continue
+                    self._import('.'.join([full_name, subname]), path)
+            except KeyboardInterrupt:
+                raise
+            except:
+                print 'FIXME: Loading %s failed, tell user!' % full_name
+                return
 
-        # FIXME: Register all the hooks and commands and things described
-        # in the manifest.
+            return self.process_manifest(full_name, manifest, dirname)
+
+    def load(self, *args):
+        try:
+            return self._load(*args)
+        finally:
+            self.loading_plugin = None
+            self.loading_builtin = False
+
+    def process_manifest(self, full_name, manifest=None, plugin_path=None):
+        if not manifest:
+            return
+
+        def manifest_path(*path):
+            c = manifest
+            for p in path:
+                c = c.get(p, {})
+            return c
+
+        def manifest_iteritems(*path):
+            return manifest_path(*path).iteritems()
+
+        def _get_class(class_name):
+            full_class_name = '.'.join([full_name, class_name])
+            mod_name, class_name = full_class_name.rsplit('.', 1)
+            module = __import__(mod_name, globals(), locals(), class_name)
+            return getattr(module, class_name)
+
+        # Register config variables and sections
+        for section, rules in manifest_iteritems('config', 'sections'):
+            self.register_config_section(*(section.split('.') + [rules]))
+        for section, rules in manifest_iteritems('config', 'variables'):
+            self.register_config_variables(*(section.split('.') + [rules]))
+
+        # Register commands
+        for command in manifest_path('commands'):
+            cls = _get_class(command['class'])
+            # FIXME: This is a bit hacky, we probably just want to kill
+            #        the SYNOPSIS attribute entirely.
+            cls.SYNOPSIS = tuple([cls.SYNOPSIS[0],
+                                  command.get('name', cls.SYNOPSIS[1]),
+                                  command.get('url', cls.SYNOPSIS[2]),
+                                  cls.SYNOPSIS_ARGS or cls.SYNOPSIS[3]])
+            self.register_commands(cls)
+
+        # Register contact/vcard hooks
+        for importer in manifest_path('contacts', 'importers'):
+            self.register_vcard_importers(_get_class(importer))
+        for exporter in manifest_path('contacts', 'exporters'):
+            self.register_contact_exporters(_get_class(exporter))
+        for context in manifest_path('contacts', 'context'):
+            self.register_contact_context_providers(_get_class(context))
+
+    def _compat_check(self, strict=True):
+        if ((strict and (not self.loading_plugin and not self.builtin)) or
+                self.deprecated):
+            stack = inspect.stack()
+            if str(stack[2][1]) == '<string>':
+                raise PluginError('Naughty plugin tried to directly access '
+                                  'mailpile.plugins!')
+            print ('FIXME: Deprecated use of %s at %s:%s (issue #547)'
+                   ) % (stack[1][3], stack[2][1], stack[2][2])
 
 
-class PluginError(Exception):
-    pass
+    ##[ Pluggable configuration ]#############################################
 
+    def register_config_variables(self, *args):
+        self._compat_check()
+        args = list(args)
+        rules = args.pop(-1)
+        dest = mailpile.defaults.CONFIG_RULES
+        path = '/'.join(args)
+        for arg in args:
+            dest = dest[arg][-1]
+        for rname, rule in rules.iteritems():
+            if rname in dest:
+                raise PluginError('Variable already exist: %s/%s' % (path, rname))
+            else:
+                dest[rname] = rule
 
-##[ Pluggable configuration ]#################################################
-
-def register_config_variables(*args):
-    args = list(args)
-    rules = args.pop(-1)
-    dest = mailpile.defaults.CONFIG_RULES
-    path = '/'.join(args)
-    for arg in args:
-        dest = dest[arg][-1]
-    for rname, rule in rules.iteritems():
+    def register_config_section(self, *args):
+        self._compat_check()
+        args = list(args)
+        rules = args.pop(-1)
+        rname = args.pop(-1)
+        dest = mailpile.defaults.CONFIG_RULES
+        path = '/'.join(args)
+        for arg in args:
+            dest = dest[arg][-1]
         if rname in dest:
-            raise PluginError('Variable already exist: %s/%s' % (path, rname))
+            raise PluginError('Section already exist: %s/%s' % (path, rname))
         else:
-            dest[rname] = rule
+            dest[rname] = rules
 
 
-def register_config_section(*args):
-    args = list(args)
-    rules = args.pop(-1)
-    rname = args.pop(-1)
-    dest = mailpile.defaults.CONFIG_RULES
-    path = '/'.join(args)
-    for arg in args:
-        dest = dest[arg][-1]
-    if rname in dest:
-        raise PluginError('Section already exist: %s/%s' % (path, rname))
-    else:
-        dest[rname] = rules
+    ##[ Pluggable keyword extractors ]########################################
 
+    DATA_KW_EXTRACTORS = {}
+    TEXT_KW_EXTRACTORS = {}
+    META_KW_EXTRACTORS = {}
 
-##[ Pluggable keyword extractors ]############################################
+    def _rkwe(self, kw_hash, term, function):
+        if term in kw_hash:
+            raise PluginError('Already registered: %s' % term)
+        kw_hash[term] = function
 
-DATA_KW_EXTRACTORS = {}
-TEXT_KW_EXTRACTORS = {}
-META_KW_EXTRACTORS = {}
+    def register_data_kw_extractor(self, term, function):
+        self._compat_check()
+        return self._rkwe(self.DATA_KW_EXTRACTORS, term, function)
+
+    def register_text_kw_extractor(self, term, function):
+        self._compat_check()
+        return self._rkwe(self.TEXT_KW_EXTRACTORS, term, function)
+
+    def register_meta_kw_extractor(self, term, function):
+        self._compat_check()
+        return self._rkwe(self.META_KW_EXTRACTORS, term, function)
 
+    def get_data_kw_extractors(self):
+        self._compat_check(strict=False)
+        return self.DATA_KW_EXTRACTORS.values()
 
-def _rkwe(kw_hash, term, function):
-    if term in kw_hash:
-        raise PluginError('Already registered: %s' % term)
-    kw_hash[term] = function
+    def get_text_kw_extractors(self):
+        self._compat_check(strict=False)
+        return self.TEXT_KW_EXTRACTORS.values()
 
+    def get_meta_kw_extractors(self):
+        self._compat_check(strict=False)
+        return self.META_KW_EXTRACTORS.values()
 
-def register_data_kw_extractor(term, function):
-    return _rkwe(DATA_KW_EXTRACTORS, term, function)
 
+    ##[ Pluggable search terms ]##############################################
 
-def register_text_kw_extractor(term, function):
-    return _rkwe(TEXT_KW_EXTRACTORS, term, function)
+    SEARCH_TERMS = {}
 
+    def get_search_term(self, term, default=None):
+        self._compat_check(strict=False)
+        return self.SEARCH_TERMS.get(term, default)
 
-def register_meta_kw_extractor(term, function):
-    return _rkwe(META_KW_EXTRACTORS, term, function)
+    def register_search_term(self, term, function):
+        self._compat_check()
+        if term in self.SEARCH_TERMS:
+            raise PluginError('Already registered: %s' % term)
+        self.SEARCH_TERMS[term] = function
 
 
-def get_data_kw_extractors():
-    return DATA_KW_EXTRACTORS.values()
+    ##[ Pluggable keyword filters ]###########################################
 
+    FILTER_HOOKS_PRE = {}
+    FILTER_HOOKS_POST = {}
 
-def get_text_kw_extractors():
-    return TEXT_KW_EXTRACTORS.values()
+    def get_filter_hooks(self, hooks):
+        self._compat_check(strict=False)
+        return ([self.FILTER_HOOKS_PRE[k]
+                 for k in sorted(self.FILTER_HOOKS_PRE.keys())]
+                + hooks +
+                [self.FILTER_HOOKS_POST[k]
+                 for k in sorted(self.FILTER_HOOKS_POST.keys())])
 
+    def register_filter_hook_pre(self, name, hook):
+        self._compat_check()
+        self.FILTER_HOOKS_PRE[name] = hook
 
-def get_meta_kw_extractors():
-    return META_KW_EXTRACTORS.values()
+    def register_filter_hook_post(self, name, hook):
+        self._compat_check()
+        self.FILTER_HOOKS_POST[name] = hook
 
 
-##[ Pluggable search terms ]##################################################
+    ##[ Pluggable vcard functions ]###########################################
 
-SEARCH_TERMS = {}
+    VCARD_IMPORTERS = {}
+    VCARD_EXPORTERS = {}
+    VCARD_CONTEXT_PROVIDERS = {}
 
+    def _reg_vcard_plugin(self, what, cfg_sect, plugin_classes, cls, dct):
+        self._compat_check()
+        for plugin_class in plugin_classes:
+            if not plugin_class.SHORT_NAME or not plugin_class.FORMAT_NAME:
+                raise PluginError("Please set SHORT_NAME "
+                                  "and FORMAT_* attributes!")
+            if not issubclass(plugin_class, cls):
+                raise PluginError("%s must be a %s" % (what, cls))
+            if plugin_class.SHORT_NAME in dct:
+                raise PluginError("%s for %s already registered"
+                                  % (what, importer.FORMAT_NAME))
 
-def get_search_term(term, default=None):
-    return SEARCH_TERMS.get(term, default)
-
-
-def register_search_term(term, function):
-    global SEARCH_TERMS
-    if term in SEARCH_TERMS:
-        raise PluginError('Already registered: %s' % term)
-    SEARCH_TERMS[term] = function
-
-
-##[ Pluggable keyword filters ]###############################################
-
-FILTER_HOOKS_PRE = {}
-FILTER_HOOKS_POST = {}
-
-
-def filter_hooks(hooks):
-    return ([FILTER_HOOKS_PRE[k] for k in sorted(FILTER_HOOKS_PRE.keys())]
-            + hooks +
-            [FILTER_HOOKS_POST[k] for k in sorted(FILTER_HOOKS_POST.keys())])
-
-
-def register_filter_hook_pre(name, hook):
-    FILTER_HOOKS_PRE[name] = hook
-
-
-def register_filter_hook_post(name, hook):
-    FILTER_HOOKS_POST[name] = hook
-
-
-##[ Pluggable vcard functions ]###############################################
-
-VCARD_IMPORTERS = {}
-VCARD_EXPORTERS = {}
-VCARD_CONTEXT_PROVIDERS = {}
-
-
-def _reg_vcard_plugin(what, cfg_sect, plugin_classes, cls, dct):
-    for plugin_class in plugin_classes:
-        if not plugin_class.SHORT_NAME or not plugin_class.FORMAT_NAME:
-            raise PluginError("Please set SHORT_NAME "
-                              "and FORMAT_* attributes!")
-        if not issubclass(plugin_class, cls):
-            raise PluginError("%s must be a %s" % (what, cls))
-        if plugin_class.SHORT_NAME in dct:
-            raise PluginError("%s for %s already registered"
-                              % (what, importer.FORMAT_NAME))
-
-        if plugin_class.CONFIG_RULES:
-            rules = {
-                'guid': ['VCard source UID', str, ''],
-                'description': ['VCard source description', str, '']
-            }
-            rules.update(plugin_class.CONFIG_RULES)
-            register_config_section(
-                'prefs', 'vcard', cfg_sect, plugin_class.SHORT_NAME,
-                [plugin_class.FORMAT_DESCRIPTION, rules, []])
-
-        dct[plugin_class.SHORT_NAME] = plugin_class
-
-
-def register_vcard_importers(*importers):
-    _reg_vcard_plugin('Importer', 'importers', importers,
-                      mailpile.vcard.VCardImporter, VCARD_IMPORTERS)
-
-
-def register_contact_exporters(*exporters):
-    _reg_vcard_plugin('Exporter', 'exporters', exporters,
-                      mailpile.vcard.VCardExporter, VCARD_EXPORTERS)
-
-
-def register_contact_context_providers(*providers):
-    _reg_vcard_plugin('Context provider', 'context', providers,
-                      mailpile.vcard.VCardContextProvider,
-                      VCARD_CONTEXT_PROVIDERS)
-
-
-##[ Pluggable cron jobs ]#####################################################
-
-FAST_PERIODIC_JOBS = {}
-SLOW_PERIODIC_JOBS = {}
-
-
-def register_fast_periodic_job(name, period, callback):
-    global FAST_PERIODIC_JOBS
-    # FIXME: complain about duplicates?
-    FAST_PERIODIC_JOBS[name] = (period, callback)
-
-
-def register_slow_periodic_job(name, period, callback):
-    global SLOW_PERIODIC_JOBS
-    # FIXME: complain about duplicates?
-    SLOW_PERIODIC_JOBS[name] = (period, callback)
-
-
-##[ Pluggable background worker threads ]####################################
-
-WORKERS = []
-
-
-def register_worker(thread_obj):
-    global WORKERS
-    assert(hasattr(thread_obj, 'start'))
-    assert(hasattr(thread_obj, 'quit'))
-    # FIXME: complain about duplicates?
-    WORKERS.append(thread_obj)
-
-
-##[ Pluggable commands ]######################################################
-
-def register_commands(*args):
-    COMMANDS = mailpile.commands.COMMANDS
-    for cls in args:
-        if cls not in COMMANDS:
-            COMMANDS.append(cls)
-
-
-##[ Pluggable UI elements ]###################################################
-
-UICLASSES = []
-DISPLAY_MODES = {}
-DISPLAY_ACTIONS = {}
-SELECTION_ACTIONS = {}
-ASSETS = {"javascript": [], "stylesheet": [], "content-view_block": []}
-BODY_BLOCKS = {}
-ACTIVITIES = []
-
-
-def register_uiclass(uiclass):
-    if uiclass not in UICLASSES:
-        UICLASSES.append(uiclass)
-        DISPLAY_ACTIONS[uiclass] = []
-        DISPLAY_MODES[uiclass] = []
-        SELECTION_ACTIONS[uiclass] = []
-        BODY_BLOCKS[uiclass] = []
-
-
-def register_display_mode(uiclass, name, jsaction, text,
-                          url="#", icon=None):
-    assert(uiclass in DISPLAY_MODES)
-    if name not in [x["name"] for x in DISPLAY_MODES[uiclass]]:
-        DISPLAY_MODES[uiclass].append({
-            "name": name,
-            "jsaction": jsaction,
-            "url": url,
-            "text": text,
-            "icon": icon
-        })
-
-
-def register_display_action(uiclass, name, jsaction, text,
-                            url="#", icon=None):
-    assert(uiclass in DISPLAY_ACTIONS)
-    if name not in [x["name"] for x in DISPLAY_ACTIONS[uiclass]]:
-        DISPLAY_ACTIONS[uiclass].append({
-            "name": name,
-            "jsaction": jsaction,
-            "url": url,
-            "text": text,
-            "icon": icon
-        })
-
-
-def register_selection_action(uiclass, name, jsaction, text,
+            if plugin_class.CONFIG_RULES:
+                rules = {
+                    'guid': ['VCard source UID', str, ''],
+                    'description': ['VCard source description', str, '']
+                }
+                rules.update(plugin_class.CONFIG_RULES)
+                register_config_section(
+                    'prefs', 'vcard', cfg_sect, plugin_class.SHORT_NAME,
+                    [plugin_class.FORMAT_DESCRIPTION, rules, []])
+
+            dct[plugin_class.SHORT_NAME] = plugin_class
+
+    def register_vcard_importers(self, *importers):
+        self._compat_check()
+        self._reg_vcard_plugin('Importer', 'importers', importers,
+                               mailpile.vcard.VCardImporter,
+                               self.VCARD_IMPORTERS)
+
+    def register_contact_exporters(self, *exporters):
+        self._compat_check()
+        self._reg_vcard_plugin('Exporter', 'exporters', exporters,
+                               mailpile.vcard.VCardExporter,
+                               self.VCARD_EXPORTERS)
+
+    def register_contact_context_providers(self, *providers):
+        self._compat_check()
+        self._reg_vcard_plugin('Context provider', 'context', providers,
+                               mailpile.vcard.VCardContextProvider,
+                               self.VCARD_CONTEXT_PROVIDERS)
+
+
+    ##[ Pluggable cron jobs ]#################################################
+
+    FAST_PERIODIC_JOBS = {}
+    SLOW_PERIODIC_JOBS = {}
+
+    def register_fast_periodic_job(self, name, period, callback):
+        self._compat_check()
+        # FIXME: complain about duplicates?
+        self.FAST_PERIODIC_JOBS[name] = (period, callback)
+
+    def register_slow_periodic_job(self, name, period, callback):
+        self._compat_check()
+        # FIXME: complain about duplicates?
+        self.SLOW_PERIODIC_JOBS[name] = (period, callback)
+
+
+    ##[ Pluggable background worker threads ]################################
+
+    WORKERS = []
+
+    def register_worker(self, thread_obj):
+        self._compat_check()
+        assert(hasattr(thread_obj, 'start'))
+        assert(hasattr(thread_obj, 'quit'))
+        # FIXME: complain about duplicates?
+        self.WORKERS.append(thread_obj)
+
+
+    ##[ Pluggable commands ]##################################################
+
+    def register_commands(self, *args):
+        self._compat_check()
+        COMMANDS = mailpile.commands.COMMANDS
+        for cls in args:
+            if cls not in COMMANDS:
+                COMMANDS.append(cls)
+
+
+    ##[ Pluggable UI elements ]###############################################
+
+    DEFAULT_UICLASSES = ["base", "search", "thread", "contact", "tag"]
+    UICLASSES = []
+    DISPLAY_MODES = {}
+    DISPLAY_ACTIONS = {}
+    SELECTION_ACTIONS = {}
+    ASSETS = {"javascript": [], "stylesheet": [], "content-view_block": []}
+    BODY_BLOCKS = {}
+    ACTIVITIES = []
+
+    def _register_builtin_uiclasses(self):
+        self._compat_check()
+        for cl in self.DEFAULT_UICLASSES:
+            self.register_uiclass(cl)
+
+    def register_uiclass(self, uiclass):
+        self._compat_check()
+        if uiclass not in self.UICLASSES:
+            self.UICLASSES.append(uiclass)
+            self.DISPLAY_ACTIONS[uiclass] = []
+            self.DISPLAY_MODES[uiclass] = []
+            self.SELECTION_ACTIONS[uiclass] = []
+            self.BODY_BLOCKS[uiclass] = []
+
+    def register_display_mode(self, uiclass, name, jsaction, text,
                               url="#", icon=None):
-    assert(uiclass in SELECTION_ACTIONS)
-    if name not in [x["name"] for x in SELECTION_ACTIONS[uiclass]]:
-        SELECTION_ACTIONS[uiclass].append({
-            "name": name,
-            "jsaction": jsaction,
-            "url": url,
-            "text": text,
-            "icon": icon
-        })
+        self._compat_check()
+        assert(uiclass in self.DISPLAY_MODES)
+        if name not in [x["name"] for x in self.DISPLAY_MODES[uiclass]]:
+            self.DISPLAY_MODES[uiclass].append({
+                "name": name,
+                "jsaction": jsaction,
+                "url": url,
+                "text": text,
+                "icon": icon
+            })
+
+    def register_display_action(self, uiclass, name, jsaction, text,
+                                url="#", icon=None):
+        self._compat_check()
+        assert(uiclass in self.DISPLAY_ACTIONS)
+        if name not in [x["name"] for x in self.DISPLAY_ACTIONS[uiclass]]:
+            self.DISPLAY_ACTIONS[uiclass].append({
+                "name": name,
+                "jsaction": jsaction,
+                "url": url,
+                "text": text,
+                "icon": icon
+            })
+
+    def register_selection_action(self, uiclass, name, jsaction, text,
+                                  url="#", icon=None):
+        self._compat_check()
+        assert(uiclass in self.SELECTION_ACTIONS)
+        if name not in [x["name"] for x in self.SELECTION_ACTIONS[uiclass]]:
+            self.SELECTION_ACTIONS[uiclass].append({
+                "name": name,
+                "jsaction": jsaction,
+                "url": url,
+                "text": text,
+                "icon": icon
+            })
+
+    def register_activity(self, name, jsaction, icon, url="#"):
+        self._compat_check()
+        if name not in [x["name"] for x in self.ACTIVITIES]:
+            self.ACTIVITIES.append({
+                "name": name,
+                "jsaction": jsaction,
+                "url": url,
+                "icon": icon,
+                "text": text
+            })
+
+    def register_asset(self, assettype, name):
+        self._compat_check()
+        assert(assettype in self.ASSETS)
+        if name not in self.ASSETS[assettype]:
+            self.ASSETS[assettype].append(name)
+
+    def get_assets(self, assettype):
+        self._compat_check(strict=False)
+        assert(assettype in self.ASSETS)
+        return self.ASSETS[assettype]
+
+    def register_body_block(self, uiclass, name):
+        self._compat_check()
+        assert(uiclass in self.UICLASSES)
+        if name not in self.BODY_BLOCKS[uiclass]:
+            self.BODY_BLOCKS[uiclass].append(name)
+
+    def get_body_blocks(self, uiclass):
+        self._compat_check(strict=False)
+        assert(uiclass in self.UICLASSES)
+        return self.BODY_BLOCKS[uiclass]
+
+    def get_activities(self):
+        self._compat_check(strict=False)
+        return self.ACTIVITIES
+
+    def get_selection_actions(self, uiclass):
+        self._compat_check(strict=False)
+        return self.SELECTION_ACTIONS[uiclass]
+
+    def get_display_actions(self, uiclass):
+        self._compat_check(strict=False)
+        return self.DISPLAY_ACTIONS[uiclass]
+
+    def get_display_modes(self, uiclass):
+        self._compat_check(strict=False)
+        return self.DISPLAY_MODES[uiclass]
 
 
-def register_activity(name, jsaction, icon, url="#"):
-    if name not in [x["name"] for x in ACTIVITIES]:
-        ACTIVITIES.append({
-            "name": name,
-            "jsaction": jsaction,
-            "url": url,
-            "icon": icon,
-            "text": text
-        })
+# Initial global setup
+PluginManager(builtin=True)._register_builtin_uiclasses()
 
-
-def register_asset(assettype, name):
-    assert(assettype in ASSETS)
-    if name not in ASSETS[assettype]:
-        ASSETS[assettype].append(name)
-
-
-def get_assets(assettype):
-    assert(assettype in ASSETS)
-    return ASSETS[assettype]
-
-
-def register_body_block(uiclass, name):
-    assert(uiclass in UICLASSES)
-    if name not in BODY_BLOCKS[uiclass]:
-        BODY_BLOCKS[uiclass].append(name)
-
-
-def get_body_blocks(uiclass):
-    assert(uiclass in UICLASSES)
-    return BODY_BLOCKS[uiclass]
-
-
-def get_activities():
-    return ACTIVITIES
-
-
-def get_selection_actions(uiclass):
-    return SELECTION_ACTIONS[uiclass]
-
-
-def get_display_actions(uiclass):
-    return DISPLAY_ACTIONS[uiclass]
-
-
-def get_display_modes(uiclass):
-    return DISPLAY_MODES[uiclass]
-
-
-for cl in ["base", "search", "thread", "contact", "tag"]:
-    register_uiclass(cl)
+# Backwards compatibility
+_default_pm = PluginManager(builtin=False, deprecated=True)
+register_config_variables = _default_pm.register_config_variables
+register_config_section = _default_pm.register_config_section
+register_data_kw_extractor = _default_pm.register_data_kw_extractor
+register_text_kw_extractor = _default_pm.register_text_kw_extractor
+register_meta_kw_extractor = _default_pm.register_meta_kw_extractor
+get_data_kw_extractors = _default_pm.get_data_kw_extractors
+get_text_kw_extractors = _default_pm.get_text_kw_extractors
+get_meta_kw_extractors = _default_pm.get_meta_kw_extractors
+get_search_term = _default_pm.get_search_term
+register_search_term = _default_pm.register_search_term
+filter_hooks = _default_pm.get_filter_hooks
+register_filter_hook_pre = _default_pm.register_filter_hook_pre
+register_filter_hook_post = _default_pm.register_filter_hook_post
+register_vcard_importers = _default_pm.register_vcard_importers
+register_contact_exporters = _default_pm.register_contact_exporters
+register_contact_context_providers = _default_pm.register_contact_context_providers
+register_fast_periodic_job = _default_pm.register_fast_periodic_job
+register_slow_periodic_job = _default_pm.register_slow_periodic_job
+register_worker = _default_pm.register_worker
+register_commands = _default_pm.register_commands
+register_display_mode = _default_pm.register_display_mode
+register_display_action = _default_pm.register_display_action
+register_selection_action = _default_pm.register_selection_action
+register_activity = _default_pm.register_activity
+register_asset = _default_pm.register_asset
+get_assets = _default_pm.get_assets
+register_body_block = _default_pm.register_body_block
+get_body_blocks = _default_pm.get_body_blocks
+get_activities = _default_pm.get_activities
+get_selection_actions = _default_pm.get_selection_actions
+get_display_actions = _default_pm.get_display_actions
+get_display_modes = _default_pm.get_display_modes

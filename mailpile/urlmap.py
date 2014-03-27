@@ -4,7 +4,7 @@ from urlparse import parse_qs, urlparse
 from urllib import quote
 
 from mailpile.commands import Command, COMMANDS
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.util import *
 
 
@@ -580,9 +580,10 @@ class HelpUrlMap(Command):
         return {'urlmap': UrlMap(self.session).map_as_markdown()}
 
 
+plugin_manager = PluginManager(builtin=True)
 if __name__ != "__main__":
-    mailpile.plugins.register_commands(HelpUrlMap, UrlRedirect,
-                                       UrlRedirectEdit, UrlRedirectThread)
+    plugin_manager.register_commands(HelpUrlMap, UrlRedirect,
+                                     UrlRedirectEdit, UrlRedirectThread)
 
 else:
     # If run as a python script, print map and run doctests.
@@ -609,7 +610,7 @@ else:
     urlmap.print_map_markdown()
 
     # For the UrlMap._map_api_command test
-    mailpile.plugins.register_commands(UrlRedirect)
+    plugin_manager.register_commands(UrlRedirect)
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'urlmap': urlmap,

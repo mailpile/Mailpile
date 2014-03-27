@@ -28,6 +28,7 @@ class Command:
                 None,    # CLI shortname, e.g. add
                 None,    # API endpoint, e.g. sys/addmailbox
                 None)    # Positional argument list
+    SYNOPSIS_ARGS = None # New-style positional argument list
     EXAMPLES = None
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
@@ -800,10 +801,10 @@ class Rescan(Command):
                 del config._running['rescan']
 
     def _rescan_vcards(self, session, config):
-        import mailpile.plugins
+        from mailpile.plugins import PluginManager
         imported = 0
         importer_cfgs = config.prefs.vcard.importers
-        for importer in mailpile.plugins.VCARD_IMPORTERS.values():
+        for importer in PluginManager.VCARD_IMPORTERS.values():
             for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
                 if cfg:
                     imp = importer(session, cfg)
