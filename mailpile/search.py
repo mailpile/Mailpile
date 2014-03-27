@@ -1229,11 +1229,13 @@ class MailIndex:
 
         if 'flat' not in how:
             # This filters away all but the first result in each conversation.
-            results.reverse()
-            cset = set(dict([(self.INDEX_THR[r], r)
-                             for r in results]).values())
-            results.reverse()
-            results[:] = filter(cset.__contains__, results)
+            session.ui.mark(_('Collapsing conversations...'))
+            seen, r2 = {}, []
+            for i in range(0, len(results)):
+                if self.INDEX_THR[results[i]] not in seen:
+                    r2.append(results[i])
+                    seen[self.INDEX_THR[results[i]]] = True
+            results[:] = r2
             session.ui.mark(_('Sorted %d messages by %s, %d conversations'
                               ) % (count, how, len(results)))
         else:

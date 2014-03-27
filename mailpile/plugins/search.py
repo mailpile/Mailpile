@@ -27,7 +27,8 @@ class Search(Command):
         'q': 'search terms',
         'order': 'sort order',
         'start': 'start position',
-        'end': 'end position'
+        'end': 'end position',
+        'full': 'return all metadata'
     }
 
     class CommandResult(Command.CommandResult):
@@ -107,7 +108,10 @@ class Search(Command):
 
     def command(self, search=None):
         session, idx, start, num = self._do_search(search=search)
-        session.displayed = SearchResults(session, idx, start=start, num=num)
+        full_threads = self.data.get('full', False)
+        session.displayed = SearchResults(session, idx,
+                                          start=start, num=num,
+                                          full_threads=full_threads)
         return session.displayed
 
 

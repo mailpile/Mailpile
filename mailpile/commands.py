@@ -434,7 +434,6 @@ class SearchResults(dict):
         nz = lambda l: [v for v in l if v]
         msg_ts = long(msg_info[MailIndex.MSG_DATE], 36)
         msg_date = datetime.datetime.fromtimestamp(msg_ts)
-        um = mailpile.urlmap.UrlMap(self.session)
         fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
@@ -464,8 +463,8 @@ class SearchResults(dict):
         # Ephemeral messages do not have URLs
         if ':' not in msg_info[MailIndex.MSG_MID]:
             expl['urls'] = {
-                'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
-                'source': um.url_source(msg_info[MailIndex.MSG_MID]),
+                'thread': self.urlmap.url_thread(msg_info[MailIndex.MSG_MID]),
+                'source': self.urlmap.url_source(msg_info[MailIndex.MSG_MID]),
             }
         else:
             expl['flags']['ephemeral'] = True
@@ -497,7 +496,7 @@ class SearchResults(dict):
         # Extra behavior for editable messages
         if 'draft' in expl['flags']:
             if self.idx.config.is_editable_message(msg_info):
-                expl['urls']['editing'] = um.url_edit(expl['mid'])
+                expl['urls']['editing'] = self.urlmap.url_edit(expl['mid'])
             else:
                 del expl['flags']['draft']
 
@@ -573,6 +572,8 @@ class SearchResults(dict):
         self.people = people
         self.emails = emails
         self.idx = idx
+        self.urlmap = mailpile.urlmap.UrlMap(self.session)
+
         results = self.results = results or session.results or []
 
         num = num or session.config.prefs.num_results
@@ -582,6 +583,9 @@ class SearchResults(dict):
             start = len(results)
         if start < 0:
             start = 0
+
+        self.session.ui.mark(_('Parsing metadata for %d results '
+                               '(full_threads=%s)') % (num, full_threads))
 
         try:
             threads = [b36(r) for r in results[start:start + num]]
