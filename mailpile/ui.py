@@ -188,7 +188,7 @@ class UserInteraction:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
                 self.notify(_('Elapsed: %.3fs (%s)') % (elapsed, t[-1][1]))
-                if True or details:
+                if details:
                     for i in range(0, len(self.times)-1):
                         e = t[i+1][0] - t[i][0]
                         self.notify(' -> %.3fs (%s)' % (e, t[i][1]))

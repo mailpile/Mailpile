@@ -339,7 +339,8 @@ class Command:
         self._update_event_state(Event.COMPLETE, log=True)
 
         self.session.ui.mark(self.event.message)
-        self.session.ui.report_marks(details=self.session.config.sys.debug)
+        self.session.ui.report_marks(
+            details=('timing' in self.session.config.sys.debug))
         if self.name:
             self.session.ui.finish_command(self.name)
         return result
