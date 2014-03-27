@@ -31,7 +31,7 @@ def NewEventId():
 
 def _ClassName(obj):
     if isinstance(obj, (str, unicode)):
-        return str(obj)
+        return str(obj).replace('mailpile.', '.')
     else:
         return str(obj.__class__).replace('mailpile.', '.')
 
