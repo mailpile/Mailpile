@@ -178,7 +178,7 @@ class MailpileSeleniumTest(MailPileUnittest):
             out.write(self.driver.page_source.encode('utf8'))
 
     def navigate_to(self, name):
-        contacts = self.driver.find_element_by_xpath(
+        contacts = self.find_element_by_xpath(
             '//a[@alt="%s"]/span' % name)
         self.assertTrue(contacts.is_displayed())
         contacts.click()
@@ -211,13 +211,28 @@ class MailpileSeleniumTest(MailPileUnittest):
     def page_title(self):
         return self.driver.title
 
+    def find_element_by_id(self, id):
+        return self.driver.find_element_by_id(id)
+
     def find_element_containing_text(self, text):
         return self.driver.find_element_by_xpath("//*[contains(.,'%s')]" % text)
+
+    def find_element_by_xpath(self, xpath):
+        return self.driver.find_element_by_xpath(xpath)
+
+    def find_element_by_class_name(self, class_name):
+        return self.driver.find_element_by_class_name(class_name)
 
     def assert_text(self, text):
         self.find_element_containing_text(text)
 
     def wait_until_element_is_visible(self, element_id):
-        wait = WebDriverWait(self.driver, 10)
-        wait.until(EC.visibility_of_element_located((By.ID, element_id)))
+        self.wait_until_element_is_visible_by_locator((By.ID, element_id))
 
+    def wait_until_element_is_visible_by_locator(self, locator_tuple):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.visibility_of_element_located(locator_tuple))
+
+    def wait_until_element_is_invisible_by_locator(self, locator_tuple):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.invisibility_of_element_located(locator_tuple))
