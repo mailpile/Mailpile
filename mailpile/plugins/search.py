@@ -112,6 +112,7 @@ class Search(Command):
         session.displayed = SearchResults(session, idx,
                                           start=start, num=num,
                                           full_threads=full_threads)
+        session.ui.mark(_('Prepared %d search results') % len(session.results))
         return self._success(_('Found %d results in %.3fs'
                                ) % (len(session.results),
                                     session.ui.report_marks(quiet=True)),
