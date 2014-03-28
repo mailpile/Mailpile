@@ -29,9 +29,7 @@ class TagGuiTest(MailpileSeleniumTest):
         return checkbox
 
     def _assert_element_has_class(self, element_id, class_name):
-        e = self.find_element_by_id(element_id)
-        self.assertIn(class_name, e.get_attribute('class'))
+        self.wait_until_element_has_class((By.ID, element_id), class_name)
 
     def _assert_element_not_class(self, element_id, class_name):
-        e = self.find_element_by_id(element_id)
-        self.assertNotIn(class_name, e.get_attribute('class'))
+        self.wait_until_element_has_not_class((By.ID, element_id), class_name)

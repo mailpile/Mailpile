@@ -1,5 +1,5 @@
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException, StaleElementReferenceException
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -7,6 +7,32 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from mailpile.httpd import HttpWorker
 from tests import MailPileUnittest, get_shared_mailpile
+
+
+class ElementHasClass(object):
+    def __init__(self, locator_tuple, class_name):
+        self.locator = locator_tuple
+        self.class_name = class_name
+
+    def __call__(self, driver):
+        try:
+            e = driver.find_element(self.locator[0], self.locator[1])
+            return self.class_name in e.get_attribute('class')
+        except (NoSuchElementException, StaleElementReferenceException):
+            return False
+
+
+class ElementHasNotClass(object):
+    def __init__(self, locator_tuple, class_name):
+        self.locator = locator_tuple
+        self.class_name = class_name
+
+    def __call__(self, driver):
+        try:
+            e = driver.find_element(self.locator[0], self.locator[1])
+            return self.class_name not in e.get_attribute('class')
+        except (NoSuchElementException, StaleElementReferenceException):
+            return True
 
 
 class SeleniumScreenshotOnExceptionAspecter(type):
@@ -236,3 +262,13 @@ class MailpileSeleniumTest(MailPileUnittest):
     def wait_until_element_is_invisible_by_locator(self, locator_tuple):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.invisibility_of_element_located(locator_tuple))
+
+    def wait_until_element_has_class(self, locator_tuple, class_name):
+        self.wait_for_element_condition(ElementHasClass(locator_tuple, class_name))
+
+    def wait_until_element_has_not_class(self, locator_tuple, class_name):
+        self.wait_for_element_condition(ElementHasNotClass(locator_tuple, class_name))
+
+    def wait_for_element_condition(self, expected_conditions):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(expected_conditions)
