@@ -197,12 +197,15 @@ class PluginManager(object):
         if plugin_path:
           try:
             for v in manifest_path('files', 'views'):
-                url, fn, vn = v['url'], v['file'], v.get('view')
+                url, fn = v['url'], v['file']
                 path_parts = [p for p in url.split('/') if p]
+                view = None
+                if len(path_parts) > 1 and path_parts[-1].endswith('.html'):
+                    view = path_parts.pop(-1)
                 if len(path_parts) == 1:
                     path_parts.append('index')
-                if vn:
-                    path_parts[-1] += '-' + vn
+                if view:
+                    path_parts[-1] += '-' + view
                 else:
                     path_parts[-1] += '.html'
                 filename = os.path.join(plugin_path, fn)
@@ -210,9 +213,10 @@ class PluginManager(object):
                                         os.path.join('html', *path_parts),
                                         filename)
 
-            for path, filename in manifest_iteritems('files', 'assets'):
-                filename = os.path.join(plugin_path, filename)
-                self.register_web_asset(full_name, path, filename)
+            for path, info in manifest_iteritems('files', 'assets'):
+                filename = os.path.join(plugin_path, info['file'])
+                self.register_web_asset(full_name, path, filename,
+                    mimetype=info.get('mimetype', 'application/octet-stream'))
           except:
             import traceback
             traceback.print_exc()
@@ -423,13 +427,13 @@ class PluginManager(object):
 
     WEB_ASSETS = {}
 
-    def register_web_asset(self, plugin, path, filename):
+    def register_web_asset(self, plugin, path, filename, mimetype='text/html'):
         if path in self.WEB_ASSETS:
             raise PluginError(_('Already registered: %s') % path)
-        self.WEB_ASSETS[path] = (filename, plugin)
+        self.WEB_ASSETS[path] = (filename, mimetype, plugin)
 
     def get_web_asset(self, path, default=None):
-        return self.WEB_ASSETS.get(path, [default])[0]
+        return tuple(self.WEB_ASSETS.get(path, [default, None])[0:2])
 
 
     ##[ Pluggable UI elements ]###############################################

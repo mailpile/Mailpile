@@ -151,8 +151,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         else:
             try:
                 tpl = config.sys.path.get(self.http_host(), 'html_theme')
-                fpath, fd = config.open_file(tpl, filename)
-                mimetype = self.guess_mimetype(fpath)
+                fpath, fd, mt = config.open_file(tpl, filename)
+                mimetype = mt or self.guess_mimetype(fpath)
                 message = fd.read()
                 fd.close()
                 code, msg = 200, "OK"

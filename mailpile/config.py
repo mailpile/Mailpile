@@ -789,13 +789,14 @@ class MailpileJinjaLoader(BaseLoader):
 
     def get_source(self, environment, template):
         template = os.path.join('html', template)
-        path = self.config.data_filename('html_theme', template)
+        path, mt = self.config.data_file_and_mimetype('html_theme', template)
         if not path:
             raise TemplateNotFound(template)
 
         mtime = os.path.getmtime(path)
         def unchanged():
-            return (path == self.config.data_filename('html_theme', template)
+            return (path == self.config.data_file_and_mimetype('html_theme',
+                                                               template)
                     and mtime == os.path.getmtime(path))
 
         with file(path) as f:
@@ -1147,20 +1148,20 @@ class ConfigManager(ConfigDict):
                 bpath = os.path.join(os.path.dirname(__file__), '..', bpath)
         return os.path.abspath(bpath)
 
-    def data_filename(self, ftype, fpath, *args, **kwargs):
+    def data_file_and_mimetype(self, ftype, fpath, *args, **kwargs):
         # The theme gets precedence
         core_path = self.data_directory(ftype, *args, **kwargs)
-        path = os.path.join(core_path, fpath)
+        path, mimetype = os.path.join(core_path, fpath), None
 
         # If there's nothing there, check our plugins
         if not os.path.exists(path):
             from mailpile.plugins import PluginManager
-            path = PluginManager().get_web_asset(fpath, path)
+            path, mimetype = PluginManager().get_web_asset(fpath, path)
 
         if os.path.exists(path):
-            return path
+            return path, mimetype
         else:
-            return None
+            return None, None
 
     def history_file(self):
         return os.path.join(self.workdir, 'history')
@@ -1215,9 +1216,9 @@ class ConfigManager(ConfigDict):
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
             raise ValueError(_('Parent paths are not allowed'))
-        bpath = self.data_directory(ftype, mode=mode, mkdir=mkdir)
-        fpath = os.path.join(bpath, fpath)
-        return fpath, open(fpath, mode)
+        fpath, mt = self.data_file_and_mimetype(ftype, fpath,
+                                                mode=mode, mkdir=mkdir)
+        return fpath, open(fpath, mode), mt
 
     def prepare_workers(config, session=None, daemons=False):
         # Set globals from config first...

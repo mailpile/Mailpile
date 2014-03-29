@@ -30,17 +30,19 @@
                 "file": "md5sum.html"
             },
             {
-                # An alternate view for search, named "demos.html"
-                "url": "/search/",
-                "file": "search.html",
-                "view": "demos.html"
+                # An alternate view for search
+                "url": "/search/demos.html",
+                "file": "search.html"
             }
         ],
 
         # This is a more low-level syntax for injecting assets directly into
         # the Mailpile web asset tree (templates, images, CSS, etc).
         "assets": {
-            "html/md5sum/index-other.html": "md5sum.html"
+            "css/demos.css": {
+                "file": "demos.css",
+                "mimetype": "text/css"
+            }
         }
     },
 
