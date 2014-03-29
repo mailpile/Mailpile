@@ -8,7 +8,7 @@ import ConfigParser
 from gettext import translation, gettext, NullTranslations
 from gettext import gettext as _
 
-from jinja2 import Environment, BaseLoader, FileSystemLoader
+from jinja2 import Environment, BaseLoader, TemplateNotFound
 
 from urllib import quote, unquote
 from mailpile.crypto.streamer import DecryptingStreamer
@@ -779,6 +779,31 @@ class PathDict(ConfigDict):
     }
 
 
+class MailpileJinjaLoader(BaseLoader):
+    """
+    A Jinja2 template loader which uses the Mailpile configuration
+    and plugin system to find template files.
+    """
+    def __init__(self, config):
+        self.config = config
+
+    def get_source(self, environment, template):
+        template = os.path.join('html', template)
+        path = self.config.data_filename('html_theme', template)
+        if not path:
+            raise TemplateNotFound(template)
+
+        mtime = os.path.getmtime(path)
+        def unchanged():
+            return (path == self.config.data_filename('html_theme', template)
+                    and mtime == os.path.getmtime(path))
+
+        with file(path) as f:
+            source = f.read().decode('utf-8')
+
+        return source, path, unchanged
+
+
 class ConfigManager(ConfigDict):
     """
     This class manages the live global mailpile configuration. This includes
@@ -935,10 +960,8 @@ class ConfigManager(ConfigDict):
         translation = self.get_i18n_translation(session)
 
         # Configure jinja2
-        # FIXME: would be nice to rename html folder to web
-        theme_path = os.path.join(self.data_directory('html_theme'), 'html')
         self.jinja_env = Environment(
-            loader=FileSystemLoader([theme_path]),
+            loader=MailpileJinjaLoader(self),
             autoescape=True,
             extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
                         'jinja2.ext.do',
@@ -1123,6 +1146,21 @@ class ConfigManager(ConfigDict):
             else:
                 bpath = os.path.join(os.path.dirname(__file__), '..', bpath)
         return os.path.abspath(bpath)
+
+    def data_filename(self, ftype, fpath, *args, **kwargs):
+        # The theme gets precedence
+        core_path = self.data_directory(ftype, *args, **kwargs)
+        path = os.path.join(core_path, fpath)
+
+        # If there's nothing there, check our plugins
+        if not os.path.exists(path):
+            from mailpile.plugins import PluginManager
+            path = PluginManager().get_web_asset(fpath, path)
+
+        if os.path.exists(path):
+            return path
+        else:
+            return None
 
     def history_file(self):
         return os.path.join(self.workdir, 'history')

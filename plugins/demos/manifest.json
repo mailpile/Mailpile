@@ -1,5 +1,8 @@
 # This is a Mailpile plugin manifest, describing the `demos` plugin.
 #
+# This file describes the resources associated with this plugin and how
+# they are meant to interact with the rest of the Mailpile application.
+#
 # NOTE: The Mailpile plugin manifest format is JSON, with the optional
 #       extension that comments are allowed.  Comments must be on lines of
 #       their own and begin with a '#' character optionally preceded by
@@ -10,9 +13,39 @@
     "author": "The Mailpile Team <team@mailpile.is>",
 
     "files": {
-        "python": ["demos.py"]
+        # Python modules end up in the namespace mailpile.plugins.<plugin>,
+        # so the file demos.py becomes mailpile.plugins.demos.demos.  If
+        # a directory is given (including "." for the plugin root dir), an
+        # __init__.py file is loaded per normal Pythonic conventions.
+        "python": ["demos.py"],
+
+        # ...
+        "javascript": ["demos.js"],
+
+        # This section defines view templates for Mailpile API commands.
+        "views": [
+            {
+                # The default view for the md5sum command
+                "url": "/md5sum/",
+                "file": "md5sum.html"
+            },
+            {
+                # An alternate view for search, named "demos.html"
+                "url": "/search/",
+                "file": "search.html",
+                "view": "demos.html"
+            }
+        ],
+
+        # This is a more low-level syntax for injecting assets directly into
+        # the Mailpile web asset tree (templates, images, CSS, etc).
+        "assets": {
+            "html/md5sum/index-other.html": "md5sum.html"
+        }
     },
 
+    # Please see https://github.com/pagekite/Mailpile/wiki/Config for
+    # details about the configuration file syntax.
     "config": {
         "sections": {},
         "variables": {
@@ -55,6 +88,5 @@
     "activities": [],
     "display_modes": [],
     "display_actions": [],
-    "selection_actions": [],
-    "assets": []
+    "selection_actions": []
 }

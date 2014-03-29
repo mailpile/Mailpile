@@ -193,6 +193,30 @@ class PluginManager(object):
         for context in manifest_path('contacts', 'context'):
             self.register_contact_context_providers(_get_class(context))
 
+        # Register web assets
+        if plugin_path:
+          try:
+            for v in manifest_path('files', 'views'):
+                url, fn, vn = v['url'], v['file'], v.get('view')
+                path_parts = [p for p in url.split('/') if p]
+                if len(path_parts) == 1:
+                    path_parts.append('index')
+                if vn:
+                    path_parts[-1] += '-' + vn
+                else:
+                    path_parts[-1] += '.html'
+                filename = os.path.join(plugin_path, fn)
+                self.register_web_asset(full_name,
+                                        os.path.join('html', *path_parts),
+                                        filename)
+
+            for path, filename in manifest_iteritems('files', 'assets'):
+                filename = os.path.join(plugin_path, filename)
+                self.register_web_asset(full_name, path, filename)
+          except:
+            import traceback
+            traceback.print_exc()
+
     def _compat_check(self, strict=True):
         if ((strict and (not self.loading_plugin and not self.builtin)) or
                 self.deprecated):
@@ -393,6 +417,19 @@ class PluginManager(object):
         for cls in args:
             if cls not in COMMANDS:
                 COMMANDS.append(cls)
+
+
+    ##[ Pluggable templates and static content ]##############################
+
+    WEB_ASSETS = {}
+
+    def register_web_asset(self, plugin, path, filename):
+        if path in self.WEB_ASSETS:
+            raise PluginError(_('Already registered: %s') % path)
+        self.WEB_ASSETS[path] = (filename, plugin)
+
+    def get_web_asset(self, path, default=None):
+        return self.WEB_ASSETS.get(path, [default])[0]
 
 
     ##[ Pluggable UI elements ]###############################################
