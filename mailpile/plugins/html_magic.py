@@ -34,19 +34,31 @@ class JsApi(Command):
         session, config = self.session, self.session.config
 
         urlmap = UrlMap(session)
-        res = []
+        res = {
+            'api_methods': [],
+            'javascript_classes': []
+        }
+
         for method in ('GET', 'POST', 'UPDATE', 'DELETE'):
             for cmd in urlmap._api_commands(method, strict=True):
-                cmdinfo = {}
-                cmdinfo["url"] = cmd.SYNOPSIS[2]
-                cmdinfo["method"] = method
-                try: cmdinfo["query_vars"] = cmd.HTTP_QUERY_VARS
-                except: pass
-                try: cmdinfo["post_vars"] = cmd.HTTP_POST_VARS
-                except: pass
-                try: cmdinfo["optional_vars"] = cmd.OPTIONAL_VARS
-                except: pass
-                res.append(cmdinfo)
+                cmdinfo = {
+                    "url": cmd.SYNOPSIS[2],
+                    "method": method
+                }
+                if hasattr(cmd, 'HTTP_QUERY_VARS'):
+                    cmdinfo["query_vars"] = cmd.HTTP_QUERY_VARS
+                if hasattr(cmd, 'HTTP_POST_VARS'):
+                    cmdinfo["post_vars"] = cmd.HTTP_POST_VARS
+                if hasattr(cmd, 'HTTP_OPTIONAL_VARS'):
+                    cmdinfo["optional_vars"] = cmd.OPTIONAL_VARS
+                res['api_methods'].append(cmdinfo)
+
+        for cls, filename in config.plugins.get_js_classes().iteritems():
+            res['javascript_classes'].append({
+                'classname': cls,
+                'code': open(filename, 'rb').read().decode('utf-8')
+            })
+
         return res
 
 mailpile.plugins.register_commands(JsApi)

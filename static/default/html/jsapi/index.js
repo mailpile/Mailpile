@@ -14,7 +14,7 @@ var MailpileAPI = (function() {
             case "GET":
                 for(var k in data) {
                     if(!data[k] || data[k] == undefined) {
-                        delete data[k]; 
+                        delete data[k];
                     }
                 }
                 var params = $.param(data);
@@ -39,7 +39,7 @@ var MailpileAPI = (function() {
     };
 
     return {
-        {% for command in result %}
+        {% for command in result.api_methods %}
         {{command.url|replace("/", "_")}}: function(
             {%- for key in command.query_vars -%}pv_{{key|replace("@", "")}}, {% endfor -%}
             {%- for key in command.post_vars -%}pv_{{key|replace("@", "")|replace(".","_")|replace("-","_")}}, {% endfor -%}
@@ -52,5 +52,11 @@ var MailpileAPI = (function() {
             }, "{{command.method}}", callback);
         },
         {%- endfor %}
+        {% for js_class in result.javascript_classes %}
+        /* {{ js_class.classname }} */
+        {{ js_class.code|safe }}
+        {%- endfor %}
     }
 })();
+
+

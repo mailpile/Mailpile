@@ -183,6 +183,10 @@ class PluginManager(object):
 
     def _process_manifest_pass_one(self, full_name,
                                    manifest=None, plugin_path=None):
+        """
+        Pass one of processing the manifest data. This updates the global
+        configuration and registers Python code with the URL map.
+        """
         if not manifest:
             return
 
@@ -208,6 +212,12 @@ class PluginManager(object):
 
     def _process_manifest_pass_two(self, full_name,
                                    manifest=None, plugin_path=None):
+        """
+        Pass two of processing the manifest data. This maps templates and
+        data to API commands and links registers classes and methods as
+        hooks here and there. As these things depend both on configuration
+        and the URL map, this happens as a second phase.
+        """
         if not manifest:
             return
 
@@ -223,6 +233,12 @@ class PluginManager(object):
         for context in manifest_path('contacts', 'context'):
             self.register_contact_context_providers(self._get_class(full_name,
                                                                     context))
+
+        # Register javascript classes
+        for fn in manifest.get('files', {}).get('javascript', []):
+            class_name = fn.replace('/', '.').rsplit('.', 1)[0]
+            self.register_js(full_name, class_name,
+                             os.path.join(plugin_path, fn))
 
         # Register web assets
         if plugin_path:
@@ -465,6 +481,17 @@ class PluginManager(object):
         for cls in args:
             if cls not in COMMANDS:
                 COMMANDS.append(cls)
+
+
+    ##[ Pluggable javascript ]################################################
+
+    JS_CLASSES = {}
+
+    def register_js(self, plugin, classname, filename):
+        self.JS_CLASSES['%s.%s' % (plugin, classname)] = filename
+
+    def get_js_classes(self):
+        return self.JS_CLASSES
 
 
     ##[ Pluggable templates and static content ]##############################
