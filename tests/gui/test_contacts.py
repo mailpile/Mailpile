@@ -6,10 +6,10 @@ class ContactsGuiTest(MailpileSeleniumTest):
         self.go_to_mailpile_home()
         self.navigate_to('Contacts')
 
-        self.click_button_with_id('button-contact-add')
+        self.click_element_with_id('button-contact-add')
 
-        self.write_to_input('@contactname', 'Foo Bar')
-        self.write_to_input('@contactemail', 'foo.bar@test.local')
+        self.fill_form_field('@contactname', 'Foo Bar')
+        self.fill_form_field('@contactemail', 'foo.bar@test.local')
         self.submit_form('form-contact-add')
 
         self.navigate_to('Contacts')

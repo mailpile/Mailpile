@@ -1,9 +1,38 @@
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException, StaleElementReferenceException
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from mailpile.httpd import HttpWorker
 from tests import MailPileUnittest, get_shared_mailpile
+
+
+class ElementHasClass(object):
+    def __init__(self, locator_tuple, class_name):
+        self.locator = locator_tuple
+        self.class_name = class_name
+
+    def __call__(self, driver):
+        try:
+            e = driver.find_element(self.locator[0], self.locator[1])
+            return self.class_name in e.get_attribute('class')
+        except (NoSuchElementException, StaleElementReferenceException):
+            return False
+
+
+class ElementHasNotClass(object):
+    def __init__(self, locator_tuple, class_name):
+        self.locator = locator_tuple
+        self.class_name = class_name
+
+    def __call__(self, driver):
+        try:
+            e = driver.find_element(self.locator[0], self.locator[1])
+            return self.class_name not in e.get_attribute('class')
+        except (NoSuchElementException, StaleElementReferenceException):
+            return True
 
 
 class SeleniumScreenshotOnExceptionAspecter(type):
@@ -30,8 +59,8 @@ class SeleniumScreenshotOnExceptionAspecter(type):
     def __new__(mcs, name, bases, dict):
         for key, value in dict.items():
             if (hasattr(value, "__call__")
-                    and key != "__metaclass__"
-                    and key.startswith('test')):
+                and key != "__metaclass__"
+                and key.startswith('test')):
                 dict[key] = SeleniumScreenshotOnExceptionAspecter.wrap_method(
                     value)
         return super(SeleniumScreenshotOnExceptionAspecter,
@@ -93,12 +122,13 @@ class MailpileSeleniumTest(MailPileUnittest):
     __metaclass__ = SeleniumScreenshotOnExceptionAspecter
 
     DRIVER = None
+    http_worker = None
 
     def __init__(self, *args, **kwargs):
         MailPileUnittest.__init__(self, *args, **kwargs)
 
     def setUp(self):
-        self.driver = self.__class__.DRIVER
+        self.driver = MailpileSeleniumTest.DRIVER
 
     def tearDown(self):
         #        try:
@@ -114,52 +144,54 @@ class MailpileSeleniumTest(MailPileUnittest):
 
     @classmethod
     def _get_mailpile_url(cls):
-        return 'http://%s:%s/' % cls._get_mailpile_sspec()
+        return 'http://%s:%s' % cls._get_mailpile_sspec()
 
     @classmethod
     def _start_web_server(cls):
-        mp = get_shared_mailpile()
-        session = mp._session
-        config = mp._config
-        sspec = cls._get_mailpile_sspec()
-        cls.http_worker = config.http_worker = HttpWorker(session, sspec)
-        config.http_worker.start()
+        if not MailpileSeleniumTest.http_worker:
+            mp = get_shared_mailpile()
+            session = mp._session
+            config = mp._config
+            sspec = MailpileSeleniumTest._get_mailpile_sspec()
+            MailpileSeleniumTest.http_worker = config.http_worker = HttpWorker(session, sspec)
+            config.http_worker.start()
 
     @classmethod
     def _start_selenium_driver(cls):
-        if not cls.DRIVER:
+        if not MailpileSeleniumTest.DRIVER:
             driver = webdriver.PhantomJS()  # or add to your PATH
-            driver.set_window_size(1024, 768)  # optional
-            cls.DRIVER = driver
+            driver.set_window_size(1280, 1024)  # optional
+            MailpileSeleniumTest.DRIVER = driver
 
     @classmethod
     def _stop_selenium_driver(cls):
-        if cls.DRIVER:
+        if MailpileSeleniumTest.DRIVER:
             try:
-                cls.DRIVER.quit()
-                cls.DRIVER = None
+                MailpileSeleniumTest.DRIVER.quit()
+                MailpileSeleniumTest.DRIVER = None
             except WebDriverException:
                 pass
 
     @classmethod
     def setUpClass(cls):
-        cls._start_selenium_driver()
-        cls._start_web_server()
+        MailpileSeleniumTest._start_selenium_driver()
+        MailpileSeleniumTest._start_web_server()
 
     @classmethod
     def _stop_web_server(cls):
-        mp = get_shared_mailpile()
-        mp._config.http_worker = None
-        cls.http_worker.quit()
-        cls.http_worker = None
+        if MailpileSeleniumTest.http_worker:
+            mp = get_shared_mailpile()
+            mp._config.http_worker = None
+            MailpileSeleniumTest.http_worker.quit()
+            MailpileSeleniumTest.http_worker = MailpileSeleniumTest.http_worker = None
 
     @classmethod
     def tearDownClass(cls):
-        cls._stop_web_server()
-        cls._stop_selenium_driver()
+        MailpileSeleniumTest._stop_web_server()
+        MailpileSeleniumTest._stop_selenium_driver()
 
     def go_to_mailpile_home(self):
-        self.driver.get(self._get_mailpile_url())
+        self.driver.get('%s/in/inbox' % self._get_mailpile_url())
 
     def take_screenshot(self, filename):
         try:
@@ -172,7 +204,7 @@ class MailpileSeleniumTest(MailPileUnittest):
             out.write(self.driver.page_source.encode('utf8'))
 
     def navigate_to(self, name):
-        contacts = self.driver.find_element_by_xpath(
+        contacts = self.find_element_by_xpath(
             '//a[@alt="%s"]/span' % name)
         self.assertTrue(contacts.is_displayed())
         contacts.click()
@@ -181,7 +213,7 @@ class MailpileSeleniumTest(MailPileUnittest):
         form = self.driver.find_element_by_id(form_id)
         form.submit()
 
-    def write_to_input(self, field, text):
+    def fill_form_field(self, field, text):
         input_field = self.driver.find_element_by_name(field)
         input_field.send_keys(text)
 
@@ -191,6 +223,52 @@ class MailpileSeleniumTest(MailPileUnittest):
         except NoSuchElementException:
             raise AssertionError
 
-    def click_button_with_id(self, button_id):
-        btn = self.driver.find_element_by_id(button_id)
-        btn.click()
+    def click_element_with_link_text(self, text):
+        try:
+            e = self.driver.find_element_by_link_text(text)
+            e.click()
+        except NoSuchElementException:
+            raise AssertionError
+
+    def click_element_with_id(self, element_id):
+        e = self.driver.find_element_by_id(element_id)
+        e.click()
+
+    def page_title(self):
+        return self.driver.title
+
+    def find_element_by_id(self, id):
+        return self.driver.find_element_by_id(id)
+
+    def find_element_containing_text(self, text):
+        return self.driver.find_element_by_xpath("//*[contains(.,'%s')]" % text)
+
+    def find_element_by_xpath(self, xpath):
+        return self.driver.find_element_by_xpath(xpath)
+
+    def find_element_by_class_name(self, class_name):
+        return self.driver.find_element_by_class_name(class_name)
+
+    def assert_text(self, text):
+        self.find_element_containing_text(text)
+
+    def wait_until_element_is_visible(self, element_id):
+        self.wait_until_element_is_visible_by_locator((By.ID, element_id))
+
+    def wait_until_element_is_visible_by_locator(self, locator_tuple):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.visibility_of_element_located(locator_tuple))
+
+    def wait_until_element_is_invisible_by_locator(self, locator_tuple):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.invisibility_of_element_located(locator_tuple))
+
+    def wait_until_element_has_class(self, locator_tuple, class_name):
+        self.wait_for_element_condition(ElementHasClass(locator_tuple, class_name))
+
+    def wait_until_element_has_not_class(self, locator_tuple, class_name):
+        self.wait_for_element_condition(ElementHasNotClass(locator_tuple, class_name))
+
+    def wait_for_element_condition(self, expected_conditions):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(expected_conditions)
