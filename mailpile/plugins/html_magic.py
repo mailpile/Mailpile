@@ -33,9 +33,20 @@ class JsApi(Command):
     def command(self, save=True, auto=False):
         session, config = self.session, self.session.config
 
-        return {
-            'lalala': 'all the stuff'
-        }
-
+        urlmap = UrlMap(session)
+        res = []
+        for method in ('GET', 'POST', 'UPDATE', 'DELETE'):
+            for cmd in urlmap._api_commands(method, strict=True):
+                cmdinfo = {}
+                cmdinfo["url"] = cmd.SYNOPSIS[2]
+                cmdinfo["method"] = method
+                try: cmdinfo["query_vars"] = cmd.HTTP_QUERY_VARS
+                except: pass
+                try: cmdinfo["post_vars"] = cmd.HTTP_POST_VARS
+                except: pass
+                try: cmdinfo["optional_vars"] = cmd.OPTIONAL_VARS
+                except: pass
+                res.append(cmdinfo)
+        return res
 
 mailpile.plugins.register_commands(JsApi)
