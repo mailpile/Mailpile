@@ -931,7 +931,7 @@ class ConfigManager(ConfigDict):
 
         # Discover plugins and update the config rule to match
         from mailpile.plugins import PluginManager
-        self.plugins = PluginManager().discover([
+        self.plugins = PluginManager(config=self).discover([
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
                          '..', 'plugins'),
             os.path.join(self.workdir, 'plugins')
@@ -982,6 +982,8 @@ class ConfigManager(ConfigDict):
         for plugin in plugin_list:
             session.ui.mark(_('Loading plugin: %s') % plugin)
             self.plugins.load(plugin)
+        session.ui.mark(_('Processing manifests'))
+        self.plugins.process_manifests()
         self.prepare_workers(session)
 
     def save(self):

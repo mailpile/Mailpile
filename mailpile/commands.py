@@ -50,10 +50,12 @@ class Command:
     HTTP_STRICT_VARS = True
 
     class CommandResult:
-        def __init__(self, session, command, template_id, doc, result,
-                     status, message, args=[], kwargs={}, error_info={}):
+        def __init__(self, command_obj, session,
+                     command_name, doc, result, status, message,
+                     template_id=None, args=[], kwargs={}, error_info={}):
             self.session = session
-            self.command = command
+            self.command_obj = command_obj
+            self.command_name = command_name
             self.args = tuple(args)
             self.kwargs = {}
             self.kwargs.update(kwargs)
@@ -88,7 +90,7 @@ class Command:
 
         def as_dict(self):
             rv = {
-                'command': self.command,
+                'command': self.command_name,
                 'status': self.status,
                 'message': self.message,
                 'result': self.result,
@@ -123,28 +125,18 @@ class Command:
             return self.as_template('txt', template)
 
         def as_template(self, etype, template=None):
-            path_parts = (self.template_id or 'command').split('/')
-            if len(path_parts) == 1:
-                path_parts.append('index')
-            if template not in (None, 'as.' + etype):
-                # Security: The template request may come from the URL, so we
-                #           sanitize it very aggressively before heading off
-                #           to the filesystem.
-                clean_tpl = CleanText(template.replace('.%s' % etype, ''),
-                                      banned=(CleanText.FS +
-                                              CleanText.WHITESPACE))
-                path_parts[-1] += '-%s' % clean_tpl
-            tpath = os.path.join(*path_parts)
+            tpath = self.command_obj.template_path(etype,
+                template_id=self.template_id, template=template)
+
             data = self.as_dict()
             data['title'] = self.message
-
             data['render_mode'] = 'full'
             for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
                 if self.session.ui.render_mode.endswith(e):
                     data['render_mode'] = 'content'
 
             return self.session.ui.render_web(self.session.config, [tpath],
-                                              etype, data)
+                                              data)
 
     def __init__(self, session, name=None, arg=None, data=None):
         self.session = session
@@ -165,6 +157,21 @@ class Command:
         else:
             self.args = tuple()
         self._create_event()
+
+    def template_path(self, etype, template_id=None, template=None):
+        path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
+        if len(path_parts) == 1:
+            path_parts.append('index')
+        if template not in (None, etype, 'as.' + etype):
+            # Security: The template request may come from the URL, so we
+            #           sanitize it very aggressively before heading off
+            #           to the filesystem.
+            clean_tpl = CleanText(template.replace('.%s' % etype, ''),
+                                  banned=(CleanText.FS +
+                                          CleanText.WHITESPACE))
+            path_parts[-1] += '-%s' % clean_tpl
+        path_parts[-1] += '.' + etype
+        return os.path.join(*path_parts)
 
     def _idx(self, reset=False, wait=True, wait_all=True, quiet=False):
         session, config = self.session, self.session.config
@@ -323,7 +330,7 @@ class Command:
             self.status = 'success'
 
         self.session.ui.mark(_('Generating result'))
-        result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
+        result = self.CommandResult(self, self.session, self.name,
                                     command.__doc__ or self.__doc__,
                                     rv, self.status, self.message,
                                     args=self.args,
@@ -1136,8 +1143,11 @@ class Output(Command):
     HTTP_STRICT_VARS = False
     LOG_NOTHING = True
 
+    def get_render_mode(self):
+        return self.args and self.args[0] or 'text'
+
     def command(self):
-        m = self.session.ui.render_mode = self.args and self.args[0] or 'text'
+        m = self.session.ui.render_mode = self.get_render_mode()
         return self._success(_('Set output mode to: %s') % m,
                              result={'output': m})
 
@@ -1277,7 +1287,7 @@ class Help(Command):
         pass
 
     def _finishing(self, command, rv):
-        return self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
+        return self.CommandResult(self, self.session, self.name,
                                   command.__doc__ or self.__doc__, rv,
                                   self.status, self.message)
 

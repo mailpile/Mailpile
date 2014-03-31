@@ -22,27 +22,19 @@
         # ...
         "javascript": ["demos.js"],
 
-        # This section defines view templates for Mailpile API commands.
-        "views": [
-            {
-                # The default view for the md5sum command
-                "url": "/md5sum/",
-                "file": "md5sum.html"
-            },
-            {
-                # An alternate view for search
-                "url": "/search/demos.html",
-                "file": "search.html"
-            }
-        ],
-
-        # This is a more low-level syntax for injecting assets directly into
-        # the Mailpile web asset tree (templates, images, CSS, etc).
-        "assets": {
-            "css/demos.css": {
-                "file": "demos.css",
-                "mimetype": "text/css"
-            }
+        # This section defines URL routes and MIME types.
+        "routes": {
+             # Routes associating templates with API methods. These should
+             # use the full versioned URL, the content will still be made
+             # available using the short-hand URLs as well.
+             "/api/0/md5sum/as.html": {"file": "md5sum.html"},
+             "/api/0/md5sum/as.xml": {"file": "md5sum.xml"},
+             "/api/0/search/demos.html": {"file": "search.html"},
+             # Static content should specify MIME types...
+             "/static/css/demos.css": {
+                 "file": "demos.css",
+                 "mimetype": "text/css"
+             }
         }
     },
 

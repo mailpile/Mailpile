@@ -292,13 +292,12 @@ class UserInteraction:
 
         return json.dumps(data, indent=1, cls=NoFailEncoder, sort_keys=True)
 
-    def _web_template(self, config, tpl_names, elems=None, ext='html'):
+    def _web_template(self, config, tpl_names, elems=None):
         env = config.jinja_env
         env.session = Session(config)
         env.session.ui = HttpUserInteraction(None, config)
-        for tpl_name in tpl_names:
+        for fn in tpl_names:
             try:
-                fn = '%s.%s' % (tpl_name, ext)
                 # FIXME(Security): Here we need to sanitize the file name
                 #                  very strictly in case it somehow came
                 #                  from user data.
@@ -307,13 +306,13 @@ class UserInteraction:
                 pass
         return None
 
-    def render_web(self, cfg, tpl_names, ext, data):
+    def render_web(self, cfg, tpl_names, data):
         """Render data as HTML"""
         alldata = default_dict(self.html_variables)
         alldata["config"] = cfg
         alldata.update(data)
         try:
-            template = self._web_template(cfg, tpl_names, ext=ext)
+            template = self._web_template(cfg, tpl_names)
             if template:
                 return template.render(alldata)
             else:

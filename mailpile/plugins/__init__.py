@@ -6,6 +6,7 @@ import os
 import sys
 from gettext import gettext as _
 
+from mailpile.util import *
 import mailpile.commands
 import mailpile.defaults
 import mailpile.vcard
@@ -46,11 +47,15 @@ class PluginManager(object):
     ]
     DISCOVERED = {}
 
-    def __init__(self, plugin_name=None, builtin=False, deprecated=False):
+    def __init__(self, plugin_name=None, builtin=False, deprecated=False,
+                 config=None, session=None):
         self.loading_plugin = plugin_name
         self.loading_builtin = plugin_name and builtin
         self.builtin = builtin
         self.deprecated = deprecated
+        self.session = session
+        self.config = config
+        self.manifests = []
 
     def _listdir(self, path):
         try:
@@ -103,7 +108,7 @@ class PluginManager(object):
         with open(full_path, 'r') as mfd:
             exec mfd.read() in sys.modules[full_name].__dict__
 
-    def _load(self, plugin_name):
+    def _load(self, plugin_name, process_manifest=False):
         full_name = 'mailpile.plugins.%s' % plugin_name
         if full_name in sys.modules:
             return
@@ -140,33 +145,49 @@ class PluginManager(object):
                 print 'FIXME: Loading %s failed, tell user!' % full_name
                 return
 
-            return self.process_manifest(full_name, manifest, dirname)
+            spec = (full_name, manifest, dirname)
+            self.manifests.append(spec)
+            if process_manifest:
+                self._process_manifest_pass_one(*spec)
+                self._process_manifest_pass_two(*spec)
 
-    def load(self, *args):
+        return self
+
+    def load(self, *args, **kwargs):
         try:
-            return self._load(*args)
+            return self._load(*args, **kwargs)
         finally:
             self.loading_plugin = None
             self.loading_builtin = False
 
-    def process_manifest(self, full_name, manifest=None, plugin_path=None):
+    def process_manifests(self):
+        for spec in self.manifests:
+            self._process_manifest_pass_one(*spec)
+        for spec in self.manifests:
+            self._process_manifest_pass_two(*spec)
+        return self
+
+    def _mf_path(self, mf, *path):
+        for p in path:
+            mf = mf.get(p, {})
+        return mf
+
+    def _mf_iteritems(self, mf, *path):
+        return self._mf_path(mf, *path).iteritems()
+
+    def _get_class(self, full_name, class_name):
+        full_class_name = '.'.join([full_name, class_name])
+        mod_name, class_name = full_class_name.rsplit('.', 1)
+        module = __import__(mod_name, globals(), locals(), class_name)
+        return getattr(module, class_name)
+
+    def _process_manifest_pass_one(self, full_name,
+                                   manifest=None, plugin_path=None):
         if not manifest:
             return
 
-        def manifest_path(*path):
-            c = manifest
-            for p in path:
-                c = c.get(p, {})
-            return c
-
-        def manifest_iteritems(*path):
-            return manifest_path(*path).iteritems()
-
-        def _get_class(class_name):
-            full_class_name = '.'.join([full_name, class_name])
-            mod_name, class_name = full_class_name.rsplit('.', 1)
-            module = __import__(mod_name, globals(), locals(), class_name)
-            return getattr(module, class_name)
+        manifest_path = lambda *p: self._mf_path(manifest, *p)
+        manifest_iteritems = lambda *p: self._mf_iteritems(manifest, *p)
 
         # Register config variables and sections
         for section, rules in manifest_iteritems('config', 'sections'):
@@ -176,7 +197,7 @@ class PluginManager(object):
 
         # Register commands
         for command in manifest_path('commands'):
-            cls = _get_class(command['class'])
+            cls = self._get_class(full_name, command['class'])
             # FIXME: This is a bit hacky, we probably just want to kill
             #        the SYNOPSIS attribute entirely.
             cls.SYNOPSIS = tuple([cls.SYNOPSIS[0],
@@ -185,38 +206,61 @@ class PluginManager(object):
                                   cls.SYNOPSIS_ARGS or cls.SYNOPSIS[3]])
             self.register_commands(cls)
 
+    def _process_manifest_pass_two(self, full_name,
+                                   manifest=None, plugin_path=None):
+        if not manifest:
+            return
+
+        manifest_path = lambda *p: self._mf_path(manifest, *p)
+        manifest_iteritems = lambda *p: self._mf_iteritems(manifest, *p)
+
         # Register contact/vcard hooks
         for importer in manifest_path('contacts', 'importers'):
-            self.register_vcard_importers(_get_class(importer))
+            self.register_vcard_importers(self._get_class(full_name, importer))
         for exporter in manifest_path('contacts', 'exporters'):
-            self.register_contact_exporters(_get_class(exporter))
+            self.register_contact_exporters(self._get_class(full_name,
+                                                            exporter))
         for context in manifest_path('contacts', 'context'):
-            self.register_contact_context_providers(_get_class(context))
+            self.register_contact_context_providers(self._get_class(full_name,
+                                                                    context))
 
         # Register web assets
         if plugin_path:
           try:
-            for v in manifest_path('files', 'views'):
-                url, fn = v['url'], v['file']
-                path_parts = [p for p in url.split('/') if p]
-                view = None
-                if len(path_parts) > 1 and path_parts[-1].endswith('.html'):
-                    view = path_parts.pop(-1)
-                if len(path_parts) == 1:
-                    path_parts.append('index')
-                if view:
-                    path_parts[-1] += '-' + view
-                else:
-                    path_parts[-1] += '.html'
-                filename = os.path.join(plugin_path, fn)
-                self.register_web_asset(full_name,
-                                        os.path.join('html', *path_parts),
-                                        filename)
-
-            for path, info in manifest_iteritems('files', 'assets'):
+            from mailpile.urlmap import UrlMap
+            um = UrlMap(session=self.session, config=self.config)
+            for url, info in manifest_iteritems('files', 'routes'):
                 filename = os.path.join(plugin_path, info['file'])
-                self.register_web_asset(full_name, path, filename,
-                    mimetype=info.get('mimetype', 'application/octet-stream'))
+
+                # Short-cut for static content
+                if url.startswith('/static/'):
+                    self.register_web_asset(full_name, url[8:], filename,
+                        mimetype=info.get('mimetype',
+                                          'application/octet-stream'))
+                    continue
+
+                # Finds the right command class and register asset in
+                # the right place for that particular command.
+                commands = []
+                for method in ('GET', 'POST', 'PUT', 'UPDATE', 'DELETE'):
+                    try:
+                        commands = um.map(None, method, url, {}, {})
+                        break
+                    except UsageError:
+                        pass
+
+                output = [o.get_render_mode()
+                          for o in commands if hasattr(o, 'get_render_mode')]
+                output = output and output[-1] or 'html'
+                if commands:
+                    command = commands[-1]
+                    tpath = command.template_path(output.split('.')[-1],
+                                                  template=output)
+                    self.register_web_asset(full_name,
+                                            'html/' + tpath,
+                                            filename)
+                else:
+                    print 'FIXME: Un-routable URL in manifest %s' % url
           except:
             import traceback
             traceback.print_exc()
