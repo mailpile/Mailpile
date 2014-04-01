@@ -12,7 +12,7 @@
     "name": "demos",
     "author": "The Mailpile Team <team@mailpile.is>",
 
-    "files": {
+    "code": {
         # Python modules end up in the namespace mailpile.plugins.<plugin>,
         # so the file demos.py becomes mailpile.plugins.demos.demos.  If
         # a directory is given (including "." for the plugin root dir), an
@@ -22,20 +22,27 @@
         # ...
         "javascript": ["demos.js"],
 
-        # This section defines URL routes and MIME types.
-        "routes": {
-             # Routes associating templates with API methods. These should
-             # use the full versioned URL, the content will still be made
-             # available using the short-hand URLs as well.
-             "/api/0/md5sum/as.html": {"file": "md5sum.html"},
-             "/api/0/md5sum/as.xml": {"file": "md5sum.xml"},
-             "/api/0/search/demos.html": {"file": "search.html"},
-             # Static content should specify MIME types...
-             "/static/css/demos.css": {
-                 "file": "demos.css",
-                 "mimetype": "text/css"
-             }
-        }
+        # ...
+        "css": ["demos.css"]
+    },
+
+    # This section defines URL routes and MIME types.
+    "routes": {
+        # Routes associating templates with API methods.
+        #
+        # Note: To communicate which API version is being developed against,
+        #       please either use full /api/N/ URL paths, or provide an "api"
+        #       attribute (both styles are illustrated below). If no view
+        #       type (filename part) is specified in the URL, HTML is assumed.
+        #
+        "/md5sum/": {"file": "md5sum.html", "api": 0},
+        "/api/0/md5sum/as.xml": {"file": "md5sum.xml"},
+        "/search/demos.html": {"file": "search.html", "api": 0},
+        # Static content can be injected anywhere under the /static/
+        # namespace. Optionally, non-obvious mime-types can be specified.
+        "/static/img/demos.png": {"file": "demos.png"},
+        "/static/data/demos.txt": {"file": "manifest.json",
+                                   "mimetype": "text/plain"}
     },
 
     # Please see https://github.com/pagekite/Mailpile/wiki/Config for

@@ -25,7 +25,7 @@ from mailpile.util import *
 
 
 class JsApi(Command):
-    """Add or remove tags on a set of messages"""
+    """Output API bindings, plugin code and CSS as CSS or Javascript"""
     SYNOPSIS = (None, None, 'jsapi', None)
     ORDER = ('Internals', 0)
     HTTP_CALLABLE = ('GET', )
@@ -36,7 +36,8 @@ class JsApi(Command):
         urlmap = UrlMap(session)
         res = {
             'api_methods': [],
-            'javascript_classes': []
+            'javascript_classes': [],
+            'css_files': []
         }
 
         for method in ('GET', 'POST', 'UPDATE', 'DELETE'):
@@ -54,11 +55,26 @@ class JsApi(Command):
                 res['api_methods'].append(cmdinfo)
 
         for cls, filename in config.plugins.get_js_classes().iteritems():
-            res['javascript_classes'].append({
-                'classname': cls,
-                'code': open(filename, 'rb').read().decode('utf-8')
-            })
+            try:
+                with open(filename, 'rb') as fd:
+                    res['javascript_classes'].append({
+                        'classname': cls,
+                        'code': fd.read().decode('utf-8')
+                    })
+            except (OSError, IOError, UnicodeDecodeError):
+                self._ignore_exception()
+
+        for cls, filename in config.plugins.get_css_files().iteritems():
+            try:
+                with open(filename, 'rb') as fd:
+                    res['css_files'].append({
+                        'classname': cls,
+                        'css': fd.read().decode('utf-8')
+                    })
+            except (OSError, IOError, UnicodeDecodeError):
+                self._ignore_exception()
 
         return res
+
 
 mailpile.plugins.register_commands(JsApi)

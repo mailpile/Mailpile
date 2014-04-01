@@ -125,7 +125,7 @@ class PluginManager(object):
             self.loading_builtin = False
 
             # Load the Python requested by the manifest.json
-            files = manifest.get('files', {}).get('python', [])
+            files = manifest.get('code', {}).get('python', [])
             files.sort(key=lambda f: len(f))
             try:
                 for filename in files:
@@ -235,29 +235,38 @@ class PluginManager(object):
                                                                     context))
 
         # Register javascript classes
-        for fn in manifest.get('files', {}).get('javascript', []):
+        for fn in manifest.get('code', {}).get('javascript', []):
             class_name = fn.replace('/', '.').rsplit('.', 1)[0]
             self.register_js(full_name, class_name,
                              os.path.join(plugin_path, fn))
+
+        # Register CSS files
+        for fn in manifest.get('code', {}).get('css', []):
+            file_name = fn.replace('/', '.').rsplit('.', 1)[0]
+            self.register_css(full_name, file_name,
+                              os.path.join(plugin_path, fn))
 
         # Register web assets
         if plugin_path:
           try:
             from mailpile.urlmap import UrlMap
             um = UrlMap(session=self.session, config=self.config)
-            for url, info in manifest_iteritems('files', 'routes'):
+            for url, info in manifest_iteritems('routes'):
                 filename = os.path.join(plugin_path, info['file'])
 
                 # Short-cut for static content
                 if url.startswith('/static/'):
                     self.register_web_asset(full_name, url[8:], filename,
-                        mimetype=info.get('mimetype',
-                                          'application/octet-stream'))
+                        mimetype=info.get('mimetype', None))
                     continue
 
                 # Finds the right command class and register asset in
                 # the right place for that particular command.
                 commands = []
+                if (not url.startswith('/api/')) and 'api' in info:
+                    url = '/api/%d%s' % (info['api'], url)
+                    if url[-1] == '/':
+                        url += 'as.html'
                 for method in ('GET', 'POST', 'PUT', 'UPDATE', 'DELETE'):
                     try:
                         commands = um.map(None, method, url, {}, {})
@@ -483,25 +492,28 @@ class PluginManager(object):
                 COMMANDS.append(cls)
 
 
-    ##[ Pluggable javascript ]################################################
+    ##[ Pluggable javascript, CSS template and static content ]###############
 
     JS_CLASSES = {}
+    CSS_FILES = {}
+    WEB_ASSETS = {}
 
     def register_js(self, plugin, classname, filename):
         self.JS_CLASSES['%s.%s' % (plugin, classname)] = filename
 
-    def get_js_classes(self):
-        return self.JS_CLASSES
-
-
-    ##[ Pluggable templates and static content ]##############################
-
-    WEB_ASSETS = {}
+    def register_css(self, plugin, classname, filename):
+        self.CSS_FILES['%s.%s' % (plugin, classname)] = filename
 
     def register_web_asset(self, plugin, path, filename, mimetype='text/html'):
         if path in self.WEB_ASSETS:
             raise PluginError(_('Already registered: %s') % path)
         self.WEB_ASSETS[path] = (filename, mimetype, plugin)
+
+    def get_js_classes(self):
+        return self.JS_CLASSES
+
+    def get_css_files(self):
+        return self.CSS_FILES
 
     def get_web_asset(self, path, default=None):
         return tuple(self.WEB_ASSETS.get(path, [default, None])[0:2])

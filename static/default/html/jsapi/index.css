@@ -1,0 +1,4 @@
+{% for css_file in result.css_files %}
+/* CSS for {{ css_file.classname }} */
+{{ css_file.css|safe }}
+{% endfor %}
