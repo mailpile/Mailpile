@@ -1,3 +1,7 @@
+/* Mailpile v0.1.0
+ * config.less
+ */
+
 /* Colors */
 
 	@white: #FFFFFF;
@@ -19,31 +23,6 @@
   @colorSelect: lighten(@yellow, 35%);
   @colorSelectHover: lighten(@yellow, 30%);
 
-/* Container */
-
-	@desktop-max-container-width: 1140px;
-	@desktop-container-width: 960px;
-	@tablet-container-width: 768px;
-	@mobile-container-width: 420px;
-
-
-/* Base - Margins, Paddings, and Spacings */
-
-	@base-line-height: 20px;
-	@base-margin: 20px;
-	@base-margin-bottom: @base-margin * 1.5;
-	@base-padding: 20px;
-	@base-border-radius: 5px;
-
-
-/* Grid */
-
-	@grid-gutter: 20px;
-	@column-count: 16;
-
-	@tablet-column-width: 100%;	
-	@mobile-column-width: 100%;
-
 
 /* Body */
 
@@ -51,6 +30,23 @@
 	@body-background-image: ~'';
 	@body-background-repeat: ~'';
 	@body-background-position: ~'';
+
+
+/* Container */
+	
+	@container-desktop-max-width: 1140px;
+	@container-desktop-width: 960px;
+	@container-tablet-width: 768px;
+	@container-mobile-width: 420px;
+
+
+/* Margins, Paddings, and Spacings */
+
+	@base-line-height: 20px;
+	@base-margin: 20px;
+	@base-margin-bottom: @base-margin * 1.5;
+	@base-padding: 20px;
+	@base-border-radius: 5px;
 
 
 /* Text */
@@ -73,6 +69,16 @@
 
 	@text-shadow-on-light: 1px 1px 1px #888888;
 	@text-shadow-on-dark: 0 -1px 0 rgba(0, 0, 0, 0.4);
+
+	@pre-margin-bottom: 20px;
+	@pre-background: @grayLight;
+  @pre-color: @black;
+  @pre-padding: 4px 8px;
+  @pre-border: 1px solid @gray;
+  @pre-border-radius: 3px;
+  @pre-font-family: 'Courier';
+  @pre-font-size: 14px;
+  @pre-font-weight: bold;
 
 
 /* Links */
@@ -120,11 +126,15 @@
 
 /* Lists */
 
-	@list-margin: ~'';
+	@list-margin-bottom: 40px;
+	@list-margin-left: 30px;
 	@list-padding: ~'';
-	@list-item-margin: ~'';
-	@list-item-padding: ~'';
-	@list-item-type: ~'';
+  @list-font-size: @text-font-size;
+  @list-line-height: @text-font-size;	
+	@list-item-margin: 15px;
+	@list-item-padding: 5px;
+	@list-item-type-ordered: decimal outside;
+	@list-item-type-unordered: square outside;
 
 
 /* Separators */
@@ -136,7 +146,7 @@
 	
 	@hr-border-type: solid;
 	@hr-border-color: @gray;
-	@hr-border-width: 1px 0 0;
+	@hr-border-width: 1px;
 	@hr-border-margin: 35px 0;
 	
 
@@ -223,7 +233,6 @@
 	@button-warning-border-hover: @blue;
 
 
-
 /* Forms */
 
 	@form-elements-background: #FFFFFF;
@@ -255,6 +264,25 @@
 
 	@table-td-border-top: 1px solid @green;
 	@table-line-height: 18px;
+
+
+/* Grid */
+
+  @grid-row-margin-bottom: 20px;
+	@grid-gutter: 1%;
+	@grid-column-count: 16;
+
+	@grid-tablet-width: 100%;	
+	@grid-mobile-width: 100%;
+
+
+
+/* Boxes */
+
+  @boxes-padding: 15px;
+  @boxes-header-font-size: 24px;
+  @boxes-paragraph-font-size: 14px;
+  @boxes-link-color: @gray;
 
 
 /* Bootstrap */
