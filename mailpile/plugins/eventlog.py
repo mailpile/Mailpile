@@ -8,21 +8,34 @@ from mailpile.util import *
 
 class Events(Command):
     """Display events from the event log"""
-    SYNOPSIS = (None, 'events', 'events',
+    SYNOPSIS = (None, 'eventlog', 'eventlog',
                 '[incomplete] [wait] [<count>] [<field>=<val> ...]')
     ORDER = ('Internals', 9)
-    HTTP_CALLABLE = ()
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {
+        'wait': 'wait for new data?',
+        'incomplete': 'incomplete events only?',
+        'source': 'source class',
+        'flags': 'match all flags',
+        'flag': 'match any flag',
+        'data': 'var:value',
+        'private_data': 'var:value'
+    }
 
     WAIT_TIME = 10.0
     GATHER_TIME = 0.1
+
+    _FALSE = ('0', 'off', 'no', 'false')
 
     def command(self):
         session, config, index = self.session, self.session.config, self._idx()
         event_log = config.event_log
 
+        incomplete = (self.data.get('incomplete', ['no']
+                                    )[0].lower() not in self._FALSE)
+        waiting = (self.data.get('wait', ['no']
+                                 )[0].lower() not in self._FALSE)
         limit = 0
-        incomplete = False
-        waiting = False
         filters = {}
         for arg in self.args:
             if arg.lower() == 'incomplete':
@@ -37,6 +50,20 @@ class Events(Command):
                     limit = int(arg)
                 except ValueError:
                     raise UsageError('Bad argument: %s' % arg)
+
+        # Handle args from the web
+        def fset(arg, val):
+            if val.startswith('!'):
+                filters[arg+'!'] = val[1:]
+            else:
+                filters[arg] = val
+        for arg in self.data:
+            if arg in ('source', 'flags', 'flag'):
+                fset(arg, self.data[arg][0])
+            elif arg in ('data', 'private_data'):
+                for data in self.data[arg]:
+                    var, val = data.split(':', 1)
+                    fset('%s_%s' % (arg, var), val)
 
         if waiting:
             tries = 2

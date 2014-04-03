@@ -212,20 +212,20 @@ def test_composition():
     # First attempt to send should fail & record failure to event log
     config.profiles['0'].route = '|/no/such/file'
     mp.sendmail()
-    events = mp.events('source=mailpile.plugins.compose.Sendit',
-                       'data_mid=%s' % new_mid).result
+    events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
+                         'data_mid=%s' % new_mid).result
     assert(len(events) == 1)
     assert(events[0]['flags'] == 'i')
-    assert(len(mp.events('incomplete').result) == 1)
+    assert(len(mp.eventlog('incomplete').result) == 1)
 
     # Second attempt should succeed!
     config.profiles['0'].route = '|%s -i %%(rcpt)s' % mailpile_send
     mp.sendmail()
-    events = mp.events('source=mailpile.plugins.compose.Sendit',
-                       'data_mid=%s' % new_mid).result
+    events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
+                         'data_mid=%s' % new_mid).result
     assert(len(events) == 1)
     assert(events[0]['flags'] == 'c')
-    assert(len(mp.events('incomplete').result) == 0)
+    assert(len(mp.eventlog('incomplete').result) == 0)
 
     # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
