@@ -49,6 +49,11 @@
   
   {% set last_enc_context = message.crypto.encryption.context %}
   {% set last_sig_context = message.crypto.signature.context %}
+  {% if not message.text_parts %}
+    {% for part in message.html_parts %}
+      {{part.data|replace("\\n", "\n")|safe}}
+    {% endfor %}
+  {% endif %}
   {% for part in message.text_parts %}
     {# Parts that do not have own crypto attribute inherit from message itself #}
     {#

@@ -2,46 +2,69 @@
 {% block content %}
 
 <div id="settings" class="content-normal">
-  
-  <h3>{{_("Your Profiles")}}</h3>
-  <ul>
-  {% for p in result.profiles %}
-    <li><strong>{{ p.name }}</strong> <br> {{ p.email }}<br> {{ p.route }}</li>
-  {% endfor %}
-  </ul>
-  <hr>
+  {% if "profiles" in result %}
+  <div id="profiles">
+    <h3>{{_("Your Profiles")}}</h3>
+    <ul>
+    {% for p in result.profiles %}
+      <li><strong>{{ p.name }}</strong> <br> {{ p.email }}<br> {{ p.route }}</li>
+    {% endfor %}
+    </ul>
+    <hr>
 
-  <h3>{{_("Add New Profile")}}</h3>
-  <form id="form-profile-add" class="standard" action="/api/0/settings/add/" method="POST">
+    <h3>{{_("Add New Profile")}}</h3>
+    <form id="form-profile-add" class="standard" action="/api/0/settings/add/" method="POST">
 
-    <label>{{_("Name")}}</label>
-    <input type="text" name="name" value="" placeholder="{{_("Chelsea Manning")}}" id="profile-add-name">
+      <label>{{_("Name")}}</label>
+      <input type="text" name="name" value="" placeholder="{{_("Chelsea Manning")}}" id="profile-add-name">
 
-    <label>{{_("Email")}}</label>
-    <input type="text" name="email" value="" placeholder="{{_("chelsea@email.com")}}" id="profile-add-email">
+      <label>{{_("Email")}}</label>
+      <input type="text" name="email" value="" placeholder="{{_("chelsea@email.com")}}" id="profile-add-email">
 
-    <h5>{{_("SMTP Server")}}</h5>
-    <label>{{_("Login")}}</label>
-    <input type="text" name="username" value="" placeholder="{{_("username@mailserver.org")}}" id="profile-add-username">
+      <h5>{{_("SMTP Server")}}</h5>
+      <label>{{_("Login")}}</label>
+      <input type="text" name="username" value="" placeholder="{{_("username@mailserver.org")}}" id="profile-add-username">
 
-    <label>{{_("Password")}}</label>
-    <input type="password" name="password" value="" placeholder="1234567890" id="profile-add-password">
+      <label>{{_("Password")}}</label>
+      <input type="password" name="password" value="" placeholder="1234567890" id="profile-add-password">
 
-    <label>{{_("Server")}}</label>
-    <input type="text" name="server" value="" placeholder="{{_("smtp.mailserver.org")}}" id="profile-add-server">
+      <label>{{_("Server")}}</label>
+      <input type="text" name="server" value="" placeholder="{{_("smtp.mailserver.org")}}" id="profile-add-server">
 
-    <label>{{_("Port")}}</label>
-    <select name="smtp-port" id="profile-add-port">
-      <option value="25">25</option>
-      <option value="587">587</option>
-      <option value="465">465 (TLS)</option>
-    </select>
+      <label>{{_("Port")}}</label>
+      <select name="smtp-port" id="profile-add-port">
+        <option value="25">25</option>
+        <option value="587">587</option>
+        <option value="465">465 (TLS)</option>
+      </select>
 
-    <button type="submit"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
+      <button type="submit"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
 
-  </form>
+    </form>
+  </div>
+  {% endif %}
 
+  {% if "prefs" in result %}
+  <div id="prefs">
+    <h3>{{_("Preferences")}}</h3>
+    <ul>
+      {% for p in result.prefs %}
+      <li>{{p}}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 
+  {% if "sys" in result %}
+  <div id="sys">
+    <h3>{{_("Advanced Settings")}}</h3>
+    <ul>
+      {% for p in result.sys %}
+      <li>{{p}}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 </div>
 
 {% endblock %}{% block title %}{{_("Profiles")}} | {{_("Settings")}}{% endblock %}

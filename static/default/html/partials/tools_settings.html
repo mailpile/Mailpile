@@ -1,5 +1,7 @@
 <nav class="sub-navigation clearfix">
 	<ul class="left horizontal">
-    <li {% if command == "settings" %} class="navigation-on" {% endif %}><a data-filter="all" href="/settings/profiles/"><span class="navigation-icon icon-user"></span><span class="navigation-text">{{_("Profiles")}}</span></a></li>
+    <li {% if "profiles" in result %} class="navigation-on" {% endif %}><a data-filter="all" href="/settings/profiles/"><span class="navigation-icon icon-user"></span><span class="navigation-text">{{_("Profiles")}}</span></a></li>
+    <li {% if "prefs" in result %} class="navigation-on" {% endif %}><a data-filter="all" href="/settings/prefs/"><span class="navigation-icon icon-user"></span><span class="navigation-text">{{_("Preferences")}}</span></a></li>
+    <li {% if "sys" in result %} class="navigation-on" {% endif %}><a data-filter="all" href="/settings/sys/"><span class="navigation-icon icon-user"></span><span class="navigation-text">{{_("Advanced")}}</span></a></li>
   </ul>
 </nav>
