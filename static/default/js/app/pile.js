@@ -235,8 +235,8 @@ $('li.sidebar-tags-draggable').droppable({
 
     var delete_tag = '';
 
-    if ($.url.segment(0) === 'in') {
-     delete_tag = $.url.segment(1);
+    if ($.url(location.href).segment(1) === 'in') {
+     delete_tag = $.url(location.href).segment(2);
     }
 
     // Add MID to Cache

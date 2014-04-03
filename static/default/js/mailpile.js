@@ -167,9 +167,6 @@ MailPile.prototype.command = function(command, data, method, callback) {
 var mailpile = new MailPile();
 var favicon = new Favico({animation:'popFade'});
 
-// Underscore _template()
-
-
 // Non-exposed functions: www, setup
 $(document).ready(function() {
 
