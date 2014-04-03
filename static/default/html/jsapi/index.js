@@ -1,9 +1,13 @@
-
+/* Mailpile - JSAPI
+   - This file autogenerates JS methods which fire GET & POST calls to 
+   - API / command endpoints
+*/
+{% set comma = ',' %}
 var MailpileAPI = (function() {
-    var api = {
-        {%- for command in result %}
-        {{command.url|replace("/", "_")}}: "/api/0/{{command.url}}/",
-        {%- endfor -%}
+    var api = { 
+    {% for command in result.api_methods %}{% if loop.index == result.api_methods|length %}{% set comma = '' %}{% endif %}        
+        {{command.url|replace("/", "_")}}: "/api/0/{{command.url}}/"{{ comma }}
+    {%- endfor -%}
     };
 
     function action(command, data, method, callback) {
