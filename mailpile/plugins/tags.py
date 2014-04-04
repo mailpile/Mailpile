@@ -269,7 +269,7 @@ class Tag(TagCommand):
                 self.session.ui.warning('Unknown tag: %s' % op)
 
         self.finish(save=save)
-        return rv
+        return self._success(_('Tagged %d messagse') % len(msg_ids), rv)
 
 
 class AddTag(TagCommand):
@@ -333,7 +333,8 @@ class AddTag(TagCommand):
             config.tags.extend(tags)
             self.finish(save=save)
 
-        return {'added': tags}
+        return self._success(_('Added %d tags') % len(tags),
+                             {'added': tags})
 
 
 class ListTags(TagCommand):
@@ -404,12 +405,12 @@ class ListTags(TagCommand):
                                            ).run().result['tags']
 
             result.append(info)
-        return {
+        return self._success(_('Listed %d tags') % len(result), {
             'search': search,
             'wanted': wanted,
             'unwanted': unwanted,
             'tags': result
-        }
+        })
 
 
 class DeleteTag(TagCommand):
@@ -436,7 +437,9 @@ class DeleteTag(TagCommand):
             tag = config.get_tag(tag_name)
             if tag:
                 tag_id = tag._key
+
                 # FIXME: Refuse to delete tag if in use by filters
+
                 rv = (Search(clean_session, arg=['tag:%s' % tag_id]).run() and
                       Tag(clean_session, arg=['-%s' % tag_id, 'all']).run())
                 if rv:
@@ -448,7 +451,8 @@ class DeleteTag(TagCommand):
                 self._error('No such tag %s' % tag_name)
         if result:
             self.finish(save=True)
-        return {'removed': result}
+        return self._success(_('Deleted %d tags') % len(result),
+                             {'removed': result})
 
 
 class FilterCommand(Command):
