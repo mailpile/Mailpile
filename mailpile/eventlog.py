@@ -256,7 +256,7 @@ class EventLog(object):
                 if truth != (event.flags == rule):
                     return False
             elif kw == 'since':
-                if truth != (event.ts >= float(rule)):
+                if truth != (event.ts > float(rule)):
                     return False
             elif kw.startswith('data_'):
                 if truth != (str(event.data.get(kw[5:])) == str(rule)):
