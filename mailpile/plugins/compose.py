@@ -5,7 +5,7 @@ import re
 import traceback
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.crypto.state import *
 from mailpile.eventlog import Event
@@ -19,6 +19,9 @@ from mailpile.urlmap import UrlMap
 from mailpile.util import *
 
 from mailpile.plugins.search import Search, SearchResults, View
+
+
+_plugins = PluginManager(builtin=True)
 
 
 class EditableSearchResults(SearchResults):
@@ -731,15 +734,15 @@ class EmptyOutbox(Command):
         return self.sendmail(self.session)
 
 
-mailpile.plugins.register_config_variables('prefs', {
+_plugins.register_config_variables('prefs', {
     'empty_outbox_interval': [_('Delay between attempts to send mail'),
                               int, 90]
 })
-mailpile.plugins.register_slow_periodic_job('sendmail',
-                                            'prefs.empty_outbox_interval',
-                                            EmptyOutbox.sendmail)
-mailpile.plugins.register_commands(Compose, Reply, Forward,  # Create
-                                   Draft, Update, Attach,    # Manipulate
-                                   UnThread,                 # ...
-                                   Sendit, UpdateAndSendit,  # Send
-                                   EmptyOutbox)              # ...
+_plugins.register_slow_periodic_job('sendmail',
+                                    'prefs.empty_outbox_interval',
+                                    EmptyOutbox.sendmail)
+_plugins.register_commands(Compose, Reply, Forward,  # Create
+                           Draft, Update, Attach,    # Manipulate
+                           UnThread,                 # ...
+                           Sendit, UpdateAndSendit,  # Send
+                           EmptyOutbox)              # ...

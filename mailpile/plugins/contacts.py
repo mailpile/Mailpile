@@ -1,10 +1,13 @@
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
 from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.vcard import SimpleVCard, VCardLine, AddressInfo
 from mailpile.util import *
+
+
+_plugins = PluginManager(builtin=True)
 
 
 ##[ VCards ]########################################
@@ -297,11 +300,11 @@ class ContactImport(Command):
     def command(self, format, terms=None, **kwargs):
         session, config = self.session, self.session.config
 
-        if not format in mailpile.plugins.CONTACT_IMPORTERS.keys():
+        if not format in PluginManager.CONTACT_IMPORTERS.keys():
             session.ui.error("No such import format")
             return False
 
-        importer = mailpile.plugins.CONTACT_IMPORTERS[format]
+        importer = PluginManager.CONTACT_IMPORTERS[format]
 
         if not all([x in kwargs.keys() for x in importer.required_parameters]):
             session.ui.error(
@@ -466,9 +469,9 @@ class AddressSearch(VCardCommand):
         }
 
 
-mailpile.plugins.register_commands(VCard, AddVCard, VCardAddLines,
-                                   RemoveVCard, ListVCards)
-mailpile.plugins.register_commands(Contact, AddContact, ContactAddLines,
-                                   RemoveContact, ListContacts,
-                                   AddressSearch)
-mailpile.plugins.register_commands(ContactImport, ContactImporters)
+_plugins.register_commands(VCard, AddVCard, VCardAddLines,
+                           RemoveVCard, ListVCards)
+_plugins.register_commands(Contact, AddContact, ContactAddLines,
+                           RemoveContact, ListContacts,
+                           AddressSearch)
+_plugins.register_commands(ContactImport, ContactImporters)
