@@ -37,6 +37,46 @@ MailPile.prototype.notification = function(status, message_text, complete, compl
 }
 
 
+/* Event Log - AJAX Polling */
+MailPile.prototype.poll_event_log =  $.timer(function() {
+
+	console.log('eventlog ------------------------------------- polled');
+
+  // Check Global State
+//  if (NewOverviewToolsModel.get('state') === "complete") {
+		// Stop the whole Shabang!
+		this.stop();
+//  }
+//  else {
+  	$.ajax({
+  		url: '/api/0/eventlog/', //?=' + new Date().getTime(),
+  		type: 'GET',
+  		dataType: 'json',
+  		cache: 'false',
+  		timeout: 3500,
+      success: function(result) {
+  			// Process Result
+//  		NewOverviewToolsModel.processTool(tool, result);
+      }
+  	});
+
+//  }
+
+});
+
+
+$(document).on('click', '.topbar-logo, .topbar-logo-name', function(e) {
+
+  e.preventDefault();
+  $('#notifications').show();
+
+  // Hide Notifications
+  $('body').click(function () {  
+    $('#notifications').hide();
+  });
+});
+
+
 $(document).ready(function() {
 
   /* Message Close */
@@ -45,5 +85,9 @@ $(document).ready(function() {
 			//$('#header').css('padding-top', statusHeaderPadding());
 		});
 	});
+
+  // Kick the whole Shabang off
+  mailpile.poll_event_log.play();
+  mailpile.poll_event_log.set({ time : 5000, autostart : true });
 
 });

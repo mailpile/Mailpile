@@ -33,7 +33,7 @@
       {% endfor %}
     </select>
     <ul id="compose-options" class="horizontal right">
-      {% if command == "message" %}
+      {% if command == "view" %}
       <!-- <li><a id="#compose-apply-quote" href="#"><input type="checkbox" checked="checked"> Quote</a></li> -->
       {% endif %}
       <li class="compose-crypto-signature signed animated"
@@ -70,12 +70,12 @@
           <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="672" href="#">1 month</a></li>
         </ul>
       </li> -->
-      {% if command == "message" %}
+      {% if command == "view" %}
       <li><a id="compose-show-details" class="{% if compose == "yes" %}navigation-on{% endif %}" href="#"><span class="icon-compose"></span> Details</a></li>
       {% endif %}
     </ul>
   </div>
-  <div id="compose-details" class="{% if command == "message" %}hide{% endif %}">
+  <div id="compose-details" class="{% if command == "view" %}hide{% endif %}">
     <div class="compose-headers">
       <label class="left">
         {{_("To")}}
@@ -107,7 +107,7 @@
   </div>
   <div class="compose-message">
     <label>{{_("Message")}}</label>
-    <textarea id="compose-text" name="body" tabindex="4" onkeyup="this.style.height='18px'; this.style.height = this.scrollHeight + 6 + 'px';" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
+    <textarea id="compose-text" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
   </div>
   <div class="compose-actions clearfix">
     <div class="compose-attachments left">

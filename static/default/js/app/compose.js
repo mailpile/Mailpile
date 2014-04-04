@@ -390,12 +390,23 @@ $(document).on('click', '.compose-hide-field', function(e) {
 
 
 /* Compose - Subject Field */
-$('#compose-from').keyup(function (e) {
+$('#compose-from').keyup(function(e) {
   var code = (e.keyCode ? e.keyCode : e.which);
   if (code === 9 && $('#compose-subject:focus').val() === '') {
   }
 });
 
+
+/* Compose - Message */
+$('#compose-text').keyup(function(e) {
+
+  // this.style.height='18px'; this.style.height = this.scrollHeight + 6 + 'px';
+  console.log(this.style.height);
+  console.log(this.scrollHeight);
+
+  var new_height = this.scrollHeight + 6 + 18 + 'px';
+  $(this).height(new_height);
+});
 
 /* Compose - Send, Save, Reply */
 $(document).on('click', '.compose-action', function(e) {
