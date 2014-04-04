@@ -15,9 +15,12 @@ class Events(Command):
     HTTP_QUERY_VARS = {
         'wait': 'wait for new data?',
         'incomplete': 'incomplete events only?',
-        'source': 'source class',
+        # Filtering by event attributes
+        'flag': 'require a flag',
         'flags': 'match all flags',
-        'flag': 'match any flag',
+        'since': 'wait for new data?',
+        'source': 'source class',
+        # Filtering by event data (syntax is a bit weird)
         'data': 'var:value',
         'private_data': 'var:value'
     }
@@ -58,7 +61,7 @@ class Events(Command):
             else:
                 filters[arg] = val
         for arg in self.data:
-            if arg in ('source', 'flags', 'flag'):
+            if arg in ('source', 'flags', 'flag', 'since'):
                 fset(arg, self.data[arg][0])
             elif arg in ('data', 'private_data'):
                 for data in self.data[arg]:
