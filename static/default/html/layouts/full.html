@@ -63,6 +63,56 @@
   </div>
 </div>
 
+<div id="notifications" class="hide">
+  <div class="notifications-header">
+    {{_("Notifications") }}
+  </div>
+  <div class="notifications-window">
+  <ul>
+    <li class="notification">
+      <a href="#">
+        <img src="/static/img/avatar-default.png">
+        <strong>Richard Stallman</strong> sent you a <strong>tormail</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-tag"></span> The <strong> Mailpile</strong> tag was applied to <strong>400 messages</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <img src="/static/img/avatar-default.png">
+        <strong>You</strong> sent <strong>5 tormail</strong> to various people
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-inbox"></span> <strong>16 new messages</strong> have been downloaded to <strong>Inbox</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-groups"></span> <strong>You</strong> added 5 people to group <strong>Group</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-inbox"></span> <strong>3 new messages</strong> have been downloaded to <strong>Bills & Banking</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-tag"></span> The <strong>Friends</strong> tag was applied to <strong>51 messages</strong>
+      </a>                    
+    </li>
+  </ul>
+  </div>
+  <div class="notifications-bottom">
+    <a href="/eventlog/">{{_("All Notifications")}}</a>
+  </div>
+</div>
+
 <div id="header" class="topbar">
   <div class="topbar-logo">
   <a href="/in/inbox/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
