@@ -591,13 +591,12 @@ else:
     import sys
     import mailpile.app
     import mailpile.config
-    import mailpile.plugins.tags
-    import mailpile.plugins.search
-    import mailpile.plugins.compose
-    import mailpile.plugins.contacts
-    import mailpile.defaults
     import mailpile.plugins
+    import mailpile.defaults
     import mailpile.ui
+
+    # Import all the default plugins
+    from mailpile.plugins import *
 
     rules = mailpile.defaults.CONFIG_RULES
     config = mailpile.config.ConfigManager(rules=rules)

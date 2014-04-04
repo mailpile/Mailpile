@@ -21,9 +21,10 @@ debian-dev:
 docs:
 	@test -d doc || \
            git submodule update --remote
-	@python2 mailpile/urlmap.py >doc/URLS.md
+	@python2 mailpile/urlmap.py |grep -v ^FIXME: >doc/URLS.md
 	@ls -l doc/URLS.md
-	@python2 mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
+	@python2 mailpile/defaults.py |grep -v -e ^FIXME -e ';timestamp' \
+           >doc/defaults.cfg
 	@ls -l doc/defaults.cfg
 
 web: less js
