@@ -231,7 +231,7 @@ class Generator:
                 preamble = msg.preamble
             print >> self._fp, preamble, self._NL,
         # dash-boundary transport-padding CRLF
-        print >> self._fp, '--' + boundary, self._NL,
+        print >> self._fp, '--' + boundary + self._NL,
         # body-part
         if msgtexts:
             self._fp.write(msgtexts.pop(0))
@@ -240,7 +240,7 @@ class Generator:
         # --> CRLF body-part
         for body_part in msgtexts:
             # delimiter transport-padding CRLF
-            print >> self._fp, self._NL + '--' + boundary, self._NL,
+            print >> self._fp, self._NL + '--' + boundary + self._NL,
             # body-part
             self._fp.write(body_part)
         # close-delimiter transport-padding
