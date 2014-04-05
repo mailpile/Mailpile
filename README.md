@@ -2,22 +2,16 @@
 
 [![Build Status](https://img.shields.io/travis/pagekite/Mailpile/master.svg)](https://travis-ci.org/pagekite/Mailpile)
 
-#### Who's doing what? ####
+#### What Is Coming Down The Pipe? ####
 
-- 2014-03-06: bre: Event logging / handling
-- 2014-03-06: bvnk: Contacts & crypto UX
-- 2014-03-06: smari: PM / issues
+The month of April you can expect to see the following things implemented in Mailpile
 
-#### Recent changes ####
+- Eventlog API for user notifications and UI feedback
+- IMAP Support
+- Plugin Architecture ready for actual development
+- SMTorP, sending peer-2-peer emails over Tor
+- Rough UI "setup installer" flow
 
-- 2014-01-27: bre: Prepping the alpha release
-- 2014-01-27: bvnk: Prepping the alpha release
-- 2014-01-27: smari: Prepping the alpha release
-- 2013-01-24: bre/bnvk: Encrypting and signing outgoing mail works
-- 2013-01-15: bre: Make message crypto searchable and visible in metadata
-- 2013-12-19: bre: Bugfixes, search-by-size, preparing for antispam work
-- 2013-12-18: smari: PGP decryption & signature verification
-- 2013-11-18: bnvk: Tweaking the compose UI
 
 ---------------------------------------------------------------------------
 
