@@ -36,15 +36,15 @@ $(document).on('click', '.bulk-action-later, .bulk-action-archive, .bulk-action-
   }
 
   // Add / Delete
-  mailpile.tag_add_delete(action, delete_tag, mailpile.bulk_cache, function() {
+  mailpile.tag_add_delete(action, delete_tag, mailpile.messages_cache, function() {
 
     // Update Pile View
-    $.each(mailpile.bulk_cache, function(key, mid) {
+    $.each(mailpile.messages_cache, function(key, mid) {
       $('#pile-message-' + mid).fadeOut('fast');
     });
 
     // Empty Bulk Cache
-    mailpile.bulk_cache = [];
+    mailpile.messages_cache = [];
   });
 });
 
