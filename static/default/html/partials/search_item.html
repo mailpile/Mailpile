@@ -15,7 +15,7 @@
 %}{%    set url = metadata.urls.thread
 %}{%  endif
 %}
-<tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}" data-state="normal" data-mid="{{mid}}">
+<tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}{% if metadata.flags.replied %} replied{% endif %}" data-state="normal" data-mid="{{mid}}">
   <td class="draggable"></td>
   <td class="avatar">
     <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
@@ -23,6 +23,7 @@
   <td class="from" title='{{metadata.from.fn}} &lt;{{from.address}}&gt;'>
     <a class="item-from" href="{{url}}">{{ metadata.from.fn }}</a>
     {% if thread|length > 1 %}<span class="conversation-count">{{ thread|length }}</span>{% endif %}
+    {% if metadata.flags.replied %}<span class="icon-reply"></span>{% endif %}
   </td>
   <td class="subject">
     <span class="item-tags">
