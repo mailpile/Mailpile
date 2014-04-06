@@ -397,16 +397,13 @@ $('#compose-from').keyup(function(e) {
 });
 
 
-/* Compose - Message */
+/* Compose - Autogrow textarea */
 $('#compose-text').keyup(function(e) {
-
-  // this.style.height='18px'; this.style.height = this.scrollHeight + 6 + 'px';
-  console.log(this.style.height);
-  console.log(this.scrollHeight);
-
-  var new_height = this.scrollHeight + 6 + 18 + 'px';
-  $(this).height(new_height);
+  var content_scroll = $('#content-view').scrollTop();  
+  this.style.height='18px'; this.style.height = this.scrollHeight + 6 + 'px'
+  $('#content-view').scrollTop(content_scroll + 12);
 });
+
 
 /* Compose - Send, Save, Reply */
 $(document).on('click', '.compose-action', function(e) {
