@@ -1220,6 +1220,8 @@ class ConfigManager(ConfigDict):
             raise ValueError(_('Parent paths are not allowed'))
         fpath, mt = self.data_file_and_mimetype(ftype, fpath,
                                                 mode=mode, mkdir=mkdir)
+        if not fpath:
+            raise IOError(2, 'Not Found')
         return fpath, open(fpath, mode), mt
 
     def prepare_workers(config, session=None, daemons=False):
