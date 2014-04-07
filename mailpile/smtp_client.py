@@ -52,7 +52,7 @@ def _RouteTuples(session, from_to_msg_ev_tuples):
             # If any of the events thinks this message has been delivered,
             # then don't try to send it again.
             frm_to = '>'.join([frm, recipient])
-            for ev in events:
+            for ev in (events or []):
                 if ev.private_data.get(frm_to, False):
                     recipient = None
                     break
@@ -77,15 +77,16 @@ def SendMail(session, from_to_msg_ev_tuples):
     # Update initial event state before we go through and start
     # trying to deliver stuff.
     for frm, sendmail, to, msg, events in routes:
-        for ev in events:
+        for ev in (events or []):
             for rcpt in to:
                 ev.private_data['>'.join([frm, rcpt])] = False
-    for ev in events:
-        ev.data['recipients'] = len(ev.private_data.keys())
-        ev.data['delivered'] = len([k for k in ev.private_data
-                                    if ev.private_data[k]])
+    for frm, sendmail, to, msg, events in routes:
+        for ev in events:
+            ev.data['recipients'] = len(ev.private_data.keys())
+            ev.data['delivered'] = len([k for k in ev.private_data
+                                        if ev.private_data[k]])
 
-    def mark(msg):
+    def mark(msg, events):
         for ev in events:
             ev.flags = Event.RUNNING
             ev.message = msg
@@ -99,7 +100,7 @@ def SendMail(session, from_to_msg_ev_tuples):
             sys.stderr.write(_('SendMail: from %s, to %s via %s\n'
                                ) % (frm, to, sendmail))
         sm_write = sm_close = lambda: True
-        mark(_('Connecting to %s') % sendmail)
+        mark(_('Connecting to %s') % sendmail, events)
 
         if sendmail.startswith('|'):
             cmd = sendmail[1:].strip().split()
@@ -177,14 +178,14 @@ def SendMail(session, from_to_msg_ev_tuples):
             raise Exception(_('Invalid sendmail command/SMTP server: %s'
                               ) % sendmail)
 
-        mark(_('Preparing message...'))
+        mark(_('Preparing message...'), events)
         msg_string = MessageAsString(CleanMessage(session.config, msg))
         total = len(msg_string)
         while msg_string:
             sm_write(msg_string[:20480])
             msg_string = msg_string[20480:]
             mark(('Sending message... (%d%%)'
-                  ) % (100 * (total-len(msg_string))/total))
+                  ) % (100 * (total-len(msg_string))/total), events)
         sm_close()
         sm_cleanup()
         for ev in events:
@@ -193,4 +194,4 @@ def SendMail(session, from_to_msg_ev_tuples):
             ev.data['bytes'] = total
             ev.data['delivered'] = len([k for k in ev.private_data
                                         if ev.private_data[k]])
-        mark(_('Message sent, %d bytes') % total)
+        mark(_('Message sent, %d bytes') % total, events)
