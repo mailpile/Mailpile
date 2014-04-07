@@ -37,14 +37,27 @@ class MacMaildir(mailbox.Mailbox):
             else:
                 raise mailbox.NoSuchMailboxError(self._path)
 
+        # What have we here?
         ds = os.listdir(self._path)
+
+        # Okay, MacMaildirs have Info.plist files
         if not 'Info.plist' in ds:
             raise mailbox.FormatError(self._path)
 
-        ds.remove('Info.plist')
+        # Now ignore all the files and dotfiles...
+        ds = [d for d in ds if not d.startswith('.')
+              and os.path.isdir(os.path.join(self._path, d))]
 
-        self._id = ds[0]
+        # There should be exactly one directory left, which is our "ID".
+        if len(ds) == 1:
+            self._id = ds[0]
+        else:
+            raise mailbox.FormatError(self._path)
+
+        # And finally, there's a Data folder (with .emlx files  in it)
         self._mailroot = "%s/%s/Data/" % (self._path, self._id)
+        if not os.path.isdir(self._mailroot):
+            raise mailbox.FormatError(self._path)
 
         self._toc = {}
         self._last_read = 0
