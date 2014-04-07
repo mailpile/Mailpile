@@ -55,6 +55,36 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
   });
 };
 
+MailPile.prototype.render_modal_tags = function() {
+
+  if (mailpile.messages_cache.length) {
+
+    // Open Modal with selection options
+    mailpile.tag_list(function(result) {
+  
+      var tags_html = '';
+      var archive_html = '';
+  
+      $.each(result.tags, function(key, value) {
+        if (value.display === 'tag') {
+          tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
+        }
+        else if (value.display === 'archive') {
+          archive_html += '<li class="checkbox-item-picker"><input type="checkbox"> ' + value.name + '</li>';
+        }
+      });
+  
+      var modal_html = $("#modal-tag-picker").html();
+      $('#modal-full').html(_.template(modal_html, { tags: tags_html, archive: archive_html }));
+      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+    });
+ 
+  } else {
+    // FIXME: Needs more internationalization support
+    alert('No Messages Selected');
+  }
+};
+
 
 /* Show Tag Add Form */
 $(document).on('click', '#button-tag-add', function(e) {

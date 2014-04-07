@@ -1,4 +1,4 @@
-MailPile.prototype.keybinding_delete = function() {
+MailPile.prototype.keybinding_move_message = function(add_tag) {
 
   // Has Messages
   if (this.messages_cache.length) {
@@ -9,7 +9,7 @@ MailPile.prototype.keybinding_delete = function() {
     }
 
     // Add / Delete
-    mailpile.tag_add_delete('trash', delete_tag, mailpile.messages_cache, function() {
+    mailpile.tag_add_delete(add_tag, delete_tag, mailpile.messages_cache, function() {
 
       // Update Pile View
       $.each(mailpile.messages_cache, function(key, mid) {

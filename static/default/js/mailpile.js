@@ -27,7 +27,10 @@ function MailPile() {
   	["normal", "g t",    function() { mailpile.go("/tag/list/"); }],
   	["normal", "g n t",  function() { mailpile.go("/tag/add/"); }],
   	["normal", "g s",    function() { mailpile.go("/settings/profiles/"); }],
-  	["normal", ["d", "del", "backspace"], function() { mailpile.keybinding_delete(); }],
+  	["normal", "command+z",  function() { alert('Undo Something ') }],
+  	["normal", ["s"], function() { mailpile.keybinding_move_message('spam'); }],
+  	["normal", ["d"], function() { mailpile.keybinding_move_message('trash'); }],
+  	["normal", ["t"], function() { mailpile.render_modal_tags(); }],
     ["global", "esc",    function() {
   		$('input[type=text]').blur();
   		$('textarea').blur();

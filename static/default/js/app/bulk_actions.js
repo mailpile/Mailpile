@@ -2,26 +2,7 @@
 $(document).on('click', '.bulk-action-tag', '.bulk-action-untag', function(e) {
 
 	e.preventDefault();
-
-  // Open Modal with selection options
-  mailpile.tag_list(function(result) {
-
-    var tags_html = '';
-    var archive_html = '';
-
-    $.each(result.tags, function(key, value) {
-      if (value.display === 'tag') {
-        tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
-      }
-      else if (value.display === 'archive') {
-        archive_html += '<li class="checkbox-item-picker"><input type="checkbox"> ' + value.name + '</li>';
-      }
-    });
-
-    var modal_html = $("#modal-tag-picker").html();
-    $('#modal-full').html(_.template(modal_html, { tags: tags_html, archive: archive_html }));
-    $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
-  });
+  mailpile.render_modal_tags();
 });
 
 
