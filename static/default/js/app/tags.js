@@ -98,7 +98,6 @@ $(document).on('click', '#button-tag-add', function(e) {
   $(this).parent().addClass('navigation-on');
   
   $('#data-tag-add-slug').slugify('#data-tag-add-tag');
-
 });
 
 
@@ -118,14 +117,37 @@ $(document).on('submit', '#form-tag-add', function(e) {
       mailpile.notification(response.status, response.message);
 
       if (response.status === 'success') {
-               
-       $('#data-tag-add-tag').val('');
-       $('#data-tag-add-slug').val('');
-       $('#data-tag-add-display option[value=""]').prop("selected", true);
-       $('#data-tag-add-parrent option[value=""]').prop("selected", true);
-       $('#data-tag-add-template option[value=""]').prop("selected", true);
-       $('#data-tag-add-search-terms').val('');
+      
+        // Reset form fields
+        $('#data-tag-add-tag').val('');
+        $('#data-tag-add-slug').val('');
+        $('#data-tag-add-display option[value="tag"]').prop("selected", true);
+        $('#data-tag-add-parrent option[value=""]').prop("selected", true);
+        $('#data-tag-add-template option[value="default"]').prop("selected", true);
+        $('#data-tag-add-search-terms').val('');
+        
+        // Reset Slugify
+        $('#data-tag-add-slug').slugify('#data-tag-add-tag');
       }
     }
   });
+});
+
+
+/* Tag - Delete Tag */
+$(document).on('click', '#button-tag-delete', function(e) {
+
+  if (confirm('Sure you want to delete this tag?') === true) { 
+
+    $.ajax({
+      url: '/api/0/tag/delete/',
+      type: 'POST',
+      data: {tag: $('#data-tag-add-slug').val() },
+      dataType : 'json',
+      success: function(response) {
+        mailpile.notification(response.status, response.message);
+      }
+    });
+  }
+
 });
