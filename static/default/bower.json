@@ -17,16 +17,20 @@
     "tests"
   ],
   "dependencies": {
-    "favico.js": "~0.3.4",
-    "bootstrap": "~3.1.1",
     "backbone": "~1.1.2",
-    "html5shiv": "~3.7.0",
-    "jquery.ui": "~1.10.4",
+    "bootstrap": "~3.1.1",
     "d3": "~3.4.3",
+    "favico.js": "~0.3.4",
+    "html5shiv": "~3.7.0",
+    "jquery": "~2.1.0",
+    "jquery-slugify": "~1.0.3",
+    "jquery-timer": "~0.1.0",
+    "jquery.ui": "~1.10.4",
     "listjs": "~1.1.0",
     "mousetrap": "~1.4.6",
     "purl": "~2.3.1",
-    "select2": "~3.4.5",
-    "qtip2": "~2.2.0"
+    "qtip2": "~2.2.0",
+    "rebar": "~0.2.0",
+    "select2": "~3.4.5"
   }
 }
