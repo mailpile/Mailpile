@@ -26,7 +26,7 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
 	  dataType : 'json',
     success  : function(response) {
       if (response.status == 'success') {
-       complete(response.result);
+       complete(response.result);       
       } else {
         mailpile.notification(response.status, response.message);
       }
@@ -96,6 +96,9 @@ $(document).on('click', '#button-tag-add', function(e) {
 
   $('.sub-navigation ul li').removeClass('navigation-on');
   $(this).parent().addClass('navigation-on');
+  
+  $('#data-tag-add-slug').slugify('#data-tag-add-tag');
+
 });
 
 
@@ -115,7 +118,13 @@ $(document).on('submit', '#form-tag-add', function(e) {
       mailpile.notification(response.status, response.message);
 
       if (response.status === 'success') {
-        console.log(response);
+               
+       $('#data-tag-add-tag').val('');
+       $('#data-tag-add-slug').val('');
+       $('#data-tag-add-display option[value=""]').prop("selected", true);
+       $('#data-tag-add-parrent option[value=""]').prop("selected", true);
+       $('#data-tag-add-template option[value=""]').prop("selected", true);
+       $('#data-tag-add-search-terms').val('');
       }
     }
   });
