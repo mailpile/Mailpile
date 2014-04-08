@@ -86,12 +86,6 @@ def TickJob(session):
     session.ui.notify('Tick!')
 
 
-#PluginManager().register_fast_periodic_job('tick-05',  # Job name
-#                                            5,          # Interval in seconds
-#                                            TickJob)    # Callback
-#PluginManager().register_slow_periodic_job('tick-15', 15, TickJob)
-
-
 ##[ Pluggable commands ]######################################################
 
 from mailpile.commands import Command

@@ -38,6 +38,7 @@
         "/md5sum/": {"file": "md5sum.html", "api": 0},
         "/api/0/md5sum/as.xml": {"file": "md5sum.xml"},
         "/search/demos.html": {"file": "search.html", "api": 0},
+
         # Static content can be injected anywhere under the /static/
         # namespace. Optionally, non-obvious mime-types can be specified.
         "/static/img/demos.png": {"file": "demos.png"},
@@ -71,8 +72,8 @@
         "context": []
     },
     "periodic_jobs": {
-        "fast": {"interval": 5, "class": "demos.TickJob"},
-        "slow": {"interval": 15, "class": "demos.TickJob"}
+        "fast": [{"interval": 5, "class": "demos.TickJob"}],
+        "slow": [{"interval": 15, "class": "demos.TickJob"}]
     },
     "keyword_extractors": [
     ],

@@ -1274,15 +1274,19 @@ class ConfigManager(ConfigDict):
                 if isinstance(i, (str, unicode)):
                     i = config.walk(i)
                 return int(i)
-
-            for job, (i, f) in PluginManager.FAST_PERIODIC_JOBS.iteritems():
-                config.cron_worker.add_task(job, interval(i),
-                                            lambda: f(session))
-            for job, (i, f) in PluginManager.SLOW_PERIODIC_JOBS.iteritems():
-                def wrap():
+            def wrap_fast(func):
+                def wrapped():
+                    return func(session)
+                return wrapped
+            def wrap_slow(func):
+                def wrapped():
                     config.slow_worker.add_task(session, job,
-                                                lambda: f(session))
-                config.cron_worker.add_task(job, interval(i), wrap)
+                                                lambda: func(session))
+                return wrapped
+            for job, (i, f) in PluginManager.FAST_PERIODIC_JOBS.iteritems():
+                config.cron_worker.add_task(job, interval(i), wrap_fast(f))
+            for job, (i, f) in PluginManager.SLOW_PERIODIC_JOBS.iteritems():
+                config.cron_worker.add_task(job, interval(i), wrap_slow(f))
 
     def stop_workers(config):
         for wait in (False, True):
@@ -1292,6 +1296,8 @@ class ConfigManager(ConfigDict):
                 if w:
                     w.quit(join=wait)
         config.other_workers = []
+        config.http_worker = config.cron_worker = None
+        config.slow_worker = config.dumb_worker
 
 
 ##############################################################################

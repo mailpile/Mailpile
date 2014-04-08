@@ -4,6 +4,7 @@ import inspect
 import json
 import os
 import sys
+import traceback
 from gettext import gettext as _
 
 from mailpile.util import *
@@ -84,13 +85,16 @@ class PluginManager(object):
                     # FIXME: this is lame
                     print 'Ignoring duplicate plugin: %s' % pname
                     continue
+                plug_path = os.path.join(pdir, subdir)
+                manifest_filename = os.path.join(plug_path, 'manifest.json')
                 try:
-                    plug_path = os.path.join(pdir, subdir)
-                    with open(os.path.join(plug_path, 'manifest.json')) as mfd:
+                    with open(manifest_filename) as mfd:
                         manifest = json.loads(self._uncomment(mfd.read()))
                         assert(manifest.get('name') == subdir)
                         # FIXME: Need more sanity checks
                         self.DISCOVERED[pname] = (plug_path, manifest)
+                except (ValueError):
+                    print 'Bad manifest: %s' % manifest_filename
                 except (OSError, IOError):
                     pass
 
@@ -120,8 +124,8 @@ class PluginManager(object):
             self.loading_builtin = True
             module = __import__(full_name)
 
-        else:
-            dirname, manifest = self.DISCOVERED.get(plugin_name)
+        elif plugin_name in self.DISCOVERED:
+            dirname, manifest = self.DISCOVERED[plugin_name]
             self.loading_builtin = False
 
             # Load the Python requested by the manifest.json
@@ -150,6 +154,8 @@ class PluginManager(object):
             if process_manifest:
                 self._process_manifest_pass_one(*spec)
                 self._process_manifest_pass_two(*spec)
+        else:
+            print 'What what what?? %s' % plugin_name
 
         return self
 
@@ -161,10 +167,17 @@ class PluginManager(object):
             self.loading_builtin = False
 
     def process_manifests(self):
-        for spec in self.manifests:
-            self._process_manifest_pass_one(*spec)
-        for spec in self.manifests:
-            self._process_manifest_pass_two(*spec)
+        failed = []
+        for process in (self._process_manifest_pass_one,
+                        self._process_manifest_pass_two):
+            for spec in self.manifests:
+                try:
+                    if spec[0] not in failed:
+                        process(*spec)
+                except:
+                    print 'Failed to process manifest for %s' % spec[0]
+                    failed.append(spec[0])
+                    traceback.print_exc()
         return self
 
     def _mf_path(self, mf, *path):
@@ -224,16 +237,6 @@ class PluginManager(object):
         manifest_path = lambda *p: self._mf_path(manifest, *p)
         manifest_iteritems = lambda *p: self._mf_iteritems(manifest, *p)
 
-        # Register contact/vcard hooks
-        for importer in manifest_path('contacts', 'importers'):
-            self.register_vcard_importers(self._get_class(full_name, importer))
-        for exporter in manifest_path('contacts', 'exporters'):
-            self.register_contact_exporters(self._get_class(full_name,
-                                                            exporter))
-        for context in manifest_path('contacts', 'context'):
-            self.register_contact_context_providers(self._get_class(full_name,
-                                                                    context))
-
         # Register javascript classes
         for fn in manifest.get('code', {}).get('javascript', []):
             class_name = fn.replace('/', '.').rsplit('.', 1)[0]
@@ -248,7 +251,6 @@ class PluginManager(object):
 
         # Register web assets
         if plugin_path:
-          try:
             from mailpile.urlmap import UrlMap
             um = UrlMap(session=self.session, config=self.config)
             for url, info in manifest_iteritems('routes'):
@@ -286,9 +288,27 @@ class PluginManager(object):
                                             filename)
                 else:
                     print 'FIXME: Un-routable URL in manifest %s' % url
-          except:
-            import traceback
-            traceback.print_exc()
+
+        # Register contact/vcard hooks
+        for importer in manifest_path('contacts', 'importers'):
+            self.register_vcard_importers(self._get_class(full_name, importer))
+        for exporter in manifest_path('contacts', 'exporters'):
+            self.register_contact_exporters(self._get_class(full_name,
+                                                            exporter))
+        for context in manifest_path('contacts', 'context'):
+            self.register_contact_context_providers(self._get_class(full_name,
+                                                                    context))
+
+        # Register periodic jobs
+        def reg_job(info, spd, register):
+            interval, cls = info['interval'], info['class']
+            callback = self._get_class(full_name, cls)
+            register('%s.%s/%s-%s' % (full_name, cls, spd, interval),
+                     interval, callback)
+        for info in manifest_path('periodic_jobs', 'fast'):
+            reg_job(info, 'fast', self.register_fast_periodic_job)
+        for info in manifest_path('periodic_jobs', 'slow'):
+            reg_job(info, 'slow', self.register_slow_periodic_job)
 
     def _compat_check(self, strict=True):
         if ((strict and (not self.loading_plugin and not self.builtin)) or

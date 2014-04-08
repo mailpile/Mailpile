@@ -82,7 +82,7 @@ def do_setup():
     # Copy the test Maildir...
     for mailbox in ('Maildir', 'Maildir2'):
         path = os.path.join(mailpile_home, mailbox)
-        os.system('cp -va %s/Maildir %s' % (mailpile_test, path))
+        os.system('cp -a %s/Maildir %s' % (mailpile_test, path))
 
     # Add the test mailboxes
     for mailbox in ('tests.mbx', ):
