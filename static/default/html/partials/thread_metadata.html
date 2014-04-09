@@ -1,9 +1,9 @@
 <div class="thread-item-metadata clearfix">
   <div class="thread-item-from-avatar">
-    <a href="{{ contact_url(from) }}" title="{{_("From")}}"><img src="{{ show_avatar(from) }}"></a>
+    <a href="{{ contact_url(from) }}" title="{{_("From")}}: {{from.address}}"><img src="{{ show_avatar(from) }}"></a>
   </div>
   <div class="thread-item-from">
-    <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}">{{ contact_name(profiles, from) }}</a>
+    <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}: {{from.address}}">{{ contact_name(profiles, from) }}</a>
     <div class="thread-item-metadata-icons">
     {% set signature = show_message_signature(metadata.crypto.signature) %}
     {% set encryption = show_message_encryption(metadata.crypto.encryption) %}

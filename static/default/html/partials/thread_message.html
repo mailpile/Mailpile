@@ -4,13 +4,13 @@
   {% include("partials/thread_metadata.html") %}        
   <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
     <ul class="clearfix">
-      <li>To:</li>
+      <li>{{_("To")}}:</li>
       {% if metadata.to_aids %}
       {% for to_aid in metadata.to_aids %}
       {% set person = result.data.addresses[to_aid] %}
       <li class="thread-item-metadata-contact">
-        <a href="{{ contact_url(person) }}" title="{{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
-        <a href="{{ contact_url(person) }}" title="{{ person.address }}">{{ contact_name(profiles, person) }}</a>
+        <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
       </li>
       {% endfor %}
       {% else %}
@@ -19,24 +19,24 @@
     </ul>
     {% if metadata.cc_aids %}
     <ul class="clearfix">
-      <li>Cc:</li>
+      <li>{{_("Cc")}}:</li>
       {% for cc_aid in metadata.cc_aids %}
       {% set person = result.data.addresses[cc_aid] %}
       <li class="thread-item-metadata-contact">
-        <a href="{{ contact_url(person) }}" title="{{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
-        <a href="{{ contact_url(person) }}" title="{{ person.address }}">{{ contact_name(profiles, person) }}</a>
+        <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
       </li>
       {% endfor %}
     </ul>
     {% endif %}
     {% if metadata.bcc_aids %}
     <ul class="clearfix">
-      <li>Bcc:</li>
+      <li>{{_("Bcc:")}}:</li>
       {% for bcc_aid in metadata.bcc_aids %}
       {% set person = result.data.addresses[bcc_aid] %}
       <li class="thread-item-metadata-contact">
-        <a href="{{ contact_url(person) }}" title="{{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
-        <a href="{{ contact_url(person) }}" title="{{ person.address }}">{{ contact_name(profiles, person) }}</a>
+        <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
       </li>
       {% endfor %}
     </ul>
