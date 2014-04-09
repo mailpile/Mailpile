@@ -946,8 +946,7 @@ class ConfigManager(ConfigDict):
         self.load_plugins(session)
 
         # Now all the plugins are loaded, reset and parse again!
-        self.set_rules(self._rules_source)
-        self.sys.plugins.rules['_any'][1] = self.plugins.available()
+        self.reset_rules_from_source()
         self.parse_config(session, '\n'.join(lines), source=filename)
 
         # Open event log
@@ -975,6 +974,10 @@ class ConfigManager(ConfigDict):
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
                                                            mkdir=True))
+
+    def reset_rules_from_source(self):
+        self.set_rules(self._rules_source)
+        self.sys.plugins.rules['_any'][1] = self.plugins.available()
 
     def load_plugins(self, session):
         from mailpile.plugins import PluginManager

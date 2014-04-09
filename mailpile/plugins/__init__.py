@@ -20,7 +20,7 @@ import mailpile.vcard
 __all__ = [
     'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
     'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_utils',
-    'setup_magic', 'exporters',
+    'setup_magic', 'exporters', 'plugins',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
     'hacks', 'html_magic', 'smtp_server'
 ]
@@ -44,9 +44,11 @@ class PluginManager(object):
     # These are plugins which we consider required
     REQUIRED = [
         'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
-        'dates', 'sizes', 'cryptostate', 'setup_magic', 'html_magic'
+        'dates', 'sizes', 'cryptostate', 'setup_magic', 'html_magic',
+        'plugins'
     ]
     DISCOVERED = {}
+    LOADED = []
 
     def __init__(self, plugin_name=None, builtin=False, deprecated=False,
                  config=None, session=None):
@@ -112,7 +114,7 @@ class PluginManager(object):
         with open(full_path, 'r') as mfd:
             exec mfd.read() in sys.modules[full_name].__dict__
 
-    def _load(self, plugin_name, process_manifest=False):
+    def _load(self, plugin_name, process_manifest=False, config=None):
         full_name = 'mailpile.plugins.%s' % plugin_name
         if full_name in sys.modules:
             return
@@ -153,10 +155,14 @@ class PluginManager(object):
             self.manifests.append(spec)
             if process_manifest:
                 self._process_manifest_pass_one(*spec)
+                if config:
+                    config.reset_rules_from_source()
                 self._process_manifest_pass_two(*spec)
         else:
             print 'What what what?? %s' % plugin_name
+            return self
 
+        self.LOADED.append(plugin_name)
         return self
 
     def load(self, *args, **kwargs):
@@ -449,7 +455,7 @@ class PluginManager(object):
                     'description': ['VCard source description', str, '']
                 }
                 rules.update(plugin_class.CONFIG_RULES)
-                register_config_section(
+                self.register_config_section(
                     'prefs', 'vcard', cfg_sect, plugin_class.SHORT_NAME,
                     [plugin_class.FORMAT_DESCRIPTION, rules, []])
 
@@ -653,11 +659,15 @@ class PluginManager(object):
         return self.DISPLAY_MODES[uiclass]
 
 
-# Initial global setup
+##[ Initial global setup ]###################################################
+
 PluginManager(builtin=True)._register_builtin_uiclasses()
 
-# Backwards compatibility
+
+##[ Backwards compatibility ]################################################
+
 _default_pm = PluginManager(builtin=False, deprecated=True)
+
 register_config_variables = _default_pm.register_config_variables
 register_config_section = _default_pm.register_config_section
 register_data_kw_extractor = _default_pm.register_data_kw_extractor
