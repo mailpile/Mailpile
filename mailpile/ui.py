@@ -184,7 +184,7 @@ class UserInteraction:
 
     def report_marks(self, quiet=False, details=False):
         t = self.times
-        if t:
+        if t and t[0]:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
                 self.notify(_('Elapsed: %.3fs (%s)') % (elapsed, t[-1][1]))
