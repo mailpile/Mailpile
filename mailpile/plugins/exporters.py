@@ -10,7 +10,7 @@ from mailpile.commands import Command
 from mailpile.mailutils import Email
 
 
-_plugins = PluginManager(builtin=True)
+_plugins = PluginManager(builtin=os.path.basename(__file__)[:-3])
 
 
 ##[ Configuration ]###########################################################

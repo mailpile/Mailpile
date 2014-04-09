@@ -1,9 +1,12 @@
 import time
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.util import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 class Events(Command):
@@ -93,4 +96,4 @@ class Events(Command):
 
 
 
-mailpile.plugins.register_commands(Events)
+_plugins.register_commands(Events)

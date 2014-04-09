@@ -9,7 +9,7 @@ from mailpile.util import *
 from mailpile.plugins.search import Search
 
 
-_plugin_manager = PluginManager(builtin=True)
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Configuration ]###########################################################
@@ -20,7 +20,7 @@ FILTER_TYPES = ('user',      # These are the default, user-created filters
                 'system',    # Mailpile core internal filters
                 'plugin')    # Filters created by plugins
 
-_plugin_manager.register_config_section('tags', ["Tags", {
+_plugins.register_config_section('tags', ["Tags", {
     'name': ['Tag name', 'str', ''],
     'slug': ['URL slug', 'slashslug', ''],
 
@@ -54,14 +54,14 @@ _plugin_manager.register_config_section('tags', ["Tags", {
     'write_flag': ['DEPRECATED', 'ignore', None],
 }, {}])
 
-_plugin_manager.register_config_section('filters', ["Filters", {
+_plugins.register_config_section('filters', ["Filters", {
     'tags': ['Tag/untag actions', 'str', ''],
     'terms': ['Search terms', 'str', ''],
     'comment': ['Human readable description', 'str', ''],
     'type': ['Filter type', FILTER_TYPES, FILTER_TYPES[0]],
 }, {}])
 
-_plugin_manager.register_config_variables('sys', {
+_plugins.register_config_variables('sys', {
     'writable_tags': ['DEPRECATED', 'str', []],
     'invisible_tags': ['DEPRECATED', 'str', []],
 })
@@ -638,6 +638,6 @@ class MoveFilter(ListFilters):
         return ListFilters.command(self, want_fid=self.args[1])
 
 
-_plugin_manager.register_commands(Tag, AddTag, DeleteTag, ListTags,
-                                  Filter, DeleteFilter,
-                                  MoveFilter, ListFilters)
+_plugins.register_commands(Tag, AddTag, DeleteTag, ListTags,
+                           Filter, DeleteFilter,
+                           MoveFilter, ListFilters)

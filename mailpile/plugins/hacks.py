@@ -1,11 +1,14 @@
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.mailutils import *
 from mailpile.search import *
 from mailpile.util import *
 from mailpile.vcard import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 class Hacks(Command):
@@ -112,4 +115,4 @@ class ViewMetadata(Hacks):
         return [self._explain(i) for i in self._choose_messages(self.args)]
 
 
-mailpile.plugins.register_commands(Hacks, FixIndex, PyCLI, ViewMetadata)
+_plugins.register_commands(Hacks, FixIndex, PyCLI, ViewMetadata)

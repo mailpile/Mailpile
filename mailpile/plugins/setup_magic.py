@@ -2,13 +2,16 @@ import os
 from gettext import gettext as _
 from datetime import date 
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.plugins import __all__ as PLUGINS
 from mailpile.commands import Command
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.util import *
 
 from mailpile.plugins.tags import AddTag, Filter
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Commands ]################################################################
@@ -84,8 +87,7 @@ class Setup(Command):
         session = self.session
 
         if session.config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
         # Create local mailboxes
         session.config.open_local_mailbox(session)
@@ -206,7 +208,7 @@ class Setup(Command):
                                 'indexing of encrypted e-mail. '))
 
         session.config.save()
-        return True
+        return self._success(_('Performed initial Mailpile setup'))
 
 
-mailpile.plugins.register_commands(Setup)
+_plugins.register_commands(Setup)

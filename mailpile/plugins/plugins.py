@@ -1,7 +1,11 @@
+import os
 from gettext import gettext as _
 
 import mailpile.commands
 from mailpile.plugins import PluginManager
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 class Plugins(mailpile.commands.Command):
@@ -79,5 +83,4 @@ class DisablePlugin(mailpile.commands.Command):
                              {'disabled': self.args})
 
 
-PluginManager(builtin=True
-              ).register_commands(Plugins, LoadPlugin, DisablePlugin)
+_plugins.register_commands(Plugins, LoadPlugin, DisablePlugin)

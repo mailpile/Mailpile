@@ -5,9 +5,12 @@ import time
 from gettext import gettext as _
 from urllib2 import urlopen
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.vcard import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 class GravatarImporter(VCardImporter):
@@ -119,4 +122,4 @@ class GravatarImporter(VCardImporter):
         return results
 
 
-mailpile.plugins.register_vcard_importers(GravatarImporter)
+_plugins.register_vcard_importers(GravatarImporter)

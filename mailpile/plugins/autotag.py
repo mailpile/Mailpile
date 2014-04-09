@@ -10,10 +10,13 @@ import datetime
 from gettext import gettext as _
 
 import mailpile.config
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.mailutils import Email
 from mailpile.util import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Configuration ]###########################################################
@@ -21,7 +24,7 @@ from mailpile.util import *
 TAGGERS = {}
 TRAINERS = {}
 
-mailpile.plugins.register_config_section(
+_plugins.register_config_section(
     'prefs', 'autotag', ["Auto-tagging", {
         'match_tag': ['Tag we are adding to automatically', str, ''],
         'unsure_tag': ['If unsure, add to this tag', str, ''],
@@ -314,7 +317,7 @@ class AutoTag(Classify):
         return tag
 
 
-mailpile.plugins.register_commands(Retrain, Classify, AutoTag)
+_plugins.register_commands(Retrain, Classify, AutoTag)
 
 
 ##[ Cron jobs ]###############################################################
@@ -355,4 +358,4 @@ def filter_hook(session, msg_mid, msg, keywords, is_new=True):
 # We add a filter pre-hook with a high (late) priority.  Late priority to
 # maximize the amount of data we are feeding to the classifier, but a
 # pre-hook so normal filter rules will override the autotagging.
-mailpile.plugins.register_filter_hook_pre('90-autotag', filter_hook)
+_plugins.register_filter_hook_pre('90-autotag', filter_hook)

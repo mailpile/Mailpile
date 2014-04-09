@@ -2,9 +2,12 @@
 import os
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.vcard import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 # User default GnuPG key file
@@ -55,4 +58,4 @@ class GnuPGImporter(VCardImporter):
         return results
 
 
-mailpile.plugins.register_vcard_importers(GnuPGImporter)
+_plugins.register_vcard_importers(GnuPGImporter)

@@ -5,16 +5,19 @@ import threading
 import traceback
 from gettext import gettext as _
 
-import mailpile.plugins
 import mailpile.config
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.mailutils import Email
 from mailpile.util import *
 
 
+_plugins = PluginManager(builtin=__file__)
+
+
 ##[ Configuration ]##########################################################
 
-mailpile.plugins.register_config_section(
+_plugins.register_config_section(
     'sys', 'smtpd', [_('SMTP Daemon'), False, {
         'host': (_('Listening host for SMTP daemon'), 'hostname', 'localhost'),
         'port': (_('Listening port for SMTP daemon'), int, 0),
@@ -103,4 +106,4 @@ class SMTPWorker(threading.Thread):
                 pass
 
 
-mailpile.plugins.register_worker(SMTPWorker)
+_plugins.register_worker(SMTPWorker)

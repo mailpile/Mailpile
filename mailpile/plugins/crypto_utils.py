@@ -3,11 +3,15 @@ import re
 import time
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.nicknym import Nicknym
+
+
+_plugins = PluginManager(builtin=__file__)
+
 
 class GPGKeySearch(Command):
     """Search for a GPG Key."""
@@ -107,8 +111,8 @@ class NicknymRefreshKeys(Command):
         n.refresh_keys()
         return True
 
-mailpile.plugins.register_commands(GPGKeySearch)
-mailpile.plugins.register_commands(GPGKeyReceive)
-mailpile.plugins.register_commands(GPGKeyImport)
-mailpile.plugins.register_commands(NicknymGetKey)
-mailpile.plugins.register_commands(NicknymRefreshKeys)
+_plugins.register_commands(GPGKeySearch)
+_plugins.register_commands(GPGKeyReceive)
+_plugins.register_commands(GPGKeyImport)
+_plugins.register_commands(NicknymGetKey)
+_plugins.register_commands(NicknymRefreshKeys)

@@ -6,8 +6,11 @@ import getopt
 from gettext import gettext as _
 from sys import stdin, stdout, stderr
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.vcard import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 def hexcmp(x, y):
@@ -361,4 +364,4 @@ if __name__ == "__main__":
     m.load()
     print m.get_contacts(data)
 else:
-    mailpile.plugins.register_vcard_importers(MorkImporter)
+    _plugins.register_vcard_importers(MorkImporter)

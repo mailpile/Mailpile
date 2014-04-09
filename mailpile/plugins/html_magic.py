@@ -3,11 +3,14 @@
 #
 from gettext import gettext as _
 
-import mailpile.plugins
 import mailpile.config
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Configuration ]###########################################################
@@ -77,4 +80,4 @@ class JsApi(Command):
         return res
 
 
-mailpile.plugins.register_commands(JsApi)
+_plugins.register_commands(JsApi)

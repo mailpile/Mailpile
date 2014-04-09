@@ -7,7 +7,7 @@ from mailpile.vcard import SimpleVCard, VCardLine, AddressInfo
 from mailpile.util import *
 
 
-_plugins = PluginManager(builtin=True)
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ VCards ]########################################

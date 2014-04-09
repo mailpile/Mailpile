@@ -2,7 +2,10 @@ import time
 import datetime
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
+
+
+_plugins = PluginManager(builtin=__name__)
 
 
 ##[ Keywords ]################################################################
@@ -18,7 +21,7 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
     ]
     return keywords
 
-mailpile.plugins.register_meta_kw_extractor('dates', meta_kw_extractor)
+_plugins.register_meta_kw_extractor('dates', meta_kw_extractor)
 
 
 ##[ Search terms ]############################################################
@@ -99,5 +102,5 @@ def search(config, idx, term, hits):
         raise ValueError('Invalid date range: %s' % term)
 
 
-mailpile.plugins.register_search_term('dates', search)
-mailpile.plugins.register_search_term('date', search)
+_plugins.register_search_term('dates', search)
+_plugins.register_search_term('date', search)

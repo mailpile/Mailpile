@@ -52,6 +52,14 @@ class PluginManager(object):
 
     def __init__(self, plugin_name=None, builtin=False, deprecated=False,
                  config=None, session=None):
+        if builtin and isinstance(builtin, (str, unicode)):
+            builtin = os.path.basename(builtin)
+            for ignore in ('.py', '.pyo', '.pyc'):
+                if builtin.endswith(ignore):
+                    builtin = builtin[:-len(ignore)]
+            if builtin not in self.LOADED:
+                self.LOADED.append(builtin)
+
         self.loading_plugin = plugin_name
         self.loading_builtin = plugin_name and builtin
         self.builtin = builtin
@@ -162,7 +170,8 @@ class PluginManager(object):
             print 'What what what?? %s' % plugin_name
             return self
 
-        self.LOADED.append(plugin_name)
+        if plugin_name not in self.LOADED:
+            self.LOADED.append(plugin_name)
         return self
 
     def load(self, *args, **kwargs):
@@ -438,7 +447,6 @@ class PluginManager(object):
     VCARD_CONTEXT_PROVIDERS = {}
 
     def _reg_vcard_plugin(self, what, cfg_sect, plugin_classes, cls, dct):
-        self._compat_check()
         for plugin_class in plugin_classes:
             if not plugin_class.SHORT_NAME or not plugin_class.FORMAT_NAME:
                 raise PluginError("Please set SHORT_NAME "

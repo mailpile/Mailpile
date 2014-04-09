@@ -1,10 +1,13 @@
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 
 from mailpile.plugins.tags import AddTag, DeleteTag, Filter
 from mailpile.plugins.contacts import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Search terms ]############################################################
@@ -24,8 +27,8 @@ def search(config, idx, term, hits):
         rt.extend(hits('%s:%s' % (email, fromto)))
     return rt
 
-mailpile.plugins.register_search_term('group', search)
-mailpile.plugins.register_search_term('togroup', search)
+_plugins.register_search_term('group', search)
+_plugins.register_search_term('togroup', search)
 
 
 ##[ Commands ]################################################################
@@ -84,5 +87,5 @@ class ListGroups(GroupVCard(ListVCards)):
     """Find groups"""
 
 
-mailpile.plugins.register_commands(Group, AddGroup, GroupAddLines,
-                                   RemoveGroup, ListGroups)
+_plugins.register_commands(Group, AddGroup, GroupAddLines,
+                           RemoveGroup, ListGroups)

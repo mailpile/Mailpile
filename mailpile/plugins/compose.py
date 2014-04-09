@@ -21,7 +21,7 @@ from mailpile.util import *
 from mailpile.plugins.search import Search, SearchResults, View
 
 
-_plugins = PluginManager(builtin=True)
+_plugins = PluginManager(builtin=__file__)
 
 
 class EditableSearchResults(SearchResults):

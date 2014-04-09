@@ -13,7 +13,7 @@ from mailpile.util import *
 from mailpile.ui import SuppressHtmlOutput
 
 
-_plugin_manager = PluginManager(builtin=True)
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Commands ]################################################################
@@ -318,8 +318,7 @@ class Extract(Command):
         return results
 
 
-_plugin_manager.register_commands(Extract, Next, Order, Previous,
-                                  Search, View)
+_plugins.register_commands(Extract, Next, Order, Previous, Search, View)
 
 
 ##[ Search terms ]############################################################
@@ -340,4 +339,4 @@ def mailbox_search(config, idx, term, hits):
     return rt
 
 
-_plugin_manager.register_search_term('mailbox', mailbox_search)
+_plugins.register_search_term('mailbox', mailbox_search)
