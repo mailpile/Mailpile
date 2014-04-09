@@ -535,7 +535,8 @@ class SearchResults(dict):
         return AddressInfo(e, n, vcard=vcard)
 
     def _msg_tags(self, msg_info):
-        tids = [t for t in msg_info[MailIndex.MSG_TAGS].split(',') if t]
+        tids = [t for t in msg_info[MailIndex.MSG_TAGS].split(',')
+                if t and t in self.session.config.tags]
         return tids
 
     def _tag(self, tid, attributes={}):
