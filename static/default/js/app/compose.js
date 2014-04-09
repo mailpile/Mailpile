@@ -30,8 +30,6 @@ MailPile.prototype.compose_load_crypto_states = function() {
     encryption = 'encrypt';
   }
 
-  console.log(signature + ' ' + encryption);
-
   mailpile.compose_render_signature(signature);
   mailpile.compose_render_encryption(encryption);
 };
@@ -149,8 +147,6 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
 };
 
 MailPile.prototype.compose_render_encryption = function(status) {
-
-console.log(status);
 
   if (status == 'encrypt') {
     $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-green');
@@ -397,11 +393,9 @@ $('#compose-from').keyup(function(e) {
 });
 
 
-/* Compose - Autogrow textarea */
-$('#compose-text').keyup(function(e) {
-  var content_scroll = $('#content-view').scrollTop();  
-  this.style.height='18px'; this.style.height = this.scrollHeight + 6 + 'px'
-  $('#content-view').scrollTop(content_scroll + 12);
+/* Compose - autogrow textarea */
+$(document).ready(function(){
+  $('#compose-text').autosize();   
 });
 
 
