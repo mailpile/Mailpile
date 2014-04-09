@@ -80,6 +80,7 @@ def SendMail(session, from_to_msg_ev_tuples):
         for ev in (events or []):
             for rcpt in to:
                 ev.private_data['>'.join([frm, rcpt])] = False
+
     for frm, sendmail, to, msg, events in routes:
         for ev in events:
             ev.data['recipients'] = len(ev.private_data.keys())
