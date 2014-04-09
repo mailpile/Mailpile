@@ -327,12 +327,12 @@ _plugin_manager.register_commands(Extract, Next, Order, Previous,
 def mailbox_search(config, idx, term, hits):
     word = term.split(':', 1)[1].lower()
     try:
-        mailbox_id = b36(int(word, 36))
+        mbox_id = (('0' * MBX_ID_LEN) + b36(int(word, 36)))[-MBX_ID_LEN:]
     except ValueError:
-        mailbox_id = None
+        mbox_id = None
 
     mailboxes = [m for m in config.sys.mailbox.keys()
-                 if word in config.sys.mailbox[m].lower() or mailbox_id == m]
+                 if (mbox_id == m) or word in config.sys.mailbox[m].lower()]
     rt = []
     for mbox_id in mailboxes:
         mbox_id = (('0' * MBX_ID_LEN) + mbox_id)[-MBX_ID_LEN:]
