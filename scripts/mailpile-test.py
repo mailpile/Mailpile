@@ -144,7 +144,7 @@ def test_load_save_rescan():
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['stats']['count'] == 13)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 14)
 
     say('FIXME: Make sure message signatures verified')
 
@@ -179,6 +179,13 @@ def test_message_data():
             continue
         say('Checking encoding: %s: %s' % (key, val))
         assert('utf' not in val)
+
+    # This message broke our HTML engine that one time
+    search_md = mp.search('from:heretic', 'subject:outcome').result
+    result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
+    view_md = mp.view('=%s' % result_md['mid'])
+    assert('Outcome' in view_md.as_html())
+
 
 def test_composition():
     # Create a message...

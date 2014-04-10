@@ -815,7 +815,8 @@ class Email(object):
 
     def decode_text(self, payload, charset='utf-8', binary=True):
         if charset:
-            charsets = [charset]
+            charsets = [charset] + [c for c in self.CHARSET_PRIORITY_LIST
+                                    if charset.lower() != c]
         else:
             charsets = self.CHARSET_PRIORITY_LIST
 
