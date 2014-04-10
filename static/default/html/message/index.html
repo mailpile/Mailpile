@@ -1,13 +1,11 @@
 {% extends "layouts/" + render_mode + ".html" %}
-
 {% block title %}{% if result.data.metadata[result.thread_ids[-1]].subject %}{{ result.data.metadata[result.thread_ids[-1]].subject }}{% else %}{{_("No Subject")}}{% endif %}{% endblock %}
-
 {% block content %}
 {% if result %}
 {% set start_mid     = result.thread_ids[-1] %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
 {% set profiles      = mailpile('settings', 'profiles').result.profiles %}
-{# 
+{#
     UGLY HACK  showed_composer = [] 
     we are setting a list called showed_composer 
     to keep track of MIDs so we know when to show the Composer
@@ -16,33 +14,19 @@
 #}
 {% set showed_composer = [] %}
 {% for mid in result.thread_ids|reverse %}
-
   {% set metadata = result.data.metadata[mid] %}
   {% set message  = result.data.messages[mid] %}
-
-  {# Determine Is A Message #}
-  {% if mid in result.data.messages %}
-
-    {# Show: Composer #}
-    {% if "editing_string" in message %}
-
+  {% if mid in result.data.messages %}{# Determine Is A Message #}
+    {% if "editing_string" in message %}{# Show: Composer #}
       {% set editing_strings = message.editing_strings %}
       {% include("partials/compose.html") %}
-
-    {# Show: Message and Composer #}
-    {% else %}
-
-      {# Show : Message #}
+    {% else %}{# Show: Message and Composer #}
       {# FIXME: make subject line show differing subjects {{ metadata.subject }} #}
-      {% include("partials/thread_message.html") %}
-
-      {# Check If Not Replied #}
-      {% if metadata.flags.replied != true %}
-
-        {# Check If Has Not Showed Composer #}
-        {% if not showed_composer %}
+      {% include("partials/thread_message.html") %}{# Show : Message #}
+      {% if metadata.flags.replied != true %}{# Check If Not Replied #}
+        {% if not showed_composer %}{# Check If Has Not Showed Composer #}
           {% do showed_composer.append(mid) %}
-          {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}
+          {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}{# Gets Ephermal message #}
           {% if compose %}
             {% set mid = compose.message_ids.0 %}
             {% set editing_strings = compose.data.messages[mid].editing_strings %}
@@ -53,19 +37,17 @@
         {% endif %}{# End Not Showed Composer #}
       {% endif %}{# End Is Not Replied #}
     {% endif %}{# End Message / Reply #}
-
-  {# Is Message & Draft #}
-  {% elif metadata.flags.draft == true %}
-      {% if not showed_composer %}
-        {% do showed_composer.append(mid) %}
-        {% set compose = mailpile('message/draft', '='+mid).result %}
-        {% if compose %}
-          {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
-          {% include("partials/compose.html") %}
-        {% else %}
-          {{_("Could Not Render Composer")}}
-        {% endif%}
-      {% endif %}
+  {% elif metadata.flags.draft == true %}{# Is Message & Draft #}
+    {% if not showed_composer %}
+      {% do showed_composer.append(mid) %}
+      {% set compose = mailpile('message/draft', '='+mid).result %}
+      {% if compose %}
+        {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
+        {% include("partials/compose.html") %}
+      {% else %}
+        {{_("Could Not Render Composer")}}
+      {% endif%}
+    {% endif %}
   {% else %}{# Show snippet #}
   <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
     {% set from = result.data.addresses[metadata.from.aid] %}
@@ -76,8 +58,7 @@
 {% endfor %}{# End for loop #}
 <div id="thread-people" class="hide" data-modal_title="{{_("People in Conversation")}}">
   <ul>
-    {% for aid in result.data.addresses %}
-    {% set person = result.data.addresses[aid] %}
+    {% for aid in result.data.addresses %}{% set person = result.data.addresses[aid] %}
     <li>
       <a class="contact-conversation-avatar" href="{{ contact_url(person) }}"><img src="{{ show_avatar(person) }}"></a>
       <a class="contact-conversation-name" href="{{ contact_url(person) }}"> <h4>{{person.fn}}</h4></a>
@@ -86,11 +67,9 @@
     {% endfor %}
   </ul>
 </div>
-
 <div id="thread-tags" class="hide" data-modal_title="{{_("Tags in Conversation")}}">
   <ul>
-    {% for tid in result.data.tags %}
-    {% set tag = result.data.tags[tid] %}
+    {% for tid in result.data.tags %}{% set tag = result.data.tags[tid] %}
     {% if tag.type == 'tag' %}
     <li>
       <a class="" href="{{ tag.url }}"><span class="icon-tag"></span> <h4>{{ tag.name }}</h4></a>
@@ -99,7 +78,6 @@
     {% endfor %}
   </ul>
 </div>
-
 {% else %}{# No Result, Show Error #}
   {% set error_title = "message_missing" %}
   {% include("partials/errors_content.html") %}
