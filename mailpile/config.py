@@ -160,6 +160,19 @@ def _SlashSlugCheck(slug):
     return _SlugCheck(slug, allow='/')
 
 
+def _MailProtocolCheck(proto):
+    """
+    Verify that the protocol is actually a protocol.
+    (Should reference a list of registered protocols...)
+
+    >>> _MailProtocolCheck('smtp')
+    'smtp'
+    """
+    if not unicode(proto) == "smtp":
+        raise ValueError(_('Invalid message delivery protocol: %s') % proto)
+    return proto.lower()
+
+
 def _HostNameCheck(host):
     """
     Verify that a string is a valid host-name, return it lowercased.
@@ -302,7 +315,7 @@ def RuledContainer(pcls):
             'int': int,
             'long': long,
             'multiline': unicode,
-            'mailroute': unicode,  # FIXME: Make more strict
+            'mailprotocol': _MailProtocolCheck,  # FIXME: Make more strict
             'new file': _NewPathCheck,
             'new dir': _NewPathCheck,
             'new directory': _NewPathCheck,
@@ -1116,7 +1129,7 @@ class ConfigManager(ConfigDict):
             'name': None,
             'email': find,
             'signature': None,
-            'route': self.prefs.default_route
+            'messageroute': self.prefs.default_messageroute
         }
         for profile in self.profiles:
             if profile.email == find or not find:
@@ -1128,10 +1141,14 @@ class ConfigManager(ConfigDict):
     def get_sendmail(self, frm, rcpts=['-t']):
         if len(rcpts) == 1:
             if rcpts[0].lower().endswith('.onion'):
-                return 'smtorp:%s:25' % rcpts[0].split('@')[-1]
-        return self.get_profile(frm)['route'] % {
-            'rcpt': ', '.join(rcpts)
-        }
+                return {"protocol": "smtorp",
+                        "host": rcpts[0].split('@')[-1],
+                        "port": 25,
+                        "username": "",
+                        "password": ""
+                       }
+        routeid = self.get_profile(frm)['messageroute']
+        return self.routes[routeid]
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """

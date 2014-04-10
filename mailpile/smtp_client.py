@@ -57,9 +57,18 @@ def _RouteTuples(session, from_to_msg_ev_tuples):
                     recipient = None
                     break
             if recipient:
-                route = session.config.get_sendmail(frm, [recipient]).strip()
-                dest[route] = dest.get(route, [])
-                dest[route].append(recipient)
+                route = {"protocol": "", 
+                         "username": "", 
+                         "password": "", 
+                         "host": "", 
+                         "port": 25
+                        }
+                route.update(session.config.get_sendmail(frm, [recipient]))
+                txtroute = "%(protocol)s://%(username)s:%(password)s@" \
+                         + "%(host)s:%(port)d"
+                txtroute %= route
+                dest[txtroute] = dest.get(txtroute, [])
+                dest[txtroute].append(recipient)
         for route in dest:
             tuples.append((frm, route, dest[route], msg, events))
     return tuples
