@@ -17,6 +17,7 @@ def migrate_routes(session):
     def route_parse(route):
         res = re.split("([\w]+)://([\w\d@.]+):([\w\d.]+)@([\w\d.]+):([\d]+)[/]{0,1}", route)
         nr = {
+            "name": _("%(user)s on %(host)s") % {"user": res[2], "host": res[4]},
             "protocol": res[1],
             "username": res[2],
             "password": res[3],
