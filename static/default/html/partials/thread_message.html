@@ -1,13 +1,11 @@
 <div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}"> 
-
   {% set from = result.data.addresses[metadata.from.aid] %}
   {% include("partials/thread_metadata.html") %}        
   <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
     <ul class="clearfix">
       <li>{{_("To")}}:</li>
       {% if metadata.to_aids %}
-      {% for to_aid in metadata.to_aids %}
-      {% set person = result.data.addresses[to_aid] %}
+      {% for to_aid in metadata.to_aids %}{% set person = result.data.addresses[to_aid] %}
       <li class="thread-item-metadata-contact">
         <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
         <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
@@ -20,8 +18,7 @@
     {% if metadata.cc_aids %}
     <ul class="clearfix">
       <li>{{_("Cc")}}:</li>
-      {% for cc_aid in metadata.cc_aids %}
-      {% set person = result.data.addresses[cc_aid] %}
+      {% for cc_aid in metadata.cc_aids %}{% set person = result.data.addresses[cc_aid] %}
       <li class="thread-item-metadata-contact">
         <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
         <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
@@ -32,8 +29,7 @@
     {% if metadata.bcc_aids %}
     <ul class="clearfix">
       <li>{{_("Bcc:")}}:</li>
-      {% for bcc_aid in metadata.bcc_aids %}
-      {% set person = result.data.addresses[bcc_aid] %}
+      {% for bcc_aid in metadata.bcc_aids %}{% set person = result.data.addresses[bcc_aid] %}
       <li class="thread-item-metadata-contact">
         <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
         <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
@@ -46,7 +42,6 @@
       <li><a href="/message/raw/={{ mid }}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
     </ul>
   </div>
-  
   {% set last_enc_context = message.crypto.encryption.context %}
   {% set last_sig_context = message.crypto.signature.context %}
   {% if not message.text_parts %}
@@ -81,7 +76,6 @@
         <div class="thread-item-crypto-line left"></div>
       </div>
       {% endif %} 
-  
       {% if part.type in ("text", "pgpsignedtext") %}
       <div class="thread-item-text">{{ part.data|urlize }}</div>
       {% elif part.type == "quote" %}
@@ -91,6 +85,7 @@
       {% endif %}
     {% endif %}
   {% endfor %}
+  {% if message.attachments %}
   <div class="thread-message-attachments">
     <ul class="clearfix">
       {% for att in message.attachments %}
@@ -103,20 +98,18 @@
       {% endfor %}
     </ul>
   </div>
-  <div id="thread-message-actions" class="bulk-actions clearfix" data-mid="{{mid}}">
-    <ul class="horizontal left">
-      <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
-      <li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
-        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
-          <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> Move to Inbox</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> Flag as Spam</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> Remove from Thread</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
-        </ul>
-      </li>
-      <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
-    </ul>
-  </div>
-
+  {% endif %}
+  <ul class="thread-message-actions horizontal clearfix" data-mid="{{mid}}">
+    <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
+      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> Move to Inbox</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> Flag as Spam</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> Remove from Thread</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
+      </ul>
+    </li>
+    <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
+  </ul>
 </div>

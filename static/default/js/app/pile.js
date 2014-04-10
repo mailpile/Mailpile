@@ -243,7 +243,7 @@ $('li.sidebar-tags-draggable').droppable({
     mailpile.bulk_cache_add('messages_cache', ui.draggable.parent().data('mid'));
 
     // Add / Delete
-    mailpile.tag_add_delete($(this).data('tag_name'), delete_tag, mailpile.messages_cache, function() {
+    mailpile.tag_add_delete($(this).find('a').data('tag_slug'), delete_tag, mailpile.messages_cache, function() {
 
       // Update Pile View
       $.each(mailpile.messages_cache, function(key, mid) {
@@ -258,12 +258,14 @@ $('li.sidebar-tags-draggable').droppable({
 
 
 $(document).ready(function() {
-
+  
+  // Render Display Size
   if (!localStorage.getItem('view_size')) {
     localStorage.setItem('view_size', mailpile.defaults.view_size);
   }
 
   mailpile.pile_display(localStorage.getItem('view_size'));
+
 
   // Display Select
   $.each($('a.change-view-size'), function() {

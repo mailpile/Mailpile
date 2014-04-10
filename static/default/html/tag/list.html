@@ -27,8 +27,10 @@
         </div>
         -->
       </div>
-      <a class="tag-card-message-link" href="{{tag.url}}"><span class="icon-inbox"></span> {{_("Messages")}}</a>
-      <a class="tag-card-message-link" href="/tag/list/{{tag.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a>
+      <ul>
+        <li><a class="tag-card-message-link" href="{{tag.url}}"><span class="icon-inbox"></span> {{_("Messages")}}</a></li>
+        <li><a class="tag-card-message-link" href="/tag/list/{{tag.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a></li>
+      </ul>
     </div>
   </div>
 {%- endmacro %}
@@ -41,7 +43,7 @@
   {% endfor %}
 </div>
 
-<div id="tags-archived-list" class="clearfix">
+<div id="tags-archived-list" class="add-top add-bottom clearfix">
   <h3 class="text-center"><span class="icon-archive"></span> {{_("Archived Tags")}}</h3>
   {% for tag in result.tags %}
   {% if tag.display == "archive" %}
