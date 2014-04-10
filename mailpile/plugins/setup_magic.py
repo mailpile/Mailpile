@@ -7,6 +7,7 @@ from mailpile.plugins import __all__ as PLUGINS
 from mailpile.commands import Command
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.util import *
+from mailpile.plugins.migrate import Migrate
 
 from mailpile.plugins.tags import AddTag, Filter
 
@@ -88,6 +89,9 @@ class Setup(Command):
 
         if session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
+
+        # Perform any required migrations
+        Migrate(session).run()
 
         # Create local mailboxes
         session.config.open_local_mailbox(session)

@@ -65,8 +65,8 @@ CONFIG_RULES = {
                             bool, False),
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
-        'default_route':   (_('Default outgoing mail route'),
-                            'mailroute', DEFAULT_SENDMAIL),
+        'default_route':   (_('Default outgoing mail route'), str, ''),
+        'default_messageroute':   (_('Default outgoing mail route'), str, ''),
         'language':        (_('User interface language'), str,             ''),
         'vcard':           [_("VCard import/export settings"), False, {
             'importers':   [_("VCard import settings"), False,             {}],
@@ -78,8 +78,17 @@ CONFIG_RULES = {
         'name':            (_('Account name'), 'str', ''),
         'email':           (_('E-mail address'), 'email', ''),
         'signature':       (_('Message signature'), 'multiline', ''),
-        'route':           (_('Outgoing mail route'), 'mailroute', ''),
-    }, []]
+        'route':           (_('Outgoing mail route'), str, ''),
+        'messageroute':    (_('Outgoing mail route'), str, ''),
+    }, []],
+    'routes': [_('Outgoing message routes'), {
+        'name':            (_('Route name'), str, ''),
+        'protocol':        (_('Messaging protocol'), 'mailprotocol', 'smtp'),
+        'username':        (_('User name'), str, ''),
+        'password':        (_('Password'), str, ''),
+        'host':            (_('Host'), str, ''),
+        'port':            (_('Port'), int, 993)
+    }, {}]
 }
 
 
