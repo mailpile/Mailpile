@@ -1,47 +1,52 @@
 {% extends "layouts/" + render_mode + ".html" %}
+
+{% macro render_profile(profile) -%}  
+  <div class="boxy">
+    <div class="boxy-inner">
+      <h3>{{profile.email}}</h3>
+      
+      <form>
+        <label>{{_("Display name:")}}</label> {{ profile.name }}<br/>
+        <label>{{_("E-mail address:")}}</label> {{ profile.email }}<br/>
+        <label>{{_("Delivery route:")}}</label> {{ config.routes[profile.messageroute].name }}<br/>
+      </form>
+
+      <a class="profile-card-message-link" href="/profile/list/{{profile.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a>
+    </div>
+  </div>
+{%- endmacro %}
 {% block content %}
 
 <div id="settings" class="content-normal">
   {% if "profiles" in result %}
   <div id="profiles">
+    <div style="float:right;"><button onclick="$('#newprofile').show();">Add new profile</button></div>
     <h3>{{_("Your Profiles")}}</h3>
-    <ul>
+
+
     {% for p in result.profiles %}
-      <li><strong>{{ p.name }}</strong> <br> {{ p.email }}<br> {{ p.route }}</li>
+      {{ render_profile(p) }}
     {% endfor %}
-    </ul>
-    <hr>
-
-    <h3>{{_("Add New Profile")}}</h3>
-    <form id="form-profile-add" class="standard" action="/api/0/settings/add/" method="POST">
-
-      <label>{{_("Name")}}</label>
-      <input type="text" name="name" value="" placeholder="{{_("Chelsea Manning")}}" id="profile-add-name">
-
-      <label>{{_("Email")}}</label>
-      <input type="text" name="email" value="" placeholder="{{_("chelsea@email.com")}}" id="profile-add-email">
-
-      <h5>{{_("SMTP Server")}}</h5>
-      <label>{{_("Login")}}</label>
-      <input type="text" name="username" value="" placeholder="{{_("username@mailserver.org")}}" id="profile-add-username">
-
-      <label>{{_("Password")}}</label>
-      <input type="password" name="password" value="" placeholder="1234567890" id="profile-add-password">
-
-      <label>{{_("Server")}}</label>
-      <input type="text" name="server" value="" placeholder="{{_("smtp.mailserver.org")}}" id="profile-add-server">
-
-      <label>{{_("Port")}}</label>
-      <select name="smtp-port" id="profile-add-port">
-        <option value="25">25</option>
-        <option value="587">587</option>
-        <option value="465">465 (TLS)</option>
-      </select>
-
-      <button type="submit"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
-
-    </form>
+  
   </div>
+  {% endif %}
+
+  {% if "route" in result %}
+          <label>{{_("Login")}}</label>
+          <input type="text" name="username" value="" placeholder="{{_("username@mailserver.org")}}" id="profile-add-username">
+
+          <label>{{_("Password")}}</label>
+          <input type="password" name="password" value="" placeholder="1234567890" id="profile-add-password">
+
+          <label>{{_("Server")}}</label>
+          <input type="text" name="server" value="" placeholder="{{_("smtp.mailserver.org")}}" id="profile-add-server">
+
+          <label>{{_("Port")}}</label>
+          <select name="smtp-port" id="profile-add-port">
+            <option value="25">25</option>
+            <option value="587">587</option>
+            <option value="465">465 (TLS)</option>
+          </select>
   {% endif %}
 
   {% if "prefs" in result %}
@@ -66,5 +71,34 @@
   </div>
   {% endif %}
 </div>
+
+  <div class="modal-dialog hide" id="newprofile">
+  <form id="form-profile-add" class="standard" action="/api/0/settings/add/" method="POST">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">{{_("Add New Profile")}}</h4>
+      </div>
+      <div class="modal-body">
+        <label>{{_("Name")}}</label>
+        <input type="text" name="name" value="" placeholder="{{_("Chelsea Manning")}}" id="profile-add-name">
+
+        <label>{{_("Email")}}</label>
+        <input type="text" name="email" value="" placeholder="{{_("chelsea@email.com")}}" id="profile-add-email">
+
+        <label>{{_("Delivery route")}}</label>
+        <select name="route">
+          {% for route in config.routes %}
+          <option value="{{route}}">{{config.routes[route].name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="submit"><span class="icon-plus"></span> {{_("Add Profile")}}</button>
+        <button title="{{_("Close")}}" alt="{{_("Close")}}" data-dismiss="modal">{{_("Close")}}</button>
+      </div>
+    </div>
+  </form>
+  </div>
 
 {% endblock %}{% block title %}{{_("Profiles")}} | {{_("Settings")}}{% endblock %}
