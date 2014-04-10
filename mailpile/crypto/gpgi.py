@@ -19,6 +19,7 @@ from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 
 DEFAULT_SERVER = "pool.sks-keyservers.net"
 GPG_KEYID_LENGTH = 8
+GNUPG_HOMEDIR = None  # None=use what gpg uses
 
 openpgp_trust = {"-": _("Trust not calculated"),
                  "o": _("Unknown trust"),
@@ -192,6 +193,8 @@ class GnuPG:
         self.needed_fds = ["stdin", "stdout", "stderr", "status"]
         self.errors = []
         self.statuscallbacks = {}
+        global GNUPG_HOMEDIR
+        self.homedir = GNUPG_HOMEDIR
 
     def default_errorhandler(self, *error):
         if error != "":
@@ -421,6 +424,9 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         args.insert(1, "--verbose")
         args.insert(1, "--batch")
         args.insert(1, "--enable-progress-filter")
+
+        if self.homedir:
+            args.insert(1, "--homedir=%s" % self.homedir)
 
         try:
             for fd in self.fds.keys():
@@ -826,14 +832,14 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 pass
             elif line[0] == "pub":
                 curpub = line[1]
-                results[curpub] = {"created": line[4], 
-                                   "keytype": openpgp_algorithms[int(line[2])], 
-                                   "keysize": line[3], 
+                results[curpub] = {"created": line[4],
+                                   "keytype": openpgp_algorithms[int(line[2])],
+                                   "keysize": line[3],
                                    "uids": []}
             elif line[0] == "uid":
                 email, name, comment = parse_uid(line[1])
-                results[curpub]["uids"].append({"name": name, 
-                                                "email": email, 
+                results[curpub]["uids"].append({"name": name,
+                                                "email": email,
                                                 "comment": comment})
         return results
 
@@ -927,6 +933,11 @@ class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
 
     def get_keys(self, who):
         return GetKeys(self.crypto, self.config, who)
+
+
+def change_gnupg_home(path):
+    global GNUPG_HOMEDIR
+    GNUPG_HOMEDIR = path
 
 
 if __name__ == "__main__":

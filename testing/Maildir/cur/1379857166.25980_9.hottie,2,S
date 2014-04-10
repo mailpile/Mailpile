@@ -1,0 +1,35 @@
+From nobody Fri Mar  7 15:17:43 2014
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="pgp-sha1"; boundary="===============7038572445886209563=="
+MIME-Version: 1.0
+Subject: Test message
+From: test@test.local
+To: signer@test.local
+
+--===============7038572445886209563==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+
+This is the original message text.
+
+:)
+
+--===============7038572445886209563==
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAABCgAGBQJTGdUHAAoJEKdd9P2OMVZyMmkH/0vPH7x+iX7vh1LOK9a6CAbm
+HR+ncLX20ilasMzXwcHCPADcdl5oxJz9O3h3WFLh1oMoazXhND2DeQx9XaHWVlTv
+6HFMnl7UDTSEbMirgzNBOxcT3u/COY7bbndxEmQwZIKk1sat8CEZQ6h9+qKRAX7v
+/oMemggzthlMzZw10QOgH6Jy2mLBCslMrT6oZ/fzjhdWOWcvE31GL3zCGK6vpb8a
+NcgB+CLMQQAFiKIxgnaqOg+YRByJPbiYBLz6bIYtLUckV34CKKEDWnORTIu+RssC
+UD0dVWg/9anmuX9asKCu0xliOfGpYrmFZjSECivYpraez2Lwsrg5Hj9jRypQ1Bw=
+=tHXr
+-----END PGP SIGNATURE-----
+
+--===============7038572445886209563==--

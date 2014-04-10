@@ -28,6 +28,7 @@ class Mailpile(object):
         else:
             self._session = session
             self._config = session.config
+            self._ui = session.ui
 
         for cls in mailpile.commands.COMMANDS:
             names, argspec = cls.SYNOPSIS[1:3], cls.SYNOPSIS[3]

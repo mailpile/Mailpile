@@ -137,3 +137,26 @@ $(document).on('click', '.contact-add-search-item', function() {
     }
   });  
 });
+
+$('#crypto-policy').select2()
+
+function extractEmailFromLocation() {
+    var pathname = decodeURIComponent(location.pathname);
+    var parts = pathname.split('/').filter(function(el) {return el.length > 0})
+    return parts[parts.length - 1]
+}
+
+
+$('#crypto-policy').on('change', function(e) {
+    var policy = e.val
+    var email = extractEmailFromLocation()
+    var data = { email: email, policy: policy }
+
+    $.ajax({
+        url : '/api/0/crypto_policy/set/',
+        type : 'POST',
+        data : data,
+        dataType : 'json'
+    })
+  console.log('Changed')
+})
