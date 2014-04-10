@@ -174,7 +174,9 @@ class Setup(Command):
             else:
                 for key, details in keys.iteritems():
                     # Ignore revoked/expired keys.
-                    if "revocation-date" in details and details["revocation-date"] <= date.today().strftime("%Y-%m-%d"):
+                    if ("revocation-date" in details and 
+                        details["revocation-date"] <= 
+                            date.today().strftime("%Y-%m-%d")):
                         continue
 
                     for uid in details["uids"]:
