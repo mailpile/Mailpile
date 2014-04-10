@@ -1,6 +1,14 @@
 /* Mailpile v0.1.0
  * config.less
  */
+ 
+  
+/* Mailpile */
+
+  @mailpile-text-font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@mailpile-text-font-family-semibold: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@mailpile-text-font-family-bold: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
 
 /* Colors */
 
@@ -53,10 +61,10 @@
 
 	@text-font-size: 18px;
 	@text-font-weight: normal;
-	@text-font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	@text-font-family-italic: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	@text-font-family-semibold: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	@text-font-family-bold: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-italic: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-semibold: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	@text-font-family-bold: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	@text-line-height: 24px;
 	@text-color: #333333;
 	@text-color-light: #999999;
@@ -82,19 +90,19 @@
 
 
 /* Links */
-	
+
 	@link-font-size: 14px;
 	@link-font-wieght: bold;
 	@link-color: @grayDark;
 	@link-color-hover: @red;
 	@link-decoration: none;
 	@link-decoration-hover: none;
-	
+
 
 /* Headings */
 
 	@headings-color: #333333;
-	@headings-font-family: @text-font-family-bold;
+	@headings-font-family: @mailpile-text-font-family-bold;
 	@headings-font-weight: bold;	
 	@headings-letter-spacing: 0px;
 	@headings-size-h1: 36px;
@@ -126,12 +134,12 @@
 
 /* Lists */
 
-	@list-margin-bottom: 40px;
+	@list-margin-bottom: 25px;
 	@list-margin-left: 30px;
 	@list-padding: ~'';
   @list-font-size: @text-font-size;
   @list-line-height: @text-font-size;	
-	@list-item-margin: 15px;
+	@list-item-margin: 5px;
 	@list-item-padding: 5px;
 	@list-item-type-ordered: decimal outside;
 	@list-item-type-unordered: square outside;
@@ -156,9 +164,9 @@
 
 		// Font
 		color: @color;
-		font-family: @text-font-family-semibold;	
+		font-family: @mailpile-text-font-family-semibold;	
 		font-size: 16px;
-		font-weight: normal;
+		font-weight: bold;
 		line-height: normal;
 		text-shadow: @shadow; 		
 		text-decoration: none;
@@ -196,12 +204,12 @@
 	  background: @color-top;
 	}
 
-	@button-primary-top: @grayMid;
-	@button-primary-top-hover: @gray;
-	@button-primary-bottom: @grayMid;
-	@button-primary-bottom-hover: @gray;
-	@button-primary-color: @black;
-	@button-primary-shadow: 0px 0px 0px;
+	@button-primary-top: @blue;
+	@button-primary-top-hover: darken(@button-primary-top, 12%);
+	@button-primary-bottom: @blue;
+	@button-primary-bottom-hover: darken(@button-primary-bottom, 12%);
+	@button-primary-color: @white;
+	@button-primary-shadow: @text-shadow-on-dark;
 	@button-primary-border: @blue;
 	@button-primary-border-hover: @blue;
 	
@@ -210,7 +218,7 @@
 	@button-secondary-bottom: @green;
 	@button-secondary-bottom-hover: darken(@button-secondary-bottom, 20%);
 	@button-secondary-color: @white;
-	@button-secondary-shadow: 0px 0px 0px;
+	@button-secondary-shadow: @text-shadow-on-dark;
 	@button-secondary-border: #7ba2a7;
 	@button-secondary-border-hover: @blue;
 
@@ -219,7 +227,7 @@
 	@button-alert-bottom: @brown;
 	@button-alert-bottom-hover: darken(@button-alert-bottom, 20%);
 	@button-alert-color: @white;
-	@button-alert-shadow: 0px 0px 0px;
+	@button-alert-shadow: @text-shadow-on-dark;
 	@button-alert-border: #8596b3;
 	@button-alert-border-hover: @blue;
 
@@ -228,9 +236,9 @@
 	@button-warning-bottom: @red;
 	@button-warning-bottom-hover: darken(@button-warning-bottom, 20%);
 	@button-warning-color: @white;
-	@button-warning-shadow: 0px 0px 0px;
+	@button-warning-shadow: @text-shadow-on-dark;
 	@button-warning-border: #713c2a;
-	@button-warning-border-hover: @blue;
+	@button-warning-border-hover: @red;
 
 
 /* Forms */
@@ -274,7 +282,6 @@
 
 	@grid-tablet-width: 100%;	
 	@grid-mobile-width: 100%;
-
 
 
 /* Boxes */

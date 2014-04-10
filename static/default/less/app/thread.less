@@ -17,6 +17,7 @@
   #thread-title h1 {
     margin: 0px;
     padding: 0px;
+    font-family: @mailpile-text-font-family-bold;
     font-size: 24px;
     font-weight: bold;
   }
@@ -40,7 +41,6 @@
   #thread-title ul a:hover {
     color: @grayDark;
   }
-
 
 
 /* Thread Items */
@@ -103,9 +103,9 @@
     margin-bottom: 8px;
     padding-top: 0px;
     color: @grayDark;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
-    line-height: 18px;
+    line-height: 16px;
   }
 
   .thread-item-metadata-icons {
@@ -304,7 +304,7 @@
 
 	.thread-message-attachments {
   	margin-left: 20px;
-  	margin-bottom: 20px;
+  	margin-bottom: 0px;
 	}
 
   .thread-message-attachments li {
@@ -333,11 +333,14 @@
   
 /* Thread Message Actions */
 
-  #thread-message-actions {
-    border-top: 1px solid @gray;
-    border-bottom: 0px;
+  .thread-message-actions {
+    margin-left: 25px;
+    margin-bottom: 15px;
   }
-  
+
+  .thread-message-actions li {
+    margin-right: 25px;
+  }
 
 /* Thread - Crypto Tooltips */
 
