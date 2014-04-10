@@ -963,6 +963,7 @@ class ConfigManager(ConfigDict):
         self.jinja_env = Environment(
             loader=MailpileJinjaLoader(self),
             autoescape=True,
+            trim_blocks=True,
             extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
                         'jinja2.ext.do',
                         'mailpile.jinjaextensions.MailpileCommand']
