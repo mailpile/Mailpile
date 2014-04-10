@@ -12,15 +12,16 @@
     vertical-align: middle;	
 		border-spacing: 0px;
 		border-bottom: 1px solid @grayMid;
+		box-sizing: padding-box;
 		font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 		font-size: 14px;
 		line-height: 14px;
 	}
 
-  #pile-results.fluffy td { padding: 15px; vertical-align: top; }
-  #pile-results.comfy  td { padding: 10px; }
-  #pile-results.cozy   td { padding: 6px; }
-  #pile-results.snug   td { padding: 2px; }
+  #pile-results.fluffy td { padding: 15px 0px; vertical-align: top; }
+  #pile-results.comfy  td { padding: 10px 0px; }
+  #pile-results.cozy   td { padding: 6px 0px; }
+  #pile-results.snug   td { padding: 2px 0px; }
 
 
   #pile-results td.draggable {
@@ -33,16 +34,16 @@
     cursor: move;
   }
 
-  #pile-results        td.avatar       { min-width: 14px; }
-  #pile-results        td.avatar a img { width: 24px; height: 24px; }
-  #pile-results.fluffy td.avatar       { width: 48px; }
-  #pile-results.fluffy td.avatar a img { display: block; width: 48px; height: 48px; }
-  #pile-results.comfy  td.avatar       { width: 24px; }
-  #pile-results.comfy  td.avatar a img { display: block; width: 24px; height: 24px; }  
-  #pile-results.cozy   td.avatar       { width: 18px; }
-  #pile-results.cozy   td.avatar a img { display: block; width: 18px; height: 18px; }
-  #pile-results.snug   td.avatar       { width: 14px; }
-  #pile-results.snug   td.avatar a img { display: block; width: 14px; height: 14px; }
+  #pile-results        td.avatar       { min-width: 18px; max-width: 68px; padding-left: 10px; }
+  #pile-results        td.avatar a img { display: block; }
+  #pile-results.fluffy td.avatar       { width: 68px; }
+  #pile-results.fluffy td.avatar a img { width: 48px; height: 48px; }
+  #pile-results.comfy  td.avatar       { width: 44px; }
+  #pile-results.comfy  td.avatar a img { width: 24px; height: 24px; }  
+  #pile-results.cozy   td.avatar       { width: 30px; }
+  #pile-results.cozy   td.avatar a img { width: 18px; height: 18px; }
+  #pile-results.snug   td.avatar       { width: 18px; }
+  #pile-results.snug   td.avatar a img { width: 14px; height: 14px; }
 
 
 	#pile-results td.from {

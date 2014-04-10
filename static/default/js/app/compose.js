@@ -515,7 +515,7 @@ $(document).ready(function() {
     mailpile.compose_load_crypto_states();
 
     // Autogrow textarea
-    $('#compose-text').autosize();
+    $('.compose-text').autosize();
   }
 
   
