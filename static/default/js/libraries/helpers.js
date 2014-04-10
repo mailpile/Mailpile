@@ -1,3 +1,19 @@
+/* Helpers.js 
+    - a collection of random functions and things
+*/
+
+
+Number.prototype.pad = function(size) {
+	// Unfortunate padding function....
+	if(typeof(size) !== "number"){
+    size = 2;
+  }
+	var s = String(this);
+	while (s.length < size) s = "0" + s;
+	return s;
+}
+
+
 /* Abbreviates Numbers */
 function abbrNum(number, decPlaces) {
 

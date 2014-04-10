@@ -1,16 +1,6 @@
 // Make console.log not crash JS browsers that don't support it
 if (!window.console) window.console = { log: $.noop, group: $.noop, groupEnd: $.noop, info: $.noop, error: $.noop };
 
-Number.prototype.pad = function(size) {
-	// Unfortunate padding function....
-	if(typeof(size) !== "number"){
-    size = 2;
-  }
-	var s = String(this);
-	while (s.length < size) s = "0" + s;
-	return s;
-}
-
 function MailPile() {
   this.instance       = {};
 	this.search_cache   = [];
