@@ -1,4 +1,4 @@
-<form id="form-compose" class="clearfix">
+<form id="form-compose" class="clearfix" data-mid="{{mid}}">
   <input id="compose-mid" type="hidden" name="mid" value="{{mid}}">
   <input id="compose-crypto" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
   <input id="compose-signature" type="hidden" value="">
@@ -32,9 +32,9 @@
       <option value="{{p.name}} &lt;{{p.email}}&gt;">{{p.name}} &lt;{{p.email}}&gt;</option>
       {% endfor %}
     </select>
-    <ul id="compose-options" class="horizontal right">
+    <ul id="compose-options" class="horizontal right" data-mid="{{mid}}">
       {% if command == "view" %}
-      <!-- <li><a id="#compose-apply-quote" href="#"><input type="checkbox" checked="checked"> Quote</a></li> -->
+      <li><label class="compose-apply-quote"><input class="compose-apply-quote" type="checkbox" checked="checked"> Quote</label></li>
       {% endif %}
       <li class="compose-crypto-signature signed animated"
           data-crypto_signed="{{_("Signed")}}"
@@ -107,7 +107,7 @@
   </div>
   <div class="compose-message">
     <label>{{_("Message")}}</label>
-    <textarea id="compose-text" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
+    <textarea id="compose-text-{{mid}}" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
   </div>
   <div class="compose-actions clearfix">
     <div class="compose-attachments left">

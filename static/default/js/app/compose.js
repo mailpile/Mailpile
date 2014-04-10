@@ -393,10 +393,22 @@ $('#compose-from').keyup(function(e) {
 });
 
 
-/* Compose - autogrow textarea */
-$(document).ready(function(){
-  $('#compose-text').autosize();   
+/* Compose - Quote */
+$(document).on('click', '.compose-apply-quote', function(e) {
+
+  e.preventDefault();
+  e.stopPropagation();
+  var mid = $(this).parent().parent().data('mid');
+
+  if ($(this).prop('checked')) {
+    $('#compose-text-' + mid).val();
+  }
+  else {
+    $('#compose-text-' + mid).val('');
+  }
+  
 });
+
 
 
 /* Compose - Send, Save, Reply */
@@ -501,7 +513,12 @@ $(document).ready(function() {
 
     // Load Crypto States
     mailpile.compose_load_crypto_states();
+
+    // Autogrow textarea
+    $('#compose-text').autosize();
   }
+
+  
 
   // Show Crypto Tooltips
   $('.compose-crypto-signature').qtip({
