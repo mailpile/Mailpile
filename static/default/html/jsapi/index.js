@@ -2,13 +2,14 @@
    - This file autogenerates JS methods which fire GET & POST calls to 
    - API / command endpoints
 */
-{% set comma = ',' %}
+
 var MailpileAPI = (function() {
     var api = { 
-    {% for command in result.api_methods %}{% if loop.index == result.api_methods|length %}{% set comma = '' %}{% endif %}        
-        {{command.url|replace("/", "_")}}: "/api/0/{{command.url}}/"{{ comma }}
-    {%- endfor -%}
-    };
+    {% for command in result.api_methods %}
+    {{command.url|replace("/", "_")}}: "/api/0/{{command.url}}/"{% if not loop.last %},{% endif %}
+
+    {% endfor %}
+};
 
     function action(command, data, method, callback) {
         if (method != "GET" && method != "POST") {
@@ -46,16 +47,17 @@ var MailpileAPI = (function() {
         {% for command in result.api_methods %}
         {{command.url|replace("/", "_")}}: function(
             {%- for key in command.query_vars -%}pv_{{key|replace("@", "")}}, {% endfor -%}
-            {%- for key in command.post_vars -%}pv_{{key|replace("@", "")|replace(".","_")|replace("-","_")}}, {% endfor -%}
-            callback) {
+            {%- for key in command.post_vars -%}pv_{{key|replace("@", "")|replace(".","_")|replace("-","_")}}, {%- endfor -%} callback) {
             return action(api.{{command.url|replace("/", "_")}}, {
-                {%- for key in command.query_vars %}
-                    "{{key}}": pv_{{key|replace("@", "")}},{%- endfor %}
-                {%- for key in command.post_vars %}
-                    "{{key}}": pv_{{key|replace("@", "")}},{%- endfor %}
+                {%- for key in command.query_vars -%}
+                    "{{key}}": pv_{{key|replace("@", "")}},
+                {% endfor %}
+                {%- for key in command.post_vars -%}
+                    "{{key}}": pv_{{key|replace("@", "")}},
+                {% endfor %}
             }, "{{command.method}}", callback);
         },
-        {%- endfor %}
+        {% endfor %}
         {% for js_class in result.javascript_classes %}
         /* {{ js_class.classname }} */
         {{ js_class.code|safe }}
