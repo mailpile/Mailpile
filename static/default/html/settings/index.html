@@ -11,10 +11,13 @@
         <label>{{_("Delivery route:")}}</label> {{ config.routes[profile.messageroute].name }}<br/>
       </form>
 
-      <a class="profile-card-message-link" href="/profile/list/{{profile.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a>
+      <div style="position: absolute; bottom: 10px;">
+        <button><span class="icon-settings"></span> {{_("Settings")}}</button>
+      </div>
     </div>
   </div>
 {%- endmacro %}
+
 {% block content %}
 
 <div id="settings" class="content-normal">
@@ -31,22 +34,50 @@
   </div>
   {% endif %}
 
-  {% if "route" in result %}
-          <label>{{_("Login")}}</label>
-          <input type="text" name="username" value="" placeholder="{{_("username@mailserver.org")}}" id="profile-add-username">
+  {% if "routes" in result %}
+  <div id="routes">
+    <div style="float: left; background: #fff; border: 1px solid #ccc;">
+      <ul>
+      {% for id in result.routes %}
+      {% set r = result.routes[id] %}
+        <li><a href="#" style="display: block; margin: 20px;" onclick="$('.route').hide();$('#route_{{id}}').show();">{{r.name}}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
 
-          <label>{{_("Password")}}</label>
-          <input type="password" name="password" value="" placeholder="1234567890" id="profile-add-password">
+    {% for id in result.routes %}
+    {% set r = result.routes[id] %}
+    <div id="route_{{id}}" class="route" style="margin-left: 40px; display: none; float: left;">
+      <h4>Route: {{r.name}}</h4>
+      <form action="" class="standard">
+        <input type="hidden" name="route_id" value="{{id}}"/>
 
-          <label>{{_("Server")}}</label>
-          <input type="text" name="server" value="" placeholder="{{_("smtp.mailserver.org")}}" id="profile-add-server">
+        <label>{{_("Route name")}}</label>
+        <input type="text" name="name" value="{{r.name}}" placeholder="{{_("my delivery route")}}" id="route-add-name"/>
 
-          <label>{{_("Port")}}</label>
-          <select name="smtp-port" id="profile-add-port">
-            <option value="25">25</option>
-            <option value="587">587</option>
-            <option value="465">465 (TLS)</option>
-          </select>
+        <label>{{_("Login")}}</label>
+        <input type="text" name="username" value="{{r.username}}" placeholder="{{_("username@mailserver.org")}}" id="route-add-username"/>
+
+        <label>{{_("Password")}}</label>
+        <input type="password" name="password" value="{{r.password}}" placeholder="1234567890" id="route-add-password"/>
+
+        <label>{{_("Server")}}</label>
+        <input type="text" name="host" value="{{r.host}}" placeholder="{{_("smtp.mailserver.org")}}" id="route-add-server"/>
+
+        <label>{{_("Port")}}</label>
+        <select name="port" id="route-add-port">
+          <option {% if r.port == 25 %}selected {% endif %}value="25">25</option>
+          <option {% if r.port == 587 %}selected {% endif %}value="587">587</option>
+          <option {% if r.port == 465 %}selected {% endif %}value="465">465 (TLS)</option>
+        </select>
+
+        <label></label>
+        <input type="submit" value="Save"/>
+        <input type="button" value="Cancel"/>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
   {% endif %}
 
   {% if "prefs" in result %}
