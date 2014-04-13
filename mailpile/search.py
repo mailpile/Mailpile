@@ -1137,7 +1137,18 @@ class MailIndex:
                               ) % (len(results), len(srs.excluded())))
         return srs
 
+    def _order_freshness(self, pos):
+        msg_info = self.get_msg_at_idx_pos(pos)
+        ts = long(msg_info[self.MSG_DATE], 36)
+        if ts > self._fresh_cutoff:
+            for tid in msg_info[self.MSG_TAGS].split(','):
+                if tid in self._fresh_tags:
+                    return ts + self.FRESHNESS_SORT_BOOST
+        return ts
+
+    FRESHNESS_SORT_BOOST = (5 * 24 * 3600)
     CACHED_SORT_ORDERS = [
+        ('freshness', True, _order_freshness),
         ('date', True,
          lambda s, k: long(s.get_msg_at_idx_pos(k)[s.MSG_DATE], 36)),
         # FIXME: The following are effectively disabled for now
@@ -1148,6 +1159,9 @@ class MailIndex:
     ]
 
     def cache_sort_orders(self, session, wanted=None):
+        self._fresh_cutoff = time.time() - self.FRESHNESS_SORT_BOOST
+        self._fresh_tags = [tag._key for tag in
+                            session.config.get_tags(type='unread')]
         try:
             self._lock.acquire()
             keys = range(0, len(self.INDEX))
