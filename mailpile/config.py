@@ -944,7 +944,7 @@ class ConfigManager(ConfigDict):
 
         # Discover plugins and update the config rule to match
         from mailpile.plugins import PluginManager
-        self.plugins = PluginManager(config=self).discover([
+        self.plugins = PluginManager(config=self, builtin=True).discover([
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
                          '..', 'plugins'),
             os.path.join(self.workdir, 'plugins')

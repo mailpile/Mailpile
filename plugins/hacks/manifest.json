@@ -1,0 +1,37 @@
+# This is a Mailpile plugin manifest, describing the `hacks` plugin.
+{
+    "name": "hacks",
+    "author": "The Mailpile Team <team@mailpile.is>",
+    "code": {
+        "python": ["hacks.py"],
+        "javascript": [],
+        "css": []
+    },
+
+    # This section defines URL routes and MIME types.
+    "routes": {},
+
+    # Please see https://github.com/pagekite/Mailpile/wiki/Config for
+    # details about the configuration file syntax.
+    "config": {},
+
+    # These are our Python-related hooks
+    "commands": [
+        {
+            "class": "hacks.Hacks",
+            "name": "hacks"
+        },
+        {
+            "class": "hacks.FixIndex",
+            "name": "hacks/fixindex"
+        },
+        {
+            "class": "hacks.PyCLI",
+            "name": "hacks/pycli"
+        },
+        {
+            "class": "hacks.ViewMetadata",
+            "name": "hacks/metadata"
+        }
+    ]
+}

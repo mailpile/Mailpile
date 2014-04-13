@@ -78,7 +78,7 @@ class DisablePlugin(mailpile.commands.Command):
                 config.sys.plugins.remove(plugin)
 
         self._serialize('Save config', lambda: config.save())
-        return self._success(_('Disabled plugins: %s (restart requird)'
+        return self._success(_('Disabled plugins: %s (restart required)'
                                ) % ', '.join(self.args),
                              {'disabled': self.args})
 

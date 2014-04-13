@@ -1,14 +1,10 @@
 from gettext import gettext as _
 
-from mailpile.plugins import PluginManager
-from mailpile.commands import Command
+from mailpile.commands import Command, Help
 from mailpile.mailutils import *
 from mailpile.search import *
 from mailpile.util import *
 from mailpile.vcard import *
-
-
-_plugins = PluginManager(builtin=__file__)
 
 
 class Hacks(Command):
@@ -16,6 +12,9 @@ class Hacks(Command):
     SYNOPSIS = (None, 'hacks', None, None)
     ORDER = ('Internals', 9)
     HTTP_CALLABLE = ()
+
+    def command(self):
+        return self._success('OK', Help(self.session, arg=['hacks']).run())
 
 
 class FixIndex(Hacks):
@@ -52,8 +51,7 @@ class FixIndex(Hacks):
                         bad_info[index.MSG_PTRS] = good_info[index.MSG_PTRS]
                         index.set_msg_at_idx_pos(bad_idx, bad_info)
 
-        session.ui.mark('Done!')
-        return True
+        return self._success(_('Tried to fix metadata index'))
 
 
 class PyCLI(Hacks):
@@ -85,7 +83,7 @@ This is Python inside of Mailpile inside of Python.
         self.session.ui.unblock()
         self.session.config.prepare_workers(self.session, daemons=True)
 
-        return 'That was fun!'
+        return self._success(_('That was fun!'))
 
 
 class ViewMetadata(Hacks):
@@ -112,7 +110,5 @@ class ViewMetadata(Hacks):
         }
 
     def command(self):
-        return [self._explain(i) for i in self._choose_messages(self.args)]
-
-
-_plugins.register_commands(Hacks, FixIndex, PyCLI, ViewMetadata)
+        return self._success(_('Displayed raw metadata'),
+            [self._explain(i) for i in self._choose_messages(self.args)])

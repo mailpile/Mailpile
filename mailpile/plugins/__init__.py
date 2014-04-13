@@ -22,7 +22,7 @@ __all__ = [
     'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_utils',
     'setup_magic', 'exporters', 'plugins',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
-    'hacks', 'html_magic', 'migrate', 'smtp_server'
+    'html_magic', 'migrate', 'smtp_server'
 ]
 
 
@@ -163,8 +163,6 @@ class PluginManager(object):
             self.manifests.append(spec)
             if process_manifest:
                 self._process_manifest_pass_one(*spec)
-                if config:
-                    config.reset_rules_from_source()
                 self._process_manifest_pass_two(*spec)
         else:
             print 'What what what?? %s' % plugin_name
@@ -332,8 +330,12 @@ class PluginManager(object):
             if str(stack[2][1]) == '<string>':
                 raise PluginError('Naughty plugin tried to directly access '
                                   'mailpile.plugins!')
-            print ('FIXME: Deprecated use of %s at %s:%s (issue #547)'
-                   ) % (stack[1][3], stack[2][1], stack[2][2])
+
+            where = '->'.join(['%s:%s' % ('/'.join(stack[i][1].split('/')[-2:]),
+                                          stack[i][2])
+                              for i in reversed(range(2, len(stack)-1))])
+            print ('FIXME: Deprecated use of %s at %s (issue #547)'
+                   ) % (stack[1][3], where)
 
 
     ##[ Pluggable configuration ]#############################################
