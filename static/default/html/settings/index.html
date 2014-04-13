@@ -1,7 +1,7 @@
 {% extends "layouts/" + render_mode + ".html" %}
 
-{% macro render_profile(profile) -%}  
-  <div class="boxy">
+{% macro render_profile(index, profile) -%}  
+  <div class="boxy" id="profile-boxy-{{index}}">
     <div class="boxy-inner">
       <h3>{{profile.email}}</h3>
       
@@ -12,7 +12,7 @@
       </form>
 
       <div style="position: absolute; bottom: 10px;">
-        <button><span class="icon-settings"></span> {{_("Settings")}}</button>
+        <button id="profile-btn-settings-{{index}}" data-profileid="{{index}}"><span class="icon-settings"></span> {{_("Settings")}}</button>
       </div>
     </div>
   </div>
@@ -28,7 +28,7 @@
 
 
     {% for p in result.profiles %}
-      {{ render_profile(p) }}
+      {{ render_profile(loop.index0, p) }}
     {% endfor %}
   
   </div>
