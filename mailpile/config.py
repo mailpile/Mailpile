@@ -1148,7 +1148,11 @@ class ConfigManager(ConfigDict):
                         "password": ""
                        }
         routeid = self.get_profile(frm)['messageroute']
-        return self.routes[routeid]
+        if self.routes[routeid] is not None:
+            return self.routes[routeid]
+        else:
+            print "Migration notice: Try running 'setup/migrate'."
+            raise ValueError(_("Route %s does not exist.") % routeid)
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """
