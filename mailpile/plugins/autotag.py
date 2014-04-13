@@ -148,8 +148,12 @@ class Retrain(AutoTagCommand):
     SYNOPSIS = (None, 'autotag/retrain', None, '[<tags>]')
 
     def command(self):
+        self._retrain(tags=self.args)
+
+    def _retrain(self, tags=None):
+        "Retrain autotaggers"
         session, config, idx = self.session, self.session.config, self._idx()
-        tags = self.args or [asb.match_tag for asb in config.prefs.autotag]
+        tags = tags or [asb.match_tag for asb in config.prefs.autotag]
         tids = [config.get_tag(t)._key for t in tags if t]
 
         session.ui.mark(_('Retraining SpamBayes autotaggers'))
@@ -247,6 +251,29 @@ class Retrain(AutoTagCommand):
                           ) % ', '.join(retrained))
         return {'retrained': retrained, 'read_messages': count_all}
 
+    @classmethod
+    def interval_retrain(cls, session):
+        """
+        Retrains autotaggers
+
+        Classmethod used for periodic automatic retraining
+        """
+        result = cls(session)._retrain()
+        if result:
+            print result
+            return True
+        else:
+            return False
+
+
+_plugins.register_config_variables('prefs', {
+    'autotag_retrain_interval': [_('Periodically retrain autotagger (seconds)'),
+                                  int, 24*60*60],
+})
+
+_plugins.register_slow_periodic_job('retrain_autotag',
+                                    'prefs.autotag_retrain_interval',
+                                    Retrain.interval_retrain)
 
 class Classify(AutoTagCommand):
     SYNOPSIS = (None, 'autotag/classify', None, '<msgs>')
@@ -318,11 +345,6 @@ class AutoTag(Classify):
 
 
 _plugins.register_commands(Retrain, Classify, AutoTag)
-
-
-##[ Cron jobs ]###############################################################
-
-# FIXME: We should periodically retrain?
 
 
 ##[ Keywords ]################################################################
