@@ -247,9 +247,11 @@ class Retrain(AutoTagCommand):
                 config.save_auto_tagger(at_config)
                 retrained.append(at_tag.name)
 
-        session.ui.mark(_('Retrained SpamBayes auto-tagging for %s'
-                          ) % ', '.join(retrained))
-        return {'retrained': retrained, 'read_messages': count_all}
+        message = _('Retrained SpamBayes auto-tagging for %s'
+                    ) % ', '.join(retrained)
+        session.ui.mark(message)
+        return self._success(message,
+            {'retrained': retrained, 'read_messages': count_all})
 
     @classmethod
     def interval_retrain(cls, session):
@@ -260,7 +262,6 @@ class Retrain(AutoTagCommand):
         """
         result = cls(session)._retrain()
         if result:
-            print result
             return True
         else:
             return False
@@ -307,7 +308,8 @@ class Classify(AutoTagCommand):
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
         emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
-        return self._classify(emails)
+        return self._success(_('Classified %d messages') % len(emails),
+                             self._classify(emails))
 
 
 class AutoTag(Classify):
@@ -341,7 +343,7 @@ class AutoTag(Classify):
         for tid in tag:
             idx.add_tag(session, tid, msg_idxs=[int(i, 36) for i in tag[tid]])
 
-        return tag
+        return self._success(_('Auto-tagged %d messages') % len(emails), tag)
 
 
 _plugins.register_commands(Retrain, Classify, AutoTag)
