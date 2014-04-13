@@ -67,9 +67,6 @@ def Interact(session):
 
 
 def Main(args):
-    re.UNICODE = 1
-    re.LOCALE = 1
-
     # Bootstrap translations until we've loaded everything else
     translation = gettext.translation("mailpile", getLocaleDirectory(),
                                       fallback=True)
