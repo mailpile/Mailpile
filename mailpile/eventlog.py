@@ -56,7 +56,10 @@ class Event(object):
 
     @classmethod
     def Parse(cls, json_string):
-        return cls(*json.loads(json_string))
+        try:
+            return cls(*json.loads(json_string))
+        except:
+            return cls()
 
     def __init__(self,
                  ts=None, event_id=None, flags='C', message='',
