@@ -262,7 +262,7 @@ class Tag(TagCommand):
                                 conversation=conversation)
                     rv['tagged'].append(tag)
                 # Record behavior
-                if len(msg_ids) < 30:
+                if len(msg_ids) < 15:
                     for t in self.session.config.get_tags(type='tagged'):
                         idx.add_tag(self.session, t._key, msg_idxs=msg_ids)
             else:
