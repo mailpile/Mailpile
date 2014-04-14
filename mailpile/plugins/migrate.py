@@ -15,7 +15,7 @@ _plugins = PluginManager(builtin=__file__)
 def migrate_routes(session):
     # Migration from route string to messageroute structure
     def route_parse(route):
-        res = re.split("([\w]+)://([\w\d@.]+):([\w\d.]+)@([\w\d.]+):([\d]+)[/]{0,1}", route)
+        res = re.split("([\w]+)://([^:]+):([^@]+)@([\w\d.]+):([\d]+)[/]{0,1}", route)
         nr = {
             "name": _("%(user)s on %(host)s") % {"user": res[2], "host": res[4]},
             "protocol": res[1],
