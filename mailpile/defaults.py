@@ -90,6 +90,16 @@ CONFIG_RULES = {
         'command':         (_('Shell command'), str, ''),
         'host':            (_('Host'), str, ''),
         'port':            (_('Port'), int, 587)
+    }, {}],
+    'sources': [_('Incoming message sources'), {
+        'name':            (_('Source name'), str, ''),
+        'protocol':        (_('Messaging protocol'), 'sourceprotocol', ''),
+        'sync_tags':       (_('Synchronized tags'), str, ''),
+        'username':        (_('User name'), str, ''),
+        'password':        (_('Password'), str, ''),
+        'host':            (_('Host'), str, ''),
+        'port':            (_('Port'), int, 993),
+        'path':            (_('Path or folder'), str, '')
     }, {}]
 }
 

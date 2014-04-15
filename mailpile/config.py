@@ -202,6 +202,21 @@ def _RouteProtocolCheck(proto):
     return proto
 
 
+def _SourceProtocolCheck(proto):
+    """
+    Verify that the protocol is actually a protocol.
+    (FIXME: Should reference a list of registered protocols...)
+
+    >>> _SourceProtocolCheck('IMAP')
+    'imap'
+    """
+    proto = str(proto).strip().lower()
+    if proto not in ("mbox", "maildir", "macmaildir", "winmaildir", "gmvault",
+                     "imap", "pop3"):
+        raise ValueError(_('Invalid message source protocol: %s') % proto)
+    return proto
+
+
 def _HostNameCheck(host):
     """
     Verify that a string is a valid host-name, return it lowercased.
@@ -346,6 +361,7 @@ def RuledContainer(pcls):
             'long': long,
             'multiline': unicode,
             'routeprotocol': _RouteProtocolCheck,
+            'sourceprotocol': _SourceProtocolCheck,
             'new file': _NewPathCheck,
             'new dir': _NewPathCheck,
             'new directory': _NewPathCheck,
