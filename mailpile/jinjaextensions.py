@@ -72,6 +72,8 @@ class MailpileCommand(Extension):
         environment.globals['urlencode'] = self._urlencode
         environment.filters['urlencode'] = self._urlencode
 
+        environment.filters['json'] = self._json
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -273,3 +275,6 @@ class MailpileCommand(Extension):
         if type(s) == 'Markup':
             s = s.unescape()
         return Markup(urllib.quote_plus(s.encode('utf-8')))
+
+    def _json(self, d):
+        return json.dumps(d)
