@@ -84,9 +84,11 @@ new_mailpile.api = (function() {
 
    FIXME: Make sure the order is somehow sane given dependenies.
 */
-{% for js_class in result.javascript_classes %}
-new_{{ js_class.classname }} = {% if js_class.code %}(function(){
-{{ js_class.code|safe }}})(); /* EOF:{{ js_class.classname }} */
-{% else %}{};
-{% endif %}
-{% endfor %}
+$(document).ready(function() {
+    {% for js_class in result.javascript_classes %}
+    new_{{ js_class.classname }} = {% if js_class.code %}(function(){
+    {{ js_class.code|safe }}})(); /* EOF:{{ js_class.classname }} */
+    {% else %}{};
+    {% endif %}
+    {% endfor %}
+});
