@@ -904,6 +904,18 @@ class RunWWW(Command):
         return self_success(_('Started the web server'))
 
 
+class WritePID(Command):
+    """Write the PID to a file"""
+    SYNOPSIS = (None, 'pidfile', None, "</path/to/pidfile>")
+    ORDER = ('Internals', 5)
+    SPLIT_ARG = False
+
+    def command(self):
+        with open(self.args[0], 'w') as fd:
+            fd.write('%d' % os.getpid())
+        return self._success(_('Wrote PID to %s') % self.args)
+
+
 class RenderPage(Command):
     """Does nothing, for use by semi-static jinja2 pages"""
     SYNOPSIS = (None, None, 'page', None)
@@ -1372,7 +1384,7 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, RenderPage,
+    Optimize, Rescan, RunWWW, WritePID, RenderPage,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     Output, Help, HelpVars, HelpSplash
 ]
