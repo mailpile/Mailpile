@@ -87,7 +87,16 @@
         "MyWorker"
     ],
 
-    "activities": [],
+    "activities": [
+        {
+            "name": "demo",
+            "text": "Demo",
+            "icon": "/static/img/demos.png",
+            "description": "Demonstrate the pluggable activities",
+            "setup": "demos.activity_setup",
+            "url": "#could-be-a-fallback"
+        }
+    ],
     "display_modes": [],
     "display_actions": [],
     "selection_actions": []

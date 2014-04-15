@@ -323,6 +323,17 @@ class PluginManager(object):
         for info in manifest_path('periodic_jobs', 'slow'):
             reg_job(info, 'slow', self.register_slow_periodic_job)
 
+        for activity in manifest.get('activities', []):
+            setup = activity.get('setup')
+            if not setup.startswith('mailpile.'):
+                setup = '%s.%s' % (full_name, setup)
+            self.register_activity(activity['name'],
+                                   activity.get('text', ''),
+                                   activity.get('icon', '?'),
+                                   activity.get('description', ''),
+                                   activity.get('url', ''),
+                                   setup)
+
     def _compat_check(self, strict=True):
         if ((strict and (not self.loading_plugin and not self.builtin)) or
                 self.deprecated):
@@ -580,6 +591,18 @@ class PluginManager(object):
             self.SELECTION_ACTIONS[uiclass] = []
             self.BODY_BLOCKS[uiclass] = []
 
+    def register_activity(self, name, text, icon, desc, url, setup):
+        self._compat_check()
+        if name not in [x["name"] for x in self.ACTIVITIES]:
+            self.ACTIVITIES.append({
+                "name": name,
+                "text": text,
+                "icon": icon,
+                "description": desc,
+                "setup": setup,
+                "url": url
+            })
+
     def register_display_mode(self, uiclass, name, jsaction, text,
                               url="#", icon=None):
         self._compat_check()
@@ -617,17 +640,6 @@ class PluginManager(object):
                 "url": url,
                 "text": text,
                 "icon": icon
-            })
-
-    def register_activity(self, name, jsaction, icon, url="#"):
-        self._compat_check()
-        if name not in [x["name"] for x in self.ACTIVITIES]:
-            self.ACTIVITIES.append({
-                "name": name,
-                "jsaction": jsaction,
-                "url": url,
-                "icon": icon,
-                "text": text
             })
 
     def register_asset(self, assettype, name):

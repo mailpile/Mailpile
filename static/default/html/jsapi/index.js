@@ -11,14 +11,14 @@ It also name-spaces and wraps any and all plugin javascript code.
 
    WARNING: Do not rename! Must match what is defined in the Python code.
 */
-var mailpile = {
+var new_mailpile = {
     plugins: {},
     api: {}
 };
 
 
 /* AJAXy wrappers for the Mailpile API */
-mailpile.api = (function() {
+new_mailpile.api = (function() {
     var api = { {% for command in result.api_methods %}
     {{command.url|replace("/", "_")}}: "/api/0/{{command.url}}/"{% if not loop.last %},{% endif %}
 
@@ -85,7 +85,7 @@ mailpile.api = (function() {
    FIXME: Make sure the order is somehow sane given dependenies.
 */
 {% for js_class in result.javascript_classes %}
-{{ js_class.classname }} = {% if js_class.code %}(function(){
+new_{{ js_class.classname }} = {% if js_class.code %}(function(){
 {{ js_class.code|safe }}})(); /* EOF:{{ js_class.classname }} */
 {% else %}{};
 {% endif %}
