@@ -265,7 +265,7 @@ class Email(object):
 
     @classmethod
     def encoded_hdr(self, msg, hdr, value=None):
-        hdr_value = value or msg[hdr]
+        hdr_value = value or (msg and msg.get(hdr)) or ''
         try:
             hdr_value.encode('us-ascii')
         except:
@@ -311,7 +311,7 @@ class Email(object):
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
         msg['Date'] = email.utils.formatdate(msg_ts)
         msg['Message-Id'] = email.utils.make_msgid('mailpile')
-        msg_subj = (msg_subject or 'New message')
+        msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
         if msg_to:
             msg['To'] = cls.encoded_hdr(None, 'to',
