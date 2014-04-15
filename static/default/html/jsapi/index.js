@@ -4,12 +4,11 @@
 */
 
 var MailpileAPI = (function() {
-    var api = { 
-    {% for command in result.api_methods %}
+    var api = { {% for command in result.api_methods %}
     {{command.url|replace("/", "_")}}: "/api/0/{{command.url}}/"{% if not loop.last %},{% endif %}
 
     {% endfor %}
-};
+    };
 
     function action(command, data, method, callback) {
         if (method != "GET" && method != "POST") {
@@ -56,7 +55,7 @@ var MailpileAPI = (function() {
                     "{{key}}": pv_{{key|replace("@", "")}},
                 {% endfor %}
             }, "{{command.method}}", callback);
-        },
+        }{% if not loop.last %},{% endif %}
         {% endfor %}
         {% for js_class in result.javascript_classes %}
         /* {{ js_class.classname }} */

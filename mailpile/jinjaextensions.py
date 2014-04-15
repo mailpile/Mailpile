@@ -1,3 +1,4 @@
+import copy
 import datetime
 import hashlib
 import re
@@ -10,6 +11,7 @@ from jinja2.utils import contextfunction, import_string, Markup
 
 from mailpile.commands import Action
 from mailpile.util import *
+from mailpile.ui import HttpUserInteraction
 from mailpile.plugins import get_activities, get_selection_actions
 from mailpile.plugins import get_display_actions, get_display_modes
 from mailpile.plugins import get_assets, get_body_blocks
@@ -23,6 +25,7 @@ class MailpileCommand(Extension):
         Extension.__init__(self, environment)
         self.env = environment
         environment.globals['mailpile'] = self._command
+        environment.globals['mailpile_render'] = self._command_render
         environment.globals['regex_replace'] = self._regex_replace
         environment.filters['regex_replace'] = self._regex_replace
         environment.globals['friendly_bytes'] = self._friendly_bytes
@@ -75,6 +78,18 @@ class MailpileCommand(Extension):
             sys.stderr.write('mailpile(%s, %s, %s) -> %s' % (
                 command, args, kwargs, rv))
         return rv
+
+    def _command_render(self, how, command, *args, **kwargs):
+        old_ui, config = self.env.session.ui, self.env.session.config
+        try:
+            ui = self.env.session.ui = HttpUserInteraction(None, config)
+            ui.html_variables = copy.copy(old_ui.html_variables)
+            ui.render_mode = how
+            ui.display_result(Action(self.env.session, command, args,
+                                     data=kwargs))
+            return ui.render_response(config)
+        finally:
+            self.env.session.ui = old_ui
 
     def _regex_replace(self, s, find, replace):
         """A non-optimal implementation of a regex filter"""
