@@ -1,5 +1,5 @@
 /* This is the demo plugin's javascript code!
-   The name of the returned class will be `mailpile.plugins.demos.demos`.
+   The name of the returned class will be `mailpile.plugins.demos`.
  */
 return {
     /* These methods are exposed to the app for various things. */
@@ -13,6 +13,6 @@ return {
            'enhance' it. Here we just give it a click handler, but fancier
            plugins could set up event listeners and update the element
            itself based on other app activities. */
-        $(element).click(new_mailpile.plugins.demos.demos.activity_click);
+        $(element).click(new_mailpile.plugins.demos.activity_click);
     }
 };

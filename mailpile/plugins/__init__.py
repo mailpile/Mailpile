@@ -146,8 +146,13 @@ class PluginManager(object):
                     path = os.path.join(dirname, filename)
                     if filename == '.':
                         self._import(full_name, dirname)
+                        continue
                     elif filename.endswith('.py'):
                         subname = filename[:-3].replace('/', '.')
+                        # FIXME: Is this a good idea?
+                        if full_name.endswith('.'+subname):
+                            self._import(full_name, path)
+                            continue
                     elif os.path.isdir(path):
                         subname = filename.replace('/', '.')
                     else:
@@ -253,7 +258,12 @@ class PluginManager(object):
         # Register javascript classes
         for fn in manifest.get('code', {}).get('javascript', []):
             class_name = fn.replace('/', '.').rsplit('.', 1)[0]
-            self.register_js(full_name, class_name,
+            # FIXME: Is this a good idea?
+            if full_name.endswith('.'+class_name):
+                parent, class_name = full_name.rsplit('.', 1)
+            else:
+                parent = full_name
+            self.register_js(parent, class_name,
                              os.path.join(plugin_path, fn))
 
         # Register CSS files

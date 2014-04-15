@@ -18,19 +18,19 @@
     # These are our Python-related hooks
     "commands": [
         {
-            "class": "hacks.Hacks",
+            "class": "Hacks",
             "name": "hacks"
         },
         {
-            "class": "hacks.FixIndex",
+            "class": "FixIndex",
             "name": "hacks/fixindex"
         },
         {
-            "class": "hacks.PyCLI",
+            "class": "PyCLI",
             "name": "hacks/pycli"
         },
         {
-            "class": "hacks.ViewMetadata",
+            "class": "ViewMetadata",
             "name": "hacks/metadata"
         }
     ]

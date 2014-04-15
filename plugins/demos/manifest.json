@@ -13,8 +13,9 @@
     "author": "The Mailpile Team <team@mailpile.is>",
 
     "code": {
-        # Python modules end up in the namespace mailpile.plugins.<plugin>,
-        # so the file demos.py becomes mailpile.plugins.demos.demos.  If
+        # Python modules end up in the namespace mailpile.plugins.<plugin>.
+        # Generally, the file stuff.py becomes mailpile.plugins.demos.stuff,
+        # with the exception that demos.py goes straight to the root.  If
         # a directory is given (including "." for the plugin root dir), an
         # __init__.py file is loaded per normal Pythonic conventions.
         "python": ["demos.py"],
@@ -61,19 +62,19 @@
     # These are our Python-related hooks
     "commands": [
         {
-            "class": "demos.md5sumCommand",
+            "class": "md5sumCommand",
             "url": "md5sum",
             "name": "md5sum"
         }
     ],
     "contacts": {
-        "importers": ["demos.DemoVCardImporter"],
+        "importers": ["DemoVCardImporter"],
         "exporters": [],
         "context": []
     },
     "periodic_jobs": {
-        "fast": [{"interval": 5, "class": "demos.TickJob"}],
-        "slow": [{"interval": 15, "class": "demos.TickJob"}]
+        "fast": [{"interval": 5, "class": "TickJob"}],
+        "slow": [{"interval": 15, "class": "TickJob"}]
     },
     "keyword_extractors": [
     ],
@@ -93,7 +94,7 @@
             "text": "Demo",
             "icon": "/static/img/demos.png",
             "description": "Demonstrate the pluggable activities",
-            "setup": "demos.activity_setup",
+            "setup": "activity_setup",
             "url": "#could-be-a-fallback"
         }
     ],
