@@ -57,17 +57,30 @@ class JsApi(Command):
                     cmdinfo["optional_vars"] = cmd.OPTIONAL_VARS
                 res['api_methods'].append(cmdinfo)
 
-        for cls, filename in config.plugins.get_js_classes().iteritems():
+        created_js = [];
+        for cls, filename in sorted(list(
+                config.plugins.get_js_classes().iteritems())):
             try:
+                parts = cls.split('.')[:-1]
+                for i in range(1, len(parts)):
+                    parent = '.'.join(parts[:i+1])
+                    if parent not in created_js:
+                        res['javascript_classes'].append({
+                            'classname': parent,
+                            'code': ''
+                        })
+                        created_js.append(parent)
                 with open(filename, 'rb') as fd:
                     res['javascript_classes'].append({
                         'classname': cls,
                         'code': fd.read().decode('utf-8')
                     })
+                    created_js.append(cls)
             except (OSError, IOError, UnicodeDecodeError):
                 self._ignore_exception()
 
-        for cls, filename in config.plugins.get_css_files().iteritems():
+        for cls, filename in sorted(list(
+                config.plugins.get_css_files().iteritems())):
             try:
                 with open(filename, 'rb') as fd:
                     res['css_files'].append({

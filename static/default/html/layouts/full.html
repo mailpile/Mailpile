@@ -36,6 +36,7 @@
 
   <script src="/static/js/libraries/jquery.min.js"></script>
   <script src="/static/js/libraries-min.js"></script>
+  <script src="/api/0/jsapi/as.js"></script>
 {% block head %}{% endblock %}
 </head>
 <body>
@@ -313,6 +314,5 @@ $('#pile-results').hide();
 <script src="/static/js/app/settings.js"></script>
 {% for asset in get_assets("javascript") %}<script src="/static/{{asset}}"></script>
 {% endfor %}
-<script src="/jsapi/as.js"></script>
 </body>
 </html>

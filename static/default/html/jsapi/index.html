@@ -1,8 +1,4 @@
 {% extends "layouts/" + render_mode + ".html" %}
-{% block head %}
-  <script src='as.js'></script>
-{% endblock %}
-
 {% block content %}
 
 <h1>JSAPI test page</h1>
@@ -12,12 +8,12 @@
   if it printed out documentation or something for developers to look at.
 </p>
 <p>Status: <b><script>
-  if (MailpileAPI) {
-    document.write('Yay, the MailpileAPI appears to exist!');
+  if (mailpile && mailpile.api) {
+    document.write('Yay, the Mailpile JS API appears to exist!');
   } else {
-    document.write('The MailpileAPI failed to load, boo!');
+    document.write('The Mailpile JS API failed to load, boo!');
   }
-</script><noscript>The MailpileAPI failed to load, boo!</noscript></b></p>
+</script><noscript>The Mailpile JS API failed to load, boo!</noscript></b></p>
 
 <p>Use the source, Luke:</p>
 <pre>{{ mailpile_render('as.js', 'jsapi')[1] }}</pre>
