@@ -15,26 +15,41 @@ _plugins = PluginManager(builtin=__file__)
 def migrate_routes(session):
     # Migration from route string to messageroute structure
     def route_parse(route):
-        res = re.split("([\w]+)://([^:]+):([^@]+)@([\w\d.]+):([\d]+)[/]{0,1}", route)
-        nr = {
-            "name": _("%(user)s on %(host)s") % {"user": res[2], "host": res[4]},
-            "protocol": res[1],
-            "username": res[2],
-            "password": res[3],
-            "host": res[4],
-            "port": res[5]
-        }
-        return nr
+        if route.startswith('|'):
+            command = route[1:].strip()
+            return {
+                "name": command.split()[0],
+                "protocol": "local",
+                "command": command
+            }
+        else:
+            res = re.split(
+                "([\w]+)://([^:]+):([^@]+)@([\w\d.]+):([\d]+)[/]{0,1}", route)
+            return {
+                "name": _("%(user)s on %(host)s"
+                          ) % {"user": res[2], "host": res[4]},
+                "protocol": res[1],
+                "username": res[2],
+                "password": res[3],
+                "host": res[4],
+                "port": res[5]
+            }
+
+    def make_route_name(route_dict):
+        # This will always return the same hash, no matter how Python
+        # decides to order the dict internally.
+        return md5_hex(str(sorted(list(route_dict.iteritems()))))[:8]
 
     if 'default_route' in session.config.prefs:
         route_dict = route_parse(session.config.prefs.default_route)
-        route_name = md5_hex(str(route_dict))[:8]
+        route_name = make_route_name(route_dict)
+        session.config.routes[route_name] = route_dict
         session.config.prefs.default_messageroute = route_name
 
     for profile in session.config.profiles:
         if 'route' in profile:
             route_dict = route_parse(profile.route)
-            route_name = md5_hex(str(route_dict))[:8]
+            route_name = make_route_name(route_dict)
             session.config.routes[route_name] = route_dict
             profile.messageroute = route_name
 
@@ -61,7 +76,8 @@ class Migrate(Command):
             else:
                 err += 1
 
-        return self._success(_('Performed %d migrations, failed %d.') % (cnt, err))
+        return self._success(_('Performed %d migrations, failed %d.'
+                               ) % (cnt, err))
 
 
 _plugins.register_commands(Migrate)

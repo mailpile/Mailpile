@@ -160,17 +160,18 @@ def _SlashSlugCheck(slug):
     return _SlugCheck(slug, allow='/')
 
 
-def _MailProtocolCheck(proto):
+def _RouteProtocolCheck(proto):
     """
     Verify that the protocol is actually a protocol.
-    (Should reference a list of registered protocols...)
+    (FIXME: Should reference a list of registered protocols...)
 
-    >>> _MailProtocolCheck('smtp')
+    >>> _RouteProtocolCheck('SMTP')
     'smtp'
     """
-    if not unicode(proto) == "smtp":
+    proto = str(proto).strip().lower()
+    if proto not in ("smtp", "smtptls", "smtpssl", "local"):
         raise ValueError(_('Invalid message delivery protocol: %s') % proto)
-    return proto.lower()
+    return proto
 
 
 def _HostNameCheck(host):
@@ -315,7 +316,7 @@ def RuledContainer(pcls):
             'int': int,
             'long': long,
             'multiline': unicode,
-            'mailprotocol': _MailProtocolCheck,  # FIXME: Make more strict
+            'routeprotocol': _RouteProtocolCheck,
             'new file': _NewPathCheck,
             'new dir': _NewPathCheck,
             'new directory': _NewPathCheck,

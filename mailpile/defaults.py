@@ -83,11 +83,12 @@ CONFIG_RULES = {
     }, []],
     'routes': [_('Outgoing message routes'), {
         'name':            (_('Route name'), str, ''),
-        'protocol':        (_('Messaging protocol'), 'mailprotocol', 'smtp'),
+        'protocol':        (_('Messaging protocol'), 'routeprotocol', 'smtp'),
         'username':        (_('User name'), str, ''),
         'password':        (_('Password'), str, ''),
+        'command':         (_('Shell command'), str, ''),
         'host':            (_('Host'), str, ''),
-        'port':            (_('Port'), int, 993)
+        'port':            (_('Port'), int, 587)
     }, {}]
 }
 
