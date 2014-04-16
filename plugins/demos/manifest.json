@@ -37,6 +37,7 @@
         #       type (filename part) is specified in the URL, HTML is assumed.
         #
         "/md5sum/": {"file": "md5sum.html", "api": 0},
+        "/md5sum/wordy.html": {"file": "md5sum-wordy.html", "api": 0},
         "/api/0/md5sum/as.xml": {"file": "md5sum.xml"},
         "/search/demos.html": {"file": "search.html", "api": 0},
 
@@ -62,9 +63,16 @@
     # These are our Python-related hooks
     "commands": [
         {
+            # Native API commands (controllers)
             "class": "md5sumCommand",
             "url": "md5sum",
             "name": "md5sum"
+        },
+        {
+            # Data views provide alternate data representations
+            "class": "md5sumWordyView",
+            "input": "md5sum",
+            "name": "wordy"
         }
     ],
     "contacts": {

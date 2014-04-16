@@ -86,7 +86,7 @@ def TickJob(session):
     session.ui.notify('Tick!')
 
 
-##[ Pluggable commands ]######################################################
+##[ Pluggable commands and data views ]#######################################
 
 from mailpile.commands import Command
 from mailpile.util import md5_hex
@@ -103,7 +103,7 @@ class md5sumCommand(Command):
 
     def command(self):
         if 'data' in self.data:
-            data = self.data['data']
+            data = self.data['data'][0]
         else:
             data = ''.join(self.args)
 
@@ -115,3 +115,10 @@ class md5sumCommand(Command):
 
         return self._success(_('I hashed your data for you, yay!'),
                              result=md5_hex(data))
+
+
+class md5sumWordyView(md5sumCommand):
+    """Represent MD5 sums in a more wordy way."""
+    @classmethod
+    def view(cls, result):
+        return 'MD5:%s' % result

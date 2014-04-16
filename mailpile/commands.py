@@ -270,7 +270,7 @@ class Command:
         ui_message = _('%s: %s') % (self.name, message)
         self.session.ui.mark(ui_message)
 
-        return result
+        return self.view(result)
 
     def _read_file_or_data(self, fn):
         if fn in self.data:
@@ -377,6 +377,10 @@ class Command:
 
     def command(self):
         return None
+
+    @classmethod
+    def view(cls, result):
+        return result
 
 
 ##[ Shared basic Search Result class]#########################################

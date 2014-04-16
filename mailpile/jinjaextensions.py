@@ -12,6 +12,7 @@ from jinja2.utils import contextfunction, import_string, Markup
 from mailpile.commands import Action
 from mailpile.util import *
 from mailpile.ui import HttpUserInteraction
+from mailpile.urlmap import UrlMap
 from mailpile.plugins import get_activities, get_selection_actions
 from mailpile.plugins import get_display_actions, get_display_modes
 from mailpile.plugins import get_assets, get_body_blocks
@@ -26,6 +27,7 @@ class MailpileCommand(Extension):
         self.env = environment
         environment.globals['mailpile'] = self._command
         environment.globals['mailpile_render'] = self._command_render
+        environment.globals['use_data_view'] = self._use_data_view
         environment.globals['regex_replace'] = self._regex_replace
         environment.filters['regex_replace'] = self._regex_replace
         environment.globals['friendly_bytes'] = self._friendly_bytes
@@ -92,6 +94,10 @@ class MailpileCommand(Extension):
             return ui.render_response(config)
         finally:
             self.env.session.ui = old_ui
+
+    def _use_data_view(self, view_name, result):
+        dv = UrlMap(self.env.session).map(None, 'GET', view_name, {}, {})[-1]
+        return dv.view(result)
 
     def _regex_replace(self, s, find, replace):
         """A non-optimal implementation of a regex filter"""

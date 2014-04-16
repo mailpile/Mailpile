@@ -233,12 +233,17 @@ class PluginManager(object):
         # Register commands
         for command in manifest_path('commands'):
             cls = self._get_class(full_name, command['class'])
-            # FIXME: This is a bit hacky, we probably just want to kill
-            #        the SYNOPSIS attribute entirely.
-            cls.SYNOPSIS = tuple([cls.SYNOPSIS[0],
-                                  command.get('name', cls.SYNOPSIS[1]),
-                                  command.get('url', cls.SYNOPSIS[2]),
+
+            # FIXME: This is all a bit hacky, we probably just want to
+            #        kill the SYNOPSIS attribute entirely.
+            if 'input' in command:
+                name = url = '%s/%s' % (command['input'], command['name'])
+            else:
+                name = command.get('name', cls.SYNOPSIS[1])
+                url = command.get('url', cls.SYNOPSIS[2])
+            cls.SYNOPSIS = tuple([cls.SYNOPSIS[0], name, url,
                                   cls.SYNOPSIS_ARGS or cls.SYNOPSIS[3]])
+
             self.register_commands(cls)
 
     def _process_manifest_pass_two(self, full_name,
