@@ -238,6 +238,7 @@ class PluginManager(object):
             #        kill the SYNOPSIS attribute entirely.
             if 'input' in command:
                 name = url = '%s/%s' % (command['input'], command['name'])
+                cls.UI_CONTEXT = command['input']
             else:
                 name = command.get('name', cls.SYNOPSIS[1])
                 url = command.get('url', cls.SYNOPSIS[2])
@@ -338,16 +339,13 @@ class PluginManager(object):
         for info in manifest_path('periodic_jobs', 'slow'):
             reg_job(info, 'slow', self.register_slow_periodic_job)
 
-        for activity in manifest.get('activities', []):
-            setup = activity.get('setup')
-            if not setup.startswith('mailpile.'):
-                setup = '%s.%s' % (full_name, setup)
-            self.register_activity(activity['name'],
-                                   activity.get('text', ''),
-                                   activity.get('icon', '?'),
-                                   activity.get('description', ''),
-                                   activity.get('url', ''),
-                                   setup)
+        for ui_type, elems in manifest.get('user_interface', {}).iteritems():
+            for hook in elems:
+                if 'javascript_setup' in hook:
+                    js = hook['javascript_setup']
+                    if not js.startswith('mailpile.'):
+                       hook['javascript_setup'] = '%s.%s' % (full_name, js)
+                self.register_ui_element(ui_type, **hook)
 
     def _compat_check(self, strict=True):
         if ((strict and (not self.loading_plugin and not self.builtin)) or
@@ -583,122 +581,37 @@ class PluginManager(object):
 
     ##[ Pluggable UI elements ]###############################################
 
-    DEFAULT_UICLASSES = ["base", "search", "thread", "contact", "tag"]
-    UICLASSES = []
-    DISPLAY_MODES = {}
-    DISPLAY_ACTIONS = {}
-    SELECTION_ACTIONS = {}
-    ASSETS = {"javascript": [], "stylesheet": [], "content-view_block": []}
-    BODY_BLOCKS = {}
-    ACTIVITIES = []
+    # These are the elements that exist at the moment
+    UI_ELEMENTS = {
+        'activities': [],
+        'display_modes': [],
+        'display_refiners': [],
+        'selection_actions': []
+    }
 
-    def _register_builtin_uiclasses(self):
-        self._compat_check()
-        for cl in self.DEFAULT_UICLASSES:
-            self.register_uiclass(cl)
-
-    def register_uiclass(self, uiclass):
-        self._compat_check()
-        if uiclass not in self.UICLASSES:
-            self.UICLASSES.append(uiclass)
-            self.DISPLAY_ACTIONS[uiclass] = []
-            self.DISPLAY_MODES[uiclass] = []
-            self.SELECTION_ACTIONS[uiclass] = []
-            self.BODY_BLOCKS[uiclass] = []
-
-    def register_activity(self, name, text, icon, desc, url, setup):
-        self._compat_check()
-        if name not in [x["name"] for x in self.ACTIVITIES]:
-            self.ACTIVITIES.append({
+    def register_ui_element(self, ui_type,
+                            context=None, name=None,
+                            text=None, icon=None, description=None,
+                            url=None, javascript_setup=None):
+        if name not in [e.get('name') for e in self.UI_ELEMENTS[ui_type]]:
+            # FIXME: Is context valid?
+            self.UI_ELEMENTS[ui_type].append({
+                "context": context or [],
                 "name": name,
                 "text": text,
                 "icon": icon,
-                "description": desc,
-                "setup": setup,
+                "description": description,
+                "javascript_setup": javascript_setup,
                 "url": url
             })
+        else:
+            raise ValueError('Duplicate element: %s' % name)
 
-    def register_display_mode(self, uiclass, name, jsaction, text,
-                              url="#", icon=None):
-        self._compat_check()
-        assert(uiclass in self.DISPLAY_MODES)
-        if name not in [x["name"] for x in self.DISPLAY_MODES[uiclass]]:
-            self.DISPLAY_MODES[uiclass].append({
-                "name": name,
-                "jsaction": jsaction,
-                "url": url,
-                "text": text,
-                "icon": icon
-            })
-
-    def register_display_action(self, uiclass, name, jsaction, text,
-                                url="#", icon=None):
-        self._compat_check()
-        assert(uiclass in self.DISPLAY_ACTIONS)
-        if name not in [x["name"] for x in self.DISPLAY_ACTIONS[uiclass]]:
-            self.DISPLAY_ACTIONS[uiclass].append({
-                "name": name,
-                "jsaction": jsaction,
-                "url": url,
-                "text": text,
-                "icon": icon
-            })
-
-    def register_selection_action(self, uiclass, name, jsaction, text,
-                                  url="#", icon=None):
-        self._compat_check()
-        assert(uiclass in self.SELECTION_ACTIONS)
-        if name not in [x["name"] for x in self.SELECTION_ACTIONS[uiclass]]:
-            self.SELECTION_ACTIONS[uiclass].append({
-                "name": name,
-                "jsaction": jsaction,
-                "url": url,
-                "text": text,
-                "icon": icon
-            })
-
-    def register_asset(self, assettype, name):
-        self._compat_check()
-        assert(assettype in self.ASSETS)
-        if name not in self.ASSETS[assettype]:
-            self.ASSETS[assettype].append(name)
-
-    def get_assets(self, assettype):
-        self._compat_check(strict=False)
-        assert(assettype in self.ASSETS)
-        return self.ASSETS[assettype]
-
-    def register_body_block(self, uiclass, name):
-        self._compat_check()
-        assert(uiclass in self.UICLASSES)
-        if name not in self.BODY_BLOCKS[uiclass]:
-            self.BODY_BLOCKS[uiclass].append(name)
-
-    def get_body_blocks(self, uiclass):
-        self._compat_check(strict=False)
-        assert(uiclass in self.UICLASSES)
-        return self.BODY_BLOCKS[uiclass]
-
-    def get_activities(self):
-        self._compat_check(strict=False)
-        return self.ACTIVITIES
-
-    def get_selection_actions(self, uiclass):
-        self._compat_check(strict=False)
-        return self.SELECTION_ACTIONS[uiclass]
-
-    def get_display_actions(self, uiclass):
-        self._compat_check(strict=False)
-        return self.DISPLAY_ACTIONS[uiclass]
-
-    def get_display_modes(self, uiclass):
-        self._compat_check(strict=False)
-        return self.DISPLAY_MODES[uiclass]
-
-
-##[ Initial global setup ]###################################################
-
-PluginManager(builtin=True)._register_builtin_uiclasses()
+    def get_ui_elements(self, ui_type, context):
+        # FIXME: This is a bit inefficient.
+        #        The good thing is, it maintains a stable order.
+        return [elem for elem in self.UI_ELEMENTS[ui_type]
+                if context in elem['context']]
 
 
 ##[ Backwards compatibility ]################################################
@@ -725,15 +638,3 @@ register_fast_periodic_job = _default_pm.register_fast_periodic_job
 register_slow_periodic_job = _default_pm.register_slow_periodic_job
 register_worker = _default_pm.register_worker
 register_commands = _default_pm.register_commands
-register_display_mode = _default_pm.register_display_mode
-register_display_action = _default_pm.register_display_action
-register_selection_action = _default_pm.register_selection_action
-register_activity = _default_pm.register_activity
-register_asset = _default_pm.register_asset
-get_assets = _default_pm.get_assets
-register_body_block = _default_pm.register_body_block
-get_body_blocks = _default_pm.get_body_blocks
-get_activities = _default_pm.get_activities
-get_selection_actions = _default_pm.get_selection_actions
-get_display_actions = _default_pm.get_display_actions
-get_display_modes = _default_pm.get_display_modes

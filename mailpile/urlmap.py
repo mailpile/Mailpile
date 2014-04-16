@@ -449,6 +449,18 @@ class UrlMap:
             prefix = '/search/'
         return self._url(prefix, output, 'q=' + quote(' '.join(search_terms)))
 
+    @classmethod
+    def canonical_url(self, cls):
+        """Return the full versioned URL for a command"""
+        return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
+                                cls.SYNOPSIS[2])
+
+    @classmethod
+    def context_url(self, cls):
+        """Return the full versioned context URL for a command"""
+        return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
+                                cls.UI_CONTEXT or cls.SYNOPSIS[2])
+
     def map_as_markdown(self):
         """Describe the current URL map as markdown"""
 
@@ -496,7 +508,8 @@ class UrlMap:
                     pos_args = '%s%s/' % (padding, pos_args)
                     if qs:
                         qs = newline + qs
-                text.append('    %s/%s/%s%s' % (api, command[0], pos_args, qs))
+                text.append('    %s%s%s' % (self.canonical_url(command[1]),
+                                            pos_args, qs))
                 if cls.HTTP_POST_VARS:
                     ps = '&'.join(['%s=[%s]' % (v, cls.HTTP_POST_VARS[v])
                                    for v in cls.HTTP_POST_VARS])

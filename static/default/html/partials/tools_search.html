@@ -11,13 +11,13 @@
         <li role="presentation"><a class="change-view-size" data-view_size="fluffy" href="#">{{_("Detailed")}}</a></li>
       </ul>
     </li>
-	{% for mode in get_display_actions("search") %}
+	{% for mode in get_ui_elements('activities', '/api/0/search/') %}
 		<li id="display-{{mode.name}}"><a href="{{mode.url}}" onclick="{{mode.jsaction}}">{% if mode.icon %}<span class="navigation-icon icon-{{mode.icon}}" title="{{mode.text}}"></span>{% else %}{{mode.text}}{% endif %}</a></li>
 	{% endfor %}    
   </ul>  
 	<ul class="right horizontal">
     <li id="btn-display-list" class="navigation-on"><a href="#" onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span></a></li>
-	{% for mode in get_display_modes("search") %}
+	{% for mode in get_ui_elements('display_modes', '/api/0/search/') %}
 	<li id="btn-display-{{mode.name}}"><a href="{{mode.url}}" onclick="{{mode.jsaction}}">{% if mode.icon %}<span class="navigation-icon icon-{{mode.icon}}" title="{{mode.text}}"></span>{% else %}{{mode.text}}{% endif %}</a></li>
 	{% endfor %}
   </ul>

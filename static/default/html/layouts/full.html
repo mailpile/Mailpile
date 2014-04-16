@@ -18,8 +18,6 @@
 ---------------------------------------------------------------------------- -->
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <link rel="stylesheet" href="/static/css/default.css" />
-  {% for asset in get_assets("stylesheet") %}<link rel="stylesheet" href="{{asset}}"/>
-  {% endfor %}
   <!--[if lt IE 9]>
     <script src="/static/js/html5.js"></script>
   <![endif]-->
@@ -159,7 +157,7 @@
         <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
         <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
         <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}" alt="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
-        {%- for a in get_activities() -%}
+        {%- for a in get_ui_elements('activities', '/') -%}
         <li><a href="{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src='{{ a.icon }}'></a></li>
         {%- endfor -%}
       </ul>
@@ -252,11 +250,12 @@
     {% include("partials/tools_settings.html") %}
   {% elif command == "view" %}
     {% include("partials/tools_message.html") %}
+  {% else %}
+    {% include("partials/tools_default.html") %}
   {% endif %}
   {% endif %}
   </div>
   <div id="content-view">
-    {% for asset in get_assets("content-view_block") %}{% include(asset) %}{% endfor %}
     {% block content %}{{results}}{% endblock %}
   </div>
 </div>
@@ -317,8 +316,8 @@ $('#pile-results').hide();
 <script src="/static/js/app/settings.js"></script>
 <script>
 $(document).ready(function(){
-{% for a in get_activities() %}{% if a.setup %}
-    $(".plugin-activity-{{ a.name }}").each(function(){ new_{{ a.setup }}(this) });
+{% for a in get_ui_elements('activities', '/') %}{% if a.javascript_setup %}
+    $(".plugin-activity-{{ a.name }}").each(function(){ new_{{ a.javascript_setup }}(this) });
 {% endif %}{% endfor %}
 });
 </script>

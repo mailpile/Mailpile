@@ -29,7 +29,9 @@ class Command:
                 None,    # API endpoint, e.g. sys/addmailbox
                 None)    # Positional argument list
     SYNOPSIS_ARGS = None # New-style positional argument list
-    EXAMPLES = None
+    API_VERSION = None
+    UI_CONTEXT = None
+
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
     SERIALIZE = False
@@ -89,8 +91,11 @@ class Command:
         __unicode__ = lambda self: self.as_text()
 
         def as_dict(self):
+            from mailpile.urlmap import UrlMap
             rv = {
                 'command': self.command_name,
+                'command_url': UrlMap.canonical_url(self.command_obj),
+                'context_url': UrlMap.context_url(self.command_obj),
                 'status': self.status,
                 'message': self.message,
                 'result': self.result,
@@ -1278,8 +1283,7 @@ class Help(Command):
                     return self._success(_('Displayed help'), result={
                         'pre': cls.__doc__,
                         'commands': cmd_list,
-                        'width': width,
-                        'post': cls.EXAMPLES
+                        'width': width
                     })
             return self._error(_('Unknown command'))
 

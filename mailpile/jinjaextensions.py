@@ -13,9 +13,7 @@ from mailpile.commands import Action
 from mailpile.util import *
 from mailpile.ui import HttpUserInteraction
 from mailpile.urlmap import UrlMap
-from mailpile.plugins import get_activities, get_selection_actions
-from mailpile.plugins import get_display_actions, get_display_modes
-from mailpile.plugins import get_assets, get_body_blocks
+from mailpile.plugins import PluginManager
 
 
 class MailpileCommand(Extension):
@@ -62,12 +60,7 @@ class MailpileCommand(Extension):
         environment.filters['friendly_time'] = friendly_time
 
         # See plugins/__init__.py for these functions:
-        environment.globals['get_activities'] = get_activities
-        environment.globals['get_selection_actions'] = get_selection_actions
-        environment.globals['get_display_actions'] = get_display_actions
-        environment.globals['get_display_modes'] = get_display_modes
-        environment.globals['get_assets'] = get_assets
-        environment.globals['get_body_blocks'] = get_body_blocks
+        environment.globals['get_ui_elements'] = self._get_ui_elements
 
         # This is a worse versin of urlencode, but without it we require
         # Jinja 2.7, which isn't apt-get installable.
@@ -98,6 +91,9 @@ class MailpileCommand(Extension):
     def _use_data_view(self, view_name, result):
         dv = UrlMap(self.env.session).map(None, 'GET', view_name, {}, {})[-1]
         return dv.view(result)
+
+    def _get_ui_elements(self, ui_type, context='/'):
+        return PluginManager().get_ui_elements(ui_type, context)
 
     def _regex_replace(self, s, find, replace):
         """A non-optimal implementation of a regex filter"""

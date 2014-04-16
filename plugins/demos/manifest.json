@@ -60,6 +60,46 @@
         }
     },
 
+    # This section tells the current Mailpile theme where and how to make
+    # this plugin visible in the user interface.
+    # Most of these will only be applicable in one (or rarely more) contexts,
+    # which is communicated by listing API endpoints as versioned URLs.
+    "user_interface": {
+        # These are stand-alone activities
+        "activities": [
+            {
+                "context": ["/"],
+                "name": "demo",
+                "text": "Demo",
+                "icon": "/static/img/demos.png",
+                "description": "Demonstrate the pluggable activities",
+                "javascript_setup": "activity_setup",
+                "url": "#could-be-a-fallback"
+            }
+        ],
+        # These are different ways to render some data
+        "display_modes": [
+            {
+                "context": ["/api/0/md5sum/"],
+                "name": "md5sum",
+                "text": "Default",
+                "description": "Default MD5 sum view",
+                "url": "/md5sum/"
+            },
+            {
+                "context": ["/api/0/md5sum/"],
+                "name": "md5sum/wordy",
+                "text": "Wordy",
+                "description": "Wordy MD5 sum view",
+                "url": "/md5sum/wordy.html"
+            }
+        ],
+        # These are ways to refine a certain view (e.g. a search)
+        "display_refiners": [],
+        # Actions that can be performed on selected items
+        "selection_actions": []
+    },
+
     # These are our Python-related hooks
     "commands": [
         {
@@ -94,19 +134,5 @@
     },
     "threads": [
         "MyWorker"
-    ],
-
-    "activities": [
-        {
-            "name": "demo",
-            "text": "Demo",
-            "icon": "/static/img/demos.png",
-            "description": "Demonstrate the pluggable activities",
-            "setup": "activity_setup",
-            "url": "#could-be-a-fallback"
-        }
-    ],
-    "display_modes": [],
-    "display_actions": [],
-    "selection_actions": []
+    ]
 }
