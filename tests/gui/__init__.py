@@ -225,14 +225,15 @@ class MailpileSeleniumTest(MailPileUnittest):
 
     def click_element_with_link_text(self, text):
         try:
-            e = self.driver.find_element_by_link_text(text)
-            e.click()
+            self.driver.find_element_by_link_text(text).click()
         except NoSuchElementException:
             raise AssertionError
 
     def click_element_with_id(self, element_id):
-        e = self.driver.find_element_by_id(element_id)
-        e.click()
+        self.driver.find_element_by_id(element_id).click()
+
+    def click_element_with_class(self, class_name):
+        self.driver.find_element_by_class_name(class_name).click()
 
     def page_title(self):
         return self.driver.title
