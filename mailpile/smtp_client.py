@@ -60,13 +60,18 @@ def _RouteTuples(session, from_to_msg_ev_tuples):
                 route = {"protocol": "", 
                          "username": "", 
                          "password": "", 
+                         "command": "",
                          "host": "", 
                          "port": 25
                         }
                 route.update(session.config.get_sendmail(frm, [recipient]))
-                txtroute = "%(protocol)s://%(username)s:%(password)s@" \
-                         + "%(host)s:%(port)d"
-                txtroute %= route
+                if route["command"]:
+                    txtroute = "|%(command)s" % route
+                else:
+                    txtroute = "%(protocol)s://%(username)s:%(password)s@" \
+                             + "%(host)s:%(port)d"
+                    txtroute %= route
+
                 dest[txtroute] = dest.get(txtroute, [])
                 dest[txtroute].append(recipient)
         for route in dest:
