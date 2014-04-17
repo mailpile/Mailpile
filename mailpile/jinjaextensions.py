@@ -102,6 +102,12 @@ class MailpileCommand(Extension):
             if elem.get('javascript_setup'):
                 setups.append('$("%s").each(function(){%s(this);});'
                               % (classfmt % elem, elem['javascript_setup']))
+            if elem.get('javascript_events'):
+                print "There be events!"
+                for event, call in elem.get('javascript_events').iteritems():
+                    print event, call
+                    setups.append('$("%s").bind("%s", %s);' % 
+                        (classfmt % elem, event, call))
         return Markup("function(){%s}" % ''.join(setups))
 
     def _regex_replace(self, s, find, replace):

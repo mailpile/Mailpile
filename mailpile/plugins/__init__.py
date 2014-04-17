@@ -347,6 +347,11 @@ class PluginManager(object):
                        # FIXME: Remove the new_ once namespaces have been
                        #        cleaned up a bit.
                        hook['javascript_setup'] = 'new_%s.%s' % (full_name, js)
+                if 'javascript_events' in hook:
+                    for event, call in hook['javascript_events'].iteritems():
+                        if not call.startswith('mailpile.'):
+                            hook['javascript_events'][event] = 'new_%s.%s' \
+                                % (full_name, call)
                 self.register_ui_element(ui_type, **hook)
 
     def _compat_check(self, strict=True):
@@ -594,7 +599,8 @@ class PluginManager(object):
     def register_ui_element(self, ui_type,
                             context=None, name=None,
                             text=None, icon=None, description=None,
-                            url=None, javascript_setup=None):
+                            url=None, javascript_setup=None, 
+                            javascript_events=None):
         name = name.replace('/', '_')
         if name not in [e.get('name') for e in self.UI_ELEMENTS[ui_type]]:
             # FIXME: Is context valid?
@@ -605,6 +611,7 @@ class PluginManager(object):
                 "icon": icon,
                 "description": description,
                 "javascript_setup": javascript_setup,
+                "javascript_events": javascript_events,
                 "url": url
             })
         else:
