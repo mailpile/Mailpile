@@ -14,5 +14,19 @@ return {
            plugins could set up event listeners and update the element
            itself based on other app activities. */
         $(element).click(new_mailpile.plugins.demos.activity_click);
+    },
+    earthquake: function(element) {
+      $(".boxy").animate({"margin-right": 5}, 40)
+                .animate({"margin-right": -5}, 40)
+                .animate({"margin-right": 5}, 40)
+                .animate({"margin-right": -5}, 40)
+                .animate({"margin-right": 5}, 40)
+                .animate({"margin-right": -5}, 40)
+                .animate({"margin-right": 5}, 40)
+                .animate({"margin-right": -5}, 40)
+                .animate({"margin-right": 5}, 40)
+                .animate({"margin-right": -5}, 40)
+                .animate({"margin-right": 5}, 40)
+                .animate({"margin-right": -5}, 40);
     }
 };

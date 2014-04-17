@@ -83,7 +83,10 @@
                 "description": "This is a useless button",
                 "url": "#useless",
                 "icon": "/static/img/demos.png",
-                "javascript_setup": "activity_setup"
+                "javascript_setup": "activity_setup",
+                "javascript_events": {
+                    "mouseover": "earthquake"
+                }
             }
         ],
         # These are different ways to render some data
