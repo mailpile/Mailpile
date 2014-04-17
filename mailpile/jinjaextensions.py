@@ -62,7 +62,7 @@ class MailpileCommand(Extension):
         # These are helpers for injecting plugin elements
         environment.globals['get_ui_elements'] = self._get_ui_elements
         environment.globals['ui_elements_setup'] = self._ui_elements_setup
-        environment.globals['update_ui_urls'] = self._update_ui_urls
+        environment.filters['add_state_query_string'] = self._add_state_query_string
 
         # This is a worse versin of urlencode, but without it we require
         # Jinja 2.7, which isn't apt-get installable.
@@ -100,21 +100,20 @@ class MailpileCommand(Extension):
         ctx = context or state.get('context_url', '')
         return copy.deepcopy(PluginManager().get_ui_elements(ui_type, ctx))
 
-    def _update_ui_urls(self, state, elements):
-        for elem in elements:
-            # If we have an explicit context, don't mess with the URLs
-            if ('url' in elem) and ('?' not in elem['url']):
-                args = []
-                for key, values in state.get('query_args', {}).iteritems():
-                    if key.startswith('_'):
-                        continue
-                    for rk, rv in elem.get('url_args_remove', []):
-                        if rk == key:
-                            values = [v for v in values if v != rv]
-                    args.extend([(key, v) for v in values])
-                args.extend(elem.get('url_args_add', []))
-                elem['url'] += '?' + urllib.urlencode(args)
-        return elements
+    def _add_state_query_string(self, url, state, elem=None):
+        args = []
+        for key, values in state.get('query_args', {}).iteritems():
+            if key.startswith('_'):
+                continue
+            if elem:
+                for rk, rv in elem.get('url_args_remove', []):
+                    if rk == key:
+                        values = [v for v in values if v != rv]
+            args.extend([(key, v) for v in values])
+        if elem:
+            args[:0] = [tuple(p) for p in elem.get('url_args_add', [])]
+        print 'args: %s' % args
+        return url + '?' + urllib.urlencode(args)
 
     def _ui_elements_setup(self, classfmt, elements):
         setups = []

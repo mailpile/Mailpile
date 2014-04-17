@@ -18,7 +18,7 @@
     <li class="hide"><a class="bulk-action-add-to-group" href="#" title="' + _("Add to Group") + '"><span class="icon-groups"></span></a></li>
     <li class="hide"><a class="bulk-action-trash" href="#" title="' + _("Delete Messages") + '"><span class="icon icon-trash"></span></a></li>
 ') -%}
-{%- set activities = [{
+{%- set display_refiners = [{
     'name': 'display_all',
     'icon': 'inbox',
     'url': '/search/',
@@ -45,10 +45,10 @@
 -%}
 {%- set display_modes = [{
     'name': 'display_list',
-    'icon': 'inbox',
+    'icon': 'list',
     'url': '/search/',
-    'text': _("Default"),
-    'description': _("Default view")
+    'text': _("List"),
+    'description': _("List view")
 }]
 -%}
 {%- include('partials/tools_default.html') -%}
