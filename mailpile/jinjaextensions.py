@@ -84,7 +84,7 @@ class MailpileCommand(Extension):
         old_ui, config = self.env.session.ui, self.env.session.config
         try:
             ui = self.env.session.ui = HttpUserInteraction(None, config)
-            ui.html_variables = copy.copy(old_ui.html_variables)
+            ui.html_variables = copy.deepcopy(old_ui.html_variables)
             ui.render_mode = how
             ui.display_result(Action(self.env.session, command, args,
                                      data=kwargs))
@@ -98,7 +98,7 @@ class MailpileCommand(Extension):
 
     def _get_ui_elements(self, ui_type, state, context=None):
         ctx = context or state.get('context_url', '')
-        return copy.copy(PluginManager().get_ui_elements(ui_type, ctx))
+        return copy.deepcopy(PluginManager().get_ui_elements(ui_type, ctx))
 
     def _update_ui_urls(self, state, elements):
         for elem in elements:
