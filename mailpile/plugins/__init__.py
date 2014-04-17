@@ -192,8 +192,8 @@ class PluginManager(object):
                 try:
                     if spec[0] not in failed:
                         process(*spec)
-                except:
-                    print 'Failed to process manifest for %s' % spec[0]
+                except Exception, e:
+                    print 'Failed to process manifest for %s: %s' % (spec[0], e)
                     failed.append(spec[0])
                     traceback.print_exc()
         return self
