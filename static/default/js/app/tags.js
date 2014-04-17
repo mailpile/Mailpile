@@ -85,26 +85,18 @@ MailPile.prototype.render_modal_tags = function() {
   }
 };
 
-/* This is what happens when the Add Tag button is clicked */
-MailPile.prototype.click_tag_add = function(e) {
+/* Show Tag Add Form */
+$(document).on('click', '.btn-activity-tag_add', function(e) {
   e.preventDefault();
   $('#tags-list').hide();
   $('#tags-archived-list').hide();
   $('#tag-add').show();
 
   $('.sub-navigation ul li').removeClass('navigation-on');
-  $(this).parent().addClass('navigation-on');
+  $(this).addClass('navigation-on');
   
   $('#data-tag-add-slug').slugify('#data-tag-add-tag');
-};
-
-/* Setup function for the Tag Add button, just register a click handler */
-MailPile.prototype.setup_tag_add = function(e) {
-  $(e).click(MailPile.prototype.click_tag_add);
-};
-
-/* Show Tag Add Form */
-$(document).on('click', '#button-tag-add', MailPile.prototype.click_tag_add);
+});
 
 
 /* API - Tag Add */

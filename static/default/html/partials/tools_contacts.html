@@ -1,3 +1,21 @@
+{%- set activities = [{
+    'name': 'contact_list',
+    'url': '/contact/list/',
+    'text': _("Contacts"),
+    'description': _("View your contacts"),
+    'icon': 'user'
+},{
+    'name': 'contact_add',
+    'url': '#contact-add',
+    'text': _("Add Contact"),
+    'description': _("Add a new contact"),
+    'icon': 'plus'
+}] -%}
+{%- include('partials/tools_default.html') -%}
+
+
+{#- ######## OLD STUFF #######
+
 <nav class="sub-navigation clearfix">
 	<ul class="left horizontal">
     <li {% if command == "contact/list" %} class="navigation-on" {% endif %}><a id="button-contact-list" data-filter="all" href="/contact/list/"><span class="navigation-icon icon-user"></span><span class="navigation-text">{{_("Contacts")}}</span></a></li>
@@ -14,3 +32,4 @@
   </ul>
 </div>
 -->
+-#}

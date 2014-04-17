@@ -2,7 +2,7 @@
 {%- set display_refiners = (display_refiners or []) + get_ui_elements('display_refiners', context_url) -%}
 {%- set display_modes = (display_modes or []) + get_ui_elements('display_modes', context_url) -%}
 {%- set selection_actions = (selection_actions or []) + get_ui_elements('selection_actions', context_url) -%}
-{% if activities or display_refiners or display_modes %}
+{%- if activities or display_refiners or display_modes %}
 <nav class="sub-navigation clearfix">
   <ul class="left horizontal">
   {%- for elem in activities %}
@@ -13,7 +13,7 @@
         <img class="navigation-icon" src="{{elem.icon}}">
       {%- elif elem.icon -%}
         <span class="navigation-icon icon-{{elem.icon}}"></span>
-      {%- endif %} {{elem.text}}
+      {%- endif %}<span class="navigation-text">{{elem.text}}</span>
       </a>
     </li>
   {%- endfor %}
@@ -26,7 +26,7 @@
         <img class="navigation-icon" src="{{elem.icon}}">
       {%- elif elem.icon -%}
         <span class="navigation-icon icon-{{elem.icon}}"></span>
-      {%- endif %} {{elem.text}}
+      {%- endif %}<span class="navigation-text">{{elem.text}}</span>
       </a>
     </li>
   {%- endfor %}
@@ -41,15 +41,15 @@
         <img class="navigation-icon" src="{{elem.icon}}">
       {%- elif elem.icon -%}
         <span class="navigation-icon icon-{{elem.icon}}"></span>
-      {%- endif %} {{elem.text}}
+      {%- endif %}<span class="navigation-text">{{elem.text}}</span>
       </a>
     </li>
   {%- endfor %}
   {{ setup_ui_elements('display_modes', context_url, '.btn-display-mode-%(name)s', display_modes) }}
   </ul>
 </nav>
-{% endif %}
-{% if selection_actions %}
+{%- endif %}
+{%- if selection_actions %}
 <div class="bulk-actions clearfix">
   <div id="bulk-actions-message" class="left" data-bulk_selected="{{_("Items Selected")}}" data-bulk_selected_none="{{_('Click item or checkbox to select')}}">
     {{_('Click item or checkbox to select')}}
@@ -71,4 +71,4 @@
   </ul>
   {{ setup_ui_elements('selection_actions', context_url, '.btn-selection-action-%(name)s', selection_actions) }}
 </div>
-{% endif %}
+{%- endif %}
