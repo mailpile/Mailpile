@@ -118,6 +118,7 @@ def SendMail(session, from_to_msg_ev_tuples):
         mark(_('Connecting to %s') % sendmail, events)
 
         if sendmail.startswith('|'):
+            sendmail %= {"rcpt": ",".join(to)}
             cmd = sendmail[1:].strip().split()
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
             sm_write = proc.stdin.write
