@@ -102,17 +102,20 @@ class MailpileCommand(Extension):
 
     def _add_state_query_string(self, url, state, elem=None):
         args = []
-        for key, values in state.get('query_args', {}).iteritems():
+        query_args = state.get('query_args', {})
+        for key in sorted(query_args.keys()):
             if key.startswith('_'):
                 continue
+            values = query_args[key]
             if elem:
                 for rk, rv in elem.get('url_args_remove', []):
                     if rk == key:
                         values = [v for v in values if v != rv]
+            if elem:
+                for ak, av in elem.get('url_args_add', []):
+                    if ak == key and av not in values:
+                         values.append(av)
             args.extend([(key, v) for v in values])
-        if elem:
-            args[:0] = [tuple(p) for p in elem.get('url_args_add', [])]
-        print 'args: %s' % args
         return url + '?' + urllib.urlencode(args)
 
     def _ui_elements_setup(self, classfmt, elements):
