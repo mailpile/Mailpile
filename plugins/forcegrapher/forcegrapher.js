@@ -3,36 +3,21 @@
     - Built using D3
 */
 
-// Change Navigation 
-$('#btn-display-graph').addClass('navigation-on');
-$('#btn-display-list').removeClass('navigation-on');
-
-// Show & Hide Pile View
-$('#pile-results').hide('fast', function() {
-    $('#form-pile-results').hide('fast');
-    //$('.pile-speed').hide('fast');
-    //$('#footer').hide('fast');
-    //$('#sidebar').hide('fast');
-    $('#pile-graph').hide().delay(1000).show();
-});
-
-// Determine & Set Height
-var available_height = $(window).height() - ($('#header').height() + $('.sub-navigation').height());
-var available_width = $("#content-view").width();
-
-$('#pile-graph-canvas').height(available_height);
-$('#pile-graph-canvas').width(available_width);
-$("#pile-graph-canvas-svg").attr('height', available_height).height(available_height);
-
-
 return {
     draw: function(graph) {
+        // Determine & Set Height
+        var available_height = $(window).height() - ($('#header').height() + $('.sub-navigation').height());
+        var available_width = $("#content-view").width();
+
+        $('#pile-graph-canvas').height(available_height);
+        $('#pile-graph-canvas').width(available_width);
+        $("#pile-graph-canvas-svg").attr('height', available_height).height(available_height);
+
         var width = available_width;
         var height = available_height;
         var force = d3.layout.force()
                     .charge(-300)
                     .linkDistance(100)
-                    .gravity(0.02)
                     .size([width, height]);
 
         var svg = d3.select("#pile-graph-canvas-svg");
