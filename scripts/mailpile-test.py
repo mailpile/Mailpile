@@ -217,7 +217,8 @@ def test_composition():
     assert(mp.search('tag:blank').result['stats']['count'] == 0)
 
     # First attempt to send should fail & record failure to event log
-    config.profiles['0'].route = '|/no/such/file'
+    config.routes['default'] = {"command": '/no/such/file'}
+    config.profiles['0'].messageroute = 'default'
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
                          'data_mid=%s' % new_mid).result
@@ -226,7 +227,7 @@ def test_composition():
     assert(len(mp.eventlog('incomplete').result) == 1)
 
     # Second attempt should succeed!
-    config.profiles['0'].route = '|%s -i %%(rcpt)s' % mailpile_send
+    config.routes.default.command = '%s -i %%(rcpt)s' % mailpile_send
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
                          'data_mid=%s' % new_mid).result
