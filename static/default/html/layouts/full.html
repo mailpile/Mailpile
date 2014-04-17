@@ -160,6 +160,7 @@
         {%- for a in get_ui_elements('activities', '/') -%}
         <li><a href="{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src='{{ a.icon }}'></a></li>
         {%- endfor -%}
+        {{ setup_ui_elements('activities', '/', '.plugin-activity-%(name)s') }}
       </ul>
     </nav>
   </div>
@@ -314,12 +315,5 @@ $('#pile-results').hide();
 <script src="/static/js/app/contacts.js"></script>
 <script src="/static/js/app/tags.js"></script>
 <script src="/static/js/app/settings.js"></script>
-<script>
-$(document).ready(function(){
-{% for a in get_ui_elements('activities', '/') %}{% if a.javascript_setup %}
-    $(".plugin-activity-{{ a.name }}").each(function(){ new_{{ a.javascript_setup }}(this) });
-{% endif %}{% endfor %}
-});
-</script>
 </body>
 </html>

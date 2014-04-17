@@ -75,6 +75,15 @@
                 "description": "Demonstrate the pluggable activities",
                 "javascript_setup": "activity_setup",
                 "url": "#could-be-a-fallback"
+            },
+            {
+                "context": ["/api/0/tag/list/"],
+                "name": "tag-list-demo-activity",
+                "text": "DEMO",
+                "description": "This is a useless button",
+                "url": "#useless",
+                "icon": "/static/img/demos.png",
+                "javascript_setup": "activity_setup"
             }
         ],
         # These are different ways to render some data
@@ -92,6 +101,15 @@
                 "text": "Wordy",
                 "description": "Wordy MD5 sum view",
                 "url": "/md5sum/wordy.html"
+            },
+            {
+                "context": ["/api/0/tag/list/"],
+                "name": "tag-list-demo-mode",
+                "text": "DEMO",
+                "description": "This is a useless button",
+                "url": "#useless",
+                "icon": "/static/img/demos.png",
+                "javascript_setup": "activity_setup"
             }
         ],
         # These are ways to refine a certain view (e.g. a search)

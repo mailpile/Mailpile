@@ -344,7 +344,9 @@ class PluginManager(object):
                 if 'javascript_setup' in hook:
                     js = hook['javascript_setup']
                     if not js.startswith('mailpile.'):
-                       hook['javascript_setup'] = '%s.%s' % (full_name, js)
+                       # FIXME: Remove the new_ once namespaces have been
+                       #        cleaned up a bit.
+                       hook['javascript_setup'] = 'new_%s.%s' % (full_name, js)
                 self.register_ui_element(ui_type, **hook)
 
     def _compat_check(self, strict=True):
@@ -593,6 +595,7 @@ class PluginManager(object):
                             context=None, name=None,
                             text=None, icon=None, description=None,
                             url=None, javascript_setup=None):
+        name = name.replace('/', '_')
         if name not in [e.get('name') for e in self.UI_ELEMENTS[ui_type]]:
             # FIXME: Is context valid?
             self.UI_ELEMENTS[ui_type].append({

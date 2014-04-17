@@ -1,22 +1,51 @@
-{%- set activities = get_ui_elements('activities', context_url) -%}
-{%- set refiners = get_ui_elements('display_refiners', context_url) -%}
-{%- set display_modes = get_ui_elements('display_modes', context_url) -%}
-{%- set selection_actions = get_ui_elements('selection_actions', context_url) -%}
-<!-- {{ display_modes }} -->
-{%- if activites or refiners or display_modes -%}
+{%- set activities = (activities or []) + get_ui_elements('activities', context_url) -%}
+{%- set display_refiners = (display_refiners or []) + get_ui_elements('display_refiners', context_url) -%}
+{%- set display_modes = (display_modes or []) + get_ui_elements('display_modes', context_url) -%}
+{%- set selection_actions = (selection_actions or []) + get_ui_elements('selection_actions', context_url) -%}
+{% if activities or display_refiners or display_modes %}
 <nav class="sub-navigation clearfix">
   <ul class="left horizontal">
-  {% for elem in activities %}
-    <li id="btn-display-{{elem.name}}"><a href="{{elem.url}}" title="{{elem.description}}">{% if elem.icon %}<img class="navigation-icon" src="{{elem.icon}}" alt="{{elem.text}}">{% else %}{{elem.text}}{% endif %}</a></li>
-  {% endfor %}    
-  {% for elem in refiners %}
-    <li id="btn-display-{{elem.name}}"><a href="{{elem.url}}" title="{{elem.description}}">{% if elem.icon %}<img class="navigation-icon" src="{{elem.icon}}" alt="{{elem.text}}">{% else %}{{elem.text}}{% endif %}</a></li>
-  {% endfor %}    
-  </ul>  
+  {%- for elem in activities %}
+    <li class="btn-activity-{{elem.name}}
+        {%- if command_url == "/api/0" + elem.url %} navigation-on{% endif %}">
+      <a href="{{elem.url}}" title="{{elem.description}}">
+      {%- if elem.icon and '.' in elem.icon -%}
+        <img class="navigation-icon" src="{{elem.icon}}">
+      {%- elif elem.icon -%}
+        <span class="navigation-icon icon-{{elem.icon}}"></span>
+      {%- endif %} {{elem.text}}
+      </a>
+    </li>
+  {%- endfor %}
+  {{ setup_ui_elements('activities', context_url, '.btn-activity-%(name)s', activities) }}
+  {%- for elem in display_refiners %}
+    <li class="btn-display-refiner-{{elem.name}}
+        {%- if command_url == "/api/0" + elem.url %} navigation-on{% endif %}">
+      <a href="{{elem.url}}" title="{{elem.description}}">
+      {%- if elem.icon and '.' in elem.icon -%}
+        <img class="navigation-icon" src="{{elem.icon}}">
+      {%- elif elem.icon -%}
+        <span class="navigation-icon icon-{{elem.icon}}"></span>
+      {%- endif %} {{elem.text}}
+      </a>
+    </li>
+  {%- endfor %}
+  {{ setup_ui_elements('display_refiners', context_url, '.btn-display-refiner-%(name)s', display_refiners) }}
+  </ul>
   <ul class="right horizontal">
-  {% for elem in display_modes %}
-    <li id="btn-display-{{elem.name}}"><a href="{{elem.url}}" title="{{elem.description}}">{% if elem.icon %}<img class="navigation-icon" src="{{elem.icon}}" alt="{{elem.text}}">{% else %}{{elem.text}}{% endif %}</a></li>
-  {% endfor %}
+  {%- for elem in display_modes %}
+    <li class="btn-display-mode-{{elem.name}}
+        {%- if command_url == "/api/0" + elem.url %} navigation-on{% endif %}">
+      <a href="{{elem.url}}" title="{{elem.description}}">
+      {%- if elem.icon and '.' in elem.icon -%}
+        <img class="navigation-icon" src="{{elem.icon}}">
+      {%- elif elem.icon -%}
+        <span class="navigation-icon icon-{{elem.icon}}"></span>
+      {%- endif %} {{elem.text}}
+      </a>
+    </li>
+  {%- endfor %}
+  {{ setup_ui_elements('display_modes', context_url, '.btn-display-mode-%(name)s', display_modes) }}
   </ul>
 </nav>
 {% endif %}
@@ -26,10 +55,20 @@
     {{_('Click item or checkbox to select')}}
   </div>
   <ul class="horizontal right">
-  {% for elem in display_modes %}
-    <li id="btn-display-{{elem.name}}"><a href="{{elem.url}}" title="{{elem.description}}">{% if elem.icon %}<img class="navigation-icon" src="{{elem.icon}}" alt="{{elem.text}}">{% else %}{{elem.text}}{% endif %}</a></li>
-  {% endfor %}
+  {%- for elem in selection_actions %}
+    <li class="btn-selection-action-{{elem.name}}
+        {%- if command_url == "/api/0" + elem.url %} navigation-on{% endif %}">
+      <a href="{{elem.url}}" title="{{elem.description}}">
+      {%- if elem.icon and '.' in elem.icon -%}
+        <img class="navigation-icon" src="{{elem.icon}}" alt="{{elem.text}}">
+      {%- elif elem.icon -%}
+        <span class="navigation-icon icon-{{elem.icon}}"></span>
+      {%- else -%}{{elem.text}}{%- endif -%}
+      </a>
+    </li>
+  {%- endfor %}
     <li><input type="checkbox" id="pile-select-all-action" class="bulk-action-select-all" tabindex="-1"></li>
   </ul>
+  {{ setup_ui_elements('selection_actions', context_url, '.btn-selection-action-%(name)s', selection_actions) }}
 </div>
 {% endif %}
