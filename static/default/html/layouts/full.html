@@ -157,11 +157,12 @@
         <li {% if command == "tag/list" %}class="navigation-on"{% endif %}><a href="/tag/list/" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
         <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
         <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}" alt="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
-        {%- for a in get_ui_elements('activities', '/') -%}
+        {%- for a in get_ui_elements('activities', state, '/') -%}
         <li><a href="{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src='{{ a.icon }}'></a></li>
         {%- endfor -%}<script>
           $(document).ready({{
-            ui_elements_setup('activities', '/', '.plugin-activity-%(name)s')
+            ui_elements_setup('.plugin-activity-%(name)s',
+                              get_ui_elements('activities', state, '/'))
           }});
         </script>
       </ul>

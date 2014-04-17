@@ -77,7 +77,7 @@
                 "url": "#could-be-a-fallback"
             },
             {
-                "context": ["/api/0/tag/list/"],
+                "context": ["/tag/list/"],
                 "name": "tag-list-demo-activity",
                 "text": "DEMO",
                 "description": "This is a useless button",
@@ -92,21 +92,21 @@
         # These are different ways to render some data
         "display_modes": [
             {
-                "context": ["/api/0/md5sum/"],
+                "context": ["/md5sum/"],
                 "name": "md5sum",
                 "text": "Default",
                 "description": "Default MD5 sum view",
                 "url": "/md5sum/"
             },
             {
-                "context": ["/api/0/md5sum/"],
+                "context": ["/md5sum/"],
                 "name": "md5sum/wordy",
                 "text": "Wordy",
                 "description": "Wordy MD5 sum view",
                 "url": "/md5sum/wordy.html"
             },
             {
-                "context": ["/api/0/tag/list/"],
+                "context": ["/tag/list/"],
                 "name": "tag-list-demo-mode",
                 "text": "DEMO",
                 "description": "This is a useless button",

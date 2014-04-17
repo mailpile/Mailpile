@@ -63,6 +63,12 @@ class Search(Command):
             return Command.CommandResult.as_dict(self._fixup(),
                                                  *args, **kwargs)
 
+    def state_as_query_args(self):
+        try:
+            return self._search_state
+        except AttributeError:
+            return Command.state_as_query_args(self)
+
     def _do_search(self, search=None):
         session, idx = self.session, self._idx()
         session.searched = search or []
@@ -104,6 +110,12 @@ class Search(Command):
         session.order = session.order or session.config.prefs.default_order
         session.results = list(idx.search(session, session.searched).as_set())
         idx.sort_results(session, session.results, session.order)
+
+        self._search_state = {
+            'q': [a for a in args if not a.startswith('@')],
+            'start': [a for a in args if a.startswith('@')],
+            'order': [session.order]
+        }
         return session, idx, start, num
 
     def command(self, search=None):

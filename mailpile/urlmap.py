@@ -454,12 +454,15 @@ class UrlMap:
         """Return the full versioned URL for a command"""
         return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
                                 cls.SYNOPSIS[2])
+    @classmethod
+    def ui_url(self, cls):
+        """Return the full user-facing URL for a command"""
+        return '/%s/' % cls.SYNOPSIS[2]
 
     @classmethod
     def context_url(self, cls):
-        """Return the full versioned context URL for a command"""
-        return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
-                                cls.UI_CONTEXT or cls.SYNOPSIS[2])
+        """Return the UI context URL for a command"""
+        return '/%s/' % (cls.UI_CONTEXT or cls.SYNOPSIS[2])
 
     def map_as_markdown(self):
         """Describe the current URL map as markdown"""

@@ -9,7 +9,7 @@
     },
 
     "routes": {
-        "/search/graph.html": {"file": "forcegrapher.html", "api": 0}
+        "/graph/": {"file": "forcegrapher.html", "api": 0}
     },
 
     "config": {},
@@ -25,12 +25,12 @@
     "user_interface": {
         "display_modes": [
             {
-                "context": ["/api/0/search/"],
+                "context": ["/search/"],
                 "name": "graph",
                 "text": "Graph",
                 "description": "Show contact relationships",
                 "icon": "graph",
-                "url": "/search/graph.html"
+                "url": "/graph/"
             }
         ]
     }

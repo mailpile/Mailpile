@@ -62,12 +62,15 @@ class MailpileCommand(Extension):
         # These are helpers for injecting plugin elements
         environment.globals['get_ui_elements'] = self._get_ui_elements
         environment.globals['ui_elements_setup'] = self._ui_elements_setup
+        environment.globals['update_ui_urls'] = self._update_ui_urls
 
         # This is a worse versin of urlencode, but without it we require
         # Jinja 2.7, which isn't apt-get installable.
         environment.globals['urlencode'] = self._urlencode
         environment.filters['urlencode'] = self._urlencode
 
+        # Make a function-version of the safe command
+        environment.globals['safe'] = self._safe
         environment.filters['json'] = self._json
 
     def _command(self, command, *args, **kwargs):
@@ -93,19 +96,34 @@ class MailpileCommand(Extension):
         dv = UrlMap(self.env.session).map(None, 'GET', view_name, {}, {})[-1]
         return dv.view(result)
 
-    def _get_ui_elements(self, ui_type, context='/'):
-        return PluginManager().get_ui_elements(ui_type, context)
+    def _get_ui_elements(self, ui_type, state, context=None):
+        ctx = context or state.get('context_url', '')
+        return copy.copy(PluginManager().get_ui_elements(ui_type, ctx))
 
-    def _ui_elements_setup(self, ui_type, context, classfmt, elements=None):
+    def _update_ui_urls(self, state, elements):
+        for elem in elements:
+            # If we have an explicit context, don't mess with the URLs
+            if ('url' in elem) and ('?' not in elem['url']):
+                args = []
+                for key, values in state.get('query_args', {}).iteritems():
+                    if key.startswith('_'):
+                        continue
+                    for rk, rv in elem.get('url_args_remove', []):
+                        if rk == key:
+                            values = [v for v in values if v != rv]
+                    args.extend([(key, v) for v in values])
+                args.extend(elem.get('url_args_add', []))
+                elem['url'] += '?' + urllib.urlencode(args)
+        return elements
+
+    def _ui_elements_setup(self, classfmt, elements):
         setups = []
-        for elem in (elements or self._get_ui_elements(ui_type, context)):
+        for elem in elements:
             if elem.get('javascript_setup'):
                 setups.append('$("%s").each(function(){%s(this);});'
                               % (classfmt % elem, elem['javascript_setup']))
             if elem.get('javascript_events'):
-                print "There be events!"
                 for event, call in elem.get('javascript_events').iteritems():
-                    print event, call
                     setups.append('$("%s").bind("%s", %s);' % 
                         (classfmt % elem, event, call))
         return Markup("function(){%s}" % ''.join(setups))
@@ -292,6 +310,12 @@ class MailpileCommand(Extension):
         if type(s) == 'Markup':
             s = s.unescape()
         return Markup(urllib.quote_plus(s.encode('utf-8')))
+
+    def _safe(self, s):
+        if type(s) == 'Markup':
+            return s.unescape()
+        else:
+            return Markup(s).unescape()
 
     def _json(self, d):
         return json.dumps(d)

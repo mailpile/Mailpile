@@ -54,11 +54,10 @@ class Command:
     class CommandResult:
         def __init__(self, command_obj, session,
                      command_name, doc, result, status, message,
-                     template_id=None, args=[], kwargs={}, error_info={}):
+                     template_id=None, kwargs={}, error_info={}):
             self.session = session
             self.command_obj = command_obj
             self.command_name = command_name
-            self.args = tuple(args)
             self.kwargs = {}
             self.kwargs.update(kwargs)
             self.template_id = template_id
@@ -94,8 +93,11 @@ class Command:
             from mailpile.urlmap import UrlMap
             rv = {
                 'command': self.command_name,
-                'command_url': UrlMap.canonical_url(self.command_obj),
-                'context_url': UrlMap.context_url(self.command_obj),
+                'state': {
+                    'command_url': UrlMap.ui_url(self.command_obj),
+                    'context_url': UrlMap.context_url(self.command_obj),
+                    'query_args': self.command_obj.state_as_query_args()
+                },
                 'status': self.status,
                 'message': self.message,
                 'result': self.result,
@@ -159,9 +161,18 @@ class Command:
                 self.args = tuple(arg.split(' ', self.SPLIT_ARG))
             else:
                 self.args = (arg, )
+        elif 'arg' in self.data:
+            self.args = tuple(self.data['arg'])
         else:
-            self.args = tuple()
+            self.args = tuple([])
         self._create_event()
+
+    def state_as_query_args(self):
+        args = {}
+        if self.args:
+            args['arg'] = self.args
+        args.update(self.data)
+        return args
 
     def template_path(self, etype, template_id=None, template=None):
         path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
@@ -338,8 +349,6 @@ class Command:
         result = self.CommandResult(self, self.session, self.name,
                                     command.__doc__ or self.__doc__,
                                     rv, self.status, self.message,
-                                    args=self.args,
-                                    kwargs=self.data,
                                     error_info=self.error_info)
 
         # Update the event!
