@@ -22,16 +22,33 @@
     'name': 'display_all',
     'icon': 'inbox',
     'url': '/search/',
-    'url_args_remove': [['q', 'is:unread'], ['q', 'in:new']],
+    'url_args_remove': [['q', 'is:unread'], ['q', 'in:new'], ['q', 'has:attachment']],
     'text': _("All"),
     'description': _("All messages")
 },{
     'name': 'unread',
     'icon': 'notifications',
     'url': '/search/',
+    'url_args_remove': [['q', 'is:unread'], ['q', 'in:new'], ['q', 'has:attachment']],
     'url_args_add': [['q', 'is:unread']],
     'text': _("Unread"),
     'description': _("Unread messages")
+},{
+    'name': 'has_attachment',
+    'icon': 'files',
+    'url': '/search/',
+    'url_args_remove': [['q', 'is:unread'], ['q', 'in:new'], ['q', 'has:attachment']],
+    'url_args_add': [['q', 'has:attachment']],
+    'text': _("Attachments"),
+    'description': _("Messages with attachments")
+}]
+-%}
+{%- set display_modes = [{
+    'name': 'display_list',
+    'icon': 'inbox',
+    'url': '/search/',
+    'text': _("Default"),
+    'description': _("Default view")
 }]
 -%}
 {%- include('partials/tools_default.html') -%}
