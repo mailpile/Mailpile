@@ -25,6 +25,7 @@ class Search(Command):
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
         'q': 'search terms',
+        'qr': 'search refinements',
         'order': 'sort order',
         'start': 'start position',
         'end': 'end position',
@@ -77,6 +78,12 @@ class Search(Command):
         for q in self.data.get('q', []):
             args.extend(q.split())
 
+        # Query refinements...
+        qrs = []
+        for qr in self.data.get('qr', []):
+            qrs.extend(qr.split())
+        args.extend(qrs)
+
         for order in self.data.get('order', []):
             session.order = order
 
@@ -112,7 +119,8 @@ class Search(Command):
         idx.sort_results(session, session.results, session.order)
 
         self._search_state = {
-            'q': [a for a in args if not a.startswith('@')],
+            'q': [a for a in args if not (a.startswith('@') or a in qrs)],
+            'qr': qrs,
             'start': [a for a in args if a.startswith('@')],
             'order': [session.order]
         }

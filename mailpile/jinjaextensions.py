@@ -110,7 +110,7 @@ class MailpileCommand(Extension):
             if elem:
                 for rk, rv in elem.get('url_args_remove', []):
                     if rk == key:
-                        values = [v for v in values if v != rv]
+                        values = [v for v in values if rv and (v != rv)]
             if elem:
                 for ak, av in elem.get('url_args_add', []):
                     if ak == key and av not in values:

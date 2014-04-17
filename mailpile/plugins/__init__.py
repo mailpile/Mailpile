@@ -600,11 +600,11 @@ class PluginManager(object):
                             context=None, name=None,
                             text=None, icon=None, description=None,
                             url=None, javascript_setup=None, 
-                            javascript_events=None):
+                            javascript_events=None, **kwargs):
         name = name.replace('/', '_')
         if name not in [e.get('name') for e in self.UI_ELEMENTS[ui_type]]:
             # FIXME: Is context valid?
-            self.UI_ELEMENTS[ui_type].append({
+            info = {
                 "context": context or [],
                 "name": name,
                 "text": text,
@@ -613,7 +613,10 @@ class PluginManager(object):
                 "javascript_setup": javascript_setup,
                 "javascript_events": javascript_events,
                 "url": url
-            })
+            }
+            for k, v in kwargs.iteritems():
+                info[k] = v
+            self.UI_ELEMENTS[ui_type].append(info)
         else:
             raise ValueError('Duplicate element: %s' % name)
 

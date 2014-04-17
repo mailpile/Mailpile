@@ -22,23 +22,23 @@
     'name': 'display_all',
     'icon': 'inbox',
     'url': '/search/',
-    'url_args_remove': [['q', 'is:unread'], ['q', 'in:new'], ['q', 'has:attachment']],
+    'url_args_remove': [['qr', '']],
     'text': _("All"),
     'description': _("All messages")
 },{
     'name': 'unread',
     'icon': 'notifications',
     'url': '/search/',
-    'url_args_remove': [['q', 'is:unread'], ['q', 'in:new'], ['q', 'has:attachment']],
-    'url_args_add': [['q', 'is:unread']],
+    'url_args_remove': [['qr', '']],
+    'url_args_add': [['qr', 'is:unread']],
     'text': _("Unread"),
     'description': _("Unread messages")
 },{
     'name': 'has_attachment',
     'icon': 'files',
     'url': '/search/',
-    'url_args_remove': [['q', 'is:unread'], ['q', 'in:new'], ['q', 'has:attachment']],
-    'url_args_add': [['q', 'has:attachment']],
+    'url_args_remove': [['qr', '']],
+    'url_args_add': [['qr', 'has:attachment']],
     'text': _("Attachments"),
     'description': _("Messages with attachments")
 }]

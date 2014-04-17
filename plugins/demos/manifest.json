@@ -116,7 +116,18 @@
             }
         ],
         # These are ways to refine a certain view (e.g. a search)
-        "display_refiners": [],
+        "display_refiners": [
+            {
+                "context": ["/search/"],
+                "name": "demo_search",
+                "text": "Demo",
+                "description": "Demo search!!!1",
+                "url": "/search/",
+                "url_args_remove": [["qr", ""]],
+                "url_args_add": [["qr", "demo"]],
+                "icon": "links"
+            }
+        ],
         # Actions that can be performed on selected items
         "selection_actions": []
     },
