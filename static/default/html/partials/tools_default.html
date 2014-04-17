@@ -16,8 +16,12 @@
       {%- endif %}<span class="navigation-text">{{elem.text}}</span>
       </a>
     </li>
-  {%- endfor %}
-  {{ setup_ui_elements('activities', context_url, '.btn-activity-%(name)s', activities) }}
+  {%- endfor %}{% if activities %}<script>
+    $(document).ready({{
+      ui_elements_setup('activities', context_url, '.btn-activity-%(name)s',
+                        activities)
+    }});
+  </script>{% endif %}
   {%- for elem in display_refiners %}
     <li class="btn-display-refiner-{{elem.name}}
         {%- if command_url == "/api/0" + elem.url %} navigation-on{% endif %}">
@@ -29,8 +33,12 @@
       {%- endif %}<span class="navigation-text">{{elem.text}}</span>
       </a>
     </li>
-  {%- endfor %}
-  {{ setup_ui_elements('display_refiners', context_url, '.btn-display-refiner-%(name)s', display_refiners) }}
+  {%- endfor %}{% if display_refiners %}<script>
+    $(document).ready({{
+      ui_elements_setup('display_refiners', context_url,
+                        '.btn-display-refiner-%(name)s', display_refiners)
+    }});
+  </script>{% endif %}
   </ul>
   <ul class="right horizontal">
   {%- for elem in display_modes %}
@@ -44,8 +52,12 @@
       {%- endif %}<span class="navigation-text">{{elem.text}}</span>
       </a>
     </li>
-  {%- endfor %}
-  {{ setup_ui_elements('display_modes', context_url, '.btn-display-mode-%(name)s', display_modes) }}
+  {%- endfor %}{% if display_modes %}<script>
+    $(document).ready({{
+      ui_elements_setup('display_modes', context_url,
+                        '.btn-display-mode-%(name)s', display_modes)
+    }});
+  </script>{% endif %}
   </ul>
 </nav>
 {%- endif %}
@@ -69,6 +81,11 @@
   {%- endfor %}
     <li><input type="checkbox" id="pile-select-all-action" class="bulk-action-select-all" tabindex="-1"></li>
   </ul>
-  {{ setup_ui_elements('selection_actions', context_url, '.btn-selection-action-%(name)s', selection_actions) }}
+  {%- if selection_actions %}<script>
+    $(document).ready({{
+      ui_elements_setup('selection_actions', context_url,
+                        '.btn-selection-action-%(name)s', selection_actions)
+    }});
+  </script>{% endif %}
 </div>
 {%- endif %}

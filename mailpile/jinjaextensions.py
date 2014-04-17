@@ -61,7 +61,7 @@ class MailpileCommand(Extension):
 
         # These are helpers for injecting plugin elements
         environment.globals['get_ui_elements'] = self._get_ui_elements
-        environment.globals['setup_ui_elements'] = self._setup_ui_elements
+        environment.globals['ui_elements_setup'] = self._ui_elements_setup
 
         # This is a worse versin of urlencode, but without it we require
         # Jinja 2.7, which isn't apt-get installable.
@@ -96,16 +96,13 @@ class MailpileCommand(Extension):
     def _get_ui_elements(self, ui_type, context='/'):
         return PluginManager().get_ui_elements(ui_type, context)
 
-    def _setup_ui_elements(self, ui_type, context, classfmt, elements=None):
+    def _ui_elements_setup(self, ui_type, context, classfmt, elements=None):
         setups = []
         for elem in (elements or self._get_ui_elements(ui_type, context)):
             if elem.get('javascript_setup'):
                 setups.append('$("%s").each(function(){%s(this);});'
                               % (classfmt % elem, elem['javascript_setup']))
-        if not setups:
-            return ''
-        return Markup("<script>$(document).ready(function(){%s});</script>"
-                      % ''.join(setups))
+        return Markup("function(){%s}" % ''.join(setups))
 
     def _regex_replace(self, s, find, replace):
         """A non-optimal implementation of a regex filter"""

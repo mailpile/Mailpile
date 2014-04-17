@@ -159,8 +159,11 @@
         <li {% if command == "settings" %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}" alt="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
         {%- for a in get_ui_elements('activities', '/') -%}
         <li><a href="{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src='{{ a.icon }}'></a></li>
-        {%- endfor -%}
-        {{ setup_ui_elements('activities', '/', '.plugin-activity-%(name)s') }}
+        {%- endfor -%}<script>
+          $(document).ready({{
+            ui_elements_setup('activities', '/', '.plugin-activity-%(name)s')
+          }});
+        </script>
       </ul>
     </nav>
   </div>
