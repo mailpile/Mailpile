@@ -270,9 +270,11 @@ class View(Search):
                                              results=conv, num=len(conv),
                                              emails=[email]))
         if len(results) == 1:
-            return results[0]
+            return self._success(_('Displayed a single message'),
+                                 result=results[0])
         else:
-            return results
+            return self._success(_('Displayed %d messages') % len(results),
+                                 result=results)
 
 
 class Extract(Command):
