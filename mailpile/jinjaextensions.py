@@ -101,6 +101,8 @@ class MailpileCommand(Extension):
         return copy.deepcopy(PluginManager().get_ui_elements(ui_type, ctx))
 
     def _add_state_query_string(self, url, state, elem=None):
+        if not url:
+            url = state.get('command_url', '')
         if '#' in url:
             url, frag = url.split('#', 1)
             frag = '#' + frag
