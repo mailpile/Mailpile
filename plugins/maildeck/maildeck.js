@@ -2,21 +2,15 @@
    The name of the returned class will be `mailpile.plugins.maildeck`.
  */
 return {
-    activity_click: function() {
-      
-        $('#sidebar').hide();
-      
+    load: function(e) {
         new_mailpile.plugins.maildeck.column_add('in:Inbox');
         new_mailpile.plugins.maildeck.column_add('in:New');
     },
     activity_setup: function(e) {
-      
-      console.log('This should add Inbox & New cols');
-      
+
       $('.column-delete').on('click', function(){
           new_mailpile.plugins.maildeck.column_delete($(this).data('id'));
       });
-    
     },
     makeid: function() {
         var text = "";
@@ -75,6 +69,10 @@ return {
     column_render: function(id) {
         var result = this.columns[id].lastresult.result;
         var thread_ids = result.thread_ids.reverse();
+
+        // Add HTML Item
+        var template_html = $('#template-maildeck-column-item').html();
+
         for (mid in thread_ids) {
             mid = thread_ids[mid];
             var metadata = result.data.metadata[mid];
@@ -92,20 +90,17 @@ return {
                     tid = metadata.tag_tids[tid];
                     tagclasses += " in_" + result.data.tags[tid].slug;
                 }
-                $("#"+id + " .entries").prepend(
-                      '<div class="piledeck-entry' + tagclasses + '" id="mid_' + mid + '">'
-                    + '<div class="actions">'
-                    + '    <a href="#"><span class="icon-reply"></span></a>'
-                    + '    <a href="#"><span class="icon-forward"></span></a>'
-                    + '    <a href="#"><span class="icon-tag"></span></a>'
-                    + '    <a href="#"><span class="icon-later"></span></a>'
-                    + '</div>'
-                    + '<div class="from">'
-                         + metadata.from.fn 
-                         + ' &lt;' + metadata.from.email + '&gt;'
-                    + '</div>'
-                    + '<div class="subject"><a href="http://localhost:33411/thread/=' + mid + '/">' + subject + '</a></div>'
-                    + '</div>');
+                
+                var item_data = {
+                  mid: mid,
+                  classes: tagclasses,
+                  from: metadata.from.fn + '&lt;' + metadata.from.email + '&gt;',
+                  subject: subject
+                }
+ 
+                // Add HTML Item
+                var item_html = _.template(template_html, item_data);
+                $("#"+id + " .entries").prepend(item_html);
             }
         }
     },

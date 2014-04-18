@@ -19,10 +19,7 @@
                 "icon": "/static/maildeck/icon.png",
                 "description": "Maildeck",
                 "url": "/maildeck/",
-                "javascript_setup": "activity_setup",
-                "javascript_events": {
-                    "click": "activity_click"
-                }
+                "javascript_setup": "activity_setup"
             }
         ],
         "display_modes": [
