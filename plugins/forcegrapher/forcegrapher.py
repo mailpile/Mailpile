@@ -16,6 +16,7 @@ class Graph(Search):
     ORDER = ('Searching', 1)
     SYNOPSIS = (None, 'getgraph', 'getgraph', '<terms>')
     HTTP_CALLABLE = ('GET', )
+    UI_CONTEXT = "search"
 
     def command(self, search=None):
         session, idx, start, num = self._do_search(search=search)
