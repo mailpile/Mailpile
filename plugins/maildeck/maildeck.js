@@ -2,19 +2,21 @@
    The name of the returned class will be `mailpile.plugins.maildeck`.
  */
 return {
-    activity_click: function(e) {
-        e.preventDefault();
+    activity_click: function() {
       
         $('#sidebar').hide();
       
         new_mailpile.plugins.maildeck.column_add('in:Inbox');
         new_mailpile.plugins.maildeck.column_add('in:New');
-
     },
-    activity_setup: function() {
+    activity_setup: function(e) {
       
       console.log('This should add Inbox & New cols');
       
+      $('.column-delete').on('click', function(){
+          new_mailpile.plugins.maildeck.column_delete($(this).data('id'));
+      });
+    
     },
     makeid: function() {
         var text = "";
@@ -37,19 +39,12 @@ return {
             }
         }
         var id = "col" + new_mailpile.plugins.maildeck.makeid();
-        var type = "Search:";
-        $(".piledeck-column-container").append(
-              '<div id="' + id + '"" class="piledeck-column">'
-            + '    <div class="piledeck-column-header">'
-            + '       <span class="type">' + type + '</span>'
-            + '       <span class="title">' + search + '</span>'
-            + '       <a onclick="piledeck.column_del(\'' + id + '\')">'
-            + '           <span class="icon-circle-x"></span>'
-            + '       </a>'
-            + '       <span class="refresh"></span>'
-            + '     </div>'
-            + '     <div class="entries"></div>'
-            + '</div>');
+
+        // Add HTML Column
+        var template_html = $('#template-maildeck-column-header').html();
+        var header_html = _.template(template_html, { type: "Search:", search: search, id: id });
+        $(".piledeck-column-container").append(header_html);
+
         this.columns[id] = {
             search:     search,
             lastresult: null,
@@ -59,7 +54,7 @@ return {
         this.column_start_refresh(id);
         return id;
     },
-    column_del: function(id) {
+    column_delete: function(id) {
         this.column_stop_refresh(id);
         delete this.columns[id];
         $("#" + id).remove();

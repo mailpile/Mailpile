@@ -8,4 +8,16 @@
   <div class="piledeck-column-container">
   </div>
 </div>
+
+<script id="template-maildeck-column-header" type="text/template">
+<div id="<%= id %>" class="piledeck-column">
+  <div class="piledeck-column-header">
+    <span class="type"><span class="icon-search"></span><%= type %></span>
+    <span class="title"><%= search %></span>
+    <a class="column-delete" data-id="<%= id %>"><span class="icon-circle-x"></span></a>
+    <span class="refresh"></span>
+  </div>
+  <div class="entries"></div>
+</div>
+</script>
 {% endblock %}

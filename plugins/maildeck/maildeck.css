@@ -7,7 +7,6 @@
     bottom: 0px;
     overflow-x: hidden;
     overflow-y: hidden;
-    background: #f2f2f2;
     white-space: nowrap;
 }
 
@@ -19,7 +18,6 @@
     height: 100%;
     overflow-x: scroll;
     overflow-y: hidden;
-    background: #888;
     margin-bottom: -50px;
 }
 
@@ -28,11 +26,11 @@
     width:      300px;
     height:     100%;
     background: #f2f2f2;
-    overflow-y: hidden;
+    overflow-y: scroll;
     overflow-x: hidden;
     border-right: 1px solid #b3b3b3;
     padding:    0;
-    margin:     0;
+    margin:     0 10px 0 0;
 }
 
 .piledeck-column-header {
@@ -73,12 +71,12 @@
 }
 
 .piledeck-entry:hover {
-    background-color:     #ddd;
-    transition:      background 0.2s linear;
+    background-color: #ddd;
+    transition: background 0.2s linear;
 }
 
 .piledeck-entry .subject {
-    font-family: Mailpile-300,HelveticaNeue,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: Mailpile-300, HelveticaNeue,"Helvetica Neue",Helvetica,Arial,sans-serif;
     white-space: normal;
     font-size:  15px;
 }
@@ -100,25 +98,4 @@
 .piledeck-entry:hover .actions {
     opacity:    1.0;
     transition: opacity 0.2s linear;
-}
-
-#search-query {
-    height:     34px;
-    width:      306px;
-}
-
-.in_mp_read {
-    color:      #999;
-}
-
-.in_mp_read a {
-    color:      #999;
-}
-
-.in_mp_read:hover {
-    color:      #333;
-}
-
-.in_mp_read:hover a {
-    color:      #333;
 }
