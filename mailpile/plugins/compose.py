@@ -331,9 +331,10 @@ class Reply(RelativeCompose):
             msg_cc_raw += [t['headers_lc'].get('cc', '') for t in trees]
         msg_cc = []
         for hdr in msg_cc_raw:
-            for addr in [a.strip() for a in hdr.split(',')]:
+            addrs = re.split("[,;]", hdr)
+            for addr in [a.strip() for a in addrs]:
                 if addr:
-                    msg_cc.append(cls._add_gpg_key(idx, session, a))
+                    msg_cc.append(cls._add_gpg_key(idx, session, addr))
 
         msg_bodies = []
         for t in trees:
