@@ -66,6 +66,7 @@ def do_setup():
     # Configure our fake mail sending setup
     config.profiles['0'].email = MY_FROM
     config.profiles['0'].name = MY_NAME
+    config.sys.http_port = 33414
     config.sys.debug = 'rescan sendmail log compose'
     config.prefs.openpgp_header = 'encrypt'
     config.prefs.crypto_policy = 'openpgp-sign'
