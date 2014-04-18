@@ -793,7 +793,7 @@ class PathDict(ConfigDict):
     }
 
 
-class MailpileJinjaBaseLoader(BaseLoader):
+class MailpileJinjaLoader(BaseLoader):
     """
     A Jinja2 template loader which uses the Mailpile configuration
     and plugin system to find template files.
@@ -802,41 +802,20 @@ class MailpileJinjaBaseLoader(BaseLoader):
         self.config = config
 
     def get_source(self, environment, template):
-        template = os.path.join('html', template)
-        path, mt = self.config.data_file_and_mimetype('html_theme', template)
+        tpl = os.path.join('html', template)
+        path, mt = self.config.data_file_and_mimetype('html_theme', tpl)
         if not path:
-            raise TemplateNotFound(template)
+            raise TemplateNotFound(tpl)
 
         mtime = os.path.getmtime(path)
-        def unchanged():
-            return (path == self.config.data_file_and_mimetype('html_theme',
-                                                               template)
-                    and mtime == os.path.getmtime(path))
+        unchanged = lambda: (
+            path == self.config.data_file_and_mimetype('html_theme', tpl)[0]
+            and mtime == os.path.getmtime(path))
 
         with file(path) as f:
             source = f.read().decode('utf-8')
 
         return source, path, unchanged
-
-
-class MailpileLoaderCacheMixin(object):
-
-    def __init__(self):
-        self.__cache = {}
-
-    def load(self, environment, name, translator):
-        if name in self.__cache:
-            return self.__cache[name]
-        tmpl = super(MailpileLoaderCacheMixin, self).load(environment, name,
-                                                          translator)
-        self.__cache[name] = tmpl
-        return tmpl
-
-
-class MailpileJinjaLoader(MailpileLoaderCacheMixin, MailpileJinjaBaseLoader):
-    def __init__(self, config):
-        MailpileJinjaBaseLoader.__init__(self, config)
-        MailpileLoaderCacheMixin.__init__(self)
 
 
 class ConfigManager(ConfigDict):
