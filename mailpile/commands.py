@@ -161,10 +161,10 @@ class Command:
                 self.args = tuple(arg.split(' ', self.SPLIT_ARG))
             else:
                 self.args = (arg, )
-        elif 'arg' in self.data:
-            self.args = tuple(self.data['arg'])
         else:
             self.args = tuple([])
+        if 'arg' in self.data:
+            self.args = tuple(list(self.args) + self.data['arg'])
         self._create_event()
 
     def state_as_query_args(self):

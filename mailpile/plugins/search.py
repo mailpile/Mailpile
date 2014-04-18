@@ -67,7 +67,7 @@ class Search(Command):
     def state_as_query_args(self):
         try:
             return self._search_state
-        except AttributeError:
+        except (AttributeError, NameError):
             return Command.state_as_query_args(self)
 
     def _do_search(self, search=None):
@@ -221,6 +221,9 @@ class View(Search):
         idx.apply_filters(session, '@read',
                           msg_idxs=[e.msg_idx_pos for e in emails])
         return None
+
+    def state_as_query_args(self):
+        return Command.state_as_query_args(self)
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()

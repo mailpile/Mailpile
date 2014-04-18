@@ -107,7 +107,7 @@ class UrlMap:
             raise BadMethodError('Invalid method (%s): %s' % (method, name))
 
         # FIXME: Move this somewhere smarter
-        SPECIAL_VARS = ('csrf', )
+        SPECIAL_VARS = ('csrf', 'arg')
 
         if command.HTTP_STRICT_VARS:
             for var in (post_data or []):
@@ -131,7 +131,8 @@ class UrlMap:
                          (ui_keys, post_data),
                          (command.HTTP_QUERY_VARS, query_data),
                          (command.HTTP_QUERY_VARS, post_data),
-                         (command.HTTP_POST_VARS, post_data))
+                         (command.HTTP_POST_VARS, post_data),
+                         (['arg'], query_data))
         else:
             for var in command.HTTP_BANNED_VARS:
                 var = var.replace('[]', '')
@@ -140,7 +141,8 @@ class UrlMap:
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
 
             copy_vars = (((query_data or {}).keys(), query_data),
-                         ((post_data or {}).keys(), post_data))
+                         ((post_data or {}).keys(), post_data),
+                         (['arg'], query_data))
 
         data = {
             '_method': method
