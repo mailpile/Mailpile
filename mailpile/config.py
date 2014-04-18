@@ -793,7 +793,7 @@ class PathDict(ConfigDict):
     }
 
 
-class MailpileJinjaLoader(BaseLoader):
+class MailpileJinjaBaseLoader(BaseLoader):
     """
     A Jinja2 template loader which uses the Mailpile configuration
     and plugin system to find template files.
@@ -817,6 +817,26 @@ class MailpileJinjaLoader(BaseLoader):
             source = f.read().decode('utf-8')
 
         return source, path, unchanged
+
+
+class MailpileLoaderCacheMixin(object):
+
+    def __init__(self):
+        self.__cache = {}
+
+    def load(self, environment, name, translator):
+        if name in self.__cache:
+            return self.__cache[name]
+        tmpl = super(MailpileLoaderCacheMixin, self).load(environment, name,
+                                                          translator)
+        self.__cache[name] = tmpl
+        return tmpl
+
+
+class MailpileJinjaLoader(MailpileLoaderCacheMixin, MailpileJinjaBaseLoader):
+    def __init__(self, config):
+        MailpileJinjaBaseLoader.__init__(self, config)
+        MailpileLoaderCacheMixin.__init__(self)
 
 
 class ConfigManager(ConfigDict):
