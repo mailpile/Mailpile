@@ -70,17 +70,20 @@
             {
                 "context": ["/"],
                 "name": "demo",
-                "text": "Demo",
+                "text": "(demo)",
                 "icon": "/static/img/demos.png",
-                "description": "Demonstrate the pluggable activities",
+                "description": "New Tool (demo)",
+                "url": "#could-be-a-fallback",
                 "javascript_setup": "activity_setup",
-                "url": "#could-be-a-fallback"
+                "javascript_events": {
+                    "click": "new_tool"
+                }
             },
             {
                 "context": ["/tag/list/"],
                 "name": "tag-list-demo-activity",
-                "text": "DEMO",
-                "description": "This is a useless button",
+                "text": "Earthquake (demo)",
+                "description": "This button makes your tags shake",
                 "url": "#useless",
                 "icon": "/static/img/demos.png",
                 "javascript_setup": "activity_setup",
@@ -108,11 +111,13 @@
             {
                 "context": ["/tag/list/"],
                 "name": "tag-list-demo-mode",
-                "text": "DEMO",
+                "text": "Tag List (demo)",
                 "description": "This is a useless button",
-                "url": "#useless",
+                "url": "#taglist",
                 "icon": "/static/img/demos.png",
-                "javascript_setup": "activity_setup"
+                "javascript_events": {
+                    "click": "tag_list"
+                }
             }
         ],
         # These are ways to refine a certain view (e.g. a search)
@@ -121,11 +126,11 @@
                 "context": ["/search/"],
                 "name": "demo_search",
                 "text": "Demo",
-                "description": "Demo search!!!1",
+                "description": "Demo search!!!",
                 "url": "/search/",
                 "url_args_remove": [["qr", ""]],
                 "url_args_add": [["qr", "demo"]],
-                "icon": "links"
+                "icon": "/static/img/demos.png"
             }
         ],
         # Actions that can be performed on selected items
