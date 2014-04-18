@@ -11,8 +11,7 @@
   {%- for elem in activities %}
     <li class="btn-activity-{{elem.name}}
         {%- if state.command_url == elem.url %} navigation-on{% endif %}">
-      <a href="{{elem.url|add_state_query_string(state, elem)}}"
-         title="{{elem.description}}">
+      <a href="{{elem.url}}" title="{{elem.description}}">
       {%- if elem.icon and '.' in elem.icon -%}
         <img class="navigation-icon" src="{{elem.icon}}">
       {%- elif elem.icon -%}

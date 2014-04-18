@@ -30,17 +30,17 @@ return {
         return false;      
     },
     earthquake: function(element) {
-      $(".boxy").animate({"margin-right": 5}, 40)
-                .animate({"margin-right": -5}, 40)
-                .animate({"margin-right": 5}, 40)
-                .animate({"margin-right": -5}, 40)
-                .animate({"margin-right": 5}, 40)
-                .animate({"margin-right": -5}, 40)
-                .animate({"margin-right": 5}, 40)
-                .animate({"margin-right": -5}, 40)
-                .animate({"margin-right": 5}, 40)
-                .animate({"margin-right": -5}, 40)
-                .animate({"margin-right": 5}, 40)
-                .animate({"margin-right": -5}, 40);
+      $(".boxy").animate({"margin-left": -5}, 40)
+                .animate({"margin-left": 5}, 40)
+                .animate({"margin-left": -5}, 40)
+                .animate({"margin-left": 5}, 40)
+                .animate({"margin-left": -5}, 40)
+                .animate({"margin-left": 5}, 40)
+                .animate({"margin-left": -5}, 40)
+                .animate({"margin-left": 5}, 40)
+                .animate({"margin-left": -5}, 40)
+                .animate({"margin-left": 5}, 40)
+                .animate({"margin-left": -5}, 40)
+                .animate({"margin-left": 5}, 40);
     }
 };
