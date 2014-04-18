@@ -143,7 +143,7 @@ MailPile.prototype.render = function() {
     // Mousetrap Keybindings
     for (var item in mailpile.keybindings) {
         var keybinding = mailpile.keybindings[item];
-        if (keybinding[0] == "global") {
+        if (keybinding[0] === "global") {
             Mousetrap.bindGlobal(keybinding[1], keybinding[2]);
         } else {
             Mousetrap.bind(keybinding[1], keybinding[2]);
@@ -153,7 +153,7 @@ MailPile.prototype.render = function() {
 };
 
 MailPile.prototype.command = function(command, data, method, callback) {
-    if (method != "GET" && method != "POST") {
+    if (method !== "GET" && method !== "POST") {
         method = "GET";
     }
     $.ajax({
@@ -164,8 +164,8 @@ MailPile.prototype.command = function(command, data, method, callback) {
     });
 };
 
-var mailpile = new MailPile();
-var favicon = new Favico({animation:'popFade'});
+var mailpile = new MailPile(),
+    favicon = new Favico({animation:'popFade'});
 
 // Non-exposed functions: www, setup
 $(document).ready(function() {
