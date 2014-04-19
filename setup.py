@@ -5,10 +5,10 @@ import os
 import re
 from glob import glob
 
-APPVER = (
+APPVER = next(
     line.strip() for line in open('mailpile/defaults.py', 'r')
     if re.match(r'^APPVER\s*=', line)
-).next().split('"')[1]
+).split('"')[1]
 
 try:
     # This borks sdist.
