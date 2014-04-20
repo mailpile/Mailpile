@@ -100,16 +100,15 @@
   </div>
   {% endif %}
   <ul class="thread-message-actions horizontal clearfix" data-mid="{{mid}}">
-    <li><a href="#"><span class="icon-forward"></span> Forward</a></li>
+    <li><a class="message-action-forward" href="#"><span class="icon-forward"></span> Forward</a></li>
     <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" id="thread-message-move" href="#"><span class="icon-move"></span> Move</a>
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-move"></span> Move</a>
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> Move to Inbox</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> Flag as Spam</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> Remove from Thread</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
+        <li role="presentation"><a class="message-action-inbox" role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> Move to Inbox</a></li>
+        <li role="presentation"><a class="message-action-spam" role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> Flag as Spam</a></li>
+        <li role="presentation"><a class="message-action-unthread" role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> Remove from Thread</a></li>
       </ul>
     </li>
-    <li><a href="#"><span class="icon-trash"></span> Trash</a></li>
+    <li><a class="message-action-trash" href="#"><span class="icon-trash"></span> Trash</a></li>
   </ul>
 </div>
