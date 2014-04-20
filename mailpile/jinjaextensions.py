@@ -340,27 +340,37 @@ class MailpileCommand(Extension):
 
         # Split the lines
         lines = text.splitlines()
-        collect = []
-        count = 0
-
-        # Strart pruning off empty lines at end but leave others
-        for line in reversed(lines):
+        start = []
+        start_count = 0
+        end = []
+        end_count = 0
+    
+        # Strart pruning off empty lines at begining, then the end
+        # but leave other blank lines
+        for line in lines:
             if line:
-                collect.append(line)
-                count += 1
-            elif line == '' and count:
-                collect.append(line)
-
+                start.append(line)
+                start_count += 1
+            elif line == '' and start_count:
+                start.append(line)
+    
+        for line in reversed(start):
+            if line:
+                end.append(line)
+                end_count += 1
+            elif line == '' and end_count:
+                end.append(line)
+    
         output = ''
         line_count = 0        
-        total_lines = len(collect)
-
+        total_lines = len(end)
+    
         # Re-ouput everything as string with line breaks
-        for line in reversed(collect):
+        for line in reversed(end):
             line_count += 1
             if line_count == total_lines:
                 output += line
             else:
                 output += line + '\n'
-
+    
         return output
