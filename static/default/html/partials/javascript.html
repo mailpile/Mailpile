@@ -1,0 +1,24 @@
+<script src="/static/js/mailpile.js"></script>
+<script>
+mailpile.instance = {
+ "command": "{{ command }}",
+ "args": "{{ args }}",
+ "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
+}
+// Set View Size
+$('#pile-results').hide();
+</script>
+<script src="/static/js/app/global.js"></script>
+<script src="/static/js/app/bulk_actions.js"></script>
+<script src="/static/js/app/notifications.js"></script>
+<script src="/static/js/app/tooltips.js"></script>
+<script src="/static/js/app/keybindings.js"></script>
+<script src="/static/js/app/gpg.js"></script>
+<script src="/static/js/app/compose.js"></script>
+<script src="/static/js/app/pile.js"></script>
+<script src="/static/js/app/search.js"></script>
+<script src="/static/js/app/thread.js"></script>
+<script src="/static/js/app/message.js"></script>
+<script src="/static/js/app/contacts.js"></script>
+<script src="/static/js/app/tags.js"></script>
+<script src="/static/js/app/settings.js"></script>
