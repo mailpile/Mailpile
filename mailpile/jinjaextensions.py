@@ -73,6 +73,10 @@ class MailpileCommand(Extension):
         environment.globals['safe'] = self._safe
         environment.filters['json'] = self._json
 
+        # Strip trailing blank lines from email
+        environment.globals['trim_blanks'] = self._trim_blanks
+        environment.filters['trim_blanks'] = self._trim_blanks
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -331,3 +335,32 @@ class MailpileCommand(Extension):
 
     def _json(self, d):
         return json.dumps(d)
+
+    def _trim_blanks(self, text):
+
+        # Split the lines
+        lines = text.splitlines()
+        collect = []
+        count = 0
+
+        # Strart pruning off empty lines at end but leave others
+        for line in reversed(lines):
+            if line:
+                collect.append(line)
+                count += 1
+            elif line == '' and count:
+                collect.append(line)
+
+        output = ''
+        line_count = 0        
+        total_lines = len(collect)
+
+        # Re-ouput everything as string with line breaks
+        for line in reversed(collect):
+            line_count += 1
+            if line_count == total_lines:
+                output += line
+            else:
+                output += line + '\n'
+
+        return output
