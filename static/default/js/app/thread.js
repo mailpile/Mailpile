@@ -97,7 +97,16 @@ $(document).on('click', '.show-thread-security', function() {
 
 /* Thread - Show Metadata Info */
 $(document).on('click', '.show-thread-message-metadata-details', function() {
-  $('#metadata-details-' + $(this).parent().parent().parent().parent().data('mid')).fadeIn();
+  var mid = $(this).parent().parent().parent().parent().data('mid');
+  var target = '#metadata-details-' + mid;
+  if ($(target).css('display') === 'none') {
+    $(target).fadeIn();
+    $(this).css('color', '#4d4d4d');
+  }
+  else {
+    $(target).fadeOut();    
+    $(this).css('color', '#ccc');
+  }
 });
 
 
