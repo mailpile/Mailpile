@@ -1,28 +1,43 @@
 /* message.js */
 
 $(document).on('click', '.message-action-forward', function() {
-
   var mid = $(this).parent().parent().data('mid');
-
-  new_mailpile.api.message_forward(mid, function(result){
-    console.log('inside the callback');
-    console.log(result); 
+  $.ajax({
+    url      : '/api/0/message/forward/',
+    type     : 'POST',
+    data     : { mid: mid },
+    success  : function(response) {
+      if (response.status === 'success') {
+        window.location.href = mailpile.urls.message_draft + response.result.created + '/';
+      } else {
+        mailpile.notification(response.status, response.message);
+      }
+    }
   });
-
 });
 
 $(document).on('click', '.message-action-inbox', function() {
-  alert('This will move a single message to Inbox');
+  var mid = $(this).parent().parent().parent().parent().data('mid');
+  mailpile.tag_add_delete(['inbox'], ['spam', 'trash'], mid, function(result) {
+    window.location.href = '/in/inbox/';
+  });
 });
 
 $(document).on('click', '.message-action-spam', function() {
-  alert('This will move a single message to Spam');
+  var mid = $(this).parent().parent().parent().parent().data('mid');
+  mailpile.tag_add_delete(['spam'], ['trash', 'inbox'], mid, function() {
+    window.location.href = '/in/inbox/';
+  });
 });
 
 $(document).on('click', '.message-action-unthread', function() {
-  alert('This will unthread a message from current thread');
+  var mid = $(this).parent().parent().data('mid');
+  console.log('This will Unthread a single message'); 
 });
 
 $(document).on('click', '.message-action-trash', function() {
-  alert('This will move a single message to Trash');
+  var mid = $(this).parent().parent().data('mid');
+  mailpile.tag_add_delete(['trash'], ['spam', 'inbox'], mid, function() {
+    window.location.href = '/in/inbox/';
+  });
 });
