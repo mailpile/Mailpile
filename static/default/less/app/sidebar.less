@@ -27,13 +27,12 @@
   #sidebar.cozy li { margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px; }
   #sidebar.snug li { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
 
-	#sidebar        a { display: table; width: 185px; height: 24px; vertical-align: middle; text-align: left; font-family: @mailpile-text-font-family-bold; color: @grayDark; }
-	#sidebar        a:active { color: @red; }	
-	#sidebar        a:hover { color: @red; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
-	#sidebar.cozy   a { padding: 3px 0px; }
-	#sidebar.snug   a { padding: 0px 0px; }
-
-	#sidebar        a.sidebar-tag { position: relative; }
+  a.sidebar-tag { position: relative; display: table; width: 185px; height: 24px; vertical-align: middle; text-align: left; font-family: @mailpile-text-font-family-bold; color: @grayDark; }
+  a.sidebar-tag:active { color: @red; }	
+  a.sidebar-tag:hover { color: @red; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
+	
+	.cozy a.sidebar-tag { padding: 3px 0px; }
+	.snug a.sidebar-tag { padding: 0px 0px; }
 
   #sidebar      span.sidebar-icon { display: table-cell; vertical-align: middle; text-align: center; width: 24px; height: 18px; font-weight: normal; font-size: 18px; line-height: 18px; }
 	#sidebar.cozy span.sidebar-icon { font-size: 18px; line-height: 18px; }
@@ -63,7 +62,7 @@
     left: 0px;
   }
 
-  #sidebar span.sidebar-notification {
+  a.sidebar-tag span.sidebar-notification {
     vertical-align: middle;
     padding: 5px;
     font-size: 11px;
@@ -77,12 +76,13 @@
     right: 0px;
   }
 
-  #sidebar.snug span.sidebar-notification { top: 3px; padding: 3px 5px; font-size: 9px; }
+  .snug a.sidebar-tag span.sidebar-notification {
+    top: 3px;
+    padding: 3px 5px;
+  }
 
-
-  #sidebar li.navigation-on a:hover { color: @grayDark; }
-  #sidevar li.navigation-on a:hover span.sidebar-notification { color: @white !important; }
-
+  li.navigation-on a.sidebar-tag:hover { color: @grayDark; }
+  li.navigation-on a.sidebar-tag:hover span.sidebar-notification { color: @white !important; }
 
 
 /* Sidebar - Drag & Drop */

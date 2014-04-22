@@ -18,11 +18,9 @@
 		line-height: 14px;
 	}
 
-  #pile-results.fluffy td { padding: 15px 0px; vertical-align: top; }
   #pile-results.comfy  td { padding: 10px 0px; }
   #pile-results.cozy   td { padding: 6px 0px; }
   #pile-results.snug   td { padding: 2px 0px; }
-
 
   #pile-results td.draggable {
     width: 12px;
@@ -36,15 +34,12 @@
 
   #pile-results        td.avatar       { min-width: 18px; max-width: 68px; padding-left: 10px; }
   #pile-results        td.avatar a img { display: block; }
-  #pile-results.fluffy td.avatar       { width: 68px; }
-  #pile-results.fluffy td.avatar a img { width: 48px; height: 48px; }
   #pile-results.comfy  td.avatar       { width: 44px; }
   #pile-results.comfy  td.avatar a img { width: 24px; height: 24px; }  
   #pile-results.cozy   td.avatar       { width: 30px; }
   #pile-results.cozy   td.avatar a img { width: 18px; height: 18px; }
   #pile-results.snug   td.avatar       { width: 18px; }
   #pile-results.snug   td.avatar a img { width: 14px; height: 14px; }
-
 
 	#pile-results td.from {
 	  min-width: 150px;
@@ -59,23 +54,21 @@
     color: @grayMid;
   }
 
-
   #pile-results span.conversation-count {
-    width: 24px;
     height: 21px;
     display: inline-block;
     position: relative;
-    top: -2px;
+    top: 0px;
     left: 5px;
     text-align: center;
     vertical-align: middle;
-    padding-top: 5px;
+    padding: 5px 8px 4px 8px;
     box-sizing: border-box;
     color: @grayDark;
     background: @grayMid;
     border-radius: @base-border-radius;
     font-size: 12px;
-    font-weight: normal;
+    font-weight: bold;
     line-height: 12px;
   }
 
@@ -90,7 +83,6 @@
     white-space: nowrap;	
 	}
 
-  #pile-results.fluffy span.item-snippet { display: inline; }
   #pile-results.comfy  span.item-snippet { display: none; }
   #pile-results.cozy   span.item-snippet { display: none; }
   #pile-results.snug   span.item-snippet { display: none; }
