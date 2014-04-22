@@ -372,7 +372,7 @@ class Reply(RelativeCompose):
         ephemeral = False
         args = list(self.args)
         if not args:
-            args = self.data.get('mid', [])
+            args = ["=%s" % x for x in self.data.get('mid', [])]
             ephemeral = bool(self.data.get('ephemeral', False))
             reply_all = bool(self.data.get('reply_all', False))
         else:
@@ -468,7 +468,7 @@ class Forward(RelativeCompose):
         ephemeral = False
         args = list(self.args)
         if not args:
-            args = self.data.get('mid', [])
+            args = ["=%s" % x for x in self.data.get('mid', [])]
             ephemeral = bool(self.data.get('ephemeral', False))
             with_atts = bool(self.data.get('atts', False))
         else:
