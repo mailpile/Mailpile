@@ -338,5 +338,5 @@ class MailpileCommand(Extension):
 
     def _nice_text(self, text):
         # trim starting & ending empty lines
-        output = text.strip('\r\n')
+        output = text.strip()
         return output
