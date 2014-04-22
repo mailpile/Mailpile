@@ -299,6 +299,8 @@ class Reply(RelativeCompose):
     ORDER = ('Composing', 3)
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
+        'reply_all': 'reply to all',
+        'ephemeral': 'ephemerality',
     }
     HTTP_POST_VARS = {}
 
@@ -369,13 +371,18 @@ class Reply(RelativeCompose):
         reply_all = False
         ephemeral = False
         args = list(self.args)
-        while args:
-            if args[0].lower() == 'all':
-                reply_all = args.pop(0) or True
-            elif args[0].lower() == 'ephemeral':
-                ephemeral = args.pop(0) or True
-            else:
-                break
+        if not args:
+            args = self.data.get('mid', [])
+            ephemeral = bool(self.data.get('ephemeral', False))
+            reply_all = bool(self.data.get('reply_all', False))
+        else:
+            while args:
+                if args[0].lower() == 'all':
+                    reply_all = args.pop(0) or True
+                elif args[0].lower() == 'ephemeral':
+                    ephemeral = args.pop(0) or True
+                else:
+                    break
 
         refs = [Email(idx, i) for i in self._choose_messages(args)]
         if refs:
@@ -402,6 +409,8 @@ class Forward(RelativeCompose):
     ORDER = ('Composing', 4)
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
+        'ephemeral': 'ephemerality',
+        'atts': 'forward attachments'
     }
     HTTP_POST_VARS = {}
 
@@ -458,20 +467,26 @@ class Forward(RelativeCompose):
         with_atts = False
         ephemeral = False
         args = list(self.args)
-        while args:
-            if args[0].lower() == 'att':
-                with_atts = args.pop(0) or True
-            elif args[0].lower() == 'ephemeral':
-                ephemeral = args.pop(0) or True
-            else:
-                break
+        if not args:
+            args = self.data.get('mid', [])
+            ephemeral = bool(self.data.get('ephemeral', False))
+            with_atts = bool(self.data.get('atts', False))
+        else:
+            while args:
+                if args[0].lower() == 'att':
+                    with_atts = args.pop(0) or True
+                elif args[0].lower() == 'ephemeral':
+                    ephemeral = args.pop(0) or True
+                else:
+                    break
+
         if ephemeral and with_atts:
             raise UsageError(_('Sorry, ephemeral messages cannot have '
                                'attachments at this time.'))
 
         refs = [Email(idx, i) for i in self._choose_messages(args)]
         if refs:
-            email, ephemeral = self.CreateReply(idx, session, refs,
+            email, ephemeral = self.CreateForward(idx, session, refs,
                                                 with_atts=with_atts,
                                                 ephemeral=ephemeral)
 
