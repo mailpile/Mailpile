@@ -74,8 +74,8 @@ class MailpileCommand(Extension):
         environment.filters['json'] = self._json
 
         # Strip trailing blank lines from email
-        environment.globals['trim_blanks'] = self._trim_blanks
-        environment.filters['trim_blanks'] = self._trim_blanks
+        environment.globals['nice_text'] = self._nice_text
+        environment.filters['nice_text'] = self._nice_text
 
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
@@ -336,41 +336,7 @@ class MailpileCommand(Extension):
     def _json(self, d):
         return json.dumps(d)
 
-    def _trim_blanks(self, text):
-
-        # Split the lines
-        lines = text.splitlines()
-        start = []
-        start_count = 0
-        end = []
-        end_count = 0
-    
-        # Strart pruning off empty lines at begining, then the end
-        # but leave other blank lines
-        for line in lines:
-            if line:
-                start.append(line)
-                start_count += 1
-            elif line == '' and start_count:
-                start.append(line)
-    
-        for line in reversed(start):
-            if line:
-                end.append(line)
-                end_count += 1
-            elif line == '' and end_count:
-                end.append(line)
-    
-        output = ''
-        line_count = 0        
-        total_lines = len(end)
-    
-        # Re-ouput everything as string with line breaks
-        for line in reversed(end):
-            line_count += 1
-            if line_count == total_lines:
-                output += line
-            else:
-                output += line + '\n'
-    
+    def _nice_text(self, text):
+        # trim starting & ending empty lines
+        output = text.strip('\r\n')
         return output

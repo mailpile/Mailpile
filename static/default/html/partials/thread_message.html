@@ -78,17 +78,17 @@
       </div>
       {% endif %}
       {% if part.type in ("text", "pgpsignedtext") %}
-      <div class="thread-item-text">{{ part.data|urlize|trim_blanks }}</div>
+      <div class="thread-item-text">{{ part.data|nice_text|urlize }}</div>
       {% elif part.type == "quote" %}
         <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}">
         {%- if loop.index != message.text_parts|length -%}
-        <div id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|urlize|trim_blanks }}</div>
+        <div id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|nice_text|urlize }}</div>
         {%- else -%}
-        <div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|urlize|trim_blanks }}</div>
+        <div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|nice_text|urlize }}</div>
         {%- endif -%}
         </div>
       {% elif part.type == "signature" %}
-      <div class="thread-item-signature" id="message-signature-{{mid}}-{{loop.index}}">{{ part.data|urlize|trim_blanks }}</div>
+      <div class="thread-item-signature" id="message-signature-{{mid}}-{{loop.index}}">{{ part.data|nice_text|urlize }}</div>
       {% endif %}
     {% endif %}
   {% endfor %}
