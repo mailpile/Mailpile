@@ -1,0 +1,34 @@
+<!-- These are the fixed top-level tempalte variables: -------------------------
+
+    csrf: {{ csrf }}
+    http_host: {{ http_host }}
+    http_hostname: {{ http_hostname }}
+    http_method: {{ http_method }}
+    message_count: {{ mailpile_size }}
+    name: {{ name }}
+    title: {{ title }}
+    url_protocol: {{ url_protocol }}
+
+---------------------------------------------------------------------------- -->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" href="/static/css/default.css" />
+  <link rel="stylesheet" href="/jsapi/as.css" />
+  
+  <!--[if lt IE 9]>
+    <script src="/static/js/html5.js"></script>
+  <![endif]-->
+  <!-- Apple Icons -->
+  <link rel="apple-touch-icon" sizes="57x57" href="/static/img/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/static/img/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/static/img/apple-touch-icon-114x114.png">
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="/static/img/favicon.png" />
+  <link rel="icon" type="image/png" href="/static/img/favicon.png" />
+
+  <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name}}'s mailpile</title>
+
+  <script src="/static/js/libraries/jquery.min.js"></script>
+  <script src="/static/js/libraries-min.js"></script>
+  <script src="/api/0/jsapi/as.js"></script>
+  {% block head %}{% endblock %}

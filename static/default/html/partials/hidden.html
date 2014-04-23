@@ -1,0 +1,83 @@
+<!-- Notifications -->
+<div id="notifications" class="hide">
+  <div class="notifications-header">
+    {{_("Notifications") }}
+  </div>
+  <div class="notifications-window">
+  <ul>
+    <li class="notification">
+      <a href="#">
+        <img src="/static/img/avatar-default.png">
+        <strong>Richard Stallman</strong> sent you a <strong>tormail</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-tag"></span> The <strong> Mailpile</strong> tag was applied to <strong>400 messages</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <img src="/static/img/avatar-default.png">
+        <strong>You</strong> sent <strong>5 tormail</strong> to various people
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-inbox"></span> <strong>16 new messages</strong> have been downloaded to <strong>Inbox</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-groups"></span> <strong>You</strong> added 5 people to group <strong>Group</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-inbox"></span> <strong>3 new messages</strong> have been downloaded to <strong>Bills & Banking</strong>
+      </a>                    
+    </li>
+    <li class="notification">
+      <a href="#">
+        <span class="icon-tag"></span> The <strong>Friends</strong> tag was applied to <strong>51 messages</strong>
+      </a>                    
+    </li>
+  </ul>
+  </div>
+  <div class="notifications-bottom">
+    <a href="/eventlog/">{{_("All Notifications")}}</a>
+  </div>
+</div>
+
+<!-- Search Param Editor -->
+<div id="search-params" class="clearfix hide">
+  <ul>
+    <li><span class="icon-calendar"></span> {{_("From")}} <a href="#" class="" id="search-start-time">{{_("Start Date")}}</a> {{_("to")}} <a href="#" class="" id="search-end-time">{{_("Present")}}</a></li>
+    <li><span class="icon-tag"></span> {{_("With")}} <a href="#" id="search-tags">{{_("No Tags")}}</a></li>
+    <li><span class="icon-groups"></span> {{_("In")}} <a href="#" id="search-all-groups">{{_("All Groups")}}</a></li>
+    <li><span class="icon-user"></span> {{_("And")}} <a href="#" id="search-tags">{{_("All Contacts")}}</a></li>
+  </ul>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modal-full" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"></h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Debug -->
+<div id="debug" class="hide">
+  <h3>DEBUG</h3>
+  <b>command:</b> {{ command }}<br>
+  <b>args:</b> {{ args }}<br>
+  <b>kwargs:</b> {{ kwargs }}
+  {{logged}}
+</div>
