@@ -8,6 +8,7 @@ from gettext import gettext as _
 from jinja2 import nodes, UndefinedError
 from jinja2.ext import Extension
 from jinja2.utils import contextfunction, import_string, Markup
+#from markdown import markdown
 
 from mailpile.commands import Action
 from mailpile.util import *
@@ -339,4 +340,6 @@ class MailpileCommand(Extension):
     def _nice_text(self, text):
         # trim starting & ending empty lines
         output = text.strip()
+        # render markdown
+        # output = markdown(output)
         return output
