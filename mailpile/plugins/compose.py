@@ -708,7 +708,7 @@ class UnThread(CompositionCommand):
         session, config, idx = self.session, self.session.config, self._idx()
 
         # Message IDs can come from post data
-        args = self.args
+        args = list(self.args)
         for mid in self.data.get('mid', []):
             args.append('=%s' % mid)
         emails = [Email(idx, mid) for mid in self._choose_messages(args)]
