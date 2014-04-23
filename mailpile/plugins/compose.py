@@ -88,7 +88,7 @@ def AddComposeMethods(cls):
                 # Not actually ephemeral, just return a normal Email
                 return Email(self._idx(), ephemeral_mid)
 
-            etype, mid = ephemeral_mid.split(':')
+            etype, mid = ephemeral_mid.rsplit('-', 1)
             etype = etype.lower()
 
             if etype in ('forward', 'forward-att'):
@@ -260,7 +260,7 @@ class Compose(CompositionCommand):
             local_id, lmbox = session.config.open_local_mailbox(session)
         else:
             local_id, lmbox = -1, None
-            ephemeral = ['new:mail']
+            ephemeral = ['new-mail']
         return (Email.Create(idx, local_id, lmbox,
                              save=(not ephemeral),
                              ephemeral_mid=ephemeral and ephemeral[0]),
@@ -351,9 +351,9 @@ class Reply(RelativeCompose):
         else:
             local_id, lmbox = -1, None
             if reply_all:
-                ephemeral = ['reply-all:%s' % refs[0].msg_mid()]
+                ephemeral = ['reply-all-%s' % refs[0].msg_mid()]
             else:
-                ephemeral = ['reply:%s' % refs[0].msg_mid()]
+                ephemeral = ['reply-%s' % refs[0].msg_mid()]
 
         return (Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
@@ -443,9 +443,9 @@ class Forward(RelativeCompose):
         else:
             local_id, lmbox = -1, None
             if msg_atts:
-                ephemeral = ['forward-att:%s' % refs[0].msg_mid()]
+                ephemeral = ['forward-att-%s' % refs[0].msg_mid()]
             else:
-                ephemeral = ['forward:%s' % refs[0].msg_mid()]
+                ephemeral = ['forward-%s' % refs[0].msg_mid()]
 
         email = Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),

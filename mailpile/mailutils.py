@@ -296,7 +296,7 @@ class Email(object):
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
                msg_subject=None, msg_text=None, msg_references=None,
-               save=True, ephemeral_mid='not:saved'):
+               save=True, ephemeral_mid='not-saved'):
         msg = MIMEMultipart()
         msg.signature_info = SignatureInfo()
         msg.encryption_info = EncryptionInfo()

@@ -245,7 +245,7 @@ class Command:
                         self.session.ui.warning((_('No such ID: %s')
                                                  ) % (what[1:], ))
                 except ValueError:
-                    if allow_ephemeral and ':' in what:
+                    if allow_ephemeral and '-' in what:
                         msg_ids.add(what[1:])
                     else:
                         self.session.ui.warning(_('What message is %s?'
@@ -487,7 +487,7 @@ class SearchResults(dict):
         }
 
         # Ephemeral messages do not have URLs
-        if ':' not in msg_info[MailIndex.MSG_MID]:
+        if '-' not in msg_info[MailIndex.MSG_MID]:
             expl['urls'] = {
                 'thread': self.urlmap.url_thread(msg_info[MailIndex.MSG_MID]),
                 'source': self.urlmap.url_source(msg_info[MailIndex.MSG_MID]),
