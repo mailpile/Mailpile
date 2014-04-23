@@ -351,9 +351,9 @@ class Reply(RelativeCompose):
         else:
             local_id, lmbox = -1, None
             if reply_all:
-                ephemeral = ['reply-all-%s' % refs[0].msg_mid()]
+                ephemeral = ['reply-all:%s' % refs[0].msg_mid()]
             else:
-                ephemeral = ['reply-%s' % refs[0].msg_mid()]
+                ephemeral = ['reply:%s' % refs[0].msg_mid()]
 
         return (Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
