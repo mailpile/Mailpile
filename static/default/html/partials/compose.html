@@ -1,4 +1,4 @@
-<form id="form-compose" class="clearfix" data-mid="{{mid}}">
+<form id="form-compose-{{mid}}" class="form-compose clearfix" data-mid="{{mid}}">
   <input id="compose-mid" type="hidden" name="mid" value="{{mid}}">
   <input id="compose-crypto" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
   <input id="compose-signature" type="hidden" value="">
@@ -25,25 +25,25 @@
     </ul>
 -->
     <label>{{_("From")}}</label>
-    <select id="compose-from" name="from">
+    <select class="compose-from" name="from">
       <option value="{{editing_strings.from}}" selected>{{editing_strings.from}}</option>
       <option value="{{editing_strings.from}}"> - - - </option>
       {% for p in profiles %}
       <option value="{{p.name}} &lt;{{p.email}}&gt;">{{p.name}} &lt;{{p.email}}&gt;</option>
       {% endfor %}
     </select>
-    <ul id="compose-options" class="horizontal right" data-mid="{{mid}}">
+    <ul class="compose-options horizontal right" data-mid="{{mid}}">
       {% if command == "view" %}
       <li><label class="compose-apply-quote"><input class="compose-apply-quote" type="checkbox" checked="checked"> Quote</label></li>
       {% endif %}
-      <li class="compose-crypto-signature signed animated"
+      <li class="compose-crypto-signature none animated"
           data-crypto_signed="{{_("Signed")}}"
           data-crypto_not_signed="{{_("Not Signed")}}"
           data-crypto_signed_error="{{_("Signature Error")}}"
           data-crypto_title_signed="{{_("This message will be signed with your key. Recipients who have your key will know it actually came from you :)")}}"          
           data-crypto_title_not_signed="{{_("This message will not be signed with your key. Recipients will have no way of knowing it actually came from you.")}}"
           data-crypto_title_signed_error="{{_("Error accesing your key")}}">
-        <span class="icon icon-signature-verified"></span> <span class="text">{{_("Signed")}}</span></li>
+        <span class="icon icon-signature-none"></span> <span class="text">{{_("Not Signed")}}</span></li>
       <li class="compose-crypto-encryption none animated"
           data-crypto_none="{{_("None")}}"
           data-crypto_encrypt="{{_("Encrypted")}}"
@@ -113,7 +113,7 @@
     <div class="compose-attachments left">
       <!-- <a href="#"><span class="icon-attachment"></span> Attach Something</a> -->
     </div>
-    <div class="compose-buttons right">
+    <div class="compose-buttons right" data-mid="{{mid}}">
       <button class="compose-action" type="submit" name="save" value="save" alt="{{_("Save")}}">
         <span class="icon-compose"></span> {{_("Save")}}
       </button>

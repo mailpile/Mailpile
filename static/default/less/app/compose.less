@@ -2,34 +2,34 @@
 
   @compose-max-width: 800px;
 
-  #form-compose {
+  .form-compose {
     min-height: 225px;
     padding: 10px 15px;
     background: @grayLight;
   }
 
-  #form-compose label {
+  .form-compose label {
     display: block;
     margin-bottom: 3px;
     font-size: 14px;
     font-weight: normal;
   }
 
-  #form-compose label a {
+  .form-compose label a {
     font-size: 14px;
     font-weight: normal;
   }
   
-  #form-compose label a:hover {
+  .form-compose label a:hover {
     color: @red;
   }
   
-  #form-compose label span,
-  #form-compose label a.compose-hide-field {
+  .form-compose label span,
+  .form-compose label a.compose-hide-field {
     color: @gray;
   }
 
-  #compose-from {
+  .compose-from {
     float: left;
     height: 32px;
     background-color: #fafafa;
@@ -38,21 +38,35 @@
     font-size: 12px;
   }
 
-  #compose-options {
+  .compose-options {
     position: relative;
     top: -20px;
     right: 10px;
   }
 
-  #compose-options li {
-    margin-left: 25px;
+  .compose-options li {
+    margin-left: 25px;    
+  }
+
+  .compose-options li label.compose-apply-quote,
+  .compose-options li span.text,
+  .compose-options li a.compose-show-details {
+    font-size: 14px;
+    font-style: bold;
+    line-height: 14px;
   }
 
 
 
 /* Compose - Crypto */
 
-  .compose-crypto-signature:hover {
+  .compose-crypto-signature,
+  .compose-crypto-encryption {
+    font-weight: bold;
+  }
+
+  .compose-crypto-signature:hover,
+  .compose-crypto-encryption:hover {
     cursor: pointer;
   }
   .compose-crypto-signature.none {
@@ -65,9 +79,6 @@
     color: @red;
   }
 
-  .compose-crypto-encryption:hover {
-    cursor: pointer;
-  }  
   .compose-crypto-encryption.none {
     color: @gray;
   }
@@ -83,7 +94,6 @@
   .compose-crypto-encryption.error {
    color: @red;
   }
-
 
 
 /* Compose - Headers */

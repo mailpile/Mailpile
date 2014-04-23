@@ -416,7 +416,8 @@ $(document).on('click', '.compose-action', function(e) {
 
   e.preventDefault();
   var action = $(this).val();
-
+  var form_data = $(this).parent().parent().parent().serialize()
+  
   if (action === 'send') {
 	  var action_url     = mailpile.api.compose_send;
 	  var action_status  = 'success';
@@ -436,7 +437,7 @@ $(document).on('click', '.compose-action', function(e) {
 	$.ajax({
 		url			 : action_url,
 		type		 : 'POST',
-		data     : $('#form-compose').serialize(),
+		data     : form_data,
 		dataType : 'json',
 	  success  : function(response) {
 	    // Is A New Message (or Forward)
@@ -610,7 +611,7 @@ $(document).ready(function() {
       hide: function(event, api) {
 
         $('.select2-choices').css('border-color', '#CCCCCC');
-        $('.compose-from').css('background-color', '#ffffff');
+        $('.compose-from').css('border-color', '#CCCCCC');
         $('.compose-subject input[type=text]').css('border-color', '#CCCCCC');
 
         $('.compose-message textarea').css('border-color', '#CCCCCC');
