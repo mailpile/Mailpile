@@ -1,4 +1,6 @@
+import json
 from gettext import gettext as _
+from urllib import urlencode, URLopener
 
 from mailpile.commands import Command, Help
 from mailpile.mailutils import *
@@ -112,3 +114,62 @@ class ViewMetadata(Hacks):
     def command(self):
         return self._success(_('Displayed raw metadata'),
             [self._explain(i) for i in self._choose_messages(self.args)])
+
+
+class Http(Hacks):
+    """Send HTTP requests to the web server"""
+    SYNOPSIS = (None, 'hacks/http', None,
+                '<GET|POST> </url/> [<Q|P> <var>=<val> ...]')
+
+#    class CommandResult(Hacks.CommandResult):
+#        def as_text(self):
+#            pass
+
+    def command(self):
+        args = list(self.args)
+        method, url = args[0:2]
+
+        if not url.startswith('http'):
+            url = 'http://%s:%s%s' % (self.session.config.sys.http_host,
+                                      self.session.config.sys.http_port,
+                                      ('/' + url).replace('//', '/'))
+
+        # FIXME: The python URLopener doesn't seem to support other verbs,
+        #        which is really quite lame.
+        method = method.upper()
+        assert(method in ('GET', 'POST'))
+
+        qv, pv = [], []
+        if method == 'POST':
+            which = pv
+        else:
+            which = qv
+        for arg in args[2:]:
+            if '=' in arg:
+                which.append(tuple(arg.split('=', 1)))
+            elif arg.upper()[0] == 'P':
+                which = pv
+            elif arg.upper()[0] == 'Q':
+                which = qv
+
+        if qv:
+            qv = urlencode(qv)
+            url += ('?' in url and '&' or '?') + qv
+
+        try:
+            uo = URLopener()
+            if method == 'POST':
+                (fn, hdrs) = uo.retrieve(url, data=urlencode(pv))
+            else:
+                (fn, hdrs) = uo.retrieve(url)
+            hdrs = unicode(hdrs)
+            data = open(fn, 'rb').read().strip()
+            if data.startswith('{') and 'application/json' in hdrs:
+                data = json.loads(data)
+            return self._success('%s %s' % (method, url), result={
+                'headers': hdrs.splitlines(),
+                'data': data
+            })
+        except:
+            self._ignore_exception()
+            return self._error('%s %s' % (method, url))

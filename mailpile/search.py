@@ -356,13 +356,39 @@ class MailIndex:
         nz_dates = sorted([d for d in dates if d])
 
         if nz_dates:
-            median = nz_dates[len(nz_dates) / 2]
-            if msg_ts and abs(msg_ts - median) < 31 * 24 * 3600:
+            a_week = 7 * 24 * 3600
+
+            # Ideally, we compare with the date on the 2nd SMTP relay, as
+            # the first will often be the same host as composed the mail
+            # itself. If we don't have enough hops, just use the last one.
+            #
+            # We don't want to use a median or average, because if the
+            # message bounces around lots of relays or gets resent, we
+            # want to ignore the latter additions.
+            #
+            rcv_ts = nz_dates[min(len(nz_dates)-1, 2)]
+
+            # Now, if everything is normal, the msg_ts will be at nz_dates[0]
+            # and it won't be too far away from our reference date.
+            if (msg_ts == nz_dates[0]) and (abs(msg_ts - rcv_ts) < a_week):
+                # Note: Trivially true for len(nz_dates) in (1, 2)
                 return msg_ts
+
+            # Damn, dates are screwy!
+            #
+            # Maybe one of the SMTP servers has a wrong clock?  If the Date:
+            # header falls within the range of all detected dates (plus a
+            # week towards the past), still trust it.
+            elif ((msg_ts >= (nz_dates[0]-a_week))
+                    and (msg_ts <= nz_dates[-1])):
+                return msg_ts
+
+            # OK, Date: is insane, use one of the early Received: lines
+            # instead.  We picked the 2nd one above, that should do.
             else:
                 session.ui.warning(_('=%s/%s using Received: instead of Date:'
                                      ) % (msg_mid, msg_id))
-                return median
+                return rcv_ts
         else:
             # If the above fails, we assume the messages in the mailbox are in
             # chronological order and just add 1 second to the date of the last

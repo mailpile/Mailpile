@@ -32,6 +32,10 @@
         {
             "class": "ViewMetadata",
             "name": "hacks/metadata"
+        },
+        {
+            "class": "Http",
+            "name": "hacks/http"
         }
     ]
 }
