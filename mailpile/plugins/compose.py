@@ -701,6 +701,7 @@ class Update(CompositionCommand):
 class UnThread(CompositionCommand):
     """Remove a message from a thread."""
     SYNOPSIS = (None, 'unthread', 'message/unthread', None)
+    HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_POST_VARS = {'mid': 'message-id'}
 
     def command(self):
