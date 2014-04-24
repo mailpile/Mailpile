@@ -49,10 +49,10 @@
       {{part.data|replace("\\n", "\n")|safe}}
     {% endfor %}
   {% endif %}
-  
+  {% set special_text_parts = [] %}
+  {% set last_part = message.text_parts|length - 1 %}
   {% for part in message.text_parts %}
-    {# Parts that do not have own crypto attribute inherit from message itself #}
-    {#
+    {# Parts that do not have own crypto attribute inherit from message itself
      # Watch for changes to the "context" which is present in each encryption and
      # signature section - if either has changed, then we have moved from
      # one security context to the next, and need to let the user know.
@@ -77,20 +77,23 @@
         <div class="thread-item-crypto-line left"></div>
       </div>
       {% endif %}
-      {% if part.type in ("text", "pgpsignedtext") %}
+      {% if part.type in ("text", "pgpsignedtext", "pgptext") %}
       <div class="thread-item-text">{{ part.data|nice_text|urlize }}</div>
-      {% elif part.type == "quote" %}
-        <div class="thread-item-quote" id="message-quote-{{mid}}-{{loop.index}}">
-        {%- if loop.index != message.text_parts|length -%}
-        <div id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|nice_text|urlize }}</div>
-        {%- else -%}
-        <div class="thread-item-quote-show" data-quote_id="{{mid}}-{{loop.index}}">&middot;&middot;&middot;&middot;</div><div class="thread-item-quote-text" id="message-quote-text-{{mid}}-{{loop.index}}">{{ part.data|nice_text|urlize }}</div>
+      {% elif part.type == "quote" %}        
+        {%- if message.text_parts|length - loop.index and message.text_parts[last_part].type == "signature" -%}
+          {% do special_text_parts.append("quote") %}
+          <div class="thread-item-quote hide">{{ part.data|nice_text|urlize }}</div>
+        {% elif loop.index == message.text_parts|length %}
+          {% do special_text_parts.append("quote") %}
+          <div class="thread-item-quote hide">{{ part.data|nice_text|urlize }}</div>
+        {% else %}
+          <div class="thread-item-quote">{{ part.data|nice_text|urlize }}</div>        
         {%- endif -%}
-        </div>
       {% elif part.type == "signature" %}
-      <div class="thread-item-signature" id="message-signature-{{mid}}-{{loop.index}}">{{ part.data|nice_text|urlize }}</div>
+        {% do special_text_parts.append("signature") %}
+        <div class="thread-item-signature hide">{{ part.data|nice_text|urlize }}</div>
       {% else %}
-      {{_("Unknown Text Part")}}
+        {{_("Unknown Text Part")}}
       {% endif %}
     {% endif %}
   {% endfor %}  
@@ -108,7 +111,25 @@
     </ul>
   </div>
   {% endif %}
-  <ul class="thread-message-actions horizontal clearfix" data-mid="{{mid}}">
+  <div class="clearfix">
+  <ul class="thread-message-actions horizontal left" data-mid="{{mid}}">
+    {% if "quote" in special_text_parts %}
+    <li><a class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
+    {% endif %}
+    {% if "signature" in special_text_parts %}
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-user"></span> Signature</a>
+      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
+        <li role="presentation"><a class="message-action-show-signature" role="menuitem" tabindex="-1" href="#"><span class="icon-eye"></span> Show Signature</a></li>
+        <li role="presentation"><a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#"><span class="icon-user"></span> Add to Contact</a></li>
+      </ul>
+    </li>
+    {% endif %}
+  </ul>  
+  <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">
+    {% if show_reply == "true" %}
+    <li><a class="message-action-reply" href="#"><span class="icon-reply"></span> Reply</a></li>
+    {% endif %}
     <li><a class="message-action-forward" href="#"><span class="icon-forward"></span> Forward</a></li>
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-move"></span> Move</a>
@@ -120,4 +141,5 @@
     </li>
     <li><a class="message-action-trash" href="#"><span class="icon-trash"></span> Trash</a></li>
   </ul>
+  </div>
 </div>

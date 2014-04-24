@@ -255,51 +255,22 @@
     line-height: inherit;
   }
 	
-  .thread-item-quote {
+  .thread-item-quote,
+  .thread-item-quote-text {
     max-width: 90%;
   	margin-left: 20px;
   	margin-bottom: 15px;
     .font-style-item-text();
     color: lighten(@black, 30%);
-   }
-	
-	.thread-item-quote-show {
-	  display: inline-block;
-    padding: 2px 5px;
-  	border: 1px solid @grayMid;
-  	border-radius: 3px;
-  	color: @grayDark;
-  	cursor: pointer;
-  	font-size: 18px;
-  	line-height: 14px;
-	}
-	
-  .thread-item-quote-show:hover {
-    background: @grayLight;
-  }
-	
-	.thread-item-quote-text {
-  	display: none;
-	}
+   }	
 
   .thread-item-signature {
-    display: inline-block;
   	margin-left: 20px;
   	margin-bottom: 15px;
   	padding: 10px;
     .font-style-item-text();
     border: 1px solid @white;
    }
-
-  .thread-item-signature-hover {
-    background: @grayLight;
-    border-radius: 7px;
-    border: 1px solid @grayMid;
-  }
-
-  .button-signature-contact {
-    float: right;
-  }
 
 
 /* Thread Message Attachments */
@@ -336,13 +307,30 @@
 /* Thread Message Actions */
 
   .thread-message-actions {
-    margin-left: 25px;
+    margin-left: 20px;
     margin-bottom: 15px;
   }
 
   .thread-message-actions li {
     margin-right: 25px;
   }
+
+	.thread-message-actions-quote {
+	  display: inline-block;
+    padding: 2px 5px;
+  	border: 1px solid @grayMid;
+  	border-radius: 3px;
+  	color: @grayDark;
+  	cursor: pointer;
+  	font-size: 18px;
+  	font-weight: normal;
+  	line-height: 14px;
+	}
+	
+  .thread-message-actions-quote:hover {
+    background: @grayLight;
+  }
+
 
 /* Thread - Crypto Tooltips */
 

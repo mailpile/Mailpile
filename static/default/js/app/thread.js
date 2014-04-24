@@ -119,11 +119,26 @@ $(document).on('click', 'div.thread-snippet', function(e) {
 });
 
 
-/* Thread - Message Quote Show */
-$(document).on('click', '.thread-item-quote-show', function() {
-  var quote_id = $(this).data('quote_id');
-  var quote_text = $('#message-quote-text-' + quote_id).html();
-  $('#message-quote-' + quote_id).html(quote_text);
+/* Thread - Message Quote */
+$(document).on('click', '.thread-message-actions-quote', function() {
+  var mid = $(this).parent().parent().data('mid');
+  $('#message-' + mid).find('.thread-item-quote').removeClass('hide');
+  $(this).parent().hide();
+});
+
+
+/* Thread - Message Signature */
+$(document).on('click', '.message-action-show-signature', function() {
+  var mid = $(this).parent().parent().parent().parent().data('mid');
+  var signature = $('#message-' + mid).find('.thread-item-signature');
+  if ($(signature).hasClass('hide')) {
+    $(signature).removeClass('hide');
+    $(this).html('<span class="icon-eye"></span> Hide Signature');
+  }
+  else {
+    $(signature).addClass('hide');
+    $(this).html('<span class="icon-eye"></span> Show Signature');
+  }    
 });
 
 
@@ -134,32 +149,10 @@ $(document).on('click', '.dropdown-toggle', function() {
 
 
 /* Thread - Add / Update Contact From Signature */
-$(document).on('mouseenter', '.thread-item-signature', function() {
+$(document).on('click', '.message-action-add-contact', function() {
 
-  /* Validate "is this a signature" by weights
-  *   - Contains same name as in From field
-  *   - Has Emails
-  *   - Has URLs (does URL match email domain)
-  *   - Has Phone numbers
-  *   - Has Street addresses
-  */
-  
-  var id = $(this).attr('id');
-  var mid = $(this).attr('id').split('-')[2];
-
-  // FIXME: make this determine "Add" or "Update" Contact
-  $('#' + id).prepend('<button id="signature-contact-'+ mid +'" class="button-signature-contact"><span class="icon-user"></span> Add</button>').addClass('thread-item-signature-hover');
-
-}).on('mouseleave', '.thread-item-signature', function() {
-
-  var id = $(this).attr('id');
-  var mid = $(this).attr('id').split('-')[2];
-  $('#signature-contact-'+ mid).remove();
-  $('#' + id).removeClass('thread-item-signature-hover');
-
-});
-
-$(document).on('click', '.button-signature-contact', function() {
+  var mid = $(this).parent().parent().parent().parent().data('mid');
+  var contat_html = $('#message-' + mid).find('.thread-item-signature').html();
 
  var options = {
    backdrop: true,
@@ -169,7 +162,7 @@ $(document).on('click', '.button-signature-contact', function() {
  };
 
  $('#modal-full .modal-title').html('Add To Contacts');
- $('#modal-full .modal-body').html('Eventually this feature will auto extract Names, Emails, URLs, Phone Numbers, and Addresses and prepopulate form fields to make contact management easier. Hang in there, its coming ;)');
+ $('#modal-full .modal-body').html('<p>Eventually this feature will extract this data from signature and pre-populate form fields.</p> <p>' + contat_html + '</p>');
  $('#modal-full').modal(options);
 });
 

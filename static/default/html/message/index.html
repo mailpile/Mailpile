@@ -13,6 +13,7 @@
     new ephermal draft
 #}
 {% set showed_composer = [] %}
+{% set show_reply = "false" %}
 {% for mid in result.thread_ids|reverse %}
   {% set metadata = result.data.metadata[mid] %}
   {% set message  = result.data.messages[mid] %}

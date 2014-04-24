@@ -3,6 +3,7 @@
 {% if result %}
   {% set profiles = mailpile('settings', 'profiles').result.profiles %}
   {% set showed_composer = [] %}
+  {% set show_reply = "true" %}
   {% for mid in result.thread_ids|reverse %}
     {% if mid in result.data.messages %}
       {% set metadata = result.data.metadata[mid] %}
