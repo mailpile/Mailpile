@@ -134,7 +134,7 @@ $(document).on('click', '.dropdown-toggle', function() {
 });
 
 
-/* Thread - Add / Update Contact From Signature */
+/* Thread - Add Contact From Signature */
 $(document).on('click', '.message-action-add-contact', function() {
 
   var mid = $(this).parent().parent().data('mid');
@@ -147,11 +147,27 @@ $(document).on('click', '.message-action-add-contact', function() {
     remote: false
   };
 
-  $('#modal-full .modal-title').html('Add To Contacts');
+  $('#modal-full .modal-title').html('<span class="icon-user"></span> Add Contact');
   $('#modal-full .modal-body').html('<p>Eventually this will extract this data from signature and pre-populate form fields.</p> <p>' + contat_html + '</p>');
   $('#modal-full').modal(options);
 });
 
+
+/* Thread - Import Key */
+$(document).on('click', '.message-action-import-key', function() {
+  
+  var options = {
+    backdrop: true,
+    keyboard: true,
+    show: true,
+    remote: false
+  };
+
+  $('#modal-full .modal-title').html('<span class="icon-key"></span> Import Key');
+  $('#modal-full .modal-body').html('<p>Eventually this will import a PGP key to a contact.</p>');
+  $('#modal-full').modal(options);  
+  
+});
 
 
 /* Thread Tooltips */

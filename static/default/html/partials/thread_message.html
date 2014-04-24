@@ -99,14 +99,15 @@
   {% endfor %}  
   {% if message.attachments %}
   <div class="thread-message-attachments">
-    <ul class="clearfix">
+    <ul class="thread-message-attachments horizontal clearfix">
       {% for att in message.attachments %}
-      <li>
       {% if att.mimetype in ('image/jpg', 'image/jpeg', 'image/png', 'image/gif') %}
-        <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+      <li><a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a></li>
+      {% elif att.mimetype in ('application/pgp-keys') %}
+      {% do special_text_parts.append("pgp-key") %}
+      {% else %}
+      <li><a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">{{ att.filename }}<small>{{ att.length|friendly_bytes }}</small></a></li>
       {% endif %}
-        <a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">{{ att.filename }}<small>{{ att.length|friendly_bytes }}</small></a>
-      </li>
       {% endfor %}
     </ul>
   </div>
@@ -118,6 +119,9 @@
     {% endif %}
     {% if "signature" in special_text_parts %}
     <li><a class="message-action-add-contact" href="#"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
+    {% endif %}
+    {% if "pgp-key" in special_text_parts %}
+    <li><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
     {% endif %}
   </ul>  
   <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">

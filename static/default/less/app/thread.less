@@ -258,15 +258,15 @@
   .thread-item-quote,
   .thread-item-quote-text {
     max-width: 90%;
-  	margin-left: 20px;
-  	margin-bottom: 15px;
+    margin-left: 20px;
+    margin-bottom: 15px;
     .font-style-item-text();
     color: lighten(@black, 30%);
    }	
 
   .thread-item-signature {
-  	margin-left: 20px;
-  	margin-bottom: 15px;
+    margin-left: 20px;
+    margin-bottom: 15px;
     .font-style-item-text();
     border: 1px solid @white;
    }
@@ -274,29 +274,35 @@
 
 /* Thread Message Attachments */
 
-	.thread-message-attachments {
+	div.thread-message-attachments {
   	margin-left: 20px;
   	margin-bottom: 0px;
 	}
 
-  .thread-message-attachments li {
+	ul.thread-message-attachments {
+  	margin-left: 0px;
+	  margin-bottom: 0px;
+  }
+
+  ul.thread-message-attachments li {
+    margin-right: 20px;
+    margin-bottom: 20px;
   	text-align: center;
-  	float: left;
   }
 	
-	.thread-message-attachments a {
+	ul.thread-message-attachments a {
   	font-size: 14px;
   	line-height: 14px;
 	}
 	
-	.thread-message-attachments a img {
+	ul.thread-message-attachments a img {
 	  display: block;
 	  width: 225px;
 	  padding: 5px;
 	  border: 1px solid @grayMid;
 	}
 
-  .thread-message-attachments a small {
+  ul.thread-message-attachments a small {
     display: block;
     font-size: 12px;
     font-weight: normal;
