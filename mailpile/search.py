@@ -553,7 +553,7 @@ class MailIndex:
         return msg_info
 
     def index_email(self, session, email):
-        msg = email.get_msg()
+        msg = email.get_msg(pgpmime=session.config.prefs.index_encrypted)
         msg_info = email.get_msg_info()
         mbox_idx = msg_info[self.MSG_PTRS].split(',')[0][:MBX_ID_LEN]
 
@@ -846,9 +846,10 @@ class MailIndex:
                                         lambda: _loader(part)))
 
         if 'crypto:has' in keywords:
-            e = Email(self, -1)
-            e.msg_parsed = msg
-            e.msg_info = self.BOGUS_METADATA[:]
+            e = Email(self, -1,
+                      msg_parsed=msg,
+                      msg_parsed_pgpmime=msg,
+                      msg_info=self.BOGUS_METADATA[:])
             tree = e.get_message_tree(want=(e.WANT_MSG_TREE_PGP +
                                             ('text_parts', )))
 

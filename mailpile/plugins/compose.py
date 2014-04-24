@@ -651,6 +651,7 @@ class Sendit(CompositionCommand):
             self._tag_drafts(sent, untag=True)
             self._tag_blank(sent, untag=True)
             for email in sent:
+                email.reset_caches()
                 idx.index_email(self.session, email)
 
             return self._return_search_results(sent, sent=sent)

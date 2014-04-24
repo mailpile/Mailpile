@@ -252,13 +252,15 @@ class Email(object):
     """This is a lazy-loading object representing a single email."""
 
     def __init__(self, idx, msg_idx_pos,
-                 msg_parsed=None, msg_info=None, ephemeral_mid=None):
+                 msg_parsed=None, msg_parsed_pgpmime=None,
+                 msg_info=None, ephemeral_mid=None):
         self.index = idx
         self.config = idx.config
         self.msg_idx_pos = msg_idx_pos
         self.ephemeral_mid = ephemeral_mid
-        self.msg_info = msg_info
-        self.msg_parsed = msg_parsed
+        self.reset_caches(msg_parsed=msg_parsed,
+                          msg_parsed_pgpmime=msg_parsed_pgpmime,
+                          msg_info=msg_info)
 
     def msg_mid(self):
         return self.ephemeral_mid or b36(self.msg_idx_pos)
@@ -541,15 +543,23 @@ class Email(object):
 
         # Remove the old message...
         mbx.remove(ptr[MBX_ID_LEN:])
+
         # FIXME: We should DELETE the old version from the index first.
 
         # Update the in-memory-index
-        self.msg_info[self.index.MSG_PTRS] = newptr
-        self.index.set_msg_at_idx_pos(self.msg_idx_pos, self.msg_info)
+        mi = self.get_msg_info()
+        mi[self.index.MSG_PTRS] = newptr
+        self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
         self.index.index_email(session, Email(self.index, self.msg_idx_pos))
 
-        self.msg_parsed = None
+        self.reset_caches()
         return self
+
+    def reset_caches(self,
+                     msg_info=None, msg_parsed=None, msg_parsed_pgpmime=None):
+        self.msg_info = msg_info
+        self.msg_parsed = msg_parsed
+        self.msg_parsed_pgpmime = msg_parsed_pgpmime
 
     def get_msg_info(self, field=None):
         if not self.msg_info:
@@ -579,14 +589,23 @@ class Email(object):
         fd.seek(0, 2)
         return fd.tell()
 
+    def _get_parsed_msg(self, pgpmime):
+        fd = self.get_file()
+        if fd:
+            return ParseMessage(fd, pgpmime=pgpmime)
+
     def get_msg(self, pgpmime=True):
-        if not self.msg_parsed:
-            fd = self.get_file()
-            if fd:
-                self.msg_parsed = ParseMessage(fd, pgpmime=pgpmime)
-        if not self.msg_parsed:
-            IndexError(_('Message not found?'))
-        return self.msg_parsed
+        if pgpmime:
+            if not self.msg_parsed_pgpmime:
+                self.msg_parsed_pgpmime = self._get_parsed_msg(pgpmime)
+            result = self.msg_parsed_pgpmime
+        else:
+            if not self.msg_parsed:
+                self.msg_parsed = self._get_parsed_msg(pgpmime)
+            result = self.msg_parsed
+        if not result:
+            raise IndexError(_('Message not found?'))
+        return result
 
     def get_headerprint(self):
         return HeaderPrint(self.get_msg())
