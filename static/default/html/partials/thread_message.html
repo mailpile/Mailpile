@@ -114,7 +114,7 @@
   {% endif %}
   <div class="clearfix">
   <ul class="thread-message-actions horizontal left" data-mid="{{mid}}">
-    {% if "quote" in special_text_parts %}
+    {% if "quote" or "signature" in special_text_parts %}
     <li><a class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
     {% endif %}
     {% if "signature" in special_text_parts %}
