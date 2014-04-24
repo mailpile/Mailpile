@@ -1,12 +1,26 @@
-MailPile.prototype.contact = function(msgids, tags) {}
-MailPile.prototype.addcontact = function(tagname) {}
+MailPile.prototype.contact_add = function(form_name, complete) {
+  $.ajax({
+    url      : '/api/0/contact/add/',
+    type     : 'POST',
+    data     : $(form_name).serialize(),
+    dataType : 'json',
+    success  : function(response) {
+      console.log(response);
+      if (response.status === 'success') {
+        complete(response.result);
+      }
+    }
+  });
+};
 
 /* Show Contact Add Form */
 $(document).on('click', '.btn-activity-contact_add', function(e) {
 
   e.preventDefault();
   $('#contacts-list').hide();
-  $('#contact-add').show();
+  var add_contact_html = $('#template-contact-add').html();
+
+  $('#content-view').prepend(add_contact_html);
 
   $('.sub-navigation ul li').removeClass('navigation-on');
   $(this).addClass('navigation-on');
@@ -115,6 +129,7 @@ $(document).on('click', '#button-contact-search-keyserver', function(e) {
   });
 });
 
+
 $(document).on('click', '.contact-add-search-item', function() {
 
   var key_data = { keyid: $(this).data('keyid') };
@@ -136,4 +151,13 @@ $(document).on('click', '.contact-add-search-item', function() {
       }
     }
   });  
+});
+
+
+/* Contact - Add */
+$(document).on('submit', '#form-contact-add', function(e) {
+  e.preventDefault();
+  mailpile.contact_add('#form-contact-add', function() {
+    alert('Woot, contact added');
+  });
 });

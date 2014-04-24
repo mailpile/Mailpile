@@ -134,22 +134,35 @@ $(document).on('click', '.dropdown-toggle', function() {
 });
 
 
-/* Thread - Add Contact From Signature */
+/* Thread - Add Contact */
 $(document).on('click', '.message-action-add-contact', function() {
 
   var mid = $(this).parent().parent().data('mid');
-  var contat_html = $('#message-' + mid).find('.thread-item-signature').html();
+  var name = $(this).data('name');
+  var address = $(this).data('address');
+  var signature = 'FIXME: ' + $('#message-' + mid).find('.thread-item-signature').html();
 
-  var options = {
-    backdrop: true,
-    keyboard: true,
-    show: true,
-    remote: false
-  };
+  var modal_html = $("#modal-add-contact").html();
+  $('#modal-full').html(_.template(modal_html, {}));
+  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
 
-  $('#modal-full .modal-title').html('<span class="icon-user"></span> Add Contact');
-  $('#modal-full .modal-body').html('<p>Eventually this will extract this data from signature and pre-populate form fields.</p> <p>' + contat_html + '</p>');
-  $('#modal-full').modal(options);
+  // Add Values
+  $('.contact-add-name').val(name);
+  $('.contact-add-email').val(address);
+  $('.contact-add-signature').html(signature);
+  $('.contact-add-mid').val(mid);
+});
+
+
+/* Thread - Add Contact Form */
+$(document).on('submit', '#form-add-contact-modal', function(e) {
+  e.preventDefault();
+  mailpile.contact_add('#form-add-contact-modal', function() {    
+    // Hide Modal
+    $('#modal-full').modal('hide');
+    // Remove Button
+    $('#message-' + mid).find('.message-action-add-contact').parent().remove();
+  });
 });
 
 

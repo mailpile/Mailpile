@@ -41,8 +41,37 @@
 {% endif %}
 </div>
 
-<div id="contact-add" class="content-normal hide">
-{% include("partials/contact_add.html") %}
-</div>
+<script id="template-contact-add" type="text/template">
+  <form id="form-contact-add" class="standard">
+    {% include("partials/contact_add.html") %}
+    <div id="contact-add-key"></div>
+    <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+  </form>
+</script>
+
+<script id="template-search-keyserver-results" type="text/template">
+  <div class="contact-add-search-keyserver">
+    <div id="contact-search-keyserver-input"></div>
+    <div id="contact-search-keyserver-result"></div>
+  </div>
+</script>
+
+<script id="template-search-keyserver" type="text/template">
+  <label>{{_("Search for encryption keys matching:")}}</label>
+  <p id="contact-search-keyserver-query"><b><%= query %></b></p>
+  <p><a href="#" class="button-primary" id="button-contact-search-keyserver" data-searching="{{_('Searching keyservers')}}" data-query="<%= query %>" data-complete="{{_('Results for:')}}"><span class="icon-search"></span> {{_("Go")}}</a></p>
+</script>
+
+<script id="template-search-keyserver-item" type="text/template">
+  <li class="contact-add-search-item" data-keyid="<%= keyid %>">
+    <span class="name"><%= name %></span>
+    <span class="email"><span class="icon-inbox"></span> <%= email %></span>
+    <span class="key"><span class="icon-key"></span> {{_("Key")}}: <%= keyid %></span>
+    <span class="created">{{_("Created")}} <%= created %></span>
+    <span class="keysize">{{_("Key Size")}} <%= keysize %></span>
+    <span class="keytype">{{_("Key Type")}} <%= keytype %></span>
+  </li>
+</script>
+
 {% endblock %}
 
