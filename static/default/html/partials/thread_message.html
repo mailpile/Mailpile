@@ -117,29 +117,23 @@
     <li><a class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
     {% endif %}
     {% if "signature" in special_text_parts %}
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-user"></span> Signature</a>
-      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
-        <li role="presentation"><a class="message-action-show-signature" role="menuitem" tabindex="-1" href="#"><span class="icon-eye"></span> Show Signature</a></li>
-        <li role="presentation"><a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#"><span class="icon-user"></span> Add to Contact</a></li>
-      </ul>
-    </li>
+    <li><a class="message-action-add-contact" href="#"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
     {% endif %}
   </ul>  
   <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">
     {% if show_reply == "true" %}
-    <li><a class="message-action-reply" href="#"><span class="icon-reply"></span> Reply</a></li>
+    <li><a class="message-action-reply" href="#"><span class="icon-reply"></span> {{_("Reply")}}</a></li>
     {% endif %}
-    <li><a class="message-action-forward" href="#"><span class="icon-forward"></span> Forward</a></li>
+    <li><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
     <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-move"></span> Move</a>
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-move"></span> {{_("Move")}}</a>
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
-        <li role="presentation"><a class="message-action-inbox" role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> Move to Inbox</a></li>
-        <li role="presentation"><a class="message-action-spam" role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> Flag as Spam</a></li>
-        <li role="presentation"><a class="message-action-unthread" role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> Remove from Thread</a></li>
+        <li role="presentation"><a class="message-action-inbox" role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> {{_("Move to Inbox")}}</a></li>
+        <li role="presentation"><a class="message-action-spam" role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> {{_("Flag as Spam")}}</a></li>
+        <li role="presentation"><a class="message-action-unthread" role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> {{_("Remove from Thread")}}</a></li>
       </ul>
     </li>
-    <li><a class="message-action-trash" href="#"><span class="icon-trash"></span> Trash</a></li>
+    <li><a class="message-action-trash" href="#"><span class="icon-trash"></span> {{_("Trash")}}</a></li>
   </ul>
   </div>
 </div>

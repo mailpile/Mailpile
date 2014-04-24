@@ -123,22 +123,8 @@ $(document).on('click', 'div.thread-snippet', function(e) {
 $(document).on('click', '.thread-message-actions-quote', function() {
   var mid = $(this).parent().parent().data('mid');
   $('#message-' + mid).find('.thread-item-quote').removeClass('hide');
+  $('#message-' + mid).find('.thread-item-signature').removeClass('hide');
   $(this).parent().hide();
-});
-
-
-/* Thread - Message Signature */
-$(document).on('click', '.message-action-show-signature', function() {
-  var mid = $(this).parent().parent().parent().parent().data('mid');
-  var signature = $('#message-' + mid).find('.thread-item-signature');
-  if ($(signature).hasClass('hide')) {
-    $(signature).removeClass('hide');
-    $(this).html('<span class="icon-eye"></span> Hide Signature');
-  }
-  else {
-    $(signature).addClass('hide');
-    $(this).html('<span class="icon-eye"></span> Show Signature');
-  }    
 });
 
 
@@ -151,19 +137,19 @@ $(document).on('click', '.dropdown-toggle', function() {
 /* Thread - Add / Update Contact From Signature */
 $(document).on('click', '.message-action-add-contact', function() {
 
-  var mid = $(this).parent().parent().parent().parent().data('mid');
+  var mid = $(this).parent().parent().data('mid');
   var contat_html = $('#message-' + mid).find('.thread-item-signature').html();
 
- var options = {
-   backdrop: true,
-   keyboard: true,
-   show: true,
-   remote: false
- };
+  var options = {
+    backdrop: true,
+    keyboard: true,
+    show: true,
+    remote: false
+  };
 
- $('#modal-full .modal-title').html('Add To Contacts');
- $('#modal-full .modal-body').html('<p>Eventually this feature will extract this data from signature and pre-populate form fields.</p> <p>' + contat_html + '</p>');
- $('#modal-full').modal(options);
+  $('#modal-full .modal-title').html('Add To Contacts');
+  $('#modal-full .modal-body').html('<p>Eventually this will extract this data from signature and pre-populate form fields.</p> <p>' + contat_html + '</p>');
+  $('#modal-full').modal(options);
 });
 
 
