@@ -118,7 +118,7 @@
     <li><a class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
     {% endif %}
     {% if not from.flags.contact %}
-    <li><a class="message-action-add-contact" href="#"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
+    <li><a class="message-action-add-contact" href="#" data-name="{{from.fn}}" data-address="{{from.address}}"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
     {% endif %}
     {% if "pgp-key" in special_text_parts %}
     <li><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
@@ -134,7 +134,9 @@
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
         <li role="presentation"><a class="message-action-inbox" role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> {{_("Move to Inbox")}}</a></li>
         <li role="presentation"><a class="message-action-spam" role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> {{_("Flag as Spam")}}</a></li>
+        {% if result.data.metadata|length > 1 %}
         <li role="presentation"><a class="message-action-unthread" role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> {{_("Remove from Thread")}}</a></li>
+        {% endif %}
       </ul>
     </li>
     <li><a class="message-action-trash" href="#"><span class="icon-trash"></span> {{_("Trash")}}</a></li>
