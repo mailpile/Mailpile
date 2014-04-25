@@ -4,39 +4,9 @@
 <!--[if IE 8]><html class="no-js ie8 oldie" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
 <head>
-<!-- These are the fixed top-level tempalte variables: -------------------------
-
-    csrf: {{ csrf }}
-    http_host: {{ http_host }}
-    http_hostname: {{ http_hostname }}
-    http_method: {{ http_method }}
-    message_count: {{ mailpile_size }}
-    name: {{ name }}
-    title: {{ title }}
-    url_protocol: {{ url_protocol }}
-
----------------------------------------------------------------------------- -->
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <link rel="stylesheet" href="/static/css/default.css" />
-  <link rel="stylesheet" href="/static/css/setup.css" />
-
-  <!--[if lt IE 9]>
-    <script src="/static/js/html5.js"></script>
-  <![endif]-->
-  <!-- Apple Icons -->
-  <link rel="apple-touch-icon" sizes="57x57" href="/static/img/apple-touch-icon.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/static/img/apple-touch-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/static/img/apple-touch-icon-114x114.png">
-
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="/static/img/favicon.png" />
-  <link rel="icon" type="image/png" href="/static/img/favicon.png" />
-
   <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name}}'s mailpile</title>
-
-  <script src="/static/js/libraries/jquery.min.js"></script>
-  <script src="/static/js/libraries-min.js"></script>
-
+  {% block head %}{% endblock %}
+  {% include("partials/head.html") %}
 </head>
 <body>
 
@@ -75,49 +45,16 @@
   <div class="topbar-middle">
     <span>Security</span>
     <span class="icon icon-lock-closed"></span>
-
   </div>
   <div class="topbar-right">
   </div>
 </div>
 
 <div id="setup" class="clearfix">
-    {% for asset in get_assets("content-view_block") %}{% include(asset) %}{% endfor %}
     {% block content %}{{results}}{% endblock %}
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="modal-full" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title"></h4>
-      </div>
-      <div class="modal-body"></div>
-      <div class="modal-footer"></div>
-    </div>
-  </div>
-</div>
-
-<div id="debug" class="hide">
-  <h3>DEBUG</h3>
-  <b>command:</b> {{ command }}<br>
-  <b>args:</b> {{ args }}<br>
-  <b>kwargs:</b> {{ kwargs }}
-  {{logged}}
-</div>
-
-<script src="/static/js/mailpile.js"></script>
-<script>
-mailpile.instance = {
- "command": "{{ command }}",
- "args": "{{ args }}",
- "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
-}
-</script>
-<script src="/static/js/setup.js"></script>
-<script src="/static/js/app/global.js"></script>
-
+{% include("partials/hidden.html") %}
+{% include("partials/javascript.html") %}
 </body>
 </html>

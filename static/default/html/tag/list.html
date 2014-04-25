@@ -45,11 +45,13 @@
 
 <div id="tags-archived-list" class="add-top add-bottom clearfix">
   <h3 class="text-center"><span class="icon-archive"></span> {{_("Archived Tags")}}</h3>
+  <div class="hide">
   {% for tag in result.tags %}
   {% if tag.display == "archive" %}
     {{ render_tag(tag) }}
   {% endif %}
   {% endfor %}
+  </div>
 </div>
 
 {% include("partials/tag_add.html") %}
