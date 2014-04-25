@@ -1,8 +1,8 @@
 {% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Compose")}}{% endblock %}
 {% block content %}
 {% if result %}
 {% set profiles = mailpile('settings', 'profiles').result.profiles %}
-
   {# Note: this code follows the pattern described on the following
            stackexchange link, collecting information about how the loop
            and inner IF-statements went into the found_editable list, so
