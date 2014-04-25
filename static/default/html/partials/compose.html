@@ -81,8 +81,8 @@
         {{_("To")}}
       </label>
       <label class="right">
-        <a id="compose-cc-show" class="compose-show-field" href="#">{{_("Cc")}}</a>
-        <a id="compose-bcc-show" class="compose-show-field" href="#">{{_("Bcc")}}</a>
+        <a id="compose-cc-show" class="compose-show-field {% if editing_strings.cc %}hide{% endif %}" href="#">{{_("Cc")}}</a>
+        <a id="compose-bcc-show" class="compose-show-field {% if editing_strings.bcc %}hide{% endif %}" href="#">{{_("Bcc")}}</a>
       </label>
       <input id="compose-to" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
     </div>
