@@ -1,3 +1,23 @@
+MailPile.prototype.bulk_action_read = function() {
+  this.tag_add_delete(mailpile.tags_cache, 'new', mailpile.messages_cache, function(result) {
+    $.each(mailpile.messages_cache, function(key, mid) {
+      $('#pile-message-' + mid).removeClass('in_new');
+    });
+    mailpile.bulk_cache = [];
+  });
+};
+
+MailPile.prototype.bulk_action_unread = function() {
+  this.tag_add_delete('new', mailpile.tags_cache, mailpile.messages_cache, function(result) {
+    $.each(mailpile.messages_cache, function(key, mid) {
+      $('#pile-message-' + mid).addClass('in_new');
+    });
+    // Empty Bulk Cache
+    mailpile.bulk_cache = [];
+  });
+};
+
+
 /* Bulk Action - Tag */
 $(document).on('click', '.bulk-action-tag', function() {
   mailpile.render_modal_tags();
@@ -44,23 +64,11 @@ $(document).on('click', '.bulk-action-add-to-group', function() {
 
 /* Bulk Action - Mark Unread */
 $(document).on('click', '.bulk-action-unread', function() {
-    mailpile.tag_add_delete('new', mailpile.tags_cache, mailpile.messages_cache, function(result) {
-      $.each(mailpile.messages_cache, function(key, mid) {
-        $('#pile-message-' + mid).addClass('in_new');
-      });
-      // Empty Bulk Cache
-      mailpile.bulk_cache = [];
-    });
+  mailpile.bulk_action_unread();
 });
 
 
 /* Bulk Action - Mark Read */
 $(document).on('click', '.bulk-action-read', function() {
-    mailpile.tag_add_delete(mailpile.tags_cache, 'new', mailpile.messages_cache, function(result) {
-      $.each(mailpile.messages_cache, function(key, mid) {
-        $('#pile-message-' + mid).removeClass('in_new');
-      });
-      // Empty Bulk Cache
-      mailpile.bulk_cache = [];
-    });
+  mailpile.bulk_action_read();    
 });

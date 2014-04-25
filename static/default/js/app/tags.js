@@ -15,7 +15,6 @@ MailPile.prototype.tag_list = function(complete) {
 
 /* Pile - Tag Add */
 MailPile.prototype.tag_add = function(tag_add, mids, complete) {
-
   $.ajax({
 	  url			 : mailpile.api.tag,
 	  type		 : 'POST',
@@ -147,5 +146,4 @@ $(document).on('click', '#button-tag-delete', function(e) {
       }
     });
   }
-
 });
