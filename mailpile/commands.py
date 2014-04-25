@@ -959,7 +959,7 @@ class RenderPage(Command):
         def __init__(self, *args, **kwargs):
             Command.CommandResult.__init__(self, *args, **kwargs)
             if self.result and 'path' in self.result:
-                self.template_id += '/' + self.result['path'] + '/index'
+                self.template_id = 'page/' + self.result['path'] + '/index'
 
     def command(self):
         return self._success(_('Rendered the page'), result={
