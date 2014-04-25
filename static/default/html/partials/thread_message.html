@@ -46,7 +46,7 @@
   {% set last_sig_context = message.crypto.signature.context %}
   {% if not message.text_parts %}
     {% for part in message.html_parts %}
-      {{part.data|replace("\\n", "\n")|safe}}
+    <iframe class="thread-item-html" onload="mailpile.thread_html_iframe(this)" sandbox="allow-same-origin allow-popups allow-top-navigation" seamless target="_blank" srcdoc="{{part.data }}"></iframe>
     {% endfor %}
   {% endif %}
   {% set special_text_parts = [] %}

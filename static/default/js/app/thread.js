@@ -58,6 +58,16 @@ MailPile.prototype.thread_initialize_tooltips = function() {
 };
 
 
+/* Thread - iframe styling */
+MailPile.prototype.thread_html_iframe = function(element) {
+
+  var new_iframe_height = $(element).contents().height();
+  $('.thread-item-html').height(new_iframe_height);
+
+  $(element).contents().find('body div').addClass('thread-item-html-text');
+};
+
+
 /* Thread - Show People In Conversation */
 $(document).on('click', '.show-thread-people', function() {
 
@@ -189,13 +199,15 @@ $(document).ready(function() {
   // Thread Scroll to Message
   if (location.href.split("thread/=")[1]) {
 
+    // Scroll to Message
     var thread_id = location.href.split("thread/=")[1].split("/")[0];
     var msg_top_pos = $('#message-' + thread_id).position().top;
     $('#content-view').scrollTop(msg_top_pos - 150);
     setTimeout(function(){
       $('#content-view').animate({ scrollTop: msg_top_pos }, 350);
     }, 50);
-
+    
+    // Show Tooltips
     mailpile.thread_initialize_tooltips();
   }
 
