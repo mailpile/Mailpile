@@ -75,7 +75,7 @@
             {% set signature_context = part.crypto.signature.context %}
             {% set signature = show_message_signature(part.crypto.signature.status) %}
             <span class="thread-item-crypto-info" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}">
-              <span class="icon {{ signature.color + ' ' + signature.icon }}"></span> <span class="text {{ encryption.color }}">{{ signature.text }}</span>
+              <span class="icon {{ signature.color + ' ' + signature.icon }}"></span> <span class="text {{ signature.color }}">{{ signature.text }}</span>
             </span>
             {% endif %}
           {% endif %}
