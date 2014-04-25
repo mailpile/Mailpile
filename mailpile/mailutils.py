@@ -361,7 +361,8 @@ class Email(object):
                                          msg_to=msg_to,
                                          msg_cc=msg_cc)
             return cls(idx, -1,
-                       msg_parsed=msg, msg_info=msg_info,
+                       msg_info=msg_info,
+                       msg_parsed=msg, msg_parsed_pgpmime=msg,
                        ephemeral_mid=ephemeral_mid)
 
     def is_editable(self):
