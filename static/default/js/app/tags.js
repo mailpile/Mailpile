@@ -147,3 +147,17 @@ $(document).on('click', '#button-tag-delete', function(e) {
     });
   }
 });
+
+
+/* Tag - Toggle Archive */
+$(document).on('click', '#button-tag-toggle-archive', function(e) {
+  var new_message = $(this).data('message');
+  var old_message = $(this).html();
+  $(this).data('message', old_message);
+  $(this).html(new_message);
+  if ($('#tags-archived-list').hasClass('hide')) {
+    $('#tags-archived-list').removeClass('hide');
+  } else {
+    $('#tags-archived-list').addClass('hide');    
+  }
+});

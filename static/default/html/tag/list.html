@@ -43,16 +43,27 @@
   {% endfor %}
 </div>
 
-<div id="tags-archived-list" class="add-top add-bottom clearfix">
+{% set tag_archive = [] %}
+{% for tag in result.tags %}
+{% if tag.display == "archive" %}
+    {% do tag_archive.append(tag.tid) %}
+{% endif %}
+{% endfor %} 
+{% if tag_archive|length > 0 %}
+<div class="add-top add-bottom">
   <h3 class="text-center"><span class="icon-archive"></span> {{_("Archived Tags")}}</h3>
-  <div class="hide">
+  <div id="tags-archived-list" class="hide clearfix add-bottom">
   {% for tag in result.tags %}
   {% if tag.display == "archive" %}
     {{ render_tag(tag) }}
   {% endif %}
   {% endfor %}
   </div>
+  <div class="text-center">
+    <button id="button-tag-toggle-archive" data-message="{{_("Hide Archived")}}">{{_("Show Archived")}}</button>
+  </div>
 </div>
+{% endif %}
 
 {% include("partials/tag_add.html") %}
 

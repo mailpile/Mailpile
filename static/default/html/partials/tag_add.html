@@ -2,15 +2,20 @@
 
   <h3>{{_("Add New Tag")}}</h3>
 
+  {% set tag = { 
+        "name": "", 
+        "slug": "" 
+    } %}
+
   <form id="form-tag-add" class="standard" method="POST">
 
     <input type="hidden" name="csrf" value="">
 
     <label>{{_("Tag")}}</label>
-    <input type="text" id="data-tag-add-tag" name="name" value="" placeholder="{{_("Friends & Family")}}">
+    <input type="text" id="data-tag-add-tag" name="name" value="{{tag.name}}" placeholder="{{_("Friends & Family")}}">
 
     <label>{{_("Slug")}}</label>
-    <input type="text" id="data-tag-add-slug" name="slug" value="" placeholder="{{_("friends-family")}}">
+    <input type="text" id="data-tag-add-slug" name="slug" value="{{tag.slug}}" placeholder="{{_("friends-family")}}">
 
     <label>{{_("Display")}}</label>
     <select name="display" id="data-tag-add-display">
