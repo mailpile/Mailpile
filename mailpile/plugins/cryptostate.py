@@ -27,6 +27,11 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
         if part.signature_info.get('status') != 'none':
             sig.add('mp_%s-%s' % ('sig', part.signature_info['status']))
             kw.add('crypto:has')
+        if 'cryptostate' in index.config.sys.debug:
+            print 'part status(=%s): enc=%s sig=%s' % (msg_mid,
+                part.encryption_info.get('status'),
+                part.signature_info.get('status')
+            )
 
         # This is OpenPGP-specific
         if (part.encryption_info.get('protocol') == 'openpgp'
@@ -37,15 +42,16 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
 
     def choose_one(fmt, statuses, ordering):
         for o in ordering:
-            status = (fmt % o)
-            if status in statuses:
-                return set([status])
+            for mix in ('', 'mixed-'):
+                status = (fmt % (mix+o))
+                if status in statuses:
+                    return set([status])
         return set(list(statuses)[:1])
 
     # Evaluate all the message parts
     crypto_eval(msg)
-    for part in msg.walk():
-        crypto_eval(part)
+    for p in msg.walk():
+        crypto_eval(p)
 
     # OK, we should have exactly encryption state...
     if len(enc) < 1:
@@ -64,6 +70,10 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
         tag = index.config.get_tags(slug=tname)
         if tag:
             kw.add('%s:in' % tag[0]._key)
+
+    if 'cryptostate' in index.config.sys.debug:
+        print 'part crypto state(=%s): %s' % (msg_mid, ','.join(list(kw)))
+
     return list(kw)
 
 _plugins.register_text_kw_extractor('crypto_tkwe', text_kw_extractor)
