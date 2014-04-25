@@ -1,6 +1,7 @@
 from gettext import gettext as _
 
 from mailpile.plugins import PluginManager
+from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 
 
 _plugins = PluginManager(builtin=__file__)
@@ -18,13 +19,13 @@ def text_kw_extractor(index, msg, ctype, text):
 
 def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
     kw, enc, sig = set(), set(), set()
-    for part in msg.walk():
-        enc.add('mp_%s-%s' % ('enc', part.encryption_info['status']))
-        sig.add('mp_%s-%s' % ('sig', part.signature_info['status']))
-
+    def crypto_eval(part):
         # This is generic
-        if (part.encryption_info.get('status') != 'none'
-                or part.signature_info.get('status') != 'none'):
+        if part.encryption_info.get('status') != 'none':
+            enc.add('mp_%s-%s' % ('enc', part.encryption_info['status']))
+            kw.add('crypto:has')
+        if part.signature_info.get('status') != 'none':
+            sig.add('mp_%s-%s' % ('sig', part.signature_info['status']))
             kw.add('crypto:has')
 
         # This is OpenPGP-specific
@@ -34,11 +35,35 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
 
         # FIXME: Other encryption protocols?
 
+    def choose_one(fmt, statuses, ordering):
+        for o in ordering:
+            status = (fmt % o)
+            if status in statuses:
+                return set([status])
+        return set(list(statuses)[:1])
+
+    # Evaluate all the message parts
+    crypto_eval(msg)
+    for part in msg.walk():
+        crypto_eval(part)
+
+    # OK, we should have exactly encryption state...
+    if len(enc) < 1:
+        enc.add('mp_enc-none')
+    elif len(enc) > 1:
+        enc = choose_one('mp_enc-%s', enc, EncryptionInfo.STATUSES)
+
+    # ... and exactly one signature state.
+    if len(sig) < 1:
+        sig.add('mp_sig-none')
+    elif len(sig) > 1:
+        sig = choose_one('mp_sig-%s', sig, SignatureInfo.STATUSES)
+
+    # Emit tags for our states
     for tname in (enc | sig):
         tag = index.config.get_tags(slug=tname)
         if tag:
             kw.add('%s:in' % tag[0]._key)
-
     return list(kw)
 
 _plugins.register_text_kw_extractor('crypto_tkwe', text_kw_extractor)
