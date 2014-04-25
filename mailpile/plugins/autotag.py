@@ -179,7 +179,7 @@ class Retrain(AutoTagCommand):
             session.ui.notify(_('Have %d interesting %s messages'
                                 ) % (len(interest[ttype]), ttype))
 
-        retrained = []
+        retrained, unreadable = [], []
         count_all = 0
         for at_config in config.prefs.autotag:
             at_tag = config.get_tag(at_config.match_tag)
@@ -232,16 +232,26 @@ class Retrain(AutoTagCommand):
                 for tset, mset, srch, which in yn:
                     count = 0
                     for msg_idx in tset:
-                        e = Email(idx, msg_idx)
-                        count += 1
-                        count_all += 1
-                        session.ui.mark(('Reading %s (%d/%d, %s=%s)'
-                                         ) % (e.msg_mid(), count, len(tset),
-                                              at_tag.name, which))
-                        atagger.learn(at_config,
-                                      e.get_msg(),
-                                      self._get_keywords(e),
-                                      which)
+                        try:
+                            e = Email(idx, msg_idx)
+                            count += 1
+                            count_all += 1
+                            session.ui.mark(
+                                _('Reading %s (%d/%d, %s=%s)'
+                                  ) % (e.msg_mid(), count, len(tset),
+                                       at_tag.name, which))
+                            atagger.learn(at_config,
+                                          e.get_msg(),
+                                          self._get_keywords(e),
+                                          which)
+                        except (IndexError, ValueError, OSError, IOError):
+                            if session.config.sys.debug:
+                                import traceback
+                                traceback.print_exc()
+                            unreadable.append(msg_idx)
+                            session.ui.warning(
+                                _('Failed to process message at =%s'
+                                  ) % (b36(msg_idx)))
 
                 # We got this far without crashing, so save the result.
                 config.save_auto_tagger(at_config)
@@ -250,8 +260,11 @@ class Retrain(AutoTagCommand):
         message = _('Retrained SpamBayes auto-tagging for %s'
                     ) % ', '.join(retrained)
         session.ui.mark(message)
-        return self._success(message,
-            {'retrained': retrained, 'read_messages': count_all})
+        return self._success(message, result={
+            'retrained': retrained,
+            'unreadable': unreadable,
+            'read_messages': count_all
+        })
 
     @classmethod
     def interval_retrain(cls, session):
