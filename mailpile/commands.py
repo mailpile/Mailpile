@@ -746,14 +746,28 @@ class SearchResults(dict):
                              and t.get('display', '') != 'invisible']
                 tag_new = [t for t in tags if t.get('type') == 'unread']
                 tag_names.sort()
-                msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
-                sfmt = '%%-%d.%ds%%s' % (46 - (clen + len(msg_tags)),
-                                         46 - (clen + len(msg_tags)))
-                text.append((cfmt + ' %s%-22.22s ' + sfmt + '%7s'
+                msg_meta = tag_names and (' <' + '<'.join(tag_names)) or ''
+
+                # FIXME: this is a bit ugly, but useful for development
+                es = ['', '']
+                for t in [t['slug'] for t in tags]:
+                    if t.startswith('mp_enc') and 'none' not in t:
+                        es[1] = 'E'
+                    if t.startswith('mp_sig') and 'none' not in t:
+                        es[0] = 'S'
+                es = ''.join([e for e in es if e])
+                if es:
+                    msg_meta += '[%s]' % es
+                else:
+                    msg_meta += ' '
+
+                msg_meta += elapsed_datetime(m['timestamp'])
+                sfmt = '%%-%d.%ds%%s' % (53 - (clen + len(msg_meta)),
+                                         53 - (clen + len(msg_meta)))
+                text.append((cfmt + ' %s%-22.22s ' + sfmt
                              ) % (count, tag_new and '*' or ' ',
                                   m['from'].get('fn') or m['from']['email'],
-                                  m['subject'], msg_tags,
-                                  elapsed_datetime(m['timestamp'])))
+                                  m['subject'], msg_meta))
             count += 1
         if not count:
             text = ['(No messages found)']
