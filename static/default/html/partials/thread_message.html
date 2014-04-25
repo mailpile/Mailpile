@@ -42,8 +42,9 @@
       <li><a href="/message/raw/={{ mid }}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
     </ul>
   </div>
-  {% set last_enc_context = message.crypto.encryption.context %}
-  {% set last_sig_context = message.crypto.signature.context %}
+  {% set encryption_context = message.crypto.encryption.context %}
+  {% set signature_context = message.crypto.signature.context %}
+  {# If no text part, show html part #}
   {% if not message.text_parts %}
     {% for part in message.html_parts %}
     <iframe class="thread-item-html" onload="mailpile.thread_html_iframe(this)" sandbox="allow-same-origin allow-popups allow-top-navigation" seamless target="_blank" srcdoc="{{part.data }}"></iframe>
@@ -57,20 +58,22 @@
      # signature section - if either has changed, then we have moved from
      # one security context to the next, and need to let the user know.
      #}
-    {% if (part.data != "") %}
+    {% if part.data != "" %}
       {% if part.crypto %}
       <div class="thread-item-crypto clearfix">
-        <div class="thread-item-crypto-info left" data-name="cats">
+        <div class="thread-item-crypto-info left">
           {% if part.crypto.encryption %}
-            {% if part.crypto.encryption.context != last_enc_context %}
-            {% set last_enc_context = part.crypto.encryption.context %}
-            <span class="icon {{ show_message_encryption(part.crypto.encryption.status) }}" title=""></span> <span class="text">{{_("Not Encrypted")}}</span>
+            {% if part.crypto.encryption.context != encryption_context %}
+            {% set encryption_context = part.crypto.encryption.context %}
+            {% set encryption = show_message_encryption(part.crypto.encryption.status) %}
+            <span class="icon {{ encryption.color + ' ' + encryption.icon }}" title=""></span> <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
             {% endif %}
           {% endif %}
           {% if part.crypto.signature %}
-            {% if part.crypto.signature.context != last_sig_context %}
-            {% set last_sig_context = part.crypto.signature.context %}
-            <span class="icon {{ show_message_signature(part.crypto.signature.status) }}" title=""></span> <span class="text">{{_("No Signature")}}</span>
+            {% if part.crypto.signature.context != signature_context %}
+            {% set signature_context = part.crypto.signature.context %}
+            {% set signature = show_message_signature(part.crypto.signature.status) %}
+            <span class="icon {{ signature.color + ' ' + signature.icon }}" title=""></span> <span class="text {{ encryption.color }}">{{ signature.text }}</span>
             {% endif %}
           {% endif %}
         </div>

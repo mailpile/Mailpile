@@ -197,39 +197,77 @@ class MailpileCommand(Extension):
             "icon-signature-error",
             _("Error"),
             _("There was a weird error with this signature")],
+        "mixed-error": [
+            "crypto-color-red",
+            "icon-signature-error",
+            _("Mixed Error"),
+            _("Parts of this message have a signature with a weird error")],
         "invalid": [
             "crypto-color-red",
             "icon-signature-invalid",
             _("Invalid"),
             _("The signature was invalid or bad")],
+        "mixed-invalid": [
+            "crypto-color-red",
+            "icon-signature-invalid",
+            _("Mixed Invalid"),
+            _("Parts of this message has a signature that are invalid or bad")],
         "revoked": [
             "crypto-color-red",
             "icon-signature-revoked",
             _("Revoked"),
             _("Watch out, the signature was made with a key that has been"
               "revoked- this is not a good thing")],
+        "mixed-revoked": [
+            "crypto-color-red",
+            "icon-signature-revoked",
+            _("Mixed Revoked"),
+            _("Watch out, parts of this message were signed from a key that "
+              "has been revoked")],
         "expired": [
             "crypto-color-red",
             "icon-signature-expired",
             _("Expired"),
             _("The signature was made with an expired key")],
+        "mixed-expired": [
+            "crypto-color-red",
+            "icon-signature-expired",
+            _("Mixed Expired"),
+            _("Parts of this message have a signature made with an expired key")],
         "unknown": [
             "crypto-color-orange",
             "icon-signature-unknown",
             _("Unknown"),
             _("the signature was made with an unknown key, so we can not "
               "verify it")],
+        "mixed-unknown": [
+            "crypto-color-orange",
+            "icon-signature-unknown",
+            _("Mixed Unknown"),
+            _("Parts of this message have a signature made with an unknown key, "
+              "which we can not verify")],
         "unverified": [
             "crypto-color-blue",
             "icon-signature-unverified",
             _("Unverified"),
             _("The signature was good but it came from a key that is not "
               "verified yet")],
+        "mixed-unverified": [
+            "crypto-color-blue",
+            "icon-signature-unverified",
+            _("Mixed Unverified"),
+            _("Parts of this message have an unverified signature, but other parts"
+              "do not")],
         "verified": [
             "crypto-color-green",
             "icon-signature-verified",
             _("Verified"),
-            _("The signature was good and came from a verified key, w00t!")]
+            _("The signature was good and came from a verified key, w00t!")],
+        "mixed-verified": [
+            "crypto-color-blue",
+            "icon-signature-verified",
+            _("Mixed Verified"),
+            _("Parts of the message have a verified signature, other parts do not")]
     }
 
     def _show_message_signature(self, status):
@@ -272,16 +310,32 @@ class MailpileCommand(Extension):
             _("Encrypted"),
             _("This message was encrypted, but we were successfully able to decrypt it. "
               "Great job being secure")],
+        "mixed-decrypted": [
+            "crypto-color-blue",
+            "icon-lock-closed",
+            _("Mixed Encrypted"),
+            _("This message was encrypted, but we were successfully able to decrypt it. "
+              "Great job being secure")],
         "missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
             _("Missing Key"),
             _("You do not have any of the private keys that will decrypt this message")],
+        "mixed-missingkey": [
+            "crypto-color-red",
+            "icon-lock-closed",
+            _("Mixed Missing Key"),
+            _("You do not have the private keys to decrypt parts of this message")],
         "error": [
             "crypto-color-red",
             "icon-lock-error",
             _("Error"),
-            _("We failed to decrypt message and are unsure why")]
+            _("We failed to decrypt message and are unsure why")],
+        "mixed-error": [
+            "crypto-color-red",
+            "icon-lock-error",
+            _("Mixed Error"),
+            _("We failed to decrypt parts of this message and are unsure why")]
     }
 
     def _show_message_encryption(self, status):
