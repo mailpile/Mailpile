@@ -460,17 +460,16 @@ class SearchResults(dict):
         nz = lambda l: [v for v in l if v]
         msg_ts = long(msg_info[MailIndex.MSG_DATE], 36)
         msg_date = datetime.datetime.fromtimestamp(msg_ts)
+
         fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
+        f_info = self._address(e=fe, n=fn)
+        f_info['aid'] = (self._msg_addresses(msg_info, no_to=True, no_cc=True)
+                         or [''])[0]
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
-            'from': {
-                'email': fe,
-                'fn': fn,
-                'aid': (self._msg_addresses(msg_info, no_to=True, no_cc=True)
-                        or [''])[0],
-            },
+            'from': f_info,
             'to_aids': self._msg_addresses(msg_info, no_from=True, no_cc=True),
             'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
             'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
@@ -547,8 +546,9 @@ class SearchResults(dict):
                     cids.add(b36(self.idx._add_email(fe, name=fn)))
         return sorted(list(cids))
 
-    def _address(self, cid):
-        e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
+    def _address(self, cid=None, e=None, n=None):
+        if cid and not (e and n):
+            e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
         vcard = self.session.config.vcards.get_vcard(e)
         return AddressInfo(e, n, vcard=vcard)
 
@@ -693,7 +693,7 @@ class SearchResults(dict):
         # Populate data.person
         for cid in self._msg_addresses(msg_info):
             if cid not in self['data']['addresses']:
-                self['data']['addresses'][cid] = self._address(cid)
+                self['data']['addresses'][cid] = self._address(cid=cid)
 
         # Populate data.tag
         if 'tags' in self.session.config:

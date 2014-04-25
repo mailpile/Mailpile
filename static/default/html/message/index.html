@@ -51,7 +51,7 @@
     {% endif %}
   {% else %}{# Show snippet #}
   <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
-    {% set from = result.data.addresses[metadata.from.aid] %}
+    {% set from = metadata.from %}
     {% include("partials/thread_metadata.html") %}
     <div class="thread-item-text">{{ metadata.body.snippet }}</div>
   </div>
