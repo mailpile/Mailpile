@@ -211,7 +211,8 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-signature-invalid",
             _("Mixed Invalid"),
-            _("Parts of this message has a signature that are invalid or bad")],
+            _("Parts of this message has a signature that are invalid"
+              " or bad")],
         "revoked": [
             "crypto-color-red",
             "icon-signature-revoked",
@@ -233,19 +234,20 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-signature-expired",
             _("Mixed Expired"),
-            _("Parts of this message have a signature made with an expired key")],
+            _("Parts of this message have a signature made with an "
+              "expired key")],
         "unknown": [
             "crypto-color-orange",
             "icon-signature-unknown",
             _("Unknown"),
-            _("the signature was made with an unknown key, so we can not "
+            _("The signature was made with an unknown key, so we can not "
               "verify it")],
         "mixed-unknown": [
             "crypto-color-orange",
             "icon-signature-unknown",
             _("Mixed Unknown"),
-            _("Parts of this message have a signature made with an unknown key, "
-              "which we can not verify")],
+            _("Parts of this message have a signature made with an unknown "
+              "key which we can not verify")],
         "unverified": [
             "crypto-color-blue",
             "icon-signature-unverified",
@@ -256,8 +258,7 @@ class MailpileCommand(Extension):
             "crypto-color-blue",
             "icon-signature-unverified",
             _("Mixed Unverified"),
-            _("Parts of this message have an unverified signature, but other parts"
-              "do not")],
+            _("Parts of this message have an unverified signature")],
         "verified": [
             "crypto-color-green",
             "icon-signature-verified",
@@ -267,7 +268,8 @@ class MailpileCommand(Extension):
             "crypto-color-blue",
             "icon-signature-verified",
             _("Mixed Verified"),
-            _("Parts of the message have a verified signature, other parts do not")]
+            _("Parts of the message have a verified signature, but other "
+              "parts do not")]
     }
 
     def _show_message_signature(self, status):
@@ -277,11 +279,6 @@ class MailpileCommand(Extension):
                 pass
         except UndefinedError:
             status = ''
-
-        #elif status.startswith("mixed-"):
-        #    "crypto-color-blue icon-signature-unknown"
-        #    _("Mixed")
-        #    _("There was mixed signatures on this message")
 
         color, icon, text, message = self._STATUS_SIGNATURE.get(status, self._DEFAULT_SIGNATURE)
 
@@ -302,30 +299,33 @@ class MailpileCommand(Extension):
             "crypto-color-gray",
             "icon-lock-open",
             _("Not Encrypted"),
-            _("This message was not encrypted. It may have been intercepted en route to "
-              "you and read by an unauthorized party.")],
+            _("This message was not encrypted. It may have been intercepted "
+              "on route to you and read by an unauthorized party")],
         "decrypted": [
             "crypto-color-green",
             "icon-lock-closed",
             _("Encrypted"),
-            _("This message was encrypted, but we were successfully able to decrypt it. "
-              "Great job being secure")],
+            _("This message was encrypted, but we were successfully able to "
+              "decrypt it. Great job being secure")],
         "mixed-decrypted": [
             "crypto-color-blue",
             "icon-lock-closed",
             _("Mixed Encrypted"),
-            _("This message was encrypted, but we were successfully able to decrypt it. "
-              "Great job being secure")],
+            _("Part of this message were encrypted, but other parts were not "
+              "encrypted")],
         "missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
             _("Missing Key"),
-            _("You do not have any of the private keys that will decrypt this message")],
+            _("You do not have any of the private keys that will decrypt this "
+              "message")],
         "mixed-missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
             _("Mixed Missing Key"),
-            _("You do not have the private keys to decrypt parts of this message")],
+            _("Parts of this message were unable to be decrypted because you "
+              "are missing "
+              "the private keys for those parts")],
         "error": [
             "crypto-color-red",
             "icon-lock-error",
@@ -345,11 +345,6 @@ class MailpileCommand(Extension):
                 pass
         except UndefinedError:
             status = ''
-
-        #elif status.startswith("mixed-"):
-        #    classes = "crypto-color-orange icon-lock-open"
-        #    text = _("Mixed")
-        #    message = _("Message contains mixed types of encryption")
 
         color, icon, text, message = self._STATUS_ENCRYPTION.get(status, self._DEFAULT_ENCRYPTION)
 
