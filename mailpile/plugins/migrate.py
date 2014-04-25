@@ -40,14 +40,14 @@ def migrate_routes(session):
         # decides to order the dict internally.
         return md5_hex(str(sorted(list(route_dict.iteritems()))))[:8]
 
-    if 'default_route' in session.config.prefs:
+    if session.config.prefs.get('default_route'):
         route_dict = route_parse(session.config.prefs.default_route)
         route_name = make_route_name(route_dict)
         session.config.routes[route_name] = route_dict
         session.config.prefs.default_messageroute = route_name
 
     for profile in session.config.profiles:
-        if 'route' in profile:
+        if profile.get('route'):
             route_dict = route_parse(profile.route)
             route_name = make_route_name(route_dict)
             session.config.routes[route_name] = route_dict
