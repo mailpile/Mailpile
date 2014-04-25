@@ -1005,8 +1005,8 @@ class ConfigSet(Command):
             ops.append((var, value))
 
         updated = {}
-        for path, value in ops:
-            value = value.strip()
+        for path, values in ops:
+            value = values[0].strip()
             if value.startswith('{') or value.startswith('['):
                 value = json.loads(value)
             try:
