@@ -204,32 +204,9 @@
     margin-bottom: 0px;
   }
 
-  .thread-item-crypto-info       {  }
+  .thread-item-crypto-info       { margin-right: 10px; }
   .thread-item-crypto-info .icon { font-size: 14px; }
   .thread-item-crypto-info .text { font-size: 12px; font-family: Helvetica, Arial, sans-serif; font-weight: bold; text-transform: uppercase; }
-
-  .thread-item-crypto-line { 
-    width: 80%;
-    position: relative;
-    top: 14px;
-    left: 10px;
-    opacity: 0;
-    transition: opacity .35s ease-in-out;
-    -moz-transition: opacity .35s ease-in-out;
-    -webkit-transition: opacity .35s ease-in-out;  
-  }
-
-  .thread-item-crypto-info:hover + .thread-item-crypto-line { opacity: 1;  }
-
-  .pgp-encryption-none       { color: @grayMid; }
-  .pgp-encryption-none .thread-item-crypto-line { border-bottom: 2px solid @grayMid; }
-  .pgp-encryption-decrypted  { color: @green; }
-  .pgp-encryption-decrypted .thread-item-crypto-line { border-bottom: 2px solid @green; }
-  .pgp-encryption-missingkey { color: @red; }
-  .pgp-encryption-missingkey .thread-item-crypto-line { border-bottom: 2px solid @red; }
-  .pgp-encryption-error      { color: @red; }
-  .pgp-encryption-error .thread-item-crypto-line { border-bottom: 2px solid @red; }
-
 
   .font-style-item-text() {
     font-family: Helvetica, Arial, sans-serif;

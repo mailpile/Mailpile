@@ -61,22 +61,24 @@
     {% if part.data != "" %}
       {% if part.crypto %}
       <div class="thread-item-crypto clearfix">
-        <div class="thread-item-crypto-info left">
           {% if part.crypto.encryption %}
             {% if part.crypto.encryption.context != encryption_context %}
             {% set encryption_context = part.crypto.encryption.context %}
             {% set encryption = show_message_encryption(part.crypto.encryption.status) %}
-            <span class="icon {{ encryption.color + ' ' + encryption.icon }}" title=""></span> <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
+            <span class="thread-item-crypto-info" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}">
+              <span class="icon {{ encryption.color + ' ' + encryption.icon }}"></span> <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
+            </span>
             {% endif %}
           {% endif %}
           {% if part.crypto.signature %}
             {% if part.crypto.signature.context != signature_context %}
             {% set signature_context = part.crypto.signature.context %}
             {% set signature = show_message_signature(part.crypto.signature.status) %}
-            <span class="icon {{ signature.color + ' ' + signature.icon }}" title=""></span> <span class="text {{ encryption.color }}">{{ signature.text }}</span>
+            <span class="thread-item-crypto-info" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}">
+              <span class="icon {{ signature.color + ' ' + signature.icon }}"></span> <span class="text {{ encryption.color }}">{{ signature.text }}</span>
+            </span>
             {% endif %}
           {% endif %}
-        </div>
         <div class="thread-item-crypto-line left"></div>
       </div>
       {% endif %}
