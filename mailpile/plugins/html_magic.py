@@ -57,7 +57,7 @@ class JsApi(Command):
                     cmdinfo["optional_vars"] = cmd.OPTIONAL_VARS
                 res['api_methods'].append(cmdinfo)
 
-        created_js = [];
+        created_js = []
         for cls, filename in sorted(list(
                 config.plugins.get_js_classes().iteritems())):
             try:
@@ -90,7 +90,7 @@ class JsApi(Command):
             except (OSError, IOError, UnicodeDecodeError):
                 self._ignore_exception()
 
-        return res
+        return self._success(_('Generated Javascript API'), result=res)
 
 
 _plugins.register_commands(JsApi)
