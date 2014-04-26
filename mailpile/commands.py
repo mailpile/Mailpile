@@ -138,12 +138,17 @@ class Command:
             data = self.as_dict()
             data['title'] = self.message
             data['render_mode'] = 'full'
+            def render():
+                return self.session.ui.render_web(
+                    self.session.config, [tpath], data)
+
             for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
                 if self.session.ui.render_mode.endswith(e):
                     data['render_mode'] = 'content'
+                    data['result'] = render()
+                    return self.session.ui.render_json(data)
 
-            return self.session.ui.render_web(self.session.config, [tpath],
-                                              data)
+            return render()
 
     def __init__(self, session, name=None, arg=None, data=None):
         self.session = session

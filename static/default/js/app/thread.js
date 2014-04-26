@@ -5,8 +5,8 @@ MailPile.prototype.render_thread_message = function(mid) {
     type		 : 'GET',
     dataType : 'json',
     success  : function(response) {
-      if (response.results) {
-        $('#snippet-' + mid).replaceWith(response.results[0]);
+      if (response.result) {
+        $('#snippet-' + mid).replaceWith(response.result);
       }
     },
     error: function() {

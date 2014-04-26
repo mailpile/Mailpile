@@ -388,13 +388,6 @@ class HttpUserInteraction(UserInteraction):
     def open_for_data(self, name_fmt=None, attributes={}):
         return 'HTTP Client', RawHttpResponder(self.request, attributes)
 
-    # Render to HTML/JSON/...
-    def _render_jembed_response(self, config):
-        return json.dumps(default_dict(self.html_variables, {
-            'results': self.results,
-            'logged': self.logged,
-        }))
-
     def _render_text_responses(self, config):
         if config.sys.debug:
             return '%s\n%s' % (
@@ -412,14 +405,13 @@ class HttpUserInteraction(UserInteraction):
         return ""
 
     def render_response(self, config):
-        if self.render_mode == 'json':
+        if (self.render_mode == 'json' or
+                self.render_mode.split('.')[-1] in ('jcss', 'jhtml', 'jjs',
+                                                    'jrss', 'jtxt', 'jxml')):
             if len(self.results) == 1:
                 return ('application/json', self.results[0])
             else:
                 return ('application/json', '[%s]' % ','.join(self.results))
-        elif self.render_mode.split('.')[-1] in ('jcss', 'jhtml', 'jjs',
-                                                 'jrss', 'jtxt', 'jxml'):
-            return ('application/json', self._render_jembed_response(config))
         elif self.render_mode.endswith('html'):
             return ('text/html', self._render_single_response(config))
         elif self.render_mode.endswith('js'):
