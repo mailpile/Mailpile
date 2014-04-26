@@ -78,6 +78,10 @@ class MailpileCommand(Extension):
         environment.globals['nice_text'] = self._nice_text
         environment.filters['nice_text'] = self._nice_text
 
+        # Strip Re: Fwd: from subject lines
+        environment.globals['nice_subject'] = self._nice_subject
+        environment.filters['nice_subject'] = self._nice_subject
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -389,4 +393,8 @@ class MailpileCommand(Extension):
         output = text.strip()
         # render markdown
         # output = markdown(output)
+        return output
+
+    def _nice_subject(self, subject):
+        output = re.sub('(?i)^((re|fwd|aw):\s+)+', '', subject)
         return output

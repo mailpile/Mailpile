@@ -39,7 +39,7 @@
     {% endfor %}
     {% endif %}
     </span>
-    <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{metadata.subject}}{% else %}({{_("No Subject")}}){% endif %}</a>
+    <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
     <span class="item-snippet">{{metadata.snippet}}</span>
   </td>
   <td class="date" valign="top">
