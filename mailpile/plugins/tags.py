@@ -430,6 +430,9 @@ class DeleteTag(TagCommand):
     SYNOPSIS = (None, 'tag/delete', 'tag/delete', '<tag>')
     ORDER = ('Tagging', 0)
     HTTP_CALLABLE = ('POST', 'DELETE')
+    HTTP_POST_VARS = {
+        "tag" : "tag(s) to delete"
+    }
 
     class CommandResult(TagCommand.CommandResult):
         def as_text(self):
@@ -445,8 +448,17 @@ class DeleteTag(TagCommand):
         clean_session = mailpile.ui.Session(config)
         clean_session.ui = session.ui
         result = []
-        for tag_name in self.args:
+
+        tag_names = []
+        if self.args:
+            tag_names = list(self.args)
+        elif self.data.get('tag', []):
+            tag_names = self.data.get('tag', [])
+
+        for tag_name in tag_names:
+
             tag = config.get_tag(tag_name)
+
             if tag:
                 tag_id = tag._key
 
