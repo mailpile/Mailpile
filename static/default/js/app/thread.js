@@ -33,23 +33,24 @@ MailPile.prototype.thread_initialize_tooltips = function() {
     style: {
       classes: 'qtip-thread-crypto',
       tip: {
-        corner: 'bottom center',
-        mimic: 'bottom center',
-        border: 0,
-        width: 10,
-        height: 10
+        corner: 'bottom right',
+        mimic: 'bottom right',
+        border: 1,
+        width: 12,
+        height: 12,
+        corner: true
       }
     },
     position: {
-      my: 'bottom center',
+      my: 'bottom right',
       at: 'top left',
 			viewport: $(window),
 			adjust: {
-				x: 7,  y: -4
+				x: 7, y: -5
 			}
     },
     show: {
-      delay: 150
+      delay: 100
     },
     hide: {
       delay: 250
@@ -107,7 +108,7 @@ $(document).on('click', '.show-thread-security', function() {
 
 /* Thread - Show Metadata Info */
 $(document).on('click', '.show-thread-message-metadata-details', function() {
-  var mid = $(this).parent().parent().parent().parent().data('mid');
+  var mid = $(this).data('mid');
   var target = '#metadata-details-' + mid;
   if ($(target).css('display') === 'none') {
     $(target).fadeIn();

@@ -1,10 +1,10 @@
 /* Thread */
 
   .crypto-color-gray   { color: @grayMid; }
-  .crypto-color-red    { color: #be1e2d; }
-  .crypto-color-orange { color: #f7931d; }
-  .crypto-color-blue   { color: #1b75bb; }
-  .crypto-color-green  { color: #006738; }
+  .crypto-color-red    { color: @red; }
+  .crypto-color-orange { color: @orange; }
+  .crypto-color-blue   { color: @blue; }
+  .crypto-color-green  { color: @green; }
 
 
 /* Thread Title */	
@@ -101,7 +101,7 @@
   .thread-item-from a.name {
     display: inline-block;
     margin-top: 0px;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
     padding-top: 0px;
     color: @grayDark;
     font-size: 16px;
@@ -109,19 +109,12 @@
     line-height: 16px;
   }
 
-  .thread-item-metadata-icons {
+  .thread-item-metadata-address {
+    font-size: 12px;
+    line-height: 12px;
+    color: @gray;
     display: block;
   }
-
-  .thread-item-from span.icon {
-    float: left;
-    margin-right: 10px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
-  .icon-circle-info { color: @grayMid; }
-
 
   .thread-item-details {
     width: 200px;
@@ -132,14 +125,32 @@
     padding-right: 15px;
   }
 
-  .thread-item-details span.datetime {
+
+  .thread-item-details a.datetime,
+  .thread-item-details a.datetime:visited {
     display: block;
     margin-bottom: 5px;
     text-align: right;
     font-size: 14px;
     font-weight: bold;
-    color: @gray;
+    color: @grayDark;
     line-height: 14px;
+  }
+
+  .thread-item-details a.datetime:active,
+  .thread-item-details a.datetime:hover {
+    color: @blue;
+  }
+
+  .thread-item-details span.icon {
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .thread-item-details .icon-circle-info {
+    color: @grayMid;
   }
 
   .thread-item-details span.datetime.message {
@@ -326,47 +337,3 @@
     background: @grayLight;
   }
 
-
-/* Thread - Crypto Tooltips */
-
-  .qtip-thread-crypto {
-  	border: 1px solid @grayMid;
-  	-moz-border-radius: 4px;
-  	-webkit-border-radius: 4px;
-  	border-radius: 4px;
-  	background: @white;
-  	padding: 10px 15px;
-    -moz-box-shadow:    3px 3px 5px 0px @gray;
-    -webkit-box-shadow: 3px 3px 5px 0px @gray;
-    box-shadow:         3px 3px 5px 0px @gray;  	
-  }
-
-  .qtip-thread-crypto .qtip-content h4 {
-    text-align: center;
-    margin-top: 5px;
-    margin-bottom: 15px;
-  }
-
-  .qtip-thread-crypto .qtip-content h4 span {
-    margin-right: 10px;    
-  }
-
-  .qtip-thread-crypto .qtip-content p {
-    margin-bottom: 10px;
-    text-align: left;
-    font-size: 14px;
-    font-weight: normal;
-  	font-family: Helvetica, Arial, sans-serif;
-  	line-height: 18px;    
-    color: @grayDark;
-  }
-
-  .qtip-thread-crypto .qtip-icon {
-  	border: 2px solid #285589;
-  	background: #285589;
-  }
-
-  .qtip-thread-crypto .qtip-icon .ui-icon {
-  	background-color: #FBFBFB;
-  	color: #555;
-  }
