@@ -4,8 +4,7 @@
     "author": "The Mailpile Team <team@mailpile.is>",
     "code": {
         "python": ["forcegrapher.py"],
-        "javascript": ["forcegrapher.js", "d3.js"],
-        "css": ["forcegrapher.css"]
+        "javascript": ["forcegrapher.js", "d3.js"]
     },
 
     "routes": {
