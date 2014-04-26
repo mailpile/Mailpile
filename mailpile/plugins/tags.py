@@ -151,7 +151,7 @@ def GetTagID(cfg, tn):
     return tags and (len(tags) == 1) and tags[0]._key or None
 
 
-def GetTagInfo(cfg, tn, stats=False, unread=None):
+def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None):
     tag = GetTag(cfg, tn)
     tid = tag._key
     info = {
@@ -161,11 +161,13 @@ def GetTagInfo(cfg, tn, stats=False, unread=None):
     for k in tag.all_keys():
         if k not in INFO_HIDES_TAG_METADATA:
             info[k] = tag[k]
+    exclude = exclude or set()
     if stats and (unread is not None):
-        stats_all = len(cfg.index.TAGS.get(tid, []))
+        messages = (cfg.index.TAGS.get(tid, set()) - exclude)
+        stats_all = len(messages)
         info['stats'] = {
             'all': stats_all,
-            'new': len(cfg.index.TAGS.get(tid, set()) & unread),
+            'new': len(messages & unread),
             'not': len(cfg.index.INDEX) - stats_all
         }
     return info
@@ -382,6 +384,10 @@ class ListTags(TagCommand):
         for tag in self.session.config.get_tags(type='unread'):
             unread_messages |= idx.TAGS.get(tag._key, set())
 
+        excluded_messages = set()
+        for tag in self.session.config.get_tags(flag_hides=True):
+            excluded_messages |= idx.TAGS.get(tag._key, set())
+
         for tag in self.session.config.get_tags(**search):
             if wanted and tag.slug.lower() not in wanted:
                 continue
@@ -395,8 +401,14 @@ class ListTags(TagCommand):
                 continue
 
             tid = tag._key
-            info = GetTagInfo(self.session.config, tid,
-                              stats=True, unread=unread_messages)
+            if tag.flag_hides:
+                info = GetTagInfo(self.session.config, tid, stats=True,
+                                  unread=unread_messages)
+            else:
+                info = GetTagInfo(self.session.config, tid, stats=True,
+                                  unread=unread_messages,
+                                  exclude=excluded_messages)
+
             subtags = self.session.config.get_tags(parent=tid)
             if subtags and '_recursing' not in self.data:
                 info['subtags'] = ListTags(self.session,
