@@ -992,7 +992,7 @@ class ConfigSet(Command):
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
             if parts[0] in config.rules:
-                ops.append((var, self.data[var]))
+                ops.append((var, self.data[var][0]))
 
         if self.args:
             arg = ' '.join(self.args)
@@ -1005,8 +1005,8 @@ class ConfigSet(Command):
             ops.append((var, value))
 
         updated = {}
-        for path, values in ops:
-            value = values[0].strip()
+        for path, value in ops:
+            value = value.strip()
             if value.startswith('{') or value.startswith('['):
                 value = json.loads(value)
             try:
