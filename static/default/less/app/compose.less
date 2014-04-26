@@ -57,7 +57,6 @@
   }
 
 
-
 /* Compose - Crypto */
 
   .compose-crypto-signature,
@@ -125,7 +124,6 @@
   }
 
 
-
 /* Compose - Subject & Message */
 
   .compose-subject input[type=text] {
@@ -141,8 +139,9 @@
   }
 
   .compose-message textarea {
-    width: @compose-max-width;
-    min-height: 100px;
+    width: 85%;
+    max-width: @compose-max-width;
+    min-height: 94px;
     padding: 10px;
     border: 1px solid @grayMid;
     border-radius: 4px;
@@ -154,7 +153,8 @@
     line-height: 18px;
   }
 
-  .compose-subject input[type=text]:focus, .compose-message textarea:focus {
+  .compose-subject input[type=text]:focus, 
+  .compose-message textarea:focus {
     outline: none;
     border: 1px solid @gray;
     box-shadow: 0 0 3px @gray;
@@ -166,9 +166,11 @@
 /* Compose - Actions */
 
  .compose-actions {
-    width: @compose-max-width;
+    width: 85%;
+    max-width: @compose-max-width;
+    margin-top: 10px;
   }
-  
+
   .compose-attachments {
     border-radius: 4px;
     border: 1px solid @grayLight;
