@@ -300,13 +300,12 @@ class MailpileCommand(Extension):
             "icon-lock-open",
             _("Not Encrypted"),
             _("This message was not encrypted. It may have been intercepted "
-              "on route to you and read by an unauthorized party")],
+              "and read by an unauthorized party")],
         "decrypted": [
             "crypto-color-green",
             "icon-lock-closed",
             _("Encrypted"),
-            _("This message was encrypted, but we were successfully able to "
-              "decrypt it. Great job being secure")],
+            _("This message was encrypted, great job being secure")],
         "mixed-decrypted": [
             "crypto-color-blue",
             "icon-lock-closed",
@@ -323,9 +322,8 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-closed",
             _("Mixed Missing Key"),
-            _("Parts of this message were unable to be decrypted because you "
-              "are missing "
-              "the private keys for those parts")],
+            _("Parts of the message were unable to be decrypted because you "
+              "are missing the private key")],
         "error": [
             "crypto-color-red",
             "icon-lock-error",
