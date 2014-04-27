@@ -16,12 +16,12 @@
 {% set show_reply = "false" %}
 {% for mid in result.thread_ids|reverse %}
   {% set metadata = result.data.metadata[mid] %}
-  {% set message  = result.data.messages[mid] %}
   {% if mid in result.data.messages %}{# Determine Is A Message #}
+    {% set message = result.data.messages[mid] %}
     {% if "editing_string" in message %}{# Show: Composer #}
       {% set editing_strings = message.editing_strings %}
       {% include("partials/compose.html") %}
-    {% else %}{# Show: Message and Composer #}
+    {% else %}{# Show: Message and Reply Composer #}
       {# FIXME: make subject line show differing subjects {{ metadata.subject }} #}
       {% include("partials/thread_message.html") %}{# Show : Message #}
       {% if metadata.flags.replied != true %}{# Check If Not Replied #}
@@ -39,16 +39,13 @@
       {% endif %}{# End Is Not Replied #}
     {% endif %}{# End Message / Reply #}
   {% elif metadata.flags.draft == true %}{# Is Message & Draft #}
-    {% if not showed_composer %}
-      {% do showed_composer.append(mid) %}
-      {% set compose = mailpile('message/draft', '='+mid).result %}
-      {% if compose %}
-        {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
-        {% include("partials/compose.html") %}
-      {% else %}
-        {{_("Could Not Render Composer")}}
-      {% endif%}
-    {% endif %}
+    {% set compose = mailpile('message/draft', '='+mid).result %}
+    {% if compose %}
+      {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
+      {% include("partials/compose.html") %}
+    {% else %}
+      {{_("Could Not Render Composer")}}
+    {% endif%}
   {% else %}{# Show snippet #}
   <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
     {% set from = metadata.from %}
