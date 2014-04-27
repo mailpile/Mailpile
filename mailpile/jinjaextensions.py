@@ -278,6 +278,7 @@ class MailpileCommand(Extension):
               "parts do not")]
     }
 
+    @classmethod
     def _show_message_signature(self, status):
         # This avoids crashes when attributes are missing.
         try:
@@ -342,6 +343,7 @@ class MailpileCommand(Extension):
             _("We failed to decrypt parts of this message and are unsure why")]
     }
 
+    @classmethod
     def _show_message_encryption(self, status):
         # This avoids crashes when attributes are missing.
         try:
@@ -361,6 +363,7 @@ class MailpileCommand(Extension):
 
         return classes
 
+    @classmethod
     def _contact_url(self, person):
         if 'contact' in person['flags']:
             url = "/contact/" + person['address'] + "/"
@@ -368,6 +371,7 @@ class MailpileCommand(Extension):
             url = "/contact/add/" + person['address'] + "/"
         return url
 
+    @classmethod
     def _contact_name(self, profiles, person):
         name = person['fn']
         for profile in profiles:
@@ -377,28 +381,55 @@ class MailpileCommand(Extension):
         return name
 
     URL_RE_HTTP = re.compile('(<a [^>]*?)'            # 1: <a
-                             '(href="https?:[^>]+>)'  # 2:    href="http..">
-                             '(.*?)'                  # 3:  Description!
-                             '(</a>)')                # 4: </a>
+                             '(href=["\'])'           # 2:    href="
+                             '(https?:[^>]+)'         # 3:  URL!
+                             '(["\'][^>]*>)'          # 4:          ">
+                             '(.*?)'                  # 5:  Description!
+                             '(</a>)')                # 6: </a>
 
     # We deliberately leave the https:// prefix on, because it is both
     # rare and worth drawing attention to.
     URL_RE_DESC_JUNK = re.compile('(?i)^http://((w+\d*|[a-z]+\d+)\.)?')
 
-    URL_RE_MAILTO = re.compile('(<a [^>]*?)'      # 1: <a
-                               '(href="mailto:)'  # 2:    href="mailto:
-                               '([^"]+)'          # 3:  Email address!
-                               '("[^>]*>)'        # 4:          ">
-                               '(.*?)'            # 5:  Description!
-                               '(</a>)')          # 6: </a>
+    URL_RE_MAILTO = re.compile('(<a [^>]*?)'          # 1: <a
+                               '(href=["\']mailto:)'  # 2:    href="mailto:
+                               '([^"]+)'              # 3:  Email address!
+                               '(["\'][^>]*>)'        # 4:          ">
+                               '(.*?)'                # 5:  Description!
+                               '(</a>)')              # 6: </a>
 
-    def _fix_urls(self, text, truncate=30):
+    URL_DANGER_ALERT = ('onclick=\'return confirm("' +
+                        _("Mailpile security tip: \\n\\n"
+                          "  Uh oh! This web site may be dangerous!\\n"
+                          "  Are you sure you want to continue?\\n") +
+                        '");\'')
+
+    @classmethod
+    def _fix_urls(self, text, truncate=30, danger=False):
         def http_fixer(m):
-            desc = re.sub(self.URL_RE_DESC_JUNK, '', m.group(3))
+            url = m.group(3)
+            odesc = desc = re.sub(self.URL_RE_DESC_JUNK, '', m.group(5))
+            url_danger = danger
+
+            # FIXME: Search for more signs of DANGER
+
             if len(desc) > truncate:
                 desc = desc[:truncate-3] + '...'
-            return ''.join([m.group(1), ' target=_blank ',
-                            m.group(2), desc, m.group(4)])
+                if '/' not in desc:
+                    # Phishers sometimes create subdomains that look like
+                    # something legit: yourbank.evil.com.
+                    # So, if the domain was getting truncated reveal the TLD
+                    # even if that means overflowing our truncation request.
+                    desc = '.'.join(odesc.split('/')[0].rsplit('.', 3)[-2:]
+                                    ) + '/...'
+                    url_danger = True
+            elif desc.endswith('/'):
+                desc = desc[:-1]
+
+            return ''.join([m.group(1),
+                            url_danger and self.URL_DANGER_ALERT or '',
+                            ' target=_blank ',
+                            m.group(2), url, m.group(4), desc, m.group(6)])
 
         # FIXME: Disabled for now, we will instead grab the mailto: URLs
         #        using javascript. A mailto: link is a reasonable fallback
