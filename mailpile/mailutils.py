@@ -844,7 +844,7 @@ class Email(object):
             try:
                 payload = payload.decode(charset)
                 return payload, charset
-            except (UnicodeDecodeError, TypeError):
+            except (UnicodeDecodeError, TypeError, LookupError):
                 pass
 
         if binary:
