@@ -847,7 +847,10 @@ class MailIndex:
 
             if ctype == 'text/plain':
                 textpart = _loader(part)
-            elif ctype == 'text/html':
+                if textpart[:3] in ('<di', '<ht', '<p>', '<p '):
+                    ctype = 'text/html'
+
+            if ctype == 'text/html':
                 _loader(part)
                 if len(payload[0]) > 3:
                     try:
@@ -859,7 +862,8 @@ class MailIndex:
                         textpart = payload[0]
                 else:
                     textpart = payload[0]
-            elif 'pgp' in part.get_content_type():
+
+            if 'pgp' in part.get_content_type().lower():
                 keywords.append('pgp:has')
                 keywords.append('crypto:has')
 

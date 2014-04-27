@@ -3,6 +3,7 @@ import email.header
 import email.parser
 import email.utils
 import errno
+import lxml.html
 import mailbox
 import mimetypes
 import os
@@ -717,6 +718,14 @@ class Email(object):
         tids = self.get_msg_info(self.index.MSG_TAGS).split(',')
         return [self.config.get_tag(t) for t in tids]
 
+    def _extract_text_from_html(self, html):
+        try:
+            return lxml.html.fromstring(html).text_content()
+        except:
+            import traceback
+            traceback.print_exc()
+            return html
+
     def get_message_tree(self, want=None):
         msg = self.get_msg()
         tree = {
@@ -786,10 +795,9 @@ class Email(object):
             if (part.get('content-disposition', 'inline') == 'inline'
                     and mimetype in ('text/plain', 'text/html')):
                 payload, charset = self.decode_payload(part)
+                start = payload[:100].strip()
 
-                if (mimetype == 'text/html'
-                        or '<html>' in payload
-                        or '</body>' in payload):
+                if mimetype == 'text/html':
                     if want is None or 'html_parts' in want:
                         tree['html_parts'].append({
                             'charset': charset,
@@ -798,10 +806,10 @@ class Email(object):
                                       and html_cleaner.clean_html(payload))
                                      or '')
                         })
+
                 elif want is None or 'text_parts' in want:
                     text_parts = self.parse_text_part(payload, charset)
-                    if want is None or 'text_parts' in want:
-                        tree['text_parts'].extend(text_parts)
+                    tree['text_parts'].extend(text_parts)
 
             elif want is None or 'attachments' in want:
                 tree['attachments'].append({
@@ -812,6 +820,14 @@ class Email(object):
                     'content-id': part.get('content-id', ''),
                     'filename': part.get_filename() or ''
                 })
+
+        if want is None or 'text_parts' in want:
+            if tree['html_parts'] and not tree['text_parts']:
+                html_part = tree['html_parts'][0]
+                payload = self._extract_text_from_html(html_part['data'])
+                text_parts = self.parse_text_part(payload,
+                                                  html_part['charset'])
+                tree['text_parts'].extend(text_parts)
 
         if self.is_editable():
             if not want or 'editing_strings' in want:
