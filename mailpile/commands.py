@@ -769,7 +769,9 @@ class SearchResults(dict):
                                          53 - (clen + len(msg_meta)))
                 text.append((cfmt + ' %s%-22.22s ' + sfmt
                              ) % (count, tag_new and '*' or ' ',
-                                  m['from'].get('fn') or m['from']['email'],
+                                  (m['from'].get('fn')
+                                   or m['from'].get('email')
+                                   or '(anonymous)'),
                                   m['subject'], msg_meta))
             count += 1
         if not count:
@@ -826,8 +828,15 @@ class Rescan(Command):
         if msg_idxs:
             for msg_idx_pos in msg_idxs:
                 e = Email(idx, msg_idx_pos)
-                session.ui.mark('Re-indexing %s' % e.msg_mid())
-                idx.index_email(self.session, e)
+                try:
+                    session.ui.mark('Re-indexing %s' % e.msg_mid())
+                    idx.index_email(self.session, e)
+                except KeyboardInterrupt:
+                    raise
+                except:
+                    self._ignore_exception()
+                    session.ui.warning(_('Failed to reindex: %s'
+                                         ) % e.msg_mid())
             return self._success(_('Indexed %d messages') % len(msg_idxs),
                                  result={'messages': len(msg_idxs)})
 
