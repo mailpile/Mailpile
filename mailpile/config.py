@@ -978,7 +978,7 @@ class ConfigManager(ConfigDict):
             autoescape=True,
             trim_blocks=True,
             extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
-                        'jinja2.ext.do',
+                        'jinja2.ext.do', 'jinja2.ext.autoescape',
                         'mailpile.jinjaextensions.MailpileCommand']
         )
         self.jinja_env.install_gettext_translations(translation,

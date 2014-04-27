@@ -5,9 +5,9 @@ import re
 import urllib
 import json
 from gettext import gettext as _
-from jinja2 import nodes, UndefinedError
+from jinja2 import nodes, UndefinedError, Markup
 from jinja2.ext import Extension
-from jinja2.utils import contextfunction, import_string, Markup
+from jinja2.utils import contextfunction, import_string
 #from markdown import markdown
 
 from mailpile.commands import Action
@@ -51,6 +51,8 @@ class MailpileCommand(Extension):
         environment.filters['contact_url'] = self._contact_url
         environment.globals['contact_name'] = self._contact_name
         environment.filters['contact_name'] = self._contact_name
+        environment.globals['fix_urls'] = self._fix_urls
+        environment.filters['fix_urls'] = self._fix_urls
 
         # See utils.py for these functions:
         environment.globals['elapsed_datetime'] = elapsed_datetime
@@ -145,7 +147,7 @@ class MailpileCommand(Extension):
                               % (classfmt % elem, elem['javascript_setup']))
             if elem.get('javascript_events'):
                 for event, call in elem.get('javascript_events').iteritems():
-                    setups.append('$("%s").bind("%s", %s);' % 
+                    setups.append('$("%s").bind("%s", %s);' %
                         (classfmt % elem, event, call))
         return Markup("function(){%s}" % ''.join(setups))
 
@@ -373,6 +375,44 @@ class MailpileCommand(Extension):
                 name = _('You')
                 break
         return name
+
+    URL_RE_HTTP = re.compile('(<a [^>]*?)'            # 1: <a
+                             '(href="https?:[^>]+>)'  # 2:    href="http..">
+                             '(.*?)'                  # 3:  Description!
+                             '(</a>)')                # 4: </a>
+
+    # We deliberately leave the https:// prefix on, because it is both
+    # rare and worth drawing attention to.
+    URL_RE_DESC_JUNK = re.compile('(?i)^http://((w+\d*|[a-z]+\d+)\.)?')
+
+    URL_RE_MAILTO = re.compile('(<a [^>]*?)'      # 1: <a
+                               '(href="mailto:)'  # 2:    href="mailto:
+                               '([^"]+)'          # 3:  Email address!
+                               '("[^>]*>)'        # 4:          ">
+                               '(.*?)'            # 5:  Description!
+                               '(</a>)')          # 6: </a>
+
+    def _fix_urls(self, text, truncate=30):
+        def http_fixer(m):
+            desc = re.sub(self.URL_RE_DESC_JUNK, '', m.group(3))
+            if len(desc) > truncate:
+                desc = desc[:truncate-3] + '...'
+            return ''.join([m.group(1), ' target=_blank ',
+                            m.group(2), desc, m.group(4)])
+
+        # FIXME: Disabled for now, we will instead grab the mailto: URLs
+        #        using javascript. A mailto: link is a reasonable fallback
+        #        until we have a GET'able compose dialog.
+        #
+        #def mailto_fixer(m):
+        #    return ''.join([m.group(1), 'href=\'javascript:compose("',
+        #                    m.group(3), '")\'>', m.group(5), m.group(6)])
+        #
+        #return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
+        #                     re.sub(self.URL_RE_MAILTO, mailto_fixer,
+        #                            text)))
+
+        return Markup(re.sub(self.URL_RE_HTTP, http_fixer, text))
 
     def _urlencode(self, s):
         if type(s) == 'Markup':

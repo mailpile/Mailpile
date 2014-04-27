@@ -1,6 +1,6 @@
-<div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}"> 
+<div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}">
   {% set from = metadata.from %}
-  {% include("partials/thread_metadata.html") %}        
+  {% include("partials/thread_metadata.html") %}
   <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
     <ul class="clearfix">
       <li>{{_("To")}}:</li>
@@ -82,26 +82,28 @@
         <div class="thread-item-crypto-line left"></div>
       </div>
       {% endif %}
+      {% autoescape false %}
       {% if part.type in ("text", "pgpsignedtext", "pgptext") %}
-      <div class="thread-item-text">{{ part.data|nice_text|urlize }}</div>
-      {% elif part.type == "quote" %}        
+      <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls }}</div>
+      {% elif part.type == "quote" %}
         {%- if message.text_parts|length - loop.index and message.text_parts[last_part].type == "signature" -%}
           {% do special_text_parts.append("quote") %}
-          <div class="thread-item-quote hide">{{ part.data|nice_text|urlize }}</div>
+          <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls }}</div>
         {% elif loop.index == message.text_parts|length %}
           {% do special_text_parts.append("quote") %}
-          <div class="thread-item-quote hide">{{ part.data|nice_text|urlize }}</div>
+          <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls }}</div>
         {% else %}
-          <div class="thread-item-quote">{{ part.data|nice_text|urlize }}</div>        
+          <div class="thread-item-quote">{{ part.data|nice_text|e|urlize|fix_urls }}</div>
         {%- endif -%}
       {% elif part.type == "signature" %}
         {% do special_text_parts.append("signature") %}
-        <div class="thread-item-signature hide">{{ part.data|nice_text|urlize }}</div>
+        <div class="thread-item-signature hide">{{ part.data|nice_text|e|urlize|fix_urls }}</div>
       {% else %}
         {{_("Unknown Text Part")}}
       {% endif %}
+      {% endautoescape %}
     {% endif %}
-  {% endfor %}  
+  {% endfor %}
   {% if message.attachments %}
   <div class="thread-message-attachments">
     <ul class="thread-message-attachments horizontal clearfix">
@@ -128,7 +130,7 @@
     {% if "pgp-key" in special_text_parts %}
     <li><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
     {% endif %}
-  </ul>  
+  </ul>
   <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">
     {% if show_reply == "true" %}
     <li><a class="message-action-reply" href="#"><span class="icon-reply"></span> {{_("Reply")}}</a></li>
