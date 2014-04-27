@@ -481,9 +481,7 @@ class SearchResults(dict):
             'tag_tids': self._msg_tags(msg_info),
             'thread_mid': msg_info[MailIndex.MSG_THREAD_MID],
             'subject': msg_info[MailIndex.MSG_SUBJECT],
-            'body': {
-                'snippet': msg_info[MailIndex.MSG_BODY],
-            },
+            'body': MailIndex.get_body(msg_info),
             'flags': {
             },
             'crypto': {

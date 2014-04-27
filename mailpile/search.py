@@ -119,6 +119,7 @@ class MailIndex:
         self._saved_changes = 0
         self._lock = threading.Lock()
 
+    @classmethod
     def l2m(self, line):
         return line.decode('utf-8').split(u'\t')
 
@@ -133,11 +134,46 @@ class MailIndex:
         0x7F: None
     })
 
+    @classmethod
     def m2l(self, message):
         # Normalize the message before saving it so we can be sure that we will
         # be able to read it back later.
         parts = [unicode(p).translate(self.NORM_TABLE) for p in message]
         return (u'\t'.join(parts)).encode('utf-8')
+
+    @classmethod
+    def get_body(self, msg_info):
+        if msg_info[self.MSG_BODY].startswith('{'):
+            return json.loads(msg_info[self.MSG_BODY])
+        else:
+            return {
+                'snippet': msg_info[self.MSG_BODY]
+            }
+
+    @classmethod
+    def truncate_body_snippet(self, body, max_chars):
+        if 'snippet' in body:
+            delta = len(self.encode_body(body)) - max_chars
+            if delta > 0:
+                body['snippet'] = body['snippet'][:-delta].rsplit(' ', 1)[0]
+
+    @classmethod
+    def encode_body(self, d, **kwargs):
+        for k, v in kwargs:
+            if v is None:
+                if k in d:
+                    del d[k]
+            else:
+                d[k] = v
+        if len(d) == 1 and 'snippet' in d:
+            return d['snippet']
+        else:
+            return json.dumps(d)
+
+    @classmethod
+    def set_body(self, msg_info, **kwargs):
+        d = self.get_body(msg_info)
+        msg_info[self.MSG_BODY] = self.encode_body(d, **kwargs)
 
     def load(self, session=None):
         self.INDEX = []
@@ -489,7 +525,7 @@ class MailIndex:
                                                msg_mid, msg_id, msg, msg_ts)
 
                 play_nice_with_threads()
-                keywords, snippet = self.index_message(
+                keywords, body_info = self.index_message(
                     session,
                     msg_mid, msg_id, msg, msg_size, msg_ts,
                     mailbox=mailbox_idx,
@@ -499,7 +535,9 @@ class MailIndex:
                 )
 
                 msg_subject = self.hdr(msg, 'subject')
-                msg_snippet = snippet[:max(0, snippet_max - len(msg_subject))]
+                self.truncate_body_snippet(
+                    body_info, max(0, snippet_max - len(msg_subject)))
+                msg_body = self.encode_body(body_info)
 
                 tags = [k.split(':')[0] for k in keywords
                         if k.endswith(':in') or k.endswith(':tag')]
@@ -510,7 +548,7 @@ class MailIndex:
 
                 msg_idx_pos, msg_info = self.add_new_msg(
                     msg_ptr, msg_id, msg_ts, self.hdr(msg, 'from'),
-                    msg_to, msg_cc, msg_size, msg_subject, msg_snippet,
+                    msg_to, msg_cc, msg_size, msg_subject, msg_body,
                     tags
                 )
                 self.set_conversation_ids(msg_info[self.MSG_MID], msg)
@@ -563,7 +601,7 @@ class MailIndex:
                   ExtractEmails(self.hdr(msg, 'bcc')))
 
         filters = _plugins.get_filter_hooks([self.filter_keywords])
-        kw, sn = self.index_message(session,
+        kw, bi = self.index_message(session,
                                     email.msg_mid(),
                                     msg_info[self.MSG_ID],
                                     msg,
@@ -574,16 +612,19 @@ class MailIndex:
                                     filter_hooks=filters,
                                     is_new=False)
 
+        snippet_max = session.config.sys.snippet_max
+        self.truncate_body_snippet(bi, max(0, snippet_max - len(msg_subj)))
+        msg_body = self.encode_body(bi)
+
         tags = [k.split(':')[0] for k in kw
                 if k.endswith(':in') or k.endswith(':tag')]
 
-        snippet_max = session.config.sys.snippet_max
         self.edit_msg_info(msg_info,
                            msg_from=self.hdr(msg, 'from'),
                            msg_to=msg_to,
                            msg_cc=msg_cc,
                            msg_subject=msg_subj,
-                           msg_body=sn[:max(0, snippet_max - len(msg_subj))])
+                           msg_body=msg_body)
 
         self.set_msg_at_idx_pos(email.msg_idx_pos, msg_info)
 
@@ -721,7 +762,7 @@ class MailIndex:
         return [self.EMAILS[int(e, 36)] for e in eids.split(',') if e]
 
     def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from,
-                    msg_to, msg_cc, msg_bytes, msg_subject, msg_snippet,
+                    msg_to, msg_cc, msg_bytes, msg_subject, msg_body,
                     tags):
         msg_idx_pos = len(self.INDEX)
         msg_mid = b36(msg_idx_pos)
@@ -736,7 +777,7 @@ class MailIndex:
             self.compact_to_list(msg_cc or []),          # Cc:
             b36(msg_bytes // 1024),                      # KB
             msg_subject,                                 # Subject:
-            msg_snippet,                                 # Snippet
+            msg_body,                                    # Snippet etc.
             ','.join(tags),                              # Initial tags
             '',                                          # No replies for now
             msg_mid                                      # Conversation ID
@@ -791,6 +832,7 @@ class MailIndex:
                      mailbox=None):
         keywords = []
         snippet = ''
+        body_info = {}
         payload = [None]
         for part in msg.walk():
             textpart = payload[0] = None
@@ -819,10 +861,12 @@ class MailIndex:
                     textpart = payload[0]
             elif 'pgp' in part.get_content_type():
                 keywords.append('pgp:has')
+                keywords.append('crypto:has')
 
             att = part.get_filename()
             if att:
                 att = self.try_decode(att, charset)
+                # FIXME: These should be tags!
                 keywords.append('attachment:has')
                 keywords.extend([t + ':att' for t
                                  in re.findall(WORD_REGEXP, att.lower())])
@@ -839,7 +883,7 @@ class MailIndex:
                     keywords.extend(kwe(self, msg, ctype, textpart))
 
                 if len(snippet) < 1024:
-                    snippet += ' ' + textpart
+                    snippet += textpart.strip() + '\n'
 
             for extract in _plugins.get_data_kw_extractors():
                 keywords.extend(extract(self, msg, ctype, att, part,
@@ -893,9 +937,25 @@ class MailIndex:
         for extract in _plugins.get_meta_kw_extractors():
             keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts))
 
-        snippet = snippet.replace('\n', ' '
-                                  ).replace('\t', ' ').replace('\r', '')
-        return (set(keywords) - STOPLIST), snippet.strip()
+        # FIXME: Allow plugins to augment the body_info
+
+        body_info['snippet'] = self.clean_snippet(snippet)
+        return (set(keywords) - STOPLIST), body_info
+
+    # FIXME: Here it would be nice to recognize more boilerplate junk in
+    #        more languages!
+    SNIPPET_JUNK_RE = re.compile('(\r+'
+                                 '|\n[^\s]+ [^\n]+(@[^\n]+|wrote):\s+>[^\n]+'
+                                 '|\n>[^\n]*'
+                                 ')+')
+    SNIPPET_SPACE_RE = re.compile('\s+')
+
+    def clean_snippet(self, snippet):
+        # FIXME: Can we do better than this? Probably!
+        return (re.sub(self.SNIPPET_SPACE_RE, ' ',
+                       re.sub(self.SNIPPET_JUNK_RE, '',
+                              snippet.split('\n--')[0]))
+                ).strip()
 
     def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
                       mailbox=None, compact=True, filter_hooks=[],
@@ -949,6 +1009,7 @@ class MailIndex:
             del(self.CACHE[msg_idx])
 
         for order in self.INDEX_SORT:
+            # FIXME: This is where we should insert, not append.
             while msg_idx >= len(self.INDEX_SORT[order]):
                 self.INDEX_SORT[order].append(msg_idx)
 
