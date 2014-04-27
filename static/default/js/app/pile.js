@@ -4,14 +4,8 @@ MailPile.prototype.pile_action_select = function(item) {
   // Add To Data Model
   mailpile.bulk_cache_add('messages_cache', item.data('mid'));
 
-	// Increment Selected
-	if (mailpile.messages_cache.length === 1) {
-    var message = '<span id="bulk-actions-selected-count">1</span> ' + $('#bulk-actions-message').data('bulk_selected');
-    $('#bulk-actions-message').html(message);
-    mailpile.show_bulk_actions($('.bulk-actions').find('li.hide'));
-	} else {
-	  $('#bulk-actions-selected-count').html(mailpile.messages_cache.length);
-  }
+	// Update Bulk UI
+  mailpile.bulk_actions_update_ui();
 
 	// Style & Select Checkbox
 	item.removeClass('result').addClass('result-on')
@@ -28,15 +22,11 @@ MailPile.prototype.pile_action_unselect = function(item) {
   // Remove From Data Model
   mailpile.bulk_cache_remove('messages_cache', item.data('mid'));
 
-	// Decrement Selected
+	// Update Bulk UI
 	$('#bulk-actions-selected-count').html(mailpile.messages_cache.length);
 
 	// Hide Actions
-	if (mailpile.messages_cache.length < 1) { 
-    var message = $('#bulk-actions-message').data('bulk_selected_none');
-    $('#bulk-actions-message').html(message);
-    mailpile.hide_bulk_actions($('.bulk-actions').find('li.hide'));
-	}
+	mailpile.bulk_actions_update_ui();
 
 	// Style & Unselect Checkbox
 	item.removeClass('result-on').addClass('result')
@@ -252,6 +242,9 @@ $('li.sidebar-tags-draggable').droppable({
 
       // Empty Bulk Cache
       mailpile.messages_cache = [];
+
+      // Update Bulk UI
+      mailpile.bulk_actions_update_ui();
     });
   }
 });

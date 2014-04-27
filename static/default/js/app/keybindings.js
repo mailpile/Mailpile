@@ -18,6 +18,12 @@ MailPile.prototype.keybinding_move_message = function(add_tag) {
 
       // Empty Bulk Cache
       mailpile.messages_cache = [];
+
+      // Update Bulk UI
+      mailpile.bulk_actions_update_ui();
     });    
+  }
+  else {
+    console.log('FIXME: Provide helpful / unobstrusive UI feedback that tells a user they hit a keybinding, then fades away');
   }
 };

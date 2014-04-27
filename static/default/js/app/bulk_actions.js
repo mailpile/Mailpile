@@ -1,9 +1,25 @@
+MailPile.prototype.bulk_actions_update_ui = function() {
+  if (mailpile.messages_cache.length === 1) {
+    var message = '<span id="bulk-actions-selected-count">1</span> ' + $('#bulk-actions-message').data('bulk_selected');
+    $('#bulk-actions-message').html(message);
+    mailpile.show_bulk_actions($('.bulk-actions').find('li.hide'));
+  }
+  else if (mailpile.messages_cache.length < 1) { 
+    var message = $('#bulk-actions-message').data('bulk_selected_none');
+    $('#bulk-actions-message').html(message);
+    mailpile.hide_bulk_actions($('.bulk-actions').find('li.hide'));
+	}
+	else {
+	  $('#bulk-actions-selected-count').html(mailpile.messages_cache.length);
+  }
+};
+
+
 MailPile.prototype.bulk_action_read = function() {
   this.tag_add_delete(mailpile.tags_cache, 'new', mailpile.messages_cache, function(result) {
     $.each(mailpile.messages_cache, function(key, mid) {
       $('#pile-message-' + mid).removeClass('in_new');
     });
-    mailpile.bulk_cache = [];
   });
 };
 
@@ -12,8 +28,6 @@ MailPile.prototype.bulk_action_unread = function() {
     $.each(mailpile.messages_cache, function(key, mid) {
       $('#pile-message-' + mid).addClass('in_new');
     });
-    // Empty Bulk Cache
-    mailpile.bulk_cache = [];
   });
 };
 
@@ -35,6 +49,9 @@ $(document).on('click', '.bulk-action-archive', function() {
 
     // Empty Bulk Cache
     mailpile.messages_cache = [];
+
+    // Update Bulk UI
+    mailpile.bulk_actions_update_ui();
   });
 });
 
@@ -50,6 +67,9 @@ $(document).on('click', '.bulk-action-trash', function() {
 
     // Empty Bulk Cache
     mailpile.messages_cache = [];
+
+    // Update Bulk UI
+    mailpile.bulk_actions_update_ui();
   });
 });
 
