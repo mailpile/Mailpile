@@ -831,7 +831,7 @@ class MailIndex:
     def read_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
                      mailbox=None):
         keywords = []
-        snippet = ''
+        snippet_text = snippet_html = ''
         body_info = {}
         payload = [None]
         for part in msg.walk():
@@ -886,8 +886,10 @@ class MailIndex:
                 for kwe in _plugins.get_text_kw_extractors():
                     keywords.extend(kwe(self, msg, ctype, textpart))
 
-                if len(snippet) < 1024:
-                    snippet += textpart.strip() + '\n'
+                if ctype == 'text/plain':
+                    snippet_text += textpart.strip() + '\n'
+                else:
+                    snippet_html += textpart.strip() + '\n'
 
             for extract in _plugins.get_data_kw_extractors():
                 keywords.extend(extract(self, msg, ctype, att, part,
@@ -943,22 +945,30 @@ class MailIndex:
 
         # FIXME: Allow plugins to augment the body_info
 
-        body_info['snippet'] = self.clean_snippet(snippet)
+        if snippet_text.strip() != '':
+            body_info['snippet'] = self.clean_snippet(snippet_text[:1024])
+        else:
+            body_info['snippet'] = self.clean_snippet(snippet_html[:1024])
+
         return (set(keywords) - STOPLIST), body_info
 
     # FIXME: Here it would be nice to recognize more boilerplate junk in
     #        more languages!
-    SNIPPET_JUNK_RE = re.compile('(\r+'
-                                 '|\n[^\s]+ [^\n]+(@[^\n]+|wrote):\s+>[^\n]+'
-                                 '|\n>[^\n]*'
-                                 ')+')
+    SNIPPET_JUNK_RE = re.compile(
+        '(\n[^\s]+ [^\n]+(@[^\n]+|(wrote|crit|schreib)):\s+>[^\n]+'
+                                                          # On .. X wrote:
+        '|\n>[^\n]*'                                      # Quoted content
+        '|\n--[^\n]+BEGIN PGP[^\n]+--\s+(\S+:[^\n]+\n)*'  # PGP header
+        ')+')
     SNIPPET_SPACE_RE = re.compile('\s+')
 
+    @classmethod
     def clean_snippet(self, snippet):
         # FIXME: Can we do better than this? Probably!
         return (re.sub(self.SNIPPET_SPACE_RE, ' ',
                        re.sub(self.SNIPPET_JUNK_RE, '',
-                              snippet.split('\n--')[0]))
+                              '\n' + snippet.replace('\r', '')
+                              ).split('\n--')[0])
                 ).strip()
 
     def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
