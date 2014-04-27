@@ -822,7 +822,7 @@ class Email(object):
                 })
 
         if want is None or 'text_parts' in want:
-            if tree['html_parts'] and not tree['text_parts']:
+            if tree.get('html_parts') and not tree.get('text_parts'):
                 html_part = tree['html_parts'][0]
                 payload = self._extract_text_from_html(html_part['data'])
                 text_parts = self.parse_text_part(payload,
