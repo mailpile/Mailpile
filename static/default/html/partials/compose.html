@@ -106,7 +106,10 @@
     </div>
   </div>
   <div class="compose-message">
-    <label>{{_("Message")}}</label>
+    <div class="clearfix">
+    <label class="left">{{_("Message")}}</label>
+    <label class="right" id="compose-message-autosaving-{{mid}}"></label>
+    </div>
     <textarea id="compose-text-{{mid}}" class="compose-text" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
   </div>
   <div class="compose-actions clearfix">

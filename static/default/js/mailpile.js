@@ -52,6 +52,7 @@ function MailPile() {
   	message_sent  : "/thread/="
 	}
 	this.plugins = [];
+	this.autosave = {};
 };
 
 MailPile.prototype.go = function(url) {

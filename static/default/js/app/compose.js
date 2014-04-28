@@ -1,6 +1,5 @@
 /* Generate New Draft MID */
 MailPile.prototype.compose = function(data) {
-
   $.ajax({
     url      : mailpile.api.compose,
     type     : 'POST',
@@ -225,7 +224,34 @@ MailPile.prototype.compose_analyze_recipients = function(addresses) {
 
     return existing;
   }
-}
+};
+
+
+MailPile.prototype.compose_autosave = function(form_data, mid) {
+  
+  // Autosave AJAX
+	$.ajax({
+		url			 : mailpile.api.compose_save,
+		type		 : 'POST',
+		data     : form_data,
+		dataType : 'json',
+	  success  : function(response) {
+      if (response.status === 'success') {    
+      
+        // Was message ephemeral? Then update IDs with draft MID
+        
+      
+        // Update UI message
+        setTimeout(function() { 
+          $('#compose-message-autosaving-' + mid).fadeOut();
+        }, 2500);        
+      }
+    },
+    error: function() {
+      mailpile.notification('error', 'Could not ' + action + ' your message');      
+    }
+	});  
+};
 
 
 $('#compose-to, #compose-cc, #compose-bcc').select2({
@@ -328,10 +354,6 @@ $('#compose-to, #compose-cc, #compose-bcc').on('select2-selecting', function(e) 
 });
 
 
-/* Composer - Add Attachment */
-MailPile.prototype.attach = function() {}
-
-
 /* Compose - Create New Blank Message */
 $(document).on('click', '#button-compose', function(e) {
 	e.preventDefault();
@@ -408,7 +430,6 @@ $(document).on('click', '.compose-apply-quote', function(e) {
   }
   
 });
-
 
 
 /* Compose - Send, Save, Reply */
@@ -497,6 +518,34 @@ $(document).on('click', '.compose-to-email', function(e) {
   });
 */
   alert('FIXME: Create New Blank Message To Address');
+});
+
+
+/* Compose - Autosave */
+$(document).on('keyup', '.compose-text', function(e) {
+
+  var mid = $(this).parent().parent().data('mid');
+  var char_count = $(this).val().length;
+
+  // Check if current char count is past threshold to autosave
+  if (_.has(mailpile.autosave, mid)) {
+  
+    // FIXME: Is char count greater or is time longer
+    if (char_count > mailpile.autosave[mid] + 100) {
+
+      // Perform Autosave (pass MID)      
+      $('#compose-message-autosaving-' + mid).html('<span class="icon-compose"></span> autosaving...').fadeIn();      
+      mailpile.compose_autosave($('#form-compose-' + mid).serialize(), mid);
+
+      // Increment Autosave Count
+      mailpile.autosave[mid] = char_count;
+    }
+  }
+  // Set character count for message box
+  else {
+    console.log('does NOT have the mid: ' + mid)
+    mailpile.autosave[mid] = char_count;    
+  }
 });
 
 
