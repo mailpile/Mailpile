@@ -17,6 +17,7 @@ import sys
 import tempfile
 import traceback
 import json
+import urllib
 from collections import defaultdict
 from gettext import gettext as _
 from json import JSONEncoder
@@ -474,8 +475,9 @@ class RawHttpResponder:
             ('Content-Length', length),
         ]
         if disposition and filename:
+            encfilename = urllib.quote(filename.encode("utf-8"))
             headers.append(('Content-Disposition',
-                            '%s; filename="%s"' % (disposition, filename)))
+                            '%s; filename*=UTF-8\'\'%s' % (disposition, encfilename)))
         elif disposition:
             headers.append(('Content-Disposition', disposition))
         request.send_standard_headers(header_list=headers,
