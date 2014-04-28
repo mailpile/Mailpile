@@ -97,10 +97,16 @@
 
 /* Compose - Headers */
 
-  .compose-headers {
+
+
+  .compose-headers,
+  .compose-subject,
+  .compose-message {
+    width: 85%;
     max-width: @compose-max-width;
 		padding: 10px 0 0 0;    
   }
+
 
 	a.compose-show-field {
 	  font-family: @text-font-family;
@@ -138,9 +144,13 @@
     line-height: 18px;
   }
 
+  .compose-message label.right {
+    font-style: italic;
+    color: @gray;
+  }
+
   .compose-message textarea {
-    width: 85%;
-    max-width: @compose-max-width;
+    width: 100%;
     min-height: 94px;
     padding: 10px;
     border: 1px solid @grayMid;
