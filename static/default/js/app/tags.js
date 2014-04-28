@@ -133,16 +133,14 @@ $(document).on('submit', '#form-tag-add', function(e) {
 
 /* Tag - Delete Tag */
 $(document).on('click', '#button-tag-delete', function(e) {
-
   if (confirm('Sure you want to delete this tag?') === true) { 
-
     $.ajax({
       url: '/api/0/tag/delete/',
       type: 'POST',
       data: {tag: $('#data-tag-add-slug').val() },
       dataType : 'json',
       success: function(response) {
-        mailpile.notification(response.status, response.message);
+        mailpile.notification(response.status, response.message, 'redirect', '/tag/list/');
       }
     });
   }

@@ -16,20 +16,18 @@ MailPile.prototype.notification = function(status, message_text, complete, compl
 
   // Show Message
   message.find('span.message-text').html(message_text),
-  message.fadeIn(function() {
-  });
+  message.fadeIn();
 
 	// Complete Action
 	if (complete == undefined) {
-
+    
   }
 	else if (complete == 'hide') {
-		message.delay(5000).fadeOut('normal', function()
-		{
+		message.delay(5000).fadeOut('normal', function() {
 			message.find('span.message-text').empty();
 		});
 	}
-	else if (options.complete == 'redirect') {
+	else if (complete == 'redirect') {
 		setTimeout(function() { window.location.href = complete_action }, 5000);
 	}
 
