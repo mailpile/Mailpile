@@ -21,9 +21,9 @@
   <td class="avatar">
     <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
   </td>
-  <td class="from" title='{{metadata.from.fn}} &lt;{{from.address}}&gt;'>
-    <a class="item-from" href="{{url}}">
-    {% if metadata.from.fn %}{{ metadata.from.fn }}{% else %}({{_("No Name")}}){% endif %}</a>
+  <td class="from">
+    <a class="item-from" href="{{url}}" title='{{metadata.from.fn}} &lt;{{from.address}}&gt;'>
+    {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(36) }}{% else %}({{_("No Name")}}){% endif %}</a>
     {% if conversation_count > 1 %}<span class="conversation-count">{{ conversation_count }}</span>{% endif %}
     {% if metadata.flags.replied %}<span class="icon-reply"></span>{% endif %}
   </td>

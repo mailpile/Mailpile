@@ -84,6 +84,10 @@ class MailpileCommand(Extension):
         environment.globals['nice_subject'] = self._nice_subject
         environment.filters['nice_subject'] = self._nice_subject
 
+        # Make unruly names a lil bit nicer
+        environment.globals['nice_name'] = self._nice_name
+        environment.filters['nice_name'] = self._nice_name
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -469,3 +473,8 @@ class MailpileCommand(Extension):
     def _nice_subject(self, subject):
         output = re.sub('(?i)^((re|fwd|aw|wg):\s+)+', '', subject)
         return output
+
+    def _nice_name(self, name, truncate=100):
+        if len(name) > truncate:
+            name = name[:truncate-3] + '...'
+        return name
