@@ -52,8 +52,12 @@ class BaseMailSource(threading.Thread):
     MailSources take care of managing a group of mailboxes, synchronizing
     the source with Mailpile's local metadata and/or caches.
     """
-    STATE_SAVE_INTERVAL = 3600
+    DEFAULT_JITTER = 15
+    SAVE_STATE_INTERVAL = 3600
     INTERNAL_ERROR_SLEEP = 900
+
+    # This is a helper for the events.
+    __classname__ = 'mailpile.mail_source.BaseMailSource'
 
     def __init__(self, session, my_config):
         threading.Thread.__init__(self)
@@ -62,17 +66,18 @@ class BaseMailSource(threading.Thread):
         self.session = session
         self.alive = None
         self.event = None
+        self.jitter = self.DEFAULT_JITTER
         self._last_saved = time.time()  # Saving right away would be silly
 
     def _pfn(self):
         return 'mail-source.%s' % self.my_config._key
 
     def _load_state(self):
-        config = self.session.config
+        config, my_config = self.session.config, self.my_config
         self.lock.acquire()
         try:
-            events = config.event_log.incomplete(source=self,
-                                                 data_id=my_config._key)
+            events = list(config.event_log.incomplete(source=self,
+                                                      data_id=my_config._key))
             if events:
                 self.event = events[0]
             else:
@@ -84,11 +89,11 @@ class BaseMailSource(threading.Thread):
             self.lock.release()
 
     def _save_state(self):
-        config.event_log.log_event(self.event)
+        self.session.config.event_log.log_event(self.event)
 
     def log_status(self, message):
         self.event.message = message
-        config.event_log.log_event(self.event)
+        self.session.config.event_log.log_event(self.event)
 
     def _wake_up(self):
         self._sleeping = 0
@@ -104,7 +109,10 @@ class BaseMailSource(threading.Thread):
         """Open mailboxes or connect to the remote mail source."""
         raise NotImplemented('Please override _sync_mail in %s' % self)
 
-    def sleep(self, seconds)
+    def _jitter(self, seconds):
+        return seconds + random.randint(0, self.jitter)
+
+    def sleep(self, seconds):
         self._sleeping = seconds
         while self.alive and self._sleeping > 0:
             time.sleep(min(1, self._sleeping))
@@ -118,17 +126,18 @@ class BaseMailSource(threading.Thread):
         self.alive = True
         self._load_state()
         self.event.flags = Event.RUNNING
-        while self.sleep(my_config.interval + random.randint(0, 15)):
+        while self.sleep(self._jitter(self.my_config.interval)):
             try:
-                if 'traceback' in self.event.data['traceback']:
+                if 'traceback' in self.event.data:
                     del self.event.data['traceback']
                 if self._open():
                     self._sync_mail()
-                if (self.alive and
-                        now >= self._last_saved + self.SAVE_STATE_INTERVAL):
+                if (self.alive and time.time() >= self._last_saved +
+                                                  self.SAVE_STATE_INTERVAL):
                     self._save_state()
             except:
                 self.event.data['traceback'] = traceback.format_exc()
+                print self.event.data['traceback']
                 self.log_status(_('Internal error!  Sleeping...'))
                 self.sleep(self.INTERNAL_ERROR_SLEEP)
                 # FIXME: Release any held locks?
@@ -145,6 +154,9 @@ class MboxMailSource(BaseMailSource):
     """
     This is a mail source that watches over one or more Unix mboxes.
     """
+    # This is a helper for the events.
+    __classname__ = 'mailpile.mail_source.MboxMailSource'
+
     def __init__(self, *args, **kwargs):
         BaseMailSource.__init__(self, *args, **kwargs)
         self.watching = -1
@@ -170,7 +182,8 @@ class MboxMailSource(BaseMailSource):
         rescanned = errors = 0
         for mbx in self.my_config.mailbox.values():
             try:
-                mt, sz = os.path.getmtime(mbx.path), os.path.getsize(mbx.path)
+                mt = long(os.path.getmtime(mbx.path))
+                sz = long(os.path.getsize(mbx.path))
                 if (mt != self.event.data['mtimes'].get(mbx._key) or
                         sz != self.event.data['sizes'].get(mbx._key)):
                     self.lock.acquire()
@@ -196,9 +209,26 @@ class MboxMailSource(BaseMailSource):
             self.log_status(_('Rescanned %d mailboxes') % rescanned)
 
 
+class MaildirMailSource(BaseMailSource):
+    """
+    This is a mail source that watches over one or more Maildirs.
+    """
+    # This is a helper for the events.
+    __classname__ = 'mailpile.mail_source.MaildirMailSource'
+
+    def __init__(self, *args, **kwargs):
+        BaseMailSource.__init__(self, *args, **kwargs)
+        self.watching = -1
+        self.mboxes = {}
+
+    def _open(self):
+        return True
+
+    def _sync_mail(self):
+        return True
+
+
 def MailSource(session, my_config):
     # FIXME: check the plugin and instanciate the right kind of mail source
     #        for this config section.
     pass
-
-

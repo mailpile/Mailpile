@@ -691,6 +691,10 @@ class ConfigList(RuledContainer(list)):
     def keys(self):
         return [self.fmt_key(i) for i in range(0, len(self))]
 
+    def iteritems(self):
+        for k in self.keys():
+            yield (k, self[k])
+
     def values(self):
         return self[:]
 
