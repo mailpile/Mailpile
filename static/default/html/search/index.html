@@ -1,7 +1,8 @@
 {% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
 {% if result %}
-  <table id="pile-results">
+  <!-- FIXME: make density class be pulled from user profile setting -->
+  <table id="pile-results" class="comfy">
   <tbody>
   {% for mid in result.thread_ids %}
     {% include("partials/search_item.html") %}
