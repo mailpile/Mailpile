@@ -99,14 +99,21 @@ CONFIG_RULES = {
                             ["mbox", "maildir", "macmaildir", "winmaildir",
                              "gmvault", "imap", "pop3"],
                             ''),
-        'sync_tags':       (_('Synchronized tags'), str, ''),
         'pre_command':     (_('Shell command run before syncing'), str, ''),
         'post_command':    (_('Shell command run after syncing'), str, ''),
+        'interval':        (_('How frequently to check for mail'), int, 300),
         'username':        (_('User name'), str, ''),
         'password':        (_('Password'), str, ''),
         'host':            (_('Host'), str, ''),
         'port':            (_('Port'), int, 993),
-        'path':            (_('Path or folder'), str, '')
+        'mailbox': (_('Mailboxes'), {
+            'path':        (_('Mailbox source path'), str, ''),
+            'policy':      (_('Mailbox policy'),
+                            ['ignore', 'read', 'move', 'sync'], 'ignore'),
+            'local':       (_('Local mailbox path'), str, ''),
+            'synced_tag':  (_('Removing this tag deletes at source'), str, ''),
+            'apply_tags':  (_('Tags applied to new messages'), str, []),
+        }, {})
     }, {}]
 }
 

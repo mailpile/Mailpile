@@ -1134,6 +1134,8 @@ class ConfigManager(ConfigDict):
                 if session:
                     session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
                 self._mbox_cache[mbx_id] = self.load_pickle(pfn)
+        except KeyboardInterrupt:
+            raise
         except:
             if self.sys.debug:
                 import traceback
