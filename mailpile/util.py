@@ -230,10 +230,10 @@ def elapsed_datetime(timestamp):
 
     if days_ago < 1:
         if hours_ago < 1:
-            if minutes_ago < 5:
-                return _('just now')
-            elif minutes_ago >= 5:
-                return _('%d minutes') % minutes_ago
+            if minutes_ago < 3:
+                return _('now')
+            elif minutes_ago >= 3:
+                return _('%d mins') % minutes_ago
         elif hours_ago < 2:
             return _('%d hour') % hours_ago
         else:
