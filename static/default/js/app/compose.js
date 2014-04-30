@@ -229,6 +229,12 @@ MailPile.prototype.compose_analyze_recipients = function(addresses) {
 
 MailPile.prototype.compose_autosave = function(form_data, mid) {
   
+  var update_ephemeral = function(new_mid) {
+    
+    console.log('update_ephemeral has been called');
+    
+  };
+  
   // Autosave AJAX
 	$.ajax({
 		url			 : mailpile.api.compose_save,
@@ -239,7 +245,15 @@ MailPile.prototype.compose_autosave = function(form_data, mid) {
       if (response.status === 'success') {    
       
         // Was message ephemeral? Then update IDs with draft MID
-        
+        if (mid.contains('reply-all-') || mid.contains('reply-')) {
+          console.log('autosave was ephemeral');
+          update_ephemeral('yayayaya');
+        }
+        else {
+          
+          console.log('autosave was NOT ephemeral');
+          
+        }
       
         // Update UI message
         setTimeout(function() { 
@@ -530,12 +544,12 @@ $(document).on('keyup', '.compose-text', function(e) {
   // Check if current char count is past threshold to autosave
   if (_.has(mailpile.autosave, mid)) {
   
-    // FIXME: Is char count greater or is time longer
+    // FIXME: Is char count greater or is time longer than X
     if (char_count > mailpile.autosave[mid] + 100) {
 
-      // Perform Autosave (pass MID)      
-      $('#compose-message-autosaving-' + mid).html('<span class="icon-compose"></span> autosaving...').fadeIn();      
-      mailpile.compose_autosave($('#form-compose-' + mid).serialize(), mid);
+      // Perform Autosave (pass MID)
+      $('#compose-message-autosaving-' + mid).html('<span class="icon-compose"></span> will someday autosave...').fadeIn();
+      //mailpile.compose_autosave($('#form-compose-' + mid).serialize(), mid);
 
       // Increment Autosave Count
       mailpile.autosave[mid] = char_count;
@@ -544,7 +558,7 @@ $(document).on('keyup', '.compose-text', function(e) {
   // Set character count for message box
   else {
     console.log('does NOT have the mid: ' + mid)
-    mailpile.autosave[mid] = char_count;    
+    mailpile.autosave[mid] = char_count;
   }
 });
 
