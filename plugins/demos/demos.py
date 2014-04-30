@@ -122,3 +122,40 @@ class md5sumWordyView(md5sumCommand):
     @classmethod
     def view(cls, result):
         return 'MD5:%s' % result
+
+
+def on_plugin_start(config):
+    """Called once after plugin is loaded.
+
+    You can initialize external or expensive dependencies here.
+
+    Args:
+        config: The Mailpile configuration dictionary
+
+    Returns:
+        void
+    """
+    # initialize some external dependencies
+    pass
+
+
+def on_plugin_shutdown(config):
+    """Called before plugin is stopped.
+
+    Shutdown external dependencies here, especially if they created some threads.
+
+    Args:
+        config: The Mailpile configuration dictionary
+
+    Returns:
+        void
+    """
+    # properly shutdown external dependencies
+    pass
+
+
+class DemoMailbox(object):
+    """A dysfunctional demo mailbox. See mailpile.mailboxes.* for proper mailbox examples"""
+    @classmethod
+    def parse_path(cls, config, fn, create=False):
+        raise ValueError('This is only a demo mailbox class!')

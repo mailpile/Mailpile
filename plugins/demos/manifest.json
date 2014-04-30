@@ -155,6 +155,13 @@
             "name": "wordy"
         }
     ],
+    # Register custom mailbox types
+    "mailboxes": [
+        {
+            "class": "DemoMailbox",
+            "priority": "100"
+        }
+    ],
     "contacts": {
         "importers": ["DemoVCardImporter"],
         "exporters": [],
@@ -174,5 +181,10 @@
     },
     "threads": [
         "MyWorker"
-    ]
+    ],
+    # List method names to be called after plugin is loaded or before its unloaded
+    "lifecycle": {
+        "startup": ["on_plugin_start"],
+        "shutdown": ["on_plugin_shutdown"]
+    }
 }
