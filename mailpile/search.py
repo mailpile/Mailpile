@@ -834,6 +834,7 @@ class MailIndex:
         snippet_text = snippet_html = ''
         body_info = {}
         payload = [None]
+        textparts = 0
         for part in msg.walk():
             textpart = payload[0] = None
             ctype = part.get_content_type()
@@ -849,6 +850,8 @@ class MailIndex:
                 textpart = _loader(part)
                 if textpart[:3] in ('<di', '<ht', '<p>', '<p '):
                     ctype = 'text/html'
+                else:
+                    textparts += 1
 
             if ctype == 'text/html':
                 _loader(part)
@@ -894,6 +897,9 @@ class MailIndex:
             for extract in _plugins.get_data_kw_extractors():
                 keywords.extend(extract(self, msg, ctype, att, part,
                                         lambda: _loader(part)))
+
+        if textparts == 0:
+            keywords.append('text:missing')
 
         if 'crypto:has' in keywords:
             e = Email(self, -1,

@@ -718,9 +718,47 @@ class Email(object):
         tids = self.get_msg_info(self.index.MSG_TAGS).split(',')
         return [self.config.get_tag(t) for t in tids]
 
+    RE_HTML_BORING = re.compile('(\s+|<style[^>]*>[^<>]*</style>)')
+    RE_EXCESS_WHITESPACE = re.compile('\n\s+\n')
+    RE_HTML_NEWLINES = re.compile('(<br|</(tr|table))')
+    RE_HTML_PARAGRAPHS = re.compile('(</?p|</?(title|div|html|body))')
+    RE_HTML_LINKS = re.compile('<a\s+[^>]*href=[\'"]?([^\'">]+)[^>]*>'
+                               '([^<]*)</a>')
+    RE_HTML_IMGS = re.compile('<img\s+[^>]*src=[\'"]?([^\'">]+)[^>]*>')
+    RE_HTML_IMG_ALT = re.compile('<img\s+[^>]*alt=[\'"]?([^\'">]+)[^>]*>')
+
     def _extract_text_from_html(self, html):
         try:
-            return lxml.html.fromstring(html).text_content()
+            # We compensate for some of the limitations of lxml...
+            links, imgs = [], []
+            def delink(m):
+                url, txt = m.group(1), m.group(2)
+                if txt[:4] in ('http', 'www.'):
+                    return txt
+                elif url.startswith('mailto:'):
+                    if '@' in txt:
+                        return txt
+                    else:
+                        return '%s (%s)' % (txt, url.split(':', 1)[1])
+                else:
+                    links.append(' [%d] %s: %s' % (len(links)+1, txt, url))
+                    return '%s[%d]' % (txt, len(links))
+            def deimg(m):
+                tag, url = m.group(0), m.group(1)
+                if ' alt=' in tag:
+                    return re.sub(self.RE_HTML_IMG_ALT, '\1', tag)
+                else:
+                    imgs.append(' [%d] %s' % (len(imgs)+1, url))
+                    return '[Image %d]' % len(imgs)
+            html = re.sub(self.RE_HTML_PARAGRAPHS, '\n\n\\1',
+                       re.sub(self.RE_HTML_NEWLINES, '\n\\1',
+                           re.sub(self.RE_HTML_BORING, ' ',
+                               re.sub(self.RE_HTML_LINKS, delink,
+                                   re.sub(self.RE_HTML_IMGS, deimg, html)))))
+            text = (lxml.html.fromstring(html).text_content() +
+                    (links and '\n\nLinks:\n' or '') + '\n'.join(links) +
+                    (imgs and '\n\nImages:\n' or '') + '\n'.join(imgs))
+            return re.sub(self.RE_EXCESS_WHITESPACE, '\n\n', text).strip()
         except:
             import traceback
             traceback.print_exc()
@@ -808,6 +846,8 @@ class Email(object):
                         })
 
                 elif want is None or 'text_parts' in want:
+                    if payload[:3] in ('<di', '<ht', '<p>', '<p '):
+                        payload = self._extract_text_from_html(payload)
                     text_parts = self.parse_text_part(payload, charset)
                     tree['text_parts'].extend(text_parts)
 
