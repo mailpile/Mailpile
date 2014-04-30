@@ -732,7 +732,7 @@ class Email(object):
             # We compensate for some of the limitations of lxml...
             links, imgs = [], []
             def delink(m):
-                url, txt = m.group(1), m.group(2)
+                url, txt = m.group(1), m.group(2).strip()
                 if txt[:4] in ('http', 'www.'):
                     return txt
                 elif url.startswith('mailto:'):
@@ -741,12 +741,14 @@ class Email(object):
                     else:
                         return '%s (%s)' % (txt, url.split(':', 1)[1])
                 else:
-                    links.append(' [%d] %s: %s' % (len(links)+1, txt, url))
+                    links.append(' [%d] %s%s' % (len(links) + 1,
+                                                 txt and (txt + ': ') or '',
+                                                 url))
                     return '%s[%d]' % (txt, len(links))
             def deimg(m):
                 tag, url = m.group(0), m.group(1)
                 if ' alt=' in tag:
-                    return re.sub(self.RE_HTML_IMG_ALT, '\1', tag)
+                    return re.sub(self.RE_HTML_IMG_ALT, '\1', tag).strip()
                 else:
                     imgs.append(' [%d] %s' % (len(imgs)+1, url))
                     return '[Image %d]' % len(imgs)
@@ -846,7 +848,7 @@ class Email(object):
                         })
 
                 elif want is None or 'text_parts' in want:
-                    if payload[:3] in ('<di', '<ht', '<p>', '<p '):
+                    if start[:3] in ('<di', '<ht', '<p>', '<p ', '<ta', '<bo'):
                         payload = self._extract_text_from_html(payload)
                     text_parts = self.parse_text_part(payload, charset)
                     tree['text_parts'].extend(text_parts)
