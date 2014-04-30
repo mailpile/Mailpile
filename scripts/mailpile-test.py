@@ -25,6 +25,7 @@ os.environ['GNUPGHOME'] = mailpile_gpgh
 
 # Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
+import mailpile.mail_source
 from mailpile import Mailpile
 
 
@@ -40,6 +41,7 @@ os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
 cfg = config = mp._session.config
 cfg.plugins.load('demos', process_manifest=True)
+mailsources = []
 
 
 def contents(fn):
@@ -97,6 +99,30 @@ def test_vcards():
     assert(mp.contact('mr@rogers.com'
                       ).result['contact']['fn'] == u'Mr. Rogers')
     assert(len(mp.contact_list('rogers').result['contacts']) == 1)
+
+def test_mail_source_start():
+    for proto in ('mbox', 'maildir'):
+        mp.set(('sources.%s = {"protocol": "%s", "interval": 1}'
+                ) % (proto, proto))
+
+    for mbx_id, path in config.sys.mailbox.iteritems():
+        source = 'sources.%s' % (os.path.isdir(path) and 'maildir' or 'mbox')
+        mp.set('%s.mailbox.%s = {"path": "%s", "policy": "read"}' % (
+            source, mbx_id, path))
+
+    mailsources[:] = [
+        mailpile.mail_source.MboxMailSource(mp._session,
+                                            config.sources.mbox),
+        mailpile.mail_source.MaildirMailSource(mp._session,
+                                               config.sources.maildir)
+    ]
+    for ms in mailsources:
+        ms.jitter = 0
+        ms.start()
+
+def test_mail_source_finish():
+    for ms in mailsources:
+        ms.quit()
 
 def test_load_save_rescan():
     mp.rescan()
@@ -278,7 +304,10 @@ try:
         say("Skipping tests...")
     else:
         test_vcards()
+        test_mail_source_start()
         test_load_save_rescan()
+        test_mail_source_finish()
+        raise Exception('Bail')
         test_message_data()
         test_html()
         test_composition()
