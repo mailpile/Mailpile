@@ -719,7 +719,7 @@ class Email(object):
         return [self.config.get_tag(t) for t in tids]
 
     RE_HTML_BORING = re.compile('(\s+|<style[^>]*>[^<>]*</style>)')
-    RE_EXCESS_WHITESPACE = re.compile('\n\s+\n')
+    RE_EXCESS_WHITESPACE = re.compile('\n\s*\n\s*')
     RE_HTML_NEWLINES = re.compile('(<br|</(tr|table))')
     RE_HTML_PARAGRAPHS = re.compile('(</?p|</?(title|div|html|body))')
     RE_HTML_LINKS = re.compile('<a\s+[^>]*href=[\'"]?([^\'">]+)[^>]*>'
@@ -850,8 +850,12 @@ class Email(object):
                 elif want is None or 'text_parts' in want:
                     if start[:3] in ('<di', '<ht', '<p>', '<p ', '<ta', '<bo'):
                         payload = self._extract_text_from_html(payload)
-                    text_parts = self.parse_text_part(payload, charset)
-                    tree['text_parts'].extend(text_parts)
+                    # Ignore white-space only text parts, they usually mean
+                    # the message is HTML only and we want the code below
+                    # to try and extract meaning from it.
+                    if (start or payload.strip()) != '':
+                        text_parts = self.parse_text_part(payload, charset)
+                        tree['text_parts'].extend(text_parts)
 
             elif want is None or 'attachments' in want:
                 tree['attachments'].append({
