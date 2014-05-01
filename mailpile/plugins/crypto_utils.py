@@ -119,12 +119,14 @@ class GPGKeyImportFromMail(Search):
 class NicknymGetKey(Command):
     """Get a key from a nickserver"""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/nicknym/getkey', 'crypto/nicknym/getkey', '<address> [<keytype>] [<server>]')
+    SYNOPSIS = (None, 'crypto/nicknym/getkey', 'crypto/nicknym/getkey', 
+        '<address> [<keytype>] [<server>]')
 
     HTTP_CALLABLE = ('POST',)
-    HTTP_QUERY_VARS = {'address': 'The nick/address to fetch a key for',
-                       'keytype': 'What type of key to import (defaults to OpenPGP)',
-                       'server': 'The Nicknym server to use (defaults to autodetect)'}
+    HTTP_QUERY_VARS = {
+        'address': 'The nick/address to fetch a key for',
+       'keytype': 'What type of key to import (defaults to OpenPGP)',
+       'server': 'The Nicknym server to use (defaults to autodetect)'}
 
     def command(self):
         address = self.data.get('address', self.args[0])
@@ -144,7 +146,8 @@ class NicknymGetKey(Command):
 class NicknymRefreshKeys(Command):
     """Get a key from a nickserver"""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/nicknym/refreshkeys', 'crypto/nicknym/refreshkeys', '')
+    SYNOPSIS = (None, 'crypto/nicknym/refreshkeys', 
+        'crypto/nicknym/refreshkeys', '')
 
     HTTP_CALLABLE = ('POST',)
 
