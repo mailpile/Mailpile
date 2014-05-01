@@ -82,7 +82,7 @@ class GPGKeyImportFromMail(Search):
     SYNOPSIS = (None, 'crypto/gpg/importkeyfrommail', 
                 'crypto/gpg/importkeyfrommail', '<mid>')
     HTTP_CALLABLE = ('POST', )
-    HTTP_QUERY_VARS = {'mid': 'Message ID'}
+    HTTP_QUERY_VARS = {'mid': 'Message ID', 'att': 'Attachment ID'}
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -99,6 +99,10 @@ class GPGKeyImportFromMail(Search):
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
+        if args and args[-1][0] == "#":
+            attid = args.pop()
+        else:
+            attid = self.data.get("att", 'application/pgp-keys')
         args.extend(["=%s" % x for x in self.data.get("mid", [])])
         eids = self._choose_messages(args)
         if len(eids) < 0:
@@ -107,8 +111,7 @@ class GPGKeyImportFromMail(Search):
             return self._error("One message at a time, please", None)
 
         email = Email(idx, list(eids)[0])
-        fn, attr = email.extract_attachment(session, 'application/pgp-keys', 
-            mode='inline')
+        fn, attr = email.extract_attachment(session, attid, mode='inline')
         if attr and attr["data"]:
             g = GnuPG()
             res = g.import_keys(attr["data"])
