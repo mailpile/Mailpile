@@ -5,6 +5,8 @@ from gettext import gettext as _
 
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command
+from mailpile.plugins.search import Search
+from mailpile.mailutils import Email, MBX_ID_LEN
 
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.nicknym import Nicknym
@@ -74,6 +76,46 @@ class GPGKeyImport(Command):
         g = GnuPG()
         return g.import_keys(key_data)
 
+class GPGKeyImportFromMail(Search):
+    """Import a GPG Key."""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/importkeyfrommail', 
+                'crypto/gpg/importkeyfrommail', '<mid>')
+    HTTP_CALLABLE = ('POST', )
+    HTTP_QUERY_VARS = {'mid': 'Message ID'}
+
+    class CommandResult(Command.CommandResult):
+        def __init__(self, *args, **kwargs):
+            Command.CommandResult.__init__(self, *args, **kwargs)
+
+        def as_text(self):
+            if self.result:
+                return "Imported %d keys (%d updated, %d unchanged) from the mail" % (
+                    self.result["results"]["count"],
+                    self.result["results"]["imported"],
+                    self.result["results"]["unchanged"])
+            return ""
+
+    def command(self):
+        session, config, idx = self.session, self.session.config, self._idx()
+        args = list(self.args)
+        args.extend(["=%s" % x for x in self.data.get("mid", [])])
+        eids = self._choose_messages(args)
+        if len(eids) < 0:
+            return self._error("No messages selected", None)
+        elif len(eids) > 1:
+            return self._error("One message at a time, please", None)
+
+        email = Email(idx, list(eids)[0])
+        fn, attr = email.extract_attachment(session, 'application/pgp-keys', 
+            mode='inline')
+        if attr and attr["data"]:
+            g = GnuPG()
+            res = g.import_keys(attr["data"])
+            return self._success("Imported key", res)
+
+        return self._error("No results found", None)
+
 class NicknymGetKey(Command):
     """Get a key from a nickserver"""
     ORDER = ('', 0)
@@ -114,5 +156,6 @@ class NicknymRefreshKeys(Command):
 _plugins.register_commands(GPGKeySearch)
 _plugins.register_commands(GPGKeyReceive)
 _plugins.register_commands(GPGKeyImport)
+_plugins.register_commands(GPGKeyImportFromMail)
 _plugins.register_commands(NicknymGetKey)
 _plugins.register_commands(NicknymRefreshKeys)
