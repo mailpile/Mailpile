@@ -1,6 +1,9 @@
 /* Pile */
 
-	#pile-results {	width: 100%; }
+	#pile-results {
+	  width: 100%;
+	  min-width: 800px;
+  }
 
   #pile-results tr.result          { background: @white; }
 	#pile-results tr.result:hover    { background: @grayLight; }
@@ -8,8 +11,9 @@
 	#pile-results tr.result-on:hover { background: @colorSelectHover }
 	
 	#pile-results td {
-    padding: 10px;
-    vertical-align: middle;	
+	  padding-top: 10px;
+	  padding-bottom: 10px;
+    vertical-align: middle;
 		border-spacing: 0px;
 		border-bottom: 1px solid @grayMid;
 		box-sizing: padding-box;
@@ -18,49 +22,39 @@
 		line-height: 14px;
 	}
 
-  #pile-results.comfy  td { padding: 10px 0px; }
-  #pile-results.cozy   td { padding: 6px 0px; }
-  #pile-results.snug   td { padding: 2px 0px; }
+  #pile-results.comfy  td { padding-top: 10px; padding-bottom: 10px; }
+  #pile-results.cozy   td { padding-top: 6px; padding-bottom: 6px; }
+  #pile-results.snug   td { padding-top: 2px; padding-bottom: 2px; }
 
-  #pile-results td.draggable {
-    width: 12px;
-    padding: 0px;
-    cursor: move;
-  }
+	#pile-results tr a        { font-size: 14px; font-weight: normal; color: inherit; }
+	#pile-results tr.in_new a { font-weight: bold;}
+  #pile-results td span.pile-message-tag { font-weight: bold; margin-right: 5px; }
 
-  #pile-results td.draggable:hover {
-    cursor: move;
-  }
+  #pile-results td.draggable       { width: 12px; cursor: move; }
+  #pile-results td.draggable:hover { cursor: move; }
 
-  #pile-results        td.avatar       { min-width: 18px; max-width: 68px; padding-left: 10px; }
-  #pile-results        td.avatar a img { display: block; border-radius: 2px; }
-  #pile-results.comfy  td.avatar       { width: 44px; }
-  #pile-results.comfy  td.avatar a img { width: 24px; height: 24px; }  
-  #pile-results.cozy   td.avatar       { width: 30px; }
+  #pile-results        td.avatar       { width: 48px; text-align: center; }
+  #pile-results        td.avatar a     { display: block; text-align: center; }
+  #pile-results        td.avatar a img { display: inline-block; border-radius: 2px; }
+  #pile-results.comfy  td.avatar a img { width: 24px; height: 24px; }
   #pile-results.cozy   td.avatar a img { width: 18px; height: 18px; }
-  #pile-results.snug   td.avatar       { width: 18px; }
   #pile-results.snug   td.avatar a img { width: 14px; height: 14px; }
 
 	#pile-results td.from {
-	  min-width: 150px;
-		padding-left: 5px;
+	  width: 255px;
+		overflow-x: hidden;
 		word-wrap: normal;
 		word-break: normal;
-		overflow-x: hidden;
     white-space: nowrap;		
 	}
 
-	#pile-results td.from .icon-reply {
-    color: @grayMid;
-  }
-
-  #pile-results span.conversation-count {
-    height: 21px;
-    display: inline-block;
+  #pile-results td.from span.conversation-count {
     text-align: center;
     vertical-align: middle;
-    margin: 0px 4px;
-    padding: 5px 8px 4px 8px;
+    position: relative;
+    top: -2px;
+    left: 3px;
+    padding: 4px 8px 4px 8px;
     box-sizing: border-box;
     color: @grayDark;
     background: @grayMid;
@@ -70,42 +64,37 @@
     line-height: 11px;
   }
 
+	#pile-results td.from .icon-reply,
+	#pile-results td.from .icon-compose {
+    position: relative;
+    top: 0px;
+    left: 4px;
+    color: @grayMid;
+  }
+
 	#pile-results td.subject {
-		min-width: 275px;
-		max-width: 475px;
-		overflow: hidden;	
+		min-width: 370px;
+		overflow-x: hidden;
+		word-wrap: normal;
+		word-break: normal;
+    white-space: nowrap;	
 	}
 	
 	#pile-results td.subject a {
-    word-break: break-word;
-    white-space: nowrap;	
+	  width: 370px;
+    display: inline-block;
 	}
 
-  #pile-results.comfy  span.item-snippet { display: none; }
-  #pile-results.cozy   span.item-snippet { display: none; }
-  #pile-results.snug   span.item-snippet { display: none; }
-  
-
   #pile-results td.date {
-    width: 35px;
-    text-align: center;
+    width: 60px;
+    text-align: right;
     white-space: nowrap;
     color: @gray;
   }
 
-	#pile-results tr td a {
-		font-size: 14px;
-		font-weight: normal;
-		color: inherit;
-	}
-
-	#pile-results tr.in_new a {
-  	font-weight: bold;
-	}
-
-  #pile-results a.pile-message-tag {
-    font-weight: bold;
-    margin-right: 5px;
+  #pile-results td.checkbox {
+    width: 45px;
+    text-align: center;
   }
 
 

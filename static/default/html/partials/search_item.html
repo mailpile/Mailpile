@@ -22,30 +22,30 @@
     <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
   </td>
   <td class="from">
-    <a class="item-from" href="{{url}}" title='{{metadata.from.fn}} &lt;{{from.address}}&gt;'>
-    {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(36) }}{% else %}({{_("No Name")}}){% endif %}</a>
+    <a href="{{url}}" title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
+    {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}</a>
     {% if conversation_count > 1 %}<span class="conversation-count">{{ conversation_count }}</span>{% endif %}
     {% if metadata.flags.replied %}<span class="icon-reply"></span>{% endif %}
   </td>
   <td class="subject">
+    <a class="item-subject" href="{{url}}">
     <span class="item-tags">
     {% if has_label_tags(result.data.tags, metadata.tag_tids) %}
     <span class="icon-tag"></span>
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
-        <a class="pile-message-tag" href="{{url}}" data-tag_name="{{tag.name}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"> {{tag.name}}</a>
+        <span class="pile-message-tag" data-tag_name="{{tag.name}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"> {{tag.name}}</span>
       {% endif %}
     {% endfor %}
     {% endif %}
     </span>
-    <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
-    <span class="item-snippet">{{metadata.snippet}}</span>
+    {% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
   </td>
-  <td class="date" valign="top">
+  <td class="date">
     <a href="/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
   </td>
-  <td class="checkbox" valign="top">
+  <td class="checkbox">
     <input type="checkbox" name="mid" value="{{mid}}">
   </td>
 </tr>
