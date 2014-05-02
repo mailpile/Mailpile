@@ -1,0 +1,19 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Filters")}}{% endblock %}
+{% block content %}
+<div id="filters-list" class="content-normal clearfix">
+
+  {% for filter in result %}
+
+    <div>
+      <h3>{{ filter.comment }}</h3>
+      Tags: <strong>{{ filter.human_tags }}</strong><br>
+      Terms: <strong>{{ filter.terms }}</strong><br>
+      Type: <strong>{{ filter.type }}</strong>
+      <hr>
+    </div>
+
+  {% endfor %}
+
+</div>
+{% endblock %}
