@@ -25,19 +25,9 @@ class MailpileMailbox(mailbox.mbox):
     def __init__(self, *args, **kwargs):
         mailbox.mbox.__init__(self, *args, **kwargs)
         self.editable = False
-        self.last_parsed = -1  # Must be -1 or first message won't get parsed
         self._save_to = None
         self._encryption_key_func = lambda: None
         self._lock = threading.Lock()
-
-    def __getstate__(self):
-        odict = self.__dict__.copy()
-        # Pickle can't handle file objects.
-        del odict['_file']
-        del odict['_lock']
-        del odict['_save_to']
-        del odict['_encryption_key_func']
-        return odict
 
     def _get_fd(self):
         return open(self._path, 'rb+')
@@ -64,11 +54,14 @@ class MailpileMailbox(mailbox.mbox):
             self._lock.release()
         self.update_toc()
 
-    def unparsed(self):
-        return range(self.last_parsed+1, len(self))
-
-    def mark_parsed(self, i):
-        self.last_parsed = i
+    def __getstate__(self):
+        odict = self.__dict__.copy()
+        # Pickle can't handle function objects.
+        for dk in ('_save_to', '_encryption_key_func',
+                   '_file', '_lock', 'parsed'):
+            if dk in odict:
+                del odict[dk]
+        return odict
 
     def update_toc(self):
         self._lock.acquire()
