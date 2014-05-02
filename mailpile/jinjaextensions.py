@@ -393,7 +393,7 @@ class MailpileCommand(Extension):
 
     # We deliberately leave the https:// prefix on, because it is both
     # rare and worth drawing attention to.
-    URL_RE_DESC_JUNK = re.compile('(?i)^http://((w+\d*|[a-z]+\d+)\.)?')
+    URL_RE_HTTP_PROTO = re.compile('(?i)^https?://((w+\d*|[a-z]+\d+)\.)?')
 
     URL_RE_MAILTO = re.compile('(<a [^>]*?)'          # 1: <a
                                '(href=["\']mailto:)'  # 2:    href="mailto:
@@ -409,26 +409,23 @@ class MailpileCommand(Extension):
                         '");\'')
 
     @classmethod
-    def _fix_urls(self, text, truncate=30, danger=False):
+    def _fix_urls(self, text, truncate=35, danger=False):
         def http_fixer(m):
             url = m.group(3)
-            odesc = desc = re.sub(self.URL_RE_DESC_JUNK, '', m.group(5))
+            odesc = desc = m.group(5)
             url_danger = danger
-
-            # FIXME: Search for more signs of DANGER
 
             if len(desc) > truncate:
                 desc = desc[:truncate-3] + '...'
-                if '/' not in desc:
+                noproto = re.sub(self.URL_RE_HTTP_PROTO, '', desc)
+                if ('/' not in noproto) and ('?' not in noproto):
                     # Phishers sometimes create subdomains that look like
                     # something legit: yourbank.evil.com.
                     # So, if the domain was getting truncated reveal the TLD
                     # even if that means overflowing our truncation request.
-                    desc = '.'.join(odesc.split('/')[0].rsplit('.', 3)[-2:]
+                    desc = '.'.join(noproto.split('/')[0].rsplit('.', 3)[-2:]
                                     ) + '/...'
                     url_danger = True
-            elif desc.endswith('/'):
-                desc = desc[:-1]
 
             return ''.join([m.group(1),
                             url_danger and self.URL_DANGER_ALERT or '',
