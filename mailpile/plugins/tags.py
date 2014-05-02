@@ -598,6 +598,12 @@ class ListFilters(Command):
     """List (all) auto-tagging rules"""
     SYNOPSIS = (None, 'filter/list', 'filter/list', '[<search>|=<id>|@<type>]')
     ORDER = ('Tagging', 1)
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = {
+        'search': 'Text to search for',
+        'id': 'Filter ID',
+        'type': 'Filter type'
+    }
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -623,8 +629,12 @@ class ListFilters(Command):
                 human_tags.append('%s%s' % (tterm[0], tagname))
 
             skip = False
-            if self.args and not want_fid:
-                for term in self.args:
+            args = list(self.args)
+            args.extend([t for t in self.data.get('search', [])])
+            args.extend(['='+t for t in self.data.get('id', [])])
+            args.extend(['@'+t for t in self.data.get('type', [])])
+            if args and not want_fid:
+                for term in args:
                     term = term.lower()
                     if term.startswith('='):
                         if (term[1:] != fid):
