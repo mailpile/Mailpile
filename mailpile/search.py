@@ -479,8 +479,6 @@ class MailIndex:
         if len(self.PTRS.keys()) == 0:
             self.update_ptrs_and_msgids(session)
 
-        added = 0
-        last_date = long(time.time())
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
         if messages_md5 == self._scanned.get(mailbox_idx, ''):
@@ -493,6 +491,8 @@ class MailIndex:
             return ((n == 1) and parse_fmt1 or parse_fmtn
                     ) % (mailbox_idx, 100 * ui / n, ui, n)
 
+        added = 0
+        last_date = long(time.time())
         for ui in range(0, len(messages)):
             if mailpile.util.QUITTING:
                 break

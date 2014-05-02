@@ -109,7 +109,8 @@ CONFIG_RULES = {
         'mailbox': (_('Mailboxes'), {
             'path':        (_('Mailbox source path'), str, ''),
             'policy':      (_('Mailbox policy'),
-                            ['ignore', 'read', 'move', 'sync'], 'ignore'),
+                            ['unknown', 'ignore', 'watch',
+                             'read', 'move', 'sync'], 'ignore'),
             'local':       (_('Local mailbox path'), str, ''),
             'synced_tag':  (_('Removing this tag deletes at source'), str, ''),
             'apply_tags':  (_('Tags applied to new messages'), str, []),

@@ -46,7 +46,6 @@ from mailpile.mailboxes import *
 #    So we start with Maildir. WERVD and IMAP inherit from that anyway.
 #
 
-
 class BaseMailSource(threading.Thread):
     """
     MailSources take care of managing a group of mailboxes, synchronizing
@@ -61,94 +60,179 @@ class BaseMailSource(threading.Thread):
 
     def __init__(self, session, my_config):
         threading.Thread.__init__(self)
-        self.lock = threading.Condition()
+        self._lock = threading.Lock()
         self.my_config = my_config
         self.session = session
         self.alive = None
         self.event = None
         self.jitter = self.DEFAULT_JITTER
+        self._sleeping = None
+        self._rescan_waiters = []
         self._last_saved = time.time()  # Saving right away would be silly
+
+        # Make locked versions of a few functions
+        self._load_state = self._locked(self._unlocked_load_state)
+        self.open = self._locked(self._unlocked_open)
+        self.sync_mail = self._locked(self._unlocked_sync_mail)
+        self.rescan_mailbox = self._locked(self._unlocked_rescan_mailbox)
+
+    def _locked(self, func):
+        def locked_func(*args, **kwargs):
+            try:
+                self._lock.acquire()
+                return func(*args, **kwargs)
+            finally:
+                self._lock.release()
+        return locked_func
 
     def _pfn(self):
         return 'mail-source.%s' % self.my_config._key
 
-    def _load_state(self):
+    def _unlocked_load_state(self):
         config, my_config = self.session.config, self.my_config
-        self.lock.acquire()
-        try:
-            events = list(config.event_log.incomplete(source=self,
-                                                      data_id=my_config._key))
-            if events:
-                self.event = events[0]
-            else:
-                self.event = config.event_log.log(source=self,
-                                                  flags=Event.RUNNING,
-                                                  message=_('Starting up'),
-                                                  data={'id': my_config._key})
-        finally:
-            self.lock.release()
+        events = list(config.event_log.incomplete(source=self,
+                                                  data_id=my_config._key))
+        if events:
+            self.event = events[0]
+        else:
+            self.event = config.event_log.log(source=self,
+                                              flags=Event.RUNNING,
+                                              message=_('Starting up'),
+                                              data={'id': my_config._key})
 
     def _save_state(self):
         self.session.config.event_log.log_event(self.event)
 
-    def log_status(self, message):
+    def _log_status(self, message):
         self.event.message = message
         self.session.config.event_log.log_event(self.event)
 
-    def _wake_up(self):
-        self._sleeping = 0
-        #self.lock.acquire()
-        #self.lock.notify()
-        #self.lock.release()
-
-    def _open(self):
+    def _unlocked_open(self):
         """Open mailboxes or connect to the remote mail source."""
         raise NotImplemented('Please override _open in %s' % self)
 
-    def _sync_mail(self):
+    def _unlocked_sync_mail(self):
         """Open mailboxes or connect to the remote mail source."""
         raise NotImplemented('Please override _sync_mail in %s' % self)
 
     def _jitter(self, seconds):
         return seconds + random.randint(0, self.jitter)
 
-    def sleep(self, seconds):
-        self._sleeping = seconds
-        while self.alive and self._sleeping > 0:
-            time.sleep(min(1, self._sleeping))
-            self._sleeping -= 1
+    def _sleep(self, seconds):
+        if self._sleeping != 0:
+            self._sleeping = seconds
+            while self.alive and self._sleeping > 0:
+                time.sleep(min(1, self._sleeping))
+                self._sleeping -= 1
+        self._sleeping = None
         return self.alive
 
-    def rescan_mailbox(self, mailbox, force=False):
+    MAX_PATHS = 50000
+
+    def _discover_mailboxes(self, path):
+        paths = [path]
+        existing = set(self.session.config.sys.mailbox +
+                       [mbx.path for mbx in self.my_config.mailbox.values()] +
+                       [mbx.local for mbx in self.my_config.mailbox.values()
+                        if mbx.local])
+        adding = []
+        while paths:
+            raw_fn = paths.pop(0)
+            fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
+            if raw_fn in existing or fn in existing or not os.path.exists(fn):
+                continue
+            if self.is_mailbox(fn):
+                adding.append(fn)
+            if os.path.isdir(fn):
+                try:
+                    for f in [f for f in os.listdir(fn)
+                              if f not in ('.', '..')]:
+                        paths.append(os.path.join(fn, f))
+                        if len(paths) > self.MAX_PATHS:
+                            return False
+                except OSError:
+                    pass
+        added = {}
+        for path in adding:
+            added[self.session.config.sys.mailbox.append(path)] = path
+        for mailbox_idx in added:
+            self.my_config.mailbox[mailbox_idx] = {
+                'path': added[mailbox_idx],
+                'policy': 'unknown'
+            }
+        if added:
+            self.event.data['have_unknown'] = True
+        return True
+
+    def _unlocked_rescan_mailbox(self, mbx_key):
+        try:
+            mbx = self.my_config.mailbox[mbx_key]
+            if mbx.policy == 'watch':
+                return self._discover_mailboxes(mbx.path)
+            if mbx.path == '/dev/null' or mbx.policy in ('ignore', 'unknown'):
+                return True
+            if mbx.local:
+                # FIXME: Should copy any new messages to our local stash
+                pass
+            self.session.config.index.scan_mailbox(
+                self.session, mbx_key, mbx.local or mbx.path,
+                self.session.config.open_mailbox)
+            return True
+        except ValueError:
+            return False
+
+    def is_mailbox(self, fn):
         return False
 
     def run(self):
         self.alive = True
         self._load_state()
         self.event.flags = Event.RUNNING
-        while self.sleep(self._jitter(self.my_config.interval)):
+        while self._sleep(self._jitter(self.my_config.interval)):
+            waiters, self._rescan_waiters = self._rescan_waiters, []
+            for b, e in waiters:
+                b.release()
             try:
                 if 'traceback' in self.event.data:
                     del self.event.data['traceback']
-                if self._open():
-                    self._sync_mail()
+                if self.open():
+                    self.sync_mail()
                 if (self.alive and time.time() >= self._last_saved +
                                                   self.SAVE_STATE_INTERVAL):
                     self._save_state()
             except:
                 self.event.data['traceback'] = traceback.format_exc()
                 print self.event.data['traceback']
-                self.log_status(_('Internal error!  Sleeping...'))
-                self.sleep(self.INTERNAL_ERROR_SLEEP)
+                self._log_status(_('Internal error!  Sleeping...'))
+                self._sleep(self.INTERNAL_ERROR_SLEEP)
                 # FIXME: Release any held locks?
+            finally:
+                for b, e in waiters:
+                    e.release()
         self.event.flags = Event.INCOMPLETE
         self.event.message = _('Shutting down')
         self._save_state()
 
+    def wake_up(self):
+        self._sleeping = 0
+
+    def rescan_now(self, started_callback=None):
+        begin, end = rsl = threading.Lock(), threading.Lock()
+        for l in rsl:
+            l.acquire()
+        self._rescan_waiters.append(rsl)
+        self.wake_up()
+        begin.acquire()
+        if started_callback:
+            started_callback()
+        end.acquire()
+        for l in rsl:
+            l.release()
+
     def quit(self):
         self.alive = False
-        self._wake_up()
-        
+        self.wake_up()
+
 
 class MboxMailSource(BaseMailSource):
     """
@@ -162,7 +246,7 @@ class MboxMailSource(BaseMailSource):
         self.watching = -1
         self.mboxes = {}
 
-    def _open(self):
+    def _unlocked_open(self):
         mailboxes = self.my_config.mailbox.values()
         if self.watching == len(mailboxes):
             return True
@@ -174,9 +258,10 @@ class MboxMailSource(BaseMailSource):
             if d not in self.event.data:
                 self.event.data[d] = {}
 
-        self.log_status(_('Watching %d mbox mailboxes') % self.watching)
+        self._log_status(_('Watching %d mbox mailboxes') % self.watching)
+        return True
 
-    def _sync_mail(self):
+    def _unlocked_sync_mail(self):
         """This checks all the mailboxes for new mail!"""
         config = self.session.config
         rescanned = errors = 0
@@ -186,27 +271,44 @@ class MboxMailSource(BaseMailSource):
                 sz = long(os.path.getsize(mbx.path))
                 if (mt != self.event.data['mtimes'].get(mbx._key) or
                         sz != self.event.data['sizes'].get(mbx._key)):
-                    self.lock.acquire()
                     happy = True
-                    try:
-                        self.event.data['mtimes'][mbx._key] = mt
-                        self.event.data['sizes'][mbx._key] = sz
-                        self.log_status(_('Reading mailbox %s') % mbx.path)
+                    self.event.data['mtimes'][mbx._key] = mt
+                    self.event.data['sizes'][mbx._key] = sz
+                    self._log_status(_('Reading mailbox %s') % mbx.path)
 
-                        mailbox = config.open_mailbox(self.session, mbx._key)
-                        if self.rescan_mailbox(mailbox):
-                            rescanned += 1
-                        else:
-                            errors += 1
-                    finally:
-                        self.lock.release()
+                    if self._unlocked_rescan_mailbox(mbx._key):
+                        rescanned += 1
+                    else:
+                        errors += 1
             except (NoSuchMailboxError, IOError, OSError):
                 errors += 1
         if errors:
-            self.log_status(_('Rescanned %d mailboxes, failed to rescan %d'
+            self._log_status(_('Rescanned %d mailboxes, failed to rescan %d'
                               ) % (rescanned, errors))
         elif rescanned:
-            self.log_status(_('Rescanned %d mailboxes') % rescanned)
+            self._log_status(_('Rescanned %d mailboxes') % rescanned)
+
+    def is_mailbox(self, fn):
+        try:
+            with open(fn, 'rb') as fd:
+                data = fd.read(2048)  # No point reading less...
+                if data.startswith('From '):
+                    # OK, this might be an mbox! Let's check if the first
+                    # few lines look like RFC2822 headers...
+                    headcount = 0
+                    for line in data.splitlines(True)[1:]:
+                        if (headcount > 3) and line in ('\n', '\r\n'):
+                            return True
+                        if line[-1:] == '\n' and line[:1] not in (' ', '\t'):
+                            parts = line.split(':')
+                            if (len(parts) < 2 or
+                                    ' ' in parts[0] or '\t' in parts[0]):
+                                return False
+                            headcount += 1
+                    return (headcount > 3)
+        except (IOError, OSError):
+            pass
+        return False
 
 
 class MaildirMailSource(BaseMailSource):
@@ -221,11 +323,14 @@ class MaildirMailSource(BaseMailSource):
         self.watching = -1
         self.mboxes = {}
 
-    def _open(self):
+    def _unlocked_open(self):
         return True
 
-    def _sync_mail(self):
+    def _unlocked_sync_mail(self):
         return True
+
+    def is_mailbox(self, fn):
+        return False
 
 
 def MailSource(session, my_config):

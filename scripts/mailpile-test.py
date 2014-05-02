@@ -41,7 +41,7 @@ os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
 cfg = config = mp._session.config
 cfg.plugins.load('demos', process_manifest=True)
-mailsources = []
+cfg.mailsources = mailsources = []
 
 
 def contents(fn):
@@ -116,9 +116,12 @@ def test_mail_source_start():
         mailpile.mail_source.MaildirMailSource(mp._session,
                                                config.sources.maildir)
     ]
+    def wahoo():
+        print 'Wahoooo'
     for ms in mailsources:
         ms.jitter = 0
         ms.start()
+        ms.rescan_now(started_callback=wahoo)
 
 def test_mail_source_finish():
     for ms in mailsources:
