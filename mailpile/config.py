@@ -4,6 +4,7 @@ import io
 import json
 import os
 import re
+import threading
 import ConfigParser
 from gettext import translation, gettext, NullTranslations
 from gettext import gettext as _
@@ -893,6 +894,7 @@ class ConfigManager(ConfigDict):
         self.vcards = {}
         self._mbox_cache = {}
         self._running = {}
+        self._lock = threading.RLock()
 
         self._magic = True  # Enable the getattr/getitem magic
 
@@ -973,7 +975,14 @@ class ConfigManager(ConfigDict):
                     all_okay = okay = False
         return all_okay
 
-    def load(self, session, filename=None):
+    def load(self, *args, **kwargs):
+        self._lock.acquire()
+        try:
+            return self._unlocked_load(*args, **kwargs)
+        finally:
+            self._lock.release()
+
+    def _unlocked_load(self, session, filename=None):
         self._mkworkdir(session)
         self.index = None
         self.reset(rules=False, data=True)
@@ -987,7 +996,6 @@ class ConfigManager(ConfigDict):
             pass
         except IOError:
             pass
-
         # Discover plugins and update the config rule to match
         from mailpile.plugins import PluginManager
         self.plugins = PluginManager(config=self, builtin=True).discover([
@@ -1037,22 +1045,37 @@ class ConfigManager(ConfigDict):
                                                            mkdir=True))
 
     def reset_rules_from_source(self):
-        self.set_rules(self._rules_source)
-        self.sys.plugins.rules['_any'][self.RULE_CHECKER
-                                       ] = [None] + self.plugins.available()
+        self._lock.acquire()
+        try:
+            self.set_rules(self._rules_source)
+            self.sys.plugins.rules['_any'][self.RULE_CHECKER
+                                           ] = [None] + self.plugins.available()
+        finally:
+            self._lock.release()
 
     def load_plugins(self, session):
-        from mailpile.plugins import PluginManager
-        plugin_list = set(PluginManager.REQUIRED + self.sys.plugins)
-        for plugin in plugin_list:
-            if plugin is not None:
-                session.ui.mark(_('Loading plugin: %s') % plugin)
-                self.plugins.load(plugin)
-        session.ui.mark(_('Processing manifests'))
-        self.plugins.process_manifests()
-        self.prepare_workers(session)
+        self._lock.acquire()
+        try:
+            from mailpile.plugins import PluginManager
+            plugin_list = set(PluginManager.REQUIRED + self.sys.plugins)
+            for plugin in plugin_list:
+                if plugin is not None:
+                    session.ui.mark(_('Loading plugin: %s') % plugin)
+                    self.plugins.load(plugin)
+            session.ui.mark(_('Processing manifests'))
+            self.plugins.process_manifests()
+            self.prepare_workers(session)
+        finally:
+            self._lock.release()
 
-    def save(self):
+    def save(self, *args, **kwargs):
+        self._lock.acquire()
+        try:
+            self._unlocked_save(*args, **kwargs)
+        finally:
+            self._lock.release()
+
+    def _unlocked_save(self):
         self._mkworkdir(None)
         newfile = '%s.new' % self.conffile
         fd = gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb')
@@ -1131,6 +1154,7 @@ class ConfigManager(ConfigDict):
         except KeyError:
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
 
+        self._lock.acquire()
         try:
             if mbx_id in self._mbox_cache:
                 self._mbox_cache[mbx_id].update_toc()
@@ -1154,6 +1178,8 @@ class ConfigManager(ConfigDict):
                       to=pfn,
                       pickler=lambda o, f: self.save_pickle(o, f))
             self._mbox_cache[mbx_id] = mbox
+        finally:
+            self._lock.release()
 
         # Always set this, it can't be pickled
         self._mbox_cache[mbx_id]._encryption_key_func = \
@@ -1162,16 +1188,20 @@ class ConfigManager(ConfigDict):
         return self._mbox_cache[mbx_id]
 
     def open_local_mailbox(self, session):
+        self._lock.acquire()
         local_id = self.sys.get('local_mailbox_id', None)
-        if not local_id:
-            mailbox = os.path.join(self.workdir, 'mail')
-            mbx = wervd.MailpileMailbox(mailbox)
-            mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
-            local_id = self.sys.mailbox.append(mailbox)
-            local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
-            self.sys.local_mailbox_id = local_id
-        else:
-            local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+        try:
+            if not local_id:
+                mailbox = os.path.join(self.workdir, 'mail')
+                mbx = wervd.MailpileMailbox(mailbox)
+                mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
+                local_id = self.sys.mailbox.append(mailbox)
+                local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+                self.sys.local_mailbox_id = local_id
+            else:
+                local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+        finally:
+            self._lock.release()
         return local_id, self.open_mailbox(session, local_id)
 
     def get_profile(self, email=None):
@@ -1213,17 +1243,22 @@ class ConfigManager(ConfigDict):
         >>> p == os.path.abspath('static/default')
         True
         """
-        # This should raise a KeyError if the ftype is unrecognized
-        bpath = self.sys.path.get(ftype)
-        if not bpath.startswith('/'):
-            cpath = os.path.join(self.workdir, bpath)
-            if os.path.exists(cpath) or 'w' in mode:
-                bpath = cpath
-                if mkdir and not os.path.exists(cpath):
-                    os.mkdir(cpath)
-            else:
-                bpath = os.path.join(os.path.dirname(__file__), '..', bpath)
-        return os.path.abspath(bpath)
+        self._lock.acquire()
+        try:
+            # This should raise a KeyError if the ftype is unrecognized
+            bpath = self.sys.path.get(ftype)
+            if not bpath.startswith('/'):
+                cpath = os.path.join(self.workdir, bpath)
+                if os.path.exists(cpath) or 'w' in mode:
+                    bpath = cpath
+                    if mkdir and not os.path.exists(cpath):
+                        os.mkdir(cpath)
+                else:
+                    bpath = os.path.join(os.path.dirname(__file__),
+                                         '..', bpath)
+            return os.path.abspath(bpath)
+        finally:
+            self._lock.release()
 
     def data_file_and_mimetype(self, ftype, fpath, *args, **kwargs):
         # The theme gets precedence
@@ -1247,21 +1282,29 @@ class ConfigManager(ConfigDict):
         return os.path.join(self.workdir, 'mailpile.idx')
 
     def postinglist_dir(self, prefix):
-        d = os.path.join(self.workdir, 'search')
-        if not os.path.exists(d):
-            os.mkdir(d)
-        d = os.path.join(d, prefix and prefix[0] or '_')
-        if not os.path.exists(d):
-            os.mkdir(d)
-        return d
+        self._lock.acquire()
+        try:
+            d = os.path.join(self.workdir, 'search')
+            if not os.path.exists(d):
+                os.mkdir(d)
+            d = os.path.join(d, prefix and prefix[0] or '_')
+            if not os.path.exists(d):
+                os.mkdir(d)
+            return d
+        finally:
+            self._lock.release()
 
     def get_index(self, session):
-        if self.index:
-            return self.index
-        idx = MailIndex(self)
-        idx.load(session)
-        self.index = idx
-        return idx
+        self._lock.acquire()
+        try:
+            if self.index:
+                return self.index
+            idx = MailIndex(self)
+            idx.load(session)
+            self.index = idx
+            return idx
+        finally:
+            self._lock.release()
 
     def get_tor_socket(self):
         if socks:
@@ -1270,25 +1313,30 @@ class ConfigManager(ConfigDict):
         return socks.socksocket
 
     def get_i18n_translation(self, session=None):
-        language = self.prefs.language
-        trans = None
-        if language != "":
-            try:
+        self._lock.acquire()
+        try:
+            language = self.prefs.language
+            trans = None
+            if language != "":
+                try:
+                    trans = translation("mailpile", getLocaleDirectory(),
+                                        [language], codeset="utf-8")
+                except IOError:
+                    if session:
+                        session.ui.warning(('Failed to load language %s'
+                                            ) % language)
+            if not trans:
                 trans = translation("mailpile", getLocaleDirectory(),
-                                    [language], codeset="utf-8")
-            except IOError:
-                if session:
-                    session.ui.warning('Failed to load language %s' % language)
-        if not trans:
-            trans = translation("mailpile", getLocaleDirectory(),
-                                codeset='utf-8', fallback=True)
-            if session and isinstance(trans, NullTranslations):
-                session.ui.warning('Failed to configure i18n. Using fallback.')
-
-        if trans:
-            trans.set_output_charset("utf-8")
-            trans.install(unicode=True)
-        return trans
+                                    codeset='utf-8', fallback=True)
+                if session and isinstance(trans, NullTranslations):
+                    session.ui.warning('Failed to configure i18n. '
+                                       'Using fallback.')
+            if trans:
+                trans.set_output_charset("utf-8")
+                trans.install(unicode=True)
+            return trans
+        finally:
+            self._lock.release()
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
@@ -1299,7 +1347,14 @@ class ConfigManager(ConfigDict):
             raise IOError(2, 'Not Found')
         return fpath, open(fpath, mode), mt
 
-    def prepare_workers(config, session=None, daemons=False):
+    def prepare_workers(self, *args, **kwargs):
+        self._lock.acquire()
+        try:
+            return self._unlocked_prepare_workers(*args, **kwargs)
+        finally:
+            self._lock.release()
+
+    def _unlocked_prepare_workers(config, session=None, daemons=False):
         # Set globals from config first...
         import mailpile.util
 
@@ -1368,15 +1423,19 @@ class ConfigManager(ConfigDict):
                 config.cron_worker.add_task(job, interval(i), wrap_slow(f))
 
     def stop_workers(config):
-        for wait in (False, True):
-            for w in [config.http_worker,
-                      config.slow_worker,
-                      config.cron_worker] + config.other_workers:
-                if w:
-                    w.quit(join=wait)
-        config.other_workers = []
-        config.http_worker = config.cron_worker = None
-        config.slow_worker = config.dumb_worker
+        config._lock.acquire()
+        try:
+            for wait in (False, True):
+                for w in [config.http_worker,
+                          config.slow_worker,
+                          config.cron_worker] + config.other_workers:
+                    if w:
+                        w.quit(join=wait)
+            config.other_workers = []
+            config.http_worker = config.cron_worker = None
+            config.slow_worker = config.dumb_worker
+        finally:
+            config._lock.release()
 
 
 ##############################################################################
