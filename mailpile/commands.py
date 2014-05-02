@@ -838,7 +838,7 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None, '[all|vcards|mailboxes|<msgs>]')
+    SYNOPSIS = (None, 'rescan', None, '[full|vcards|mailboxes|<msgs>]')
     ORDER = ('Internals', 2)
     SERIALIZE = 'Rescan'
     LOG_PROGRESS = True
@@ -861,7 +861,8 @@ class Rescan(Command):
             return self._rescan_vcards(session, config)
         elif args and args[0].lower() == 'mailboxes':
             return self._rescan_mailboxes(session, config)
-        elif args and args[0].lower() == 'all':
+        elif args and args[0].lower() == 'full':
+            config.clear_mbox_cache()
             args.pop(0)
 
         msg_idxs = self._choose_messages(args)
@@ -935,7 +936,6 @@ class Rescan(Command):
                 if count:
                     msg_count += count
                     mbox_count += 1
-                config.clear_mbox_cache()
                 session.ui.mark('\n')
             msg_count -= 1
             if msg_count:

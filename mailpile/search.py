@@ -117,6 +117,7 @@ class MailIndex:
         self.CACHE = {}
         self.MODIFIED = set()
         self.EMAILS_SAVED = 0
+        self._scanned = {}
         self._saved_changes = 0
         self._lock = threading.RLock()
 
@@ -481,26 +482,30 @@ class MailIndex:
         added = 0
         last_date = long(time.time())
         messages = sorted(mbox.keys())
+        messages_md5 = md5_hex(str(messages))
+        if messages_md5 == self._scanned.get(mailbox_idx, ''):
+            return 0
+
+        parse_fmt1 = _('%s: Reading your mail: %d%% (%d/%d message)')
+        parse_fmtn = _('%s: Reading your mail: %d%% (%d/%d messages)')
+        def parse_status(ui):
+            n = len(messages)
+            return ((n == 1) and parse_fmt1 or parse_fmtn
+                    ) % (mailbox_idx, 100 * ui / n, ui, n)
+
         for ui in range(0, len(messages)):
             if mailpile.util.QUITTING:
                 break
 
             i = messages[ui]
-            parse_status = _n('%s: Reading your mail: %d%% (%d/%d message)',
-                              '%s: Reading your mail: %d%% (%d/%d messages)',
-                              len(messages)
-                              ) % (mailbox_idx,
-                                   100 * ui / len(messages),
-                                   ui, len(messages))
-
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
-                    session.ui.mark(parse_status)
+                    session.ui.mark(parse_status(ui))
                     play_nice_with_threads()
                 continue
             else:
-                session.ui.mark(parse_status)
+                session.ui.mark(parse_status(ui))
 
             # Message new or modified, let's parse it.
             if 'rescan' in session.config.sys.debug:
@@ -537,6 +542,7 @@ class MailIndex:
 
         if added:
             mbox.save(session)
+        self._scanned[mailbox_idx] = messages_md5
         session.ui.mark(_('%s: Indexed mailbox: %s'
                           ) % (mailbox_idx, mailbox_fn))
         return added

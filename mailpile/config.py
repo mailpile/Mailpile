@@ -1156,12 +1156,11 @@ class ConfigManager(ConfigDict):
 
         self._lock.acquire()
         try:
-            if mbx_id in self._mbox_cache:
-                self._mbox_cache[mbx_id].update_toc()
-            else:
+            if mbx_id not in self._mbox_cache:
                 if session:
                     session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
                 self._mbox_cache[mbx_id] = self.load_pickle(pfn)
+            self._mbox_cache[mbx_id].update_toc()
         except KeyboardInterrupt:
             raise
         except:
