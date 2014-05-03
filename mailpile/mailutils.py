@@ -578,7 +578,7 @@ class Email(object):
                 fd = mbox.get_file_by_ptr(msg_ptr)
                 # FIXME: How do we know we have the right message?
                 return mbox, msg_ptr, fd
-            except (IOError, OSError, KeyError):
+            except (IOError, OSError, KeyError, ValueError, IndexError):
                 # FIXME: If this pointer is wrong, should we fix the index?
                 print 'WARNING: %s not found' % msg_ptr
         return None, None, None
