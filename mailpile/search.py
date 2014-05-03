@@ -355,6 +355,17 @@ class MailIndex:
         except email.errors.HeaderParseError:
             return ''
 
+    def _remove_location(self, session, msg_ptr):
+        msg_idx_pos = self.PTRS[msg_ptr]
+        del self.PTRS[msg_ptr]
+
+        msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
+        msg_ptrs = [p for p in msg_info[self.MSG_PTRS].split(',')
+                    if p != msg_ptr]
+
+        msg_info[self.MSG_PTRS] = ','.join(msg_ptrs)
+        self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
+
     def _update_location(self, session, msg_idx_pos, msg_ptr):
         if 'rescan' in session.config.sys.debug:
             session.ui.debug('Moved? %s -> %s' % (msg_idx_pos, msg_ptr))
@@ -469,6 +480,7 @@ class MailIndex:
             else:
                 session.ui.mark(_('%s: Checking: %s'
                                   ) % (mailbox_idx, mailbox_fn))
+                mbox.update_toc()
         except (IOError, OSError, NoSuchMailboxError), e:
             session.ui.mark(_('%s: Error opening: %s (%s)'
                               ) % (mailbox_idx, mailbox_fn, e))
@@ -479,6 +491,7 @@ class MailIndex:
         if len(self.PTRS.keys()) == 0:
             self.update_ptrs_and_msgids(session)
 
+        existing_ptrs = set()
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
         if messages_md5 == self._scanned.get(mailbox_idx, ''):
@@ -491,7 +504,7 @@ class MailIndex:
             return ((n == 1) and parse_fmt1 or parse_fmtn
                     ) % (mailbox_idx, 100 * ui / n, ui, n)
 
-        added = 0
+        added = updated = 0
         last_date = long(time.time())
         for ui in range(0, len(messages)):
             if mailpile.util.QUITTING:
@@ -499,6 +512,7 @@ class MailIndex:
 
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
+            existing_ptrs.add(msg_ptr)
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status(ui))
@@ -526,6 +540,7 @@ class MailIndex:
                 msg_id = self.get_msg_id(msg, msg_ptr)
                 if msg_id in self.MSGIDS:
                     self._update_location(session, self.MSGIDS[msg_id], msg_ptr)
+                    updated += 1
                 else:
                     msg_info = self._index_new_message(session,
                                                        msg_id, msg_ptr,
@@ -535,16 +550,27 @@ class MailIndex:
                     last_date = long(msg_info[self.MSG_DATE], 36)
                     GlobalPostingList.Optimize(session, self,
                                                lazy=True, quick=True)
-                added += 1
+                    added += 1
             finally:
                 self._lock.release()
                 play_nice_with_threads()
 
-        if added:
+        self._lock.acquire()
+        try:
+            for msg_ptr in self.PTRS.keys():
+                if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
+                        msg_ptr not in existing_ptrs):
+                    self._remove_location(session, msg_ptr)
+                    updated += 1
+        finally:
+            self._lock.release()
+            play_nice_with_threads()
+
+        if added or updated:
             mbox.save(session)
         self._scanned[mailbox_idx] = messages_md5
-        session.ui.mark(_('%s: Indexed mailbox: %s'
-                          ) % (mailbox_idx, mailbox_fn))
+        session.ui.mark(_('%s: Indexed mailbox: %s (%d new, %d updated)'
+                          ) % (mailbox_idx, mailbox_fn, added, updated))
         return added
 
     def edit_msg_info(self, msg_info,

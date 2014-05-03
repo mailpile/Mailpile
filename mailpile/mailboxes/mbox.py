@@ -25,6 +25,7 @@ class MailpileMailbox(mailbox.mbox):
     def __init__(self, *args, **kwargs):
         mailbox.mbox.__init__(self, *args, **kwargs)
         self.editable = False
+        self._mtime = 0
         self._save_to = None
         self._encryption_key_func = lambda: None
         self._lock = threading.Lock()
@@ -66,48 +67,40 @@ class MailpileMailbox(mailbox.mbox):
     def update_toc(self):
         self._lock.acquire()
         try:
-            # FIXME: Does this break on zero-length mailboxes?
-
-            # Scan for incomplete entries in the toc, so they can get fixed.
-            for i in sorted(self._toc.keys()):
-                if i > 0 and self._toc[i][0] is None:
-                    self._file_length = self._toc[i-1][0]
-                    self._next_key = i-1
-                    del self._toc[i-1]
-                    del self._toc[i]
-                    break
-                elif self._toc[i][0] and not self._toc[i][1]:
-                    self._file_length = self._toc[i][0]
-                    self._next_key = i
-                    del self._toc[i]
-                    break
-
             fd = self._file
-            self._file.seek(0, 2)
-            if self._file_length == fd.tell():
-                return
 
-            fd.seek(self._toc[self._next_key-1][0])
-            line = fd.readline()
-            if not line.startswith('From '):
-                raise IOError(_("Mailbox has been modified"))
+            # FIXME: Should also check the mtime.
+            fd.seek(0, 2)
+            cur_length = fd.tell()
+            cur_mtime = os.path.getmtime(self._path)
+            try:
+                if (self._file_length == cur_length and
+                        self._mtime == cur_mtime):
+                    return
+            except (NameError, AttributeError):
+                pass
 
-            fd.seek(self._file_length-len(os.linesep))
+            fd.seek(0)
+            self._next_key = 0
+            self._toc = {}
             start = None
             while True:
                 line_pos = fd.tell()
                 line = fd.readline()
                 if line.startswith('From '):
-                    if start:
-                        self._toc[self._next_key] = (
-                            start, line_pos - len(os.linesep))
+                    if start is not None:
+                        len_nl = ('\r' == line[-2]) and 2 or 1
+                        self._toc[self._next_key] = (start, line_pos - len_nl)
                         self._next_key += 1
                     start = line_pos
                 elif line == '':
-                    self._toc[self._next_key] = (start, line_pos)
-                    self._next_key += 1
+                    if (start is not None) and (start != line_pos):
+                        self._toc[self._next_key] = (start, line_pos)
+                        self._next_key += 1
                     break
+
             self._file_length = fd.tell()
+            self._mtime = cur_mtime
         finally:
             self._lock.release()
         self.save(None)
@@ -126,11 +119,16 @@ class MailpileMailbox(mailbox.mbox):
                 self._lock.release()
 
     def get_msg_size(self, toc_id):
-        return self._toc[toc_id][1] - self._toc[toc_id][0]
+        try:
+            return self._toc[toc_id][1] - self._toc[toc_id][0]
+        except (IndexError, KeyError, IndexError, TypeError):
+            return 0
 
     def get_msg_cs(self, start, cs_size, max_length):
         self._lock.acquire()
         try:
+            if start is None:
+                raise IOError(_('No data found'))
             fd = self._file
             fd.seek(start, 0)
             firstKB = fd.read(min(cs_size, max_length))
