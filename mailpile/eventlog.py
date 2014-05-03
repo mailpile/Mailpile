@@ -49,8 +49,7 @@ class Event(object):
     # For now these live here, we may templatize this later.
     PREAMBLE_HTML = '<ul class="events">'
     PUBLIC_HTML = ('<li><span class="event_date">%(date)s</span> '
-                   '<b class="event_message">%(message)s</b> '
-                   '<i class="event_elapsed">%(elapsed)sms</i></li>')
+                   '<b class="event_message">%(message)s</b></li>')
     PRIVATE_HTML = PUBLIC_HTML
     POSTAMBLE_HTML = '</ul>'
 
