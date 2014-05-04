@@ -62,15 +62,15 @@ class Event(object):
 
     def __init__(self,
                  ts=None, event_id=None, flags='C', message='',
-                 source=None, data={}, private_data={}):
+                 source=None, data=None, private_data=None):
         self._data = [
             '',
             event_id or NewEventId(),
             flags,
             message,
             _ClassName(source),
-            data,
-            private_data,
+            data or {},
+            private_data or {},
         ]
         self._set_ts(ts or time.time())
 
