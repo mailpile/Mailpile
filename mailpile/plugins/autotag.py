@@ -244,7 +244,8 @@ class Retrain(AutoTagCommand):
                                           e.get_msg(),
                                           self._get_keywords(e),
                                           which)
-                        except (IndexError, ValueError, OSError, IOError):
+                        except (IndexError, TypeError, ValueError,
+                                OSError, IOError):
                             if session.config.sys.debug:
                                 import traceback
                                 traceback.print_exc()
