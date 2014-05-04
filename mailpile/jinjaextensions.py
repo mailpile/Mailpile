@@ -88,6 +88,10 @@ class MailpileCommand(Extension):
         environment.globals['nice_name'] = self._nice_name
         environment.filters['nice_name'] = self._nice_name
 
+        # Makes a UI usable classification of attachment from mimetype
+        environment.globals['attachment_type'] = self._attachment_type
+        environment.filters['attachment_type'] = self._attachment_type
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -481,3 +485,148 @@ class MailpileCommand(Extension):
         if len(name) > truncate:
             name = name[:truncate-3] + '...'
         return name
+        
+    def _attachment_type(self, mime):
+        if mime in [
+            "application/octet-stream",
+            "application/mac-binhex40",
+            "application/x-shockwave-flash",
+            "application/x-director",
+            "application/x-x509-ca-cert",
+            "application/x-director",
+            "application/x-msdownload",
+            "application/x-director"
+            ]:
+            attachment = "application"
+        elif mime in [
+            "application/x-compress",
+            "application/x-compressed",
+            "application/x-tar",
+            "application/zip",
+            "application/x-stuffit",
+            "application/x-gzip",
+            "application/x-gzip-compressed",
+            "application/x-tar",
+            "application/x-winzip",
+            "application/x-zip",
+            "application/x-zip-compressed"
+            ]:
+            attachment = "archive"
+        elif mime in [
+            "audio/midi",
+            "audio/mid",
+            "audio/mpeg",
+            "audio/basic",
+            "audio/x-aiff",
+            "audio/x-pn-realaudio",
+            "audio/x-pn-realaudio",
+            "audio/mid",
+            "audio/basic",
+            "audio/x-wav",
+            "audio/x-mpegurl",
+            "audio/wave",
+            "audio/wav"
+            ]:
+            attachment = "audio"
+        elif mime in [
+            "text/x-vcard"
+            ]:
+            attachment = "contact"
+        elif mime in [
+            "image/bmp",
+            "image/gif",
+            "image/jpeg",
+            "image/pjpeg",
+            "image/svg+xml",
+            "image/x-png",
+            "image/png"
+            ]:
+            attachment = "image-visible"
+        elif mime in [
+            "image/cis-cod",
+            "image/ief",
+            "image/pipeg",
+            "image/tiff",
+            "image/x-cmx",
+            "image/x-cmu-raster",
+            "image/x-rgb",
+            "image/x-icon",
+            "image/x-xbitmap",
+            "image/x-xpixmap",
+            "image/x-xwindowdump",
+            "image/x-portable-anymap",
+            "image/x-portable-graymap",
+            "image/x-portable-pixmap",
+            "image/x-portable-bitmap",
+            "application/x-photoshop",
+            "application/postscript"
+            ]:
+            attachment = "image"
+        elif mime in [
+            "application/pgp-signature"
+            ]:
+            attachment = "signature" 
+        elif mime in [
+            "application/pgp-keys"
+            ]:
+            attachment = "keys"
+        elif mime in [
+            "application/rtf",
+            "application/vnd.ms-works",
+            "application/msword",
+            "application/pdf",
+            "application/x-download",
+            "message/rfc822",
+            "text/scriptlet",
+            "text/plain",
+            "text/iuls",
+            "text/plain",
+            "text/richtext",
+            "text/x-setext",
+            "text/x-component",
+            "text/webviewhtml",
+            "text/h323"
+            ]:
+            attachment = "document"
+        elif mime in [
+            "application/x-javascript",
+            "text/html",
+            "text/css",
+            "text/xml",
+            "text/json"
+            ]:
+            attachment = "code"
+        elif mime in [
+            "application/excel",
+            "application/msexcel",
+            "application/vnd.ms-excel",
+            "application/vnd.msexcel",
+            "application/csv",
+            "application/x-csv",
+            "text/tab-separated-values",
+            "text/x-comma-separated-values",
+            "text/comma-separated-values",
+            "text/csv",
+            "text/x-csv"
+            ]:
+            attachment = "spreadsheet"
+        elif mime in [
+            "application/powerpoint",
+            "application/vnd.ms-powerpoint"
+            ]:
+            attachment = "slideshow"
+        elif mime in [
+            "video/quicktime",
+            "video/x-sgi-movie",
+            "video/mpeg",
+            "video/x-la-asf",
+            "video/x-ms-asf",
+            "video/x-msvideo"
+            ]:
+            attachment = "video"
+        else:
+            attachment = "unknown"
+        return attachment
+    
+
+  
