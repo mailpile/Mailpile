@@ -409,7 +409,7 @@ class MailpileCommand(Extension):
                         '");\'')
 
     @classmethod
-    def _fix_urls(self, text, truncate=35, danger=False):
+    def _fix_urls(self, text, truncate=45, danger=False):
         def http_fixer(m):
             url = m.group(3)
             odesc = desc = m.group(5)
@@ -423,8 +423,13 @@ class MailpileCommand(Extension):
                     # something legit: yourbank.evil.com.
                     # So, if the domain was getting truncated reveal the TLD
                     # even if that means overflowing our truncation request.
-                    desc = '.'.join(noproto.split('/')[0].rsplit('.', 3)[-2:]
-                                    ) + '/...'
+                    noproto = re.sub(self.URL_RE_HTTP_PROTO, '', odesc)
+                    if '/' in noproto:
+                        desc = '.'.join(noproto.split('/')[0]
+                                        .rsplit('.', 3)[-2:]) + '/...'
+                    else:
+                        desc = '.'.join(noproto.split('?')[0]
+                                        .rsplit('.', 3)[-2:]) + '/...'
                     url_danger = True
 
             return ''.join([m.group(1),

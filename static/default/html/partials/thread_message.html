@@ -85,20 +85,20 @@
       {% endif %}
       {% autoescape false %}
       {% if part.type in ("text", "pgpsignedtext", "pgptext") %}
-      <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(30, url_danger) }}</div>
+      <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
       {% elif part.type == "quote" %}
         {%- if message.text_parts|length - loop.index and message.text_parts[last_part].type == "signature" -%}
           {% do special_text_parts.append("quote") %}
-          <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(30, url_danger) }}</div>
+          <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
         {% elif loop.index == message.text_parts|length %}
           {% do special_text_parts.append("quote") %}
-          <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(30, url_danger) }}</div>
+          <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
         {% else %}
-          <div class="thread-item-quote">{{ part.data|nice_text|e|urlize|fix_urls(30, url_danger) }}</div>
+          <div class="thread-item-quote">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
         {%- endif -%}
       {% elif part.type == "signature" %}
         {% do special_text_parts.append("signature") %}
-        <div class="thread-item-signature hide">{{ part.data|nice_text|e|urlize|fix_urls(30, url_danger) }}</div>
+        <div class="thread-item-signature hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
       {% else %}
         {{_("Unknown Text Part")}}
       {% endif %}
