@@ -27,51 +27,61 @@ class Setup(Command):
         'New': {
             'type': 'unread',
             'label': False,
-            'display': 'invisible'
+            'display': 'invisible',
+            'name': _('New'),
         },
         'Inbox': {
             'display': 'priority',
             'display_order': 2,
+            'name': _('Inbox'),
         },
         'Blank': {
             'type': 'blank',
             'flag_editable': True,
-            'display': 'invisible'
+            'display': 'invisible',
+            'name': _('Blank'),
         },
         'Drafts': {
             'type': 'drafts',
             'flag_editable': True,
             'display': 'priority',
             'display_order': 1,
+            'name': _('Drafts'),
         },
         'Outbox': {
             'type': 'outbox',
             'display': 'priority',
             'display_order': 3,
+            'name': _('Outbox'),
         },
         'Sent': {
             'type': 'sent',
             'display': 'priority',
             'display_order': 4,
+            'name': _('Sent'),
         },
         'Spam': {
             'type': 'spam',
             'flag_hides': True,
             'display': 'priority',
             'display_order': 5,
+            'name': _('Spam'),
         },
         'MaybeSpam': {
             'display': 'invisible',
+            'name': _('MaybeSpam'),
         },
         'Ham': {
             'type': 'ham',
             'display': 'invisible',
+            'name': _('Ham'),
         },
         'Trash': {
             'type': 'trash',
             'flag_hides': True,
             'display': 'priority',
             'display_order': 6,
+            'name': _('Trash'),
         },
         # These are internal tags, used for tracking user actions on
         # messages, as input for machine learning algorithms. These get
