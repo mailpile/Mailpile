@@ -269,13 +269,13 @@ class View(Search):
                     return -int(info[idx.MSG_DATE], 36)
                 conv.sort(key=sort_conv_key)
 
-                results.append(SearchResults(session, idx,
-                                             results=conv, num=len(conv),
-                                             emails=[email]))
+                session.results = conv
+                results.append(SearchResults(session, idx, emails=[email]))
         if len(results) == 1:
             return self._success(_('Displayed a single message'),
                                  result=results[0])
         else:
+            session.results = []
             return self._success(_('Displayed %d messages') % len(results),
                                  result=results)
 

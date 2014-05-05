@@ -729,6 +729,7 @@ class SearchResults(dict):
                              end=stats['start'] - 1)
 
     def as_text(self):
+        from mailpile.jinjaextensions import MailpileCommand as JE
         clen = max(3, len('%d' % len(self.session.results)))
         cfmt = '%%%d.%ds' % (clen, clen)
         text = []
@@ -744,7 +745,7 @@ class SearchResults(dict):
                          and t.get('display', '') != 'invisible']
             tag_new = [t for t in tags if t.get('type') == 'unread']
             tag_names.sort()
-            msg_meta = tag_names and (' <' + '<'.join(tag_names)) or ''
+            msg_meta = tag_names and ('  (' + '('.join(tag_names)) or ''
 
             # FIXME: this is a bit ugly, but useful for development
             es = ['', '']
@@ -755,19 +756,49 @@ class SearchResults(dict):
                     es[0] = 'S'
             es = ''.join([e for e in es if e])
             if es:
-                msg_meta += '[%s]' % es
+                msg_meta = (msg_meta or '  ') + ('[%s]' % es)
+            elif msg_meta:
+                msg_meta += ')'
             else:
-                msg_meta += ' '
-
+                msg_meta += '  '
             msg_meta += elapsed_datetime(m['timestamp'])
+
+            from_info = (m['from'].get('fn') or m['from'].get('email')
+                         or '(anonymous)')
+            if from_info[:1] in ('<', '"', '\''):
+                from_info = from_info[1:]
+                if from_info[-1:] in ('>', '"', '\''):
+                    from_info = from_info[:-1]
+            if '@' in from_info and len(from_info) > 18:
+                e, d = from_info.split('@', 1)
+                if d in ('gmail.com', 'yahoo.com', 'hotmail.com'):
+                    from_info = '%s@%s..' % (e, d[0])
+                else:
+                    from_info = '%s..@%s' % (e[0], d)
+
+            if not expand_ids:
+                def gg(pos):
+                    return (pos < 10) and pos or '>'
+                thread = [m['thread_mid']]
+                thread += self['data']['threads'][m['thread_mid']]
+                if m['mid'] not in thread:
+                    thread.append(m['mid'])
+                pos = thread.index(m['mid']) + 1
+                if pos > 1:
+                    from_info = '%s>%s' % (gg(pos-1), from_info)
+                else:
+                    from_info = '  ' + from_info
+                if pos < len(thread):
+                    from_info = '%s>%s' % (from_info[:20], gg(len(thread)-pos))
+
+            subject = re.sub('^(\\[[^\\]]{6})[^\\]]{3,}\\]\\s*', '\\1..] ',
+                             JE._nice_subject(m['subject']))
+
             sfmt = '%%-%d.%ds%%s' % (53 - (clen + len(msg_meta)),
                                      53 - (clen + len(msg_meta)))
-            text.append((cfmt + ' %s%-22.22s ' + sfmt
-                         ) % (count, tag_new and '*' or ' ',
-                              (m['from'].get('fn')
-                               or m['from'].get('email')
-                               or '(anonymous)'),
-                              m['subject'], msg_meta))
+            text.append((cfmt + ' %-22.22s %s' + sfmt
+                         ) % (count, from_info, tag_new and '*' or ' ',
+                              subject, msg_meta))
 
             if mid in self['data'].get('messages', {}):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]

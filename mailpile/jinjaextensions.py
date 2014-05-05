@@ -467,6 +467,7 @@ class MailpileCommand(Extension):
         # output = markdown(output)
         return output
 
+    @classmethod
     def _nice_subject(self, subject):
         output = re.sub('(?i)^((re|fwd|aw|wg):\s+)+', '', subject)
         return output
