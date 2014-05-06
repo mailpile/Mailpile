@@ -668,33 +668,47 @@ class SimpleVCard(object):
             raise ValueError('Save to what file?')
 
 
-def AddressInfo(addr, fn, vcard=None, rank=0, proto='smtp', secure=False):
-    info = {
-        'fn': fn,
-        'address': addr,
-        'rank': rank,
-        'protocol': proto,
-        'flags': {}
-    }
-    if vcard:
-        info['flags']['contact'] = True
+class AddressInfo(dict):
 
-        keys = []
-        for k in vcard.get_all('KEY'):
-            val = k.value.split("data:")[1]
-            mime, fp = val.split(",")
-            keys.append({'fingerprint': fp, 'type': 'openpgp', 'mime': mime})
-        if keys:
-            info['keys'] = [k for k in keys[:1]]
-            info['flags']['secure'] = True
+    fn = property(lambda s: s['fn'],
+                  lambda s, v: s.__setitem__('fn', v))
+    address = property(lambda s: s['address'],
+                       lambda s, v: s.__setitem__('address', v))
+    rank = property(lambda s: s['rank'],
+                    lambda s, v: s.__setitem__('rank', v))
+    protocol = property(lambda s: s['protocol'],
+                        lambda s, v: s.__setitem__('protocol', v))
+    flags = property(lambda s: s['flags'],
+                     lambda s, v: s.__setitem__('flags', v))
 
-        photos = vcard.get_all('photo')
-        if photos:
-            info['photo'] = photos[0].value
+    def __init__(self, addr, fn,
+                 vcard=None, rank=0, proto='smtp', secure=False):
+        info = {
+            'fn': fn,
+            'address': addr,
+            'rank': rank,
+            'protocol': proto,
+            'flags': {}
+        }
+        if vcard:
+            info['flags']['contact'] = True
 
-        info['rank'] += 10.0 + 25 * len(keys) + 5 * len(photos)
+            keys = []
+            for k in vcard.get_all('KEY'):
+                val = k.value.split("data:")[1]
+                mime, fp = val.split(",")
+                keys.append({'fingerprint': fp, 'type': 'openpgp', 'mime': mime})
+            if keys:
+                info['keys'] = [k for k in keys[:1]]
+                info['flags']['secure'] = True
 
-    return info
+            photos = vcard.get_all('photo')
+            if photos:
+                info['photo'] = photos[0].value
+
+            info['rank'] += 10.0 + 25 * len(keys) + 5 * len(photos)
+
+        self.update(info)
 
 
 class VCardStore(dict):

@@ -31,6 +31,7 @@ web: less js
 	@true
 
 alltests: docs
+	@python2 mailpile/mailutils.py
 	@python2 mailpile/config.py
 	@python2 mailpile/util.py
 	@python2 mailpile/vcard.py
