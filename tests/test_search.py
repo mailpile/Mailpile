@@ -17,7 +17,7 @@ def checkSearch(query, expected_count=1):
 
 def test_generator():
     # All mail
-    yield checkSearch(['all:mail'], 7)
+    yield checkSearch(['all:mail'], 8)
     # Full match
     yield checkSearch(['brennan'])
     # Partial match
@@ -29,7 +29,7 @@ def test_generator():
     # From date
     yield checkSearch(['dates:2013-09-17', 'feministinn'])
     # with attachment
-    yield checkSearch(['has:attachment'], 2)
+    yield checkSearch(['has:attachment'], 3)
     # In attachment name
     yield checkSearch(['att:jpg'])
     # term + term
@@ -38,4 +38,4 @@ def test_generator():
     yield checkSearch(['brennan', 'from:twitter'])
     # Not found
     yield checkSearch(['subject:Moderation', 'kde-isl'], 0)
-    yield checkSearch(['has:crypto'], 2)
+    yield checkSearch(['has:crypto'], 3)

@@ -38,7 +38,7 @@ TAGS = {
 
 def _initialize_mailpile_for_testing(workdir, test_data):
     config = mailpile.app.ConfigManager(workdir=workdir, rules=mailpile.defaults.CONFIG_RULES)
-    config.sys.http_port = random.randint(40000, 45000)
+    config.sys.http_port = random.randint(33500, 34000)
     session = mailpile.ui.Session(config)
     session.config.load(session)
     session.main = True
