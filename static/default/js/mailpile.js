@@ -121,6 +121,9 @@ MailPile.prototype.render = function() {
     $('.sub-navigation').width(content_width);
     $('#thread-title').width(content_width);
   
+    console.log(fix_content_view_height);
+    console.log(content_tools_height);
+  
     // Set Content View
     $('#content-tools, .sub-navigation, .bulk-actions').width(new_content_width);
     $('#content-view').css({'height': fix_content_view_height, 'top': content_tools_height});
