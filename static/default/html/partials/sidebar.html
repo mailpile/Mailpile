@@ -1,16 +1,16 @@
 <!-- FIXME: make density class be pulled from user profile setting -->
 <div id="sidebar" class="comfy">
   <nav>
-    <ul>
+    <ul class="sidebar-sortable">
       {% for tag in mailpile("tag/list", "display=priority").result.tags %}
       {% if tag.slug == "drafts" %}
-      <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-default {{ navigation_on(result.search_tag_ids, tag.tid) }}">
+      <li id="sidebar-tag-{{tag.slug}}" class="ui-state-default sidebar-tags-default {{ navigation_on(result.search_tag_ids, tag.tid) }}">
       {% elif tag.slug == "outbox" %}
-      <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %} {{ navigation_on(result.search_tag_ids, tag.tid) }}">
+      <li id="sidebar-tag-{{tag.slug}}" class="ui-state-default sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %} {{ navigation_on(result.search_tag_ids, tag.tid) }}">
       {% else %}
-      <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
+      <li id="sidebar-tag-{{tag.slug}}" class="ui-state-default sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
       {% endif %}
-        <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.stats.all}} {{_("emails")}}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+        <a href="{{tag.url}}" class="ui-state-default sidebar-tag" title="{{tag.stats.all}} {{_("emails")}}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
           {% if tag.icon %}
           <span class="sidebar-icon {{tag.icon}}"></span>          
           {% else %}
@@ -31,8 +31,26 @@
       {% endfor %}
     </ul>
     <hr>
-    <ul>
+    <ul class="sidebar-sortable">
       {% for tag in mailpile("tag/list", "display=tag").result.tags %}
+      {% if tag.subtags and not tag.parent %}
+      <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
+          <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.stats.all}} emails" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+            <span class="sidebar-icon icon-tags"></span>
+            <span class="sidebar-tag"><span>{{tag.name}}</span></span>
+            {% if tag.stats.new > 0 %}
+            <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
+            {% endif %}
+          </a>
+          <ul>
+          {% for subtag in tag.subtags %}
+            <a href="{{subtag.url}}" class="sidebar-tag" title="{{subtag.stats.all}} emails" data-tag_name="{{subtag.name}}" data-tag_slug="{{subtag.slug}}" data-tag_stat_new="{{subtag.stats.new}}" data-tag_stat_all="{{subtag.stats.all}}">
+            <span class="sidebar-tag"><span>{{subtag.name}}</span></span>
+            </a>
+          {% endfor %}
+          </ul>
+      </li>
+      {% elif not tag.parent %}
       <li id="sidebar-tag-{{tag.slug}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
         <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.stats.all}} emails" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
           {% if tag.icon %}
@@ -44,8 +62,9 @@
           {% if tag.stats.new > 0 %}
           <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
           {% endif %}
-        </a>
+        </a>        
       </li>
+      {% endif %}
       {% endfor %}
     </ul>
     <hr>
