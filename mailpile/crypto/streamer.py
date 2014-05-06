@@ -1,5 +1,4 @@
 import os
-import fcntl
 import hashlib
 import random
 import sys

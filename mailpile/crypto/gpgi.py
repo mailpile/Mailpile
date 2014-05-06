@@ -2,7 +2,6 @@
 import os
 import string
 import sys
-import fcntl
 import time
 import re
 import StringIO
@@ -413,7 +412,16 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         >>> g = GnuPG()
         >>> g.run(["--list-keys"])[0]
         0
+        
+        @return: proc.returncode, retvals
         """
+        try :
+            import fcntl # Unix-only
+            return self._run_with_fcntl(fcntl, args, callbacks, output, debug)
+        except ImportError : # perhaps on Windows
+            raise NotImplementedError("Currently not for windows")
+
+    def _run_with_fcntl(self, fcntl, args, callbacks, output, debug):
         self.pipes = {}
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")

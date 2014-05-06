@@ -22,15 +22,21 @@ Help.ABOUT = mailpile.defaults.ABOUT
 ##[ Main ]####################################################################
 
 def Interact(session):
-    import readline
+    try :
+        import readline # Unix-only
+    except ImportError :
+        readline = None # we are on Windows or Mac
     try:
-        readline.read_history_file(session.config.history_file())
+        if readline :
+            readline.read_history_file(session.config.history_file())
     except IOError:
         pass
 
     # Negative history means no saving state to disk.
     history_length = session.config.sys.history_length
-    if history_length >= 0:
+    if readline is None :
+        pass # history currently not supported under Windows / Mac
+    elif history_length >= 0:
         readline.set_history_length(history_length)
     else:
         readline.set_history_length(-history_length)

@@ -1,6 +1,5 @@
 import os
 import sys
-import fcntl
 import random
 from subprocess import Popen, PIPE
 from datetime import datetime
