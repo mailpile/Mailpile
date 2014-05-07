@@ -814,6 +814,13 @@ class Email(object):
             tree['header_list'] = [(k, self.index.hdr(msg, k, value=v))
                                    for k, v in msg.items()]
 
+        if want is None or 'addresses' in want:
+            tree['addresses'] = {}
+            for hdr in msg.keys():
+                hdrl = hdr.lower()
+                if hdrl in ('reply-to', 'from', 'to', 'cc', 'bcc'):
+                    tree['addresses'][hdrl] = AddressHeaderParser(msg[hdr])
+
         # FIXME: Decide if this is strict enough or too strict...?
         html_cleaner = Cleaner(page_structure=True, meta=True, links=True,
                                javascript=True, scripts=True, frames=True,
@@ -1091,7 +1098,7 @@ class Email(object):
         return decrypted.decode('utf-8')
 
 
-class AddressHeaderParser(object):
+class AddressHeaderParser(list):
     """
     This is a class which tries very hard to interpret the From:, To:
     and Cc: lines found in real-world e-mail and make sense of them.
@@ -1117,7 +1124,7 @@ class AddressHeaderParser(object):
     Examples:
 
     >>> ahp = AddressHeaderParser(AddressHeaderParser.TEST_HEADER_DATA)
-    >>> ai = ahp.addresses[1]
+    >>> ai = ahp[1]
     >>> ai.fn
     'Bjarni'
     >>> ai.address
@@ -1138,6 +1145,7 @@ class AddressHeaderParser(object):
         (FIXME: (nested) bre@wrongmail.com parser breaker) bre@klaki.net,
         undisclosed-recipients-gets-ignored:,
         Bjarni [mailto:bre@klaki.net],
+        "This is a key test" <bre@klaki.net#123456789>,
         bre@klaki.net (Bjarni Runar Einar's son);
         Bjarni is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
@@ -1150,6 +1158,7 @@ class AddressHeaderParser(object):
         '"(nested bre@notmail.com comment)" <bre@klaki.net>',
         '"(FIXME: nested parser breaker) bre@klaki.net" <bre@wrongmail.com>',
         '"Bjarni" <bre@klaki.net>',
+        '"This is a key test" <bre@klaki.net>',
         '"Bjarni Runar Einar\\\'s son" <bre@klaki.net>',
         '"Bjarni is" <bre@klaki.net>',
         '"Bjarni Runar Einarsson" <bre@klaki.net>']
@@ -1189,7 +1198,7 @@ class AddressHeaderParser(object):
 
     # This a simple regular expression for detecting e-mail addresses.
     RE_MAYBE_EMAIL = re.compile('^[^()<>@,;:\\\\"\\[\\]\\s\000-\031]+'
-                                '@[a-zA-Z0-9_\\.-]+$')
+                                '@[a-zA-Z0-9_\\.-]+(?:#[A-Za-z0-9]+)?$')
 
     # We try and interpret non-ascii data as a particular charset, in
     # this order by default. Should be overridden whenever we have more
@@ -1208,7 +1217,7 @@ class AddressHeaderParser(object):
         self._raw_data = _raw_data
         self._tokens = []
         self._groups = []
-        self.addresses = None
+        self[:] = []
 
     def parse(self, data):
         return self._parse(data, **self._parse_args)
@@ -1220,8 +1229,8 @@ class AddressHeaderParser(object):
         try:
             self._tokens = self._tokenize(self._raw_data)
             self._groups = self._group(self._tokens)
-            self.addresses = self._find_addresses(self._groups,
-                                                  _raise=(not strict))
+            self[:] = self._find_addresses(self._groups,
+                                           _raise=(not strict))
             return self
         except ValueError:
             if strict and _raise:
@@ -1234,9 +1243,9 @@ class AddressHeaderParser(object):
             try:
                 self._tokens = self._tokenize(self._raw_data, munge=_pass)
                 self._groups = self._group(self._tokens, munge=_pass)
-                self.addresses = self._find_addresses(self._groups,
-                                                      munge=_pass,
-                                                      _raise=_raise)
+                self[:] = self._find_addresses(self._groups,
+                                               munge=_pass,
+                                               _raise=_raise)
                 return self
             except ValueError:
                 if _pass == 3 and _raise:
@@ -1327,7 +1336,11 @@ class AddressHeaderParser(object):
                     g[j] = g[j][1:-1]
             rest = ' '.join([g[j] for j in range(0, len(g)) if j != i
                              ]).replace(' ,', ',').replace(' ;', ';')
-            return AddressInfo(g[i], rest.strip())
+            email, keys = g[i], None
+            if '#' in email[email.index('@'):]:
+                email, key = email.rsplit('#', 1)
+                keys = [{'fingerprint': key}]
+            return AddressInfo(email, rest.strip(), keys=keys)
 
         def munger(string):
             if munge:
@@ -1363,18 +1376,23 @@ class AddressHeaderParser(object):
         else:
             return None
 
-    def normalized_addresses(self, addresses=None):
+    def normalized_addresses(self, addresses=None, with_keys=False):
         if addresses is None:
-            addresses = self.addresses
+            addresses = self
         def fmt(ai):
-            if ai.fn:
-                 return '"%s" <%s>' % (self.escape(ai.fn), ai.address)
+            if with_keys and ai.keys:
+                fp = ai.keys[0].get('fingerprint')
+                epart = '<%s%s>' % (ai.address, fp and ('#%s' % fp) or '')
             else:
-                 return '<%s>' % (ai.address,)
+                epart = '<%s>' % ai.address
+            if ai.fn:
+                 return '"%s" %s' % (self.escape(ai.fn), epart)
+            else:
+                 return epart
         return [fmt(ai) for ai in (addresses or [])]
 
-    def normalized(self, addresses=None):
-        return ', '.join(self.normalized_addresses(addresses))
+    def normalized(self, **kwargs):
+        return ', '.join(self.normalized_addresses(**kwargs))
 
 
 if __name__ == "__main__":

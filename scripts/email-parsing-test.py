@@ -23,9 +23,9 @@ from mailpile.mailutils import AddressHeaderParser as AHP
 
 
 ahp_tests = AHP(AHP.TEST_HEADER_DATA)
-print 'tokenss: %s' % ahp_tests._tokens
-print 'groups: %s' % ahp_tests._groups
-print 'addresses: %s' % ahp_tests.addresses
+print '_tokens: %s' % ahp_tests._tokens
+print '_groups: %s' % ahp_tests._groups
+print '%s' % ahp_tests
 print 'normalized: %s' % ahp_tests.normalized()
 
 

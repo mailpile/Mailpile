@@ -680,9 +680,10 @@ class AddressInfo(dict):
                         lambda s, v: s.__setitem__('protocol', v))
     flags = property(lambda s: s['flags'],
                      lambda s, v: s.__setitem__('flags', v))
+    keys = property(lambda s: s.get('keys'),
+                    lambda s, v: s.__setitem__('keys', v))
 
-    def __init__(self, addr, fn,
-                 vcard=None, rank=0, proto='smtp', secure=False):
+    def __init__(self, addr, fn, vcard=None, rank=0, proto='smtp', keys=None):
         info = {
             'fn': fn,
             'address': addr,
@@ -690,25 +691,30 @@ class AddressInfo(dict):
             'protocol': proto,
             'flags': {}
         }
-        if vcard:
-            info['flags']['contact'] = True
-
-            keys = []
-            for k in vcard.get_all('KEY'):
-                val = k.value.split("data:")[1]
-                mime, fp = val.split(",")
-                keys.append({'fingerprint': fp, 'type': 'openpgp', 'mime': mime})
-            if keys:
-                info['keys'] = [k for k in keys[:1]]
-                info['flags']['secure'] = True
-
-            photos = vcard.get_all('photo')
-            if photos:
-                info['photo'] = photos[0].value
-
-            info['rank'] += 10.0 + 25 * len(keys) + 5 * len(photos)
-
+        if keys:
+            info['keys'] = keys
+            info['flags']['secure'] = True
         self.update(info)
+        if vcard:
+            self.merge_vcard(vcard)
+
+    def merge_vcard(self, vcard):
+        self['flags']['contact'] = True
+
+        keys = []
+        for k in vcard.get_all('KEY'):
+            val = k.value.split("data:")[1]
+            mime, fp = val.split(",")
+            keys.append({'fingerprint': fp, 'type': 'openpgp', 'mime': mime})
+        if keys:
+            self['keys'] = self.get('keys', []) + [k for k in keys[:1]]
+            self['flags']['secure'] = True
+
+        photos = vcard.get_all('photo')
+        if photos:
+            self['photo'] = photos[0].value
+
+        self['rank'] += 10.0 + 25 * len(keys) + 5 * len(photos)
 
 
 class VCardStore(dict):
