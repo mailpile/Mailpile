@@ -11,12 +11,13 @@ from mailpile.crypto.state import *
 from mailpile.eventlog import Event
 from mailpile.plugins.tags import Tag
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
-from mailpile.mailutils import NotEditableError
+from mailpile.mailutils import NotEditableError, AddressHeaderParser
 from mailpile.mailutils import NoFromAddressError, PrepareMessage
 from mailpile.smtp_client import SendMail
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
+from mailpile.vcard import AddressInfo
 
 from mailpile.plugins.search import Search, SearchResults, View
 
@@ -316,28 +317,84 @@ class Reply(RelativeCompose):
         return "%s <%s>" % (fn, fe)
 
     @classmethod
+    def _create_from_to_cc(cls, idx, session, trees):
+        config = session.config
+        ahp = AddressHeaderParser()
+        ref_from, ref_to, ref_cc, result = [], [], [], {}
+
+        def merge_contact(ai):
+            vcard = session.config.vcards.get_vcard(ai.address)
+            if vcard:
+                ai.merge_vcard(vcard)
+            return ai
+
+        # Parse the headers, so we know what we're working with. We prune
+        # some of the duplicates at this stage.
+        for addrs in [t['addresses'] for t in trees]:
+            alist = []
+            for dst, addresses in (
+                    (ref_from, addrs.get('reply-to') or addrs.get('from', [])),
+                    (ref_to, addrs.get('to', [])),
+                    (ref_cc, addrs.get('cc', []))):
+                alist += [d.address for d in dst]
+                dst.extend([a for a in addresses if a.address not in alist])
+
+        # 1st, choose a from address. We'll use the system default if
+        # nothing is found, but hopefully we'll find an address we
+        # recognize in one of the headers.
+        from_address = (session.config.prefs.default_email or
+                        session.config.profiles[0].email)
+        profile_emails = [p.email for p in session.config.profiles if p.email]
+        for src in (ref_from, ref_to, ref_cc):
+            matches = [s for s in src if s.address in profile_emails]
+            if matches:
+                from_address = matches[0].address
+                break
+        result['from'] = ahp.normalized(addresses=[
+            merge_contact(AddressInfo(p.email, p.name))
+            for p in session.config.profiles if p.email == from_address],
+                                        with_keys=True)
+
+        def addresses(addrs, exclude=[]):
+            alist = [from_address] + [a.address for a in exclude]
+            return ahp.normalized_addresses(addresses=[
+                merge_contact(a) for a in addrs if a.address not in alist],
+                                            with_keys=True)
+
+        # If only replying to messages sent from chosen from, then this is
+        # a follow-up or clarification, so just use the same headers.
+        if len([e for e in ref_from if e.address == from_address]
+               ) == len(ref_from):
+            if ref_to:
+                result['to'] = addresses(ref_to)
+            if ref_cc:
+                result['cc'] = addresses(ref_cc)
+
+        # Else, if replying to other people:
+        #   - Construct To from the From lines, excluding own from
+        #   - Construct Cc from the To and CC lines, except new To/From
+        else:
+            result['to'] = addresses(ref_from)
+            result['cc'] = addresses(ref_to + ref_cc, exclude=ref_from)
+
+        if not result['cc']:
+            del result['cc']
+        return result
+
+    @classmethod
     def CreateReply(cls, idx, session, refs,
                     reply_all=False, ephemeral=False):
         trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True)
                  for m in refs]
 
+        headers = cls._create_from_to_cc(idx, session, trees)
+        if not reply_all and 'cc' in headers:
+            del headers['cc']
+
+        print 'HEADERS: %s' % headers
+
         ref_ids = [t['headers_lc'].get('message-id') for t in trees]
         ref_subjs = [t['headers_lc'].get('subject') for t in trees]
-        msg_to = [cls._add_gpg_key(idx, session,
-            t['headers_lc'].get('reply-to', t['headers_lc']['from']))
-            for t in trees]
-
-        msg_cc_raw = []
-        if reply_all:
-            msg_cc_raw += [t['headers_lc'].get('to', '') for t in trees]
-            msg_cc_raw += [t['headers_lc'].get('cc', '') for t in trees]
-        msg_cc = []
-        for hdr in msg_cc_raw:
-            addrs = re.split("[,;]", hdr)
-            for addr in [a.strip() for a in addrs]:
-                if addr:
-                    msg_cc.append(cls._add_gpg_key(idx, session, addr))
-
         msg_bodies = []
         for t in trees:
             # FIXME: Templates/settings for how we quote replies?
@@ -358,8 +415,9 @@ class Reply(RelativeCompose):
         return (Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
                              msg_subject=('Re: %s' % ref_subjs[-1]),
-                             msg_to=msg_to,
-                             msg_cc=[r for r in msg_cc if r],
+                             msg_from=headers.get('from', None),
+                             msg_to=headers.get('to', []),
+                             msg_cc=headers.get('cc', []),
                              msg_references=[i for i in ref_ids if i],
                              save=(not ephemeral),
                              ephemeral_mid=ephemeral and ephemeral[0]),

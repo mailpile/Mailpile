@@ -307,6 +307,7 @@ class Email(object):
         msg.signature_info = SignatureInfo()
         msg.encryption_info = EncryptionInfo()
         msg_ts = int(time.time())
+
         if not msg_from:
             msg_from = idx.config.get_profile().get('email', None)
             from_name = idx.config.get_profile().get('name', None)
@@ -314,6 +315,7 @@ class Email(object):
                 msg_from = '%s <%s>' % (from_name, msg_from)
         if not msg_from:
             raise NoFromAddressError()
+
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
         msg['Date'] = email.utils.formatdate(msg_ts)
         msg['Message-Id'] = email.utils.make_msgid('mailpile')
