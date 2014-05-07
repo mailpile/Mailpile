@@ -1123,12 +1123,20 @@ class MailIndex:
         if tag_id in self.TAGS:
             self.TAGS[tag_id] -= eids
 
-    def search_tag(self, term, hits):
+    def search_tag(self, session, term, hits, recursion=0):
         t = term.split(':', 1)
-        t[1] = self.config.get_tag_id(t[1]) or t[1]
-        return hits('%s:in' % t[1])
+        tag_id, tag = t[1], self.config.get_tag(t[1])
+        results = []
+        if tag:
+            tag_id = tag._key
+            if tag.search_terms and recursion < 5:
+                results.extend(self.search(session, [tag.search_terms],
+                                           recursion=recursion+1).as_set())
+        results.extend(hits('%s:in' % tag_id))
+        return results
 
-    def search(self, session, searchterms, keywords=None, order=None):
+    def search(self, session, searchterms,
+               keywords=None, order=None, recursion=0):
         # Stash the raw search terms, decide if this is cached or not
         raw_terms = searchterms[:]
         if keywords is None:
@@ -1191,7 +1199,8 @@ class MailIndex:
                 elif term == 'all:mail':
                     rt.extend(range(0, len(self.INDEX)))
                 elif term.startswith('in:'):
-                    rt.extend(self.search_tag(term, hits))
+                    rt.extend(self.search_tag(session, term, hits,
+                                              recursion=recursion))
                 else:
                     t = term.split(':', 1)
                     fnc = _plugins.get_search_term(t[0])

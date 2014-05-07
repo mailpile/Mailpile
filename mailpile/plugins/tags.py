@@ -37,7 +37,7 @@ _plugins.register_config_section('tags', ["Tags", {
 
     # Tag display attributes for /in/tag or searching in:tag
     'template': ['Default tag display template', 'str', 'index'],
-    'search_terms': ['Terms to search for', 'str', 'in:%(slug)s'],
+    'search_terms': ['Terms to search for', 'str', ''],
     'search_order': ['Default search order', 'str', ''],
 
     # Tag display attributes for search results/lists/UI placement
@@ -66,8 +66,7 @@ _plugins.register_config_variables('sys', {
     'invisible_tags': ['DEPRECATED', 'str', []],
 })
 
-INFO_HIDES_TAG_METADATA = ('flag_editable', 'flag_hides',
-                           'search_terms', 'search_order', 'template')
+#INFO_HIDES_TAG_METADATA = ('flag_editable', 'flag_hides')
 
 
 def GetFilters(cfg, filter_on=None, types=FILTER_TYPES[:1]):
@@ -159,7 +158,7 @@ def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None):
         'url': UrlMap(config=cfg).url_tag(tid),
     }
     for k in tag.all_keys():
-        if k not in INFO_HIDES_TAG_METADATA:
+#       if k not in INFO_HIDES_TAG_METADATA:
             info[k] = tag[k]
     exclude = exclude or set()
     if stats and (unread is not None):
