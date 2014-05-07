@@ -1,11 +1,11 @@
-{% extends "layouts/" + render_mode + ".html" %}
+  {% extends "layouts/" + render_mode + ".html" %}
 {% if result.tags.0 %}
 {% set tag = result.tags.0 %}
 {% block title %}{{ tag.name }} | {{_("Tags")}} {% endblock %}
 {% block content %}
 <div id="tags-settings" class="content-normal">
   <div class="clearfix">
-    <h2 class="contact-name "><span class="icon-tag"></span> {{ tag.name }}</h2>
+    <h2 class="contact-name "><span class="icon-tag"></span> {{_("Edit Tag")}}</h2>
 	</div>
 
   <form id="form-tag-add" class="standard" method="POST">
@@ -18,12 +18,20 @@
     <label>{{_("Slug")}}</label>
     <input type="text" id="data-tag-add-slug" name="slug" value="{{tag.slug}}" placeholder="{{_("friends-family")}}">
 
+    <label>{{_("Icon")}}</label>
+    <input type="text" id="data-tag-add-icon" name="icon" value="{{tag.icon}}" placeholder="{{_("icon-tag")}}">
+
     <label>{{_("Display")}}</label>
     <select name="display">
       <option value="tag"{% if tag.value=="tag"%} checked{% endif %}>{{_("Tag")}}</option>
       <option value="priority"{% if tag.value=="priority"%} checked{% endif %}>{{_("Priority Tag")}}</option>
       <option value="archive"{% if tag.value=="archive"%} checked{% endif %}>{{_("Archive")}}</option>
       <option value="invisible"{% if tag.value=="invisible"%} checked{% endif %}>{{_("Invisible")}}</option>
+    </select>
+
+    <label>{{_("Template")}}</label>
+    <select name="template">
+      <option value="default">{{_("Default")}}</option>
     </select>
 
     <label>{{_("Parent")}}</label>
@@ -35,11 +43,6 @@
       <option value="{{ptag.tid}}"{% if tag.parent==ptag.tid%} checked{% endif %}>{{ptag.name}}</option>
       {% endif %}    
     {% endfor %}
-    </select>
-
-    <label>{{_("Template")}}</label>
-    <select name="template">
-      <option value="default">{{_("Default")}}</option>
     </select>
 
     <label>{{_("Search Terms")}}</label>

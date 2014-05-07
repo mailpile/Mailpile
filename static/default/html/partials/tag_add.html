@@ -4,7 +4,8 @@
 
   {% set tag = { 
         "name": "", 
-        "slug": "" 
+        "slug": "",
+        "icon": "" 
     } %}
 
   <form id="form-tag-add" class="standard" method="POST">
@@ -16,6 +17,9 @@
 
     <label>{{_("Slug")}}</label>
     <input type="text" id="data-tag-add-slug" name="slug" value="{{tag.slug}}" placeholder="{{_("friends-family")}}">
+
+    <label>{{_("Icon")}}</label>
+    <input type="text" id="data-tag-add-icon" name="icon" value="{{tag.icon}}" placeholder="icon-tag">
 
     <label>{{_("Display")}}</label>
     <select name="display" id="data-tag-add-display">
