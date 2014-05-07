@@ -134,7 +134,7 @@ def Main(args):
         config.stop_workers()
         if config.index:
             config.index.save_changes()
-
+        config.plugins.process_shutdown_hooks()
 
 if __name__ == "__main__":
     Main(sys.argv[1:])

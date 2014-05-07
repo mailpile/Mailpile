@@ -30,10 +30,10 @@ def register(prio, cls):
     MAILBOX_CLASSES.sort()
 
 
-def IsMailbox(fn):
+def IsMailbox(fn, config):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
-            if mbox_cls.parse_path(fn):
+            if mbox_cls.parse_path(config, fn):
                 return True
         except KeyboardInterrupt:
             raise
@@ -42,10 +42,10 @@ def IsMailbox(fn):
     return False
 
 
-def OpenMailbox(fn, create=False):
+def OpenMailbox(fn, config, create=False):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
-            return mbox_cls(*mbox_cls.parse_path(fn, create=create))
+            return mbox_cls(*mbox_cls.parse_path(config, fn, create=create))
         except KeyboardInterrupt:
             raise
         except:

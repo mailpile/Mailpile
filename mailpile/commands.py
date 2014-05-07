@@ -1191,10 +1191,9 @@ class AddMailboxes(Command):
                     session.ui.warning('Already in the pile: %s' % raw_fn)
                 elif raw_fn.startswith("imap://"):
                     adding.append(raw_fn)
-                elif os.path.exists(fn):
-                    if IsMailbox(fn):
-                        adding.append(fn)
-                    elif os.path.isdir(fn):
+                elif IsMailbox(fn, config):
+                    adding.append(raw_fn)
+                elif os.path.exists(fn) and os.path.isdir(fn):
                         session.ui.mark('Scanning %s for mailboxes' % fn)
                         try:
                             for f in [f for f in os.listdir(fn)
@@ -1206,8 +1205,6 @@ class AddMailboxes(Command):
                             if raw_fn in self.args:
                                 return self._error(_('Failed to read: %s'
                                                      ) % raw_fn)
-                    elif raw_fn in self.args:
-                        return self._error(_('Not a mailbox: %s') % raw_fn)
                 elif raw_fn in self.args:
                     return self._error(_('No such file or directory: %s'
                                          ) % raw_fn)
