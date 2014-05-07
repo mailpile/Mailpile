@@ -303,7 +303,7 @@ class Email(object):
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
                msg_subject=None, msg_text=None, msg_references=None,
-               save=True, ephemeral_mid='not-saved'):
+               save=True, ephemeral_mid='not-saved', append_sig=True):
         msg = MIMEMultipart()
         msg.signature_info = SignatureInfo()
         msg.encryption_info = EncryptionInfo()
@@ -346,6 +346,20 @@ class Email(object):
             textpart.encryption_info = EncryptionInfo()
             msg.attach(textpart)
             del textpart['MIME-Version']
+
+        if append_sig:
+            sig = idx.config.get_profile().get('signature', '')
+            if sig not in ['', None]:
+                try:
+                    sig.encode('us-ascii')
+                    charset = 'us-ascii'
+                except UnicodeEncodeError:
+                    charset = 'utf-8'
+                textpart = MIMEText(sig, _subtype='plain', _charset=charset)
+                textpart.signature_info = SignatureInfo()
+                textpart.encryption_info = EncryptionInfo()
+                msg.attach(textpart)
+                del textpart['MIME-Version']
 
         if save:
             msg_key = mbx.add(msg)
