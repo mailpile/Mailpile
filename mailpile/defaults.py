@@ -66,7 +66,8 @@ CONFIG_RULES = {
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'), str, ''),
-        'default_messageroute':   (_('Default outgoing mail route'), str, ''),
+        'always_bcc_self': (_('Always BCC self on outgoing mail'), bool, True),
+        'default_messageroute': (_('Default outgoing mail route'), str,    ''),
         'language':        (_('User interface language'), str,             ''),
         'vcard':           [_("VCard import/export settings"), False, {
             'importers':   [_("VCard import settings"), False,             {}],

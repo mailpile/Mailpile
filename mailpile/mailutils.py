@@ -170,7 +170,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         crypto_policy = config.prefs.crypto_policy
 
     # This is the BCC hack that Brennan hates!
-    rcpts += [sender]
+    if config.prefs.always_bcc_self:
+        rcpts += [sender]
 
     sender = ExtractEmails(sender, strip_keys=False)[0]
     sender_keyid = None
