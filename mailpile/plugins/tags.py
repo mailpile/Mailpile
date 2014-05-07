@@ -37,8 +37,9 @@ _plugins.register_config_section('tags', ["Tags", {
 
     # Tag display attributes for /in/tag or searching in:tag
     'template': ['Default tag display template', 'str', 'index'],
-    'search_terms': ['Terms to search for', 'str', ''],
-    'search_order': ['Default search order', 'str', ''],
+    'search_terms': ['Terms to search for on /in/tag/', 'str', 'in:%(slug)s'],
+    'search_order': ['Default search order for /in/tag/', 'str', ''],
+    'magic_terms': ['Extra terms to search for', 'str', ''],
 
     # Tag display attributes for search results/lists/UI placement
     'icon': ['URL to default tag icon', 'url', ''],
@@ -288,7 +289,8 @@ class AddTag(TagCommand):
         'label_color': 'label color',
         'display': 'tag display type',
         'template': 'tag template type',
-        'search_terms': 'magic search terms associated with this tag',
+        'search_terms': 'default search associated with this tag',
+        'magic_terms': 'magic search terms associated with this tag',
         'parent': 'parent tag ID',
     }
     OPTIONAL_VARS = ['icon', 'label', 'label_color', 'display', 'template',
