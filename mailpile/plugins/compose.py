@@ -254,20 +254,20 @@ class Compose(CompositionCommand):
     ORDER = ('Composing', 0)
     HTTP_CALLABLE = ('POST', )
     HTTP_POST_VARS = dict_merge(CompositionCommand.UPDATE_STRING_DATA, {
-        'tid': 'template metadata-ID',
+        'cid': 'canned response metadata-ID',
     })
 
     @classmethod
-    def _get_template(cls, idx, tid):
+    def _get_canned(cls, idx, cid):
         try:
-            return Email(idx, int(tid, 36)
+            return Email(idx, int(cid, 36)
                          ).get_editing_strings().get('body', '')
         except (ValueError, IndexError, TypeError, OSError, IOError):
             traceback.print_exc()  # FIXME, ugly
             return ''
 
     @classmethod
-    def CreateMessage(cls, idx, session, tid=None, ephemeral=False):
+    def CreateMessage(cls, idx, session, cid=None, ephemeral=False):
         if not ephemeral:
             local_id, lmbox = session.config.open_local_mailbox(session)
         else:
@@ -275,7 +275,7 @@ class Compose(CompositionCommand):
             ephemeral = ['new-mail']
         return (Email.Create(idx, local_id, lmbox,
                              save=(not ephemeral),
-                             msg_text=(tid and cls._get_template(idx, tid)
+                             msg_text=(cid and cls._get_canned(idx, cid)
                                        or ''),
                              ephemeral_mid=ephemeral and ephemeral[0]),
                 ephemeral)
@@ -286,10 +286,10 @@ class Compose(CompositionCommand):
 
         session, idx = self.session, self._idx()
         ephemeral = (self.args and "ephemeral" in self.args)
-        tid = self.data.get('tid', [None])[0]
+        cid = self.data.get('cid', [None])[0]
 
         email, ephemeral = self.CreateMessage(idx, session,
-                                              tid=tid,
+                                              cid=cid,
                                               ephemeral=ephemeral)
         email_updates = self._get_email_updates(idx,
                                                 emails=[email],
@@ -315,7 +315,7 @@ class Reply(RelativeCompose):
     ORDER = ('Composing', 3)
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
-        'tid': 'template metadata-ID',
+        'cid': 'canned response metadata-ID',
         'reply_all': 'reply to all',
         'ephemeral': 'ephemerality',
     }
@@ -400,7 +400,7 @@ class Reply(RelativeCompose):
 
     @classmethod
     def CreateReply(cls, idx, session, refs,
-                    reply_all=False, tid=None, ephemeral=False):
+                    reply_all=False, cid=None, ephemeral=False):
         trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True)
                  for m in refs]
 
@@ -433,11 +433,11 @@ class Reply(RelativeCompose):
             fmt = _('Composing a reply from %(from)s to %(to)s')
         session.ui.debug(fmt % headers)
 
-        if tid:
+        if cid:
             # FIXME: Instead, we should use placeholders in the template
             #        and insert the quoted bits in the right place (or
             #        nowhere if the template doesn't want them).
-            msg_bodies.append(cls._get_template(idx, tid))
+            msg_bodies[:0] = [cls._get_canned(idx, cid)]
 
         return (Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
@@ -472,10 +472,10 @@ class Reply(RelativeCompose):
         refs = [Email(idx, i) for i in self._choose_messages(args)]
         if refs:
             try:
-                tid = self.data.get('tid', [None])[0]
+                cid = self.data.get('cid', [None])[0]
                 email, ephemeral = self.CreateReply(idx, session, refs,
                                                     reply_all=reply_all,
-                                                    tid=tid,
+                                                    cid=cid,
                                                     ephemeral=ephemeral)
             except NoFromAddressError:
                 return self._error(_('You must configure a '
@@ -496,7 +496,7 @@ class Forward(RelativeCompose):
     ORDER = ('Composing', 4)
     HTTP_QUERY_VARS = {
         'mid': 'metadata-ID',
-        'tid': 'template metadata-ID',
+        'cid': 'canned response metadata-ID',
         'ephemeral': 'ephemerality',
         'atts': 'forward attachments'
     }
@@ -504,7 +504,7 @@ class Forward(RelativeCompose):
 
     @classmethod
     def CreateForward(cls, idx, session, refs,
-                      with_atts=False, tid=None, ephemeral=False):
+                      with_atts=False, cid=None, ephemeral=False):
         trees = [m.evaluate_pgp(m.get_message_tree(), decrypt=True)
                  for m in refs]
         ref_subjs = [t['headers_lc']['subject'] for t in trees]
@@ -535,11 +535,11 @@ class Forward(RelativeCompose):
             else:
                 ephemeral = ['forward-%s' % refs[0].msg_mid()]
 
-        if tid:
+        if cid:
             # FIXME: Instead, we should use placeholders in the template
             #        and insert the quoted bits in the right place (or
             #        nowhere if the template doesn't want them).
-            msg_bodies.append(cls._get_template(idx, tid))
+            msg_bodies[:0] = [cls._get_canned(idx, cid)]
 
         email = Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
@@ -580,10 +580,10 @@ class Forward(RelativeCompose):
 
         refs = [Email(idx, i) for i in self._choose_messages(args)]
         if refs:
-            tid = self.data.get('tid', [None])[0]
+            cid = self.data.get('cid', [None])[0]
             email, ephemeral = self.CreateForward(idx, session, refs,
                                                   with_atts=with_atts,
-                                                  tid=tid,
+                                                  cid=cid,
                                                   ephemeral=ephemeral)
 
             if not ephemeral:
