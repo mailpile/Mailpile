@@ -1389,17 +1389,21 @@ class AddressHeaderParser(list):
             return None
 
     def normalized_addresses(self,
-                             addresses=None, quote=True, with_keys=False):
+                             addresses=None, quote=True, with_keys=False,
+                             force_name=False):
         if addresses is None:
             addresses = self
         def fmt(ai):
+            email = ai.address
             if with_keys and ai.keys:
                 fp = ai.keys[0].get('fingerprint')
-                epart = '<%s%s>' % (ai.address, fp and ('#%s' % fp) or '')
+                epart = '<%s%s>' % (email, fp and ('#%s' % fp) or '')
             else:
-                epart = '<%s>' % ai.address
+                epart = '<%s>' % email
             if ai.fn:
                  return ' '.join([quote and self.quote(ai.fn) or ai.fn, epart])
+            elif force_name:
+                 return ' '.join([quote and self.quote(email) or email, epart])
             else:
                  return epart
         return [fmt(ai) for ai in (addresses or [])]

@@ -185,7 +185,7 @@ class CompositionCommand(AddComposeMethods(Search)):
 
         return updates
 
-    def _return_search_results(self, emails,
+    def _return_search_results(self, message, emails,
                                expand=None, new=[], sent=[], ephemeral=False):
         session, idx = self.session, self._idx()
         if not ephemeral:
@@ -197,7 +197,7 @@ class CompositionCommand(AddComposeMethods(Search)):
                                                   results=session.results,
                                                   num=len(emails),
                                                   emails=expand)
-        return session.displayed
+        return self._success(message, result=session.displayed)
 
     def _edit_messages(self, emails, new=True, tag=True, ephemeral=False):
         session, idx = self.session, self._idx()
@@ -211,7 +211,7 @@ class CompositionCommand(AddComposeMethods(Search)):
         else:
             self.message = _('%d message(s) created') % len(emails)
         session.ui.mark(self.message)
-        return self._return_search_results(emails,
+        return self._return_search_results(self.message, emails,
                                            expand=emails,
                                            new=(new and emails),
                                            ephemeral=ephemeral)
@@ -320,7 +320,8 @@ class Reply(RelativeCompose):
     def _create_from_to_cc(cls, idx, session, trees):
         config = session.config
         ahp = AddressHeaderParser()
-        ref_from, ref_to, ref_cc, result = [], [], [], {}
+        ref_from, ref_to, ref_cc = [], [], []
+        result = {'from': '', 'to': [], 'cc': []}
 
         def merge_contact(ai):
             vcard = session.config.vcards.get_vcard(ai.address)
@@ -351,14 +352,17 @@ class Reply(RelativeCompose):
                 from_address = matches[0].address
                 break
         result['from'] = ahp.normalized(addresses=[AddressInfo(p.email, p.name)
-            for p in session.config.profiles if p.email == from_address])
+            for p in session.config.profiles if p.email == from_address],
+                                        force_name=True)
 
         def addresses(addrs, exclude=[]):
             alist = [from_address] + [a.address for a in exclude]
             return ahp.normalized_addresses(addresses=[merge_contact(a)
                 for a in addrs if a.address not in alist
                 and not a.address.startswith('noreply@')
-                and '@noreply' not in a.address], with_keys=True)
+                and '@noreply' not in a.address],
+                                            with_keys=True,
+                                            force_name=True)
 
         # If only replying to messages sent from chosen from, then this is
         # a follow-up or clarification, so just use the same headers.
@@ -376,8 +380,6 @@ class Reply(RelativeCompose):
             result['to'] = addresses(ref_from)
             result['cc'] = addresses(ref_to + ref_cc, exclude=ref_from)
 
-        if not result['cc']:
-            del result['cc']
         return result
 
     @classmethod
@@ -408,6 +410,12 @@ class Reply(RelativeCompose):
                 ephemeral = ['reply-all-%s' % refs[0].msg_mid()]
             else:
                 ephemeral = ['reply-%s' % refs[0].msg_mid()]
+
+        if 'cc' in headers:
+            fmt = _('Composing a reply from %(from)s to %(to)s, cc %(cc)s')
+        else:
+            fmt = _('Composing a reply from %(from)s to %(to)s')
+        session.ui.debug(fmt % headers)
 
         return (Email.Create(idx, local_id, lmbox,
                              msg_text='\n\n'.join(msg_bodies),
@@ -607,7 +615,8 @@ class Attach(CompositionCommand):
         self.message = _('Attached %s to %d messages'
                          ) % (', '.join(files), len(updated))
         session.ui.notify(self.message)
-        return self._return_search_results(updated, expand=updated)
+        return self._return_search_results(self.message, updated,
+                                           expand=updated)
 
 
 class Sendit(CompositionCommand):
@@ -709,7 +718,8 @@ class Sendit(CompositionCommand):
                 email.reset_caches()
                 idx.index_email(self.session, email)
 
-            return self._return_search_results(sent, sent=sent)
+            return self._return_search_results(
+                _('Sent %d messages') % len(sent), sent, sent=sent)
         else:
             return self._error(_('Nothing was sent'))
 
@@ -739,14 +749,15 @@ class Update(CompositionCommand):
                 email.update_from_string(session, update_string, final=outbox)
 
             emails = [e for e, u in email_updates]
-            session.ui.notify(_('%d message(s) updated') % len(email_updates))
+            message = _('%d message(s) updated') % len(email_updates)
 
             self._tag_blank(emails, untag=True)
             self._tag_drafts(emails, untag=outbox)
             self._tag_outbox(emails, untag=(not outbox))
 
             if outbox:
-                return self._return_search_results(emails, sent=emails)
+                return self._return_search_results(message, emails,
+                                                   sent=emails)
             else:
                 return self._edit_messages(emails, new=False, tag=False)
         except KeyLookupError, kle:
@@ -772,7 +783,8 @@ class UnThread(CompositionCommand):
         if emails:
             for email in emails:
                 idx.unthread_message(email.msg_mid())
-            return self._return_search_results(emails)
+            return self._return_search_results(
+                _('Unthreaded %d messaages') % len(emails), emails)
         else:
             return self._error(_('Nothing to do!'))
 
