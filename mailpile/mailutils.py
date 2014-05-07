@@ -1129,14 +1129,14 @@ class AddressHeaderParser(list):
     >>> ahp = AddressHeaderParser(AddressHeaderParser.TEST_HEADER_DATA)
     >>> ai = ahp[1]
     >>> ai.fn
-    'Bjarni'
+    u'Bjarni'
     >>> ai.address
-    'bre@klaki.net'
+    u'bre@klaki.net'
     >>> ahp.normalized_addresses() == ahp.TEST_EXPECT_NORMALIZED_ADDRESSES
     True
 
     >>> AddressHeaderParser('Weird email@somewhere.com Header').normalized()
-    '"Weird Header" <email@somewhere.com>'
+    u'"Weird Header" <email@somewhere.com>'
     """
 
     TEST_HEADER_DATA = """
@@ -1172,6 +1172,7 @@ class AddressHeaderParser(list):
     RE_ESCAPES = re.compile('\\\\([\\\\"\'])')
     RE_QUOTED = re.compile(TXT_RE_QUOTE)
     RE_SHOULD_ESCAPE = re.compile('([\\\\"\'])')
+    RE_SHOULD_QUOTE = re.compile('[^a-zA-Z0-9()\.:/_ \'"+@-]')
 
     # This is how we normally break a header line into tokens
     RE_TOKENIZER = re.compile('(<[^<>]*>'                    # <stuff>
@@ -1259,14 +1260,13 @@ class AddressHeaderParser(list):
         def uq(m):
             cs, how, data = m.group(1), m.group(2), m.group(3)
             if how in ('b', 'B'):
-                return base64.b64decode(data).decode(cs).encode('utf-8')
+                return base64.b64decode(data).decode(cs)
             else:
-                return quopri.decodestring(data, header=True
-                                           ).decode(cs).encode('utf-8')
+                return quopri.decodestring(data, header=True).decode(cs)
 
         for cs in charset_order or self.charset_order:
              try:
-                 string = string.decode(cs).encode('utf-8')
+                 string = string.decode(cs)
                  break
              except UnicodeDecodeError:
                  pass
@@ -1280,6 +1280,15 @@ class AddressHeaderParser(list):
     @classmethod
     def escape(self, strng):
         return re.sub(self.RE_SHOULD_ESCAPE, lambda m: '\\'+m.group(0), strng)
+
+    @classmethod
+    def quote(self, strng):
+        if re.search(self.RE_SHOULD_QUOTE, strng):
+            enc = quopri.encodestring(strng.encode('utf-8'), False,
+                                      header=True)
+            return '=?utf-8?Q?%s?=' % enc
+        else:
+            return '"%s"' % self.escape(strng)
 
     def _tokenize(self, string, munge=False):
         if munge:
@@ -1379,7 +1388,8 @@ class AddressHeaderParser(list):
         else:
             return None
 
-    def normalized_addresses(self, addresses=None, with_keys=False):
+    def normalized_addresses(self,
+                             addresses=None, quote=True, with_keys=False):
         if addresses is None:
             addresses = self
         def fmt(ai):
@@ -1389,7 +1399,7 @@ class AddressHeaderParser(list):
             else:
                 epart = '<%s>' % ai.address
             if ai.fn:
-                 return '"%s" %s' % (self.escape(ai.fn), epart)
+                 return ' '.join([quote and self.quote(ai.fn) or ai.fn, epart])
             else:
                  return epart
         return [fmt(ai) for ai in (addresses or [])]

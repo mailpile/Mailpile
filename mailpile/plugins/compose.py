@@ -206,11 +206,11 @@ class CompositionCommand(AddComposeMethods(Search)):
             if tag:
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
+                idx.save_changes()
             self.message = _('%d message(s) edited') % len(emails)
         else:
             self.message = _('%d message(s) created') % len(emails)
         session.ui.mark(self.message)
-        idx.save_changes()
         return self._return_search_results(emails,
                                            expand=emails,
                                            new=(new and emails),
@@ -350,16 +350,15 @@ class Reply(RelativeCompose):
             if matches:
                 from_address = matches[0].address
                 break
-        result['from'] = ahp.normalized(addresses=[
-            merge_contact(AddressInfo(p.email, p.name))
-            for p in session.config.profiles if p.email == from_address],
-                                        with_keys=True)
+        result['from'] = ahp.normalized(addresses=[AddressInfo(p.email, p.name)
+            for p in session.config.profiles if p.email == from_address])
 
         def addresses(addrs, exclude=[]):
             alist = [from_address] + [a.address for a in exclude]
-            return ahp.normalized_addresses(addresses=[
-                merge_contact(a) for a in addrs if a.address not in alist],
-                                            with_keys=True)
+            return ahp.normalized_addresses(addresses=[merge_contact(a)
+                for a in addrs if a.address not in alist
+                and not a.address.startswith('noreply@')
+                and '@noreply' not in a.address], with_keys=True)
 
         # If only replying to messages sent from chosen from, then this is
         # a follow-up or clarification, so just use the same headers.
@@ -390,8 +389,6 @@ class Reply(RelativeCompose):
         headers = cls._create_from_to_cc(idx, session, trees)
         if not reply_all and 'cc' in headers:
             del headers['cc']
-
-        print 'HEADERS: %s' % headers
 
         ref_ids = [t['headers_lc'].get('message-id') for t in trees]
         ref_subjs = [t['headers_lc'].get('subject') for t in trees]
