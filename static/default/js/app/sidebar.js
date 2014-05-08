@@ -1,9 +1,11 @@
 $(document).ready(function() {
 
+
   // Drag Sort Tag Order
 	$( ".sidebar-sortable" ).sortable({
 		placeholder: "sidebar-tags-sortable",
     distance: 13,
+    scroll: false,
     opacity: 0.8,
 		stop: function(event, ui) {
      
@@ -38,5 +40,31 @@ $(document).ready(function() {
       });
 		}
 	}).disableSelection();
+  
+
+  // Drag Tags to Search Messages
+  $('a.sidebar-tag').draggable({
+    containment: "#container",
+    appendTo: 'body',
+    cursor: 'move',
+    scroll: false,
+    revert: false,
+    opacity: 1,
+    helper: function(event) {      
+      return $('<div class="sidebar-tag-drag ui-widget-header">' + $(this).html() + '</div>');
+    }
+  });
+
+  $('#pile-results tr').droppable({
+    accept: 'a.sidebar-tag',
+    hoverClass: 'result-hover',
+    tolerance: 'pointer',
+    drop: function(event, ui) {
+      mailpile.tag_add_delete(ui.draggable.data('tag_slug'), '', $(event.target).data('mid'), function() {
+        // FIXME: needs to show tag icon (if not exist) and more data attributes on inserted tag
+        $(event.target).find('td.subject span.item-tags').append('<span class="pile-message-tag">' + ui.draggable.data('tag_name') + '</span>');  
+      });      
+    }
+  });
 
 });

@@ -16,7 +16,7 @@
     z-index: 5;
   }
 
-  #sidebar nav { padding: 0px; margin: 0px; }
+  #sidebar nav { padding: 0px; padding-bottom: 15px; margin: 0px; }
 	#sidebar hr { margin: 10px 0px;	}
 
   #sidebar      ul { margin: 0px 10px; padding: 0px; }
@@ -26,6 +26,8 @@
   #sidebar      li { margin: 4px 0px; padding: 5px 10px 5px 10px; }
   #sidebar.cozy li { margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px; }
   #sidebar.snug li { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
+
+  ul.sidebar-subtag { display: none; }
 
   a.sidebar-tag { position: relative; display: table; width: 185px; height: 24px; vertical-align: middle; text-align: left; font-family: @mailpile-text-font-family-bold; color: @grayDark; }
   a.sidebar-tag:active { color: @blue; }	
@@ -93,21 +95,46 @@
 
   .sidebar-tags-draggable-hover {
     background: @grayLight;
-	  -webkit-transition-duration: 0.4s;
-	  -moz-transition-duration: 0.4s;
-	  transition-duration: 0.4s;	    
+	  -webkit-transition-duration: 0.3s;
+	  -moz-transition-duration: 0.3s;
+	  transition-duration: 0.3s;	    
   }
 
   .sidebar-tags-draggable-active {
     background: @grayMid;
-	  -webkit-transition-duration: 0.5s;
-	  -moz-transition-duration: 0.5s;
-	  transition-duration: 0.5s;    
+	  -webkit-transition-duration: 0.3s;
+	  -moz-transition-duration: 0.3s;
+	  transition-duration: 0.3s;
   }
 
   .sidebar-tags-draggable-highlight {
     background: green;
-	  -webkit-transition-duration: 0.4s;
-	  -moz-transition-duration: 0.4s;
-	  transition-duration: 0.4s;
-  }	  
+	  -webkit-transition-duration: 0.3s;
+	  -moz-transition-duration: 0.3s;
+	  transition-duration: 0.3s;
+  }
+
+
+/* Sidebar - Sortable */
+
+  .sidebar-tags-sortable {
+    height: 29px;
+    padding: 5px 10px;
+    margin: 4px 0;
+    border-radius: @base-border-radius;
+    background: @grayMid;
+  }
+  
+
+/* Sidebar - Tag Drag */
+
+  .sidebar-tag-drag {
+  	background: @white;
+  	border: 1px solid @gray;
+  	border-radius: 4px;
+  	padding: 5px 10px;
+  	z-index: 9999;
+  	font-size: 14px;
+  	font-weight: bold;
+    z-index: 9999;
+  }
