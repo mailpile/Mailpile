@@ -83,6 +83,45 @@ class Setup(Command):
             'display_order': 6,
             'name': _('Trash'),
         },
+        # These are magical tags that perform searches and show
+        # messages in contextual views.
+        'All Mail': {
+            'type': 'tag',
+            'icon': 'icon-logo',
+            'search_terms': 'all:mail',
+            'name': _('All Mail'),
+            'display_order': 1000,
+        },
+        'Photos': {
+            'type': 'tag',
+            'icon': 'icon-photos',
+            'search_terms': 'att:jpg',
+            'name': _('Photos'),
+            'template': 'photos',
+            'display_order': 1001,
+        },
+        'Files': {
+            'type': 'tag',
+            'icon': 'icon-document',
+            'search_terms': 'has:attachment',
+            'name': _('Files'),
+            'template': 'files',
+            'display_order': 1002,
+        },
+        'Links': {
+            'type': 'tag',
+            'icon': 'icon-links',
+            'search_terms': 'http',
+            'name': _('Links'),
+            'display_order': 1003,
+        },
+        'Groups': {
+            'type': 'tag',
+            'icon': 'icon-groups',
+            # 'url': '/group/list/',
+            'name': _('Groups'),
+            'display_order': 1004,
+        },
         # These are internal tags, used for tracking user actions on
         # messages, as input for machine learning algorithms. These get
         # automatically added, and may be automatically removed as well
