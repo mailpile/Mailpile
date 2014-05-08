@@ -25,7 +25,7 @@
     <select name="display">
       <option value="tag"{% if tag.value=="tag"%} checked{% endif %}>{{_("Tag")}}</option>
       <option value="priority"{% if tag.value=="priority"%} checked{% endif %}>{{_("Priority Tag")}}</option>
-      <option value="archive"{% if tag.value=="archive"%} checked{% endif %}>{{_("Archive")}}</option>
+      <option value="archive"{% if tag.value=="archive"%} selected{% endif %}>{{_("Archive")}}</option>
       <option value="invisible"{% if tag.value=="invisible"%} checked{% endif %}>{{_("Invisible")}}</option>
     </select>
 
