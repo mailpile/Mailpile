@@ -48,7 +48,6 @@ MailPile.prototype.pile_display = function(current, change) {
   }
   
   setTimeout(function() {
-
     $('#sidebar').fadeIn('fast');
     $('#pile-results').fadeIn('fast');
   }, 250);
@@ -196,23 +195,20 @@ $(document).on('submit', '#form-tag-picker', function(e) {
 $('td.draggable').draggable({
   containment: "#container",
   appendTo: 'body',
+  cursor: 'move',
   scroll: false,
   revert: true,
+  opacity: 1,
   helper: function(event) {
-
-    var selected_count = parseInt($('#bulk-actions-selected-count').html());
-
-    if (selected_count == 0) {
+    // FIXME: the word 'message' needs to updated as per Issue #666 mwhuahahaha
+    if (mailpile.messages_cache.length == 0) {
       drag_count = '1 message</div>';
     } else {
-      drag_count = selected_count + ' messages';
+      drag_count = mailpile.messages_cache.length + ' messages';
     }
-
-    return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Move ' + drag_count + '</div>');
+    return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Moving ' + drag_count + '</div>');
   },
-  stop: function(event, ui) {
-    //console.log('done dragging things');
-  }
+  stop: function(event, ui) {}
 });
 
 
