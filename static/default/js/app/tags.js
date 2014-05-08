@@ -54,8 +54,23 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
   });
 };
 
-MailPile.prototype.render_modal_tags = function() {
+MailPile.prototype.tag_update = function(tid, setting, complete) {
+  $.ajax({
+	  url			 : mailpile.api.tag_update,
+	  type		 : 'POST',
+	  data     : setting,
+	  dataType : 'json',
+    success  : function(response) {
+      if (response.status == 'success') {
+        complete(response.result);
+      } else {
+        mailpile.notification(response.status, response.message);
+      }
+    }
+  });
+};
 
+MailPile.prototype.render_modal_tags = function() {
   if (mailpile.messages_cache.length) {
 
     // Open Modal with selection options

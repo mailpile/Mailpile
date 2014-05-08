@@ -43,9 +43,11 @@ function MailPile() {
   	tag          : "/api/0/tag/",
   	tag_list     : "/api/0/tag/list/",
   	tag_add      : "/api/0/tag/add/",
+  	tag_update   : "/api/0/settings/set/",
   	search_new   : "/api/0/search/?q=in%3Anew",
     search       : "/api/0/search/",
   	settings_add : "/api/0/settings/add/"
+  	
 	}
 	this.urls = {
   	message_draft : "/message/draft/=",
