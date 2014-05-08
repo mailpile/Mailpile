@@ -192,6 +192,15 @@ class TagCommand(Command):
                          banned=CleanText.NONDNS.replace('/', '')
                          ).clean.lower()
 
+    def _reorder_all_tags(self):
+        taglist = [(t.display, t.display_order, t.slug, t._key)
+                   for t in self.session.config.tags.values()]
+        taglist.sort()
+        order = 1
+        for td, tdo, ts, tid in taglist:
+            self.session.config.tags[tid].display_order = order
+            order += 1
+
     def finish(self, save=True):
         idx = self._idx()
         if save:
@@ -334,6 +343,7 @@ class AddTag(TagCommand):
                     tags[i][v] = vlist[i]
         if tags:
             config.tags.extend(tags)
+            self._reorder_all_tags()
             self.finish(save=save)
 
         return self._success(_('Added %d tags') % len(tags),
@@ -475,6 +485,7 @@ class DeleteTag(TagCommand):
             else:
                 self._error('No such tag %s' % tag_name)
         if result:
+            self._reorder_all_tags()
             self.finish(save=True)
         return self._success(_('Deleted %d tags') % len(result),
                              {'removed': result})
