@@ -1,3 +1,19 @@
+$(document).on('click', '.icon-tags', function(e) {
+
+  e.preventDefault();
+  var tid = $(this).parent().parent().data('tid');
+
+  if ($('#sidebar-subtag-' + tid).css('display') === 'none') {
+    $('#sidebar-subtag-' + tid).show();
+  }
+  else {
+    $('#sidebar-subtag-' + tid).hide();    
+  }
+
+});
+
+
+
 $(document).ready(function() {
 
 
