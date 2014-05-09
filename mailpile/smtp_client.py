@@ -210,4 +210,7 @@ def SendMail(session, from_to_msg_ev_tuples):
             ev.data['bytes'] = total
             ev.data['delivered'] = len([k for k in ev.private_data
                                         if ev.private_data[k]])
-        mark(_('Message sent, %d bytes') % total, events)
+        mark(_n('Message sent, %d byte',
+                'Message sent, %d bytes',
+                total
+               ) % total, events)
