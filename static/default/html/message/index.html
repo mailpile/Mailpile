@@ -13,36 +13,42 @@
     new ephermal draft
 #}
 {% set showed_composer = [] %}
+{% set showed_from_me = [] %}
 {% set show_reply = "false" %}
 {% for mid in result.thread_ids|reverse %}
   {% set metadata = result.data.metadata[mid] %}
   {% if mid in result.data.messages %}{# Determine Is A Message #}
     {% set message = result.data.messages[mid] %}
-    {% if "editing_string" in message %}{# Show: Composer #}
-      {% set editing_strings = message.editing_strings %}
-      {% include("partials/compose.html") %}
-    {% else %}{# Show: Message and Reply Composer #}
-      {# FIXME: make subject line show differing subjects {{ metadata.subject }} #}
-      {% if metadata.flags.replied %}{# Show : Message / Don't Show Composer (cause replied) #}
-        {% do showed_composer.append(mid) %}
-        {% set show_reply = "true" %}
-        {% include("partials/thread_message.html") %}{# Show : Message #}
-      {% else %}
-        {% include("partials/thread_message.html") %}{# Show : Message #}
-        {% if not showed_composer %}{# Check If Has Not Showed Composer #}          
+    {% if metadata.flags.from_me %}{# Show: Just Message (from me) #}
+      {% do showed_from_me.append(mid) %}
+      {% set show_reply = "true" %}
+      {% include("partials/thread_message.html") %}{# Show: Message #}
+    {% else %}
+      {% if "editing_string" in message %}{# Show: Just Composer #}
+        {% set editing_strings = message.editing_strings %}
+        {% include("partials/compose.html") %}
+      {% else %}{# Show: Message & Reply Composer #}
+        {% if metadata.flags.replied %}{# Show: Message / No Composer (cause replied) #}
           {% do showed_composer.append(mid) %}
-          {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}{# Gets Ephermal message #}
-          {% if compose %}
-            {% set mid = compose.message_ids.0 %}
-            {% set editing_strings = compose.data.messages[mid].editing_strings %}
-            {% include("partials/compose.html") %}
-          {% else %}
-            {{_("Could Not Render Composer")}}
+          {% set show_reply = "true" %}
+          {% include("partials/thread_message.html") %}{# Show: Message #}
+        {% else %}
+          {% include("partials/thread_message.html") %}{# Show: Message #}
+          {% if not showed_composer %}{# Check If Has Not Showed Composer #}          
+            {% do showed_composer.append(mid) %}
+            {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}{# Gets Ephermal message #}
+            {% if compose %}
+              {% set mid = compose.message_ids.0 %}
+              {% set editing_strings = compose.data.messages[mid].editing_strings %}
+              {% include("partials/compose.html") %}
+            {% else %}
+              {{_("Could Not Render Composer")}}
+            {% endif %}
           {% endif %}
-        {% endif %}
-      {% endif %}{# End Not Showed Composer #}
-    {% endif %}{# End Message / Reply #}
-  {% elif metadata.flags.draft == true %}{# Is Message & Draft #}
+        {% endif %}{# End Not Showed Composer #}
+      {% endif %}{# End: Just Composer #} 
+    {% endif %}{# End: Just Message (from me) #}
+  {% elif metadata.flags.draft == true %}{# Is Draft #}
     {% set compose = mailpile('message/draft', '='+mid).result %}
     {% if compose %}
       {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
@@ -58,7 +64,8 @@
   </div>
   {% endif %}{# End if mid #}
 {% endfor %}{# End for loop #}
-{% if showed_composer %}
+
+{% if showed_composer or showed_from_me %}{# If Composer has not showed up anywhere, show at bottom #}
   {% set last_mid = result.thread_ids.0 %}
   {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+last_mid).result %}{# Gets Ephermal message #}
   {% if compose %}
