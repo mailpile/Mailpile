@@ -22,9 +22,6 @@ MailPile.prototype.pile_action_unselect = function(item) {
   // Remove From Data Model
   mailpile.bulk_cache_remove('messages_cache', item.data('mid'));
 
-	// Update Bulk UI
-	$('#bulk-actions-selected-count').html(mailpile.messages_cache.length);
-
 	// Hide Actions
 	mailpile.bulk_actions_update_ui();
 
@@ -210,6 +207,11 @@ $('td.draggable').draggable({
   },
   start: function(event, ui) {
 
+    mailpile.bulk_cache_add('messages_cache', $(event.target).parent().data('mid'));
+
+    // Update Bulk UI
+    mailpile.bulk_actions_update_ui();
+
   	// Style & Select Checkbox
   	$(event.target).parent().removeClass('result').addClass('result-on')
   	.data('state', 'selected')
@@ -218,13 +220,7 @@ $('td.draggable').draggable({
   	.prop('checked', true);
   },
   stop: function(event, ui) {
-
-  	// Style & Unselect Checkbox
-  	$(event.target).parent().removeClass('result-on').addClass('result')
-  	.data('state', 'normal')
-  	.find('td.checkbox input[type=checkbox]')
-  	.val('normal')
-  	.prop('checked', false);
+    
   }
 });
 
