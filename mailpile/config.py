@@ -3,6 +3,7 @@ import cPickle
 import io
 import json
 import os
+import socket
 import sys
 import random
 import re
@@ -12,6 +13,7 @@ import ConfigParser
 
 from jinja2 import Environment, BaseLoader, TemplateNotFound
 from urllib import quote, unquote
+from urlparse import urlparse
 
 from mailpile.crypto.streamer import DecryptingStreamer
 from mailpile.i18n import gettext as _
@@ -260,6 +262,61 @@ def _SlashSlugCheck(slug):
     return _SlugCheck(slug, allow='/')
 
 
+def _RouteProtocolCheck(proto):
+    """
+    Verify that the protocol is actually a protocol.
+    (FIXME: Should reference a list of registered protocols...)
+
+    >>> _RouteProtocolCheck('SMTP')
+    'smtp'
+    """
+    proto = str(proto).strip().lower()
+    if proto not in ("smtp", "smtptls", "smtpssl", "local"):
+        raise ValueError(_('Invalid message delivery protocol: %s') % proto)
+    return proto
+
+def _DnsNameValid(dnsname):
+    """
+    Tests whether a string is a valid dns name, returns a boolean value
+    """
+    if not dnsname or not DNSNAME_RE.match(dnsname):
+        return False
+    else:
+        return True
+
+def _HostNameValid(host):
+    """
+    Tests whether a string is a valid host-name, return a boolean value
+
+    >>> _HostNameValid("127.0.0.1")
+    True
+
+    >>> _HostNameValid("::1")
+    True
+
+    >>> _HostNameValid("localhost")
+    True
+
+    >>> _HostNameValid("22.45")
+    False
+    """
+    valid = False
+    for attr in ["AF_INET","AF_INET6"]:
+        try:
+            socket.inet_pton(socket.__getattribute__(attr), host)
+            valid = True
+            break
+        except (socket.error):
+            pass
+    if not valid:
+        # the host is not an IP so check if its a hostname i.e. 'localhost' or 'site.com'
+        if not host or (not _DnsNameValid(host) and not ALPHA_RE.match(host)):
+            return False
+        else:
+            return True
+    else:
+        return True
+
 def _HostNameCheck(host):
     """
     Verify that a string is a valid host-name, return it lowercased.
@@ -275,10 +332,8 @@ def _HostNameCheck(host):
         ...
     ValueError: Invalid hostname: not/a/hostname
     """
-    # FIXME: We do not want to check the network, but rules for DNS are
-    #        still stricter than this so a static check could do more.
-    if not unicode(host) == CleanText(unicode(host),
-                                      banned=CleanText.NONDNS).clean:
+    # Check DNS, IPv4, and finally IPv6
+    if not _HostNameValid(host):
         raise ValueError(_('Invalid hostname: %s') % host)
     return str(host).lower()
 
