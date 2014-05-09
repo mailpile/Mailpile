@@ -86,10 +86,10 @@ class VCardLine(dict):
 
     def set_attr(self, attr, value):
         try:
-            for av in self._attrs:
+            for i, av in enumerate(self._attrs):
                 if av[0] == attr:
                     nav = (av[0], value)
-                    av = nav
+                    self.attrs[i] = nav
                     return
             self._attrs.append((attr, value))
         finally:
@@ -154,7 +154,7 @@ class VCardLine(dict):
         Quote values so they can be safely represented in a VCard.
 
         >>> print VCardLine.Quote('Comma, semicolon; backslash\\ newline\\n')
-        Comma\\, semicolon\\; backslash\\\\ newline\\n
+        Comma\\, semicolon\\; backslash\\\\ newline\\\\n
         """
         return unicode(''.join([self.QUOTE_MAP.get(c, c) for c in text]))
 
