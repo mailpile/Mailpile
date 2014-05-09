@@ -1,80 +1,74 @@
-{% if result.tags|length == 1 %}
-{% include "tag/index.html"%}
-{% else %}
 {% extends "layouts/" + render_mode + ".html" %}
 {% block title %}{{_("Tags")}}{% endblock %}
 {% block content %}
 
-{% macro render_tag(tag) -%}  
-  <div class="boxy" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.stats.not}}">
-    <div class="boxy-inner">
-      <a class="tag-card-name" href="{{tag.url}}">{{tag.name}}</a>
-      <div class="tag-card-numbers">
-        <div class="tag-card-stat">
-          <span class="tag-card-label">{{_("Total")}}</span>
-          <span class="tag-card-stat-count">{{tag.stats.all}}</span>
+  {% macro render_tag(tag) -%}  
+    <div class="boxy" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.stats.not}}">
+      <div class="boxy-inner">
+        <a class="tag-card-name" href="{{tag.url}}"><span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span> {{tag.name}}</a>
+        <div class="tag-card-numbers">
+          <div class="tag-card-stat">
+            <span class="tag-card-label">{{_("Total")}}</span>
+            <span class="tag-card-stat-count">{{tag.stats.all}}</span>
+          </div>
+          <div class="tag-card-stat">
+            {% if tag.stats.new > 0 %}
+            <span class="tag-card-label">{{_("New")}}</span>
+            <span class="tag-card-stat-count">{{tag.stats.new}}</span>
+            {% endif %}
+          </div>
+          <!--
+          <div class="tag-card-view">
+            <span class="tag-card-label">{{_("Display")}}</span>
+            <span class="icon-list"></span>
+          </div>
+          -->
         </div>
-        <div class="tag-card-stat">
-          {% if tag.stats.new > 0 %}
-          <span class="tag-card-label">{{_("New")}}</span>
-          <span class="tag-card-stat-count">{{tag.stats.new}}</span>
-          {% endif %}
-        </div>
-        <!--
-        <div class="tag-card-view">
-          <span class="tag-card-label">{{_("Display")}}</span>
-          <span class="icon-list"></span>
-        </div>
-        -->
+        <ul>
+          <li><a class="tag-card-message-link" href="{{tag.url}}"><span class="icon-inbox"></span> {{_("Messages")}}</a></li>
+          <li><a class="tag-card-message-link" href="/tags/{{tag.slug}}/edit.html"><span class="icon-settings"></span> {{_("Settings")}}</a></li>
+        </ul>
       </div>
-      <ul>
-        <li><a class="tag-card-message-link" href="{{tag.url}}"><span class="icon-inbox"></span> {{_("Messages")}}</a></li>
-        <li><a class="tag-card-message-link" href="/tags/{{tag.slug}}/"><span class="icon-settings"></span> {{_("Settings")}}</a></li>
-      </ul>
     </div>
+  {%- endmacro %}
+  
+  <div id="tags-list" class="clearfix">
+    {% for tag in result.tags %}
+    {% if tag.display == "priority" and tag.type == "tag" %}
+      {{ render_tag(tag) }}
+    {% endif %}
+    {% endfor %}
   </div>
-{%- endmacro %}
-
-<div id="tags-list" class="clearfix">
-  {% for tag in result.tags %}
-  {% if tag.display == "priority" and tag.type == "tag" %}
-    {{ render_tag(tag) }}
-  {% endif %}
-  {% endfor %}
-</div>
-<hr>
-
-<div id="tags-list" class="clearfix">
-  {% for tag in result.tags %}
-  {% if tag.display == "tag" %}
-    {{ render_tag(tag) }}
-  {% endif %}
-  {% endfor %}
-</div>
-
-{% set tag_archive = [] %}
-{% for tag in result.tags %}
-{% if tag.display == "archive" %}
-    {% do tag_archive.append(tag.tid) %}
-{% endif %}
-{% endfor %} 
-{% if tag_archive|length > 0 %}
-<div class="add-top add-bottom">
-  <h3 class="text-center"><span class="icon-archive"></span> {{_("Archived Tags")}}</h3>
-  <div id="tags-archived-list" class="hide clearfix add-bottom">
+  <hr>
+  
+  <div id="tags-list" class="clearfix">
+    {% for tag in result.tags %}
+    {% if tag.display == "tag" %}
+      {{ render_tag(tag) }}
+    {% endif %}
+    {% endfor %}
+  </div>
+  
+  {% set tag_archive = [] %}
   {% for tag in result.tags %}
   {% if tag.display == "archive" %}
-    {{ render_tag(tag) }}
+      {% do tag_archive.append(tag.tid) %}
   {% endif %}
-  {% endfor %}
+  {% endfor %} 
+  {% if tag_archive|length > 0 %}
+  <div class="add-top add-bottom">
+    <h3 class="text-center"><span class="icon-archive"></span> {{_("Archived Tags")}}</h3>
+    <div id="tags-archived-list" class="hide clearfix add-bottom">
+    {% for tag in result.tags %}
+    {% if tag.display == "archive" %}
+      {{ render_tag(tag) }}
+    {% endif %}
+    {% endfor %}
+    </div>
+    <div class="text-center">
+      <button id="button-tag-toggle-archive" data-message="{{_("Hide Archived")}}">{{_("Show Archived")}}</button>
+    </div>
   </div>
-  <div class="text-center">
-    <button id="button-tag-toggle-archive" data-message="{{_("Hide Archived")}}">{{_("Show Archived")}}</button>
-  </div>
-</div>
-{% endif %}
-
-{% include("partials/tag_add.html") %}
+  {% endif %}
 
 {% endblock %}
-{% endif %}

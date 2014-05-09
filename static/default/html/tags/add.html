@@ -1,7 +1,7 @@
 {% extends "layouts/" + render_mode + ".html" %}
-{% block title %}{{_("Add Contact")}} {% endblock %}
+{% block title %}{{_("Add Tag")}} {% endblock %}
 {% block content %}
-<div id="tag-add" class="content-normal">
-  {% include("partials/tag_add.html") %}
-</div>
+  {% set form_title = _("Add Tag") %}
+  {% set tag = result.form %}
+  {% include("tags/form.html") %}
 {% endblock %}

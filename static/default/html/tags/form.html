@@ -1,11 +1,6 @@
-  {% extends "layouts/" + render_mode + ".html" %}
-{% if result.tags.0 %}
-{% set tag = result.tags.0 %}
-{% block title %}{{ tag.name }} | {{_("Tags")}} {% endblock %}
-{% block content %}
 <div id="tags-settings" class="content-normal">
   <div class="clearfix">
-    <h2 class="contact-name "><span class="icon-tag"></span> {{_("Edit Tag")}}</h2>
+    <h2 class="contact-name "><span class="icon-tag"></span> {{form_title}}</h2>
 	</div>
 
   <form id="form-tag-add" class="standard" method="POST">
@@ -23,10 +18,10 @@
 
     <label>{{_("Display")}}</label>
     <select name="display">
-      <option value="tag"{% if tag.value=="tag"%} checked{% endif %}>{{_("Tag")}}</option>
-      <option value="priority"{% if tag.value=="priority"%} checked{% endif %}>{{_("Priority Tag")}}</option>
-      <option value="archive"{% if tag.value=="archive"%} selected{% endif %}>{{_("Archive")}}</option>
-      <option value="invisible"{% if tag.value=="invisible"%} checked{% endif %}>{{_("Invisible")}}</option>
+      <option value="tag"{% if tag.display == "tag"%} selected="selected"{% endif %}>{{_("Tag")}}</option>
+      <option value="priority"{% if tag.display == "priority"%} selected="selected"{% endif %}>{{_("Priority Tag")}}</option>
+      <option value="archive"{% if tag.display == "archive"%} selected="selected"{% endif %}>{{_("Archive")}}</option>
+      <option value="invisible"{% if tag.display == "invisible"%} selected="selected"{% endif %}>{{_("Invisible")}}</option>
     </select>
 
     <label>{{_("Template")}}</label>
@@ -46,20 +41,12 @@
     </select>
 
     <label>{{_("Search Terms")}}</label>
-    <textarea name="search_terms" placeholder="in:inbox"></textarea>
+    <textarea name="search_terms" placeholder="in:inbox">{{tag.search_terms}}</textarea>
 
-	</select>
-
-	<button type="submit"><span class="icon-checkmark"></span> {{_("Save Tag")}}</button>
+	  <button type="submit"><span class="icon-checkmark"></span> {{_("Save Tag")}}</button>
 		
-</form>
+  </form>
 
-<button type="submit" id="button-tag-delete" class="button-warning"><span class="icon-minus"></span> {{_("Delete Tag")}}</button>
+  <button type="submit" id="button-tag-delete" class="button-warning"><span class="icon-minus"></span> {{_("Delete Tag")}}</button>
 
 </div>
-{% endblock %}
-
-{% else %}
-    {% set error_title = "tag_missing" %}
-    {% include("partials/errors_content.html") %}
-{% endif %}
