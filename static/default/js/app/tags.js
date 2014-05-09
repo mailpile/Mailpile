@@ -54,7 +54,13 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
   });
 };
 
-MailPile.prototype.tag_update = function(tid, setting, complete) {
+MailPile.prototype.tag_update = function(tid, setting, value, complete) {
+
+  // Prep Update Value
+  var key = 'tags.' + tid + '.' + setting;
+  var setting = {};
+  setting[key] = value;
+
   $.ajax({
 	  url			 : mailpile.api.tag_update,
 	  type		 : 'POST',
@@ -174,3 +180,15 @@ $(document).on('click', '#button-tag-toggle-archive', function(e) {
     $('#tags-archived-list').addClass('hide');    
   }
 });
+
+
+/* Tag - Update */
+$(document).on('blur', '#data-tag-add-tag', function(e) {
+
+  alert('Saving: ' + $(this).val())  
+
+});
+
+
+
+

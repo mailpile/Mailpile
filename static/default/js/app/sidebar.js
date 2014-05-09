@@ -12,6 +12,60 @@ $(document).on('click', '.icon-tags', function(e) {
 
 });
 
+$(document).on('click', '.is-editing', function(e) {
+  e.preventDefault();
+});
+
+$(document).on('click', '.button-sidebar-edit', function() {
+
+  var new_message = $(this).data('message');
+  var old_message = $(this).html();
+
+  if ($(this).data('state') === 'done') {
+
+    // Disable Drag & Drop
+    $('a.sidebar-tag').draggable({ disabled: true });
+    
+    // Update Cursor Make Links Not Work
+    $('.sidebar-sortable li').addClass('is-editing');
+
+    // Hide Notification
+    $('.sidebar-notification').hide();
+
+    // Add Minus Button
+    $.each($('.sidebar-tag'), function(key, value) {
+      $(this).append('<span class="sidebar-tag-archive icon-minus"></span>');
+    });
+
+    // Update Edit Button
+    $(this).data('message', old_message).data('state', 'editing').html('<span class="icon-checkmark"></span> ' + new_message);
+  }
+  else {
+
+    // Enable Drag & Drop
+    $('a.sidebar-tag').draggable({ disabled: false });    
+
+    // Update Cursor Make Links Not Work
+    $('.sidebar-sortable li').removeClass('is-editing');
+
+    // Show Notification / Hide Minus Button
+    $('.sidebar-notification').show();
+    $('.sidebar-tag-archive').remove();
+
+    // Update Edit Button
+    $(this).data('message', old_message).data('state', 'done').html(new_message);
+  }
+});
+
+
+$(document).on('click', '.sidebar-tag-archive', function(e) {
+  
+  e.preventDefault();
+  alert('This will mark this tag as "archived" and remove it from your sidebar, you can go edit this in the Tags -> Tag Name -> Settings page at anytime');
+  
+  $(this).parent().parent().fadeOut();
+  
+});
 
 
 $(document).ready(function() {
@@ -43,13 +97,8 @@ $(document).ready(function() {
       var next      = get_order((parseInt(index) + 2), 1000000);
       var new_order = (parseFloat(previous) + parseFloat(next)) / 2;
 
-      // Prep Update Value
-      var key = 'tags.' + tid + '.display_order';
-      var setting = {};
-      setting[key] = new_order;
-
       // Save Tag Order
-      mailpile.tag_update(tid, setting, function() {
+      mailpile.tag_update(tid, 'display_order', new_order, function() {
 
         // Update Current Element
         $(ui.item).attr('data-display_order', new_order).data('display_order', new_order);
@@ -66,8 +115,10 @@ $(document).ready(function() {
     scroll: false,
     revert: false,
     opacity: 1,
-    helper: function(event) {      
-      return $('<div class="sidebar-tag-drag ui-widget-header">' + $(this).html() + '</div>');
+    helper: function(event) {
+      var icon = $(this).find('span.sidebar-icon').attr('class').replace('sidebar-icon ', '');
+      var tag = $(this).find('.sidebar-name span').html();
+      return $('<div class="sidebar-tag-drag ui-widget-header"><span class="' + icon + '"></span> ' + tag + '</div>');
     }
   });
 

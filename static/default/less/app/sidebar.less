@@ -17,22 +17,24 @@
   }
 
   #sidebar nav { padding: 0px; padding-bottom: 15px; margin: 0px; }
-	#sidebar hr { margin: 10px 0px;	}
+	#sidebar hr  { margin: 10px 0px;	}
 
   #sidebar      ul { margin: 0px 10px; padding: 0px; }
   #sidebar.cozy ul { margin: 0px 8px; }
   #sidebar.snug ul { margin: 0px 8px; }
-
-  #sidebar      li { margin: 4px 0px; padding: 5px 10px 5px 10px; }
-  #sidebar.cozy li { margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px; }
-  #sidebar.snug li { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
+  #sidebar      ul li { margin: 4px 0px; padding: 5px 10px 5px 10px; }
+  #sidebar.cozy ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px; }
+  #sidebar.snug ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
 
   ul.sidebar-subtag { display: none; }
 
-  a.sidebar-tag { position: relative; display: table; width: 185px; height: 24px; vertical-align: middle; text-align: left; font-family: @mailpile-text-font-family-bold; color: @grayDark; }
+  a.sidebar-tag        { position: relative; display: table; width: 185px; height: 24px; vertical-align: middle; text-align: left; }
   a.sidebar-tag:active { color: @blue; }	
-  a.sidebar-tag:hover { color: @blue; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
-	
+  a.sidebar-tag:hover  { color: @blue; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
+
+	li.is-editing,
+	li.is-editing a.sidebar-tag { cursor: move; }
+
 	.cozy a.sidebar-tag { padding: 3px 0px; }
 	.snug a.sidebar-tag { padding: 0px 0px; }
 
@@ -40,21 +42,23 @@
 	#sidebar.cozy span.sidebar-icon { font-size: 18px; line-height: 18px; }
   #sidebar.snug span.sidebar-icon { font-size: 16px; line-height: 16px; }
 
-  #sidebar span.sidebar-tag {
+  #sidebar span.sidebar-name {
     width: 130px;
     display: table-cell;
     vertical-align: middle;
     margin-right: 15px;
     padding-left: 5px;
+    color: @grayDark;
+    font-family: @mailpile-text-font-family-bold;
     font-weight: bold;
     font-size: 18px;
     line-height: 24px;
 	}
 	
-  #sidebar.cozy span.sidebar-tag { font-size: 16px; line-height: 20px; }
-  #sidebar.snug span.sidebar-tag { font-size: 14px; line-height: 18px; }
+  #sidebar.cozy span.sidebar-name { font-size: 16px; line-height: 20px; }
+  #sidebar.snug span.sidebar-name { font-size: 14px; line-height: 18px; }
 
-  #sidebar span.sidebar-tag span {
+  #sidebar span.sidebar-name span {
     width: 130px;
     display: inline-block;
     white-space: nowrap;
@@ -85,6 +89,32 @@
 
   li.navigation-on a.sidebar-tag:hover { color: @grayDark; }
   li.navigation-on a.sidebar-tag:hover span.sidebar-notification { color: @white !important; }
+
+
+/* Sidebar - Edit */
+
+  .button-sidebar-edit {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: italic;
+    color: @gray !important;
+  }
+
+  a.sidebar-tag span.sidebar-tag-archive {
+    background: @orange;
+    color: @white;
+    vertical-align: middle;
+    padding: 5px;
+    position: absolute;
+    top: 4px;
+    right: 0px;
+    font-size: 8px;
+    border-radius: 10px;
+  }
 
 
 /* Sidebar - Drag & Drop */
