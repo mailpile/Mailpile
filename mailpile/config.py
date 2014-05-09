@@ -441,7 +441,6 @@ def _UrlCheck(url):
     ValueError: Not a valid http url: telnet://some-host.com
     """
     uri = urlparse(url)
-    method_name = "_%sCheck" % uri.scheme.capitalize()
     if not uri.scheme in URI_SCHEMES:
         raise ValueError(_("Not a valid url: %s") % url)
     else:
