@@ -15,6 +15,7 @@ scripts/less-compiler.mk
 .DS_Store
 static/default/plugins/
 *.swp
+*.swo
 .vagrant
 .coverage
 testing/tmp
