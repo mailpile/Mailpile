@@ -132,6 +132,8 @@ def Main(args):
     finally:
         mailpile.util.QUITTING = True
         config.stop_workers()
+        if readline:
+            readline.write_history_file(session.config.history_file())
         if config.index:
             config.index.save_changes()
         config.plugins.process_shutdown_hooks()
