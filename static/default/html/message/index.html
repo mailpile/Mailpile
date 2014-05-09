@@ -23,16 +23,22 @@
       {% include("partials/compose.html") %}
     {% else %}{# Show: Message and Reply Composer #}
       {# FIXME: make subject line show differing subjects {{ metadata.subject }} #}
-      {% include("partials/thread_message.html") %}{# Show : Message #}
-        {% if not showed_composer %}{# Check If Has Not Showed Composer #}
+      {% if metadata.flags.replied %}{# Show : Message / Don't Show Composer (cause replied) #}
         {% do showed_composer.append(mid) %}
-        {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}{# Gets Ephermal message #}
-        {% if compose %}
-          {% set mid = compose.message_ids.0 %}
-          {% set editing_strings = compose.data.messages[mid].editing_strings %}
-          {% include("partials/compose.html") %}
-        {% else %}
-          {{_("Could Not Render Composer")}}
+        {% set show_reply = "true" %}
+        {% include("partials/thread_message.html") %}{# Show : Message #}
+      {% else %}
+        {% include("partials/thread_message.html") %}{# Show : Message #}
+        {% if not showed_composer %}{# Check If Has Not Showed Composer #}          
+          {% do showed_composer.append(mid) %}
+          {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}{# Gets Ephermal message #}
+          {% if compose %}
+            {% set mid = compose.message_ids.0 %}
+            {% set editing_strings = compose.data.messages[mid].editing_strings %}
+            {% include("partials/compose.html") %}
+          {% else %}
+            {{_("Could Not Render Composer")}}
+          {% endif %}
         {% endif %}
       {% endif %}{# End Not Showed Composer #}
     {% endif %}{# End Message / Reply #}
@@ -52,6 +58,18 @@
   </div>
   {% endif %}{# End if mid #}
 {% endfor %}{# End for loop #}
+{% if showed_composer %}
+  {% set last_mid = result.thread_ids.0 %}
+  {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+last_mid).result %}{# Gets Ephermal message #}
+  {% if compose %}
+    {% set mid = compose.message_ids.0 %}
+    {% set editing_strings = compose.data.messages[mid].editing_strings %}
+    {% include("partials/compose.html") %}
+  {% else %}
+    {{_("Could Not Render Composer")}}
+  {% endif %}
+{% endif %}
+
 <div id="thread-people" class="hide" data-modal_title="{{_("People in Conversation")}}">
   <ul>
     {% for aid in result.data.addresses %}{% set person = result.data.addresses[aid] %}

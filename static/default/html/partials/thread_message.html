@@ -109,13 +109,19 @@
   <div class="thread-message-attachments">
     <ul class="thread-message-attachments horizontal clearfix">
       {% for att in message.attachments %}
-      {% if att.mimetype in ('image/jpg', 'image/jpeg', 'image/png', 'image/gif') %}
-      <li><a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a></li>
-      {% elif att.mimetype in ('application/pgp-keys') %}
+      <li>
+      {% set type = attachment_type(att.mimetype) %}
+      {% if type == "image-visible" %}
+      <a href="/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+      {% elif type == "keys" %}
       {% do special_text_parts.append("pgp-key") %}
       {% else %}
-      <li><a href="/message/download/={{ mid }}/part:{{ att.count }}/" type="{{ att.mimetype }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}">{{ att.filename }}<small>{{ att.length|friendly_bytes }}</small></a></li>
+      <a href="/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.filenmae }} @ {{ att.length|friendly_bytes }}">
+        <span class="icon-{{ type}}"></span>
+        {{ att.filename }}<small>{{ att.length|friendly_bytes }}</small>
+      </a>
       {% endif %}
+      </li>
       {% endfor %}
     </ul>
   </div>
