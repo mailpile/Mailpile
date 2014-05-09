@@ -197,7 +197,7 @@ $('td.draggable').draggable({
   appendTo: 'body',
   cursor: 'move',
   scroll: false,
-  revert: true,
+  revert: false,
   opacity: 1,
   helper: function(event) {
     // FIXME: the word 'message' needs to updated as per Issue #666 mwhuahahaha
@@ -208,7 +208,24 @@ $('td.draggable').draggable({
     }
     return $('<div class="pile-results-drag ui-widget-header"><span class="icon-message"></span> Moving ' + drag_count + '</div>');
   },
-  stop: function(event, ui) {}
+  start: function(event, ui) {
+
+  	// Style & Select Checkbox
+  	$(event.target).parent().removeClass('result').addClass('result-on')
+  	.data('state', 'selected')
+  	.find('td.checkbox input[type=checkbox]')
+  	.val('selected')
+  	.prop('checked', true);
+  },
+  stop: function(event, ui) {
+
+  	// Style & Unselect Checkbox
+  	$(event.target).parent().removeClass('result-on').addClass('result')
+  	.data('state', 'normal')
+  	.find('td.checkbox input[type=checkbox]')
+  	.val('normal')
+  	.prop('checked', false);
+  }
 });
 
 
