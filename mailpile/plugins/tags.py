@@ -32,8 +32,8 @@ _plugins.register_config_section('tags', ["Tags", {
         'replied', 'fwded', 'tagged', 'read', 'ham',  # behavior tracking tags
         'trash', 'spam'                               # junk mail tags
     ], 'tag'],
-    'flag_hides': ['Hide tagged messages from searches?', bool, False],
-    'flag_editable': ['Mark tagged messages as editable?', bool, False],
+    'flag_hides': ['Hide tagged messages from searches?', 'bool', False],
+    'flag_editable': ['Mark tagged messages as editable?', 'bool', False],
 
     # Tag display attributes for /in/tag or searching in:tag
     'template': ['Default tag display template', 'str', 'index'],
@@ -43,12 +43,12 @@ _plugins.register_config_section('tags', ["Tags", {
 
     # Tag display attributes for search results/lists/UI placement
     'icon': ['URL to default tag icon', 'url', ''],
-    'label': ['Display as label in results', bool, True],
+    'label': ['Display as label in results', 'bool', True],
     'label_color': ['Color to use in label', 'str', ''],
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
                                           'archive', 'invisible'], 'tag'],
-    'display_order': ['Order in lists', float, 0],
-    'parent': ['ID of parent tag, if any', str, ''],
+    'display_order': ['Order in lists', 'float', 0],
+    'parent': ['ID of parent tag, if any', 'str', ''],
 
     # Outdated crap
     'hides_flag': ['DEPRECATED', 'ignore', None],
@@ -288,7 +288,7 @@ class AddTag(TagCommand):
     SYNOPSIS = (None, 'tag/add', 'tag/add', '<tag>')
     ORDER = ('Tagging', 0)
     SPLIT_ARG = False
-    HTTP_CALLABLE = ('POST', )
+    HTTP_CALLABLE = ('GET', 'POST')
     HTTP_POST_VARS = {
         'name': 'tag name',
         'slug': 'tag slug',
@@ -316,6 +316,12 @@ class AddTag(TagCommand):
 
     def command(self, save=True):
         config = self.session.config
+
+        if self.data.get('_method', 'not-http').upper() == 'GET':
+            return self._success(_('Add tags here!'), {
+                'form': self.HTTP_POST_VARS,
+                'rules': self.session.config.tags.rules['_any'][1]._RULES
+            })
 
         slugs = self.data.get('slug', [])
         names = self.data.get('name', [])
@@ -352,7 +358,7 @@ class AddTag(TagCommand):
 
 class ListTags(TagCommand):
     """List tags"""
-    SYNOPSIS = (None, 'tag/list', 'tag/list', '[<wanted>|!<wanted>] [...]')
+    SYNOPSIS = (None, 'tag/list', 'tags', '[<wanted>|!<wanted>] [...]')
     ORDER = ('Tagging', 0)
     HTTP_STRICT_VARS = False
 

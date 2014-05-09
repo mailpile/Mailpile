@@ -2,7 +2,7 @@
 <div id="sidebar" class="comfy">
   <nav>
     <ul class="sidebar-sortable">
-      {% for tag in mailpile("tag/list", "display=priority").result.tags %}
+      {% for tag in mailpile("tags", "display=priority").result.tags %}
       {% if tag.slug == "drafts" %}
       <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-default {{ navigation_on(result.search_tag_ids, tag.tid) }}">
       {% elif tag.slug == "outbox" %}
@@ -32,7 +32,7 @@
     </ul>
     <hr>
     <ul class="sidebar-sortable">
-      {% for tag in mailpile("tag/list", "display=tag").result.tags %}
+      {% for tag in mailpile("tags", "display=tag").result.tags %}
       {% if tag.subtags and not tag.parent %}
       <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
           <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}"  data-icon="{{tag.icon}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
