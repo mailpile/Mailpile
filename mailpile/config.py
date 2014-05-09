@@ -423,6 +423,41 @@ def _NewPathCheck(path):
     _PathCheck(os.path.dirname(path))
     return os.path.abspath(path)
 
+def _UrlCheck(url):
+    """
+    Verify that a url parsed string has a valid uri scheme
+
+    >>> _UrlCheck("http://mysite.com")
+    "http://mysite.com"
+
+    >>> _UrlCheck("/not-valid.net")
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a valid url: /not-valid.net"
+
+    >>> _UrlCheck("telnet://some-host.com")
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a valid http url: telnet://some-host.com
+    """
+    uri = urlparse(url)
+    method_name = "_%sCheck" % uri.scheme.capitalize()
+    if not uri.scheme in URI_SCHEMES:
+        raise ValueError(_("Not a valid url: %s") % url)
+    else:
+        return url
+
+def _EmailCheck(email):
+    """
+    Verify that a string is a valid email
+
+    >>> _EmailCheck("test@test.com")
+    'test@test.com'
+    """
+    if not EMAIL_RE.match(email):
+        raise ValueError(_("Not a valid email: %s") % email)
+    return email
+
 
 class IgnoreValue(Exception):
     pass
@@ -450,7 +485,7 @@ def RuledContainer(pcls):
             'dir': _DirCheck,
             'directory': _DirCheck,
             'ignore': _IgnoreCheck,
-            'email': unicode,  # FIXME: Make more strict
+            'email': _EmailCheck,
             'False': False, 'false': False,
             'file': _FileCheck,
             'float': float,
@@ -469,7 +504,7 @@ def RuledContainer(pcls):
             'True': True, 'true': True,
             'timestamp': long,
             'unicode': unicode,
-            'url': unicode,  # FIXME: Make more strict
+            'url': _UrlCheck, # FIXME: check more than the scheme?
         }
         _NAME = 'container'
         _RULES = None
