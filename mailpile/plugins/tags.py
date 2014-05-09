@@ -285,7 +285,7 @@ class Tag(TagCommand):
 
 class AddTag(TagCommand):
     """Create a new tag"""
-    SYNOPSIS = (None, 'tag/add', 'tag/add', '<tag>')
+    SYNOPSIS = (None, 'tags/add', 'tags/add', '<tag>')
     ORDER = ('Tagging', 0)
     SPLIT_ARG = False
     HTTP_CALLABLE = ('GET', 'POST')
@@ -358,7 +358,7 @@ class AddTag(TagCommand):
 
 class ListTags(TagCommand):
     """List tags"""
-    SYNOPSIS = (None, 'tag/list', 'tags', '[<wanted>|!<wanted>] [...]')
+    SYNOPSIS = (None, 'tags', 'tags', '[<wanted>|!<wanted>] [...]')
     ORDER = ('Tagging', 0)
     HTTP_STRICT_VARS = False
 
@@ -444,7 +444,7 @@ class ListTags(TagCommand):
 
 class DeleteTag(TagCommand):
     """Delete a tag"""
-    SYNOPSIS = (None, 'tag/delete', 'tag/delete', '<tag>')
+    SYNOPSIS = (None, 'tags/delete', 'tags/delete', '<tag>')
     ORDER = ('Tagging', 0)
     HTTP_CALLABLE = ('POST', 'DELETE')
     HTTP_POST_VARS = {

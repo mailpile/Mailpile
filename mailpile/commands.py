@@ -1366,7 +1366,7 @@ class Help(Command):
                                                        count + cls.ORDER[1])
             return self._success(_('Displayed help'), result={
                 'commands': cmd_list,
-                'tags': GetCommand('tag/list')(self.session).run(),
+                'tags': GetCommand('tags')(self.session).run(),
                 'index': self._idx()
             })
 
