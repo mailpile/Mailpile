@@ -22,3 +22,4 @@ testing/tmp
 testing/gpg-keyring/random_seed
 ghostdriver.log
 static/default/bower_components/
+cover/
