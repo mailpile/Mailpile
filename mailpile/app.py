@@ -20,15 +20,20 @@ Help.ABOUT = mailpile.defaults.ABOUT
 
 
 ##[ Main ]####################################################################
+try:
+    import readline # Unix-only
+    from mailpile.ui import Completer
+except ImportError:
+    readline = None
 
 def Interact(session):
-    try :
-        import readline # Unix-only
-    except ImportError :
-        readline = None # we are on Windows or Mac
     try:
         if readline :
             readline.read_history_file(session.config.history_file())
+            readline.set_completer_delims(Completer.DELIMS)
+            readline.set_completer(Completer().autocomplete)
+            for opt in ["tab: complete", "set show-all-if-ambiguous on"]:
+                readline.parse_and_bind(opt)
     except IOError:
         pass
 
@@ -132,6 +137,8 @@ def Main(args):
     finally:
         mailpile.util.QUITTING = True
         config.stop_workers()
+        if readline:
+            readline.write_history_file(session.config.history_file())
         if config.index:
             config.index.save_changes()
         config.plugins.process_shutdown_hooks()

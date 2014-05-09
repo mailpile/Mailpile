@@ -68,6 +68,27 @@ class ANSIColors(NoColors):
     RESET = "\x1B[0m"
     FORMAT = "\x1B[%s%sm"
 
+class Completer(object):
+    """Readline autocompler"""
+    DELIMS = ' \t\n`~!@#$%^&*()-=+[{]}\\|;:\'",<>?'
+
+    def __init__(self):
+        opts = []
+        for cmd in mailpile.commands.COMMANDS:
+            s = cmd.SYNOPSIS
+            # ignore shortcut aliases
+            if s[1]:
+               opts.append(s[1])
+        self.options = sorted(opts)
+        return
+
+    def autocomplete(self, text, state):
+        available_opts = [o for o in self.options if o and o.startswith(text)]
+        try:
+            response = available_opts[state]
+        except IndexError:
+            response = None
+        return response
 
 class UserInteraction:
     """Log the progress and performance of individual operations"""

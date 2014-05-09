@@ -1240,6 +1240,18 @@ class Output(Command):
                              result={'output': m})
 
 
+class Quit(Command):
+  """Exit Mailpile """
+  SYNOPSIS = ("q", "quit", "quit", None)
+  ABOUT = ("Quit mailpile")
+  ORDER = ("Internals", 2)
+  RAISES = (KeyboardInterrupt)
+
+  def command(self):
+    config = self.session.config
+    mailpile.util.QUITTING = True
+    raise KeyboardInterrupt
+
 class Help(Command):
     """Print help on Mailpile or individual commands."""
     SYNOPSIS = ('h', 'help', 'help', '[<command-group>]')
@@ -1460,6 +1472,6 @@ def Action(session, opt, arg, data=None):
 COMMANDS = [
     Optimize, Rescan, RunWWW, WritePID, RenderPage,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    Output, Help, HelpVars, HelpSplash
+    Output, Help, HelpVars, HelpSplash, Quit
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
