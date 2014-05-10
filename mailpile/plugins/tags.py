@@ -404,10 +404,16 @@ class ListTags(TagCommand):
         for tag in self.session.config.get_tags(flag_hides=True):
             excluded_messages |= idx.TAGS.get(tag._key, set())
 
+        mode = search.get('mode', 'default')
+        if 'mode' in search:
+            del search['mode']
+
         for tag in self.session.config.get_tags(**search):
             if wanted and tag.slug.lower() not in wanted:
                 continue
             if unwanted and tag.slug.lower() in unwanted:
+                continue
+            if mode == 'tree' and tag.parent and not wanted:
                 continue
 
             # Hide invisible tags by default, any search terms at all will
@@ -425,12 +431,27 @@ class ListTags(TagCommand):
                                   unread=unread_messages,
                                   exclude=excluded_messages)
 
+            # List subtags...
             subtags = self.session.config.get_tags(parent=tid)
-            if subtags and '_recursing' not in self.data:
-                info['subtags'] = ListTags(self.session,
-                                           arg=[t.slug for t in subtags],
-                                           data={'_recursing': 1}
-                                           ).run().result['tags']
+            subtags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
+            info['subtag_ids'] = [t._key for t in subtags]
+
+            # This expands out the full tree
+            recursion = self.data.get('_recursion', 0) + 1
+            if subtags and recursion < 5:
+                if mode in ('both', 'tree') or (wanted and mode != 'flat'):
+                    info['subtags'] = ListTags(self.session,
+                                               arg=[t.slug for t in subtags],
+                                               data={'_recursion': recursion}
+                                               ).run().result['tags']
+                    stats = info['stats']
+                    sstats = {}
+                    for k in ('all', 'new'):
+                        sstats['sum_%s' % k] = stats[k]
+                    for sinfo in info['subtags']:
+                        for k in ('all', 'new'):
+                            sstats['sum_%s' % k] += sinfo['stats'][k]
+                    stats.update(sstats)
 
             result.append(info)
         return self._success(_('Listed %d tags') % len(result), {
