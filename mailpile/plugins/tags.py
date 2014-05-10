@@ -379,9 +379,11 @@ class ListTags(TagCommand):
             wrap = int(78 / 23)  # FIXME: Magic number
             text = []
             for i in range(0, len(tags)):
+                stats = tags[i]['stats']
                 text.append(('%s%5.5s %-18.18s'
                              ) % ((i % wrap) == 0 and '  ' or '',
-                                  '%s' % (tags[i]['stats']['new'] or ''),
+                                  '%s' % (stats.get('sum_new', stats['new'])
+                                          or ''),
                                   tags[i]['name'])
                             + ((i % wrap) == (wrap - 1) and '\n' or ''))
             return ''.join(text) + '\n'
@@ -432,11 +434,15 @@ class ListTags(TagCommand):
                     and tag.display == 'invisible'):
                 continue
 
+            recursion = self.data.get('_recursion', 0)
             tid = tag._key
 
             # List subtags...
-            subtags = self.session.config.get_tags(parent=tid)
-            subtags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
+            if recursion == 0:
+                subtags = self.session.config.get_tags(parent=tid)
+                subtags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
+            else:
+                subtags = None
 
             # Get tag info (how depends on whether this is a hiding tag)
             if tag.flag_hides:
@@ -450,12 +456,11 @@ class ListTags(TagCommand):
                                   subtags=subtags)
 
             # This expands out the full tree
-            recursion = self.data.get('_recursion', 0) + 1
-            if subtags and recursion < 5:
+            if subtags and recursion == 0:
                 if mode in ('both', 'tree') or (wanted and mode != 'flat'):
                     info['subtags'] = ListTags(self.session,
                                                arg=[t.slug for t in subtags],
-                                               data={'_recursion': recursion}
+                                               data={'_recursion': 1}
                                                ).run().result['tags']
 
             result.append(info)
