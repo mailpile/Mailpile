@@ -36,7 +36,7 @@ class Command:
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
     SERIALIZE = False
-    SPLIT_ARG = 10000  # A big number!
+    SPLIT_ARG = True  # Uses shlex by default
     RAISES = (UsageError, UrlRedirectException)
 
     # Event logging settings
@@ -165,8 +165,6 @@ class Command:
         elif arg:
             if self.SPLIT_ARG is True:
                 self.args = tuple(shlex.split(arg))
-            elif self.SPLIT_ARG:
-                self.args = tuple(arg.split(' ', self.SPLIT_ARG))
             else:
                 self.args = (arg, )
         else:

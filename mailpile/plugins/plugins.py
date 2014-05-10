@@ -32,7 +32,6 @@ class Plugins(mailpile.commands.Command):
 class LoadPlugin(mailpile.commands.Command):
     """Load and enable a given plugin."""
     SYNOPSIS = (None, 'plugins/load', 'plugins/load', '<plugin>')
-    SPLIT_ARGS = False
     ORDER = ('Config', 9)
 
     def command(self):
