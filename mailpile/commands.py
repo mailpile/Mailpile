@@ -164,7 +164,7 @@ class Command:
             self.args = tuple(arg)
         elif arg:
             if self.SPLIT_ARG is True:
-                self.args = shlex.split(arg)[:self.SPLIT_ARG]
+                self.args = tuple(shlex.split(arg))
             elif self.SPLIT_ARG:
                 self.args = tuple(arg.split(' ', self.SPLIT_ARG))
             else:
