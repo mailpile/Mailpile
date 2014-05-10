@@ -105,17 +105,83 @@ MailPile.prototype.render_modal_tags = function() {
   }
 };
 
-/* Show Tag Add Form */
-$(document).on('click', '.btn-activity-tag_add', function(e) {
-  e.preventDefault();
-  $('#tags-list').hide();
-  $('#tags-archived-list').hide();
-  $('#tag-add').show();
 
-  $('.sub-navigation ul li').removeClass('navigation-on');
-  $(this).addClass('navigation-on');
+$(document).on('click', '#button-tag-change-icon', function() {
+
+  var icons = [
+    "icon-comment",
+    "icon-forum",
+    "icon-donate",
+    "icon-news",
+    "icon-photos",
+    "icon-image",
+    "icon-video",
+    "icon-themes",
+    "icon-links",
+    "icon-document",
+    "icon-text",
+    "icon-travel",
+    "icon-money",
+    "icon-receipts",
+    "icon-trophy",
+    "icon-calendar",
+    "icon-spreadsheet",
+    "icon-attachment",
+    "icon-user",
+    "icon-groups",
+    "icon-graph",
+    "icon-list",
+    "icon-checkmark",
+    "icon-alerts",
+    "icon-zip",
+    "icon-work",
+    "icon-star",
+    "icon-rss",
+    "icon-robot",
+    "icon-code",
+    "icon-privacy",
+    "icon-music",
+    "icon-lock-closed",
+    "icon-key",
+    "icon-trash",
+    "icon-home",
+    "icon-new"
+  ];
+
+  var icons_html = '';
+
+  $.each(icons, function(key, icon) {
+    icons_html += '<li class="modal-tag-icon-option ' + icon + '" data-icon="' + icon + '"></li>';
+  });
+
+  var modal_html = $("#modal-tag-icon-picker").html();
+  $('#modal-full').html(_.template(modal_html, { icons: icons_html }));
+  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+});
+
+
+$(document).on('click', '.modal-tag-icon-option', function() {
+
+  var tid  = $('#data-tag-tid').val();
+  var old  = $('#data-tag-icon').val();
+  var icon = $(this).data('icon');
+
+  mailpile.tag_update(tid, 'icon', icon, function() {
+
+    // Update Sidebar
+    $('.sidebar-icon').removeClass(old).addClass(icon);
+
+    // Update Tag Editor
+    $('#data-tag-icon').val(icon);
+    $('#tag-editor-icon').removeClass().addClass(icon);
+    $('#modal-full').modal('hide');
+  });
+});
+
+
+$(document).on('click', '#button-tag-change-label-color', function(e) {
   
-  $('#data-tag-add-slug').slugify('#data-tag-add-tag');
+  
 });
 
 

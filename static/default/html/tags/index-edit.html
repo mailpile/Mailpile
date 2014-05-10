@@ -3,7 +3,7 @@
   {% include("partials/errors_content.html") %}
 {% endif %}
 {% extends "layouts/" + render_mode + ".html" %}
-{% block title %}{{_("Edit Tag: ") + result.tags.0.name }}{% endblock %}
+{% block title %}{{_("Edit: ") + result.tags.0.name }}{% endblock %}
 {% block content %}
   {% set form_title = _("Edit Tag") %}
   {% set tag = result.tags.0 %}
