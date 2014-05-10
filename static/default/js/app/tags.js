@@ -162,11 +162,10 @@ $(document).on('click', '#button-tag-change-icon', function() {
 
 $(document).on('click', '.modal-tag-icon-option', function() {
 
-  var tid  = $('#data-tag-tid').val();
   var old  = $('#data-tag-icon').val();
   var icon = $(this).data('icon');
 
-  mailpile.tag_update(tid, 'icon', icon, function() {
+  mailpile.tag_update($('#data-tag-tid').val(), 'icon', icon, function() {
 
     // Update Sidebar
     $('.sidebar-icon').removeClass(old).addClass(icon);
@@ -180,8 +179,49 @@ $(document).on('click', '.modal-tag-icon-option', function() {
 
 
 $(document).on('click', '#button-tag-change-label-color', function(e) {
-  
-  
+
+  var colors = [
+    "#F6F6F6",
+    "#CCCCCC",
+    "#B3B3B3",
+    "#4D4D4D",
+    "#333333",
+    "#337FB2",
+  	"#4B9441",
+	  "#E9DB2F",
+	  "#FBB03B",
+  	"#F15A24",
+	  "#BE1C21",
+  	"#826f69"
+  ];
+
+  var colors_html = '';
+
+  $.each(colors, function(key, color) {
+    colors_html += '<li><a href="#" class="modal-tag-color-option" style="background-color: ' + color + '" data-color="' + color + '"></a></li>';
+  });
+
+  var modal_html = $("#modal-tag-color-picker").html();
+  $('#modal-full').html(_.template(modal_html, { colors: colors_html }));
+  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+});
+
+
+$(document).on('click', '.modal-tag-color-option', function(e) {
+
+  var old  = $('#data-tag-label-color').val();
+  var color = $(this).data('color');
+
+  mailpile.tag_update($('#data-tag-tid').val(), 'label_color', color, function() {
+
+    // Update Sidebar
+    //$('.sidebar-icon').removeClass(old).addClass(color);
+
+    // Update Tag Editor
+    $('#data-tag-label-color').val(color);
+    $('#tag-editor-label-color').css('background-color', color);
+    $('#modal-full').modal('hide');
+  });
 });
 
 
