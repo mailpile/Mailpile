@@ -39,7 +39,8 @@ class Search(Command):
             if isinstance(self.result, dict):
                 self.message = self.result.get('summary', '')
             elif isinstance(self.result, list):
-                self.message = ', '.join([r.get('summary', '') for r in self.result])
+                self.message = ', '.join([r.get('summary', '')
+                                          for r in self.result])
 
         def _fixup(self):
             if self.fixed_up:
@@ -136,7 +137,7 @@ class Search(Command):
         return self._success(_('Found %d results in %.3fs'
                                ) % (len(session.results),
                                     session.ui.report_marks(quiet=True)),
-                             session.displayed)
+                             result=session.displayed)
 
 
 class Next(Search):
@@ -150,9 +151,11 @@ class Next(Search):
         try:
             session.displayed = session.displayed.next_set()
         except AttributeError:
-            session.ui.error(_("You must perform a search before requesting the next page."))
+            session.ui.error(_("You must perform a search before "
+                               "requesting the next page."))
             return False
-        return session.displayed
+        return self._success(_('Displayed next page of results.'),
+                             result=session.displayed)
 
 
 class Previous(Search):
@@ -166,9 +169,11 @@ class Previous(Search):
         try:
             session.displayed = session.displayed.previous_set()
         except AttributeError:
-            session.ui.error(_("You must perform a search before requesting the previous page."))
+            session.ui.error(_("You must perform a search before "
+                               "requesting the previous page."))
             return False
-        return session.displayed
+        return self._success(_('Displayed previous page of results.'),
+                             result=session.displayed)
 
 
 class Order(Search):
@@ -182,7 +187,8 @@ class Order(Search):
         session.order = self.args and self.args[0] or None
         idx.sort_results(session, session.results, session.order)
         session.displayed = SearchResults(session, idx)
-        return session.displayed
+        return self._success(_('Changed sort order to %s') % session.order,
+                             result=session.displayed)
 
 
 class View(Search):
@@ -253,8 +259,8 @@ class View(Search):
                     if email.msg_idx_pos in result.results:
                         old_result = result
                 if old_result:
-                   old_result.add_email(email)
-                   continue
+                    old_result.add_email(email)
+                    continue
 
                 conv = [int(c[0], 36) for c
                         in idx.get_conversation(msg_idx=email.msg_idx_pos)]
