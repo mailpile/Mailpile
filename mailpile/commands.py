@@ -7,6 +7,7 @@ import json
 import os
 import os.path
 import re
+import shlex
 import traceback
 import time
 from gettext import gettext as _
@@ -35,7 +36,7 @@ class Command:
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
     SERIALIZE = False
-    SPLIT_ARG = 10000  # A big number!
+    SPLIT_ARG = True  # Uses shlex by default
     RAISES = (UsageError, UrlRedirectException)
 
     # Event logging settings
@@ -162,8 +163,8 @@ class Command:
         if type(arg) in (type(list()), type(tuple())):
             self.args = tuple(arg)
         elif arg:
-            if self.SPLIT_ARG:
-                self.args = tuple(arg.split(' ', self.SPLIT_ARG))
+            if self.SPLIT_ARG is True:
+                self.args = tuple(shlex.split(arg))
             else:
                 self.args = (arg, )
         else:
