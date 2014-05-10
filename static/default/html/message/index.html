@@ -65,7 +65,7 @@
   {% endif %}{# End if mid #}
 {% endfor %}{# End for loop #}
 
-{% if showed_composer or showed_from_me %}{# If Composer has not showed up anywhere, show at bottom #}
+{% if not showed_composer or showed_from_me %}{# If Composer has not showed up anywhere, show at bottom #}
   {% set last_mid = result.thread_ids.0 %}
   {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+last_mid).result %}{# Gets Ephermal message #}
   {% if compose %}
