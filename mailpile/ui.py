@@ -84,7 +84,7 @@ class Completer(object):
 
     def _autocomplete(self, text, state):
         try:
-            return self._available_opts(text)[state]
+            return self._available_opts(text)[state] + ' '
         except IndexError:
             return None
 
