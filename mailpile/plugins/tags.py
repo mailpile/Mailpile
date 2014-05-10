@@ -151,7 +151,7 @@ def GetTagID(cfg, tn):
     return tags and (len(tags) == 1) and tags[0]._key or None
 
 
-def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None):
+def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None, subtags=None):
     tag = GetTag(cfg, tn)
     tid = tag._key
     info = {
@@ -161,6 +161,8 @@ def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None):
     for k in tag.all_keys():
 #       if k not in INFO_HIDES_TAG_METADATA:
             info[k] = tag[k]
+    if subtags:
+        info['subtag_ids'] = [t._key for t in subtags]
     exclude = exclude or set()
     if stats and (unread is not None):
         messages = (cfg.index.TAGS.get(tid, set()) - exclude)
@@ -170,6 +172,14 @@ def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None):
             'new': len(messages & unread),
             'not': len(cfg.index.INDEX) - stats_all
         }
+        if subtags:
+            for subtag in subtags:
+                messages |= cfg.index.TAGS.get(subtag._key, set())
+            info['stats'].update({
+                'sum_all': len(messages),
+                'sum_new': len(messages & unread),
+            })
+
     return info
 
 
@@ -423,18 +433,21 @@ class ListTags(TagCommand):
                 continue
 
             tid = tag._key
-            if tag.flag_hides:
-                info = GetTagInfo(self.session.config, tid, stats=True,
-                                  unread=unread_messages)
-            else:
-                info = GetTagInfo(self.session.config, tid, stats=True,
-                                  unread=unread_messages,
-                                  exclude=excluded_messages)
 
             # List subtags...
             subtags = self.session.config.get_tags(parent=tid)
             subtags.sort(key=lambda k: (k.get('display_order', 0), k.slug))
-            info['subtag_ids'] = [t._key for t in subtags]
+
+            # Get tag info (how depends on whether this is a hiding tag)
+            if tag.flag_hides:
+                info = GetTagInfo(self.session.config, tid, stats=True,
+                                  unread=unread_messages,
+                                  subtags=subtags)
+            else:
+                info = GetTagInfo(self.session.config, tid, stats=True,
+                                  unread=unread_messages,
+                                  exclude=excluded_messages,
+                                  subtags=subtags)
 
             # This expands out the full tree
             recursion = self.data.get('_recursion', 0) + 1
@@ -444,14 +457,6 @@ class ListTags(TagCommand):
                                                arg=[t.slug for t in subtags],
                                                data={'_recursion': recursion}
                                                ).run().result['tags']
-                    stats = info['stats']
-                    sstats = {}
-                    for k in ('all', 'new'):
-                        sstats['sum_%s' % k] = stats[k]
-                    for sinfo in info['subtags']:
-                        for k in ('all', 'new'):
-                            sstats['sum_%s' % k] += sinfo['stats'][k]
-                    stats.update(sstats)
 
             result.append(info)
         return self._success(_('Listed %d tags') % len(result), {
