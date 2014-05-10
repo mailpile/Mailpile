@@ -1129,7 +1129,7 @@ class MailIndex:
         results = []
         if tag:
             tag_id = tag._key
-            for subtag in session.config.get_tags(parent=tag_id):
+            for subtag in self.config.get_tags(parent=tag_id):
                 results.extend(hits('%s:in' % subtag._key))
             if tag.magic_terms and recursion < 5:
                 results.extend(self.search(session, [tag.magic_terms],
