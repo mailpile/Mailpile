@@ -487,7 +487,7 @@ class MailIndex:
 
             i = unparsed[ui]
 
-            parse_status = _n('%s: Reading your mail: %d%% (%d/%d messages)',
+            parse_status = _n('%s: Reading your mail: %d%% (%d/%d message)',
                               '%s: Reading your mail: %d%% (%d/%d messages)',
                               len(unparsed)
                              ) % (mailbox_idx,
@@ -1401,7 +1401,7 @@ class MailIndex:
                                len(results)
                               ) % (len(results), ))
         else:
-            session.ui.mark(_n('Sorted %d messages by %s',
+            session.ui.mark(_n('Sorted %d message by %s',
                                'Sorted %d messages by %s',
                                count
                               ) % (count, _(how)))
