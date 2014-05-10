@@ -85,7 +85,9 @@
       {% endif %}
       {% autoescape false %}
       {% if part.type in ("text", "pgpsignedtext", "pgptext") %}
-      <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+        <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+      {% elif part.type in ("pgpbegin", "pgpend") %}
+        <div class="thread-item-{{part.type}} hide">{{part.data}}</div>
       {% elif part.type == "quote" %}
         {%- if message.text_parts|length - loop.index and message.text_parts[last_part].type == "signature" -%}
           {% do special_text_parts.append("quote") %}
