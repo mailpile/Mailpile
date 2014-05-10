@@ -68,27 +68,29 @@ class ANSIColors(NoColors):
     RESET = "\x1B[0m"
     FORMAT = "\x1B[%s%sm"
 
+
 class Completer(object):
     """Readline autocompler"""
     DELIMS = ' \t\n`~!@#$%^&*()-=+[{]}\\|;:\'",<>?'
 
-    def __init__(self):
-        opts = []
-        for cmd in mailpile.commands.COMMANDS:
-            s = cmd.SYNOPSIS
-            # ignore shortcut aliases
-            if s[1]:
-               opts.append(s[1])
-        self.options = sorted(opts)
-        return
+    def __init__(self, session):
+        self.session = session
 
-    def autocomplete(self, text, state):
-        available_opts = [o for o in self.options if o and o.startswith(text)]
+    def _available_opts(self, text):
+        opts = ([s.SYNOPSIS[1] for s in mailpile.commands.COMMANDS] +
+                [s.SYNOPSIS[2] for s in mailpile.commands.COMMANDS] +
+                [t.name.lower() for t in self.session.config.tags.values()])
+        return sorted([o for o in opts if o and o.startswith(text)])
+
+    def _autocomplete(self, text, state):
         try:
-            response = available_opts[state]
+            return self._available_opts(text)[state]
         except IndexError:
-            response = None
-        return response
+            return None
+
+    def get_completer(self):
+        return lambda t, s: self._autocomplete(t, s)
+
 
 class UserInteraction:
     """Log the progress and performance of individual operations"""
@@ -356,7 +358,8 @@ class UserInteraction:
             return emsg % tuple([escape_html(unicode(v))
                                  for v in (e.name, e.message,
                                            '%.4096s' % alldata)])
-        except (TemplateError, TemplateSyntaxError, TemplateAssertionError, ), e:
+        except (TemplateError, TemplateSyntaxError,
+                TemplateAssertionError,), e:
             emsg = _("<h1>Template error in %s</h1>\n"
                      "Parsing template %s: <b>%s</b> on line %s<br/>"
                      "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
@@ -498,7 +501,8 @@ class RawHttpResponder:
         if disposition and filename:
             encfilename = urllib.quote(filename.encode("utf-8"))
             headers.append(('Content-Disposition',
-                            '%s; filename*=UTF-8\'\'%s' % (disposition, encfilename)))
+                            '%s; filename*=UTF-8\'\'%s' % (disposition,
+                                                           encfilename)))
         elif disposition:
             headers.append(('Content-Disposition', disposition))
         request.send_standard_headers(header_list=headers,

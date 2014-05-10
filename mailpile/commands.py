@@ -1241,16 +1241,17 @@ class Output(Command):
 
 
 class Quit(Command):
-  """Exit Mailpile """
-  SYNOPSIS = ("q", "quit", "quit", None)
-  ABOUT = ("Quit mailpile")
-  ORDER = ("Internals", 2)
-  RAISES = (KeyboardInterrupt)
+    """Exit Mailpile """
+    SYNOPSIS = ("q", "quit", None, None)
+    ABOUT = ("Quit mailpile")
+    ORDER = ("Internals", 2)
+    RAISES = (KeyboardInterrupt,)
 
-  def command(self):
-    config = self.session.config
-    mailpile.util.QUITTING = True
-    raise KeyboardInterrupt
+    def command(self):
+        config = self.session.config
+        mailpile.util.QUITTING = True
+        raise KeyboardInterrupt()
+
 
 class Help(Command):
     """Print help on Mailpile or individual commands."""

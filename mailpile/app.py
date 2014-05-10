@@ -9,7 +9,7 @@ import mailpile.util
 import mailpile.defaults
 from mailpile.commands import COMMANDS, Action, Help, HelpSplash, Load, Rescan
 from mailpile.config import ConfigManager, getLocaleDirectory
-from mailpile.ui import ANSIColors, Session, UserInteraction
+from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
 
 # This makes sure mailbox "plugins" get loaded... has to go somewhere?
@@ -18,20 +18,26 @@ from mailpile.mailboxes import *
 # This is also a bit silly, should be somewhere else?
 Help.ABOUT = mailpile.defaults.ABOUT
 
+# We may try to load readline later on... maybe?
+readline = None
+
 
 ##[ Main ]####################################################################
-try:
-    import readline # Unix-only
-    from mailpile.ui import Completer
-except ImportError:
-    readline = None
+
 
 def Interact(session):
+    global readline
     try:
-        if readline :
+        import readline as rl  # Unix-only
+        readline = rl
+    except ImportError:
+        pass
+
+    try:
+        if readline:
             readline.read_history_file(session.config.history_file())
             readline.set_completer_delims(Completer.DELIMS)
-            readline.set_completer(Completer().autocomplete)
+            readline.set_completer(Completer(session).get_completer())
             for opt in ["tab: complete", "set show-all-if-ambiguous on"]:
                 readline.parse_and_bind(opt)
     except IOError:
@@ -39,8 +45,8 @@ def Interact(session):
 
     # Negative history means no saving state to disk.
     history_length = session.config.sys.history_length
-    if readline is None :
-        pass # history currently not supported under Windows / Mac
+    if readline is None:
+        pass  # history currently not supported under Windows / Mac
     elif history_length >= 0:
         readline.set_history_length(history_length)
     else:
