@@ -252,8 +252,8 @@ class MailIndex:
         if session:
             session.ui.mark(_n('Loaded metadata, %d message',
                                'Loaded metadata, %d messages',
-                                len(self.INDEX)
-                              ) % len(self.INDEX))
+                               len(self.INDEX)
+                               ) % len(self.INDEX))
         self.EMAILS_SAVED = len(self.EMAILS)
 
     def update_msg_tags(self, msg_idx_pos, msg_info):
@@ -490,9 +490,9 @@ class MailIndex:
             parse_status = _n('%s: Reading your mail: %d%% (%d/%d message)',
                               '%s: Reading your mail: %d%% (%d/%d messages)',
                               len(unparsed)
-                             ) % (mailbox_idx,
-                                  100 * ui / len(unparsed),
-                                  ui, len(unparsed))
+                              ) % (mailbox_idx,
+                                   100 * ui / len(unparsed),
+                                   ui, len(unparsed))
 
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
             if msg_ptr in self.PTRS:
@@ -1077,7 +1077,7 @@ class MailIndex:
         session.ui.mark(_n('Tagging %d message (%s)',
                            'Tagging %d messages (%s)',
                            len(msg_idxs)
-                          ) % (len(msg_idxs), tag_id))
+                           ) % (len(msg_idxs), tag_id))
         for msg_idx in list(msg_idxs):
             if conversation:
                 for reply in self.get_conversation(msg_idx=msg_idx):
@@ -1111,7 +1111,7 @@ class MailIndex:
         session.ui.mark(_n('Untagging conversation (%s)',
                            'Untagging conversations (%s)',
                            len(msg_idxs)
-                          ) % (tag_id, ))
+                           ) % (tag_id, ))
         for msg_idx in list(msg_idxs):
             if conversation:
                 for reply in self.get_conversation(msg_idx=msg_idx):
@@ -1120,7 +1120,7 @@ class MailIndex:
         session.ui.mark(_n('Untagging %d message (%s)',
                            'Untagging %d messages (%s)',
                            len(msg_idxs)
-                          ) % (len(msg_idxs), tag_id))
+                           ) % (len(msg_idxs), tag_id))
         eids = set()
         for msg_idx in msg_idxs:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
@@ -1269,7 +1269,7 @@ class MailIndex:
                             _n('%d suppressed',
                                '%d suppressed',
                                len(srs.excluded())
-                              ) % (len(srs.excluded()), ))
+                               ) % (len(srs.excluded()), ))
         return srs
 
     def _order_freshness(self, pos):
@@ -1304,7 +1304,7 @@ class MailIndex:
                 session.ui.mark(_n('Finding conversations (%d message)...',
                                    'Finding conversations (%d messages)...',
                                    len(keys)
-                                  ) % len(keys))
+                                   ) % len(keys))
             self.INDEX_THR = [
                 int(self.get_msg_at_idx_pos(r)[self.MSG_THREAD_MID], 36)
                 for r in keys]
@@ -1315,7 +1315,7 @@ class MailIndex:
                     session.ui.mark(_n('Sorting %d message by %s...',
                                        'Sorting %d messages by %s...',
                                        len(keys)
-                                      ) % (len(keys), _(order)))
+                                       ) % (len(keys), _(order)))
 
                 play_nice_with_threads()
                 o = keys[:]
@@ -1337,7 +1337,7 @@ class MailIndex:
         session.ui.mark(_n('Sorting %d message by %s...',
                            'Sorting %d messages by %s...',
                            count
-                          ) % (count, _(how)))
+                           ) % (count, _(how)))
         try:
             if how.endswith('unsorted'):
                 pass
@@ -1395,15 +1395,15 @@ class MailIndex:
             session.ui.mark(_n('Sorted %d message by %s',
                                'Sorted %d messages by %s',
                                count
-                              ) % (count, how) +\
+                               ) % (count, how) +\
                             _n('%d conversation',
                                '%d conversations',
                                len(results)
-                              ) % (len(results), ))
+                               ) % (len(results), ))
         else:
             session.ui.mark(_n('Sorted %d message by %s',
                                'Sorted %d messages by %s',
                                count
-                              ) % (count, _(how)))
+                               ) % (count, _(how)))
 
         return True

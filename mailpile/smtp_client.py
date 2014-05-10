@@ -213,4 +213,4 @@ def SendMail(session, from_to_msg_ev_tuples):
         mark(_n('Message sent, %d byte',
                 'Message sent, %d bytes',
                 total
-               ) % total, events)
+                ) % total, events)
