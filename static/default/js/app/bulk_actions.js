@@ -74,11 +74,21 @@ $(document).on('click', '.bulk-action-trash', function() {
 });
 
 
-/* Bulk Action - Add to Group */
-$(document).on('click', '.bulk-action-add-to-group', function() {
-  var modal_html = $("#modal-group-editor").html();
-  $('#modal-full').html(_.template(modal_html, {}));
-  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+/* Bulk Action - Spam */
+$(document).on('click', '.bulk-action-spam', function() {
+  mailpile.tag_add_delete('spam', '', mailpile.messages_cache, function() {
+
+    // Update Pile View
+    $.each(mailpile.messages_cache, function(key, mid) {
+      $('#pile-message-' + mid).fadeOut('fast');
+    });
+
+    // Empty Bulk Cache
+    mailpile.messages_cache = [];
+
+    // Update Bulk UI
+    mailpile.bulk_actions_update_ui();
+  });
 });
 
 
