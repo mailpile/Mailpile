@@ -186,13 +186,18 @@ $(document).on('click', '#button-tag-change-label-color', function(e) {
     "#B3B3B3",
     "#4D4D4D",
     "#333333",
+    "#85B2E8",
     "#337FB2",
+    "#A3CE73",
   	"#4B9441",
 	  "#E9DB2F",
 	  "#FBB03B",
   	"#F15A24",
 	  "#BE1C21",
-  	"#826f69"
+  	"#7D4837",
+  	"#90746C",
+  	"#F08DCA",
+    "#6A27A4"
   ];
 
   var colors_html = '';
@@ -267,7 +272,7 @@ $(document).on('click', '#button-tag-delete', function(e) {
       data: {tag: $('#data-tag-add-slug').val() },
       dataType : 'json',
       success: function(response) {
-        mailpile.notification(response.status, response.message, 'redirect', '/tag/list/');
+        mailpile.notification(response.status, response.message, 'redirect', mailpile.urls.tags);
       }
     });
   }
