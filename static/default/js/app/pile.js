@@ -207,6 +207,7 @@ $('td.draggable').draggable({
   },
   start: function(event, ui) {
 
+    // Add Draggable MID
     mailpile.bulk_cache_add('messages_cache', $(event.target).parent().data('mid'));
 
     // Update Bulk UI
@@ -232,17 +233,11 @@ $('li.sidebar-tags-draggable').droppable({
   tolerance: 'pointer',
   drop: function(event, ui) {
 
-    var delete_tag = '';
-
-    if ($.url(location.href).segment(1) === 'in') {
-     delete_tag = $.url(location.href).segment(2);
-    }
-
     // Add MID to Cache
     mailpile.bulk_cache_add('messages_cache', ui.draggable.parent().data('mid'));
 
     // Add / Delete
-    mailpile.tag_add_delete($(this).find('a').data('tag_slug'), delete_tag, mailpile.messages_cache, function() {
+    mailpile.tag_add_delete($(this).find('a').data('tid'), mailpile.instance.search_tag_ids, mailpile.messages_cache, function() {
 
       // Update Pile View
       $.each(mailpile.messages_cache, function(key, mid) {

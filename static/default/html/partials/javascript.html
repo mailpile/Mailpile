@@ -3,7 +3,7 @@
 mailpile.instance = {
  "command": "{{ command }}",
  "args": "{{ args }}",
- "search_terms": "{% for term in result.search_terms %}{{term}}{% if not loop.last %} {% endif %}{%endfor%}"
+ "search_tag_ids": {{result.search_tag_ids|safe }}
 }
 // Set View Size
 $('#pile-results').hide();
