@@ -35,9 +35,15 @@
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
         {% if tag.icon %}
-        <span class="{{tag.icon}}" style="color: {{tag.label_color}};" data-tag_name="{{tag.name}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"></span>
+        <span class="pile-message-tag" style="color: {{tag.label_color}}" data-tid="{{tag.tid}}" data-name="{{tag.name}}" data-url="{{tag.url}}">
+          <span class="pile-message-tag-icon {{tag.icon}}"></span>
+          <span class="pile-message-tag-name">{{tag.name}}</span>
+        </span>
         {% else %}
-        <span class="pile-message-tag" data-tag_name="{{tag.name}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"> {{tag.name}}</span>
+        <span class="pile-message-tag" data-tid="{{tag.tid}}" data-name="{{tag.name}}" data-url="{{tag.url}}">
+          <span class="pile-message-tag-icon icon-tag"></span>
+          <span class="pile-message-tag-name">{{tag.name}}</span>
+        </span>
         {% endif %}
       {% endif %}
     {% endfor %}

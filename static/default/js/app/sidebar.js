@@ -16,6 +16,7 @@ $(document).on('click', '.is-editing', function(e) {
   e.preventDefault();
 });
 
+
 $(document).on('click', '.button-sidebar-edit', function() {
 
   var new_message = $(this).data('message');
@@ -59,12 +60,12 @@ $(document).on('click', '.button-sidebar-edit', function() {
 
 
 $(document).on('click', '.sidebar-tag-archive', function(e) {
-  
+
   e.preventDefault();
   alert('This will mark this tag as "archived" and remove it from your sidebar, you can go edit this in the Tags -> Tag Name -> Settings page at anytime');
-  
+
   $(this).parent().parent().fadeOut();
-  
+
 });
 
 
@@ -112,26 +113,34 @@ $(document).ready(function() {
     containment: "#container",
     appendTo: 'body',
     cursor: 'move',
+    distance: 15,
     scroll: false,
     revert: false,
     opacity: 1,
     helper: function(event) {
+      var count = '';
+      if (mailpile.messages_cache.length > 0) {
+        count = ' to (' + mailpile.messages_cache.length + ')';
+      }
+    
       var icon = $(this).find('span.sidebar-icon').attr('class').replace('sidebar-icon ', '');
       var tag = $(this).find('.sidebar-name span').html();
-      return $('<div class="sidebar-tag-drag ui-widget-header"><span class="' + icon + '"></span> ' + tag + '</div>');
+      return $('<div class="sidebar-tag-drag ui-widget-header"><span class="' + icon + '"></span> ' + tag + count + '</div>');
     }
   });
+
 
   $('#pile-results tr').droppable({
     accept: 'a.sidebar-tag',
     hoverClass: 'result-hover',
     tolerance: 'pointer',
     drop: function(event, ui) {
-      mailpile.tag_add_delete(ui.draggable.data('tag_slug'), '', $(event.target).data('mid'), function() {
+      mailpile.tag_add_delete(ui.draggable.data('tid'), '', $(event.target).data('mid'), function() {
         // FIXME: needs to show tag icon (if not exist) and more data attributes on inserted tag
-        $(event.target).find('td.subject span.item-tags').append('<span class="pile-message-tag">' + ui.draggable.data('tag_name') + '</span>');  
+        $(event.target).find('td.subject span.item-tags').append('<span class="pile-message-tag"><span class="pile-message-tag-icon ' + ui.draggable.data('icon') + '"></span> <span class="pile-message-tag-name">' + ui.draggable.data('name') + '</span></span>');  
       });      
     }
   });
+
 
 });
