@@ -19,11 +19,11 @@
           <span class="sidebar-name"><span>{{tag.name}}</span></span>
           {% if tag.slug == "outbox" or tag.slug == "drafts" %}
             {% if tag.stats.all > 0 %}
-            <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.all) }}</span>
+            <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.all) }}</span>
             {% endif %}
           {% else %}
             {% if tag.stats.new > 0 %}
-            <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
+            <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.new) }}</span>
             {% endif %}
           {% endif %}
         </a>
@@ -35,11 +35,11 @@
       {% for tag in mailpile("tags", "mode=tree", "display=tag").result.tags %}
       {% if tag.subtags %}
       <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
-          <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.sum_all}}" data-tid="{{tag.tid}}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-icon="{{tag.icon}}" data-tag_stat_sum_new="{{tag.stats.sum_new}}" data-tag_stat_sum_all="{{tag.stats.sum_all}} data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
+          <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.sum_all}}" data-tid="{{tag.tid}}" data-tag_name="{{tag.name}}" data-tag_slug="{{tag.slug}}" data-icon="{{tag.icon}}" data-tag_stat_sum_new="{{tag.stats.sum_new}}" data-tag_stat_sum_all="{{tag.stats.sum_all}}" data-tag_stat_new="{{tag.stats.new}}" data-tag_stat_all="{{tag.stats.all}}">
             <span class="sidebar-icon icon-tags"></span>
             <span class="sidebar-name"><span>{{tag.name}}</span></span>
             {% if tag.stats.sum_new > 0 %}
-            <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.sum_new) }}</span>
+            <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.sum_new) }}</span>
             {% endif %}
           </a>
           <ul id="sidebar-subtag-{{tag.tid}}" class="sidebar-subtag">
@@ -63,7 +63,7 @@
           {% endif %}
           <span class="sidebar-name"><span>{{tag.name}}</span></span>
           {% if tag.stats.new > 0 %}
-          <span class="sidebar-notification notification-important">{{ friendly_number(tag.stats.new) }}</span>
+          <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.new) }}</span>
           {% endif %}
         </a>        
       </li>

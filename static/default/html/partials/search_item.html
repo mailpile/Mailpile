@@ -31,11 +31,14 @@
     <a class="item-subject" href="{{url}}">
     <span class="item-tags">
     {% if has_label_tags(result.data.tags, metadata.tag_tids) %}
-    <span class="icon-tag"></span>
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
+        {% if tag.icon %}
+        <span class="{{tag.icon}}" style="color: {{tag.label_color}};" data-tag_name="{{tag.name}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"></span>
+        {% else %}
         <span class="pile-message-tag" data-tag_name="{{tag.name}}" data-tag_url="{{tag.url}}" data-tag_tid="{{tag.tid}}"> {{tag.name}}</span>
+        {% endif %}
       {% endif %}
     {% endfor %}
     {% endif %}

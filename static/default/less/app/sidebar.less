@@ -19,17 +19,15 @@
   #sidebar nav { padding: 0px; padding-bottom: 15px; margin: 0px; }
 	#sidebar hr  { margin: 10px 0px;	}
 
-  #sidebar      ul { margin: 0px 10px; padding: 0px; }
-  #sidebar.cozy ul { margin: 0px 8px; }
-  #sidebar.snug ul { margin: 0px 8px; }
-  #sidebar      ul li { margin: 4px 0px; padding: 5px 10px 5px 10px; }
+  #sidebar      ul { margin: 0px 8px 0px 8px; padding: 0px; }
+  #sidebar      ul li { margin: 4px 0px; padding: 5px 8px 5px 8px; }
   #sidebar.cozy ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px; }
   #sidebar.snug ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
 
   ul.sidebar-subtag { display: none; }
 
-  a.sidebar-tag        { position: relative; display: table; width: 185px; height: 24px; vertical-align: middle; text-align: left; }
-  a.sidebar-tag:active { color: @blue; }	
+  a.sidebar-tag        { position: relative; display: table; width: 190px; height: 24px; vertical-align: middle; text-align: left; }
+  a.sidebar-tag:active { color: @blue; }
   a.sidebar-tag:hover  { color: @blue; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
 
 	li.is-editing,
@@ -43,12 +41,11 @@
   #sidebar.snug span.sidebar-icon { font-size: 16px; line-height: 16px; }
 
   #sidebar span.sidebar-name {
-    width: 130px;
+    width: 140px;
     display: table-cell;
     vertical-align: middle;
     margin-right: 15px;
     padding-left: 5px;
-    color: @grayDark;
     font-family: @mailpile-text-font-family-bold;
     font-weight: bold;
     font-size: 18px;
@@ -70,16 +67,18 @@
 
   a.sidebar-tag span.sidebar-notification {
     vertical-align: middle;
+    text-align: center;
     padding: 5px;
     font-size: 11px;
     font-size: @text-font-family-bold;
     font-weight: bold;
     line-height: 11px;
-    letter-spacing: -.5px;
+    letter-spacing: -.2px;
     color: @white;
     position: absolute;
     top: 4px;
     right: 0px;
+    border-radius: @base-border-radius;
   }
 
   .snug a.sidebar-tag span.sidebar-notification {
@@ -105,6 +104,7 @@
   }
 
   a.sidebar-tag span.sidebar-tag-archive {
+    cursor: pointer;
     background: @orange;
     color: @white;
     vertical-align: middle;
