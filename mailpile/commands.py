@@ -1015,6 +1015,39 @@ class RenderPage(Command):
         })
 
 
+class ListDir(Command):
+    """Display working directory listing"""
+    SYNOPSIS = (None, 'ls', None, "<.../new/path/...>")
+    ORDER = ('Internals', 5)
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            lines = []
+            for fn, sz, isdir in self.result:
+                lines.append('%10.10s  %s%s' % (sz, fn, isdir and '/' or ''))
+            return '\n'.join(lines)
+
+    def command(self, args=None):
+        args = list(args or self.args)
+        file_list = [(f, os.path.getsize(f), os.path.isdir(f))
+                     for f in os.listdir('.') if not f.startswith('.')
+                     and not args or [a for a in args if a in f]]
+        file_list.sort(key=lambda i: i[0].lower())
+        return self._success(_('Current directory is %s') % os.getcwd(),
+                             result=file_list)
+
+
+class ChangeDir(ListDir):
+    """Change working directory"""
+    SYNOPSIS = (None, 'cd', None, "<.../new/path/...>")
+    ORDER = ('Internals', 5)
+
+    def command(self, args=None):
+        args = list(args or self.args)
+        os.chdir(args.pop(0))
+        return ListDir.command(self, args=args)
+
+
 ##[ Configuration commands ]###################################################
 
 class ConfigSet(Command):
@@ -1472,7 +1505,7 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, WritePID, RenderPage,
+    Optimize, Rescan, RunWWW, ListDir, ChangeDir, WritePID, RenderPage,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     Output, Help, HelpVars, HelpSplash, Quit
 ]
