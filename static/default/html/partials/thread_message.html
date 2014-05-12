@@ -86,14 +86,19 @@
       {% autoescape false %}
       {% if part.type == "text" %}
         <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
-      {% elif part.type in ("pgpsignedtext", "pgptext") %}
+      {% elif part.type in ("pgpsignedtext") %}
+        <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+      {% elif part.type in ("pgptext") %}
         {% if part.crypto.encryption.status in ("missingkey", "error") %}
         {% set crypto = show_message_encryption(part.crypto.encryption.status) %}
         <div class="thread-item-crypto-error">
           <span class="icon {{ crypto.color + ' ' + crypto.icon }}"></span>
+          <h3 class="status {{ crypto.color }}">{{ crypto.text }}</h3>
           <p>{{ crypto.message }}</p>
-          <!-- FIXME: Make a "crypto.action" attribute that renders a button or something like below -->
-          <button><span class="icon-key"></span> Send Your Private Key</button>
+          <!-- FIXME: Make a "crypto.action" attribute in show_message_encryption() that renders a button or something... -->
+          <p><button><span class="icon-key"></span> Send Your Public Key</button></p>
+          <!-- FIXME: Make a "crypto.suggestion" attribute in show_message_encryption() that performs further investigation.. -->
+          <a href="#">Investigate Message</a>
         </div>
         {% else %}
         <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
