@@ -1,12 +1,14 @@
 <script src="/static/js/mailpile.js"></script>
 <script>
-mailpile.instance = {
- "command": "{{ command }}",
- "args": "{{ args }}",
- "search_tag_ids": {{result.search_tag_ids|safe }}
-}
-// Set View Size
-$('#pile-results').hide();
+{% set tags_json = mailpile("tags").result.tags|json %}
+$(document).ready(function() {
+  mailpile.instance = {
+   "command": "{{ command }}",
+   "args": "{{ args }}",
+   "tags": {{ tags_json|safe }},
+   {% if result.search_tag_ids %}"search_tag_ids": {{result.search_tag_ids|safe }}{% endif %}
+  };
+});
 </script>
 <script src="/static/js/app/global.js"></script>
 <script src="/static/js/app/bulk_actions.js"></script>
