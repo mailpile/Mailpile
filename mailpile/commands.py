@@ -1027,19 +1027,26 @@ class ListDir(Command):
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
-            lines = []
-            for fn, sz, isdir in self.result:
-                lines.append('%10.10s  %s%s' % (sz, fn, isdir and '/' or ''))
-            return '\n'.join(lines)
+            if self.result:
+                lines = []
+                for fn, sz, isdir in self.result:
+                    lines.append(('%10.10s  %s%s'
+                                  ) % (sz, fn, isdir and '/' or ''))
+                return '\n'.join(lines)
+            else:
+                return _('Nothing Found')
 
     def command(self, args=None):
-        args = list(args or self.args)
-        file_list = [(f, os.path.getsize(f), os.path.isdir(f))
-                     for f in os.listdir('.') if not f.startswith('.')
-                     and not args or [a for a in args if a in f]]
-        file_list.sort(key=lambda i: i[0].lower())
-        return self._success(_('Current directory is %s') % os.getcwd(),
-                             result=file_list)
+        args = list((args is None) and self.args or args or [])
+        try:
+            file_list = [(f.decode('utf-8'), os.path.getsize(f), os.path.isdir(f))
+                         for f in os.listdir('.') if not f.startswith('.')
+                         and not args or [a for a in args if a in f]]
+            file_list.sort(key=lambda i: i[0].lower())
+            return self._success(_('Current directory is %s') % os.getcwd(),
+                                 result=file_list)
+        except (OSError, IOError, UnicodeDecodeError), e:
+            return self._error(_('Failed to list directory: %s') % e)
 
 
 class ChangeDir(ListDir):
@@ -1048,9 +1055,12 @@ class ChangeDir(ListDir):
     ORDER = ('Internals', 5)
 
     def command(self, args=None):
-        args = list(args or self.args)
-        os.chdir(args.pop(0))
-        return ListDir.command(self, args=args)
+        args = list((args is None) and self.args or args or [])
+        try:
+            os.chdir(args.pop(0).encode('utf-8'))
+            return ListDir.command(self, args=args)
+        except (OSError, IOError, UnicodeEncodeError), e:
+            return self._error(_('Failed to change directories: %s') % e)
 
 
 ##[ Configuration commands ]###################################################

@@ -327,25 +327,35 @@ class Extract(Command):
         if len(args) > 0 and args[-1].startswith('>'):
             name_fmt = args.pop(-1)[1:]
 
-        if args[0].startswith('#') or args[0].startswith('part:'):
+        if (args[0].startswith('#') or
+                args[0].startswith('part:') or
+                args[0].startswith('ext:')):
             cid = args.pop(0)
         else:
             cid = args.pop(-1)
 
         eids = self._choose_messages(args)
+        emails = [Email(idx, i) for i in eids]
+
         print 'Download %s from %s as %s/%s' % (cid, eids, mode, name_fmt)
 
-        emails = [Email(idx, i) for i in eids]
         results = []
         for e in emails:
-            fn, info = e.extract_attachment(session, cid,
-                                            name_fmt=name_fmt,
-                                            mode=mode)
-            if info:
-                info['idx'] = e.msg_idx_pos
-                if fn:
-                    info['created_file'] = fn
-                results.append(info)
+            if cid[0] == '*':
+                tree = e.get_message_tree(want=['attachments'])
+                cids = [('#%s' % a['count']) for a in tree['attachments']
+                        if a['filename'].lower().endswith(cid[1:].lower())]
+            else:
+                cids = [cid]
+
+            for c in cids:
+                fn, info = e.extract_attachment(session, c,
+                                                name_fmt=name_fmt, mode=mode)
+                if info:
+                    info['idx'] = e.msg_idx_pos
+                    if fn:
+                        info['created_file'] = fn
+                    results.append(info)
         return results
 
 
