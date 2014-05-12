@@ -10,7 +10,7 @@
       {% else %}
       <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
       {% endif %}
-        <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}" data-name="{{tag.name}}" data-slug="{{tag.slug}}" data-icon="{{tag.icon}}" data-stat_new="{{tag.stats.new}}" data-stat_all="{{tag.stats.all}}">
+        <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}">
           {% if tag.icon %}
           <span class="sidebar-icon {{tag.icon}}"></span>          
           {% else %}
@@ -35,32 +35,26 @@
       {% for tag in mailpile("tags", "mode=tree", "display=tag").result.tags %}
       {% if tag.subtags %}
       <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
-          <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.sum_all}}" data-tid="{{tag.tid}}" data-name="{{tag.name}}" data-slug="{{tag.slug}}" data-icon="{{tag.icon}}" data-stat_sum_new="{{tag.stats.sum_new}}" data-stat_sum_all="{{tag.stats.sum_all}}" data-stat_new="{{tag.stats.new}}" data-stat_all="{{tag.stats.all}}">
+          <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.sum_all}}" data-tid="{{tag.tid}}">
             <span class="sidebar-icon icon-tags"></span>
             <span class="sidebar-name"><span>{{tag.name}}</span></span>
             {% if tag.stats.sum_new > 0 %}
             <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.sum_new) }}</span>
             {% endif %}
           </a>
-          <ul id="sidebar-subtag-{{tag.tid}}" class="sidebar-subtag">
-          {% for subtag in tag.subtags %}
-          <li>
-            <a href="{{subtag.url}}" class="sidebar-tag" title="{{tag.name}} {{subtag.stats.all}}" data-tid="{{tag.tid}}" data-name="{{subtag.name}}" data-slug="{{subtag.slug}}" data-icon="{{tag.icon}}" data-stat_new="{{subtag.stats.new}}" data-stat_all="{{subtag.stats.all}}">
-              <span class="sidebar-icon icon-minus"></span>
-              <span class="sidebar-name"><span>{{subtag.name}}</span></span>
-            </a>
-          </li>
-          {% endfor %}
-          </ul>
       </li>
+      {% for subtag in tag.subtags %}
+      <li id="sidebar-tag-{{subtag.slug}}" class="hide">
+        <a href="{{subtag.url}}" class="sidebar-tag" title="{{tag.name}} {{subtag.stats.all}}" data-tid="{{tag.tid}}">
+          <span class="sidebar-icon {{subtag.icon}}"></span>
+          <span class="sidebar-name"><span>{{subtag.name}}</span></span>
+        </a>
+      </li>
+      {% endfor %}
       {% else %}
       <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
-        <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}" data-name="{{tag.name}}" data-slug="{{tag.slug}}" data-icon="{{tag.icon}}" data-stat_new="{{tag.stats.new}}" data-stat_all="{{tag.stats.all}}">
-          {% if tag.icon %}
+        <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}">
           <span class="sidebar-icon {{tag.icon}}"></span>          
-          {% else %}
-          <span class="sidebar-icon icon-tag"></span>
-          {% endif %}
           <span class="sidebar-name"><span>{{tag.name}}</span></span>
           {% if tag.stats.new > 0 %}
           <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.new) }}</span>

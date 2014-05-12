@@ -122,10 +122,9 @@ $(document).ready(function() {
       if (mailpile.messages_cache.length > 0) {
         count = ' to (' + mailpile.messages_cache.length + ')';
       }
-    
-      var icon = $(this).find('span.sidebar-icon').attr('class').replace('sidebar-icon ', '');
-      var tag = $(this).find('.sidebar-name span').html();
-      return $('<div class="sidebar-tag-drag ui-widget-header"><span class="' + icon + '"></span> ' + tag + count + '</div>');
+
+      var tag = _.findWhere(mailpile.instance.tags, { tid: $(this).data('tid') });
+      return $('<div class="sidebar-tag-drag ui-widget-header" style="color: ' + tag.label_color + '"><span class="' + tag.icon + '"></span> ' + tag.name + count + '</div>');
     }
   });
 
@@ -136,8 +135,9 @@ $(document).ready(function() {
     tolerance: 'pointer',
     drop: function(event, ui) {
       mailpile.tag_add_delete(ui.draggable.data('tid'), '', $(event.target).data('mid'), function() {
-        // FIXME: needs to show tag icon (if not exist) and more data attributes on inserted tag
-        $(event.target).find('td.subject span.item-tags').append('<span class="pile-message-tag"><span class="pile-message-tag-icon ' + ui.draggable.data('icon') + '"></span> <span class="pile-message-tag-name">' + ui.draggable.data('name') + '</span></span>');  
+
+        var tag = _.findWhere(mailpile.instance.tags, { tid: ui.draggable.data('tid') });
+        $(event.target).find('td.subject span.item-tags').append('<span class="pile-message-tag" style="color: ' + tag.label_color + ';"><span class="pile-message-tag-icon ' + tag.icon + '"></span> <span class="pile-message-tag-name">' + tag.name + '</span></span>');  
       });      
     }
   });
