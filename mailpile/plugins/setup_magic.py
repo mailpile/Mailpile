@@ -28,11 +28,15 @@ class Setup(Command):
             'type': 'unread',
             'label': False,
             'display': 'invisible',
+            'icon': 'icon-new',
+            'label_color': '#4D4D4D',
             'name': _('New'),
         },
         'Inbox': {
             'display': 'priority',
             'display_order': 2,
+            'icon': 'icon-inbox',
+            'label_color': '#4D4D4D',
             'name': _('Inbox'),
         },
         'Blank': {
@@ -46,18 +50,24 @@ class Setup(Command):
             'flag_editable': True,
             'display': 'priority',
             'display_order': 1,
+            'icon': 'icon-compose',
+            'label_color': '#4D4D4D',
             'name': _('Drafts'),
         },
         'Outbox': {
             'type': 'outbox',
             'display': 'priority',
             'display_order': 3,
+            'icon': 'icon-outbox',
+            'label_color': '#4D4D4D',
             'name': _('Outbox'),
         },
         'Sent': {
             'type': 'sent',
             'display': 'priority',
             'display_order': 4,
+            'icon': 'icon-sent',
+            'label_color': '#4D4D4D',
             'name': _('Sent'),
         },
         'Spam': {
@@ -65,10 +75,13 @@ class Setup(Command):
             'flag_hides': True,
             'display': 'priority',
             'display_order': 5,
+            'icon': 'icon-spam',
+            'label_color': '#4D4D4D',
             'name': _('Spam'),
         },
         'MaybeSpam': {
             'display': 'invisible',
+            'icon': 'icon-spam',
             'name': _('MaybeSpam'),
         },
         'Ham': {
@@ -81,6 +94,8 @@ class Setup(Command):
             'flag_hides': True,
             'display': 'priority',
             'display_order': 6,
+            'icon': 'icon-trash',
+            'label_color': '#4D4D4D',
             'name': _('Trash'),
         },
         # These are magical tags that perform searches and show
@@ -88,6 +103,7 @@ class Setup(Command):
         'All Mail': {
             'type': 'tag',
             'icon': 'icon-logo',
+            'label_color': '#4D4D4D',
             'search_terms': 'all:mail',
             'name': _('All Mail'),
             'display_order': 1000,
@@ -95,6 +111,7 @@ class Setup(Command):
         'Photos': {
             'type': 'tag',
             'icon': 'icon-photos',
+            'label_color': '#4D4D4D',
             'search_terms': 'att:jpg',
             'name': _('Photos'),
             'template': 'photos',
@@ -103,6 +120,7 @@ class Setup(Command):
         'Files': {
             'type': 'tag',
             'icon': 'icon-document',
+            'label_color': '#4D4D4D',          
             'search_terms': 'has:attachment',
             'name': _('Files'),
             'template': 'files',
@@ -111,16 +129,10 @@ class Setup(Command):
         'Links': {
             'type': 'tag',
             'icon': 'icon-links',
+            'label_color': '#4D4D4D',
             'search_terms': 'http',
             'name': _('Links'),
             'display_order': 1003,
-        },
-        'Groups': {
-            'type': 'tag',
-            'icon': 'icon-groups',
-            # 'url': '/group/list/',
-            'name': _('Groups'),
-            'display_order': 1004,
         },
         # These are internal tags, used for tracking user actions on
         # messages, as input for machine learning algorithms. These get
