@@ -101,11 +101,12 @@ def SendMail(session, from_to_msg_ev_tuples):
             ev.data['delivered'] = len([k for k in ev.private_data
                                         if ev.private_data[k]])
 
-    def mark(msg, events):
+    def mark(msg, events, log=True):
         for ev in events:
             ev.flags = Event.RUNNING
             ev.message = msg
-            session.config.event_log.log_event(ev)
+            if log:
+                session.config.event_log.log_event(ev)
         session.ui.mark(msg)
 
     # Do the actual delivering...
@@ -201,7 +202,8 @@ def SendMail(session, from_to_msg_ev_tuples):
             sm_write(msg_string[:20480])
             msg_string = msg_string[20480:]
             mark(('Sending message... (%d%%)'
-                  ) % (100 * (total-len(msg_string))/total), events)
+                  ) % (100 * (total-len(msg_string))/total), events,
+                 log=False)
         sm_close()
         sm_cleanup()
         for ev in events:
