@@ -263,22 +263,21 @@ $(document).ready(function() {
 
   mailpile.pile_display(localStorage.getItem('view_size'));
 
-
   // Display Select
   $.each($('a.change-view-size'), function() {
     if ($(this).data('view_size') == localStorage.getItem('view_size')) {
       $(this).addClass('view-size-selected');
     }
   });
+
   
   $('.pile-message-tag').qtip({
     content: {
       title: false,
       text: function(event, api) {
-        var html = '<div>\
-          <h4 class="text-center">' + $(this).data('tag_name') + '\</h4>\
-          <p><a class="button-primary" href="' + $(this).data('tag_url') + '"><span class="icon-links"></span> Browse This Tag</a></p>\
-          </div>';
+        var tag = _.findWhere(mailpile.instance.tags, { tid: $(this).data('tid').toString() });              
+        var template = $('#tooltip-pile-tag-details').html();
+        var html = _.template(template, tag);
         return html;
       }
     },
