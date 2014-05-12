@@ -331,19 +331,21 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-closed",
             _("Missing Key"),
-            _("You do not have any of the private keys that will decrypt this "
-              "message")],
+            _("You don't have any of the private keys that will decrypt this "
+              "message. Perhaps it was encrypted to an old key you don't have "
+              "anymore?")],
         "mixed-missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
             _("Mixed Missing Key"),
             _("Parts of the message were unable to be decrypted because you "
-              "are missing the private key")],
+              "are missing the private key. Perhaps it was encrypted to an "
+              "old key you don't have anymore?")],
         "error": [
             "crypto-color-red",
             "icon-lock-error",
             _("Error"),
-            _("We failed to decrypt message and are unsure why")],
+            _("We failed to decrypt message and are unsure why.")],
         "mixed-error": [
             "crypto-color-red",
             "icon-lock-error",
