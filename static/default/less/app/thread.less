@@ -221,12 +221,11 @@
 
   .thread-item-crypto-error {
     width: 40%;
-    font-size: 21px;
-    line-height: 24px;
     text-align: center;
     color: @grayMid;
     margin-top: @base-margin;
     margin-bottom: @base-margin;
+    margin-left: @base-margin;
   }
   
   .thread-item-crypto-error .icon {
@@ -234,6 +233,14 @@
     line-height: 48px;
     display: block;
     margin: @base-margin auto;
+  }
+
+  .thread-item-crypto-error .status {
+    margin-bottom: @base-margin;
+    font-size: 21px;
+    line-height: 24px;
+    font-family: @mailpile-text-font-family-bold;
+    font-weight: bold;
   }
 
   .font-style-item-text() {
@@ -247,7 +254,7 @@
   .thread-item-html {
     width: 75%;
     margin-top: 5px;
-    margin-left: 20px;
+    margin-left: @base-margin;
     margin-right: 15px;
     margin-bottom: 15px;
   }
@@ -259,7 +266,7 @@
   .thread-item-text {
     max-width: 75%;
     margin-top: 5px;
-    margin-left: 20px;
+    margin-left: @base-margin;
     margin-right: 15px;
     margin-bottom: 15px;
     .font-style-item-text();
