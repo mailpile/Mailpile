@@ -99,9 +99,6 @@
     {% endfor %}
   </ul>
 </div>
-
-{% include("partials/modal_contact_add.html") %}
-
 {% else %}{# No Result, Show Error #}
   {% set error_title = "message_missing" %}
   {% include("partials/errors_content.html") %}
