@@ -510,7 +510,7 @@ class MailIndex:
             try:
                 msg_fd = mbox.get_file(i)
                 msg = ParseMessage(msg_fd,
-                    pgpmime=session.config.prefs.index_encrypted)
+                                   pgpmime=session.config.prefs.index_encrypted)
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 if session.config.sys.debug:
                     traceback.print_exc()
@@ -806,7 +806,7 @@ class MailIndex:
             ftypes -= set(['incoming'])
 
         for (fid, terms, tags, comment, ftype
-                ) in session.config.get_filters(types=ftypes):
+             ) in session.config.get_filters(types=ftypes):
             if (terms == '*' or
                     len(self.search(None, terms.split(),
                                     keywords=keywordmap)) > 0):
@@ -1265,7 +1265,7 @@ class MailIndex:
         if session:
             session.ui.mark(_n('Found %d result ',
                                'Found %d results ',
-                               len(results)) % (len(results), ) +\
+                               len(results)) % (len(results), ) +
                             _n('%d suppressed',
                                '%d suppressed',
                                len(srs.excluded())
@@ -1395,7 +1395,7 @@ class MailIndex:
             session.ui.mark(_n('Sorted %d message by %s',
                                'Sorted %d messages by %s',
                                count
-                               ) % (count, how) +\
+                               ) % (count, how) +
                             _n('%d conversation',
                                '%d conversations',
                                len(results)

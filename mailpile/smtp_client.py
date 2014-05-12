@@ -35,7 +35,6 @@ def _AddSocksHooks(cls, SSL=False):
 
 class SMTP(_AddSocksHooks(smtplib.SMTP)):
     pass
-            
 
 if ssl is not None:
     class SMTP_SSL(_AddSocksHooks(smtplib.SMTP_SSL, SSL=True)):
@@ -57,19 +56,19 @@ def _RouteTuples(session, from_to_msg_ev_tuples):
                     recipient = None
                     break
             if recipient:
-                route = {"protocol": "", 
-                         "username": "", 
-                         "password": "", 
+                route = {"protocol": "",
+                         "username": "",
+                         "password": "",
                          "command": "",
-                         "host": "", 
+                         "host": "",
                          "port": 25
-                        }
+                         }
                 route.update(session.config.get_sendmail(frm, [recipient]))
                 if route["command"]:
                     txtroute = "|%(command)s" % route
                 else:
                     txtroute = "%(protocol)s://%(username)s:%(password)s@" \
-                             + "%(host)s:%(port)d"
+                               + "%(host)s:%(port)d"
                     txtroute %= route
 
                 dest[txtroute] = dest.get(txtroute, [])
