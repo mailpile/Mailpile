@@ -342,7 +342,7 @@ class Extract(Command):
                                             name_fmt=name_fmt,
                                             mode=mode)
             if info:
-                info['idx'] = email.msg_idx_pos
+                info['idx'] = e.msg_idx_pos
                 if fn:
                     info['created_file'] = fn
                 results.append(info)

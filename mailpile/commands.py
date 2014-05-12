@@ -805,7 +805,12 @@ class SearchResults(dict):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
                 msg_tree = exp_email.get_message_tree()
                 text.append('-' * 79)
-                text.append(exp_email.get_editing_string(msg_tree))
+                text.append(exp_email.get_editing_string(msg_tree).strip())
+                if msg_tree['attachments']:
+                    text.append('\nAttachments:')
+                    for a in msg_tree['attachments']:
+                        text.append('%5.5s %s' % ('#%s' % a['count'],
+                                                  a['filename']))
                 text.append('-' * 79)
 
             count += 1
