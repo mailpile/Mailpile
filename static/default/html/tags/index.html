@@ -34,7 +34,7 @@
   
   <div id="tags-list" class="clearfix">
     {% for tag in result.tags %}
-    {% if tag.display == "priority" and tag.type == "tag" %}
+    {% if tag.display == "priority" %}
       {{ render_tag(tag) }}
     {% endif %}
     {% endfor %}

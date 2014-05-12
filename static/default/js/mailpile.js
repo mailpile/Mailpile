@@ -41,8 +41,8 @@ function MailPile() {
     contacts     : "/api/0/search/address/",
     message      : "/api/0/message/=",
   	tag          : "/api/0/tag/",
-  	tag_list     : "/api/0/tag/list/",
-  	tag_add      : "/api/0/tag/add/",
+  	tag_list     : "/api/0/tags/",
+  	tag_add      : "/api/0/tags/add/",
   	tag_update   : "/api/0/settings/set/",
   	search_new   : "/api/0/search/?q=in%3Anew",
     search       : "/api/0/search/",
@@ -51,7 +51,8 @@ function MailPile() {
 	}
 	this.urls = {
   	message_draft : "/message/draft/=",
-  	message_sent  : "/thread/="
+  	message_sent  : "/thread/=",
+  	tags          : "/tags/"
 	}
 	this.plugins = [];
 	this.autosave = {};

@@ -143,9 +143,14 @@ $(document).on('click', '#button-tag-change-icon', function() {
     "icon-music",
     "icon-lock-closed",
     "icon-key",
-    "icon-trash",
     "icon-home",
-    "icon-new"
+    "icon-new",
+    "icon-compose",
+    "icon-inbox",
+    "icon-sent",
+    "icon-outbox",
+    "icon-spam",
+    "icon-trash"
   ];
 
   var icons_html = '';

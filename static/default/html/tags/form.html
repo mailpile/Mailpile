@@ -48,10 +48,14 @@
     {% endfor %}
     </select>
 
+    {% if state.command_url == "/tags/add/" %}
+    <button type="submit"><span class="icon-plus"></span> {{_("Add")}}</button>
+    {% endif %}
   </form>
 
+  {% if state.command_url == "/tags/" %}
   <button type="submit" id="button-tag-delete" class="button-warning"><span class="icon-minus"></span> {{_("Delete Tag")}}</button>
-
+  {% endif %}
 </div>
 
 <script id="modal-tag-icon-picker" type="text/template">
