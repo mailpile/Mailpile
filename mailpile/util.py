@@ -33,6 +33,9 @@ DEFAULT_PORT = 33411
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                          ':\"|;\'\\\<\>\?,\.\/\-]{2,}')
 
+PROSE_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
+                          ':\"|;\'\\\<\>\?,\.\/\-]{1,}')
+
 STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
                 'has', 'http', 'https', 'i', 'in', 'is', 'it',
                 'mailto', 'me',
@@ -53,6 +56,8 @@ B64W_TRANSLATE = string.maketrans('/+', '_-')
 STRHASH_RE = re.compile('[^0-9a-z]+')
 
 B36_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+RE_LONG_LINE_SPLITTER = re.compile('([^\n]{,72}) ')
 
 
 class WorkerError(Exception):
@@ -216,6 +221,44 @@ def b36(number):
         number, i = divmod(number, 36)
         base36.append(B36_ALPHABET[i])
     return ''.join(reversed(base36))
+
+
+def split_long_lines(text):
+    """
+    Split long lines of text into shorter ones, ignoring ascii art.
+
+    >>> test_string = (('abcd efgh ijkl mnop ' + ('q' * 72) + ' ') * 2)[:-1]
+    >>> print split_long_lines(test_string)
+    abcd efgh ijkl mnop
+    qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+    abcd efgh ijkl mnop
+    qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+    >>> print split_long_lines('> ' + ('q' * 72))
+    > qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+    The function should be stable:
+
+    >>> split_long_lines(test_string) == split_long_lines(
+    ...                                    split_long_lines(test_string))
+    True
+    """
+    lines = text.splitlines()
+    for i in range(0, len(lines)):
+        buffered, done = [], False
+        while (not done and
+               len(lines[i]) > 72 and
+               re.match(PROSE_REGEXP, lines[i])):
+            n = re.sub(RE_LONG_LINE_SPLITTER, '\\1\n', lines[i], 1
+                       ).split('\n')
+            if len(n) == 1:
+                done = True
+            else:
+                buffered.append(n[0])
+                lines[i] = n[1]
+        if buffered:
+            lines[i] = '\n'.join(buffered + [lines[i]])
+    return '\n'.join(lines)
 
 
 def elapsed_datetime(timestamp):

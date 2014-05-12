@@ -518,6 +518,8 @@ class Email(object):
 
             # Copy the message text
             new_body = newmsg.get_payload().decode('utf-8')
+            if final:
+                new_body = split_long_lines(new_body)
             try:
                 new_body.encode('us-ascii')
                 charset = 'us-ascii'
