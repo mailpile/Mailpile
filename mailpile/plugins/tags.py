@@ -42,9 +42,9 @@ _plugins.register_config_section('tags', ["Tags", {
     'magic_terms': ['Extra terms to search for', 'str', ''],
 
     # Tag display attributes for search results/lists/UI placement
-    'icon': ['URL to default tag icon', 'url', ''],
+    'icon': ['URL to default tag icon', 'url', 'icon-tag'],
     'label': ['Display as label in results', 'bool', True],
-    'label_color': ['Color to use in label', 'str', ''],
+    'label_color': ['Color to use in label', 'str', '#4D4D4D'],
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
                                           'archive', 'invisible'], 'tag'],
     'display_order': ['Order in lists', 'float', 0],
@@ -302,9 +302,9 @@ class AddTag(TagCommand):
         'name': 'tag name',
         'slug': 'tag slug',
         # Optional initial attributes of tags
-        'icon': 'tag icon',
+        'icon': 'icon-tag',
         'label': 'display as label in search results, or not',
-        'label_color': 'label color',
+        'label_color': '#4D4D4D',
         'display': 'tag display type',
         'template': 'tag template type',
         'search_terms': 'default search associated with this tag',
