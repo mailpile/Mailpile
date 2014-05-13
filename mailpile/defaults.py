@@ -95,9 +95,9 @@ CONFIG_RULES = {
     }, {}],
     'sources': [_('Incoming message sources'), {
         'name':            (_('Source name'), str, ''),
-        'protocol':        (_('Messaging protocol'),
-                            ["mbox", "maildir", "macmaildir", "winmaildir",
-                             "gmvault", "imap", "pop3"],
+        'protocol':        (_('Mailbox protocol or format'),
+                            ["mbox", "maildir", "macmaildir", "gmvault",
+                             "imap", "pop3"],
                             ''),
         'pre_command':     (_('Shell command run before syncing'), str, ''),
         'post_command':    (_('Shell command run after syncing'), str, ''),
@@ -106,14 +106,24 @@ CONFIG_RULES = {
         'password':        (_('Password'), str, ''),
         'host':            (_('Host'), str, ''),
         'port':            (_('Port'), int, 993),
+        'discovery':       (_('Mailbox discovery policy'), False, {
+            'policy':      (_('Default mailbox policy'),
+                            ['unknown', 'ignore', 'watch',
+                             'read', 'move', 'sync'], 'unknown'),
+            'local_copy':  (_('Copy mail to a local mailbox?'), bool, False),
+            'create_tag':  (_('Create a tag for each mailbox?'), bool, True),
+            'process_new': (_('Is a potential source of new mail'), bool, True),
+            'apply_tags':  (_('Tags applied to messages'), str, []),
+        }),
         'mailbox': (_('Mailboxes'), {
             'path':        (_('Mailbox source path'), str, ''),
             'policy':      (_('Mailbox policy'),
                             ['unknown', 'ignore', 'watch',
                              'read', 'move', 'sync'], 'ignore'),
             'local':       (_('Local mailbox path'), str, ''),
-            'synced_tag':  (_('Removing this tag deletes at source'), str, ''),
-            'apply_tags':  (_('Tags applied to new messages'), str, []),
+            'process_new': (_('Is a source of new mail'), bool, True),
+            'primary_tag': (_('A tag representing this mailbox'), str, ''),
+            'apply_tags':  (_('Tags applied to messages'), str, []),
         }, {})
     }, {}]
 }

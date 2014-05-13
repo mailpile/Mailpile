@@ -569,8 +569,9 @@ class MailIndex:
         if added or updated:
             mbox.save(session)
         self._scanned[mailbox_idx] = messages_md5
-        session.ui.mark(_('%s: Indexed mailbox: %s (%d new, %d updated)'
-                          ) % (mailbox_idx, mailbox_fn, added, updated))
+        short_fn = '/'.join(mailbox_fn.split('/')[-2:])
+        session.ui.mark(_('%s: Indexed mailbox: ...%s (%d new, %d updated)'
+                          ) % (mailbox_idx, short_fn, added, updated))
         return added
 
     def edit_msg_info(self, msg_info,

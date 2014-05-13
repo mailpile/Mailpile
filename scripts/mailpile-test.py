@@ -25,7 +25,8 @@ os.environ['GNUPGHOME'] = mailpile_gpgh
 
 # Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
-import mailpile.mail_source
+from mailpile.mail_source.mbox import MboxMailSource
+from mailpile.mail_source.maildir import MaildirMailSource
 from mailpile import Mailpile
 
 
@@ -104,24 +105,24 @@ def test_mail_source_start():
     for proto in ('mbox', 'maildir'):
         mp.set(('sources.%s = {"protocol": "%s", "interval": 1}'
                 ) % (proto, proto))
-
-    for mbx_id, path in config.sys.mailbox.iteritems():
-        source = 'sources.%s' % (os.path.isdir(path) and 'maildir' or 'mbox')
-        mp.set('%s.mailbox.%s = {"path": "%s", "policy": "read"}' % (
-            source, mbx_id, path))
-
     mailsources[:] = [
-        mailpile.mail_source.MboxMailSource(mp._session,
-                                            config.sources.mbox),
-        mailpile.mail_source.MaildirMailSource(mp._session,
-                                               config.sources.maildir)
+        MboxMailSource(mp._session, config.sources.mbox),
+        MaildirMailSource(mp._session, config.sources.maildir)
     ]
+    for mbx_id, path in config.sys.mailbox.iteritems():
+        for ms in mailsources:
+            if ms.is_mailbox(path):
+                ms.my_config.mailbox[mbx_id] = {
+                    "path": path, "policy": "read"
+                }
+
     def wahoo():
-        print 'Wahoooo'
+        print 'Wahoooo!!!1'
     for ms in mailsources:
         ms.jitter = 0
         ms.start()
         ms.rescan_now(started_callback=wahoo)
+    print 'OKAY THAT WAS FUN'
 
 def test_mail_source_finish():
     for ms in mailsources:

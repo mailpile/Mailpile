@@ -3,6 +3,7 @@ import cPickle
 import io
 import json
 import os
+import random
 import re
 import threading
 import ConfigParser
@@ -1186,14 +1187,29 @@ class ConfigManager(ConfigDict):
 
         return self._mbox_cache[mbx_id]
 
+    def create_local_mailstore(self, session, name=None):
+        self._lock.acquire()
+        try:
+            path = os.path.join(self.workdir, 'mail')
+            if name is None:
+                name = '%5.5x' % random.randint(0, 16**5)
+                while os.path.exists(os.path.join(path, name)):
+                    name = '%5.5x' % random.randint(0, 16**5)
+            if name != '':
+                path = os.path.join(path, name)
+
+            mbx = wervd.MailpileMailbox(path)
+            mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
+            return path, mbx
+        finally:
+            self._lock.release()
+
     def open_local_mailbox(self, session):
         self._lock.acquire()
         local_id = self.sys.get('local_mailbox_id', None)
         try:
             if not local_id:
-                mailbox = os.path.join(self.workdir, 'mail')
-                mbx = wervd.MailpileMailbox(mailbox)
-                mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
+                mailbox, mbx = self.create_local_mailstore(session, name='')
                 local_id = self.sys.mailbox.append(mailbox)
                 local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
                 self.sys.local_mailbox_id = local_id

@@ -1,11 +1,15 @@
 import os
 import random
+import re
 import threading
 import traceback
 import time
 
 from mailpile.eventlog import Event
 from mailpile.mailboxes import *
+
+
+__all__ = ['mbox', 'maildir']
 
 
 # Brainstorming:  What does a mail source have to do?
@@ -111,9 +115,35 @@ class BaseMailSource(threading.Thread):
         """Open mailboxes or connect to the remote mail source."""
         raise NotImplemented('Please override _open in %s' % self)
 
+    def _has_mailbox_changed(self, mbx, state):
+        """For the default sync_mail routine, report if mailbox changed."""
+        raise NotImplemented('Please override _open in %s' % self)
+
+    def _mark_mailbox_rescanned(self, mbx, state):
+        """For the default sync_mail routine, note mailbox was rescanned."""
+        raise NotImplemented('Please override _open in %s' % self)
+
     def _unlocked_sync_mail(self):
-        """Open mailboxes or connect to the remote mail source."""
-        raise NotImplemented('Please override _sync_mail in %s' % self)
+        """Iterates through all the mailboxes and scans if necessary."""
+        config = self.session.config
+        rescanned = errors = 0
+        for mbx in self.my_config.mailbox.values():
+            try:
+                state = {}
+                if self._has_mailbox_changed(mbx, state):
+                    self._log_status(_('Reading mailbox %s') % mbx.path)
+                    if self._unlocked_rescan_mailbox(mbx._key):
+                        self._mark_mailbox_rescanned(mbx, state)
+                        rescanned += 1
+                    else:
+                        errors += 1
+            except (NoSuchMailboxError, IOError, OSError):
+                errors += 1
+        if errors:
+            self._log_status(_('Rescanned %d mailboxes, failed to rescan %d'
+                              ) % (rescanned, errors))
+        elif rescanned:
+            self._log_status(_('Rescanned %d mailboxes') % rescanned)
 
     def _jitter(self, seconds):
         return seconds + random.randint(0, self.jitter)
@@ -130,8 +160,9 @@ class BaseMailSource(threading.Thread):
     MAX_PATHS = 50000
 
     def _discover_mailboxes(self, path):
+        config = self.session.config
         paths = [path]
-        existing = set(self.session.config.sys.mailbox +
+        existing = set(config.sys.mailbox +
                        [mbx.path for mbx in self.my_config.mailbox.values()] +
                        [mbx.local for mbx in self.my_config.mailbox.values()
                         if mbx.local])
@@ -152,17 +183,76 @@ class BaseMailSource(threading.Thread):
                             return False
                 except OSError:
                     pass
-        added = {}
+
+        new = {}
+        created = {}
+        disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         for path in adding:
-            added[self.session.config.sys.mailbox.append(path)] = path
-        for mailbox_idx in added:
-            self.my_config.mailbox[mailbox_idx] = {
-                'path': added[mailbox_idx],
-                'policy': 'unknown'
+            new[config.sys.mailbox.append(path)] = path
+        for mailbox_idx in new.keys():
+            mbx = self.my_config.mailbox[mailbox_idx] = {
+                'path': new[mailbox_idx],
+                'policy': disco_cfg.policy,
+                'process_new': disco_cfg.process_new,
+                'apply_tags': disco_cfg.apply_tags[:]
             }
-        if added:
+            if disco_cfg.create_tag:
+                tag_name_or_id = self._create_tag_name(new[mailbox_idx])
+                mbx['primary_tag'] = tag_name_or_id
+                if disco_cfg.policy != 'unknown':
+                    try:
+                        mbx['primary_tag'] = self._create_tag(tag_name_or_id,
+                                                              unique=True)
+                    except ValueError:
+                        pass  # FIXME: This suxors
+            if self.my_config.discovery.local_copy:
+                path, wervd = config.create_local_mailstore(self.session)
+                mbx.local = path
+            if mbx.policy != 'unknown':
+                del new[mailbox_idx]
+        if new:
             self.event.data['have_unknown'] = True
+
         return True
+
+    BORING_FOLDER_RE = re.compile('(?i)^(home|mail|data|user\S*|[^a-z]+)$')
+
+    def _path_to_tagname(self, path):  # -> tag name
+        """This converts a path to a tag name."""
+        path = path.replace('/.', '/')
+        parts = ('/' in path) and path.split('/') or path.split('\\')
+        parts = [p for p in parts if not re.match(self.BORING_FOLDER_RE, p)]
+        tagname = parts.pop(-1).split('.')[0]
+        if self.session.config.get_tags(tagname):
+            tagname = '%s/%s' % (parts[-1], tagname)
+        return tagname.replace('-', ' ').replace('_', ' ')
+
+    def _unique_tag_name(self, tagname):  # -> unused tag name
+        """This makes sure a tagname really is unused"""
+        tagnameN, count = tagname, 2
+        while self.session.config.get_tags(tagnameN):
+            tagnameN = '%s (%s)' % (tagname, count)
+            count += 1
+        return tagnameN
+
+    def _create_tag_name(self, path):  # -> unique tag name
+        """Convert a path to a unique tag name."""
+        return self._unique_tag_name(self._path_to_tagname(tagname))
+
+    def _create_tag(self, tag_name_or_id, unique=False):  # -> tag ID
+        tags = self.session.config.get_tags(tag_name_or_id)
+        if tags and unique:
+            raise ValueError('Tag name is not unique!')
+        elif len(tags) == 1:
+            tag_id = tags[0]._key
+        elif len(tags) > 1:
+            raise ValueError('Tag name matches multiple tags!')
+        else:
+            from mailpile.plugins.tags import AddTag
+            AddTag(self.session, arg=[tag_name_or_id]).run(save=False)
+            tags = self.session.config.get_tags(tag_name_or_id)
+            tag_id = tags[0]._key
+        return tag_id
 
     def _unlocked_rescan_mailbox(self, mbx_key):
         try:
@@ -232,105 +322,6 @@ class BaseMailSource(threading.Thread):
     def quit(self):
         self.alive = False
         self.wake_up()
-
-
-class MboxMailSource(BaseMailSource):
-    """
-    This is a mail source that watches over one or more Unix mboxes.
-    """
-    # This is a helper for the events.
-    __classname__ = 'mailpile.mail_source.MboxMailSource'
-
-    def __init__(self, *args, **kwargs):
-        BaseMailSource.__init__(self, *args, **kwargs)
-        self.watching = -1
-        self.mboxes = {}
-
-    def _unlocked_open(self):
-        mailboxes = self.my_config.mailbox.values()
-        if self.watching == len(mailboxes):
-            return True
-        else:
-            self.watching = len(mailboxes)
-
-        # Prepare the data section of our event, for keeping state.
-        for d in ('mtimes', 'sizes'):
-            if d not in self.event.data:
-                self.event.data[d] = {}
-
-        self._log_status(_('Watching %d mbox mailboxes') % self.watching)
-        return True
-
-    def _unlocked_sync_mail(self):
-        """This checks all the mailboxes for new mail!"""
-        config = self.session.config
-        rescanned = errors = 0
-        for mbx in self.my_config.mailbox.values():
-            try:
-                mt = long(os.path.getmtime(mbx.path))
-                sz = long(os.path.getsize(mbx.path))
-                if (mt != self.event.data['mtimes'].get(mbx._key) or
-                        sz != self.event.data['sizes'].get(mbx._key)):
-                    happy = True
-                    self.event.data['mtimes'][mbx._key] = mt
-                    self.event.data['sizes'][mbx._key] = sz
-                    self._log_status(_('Reading mailbox %s') % mbx.path)
-
-                    if self._unlocked_rescan_mailbox(mbx._key):
-                        rescanned += 1
-                    else:
-                        errors += 1
-            except (NoSuchMailboxError, IOError, OSError):
-                errors += 1
-        if errors:
-            self._log_status(_('Rescanned %d mailboxes, failed to rescan %d'
-                              ) % (rescanned, errors))
-        elif rescanned:
-            self._log_status(_('Rescanned %d mailboxes') % rescanned)
-
-    def is_mailbox(self, fn):
-        try:
-            with open(fn, 'rb') as fd:
-                data = fd.read(2048)  # No point reading less...
-                if data.startswith('From '):
-                    # OK, this might be an mbox! Let's check if the first
-                    # few lines look like RFC2822 headers...
-                    headcount = 0
-                    for line in data.splitlines(True)[1:]:
-                        if (headcount > 3) and line in ('\n', '\r\n'):
-                            return True
-                        if line[-1:] == '\n' and line[:1] not in (' ', '\t'):
-                            parts = line.split(':')
-                            if (len(parts) < 2 or
-                                    ' ' in parts[0] or '\t' in parts[0]):
-                                return False
-                            headcount += 1
-                    return (headcount > 3)
-        except (IOError, OSError):
-            pass
-        return False
-
-
-class MaildirMailSource(BaseMailSource):
-    """
-    This is a mail source that watches over one or more Maildirs.
-    """
-    # This is a helper for the events.
-    __classname__ = 'mailpile.mail_source.MaildirMailSource'
-
-    def __init__(self, *args, **kwargs):
-        BaseMailSource.__init__(self, *args, **kwargs)
-        self.watching = -1
-        self.mboxes = {}
-
-    def _unlocked_open(self):
-        return True
-
-    def _unlocked_sync_mail(self):
-        return True
-
-    def is_mailbox(self, fn):
-        return False
 
 
 def MailSource(session, my_config):
