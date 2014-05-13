@@ -1,16 +1,18 @@
 $(document).on('click', '.icon-tags', function(e) {
 
   e.preventDefault();
-  var tid = $(this).parent().parent().data('tid');
+  var tid = $(this).parent().data('tid');
 
-  if ($('#sidebar-subtag-' + tid).css('display') === 'none') {
-    $('#sidebar-subtag-' + tid).show();
-  }
-  else {
-    $('#sidebar-subtag-' + tid).hide();    
-  }
-
+  $.each($('.subtag-of-' + tid), function(key, item) {
+    if ($(this).css('display') === 'none') {
+      $(this).show();
+    }
+    else {
+      $(this).hide();
+    }
+  });
 });
+
 
 $(document).on('click', '.is-editing', function(e) {
   e.preventDefault();
@@ -30,8 +32,9 @@ $(document).on('click', '.button-sidebar-edit', function() {
     // Update Cursor Make Links Not Work
     $('.sidebar-sortable li').addClass('is-editing');
 
-    // Hide Notification
+    // Hide Notification & Subtags
     $('.sidebar-notification').hide();
+    $('.sidebar-subtag').hide();
 
     // Add Minus Button
     $.each($('.sidebar-tag'), function(key, value) {
@@ -60,12 +63,12 @@ $(document).on('click', '.button-sidebar-edit', function() {
 
 
 $(document).on('click', '.sidebar-tag-archive', function(e) {
-
   e.preventDefault();
+  // FIXME: This should use Int. language
   alert('This will mark this tag as "archived" and remove it from your sidebar, you can go edit this in the Tags -> Tag Name -> Settings page at anytime');
-
-  $(this).parent().parent().fadeOut();
-
+  mailpile.tag_update($(this).parent().data('tid'), 'display', 'archive', function() {
+    $(this).parent().parent().fadeOut();
+  });
 });
 
 

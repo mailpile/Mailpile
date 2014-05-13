@@ -1,67 +1,60 @@
-<!-- FIXME: make density class be pulled from user profile setting -->
+{% macro render_sidebar_tag(tag) -%}
+  {# Show proper classes #}
+  {% if tag.slug == "drafts" %}
+  <li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-default {{ navigation_on(result.search_tag_ids, tag.tid) }}">
+  {% elif tag.slug == "outbox" %}
+  <li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %} {{ navigation_on(result.search_tag_ids, tag.tid) }}">
+  {% else %}
+  <li id="sidebar-tag-{{tag.tid}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
+  {% endif %}
+    <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}">
+      {% if tag.get("subtags") %}
+      <span class="sidebar-icon icon-tags"></span>
+      {% else %}
+      <span class="sidebar-icon {{tag.icon}}"></span>
+      {% endif %}
+      <span class="sidebar-name"><span>{{tag.name}}</span></span>
+      {# Various New Count States #}
+      {% if tag.slug == "outbox" or tag.slug == "drafts" %}
+      {% set tag_new_count = tag.stats.all %}
+      {% elif tag.stats.get("sum_new") %}
+      {% set tag_new_count = tag.stats.sum_new %}          
+      {% else %}
+      {% set tag_new_count = tag.stats.new %}
+      {% endif %}
+      {% if tag_new_count %}
+      <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag_new_count) }}</span>
+      {% endif %}
+    </a>
+  </li>
+  {% if tag.subtags %}{# Render Subtags #}
+  {% for subtag in tag.subtags %}
+  <li id="sidebar-tag-{{subtag.tid}}" data-tid="{{subtag.tid}}" class="sidebar-subtag subtag-of-{{tag.tid}} hide">
+    <a href="{{subtag.url}}" class="sidebar-tag" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
+      <span class="sidebar-icon icon-minus"></span>
+      <span class="sidebar-name"><span>{{subtag.name}}</span></span>
+      {% if subtag.stats.new %}
+      <span class="sidebar-notification" style="background-color: {% if subtag.label_color %}{{ subtag.label_color }}{% else %}#CCCCCC{% endif %};">{{ friendly_number(subtag.stats.new) }}</span>
+      {% endif %}
+    </a>
+  </li>
+  {% endfor %}
+  {% endif %}
+{%- endmacro %}
+
+<!-- FIXME: make "density" class be pulled from user profile setting -->
 <div id="sidebar" class="comfy">
   <nav>
     <ul class="sidebar-sortable">
       {% for tag in mailpile("tags", "mode=tree", "display=priority").result.tags %}
-      {% if tag.slug == "drafts" %}
-      <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-default {{ navigation_on(result.search_tag_ids, tag.tid) }}">
-      {% elif tag.slug == "outbox" %}
-      <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-default {% if tag.stats.all == 0 %} hide{% endif %} {{ navigation_on(result.search_tag_ids, tag.tid) }}">
-      {% else %}
-      <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
-      {% endif %}
-        <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}">
-          {% if tag.icon %}
-          <span class="sidebar-icon {{tag.icon}}"></span>          
-          {% else %}
-          <span class="sidebar-icon icon-{{tag.slug}}"></span>
-          {% endif %}
-          <span class="sidebar-name"><span>{{tag.name}}</span></span>
-          {% if tag.slug == "outbox" or tag.slug == "drafts" %}
-            {% if tag.stats.all > 0 %}
-            <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.all) }}</span>
-            {% endif %}
-          {% else %}
-            {% if tag.stats.new > 0 %}
-            <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.new) }}</span>
-            {% endif %}
-          {% endif %}
-        </a>
-      </li>
+      {{ render_sidebar_tag(tag) }}
       {% endfor %}
     </ul>
     <hr>
     <ul class="sidebar-sortable">
       {% for tag in mailpile("tags", "mode=tree", "display=tag").result.tags %}
-      {% if tag.subtags %}
-      <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
-          <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.sum_all}}" data-tid="{{tag.tid}}">
-            <span class="sidebar-icon icon-tags"></span>
-            <span class="sidebar-name"><span>{{tag.name}}</span></span>
-            {% if tag.stats.sum_new > 0 %}
-            <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.sum_new) }}</span>
-            {% endif %}
-          </a>
+      {{ render_sidebar_tag(tag) }}
       </li>
-      {% for subtag in tag.subtags %}
-      <li id="sidebar-tag-{{subtag.slug}}" class="hide">
-        <a href="{{subtag.url}}" class="sidebar-tag" title="{{tag.name}} {{subtag.stats.all}}" data-tid="{{tag.tid}}">
-          <span class="sidebar-icon {{subtag.icon}}"></span>
-          <span class="sidebar-name"><span>{{subtag.name}}</span></span>
-        </a>
-      </li>
-      {% endfor %}
-      {% else %}
-      <li id="sidebar-tag-{{tag.slug}}" data-tid="{{tag.tid}}" data-display_order="{{tag.display_order}}" class="sidebar-tags-draggable {{ navigation_on(result.search_tag_ids, tag.tid) }}">
-        <a href="{{tag.url}}" class="sidebar-tag" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}">
-          <span class="sidebar-icon {{tag.icon}}"></span>          
-          <span class="sidebar-name"><span>{{tag.name}}</span></span>
-          {% if tag.stats.new > 0 %}
-          <span class="sidebar-notification" style="background-color: {% if tag.label_color %}{{tag.label_color}}{% else %}#CCCCCC{% endif %};">{{ friendly_number(tag.stats.new) }}</span>
-          {% endif %}
-        </a>        
-      </li>
-      {% endif %}
       {% endfor %}
     </ul>
     <a href="#" class="button-sidebar-edit" data-message="{{_("Done Editing")}}" data-state="done">{{_("Edit Sidebar")}}</a>
