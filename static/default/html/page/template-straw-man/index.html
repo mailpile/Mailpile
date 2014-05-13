@@ -1,0 +1,52 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{#
+## This is a straw-man design pattern that might get us closer to letting
+## Javascript and Jinja2 cooperate instead of duplicating effort.
+##
+## This example uses a simple Jinja2 macro to first render a static HTML
+## version of some data, and then expose both the raw data and the template
+## used to the Javascript universe, so they can be manipulated there and
+## code reused.
+#}
+{% block content %}<div id="page" class="content-normal">
+  
+  <h3>This is Javascript-friendly Jinja2 straw-man!</h3>
+
+  {# 1st. Create a macro for the template fragment #}
+  {%- macro render_tag(tag) -%}
+    <li>{{tag.name}} ({{tag.stats_new}})</li>
+  {%- endmacro -%}
+
+  {# 2nd. Create a structure with just the data the macro cares about
+  ##
+  ## Note: This will usually be the most complicated part of the
+  ##       template. Once it is stable, this logic should move to a
+  ##       DataView class so we can pull updates using AJAX.
+  #}
+  {%- set json_data = [] -%}
+  {%- for tag in mailpile("tags").result.tags -%}
+    {% do json_data.append({
+      'name': tag.name,
+      'stats_new': tag.stats.new
+    }) %}
+  {%- endfor -%}
+
+  {# 3rd. Render as HTML #}
+  <ul>
+    {%- for tag in json_data -%}
+      {{ render_tag(tag) }}
+    {%- endfor -%}
+  </ul>
+
+  {# 4th. Expose raw data and template to Javascript #}
+  <script type='text/javascript'>
+    var tags = {{ json_data|json|safe }};
+    var template = {{ render_tag({
+      'name': '{{tag.name}}',
+      'stats_new': '{{tag.stats_new}}',
+    })|json|safe }};
+  </script>
+
+  {# 5th. (optional) Dump template to a <script...> template? #}
+
+</div>{% endblock %}
