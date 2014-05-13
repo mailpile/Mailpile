@@ -158,7 +158,7 @@
     {% endif %}
   </ul>
   <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">
-    {% if show_reply == "true" %}
+    {% if show_reply %}
     <li><a class="message-action-reply" href="#"><span class="icon-reply"></span> {{_("Reply")}}</a></li>
     {% endif %}
     <li><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>

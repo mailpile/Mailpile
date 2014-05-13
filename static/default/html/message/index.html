@@ -3,70 +3,58 @@
 {% block content %}
 {% if result %}
 {% set start_mid     = result.thread_ids[-1] %}
+{% set last_mid      = result.thread_ids.0 %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
 {% set profiles      = mailpile('settings', 'profiles').result.profiles %}
-{#
-    UGLY HACK  showed_composer = [] 
-    we are setting a list called showed_composer 
-    to keep track of MIDs so we know when to show the Composer
-    with partially compose draft inside OR load Composer with
-    new ephermal draft
-#}
-{% set showed_composer = [] %}
-{% set showed_from_me = [] %}
-{% set show_reply = "false" %}
+
+{% set loop_history  = [] %}
 {% for mid in result.thread_ids|reverse %}
-  {% set metadata = result.data.metadata[mid] %}
-  {% if mid in result.data.messages %}{# Determine Is A Message #}
-    {% set message = result.data.messages[mid] %}
-    {% if metadata.flags.from_me %}{# Show: Just Message (from me) #}
-      {% do showed_from_me.append(mid) %}
-      {% set show_reply = "true" %}
-      {% include("partials/thread_message.html") %}{# Show: Message #}
-    {% else %}
-      {% if "editing_string" in message %}{# Show: Just Composer #}
-        {% set editing_strings = message.editing_strings %}
-        {% include("partials/compose.html") %}
-      {% else %}{# Show: Message & Reply Composer #}
-        {% if metadata.flags.replied %}{# Show: Message / No Composer (cause replied) #}
-          {% do showed_composer.append(mid) %}
-          {% set show_reply = "true" %}
-          {% include("partials/thread_message.html") %}{# Show: Message #}
-        {% else %}
-          {% include("partials/thread_message.html") %}{# Show: Message #}
-          {% if not showed_composer %}{# Check If Has Not Showed Composer #}          
-            {% do showed_composer.append(mid) %}
-            {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}{# Gets Ephermal message #}
-            {% if compose %}
-              {% set mid = compose.message_ids.0 %}
-              {% set editing_strings = compose.data.messages[mid].editing_strings %}
-              {% include("partials/compose.html") %}
-            {% else %}
-              {{_("Could Not Render Composer")}}
-            {% endif %}
-          {% endif %}
-        {% endif %}{# End Not Showed Composer #}
-      {% endif %}{# End: Just Composer #} 
-    {% endif %}{# End: Just Message (from me) #}
-  {% elif metadata.flags.draft == true %}{# Is Draft #}
-    {% set compose = mailpile('message/draft', '='+mid).result %}
+  {% set metadata = result.data.metadata.get(mid) %}
+  {% set message = result.data.messages.get(mid) %}
+
+  {% if message and "editing_string" in message %}
+    {# Editing this message was requested, so render the composer #}
+    {% set editing_strings = message.editing_strings %}
+    {% include("partials/compose.html") %}
+    {% do loop_history.append("edit message") %}
+
+  {% elif message %}
+    {# Full message was requested, render it #}
+    {% set show_reply = (mid != last_mid) %}
+    {% include("partials/thread_message.html") %}{# Show: Message #}
+    {% do loop_history.append("display message") %}
+
+  {% elif metadata.flags.draft %}
+    {# This message is a draft, inline the composer #}
+    {#
+       FIXME: We should probably just tell the user this is a draft, make
+              loading the composer a manual action UNLESS this is the last
+              message in the the thread.
+     #}
+    {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}{# Gets Ephermal message #}
     {% if compose %}
-      {% set editing_strings = compose.data.messages[compose.message_ids.0].editing_strings %}
+      {% set mid = compose.message_ids.0 %}
+      {% set editing_strings = compose.data.messages[mid].editing_strings %}
       {% include("partials/compose.html") %}
+      {% do loop_history.append("edit draft") %}
     {% else %}
       {{_("Could Not Render Composer")}}
-    {% endif%}
-  {% else %}{# Show snippet #}
-  <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
-    {% set from = metadata.from %}
-    {% include("partials/thread_metadata.html") %}
-    <div class="thread-item-text">{{ metadata.body.snippet }}</div>
-  </div>
-  {% endif %}{# End if mid #}
+    {% endif %}
+
+  {% else %}
+    {# By default, just render the snippet view #}
+    <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
+      {% set from = metadata.from %}
+      {% include("partials/thread_metadata.html") %}
+      <div class="thread-item-text">{{ metadata.body.snippet }}</div>
+    </div>
+    {% do loop_history.append("display snippet") %}
+  {% endif %}
 {% endfor %}{# End for loop #}
 
-{% if not showed_composer or showed_from_me %}{# If Composer has not showed up anywhere, show at bottom #}
-  {% set last_mid = result.thread_ids.0 %}
+{% if loop_history|last not in ("edit draft", "edit message") %}
+  {# Give the user the option to reply to the last message in the thread
+     - unless we already did! #}
   {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+last_mid).result %}{# Gets Ephermal message #}
   {% if compose %}
     {% set mid = compose.message_ids.0 %}
