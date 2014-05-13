@@ -307,4 +307,13 @@ $(document).on('blur', '#data-tag-add-tag', function(e) {
 
 
 
+/* Tag - Update */
+
+
+$(document).on('change', '#data-tag-display', function(e) {
+  mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function() {
+    // FIXME: show (or move) change update in sidebar
+  });  
+});
+
 
