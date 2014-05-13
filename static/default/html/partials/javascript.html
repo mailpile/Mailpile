@@ -1,6 +1,6 @@
 <script src="/static/js/mailpile.js"></script>
 <script>
-{% set tags_json = mailpile("tags").result.tags|json %}
+{% set tags_json = mailpile("tags", "display=*", "mode=flat").result.tags|json %}
 $(document).ready(function() {
   mailpile.instance = {
    "command": "{{ command }}",
