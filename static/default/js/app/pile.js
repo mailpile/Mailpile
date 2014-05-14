@@ -231,6 +231,13 @@ $('li.sidebar-tags-draggable').droppable({
   activeClass: 'sidebar-tags-draggable-hover',
   hoverClass: 'sidebar-tags-draggable-active',
   tolerance: 'pointer',
+  over: function(event, ui) {
+    mailpile.ui_sidebar_toggle_subtags($(this).find('a').data('tid'), 'open');
+  },
+  out: function(event, ui) {
+    var tid = $(this).find('a').data('tid');
+    mailpile.ui_sidebar_toggle_subtags($(this).find('a').data('tid'), 'close');
+  },
   drop: function(event, ui) {
 
     // Add MID to Cache

@@ -1,16 +1,27 @@
-$(document).on('click', '.icon-tags', function(e) {
-
-  e.preventDefault();
-  var tid = $(this).parent().data('tid');
-
+MailPile.prototype.ui_sidebar_toggle_subtags = function(tid, state) {
   $.each($('.subtag-of-' + tid), function(key, item) {
-    if ($(this).css('display') === 'none') {
-      $(this).show();
+    if ($(this).css('display') === 'none' && state === 'open') {
+      $(this).removeClass('hide');
     }
-    else {
-      $(this).hide();
+    else if ($(this).css('display') === 'list-item' && state === 'close') {
+      $(this).addClass('hide');
+    }
+    else if (state === 'toggle') {
+      if ($(this).css('display') === 'none') {
+        $(this).removeClass('hide');
+      }
+      else {
+        $(this).addClass('hide');
+      }
     }
   });
+};
+
+
+$(document).on('click', '.icon-tags', function(e) {
+  e.preventDefault();
+  var tid = $(this).parent().data('tid');
+  mailpile.ui_sidebar_toggle_subtags(tid, 'toggle');
 });
 
 
