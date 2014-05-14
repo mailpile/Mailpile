@@ -29,7 +29,7 @@
   </li>
   {% if tag.subtags %}{# Render Subtags #}
   {% for subtag in tag.subtags %}
-  <li id="sidebar-tag-{{subtag.tid}}" data-tid="{{subtag.tid}}" class="sidebar-subtag subtag-of-{{tag.tid}} hide">
+  <li id="sidebar-tag-{{subtag.tid}}" data-tid="{{subtag.tid}}" class="sidebar-subtag subtag-of-{{tag.tid}} sidebar-tags-draggable hide">
     <a href="{{subtag.url}}" class="sidebar-tag" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
       <span class="sidebar-icon icon-minus"></span>
       <span class="sidebar-name"><span>{{subtag.name}}</span></span>
