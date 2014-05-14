@@ -52,3 +52,41 @@ $(document).on('click', '.message-action-trash', function() {
     window.location.href = '/in/inbox/';
   });
 });
+
+
+/* Message - Crypto Feedback Actions */
+$(document).on('click', '.message-crypto-action', function() {
+
+  var mid = $(this).data('mid');
+
+  var modal_html = $("#modal-send-public-key").html();
+  $('#modal-full').html(_.template(modal_html, { name: 'User Name', address: 'name@address.org' }));
+  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+});
+
+
+$(document).on('click', '.message-crypto-investigate', function() {
+
+  var mid = $(this).data('mid');
+  var part = $(this).data('part');
+  var message = mailpile.instance.messages[mid];
+  var missing_keys = message.text_parts[part].crypto.encryption.missing_keys;
+
+  // Search Missing Keys
+  if (missing_keys.length) {
+
+    console.log(missing_keys);
+  
+    new_mailpile.api.crypto_gpg_searchkey(missing_keys[1], function(data) {
+
+      console.log(data);
+
+    });
+      
+    var modal_html = $("#modal-search-keyservers").html();
+    $('#modal-full').html(_.template(modal_html, { keys: '<li>Key of User #1</li>' }));
+    $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });  
+  
+  }
+    
+});

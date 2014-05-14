@@ -96,9 +96,11 @@
           <h3 class="status {{ crypto.color }}">{{ crypto.text }}</h3>
           <p>{{ crypto.message }}</p>
           <!-- FIXME: Make a "crypto.action" attribute in show_message_encryption() that renders a button or something... -->
-          <p><button><span class="icon-key"></span> Send Your Public Key</button></p>
+          <p><button class="message-crypto-action" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}"><span class="icon-key"></span> Send Your Public Key</button></p>
           <!-- FIXME: Make a "crypto.suggestion" attribute in show_message_encryption() that performs further investigation.. -->
-          <a href="#">Investigate Message</a>
+          {% if part.crypto.encryption.missing_keys %}
+          <a href="#" class="message-crypto-investigate" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}">Investigate Message</a>
+          {% endif %}
         </div>
         {% else %}
         <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
