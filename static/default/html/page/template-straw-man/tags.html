@@ -39,7 +39,7 @@
 {# 4th. Expose raw data and template to Javascript #}
 {%- macro render_json() -%}
 {
-  "data": {{ data|json|safe }};
+  "data": {{ data|json|safe }},
   "template": {{ render_tag({
     'tid': '{{tag.tid}}',
     'name': '{{tag.name}}',
