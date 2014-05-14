@@ -12,41 +12,11 @@
   
   <h3>This is Javascript-friendly Jinja2 straw-man!</h3>
 
-  {# 1st. Create a macro for the template fragment #}
-  {%- macro render_tag(tag) -%}
-    <li>{{tag.name}} ({{tag.stats_new}})</li>
-  {%- endmacro -%}
+  <p>Hey, check this out <a href="as.js">as javascript (JSON)</a></p>
 
-  {# 2nd. Create a structure with just the data the macro cares about
-  ##
-  ## Note: This will usually be the most complicated part of the
-  ##       template. Once it is stable, this logic should move to a
-  ##       DataView class so we can pull updates using AJAX.
-  #}
-  {%- set json_data = [] -%}
-  {%- for tag in mailpile("tags").result.tags -%}
-    {% do json_data.append({
-      'name': tag.name,
-      'stats_new': tag.stats.new
-    }) %}
-  {%- endfor -%}
+  {% import 'page/template-straw-man/tags.html' as tags %}
+  {{ tags.render_html() }}
 
-  {# 3rd. Render as HTML #}
-  <ul>
-    {%- for tag in json_data -%}
-      {{ render_tag(tag) }}
-    {%- endfor -%}
-  </ul>
-
-  {# 4th. Expose raw data and template to Javascript #}
-  <script type='text/javascript'>
-    var tags = {{ json_data|json|safe }};
-    var template = {{ render_tag({
-      'name': '{{tag.name}}',
-      'stats_new': '{{tag.stats_new}}',
-    })|json|safe }};
-  </script>
-
-  {# 5th. (optional) Dump template to a <script...> template? #}
+  <script>var model = {{ tags.render_json() }};</script>
 
 </div>{% endblock %}
