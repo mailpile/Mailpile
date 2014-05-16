@@ -96,6 +96,7 @@ $(document).ready(function() {
      
       var get_order = function(index, base) {
         $elem = $('.sidebar-sortable li:nth-child(' + index + ')');
+        console.log($elem);
         if ($elem.length) {
           return $elem.data('display_order');
         }

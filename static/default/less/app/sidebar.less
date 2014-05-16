@@ -13,10 +13,7 @@
     border-right: 1px solid @gray;
     border-spacing: 0px;
     overflow-y: auto;
-    z-index: 10;
-    -moz-box-shadow: 0 0 3px #a9a9a9;
-    -webkit-box-shadow: 0 0 3px #a9a9a9;
-    box-shadow: 0 0 3px #a9a9a9;    
+    z-index: 10;  
   }
 
   #sidebar nav { padding: 0px; padding-bottom: 15px; margin: 0px; }
@@ -26,8 +23,8 @@
   #sidebar      ul li { margin: 4px 0px; padding: 5px 8px 5px 8px; }
   #sidebar.cozy ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px; }
   #sidebar.snug ul li { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
-
-  a.sidebar-tag        { position: relative; display: table; width: 190px; height: 24px; vertical-align: middle; text-align: left; }
+  
+  a.sidebar-tag        { position: relative; display: table; width: 195px; height: 24px; vertical-align: middle; text-align: left; }
   a.sidebar-tag:active { color: @blue; }
   a.sidebar-tag:hover  { color: @blue; -webkit-transition-duration: 0.2s; -moz-transition-duration: 0.2s; transition-duration: 0.2s; }
 
@@ -42,7 +39,6 @@
   #sidebar.snug span.sidebar-icon { font-size: 16px; line-height: 16px; }
 
   #sidebar span.sidebar-name {
-    width: 140px;
     display: table-cell;
     vertical-align: middle;
     margin-right: 15px;
@@ -50,14 +46,14 @@
     font-family: @mailpile-text-font-family-bold;
     font-weight: bold;
     font-size: 18px;
-    line-height: 24px;
+    line-height: 21 px;
 	}
 	
   #sidebar.cozy span.sidebar-name { font-size: 16px; line-height: 20px; }
   #sidebar.snug span.sidebar-name { font-size: 14px; line-height: 18px; }
 
   #sidebar span.sidebar-name span {
-    width: 130px;
+    width: 140px;
     display: inline-block;
     white-space: nowrap;
     overflow-x: hidden;
@@ -70,13 +66,13 @@
     vertical-align: middle;
     text-align: center;
     padding: 5px;
-    font-size: 11px;
+    font-size: 14px;
     font-size: @text-font-family-bold;
     font-weight: bold;
-    line-height: 11px;
+    line-height: 14px;
     letter-spacing: -.2px;
-    color: @white;
-    position: absolute;
+    color: @gray;
+    position: relative;
     top: 4px;
     right: 0px;
     border-radius: @base-border-radius;
@@ -89,6 +85,10 @@
 
   li.navigation-on a.sidebar-tag:hover { color: @grayDark; }
   li.navigation-on a.sidebar-tag:hover span.sidebar-notification { color: @white !important; }
+
+  #sidebar ul li.sidebar-subtag { margin-top: 2px; margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px; }
+  #sidebar ul li.sidebar-subtag a {  }
+
 
 
 /* Sidebar - Edit */
