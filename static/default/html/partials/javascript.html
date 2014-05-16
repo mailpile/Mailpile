@@ -1,6 +1,6 @@
 <script src="/static/js/mailpile.js"></script>
 <script>
-{% if result.data %}
+{% if result.data and result.data.messages %}
 {% set messagess_json = result.data.messages|json %}
 {% endif %}
 {% set tags_json = mailpile("tags", "display=*", "mode=flat").result|json %}
@@ -8,7 +8,7 @@ $(document).ready(function() {
   mailpile.instance = {
    "command": "{{ command }}",
    "args": "{{ args }}",
-   {% if result.data %}"messages": {{ messagess_json|safe }},{% endif %}
+   {% if result.data and result.data.messages %}"messages": {{ messagess_json|safe }},{% endif %}
    "tags": {{ tags_json|safe }},
    {% if result.search_tag_ids %}"search_tag_ids": {{result.search_tag_ids|safe }}{% endif %}
   };
@@ -21,7 +21,7 @@ $(document).ready(function() {
 <script src="/static/js/app/keybindings.js"></script>
 <script src="/static/js/app/gpg.js"></script>
 <script src="/static/js/app/compose.js"></script>
-<script src="/static/js/app/sidebar.js"></script>
+<script src="/static/js/app/sidebar.js"></script> 
 <script src="/static/js/app/pile.js"></script>
 <script src="/static/js/app/search.js"></script>
 <script src="/static/js/app/thread.js"></script>
