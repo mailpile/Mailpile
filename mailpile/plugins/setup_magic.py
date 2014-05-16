@@ -153,7 +153,7 @@ class Setup(Command):
             return self._error(_('In lockdown, doing nothing.'))
 
         # Perform any required migrations
-        Migrate(session).run()
+        Migrate(session).run(before_setup=True, after_setup=False)
 
         # Create local mailboxes
         session.config.open_local_mailbox(session)
@@ -278,6 +278,9 @@ class Setup(Command):
             session.config.prefs.index_encrypted = True
             session.ui.notify(_('Obfuscating search index and enabling '
                                 'indexing of encrypted e-mail. '))
+
+        # Perform any required migrations
+        Migrate(session).run(before_setup=False, after_setup=True)
 
         session.config.save()
         return self._success(_('Performed initial Mailpile setup'))

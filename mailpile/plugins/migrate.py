@@ -4,6 +4,8 @@ import mailpile.config
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.util import *
+from mailpile.mail_source.mbox import MboxMailSource
+from mailpile.mail_source.maildir import MaildirMailSource
 
 
 _plugins = PluginManager(builtin=__file__)
@@ -56,26 +58,126 @@ def migrate_routes(session):
     return True
 
 
+def migrate_mailboxes(session):
+    config = session.config
 
-MIGRATIONS = (migrate_routes,)
+    def _common_path(paths):
+        common_head, junk = os.path.split(paths[0])
+        for path in paths:
+            head, junk = os.path.split(path)
+            while (common_head and common_head != '/' and
+                   head and head != '/' and
+                   head != common_head):
+                # First we try shortening the target path...
+                while head and head != '/' and head != common_head:
+                    head, junk = os.path.split(head)
+                # If that failed, lop one off the common path and try again
+                if head != common_head:
+                    common_head, junk = os.path.split(common_head)
+                    head, junk = os.path.split(path)
+        return common_head
+
+    mboxes = []
+    maildirs = []
+    macmaildirs = []
+    thunderbird = []
+
+    spam_tid = config.get_tags(type='spam')[0]._key
+    trash_tid = config.get_tags(type='trash')[0]._key
+    inbox_tid = config.get_tags(type='inbox')[0]._key
+
+    # Iterate through config.sys.mailbox, sort mailboxes by type
+    for mbx_id, path in config.sys.mailbox.iteritems():
+        if path == '/dev/null' or path[:1] == '@':
+            continue
+        elif os.path.exists(os.path.join(path, 'Info.plist')):
+            macmaildirs.append((mbx_id, path))
+        elif os.path.isdir(path):
+            maildirs.append((mbx_id, path))
+        elif 'thunderbird' in path.lower():
+            thunderbird.append((mbx_id, path))
+        else:
+            mboxes.append((mbx_id, path))
+
+    # macmail: library/mail/v2
+
+    if thunderbird:
+        # Create basic mail source...
+        if 'tbird' not in config.sources:
+            config.sources['tbird'] = {
+                'name': 'Thunderbird',
+                'protocol': 'mbox',
+            }
+            config.sources.tbird.discovery.create_tag = True
+
+        config.sources.tbird.discovery.policy = 'read'
+        tbird_src = MboxMailSource(session, config.sources.tbird)
+
+        # Configure discovery policy?
+        root = _common_path([path for mbx_id, path in thunderbird])
+        if 'thunderbird' in root.lower():
+            tbird_src.my_config.discovery.path = root
+
+        # Take over all the mailboxes
+        for mbx_id, path in thunderbird:
+            mbx = tbird_src.take_over_mailbox(mbx_id)
+            if 'inbox' in path.lower():
+                mbx.apply_tags.append(inbox_tid)
+            elif 'spam' in path.lower() or 'junk' in path.lower():
+                mbx.apply_tags.append(spam_tid)
+            elif 'trash' in path.lower():
+                mbx.apply_tags.append(trash_tid)
+
+        config.sources.tbird.discovery.policy = 'unknown'
+
+    for name, mailboxes, proto, description, cls in (
+        ('mboxes', mboxes, 'mbox', 'Unix mbox files', MboxMailSource),
+        ('maildirs', maildirs, 'maildir', 'Maildirs', MaildirMailSource),
+    ):
+        if mailboxes:
+            # Create basic mail source...
+            if name not in config.sources:
+                config.sources[name] = {
+                    'name': description,
+                    'protocol': proto
+                }
+                config.sources[name].discovery.create_tag = False
+            config.sources[name].discovery.policy = 'read'
+            src = cls(session, config.sources[name])
+            for mbx_id, path in mailboxes:
+                mbx = src.take_over_mailbox(mbx_id)
+            config.sources[name].discovery.policy = 'unknown'
+
+    return True
+
+
+MIGRATIONS_BEFORE_SETUP = [migrate_routes]
+MIGRATIONS_AFTER_SETUP = [migrate_mailboxes]
 
 class Migrate(Command):
     """Perform any needed migrations"""
     SYNOPSIS = (None, 'setup/migrate', None, None)
     ORDER = ('Internals', 0)
 
-    def command(self):
+    def command(self, before_setup=True, after_setup=True):
         session = self.session
-        cnt = 0
-        err = 0
+        err = cnt = 0
+
+        MIGRATIONS = ((before_setup and MIGRATIONS_BEFORE_SETUP or []) +
+                      (after_setup and MIGRATIONS_AFTER_SETUP or []))
 
         for mig in MIGRATIONS:
-            if mig(session):
-                cnt += 1
-                session.config.save()
-            else:
+            try:
+                if mig(session):
+                    cnt += 1
+                else:
+                    err += 1
+            except:
+                self._ignore_exception()
                 err += 1
 
+        if cnt:
+            session.config.save()
         return self._success(_('Performed %d migrations, failed %d.'
                                ) % (cnt, err))
 

@@ -6,6 +6,7 @@ import os
 import random
 import re
 import threading
+import traceback
 import ConfigParser
 from gettext import translation, gettext, NullTranslations
 from gettext import gettext as _
@@ -887,6 +888,7 @@ class ConfigManager(ConfigDict):
         self.http_worker = None
         self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
         self.other_workers = []
+        self.mail_sources = {}
 
         self.jinja_env = None
 
@@ -1093,15 +1095,33 @@ class ConfigManager(ConfigDict):
     def clear_mbox_cache(self):
         self._mbox_cache = {}
 
-    def get_mailboxes(self):
+    def _translate_mailbox_path(self, mbx_id, path):
+        if path[:1] == '@':
+            mbx = self.sources[path[1:]].mailbox[mbx_id]
+            path = mbx.local or mbx.path
+        return path
+
+    def get_mailboxes(self, standalone=True, mail_sources=False):
         def fmt_mbxid(k):
             k = b36(int(k, 36))
             if len(k) > MBX_ID_LEN:
                 raise ValueError(_('Mailbox ID too large: %s') % k)
             return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
-        mailboxes = [fmt_mbxid(k) for k in self.sys.mailbox.keys()]
+        mailboxes = [(fmt_mbxid(k), self.sys.mailbox[k])
+                     for k in self.sys.mailbox.keys()]
+
+        if not standalone:
+            mailboxes = [(i, p) for i, p in mailboxes if p[:1] == '@']
+
+        if mail_sources:
+            for i in range(0, len(mailboxes)):
+                mid, path = mailboxes[i]
+                mailboxes[i] = (mid, self._translate_mailbox_path(mid, path))
+        else:
+            mailboxes = [(i, p) for i, p in mailboxes if p[:1] != '@']
+
         mailboxes.sort()
-        return [(k, self.sys.mailbox[k]) for k in mailboxes]
+        return mailboxes
 
     def is_editable_message(self, msg_info):
         for ptr in msg_info[MailIndex.MSG_PTRS].split(','):
@@ -1150,7 +1170,8 @@ class ConfigManager(ConfigDict):
     def open_mailbox(self, session, mailbox_id):
         try:
             mbx_id = mailbox_id.lower()
-            mfn = self.sys.mailbox[mbx_id]
+            mfn = self._translate_mailbox_path(mbx_id,
+                                               self.sys.mailbox[mbx_id])
             pfn = 'pickled-mailbox.%s' % mbx_id
         except KeyError:
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
@@ -1379,6 +1400,16 @@ class ConfigManager(ConfigDict):
             config.background.ui = BackgroundInteraction(config)
             config.background.ui.block()
 
+        for src_id, src_config in config.sources.iteritems():
+            if src_id not in config.mail_sources:
+                from mailpile.mail_source import MailSource
+                try:
+                    config.mail_sources[src_id] = MailSource(
+                        session or config.background, src_config)
+                    config.mail_sources[src_id].start()
+                except ValueError:
+                    traceback.print_exc()
+
         # Start the workers
         if daemons:
             if config.slow_worker == config.dumb_worker:
@@ -1441,9 +1472,11 @@ class ConfigManager(ConfigDict):
         config._lock.acquire()
         try:
             for wait in (False, True):
-                for w in [config.http_worker,
-                          config.slow_worker,
-                          config.cron_worker] + config.other_workers:
+                for w in ([config.http_worker,
+                           config.slow_worker,
+                           config.cron_worker] +
+                          config.other_workers +
+                          config.mail_sources.values()):
                     if w:
                         w.quit(join=wait)
             config.other_workers = []

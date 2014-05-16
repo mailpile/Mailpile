@@ -921,6 +921,8 @@ class Rescan(Command):
                 session.ui.mark(_('Running: %s') % pre_command)
                 subprocess.check_call(pre_command, shell=True)
             msg_count = 1
+            for src in config.mail_sources.values():
+                src.rescan_now(session)
             for fid, fpath in config.get_mailboxes():
                 if fpath == '/dev/null':
                     continue

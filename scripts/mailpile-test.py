@@ -93,6 +93,8 @@ def do_setup():
         mp.add(os.path.join(mailpile_test, mailbox))
     mp.add(os.path.join(mailpile_home, 'Maildir'))
 
+    mp.setup_migrate()
+
 
 def test_vcards():
     # Do we have a Mr. Rogers contact?
@@ -100,33 +102,6 @@ def test_vcards():
     assert(mp.contact('mr@rogers.com'
                       ).result['contact']['fn'] == u'Mr. Rogers')
     assert(len(mp.contact_list('rogers').result['contacts']) == 1)
-
-def test_mail_source_start():
-    for proto in ('mbox', 'maildir'):
-        mp.set(('sources.%s = {"protocol": "%s", "interval": 1}'
-                ) % (proto, proto))
-    mailsources[:] = [
-        MboxMailSource(mp._session, config.sources.mbox),
-        MaildirMailSource(mp._session, config.sources.maildir)
-    ]
-    for mbx_id, path in config.sys.mailbox.iteritems():
-        for ms in mailsources:
-            if ms.is_mailbox(path):
-                ms.my_config.mailbox[mbx_id] = {
-                    "path": path, "policy": "read"
-                }
-
-    def wahoo():
-        print 'Wahoooo!!!1'
-    for ms in mailsources:
-        ms.jitter = 0
-        ms.start()
-        ms.rescan_now(started_callback=wahoo)
-    print 'OKAY THAT WAS FUN'
-
-def test_mail_source_finish():
-    for ms in mailsources:
-        ms.quit()
 
 def test_load_save_rescan():
     mp.rescan()
@@ -308,10 +283,7 @@ try:
         say("Skipping tests...")
     else:
         test_vcards()
-        test_mail_source_start()
         test_load_save_rescan()
-        test_mail_source_finish()
-        raise Exception('Bail')
         test_message_data()
         test_html()
         test_composition()

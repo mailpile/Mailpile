@@ -79,6 +79,7 @@ class BaseMailSource(threading.Thread):
         self.open = self._locked(self._unlocked_open)
         self.sync_mail = self._locked(self._unlocked_sync_mail)
         self.rescan_mailbox = self._locked(self._unlocked_rescan_mailbox)
+        self.take_over_mailbox = self._locked(self._unlocked_take_over_mailbox)
 
     def _locked(self, func):
         def locked_func(*args, **kwargs):
@@ -185,35 +186,41 @@ class BaseMailSource(threading.Thread):
                     pass
 
         new = {}
-        created = {}
-        disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         for path in adding:
             new[config.sys.mailbox.append(path)] = path
         for mailbox_idx in new.keys():
-            mbx = self.my_config.mailbox[mailbox_idx] = {
-                'path': new[mailbox_idx],
-                'policy': disco_cfg.policy,
-                'process_new': disco_cfg.process_new,
-                'apply_tags': disco_cfg.apply_tags[:]
-            }
-            if disco_cfg.create_tag:
-                tag_name_or_id = self._create_tag_name(new[mailbox_idx])
-                mbx['primary_tag'] = tag_name_or_id
-                if disco_cfg.policy != 'unknown':
-                    try:
-                        mbx['primary_tag'] = self._create_tag(tag_name_or_id,
-                                                              unique=True)
-                    except ValueError:
-                        pass  # FIXME: This suxors
-            if self.my_config.discovery.local_copy:
-                path, wervd = config.create_local_mailstore(self.session)
-                mbx.local = path
+            mbx = self.take_over_mailbox(mailbox_idx)
             if mbx.policy != 'unknown':
                 del new[mailbox_idx]
         if new:
             self.event.data['have_unknown'] = True
 
         return True
+
+    def _unlocked_take_over_mailbox(self, mailbox_idx):
+        config = self.session.config
+        disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
+        self.my_config.mailbox[mailbox_idx] = {
+            'path': config.sys.mailbox[mailbox_idx],
+            'policy': disco_cfg.policy,
+            'process_new': disco_cfg.process_new,
+        }
+        mbx = self.my_config.mailbox[mailbox_idx]
+        mbx.apply_tags.extend(disco_cfg.apply_tags)
+        config.sys.mailbox[mailbox_idx] = '@%s' % self.my_config._key
+        if disco_cfg.create_tag:
+            tag_name_or_id = self._create_tag_name(mbx.path)
+            mbx['primary_tag'] = tag_name_or_id
+            if disco_cfg.policy != 'unknown':
+                try:
+                    mbx['primary_tag'] = self._create_tag(tag_name_or_id,
+                                                          unique=True)
+                except ValueError:
+                    pass  # FIXME: This suxors
+        if disco_cfg.local_copy:
+            path, wervd = config.create_local_mailstore(self.session)
+            mbx.local = path
+        return mbx
 
     BORING_FOLDER_RE = re.compile('(?i)^(home|mail|data|user\S*|[^a-z]+)$')
 
@@ -237,7 +244,7 @@ class BaseMailSource(threading.Thread):
 
     def _create_tag_name(self, path):  # -> unique tag name
         """Convert a path to a unique tag name."""
-        return self._unique_tag_name(self._path_to_tagname(tagname))
+        return self._unique_tag_name(self._path_to_tagname(path))
 
     def _create_tag(self, tag_name_or_id, unique=False):  # -> tag ID
         tags = self.session.config.get_tags(tag_name_or_id)
@@ -278,10 +285,14 @@ class BaseMailSource(threading.Thread):
         self.alive = True
         self._load_state()
         self.event.flags = Event.RUNNING
+        print 'STARTING %s' % self
+        _original_session = self.session
         while self._sleep(self._jitter(self.my_config.interval)):
             waiters, self._rescan_waiters = self._rescan_waiters, []
-            for b, e in waiters:
+            for b, e, s in waiters:
                 b.release()
+                if s:
+                    self.session = s
             try:
                 if 'traceback' in self.event.data:
                     del self.event.data['traceback']
@@ -297,8 +308,9 @@ class BaseMailSource(threading.Thread):
                 self._sleep(self.INTERNAL_ERROR_SLEEP)
                 # FIXME: Release any held locks?
             finally:
-                for b, e in waiters:
+                for b, e, s in waiters:
                     e.release()
+                self.session = _original_session
         self.event.flags = Event.INCOMPLETE
         self.event.message = _('Shutting down')
         self._save_state()
@@ -306,20 +318,20 @@ class BaseMailSource(threading.Thread):
     def wake_up(self):
         self._sleeping = 0
 
-    def rescan_now(self, started_callback=None):
-        begin, end = rsl = threading.Lock(), threading.Lock()
-        for l in rsl:
+    def rescan_now(self, session=None, started_callback=None):
+        begin, end = threading.Lock(), threading.Lock()
+        for l in (begin, end):
             l.acquire()
-        self._rescan_waiters.append(rsl)
+        self._rescan_waiters.append((begin, end, session))
         self.wake_up()
         begin.acquire()
         if started_callback:
             started_callback()
         end.acquire()
-        for l in rsl:
+        for l in (begin, end):
             l.release()
 
-    def quit(self):
+    def quit(self, join='ignored'):
         self.alive = False
         self.wake_up()
 
@@ -327,4 +339,11 @@ class BaseMailSource(threading.Thread):
 def MailSource(session, my_config):
     # FIXME: check the plugin and instanciate the right kind of mail source
     #        for this config section.
-    pass
+    if my_config.protocol in ('mbox',):
+        from mailpile.mail_source.mbox import MboxMailSource
+        return MboxMailSource(session, my_config)
+    elif my_config.protocol in ('maildir',):
+        from mailpile.mail_source.maildir import MaildirMailSource
+        return MaildirMailSource(session, my_config)
+    raise ValueError(_('Unknown mail source protocol: %s'
+                       ) % my_config.protocol)
