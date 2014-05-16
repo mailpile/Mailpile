@@ -944,7 +944,7 @@ class ConfigManager(ConfigDict):
         def item_sorter(i):
             try:
                 return (int(i[0], 36), i[1])
-            except:
+            except (ValueError, IndexError, KeyError, TypeError):
                 return i
 
         all_okay = True
@@ -999,6 +999,7 @@ class ConfigManager(ConfigDict):
             pass
         except IOError:
             pass
+
         # Discover plugins and update the config rule to match
         from mailpile.plugins import PluginManager
         self.plugins = PluginManager(config=self, builtin=True).discover([

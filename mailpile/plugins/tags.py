@@ -26,7 +26,7 @@ _plugins.register_config_section('tags', ["Tags", {
 
     # Functional attributes
     'type': ['Tag type', [
-        'tag', 'group', 'attribute', 'unread',
+        'tag', 'group', 'attribute', 'unread', 'inbox',
         # Maybe TODO: 'folder', 'shadow',
         'drafts', 'blank', 'outbox', 'sent',          # composing and sending
         'replied', 'fwded', 'tagged', 'read', 'ham',  # behavior tracking tags

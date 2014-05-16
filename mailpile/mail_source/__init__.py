@@ -285,7 +285,6 @@ class BaseMailSource(threading.Thread):
         self.alive = True
         self._load_state()
         self.event.flags = Event.RUNNING
-        print 'STARTING %s' % self
         _original_session = self.session
         while self._sleep(self._jitter(self.my_config.interval)):
             waiters, self._rescan_waiters = self._rescan_waiters, []

@@ -10,7 +10,7 @@ from mailpile.mail_source.maildir import MaildirMailSource
 
 _plugins = PluginManager(builtin=__file__)
 
-# We might want to do this differently at some point, but 
+# We might want to do this differently at some point, but
 # for now it's fine.
 
 

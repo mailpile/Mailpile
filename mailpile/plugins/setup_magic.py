@@ -1,6 +1,6 @@
 import os
 from gettext import gettext as _
-from datetime import date 
+from datetime import date
 
 from mailpile.plugins import PluginManager
 from mailpile.plugins import __all__ as PLUGINS
@@ -33,6 +33,7 @@ class Setup(Command):
             'name': _('New'),
         },
         'Inbox': {
+            'type': 'inbox',
             'display': 'priority',
             'display_order': 2,
             'icon': 'icon-inbox',
