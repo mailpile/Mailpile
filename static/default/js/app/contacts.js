@@ -161,7 +161,6 @@ $(document).on('submit', '#form-contact-add', function(e) {
   });
 });
 
-$('#crypto-policy').select2()
 
 function extractEmailFromLocation() {
     var pathname = decodeURIComponent(location.pathname);
