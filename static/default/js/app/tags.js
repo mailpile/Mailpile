@@ -167,13 +167,14 @@ $(document).on('click', '#button-tag-change-icon', function() {
 
 $(document).on('click', '.modal-tag-icon-option', function() {
 
+  var tid  = $('#data-tag-tid').val();
   var old  = $('#data-tag-icon').val();
   var icon = $(this).data('icon');
 
-  mailpile.tag_update($('#data-tag-tid').val(), 'icon', icon, function() {
+  mailpile.tag_update(tid, 'icon', icon, function() {
 
     // Update Sidebar
-    $('.sidebar-icon').removeClass(old).addClass(icon);
+    $('#sidebar-tag-' + tid).find('span.sidebar-icon').removeClass(old).addClass(icon);
 
     // Update Tag Editor
     $('#data-tag-icon').val(icon);
@@ -219,17 +220,18 @@ $(document).on('click', '#button-tag-change-label-color', function(e) {
 
 $(document).on('click', '.modal-tag-color-option', function(e) {
 
-  var old  = $('#data-tag-label-color').val();
+  var tid   = $('#data-tag-tid').val();
+  var old   = $('#data-tag-label-color').val();
   var color = $(this).data('color');
 
-  mailpile.tag_update($('#data-tag-tid').val(), 'label_color', color, function() {
+  mailpile.tag_update(tid, 'label_color', color, function() {
 
     // Update Sidebar
-    //$('.sidebar-icon').removeClass(old).addClass(color);
+    $('#sidebar-tag-' + tid).find('span.sidebar-icon').css('color', color);
 
     // Update Tag Editor
     $('#data-tag-label-color').val(color);
-    $('#tag-editor-label-color').css('background-color', color);
+    $('#tag-editor-icon').css('color', color);
     $('#modal-full').modal('hide');
   });
 });
@@ -307,11 +309,16 @@ $(document).on('blur', '#data-tag-add-tag', function(e) {
 
 
 
-/* Tag - Update */
-
-
+/* Tag - Update (multiple attribute events) */
 $(document).on('change', '#data-tag-display', function(e) {
   mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function() {
+    // FIXME: show (or move) change update in sidebar
+  });  
+});
+
+
+$(document).on('change', '#data-tag-parent', function(e) {
+  mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function() {
     // FIXME: show (or move) change update in sidebar
   });  
 });
