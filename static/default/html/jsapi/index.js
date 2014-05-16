@@ -1,3 +1,4 @@
+{% set theme_settings = theme_settings() %}
 /* **[ Mailpile - JSAPI ]******************************************************
 
 This file autogenerates JS methods which fire GET & POST calls to Mailpile
@@ -13,9 +14,11 @@ It also name-spaces and wraps any and all plugin javascript code.
 */
 var new_mailpile = {
     plugins: {},
-    api: {}
+    api: {},
+    theme: {}
 };
 
+new_mailpile.theme = {{ theme_settings|json|safe }}
 
 /* AJAXy wrappers for the Mailpile API */
 new_mailpile.api = (function() {

@@ -92,6 +92,10 @@ class MailpileCommand(Extension):
         environment.globals['attachment_type'] = self._attachment_type
         environment.filters['attachment_type'] = self._attachment_type
 
+        # Loads theme settings JSON manifest
+        environment.globals['theme_settings'] = self._theme_settings
+        environment.filters['theme_settings'] = self._theme_settings
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -629,6 +633,7 @@ class MailpileCommand(Extension):
         else:
             attachment = "unknown"
         return attachment
-    
 
-  
+    def _theme_settings(self):
+        path, handle, mime = self.env.session.config.open_file('html_theme', 'theme.json')
+        return json.load(handle)
