@@ -63,7 +63,7 @@ MailPile.prototype.poll_event_log =  $.timer(function() {
 });
 
 
-$(document).on('click', '.topbar-logo, .topbar-logo-name', function(e) {
+$(document).on('click', '.show-notifications', function(e) {
 
   e.preventDefault();
   $('#notifications').show();
