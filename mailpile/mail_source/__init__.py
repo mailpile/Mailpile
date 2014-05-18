@@ -5,6 +5,8 @@ import threading
 import traceback
 import time
 
+import mailpile.util
+from mailpile.util import *
 from mailpile.eventlog import Event
 from mailpile.mailboxes import *
 
@@ -71,7 +73,10 @@ class BaseMailSource(threading.Thread):
         self.event = None
         self.jitter = self.DEFAULT_JITTER
         self._sleeping = None
+        self._interrupt = None
+        self._rescanning = False
         self._rescan_waiters = []
+        self._last_rescan_count = 0
         self._last_saved = time.time()  # Saving right away would be silly
 
         # Make locked versions of a few functions
@@ -126,14 +131,24 @@ class BaseMailSource(threading.Thread):
 
     def _unlocked_sync_mail(self):
         """Iterates through all the mailboxes and scans if necessary."""
+        def unsorted(l):
+            l.sort(key=lambda k: random.randint(0, 500))
+            return l
         config = self.session.config
-        rescanned = errors = 0
-        for mbx in self.my_config.mailbox.values():
+        self._last_rescan_count = rescanned = errors = 0
+        self._interrupt = None
+        for mbx in unsorted(self.my_config.mailbox.values()):
+            if mailpile.util.QUITTING or self._interrupt:
+                self._log_status(_('Interrupted: %s'
+                                   ) % (self._interrupt or _('Quitting')))
+                self._interrupt = None
+                break
             try:
                 state = {}
                 if self._has_mailbox_changed(mbx, state):
                     self._log_status(_('Reading mailbox %s') % mbx.path)
-                    if self._unlocked_rescan_mailbox(mbx._key):
+                    count = self._unlocked_rescan_mailbox(mbx._key)
+                    if count >= 0:
                         self._mark_mailbox_rescanned(mbx, state)
                         rescanned += 1
                     else:
@@ -145,6 +160,8 @@ class BaseMailSource(threading.Thread):
                               ) % (rescanned, errors))
         elif rescanned:
             self._log_status(_('Rescanned %d mailboxes') % rescanned)
+        self._last_rescan_count = rescanned
+        return rescanned
 
     def _jitter(self, seconds):
         return seconds + random.randint(0, self.jitter)
@@ -261,6 +278,11 @@ class BaseMailSource(threading.Thread):
             tag_id = tags[0]._key
         return tag_id
 
+    def interrupt_rescan(self, reason):
+        self._interrupt = reason or _('Aborted')
+        if self._rescanning:
+            self.session.config.index.interrupt = reason
+
     def _unlocked_rescan_mailbox(self, mbx_key):
         try:
             mbx = self.my_config.mailbox[mbx_key]
@@ -271,12 +293,14 @@ class BaseMailSource(threading.Thread):
             if mbx.local:
                 # FIXME: Should copy any new messages to our local stash
                 pass
-            self.session.config.index.scan_mailbox(
+            self._rescanning = True
+            return self.session.config.index.scan_mailbox(
                 self.session, mbx_key, mbx.local or mbx.path,
                 self.session.config.open_mailbox)
-            return True
         except ValueError:
-            return False
+            return -1
+        finally:
+            self._rescanning = False
 
     def is_mailbox(self, fn):
         return False
@@ -308,7 +332,10 @@ class BaseMailSource(threading.Thread):
                 # FIXME: Release any held locks?
             finally:
                 for b, e, s in waiters:
-                    e.release()
+                    try:
+                        e.release()
+                    except threading.ThreadError:
+                        pass
                 self.session = _original_session
         self.event.flags = Event.INCOMPLETE
         self.event.message = _('Shutting down')
@@ -321,14 +348,25 @@ class BaseMailSource(threading.Thread):
         begin, end = threading.Lock(), threading.Lock()
         for l in (begin, end):
             l.acquire()
-        self._rescan_waiters.append((begin, end, session))
-        self.wake_up()
-        begin.acquire()
-        if started_callback:
-            started_callback()
-        end.acquire()
-        for l in (begin, end):
-            l.release()
+        try:
+            self._rescan_waiters.append((begin, end, session))
+            self.wake_up()
+            while not begin.acquire(False):
+                time.sleep(1)
+            if started_callback:
+                started_callback()
+            while not end.acquire(False):
+                time.sleep(1)
+            return self._last_rescan_count
+        except KeyboardInterrupt:
+            self.interrupt_rescan(_('User aborted'))
+            raise
+        finally:
+            for l in (begin, end):
+                try:
+                    l.release()
+                except threading.ThreadError:
+                    pass
 
     def quit(self, join='ignored'):
         self.alive = False

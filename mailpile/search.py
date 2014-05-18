@@ -106,6 +106,7 @@ class MailIndex:
 
     def __init__(self, config):
         self.config = config
+        self.interrupt = None
         self.INDEX = []
         self.INDEX_SORT = {}
         self.INDEX_THR = []
@@ -484,7 +485,7 @@ class MailIndex:
         except (IOError, OSError, NoSuchMailboxError), e:
             session.ui.mark(_('%s: Error opening: %s (%s)'
                               ) % (mailbox_idx, mailbox_fn, e))
-            return 0
+            return -1
         finally:
             self._lock.release()
 
@@ -507,8 +508,10 @@ class MailIndex:
         added = updated = 0
         last_date = long(time.time())
         for ui in range(0, len(messages)):
-            if mailpile.util.QUITTING:
-                break
+            if mailpile.util.QUITTING or self.interrupt:
+                session.ui.debug(_('Rescan interrupted: %s') % self.interrupt)
+                self.interrupt = None
+                return -1
 
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)

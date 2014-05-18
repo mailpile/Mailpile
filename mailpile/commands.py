@@ -858,9 +858,11 @@ class Rescan(Command):
             ) % delay)
 
         if args and args[0].lower() == 'vcards':
-            return self._rescan_vcards(session, config)
+            return self._success(_('Rescanned vcards'),
+                                 result=self._rescan_vcards(session))
         elif args and args[0].lower() == 'mailboxes':
-            return self._rescan_mailboxes(session, config)
+            return self._success(_('Rescanned mailboxes'),
+                                 result=self._rescan_mailboxes(session))
         elif args and args[0].lower() == 'full':
             config.clear_mbox_cache()
             args.pop(0)
@@ -888,8 +890,8 @@ class Rescan(Command):
             config._running['rescan'] = True
             try:
                 results = {}
-                results.update(self._rescan_vcards(session, config))
-                results.update(self._rescan_mailboxes(session, config))
+                results.update(self._rescan_vcards(session))
+                results.update(self._rescan_mailboxes(session))
                 if 'aborted' in results:
                     raise KeyboardInterrupt()
                 return self._success(_('Rescanned vcards and mailboxes'),
@@ -899,8 +901,9 @@ class Rescan(Command):
             finally:
                 del config._running['rescan']
 
-    def _rescan_vcards(self, session, config):
+    def _rescan_vcards(self, session):
         from mailpile.plugins import PluginManager
+        config = session.config
         imported = 0
         importer_cfgs = config.prefs.vcard.importers
         for importer in PluginManager.VCARD_IMPORTERS.values():
@@ -910,7 +913,8 @@ class Rescan(Command):
                     imported += imp.import_vcards(session, config.vcards)
         return {'vcards': imported}
 
-    def _rescan_mailboxes(self, session, config):
+    def _rescan_mailboxes(self, session):
+        config = session.config
         idx = self._idx()
         msg_count = 0
         mbox_count = 0
@@ -921,24 +925,33 @@ class Rescan(Command):
                 session.ui.mark(_('Running: %s') % pre_command)
                 subprocess.check_call(pre_command, shell=True)
             msg_count = 1
+
             for src in config.mail_sources.values():
-                src.rescan_now(session)
-            for fid, fpath in config.get_mailboxes():
-                if fpath == '/dev/null':
-                    continue
                 if mailpile.util.QUITTING:
                     break
+                count = src.rescan_now(session)
+                if count > 0:
+                    msg_count += count
+                    mbox_count += 1
+                session.ui.mark('\n')
+
+            for fid, fpath in config.get_mailboxes():
+                if mailpile.util.QUITTING:
+                    break
+                if fpath == '/dev/null':
+                    continue
                 try:
                     count = idx.scan_mailbox(session, fid, fpath,
                                              config.open_mailbox)
                 except ValueError:
+                    count = -1
+                if count < 0:
                     session.ui.warning(_('Failed to rescan: %s') % fpath)
-                    count = 0
-
-                if count:
+                elif count > 0:
                     msg_count += count
                     mbox_count += 1
                 session.ui.mark('\n')
+
             msg_count -= 1
             if msg_count:
                 if not mailpile.util.QUITTING:

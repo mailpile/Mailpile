@@ -1401,18 +1401,18 @@ class ConfigManager(ConfigDict):
             config.background.ui = BackgroundInteraction(config)
             config.background.ui.block()
 
-        for src_id, src_config in config.sources.iteritems():
-            if src_id not in config.mail_sources:
-                from mailpile.mail_source import MailSource
-                try:
-                    config.mail_sources[src_id] = MailSource(
-                        session or config.background, src_config)
-                    config.mail_sources[src_id].start()
-                except ValueError:
-                    traceback.print_exc()
-
         # Start the workers
         if daemons:
+            for src_id, src_config in config.sources.iteritems():
+                if src_id not in config.mail_sources:
+                    from mailpile.mail_source import MailSource
+                    try:
+                        config.mail_sources[src_id] = MailSource(
+                            session or config.background, src_config)
+                        config.mail_sources[src_id].start()
+                    except ValueError:
+                        traceback.print_exc()
+
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', session)
                 config.slow_worker.start()
