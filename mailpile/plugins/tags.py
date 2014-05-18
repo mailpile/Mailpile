@@ -304,7 +304,7 @@ class AddTag(TagCommand):
         # Optional initial attributes of tags
         'icon': 'icon-tag',
         'label': 'display as label in search results, or not',
-        'label_color': '#4D4D4D',
+        'label_color': '03-gray-dark',
         'display': 'tag display type',
         'template': 'tag template type',
         'search_terms': 'default search associated with this tag',

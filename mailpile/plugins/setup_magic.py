@@ -29,14 +29,14 @@ class Setup(Command):
             'label': False,
             'display': 'invisible',
             'icon': 'icon-new',
-            'label_color': '#4D4D4D',
+            'label_color': '03-gray-dark',
             'name': _('New'),
         },
         'Inbox': {
             'display': 'priority',
             'display_order': 2,
             'icon': 'icon-inbox',
-            'label_color': '#337FB2',
+            'label_color': '06-blue',
             'name': _('Inbox'),
         },
         'Blank': {
@@ -51,7 +51,7 @@ class Setup(Command):
             'display': 'priority',
             'display_order': 1,
             'icon': 'icon-compose',
-            'label_color': '#CCCCCC',
+            'label_color': '03-gray-dark',
             'name': _('Drafts'),
         },
         'Outbox': {
@@ -59,7 +59,7 @@ class Setup(Command):
             'display': 'priority',
             'display_order': 3,
             'icon': 'icon-outbox',
-            'label_color': '#337FB2',
+            'label_color': '06-blue',
             'name': _('Outbox'),
         },
         'Sent': {
@@ -67,7 +67,7 @@ class Setup(Command):
             'display': 'priority',
             'display_order': 4,
             'icon': 'icon-sent',
-            'label_color': '#CCCCCC',
+            'label_color': '03-gray-dark',
             'name': _('Sent'),
         },
         'Spam': {
@@ -76,13 +76,13 @@ class Setup(Command):
             'display': 'priority',
             'display_order': 5,
             'icon': 'icon-spam',
-            'label_color': '#CCCCCC',
+            'label_color': '10-orange',
             'name': _('Spam'),
         },
         'MaybeSpam': {
             'display': 'invisible',
             'icon': 'icon-spam',
-            'label_color': '#CCCCCC',
+            'label_color': '10-orange',
             'name': _('MaybeSpam'),
         },
         'Ham': {
@@ -96,7 +96,7 @@ class Setup(Command):
             'display': 'priority',
             'display_order': 6,
             'icon': 'icon-trash',
-            'label_color': '#CCCCCC',
+            'label_color': '13-brown',
             'name': _('Trash'),
         },
         # These are magical tags that perform searches and show
@@ -104,7 +104,7 @@ class Setup(Command):
         'All Mail': {
             'type': 'tag',
             'icon': 'icon-logo',
-            'label_color': '#4D4D4D',
+            'label_color': '06-blue',
             'search_terms': 'all:mail',
             'name': _('All Mail'),
             'display_order': 1000,
@@ -112,7 +112,7 @@ class Setup(Command):
         'Photos': {
             'type': 'tag',
             'icon': 'icon-photos',
-            'label_color': '#4D4D4D',
+            'label_color': '08-green',
             'search_terms': 'att:jpg',
             'name': _('Photos'),
             'template': 'photos',
@@ -121,7 +121,7 @@ class Setup(Command):
         'Files': {
             'type': 'tag',
             'icon': 'icon-document',
-            'label_color': '#4D4D4D',          
+            'label_color': '06-blue',          
             'search_terms': 'has:attachment',
             'name': _('Files'),
             'template': 'files',
@@ -130,7 +130,7 @@ class Setup(Command):
         'Links': {
             'type': 'tag',
             'icon': 'icon-links',
-            'label_color': '#4D4D4D',
+            'label_color': '12-red',
             'search_terms': 'http',
             'name': _('Links'),
             'display_order': 1003,
