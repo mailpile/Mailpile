@@ -3,7 +3,7 @@
 {% if result.data %}
 {% set messagess_json = result.data.messages|json %}
 {% endif %}
-{% set tags_json = mailpile("tags", "display=*", "mode=flat").result.tags|json %}
+{% set tags_json = mailpile_render("json", "tags", "display=*", "mode=flat") %}
 $(document).ready(function() {
   mailpile.instance = {
    "command": "{{ command }}",
