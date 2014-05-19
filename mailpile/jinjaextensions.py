@@ -469,7 +469,7 @@ class MailpileCommand(Extension):
             return Markup(s).unescape()
 
     def _json(self, d):
-        return json.dumps(d)
+        return self.env.session.ui.render_json(d)
 
     def _nice_text(self, text):
         # trim starting & ending empty lines
