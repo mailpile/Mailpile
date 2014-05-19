@@ -25,11 +25,11 @@ from mailpile.vcard import AddressInfo
 
 class Command:
     """Generic command object all others inherit from"""
-    SYNOPSIS = (None,    # CLI shortcode, e.g. A:
-                None,    # CLI shortname, e.g. add
-                None,    # API endpoint, e.g. sys/addmailbox
-                None)    # Positional argument list
-    SYNOPSIS_ARGS = None # New-style positional argument list
+    SYNOPSIS = (None,     # CLI shortcode, e.g. A:
+                None,     # CLI shortname, e.g. add
+                None,     # API endpoint, e.g. sys/addmailbox
+                None)     # Positional argument list
+    SYNOPSIS_ARGS = None  # New-style positional argument list
     API_VERSION = None
     UI_CONTEXT = None
 
@@ -133,12 +133,13 @@ class Command:
             return self.as_template('txt', template)
 
         def as_template(self, etype, template=None):
-            tpath = self.command_obj.template_path(etype,
-                template_id=self.template_id, template=template)
+            tpath = self.command_obj.template_path(
+                etype, template_id=self.template_id, template=template)
 
             data = self.as_dict()
             data['title'] = self.message
             data['render_mode'] = 'full'
+
             def render():
                 return self.session.ui.render_web(
                     self.session.config, [tpath], data)
@@ -1054,7 +1055,9 @@ class ListDir(Command):
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
         try:
-            file_list = [(f.decode('utf-8'), os.path.getsize(f), os.path.isdir(f))
+            file_list = [(f.decode('utf-8'),
+                          os.path.getsize(f),
+                          os.path.isdir(f))
                          for f in os.listdir('.') if not f.startswith('.')
                          and not args or [a for a in args if a in f]]
             file_list.sort(key=lambda i: i[0].lower())
