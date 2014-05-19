@@ -283,6 +283,13 @@ class BaseMailSource(threading.Thread):
         if self._rescanning:
             self.session.config.index.interrupt = reason
 
+    def _process_new(self, msg, msg_ts, keywords, snippet):
+        if 'r' in msg.get('status', '').lower():
+            return False
+        keywords.update(['%s:in' % tag._key for tag in
+                         self.session.config.get_tags(type='unread')])
+        return True
+
     def _unlocked_rescan_mailbox(self, mbx_key):
         try:
             mbx = self.my_config.mailbox[mbx_key]
@@ -294,9 +301,14 @@ class BaseMailSource(threading.Thread):
                 # FIXME: Should copy any new messages to our local stash
                 pass
             self._rescanning = True
+            apply_tags = mbx.apply_tags[:]
+            if mbx.primary_tag:
+                apply_tags.append(mbx.primary_tag)
             return self.session.config.index.scan_mailbox(
                 self.session, mbx_key, mbx.local or mbx.path,
-                self.session.config.open_mailbox)
+                self.session.config.open_mailbox,
+                process_new=(mbx.process_new and self._process_new or False),
+                apply_tags=(apply_tags or []))
         except ValueError:
             return -1
         finally:

@@ -365,7 +365,7 @@ _plugins.register_commands(Retrain, Classify, AutoTag)
 
 ##[ Keywords ]################################################################
 
-def filter_hook(session, msg_mid, msg, keywords, is_new=True):
+def filter_hook(session, msg_mid, msg, keywords, **ignored_kwargs):
     """Classify this message."""
     config = session.config
     for at_config in config.prefs.autotag:

@@ -470,7 +470,8 @@ class MailIndex:
             print _('WARNING: No proper Message-ID for %s') % msg_ptr
         return self.encode_msg_id(raw_msg_id or msg_ptr)
 
-    def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener):
+    def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
+                     process_new=None, apply_tags=None):
         try:
             self._lock.acquire()
             mbox = mailbox_opener(session, mailbox_idx)
@@ -545,11 +546,9 @@ class MailIndex:
                     self._update_location(session, self.MSGIDS[msg_id], msg_ptr)
                     updated += 1
                 else:
-                    msg_info = self._index_new_message(session,
-                                                       msg_id, msg_ptr,
-                                                       msg_fd.tell(), msg,
-                                                       last_date + 1,
-                                                       mailbox_idx)
+                    msg_info = self._index_incoming_message(
+                        session, msg_id, msg_ptr, msg_fd.tell(), msg,
+                        last_date + 1, mailbox_idx, process_new, apply_tags)
                     last_date = long(msg_info[self.MSG_DATE], 36)
                     GlobalPostingList.Optimize(session, self,
                                                lazy=True, quick=True)
@@ -606,7 +605,8 @@ class MailIndex:
     # FIXME: Finish merging this function with the one below it...
     def _extract_info_and_index(self, session, mailbox_idx,
                                 msg_mid, msg_id,
-                                msg_size, msg, default_date, is_new):
+                                msg_size, msg, default_date,
+                                **index_kwargs):
         # Extract info from the message headers
         msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg,
                                        default_date)
@@ -621,7 +621,7 @@ class MailIndex:
                                     mailbox=mailbox_idx,
                                     compact=False,
                                     filter_hooks=filters,
-                                    is_new=is_new)
+                                    **index_kwargs)
 
         snippet_max = session.config.sys.snippet_max
         self.truncate_body_snippet(bi, max(0, snippet_max - len(msg_subj)))
@@ -632,14 +632,17 @@ class MailIndex:
 
         return (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags)
 
-    def _index_new_message(self, session,
-                           msg_id, msg_ptr, msg_size, msg, default_date,
-                           mailbox_idx, is_new=True):
+    def _index_incoming_message(self, session,
+                                msg_id, msg_ptr, msg_size, msg, default_date,
+                                mailbox_idx, process_new, apply_tags):
         msg_mid = b36(len(self.INDEX))
         (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags
          ) = self._extract_info_and_index(session, mailbox_idx,
                                           msg_mid, msg_id, msg_size, msg,
-                                          default_date, is_new)
+                                          default_date,
+                                          process_new=process_new,
+                                          apply_tags=apply_tags,
+                                          incoming=True)
         msg_idx_pos, msg_info = self.add_new_msg(
             msg_ptr, msg_id, msg_ts, self.hdr(msg, 'from'),
             msg_to, msg_cc, msg_size, msg_subj, msg_body,
@@ -661,7 +664,7 @@ class MailIndex:
         (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags
          ) = self._extract_info_and_index(session, mailbox_idx,
                                           msg_mid, msg_id, msg_size, msg,
-                                          default_date, False)
+                                          default_date)
         self.edit_msg_info(msg_info,
                            msg_from=self.hdr(msg, 'from'),
                            msg_to=msg_to,
@@ -831,7 +834,7 @@ class MailIndex:
         self.set_msg_at_idx_pos(msg_idx_pos, msg_info)
         return msg_idx_pos, msg_info
 
-    def filter_keywords(self, session, msg_mid, msg, keywords, is_new=True):
+    def filter_keywords(self, session, msg_mid, msg, keywords, incoming=True):
         keywordmap = {}
         msg_idx_list = [msg_mid]
         for kw in keywords:
@@ -839,7 +842,7 @@ class MailIndex:
 
         import mailpile.plugins.tags
         ftypes = set(mailpile.plugins.tags.FILTER_TYPES)
-        if not is_new:
+        if not incoming:
             ftypes -= set(['incoming'])
 
         for (fid, terms, tags, comment, ftype
@@ -1021,15 +1024,30 @@ class MailIndex:
                 ).strip()
 
     def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
-                      mailbox=None, compact=True, filter_hooks=[],
-                      is_new=True):
+                      mailbox=None, compact=True, filter_hooks=None,
+                      process_new=None, apply_tags=None, incoming=True):
         keywords, snippet = self.read_message(session,
                                               msg_mid, msg_id, msg,
                                               msg_size, msg_ts,
                                               mailbox=mailbox)
 
-        for hook in filter_hooks:
-            keywords = hook(session, msg_mid, msg, keywords, is_new=is_new)
+        # Apply the defaults for this mail source / mailbox.
+        if apply_tags:
+            keywords |= set(['%s:in' % tid for tid in apply_tags])
+        if process_new:
+            process_new(msg, msg_ts, keywords, snippet)
+        elif incoming:
+            # This is the default behavior if the above are undefined.
+            if process_new is None:
+                keywords |= set(['%s:in' % tag._key for tag in
+                                 self.config.get_tags(type='unread')])
+            if apply_tags is None:
+                keywords |= set(['%s:in' % tag._key for tag in
+                                 self.config.get_tags(type='inbox')])
+
+        for hook in filter_hooks or []:
+            keywords = hook(session, msg_mid, msg, keywords,
+                            incoming=incoming)
 
         for word in keywords:
             if (word.startswith('__') or

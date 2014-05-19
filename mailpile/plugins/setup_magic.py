@@ -180,9 +180,6 @@ class Setup(Command):
                 })
 
         if 'New' in created:
-            Filter(session,
-                   arg=['new', '@incoming', '+Inbox', '+New',
-                        'Incoming mail filter']).run(save=False)
             session.ui.notify(_('Created default tags'))
 
         # Import all the basic plugins

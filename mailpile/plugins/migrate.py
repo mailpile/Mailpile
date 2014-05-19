@@ -82,9 +82,9 @@ def migrate_mailboxes(session):
     macmaildirs = []
     thunderbird = []
 
-    spam_tid = config.get_tags(type='spam')[0]._key
-    trash_tid = config.get_tags(type='trash')[0]._key
-    inbox_tid = config.get_tags(type='inbox')[0]._key
+    spam_tids = [tag._key for tag in config.get_tags(type='spam')]
+    trash_tids = [tag._key for tag in config.get_tags(type='trash')]
+    inbox_tids = [tag._key for tag in config.get_tags(type='inbox')]
 
     # Iterate through config.sys.mailbox, sort mailboxes by type
     for mbx_id, path in config.sys.mailbox.iteritems():
@@ -111,24 +111,27 @@ def migrate_mailboxes(session):
             config.sources.tbird.discovery.create_tag = True
 
         config.sources.tbird.discovery.policy = 'read'
+        config.sources.tbird.discovery.process_new = True
         tbird_src = MboxMailSource(session, config.sources.tbird)
 
         # Configure discovery policy?
         root = _common_path([path for mbx_id, path in thunderbird])
         if 'thunderbird' in root.lower():
+            # FIXME: This is wrong, we should create a mailbox entry
+            #        with the policy 'watch'.
             tbird_src.my_config.discovery.path = root
 
         # Take over all the mailboxes
         for mbx_id, path in thunderbird:
             mbx = tbird_src.take_over_mailbox(mbx_id)
             if 'inbox' in path.lower():
-                mbx.apply_tags.append(inbox_tid)
+                mbx.apply_tags.extend(inbox_tids)
             elif 'spam' in path.lower() or 'junk' in path.lower():
-                mbx.apply_tags.append(spam_tid)
+                mbx.apply_tags.extend(spam_tids)
             elif 'trash' in path.lower():
-                mbx.apply_tags.append(trash_tid)
+                mbx.apply_tags.extend(trash_tids)
 
-        config.sources.tbird.discovery.policy = 'unknown'
+        tbird_src.my_config.discovery.policy = 'unknown'
 
     for name, mailboxes, proto, description, cls in (
         ('mboxes', mboxes, 'mbox', 'Unix mbox files', MboxMailSource),
@@ -143,6 +146,8 @@ def migrate_mailboxes(session):
                 }
                 config.sources[name].discovery.create_tag = False
             config.sources[name].discovery.policy = 'read'
+            config.sources[name].discovery.process_new = True
+            config.sources[name].discovery.apply_tags = inbox_tids[:]
             src = cls(session, config.sources[name])
             for mbx_id, path in mailboxes:
                 mbx = src.take_over_mailbox(mbx_id)
@@ -153,6 +158,7 @@ def migrate_mailboxes(session):
 
 MIGRATIONS_BEFORE_SETUP = [migrate_routes]
 MIGRATIONS_AFTER_SETUP = [migrate_mailboxes]
+
 
 class Migrate(Command):
     """Perform any needed migrations"""
