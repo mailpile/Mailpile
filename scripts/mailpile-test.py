@@ -138,6 +138,7 @@ def test_load_save_rescan():
                     'tag:mp_sig-unverified'],
                    ['from:barnaby', 'subject:testing', 'soup',
                     'tag:mp_sig-unknown', 'tag:mp_enc-decrypted'],
+                   ['from:square', 'subject:here', '-has:attachment'],
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
@@ -145,7 +146,7 @@ def test_load_save_rescan():
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['stats']['count'] == 16)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 17)
 
     say('FIXME: Make sure message signatures verified')
 
