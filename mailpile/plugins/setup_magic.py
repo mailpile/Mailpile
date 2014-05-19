@@ -227,40 +227,43 @@ class Setup(Command):
         #             one made for you, if GnuPG is available.
         #             If GnuPG is not available, you should be warned.
         gnupg = GnuPG()
+        accepted_keys = []
         if gnupg.is_available():
             keys = gnupg.list_secret_keys()
-            if len(keys) == 0:
+            for key, details in keys.iteritems():
+                # Ignore revoked/expired keys.
+                if ("revocation-date" in details and
+                    details["revocation-date"] <=
+                        date.today().strftime("%Y-%m-%d")):
+                    continue
+
+                accepted_keys.append(key)
+                for uid in details["uids"]:
+                    if "email" not in uid or uid["email"] == "":
+                        continue
+
+                    if uid["email"] in [x["email"]
+                                        for x in session.config.profiles]:
+                        # Don't set up the same e-mail address twice.
+                        continue
+
+                    # FIXME: Add route discovery mechanism.
+                    profile = {
+                        "email": uid["email"],
+                        "name": uid["name"],
+                    }
+                    session.config.profiles.append(profile)
+                if not session.config.prefs.gpg_recipient:
+                    session.config.prefs.gpg_recipient = key
+                    session.ui.notify(_('Encrypting config to %s') % key)
+                if session.config.prefs.crypto_policy == 'none':
+                    session.config.prefs.crypto_policy = 'openpgp-sign'
+
+            if len(accepted_keys) == 0:
                 # FIXME: Start background process generating a key once a user
                 #        has supplied a name and e-mail address.
                 pass
-            else:
-                for key, details in keys.iteritems():
-                    # Ignore revoked/expired keys.
-                    if ("revocation-date" in details and 
-                        details["revocation-date"] <= 
-                            date.today().strftime("%Y-%m-%d")):
-                        continue
 
-                    for uid in details["uids"]:
-                        if "email" not in uid or uid["email"] == "":
-                            continue
-
-                        if uid["email"] in [x["email"]
-                                            for x in session.config.profiles]:
-                            # Don't set up the same e-mail address twice.
-                            continue
-
-                        # FIXME: Add route discovery mechanism.
-                        profile = {
-                            "email": uid["email"],
-                            "name": uid["name"],
-                        }
-                        session.config.profiles.append(profile)
-                    if not session.config.prefs.gpg_recipient:
-                        session.config.prefs.gpg_recipient = key
-                        session.ui.notify(_('Encrypting config to %s') % key)
-                    if session.config.prefs.crypto_policy == 'none':
-                        session.config.prefs.crypto_policy = 'openpgp-sign'
         else:
             session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 
