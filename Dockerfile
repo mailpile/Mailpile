@@ -7,10 +7,10 @@ RUN apt-get update -y
 RUN echo "APT::Get::Assume-Yes true;" >>/etc/apt/apt.conf
 
 # Add code & install the requirements
-RUN apt-get install make python-pip
+RUN apt-get install make python-pip && apt-get clean
 ADD Makefile /Mailpile/Makefile
 WORKDIR /Mailpile
-RUN make debian-dev
+RUN make debian-dev && apt-get clean
 
 # Add code
 ADD . /Mailpile
