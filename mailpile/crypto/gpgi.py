@@ -257,6 +257,19 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         keys = {}
         curkey = None
 
+        def parse_capabilities(curkey, caps):
+            if "e" in caps or "E" in caps:
+                keys[curkey]["capabilities"]["encrypt"] = True
+            if "s" in caps or "S" in caps:
+                keys[curkey]["capabilities"]["sign"] = True
+            if "c" in caps or "C" in caps:
+                keys[curkey]["capabilities"]["certify"] = True
+            if "a" in caps or "A" in caps:
+                keys[curkey]["capabilities"]["authenticate"] = True
+            if "D" in caps:
+                keys[curkey]["disabled"] = True
+
+
         def parse_pubkey(line, curkey, keys):
             keys[line[4]] = {
                 "size": int(line[2]),
@@ -265,11 +278,20 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 "subkeys": [],
                 "signatures": [],
                 "trust": line[1],
-                "algorithm": int(line[3])
+                "algorithm": int(line[3]),
+                "capabilities": {
+                    "encrypt": False,
+                    "sign": False,
+                    "certify": False,
+                    "authenticate": False,
+                },
+                "disabled": False
             }
+
             if line[6] != "":
                 keys[line[4]]["revocation-date"] = line[5]
             curkey = line[4]
+            parse_capabilities(curkey, line[11])
             curkey, keys = parse_uidline(line, curkey, keys)
             return (curkey, keys)
 
@@ -277,6 +299,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             subkey = {"id": line[4], "size": int(line[2]),
                       "creation-date": line[5],
                       "algorithm": int(line[3])}
+            parse_capabilities(curkey, line[11])
             if line[0] == "ssb":
                 subkey["secret"] = True
             keys[curkey]["subkeys"].append(subkey)
@@ -605,7 +628,24 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         >>> g.list_secret_keys()[0]
         0
         """
-        retvals = self.run(["--list-secret-keys", "--fingerprint"],
+        #
+        # Note: The "." parameter that is passed is to work around a bug
+        #       in GnuPG < 2.1, where --list-secret-keys does not list
+        #       details about key capabilities or expiry for 
+        #       --list-secret-keys unless a selector is provided. A dot
+        #       is reasonably likely to appear in all PGP keys, as it is
+        #       a common component of e-mail addresses (and @ does not
+        #       work as a selector for some reason...)
+        #
+        #       The downside of this workaround is that keys with no e-mail
+        #       address or an address like alice@localhost won't be found.
+        #       Therefore, this paramter should be removed when GnuPG >= 2.1
+        #       becomes commonplace.
+        #
+        #       (This is a better workaround than doing an additional 
+        #       --list-keys and trying to aggregate it though...)
+        #
+        retvals = self.run(["--list-secret-keys", ".", "--fingerprint"],
                            callbacks={"stdout": self.parse_keylist})
         if retvals[1]["stdout"]:
             return retvals[1]["stdout"][0]
