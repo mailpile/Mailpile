@@ -237,6 +237,10 @@ class GnuPG:
 
         return sig
 
+    def version(self):
+        retvals = self.run(["--version"],  callbacks={"stdout": self.default_output})
+        return retvals[1]["stdout"][0].split('\n')[0]
+
     def parse_keylist(self, keylist, *args):
         """
         >>> g = GnuPG()
