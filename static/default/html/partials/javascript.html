@@ -1,16 +1,17 @@
 <script src="/static/js/mailpile.js"></script>
 <script>
 {% if result.data and result.data.messages %}
-{% set messagess_json = result.data.messages|json %}
+{% set messages_json = result.data.messages|json %}
+{# result.data.messages|json #}
 {% endif %}
-{% set tags_json = mailpile("tags", "display=*", "mode=flat").result|json %}
+{% set tags_json = mailpile("tags", "display=*", "mode=flat").result.tags|json %}
 $(document).ready(function() {
   mailpile.instance = {
    "command": "{{ command }}",
    "args": "{{ args }}",
-   {% if result.data and result.data.messages %}"messages": {{ messagess_json|safe }},{% endif %}
+   "messages": {% if result.data and result.data.messages %}{{ messages_json|safe }}{% else %}{}{% endif %},
    "tags": {{ tags_json|safe }},
-   {% if result.search_tag_ids %}"search_tag_ids": {{result.search_tag_ids|safe }}{% endif %}
+   "search_tag_ids": {% if result.search_tag_ids %}{{result.search_tag_ids|safe }}{% else %}[]{% endif %}
   };
 });
 </script>
