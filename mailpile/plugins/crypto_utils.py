@@ -125,8 +125,8 @@ class GPGKeyList(Command):
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/keylist', 
                 'crypto/gpg/keylist', '<address>')
-    HTTP_CALLABLE = ('POST', )
-    HTTP_QUERY_VARS = {'mid': 'Message ID', 'att': 'Attachment ID'}
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {'address': 'E-mail address'}
 
     def command(self):
         args = list(self.args)
@@ -136,10 +136,13 @@ class GPGKeyList(Command):
             addr = self.data.get("address", None)
 
         if addr is None:
-            return []
+            return self._error("Must supply e-mail address", None)
 
         g = GnuPG()
-        return g.address_to_keys(args[0])
+        res = g.address_to_keys(args[0])
+        return self._success("Searched for keys for e-mail address", res)
+
+
 
 
 class NicknymGetKey(Command):
