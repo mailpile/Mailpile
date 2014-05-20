@@ -143,6 +143,60 @@ class GPGKeyList(Command):
         return self._success("Searched for keys for e-mail address", res)
 
 
+class GPGUsageStatistics(Search):
+    """Get usage statistics from mail, given an address"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/statistics', 
+                'crypto/gpg/statistics', '<address>')
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {'address': 'E-mail address'}
+
+    class CommandResult(Command.CommandResult):
+        def __init__(self, *args, **kwargs):
+            Command.CommandResult.__init__(self, *args, **kwargs)
+
+        def as_text(self):
+            if self.result:
+                return "%d%% of e-mail from %s has PGP signatures (%d/%d)" % (
+                    100*self.result["ratio"],
+                    self.result["address"],
+                    self.result["pgpsigned"],
+                    self.result["messages"])
+            return ""
+
+    def command(self):
+        args = list(self.args)
+        if len(args) >= 0:
+            addr = args[0]
+        else:
+            addr = self.data.get("address", None)
+
+        if addr is None:
+            return self._error("Must supply an address", None)
+
+        session, idx, _, _ = self._do_search(search=["from:%s" % addr])
+        total = 0
+        for messageid in session.results:
+            total += 1
+
+        session, idx, _, _ = self._do_search(search=["from:%s" % addr, 
+            "has:pgp"])
+        pgp = 0
+        for messageid in session.results:
+            pgp += 1
+
+        if total > 0:
+            ratio = float(pgp)/total
+        else:
+            ratio = 0
+
+        res = {"messages": total, 
+               "pgpsigned": pgp, 
+               "ratio": ratio,
+               "address": addr}
+
+        return self._success("Got statistics for address", res)
+
 
 
 class NicknymGetKey(Command):
@@ -190,5 +244,6 @@ _plugins.register_commands(GPGKeyReceive)
 _plugins.register_commands(GPGKeyImport)
 _plugins.register_commands(GPGKeyImportFromMail)
 _plugins.register_commands(GPGKeyList)
+_plugins.register_commands(GPGUsageStatistics)
 _plugins.register_commands(NicknymGetKey)
 _plugins.register_commands(NicknymRefreshKeys)
