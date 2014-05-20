@@ -933,12 +933,10 @@ class ConfigManager(ConfigDict):
         filename = filename or self.conffile
         lines = []
         try:
-            fd = open(filename, 'rb')
-            try:
+            with open(filename, 'rb') as fd:
                 decrypt_and_parse_lines(fd, lambda l: lines.append(l), None)
-            except ValueError:
-                pass
-            fd.close()
+        except ValueError:
+            pass
         except IOError:
             pass
 

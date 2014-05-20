@@ -4,6 +4,7 @@
 #
 import cgi
 import datetime
+import distutils
 import hashlib
 import locale
 import re
@@ -16,6 +17,7 @@ import threading
 import time
 import StringIO
 from gettext import gettext as _
+from mailpile.crypto.gpgi import GnuPG
 
 try:
     from PIL import Image
@@ -337,15 +339,15 @@ def decrypt_gpg(lines, fd):
         if line.startswith(GPG_END_MESSAGE):
             break
 
-    gpg = subprocess.Popen(['gpg', '--batch'],
-                           stdin=subprocess.PIPE,
-                           stderr=subprocess.PIPE,
-                           stdout=subprocess.PIPE)
-    lines = gpg.communicate(input=''.join(lines))[0].splitlines(True)
-    if gpg.wait() != 0:
-        raise AccessError("GPG was unable to decrypt the data.")
+    gpg = GnuPG()
+    _, encryption_info, plaintext = gpg.decrypt(''.join(lines))
 
-    return lines
+    if encryption_info['status'] != 'decrypted':
+        gpg_exec = distutils.spawn.find_executable('gpg')
+        gpg_version = gpg.version()
+        raise AccessError("GPG (version: %s, location: %s) was unable to decrypt the data: %s" % (gpg_version, gpg_exec, encryption_info['status']))
+
+    return plaintext.splitlines(True)
 
 
 def decrypt_and_parse_lines(fd, parser, config, newlines=False):
