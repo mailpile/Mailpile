@@ -1,6 +1,6 @@
 import unittest
 import mailpile
-
+from mock import patch
 from mailpile.commands import Action as action
 
 from tests import MailPileUnittest
@@ -113,25 +113,52 @@ class TestTagging(MailPileUnittest):
 
 
 class TestGPG(MailPileUnittest):
-#   def test_key_search(self):
-#       res = action(self.mp._session, "crypto/gpg/searchkey", "D13C70DA")
-#       email = res.result["D13C70DA"]["uids"][0]["email"]
-#       self.assertEqual(email, "smari@mailpile.is")
-#
-#   def test_key_receive(self):
-#       res = action(self.mp._session, "crypto/gpg/receivekey","D13C70DA")
-#       self.assertEqual(res.result[0]["updated"][0]["fingerprint"],
-#                        "08A650B8E2CBC1B02297915DC65626EED13C70DA")
+    def test_key_search(self):
+        gpg_result = {
+            "D13C70DA": {
+                "uids": [
+                    {
+                        "email": "smari@mailpile.is"
+                    }
+                ]
+            }
+        }
+
+        with patch('mailpile.plugins.crypto_utils.GnuPG') as gpg_mock:
+            gpg_mock.return_value.search_key.return_value = gpg_result
+
+            res = action(self.mp._session, "crypto/gpg/searchkey", "D13C70DA")
+            email = res.result["D13C70DA"]["uids"][0]["email"]
+            self.assertEqual(email, "smari@mailpile.is")
+            gpg_mock.return_value.search_key.assert_called_with("D13C70DA")
+
+    def test_key_receive(self):
+        gpg_result = {
+            "updated": [
+                {
+                    "fingerprint": "08A650B8E2CBC1B02297915DC65626EED13C70DA"
+                }
+            ]
+        }
+
+        with patch('mailpile.plugins.crypto_utils.GnuPG') as gpg_mock:
+            gpg_mock.return_value.recv_key.return_value = gpg_result
+
+            res = action(self.mp._session, "crypto/gpg/receivekey", "D13C70DA")
+            self.assertEqual(res.result[0]["updated"][0]["fingerprint"],
+                             "08A650B8E2CBC1B02297915DC65626EED13C70DA")
+            gpg_mock.return_value.recv_key.assert_called_with("D13C70DA")
 
     def test_key_import(self):
         res = action(self.mp._session, "crypto/gpg/importkey", 'testing/pub.key')
-        self.assertEqual(res.result["results"]["count"] , 1)
+        self.assertEqual(res.result["results"]["count"], 1)
 
     def test_nicknym_get_key(self):
         pass
 
     def test_nicknym_refresh_key(self):
         pass
+
 
 if __name__ == '__main__':
     unittest.main()
