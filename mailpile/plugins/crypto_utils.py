@@ -119,6 +119,29 @@ class GPGKeyImportFromMail(Search):
 
         return self._error("No results found", None)
 
+
+class GPGKeyList(Command):
+    """Import a GPG Key."""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/keylist', 
+                'crypto/gpg/keylist', '<address>')
+    HTTP_CALLABLE = ('POST', )
+    HTTP_QUERY_VARS = {'mid': 'Message ID', 'att': 'Attachment ID'}
+
+    def command(self):
+        args = list(self.args)
+        if len(args) >= 0:
+            addr = args[0]
+        else:
+            addr = self.data.get("address", None)
+
+        if addr is None:
+            return []
+
+        g = GnuPG()
+        return g.address_to_keys(args[0])
+
+
 class NicknymGetKey(Command):
     """Get a key from a nickserver"""
     ORDER = ('', 0)
@@ -163,5 +186,6 @@ _plugins.register_commands(GPGKeySearch)
 _plugins.register_commands(GPGKeyReceive)
 _plugins.register_commands(GPGKeyImport)
 _plugins.register_commands(GPGKeyImportFromMail)
+_plugins.register_commands(GPGKeyList)
 _plugins.register_commands(NicknymGetKey)
 _plugins.register_commands(NicknymRefreshKeys)
