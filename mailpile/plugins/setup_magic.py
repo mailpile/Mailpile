@@ -253,7 +253,8 @@ class Setup(Command):
                         "name": uid["name"],
                     }
                     session.config.profiles.append(profile)
-                if not session.config.prefs.gpg_recipient:
+                if (not session.config.prefs.gpg_recipient
+                   and details["capabilities"]["encrypt"]):
                     session.config.prefs.gpg_recipient = key
                     session.ui.notify(_('Encrypting config to %s') % key)
                 if session.config.prefs.crypto_policy == 'none':
