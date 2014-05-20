@@ -39,6 +39,7 @@
   @colorSelectHover: lighten(@yellow, 30%);
   @colorExpand: lighten(@blue, 50%);
 
+
 /* Body */
 
 	@body-background-color: #ffffff;
@@ -175,11 +176,10 @@
 		font-size: 16px;
 		font-weight: bold;
 		line-height: normal;
-		text-shadow: @shadow; 		
 		text-decoration: none;
 
 		// Display
-		padding: 8px 15px;
+		padding: 7px 10px;
 		display: inline-block;
 		cursor: pointer;
 		-webkit-box-sizing: border-box;
@@ -191,17 +191,24 @@
 	  -moz-user-select:none;
 	  -ms-user-select:none;
 	  user-select:none;
-	    
+    outline: none;
+
 	  // Animate
 	  -webkit-transition-duration: 0.2s;
 	  -moz-transition-duration: 0.2s;
-    transition-duration: 0.2s;	    
+    transition-duration: 0.2s;	 
+
+    // Shadow
+    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,03,0.3);
+    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,0,0.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,0,0.3);
 	}
 
 	.button-border(@border-color) {
-		border: 0px solid @border-color, ;
-		border-top: 0px solid (@border-color + #222222);
-		border-left: 0px solid (@border-color + #222222);
+		border: 1px solid @border-color, ;
+		border-top: 1px solid (@border-color + #222222);
+		border-left: 1px solid (@border-color + #222222);
+
 		-moz-border-radius: 4px;
 		-webkit-border-radius: 4px;
 		border-radius: 4px;
@@ -220,14 +227,14 @@
 	@button-primary-border: @blue;
 	@button-primary-border-hover: @blue;
 	
-	@button-secondary-top: @green;
+	@button-secondary-top: @grayLight;
 	@button-secondary-top-hover: darken(@button-secondary-top, 20%);
-	@button-secondary-bottom: @green;
+	@button-secondary-bottom: @grayLight;
 	@button-secondary-bottom-hover: darken(@button-secondary-bottom, 20%);
-	@button-secondary-color: @white;
+	@button-secondary-color: @grayLight;
 	@button-secondary-shadow: @text-shadow-on-dark;
-	@button-secondary-border: #7ba2a7;
-	@button-secondary-border-hover: @blue;
+	@button-secondary-border: @grayMid;
+	@button-secondary-border-hover: @gray;
 
 	@button-alert-top: @brown;
 	@button-alert-top-hover: darken(@button-alert-top, 20%);
