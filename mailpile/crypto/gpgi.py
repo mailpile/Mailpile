@@ -907,7 +907,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             version 1 allows to search without 0x while version 2 requires 0x in front of the key id.
         """
         is_hex_keyid = False
-        if len(term) == GPG_KEYID_LENGTH:
+        if len(term) == GPG_KEYID_LENGTH or len(term) == 2*GPG_KEYID_LENGTH:
             hex_digits = set(string.hexdigits)
             is_hex_keyid = all(c in hex_digits for c in term)
 
