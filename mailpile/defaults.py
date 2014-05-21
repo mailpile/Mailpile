@@ -20,7 +20,7 @@ from mailpile.config import PathDict
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
-    'version': [_('Mailpile program version'), str, APPVER],
+    'version': [_('Mailpile program version'), False, APPVER],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'sys': [_('Technical system settings'), False, {
         'fd_cache_size':  (_('Max files kept open at once'), int,         500),

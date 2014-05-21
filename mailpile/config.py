@@ -85,10 +85,12 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
                 in ConfigParser.RawConfigParser.items(self, section)]
 
 
-def _MakeCheck(pcls, rules):
-    class CD(pcls):
+def _MakeCheck(pcls, name, comment, rules):
+    class Checker(pcls):
+        _NAME = name
         _RULES = rules
-    return CD
+        _COMMENT = comment
+    return Checker
 
 
 def _BoolCheck(value):
@@ -189,7 +191,8 @@ def _HostNameCheck(host):
         ...
     ValueError: Invalid hostname: not/a/hostname
     """
-    # FIXME: Check DNS?
+    # FIXME: We do not want to check the network, but rules for DNS are
+    #        still stricter than this so a static check could do more.
     if not unicode(host) == CleanText(unicode(host),
                                       banned=CleanText.NONDNS).clean:
         raise ValueError(_('Invalid hostname: %s') % host)
@@ -296,7 +299,7 @@ def RuledContainer(pcls):
     details, examples and tests.
     """
 
-    class RC(pcls):
+    class _RuledContainer(pcls):
         RULE_COMMENT = 0
         RULE_CHECKER = 1
         # Reserved ...
@@ -332,20 +335,26 @@ def RuledContainer(pcls):
         }
         _NAME = 'container'
         _RULES = None
+        _COMMENT = None
+        _MAGIC = True
 
         def __init__(self, *args, **kwargs):
             rules = kwargs.get('_rules', self._RULES or {})
             self._name = kwargs.get('_name', self._NAME)
-            self._comment = kwargs.get('_comment', None)
-            for kw in ('_rules', '_comment', '_name'):
+            self._comment = kwargs.get('_comment', self._COMMENT)
+            enable_magic =  kwargs.get('_magic', self._MAGIC)
+            for kw in ('_rules', '_comment', '_name', '_magic'):
                 if kw in kwargs:
                     del kwargs[kw]
 
             pcls.__init__(self)
             self._key = self._name
             self._rules_source = rules
+            self.rules = {}
             self.set_rules(rules)
             self.update(*args, **kwargs)
+
+            self._magic = enable_magic  # Enable the getitem/getattr magic
 
         def __str__(self):
             return json.dumps(self, sort_keys=True, indent=2)
@@ -423,38 +432,33 @@ def RuledContainer(pcls):
             comment = rule[self.RULE_COMMENT]
             value = rule[self.RULE_DEFAULT]
 
-            if type(check) == dict:
-                check_rule = rule[:]
-                check_rule[self.RULE_DEFAULT] = None
-                check_rule[self.RULE_CHECKER] = _MakeCheck(ConfigDict, check)
-                check_rule = {'_any': check_rule}
-            else:
-                check_rule = None
+            if (isinstance(check, dict) and value is not None
+                    and not isinstance(value, (dict, list))):
+                raise TypeError(_('Only lists or dictionaries can contain '
+                                  'dictionary values (key %s).') % name)
 
-            if isinstance(value, dict):
-                rule[self.RULE_CHECKER] = False
-                if check_rule:
-                    pcls.__setitem__(self, key, ConfigDict(_name=name,
-                                                           _comment=comment,
-                                                           _rules=check_rule))
-                else:
-                    pcls.__setitem__(self, key, ConfigDict(_name=name,
-                                                           _comment=comment,
-                                                           _rules=value))
+            if isinstance(value, dict) and check is False:
+                pcls.__setitem__(self, key, ConfigDict(_name=name,
+                                                       _comment=comment,
+                                                       _rules=value))
+
+            elif isinstance(value, dict):
+                if value:
+                    raise ValueError(_('Subsections must be immutable '
+                                       '(key %s).') % name)
+                sub_rule = {'_any': [rule[self.RULE_COMMENT], check, None]}
+                checker = _MakeCheck(ConfigDict, name, check, sub_rule)
+                pcls.__setitem__(self, key, checker())
+                rule[self.RULE_CHECKER] = checker
 
             elif isinstance(value, list):
-                rule[self.RULE_CHECKER] = False
-                if check_rule:
-                    pcls.__setitem__(self, key, ConfigList(_name=name,
-                                                           _comment=comment,
-                                                           _rules=check_rule))
-                else:
-                    pcls.__setitem__(self, key, ConfigList(
-                        _name=name,
-                        _comment=comment,
-                        _rules={
-                            '_any': [rule[self.RULE_COMMENT], check, None]
-                        }))
+                if value:
+                    raise ValueError(_('Lists cannot have default values '
+                                       '(key %s).') % name)
+                sub_rule = {'_any': [rule[self.RULE_COMMENT], check, None]}
+                checker = _MakeCheck(ConfigList, name, comment, sub_rule)
+                pcls.__setitem__(self, key, checker())
+                rule[self.RULE_CHECKER] = checker
 
             elif not isinstance(value, (type(None), int, long, bool,
                                         float, str, unicode)):
@@ -466,12 +470,21 @@ def RuledContainer(pcls):
 
         def get_rule(self, key):
             key = self.__fixkey__(key)
-            if key not in self.rules:
+            rule = self.rules.get(key, None)
+            if rule is None:
                 if '_any' in self.rules:
-                    return self.rules['_any']
-                raise InvalidKeyError(_('Invalid key for %s: %s'
-                                        ) % (self._name, key))
-            return self.rules[key]
+                    rule = self.rules['_any']
+                else:
+                    raise InvalidKeyError(_('Invalid key for %s: %s'
+                                            ) % (self._name, key))
+            if isinstance(rule[self.RULE_CHECKER], dict):
+                rule = rule[:]
+                rule[self.RULE_CHECKER] = _MakeCheck(
+                    ConfigDict,
+                    '%s/%s' % (self._name, key),
+                    rule[self.RULE_COMMENT],
+                    rule[self.RULE_CHECKER])
+            return rule
 
         def ignored_keys(self):
             return set([k for k in self.rules
@@ -510,25 +523,28 @@ def RuledContainer(pcls):
                 return self.get(key)
             return pcls.__getitem__(self, key)
 
-        def __getattr__(self, attr, default=None):
+        def _getattr(self, attr):
             try:
-                rules = self.__getattribute__('rules')
+                return pcls.__getattribute__(self, attr)
             except AttributeError:
-                rules = {}
-            if self.__fixkey__(attr) in rules or '_any' in rules:
-                return self[attr]
-            else:
-                return self.__getattribute__(attr)
+                return False
+
+        def _hasattr(self, attr):
+            try:
+                pcls.__getattribute__(self, attr)
+                return True
+            except AttributeError:
+                return False
+
+        def __getattr__(self, attr, default=None):
+            if self._hasattr(attr) or not self._getattr('_magic'):
+                return pcls.__getattribute__(self, attr)
+            return self[attr]
 
         def __setattr__(self, attr, value):
-            try:
-                rules = self.__getattribute__('rules')
-            except AttributeError:
-                rules = {}
-            if self.__fixkey__(attr) in rules:
-                self.__setitem__(attr, value)
-            else:
-                pcls.__setattr__(self, attr, value)
+            if self._hasattr(attr) or not self._getattr('_magic'):
+                return pcls.__setattr__(self, attr, value)
+            self.__setitem__(attr, value)
 
         def __passkey__(self, key, value):
             if hasattr(value, '__passkey__'):
@@ -581,7 +597,7 @@ def RuledContainer(pcls):
             self.extend(src)
             return self
 
-    return RC
+    return _RuledContainer
 
 
 class ConfigList(RuledContainer(list)):
@@ -696,7 +712,7 @@ class ConfigDict(RuledContainer(dict)):
     ...                                            'x': ['X', str, '']}, []],
     ...                          'colors': ['Colors', ('red', 'blue'), []]})
     >>> sorted(pot.keys()), sorted(pot.values())
-    (['colors', 'liquids', 'tags'], [{...}, [], []])
+    (['colors', 'liquids', 'tags'], [[], [], {}])
 
     >>> pot['potatoes'] = pot['liquids']['vodka'] = "123"
     >>> pot['potatoes']
@@ -828,7 +844,8 @@ class ConfigManager(ConfigDict):
                                      os.path.expanduser('~/.mailpile'))
 
     def __init__(self, workdir=None, rules={}):
-        ConfigDict.__init__(self, _rules=rules)
+        ConfigDict.__init__(self, _rules=rules, _magic=False)
+
         self.workdir = workdir or self.DEFAULT_WORKDIR
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
 
@@ -845,6 +862,8 @@ class ConfigManager(ConfigDict):
         self.vcards = {}
         self._mbox_cache = {}
         self._running = {}
+
+        self._magic = True  # Enable the getattr/getitem magic
 
     def _mkworkdir(self, session):
         if not os.path.exists(self.workdir):
@@ -897,14 +916,12 @@ class ConfigManager(ConfigDict):
             okay = True
             cfgpath = section.split(':')[0].split('/')[1:]
             cfg = self
+            added_parts = []
             for part in cfgpath:
-                if part in cfg:
+                if part in cfg.keys():
                     cfg = cfg[part]
                 elif '_any' in cfg.rules:
-                    if isinstance(cfg, list):
-                        cfg.append({})
-                    else:
-                        cfg[part] = {}
+                    cfg[part] = {}
                     cfg = cfg[part]
                 else:
                     if session:
@@ -1328,6 +1345,7 @@ class ConfigManager(ConfigDict):
 ##############################################################################
 
 if __name__ == "__main__":
+    import copy
     import doctest
     import sys
     import mailpile.config
@@ -1335,18 +1353,90 @@ if __name__ == "__main__":
     import mailpile.plugins.tags
     import mailpile.ui
 
-    cfg = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
+    rules = copy.deepcopy(mailpile.defaults.CONFIG_RULES)
+    rules.update({
+        'nest1': ['Nest1', {
+            'nest2': ['Nest2', str, []],
+            'nest3': ['Nest3', {
+                'nest4': ['Nest4', str, []]
+            }, []],
+        }, {}]
+    })
+    cfg = mailpile.config.ConfigManager(rules=rules)
     session = mailpile.ui.Session(cfg)
     session.ui.block()
 
-    for tn in range(0, 11):
-        cfg.tags.append({'name': 'Test Tag %s' % tn})
+    def prnt(cfg, indent=''):
+        rv = []
+        if isinstance(cfg, dict):
+            pairer = cfg.iteritems()
+        else:
+            pairer = enumerate(cfg)
+        for key, val in pairer:
+            if hasattr(val, 'rules'):
+                preamble = '[%s: %s] ' % (val._NAME, val._COMMENT)
+            else:
+                preamble = ''
+            if isinstance(val, (dict, list, tuple)):
+                if isinstance(val, dict):
+                    b, e = '{', '}'
+                else:
+                    b, e = '[', ']'
+                rv.append(('%s: %s%s\n%s\n%s'
+                           '' % (key, preamble, b, prnt(val, '  '), e)
+                           ).replace('\n  \n', ''))
+            elif isinstance(val, (str, unicode)):
+                rv.append('%s: "%s"' % (key, val))
+            else:
+                rv.append('%s: %s' % (key, val))
+        return indent + ',\n'.join(rv).replace('\n', '\n'+indent)
 
-    assert(cfg.tags.a['name'] == 'Test Tag 10')
+    for tries in (1, 2):
+        # This tests that we can set (and reset) dicts of unnested objects
+        cfg.tags = {}
+        assert(cfg.tags.a is None)
+        for tn in range(0, 11):
+            cfg.tags.append({'name': 'Test Tag %s' % tn})
+        assert(cfg.tags.a['name'] == 'Test Tag 10')
+
+        # This tests the same thing for lists
+        cfg.profiles = []
+        assert(len(cfg.profiles) == 0)
+        cfg.profiles.append({'name': 'Test Profile'})
+        assert(len(cfg.profiles) == 1)
+        assert(cfg.profiles[0].name == 'Test Profile')
+
+        # This is the complicated one: multiple nesting layers
+        cfg.nest1 = {}
+        assert(cfg.nest1.a is None)
+        cfg.nest1.a = {
+            'nest2': ['hello', 'world'],
+            'nest3': [{'nest4': ['Hooray']}]
+        }
+        cfg.nest1.b = {
+            'nest2': ['hello', 'world'],
+            'nest3': [{'nest4': ['Hooray', 'Bravo']}]
+        }
+        assert(cfg.nest1.a.nest3[0].nest4[0] == 'Hooray')
+        assert(cfg.nest1.b.nest3[0].nest4[1] == 'Bravo')
+
     assert(cfg.sys.http_port ==
            mailpile.defaults.CONFIG_RULES['sys'][-1]['http_port'][-1])
     assert(cfg.sys.path.vcards == 'vcards')
     assert(cfg.walk('sys.path.vcards') == 'vcards')
+
+    # Verify that the tricky nested stuff from above persists and
+    # load/save doesn't change lists.
+    for passes in (1, 2, 3):
+        cfg2 = mailpile.config.ConfigManager(rules=rules)
+        cfg2.parse_config(session, cfg.as_config_bytes())
+        cfg.parse_config(session, cfg2.as_config_bytes())
+        assert(cfg2.nest1.a.nest3[0].nest4[0] == 'Hooray')
+        assert(cfg2.nest1.b.nest3[0].nest4[1] == 'Bravo')
+        assert(len(cfg2.nest1) == 2)
+        assert(len(cfg.nest1) == 2)
+        assert(len(cfg.profiles) == 1)
+        assert(len(cfg.tags) == 11)
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'cfg': cfg,
