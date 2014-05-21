@@ -4,8 +4,14 @@
 	  min-width: 800px;
 	  margin-top: 62px;	  
     margin-left: 225px;
-    background: @grayLight;
 	}
+
+	#content-wide {
+	  width: 96%;
+	  margin-top: 62px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
   #content-tools {
     z-index: 10; 
@@ -122,12 +128,12 @@
 /* Content View */
 
   #content-view {
-    background: @grayLight;
     position: relative;
     top: 80px;
     min-height: 500px;
     overflow-y: auto;
     z-index: 5;
+    background: @grayLight;
   }
 
   div.content-normal {
@@ -156,13 +162,13 @@
 
 /* FIXME: Responsive Boxes (need to debug move to using Rebar lib) */
 
-  .boxy			      { background: @white; border: 1px solid @grayMid; width: 22%; padding-bottom: 20%; position: relative; float: left; margin: 20px 0px 0px 20px; display: block; }
-  .boxy:hover		  { background: @grayLight; }
-  .boxy-inner		  { position: absolute; left: 1px; right: 1px; top: 1px; bottom: 1px; padding: 10px;  color: #555555; overflow: hidden; }
-  .boxy-inner i	  { margin: .3em 0 .2em .2em; display: block; }
-  .boxy-inner .contact-avatar { float: left; margin: 0 15px 15px 0;  }
-  .boxy-inner .contact-name { font-size: 18px; }
-  .boxy-inner p	  { }
+  .boxes-outer			{ background: @white; border: 1px solid @grayMid; border-radius: @base-border-radius; }
+  .boxes-outer:hover{ background: @grayLight; }
+  .boxes-inner		  {  }
+  .boxes-inner i	  { margin: 0; display: block; }
+  .boxes-inner .contact-avatar { float: left; margin: 0;  }
+  .boxes-inner .contact-name { font-size: 18px; }
+  .boxes-inner p	  { }
 
 /* Modal */
 
