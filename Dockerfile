@@ -16,7 +16,7 @@ RUN make debian-dev && apt-get clean
 ADD . /Mailpile
 
 # Setup
-RUN ./mp setup
+RUN ./mp --setup
 RUN ./mp --set sys.http_host=0.0.0.0
 
 CMD /Mailpile/mp www
