@@ -445,13 +445,16 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         
         @return: proc.returncode, retvals
         """
-        try :
-            import fcntl # Unix-only
-            return self._run_with_fcntl(fcntl, args, callbacks, output, debug)
-        except ImportError : # perhaps on Windows
-            raise NotImplementedError("Currently not for windows")
+        try : # Try on POSIX
+            return self._run_with_fcntl(args, callbacks, output, debug)
+        except ImportError: # perhaps on Windows
+            return self._run_with_windows(args, callbacks, output, debug)
+        except ImportError: # Where are we?
+            raise NotImplementedError("Unknown operating system")
 
-    def _run_with_fcntl(self, fcntl, args, callbacks, output, debug):
+    def _run_with_fcntl(self, args, callbacks, output, debug):
+        import fcntl
+
         self.pipes = {}
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
@@ -578,6 +581,13 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 except Exception:
                     pass
             self.handles = {}
+
+    def _run_with_windows(self, args, callbacks, output, debug):
+        import win32con
+        import win32file
+        import pywintypes
+        # Implement me!
+        raise NotImplementedError("No Windows version yet")
 
     def is_available(self):
         try:
