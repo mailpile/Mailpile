@@ -9,7 +9,7 @@ dev:
 debian-dev:
 	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
 	                     ruby-dev yui-compressor python-nose spambayes \
-	                     phantomjs python-pip
+	                     phantomjs python-pip python-mock
 	if [ "$(shell cat /etc/debian_version)" = "jessie/sid"  ]; then\
 		 sudo apt-get install rubygems-integration;\
 	else \
