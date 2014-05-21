@@ -79,7 +79,7 @@ class GPGKeyImport(Command):
 class GPGKeySign(Command):
     """Sign a key."""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/gpg/keysign', 'crypto/gpg/keysign', '<keyid> [<signingkey>]')
+    SYNOPSIS = (None, 'crypto/gpg/signkey', 'crypto/gpg/signkey', '<keyid> [<signingkey>]')
     HTTP_CALLABLE = ('POST',)
     HTTP_QUERY_VARS = {'keyid': 'The key to sign',
                        'signingkey': 'The key to sign with'}
