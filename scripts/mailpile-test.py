@@ -42,7 +42,6 @@ os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
 cfg = config = mp._session.config
 cfg.plugins.load('demos', process_manifest=True)
-cfg.mailsources = mailsources = []
 
 
 def contents(fn):
