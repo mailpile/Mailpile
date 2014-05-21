@@ -72,21 +72,15 @@ $(document).on('click', '.message-crypto-investigate', function() {
   var message = mailpile.instance.messages[mid];
   var missing_keys = message.text_parts[part].crypto.encryption.missing_keys;
 
-  // Search Missing Keys
+  // Search Keyservers Missing Keys
   if (missing_keys.length) {
-
-    console.log(missing_keys);
-  
-    new_mailpile.api.crypto_gpg_searchkey(missing_keys[1], function(data) {
-
-      console.log(data);
-
-    });
-      
-    var modal_html = $("#modal-search-keyservers").html();
-    $('#modal-full').html(_.template(modal_html, { keys: '<li>Key of User #1</li>' }));
-    $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });  
-  
+    // FIXME: this needs to search all "missing_key" values
+    // this is tricky as searching multiple calls to keyservers
+    // can have much latency and slowness
+    new_mailpile.api.crypto_gpg_searchkey(missing_keys[0], function(data) {
+      var modal_html = $("#modal-search-keyservers").html();
+      $('#modal-full').html(_.template(modal_html, { keys: '<li>Key of User #1</li>' }));
+      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+    });     
   }
-    
 });
