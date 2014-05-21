@@ -868,6 +868,14 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
         return cryptblock
 
+    def sign_key(self, keyid, signingkey=None):
+        action = ["--yes", "--sign-key", keyid]
+        if signingkey:
+            action.insert(1, "-u")
+            action.insert(2, signingkey)
+        retvals = self.run(action)
+        return retvals
+
     def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
         return self.parse_import(retvals[1]["status"])

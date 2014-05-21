@@ -76,6 +76,31 @@ class GPGKeyImport(Command):
         g = GnuPG()
         return g.import_keys(key_data)
 
+class GPGKeySign(Command):
+    """Sign a key."""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/keysign', 'crypto/gpg/keysign', '<keyid> [<signingkey>]')
+    HTTP_CALLABLE = ('POST',)
+    HTTP_QUERY_VARS = {'keyid': 'The key to sign',
+                       'signingkey': 'The key to sign with'}
+
+    def command(self):
+        signingkey = None
+        keyid = None
+        args = list(self.args)
+        try: keyid = args.pop(0)
+        except: keyid = self.data.get("keyid", None)
+        try: signingkey = args.pop(0)
+        except: signingkey = self.data.get("signingkey", None)
+
+        print keyid
+        if not keyid:
+            return self._error("You must supply a keyid", None)
+
+        g = GnuPG()
+        return g.sign_key(keyid, signingkey)
+
+
 class GPGKeyImportFromMail(Search):
     """Import a GPG Key."""
     ORDER = ('', 0)
@@ -141,6 +166,8 @@ class GPGKeyList(Command):
         g = GnuPG()
         res = g.address_to_keys(args[0])
         return self._success("Searched for keys for e-mail address", res)
+
+
 
 
 class GPGUsageStatistics(Search):
@@ -243,6 +270,7 @@ _plugins.register_commands(GPGKeySearch)
 _plugins.register_commands(GPGKeyReceive)
 _plugins.register_commands(GPGKeyImport)
 _plugins.register_commands(GPGKeyImportFromMail)
+_plugins.register_commands(GPGKeySign)
 _plugins.register_commands(GPGKeyList)
 _plugins.register_commands(GPGUsageStatistics)
 _plugins.register_commands(NicknymGetKey)
