@@ -108,54 +108,8 @@ MailPile.prototype.render_modal_tags = function() {
 
 $(document).on('click', '#button-tag-change-icon', function() {
 
-  var icons = [
-    "icon-comment",
-    "icon-forum",
-    "icon-donate",
-    "icon-news",
-    "icon-photos",
-    "icon-image",
-    "icon-video",
-    "icon-themes",
-    "icon-links",
-    "icon-document",
-    "icon-text",
-    "icon-travel",
-    "icon-money",
-    "icon-receipts",
-    "icon-trophy",
-    "icon-calendar",
-    "icon-spreadsheet",
-    "icon-attachment",
-    "icon-user",
-    "icon-groups",
-    "icon-graph",
-    "icon-list",
-    "icon-checkmark",
-    "icon-alerts",
-    "icon-zip",
-    "icon-work",
-    "icon-star",
-    "icon-rss",
-    "icon-robot",
-    "icon-code",
-    "icon-privacy",
-    "icon-music",
-    "icon-lock-closed",
-    "icon-key",
-    "icon-home",
-    "icon-new",
-    "icon-compose",
-    "icon-inbox",
-    "icon-sent",
-    "icon-outbox",
-    "icon-spam",
-    "icon-trash"
-  ];
-
   var icons_html = '';
-
-  $.each(icons, function(key, icon) {
+  $.each(new_mailpile.theme.icons, function(key, icon) {
     icons_html += '<li class="modal-tag-icon-option ' + icon + '" data-icon="' + icon + '"></li>';
   });
 
@@ -185,31 +139,12 @@ $(document).on('click', '.modal-tag-icon-option', function() {
 
 
 $(document).on('click', '#button-tag-change-label-color', function(e) {
-
-  var colors = [
-    "#F6F6F6",
-    "#CCCCCC",
-    "#B3B3B3",
-    "#4D4D4D",
-    "#333333",
-    "#85B2E8",
-    "#337FB2",
-    "#A3CE73",
-  	"#4B9441",
-	  "#E9DB2F",
-	  "#FBB03B",
-  	"#F15A24",
-	  "#BE1C21",
-  	"#7D4837",
-  	"#90746C",
-  	"#F08DCA",
-    "#6A27A4"
-  ];
-
+  
+  var sorted_colors =  _.keys(new_mailpile.theme.colors).sort();
   var colors_html = '';
-
-  $.each(colors, function(key, color) {
-    colors_html += '<li><a href="#" class="modal-tag-color-option" style="background-color: ' + color + '" data-color="' + color + '"></a></li>';
+  $.each(sorted_colors, function(key, name) {
+    var hex = new_mailpile.theme.colors[name];
+    colors_html += '<li><a href="#" class="modal-tag-color-option" style="background-color: ' + hex + '" data-name="' + name + '" data-hex="' + hex + '"></a></li>';
   });
 
   var modal_html = $("#modal-tag-color-picker").html();
@@ -222,16 +157,17 @@ $(document).on('click', '.modal-tag-color-option', function(e) {
 
   var tid   = $('#data-tag-tid').val();
   var old   = $('#data-tag-label-color').val();
-  var color = $(this).data('color');
+  var name = $(this).data('name');
+  var hex = $(this).data('hex');
 
-  mailpile.tag_update(tid, 'label_color', color, function() {
+  mailpile.tag_update(tid, 'label_color', name, function() {
 
     // Update Sidebar
-    $('#sidebar-tag-' + tid).find('span.sidebar-icon').css('color', color);
+    $('#sidebar-tag-' + tid).find('span.sidebar-icon').css('color', hex);
 
     // Update Tag Editor
-    $('#data-tag-label-color').val(color);
-    $('#tag-editor-icon').css('color', color);
+    $('#data-tag-label-color').val(name);
+    $('#tag-editor-icon').css('color', hex);
     $('#modal-full').modal('hide');
   });
 });
