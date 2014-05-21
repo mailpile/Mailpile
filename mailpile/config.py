@@ -342,7 +342,7 @@ def RuledContainer(pcls):
             rules = kwargs.get('_rules', self._RULES or {})
             self._name = kwargs.get('_name', self._NAME)
             self._comment = kwargs.get('_comment', self._COMMENT)
-            enable_magic =  kwargs.get('_magic', self._MAGIC)
+            enable_magic = kwargs.get('_magic', self._MAGIC)
             for kw in ('_rules', '_comment', '_name', '_magic'):
                 if kw in kwargs:
                     del kwargs[kw]
@@ -416,9 +416,12 @@ def RuledContainer(pcls):
                 self.add_rule(key, rule)
 
         def add_rule(self, key, rule):
-            assert(isinstance(rule, (list, tuple)))
-            assert(key == CleanText(key, banned=CleanText.NONVARS).clean)
-            assert(not hasattr(self, key))
+            if not ((isinstance(rule, (list, tuple))) and
+                    (key == CleanText(key, banned=CleanText.NONVARS).clean) and
+                    (not self._hasattr(key))):
+                raise TypeError('add_rule(%s, %s): Bad key or rule.'
+                                % (key, rule))
+
             rule = list(rule[:])
             self.rules[key] = rule
             check = rule[self.RULE_CHECKER]
@@ -849,6 +852,7 @@ class ConfigManager(ConfigDict):
         self.workdir = workdir or self.DEFAULT_WORKDIR
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
 
+        self.plugins = None
         self.background = None
         self.cron_worker = None
         self.http_worker = None
@@ -1160,8 +1164,7 @@ class ConfigManager(ConfigDict):
                         "host": rcpts[0].split('@')[-1],
                         "port": 25,
                         "username": "",
-                        "password": ""
-                       }
+                        "password": ""}
         routeid = self.get_profile(frm)['messageroute']
         if self.routes[routeid] is not None:
             return self.routes[routeid]
@@ -1316,10 +1319,12 @@ class ConfigManager(ConfigDict):
                 if isinstance(i, (str, unicode)):
                     i = config.walk(i)
                 return int(i)
+
             def wrap_fast(func):
                 def wrapped():
                     return func(session)
                 return wrapped
+
             def wrap_slow(func):
                 def wrapped():
                     config.slow_worker.add_task(session, job,
