@@ -276,12 +276,12 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
 
         def parse_pubkey(line, curkey, keys):
             keys[line[4]] = {
-                "size": int(line[2]),
+                "keysize": int(line[2]),
                 "creation-date": line[5],
                 "uids": [],
                 "subkeys": [],
                 "trust": line[1],
-                "algorithm": openpgp_algorithms[int(line[3])],
+                "keytype": openpgp_algorithms[int(line[3])],
                 "capabilities": {
                     "encrypt": False,
                     "sign": False,
@@ -305,7 +305,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         def parse_subkey(line, curkey, keys):
             subkey = {"id": line[4], "size": int(line[2]),
                       "creation-date": line[5],
-                      "algorithm": openpgp_algorithms[int(line[3])]}
+                      "keytype": openpgp_algorithms[int(line[3])]}
             parse_capabilities(curkey, line[11])
             keys[curkey]["subkeys"].append(subkey)
             return (curkey, keys)
