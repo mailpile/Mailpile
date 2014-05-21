@@ -280,17 +280,20 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 "creation-date": line[5],
                 "uids": [],
                 "subkeys": [],
-                "signatures": [],
                 "trust": line[1],
-                "algorithm": int(line[3]),
+                "algorithm": openpgp_algorithms[int(line[3])],
                 "capabilities": {
                     "encrypt": False,
                     "sign": False,
                     "certify": False,
                     "authenticate": False,
                 },
-                "disabled": False
+                "disabled": False,
+                "private_key": False
             }
+
+            if line[0] == "sec":
+                keys[line[4]]["secret"] = True
 
             if line[6] != "":
                 keys[line[4]]["revocation-date"] = line[5]
@@ -302,10 +305,8 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
         def parse_subkey(line, curkey, keys):
             subkey = {"id": line[4], "size": int(line[2]),
                       "creation-date": line[5],
-                      "algorithm": int(line[3])}
+                      "algorithm": openpgp_algorithms[int(line[3])]}
             parse_capabilities(curkey, line[11])
-            if line[0] == "ssb":
-                subkey["secret"] = True
             keys[curkey]["subkeys"].append(subkey)
             return (curkey, keys)
 
@@ -336,8 +337,10 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
             return (curkey, keys)
 
         def parse_signature(line, curkey, keys):
+            if "signatures" not in keys[curkey]:
+                keys[curkey]["signatures"] = []
             sig = {"signer": line[9], "signature-date": line[5],
-                   "keyid": line[4], "trust": line[10], "algorithm": line[4]}
+                   "keyid": line[4], "trust": line[10], "keytype": line[4]}
 
             keys[curkey]["signatures"].append(sig)
             return (curkey, keys)
