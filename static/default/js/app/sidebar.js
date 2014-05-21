@@ -134,12 +134,13 @@ $(document).ready(function() {
     opacity: 1,
     helper: function(event) {
       var count = '';
-      if (mailpile.messages_cache.length > 0) {
+      if (mailpile.messages_cache.length > 1) {
         count = ' to (' + mailpile.messages_cache.length + ')';
       }
 
       var tag = _.findWhere(mailpile.instance.tags, { tid: $(this).data('tid').toString() });
-      return $('<div class="sidebar-tag-drag ui-widget-header" style="color: ' + tag.label_color + '"><span class="' + tag.icon + '"></span> ' + tag.name + count + '</div>');
+      var hex = new_mailpile.theme.colors[tag.label_color];
+      return $('<div class="sidebar-tag-drag ui-widget-header" style="color: ' + hex + '"><span class="' + tag.icon + '"></span> ' + tag.name + count + '</div>');
     }
   });
 
@@ -157,13 +158,14 @@ $(document).ready(function() {
       mailpile.tag_add_delete(ui.draggable.data('tid'), '', mailpile.messages_cache, function() {
 
         var tag = _.findWhere(mailpile.instance.tags, { tid: ui.draggable.data('tid').toString() });
+        var hex = new_mailpile.theme.colors[tag.label_color];
         var updated = [];
 
         // Update Multiple Selected Messages
         if (mailpile.messages_cache.length > 0) {
           $.each(mailpile.messages_cache, function(key, mid) {
-            updated.push(mid)
-            $('#pile-message-' + mid).find('td.subject span.item-tags').append('<span class="pile-message-tag" style="color: ' + tag.label_color + ';"><span class="pile-message-tag-icon ' + tag.icon + '"></span> <span class="pile-message-tag-name">' + tag.name + '</span></span>');
+            updated.push(mid);
+            $('#pile-message-' + mid).find('td.subject span.item-tags').append('<span class="pile-message-tag" style="color: ' + hex + ';"><span class="pile-message-tag-icon ' + tag.icon + '"></span> <span class="pile-message-tag-name">' + tag.name + '</span></span>');
           });
         }
       });
