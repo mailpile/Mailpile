@@ -27,15 +27,19 @@ def migrate_routes(session):
         else:
             res = re.split(
                 "([\w]+)://([^:]+):([^@]+)@([\w\d.]+):([\d]+)[/]{0,1}", route)
-            return {
-                "name": _("%(user)s on %(host)s"
-                          ) % {"user": res[2], "host": res[4]},
-                "protocol": res[1],
-                "username": res[2],
-                "password": res[3],
-                "host": res[4],
-                "port": res[5]
-            }
+            if len(res) >= 5:
+                return {
+                    "name": _("%(user)s on %(host)s"
+                              ) % {"user": res[2], "host": res[4]},
+                    "protocol": res[1],
+                    "username": res[2],
+                    "password": res[3],
+                    "host": res[4],
+                    "port": res[5]
+                }
+            else:
+                session.ui.warning(_('Could not migrate route: %s') % route)
+        return None
 
     def make_route_name(route_dict):
         # This will always return the same hash, no matter how Python
@@ -44,16 +48,18 @@ def migrate_routes(session):
 
     if session.config.prefs.get('default_route'):
         route_dict = route_parse(session.config.prefs.default_route)
-        route_name = make_route_name(route_dict)
-        session.config.routes[route_name] = route_dict
-        session.config.prefs.default_messageroute = route_name
+        if route_dict:
+            route_name = make_route_name(route_dict)
+            session.config.routes[route_name] = route_dict
+            session.config.prefs.default_messageroute = route_name
 
     for profile in session.config.profiles:
         if profile.get('route'):
             route_dict = route_parse(profile.route)
-            route_name = make_route_name(route_dict)
-            session.config.routes[route_name] = route_dict
-            profile.messageroute = route_name
+            if route_dict:
+                route_name = make_route_name(route_dict)
+                session.config.routes[route_name] = route_dict
+                profile.messageroute = route_name
 
     return True
 
@@ -157,7 +163,11 @@ def migrate_mailboxes(session):
 
 
 MIGRATIONS_BEFORE_SETUP = [migrate_routes]
-MIGRATIONS_AFTER_SETUP = [migrate_mailboxes]
+MIGRATIONS_AFTER_SETUP = []
+MIGRATIONS = {
+    'routes': migrate_routes,
+    'sources': migrate_mailboxes
+}
 
 
 class Migrate(Command):
@@ -169,10 +179,19 @@ class Migrate(Command):
         session = self.session
         err = cnt = 0
 
-        MIGRATIONS = ((before_setup and MIGRATIONS_BEFORE_SETUP or []) +
-                      (after_setup and MIGRATIONS_AFTER_SETUP or []))
+        migrations = []
+        for a in self.args:
+            if a in MIGRATIONS:
+                migrations.append(MIGRATIONS[a])
+            else:
+                raise UsageError(_('Unknown migration: %s (available: %s)'
+                                   ) % (a, ', '.join(MIGRATIONS.keys())))
 
-        for mig in MIGRATIONS:
+        if not migrations:
+            migrations = ((before_setup and MIGRATIONS_BEFORE_SETUP or []) +
+                          (after_setup and MIGRATIONS_AFTER_SETUP or []))
+
+        for mig in migrations:
             try:
                 if mig(session):
                     cnt += 1
