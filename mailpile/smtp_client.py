@@ -3,6 +3,7 @@ import smtplib
 import socket
 import subprocess
 import sys
+from gettext import ngettext as _n
 
 from mailpile.config import ssl, socks
 from mailpile.mailutils import CleanMessage, MessageAsString
