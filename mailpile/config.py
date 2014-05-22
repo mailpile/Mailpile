@@ -418,7 +418,7 @@ def RuledContainer(pcls):
         def add_rule(self, key, rule):
             if not ((isinstance(rule, (list, tuple))) and
                     (key == CleanText(key, banned=CleanText.NONVARS).clean) and
-                    (not self._hasattr(key))):
+                    (not self.real_hasattr(key))):
                 raise TypeError('add_rule(%s, %s): Bad key or rule.'
                                 % (key, rule))
 
@@ -526,27 +526,30 @@ def RuledContainer(pcls):
                 return self.get(key)
             return pcls.__getitem__(self, key)
 
-        def _getattr(self, attr):
+        def real_getattr(self, attr):
             try:
                 return pcls.__getattribute__(self, attr)
             except AttributeError:
                 return False
 
-        def _hasattr(self, attr):
+        def real_hasattr(self, attr):
             try:
                 pcls.__getattribute__(self, attr)
                 return True
             except AttributeError:
                 return False
 
+        def real_setattr(self, attr, value):
+            return pcls.__setattr__(self, attr, value)
+
         def __getattr__(self, attr, default=None):
-            if self._hasattr(attr) or not self._getattr('_magic'):
+            if self.real_hasattr(attr) or not self.real_getattr('_magic'):
                 return pcls.__getattribute__(self, attr)
             return self[attr]
 
         def __setattr__(self, attr, value):
-            if self._hasattr(attr) or not self._getattr('_magic'):
-                return pcls.__setattr__(self, attr, value)
+            if self.real_hasattr(attr) or not self.real_getattr('_magic'):
+                return self.real_setattr(attr, value)
             self.__setitem__(attr, value)
 
         def __passkey__(self, key, value):

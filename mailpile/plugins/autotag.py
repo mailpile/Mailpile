@@ -71,8 +71,8 @@ def SaveAutoTagger(config, at_config):
 
 
 def LoadAutoTagger(config, at_config):
-    if not hasattr(config, 'autotag'):
-        config.autotag = {}
+    if not config.real_hasattr('autotag'):
+        config.real_setattr('autotag', {})
     aid = at_identify(at_config)
     at = config.autotag.get(aid)
     if aid not in config.autotag:
@@ -157,8 +157,8 @@ class Retrain(AutoTagCommand):
         tids = [config.get_tag(t)._key for t in tags if t]
 
         session.ui.mark(_('Retraining SpamBayes autotaggers'))
-        if not hasattr(config, 'autotag'):
-            config.autotag = {}
+        if not config.real_hasattr('autotag'):
+            config.real_setattr('autotag', {})
 
         # Find all the interesting messages! We don't look in the trash,
         # but we do look at interesting spam.
