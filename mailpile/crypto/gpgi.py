@@ -515,7 +515,7 @@ u:Smari McCarthy <smari@immi.is>::scESC:\\nsub:u:4096:1:13E0BB42176BA0AC:\
                 buffers["stdin"] = output
             if self.passphrase:
                 buffers["passphrase"] = self.passphrase
-            CHUNKSIZE = 1024
+            CHUNKSIZE = 8 * 1024
 
             while (rlist or wlist):
                 rrlist, rwlist, rxlist = select.select(rlist, wlist, rlist+wlist, 0.02)
