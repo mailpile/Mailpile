@@ -178,12 +178,15 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     if config.prefs.openpgp_header:
         try:
             gnupg = GnuPG()
-            seckeys = dict([(x["email"], y["fingerprint"])
-                            for y in gnupg.list_secret_keys().values()
-                            for x in y["uids"]])
-            sender_keyid = seckeys[sender]
-        except:
-            pass
+            seckeys = dict([(uid["email"], fp) for fp, key
+                            in gnupg.list_secret_keys().iteritems()
+                            if key["capabilities"].get("encrypt")
+                            and key["capabilities"].get("sign")
+                            for uid in key["uids"]])
+            print 'IS %s in %s?' % (sender, seckeys)
+            sender_keyid = seckeys.get(sender)
+        except (KeyError, TypeError, IndexError, ValueError):
+            traceback.print_exc()
 
     rcpts, rr = [sender], rcpts
     for r in rr:
