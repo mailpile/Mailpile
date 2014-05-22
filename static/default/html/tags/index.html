@@ -1,54 +1,63 @@
-{% extends "layouts/" + render_mode + ".html" %}
+{% extends "layouts/wide.html" %}
 {% block title %}{{_("Tags")}}{% endblock %}
 {% block content %}
 
-  {% macro render_tag(tag) -%}  
-    <div class="boxy" id="tag-card-{{tag.tid}}" data-count_not_tagged="{{tag.stats.not}}">
-      <div class="boxy-inner">
-        <a class="tag-card-name" href="{{tag.url}}"><span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span> {{tag.name}}</a>
-        <div class="tag-card-numbers">
-          <div class="tag-card-stat">
-            <span class="tag-card-label">{{_("Total")}}</span>
-            <span class="tag-card-stat-count">{{tag.stats.all}}</span>
-          </div>
-          <div class="tag-card-stat">
-            {% if tag.stats.new > 0 %}
-            <span class="tag-card-label">{{_("New")}}</span>
-            <span class="tag-card-stat-count">{{tag.stats.new}}</span>
-            {% endif %}
-          </div>
-          <!--
-          <div class="tag-card-view">
-            <span class="tag-card-label">{{_("Display")}}</span>
-            <span class="icon-list"></span>
-          </div>
-          -->
-        </div>
-        <ul>
-          <li><a class="tag-card-message-link" href="{{tag.url}}"><span class="icon-inbox"></span> {{_("Messages")}}</a></li>
-          <li><a class="tag-card-message-link" href="/tags/{{tag.slug}}/edit.html"><span class="icon-settings"></span> {{_("Settings")}}</a></li>
-        </ul>
+{% macro render_tag(tag) -%}
+ <div class="boxes-outer" id="tag-card-{{tag.tid}}" data-tid="{{tag.tid}}">
+  <div class="boxes-inner">
+    <a class="tag-card-name" href="{{tag.url}}" style="color: {{theme_settings().colors[tag.label_color]}};">
+      <span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span>
+      {{tag.name}}
+    </a>
+<!--
+    <div class="tag-card-numbers">
+      {% if tag.subtag_ids %}
+      {% set total_count = tag.stats.sum_all %}
+      {% else %}
+      {% set total_count = tag.stats.all %}
+      {% endif %}
+      <div class="tag-card-stat">
+        <span class="tag-card-label">{{_("Total")}}</span>
+        <span class="tag-card-stat-count">{{total_count}}</span>
       </div>
+      <div class="tag-card-stat">
+        {% if tag.stats.new > 0 %}
+        <span class="tag-card-label">{{_("New")}}</span>
+        <span class="tag-card-stat-count">{{tag.stats.new}}</span>
+        {% endif %}
+      </div>
+      {% if tag.subtag_ids %}
+      <div class="tag-card-stat">
+        <span class="tag-card-label">{{_("Tags")}}</span>
+        <span class="tag-card-stat-count">{{tag.subtag_ids|length}}</span>
+      </div>        
+      {% endif %}
     </div>
-  {%- endmacro %}
-  
-  <div id="tags-list" class="clearfix">
+    <a class="bottom tag-card-message-link" href="/tags/{{tag.slug}}/edit.html"><span class="icon-settings"></span> {{_("Settings")}}</a>
+-->
+  </div>
+</div>
+{%- endmacro %}
+
+<div id="content-wide">
+  <div id="content-tools">
+    {% include("partials/tools_tags.html") %}
+  </div>
+  <div id="tags-priority-list" class="container">
     {% for tag in result.tags %}
-    {% if tag.display == "priority" %}
+    {% if tag.display == "priority" and not tag.parent %}
       {{ render_tag(tag) }}
     {% endif %}
     {% endfor %}
   </div>
-  <hr>
-  
-  <div id="tags-list" class="clearfix">
+  <hr>  
+  <div id="tags-list" class="container">
     {% for tag in result.tags %}
-    {% if tag.display == "tag" %}
+    {% if tag.display == "tag" and not tag.parent %}
       {{ render_tag(tag) }}
     {% endif %}
     {% endfor %}
   </div>
-  
   {% set tag_archive = [] %}
   {% for tag in result.tags %}
   {% if tag.display == "archive" %}
@@ -70,5 +79,5 @@
     </div>
   </div>
   {% endif %}
-
+</div>
 {% endblock %}

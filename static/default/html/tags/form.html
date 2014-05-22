@@ -17,7 +17,7 @@
     <input type="text" id="data-tag-add-slug" name="slug" value="{{tag.slug}}" placeholder="{{_("friends-family")}}">
 
     <label>{{_("Icon & Color")}}</label>
-    <span id="tag-editor-icon" class="{{tag.icon}}" style="color: {{tag.label_color}}"></span><br>
+    <span id="tag-editor-icon" class="{{tag.icon}}" style="color: {{ theme_settings().colors[tag.label_color] }}"></span><br>
     <a href="#" id="button-tag-change-icon" class="button-secondary">{{_("Change Icon")}}</a>
     <a href="#" id="button-tag-change-label-color" class="button-secondary">{{_("Change Color")}}</a>
 
