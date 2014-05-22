@@ -595,6 +595,8 @@ class Email(object):
 
     def get_mbox_ptr_and_fd(self):
         for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
+            if msg_ptr == '':
+                continue
             try:
                 mbox = self.config.open_mailbox(None, msg_ptr[:MBX_ID_LEN])
                 fd = mbox.get_file_by_ptr(msg_ptr)

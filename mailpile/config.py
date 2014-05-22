@@ -582,7 +582,10 @@ def RuledContainer(pcls):
                                            ) % (self._name, key, value))
                 elif isinstance(checker, (type, type(RuledContainer))):
                     try:
-                        value = checker(value)
+                        if value is None:
+                            value = checker()
+                        else:
+                            value = checker(value)
                     except (IgnoreValue):
                         return
                     except (ValueError, TypeError):
@@ -634,8 +637,10 @@ class ConfigList(RuledContainer(list)):
             self[:] = []
 
     def __createkey_and_setitem__(self, key, value):
+        while key > len(self):
+            self.append(self.rules['_any'][self.RULE_DEFAULT])
         if key == len(self):
-            list.append(self, value)
+            self.append(value)
         else:
             list.__setitem__(self, key, value)
 
@@ -943,8 +948,8 @@ class ConfigManager(ConfigDict):
                     cfg[var] = val
                 except (ValueError, KeyError, IndexError):
                     if session:
-                        msg = _(u'Invalid (%s): section %s, variable %s'
-                                ) % (source, section, var)
+                        msg = _(u'Invalid (%s): section %s, variable %s=%s'
+                                ) % (source, section, var, val)
                         session.ui.warning(msg)
                     all_okay = okay = False
         return all_okay
@@ -971,7 +976,7 @@ class ConfigManager(ConfigDict):
                          '..', 'plugins'),
             os.path.join(self.workdir, 'plugins')
         ])
-        self.sys.plugins.rules['_any'][1] = self.plugins.available()
+        self.sys.plugins.rules['_any'][1] = [None] + self.plugins.available()
 
         # Parse once (silently), to figure out which plugins to load...
         self.parse_config(None, '\n'.join(lines), source=filename)
@@ -1019,8 +1024,9 @@ class ConfigManager(ConfigDict):
         from mailpile.plugins import PluginManager
         plugin_list = set(PluginManager.REQUIRED + self.sys.plugins)
         for plugin in plugin_list:
-            session.ui.mark(_('Loading plugin: %s') % plugin)
-            self.plugins.load(plugin)
+            if plugin is not None:
+                session.ui.mark(_('Loading plugin: %s') % plugin)
+                self.plugins.load(plugin)
         session.ui.mark(_('Processing manifests'))
         self.plugins.process_manifests()
         self.prepare_workers(session)
