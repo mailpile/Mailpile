@@ -24,14 +24,28 @@
   </div>
   <hr>
  
-  <h4>Addresses</h4>
+  <h4><span class="icon-compose"></span> {{_("Addresses")}}</h4>
   <ul>
   {% if result.contact.email %}
     {% for email in result.contact.email %}
-    <li><a class="compose-to-email" href="/contact/{{ email.email }}">{{email.email}}</a></li>
+    <li><a class="compose-to-email button-primary" href="/contact/{{ email.email }}">{{email.email}}</a></li>
     {% endfor %}
   {% endif %}
   </ul>
+  
+  <h4><span class="icon-lock-closed"></span> {{_("Security & Keys")}}</h4>
+  {{ mailpile("crypto/gpg/keylist", "james@gearedinteractive.ca") }}
+
+  <ul>
+    <li>{{_("Crypto Policy")}}:
+    <select id="crypto-policy">
+        {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
+          <option value="{{ policy }}" {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected"{% endif %}>{{ _(policy) }}</option>
+        {% endfor %}
+    </select>
+    </li>
+  </ul>  
+  
   <hr>
 
   <h4>Stats</h4>
@@ -63,29 +77,11 @@
     {% endfor %}  
   </ul>
   {% endif %}
-  <hr>
-
-  <h4>Properties</h4>
-
-  <ul>
-    <li>{{_("Crypto Policy")}}:
-    <select id="crypto-policy">
-        {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
-          <option value="{{ policy }}" {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected" {% endif %}>{{ _(policy) }}</option>
-        {% endfor %}
-    </select>
-    </li>
-  </ul>
 
 {% else %}
-
     {% set error_title = "contact_missing" %}
     {% include("partials/errors_content.html") %}
-
 {% endif %}
+</div>
 
-</div>
-<div id="contact-add" class="content-normal hide">
-{% include("partials/contact_add.html") %}
-</div>
 {% endblock %}
