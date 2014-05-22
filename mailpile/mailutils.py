@@ -183,7 +183,6 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
                             if key["capabilities"].get("encrypt")
                             and key["capabilities"].get("sign")
                             for uid in key["uids"]])
-            print 'IS %s in %s?' % (sender, seckeys)
             sender_keyid = seckeys.get(sender)
         except (KeyError, TypeError, IndexError, ValueError):
             traceback.print_exc()
