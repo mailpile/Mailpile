@@ -18,9 +18,9 @@
     {% include("partials/tools_search.html") %}
   {% elif command in ("contact", "contact/list", "contact/add") %}
     {% include("partials/tools_contacts.html") %}
-  {% elif command in ("tag", "tags", "tags/add") %}
+  {% elif command in ("tag", "tags", "tags/add", "filter/list") %}
     {% include("partials/tools_tags.html") %}
-  {% elif command in ("print", "filter/list") %}
+  {% elif command in ("print") %}
     {% include("partials/tools_settings.html") %}
   {% elif command == "view" %}
     {% include("partials/tools_message.html") %}
