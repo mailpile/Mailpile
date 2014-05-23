@@ -13,6 +13,7 @@ MailPile.prototype.contact_add = function(form_name, complete) {
   });
 };
 
+
 /* Show Contact Add Form */
 $(document).on('click', '.btn-activity-contact_add', function(e) {
 
@@ -153,6 +154,7 @@ $(document).on('click', '.contact-add-search-item', function() {
   });  
 });
 
+
 /* Contact - Add */
 $(document).on('submit', '#form-contact-add', function(e) {
   e.preventDefault();
@@ -169,6 +171,11 @@ function extractEmailFromLocation() {
 }
 
 
+$('.contact-key-use').on('change', function(e) {
+  alert('This will update a KEYS USE state');
+});
+
+
 $('#crypto-policy').on('change', function(e) {
     var policy = e.val
     var email = extractEmailFromLocation()
@@ -182,3 +189,19 @@ $('#crypto-policy').on('change', function(e) {
     })
   console.log('Changed')
 })
+
+
+$('.show-key-details').on('click', function(e) {
+  e.preventDefault();
+  $(this).hide();
+  var keyid = $(this).data('keyid');
+  $('#contact-key-details-' + keyid).fadeIn();
+});
+
+
+$(document).ready(function() {
+
+  // Hide Key Details
+  $('.contact-key-details').hide();
+
+});
