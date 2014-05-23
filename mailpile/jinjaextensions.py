@@ -96,6 +96,10 @@ class MailpileCommand(Extension):
         environment.globals['theme_settings'] = self._theme_settings
         environment.filters['theme_settings'] = self._theme_settings
 
+        # Separates Fingerprint in 4 char groups
+        environment.globals['nice_fingerprint'] = self._nice_fingerprint
+        environment.filters['nice_fingerprint'] = self._nice_fingerprint
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -637,3 +641,7 @@ class MailpileCommand(Extension):
     def _theme_settings(self):
         path, handle, mime = self.env.session.config.open_file('html_theme', 'theme.json')
         return json.load(handle)
+
+    def _nice_fingerprint(self, fingerprint):
+        slices = [fingerprint[i:i + 4] for i in range(0, len(fingerprint), 4)]
+        return slices[0] + " " + slices[1] + " " + slices[2] + " " + slices[3]
