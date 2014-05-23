@@ -104,32 +104,28 @@ MailPile.prototype.render = function() {
   // Dynamic CSS Reiszing
   var dynamic_sizing = function() {
 
-    var sidebar_height = $('#sidebar').height();
-
     // Is Tablet or Mobile
-    if ($(window).width() < 1024) {
-      var sidebar_width = 0;
+    if ($('#sidebar').length === 0 || $(window).width() < 1024) {
+      var sidebar_width  = 0;
     }
     else {
-      var sidebar_width = 225;
+      var sidebar_width  = 225;
     }
 
     var content_width  = $(window).width() - sidebar_width;
     var content_height = $(window).height() - 62;
-    var content_tools_height = $('#content-tools').height();
-    var fix_content_view_height = sidebar_height - content_tools_height;
-    var new_content_width = $(window).width() - sidebar_width;
-  
-    $('#content-tools').css('position', 'fixed')
+    var content_tools_height    = $('#content-tools').height();
+    var new_content_width       = $(window).width() - sidebar_width;
+    var new_content_view_height = content_height - content_tools_height;
+
+    $('#content-tools').css('position', 'fixed');
     $('.sub-navigation').width(content_width);
     $('#thread-title').width(content_width);
-  
-    console.log(fix_content_view_height);
-    console.log(content_tools_height);
-  
+
     // Set Content View
+    $('#content, #content-wide').css({'height': content_height});
     $('#content-tools, .sub-navigation, .bulk-actions').width(new_content_width);
-    $('#content-view').css({'height': fix_content_view_height, 'top': content_tools_height});
+    $('#content-view').css({'height': new_content_view_height, 'top': content_tools_height});
   };
 
   dynamic_sizing();
@@ -153,7 +149,6 @@ MailPile.prototype.render = function() {
       Mousetrap.bind(keybinding[1], keybinding[2]);
 		}
 	}
-
 };
 
 MailPile.prototype.command = function(command, data, method, callback) {
