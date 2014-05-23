@@ -46,7 +46,11 @@
     <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
       {% set from = metadata.from %}
       {% include("partials/thread_metadata.html") %}
+      {% if metadata.crypto.encryption in ("missingkey", "error", "mixed-missingkey", "mixed-error") %}
+      <div class="thread-item-text"><em>{{_("Unable to see message preview")}}</em></div>
+      {% else %}
       <div class="thread-item-text">{{ metadata.body.snippet }}</div>
+      {% endif %}
     </div>
     {% do loop_history.append("display snippet") %}
   {% endif %}
