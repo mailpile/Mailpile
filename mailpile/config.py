@@ -38,6 +38,32 @@ from mailpile.vcard import SimpleVCard, VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
 
 
+def ConfigPrinter(cfg, indent=''):
+    rv = []
+    if isinstance(cfg, dict):
+        pairer = cfg.iteritems()
+    else:
+        pairer = enumerate(cfg)
+    for key, val in pairer:
+        if hasattr(val, 'rules'):
+            preamble = '[%s: %s] ' % (val._NAME, val._COMMENT)
+        else:
+            preamble = ''
+        if isinstance(val, (dict, list, tuple)):
+            if isinstance(val, dict):
+                b, e = '{', '}'
+            else:
+                b, e = '[', ']'
+            rv.append(('%s: %s%s\n%s\n%s'
+                       '' % (key, preamble, b, ConfigPrinter(val, '  '), e)
+                       ).replace('\n  \n', ''))
+        elif isinstance(val, (str, unicode)):
+            rv.append('%s: "%s"' % (key, val))
+        else:
+            rv.append('%s: %s' % (key, val))
+    return indent + ',\n'.join(rv).replace('\n', '\n'+indent)
+
+
 def getLocaleDirectory():
     """Get the gettext translation object, no matter where our CWD is"""
     # NOTE: MO files are loaded from the directory where the scripts reside in
@@ -471,6 +497,9 @@ def RuledContainer(pcls):
         def __fixkey__(self, key):
             return key
 
+        def fmt_key(self, key):
+            return key
+
         def get_rule(self, key):
             key = self.__fixkey__(key)
             rule = self.rules.get(key, None)
@@ -670,11 +699,12 @@ class ConfigList(RuledContainer(list)):
     def __getitem__(self, key):
         return list.__getitem__(self, self.__fixkey__(key))
 
+    def fmt_key(self, key):
+        f = b36(self.__fixkey__(key)).lower()
+        return ('0000' + f)[-4:] if (len(f) < 4) else f
+
     def keys(self):
-        def fmt_key(k):
-            f = b36(i).lower()
-            return (len(f) < 4) and ('0000' + f)[-4:] or f
-        return [fmt_key(i) for i in range(0, len(self))]
+        return [self.fmt_key(i) for i in range(0, len(self))]
 
     def values(self):
         return self[:]
@@ -930,7 +960,7 @@ class ConfigManager(ConfigDict):
             cfg = self
             added_parts = []
             for part in cfgpath:
-                if part in cfg.keys():
+                if cfg.fmt_key(part) in cfg.keys():
                     cfg = cfg[part]
                 elif '_any' in cfg.rules:
                     cfg[part] = {}
@@ -941,7 +971,7 @@ class ConfigManager(ConfigDict):
                                 'exist') % (source, section)
                         session.ui.warning(msg)
                     all_okay = okay = False
-            items = okay and parser.items(section) or []
+            items = parser.items(section) if okay else []
             items.sort(key=item_sorter)
             for var, val in items:
                 try:
@@ -976,7 +1006,8 @@ class ConfigManager(ConfigDict):
                          '..', 'plugins'),
             os.path.join(self.workdir, 'plugins')
         ])
-        self.sys.plugins.rules['_any'][1] = [None] + self.plugins.available()
+        self.sys.plugins.rules['_any'][self.RULE_CHECKER
+                                       ] = [None] + self.plugins.available()
 
         # Parse once (silently), to figure out which plugins to load...
         self.parse_config(None, '\n'.join(lines), source=filename)
@@ -1018,7 +1049,8 @@ class ConfigManager(ConfigDict):
 
     def reset_rules_from_source(self):
         self.set_rules(self._rules_source)
-        self.sys.plugins.rules['_any'][1] = self.plugins.available()
+        self.sys.plugins.rules['_any'][self.RULE_CHECKER
+                                       ] = [None] + self.plugins.available()
 
     def load_plugins(self, session):
         from mailpile.plugins import PluginManager
@@ -1379,31 +1411,6 @@ if __name__ == "__main__":
     cfg = mailpile.config.ConfigManager(rules=rules)
     session = mailpile.ui.Session(cfg)
     session.ui.block()
-
-    def prnt(cfg, indent=''):
-        rv = []
-        if isinstance(cfg, dict):
-            pairer = cfg.iteritems()
-        else:
-            pairer = enumerate(cfg)
-        for key, val in pairer:
-            if hasattr(val, 'rules'):
-                preamble = '[%s: %s] ' % (val._NAME, val._COMMENT)
-            else:
-                preamble = ''
-            if isinstance(val, (dict, list, tuple)):
-                if isinstance(val, dict):
-                    b, e = '{', '}'
-                else:
-                    b, e = '[', ']'
-                rv.append(('%s: %s%s\n%s\n%s'
-                           '' % (key, preamble, b, prnt(val, '  '), e)
-                           ).replace('\n  \n', ''))
-            elif isinstance(val, (str, unicode)):
-                rv.append('%s: "%s"' % (key, val))
-            else:
-                rv.append('%s: %s' % (key, val))
-        return indent + ',\n'.join(rv).replace('\n', '\n'+indent)
 
     for tries in (1, 2):
         # This tests that we can set (and reset) dicts of unnested objects
