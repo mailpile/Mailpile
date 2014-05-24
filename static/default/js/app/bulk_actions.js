@@ -58,7 +58,7 @@ $(document).on('click', '.bulk-action-archive', function() {
 
 /* Bulk Action - Trash */
 $(document).on('click', '.bulk-action-trash', function() {
-  mailpile.tag_add_delete('trash', '', mailpile.messages_cache, function() {
+  mailpile.tag_add_delete('trash', 'new', mailpile.messages_cache, function() {
 
     // Update Pile View
     $.each(mailpile.messages_cache, function(key, mid) {
@@ -76,7 +76,7 @@ $(document).on('click', '.bulk-action-trash', function() {
 
 /* Bulk Action - Spam */
 $(document).on('click', '.bulk-action-spam', function() {
-  mailpile.tag_add_delete('spam', '', mailpile.messages_cache, function() {
+  mailpile.tag_add_delete('spam', 'new', mailpile.messages_cache, function() {
 
     // Update Pile View
     $.each(mailpile.messages_cache, function(key, mid) {
