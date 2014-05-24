@@ -17,4 +17,11 @@
     'description': _("All current filters"),
     'icon': 'filters'
 }] -%}
+{%- set display_modes = [{
+    'name': 'display_tag_type',
+    'icon': 'eye',
+    'url': '/tags/',
+    'text': _("Type"),
+    'description': _("Show Tag by type")
+}] -%}
 {%- include('partials/tools_default.html') -%}

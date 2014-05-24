@@ -1,53 +1,53 @@
 {% extends "layouts/wide.html" %}
 {% block title %}{{_("Contacts")}}{% endblock %}
 {% block content %}
-
 <div id="content-tools">
   {% include("partials/tools_contacts.html") %}
 </div>
-
-<div id="content-wide" class="container">
-  <div id="contacts-list" class="clearfix">
-  {% if result.contacts %}
+<div id="content-view">
+  <div class="container boxes-container center">
+    <div class="clearfix"></div>
+    {% if result.contacts %}
     {% for contact in result.contacts %}
     <div class="boxes-outer">
       <div class="boxes-inner">
-        <div class="clearfix">
-          {% if contact.email %}
-          <a class="contact-avatar" href="/contact/{{ contact.email.0.email }}/">{% if contact.photo %}<img width=50 src="{{contact.photo.0.photo}}">{% elif contact.email %}<img src="/static/img/avatar-default.png">{% endif %}</a>
-          <a class="contact-name" href="/contact/{{ contact.email.0.email }}/">{{ contact.fn }}</a>{% endif %}
-        </div>
-        <b>{% if contact.key %}{% endif %} <span class="icon-lock-closed"></span> {{_("Emails")}}</b>
+        {% if contact.email %}
+        <a class="contact-avatar" href="/contact/{{ contact.email.0.email }}/">{% if contact.photo %}<img width=50 src="{{contact.photo.0.photo}}">{% elif contact.email %}<img src="/static/img/avatar-default.png">{% endif %}</a>
+        <a class="contact-name" href="/contact/{{ contact.email.0.email }}/">{{ contact.fn }}</a>
+        {% endif %}
         <ul>
           {% if contact.email %}
-            <li>
-              <a class="compose-to-email" data-email="{{ contact.email.0.email }}" title="{{_("Compose Email To This Address") }}" href="/contact/{{ contact.email.0.email }}/">
-                {{ contact.email.0.email }}
-              </a>
-            </li>
+          <li>
+            <a class="compose-to-email" data-email="{{ contact.email.0.email }}" title="{{_("Compose Email To This Address") }}" href="/contact/{{ contact.email.0.email }}/">
+              {{ contact.email.0.email }}
+            </a>
+          </li>
           {% endif %}
           {% if contact.email|length > 1 %}
-            <li class="contact-details"> {{ contact.email|length }} {{_("More Address")}}</li>
+          <li class="contact-details"> {{ contact.email|length }} {{_("More Address")}}</li>
           {% endif %}
         </ul>
-      {% if contact['crypto-policy'] %}
-        <b class="contact-details">{{_("Crypto Policy")}}: {{ contact['crypto-policy'] }}</b>
-      {% else %}
-        <b class="contact-details">{{_("Crypto Policy")}}: {{ _("default") }}</b>
-      {% endif %}
+        <p>{% if contact.key %}<span class="icon-lock-closed"></span>{% endif %}
+        {% if contact['crypto-policy'] %}
+        <b class="contact-details">{{ contact['crypto-policy'] }}</b>
+        {% else %}
+        <b class="contact-details">{{ _("default") }}</b>
+        {% endif %}</p>
+        <input type="checkbox" class="bottom boxes-inner-select">
       </div>
     </div>
     {% endfor %}
-    <div id="pile-bottom" class="clearfix">
+    <div class="clearfix"></div>
+    <div id="pile-bottom">
       {% if result.offset > 0 %}
       <a href="/contact/list/?offset={{result.offset-result.count}}&count={{result.count}}" class="button-primary">{{_("Previous")}}</a>
       {% endif %}
       {% if result.offset + result.count < result.total %}
       <a href="/contact/list/?offset={{result.offset+result.count}}&count={{result.count}}" class="button-primary">{{_("Next")}}</a>
       {% endif %}
-    <div>
       <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} {{_("of")}} {{result.total}} {{_("Contacts")}} {% elif result.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5>
     </div>
+
   </div>
   {% endif %}
   </div>
