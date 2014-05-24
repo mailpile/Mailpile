@@ -4,6 +4,7 @@ import hashlib
 import re
 import urllib
 import json
+import shlex
 from gettext import gettext as _
 from jinja2 import nodes, UndefinedError, Markup
 from jinja2.ext import Extension
@@ -99,6 +100,10 @@ class MailpileCommand(Extension):
         # Separates Fingerprint in 4 char groups
         environment.globals['nice_fingerprint'] = self._nice_fingerprint
         environment.filters['nice_fingerprint'] = self._nice_fingerprint
+
+        # Converts Filter +/- tags into arrays
+        environment.globals['make_filter_groups'] = self._make_filter_groups
+        environment.filters['make_filter_groups'] = self._make_filter_groups
 
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
@@ -645,3 +650,18 @@ class MailpileCommand(Extension):
     def _nice_fingerprint(self, fingerprint):
         slices = [fingerprint[i:i + 4] for i in range(0, len(fingerprint), 4)]
         return slices[0] + " " + slices[1] + " " + slices[2] + " " + slices[3]
+
+    def _make_filter_groups(self, tags):
+        split = shlex.split(tags)
+        output = dict();
+        add = []
+        remove = []
+        for item in split:
+            out = item.strip('+-')
+            if item[0] == "+":
+                add.append(out)
+            elif item[0] == "-":
+                remove.append(out)
+        output['add'] = add
+        output['remove'] = remove
+        return output
