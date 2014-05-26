@@ -839,7 +839,7 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None, '[full|vcards|mailboxes|<msgs>]')
+    SYNOPSIS = (None, 'rescan', None, '[full|vcards|mailboxes|sources|<msgs>]')
     ORDER = ('Internals', 2)
     SERIALIZE = 'Rescan'
     LOG_PROGRESS = True
@@ -861,9 +861,10 @@ class Rescan(Command):
         if args and args[0].lower() == 'vcards':
             return self._success(_('Rescanned vcards'),
                                  result=self._rescan_vcards(session))
-        elif args and args[0].lower() == 'mailboxes':
+        elif args and args[0].lower() in ('mailboxes', 'sources'):
             return self._success(_('Rescanned mailboxes'),
-                                 result=self._rescan_mailboxes(session))
+                                 result=self._rescan_mailboxes(session,
+                                                               which=args[0]))
         elif args and args[0].lower() == 'full':
             config.clear_mbox_cache()
             args.pop(0)
@@ -914,11 +915,12 @@ class Rescan(Command):
                     imported += imp.import_vcards(session, config.vcards)
         return {'vcards': imported}
 
-    def _rescan_mailboxes(self, session):
+    def _rescan_mailboxes(self, session, which='both'):
         config = session.config
         idx = self._idx()
         msg_count = 0
         mbox_count = 0
+        which = which.lower()
         rv = True
         try:
             pre_command = config.prefs.rescan_command
@@ -927,31 +929,33 @@ class Rescan(Command):
                 subprocess.check_call(pre_command, shell=True)
             msg_count = 1
 
-            for src in config.mail_sources.values():
-                if mailpile.util.QUITTING:
-                    break
-                count = src.rescan_now(session)
-                if count > 0:
-                    msg_count += count
-                    mbox_count += 1
-                session.ui.mark('\n')
+            if which in ('both', 'sources'):
+                for src in config.mail_sources.values():
+                    if mailpile.util.QUITTING:
+                        break
+                    count = src.rescan_now(session)
+                    if count > 0:
+                        msg_count += count
+                        mbox_count += 1
+                    session.ui.mark('\n')
 
-            for fid, fpath in config.get_mailboxes():
-                if mailpile.util.QUITTING:
-                    break
-                if fpath == '/dev/null':
-                    continue
-                try:
-                    count = idx.scan_mailbox(session, fid, fpath,
-                                             config.open_mailbox)
-                except ValueError:
-                    count = -1
-                if count < 0:
-                    session.ui.warning(_('Failed to rescan: %s') % fpath)
-                elif count > 0:
-                    msg_count += count
-                    mbox_count += 1
-                session.ui.mark('\n')
+            if which in ('both', 'mailboxes'):
+                for fid, fpath in config.get_mailboxes():
+                    if mailpile.util.QUITTING:
+                        break
+                    if fpath == '/dev/null':
+                        continue
+                    try:
+                        count = idx.scan_mailbox(session, fid, fpath,
+                                                 config.open_mailbox)
+                    except ValueError:
+                        count = -1
+                    if count < 0:
+                        session.ui.warning(_('Failed to rescan: %s') % fpath)
+                    elif count > 0:
+                        msg_count += count
+                        mbox_count += 1
+                    session.ui.mark('\n')
 
             msg_count -= 1
             if msg_count:
