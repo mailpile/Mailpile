@@ -30,8 +30,8 @@ class MboxMailSource(BaseMailSource):
         return True
 
     def _has_mailbox_changed(self, mbx, state):
-        mt = state['mt'] = long(os.path.getmtime(mbx.path))
-        sz = state['sz'] = long(os.path.getsize(mbx.path))
+        mt = state['mt'] = long(os.path.getmtime(self._path(mbx)))
+        sz = state['sz'] = long(os.path.getsize(self._path(mbx)))
         return (mt != self.event.data['mtimes'].get(mbx._key) or
                 sz != self.event.data['sizes'].get(mbx._key))
 

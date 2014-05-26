@@ -471,7 +471,7 @@ class MailIndex:
         return self.encode_msg_id(raw_msg_id or msg_ptr)
 
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
-                     process_new=None, apply_tags=None):
+                     process_new=None, apply_tags=None, stop_after=None):
         try:
             self._lock.acquire()
             mbox = mailbox_opener(session, mailbox_idx)
@@ -513,6 +513,8 @@ class MailIndex:
                 session.ui.debug(_('Rescan interrupted: %s') % self.interrupt)
                 self.interrupt = None
                 return -1
+            if stop_after and added >= stop_after:
+                break
 
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)

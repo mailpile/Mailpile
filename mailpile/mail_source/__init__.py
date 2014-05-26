@@ -57,9 +57,11 @@ class BaseMailSource(threading.Thread):
     MailSources take care of managing a group of mailboxes, synchronizing
     the source with Mailpile's local metadata and/or caches.
     """
-    DEFAULT_JITTER = 15
-    SAVE_STATE_INTERVAL = 3600
-    INTERNAL_ERROR_SLEEP = 900
+    DEFAULT_JITTER = 15         # Fudge factor to tame thundering herds
+    SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
+    INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
+    RESCAN_BATCH_SIZE = 2500    # Index at most this many new e-mails at once
+    MAX_PATHS = 50000           # Abort if asked to scan too many directories
 
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.BaseMailSource'
@@ -129,6 +131,12 @@ class BaseMailSource(threading.Thread):
         """For the default sync_mail routine, note mailbox was rescanned."""
         raise NotImplemented('Please override _open in %s' % self)
 
+    def _path(self, mbx):
+        if mbx.path.startswith('@'):
+            return self.session.config.sys.mailbox[mbx.path[1:]]
+        else:
+            return mbx.path
+
     def _unlocked_sync_mail(self):
         """Iterates through all the mailboxes and scans if necessary."""
         def unsorted(l):
@@ -137,6 +145,9 @@ class BaseMailSource(threading.Thread):
         config = self.session.config
         self._last_rescan_count = rescanned = errors = 0
         self._interrupt = None
+        batch = self.RESCAN_BATCH_SIZE
+        if self.session.config.sys.debug:
+            batch //= 10
         for mbx in unsorted(self.my_config.mailbox.values()):
             if mailpile.util.QUITTING or self._interrupt:
                 self._log_status(_('Interrupted: %s'
@@ -145,12 +156,15 @@ class BaseMailSource(threading.Thread):
                 break
             try:
                 state = {}
-                if self._has_mailbox_changed(mbx, state):
-                    self._log_status(_('Reading mailbox %s') % mbx.path)
-                    count = self._unlocked_rescan_mailbox(mbx._key)
+                if batch > 0 and self._has_mailbox_changed(mbx, state):
+                    self._log_status(_('Reading mailbox %s') % self._path(mbx))
+                    count = self._unlocked_rescan_mailbox(mbx._key,
+                                                          stop_after=batch)
                     if count >= 0:
-                        self._mark_mailbox_rescanned(mbx, state)
-                        rescanned += 1
+                        batch -= count
+                        if batch >= 0:
+                            self._mark_mailbox_rescanned(mbx, state)
+                            rescanned += 1
                     else:
                         errors += 1
             except (NoSuchMailboxError, IOError, OSError):
@@ -169,19 +183,17 @@ class BaseMailSource(threading.Thread):
     def _sleep(self, seconds):
         if self._sleeping != 0:
             self._sleeping = seconds
-            while self.alive and self._sleeping > 0:
+            while (self.alive and self._sleeping > 0 and
+                    not mailpile.util.QUITTING):
                 time.sleep(min(1, self._sleeping))
                 self._sleeping -= 1
         self._sleeping = None
-        return self.alive
-
-    MAX_PATHS = 50000
+        return (self.alive and not mailpile.util.QUITTING)
 
     def _discover_mailboxes(self, path):
         config = self.session.config
         paths = [path]
         existing = set(config.sys.mailbox +
-                       [mbx.path for mbx in self.my_config.mailbox.values()] +
                        [mbx.local for mbx in self.my_config.mailbox.values()
                         if mbx.local])
         adding = []
@@ -218,15 +230,14 @@ class BaseMailSource(threading.Thread):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
         self.my_config.mailbox[mailbox_idx] = {
-            'path': config.sys.mailbox[mailbox_idx],
+            'path': '@%s' % mailbox_idx,
             'policy': disco_cfg.policy,
             'process_new': disco_cfg.process_new,
         }
         mbx = self.my_config.mailbox[mailbox_idx]
         mbx.apply_tags.extend(disco_cfg.apply_tags)
-        config.sys.mailbox[mailbox_idx] = '@%s' % self.my_config._key
         if disco_cfg.create_tag:
-            tag_name_or_id = self._create_tag_name(mbx.path)
+            tag_name_or_id = self._create_tag_name(self._path(mbx))
             mbx['primary_tag'] = tag_name_or_id
             if disco_cfg.policy != 'unknown':
                 try:
@@ -290,12 +301,13 @@ class BaseMailSource(threading.Thread):
                          self.session.config.get_tags(type='unread')])
         return True
 
-    def _unlocked_rescan_mailbox(self, mbx_key):
+    def _unlocked_rescan_mailbox(self, mbx_key, stop_after=None):
         try:
             mbx = self.my_config.mailbox[mbx_key]
+            path = self._path(mbx)
             if mbx.policy == 'watch':
-                return self._discover_mailboxes(mbx.path)
-            if mbx.path == '/dev/null' or mbx.policy in ('ignore', 'unknown'):
+                return self._discover_mailboxes(path)
+            if path == '/dev/null' or mbx.policy in ('ignore', 'unknown'):
                 return True
             if mbx.local:
                 # FIXME: Should copy any new messages to our local stash
@@ -305,10 +317,11 @@ class BaseMailSource(threading.Thread):
             if mbx.primary_tag:
                 apply_tags.append(mbx.primary_tag)
             return self.session.config.index.scan_mailbox(
-                self.session, mbx_key, mbx.local or mbx.path,
+                self.session, mbx_key, mbx.local or path,
                 self.session.config.open_mailbox,
                 process_new=(mbx.process_new and self._process_new or False),
-                apply_tags=(apply_tags or []))
+                apply_tags=(apply_tags or []),
+                stop_after=stop_after)
         except ValueError:
             return -1
         finally:
