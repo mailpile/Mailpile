@@ -162,11 +162,21 @@ def migrate_mailboxes(session):
     return True
 
 
+def migrate_cleanup(session):
+    config = session.config
+
+    autotaggers = [t for t in config.prefs.autotag.values() if t.tagger]
+    config.prefs.autotag = autotaggers
+
+    return True
+
+
 MIGRATIONS_BEFORE_SETUP = [migrate_routes]
-MIGRATIONS_AFTER_SETUP = []
+MIGRATIONS_AFTER_SETUP = [migrate_cleanup]
 MIGRATIONS = {
     'routes': migrate_routes,
-    'sources': migrate_mailboxes
+    'sources': migrate_mailboxes,
+    'cleanup': migrate_cleanup
 }
 
 
