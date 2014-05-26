@@ -664,7 +664,8 @@ class MailIndex:
         (msg_ts, msg_to, msg_cc, msg_subj, msg_body, tags
          ) = self._extract_info_and_index(session, mailbox_idx,
                                           msg_mid, msg_id, msg_size, msg,
-                                          default_date)
+                                          default_date,
+                                          incoming=False)
         self.edit_msg_info(msg_info,
                            msg_from=self.hdr(msg, 'from'),
                            msg_to=msg_to,
@@ -1025,7 +1026,7 @@ class MailIndex:
 
     def index_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
                       mailbox=None, compact=True, filter_hooks=None,
-                      process_new=None, apply_tags=None, incoming=True):
+                      process_new=None, apply_tags=None, incoming=False):
         keywords, snippet = self.read_message(session,
                                               msg_mid, msg_id, msg,
                                               msg_size, msg_ts,
