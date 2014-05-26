@@ -940,7 +940,7 @@ class Rescan(Command):
                     session.ui.mark('\n')
 
             if which in ('both', 'mailboxes'):
-                for fid, fpath in config.get_mailboxes():
+                for fid, fpath, sc in config.get_mailboxes(mail_sources=False):
                     if mailpile.util.QUITTING:
                         break
                     if fpath == '/dev/null':

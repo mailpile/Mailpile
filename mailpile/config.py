@@ -1096,11 +1096,11 @@ class ConfigManager(ConfigDict):
     def clear_mbox_cache(self):
         self._mbox_cache = {}
 
-    def _translate_mailbox_path(self, mbx_id, path):
-        if path[:1] == '@':
-            mbx = self.sources[path[1:]].mailbox[mbx_id]
-            path = mbx.local or mbx.path
-        return path
+    def _find_mail_source(self, mbx_id):
+        for src in self.sources.values():
+            if mbx_id in src.mailbox:
+                return src
+        return None
 
     def get_mailboxes(self, standalone=True, mail_sources=False):
         def fmt_mbxid(k):
@@ -1108,18 +1108,22 @@ class ConfigManager(ConfigDict):
             if len(k) > MBX_ID_LEN:
                 raise ValueError(_('Mailbox ID too large: %s') % k)
             return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
-        mailboxes = [(fmt_mbxid(k), self.sys.mailbox[k])
+        mailboxes = [(fmt_mbxid(k),
+                      self.sys.mailbox[k],
+                      self._find_mail_source(k))
                      for k in self.sys.mailbox.keys()]
 
         if not standalone:
-            mailboxes = [(i, p) for i, p in mailboxes if p[:1] == '@']
+            mailboxes = [(i, p, s) for i, p, s in mailboxes if s]
 
         if mail_sources:
             for i in range(0, len(mailboxes)):
-                mid, path = mailboxes[i]
-                mailboxes[i] = (mid, self._translate_mailbox_path(mid, path))
+                mid, path, src = mailboxes[i]
+                mailboxes[i] = (mid,
+                                src and src.mailbox[mid].local or path,
+                                src)
         else:
-            mailboxes = [(i, p) for i, p in mailboxes if p[:1] != '@']
+            mailboxes = [(i, p, s) for i, p, s in mailboxes if not s]
 
         mailboxes.sort()
         return mailboxes
@@ -1168,11 +1172,13 @@ class ConfigManager(ConfigDict):
         finally:
             fd.close()
 
-    def open_mailbox(self, session, mailbox_id):
+    def open_mailbox(self, session, mailbox_id, prefer_local=True):
         try:
             mbx_id = mailbox_id.lower()
-            mfn = self._translate_mailbox_path(mbx_id,
-                                               self.sys.mailbox[mbx_id])
+            mfn = self.sys.mailbox[mbx_id]
+            if prefer_local:
+                src = self._find_mail_source(mbx_id)
+                mfn = src and src.mailbox[mbx_id].local or mfn
             pfn = 'pickled-mailbox.%s' % mbx_id
         except KeyError:
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)

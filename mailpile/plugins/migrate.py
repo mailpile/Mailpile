@@ -93,8 +93,8 @@ def migrate_mailboxes(session):
     inbox_tids = [tag._key for tag in config.get_tags(type='inbox')]
 
     # Iterate through config.sys.mailbox, sort mailboxes by type
-    for mbx_id, path in config.sys.mailbox.iteritems():
-        if path == '/dev/null' or path[:1] == '@':
+    for mbx_id, path, src in config.get_mailboxes():
+        if path == '/dev/null' or src is not None:
             continue
         elif os.path.exists(os.path.join(path, 'Info.plist')):
             macmaildirs.append((mbx_id, path))
