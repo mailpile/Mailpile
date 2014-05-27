@@ -4,7 +4,6 @@
 #
 import cgi
 import datetime
-import distutils
 import hashlib
 import locale
 import re
@@ -16,6 +15,7 @@ import tempfile
 import threading
 import time
 import StringIO
+from distutils import spawn
 from gettext import gettext as _
 from mailpile.crypto.gpgi import GnuPG
 
@@ -343,7 +343,7 @@ def decrypt_gpg(lines, fd):
     _, encryption_info, plaintext = gpg.decrypt(''.join(lines))
 
     if encryption_info['status'] != 'decrypted':
-        gpg_exec = distutils.spawn.find_executable('gpg')
+        gpg_exec = spawn.find_executable('gpg')
         gpg_version = gpg.version()
         raise AccessError("GPG (version: %s, location: %s) was unable to decrypt the data: %s" % (gpg_version, gpg_exec, encryption_info['status']))
 
