@@ -291,7 +291,7 @@ class StreamWriter(Thread):
         self.start()
 
     def writeout(self, fd, output):
-        if type(output) == str:
+        if isinstance(output, (str, unicode)):
             output = StringIO.StringIO(output)
 
         while True:
