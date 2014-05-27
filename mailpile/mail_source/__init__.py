@@ -4,6 +4,7 @@ import re
 import threading
 import traceback
 import time
+from gettext import gettext as _
 
 import mailpile.util
 from mailpile.util import *

@@ -1,4 +1,5 @@
 import os
+from gettext import gettext as _
 
 from mailpile.mail_source import BaseMailSource
 

@@ -862,9 +862,10 @@ class Rescan(Command):
             return self._success(_('Rescanned vcards'),
                                  result=self._rescan_vcards(session))
         elif args and args[0].lower() in ('mailboxes', 'sources'):
+            which = args[0].lower()
             return self._success(_('Rescanned mailboxes'),
                                  result=self._rescan_mailboxes(session,
-                                                               which=args[0]))
+                                                               which=which))
         elif args and args[0].lower() == 'full':
             config.clear_mbox_cache()
             args.pop(0)
@@ -920,7 +921,6 @@ class Rescan(Command):
         idx = self._idx()
         msg_count = 0
         mbox_count = 0
-        which = which.lower()
         rv = True
         try:
             pre_command = config.prefs.rescan_command
