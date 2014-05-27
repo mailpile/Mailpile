@@ -10,7 +10,7 @@ from cStringIO import StringIO
 # Mailpile core
 import mailpile
 from mailpile.plugins.tags import AddTag, Filter
-from mailpile.crypto.gpgi import change_gnupg_home
+from mailpile.crypto.gpgi import GNUPG_HOMEDIR
 from mailpile.ui import SilentInteraction
 
 # Pull in all the standard plugins, plus the demos.
@@ -69,7 +69,7 @@ def get_shared_mailpile():
 
     # force usage of test keyring whenever the test mailpile instance is used
     os.chmod(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'), stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR)
-    change_gnupg_home(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'))
+    GNUPG_HOMEDIR = os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring')
 
     workdir = get_mailpile_root()
     tmpdir = os.path.join(workdir, 'testing', 'tmp')
