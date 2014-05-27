@@ -274,9 +274,7 @@ def parse_uid(uidstr):
 class StreamReader(Thread):
     def __init__(self, fd, callback, lines=True):
         Thread.__init__(self, target=self.readin, args=(fd, callback))
-        self.daemon = True
         self.lines = lines
-        self.done = False
         self.start()
 
     def readin(self, fd, callback):
@@ -292,16 +290,12 @@ class StreamReader(Thread):
                         break
         except:
             traceback.print_exc()
-            raise
         finally:
             fd.close()
-            self.done = True
 
 class StreamWriter(Thread):
     def __init__(self, fd, output):
-        self.done = False
         Thread.__init__(self, target=self.writeout, args=(fd, output))
-        self.daemon = True
         self.start()
 
     def writeout(self, fd, output):
@@ -316,10 +310,8 @@ class StreamWriter(Thread):
             output.close()
         except:
             traceback.print_exc()
-            raise
         finally:
             fd.close()
-            self.done = True
 
 class GnuPG:
     """
@@ -382,8 +374,6 @@ class GnuPG:
         if self.passphrase:
             self.threads["passphrase"] = StreamWriter(self.passphrase_handle, 
                                                       self.passphrase)
-        if output:
-            self.threads["stdin"] = StreamWriter(proc.stdin, output)
 
         if outputfd:
             self.threads["stdout"] = StreamReader(proc.stdout, outputfd.write,
@@ -392,13 +382,24 @@ class GnuPG:
             self.threads["stdout"] = StreamReader(proc.stdout,
                                                   self.parse_stdout)
 
-        done = False
-        while not done:
-            proc.poll()
-            if (proc.returncode != None and 
-                all([x.done for y,x in self.threads.iteritems() 
-                    if y != "status"])):
-                done = True
+        if output:
+            # If we have output, we just stream it. Technically, this
+            # doesn't really need to be a thread at the moment.
+            StreamWriter(proc.stdin, output).join()
+        else:
+            proc.stdin.close()
+
+        # Reap GnuPG
+        proc.wait()
+
+        # Close our pipes so the threads finish
+        os.close(self.statuspipe[1])
+        if self.passphrase:
+            os.close(self.passphrase_pipe[1])
+
+        # Reap the threads
+        for name, thr in self.threads.iteritems():
+            thr.join()
 
         if outputfd:
             outputfd.close()
