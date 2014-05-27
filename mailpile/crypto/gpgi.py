@@ -6,6 +6,7 @@ import time
 import re
 import StringIO
 import tempfile
+import traceback
 import select
 from datetime import datetime
 from email.parser import Parser
@@ -271,17 +272,30 @@ def parse_uid(uidstr):
     return email, name, comment
 
 class StreamReader(Thread):
-    def __init__(self, fd, callback):
+    def __init__(self, fd, callback, lines=True):
         Thread.__init__(self, target=self.readin, args=(fd, callback))
         self.daemon = True
-        self.start()
+        self.lines = lines
         self.done = False
+        self.start()
 
     def readin(self, fd, callback):
-        for line in iter(fd.readline, b''):
-            callback(line)
-        fd.close()
-        self.done = True
+        try:
+            if self.lines:
+                for line in iter(fd.readline, b''):
+                    callback(line)
+            else:
+                while True:
+                    buf = fd.read(BLOCKSIZE)
+                    callback(buf)
+                    if buf == "":
+                        break
+        except:
+            traceback.print_exc()
+            raise
+        finally:
+            fd.close()
+            self.done = True
 
 class StreamWriter(Thread):
     def __init__(self, fd, output):
@@ -293,16 +307,19 @@ class StreamWriter(Thread):
     def writeout(self, fd, output):
         if isinstance(output, (str, unicode)):
             output = StringIO.StringIO(output)
-
-        while True:
-            line = output.read(BLOCKSIZE)
-            if line == "":
-                break
-            fd.write(line)
-
-        output.close()
-        fd.close()
-        self.done = True
+        try:
+            while True:
+                line = output.read(BLOCKSIZE)
+                if line == "":
+                    break
+                fd.write(line)
+            output.close()
+        except:
+            traceback.print_exc()
+            raise
+        finally:
+            fd.close()
+            self.done = True
 
 class GnuPG:
     """
@@ -364,14 +381,16 @@ class GnuPG:
         }
         if self.passphrase:
             self.threads["passphrase"] = StreamWriter(self.passphrase_handle, 
-                self.passphrase)
+                                                      self.passphrase)
         if output:
             self.threads["stdin"] = StreamWriter(proc.stdin, output)
 
         if outputfd:
-            self.threads["stdout"] = StreamReader(proc.stdout, outputfd.write)
+            self.threads["stdout"] = StreamReader(proc.stdout, outputfd.write,
+                                                  lines=False)
         else:
-            self.threads["stdout"] = StreamReader(proc.stdout, self.parse_stdout)
+            self.threads["stdout"] = StreamReader(proc.stdout,
+                                                  self.parse_stdout)
 
         done = False
         while not done:
@@ -444,7 +463,7 @@ class GnuPG:
         retvals = self.run(["--import"], output=key_data)
         return self.parse_import(retvals[1]["status"])
 
-    def decrypt(self, data, outputfd=None, passphrase=None):
+    def decrypt(self, data, outputfd=None, passphrase=None, as_lines=False):
         """
         Note that this test will fail if you don't replace the recipient with
         one whose key you control.
@@ -459,9 +478,14 @@ class GnuPG:
         retvals = self.run(action, output=data, outputfd=outputfd)
         self.passphrase = None
 
+        if as_lines:
+            as_lines = retvals[1]["stdout"]
+            retvals[1]["stdout"] = []
+
         rp = GnuPGResultParser().parse(retvals)
 
-        return rp.signature_info, rp.encryption_info, rp.plaintext
+        return (rp.signature_info, rp.encryption_info,
+                as_lines or rp.plaintext)
 
     def verify(self, data, signature=None):
         """

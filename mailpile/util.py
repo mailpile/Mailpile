@@ -340,14 +340,16 @@ def decrypt_gpg(lines, fd):
             break
 
     gpg = GnuPG()
-    _, encryption_info, plaintext = gpg.decrypt(''.join(lines))
+    _, encryption_info, plaintext = gpg.decrypt(''.join(lines), as_lines=True)
 
     if encryption_info['status'] != 'decrypted':
         gpg_exec = spawn.find_executable('gpg')
         gpg_version = gpg.version()
-        raise AccessError("GPG (version: %s, location: %s) was unable to decrypt the data: %s" % (gpg_version, gpg_exec, encryption_info['status']))
+        raise AccessError("GPG (version: %s, location: %s) was unable "
+                          "to decrypt the data: %s"
+                          % (gpg_version, gpg_exec, encryption_info['status']))
 
-    return plaintext.splitlines(True)
+    return plaintext
 
 
 def decrypt_and_parse_lines(fd, parser, config, newlines=False):
