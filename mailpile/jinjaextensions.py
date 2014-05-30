@@ -648,8 +648,11 @@ class MailpileCommand(Extension):
         return json.load(handle)
 
     def _nice_fingerprint(self, fingerprint):
-        slices = [fingerprint[i:i + 4] for i in range(0, len(fingerprint), 4)]
-        return slices[0] + " " + slices[1] + " " + slices[2] + " " + slices[3]
+        if fingerprint:
+            slices = [fingerprint[i:i + 4] for i in range(0, len(fingerprint), 4)]
+            return slices[0] + " " + slices[1] + " " + slices[2] + " " + slices[3]
+        else:
+            return _("No Fingerprint")
 
     def _make_filter_groups(self, tags):
         split = shlex.split(tags)
