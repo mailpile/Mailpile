@@ -16,13 +16,13 @@
   {% if result %}
   {% if command == "search" %}
     {% include("partials/tools_search.html") %}
-  {% elif command in ("contact", "contact/list", "contact/add") %}
+  {% elif state.command_url in ("/contact/", "/contact/list/", "/contact/add/") %}
     {% include("partials/tools_contacts.html") %}
-  {% elif command in ("tag", "tags", "tags/add", "filter/list") %}
+  {% elif state.command_url in ("/tags/", "/tags/add/", "/filter/list/") %}
     {% include("partials/tools_tags.html") %}
-  {% elif command in ("print") %}
+  {% elif state.command_url in ("/settings/") %}
     {% include("partials/tools_settings.html") %}
-  {% elif command == "view" %}
+  {% elif state.command_url == "/message/" %}
     {% include("partials/tools_message.html") %}
   {% else %}
     {% include("partials/tools_default.html") %}
