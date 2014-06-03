@@ -408,5 +408,8 @@ def MailSource(session, my_config):
     elif my_config.protocol in ('maildir',):
         from mailpile.mail_source.maildir import MaildirMailSource
         return MaildirMailSource(session, my_config)
+    elif my_config.protocol in ('imap', 'imap_ssl'):
+        from mailpile.mail_source.imap import ImapMailSource
+        return ImapMailSource(session, my_config)
     raise ValueError(_('Unknown mail source protocol: %s'
                        ) % my_config.protocol)

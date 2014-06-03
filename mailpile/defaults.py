@@ -97,7 +97,7 @@ CONFIG_RULES = {
         'name':            (_('Source name'), str, ''),
         'protocol':        (_('Mailbox protocol or format'),
                             ["mbox", "maildir", "macmaildir", "gmvault",
-                             "imap", "pop3"],
+                             "imap", "imap_ssl", "pop3"],
                             ''),
         'pre_command':     (_('Shell command run before syncing'), str, ''),
         'post_command':    (_('Shell command run after syncing'), str, ''),
