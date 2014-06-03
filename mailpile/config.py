@@ -1110,7 +1110,7 @@ class ConfigManager(ConfigDict):
             return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
         mailboxes = [(fmt_mbxid(k),
                       self.sys.mailbox[k],
-                      self._find_mail_source(k))
+                      self._find_mail_source(fmt_mbxid(k)))
                      for k in self.sys.mailbox.keys()]
 
         if not standalone:
