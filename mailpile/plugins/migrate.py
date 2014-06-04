@@ -165,8 +165,13 @@ def migrate_mailboxes(session):
 def migrate_cleanup(session):
     config = session.config
 
+    # Clean the autotaggers
     autotaggers = [t for t in config.prefs.autotag.values() if t.tagger]
     config.prefs.autotag = autotaggers
+
+    # Clean the profiles
+    profiles = [p for p in config.profiles.values() if p.email or p.name]
+    config.profiles = profiles
 
     return True
 
