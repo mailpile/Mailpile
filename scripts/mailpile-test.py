@@ -64,6 +64,7 @@ def say(stuff):
 def do_setup():
     # Set up initial tags and such
     mp.setup()
+    mp.plugins_load('hacks')
 
     # Configure our fake mail sending setup
     config.profiles['0'].email = MY_FROM
@@ -91,8 +92,6 @@ def do_setup():
     for mailbox in ('tests.mbx', ):
         mp.add(os.path.join(mailpile_test, mailbox))
     mp.add(os.path.join(mailpile_home, 'Maildir'))
-
-    mp.setup_migrate()
 
 
 def test_vcards():

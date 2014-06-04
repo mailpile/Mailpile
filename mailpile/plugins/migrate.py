@@ -182,7 +182,8 @@ MIGRATIONS = {
 
 class Migrate(Command):
     """Perform any needed migrations"""
-    SYNOPSIS = (None, 'setup/migrate', None, None)
+    SYNOPSIS = (None, 'setup/migrate', None,
+                '[' + '|'.join(sorted(MIGRATIONS.keys())) + ']')
     ORDER = ('Internals', 0)
 
     def command(self, before_setup=True, after_setup=True):
