@@ -9,8 +9,12 @@ def checkSearch(query, expected_count=1):
         def __init__(self):
             self.mp = get_shared_mailpile()[0]
             results = self.mp.search(*query)
-            assert_equal(results.result['stats']['count'], expected_count)
-            assert_less(float(results.as_dict()["elapsed"]), 0.2)
+            try:
+                assert_equal(results.result['stats']['count'], expected_count)
+                assert_less(float(results.as_dict()["elapsed"]), 0.2)
+            except:
+                print 'BAD RESULT:\n%s' % results.as_text()
+                raise
     TestSearch.description = "Searching for %s" % str(query)
     return TestSearch
 
@@ -29,7 +33,9 @@ def test_generator():
     # From date
     yield checkSearch(['dates:2013-09-17', 'feministinn'])
     # with attachment
-    yield checkSearch(['has:attachment'], 2)
+    #  - Note: this differs from mailpile-test.py because we do not have the
+    #          keys required to decrypt, so encrypted mail => attachment.
+    yield checkSearch(['has:attachment'], 3)
     # In attachment name
     yield checkSearch(['att:jpg'])
     # term + term

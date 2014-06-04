@@ -9,7 +9,7 @@ from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.util import *
 from mailpile.plugins.migrate import Migrate
 
-from mailpile.plugins.tags import AddTag, Filter
+from mailpile.plugins.tags import AddTag
 
 
 _plugins = PluginManager(builtin=__file__)

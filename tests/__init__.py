@@ -30,6 +30,7 @@ TAGS = {
         'display': 'invisible'
     },
     'Inbox': {
+        'type': 'inbox',
         'display': 'priority',
         'display_order': 2,
     }
@@ -37,7 +38,8 @@ TAGS = {
 
 
 def _initialize_mailpile_for_testing(workdir, test_data):
-    config = mailpile.app.ConfigManager(workdir=workdir, rules=mailpile.defaults.CONFIG_RULES)
+    config = mailpile.app.ConfigManager(workdir=workdir,
+                                        rules=mailpile.defaults.CONFIG_RULES)
     config.sys.http_port = random.randint(33500, 34000)
     session = mailpile.ui.Session(config)
     session.config.load(session)
@@ -54,7 +56,6 @@ def _initialize_mailpile_for_testing(workdir, test_data):
     for t in TAGS:
         AddTag(session, arg=[t]).run(save=False)
         session.config.get_tag(t).update(TAGS[t])
-    Filter(session, arg=['new', '@incoming', '+Inbox', '+New', 'Incoming mail filter']).run(save=False)
 
     mp.add(test_data)
     mp.rescan()
@@ -67,8 +68,12 @@ def get_shared_mailpile():
     if MP is not None:
         return MP
 
+    sys.stderr.write('Preparing shared Mailpile test environment, '
+                     'please wait. 8-)\n')
+
     # force usage of test keyring whenever the test mailpile instance is used
-    os.chmod(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'), stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR)
+    os.chmod(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'),
+             stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR)
     GNUPG_HOMEDIR = os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring')
 
     workdir = get_mailpile_root()
@@ -79,9 +84,6 @@ def get_shared_mailpile():
         shutil.rmtree(tmpdir)
     if not os.path.exists(os.path.join(test_data, "new")):
         os.mkdir(os.path.join(test_data, "new"))
-
-    sys.stderr.write('Preparing shared Mailpile test environment, '
-                     'please wait. 8-)\n')
 
     MP = _initialize_mailpile_for_testing(tmpdir, test_data)
 

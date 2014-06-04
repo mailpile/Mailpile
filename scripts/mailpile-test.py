@@ -41,7 +41,14 @@ MY_KEYID = '0x7848252F'
 os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
 cfg = config = mp._session.config
+ui = mp._session.ui
+
+if '-v' not in sys.argv:
+    from mailpile.ui import SilentInteraction
+    mp._session.ui = SilentInteraction(config)
+
 cfg.plugins.load('demos', process_manifest=True)
+cfg.plugins.load('hacks', process_manifest=True)
 
 
 def contents(fn):
@@ -59,20 +66,23 @@ def grepv(w, fn):
 def say(stuff):
     mp._session.ui.mark(stuff)
     mp._session.ui.reset_marks()
+    if '-v' not in sys.argv:
+        sys.stderr.write('.')
 
 
 def do_setup():
     # Set up initial tags and such
     mp.setup()
-    mp.plugins_load('hacks')
 
     # Configure our fake mail sending setup
     config.profiles['0'].email = MY_FROM
     config.profiles['0'].name = MY_NAME
     config.sys.http_port = 33414
-    config.sys.debug = 'rescan sendmail log compose'
     config.prefs.openpgp_header = 'encrypt'
     config.prefs.crypto_policy = 'openpgp-sign'
+
+    if '-v' in sys.argv:
+        config.sys.debug = 'rescan sendmail log compose'
 
     # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
@@ -95,6 +105,8 @@ def do_setup():
 
 
 def test_vcards():
+    say("Testing vcards")
+
     # Do we have a Mr. Rogers contact?
     mp.rescan('vcards')
     assert(mp.contact('mr@rogers.com'
@@ -102,6 +114,7 @@ def test_vcards():
     assert(len(mp.contact_list('rogers').result['contacts']) == 1)
 
 def test_load_save_rescan():
+    say("Testing load/save/rescan")
     mp.rescan()
 
     # Save and load the index, just for kicks
@@ -128,12 +141,12 @@ def test_load_save_rescan():
                    ['dates:2013-09-17', 'feministinn'],
                    ['mailbox:tests.mbx'] + FROM_BRE,
                    ['att:jpg', 'fimmtudaginn'],
-                   ['subject:Moderation', 'kde-isl'],
+                   ['subject:Moderation', 'kde-isl', '-is:unread'],
                    ['from:bjarni', 'subject:testing', 'subject:encryption',
                     'should', 'encrypted', 'message', 'tag:mp_enc-decrypted'],
                    ['from:bjarni', 'subject:inline', 'subject:encryption',
                     'grand', 'tag:mp_enc-mixed-decrypted'],
-                   ['from:bjarni', 'subject:signatures',
+                   ['from:bjarni', 'subject:signatures', '-is:unread',
                     'tag:mp_sig-unverified'],
                    ['from:brennan', 'subject:encrypted',
                     'testing', 'purposes', 'only', 'tag:mp_enc-decrypted'],
@@ -154,6 +167,8 @@ def test_load_save_rescan():
     say('FIXME: Make sure message signatures verified')
 
 def test_message_data():
+    say("Testing message contents")
+
     # Load up a message and take a look at it...
     search_md = mp.search('subject:emerging').result
     result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
@@ -193,6 +208,8 @@ def test_message_data():
 
 
 def test_composition():
+    say("Testing composition")
+
     # Create a message...
     new_mid = mp.message_compose().result['thread_ids'][0]
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
@@ -270,6 +287,8 @@ def test_composition():
     assert('-i nasty@test.com' in contents(mailpile_sent))
 
 def test_html():
+    say("Testing HTML")
+
     mp.output("jhtml")
     assert('&lt;bang&gt;' in '%s' % mp.search('in:inbox').as_html())
     mp.output("text")
@@ -277,17 +296,18 @@ def test_html():
 
 try:
     do_setup()
-    if '-n' in sys.argv:
-        say("Skipping tests...")
-    else:
+    if '-n' not in sys.argv:
         test_vcards()
         test_load_save_rescan()
         test_message_data()
         test_html()
         test_composition()
-        say("Tests passed, woot!")
+        if '-v' not in sys.argv:
+            sys.stderr.write("\nTests passed, woot!\n")
+        else:
+            say("Tests passed, woot!")
 except:
-    say("Tests FAILED!")
+    sys.stderr.write("\nTests FAILED!\n")
     print
     traceback.print_exc()
 
@@ -297,6 +317,7 @@ except:
 if '-i' in sys.argv:
     mp.set('prefs/vcard/importers/gravatar/0/active = true')
     mp.set('prefs/vcard/importers/gpg/0/active = true')
+    mp._session.ui = ui
     mp.Interact()
 
 

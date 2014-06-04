@@ -37,6 +37,7 @@ alltests: docs
 	@python2 mailpile/vcard.py
 	@python2 mailpile/workers.py
 	@python2 mailpile/mail_source/imap.py
+	@python2 scripts/mailpile-test.py
 	@nosetests
 
 clean:

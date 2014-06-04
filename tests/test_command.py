@@ -150,7 +150,8 @@ class TestGPG(MailPileUnittest):
             gpg_mock.return_value.recv_key.assert_called_with("D13C70DA")
 
     def test_key_import(self):
-        res = action(self.mp._session, "crypto/gpg/importkey", 'testing/pub.key')
+        res = action(self.mp._session, "crypto/gpg/importkey",
+                                       'testing/pub.key')
         self.assertEqual(res.result["results"]["count"], 1)
 
     def test_nicknym_get_key(self):
