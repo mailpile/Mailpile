@@ -471,11 +471,12 @@ class MailIndex:
         return self.encode_msg_id(raw_msg_id or msg_ptr)
 
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
-                     process_new=None, apply_tags=None, stop_after=None):
+                     process_new=None, apply_tags=None, stop_after=None,
+                     editable=False):
         try:
             self._lock.acquire()
             mbox = mailbox_opener(session, mailbox_idx)
-            if mbox.editable:
+            if mbox.editable != editable:
                 session.ui.mark(_('%s: Skipped: %s'
                                   ) % (mailbox_idx, mailbox_fn))
                 return 0

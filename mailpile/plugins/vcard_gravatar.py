@@ -5,6 +5,7 @@ import time
 from gettext import gettext as _
 from urllib2 import urlopen
 
+import mailpile.util
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.vcard import *
@@ -58,7 +59,7 @@ class GravatarImporter(VCardImporter):
                 ts = 0
             if ts < _jittery_time() - (self.config.interval * 24 * 3600):
                 want.append(vcard)
-            if len(want) >= self.config.batch:
+            if len(want) >= self.config.batch or mailpile.util.QUITTING:
                 break
         return want
 
@@ -71,7 +72,7 @@ class GravatarImporter(VCardImporter):
 
         def _get(url):
             self.session.ui.mark('Getting: %s' % url)
-            return urlopen(url).read()
+            return urlopen(url, data=None, timeout=3).read()
 
         results = []
         for contact in self._want_update():

@@ -35,7 +35,7 @@ class MboxMailSource(BaseMailSource):
             mt = state['mt'] = long(os.path.getmtime(self._path(mbx)))
             sz = state['sz'] = long(os.path.getsize(self._path(mbx)))
         except (OSError, IOError):
-            state['mt'] = state['sz'] = -1
+            mt = sz = state['mt'] = state['sz'] = -1
         return (mt != self.event.data['mtimes'].get(mbx._key) or
                 sz != self.event.data['sizes'].get(mbx._key))
 

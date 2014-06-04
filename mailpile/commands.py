@@ -862,7 +862,7 @@ class Rescan(Command):
         if args and args[0].lower() == 'vcards':
             return self._success(_('Rescanned vcards'),
                                  result=self._rescan_vcards(session))
-        elif args and args[0].lower() in ('mailboxes', 'sources'):
+        elif args and args[0].lower() in ('mailboxes', 'sources', 'editable'):
             which = args[0].lower()
             return self._success(_('Rescanned mailboxes'),
                                  result=self._rescan_mailboxes(session,
@@ -910,11 +910,16 @@ class Rescan(Command):
         config = session.config
         imported = 0
         importer_cfgs = config.prefs.vcard.importers
-        for importer in PluginManager.VCARD_IMPORTERS.values():
-            for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
-                if cfg:
-                    imp = importer(session, cfg)
-                    imported += imp.import_vcards(session, config.vcards)
+        try:
+            for importer in PluginManager.VCARD_IMPORTERS.values():
+                for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
+                    if cfg:
+                        imp = importer(session, cfg)
+                        imported += imp.import_vcards(session, config.vcards)
+                    if mailpile.util.QUITTING:
+                        return {'vcards': imported, 'aborted': True}
+        except KeyboardInterrupt:
+            return {'vcards': imported, 'aborted': True}
         return {'vcards': imported}
 
     def _rescan_mailboxes(self, session, which='both'):
@@ -940,15 +945,26 @@ class Rescan(Command):
                         mbox_count += 1
                     session.ui.mark('\n')
 
-            if which in ('both', 'mailboxes'):
-                for fid, fpath, sc in config.get_mailboxes(mail_sources=False):
+            if which in ('both', 'mailboxes', 'editable'):
+                if which == 'editable':
+                    mailboxes = config.get_mailboxes(mail_sources=True)
+                else:
+                    mailboxes = config.get_mailboxes(mail_sources=False)
+
+                for fid, fpath, sc in mailboxes:
                     if mailpile.util.QUITTING:
                         break
                     if fpath == '/dev/null':
                         continue
                     try:
-                        count = idx.scan_mailbox(session, fid, fpath,
-                                                 config.open_mailbox)
+                        if which == 'editable':
+                            count = idx.scan_mailbox(session, fid, fpath,
+                                                     config.open_mailbox,
+                                                     process_new=False,
+                                                     editable=True)
+                        else:
+                            count = idx.scan_mailbox(session, fid, fpath,
+                                                     config.open_mailbox)
                     except ValueError:
                         count = -1
                     if count < 0:
@@ -1128,6 +1144,28 @@ class ChangeDir(ListDir):
             return ListDir.command(self, args=args)
         except (OSError, IOError, UnicodeEncodeError), e:
             return self._error(_('Failed to change directories: %s') % e)
+
+
+class CatFile(Command):
+    """Dump the contents of a file, decrypting if necessary"""
+    SYNOPSIS = (None, 'cat', None, "</path/to/file>")
+    ORDER = ('Internals', 5)
+    SPLIT_ARG = False
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            if self.result:
+                return '\n'.join([l.decode('utf-8') for l in self.result])
+            else:
+                return ''
+
+    def command(self, args=None):
+        lines = []
+        with open(self.args[0]) as fd:
+            decrypt_and_parse_lines(fd, lambda l: lines.append(l),
+                                    self.session.config, newlines=False)
+        return self._success(_('Dumped file %s') % self.args[0],
+                             result=lines)
 
 
 ##[ Configuration commands ]###################################################
@@ -1587,7 +1625,8 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, ListThreadsAndLocks, ListDir, ChangeDir,
+    Optimize, Rescan, RunWWW, ListThreadsAndLocks,
+    ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     RenderPage, Output, Help, HelpVars, HelpSplash, Quit
 ]

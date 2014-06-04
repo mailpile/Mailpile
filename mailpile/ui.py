@@ -25,6 +25,7 @@ from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound
 from jinja2 import TemplatesNotFound, TemplateAssertionError, UndefinedError
 
 import mailpile.commands
+import mailpile.util
 from mailpile.util import *
 from mailpile.search import MailIndex
 
@@ -544,7 +545,7 @@ class Session(object):
         self.report_task_completed(name, None)
 
     def wait_for_task(self, wait_for, quiet=False):
-        while True:
+        while not mailpile.util.QUITTING:
             self.wait_lock.acquire()
             for i in range(0, len(self.task_results)):
                 if self.task_results[i][0] == wait_for:

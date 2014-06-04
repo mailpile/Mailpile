@@ -771,7 +771,7 @@ class VCardStore(dict):
         try:
             self.loaded = True
             prefs = self.config.prefs
-            for fn in os.listdir(self.vcard_dir):
+            for fn in sorted(os.listdir(self.vcard_dir)):
                 if mailpile.util.QUITTING:
                     return
                 try:
@@ -782,13 +782,18 @@ class VCardStore(dict):
                     self.index_vcard(c)
                     if session:
                         session.ui.mark('Loaded %s from %s' % (c.email, fn))
+                except KeyboardInterrupt:
+                    raise
+                except ValueError:
+                    if fn.startswith('tmp'):
+                        os.remove(os.path.join(self.vcard_dir, fn))
                 except:
                     if session:
                         if 'vcard' in self.config.sys.debug:
                             import traceback
                             traceback.print_exc()
                         session.ui.warning('Failed to load vcard %s' % fn)
-        except OSError:
+        except (OSError, IOError):
             pass
 
     def get_vcard(self, email):
