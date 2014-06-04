@@ -126,6 +126,7 @@ class AddVCard(VCardCommand):
                 and self.args[1] == '='
                 and self._valid_vcard_handle(self.args[0])):
             pairs = [(self.args[0], ' '.join(self.args[2:]))]
+
         elif self.data:
             if "@contactname" in self.data and "@contactemail" in self.data:
                 pairs = [(self.data["@contactemail"][0],
@@ -133,6 +134,7 @@ class AddVCard(VCardCommand):
             elif "contactnames" in self.data and "contactemails" in self.data:
                 pairs = zip(self.data["contactemails"],
                             self.data["contactnames"])
+
         else:
             pairs = self._add_from_messages()
 
@@ -254,10 +256,10 @@ class ListVCards(VCardCommand):
                              result=self._vcard_list(vcards, mode=fmt, info={
                    'terms': args,
                    'offset': offset,
-                   'count': count,
+                   'count': min(count, total),
                    'total': total,
                    'start': offset,
-                   'end': offset + count,
+                   'end': offset + min(count, total - offset),
                }))
 
 

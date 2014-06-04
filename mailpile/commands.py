@@ -631,7 +631,7 @@ class SearchResults(dict):
             'stats': {
                 'count': len(threads),
                 'start': start + 1,
-                'end': start + num,
+                'end': start + min(num, len(results)-start),
                 'total': len(results),
             },
             'search_terms': session.searched,
