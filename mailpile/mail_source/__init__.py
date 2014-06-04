@@ -296,11 +296,7 @@ class BaseMailSource(threading.Thread):
             self.session.config.index.interrupt = reason
 
     def _process_new(self, msg, msg_ts, keywords, snippet):
-        if 'r' in msg.get('status', '').lower():
-            return False
-        keywords.update(['%s:in' % tag._key for tag in
-                         self.session.config.get_tags(type='unread')])
-        return True
+        return ProcessNew(self.session, msg, msg_ts, keywords, snippet)
 
     def _unlocked_rescan_mailbox(self, mbx_key, stop_after=None):
         try:
@@ -397,6 +393,14 @@ class BaseMailSource(threading.Thread):
     def quit(self, join='ignored'):
         self.alive = False
         self.wake_up()
+
+
+def ProcessNew(session, msg, msg_ts, keywords, snippet):
+    if 'r' in msg.get('status', '').lower():
+        return False
+    keywords.update(['%s:in' % tag._key for tag in
+                     session.config.get_tags(type='unread')])
+    return True
 
 
 def MailSource(session, my_config):

@@ -1042,8 +1042,8 @@ class MailIndex:
         elif incoming:
             # This is the default behavior if the above are undefined.
             if process_new is None:
-                keywords |= set(['%s:in' % tag._key for tag in
-                                 self.config.get_tags(type='unread')])
+                from mailpile.mail_source import ProcessNew
+                ProcessNew(session, msg, msg_ts, keywords, snippet)
             if apply_tags is None:
                 keywords |= set(['%s:in' % tag._key for tag in
                                  self.config.get_tags(type='inbox')])
