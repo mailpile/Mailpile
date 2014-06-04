@@ -8,8 +8,8 @@ class ContactsGuiTest(MailpileSeleniumTest):
 
         self.click_element_with_class('btn-activity-contact_add')
 
-        self.fill_form_field('@contactname', 'Foo Bar')
-        self.fill_form_field('@contactemail', 'foo.bar@test.local')
+        self.fill_form_field('name', 'Foo Bar')
+        self.fill_form_field('email', 'foo.bar@test.local')
         self.submit_form('form-contact-add')
 
         self.navigate_to('Contacts')

@@ -111,7 +111,7 @@ def test_vcards():
     mp.rescan('vcards')
     assert(mp.contact('mr@rogers.com'
                       ).result['contact']['fn'] == u'Mr. Rogers')
-    assert(len(mp.contact_list('rogers').result['contacts']) == 1)
+    assert(len(mp.contacts('rogers').result['contacts']) == 1)
 
 def test_load_save_rescan():
     say("Testing load/save/rescan")
