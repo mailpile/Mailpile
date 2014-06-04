@@ -388,9 +388,14 @@ class Email(object):
                        msg_parsed=msg, msg_parsed_pgpmime=msg,
                        ephemeral_mid=ephemeral_mid)
 
-    def is_editable(self):
-        return (self.ephemeral_mid or
-                self.config.is_editable_message(self.get_msg_info()))
+    def is_editable(self, quick=False):
+        if self.ephemeral_mid:
+            return True
+        if not self.config.is_editable_message(self.get_msg_info()):
+            return False
+        if quick:
+            return True
+        return ('x-mp-internal-readonly' not in self.get_msg())
 
     MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                     'content-transfer-encoding')
@@ -480,22 +485,17 @@ class Email(object):
 
     def add_attachments(self, session, filenames, filedata=None):
         if not self.is_editable():
-            raise NotEditableError(_('Mailbox is read-only.'))
+            raise NotEditableError(_('Message or mailbox is read-only.'))
         msg = self.get_msg()
-        if 'x-mp-internal-readonly' in msg:
-            raise NotEditableError(_('Message is read-only.'))
         for fn in filenames:
             msg.attach(self.make_attachment(fn, filedata=filedata))
         return self.update_from_msg(session, msg)
 
     def update_from_string(self, session, data, final=False):
         if not self.is_editable():
-            raise NotEditableError(_('Mailbox is read-only.'))
+            raise NotEditableError(_('Message or mailbox is read-only.'))
 
         oldmsg = self.get_msg()
-        if 'x-mp-internal-readonly' in oldmsg:
-            raise NotEditableError(_('Message is read-only.'))
-
         if not data:
             outmsg = oldmsg
 
@@ -560,7 +560,7 @@ class Email(object):
 
     def update_from_msg(self, session, newmsg):
         if not self.is_editable():
-            raise NotEditableError(_('Mailbox is read-only.'))
+            raise NotEditableError(_('Message or mailbox is read-only.'))
 
         mbx, ptr, fd = self.get_mbox_ptr_and_fd()
 
@@ -665,7 +665,7 @@ class Email(object):
             self.get_msg_info(self.index.MSG_BODY),
             self.get_msg_info(self.index.MSG_DATE),
             self.get_msg_info(self.index.MSG_TAGS).split(','),
-            self.is_editable()
+            self.is_editable(quick=True)
         ]
 
     def extract_attachment(self, session, att_id,

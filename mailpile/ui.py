@@ -376,6 +376,12 @@ class UserInteraction:
         if not self.interactive:
             return False
 
+        for e in emails:
+            if not e.is_editable():
+                from mailpile.mailutils import NotEditableError
+                raise NotEditableError(_('Message %s is not editable')
+                                       % e.msg_mid())
+
         sep = '-' * 79 + '\n'
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
 

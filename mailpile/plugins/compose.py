@@ -199,7 +199,13 @@ class CompositionCommand(AddComposeMethods(Search)):
                                                   emails=expand)
         return self._success(message, result=session.displayed)
 
-    def _edit_messages(self, emails, new=True, tag=True, ephemeral=False):
+    def _edit_messages(self, *args, **kwargs):
+        try:
+            return self._real_edit_messages(*args, **kwargs)
+        except NotEditableError:
+            return self._error(_('Message is not editable'))
+
+    def _real_edit_messages(self, emails, new=True, tag=True, ephemeral=False):
         session, idx = self.session, self._idx()
         if (not ephemeral and
                 (session.ui.edit_messages(session, emails) or not new)):
@@ -225,26 +231,18 @@ class Draft(AddComposeMethods(View)):
         'mid': 'metadata-ID'
     }
 
-    # FIXME: This command should raise an error if the message being
-    #        displayed is not editable.
-
     def _side_effects(self, emails):
         session, idx = self.session, self._idx()
-        try:
-            if not emails:
-                session.ui.mark(_('No messages!'))
-            elif session.ui.edit_messages(session, emails):
-                self._tag_blank(emails, untag=True)
-                self._tag_drafts(emails)
-                idx.save_changes()
-                self.message = _('%d message(s) edited') % len(emails)
-            else:
-                self.message = _('%d message(s) unchanged') % len(emails)
-            session.ui.mark(self.message)
-        except:
-            # FIXME: Shutup
-            import traceback
-            traceback.print_exc()
+        if not emails:
+            session.ui.mark(_('No messages!'))
+        elif session.ui.edit_messages(session, emails):
+            self._tag_blank(emails, untag=True)
+            self._tag_drafts(emails)
+            idx.save_changes()
+            self.message = _('%d message(s) edited') % len(emails)
+        else:
+            self.message = _('%d message(s) unchanged') % len(emails)
+        session.ui.mark(self.message)
         return None
 
 
