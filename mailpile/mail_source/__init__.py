@@ -172,7 +172,7 @@ class BaseMailSource(threading.Thread):
                 errors += 1
         if errors:
             self._log_status(_('Rescanned %d mailboxes, failed to rescan %d'
-                              ) % (rescanned, errors))
+                               ) % (rescanned, errors))
         elif rescanned:
             self._log_status(_('Rescanned %d mailboxes') % rescanned)
         self._last_rescan_count = rescanned
@@ -347,8 +347,8 @@ class BaseMailSource(threading.Thread):
                     del self.event.data['traceback']
                 if self.open():
                     self.sync_mail()
-                if (self.alive and time.time() >= self._last_saved +
-                                                  self.SAVE_STATE_INTERVAL):
+                next_save_time = self._last_saved + self.SAVE_STATE_INTERVAL
+                if self.alive and time.time() >= next_save_time:
                     self._save_state()
             except:
                 self.event.data['traceback'] = traceback.format_exc()

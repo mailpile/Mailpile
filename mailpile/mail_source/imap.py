@@ -19,6 +19,7 @@ IMAP_TOKEN = re.compile('("[^"]*"'
                         '|[^\\(\\)"\\s]+'
                         '|\\s+)')
 
+
 def _parse(reply):
     """
     This routine will parse common IMAP4 responses into Pythonic data
@@ -36,20 +37,20 @@ def _parse(reply):
         while True:
             m = IMAP_TOKEN.match(dline)
             if m:
-               token = m.group(0)
-               dline = dline[len(token):]
-               if token[:1] == '"':
-                   pdata.append(token[1:-1])
-               elif token[:1] == '(':
-                   stack.append(pdata)
-                   pdata.append([])
-                   pdata = pdata[-1]
-               elif token[:1] == ')':
-                   pdata = stack.pop(-1)
-               elif token[:1] not in (' ', '\t', '\n', '\r'):
-                   pdata.append(token)
+                token = m.group(0)
+                dline = dline[len(token):]
+                if token[:1] == '"':
+                    pdata.append(token[1:-1])
+                elif token[:1] == '(':
+                    stack.append(pdata)
+                    pdata.append([])
+                    pdata = pdata[-1]
+                elif token[:1] == ')':
+                    pdata = stack.pop(-1)
+                elif token[:1] not in (' ', '\t', '\n', '\r'):
+                    pdata.append(token)
             else:
-               break
+                break
     return (reply[0].upper() == 'OK'), pdata
 
 
