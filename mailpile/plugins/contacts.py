@@ -15,6 +15,39 @@ _plugins = PluginManager(builtin=__file__)
 class VCardCommand(Command):
     VCARD = "vcard"
 
+    class CommandResult(Command.CommandResult):
+        IGNORE = ('line_id', 'pid', 'x-rank')
+
+        def as_text(self):
+            try:
+                return self._as_text()
+            except (KeyError, ValueError, IndexError, TypeError):
+                return ''
+
+        def _as_text(self):
+            key = self.command_obj.VCARD + 's'
+            if isinstance(self.result, dict) and key in self.result:
+                lines = []
+                for card in self.result[key]:
+                    if isinstance(card, list):
+                        for line in card:
+                            key = [k for k in line.keys()
+                                   if k not in self.IGNORE][0]
+                            lines.append('%5.5s %s: %s'
+                                         % (line.get('pid', ''),
+                                            key, line[key]))
+                        lines.append('')
+                    else:
+                        emails = [k['email'] for k in card['email']]
+                        lines.append(' %-28.28s %s'
+                                     % (card['fn'], ', '.join(emails)))
+                        for key in [k['key'].split(',')[-1]
+                                    for k in card.get('key', [])]:
+                            lines.append(' %-28.28s key:%s' % ('', key))
+                return '\n'.join(lines)
+            else:
+                return Command.CommandResult.as_text(self)
+
     def _make_new_vcard(self, handle, name):
         l = [VCardLine(name='fn', value=name),
              VCardLine(name='kind', value=self.KIND)]
@@ -131,10 +164,11 @@ class VCardAddLines(VCardCommand):
         try:
             vcard.add(*[VCardLine(l) for l in lines])
             vcard.save()
-            return self._vcard_list([vcard], info={
-                'updated': handle,
-                'added': len(lines)
-            })
+            return self._success(_("Added lines"),
+                result=self._vcard_list([vcard], info={
+                    'updated': handle,
+                    'added': len(lines)
+                }))
         except:
             config.vcards.index_vcard(vcard)
             self._ignore_exception()
@@ -152,14 +186,20 @@ class RemoveVCard(VCardCommand):
 
     def command(self):
         session, config = self.session, self.session.config
+        removed = []
         for handle in self.args:
             vcard = config.vcards.get_vcard(handle)
             if vcard:
                 self._pre_delete_vcard(vcard)
-                config.vcards.del_vcard(handle)
+                config.vcards.del_vcards(vcard)
+                removed.append(handle)
             else:
-                session.ui.error('No such contact: %s' % handle)
-        return True
+                session.ui.error(_('No such contact: %s') % handle)
+        if removed:
+            return self._success(_('Removed contacts: %s')
+                                 % ', '.join(removed))
+        else:
+            return self._error(_('No contacts found'))
 
 
 class ListVCards(VCardCommand):
@@ -206,14 +246,16 @@ class ListVCards(VCardCommand):
         vcards = config.vcards.find_vcards(terms, kinds=kinds)
         total = len(vcards)
         vcards = vcards[offset:offset + count]
-        return self._vcard_list(vcards, mode=fmt, info={
-            'terms': args,
-            'offset': offset,
-            'count': count,
-            'total': total,
-            'start': offset,
-            'end': offset + count,
-        })
+        return self._success(_("Listed %d/%d results") % (min(total, count),
+                                                          total),
+                             result=self._vcard_list(vcards, mode=fmt, info={
+                   'terms': args,
+                   'offset': offset,
+                   'count': count,
+                   'total': total,
+                   'start': offset,
+                   'end': offset + count,
+               }))
 
 
 def ContactVCard(parent):

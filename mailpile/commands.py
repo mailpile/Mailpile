@@ -930,7 +930,7 @@ class Rescan(Command):
         rv = True
         try:
             pre_command = config.prefs.rescan_command
-            if pre_command:
+            if pre_command and not mailpile.util.QUITTING:
                 session.ui.mark(_('Running: %s') % pre_command)
                 subprocess.check_call(pre_command, shell=True)
             msg_count = 1

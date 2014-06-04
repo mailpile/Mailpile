@@ -799,6 +799,10 @@ class VCardStore(dict):
     def get_vcard(self, email):
         return self.get(email.lower(), None)
 
+    def find_vcards_with_line(vcards, name, value):
+        return [vc for vc in set(vcards.values())
+                if [vcl for vcl in vc.get_all(name) if vcl.value == value]]
+
     def find_vcards(vcards, terms, kinds=['individual']):
         results = []
         if not terms:
@@ -859,26 +863,41 @@ class VCardPluginClass:
 
 
 class VCardImporter(VCardPluginClass):
+    MERGE_BY = ['email']
+    UPDATE_INDEX = False
 
     def import_vcards(self, session, vcard_store):
         all_vcards = self.get_vcards()
         updated = []
         for vcard in all_vcards:
-            existing = None
-            for email in vcard.get_all('email'):
-                existing = vcard_store.get_vcard(email.value)
-                if existing:
-                    existing.merge(self.config.guid, vcard.as_lines())
-                    updated.append(existing)
-                if session.config and session.config.index:
+            # Some importers want to update the index's idea of what names go
+            # with what e-mail addresses. Not all do, but some...
+            if (self.UPDATE_INDEX and vcard.fn and
+                    session.config and session.config.index):
+                for email in vcard.get_all('email'):
                     session.config.index.update_email(email.value,
                                                       name=vcard.fn)
-            if existing is None:
+
+            # Update existing vcards if possible...
+            existing = []
+            for merge_by in self.MERGE_BY:
+                for vcl in vcard.get_all(merge_by):
+                    existing.extend(
+                        vcard_store.find_vcards_with_line(merge_by, vcl.value))
+                if existing:
+                    break
+            for card in existing:
+                card.merge(self.config.guid, vcard.as_lines())
+                updated.append(card)
+
+            # Otherwise, create new ones.
+            if not existing:
                 new_vcard = SimpleVCard()
                 new_vcard.merge(self.config.guid, vcard.as_lines())
                 vcard_store.add_vcards(new_vcard)
                 updated.append(new_vcard)
                 play_nice_with_threads()
+
         for vcard in set(updated):
             vcard.save()
             play_nice_with_threads()

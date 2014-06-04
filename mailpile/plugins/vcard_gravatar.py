@@ -59,7 +59,7 @@ class GravatarImporter(VCardImporter):
                 ts = 0
             if ts < _jittery_time() - (self.config.interval * 24 * 3600):
                 want.append(vcard)
-            if len(want) >= self.config.batch or mailpile.util.QUITTING:
+            if len(want) >= self.config.batch:
                 break
         return want
 
@@ -76,8 +76,10 @@ class GravatarImporter(VCardImporter):
 
         results = []
         for contact in self._want_update():
-            vcls = [VCardLine(name=self.VCARD_TS, value=int(time.time()))]
+            if mailpile.util.QUITTING:
+                return []
 
+            vcls = [VCardLine(name=self.VCARD_TS, value=int(time.time()))]
             email = contact.email
             if not email:
                 continue
@@ -86,6 +88,8 @@ class GravatarImporter(VCardImporter):
             for vcl in contact.get_all('email'):
                 digest = md5_hex(vcl.value.lower())
                 try:
+                    if mailpile.util.QUITTING:
+                        return []
                     if not img:
                         img = _get(('%s/avatar/%s.jpg?s=%s&r=%s&d=404'
                                     ) % (self.config.url,

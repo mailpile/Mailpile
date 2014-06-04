@@ -173,6 +173,35 @@ def migrate_cleanup(session):
     profiles = [p for p in config.profiles.values() if p.email or p.name]
     config.profiles = profiles
 
+    # Clean the vcards:
+    #   - Prefer vcards with valid key info
+    #   - De-dupe everything based on name/email combinations
+    def cardprint(vc):
+        emails = set([v.value for v in vc.get_all('email')])
+        return '/'.join([vc.fn] + sorted(list(emails)))
+    vcards = all_vcards = set(config.vcards.values())
+    keepers = set()
+    for vc in vcards:
+        keys = vc.get_all('key')
+        for k in keys:
+            try:
+                mime, fp = k.value.split('data:')[1].split(',')
+                if fp:
+                    keepers.add(vc)
+            except (ValueError, IndexError):
+                pass
+    for p in (1, 2):
+        prints = set([cardprint(vc) for vc in keepers])
+        for vc in vcards:
+            cp = cardprint(vc)
+            if cp not in prints:
+                keepers.add(vc)
+                prints.add(cp)
+        vcards = keepers
+        keepers = set()
+    # Deleted!!
+    config.vcards.del_vcards(*list(all_vcards - vcards))
+
     return True
 
 
