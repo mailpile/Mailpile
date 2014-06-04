@@ -39,11 +39,14 @@ class VCardCommand(Command):
                         lines.append('')
                     else:
                         emails = [k['email'] for k in card['email']]
-                        lines.append(' %-28.28s %s'
-                                     % (card['fn'], ', '.join(emails)))
+                        photos = [k['photo'] for k in card.get('photo', [])]
+                        lines.append('%s %-26.26s %s'
+                                     % (photos and ':)' or '  ',
+                                        card['fn'],
+                                        ', '.join(emails)))
                         for key in [k['key'].split(',')[-1]
                                     for k in card.get('key', [])]:
-                            lines.append(' %-28.28s key:%s' % ('', key))
+                            lines.append('   %-26.26s key:%s' % ('', key))
                 return '\n'.join(lines)
             else:
                 return Command.CommandResult.as_text(self)
