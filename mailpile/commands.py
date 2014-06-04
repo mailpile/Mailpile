@@ -1041,21 +1041,48 @@ class RenderPage(Command):
         })
 
 
-class ListThreads(Command):
-    """Display list of running threads."""
+class ListThreadsAndLocks(Command):
+    """Display list of running threads and locks."""
     SYNOPSIS = (None, 'ps', None, None)
     ORDER = ('Internals', 5)
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
-            if self.result:
-                return '\n'.join([str(t) for t in self.result])
+            threads = self.result['threads']
+            if threads:
+                threads = '\n'.join([('  ' + str(t)) for t in threads])
             else:
-                return _('Nothing Found')
+                threads = _('Nothing Found')
+            locks = self.result['locks']
+            if locks:
+                locks = '\n'.join([('  %s.%s is %slocked'
+                                    ) % (l[0], l[1], '' if l[2] else 'un')
+                                   for l in locks])
+            else:
+                locks = _('Nothing Found')
+            return 'Threads:\n%s\n\nLocks:\n%s' % (threads, locks)
 
     def command(self, args=None):
-        return self._success(_("Listed running threads"),
-                             result=threading.enumerate())
+        config = self.session.config
+
+        locks = [(config.index, '_lock', config.index._lock._is_owned())]
+        threads = threading.enumerate()
+        for thread in threads:
+            try:
+                if hasattr(thread, 'lock'):
+                    locks.append([thread, 'lock', thread.lock])
+                if hasattr(thread, '_lock'):
+                    locks.append([thread, '_lock', thread._lock])
+                if hasattr(locks[-1][-1], 'locked'):
+                    locks[-1][-1] = locks[-1][-1].locked()
+                elif hasattr(locks[-1][-1], '_is_owned'):
+                    locks[-1][-1] = locks[-1][-1]._is_owned()
+            except AttributeError:
+                pass
+
+        return self._success(_("Listed threads and locks"),
+                             result={'threads': threads,
+                                     'locks': locks})
 
 
 class ListDir(Command):
@@ -1560,8 +1587,8 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, ListThreads, ListDir, ChangeDir, WritePID,
-    ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
+    Optimize, Rescan, RunWWW, ListThreadsAndLocks, ListDir, ChangeDir,
+    WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     RenderPage, Output, Help, HelpVars, HelpSplash, Quit
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

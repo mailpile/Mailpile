@@ -73,6 +73,8 @@ def Interact(session):
                     session.error('Tried to redirect to: %s' % e.url)
     except EOFError:
         print
+    finally:
+        session.ui.unblock()
 
     try:
         if session.config.sys.history_length > 0:
@@ -141,13 +143,16 @@ def Main(args):
         pass
 
     finally:
+        if config.sys.debug:
+            session.ui.display_result(Action(session, 'ps', ''))
+
         mailpile.util.QUITTING = True
+        config.plugins.process_shutdown_hooks()
         config.stop_workers()
-        if readline:
-            readline.write_history_file(session.config.history_file())
         if config.index:
             config.index.save_changes()
-        config.plugins.process_shutdown_hooks()
+        if readline:
+            readline.write_history_file(session.config.history_file())
 
 if __name__ == "__main__":
     Main(sys.argv[1:])

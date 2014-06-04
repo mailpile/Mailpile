@@ -202,7 +202,10 @@ class UserInteraction:
     def mark(self, action=None, percent=None):
         """Note that we are about to perform an action."""
         if not action:
-            action = self.times and self.times[-1][1] or 'mark'
+            try:
+                action = self.times[-1][1]
+            except IndexError:
+                action = 'mark'
         self.progress(action)
         self.times.append((time.time(), action))
 
