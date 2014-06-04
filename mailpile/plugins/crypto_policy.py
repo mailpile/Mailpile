@@ -1,7 +1,10 @@
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.vcard import VCardLine
 from mailpile.commands import Command
 from mailpile.mailutils import Email
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 VCARD_CRYPTO_POLICY = 'X-MAILPILE-CRYPTO-POLICY'
@@ -150,4 +153,6 @@ class CryptoPolicyForUser(CryptoPolicyBaseAction):
             return None
 
 
-mailpile.plugins.register_commands(AutoDiscoverCryptoPolicy, CryptoPolicyForUser, UpdateCryptoPolicyForUser)
+_plugins.register_commands(AutoDiscoverCryptoPolicy,
+                           CryptoPolicyForUser,
+                           UpdateCryptoPolicyForUser)
