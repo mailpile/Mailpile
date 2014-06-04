@@ -9,6 +9,7 @@
 ## larger mailbox.
 
 from urllib import quote, unquote
+from gettext import gettext as _
 
 
 __all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'wervd',

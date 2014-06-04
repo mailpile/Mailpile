@@ -1,6 +1,7 @@
 import mailbox
 import os
 import threading
+from gettext import gettext as _
 
 import mailpile.mailboxes
 from mailpile.mailboxes import MBX_ID_LEN, NoSuchMailboxError

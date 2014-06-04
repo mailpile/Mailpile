@@ -3,6 +3,7 @@ try:
 except ImportError:
     import StringIO
 
+from gettext import gettext as _
 from imaplib import IMAP4, IMAP4_SSL
 from mailbox import Mailbox, Message
 

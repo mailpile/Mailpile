@@ -2,6 +2,7 @@ import mailbox
 import os
 import gzip
 import rfc822
+from gettext import gettext as _
 
 import mailpile.mailboxes
 import mailpile.mailboxes.maildir as maildir

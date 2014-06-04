@@ -5,6 +5,7 @@ import warnings
 import rfc822
 import time
 import errno
+from gettext import gettext as _
 
 import mailpile.mailboxes
 from mailpile.mailboxes import UnorderedPicklable

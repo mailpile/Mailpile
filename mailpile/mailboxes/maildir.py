@@ -1,5 +1,6 @@
 import mailbox
 import os
+from gettext import gettext as _
 
 import mailpile.mailboxes
 from mailpile.mailboxes import UnorderedPicklable
