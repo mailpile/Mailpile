@@ -25,31 +25,36 @@ class VCardCommand(Command):
                 return ''
 
         def _as_text(self):
-            key = self.command_obj.VCARD + 's'
-            if isinstance(self.result, dict) and key in self.result:
-                lines = []
-                for card in self.result[key]:
-                    if isinstance(card, list):
-                        for line in card:
-                            key = [k for k in line.keys()
-                                   if k not in self.IGNORE][0]
-                            lines.append('%5.5s %s: %s'
-                                         % (line.get('pid', ''),
-                                            key, line[key]))
-                        lines.append('')
-                    else:
-                        emails = [k['email'] for k in card['email']]
-                        photos = [k['photo'] for k in card.get('photo', [])]
-                        lines.append('%s %-26.26s %s'
-                                     % (photos and ':)' or '  ',
-                                        card['fn'],
-                                        ', '.join(emails)))
-                        for key in [k['key'].split(',')[-1]
-                                    for k in card.get('key', [])]:
-                            lines.append('   %-26.26s key:%s' % ('', key))
-                return '\n'.join(lines)
-            else:
-                return Command.CommandResult.as_text(self)
+            if isinstance(self.result, dict):
+                co = self.command_obj
+                if co.VCARD in self.result:
+                    return self._vcards_as_text([self.result[co.VCARD]])
+                if co.VCARD + 's' in self.result:
+                    return self._vcards_as_text(self.result[co.VCARD + 's'])
+            return Command.CommandResult.as_text(self)
+
+        def _vcards_as_text(self, result):
+            lines = []
+            for card in result:
+                if isinstance(card, list):
+                    for line in card:
+                        key = [k for k in line.keys()
+                               if k not in self.IGNORE][0]
+                        lines.append('%5.5s %s: %s'
+                                     % (line.get('pid', ''),
+                                        key, line[key]))
+                    lines.append('')
+                else:
+                    emails = [k['email'] for k in card['email']]
+                    photos = [k['photo'] for k in card.get('photo', [])]
+                    lines.append('%s %-26.26s %s'
+                                 % (photos and ':)' or '  ',
+                                    card['fn'],
+                                    ', '.join(emails)))
+                    for key in [k['key'].split(',')[-1]
+                                for k in card.get('key', [])]:
+                        lines.append('   %-26.26s key:%s' % ('', key))
+            return '\n'.join(lines)
 
     def _make_new_vcard(self, handle, name):
         l = [VCardLine(name='fn', value=name),
@@ -61,12 +66,6 @@ class VCardCommand(Command):
 
     def _valid_vcard_handle(self, vc_handle):
         return (vc_handle and '@' in vc_handle[1:])
-
-    def _add_from_messages(self):
-        pairs, idx = [], self._idx()
-        for email in [Email(idx, i) for i in self._choose_messages(self.args)]:
-            pairs.append(ExtractEmailAndName(email.get_msg_info(idx.MSG_FROM)))
-        return pairs
 
     def _pre_delete_vcard(self, vcard):
         pass
@@ -85,7 +84,7 @@ class VCardCommand(Command):
 
 
 class VCard(VCardCommand):
-    """Add/remove/list/edit vcards"""
+    """Display a single vcard"""
     SYNOPSIS = (None, 'vcard', None, '<nickname>')
     ORDER = ('Internals', 6)
     KIND = ''
@@ -100,27 +99,38 @@ class VCard(VCardCommand):
             else:
                 session.ui.warning('No such %s: %s' % (self.VCARD, email))
         if len(vcards) == 1:
-            return {"contact": vcards[0].as_mpCard()}
+            result = {self.VCARD: vcards[0].as_mpCard()}
         else:
-            return {"contacts": [x.as_mpCard() for x in vcards]}
+            result = {self.VCARD + 's': [x.as_mpCard() for x in vcards]}
+        return self._success(_('Found %d results') % len(vcards),
+                             result=result)
 
 
 class AddVCard(VCardCommand):
     """Add one or more vcards"""
-    SYNOPSIS = (None, 'vcard/add', None, '<msgs>', '<email> = <name>')
+    SYNOPSIS = (None, 'vcards/add', None, '<msgs>', '<email> = <name>')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'PUT', 'GET')
-    HTTP_QUERY_VARS = {
-        '@contactemail': 'e-mail address',
-        '@contactname': 'Contact name',
+    HTTP_POST_VARS = {
+        'email': 'e-mail address',
+        'name': 'Contact name',
+        'mid': 'Message ID'
     }
+
+    def _add_from_messages(self, args):
+        pairs, idx = [], self._idx()
+        for email in [Email(idx, i) for i in self._choose_messages(args)]:
+            pairs.append(ExtractEmailAndName(email.get_msg_info(idx.MSG_FROM)))
+        return pairs
 
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
 
-        # FIXME: This method SHOULD NOT make changes on GET.
-        #        It shouldn't really allow GET at all.
+        if self.data.get('_method', 'not-http').upper() == 'GET':
+            return self._success(_('Add contacts here!'), {
+                'form': self.HTTP_POST_VARS
+            })
 
         if (len(self.args) > 2
                 and self.args[1] == '='
@@ -128,33 +138,33 @@ class AddVCard(VCardCommand):
             pairs = [(self.args[0], ' '.join(self.args[2:]))]
 
         elif self.data:
-            if "@contactname" in self.data and "@contactemail" in self.data:
-                pairs = [(self.data["@contactemail"][0],
-                          self.data["@contactname"][0])]
-            elif "contactnames" in self.data and "contactemails" in self.data:
-                pairs = zip(self.data["contactemails"],
-                            self.data["contactnames"])
-
+            if self.data.get('name') and self.data.get('email'):
+                pairs = zip(self.data["email"], self.data["name"])
+            elif self.data.get('mid'):
+                mids = self.data.get('mid')
+                pairs = self._add_from_messages(
+                    ['=%s' % mid.replace('=', '') for mid in mids])
         else:
-            pairs = self._add_from_messages()
+            pairs = self._add_from_messages(self.args)
 
         if pairs:
             vcards = []
             for handle, name in pairs:
                 if handle.lower() not in config.vcards:
                     vcard = self._make_new_vcard(handle.lower(), name)
-                    config.vcards.index_vcard(vcard)
+                    config.vcards.add_vcards(vcard)
                     vcards.append(vcard)
                 else:
                     session.ui.warning('Already exists: %s' % handle)
         else:
             return self._error('Nothing to do!')
-        return {"contacts": [x.as_mpCard() for x in vcards]}
+        return self._success(_('Added %d contacts') % len(vcards),
+            result={self.VCARD + 's': [x.as_mpCard() for x in vcards]})
 
 
 class VCardAddLines(VCardCommand):
     """Add a lines to a VCard"""
-    SYNOPSIS = (None, 'vcard/addline', None, '<email> <lines>')
+    SYNOPSIS = (None, 'vcards/addline', None, '<email> <lines>')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'UPDATE')
@@ -169,7 +179,7 @@ class VCardAddLines(VCardCommand):
         try:
             vcard.add(*[VCardLine(l) for l in lines])
             vcard.save()
-            return self._success(_("Added lines"),
+            return self._success(_("Added %d lines") % len(lines),
                 result=self._vcard_list([vcard], info={
                     'updated': handle,
                     'added': len(lines)
@@ -184,7 +194,7 @@ class VCardAddLines(VCardCommand):
 
 class RemoveVCard(VCardCommand):
     """Delete vcards"""
-    SYNOPSIS = (None, 'vcard/remove', None, '<email>')
+    SYNOPSIS = (None, 'vcards/remove', None, '<email>')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'DELETE')
@@ -209,7 +219,7 @@ class RemoveVCard(VCardCommand):
 
 class ListVCards(VCardCommand):
     """Find vcards"""
-    SYNOPSIS = (None, 'vcard/list', None, '[--lines] [<terms>]')
+    SYNOPSIS = (None, 'vcards', None, '[--lines] [<terms>]')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_QUERY_VARS = {
@@ -334,13 +344,13 @@ class RemoveContact(ContactVCard(RemoveVCard)):
 
 
 class ListContacts(ContactVCard(ListVCards)):
-    SYNOPSIS = (None, 'contact/list', 'contact/list', '[--lines] [<terms>]')
+    SYNOPSIS = (None, 'contacts', 'contacts', '[--lines] [<terms>]')
     """Find contacts"""
 
 
 class ContactImport(Command):
     """Import contacts"""
-    SYNOPSIS = (None, 'contact/import', 'contact/import', '[<parameters>]')
+    SYNOPSIS = (None, 'contacts/import', 'contacts/import', '[<parameters>]')
     ORDER = ('Internals', 6)
     HTTP_CALLABLE = ('GET', )
 
@@ -381,7 +391,7 @@ class ContactImport(Command):
 
 class ContactImporters(Command):
     """Return a list of contact importers"""
-    SYNOPSIS = (None, 'contact/importers', 'contact/importers', '')
+    SYNOPSIS = (None, 'contacts/importers', 'contacts/importers', '')
     ORDER = ('Internals', 6)
     HTTP_CALLABLE = ('GET', )
 

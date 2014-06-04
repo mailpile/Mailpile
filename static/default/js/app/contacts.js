@@ -1,6 +1,6 @@
 MailPile.prototype.contact_add = function(form_name, complete) {
   $.ajax({
-    url      : '/api/0/contact/add/',
+    url      : '/api/0/contacts/add/',
     type     : 'POST',
     data     : $(form_name).serialize(),
     dataType : 'json',
