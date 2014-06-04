@@ -9,6 +9,7 @@ import os.path
 import re
 import shlex
 import traceback
+import threading
 import time
 from gettext import gettext as _
 
@@ -1040,6 +1041,23 @@ class RenderPage(Command):
         })
 
 
+class ListThreads(Command):
+    """Display list of running threads."""
+    SYNOPSIS = (None, 'ps', None, None)
+    ORDER = ('Internals', 5)
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            if self.result:
+                return '\n'.join([str(t) for t in self.result])
+            else:
+                return _('Nothing Found')
+
+    def command(self, args=None):
+        return self._success(_("Listed running threads"),
+                             result=threading.enumerate())
+
+
 class ListDir(Command):
     """Display working directory listing"""
     SYNOPSIS = (None, 'ls', None, "<.../new/path/...>")
@@ -1542,8 +1560,8 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, ListDir, ChangeDir, WritePID, RenderPage,
+    Optimize, Rescan, RunWWW, ListThreads, ListDir, ChangeDir, WritePID,
     ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    Output, Help, HelpVars, HelpSplash, Quit
+    RenderPage, Output, Help, HelpVars, HelpSplash, Quit
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

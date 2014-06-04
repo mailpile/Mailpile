@@ -89,6 +89,10 @@ class BaseMailSource(threading.Thread):
         self.rescan_mailbox = self._locked(self._unlocked_rescan_mailbox)
         self.take_over_mailbox = self._locked(self._unlocked_take_over_mailbox)
 
+    def __str__(self):
+        return ': '.join([threading.Thread.__str__(self),
+                          self._rescanning and 'Rescanning' or 'Idle'])
+
     def _locked(self, func):
         def locked_func(*args, **kwargs):
             try:

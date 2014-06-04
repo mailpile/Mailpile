@@ -1487,7 +1487,12 @@ class ConfigManager(ConfigDict):
                            config.cron_worker] +
                           config.other_workers +
                           config.mail_sources.values()):
-                    if w:
+                    if w and w.isAlive():
+                        if config.sys.debug:
+                            if wait:
+                                print 'Waiting for %s' % w
+                            else:
+                                print 'Stopping %s' % w
                         w.quit(join=wait)
             config.other_workers = []
             config.http_worker = config.cron_worker = None

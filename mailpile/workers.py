@@ -28,10 +28,14 @@ class Cron(threading.Thread):
         self.ALIVE = False
         self.name = name
         self.session = session
+        self.running = 'Idle'
         self.schedule = {}
         self.sleep = 10
         # This lock is used to synchronize
         self.lock = threading.Lock()
+
+    def __str__(self):
+        return ': '.join([threading.Thread.__str__(self), self.running])
 
     def add_task(self, name, interval, task):
         """
@@ -106,10 +110,13 @@ class Cron(threading.Thread):
                 # Set last_executed
                 self.schedule[name][3] = time.time()
                 try:
+                    self.running = name
                     task()
                 except Exception, e:
                     self.session.ui.error(('%s failed in %s: %s'
                                            ) % (name, self.name, e))
+                finally:
+                    self.running = 'Idle'
 
             # Some tasks take longer than others, so use the time before
             # executing tasks as reference for the delay
@@ -153,8 +160,12 @@ class Worker(threading.Thread):
         self.ALIVE = False
         self.JOBS = []
         self.LOCK = threading.Condition()
+        self.running = 'Idle'
         self.pauses = 0
         self.session = session
+
+    def __str__(self):
+        return ': '.join([threading.Thread.__str__(self), self.running])
 
     def add_task(self, session, name, task):
         self.LOCK.acquire()
@@ -189,6 +200,7 @@ class Worker(threading.Thread):
             self.LOCK.release()
 
             try:
+                self.running = name
                 if session:
                     session.ui.mark('Starting: %s' % name)
                     session.report_task_completed(name, task())
@@ -199,6 +211,8 @@ class Worker(threading.Thread):
                                        ) % (name, self.NAME, e))
                 if session:
                     session.report_task_failed(name)
+            finally:
+                self.running = 'Idle'
 
     def pause(self, session):
         self.LOCK.acquire()
