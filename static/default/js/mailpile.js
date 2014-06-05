@@ -117,7 +117,11 @@ MailPile.prototype.render = function() {
     var content_tools_height    = $('#content-tools').height();
     var new_content_width       = $(window).width() - sidebar_width;
     var new_content_view_height = content_height - content_tools_height;
-  
+
+    $('#content-tools').css('position', 'fixed');
+    $('.sub-navigation').width(content_width);
+    $('#thread-title').width(content_width);
+
     // Set Content View
     $('#content, #content-wide').css({'height': content_height});
     $('#content-tools, .sub-navigation, .bulk-actions').width(new_content_width);
