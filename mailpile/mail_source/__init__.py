@@ -75,6 +75,7 @@ class BaseMailSource(threading.Thread):
         self.alive = None
         self.event = None
         self.jitter = self.DEFAULT_JITTER
+        self._state = 'Idle'
         self._sleeping = None
         self._interrupt = None
         self._rescanning = False
@@ -90,15 +91,16 @@ class BaseMailSource(threading.Thread):
         self.take_over_mailbox = self._locked(self._unlocked_take_over_mailbox)
 
     def __str__(self):
-        return ': '.join([threading.Thread.__str__(self),
-                          self._rescanning and 'Rescanning' or 'Idle'])
+        return ': '.join([threading.Thread.__str__(self), self._state])
 
     def _locked(self, func):
         def locked_func(*args, **kwargs):
             try:
                 self._lock.acquire()
+                ostate, self._state = self._state, func.__name__
                 return func(*args, **kwargs)
             finally:
+                self._state = ostate
                 self._lock.release()
         return locked_func
 
@@ -304,6 +306,8 @@ class BaseMailSource(threading.Thread):
 
     def _unlocked_rescan_mailbox(self, mbx_key, stop_after=None):
         try:
+            ostate, self._state = self._state, 'Rescan'
+
             mbx = self.my_config.mailbox[mbx_key]
             path = self._path(mbx)
             if mbx.policy == 'watch':
@@ -326,6 +330,7 @@ class BaseMailSource(threading.Thread):
         except ValueError:
             return -1
         finally:
+            self._state = ostate
             self._rescanning = False
 
     def is_mailbox(self, fn):
@@ -379,10 +384,14 @@ class BaseMailSource(threading.Thread):
             self.wake_up()
             while not begin.acquire(False):
                 time.sleep(1)
+                if mailpile.util.QUITTING:
+                    return self._last_rescan_count
             if started_callback:
                 started_callback()
             while not end.acquire(False):
                 time.sleep(1)
+                if mailpile.util.QUITTING:
+                    return self._last_rescan_count
             return self._last_rescan_count
         except KeyboardInterrupt:
             self.interrupt_rescan(_('User aborted'))
