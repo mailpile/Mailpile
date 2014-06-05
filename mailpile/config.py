@@ -1185,27 +1185,32 @@ class ConfigManager(ConfigDict):
 
         self._lock.acquire()
         try:
+            try:
+                if mbx_id not in self._mbox_cache:
+                    if session:
+                        session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
+                    self._mbox_cache[mbx_id] = self.load_pickle(pfn)
+                self._mbox_cache[mbx_id].update_toc()
+            except KeyboardInterrupt:
+                raise
+            except IOError:
+                pass
+            except:
+                if self.sys.debug:
+                    import traceback
+                    traceback.print_exc()
+
             if mbx_id not in self._mbox_cache:
                 if session:
-                    session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
-                self._mbox_cache[mbx_id] = self.load_pickle(pfn)
-            self._mbox_cache[mbx_id].update_toc()
-        except KeyboardInterrupt:
-            raise
-        except:
-            if self.sys.debug:
-                import traceback
-                traceback.print_exc()
-            if session:
-                session.ui.mark(_('%s: Opening: %s (may take a while)'
-                                  ) % (mbx_id, mfn))
-            editable = self.is_editable_mailbox(mbx_id)
-            mbox = OpenMailbox(mfn, self, create=editable)
-            mbox.editable = editable
-            mbox.save(session,
-                      to=pfn,
-                      pickler=lambda o, f: self.save_pickle(o, f))
-            self._mbox_cache[mbx_id] = mbox
+                    session.ui.mark(_('%s: Opening: %s (may take a while)'
+                                      ) % (mbx_id, mfn))
+                editable = self.is_editable_mailbox(mbx_id)
+                mbox = OpenMailbox(mfn, self, create=editable)
+                mbox.editable = editable
+                mbox.save(session,
+                          to=pfn,
+                          pickler=lambda o, f: self.save_pickle(o, f))
+                self._mbox_cache[mbx_id] = mbox
         finally:
             self._lock.release()
 
@@ -1420,7 +1425,7 @@ class ConfigManager(ConfigDict):
                             session or config.background, src_config)
                         config.mail_sources[src_id].start()
                     except ValueError:
-                        traceback.print_exc()
+                        pass
 
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', session)
