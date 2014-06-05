@@ -58,6 +58,8 @@ class ImapMailSource(BaseMailSource):
     """
     This is a mail source that connects to an IMAP server.
     """
+    TIMEOUT = 5
+
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.imap.ImapMailSource'
 
@@ -72,13 +74,16 @@ class ImapMailSource(BaseMailSource):
         tcls = cls(*args, **kwargs)
         return tcls.open(conn_cls=conn_cls) and tcls or False
 
+    def _timed(self, *args, **kwargs):
+        return RunTimed(self.TIMEOUT, *args, **kwargs)
+
     def _unlocked_open(self, conn_cls=None):
         my_config = self.my_config
         mailboxes = my_config.mailbox.values()
         try:
-            if self.conn and self.conn.noop()[0] == 'OK':
+            if self.conn and self._timed(self.conn.noop)[0] == 'OK':
                 return True
-        except IMAP4.error:
+        except (IMAP4.error, TimedOut):
             pass
 
         # If we are given a conn class, use that - this allows mocks for
@@ -89,24 +94,30 @@ class ImapMailSource(BaseMailSource):
 
         self.conn = None
         try:
-            conn = self.conn = conn_cls(my_config.host, my_config.port)
-        except (IMAP4.error, socket.error):
+            def mkconn():
+                return conn_cls(my_config.host, my_config.port)
+            conn = self.conn = self._timed(mkconn)
+
+            ok, data = _parse(self._timed(conn.login,
+                                          my_config.username,
+                                          my_config.password))
+            if not ok:
+                # FIXME: Event! Bad login/password?
+                return False
+
+            ok, data = _parse(self._timed(conn.capability))
+            if ok:
+                self.capabilities = set(' '.join(data).upper().split())
+            else:
+                self.capabilities = set()
+
+            # FIXME: This is wrong
+            return False
+
+        except (IMAP4.error, socket.error, TimedOut):
             # FIXME: Event! Network down? Bad host/port?
+            self.conn = None
             return False
-
-        ok, data = _parse(conn.login(my_config.username, my_config.password))
-        if not ok:
-            # FIXME: Event! Bad login/password?
-            return False
-
-        ok, data = _parse(conn.capability())
-        if ok:
-            self.capabilities = set(' '.join(data).upper().split())
-        else:
-            self.capabilities = set()
-
-        # FIXME: This is wrong
-        return False
 
         # Prepare the data section of our event, for keeping state.
         for d in ('mtimes', 'sizes'):

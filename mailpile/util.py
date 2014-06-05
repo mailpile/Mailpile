@@ -558,6 +558,28 @@ def HideBinary(text):
         return '[BINARY DATA, %d BYTES]' % len(text)
 
 
+class TimedOut(Exception):
+    pass
+
+
+def RunTimed(timeout, func, *args, **kwargs):
+    result, exception = [], []
+    def work():
+        try:
+            result.append(func(*args, **kwargs))
+        except Exception as e:
+            exception.append(e)
+    worker = threading.Thread(target=work)
+    worker.daemon = True
+    worker.start()
+    worker.join(timeout=timeout)
+    if worker.isAlive():
+        raise TimedOut('Timed out: %s' % func.__name__)
+    if exception:
+        raise exception[0]
+    return result[0]
+
+
 class DebugFileWrapper(object):
     def __init__(self, dbg, fd):
         self.fd = fd
