@@ -153,7 +153,7 @@ $(document).on('click', '.message-action-add-contact', function() {
   var address = $(this).data('address');
   var signature = 'FIXME: ' + $('#message-' + mid).find('.thread-item-signature').html();
 
-  var modal_html = $("#modal-add-contact").html();
+  var modal_html = $("#modal-contact-add").html();
   $('#modal-full').html(_.template(modal_html, {}));
   $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
 
@@ -166,9 +166,9 @@ $(document).on('click', '.message-action-add-contact', function() {
 
 
 /* Thread - Add Contact Form */
-$(document).on('submit', '#form-add-contact-modal', function(e) {
+$(document).on('submit', '#form-contact-add-modal', function(e) {
   e.preventDefault();
-  mailpile.contact_add('#form-add-contact-modal', function() {    
+  mailpile.contact_add('#form-contact-add-modal', function() {    
     // Hide Modal
     $('#modal-full').modal('hide');
     // Remove Button

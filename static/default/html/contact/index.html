@@ -99,6 +99,11 @@
     </li>
   </ul>
 
+  <h4><span class="icon-tag"></span> Tags</h4>
+  <ul class="contact-detail">
+    <li>No tags automatically assigned for this contact</li>
+  </ul>  
+
   <h4><span class="icon-forum"></span> Conversations</h4>
   {% set contact_search = "email:" + result.contact.email.0.email %}
   {% set conversations = mailpile("search", contact_search).result %}

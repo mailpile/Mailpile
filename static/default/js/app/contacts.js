@@ -18,58 +18,26 @@ MailPile.prototype.contact_add = function(form_name, complete) {
 $(document).on('click', '.btn-activity-contact_add', function(e) {
 
   e.preventDefault();
-  $('#contacts-list').hide();
-  var add_contact_html = $('#template-contact-add').html();
-
-  $('#content-view').prepend(add_contact_html);
 
   $('.sub-navigation ul li').removeClass('navigation-on');
   $(this).addClass('navigation-on');
+
+  var modal_data = { name: '', address: '', extras: '' };
+  var modal_html = $("#modal-contact-add").html();
+  $('#modal-full').html(_.template(modal_html, modal_data));
+  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
 });
 
 
-var contactActionSelect = function(item) {
-
-  // Data Stuffs    
-  mailpile.bulk_cache_add();
-
-	// Increment Selected
-	$('#bulk-actions-selected-count').html(parseInt($('#bulk-actions-selected-count').html()) + 1);
-
-
-	// Style & Select Checkbox
-	item.removeClass('result').addClass('result-on').data('state', 'selected');
-};
-
-
-var contactActionUnselect = function(item) {
-
-  // Data Stuffs    
-  mailpile.bulk_cache_remove();
-
-	// Decrement Selected
-	var selected_count = parseInt($('#bulk-actions-selected-count').html()) - 1;
-
-	$('#bulk-actions-selected-count').html(selected_count);
-
-	// Hide Actions
-	if (selected_count < 1) {
-
-	}
-
-	// Style & Unselect Checkbox
-	item.removeClass('result-on').addClass('result').data('state', 'normal');
-};
-
-
-$(document).on('click', '#contacts-list div.boxy', function(e) {
-	if (e.target.href === undefined && $(this).data('state') === 'selected') {
-		contactActionUnselect($(this));
-	}
-	else if (e.target.href === undefined) {
-		contactActionSelect($(this));
-	}
+/* Contact - Add */
+$(document).on('submit', '#form-contact-add', function(e) {
+  e.preventDefault();
+  mailpile.contact_add('#form-contact-add', function() {
+    alert('Woot, contact added');
+  });
 });
+
+
 
 
 $(document).on('blur', '.contact-add-name, .contact-add-email', function(e) {
@@ -155,21 +123,13 @@ $(document).on('click', '.contact-add-search-item', function() {
 });
 
 
-/* Contact - Add */
-$(document).on('submit', '#form-contact-add', function(e) {
-  e.preventDefault();
-  mailpile.contact_add('#form-contact-add', function() {
-    alert('Woot, contact added');
-  });
-});
 
-
+/* Contacts - View Page */
 function extractEmailFromLocation() {
-    var pathname = decodeURIComponent(location.pathname);
-    var parts = pathname.split('/').filter(function(el) {return el.length > 0})
-    return parts[parts.length - 1]
+  var pathname = decodeURIComponent(location.pathname);
+  var parts = pathname.split('/').filter(function(el) {return el.length > 0})
+  return parts[parts.length - 1]
 }
-
 
 $('.contact-key-use').on('change', function(e) {
   alert('This will update a KEYS USE state');

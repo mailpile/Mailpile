@@ -1,45 +1,47 @@
 {% extends "layouts/" + render_mode + ".html" %}
 
 {% macro render_profile(index, profile) -%}  
-  <div class="boxy" id="profile-boxy-{{index}}">
-    <div class="boxy-inner">
-      <h3>{{profile.email}}</h3>
-      
-      <form>
-        <label>{{_("Display name:")}}</label> {{ profile.name }}<br/>
-        <label>{{_("E-mail address:")}}</label> {{ profile.email }}<br/>
-        <label>{{_("Delivery route:")}}</label> {{ config.routes[profile.messageroute].name }}<br/>
-      </form>
-
-      <div style="position: absolute; bottom: 10px;">
-        <button id="profile-btn-settings-{{index}}" data-profileid="{{index}}"><span class="icon-settings"></span> {{_("Settings")}}</button>
-      </div>
-    </div>
-  </div>
+<li class="separate">
+  <h3>{{profile.name}}</h3>
+  <form>
+    <label>{{_("Address:")}}</label> {{ profile.email }}<br/>
+    <label>{{_("Route:")}}</label> {{ config.routes[profile.messageroute].name }}<br/>
+  </form>
+  <ul class="horizontal right">
+    <li><a href="" onclick="$('.route').hide();$('#route_{{id}}').show();"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+    <li><a href=""><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
+  </ul>
+</li>
 {%- endmacro %}
 
 {% block content %}
-
 <div id="settings" class="content-normal">
   {% if "profiles" in result %}
   <div id="profiles">
-    <div style="float:right;"><button onclick="$('#newprofile').show();">Add new profile</button></div>
+    <div style="float:right;"><button onclick="$('#newprofile').show();">{{_("Add Profile")}}</button></div>
     <h3>{{_("Your Profiles")}}</h3>
+    <ul class="items">
     {% for p in result.profiles %}
       {{ render_profile(loop.index0, p) }}
     {% endfor %}
+    </ul>
   </div>
   {% endif %}
   {% if "routes" in result %}
   <div id="routes">
-    <div style="float: left; background: #fff; border: 1px solid #ccc;">
-      <ul>
-      {% for id in result.routes %}
-      {% set r = result.routes[id] %}
-        <li><a href="#" style="display: block; margin: 20px;" onclick="$('.route').hide();$('#route_{{id}}').show();">{{r.name}}</a></li>
-      {% endfor %}
-      </ul>
-    </div>
+    <h3>{{_("Routes")}}</h3>
+    <ul class="items">
+    {% for id in result.routes %}
+    {% set route = result.routes[id] %}
+      <li class="separate">
+        <h4>{{route.name}}</h4>
+        <ul class="horizontal right">
+          <li><a href="" onclick="$('.route').hide();$('#route_{{id}}').show();"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+          <li><a href=""><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
+        </ul>
+      </li>
+    {% endfor %}
+    </ul>
     {% for id in result.routes %}
     {% set r = result.routes[id] %}
     <div id="route_{{id}}" class="route" style="margin-left: 40px; display: none; float: left;">
