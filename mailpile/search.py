@@ -186,6 +186,7 @@ class MailIndex:
         self.EMAILS = []
         self.EMAIL_IDS = {}
         CachedSearchResultSet.DropCaches()
+        bogus_lines = []
 
         def process_line(line):
             try:
@@ -201,6 +202,7 @@ class MailIndex:
                     self.EMAILS[pos] = unquoted_email
                     self.EMAIL_IDS[unquoted_email.split()[0].lower()] = pos
                 elif line:
+                    bogus = False
                     words = line.split('\t')
 
                     # Migration: converting old metadata into new!
@@ -216,18 +218,31 @@ class MailIndex:
                         if len(words) == self.MSG_FIELDS_V2:
                             line = '\t'.join(words)
                         else:
-                            raise Exception(_('Your metadata index is either '
-                                              'too old, too new or corrupt!'))
+                            bogus = True
 
-                    pos = int(words[self.MSG_MID], 36)
-                    while len(self.INDEX) < pos + 1:
-                        self.INDEX.append('')
+                    if not bogus:
+                        try:
+                            pos = int(words[self.MSG_MID], 36)
+                            while len(self.INDEX) < pos + 1:
+                                self.INDEX.append('')
+                        except ValueError:
+                            bogus = True
 
-                    self.INDEX[pos] = line
-                    self.MSGIDS[words[self.MSG_ID]] = pos
-                    self.update_msg_tags(pos, words)
-                    for msg_ptr in words[self.MSG_PTRS].split(','):
-                        self.PTRS[msg_ptr] = pos
+                    if bogus:
+                        bogus_lines.append(line)
+                        if len(bogus_lines) > max(0.02 * len(self.INDEX), 50):
+                            raise Exception(_('Your metadata index is '
+                                              'either too old, too new '
+                                              'or corrupt!'))
+                        elif session and 1 == len(bogus_lines) % 100:
+                            session.ui.error(_('Corrupt data in metadata '
+                                               'index! Trying to cope...'))
+                    else:
+                        self.INDEX[pos] = line
+                        self.MSGIDS[words[self.MSG_ID]] = pos
+                        self.update_msg_tags(pos, words)
+                        for msg_ptr in words[self.MSG_PTRS].split(','):
+                            self.PTRS[msg_ptr] = pos
 
             except ValueError:
                 pass
@@ -250,6 +265,15 @@ class MailIndex:
         finally:
             self._lock.release()
             play_nice_with_threads()
+
+        if bogus_lines:
+            bogus_file = (self.config.mailindex_file() +
+                          '.bogus.%x' % time.time())
+            with open(bogus_file, 'w') as bl:
+                bl.write('\n'.join(bogus_lines))
+            if session:
+                session.ui.warning(_('Recovered! Wrote bad metadata to: %s'
+                                     ) % bogus_file)
 
         self.cache_sort_orders(session)
         if session:
@@ -1074,8 +1098,10 @@ class MailIndex:
                 if len(self.CACHE) > 20000:
                     self.CACHE = {}
                 rv = self.CACHE[msg_idx] = self.l2m(self.INDEX[msg_idx])
+            if len(rv) != self.MSG_FIELDS_V2:
+                raise ValueError()
             return rv
-        except IndexError:
+        except (IndexError, ValueError):
             return self.BOGUS_METADATA[:]
 
     def set_msg_at_idx_pos(self, msg_idx, msg_info):
