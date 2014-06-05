@@ -923,7 +923,7 @@ class Rescan(Command):
             return {'vcards': imported, 'aborted': True}
         return {'vcards': imported}
 
-    def _rescan_mailboxes(self, session, which='both'):
+    def _rescan_mailboxes(self, session, which='mailboxes'):
         config = session.config
         idx = self._idx()
         msg_count = 0
