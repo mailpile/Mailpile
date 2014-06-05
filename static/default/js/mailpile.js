@@ -132,6 +132,9 @@ MailPile.prototype.render = function() {
     console.log(content_tools_height);
   
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
