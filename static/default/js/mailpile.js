@@ -114,10 +114,27 @@ MailPile.prototype.render = function() {
 
     var content_width  = $(window).width() - sidebar_width;
     var content_height = $(window).height() - 62;
+<<<<<<< Updated upstream
     var content_tools_height    = $('#content-tools').height();
     var new_content_width       = $(window).width() - sidebar_width;
     var new_content_view_height = content_height - content_tools_height;
 
+=======
+    var content_tools_height = $('#content-tools').height();
+    var fix_content_view_height = sidebar_height - content_tools_height;
+    var new_content_width = $(window).width() - sidebar_width;
+  
+    $('#content-tools').css('position', 'fixed')
+    $('.sub-navigation').width(content_width);
+    $('#thread-title').width(content_width);
+  
+    console.log(fix_content_view_height);
+    console.log(content_tools_height);
+  
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     // Set Content View
     $('#content, #content-wide').css({'height': content_height});
     $('#content-tools, .sub-navigation, .bulk-actions').width(new_content_width);
