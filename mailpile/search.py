@@ -539,6 +539,7 @@ class MailIndex:
                 self.interrupt = None
                 return -1
             if stop_after and added >= stop_after:
+                messages_md5 = 'NOT DONE YET'
                 break
 
             i = messages[ui]

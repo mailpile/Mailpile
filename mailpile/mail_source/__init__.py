@@ -12,46 +12,8 @@ from mailpile.eventlog import Event
 from mailpile.mailboxes import *
 
 
-__all__ = ['mbox', 'maildir']
+__all__ = ['mbox', 'maildir', 'imap']
 
-
-# Brainstorming:  What does a mail source have to do?
-#
-# It's a thread that watches for new mail. It can do so using one account
-# and one data type, so it can be specialized for the task. For example an
-# IMAP source. That one connects to the remote server whenever it can,
-# checks which remote folders exist and which have messages we haven't
-# yet seen. It downloads the ones we're missing, indexes and assigns
-# tags to them. Unless they've been deleted locally, then if we're
-# syncing it deletes them from the server as well.
-#
-# So... we have a thread. Inna loop:
-#   It connects.
-#   A watcher/syncer subroutine starts up.
-#     Inna loop:
-#       Folders are discovered. Post/update an event if we see folders
-#       that we haven't seen before and can't figure out what they are meant
-#       to be. Use IDLE or poll for mail. Download new mail, add to index.
-#
-# Pointers to mail:
-#    Indexed mail is identified by a pointer. Currently that's a combo
-#    of mailbox ID and an ID within the mailbox.  When the rest of the
-#    app wants to load a message, it currently assumes it can access
-#    something that looks like a Python mailbox. We aren't actually using
-#    much of that interface, so we could rip it out and replace it.
-#    Making the ID reference mail sources instead, and delegating to
-#    the mail source read/write mail ops might make sense.
-#
-#
-# ... so how do I get there?  Migration:
-#
-#    Goal: sys.mailbox goes away.
-#    Migration: create a bunch of sources, one per mailbox type or
-#               group by were in the FS they are.
-#    ... so a mbox mail source.
-#    ... and a maildir mail source.
-#    So we start with Maildir. WERVD and IMAP inherit from that anyway.
-#
 
 class BaseMailSource(threading.Thread):
     """
@@ -91,7 +53,10 @@ class BaseMailSource(threading.Thread):
         self.take_over_mailbox = self._locked(self._unlocked_take_over_mailbox)
 
     def __str__(self):
-        return ': '.join([threading.Thread.__str__(self), self._state])
+        rv = ': '.join([threading.Thread.__str__(self), self._state])
+        if self._sleeping > 0:
+            rv += '(%s)' % self._sleeping
+        return rv
 
     def _locked(self, func):
         def locked_func(*args, **kwargs):
@@ -163,13 +128,19 @@ class BaseMailSource(threading.Thread):
                 break
             try:
                 state = {}
-                if batch > 0 and self._has_mailbox_changed(mbx, state):
+                # Generally speaking, we only rescan if a mailbox looks like
+                # it has changed. However, 1/20th of the time we take a look
+                # anyway just in case looks are deceiving.
+                if batch > 0 and (self._has_mailbox_changed(mbx, state) or
+                                  random.randint(0, 20) == 10):
                     self._log_status(_('Reading mailbox %s') % self._path(mbx))
                     count = self._unlocked_rescan_mailbox(mbx._key,
                                                           stop_after=batch)
                     if count >= 0:
                         batch -= count
-                        if batch >= 0:
+                        if (count and batch > 0 and
+                                not self._interrupt and
+                                not mailpile.util.QUITTING):
                             self._mark_mailbox_rescanned(mbx, state)
                             rescanned += 1
                     else:
@@ -181,6 +152,8 @@ class BaseMailSource(threading.Thread):
                                ) % (rescanned, errors))
         elif rescanned:
             self._log_status(_('Rescanned %d mailboxes') % rescanned)
+        if batch > 0:
+            self._discover_mailboxes(self.my_config.discovery.paths)
         self._last_rescan_count = rescanned
         return rescanned
 
@@ -188,6 +161,8 @@ class BaseMailSource(threading.Thread):
         return seconds + random.randint(0, self.jitter)
 
     def _sleep(self, seconds):
+        if self.session.config.sys.debug:
+            seconds //= 10
         if self._sleeping != 0:
             self._sleeping = seconds
             while (self.alive and self._sleeping > 0 and
@@ -197,13 +172,13 @@ class BaseMailSource(threading.Thread):
         self._sleeping = None
         return (self.alive and not mailpile.util.QUITTING)
 
-    def _discover_mailboxes(self, path):
+    def _discover_mailboxes(self, paths):
         config = self.session.config
-        paths = [path]
         existing = set(config.sys.mailbox +
                        [mbx.local for mbx in self.my_config.mailbox.values()
                         if mbx.local])
         adding = []
+        paths = paths[:]
         while paths:
             raw_fn = paths.pop(0)
             fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
@@ -306,14 +281,13 @@ class BaseMailSource(threading.Thread):
 
     def _unlocked_rescan_mailbox(self, mbx_key, stop_after=None):
         try:
-            ostate, self._state = self._state, 'Rescan'
+            ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
+                                                                   stop_after)
 
             mbx = self.my_config.mailbox[mbx_key]
             path = self._path(mbx)
-            if mbx.policy == 'watch':
-                return self._discover_mailboxes(path)
             if path == '/dev/null' or mbx.policy in ('ignore', 'unknown'):
-                return True
+                return 0
             if mbx.local:
                 # FIXME: Should copy any new messages to our local stash
                 pass

@@ -288,6 +288,8 @@ class GlobalPostingList(PostingList):
                 # rules (compacts as necessary).
                 pls._migrate(sig, compact=quick)
                 count += 1
+                if mailpile.util.QUITTING:
+                    break
             pls.save()
 
         if quick:
@@ -309,11 +311,11 @@ class GlobalPostingList(PostingList):
 
     @classmethod
     def _Append(cls, session, word, mail_ids, compact=True):
-        super(GlobalPostingList, cls)._Append(session, word, mail_ids,
-                                              compact=compact)
         global GLOBAL_POSTING_LIST
         GLOBAL_GPL_LOCK.acquire()
         try:
+            super(GlobalPostingList, cls)._Append(session, word, mail_ids,
+                                                  compact=compact)
             sig = cls.WordSig(word, session.config)
             if GLOBAL_POSTING_LIST is None:
                 GLOBAL_POSTING_LIST = {}

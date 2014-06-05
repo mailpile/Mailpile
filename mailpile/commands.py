@@ -6,6 +6,7 @@ import datetime
 import json
 import os
 import os.path
+import random
 import re
 import shlex
 import traceback
@@ -936,7 +937,9 @@ class Rescan(Command):
             msg_count = 1
 
             if which in ('both', 'sources'):
-                for src in config.mail_sources.values():
+                sources = config.mail_sources.values()
+                sources.sort(key=lambda k: random.randint(0, 100))
+                for src in sources:
                     if mailpile.util.QUITTING:
                         break
                     count = src.rescan_now(session)

@@ -107,6 +107,7 @@ CONFIG_RULES = {
         'host':            (_('Host'), str, ''),
         'port':            (_('Port'), int, 993),
         'discovery':       (_('Mailbox discovery policy'), False, {
+            'paths':       (_('Paths to watch for new mailboxes'), str, []),
             'policy':      (_('Default mailbox policy'),
                             ['unknown', 'ignore', 'watch',
                              'read', 'move', 'sync'], 'unknown'),
@@ -118,8 +119,8 @@ CONFIG_RULES = {
         'mailbox': (_('Mailboxes'), {
             'path':        (_('Mailbox source path'), str, ''),
             'policy':      (_('Mailbox policy'),
-                            ['unknown', 'ignore', 'watch',
-                             'read', 'move', 'sync'], 'ignore'),
+                            ['unknown', 'ignore', 'read', 'move', 'sync'],
+                            'ignore'),
             'local':       (_('Local mailbox path'), str, ''),
             'process_new': (_('Is a source of new mail'), bool, True),
             'primary_tag': (_('A tag representing this mailbox'), str, ''),

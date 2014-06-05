@@ -562,6 +562,19 @@ class TimedOut(Exception):
     pass
 
 
+class RunTimedThread(threading.Thread):
+    def __init__(self, name, func):
+        threading.Thread.__init__(self, target=func)
+        self.name = name
+        self.daemon = True
+
+    def run_timed(self, timeout):
+        self.start()
+        self.join(timeout=timeout)
+        if self.isAlive():
+            raise TimedOut('Timed out: %s' % self.name)
+
+
 def RunTimed(timeout, func, *args, **kwargs):
     result, exception = [], []
     def work():
@@ -569,12 +582,7 @@ def RunTimed(timeout, func, *args, **kwargs):
             result.append(func(*args, **kwargs))
         except Exception as e:
             exception.append(e)
-    worker = threading.Thread(target=work)
-    worker.daemon = True
-    worker.start()
-    worker.join(timeout=timeout)
-    if worker.isAlive():
-        raise TimedOut('Timed out: %s' % func.__name__)
+    RunTimedThread(func.__name__, work).run_timed(timeout)
     if exception:
         raise exception[0]
     return result[0]
