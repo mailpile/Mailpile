@@ -316,6 +316,8 @@ class BaseMailSource(threading.Thread):
         self.event.flags = Event.RUNNING
         _original_session = self.session
         while self._sleep(self._jitter(self.my_config.interval)):
+            if not self.session.config.index:
+                continue
             waiters, self._rescan_waiters = self._rescan_waiters, []
             for b, e, s in waiters:
                 b.release()
