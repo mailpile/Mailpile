@@ -310,6 +310,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     def __init__(self, session, sspec, handler):
         SimpleXMLRPCServer.__init__(self, sspec, handler)
+        self.daemon_threads = True
         self.session = session
         self.sessions = {}
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
