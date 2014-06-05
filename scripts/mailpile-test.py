@@ -109,8 +109,8 @@ def test_vcards():
 
     # Do we have a Mr. Rogers contact?
     mp.rescan('vcards')
-    assert(mp.contact('mr@rogers.com'
-                      ).result['contact']['fn'] == u'Mr. Rogers')
+    assert(mp.contacts_view('mr@rogers.com'
+                            ).result['contact']['fn'] == u'Mr. Rogers')
     assert(len(mp.contacts('rogers').result['contacts']) == 1)
 
 def test_load_save_rescan():

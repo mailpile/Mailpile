@@ -7,17 +7,17 @@
 
   <div id="tab-container" class="tab-container">
   <ul>
-    {% for importer in mailpile("contact/importers").result %}
+    {% for importer in mailpile("contacts/importers").result %}
     <li class="tab"><a href="#tabs-{{importer.short_name}}">{{importer.format_name}}</a></li>
     {% endfor %}
   </ul>
 
-  {% for importer in mailpile("contact/importers").result %}
+  {% for importer in mailpile("contacts/importers").result %}
   <div class="tab" id="tabs-{{importer.short_name}}">
     <h2>{{importer.format_name}}</h2>
     <p>{{importer.format_description}}</p>
 
-    <form id="form-contact-import-{{importer.short_name}}" action="/api/0/contact/import/" method="POST">
+    <form id="form-contact-import-{{importer.short_name}}" action="/api/0/contacts/import/" method="POST">
       <input type="hidden" name="csrf" value=""/>
       <input type="hidden" name="format" value="{{importer.short_name}}"/>
 

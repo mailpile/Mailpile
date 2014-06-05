@@ -18,6 +18,6 @@
 </div>
 {% else %}
   {{ mailpile('http/redirect',
-              '/contact/' + result.contacts.0.email.0.email + '/') }}
+              '/contacts/view/' + result.contacts.0.email.0.email + '/') }}
 {% endif %}
 {% endblock %}

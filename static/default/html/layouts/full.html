@@ -16,7 +16,7 @@
   {% if result %}
   {% if command == "search" %}
     {% include("partials/tools_search.html") %}
-  {% elif state.command_url in ("/contact/", "/contact/list/", "/contact/add/") %}
+  {% elif state.command_url in ("/contacts/view/", "/contacts/", "/contacts/add/") %}
     {% include("partials/tools_contacts.html") %}
   {% elif state.command_url in ("/tags/", "/tags/add/", "/filter/list/") %}
     {% include("partials/tools_tags.html") %}

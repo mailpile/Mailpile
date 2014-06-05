@@ -85,7 +85,7 @@ class VCardCommand(Command):
 
 class VCard(VCardCommand):
     """Display a single vcard"""
-    SYNOPSIS = (None, 'vcard', None, '<nickname>')
+    SYNOPSIS = (None, 'vcards/view', None, '<nickname>')
     ORDER = ('Internals', 6)
     KIND = ''
 
@@ -290,7 +290,7 @@ def ContactVCard(parent):
 
 class Contact(ContactVCard(VCard)):
     """View contacts"""
-    SYNOPSIS = (None, 'contact', 'contact', '[<email>]')
+    SYNOPSIS = (None, 'contacts/view', 'contacts/view', '[<email>]')
 
     def command(self, save=True):
         contact = VCard.command(self, save)
