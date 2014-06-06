@@ -51,6 +51,8 @@ class BaseMailSource(threading.Thread):
         self.sync_mail = self._locked(self._unlocked_sync_mail)
         self.rescan_mailbox = self._locked(self._unlocked_rescan_mailbox)
         self.take_over_mailbox = self._locked(self._unlocked_take_over_mailbox)
+        self.discover_mailboxes = self._locked(
+            self._unlocked_discover_mailboxes)
 
     def __str__(self):
         rv = ': '.join([threading.Thread.__str__(self), self._state])
@@ -152,8 +154,8 @@ class BaseMailSource(threading.Thread):
                                ) % (rescanned, errors))
         elif rescanned:
             self._log_status(_('Rescanned %d mailboxes') % rescanned)
-        if batch > 0:
-            self._discover_mailboxes(self.my_config.discovery.paths)
+        if batch > 0 and not errors:
+            self._unlocked_discover_mailboxes(self.my_config.discovery.paths)
         self._last_rescan_count = rescanned
         return rescanned
 
@@ -172,7 +174,7 @@ class BaseMailSource(threading.Thread):
         self._sleeping = None
         return (self.alive and not mailpile.util.QUITTING)
 
-    def _discover_mailboxes(self, paths):
+    def _unlocked_discover_mailboxes(self, paths):
         config = self.session.config
         existing = set(config.sys.mailbox +
                        [mbx.local for mbx in self.my_config.mailbox.values()
@@ -200,7 +202,7 @@ class BaseMailSource(threading.Thread):
         for path in adding:
             new[config.sys.mailbox.append(path)] = path
         for mailbox_idx in new.keys():
-            mbx = self.take_over_mailbox(mailbox_idx)
+            mbx = self._unlocked_take_over_mailbox(mailbox_idx)
             if mbx.policy != 'unknown':
                 del new[mailbox_idx]
         if new:

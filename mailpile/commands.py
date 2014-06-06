@@ -980,8 +980,6 @@ class Rescan(Command):
             msg_count -= 1
             if msg_count:
                 if not mailpile.util.QUITTING:
-                    idx.cache_sort_orders(session)
-                if not mailpile.util.QUITTING:
                     GlobalPostingList.Optimize(session, idx, quick=True)
             else:
                 session.ui.mark(_('Nothing changed'))

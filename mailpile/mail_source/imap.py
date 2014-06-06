@@ -254,7 +254,7 @@ class ImapMailSource(BaseMailSource):
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)
 
-    def _discover_mailboxes(self, unused_paths):
+    def _unlocked_discover_mailboxes(self, unused_paths):
         print 'Capabilities: %s' % self.capabilities
         with self.conn as raw_conn:
             try:
