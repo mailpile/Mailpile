@@ -280,7 +280,7 @@ class _MockImap(object):
 
     >>> imap = ImapMailSource(session, imap_config)
     >>> imap.open(conn_cls=_MockImap)
-    False
+    True
 
     >>> sorted(imap.capabilities)
     ['IMAP4REV1', 'X-MAGIC-BEANS']
