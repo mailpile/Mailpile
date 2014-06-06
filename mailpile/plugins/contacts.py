@@ -457,9 +457,7 @@ class AddressSearch(VCardCommand):
         # for matching senders or recipients, give medium priority.
         matches = {}
         addresses = []
-        msg_idxs = range(0, len(index.INDEX))
-        msg_idxs.sort(key=index.INDEX_SORT['date'].__getitem__)
-        for msg_idx in msg_idxs[-1500:]:
+        for msg_idx in xrange(max(0, len(index.INDEX)-2500), len(index.INDEX)):
             msg_info = index.get_msg_at_idx_pos(msg_idx)
             tags = set(msg_info[index.MSG_TAGS].split(','))
             frm = msg_info[index.MSG_FROM]
