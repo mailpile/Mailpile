@@ -798,11 +798,11 @@ class SearchResults(dict):
             subject = re.sub('^(\\[[^\\]]{6})[^\\]]{3,}\\]\\s*', '\\1..] ',
                              JE._nice_subject(m['subject']))
 
-            sfmt = '%%-%d.%ds%%s' % (53 - (clen + len(msg_meta)),
-                                     53 - (clen + len(msg_meta)))
-            text.append((cfmt + ' %-22.22s %s' + sfmt
-                         ) % (count, from_info, tag_new and '*' or ' ',
-                              subject, msg_meta))
+            sfmt = '%%-%d.%ds%%s' % (max(1, 53 - (clen + len(msg_meta))),
+                                     max(1, 53 - (clen + len(msg_meta))))
+            tfmt = cfmt + ' %-22.22s %s' + sfmt
+            text.append(tfmt % (count, from_info, tag_new and '*' or ' ',
+                                subject, msg_meta))
 
             if mid in self['data'].get('messages', {}):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
