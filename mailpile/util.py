@@ -451,8 +451,8 @@ def play_nice_with_threads():
         return 0
 
     activity_threshold = (300 - time.time() + LAST_USER_ACTIVITY) / 300
-    delay = (max(0.00, 0.002 * threads) +
-             min(0.20, 0.400 * activity_threshold))
+    delay = (max(0, 0.002 * threads) +
+             max(0, min(0.20, 0.400 * activity_threshold)))
 
     if delay > 0.005:
         time.sleep(delay)
