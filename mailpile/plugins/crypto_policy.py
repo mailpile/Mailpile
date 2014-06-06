@@ -29,7 +29,9 @@ class CryptoPolicyBaseAction(Command):
 
     def _search(self, email):
         idx = self._idx()
-        return idx.search(self.session, ['to:' + email, 'has:crypto', 'has:pgp'], order='date_fwd')
+        return idx.search(self.session,
+                          ['to:' + email, 'has:crypto', 'has:pgp'],
+                          order='date')
 
     def _find_policy_based_on_mails(self, mail_idxs):
         idx = self._idx()
