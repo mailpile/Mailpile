@@ -121,6 +121,7 @@ class MailIndex:
         self._scanned = {}
         self._saved_changes = 0
         self._lock = threading.RLock()
+        self._prepare_sorting()
 
     @classmethod
     def l2m(self, line):
@@ -223,8 +224,8 @@ class MailIndex:
                     if not bogus:
                         try:
                             pos = int(words[self.MSG_MID], 36)
-                            while len(self.INDEX) < pos + 1:
-                                self.INDEX.append('')
+                            self.set_msg_at_idx_pos(pos, words,
+                                                    original_line=line)
                         except ValueError:
                             bogus = True
 
@@ -237,12 +238,6 @@ class MailIndex:
                         elif session and 1 == len(bogus_lines) % 100:
                             session.ui.error(_('Corrupt data in metadata '
                                                'index! Trying to cope...'))
-                    else:
-                        self.INDEX[pos] = line
-                        self.MSGIDS[words[self.MSG_ID]] = pos
-                        self.update_msg_tags(pos, words)
-                        for msg_ptr in words[self.MSG_PTRS].split(','):
-                            self.PTRS[msg_ptr] = pos
 
             except ValueError:
                 pass
@@ -275,7 +270,6 @@ class MailIndex:
                 session.ui.warning(_('Recovered! Wrote bad metadata to: %s'
                                      ) % bogus_file)
 
-        self.cache_sort_orders(session)
         if session:
             session.ui.mark(_n('Loaded metadata, %d message',
                                'Loaded metadata, %d messages',
@@ -1105,30 +1099,30 @@ class MailIndex:
         except (IndexError, ValueError):
             return self.BOGUS_METADATA[:]
 
-    def set_msg_at_idx_pos(self, msg_idx, msg_info):
-        if msg_idx < len(self.INDEX):
-            self.INDEX[msg_idx] = self.m2l(msg_info)
-            self.INDEX_THR[msg_idx] = int(msg_info[self.MSG_THREAD_MID], 36)
-        elif msg_idx == len(self.INDEX):
-            self.INDEX.append(self.m2l(msg_info))
-            self.INDEX_THR.append(int(msg_info[self.MSG_THREAD_MID], 36))
-        else:
-            raise IndexError(_('%s is outside the index') % msg_idx)
+    def update_msg_sorting(self, msg_idx, msg_info):
+        for order, sorter in self.SORT_ORDERS.iteritems():
+            self.INDEX_SORT[order][msg_idx] = sorter(self, msg_info)
 
-        CachedSearchResultSet.DropCaches(msg_idxs=[msg_idx])
-        self.MODIFIED.add(msg_idx)
-        if msg_idx in self.CACHE:
-            del(self.CACHE[msg_idx])
+    def set_msg_at_idx_pos(self, msg_idx, msg_info, original_line=None):
+        while len(self.INDEX) <= msg_idx:
+            self.INDEX.append('')
+            self.INDEX_THR.append(-1)
+            for order in self.INDEX_SORT:
+                self.INDEX_SORT[order].append(0)
 
-        for order in self.INDEX_SORT:
-            # FIXME: This is where we should insert, not append.
-            while msg_idx >= len(self.INDEX_SORT[order]):
-                self.INDEX_SORT[order].append(msg_idx)
-
+        self.INDEX[msg_idx] = original_line or self.m2l(msg_info)
+        self.INDEX_THR[msg_idx] = int(msg_info[self.MSG_THREAD_MID], 36)
         self.MSGIDS[msg_info[self.MSG_ID]] = msg_idx
         for msg_ptr in msg_info[self.MSG_PTRS].split(','):
             self.PTRS[msg_ptr] = msg_idx
+        self.update_msg_sorting(msg_idx, msg_info)
         self.update_msg_tags(msg_idx, msg_info)
+
+        if not original_line:
+            CachedSearchResultSet.DropCaches(msg_idxs=[msg_idx])
+            self.MODIFIED.add(msg_idx)
+            if msg_idx in self.CACHE:
+                del self.CACHE[msg_idx]
 
     def get_conversation(self, msg_info=None, msg_idx=None):
         if not msg_info:
@@ -1179,6 +1173,7 @@ class MailIndex:
                 msg_info[self.MSG_TAGS] = ','.join(list(tags))
                 self.INDEX[msg_idx] = self.m2l(msg_info)
                 self.MODIFIED.add(msg_idx)
+                self.update_msg_sorting(msg_idx, msg_info)
                 eids.add(msg_idx)
         if tag_id in self.TAGS:
             self.TAGS[tag_id] |= eids
@@ -1218,6 +1213,7 @@ class MailIndex:
                     msg_info[self.MSG_TAGS] = ','.join(list(tags))
                     self.INDEX[msg_idx] = self.m2l(msg_info)
                     self.MODIFIED.add(msg_idx)
+                    self.update_msg_sorting(msg_idx, msg_info)
                 eids.add(msg_idx)
         if tag_id in self.TAGS:
             self.TAGS[tag_id] -= eids
@@ -1360,62 +1356,28 @@ class MailIndex:
                                ) % (len(srs.excluded()), ))
         return srs
 
-    def _order_freshness(self, pos):
-        msg_info = self.get_msg_at_idx_pos(pos)
+    def _freshness_sorter(self, msg_info):
         ts = long(msg_info[self.MSG_DATE], 36)
-        if ts > self._fresh_cutoff:
-            for tid in msg_info[self.MSG_TAGS].split(','):
-                if tid in self._fresh_tags:
-                    return ts + self.FRESHNESS_SORT_BOOST
+        for tid in msg_info[self.MSG_TAGS].split(','):
+            if tid in self._sort_freshness_tags:
+                return ts + self.FRESHNESS_SORT_BOOST
         return ts
 
     FRESHNESS_SORT_BOOST = (5 * 24 * 3600)
-    CACHED_SORT_ORDERS = [
-        ('freshness', True, _order_freshness),
-        ('date', True,
-         lambda s, k: long(s.get_msg_at_idx_pos(k)[s.MSG_DATE], 36)),
-        # FIXME: The following are effectively disabled for now
-        ('from', False,
-         lambda s, k: s.get_msg_at_idx_pos(k)[s.MSG_FROM]),
-        ('subject', False,
-         lambda s, k: s.get_msg_at_idx_pos(k)[s.MSG_SUBJECT]),
-    ]
+    SORT_ORDERS = {
+        'freshness': _freshness_sorter,
+        'date': lambda s, mi: long(mi[s.MSG_DATE], 36),
+# FIXME: The following are disabled for now for being memory hogs
+#       'from': lambda s, mi: s.mi[s.MSG_FROM]),
+#       'subject': lambda s, mi: s.mi[s.MSG_SUBJECT]),
+    }
 
-    def cache_sort_orders(self, session, wanted=None):
-        self._fresh_cutoff = time.time() - self.FRESHNESS_SORT_BOOST
-        self._fresh_tags = [tag._key for tag in
-                            session.config.get_tags(type='unread')]
-        try:
-            self._lock.acquire()
-            keys = range(0, len(self.INDEX))
-            if session:
-                session.ui.mark(_n('Finding conversations (%d message)...',
-                                   'Finding conversations (%d messages)...',
-                                   len(keys)
-                                   ) % len(keys))
-            self.INDEX_THR = [
-                int(self.get_msg_at_idx_pos(r)[self.MSG_THREAD_MID], 36)
-                for r in keys]
-            for order, by_default, sorter in self.CACHED_SORT_ORDERS:
-                if (not by_default) and not (wanted and order in wanted):
-                    continue
-                if session:
-                    session.ui.mark(_n('Sorting %d message by %s...',
-                                       'Sorting %d messages by %s...',
-                                       len(keys)
-                                       ) % (len(keys), _(order)))
-
-                play_nice_with_threads()
-                o = keys[:]
-                o.sort(key=lambda k: sorter(self, k))
-                self.INDEX_SORT[order] = keys[:]
-                self.INDEX_SORT[order+'_fwd'] = o
-
-                play_nice_with_threads()
-                for i in range(0, len(o)):
-                    self.INDEX_SORT[order][o[i]] = i
-        finally:
-            self._lock.release()
+    def _prepare_sorting(self):
+        self._sort_freshness_tags = [tag._key for tag in
+                                     self.config.get_tags(type='unread')]
+        self.INDEX_SORT = {}
+        for order, sorter in self.SORT_ORDERS.iteritems():
+            self.INDEX_SORT[order] = []
 
     def sort_results(self, session, results, how):
         if not results:
