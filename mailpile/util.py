@@ -29,6 +29,7 @@ global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING
 
 
 QUITTING = False
+LAST_USER_ACTIVITY = 0
 
 DEFAULT_PORT = 33411
 
@@ -441,11 +442,19 @@ def dict_merge(*dicts):
 def play_nice_with_threads():
     """
     Long-running batch jobs should call this now and then to pause
-    their activities if there are other threads that would like to
-    run. This is a bit of a hack!
+    their activities in case there are other threads that would like to
+    run. Recent user activity increases the delay significantly, to
+    hopefully make the app more responsive when it is in use.
     """
-    delay = max(0, 0.01 * (threading.activeCount() - 2))
-    if delay:
+    threads = threading.activeCount() - 3
+    if threads < 1:
+        return 0
+
+    activity_threshold = (300 - time.time() + LAST_USER_ACTIVITY) / 300
+    delay = (max(0.00, 0.002 * threads) +
+             min(0.20, 0.400 * activity_threshold))
+
+    if delay > 0.005:
         time.sleep(delay)
     return delay
 

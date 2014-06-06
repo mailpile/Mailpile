@@ -14,6 +14,7 @@ _plugins = PluginManager(builtin=__file__)
 
 class VCardCommand(Command):
     VCARD = "vcard"
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         IGNORE = ('line_id', 'pid', 'x-rank')

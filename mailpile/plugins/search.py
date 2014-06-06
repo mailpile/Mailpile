@@ -31,6 +31,7 @@ class Search(Command):
         'end': 'end position',
         'full': 'return all metadata'
     }
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -291,6 +292,7 @@ class Extract(Command):
     SYNOPSIS = ('e', 'extract', 'message/download', '<msgs> <att> [><fn>]')
     ORDER = ('Searching', 5)
     RAISES = (SuppressHtmlOutput, UrlRedirectException)
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):

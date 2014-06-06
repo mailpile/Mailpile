@@ -259,7 +259,6 @@ class MailIndex:
                                      ) % self.config.mailindex_file())
         finally:
             self._lock.release()
-            play_nice_with_threads()
 
         if bogus_lines:
             bogus_file = (self.config.mailindex_file() +
@@ -542,6 +541,7 @@ class MailIndex:
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status(ui))
+                elif (ui % 129) == 0:
                     play_nice_with_threads()
                 continue
             else:

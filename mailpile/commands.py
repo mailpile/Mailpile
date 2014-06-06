@@ -34,6 +34,7 @@ class Command:
     SYNOPSIS_ARGS = None  # New-style positional argument list
     API_VERSION = None
     UI_CONTEXT = None
+    IS_USER_ACTIVITY = False
 
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
@@ -390,6 +391,8 @@ class Command:
             return self._finishing(command, False)
 
     def run(self, *args, **kwargs):
+        if self.IS_USER_ACTIVITY:
+            mailpile.util.LAST_USER_ACTIVITY = time.time()
         if self.serialize:
             # Some functions we always run in the slow worker, to make sure
             # they don't get run in parallel with other things.
@@ -1044,6 +1047,7 @@ class RenderPage(Command):
     ORDER = ('Internals', 6)
     SPLIT_ARG = False
     HTTP_STRICT_VARS = False
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -1062,6 +1066,7 @@ class ListThreadsAndLocks(Command):
     """Display list of running threads and locks."""
     SYNOPSIS = (None, 'ps', None, None)
     ORDER = ('Internals', 5)
+    IS_USER_ACTIVITY = False
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -1077,7 +1082,8 @@ class ListThreadsAndLocks(Command):
                                    for l in locks])
             else:
                 locks = _('Nothing Found')
-            return 'Threads:\n%s\n\nLocks:\n%s' % (threads, locks)
+            return ('Delay: %.3fs\nThreads:\n%s\n\nLocks:\n%s'
+                    ) % (self.result['delay'], threads, locks)
 
     def command(self, args=None):
         config = self.session.config
@@ -1099,13 +1105,15 @@ class ListThreadsAndLocks(Command):
 
         return self._success(_("Listed threads and locks"),
                              result={'threads': threads,
-                                     'locks': locks})
+                                     'locks': locks,
+                                     'delay': play_nice_with_threads()})
 
 
 class ListDir(Command):
     """Display working directory listing"""
     SYNOPSIS = (None, 'ls', None, "<.../new/path/...>")
     ORDER = ('Internals', 5)
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -1137,6 +1145,7 @@ class ChangeDir(ListDir):
     """Change working directory"""
     SYNOPSIS = (None, 'cd', None, "<.../new/path/...>")
     ORDER = ('Internals', 5)
+    IS_USER_ACTIVITY = True
 
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
@@ -1152,6 +1161,7 @@ class CatFile(Command):
     SYNOPSIS = (None, 'cat', None, "</path/to/file>")
     ORDER = ('Internals', 5)
     SPLIT_ARG = False
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -1181,6 +1191,7 @@ class ConfigSet(Command):
     HTTP_POST_VARS = {
         'section.variable': 'value|json-string',
     }
+    IS_USER_ACTIVITY = True
 
     def command(self):
         config = self.session.config
@@ -1232,6 +1243,7 @@ class ConfigAdd(Command):
     HTTP_POST_VARS = {
         'section.variable': 'value|json-string',
     }
+    IS_USER_ACTIVITY = True
 
     def command(self):
         config = self.session.config
@@ -1276,6 +1288,7 @@ class ConfigUnset(Command):
     HTTP_POST_VARS = {
         'var': 'section.variables'
     }
+    IS_USER_ACTIVITY = True
 
     def command(self):
         session, config = self.session, self.session.config
@@ -1302,6 +1315,7 @@ class ConfigPrint(Command):
     HTTP_QUERY_VARS = {
         'var': 'section.variable'
     }
+    IS_USER_ACTIVITY = True
 
     def command(self):
         session, config = self.session, self.session.config
@@ -1325,6 +1339,7 @@ class AddMailboxes(Command):
     ORDER = ('Config', 4)
     SPLIT_ARG = False
     HTTP_CALLABLE = ('POST', 'UPDATE')
+    IS_USER_ACTIVITY = True
 
     MAX_PATHS = 50000
 
@@ -1413,6 +1428,7 @@ class Help(Command):
     SYNOPSIS = ('h', 'help', 'help', '[<command-group>]')
     ABOUT = ('This is Mailpile!')
     ORDER = ('Config', 9)
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
 
@@ -1552,6 +1568,7 @@ class HelpVars(Help):
     SYNOPSIS = (None, 'help/variables', 'help/variables', None)
     ABOUT = ('The available mailpile variables')
     ORDER = ('Config', 9)
+    IS_USER_ACTIVITY = True
 
     def command(self):
         config = self.session.config.rules

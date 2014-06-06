@@ -279,10 +279,11 @@ class GlobalPostingList(PostingList):
             keys = sorted(GLOBAL_POSTING_LIST.keys())
             pls = GlobalPostingList(session, '')
             for sig in keys:
-                if (count % 25) == 0:
-                    play_nice_with_threads()
+                if (count % 97) == 0:
                     session.ui.mark(('Updating search index... %d%% (%s)'
                                      ) % (count * 100 / len(keys), sig))
+                elif (count % 17) == 0:
+                    play_nice_with_threads()
                 # If we're doing a full optimize later, we disable the
                 # compaction here. Otherwise it follows the normal
                 # rules (compacts as necessary).
