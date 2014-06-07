@@ -312,11 +312,11 @@ class GlobalPostingList(PostingList):
 
     @classmethod
     def _Append(cls, session, word, mail_ids, compact=True):
+        super(GlobalPostingList, cls)._Append(session, word, mail_ids,
+                                              compact=compact)
         global GLOBAL_POSTING_LIST
         GLOBAL_GPL_LOCK.acquire()
         try:
-            super(GlobalPostingList, cls)._Append(session, word, mail_ids,
-                                                  compact=compact)
             sig = cls.WordSig(word, session.config)
             if GLOBAL_POSTING_LIST is None:
                 GLOBAL_POSTING_LIST = {}
