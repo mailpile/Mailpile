@@ -70,8 +70,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
 
     def send_http_redirect(self, destination):
-        if '//' not in destination:
-            pass#destination = '%s%s' % (self.server_url(), destination)
         self.send_http_response(302, 'Found')
         self.wfile.write(('Location: %s\r\n\r\n'
                           '<h1><a href="%s">Please look here!</a></h1>\n'
