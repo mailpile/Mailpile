@@ -965,7 +965,7 @@ msgstr "SpamBayes auto-tagging voor %s opnieuw getrained"
 #: mailpile/plugins/autotag.py:264
 #, fuzzy, python-format
 msgid "Unknown tag: %s"
-msgstr "Onbekend label: %s"
+msgstr "Onbekend tag: %s"
 
 #: mailpile/plugins/compose.py:30
 #, fuzzy, python-format
@@ -1111,7 +1111,7 @@ msgstr "Geen resultaten gevonden"
 #: mailpile/plugins/search.py:89
 #, python-format
 msgid "Weird starting point: %s"
-msgstr ""
+msgstr "Raar beginpunt: %s"
 
 #: mailpile/plugins/search.py:204
 #, fuzzy, python-format
@@ -1120,19 +1120,19 @@ msgstr "Welk bericht is %s?"
 
 #: mailpile/plugins/setup_magic.py:113
 msgid "Created default tags"
-msgstr ""
+msgstr "Standaard tags aangemaakt"
 
 #: mailpile/plugins/setup_magic.py:124
 msgid "Enabling spambayes autotagger"
-msgstr ""
+msgstr "SpamBayes autotagger inschakelen"
 
 #: mailpile/plugins/setup_magic.py:126
 msgid "Please install spambayes for super awesome spam filtering"
-msgstr ""
+msgstr "Installeer SpamBayes voor super coole spam filtering"
 
 #: mailpile/plugins/setup_magic.py:134
 msgid "Enabling gravatar image importer"
-msgstr ""
+msgstr "Gravatar afbeelding importeren inschakelen"
 
 #: mailpile/plugins/setup_magic.py:140
 #, fuzzy
@@ -1146,11 +1146,11 @@ msgstr "Verbinden met %s"
 
 #: mailpile/plugins/setup_magic.py:187
 msgid "Oh no, PGP/GPG support is unavailable!"
-msgstr ""
+msgstr "Oh nee, PGP/GPG ondersteuning is niet beschikbaar!"
 
 #: mailpile/plugins/setup_magic.py:197
 msgid "Obfuscating search index and enabling indexing of encrypted e-mail. "
-msgstr ""
+msgstr "Zoek index versleutelen en inschakelen van indexeren van versleutelde e-mail"
 
 #: mailpile/plugins/vcard_gnupg.py:16
 msgid "Import contacts from GnuPG keyring"
@@ -1158,7 +1158,7 @@ msgstr "Importeer contacten uit GPG sleutelbos"
 
 #: mailpile/plugins/vcard_gnupg.py:19 mailpile/plugins/vcard_gravatar.py:28
 msgid "Enable this importer"
-msgstr ""
+msgstr "Importeerder inschakelen"
 
 #: mailpile/plugins/vcard_gnupg.py:20
 msgid "Location of keyring"
@@ -1171,11 +1171,11 @@ msgstr "Importeer contacten uit GPG sleutelbos"
 
 #: mailpile/plugins/vcard_gravatar.py:29
 msgid "Minimum days between refreshing"
-msgstr ""
+msgstr "Minimum dagen tussen verversen"
 
 #: mailpile/plugins/vcard_gravatar.py:30
 msgid "Max batch size per update"
-msgstr ""
+msgstr "Max grootte per update"
 
 #: mailpile/plugins/vcard_gravatar.py:31
 #, fuzzy
@@ -1201,20 +1201,20 @@ msgstr "Locatie van gesorteerde data"
 
 #: static/default/html/contact/index.html:19
 msgid "Hey that's you"
-msgstr ""
+msgstr "Hey, dat ben jij"
 
 #: static/default/html/contact/list.html:14
 #, fuzzy
 msgid "Emails"
-msgstr "E-mail"
+msgstr "E-mails"
 
 #: static/default/html/contact/list.html:17
 msgid "Compose Email To This Address"
-msgstr ""
+msgstr "Stel e-mail samen naar dit adres"
 
 #: static/default/html/contact/list.html:20
 msgid "More Address"
-msgstr ""
+msgstr "Meer adressen"
 
 #: static/default/html/contact/list.html:28
 #: static/default/html/search/index.html:16
@@ -1251,7 +1251,7 @@ msgstr "Geen resultaten gevonden"
 
 #: static/default/html/layouts/base.html:46
 msgid "Close"
-msgstr ""
+msgstr "Sluiten"
 
 #: static/default/html/layouts/base.html:71
 #, python-format
@@ -1260,7 +1260,7 @@ msgstr "%(name)s<small> mailpile van <b>%(size)s</b> e-mails</small>"
 
 #: static/default/html/layouts/base.html:80
 msgid "Compose"
-msgstr ""
+msgstr "Samenstellen"
 
 #: static/default/html/layouts/base.html:82
 #: static/default/html/partials/tools_tags.html:3
@@ -1271,7 +1271,7 @@ msgstr "Tags"
 
 #: static/default/html/layouts/base.html:83
 msgid "Donate"
-msgstr ""
+msgstr "Doneer"
 
 #: static/default/html/layouts/base.html:84
 #: static/default/html/tag/list.html:30
@@ -1382,7 +1382,7 @@ msgstr "Ondertekend door"
 #: static/default/html/partials/compose.html:41
 #, fuzzy
 msgid "Signature Error"
-msgstr "Interne Fout"
+msgstr "Ondertekeningsfout"
 
 #: static/default/html/partials/compose.html:42
 #: static/default/html/partials/compose.html:43
@@ -1392,16 +1392,16 @@ msgstr "Ondertekend door"
 
 #: static/default/html/partials/compose.html:45
 msgid "None"
-msgstr ""
+msgstr "Geen"
 
 #: static/default/html/partials/compose.html:47
 #, fuzzy
 msgid "Can't Encrypt"
-msgstr "Versleuteld"
+msgstr "Kan niet versleutelen"
 
 #: static/default/html/partials/compose.html:48
 msgid "Error Encrypting"
-msgstr ""
+msgstr "Fout bij versleutelen"
 
 #: static/default/html/partials/compose.html:74
 msgid "To"
@@ -1424,7 +1424,7 @@ msgstr "Onderwerp"
 #: static/default/html/partials/compose.html:90
 #, fuzzy
 msgid "New Subject"
-msgstr "Onderwerp"
+msgstr "Nieuw Onderwerp"
 
 #: static/default/html/partials/compose.html:94
 #, fuzzy
@@ -1433,7 +1433,7 @@ msgstr "Berichten"
 
 #: static/default/html/partials/compose.html:95
 msgid "Your reply..."
-msgstr ""
+msgstr "Je antwoord..."
 
 #: static/default/html/partials/compose.html:103
 msgid "Save"
@@ -1501,7 +1501,7 @@ msgstr ""
 
 #: static/default/html/partials/thread_message.html:17
 msgid "No Recipients"
-msgstr ""
+msgstr "Geen ontvangers"
 
 #: static/default/html/partials/thread_metadata.html:17
 #, fuzzy
@@ -1524,11 +1524,11 @@ msgstr "geselecteerd"
 #: static/default/html/partials/tools_message.html:2
 #, fuzzy
 msgid "No Subject"
-msgstr "Onderwerp"
+msgstr "Geen Onderwerp"
 
 #: static/default/html/partials/tools_message.html:4
 msgid "People"
-msgstr ""
+msgstr "Mensen"
 
 #: static/default/html/partials/tools_message.html:10
 #: static/default/html/tag/list.html:29
@@ -1537,19 +1537,19 @@ msgstr "Berichten"
 
 #: static/default/html/partials/tools_message.html:12
 msgid "Move Whole Thread to Later"
-msgstr ""
+msgstr "Verplaats de hele ketting naar later"
 
 #: static/default/html/partials/tools_message.html:13
 msgid "Assign Tags to Thread"
-msgstr ""
+msgstr "Voeg tags to aan ketting"
 
 #: static/default/html/partials/tools_message.html:14
 msgid "Archive Whole Thread"
-msgstr ""
+msgstr "Archiveer hele ketting"
 
 #: static/default/html/partials/tools_message.html:15
 msgid "Delete Whole Thread"
-msgstr ""
+msgstr "Verwijder hele ketting"
 
 #: static/default/html/partials/tools_search.html:3
 msgid "All"
@@ -1557,13 +1557,13 @@ msgstr "Alle"
 
 #: static/default/html/partials/tools_search.html:4
 msgid "Unread"
-msgstr ""
+msgstr "Ongelezen"
 
 #: static/default/html/partials/tools_search.html:6
 #: static/default/html/tag/add.html:15 static/default/html/tag/index.html:19
 #: static/default/html/tag/list.html:24
 msgid "Display"
-msgstr ""
+msgstr "Weergave"
 
 #: static/default/html/partials/tools_search.html:8
 msgid "Snug"
@@ -1579,41 +1579,41 @@ msgstr "Gezellig"
 
 #: static/default/html/partials/tools_search.html:11
 msgid "Detailed"
-msgstr ""
+msgstr "Gedetailleerd"
 
 #: static/default/html/partials/tools_search.html:27
 #, fuzzy
 msgid "Messages Selected"
-msgstr "Berichten"
+msgstr "Berichten Geselecteerd"
 
 #: static/default/html/partials/tools_search.html:27
 #: static/default/html/partials/tools_search.html:28
 msgid "Click message or checkbox to select"
-msgstr ""
+msgstr "Klik bericht of checkbox om te kiezen"
 
 #: static/default/html/partials/tools_search.html:32
 msgid "Move to Later"
-msgstr ""
+msgstr "Verplaats naar later"
 
 #: static/default/html/partials/tools_search.html:33
 msgid "Move to Group"
-msgstr ""
+msgstr "Verplaats naar groep"
 
 #: static/default/html/partials/tools_search.html:34
 msgid "Assign Tags"
-msgstr ""
+msgstr "Ken tags toe"
 
 #: static/default/html/partials/tools_search.html:36
 msgid "Archive Selection"
-msgstr ""
+msgstr "Archiveer selectie"
 
 #: static/default/html/partials/tools_search.html:38
 msgid "Untag"
-msgstr ""
+msgstr "Verwijder tags"
 
 #: static/default/html/partials/tools_search.html:40
 msgid "Delete Selection"
-msgstr ""
+msgstr "Verwijder selectie"
 
 #: static/default/html/partials/tools_tags.html:4
 msgid "Add Tag"
@@ -1682,7 +1682,7 @@ msgstr "Server"
 
 #: static/default/html/settings/index.html:34
 msgid "smtp.mailserver.org"
-msgstr ""
+msgstr "smtp.mailserver.org"
 
 #: static/default/html/settings/index.html:36
 msgid "Port"
@@ -1704,7 +1704,7 @@ msgstr "Tag"
 
 #: static/default/html/tag/add.html:10 static/default/html/tag/index.html:14
 msgid "Friends & Family"
-msgstr ""
+msgstr "Vrienden & Familie"
 
 #: static/default/html/tag/add.html:12 static/default/html/tag/index.html:16
 msgid "Slug"
@@ -1712,7 +1712,7 @@ msgstr "Slug"
 
 #: static/default/html/tag/add.html:13 static/default/html/tag/index.html:17
 msgid "friends-family"
-msgstr ""
+msgstr "vrienden-familie"
 
 #: static/default/html/tag/add.html:18 static/default/html/tag/index.html:23
 msgid "Archive"
@@ -1720,15 +1720,15 @@ msgstr "Archief"
 
 #: static/default/html/tag/add.html:21 static/default/html/tag/index.html:27
 msgid "Parent"
-msgstr ""
+msgstr "Bovenliggend"
 
 #: static/default/html/tag/add.html:23 static/default/html/tag/index.html:29
 msgid "none"
-msgstr ""
+msgstr "geen"
 
 #: static/default/html/tag/add.html:31 static/default/html/tag/index.html:38
 msgid "Template"
-msgstr ""
+msgstr "Blauwdruk"
 
 #: static/default/html/tag/add.html:33 static/default/html/tag/index.html:40
 #, fuzzy
@@ -1742,11 +1742,11 @@ msgstr "Zoeken naar %s"
 
 #: static/default/html/tag/index.html:22
 msgid "Priority Tag"
-msgstr ""
+msgstr "Prioriteits tag"
 
 #: static/default/html/tag/index.html:24
 msgid "Invisible"
-msgstr ""
+msgstr "Onzichtbaar"
 
 #: static/default/html/tag/index.html:48
 #, fuzzy
