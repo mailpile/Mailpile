@@ -33,6 +33,7 @@ MailPile.prototype.pile_action_unselect = function(item) {
 	.prop('checked', false);
 };
 
+
 /* Pile - Display */
 MailPile.prototype.pile_display = function(current, change) {
 
@@ -50,6 +51,7 @@ MailPile.prototype.pile_display = function(current, change) {
   }, 250);
   
 }
+
 
 /* Pile - Bulk Select / Unselect All */
 $(document).on('click', '#pile-select-all-action', function(e) {
@@ -73,16 +75,22 @@ $(document).on('click', '#pile-select-all-action', function(e) {
 
 /* Pile - Select & Unselect Items */
 $(document).on('click', '#pile-results tr.result', function(e) {
-	if (e.target.href === undefined && $(this).data('state') !== 'selected') {
+  console.log()
+	if (e.target.href === undefined &&
+      $(this).data('state') !== 'selected' &&
+      $(e.target).hasClass('pile-message-tag-name') == false) {
 		mailpile.pile_action_select($(this));		
 	}
 });
 
 $(document).on('click', '#pile-results tr.result-on', function(e) {
-	if (e.target.href === undefined && $(this).data('state') === 'selected') {
+	if (e.target.href === undefined &&
+      $(this).data('state') === 'selected' && 
+      $(e.target).hasClass('pile-message-tag-name') == false) {
 		mailpile.pile_action_unselect($(this));
 	}
 });
+
 
 /* Pile - Show Unread */
 $(document).on('click', '.button-sub-navigation', function() {
@@ -270,7 +278,19 @@ MailPile.prototype.sidebar_tags_droppable_opts = {
   }
 };
 
+/* Make Pile items draggable to sidebar */
 $('li.sidebar-tags-draggable').droppable(mailpile.sidebar_tags_droppable_opts);
+
+
+/* Tag Tooltip - Actions */
+$(document).on('click', '.pile-tag-delete', function(e) {
+  e.preventDefault();
+  var tid = $(this).data('tid');
+  var mid = $(this).data('mid');
+  mailpile.tag_add_delete([], tid, mid, function(result) {
+    $('#pile-message-tag-' + tid + '-' + mid).qtip('hide').remove();
+  });
+});
 
 
 $(document).ready(function() {
@@ -294,10 +314,9 @@ $(document).ready(function() {
     content: {
       title: false,
       text: function(event, api) {
-        var tag = _.findWhere(mailpile.instance.tags, { tid: $(this).data('tid').toString() });              
-        var template = $('#tooltip-pile-tag-details').html();
-        var html = _.template(template, tag);
-        return html;
+        var tooltip_data = _.findWhere(mailpile.instance.tags, { tid: $(this).data('tid').toString() });              
+        tooltip_data['mid'] = $(this).data('mid');
+        return  _.template($('#tooltip-pile-tag-details').html(), tooltip_data);
       }
     },
     style: {
@@ -319,10 +338,12 @@ $(document).ready(function() {
 			}
     },
     show: {
+      event: 'click',
       delay: 150
     },
     hide: {
-      delay: 1000
+      event: false,
+      inactive: 700
     }
   });
 

@@ -1,8 +1,7 @@
 <script id="tooltip-pile-tag-details" type="text/template">
   <div>
-    <h4 class="text-center" style="color: <%= label_color %> "><span class=" <%= icon %> "></span> <%= name %></h4>
-    <p>This tag has <strong><%= stats.new %> new</strong> and <strong> <%= stats.all %> total</strong> messages</p>
-    <p><a href="<%= url %>"><span class="icon-links"></span> Browse Tag</a></p>
-    <p><a href="<%= tid %>"><span class="icon-circle-x"></span> Remove Tag</a></p>
+    <h4 class="text-center" style="color: <%= new_mailpile.theme.colors[label_color] %> "><span class=" <%= icon %> "></span> <%= name %></h4>
+    <p><a href="<%= url %>" data-mid="<%= mid %>"><span class="icon-links"></span> {{_("Browse Tag")}}</a></p>
+    <p><a href="#" data-tid="<%= tid %>" data-mid="<%= mid %>" class="pile-tag-delete"><span class="icon-circle-x"></span> {{_("Remove Tag")}}</a></p>
   </div>
 </script>

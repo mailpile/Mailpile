@@ -23,18 +23,18 @@
   </td>
   <td class="from">
     <a href="{{url}}" title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
-    {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}</a>
-    {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
-    {% if metadata.flags.replied %}<span class="icon-reply"></span>{% endif %}
+      {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
+      {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
+      {% if metadata.flags.replied %}<span class="icon-reply"></span>{% endif %}
+    </a>
   </td>
   <td class="subject">
-    <a class="item-subject" href="{{url}}">
     <span class="item-tags">
     {% if has_label_tags(result.data.tags, metadata.tag_tids) %}
     {% for tid in metadata.tag_tids %}
       {% set tag = result.data.tags[tid] %}
       {% if tag.label and not tag.searched %}
-      <span class="pile-message-tag" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tag.tid}}">
+      <span class="pile-message-tag" id="pile-message-tag-{{tag.tid}}-{{mid}}" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tag.tid}}" data-mid="{{mid}}">
         <span class="pile-message-tag-icon {{tag.icon}}"></span>
         <span class="pile-message-tag-name">{{tag.name}}</span>
       </span>
@@ -42,7 +42,7 @@
     {% endfor %}
     {% endif %}
     </span>
-    {% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
+    <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
   </td>
   <td class="date">
     <a href="/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
