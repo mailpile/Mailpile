@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-02-13 13:32+0000\n"
-"PO-Revision-Date: 2013-11-20 10:29+0000\n"
+"PO-Revision-Date: 2014-06-09 04:29+0000\n"
 "Last-Translator: Lazlo <transifex@lazlo.me>\n"
 "Language-Team: Dutch (Netherlands) (http://www.transifex.com/projects/p/"
 "mailpile/language/nl_NL/)\n"
@@ -38,7 +38,7 @@ msgstr "Zoeken naar %s"
 #: mailpile/commands.py:935 mailpile/commands.py:984
 #: mailpile/plugins/setup_magic.py:85
 msgid "In lockdown, doing nothing."
-msgstr ""
+msgstr "Vergrendeld, geen actie."
 
 #: mailpile/commands.py:680
 #, python-format
@@ -82,7 +82,7 @@ msgstr "De webinterface is %s"
 #: mailpile/commands.py:1041
 #, fuzzy
 msgid "The Web interface is disabled."
-msgstr "De webinterface is %s"
+msgstr "De webinterface is niet beschikbaar"
 
 #: mailpile/commands.py:1046
 #, fuzzy
@@ -114,33 +114,33 @@ msgstr "Onbekend commando: %s"
 
 #: mailpile/config.py:103
 msgid "true"
-msgstr ""
+msgstr "waar"
 
 #: mailpile/config.py:103
 msgid "yes"
-msgstr ""
+msgstr "ja"
 
 #: mailpile/config.py:103
 msgid "on"
-msgstr ""
+msgstr "aan"
 
 #: mailpile/config.py:106
 msgid "false"
-msgstr ""
+msgstr "onwaar"
 
 #: mailpile/config.py:106
 msgid "no"
-msgstr ""
+msgstr "nee"
 
 #: mailpile/config.py:106
 #, fuzzy
 msgid "off"
-msgstr "van"
+msgstr "uit"
 
 #: mailpile/config.py:108
 #, fuzzy, python-format
 msgid "Invalid boolean: %s"
-msgstr "Ongeldige hostnaamL %s"
+msgstr "Ongeldige keuze: %s"
 
 #: mailpile/config.py:131
 #, python-format
@@ -150,7 +150,7 @@ msgstr "Ongeldige URL slug: %s"
 #: mailpile/config.py:163
 #, python-format
 msgid "Invalid hostname: %s"
-msgstr "Ongeldige hostnaamL %s"
+msgstr "Ongeldige hostnaam: %s"
 
 #: mailpile/config.py:197
 #, python-format
@@ -170,7 +170,7 @@ msgstr "Niet een map: %s"
 #: mailpile/config.py:369
 #, fuzzy
 msgid "Please override this method"
-msgstr "Overschrijf dit"
+msgstr "Overschrijf deze methode"
 
 #: mailpile/config.py:429
 #, fuzzy, python-format
@@ -243,7 +243,7 @@ msgstr "%s: Openen: %s (dit kan even duren)"
 
 #: mailpile/config.py:1126
 msgid "Parent paths are not allowed"
-msgstr ""
+msgstr "Bovenliggende paden zijn niet toegestaan"
 
 #: mailpile/defaults.py:11
 msgid "Mailpile program version"
@@ -272,7 +272,7 @@ msgstr "Luisterpoort voor web UI"
 
 #: mailpile/defaults.py:17
 msgid "Posting list target size in KB"
-msgstr ""
+msgstr "Doorgeven van grootte van lijst in KB"
 
 #: mailpile/defaults.py:18
 msgid "Max results we sort \"well\""
@@ -312,7 +312,7 @@ msgstr "Mailboxen die we indexeren"
 
 #: mailpile/defaults.py:29
 msgid "Plugins to load on startup"
-msgstr ""
+msgstr "Plugins geladen bij opstarten"
 
 #: mailpile/defaults.py:31
 msgid "Locations of assorted data"
@@ -328,7 +328,7 @@ msgstr "Locatie van vcards"
 
 #: mailpile/defaults.py:36
 msgid "Demo mode, disallow changes"
-msgstr ""
+msgstr "Demo mode, geen wijzigingen toegestaan"
 
 #: mailpile/defaults.py:38
 msgid "User preferences"
@@ -352,7 +352,7 @@ msgstr "Versleutel lokale data naar ..."
 
 #: mailpile/defaults.py:44
 msgid "Advertise GPG preferences in a header?"
-msgstr ""
+msgstr "GPG voorkeuren in een header doorgeven?"
 
 #: mailpile/defaults.py:47
 #, fuzzy
@@ -369,7 +369,7 @@ msgstr "Sleutel te gebruiken om de index te husselen"
 
 #: mailpile/defaults.py:51
 msgid "Make encrypted content searchable"
-msgstr ""
+msgstr "Maak versleutelde inhoud doorzoekbaar"
 
 #: mailpile/defaults.py:53
 msgid "Command run before rescanning"
@@ -417,7 +417,7 @@ msgstr "E-mail adres"
 
 #: mailpile/defaults.py:67
 msgid "Message signature"
-msgstr "Berciht handtekening"
+msgstr "Bericht handtekening"
 
 #: mailpile/defaults.py:68
 msgid "Outgoing mail route"
@@ -451,12 +451,12 @@ msgstr "Onbekend vertrouwen"
 
 #: mailpile/jinjaextensions.py:114
 msgid "There is something unknown or wrong with this signature"
-msgstr ""
+msgstr "Er is iets fout of onbekend aan deze handtekening"
 
 #: mailpile/jinjaextensions.py:119
 #, fuzzy
 msgid "No Signature"
-msgstr "Berciht handtekening"
+msgstr "Geen handtekening"
 
 #: mailpile/jinjaextensions.py:120
 msgid ""
@@ -466,19 +466,19 @@ msgstr ""
 
 #: mailpile/jinjaextensions.py:126
 msgid "There was a weird error with this signature"
-msgstr ""
+msgstr "Er was een rare fout bij deze handtekening"
 
 #: mailpile/jinjaextensions.py:130
 msgid "Invalid"
-msgstr ""
+msgstr "Ongeldig"
 
 #: mailpile/jinjaextensions.py:131
 msgid "The signature was invalid or bad"
-msgstr ""
+msgstr "De handtekening was ongeldig of fout"
 
 #: mailpile/jinjaextensions.py:135
 msgid "Revoked"
-msgstr ""
+msgstr "Ingetrokken"
 
 #: mailpile/jinjaextensions.py:136
 msgid ""
@@ -488,27 +488,27 @@ msgstr ""
 
 #: mailpile/jinjaextensions.py:141
 msgid "Expired"
-msgstr ""
+msgstr "Verlopen"
 
 #: mailpile/jinjaextensions.py:142
 msgid "The signature was made with an expired key"
-msgstr ""
+msgstr "De handtekening is gemaakt met een verlopen sleutel"
 
 #: mailpile/jinjaextensions.py:147
 msgid "the signature was made with an unknown key, so we can not verify it"
-msgstr ""
+msgstr "de handtekening is gemaakt met een onbekende sleutel, dus kunnen we hem niet controleren"
 
 #: mailpile/jinjaextensions.py:152
 msgid "Unverified"
-msgstr ""
+msgstr "Ongecontroleerd"
 
 #: mailpile/jinjaextensions.py:153
 msgid "The signature was good but it came from a key that is not verified yet"
-msgstr ""
+msgstr "De handtekening was goed maar kwam van een sleutel die nog niet is geverifieerd"
 
 #: mailpile/jinjaextensions.py:158
 msgid "Verified"
-msgstr ""
+msgstr "Geverifieerd"
 
 #: mailpile/jinjaextensions.py:159
 msgid "The signature was good and came from a verified key, w00t!"
@@ -516,13 +516,13 @@ msgstr ""
 
 #: mailpile/jinjaextensions.py:188
 msgid "There is some unknown thing wrong with this encryption"
-msgstr ""
+msgstr "Er is iets onbekends verkeerd met deze versleuteling"
 
 #: mailpile/jinjaextensions.py:193
 #: static/default/html/partials/compose.html:49
 #, fuzzy
 msgid "Not Encrypted"
-msgstr "Versleuteld"
+msgstr "Niet Versleuteld"
 
 #: mailpile/jinjaextensions.py:194
 msgid ""
@@ -543,20 +543,20 @@ msgstr ""
 
 #: mailpile/jinjaextensions.py:205
 msgid "Missing Key"
-msgstr ""
+msgstr "Missende sleutel"
 
 #: mailpile/jinjaextensions.py:206
 msgid "You do not have any of the private keys that will decrypt this message"
-msgstr ""
+msgstr "Je hebt geen van de private sleutels om dit bericht te ontcijferen"
 
 #: mailpile/jinjaextensions.py:211
 #, fuzzy
 msgid "We failed to decrypt message and are unsure why"
-msgstr "Bericht ontsleutelen mislukt"
+msgstr "Bericht ontsleutelen mislukt en we weten niet waarom"
 
 #: mailpile/jinjaextensions.py:249
 msgid "You"
-msgstr ""
+msgstr "Je"
 
 #: mailpile/mailutils.py:223
 #, python-format
@@ -585,7 +585,7 @@ msgstr "Bericht voorbereiden..."
 #: mailpile/mailutils.py:299
 #, python-format
 msgid "Message sent, %d bytes"
-msgstr "Berciht verzonden, %d bytes"
+msgstr "Bericht verzonden, %d bytes"
 
 #: mailpile/mailutils.py:539 mailpile/mailutils.py:549
 #: mailpile/mailutils.py:617
@@ -627,11 +627,11 @@ msgstr "Geen bijlagen gevonden voor: %s"
 
 #: mailpile/mailutils.py:908
 msgid "[Binary data suppressed]\n"
-msgstr ""
+msgstr "[Binaire data niet weergegeven]\n"
 
 #: mailpile/search.py:177
 msgid "Your metadata index is either too old, too new or corrupt!"
-msgstr ""
+msgstr "De zoekindex is te oud, te nieuw of corrupt!"
 
 #: mailpile/search.py:194
 msgid "Loading metadata index..."
@@ -640,7 +640,7 @@ msgstr "Metadata index laden..."
 #: mailpile/search.py:207
 #, python-format
 msgid "Metadata index not found: %s"
-msgstr "Metadata index  niet gevonden: %s"
+msgstr "Metadata index niet gevonden: %s"
 
 #: mailpile/search.py:214
 #, python-format
@@ -768,12 +768,12 @@ msgstr "Herstellen van ongeldige sortering, corrupte index?"
 
 #: mailpile/search.py:1198
 msgid "Please tell team@mailpile.is !"
-msgstr "Laat weten aan team@mailpile.is !"
+msgstr "Laat het weten aan team@mailpile.is !"
 
 #: mailpile/search.py:1207
 #, python-format
 msgid "Unknown sort order: %s"
-msgstr "Onbekend sorteervolgorde: %s"
+msgstr "Onbekende sorteervolgorde: %s"
 
 #: mailpile/search.py:1212
 msgid "Sort failed, sorting badly. Partial index?"
@@ -832,7 +832,7 @@ msgstr ""
 
 #: mailpile/ui.py:358
 msgid "Number of edit messages does not match!"
-msgstr ""
+msgstr "Aantal veranderde berichten klopt niet!"
 
 #: mailpile/ui.py:403
 msgid "FIXME: Multiple results, OMG WTF"
@@ -840,21 +840,21 @@ msgstr "FIXME: Meerdere resultaten, OMG WTF"
 
 #: mailpile/util.py:230
 msgid "today"
-msgstr ""
+msgstr "vandaag"
 
 #: mailpile/util.py:232
 #, python-format
 msgid "%d day"
-msgstr ""
+msgstr "%d dag"
 
 #: mailpile/util.py:234
 #, python-format
 msgid "%d days"
-msgstr ""
+msgstr "%d dagen"
 
 #: mailpile/util.py:315
 msgid "Symmetric decryption is not available without config and key."
-msgstr ""
+msgstr "Symmetrische ontcijfering is niet beschikbaar zonder configuratie en zonder sleutel"
 
 #: mailpile/crypto/gpgi.py:20
 msgid "Trust not calculated"
@@ -866,7 +866,7 @@ msgstr "Onbekend vertrouwen"
 
 #: mailpile/crypto/gpgi.py:22
 msgid "Undefined trust"
-msgstr "Onbekend vertrouwen"
+msgstr "Ongedefineerd vertrouwen"
 
 #: mailpile/crypto/gpgi.py:23
 msgid "Never trust"
@@ -923,12 +923,12 @@ msgstr "Elgamal (versleutelen/ondertekenen) [GECOMPROMITTEERD]"
 #: mailpile/crypto/gpgi.py:760
 #, python-format
 msgid "Keys missing or ambiguous for %s"
-msgstr ""
+msgstr "Sleutels missed of niet geldig voor %s"
 
 #: mailpile/crypto/mime.py:193 mailpile/crypto/mime.py:233
 #, fuzzy
 msgid "Failed to sign message!"
-msgstr "Bericht ontsleutelen mislukt"
+msgstr "Bericht ontsleutelen mislukt!"
 
 #: mailpile/mailboxes/mbox.py:97
 #, fuzzy
@@ -938,7 +938,7 @@ msgstr "Mailboxen die we indexeren"
 #: mailpile/mailboxes/mbox.py:127
 #, python-format
 msgid "Saving %s state to %s"
-msgstr ""
+msgstr "Status %s opslaan naar %s"
 
 #: mailpile/mailboxes/mbox.py:142
 msgid "No data found"
@@ -950,64 +950,64 @@ msgstr "Bericht niet gevonden"
 
 #: mailpile/plugins/autotag.py:152
 msgid "Retraining SpamBayes autotaggers"
-msgstr ""
+msgstr "SpamBayes autotaggers opnieuw trainen"
 
 #: mailpile/plugins/autotag.py:172
 #, python-format
 msgid "Have %d interesting %s messages"
-msgstr ""
+msgstr "Heb %d interessante %s berichten"
 
 #: mailpile/plugins/autotag.py:243
 #, python-format
 msgid "Retrained SpamBayes auto-tagging for %s"
-msgstr ""
+msgstr "SpamBayes auto-tagging voor %s opnieuw getrained"
 
 #: mailpile/plugins/autotag.py:264
 #, fuzzy, python-format
 msgid "Unknown tag: %s"
-msgstr "Onbekend commando: %s"
+msgstr "Onbekend label: %s"
 
 #: mailpile/plugins/compose.py:30
 #, fuzzy, python-format
 msgid "Sent: %s"
-msgstr "Aanmaken: %s"
+msgstr "Verzonden: %s"
 
 #: mailpile/plugins/compose.py:144
 msgid "Cannot update from multiple files"
-msgstr ""
+msgstr "Kan niet vanaf meerdere bestanden bijwerken"
 
 #: mailpile/plugins/compose.py:202 mailpile/plugins/compose.py:233
 #, python-format
 msgid "%d message(s) edited"
-msgstr ""
+msgstr "%d bericht(en) bewerkt"
 
 #: mailpile/plugins/compose.py:204
 #, python-format
 msgid "%d message(s) created"
-msgstr ""
+msgstr "%d bericht(en) gemaakt"
 
 #: mailpile/plugins/compose.py:228
 #, fuzzy
 msgid "No messages!"
-msgstr "Berichten"
+msgstr "Geen berichten!"
 
 #: mailpile/plugins/compose.py:235
 #, python-format
 msgid "%d message(s) unchanged"
-msgstr ""
+msgstr "%d bericht(en) onveranderd"
 
 #: mailpile/plugins/compose.py:265
 msgid "Please use update for editing messages"
-msgstr ""
+msgstr "Gebruik bijwerken om berichten te veranderen"
 
 #: mailpile/plugins/compose.py:335
 #, python-format
 msgid "%s wrote:"
-msgstr ""
+msgstr "%s schreef"
 
 #: mailpile/plugins/compose.py:379
 msgid "You must configure a From address first."
-msgstr ""
+msgstr "Je moet eerst een Afzender instellen"
 
 #: mailpile/plugins/compose.py:388 mailpile/plugins/compose.py:475
 #, fuzzy
@@ -1025,12 +1025,12 @@ msgstr "Geen resultaten gevonden"
 
 #: mailpile/plugins/compose.py:513
 msgid "No messages selected"
-msgstr ""
+msgstr "Geen berichten geselecteerd"
 
 #: mailpile/plugins/compose.py:522
 #, fuzzy, python-format
 msgid "Read-only message: %s"
-msgstr "FIXME: berichten herscannen: %s"
+msgstr "Alleen-lezen bericht: %s"
 
 #: mailpile/plugins/compose.py:524
 #, fuzzy, python-format
@@ -1050,30 +1050,30 @@ msgstr "Bericht ontsleutelen mislukt"
 #: mailpile/plugins/compose.py:595
 #, fuzzy
 msgid "Nothing was sent"
-msgstr "Niks veranderd"
+msgstr "Niks verstuurd"
 
 #: mailpile/plugins/compose.py:613 mailpile/plugins/compose.py:657
 #, fuzzy
 msgid "Nothing to do!"
-msgstr "Niks veranderd"
+msgstr "Niks te doen!"
 
 #: mailpile/plugins/compose.py:623
 #, python-format
 msgid "%d message(s) updated"
-msgstr ""
+msgstr "%d bericht(en) bijgewerkt"
 
 #: mailpile/plugins/compose.py:634
 msgid "Missing encryption keys"
-msgstr ""
+msgstr "Versleutelings sleutel ontbreekt"
 
 #: mailpile/plugins/compose.py:691
 msgid "Delay between attempts to send mail"
-msgstr ""
+msgstr "Wachten tussen pogingen om mail te versturen"
 
 #: mailpile/plugins/contacts.py:304
 #, python-format
 msgid "Required paramter missing. Required parameters are: %s"
-msgstr ""
+msgstr "Vereiste informatie mist. Vereiste informatie is: %s"
 
 #: mailpile/plugins/contacts.py:312
 #, python-format
