@@ -330,29 +330,6 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
     return fmt % (number, powers[count], suffix)
 
 
-GPG_BEGIN_MESSAGE = '-----BEGIN PGP MESSAGE'
-GPG_END_MESSAGE = '-----END PGP MESSAGE'
-
-
-def decrypt_gpg(lines, fd):
-    for line in fd:
-        lines.append(line)
-        if line.startswith(GPG_END_MESSAGE):
-            break
-
-    gpg = GnuPG()
-    _, encryption_info, plaintext = gpg.decrypt(''.join(lines), as_lines=True)
-
-    if encryption_info['status'] != 'decrypted':
-        gpg_exec = spawn.find_executable('gpg')
-        gpg_version = gpg.version()
-        raise AccessError("GPG (version: %s, location: %s) was unable "
-                          "to decrypt the data: %s"
-                          % (gpg_version, gpg_exec, encryption_info['status']))
-
-    return plaintext
-
-
 def decrypt_and_parse_lines(fd, parser, config,
                             newlines=False, decode='utf-8'):
     import mailpile.crypto.streamer as cstrm

@@ -189,20 +189,23 @@ class MailIndex:
         CachedSearchResultSet.DropCaches()
         bogus_lines = []
 
-        def process_line(line):
-            try:
+        def process_lines(lines):
+            for line in lines:
                 line = line.strip()
-                if line.startswith('#'):
+                if line[:1] in ('#', ''):
                     pass
-                elif line.startswith('@'):
-                    pos, email = line[1:].split('\t', 1)
-                    pos = int(pos, 36)
-                    while len(self.EMAILS) < pos + 1:
-                        self.EMAILS.append('')
-                    unquoted_email = unquote(email).decode('utf-8')
-                    self.EMAILS[pos] = unquoted_email
-                    self.EMAIL_IDS[unquoted_email.split()[0].lower()] = pos
-                elif line:
+                elif line[:1] == '@':
+                    try:
+                        pos, email = line[1:].split('\t', 1)
+                        pos = int(pos, 36)
+                        while len(self.EMAILS) < pos + 1:
+                            self.EMAILS.append('')
+                        unquoted_email = unquote(email).decode('utf-8')
+                        self.EMAILS[pos] = unquoted_email
+                        self.EMAIL_IDS[unquoted_email.split()[0].lower()] = pos
+                    except (ValueError, IndexError, TypeError):
+                        bogus_lines.append(line)
+                else:
                     bogus = False
                     words = line.split('\t')
 
@@ -239,20 +242,13 @@ class MailIndex:
                             session.ui.error(_('Corrupt data in metadata '
                                                'index! Trying to cope...'))
 
-            except ValueError:
-                pass
-
         if session:
             session.ui.mark(_('Loading metadata index...'))
         try:
             self._lock.acquire()
             with open(self.config.mailindex_file(), 'r') as fd:
-                for line in fd:
-                    if line.startswith(GPG_BEGIN_MESSAGE):
-                        for line in decrypt_gpg([line], fd):
-                            process_line(line)
-                    else:
-                        process_line(line)
+                decrypt_and_parse_lines(fd, process_lines, self.config,
+                                        newlines=True, decode=False)
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'
