@@ -128,8 +128,18 @@ class InputCoprocess(IOCoprocess):
                      bufsize=0, close_fds=True)
         return proc, proc.stdout
 
+    def __iter__(self, *args):
+        return self._fd.__iter__(*args)
+
+    def readline(self, *args):
+        return self._fd.readline(*args)
+
+    def readlines(self, *args):
+        return self._fd.readlines(*args)
+
     def read(self, *args):
         return self._fd.read(*args)
+
 
 
 class ChecksummingStreamer(OutputCoprocess):
@@ -253,6 +263,7 @@ class DecryptingStreamer(InputCoprocess):
     This class creates a coprocess for decrypting data.
     """
     BEGIN_PGP = "-----BEGIN PGP MESSAGE-----"
+    END_PGP = "-----END PGP MESSAGE-----"
     BEGIN_MED = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
     END_MED = "-----END MAILPILE ENCRYPTED DATA-----\n"
     DEFAULT_CIPHER = "aes-256-cbc"
@@ -265,10 +276,20 @@ class DecryptingStreamer(InputCoprocess):
     STATE_PGP_DATA = 5
     STATE_ERROR = -1
 
+    @classmethod
+    def StartEncrypted(cls, line):
+        return (line.startswith(cls.BEGIN_MED[:-1]) or
+                line.startswith(cls.BEGIN_PGP[:-1]))
+
+    @classmethod
+    def EndEncrypted(cls, line):
+        return (line.startswith(cls.END_MED[:-1]) or
+                line.startswith(cls.END_PGP[:-1]))
+
     def __init__(self, key, fd, md5sum=None, cipher=None):
         self.expected_outer_md5sum = md5sum
         self.outer_md5 = hashlib.md5()
-        self.data_filter = IOFilter(fd, self._read_data)
+        self.data_filter = self._mk_data_filter(fd, self._read_data)
         self.cipher = self.DEFAULT_CIPHER
         self.state = self.STATE_BEGIN
         self.buffered = ''
@@ -292,6 +313,9 @@ class DecryptingStreamer(InputCoprocess):
             return False
         return (self.expected_outer_md5sum == self.outer_md5.hexdigest())
 
+    def _mk_data_filter(self, fd, cb):
+        return IOFilter(fd, cb)
+
     def _read_data(self, data):
         if data is None:
             if self.state in (self.STATE_BEGIN, self.STATE_HEADER):
@@ -301,9 +325,10 @@ class DecryptingStreamer(InputCoprocess):
                 return data
             return ''
 
-        self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
+        if self.expected_outer_md5sum:
+            self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
 
-        if self.state == self.STATE_RAW_DATA:
+        if self.state in (self.STATE_RAW_DATA, self.STATE_PGP_DATA):
             return data
 
         if self.state == self.STATE_BEGIN:
@@ -362,6 +387,40 @@ class DecryptingStreamer(InputCoprocess):
             return ["gpg", "--batch"]
         return ["openssl", "enc", "-d", "-a", "-%s" % self.cipher,
                 "-pass", "stdin"]
+
+
+class ReadLineIOFilter(IOFilter):
+    """
+    This is a line-based IOFilter, which can stop when it sees a
+    particular marker to hand off processing to others.
+    """
+    def __init__(self, fd, callback, start_data=None, stop_check=None):
+        self.stop_check = stop_check
+        self.start_data = start_data
+        IOFilter.__init__(self, fd, callback)
+
+    def _do_read(self):
+        if self.start_data:
+            os.write(self.pipe[1], self.callback(''.join(self.start_data)))
+
+        for data in self.fd:
+            os.write(self.pipe[1], self.callback(data))
+            if self.stop_check and self.stop_check(data):
+                break
+
+        os.write(self.pipe[1], self.callback(None))
+        os.close(self.pipe[1])
+
+
+class PartialDecryptingStreamer(DecryptingStreamer):
+    def __init__(self, start_data, *args, **kwargs):
+        self.start_data = start_data
+        DecryptingStreamer.__init__(self, *args, **kwargs)
+
+    def _mk_data_filter(self, fd, cb):
+        return ReadLineIOFilter(fd, cb,
+                                start_data=self.start_data,
+                                stop_check=self.EndEncrypted)
 
 
 if __name__ == "__main__":

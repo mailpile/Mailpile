@@ -164,23 +164,24 @@ class PostingList(object):
         self.lock = threading.Lock()
         self.load()
 
-    def _parse_line(self, line):
-        words = line.strip().split('\t')
-        if len(words) > 1:
-            wset = set(words[1:])
-            if words[0] in self.WORDS:
-                self.WORDS[words[0]] |= wset
-            else:
-                self.WORDS[words[0]] = wset
+    def _parse_lines(self, lines):
+        for line in lines:
+            self.size += len(line)
+            words = line.strip().split('\t')
+            if len(words) > 1:
+                wset = set(words[1:])
+                if words[0] in self.WORDS:
+                    self.WORDS[words[0]] |= wset
+                else:
+                    self.WORDS[words[0]] = wset
 
     def load(self):
-        self.size = 0
         fd, self.filename = self.GetFile(self.session, self.sig)
         if fd:
             try:
                 self.lock.acquire()
-                self.size = decrypt_and_parse_lines(fd, self._parse_line,
-                                                    self.config)
+                self.size = 0
+                decrypt_and_parse_lines(fd, self._parse_lines, self.config)
             except ValueError:
                 pass
             finally:

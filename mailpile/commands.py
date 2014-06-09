@@ -1158,25 +1158,44 @@ class ChangeDir(ListDir):
 
 class CatFile(Command):
     """Dump the contents of a file, decrypting if necessary"""
-    SYNOPSIS = (None, 'cat', None, "</path/to/file>")
+    SYNOPSIS = (None, 'cat', None, "</path/to/file> [>/path/to/output]")
     ORDER = ('Internals', 5)
-    SPLIT_ARG = False
     IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
-            if self.result:
-                return '\n'.join([l.decode('utf-8') for l in self.result])
+            if isinstance(self.result, list):
+                return ''.join(self.result)
             else:
                 return ''
 
     def command(self, args=None):
         lines = []
-        with open(self.args[0]) as fd:
-            decrypt_and_parse_lines(fd, lambda l: lines.append(l),
-                                    self.session.config, newlines=False)
-        return self._success(_('Dumped file %s') % self.args[0],
-                             result=lines)
+        files = list(args or self.args)
+
+        target = tfd = None
+        if files and files[-1] and files[-1][:1] == '>':
+            target = files.pop(-1)[1:]
+            if os.path.exists(target):
+                return self._error(_('That file already exists: %s'
+                                     ) % target)
+            tfd = open(target, 'wb')
+            cb = lambda ll: [tfd.write(l) for l in ll]
+        else:
+            cb = lambda ll: lines.extend((l.decode('utf-8') for l in ll))
+
+        for fn in files:
+            with open(fn, 'r') as fd:
+                decrypt_and_parse_lines(fd, cb, self.session.config,
+                                        newlines=True, decode=None)
+
+        if tfd:
+            tfd.close()
+            return self._success(_('Dumped to %s: %s'
+                                   ) % (target, ', '.join(files)))
+        else:
+            return self._success(_('Dumped: %s') % ', '.join(files),
+                                   result=lines)
 
 
 ##[ Configuration commands ]###################################################

@@ -353,31 +353,31 @@ def decrypt_gpg(lines, fd):
     return plaintext
 
 
-def decrypt_and_parse_lines(fd, parser, config, newlines=False):
-    import mailpile.crypto.symencrypt as symencrypt
+def decrypt_and_parse_lines(fd, parser, config,
+                            newlines=False, decode='utf-8'):
+    import mailpile.crypto.streamer as cstrm
+    begin_sym = cstrm.PartialDecryptingStreamer.BEGIN_MED[:-1]
+    begin_pgp = cstrm.PartialDecryptingStreamer.BEGIN_PGP[:-1]
+    symmetric_key = config and config.prefs.obfuscate_index or 'missing'
+
     if not newlines:
-        _parser = lambda l: parser(l.rstrip('\r\n'))
+        if decode:
+            _parser = lambda ll: parser((l.rstrip('\r\n').decode(decode)
+                                         for l in ll))
+        else:
+            _parser = lambda ll: parser((l.rstrip('\r\n') for l in ll))
+    elif decode:
+        _parser = lambda ll: parser((l.decode(decode) for l in ll))
     else:
         _parser = parser
-    size = 0
-    while True:
-        line = fd.readline(102400)
-        if line == '':
-            break
-        size += len(line)
-        if line.startswith(GPG_BEGIN_MESSAGE):
-            for line in decrypt_gpg([line], fd):
-                _parser(line.decode('utf-8'))
-        elif line.startswith(symencrypt.SymmetricEncrypter.BEGIN_DATA):
-            if not config or not config.prefs.obfuscate_index:
-                raise ValueError(_("Symmetric decryption is not available "
-                                   "without config and key."))
-            for line in symencrypt.SymmetricEncrypter(
-                    config.prefs.obfuscate_index).decrypt_fd([line], fd):
-                _parser(line.decode('utf-8'))
+
+    for line in fd:
+        if cstrm.PartialDecryptingStreamer.StartEncrypted(line):
+            with cstrm.PartialDecryptingStreamer(
+                    [line], symmetric_key, fd) as pdsfd:
+                _parser(pdsfd)
         else:
-            _parser(line.decode('utf-8'))
-    return size
+            _parser([line])
 
 
 def backup_file(filename, backups=5, min_age_delta=0):

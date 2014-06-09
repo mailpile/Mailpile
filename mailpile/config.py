@@ -994,7 +994,7 @@ class ConfigManager(ConfigDict):
         lines = []
         try:
             with open(filename, 'rb') as fd:
-                decrypt_and_parse_lines(fd, lambda l: lines.append(l), None)
+                decrypt_and_parse_lines(fd, lambda ll: lines.extend(ll), None)
         except ValueError:
             pass
         except IOError:
