@@ -5,6 +5,8 @@ import subprocess
 import sys
 from gettext import ngettext as _n
 
+import mailpile.util
+from mailpile.util import *
 from mailpile.config import ssl, socks
 from mailpile.mailutils import CleanMessage, MessageAsString
 from mailpile.eventlog import Event
@@ -116,15 +118,17 @@ def SendMail(session, from_to_msg_ev_tuples):
             sys.stderr.write(_('SendMail: from %s, to %s via %s\n'
                                ) % (frm, to, sendmail))
         sm_write = sm_close = lambda: True
+
         mark(_('Connecting to %s') % sendmail, events)
 
         if sendmail.startswith('|'):
             sendmail %= {"rcpt": ",".join(to)}
             cmd = sendmail[1:].strip().split()
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+            sm_startup = None
             sm_write = proc.stdin.write
             sm_close = proc.stdin.close
-            sm_cleanup = lambda: proc.wait()
+            sm_cleanup = lambda: [sm_close(), proc.wait()]
             # FIXME: Update session UI with progress info
             for ev in events:
                 ev.data['proto'] = 'subprocess'
@@ -154,65 +158,73 @@ def SendMail(session, from_to_msg_ev_tuples):
                                    ) % (host, port, user, pwd))
 
             server = smtp_ssl and SMTP_SSL() or SMTP()
-            if proto == 'smtorp':
-                server.connect(host, int(port),
-                               socket_cls=session.config.get_tor_socket())
-            else:
-                server.connect(host, int(port))
-            server.ehlo()
-            if not smtp_ssl:
-                # We always try to enable TLS, even if the user just requested
-                # plain-text smtp.  But we only throw errors if the user asked
-                # for encryption.
-                try:
-                    server.starttls()
-                    server.ehlo()
-                except:
-                    if sendmail.startswith('smtptls'):
-                        raise InsecureSmtpError()
-            if user and pwd:
-                server.login(user, pwd)
+            def sm_startup():
+                if proto == 'smtorp':
+                    server.connect(host, int(port),
+                                   socket_cls=session.config.get_tor_socket())
+                else:
+                    server.connect(host, int(port))
+                server.ehlo()
+                if not smtp_ssl:
+                    # We always try to enable TLS, even if the user just requested
+                    # plain-text smtp.  But we only throw errors if the user asked
+                    # for encryption.
+                    try:
+                        server.starttls()
+                        server.ehlo()
+                    except:
+                        if sendmail.startswith('smtptls'):
+                            raise InsecureSmtpError()
+                if user and pwd:
+                    server.login(user, pwd)
 
-            server.mail(frm)
-            for rcpt in to:
-                server.rcpt(rcpt)
-            server.docmd('DATA')
+                server.mail(frm)
+                for rcpt in to:
+                    server.rcpt(rcpt)
+                server.docmd('DATA')
 
-            def sender(data):
-                for line in data.splitlines(1):
+            def sm_write(data):
+                for line in data.splitlines(True):
                     if line.startswith('.'):
                         server.send('.')
                     server.send(line)
 
-            def closer():
+            def sm_close():
                 server.send('\r\n.\r\n')
-                server.quit()
 
-            sm_write = sender
-            sm_close = closer
-            sm_cleanup = lambda: True
+            def sm_cleanup():
+                if hasattr(server, 'sock'):
+                    server.close()
         else:
             raise Exception(_('Invalid sendmail command/SMTP server: %s'
                               ) % sendmail)
 
-        mark(_('Preparing message...'), events)
-        msg_string = MessageAsString(CleanMessage(session.config, msg))
-        total = len(msg_string)
-        while msg_string:
-            sm_write(msg_string[:20480])
-            msg_string = msg_string[20480:]
-            mark(('Sending message... (%d%%)'
-                  ) % (100 * (total-len(msg_string))/total), events,
-                 log=False)
-        sm_close()
-        sm_cleanup()
-        for ev in events:
-            for rcpt in to:
-                ev.private_data['>'.join([frm, rcpt])] = True
-            ev.data['bytes'] = total
-            ev.data['delivered'] = len([k for k in ev.private_data
-                                        if ev.private_data[k]])
-        mark(_n('Message sent, %d byte',
-                'Message sent, %d bytes',
-                total
-                ) % total, events)
+        try:
+            # Run the entire connect/login sequence in a single timer...
+            if sm_startup:
+                RunTimed(30, sm_startup)
+
+            mark(_('Preparing message...'), events)
+            msg_string = MessageAsString(CleanMessage(session.config, msg))
+            total = len(msg_string)
+            while msg_string:
+                if mailpile.util.QUITTING:
+                    raise TimedOut(_('Quitting'))
+                mark(('Sending message... (%d%%)'
+                      ) % (100 * (total-len(msg_string))/total), events,
+                     log=False)
+                RunTimed(20, sm_write, msg_string[:20480])
+                msg_string = msg_string[20480:]
+            RunTimed(10, sm_close)
+            for ev in events:
+                for rcpt in to:
+                    ev.private_data['>'.join([frm, rcpt])] = True
+                ev.data['bytes'] = total
+                ev.data['delivered'] = len([k for k in ev.private_data
+                                            if ev.private_data[k]])
+            mark(_n('Message sent, %d byte',
+                    'Message sent, %d bytes',
+                    total
+                    ) % total, events)
+        finally:
+            sm_cleanup()
