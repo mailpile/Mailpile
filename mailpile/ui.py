@@ -162,8 +162,12 @@ class UserInteraction:
 
     # Logging
     def _debug_log(self, text, level, prefix=''):
-        if 'log' in self.config.sys.debug:
-            self.term.write('%slog(%s): %s\n' % (prefix, level, text))
+        if text and 'log' in self.config.sys.debug:
+            if self.log_parent:
+                self.log_parent._debug_log(text, level, prefix)
+            else:
+                message = '%slog(%s): %s' % (prefix, level, text)
+                self.log(level, message)
 
     def _display_log(self, text, level=LOG_URGENT):
         c, w, clip = self.term.NONE, self.term.NORMAL, 2048
@@ -356,7 +360,7 @@ class UserInteraction:
     def _web_template(self, config, tpl_names, elems=None):
         env = config.jinja_env
         env.session = Session(config)
-        env.session.ui = HttpUserInteraction(None, config)
+        env.session.ui = HttpUserInteraction(None, config, log_parent=self)
         for fn in tpl_names:
             try:
                 # FIXME(Security): Here we need to sanitize the file name

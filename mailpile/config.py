@@ -1409,7 +1409,8 @@ class ConfigManager(ConfigDict):
         # Make sure we have a silent background session
         if not config.background:
             config.background = Session(config)
-            config.background.ui = BackgroundInteraction(config)
+            config.background.ui = BackgroundInteraction(config,
+                                                         log_parent=session.ui)
             config.background.ui.block()
 
         # Start the workers

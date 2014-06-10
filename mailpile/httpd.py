@@ -239,7 +239,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             return self.send_file(config, path[len('/static/'):])
 
         session = Session(config)
-        session.ui = HttpUserInteraction(self, config)
+        session.ui = HttpUserInteraction(self, config,
+                                         log_parent=server_session.ui)
 
         if 'http' in config.sys.debug:
             session.ui.warning = server_session.ui.warning

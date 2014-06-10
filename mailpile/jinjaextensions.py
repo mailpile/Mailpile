@@ -115,7 +115,8 @@ class MailpileCommand(Extension):
     def _command_render(self, how, command, *args, **kwargs):
         old_ui, config = self.env.session.ui, self.env.session.config
         try:
-            ui = self.env.session.ui = HttpUserInteraction(None, config)
+            ui = self.env.session.ui = HttpUserInteraction(None, config,
+                                                           log_parent=old_ui)
             ui.html_variables = copy.deepcopy(old_ui.html_variables)
             ui.render_mode = how
             ui.display_result(Action(self.env.session, command, args,
