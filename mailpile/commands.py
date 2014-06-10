@@ -1062,19 +1062,36 @@ class RenderPage(Command):
         })
 
 
-class ListThreadsAndLocks(Command):
-    """Display list of running threads and locks."""
+class ProgramStatus(Command):
+    """Display list of running threads, locks and outstanding events."""
     SYNOPSIS = (None, 'ps', None, None)
     ORDER = ('Internals', 5)
     IS_USER_ACTIVITY = False
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
+            cevents = self.result['cevents']
+            if cevents:
+                cevents = '\n'.join(['  %s %s' % (e.source, e.message)
+                                     for e in cevents])
+            else:
+                cevents = _('Nothing Found')
+
+            ievents = self.result['ievents']
+            if ievents:
+                ievents = '\n'.join(['  %s:%s %s' % (e.source,
+                                                     e.flags,
+                                                     e.message)
+                                     for e in ievents])
+            else:
+                ievents = _('Nothing Found')
+
             threads = self.result['threads']
             if threads:
                 threads = '\n'.join([('  ' + str(t)) for t in threads])
             else:
                 threads = _('Nothing Found')
+
             locks = self.result['locks']
             if locks:
                 locks = '\n'.join([('  %s.%s is %slocked'
@@ -1082,8 +1099,14 @@ class ListThreadsAndLocks(Command):
                                    for l in locks])
             else:
                 locks = _('Nothing Found')
-            return ('Delay: %.3fs\nThreads:\n%s\n\nLocks:\n%s'
-                    ) % (self.result['delay'], threads, locks)
+
+            return ('Recent events:\n%s\n\n'
+                    'Events in progress:\n%s\n\n'
+                    'Threads: (bg delay %.3fs)\n%s\n\n'
+                    'Locks:\n%s'
+                    ) % (cevents, ievents,
+                         self.result['delay'], threads,
+                         locks)
 
     def command(self, args=None):
         config = self.session.config
@@ -1103,10 +1126,13 @@ class ListThreadsAndLocks(Command):
             except AttributeError:
                 pass
 
-        return self._success(_("Listed threads and locks"),
-                             result={'threads': threads,
-                                     'locks': locks,
-                                     'delay': play_nice_with_threads()})
+        return self._success(_("Listed events, threads, and locks"), result={
+            'cevents': list(config.event_log.events(flag='c'))[-10:],
+            'ievents': config.event_log.incomplete(),
+            'delay': play_nice_with_threads(),
+            'threads': threads,
+            'locks': locks
+        })
 
 
 class ListDir(Command):
@@ -1662,7 +1688,7 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, ListThreadsAndLocks,
+    Optimize, Rescan, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     RenderPage, Output, Help, HelpVars, HelpSplash, Quit
