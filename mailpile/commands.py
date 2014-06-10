@@ -739,10 +739,17 @@ class SearchResults(dict):
         from mailpile.jinjaextensions import MailpileCommand as JE
         clen = max(3, len('%d' % len(self.session.results)))
         cfmt = '%%%d.%ds' % (clen, clen)
+
+        term_width = self.session.ui.term.max_width()
+        fs_width = int((22 + 53) * (term_width / 79.0))
+        f_width = min(32, int(0.30 * fs_width))
+        s_width = fs_width - f_width
+
         text = []
         count = self['stats']['start']
         expand_ids = [e.msg_idx_pos for e in (self.emails or [])]
         addresses = self.get('data', {}).get('addresses', {})
+
         for mid in self['thread_ids']:
             m = self['data']['metadata'][mid]
             tags = [self['data']['tags'][t] for t in m['tag_tids']]
@@ -801,23 +808,24 @@ class SearchResults(dict):
             subject = re.sub('^(\\[[^\\]]{6})[^\\]]{3,}\\]\\s*', '\\1..] ',
                              JE._nice_subject(m['subject']))
 
-            sfmt = '%%-%d.%ds%%s' % (max(1, 53 - (clen + len(msg_meta))),
-                                     max(1, 53 - (clen + len(msg_meta))))
-            tfmt = cfmt + ' %-22.22s %s' + sfmt
+            sfmt = '%%-%d.%ds%%s' % (max(1, s_width - (clen + len(msg_meta))),
+                                     max(1, s_width - (clen + len(msg_meta))))
+            ffmt = ' %%-%d.%ds %%s' % (f_width, f_width)
+            tfmt = cfmt + ffmt + sfmt
             text.append(tfmt % (count, from_info, tag_new and '*' or ' ',
                                 subject, msg_meta))
 
             if mid in self['data'].get('messages', {}):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
                 msg_tree = exp_email.get_message_tree()
-                text.append('-' * 79)
+                text.append('-' * term_width)
                 text.append(exp_email.get_editing_string(msg_tree).strip())
                 if msg_tree['attachments']:
                     text.append('\nAttachments:')
                     for a in msg_tree['attachments']:
                         text.append('%5.5s %s' % ('#%s' % a['count'],
                                                   a['filename']))
-                text.append('-' * 79)
+                text.append('-' * term_width)
 
             count += 1
         if not count:

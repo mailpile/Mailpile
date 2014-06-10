@@ -43,7 +43,6 @@ def default_dict(*args):
 
 class NoColors:
     """Dummy color constants"""
-    MAX_WIDTH = 79
     C_SAVE = ''
     C_RESTORE = ''
 
@@ -60,12 +59,15 @@ class NoColors:
     RESET = ''
     LINE_BELOW = ''
 
+    def max_width(self):
+        return 79
+
     def color(self, text, color='', weight=''):
         return '%s%s%s' % (self.FORMAT % (color, weight), text, self.RESET)
 
     def replace_line(self, text, chars=None):
-        pad = ' ' * max(0, min(self.MAX_WIDTH,
-                               self.MAX_WIDTH-(chars or len(unicode(text)))))
+        pad = ' ' * max(0, min(self.max_width(),
+                               self.max_width()-(chars or len(unicode(text)))))
         return '%s%s\r' % (text, pad)
 
     def add_line_below(self):
@@ -76,6 +78,9 @@ class NoColors:
 
     def write(self, data):
         sys.stderr.write(data)
+
+    def check_max_width(self):
+        pass
 
 
 class ANSIColors(NoColors):
@@ -98,10 +103,27 @@ class ANSIColors(NoColors):
     CURSOR_RESTORE = "\x1B[u"
     CLEAR_LINE = "\x1B[2K"
 
+    def __init__(self):
+        self.check_max_width()
+
     def replace_line(self, text, chars=None):
         return '%s%s%s\r%s' % (self.CURSOR_SAVE,
                                self.CLEAR_LINE, text,
                                self.CURSOR_RESTORE)
+
+    def max_width(self):
+        return self.MAX_WIDTH
+
+    def check_max_width(self):
+        try:
+            import fcntl, termios, struct
+            fcntl_result = fcntl.ioctl(sys.stdin.fileno(),
+                                       termios.TIOCGWINSZ,
+                                       struct.pack('HHHH', 0, 0, 0, 0))
+            h, w, hp, wp = struct.unpack('HHHH', fcntl_result)
+            self.MAX_WIDTH = (w-1)
+        except:
+            self.MAX_WIDTH = 79
 
 
 class Completer(object):

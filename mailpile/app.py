@@ -59,6 +59,7 @@ def Interact(session):
         while True:
             session.ui.block()
             opt = raw_input(prompt).decode('utf-8').strip()
+            session.ui.term.check_max_width()
             session.ui.unblock()
             if opt:
                 if ' ' in opt:
