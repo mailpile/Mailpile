@@ -346,9 +346,9 @@ class BaseMailSource(threading.Thread):
                     except threading.ThreadError:
                         pass
                 self.session = _original_session
-        self.event.flags = Event.INCOMPLETE
-        self.event.message = _('Shutting down')
         self._save_state()
+        self.event.flags = Event.COMPLETE
+        self._log_status(_('Shut down'))
 
     def wake_up(self):
         self._sleeping = 0
