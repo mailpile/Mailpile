@@ -1423,7 +1423,7 @@ class ConfigManager(ConfigDict):
                     from mailpile.mail_source import MailSource
                     try:
                         config.mail_sources[src_id] = MailSource(
-                            session or config.background, src_config)
+                            config.background, src_config)
                         config.mail_sources[src_id].start()
                     except ValueError:
                         pass
@@ -1443,22 +1443,21 @@ class ConfigManager(ConfigDict):
             if not config.other_workers:
                 from mailpile.plugins import PluginManager
                 for worker in PluginManager.WORKERS:
-                    w = worker(session)
+                    w = worker(config.background)
                     w.start()
                     config.other_workers.append(w)
 
         # Update the cron jobs, if necessary
         if config.cron_worker:
-            session = session or config.background
-
             # Schedule periodic rescanning, if requested.
             rescan_interval = config.prefs.rescan_interval
             if rescan_interval:
                 def rescan():
                     if 'rescan' not in config._running:
-                        rsc = Rescan(session, 'rescan')
+                        rsc = Rescan(config.background, 'rescan')
                         rsc.serialize = False
-                        config.slow_worker.add_task(session, 'Rescan', rsc.run)
+                        config.slow_worker.add_task(config.background,
+                                                    'Rescan', rsc.run)
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
             # Schedule plugin jobs
@@ -1471,13 +1470,13 @@ class ConfigManager(ConfigDict):
 
             def wrap_fast(func):
                 def wrapped():
-                    return func(session)
+                    return func(config.background)
                 return wrapped
 
             def wrap_slow(func):
                 def wrapped():
-                    config.slow_worker.add_task(session, job,
-                                                lambda: func(session))
+                    config.slow_worker.add_task(config.background, job,
+                                                lambda: func(config.background))
                 return wrapped
             for job, (i, f) in PluginManager.FAST_PERIODIC_JOBS.iteritems():
                 config.cron_worker.add_task(job, interval(i), wrap_fast(f))
