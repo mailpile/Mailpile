@@ -221,14 +221,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     def do_GET(self, post_data={}, suppress_body=False, method='GET'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
         query_data = parse_qs(query)
-        path = unquote(path)
+        opath = path = unquote(path)
 
         # HTTP is stateless, so we create a new session for each request.
-        config = self.server.session.config
+        server_session = self.server.session
+        config = server_session.config
 
-        if 'http' in config.sys.debug:
-            sys.stderr.write(('%s: %s qs = %s post = %s\n'
-                              ) % (method, path, query_data, post_data))
         if 'httpdata' in config.sys.debug:
             self.wfile = DebugFileWrapper(sys.stderr, self.wfile)
 
@@ -242,6 +240,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
         session = Session(config)
         session.ui = HttpUserInteraction(self, config)
+
+        if 'http' in config.sys.debug:
+            session.ui.warning = server_session.ui.warning
+            session.ui.notify = server_session.ui.notify
+            session.ui.error = server_session.ui.error
+            session.ui.debug = server_session.ui.debug
+            session.ui.debug('%s: %s qs = %s post = %s'
+                             % (method, opath, query_data, post_data))
 
         idx = session.config.index
         name = session.config.get_profile().get('name', 'Chelsea Manning')
@@ -282,7 +288,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             return
         except:
             e = traceback.format_exc()
-            print e
+            session.ui.debug(e)
             if not session.config.sys.debug:
                 e = _('Internal error')
             self.send_full_response(e, code=500, mimetype='text/plain')

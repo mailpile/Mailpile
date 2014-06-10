@@ -1442,6 +1442,7 @@ class MailIndex:
                                'Sorted %d messages by %s',
                                count
                                ) % (count, how) +
+                            ', ' +
                             _n('%d conversation',
                                '%d conversations',
                                len(results)

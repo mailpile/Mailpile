@@ -335,10 +335,9 @@ class BaseMailSource(threading.Thread):
                     self._save_state()
             except:
                 self.event.data['traceback'] = traceback.format_exc()
-                print self.event.data['traceback']
+                self.session.ui.debug(self.event.data['traceback'])
                 self._log_status(_('Internal error!  Sleeping...'))
                 self._sleep(self.INTERNAL_ERROR_SLEEP)
-                # FIXME: Release any held locks?
             finally:
                 for b, e, s in waiters:
                     try:

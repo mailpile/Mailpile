@@ -255,14 +255,15 @@ class ImapMailSource(BaseMailSource):
         return 'src:%s/%s' % (self.my_config._key, path)
 
     def _unlocked_discover_mailboxes(self, unused_paths):
-        print 'Capabilities: %s' % self.capabilities
+        self.session.ui.debug('Capabilities: %s' % self.capabilities)
         with self.conn as raw_conn:
             try:
                 ok, data = _parse_imap(self._timed(raw_conn.list))
                 while ok and len(data) >= 3:
                     flags, sep, path = data[:3]
                     data[:3] = []
-                    print 'Discovered: %s %s' % (self._fmt_path(path), flags)
+                    self.session.ui.debug('Discovered: %s %s'
+                                          % (self._fmt_path(path), flags))
             except self.CONN_ERRORS:
                 pass
 

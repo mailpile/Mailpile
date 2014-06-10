@@ -53,9 +53,9 @@ def Interact(session):
         readline.set_history_length(-history_length)
 
     try:
-        prompt = session.ui.palette.color('mailpile> ',
-                                          color=session.ui.palette.BLACK,
-                                          weight=session.ui.palette.BOLD)
+        prompt = session.ui.term.color('mailpile> ',
+                                       color=session.ui.term.BLACK,
+                                       weight=session.ui.term.BOLD)
         while True:
             session.ui.block()
             opt = raw_input(prompt).decode('utf-8').strip()
@@ -99,7 +99,7 @@ def Main(args):
         session.main = True
         session.ui = UserInteraction(config)
         if sys.stdout.isatty():
-            session.ui.palette = ANSIColors()
+            session.ui.term = ANSIColors()
     except AccessError, e:
         sys.stderr.write('Access denied: %s\n' % e)
         sys.exit(1)

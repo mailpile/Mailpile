@@ -43,6 +43,10 @@ def default_dict(*args):
 
 class NoColors:
     """Dummy color constants"""
+    MAX_WIDTH = 79
+    C_SAVE = ''
+    C_RESTORE = ''
+
     NORMAL = ''
     BOLD = ''
     NONE = ''
@@ -50,11 +54,28 @@ class NoColors:
     RED = ''
     YELLOW = ''
     BLUE = ''
+    MAGENTA = ''
+    CYAN = ''
     FORMAT = "%s%s"
     RESET = ''
+    LINE_BELOW = ''
 
     def color(self, text, color='', weight=''):
         return '%s%s%s' % (self.FORMAT % (color, weight), text, self.RESET)
+
+    def replace_line(self, text, chars=None):
+        pad = ' ' * max(0, min(self.MAX_WIDTH,
+                               self.MAX_WIDTH-(chars or len(unicode(text)))))
+        return '%s%s\r' % (text, pad)
+
+    def add_line_below(self):
+        pass
+
+    def print_below(self):
+        pass
+
+    def write(self, data):
+        sys.stderr.write(data)
 
 
 class ANSIColors(NoColors):
@@ -66,8 +87,21 @@ class ANSIColors(NoColors):
     RED = "31"
     YELLOW = "33"
     BLUE = "34"
+    MAGENTA = '35'
+    CYAN = '36'
     RESET = "\x1B[0m"
     FORMAT = "\x1B[%s%sm"
+
+    CURSOR_UP = "\x1B[1A"
+    CURSOR_DN = "\x1B[1B"
+    CURSOR_SAVE = "\x1B[s"
+    CURSOR_RESTORE = "\x1B[u"
+    CLEAR_LINE = "\x1B[2K"
+
+    def replace_line(self, text, chars=None):
+        return '%s%s%s\r%s' % (self.CURSOR_SAVE,
+                               self.CLEAR_LINE, text,
+                               self.CURSOR_RESTORE)
 
 
 class Completer(object):
@@ -96,7 +130,6 @@ class Completer(object):
 class UserInteraction:
     """Log the progress and performance of individual operations"""
     MAX_BUFFER_LEN = 150
-    MAX_WIDTH = 79
 
     LOG_URGENT = 0
     LOG_RESULT = 5
@@ -117,7 +150,7 @@ class UserInteraction:
         self.time_elapsed = 0.0
         self.last_display = [self.LOG_PROGRESS, 0]
         self.render_mode = 'text'
-        self.palette = NoColors()
+        self.term = NoColors()
         self.config = config
         self.html_variables = {
             'title': 'Mailpile',
@@ -130,30 +163,29 @@ class UserInteraction:
     # Logging
     def _debug_log(self, text, level, prefix=''):
         if 'log' in self.config.sys.debug:
-            sys.stderr.write('%slog(%s): %s\n' % (prefix, level, text))
+            self.term.write('%slog(%s): %s\n' % (prefix, level, text))
 
     def _display_log(self, text, level=LOG_URGENT):
-        pad = ' ' * max(0, min(self.MAX_WIDTH,
-                               self.MAX_WIDTH-len(unicode(text))))
-        if self.last_display[0] not in (self.LOG_PROGRESS, ):
-            sys.stderr.write('\n')
-
-        c, w, clip = self.palette.NONE, self.palette.NORMAL, 2048
+        c, w, clip = self.term.NONE, self.term.NORMAL, 2048
         if level == self.LOG_URGENT:
-            c, w = self.palette.RED, self.palette.BOLD
+            c, w = self.term.RED, self.term.BOLD
         elif level == self.LOG_ERROR:
-            c = self.palette.RED
+            c = self.term.RED
         elif level == self.LOG_WARNING:
-            c = self.palette.YELLOW
+            c = self.term.YELLOW
+        elif level == self.LOG_NOTIFY:
+            c = self.term.CYAN
+        elif level == self.LOG_DEBUG:
+            c = self.term.MAGENTA
         elif level == self.LOG_PROGRESS:
-            c, clip = self.palette.BLUE, 78
+            c, clip = self.term.BLUE, 78
 
-        sys.stderr.write('%s%s\r' % (
-            self.palette.color(unicode(text[:clip]).encode('utf-8'),
-                               color=c, weight=w), pad))
+        self.term.write(self.term.replace_line(self.term.color(
+            unicode(text[:clip]).encode('utf-8'), color=c, weight=w),
+            chars=len(text[:clip])))
 
-        if level == self.LOG_ERROR:
-            sys.stderr.write('\n')
+        if level != self.LOG_PROGRESS:
+            self.term.write('\n')
         self.last_display = [level, len(unicode(text))]
 
     def clear_log(self):
@@ -219,7 +251,7 @@ class UserInteraction:
                 if details:
                     for i in range(0, len(self.times)-1):
                         e = t[i+1][0] - t[i][0]
-                        self.notify(' -> %.3fs (%s)' % (e, t[i][1]))
+                        self.debug(' -> %.3fs (%s)' % (e, t[i][1]))
             return elapsed
         return 0
 
@@ -245,7 +277,8 @@ class UserInteraction:
 
     # Higher level command-related methods
     def _display_result(self, result):
-        sys.stdout.write(unicode(result)+'\n')
+        sys.stdout.write(unicode(result).rstrip())
+        sys.stdout.write('\n')
 
     def start_command(self, cmd, args, kwargs):
         self.flush_log()
@@ -465,10 +498,6 @@ class HttpUserInteraction(UserInteraction):
 
     def edit_messages(self, session, emails):
         return False
-
-    def print_filters(self, args):
-        print args
-        return args
 
 
 class BackgroundInteraction(UserInteraction):
