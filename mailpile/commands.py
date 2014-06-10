@@ -1520,6 +1520,7 @@ class Help(Command):
             width = self.result.get('width', 8)
             ckeys = cmds.keys()
             ckeys.sort(key=lambda k: cmds[k][3])
+            arg_width = min(50, max(14, self.session.ui.term.max_width()-70))
             for c in ckeys:
                 cmd, args, explanation, rank = cmds[c]
                 if not rank or not cmd:
@@ -1533,10 +1534,11 @@ class Help(Command):
                     c = '%s|' % c[0]
                 fmt = '  %%s%%-%d.%ds' % (width, width)
                 if explanation:
-                    if len(args or '') <= 15:
-                        fmt += ' %-15.15s %s'
+                    if len(args or '') <= arg_width:
+                        fmt += ' %%-%d.%ds %%s' % (arg_width, arg_width)
                     else:
-                        fmt += ' %%s\n%s %%s' % (' ' * (len(c) + width + 18))
+                        pad = len(c) + width + 3 + arg_width
+                        fmt += ' %%s\n%s %%s' % (' ' * pad)
                 else:
                     explanation = ''
                     fmt += ' %s %s '
