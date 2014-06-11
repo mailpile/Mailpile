@@ -24,23 +24,20 @@
     {% include("partials/thread_message.html") %}{# Show: Message #}
     {% do loop_history.append("display message") %}
 
-  {% elif metadata.flags.draft %}
-    {# This message is a draft, inline the composer #}
-    {#
-       FIXME: We should probably just tell the user this is a draft, make
+  {% elif metadata.flags.draft %}{# This message is a draft, inline the composer #}
+    {# FIXME: We should probably just tell the user this is a draft, make
               loading the composer a manual action UNLESS this is the last
               message in the the thread.
      #}
-    {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+mid).result %}{# Gets Ephermal message #}
+    {% set compose = mailpile('message/draft', 'all', '='+mid).result %}{# Gets Ephermal message #}
     {% if compose %}
+      {% do loop_history.append("edit draft") %}
       {% set mid = compose.message_ids.0 %}
       {% set editing_strings = compose.data.messages[mid].editing_strings %}
       {% include("partials/compose.html") %}
-      {% do loop_history.append("edit draft") %}
     {% else %}
       {{_("Could Not Render Composer")}}
     {% endif %}
-
   {% else %}
     {# By default, just render the snippet view #}
     <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
