@@ -135,7 +135,6 @@ class BaseMailSource(threading.Thread):
                 # anyway just in case looks are deceiving.
                 if batch > 0 and (self._has_mailbox_changed(mbx, state) or
                                   random.randint(0, 20) == 10):
-                    self._log_status(_('Reading mailbox %s') % self._path(mbx))
                     count = self._unlocked_rescan_mailbox(mbx._key,
                                                           stop_after=batch)
                     if count >= 0:
@@ -149,13 +148,19 @@ class BaseMailSource(threading.Thread):
                         errors += 1
             except (NoSuchMailboxError, IOError, OSError):
                 errors += 1
+            except:
+                self._log_status(_('Internal error'))
+                raise
+
+        if batch > 0 and not errors:
+            self._log_status(_('Checking for new mailboxes'))
+            self._unlocked_discover_mailboxes(self.my_config.discovery.paths)
+
         if errors:
             self._log_status(_('Rescanned %d mailboxes, failed to rescan %d'
                                ) % (rescanned, errors))
-        elif rescanned:
+        else:
             self._log_status(_('Rescanned %d mailboxes') % rescanned)
-        if batch > 0 and not errors:
-            self._unlocked_discover_mailboxes(self.my_config.discovery.paths)
         self._last_rescan_count = rescanned
         return rescanned
 
@@ -174,11 +179,14 @@ class BaseMailSource(threading.Thread):
         self._sleeping = None
         return (self.alive and not mailpile.util.QUITTING)
 
+    def _existing_mailboxes(self):
+        return set(self.session.config.sys.mailbox +
+                   [mbx.local for mbx in self.my_config.mailbox.values()
+                    if mbx.local])
+
     def _unlocked_discover_mailboxes(self, paths):
         config = self.session.config
-        existing = set(config.sys.mailbox +
-                       [mbx.local for mbx in self.my_config.mailbox.values()
-                        if mbx.local])
+        existing = self._existing_mailboxes()
         adding = []
         paths = paths[:]
         while paths:
@@ -288,12 +296,14 @@ class BaseMailSource(threading.Thread):
 
             mbx = self.my_config.mailbox[mbx_key]
             path = self._path(mbx)
-            if path == '/dev/null' or mbx.policy in ('ignore', 'unknown'):
+            if (path in ('/dev/null', '', None)
+                    or mbx.policy in ('ignore', 'unknown')):
                 return 0
             if mbx.local:
                 # FIXME: Should copy any new messages to our local stash
                 pass
             self._rescanning = True
+            self._log_status(_('Rescanning: %s') % path)
             apply_tags = mbx.apply_tags[:]
             if mbx.primary_tag:
                 apply_tags.append(mbx.primary_tag)
@@ -308,6 +318,11 @@ class BaseMailSource(threading.Thread):
         finally:
             self._state = ostate
             self._rescanning = False
+
+    def open_mailbox(self, mbx_id, fn):
+        # This allows mail sources to override the default mailbox
+        # opening mechanism.  Returning false respectfully declines.
+        return False
 
     def is_mailbox(self, fn):
         return False

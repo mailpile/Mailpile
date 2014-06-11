@@ -1174,12 +1174,12 @@ class ConfigManager(ConfigDict):
 
     def open_mailbox(self, session, mailbox_id, prefer_local=True):
         try:
-            mbx_id = mailbox_id.lower()
+            mbx_id = mailbox_id.upper()
+            src = self._find_mail_source(mailbox_id)
             mfn = self.sys.mailbox[mbx_id]
             if prefer_local:
-                src = self._find_mail_source(mbx_id)
                 mfn = src and src.mailbox[mbx_id].local or mfn
-            pfn = 'pickled-mailbox.%s' % mbx_id
+            pfn = 'pickled-mailbox.%s' % mbx_id.lower()
         except KeyError:
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
 
@@ -1205,8 +1205,13 @@ class ConfigManager(ConfigDict):
                     session.ui.mark(_('%s: Opening: %s (may take a while)'
                                       ) % (mbx_id, mfn))
                 editable = self.is_editable_mailbox(mbx_id)
-                mbox = OpenMailbox(mfn, self, create=editable)
-                mbox.editable = editable
+                mbox = None
+                if src:
+                    msrc = self.mail_sources.get(src._key)
+                    mbox = msrc and msrc.open_mailbox(mbx_id, mfn)
+                if not mbox:
+                    mbox = OpenMailbox(mfn, self, create=editable)
+                    mbox.editable = editable
                 mbox.save(session,
                           to=pfn,
                           pickler=lambda o, f: self.save_pickle(o, f))

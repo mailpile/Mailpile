@@ -206,6 +206,13 @@ class ImapMailSource(BaseMailSource):
             else:
                 self.conn = SharedImapConn(conn)
 
+            # Prepare the data section of our event, for keeping state.
+            for d in ('uidvalidity', 'uidnext'):
+                if d not in self.event.data:
+                    event.data[d] = {}
+
+            self._log_status(_('Connected to IMAP server %s'
+                               ) % my_config.host)
             return True
 
         except TimedOut:
@@ -224,18 +231,14 @@ class ImapMailSource(BaseMailSource):
             pass
         return False
 
-        # FIXME: Set up other things, per examples below...
-
-        # Prepare the data section of our event, for keeping state.
-        for d in ('mtimes', 'sizes'):
-            if d not in self.event.data:
-                event.data[d] = {}
-
-        self._log_status(_('Watching %d IMAP mailboxes') % self.watching)
         return True
 
     def _idle_callback(self, data):
         pass
+
+    def open_mailbox(self, mbx_id, mfn):
+        print 'TRYING TO OPEN: %s / %s' % (mbx_id, mfn)
+        return False
 
     def _has_mailbox_changed(self, mbx, state):
         return True
@@ -255,17 +258,25 @@ class ImapMailSource(BaseMailSource):
         return 'src:%s/%s' % (self.my_config._key, path)
 
     def _unlocked_discover_mailboxes(self, unused_paths):
-        self.session.ui.debug('Capabilities: %s' % self.capabilities)
+        config = self.session.config
+        existing = self._existing_mailboxes()
+        discovered = []
         with self.conn as raw_conn:
             try:
                 ok, data = _parse_imap(self._timed(raw_conn.list))
                 while ok and len(data) >= 3:
-                    flags, sep, path = data[:3]
-                    data[:3] = []
-                    self.session.ui.debug('Discovered: %s %s'
-                                          % (self._fmt_path(path), flags))
+                    (flags, sep, path), data[:3] = data[:3], []
+                    path = self._fmt_path(path)
+                    if path not in existing:
+                        discovered.append((path, flags))
             except self.CONN_ERRORS:
                 pass
+
+        for path, flags in discovered:
+            idx = config.sys.mailbox.append(path)
+            mbx = self._unlocked_take_over_mailbox(idx)
+            if mbx.policy == 'unknown':
+                self.event.data['have_unknown'] = True
 
     def quit(self, *args, **kwargs):
         if self.conn:
