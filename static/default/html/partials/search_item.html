@@ -10,7 +10,7 @@
 %}{%  if not from
 %}{%    set from = {'fn': 'Unknown sender', 'email': ''}
 %}{%  endif
-%}{%  if metadata.urls.editing
+%}{%  if metadata.urls.editing and conversation_count < 2
 %}{%    set url = metadata.urls.editing
 %}{%  else
 %}{%    set url = metadata.urls.thread
@@ -25,7 +25,9 @@
     <a href="{{url}}" title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
       {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
       {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
-      {% if metadata.flags.replied %}<span class="icon-reply"></span>{% endif %}
+      {% if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}
+      {% if metadata.flags.forwarded %}<span class="icon-forward"></span>{% endif %}
+      {% endif %}
     </a>
   </td>
   <td class="subject">
