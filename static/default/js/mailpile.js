@@ -5,6 +5,7 @@ function MailPile() {
   this.instance       = {};
 	this.search_cache   = [];
 	this.messages_cache = [];
+  this.messages_composing = {};
 	this.tags_cache     = [];
 	this.contacts_cache = [];
 	this.keybindings    = [
@@ -55,7 +56,6 @@ function MailPile() {
   	tags          : "/tags/"
 	}
 	this.plugins = [];
-	this.autosave = {};
 };
 
 MailPile.prototype.go = function(url) {

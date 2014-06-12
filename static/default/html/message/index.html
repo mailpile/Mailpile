@@ -31,8 +31,10 @@
     {% if compose %}
       {% do loop_history.append("edit draft") %}
       {% set mid = compose.message_ids.0 %}
+      {% if "editing_strings" in compose.data.messages[mid] %}
       {% set editing_strings = compose.data.messages[mid].editing_strings %}
       {% include("partials/compose.html") %}
+      {% endif %}
     {% else %}
       {{_("Could Not Render Composer")}}
     {% endif %}

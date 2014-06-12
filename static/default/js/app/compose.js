@@ -227,45 +227,62 @@ MailPile.prototype.compose_analyze_recipients = function(addresses) {
 };
 
 
-MailPile.prototype.compose_autosave = function(form_data, mid) {
-  
-  var update_ephemeral = function(new_mid) {
-    
-    console.log('update_ephemeral has been called');
-    
-  };
-  
-  // Autosave AJAX
-	$.ajax({
-		url			 : mailpile.api.compose_save,
-		type		 : 'POST',
-		data     : form_data,
-		dataType : 'json',
-	  success  : function(response) {
-      if (response.status === 'success') {    
-      
-        // Was message ephemeral? Then update IDs with draft MID
-        if (mid.contains('reply-all-') || mid.contains('reply-')) {
-          console.log('autosave was ephemeral');
-          update_ephemeral('yayayaya');
-        }
-        else {
-          
-          console.log('autosave was NOT ephemeral');
-          
-        }
-      
-        // Update UI message
-        setTimeout(function() { 
-          $('#compose-message-autosaving-' + mid).fadeOut();
-        }, 2500);        
-      }
-    },
-    error: function() {
-      mailpile.notification('error', 'Could not ' + action + ' your message');      
-    }
-	});  
+MailPile.prototype.compose_autosave_update_ephemeral = function(mid, new_mid) {
+
+  // Update UI Elements
+  $('#form-compose-' + mid).data('mid', new_mid).attr('id', 'form-compose-' + new_mid).attr('data-mid', new_mid);
+  $('#compose-mid').val(new_mid);
+  $('#compose-message-autosaving-' + mid).attr('id', 'compose-message-autosaving-' + new_mid);
+  $('#compose-text-' + mid).attr('id', 'compose-text-' + new_mid);
+
+  // Update Model
+  mailpile.messages_composing = _.omit(mailpile.messages_composing, mid);
 };
+
+
+MailPile.prototype.compose_autosave = function(mid, form_data) {
+
+  // Text is different, run autosave
+  if ($('#compose-text-' + mid).val() !== mailpile.messages_composing['compose-text-' + mid]) {
+
+    // UI Feedback
+    var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
+    $('#compose-message-autosaving-' + mid).html('<span class="icon-compose"></span>' + autosave_msg).fadeIn();
+
+  	$.ajax({
+  		url			 : mailpile.api.compose_save,
+  		type		 : 'POST',
+  		data     : form_data,
+  		dataType : 'json',
+  	  success  : function(response) {
+
+        var new_mid = response.result.message_ids[0];
+
+        // Update ephermal IDs, Message Model, fadeout UI msg
+        if (mid !== new_mid) {
+          mailpile.compose_autosave_update_ephemeral(mid, new_mid);
+        }
+
+        mailpile.messages_composing['compose-text-' + new_mid] = $('#compose-text-' + new_mid).val();
+
+        setTimeout(function() {
+          $('#compose-message-autosaving-' + new_mid).fadeOut();
+        }, 2250);
+      },
+      error: function() {
+        var autosave_error_msg = $('#compose-message-autosaving-' + mid).data('autosave_error_msg');
+        $('#compose-message-autosaving-' + mid).html('<span class="icon-x"></span>' + autosave_error_msg).fadeIn();
+      }
+  	});
+  }
+};
+
+/* Compose Autosave - UNTESTED: should handle multiples in a thread  */
+MailPile.prototype.compose_autosave_timer =  $.timer(function() {
+  $('.form-compose').each(function(key, form) {
+    mailpile.compose_autosave($(form).data('mid'), $(form).serialize());
+  });
+});
 
 
 $('#compose-to, #compose-cc, #compose-bcc').select2({
@@ -526,40 +543,9 @@ $(document).on('click', '#compose-show-details', function(e) {
 /* Compose - Sent To Email */
 $(document).on('click', '.compose-to-email', function(e) {
   e.preventDefault();
-/*
   mailpile.compose({
     to: $(this).data('email')
   });
-*/
-  alert('FIXME: Create New Blank Message To Address');
-});
-
-
-/* Compose - Autosave */
-$(document).on('keyup', '.compose-text', function(e) {
-
-  var mid = $(this).parent().parent().data('mid');
-  var char_count = $(this).val().length;
-
-  // Check if current char count is past threshold to autosave
-  if (_.has(mailpile.autosave, mid)) {
-  
-    // FIXME: Is char count greater or is time longer than X
-    if (char_count > mailpile.autosave[mid] + 100) {
-
-      // Perform Autosave (pass MID)
-      $('#compose-message-autosaving-' + mid).html('<span class="icon-compose"></span> will someday autosave...').fadeIn();
-      //mailpile.compose_autosave($('#form-compose-' + mid).serialize(), mid);
-
-      // Increment Autosave Count
-      mailpile.autosave[mid] = char_count;
-    }
-  }
-  // Set character count for message box
-  else {
-    console.log('does NOT have the mid: ' + mid)
-    mailpile.autosave[mid] = char_count;
-  }
 });
 
 
@@ -580,9 +566,17 @@ $(document).ready(function() {
 
     // Autogrow textarea
     $('.compose-text').autosize();
+
+    // Save Text Composing Objects
+    $('.compose-text').each(function(key, elem) {
+        mailpile.messages_composing[$(elem).attr('id')] = $(elem).val()
+    });
+
+    // Run Autosave
+    mailpile.compose_autosave_timer.play();
+    mailpile.compose_autosave_timer.set({ time : 10000, autostart : true });
   }
 
-  
 
   // Show Crypto Tooltips
   $('.compose-crypto-signature').qtip({
