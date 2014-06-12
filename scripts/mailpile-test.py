@@ -285,6 +285,8 @@ def test_composition():
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
+    assert('BEGIN PGP SIG' in contents(mailpile_sent))
+    assert('END PGP SIG' in contents(mailpile_sent))
 
 def test_html():
     say("Testing HTML")
