@@ -12,19 +12,17 @@
   {% set metadata = result.data.metadata.get(mid) %}
   {% set message = result.data.messages.get(mid) %}
 
-  {% if message and "editing_string" in message %}
-    {# Editing this message was requested, so render the composer #}
+  {% if message and "editing_strings" in message %}{# Render the composer #}
     {% set editing_strings = message.editing_strings %}
     {% include("partials/compose.html") %}
     {% do loop_history.append("edit message") %}
 
-  {% elif message %}
-    {# Full message was requested, render it #}
-    {% set show_reply = (mid != last_mid) %}
+  {% elif message %}{# Render full message #}
     {% include("partials/thread_message.html") %}{# Show: Message #}
+    {% set show_reply = (mid != last_mid) %}
     {% do loop_history.append("display message") %}
 
-  {% elif metadata.flags.draft %}{# This message is a draft, inline the composer #}
+  {% elif metadata.flags.draft %}{# Message is a draft, show composer #}
     {# FIXME: We should probably just tell the user this is a draft, make
               loading the composer a manual action UNLESS this is the last
               message in the the thread.
@@ -38,8 +36,7 @@
     {% else %}
       {{_("Could Not Render Composer")}}
     {% endif %}
-  {% else %}
-    {# By default, just render the snippet view #}
+  {% else  %}{# Just render snippet view #}
     <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
       {% set from = metadata.from %}
       {% include("partials/thread_metadata.html") %}
