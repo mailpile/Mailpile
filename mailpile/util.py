@@ -360,7 +360,7 @@ def decrypt_and_parse_lines(fd, parser, config,
 def backup_file(filename, backups=5, min_age_delta=0):
     if os.path.exists(filename):
         if os.stat(filename).st_mtime >= time.time() - min_age_delta:
-            return
+            return False
 
         for ver in reversed(range(1, backups)):
             bf = '%s.%d' % (filename, ver)
@@ -370,6 +370,8 @@ def backup_file(filename, backups=5, min_age_delta=0):
                     os.remove(nbf)
                 os.rename(bf, nbf)
         os.rename(filename, '%s.1' % filename)
+        return True
+    return False
 
 
 class GpgWriter(object):

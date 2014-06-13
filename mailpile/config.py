@@ -1087,8 +1087,8 @@ class ConfigManager(ConfigDict):
         fd.close()
 
         # Keep the last 5 config files around... just in case.
-        backup_file(self.conffile, backups=5, min_age_delta=10)
-        os.rename(newfile, self.conffile)
+        if backup_file(self.conffile, backups=5, min_age_delta=10):
+            os.rename(newfile, self.conffile)
 
         self.get_i18n_translation()
         self.prepare_workers()
