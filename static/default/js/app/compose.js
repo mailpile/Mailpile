@@ -268,7 +268,7 @@ MailPile.prototype.compose_autosave = function(mid, form_data) {
 
         setTimeout(function() {
           $('#compose-message-autosaving-' + new_mid).fadeOut();
-        }, 2250);
+        }, 2000);
       },
       error: function() {
         var autosave_error_msg = $('#compose-message-autosaving-' + mid).data('autosave_error_msg');

@@ -1,8 +1,10 @@
 <script src="/static/js/mailpile.js"></script>
 <script>
 {% if result.data and result.data.messages %}
-{% set messages_json = result.data.messages|json %}
-{# result.data.messages|json #}
+  {% set messages_json = result.data.messages|json %}
+{% endif %}
+{% if result.data and result.data.metadata %}
+  {% set metadata_json = result.data.metadata|json %}
 {% endif %}
 {% set tags_json = mailpile("tags", "display=*", "mode=flat").result.tags|json %}
 $(document).ready(function() {
@@ -10,6 +12,7 @@ $(document).ready(function() {
    "command": "{{ command }}",
    "args": "{{ args }}",
    "messages": {% if result.data and result.data.messages %}{{ messages_json|safe }}{% else %}{}{% endif %},
+   "metadata": {% if result.data and result.data.metadata %}{{ metadata_json|safe }}{% else %}{}{% endif %},
    "tags": {{ tags_json|safe }},
    "search_tag_ids": {% if result.search_tag_ids %}{{result.search_tag_ids|safe }}{% else %}[]{% endif %}
   };
