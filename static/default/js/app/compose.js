@@ -252,6 +252,7 @@ MailPile.prototype.compose_autosave = function(mid, form_data) {
   	$.ajax({
   		url			 : mailpile.api.compose_save,
   		type		 : 'POST',
+      timeout  : 15000,
   		data     : form_data,
   		dataType : 'json',
   	  success  : function(response) {
@@ -574,7 +575,7 @@ $(document).ready(function() {
 
     // Run Autosave
     mailpile.compose_autosave_timer.play();
-    mailpile.compose_autosave_timer.set({ time : 10000, autostart : true });
+    mailpile.compose_autosave_timer.set({ time : 20000, autostart : true });
   }
 
 
