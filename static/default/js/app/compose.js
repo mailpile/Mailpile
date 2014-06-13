@@ -550,6 +550,12 @@ $(document).on('click', '.compose-to-email', function(e) {
 });
 
 
+/* Compose - Autogrow composer boxes */
+$(document).on('focus', '.compose-text', function() {
+  $(this).autosize();
+});
+
+
 $(document).ready(function() {
 
   // Is Drafts
@@ -564,9 +570,6 @@ $(document).ready(function() {
 
     // Load Crypto States
     mailpile.compose_load_crypto_states();
-
-    // Autogrow textarea
-    $('.compose-text').autosize();
 
     // Save Text Composing Objects
     $('.compose-text').each(function(key, elem) {
