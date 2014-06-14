@@ -469,8 +469,9 @@ $(document).on('click', '.compose-action', function(e) {
 
   e.preventDefault();
   var action = $(this).val();
-  var form_data = $(this).parent().parent().parent().serialize()
-  
+  var mid = $(this).parent().data('mid');
+  var form_data = $('#form-compose-' + mid).serialize();
+
   if (action === 'send') {
 	  var action_url     = mailpile.api.compose_send;
 	  var action_status  = 'success';

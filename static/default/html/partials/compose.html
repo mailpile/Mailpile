@@ -113,14 +113,16 @@
     <textarea id="compose-text-{{mid}}" class="compose-text" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
   </div>
   <div class="compose-actions clearfix">
-    <div class="compose-attachments left">
-      <!-- <a href="#"><span class="icon-attachment"></span> Attach Something</a> -->
+    <div id="attachments-container" class="compose-attachments left">
+      <a id="pickfiles" href="javascript:;"><span class="icon-attachment"></span> Attach Something</a> 
+      <a id="uploadfiles" href="javascript:;">[Upload files]</a>
+      <div id="filelist">Your browser doesn't have HTML5 support.</div>
     </div>
     <div class="compose-buttons right" data-mid="{{mid}}">
       <button class="compose-action" type="submit" name="save" value="save" alt="{{_("Save")}}">
         <span class="icon-compose"></span> {{_("Save")}}
       </button>
-      {% if command == "message" %}
+      {% if command == "view" %}
       <button class="compose-action" type="submit" name="reply" value="reply" alt="{{_("Reply")}}">
         <span class="icon-reply"></span> {{_("Reply")}}
       </button>  
