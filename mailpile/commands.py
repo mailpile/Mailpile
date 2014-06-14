@@ -1119,7 +1119,11 @@ class ProgramStatus(Command):
     def command(self, args=None):
         config = self.session.config
 
-        locks = [(config.index, '_lock', config.index._lock._is_owned())]
+        try:
+            locks = [(config.index, '_lock', config.index._lock._is_owned())]
+        except AttributeError:
+            locks = []
+
         threads = threading.enumerate()
         for thread in threads:
             try:
