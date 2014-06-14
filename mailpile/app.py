@@ -144,16 +144,16 @@ def Main(args):
         pass
 
     finally:
-        if config.sys.debug:
+        if session.interactive and config.sys.debug:
             session.ui.display_result(Action(session, 'ps', ''))
+            if readline:
+                readline.write_history_file(session.config.history_file())
 
         mailpile.util.QUITTING = True
         config.plugins.process_shutdown_hooks()
         config.stop_workers()
         if config.index:
             config.index.save_changes()
-        if readline:
-            readline.write_history_file(session.config.history_file())
 
 if __name__ == "__main__":
     Main(sys.argv[1:])
