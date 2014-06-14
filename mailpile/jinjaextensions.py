@@ -487,11 +487,16 @@ class MailpileCommand(Extension):
         return self.env.session.ui.render_json(d)
 
     def _nice_text(self, text):
-        # trim starting & ending empty lines
-        output = text.strip()
-        # render markdown
-        # output = markdown(output)
-        return output
+        trimmed = ''
+        previous = 'not'
+        for line in text.splitlines():
+            if line or previous == 'not':
+                trimmed += line + '\n'
+                if line:
+                    previous = 'not'
+                else:
+                    previous = 'blank'
+        return trimmed.strip()
 
     @classmethod
     def _nice_subject(self, subject):
