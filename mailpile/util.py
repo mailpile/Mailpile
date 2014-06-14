@@ -544,7 +544,8 @@ def HideBinary(text):
         return '[BINARY DATA, %d BYTES]' % len(text)
 
 
-class TimedOut(Exception):
+class TimedOut(IOError):
+    """We treat timeouts as a particular type of IO error."""
     pass
 
 
