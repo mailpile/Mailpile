@@ -116,7 +116,8 @@ class MailpileCommand(Extension):
         old_ui, config = self.env.session.ui, self.env.session.config
         try:
             ui = self.env.session.ui = HttpUserInteraction(None, config,
-                                                           log_parent=old_ui)
+                                                           log_parent=old_ui,
+                                                           log_prefix='jinja/')
             ui.html_variables = copy.deepcopy(old_ui.html_variables)
             ui.render_mode = how
             ui.display_result(Action(self.env.session, command, args,

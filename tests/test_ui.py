@@ -13,9 +13,9 @@ class TestUI(MailPileUnittest):
     def test_ui_debug_log_debug_not_set(self):
         old_ui = self._ui_swap()
         try:
+            self.mp._ui.log_prefix = 'testprefix'
             with capture() as out:
-                self.mp._ui._debug_log("text", UserInteraction.LOG_ALL,
-                                       prefix='testprefix')
+                self.mp._ui._debug_log("text", UserInteraction.LOG_ALL)
             self.assertNotIn("testprefixlog(99): text", ''.join(out))
         finally:
             self.mp._ui = old_ui
@@ -23,10 +23,10 @@ class TestUI(MailPileUnittest):
     def test_ui_debug_log_debug_set(self):
         old_ui = self._ui_swap()
         try:
+            self.mp._ui.log_prefix = 'testprefix'
             with capture() as out:
                 self.mp.set("sys.debug=log")
-                self.mp._ui._debug_log("text", UserInteraction.LOG_ALL,
-                                       prefix='testprefix')
+                self.mp._ui._debug_log("text", UserInteraction.LOG_ALL)
             self.assertIn("testprefixlog(99): text", ''.join(out))
         finally:
             self.mp._ui = old_ui

@@ -162,15 +162,17 @@ class UserInteraction:
     LOG_DEBUG = 50
     LOG_ALL = 99
 
-    def __init__(self, config, log_parent=None):
+    LOG_PREFIX = ''
+
+    def __init__(self, config, log_parent=None, log_prefix=None):
         self.log_parent = log_parent
         self.log_buffer = []
         self.log_buffering = False
         self.log_level = self.LOG_ALL
+        self.log_prefix = log_prefix or self.LOG_PREFIX
         self.interactive = False
         self.time_tracking = [('Main', [])]
         self.time_elapsed = 0.0
-        self.last_display = [self.LOG_PROGRESS, 0]
         self.render_mode = 'text'
         self.term = NoColors()
         self.config = config
@@ -183,15 +185,8 @@ class UserInteraction:
         }
 
     # Logging
-    def _debug_log(self, text, level, prefix=''):
-        if text and 'log' in self.config.sys.debug:
-            if self.log_parent:
-                self.log_parent._debug_log(text, level, prefix)
-            else:
-                message = '%slog(%s): %s' % (prefix, level, text)
-                self.log(level, message)
 
-    def _display_log(self, text, level=LOG_URGENT):
+    def _fmt_log(self, text, level=LOG_URGENT):
         c, w, clip = self.term.NONE, self.term.NORMAL, 2048
         if level == self.LOG_URGENT:
             c, w = self.term.RED, self.term.BOLD
@@ -206,13 +201,30 @@ class UserInteraction:
         elif level == self.LOG_PROGRESS:
             c, clip = self.term.BLUE, 78
 
-        self.term.write(self.term.replace_line(self.term.color(
+        formatted = self.term.replace_line(self.term.color(
             unicode(text[:clip]).encode('utf-8'), color=c, weight=w),
-            chars=len(text[:clip])))
-
+            chars=len(text[:clip]))
         if level != self.LOG_PROGRESS:
-            self.term.write('\n')
-        self.last_display = [level, len(unicode(text))]
+            formatted += '\n'
+
+        return formatted
+
+    def _display_log(self, text, level=LOG_URGENT):
+        if not text.startswith(self.log_prefix):
+            text = '%slog(%s): %s' % (self.log_prefix, level, text)
+        if self.log_parent:
+            self.log_parent.log(level, text)
+        else:
+            self.term.write(self._fmt_log(text, level=level))
+
+    def _debug_log(self, text, level):
+        if text and 'log' in self.config.sys.debug:
+            if not text.startswith(self.log_prefix):
+                text = '%slog(%s): %s' % (self.log_prefix, level, text)
+            if self.log_parent:
+                return self.log_parent.log(level, text)
+            else:
+                self.term.write(self._fmt_log(text, level=level))
 
     def clear_log(self):
         self.log_buffer = []
@@ -232,7 +244,6 @@ class UserInteraction:
 
     def unblock(self):
         self.log_buffering = False
-        self.last_display = [self.LOG_RESULT, 0]
         self.flush_log()
 
     def log(self, level, message):
@@ -464,6 +475,8 @@ class UserInteraction:
 
 
 class HttpUserInteraction(UserInteraction):
+    LOG_PREFIX = 'http/'
+
     def __init__(self, request, *args, **kwargs):
         UserInteraction.__init__(self, *args, **kwargs)
         self.request = request
@@ -472,7 +485,7 @@ class HttpUserInteraction(UserInteraction):
 
     # Just buffer up rendered data
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level, prefix='http/')
+        self._debug_log(text, level)
         self.logged.append((level, text))
 
     def _display_result(self, result):
@@ -527,16 +540,20 @@ class HttpUserInteraction(UserInteraction):
 
 
 class BackgroundInteraction(UserInteraction):
+    LOG_PREFIX = 'bg/'
+
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level, prefix='bg/')
+        self._debug_log(text, level)
 
     def edit_messages(self, session, emails):
         return False
 
 
 class SilentInteraction(UserInteraction):
+    LOG_PREFIX = 'silent/'
+
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level, prefix='silent/')
+        self._debug_log(text, level)
 
     def _display_result(self, result):
         return result
