@@ -151,7 +151,7 @@ class UrlMap:
             for var in vlist:
                 varBB = var + '[]'
                 if src and (var in src or varBB in src):
-                    sdata = (var in src) and src[var] or src.get(varBB, '')
+                    sdata = src[var] if (var in src) else src[varBB]
                     if isinstance(sdata, cgi.FieldStorage):
                         data[var] = [_FancyString(sdata.value.decode('utf-8'))]
                         if hasattr(sdata, 'filename'):
