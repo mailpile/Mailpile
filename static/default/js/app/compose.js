@@ -230,12 +230,17 @@ MailPile.prototype.compose_analyze_recipients = function(addresses) {
 MailPile.prototype.compose_autosave_update_ephemeral = function(mid, new_mid) {
 
   // Update UI Elements
-  $('#form-compose-' + mid).data('mid', new_mid).attr('id', 'form-compose-' + new_mid).attr('data-mid', new_mid);
-  $('#compose-mid').val(new_mid);
-  $('#compose-message-autosaving-' + mid).attr('id', 'compose-message-autosaving-' + new_mid);
-  $('#compose-text-' + mid).attr('id', 'compose-text-' + new_mid);
+  $.each($('.has-mid'), function(key, elem) {
+    $(this).data('mid', new_mid).attr('data-mid', new_mid);
+    if ($(this).attr('id') !== undefined) {
+      var new_id = $(this).attr('id').replace(mid, new_mid, "gi");
+      $(this).attr('id', new_id);
+    }
+  });
 
-  // Update Model
+  $('#compose-mid-' + new_mid).val(new_mid);
+
+  // Remove Ephermal From Model - is added with new MID in mailpile.compose_autosave()
   mailpile.messages_composing = _.omit(mailpile.messages_composing, mid);
 };
 
@@ -278,12 +283,23 @@ MailPile.prototype.compose_autosave = function(mid, form_data) {
   }
 };
 
-/* Compose Autosave - UNTESTED: should handle multiples in a thread  */
+
+/* Compose Autosave - finds each compose form and performs action */
 MailPile.prototype.compose_autosave_timer =  $.timer(function() {
+  // UNTESTED: should handle multiples in a thread
   $('.form-compose').each(function(key, form) {
     mailpile.compose_autosave($(form).data('mid'), $(form).serialize());
   });
 });
+
+
+/* Compose Render Message to Thread - */
+MailPile.prototype.compose_render_message_thread = function(mid) {
+  window.location.href = mailpile.urls.message_sent + mid + "/";
+  // FIXME: make this ajaxy and nice transitions and such
+  // $('#form-compose-' + mid).slideUp().remove();
+};
+
 
 
 $('#compose-to, #compose-cc, #compose-bcc').select2({
@@ -495,13 +511,12 @@ $(document).on('click', '.compose-action', function(e) {
 		dataType : 'json',
 	  success  : function(response) {
 	    // Is A New Message (or Forward)
-      if (action === 'send' && response.status === 'success') {    
+      if (action === 'send' && response.status === 'success') {
         window.location.href = mailpile.urls.message_sent + response.result.thread_ids[0] + "/";
       }
       // Is Thread Reply
-      else if (action === 'reply') {
-          mailpile.notification(response.status, response.message);
-//        mailpile.render_thread_message(response.result);
+      else if (action === 'reply' && response.status === 'success') {
+        mailpile.compose_render_message_thread(response.result.thread_ids[0]);
       }
       else {
         mailpile.notification(response.status, response.message);
