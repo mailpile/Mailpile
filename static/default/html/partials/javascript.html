@@ -1,3 +1,6 @@
+{% if state.command_url in ("/message/draft/", "/message/") %}
+<script src="/static/js/libraries/plupload.full.min.js"></script>
+{% endif %}
 <script src="/static/js/mailpile.js"></script>
 <script>
 {% if result.data and result.data.messages %}
