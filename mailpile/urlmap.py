@@ -153,9 +153,11 @@ class UrlMap:
                 if src and (var in src or varBB in src):
                     sdata = src[var] if (var in src) else src[varBB]
                     if isinstance(sdata, cgi.FieldStorage):
-                        data[var] = [_FancyString(sdata.value.decode('utf-8'))]
                         if hasattr(sdata, 'filename'):
+                            data[var] = [_FancyString(sdata.value)]
                             data[var][0].filename = sdata.filename
+                        else:
+                            data[var] = [sdata.value.decode('utf-8')]
                     else:
                         data[var] = [d.decode('utf-8') for d in sdata]
 
