@@ -180,8 +180,8 @@ class Command:
     def state_as_query_args(self):
         args = {}
         if self.args:
-            args['arg'] = self.args
-        args.update(self.data)
+            args['arg'] = self._sloppy_copy(self.args)
+        args.update(self._sloppy_copy(self.data))
         return args
 
     def template_path(self, etype, template_id=None, template=None):
@@ -336,12 +336,26 @@ class Command:
                           'status': self.status or '',
                           'message': self.message or ''}
 
+    def _sloppy_copy(self, data):
+        def copy_value(v):
+            try:
+                unicode(v).encode('utf-8')
+                return unicode(v)[:1024]
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                return '(BINARY DATA)'
+        if isinstance(data, (list, tuple)):
+            return [self._sloppy_copy(i) for i in data]
+        elif isinstance(data, dict):
+            return dict((k, self._sloppy_copy(v)) for k, v in data.iteritems())
+        else:
+            return copy_value(data)
+
     def _create_event(self):
         private_data = {}
         if self.data:
-            private_data['data'] = copy.copy(self.data)
+            private_data['data'] = self._sloppy_copy(self.data)
         if self.args:
-            private_data['args'] = copy.copy(self.args)
+            private_data['args'] = self._sloppy_copy(self.args)
 
         self.event = Event(source=self,
                            message=self._fmt_msg(self.LOG_STARTING),
