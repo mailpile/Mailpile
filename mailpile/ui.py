@@ -151,7 +151,7 @@ class Completer(object):
 
 class UserInteraction:
     """Log the progress and performance of individual operations"""
-    MAX_BUFFER_LEN = 150
+    MAX_BUFFER_LEN = 550
 
     LOG_URGENT = 0
     LOG_RESULT = 5
