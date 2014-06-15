@@ -628,6 +628,7 @@ class Attach(CompositionCommand):
             return self._error(_('No files found'))
 
         if not emails:
+            args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
             emails = [self._actualize_ephemeral(i) for i in
                       self._choose_messages(args, allow_ephemeral=True)]
         if not emails:
