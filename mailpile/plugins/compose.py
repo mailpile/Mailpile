@@ -602,6 +602,7 @@ class Attach(CompositionCommand):
     HTTP_QUERY_VARS = {}
     HTTP_POST_VARS = {
         'mid': 'metadata-ID',
+        'name': '(ignored)',
         'file-data': 'file data'
     }
 
