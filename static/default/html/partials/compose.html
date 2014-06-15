@@ -114,13 +114,12 @@
   </div>
   <div class="compose-actions clearfix">
     <div id="attachments-container" class="compose-attachments left">
-      <a id="pickfiles" href="javascript:;"><span class="icon-attachment"></span> Attach Something</a> 
-      <a id="uploadfiles" href="javascript:;">[Upload files]</a>
+      <a id="pickfiles" href="#"><span class="icon-attachment"></span> Attach Something</a> 
       <div id="filelist">Your browser doesn't have HTML5 support.</div>
     </div>
     <div class="compose-buttons right" data-mid="{{mid}}">
-      <button class="compose-action" type="submit" name="save" value="save" alt="{{_("Save")}}">
-        <span class="icon-compose"></span> {{_("Save")}}
+      <button class="compose-action button-alert" type="submit" name="save" value="save" alt="{{_("Save")}}">
+        <span class="icon-compose"></span>{{_("Save")}}
       </button>
       {% if command == "view" %}
       <button class="compose-action" type="submit" name="reply" value="reply" alt="{{_("Reply")}}">

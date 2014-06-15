@@ -557,6 +557,60 @@ $(document).on('focus', '.compose-text', function() {
 });
 
 
+
+// Attachments Uploader
+var uploader = function(params) {
+  var uploader = new plupload.Uploader({
+	runtimes : 'html5',
+	browse_button : params.browse_button, // you can pass in id...
+	container: document.getElementById('attachments-container'), // ... or DOM Element itself
+  drop_element: document.getElementById('attachments-container'),
+	url : '/api/0/message/attach/',
+  multipart : true,
+  multipart_params : {'mid': params.mid},
+  file_data_name : 'file-data',
+	filters : {
+		max_file_size : '20mb',
+		mime_types: [
+			{title : "Audio files", extensions : "mp3,aac,flac,wav,ogg,aiff,midi"},
+			{title : "Document files", extensions : "pdf,doc,docx,xls"},
+			{title : "Image files", extensions : "jpg,gif,png,svg"},
+			{title : "Image files", extensions : "mp2,mp4,mov,avi,mkv"},
+			{title : "Zip files", extensions : "zip,rar"},
+			{title : "Crypto files", extensions : "asc,pub,key"}
+		]
+	},
+  resize: {
+    width: '3600',
+    height: '3600',
+    crop: true,
+    quaility: 100
+  },
+	init: {
+    PostInit: function() {
+      $('#filelist').html('');
+      uploader.refresh();
+    },
+    FilesAdded: function(up, files) {
+    	plupload.each(files, function(file) {
+    		$('#filelist').append('<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>');
+    	});
+      uploader.start();
+    },
+    UploadProgress: function(up, file) {
+    	document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+    },
+    Error: function(up, err) {
+      console.log("Error #" + err.code + ": " + err.message);
+      $('#' + err.file.id).find('b').html('Failed');
+      uploader.refresh();
+    }
+  }
+  });
+
+  return uploader.init();
+};
+
 $(document).ready(function() {
 
   // Is Drafts
@@ -570,6 +624,7 @@ $(document).ready(function() {
   if (location.href.split("draft/=")[1] || location.href.split("thread/=")[1]) {
 
     // Load Crypto States
+    // FIXME: needs dynamic support for multi composers on a page
     mailpile.compose_load_crypto_states();
 
     // Save Text Composing Objects
@@ -580,6 +635,13 @@ $(document).ready(function() {
     // Run Autosave
     mailpile.compose_autosave_timer.play();
     mailpile.compose_autosave_timer.set({ time : 20000, autostart : true });
+
+    // Initialize Attachments
+    // FIXME: needs dynamic support for multi composers on a page
+    uploader({
+      browse_button: 'pickfiles',
+      mid: $('#compose-mid').val()
+    });
   }
 
 
