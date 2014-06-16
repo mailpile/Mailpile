@@ -83,7 +83,7 @@ class SharedImapConn(threading.Thread):
         self._selected = None
 
         for meth in ('append', 'add', 'capability', 'fetch', 'noop',
-                     'list', 'login', 'search'):
+                     'list', 'login', 'search', 'uid'):
             self.__setattr__(meth, self._mk_proxy(meth))
 
         self.start()
@@ -210,25 +210,44 @@ class SharedImapMailbox(Mailbox):
                                        mailbox=self.path)
             assert(ok)
 
-    def _get(self, key):
+    def get(self, key):
         with self.open_imap() as imap:
             # Note: uses the raw method, not the convenient parsed version.
-            # FIXME: This is downloading mail! Handle timeoutes better!
-            typ, data = self.source.timed(imap.fetch, key, '(RFC822)',
-                                          mailbox=self.path)
-            if typ != 'OK' or not data[0]:
+            ok, data = self.timed_imap(imap.uid, 'FETCH', key,
+                                       '(RFC822.SIZE FLAGS ENVELOPE)',
+                                       mailbox=self.path)
+            if not ok:
                 raise KeyError
-            return data[0][1]
+            info = dict(zip(*[iter(data[1])]*2))
+            msg_bytes = int(info['RFC822.SIZE'])
+            msg_data = []
+
+            # FIXME: This will hard fail to download mail, if our internet
+            #        connection averages 8 kbps or worse. Better would be to
+            #        adapt the chunk size here to actual network performance.
+            #
+            chunk_size = self.source.timeout * 1024
+            for chunk in range(0, 1 + msg_bytes // chunk_size):
+                req = '(BODY[]<%d.%d>)' % (chunk * chunk_size, chunk_size)
+                typ, data = self.source.timed(imap.uid, 'FETCH', key, req,
+                                              mailbox=self.path)
+                if typ != 'OK':
+                    raise IMAP_IOError(_('Fetching chunk %d failed') % chunk)
+                msg_data.append(data[0][1])
+
+            return info, ''.join(msg_data)
 
     def get_message(self, key):
-        return Message(self._get(key))
+        info, payload = self.get(key)
+        return Message(payload)
 
     def get_bytes(self, key):
-        return StringIO.StringIO(self._get(key))
+        info, payload = self.get(key)
+        return StringIO.StringIO(payload)
 
     def iterkeys(self):
         with self.open_imap() as imap:
-            ok, data = self.timed_imap(imap.search, None, 'ALL',
+            ok, data = self.timed_imap(imap.uid, 'SEARCH', None, 'ALL',
                                        mailbox=self.path)
             assert(ok)
             return data
@@ -505,8 +524,9 @@ if __name__ == "__main__":
         imap = ImapMailSource(session, config.sources.imap)
         with imap.open() as conn:
             print '%s' % (conn.list(), )
-        mbx = SharedImapMailbox(config, imap, mailbox_path='[Gmail]/All Mail')
+        mbx = SharedImapMailbox(config, imap, mailbox_path='INBOX')
         print '%s' % list(mbx.iterkeys())
         for key in args:
-            print '%s' % mbx.get_bytes(key).read()
+            info, payload = mbx.get(key)
+            print '%s\n%s' % (info, payload)
 
