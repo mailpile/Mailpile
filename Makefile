@@ -13,13 +13,19 @@ arch-dev:
 	                 extra/ruby
 	TMPDIR=`mktemp -d /tmp/aur.XXXXXXXXXX`; \
 	cd $$TMPDIR; \
-	curl -s https://aur.archlinux.org/packages/yu/yuicompressor/yuicompressor.tar.gz | tar xzv; \
-	cd yuicompressor; \
-	makepkg -si; \
-	cd $$TMPDIR; \
-	curl -s https://aur.archlinux.org/packages/sp/spambayes/spambayes.tar.gz | tar xzv; \
-	cd spambayes; \
-	makepkg -si; \
+	pacman -Qs '^yuicompressor$$' > /dev/null; \
+	if [ $$? -ne 0 ]; then \
+	  curl -s https://aur.archlinux.org/packages/yu/yuicompressor/yuicompressor.tar.gz | tar xzv; \
+	  cd yuicompressor; \
+	  makepkg -si; \
+	  cd $$TMPDIR; \
+	fi; \
+	  pacman -Qs '^spambayes$$' > /dev/null; \
+	  if [ $$? -ne 0 ]; then \
+	  curl -s https://aur.archlinux.org/packages/sp/spambayes/spambayes.tar.gz | tar xzv; \
+	  cd spambayes; \
+	  makepkg -si; \
+	fi; \
 	cd /tmp; \
 	rm -rf $$TMPDIR
 	sudo pip2 install 'selenium>=2.40.0'
