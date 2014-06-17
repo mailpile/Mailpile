@@ -1,5 +1,5 @@
-<form id="form-compose-{{mid}}" class="form-compose clearfix" data-mid="{{mid}}">
-  <input id="compose-mid" type="hidden" name="mid" value="{{mid}}">
+<form id="form-compose-{{mid}}" class="form-compose clearfix has-mid" data-mid="{{mid}}">
+  <input id="compose-mid-{{mid}}" class="has-mid" type="hidden" name="mid" value="{{mid}}">
   <input id="compose-crypto" type="hidden" name="encryption" value="{{editing_strings.encryption}}">
   <input id="compose-signature" type="hidden" value="">
   <input id="compose-encryption" type="hidden" value="">
@@ -32,10 +32,24 @@
       <option value="{{p.name}} &lt;{{p.email}}&gt;">{{p.name}} &lt;{{p.email}}&gt;</option>
       {% endfor %}
     </select>
-    <ul class="compose-options horizontal right" data-mid="{{mid}}">
-      {% if command == "view" %}
-      <li><label class="compose-apply-quote"><input class="compose-apply-quote" type="checkbox" checked="checked"> Quote</label></li>
-      {% endif %}
+    <ul class="compose-options horizontal right has-mid" data-mid="{{mid}}">
+      <!-- FIXME: Add ability to delay sending of an email
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-arrow-right"></span> Send <span id="reply-datetime-display">Immediately</span></a>
+        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="immediately" href="#">Immediately</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="1" href="#">1 hr</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2" href="#">3 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="6" href="#">6 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="12" href="#">12 hrs</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="24" href="#">1 day</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="48" href="#">2 days</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="168" href="#">1 week</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="336" href="#">2 weeks</a></li>
+          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="672" href="#">1 month</a></li>
+        </ul>
+      </li>
+      -->
       <li class="compose-crypto-signature none animated"
           data-crypto_signed="{{_("Signed")}}"
           data-crypto_not_signed="{{_("Not Signed")}}"
@@ -54,22 +68,6 @@
           data-crypto_title_cannot_encrypt="{{_("This message cannot be encrypted because you do not have keys for one or more recipients")}}"
           data-crypto_title_encrypt_error="{{_("There was an error prepping this message for encryption")}}">
         <span class="icon icon-lock-open"></span> <span class="text">{{_("Not Encrypted")}}</span></li>
-<!-- FIXME: Add ability to delay sending of an email
-      <li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-arrow-right"></span> Send <span id="reply-datetime-display">Immediately</span></a>
-        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="immediately" href="#">Immediately</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="1" href="#">1 hr</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2" href="#">3 hrs</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="6" href="#">6 hrs</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="12" href="#">12 hrs</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="24" href="#">1 day</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="48" href="#">2 days</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="168" href="#">1 week</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="336" href="#">2 weeks</a></li>
-          <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="672" href="#">1 month</a></li>
-        </ul>
-      </li> -->
       {% if command == "view" %}
       <li><a id="compose-show-details" class="{% if compose == "yes" %}navigation-on{% endif %}" href="#"><span class="icon-compose"></span> Details</a></li>
       {% endif %}
@@ -108,16 +106,35 @@
   <div class="compose-message">
     <div class="clearfix">
       <label class="left">{{_("Message")}}</label>
-      <label class="right" id="compose-message-autosaving-{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
+      {% if command == "view" %}
+      <label class="compose-apply-quote right"><input class="compose-apply-quote" type="checkbox" checked="checked"> Quote</label>
+      {% endif %}
+      <label class="right has-mid" id="compose-message-autosaving-{{mid}}" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
     </div>
-    <textarea id="compose-text-{{mid}}" class="compose-text" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
+    <div id="compose-body-{{mid}}" data-mid="{{mid}}" class="compose-body has-mid clearfix">
+      <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text has-mid" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
+      <div id="compose-attachments-{{mid}}" class="compose-attachments has-mid" data-mid="{{mid}}">
+        <ul id="compose-attachments-files-{{mid}}" class="horizontal">
+          {% if editing_strings.attachments %}
+          {% for count, filename in editing_strings.attachments.iteritems() %}
+          <li class="compose-attachment">
+            <a href="/message/attachment/={{ mid }}/part:{{ count }}" class="compose-attachment-remove"><span class="icon-circle-x"></span></a>
+            <img src="/message/download/preview/={{ mid }}/part:{{ count }}/">
+            <div class="compose-attachment-filename">{{filename}}</div>
+          </li>
+          {% endfor %}
+          {% endif %}
+        </ul>
+        <div class="clearfix"></div>
+        <a id="compose-attachment-pick-{{mid}}" class="compose-attachment-pick hide" href="#"><span class="icon-attachment"></span>Add Attachment</a>
+        <span class="attachment-browswer-unsupported">Unable to add attachments, <a href="">update your browser?</a></span>
+      </div>
+   </div>
   </div>
   <div class="compose-actions clearfix">
-    <div id="attachments-container" class="compose-attachments left">
-      <a id="pickfiles" href="#"><span class="icon-attachment"></span> Attach Something</a> 
-      <div id="filelist">Your browser doesn't have HTML5 support.</div>
+    <div class="left">
     </div>
-    <div class="compose-buttons right" data-mid="{{mid}}">
+    <div class="compose-buttons right has-mid" data-mid="{{mid}}">
       <button class="compose-action button-alert" type="submit" name="save" value="save" alt="{{_("Save")}}">
         <span class="icon-compose"></span>{{_("Save")}}
       </button>

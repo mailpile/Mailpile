@@ -574,15 +574,55 @@ $(document).on('focus', '.compose-text', function() {
 
 
 // Attachments Uploader
-var uploader = function(params) {
+var uploader = function(settings) {
+
+  var dom = {
+    uploader: $('#compose-attachments-' + settings.mid),
+    uploads: $('#compose-attachments-files-' + settings.mid)
+  };
+
+  var upload_image_preview = function(file) {
+
+    var item = $("<li></li>").prependTo(dom.uploads);
+    var image = $(new Image()).appendTo(item);
+
+    // Create an instance of the mOxie Image object. This
+    // utility object provides several means of reading in
+    // and loading image data from various sources.
+    // Wiki: https://github.com/moxiecode/moxie/wiki/Image
+    var preloader = new mOxie.Image();
+    
+    // Define the onload BEFORE you execute the load()
+    // command as load() does not execute async.
+    preloader.onload = function() {
+    
+        // This will scale the image (in memory) before it
+        // tries to render it. This just reduces the amount
+        // of Base64 data that needs to be rendered.
+        preloader.downsize(100, 100);
+
+        // Now that the image is preloaded, grab the Base64
+        // encoded data URL. This will show the image
+        // without making an Network request using the
+        // client-side file binary.
+        image.prop("src", preloader.getAsDataURL());
+    };
+    
+    // Calling the .getSource() on the file will return an
+    // instance of mOxie.File, which is a unified file
+    // wrapper that can be used across the various runtime
+    // Wiki: https://github.com/moxiecode/plupload/wiki/File
+    preloader.load(file.getSource());
+  };
+
   var uploader = new plupload.Uploader({
 	runtimes : 'html5',
-	browse_button : params.browse_button, // you can pass in id...
-	container: document.getElementById('attachments-container'), // ... or DOM Element itself
-  drop_element: document.getElementById('attachments-container'),
+	browse_button : settings.browse_button, // you can pass in id...
+	container: settings.container, // ... or DOM Element itself
+  drop_element: settings.container,
 	url : '/api/0/message/attach/',
   multipart : true,
-  multipart_params : {'mid': params.mid},
+  multipart_params : {'mid': settings.mid},
   file_data_name : 'file-data',
 	filters : {
 		max_file_size : '20mb',
@@ -601,19 +641,31 @@ var uploader = function(params) {
     crop: true,
     quaility: 100
   },
+  views: {
+    list: true,
+    thumbs: true,
+    active: 'thumbs'
+  },
 	init: {
     PostInit: function() {
-      $('#filelist').html('');
+      $('#compose-attachments-' + settings.mid).find('.compose-attachment-pick').removeClass('hide');
+      $('#compose-attachments-' + settings.mid).find('.attachment-browswer-unsupported').addClass('hide');
       uploader.refresh();
     },
     FilesAdded: function(up, files) {
     	plupload.each(files, function(file) {
-    		$('#filelist').append('<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>');
+
+        // Show Preview while uploading
+        upload_image_preview(file);
+
+        // Add to attachments
+        var attachment_html = '<li id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></li>';
+    		$('#compose-attachments-files').append(attachment_html);
     	});
       uploader.start();
     },
     UploadProgress: function(up, file) {
-    	document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+    	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
     },
     Error: function(up, err) {
       console.log("Error #" + err.code + ": " + err.message);
@@ -653,9 +705,14 @@ $(document).ready(function() {
 
     // Initialize Attachments
     // FIXME: needs dynamic support for multi composers on a page
-    uploader({
-      browse_button: 'pickfiles',
-      mid: $('#compose-mid').val()
+    $('.compose-attachments').each(function(key, elem) {
+      var mid = $(elem).data('mid');
+      console.log('js uploader: ' + mid);
+      uploader({
+        browse_button: 'compose-attachment-pick-' + mid,
+        container: 'form-compose-' + mid,
+        mid: mid
+      });
     });
   }
 
@@ -733,7 +790,7 @@ $(document).ready(function() {
     },
     events: {
       show: function(event, api) {
-
+        // FIXME: Replace colors with dynamic JSAPI values
         $('.select2-choices').css('border-color', '#fbb03b');
         $('.compose-from').css('border-color', '#fbb03b');
         $('.compose-subject input[type=text]').css('border-color', '#fbb03b');
@@ -744,7 +801,7 @@ $(document).ready(function() {
           var encrypt_color = '#fbb03b';
         }
 
-        $('.compose-message textarea').css('border-color', encrypt_color);
+        $('.compose-body').css('border-color', encrypt_color);
         $('.compose-attachments').css('border-color', encrypt_color);
       },
       hide: function(event, api) {
@@ -753,8 +810,8 @@ $(document).ready(function() {
         $('.compose-from').css('border-color', '#CCCCCC');
         $('.compose-subject input[type=text]').css('border-color', '#CCCCCC');
 
-        $('.compose-message textarea').css('border-color', '#CCCCCC');
-        $('.compose-attachments').css('border-color', '#F2F2F2');
+        $('.compose-body').css('border-color', '#CCCCCC');
+        $('.compose-attachments').css('border-color', '#CCCCCC');
       }
     }
   });
