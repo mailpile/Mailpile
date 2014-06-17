@@ -74,6 +74,7 @@ def get_shared_mailpile():
     # force usage of test keyring whenever the test mailpile instance is used
     os.chmod(os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring'),
              stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR)
+    global GNUPG_HOMEDIR
     GNUPG_HOMEDIR = os.path.join(get_mailpile_root(), 'testing', 'gpg-keyring')
 
     workdir = get_mailpile_root()

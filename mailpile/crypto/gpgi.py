@@ -323,7 +323,7 @@ class GnuPG:
         self.passphrase = None
         self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
-        self.homedir = None
+        self.homedir = GNUPG_HOMEDIR
 
     def set_home(self, path):
         self.homedir = path
