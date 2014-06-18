@@ -67,6 +67,9 @@ class BaseMailSource(threading.Thread):
                 self._lock.acquire()
                 ostate, self._state = self._state, func.__name__
                 return func(*args, **kwargs)
+            except:
+                traceback.print_exc()
+                raise
             finally:
                 self._state = ostate
                 self._lock.release()
@@ -121,6 +124,7 @@ class BaseMailSource(threading.Thread):
         self._last_rescan_count = rescanned = errors = 0
         self._interrupt = None
         batch = self.RESCAN_BATCH_SIZE
+        errors = rescanned = 0
         if self.session.config.sys.debug:
             batch //= 10
         for mbx in unsorted(self.my_config.mailbox.values()):
@@ -136,6 +140,7 @@ class BaseMailSource(threading.Thread):
                 # anyway just in case looks are deceiving.
                 if batch > 0 and (self._has_mailbox_changed(mbx, state) or
                                   random.randint(0, 20) == 10):
+
                     count = self._unlocked_rescan_mailbox(mbx._key,
                                                           stop_after=batch)
                     if count >= 0:
@@ -292,7 +297,13 @@ class BaseMailSource(threading.Thread):
         return ProcessNew(self.session, msg, msg_ts, keywords, snippet)
 
     def _unlocked_rescan_mailbox(self, mbx_key, stop_after=None):
+        mbx_key = FormatMbxId(mbx_key)
+        if self._rescanning:
+            # We unlock below, so there is a chance someone will try to
+            # rescan again while we're in a mailbox. If they do, fail.
+            return -1
         try:
+            self._rescanning = True
             ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
                                                                    stop_after)
 
@@ -304,18 +315,27 @@ class BaseMailSource(threading.Thread):
             if mbx.local:
                 # FIXME: Should copy any new messages to our local stash
                 pass
-            self._rescanning = True
             self._log_status(_('Rescanning: %s') % path)
             apply_tags = mbx.apply_tags[:]
             if mbx.primary_tag:
                 apply_tags.append(mbx.primary_tag)
-            return self.session.config.index.scan_mailbox(
-                self.session, mbx_key, mbx.local or path,
-                self.session.config.open_mailbox,
-                process_new=(mbx.process_new and self._process_new or False),
-                apply_tags=(apply_tags or []),
-                stop_after=stop_after)
+            locked = self._lock.locked()
+            try:
+                if locked:
+                    # We need to unlock here, because the mailbox scanner
+                    # may need to interact with us.
+                    self._lock.release()
+                return self.session.config.index.scan_mailbox(
+                    self.session, mbx_key, mbx.local or path,
+                    self.session.config.open_mailbox,
+                    process_new=(mbx.process_new and self._process_new or False),
+                    apply_tags=(apply_tags or []),
+                    stop_after=stop_after)
+            finally:
+                if locked:
+                    self._lock.acquire()
         except ValueError:
+            self.session.ui.debug(traceback.format_exc())
             return -1
         finally:
             self._state = ostate
