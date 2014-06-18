@@ -45,10 +45,14 @@
   </div>
   {% set encryption_context = message.crypto.encryption.context %}
   {% set signature_context = message.crypto.signature.context %}
-  {# If no text part, show html part #}
+  {# If no text_part, show html_part #}
   {% if not message.text_parts %}
     {% for part in message.html_parts %}
+    {% if part.data %}
     <iframe class="thread-item-html" onload="mailpile.thread_html_iframe(this)" sandbox="allow-same-origin allow-popups allow-top-navigation" seamless target="_blank" srcdoc="{{part.data }}"></iframe>
+    {% else %}
+    <div class="thread-item-text"><em>{{_("Message content is empty")}}</em></div>
+    {% endif %}
     {% endfor %}
   {% endif %}
   {% set special_text_parts = [] %}
@@ -121,7 +125,7 @@
         {% do special_text_parts.append("signature") %}
         <div class="thread-item-signature hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
       {% else %}
-        {{_("Unknown Text Part")}}
+        <div class="thread-item-text"><em>{{_("Unknown Text Part")}}</em></div>
       {% endif %}
       {% endautoescape %}
     {% endif %}
