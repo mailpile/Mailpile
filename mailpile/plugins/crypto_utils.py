@@ -6,7 +6,7 @@ from gettext import gettext as _
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.plugins.search import Search
-from mailpile.mailutils import Email, MBX_ID_LEN
+from mailpile.mailutils import Email
 
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.nicknym import Nicknym

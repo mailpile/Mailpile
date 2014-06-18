@@ -1105,7 +1105,7 @@ class ConfigManager(ConfigDict):
     def get_mailboxes(self, standalone=True, mail_sources=False):
         mailboxes = [(FormatMbxId(k),
                       self.sys.mailbox[k],
-                      self._find_mail_source(fmt_mbxid(k)))
+                      self._find_mail_source(FormatMbxId(k)))
                      for k in self.sys.mailbox.keys()]
 
         if not standalone:

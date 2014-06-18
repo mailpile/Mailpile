@@ -4,7 +4,7 @@ import time
 from gettext import gettext as _
 
 from mailpile.commands import Command, SearchResults
-from mailpile.mailutils import Email, MBX_ID_LEN
+from mailpile.mailutils import Email, FormatMbxId
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
@@ -369,7 +369,7 @@ _plugins.register_commands(Extract, Next, Order, Previous, Search, View)
 def mailbox_search(config, idx, term, hits):
     word = term.split(':', 1)[1].lower()
     try:
-        mbox_id = (('0' * MBX_ID_LEN) + b36(int(word, 36)))[-MBX_ID_LEN:]
+        mbox_id = FormatMbxId(b36(int(word, 36)))
     except ValueError:
         mbox_id = None
 
@@ -377,7 +377,7 @@ def mailbox_search(config, idx, term, hits):
                  if (mbox_id == m) or word in config.sys.mailbox[m].lower()]
     rt = []
     for mbox_id in mailboxes:
-        mbox_id = (('0' * MBX_ID_LEN) + mbox_id)[-MBX_ID_LEN:]
+        mbox_id = FormatMbxId(mbox_id)
         rt.extend(hits('%s:mailbox' % mbox_id))
     return rt
 
