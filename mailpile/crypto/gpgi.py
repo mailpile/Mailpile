@@ -600,7 +600,7 @@ class GnuPG:
 
         retvals = self.run(action, output=data)
         self.passphrase = None
-        return retvals[0], retvals[1]["stdout"][0]
+        return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True,
                      detatch=False, clearsign=True):
@@ -676,6 +676,7 @@ class GnuPG:
         else:
             return term
 
+
 def GetKeys(gnupg, config, people):
     keys = []
     missing = []
@@ -701,14 +702,14 @@ def GetKeys(gnupg, config, people):
 
     # FIXME: This doesn't really feel scalable...
     all_keys = gnupg.list_keys()
-    for key in all_keys.values():
-        for uid in key["uids"]:
-            if uid["email"] in missing:
+    for key_id, key in all_keys.iteritems():
+        for uid in key.get("uids", []):
+            if uid.get("email", None) in missing:
                 missing.remove(uid["email"])
-                keys.append(key["fingerprint"])
+                keys.append(key_id)
 
     # Next, we go make sure all those keys are really in our keychain.
-    fprints = [k["fingerprint"] for k in all_keys.values()]
+    fprints = all_keys.keys()
     for key in keys:
         if key not in keys and key not in fprints:
             missing.append(key)
@@ -717,6 +718,7 @@ def GetKeys(gnupg, config, people):
         raise KeyLookupError(_('Keys missing or ambiguous for %s'
                                ) % ', '.join(missing), missing)
     return keys
+
 
 class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
     CRYPTO_CLASS = GnuPG
@@ -727,6 +729,7 @@ class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
 
     def get_keys(self, who):
         return GetKeys(self.crypto, self.config, who)
+
 
 class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
     CRYPTO_CLASS = GnuPG
