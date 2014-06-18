@@ -37,6 +37,14 @@ from mailpile.vcard import AddressInfo
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
 
 
+def FormatMbxId(n):
+    if not isinstance(n, (str, unicode)):
+        n = b36(n)
+    if len(n) > MBX_ID_LEN:
+        raise ValueError(_('%s is too large to be a mailbox ID') % n)
+    return ('0000' + n)[-MBX_ID_LEN:]
+
+
 class NotEditableError(ValueError):
     pass
 

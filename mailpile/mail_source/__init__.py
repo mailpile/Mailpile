@@ -10,6 +10,7 @@ import mailpile.util
 from mailpile.util import *
 from mailpile.eventlog import Event
 from mailpile.mailboxes import *
+from mailpile.mailutils import FormatMbxId
 
 
 __all__ = ['mbox', 'maildir', 'imap']
@@ -221,6 +222,7 @@ class BaseMailSource(threading.Thread):
     def _unlocked_take_over_mailbox(self, mailbox_idx):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
+        mailbox_idx = FormatMbxId(mailbox_idx)
         self.my_config.mailbox[mailbox_idx] = {
             'path': '@%s' % mailbox_idx,
             'policy': disco_cfg.policy,

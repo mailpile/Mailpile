@@ -12,7 +12,7 @@ from urllib import quote, unquote
 import mailpile.util
 from mailpile.util import *
 from mailpile.plugins import PluginManager
-from mailpile.mailutils import MBX_ID_LEN, NoSuchMailboxError
+from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import Email, ParseMessage, HeaderPrint
 from mailpile.postinglist import GlobalPostingList
@@ -486,6 +486,7 @@ class MailIndex:
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
                      process_new=None, apply_tags=None, stop_after=None,
                      editable=False):
+        mailbox_idx = FormatMbxId(mailbox_idx)
         try:
             self._lock.acquire()
             mbox = mailbox_opener(session, mailbox_idx)

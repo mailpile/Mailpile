@@ -32,8 +32,8 @@ except ImportError:
 from mailpile.commands import Rescan
 from mailpile.eventlog import EventLog
 from mailpile.httpd import HttpWorker
-from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, NoSuchMailboxError
-from mailpile.mailboxes import wervd
+from mailpile.mailboxes import OpenMailbox, NoSuchMailboxError, wervd
+from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
@@ -1103,12 +1103,7 @@ class ConfigManager(ConfigDict):
         return None
 
     def get_mailboxes(self, standalone=True, mail_sources=False):
-        def fmt_mbxid(k):
-            k = b36(int(k, 36))
-            if len(k) > MBX_ID_LEN:
-                raise ValueError(_('Mailbox ID too large: %s') % k)
-            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
-        mailboxes = [(fmt_mbxid(k),
+        mailboxes = [(FormatMbxId(k),
                       self.sys.mailbox[k],
                       self._find_mail_source(fmt_mbxid(k)))
                      for k in self.sys.mailbox.keys()]
@@ -1130,7 +1125,7 @@ class ConfigManager(ConfigDict):
 
     def is_editable_message(self, msg_info):
         for ptr in msg_info[MailIndex.MSG_PTRS].split(','):
-            if not self.is_editable_mailbox(ptr[: MBX_ID_LEN]):
+            if not self.is_editable_mailbox(ptr[:MBX_ID_LEN]):
                 return False
         editable = False
         for tid in msg_info[MailIndex.MSG_TAGS].split(','):
@@ -1142,11 +1137,15 @@ class ConfigManager(ConfigDict):
         return editable
 
     def is_editable_mailbox(self, mailbox_id):
-        mailbox_id = ((mailbox_id is None and -1) or
-                      (mailbox_id == '' and -1) or
-                      int(mailbox_id, 36))
-        local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'), 36)
-        return (mailbox_id == local_mailbox_id)
+        try:
+            mailbox_id = ((mailbox_id is None and -1) or
+                          (mailbox_id == '' and -1) or
+                          int(mailbox_id, 36))
+            local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'),
+                                   36)
+            return (mailbox_id == local_mailbox_id)
+        except ValueError:
+            return False
 
     def load_pickle(self, pfn):
         with open(os.path.join(self.workdir, pfn), 'rb') as fd:
@@ -1174,13 +1173,13 @@ class ConfigManager(ConfigDict):
 
     def open_mailbox(self, session, mailbox_id, prefer_local=True):
         try:
-            mbx_id = mailbox_id.upper()
+            mbx_id = FormatMbxId(mailbox_id.upper())
             src = self._find_mail_source(mailbox_id)
             mfn = self.sys.mailbox[mbx_id]
             if prefer_local:
                 mfn = src and src.mailbox[mbx_id].local or mfn
             pfn = 'pickled-mailbox.%s' % mbx_id.lower()
-        except KeyError:
+        except (KeyError, TypeError):
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
 
         self._lock.acquire()
@@ -1248,11 +1247,10 @@ class ConfigManager(ConfigDict):
         try:
             if not local_id:
                 mailbox, mbx = self.create_local_mailstore(session, name='')
-                local_id = self.sys.mailbox.append(mailbox)
-                local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+                local_id = FormatMbxId(self.sys.mailbox.append(mailbox))
                 self.sys.local_mailbox_id = local_id
             else:
-                local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+                local_id = FormatMbxId(local_id)
         finally:
             self._lock.release()
         return local_id, self.open_mailbox(session, local_id)

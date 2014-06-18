@@ -14,6 +14,7 @@ except ImportError:
 from mailpile.eventlog import Event
 from mailpile.util import *
 from mailpile.mail_source import BaseMailSource
+from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 
 
 IMAP_TOKEN = re.compile('("[^"]*"'
