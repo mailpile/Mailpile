@@ -9,5 +9,5 @@
 5. install Jinja2 via pip
 	run "python -m pip install Jinja2" in cmd
 6. Run mp.cmd in command prompt
-	If error for import fcntly download from: <https://communities.cisco.com/servlet/JiveServlet/download/150596-65641/fcntl.py.zip>
+	If error for import fcntly download no-op module from: <https://communities.cisco.com/servlet/JiveServlet/download/150596-65641/fcntl.py.zip>
 	and add the file into python27 folder
