@@ -1,0 +1,10 @@
+1. Download and install python 2.7
+	python 2.7: <http://www.python.org/download/>
+2. add c:\python27 to path.
+3. setup python packages:
+	lxml: <http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml>
+	pyreadline: <https://pypi.python.org/pypi/pyreadline/2.0>
+4. install pip for python
+	follow instructions at: <https://pip.pypa.io/en/latest/installing.html>
+5. install Jinja2 via pip
+	run "python -m pip install Jinja2" in cmd
