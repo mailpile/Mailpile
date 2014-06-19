@@ -498,7 +498,7 @@ class MailIndex:
                 session.ui.mark(_('%s: Checking: %s'
                                   ) % (mailbox_idx, mailbox_fn))
                 mbox.update_toc()
-        except (IOError, OSError, NoSuchMailboxError), e:
+        except (IOError, OSError, ValueError, NoSuchMailboxError), e:
             session.ui.mark(_('%s: Error opening: %s (%s)'
                               ) % (mailbox_idx, mailbox_fn, e))
             return -1
