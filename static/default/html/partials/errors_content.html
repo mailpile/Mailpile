@@ -12,5 +12,8 @@
   <h2><span class="icon-inbox"></span> {{_("Oops, You've Found a Quirk")}}</h2>
   <p>{{_("There's something happening here. What it is ain't exactly clear. Everybody look what's going down.")}}</p>
   {% endif %}
+  {% if state.query_args.arg %}
+  <p>You can also try to view the <a href="/message/raw/{{state.query_args.arg.0}}/as.text">raw message data</a></p>
+  {% endif %}
   <p>{{_("If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank\">bug report</a>", url="https://github.com/pagekite/Mailpile/issues")}}</p>
 </div>
