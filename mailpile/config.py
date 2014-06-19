@@ -218,7 +218,7 @@ def _B36Check(b36val):
     """
     Verify that a string is a valid path base-36 integer.
 
-    >>> _B36Check('aa')
+    >>> _B36Check('Aa')
     'aa'
 
     >>> _B36Check('.')
@@ -483,10 +483,10 @@ def RuledContainer(pcls):
                                   ) % (type(value), name, repr(value)))
 
         def __fixkey__(self, key):
-            return key
+            return key.lower()
 
         def fmt_key(self, key):
-            return key
+            return key.lower()
 
         def get_rule(self, key):
             key = self.__fixkey__(key)
@@ -665,7 +665,7 @@ class ConfigList(RuledContainer(list)):
         list.append(self, None)
         try:
             self[len(self) - 1] = value
-            return b36(len(self) - 1)
+            return b36(len(self) - 1).lower()
         except:
             self[len(self) - 1:] = []
             raise
@@ -691,12 +691,15 @@ class ConfigList(RuledContainer(list)):
         f = b36(self.__fixkey__(key)).lower()
         return ('0000' + f)[-4:] if (len(f) < 4) else f
 
-    def keys(self):
-        return [self.fmt_key(i) for i in range(0, len(self))]
+    def iterkeys(self):
+        return (self.fmt_key(i) for i in range(0, len(self)))
 
     def iteritems(self):
-        for k in self.keys():
+        for k in self.iterkeys():
             yield (k, self[k])
+
+    def keys(self):
+        return list(self.iterkeys())
 
     def values(self):
         return self[:]
@@ -1098,7 +1101,8 @@ class ConfigManager(ConfigDict):
 
     def _find_mail_source(self, mbx_id):
         for src in self.sources.values():
-            if FormatMbxId(mbx_id) in src.mailbox:
+            # Note: we cannot test 'mbx_id in ...' because of case sensitivity.
+            if src.mailbox[FormatMbxId(mbx_id)] is not None:
                 return src
         return None
 
