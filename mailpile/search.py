@@ -382,7 +382,7 @@ class MailIndex:
 
     def _update_location(self, session, msg_idx_pos, msg_ptr):
         if 'rescan' in session.config.sys.debug:
-            session.ui.debug('Moved? %s -> %s' % (msg_idx_pos, msg_ptr))
+            session.ui.debug('Moved? %s -> %s' % (b36(msg_idx_pos), msg_ptr))
 
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
         msg_ptrs = msg_info[self.MSG_PTRS].split(',')

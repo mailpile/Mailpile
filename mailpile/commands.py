@@ -857,7 +857,8 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None, '[full|vcards|mailboxes|sources|<msgs>]')
+    SYNOPSIS = (None, 'rescan', None,
+                '[full|vcards|both|mailboxes|sources|<msgs>]')
     ORDER = ('Internals', 2)
     LOG_PROGRESS = True
 
@@ -868,17 +869,14 @@ class Rescan(Command):
         if config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
-        delay = play_nice_with_threads()
-        if delay > 0:
-            session.ui.notify((
-                _('Note: periodic delay is %ss, run from shell to '
-                  'speed up: mp --rescan=...')
-            ) % delay)
+        # Pretend we're idle, to make rescan go fast fast.
+        mailpile.util.LAST_USER_ACTIVITY = 0
 
         if args and args[0].lower() == 'vcards':
             return self._success(_('Rescanned vcards'),
                                  result=self._rescan_vcards(session))
-        elif args and args[0].lower() in ('mailboxes', 'sources', 'editable'):
+        elif args and args[0].lower() in ('both', 'mailboxes', 'sources',
+                                          'editable'):
             which = args[0].lower()
             return self._success(_('Rescanned mailboxes'),
                                  result=self._rescan_mailboxes(session,
@@ -927,6 +925,7 @@ class Rescan(Command):
         imported = 0
         importer_cfgs = config.prefs.vcard.importers
         try:
+            session.ui.mark(_('Rescanning: %s') % 'vcards')
             for importer in PluginManager.VCARD_IMPORTERS.values():
                 for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
                     if cfg:
@@ -945,6 +944,8 @@ class Rescan(Command):
         mbox_count = 0
         rv = True
         try:
+            session.ui.mark(_('Rescanning: %s') % which)
+
             pre_command = config.prefs.rescan_command
             if pre_command and not mailpile.util.QUITTING:
                 session.ui.mark(_('Running: %s') % pre_command)
@@ -957,6 +958,7 @@ class Rescan(Command):
                 for src in sources:
                     if mailpile.util.QUITTING:
                         break
+                    session.ui.mark(_('Rescanning: %s') % (src, ))
                     count = src.rescan_now(session)
                     if count > 0:
                         msg_count += count
@@ -975,6 +977,7 @@ class Rescan(Command):
                     if fpath == '/dev/null':
                         continue
                     try:
+                        session.ui.mark(_('Rescanning: %s %s') % (fid, fpath))
                         if which == 'editable':
                             count = idx.scan_mailbox(session, fid, fpath,
                                                      config.open_mailbox,
