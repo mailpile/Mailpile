@@ -38,7 +38,6 @@ class Command:
 
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
-    SERIALIZE = False
     SPLIT_ARG = True  # Uses shlex by default
     RAISES = (UsageError, UrlRedirectException)
 
@@ -157,7 +156,6 @@ class Command:
 
     def __init__(self, session, name=None, arg=None, data=None):
         self.session = session
-        self.serialize = self.SERIALIZE
         self.name = self.SYNOPSIS[1] or self.SYNOPSIS[2] or name
         self.data = data or {}
         self.status = 'unknown'
@@ -308,8 +306,7 @@ class Command:
         self.session.ui.debug(traceback.format_exc())
 
     def _serialize(self, name, function):
-        session, config = self.session, self.session.config
-        return config.slow_worker.do(session, name, function)
+        return function()
 
     def _background(self, name, function):
         session, config = self.session, self.session.config
@@ -407,13 +404,7 @@ class Command:
     def run(self, *args, **kwargs):
         if self.IS_USER_ACTIVITY:
             mailpile.util.LAST_USER_ACTIVITY = time.time()
-        if self.serialize:
-            # Some functions we always run in the slow worker, to make sure
-            # they don't get run in parallel with other things.
-            return self._serialize(self.serialize,
-                                   lambda: self._run(*args, **kwargs))
-        else:
-            return self._run(*args, **kwargs)
+        return self._run(*args, **kwargs)
 
     def command(self):
         return None
@@ -868,7 +859,6 @@ class Rescan(Command):
     """Add new messages to index"""
     SYNOPSIS = (None, 'rescan', None, '[full|vcards|mailboxes|sources|<msgs>]')
     ORDER = ('Internals', 2)
-    SERIALIZE = 'Rescan'
     LOG_PROGRESS = True
 
     def command(self):
@@ -1027,7 +1017,6 @@ class Optimize(Command):
     """Optimize the keyword search index"""
     SYNOPSIS = (None, 'optimize', None, '[harder]')
     ORDER = ('Internals', 3)
-    SERIALIZE = 'Optimize'
 
     def command(self):
         try:
@@ -1300,7 +1289,7 @@ class ConfigSet(Command):
                 cfg, v1, v2 = config.walk(path.strip(), parent=2)
                 cfg[v1] = {v2: value}
 
-        self._serialize('Save config', lambda: config.save())
+        config.save()
         return self._success(_('Updated your settings'), result=updated)
 
 
@@ -1347,7 +1336,7 @@ class ConfigAdd(Command):
             cfg[var].append(value)
             updated[path] = value
 
-        self._serialize('Save config', lambda: config.save())
+        config.save()
         return self._success(_('Updated your settings'), result=updated)
 
 
@@ -1375,7 +1364,7 @@ class ConfigUnset(Command):
                 del cfg[vn]
                 updated.append(v)
 
-        self._serialize('Save config', lambda: config.save())
+        config.save()
         return self._success(_('Reset to default values'), result=updated)
 
 
@@ -1456,7 +1445,7 @@ class AddMailboxes(Command):
         for arg in adding:
             added[config.sys.mailbox.append(arg)] = arg
         if added:
-            self._serialize('Save config', lambda: config.save())
+            config.save()
             return self._success(_('Added %d mailboxes') % len(added),
                                  result={'added': added})
         else:

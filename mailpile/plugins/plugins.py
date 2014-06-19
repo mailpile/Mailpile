@@ -52,7 +52,7 @@ class LoadPlugin(mailpile.commands.Command):
                 return self._error(_('Failed to load plugin: %s') % plugin,
                                    info={'failed': plugin})
 
-        self._serialize('Save config', lambda: config.save())
+        config.save()
         return self._success(_('Loaded plugins: %s') % ', '.join(self.args),
                              {'loaded': self.args})
 
@@ -76,7 +76,7 @@ class DisablePlugin(mailpile.commands.Command):
             while plugin in config.sys.plugins:
                 config.sys.plugins.remove(plugin)
 
-        self._serialize('Save config', lambda: config.save())
+        config.save()
         return self._success(_('Disabled plugins: %s (restart required)'
                                ) % ', '.join(self.args),
                              {'disabled': self.args})

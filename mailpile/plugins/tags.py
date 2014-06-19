@@ -529,13 +529,10 @@ class DeleteTag(TagCommand):
 
 class FilterCommand(Command):
     def finish(self, save=True):
-        def save_filter():
-            self.session.config.save()
-            if self.session.config.index:
-                self.session.config.index.save_changes()
-            return True
-        if save:
-            self._serialize('Save filter', save_filter)
+        self.session.config.save()
+        if self.session.config.index:
+            self.session.config.index.save_changes()
+        return True
 
 
 class Filter(FilterCommand):
