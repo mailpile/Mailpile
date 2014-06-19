@@ -154,6 +154,7 @@ class Setup(Command):
             return self._error(_('In lockdown, doing nothing.'))
 
         # Stop the workers...
+        want_daemons = session.config.cron_worker is not None
         session.config.stop_workers()
 
         # Perform any required migrations
@@ -285,7 +286,7 @@ class Setup(Command):
         Migrate(session).run(before_setup=False, after_setup=True)
 
         session.config.save()
-        session.config.prepare_workers(session, daemons=True)
+        session.config.prepare_workers(session, daemons=want_daemons)
 
         return self._success(_('Performed initial Mailpile setup'))
 
