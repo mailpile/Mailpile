@@ -1,0 +1,1859 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+# Okafuji_cz, 2014
+# lepsaantonin, 2013
+# xvasek <xvasek@gmail.com>, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: Mailpile\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-02-13 13:32+0000\n"
+"PO-Revision-Date: 2014-01-05 18:38+0000\n"
+"Last-Translator: Okafuji_cz\n"
+"Language-Team: Czech (Czech Republic) (http://www.transifex.com/projects/p/"
+"mailpile/language/cs_CZ/)\n"
+"Language: cs_CZ\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#: mailpile/commands.py:202
+#, fuzzy, python-format
+msgid "No such ID: %s"
+msgstr "Žádný klíč: %s"
+
+#: mailpile/commands.py:208 mailpile/commands.py:215 mailpile/commands.py:221
+#, python-format
+msgid "What message is %s?"
+msgstr "Jaká je zpráva %s?"
+
+#: mailpile/commands.py:512
+#, fuzzy, python-format
+msgid "Search: %s"
+msgstr "Vyhledávám %s"
+
+#: mailpile/commands.py:674 mailpile/commands.py:843 mailpile/commands.py:893
+#: mailpile/commands.py:935 mailpile/commands.py:984
+#: mailpile/plugins/setup_magic.py:85
+msgid "In lockdown, doing nothing."
+msgstr ""
+
+#: mailpile/commands.py:680
+#, python-format
+msgid ""
+"Note: periodic delay is %ss, run from shell to speed up: mp --rescan=..."
+msgstr ""
+
+#: mailpile/commands.py:730
+#, python-format
+msgid "Running: %s"
+msgstr "Probíhá: %s"
+
+#: mailpile/commands.py:742
+#, fuzzy, python-format
+msgid "Failed to rescan: %s"
+msgstr "Nepodařilo se rozšifrovat zprávu"
+
+#: mailpile/commands.py:757
+msgid "Nothing changed"
+msgstr "Žádná změna"
+
+#: mailpile/commands.py:759
+#, python-format
+msgid "Aborted: %s"
+msgstr "Zrušeno: %s"
+
+#: mailpile/commands.py:788
+msgid "Aborted"
+msgstr "Přerušeno"
+
+#: mailpile/commands.py:965
+#, python-format
+msgid "No such key: %s"
+msgstr "Žádný klíč: %s"
+
+#: mailpile/commands.py:1038
+#, fuzzy, python-format
+msgid "The Web interface address is: %s"
+msgstr "Webové rozhraní je %s"
+
+#: mailpile/commands.py:1041
+#, fuzzy
+msgid "The Web interface is disabled."
+msgstr "Webové rozhraní je %s"
+
+#: mailpile/commands.py:1046
+#, fuzzy
+msgid "Type `help` for instructions or press <Ctrl-d> to quit."
+msgstr "Pro další informace napište `help`, stiskněte <CTRL-D> pro ukončení."
+
+#: mailpile/commands.py:1065
+msgid "Commands:"
+msgstr "Příkazy:"
+
+#: mailpile/commands.py:1097
+msgid "Tags:  (use a tag as a command to display tagged messages)"
+msgstr "Štítky: (použijte štítek jako příkaz ke zobrazení zpráv se štítkem)"
+
+#: mailpile/commands.py:1106 mailpile/jinjaextensions.py:125
+#: mailpile/jinjaextensions.py:210
+msgid "Error"
+msgstr "Chyba"
+
+#: mailpile/commands.py:1140
+msgid "Unknown command"
+msgstr "Neznámý příkaz"
+
+#: mailpile/commands.py:1238
+#, python-format
+msgid "Unknown command: %s"
+msgstr "Neznámý příkaz: %s"
+
+#: mailpile/config.py:103
+msgid "true"
+msgstr ""
+
+#: mailpile/config.py:103
+msgid "yes"
+msgstr ""
+
+#: mailpile/config.py:103
+msgid "on"
+msgstr ""
+
+#: mailpile/config.py:106
+msgid "false"
+msgstr ""
+
+#: mailpile/config.py:106
+msgid "no"
+msgstr ""
+
+#: mailpile/config.py:106
+#, fuzzy
+msgid "off"
+msgstr "z"
+
+#: mailpile/config.py:108
+#, fuzzy, python-format
+msgid "Invalid boolean: %s"
+msgstr "Nesprávný název počítače: %s"
+
+#: mailpile/config.py:131
+#, python-format
+msgid "Invalid URL slug: %s"
+msgstr "Nesprávný konec URL: %s"
+
+#: mailpile/config.py:163
+#, python-format
+msgid "Invalid hostname: %s"
+msgstr "Nesprávný název počítače: %s"
+
+#: mailpile/config.py:197
+#, python-format
+msgid "File/directory does not exist: %s"
+msgstr "Soubor/adresář neexistuje: %s"
+
+#: mailpile/config.py:215
+#, python-format
+msgid "Not a file: %s"
+msgstr "Není soubor: %s"
+
+#: mailpile/config.py:233
+#, python-format
+msgid "Not a directory: %s"
+msgstr "Není adresář: %s"
+
+#: mailpile/config.py:369
+#, fuzzy
+msgid "Please override this method"
+msgstr "Přebij toto"
+
+#: mailpile/config.py:429
+#, fuzzy, python-format
+msgid "Invalid type \"%s\" for key \"%s\" (value: %s)"
+msgstr "Neplatný typ pro defaultní %s = %s"
+
+#: mailpile/config.py:440
+#, python-format
+msgid "Invalid key for %s: %s"
+msgstr "Neplatný klíč pro %s: %s"
+
+#: mailpile/config.py:523
+#, python-format
+msgid "Modifying %s/%s is not allowed"
+msgstr "Úprava %s/%s není povolena"
+
+#: mailpile/config.py:527 mailpile/config.py:535
+#, python-format
+msgid "Invalid value for %s/%s: %s"
+msgstr "Neplatná hodnota pro %s/%s: %s"
+
+#: mailpile/config.py:538
+#, python-format
+msgid "Unknown constraint for %s/%s: %s"
+msgstr "Neznámé omezení pro %s/%s: %s"
+
+#: mailpile/config.py:743
+msgid "Cannot append to fixed dict"
+msgstr "Nelze připojit k ověřenému slovníku"
+
+#: mailpile/config.py:791
+#, python-format
+msgid "Creating: %s"
+msgstr "Vytváření: %s"
+
+#: mailpile/config.py:850
+#, python-format
+msgid "Invalid (%s): section %s does not exist"
+msgstr "Neplatné (%s): sekce %s neexistuje"
+
+#: mailpile/config.py:861
+#, python-format
+msgid "Invalid (%s): section %s, variable %s"
+msgstr "Neplatné (%s): sekce %s, proměnná %s"
+
+#: mailpile/config.py:913
+#, fuzzy, python-format
+msgid "Loading plugin: %s"
+msgstr "Chybový řádek: %s"
+
+#: mailpile/config.py:938
+#, python-format
+msgid "Mailbox ID too large: %s"
+msgstr "ID schránky je příliš dlouhé: %s"
+
+#: mailpile/config.py:1001
+#, python-format
+msgid "No such mailbox: %s"
+msgstr "Žádná schránka: %s"
+
+#: mailpile/config.py:1008
+#, python-format
+msgid "%s: Updating: %s"
+msgstr "%s: Aktualizace: %s"
+
+#: mailpile/config.py:1015
+#, python-format
+msgid "%s: Opening: %s (may take a while)"
+msgstr "%s: Otevírání: %s (může chvilku trvat)"
+
+#: mailpile/config.py:1126
+msgid "Parent paths are not allowed"
+msgstr "Nadřazené cesty nejsou povoleny"
+
+#: mailpile/defaults.py:11
+msgid "Mailpile program version"
+msgstr "Verze programu Mailpile"
+
+#: mailpile/defaults.py:12
+msgid "Configuration timestamp"
+msgstr "Časová značka konfigurace"
+
+#: mailpile/defaults.py:13
+msgid "Technical system settings"
+msgstr "Technická nastavení systému"
+
+#: mailpile/defaults.py:14
+msgid "Max files kept open at once"
+msgstr "Max současně otevřených souborů"
+
+#: mailpile/defaults.py:15
+#, fuzzy
+msgid "History length (lines, <0=no save)"
+msgstr "Délka historie (řádky, <0 = neukládat)"
+
+#: mailpile/defaults.py:16
+msgid "Listening port for web UI"
+msgstr "Port pro webové UI"
+
+#: mailpile/defaults.py:17
+msgid "Posting list target size in KB"
+msgstr "Zasílám velikost cílového seznamu v KB"
+
+#: mailpile/defaults.py:18
+msgid "Max results we sort \"well\""
+msgstr "Max výsledků, které třídíme \"správně\""
+
+#: mailpile/defaults.py:19
+msgid "Max length of metadata snippets"
+msgstr "Maximální délka útržku metadat"
+
+#: mailpile/defaults.py:20
+msgid "Debugging flags"
+msgstr "Debugging flags"
+
+#: mailpile/defaults.py:21
+msgid "Host:port of PGP keyserver"
+msgstr "Server:port PGP serveru s klíči"
+
+#: mailpile/defaults.py:23
+msgid "Listening host for web UI"
+msgstr "Server pro web UI"
+
+#: mailpile/defaults.py:25
+msgid "Local read/write Maildir"
+msgstr "Místní Maildir pro čtení/zápis"
+
+#: mailpile/defaults.py:26
+msgid "Metadata index file"
+msgstr "Indexový soubor pro metadata"
+
+#: mailpile/defaults.py:27
+msgid "Search index directory"
+msgstr "Adresář vyhledávacího indexu"
+
+#: mailpile/defaults.py:28
+msgid "Mailboxes we index"
+msgstr "Mailboxy, které indexujeme"
+
+#: mailpile/defaults.py:29
+msgid "Plugins to load on startup"
+msgstr ""
+
+#: mailpile/defaults.py:31
+msgid "Locations of assorted data"
+msgstr "Umístění roztříděných dat"
+
+#: mailpile/defaults.py:32
+msgid "Default theme"
+msgstr "Implicitní téma"
+
+#: mailpile/defaults.py:34
+msgid "Location of vcards"
+msgstr "Umístění vizitek - vcards"
+
+#: mailpile/defaults.py:36
+msgid "Demo mode, disallow changes"
+msgstr ""
+
+#: mailpile/defaults.py:38
+msgid "User preferences"
+msgstr "Uživatelské nastavení"
+
+#: mailpile/defaults.py:39
+msgid "Search results per page"
+msgstr "Počet výsledků na stránku"
+
+#: mailpile/defaults.py:40
+msgid "New mail check frequency"
+msgstr "Frekvence kontroly nové pošty"
+
+#: mailpile/defaults.py:41
+msgid "Inline PGP signatures or attached"
+msgstr "Připojené nebo vložené PGP podpisy"
+
+#: mailpile/defaults.py:43
+msgid "Encrypt local data to ..."
+msgstr "Zašifrovat místní data do ..."
+
+#: mailpile/defaults.py:44
+msgid "Advertise GPG preferences in a header?"
+msgstr ""
+
+#: mailpile/defaults.py:47
+#, fuzzy
+msgid "Default encryption policy for outgoing mail"
+msgstr "Implicitní cesta pro odchozí maily"
+
+#: mailpile/defaults.py:49
+msgid "Default sort order"
+msgstr "Implicitní pořadí"
+
+#: mailpile/defaults.py:50
+msgid "Key to use to scramble the index"
+msgstr "Klíč k zašifrování indexu"
+
+#: mailpile/defaults.py:51
+msgid "Make encrypted content searchable"
+msgstr ""
+
+#: mailpile/defaults.py:53
+msgid "Command run before rescanning"
+msgstr "Příkaz spouštěný před znovuprohledáním"
+
+#: mailpile/defaults.py:54
+msgid "Default outgoing e-mail address"
+msgstr "Implicitní odchozí e-mail adresa"
+
+#: mailpile/defaults.py:55
+msgid "Default outgoing mail route"
+msgstr "Implicitní cesta pro odchozí maily"
+
+#: mailpile/defaults.py:57
+msgid "User interface language"
+msgstr "Jazyk rozhraní uživatele"
+
+#: mailpile/defaults.py:58
+msgid "VCard import/export settings"
+msgstr "Nastavení pro import/export vizitek"
+
+#: mailpile/defaults.py:59
+msgid "VCard import settings"
+msgstr "Nastavení importu pro vizitky"
+
+#: mailpile/defaults.py:60
+msgid "VCard export settings"
+msgstr "Nastavení exportu pro vizitky"
+
+#: mailpile/defaults.py:61
+msgid "VCard context helper settings"
+msgstr "Nastavení kontextové nápovědy vizitky"
+
+#: mailpile/defaults.py:64
+msgid "User profiles and personalities"
+msgstr "Uživatelské profily a osobní data"
+
+#: mailpile/defaults.py:65
+msgid "Account name"
+msgstr "Název účtu"
+
+#: mailpile/defaults.py:66
+msgid "E-mail address"
+msgstr "E-mail adresa"
+
+#: mailpile/defaults.py:67
+msgid "Message signature"
+msgstr "Podpis zprávy"
+
+#: mailpile/defaults.py:68
+msgid "Outgoing mail route"
+msgstr "Cesta pro odchozí poštu"
+
+#: mailpile/httpd.py:191
+msgid "XMLRPC has been disabled for now."
+msgstr "XMLRPC je nyní zakázáno"
+
+#: mailpile/httpd.py:210
+msgid "OMG, input too big"
+msgstr "Můj bože, vstup je příliš velký"
+
+#: mailpile/httpd.py:213
+msgid "Unknown content-type"
+msgstr "Neznámý typ souboru"
+
+#: mailpile/httpd.py:219
+msgid "Internal Error"
+msgstr "Vnitřní chyba"
+
+#: mailpile/httpd.py:290
+msgid "Internal error"
+msgstr "Vnitřní chyba"
+
+#: mailpile/jinjaextensions.py:113 mailpile/jinjaextensions.py:146
+#: mailpile/jinjaextensions.py:187
+#, fuzzy
+msgid "Unknown"
+msgstr "Neznámá důvěryhodnost"
+
+#: mailpile/jinjaextensions.py:114
+msgid "There is something unknown or wrong with this signature"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:119
+#, fuzzy
+msgid "No Signature"
+msgstr "Podpis zprávy"
+
+#: mailpile/jinjaextensions.py:120
+msgid ""
+"This message contains no signature, which means it could have come from "
+"anyone, not necessarily the real sender"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:126
+msgid "There was a weird error with this signature"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:130
+msgid "Invalid"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:131
+msgid "The signature was invalid or bad"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:135
+msgid "Revoked"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:136
+msgid ""
+"Watch out, the signature was made with a key that has beenrevoked- this is "
+"not a good thing"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:141
+msgid "Expired"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:142
+msgid "The signature was made with an expired key"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:147
+msgid "the signature was made with an unknown key, so we can not verify it"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:152
+msgid "Unverified"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:153
+msgid "The signature was good but it came from a key that is not verified yet"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:158
+msgid "Verified"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:159
+msgid "The signature was good and came from a verified key, w00t!"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:188
+msgid "There is some unknown thing wrong with this encryption"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:193
+#: static/default/html/partials/compose.html:49
+#, fuzzy
+msgid "Not Encrypted"
+msgstr "Zakódováno"
+
+#: mailpile/jinjaextensions.py:194
+msgid ""
+"This message was not encrypted. It may have been intercepted en route to you "
+"and read by an unauthorized party."
+msgstr ""
+
+#: mailpile/jinjaextensions.py:199
+#: static/default/html/partials/compose.html:46
+msgid "Encrypted"
+msgstr "Zakódováno"
+
+#: mailpile/jinjaextensions.py:200
+msgid ""
+"This message was encrypted, but we were successfully able to decrypt it. "
+"Great job being secure"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:205
+msgid "Missing Key"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:206
+msgid "You do not have any of the private keys that will decrypt this message"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:211
+#, fuzzy
+msgid "We failed to decrypt message and are unsure why"
+msgstr "Nepodařilo se rozšifrovat zprávu"
+
+#: mailpile/jinjaextensions.py:249
+msgid "You"
+msgstr ""
+
+#: mailpile/mailutils.py:223
+#, python-format
+msgid "SendMail: from %s, to %s\n"
+msgstr "SendMail: od %s do %s\n"
+
+#: mailpile/mailutils.py:226
+#, python-format
+msgid "Connecting to %s"
+msgstr "Připojování k %s"
+
+#: mailpile/mailutils.py:248
+#, python-format
+msgid "SMTP connection to: %s:%s as %s@%s\n"
+msgstr "SMTP připojení k: %s:%s jako %s@%s\n"
+
+#: mailpile/mailutils.py:286
+#, fuzzy, python-format
+msgid "Invalid sendmail command/SMTP server: %s"
+msgstr "Neplatné odeslání zprávy: %s"
+
+#: mailpile/mailutils.py:289
+msgid "Preparing message..."
+msgstr "Příprava zprávy..."
+
+#: mailpile/mailutils.py:299
+#, python-format
+msgid "Message sent, %d bytes"
+msgstr "Zpráva odeslána, %d bytů"
+
+#: mailpile/mailutils.py:539 mailpile/mailutils.py:549
+#: mailpile/mailutils.py:617
+msgid "Mailbox is read-only."
+msgstr "Mailbox je pouze pro čtení."
+
+#: mailpile/mailutils.py:542 mailpile/mailutils.py:553
+#, fuzzy
+msgid "Message is read-only."
+msgstr "Mailbox je pouze pro čtení."
+
+#: mailpile/mailutils.py:664
+msgid "Message not found?"
+msgstr "Zpráva nenalezena?"
+
+#: mailpile/mailutils.py:742
+#, python-format
+msgid "Extracted attachment %s"
+msgstr "Extrahované přílohy %s"
+
+#: mailpile/mailutils.py:749
+#, python-format
+msgid "Wrote preview to: %s"
+msgstr "Napsaný náhled k: %s"
+
+#: mailpile/mailutils.py:757
+msgid "Failed to generate thumbnail"
+msgstr "Generování náhledu selhalo"
+
+#: mailpile/mailutils.py:763
+#, python-format
+msgid "Wrote attachment to: %s"
+msgstr "Zapsaná příloha k: %s"
+
+#: mailpile/mailutils.py:767
+#, python-format
+msgid "No attachments found for: %s"
+msgstr "Přílohy nenalezeny k: %s"
+
+#: mailpile/mailutils.py:908
+msgid "[Binary data suppressed]\n"
+msgstr ""
+
+#: mailpile/search.py:177
+msgid "Your metadata index is either too old, too new or corrupt!"
+msgstr ""
+
+#: mailpile/search.py:194
+msgid "Loading metadata index..."
+msgstr "Načítání indexu metadat..."
+
+#: mailpile/search.py:207
+#, python-format
+msgid "Metadata index not found: %s"
+msgstr "Index metadat nebyl nalezen: %s"
+
+#: mailpile/search.py:214
+#, python-format
+msgid "Loaded metadata, %d messages"
+msgstr "Metadata načtena, %d zpráv"
+
+#: mailpile/search.py:235
+msgid "Saving metadata index changes..."
+msgstr "Ukládání změn indexu metadat..."
+
+#: mailpile/search.py:246
+msgid "Saved metadata index changes"
+msgstr "Změna indexu metadat uložena"
+
+#: mailpile/search.py:257
+msgid "Saving metadata index..."
+msgstr "Ukládání indexu metadat..."
+
+#: mailpile/search.py:279
+msgid "Saved metadata index"
+msgstr "Index metadat uložen"
+
+#: mailpile/search.py:284
+msgid "Updating high level indexes"
+msgstr "Aktualizace indexu s vysokou úrovní"
+
+#: mailpile/search.py:292
+#, python-format
+msgid "Bogus line: %s"
+msgstr "Chybový řádek: %s"
+
+#: mailpile/search.py:362
+#, fuzzy, python-format
+msgid "=%s/%s using Received: instead of Date:"
+msgstr "=%s/%s užívá Obdrženo: namísto Datum:"
+
+#: mailpile/search.py:369
+#, python-format
+msgid "=%s/%s has a bogus date"
+msgstr "=%s/%s má chybné datum"
+
+#: mailpile/search.py:390
+#, python-format
+msgid "WARNING: No proper Message-ID for %s"
+msgstr "VAROVÁNÍ: Žádné lepší ID zprávy pro %s"
+
+#: mailpile/search.py:397
+#, python-format
+msgid "%s: Skipped: %s"
+msgstr "%s: Přeskočeno: %s"
+
+#: mailpile/search.py:401
+#, python-format
+msgid "%s: Checking: %s"
+msgstr "%: Kontrola: %s"
+
+#: mailpile/search.py:404
+#, python-format
+msgid "%s: Error opening: %s (%s)"
+msgstr "%s: Chyba při otevírání: %s (%s)"
+
+#: mailpile/search.py:423
+#, python-format
+msgid "%s: Reading your mail: %d%% (%d/%d messages)"
+msgstr "%s: Čtení vašich zpráv: %d%% (%d/%d zpráv)"
+
+#: mailpile/search.py:497
+#, python-format
+msgid "%s: Indexed mailbox: %s"
+msgstr "%s: Indexované schránky: %s"
+
+#: mailpile/search.py:780
+#, python-format
+msgid "=%s/%s has bogus HTML."
+msgstr "=%s/%s má chybné HTML."
+
+#: mailpile/search.py:905
+#, python-format
+msgid "%s is outside the index"
+msgstr "%s je mimo index"
+
+#: mailpile/search.py:951
+#, python-format
+msgid "Tagging %d messages (%s)"
+msgstr "Štítkování %d zpráv (%s)"
+
+#: mailpile/search.py:983
+#, python-format
+msgid "Untagging conversations (%s)"
+msgstr "Odebírání štítků konverzací (%s)"
+
+#: mailpile/search.py:989
+#, python-format
+msgid "Untagging %d messages (%s)"
+msgstr "Odebírání štítků %d zpráv (%s)"
+
+#: mailpile/search.py:1030
+#, python-format
+msgid "Searching for %s"
+msgstr "Vyhledávám %s"
+
+#: mailpile/search.py:1055
+#, python-format
+msgid "Ignoring common word: %s"
+msgstr "Ignorování běžného slova: %s"
+
+#: mailpile/search.py:1124
+#, python-format
+msgid "Found %d results (%d suppressed)"
+msgstr "Nalezeno %d výsledků (%d potlačeno)"
+
+#: mailpile/search.py:1143
+#, python-format
+msgid "Finding conversations (%d messages)..."
+msgstr "Hledání konverzací (%d zpráv)..."
+
+#: mailpile/search.py:1152 mailpile/search.py:1172
+#, fuzzy, python-format
+msgid "Sorting %d messages by %s..."
+msgstr "Třídění %d zpráv v %s pořadí..."
+
+#: mailpile/search.py:1196
+msgid "Recovering from bogus sort, corrupt index?"
+msgstr "Obnovování z chybného řazení, poškozený index?"
+
+#: mailpile/search.py:1198
+msgid "Please tell team@mailpile.is !"
+msgstr "Prosíme o upozornění team@mailpile.is !"
+
+#: mailpile/search.py:1207
+#, python-format
+msgid "Unknown sort order: %s"
+msgstr "Neznámé pořadí třídění: %s"
+
+#: mailpile/search.py:1212
+msgid "Sort failed, sorting badly. Partial index?"
+msgstr "Třídění selhalo, špatné třídění. Částečný index?"
+
+#: mailpile/search.py:1225
+#, python-format
+msgid "Sorted %d messages by %s, %d conversations"
+msgstr "Seřazeno %d zpráv podle %s, %d konverzací"
+
+#: mailpile/search.py:1228
+#, fuzzy, python-format
+msgid "Sorted %d messages by %s"
+msgstr "Seřazeno %d zpráv v pořadí podle %s"
+
+#: mailpile/ui.py:192
+#, python-format
+msgid "Elapsed: %.3fs (%s)"
+msgstr "Hotovo: %.3fs (%s)"
+
+#: mailpile/ui.py:206
+#, python-format
+msgid "Completed %s in %.3fs"
+msgstr "Hotovo %s z %.3fs"
+
+#: mailpile/ui.py:317
+#, python-format
+msgid ""
+"<h1>Template not found</h1>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+"<h1>Šablona nebyla nalezena</h1>\n"
+"<p>%s</p><p><b>DATA:</b>%s</p>"
+
+#: mailpile/ui.py:323
+#, python-format
+msgid ""
+"<h1>Template error</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+"<h1>Chyba šablony</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+
+#: mailpile/ui.py:330
+#, python-format
+msgid ""
+"<h1>Template error in %s</h1>\n"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
+msgstr ""
+"<h1>Chyba v šabloně - %s</h1>\n"
+" Analýza šablony %s: <b>%s</b> na řádku %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
+
+#: mailpile/ui.py:358
+msgid "Number of edit messages does not match!"
+msgstr ""
+
+#: mailpile/ui.py:403
+msgid "FIXME: Multiple results, OMG WTF"
+msgstr "FIXME: Více výsledků, pane bože co to sakra je"
+
+#: mailpile/util.py:230
+msgid "today"
+msgstr ""
+
+#: mailpile/util.py:232
+#, python-format
+msgid "%d day"
+msgstr ""
+
+#: mailpile/util.py:234
+#, python-format
+msgid "%d days"
+msgstr ""
+
+#: mailpile/util.py:315
+msgid "Symmetric decryption is not available without config and key."
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:20
+msgid "Trust not calculated"
+msgstr "Důvěryhodnost nebyla vypočítána"
+
+#: mailpile/crypto/gpgi.py:21
+msgid "Unknown trust"
+msgstr "Neznámá důvěryhodnost"
+
+#: mailpile/crypto/gpgi.py:22
+msgid "Undefined trust"
+msgstr "Nedefinovaná důvěryhodnost"
+
+#: mailpile/crypto/gpgi.py:23
+msgid "Never trust"
+msgstr "Nedůvěřovat"
+
+#: mailpile/crypto/gpgi.py:24
+msgid "Marginally trust"
+msgstr "Částečně důvěřovat"
+
+#: mailpile/crypto/gpgi.py:25
+msgid "Full trust"
+msgstr "Plně důvěřovat"
+
+#: mailpile/crypto/gpgi.py:26
+msgid "Ultimate trust"
+msgstr "Maximálně důvěřovat"
+
+#: mailpile/crypto/gpgi.py:27
+msgid "Expired key, not trusted"
+msgstr "Expirovaný klíč, nedůvěryhodný"
+
+#: mailpile/crypto/gpgi.py:28
+msgid "Disabled key, not trusted"
+msgstr "Neplatný klíč, nedůvěryhodný"
+
+#: mailpile/crypto/gpgi.py:29
+msgid "Revoked key, not trusted"
+msgstr "Zrušený klíč, nedůvěryhodný"
+
+#: mailpile/crypto/gpgi.py:31
+msgid "RSA"
+msgstr "RSA"
+
+#: mailpile/crypto/gpgi.py:32
+msgid "RSA (encrypt only)"
+msgstr "RSA (pouze kódování)"
+
+#: mailpile/crypto/gpgi.py:33
+msgid "RSA (sign only)"
+msgstr "RSA (pouze přihlášení)"
+
+#: mailpile/crypto/gpgi.py:34
+msgid "Elgamal (encrypt only)"
+msgstr "ElGamal (pouze kódování)"
+
+#: mailpile/crypto/gpgi.py:35
+msgid "DSA"
+msgstr "DSA"
+
+#: mailpile/crypto/gpgi.py:36
+msgid "Elgamal (encrypt/sign) [COMPROMISED]"
+msgstr "ElGamal (kódování/přihlášení) [OHROŽENÍ]"
+
+#: mailpile/crypto/gpgi.py:760
+#, python-format
+msgid "Keys missing or ambiguous for %s"
+msgstr ""
+
+#: mailpile/crypto/mime.py:193 mailpile/crypto/mime.py:233
+#, fuzzy
+msgid "Failed to sign message!"
+msgstr "Nepodařilo se rozšifrovat zprávu"
+
+#: mailpile/mailboxes/mbox.py:97
+#, fuzzy
+msgid "Mailbox has been modified"
+msgstr "Mailboxy, které indexujeme"
+
+#: mailpile/mailboxes/mbox.py:127
+#, python-format
+msgid "Saving %s state to %s"
+msgstr ""
+
+#: mailpile/mailboxes/mbox.py:142
+msgid "No data found"
+msgstr "Nenalezena žádná data"
+
+#: mailpile/mailboxes/mbox.py:172
+msgid "Message not found"
+msgstr "Zpráva nenalezena"
+
+#: mailpile/plugins/autotag.py:152
+msgid "Retraining SpamBayes autotaggers"
+msgstr ""
+
+#: mailpile/plugins/autotag.py:172
+#, python-format
+msgid "Have %d interesting %s messages"
+msgstr ""
+
+#: mailpile/plugins/autotag.py:243
+#, python-format
+msgid "Retrained SpamBayes auto-tagging for %s"
+msgstr ""
+
+#: mailpile/plugins/autotag.py:264
+#, fuzzy, python-format
+msgid "Unknown tag: %s"
+msgstr "Neznámý příkaz: %s"
+
+#: mailpile/plugins/compose.py:30
+#, fuzzy, python-format
+msgid "Sent: %s"
+msgstr "Vytváření: %s"
+
+#: mailpile/plugins/compose.py:144
+msgid "Cannot update from multiple files"
+msgstr ""
+
+#: mailpile/plugins/compose.py:202 mailpile/plugins/compose.py:233
+#, python-format
+msgid "%d message(s) edited"
+msgstr ""
+
+#: mailpile/plugins/compose.py:204
+#, python-format
+msgid "%d message(s) created"
+msgstr ""
+
+#: mailpile/plugins/compose.py:228
+#, fuzzy
+msgid "No messages!"
+msgstr "Zprávy"
+
+#: mailpile/plugins/compose.py:235
+#, python-format
+msgid "%d message(s) unchanged"
+msgstr ""
+
+#: mailpile/plugins/compose.py:265
+msgid "Please use update for editing messages"
+msgstr ""
+
+#: mailpile/plugins/compose.py:335
+#, python-format
+msgid "%s wrote:"
+msgstr ""
+
+#: mailpile/plugins/compose.py:379
+msgid "You must configure a From address first."
+msgstr ""
+
+#: mailpile/plugins/compose.py:388 mailpile/plugins/compose.py:475
+#, fuzzy
+msgid "No message found"
+msgstr "Nenalezeny žádné výsledky"
+
+#: mailpile/plugins/compose.py:460
+msgid "Sorry, ephemeral messages cannot have attachments at this time."
+msgstr ""
+
+#: mailpile/plugins/compose.py:507
+#, fuzzy
+msgid "No files found"
+msgstr "Nenalezeny žádné výsledky"
+
+#: mailpile/plugins/compose.py:513
+msgid "No messages selected"
+msgstr ""
+
+#: mailpile/plugins/compose.py:522
+#, fuzzy, python-format
+msgid "Read-only message: %s"
+msgstr "FIXME: znovu skenovat zprávy: %s"
+
+#: mailpile/plugins/compose.py:524
+#, fuzzy, python-format
+msgid "Error attaching to %s"
+msgstr "Zapsaná příloha k: %s"
+
+#: mailpile/plugins/compose.py:527
+#, fuzzy, python-format
+msgid "Attached %s to %d messages"
+msgstr "Metadata načtena, %d zpráv"
+
+#: mailpile/plugins/compose.py:575
+#, fuzzy, python-format
+msgid "Failed to send %s"
+msgstr "Nepodařilo se rozšifrovat zprávu"
+
+#: mailpile/plugins/compose.py:595
+#, fuzzy
+msgid "Nothing was sent"
+msgstr "Žádná změna"
+
+#: mailpile/plugins/compose.py:613 mailpile/plugins/compose.py:657
+#, fuzzy
+msgid "Nothing to do!"
+msgstr "Žádná změna"
+
+#: mailpile/plugins/compose.py:623
+#, python-format
+msgid "%d message(s) updated"
+msgstr ""
+
+#: mailpile/plugins/compose.py:634
+msgid "Missing encryption keys"
+msgstr ""
+
+#: mailpile/plugins/compose.py:691
+msgid "Delay between attempts to send mail"
+msgstr ""
+
+#: mailpile/plugins/contacts.py:304
+#, python-format
+msgid "Required paramter missing. Required parameters are: %s"
+msgstr ""
+
+#: mailpile/plugins/contacts.py:312
+#, python-format
+msgid ""
+"Unknown parameter passed to importer. Provided %s; but known parameters are: "
+"%s"
+msgstr ""
+
+#: mailpile/plugins/demos.py:45
+msgid "Demo Contacts"
+msgstr "Vzorový kontakt"
+
+#: mailpile/plugins/demos.py:46
+msgid "This is the demo importer"
+msgstr "Toto je imortér vzoru"
+
+#: mailpile/plugins/demos.py:49
+#, fuzzy
+msgid "Activate demo importer"
+msgstr "Toto je imortér vzoru"
+
+#: mailpile/plugins/demos.py:50
+msgid "Contact name"
+msgstr "Jméno kontaktu"
+
+#: mailpile/plugins/demos.py:51
+msgid "Contact email"
+msgstr "Email kontaktu"
+
+#: mailpile/plugins/search.py:52
+#, fuzzy
+msgid "No results"
+msgstr "Nenalezeny žádné výsledky"
+
+#: mailpile/plugins/search.py:89
+#, python-format
+msgid "Weird starting point: %s"
+msgstr ""
+
+#: mailpile/plugins/search.py:204
+#, fuzzy, python-format
+msgid "Raw message: %s"
+msgstr "Jaká je zpráva %s?"
+
+#: mailpile/plugins/setup_magic.py:113
+msgid "Created default tags"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:124
+msgid "Enabling spambayes autotagger"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:126
+msgid "Please install spambayes for super awesome spam filtering"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:134
+msgid "Enabling gravatar image importer"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:140
+#, fuzzy
+msgid "Importing contacts from GPG keyring"
+msgstr "Importovat kontakty z GnuPG přívěsku"
+
+#: mailpile/plugins/setup_magic.py:183
+#, fuzzy, python-format
+msgid "Encrypting config to %s"
+msgstr "Připojování k %s"
+
+#: mailpile/plugins/setup_magic.py:187
+msgid "Oh no, PGP/GPG support is unavailable!"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:197
+msgid "Obfuscating search index and enabling indexing of encrypted e-mail. "
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:16
+msgid "Import contacts from GnuPG keyring"
+msgstr "Importovat kontakty z GnuPG přívěsku"
+
+#: mailpile/plugins/vcard_gnupg.py:19 mailpile/plugins/vcard_gravatar.py:28
+msgid "Enable this importer"
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:20
+msgid "Location of keyring"
+msgstr "Umístění přívěsku"
+
+#: mailpile/plugins/vcard_gravatar.py:25
+#, fuzzy
+msgid "Import contact info from a Gravatar server"
+msgstr "Importovat kontakty z GnuPG přívěsku"
+
+#: mailpile/plugins/vcard_gravatar.py:29
+msgid "Minimum days between refreshing"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:30
+msgid "Max batch size per update"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:31
+#, fuzzy
+msgid "Default thumbnail style"
+msgstr "Implicitní téma"
+
+#: mailpile/plugins/vcard_gravatar.py:32
+msgid "Preferred thumbnail rating"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:34
+msgid "Preferred thumbnail size"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:35
+msgid "Gravatar server URL"
+msgstr ""
+
+#: mailpile/plugins/vcard_mork.py:39
+#, fuzzy
+msgid "Location of Mork database"
+msgstr "Umístění roztříděných dat"
+
+#: static/default/html/contact/index.html:19
+msgid "Hey that's you"
+msgstr ""
+
+#: static/default/html/contact/list.html:14
+#, fuzzy
+msgid "Emails"
+msgstr "Email"
+
+#: static/default/html/contact/list.html:17
+msgid "Compose Email To This Address"
+msgstr ""
+
+#: static/default/html/contact/list.html:20
+msgid "More Address"
+msgstr ""
+
+#: static/default/html/contact/list.html:28
+#: static/default/html/search/index.html:16
+msgid "Previous"
+msgstr "Předcházející"
+
+#: static/default/html/contact/list.html:31
+#: static/default/html/search/index.html:21
+msgid "Next"
+msgstr "Další"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "of"
+msgstr "z"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/contact/list.html:44
+#: static/default/html/layouts/base.html:81
+#: static/default/html/partials/tools_contacts.html:3
+#: static/default/html/partials/tools_contacts.html:11
+msgid "Contacts"
+msgstr "Kontakty"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "1 Conversation"
+msgstr "1 konverzace"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "No results found"
+msgstr "Nenalezeny žádné výsledky"
+
+#: static/default/html/layouts/base.html:46
+msgid "Close"
+msgstr ""
+
+#: static/default/html/layouts/base.html:71
+#, python-format
+msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
+msgstr "%(name)s<small> hromádka <b>%(size)s</b> emailů</small>"
+
+#: static/default/html/layouts/base.html:80
+msgid "Compose"
+msgstr ""
+
+#: static/default/html/layouts/base.html:82
+#: static/default/html/partials/tools_tags.html:3
+#: static/default/html/partials/tools_tags.html:10
+#: static/default/html/tag/list.html:54
+msgid "Tags"
+msgstr "Štítky"
+
+#: static/default/html/layouts/base.html:83
+msgid "Donate"
+msgstr ""
+
+#: static/default/html/layouts/base.html:84
+#: static/default/html/tag/list.html:30
+#, fuzzy
+msgid "Settings"
+msgstr "Vytváření: %s"
+
+#: static/default/html/layouts/base.html:98
+#, fuzzy
+msgid "emails"
+msgstr "Email"
+
+#: static/default/html/layouts/base.html:127
+msgid "Photos"
+msgstr "Fotky"
+
+#: static/default/html/layouts/base.html:133
+msgid "Files"
+msgstr "Soubory"
+
+#: static/default/html/layouts/base.html:139
+msgid "Links"
+msgstr "Odkazy"
+
+#: static/default/html/layouts/base.html:145
+msgid "Groups"
+msgstr "Skupiny"
+
+#: static/default/html/layouts/base.html:200
+#: static/default/html/partials/compose.html:27
+#: static/default/html/partials/thread_metadata.html:3
+#: static/default/html/partials/thread_metadata.html:6
+msgid "From"
+msgstr "Od"
+
+#: static/default/html/layouts/base.html:200
+#, fuzzy
+msgid "Start Date"
+msgstr "Začátek"
+
+#: static/default/html/layouts/base.html:200
+msgid "to"
+msgstr "do"
+
+#: static/default/html/layouts/base.html:200
+msgid "Present"
+msgstr "Současnost"
+
+#: static/default/html/layouts/base.html:201
+#, fuzzy
+msgid "With"
+msgstr "S:"
+
+#: static/default/html/layouts/base.html:201
+msgid "No Tags"
+msgstr "Žádné štítky"
+
+#: static/default/html/layouts/base.html:202
+msgid "In"
+msgstr ""
+
+#: static/default/html/layouts/base.html:202
+#, fuzzy
+msgid "All Groups"
+msgstr "Všechny skupiny"
+
+#: static/default/html/layouts/base.html:203
+#, fuzzy
+msgid "And"
+msgstr "A:"
+
+#: static/default/html/layouts/base.html:203
+#, fuzzy
+msgid "All Contacts"
+msgstr "Kontakty"
+
+#: static/default/html/page/donate/index.html:2
+#: static/default/html/page/donate/index.html:7
+#, fuzzy
+msgid "Donate To Mailpile"
+msgstr "Prosíme podpořte Mailpile"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Or you can donate to our"
+msgstr "Nebo můžete podpořit naši"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Bitcoin Wallet"
+msgstr "Bitcoin Peněženku"
+
+#: static/default/html/page/donate/index.html:22
+msgid "Mailpile"
+msgstr "Mailpile"
+
+#: static/default/html/page/donate/index.html:22
+msgid "is free software made by"
+msgstr "je svobodný software vytvářený"
+
+#: static/default/html/page/donate/index.html:22
+msgid "more"
+msgstr "dalšími"
+
+#: static/default/html/partials/compose.html:40
+#, fuzzy
+msgid "Not Signed"
+msgstr "Podepsáno"
+
+#: static/default/html/partials/compose.html:41
+#, fuzzy
+msgid "Signature Error"
+msgstr "Vnitřní chyba"
+
+#: static/default/html/partials/compose.html:42
+#: static/default/html/partials/compose.html:43
+#, fuzzy
+msgid "Signed"
+msgstr "Podepsáno"
+
+#: static/default/html/partials/compose.html:45
+msgid "None"
+msgstr ""
+
+#: static/default/html/partials/compose.html:47
+#, fuzzy
+msgid "Can't Encrypt"
+msgstr "Zakódováno"
+
+#: static/default/html/partials/compose.html:48
+msgid "Error Encrypting"
+msgstr ""
+
+#: static/default/html/partials/compose.html:74
+msgid "To"
+msgstr "Komu"
+
+#: static/default/html/partials/compose.html:75
+#: static/default/html/partials/compose.html:81
+msgid "Cc"
+msgstr "Kopie"
+
+#: static/default/html/partials/compose.html:76
+#: static/default/html/partials/compose.html:85
+msgid "Bcc"
+msgstr "Skrytá kopie"
+
+#: static/default/html/partials/compose.html:89
+msgid "Subject"
+msgstr "Předmět"
+
+#: static/default/html/partials/compose.html:90
+#, fuzzy
+msgid "New Subject"
+msgstr "Předmět"
+
+#: static/default/html/partials/compose.html:94
+#, fuzzy
+msgid "Message"
+msgstr "Zprávy"
+
+#: static/default/html/partials/compose.html:95
+msgid "Your reply..."
+msgstr ""
+
+#: static/default/html/partials/compose.html:103
+msgid "Save"
+msgstr "Uložit"
+
+#: static/default/html/partials/compose.html:107
+msgid "Reply"
+msgstr "Odpovědět"
+
+#: static/default/html/partials/compose.html:111
+msgid "Send"
+msgstr "Odeslat"
+
+#: static/default/html/partials/contact_add.html:1
+#, fuzzy
+msgid "Add New Contact"
+msgstr "Přidat kontakty"
+
+#: static/default/html/partials/contact_add.html:6
+#: static/default/html/settings/index.html:20
+msgid "Name"
+msgstr "Jméno"
+
+#: static/default/html/partials/contact_add.html:9
+msgid "E-mail"
+msgstr "E-mail"
+
+#: static/default/html/partials/contact_add.html:12
+#: static/default/html/tag/add.html:40
+msgid "Add"
+msgstr "Přidat"
+
+#: static/default/html/partials/errors_content.html:3
+#, fuzzy
+msgid "Oops, You've Found a Quirk"
+msgstr "Ups, našli jsme žertík!"
+
+#: static/default/html/partials/errors_content.html:4
+msgid ""
+"We were unable to find the message you requested, perhaps it was deleted?"
+msgstr "Nebyli jsme schopni najít požadovanou zprávu, možná byla smazána?"
+
+#: static/default/html/partials/errors_content.html:6
+#, fuzzy
+msgid "Contact Missing"
+msgstr "Kontakty"
+
+#: static/default/html/partials/errors_content.html:7
+#, fuzzy
+msgid ""
+"We were unable to find the contact you requested, perhaps it was typed (or "
+"linked to) incorrectly?"
+msgstr "Nebyli jsme schopni najít požadovanou zprávu, možná byla smazána?"
+
+#: static/default/html/partials/errors_content.html:9
+#, python-format
+msgid ""
+"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
+"\">bug report</a>"
+msgstr ""
+"Pokud myslíte, že se jedná o chybu, vyplňte <a href=\"%(url)s\" target="
+"\"_blank\">zprávu</a>"
+
+#: static/default/html/partials/thread_message.html:17
+msgid "No Recipients"
+msgstr ""
+
+#: static/default/html/partials/thread_metadata.html:17
+#, fuzzy
+msgid "Expand Message"
+msgstr "Zprávy"
+
+#: static/default/html/partials/tools_contacts.html:4
+msgid "Add Contact"
+msgstr "Přidat kontakty"
+
+#: static/default/html/partials/tools_contacts.html:5
+msgid "Import Contacts"
+msgstr "Importovat kontakty"
+
+#: static/default/html/partials/tools_contacts.html:11
+#: static/default/html/partials/tools_tags.html:10
+msgid "selected"
+msgstr "označeno"
+
+#: static/default/html/partials/tools_message.html:2
+#, fuzzy
+msgid "No Subject"
+msgstr "Předmět"
+
+#: static/default/html/partials/tools_message.html:4
+msgid "People"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:10
+#: static/default/html/tag/list.html:29
+msgid "Messages"
+msgstr "Zprávy"
+
+#: static/default/html/partials/tools_message.html:12
+msgid "Move Whole Thread to Later"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:13
+msgid "Assign Tags to Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:14
+msgid "Archive Whole Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:15
+msgid "Delete Whole Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:3
+msgid "All"
+msgstr "Všem"
+
+#: static/default/html/partials/tools_search.html:4
+msgid "Unread"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:6
+#: static/default/html/tag/add.html:15 static/default/html/tag/index.html:19
+#: static/default/html/tag/list.html:24
+msgid "Display"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:8
+msgid "Snug"
+msgstr "Příjemný"
+
+#: static/default/html/partials/tools_search.html:9
+msgid "Cozy"
+msgstr "Pohodlný"
+
+#: static/default/html/partials/tools_search.html:10
+msgid "Comfy"
+msgstr "Útulný"
+
+#: static/default/html/partials/tools_search.html:11
+msgid "Detailed"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:27
+#, fuzzy
+msgid "Messages Selected"
+msgstr "Zprávy"
+
+#: static/default/html/partials/tools_search.html:27
+#: static/default/html/partials/tools_search.html:28
+msgid "Click message or checkbox to select"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:32
+msgid "Move to Later"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:33
+msgid "Move to Group"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:34
+msgid "Assign Tags"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:36
+msgid "Archive Selection"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:38
+msgid "Untag"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:40
+msgid "Delete Selection"
+msgstr ""
+
+#: static/default/html/partials/tools_tags.html:4
+msgid "Add Tag"
+msgstr "Přidat štítek"
+
+#: static/default/html/search/index.html:25
+msgid "Conversations"
+msgstr "Konverzace"
+
+#: static/default/html/search/index.html:30
+msgid "No Results Found"
+msgstr "Nenalezeny žádné výsledky"
+
+#: static/default/html/search/index.html:34
+#, python-format
+msgid ""
+"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
+"strong> seconds."
+msgstr ""
+"Prohledáno <strong>%(number)s</strong> zpráv za <strong>%(elapsed)s</strong> "
+"sekundy."
+
+#: static/default/html/search/index.html:34
+msgid "Vroom!"
+msgstr "Vroom!"
+
+#: static/default/html/settings/index.html:7
+msgid "Your Profiles"
+msgstr "Profily"
+
+#: static/default/html/settings/index.html:17
+msgid "Add New Profile"
+msgstr "Přidat nový profil"
+
+#: static/default/html/settings/index.html:21
+msgid "Chelsea Manning"
+msgstr ""
+
+#: static/default/html/settings/index.html:23
+msgid "Email"
+msgstr "Email"
+
+#: static/default/html/settings/index.html:24
+msgid "chelsea@email.com"
+msgstr ""
+
+#: static/default/html/settings/index.html:26
+msgid "SMTP Server"
+msgstr "SMTP server"
+
+#: static/default/html/settings/index.html:27
+msgid "Login"
+msgstr "Přihlašovací jméno"
+
+#: static/default/html/settings/index.html:28
+msgid "username@mailserver.org"
+msgstr ""
+
+#: static/default/html/settings/index.html:30
+msgid "Password"
+msgstr "Heslo"
+
+#: static/default/html/settings/index.html:33
+msgid "Server"
+msgstr "Server"
+
+#: static/default/html/settings/index.html:34
+msgid "smtp.mailserver.org"
+msgstr ""
+
+#: static/default/html/settings/index.html:36
+msgid "Port"
+msgstr "Port"
+
+#: static/default/html/settings/index.html:43
+msgid "Add Profile"
+msgstr "Přidat profil"
+
+#: static/default/html/tag/add.html:3
+#, fuzzy
+msgid "Add New Tag"
+msgstr "Přidat štítek"
+
+#: static/default/html/tag/add.html:9 static/default/html/tag/add.html:17
+#: static/default/html/tag/index.html:13 static/default/html/tag/index.html:21
+msgid "Tag"
+msgstr "Štítek"
+
+#: static/default/html/tag/add.html:10 static/default/html/tag/index.html:14
+msgid "Friends & Family"
+msgstr ""
+
+#: static/default/html/tag/add.html:12 static/default/html/tag/index.html:16
+msgid "Slug"
+msgstr "Pro hezčí URL"
+
+#: static/default/html/tag/add.html:13 static/default/html/tag/index.html:17
+msgid "friends-family"
+msgstr ""
+
+#: static/default/html/tag/add.html:18 static/default/html/tag/index.html:23
+msgid "Archive"
+msgstr "Archivovat"
+
+#: static/default/html/tag/add.html:21 static/default/html/tag/index.html:27
+msgid "Parent"
+msgstr ""
+
+#: static/default/html/tag/add.html:23 static/default/html/tag/index.html:29
+msgid "none"
+msgstr ""
+
+#: static/default/html/tag/add.html:31 static/default/html/tag/index.html:38
+msgid "Template"
+msgstr ""
+
+#: static/default/html/tag/add.html:33 static/default/html/tag/index.html:40
+#, fuzzy
+msgid "Default"
+msgstr "Implicitní téma"
+
+#: static/default/html/tag/add.html:36 static/default/html/tag/index.html:43
+#, fuzzy
+msgid "Search Terms"
+msgstr "Vyhledávám %s"
+
+#: static/default/html/tag/index.html:22
+msgid "Priority Tag"
+msgstr ""
+
+#: static/default/html/tag/index.html:24
+msgid "Invisible"
+msgstr ""
+
+#: static/default/html/tag/index.html:48
+#, fuzzy
+msgid "Save tag"
+msgstr "Uložit"
+
+#: static/default/html/tag/list.html:13
+msgid "Total"
+msgstr "Celkem"
+
+#: static/default/html/tag/list.html:18
+msgid "New"
+msgstr "Nové"
+
+#: static/default/html/tag/list.html:44
+#, fuzzy
+msgid "Archived Tags"
+msgstr "Archivováno"
+
+#~ msgid "WARNING: Imported old config from %s"
+#~ msgstr "VAROVÁNÍ: Importována stará konfigurace z %s"
+
+#~ msgid "WARNING: Failed to import config from %s"
+#~ msgstr "VAROVÁNÍ: Import konfigurace z %s selhal"
+
+#~ msgid "Could not parse (%s): %s"
+#~ msgstr "Nelze analyzovat (%s): %s"
+
+#~ msgid "Could not assign mailbox:%s = %s"
+#~ msgstr "Nelze přiřadit schránku:%s = %s"
+
+#~ msgid "ID out of bounds: %s"
+#~ msgstr "ID mimo rozpětí: %s"
+
+#~ msgid "Statistics updated"
+#~ msgstr "Statistiky aktualizovány"
+
+#~ msgid "disabled."
+#~ msgstr "vypnuto."
+
+#~ msgid "Counting messages in tag:%s"
+#~ msgstr "Počítání zpráv se štítkem: %s"
+
+#~ msgid "Sorry, this UI cannot edit messages."
+#~ msgstr "Omlouváme se, toto UI nedovoluje upravovat zprávy."
+
+#~ msgid "Decode failed: %s %s"
+#~ msgstr "Dekódování selhalo: %s %s"
+
+#~ msgid "Date:"
+#~ msgstr "Datum:"
+
+#~ msgid "at"
+#~ msgstr "na"
+
+#~ msgid "From:"
+#~ msgstr "Od:"
+
+#~ msgid "To:"
+#~ msgstr "Komu:"
+
+#~ msgid "Cc:"
+#~ msgstr "Kopie:"
+
+#~ msgid "Bcc:"
+#~ msgstr "Skrytá kopie:"
+
+#~ msgid "Subject:"
+#~ msgstr "Předmět:"
+
+#~ msgid "Unknown signature from"
+#~ msgstr "Neznámý podpis od"
+
+#~ msgid "Signed with unknown key"
+#~ msgstr "Podepsáno neznámým klíčem"
+
+#~ msgid "Successfully decrypted message"
+#~ msgstr "Zpráva úspěšně rozšifrována"
+
+#~ msgid "Forward"
+#~ msgstr "Přeposlat"
+
+#~ msgid "No Attachments"
+#~ msgstr "Žádné přílohy"
+
+#~ msgid "Message not found!"
+#~ msgstr "Zprávy nenalezeny!"
+
+#~ msgid "View Messages"
+#~ msgstr "Zobrazit zprávy"
+
+#~ msgid "Enter New Tag Info"
+#~ msgstr "Vložte info ke štítku"
+
+#~ msgid "Delete"
+#~ msgstr "Smazat"
+
+#~ msgid "Show All"
+#~ msgstr "Zobraz vše"
+
+#~ msgid "Fluffy"
+#~ msgstr "Načechraný"
+
+#~ msgid "Contact Info"
+#~ msgstr "Kontakt"
+
+#~ msgid "Website"
+#~ msgstr "Webová stránka"
+
+#~ msgid "PGP Key"
+#~ msgstr "PGP klíč"

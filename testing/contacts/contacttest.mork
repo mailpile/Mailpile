@@ -1,0 +1,38 @@
+// 
+< <(a=c)> // (f=iso-8859-1)
+ (B8=Custom4)(B9=Notes)(BA=LastModifiedDate)(BB=RecordKey)
+ (BC=AddrCharSet)(BD=LastRecordKey)(BE=ns:addrbk:db:table:kind:pab)
+ (BF=ListName)(C0=ListNickName)(C1=ListDescription)
+ (C2=ListTotalAddresses)(C3=LowercaseListName)
+ (C4=ns:addrbk:db:table:kind:deleted)
+ (80=ns:addrbk:db:row:scope:card:all)
+ (81=ns:addrbk:db:row:scope:list:all)
+ (82=ns:addrbk:db:row:scope:data:all)(83=FirstName)(84=LastName)
+ (85=PhoneticFirstName)(86=PhoneticLastName)(87=DisplayName)
+ (88=NickName)(89=PrimaryEmail)(8A=LowercasePrimaryEmail)
+ (8B=SecondEmail)(8C=PreferMailFormat)(8D=PopularityIndex)
+ (8E=AllowRemoteContent)(8F=WorkPhone)(90=HomePhone)(91=FaxNumber)
+ (92=PagerNumber)(93=CellularNumber)(94=WorkPhoneType)(95=HomePhoneType)
+ (96=FaxNumberType)(97=PagerNumberType)(98=CellularNumberType)
+ (99=HomeAddress)(9A=HomeAddress2)(9B=HomeCity)(9C=HomeState)
+ (9D=HomeZipCode)(9E=HomeCountry)(9F=WorkAddress)(A0=WorkAddress2)
+ (A1=WorkCity)(A2=WorkState)(A3=WorkZipCode)(A4=WorkCountry)
+ (A5=JobTitle)(A6=Department)(A7=Company)(A8=_AimScreenName)
+ (A9=AnniversaryYear)(AA=AnniversaryMonth)(AB=AnniversaryDay)
+ (AC=SpouseName)(AD=FamilyName)(AE=DefaultAddress)(AF=Category)
+ (B0=WebPage1)(B1=WebPage2)(B2=BirthYear)(B3=BirthMonth)(B4=BirthDay)
+ (B5=Custom1)(B6=Custom2)(B7=Custom3)>
+<(80=0)>
+{1:^80 {(k^BE:c)(s=9)} 
+ [1:^82(^BD=0)]}
+@$${1{@
+<(8E=1)(81=Douglas)(82=Adams)(83=Douglas Adams)(84
+   =Douglas@douglasadams.com)(85=douglas@douglasadams.com)(86
+   =Douglas_adams)(87=(858\) 555-0042)(88=(858\) 555-4200)(89
+   =42 some street)(8A=some city)(8B=00042)(8C=England)(8D
+   =http://www.douglasadams.com)>
+{-1:^80 {(k^BE:c)(s=9)} 
+ [1:^82(^BD=1)]
+ [-1(^83^81)(^84^82)(^87^83)(^89^84)(^8A^85)(^88^86)(^90^87)(^93^88)
+   (^9F^89)(^A1^8A)(^A3^8B)(^A4^8C)(^B0^8D)(^BB=1)]}
+@$$}1}@

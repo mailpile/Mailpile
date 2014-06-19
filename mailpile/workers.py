@@ -1,5 +1,6 @@
 import threading
 import time
+from gettext import gettext as _
 
 import mailpile.util
 from mailpile.util import *
@@ -27,10 +28,14 @@ class Cron(threading.Thread):
         self.ALIVE = False
         self.name = name
         self.session = session
+        self.running = 'Idle'
         self.schedule = {}
         self.sleep = 10
         # This lock is used to synchronize
         self.lock = threading.Lock()
+
+    def __str__(self):
+        return ': '.join([threading.Thread.__str__(self), self.running])
 
     def add_task(self, name, interval, task):
         """
@@ -43,12 +48,12 @@ class Cron(threading.Thread):
         """
         self.lock.acquire()
         try:
-                self.schedule[name] = [name, interval, task, time.time()]
-                self.sleep = 1
-                self.__recalculateSleep()
+            self.schedule[name] = [name, interval, task, time.time()]
+            self.sleep = 1
+            self.__recalculateSleep()
         finally:
-                #Not releasing the lock will block the entire cron thread
-                self.lock.release()
+            # Not releasing the lock will block the entire cron thread
+            self.lock.release()
 
     def __recalculateSleep(self):
         """
@@ -61,7 +66,7 @@ class Cron(threading.Thread):
         for i in range(2, 61):  # i = second
             # Check if any scheduled task intervals are != 0 mod i
             filteredTasks = [True for task in self.schedule.values()
-                                           if int(task[1]) % i != 0]
+                             if int(task[1]) % i != 0]
             # We can sleep for i seconds if i divides all intervals
             if (len(filteredTasks) == 0):
                 self.sleep = i
@@ -102,26 +107,33 @@ class Cron(threading.Thread):
             self.lock.release()
             #Execute the tasks
             for name, task in tasksToBeExecuted:
-                    #Set last_executed
-                    self.schedule[name][3] = time.time()
+                # Set last_executed
+                self.schedule[name][3] = time.time()
+                try:
+                    self.running = name
                     task()
+                except Exception, e:
+                    self.session.ui.error(('%s failed in %s: %s'
+                                           ) % (name, self.name, e))
+                finally:
+                    self.running = 'Idle'
 
-            # Some tasks take longer than others,
-            #    so use the time before executing tasks
-            #    as reference for the delay
+            # Some tasks take longer than others, so use the time before
+            # executing tasks as reference for the delay
             sleepTime = self.sleep
             delay = time.time() - now + sleepTime
 
-            # Sleep for max. 1 sec to react to the quit
-            #    signal in time
+            # Sleep for max. 1 sec to react to the quit signal in time
             while delay > 0 and self.ALIVE:
                 # self.sleep might change during loop (if tasks are modified)
-                # In that case, just check if any tasks need to be executed
+                # In that case, just wake up and check if any tasks need
+                # to be executed
                 if self.sleep != sleepTime:
-                        delay -= (sleepTime - self.sleep)  # old-new
-                # Sleep for max 1 second to check self.ALIVE
-                time.sleep(min(1, delay))
-                delay -= 1
+                    delay = 0
+                else:
+                    # Sleep for max 1 second to check self.ALIVE
+                    time.sleep(max(0, min(1, delay)))
+                    delay -= 1
 
     def quit(self, session=None, join=True):
         """
@@ -148,8 +160,12 @@ class Worker(threading.Thread):
         self.ALIVE = False
         self.JOBS = []
         self.LOCK = threading.Condition()
+        self.running = 'Idle'
         self.pauses = 0
         self.session = session
+
+    def __str__(self):
+        return ': '.join([threading.Thread.__str__(self), self.running])
 
     def add_task(self, session, name, task):
         self.LOCK.acquire()
@@ -184,6 +200,7 @@ class Worker(threading.Thread):
             self.LOCK.release()
 
             try:
+                self.running = name
                 if session:
                     session.ui.mark('Starting: %s' % name)
                     session.report_task_completed(name, task())
@@ -194,6 +211,8 @@ class Worker(threading.Thread):
                                        ) % (name, self.NAME, e))
                 if session:
                     session.report_task_failed(name)
+            finally:
+                self.running = 'Idle'
 
     def pause(self, session):
         self.LOCK.acquire()

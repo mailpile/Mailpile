@@ -1,0 +1,117 @@
+{%- set activities = (activities or []) + get_ui_elements('activities', state) -%}
+{%- set display_refiners = (display_refiners or []) + get_ui_elements('display_refiners', state) -%}
+{%- set display_modes = (display_modes or []) + get_ui_elements('display_modes', state) -%}
+{%- set selection_actions = (selection_actions or []) + get_ui_elements('selection_actions', state) -%}
+
+{%- if tools_all_in_bulk_actions %}
+<div class="bulk-actions clearfix">
+{%- endif %}
+
+{%- if (activities or display_refiners or display_modes or
+        hard_coded_activities or
+        hard_coded_display_refiners or
+        hard_coded_display_modes) %}
+{%- if not tools_all_in_bulk_actions %}
+<nav class="sub-navigation clearfix">
+{%- endif %}
+  <ul class="left horizontal">
+  {%- for elem in activities %}
+    <li class="btn-activity-{{elem.name}}
+        {%- if state.command_url == elem.url %} navigation-on{% endif %}">
+      <a href="{{elem.url}}" title="{{elem.description}}">
+      {%- if elem.icon and '.' in elem.icon -%}
+        <img class="navigation-icon" src="{{elem.icon}}">
+      {%- elif elem.icon -%}
+        <span class="navigation-icon icon-{{elem.icon}}"></span>
+      {%- endif %}<span class="navigation-text">{{elem.text}}</span>
+      </a>
+    </li>
+  {%- endfor %}{{ hard_coded_activities|safe }}
+  {%- if activities %}<script>
+    $(document).ready({{
+      ui_elements_setup('.btn-activity-%(name)s', activities)
+    }});
+  </script>{% endif %}
+  {%- for elem in display_refiners %}
+    {%- set url = elem.url|add_state_query_string(state, elem) %}
+    <li class="btn-display-refiner-{{elem.name}}
+        {%- if state.command_url|add_state_query_string(state) == url %} navigation-on{% endif %}">
+      <a href="{{url}}" title="{{elem.description}}">
+      {%- if elem.icon and '.' in elem.icon -%}
+        <img class="navigation-icon" src="{{elem.icon}}">
+      {%- elif elem.icon -%}
+        <span class="navigation-icon icon-{{elem.icon}}"></span>
+      {%- endif %}<span class="navigation-text">{{elem.text}}</span>
+      </a>
+    </li>
+  {%- endfor %}{{ hard_coded_refiners|safe }}
+  {%- if display_refiners %}<script>
+    $(document).ready({{
+      ui_elements_setup('.btn-display-refiner-%(name)s', display_refiners)
+    }});
+  </script>{% endif %}
+  </ul>
+  <ul class="right horizontal">
+  {%- for elem in display_modes %}
+    <li class="btn-display-mode-{{elem.name}}
+        {%- if state.command_url == elem.url %} navigation-on{% endif %}">
+      <a href="{{elem.url|add_state_query_string(state, elem)}}"
+         title="{{elem.description}}">
+      {%- if elem.icon and '.' in elem.icon -%}
+        <img class="navigation-icon" src="{{elem.icon}}">
+      {%- elif elem.icon -%}
+        <span class="navigation-icon icon-{{elem.icon}}"></span>
+      {%- endif %}<span class="navigation-text">{{elem.text}}</span>
+      </a>
+    </li>
+  {%- endfor %}{{ hard_coded_display_modes|safe }}
+  {%- if display_modes %}<script>
+    $(document).ready({{
+      ui_elements_setup('.btn-display-mode-%(name)s', display_modes)
+    }});
+  </script>{% endif %}
+  </ul>
+{%- if not tools_all_in_bulk_actions %}
+</nav>
+{%- endif %}
+{%- endif %}
+{%- if selection_actions or hard_coded_selection_actions %}
+{%- if not tools_all_in_bulk_actions %}
+<div class="bulk-actions clearfix">
+{%- endif %}
+  {%- if not tools_disable_checkbox %}
+  <div id="bulk-actions-message" class="left" data-bulk_selected="{{_("Items Selected")}}" data-bulk_selected_none="{{_('Click item or checkbox to select')}}">
+    {{_('Click item or checkbox to select')}}
+  </div>
+  {%- endif %}
+  <ul class="horizontal right">
+  {%- for elem in selection_actions %}
+    <li class="btn-selection-action-{{elem.name}}
+        {%- if state.command_url == elem.url %} navigation-on{% endif %}">
+      <a href="{{elem.url|add_state_query_string(state, elem)}}"
+         title="{{elem.description}}">
+      {%- if elem.icon and '.' in elem.icon -%}
+        <img class="navigation-icon" src="{{elem.icon}}" alt="{{elem.text}}">
+      {%- elif elem.icon -%}
+        <span class="navigation-icon icon-{{elem.icon}}"></span>
+      {%- else -%}{{elem.text}}{%- endif -%}
+      </a>
+    </li>
+  {%- endfor %}{{ hard_coded_selection_actions|safe }}
+  {%- if not tools_disable_checkbox %}
+    <li><input type="checkbox" id="pile-select-all-action" class="bulk-action-select-all" tabindex="-1"></li>
+  {%- endif %}
+  </ul>
+  {%- if selection_actions %}<script>
+    $(document).ready({{
+      ui_elements_setup('.btn-selection-action-%(name)s', selection_actions)
+    }});
+  </script>{% endif %}
+{%- if not tools_all_in_bulk_actions %}
+</div>
+{%- endif %}
+{%- endif %}
+
+{%- if tools_all_in_bulk_actions %}
+</div>
+{%- endif %}

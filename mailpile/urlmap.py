@@ -1,9 +1,10 @@
 import cgi
+from gettext import gettext as _
 from urlparse import parse_qs, urlparse
 from urllib import quote
 
 from mailpile.commands import Command, COMMANDS
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.util import *
 
 
@@ -44,7 +45,8 @@ class UrlMap:
     """
     API_VERSIONS = (0, )
 
-    def __init__(self, session):
+    def __init__(self, session=None, config=None):
+        self.config = config or session.config
         self.session = session
 
     def _prefix_to_query(self, path, query_data, post_data):
@@ -63,12 +65,12 @@ class UrlMap:
 
     def _api_commands(self, method, strict=False):
         return [c for c in COMMANDS
-                        if (not method) or
-                           (c.SYNOPSIS[2] and (method in c.HTTP_CALLABLE or
-                                               not strict))]
+                if ((not method)
+                    or (c.SYNOPSIS[2] and (method in c.HTTP_CALLABLE
+                                           or not strict)))]
 
-    def _command(self, name, args=None, query_data=None, post_data=None,
-                             method='GET'):
+    def _command(self, name,
+                 args=None, query_data=None, post_data=None, method='GET'):
         """
         Return an instantiated mailpile.command object or raise a UsageError.
 
@@ -93,8 +95,8 @@ class UrlMap:
         """
         try:
             match = [c for c in self._api_commands(method, strict=False)
-                             if (method and name == c.SYNOPSIS[2]) or
-                                (not method and name == c.SYNOPSIS[1])]
+                     if ((method and name == c.SYNOPSIS[2]) or
+                         (not method and name == c.SYNOPSIS[1]))]
             if len(match) != 1:
                 raise UsageError('Unknown command: %s' % name)
         except ValueError, e:
@@ -105,7 +107,7 @@ class UrlMap:
             raise BadMethodError('Invalid method (%s): %s' % (method, name))
 
         # FIXME: Move this somewhere smarter
-        SPECIAL_VARS = ('csrf', )
+        SPECIAL_VARS = ('csrf', 'arg')
 
         if command.HTTP_STRICT_VARS:
             for var in (post_data or []):
@@ -124,12 +126,13 @@ class UrlMap:
 
             ui_keys = [k for k in ((query_data or {}).keys() +
                                    (post_data or {}).keys())
-                               if k.startswith('ui_')]
+                       if k.startswith('ui_')]
             copy_vars = ((ui_keys, query_data),
                          (ui_keys, post_data),
                          (command.HTTP_QUERY_VARS, query_data),
                          (command.HTTP_QUERY_VARS, post_data),
-                         (command.HTTP_POST_VARS, post_data))
+                         (command.HTTP_POST_VARS, post_data),
+                         (['arg'], query_data))
         else:
             for var in command.HTTP_BANNED_VARS:
                 var = var.replace('[]', '')
@@ -138,7 +141,8 @@ class UrlMap:
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
 
             copy_vars = (((query_data or {}).keys(), query_data),
-                         ((post_data or {}).keys(), post_data))
+                         ((post_data or {}).keys(), post_data),
+                         (['arg'], query_data))
 
         data = {
             '_method': method
@@ -147,15 +151,24 @@ class UrlMap:
             for var in vlist:
                 varBB = var + '[]'
                 if src and (var in src or varBB in src):
-                    sdata = (var in src) and src[var] or src.get(varBB, '')
+                    sdata = src[var] if (var in src) else src[varBB]
                     if isinstance(sdata, cgi.FieldStorage):
-                        data[var] = [_FancyString(sdata.value.decode('utf-8'))]
                         if hasattr(sdata, 'filename'):
+                            data[var] = [_FancyString(sdata.value)]
                             data[var][0].filename = sdata.filename
+                        else:
+                            data[var] = [sdata.value.decode('utf-8')]
                     else:
                         data[var] = [d.decode('utf-8') for d in sdata]
 
         return command(self.session, name, args, data=data)
+
+    OUTPUT_SUFFIXES = ['.css', '.html', '.js',  '.json', '.rss', '.txt',
+                       '.text', '.vcf', '.xml',
+                       # These are the template-based ones which can
+                       # be embedded in JSON.
+                       '.jcss', '.jhtml', '.jjs', '.jrss', '.jtxt',
+                       '.jxml']
 
     def _choose_output(self, path_parts, fmt='html'):
         """
@@ -184,14 +197,16 @@ class UrlMap:
             path_parts.pop(-1)
         else:
             fn = path_parts.pop(-1)
-            for suffix in ('.html', '.jhtml'):
+            for suffix in self.OUTPUT_SUFFIXES:
+                if suffix == '.' + fn:
+                    return self._command('output', [suffix[1:]], method=False)
                 if fn.endswith(suffix):
-                    # FIXME: We are passing user input here which may
-                    #        have security implications.
-                    return self._command('output', [fn], method=False)
-            for suffix in ('as.json', 'as.xml', 'as.vcf'):
-                if fn == suffix:
-                    return self._command('output', [suffix[3:]], method=False)
+                    if fn == 'as' + suffix:
+                        return self._command('output', [fn[3:]], method=False)
+                    else:
+                        # FIXME: We are passing user input here which may
+                        #        have security implications.
+                        return self._command('output', [fn], method=False)
             raise UsageError('Invalid output format: %s' % fn)
         return self._command('output', [fmt], method=False)
 
@@ -208,9 +223,9 @@ class UrlMap:
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
         >>> commands[0].args
-        ['json']
+        ('json',)
         >>> commands[1].args
-        ['@20', 'in:inbox']
+        ('@20', 'in:inbox')
         """
         output = self._choose_output(path_parts)
 
@@ -219,9 +234,9 @@ class UrlMap:
             pos = path_parts[-1].startswith('@') and path_parts.pop(-1)
 
         tag_slug = '/'.join([p for p in path_parts[1:] if p])
-        tag = self.session.config.get_tag(tag_slug)
-        tag_search = [tag.search_terms % tag]
-        if tag.search_order and 'order' not in query_data:
+        tag = self.config.get_tag(tag_slug)
+        tag_search = [tag.search_terms % tag] if tag is not None else [""]
+        if tag is not None and tag.search_order and 'order' not in query_data:
             query_data['order'] = [tag.search_order]
 
         if pos:
@@ -229,9 +244,10 @@ class UrlMap:
 
         return [
             output,
-            self._command('search', args=tag_search,
-                                    query_data=query_data,
-                                    post_data=post_data)
+            self._command('search',
+                          args=tag_search,
+                          query_data=query_data,
+                          post_data=post_data)
         ]
 
     def _map_thread(self, request, path_parts, query_data, post_data):
@@ -243,21 +259,25 @@ class UrlMap:
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
         >>> commands[1].args
-        ['=123']
+        ('=123',)
         """
-        message_mid = path_parts[1]
+        message_mids, i = [], 1
+        while path_parts[i].startswith('='):
+            message_mids.append(path_parts[i])
+            i += 1
         return [
             self._choose_output(path_parts),
-            self._command('message', args=[message_mid],
-                                     query_data=query_data,
-                                     post_data=post_data)
+            self._command('message',
+                          args=message_mids,
+                          query_data=query_data,
+                          post_data=post_data)
         ]
 
     def _map_RESERVED(self, *args):
         """RESERVED FOR LATER."""
 
     def _map_api_command(self, method, path_parts,
-                               query_data, post_data, fmt='html'):
+                         query_data, post_data, fmt='html'):
         """Map a path to a command list, prefering the longest match.
 
         >>> urlmap._map_api_command('GET', ['message', 'draft', ''], {}, {})
@@ -289,10 +309,10 @@ class UrlMap:
 
     MAP_API = 'api'
     MAP_PATHS = {
-       '':        _map_root,
-       'in':      _map_tag,
-       'thread':  _map_thread,
-       'static':  _map_RESERVED,
+        '': _map_root,
+        'in': _map_tag,
+        'thread': _map_thread,
+        'static': _map_RESERVED,
     }
 
     def map(self, request, method, path, query_data, post_data):
@@ -317,7 +337,7 @@ class UrlMap:
         The root currently just redirects to /in/inbox/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
-        (<...UrlRedirect instance at 0x...>, ['/in/inbox/'])
+        (<...UrlRedirect instance at 0x...>, ('/in/inbox/',))
 
         Tag searches have an /in/TAGNAME shorthand:
         >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
@@ -362,6 +382,10 @@ class UrlMap:
         """Map a message to it's short-hand thread URL."""
         return self._url('/thread/=%s/' % message_id, output)
 
+    def url_source(self, message_id, output=''):
+        """Map a message to it's raw message source URL."""
+        return self._url('/message/raw/=%s/as.text' % message_id, output)
+
     def url_edit(self, message_id, output=''):
         """Map a message to it's short-hand editing URL."""
         return self._url('/message/draft/=%s/' % message_id, output)
@@ -384,12 +408,12 @@ class UrlMap:
         ValueError: Unknown tag: 99
         """
         try:
-            tag = self.session.config.tags[tag_id]
+            tag = self.config.tags[tag_id]
             if tag is None:
                 raise KeyError('oops')
         except (KeyError, IndexError):
-            tag = [t for t in self.session.config.tags.values()
-                           if t.slug == tag_id.lower()]
+            tag = [t for t in self.config.tags.values()
+                   if t.slug == tag_id.lower()]
             tag = tag and tag[0]
         if tag:
             return self._url('/in/%s/' % tag.slug, output)
@@ -408,21 +432,41 @@ class UrlMap:
         '/search/?q=foo%20bar%20baz'
         >>> urlmap.url_search(['foo', 'tag:Inbox', 'wtf'], output='json')
         '/in/inbox/as.json?q=foo%20wtf'
-        >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], output='xml')
-        '/search/as.xml?q=foo%20tag%3AInbox%20tag%3ANew'
-        >>> urlmap.url_search(['foo', 'tag:Inbox', 'tag:New'], tag='Inbox')
-        '/in/inbox/?q=foo%20tag%3ANew'
+        >>> urlmap.url_search(['foo', 'in:Inbox', 'wtf'], output='json')
+        '/in/inbox/as.json?q=foo%20wtf'
+        >>> urlmap.url_search(['foo', 'in:Inbox', 'tag:New'], output='xml')
+        '/search/as.xml?q=foo%20in%3AInbox%20tag%3ANew'
+        >>> urlmap.url_search(['foo', 'tag:Inbox', 'in:New'], tag='Inbox')
+        '/in/inbox/?q=foo%20in%3ANew'
         """
         tags = tag and [tag] or [t for t in search_terms
-                                         if t.startswith('tag:')]
+                                 if (t.startswith('tag:') or
+                                     t.startswith('in:'))]
         if len(tags) == 1:
-            prefix = self.url_tag(tags[0].replace('tag:', ''))
+            prefix = self.url_tag(
+                tags[0].replace('tag:', '').replace('in:', ''))
             search_terms = [t for t in search_terms
-                                    if t not in tags and
-                                       t.replace('tag:', '') not in tags]
+                            if (t not in tags and
+                                t.replace('tag:', '').replace('in:', '')
+                                not in tags)]
         else:
             prefix = '/search/'
         return self._url(prefix, output, 'q=' + quote(' '.join(search_terms)))
+
+    @classmethod
+    def canonical_url(self, cls):
+        """Return the full versioned URL for a command"""
+        return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
+                                cls.SYNOPSIS[2])
+    @classmethod
+    def ui_url(self, cls):
+        """Return the full user-facing URL for a command"""
+        return '/%s/' % cls.SYNOPSIS[2]
+
+    @classmethod
+    def context_url(self, cls):
+        """Return the UI context URL for a command"""
+        return '/%s/' % (cls.UI_CONTEXT or cls.SYNOPSIS[2])
 
     def map_as_markdown(self):
         """Describe the current URL map as markdown"""
@@ -449,7 +493,7 @@ class UrlMap:
             if commands:
                 text.extend([
                     '### %s%s' % (method, method == 'GET' and
-                                          ' (also accept POST)' or ''),
+                                  ' (also accept POST)' or ''),
                     '',
                 ])
             commands.sort()
@@ -471,7 +515,8 @@ class UrlMap:
                     pos_args = '%s%s/' % (padding, pos_args)
                     if qs:
                         qs = newline + qs
-                text.append('    %s/%s/%s%s' % (api, command[0], pos_args, qs))
+                text.append('    %s%s%s' % (self.canonical_url(command[1]),
+                                            pos_args, qs))
                 if cls.HTTP_POST_VARS:
                     ps = '&'.join(['%s=[%s]' % (v, cls.HTTP_POST_VARS[v])
                                    for v in cls.HTTP_POST_VARS])
@@ -555,9 +600,10 @@ class HelpUrlMap(Command):
         return {'urlmap': UrlMap(self.session).map_as_markdown()}
 
 
+plugin_manager = PluginManager(builtin=True)
 if __name__ != "__main__":
-    mailpile.plugins.register_commands(HelpUrlMap, UrlRedirect,
-                                       UrlRedirectEdit, UrlRedirectThread)
+    plugin_manager.register_commands(HelpUrlMap, UrlRedirect,
+                                     UrlRedirectEdit, UrlRedirectThread)
 
 else:
     # If run as a python script, print map and run doctests.
@@ -565,10 +611,12 @@ else:
     import sys
     import mailpile.app
     import mailpile.config
-    import mailpile.plugins.tags
-    import mailpile.defaults
     import mailpile.plugins
+    import mailpile.defaults
     import mailpile.ui
+
+    # Import all the default plugins
+    from mailpile.plugins import *
 
     rules = mailpile.defaults.CONFIG_RULES
     config = mailpile.config.ConfigManager(rules=rules)
@@ -581,7 +629,7 @@ else:
     urlmap.print_map_markdown()
 
     # For the UrlMap._map_api_command test
-    mailpile.plugins.register_commands(UrlRedirect)
+    plugin_manager.register_commands(UrlRedirect)
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'urlmap': urlmap,

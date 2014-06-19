@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import sys, os
 
-# add root to sys.path so imports work without PYTHONPATH
-sys.path.append(os.path.dirname(__file__))
+# Make imports work without PYTHONPATH
+sys.path.append(
+  os.path.dirname(              # Mailpile root
+    os.path.dirname(              # scripts/
+      os.path.realpath(__file__)))) # this script
 
 from mailpile.app import Main
-
-# Load the standard plugins
-from mailpile.plugins import *
 
 Main(sys.argv[1:])

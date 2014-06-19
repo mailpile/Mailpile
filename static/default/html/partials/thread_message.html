@@ -1,0 +1,184 @@
+<div class="thread-message" id="message-{{mid}}" data-mid="{{mid}}">
+  {% set from = metadata.from %}
+  {% set url_danger = metadata.flags.spam %}
+  {% include("partials/thread_metadata.html") %}
+  <div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
+    <ul class="clearfix">
+      <li>{{_("To")}}:</li>
+      {% if metadata.to_aids %}
+      {% for to_aid in metadata.to_aids %}{% set person = result.data.addresses[to_aid] %}
+      <li class="thread-item-metadata-contact">
+        <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
+      </li>
+      {% endfor %}
+      {% else %}
+      <li>{{_("No Recipients")}} :(</li>
+      {% endif %}
+    </ul>
+    {% if metadata.cc_aids %}
+    <ul class="clearfix">
+      <li>{{_("Cc")}}:</li>
+      {% for cc_aid in metadata.cc_aids %}{% set person = result.data.addresses[cc_aid] %}
+      <li class="thread-item-metadata-contact">
+        <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if metadata.bcc_aids %}
+    <ul class="clearfix">
+      <li>{{_("Bcc:")}}:</li>
+      {% for bcc_aid in metadata.bcc_aids %}{% set person = result.data.addresses[bcc_aid] %}
+      <li class="thread-item-metadata-contact">
+        <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+        <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}">{{ contact_name(profiles, person) }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <ul class="clearfix">
+      <li>Show:</li>
+      <li><a href="/message/raw/={{ mid }}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
+    </ul>
+  </div>
+  {% set encryption_context = message.crypto.encryption.context %}
+  {% set signature_context = message.crypto.signature.context %}
+  {# If no text_part, show html_part #}
+  {% if not message.text_parts %}
+    {% for part in message.html_parts %}
+    {% if part.data %}
+    <iframe class="thread-item-html" onload="mailpile.thread_html_iframe(this)" sandbox="allow-same-origin allow-popups allow-top-navigation" seamless target="_blank" srcdoc="{{part.data }}"></iframe>
+    {% else %}
+    <div class="thread-item-text"><em>{{_("Message content is empty")}}</em></div>
+    {% endif %}
+    {% endfor %}
+  {% endif %}
+  {% set special_text_parts = [] %}
+  {% set last_part = message.text_parts|length - 1 %}
+  {% for part in message.text_parts %}
+    {# Parts that do not have own crypto attribute inherit from message itself
+     # Watch for changes to the "context" which is present in each encryption and
+     # signature section - if either has changed, then we have moved from
+     # one security context to the next, and need to let the user know.
+     #}
+    {% if part.data != "" %}
+      {% if part.crypto %}
+      <div class="thread-item-crypto clearfix">
+          {% if part.crypto.encryption %}
+            {% if part.crypto.encryption.context != encryption_context %}
+            {% set encryption_context = part.crypto.encryption.context %}
+            {% set encryption = show_message_encryption(part.crypto.encryption.status) %}
+            <span class="thread-item-crypto-info" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}">
+              <span class="icon {{ encryption.color + ' ' + encryption.icon }}"></span> <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
+            </span>
+            {% endif %}
+          {% endif %}
+          {% if part.crypto.signature %}
+            {% if part.crypto.signature.context != signature_context %}
+            {% set signature_context = part.crypto.signature.context %}
+            {% set signature = show_message_signature(part.crypto.signature.status) %}
+            <span class="thread-item-crypto-info" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}">
+              <span class="icon {{ signature.color + ' ' + signature.icon }}"></span> <span class="text {{ signature.color }}">{{ signature.text }}</span>
+            </span>
+            {% endif %}
+          {% endif %}
+        <div class="thread-item-crypto-line left"></div>
+      </div>
+      {% endif %}
+      {% autoescape false %}
+      {% if part.type == "text" %}
+        <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+      {% elif part.type in ("pgpsignedtext") %}
+        <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+      {% elif part.type in ("pgptext") %}
+        {% if part.crypto.encryption.status in ("missingkey", "error") %}
+        {% set crypto = show_message_encryption(part.crypto.encryption.status) %}
+        <div class="thread-item-crypto-error">
+          <span class="icon {{ crypto.color + ' ' + crypto.icon }}"></span>
+          <h3 class="status {{ crypto.color }}">{{ crypto.text }}</h3>
+          <p>{{ crypto.message }}</p>
+          <!-- FIXME: Make a "crypto.action" attribute in show_message_encryption() that renders a button or something... -->
+          <p><button class="message-crypto-action" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}"><span class="icon-key"></span> Send Your Public Key</button></p>
+          <!-- FIXME: Make a "crypto.suggestion" attribute in show_message_encryption() that performs further investigation.. -->
+          {% if part.crypto.encryption.missing_keys %}
+          <a href="#" class="message-crypto-investigate" data-mid="{{mid}}" data-part="{{ loop.index - 1 }}">Investigate Message</a>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+        {% endif %}
+      {% elif part.type in ("pgpbegin", "pgpend") %}
+        <div class="thread-item-{{part.type}} hide">{{part.data}}</div>
+      {% elif part.type == "quote" %}
+        {%- if message.text_parts|length - loop.index and message.text_parts[last_part].type == "signature" -%}
+          {% do special_text_parts.append("quote") %}
+          <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+        {% elif loop.index == message.text_parts|length %}
+          {% do special_text_parts.append("quote") %}
+          <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+        {% else %}
+          <div class="thread-item-quote">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+        {%- endif -%}
+      {% elif part.type == "signature" %}
+        {% do special_text_parts.append("signature") %}
+        <div class="thread-item-signature hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
+      {% else %}
+        <div class="thread-item-text"><em>{{_("Unknown Text Part")}}</em></div>
+      {% endif %}
+      {% endautoescape %}
+    {% endif %}
+  {% endfor %}
+  {% if message.attachments %}
+  <div class="thread-message-attachments">
+    <ul class="thread-message-attachments horizontal clearfix">
+      {% for att in message.attachments %}
+      <li>
+      {% set type = attachment_type(att.mimetype) %}
+      {% if type == "image-visible" %}
+      <a href="/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.mimetype }} @ {{ att.length|friendly_bytes }}"><img src="/message/download/preview/={{ mid }}/part:{{ att.count }}/"></a>
+      {% elif type == "keys" %}
+      {% do special_text_parts.append("pgp-key") %}
+      {% else %}
+      <a href="/message/download/={{ mid }}/part:{{ att.count }}/" class="{{ type }}" title="{{ att.filenmae }} @ {{ att.length|friendly_bytes }}">
+        <span class="icon-{{ type}}"></span>
+        {{ att.filename }}<small>{{ att.length|friendly_bytes }}</small>
+      </a>
+      {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  <div class="clearfix">
+  <ul class="thread-message-actions horizontal left" data-mid="{{mid}}">
+    {% if "quote" in special_text_parts or "signature" in special_text_parts %}
+    <li><a class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
+    {% endif %}
+    {% if not from.flags.contact %}
+    <li><a class="message-action-add-contact" href="#" data-name="{{from.fn}}" data-address="{{from.address}}"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
+    {% endif %}
+    {% if "pgp-key" in special_text_parts %}
+    <li><a class="message-action-import-key" href="#"><span class="icon-key"></span> {{_("Import Key")}}</a></li>
+    {% endif %}
+  </ul>
+  <ul class="thread-message-actions horizontal right" data-mid="{{mid}}">
+    {% if show_reply %}
+    <li><a class="message-action-reply" href="#"><span class="icon-reply"></span> {{_("Reply")}}</a></li>
+    {% endif %}
+    <li><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-move"></span> {{_("Move")}}</a>
+      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
+        <li role="presentation"><a class="message-action-inbox" role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> {{_("Move to Inbox")}}</a></li>
+        <li role="presentation"><a class="message-action-spam" role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> {{_("Flag as Spam")}}</a></li>
+        {% if result.data.metadata|length > 1 %}
+        <li role="presentation"><a class="message-action-unthread" role="menuitem" tabindex="-1" href="#"><span class="icon-circle-x"></span> {{_("Remove from Thread")}}</a></li>
+        {% endif %}
+      </ul>
+    </li>
+    <li><a class="message-action-trash" href="#"><span class="icon-trash"></span> {{_("Trash")}}</a></li>
+  </ul>
+  </div>
+</div>

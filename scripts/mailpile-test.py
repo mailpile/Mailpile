@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 # This script runs a set of black-box tests on Mailpile using the test
 # messages found in `testing/`.
@@ -8,6 +8,7 @@
 #
 import os
 import sys
+import time
 import traceback
 
 
@@ -16,57 +17,119 @@ mailpile_root = os.path.join(os.path.dirname(__file__), '..')
 mailpile_test = os.path.join(mailpile_root, 'testing')
 mailpile_send = os.path.join(mailpile_root, 'scripts', 'test-sendmail.sh')
 mailpile_home = os.path.join(mailpile_test, 'tmp')
+mailpile_gpgh = os.path.join(mailpile_test, 'gpg-keyring')
 mailpile_sent = os.path.join(mailpile_home, 'sent.mbx')
 
-# Add the root to our import path, import API and standard plugins
+# Set the GNUGPHOME variable to our test key
+os.environ['GNUPGHOME'] = mailpile_gpgh
+
+# Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
-from mailpile.plugins import *
+from mailpile.mail_source.mbox import MboxMailSource
+from mailpile.mail_source.maildir import MaildirMailSource
 from mailpile import Mailpile
 
 
 ##[ Black-box test script ]###################################################
 
 FROM_BRE = [u'from:r\xfanar', u'from:bjarni']
-MY_FROM = 'test@test.com'
+MY_FROM = 'team+testing@mailpile.is'
+MY_NAME = 'Mailpile Team'
+MY_KEYID = '0x7848252F'
 
 # First, we set up a pristine Mailpile
 os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
-cfg = mp._session.config
+cfg = config = mp._session.config
+ui = mp._session.ui
+
+if '-v' not in sys.argv:
+    from mailpile.ui import SilentInteraction
+    mp._session.ui = SilentInteraction(config)
+
+cfg.plugins.load('demos', process_manifest=True)
+cfg.plugins.load('hacks', process_manifest=True)
+
 
 def contents(fn):
     return open(fn, 'r').read()
 
+
 def grep(w, fn):
     return '\n'.join([l for l in open(fn, 'r').readlines() if w in l])
+
 
 def grepv(w, fn):
     return '\n'.join([l for l in open(fn, 'r').readlines() if w not in l])
 
+
 def say(stuff):
     mp._session.ui.mark(stuff)
     mp._session.ui.reset_marks()
+    if '-v' not in sys.argv:
+        sys.stderr.write('.')
 
-try:
+
+def do_setup():
     # Set up initial tags and such
     mp.setup()
 
     # Configure our fake mail sending setup
-    mp.set('profiles/0/email = %s' % MY_FROM)
-    mp.set('profiles/0/name = Test Account')
-    mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
-    mp.set('sys/debug = sendmail log compose')
+    config.profiles['0'].email = MY_FROM
+    config.profiles['0'].name = MY_NAME
+    config.sys.http_port = 33414
+    config.prefs.openpgp_header = 'encrypt'
+    config.prefs.crypto_policy = 'openpgp-sign'
 
-    # Add the mailboxes, scan them
-    for mailbox in ('tests.mbx', 'Maildir'):
+    if '-v' in sys.argv:
+        config.sys.debug = 'rescan sendmail log compose'
+
+    # Set up dummy conctact importer fortesting, disable Gravatar
+    mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
+    mp.set('prefs/vcard/importers/gravatar/0/active = false')
+    mp.set('prefs/vcard/importers/gpg/0/active = false')
+
+    # Make sure that actually worked
+    assert(not mp._config.prefs.vcard.importers.gpg[0].active)
+    assert(not mp._config.prefs.vcard.importers.gravatar[0].active)
+
+    # Copy the test Maildir...
+    for mailbox in ('Maildir', 'Maildir2'):
+        path = os.path.join(mailpile_home, mailbox)
+        os.system('cp -a %s/Maildir %s' % (mailpile_test, path))
+
+    # Add the test mailboxes
+    for mailbox in ('tests.mbx', ):
         mp.add(os.path.join(mailpile_test, mailbox))
+    mp.add(os.path.join(mailpile_home, 'Maildir'))
+
+
+def test_vcards():
+    say("Testing vcards")
+
+    # Do we have a Mr. Rogers contact?
+    mp.rescan('vcards')
+    assert(mp.contacts_view('mr@rogers.com'
+                            ).result['contact']['fn'] == u'Mr. Rogers')
+    assert(len(mp.contacts('rogers').result['contacts']) == 1)
+
+def test_load_save_rescan():
+    say("Testing load/save/rescan")
     mp.rescan()
 
     # Save and load the index, just for kicks
-    mp._config.index.save()
-    mp._config.index.load()
+    messages = len(mp._config.index.INDEX)
+    assert(messages > 5)
+    mp._config.index.save(mp._session)
+    mp._session.ui.reset_marks()
+    mp._config.index.load(mp._session)
+    mp._session.ui.reset_marks()
+    assert(len(mp._config.index.INDEX) == messages)
 
-    # Rescan AGAIN, so we can test for the presence of duplicates.
+    # Rescan AGAIN, so we can test for the presence of duplicates and
+    # verify that the move-detection code actually works.
+    os.system('rm -f %s/Maildir/*/*' % mailpile_home)
+    mp.add(os.path.join(mailpile_home, 'Maildir2'))
     mp.rescan()
 
     # Search for things, there should be exactly one match for each.
@@ -78,73 +141,175 @@ try:
                    ['dates:2013-09-17', 'feministinn'],
                    ['mailbox:tests.mbx'] + FROM_BRE,
                    ['att:jpg', 'fimmtudaginn'],
-                   ['subject:Moderation', 'kde-isl']):
+                   ['subject:Moderation', 'kde-isl', '-is:unread'],
+                   ['from:bjarni', 'subject:testing', 'subject:encryption',
+                    'should', 'encrypted', 'message', 'tag:mp_enc-decrypted'],
+                   ['from:bjarni', 'subject:inline', 'subject:encryption',
+                    'grand', 'tag:mp_enc-mixed-decrypted'],
+                   ['from:bjarni', 'subject:signatures', '-is:unread',
+                    'tag:mp_sig-unverified'],
+                   ['from:brennan', 'subject:encrypted',
+                    'testing', 'purposes', 'only', 'tag:mp_enc-decrypted'],
+                   ['from:brennan', 'subject:signed',
+                    'tag:mp_sig-unverified'],
+                   ['from:barnaby', 'subject:testing', 'soup',
+                    'tag:mp_sig-unknown', 'tag:mp_enc-decrypted'],
+                   ['from:square', 'subject:here', '-has:attachment'],
+                   ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
-        assert(results.result['count'] == 1)
+        assert(results.result['stats']['count'] == 1)
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['count'] == 8)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 17)
+
+    say('FIXME: Make sure message signatures verified')
+
+def test_message_data():
+    say("Testing message contents")
+
+    # Load up a message and take a look at it...
+    search_md = mp.search('subject:emerging').result
+    result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
+    view_md = mp.view('=%s' % result_md['mid']).result
+
+    # That loaded?
+    message_md = view_md['data']['messages'][result_md['mid']]
+    assert('athygli' in message_md['text_parts'][0]['data'])
+
+    # Load up another message and take a look at it...
+    search_bre = mp.search(*FROM_BRE).result
+    result_bre = search_bre['data']['metadata'][search_bre['thread_ids'][0]]
+    view_bre = mp.view('=%s' % result_bre['mid']).result
+
+    # Make sure message threading is working (there are message-ids and
+    # references in the test data).
+    assert(len(view_bre['thread_ids']) == 3)
 
     # Make sure we are decoding weird headers correctly
-    result_bre = mp.search(*FROM_BRE).result['messages'][0]
-    result_bre = mp.view('=%s' % result_bre['mid']).result['messages'][0]
-    say('Checking encoding: %s' % result_bre['from'])
-    assert('=C3' not in result_bre['from'])
-    say('Checking encoding: %s' % result_bre['message']['headers']['To'])
-    assert('utf' not in result_bre['message']['headers']['To'])
+    metadata_bre = view_bre['data']['metadata'][view_bre['message_ids'][0]]
+    message_bre = view_bre['data']['messages'][view_bre['message_ids'][0]]
+    from_bre = search_bre['data']['addresses'][metadata_bre['from']['aid']]
+    say('Checking encoding: %s' % from_bre)
+    assert('=C3' not in from_bre['fn'])
+    assert('=C3' not in from_bre['address'])
+    for key, val in message_bre['header_list']:
+        if key.lower() not in ('from', 'to', 'cc'):
+            continue
+        say('Checking encoding: %s: %s' % (key, val))
+        assert('utf' not in val)
+
+    # This message broke our HTML engine that one time
+    search_md = mp.search('from:heretic', 'subject:outcome').result
+    result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
+    view_md = mp.view('=%s' % result_md['mid'])
+    assert('Outcome' in view_md.as_html())
+
+
+def test_composition():
+    say("Testing composition")
 
     # Create a message...
-    new_mid = mp.message_compose().result['messages'][0]['mid']
-    assert(mp.search('tag:drafts').result['count'] == 0)
-    assert(mp.search('tag:blank').result['count'] == 1)
-    assert(mp.search('tag:sent').result['count'] == 0)
+    new_mid = mp.message_compose().result['thread_ids'][0]
+    assert(mp.search('tag:drafts').result['stats']['count'] == 0)
+    assert(mp.search('tag:blank').result['stats']['count'] == 1)
+    assert(mp.search('tag:sent').result['stats']['count'] == 0)
     assert(not os.path.exists(mailpile_sent))
 
     # Edit the message (moves from Blank to Draft, not findable in index)
     msg_data = {
-      'from': [MY_FROM],
-      'bcc': ['secret@test.com'],
-      'mid': [new_mid],
-      'subject': ['This the TESTMSG subject'],
-      'body': ['Hello world!']
+        'to': ['%s#%s' % (MY_FROM, MY_KEYID)],
+        'bcc': ['secret@test.com#%s' % MY_KEYID],
+        'mid': [new_mid],
+        'subject': ['This the TESTMSG subject'],
+        'body': ['Hello world!']
     }
     mp.message_update(**msg_data)
-    assert(mp.search('tag:drafts').result['count'] == 1)
-    assert(mp.search('tag:blank').result['count'] == 0)
-    assert(mp.search('TESTMSG').result['count'] == 0)
+    assert(mp.search('tag:drafts').result['stats']['count'] == 1)
+    assert(mp.search('tag:blank').result['stats']['count'] == 0)
+    assert(mp.search('TESTMSG').result['stats']['count'] == 1)
     assert(not os.path.exists(mailpile_sent))
 
     # Send the message (moves from Draft to Sent, is findable via. search)
     del msg_data['subject']
     msg_data['body'] = ['Hello world: thisisauniquestring :)']
     mp.message_update_send(**msg_data)
-    assert(mp.search('tag:drafts').result['count'] == 0)
-    assert(mp.search('tag:blank').result['count'] == 0)
+    assert(mp.search('tag:drafts').result['stats']['count'] == 0)
+    assert(mp.search('tag:blank').result['stats']['count'] == 0)
+
+    # First attempt to send should fail & record failure to event log
+    config.routes['default'] = {"command": '/no/such/file'}
+    config.profiles['0'].messageroute = 'default'
+    mp.sendmail()
+    events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
+                         'data_mid=%s' % new_mid).result
+    assert(len(events) == 1)
+    assert(events[0]['flags'] == 'i')
+    assert(len(mp.eventlog('incomplete').result) == 1)
+
+    # Second attempt should succeed!
+    config.routes.default.command = '%s -i %%(rcpt)s' % mailpile_send
+    mp.sendmail()
+    events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
+                         'data_mid=%s' % new_mid).result
+    assert(len(events) == 1)
+    assert(events[0]['flags'] == 'c')
+    assert(len(mp.eventlog('incomplete').result) == 0)
+
+    # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
     assert('thisisauniquestring' in contents(mailpile_sent))
+    assert(MY_KEYID not in contents(mailpile_sent))
     assert(MY_FROM in grep('X-Args', mailpile_sent))
     assert('secret@test.com' in grep('X-Args', mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     for search in (['tag:sent'],
                    ['bcc:secret@test.com'],
                    ['thisisauniquestring'],
+                   ['thisisauniquestring'] + MY_FROM.split(),
                    ['subject:TESTMSG']):
         say('Searching for: %s' % search)
-        assert(mp.search(*search).result['count'] == 1)
+        assert(mp.search(*search).result['stats']['count'] == 1)
+    assert('thisisauniquestring' in contents(mailpile_sent))
+    assert('OpenPGP: id=3D95' in contents(mailpile_sent))
+    assert('; preference=encrypt' in contents(mailpile_sent))
+    assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     os.remove(mailpile_sent)
 
     # Test the send method's "bounce" capability
     mp.message_send(mid=[new_mid], to=['nasty@test.com'])
+    mp.sendmail()
     assert('thisisauniquestring' in contents(mailpile_sent))
+    assert('OpenPGP: id=3D95' in contents(mailpile_sent))
+    assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
-    os.remove(mailpile_sent)
+    assert('BEGIN PGP SIG' in contents(mailpile_sent))
+    assert('END PGP SIG' in contents(mailpile_sent))
 
-    say("Tests passed, woot!")
+def test_html():
+    say("Testing HTML")
+
+    mp.output("jhtml")
+    assert('&lt;bang&gt;' in '%s' % mp.search('in:inbox').as_html())
+    mp.output("text")
+
+
+try:
+    do_setup()
+    if '-n' not in sys.argv:
+        test_vcards()
+        test_load_save_rescan()
+        test_message_data()
+        test_html()
+        test_composition()
+        if '-v' not in sys.argv:
+            sys.stderr.write("\nTests passed, woot!\n")
+        else:
+            say("Tests passed, woot!")
 except:
-    say("Tests FAILED!")
+    sys.stderr.write("\nTests FAILED!\n")
     print
     traceback.print_exc()
 
@@ -152,13 +317,10 @@ except:
 ##[ Interactive mode ]########################################################
 
 if '-i' in sys.argv:
-    import code
-    import readline
-    code.InteractiveConsole(locals=globals()).interact("""
-
-Welcome to the Mailpile test shell. You can interact pythonically with the
-Mailpile object `mp`, or drop to the Mailpile CLI with `mp.Interact()`.
-    """)
+    mp.set('prefs/vcard/importers/gravatar/0/active = true')
+    mp.set('prefs/vcard/importers/gpg/0/active = true')
+    mp._session.ui = ui
+    mp.Interact()
 
 
 ##[ Cleanup ]#################################################################

@@ -1,0 +1,11 @@
+# This is an experimental plugin that uses Mailpile's JSON-wrapped-HTML
+# result rendering mode, to display search results without needing a full
+# page refresh.
+{
+    "name": "autoajax",
+    "author": "The Mailpile Team <team@mailpile.is>",
+
+    "code": {
+        "javascript": ["autoajax.js"]
+    }
+}

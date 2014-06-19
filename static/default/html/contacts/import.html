@@ -1,0 +1,43 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Import Contacts")}}{% endblock %}
+{% block content %}
+<div id="contact-add" class="content-normal">
+
+  <h1>Import Contacts</h1>
+
+  <div id="tab-container" class="tab-container">
+  <ul>
+    {% for importer in mailpile("contacts/importers").result %}
+    <li class="tab"><a href="#tabs-{{importer.short_name}}">{{importer.format_name}}</a></li>
+    {% endfor %}
+  </ul>
+
+  {% for importer in mailpile("contacts/importers").result %}
+  <div class="tab" id="tabs-{{importer.short_name}}">
+    <h2>{{importer.format_name}}</h2>
+    <p>{{importer.format_description}}</p>
+
+    <form id="form-contact-import-{{importer.short_name}}" action="/api/0/contacts/import/" method="POST">
+      <input type="hidden" name="csrf" value=""/>
+      <input type="hidden" name="format" value="{{importer.short_name}}"/>
+
+      {% for parm in importer.required_parameters %}
+        <div>
+          <label><b>{{parm}}</b></label>
+          <input type="text" name="@{{parm}}" value=""/>
+        </div>
+      {% endfor %}
+      {% for parm in importer.optional_parameters %}
+        <div>
+          <label>{{parm}}</label>
+          <input type="text" name="@{{parm}}" value=""/>
+        </div>
+      {% endfor %}
+
+      <input type="submit" value="Import"/>
+    </form>
+  </div>
+  {% endfor %}
+
+</div>
+{% endblock %}

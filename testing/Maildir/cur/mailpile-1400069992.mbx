@@ -1,0 +1,643 @@
+Return-Path: <bounces+hi=wigglebot.com@bounce-dyn.square.com>
+X-Original-To: reverse@heart.wigglecorp.com
+Delivered-To: reverse@heart.wigglecorp.com
+Received: by heart.wigglecorp.com (Postfix, from userid 5001)
+	id E2C476C9C2; Tue, 13 May 2014 18:16:24 -0700 (PDT)
+X-Spam-Checker-Version: SpamAssassin 3.3.2 (2011-06-06) on
+	heart.wigglecorp.com
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,HTML_MESSAGE,
+	RCVD_IN_DNSWL_NONE,T_DKIM_INVALID autolearn=ham version=3.3.2
+Received: from mtaout-090-ewr.square.com (mtaout-090-ewr.square.com [216.146.33.90])
+	by heart.wigglecorp.com (Postfix) with ESMTP id 1DFDD6C83F
+	for <hi@wigglebot.com>; Tue, 13 May 2014 18:16:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed/relaxed; s=201308-pay-dyn; d=square.com;
+ h=Date:From:To:Cc:Message-ID:Subject:MIME-Version:Content-Type:Sender; i=demo@square.com;
+ bh=zGLjgIBiSUnRmcU7eQ61Hy18vqc=;
+ b=sR7k0/0x/E4a9tuMLMy//xPw3Vwdyuzp+/b+dGhfi2hxRYcLqWb9TCvz8L8OavfOHJkL9SRq7oYz
+   BTxGeEEwb8mWLu8AVk8RkfFsYdnfWsTUu/uW2eMbRZfkUPn20yXoQhduqOkOtCBG/xMik3zappb9
+   oM25cVk01i7MD9mHsZo=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=square.com;
+ s=201308-pay; t=1400030175; i=demo@square.com;
+ bh=m2lW3TrxcDXUiE8SbFgz8T7if500H4l/9gKFuKOl83E=;
+ h=Date:From:To:Cc:Message-ID:Subject:MIME-Version:Content-Type:From:
+ Content-Type;
+ b=SaDYImGjdsnCmiCtbLQrOBwZdSHTIlGNIQcUedSvhYYOPIaMUlKoZXldJK7eBv6BH
+ tfVNbGiZZFBxE4PhZ7lq/8r81Rm0au2e816Lig4f0XY3cz3UUlTHyW9skw7lgKRsbT
+ krByvO+lN0o8WzcJ4zuctIE0fLBGY0OZhlW5NievvqHZCtPHk7vJGCuWSWoPXsVlNO
+ yVsqj1eJXUvOTklB9oPzne9fMuVU+ROdjGO/sRmKYqKmXroeZw03sR3p1q/7Pke7f9
+ JXdQHfu8Yn5XtUSJKyexRUCzQcfQ9YWYqs/V0iquxoHNLYPPyUVukoHxp4JQJaIyEu
+ DR6SVCBquvuhg==
+Date: Wed, 14 May 2014 01:16:15 +0000 (UTC)
+From: The Square Team <demo@square.com>
+To: hi@wigglebot.com
+Cc: cash@square.com
+X-DynectEmail-Msg-Key: 20140514011619.FF8A06700036@mail6-12-ewr
+Message-ID:  <f38s7nk064or5h7pjjwzsj4kt-a881f968-36a7-4af7-b027-a12d6b686326@square.com>
+Subject: Here's $1
+MIME-Version: 1.0
+Content-Type: multipart/alternative;  boundary="----=_Part_31399_1772714090.1400030175154"
+X-Square-Cash-Referrer-Token: C_apf4xbdgjbf39ema8ie8noen3
+X-Square-Message-ID:  <f38s7nk064or5h7pjjwzsj4kt-a881f968-36a7-4af7-b027-a12d6b686326@square.com>
+X-Square-Received: by cash; Wed, 14 May 2014 01:16:15 +0000
+Auto-Submitted: auto-replied
+X-Autoreply: yes
+X-Square-Cash-Template: tryItNow
+Sender: demo@square.com
+X-DynectEmail-Msg-Hash:  +c7LZw7dwhJTgSQcZA2UskvtjfMRvKccJ3eLTW+ZNi0tOHFDJwRPcH/UgnThrmMFzDj31y9O/3TqMoq/CD2Q0Q2QeET6hCCDW8g8JMOmvIY=
+X-DynectEmail-X-Headers:  MHw3NzA5NjE6JTNDZjM4czduazA2NG9yNWg3cGpqd3pzajRrdC1hODgxZjk2OC0zNmE3LTRhZjctYjAyNy1hMTJkNmI2ODYzMjYlNDBzcXVhcmUuY29tJTNFOw==
+X-Feedback-ID: U3F1YXJlVk1UQXM=:36726:275572:dyn06
+
+------=_Part_31399_1772714090.1400030175154
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Your $1 is on its way.
+
+All it takes is an ordinary email like this one to send cash. Just enter a dollar amount in the subject line and add cash@square.com to the Cc field.
+
+Enjoy,
+
+The Square Team
+------=_Part_31399_1772714090.1400030175154
+Content-Type: multipart/related; 
+	boundary="----=_Part_31398_1983417104.1400030175154"
+
+------=_Part_31398_1983417104.1400030175154
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+ <head></head>
+ <body>
+  Your $1 is on its way.
+  <br />
+  <br />All it takes is an ordinary email like this one to send cash. Just enter a dollar amount in the subject line and add cash@square.com to the Cc field.
+  <br />
+  <br />Enjoy,
+  <br />
+  <br />The Square Team
+ </body>
+</html>
+------=_Part_31398_1983417104.1400030175154--
+
+------=_Part_31399_1772714090.1400030175154--
+
+From MAILER-DAEMON Wed May 14 12:19:52 2014
+Return-Path: <bounces+hi=wigglebot.com@bounce-dyn.square.com>
+X-Original-To: reverse@heart.wigglecorp.com
+Delivered-To: reverse@heart.wigglecorp.com
+Received: by heart.wigglecorp.com (Postfix, from userid 5001)
+	id D92DE6C9C1; Tue, 13 May 2014 18:16:26 -0700 (PDT)
+X-Spam-Checker-Version: SpamAssassin 3.3.2 (2011-06-06) on
+	heart.wigglecorp.com
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.6 required=5.0 tests=BAYES_00,DC_IMAGE_SPAM_TEXT,
+	HTML_IMAGE_RATIO_06,HTML_MESSAGE,RCVD_IN_DNSWL_BLOCKED,T_DKIM_INVALID
+	autolearn=no version=3.3.2
+Received: from mtaout-088-ewr.square.com (mtaout-088-ewr.square.com [216.146.33.88])
+	by heart.wigglecorp.com (Postfix) with ESMTP id 257C66C9BF
+	for <hi@wigglebot.com>; Tue, 13 May 2014 18:16:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed/relaxed; s=201308-pay-dyn; d=square.com;
+ h=Date:From:To:Message-ID:In-Reply-To:Subject:MIME-Version:Content-Type:Sender; i=cash@square.com;
+ bh=n8uJdeJzYnfdSJuzS2CxC+Mtc3M=;
+ b=mGVUARyX4keiTSukTuat+jBgkb36vJ4Wr/JH4/tRcK0ykMjXJeF5591Ewa1XnEhpYZ2udhJofjeE
+   vW0wFx8xU77u+tTQhif3E5UfWnDlHFCd768ASY2uft67XS87n24fRyowmS0ElyYjEt5qtZzXtr3i
+   2IID0R54T9/ytPWubVo=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=square.com;
+ s=201308-pay; t=1400030180; i=cash@square.com;
+ bh=UnSpjyrNunPWj7UR7n92moWlPsyua1QAB+gxcgXf7Hc=;
+ h=Date:From:To:Message-ID:In-Reply-To:Subject:MIME-Version:
+ Content-Type:From:Content-Type;
+ b=Q9Ms61s6qzx5xhAuV5rT7JOL1cqY3hIczHMjjXIgRKhwTqIT11Hb4pPfJZLayL4eA
+ 1kGARliKisWDO26DQqoPKVyN+7rsHUMYz5dn0rvU2+CEJJJFF79fUCCtXLTEJ/j58T
+ Qg5wDkFoJ7N8MBhZNZFNQnSSnoAKWrWUyVp7RetZ2Vm6TTz57HRzqEF/5pZtgbx7pb
+ dBR9AbDd9wEY7Zl7yNSttC07EL4gnzRB8n/OWQhJnp+gF+6yKgS0z3oxm6JKwEnENA
+ n8QQuq+2Gl38I6Btp4NrZcNslUnkOK78HXTYjb9Zqi7gBXYxJ0rt5KcdlWm7IPBoIf
+ fzJ3/iZw8SruA==
+Date: Wed, 14 May 2014 01:16:20 +0000 (UTC)
+From: Square Cash <cash@square.com>
+To: hi@wigglebot.com
+X-DynectEmail-Msg-Key: 20140514011621.94D806700038@mail6-12-ewr
+Message-ID:  <bqr3om0kmor203jvzmdpx79vb-fdef1c6b-2d87-4cd1-ad72-eb6e440278d4@square.com>
+In-Reply-To:  <f38s7nk064or5h7pjjwzsj4kt-a881f968-36a7-4af7-b027-a12d6b686326@square.com>
+Subject: Re: Here's $1
+MIME-Version: 1.0
+Content-Type: multipart/alternative;  boundary="----=_Part_61073_141710048.1400030180530"
+X-Square-Message-ID:  <bqr3om0kmor203jvzmdpx79vb-fdef1c6b-2d87-4cd1-ad72-eb6e440278d4@square.com>
+X-Square-Received: by cash; Wed, 14 May 2014 01:16:20 +0000
+Auto-Submitted: auto-replied
+X-Autoreply: yes
+X-Square-Cash-Template: recipientLinkRequired
+Sender: cash@square.com
+X-DynectEmail-Msg-Hash:  +c7LZw7dwhJTgSQcZA2UskvtjfMRvKccwx8KB1ukvaiXOcCzgQYYET/scCge6kJI3qlhhMmNfsD655YUBBuitwk7Jn5VjlM4f/WYpp7O7SI=
+X-DynectEmail-X-Headers:  MHw3NzA5NjE6JTNDYnFyM29tMGttb3IyMDNqdnptZHB4Nzl2Yi1mZGVmMWM2Yi0yZDg3LTRjZDEtYWQ3Mi1lYjZlNDQwMjc4ZDQlNDBzcXVhcmUuY29tJTNFOw==
+X-Feedback-ID: U3F1YXJlVk1UQXM=:36726:155511:dyn06
+
+------=_Part_61073_141710048.1400030180530
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+The Square Team sent you $1. To deposit, visit this URL in your web browser:
+
+https://square.com/cash/payments/RANDOMDIGITSHERE
+
+By depositing, you agree to the Square Cash terms and conditions:
+
+https://squareup.com/legal/cash-ua
+
+To reject, visit this URL in your browser:
+
+https://square.com/cash/payments/RANDOMDIGITSHERE?action=reject
+
+------=_Part_61073_141710048.1400030180530
+Content-Type: multipart/related; 
+	boundary="----=_Part_61072_577381436.1400030180529"
+
+------=_Part_61072_577381436.1400030180529
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org=
+/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+ <head>=20
+  <meta charset=3D"utf-8" />=20
+  <meta name=3D"viewport" content=3D"initial-scale=3D1.0, maximum-scale=3D1=
+.0" /> =20
+  <style type=3D"text/css">
+    .email {
+      text-decoration: none;
+      color: #90de7c;
+      cursor: text;
+    }
+
+    p {
+      margin: 1em 0;
+    }
+  </style> =20
+ </head>=20
+ <body>=20
+  <!--[if !mso]><!-->=20
+  <div style=3D"font-size:0;max-height:0;overflow:hidden;display:none">
+   The Square Team sent you $1
+  </div>=20
+  <!--<![endif]-->=20
+  <table width=3D"100%" cellspacing=3D"0" cellpadding=3D"0" border=3D"0">=
+=20
+   <tbody>
+    <tr>
+     <td height=3D"20"> <img src=3D"http://square-production.s3.amazonaws.c=
+om/images/email/alpha.gif" width=3D"1" height=3D"20" style=3D"display:block=
+display: block;" /> </td>
+    </tr>=20
+    <tr>
+     <td align=3D"center">=20
+      <div id=3D"view-on-the-web" style=3D"font-size: 14px;  font-family: H=
+elvetica Neue, Helvetica, Arial, sans-serif;  font-weight: 300;  color: #99=
+9999;  letter-spacing: 0.25px;">=20
+       <a href=3D"https://square.com/cash/email/bqr3om0kmor203jvzmdpx79vb-f=
+def1c6b-2d87-4cd1-ad72-eb6e440278d4" style=3D"color: #999999;  text-decorat=
+ion: none;">Having trouble viewing this email?</a>=20
+      </div> </td>
+    </tr>=20
+    <tr>
+     <td height=3D"20"> <img src=3D"http://square-production.s3.amazonaws.c=
+om/images/email/alpha.gif" width=3D"1" height=3D"20" style=3D"display:block=
+display: block;" /> </td>
+    </tr>=20
+    <tr>
+     <td align=3D"center">=20
+      <table align=3D"center" id=3D"container" border=3D"0" cellpadding=3D"=
+0" cellspacing=3D"0" bgcolor=3D"#16a500" width=3D"300" style=3D"-webkit-bor=
+der-radius: 10px;  -moz-border-radius: 10px;  -ms-border-radius: 10px;  -o-=
+border-radius: 10px;  border-radius: 10px;  overflow: hidden;  table-layout=
+: fixed;  letter-spacing: 0.25px;">=20
+       <tbody>
+        <tr>=20
+         <td width=3D"300" height=3D"277" background=3D"cid:image-c63065ff-=
+0226-4b99-8968-1b52010d717c@square.com">=20
+          <table width=3D"300" height=3D"277" background=3D"data:image/png;=
+base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEVBAMAAACoJsUjAAAAJFBMVEUAAAAWpQAWpQAi=
+qQAxrgJAtBpPui9dv0FsxVOZ14jN7MX///+ZeuycAAAAAXRSTlMAQObYZgAABCZJREFUeNrt3E1=
+ME0EUB/C3S4GWU1WiBy/ogeANvw7eMB6QG2oC9FZiYiCIJkaIUUOIYoRoDEEN6EFXT4BGORm8ID=
+dupp4AP5ArnDgYvtruulO27S5dSADLe5H/JG1n2hR+mZl9M7OzW20fSUw6gQUWWGCBBRZYYIEFF=
+libpgBrnTw8ki1Y0x3ZQkGIkRU54ypopfEpEY2o13rLF2X0raKNy7qgw03Hkbh5MhvSueBbQXFr=
+2SeHKA/Wf3wk2in0xh4P68XVluY80LfAAgusnGQ5D2HhdKkOjQjW3mEFfXICjkR9WH4jWjJYpkz=
+W6sZl1toa8ZY/COlbg7/dTTjlUmrYQgcLLLDAAgsssMACCyywwAILLLDAAgsssMACCyywwAILLP=
+6Uny306koi8xEHq8RYjG70WdFlyt2J5m/ELpF9K1LGx6ra8JPgBa4uH2g7bveugV9+vTrQ9w8qf=
+Fu3iBQ9T91xEjp87s9szoe3nCa03u9yIwaehZ3c/uactqyo5Aqn7eFMVmta172LbnBF+aC7PvSb=
+3j/XFeZi3fOUDnpu1qkuIyZWsfrP5qcoLY4tqLL7QsjiRrah+qRSdRv280CLOg4D2eoqeMo3g1C=
+KqVgqG7+94AmsV8J8LLsNzU4nn2i145ORiQ1nnYg1svusYnJf/7UyQpMxJ1+Yjg2TDCx1f8JMtv=
+guma45euA04Xwn8bBcI048ks7VOLHBfExMLMOvcZ3YYI3OCprL6+nYMG1IWmLUOx0r0cG38vGZA=
+n5zOtZLprilrln1mbv8XHsZHWdk+YzHq6mO/t0gRtYhn/cVKHmXbfBJqiE56tuKVg/fYj+hRufz=
+vq04EWM8B6EGPL0/9/3X872cp0bG1NOBwdr17/+4ynrGZjk1J9VzWAliZdF15zXURXlL22AtOWO=
+xVj5QJYhFdxYyq9daQax4a9qlRWrlsGilJT2n0hrK5LAo3v7Vf1XNyyLqjvquqrlZanRca8lLwl=
+gr7V9S52iEsYj6X6leH5XGotGP/nNV7iXGsB3BSuWxkiP52QjZ6YJszOfnCQSwTJmsBBHJrC2JL=
+JLJ0sWw2tyFgM/vALCwak6Veb8vghVs9AyCR/PT67fKKuwjqnCVo7k3/HKwrLD9nc5MUW1pzApg=
+JdR5hmOZhdh9Z/XP3reeqClWk+NqtisrGZPAWlZtpjerKFHeo7Yt5mTErdQ5W+20QSVdamvY6pX=
+BWh73FOdmZbDohRtiXpMy+CQz5yDUnoWgcxCZtb41YeSHta2JeLy9/oTd3a2Zz+MkiEU0NLTZFU=
+mYBoJFO1h7LtahEcECCyywwAILLLDAAgsssMACCyywwAILLLDAAmuLCb9qDRZYYIEFFlhggQUWW=
+GCBBRZYYIEFFlhggQUWWGCBBRZYYIEFFlhggQUWWGCBBRZYYO1d1l+YoNJYmTim2QAAAABJRU5E=
+rkJggg=3D=3D" border=3D"0" cellpadding=3D"0" cellspacing=3D"0">
+           <tbody>
+            <tr>
+             <td> <img width=3D"300" height=3D"277" style=3D"width:300px;/*=
+For iCloud*/display: block;" src=3D"cid:image-dd72b895-de9b-4559-9756-6067b=
+47f64b5@square.com" alt=3D"$1" /></td>=20
+            </tr>
+           </tbody>
+          </table></td>=20
+        </tr>=20
+        <tr>=20
+         <td align=3D"center">=20
+          <table align=3D"center" border=3D"0" cellpadding=3D"0" cellspacin=
+g=3D"0" width=3D"220">=20
+           <tbody>
+            <tr>
+             <td align=3D"center" id=3D"title" style=3D"color: white;  font=
+-family: Helvetica Neue, Helvetica, Arial, sans-serif;  font-size: 20px;  f=
+ont-weight: 400;  line-height: 1.4;">
+              <div style=3D"overflow: hidden;">
+               The Square Team sent you $1
+              </div></td>
+            </tr>=20
+            <tr>
+             <td height=3D"15"> <img src=3D"http://square-production.s3.ama=
+zonaws.com/images/email/alpha.gif" width=3D"1" height=3D"15" style=3D"displ=
+ay:blockdisplay: block;" /> </td>
+            </tr>=20
+            <tr>
+             <td align=3D"center" class=3D"secondary" style=3D"font-family:=
+ Helvetica Neue, Helvetica, Arial, sans-serif;  font-size: 16px;  line-heig=
+ht: 1.4;  font-weight: 300;color: #90de7c;">
+              <div style=3D"overflow: hidden;">
+               You can deposit this cash in your bank account.
+              </div></td>
+            </tr>=20
+            <tr>
+             <td height=3D"25"> <img src=3D"http://square-production.s3.ama=
+zonaws.com/images/email/alpha.gif" width=3D"1" height=3D"25" style=3D"displ=
+ay:blockdisplay: block;" /> </td>
+            </tr>=20
+            <tr>
+             <td height=3D"50" bgcolor=3D"#34bd0a" class=3D"button" align=
+=3D"center" valign=3D"middle" style=3D"display: block;  -webkit-border-radi=
+us: 4px;  -moz-border-radius: 4px;  -ms-border-radius: 4px;  -o-border-radi=
+us: 4px;  border-radius: 4px;  letter-spacing: 0.5px;"> <a class=3D"button"=
+ href=3D"https://square.com/cash/payments/RANDOMDIGITSHERE" style=
+=3D"color: white;  font-size: 20px;  font-weight: 400;  font-family: Helvet=
+ica Neue, Helvetica, Arial, sans-serif;  text-decoration: none;  display: i=
+nline-block;  width: 220px;  text-align: center;  line-height: 50px;  -webk=
+it-text-size-adjust: none;  letter-spacing: 0.5px;">Deposit Cash</a> </td>
+            </tr>=20
+            <tr>
+             <td height=3D"20"> <img src=3D"http://square-production.s3.ama=
+zonaws.com/images/email/alpha.gif" width=3D"1" height=3D"20" style=3D"displ=
+ay:blockdisplay: block;" /> </td>
+            </tr>=20
+            <tr>
+             <td align=3D"center">=20
+              <div id=3D"minor-button" class=3D"secondary" style=3D"overflo=
+w: hidden;font-family: Helvetica Neue, Helvetica, Arial, sans-serif;  font-=
+size: 16px;  line-height: 1.4;  font-weight: 300;color: #90de7c;">
+               <a href=3D"https://square.com/cash/payments/f3j2xavdvc79p3vs=
+u70sudpc1?action=3Dreject" style=3D"font-family: Helvetica Neue, Helvetica,=
+ Arial, sans-serif;  font-size: 16px;  line-height: 1.4;  font-weight: 300;=
+color: #90de7c;">Reject</a>
+              </div> </td>
+            </tr>=20
+           </tbody>
+          </table> </td>=20
+        </tr>=20
+        <tr>
+         <td height=3D"40"> <img src=3D"http://square-production.s3.amazona=
+ws.com/images/email/alpha.gif" width=3D"1" height=3D"40" style=3D"display:b=
+lockdisplay: block;" /> </td>
+        </tr>=20
+       </tbody>
+      </table> </td>
+    </tr>=20
+    <!-- Referral footer -->=20
+    <!-- END Referral footer -->=20
+    <tr>
+     <td>=20
+      <table align=3D"center" border=3D"0" cellpadding=3D"0" cellspacing=3D=
+"0" width=3D"280">=20
+       <tbody>
+        <tr>
+         <td height=3D"20"> <img src=3D"http://square-production.s3.amazona=
+ws.com/images/email/alpha.gif" width=3D"1" height=3D"20" style=3D"display:b=
+lockdisplay: block;" /> </td>
+        </tr>=20
+        <tr>=20
+         <td align=3D"center" id=3D"external-footer" style=3D"font-size: 16=
+px;  text-align: center;  line-height: 1.4;  font-family: Helvetica Neue, H=
+elvetica, Arial, sans-serif;  font-weight: 300;  color: #999999;  letter-sp=
+acing: 0.25px;"> By depositing, you agree to these <a href=3D"https://squar=
+eup.com/legal/cash-ua" style=3D"color: #999999;">terms and conditions</a>. =
+</td>=20
+        </tr>=20
+       </tbody>
+      </table> </td>
+    </tr>=20
+   </tbody>
+  </table>
+  <table class=3D"first-time-footer" width=3D"100%" border=3D"0" cellpaddin=
+g=3D"0" cellspacing=3D"0">=20
+   <tbody>
+    <tr>
+     <td height=3D"50" style=3D"font-family: Helvetica Neue, Helvetica, Ari=
+al, sans-serif;  letter-spacing: 0.25px;"></td>
+    </tr>=20
+    <tr>
+     <td bgcolor=3D"#16a500" align=3D"center" valign=3D"middle" style=3D"fo=
+nt-family: Helvetica Neue, Helvetica, Arial, sans-serif;  letter-spacing: 0=
+.25px;">=20
+      <table width=3D"280" cellspacing=3D"0" cellpadding=3D"0" border=3D"0"=
+ class=3D"footer-block" style=3D"display: inline-block;  vertical-align: mi=
+ddle;">=20
+       <tbody>
+        <tr>
+         <td rowspan=3D"6" width=3D"20" style=3D"font-family: Helvetica Neu=
+e, Helvetica, Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+         <td height=3D"40" style=3D"font-family: Helvetica Neue, Helvetica,=
+ Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+         <td rowspan=3D"6" width=3D"20" style=3D"font-family: Helvetica Neu=
+e, Helvetica, Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+        </tr>=20
+        <tr>=20
+         <td class=3D"title" align=3D"left" style=3D"color: white;  font-fa=
+mily: Helvetica Neue, Helvetica, Arial, sans-serif;  font-size: 20px;  font=
+-weight: 400;  line-height: 1.4;font-family: Helvetica Neue, Helvetica, Ari=
+al, sans-serif;  letter-spacing: 0.25px;"> About Square Cash </td>=20
+        </tr>=20
+        <tr>
+         <td height=3D"10" style=3D"font-family: Helvetica Neue, Helvetica,=
+ Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+        </tr>=20
+        <tr>=20
+         <td class=3D"secondary footer" align=3D"left" style=3D"font-family=
+: Helvetica Neue, Helvetica, Arial, sans-serif;  font-size: 16px;  line-hei=
+ght: 1.4;  font-weight: 300;color: white;font-family: Helvetica Neue, Helve=
+tica, Arial, sans-serif;  letter-spacing: 0.25px;color: #90de7c;"> Square C=
+ash makes sending and requesting money as easy as composing an email. All i=
+t takes is a debit card to send and receive with your bank account =E2=80=
+=93 all&nbsp;for&nbsp;free. </td>=20
+        </tr>=20
+        <tr>
+         <td height=3D"10" style=3D"font-family: Helvetica Neue, Helvetica,=
+ Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+        </tr>=20
+        <tr>=20
+         <td style=3D"font-size:16px;font-family: Helvetica Neue, Helvetica=
+, Arial, sans-serif;  letter-spacing: 0.25px;" align=3D"left"> <a href=3D"h=
+ttps://square.com/cash" style=3D"color: #90de7c">Learn More</a> </td>=20
+        </tr>=20
+       </tbody>
+      </table>
+      <table width=3D"300" cellspacing=3D"0" cellpadding=3D"0" border=3D"0"=
+ class=3D"footer-block" style=3D"display: inline-block;  vertical-align: mi=
+ddle;">=20
+       <tbody>
+        <tr>=20
+         <td rowspan=3D"4" width=3D"20" style=3D"font-family: Helvetica Neu=
+e, Helvetica, Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+         <td colspan=3D"3" height=3D"45" style=3D"font-family: Helvetica Ne=
+ue, Helvetica, Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+         <td rowspan=3D"6" width=3D"20" style=3D"font-family: Helvetica Neu=
+e, Helvetica, Arial, sans-serif;  letter-spacing: 0.25px;"> </td>
+        </tr>=20
+        <tr>=20
+         <td valign=3D"middle" height=3D"50" align=3D"left" style=3D"font-f=
+amily: Helvetica Neue, Helvetica, Arial, sans-serif;  letter-spacing: 0.25p=
+x;"> <img src=3D"cid:image-51be63f9-05c3-49ef-8268-e937035bbe29@square.com"=
+ style=3D"width:30px;display: block;" width=3D"30" height=3D"32" /></td>=20
+         <td width=3D"10" style=3D"font-family: Helvetica Neue, Helvetica, =
+Arial, sans-serif;  letter-spacing: 0.25px;"></td>=20
+         <td valign=3D"middle" align=3D"left" class=3D"title with-icon" sty=
+le=3D"color: white;  font-family: Helvetica Neue, Helvetica, Arial, sans-se=
+rif;  font-size: 20px;  font-weight: 400;  line-height: 1.4;font-size: 18px=
+;font-family: Helvetica Neue, Helvetica, Arial, sans-serif;  letter-spacing=
+: 0.25px;"> Safe to use. </td>=20
+        </tr>=20
+        <tr>=20
+         <td valign=3D"middle" height=3D"50" align=3D"left" style=3D"font-f=
+amily: Helvetica Neue, Helvetica, Arial, sans-serif;  letter-spacing: 0.25p=
+x;"> <img src=3D"cid:image-97de2d61-9082-46fa-b927-32b6151aaa9d@square.com"=
+ style=3D"width:30px;display: block;" width=3D"30" height=3D"30" /></td>=20
+         <td style=3D"font-family: Helvetica Neue, Helvetica, Arial, sans-s=
+erif;  letter-spacing: 0.25px;"></td>=20
+         <td valign=3D"middle" align=3D"left" class=3D"title with-icon" sty=
+le=3D"color: white;  font-family: Helvetica Neue, Helvetica, Arial, sans-se=
+rif;  font-size: 20px;  font-weight: 400;  line-height: 1.4;font-size: 18px=
+;font-family: Helvetica Neue, Helvetica, Arial, sans-serif;  letter-spacing=
+: 0.25px;"> Free to send and receive. </td>=20
+        </tr>=20
+        <tr>=20
+         <td valign=3D"middle" height=3D"50" align=3D"left" style=3D"font-f=
+amily: Helvetica Neue, Helvetica, Arial, sans-serif;  letter-spacing: 0.25p=
+x;"> <img src=3D"cid:image-399bc086-a392-46b6-b70c-cbbab92bac55@square.com"=
+ style=3D"width:30px;display: block;" width=3D"30" height=3D"30" /></td>=20
+         <td style=3D"font-family: Helvetica Neue, Helvetica, Arial, sans-s=
+erif;  letter-spacing: 0.25px;"></td>=20
+         <td valign=3D"middle" align=3D"left" class=3D"title with-icon" sty=
+le=3D"color: white;  font-family: Helvetica Neue, Helvetica, Arial, sans-se=
+rif;  font-size: 20px;  font-weight: 400;  line-height: 1.4;font-size: 18px=
+;font-family: Helvetica Neue, Helvetica, Arial, sans-serif;  letter-spacing=
+: 0.25px;"> Direct to your bank. </td>=20
+        </tr>=20
+       </tbody>
+      </table>=20
+      <table width=3D"260" cellspacing=3D"0" cellpadding=3D"0" border=3D"0"=
+>=20
+       <tbody>
+        <tr>
+         <td height=3D"40" style=3D"font-family: Helvetica Neue, Helvetica,=
+ Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+        </tr>=20
+        <tr>=20
+         <td align=3D"center" style=3D"font-family: Helvetica Neue, Helveti=
+ca, Arial, sans-serif;  letter-spacing: 0.25px;">
+          <div id=3D"first-time-footer-copyright" style=3D"text-align: cent=
+er; color: #ffffff;font-size: 16px;  font-family: Helvetica Neue, Helvetica=
+, Arial, sans-serif;">
+            &copy; Square Inc.
+          </div> </td>=20
+        </tr>=20
+        <tr>
+         <td height=3D"40" style=3D"font-family: Helvetica Neue, Helvetica,=
+ Arial, sans-serif;  letter-spacing: 0.25px;"></td>
+        </tr>=20
+       </tbody>
+      </table> </td>
+    </tr>=20
+   </tbody>
+  </table> =20
+  <img src=3D"https://square.com/cash/pixel-open/bqr3om0kmor203jvzmdpx79vb-=
+fdef1c6b-2d87-4cd1-ad72-eb6e440278d4" height=3D"1" width=3D"1" style=3D"dis=
+play: block;" /> =20
+ </body>
+</html>
+------=_Part_61072_577381436.1400030180529
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-ID: <image-c63065ff-0226-4b99-8968-1b52010d717c@square.com>
+Content-Disposition: INLINE
+
+iVBORw0KGgoAAAANSUhEUgAAASwAAAEVBAMAAACoJsUjAAAAJFBMVEUAAAAWpQAWpQAiqQAxrgJA
+tBpPui9dv0FsxVOZ14jN7MX///+ZeuycAAAAAXRSTlMAQObYZgAABCZJREFUeNrt3E1ME0EUB/C3
+S4GWU1WiBy/ogeANvw7eMB6QG2oC9FZiYiCIJkaIUUOIYoRoDEEN6EFXT4BGORm8IDdupp4AP5Ar
+nDgYvtruulO27S5dSADLe5H/JG1n2hR+mZl9M7OzW20fSUw6gQUWWGCBBRZYYIEFFlibpgBrnTw8
+ki1Y0x3ZQkGIkRU54ypopfEpEY2o13rLF2X0raKNy7qgw03Hkbh5MhvSueBbQXFr2SeHKA/Wf3wk
+2in0xh4P68XVluY80LfAAgusnGQ5D2HhdKkOjQjW3mEFfXICjkR9WH4jWjJYpkzW6sZl1toa8ZY/
+COlbg7/dTTjlUmrYQgcLLLDAAgsssMACCyywwAILLLDAAgsssMACCyywwAILLP6Uny306koi8xEH
+q8RYjG70WdFlyt2J5m/ELpF9K1LGx6ra8JPgBa4uH2g7bveugV9+vTrQ9w8qfFu3iBQ9T91xEjp8
+7s9szoe3nCa03u9yIwaehZ3c/uactqyo5Aqn7eFMVmta172LbnBF+aC7PvSb3j/XFeZi3fOUDnpu
+1qkuIyZWsfrP5qcoLY4tqLL7QsjiRrah+qRSdRv280CLOg4D2eoqeMo3g1CKqVgqG7+94AmsV8J8
+LLsNzU4nn2i145ORiQ1nnYg1svusYnJf/7UyQpMxJ1+Yjg2TDCx1f8JMtvguma45euA04Xwn8bBc
+I048ks7VOLHBfExMLMOvcZ3YYI3OCprL6+nYMG1IWmLUOx0r0cG38vGZAn5zOtZLprilrln1mbv8
+XHsZHWdk+YzHq6mO/t0gRtYhn/cVKHmXbfBJqiE56tuKVg/fYj+hRufzvq04EWM8B6EGPL0/9/3X
+872cp0bG1NOBwdr17/+4ynrGZjk1J9VzWAliZdF15zXURXlL22AtOWOxVj5QJYhFdxYyq9daQax4
+a9qlRWrlsGilJT2n0hrK5LAo3v7Vf1XNyyLqjvquqrlZanRca8lLwlgr7V9S52iEsYj6X6leH5XG
+otGP/nNV7iXGsB3BSuWxkiP52QjZ6YJszOfnCQSwTJmsBBHJrC2JLJLJ0sWw2tyFgM/vALCwak6V
+eb8vghVs9AyCR/PT67fKKuwjqnCVo7k3/HKwrLD9nc5MUW1pzApgJdR5hmOZhdh9Z/XP3reeqClW
+k+NqtisrGZPAWlZtpjerKFHeo7Yt5mTErdQ5W+20QSVdamvY6pXBWh73FOdmZbDohRtiXpMy+CQz
+5yDUnoWgcxCZtb41YeSHta2JeLy9/oTd3a2Zz+MkiEU0NLTZFUmYBoJFO1h7LtahEcECCyywwAIL
+LLDAAgsssMACCyywwAILLLDAAmuLCb9qDRZYYIEFFlhggQUWWGCBBRZYYIEFFlhggQUWWGCBBRZY
+YIEFFlhggQUWWGCBBRZYYO1d1l+YoNJYmTim2QAAAABJRU5ErkJggg==
+------=_Part_61072_577381436.1400030180529
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-ID: <image-dd72b895-de9b-4559-9756-6067b47f64b5@square.com>
+Content-Disposition: INLINE
+
+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
+------=_Part_61072_577381436.1400030180529
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-ID: <image-51be63f9-05c3-49ef-8268-e937035bbe29@square.com>
+Content-Disposition: INLINE
+
+iVBORw0KGgoAAAANSUhEUgAAADwAAABACAYAAABGHBTIAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
+bWFnZVJlYWR5ccllPAAAAyNpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdp
+bj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6
+eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1
+MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJo
+dHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlw
+dGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAv
+IiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RS
+ZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpD
+cmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChNYWNpbnRvc2gpIiB4bXBNTTpJbnN0YW5j
+ZUlEPSJ4bXAuaWlkOkVBNjg2MTc5MkZBNzExRTNCQ0Y1OTQ3RDQ4MTgzQjJCIiB4bXBNTTpEb2N1
+bWVudElEPSJ4bXAuZGlkOkVBNjg2MTdBMkZBNzExRTNCQ0Y1OTQ3RDQ4MTgzQjJCIj4gPHhtcE1N
+OkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6RUE2ODYxNzcyRkE3MTFFM0JD
+RjU5NDdENDgxODNCMkIiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6RUE2ODYxNzgyRkE3MTFF
+M0JDRjU5NDdENDgxODNCMkIiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94Onht
+cG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4MVoyyAAAC/klEQVR42uyaz29NQRTH72382Ajqd9GI
+ldoQIULbhLCiRLDhsZJI/AGi/4Ol5RMLyUvtJFoaC69VVBfS+NGNrQRh4UfQNFV6fU/eiHqZuZ3n
+nTu/zEk+izf33nnznTPnzI970yzLkv/JFhj4j/XgKOgG28AGsFRc+wLegAnwEAyAt4W2hjxcEF1g
+APzM9I3u7QedRbWriEpXgL6sOZsFFdDK3b6UOYZ3gFugnam+VyIcJrgayCl4OxgBy5ij7hPYxyW6
+halRa8BgjtgpUAY9YC11NFgkRkKPuDaleLYV3AGrXEpa/TnxeBW0adTRJu5V2U1XktYhRQOnQekf
+6iuJZ2V20AXBo4osW2qiztOijnq7Z1twh8ITZYaOLCs6cnMz9TabtI5Jyj6DXob00ivq+mtWAcdt
+ZuluSVlFTCUc01FFUt5pU/BWSdldxjlYVleHTcEbJWXPGAU/VWxGrK20ZA+n3Psbye8WWx62YanN
+Ie2dRcFRsNoW+9juRh+kLd1F8BxM5mRVTmT2XeyPLzXa8Y1MSzTn3hYbfZeMhB8GrzkFk2cfg52O
+hiYtUPYIz7MM6fMOi/19lnaBM4bPeJCAT3EO6a9gieOCJ3XaqCvYl/cxKdeQjguPKDgKluaB6+BA
+Uju4p4P1veAKmDEW5IaS1iw4C24orlMnDDKsz51JWuUcsWRD4HJIHt4Fxue5Zwt4WbSHTQleCT7O
+c89CnbWwL0NaJzZXh5Sl92vcczKkGKbYpDcGqjcSm8ATBi87M6TpbcEDkbzqG3gCPDI1pE1vHt6D
+dXN+02dTH5I/nzEFt3kYrvv9Q3g+2LX0iKSsGrLgIduCTcYwnSq2K+LundhQBBXD93M6sxrikB5u
+cKh7LzhPVDXEGDaix7Usbd2i4Ci4ZtMeaPnGKXjcA8EvOAX3eSBYq4260xJt40bBbkfF0uFBV6Jx
+vq3rYdrGHQFjDoodE22b4fTwXE+fA6Wk9unDcksi6Stb+s6EzrqvCYckRQiO83AUHAVHwVGwSfsl
+wADqBTnGvkkd+AAAAABJRU5ErkJggg==
+------=_Part_61072_577381436.1400030180529
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-ID: <image-97de2d61-9082-46fa-b927-32b6151aaa9d@square.com>
+Content-Disposition: INLINE
+
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
+bWFnZVJlYWR5ccllPAAABDpJREFUeNrsm2tIVEEUx6+PosxHpRYSFGloZoKkVpQ9PlQU9IKoJIug
+oof2DouIKIsIITAKow9FkJagFVIfIoqKsCjKvkSkYllEGD00zSDR3P4Hj3RZXHfu7pndu+mBH3sX
+LjP7v3Nn5sx/ZoMcDofRnyLY6GcxIPh/j1CNZQ8BWWAmSAaJYAwYyfV2gibwCdSBN+AxqAK/df2o
+IOFBi0SuBGvAXP5uNUjsQ3AVVEiLlxI8HOwFuSBa8Pd9A8XgNPghUiIJ9oIQkAeaHHqDyt8Kgr38
+vV61cBIoBRk+HHOegRzw1tejNPXRFz4WSzENvASrfSn4MLdsuJ9mlkhQBvJ90YeLHPaKk1b7sJWb
+Cxz2jHwdg1YOv8Z2DBKwClyTmocngud+7LMq0QLSVUZvd4NWCLhic7EUUeAyNaC3gvPAlABZF8wA
+m7x5pUeABn56gRJfQTxo86SFd2kUG6Sp3FiwzZMWHgY+citLjqbVnB5uB+dBGsgUXpc3gnGgw0ri
+kSM8Vz4Ak1zUNR5cAl2C9S2zmnjcEay8kldV7pKCbNAuVGeFFcHhoEOo4l8gzlR2AjjL18VgulPd
+u4Xq/QkGqwpeKNi6103lpvIDcPB3B7/GhYDGkjC+XyqyehPcm6c1S3AAqTFdkxsS1stovZ9ng3Th
+5WYW+2NuTbxk4ZG5J5r6uG+LhikqSXUeThSsNMF0XcgLEF9tdSSqCo4TrHQpGMvXrWAdmMDfqzUL
+jlMVHCFYaRi7E+aM7R1/ZrD4Y6BZg+AI1cRDR9SCRX3MwTHgtnCdLaoGQIfGHQky4ErYZw5y6s9U
+5z0wR9DTjlXJpZvZWNcZJPYDiz9lMtkz2GyQiAZeObntw40+GkVpMDsEnhr/tmTI+v0iuIhQGrTq
+NIj742a+zNTwwOtUBdcICqXusRhku7nvu+l6tIYsr89ReongSJnsZPN2OeXSFGWme+J159K9CY4C
+nUKVHnQqezYo5+tbINdp6VgkuFoKtbIevi9UMT24jYom+QLBZWm5q3pcWSslQv2IbN4LnG25ytHJ
+TjoAbgrO/6VWPa1I9rQihVdOlHg8ATvBUZAC5gubhR55WgZvVOkKQ2PZezzdW4oB7/mV6xe+NOWi
+BUZgxZG+xLrbeaAYxP1ucgCIreKFR5c3gilS2TwfamOxzeyJNbi7UcXxfwV22FgstdgGFbGqgiku
+ghM2FUznwyrVH4/6cQF6/c/Z7LhDgc4zHj2ij9tAaBfvUhi6BfdA+XGbn8S2ghX+OImXwjlrmg/7
+K6Wl60G9pwV4sy/7mp2Kfew56wxKgjbz9km9NwVJnaaN5qmLFgWSm+jkb9Fp2jOG0Gla6fPSZLwv
+B2vBPM7UrAadj77LS8oboF3ULtX4rxZaWtJO5FSj+6wXmXWjjO4jUBHcDSjv/Qxq2YN6xC5mwJyI
+t30M/KtlQPCA4MCOvwIMALRqfCmpqxXQAAAAAElFTkSuQmCC
+------=_Part_61072_577381436.1400030180529
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-ID: <image-399bc086-a392-46b6-b70c-cbbab92bac55@square.com>
+Content-Disposition: INLINE
+
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
+bWFnZVJlYWR5ccllPAAAAOxJREFUeNrs2rEJAkEQheFbPQMzS7EMMw3EIgxExDasQQsQE7GOw0gz
+S7hQLjjWN3KBBYjCzD/wuEk/5thd2E055yJS9YpgBRgwYMCAAQMG/HPwQNkqd6VVspO0nWmj9A2a
+dJYu9T0rE+fDvShTA5t+F+SPXhu4UjMOAq4MXKsZBQE/o63Sw3DbUvnRJ+fWzEkLMGBfi1ZmwoAB
+AwYMGDBgwIABAwYMGDBgwIABA/53vS/THoHANwMfAoH3dj9sbx+Oysw59qQsbML28GOurJSr0jhC
+Np1paVizJh6IAwYMGDBgwIABA/5OvQQYAPu/YgTnDZhFAAAAAElFTkSuQmCC
+------=_Part_61072_577381436.1400030180529--
+
+------=_Part_61073_141710048.1400030180530--

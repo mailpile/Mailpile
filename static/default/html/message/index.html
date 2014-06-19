@@ -1,89 +1,94 @@
-{% extends "layouts/base.html" %}
-
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{% if result.data.metadata[result.thread_ids[-1]].subject %}{{ result.data.metadata[result.thread_ids[-1]].subject|nice_subject }}{% else %}{{_("No Subject")}}{% endif %}{% endblock %}
 {% block content %}
-{% include("partials/sub_nav_view.html") %}
-
 {% if result %}
-<table class="pile-results" id="pile-results">
-  <tbody>
-    {% for message in result.messages %}
-    {% if message.message %}
-    {% if not message.editing_string %}
-		<tr>
-      <td class="message-body" colspan="4">
-      <div class="message-headers">
-        <ul>
-          <li><b>Date:</b> {{message.friendly_date}} at {{message.shorttime}}</li>
-          <li><b>From:</b> {{message.from|e}}</li>
-          <li><b>To:</b> {% for toaddr in message.to %}<a class="message-email-address" href="/contact/{{toaddr}}/">{{toaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
-          {% if message.cc %}
-          <li><b>Cc:</b> {% for ccaddr in message.cc %}<a class="message-email-address" href="/contact/{{ccaddr}}/">{{ccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
-          {% endif %}
-          {% if message.bcc %}
-          <li><b>Bcc:</b> {% for bccaddr in message.bcc %}<a class="message-email-address" href="/contact/{{bccaddr}}/">{{bccaddr}}</a>{% if not loop.last %}, {% endif %}{% endfor %}</li>
-          {% endif %}
-          <li><b>Subject:</b> {{message.subject}}</li>
-        </ul>
-      </div>
-      <div class="message-body">
-      {% set lastpart = "none" %}
-      {% for part in message.message.text_parts %}
-        {% if part.type == "pgpbeginsigned" and part.openpgp_data %}
-        <div class="pgp_signature_{{part.openpgp_data.signature}}" style="background: #c0ffc0;">
-          <div class="pgp_signheader" style="background: #90ff90;">
-            {% if part.openpgp_data.signature == "good"%}Signed by <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
-            {% if part.openpgp_data.signature == "bad"%}Unknown signature from <a href="mailto:{{part.openpgp_data.fromaddr}}">{{part.openpgp_data.from}}</a>{% endif %}
-            {% if part.openpgp_data.signature == "error"%}Signed with unknown key{% endif %}
-          </div>
-        {% elif part.type == "pgpbegin" and part.openpgp_data %}
-        <div class="pgp_encrypted_{{part.openpgp_data.decrypted}}" style="background: #c0c0ff;">
-          <div class="pgp_encryptedheader" style="background: #9090ff;">
-            {% if part.openpgp_data.decrypt == "success"%}Successfully decrypted message{% endif %}
-            {% if part.openpgp_data.decrypt == "fail"%}Failed to decrypt message{% endif %}
-          </div>
-        {% elif part.type == "pgpsignature" or part.type == "pgpend" %}
-        </div>
-        {% elif part.type == "text" and lastpart == "pgpsignedtext" %}
-        </div>
-        {% else %}
-          <p class="text-part-{{part.type}}">{{part.data|e|urlize}}</p>
-        {% endif %}
-        {% set lastpart = part.type %}
-      {% endfor %}
-      </div>
-      <div class="message-attachments">
-      <ul>
-         {% for att in message.message.attachments %}
-         <li><a href="./att:{{att.count}}" type="{{att.mimetype}}">{{att.filename}}</a>({{att.mimetype}} {{att.length}} bytes)</li>
-         {% endfor %}
-      </ul>
-      </div>
-      <div class="message-actions">
-        <form action="/message/reply/={{message.mid}}/" method=POST>
-          <button type="submit"><span class="icon-reply"></span> Reply</button>
-        </form>
-        <form action="/message/forward/={{message.mid}}/" method=POST>
-          <button type="submit"><span class="icon-forward"></span> Forward</button>
-        </form>
-        <form action="/message/archive/={{message.mid}}/" method=POST>
-          <button type="submit"><span class="icon-archive"></span> Archive</button>
-        </form>
-        <form action="/message/reply/={{message.mid}}/" method=POST>
-          <button type="submit"><span class="icon-trash"></span> Delete</button>
-        </form>
-      </div>
-      </td>
-    </tr>
-    {% endif %}
+{% set start_mid     = result.thread_ids[-1] %}
+{% set last_mid      = result.thread_ids.0 %}
+{% set start_subject = result.data.metadata[start_mid].subject %}
+{% set profiles      = mailpile('settings', 'profiles').result.profiles %}
+
+{% set loop_history  = [] %}
+{% for mid in result.thread_ids|reverse %}
+  {% set metadata = result.data.metadata.get(mid) %}
+  {% set message = result.data.messages.get(mid) %}
+
+  {% if message and "editing_strings" in message %}{# Render the composer #}
+    {% set editing_strings = message.editing_strings %}
+    {% include("partials/compose.html") %}
+    {% do loop_history.append("edit message") %}
+
+  {% elif message %}{# Render full message #}
+    {% include("partials/thread_message.html") %}{# Show: Message #}
+    {% set show_reply = (mid != last_mid) %}
+    {% do loop_history.append("display message") %}
+
+  {% elif metadata.flags.draft %}{# Message is a draft, show composer #}
+    {# FIXME: We should probably just tell the user this is a draft, make
+              loading the composer a manual action UNLESS this is the last
+              message in the the thread.
+     #}
+    {% set compose = mailpile('message/draft', 'all', '='+mid).result %}{# Gets Ephermal message #}
+    {% if compose %}
+      {% do loop_history.append("edit draft") %}
+      {% set mid = compose.message_ids.0 %}
+      {% if "editing_strings" in compose.data.messages[mid] %}
+      {% set editing_strings = compose.data.messages[mid].editing_strings %}
+      {% include("partials/compose.html") %}
+      {% endif %}
     {% else %}
-      {% include("partials/search_item.html") %}
+      {{_("Could Not Render Composer")}}
     {% endif %}
-  {% endfor %}
-</tbody>
-</table>
-{% include("partials/details_search_speed.html") %}
-{% else %}
-{% set error_title = "message_missing" %}
-{% include("partials/errors_content.html") %}
+  {% else  %}{# Just render snippet view #}
+    <div class="thread-snippet" id="snippet-{{ mid }}" data-mid="{{ mid }}">
+      {% set from = metadata.from %}
+      {% include("partials/thread_metadata.html") %}
+      {% if metadata.crypto.encryption in ("missingkey", "error", "mixed-missingkey", "mixed-error") %}
+      <div class="thread-item-text"><em>{{_("Unable to see message preview")}}</em></div>
+      {% else %}
+      <div class="thread-item-text">{{ metadata.body.snippet }}</div>
+      {% endif %}
+    </div>
+    {% do loop_history.append("display snippet") %}
+  {% endif %}
+{% endfor %}{# End for loop #}
+
+{% if loop_history|last not in ("edit draft", "edit message") %}
+  {# Give the user the option to reply to the last message in the thread
+     - unless we already did! #}
+  {% set compose = mailpile('message/reply', 'all', 'ephemeral', '='+last_mid).result %}{# Gets Ephermal message #}
+  {% if compose %}
+    {% set mid = compose.message_ids.0 %}
+    {% set editing_strings = compose.data.messages[mid].editing_strings %}
+    {% include("partials/compose.html") %}
+  {% else %}
+    {{_("Could Not Render Composer")}}
+  {% endif %}
 {% endif %}
+
+<div id="thread-people" class="hide" data-modal_title="{{_("People in Conversation")}}">
+  <ul>
+    {% for aid in result.data.addresses %}{% set person = result.data.addresses[aid] %}
+    <li>
+      <a class="contact-conversation-avatar" href="{{ contact_url(person) }}"><img src="{{ show_avatar(person) }}"></a>
+      <a class="contact-conversation-name" href="{{ contact_url(person) }}"> <h4>{{person.fn}}</h4></a>
+      <a class="contact-conversation-address" href=""><span class="icon-compose"></span> {{person.address}}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+<div id="thread-tags" class="hide" data-modal_title="{{_("Tags in Conversation")}}">
+  <ul>
+    {% for tid in result.data.tags %}{% set tag = result.data.tags[tid] %}
+    {% if tag.type == 'tag' %}
+    <li>
+      <a class="" href="{{ tag.url }}"><span class="icon-tag"></span> <h4>{{ tag.name }}</h4></a>
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+{% else %}{# No Result, Show Error #}
+  {% set error_title = "message_missing" %}
+  {% include("partials/errors_content.html") %}
+{% endif  %}{# if result #}
 {% endblock %}

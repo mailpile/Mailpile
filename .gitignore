@@ -1,5 +1,4 @@
 *.pyc
-*.mo
 build/
 dist/
 mailpile.egg-info/
@@ -15,4 +14,11 @@ static/default/codekit-config.json
 scripts/less-compiler.mk
 .DS_Store
 static/default/plugins/
-doc/
+*.swp
+*.swo
+.vagrant
+.coverage
+testing/tmp
+testing/gpg-keyring/random_seed
+ghostdriver.log
+static/default/bower_components/

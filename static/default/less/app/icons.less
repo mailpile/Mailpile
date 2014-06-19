@@ -2,29 +2,14 @@
 	font-family: 'Mailpile-Interface';
 	src:url('../webfonts/Mailpile-Interface.eot');
 	src:url('../webfonts/Mailpile-Interface.eot?#iefix') format('embedded-opentype'),
-		url('../webfonts/Mailpile-Interface.woff') format('font-woff'),
 		url('../webfonts/Mailpile-Interface.ttf') format('truetype'),
+		url('../webfonts/Mailpile-Interface.woff') format('font-woff'),
 		url('../webfonts/Mailpile-Interface.svg#Mailpile-Interface') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
 
-
-
-/* Use the following CSS code if you want to use data attributes for inserting your icons */
-[data-icon]:before {
-	font-family: 'Mailpile-Interface';
-	content: attr(data-icon);
-	speak: none;
-	font-weight: normal;
-	font-variant: normal;
-	text-transform: none;
-	line-height: 1;
-	-webkit-font-smoothing: antialiased;
-}
-
-/* Manually Created Duplications & Weird Cases */
-.icon-drafts {
+[class^="icon-"], [class*=" icon-"] {
 	font-family: 'Mailpile-Interface';
 	speak: none;
 	font-style: normal;
@@ -32,196 +17,339 @@
 	font-variant: normal;
 	text-transform: none;
 	line-height: 1;
+
+	/* Better Font Rendering =========== */
 	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
-.icon-drafts:before {
-	content: "\e024";
-}
 
-/* Use the following CSS code if you want to have a class per icon */
-/*
-Instead of a list of all class selectors,
-you can use the generic selector below, but it's slower:
-[class*="icon-"] {
-*/
-.icon-zip, .icon-video, .icon-verified, .icon-user, .icon-unverified, .icon-unknown, .icon-unencrypted, .icon-trash, .icon-themes, .icon-tag, .icon-spreadsheet, .icon-speed, .icon-spam, .icon-settings, .icon-sent, .icon-search, .icon-rss, .icon-reply, .icon-reply-all, .icon-privacy, .icon-photos, .icon-notifications, .icon-music, .icon-logo, .icon-links, .icon-later, .icon-key, .icon-image, .icon-hosting, .icon-groups, .icon-forward, .icon-files, .icon-encrypted, .icon-donate, .icon-connections, .icon-compose, .icon-code, .icon-circle-x, .icon-circle-remove, .icon-circle-check, .icon-circle-add, .icon-calendar, .icon-attachment, .icon-archive, .icon-ads, .icon-graph, .icon-inbox, .icon-list, .icon-expand, .icon-collapse, .icon-circle-dotted, .icon-arrow-up, .icon-arrow-right, .icon-arrow-left, .icon-arrow-down, .icon-conversation {
-	font-family: 'Mailpile-Interface';
-	speak: none;
-	font-style: normal;
-	font-weight: normal;
-	font-variant: normal;
-	text-transform: none;
-	line-height: 1;
-	-webkit-font-smoothing: antialiased;
-}
+
 .icon-zip:before {
-	content: "\e000";
+	content: "\e600";
+}
+.icon-x:before {
+	content: "\e601";
+}
+.icon-work:before {
+	content: "\e602";
 }
 .icon-video:before {
-	content: "\e001";
-}
-.icon-verified:before {
-	content: "\e002";
+	content: "\e603";
 }
 .icon-user:before {
-	content: "\e003";
+	content: "\e604";
 }
-.icon-unverified:before {
-	content: "\e004";
+.icon-unlike:before {
+	content: "\e605";
 }
 .icon-unknown:before {
-	content: "\e005";
+	content: "\e606";
 }
-.icon-unencrypted:before {
-	content: "\e006";
+.icon-trophy:before {
+	content: "\e607";
+}
+.icon-travel:before {
+	content: "\e608";
 }
 .icon-trash:before {
-	content: "\e007";
+	content: "\e609";
+}
+.icon-tor:before {
+	content: "\e60a";
 }
 .icon-themes:before {
-	content: "\e008";
+	content: "\e60b";
+}
+.icon-text:before {
+	content: "\e60c";
+}
+.icon-tags:before {
+	content: "\e60d";
 }
 .icon-tag:before {
-	content: "\e009";
+	content: "\e60e";
+}
+.icon-star:before {
+	content: "\e60f";
 }
 .icon-spreadsheet:before {
-	content: "\e00a";
+	content: "\e610";
 }
 .icon-speed:before {
-	content: "\e00b";
+	content: "\e611";
 }
 .icon-spam:before {
-	content: "\e00c";
+	content: "\e612";
+}
+.icon-social:before {
+	content: "\e613";
+}
+.icon-signature-verified:before {
+	content: "\e614";
+}
+.icon-signature-unverified:before {
+	content: "\e615";
+}
+.icon-signature-unknown:before {
+	content: "\e616";
+}
+.icon-signature-revoked:before {
+	content: "\e617";
+}
+.icon-signature-none:before {
+	content: "\e618";
+}
+.icon-signature-invalid:before {
+	content: "\e619";
+}
+.icon-signature-expired:before {
+	content: "\e61a";
+}
+.icon-signature-error:before {
+	content: "\e61b";
 }
 .icon-settings:before {
-	content: "\e00d";
+	content: "\e61c";
 }
 .icon-sent:before {
-	content: "\e00e";
+	content: "\e61d";
 }
 .icon-search:before {
-	content: "\e00f";
+	content: "\e61e";
 }
 .icon-rss:before {
-	content: "\e010";
+	content: "\e61f";
+}
+.icon-routes:before {
+	content: "\e620";
+}
+.icon-robot:before {
+	content: "\e621";
 }
 .icon-reply:before {
-	content: "\e011";
+	content: "\e622";
 }
 .icon-reply-all:before {
-	content: "\e012";
+	content: "\e623";
+}
+.icon-receipts:before {
+	content: "\e624";
+}
+.icon-purchases:before {
+	content: "\e625";
+}
+.icon-profiles:before {
+	content: "\e626";
 }
 .icon-privacy:before {
-	content: "\e013";
+	content: "\e627";
+}
+.icon-preferences:before {
+	content: "\e628";
+}
+.icon-plus:before {
+	content: "\e629";
 }
 .icon-photos:before {
-	content: "\e014";
+	content: "\e62a";
+}
+.icon-outbox:before {
+	content: "\e62b";
 }
 .icon-notifications:before {
-	content: "\e015";
+	content: "\e62c";
+}
+.icon-news:before {
+	content: "\e62d";
+}
+.icon-new:before {
+	content: "\e62e";
 }
 .icon-music:before {
-	content: "\e016";
+	content: "\e62f";
+}
+.icon-move:before {
+	content: "\e630";
+}
+.icon-money:before {
+	content: "\e631";
+}
+.icon-minus:before {
+	content: "\e632";
+}
+.icon-merge:before {
+	content: "\e633";
 }
 .icon-logo:before {
-	content: "\e018";
+	content: "\e634";
 }
-.icon-links:before {
-	content: "\e019";
+.icon-lock-open:before {
+	content: "\e635";
 }
-.icon-later:before {
-	content: "\e01a";
+.icon-lock-error:before {
+	content: "\e636";
 }
-.icon-key:before {
-	content: "\e01b";
-}
-.icon-image:before {
-	content: "\e01c";
-}
-.icon-hosting:before {
-	content: "\e01d";
-}
-.icon-groups:before {
-	content: "\e01e";
-}
-.icon-forward:before {
-	content: "\e01f";
-}
-.icon-files:before {
-	content: "\e020";
-}
-.icon-encrypted:before {
-	content: "\e021";
-}
-.icon-donate:before {
-	content: "\e022";
-}
-.icon-connections:before {
-	content: "\e023";
-}
-.icon-compose:before {
-	content: "\e024";
-}
-.icon-code:before {
-	content: "\e025";
-}
-.icon-circle-x:before {
-	content: "\e026";
-}
-.icon-circle-remove:before {
-	content: "\e027";
-}
-.icon-circle-check:before {
-	content: "\e028";
-}
-.icon-circle-add:before {
-	content: "\e029";
-}
-.icon-calendar:before {
-	content: "\e02a";
-}
-.icon-attachment:before {
-	content: "\e02b";
-}
-.icon-archive:before {
-	content: "\e02c";
-}
-.icon-ads:before {
-	content: "\e02d";
-}
-.icon-graph:before {
-	content: "\e017";
-}
-.icon-inbox:before {
-	content: "\e02e";
+.icon-lock-closed:before {
+	content: "\e637";
 }
 .icon-list:before {
-	content: "\e02f";
+	content: "\e638";
+}
+.icon-links:before {
+	content: "\e639";
+}
+.icon-like:before {
+	content: "\e63a";
+}
+.icon-lightbulb:before {
+	content: "\e63b";
+}
+.icon-later:before {
+	content: "\e63c";
+}
+.icon-key:before {
+	content: "\e63d";
+}
+.icon-inbox:before {
+	content: "\e63e";
+}
+.icon-image:before {
+	content: "\e63f";
+}
+.icon-hosting:before {
+	content: "\e640";
+}
+.icon-home:before {
+	content: "\e641";
+}
+.icon-groups:before {
+	content: "\e642";
+}
+.icon-graph:before {
+	content: "\e643";
+}
+.icon-forward:before {
+	content: "\e644";
+}
+.icon-forum:before {
+	content: "\e645";
+}
+.icon-fingerprint:before {
+	content: "\e646";
+}
+.icon-filters:before {
+	content: "\e647";
+}
+.icon-eye:before {
+	content: "\e648";
 }
 .icon-expand:before {
-	content: "\e030";
+	content: "\e649";
+}
+.icon-donate:before {
+	content: "\e64a";
+}
+.icon-document:before {
+	content: "\e64b";
+}
+.icon-dislike:before {
+	content: "\e64c";
+}
+.icon-compose:before {
+	content: "\e64d";
+}
+.icon-comment:before {
+	content: "\e64e";
+}
+.icon-columns:before {
+	content: "\e64f";
 }
 .icon-collapse:before {
-	content: "\e031";
+	content: "\e650";
+}
+.icon-code:before {
+	content: "\e651";
+}
+.icon-circle-x:before {
+	content: "\e652";
+}
+.icon-circle-info:before {
+	content: "\e653";
 }
 .icon-circle-dotted:before {
-	content: "\e032";
+	content: "\e654";
 }
-.icon-arrow-up:before {
-	content: "\e033";
+.icon-checkmark:before {
+	content: "\e655";
 }
-.icon-arrow-right:before {
-	content: "\e034";
+.icon-calendar:before {
+	content: "\e656";
 }
-.icon-arrow-left:before {
-	content: "\e035";
+.icon-attachment:before {
+	content: "\e657";
 }
-.icon-arrow-down:before {
-	content: "\e036";
+.icon-archive:before {
+	content: "\e658";
 }
-.icon-conversation:before {
-	content: "\e037";
+.icon-alerts:before {
+	content: "\e659";
+}
+.icon-ads:before {
+	content: "\e65a";
+}
+
+
+
+/* 
+   CUSTOM HACKS 
+   Manually Created Duplications & Weird Cases
+*/
+.sidebar-tags-draggable-hover .icon-inbox:before,
+.sidebar-tags-draggable-hover .icon-sent:before,
+.sidebar-tags-draggable-hover .icon-spam:before,
+.sidebar-tags-draggable-hover .icon-trash:before,
+
+.sidebar-tags-draggable-hover .icon-comment:before,
+.sidebar-tags-draggable-hover .icon-donate:before,
+.sidebar-tags-draggable-hover .icon-code:before,
+.sidebar-tags-draggable-hover .icon-news:before,
+.sidebar-tags-draggable-hover .icon-forum:before,
+.sidebar-tags-draggable-hover .icon-travel:before,
+.sidebar-tags-draggable-hover .icon-money:before,
+.sidebar-tags-draggable-hover .icon-photos:before,
+.sidebar-tags-draggable-hover .icon-links:before,
+.sidebar-tags-draggable-hover .icon-document:before,
+.sidebar-tags-draggable-hover .icon-receipts:before,
+.sidebar-tags-draggable-hover .icon-calendar:before,
+.sidebar-tags-draggable-hover .icon-themes:before,
+.sidebar-tags-draggable-hover .icon-spreadsheet:before,
+.sidebar-tags-draggable-hover .icon-key:before,
+.sidebar-tags-draggable-hover .icon-groups:before,
+.sidebar-tags-draggable-hover .icon-graph:before,
+.sidebar-tags-draggable-hover .icon-checkmark:before,
+.sidebar-tags-draggable-hover .icon-alerts:before,
+.sidebar-tags-draggable-hover .icon-zip:before,
+.sidebar-tags-draggable-hover .icon-work:before,
+.sidebar-tags-draggable-hover .icon-user:before,
+.sidebar-tags-draggable-hover .icon-text:before,
+.sidebar-tags-draggable-hover .icon-star:before,
+.sidebar-tags-draggable-hover .icon-rss:before,
+.sidebar-tags-draggable-hover .icon-robot:before,
+.sidebar-tags-draggable-hover .icon-privacy:before,
+.sidebar-tags-draggable-hover .icon-music:before,
+.sidebar-tags-draggable-hover .icon-lock-closed:before,
+.sidebar-tags-draggable-hover .icon-key:before,
+.sidebar-tags-draggable-hover .icon-list:before,
+.sidebar-tags-draggable-hover .icon-image:before,
+.sidebar-tags-draggable-hover .icon-home:before,
+.sidebar-tags-draggable-hover .icon-video:before,
+.sidebar-tags-draggable-hover .icon-new:before,
+.sidebar-tags-draggable-hover .icon-trophy:before,
+.sidebar-tags-draggable-hover .icon-tag:before,
+.sidebar-tags-draggable-hover .icon-tags:before {
+  content: "\e654";
+  color: @black;
 }
 
 

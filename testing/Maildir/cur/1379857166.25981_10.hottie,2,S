@@ -1,0 +1,45 @@
+From nobody Fri Mar  7 17:36:01 2014
+Envelope-to: encrypter@test.local
+Content-Type: multipart/encrypted; boundary="===============8775766059736482912=="; protocol="application/pgp-encrypted";
+Mime-Version: 1.0
+Subject: Encrypted test message
+From: signer@test.local
+To: encrypter@test.local
+
+This is an OpenPGP/MIME encrypted message (RFC 2440 and 3156)
+--===============8775766059736482912==
+Content-Transfer-Encoding: 7bit
+Content-Type: application/pgp-encrypted
+Content-Description: PGP/MIME Versions Identification
+
+Version: 1
+
+--===============8775766059736482912==
+Content-Transfer-Encoding: 7bit
+Content-Type: application/octet-stream; name=encrypted.asc
+Content-Description: OpenPGP encrypted message
+Content-Disposition: inline; filename=encrypted.asc
+
+-----BEGIN PGP MESSAGE-----
+
+hQEMAyx3pxxZI/uNAQf/QXuuaSpKQo++LV6+EBvfNe7BRf2FpuzgGcMLFRLWqKHg
+HNKsuHcDQX0tFwNKZe25v6SYWEWJ1oq+jqWfHLCt5M56dR4/Ia5wJItb+PBkWukb
+8miLpP7t1uI5hunqu66fJxlQKCn0UszwtAIQf7DSqS2xuArsiut8g/4bjoVckZhv
+Rp1cDnrt3+YyWUxpMEVWDPQrIXb9KOOiQETu3/bTnVtTP5osJlM206FWhUnAAJTH
+AX0MyYve4em9nkcfLmNmDpgIbPk3qvqBAoSrrPb+RNvy7IwNVzatKL+87n96+AcG
+yuWYrVhX5QpNlRTBWjEFFwJLQTXI4M1Tm2OdVGGTENLBMAHAavaYPD6fSIf4IlxP
+r9f1R7sacsfeesC6V4gxtSOqqAFIQkKj3IZfWuTKr+JDOfQX4SAonHppJCps+PjS
+hgVHeycF58Se5EdPyPeoTFqWz4azd4E9To+5N1Z/957elFfshZVZjClKXwXrtSX+
+iwG+chKbPwuo9Dhj41jzmuw0VX9A61yOzWVBs7cP7u8ECrf3OGMbBSR6B15/aqiy
+Kbufd8p2TUgb4oyr+ylQR7Kt7FWtR1d9uZPPj9bmqa9U5yMAK1Uzz6PqVZYwSyo8
+xvteOKbp/7Z2JZrHErj6nz7OFgcD/DRYyF5oVrqrNOk3+B+lU8RSCxkRHYtAZn2L
+DSupuHNt0a3+CHrmU1rsFrgg4LbQbbcvr6udlhy9Ximl6mfqFgtZVqGUq4k6vYcd
+3Fg80MIE5gSnJrkoz5MavLV7YaYlBidLOYFJ/rbKYkvQVt39Zz/maK39i/9/ADJT
+1iBcmxizWdBiqA6nxEw3bXP04HB2m4LR9XrJNyY0HOuEOhCHkSJuscQWidWiL+S0
+LNH9LYjdtJ8gIMibVRIxQNC8RqIqai2kGsA55Vd1DnW3jB/9smWjlP5xWPmMHnSG
+P8X6mvhjOlvqpFfmvQC/4zp8xsoEAydUsy813mWykR3tihV/yFzDr0+Y6AOWncdH
+TCM=
+=0ep3
+-----END PGP MESSAGE-----
+
+--===============8775766059736482912==--

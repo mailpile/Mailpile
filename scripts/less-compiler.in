@@ -8,4 +8,8 @@ static/default/css/default.css: .less-deps
 	    >../css/default.css)
 	@ls -l static/default/css/default.css
 
+static/default/css/print.css:
+	@(cd static/default/less && lessc print.less >../css/print.css)
+	@ls -l static/default/css/print.css
+
 .less-deps: scripts/less-compiler.in \

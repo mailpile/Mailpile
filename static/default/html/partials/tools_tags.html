@@ -1,0 +1,27 @@
+{%- set activities = [{
+    'name': 'tag_list',
+    'url': '/tags/',
+    'text': _("Tags"),
+    'description': _("View all tags"),
+    'icon': 'tag'
+},{
+    'name': 'tag_add',
+    'url': '/tags/add/',
+    'text': _("Add Tag"),
+    'description': _("Create a new tag"),
+    'icon': 'plus'
+},{
+    'name': 'filter_list',
+    'url': '/filter/list/',
+    'text': _("Filters"),
+    'description': _("All current filters"),
+    'icon': 'filters'
+}] -%}
+{%- set display_modes = [{
+    'name': 'display_tag_type',
+    'icon': 'eye',
+    'url': '/tags/',
+    'text': _("Type"),
+    'description': _("Show Tag by type")
+}] -%}
+{%- include('partials/tools_default.html') -%}

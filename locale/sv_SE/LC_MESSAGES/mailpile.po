@@ -1,0 +1,1853 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-02-13 13:32+0000\n"
+"PO-Revision-Date: 2014-02-24 08:05-0000\n"
+"Last-Translator: Anton Strömkvist <teun@lutic.org>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: sv_SE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
+
+#: mailpile/commands.py:202
+#, python-format
+msgid "No such ID: %s"
+msgstr "Inget sådant ID: %s"
+
+#: mailpile/commands.py:208 mailpile/commands.py:215 mailpile/commands.py:221
+#, python-format
+msgid "What message is %s?"
+msgstr "Vilket medelande är %s?"
+
+#: mailpile/commands.py:512
+#, python-format
+msgid "Search: %s"
+msgstr "Sök: %s"
+
+#: mailpile/commands.py:674 mailpile/commands.py:843 mailpile/commands.py:893
+#: mailpile/commands.py:935 mailpile/commands.py:984
+#: mailpile/plugins/setup_magic.py:85
+#, fuzzy
+msgid "In lockdown, doing nothing."
+msgstr "Låst, gör inget."
+
+#: mailpile/commands.py:680
+#, python-format
+msgid ""
+"Note: periodic delay is %ss, run from shell to speed up: mp --rescan=..."
+msgstr ""
+"Notera: periodisk fördröjning är %ss, kör från terminal för att öka "
+"hastighet: mp --rescan=..."
+
+#: mailpile/commands.py:730
+#, python-format
+msgid "Running: %s"
+msgstr "Kör: %s"
+
+#: mailpile/commands.py:742
+#, python-format
+msgid "Failed to rescan: %s"
+msgstr "Misslyckades med att skanna om: %s"
+
+#: mailpile/commands.py:757
+msgid "Nothing changed"
+msgstr "Inget ändrades"
+
+#: mailpile/commands.py:759
+#, python-format
+msgid "Aborted: %s"
+msgstr "Avbröt: %s"
+
+#: mailpile/commands.py:788
+msgid "Aborted"
+msgstr "Avbruten"
+
+#: mailpile/commands.py:965
+#, python-format
+msgid "No such key: %s"
+msgstr "Ingen sådan nyckel: %s"
+
+#: mailpile/commands.py:1038
+#, python-format
+msgid "The Web interface address is: %s"
+msgstr "Webgränssnittadressen är: %s"
+
+#: mailpile/commands.py:1041
+msgid "The Web interface is disabled."
+msgstr "Webgränssnittet är avaktiverat."
+
+#: mailpile/commands.py:1046
+msgid "Type `help` for instructions or press <Ctrl-d> to quit."
+msgstr "Skriv `help` för instruktioner eller tryck <Ctrl-d> för att avsluta."
+
+#: mailpile/commands.py:1065
+msgid "Commands:"
+msgstr "Kommandon:"
+
+#: mailpile/commands.py:1097
+msgid "Tags:  (use a tag as a command to display tagged messages)"
+msgstr ""
+"Taggar:  (använd en tagg som ett kommando för att visa taggade meddelanden)"
+
+#: mailpile/commands.py:1106 mailpile/jinjaextensions.py:125
+#: mailpile/jinjaextensions.py:210
+msgid "Error"
+msgstr "Fel"
+
+#: mailpile/commands.py:1140
+msgid "Unknown command"
+msgstr "Okänt kommando"
+
+#: mailpile/commands.py:1238
+#, python-format
+msgid "Unknown command: %s"
+msgstr "Okänt commando: %s"
+
+#: mailpile/config.py:103
+msgid "true"
+msgstr "sant"
+
+#: mailpile/config.py:103
+msgid "yes"
+msgstr "ja"
+
+#: mailpile/config.py:103
+msgid "on"
+msgstr "på"
+
+#: mailpile/config.py:106
+msgid "false"
+msgstr "falskt"
+
+#: mailpile/config.py:106
+msgid "no"
+msgstr "nej"
+
+#: mailpile/config.py:106
+#, fuzzy
+msgid "off"
+msgstr "av"
+
+#: mailpile/config.py:108
+#, python-format
+msgid "Invalid boolean: %s"
+msgstr "Ogiltigt boolesk: %s"
+
+# Could not find a translation for slug that made sense (I found 'snail' and 'explosion') so I guess the Swedish language has to adapt.
+#: mailpile/config.py:131
+#, fuzzy, python-format
+msgid "Invalid URL slug: %s"
+msgstr "Ogiltig URL slug: %s"
+
+#: mailpile/config.py:163
+#, python-format
+msgid "Invalid hostname: %s"
+msgstr "Ogiltigt värdnamn: %s"
+
+#: mailpile/config.py:197
+#, python-format
+msgid "File/directory does not exist: %s"
+msgstr "Fil/mapp existerar inte: %s"
+
+#: mailpile/config.py:215
+#, python-format
+msgid "Not a file: %s"
+msgstr "Inte en fil: %s"
+
+#: mailpile/config.py:233
+#, python-format
+msgid "Not a directory: %s"
+msgstr "Inte en mapp: %s"
+
+#: mailpile/config.py:369
+msgid "Please override this method"
+msgstr "Var vänlig skriv över den här metoden"
+
+#: mailpile/config.py:429
+#, python-format
+msgid "Invalid type \"%s\" for key \"%s\" (value: %s)"
+msgstr "Ogiltig typ \"%s\" för nyckel \"%s\" (värde: %s)"
+
+#: mailpile/config.py:440
+#, python-format
+msgid "Invalid key for %s: %s"
+msgstr "Ogiltig nyckel för %s: %s"
+
+#: mailpile/config.py:523
+#, python-format
+msgid "Modifying %s/%s is not allowed"
+msgstr "Att ändra %s/%s är inte tillåtet"
+
+#: mailpile/config.py:527 mailpile/config.py:535
+#, python-format
+msgid "Invalid value for %s/%s: %s"
+msgstr "Ogiltigt värde för %s/%s: %s"
+
+#: mailpile/config.py:538
+#, python-format
+msgid "Unknown constraint for %s/%s: %s"
+msgstr "Okänd restriktion för %s/%s: %s"
+
+#: mailpile/config.py:743
+msgid "Cannot append to fixed dict"
+msgstr "Kan inte lägga till till fixerad mapp"
+
+#: mailpile/config.py:791
+#, python-format
+msgid "Creating: %s"
+msgstr "Skapar: %s"
+
+#: mailpile/config.py:850
+#, python-format
+msgid "Invalid (%s): section %s does not exist"
+msgstr "Ogiltig (%s): sektionen %s existerar inte"
+
+#: mailpile/config.py:861
+#, python-format
+msgid "Invalid (%s): section %s, variable %s"
+msgstr "Ogiltig (%s): sektion %s, variabel %s"
+
+#: mailpile/config.py:913
+#, python-format
+msgid "Loading plugin: %s"
+msgstr "Laddar plugin: %s"
+
+#: mailpile/config.py:938
+#, python-format
+msgid "Mailbox ID too large: %s"
+msgstr "Mailbox ID för stort: %s"
+
+#: mailpile/config.py:1001
+#, python-format
+msgid "No such mailbox: %s"
+msgstr "Ingen sådan mailbox: %s"
+
+#: mailpile/config.py:1008
+#, python-format
+msgid "%s: Updating: %s"
+msgstr "%s: Updaterar: %s"
+
+#: mailpile/config.py:1015
+#, python-format
+msgid "%s: Opening: %s (may take a while)"
+msgstr "%s: Öppnar: %s (kan ta en stund)"
+
+#: mailpile/config.py:1126
+#, fuzzy
+msgid "Parent paths are not allowed"
+msgstr "Modersökvägar är inte tillåtna"
+
+#: mailpile/defaults.py:11
+msgid "Mailpile program version"
+msgstr "Mailpiles programversion"
+
+#: mailpile/defaults.py:12
+msgid "Configuration timestamp"
+msgstr "Konfigurationstid"
+
+#: mailpile/defaults.py:13
+msgid "Technical system settings"
+msgstr "Tekniska systeminställningar"
+
+#: mailpile/defaults.py:14
+msgid "Max files kept open at once"
+msgstr "Max antal filer öppna på samma gång"
+
+#: mailpile/defaults.py:15
+msgid "History length (lines, <0=no save)"
+msgstr "Historiklängd (rader, <0=inget sparas)"
+
+#: mailpile/defaults.py:16
+msgid "Listening port for web UI"
+msgstr "Lyssningsport för webbgränssnitt"
+
+#: mailpile/defaults.py:17
+#, fuzzy
+msgid "Posting list target size in KB"
+msgstr "Postar listmålstorlek i KB"
+
+#: mailpile/defaults.py:18
+msgid "Max results we sort \"well\""
+msgstr "Max antal resultat vi sorterar \"bra\""
+
+#: mailpile/defaults.py:19
+msgid "Max length of metadata snippets"
+msgstr "Maxlängd på metadatafragment"
+
+#: mailpile/defaults.py:20
+msgid "Debugging flags"
+msgstr "Felsökningsflaggor"
+
+#: mailpile/defaults.py:21
+msgid "Host:port of PGP keyserver"
+msgstr "Värd:port för PGP-nyckelserver"
+
+#: mailpile/defaults.py:23
+msgid "Listening host for web UI"
+msgstr "Lyssningsvärd för webgränssnitt"
+
+#: mailpile/defaults.py:25
+msgid "Local read/write Maildir"
+msgstr "Lokal läs/skriv Maildir"
+
+#: mailpile/defaults.py:26
+msgid "Metadata index file"
+msgstr "Metadata indexfil"
+
+#: mailpile/defaults.py:27
+msgid "Search index directory"
+msgstr "Sök indexkatalog"
+
+#: mailpile/defaults.py:28
+msgid "Mailboxes we index"
+msgstr "Mailboxar vi indexerar"
+
+#: mailpile/defaults.py:29
+msgid "Plugins to load on startup"
+msgstr "Plugins att ladda vid start"
+
+#: mailpile/defaults.py:31
+msgid "Locations of assorted data"
+msgstr "Platser för sorterad data"
+
+#: mailpile/defaults.py:32
+msgid "Default theme"
+msgstr "Standardtema"
+
+#: mailpile/defaults.py:34
+#, fuzzy
+msgid "Location of vcards"
+msgstr "Plats för visitkort"
+
+#: mailpile/defaults.py:36
+msgid "Demo mode, disallow changes"
+msgstr "Demoläge, avvisa ändringar"
+
+#: mailpile/defaults.py:38
+msgid "User preferences"
+msgstr "Användarinställningar"
+
+#: mailpile/defaults.py:39
+msgid "Search results per page"
+msgstr "Sökresultat per sida"
+
+#: mailpile/defaults.py:40
+msgid "New mail check frequency"
+msgstr "Kontrollfrekvens för nya mail"
+
+#: mailpile/defaults.py:41
+msgid "Inline PGP signatures or attached"
+msgstr "PGP-signaturer i text eller som bilaga"
+
+#: mailpile/defaults.py:43
+msgid "Encrypt local data to ..."
+msgstr "Kryptera lokal data till..."
+
+#: mailpile/defaults.py:44
+#, fuzzy
+msgid "Advertise GPG preferences in a header?"
+msgstr "Utlys GPG-preferns i en rubrik?"
+
+#: mailpile/defaults.py:47
+msgid "Default encryption policy for outgoing mail"
+msgstr "Standard krypteringspolicy för utgående mail"
+
+#: mailpile/defaults.py:49
+msgid "Default sort order"
+msgstr "Standard sorteringsordning"
+
+#: mailpile/defaults.py:50
+msgid "Key to use to scramble the index"
+msgstr "Nyckel att använda för att förvränga indexet"
+
+#: mailpile/defaults.py:51
+msgid "Make encrypted content searchable"
+msgstr "Gör krypterat innehåll sökbart"
+
+#: mailpile/defaults.py:53
+msgid "Command run before rescanning"
+msgstr "Kommando att köra innan omskanning"
+
+#: mailpile/defaults.py:54
+msgid "Default outgoing e-mail address"
+msgstr "Standard avsändaradress"
+
+#: mailpile/defaults.py:55
+msgid "Default outgoing mail route"
+msgstr "Standardväg för utgående mail"
+
+#: mailpile/defaults.py:57
+msgid "User interface language"
+msgstr "Språk för användargränssnitt"
+
+#: mailpile/defaults.py:58
+msgid "VCard import/export settings"
+msgstr "VCard import-/exportinställningar"
+
+#: mailpile/defaults.py:59
+msgid "VCard import settings"
+msgstr "VCard importinställningar"
+
+#: mailpile/defaults.py:60
+msgid "VCard export settings"
+msgstr "VCard exportinställningar"
+
+#: mailpile/defaults.py:61
+#, fuzzy
+msgid "VCard context helper settings"
+msgstr "VCard kontexthjälpinställningar"
+
+#: mailpile/defaults.py:64
+msgid "User profiles and personalities"
+msgstr "Användarprofiler och personligheter"
+
+#: mailpile/defaults.py:65
+msgid "Account name"
+msgstr "Kontonamn"
+
+#: mailpile/defaults.py:66
+msgid "E-mail address"
+msgstr "E-postadress"
+
+#: mailpile/defaults.py:67
+msgid "Message signature"
+msgstr "Meddelandesignatur"
+
+#: mailpile/defaults.py:68
+msgid "Outgoing mail route"
+msgstr "Väg för ugående mail"
+
+#: mailpile/httpd.py:191
+msgid "XMLRPC has been disabled for now."
+msgstr "XMLRPC har blivit inaktiverat för stunden."
+
+#: mailpile/httpd.py:210
+msgid "OMG, input too big"
+msgstr "Satan i gatan, för stor input"
+
+#: mailpile/httpd.py:213
+msgid "Unknown content-type"
+msgstr "Okänd innehållstyp"
+
+#: mailpile/httpd.py:219
+msgid "Internal Error"
+msgstr "Inre Fel"
+
+#: mailpile/httpd.py:290
+msgid "Internal error"
+msgstr "Inre fel"
+
+#: mailpile/jinjaextensions.py:113 mailpile/jinjaextensions.py:146
+#: mailpile/jinjaextensions.py:187
+#, fuzzy
+msgid "Unknown"
+msgstr "Okänd tillit"
+
+#: mailpile/jinjaextensions.py:114
+msgid "There is something unknown or wrong with this signature"
+msgstr "Det är någonting okänt eller fel med den här signaturen"
+
+#: mailpile/jinjaextensions.py:119
+msgid "No Signature"
+msgstr "Ingen Signatur"
+
+#: mailpile/jinjaextensions.py:120
+msgid ""
+"This message contains no signature, which means it could have come from "
+"anyone, not necessarily the real sender"
+msgstr ""
+"Det här meddelandet har ingen signatur, vilket betyder att det kan ha kommit "
+"från vem som helst, inte nödvändigtvis den riktiga avsändaren"
+
+#: mailpile/jinjaextensions.py:126
+msgid "There was a weird error with this signature"
+msgstr "Det var ett konstigt fel med den här signaturen"
+
+#: mailpile/jinjaextensions.py:130
+msgid "Invalid"
+msgstr "Ogiltig"
+
+#: mailpile/jinjaextensions.py:131
+msgid "The signature was invalid or bad"
+msgstr "Signaturen var ogiltig eller innehöll fel"
+
+#: mailpile/jinjaextensions.py:135
+msgid "Revoked"
+msgstr "Upphävd"
+
+#: mailpile/jinjaextensions.py:136
+msgid ""
+"Watch out, the signature was made with a key that has beenrevoked- this is "
+"not a good thing"
+msgstr ""
+"Se upp, signaturen skapades med en nyckel som har blivit upphävd - det är "
+"inte bra"
+
+#: mailpile/jinjaextensions.py:141
+msgid "Expired"
+msgstr "Utgången"
+
+#: mailpile/jinjaextensions.py:142
+msgid "The signature was made with an expired key"
+msgstr "Signaturen skapades med en utgången nyckel"
+
+#: mailpile/jinjaextensions.py:147
+msgid "the signature was made with an unknown key, so we can not verify it"
+msgstr ""
+"signaturen skapades med en okänd nyckel, så vi kunde inte verifiera den"
+
+#: mailpile/jinjaextensions.py:152
+msgid "Unverified"
+msgstr "Overifierad"
+
+#: mailpile/jinjaextensions.py:153
+msgid "The signature was good but it came from a key that is not verified yet"
+msgstr ""
+"Signaturen var godkänd men den kom från en nyckel som inte är verifierad ännu"
+
+#: mailpile/jinjaextensions.py:158
+msgid "Verified"
+msgstr "Verifierad"
+
+#: mailpile/jinjaextensions.py:159
+msgid "The signature was good and came from a verified key, w00t!"
+msgstr "Signaturen var godkänd och kom från en verifierad nyckel, w00t!"
+
+#: mailpile/jinjaextensions.py:188
+msgid "There is some unknown thing wrong with this encryption"
+msgstr "Det är något okänt fel med den här krypteringen"
+
+#: mailpile/jinjaextensions.py:193
+#: static/default/html/partials/compose.html:49
+#, fuzzy
+msgid "Not Encrypted"
+msgstr "Ej Krypterat"
+
+#: mailpile/jinjaextensions.py:194
+msgid ""
+"This message was not encrypted. It may have been intercepted en route to you "
+"and read by an unauthorized party."
+msgstr ""
+"Det här meddelandet var inte krypterat. Det kan ha blivit uppsnappat på väg "
+"till dig och läst av en obehörig part"
+
+#: mailpile/jinjaextensions.py:199
+#: static/default/html/partials/compose.html:46
+msgid "Encrypted"
+msgstr "Krypterad"
+
+#: mailpile/jinjaextensions.py:200
+msgid ""
+"This message was encrypted, but we were successfully able to decrypt it. "
+"Great job being secure"
+msgstr ""
+"Det här meddelandet var krypterat, men vi lyckades dekryptera det. Bra "
+"jobbat med säkerheten"
+
+#: mailpile/jinjaextensions.py:205
+msgid "Missing Key"
+msgstr "Nyckel Saknas"
+
+#: mailpile/jinjaextensions.py:206
+msgid "You do not have any of the private keys that will decrypt this message"
+msgstr "Du har inga privata nycklar som kan dekryptera det här meddelandet"
+
+#: mailpile/jinjaextensions.py:211
+msgid "We failed to decrypt message and are unsure why"
+msgstr "Meddelandet gick inte att dekryptera och vi vet inte varför"
+
+#: mailpile/jinjaextensions.py:249
+#, fuzzy
+msgid "You"
+msgstr "Du"
+
+#: mailpile/mailutils.py:223
+#, python-format
+msgid "SendMail: from %s, to %s\n"
+msgstr "SendMail: från %s, till %s\n"
+
+#: mailpile/mailutils.py:226
+#, python-format
+msgid "Connecting to %s"
+msgstr "Ansluter till %s"
+
+#: mailpile/mailutils.py:248
+#, python-format
+msgid "SMTP connection to: %s:%s as %s@%s\n"
+msgstr "SMTP anslutning till: %s:%s som %s@%s\n"
+
+#: mailpile/mailutils.py:286
+#, python-format
+msgid "Invalid sendmail command/SMTP server: %s"
+msgstr "Ogiltigt sendmailkommando/SMTP-server: %s"
+
+#: mailpile/mailutils.py:289
+msgid "Preparing message..."
+msgstr "Förbereder meddelande..."
+
+#: mailpile/mailutils.py:299
+#, python-format
+msgid "Message sent, %d bytes"
+msgstr "Meddelande skickat, %d bytes"
+
+#: mailpile/mailutils.py:539 mailpile/mailutils.py:549
+#: mailpile/mailutils.py:617
+msgid "Mailbox is read-only."
+msgstr "Mailboxen är read-only"
+
+#: mailpile/mailutils.py:542 mailpile/mailutils.py:553
+msgid "Message is read-only."
+msgstr "Meddelandet är read-only"
+
+#: mailpile/mailutils.py:664
+msgid "Message not found?"
+msgstr "Meddelandet hittades inte?"
+
+#: mailpile/mailutils.py:742
+#, python-format
+msgid "Extracted attachment %s"
+msgstr "Extraherad bilaga %s"
+
+#: mailpile/mailutils.py:749
+#, python-format
+msgid "Wrote preview to: %s"
+msgstr "Skrev förhandsvisning till: %s"
+
+#: mailpile/mailutils.py:757
+msgid "Failed to generate thumbnail"
+msgstr "Misslyckades med att generera ikon"
+
+#: mailpile/mailutils.py:763
+#, fuzzy, python-format
+msgid "Wrote attachment to: %s"
+msgstr "Skrev bilaga till: %s"
+
+#: mailpile/mailutils.py:767
+#, python-format
+msgid "No attachments found for: %s"
+msgstr "Inga bilagor hittade för: %s"
+
+#: mailpile/mailutils.py:908
+msgid "[Binary data suppressed]\n"
+msgstr "[Binary data suppressed]\n"
+
+#: mailpile/search.py:177
+msgid "Your metadata index is either too old, too new or corrupt!"
+msgstr "Ditt metadataindex är antingen för gammalt, för nytt eller korrupt!"
+
+#: mailpile/search.py:194
+msgid "Loading metadata index..."
+msgstr "Laddar metadataindex..."
+
+#: mailpile/search.py:207
+#, python-format
+msgid "Metadata index not found: %s"
+msgstr "Metadataindex hittades inte: %s"
+
+#: mailpile/search.py:214
+#, python-format
+msgid "Loaded metadata, %d messages"
+msgstr "Laddade metadata, %d meddelanden"
+
+#: mailpile/search.py:235
+msgid "Saving metadata index changes..."
+msgstr "Sparar ändringar till metadataindex..."
+
+#: mailpile/search.py:246
+msgid "Saved metadata index changes"
+msgstr "Sparade ändringar till metadataindex"
+
+#: mailpile/search.py:257
+msgid "Saving metadata index..."
+msgstr "Sparar metadataindex..."
+
+#: mailpile/search.py:279
+msgid "Saved metadata index"
+msgstr "Sparade metadataindex"
+
+#: mailpile/search.py:284
+msgid "Updating high level indexes"
+msgstr "Uppdaterar höga index"
+
+#: mailpile/search.py:292
+#, python-format
+msgid "Bogus line: %s"
+msgstr "Felaktig rad: %s"
+
+#: mailpile/search.py:362
+#, python-format
+msgid "=%s/%s using Received: instead of Date:"
+msgstr "=%s/%s använder Mottaget: istället för Datum:"
+
+#: mailpile/search.py:369
+#, python-format
+msgid "=%s/%s has a bogus date"
+msgstr "%s/%s har ett felaktigt datum"
+
+#: mailpile/search.py:390
+#, python-format
+msgid "WARNING: No proper Message-ID for %s"
+msgstr "VARNING: Inget ordentligt Meddelande-ID för %s"
+
+#: mailpile/search.py:397
+#, python-format
+msgid "%s: Skipped: %s"
+msgstr "%s: Hoppade över: %s"
+
+#: mailpile/search.py:401
+#, python-format
+msgid "%s: Checking: %s"
+msgstr "%s: Kontrollerar: %s"
+
+#: mailpile/search.py:404
+#, python-format
+msgid "%s: Error opening: %s (%s)"
+msgstr "%s: Fel vid öppning: %s (%s)"
+
+#: mailpile/search.py:423
+#, python-format
+msgid "%s: Reading your mail: %d%% (%d/%d messages)"
+msgstr "%s: Läser din mail: %d%% (%d/%d meddelanden)"
+
+#: mailpile/search.py:497
+#, python-format
+msgid "%s: Indexed mailbox: %s"
+msgstr "%s: Indexerad mailbox: %s"
+
+#: mailpile/search.py:780
+#, python-format
+msgid "=%s/%s has bogus HTML."
+msgstr "%s/%s har felaktig HTML."
+
+#: mailpile/search.py:905
+#, python-format
+msgid "%s is outside the index"
+msgstr "%s är utanför indexet"
+
+#: mailpile/search.py:951
+#, python-format
+msgid "Tagging %d messages (%s)"
+msgstr "Tagga %d medelanden (%s)"
+
+#: mailpile/search.py:983
+#, python-format
+msgid "Untagging conversations (%s)"
+msgstr "Avtagga konversationer (%s)"
+
+#: mailpile/search.py:989
+#, python-format
+msgid "Untagging %d messages (%s)"
+msgstr "Avtagga %d meddelanden (%s)"
+
+#: mailpile/search.py:1030
+#, python-format
+msgid "Searching for %s"
+msgstr "Söker efter %s"
+
+#: mailpile/search.py:1055
+#, python-format
+msgid "Ignoring common word: %s"
+msgstr "Ignorerar vanligt ord: %s"
+
+#: mailpile/search.py:1124
+#, python-format
+msgid "Found %d results (%d suppressed)"
+msgstr "Hittade %d resultat (%d undertryckta)"
+
+#: mailpile/search.py:1143
+#, python-format
+msgid "Finding conversations (%d messages)..."
+msgstr "Hittar konversationer (%d meddelanden)..."
+
+#: mailpile/search.py:1152 mailpile/search.py:1172
+#, fuzzy, python-format
+msgid "Sorting %d messages by %s..."
+msgstr "Sorterar %d meddelanden efter %s..."
+
+#: mailpile/search.py:1196
+msgid "Recovering from bogus sort, corrupt index?"
+msgstr "Återställer från felaktig sortering, korrupterat index?"
+
+#: mailpile/search.py:1198
+msgid "Please tell team@mailpile.is !"
+msgstr "Var vänlig och kontakta team@mialpile.is !"
+
+#: mailpile/search.py:1207
+#, python-format
+msgid "Unknown sort order: %s"
+msgstr "Okänd sorteringsordning: %s"
+
+#: mailpile/search.py:1212
+#, fuzzy
+msgid "Sort failed, sorting badly. Partial index?"
+msgstr "Sortering misslyckades, sorterar dåligt. Partiell index?"
+
+#: mailpile/search.py:1225
+#, python-format
+msgid "Sorted %d messages by %s, %d conversations"
+msgstr "Sorterade %d meddelanden från %s, %d konversationer"
+
+#: mailpile/search.py:1228
+#, fuzzy, python-format
+msgid "Sorted %d messages by %s"
+msgstr "Sorterade %d meddelanden efter %s"
+
+#: mailpile/ui.py:192
+#, python-format
+msgid "Elapsed: %.3fs (%s)"
+msgstr "Förfluten: %.3fs (%s)"
+
+#: mailpile/ui.py:206
+#, python-format
+msgid "Completed %s in %.3fs"
+msgstr "Fullbordade %s i %.3fs"
+
+#: mailpile/ui.py:317
+#, python-format
+msgid ""
+"<h1>Template not found</h1>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+"<h1>Mall hittades inte</h1>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+
+#: mailpile/ui.py:323
+#, python-format
+msgid ""
+"<h1>Template error</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+"<h1>Fel i mallen</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p<p><b>DATA:</b> %s</p>"
+
+#: mailpile/ui.py:330
+#, python-format
+msgid ""
+"<h1>Template error in %s</h1>\n"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
+msgstr ""
+"<h1>Mallfel i %s</h1>\n"
+"Tolkar mall %s: <b>%s</b> på rad %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</"
+"b> %s</p></div>"
+
+#: mailpile/ui.py:358
+#, fuzzy
+msgid "Number of edit messages does not match!"
+msgstr "Antal ändrade meddelanden matchar inte!"
+
+#: mailpile/ui.py:403
+msgid "FIXME: Multiple results, OMG WTF"
+msgstr "FIXAMIG: Flera resultat, satan i gatan vad galet"
+
+#: mailpile/util.py:230
+msgid "today"
+msgstr "idag"
+
+#: mailpile/util.py:232
+#, python-format
+msgid "%d day"
+msgstr "%d dag"
+
+#: mailpile/util.py:234
+#, python-format
+msgid "%d days"
+msgstr "%d dagar"
+
+#: mailpile/util.py:315
+msgid "Symmetric decryption is not available without config and key."
+msgstr ""
+"Symmetrisk dekryptering är inte tillgänglig utan konfigurering och nyckel."
+
+#: mailpile/crypto/gpgi.py:20
+msgid "Trust not calculated"
+msgstr "Tillit inte uträknad"
+
+#: mailpile/crypto/gpgi.py:21
+msgid "Unknown trust"
+msgstr "Okänd tillit"
+
+#: mailpile/crypto/gpgi.py:22
+msgid "Undefined trust"
+msgstr "Odefinierad tillit"
+
+#: mailpile/crypto/gpgi.py:23
+msgid "Never trust"
+msgstr "Ingen tillit"
+
+#: mailpile/crypto/gpgi.py:24
+msgid "Marginally trust"
+msgstr "Marginell tillit"
+
+#: mailpile/crypto/gpgi.py:25
+msgid "Full trust"
+msgstr "Full tillit"
+
+#: mailpile/crypto/gpgi.py:26
+msgid "Ultimate trust"
+msgstr "Ultimat tillit"
+
+#: mailpile/crypto/gpgi.py:27
+msgid "Expired key, not trusted"
+msgstr "Utgången nyckel, inte tillförlitlig"
+
+#: mailpile/crypto/gpgi.py:28
+msgid "Disabled key, not trusted"
+msgstr "Inaktiverad nyckel, inte tillförlitlig"
+
+#: mailpile/crypto/gpgi.py:29
+msgid "Revoked key, not trusted"
+msgstr "Tillbakadragen nyckel, inte tillförlitlig"
+
+#: mailpile/crypto/gpgi.py:31
+msgid "RSA"
+msgstr "RSA"
+
+#: mailpile/crypto/gpgi.py:32
+msgid "RSA (encrypt only)"
+msgstr "RSA (kryptera endast)"
+
+#: mailpile/crypto/gpgi.py:33
+msgid "RSA (sign only)"
+msgstr "RSA (signera endast)"
+
+#: mailpile/crypto/gpgi.py:34
+msgid "Elgamal (encrypt only)"
+msgstr "Elgamal (kryptera endast)"
+
+#: mailpile/crypto/gpgi.py:35
+msgid "DSA"
+msgstr "DSA"
+
+#: mailpile/crypto/gpgi.py:36
+msgid "Elgamal (encrypt/sign) [COMPROMISED]"
+msgstr "Elgamal (kryptera/signera) [ÄVENTYRAD]"
+
+#: mailpile/crypto/gpgi.py:760
+#, python-format
+msgid "Keys missing or ambiguous for %s"
+msgstr "Nycklar saknas eller tvetydiga för %s"
+
+#: mailpile/crypto/mime.py:193 mailpile/crypto/mime.py:233
+msgid "Failed to sign message!"
+msgstr "Kunde inte signera meddelandet!"
+
+#: mailpile/mailboxes/mbox.py:97
+msgid "Mailbox has been modified"
+msgstr "Mailboxen har blivit modifierad"
+
+#: mailpile/mailboxes/mbox.py:127
+#, fuzzy, python-format
+msgid "Saving %s state to %s"
+msgstr "Sparar %s läge till %s"
+
+#: mailpile/mailboxes/mbox.py:142
+msgid "No data found"
+msgstr "Ingen data hittades"
+
+#: mailpile/mailboxes/mbox.py:172
+msgid "Message not found"
+msgstr "Meddelandet hittades inte"
+
+#: mailpile/plugins/autotag.py:152
+#, fuzzy
+msgid "Retraining SpamBayes autotaggers"
+msgstr "Omskolar SpamBayes autotaggare"
+
+#: mailpile/plugins/autotag.py:172
+#, python-format
+msgid "Have %d interesting %s messages"
+msgstr "Har %d intressanta %s meddelanden"
+
+#: mailpile/plugins/autotag.py:243
+#, fuzzy, python-format
+msgid "Retrained SpamBayes auto-tagging for %s"
+msgstr "Omskolar SpamBayes autotaggning för %s"
+
+#: mailpile/plugins/autotag.py:264
+#, python-format
+msgid "Unknown tag: %s"
+msgstr "Okänd tagg: %s"
+
+#: mailpile/plugins/compose.py:30
+#, python-format
+msgid "Sent: %s"
+msgstr "Skickat: %s"
+
+#: mailpile/plugins/compose.py:144
+msgid "Cannot update from multiple files"
+msgstr "Kan inte uppdatera från flera filer"
+
+#: mailpile/plugins/compose.py:202 mailpile/plugins/compose.py:233
+#, python-format
+msgid "%d message(s) edited"
+msgstr "%d meddelanden ändrade"
+
+#: mailpile/plugins/compose.py:204
+#, python-format
+msgid "%d message(s) created"
+msgstr "%d meddelanden skapade"
+
+#: mailpile/plugins/compose.py:228
+msgid "No messages!"
+msgstr "Inga meddelanden!"
+
+#: mailpile/plugins/compose.py:235
+#, python-format
+msgid "%d message(s) unchanged"
+msgstr "%d meddelanden oändrade"
+
+#: mailpile/plugins/compose.py:265
+#, fuzzy
+msgid "Please use update for editing messages"
+msgstr "Var vänlig använd uppdatera för att ändra meddelanden"
+
+#: mailpile/plugins/compose.py:335
+#, python-format
+msgid "%s wrote:"
+msgstr "%s skrev:"
+
+#: mailpile/plugins/compose.py:379
+msgid "You must configure a From address first."
+msgstr "Du måste konfigurera en Från adress först."
+
+#: mailpile/plugins/compose.py:388 mailpile/plugins/compose.py:475
+msgid "No message found"
+msgstr "Inget meddelande hittades"
+
+#: mailpile/plugins/compose.py:460
+msgid "Sorry, ephemeral messages cannot have attachments at this time."
+msgstr "Förlåt, efemära meddelanden kan inte ha bilagor för tillfället."
+
+#: mailpile/plugins/compose.py:507
+msgid "No files found"
+msgstr "Inga filer hittades"
+
+#: mailpile/plugins/compose.py:513
+msgid "No messages selected"
+msgstr "Inga meddelanden är valda"
+
+#: mailpile/plugins/compose.py:522
+#, fuzzy, python-format
+msgid "Read-only message: %s"
+msgstr "Read-only meddelande: %s"
+
+#: mailpile/plugins/compose.py:524
+#, python-format
+msgid "Error attaching to %s"
+msgstr "Problem med att bifoga bilaga till: %s"
+
+#: mailpile/plugins/compose.py:527
+#, python-format
+msgid "Attached %s to %d messages"
+msgstr "Bifogade %s till %d meddelanden"
+
+#: mailpile/plugins/compose.py:575
+#, python-format
+msgid "Failed to send %s"
+msgstr "Kunde inte skicka %s"
+
+#: mailpile/plugins/compose.py:595
+msgid "Nothing was sent"
+msgstr "Inget skickades"
+
+#: mailpile/plugins/compose.py:613 mailpile/plugins/compose.py:657
+msgid "Nothing to do!"
+msgstr "Inget att göra!"
+
+#: mailpile/plugins/compose.py:623
+#, python-format
+msgid "%d message(s) updated"
+msgstr "%d meddelanden uppdaterade"
+
+#: mailpile/plugins/compose.py:634
+msgid "Missing encryption keys"
+msgstr "Krypteringsnyckel saknas"
+
+#: mailpile/plugins/compose.py:691
+msgid "Delay between attempts to send mail"
+msgstr "Fördröjning mellan försök att skicka mail"
+
+#: mailpile/plugins/contacts.py:304
+#, python-format
+msgid "Required paramter missing. Required parameters are: %s"
+msgstr "Obligatorisk parameter saknas. Obligatoriska parametrar är: %s"
+
+#: mailpile/plugins/contacts.py:312
+#, python-format
+msgid ""
+"Unknown parameter passed to importer. Provided %s; but known parameters are: "
+"%s"
+msgstr ""
+"Okänd parameter skickad till importör. Gav %s; men kända parametrar är: %s"
+
+#: mailpile/plugins/demos.py:45
+msgid "Demo Contacts"
+msgstr "Demokontakter"
+
+#: mailpile/plugins/demos.py:46
+msgid "This is the demo importer"
+msgstr "Det här är demoimportören"
+
+#: mailpile/plugins/demos.py:49
+msgid "Activate demo importer"
+msgstr "aktiv demoimportör"
+
+#: mailpile/plugins/demos.py:50
+msgid "Contact name"
+msgstr "Kontaktnamn"
+
+#: mailpile/plugins/demos.py:51
+msgid "Contact email"
+msgstr "Kontaktadress"
+
+#: mailpile/plugins/search.py:52
+msgid "No results"
+msgstr "Inga resultat"
+
+#: mailpile/plugins/search.py:89
+#, python-format
+msgid "Weird starting point: %s"
+msgstr "Konstig startpunkt: %s"
+
+#: mailpile/plugins/search.py:204
+#, fuzzy, python-format
+msgid "Raw message: %s"
+msgstr "Rått meddelande: %s?"
+
+#: mailpile/plugins/setup_magic.py:113
+msgid "Created default tags"
+msgstr "Skapade standardtaggar"
+
+#: mailpile/plugins/setup_magic.py:124
+msgid "Enabling spambayes autotagger"
+msgstr "Aktiverar SpamBayes autotaggare"
+
+#: mailpile/plugins/setup_magic.py:126
+msgid "Please install spambayes for super awesome spam filtering"
+msgstr "Var vänlig installera SpamBayes för super awesome spamfiltrering"
+
+#: mailpile/plugins/setup_magic.py:134
+msgid "Enabling gravatar image importer"
+msgstr "Aktiverar Gravatar bildimportör"
+
+#: mailpile/plugins/setup_magic.py:140
+msgid "Importing contacts from GPG keyring"
+msgstr "Importerar kontakter från GPG-nyckelring"
+
+#: mailpile/plugins/setup_magic.py:183
+#, python-format
+msgid "Encrypting config to %s"
+msgstr "Krypterar konfigurering till %s"
+
+#: mailpile/plugins/setup_magic.py:187
+msgid "Oh no, PGP/GPG support is unavailable!"
+msgstr "Åh nej, PGP/GPG-support är otillgängligt!"
+
+#: mailpile/plugins/setup_magic.py:197
+msgid "Obfuscating search index and enabling indexing of encrypted e-mail. "
+msgstr "Förvränger sökindex och aktiverar indexering av krypterad e-mail."
+
+#: mailpile/plugins/vcard_gnupg.py:16
+msgid "Import contacts from GnuPG keyring"
+msgstr "Importera kontakter från GnuPG-nyckelring"
+
+#: mailpile/plugins/vcard_gnupg.py:19 mailpile/plugins/vcard_gravatar.py:28
+msgid "Enable this importer"
+msgstr "Aktivera den här importören"
+
+#: mailpile/plugins/vcard_gnupg.py:20
+#, fuzzy
+msgid "Location of keyring"
+msgstr "Plats för nyckelring"
+
+#: mailpile/plugins/vcard_gravatar.py:25
+msgid "Import contact info from a Gravatar server"
+msgstr "Importera kontaktinformation från en Gravatar-server"
+
+#: mailpile/plugins/vcard_gravatar.py:29
+#, fuzzy
+msgid "Minimum days between refreshing"
+msgstr "Minst antal dagar mellan omladdning"
+
+#: mailpile/plugins/vcard_gravatar.py:30
+msgid "Max batch size per update"
+msgstr "Max batchstorlek per uppdatering"
+
+#: mailpile/plugins/vcard_gravatar.py:31
+msgid "Default thumbnail style"
+msgstr "Standard ikonstil"
+
+#: mailpile/plugins/vcard_gravatar.py:32
+#, fuzzy
+msgid "Preferred thumbnail rating"
+msgstr "Föredragen ikonrating"
+
+#: mailpile/plugins/vcard_gravatar.py:34
+msgid "Preferred thumbnail size"
+msgstr "Föredragen ikonstorlek"
+
+#: mailpile/plugins/vcard_gravatar.py:35
+msgid "Gravatar server URL"
+msgstr "Gravatar server URL"
+
+#: mailpile/plugins/vcard_mork.py:39
+msgid "Location of Mork database"
+msgstr "Plats av Morkdatabas"
+
+#: static/default/html/contact/index.html:19
+msgid "Hey that's you"
+msgstr "Hörrö det är du"
+
+#: static/default/html/contact/list.html:14
+#, fuzzy
+msgid "Emails"
+msgstr "Email"
+
+#: static/default/html/contact/list.html:17
+msgid "Compose Email To This Address"
+msgstr "Skriv Email Till Den Här Adressen"
+
+#: static/default/html/contact/list.html:20
+msgid "More Address"
+msgstr "Fler Adresser"
+
+#: static/default/html/contact/list.html:28
+#: static/default/html/search/index.html:16
+msgid "Previous"
+msgstr "Föregående"
+
+#: static/default/html/contact/list.html:31
+#: static/default/html/search/index.html:21
+msgid "Next"
+msgstr "Nästa"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "of"
+msgstr "av"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/contact/list.html:44
+#: static/default/html/layouts/base.html:81
+#: static/default/html/partials/tools_contacts.html:3
+#: static/default/html/partials/tools_contacts.html:11
+msgid "Contacts"
+msgstr "Kontakter"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "1 Conversation"
+msgstr "1 Konversation"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "No results found"
+msgstr "Inga resultat hittades"
+
+#: static/default/html/layouts/base.html:46
+msgid "Close"
+msgstr "Stäng"
+
+#: static/default/html/layouts/base.html:71
+#, fuzzy, python-format
+msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
+msgstr "%(name)s<small> mailpile av <b>%(size)s</b> email</small>"
+
+#: static/default/html/layouts/base.html:80
+msgid "Compose"
+msgstr "Skriv"
+
+#: static/default/html/layouts/base.html:82
+#: static/default/html/partials/tools_tags.html:3
+#: static/default/html/partials/tools_tags.html:10
+#: static/default/html/tag/list.html:54
+msgid "Tags"
+msgstr "Taggar"
+
+#: static/default/html/layouts/base.html:83
+msgid "Donate"
+msgstr "Donera"
+
+#: static/default/html/layouts/base.html:84
+#: static/default/html/tag/list.html:30
+msgid "Settings"
+msgstr "Inställningar"
+
+#: static/default/html/layouts/base.html:98
+msgid "emails"
+msgstr "email"
+
+#: static/default/html/layouts/base.html:127
+msgid "Photos"
+msgstr "Foton"
+
+#: static/default/html/layouts/base.html:133
+msgid "Files"
+msgstr "Filer"
+
+#: static/default/html/layouts/base.html:139
+msgid "Links"
+msgstr "Länkar"
+
+#: static/default/html/layouts/base.html:145
+msgid "Groups"
+msgstr "Grupper"
+
+#: static/default/html/layouts/base.html:200
+#: static/default/html/partials/compose.html:27
+#: static/default/html/partials/thread_metadata.html:3
+#: static/default/html/partials/thread_metadata.html:6
+msgid "From"
+msgstr "Från"
+
+#: static/default/html/layouts/base.html:200
+msgid "Start Date"
+msgstr "Startdatum"
+
+#: static/default/html/layouts/base.html:200
+msgid "to"
+msgstr "till"
+
+#: static/default/html/layouts/base.html:200
+msgid "Present"
+msgstr "Nuvarande"
+
+#: static/default/html/layouts/base.html:201
+msgid "With"
+msgstr "Med"
+
+#: static/default/html/layouts/base.html:201
+msgid "No Tags"
+msgstr "Inga Taggar"
+
+#: static/default/html/layouts/base.html:202
+#, fuzzy
+msgid "In"
+msgstr "I"
+
+#: static/default/html/layouts/base.html:202
+msgid "All Groups"
+msgstr "Alla Grupper"
+
+#: static/default/html/layouts/base.html:203
+msgid "And"
+msgstr "Och"
+
+#: static/default/html/layouts/base.html:203
+msgid "All Contacts"
+msgstr "Alla Kontakter"
+
+#: static/default/html/page/donate/index.html:2
+#: static/default/html/page/donate/index.html:7
+msgid "Donate To Mailpile"
+msgstr "Donera Till Mailpile"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Or you can donate to our"
+msgstr "Eller så kan du donera till vår"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Bitcoin Wallet"
+msgstr "Bitcoinplånbok"
+
+#: static/default/html/page/donate/index.html:22
+msgid "Mailpile"
+msgstr "Mailpile"
+
+#: static/default/html/page/donate/index.html:22
+msgid "is free software made by"
+msgstr "är fri mjukvara skapad av"
+
+#: static/default/html/page/donate/index.html:22
+msgid "more"
+msgstr "mer"
+
+#: static/default/html/partials/compose.html:40
+msgid "Not Signed"
+msgstr "Inte Signerat"
+
+#: static/default/html/partials/compose.html:41
+msgid "Signature Error"
+msgstr "Signaturfel"
+
+#: static/default/html/partials/compose.html:42
+#: static/default/html/partials/compose.html:43
+msgid "Signed"
+msgstr "Signerat"
+
+#: static/default/html/partials/compose.html:45
+#, fuzzy
+msgid "None"
+msgstr "Ingen"
+
+#: static/default/html/partials/compose.html:47
+msgid "Can't Encrypt"
+msgstr "Kan Inte Kryptera"
+
+#: static/default/html/partials/compose.html:48
+msgid "Error Encrypting"
+msgstr "Krypteringen Gick Fel"
+
+#: static/default/html/partials/compose.html:74
+msgid "To"
+msgstr "Till"
+
+#: static/default/html/partials/compose.html:75
+#: static/default/html/partials/compose.html:81
+msgid "Cc"
+msgstr "Cc"
+
+#: static/default/html/partials/compose.html:76
+#: static/default/html/partials/compose.html:85
+msgid "Bcc"
+msgstr "Bcc"
+
+#: static/default/html/partials/compose.html:89
+msgid "Subject"
+msgstr "Ämne"
+
+#: static/default/html/partials/compose.html:90
+msgid "New Subject"
+msgstr "Nytt Ämne"
+
+#: static/default/html/partials/compose.html:94
+msgid "Message"
+msgstr "Meddelande"
+
+#: static/default/html/partials/compose.html:95
+msgid "Your reply..."
+msgstr "Ditt svar..."
+
+#: static/default/html/partials/compose.html:103
+msgid "Save"
+msgstr "Spara"
+
+#: static/default/html/partials/compose.html:107
+msgid "Reply"
+msgstr "Svara"
+
+#: static/default/html/partials/compose.html:111
+msgid "Send"
+msgstr "Skicka"
+
+#: static/default/html/partials/contact_add.html:1
+msgid "Add New Contact"
+msgstr "Lägg Till Ny Kontakt"
+
+#: static/default/html/partials/contact_add.html:6
+#: static/default/html/settings/index.html:20
+msgid "Name"
+msgstr "Namn"
+
+#: static/default/html/partials/contact_add.html:9
+msgid "E-mail"
+msgstr "Email"
+
+#: static/default/html/partials/contact_add.html:12
+#: static/default/html/tag/add.html:40
+msgid "Add"
+msgstr "Lägg Till"
+
+#: static/default/html/partials/errors_content.html:3
+msgid "Oops, You've Found a Quirk"
+msgstr "Oj, Du Har Hittat Något Skumt"
+
+#: static/default/html/partials/errors_content.html:4
+msgid ""
+"We were unable to find the message you requested, perhaps it was deleted?"
+msgstr ""
+"Vi lyckades inte hitta meddelandet du efterfrågade, kanske det blivit "
+"raderat?"
+
+#: static/default/html/partials/errors_content.html:6
+msgid "Contact Missing"
+msgstr "Kontakt Saknas"
+
+#: static/default/html/partials/errors_content.html:7
+msgid ""
+"We were unable to find the contact you requested, perhaps it was typed (or "
+"linked to) incorrectly?"
+msgstr ""
+"Vi lyckades inte hitta meddelandet du efterfrågade, kanske skrev du (eller "
+"länkade till) det inkorrekt?"
+
+#: static/default/html/partials/errors_content.html:9
+#, python-format
+msgid ""
+"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
+"\">bug report</a>"
+msgstr ""
+"Om du tror att det här är en bug, var vänlig och skriv en<a href=\"%(url)s\" "
+"target=\"_blank\">felreport</a>"
+
+#: static/default/html/partials/thread_message.html:17
+msgid "No Recipients"
+msgstr "Inga Mottagare"
+
+#: static/default/html/partials/thread_metadata.html:17
+msgid "Expand Message"
+msgstr "Utöka Meddelande"
+
+#: static/default/html/partials/tools_contacts.html:4
+msgid "Add Contact"
+msgstr "Lägg Till Kontakt"
+
+#: static/default/html/partials/tools_contacts.html:5
+msgid "Import Contacts"
+msgstr "Importera Kontakter"
+
+# "markerad" if it's singular.
+#: static/default/html/partials/tools_contacts.html:11
+#: static/default/html/partials/tools_tags.html:10
+msgid "selected"
+msgstr "markerade"
+
+#: static/default/html/partials/tools_message.html:2
+msgid "No Subject"
+msgstr "Inget Ämne"
+
+#: static/default/html/partials/tools_message.html:4
+msgid "People"
+msgstr "Folk"
+
+#: static/default/html/partials/tools_message.html:10
+#: static/default/html/tag/list.html:29
+msgid "Messages"
+msgstr "Meddelanden"
+
+#: static/default/html/partials/tools_message.html:12
+msgid "Move Whole Thread to Later"
+msgstr "Flytta Hela Tråden till Senare"
+
+#: static/default/html/partials/tools_message.html:13
+msgid "Assign Tags to Thread"
+msgstr "Tilldela Taggar till Tråd"
+
+#: static/default/html/partials/tools_message.html:14
+msgid "Archive Whole Thread"
+msgstr "Arkivera Hela Tråden"
+
+#: static/default/html/partials/tools_message.html:15
+msgid "Delete Whole Thread"
+msgstr "Radera Hela Tråden"
+
+#: static/default/html/partials/tools_search.html:3
+msgid "All"
+msgstr "Alla"
+
+#: static/default/html/partials/tools_search.html:4
+msgid "Unread"
+msgstr "Oläst"
+
+#: static/default/html/partials/tools_search.html:6
+#: static/default/html/tag/add.html:15 static/default/html/tag/index.html:19
+#: static/default/html/tag/list.html:24
+msgid "Display"
+msgstr "Visa"
+
+#: static/default/html/partials/tools_search.html:8
+#, fuzzy
+msgid "Snug"
+msgstr "Nätt"
+
+#: static/default/html/partials/tools_search.html:9
+#, fuzzy
+msgid "Cozy"
+msgstr "Mysig"
+
+#: static/default/html/partials/tools_search.html:10
+#, fuzzy
+msgid "Comfy"
+msgstr "Bekväm"
+
+#: static/default/html/partials/tools_search.html:11
+msgid "Detailed"
+msgstr "Detaljerad"
+
+#: static/default/html/partials/tools_search.html:27
+msgid "Messages Selected"
+msgstr "Markerade Meddelanden"
+
+#: static/default/html/partials/tools_search.html:27
+#: static/default/html/partials/tools_search.html:28
+msgid "Click message or checkbox to select"
+msgstr "Klicka på meddelandet eller kryssrutan för att markera"
+
+#: static/default/html/partials/tools_search.html:32
+msgid "Move to Later"
+msgstr "Flytta till Senare"
+
+#: static/default/html/partials/tools_search.html:33
+msgid "Move to Group"
+msgstr "Flytta till Grupp"
+
+#: static/default/html/partials/tools_search.html:34
+msgid "Assign Tags"
+msgstr "Tilldela Taggar"
+
+#: static/default/html/partials/tools_search.html:36
+msgid "Archive Selection"
+msgstr "Arkrivera Markering"
+
+#: static/default/html/partials/tools_search.html:38
+msgid "Untag"
+msgstr "Avtagga"
+
+#: static/default/html/partials/tools_search.html:40
+msgid "Delete Selection"
+msgstr "Radera Markering"
+
+#: static/default/html/partials/tools_tags.html:4
+msgid "Add Tag"
+msgstr "Lägg Till Tagg"
+
+#: static/default/html/search/index.html:25
+msgid "Conversations"
+msgstr "Konversationer"
+
+#: static/default/html/search/index.html:30
+msgid "No Results Found"
+msgstr "Inga Resultat Hittades"
+
+#: static/default/html/search/index.html:34
+#, python-format
+msgid ""
+"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
+"strong> seconds."
+msgstr ""
+"Sökte <strong>%(number)s</strong> meddelanden på <strong>%(elapsed)s</"
+"strong> sekunder."
+
+#: static/default/html/search/index.html:34
+msgid "Vroom!"
+msgstr "Brum!"
+
+#: static/default/html/settings/index.html:7
+msgid "Your Profiles"
+msgstr "Dina Profiler"
+
+#: static/default/html/settings/index.html:17
+msgid "Add New Profile"
+msgstr "Lägg Till Ny Profil"
+
+#: static/default/html/settings/index.html:21
+msgid "Chelsea Manning"
+msgstr "Chelsea Manning"
+
+#: static/default/html/settings/index.html:23
+msgid "Email"
+msgstr "Email"
+
+#: static/default/html/settings/index.html:24
+msgid "chelsea@email.com"
+msgstr "chelsea@email.com"
+
+#: static/default/html/settings/index.html:26
+msgid "SMTP Server"
+msgstr "SMTP-server"
+
+#: static/default/html/settings/index.html:27
+msgid "Login"
+msgstr "Login"
+
+#: static/default/html/settings/index.html:28
+msgid "username@mailserver.org"
+msgstr "username@mailserver.org"
+
+#: static/default/html/settings/index.html:30
+msgid "Password"
+msgstr "Lösenord"
+
+#: static/default/html/settings/index.html:33
+msgid "Server"
+msgstr "Server"
+
+#: static/default/html/settings/index.html:34
+msgid "smtp.mailserver.org"
+msgstr "smtp.mailserver.org"
+
+#: static/default/html/settings/index.html:36
+msgid "Port"
+msgstr "Port"
+
+#: static/default/html/settings/index.html:43
+msgid "Add Profile"
+msgstr "Lägg Till Profil"
+
+#: static/default/html/tag/add.html:3
+msgid "Add New Tag"
+msgstr "Lägg Till Ny Tagg"
+
+#: static/default/html/tag/add.html:9 static/default/html/tag/add.html:17
+#: static/default/html/tag/index.html:13 static/default/html/tag/index.html:21
+msgid "Tag"
+msgstr "Tagg"
+
+#: static/default/html/tag/add.html:10 static/default/html/tag/index.html:14
+msgid "Friends & Family"
+msgstr "Vänner & Familj"
+
+# Could not find a translation for slug that made sense (I found 'snail' and 'explosion') so I guess the Swedish language has to adapt.
+#: static/default/html/tag/add.html:12 static/default/html/tag/index.html:16
+#, fuzzy
+msgid "Slug"
+msgstr "Slug"
+
+#: static/default/html/tag/add.html:13 static/default/html/tag/index.html:17
+msgid "friends-family"
+msgstr "vänner-familj"
+
+#: static/default/html/tag/add.html:18 static/default/html/tag/index.html:23
+msgid "Archive"
+msgstr "Arkiv"
+
+#: static/default/html/tag/add.html:21 static/default/html/tag/index.html:27
+msgid "Parent"
+msgstr "Föräldrar"
+
+#: static/default/html/tag/add.html:23 static/default/html/tag/index.html:29
+msgid "none"
+msgstr "ingen"
+
+#: static/default/html/tag/add.html:31 static/default/html/tag/index.html:38
+msgid "Template"
+msgstr "Mall"
+
+#: static/default/html/tag/add.html:33 static/default/html/tag/index.html:40
+msgid "Default"
+msgstr "Standard"
+
+#: static/default/html/tag/add.html:36 static/default/html/tag/index.html:43
+msgid "Search Terms"
+msgstr "Söktermer"
+
+#: static/default/html/tag/index.html:22
+msgid "Priority Tag"
+msgstr "Prioritetstagg"
+
+#: static/default/html/tag/index.html:24
+msgid "Invisible"
+msgstr "Osynlig"
+
+#: static/default/html/tag/index.html:48
+msgid "Save tag"
+msgstr "Spara tagg"
+
+# Could be "Totalt"
+# Check context.
+#: static/default/html/tag/list.html:13
+msgid "Total"
+msgstr "Total"
+
+#: static/default/html/tag/list.html:18
+msgid "New"
+msgstr "Ny"
+
+#: static/default/html/tag/list.html:44
+msgid "Archived Tags"
+msgstr "Arkiverade Taggar"
+
+#~ msgid "ID out of bounds: %s"
+#~ msgstr "ID:t är för långt: %s"
+
+#~ msgid "Statistics updated"
+#~ msgstr "Statistik uppdaterad"
+
+#~ msgid "disabled."
+#~ msgstr "inaktiverad."
+
+#~ msgid "WARNING: Imported old config from %s"
+#~ msgstr "VARNING: Importerade gammal konfigureringsfil från %s"
+
+#~ msgid "WARNING: Failed to import config from %s"
+#~ msgstr "VARNING: Misslyckades med att importera konfigureringsfil från %s"
+
+#~ msgid "Could not parse (%s): %s"
+#~ msgstr "Kunde inte tolka (%s): %s"
+
+#~ msgid "Could not assign mailbox:%s = %s"
+#~ msgstr "Kunde inte ange mailbox:%s = %s"
+
+#~ msgid "Decode failed: %s %s"
+#~ msgstr "Avkodning misslyckades: %s %s"
+
+#~ msgid "Counting messages in tag:%s"
+#~ msgstr "Räknar meddelanden i tagg:%s"
+
+#~ msgid "Sorry, this UI cannot edit messages."
+#~ msgstr "Förlåt, det här användargränssnittet kan inte redigera meddelanden."
+
+#~ msgid "Contact Info"
+#~ msgstr "Kontaktinformation"
+
+#~ msgid "Website"
+#~ msgstr "Hemsida"
+
+#~ msgid "PGP Key"
+#~ msgstr "PGP-nyckel"
+
+#, fuzzy
+#~ msgid "Fluffy"
+#~ msgstr "Rymlig"
+
+#~ msgid "Date:"
+#~ msgstr "Datum:"
+
+#~ msgid "No Attachments"
+#~ msgstr "Inga Bilagor"
+
+#~ msgid "Message not found!"
+#~ msgstr "Meddelandet hittades inte!"
+
+#~ msgid "Unknown signature from"
+#~ msgstr "Okänd signatur från"
+
+#~ msgid "Signed with unknown key"
+#~ msgstr "Signerad med okänd nyckel"
+
+#~ msgid "Successfully decrypted message"
+#~ msgstr "Meddelandet dekrypterades utan problem"
+
+#~ msgid "Forward"
+#~ msgstr "Vidarebefodra"
+
+#~ msgid "Delete"
+#~ msgstr "Ta Bort"
+
+#~ msgid "Show All"
+#~ msgstr "Visa Alla"
+
+#~ msgid "Enter New Tag Info"
+#~ msgstr "Infoga Ny Tagg Information"
+
+#~ msgid "View Messages"
+#~ msgstr "Visa Meddelanden"
+
+#~ msgid "at"
+#~ msgstr "på"
+
+#~ msgid "From:"
+#~ msgstr "Från:"
+
+#~ msgid "To:"
+#~ msgstr "Till:"
+
+#~ msgid "Cc:"
+#~ msgstr "Cc:"
+
+#~ msgid "Bcc:"
+#~ msgstr "Bcc:"
+
+#~ msgid "Subject:"
+#~ msgstr "Ämne:"

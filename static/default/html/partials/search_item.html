@@ -1,22 +1,55 @@
-<tr id="pile-message-{{message.mid}}" class="result{% for tag in message.tags %} in_{{ tag.slug.lower() }}{% endfor %}" data-state="normal" data-mid="{{message.mid}}">
+{%    if mid in result.data.message
+%}{%    set message = result.data.message[mid]
+%}{%  else
+%}{%    set message = None
+%}{%  endif
+%}{%  set metadata = result.data.metadata[mid]
+%}{%  set thread = result.data.threads[metadata.thread_mid]
+%}{%  set conversation_count = thread|length + 1
+%}{%  set from = result.data.addresses[metadata.from.aid]
+%}{%  if not from
+%}{%    set from = {'fn': 'Unknown sender', 'email': ''}
+%}{%  endif
+%}{%  if metadata.urls.editing and conversation_count < 2
+%}{%    set url = metadata.urls.editing
+%}{%  else
+%}{%    set url = metadata.urls.thread
+%}{%  endif
+%}
+<tr id="pile-message-{{mid}}" class="result{% for tid in metadata.tag_tids %} in_{{result.data.tags[tid].slug}}{% endfor %}{% if metadata.flags.replied %} replied{% endif %}" data-state="normal" data-mid="{{mid}}">
   <td class="draggable"></td>
   <td class="avatar">
-    <a href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">
-      <img src="{{ show_avatar(url_protocol, http_host, message.from_email, 48) }}">
+    <a href="{{url}}"><img src="{{ show_avatar(from) }}"></a>
+  </td>
+  <td class="from">
+    <a href="{{url}}" title="{{metadata.from.fn}} &lt;{{from.address}}&gt;">
+      {% if metadata.from.fn %}{{ metadata.from.fn|nice_name(28) }}{% else %}({{_("No Name")}}){% endif %}
+      {% if conversation_count > 1 %}<span class="conversation-count">{{conversation_count}}</span>{% endif %}
+      {% if metadata.flags.replied %}<span class="icon-reply"></span>{% else %}
+      {% if metadata.flags.forwarded %}<span class="icon-forward"></span>{% endif %}
+      {% endif %}
     </a>
   </td>
-  <td class="from" title='{% for p in message.conv_people %} {{p.name}} &lt;{{p.email}}&gt;{% endfor %}'>
-    <a class="item-from" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.short_from}}</a>
-    {% if message.conv_count > 1 %}<span class="conversation-count">{{ message.conv_count }}</span>{% endif %}
-  </td>
   <td class="subject">
-    {% for tag in message.tags %}{% if tag.slug != "new" and not tag.searched %}<a class="pile-message-tag" href="{{ tag.url }}/">{{ tag.name }}</a>{% endif %}{% endfor %}
-    <a class="item-subject" href="{% if message.editing_url %}{{message.editing_url}}{% else %}{{message.url}}{% endif %}">{{message.subject}}</a>
+    <span class="item-tags">
+    {% if has_label_tags(result.data.tags, metadata.tag_tids) %}
+    {% for tid in metadata.tag_tids %}
+      {% set tag = result.data.tags[tid] %}
+      {% if tag.label and not tag.searched %}
+      <span class="pile-message-tag" id="pile-message-tag-{{tag.tid}}-{{mid}}" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tag.tid}}" data-mid="{{mid}}">
+        <span class="pile-message-tag-icon {{tag.icon}}"></span>
+        <span class="pile-message-tag-name">{{tag.name}}</span>
+      </span>
+      {% endif %}
+    {% endfor %}
+    {% endif %}
+    </span>
+    <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
   </td>
-  <td class="date" valign="top">
-    <a class="item-date" href="/search/dates:{{message.date}}/">{{ message.timestamp|friendly_date }}</a>
+  <td class="date">
+    <a href="/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
   </td>
-  <td class="checkbox" valign="top">
-    <input type="checkbox" name="mid" value="{{message.mid}}">
+  <td class="checkbox">
+    <input type="checkbox" name="mid" value="{{mid}}">
   </td>
 </tr>

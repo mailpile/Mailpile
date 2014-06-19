@@ -1,0 +1,49 @@
+{
+    "name": "maildeck",
+    "author": "The Mailpile Team <team@mailpile.is>",
+    "code": {
+        "python": ["maildeck.py"],
+        "javascript": ["maildeck.js"],
+        "css": ["maildeck.css"]
+    },
+    "routes": {
+        "/maildeck/": {"file": "maildeck.html", "api": 0},
+        "/static/maildeck/icon.png": {"file": "viking.png"}
+    },
+    "user_interface": {
+        "activities": [
+            {
+                "context": ["/"],
+                "name": "maildeck",
+                "text": "Maildeck",
+                "icon": "/static/maildeck/icon.png",
+                "description": "Maildeck",
+                "url": "/maildeck/",
+                "javascript_setup": "activity_setup"
+            }
+        ],
+        "display_modes": [
+            {
+                "context": ["/maildeck/"],
+                "name": "something",
+                "text": "Something",
+                "description": "Something, very useful",
+                "url": "#something"
+            },
+            {
+                "context": ["/maildeck/"],
+                "name": "other",
+                "text": "Other",
+                "description": "Other, more useful",
+                "url": "#other"
+            }
+        ]
+    },
+    "commands": [
+        {
+            "class": "maildeckCommand",
+            "url": "maildeck",
+            "name": "maildeck"
+        }
+    ]    
+}

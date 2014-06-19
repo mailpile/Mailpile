@@ -1,8 +1,13 @@
-import mailpile.plugins
+from gettext import gettext as _
+
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 
-from mailpile.plugins.tags import Tag, Filter
+from mailpile.plugins.tags import AddTag, DeleteTag, Filter
 from mailpile.plugins.contacts import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Search terms ]############################################################
@@ -22,8 +27,8 @@ def search(config, idx, term, hits):
         rt.extend(hits('%s:%s' % (email, fromto)))
     return rt
 
-mailpile.plugins.register_search_term('group', search)
-mailpile.plugins.register_search_term('togroup', search)
+_plugins.register_search_term('group', search)
+_plugins.register_search_term('togroup', search)
 
 
 ##[ Commands ]################################################################
@@ -46,7 +51,7 @@ def GroupVCard(parent):
 
         def _prepare_new_vcard(self, vcard):
             session, handle = self.session, vcard.nickname
-            return (Tag(session, arg=['add', handle]).run() and
+            return (AddTag(session, arg=[handle]).run() and
                     Filter(session, arg=['add', 'group:%s' % handle,
                                          '+%s' % handle, vcard.fn]).run())
 
@@ -57,7 +62,7 @@ def GroupVCard(parent):
             session, handle = self.session, vcard.nickname
             return (Filter(session, arg=['delete',
                                          'group:%s' % handle]).run() and
-                    Tag(session, arg=['delete', handle]).run())
+                    DeleteTag(session, arg=[handle]).run())
 
     return GroupVCardCommand
 
@@ -70,17 +75,17 @@ class AddGroup(GroupVCard(AddVCard)):
     """Add groups"""
 
 
-class SetGroup(GroupVCard(SetVCard)):
-    """Add groups"""
+class GroupAddLines(GroupVCard(VCardAddLines)):
+    """Add lines to a group VCard"""
 
 
 class RemoveGroup(GroupVCard(RemoveVCard)):
-    """Add groups"""
+    """Remove groups"""
 
 
 class ListGroups(GroupVCard(ListVCards)):
     """Find groups"""
 
 
-mailpile.plugins.register_commands(Group, AddGroup, SetGroup, RemoveGroup,
-                                   ListGroups)
+_plugins.register_commands(Group, AddGroup, GroupAddLines,
+                           RemoveGroup, ListGroups)

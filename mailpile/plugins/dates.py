@@ -1,12 +1,17 @@
 import time
 import datetime
-import mailpile.plugins
+from gettext import gettext as _
+
+from mailpile.plugins import PluginManager
+
+
+_plugins = PluginManager(builtin=__name__)
 
 
 ##[ Keywords ]################################################################
 
-def meta_kw_extractor(index, msg_mid, msg, msg_date):
-    mdate = datetime.date.fromtimestamp(msg_date)
+def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
+    mdate = datetime.date.fromtimestamp(msg_ts)
     keywords = [
         '%s:year' % mdate.year,
         '%s:month' % mdate.month,
@@ -16,7 +21,7 @@ def meta_kw_extractor(index, msg_mid, msg, msg_date):
     ]
     return keywords
 
-mailpile.plugins.register_meta_kw_extractor('dates', meta_kw_extractor)
+_plugins.register_meta_kw_extractor('dates', meta_kw_extractor)
 
 
 ##[ Search terms ]############################################################
@@ -29,14 +34,18 @@ def _adjust(d):
         d[0] += 1
         d[1] -= 12
 
+
 def _mk_date(ts):
     mdate = datetime.date.fromtimestamp(ts)
     return '%d-%d-%d' % (mdate.year, mdate.month, mdate.day)
+
 
 _date_offsets = {
     'today': 0,
     'yesterday': 1
 }
+
+
 def search(config, idx, term, hits):
     try:
         word = term.split(':', 1)[1].lower()
@@ -86,11 +95,12 @@ def search(config, idx, term, hits):
             _adjust(start)
 
         rt = []
-        for term in terms:
-            rt.extend(hits(term))
+        for t in terms:
+            rt.extend(hits(t))
         return rt
     except:
         raise ValueError('Invalid date range: %s' % term)
 
-mailpile.plugins.register_search_term('dates', search)
-mailpile.plugins.register_search_term('date', search)
+
+_plugins.register_search_term('dates', search)
+_plugins.register_search_term('date', search)

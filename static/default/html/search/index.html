@@ -1,37 +1,40 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
-
-{% include("partials/sub_nav_search.html") %}
-{% include("partials/bulk_actions.html") %}
-
-  {% if result %}
-  <form id="form-pile-results" action="" method="POST">
-    <input type='hidden' name='csrf' value='{{csrf}}' />
-    <table id="pile-results">
-    <tbody>
-    {% for message in result.messages %}
-      {% if not message.message %}
-        {% include("partials/search_item.html") %}
-      {% endif %}
-    {% endfor %}
-    </tbody>
-    </table>
-    <div id="pile-bottom" class="clearfix">
-      <a href="#" class="button-primary">Previous</a> <a href="/in/Inbox/@20/" class="button-primary">Next</a>
-      <div>
-        <h5>{% if result.total > 1 %}{{result.start}} - {{result.end}} of {{result.total}} Messages {% elif result.total == 1 %} 1 Message {% else %} No results found {% endif %}</h5><br>
-        <a class="change-view-size" data-view_size="snug" href="#">Snug</a>
-        <a class="change-view-size" data-view_size="cozy" href="#">Cozy</a>
-        <a class="change-view-size" data-view_size="comfy" href="#">Comfy</a>
-        <a class="change-view-size" data-view_size="avatar" href="#">Avatar</a>
-      </div>
+{% if result %}
+  <!-- FIXME: make density class be pulled from user profile setting -->
+  <table id="pile-results" class="comfy">
+  <tbody>
+  {% for mid in result.thread_ids %}
+    {% include("partials/search_item.html") %}
+  {% endfor %}
+  </tbody>
+  </table>
+  <div id="pile-bottom" class="clearfix">
+    {% set searchterms = result.search_terms|join(' ') %}
+    {% if result.stats.start > 1 %}
+    {% set newstart = result.stats.start-result.stats.count %}
+    {% set newend = newstart+result.stats.count-1 %}
+    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Previous")}}</a>
+    {% endif %}
+    {% if result.stats.start + result.stats.count < result.stats.total %}
+    {% set newstart = result.stats.start+result.stats.count %}
+    {% set newend = newstart+result.stats.count-1 %}
+    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Next")}}</a>
+    {% endif %}
+    <div>
+      {% set stats = result.stats %}
+      <h5>{% if stats.total > 1 %}{{stats.start}} - {{stats.end}} {{_("of")}} {{stats.total}} {{_("Conversations")}} {% elif stats.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5><br>
     </div>
-  </form>
-  {% else %}
-  <div class="add-top add-bottom center">
-    <h2 class="add-top text-center">No Results Found</h2>
   </div>
-  {% endif %}
-
-{% include("partials/details_search_speed.html") %}
+  <div id="pile-speed">
+    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
+  </div>  
+{% else %}
+  <div class="add-top add-bottom center">
+    <h2 class="add-top text-center">{{_("No Results Found")}}</h2>
+  </div>
+{% endif %}
+<script id="template-search-pile-tags-link" type="text/template">
+  <a class="pile-message-tag" id="pile-message-tag-<%= mid %>-<%= tid %>" href="/thread/=<%= mid %>/" data-tag_name="<%= name %>" data-tag_url="/in/<%= slug %>/" data-tag_tid="<%= tid %>"><%= name %></a>
+</script>
 {% endblock %}
