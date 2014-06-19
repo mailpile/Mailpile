@@ -304,9 +304,10 @@ class StreamReader(Thread):
 
 
 class StreamWriter(Thread):
-    def __init__(self, name, fd, output):
+    def __init__(self, name, fd, output, partial_write_ok=False):
         Thread.__init__(self, target=self.writeout, args=(fd, output))
         self.name = name
+        self.partial_write_ok = partial_write_ok
         self.start()
 
     def __str__(self):
@@ -314,16 +315,22 @@ class StreamWriter(Thread):
 
     def writeout(self, fd, output):
         if isinstance(output, (str, unicode)):
+            total = len(output)
             output = StringIO.StringIO(output)
+        else:
+            total = 0
         try:
             while True:
                 line = output.read(BLOCKSIZE)
                 if line == "":
                     break
                 fd.write(line)
+                total -= len(line)
             output.close()
         except:
-            traceback.print_exc()
+            if not self.partial_write_ok:
+                print '%s: %s bytes left' % (self, total)
+                traceback.print_exc()
         finally:
             fd.close()
 
@@ -356,9 +363,13 @@ class GnuPG:
 
         return self.available
 
-    def run(self, args=[], output=None, outputfd=None):
+    def run(self,
+            args=[], gpg_input=None, outputfd=None, partial_read_ok=False):
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
         self.pipes = {}
+        self.threads = {}
+
+        wtf = ' '.join(args)
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
         args.insert(1, "--with-colons")
@@ -379,32 +390,36 @@ class GnuPG:
             args.insert(1, "--passphrase-fd")
             args.insert(2, "%d" % self.statuspipe[0])
 
-        self.threads = {}
         try:
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
                 bufsize=1, close_fds=False)
 
             self.threads = {
-                "stderr": StreamReader('stderr',
+                "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
                                        proc.stderr, self.parse_stderr),
-                "status": StreamReader('status',
+                "status": StreamReader('gpgi-status(%s)' % wtf,
                                        self.status, self.parse_status),
             }
             if self.passphrase:
                 self.threads["passphrase"] = StreamWriter(
-                    'passphrase', self.passphrase_handle, self.passphrase)
+                    'gpgi-passphrase(%s)' % wtf,
+                    self.passphrase_handle, self.passphrase)
 
             if outputfd:
                 self.threads["stdout"] = StreamReader(
-                    'stdout(fd)', proc.stdout, outputfd.write, lines=False)
+                    'gpgi-stdout-to-fd(%s)' % wtf,
+                    proc.stdout, outputfd.write, lines=False)
             else:
                 self.threads["stdout"] = StreamReader(
-                    'stdout(parsed)', proc.stdout, self.parse_stdout)
+                    'gpgi-stdout-parsed(%s)' % wtf,
+                    proc.stdout, self.parse_stdout)
 
-            if output:
+            if gpg_input:
                 # If we have output, we just stream it. Technically, this
                 # doesn't really need to be a thread at the moment.
-                StreamWriter('output', proc.stdin, output).join()
+                StreamWriter('gpgi-output(%s)' % wtf,
+                             proc.stdin, gpg_input,
+                             partial_write_ok=partial_read_ok).join()
             else:
                 proc.stdin.close()
 
@@ -414,6 +429,7 @@ class GnuPG:
         finally:
             # Close our pipes so the threads finish
             os.close(self.statuspipe[1])
+            proc.stdin.close()
             if self.passphrase:
                 os.close(self.passphrase_pipe[1])
 
@@ -481,7 +497,7 @@ class GnuPG:
         >>> g.import_keys(key_data)
         {'failed': [], 'updated': [{'details_text': 'unchanged', 'details': 0, 'fingerprint': '08A650B8E2CBC1B02297915DC65626EED13C70DA'}], 'imported': [], 'results': {'sec_dups': 0, 'unchanged': 1, 'num_uids': 0, 'skipped_new_keys': 0, 'no_userids': 0, 'num_signatures': 0, 'num_revoked': 0, 'sec_imported': 0, 'sec_read': 0, 'not_imported': 0, 'count': 1, 'imported_rsa': 0, 'imported': 0, 'num_subkeys': 0}}
         """
-        retvals = self.run(["--import"], output=key_data)
+        retvals = self.run(["--import"], gpg_input=key_data)
         return self._parse_import(retvals[1]["status"])
 
     def _parse_import(self, output):
@@ -550,7 +566,7 @@ class GnuPG:
         if passphrase:
             self.passphrase = passphrase
         action = ["--decrypt"]
-        retvals = self.run(action, output=data, outputfd=outputfd)
+        retvals = self.run(action, gpg_input=data, outputfd=outputfd)
         self.passphrase = None
 
         if as_lines:
@@ -577,7 +593,7 @@ class GnuPG:
             params.append(sig.name)
             params.append("-")
 
-        ret, retvals = self.run(params, output=data)
+        ret, retvals = self.run(params, gpg_input=data, partial_read_ok=True)
 
         return GnuPGResultParser().parse([None, retvals]).signature_info
 
@@ -593,7 +609,7 @@ class GnuPG:
         for r in tokeys:
             action.append("--recipient")
             action.append(r)
-        retvals = self.run(action, output=data)
+        retvals = self.run(action, gpg_input=data)
         return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign(self, data,
@@ -618,7 +634,7 @@ class GnuPG:
             action.append("--local-user")
             action.append(fromkey)
 
-        retvals = self.run(action, output=data)
+        retvals = self.run(action, gpg_input=data)
         self.passphrase = None
         return retvals[0], "".join(retvals[1]["stdout"])
 
