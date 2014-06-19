@@ -862,7 +862,7 @@ class Rescan(Command):
     ORDER = ('Internals', 2)
     LOG_PROGRESS = True
 
-    def command(self):
+    def command(self, slowly=False):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
 
@@ -870,7 +870,8 @@ class Rescan(Command):
             return self._error(_('In lockdown, doing nothing.'))
 
         # Pretend we're idle, to make rescan go fast fast.
-        mailpile.util.LAST_USER_ACTIVITY = 0
+        if not slowly:
+            mailpile.util.LAST_USER_ACTIVITY = 0
 
         if args and args[0].lower() == 'vcards':
             return self._success(_('Rescanned vcards'),

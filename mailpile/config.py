@@ -1462,8 +1462,9 @@ class ConfigManager(ConfigDict):
                     if 'rescan' not in config._running:
                         rsc = Rescan(config.background, 'rescan')
                         rsc.serialize = False
-                        config.slow_worker.add_task(config.background,
-                                                    'Rescan', rsc.run)
+                        config.slow_worker.add_task(
+                            config.background, 'Rescan',
+                            lambda: rsc.run(slowly=True))
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
             # Schedule plugin jobs
