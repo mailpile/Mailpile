@@ -94,7 +94,10 @@ def migrate_mailboxes(session):
 
     # Iterate through config.sys.mailbox, sort mailboxes by type
     for mbx_id, path, src in config.get_mailboxes():
-        if path == '/dev/null' or src is not None:
+        if (path == '/dev/null' or
+                path.startswith('src:') or
+                src is not None or
+                config.is_editable_mailbox(mbx_id)):
             continue
         elif os.path.exists(os.path.join(path, 'Info.plist')):
             macmaildirs.append((mbx_id, path))

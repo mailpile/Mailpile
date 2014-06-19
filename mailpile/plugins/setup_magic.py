@@ -153,6 +153,9 @@ class Setup(Command):
         if session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
+        # Stop the workers...
+        session.config.stop_workers()
+
         # Perform any required migrations
         Migrate(session).run(before_setup=True, after_setup=False)
 
@@ -195,6 +198,7 @@ class Setup(Command):
         except ImportError:
             session.ui.warning(_('Please install spambayes '
                                  'for super awesome spam filtering'))
+
         session.config.save()
         session.config.load(session)
 
@@ -281,6 +285,8 @@ class Setup(Command):
         Migrate(session).run(before_setup=False, after_setup=True)
 
         session.config.save()
+        session.config.prepare_workers(session, daemons=True)
+
         return self._success(_('Performed initial Mailpile setup'))
 
 
