@@ -42,7 +42,7 @@ def FormatMbxId(n):
         n = b36(n)
     if len(n) > MBX_ID_LEN:
         raise ValueError(_('%s is too large to be a mailbox ID') % n)
-    return ('0000' + n)[-MBX_ID_LEN:]
+    return ('0000' + n).lower()[-MBX_ID_LEN:]
 
 
 class NotEditableError(ValueError):

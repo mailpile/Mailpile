@@ -1177,7 +1177,7 @@ class ConfigManager(ConfigDict):
 
     def open_mailbox(self, session, mailbox_id, prefer_local=True):
         try:
-            mbx_id = FormatMbxId(mailbox_id.upper())
+            mbx_id = FormatMbxId(mailbox_id)
             src = self._find_mail_source(mailbox_id)
             mfn = self.sys.mailbox[mbx_id]
             if prefer_local:
