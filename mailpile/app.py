@@ -96,11 +96,11 @@ def Main(args):
         # Create our global config manager and the default (CLI) session
         config = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
         session = Session(config)
-        session.config.load(session)
-        session.main = True
         session.ui = UserInteraction(config)
         if sys.stdout.isatty():
             session.ui.term = ANSIColors()
+        session.main = True
+        session.config.load(session)
     except AccessError, e:
         sys.stderr.write('Access denied: %s\n' % e)
         sys.exit(1)

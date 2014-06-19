@@ -96,6 +96,8 @@ class BaseMailSource(threading.Thread):
     def _log_status(self, message):
         self.event.message = message
         self.session.config.event_log.log_event(self.event)
+        if 'sources' in self.session.config.sys.debug:
+            self.session.ui.debug('%s: %s' % (self, message))
 
     def _unlocked_open(self):
         """Open mailboxes or connect to the remote mail source."""
@@ -418,6 +420,7 @@ class BaseMailSource(threading.Thread):
                     pass
 
     def quit(self, join='ignored'):
+        self.interrupt_rescan(_('Shut down'))
         self.alive = False
         self.wake_up()
 

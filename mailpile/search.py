@@ -993,7 +993,7 @@ class MailIndex:
         keywords.extend(re.findall(WORD_REGEXP,
                                    self.hdr(msg, 'from').lower()))
         if mailbox:
-            keywords.append('%s:mailbox' % mailbox.lower())
+            keywords.append('%s:mailbox' % FormatMbxId(mailbox).lower())
         keywords.append('%s:hp' % HeaderPrint(msg))
 
         for key in msg.keys():
@@ -1068,6 +1068,9 @@ class MailIndex:
         for hook in filter_hooks or []:
             keywords = hook(session, msg_mid, msg, keywords,
                             incoming=incoming)
+
+        if 'keywords' in self.config.sys.debug:
+            print 'KEYWORDS: %s' % keywords
 
         for word in keywords:
             if (word.startswith('__') or

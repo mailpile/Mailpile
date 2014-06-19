@@ -1418,7 +1418,6 @@ class ConfigManager(ConfigDict):
             config.background = Session(config)
             config.background.ui = BackgroundInteraction(config,
                                                          log_parent=session.ui)
-            config.background.ui.block()
 
         # Start the workers
         if daemons:
