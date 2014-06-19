@@ -435,7 +435,10 @@ class GnuPG:
 
         # Reap the threads
         for name, thr in self.threads.iteritems():
-            thr.join()
+            if thr.isAlive():
+                thr.join(timeout=15)
+                if thr.isAlive():
+                    print 'SCARY WARNING: FAILED TO REAP THREAD %s' % thr
 
         if outputfd:
             outputfd.close()
