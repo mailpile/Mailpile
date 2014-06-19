@@ -241,7 +241,10 @@ class GnuPGRecordParser:
     def parse_none(line):
         pass
 
+
 UID_PARSE_RE = "([^\(\<]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}"
+
+
 def parse_uid(uidstr):
     matches = re.match(UID_PARSE_RE, uidstr)
     if matches:
@@ -271,11 +274,17 @@ def parse_uid(uidstr):
 
     return email, name, comment
 
+
 class StreamReader(Thread):
-    def __init__(self, fd, callback, lines=True):
+    def __init__(self, name, fd, callback, lines=True):
         Thread.__init__(self, target=self.readin, args=(fd, callback))
+        self.name = name
         self.lines = lines
         self.start()
+
+    def __str__(self):
+        return '%s(%s, lines=%s)' % (Thread.__str__(self),
+                                     self.name, self.lines)
 
     def readin(self, fd, callback):
         try:
@@ -293,10 +302,15 @@ class StreamReader(Thread):
         finally:
             fd.close()
 
+
 class StreamWriter(Thread):
-    def __init__(self, fd, output):
+    def __init__(self, name, fd, output):
         Thread.__init__(self, target=self.writeout, args=(fd, output))
+        self.name = name
         self.start()
+
+    def __str__(self):
+        return '%s(%s)' % (Thread.__str__(self), self.name)
 
     def writeout(self, fd, output):
         if isinstance(output, (str, unicode)):
@@ -312,6 +326,7 @@ class StreamWriter(Thread):
             traceback.print_exc()
         finally:
             fd.close()
+
 
 class GnuPG:
     """
@@ -364,38 +379,43 @@ class GnuPG:
             args.insert(1, "--passphrase-fd")
             args.insert(2, "%d" % self.statuspipe[0])
 
-        proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-            bufsize=1, close_fds=False)
+        self.threads = {}
+        try:
+            proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                bufsize=1, close_fds=False)
 
-        self.threads = {
-            "stderr": StreamReader(proc.stderr, self.parse_stderr),
-            "status": StreamReader(self.status, self.parse_status),
-        }
-        if self.passphrase:
-            self.threads["passphrase"] = StreamWriter(self.passphrase_handle, 
-                                                      self.passphrase)
+            self.threads = {
+                "stderr": StreamReader('stderr',
+                                       proc.stderr, self.parse_stderr),
+                "status": StreamReader('status',
+                                       self.status, self.parse_status),
+            }
+            if self.passphrase:
+                self.threads["passphrase"] = StreamWriter(
+                    'passphrase', self.passphrase_handle, self.passphrase)
 
-        if outputfd:
-            self.threads["stdout"] = StreamReader(proc.stdout, outputfd.write,
-                                                  lines=False)
-        else:
-            self.threads["stdout"] = StreamReader(proc.stdout,
-                                                  self.parse_stdout)
+            if outputfd:
+                self.threads["stdout"] = StreamReader(
+                    'stdout(fd)', proc.stdout, outputfd.write, lines=False)
+            else:
+                self.threads["stdout"] = StreamReader(
+                    'stdout(parsed)', proc.stdout, self.parse_stdout)
 
-        if output:
-            # If we have output, we just stream it. Technically, this
-            # doesn't really need to be a thread at the moment.
-            StreamWriter(proc.stdin, output).join()
-        else:
-            proc.stdin.close()
+            if output:
+                # If we have output, we just stream it. Technically, this
+                # doesn't really need to be a thread at the moment.
+                StreamWriter('output', proc.stdin, output).join()
+            else:
+                proc.stdin.close()
 
-        # Reap GnuPG
-        proc.wait()
+            # Reap GnuPG
+            proc.wait()
 
-        # Close our pipes so the threads finish
-        os.close(self.statuspipe[1])
-        if self.passphrase:
-            os.close(self.passphrase_pipe[1])
+        finally:
+            # Close our pipes so the threads finish
+            os.close(self.statuspipe[1])
+            if self.passphrase:
+                os.close(self.passphrase_pipe[1])
 
         # Reap the threads
         for name, thr in self.threads.iteritems():
