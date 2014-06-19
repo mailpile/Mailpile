@@ -33,8 +33,9 @@ $(document).on('click', '.is-editing', function(e) {
 $(document).on('click', '.button-sidebar-edit', function() {
 
   var new_message = $(this).data('message');
-  var old_message = $(this).html();
+  var old_message = $(this).find('span.text').html();
 
+  // Make Editable
   if ($(this).data('state') === 'done') {
 
     // Disable Drag & Drop
@@ -53,9 +54,10 @@ $(document).on('click', '.button-sidebar-edit', function() {
     });
 
     // Update Edit Button
-    $(this).data('message', old_message).data('state', 'editing').html('<span class="icon-checkmark"></span> ' + new_message);
-  }
-  else {
+    $(this).data('message', old_message).data('state', 'editing');
+    $(this).find('span.icon').removeClass('icon-settings').addClass('icon-checkmark');
+
+  } else {
 
     // Enable Drag & Drop
     $('a.sidebar-tag').draggable({ disabled: false });    
@@ -68,8 +70,11 @@ $(document).on('click', '.button-sidebar-edit', function() {
     $('.sidebar-tag-archive').remove();
 
     // Update Edit Button
-    $(this).data('message', old_message).data('state', 'done').html(new_message);
+    $(this).data('message', old_message).data('state', 'done');
+    $(this).find('span.icon').removeClass('icon-checkmark').addClass('icon-settings');
   }
+
+  $(this).find('span.text').html(new_message);
 });
 
 

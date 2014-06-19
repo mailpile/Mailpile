@@ -625,7 +625,7 @@ var uploader = function(settings) {
   multipart_params : {'mid': settings.mid},
   file_data_name : 'file-data',
 	filters : {
-		max_file_size : '20mb',
+		max_file_size : '50mb',
 		mime_types: [
 			{title : "Audio files", extensions : "mp3,aac,flac,wav,ogg,aiff,midi"},
 			{title : "Document files", extensions : "pdf,doc,docx,xls"},
@@ -653,6 +653,8 @@ var uploader = function(settings) {
       uploader.refresh();
     },
     FilesAdded: function(up, files) {
+      var start_upload = true;
+
     	plupload.each(files, function(file) {
 
         // Show Preview while uploading
@@ -661,8 +663,19 @@ var uploader = function(settings) {
         // Add to attachments
         var attachment_html = '<li id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></li>';
     		$('#compose-attachments-files').append(attachment_html);
+
+        console.log(file);
+
+        // Show Warning for 10mb or larger
+        if (file.size > 10485760) {
+          start_upload = false;
+          alert(file.name + ' is ' + plupload.formatSize(file.size) + '. Some people cannot receive attachments that are 10 mb or larger');
+        }
     	});
-      uploader.start();
+
+      if (start_upload) {
+        uploader.start();
+      }
     },
     UploadProgress: function(up, file) {
     	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');

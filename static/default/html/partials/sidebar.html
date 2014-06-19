@@ -49,6 +49,9 @@
       {{ render_sidebar_tag(tag) }}
       {%- endfor -%}
     </ul>
-    <a href="#" class="button-sidebar-edit" data-message="{{_("Done Editing")}}" data-state="done">{{_("Edit Sidebar")}}</a>
+    <a href="#" class="button-sidebar-edit" data-message="{{_("Done Editing")}}" data-state="done">
+      <span class="icon icon-settings"></span>
+      <span class="text">{{_("Edit Sidebar")}}</span>
+    </a>
   </nav>
 </div>
