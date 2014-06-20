@@ -105,7 +105,7 @@ class Undo(Command):
     }
 
     def command(self):
-        event_id = self.data.get('event_id', None) or self.args[0]
+        event_id = self.data.get('event_id', [None])[0] or self.args[0]
         event = self.session.config.event_log.get(event_id)
         if event:
             scls = event.source_class
