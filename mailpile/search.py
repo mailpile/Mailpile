@@ -1152,7 +1152,7 @@ class MailIndex:
         else:
             msg_idxs = set(msg_idxs)
         if not msg_idxs:
-            return
+            return set()
         CachedSearchResultSet.DropCaches()
         session.ui.mark(_n('Tagging %d message (%s)',
                            'Tagging %d messages (%s)',
@@ -1164,21 +1164,25 @@ class MailIndex:
                     if reply[self.MSG_MID]:
                         msg_idxs.add(int(reply[self.MSG_MID], 36))
         eids = set()
+        added = set()
         for msg_idx in msg_idxs:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
                 msg_info = self.get_msg_at_idx_pos(msg_idx)
                 tags = set([r for r in msg_info[self.MSG_TAGS].split(',')
                             if r])
-                tags.add(tag_id)
-                msg_info[self.MSG_TAGS] = ','.join(list(tags))
-                self.INDEX[msg_idx] = self.m2l(msg_info)
-                self.MODIFIED.add(msg_idx)
-                self.update_msg_sorting(msg_idx, msg_info)
+                if tag_id not in tags:
+                    tags.add(tag_id)
+                    msg_info[self.MSG_TAGS] = ','.join(list(tags))
+                    self.INDEX[msg_idx] = self.m2l(msg_info)
+                    self.MODIFIED.add(msg_idx)
+                    self.update_msg_sorting(msg_idx, msg_info)
+                    added.add(msg_idx)
                 eids.add(msg_idx)
         if tag_id in self.TAGS:
             self.TAGS[tag_id] |= eids
         elif eids:
             self.TAGS[tag_id] = eids
+        return added
 
     def remove_tag(self, session, tag_id,
                    msg_info=None, msg_idxs=None, conversation=False):
@@ -1187,7 +1191,7 @@ class MailIndex:
         else:
             msg_idxs = set(msg_idxs)
         if not msg_idxs:
-            return
+            return set()
         CachedSearchResultSet.DropCaches()
         session.ui.mark(_n('Untagging conversation (%s)',
                            'Untagging conversations (%s)',
@@ -1203,6 +1207,7 @@ class MailIndex:
                            len(msg_idxs)
                            ) % (len(msg_idxs), tag_id))
         eids = set()
+        removed = set()
         for msg_idx in msg_idxs:
             if msg_idx >= 0 and msg_idx < len(self.INDEX):
                 msg_info = self.get_msg_at_idx_pos(msg_idx)
@@ -1214,9 +1219,11 @@ class MailIndex:
                     self.INDEX[msg_idx] = self.m2l(msg_info)
                     self.MODIFIED.add(msg_idx)
                     self.update_msg_sorting(msg_idx, msg_info)
+                    removed.add(msg_idx)
                 eids.add(msg_idx)
         if tag_id in self.TAGS:
             self.TAGS[tag_id] -= eids
+        return removed
 
     def search_tag(self, session, term, hits, recursion=0):
         t = term.split(':', 1)

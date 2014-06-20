@@ -95,4 +95,28 @@ class Events(Command):
                              result=result)
 
 
-_plugins.register_commands(Events)
+class Undo(Command):
+    """Undo an event from the event log."""
+    SYNOPSIS = (None, 'undo', 'eventlog/undo', '<eventID>')
+    ORDER = ('Internals', 9)
+    HTTP_CALLABLE = ('POST', )
+    HTTP_POST_VARS = {
+        'event_id': 'Event ID'
+    }
+
+    def command(self):
+        event_id = self.data.get('event_id', None) or self.args[0]
+        event = self.session.config.event_log.get(event_id)
+        if event:
+            scls = event.source_class
+            if scls and hasattr(scls, 'Undo'):
+                if self.session.config.sys.debug:
+                    self.session.ui.debug('About to undo %s' % event)
+                return scls.Undo(self, event)
+            else:
+                return self._error(_('Event is not undoable'))
+        else:
+            return self._error(_('Event not found'))
+
+
+_plugins.register_commands(Events, Undo)

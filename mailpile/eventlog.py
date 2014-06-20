@@ -295,6 +295,9 @@ class EventLog(object):
     def events(self, **filters):
         return self.since(0, **filters)
 
+    def get(self, event_id, default=None):
+        return self._events.get(event_id, default)
+
     def log_event(self, event):
         """Log an Event object."""
         self._lock.acquire()

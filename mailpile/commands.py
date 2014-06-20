@@ -104,6 +104,7 @@ class Command:
                 'status': self.status,
                 'message': self.message,
                 'result': self.result,
+                'event_id': self.command_obj.event.event_id,
                 'elapsed': '%.3f' % self.session.ui.time_elapsed,
             }
             if self.error_info:
