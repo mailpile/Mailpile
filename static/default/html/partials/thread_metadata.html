@@ -17,3 +17,44 @@
     <span class="show-thread-message-metadata-details icon icon-circle-info" data-mid="{{mid}}"></span>
   </div>
 </div>
+<div class="thread-item-metadata-details" id="metadata-details-{{mid}}">
+  <ul class="clearfix">
+    <li>{{_("To")}}:</li>
+    {% if metadata.to_aids %}
+    {% for to_aid in metadata.to_aids %}{% set person = result.data.addresses[to_aid] %}
+    <li class="thread-item-metadata-contact">
+      <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+      <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}">{{ contact_name(profiles, person) }}<br> <span>{{person.address}}</span></a>
+    </li>
+    {% endfor %}
+    {% else %}
+    <li>{{_("No Recipients")}} :(</li>
+    {% endif %}
+  </ul>
+  {% if metadata.cc_aids %}
+  <ul class="clearfix">
+    <li>{{_("Cc")}}:</li>
+    {% for cc_aid in metadata.cc_aids %}{% set person = result.data.addresses[cc_aid] %}
+    <li class="thread-item-metadata-contact">
+      <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+      <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}">{{ contact_name(profiles, person) }}<br> <span>{{person.address}}</span></a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if metadata.bcc_aids %}
+  <ul class="clearfix">
+    <li>{{_("Bcc:")}}:</li>
+    {% for bcc_aid in metadata.bcc_aids %}{% set person = result.data.addresses[bcc_aid] %}
+    <li class="thread-item-metadata-contact">
+      <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
+      <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}">{{ contact_name(profiles, person) }}<br> <span>{{person.address}}</span></a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <ul class="clearfix">
+    <li>Show:</li>
+    <li><a href="/message/raw/={{ mid }}/as.text" target="_blank">{{_("Raw Source")}}</a></li>
+  </ul>
+</div>
