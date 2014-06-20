@@ -15,16 +15,16 @@ class CryptoPolicyBaseTest(MailPileUnittest):
         return card
 
 
-class AutoDiscoverCryptoActionTest(CryptoPolicyBaseTest):
+class CryptoPolicyAutoSetAll(CryptoPolicyBaseTest):
     def test_command_is_executable(self):
-        res = self.mp.discover_crypto_policy()
+        res = self.mp.crypto_policy_auto_set_all()
         self.assertIsNotNone(res)
 
     def test_vcard_gets_updated(self):
         self._add_vcard('Signer', 'signer@test.local')
         self._add_vcard('Encrypter', 'encrypter@test.local')
 
-        res = self.mp.discover_crypto_policy()
+        res = self.mp.crypto_policy_auto_set_all()
 
         self.assertEqual({'signer@test.local', 'encrypter@test.local'}, res.as_dict()['result'])
         signer_vcard = self.config.vcards.get_vcard('signer@test.local')

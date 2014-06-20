@@ -69,9 +69,9 @@ class TestCommands(MailPileUnittest):
         self.assertEqual(len(res.result), 1)
         self.assertGreater(res.as_text(), 0)
 
-    def test_autodiscover_crypto_action(self):
-        res = self.mp.discover_crypto_policy()
-        self.assertEqual(res.as_dict()["message"], 'discover_crypto_policy')
+    def test_crypto_policy_auto_set_all_action(self):
+        res = self.mp.crypto_policy_auto_set_all()
+        self.assertEqual(res.as_dict()["message"], 'crypto_policy/auto_set_all')
         self.assertEqual(set(), res.as_dict()['result'])
 
     def test_crypto_policy_action(self):

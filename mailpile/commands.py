@@ -490,7 +490,7 @@ class SearchResults(dict):
             'to_aids': self._msg_addresses(msg_info, no_from=True, no_cc=True),
             'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
             'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
-            'tag_tids': self._msg_tags(msg_info),
+            'tag_tids': sorted(self._msg_tags(msg_info)),
             'thread_mid': msg_info[MailIndex.MSG_THREAD_MID],
             'subject': msg_info[MailIndex.MSG_SUBJECT],
             'body': MailIndex.get_body(msg_info),
