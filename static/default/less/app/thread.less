@@ -109,6 +109,10 @@
     line-height: 16px;
   }
 
+  .thread-item-from a:hover {
+    color: @blue;
+  }
+
   .thread-item-metadata-address {
     font-size: 12px;
     line-height: 12px;
@@ -184,6 +188,10 @@
     font-weight: normal;   
     line-height: 14px;
   }
+
+	.thread-item-metadata-details a:hover {
+    color: @blue;
+  }
   
   .thread-item-metadata-contact {
 	  color: @grayDark;
@@ -198,14 +206,18 @@
     padding-right: 5px;
   }
 
-	.thread-item-metadata-contact a:hover {
-    color: @red;
+  .thread-item-metadata-contact a span {
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 11px;
+    color: @gray;
   }
 
 	.thread-item-metadata-contact a img {
-     width: 21px;
-     height: 21px;
-     padding-right: 5px;
+     width: 24px;
+     height: 24px;
+     border-radius: @base-border-radius;
+     margin-right: 5px;
   }
 
   .thread-item-crypto {

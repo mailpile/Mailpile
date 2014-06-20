@@ -111,11 +111,11 @@ $(document).on('click', '.show-thread-message-metadata-details', function() {
   var mid = $(this).data('mid');
   var target = '#metadata-details-' + mid;
   if ($(target).css('display') === 'none') {
-    $(target).fadeIn();
+    $(target).show('fast');
     $(this).css('color', '#4d4d4d');
   }
   else {
-    $(target).fadeOut();    
+    $(target).hide('fast');    
     $(this).css('color', '#ccc');
   }
 });
@@ -124,7 +124,7 @@ $(document).on('click', '.show-thread-message-metadata-details', function() {
 /* Thread - Expand Snippet */
 $(document).on('click', 'div.thread-snippet', function(e) {  
   var mid = $(this).data('mid');
-  if (e.target.href === undefined && $(e.target).data('expand') !== 'no') {
+  if (e.target.href === undefined && $(e.target).data('expand') !== 'no' && $(e.target).hasClass('show-thread-message-metadata-details') === false) {
     mailpile.render_thread_message(mid);
   }
 });
@@ -142,55 +142,6 @@ $(document).on('click', '.thread-message-actions-quote', function() {
 /* Thread - Might Move to Global Location / Abstraction */
 $(document).on('click', '.dropdown-toggle', function() {
   $(this).find('.icon-arrow-right').removeClass('icon-arrow-right').addClass('icon-arrow-down');
-});
-
-
-/* Thread - Add Contact */
-$(document).on('click', '.message-action-add-contact', function() {
-
-  var mid = $(this).parent().parent().data('mid');
-  var name = $(this).data('name');
-  var address = $(this).data('address');
-  var signature = 'FIXME: ' + $('#message-' + mid).find('.thread-item-signature').html();
-
-  var modal_html = $("#modal-contact-add").html();
-  $('#modal-full').html(_.template(modal_html, {}));
-  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
-
-  // Add Values
-  $('.contact-add-name').val(name);
-  $('.contact-add-email').val(address);
-  $('.contact-add-signature').html(signature);
-  $('.contact-add-mid').val(mid);
-});
-
-
-/* Thread - Add Contact Form */
-$(document).on('submit', '#form-contact-add-modal', function(e) {
-  e.preventDefault();
-  mailpile.contact_add('#form-contact-add-modal', function() {    
-    // Hide Modal
-    $('#modal-full').modal('hide');
-    // Remove Button
-    $('#message-' + mid).find('.message-action-add-contact').parent().remove();
-  });
-});
-
-
-/* Thread - Import Key */
-$(document).on('click', '.message-action-import-key', function() {
-  
-  var options = {
-    backdrop: true,
-    keyboard: true,
-    show: true,
-    remote: false
-  };
-
-  $('#modal-full .modal-title').html('<span class="icon-key"></span> Import Key');
-  $('#modal-full .modal-body').html('<p>Eventually this will import a PGP key to a contact.</p>');
-  $('#modal-full').modal(options);  
-  
 });
 
 

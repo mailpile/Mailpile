@@ -401,7 +401,7 @@ class MailpileCommand(Extension):
         name = person['fn']
         for profile in profiles:
             if profile['email'] == person['address']:
-                name = _('You')
+                name = profile['name']
                 break
         return name
 
