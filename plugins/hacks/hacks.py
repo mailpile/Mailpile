@@ -95,6 +95,11 @@ class ViewMetadata(Hacks):
     def _explain(self, i):
         idx = self._idx()
         info = idx.get_msg_at_idx_pos(i)
+        ptags = [self.session.config.get_tag(t).name
+                 for t in info[idx.MSG_TAGS].split(',') if t]
+        pptrs = ['%s -> %s' % (self.session.config.sys.mailbox[p[:MBX_ID_LEN]],
+                               p[MBX_ID_LEN:])
+                 for p in info[idx.MSG_PTRS].split(',') if p]
         return {
             'mid': info[idx.MSG_MID],
             'ptrs': info[idx.MSG_PTRS],
@@ -109,6 +114,11 @@ class ViewMetadata(Hacks):
             'tags': info[idx.MSG_TAGS],
             'replies': info[idx.MSG_REPLIES],
             'thread_mid': info[idx.MSG_THREAD_MID],
+            'parsed': {
+                'date': friendly_datetime(long(info[idx.MSG_DATE], 36)),
+                'tags': ', '.join(ptags),
+                'ptrs': pptrs
+            }
         }
 
     def command(self):
