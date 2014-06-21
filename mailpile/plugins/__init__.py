@@ -23,7 +23,8 @@ __all__ = [
     'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_utils',
     'setup_magic', 'exporters', 'plugins',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
-    'html_magic', 'migrate', 'smtp_server', 'crypto_policy'
+    'html_magic', 'migrate', 'smtp_server', 'crypto_policy', 
+    'keylookup'
 ]
 
 
