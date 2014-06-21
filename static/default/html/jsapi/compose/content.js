@@ -15,6 +15,7 @@ MailPile.prototype.compose = function(data) {
   });
 }
 
+
 /* Composer - Crypto */
 MailPile.prototype.compose_load_crypto_states = function() {
 
@@ -32,6 +33,7 @@ MailPile.prototype.compose_load_crypto_states = function() {
   mailpile.compose_render_signature(signature);
   mailpile.compose_render_encryption(encryption);
 };
+
 
 MailPile.prototype.compose_set_crypto_state = function() {
   
@@ -58,6 +60,7 @@ MailPile.prototype.compose_set_crypto_state = function() {
   return state;
 }
 
+
 MailPile.prototype.compose_determine_signature = function() {
 
   if ($('#compose-signature').val() === '') {
@@ -72,6 +75,7 @@ MailPile.prototype.compose_determine_signature = function() {
 
   return status;
 };
+
 
 MailPile.prototype.compose_render_signature = function(status) {
 
@@ -112,6 +116,7 @@ MailPile.prototype.compose_render_signature = function(status) {
   }
 };
 
+
 MailPile.prototype.compose_determine_encryption = function(contact) {
 
   var status = 'none';
@@ -144,6 +149,7 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
 
   return status;
 };
+
 
 MailPile.prototype.compose_render_encryption = function(status) {
 
@@ -204,6 +210,7 @@ MailPile.prototype.compose_analyze_address = function(address) {
     return {"id": address, "fn": address, "address": address, "flags": { "secure" : false }};
   }
 }
+
 
 MailPile.prototype.compose_analyze_recipients = function(addresses) {
 
@@ -301,7 +308,6 @@ MailPile.prototype.compose_render_message_thread = function(mid) {
 };
 
 
-
 $('#compose-to, #compose-cc, #compose-bcc').select2({
   id: function(object) {
     if (object.flags.secure) {
@@ -364,6 +370,11 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
             </span>';
   },
   formatSelection: function(state) {
+    // Add To Model
+    console.log(state);
+     
+    
+    // Create HTML
     var avatar = '<span class="icon-user"></span>';
     var name   = state.fn;
     var secure = '<span class="icon-blank"></span>';
@@ -377,7 +388,7 @@ $('#compose-to, #compose-cc, #compose-bcc').select2({
     if (state.flags.secure) {
       secure = '<span class="icon-lock-closed"></span>';
     }
-    return avatar + '<span class="compose-choice-name" title="' + name + ' &lt;' + state.address + '&gt;" alt="' + name + ' &lt;' + state.address + '&gt;">' + name + secure + '</span>';
+    return avatar + '<span class="compose-choice-name">' + name + secure + '</span>';
   },
   formatSelectionTooBig: function() {
     return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
@@ -402,11 +413,7 @@ $('#compose-to, #compose-cc, #compose-bcc').on('select2-selecting', function(e) 
 });
 
 
-/* Compose - Create New Blank Message */
-$(document).on('click', '#button-compose', function(e) {
-	e.preventDefault();
-	mailpile.compose();
-});
+
 
 
 /* Compose - Change Signature Status */
@@ -566,13 +573,6 @@ $(document).on('click', '.compose-to-email', function(e) {
 });
 
 
-/* Compose - Autogrow composer boxes */
-$(document).on('focus', '.compose-text', function() {
-  $(this).autosize();
-});
-
-
-
 // Attachments Uploader
 var uploader = function(settings) {
 
@@ -691,6 +691,13 @@ var uploader = function(settings) {
   return uploader.init();
 };
 
+
+/* Compose - Autogrow composer boxes */
+$(document).on('focus', '.compose-text', function() {
+  $(this).autosize();
+});
+
+
 $(document).ready(function() {
 
   // Is Drafts
@@ -728,105 +735,5 @@ $(document).ready(function() {
       });
     });
   }
-
-
-  // Show Crypto Tooltips
-  $('.compose-crypto-signature').qtip({
-    content: {
-      title: false,
-      text: function(event, api) {
-        var html = '<div>\
-          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html() + '</h4>\
-          <p>' + $(this).attr('title') + '</p>\
-          </div>';
-        return html;
-      }
-    },  
-    style: {
-     tip: {
-        corner: 'right center',
-        mimic: 'right center',
-        border: 0,
-        width: 10,
-        height: 10
-      },
-      classes: 'qtip-thread-crypto'
-    },
-    position: {
-      my: 'right center',
-      at: 'left center',
-			viewport: $(window),
-			adjust: {
-				x: -5,  y: 0
-			}
-    },
-    show: {
-      delay: 50
-    },
-    events: {
-      show: function(event, api) {
-      }
-    }
-  });
-
-  $('.compose-crypto-encryption').qtip({
-    content: {
-      title: false,
-      text: function(event, api) {
-        var html = '<div>\
-          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html() + '</h4>\
-          <p>' + $(this).attr('title') + '</p>\
-          </div>';
-        return html;
-      }
-    },
-    style: {
-     tip: {
-        corner: 'right center',
-        mimic: 'right center',
-        border: 0,
-        width: 10,
-        height: 10
-      },
-      classes: 'qtip-thread-crypto'
-    },
-    position: {
-      my: 'right center',
-      at: 'left center',
-			viewport: $(window),
-			adjust: {
-				x: -5,  y: 0
-			}
-    },
-    show: {
-      delay: 50
-    },
-    events: {
-      show: function(event, api) {
-        // FIXME: Replace colors with dynamic JSAPI values
-        $('.select2-choices').css('border-color', '#fbb03b');
-        $('.compose-from').css('border-color', '#fbb03b');
-        $('.compose-subject input[type=text]').css('border-color', '#fbb03b');
-
-        if ($('#compose-encryption').val() === 'encrypt') {
-          var encrypt_color = '#a2d699';
-        } else {
-          var encrypt_color = '#fbb03b';
-        }
-
-        $('.compose-body').css('border-color', encrypt_color);
-        $('.compose-attachments').css('border-color', encrypt_color);
-      },
-      hide: function(event, api) {
-
-        $('.select2-choices').css('border-color', '#CCCCCC');
-        $('.compose-from').css('border-color', '#CCCCCC');
-        $('.compose-subject input[type=text]').css('border-color', '#CCCCCC');
-
-        $('.compose-body').css('border-color', '#CCCCCC');
-        $('.compose-attachments').css('border-color', '#CCCCCC');
-      }
-    }
-  });
 
 });

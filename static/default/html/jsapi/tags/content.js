@@ -1,5 +1,3 @@
-MailPile.prototype.tag = function(msgids, tags) {};
-
 MailPile.prototype.tag_list = function(complete) {
   $.ajax({
     url      : mailpile.api.tag_list,
@@ -12,6 +10,7 @@ MailPile.prototype.tag_list = function(complete) {
     }
   });
 };
+
 
 /* Pile - Tag Add */
 MailPile.prototype.tag_add = function(tag_add, mids, complete) {
@@ -54,6 +53,7 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
   });
 };
 
+
 MailPile.prototype.tag_update = function(tid, setting, value, complete) {
 
   // Prep Update Value
@@ -76,6 +76,7 @@ MailPile.prototype.tag_update = function(tid, setting, value, complete) {
   });
 };
 
+
 MailPile.prototype.render_modal_tags = function() {
   if (mailpile.messages_cache.length) {
 
@@ -90,7 +91,7 @@ MailPile.prototype.render_modal_tags = function() {
           tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
         }
         else if (value.display === 'archive') {
-          archive_html += '<li class="checkbox-item-picker"><input type="checkbox"> ' + value.name + '</li>';
+          archive_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
         }
       });
   
@@ -244,7 +245,6 @@ $(document).on('blur', '#data-tag-add-tag', function(e) {
 });
 
 
-
 /* Tag - Update (multiple attribute events) */
 $(document).on('change', '#data-tag-display', function(e) {
   mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function() {
@@ -258,5 +258,3 @@ $(document).on('change', '#data-tag-parent', function(e) {
     // FIXME: show (or move) change update in sidebar
   });  
 });
-
-

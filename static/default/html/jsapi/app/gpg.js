@@ -3,6 +3,9 @@ MailPile.prototype.gpgrecvkey = function(keyid) {
 
 }
 
+
 MailPile.prototype.gpglistkeys = function() {
 
 }
+
+

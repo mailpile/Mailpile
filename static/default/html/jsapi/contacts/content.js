@@ -38,8 +38,6 @@ $(document).on('submit', '#form-contact-add', function(e) {
 });
 
 
-
-
 $(document).on('blur', '.contact-add-name, .contact-add-email', function(e) {
   if ($(this).val() !== '') {
     var search_query  = $('.contact-add-name').val() + ' ' + $('.contact-add-email').val();
@@ -121,7 +119,6 @@ $(document).on('click', '.contact-add-search-item', function() {
     }
   });  
 });
-
 
 
 /* Contacts - View Page */

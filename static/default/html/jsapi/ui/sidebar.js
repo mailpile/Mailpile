@@ -90,7 +90,6 @@ $(document).on('click', '.sidebar-tag-archive', function(e) {
 
 $(document).ready(function() {
 
-
   // Drag Sort Tag Order
 	$( ".sidebar-sortable" ).sortable({
 		placeholder: "sidebar-tags-sortable",

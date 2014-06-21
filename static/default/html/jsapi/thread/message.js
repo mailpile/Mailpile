@@ -54,6 +54,52 @@ $(document).on('click', '.message-action-trash', function() {
 });
 
 
+/* Message - Add Contact */
+$(document).on('click', '.message-action-add-contact', function() {
+
+  var mid = $(this).parent().parent().data('mid');
+  var name = $(this).data('name');
+  var address = $(this).data('address');
+  var signature = 'FIXME: ' + $('#message-' + mid).find('.thread-item-signature').html();
+
+  var modal_html = $("#modal-contact-add").html();
+  $('#modal-full').html(_.template(modal_html, {}));
+  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+
+  // Add Values
+  $('.contact-add-name').val(name);
+  $('.contact-add-email').val(address);
+  $('.contact-add-signature').html(signature);
+  $('.contact-add-mid').val(mid);
+});
+
+
+/* Message - Add Contact Form */
+$(document).on('submit', '#form-contact-add-modal', function(e) {
+  e.preventDefault();
+  mailpile.contact_add('#form-contact-add-modal', function() {
+    $('#modal-full').modal('hide');
+    $('#message-' + mid).find('.message-action-add-contact').parent().remove();
+  });
+});
+
+
+/* Message - Import Key */
+$(document).on('click', '.message-action-import-key', function() {
+
+  var options = {
+    backdrop: true,
+    keyboard: true,
+    show: true,
+    remote: false
+  };
+
+  $('#modal-full .modal-title').html('<span class="icon-key"></span> Import Key');
+  $('#modal-full .modal-body').html('<p>Eventually this will import a PGP key to a contact.</p>');
+  $('#modal-full').modal(options);
+});
+
+
 /* Message - Crypto Feedback Actions */
 $(document).on('click', '.message-crypto-action', function() {
 
