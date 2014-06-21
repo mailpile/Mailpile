@@ -167,7 +167,8 @@ class Command:
             self.args = tuple(arg)
         elif arg:
             if self.SPLIT_ARG is True:
-                self.args = tuple(shlex.split(arg))
+                self.args = tuple([a.decode('utf-8') for a in
+                                   shlex.split(arg.encode('utf-8'))])
             else:
                 self.args = (arg, )
         else:
