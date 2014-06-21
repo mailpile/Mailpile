@@ -8,7 +8,9 @@
 
 /* JS - Compose */
 {% include("jsapi/compose/content.js") %}
+{% include("jsapi/compose/gpg.js") %}
 {% include("jsapi/compose/tooltips.js") %}
+{% include("jsapi/compose/ui.js") %}
 
 /* JS - Contacts */
 {% include("jsapi/contacts/display_modes.js") %}
