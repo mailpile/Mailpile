@@ -167,8 +167,11 @@ class Command:
             self.args = tuple(arg)
         elif arg:
             if self.SPLIT_ARG is True:
-                self.args = tuple([a.decode('utf-8') for a in
-                                   shlex.split(arg.encode('utf-8'))])
+                try:
+                    self.args = tuple([a.decode('utf-8') for a in
+                                       shlex.split(arg.encode('utf-8'))])
+                except (ValueError, UnicodeEncodeError, UnicodeDecodeError):
+                    raise UsageError(_('Failed to parse arguments'))
             else:
                 self.args = (arg, )
         else:
