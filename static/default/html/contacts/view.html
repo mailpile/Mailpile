@@ -110,7 +110,7 @@
   {% if conversations %}
   <ul class="contact-tag-filter">
     <li><select><option>Most Recent</option><option>Longest Conversations</option><option>Oldest</option></select></li>
-    {% if conversations.data.tags %}
+    {% if conversations.data and conversations.data.tags %}
     {% for tid, tag in conversations.data.tags.iteritems() %}
     {% if tag.display in ("priority", "tag", "archive") %}
     <li><a href="" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tid}}"><span class="{{tag.icon}}"></span> {{tag.name}}</a></li>
