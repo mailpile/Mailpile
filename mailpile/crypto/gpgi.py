@@ -18,7 +18,7 @@ from threading import Thread
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 
-DEFAULT_SERVER = "pool.sks-keyservers.net"
+DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
 BLOCKSIZE = 65536
@@ -201,7 +201,10 @@ class GnuPGRecordParser:
         self.keys[self.curkey]["subkeys"].append(subkey)
 
     def parse_fingerprint(self, line):
-        self.keys[self.curkey]["fingerprint"] = line["keyid"]
+        self.keys[self.curkey]["fingerprint"] = line["uid"]
+        self.keys[line["uid"]] = self.keys[self.curkey]
+        del(self.keys[self.curkey])
+        self.curkey = line["uid"]
 
     def parse_userattribute(self, line):
         # TODO: We are currently ignoring user attributes as not useful.
@@ -577,7 +580,6 @@ class GnuPG:
             retvals[1]["stdout"] = []
 
         rp = GnuPGResultParser().parse(retvals)
-
         return (rp.signature_info, rp.encryption_info,
                 as_lines or rp.plaintext)
 
@@ -669,6 +671,7 @@ class GnuPG:
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
+                            '--fingerprint',
                             '--search-key', self._escape_hex_keyid_term(term)]
                             )[1]["stdout"]
         results = {}
