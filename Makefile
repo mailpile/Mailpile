@@ -40,21 +40,22 @@ docs:
 web: less js
 	@true
 
-alltests: docs
+alltests: clean docs
 	@python2 mailpile/mailutils.py
 	@python2 mailpile/config.py
 	@python2 mailpile/util.py
 	@python2 mailpile/vcard.py
 	@python2 mailpile/workers.py
 	@python2 mailpile/mail_source/imap.py
+	@chmod go-rwx testing/gpg-keyring
 	@python2 scripts/mailpile-test.py
 	@nosetests
 
 clean:
-	@rm -vf *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py
-	@rm -vf .appver MANIFEST setup.cfg .SELF .*deps
-	@rm -vf scripts/less-compiler.mk
-	@rm -vrf *.egg-info build/ mp-virtualenv/ dist/
+	@rm -f *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py
+	@rm -f .appver MANIFEST setup.cfg .SELF .*deps
+	@rm -f scripts/less-compiler.mk
+	@rm -rf *.egg-info build/ mp-virtualenv/ dist/ testing/tmp/
 
 virtualenv:
 	virtualenv -p python2 mp-virtualenv
