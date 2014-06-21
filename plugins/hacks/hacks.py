@@ -95,8 +95,9 @@ class ViewMetadata(Hacks):
     def _explain(self, i):
         idx = self._idx()
         info = idx.get_msg_at_idx_pos(i)
-        ptags = [self.session.config.get_tag(t).name
+        ptags = [self.session.config.get_tag(t) or t
                  for t in info[idx.MSG_TAGS].split(',') if t]
+        ptags = [t.name for t in ptags if hasattr(t, 'name')]
         pptrs = ['%s -> %s' % (self.session.config.sys.mailbox[p[:MBX_ID_LEN]],
                                p[MBX_ID_LEN:])
                  for p in info[idx.MSG_PTRS].split(',') if p]
