@@ -1,5 +1,9 @@
 #coding:utf-8
 
+from mailpile.plugins import PluginManager
+from mailpile.commands import Command
+from mailpile.plugins.search import Search
+from mailpile.mailutils import Email
 # from mailpile.crypto.state import *
 from mailpile.crypto.gpgi import GnuPG
 
@@ -144,6 +148,52 @@ class Nicknym:
 			return self.config.load_pickle("nicknym.cache")
 		except IOError:
 			return []
+
+
+class NicknymGetKey(Command):
+    """Get a key from a nickserver"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/nicknym/getkey', 'crypto/nicknym/getkey', 
+        '<address> [<keytype>] [<server>]')
+
+    HTTP_CALLABLE = ('POST',)
+    HTTP_QUERY_VARS = {
+        'address': 'The nick/address to fetch a key for',
+       'keytype': 'What type of key to import (defaults to OpenPGP)',
+       'server': 'The Nicknym server to use (defaults to autodetect)'}
+
+    def command(self):
+        address = self.data.get('address', self.args[0])
+        keytype = self.data.get('keytype', None)
+        server = self.data.get('server', None)
+        if len(self.args) > 1:
+            keytype = self.args[1]
+        else:
+            keytype = 'openpgp'
+
+        if len(self.args) > 2:
+            server = self.args[2]
+
+        n = Nicknym(self.session.config)
+        return n.get_key(address, keytype, server)
+
+class NicknymRefreshKeys(Command):
+    """Get a key from a nickserver"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/nicknym/refreshkeys', 
+        'crypto/nicknym/refreshkeys', '')
+
+    HTTP_CALLABLE = ('POST',)
+
+    def command(self):
+        n = Nicknym(self.session.config)
+        n.refresh_keys()
+        return True
+
+_plugins = PluginManager(builtin=__file__)
+_plugins.register_commands(NicknymGetKey)
+_plugins.register_commands(NicknymRefreshKeys)
+
 
 
 
