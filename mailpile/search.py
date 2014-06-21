@@ -120,7 +120,7 @@ class MailIndex:
         self.EMAILS_SAVED = 0
         self._scanned = {}
         self._saved_changes = 0
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._prepare_sorting()
 
     @classmethod
@@ -255,6 +255,9 @@ class MailIndex:
                                      ) % self.config.mailindex_file())
         finally:
             self._lock.release()
+
+        session.ui.mark(_('Loading global posting list...'))
+        GlobalPostingList(session, '')
 
         if bogus_lines:
             bogus_file = (self.config.mailindex_file() +
@@ -897,20 +900,9 @@ class MailIndex:
                 else:
                     self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
-    def read_message(self, *args, **kwargs):
-        relock = False
-        try:
-            if self._lock.locked():
-                self._lock.release()
-                relock = True
-            return self._unlocked_read_message(*args, **kwargs)
-        finally:
-            if relock:
-                self._lock.acquire()
-
-    def _unlocked_read_message(self, session,
-                               msg_mid, msg_id, msg, msg_size, msg_ts,
-                               mailbox=None):
+    def read_message(self, session,
+                     msg_mid, msg_id, msg, msg_size, msg_ts,
+                     mailbox=None):
         keywords = []
         snippet_text = snippet_html = ''
         body_info = {}
