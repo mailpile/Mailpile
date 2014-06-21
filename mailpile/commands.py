@@ -1143,9 +1143,9 @@ class ProgramStatus(Command):
                     locks.append([thread, 'lock', thread.lock])
                 if hasattr(thread, '_lock'):
                     locks.append([thread, '_lock', thread._lock])
-                if hasattr(locks[-1][-1], 'locked'):
+                if locks and hasattr(locks[-1][-1], 'locked'):
                     locks[-1][-1] = locks[-1][-1].locked()
-                elif hasattr(locks[-1][-1], '_is_owned'):
+                elif locks and hasattr(locks[-1][-1], '_is_owned'):
                     locks[-1][-1] = locks[-1][-1]._is_owned()
             except AttributeError:
                 pass

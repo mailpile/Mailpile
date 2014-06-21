@@ -120,7 +120,7 @@ class MailIndex:
         self.EMAILS_SAVED = 0
         self._scanned = {}
         self._saved_changes = 0
-        self._lock = threading.RLock()
+        self._lock = threading.Lock()
         self._prepare_sorting()
 
     @classmethod
@@ -559,6 +559,7 @@ class MailIndex:
                 continue
 
             self._lock.acquire()
+            optimize = False
             try:
                 msg_id = self.get_msg_id(msg, msg_ptr)
                 if msg_id in self.MSGIDS:
@@ -569,12 +570,14 @@ class MailIndex:
                         session, msg_id, msg_ptr, msg_fd.tell(), msg,
                         last_date + 1, mailbox_idx, process_new, apply_tags)
                     last_date = long(msg_info[self.MSG_DATE], 36)
-                    GlobalPostingList.Optimize(session, self,
-                                               lazy=True, quick=True)
+                    optimize = True
                     added += 1
             finally:
                 self._lock.release()
                 play_nice_with_threads()
+            if optimize:
+                GlobalPostingList.Optimize(session, self,
+                                           lazy=True, quick=True)
 
         self._lock.acquire()
         try:
@@ -894,8 +897,20 @@ class MailIndex:
                 else:
                     self.add_tag(session, tag_id, msg_idxs=set(msg_idxs))
 
-    def read_message(self, session, msg_mid, msg_id, msg, msg_size, msg_ts,
-                     mailbox=None):
+    def read_message(self, *args, **kwargs):
+        relock = False
+        try:
+            if self._lock.locked():
+                self._lock.release()
+                relock = True
+            return self._unlocked_read_message(*args, **kwargs)
+        finally:
+            if relock:
+                self._lock.acquire()
+
+    def _unlocked_read_message(self, session,
+                               msg_mid, msg_id, msg, msg_size, msg_ts,
+                               mailbox=None):
         keywords = []
         snippet_text = snippet_html = ''
         body_info = {}
