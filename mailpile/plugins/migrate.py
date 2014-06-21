@@ -61,6 +61,7 @@ def migrate_routes(session):
                 session.config.routes[route_name] = route_dict
                 profile.messageroute = route_name
 
+    self._background_save(config=True)
     return True
 
 
@@ -162,6 +163,7 @@ def migrate_mailboxes(session):
                 mbx = src.take_over_mailbox(mbx_id)
             config.sources[name].discovery.policy = 'unknown'
 
+    self._background_save(config=True)
     return True
 
 
@@ -205,6 +207,7 @@ def migrate_cleanup(session):
     # Deleted!!
     config.vcards.del_vcards(*list(all_vcards - vcards))
 
+    self._background_save(config=True)
     return True
 
 
@@ -249,8 +252,7 @@ class Migrate(Command):
                 self._ignore_exception()
                 err += 1
 
-        if cnt:
-            session.config.save()
+        self._background_save(config=True)
         return self._success(_('Performed %d migrations, failed %d.'
                                ) % (cnt, err))
 

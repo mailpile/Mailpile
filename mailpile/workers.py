@@ -169,9 +169,22 @@ class Worker(threading.Thread):
 
     def add_task(self, session, name, task):
         self.LOCK.acquire()
-        self.JOBS.append((session, name, task))
-        self.LOCK.notify()
-        self.LOCK.release()
+        try:
+            self.JOBS.append((session, name, task))
+        finally:
+            self.LOCK.notify()
+            self.LOCK.release()
+
+    def add_unique_task(self, session, name, task):
+        self.LOCK.acquire()
+        try:
+            for s, n, t in self.JOBS:
+                if n == name:
+                    return
+            self.JOBS.append((session, name, task))
+        finally:
+            self.LOCK.notify()
+            self.LOCK.release()
 
     def do(self, session, name, task):
         if session and session.main:

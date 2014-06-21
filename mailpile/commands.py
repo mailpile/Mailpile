@@ -240,6 +240,20 @@ class Command:
 
         return rv
 
+    def _background_save(self,
+                         everything=False, config=False,
+                         index=False, index_full=False):
+        session, cfg, idx = self.session, self.session.config, self._idx()
+        aut = cfg.slow_worker.add_unique_task
+        if everything or config:
+            aut(session, 'Save config', cfg.save)
+        if idx:
+            if index_full:
+                aut(session, 'Save index', lambda: idx.save(session))
+            elif everything or index:
+                aut(session, 'Save index changes',
+                    lambda: self._idx().save_changes(session))
+
     def _choose_messages(self, words, allow_ephemeral=False):
         msg_ids = set()
         all_words = []
@@ -1018,9 +1032,9 @@ class Rescan(Command):
             if msg_count:
                 session.ui.mark('\n')
                 if msg_count < 500:
-                    idx.save_changes(session)
+                    self._background_save(index=True)
                 else:
-                    idx.save(session)
+                    self._background_save(index_full=True)
         return {'messages': msg_count,
                 'mailboxes': mbox_count}
 
@@ -1308,7 +1322,7 @@ class ConfigSet(Command):
                 cfg, v1, v2 = config.walk(path.strip(), parent=2)
                 cfg[v1] = {v2: value}
 
-        config.save()
+        self._background_save(config=True)
         return self._success(_('Updated your settings'), result=updated)
 
 
@@ -1355,7 +1369,7 @@ class ConfigAdd(Command):
             cfg[var].append(value)
             updated[path] = value
 
-        config.save()
+        self._background_save(config=True)
         return self._success(_('Updated your settings'), result=updated)
 
 
@@ -1383,7 +1397,7 @@ class ConfigUnset(Command):
                 del cfg[vn]
                 updated.append(v)
 
-        config.save()
+        self._background_save(config=True)
         return self._success(_('Reset to default values'), result=updated)
 
 
@@ -1464,7 +1478,7 @@ class AddMailboxes(Command):
         for arg in adding:
             added[config.sys.mailbox.append(arg)] = arg
         if added:
-            config.save()
+            self._background_save(config=True)
             return self._success(_('Added %d mailboxes') % len(added),
                                  result={'added': added})
         else:

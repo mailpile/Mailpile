@@ -212,7 +212,7 @@ class CompositionCommand(AddComposeMethods(Search)):
             if tag:
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
-                idx.save_changes()
+                self._background_save(index=True)
             self.message = _('%d message(s) edited') % len(emails)
         else:
             self.message = _('%d message(s) created') % len(emails)
@@ -238,7 +238,7 @@ class Draft(AddComposeMethods(View)):
         elif session.ui.edit_messages(session, emails):
             self._tag_blank(emails, untag=True)
             self._tag_drafts(emails)
-            idx.save_changes()
+            self._background_save(index=True)
             self.message = _('%d message(s) edited') % len(emails)
         else:
             self.message = _('%d message(s) unchanged') % len(emails)

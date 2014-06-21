@@ -212,14 +212,9 @@ class TagCommand(Command):
             order += 1
 
     def finish(self, save=True):
-        idx = self._idx()
         if save:
-            # Background save makes things feel fast!
-            def background():
-                if idx:
-                    idx.save_changes()
-                self.session.config.save()
-            self._background('Save index', background)
+            self._background_save(config=True, index=True)
+        return True
 
 
 class Tag(TagCommand):
@@ -594,9 +589,7 @@ class DeleteTag(TagCommand):
 
 class FilterCommand(Command):
     def finish(self, save=True):
-        self.session.config.save()
-        if self.session.config.index:
-            self.session.config.index.save_changes()
+        self._background_save(config=True, index=True)
         return True
 
 
@@ -778,7 +771,7 @@ class MoveFilter(ListFilters):
 
     def command(self):
         self.session.config.filter_move(self.args[0], self.args[1])
-        self.session.config.save()
+        self._background_save(config=True)
         return ListFilters.command(self, want_fid=self.args[1])
 
 
