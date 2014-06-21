@@ -16,6 +16,7 @@ from gettext import gettext as _
 
 import mailpile.util
 import mailpile.ui
+import mailpile.postinglist
 from mailpile.eventlog import Event
 from mailpile.mailboxes import IsMailbox
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
@@ -1084,7 +1085,7 @@ class RenderPage(Command):
 
 class ProgramStatus(Command):
     """Display list of running threads, locks and outstanding events."""
-    SYNOPSIS = (None, 'ps', None, None)
+    SYNOPSIS = (None, 'ps', 'ps', None)
     ORDER = ('Internals', 5)
     IS_USER_ACTIVITY = False
 
@@ -1135,6 +1136,13 @@ class ProgramStatus(Command):
             locks = [(config.index, '_lock', config.index._lock._is_owned())]
         except AttributeError:
             locks = []
+        locks.extend([('config', '_lock', config._lock._is_owned()),
+                      ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
+                       mailpile.postinglist.GLOBAL_POSTING_LOCK.locked()),
+                      ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
+                       mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
+                      ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
+                       mailpile.postinglist.GLOBAL_GPL_LOCK.locked())])
 
         threads = threading.enumerate()
         for thread in threads:
