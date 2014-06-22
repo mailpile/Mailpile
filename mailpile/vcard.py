@@ -875,6 +875,8 @@ class VCardStore(dict):
     VCards can be looked up directly by e-mail.
     >>> vcs.get_vcard('d@evil.com').fn
     u'Dude'
+    >>> vcs.get_vcard('nosuch@email.address') is None
+    True
 
     Or they can be found using searches...
     >>> vcs.find_vcards(['guy'])[0].fn

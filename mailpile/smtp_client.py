@@ -81,7 +81,7 @@ def _RouteTuples(session, from_to_msg_ev_tuples):
     return tuples
 
 
-def SendMail(session, from_to_msg_ev_tuples):
+def SendMail(session, msg_mid, from_to_msg_ev_tuples):
     routes = _RouteTuples(session, from_to_msg_ev_tuples)
 
     # Randomize order of routes, so we don't always try the broken
@@ -218,6 +218,9 @@ def SendMail(session, from_to_msg_ev_tuples):
             RunTimed(10, sm_close)
             for ev in events:
                 for rcpt in to:
+                    vcard = session.config.vcards.get_vcard(rcpt)
+                    if vcard:
+                        vcard.record_history('send', time.time(), msg_mid)
                     ev.private_data['>'.join([frm, rcpt])] = True
                 ev.data['bytes'] = total
                 ev.data['delivered'] = len([k for k in ev.private_data

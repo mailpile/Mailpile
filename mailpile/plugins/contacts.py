@@ -118,7 +118,7 @@ class VCard(VCardCommand):
 
 class AddVCard(VCardCommand):
     """Add one or more vcards"""
-    SYNOPSIS = (None, 'vcards/add', None, '<msgs>', '<email> = <name>')
+    SYNOPSIS = (None, 'vcards/add', None, '[all] <msgs> OR <email> = <name>')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'PUT', 'GET')
@@ -128,24 +128,31 @@ class AddVCard(VCardCommand):
         'mid': 'Message ID'
     }
 
-    def _add_from_messages(self, args):
+    def _add_from_messages(self, args, add_recipients):
         pairs, idx = [], self._idx()
         for email in [Email(idx, i) for i in self._choose_messages(args)]:
-            pairs.append(ExtractEmailAndName(email.get_msg_info(idx.MSG_FROM)))
+            msg_info = email.get_msg_info()
+            pairs.append(ExtractEmailAndName(msg_info[idx.MSG_FROM]))
+            if add_recipients:
+                people = (idx.expand_to_list(msg_info) +
+                          idx.expand_to_list(msg_info, field=idx.MSG_CC))
+                for e in people:
+                    pairs.append(ExtractEmailAndName(e))
         return pairs
 
-    def command(self):
+    def command(self, recipients=False, quietly=False):
         session, config, idx = self.session, self.session.config, self._idx()
+        args = list(self.args)
 
         if self.data.get('_method', 'not-http').upper() == 'GET':
             return self._success(_('Add contacts here!'), {
                 'form': self.HTTP_POST_VARS
             })
 
-        if (len(self.args) > 2
-                and self.args[1] == '='
-                and self._valid_vcard_handle(self.args[0])):
-            pairs = [(self.args[0], ' '.join(self.args[2:]))]
+        if (len(args) > 2
+                and args[1] == '='
+                and self._valid_vcard_handle(args[0])):
+            pairs = [(args[0], ' '.join(args[2:]))]
 
         elif self.data:
             if self.data.get('name') and self.data.get('email'):
@@ -155,15 +162,18 @@ class AddVCard(VCardCommand):
                 pairs = self._add_from_messages(
                     ['=%s' % mid.replace('=', '') for mid in mids])
         else:
-            pairs = self._add_from_messages(self.args)
+            if args and args[0] == 'all':
+                recipients = args.pop(0) and True
+            pairs = self._add_from_messages(args, recipients)
 
         if pairs:
             vcards = []
             for handle, name in pairs:
                 if handle.lower() in config.vcards:
-                    session.ui.warning('Already exists: %s' % handle)
+                    if not quietly:
+                        session.ui.warning('Already exists: %s' % handle)
                     if self.KIND != 'profile':
-                        break
+                        continue
                 vcard = self._make_new_vcard(handle.lower(), name)
                 config.vcards.add_vcards(vcard)
                 vcards.append(vcard)

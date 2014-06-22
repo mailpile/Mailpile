@@ -39,6 +39,15 @@ class EditableSearchResults(SearchResults):
 
 def AddComposeMethods(cls):
     class newcls(cls):
+        def _create_contacts(self, emails):
+            try:
+                from mailpile.plugins.contacts import AddContact
+                AddContact(self.session,
+                           arg=['=%s' % e.msg_mid() for e in emails]
+                           ).run(recipients=True, quietly=True)
+            except (TypeError, ValueError, IndexError):
+                self._ignore_exception()
+
         def _tag_emails(self, emails, tag):
             try:
                 idx = self._idx()
@@ -706,10 +715,10 @@ class Sendit(CompositionCommand):
                         message=_('Sending message'),
                         data={'mid': msg_mid, 'sid': msg_sid}))
 
-                SendMail(session, [PrepareMessage(config,
-                                                  email.get_msg(pgpmime=False),
-                                                  rcpts=(bounce_to or None),
-                                                  events=events)])
+                SendMail(session, msg_mid,
+                         [PrepareMessage(config, email.get_msg(pgpmime=False),
+                                         rcpts=(bounce_to or None),
+                                         events=events)])
                 for ev in events:
                     ev.flags = Event.COMPLETE
                     config.event_log.log_event(ev)
@@ -788,6 +797,7 @@ class Update(CompositionCommand):
             self._tag_outbox(emails, untag=(not outbox))
 
             if outbox:
+                self._create_contacts(emails)
                 return self._return_search_results(message, emails,
                                                    sent=emails)
             else:
