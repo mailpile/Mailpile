@@ -52,7 +52,7 @@ class GnuPGImporter(VCardImporter):
             elif emails:
                 # This is us taking care to only create one card for each
                 # set of e-mail addresses.
-                card = SimpleVCard(*vcls)
+                card = MailpileVCard(*vcls)
                 for email in emails:
                     vcards[email] = card
                 results.append(card)

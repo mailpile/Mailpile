@@ -37,7 +37,7 @@ from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
-from mailpile.vcard import SimpleVCard, VCardStore
+from mailpile.vcard import VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
 
 

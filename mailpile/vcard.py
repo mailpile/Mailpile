@@ -1,4 +1,5 @@
 import random
+import time
 from gettext import gettext as _
 
 import mailpile.util
@@ -70,7 +71,9 @@ class VCardLine(dict):
         self._line_id = value
         self._update_dict()
 
-    line_id = property(lambda self: self._line_id, set_line_id)
+    line_id = property(
+        lambda self: self._line_id,
+        set_line_id)
 
     def set_name(self, value):
         self._name = unicode(value).lower()
@@ -95,14 +98,17 @@ class VCardLine(dict):
         finally:
             self._update_dict()
 
-    name = property(lambda self: self._name,
-                    lambda self, v: self.set_name(v))
+    name = property(
+        lambda self: self._name,
+        lambda self, v: self.set_name(v))
 
-    value = property(lambda self: self._value,
-                     lambda self, v: self.set_value(v))
+    value = property(
+        lambda self: self._value,
+        lambda self, v: self.set_value(v))
 
-    attrs = property(lambda self: self._attrs,
-                     lambda self, v: self.set_attrs(v))
+    attrs = property(
+        lambda self: self._attrs,
+        lambda self, v: self.set_attrs(v))
 
     def parse(self, line):
         self._name, self._attrs, self._value = self.ParseLine(line)
@@ -325,21 +331,30 @@ class SimpleVCard(object):
         else:
             return self.VCARD4_KEYS.get(vcl.name.upper(), [''])[0]
 
+    UNREMOVABLE = ('x-mailpile-rid', 'clientpidmap', 'version')
+
     def remove(self, *line_ids):
         """
         Remove one or more lines from the VCard.
 
         >>> vc = SimpleVCard(VCardLine(name='fn', value='Houdini'))
         >>> vc.remove(vc.get('fn').line_id)
+        1
         >>> vc.get('fn')
         Traceback (most recent call last):
             ...
         IndexError: ...
         """
+        removed = 0
         for index in range(0, len(self._lines)):
             vcl = self._lines[index]
             if vcl and vcl.line_id in line_ids:
+                if self._lines[index].name in self.UNREMOVABLE:
+                    raise ValueError('Cannot remove %s from VCard'
+                                     % self._lines[index].name)
                 self._lines[index] = None
+                removed += 1
+        return removed
 
     def add(self, *vcls):
         """
@@ -366,6 +381,24 @@ class SimpleVCard(object):
                     raise ValueError('Already on card: %s' % vcl.name)
             self._lines.append(vcl)
             vcl.line_id = len(self._lines)
+
+    def set_line(self, ln, vcl):
+        """
+        Modify one line of a VCard.
+
+        >>> vc = SimpleVCard(VCardLine(name='fn', value='Bjarni'))
+        >>> vc.get('fn').value
+        u'Bjarni'
+
+        >>> vc.set_line(vc.get('fn').line_id,
+        ...             VCardLine(name='fn', value='Dude'))
+        >>> vc.get('fn').value
+        u'Dude'
+        """
+        if not (ln > 0 and ln <= len(self._lines)):
+            raise ValueError(_('Line number %s is out of range') % ln)
+        vcl.line_id = ln
+        self._lines[ln-1] = vcl
 
     def get_clientpidmap(self):
         """
@@ -405,6 +438,8 @@ class SimpleVCard(object):
         Merge a set of VCard lines from a given source into this card.
 
         >>> vc = SimpleVCard(VCardLine(name='fn', value='Bjarni', pid='1.2'),
+        ...                  VCardLine(name='email', value='bre@foo', t='1'),
+        ...                  VCardLine(name='email', value='bre@bar', t='2'),
         ...                  VCardLine(name='clientpidmap',
         ...                            value='1;thisisauid'))
         >>> vc.merge('thisisauid', [VCardLine(name='fn', value='Bjarni'),
@@ -413,6 +448,12 @@ class SimpleVCard(object):
         '1.3'
         >>> vc.get('fn')['pid']
         '1.2'
+        >>> vc.get('email', prefer={'t': '1'}).value
+        u'bre@foo'
+        >>> vc.get('email', prefer={'t': '2'}).value
+        u'bre@bar'
+        >>> vc.get('email', prefer={'t': 'unfindable'}).value
+        u'bre@foo'
 
         >>> vc.merge('otheruid', [VCardLine(name='x-b', value='c')])
         >>> vc.get('x-b')['pid']
@@ -431,8 +472,10 @@ class SimpleVCard(object):
         >>> print vc.as_vCard()
         BEGIN:VCARD
         VERSION:4.0
-        CLIENTPIDMAP:2\\;otheruid
         CLIENTPIDMAP:1\\;thisisauid
+        CLIENTPIDMAP:2\\;otheruid
+        EMAIL;T=1:bre@foo
+        EMAIL;T=2:bre@bar
         FN;PID=1.4:Inrajb
         X-B;PID=2.1:c
         END:VCARD
@@ -499,60 +542,41 @@ class SimpleVCard(object):
         # FIXME: 3rd, collapse lines from multiple sources that have
         #        identical values?
 
-    def get_all(self, key):
-        return [l for l in self._lines if l and l.name == key.lower()]
+    def get_all(self, key, sort=False):
+        lines = [l for l in self._lines if l and l.name == key.lower()]
+        if sort:
+            self._sort_lines(lines)
+        return lines
 
-    def get(self, key, n=0):
+    def get(self, key, n=0, prefer=None):
         lines = self.get_all(key)
-        lines.sort(key=lambda l: 1 - (int(l.get('x-rank', 0)) or
-                                      (('pref' in l or
-                                        'pref' in l.get('type', '').lower()
-                                        ) and 100 or 0)))
-        return lines[n]
+        if prefer:
+            for k, v in prefer.iteritems():
+                llines = [l for l in lines if l.get(k) == v]
+                if llines:
+                    lines = llines
+        return self._sort_lines(lines)[n]
+
+    def _sort_lines(self, lines=None):
+        lines = self._lines if (lines is None) else lines
+        def sortkey(l):
+            if not l:
+                return (3, 0, 0, 0)
+            return ((l.name == 'version') and 1 or 2,
+                    (l.name),
+                    (1 - ((('pref' in l or
+                            'pref' in l.get('type', '').lower()) and 100 or 0)
+                          or (50 - (l.get('pid', 0) and 50))
+                          or int(l.get('x-rank', 0)))),
+                    (l.line_id))
+        lines.sort(key=sortkey)
+        return lines
 
     def as_jCard(self):
         card = [[key.lower(), {}, "text", self[key][0][0]]
                 for key in self.order]
         stream = ["vcardstream", ["vcard", card]]
         return stream
-
-    def _mpcdict(self, vcl):
-        d = {}
-        for k in vcl.keys():
-            if k not in ('line_id', ):
-                if k.startswith('x-mailpile-'):
-                    d[k.replace('x-mailpile-', '')] = vcl[k]
-                else:
-                    d[k] = vcl[k]
-        return d
-
-    MPCARD_SINGLETONS = ('fn', 'kind', 'x-mailpile-crypto-policy')
-    MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
-
-    def as_mpCard(self):
-        mpCard, ln, lv = {}, None, None
-        self._sort_lines()
-        for vcl in self._lines:
-            if not vcl or vcl.name in self.MPCARD_SUPPRESSED:
-                continue
-            if ln == vcl.name and lv == vcl.value:
-                continue
-            name = vcl.name.replace('x-mailpile-', '')
-            if name not in mpCard:
-                if vcl.name in self.MPCARD_SINGLETONS:
-                    mpCard[name] = vcl.value
-                else:
-                    mpCard[name] = [self._mpcdict(vcl)]
-            elif vcl.name not in self.MPCARD_SINGLETONS:
-                mpCard[name].append(self._mpcdict(vcl))
-            ln, lv = vcl.name, vcl.value
-        return mpCard
-
-    def _sort_lines(self):
-        self._lines.sort(key=lambda k: ((k and k.name == 'version') and 1 or 2,
-                                        k and k.name,
-                                        k and len(k.value),
-                                        k and k.value))
 
     def as_vCard(self):
         """
@@ -582,11 +606,12 @@ class SimpleVCard(object):
         self._sort_lines()
         return [vcl for vcl in self._lines if vcl]
 
-    def _vcard_get(self, key):
+    def _vcard_get(self, key, default=None):
         try:
             return self.get(key).value
         except IndexError:
-            default = self.VCARD4_KEYS.get(key.upper(), ['', '', None])[2]
+            if default is None:
+                default = self.VCARD4_KEYS.get(key.upper(), ['', '', None])[2]
             return default
 
     def _vcard_set(self, key, value):
@@ -595,17 +620,68 @@ class SimpleVCard(object):
         except IndexError:
             self.add(VCardLine(name=key, value=value, pref=None))
 
-    nickname = property(lambda self: self._vcard_get('nickname'),
-                        lambda self, e: self._vcard_set('nickname', e))
+    nickname = property(
+        lambda self: self._vcard_get('nickname'),
+        lambda self, e: self._vcard_set('nickname', e))
 
-    email = property(lambda self: self._vcard_get('email'),
-                     lambda self, e: self._vcard_set('email', e))
+    email = property(
+        lambda self: self._vcard_get('email'),
+        lambda self, e: self._vcard_set('email', e))
 
-    kind = property(lambda self: self._vcard_get('kind'),
-                    lambda self, e: self._vcard_set('kind', e))
+    kind = property(
+        lambda self: self._vcard_get('kind'),
+        lambda self, e: self._vcard_set('kind', e))
 
-    fn = property(lambda self: self._vcard_get('fn'),
-                  lambda self, e: self._vcard_set('fn', e))
+    fn = property(
+        lambda self: self._vcard_get('fn'),
+        lambda self, e: self._vcard_set('fn', e))
+
+
+class MailpileVCard(SimpleVCard):
+    """
+    This is adds some mailpile-specific extensions to the SimpleVCard.
+    """
+    HISTORY_MAX_AGE = 31 * 24 * 3600
+
+    def _history_parse_and_expire(self, history_vcl, now):
+        history = {
+            'sent': [],
+            'received': []
+        }
+        entries = []
+        for entry in [e for e in history_vcl.value.split(',') if e]:
+            try:
+                what, when, mid = entry.split('-')
+                when = int(when, 36)
+                if when > now - self.HISTORY_MAX_AGE:
+                    history['sent' if (what == 's') else 'received'].append(
+                        (when, mid))
+                    entries.append(entry)
+            except (ValueError, IndexError, TypeError):
+                pass
+        history_vcl.value = ','.join(entries)
+        return entries, history
+
+    def recent_history(self, now=None):
+        try:
+            now = now if (now is not None) else time.time()
+            history_vcl = self.get('x-mailpile-history')
+            return self._history_parse_and_expire(history_vcl, now)[1]
+        except IndexError:
+            return {}
+
+    def record_history(self, what, when, mid, now=None):
+        assert(what[0] in ('s', 'r'))
+        try:
+            history_vcl = self.get('x-mailpile-history')
+        except IndexError:
+            history_vcl = VCardLine(name='x-mailpile-history', value='')
+            self.add(history_vcl)
+        now = now if (now is not None) else time.time()
+        entries, history = self._history_parse_and_expire(history_vcl, now)
+        entries.append('%s-%s-%s' % (what[0], b36(int(when)), mid))
+        history_vcl.value = ','.join(entries)
+        self.save()
 
     def _random_uid(self):
         try:
@@ -617,6 +693,40 @@ class SimpleVCard(object):
         return rid
 
     random_uid = property(_random_uid)
+
+    def _mpcdict(self, vcl):
+        d = {}
+        for k in vcl.keys():
+            if k not in ('line_id', ):
+                if k.startswith('x-mailpile-'):
+                    d[k.replace('x-mailpile-', '')] = vcl[k]
+                else:
+                    d[k] = vcl[k]
+        return d
+
+    MPCARD_SINGLETONS = ('fn', 'kind',
+                         'x-mailpile-profile-signature',
+                         'x-mailpile-profile-messageroute')
+    MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
+
+    def as_mpCard(self):
+        mpCard, added = {}, set()
+        self._sort_lines()
+        for vcl in self._lines:
+            if not vcl or vcl.name in self.MPCARD_SUPPRESSED:
+                continue
+            name = vcl.name
+            if (name, vcl.value) in added:
+                continue
+            if name not in mpCard:
+                if name in self.MPCARD_SINGLETONS:
+                    mpCard[name] = vcl.value
+                else:
+                    mpCard[name] = [self._mpcdict(vcl)]
+            elif name not in self.MPCARD_SINGLETONS:
+                mpCard[name].append(self._mpcdict(vcl))
+            added.add((name, vcl.value))
+        return mpCard
 
     def load(self, filename=None, data=None, config=None):
         """
@@ -670,18 +780,29 @@ class SimpleVCard(object):
 
 class AddressInfo(dict):
 
-    fn = property(lambda s: s['fn'],
-                  lambda s, v: s.__setitem__('fn', v))
-    address = property(lambda s: s['address'],
-                       lambda s, v: s.__setitem__('address', v))
-    rank = property(lambda s: s['rank'],
-                    lambda s, v: s.__setitem__('rank', v))
-    protocol = property(lambda s: s['protocol'],
-                        lambda s, v: s.__setitem__('protocol', v))
-    flags = property(lambda s: s['flags'],
-                     lambda s, v: s.__setitem__('flags', v))
-    keys = property(lambda s: s.get('keys'),
-                    lambda s, v: s.__setitem__('keys', v))
+    fn = property(
+        lambda self: self['fn'],
+        lambda self, v: self.__setitem__('fn', v))
+
+    address = property(
+        lambda self: self['address'],
+        lambda self, v: self.__setitem__('address', v))
+
+    rank = property(
+        lambda self: self['rank'],
+        lambda self, v: self.__setitem__('rank', v))
+
+    protocol = property(
+        lambda self: self['protocol'],
+        lambda self, v: self.__setitem__('protocol', v))
+
+    flags = property(
+        lambda self: self['flags'],
+        lambda self, v: self.__setitem__('flags', v))
+
+    keys = property(
+        lambda self: self.get('keys'),
+        lambda self, v: self.__setitem__('keys', v))
 
     def __init__(self, addr, fn, vcard=None, rank=0, proto='smtp', keys=None):
         info = {
@@ -699,8 +820,14 @@ class AddressInfo(dict):
             self.merge_vcard(vcard)
 
     def merge_vcard(self, vcard):
-        self['flags']['contact'] = True
+        if vcard.kind == 'profile':
+            base_rank = 5.0
+            self['flags']['profile'] = True
+        else:
+            base_rank = 10.0
+            self['flags']['contact'] = True
 
+        self['x-mailpile-rid'] = vcard.random_uid
         keys = []
         for k in vcard.get_all('KEY'):
             val = k.value.split("data:")[1]
@@ -714,7 +841,7 @@ class AddressInfo(dict):
         if photos:
             self['photo'] = photos[0].value
 
-        self['rank'] += 10.0 + 25 * len(keys) + 5 * len(photos)
+        self['rank'] += base_rank + 25 * len(keys) + 5 * len(photos)
 
 
 class VCardStore(dict):
@@ -725,9 +852,9 @@ class VCardStore(dict):
 
     # VCards are added to the collection using add_vcard. This will
     # create a file for the card on disk, using a random name.
-    >>> vcs.add_vcards(SimpleVCard(VCardLine('FN:Dude'),
-    ...                            VCardLine('EMAIL:d@evil.com')),
-    ...                SimpleVCard(VCardLine('FN:Guy')))
+    >>> vcs.add_vcards(MailpileVCard(VCardLine('FN:Dude'),
+    ...                              VCardLine('EMAIL:d@evil.com')),
+    ...                MailpileVCard(VCardLine('FN:Guy')))
 
     VCards can be looked up directly by e-mail.
     >>> vcs.get_vcard('d@evil.com').fn
@@ -752,16 +879,24 @@ class VCardStore(dict):
         self.loaded = False
 
     def index_vcard(self, card):
-        attr = (card.kind == 'individual') and 'email' or 'nickname'
-        for vcl in card.get_all(attr):
-            self[vcl.value.lower()] = card
+        attrs = (['email'] if (card.kind in ('individual', 'profile'))
+                 else ['nickname'])
+        for attr in attrs:
+            for n, vcl in enumerate(card.get_all(attr, sort=True)):
+                key = vcl.value.lower()
+                if n == 0 or key not in self:
+                    self[key] = card
         self[card.random_uid] = card
 
     def deindex_vcard(self, card):
-        attr = (card.kind == 'individual') and 'email' or 'nickname'
-        for vcl in card.get_all(attr):
-            if vcl.value.lower() in self:
-                del self[vcl.value.lower()]
+        attrs = (['email'] if (card.kind in ('individual', 'profile'))
+                 else ['nickname'])
+        for attr in attrs:
+            for vcl in card.get_all(attr):
+                key = vcl.value.lower()
+                indexed = self.get(key)
+                if indexed and indexed.random_uid == card.random_uid:
+                    del self[key]
         if card.random_uid in self:
             del self[card.random_uid]
 
@@ -775,8 +910,9 @@ class VCardStore(dict):
                 if mailpile.util.QUITTING:
                     return
                 try:
-                    c = SimpleVCard().load(os.path.join(self.vcard_dir, fn),
-                                           config=(session and session.config))
+                    c = MailpileVCard().load(
+                        os.path.join(self.vcard_dir, fn),
+                        config=(session and session.config))
                     c.gpg_recipient = lambda: prefs.get('gpg_recipient')
                     c.encryption_key = lambda: prefs.get('obfuscate_index')
                     self.index_vcard(c)
@@ -884,15 +1020,13 @@ class VCardImporter(VCardPluginClass):
                 for vcl in vcard.get_all(merge_by):
                     existing.extend(
                         vcard_store.find_vcards_with_line(merge_by, vcl.value))
-                if existing:
-                    break
             for card in existing:
                 card.merge(self.config.guid, vcard.as_lines())
                 updated.append(card)
 
             # Otherwise, create new ones.
             if not existing:
-                new_vcard = SimpleVCard()
+                new_vcard = MailpileVCard()
                 new_vcard.merge(self.config.guid, vcard.as_lines())
                 vcard_store.add_vcards(new_vcard)
                 updated.append(new_vcard)

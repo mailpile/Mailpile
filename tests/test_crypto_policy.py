@@ -1,4 +1,4 @@
-from mailpile.vcard import SimpleVCard, VCardLine
+from mailpile.vcard import MailpileVCard, VCardLine
 from tests import MailPileUnittest
 
 VCARD_CRYPTO_POLICY = 'X-MAILPILE-CRYPTO-POLICY'
@@ -10,7 +10,8 @@ class CryptoPolicyBaseTest(MailPileUnittest):
         pass
 
     def _add_vcard(self, full_name, email):
-        card = SimpleVCard(VCardLine(name='fn', value=full_name), VCardLine(name='email', value=email))
+        card = MailpileVCard(VCardLine(name='fn', value=full_name),
+                             VCardLine(name='email', value=email))
         self.config.vcards.index_vcard(card)
         return card
 

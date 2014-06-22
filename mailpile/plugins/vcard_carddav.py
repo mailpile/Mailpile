@@ -94,7 +94,7 @@ class CardDAV(DAVClient):
 
     def get_vcard(self, url):
         status, msg, header, resbody = self.request(url, "GET")
-        card = SimpleVCard()
+        card = MailpileVCard()
         card.load(data=resbody)
         return card
 

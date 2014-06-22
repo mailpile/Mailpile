@@ -346,7 +346,7 @@ class MorkImporter(VCardImporter):
         results = []
         vcards = {}
         for person in people:
-            card = SimpleVCard()
+            card = MailpileVCard()
             if "name" in person:
                 card.add(VCardLine(name="FN", value=person["name"]))
             if "email" in person:
