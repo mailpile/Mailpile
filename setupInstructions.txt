@@ -11,3 +11,8 @@
 6. Run mp.cmd in command prompt
 	If error for import fcntly download no-op module from: <https://communities.cisco.com/servlet/JiveServlet/download/150596-65641/fcntl.py.zip>
 	and add the file into python27 folder
+
+
+
+	python -m pip install nose
+	python -m pip install -U selenium
