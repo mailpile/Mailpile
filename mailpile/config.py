@@ -1087,8 +1087,6 @@ class ConfigManager(ConfigDict):
         fd.close()
 
         # Keep the last 5 config files around... just in case.
-        print(self.conffile)
-        print(newfile)
         backup_file(self.conffile, backups=5, min_age_delta=10)
         # If the file already exists, delete it... its a windows thing
         if os.path.exists(self.conffile):

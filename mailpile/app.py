@@ -22,6 +22,13 @@ Help.ABOUT = mailpile.defaults.ABOUT
 readline = None
 
 
+try: # Only neccesary for windows. this kills Ctrl-d functionality for some reason
+    import colorama
+    colorama.init()
+except ImportError:
+        pass
+
+
 ##[ Main ]####################################################################
 
 
@@ -56,6 +63,7 @@ def Interact(session):
         prompt = session.ui.term.color('mailpile> ',
                                        color=session.ui.term.BLACK,
                                        weight=session.ui.term.BOLD)
+
         while True:
             session.ui.block()
             opt = raw_input(prompt).decode('utf-8').strip()
