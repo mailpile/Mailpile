@@ -32,6 +32,8 @@ CONFIG_RULES = {
         'debug':          (_('Debugging flags'), str,                      ''),
         'gpg_keyserver':  (_('Host:port of PGP keyserver'),
                            str, 'pool.sks-keyservers.net'),
+        'gpg_home':       (_('Override the home directory of GnuPG'), 'dir',
+                           None),
         'http_host':      (_('Listening host for web UI'),
                            'hostname', 'localhost'),
         'local_mailbox_id': (_('Local read/write Maildir'), 'b36',         ''),

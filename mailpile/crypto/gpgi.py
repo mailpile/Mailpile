@@ -342,13 +342,17 @@ class GnuPG:
     """
     Wrap GnuPG and make all functionality feel Pythonic.
     """
-    def __init__(self):
+    def __init__(self, session=None):
         self.available = None
         self.gpgbinary = 'gpg'
         self.passphrase = None
         self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
-        self.homedir = GNUPG_HOMEDIR
+        self.session = session
+        if self.session:
+            self.homedir = session.config.sys.gpg_home or GNUPG_HOMEDIR
+        else:
+            self.homedir = GNUPG_HOMEDIR
 
     def set_home(self, path):
         self.homedir = path

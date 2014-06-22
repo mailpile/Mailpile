@@ -71,7 +71,7 @@ class KeyLookup(Command):
 
     def command(self):
         address = self.data.get('address', self.args[0])
-        return lookup_crypto_keys(this.session, address)
+        return lookup_crypto_keys(self.session, address)
 
 _plugins = PluginManager(builtin=__file__)
 _plugins.register_commands(KeyLookup)
