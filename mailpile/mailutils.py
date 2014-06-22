@@ -332,15 +332,16 @@ class Email(object):
         msg['Message-Id'] = email.utils.make_msgid('mailpile')
         msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
+
+        ahp = AddressHeaderParser()
+        norm = lambda a: ', '.join(sorted(list(set(ahp.normalized_addresses(
+            addresses=a, with_keys=True, force_name=True)))))
         if msg_to:
-            msg['To'] = cls.encoded_hdr(None, 'to',
-                                        value=', '.join(set(msg_to)))
+            msg['To'] = cls.encoded_hdr(None, 'to', value=norm(msg_to))
         if msg_cc:
-            msg['Cc'] = cls.encoded_hdr(None, 'cc',
-                                        value=', '.join(set(msg_cc)))
+            msg['Cc'] = cls.encoded_hdr(None, 'cc', value=norm(msg_cc))
         if msg_bcc:
-            msg['Bcc'] = cls.encoded_hdr(None, 'bcc',
-                                         value=', '.join(set(msg_bcc)))
+            msg['Bcc'] = cls.encoded_hdr(None, 'bcc', value=norm(msg_bcc))
         if msg_references:
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
@@ -1421,6 +1422,8 @@ class AddressHeaderParser(list):
                              force_name=False):
         if addresses is None:
             addresses = self
+        elif not addresses:
+            addresses = []
         def fmt(ai):
             email = ai.address
             if with_keys and ai.keys:
@@ -1434,7 +1437,7 @@ class AddressHeaderParser(list):
                  return ' '.join([quote and self.quote(email) or email, epart])
             else:
                  return epart
-        return [fmt(ai) for ai in (addresses or [])]
+        return [fmt(ai) for ai in addresses]
 
     def normalized(self, **kwargs):
         return ', '.join(self.normalized_addresses(**kwargs))

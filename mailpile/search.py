@@ -13,6 +13,7 @@ import mailpile.util
 from mailpile.util import *
 from mailpile.plugins import PluginManager
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
+from mailpile.mailutils import AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import Email, ParseMessage, HeaderPrint
 from mailpile.postinglist import GlobalPostingList
@@ -661,9 +662,9 @@ class MailIndex:
         # Extract info from the message headers
         msg_ts = self._extract_date_ts(session, msg_mid, msg_id, msg,
                                        default_date)
-        msg_to = ExtractEmails(self.hdr(msg, 'to'))
-        msg_cc = (ExtractEmails(self.hdr(msg, 'cc')) +
-                  ExtractEmails(self.hdr(msg, 'bcc')))
+        msg_to = AddressHeaderParser(msg.get('to', ''))
+        msg_cc = (AddressHeaderParser(msg.get('cc', '')) +
+                  AddressHeaderParser(msg.get('bcc', '')))
         msg_subj = self.hdr(msg, 'subject')
 
         filters = _plugins.get_filter_hooks([self.filter_keywords])
@@ -862,16 +863,20 @@ class MailIndex:
 
     def compact_to_list(self, msg_to):
         eids = []
-        for email in msg_to:
+        for ai in msg_to:
+            email = ai.address
             eid = self.EMAIL_IDS.get(email.lower())
             if eid is None:
-                eid = self._add_email(email)
+                eid = self._add_email(email, name=ai.fn)
+            elif ai.fn and ai.fn != email:
+                self.update_email(email, name=ai.fn)
             eids.append(eid)
         return ','.join([b36(e) for e in set(eids)])
 
-    def expand_to_list(self, msg_info):
-        eids = msg_info[self.MSG_TO]
-        return [self.EMAILS[int(e, 36)] for e in eids.split(',') if e]
+    def expand_to_list(self, msg_info, field=None):
+        eids = msg_info[field if (field is not None) else self.MSG_TO]
+        eids = [e for e in eids.strip().split(',') if e]
+        return [self.EMAILS[int(e, 36)] for e in eids]
 
     def add_new_msg(self, msg_ptr, msg_id, msg_ts, msg_from,
                     msg_to, msg_cc, msg_bytes, msg_subject, msg_body,

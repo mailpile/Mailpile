@@ -371,12 +371,10 @@ class Reply(RelativeCompose):
 
         def addresses(addrs, exclude=[]):
             alist = [from_address] + [a.address for a in exclude]
-            return ahp.normalized_addresses(addresses=[merge_contact(a)
-                for a in addrs if a.address not in alist
-                and not a.address.startswith('noreply@')
-                and '@noreply' not in a.address],
-                                            with_keys=True,
-                                            force_name=True)
+            return [merge_contact(a) for a in addrs
+                    if a.address not in alist
+                    and not a.address.startswith('noreply@')
+                    and '@noreply' not in a.address]
 
         # If only replying to messages sent from chosen from, then this is
         # a follow-up or clarification, so just use the same headers.
