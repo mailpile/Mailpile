@@ -28,8 +28,10 @@ class Events(Command):
         'private_data': 'var:value'
     }
 
-    WAIT_TIME = 10.0
+    WAIT_TIME = 20.0
     GATHER_TIME = 0.1
+
+    LOG_NOTHING = True
 
     _FALSE = ('0', 'off', 'no', 'false')
 
