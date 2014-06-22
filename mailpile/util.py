@@ -372,6 +372,11 @@ def backup_file(filename, backups=5, min_age_delta=0):
         os.rename(filename, '%s.1' % filename)
 
 
+def json_helper(obj):
+    if isinstance(obj, datetime.datetime):
+        return str(obj)
+
+
 class GpgWriter(object):
     def __init__(self, gpg):
         self.fd = gpg.stdin
