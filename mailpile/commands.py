@@ -921,7 +921,11 @@ class Rescan(Command):
                     self._ignore_exception()
                     session.ui.warning(_('Failed to reindex: %s'
                                          ) % e.msg_mid())
+
+            self.event.data["messages"] = len(msg_idxs)
+            self.session.config.event_log.log_event(self.event)
             self._background_save(index=True)
+
             return self._success(_('Indexed %d messages') % len(msg_idxs),
                                  result={'messages': len(msg_idxs)})
 
@@ -934,6 +938,9 @@ class Rescan(Command):
                 results = {}
                 results.update(self._rescan_vcards(session))
                 results.update(self._rescan_mailboxes(session))
+
+                self.event.data.update(results)
+                self.session.config.event_log.log_event(self.event)
                 if 'aborted' in results:
                     raise KeyboardInterrupt()
                 return self._success(_('Rescanned vcards and mailboxes'),
