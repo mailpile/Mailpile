@@ -101,6 +101,8 @@ class ViewMetadata(Hacks):
         pptrs = ['%s -> %s' % (self.session.config.sys.mailbox[p[:MBX_ID_LEN]],
                                p[MBX_ID_LEN:])
                  for p in info[idx.MSG_PTRS].split(',') if p]
+        to = idx.expand_to_list(info)
+        cc = idx.expand_to_list(info, idx.MSG_CC)
         return {
             'mid': info[idx.MSG_MID],
             'ptrs': info[idx.MSG_PTRS],
@@ -118,6 +120,8 @@ class ViewMetadata(Hacks):
             'parsed': {
                 'date': friendly_datetime(long(info[idx.MSG_DATE], 36)),
                 'tags': ', '.join(ptags),
+                'to': to,
+                'cc': cc,
                 'ptrs': pptrs
             }
         }
