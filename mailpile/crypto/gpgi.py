@@ -685,7 +685,9 @@ class GnuPG:
                 results[curpub] = {"created": datetime.fromtimestamp(int(line[4])),
                                    "keytype_name": openpgp_algorithms[int(line[2])],
                                    "keysize": line[3],
-                                   "uids": []}
+                                   "uids": [],
+                                   "fingerprint": curpub
+                                  }
             elif line[0] == "uid":
                 email, name, comment = parse_uid(line[1])
                 results[curpub]["uids"].append({"name": name,
