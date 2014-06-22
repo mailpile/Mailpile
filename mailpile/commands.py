@@ -80,12 +80,14 @@ class Command:
                 happy = '%s: %s' % (self.result and _('OK') or _('Failed'),
                                     self.message or self.doc)
                 if not self.result and self.error_info:
-                    return '%s\n%s' % (happy, json.dumps(self.error_info,
-                                                         indent=4))
+                    return '%s\n%s' % (happy, 
+                        json.dumps(self.error_info, indent=4, 
+                                   default=mailpile.util.json_helper))
                 else:
                     return happy
             elif isinstance(self.result, (dict, list, tuple)):
-                return json.dumps(self.result, indent=4, sort_keys=True)
+                return json.dumps(self.result, indent=4, sort_keys=True,
+                    default=mailpile.util.json_helper)
             else:
                 return unicode(self.result)
 

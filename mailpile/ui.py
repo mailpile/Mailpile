@@ -386,6 +386,8 @@ class UserInteraction:
                 if isinstance(obj, (list, dict, str, unicode,
                                     int, float, bool, type(None))):
                     return JSONEncoder.default(self, obj)
+                if isinstance(obj, datetime.datetime):
+                    return str(obj)
                 return "COMPLEXBLOB"
 
         return json.dumps(data, indent=1, cls=NoFailEncoder, sort_keys=True)
