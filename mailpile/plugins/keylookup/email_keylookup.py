@@ -1,6 +1,7 @@
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.plugins import PluginManager
-from mailpile.plugins.keylookup import LookupHandler, register_crypto_key_lookup_handler
+from mailpile.plugins.keylookup import (LookupHandler, 
+    register_crypto_key_lookup_handler)
 from mailpile.plugins.search import Search
 from mailpile.mailutils import Email
 
@@ -19,10 +20,11 @@ class EmailKeyLookupHandler(LookupHandler, Search):
 
     def _lookup(self, address):
         results = {}
-        session, idx, _, _ = self._do_search(search=["from:%s" % address, "has:pgpkey"])
+        session, idx, _, _ = self._do_search(search=["from:%s" % address, 
+            "has:pgpkey"])
         for messageid in session.results:
             email = Email(self._idx(), messageid)
-            attachments = email.get_message_tree()["attachments"]
+            attachments = email.get_message_tree("attachments")["attachments"]
             for part in attachments:
                 if part["mimetype"] == "application/pgp-keys":
                     key = part["part"].get_payload(None, True)
@@ -51,7 +53,8 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                     "uids": [],
                 }
             if isinstance(m, pgpdump.packet.UserIDPacket):
-                results[curfp]["uids"].append({"name": m.user_name, "email": m.user_email})
+                results[curfp]["uids"].append({"name": m.user_name, 
+                    "email": m.user_email})
 
         return results
 

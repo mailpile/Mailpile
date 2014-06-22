@@ -1,4 +1,6 @@
 from mailpile.crypto.gpgi import GnuPG
+from mailpile.plugins import PluginManager
+from mailpile.commands import Command
 # from mailpile.crypto.dnspka import DNSPKALookupHandler
 
 __all__ = ['email_keylookup', 'nicknym', 'dnspka']
@@ -53,7 +55,7 @@ def lookup_crypto_keys(session, address):
     known_keys_list = g.list_keys()
     for key in x.keys():
         x[key]["fingerprint"] = key
-        x[key]["score"] += crypto_keys_scorer(known_keys_list, key):
+        x[key]["score"] += crypto_keys_scorer(known_keys_list, key)
 
     x = [i for i in x.values()]
     x.sort(key=lambda k: k["score"])
@@ -71,6 +73,7 @@ class KeyLookup(Command):
         address = self.data.get('address', self.args[0])
         return lookup_crypto_keys(this.session, address)
 
+_plugins = PluginManager(builtin=__file__)
 _plugins.register_commands(KeyLookup)
 
 
