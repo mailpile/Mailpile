@@ -12,7 +12,7 @@ from mailpile.plugins.keylookup import LookupHandler, register_crypto_key_lookup
 class DNSPKALookupHandler(LookupHandler):
     NAME = "DNS PKA records"
 
-    def __init__(self):
+    def __init__(self, session=None):
         DNS.ParseResolvConf()
         self.req = DNS.Request(qtype="TXT")
 

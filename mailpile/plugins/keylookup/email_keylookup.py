@@ -1,32 +1,36 @@
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import LookupHandler, register_crypto_key_lookup_handler
-from mailpile.commands import Action
+from mailpile.plugins.search import Search
+from mailpile.mailutils import Email
 
 import pgpdump
 
 
-class EmailKeyLookupHandler(LookupHandler):
+class EmailKeyLookupHandler(LookupHandler, Search):
     NAME = "E-mail keys"
 
+    def __init__(self, session):
+        Search.__init__(self, session)
+        LookupHandler.__init__(self, session)
+
     def _score(self, key):
-        return 
+        return 1
 
     def _lookup(self, address):
         results = {}
-        cmdres = Action(self.session, "search", ["from:%s" % address, "has:pgpkey"])
-        print cmdres.as_dict()
-        print "Found %d messages matching." % cmdres["result"]["stats"]["total"]
-        for messageid in cmdres["result"]["thread_ids"]:
-            email = Email(idx, list(eids)[0])
-            for part in email.walk():
-                if part.get_content_type == "application/pgp-keys":
-                    results.update(self._get_keydata(part))
+        session, idx, _, _ = self._do_search(search=["from:%s" % address, "has:pgpkey"])
+        for messageid in session.results:
+            email = Email(self._idx(), messageid)
+            attachments = email.get_message_tree()["attachments"]
+            for part in attachments:
+                if part["mimetype"] == "application/pgp-keys":
+                    key = part["part"].get_payload(None, True)
+                    results.update(self._get_keydata(key))
 
         return results
 
-    def _get_keydata(self, part):
-        data = part.get_payload()
+    def _get_keydata(self, data):
         results = {}
         try:
             if "-----BEGIN" in data:
