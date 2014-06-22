@@ -5,3 +5,16 @@
     <p><a href="#" data-tid="<%= tid %>" data-mid="<%= mid %>" class="pile-tag-delete"><span class="icon-circle-x"></span> {{_("Remove Tag")}}</a></p>
   </div>
 </script>
+
+<script id="tooltip-contact-details" type="text/template">
+  <h3><a href="/contacts/view/<%= address %>/"><%= fn %></a></h3>
+  <% if (flags.secure) { %>
+  <select class="compose-address-change-key">
+    <% _.each(keys, function(key) { %>
+    <option><%= key.fingerprint %></option>
+    <% }); %>
+  </select>
+  <% } else { %>
+  <a href="">Search for PGP Keys</a>
+  <% } %>
+</script>

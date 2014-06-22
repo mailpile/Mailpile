@@ -101,13 +101,13 @@ $(document).ready(function() {
   });
 
 
-  $('.select2-search-choice').qtip({
+  $('.compose-choice-wrapper').qtip({
     content: {
       title: true,
       text: function(event, api) {
-        var contact_html = $(event.target).html();
-        var html = 'Hiyo party people :P'
-        return contact_html;
+        var address = $(event.target).data('address');
+        var contact_data = _.findWhere(mailpile.instance.search_addresses, {address: address});
+        return _.template($('#tooltip-contact-details').html(), contact_data);
       }
     },
     style: {
@@ -130,20 +130,13 @@ $(document).ready(function() {
     },
     show: {
       event: 'click',
-      delay: 150
+      delay: 100
     },
     hide: {
       event: false,
       inactive: 800
     },
-    events: {
-      show: function(event, api) {
-        
-      },
-      hide: function(event, api) {
-        
-      }
-    }
+    events: {}
   });
 
 });

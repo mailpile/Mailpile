@@ -37,7 +37,6 @@ MailPile.prototype.compose_analyze_recipients = function(addresses) {
 
   // Is Valid & Has Multiple
   if (addresses) {
-
     var multiple = addresses.split(/, */);
 
     if (multiple.length > 1) {
@@ -72,7 +71,7 @@ MailPile.prototype.compose_autosave_update_ephemeral = function(mid, new_mid) {
 };
 
 
-/* Compose - */
+/* Compose - Perform autosave checking & save */
 MailPile.prototype.compose_autosave = function(mid, form_data) {
 
   // Text is different, run autosave
@@ -122,109 +121,107 @@ MailPile.prototype.compose_autosave_timer =  $.timer(function() {
 
 
 /* Compose - Instance of select2 contact selecting */
-$('#compose-to, #compose-cc, #compose-bcc').select2({
-  id: function(object) {
-    if (object.flags.secure) {
-      address = object.address + '#' + object.keys[0].fingerprint;
-    }
-    else {
-      address = object.address;
-    }
-    if (object.fn !== "" && object.address !== object.fn) {
-      return object.fn + ' <' + address + '>';
-    } else {
-      return address;
-    }
-  },
-  ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
-    url: mailpile.api.contacts,
-    quietMillis: 1,
-    cache: true,
-    dataType: 'json',
-    data: function(term, page) {
-      return {
-        q: term
-      };
+MailPile.prototype.compose_address_field = function(id) {
+
+  $('#' + id).select2({
+    id: function(object) {
+      if (object.flags.secure) {
+        address = object.address + '#' + object.keys[0].fingerprint;
+      } else {
+        address = object.address;
+      }
+      if (object.fn !== "" && object.address !== object.fn) {
+        return object.fn + ' <' + address + '>';
+      } else {
+        return address;
+      }
     },
-    results: function(response, page) { // parse the results into the format expected by Select2
-      return {
-        results: response.result.addresses
-      };
-    }
-  },
-  multiple: true,
-  allowClear: true,
-  width: '100%',
-  minimumInputLength: 1,
-  minimumResultsForSearch: -1,
-  placeholder: 'Type to add contacts',
-  maximumSelectionSize: 100,
-  tokenSeparators: [", ", ";"],
-  createSearchChoice: function(term) {
-    // Check if we have an RFC5322 compliant e-mail address
-    if (term.match(/(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
-      return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
-    // FIXME: handle invalid email addresses with UI feedback
-    } else {
-      return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
-    }
-  },
-  formatResult: function(state) {
-    var avatar = '<span class="icon-user"></span>';
-    var secure = '<span class="icon-blank"></span>';
-    if (state.photo) {
-      avatar = '<img src="' + state.photo + '">';
-    }
-    if (state.flags.secure) {
-      secure = '<span class="icon-lock-closed"></span>';
-    }
-    return '<span class="compose-select-avatar">' + avatar + '</span>\
-            <span class="compose-select-name">' + state.fn + secure + '<br>\
-            <span class="compose-select-address">' + state.address + '</span>\
-            </span>';
-  },
-  formatSelection: function(state) {
-    // Add To Model
-    console.log(state);
-     
-    
-    // Create HTML
-    var avatar = '<span class="icon-user"></span>';
-    var name   = state.fn;
-    var secure = '<span class="icon-blank"></span>';
+    ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
+      url: mailpile.api.contacts,
+      quietMillis: 1,
+      cache: true,
+      dataType: 'json',
+      data: function(term, page) {
+        return {
+          q: term
+        };
+      },
+      results: function(response, page) { // parse the results into the format expected by Select2
+        return {
+          results: response.result.addresses
+        };
+      }
+    },
+    multiple: true,
+    allowClear: true,
+    width: '100%',
+    minimumInputLength: 1,
+    minimumResultsForSearch: -1,
+    placeholder: 'Type to add contacts',
+    maximumSelectionSize: 100,
+    tokenSeparators: [", ", ";"],
+    createSearchChoice: function(term) {
+      // Check if we have an RFC5322 compliant e-mail address
+      if (term.match(/(?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
+        return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
+      // FIXME: handle invalid email addresses with UI feedback
+      } else {
+        return {"id": term, "fn": term, "address": term, "flags": { "secure" : false }};
+      }
+    },
+    formatResult: function(state) {
+      var avatar = '<span class="icon-user"></span>';
+      var secure = '<span class="icon-blank"></span>';
+      if (state.photo) {
+        avatar = '<img src="' + state.photo + '">';
+      }
+      if (state.flags.secure) {
+        secure = '<span class="icon-lock-closed"></span>';
+      }
+      return '<span class="compose-select-avatar">' + avatar + '</span>\
+              <span class="compose-select-name">' + state.fn + secure + '<br>\
+              <span class="compose-select-address">' + state.address + '</span>\
+              </span>';
+    },
+    formatSelection: function(state, elem) {
 
-    if (state.photo) {
-      avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
-    }
-    if (!state.fn) {
-      name = state.address; 
-    }
-    if (state.flags.secure) {
-      secure = '<span class="icon-lock-closed"></span>';
-    }
-    return avatar + '<span class="compose-choice-name">' + name + secure + '</span>';
-  },
-  formatSelectionTooBig: function() {
-    return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
-  },
-  selectOnBlur: true
-});
+      // Add To Model
+      mailpile.instance.search_addresses.push(state);
 
+      // Create HTML
+      var avatar = '<span class="icon-user"></span>';
+      var name   = state.fn;
+      var secure = '<span class="icon-blank"></span>';
+  
+      if (state.photo) {
+        avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
+      }
+      if (!state.fn) {
+        name = state.address; 
+      }
+      if (state.flags.secure) {
+        secure = '<span class="icon-lock-closed"></span>';
+      }
+      return '<div class="compose-choice-wrapper" data-address="' + state.address + '">' + avatar + '<span class="compose-choice-name" data-address="' + state.address + '">' + name + secure + '</span></div>';
+    },
+    formatSelectionTooBig: function() {
+      return 'You\'ve added the maximum contacts allowed, to increase this go to <a href="#">settings</a>';
+    },
+    selectOnBlur: true
+  });
 
-/* Compose - Load existing */
-$('#compose-to').select2('data', mailpile.compose_analyze_recipients($('#compose-to').val()));
-$('#compose-cc').select2('data', mailpile.compose_analyze_recipients($('#compose-cc').val()));
-$('#compose-bcc').select2('data', mailpile.compose_analyze_recipients($('#compose-bcc').val()));
+  /* Check encryption state */
+  $('#' + id).select2('data', mailpile.compose_analyze_recipients($('#' + id).val()));
 
-
-/* Compose - Selection */
-$('#compose-to, #compose-cc, #compose-bcc').on('select2-selecting', function(e) {
-    var status = mailpile.compose_determine_encryption(e.val);
-    mailpile.compose_render_encryption(status);
-  }).on('select2-removed', function(e) {
-    var status = mailpile.compose_determine_encryption();
-    mailpile.compose_render_encryption(status);
-});
+  /* On select update encryption state */
+  $('#' + id).on('select2-selecting', function(e) {
+      var status = mailpile.compose_determine_encryption(e.val);
+      mailpile.compose_render_encryption(status);
+    }).on('select2-removed', function(e) {
+      var status = mailpile.compose_determine_encryption();
+      mailpile.compose_render_encryption(status);
+  });
+};
 
 
 /* Compose - Change Signature Status */
@@ -285,7 +282,6 @@ $('#compose-from').keyup(function(e) {
 $(document).on('click', '.compose-apply-quote', function(e) {
 
   e.preventDefault();
-  e.stopPropagation();
   var mid = $(this).parent().parent().data('mid');
 
   if ($(this).prop('checked')) {
@@ -294,7 +290,7 @@ $(document).on('click', '.compose-apply-quote', function(e) {
   else {
     $('#compose-text-' + mid).val('');
   }
-  
+
 });
 
 
@@ -525,6 +521,11 @@ $(document).ready(function() {
     // Load Crypto States
     // FIXME: needs dynamic support for multi composers on a page
     mailpile.compose_load_crypto_states();
+
+    // Instantiate select2
+    $('.compose-address-field').each(function(key, elem) {
+      mailpile.compose_address_field($(elem).attr('id'));
+    });
 
     // Save Text Composing Objects
     $('.compose-text').each(function(key, elem) {

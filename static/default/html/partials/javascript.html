@@ -2,6 +2,9 @@
 <script src="/static/js/libraries/plupload.full.min.js"></script>
 {% endif %}
 <script>
+{% if result.data and result.data.addresses %}
+  {% set addresses_json = result.data.addresses|json %}
+{% endif %}
 {% if result.data and result.data.messages %}
   {% set messages_json = result.data.messages|json %}
 {% endif %}
@@ -18,6 +21,7 @@ $(document).ready(function() {
   mailpile.instance = {
    "command": "{{ command }}",
    "args": "{{ args }}",
+   "addresses": {% if result.data and result.data.addresses %}{{ addresses_json|safe }}{% else %}{}{% endif %},
    "messages": {% if result.data and result.data.messages %}{{ messages_json|safe }}{% else %}{}{% endif %},
    "metadata": {% if result.data and result.data.metadata %}{{ metadata_json|safe }}{% else %}{}{% endif %},
    "tags": {{ tags_json|safe }},

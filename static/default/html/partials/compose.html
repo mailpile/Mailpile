@@ -26,10 +26,8 @@
 -->
     <label>{{_("From")}}</label>
     <select class="compose-from" name="from">
-      <option value="{{editing_strings.from}}" selected>{{editing_strings.from}}</option>
-      <option value="{{editing_strings.from}}"> - - - </option>
       {% for p in profiles %}
-      <option value="{{p.name}} &lt;{{p.email}}&gt;">{{p.name}} &lt;{{p.email}}&gt;</option>
+      <option value="{{p.name}} &lt;{{p.email}}&gt;" {% if p.email == editing_strings.from %}selected="selected"{% endif %}>{{p.name}} &lt;{{p.email}}&gt;</option>
       {% endfor %}
     </select>
     <ul class="compose-options horizontal right has-mid" data-mid="{{mid}}">
@@ -82,21 +80,21 @@
         <a id="compose-cc-show" class="compose-show-field {% if editing_strings.cc %}hide{% endif %}" href="#">{{_("Cc")}}</a>
         <a id="compose-bcc-show" class="compose-show-field {% if editing_strings.bcc %}hide{% endif %}" href="#">{{_("Bcc")}}</a>
       </label>
-      <input id="compose-to" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
+      <input id="compose-to" class="compose-address-field" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
     </div>
     <div id="compose-cc-html" class="compose-headers compose-cc {% if not editing_strings.cc %}hide{% endif %}">
       <label class="left">{{_("Cc")}}</label>
       <label class="right">
         <a href="#cc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
       </label>
-      <input id="compose-cc" name="cc" type="text" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
+      <input id="compose-cc" class="compose-address-field" name="cc" type="text" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
     </div>
     <div id="compose-bcc-html" class="compose-headers compose-bcc {% if not editing_strings.bcc %}hide{% endif %}">
       <label class="left">{{_("Bcc")}}</label>
       <label class="right">
         <a href="#bcc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
       </label>
-      <input id="compose-bcc" name="bcc" type="text" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
+      <input id="compose-bcc" class="compose-address-field" name="bcc" type="text" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
     </div>
     <div class="compose-headers compose-subject">
       <label>{{_("Subject")}}</label>
