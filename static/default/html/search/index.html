@@ -2,6 +2,7 @@
 {% block content %}
 {% if result %}
   <!-- FIXME: make density class be pulled from user profile setting -->
+    <div class="hide" id="pile-newmessages-notification">New messages received! Click here (or press f) to refresh your view.</div>
   <table id="pile-results" class="comfy">
   <tbody>
   {% for mid in result.thread_ids %}
@@ -34,7 +35,4 @@
     <h2 class="add-top text-center">{{_("No Results Found")}}</h2>
   </div>
 {% endif %}
-<script id="template-search-pile-tags-link" type="text/template">
-  <a class="pile-message-tag" id="pile-message-tag-<%= mid %>-<%= tid %>" href="/thread/=<%= mid %>/" data-tag_name="<%= name %>" data-tag_url="/in/<%= slug %>/" data-tag_tid="<%= tid %>"><%= name %></a>
-</script>
 {% endblock %}

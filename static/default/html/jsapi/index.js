@@ -33,6 +33,7 @@ function MailPile() {
     ["normal", "k",      function() { mailpile.bulk_action_selection_down(); }],
     ["normal", "j",      function() { mailpile.bulk_action_selection_up(); }],
     ["normal", "enter",  function() { mailpile.open_selected_thread(); }],
+    ["normal", "f",      function() { mailpile.update_search(); }],
   	["normal", ["a"], function() { mailpile.keybinding_move_message(''); }],
   	["normal", ["d"], function() { mailpile.keybinding_move_message('trash'); }],
   	["normal", ["r"], function() { mailpile.bulk_action_read(); }],
@@ -127,6 +128,7 @@ new_mailpile.api = (function() {
                     dataType : 'json',
                     success  : callback,
                 });
+                break;
             case "POST":
                 $.ajax({
                     url      : command,

@@ -1,92 +1,157 @@
 MailPile.prototype.notification = function(status, message_text, complete, complete_action) {
+    var default_messages = {
+        "success" : "Success, we did exactly what you asked.",
+        "info"    : "Here is a basic info update",
+        "debug"   : "What kind of bug is this bug, it's a debug",
+        "warning" : "This here be a warnin to you, just a warnin mind you",
+        "error"   : "Whoa cowboy, you've mozied on over to an error"
+    }
 
-  var default_messages = {
-    "success" : "Success, we did exactly what you asked.",
-    "info"    : "Here is a basic info update",
-    "debug"   : "What kind of bug is this bug, it's a debug",
-    "warning" : "This here be a warnin to you, just a warnin mind you",
-    "error"   : "Whoa cowboy, you've mozyed on over to an error"
-  }
+    var message = $('#messages').find('div.' + status);
 
-  var message = $('#messages').find('div.' + status);
+    if (message_text == undefined) {
+        message_text = default_messages[status];
+    }
 
-  if (message_text == undefined) {
-    message_text = default_messages[status];
-  }
+    // Show Message
+    message.find('span.message-text').html(message_text),
+    message.fadeIn();
 
-  // Show Message
-  message.find('span.message-text').html(message_text),
-  message.fadeIn();
-
-	// Complete Action
-	if (complete == undefined) {
+    // Complete Action
+    if (complete == undefined) {
     
-  }
-	else if (complete == 'hide') {
-		message.delay(5000).fadeOut('normal', function() {
-			message.find('span.message-text').empty();
-		});
-	}
-	else if (complete == 'redirect') {
-		setTimeout(function() { window.location.href = complete_action }, 5000);
-	}
+    } else if (complete == 'hide') {
+        message.delay(5000).fadeOut('normal', function() {
+            message.find('span.message-text').empty();
+        });
+    } else if (complete == 'redirect') {
+        setTimeout(function() { window.location.href = complete_action }, 5000);
+    }
 
-  return false;
+    return function() { message.fadeOut('normal'); };
 }
 
 
-/* Event Log - AJAX Polling */
-MailPile.prototype.poll_event_log =  $.timer(function() {
+var EventLog = {
+    eventbindings: {},  // All the subscriptions
+    last_ts: (new Date().getTime() - 5) / 1000,
+    timer: null,
+    cancelwarning: null
+};
 
-	console.log('eventlog ------------------------------------- polled');
+EventLog.init = function() {
+    $('.message-close').on('click', function() {
+        $(this).parent().fadeOut();
+    });
 
-  // Check Global State
-//  if (NewOverviewToolsModel.get('state') === "complete") {
-		// Stop the whole Shabang!
-		this.stop();
-//  }
-//  else {
-  	$.ajax({
-  		url: '/api/0/eventlog/', //?=' + new Date().getTime(),
-  		type: 'GET',
-  		dataType: 'json',
-  		cache: 'false',
-  		timeout: 3500,
-      success: function(result) {
-  			// Process Result
-//  		NewOverviewToolsModel.processTool(tool, result);
-      }
-  	});
+    EventLog.timer = $.timer(EventLog.heartbeat_warning);
+    EventLog.timer.set({ time : 22000, autostart : true });
+    EventLog.poll();
+};
 
-//  }
+EventLog.pause = function() {
+    return EventLog.timer.pause();
+}
 
-});
+EventLog.play = function() {
+    return EventLog.timer.play();
+}
 
+EventLog.heartbeat_warning = function() {
+    EventLog.cancelwarning = mailpile.notification("warning", "Having trouble connecting to Mailpile... will retry in a few seconds.");
+    EventLog.poll();
+}
 
-$(document).on('click', '.show-notifications', function(e) {
+EventLog.request = function(conditions) {
+    conditions = conditions || {};
+    if (!conditions.callback) {
+        conditions.callback = EventLog.process_result;
+    }
 
-  e.preventDefault();
-  $('#notifications').show();
+    new_mailpile.api.eventlog(
+        conditions.privatedata, // private_data
+        conditions.source,      // source
+        conditions.flag,        // require a flag
+        conditions.allflags,    // match all flags
+        conditions.since,       // since when?
+        conditions.filter,      // filter?
+        conditions.incomplete,  // incomplete events only?
+        conditions.wait,        // wait for new data?
+        conditions.callback     // callback
+    );
+}
 
-  // Hide Notifications
-  $('body').click(function () {  
-    $('#notifications').hide();
-  });
-});
+EventLog.poll = function() {
+    EventLog.request({since: EventLog.last_ts, wait: 20});     // Request everything new.
+};
 
+EventLog.process_result = function(result, textstatus) {
+    for (event in result.result) {
+        var ev = result.result[event];
+        for (binding in EventLog.eventbindings) {
+            if (ev.source.match(new RegExp("^" + binding + "$"))) {
+                EventLog.firebindings(binding, ev);
+            }
+        }
+        EventLog.last_ts = ev.ts;
+    }
+    console.log("eventlog ---- processed", result.result.length, "results");
+    EventLog.timer.stop();
+    EventLog.timer.play();
+    EventLog.poll();
+    if (EventLog.cancelwarning) {
+        EventLog.cancelwarning();
+        EventLog.cancelwarning = null;
+    }
+};
+
+EventLog.firebindings = function(binding, ev) {
+    for (fun in this.eventbindings[binding]) {
+        this.eventbindings[binding][fun](ev);
+    }
+}
+
+EventLog.subscribe = function(ev, func) {
+    // Subscribe a function to an event.
+    // Returns a subscription ID.
+    if (!this.eventbindings[ev]) {
+        this.eventbindings[ev] = [];
+    }
+    if (!$.isFunction(func)) {
+        console.log("Can only subscribe functions");
+        return false;
+    }
+    this.eventbindings[ev].push(func);
+    return this.eventbindings[ev].length - 1;
+};
+
+EventLog.unsubscribe = function(ev, func_or_id) {
+    // Given an event class and a subscription id
+    //   or a function, will unsubscribe from the 
+    //   event.
+    // Returns true if successfully unsubscribed.
+    if ($.isFunction(func_or_id)) {
+        for (i in this.eventbindings[ev]) {
+            if (this.eventbindings[ev][i] == func_or_id) {
+                this.eventbindings[ev].splice(i, 1);
+                return true;
+            }
+        }
+    } else {
+        this.eventbindings[ev].splice(func_or_id, 1);
+        return true;
+    }
+    return false;
+};
 
 
 $(document).ready(function() {
+    /* Message Close */
+    $('.message-close').on('click', function() {
+        $(this).parent().fadeOut(function() {
+            //$('#header').css('padding-top', statusHeaderPadding());
+        });
+    });
 
-  /* Message Close */
-	$('.message-close').on('click', function() {
-		$(this).parent().fadeOut(function() {
-			//$('#header').css('padding-top', statusHeaderPadding());
-		});
-	});
-
-  // Kick the whole Shabang off
-  mailpile.poll_event_log.play();
-  mailpile.poll_event_log.set({ time : 5000, autostart : true });
-
+    EventLog.init();
 });

@@ -20,6 +20,7 @@ $(document).ready(function() {
   // Print JSON for JS Use
   mailpile.instance = {
    "command": "{{ command }}",
+   "state": {{state|json|safe}},
    "args": "{{ args }}",
    "addresses": {% if result.data and result.data.addresses %}{{ addresses_json|safe }}{% else %}{}{% endif %},
    "messages": {% if result.data and result.data.messages %}{{ messages_json|safe }}{% else %}{}{% endif %},
