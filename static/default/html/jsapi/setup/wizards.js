@@ -1,7 +1,8 @@
 /* Wizard - Setup */
-var Wizard = function() {
+var Wizard = function(container, titlecontainer) {
+	this.container = container;
+	this.titlecontainer = titlecontainer;
 	this.curpage = 0;
-	this.title = "";
 	this.pages = [];
 	this.initialized = false;
 };
@@ -18,8 +19,8 @@ Wizard.prototype.init = function() {
 };
 
 
-Wizard.prototype.set_title = function(name) {
-	this.title = name;
+Wizard.prototype.set_title = function(title) {
+	$(this.titlecontainer).text(title);
 };
 
 
