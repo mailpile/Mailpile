@@ -10,8 +10,9 @@ _plugins = PluginManager(builtin=__file__)
 
 class Plugins(mailpile.commands.Command):
     """List the currently available plugins."""
-    SYNOPSIS = (None, 'plugins', 'plugins', '[<plugins>]')
+    SYNOPSIS = (None, 'plugins', None, '[<plugins>]')
     ORDER = ('Config', 9)
+    HTTP_CALLABLE = ()
 
     def command(self):
         pm = self.session.config.plugins
@@ -31,8 +32,9 @@ class Plugins(mailpile.commands.Command):
 
 class LoadPlugin(mailpile.commands.Command):
     """Load and enable a given plugin."""
-    SYNOPSIS = (None, 'plugins/load', 'plugins/load', '<plugin>')
+    SYNOPSIS = (None, 'plugins/load', None, '<plugin>')
     ORDER = ('Config', 9)
+    HTTP_CALLABLE = ()
 
     def command(self):
         config = self.session.config
@@ -59,8 +61,9 @@ class LoadPlugin(mailpile.commands.Command):
 
 class DisablePlugin(mailpile.commands.Command):
     """Disable a plugin."""
-    SYNOPSIS = (None, 'plugins/disable', 'plugins/disable', '<plugin>')
+    SYNOPSIS = (None, 'plugins/disable', None, '<plugin>')
     ORDER = ('Config', 9)
+    HTTP_CALLABLE = ()
 
     def command(self):
         config = self.session.config
