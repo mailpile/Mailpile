@@ -1,10 +1,11 @@
-
+/* Wizard - Setup */
 var Wizard = function() {
 	this.curpage = 0;
 	this.title = "";
 	this.pages = [];
 	this.initialized = false;
 };
+
 
 Wizard.prototype.init = function() {
 	console.log("Initializing Wizard!");
@@ -16,9 +17,11 @@ Wizard.prototype.init = function() {
 	return true;
 };
 
+
 Wizard.prototype.set_title = function(name) {
 	this.title = name;
 };
+
 
 Wizard.prototype.goto = function(page) {
 	if (page % 1 != 0) {
@@ -37,6 +40,7 @@ Wizard.prototype.goto = function(page) {
 	this.pages[this.curpage].show();
 	return this.pages[this.curpage];
 };
+
 
 Wizard.prototype.go = function() {
 	this.init();

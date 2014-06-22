@@ -1,9 +1,7 @@
 
 var Page = function(binddom) {
 	this.dom_object = binddom;
-	this.buttons = {
-
-	};
+	this.buttons = {};
 	this.show_actions = [];
 	this.hide_actions = [];
 	this.input_validators = {};
@@ -38,10 +36,6 @@ Page.prototype.init = function(parent) {
 		console.log("Set page parent to ", parent);
 	}
 
-	for (btn in this.buttons) {
-		$(btn).click(this.buttons[btn]);
-	}
-
 	return true;
 }
 
@@ -53,6 +47,9 @@ Page.prototype.route = function(routename) {
 Page.prototype.show = function() {
 	for (i in this.show_actions) {
 		this.show_actions[i](this);
+	}
+	for (btn in this.buttons) {
+		$(btn).click(this.buttons[btn]);
 	}
 	$(this.dom_object).show();
 };
