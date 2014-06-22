@@ -921,6 +921,7 @@ class Rescan(Command):
                     self._ignore_exception()
                     session.ui.warning(_('Failed to reindex: %s'
                                          ) % e.msg_mid())
+            self._background_save(index=True)
             return self._success(_('Indexed %d messages') % len(msg_idxs),
                                  result={'messages': len(msg_idxs)})
 
@@ -1149,7 +1150,9 @@ class ProgramStatus(Command):
         config = self.session.config
 
         try:
-            locks = [(config.index, '_lock', config.index._lock._is_owned())]
+            locks = [(config.index, '_lock', config.index._lock._is_owned()),
+                     (config.index, '_save_lock',
+                      config.index._save_lock._is_owned())]
         except AttributeError:
             locks = []
         locks.extend([('config', '_lock', config._lock._is_owned()),
