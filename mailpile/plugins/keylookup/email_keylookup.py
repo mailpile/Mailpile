@@ -7,7 +7,6 @@ from mailpile.mailutils import Email
 
 import pgpdump
 
-
 class EmailKeyLookupHandler(LookupHandler, Search):
     NAME = "E-mail keys"
 
@@ -20,8 +19,9 @@ class EmailKeyLookupHandler(LookupHandler, Search):
 
     def _lookup(self, address):
         results = {}
-        session, idx, _, _ = self._do_search(search=["from:%s" % address, 
-            "has:pgpkey"])
+        terms = ["from:%s" % x for x in address.split('@')]
+        terms.append("has:pgpkey")
+        session, idx, _, _ = self._do_search(search=terms)
         for messageid in session.results:
             email = Email(self._idx(), messageid)
             attachments = email.get_message_tree("attachments")["attachments"]
