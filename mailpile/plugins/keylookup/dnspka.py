@@ -1,4 +1,8 @@
-import DNS
+try:
+    import DNS
+except:
+    DNS = None
+
 import urllib2
 
 from mailpile.crypto.gpgi import GnuPG
@@ -13,6 +17,8 @@ class DNSPKALookupHandler(LookupHandler):
     NAME = "DNS PKA records"
 
     def __init__(self, session=None):
+        if not DNS:
+            return
         DNS.ParseResolvConf()
         self.req = DNS.Request(qtype="TXT")
 
@@ -26,6 +32,8 @@ class DNSPKALookupHandler(LookupHandler):
         >>> res = d.lookup("smari@immi.is")
         >>> res["result"]["count"] == 1
         """
+        if not DNS:
+            return {}
         dom = address.replace("@", "._pka.")
         result = self.req.req(dom)
         for res in result.answers:
