@@ -1,4 +1,4 @@
-MailPile.prototype.ui_sidebar_toggle_subtags = function(tid, state) {
+Mailpile.ui_sidebar_toggle_subtags = function(tid, state) {
   $.each($('.subtag-of-' + tid), function(key, item) {
     if ($(this).css('display') === 'none' && state === 'open') {
       $(this).removeClass('hide');
@@ -21,7 +21,7 @@ MailPile.prototype.ui_sidebar_toggle_subtags = function(tid, state) {
 $(document).on('click', '.icon-tags', function(e) {
   e.preventDefault();
   var tid = $(this).parent().data('tid');
-  mailpile.ui_sidebar_toggle_subtags(tid, 'toggle');
+  Mailpile.ui_sidebar_toggle_subtags(tid, 'toggle');
 });
 
 
@@ -82,7 +82,7 @@ $(document).on('click', '.sidebar-tag-archive', function(e) {
   e.preventDefault();
   // FIXME: This should use Int. language
   alert('This will mark this tag as "archived" and remove it from your sidebar, you can go edit this in the Tags -> Tag Name -> Settings page at anytime');
-  mailpile.tag_update($(this).parent().data('tid'), 'display', 'archive', function() {
+  Mailpile.tag_update($(this).parent().data('tid'), 'display', 'archive', function() {
     $(this).parent().parent().fadeOut();
   });
 });
@@ -118,7 +118,7 @@ $(document).ready(function() {
       var new_order = (parseFloat(previous) + parseFloat(next)) / 2;
 
       // Save Tag Order
-      mailpile.tag_update(tid, 'display_order', new_order, function() {
+      Mailpile.tag_update(tid, 'display_order', new_order, function() {
 
         // Update Current Element
         $(ui.item).attr('data-display_order', new_order).data('display_order', new_order);
@@ -138,12 +138,12 @@ $(document).ready(function() {
     opacity: 1,
     helper: function(event) {
       var count = '';
-      if (mailpile.messages_cache.length > 1) {
-        count = ' to (' + mailpile.messages_cache.length + ')';
+      if (Mailpile.messages_cache.length > 1) {
+        count = ' to (' + Mailpile.messages_cache.length + ')';
       }
 
-      var tag = _.findWhere(mailpile.instance.tags, { tid: $(this).data('tid').toString() });
-      var hex = new_mailpile.theme.colors[tag.label_color];
+      var tag = _.findWhere(Mailpile.instance.tags, { tid: $(this).data('tid').toString() });
+      var hex = new_Mailpile.theme.colors[tag.label_color];
       return $('<div class="sidebar-tag-drag ui-widget-header" style="color: ' + hex + '"><span class="' + tag.icon + '"></span> ' + tag.name + count + '</div>');
     }
   });
@@ -156,18 +156,18 @@ $(document).ready(function() {
     drop: function(event, ui) {
 
       // Update Cache
-      mailpile.bulk_cache_add('messages_cache', $(event.target).data('mid'));
+      Mailpile.bulk_cache_add('messages_cache', $(event.target).data('mid'));
 
       // Save Update
-      mailpile.tag_add_delete(ui.draggable.data('tid'), '', mailpile.messages_cache, function() {
+      Mailpile.tag_add_delete(ui.draggable.data('tid'), '', Mailpile.messages_cache, function() {
 
-        var tag = _.findWhere(mailpile.instance.tags, { tid: ui.draggable.data('tid').toString() });
-        var hex = new_mailpile.theme.colors[tag.label_color];
+        var tag = _.findWhere(Mailpile.instance.tags, { tid: ui.draggable.data('tid').toString() });
+        var hex = new_Mailpile.theme.colors[tag.label_color];
         var updated = [];
 
         // Update Multiple Selected Messages
-        if (mailpile.messages_cache.length > 0) {
-          $.each(mailpile.messages_cache, function(key, mid) {
+        if (Mailpile.messages_cache.length > 0) {
+          $.each(Mailpile.messages_cache, function(key, mid) {
             updated.push(mid);
             $('#pile-message-' + mid).find('td.subject span.item-tags').append('<span class="pile-message-tag" style="color: ' + hex + ';"><span class="pile-message-tag-icon ' + tag.icon + '"></span> <span class="pile-message-tag-name">' + tag.name + '</span></span>');
           });

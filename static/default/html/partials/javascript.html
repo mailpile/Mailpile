@@ -15,10 +15,10 @@
 $(document).ready(function() {
 
   // Start It
-  mailpile.render();
+  Mailpile.render();
 
   // Print JSON for JS Use
-  mailpile.instance = {
+  Mailpile.instance = {
    "command": "{{ command }}",
    "state": {{state|json|safe}},
    "args": "{{ args }}",

@@ -1,6 +1,6 @@
-MailPile.prototype.tag_list = function(complete) {
+Mailpile.tag_list = function(complete) {
   $.ajax({
-    url      : mailpile.api.tag_list,
+    url      : Mailpile.api.tag_list,
     type     : 'GET',
     dataType : 'json',
     success  : function(response) {
@@ -13,9 +13,9 @@ MailPile.prototype.tag_list = function(complete) {
 
 
 /* Pile - Tag Add */
-MailPile.prototype.tag_add = function(tag_add, mids, complete) {
+Mailpile.tag_add = function(tag_add, mids, complete) {
   $.ajax({
-	  url			 : mailpile.api.tag,
+	  url			 : Mailpile.api.tag,
 	  type		 : 'POST',
 	  data     : {
       add: tag_add,
@@ -26,16 +26,16 @@ MailPile.prototype.tag_add = function(tag_add, mids, complete) {
       if (response.status == 'success') {
        complete(response.result);       
       } else {
-        mailpile.notification(response.status, response.message);
+        Mailpile.notification(response.status, response.message);
       }
     }
   });
 };
 
 
-MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
+Mailpile.tag_add_delete = function(tag_add, tag_del, mids, complete) {
   $.ajax({
-	  url			 : mailpile.api.tag,
+	  url			 : Mailpile.api.tag,
 	  type		 : 'POST',
 	  data     : {
       add: tag_add,
@@ -47,14 +47,14 @@ MailPile.prototype.tag_add_delete = function(tag_add, tag_del, mids, complete) {
       if (response.status == 'success') {
         complete(response.result);
       } else {
-        mailpile.notification(response.status, response.message);
+        Mailpile.notification(response.status, response.message);
       }
     }
   });
 };
 
 
-MailPile.prototype.tag_update = function(tid, setting, value, complete) {
+Mailpile.tag_update = function(tid, setting, value, complete) {
 
   // Prep Update Value
   var key = 'tags.' + tid + '.' + setting;
@@ -62,7 +62,7 @@ MailPile.prototype.tag_update = function(tid, setting, value, complete) {
   setting[key] = value;
 
   $.ajax({
-	  url			 : mailpile.api.tag_update,
+	  url			 : Mailpile.api.tag_update,
 	  type		 : 'POST',
 	  data     : setting,
 	  dataType : 'json',
@@ -70,18 +70,18 @@ MailPile.prototype.tag_update = function(tid, setting, value, complete) {
       if (response.status == 'success') {
         complete(response.result);
       } else {
-        mailpile.notification(response.status, response.message);
+        Mailpile.notification(response.status, response.message);
       }
     }
   });
 };
 
 
-MailPile.prototype.render_modal_tags = function() {
-  if (mailpile.messages_cache.length) {
+Mailpile.render_modal_tags = function() {
+  if (Mailpile.messages_cache.length) {
 
     // Open Modal with selection options
-    mailpile.tag_list(function(result) {
+    Mailpile.tag_list(function(result) {
   
       var tags_html = '';
       var archive_html = '';
@@ -110,7 +110,7 @@ MailPile.prototype.render_modal_tags = function() {
 $(document).on('click', '#button-tag-change-icon', function() {
 
   var icons_html = '';
-  $.each(new_mailpile.theme.icons, function(key, icon) {
+  $.each(new_Mailpile.theme.icons, function(key, icon) {
     icons_html += '<li class="modal-tag-icon-option ' + icon + '" data-icon="' + icon + '"></li>';
   });
 
@@ -126,7 +126,7 @@ $(document).on('click', '.modal-tag-icon-option', function() {
   var old  = $('#data-tag-icon').val();
   var icon = $(this).data('icon');
 
-  mailpile.tag_update(tid, 'icon', icon, function() {
+  Mailpile.tag_update(tid, 'icon', icon, function() {
 
     // Update Sidebar
     $('#sidebar-tag-' + tid).find('span.sidebar-icon').removeClass(old).addClass(icon);
@@ -141,10 +141,10 @@ $(document).on('click', '.modal-tag-icon-option', function() {
 
 $(document).on('click', '#button-tag-change-label-color', function(e) {
   
-  var sorted_colors =  _.keys(new_mailpile.theme.colors).sort();
+  var sorted_colors =  _.keys(new_Mailpile.theme.colors).sort();
   var colors_html = '';
   $.each(sorted_colors, function(key, name) {
-    var hex = new_mailpile.theme.colors[name];
+    var hex = new_Mailpile.theme.colors[name];
     colors_html += '<li><a href="#" class="modal-tag-color-option" style="background-color: ' + hex + '" data-name="' + name + '" data-hex="' + hex + '"></a></li>';
   });
 
@@ -161,7 +161,7 @@ $(document).on('click', '.modal-tag-color-option', function(e) {
   var name = $(this).data('name');
   var hex = $(this).data('hex');
 
-  mailpile.tag_update(tid, 'label_color', name, function() {
+  Mailpile.tag_update(tid, 'label_color', name, function() {
 
     // Update Sidebar
     $('#sidebar-tag-' + tid).find('span.sidebar-icon').css('color', hex);
@@ -181,13 +181,13 @@ $(document).on('submit', '#form-tag-add', function(e) {
   var tag_data = $('#form-tag-add').serialize();
 
   $.ajax({
-    url: mailpile.api.tag_add,
+    url: Mailpile.api.tag_add,
     type: 'POST',
     data: tag_data,
     dataType : 'json',
     success: function(response) {
 
-      mailpile.notification(response.status, response.message);
+      Mailpile.notification(response.status, response.message);
 
       if (response.status === 'success') {
       
@@ -216,7 +216,7 @@ $(document).on('click', '#button-tag-delete', function(e) {
       data: {tag: $('#data-tag-add-slug').val() },
       dataType : 'json',
       success: function(response) {
-        mailpile.notification(response.status, response.message, 'redirect', mailpile.urls.tags);
+        Mailpile.notification(response.status, response.message, 'redirect', Mailpile.urls.tags);
       }
     });
   }
@@ -247,14 +247,14 @@ $(document).on('blur', '#data-tag-add-tag', function(e) {
 
 /* Tag - Update (multiple attribute events) */
 $(document).on('change', '#data-tag-display', function(e) {
-  mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function() {
+  Mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function() {
     // FIXME: show (or move) change update in sidebar
   });  
 });
 
 
 $(document).on('change', '#data-tag-parent', function(e) {
-  mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function() {
+  Mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function() {
     // FIXME: show (or move) change update in sidebar
   });  
 });

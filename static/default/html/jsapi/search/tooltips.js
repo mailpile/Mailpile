@@ -5,7 +5,7 @@ $(document).ready(function() {
     content: {
       title: false,
       text: function(event, api) {
-        var tooltip_data = _.findWhere(mailpile.instance.tags, { tid: $(this).data('tid').toString() });              
+        var tooltip_data = _.findWhere(Mailpile.instance.tags, { tid: $(this).data('tid').toString() });              
         tooltip_data['mid'] = $(this).data('mid');
         return  _.template($('#tooltip-pile-tag-details').html(), tooltip_data);
       }

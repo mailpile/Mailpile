@@ -1,23 +1,23 @@
-MailPile.prototype.go = function(url) {
+Mailpile.go = function(url) {
   window.location.href = url;
 };
 
 
-MailPile.prototype.bulk_cache_add = function(type, value) {
+Mailpile.bulk_cache_add = function(type, value) {
   if (_.indexOf(this[type], value) < 0) {
     this[type].push(value);
   }
 };
 
 
-MailPile.prototype.bulk_cache_remove = function(type, value) {
+Mailpile.bulk_cache_remove = function(type, value) {
   if (_.indexOf(this[type], value) > -1) {
     this[type] = _.without(this[type], value);
   }
 };
 
 
-MailPile.prototype.command = function(command, data, method, callback) {
+Mailpile.command = function(command, data, method, callback) {
   if (method != "GET" && method != "POST") {
     method = "GET";
   }

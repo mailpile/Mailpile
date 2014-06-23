@@ -1,4 +1,4 @@
-MailPile.prototype.contact_add = function(form_name, complete) {
+Mailpile.contact_add = function(form_name, complete) {
   $.ajax({
     url      : '/api/0/contacts/add/',
     type     : 'POST',
@@ -32,7 +32,7 @@ $(document).on('click', '.btn-activity-contact_add', function(e) {
 /* Contact - Add */
 $(document).on('submit', '#form-contact-add', function(e) {
   e.preventDefault();
-  mailpile.contact_add('#form-contact-add', function() {
+  Mailpile.contact_add('#form-contact-add', function() {
     alert('Woot, contact added');
   });
 });

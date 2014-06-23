@@ -1,5 +1,5 @@
 /* Composer - Analyze cyrpto state of a message */
-MailPile.prototype.compose_load_crypto_states = function() {
+Mailpile.compose_load_crypto_states = function() {
 
   var state = $('#compose-crypto').val();
   var signature = 'none';
@@ -12,13 +12,13 @@ MailPile.prototype.compose_load_crypto_states = function() {
     encryption = 'encrypt';
   }
 
-  mailpile.compose_render_signature(signature);
-  mailpile.compose_render_encryption(encryption);
+  Mailpile.compose_render_signature(signature);
+  Mailpile.compose_render_encryption(encryption);
 };
 
 
 /* Compose - Set crypto state of message */
-MailPile.prototype.compose_set_crypto_state = function() {
+Mailpile.compose_set_crypto_state = function() {
   
   // Returns: none, openpgp-sign, openpgp-encrypt and openpgp-sign-encrypt
   var state = 'none';
@@ -45,7 +45,7 @@ MailPile.prototype.compose_set_crypto_state = function() {
 
 
 /* Compose - Determine possible crypto "signature" of a message */
-MailPile.prototype.compose_determine_signature = function() {
+Mailpile.compose_determine_signature = function() {
 
   if ($('#compose-signature').val() === '') {
     if ($.inArray($('#compose-pgp').val(), ['openpgp-sign', 'openpgp-sign-encrypt']) > -1) {
@@ -62,7 +62,7 @@ MailPile.prototype.compose_determine_signature = function() {
 
 
 /* Compose - Determine possible crypto "encryption" of a message */
-MailPile.prototype.compose_determine_encryption = function(contact) {
+Mailpile.compose_determine_encryption = function(contact) {
 
   var status = 'none';
   var addresses  = $('#compose-to').val() + ', ' + $('#compose-cc').val() + ', ' + $('#compose-bcc').val();
@@ -78,7 +78,7 @@ MailPile.prototype.compose_determine_encryption = function(contact) {
   $.each(recipients, function(key, value){  
     if (value) {
       count_total++;
-      var check = mailpile.compose_analyze_address(value);
+      var check = Mailpile.compose_analyze_address(value);
       if (check.flags.secure) {
         count_secure++;
       }

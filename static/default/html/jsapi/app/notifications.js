@@ -1,4 +1,4 @@
-MailPile.prototype.notification = function(status, message_text, complete, complete_action) {
+Mailpile.notification = function(status, message_text, complete, complete_action) {
     var default_messages = {
         "success" : "Success, we did exactly what you asked.",
         "info"    : "Here is a basic info update",
@@ -68,7 +68,7 @@ EventLog.request = function(conditions) {
         conditions.callback = EventLog.process_result;
     }
 
-    new_mailpile.api.eventlog(
+    Mailpile.API.eventlog(
         conditions.privatedata, // private_data
         conditions.source,      // source
         conditions.flag,        // require a flag

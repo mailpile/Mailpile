@@ -1,24 +1,24 @@
-MailPile.prototype.keybinding_move_message = function(add_tag) {
+Mailpile.keybinding_move_message = function(add_tag) {
 
   // Has Messages
   if (this.messages_cache.length) {
 
-    var delete_tags = mailpile.instance.search_tag_ids;
+    var delete_tags = Mailpile.instance.search_tag_ids;
     delete_tags.push('new');
 
     // Add / Delete
-    mailpile.tag_add_delete(add_tag, delete_tags, mailpile.messages_cache, function() {
+    Mailpile.tag_add_delete(add_tag, delete_tags, Mailpile.messages_cache, function() {
 
       // Update Pile View
-      $.each(mailpile.messages_cache, function(key, mid) {
+      $.each(Mailpile.messages_cache, function(key, mid) {
         $('#pile-message-' + mid).fadeOut('fast');
       });
 
       // Empty Bulk Cache
-      mailpile.messages_cache = [];
+      Mailpile.messages_cache = [];
 
       // Update Bulk UI
-      mailpile.bulk_actions_update_ui();
+      Mailpile.bulk_actions_update_ui();
     });    
   }
   else {

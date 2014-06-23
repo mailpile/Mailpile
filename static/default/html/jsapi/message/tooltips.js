@@ -1,4 +1,4 @@
-MailPile.prototype.thread_initialize_tooltips = function() {
+Mailpile.thread_initialize_tooltips = function() {
 
   $('.thread-item-crypto-info').qtip({
     content: {

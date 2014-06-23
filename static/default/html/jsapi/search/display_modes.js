@@ -1,5 +1,5 @@
 /* Search - Display Mode */
-MailPile.prototype.pile_display = function(current, change) {
+Mailpile.pile_display = function(current, change) {
 
   if (change) {
     $('#sidebar').removeClass(current).addClass(change);
@@ -28,7 +28,7 @@ $(document).on('click', 'a.change-view-size', function(e) {
   $(this).addClass('view-size-selected');
 
   // Update View Sizes
-  mailpile.pile_display(current_size, change_size);
+  Mailpile.pile_display(current_size, change_size);
 
   // Data
   localStorage.setItem('view_size', change_size);

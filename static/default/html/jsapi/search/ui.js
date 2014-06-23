@@ -1,15 +1,15 @@
-MailPile.prototype.focus_search = function() {
+Mailpile.focus_search = function() {
     $("#search-query").focus(); return false;
 };
 
 
 /* Search - Action Select */
-MailPile.prototype.pile_action_select = function(item) {
+Mailpile.pile_action_select = function(item) {
     // Add To Data Model
-    mailpile.bulk_cache_add('messages_cache', item.data('mid'));
+    Mailpile.bulk_cache_add('messages_cache', item.data('mid'));
 
     // Update Bulk UI
-    mailpile.bulk_actions_update_ui();
+    Mailpile.bulk_actions_update_ui();
 
     // Style & Select Checkbox
     item.removeClass('result').addClass('result-on')
@@ -21,12 +21,12 @@ MailPile.prototype.pile_action_select = function(item) {
 
 
 /* Search - Action Unselect */
-MailPile.prototype.pile_action_unselect = function(item) {
+Mailpile.pile_action_unselect = function(item) {
     // Remove From Data Model
-    mailpile.bulk_cache_remove('messages_cache', item.data('mid'));
+    Mailpile.bulk_cache_remove('messages_cache', item.data('mid'));
 
     // Hide Actions
-    mailpile.bulk_actions_update_ui();
+    Mailpile.bulk_actions_update_ui();
 
     // Style & Unselect Checkbox
     item.removeClass('result-on').addClass('result')
@@ -38,7 +38,7 @@ MailPile.prototype.pile_action_unselect = function(item) {
 
 
 /* Search - Result List */
-MailPile.prototype.results_list = function() {
+Mailpile.results_list = function() {
     // Navigation
     $('#btn-display-list').addClass('navigation-on');
     $('#btn-display-graph').removeClass('navigation-on');
@@ -53,10 +53,10 @@ MailPile.prototype.results_list = function() {
 };
 
 
-MailPile.prototype.update_search = function(ev) {
+Mailpile.update_search = function(ev) {
     $("#pile-newmessages-notification").slideUp("slow");
-    console.log("Refreshing ", mailpile.instance);
-    url = "/api/0/search/as.jhtml?" + $.param(mailpile.instance.state.query_args);
+    console.log("Refreshing ", Mailpile.instance);
+    url = "/api/0/search/as.jhtml?" + $.param(Mailpile.instance.state.query_args);
     $.getJSON(url, {}, function(data) {
         if (data.status == "success") {
             $("#content-view").html(data.result);
@@ -66,7 +66,7 @@ MailPile.prototype.update_search = function(ev) {
 };
 
 $().ready(function() {
-    $("#pile-newmessages-notification").click(mailpile.update_search);
+    $("#pile-newmessages-notification").click(Mailpile.update_search);
     EventLog.subscribe(".commands.Rescan", function(ev) {
         if (ev.flags.indexOf("R") != -1) {
             console.log("Started rescanning...");

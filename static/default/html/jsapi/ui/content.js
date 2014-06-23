@@ -1,5 +1,5 @@
 /* UI - Show specific elements */
-MailPile.prototype.show_bulk_actions = function(elements) {
+Mailpile.show_bulk_actions = function(elements) {
   $.each(elements, function(){    
     $(this).css('visibility', 'visible');
   });
@@ -7,7 +7,7 @@ MailPile.prototype.show_bulk_actions = function(elements) {
 
 
 /* UI - Hide specific elements */
-MailPile.prototype.hide_bulk_actions = function(elements) {
+Mailpile.hide_bulk_actions = function(elements) {
   $.each(elements, function(){    
     $(this).css('visibility', 'hidden');
   });

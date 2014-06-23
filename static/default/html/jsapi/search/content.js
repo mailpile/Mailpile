@@ -4,7 +4,7 @@ $(document).on('click', '#pile-results tr.result', function(e) {
 	if (e.target.href === undefined &&
       $(this).data('state') !== 'selected' &&
       $(e.target).hasClass('pile-message-tag-name') == false) {
-		mailpile.pile_action_select($(this));		
+		Mailpile.pile_action_select($(this));		
 	}
 });
 
@@ -14,7 +14,7 @@ $(document).on('click', '#pile-results tr.result-on', function(e) {
 	if (e.target.href === undefined &&
       $(this).data('state') === 'selected' && 
       $(e.target).hasClass('pile-message-tag-name') == false) {
-		mailpile.pile_action_unselect($(this));
+		Mailpile.pile_action_unselect($(this));
 	}
 });
 
@@ -24,7 +24,7 @@ $(document).on('click', '.pile-tag-delete', function(e) {
   e.preventDefault();
   var tid = $(this).data('tid');
   var mid = $(this).data('mid');
-  mailpile.tag_add_delete([], tid, mid, function(result) {
+  Mailpile.tag_add_delete([], tid, mid, function(result) {
     $('#pile-message-tag-' + tid + '-' + mid).qtip('hide').remove();
   });
 });
@@ -40,20 +40,20 @@ $('td.draggable').draggable({
   opacity: 1,
   helper: function(event) {
     // FIXME: the word 'message' needs to updated as per Issue #666 mwhuahahaha
-    if (mailpile.messages_cache.length == 0) {
+    if (Mailpile.messages_cache.length == 0) {
       drag_count = '1 message</div>';
     } else {
-      drag_count = mailpile.messages_cache.length + ' messages';
+      drag_count = Mailpile.messages_cache.length + ' messages';
     }
     return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> Moving ' + drag_count + '</div>');
   },
   start: function(event, ui) {
 
     // Add Draggable MID
-    mailpile.bulk_cache_add('messages_cache', $(event.target).parent().data('mid'));
+    Mailpile.bulk_cache_add('messages_cache', $(event.target).parent().data('mid'));
 
     // Update Bulk UI
-    mailpile.bulk_actions_update_ui();
+    Mailpile.bulk_actions_update_ui();
 
   	// Style & Select Checkbox
   	$(event.target).parent().removeClass('result').addClass('result-on')
@@ -71,10 +71,10 @@ $(document).ready(function() {
   
   // Render Display Size
   if (!localStorage.getItem('view_size')) {
-    localStorage.setItem('view_size', mailpile.defaults.view_size);
+    localStorage.setItem('view_size', Mailpile.defaults.view_size);
   }
 
-  mailpile.pile_display(localStorage.getItem('view_size'));
+  Mailpile.pile_display(localStorage.getItem('view_size'));
 
   // Display Select
   $.each($('a.change-view-size'), function() {

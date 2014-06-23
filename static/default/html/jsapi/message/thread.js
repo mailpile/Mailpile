@@ -1,7 +1,7 @@
-MailPile.prototype.render_thread_message = function(mid) {
+Mailpile.render_thread_message = function(mid) {
   
   $.ajax({
-    url			 : mailpile.api.message + mid + "/single.jhtml",
+    url			 : Mailpile.api.message + mid + "/single.jhtml",
     type		 : 'GET',
     dataType : 'json',
     success  : function(response) {
@@ -10,14 +10,14 @@ MailPile.prototype.render_thread_message = function(mid) {
       }
     },
     error: function() {
-      mailpile.notification('error', 'Could not retrieve message');
+      Mailpile.notification('error', 'Could not retrieve message');
     }
   });
 };
 
 
 /* Thread - iframe styling */
-MailPile.prototype.thread_html_iframe = function(element) {
+Mailpile.thread_html_iframe = function(element) {
 
   var new_iframe_height = $(element).contents().height();
   $('.thread-item-html').height(new_iframe_height);
@@ -85,7 +85,7 @@ $(document).on('click', '.show-thread-message-metadata-details', function() {
 $(document).on('click', 'div.thread-snippet', function(e) {  
   var mid = $(this).data('mid');
   if (e.target.href === undefined && $(e.target).data('expand') !== 'no' && $(e.target).hasClass('show-thread-message-metadata-details') === false) {
-    mailpile.render_thread_message(mid);
+    Mailpile.render_thread_message(mid);
   }
 });
 
@@ -120,6 +120,6 @@ $(document).ready(function() {
     }, 50);
     
     // Show Tooltips
-    mailpile.thread_initialize_tooltips();
+    Mailpile.thread_initialize_tooltips();
   }
 });

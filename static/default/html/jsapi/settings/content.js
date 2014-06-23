@@ -15,13 +15,13 @@ $(document).on('submit', '#form-profile-add', function(e) {
   }
 
 	$.ajax({
-    url      : mailpile.api.settings_add,
+    url      : Mailpile.api.settings_add,
 		type     : 'POST',
 		data     : {profiles: JSON.stringify(profile_data)},
 		dataType : 'json',
     success  : function(response) {
 
-      mailpile.notification(response.status, response.message);
+      Mailpile.notification(response.status, response.message);
       if (response.status === 'success') {
         console.log(response);
       }

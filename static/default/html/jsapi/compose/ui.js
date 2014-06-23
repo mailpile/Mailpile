@@ -1,5 +1,5 @@
 /* Compose - Render crypto "signature" of a message */
-MailPile.prototype.compose_render_signature = function(status) {
+Mailpile.compose_render_signature = function(status) {
 
   if (status === 'sign') {
     $('.compose-crypto-signature').data('crypto_color', 'crypto-color-blue');  
@@ -40,7 +40,7 @@ MailPile.prototype.compose_render_signature = function(status) {
 
 
 /* Compose - Render crypto "encryption" of a message */
-MailPile.prototype.compose_render_encryption = function(status) {
+Mailpile.compose_render_encryption = function(status) {
 
   if (status == 'encrypt') {
     $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-green');
@@ -88,8 +88,8 @@ MailPile.prototype.compose_render_encryption = function(status) {
 
 
 /* Compose - Render adding new message to thread */
-MailPile.prototype.compose_render_message_thread = function(mid) {
-  window.location.href = mailpile.urls.message_sent + mid + "/";
+Mailpile.compose_render_message_thread = function(mid) {
+  window.location.href = Mailpile.urls.message_sent + mid + "/";
   // FIXME: make this ajaxy and nice transitions and such
   // $('#form-compose-' + mid).slideUp().remove();
 };

@@ -1,7 +1,7 @@
 /* Message - Get new messsage  */
-MailPile.prototype.get_new_messages = function(actions) {    
+Mailpile.get_new_messages = function(actions) {    
   $.ajax({
-	  url			 : mailpile.api.search_new,
+	  url			 : Mailpile.api.search_new,
 	  type		 : 'GET',
 	  dataType : 'json',
     success  : function(response) {
@@ -22,9 +22,9 @@ $(document).on('click', '.message-action-forward', function() {
     data     : { mid: mid },
     success  : function(response) {
       if (response.status === 'success') {
-        window.location.href = mailpile.urls.message_draft + response.result.created + '/';
+        window.location.href = Mailpile.urls.message_draft + response.result.created + '/';
       } else {
-        mailpile.notification(response.status, response.message);
+        Mailpile.notification(response.status, response.message);
       }
     }
   });
@@ -34,7 +34,7 @@ $(document).on('click', '.message-action-forward', function() {
 /* Message - Move message to inbox */
 $(document).on('click', '.message-action-inbox', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
-  mailpile.tag_add_delete(['inbox'], ['spam', 'trash'], mid, function(result) {
+  Mailpile.tag_add_delete(['inbox'], ['spam', 'trash'], mid, function(result) {
     window.location.href = '/in/inbox/';
   });
 });
@@ -43,7 +43,7 @@ $(document).on('click', '.message-action-inbox', function() {
 /* Message - Mark message as spam */
 $(document).on('click', '.message-action-spam', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
-  mailpile.tag_add_delete(['spam'], ['trash', 'inbox'], mid, function() {
+  Mailpile.tag_add_delete(['spam'], ['trash', 'inbox'], mid, function() {
     window.location.href = '/in/inbox/';
   });
 });
@@ -58,9 +58,9 @@ $(document).on('click', '.message-action-unthread', function() {
     data     : { mid: mid },
     success  : function(response) {
       if (response.status === 'success') {
-        window.location.href = mailpile.urls.message_sent + mid + '/';
+        window.location.href = Mailpile.urls.message_sent + mid + '/';
       } else {
-        mailpile.notification(response.status, response.message);
+        Mailpile.notification(response.status, response.message);
       }
     }
   });
@@ -70,7 +70,7 @@ $(document).on('click', '.message-action-unthread', function() {
 /* Message - Move a message to trash */
 $(document).on('click', '.message-action-trash', function() {
   var mid = $(this).parent().parent().data('mid');
-  mailpile.tag_add_delete(['trash'], ['spam', 'inbox'], mid, function() {
+  Mailpile.tag_add_delete(['trash'], ['spam', 'inbox'], mid, function() {
     window.location.href = '/in/inbox/';
   });
 });
@@ -99,7 +99,7 @@ $(document).on('click', '.message-action-add-contact', function() {
 /* Message - Add contact from a message */
 $(document).on('submit', '#form-contact-add-modal', function(e) {
   e.preventDefault();
-  mailpile.contact_add('#form-contact-add-modal', function() {
+  Mailpile.contact_add('#form-contact-add-modal', function() {
     $('#modal-full').modal('hide');
     $('#message-' + mid).find('.message-action-add-contact').parent().remove();
   });
@@ -138,7 +138,7 @@ $(document).on('click', '.message-crypto-investigate', function() {
 
   var mid = $(this).data('mid');
   var part = $(this).data('part');
-  var message = mailpile.instance.messages[mid];
+  var message = Mailpile.instance.messages[mid];
   var missing_keys = message.text_parts[part].crypto.encryption.missing_keys;
 
   // Search Keyservers Missing Keys
@@ -146,7 +146,7 @@ $(document).on('click', '.message-crypto-investigate', function() {
     // FIXME: this needs to search all "missing_key" values
     // this is tricky as searching multiple calls to keyservers
     // can have much latency and slowness
-    new_mailpile.api.crypto_gpg_searchkey(missing_keys[0], function(data) {
+    new_Mailpile.api.crypto_gpg_searchkey(missing_keys[0], function(data) {
       var modal_html = $("#modal-search-keyservers").html();
       $('#modal-full').html(_.template(modal_html, { keys: '<li>Key of User #1</li>' }));
       $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });

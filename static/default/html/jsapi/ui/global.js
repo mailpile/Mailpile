@@ -1,4 +1,4 @@
-MailPile.prototype.render = function() {
+Mailpile.render = function() {
 
   // Dynamic CSS Reiszing
   var dynamic_sizing = function() {
@@ -41,8 +41,8 @@ MailPile.prototype.render = function() {
   }
 
   // Mousetrap Keybindings
-	for (item in mailpile.keybindings) {
-	  var keybinding = mailpile.keybindings[item];
+	for (item in Mailpile.keybindings) {
+	  var keybinding = Mailpile.keybindings[item];
 		if (keybinding[0] == "global") {
 			Mousetrap.bindGlobal(keybinding[1], keybinding[2]);
 		} else {

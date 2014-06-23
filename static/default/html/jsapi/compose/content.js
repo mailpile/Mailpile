@@ -1,23 +1,23 @@
 /* Generate New draft MID */
-MailPile.prototype.compose = function(data) {
+Mailpile.compose = function(data) {
   $.ajax({
-    url      : mailpile.api.compose,
+    url      : Mailpile.api.compose,
     type     : 'POST',
     data     : data,
     dataType : 'json'
   }).done(function(response) {
 
     if (response.status === 'success') {
-      window.location.href = mailpile.urls.message_draft + response.result.created + '/';
+      window.location.href = Mailpile.urls.message_draft + response.result.created + '/';
     } else {
-      mailpile.notification(response.status, response.message);
+      Mailpile.notification(response.status, response.message);
     }
   });
 };
 
 
 /* Composer - To, Cc, Bcc */
-MailPile.prototype.compose_analyze_address = function(address) {
+Mailpile.compose_analyze_address = function(address) {
   var check = address.match(/([^<]+?)\s<(.+?)(#[a-zA-Z0-9]+)?>/);
   if (check) {
     if (check[3]) {
@@ -31,7 +31,7 @@ MailPile.prototype.compose_analyze_address = function(address) {
 
 
 /* Compose - */
-MailPile.prototype.compose_analyze_recipients = function(addresses) {
+Mailpile.compose_analyze_recipients = function(addresses) {
 
   var existing = [];
 
@@ -41,10 +41,10 @@ MailPile.prototype.compose_analyze_recipients = function(addresses) {
 
     if (multiple.length > 1) {
       $.each(multiple, function(key, value){
-        existing.push(mailpile.compose_analyze_address(value));
+        existing.push(Mailpile.compose_analyze_address(value));
       });
     } else {
-      existing.push(mailpile.compose_analyze_address(multiple[0]));
+      existing.push(Mailpile.compose_analyze_address(multiple[0]));
     }
 
     return existing;
@@ -53,7 +53,7 @@ MailPile.prototype.compose_analyze_recipients = function(addresses) {
 
 
 /* Compose - */
-MailPile.prototype.compose_autosave_update_ephemeral = function(mid, new_mid) {
+Mailpile.compose_autosave_update_ephemeral = function(mid, new_mid) {
 
   // Update UI Elements
   $.each($('.has-mid'), function(key, elem) {
@@ -66,23 +66,23 @@ MailPile.prototype.compose_autosave_update_ephemeral = function(mid, new_mid) {
 
   $('#compose-mid-' + new_mid).val(new_mid);
 
-  // Remove Ephermal From Model - is added with new MID in mailpile.compose_autosave()
-  mailpile.messages_composing = _.omit(mailpile.messages_composing, mid);
+  // Remove Ephermal From Model - is added with new MID in Mailpile.compose_autosave()
+  Mailpile.messages_composing = _.omit(Mailpile.messages_composing, mid);
 };
 
 
 /* Compose - Perform autosave checking & save */
-MailPile.prototype.compose_autosave = function(mid, form_data) {
+Mailpile.compose_autosave = function(mid, form_data) {
 
   // Text is different, run autosave
-  if ($('#compose-text-' + mid).val() !== mailpile.messages_composing['compose-text-' + mid]) {
+  if ($('#compose-text-' + mid).val() !== Mailpile.messages_composing['compose-text-' + mid]) {
 
     // UI Feedback
     var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
     $('#compose-message-autosaving-' + mid).html('<span class="icon-compose"></span>' + autosave_msg).fadeIn();
 
   	$.ajax({
-  		url			 : mailpile.api.compose_save,
+  		url			 : Mailpile.api.compose_save,
   		type		 : 'POST',
       timeout  : 15000,
   		data     : form_data,
@@ -93,10 +93,10 @@ MailPile.prototype.compose_autosave = function(mid, form_data) {
 
         // Update ephermal IDs, Message Model, fadeout UI msg
         if (mid !== new_mid) {
-          mailpile.compose_autosave_update_ephemeral(mid, new_mid);
+          Mailpile.compose_autosave_update_ephemeral(mid, new_mid);
         }
 
-        mailpile.messages_composing['compose-text-' + new_mid] = $('#compose-text-' + new_mid).val();
+        Mailpile.messages_composing['compose-text-' + new_mid] = $('#compose-text-' + new_mid).val();
 
         setTimeout(function() {
           $('#compose-message-autosaving-' + new_mid).fadeOut();
@@ -112,16 +112,16 @@ MailPile.prototype.compose_autosave = function(mid, form_data) {
 
 
 /* Compose Autosave - finds each compose form and performs action */
-MailPile.prototype.compose_autosave_timer =  $.timer(function() {
+Mailpile.compose_autosave_timer = $.timer(function() {
   // UNTESTED: should handle multiples in a thread
   $('.form-compose').each(function(key, form) {
-    mailpile.compose_autosave($(form).data('mid'), $(form).serialize());
+    Mailpile.compose_autosave($(form).data('mid'), $(form).serialize());
   });
 });
 
 
 /* Compose - Instance of select2 contact selecting */
-MailPile.prototype.compose_address_field = function(id) {
+Mailpile.compose_address_field = function(id) {
 
   $('#' + id).select2({
     id: function(object) {
@@ -137,7 +137,7 @@ MailPile.prototype.compose_address_field = function(id) {
       }
     },
     ajax: { // instead of writing the function to execute the request we use Select2's convenient helper
-      url: mailpile.api.contacts,
+      url: Mailpile.api.contacts,
       quietMillis: 1,
       cache: true,
       dataType: 'json',
@@ -186,7 +186,7 @@ MailPile.prototype.compose_address_field = function(id) {
     formatSelection: function(state, elem) {
 
       // Add To Model
-      mailpile.instance.search_addresses.push(state);
+      Mailpile.instance.search_addresses.push(state);
 
       // Create HTML
       var avatar = '<span class="icon-user"></span>';
@@ -211,22 +211,22 @@ MailPile.prototype.compose_address_field = function(id) {
   });
 
   /* Check encryption state */
-  $('#' + id).select2('data', mailpile.compose_analyze_recipients($('#' + id).val()));
+  $('#' + id).select2('data', Mailpile.compose_analyze_recipients($('#' + id).val()));
 
   /* On select update encryption state */
   $('#' + id).on('select2-selecting', function(e) {
-      var status = mailpile.compose_determine_encryption(e.val);
-      mailpile.compose_render_encryption(status);
+      var status = Mailpile.compose_determine_encryption(e.val);
+      Mailpile.compose_render_encryption(status);
     }).on('select2-removed', function(e) {
-      var status = mailpile.compose_determine_encryption();
-      mailpile.compose_render_encryption(status);
+      var status = Mailpile.compose_determine_encryption();
+      Mailpile.compose_render_encryption(status);
   });
 };
 
 
 /* Compose - Change Signature Status */
 $(document).on('click', '.compose-crypto-signature', function() {
-  var status = mailpile.compose_determine_signature();
+  var status = Mailpile.compose_determine_signature();
   var change = '';
 
   if (status == 'sign') {
@@ -235,7 +235,7 @@ $(document).on('click', '.compose-crypto-signature', function() {
     change = 'sign';
   }
 
-  mailpile.compose_render_signature(change);
+  Mailpile.compose_render_signature(change);
 });
 
 
@@ -247,12 +247,12 @@ $(document).on('click', '.compose-crypto-encryption', function() {
   if (status == 'encrypt') {
     change = 'none';
   } else {
-    if (mailpile.compose_determine_encryption() == "encrypt") {
+    if (Mailpile.compose_determine_encryption() == "encrypt") {
       change = 'encrypt';
     }
   }
 
-  mailpile.compose_render_encryption(change);
+  Mailpile.compose_render_encryption(change);
 });
 
 
@@ -303,17 +303,17 @@ $(document).on('click', '.compose-action', function(e) {
   var form_data = $('#form-compose-' + mid).serialize();
 
   if (action === 'send') {
-	  var action_url     = mailpile.api.compose_send;
+	  var action_url     = Mailpile.api.compose_send;
 	  var action_status  = 'success';
 	  var action_message = 'Your message was sent <a id="status-undo-link" data-action="undo-send" href="#">undo</a>';
   }
   else if (action == 'save') {
-	  var action_url     = mailpile.api.compose_save;
+	  var action_url     = Mailpile.api.compose_save;
 	  var action_status  =  'info';
 	  var action_message = 'Your message was saved';
   }
   else if (action == 'reply') {
-	  var action_url     = mailpile.api.compose_send;
+	  var action_url     = Mailpile.api.compose_send;
 	  var action_status  =  'success';
 	  var action_message = 'Your reply was sent';
   }
@@ -326,18 +326,18 @@ $(document).on('click', '.compose-action', function(e) {
 	  success  : function(response) {
 	    // Is A New Message (or Forward)
       if (action === 'send' && response.status === 'success') {
-        window.location.href = mailpile.urls.message_sent + response.result.thread_ids[0] + "/";
+        window.location.href = Mailpile.urls.message_sent + response.result.thread_ids[0] + "/";
       }
       // Is Thread Reply
       else if (action === 'reply' && response.status === 'success') {
-        mailpile.compose_render_message_thread(response.result.thread_ids[0]);
+        Mailpile.compose_render_message_thread(response.result.thread_ids[0]);
       }
       else {
-        mailpile.notification(response.status, response.message);
+        Mailpile.notification(response.status, response.message);
       }
     },
     error: function() {
-      mailpile.notification('error', 'Could not ' + action + ' your message');      
+      Mailpile.notification('error', 'Could not ' + action + ' your message');      
     }
 	});
 });
@@ -374,7 +374,7 @@ $(document).on('click', '.compose-show-details', function(e) {
 /* Compose - Sent To Email */
 $(document).on('click', '.compose-to-email', function(e) {
   e.preventDefault();
-  mailpile.compose({
+  Mailpile.compose({
     to: $(this).data('email')
   });
 });
@@ -520,21 +520,21 @@ $(document).ready(function() {
 
     // Load Crypto States
     // FIXME: needs dynamic support for multi composers on a page
-    mailpile.compose_load_crypto_states();
+    Mailpile.compose_load_crypto_states();
 
     // Instantiate select2
     $('.compose-address-field').each(function(key, elem) {
-      mailpile.compose_address_field($(elem).attr('id'));
+      Mailpile.compose_address_field($(elem).attr('id'));
     });
 
     // Save Text Composing Objects
     $('.compose-text').each(function(key, elem) {
-        mailpile.messages_composing[$(elem).attr('id')] = $(elem).val()
+        Mailpile.messages_composing[$(elem).attr('id')] = $(elem).val()
     });
 
     // Run Autosave
-    mailpile.compose_autosave_timer.play();
-    mailpile.compose_autosave_timer.set({ time : 20000, autostart : true });
+    Mailpile.compose_autosave_timer.play();
+    Mailpile.compose_autosave_timer.set({ time : 20000, autostart : true });
 
     // Initialize Attachments
     // FIXME: needs dynamic support for multi composers on a page

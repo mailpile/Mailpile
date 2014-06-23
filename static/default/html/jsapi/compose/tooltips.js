@@ -106,7 +106,7 @@ $(document).ready(function() {
       title: true,
       text: function(event, api) {
         var address = $(event.target).data('address');
-        var contact_data = _.findWhere(mailpile.instance.search_addresses, {address: address});
+        var contact_data = _.findWhere(Mailpile.instance.search_addresses, {address: address});
         return _.template($('#tooltip-contact-details').html(), contact_data);
       }
     },
