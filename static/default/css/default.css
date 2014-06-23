@@ -4319,6 +4319,7 @@ Version: 3.4.2 Timestamp: Mon Aug 12 15:04:12 PDT 2013
   -ms-user-select: none;
   user-select: none;
   background: #f6f6f6;
+  max-height: 24px;
 }
 .select2-container-multi .select2-choices .select2-search-choice:hover {
   background: #e9e9e9;
@@ -5589,7 +5590,7 @@ li.notification img {
 }
 a.sidebar-tag span.sidebar-tag-archive {
   cursor: pointer;
-  background: #fbb03b;
+  background: #b3b3b3;
   color: #ffffff;
   vertical-align: middle;
   padding: 5px;
@@ -5597,7 +5598,11 @@ a.sidebar-tag span.sidebar-tag-archive {
   top: 4px;
   right: 0px;
   font-size: 8px;
+  line-height: 8px;
   border-radius: 10px;
+}
+a.sidebar-tag span.sidebar-tag-archive:hover {
+  background: #be1c21;
 }
 /* Sidebar - Drag & Drop */
 .sidebar-tags-draggable {
@@ -5641,9 +5646,9 @@ a.sidebar-tag span.sidebar-tag-archive {
 }
 /* Compose */
 .form-compose {
-  min-height: 225px;
-  padding: 10px 15px;
+  padding: 15px 20px 10px 20px;
   background: #f6f6f6;
+  border-bottom: 1px solid #cccccc;
 }
 .form-compose label {
   display: block;
@@ -5665,30 +5670,100 @@ a.sidebar-tag span.sidebar-tag-archive {
 .compose-from {
   float: left;
   height: 32px;
-  background-color: #fafafa;
+  background-color: #ffffff;
   border-color: #cccccc;
   border-radius: 5px;
   font-size: 12px;
 }
-.compose-options {
-  position: relative;
-  top: -20px;
-  right: 10px;
+.compose-headers,
+.compose-subject,
+.compose-options,
+.compose-body {
+  width: 85%;
+  max-width: 800px;
 }
-.compose-options li {
-  margin-left: 25px;
+/* Compose - Headers */
+.compose-headers {
+  padding-bottom: 15px;
 }
-.compose-options li label.compose-apply-quote,
-.compose-options li span.text,
-.compose-options li a.compose-show-details {
+a.compose-show-field {
+  font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  color: #4d4d4d;
+  margin-left: 10px;
+}
+.compose-from-avatar {
+  width: 45px;
+}
+.compose-from-address {
+  color: #b3b3b3;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+}
+/* Compose - Subject */
+.compose-subject input[type=text] {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
-  font-style: bold;
+  line-height: 18px;
+}
+.compose-subject input[type=text]:focus {
+  outline: none;
+  border: 1px solid #b3b3b3;
+  box-shadow: 0 0 3px #b3b3b3;
+  -moz-box-shadow: 0 0 3px #b3b3b3;
+  -webkit-box-shadow: 0 0 3px #b3b3b3;
+}
+/* Compose - Options */
+.compose-options {
+  margin-bottom: 0px;
+  padding: 0 0 10px 0;
+}
+.compose-options-size {
+  font-size: 14px;
+  font-weight: normal;
   line-height: 14px;
 }
-/* Compose - Crypto */
-.compose-crypto-signature,
-.compose-crypto-encryption {
-  font-weight: bold;
+.compose-options ul {
+  margin-bottom: 0px;
+  padding: 0px;
+}
+.compose-options ul li {
+  margin: 0px 20px 0px 0px;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 14px;
+}
+.compose-options a {
+  font-weight: normal;
+  color: #b3b3b3;
+}
+.compose-options a.navigation-on {
+  padding: 5px;
+  color: #4d4d4d;
+}
+.compose-options label {
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 14px;
+  font-style: italic;
+  color: #b3b3b3;
+}
+.compose-options .compose-crypto-encryption,
+.compose-options .compose-crypto-signature {
+  text-align: center;
 }
 .compose-crypto-signature:hover,
 .compose-crypto-encryption:hover {
@@ -5718,65 +5793,17 @@ a.sidebar-tag span.sidebar-tag-archive {
 .compose-crypto-encryption.error {
   color: #be1c21;
 }
-/* Compose - Headers */
-.compose-headers,
-.compose-subject,
-.compose-message {
-  width: 85%;
-  max-width: 800px;
-  padding: 10px 0 0 0;
-}
-a.compose-show-field {
-  font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 18px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: bold;
-  color: #4d4d4d;
-  margin-left: 10px;
-}
-.compose-from-avatar {
-  width: 45px;
-}
-.compose-from-address {
-  color: #b3b3b3;
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 12px;
-  font-weight: normal;
-}
-/* Compose - Subject & Message */
-.compose-subject input[type=text] {
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 10px;
-  border: 1px solid #cccccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  line-height: 18px;
-}
-.compose-subject input[type=text]:focus {
-  outline: none;
-  border: 1px solid #b3b3b3;
-  box-shadow: 0 0 3px #b3b3b3;
-  -moz-box-shadow: 0 0 3px #b3b3b3;
-  -webkit-box-shadow: 0 0 3px #b3b3b3;
-}
 /* Compose - Body */
 .compose-body {
   border-radius: 4px;
   background: #ffffff;
   border: 1px solid #cccccc;
-}
-.compose-message label.right {
-  font-style: italic;
-  color: #b3b3b3;
+  padding-bottom: 0px;
 }
 .compose-body textarea {
   width: 97%;
   display: block;
-  min-height: 76px;
+  min-height: 78px;
   margin: 12px auto 0px auto;
   padding: 0px 0px 12px 0px;
   border: 0px;
@@ -5792,7 +5819,7 @@ a.compose-show-field {
 .compose-body textarea:focus {
   outline: none;
 }
-/* Compose - Attachments */
+/* Compose - Body - Attachments */
 .compose-attachments {
   margin-top: 0px;
   padding: 10px;
@@ -5833,6 +5860,7 @@ li.compose-attachment img {
   width: 85%;
   max-width: 800px;
   margin-top: 10px;
+  padding-bottom: 15px;
 }
 .compose-buttons {
   text-align: right;
@@ -6289,6 +6317,9 @@ li.compose-attachment img {
   font-weight: bold;
   line-height: 16px;
 }
+.thread-item-from a:hover {
+  color: #337fb2;
+}
 .thread-item-metadata-address {
   font-size: 12px;
   line-height: 12px;
@@ -6353,6 +6384,9 @@ li.compose-attachment img {
   font-weight: normal;
   line-height: 14px;
 }
+.thread-item-metadata-details a:hover {
+  color: #337fb2;
+}
 .thread-item-metadata-contact {
   color: #4d4d4d;
   display: table;
@@ -6364,13 +6398,17 @@ li.compose-attachment img {
   vertical-align: middle;
   padding-right: 5px;
 }
-.thread-item-metadata-contact a:hover {
-  color: #be1c21;
+.thread-item-metadata-contact a span {
+  font-size: 11px;
+  font-weight: normal;
+  line-height: 11px;
+  color: #b3b3b3;
 }
 .thread-item-metadata-contact a img {
-  width: 21px;
-  height: 21px;
-  padding-right: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  margin-right: 5px;
 }
 .thread-item-crypto {
   width: 95%;
