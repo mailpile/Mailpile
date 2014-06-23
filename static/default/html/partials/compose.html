@@ -8,21 +8,21 @@
         <a id="compose-cc-show" class="compose-show-field {% if editing_strings.cc %}hide{% endif %}" href="#">{{_("Cc")}}</a>
         <a id="compose-bcc-show" class="compose-show-field {% if editing_strings.bcc %}hide{% endif %}" href="#">{{_("Bcc")}}</a>
       </label>
-      <input id="compose-to" class="compose-address-field" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
+      <input id="compose-to-{{mid}}" class="compose-address-field" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
     </div>
     <div id="compose-cc-html" class="compose-headers compose-cc {% if not editing_strings.cc %}hide{% endif %}">
       <label class="left">{{_("Cc")}}</label>
       <label class="right">
         <a href="#cc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
       </label>
-      <input id="compose-cc" class="compose-address-field" name="cc" type="text" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
+      <input id="compose-cc-{{mid}}" class="compose-address-field" name="cc" type="text" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
     </div>
     <div id="compose-bcc-html" class="compose-headers compose-bcc {% if not editing_strings.bcc %}hide{% endif %}">
       <label class="left">{{_("Bcc")}}</label>
       <label class="right">
         <a href="#bcc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
       </label>
-      <input id="compose-bcc" class="compose-address-field" name="bcc" type="text" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
+      <input id="compose-bcc-{{mid}}" class="compose-address-field" name="bcc" type="text" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
     </div>
     <div class="compose-headers compose-subject">
       <label>{{_("Subject")}}</label>
@@ -40,7 +40,7 @@
           data-crypto_title_encrypt="{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")}}"
           data-crypto_title_cannot_encrypt="{{_("This message cannot be encrypted because you do not have keys for one or more recipients")}}"
           data-crypto_title_encrypt_error="{{_("There was an error prepping this message for encryption")}}">
-        <span class="icon icon-lock-open"></span> <span class="text">{{_("Not Encrypted")}}</span>
+        <span class="icon icon-lock-open"></span> <span class="text hide">{{_("None")}}</span>
       </li>
       <li class="compose-crypto-signature none"
           data-crypto_signed="{{_("Signed")}}"
@@ -49,12 +49,19 @@
           data-crypto_title_signed="{{_("This message will be signed with your key. Recipients who have your key will know it actually came from you :)")}}"
           data-crypto_title_not_signed="{{_("This message will not be signed with your key. Recipients will have no way of knowing it actually came from you.")}}"
           data-crypto_title_signed_error="{{_("Error accesing your key")}}">
-        <span class="icon icon-signature-none"></span> <span class="text">{{_("Unsigned")}}</span>
+        <span class="icon icon-signature-none"></span> <span class="text hide">{{_("Unsigned")}}</span>
       </li>
       {% if command == "view" %}
-      <li><a id="compose-show-details-{{mid}}" class="compose-show-details has-mid {% if compose == "yes" %}navigation-on{% endif %}" href="#" data-mid="{{mid}}"><span class="icon-eye"></span> Details</a></li>
+      <li id="compose-to-summary-{{mid}}" class="compose-to-summary has-mid" data-mid="{{mid}}">
+        {{_("To")}}: {{recipient_summary(editing_strings, result.data.addresses, 120)}}
+      </li>
+      <li>
+        <a id="compose-show-details-{{mid}}" class="compose-show-details has-mid {% if compose == "yes" %}navigation-on{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("details")}}</a>
+      </li>
       {% endif %}
-      <li><label id="compose-message-autosaving-{{mid}}" class="has-mid" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label></li>
+      <li>
+        <label id="compose-message-autosaving-{{mid}}" class="has-mid" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
+      </li>
     </ul>
     {% if command == "view" %}
     <label class="compose-apply-quote right"><input class="compose-apply-quote" type="checkbox" checked="checked"> Quote</label>
@@ -106,23 +113,24 @@
       </li>
     </ul>
     -->
-    <!-- FIXME: Add ability to delay sending of an email
+    <ul>
     <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-arrow-right"></span> Send <span id="reply-datetime-display">Immediately</span></a>
+      <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-clock"></span> Send <span id="reply-datetime-display">Immediately</span></a>
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="immediately" href="#">Immediately</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="1" href="#">1 hr</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2" href="#">3 hrs</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="6" href="#">6 hrs</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="12" href="#">12 hrs</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="24" href="#">1 day</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="48" href="#">2 days</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="168" href="#">1 week</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="336" href="#">2 weeks</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="672" href="#">1 month</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="60" href="#">1 min</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="3600" href="#">1 hr</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="10800" href="#">3 hrs</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="21600" href="#">6 hrs</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="43200" href="#">12 hrs</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="86400" href="#">1 day</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="172800" href="#">2 days</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="604800" href="#">1 week</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="1209600" href="#">2 weeks</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2592000" href="#">1 month</a></li>
       </ul>
     </li>
-    -->
+    </ul>
     </div>
     <div class="compose-buttons right has-mid" data-mid="{{mid}}">
       <button class="compose-action button-alert" type="submit" name="save" value="save" alt="{{_("Save")}}">

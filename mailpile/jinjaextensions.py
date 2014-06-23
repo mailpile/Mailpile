@@ -105,6 +105,10 @@ class MailpileCommand(Extension):
         environment.globals['make_filter_groups'] = self._make_filter_groups
         environment.filters['make_filter_groups'] = self._make_filter_groups
 
+        # Make Nice Summary of Recipients
+        environment.globals['recipient_summary'] = self._recipient_summary
+        environment.filters['recipient_summary'] = self._recipient_summary
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -507,7 +511,23 @@ class MailpileCommand(Extension):
         if len(name) > truncate:
             name = name[:truncate-3] + '...'
         return name
-        
+
+    def _recipient_summary(self, editing_strings, addresses, truncate=120):
+        summary_list = []
+        others = ''
+        recipients = editing_strings['to_aids'] + editing_strings['cc_aids'] + editing_strings['bcc_aids']
+        for aid in recipients:
+            print 'adding: ' + addresses[aid].fn
+            summary_list.append(addresses[aid].fn)
+        summary = ', '.join(summary_list)
+        if len(summary) > truncate:
+            if len(recipients) > 1:
+                others = _("and") + str(len(recipients) - 1) + _("others")
+            summary + others + '...'
+        else:
+            summary
+        return summary
+
     def _attachment_type(self, mime):
         if mime in [
             "application/octet-stream",

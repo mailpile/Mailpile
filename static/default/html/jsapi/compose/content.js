@@ -79,7 +79,7 @@ Mailpile.compose_autosave = function(mid, form_data) {
 
     // UI Feedback
     var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
-    $('#compose-message-autosaving-' + mid).html('<span class="icon-compose"></span>' + autosave_msg).fadeIn();
+    $('#compose-message-autosaving-' + mid).html(autosave_msg).fadeIn();
 
   	$.ajax({
   		url			 : Mailpile.api.compose_save,
@@ -361,13 +361,18 @@ $(document).on('click', '.pick-send-datetime', function(e) {
 $(document).on('click', '.compose-show-details', function(e) {
   e.preventDefault();
   var mid = $(this).data('mid');
+  var old_message = $(this).html();
+  var new_message = $(this).data('message');
   if ($('#compose-details-' + mid).hasClass('hide')) {
-    $(this).addClass('navigation-on');
     $('#compose-details-' + mid).slideDown('fast').removeClass('hide');
+    $('#compose-to-summary-' + mid).hide();
+    $(this).html(new_message);
   } else {
-    $(this).removeClass('navigation-on');
     $('#compose-details-' + mid).slideUp('fast').addClass('hide');
+    $('#compose-to-summary-' + mid).show();
+    $(this).html(new_message);
   }
+  $(this).data('message', old_message).attr('data-message', old_message);
 });
 
 
