@@ -2,10 +2,12 @@
 	python 2.7: <http://www.python.org/download/>
 2. Install pip for python
 	follow instructions at: <https://pip.pypa.io/en/latest/installing.html>
-3. Run setupWin.bat in the Mailpile folder
-4. Run mp.cmd in Command Prompt
-5. Run setup in the Mailpile shell
-6. to set profile enter:
+3. Download and install lxml
+	download binary from: <http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml>
+4. Run setupWin.bat in the Mailpile folder
+5. Run mp.cmd in Command Prompt
+6. Run setup in the Mailpile shell
+7. to set profile enter:
 set profiles.0.email = yourmail@domain.com
 
 set profiles.0.name = Your Real Name
@@ -16,4 +18,4 @@ set profiles.0.route = smtp://user:password@smtphost.com:25
 to send mail using TLS over the submission port, 587
 set profiles.0.route = smtptls://user:password@smtphost.com:587
 
-7. Now you are done configuring Mailpile, now go to http://localhost:33411 to check out your new and better mail client :)
+8. Now you are done configuring Mailpile, now go to http://localhost:33411 to check out your new and better mail client :)
