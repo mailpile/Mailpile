@@ -2,7 +2,12 @@
 	python 2.7: <http://www.python.org/download/>
 2. Install pip for python
 	follow instructions at: <https://pip.pypa.io/en/latest/installing.html>
-3. Run setupWin.bat in the Mailpile folder
+3. Run each of these commands in succession:
+	python -m pip install lxml
+	python -m pip install Jinja2
+	python -m pip install spambayes
+	python -m pip install markupsafe
+	python -m pip install colorama
 4. Run mp.cmd in Command Prompt
 5. Run setup in the Mailpile shell
 6. to set profile enter:
