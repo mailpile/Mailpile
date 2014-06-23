@@ -154,4 +154,11 @@ $(document).ready(function() {
     });
 
     EventLog.init();
+
+    if (window.webkitNotifications.checkPermission() == 0) {
+        $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
+    }
+    $('#notifications-permission-option').click(function() {
+        window.webkitNotifications.requestPermission();
+    });
 });

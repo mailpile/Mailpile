@@ -80,6 +80,7 @@
   {% if "prefs" in result %}
   <div id="prefs">
     <h3>{{_("Preferences")}}</h3>
+    <a class="button" id="notifications-permission-option">{{_("Permit browser notifications")}}</a>
     <ul>
       {% for p in result.prefs %}
       <li>{{p}}</li>
