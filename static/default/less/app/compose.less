@@ -3,8 +3,7 @@
   @compose-max-width: 800px;
 
   .form-compose {
-    min-height: 225px;
-    padding: 10px 15px;
+    padding: 15px 20px 10px 20px;
     background: @grayLight;
     border-bottom: 1px solid @grayMid;
   }
@@ -33,82 +32,27 @@
   .compose-from {
     float: left;
     height: 32px;
-    background-color: #fafafa;
+    background-color: @white;
     border-color: #cccccc;
     border-radius: 5px;
     font-size: 12px;
   }
 
-  .compose-options {
-    position: relative;
-    top: -20px;
-    right: 10px;
-  }
-
-  .compose-options li {
-    margin-left: 25px;    
-  }
-
-  .compose-options li label.compose-apply-quote,
-  .compose-options li span.text,
-  .compose-options li a.compose-show-details {
-    font-size: 14px;
-    font-style: bold;
-    line-height: 14px;
-  }
-
-
-/* Compose - Crypto */
-
-  .compose-crypto-signature,
-  .compose-crypto-encryption {
-    font-weight: bold;
-  }
-
-  .compose-crypto-signature:hover,
-  .compose-crypto-encryption:hover {
-    cursor: pointer;
-  }
-  .compose-crypto-signature.none {
-    color: @gray;
-  }
-  .compose-crypto-signature.signed {
-    color: @blue;
-  }
-  .compose-crypto-signature.error {
-    color: @red;
-  }
-
-  .compose-crypto-encryption.none {
-    color: @gray;
-  }
-  .compose-crypto-encryption.none {
-    color: @gray;
-  }  
-  .compose-crypto-encryption.cannot {
-    color: @orange;
-  }
-  .compose-crypto-encryption.encrypted {
-    color: @green;
-  }
-  .compose-crypto-encryption.error {
-   color: @red;
+  .compose-headers,
+  .compose-subject,
+  .compose-options,
+  .compose-body {
+    width: 85%;
+    max-width: @compose-max-width;
   }
 
 
 /* Compose - Headers */
 
-
-
-  .compose-headers,
-  .compose-subject,
-  .compose-message {
-    width: 85%;
-    max-width: @compose-max-width;
-		padding: 10px 0 0 0;    
+  .compose-headers {
+    padding-bottom: 15px;
   }
-
-
+  
 	a.compose-show-field {
 	  font-family: @text-font-family;
     font-size: 18px;
@@ -131,7 +75,7 @@
   }
 
 
-/* Compose - Subject & Message */
+/* Compose - Subject */
 
   .compose-subject input[type=text] {
     width: 100%;
@@ -154,23 +98,96 @@
   }
 
 
+/* Compose - Options */
+
+  .compose-options {
+    margin-bottom: 0px;
+		padding: 0 0 10px 0;
+  }
+
+  .compose-options-size {
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 14px;
+  }
+
+  .compose-options ul {
+    margin-bottom: 0px;
+    padding: 0px;
+  }
+
+  .compose-options ul li {
+    margin: 0px @base-margin 0px 0px;
+    .compose-options-size();
+  }
+
+  .compose-options a {
+    font-weight: normal;
+    color: @gray;
+  }
+
+  .compose-options a.navigation-on {
+    padding: 5px;
+    color: @grayDark;
+  }
+
+  .compose-options label {
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    cursor: pointer;
+    .compose-options-size();
+    font-style: italic;
+    color: @gray;
+  }
+
+  .compose-options .compose-crypto-encryption,
+  .compose-options .compose-crypto-signature {
+    text-align: center;
+  }
+
+  .compose-crypto-signature:hover,
+  .compose-crypto-encryption:hover {
+    cursor: pointer;
+  }
+  .compose-crypto-signature.none {
+    color: @gray;
+  }
+  .compose-crypto-signature.signed {
+    color: @blue;
+  }
+  .compose-crypto-signature.error {
+    color: @red;
+  }
+  .compose-crypto-encryption.none {
+    color: @gray;
+  }
+  .compose-crypto-encryption.none {
+    color: @gray;
+  }  
+  .compose-crypto-encryption.cannot {
+    color: @orange;
+  }
+  .compose-crypto-encryption.encrypted {
+    color: @green;
+  }
+  .compose-crypto-encryption.error {
+   color: @red;
+  }
+
+
 /* Compose - Body */
 
   .compose-body {
     border-radius: 4px;
     background: @white;
     border: 1px solid @grayMid;
-  }
-
-  .compose-message label.right {
-    font-style: italic;
-    color: @gray;
+    padding-bottom: 0px;
   }
 
   .compose-body textarea {
     width: 97%;
     display: block;
-    min-height: 76px;
+    min-height: 78px;
     margin: 12px auto 0px auto;
     padding: 0px 0px 12px 0px;
     border: 0px;
@@ -189,7 +206,7 @@
   }
 
 
-/* Compose - Attachments */
+/* Compose - Body - Attachments */
 
   .compose-attachments {
     margin-top: 0px;
@@ -241,6 +258,7 @@
     width: 85%;
     max-width: @compose-max-width;
     margin-top: 10px;
+    padding-bottom: @base-padding;
   }
 
   .compose-buttons {

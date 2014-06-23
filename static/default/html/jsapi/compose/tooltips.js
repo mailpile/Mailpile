@@ -14,8 +14,8 @@ $(document).ready(function() {
     },  
     style: {
      tip: {
-        corner: 'right center',
-        mimic: 'right center',
+        corner: 'bottom center',
+        mimic: 'bottom center',
         border: 0,
         width: 10,
         height: 10
@@ -23,8 +23,8 @@ $(document).ready(function() {
       classes: 'qtip-thread-crypto'
     },
     position: {
-      my: 'right center',
-      at: 'left center',
+      my: 'bottom center',
+      at: 'top center',
 			viewport: $(window),
 			adjust: {
 				x: -5,  y: 0
@@ -53,8 +53,8 @@ $(document).ready(function() {
     },
     style: {
      tip: {
-        corner: 'right center',
-        mimic: 'right center',
+        corner: 'bottom center',
+        mimic: 'bottom center',
         border: 0,
         width: 10,
         height: 10
@@ -62,8 +62,8 @@ $(document).ready(function() {
       classes: 'qtip-thread-crypto'
     },
     position: {
-      my: 'right center',
-      at: 'left center',
+      my: 'bottom center',
+      at: 'top center',
 			viewport: $(window),
 			adjust: {
 				x: -5,  y: 0

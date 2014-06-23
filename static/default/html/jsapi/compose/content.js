@@ -358,15 +358,15 @@ $(document).on('click', '.pick-send-datetime', function(e) {
 
 
 /* Compose - Details */
-$(document).on('click', '#compose-show-details', function(e) {
+$(document).on('click', '.compose-show-details', function(e) {
   e.preventDefault();
-  
-  if ($('#compose-details').hasClass('hide')) {
+  var mid = $(this).data('mid');
+  if ($('#compose-details-' + mid).hasClass('hide')) {
     $(this).addClass('navigation-on');
-    $('#compose-details').slideDown('fast').removeClass('hide');
+    $('#compose-details-' + mid).slideDown('fast').removeClass('hide');
   } else {
     $(this).removeClass('navigation-on');
-    $('#compose-details').slideUp('fast').addClass('hide');
+    $('#compose-details-' + mid).slideUp('fast').addClass('hide');
   }
 });
 
