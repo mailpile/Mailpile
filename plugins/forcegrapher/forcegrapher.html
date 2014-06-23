@@ -4,7 +4,7 @@
 <script>
 $(document).ready(function() {
 	var data = {{result|json|safe}};
-	new_mailpile.plugins.forcegrapher.draw(data);
+	Mailpile.plugins.forcegrapher.draw(data);
 });
 </script>
 <div id="pile-graph" style="display: block; position: relative;">
