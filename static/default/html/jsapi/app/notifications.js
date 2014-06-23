@@ -34,7 +34,7 @@ MailPile.prototype.notification = function(status, message_text, complete, compl
 
 var EventLog = {
     eventbindings: {},  // All the subscriptions
-    last_ts: (new Date().getTime() - 5) / 1000,
+    last_ts: -1,
     timer: null,
     cancelwarning: null
 };
@@ -86,16 +86,16 @@ EventLog.poll = function() {
 };
 
 EventLog.process_result = function(result, textstatus) {
-    for (event in result.result) {
-        var ev = result.result[event];
+    for (event in result.result.events) {
+        var ev = result.result.events[event];
         for (binding in EventLog.eventbindings) {
             if (ev.source.match(new RegExp("^" + binding + "$"))) {
                 EventLog.firebindings(binding, ev);
             }
         }
-        EventLog.last_ts = ev.ts;
+        EventLog.last_ts = result.result.ts;
     }
-    console.log("eventlog ---- processed", result.result.length, "results");
+    console.log("eventlog ---- processed", result.result.count, "results");
     EventLog.timer.stop();
     EventLog.timer.play();
     EventLog.poll();

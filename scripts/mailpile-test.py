@@ -243,19 +243,19 @@ def test_composition():
     config.profiles['0'].messageroute = 'default'
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
-                         'data_mid=%s' % new_mid).result
+                         'data_mid=%s' % new_mid).result['events']
     assert(len(events) == 1)
     assert(events[0]['flags'] == 'i')
-    assert(len(mp.eventlog('incomplete').result) == 1)
+    assert(len(mp.eventlog('incomplete').result['events']) == 1)
 
     # Second attempt should succeed!
     config.routes.default.command = '%s -i %%(rcpt)s' % mailpile_send
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
-                         'data_mid=%s' % new_mid).result
+                         'data_mid=%s' % new_mid).result['events']
     assert(len(events) == 1)
     assert(events[0]['flags'] == 'c')
-    assert(len(mp.eventlog('incomplete').result) == 0)
+    assert(len(mp.eventlog('incomplete').result['events']) == 0)
 
     # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
