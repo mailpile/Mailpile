@@ -630,6 +630,8 @@ class SearchResults(dict):
         if cid and not (e and n):
             e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
         vcard = self.session.config.vcards.get_vcard(e)
+        if vcard and '@' in n:
+            n = vcard.fn
         return AddressInfo(e, n, vcard=vcard)
 
     def _msg_tags(self, msg_info):
@@ -667,19 +669,21 @@ class SearchResults(dict):
     def _message(self, email):
         tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
                                             self.WANT_MSG_TREE))
+        email.evaluate_pgp(tree, decrypt=True)
+
         editing_strings = tree.get('editing_strings')
         if editing_strings:
             for key in ('from', 'to', 'cc', 'bcc'):
                 if key in editing_strings:
                     cids = self._msg_addresses(
-                        addresses=AddressHeaderParser(editing_strings[key]))
+                        addresses=AddressHeaderParser(
+                            unicode_data=editing_strings[key]))
                     editing_strings['%s_aids' % key] = cids
                     for cid in cids:
                         if cid not in self['data']['addresses']:
                             self['data']['addresses'
                                          ][cid] = self._address(cid=cid)
 
-        email.evaluate_pgp(tree, decrypt=True)
         return self._prune_msg_tree(tree)
 
     def __init__(self, session, idx,

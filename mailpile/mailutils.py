@@ -1,3 +1,4 @@
+# vim: set fileencoding=utf-8 :
 import base64
 import copy
 import email.header
@@ -1166,8 +1167,18 @@ class AddressHeaderParser(list):
 
     >>> AddressHeaderParser('Weird email@somewhere.com Header').normalized()
     u'"Weird Header" <email@somewhere.com>'
+
+    >>> ai = AddressHeaderParser(unicode_data=ahp.TEST_UNICODE_DATA)
+    >>> ai[0].fn
+    u'Bjarni R\\xfanar'
+    >>> ai[0].fn == ahp.TEST_UNICODE_NAME
+    True
+    >>> ai[0].address
+    u'b@c.x'
     """
 
+    TEST_UNICODE_DATA = u'Bjarni R\xfanar <b@c.x#61A015763D28D4>'
+    TEST_UNICODE_NAME = u'Bjarni R\xfanar'
     TEST_HEADER_DATA = """
         bre@klaki.net  ,
         bre@klaki.net Bjarni ,
@@ -1177,7 +1188,7 @@ class AddressHeaderParser(list):
         (FIXME: (nested) bre@wrongmail.com parser breaker) bre@klaki.net,
         undisclosed-recipients-gets-ignored:,
         Bjarni [mailto:bre@klaki.net],
-        "This is a key test" <bre@klaki.net#123456789>,
+        "This is a key test" <bre@klaki.net#61A015763D28D410A87B197328191D9B3B4199B4>,
         bre@klaki.net (Bjarni Runar Einar's son);
         Bjarni is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
@@ -1238,13 +1249,17 @@ class AddressHeaderParser(list):
     # useful info from the message itself.
     DEFAULT_CHARSET_ORDER = ('iso-8859-1', 'utf-8')
 
-    def __init__(self, data=None, charset_order=None, **kwargs):
+    def __init__(self,
+                 data=None, unicode_data=None, charset_order=None, **kwargs):
         self.charset_order = charset_order or self.DEFAULT_CHARSET_ORDER
         self._parse_args = kwargs
-        if data is None:
+        if data is None and unicode_data is None:
             self._reset(**kwargs)
-        else:
+        elif data is not None:
             self.parse(data)
+        else:
+            self.charset_order = ['utf-8']
+            self.parse(unicode_data.encode('utf-8'))
 
     def _reset(self, _raw_data=None, strict=False, _raise=False):
         self._raw_data = _raw_data
@@ -1294,11 +1309,11 @@ class AddressHeaderParser(list):
                 return quopri.decodestring(data, header=True).decode(cs)
 
         for cs in charset_order or self.charset_order:
-             try:
-                 string = string.decode(cs)
-                 break
-             except UnicodeDecodeError:
-                 pass
+            try:
+                string = string.decode(cs)
+                break
+            except UnicodeDecodeError:
+                pass
 
         return re.sub(self.RE_QUOTED, uq, string)
 
