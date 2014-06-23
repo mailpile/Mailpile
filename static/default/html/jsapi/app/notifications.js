@@ -33,7 +33,7 @@ Mailpile.notification = function(status, message_text, complete, complete_action
 
 
 var EventLog = {
-    eventbindings: {},  // All the subscriptions
+    eventbindings: [],  // All the subscriptions
     last_ts: -1,
     timer: null,
     cancelwarning: null
@@ -58,27 +58,17 @@ EventLog.play = function() {
 }
 
 EventLog.heartbeat_warning = function() {
-    EventLog.cancelwarning = mailpile.notification("warning", "Having trouble connecting to Mailpile... will retry in a few seconds.");
+    EventLog.cancelwarning = Mailpile.notification("warning", "Having trouble connecting to Mailpile... will retry in a few seconds.");
     EventLog.poll();
 }
 
-EventLog.request = function(conditions) {
+EventLog.request = function(conditions, callback) {
     conditions = conditions || {};
-    if (!conditions.callback) {
-        conditions.callback = EventLog.process_result;
+    if (!callback) {
+        callback = EventLog.process_result;
     }
 
-    Mailpile.API.eventlog(
-        conditions.privatedata, // private_data
-        conditions.source,      // source
-        conditions.flag,        // require a flag
-        conditions.allflags,    // match all flags
-        conditions.since,       // since when?
-        conditions.filter,      // filter?
-        conditions.incomplete,  // incomplete events only?
-        conditions.wait,        // wait for new data?
-        conditions.callback     // callback
-    );
+    Mailpile.API.eventlog(conditions, callback);
 }
 
 EventLog.poll = function() {
@@ -88,9 +78,15 @@ EventLog.poll = function() {
 EventLog.process_result = function(result, textstatus) {
     for (event in result.result.events) {
         var ev = result.result.events[event];
-        for (binding in EventLog.eventbindings) {
-            if (ev.source.match(new RegExp("^" + binding + "$"))) {
-                EventLog.firebindings(binding, ev);
+        for (id in EventLog.eventbindings) {
+            binding = EventLog.eventbindings[id][0];
+            callback = EventLog.eventbindings[id][1];
+            if (   (!binding.source || 
+                         ev.source.match(new RegExp("^" + binding.source + "$")))
+                    && (!binding.event_id || ev.event_id == binding.event_id)
+                    && (!binding.flags || ev.flags.match(new RegExp(binding.flags)))
+                   ) {
+                callback(ev);
             }
         }
         EventLog.last_ts = result.result.ts;
@@ -105,24 +101,19 @@ EventLog.process_result = function(result, textstatus) {
     }
 };
 
-EventLog.firebindings = function(binding, ev) {
-    for (fun in this.eventbindings[binding]) {
-        this.eventbindings[binding][fun](ev);
-    }
-}
 
 EventLog.subscribe = function(ev, func) {
     // Subscribe a function to an event.
     // Returns a subscription ID.
-    if (!this.eventbindings[ev]) {
-        this.eventbindings[ev] = [];
-    }
     if (!$.isFunction(func)) {
         console.log("Can only subscribe functions");
         return false;
     }
-    this.eventbindings[ev].push(func);
-    return this.eventbindings[ev].length - 1;
+    if (typeof(ev) == "string") {
+        ev = {source: ev, event_id: null};
+    }
+    this.eventbindings.push([ev, func]);
+    return this.eventbindings.length - 1;
 };
 
 EventLog.unsubscribe = function(ev, func_or_id) {
@@ -131,14 +122,14 @@ EventLog.unsubscribe = function(ev, func_or_id) {
     //   event.
     // Returns true if successfully unsubscribed.
     if ($.isFunction(func_or_id)) {
-        for (i in this.eventbindings[ev]) {
-            if (this.eventbindings[ev][i] == func_or_id) {
-                this.eventbindings[ev].splice(i, 1);
+        for (i in this.eventbindings) {
+            if (this.eventbindings[i][1] == func_or_id) {
+                this.eventbindings.splice(i, 1);
                 return true;
             }
         }
     } else {
-        this.eventbindings[ev].splice(func_or_id, 1);
+        this.eventbindings.splice(func_or_id, 1);
         return true;
     }
     return false;
@@ -155,10 +146,10 @@ $(document).ready(function() {
 
     EventLog.init();
 
-    if (window.webkitNotifications.checkPermission() == 0) {
+    if (Notification.permission == "granted") {
         $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
     }
     $('#notifications-permission-option').click(function() {
-        window.webkitNotifications.requestPermission();
+        Notification.requestPermission();
     });
 });

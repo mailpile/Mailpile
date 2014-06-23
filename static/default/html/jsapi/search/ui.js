@@ -80,11 +80,14 @@ $().ready(function() {
         if (ev.flags.indexOf("c") != -1 && ev.data.messages > 0) {
             $("#pile-newmessages-notification").slideDown("slow");
 
-            if (window.webkitNotifications.checkPermission() == 0) {
-                window.webkitNotifications.createNotification(
-                    '/static/img/logo-color.png', 
+            if (Notification.permission == "granted") {
+                new Notification(
                     ev.data.messages + "{{_(' new messages received')}}", 
-                    '{{_("Your pile is growing...")}}').show();
+                    { 
+                        body:'{{_("Your pile is growing...")}}',
+                        icon:'/static/img/logo-color.png', 
+                    }  
+                )
             }
         }
     });

@@ -1,5 +1,11 @@
 // Make console.log not crash JS browsers that don't support it
-if (!window.console) window.console = { log: $.noop, group: $.noop, groupEnd: $.noop, info: $.noop, error: $.noop };
+if (!window.console) window.console = { 
+    log: $.noop, 
+    group: $.noop, 
+    groupEnd: $.noop, 
+    info: $.noop, 
+    error: $.noop 
+};
 
 
 Mailpile = {
@@ -85,64 +91,137 @@ Mailpile.theme = {{ theme_settings|json|safe }}
 
 
 /* **[AJAX Wappers - for the Mailpile API]********************************** */
-Mailpile.API = (function() {
-    var api = { {% for command in result.api_methods %}
-    {{command.url|replace("/", "_")}}: "/api/0/{{command.url}}/"{% if not loop.last %},{% endif %}
+Mailpile.API = {
+    _endpoints: {
+{% for command in result.api_methods %}
+        {{command.url|replace("/", "_")}}: "/0/{{command.url}}/"{% if not loop.last %},{% endif %}
 
-    {% endfor %}
-    };
+{% endfor %}
+    },
+    _sync_url: "/api",
+    _async_url: "/async",
+}
 
-    function action(command, data, method, callback) {
-        if (method != "GET" && method != "POST") {
-            method = "GET";
-        }
-        switch (method) {
-            case "GET":
-                for(var k in data) {
-                    if(!data[k] || data[k] == undefined) {
-                        delete data[k];
-                    }
-                }
-                var params = $.param(data);
-                $.ajax({
-                    url      : command + "?" + params,
-                    type     : method,
-                    dataType : 'json',
-                    success  : callback,
-                });
-                break;
-            case "POST":
-                $.ajax({
-                    url      : command,
-                    type     : method,
-                    data     : data,
-                    dataType : 'json',
-                    success  : callback,
-                });
-                break;
-        }
-
-        return true;
-    };
-
-    return {
-        {%- for command in result.api_methods -%}
-        {{command.url|replace("/", "_")}}: function(
-            {%- for key in command.query_vars -%}pv_{{key|replace("@", "")}}, {% endfor -%}
-            {%- for key in command.post_vars -%}pv_{{key|replace("@", "")|replace(".","_")|replace("-","_")}}, {%- endfor -%} callback) {
-            return action(api.{{command.url|replace("/", "_")}}, {
-                {%- for key in command.query_vars -%}
-                    "{{key}}": pv_{{key|replace("@", "")}},
-                {% endfor %}
-                {%- for key in command.post_vars -%}
-                    "{{key}}": pv_{{key|replace("@", "")}},
-                {% endfor %}
-            }, "{{command.method}}", callback);
-        }{%- if not loop.last -%},{% endif %}
-
-        {% endfor %}
+Mailpile.API._sync_action = function(command, data, method, callback) {
+    if (method != "GET" && method != "POST") {
+        method = "GET";
     }
-})();
+    if (method == "GET") {
+        for(var k in data) {
+            if(!data[k] || data[k] == undefined) {
+                delete data[k];
+            }
+        }
+        var params = $.param(data);
+        $.ajax({
+            url      : Mailpile.API._sync_url + command + "?" + params,
+            type     : method,
+            dataType : 'json',
+            success  : callback,
+        });
+    } else if (method =="POST") {
+        $.ajax({
+            url      : Mailpile.API._sync_url + command,
+            type     : method,
+            data     : data,
+            dataType : 'json',
+            success  : callback,
+        });
+    }
+
+    return true;
+};
+
+
+Mailpile.API._async_action = function(command, data, method, callback) {
+    function handle_event(data) {
+        if (data.result.resultid) {
+            subreq = {event_id: data.result.resultid, flags: "c"};
+            var subid = EventLog.subscribe(subreq, function(ev) {
+                callback(ev.private_data);
+                EventLog.unsubscribe(data.result.resultid, subid);
+            });
+        }
+    }
+
+    if (method != "GET" && method != "POST") {
+        method = "GET";
+    }
+    if (method == "GET") {
+        for(var k in data) {
+            if(!data[k] || data[k] == undefined) {
+                delete data[k];
+            }
+        }
+        var params = $.param(data);
+        $.ajax({
+            url      : Mailpile.API._async_url + command + "?" + params,
+            type     : method,
+            dataType : 'json',
+            success  : handle_event,
+        });
+    } else if (method =="POST") {
+        $.ajax({
+            url      : Mailpile.API._async_url + command,
+            type     : method,
+            data     : data,
+            dataType : 'json',
+            success  : handle_event,
+        });
+    }
+
+}
+
+{% for command in result.api_methods -%}
+Mailpile.API.{{command.url|replace("/", "_")}} = function(data, callback, method) {
+    var methods = ["{{command.method}}"];
+    if (!method || methods.indexOf(method) == -1) {
+        method = methods[0];
+    }
+/*
+    {%- for key in command.query_vars -%}pv_{{key|replace("@", "")}}, {% endfor -%}
+    {%- for key in command.post_vars -%}pv_{{key|replace("@", "")|replace(".","_")|replace("-","_")}}, {%- endfor -%}
+    
+    {%- for key in command.query_vars -%}
+        "{{key}}": pv_{{key|replace("@", "")}},
+    {% endfor %}
+    {%- for key in command.post_vars -%}
+        "{{key}}": pv_{{key|replace("@", "")}},
+    {% endfor %}
+*/
+    return Mailpile.API._sync_action(
+        Mailpile.API._endpoints.{{command.url|replace("/", "_")}}, 
+        data,
+        method,
+        callback
+    );
+};
+
+Mailpile.API.async_{{command.url|replace("/", "_")}} = function(data, callback, method) {
+    var methods = ["{{command.method}}"];
+    if (!method || methods.indexOf(method) == -1) {
+        method = methods[0];
+    }
+/*
+    {%- for key in command.query_vars -%}pv_{{key|replace("@", "")}}, {% endfor -%}
+    {%- for key in command.post_vars -%}pv_{{key|replace("@", "")|replace(".","_")|replace("-","_")}}, {%- endfor -%}
+    
+    {%- for key in command.query_vars -%}
+        "{{key}}": pv_{{key|replace("@", "")}},
+    {% endfor %}
+    {%- for key in command.post_vars -%}
+        "{{key}}": pv_{{key|replace("@", "")}},
+    {% endfor %}
+*/
+    return Mailpile.API._async_action(
+        Mailpile.API._endpoints.{{command.url|replace("/", "_")}}, 
+        data,
+        method,
+        callback
+    );
+}
+
+{% endfor %}
 
 
 /* Plugin Javascript - we do this in multiple commands instead of one big
