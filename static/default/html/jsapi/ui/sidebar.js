@@ -143,7 +143,7 @@ $(document).ready(function() {
       }
 
       var tag = _.findWhere(Mailpile.instance.tags, { tid: $(this).data('tid').toString() });
-      var hex = new_Mailpile.theme.colors[tag.label_color];
+      var hex = Mailpile.theme.colors[tag.label_color];
       return $('<div class="sidebar-tag-drag ui-widget-header" style="color: ' + hex + '"><span class="' + tag.icon + '"></span> ' + tag.name + count + '</div>');
     }
   });
@@ -162,7 +162,7 @@ $(document).ready(function() {
       Mailpile.tag_add_delete(ui.draggable.data('tid'), '', Mailpile.messages_cache, function() {
 
         var tag = _.findWhere(Mailpile.instance.tags, { tid: ui.draggable.data('tid').toString() });
-        var hex = new_Mailpile.theme.colors[tag.label_color];
+        var hex = Mailpile.theme.colors[tag.label_color];
         var updated = [];
 
         // Update Multiple Selected Messages

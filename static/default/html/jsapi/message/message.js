@@ -146,7 +146,7 @@ $(document).on('click', '.message-crypto-investigate', function() {
     // FIXME: this needs to search all "missing_key" values
     // this is tricky as searching multiple calls to keyservers
     // can have much latency and slowness
-    new_Mailpile.api.crypto_gpg_searchkey(missing_keys[0], function(data) {
+    Mailpile.API.crypto_gpg_searchkey(missing_keys[0], function(data) {
       var modal_html = $("#modal-search-keyservers").html();
       $('#modal-full').html(_.template(modal_html, { keys: '<li>Key of User #1</li>' }));
       $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });

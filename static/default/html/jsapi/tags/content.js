@@ -110,7 +110,7 @@ Mailpile.render_modal_tags = function() {
 $(document).on('click', '#button-tag-change-icon', function() {
 
   var icons_html = '';
-  $.each(new_Mailpile.theme.icons, function(key, icon) {
+  $.each(Mailpile.theme.icons, function(key, icon) {
     icons_html += '<li class="modal-tag-icon-option ' + icon + '" data-icon="' + icon + '"></li>';
   });
 
@@ -141,10 +141,10 @@ $(document).on('click', '.modal-tag-icon-option', function() {
 
 $(document).on('click', '#button-tag-change-label-color', function(e) {
   
-  var sorted_colors =  _.keys(new_Mailpile.theme.colors).sort();
+  var sorted_colors =  _.keys(Mailpile.theme.colors).sort();
   var colors_html = '';
   $.each(sorted_colors, function(key, name) {
-    var hex = new_Mailpile.theme.colors[name];
+    var hex = Mailpile.theme.colors[name];
     colors_html += '<li><a href="#" class="modal-tag-color-option" style="background-color: ' + hex + '" data-name="' + name + '" data-hex="' + hex + '"></a></li>';
   });
 
