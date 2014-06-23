@@ -1,47 +1,65 @@
-/*  */
+/* Setup Pages */
 var setupdata = {};
 
 /* Welcome - First thing people see */
-var WelcomePage = new Page("#template-setup-welcome", "{{_("Welcome to Mailpile!")}}");
-WelcomePage.bind_button("#btn-setup-welcome-begin", function() {
-    console.log('Go from Welcome -> Basic');  
-    WelcomePage.next();
+var Welcome = new Page("#template-setup-welcome", "{{_("Welcome to your")}} <strong>mail</strong>pile");
+Welcome.bind_button("#btn-setup-welcome-begin", function() {
+  console.log('Go Welcome -> Basic');  
+  Welcome.next();
 });
+
 
 /* Basic - Collect */
-var BasicPage = new Page("#template-setup-basic", "{{_("Basic information")}}");
-BasicPage.bind_button("#btn-setup-basic-next", function() {
-    console.log('Go from Basic -> Crypto');  
-    BasicPage.next();
+var Basic = new Page("#template-setup-basic", "{{_("Welcome to Mailpile!")}}");
+Basic.bind_button("#btn-setup-basic-info", function() {
+
+  console.log('Go Basic -> Dicovery');  
+  Basic.next();
+
 });
 
-BasicPage.bind_validator("#input-name-name", function(m) {
-    return m.value != "";
+Basic.bind_validator("#input-name-name", function(m) {
+
+  return m.value != "";
+
 });
 
-BasicPage.bind_hide(function() {
+Basic.bind_hide(function() {
+
 	setupdata["name"] = $("#input-name-name").value();
+
 });
 
 
-var CryptoPage = new Page("#setup-crypto-setup");
-CryptoPage.route("cryptosetup");
-CryptoPage.bind_button("#btn-setup-crypto-prev", function() {
-    CryptoPage.prev();
+/* Discovery - */
+var Discovery = new Page("#template-setup-discovery", "{{_("Analyzing your Computer")}}");
+Discovery.bind_button("#btn-setup-basic-next", function() {
+  console.log('Go Basic -> Crypto');  
+  Discovery.next();
 });
 
 
-CryptoPage.bind_button("#btn-setup-crypto-next", function() {
-    CryptoPage.next();
+
+/* Crypto - Handle keys and such */
+var Crypto = new Page("#setup-crypto-setup", "{{_("Welcome to Mailpile!")}}");
+Crypto.route("cryptosetup");
+Crypto.bind_button("#btn-setup-crypto-prev", function() {
+    Crypto.prev();
+});
+
+
+Crypto.bind_button("#btn-setup-crypto-next", function() {
+    Crypto.next();
 });
 
 
 /* Wizard order / route table */
 var SetupWizard = new Wizard("#setup", "span.title");
 SetupWizard.pages = [
-	WelcomePage,
-	BasicPage,
-	CryptoPage
+	Welcome,
+	Basic,
+  Discovery,
+	Crypto
 ];
 
 /* Start The Dang thing */

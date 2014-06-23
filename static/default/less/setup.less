@@ -9,36 +9,108 @@
 
 /* Topbar */
 
-.topbar-middle { 
-  position: relative;
-  top: 15px;
-  right: 15px;
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
-  font-size: 30px;
-  line-height: 30px;
-}
+  .topbar-middle { 
+    position: relative;
+    top: 15px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 30px;
+    line-height: 30px;
+  }
+  
+  .topbar-middle .title {
+    position: relative;
+    top: 0px;
+    left: -95px;
+    font-family: @mailpile-text-font-family-bold;
+  }
+  
+  .topbar-middle .icon {
+    float: right;
+    position: relative;
+    top: 0px;
+    right: 20px;
+    display: block;
+    font-size: 30px;
+    line-height: 30px;
+  }
 
-.topbar-middle .icon {
-  float: right;
-  display: block;
-  font-size: 30px;
-  line-height: 30px;
-}
 
 /* Setup */
-#setup {
-  margin-top: 100px;
-  text-align: center;
-}
 
-div.setup-box {
-  width: 600px;
-  min-height: 400px;
-  margin: 0px auto;
-  padding: 25px;
-  border-radius: 5px;
-  background: @grayLight;
-  border: 1px solid @grayMid;
-}
+  #setup {
+    position: relative;
+    top: 0px;
+    margin-top: 100px;
+  }
+  
+  .setup-welcome-icons {
+    margin-top: (@base-margin * 2);
+    margin-bottom: (@base-margin * 3);
+  }
+
+  .setup-welcome-icon {
+    margin: 0 @base-margin;
+    font-size: 72px;
+    line-height: 72px;
+  }
+
+  div.setup-white {
+    text-align: center;
+  }
+
+  div.setup-box {
+    min-height: 200px;
+    margin: 0px auto;
+    padding: 25px;
+    border-radius: 5px;
+    background: @grayLight;
+    border: 1px solid @grayMid;
+  }
+
+  div.setup-box-small {
+    width: 400px;
+  }
+
+  div.setup-box-medium {
+    width: 600px;
+  }
+
+  div.setup-box-large {
+    width: 800px;
+  }
+  
+  .setup-text-small-print {
+    
+  }
+
+/* Setup Progress */
+
+  #setup-progress {
+    width: 700px;
+    margin: ( @base-margin * 2) auto @base-margin auto;
+    text-align: center;
+  }
+  
+  
+  div.setup-progress-circle {
+    display: table-cell;
+    height: 45px;
+    width: 45px;
+    vertical-align: middle;
+    border-radius: 25px;
+    background: @grayLight;
+    border: 1px solid @gray;
+  }
+  
+  span.setup-progress-icon {
+    display: inline-block;
+  }
+  
+  span.setup-progress-line {
+    width: 100px;
+    display: block;
+    border-bottom: 1px solid @grayMid;
+    margin: 23px 8px 0px 8px;
+  }

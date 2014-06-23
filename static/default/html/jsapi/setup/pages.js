@@ -1,7 +1,8 @@
 
-var Page = function(template, title) {
+var Page = function(template, title, data) {
     this.template = template;
     this.title = title;
+    this.data = data;
     this.buttons = {};
     this.show_actions = [];
     this.hide_actions = [];
@@ -50,7 +51,7 @@ Page.prototype.route = function(routename) {
 
 Page.prototype.show = function() {
     var html = $(this.template).html();
-    var view = _.template(html);
+    var view = _.template(html, this.data);
     this.parent.set_title(this.title);
     $(this.parent.container).html(view);
     for (i in this.show_actions) {

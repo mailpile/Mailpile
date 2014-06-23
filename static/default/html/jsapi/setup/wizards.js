@@ -20,7 +20,7 @@ Wizard.prototype.init = function() {
 
 
 Wizard.prototype.set_title = function(title) {
-	$(this.titlecontainer).text(title);
+	$(this.titlecontainer).html(title);
 };
 
 
