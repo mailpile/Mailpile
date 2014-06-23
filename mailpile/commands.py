@@ -19,6 +19,7 @@ import mailpile.ui
 import mailpile.postinglist
 from mailpile.eventlog import Event
 from mailpile.mailboxes import IsMailbox
+from mailpile.mailutils import AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.postinglist import GlobalPostingList
 from mailpile.search import MailIndex
@@ -80,8 +81,8 @@ class Command:
                 happy = '%s: %s' % (self.result and _('OK') or _('Failed'),
                                     self.message or self.doc)
                 if not self.result and self.error_info:
-                    return '%s\n%s' % (happy, 
-                        json.dumps(self.error_info, indent=4, 
+                    return '%s\n%s' % (happy,
+                        json.dumps(self.error_info, indent=4,
                                    default=mailpile.util.json_helper))
                 else:
                     return happy
@@ -432,11 +433,11 @@ class Command:
             self._update_event_state(self.event.RUNNING, log=True)
             result = Command.CommandResult(self, self.session, self.name,
                                            self.__doc__,
-                                           {"resultid": self.event.event_id}, 
-                                           "success", 
+                                           {"resultid": self.event.event_id},
+                                           "success",
                                            "Running in background")
 
-            self.session.config.slow_worker.add_task(self.session, self.name, 
+            self.session.config.slow_worker.add_task(self.session, self.name,
                                                      streetcar)
             return result
 
@@ -598,23 +599,31 @@ class SearchResults(dict):
 
         return expl
 
-    def _msg_addresses(self, msg_info,
+    def _msg_addresses(self, msg_info=None, addresses=[],
                        no_from=False, no_to=False, no_cc=False):
-        if no_to:
-            cids = set()
-        else:
-            to = [t for t in msg_info[MailIndex.MSG_TO].split(',') if t]
-            cids = set(to)
-        if not no_cc:
-            cc = [t for t in msg_info[MailIndex.MSG_CC].split(',') if t]
-            cids |= set(cc)
-        if not no_from:
-            fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
-            if fe:
-                try:
-                    cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
-                except KeyError:
-                    cids.add(b36(self.idx._add_email(fe, name=fn)))
+        cids = set()
+
+        for ai in addresses:
+            try:
+                cids.add(b36(self.idx.EMAIL_IDS[ai.address.lower()]))
+            except KeyError:
+                cids.add(b36(self.idx._add_email(ai.address, name=ai.fn)))
+
+        if msg_info:
+            if not no_to:
+                to = [t for t in msg_info[MailIndex.MSG_TO].split(',') if t]
+                cids |= set(to)
+            if not no_cc:
+                cc = [t for t in msg_info[MailIndex.MSG_CC].split(',') if t]
+                cids |= set(cc)
+            if not no_from:
+                fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
+                if fe:
+                    try:
+                        cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
+                    except KeyError:
+                        cids.add(b36(self.idx._add_email(fe, name=fn)))
+
         return sorted(list(cids))
 
     def _address(self, cid=None, e=None, n=None):
@@ -658,6 +667,18 @@ class SearchResults(dict):
     def _message(self, email):
         tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
                                             self.WANT_MSG_TREE))
+        editing_strings = tree.get('editing_strings')
+        if editing_strings:
+            for key in ('from', 'to', 'cc', 'bcc'):
+                if key in editing_strings:
+                    cids = self._msg_addresses(
+                        addresses=AddressHeaderParser(editing_strings[key]))
+                    editing_strings['%s_aids' % key] = cids
+                    for cid in cids:
+                        if cid not in self['data']['addresses']:
+                            self['data']['addresses'
+                                         ][cid] = self._address(cid=cid)
+
         email.evaluate_pgp(tree, decrypt=True)
         return self._prune_msg_tree(tree)
 
