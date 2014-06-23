@@ -45,7 +45,7 @@
     </a>
   </div>
   <div class="topbar-middle">
-    <span class="title">Security</span>
+    <span class="title">{{_("Welcome to Mailpile!")}}</span>
     <span class="icon icon-lock-closed"></span>
   </div>
 </div>
@@ -69,27 +69,40 @@
 </div>
 
 <script id="template-setup-welcome" type="text/template">
-  <div id="setup-welcome">
-    <h1>{{_("Welcome to your")}} <strong>mail</strong>pile</h1>
-    <p><img src="/static/img/logo-color.svg"></p>
-    <p>You are about to experience secure email like never before!</p>
-    <button id="btn-setup-welcome-begin">Begin</button>
+  <div id="setup-welcome" class="setup-white">
+    <div class="setup-welcome-icons">
+      <span class="setup-welcome-icon icon-inbox"></span>
+      <span class="setup-welcome-icon icon-lock-closed"></span>
+      <span class="setup-welcome-icon icon-tag"></span>
+      <span class="setup-welcome-icon icon-compose"></span>
+      <span class="setup-welcome-icon icon-key"></span>
+      <span class="setup-welcome-icon icon-donate"></span>
+      <img src="/static/img/logo-color.svg">
+    </div>
+    <h3>{{_("You're about to experience secure email like never before!")}}</h3>
+    <button id="btn-setup-welcome-begin">{{_("Begin")}}</button>
   </div>
 </script>
 
 <script id="template-setup-basic" type="text/template">
-  <div class="setup-box">
-    <h3><span class="icon-user"></span> Basic Information</h3>
-    <input type="text" name="name" autocorrect="off" autocapitalize="off">
-    <input type="password" name="password" autocorrect="off" autocapitalize="off">
-    <span>If you have a PGP key with a passphrase, use that passphrase here!</span>
+  <div class="setup-box setup-box-small animated bounceInRight">
+    <h2 class="text-center"><span class="icon-user"></span> {{_("Basic Information")}}</h2>
+    <form class="standard text-center">
+      <label>{{_("Name")}}</label>
+      <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
+      <label>{{_("Password")}}</label>
+      <input type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
+      <p class="text-center">{{_("If you have a PGP key with a passphrase, use that passphrase here!")}}</p>
+      <button id="btn-setup-basic-info" class="text-center">{{_("Next")}}</button>
+    </form>
   </div>
 </script>
 
+
 <!-- Discovery -->
 <script id="template-setup-discovery" type="text/template">
-  <div class="setup-box">
-    <h3><span class="icon-"></span></h3>
+  <div id="setup-welcome" class="setup-white">
+    <h1>Discovering things</h1>
     <p></p>
   </div>
 </script>
@@ -101,27 +114,29 @@
   </div>
 </script>
 
-<!-- Crypto Views -->
+
+<!-- Crypto -->
 <script id="template-setup-crypto-found-keys" type="text/template">
   <div class="setup-box">
-    <h3>We found an existing PGP keychain</h3>
+    <h3>{{_("We found an existing PGP keychain")}}</h3>
     <%= public_key_count %><br>
     <%= private_key_count %>
-    <p>Do you want to generate a new key or import this keychain?</p>
-    <p><a href="#">Learn About PGP Keys</a></p>
-    <button>Generate</button>
-    <button>Import</button>
+    <p>{{_("Do you want to generate a new key or import this keychain?")}}</p>
+    <p><a href="#">{{_("Learn About PGP Keys")}}</a></p>
+    <button>{{_("Generate")}}</button>
+    <button>{{_("Import")}}</button>
   </div>
 </script>
 
 <script id="template-setup-crypto-generated" type="text/template">
   <div class="setup-box">
-    <h3>New PGP key generated</h3>
-    <p>This is your key’s verification fingerprint</p>
+    <h3>{{_("New PGP key generated")}}</h3>
+    <p>{{_("This is your key’s verification fingerprint")}}</p>
     <span class="icon-fingerprint"></span> <%= fingerprint %>
-    <p><a href="#">See Key Details</a> <a href="#">Learn About PGP Keys</a></p>
+    <p><a href="#">{{_("See Key Details")}}</a> <a href="#">{{_("Learn About PGP Keys")}}</a></p>
   </div>
 </script>
+
 
 <!-- Views -->
 <script id="template-setup-" type="text/template">
