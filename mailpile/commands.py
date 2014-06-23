@@ -158,7 +158,7 @@ class Command:
 
             return render()
 
-    def __init__(self, session, name=None, arg=None, data=None):
+    def __init__(self, session, name=None, arg=None, data=None, async=False):
         self.session = session
         self.name = self.SYNOPSIS[1] or self.SYNOPSIS[2] or name
         self.data = data or {}
@@ -166,6 +166,7 @@ class Command:
         self.message = name
         self.error_info = {}
         self.result = None
+        self.run_async = async
         if type(arg) in (type(list()), type(tuple())):
             self.args = tuple(arg)
         elif arg:
@@ -376,10 +377,13 @@ class Command:
         if self.args:
             private_data['args'] = self._sloppy_copy(self.args)
 
-        self.event = Event(source=self,
-                           message=self._fmt_msg(self.LOG_STARTING),
-                           data={},
-                           private_data=private_data)
+        self.event = self._make_command_event(private_data)
+
+    def _make_command_event(self, private_data):
+        return Event(source=self,
+                     message=self._fmt_msg(self.LOG_STARTING),
+                     data={},
+                     private_data=private_data)
 
     def _finishing(self, command, rv):
         # FIXME: Remove this when stuff is up to date
@@ -394,6 +398,11 @@ class Command:
                                     rv, self.status, self.message,
                                     error_info=self.error_info)
 
+        if not self.run_async:
+            self._update_finished_event()
+        return result
+
+    def _update_finished_event(self):
         # Update the event!
         if self.message:
             self.event.message = self.message
@@ -407,9 +416,34 @@ class Command:
             details=('timing' in self.session.config.sys.debug))
         if self.name:
             self.session.ui.finish_command(self.name)
-        return result
+
 
     def _run(self, *args, **kwargs):
+        if self.run_async:
+            def streetcar():
+                try:
+                    rv = self._run_sync(*args, **kwargs).as_dict()
+                    self.event.private_data.update(rv)
+                    self._update_finished_event()
+                except:
+                    traceback.print_exc()
+
+            self._starting()
+            self._update_event_state(self.event.RUNNING, log=True)
+            result = Command.CommandResult(self, self.session, self.name,
+                                           self.__doc__,
+                                           {"resultid": self.event.event_id}, 
+                                           "success", 
+                                           "Running in background")
+
+            self.session.config.slow_worker.add_task(self.session, self.name, 
+                                                     streetcar)
+            return result
+
+        else:
+            return self._run_sync(*args, **kwargs)
+
+    def _run_sync(self, *args, **kwargs):
         def command(self, *args, **kwargs):
             return self.command(*args, **kwargs)
         try:

@@ -70,7 +70,8 @@ class UrlMap:
                                            or not strict)))]
 
     def _command(self, name,
-                 args=None, query_data=None, post_data=None, method='GET'):
+                 args=None, query_data=None, post_data=None, 
+                 method='GET', async=False):
         """
         Return an instantiated mailpile.command object or raise a UsageError.
 
@@ -161,7 +162,7 @@ class UrlMap:
                     else:
                         data[var] = [d.decode('utf-8') for d in sdata]
 
-        return command(self.session, name, args, data=data)
+        return command(self.session, name, args, data=data, async=async)
 
     OUTPUT_SUFFIXES = ['.css', '.html', '.js',  '.json', '.rss', '.txt',
                        '.text', '.vcf', '.xml',
@@ -277,7 +278,7 @@ class UrlMap:
         """RESERVED FOR LATER."""
 
     def _map_api_command(self, method, path_parts,
-                         query_data, post_data, fmt='html'):
+                         query_data, post_data, fmt='html', async=False):
         """Map a path to a command list, prefering the longest match.
 
         >>> urlmap._map_api_command('GET', ['message', 'draft', ''], {}, {})
@@ -298,7 +299,8 @@ class UrlMap:
                                   args=path_parts[bp:],
                                   query_data=query_data,
                                   post_data=post_data,
-                                  method=method)
+                                  method=method, 
+                                  async=async)
                 ]
             except UsageError:
                 pass
@@ -308,6 +310,7 @@ class UrlMap:
                                                        '/'.join(path_parts)))
 
     MAP_API = 'api'
+    MAP_ASYNC_API = 'async'
     MAP_PATHS = {
         '': _map_root,
         'in': _map_tag,
@@ -335,6 +338,10 @@ class UrlMap:
         UsageError: Not available for GET: bogus
 
         The root currently just redirects to /in/inbox/:
+        >>> urlmap.map(request, 'GET', '/async/0/search/', {}, {})
+        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+
+        The root currently just redirects to /in/inbox/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
         (<...UrlRedirect instance at 0x...>, ('/in/inbox/',))
@@ -355,12 +362,15 @@ class UrlMap:
         """
 
         # Check the API first.
-        if path.startswith('/%s/' % self.MAP_API):
+        is_async = path.startswith('/%s/' % self.MAP_ASYNC_API)
+        is_api = path.startswith('/%s/' % self.MAP_API)
+        if is_api or is_async:
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:
                 raise UsageError('Unknown API level: %s' % path_parts[2])
             return self._map_api_command(method, path_parts[3:],
-                                         query_data, post_data, fmt='json')
+                                         query_data, post_data, 
+                                         fmt='json', async=is_async)
 
         path_parts = path[1:].split('/')
         try:
