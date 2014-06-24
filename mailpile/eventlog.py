@@ -7,7 +7,7 @@ import time
 from email.utils import formatdate, parsedate_tz, mktime_tz
 
 from mailpile.crypto.streamer import EncryptingStreamer, DecryptingStreamer
-from mailpile.util import CleanText
+from mailpile.util import CleanText, json_helper
 
 
 EVENT_COUNTER_LOCK = threading.Lock()
@@ -77,7 +77,7 @@ class Event(object):
         self._set_ts(ts or time.time())
 
     def __str__(self):
-        return json.dumps(self._data)
+        return json.dumps(self._data, default=json_helper)
 
     def _set_ts(self, ts):
         if hasattr(ts, 'timetuple'):
