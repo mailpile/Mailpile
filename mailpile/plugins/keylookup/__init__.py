@@ -66,8 +66,6 @@ def lookup_crypto_keys(session, address, event=None):
             x[key]["origin"].append(h.NAME)
         scores.append(s)
 
-    event.private_data = {"result": m, "runningsearch": None}
-    session.config.event_log.log_event(event)
     x = _calc_scores(x, scores)
 
     g = GnuPG()
@@ -78,6 +76,9 @@ def lookup_crypto_keys(session, address, event=None):
 
     x = [i for i in x.values()]
     x.sort(key=lambda k: -k["score"])
+    if event:
+        event.private_data = {"result": x, "runningsearch": None}
+        session.config.event_log.log_event(event)
     return x
 
 
