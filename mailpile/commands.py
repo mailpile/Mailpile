@@ -1171,6 +1171,7 @@ class ProgramStatus(Command):
     SYNOPSIS = (None, 'ps', 'ps', None)
     ORDER = ('Internals', 5)
     IS_USER_ACTIVITY = False
+    LOG_NOTHING = True
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
