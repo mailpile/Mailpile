@@ -5726,44 +5726,33 @@ a.compose-show-field {
 /* Compose - Options */
 .compose-options {
   margin-bottom: 0px;
-  padding: 0 0 10px 0;
+  padding: 0 0 0px 0;
 }
 .compose-options-size {
   font-size: 14px;
   font-weight: normal;
   line-height: 14px;
 }
-.compose-options ul {
-  margin-bottom: 0px;
-  padding: 0px;
-}
-.compose-options ul li {
-  margin: 0px 20px 0px 0px;
-  font-size: 14px;
-  font-weight: normal;
-  line-height: 14px;
-}
-.compose-options a {
-  font-weight: normal;
-  color: #b3b3b3;
-}
-.compose-options a.navigation-on {
-  padding: 5px;
-  color: #4d4d4d;
-}
-.compose-options label {
-  padding-bottom: 0px;
-  margin-bottom: 0px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: normal;
-  line-height: 14px;
-  font-style: italic;
-  color: #b3b3b3;
-}
-.compose-options .compose-crypto-encryption,
-.compose-options .compose-crypto-signature {
+.compose-options-crypto {
+  width: 74px;
+  position: relative;
+  bottom: -1px;
+  display: inline-block;
   text-align: center;
+  background: #ffffff;
+  border-left: 1px solid #cccccc;
+  border-top: 1px solid #cccccc;
+  border-right: 1px solid #cccccc;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 14px;
+}
+.compose-options-crypto .compose-crypto-encryption,
+.compose-options-crypto .compose-crypto-signature {
+  display: inline-block;
+  margin: 10px 6px;
 }
 .compose-crypto-signature:hover,
 .compose-crypto-encryption:hover {
@@ -5773,7 +5762,7 @@ a.compose-show-field {
   color: #b3b3b3;
 }
 .compose-crypto-signature.signed {
-  color: #337fb2;
+  color: #4b9441;
 }
 .compose-crypto-signature.error {
   color: #be1c21;
@@ -5792,6 +5781,42 @@ a.compose-show-field {
 }
 .compose-crypto-encryption.error {
   color: #be1c21;
+}
+.compose-options ul {
+  display: inline-block;
+  margin-left: 10px;
+  margin-bottom: 0px;
+  padding: 0px;
+}
+.compose-options ul li {
+  margin: 0px 10px 0px 0px;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 14px;
+}
+.compose-options a {
+  font-weight: normal;
+  color: #b3b3b3;
+}
+.compose-options label.right {
+  position: relative;
+  top: 9px;
+  right: 10px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 14px;
+  font-style: italic;
+  color: #b3b3b3;
+}
+.compose-to-summary {
+  max-width: 500px;
+  word-wrap: normal;
+  word-break: normal;
+  white-space: nowrap;
+  overflow: hidden;
 }
 /* Compose - Body */
 .compose-body {
@@ -5822,8 +5847,7 @@ a.compose-show-field {
 /* Compose - Body - Attachments */
 .compose-attachments {
   margin-top: 0px;
-  padding: 10px;
-  border-top: 1px solid #cccccc;
+  padding: 10px 10px 10px 10px;
   font-size: 14px;
 }
 .compose-attachments ul {
@@ -6506,6 +6530,7 @@ li.compose-attachment img {
 }
 /* Thread Message Attachments */
 div.thread-message-attachments {
+  margin-top: 15px;
   margin-left: 20px;
   margin-bottom: 0px;
 }
