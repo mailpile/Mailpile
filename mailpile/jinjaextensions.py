@@ -512,18 +512,17 @@ class MailpileCommand(Extension):
             name = name[:truncate-3] + '...'
         return name
 
-    def _recipient_summary(self, editing_strings, addresses, truncate=120):
+    def _recipient_summary(self, editing_strings, addresses, truncate):
         summary_list = []
-        others = ''
         recipients = editing_strings['to_aids'] + editing_strings['cc_aids'] + editing_strings['bcc_aids']
         for aid in recipients:
-            print 'adding: ' + addresses[aid].fn
             summary_list.append(addresses[aid].fn)
         summary = ', '.join(summary_list)
         if len(summary) > truncate:
+            others = ''
             if len(recipients) > 1:
-                others = _("and") + str(len(recipients) - 1) + _("others")
-            summary + others + '...'
+                others = _("and") + ' ' + str(len(recipients) - 1) + ' ' + _("others")
+            summary = summary[:truncate] + '... ' + others
         else:
             summary
         return summary
