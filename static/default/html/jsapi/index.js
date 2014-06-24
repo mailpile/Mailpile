@@ -133,43 +133,20 @@ Mailpile.API._sync_action = function(command, data, method, callback) {
 };
 
 
-Mailpile.API._async_action = function(command, data, method, callback) {
+Mailpile.API._async_action = function(command, data, method, callback, flags) {
     function handle_event(data) {
         if (data.result.resultid) {
-            subreq = {event_id: data.result.resultid, flags: "c"};
+            subreq = {event_id: data.result.resultid, flags: flags};
             var subid = EventLog.subscribe(subreq, function(ev) {
-                callback(ev.private_data);
-                EventLog.unsubscribe(data.result.resultid, subid);
+                callback(ev.private_data, ev);
+                if (ev.flags == "c") {
+                    EventLog.unsubscribe(data.result.resultid, subid);
+                }
             });
         }
     }
 
-    if (method != "GET" && method != "POST") {
-        method = "GET";
-    }
-    if (method == "GET") {
-        for(var k in data) {
-            if(!data[k] || data[k] == undefined) {
-                delete data[k];
-            }
-        }
-        var params = $.param(data);
-        $.ajax({
-            url      : Mailpile.API._async_url + command + "?" + params,
-            type     : method,
-            dataType : 'json',
-            success  : handle_event,
-        });
-    } else if (method =="POST") {
-        $.ajax({
-            url      : Mailpile.API._async_url + command,
-            type     : method,
-            data     : data,
-            dataType : 'json',
-            success  : handle_event,
-        });
-    }
-
+    Mailpile.API._sync_action(command, data, method, handle_event, flags);
 }
 
 {% for command in result.api_methods -%}
