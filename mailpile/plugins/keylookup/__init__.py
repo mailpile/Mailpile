@@ -29,7 +29,7 @@ def crypto_keys_scorer(known_keys_list, key):
     return score
 
 
-def lookup_crypto_keys(session, address, event=None):
+def lookup_crypto_keys(session, address, event=None, allowremote=True):
     def _calc_scores(x, scores):
         for key in x.keys():
             x[key]["score"] = 0
@@ -49,6 +49,9 @@ def lookup_crypto_keys(session, address, event=None):
 
     for handler in KEY_LOOKUP_HANDLERS:
         h = handler(session)
+        if not allowremote and not h.LOCAL:
+            continue
+
         if event:
             m = _calc_scores(x, scores)
             m = [i for i in m.values()]
@@ -85,13 +88,23 @@ def lookup_crypto_keys(session, address, event=None):
 class KeyLookup(Command):
     """Perform a key lookup"""
     ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/keylookup', 'crypto/keylookup', '<address>')
+    SYNOPSIS = (None, 'crypto/keylookup', 'crypto/keylookup', 
+        '<address> [<allowremote>]')
     HTTP_CALLABLE = ('GET',)
-    HTTP_QUERY_VARS = {'address': 'The nick/address to find a key for'}
+    HTTP_QUERY_VARS = {
+        'address': 'The nick/address to find a key for',
+        'allowremote': 'Whether to permit remote key lookups (defaults to true)'
+    }
 
     def command(self):
+        if len(self.args) > 1:
+            allowremote = self.args.pop()
+        else:
+            allowremote = self.data.get('allowremote', True)
+            
         address = " ".join(self.data.get('address', self.args))
-        return lookup_crypto_keys(self.session, address, event=self.event)
+        return lookup_crypto_keys(self.session, address, event=self.event,
+                                  allowremote=allowremote)
 
 _plugins = PluginManager(builtin=__file__)
 _plugins.register_commands(KeyLookup)
@@ -99,6 +112,7 @@ _plugins.register_commands(KeyLookup)
 
 class LookupHandler:
     NAME = "NONE"
+    LOCAL = False
 
     def __init__(self, session):
         self.session = session

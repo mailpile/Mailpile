@@ -9,6 +9,7 @@ import pgpdump
 
 class EmailKeyLookupHandler(LookupHandler, Search):
     NAME = "E-mail keys"
+    LOCAL = True
 
     def __init__(self, session):
         Search.__init__(self, session)
