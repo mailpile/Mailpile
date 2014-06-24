@@ -1216,18 +1216,23 @@ class ProgramStatus(Command):
         config = self.session.config
 
         try:
-            locks = [(config.index, '_lock', config.index._lock._is_owned()),
-                     (config.index, '_save_lock',
-                      config.index._save_lock._is_owned())]
+            idx = config.index
+            locks = [
+                ('config.index', '_lock', idx._lock._is_owned()),
+                ('config.index', '_save_lock', idx._save_lock._is_owned())
+            ]
         except AttributeError:
             locks = []
-        locks.extend([('config', '_lock', config._lock._is_owned()),
-                      ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
-                       mailpile.postinglist.GLOBAL_POSTING_LOCK.locked()),
-                      ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
-                       mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
-                      ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
-                       mailpile.postinglist.GLOBAL_GPL_LOCK.locked())])
+        locks.extend([
+            ('config', '_lock', config._lock._is_owned()),
+            ('config.vcards', '_lock', config.vcards._lock._is_owned()),
+            ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
+             mailpile.postinglist.GLOBAL_POSTING_LOCK.locked()),
+            ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
+             mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
+            ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
+             mailpile.postinglist.GLOBAL_GPL_LOCK.locked()),
+        ])
 
         threads = threading.enumerate()
         for thread in threads:
@@ -1248,7 +1253,7 @@ class ProgramStatus(Command):
             'ievents': config.event_log.incomplete(),
             'delay': play_nice_with_threads(),
             'threads': threads,
-            'locks': locks
+            'locks': sorted(locks)
         })
 
 
