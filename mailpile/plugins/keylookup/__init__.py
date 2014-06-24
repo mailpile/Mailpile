@@ -29,11 +29,33 @@ def crypto_keys_scorer(known_keys_list, key):
     return score
 
 
-def lookup_crypto_keys(session, address):
+def lookup_crypto_keys(session, address, event=None):
+    def _calc_scores(x, scores):
+        for key in x.keys():
+            x[key]["score"] = 0
+
+        for scoreset in scores:
+            for key, value in scoreset.iteritems():
+                if key not in x:
+                    continue
+                if "score" not in x[key]:
+                    x[key]["score"] = 0
+                x[key]["score"] += value
+        return x
+
     x = {}
     scores = []
+    lastresult = {}
+
     for handler in KEY_LOOKUP_HANDLERS:
         h = handler(session)
+        if event:
+            m = _calc_scores(x, scores)
+            m = [i for i in m.values()]
+            m.sort(key=lambda k: -k["score"])
+            event.private_data = {"result": m, "runningsearch": h.NAME}
+            session.config.event_log.log_event(event)
+
         r, s = h.lookup(address)
         for key, value in r.iteritems():
             if key in x:
@@ -44,13 +66,9 @@ def lookup_crypto_keys(session, address):
             x[key]["origin"].append(h.NAME)
         scores.append(s)
 
-    for scoreset in scores:
-        for key, value in scoreset.iteritems():
-            if key not in x:
-                continue
-            if "score" not in x[key]:
-                x[key]["score"] = 0
-            x[key]["score"] += value
+    event.private_data = {"result": m, "runningsearch": None}
+    session.config.event_log.log_event(event)
+    x = _calc_scores(x, scores)
 
     g = GnuPG()
     known_keys_list = g.list_keys()
@@ -72,7 +90,7 @@ class KeyLookup(Command):
 
     def command(self):
         address = " ".join(self.data.get('address', self.args))
-        return lookup_crypto_keys(self.session, address)
+        return lookup_crypto_keys(self.session, address, event=self.event)
 
 _plugins = PluginManager(builtin=__file__)
 _plugins.register_commands(KeyLookup)
@@ -103,6 +121,8 @@ class LookupHandler:
 
 #########################################
 
+from mailpile.plugins.keylookup.email_keylookup import EmailKeyLookupHandler
+from mailpile.plugins.keylookup.dnspka import DNSPKALookupHandler
 
 class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
@@ -118,7 +138,3 @@ class KeyserverLookupHandler(LookupHandler):
         pass
 
 register_crypto_key_lookup_handler(KeyserverLookupHandler)
-
-
-from mailpile.plugins.keylookup.dnspka import DNSPKALookupHandler
-from mailpile.plugins.keylookup.email_keylookup import EmailKeyLookupHandler
