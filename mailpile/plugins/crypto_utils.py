@@ -144,7 +144,7 @@ class GPGKeyImportFromMail(Search):
 
 
 class GPGKeyList(Command):
-    """Import a GPG Key."""
+    """List GPG Keys."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/keylist', 
                 'crypto/gpg/keylist', '<address>')
@@ -166,6 +166,17 @@ class GPGKeyList(Command):
         return self._success("Searched for keys for e-mail address", res)
 
 
+class GPGKeyListSecret(Command):
+    """List Secret GPG Keys"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/keylist/secret', 
+                'crypto/gpg/keylist/secret', '<address>')
+    HTTP_CALLABLE = ('GET', )
+
+    def command(self):
+        g = GnuPG()
+        res = g.list_secret_keys()
+        return self._success("Searched for secret keys", res)
 
 
 class GPGUsageStatistics(Search):
@@ -232,3 +243,4 @@ _plugins.register_commands(GPGKeyImportFromMail)
 _plugins.register_commands(GPGKeySign)
 _plugins.register_commands(GPGKeyList)
 _plugins.register_commands(GPGUsageStatistics)
+_plugins.register_commands(GPGKeyListSecret)
