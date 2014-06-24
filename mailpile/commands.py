@@ -231,14 +231,14 @@ class Command:
             return idx
 
         if wait:
-            rv = config.slow_worker.do(session, 'Load', __do_load1)
+            rv = config.save_worker.do(session, 'Load', __do_load1)
             session.ui.reset_marks(quiet=quiet)
         else:
-            config.slow_worker.add_task(session, 'Load', __do_load1)
+            config.save_worker.add_task(session, 'Load', __do_load1)
             rv = None
 
         if not wait_all:
-            config.slow_worker.add_task(session, 'Load2', __do_load2)
+            config.save_worker.add_task(session, 'Load2', __do_load2)
 
         return rv
 
@@ -246,7 +246,7 @@ class Command:
                          everything=False, config=False,
                          index=False, index_full=False):
         session, cfg, idx = self.session, self.session.config, self._idx()
-        aut = cfg.slow_worker.add_unique_task
+        aut = cfg.save_worker.add_unique_task
         if everything or config:
             aut(session, 'Save config', cfg.save)
         if idx:

@@ -889,7 +889,9 @@ class ConfigManager(ConfigDict):
         self.background = None
         self.cron_worker = None
         self.http_worker = None
-        self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
+        self.dumb_worker = DumbWorker('Dumb worker', None)
+        self.slow_worker = self.dumb_worker
+        self.save_worker = self.dumb_worker
         self.other_workers = []
         self.mail_sources = {}
 
@@ -1437,6 +1439,9 @@ class ConfigManager(ConfigDict):
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', session)
                 config.slow_worker.start()
+            if config.save_worker == config.dumb_worker:
+                config.save_worker = Worker('Save worker', session)
+                config.save_worker.start()
             if not config.cron_worker:
                 config.cron_worker = Cron('Cron worker', session)
                 config.cron_worker.start()
@@ -1496,6 +1501,7 @@ class ConfigManager(ConfigDict):
             for wait in (False, True):
                 for w in ([config.http_worker,
                            config.slow_worker,
+                           config.save_worker,
                            config.cron_worker] +
                           config.other_workers +
                           config.mail_sources.values()):
@@ -1509,6 +1515,7 @@ class ConfigManager(ConfigDict):
             config.other_workers = []
             config.http_worker = config.cron_worker = None
             config.slow_worker = config.dumb_worker
+            config.save_worker = config.dumb_worker
         finally:
             config._lock.release()
 
