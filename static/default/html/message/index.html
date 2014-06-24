@@ -14,6 +14,7 @@
 
   {% if message and "editing_strings" in message %}{# Render the composer #}
     {% set editing_strings = message.editing_strings %}
+    {% set editing_addresses = result.data.addresses %}
     {% include("partials/compose.html") %}
     {% do loop_history.append("edit message") %}
 
@@ -33,6 +34,7 @@
       {% set mid = compose.message_ids.0 %}
       {% if "editing_strings" in compose.data.messages[mid] %}
       {% set editing_strings = compose.data.messages[mid].editing_strings %}
+      {% set editing_addresses = compose.data.addresses %}
       {% include("partials/compose.html") %}
       {% endif %}
     {% else %}
@@ -59,6 +61,7 @@
   {% if compose %}
     {% set mid = compose.message_ids.0 %}
     {% set editing_strings = compose.data.messages[mid].editing_strings %}
+    {% set editing_addresses = compose.data.addresses %}
     {% include("partials/compose.html") %}
   {% else %}
     {{_("Could Not Render Composer")}}

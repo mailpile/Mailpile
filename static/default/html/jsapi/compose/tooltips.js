@@ -5,8 +5,9 @@ $(document).ready(function() {
     content: {
       title: false,
       text: function(event, api) {
+        $(this).find('text').removeClass('hide');
         var html = '<div>\
-          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html() + '</h4>\
+          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html().replace(' hide', '') + '</h4>\
           <p>' + $(this).attr('title') + '</p>\
           </div>';
         return html;
@@ -34,8 +35,7 @@ $(document).ready(function() {
       delay: 50
     },
     events: {
-      show: function(event, api) {
-      }
+      show: function(event, api) {}
     }
   });
 
@@ -45,7 +45,7 @@ $(document).ready(function() {
       title: false,
       text: function(event, api) {
         var html = '<div>\
-          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html() + '</h4>\
+          <h4 class="' + $(this).data('crypto_color') + '">' + $(this).html().replace(' hide', '') + '</h4>\
           <p>' + $(this).attr('title') + '</p>\
           </div>';
         return html;
@@ -85,15 +85,16 @@ $(document).ready(function() {
           var encrypt_color = '#fbb03b';
         }
 
+        $('.compose-options-crypto').css('border-color', encrypt_color);
         $('.compose-body').css('border-color', encrypt_color);
         $('.compose-attachments').css('border-color', encrypt_color);
       },
       hide: function(event, api) {
-
         $('.select2-choices').css('border-color', '#CCCCCC');
         $('.compose-from').css('border-color', '#CCCCCC');
         $('.compose-subject input[type=text]').css('border-color', '#CCCCCC');
 
+        $('.compose-options-crypto').css('border-color', '#CCCCCC');
         $('.compose-body').css('border-color', '#CCCCCC');
         $('.compose-attachments').css('border-color', '#CCCCCC');
       }
@@ -135,8 +136,7 @@ $(document).ready(function() {
     hide: {
       event: false,
       inactive: 800
-    },
-    events: {}
+    }
   });
 
 });

@@ -30,8 +30,8 @@
     </div>
   </div>
   <div class="compose-options clearfix" data-mid="{{mid}}">
-    <ul class="horizontal left has-mid" data-mid="{{mid}}">
-      <li class="compose-crypto-encryption none"
+    <div class="compose-options-crypto">
+      <div class="compose-crypto-encryption none"
           data-crypto_none="{{_("None")}}"
           data-crypto_encrypt="{{_("Encrypted")}}"
           data-crypto_cant_encrypt="{{_("Can't Encrypt")}}"
@@ -40,23 +40,23 @@
           data-crypto_title_encrypt="{{_("This message and attachments will be encrypted. The recipients & subject (metadata) will not")}}"
           data-crypto_title_cannot_encrypt="{{_("This message cannot be encrypted because you do not have keys for one or more recipients")}}"
           data-crypto_title_encrypt_error="{{_("There was an error prepping this message for encryption")}}">
-        <span class="icon icon-lock-open"></span> <span class="text hide">{{_("None")}}</span>
-      </li>
-      <li class="compose-crypto-signature none"
+          <span class="icon icon-lock-open"></span><span class="text hide">{{_("None")}}</span>
+      </div>
+      <div class="compose-crypto-signature none"
           data-crypto_signed="{{_("Signed")}}"
           data-crypto_not_signed="{{_("Unsigned")}}"
           data-crypto_signed_error="{{_("Signature Error")}}"
           data-crypto_title_signed="{{_("This message will be signed with your key. Recipients who have your key will know it actually came from you :)")}}"
           data-crypto_title_not_signed="{{_("This message will not be signed with your key. Recipients will have no way of knowing it actually came from you.")}}"
           data-crypto_title_signed_error="{{_("Error accesing your key")}}">
-        <span class="icon icon-signature-none"></span> <span class="text hide">{{_("Unsigned")}}</span>
-      </li>
+          <span class="icon icon-signature-none"></span><span class="text hide">{{_("Unsigned")}}</span>
+      </div>
+    </div>
+    <ul class="horizontal has-mid" data-mid="{{mid}}">
       {% if command == "view" %}
-      <li id="compose-to-summary-{{mid}}" class="compose-to-summary has-mid" data-mid="{{mid}}">
-        {{_("To")}}: {{recipient_summary(editing_strings, result.data.addresses, 120)}}
-      </li>
+      <li id="compose-to-summary-{{mid}}" class="compose-to-summary has-mid" data-mid="{{mid}}"></li>
       <li>
-        <a id="compose-show-details-{{mid}}" class="compose-show-details has-mid {% if compose == "yes" %}navigation-on{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("details")}}</a>
+        <a id="compose-show-details-{{mid}}" class="compose-show-details has-mid {% if compose == "yes" %}navigation-on{% endif %}" href="#" data-mid="{{mid}}" data-message="{{_("hide details")}}">{{_("To")}}: {{recipient_summary(editing_strings, editing_addresses, 36)}}</a>
       </li>
       {% endif %}
       <li>
@@ -88,11 +88,6 @@
   </div>
   <div class="compose-actions clearfix">
     <div class="left">
-    <select class="compose-from" name="from">
-      {% for p in profiles %}
-      <option value="{{p.name}} &lt;{{p.email}}&gt;" {% if p.email == editing_strings.from %}selected="selected"{% endif %}>{{p.name}} &lt;{{p.email}}&gt;</option>
-      {% endfor %}
-    </select>
     <!-- FIXME: Add nice pretty dropdown
     <ul class="left">
       <li class="dropdown">
@@ -115,9 +110,9 @@
     -->
     <ul>
     <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-clock"></span> Send <span id="reply-datetime-display">Immediately</span></a>
+      <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-archive"></span> Send <span id="reply-datetime-display">Now</span></a>
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
-        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="immediately" href="#">Immediately</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="now" href="#">Now</a></li>
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="60" href="#">1 min</a></li>
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="3600" href="#">1 hr</a></li>
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="10800" href="#">3 hrs</a></li>
@@ -133,6 +128,11 @@
     </ul>
     </div>
     <div class="compose-buttons right has-mid" data-mid="{{mid}}">
+      <select class="compose-from" name="from">
+        {% for p in profiles %}
+        <option value="{{p.name}} &lt;{{p.email}}&gt;" {% if p.email == editing_strings.from %}selected="selected"{% endif %}>{{p.name}} &lt;{{p.email}}&gt;</option>
+        {% endfor %}
+      </select>
       <button class="compose-action button-alert" type="submit" name="save" value="save" alt="{{_("Save")}}">
         <span class="icon-compose"></span>{{_("Save")}}
       </button>

@@ -102,7 +102,7 @@
 
   .compose-options {
     margin-bottom: 0px;
-		padding: 0 0 10px 0;
+		padding: 0 0 0px 0;
   }
 
   .compose-options-size {
@@ -111,38 +111,25 @@
     line-height: 14px;
   }
 
-  .compose-options ul {
-    margin-bottom: 0px;
-    padding: 0px;
-  }
-
-  .compose-options ul li {
-    margin: 0px 10px 0px 0px;
-    .compose-options-size();
-  }
-
-  .compose-options a {
-    font-weight: normal;
-    color: @gray;
-  }
-
-  .compose-options a.navigation-on {
-    padding: 5px;
-    color: @grayDark;
-  }
-
-  .compose-options label {
-    padding-bottom: 0px;
-    margin-bottom: 0px;
-    cursor: pointer;
-    .compose-options-size();
-    font-style: italic;
-    color: @gray;
-  }
-
-  .compose-options .compose-crypto-encryption,
-  .compose-options .compose-crypto-signature {
+  .compose-options-crypto {
+    width: 74px;
+    position: relative;
+    bottom: -1px;
+    display: inline-block;
     text-align: center;
+    background: @white;
+    border-left: 1px solid @grayMid;
+    border-top: 1px solid @grayMid;
+    border-right: 1px solid @grayMid;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    .compose-options-size();
+  }
+
+  .compose-options-crypto .compose-crypto-encryption,
+  .compose-options-crypto .compose-crypto-signature {
+    display: inline-block;
+    margin: 10px 6px;
   }
 
   .compose-crypto-signature:hover,
@@ -153,7 +140,7 @@
     color: @gray;
   }
   .compose-crypto-signature.signed {
-    color: @blue;
+    color: @green;
   }
   .compose-crypto-signature.error {
     color: @red;
@@ -172,6 +159,35 @@
   }
   .compose-crypto-encryption.error {
    color: @red;
+  }
+
+  .compose-options ul {
+    display: inline-block;
+    margin-left: 10px;
+    margin-bottom: 0px;
+    padding: 0px;
+  }
+
+  .compose-options ul li {
+    margin: 0px 10px 0px 0px;
+    .compose-options-size();
+  }
+
+  .compose-options a {
+    font-weight: normal;
+    color: @gray;
+  }
+
+  .compose-options label.right {
+    position: relative;
+    top: 9px;
+    right: 10px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    cursor: pointer;
+    .compose-options-size();
+    font-style: italic;
+    color: @gray;
   }
 
   .compose-to-summary {
@@ -218,8 +234,7 @@
 
   .compose-attachments {
     margin-top: 0px;
-    padding: 10px;
-    border-top: 1px solid @grayMid;
+    padding: 10px 10px 10px 10px;
     font-size: 14px;
   }
   
