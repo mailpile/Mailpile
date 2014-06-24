@@ -162,3 +162,11 @@ $(document).ready(function() {
   $('.contact-key-details').hide();
 
 });
+
+$($(".sub-navigation ul")[0]).append("<li><input id=\"search-contacts\"/</li>");
+$("#search-contacts").attr('placeholder', 'search contacts');
+$("#search-contacts").keyup(function() {
+	$.getJSON("/contacts/" + $("#search-contacts").val() + "/as.jhtml", function(data) {
+	$("#content-view").html(data.result);
+	});
+});
