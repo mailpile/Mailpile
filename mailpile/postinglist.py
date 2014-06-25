@@ -169,7 +169,7 @@ class PostingList(object):
         self.sig = sig or self.WordSig(word, self.config)
         self.word = word
         self.WORDS = {self.sig: set()}
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.load()
 
     def _parse_lines(self, lines):
