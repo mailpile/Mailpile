@@ -1176,16 +1176,16 @@ class ProgramStatus(Command):
         def as_text(self):
             cevents = self.result['cevents']
             if cevents:
-                cevents = '\n'.join(['  %s %s' % (e.source, e.message)
+                cevents = '\n'.join(['  %s %s' % (e.event_id, e.message)
                                      for e in cevents])
             else:
                 cevents = _('Nothing Found')
 
             ievents = self.result['ievents']
             if ievents:
-                ievents = '\n'.join(['  %s:%s %s' % (e.source,
-                                                     e.flags,
-                                                     e.message)
+                ievents = '\n'.join([' %s:%s %s' % (e.event_id,
+                                                    e.flags,
+                                                    e.message)
                                      for e in ievents])
             else:
                 ievents = _('Nothing Found')
@@ -1227,11 +1227,11 @@ class ProgramStatus(Command):
             ('config', '_lock', config._lock._is_owned()),
             ('config.vcards', '_lock', config.vcards._lock._is_owned()),
             ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
-             mailpile.postinglist.GLOBAL_POSTING_LOCK.locked()),
+             mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
             ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
              mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
             ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
-             mailpile.postinglist.GLOBAL_GPL_LOCK.locked()),
+             mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),
         ])
 
         threads = threading.enumerate()

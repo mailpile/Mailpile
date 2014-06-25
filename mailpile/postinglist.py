@@ -9,8 +9,7 @@ from mailpile.util import *
 
 
 GLOBAL_POSTING_LIST = None
-
-GLOBAL_POSTING_LOCK = threading.Lock()
+GLOBAL_POSTING_LOCK = threading.RLock()
 GLOBAL_OPTIMIZE_LOCK = threading.Lock()
 
 
@@ -76,7 +75,10 @@ class PostingList(object):
                                 for line in fd:
                                     fdp.write(line)
                     finally:
-                        os.remove(os.path.join(postinglist_dir, fn))
+                        try:
+                            os.remove(os.path.join(postinglist_dir, fn))
+                        except (OSError, IOError):
+                            pass
                         GLOBAL_POSTING_LOCK.release()
 
         filecount = 0
@@ -266,7 +268,7 @@ class PostingList(object):
             return self
 
 
-GLOBAL_GPL_LOCK = threading.Lock()
+GLOBAL_GPL_LOCK = threading.RLock()
 
 
 class GlobalPostingList(PostingList):
@@ -285,6 +287,7 @@ class GlobalPostingList(PostingList):
                                      ) % (count * 100 / len(keys), sig))
                 elif (count % 17) == 0:
                     play_nice_with_threads()
+
                 # If we're doing a full optimize later, we disable the
                 # compaction here. Otherwise it follows the normal
                 # rules (compacts as necessary).
@@ -294,7 +297,7 @@ class GlobalPostingList(PostingList):
                     break
             pls.save()
 
-        if quick:
+        if quick or mailpile.util.QUITTING:
             return count
         else:
             return PostingList._Optimize(session, idx, force=force)
@@ -315,8 +318,8 @@ class GlobalPostingList(PostingList):
     def _Append(cls, session, word, mail_ids, compact=True):
         super(GlobalPostingList, cls)._Append(session, word, mail_ids,
                                               compact=compact)
-        global GLOBAL_POSTING_LIST
         with GLOBAL_GPL_LOCK:
+            global GLOBAL_POSTING_LIST
             sig = cls.WordSig(word, session.config)
             if GLOBAL_POSTING_LIST is None:
                 GLOBAL_POSTING_LIST = {}
@@ -336,7 +339,7 @@ class GlobalPostingList(PostingList):
         return prefix, output
 
     def load(self):
-        with GLOBAL_GPL_LOCK:
+        with self.lock:
             self.filename = 'kw-journal.dat'
             global GLOBAL_POSTING_LIST
             if GLOBAL_POSTING_LIST:

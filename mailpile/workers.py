@@ -154,8 +154,9 @@ class Cron(threading.Thread):
 
 class Worker(threading.Thread):
 
-    def __init__(self, name, session):
+    def __init__(self, name, session, daemon=False):
         threading.Thread.__init__(self)
+        self.daemon = daemon
         self.name = name or 'Worker'
         self.ALIVE = False
         self.JOBS = []
