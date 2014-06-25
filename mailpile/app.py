@@ -149,7 +149,10 @@ def Main(args):
             if readline:
                 readline.write_history_file(session.config.history_file())
 
+        # Make everything in the background quit ASAP...
+        mailpile.util.LAST_USER_ACTIVITY = 0
         mailpile.util.QUITTING = True
+
         config.plugins.process_shutdown_hooks()
         config.stop_workers()
         if config.index:

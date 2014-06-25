@@ -418,6 +418,19 @@ class Command:
         if self.name:
             self.session.ui.finish_command(self.name)
 
+    def _run_sync(self, *args, **kwargs):
+        def command(self, *args, **kwargs):
+            return self.command(*args, **kwargs)
+        try:
+            self._starting()
+            return self._finishing(command, command(self, *args, **kwargs))
+        except self.RAISES:
+            raise
+        except:
+            self._ignore_exception()
+            self._error(self.FAILURE % {'name': self.name,
+                                        'args': ' '.join(self.args)})
+            return self._finishing(command, False)
 
     def _run(self, *args, **kwargs):
         if self.run_async:
@@ -443,20 +456,6 @@ class Command:
 
         else:
             return self._run_sync(*args, **kwargs)
-
-    def _run_sync(self, *args, **kwargs):
-        def command(self, *args, **kwargs):
-            return self.command(*args, **kwargs)
-        try:
-            self._starting()
-            return self._finishing(command, command(self, *args, **kwargs))
-        except self.RAISES:
-            raise
-        except:
-            self._ignore_exception()
-            self._error(self.FAILURE % {'name': self.name,
-                                        'args': ' '.join(self.args)})
-            return self._finishing(command, False)
 
     def run(self, *args, **kwargs):
         if self.IS_USER_ACTIVITY:
