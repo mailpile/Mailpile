@@ -632,19 +632,19 @@ class MailIndex:
                       msg_mid=None, raw_msg_id=None, msg_id=None, msg_ts=None,
                       msg_from=None, msg_subject=None, msg_body=None,
                       msg_to=None, msg_cc=None, msg_tags=None):
-        if msg_mid:
+        if msg_mid is not None:
             msg_info[self.MSG_MID] = msg_mid
-        if raw_msg_id:
+        if raw_msg_id is not None:
             msg_info[self.MSG_ID] = self.encode_msg_id(raw_msg_id)
-        if msg_id:
+        if msg_id is not None:
             msg_info[self.MSG_ID] = msg_id
-        if msg_ts:
+        if msg_ts is not None:
             msg_info[self.MSG_DATE] = b36(msg_ts)
-        if msg_from:
+        if msg_from is not None:
             msg_info[self.MSG_FROM] = msg_from
-        if msg_subject:
+        if msg_subject is not None:
             msg_info[self.MSG_SUBJECT] = msg_subject
-        if msg_body:
+        if msg_body is not None:
             msg_info[self.MSG_BODY] = msg_body
         if msg_to is not None:
             msg_info[self.MSG_TO] = self.compact_to_list(msg_to or [])
