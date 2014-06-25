@@ -96,8 +96,9 @@ Mailpile.compose_render_message_thread = function(mid) {
 Mailpile.find_missing_keys_locally = function(addr) {
     Mailpile.API.async_crypto_keylookup({"address": addr, "allowremote": false}, function(data, ev) {
         // Do stuff..        
-    }    
-}
+    })
+};
+
 
 Mailpile.find_missing_keys = function(addr) {
     $("#modal-full").html($("#modal-search-keyservers").html());
