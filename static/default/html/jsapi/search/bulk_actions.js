@@ -68,6 +68,11 @@ Mailpile.bulk_action_select_invert = function() {
 };
 
 
+Mailpile.bulk_action_select_between = function() {
+  alert('FIXME: Will select messages between two points');
+};
+
+
 Mailpile.bulk_action_selection_up = function() {
   var checkboxes = $('#pile-results input[type=checkbox]');
   if (this['messages_cache'].length == 0) {
@@ -90,7 +95,6 @@ Mailpile.bulk_action_selection_down = function() {
     Mailpile.pile_action_select($(checkboxes[0]).parent().parent());
     return;
   }
-
   $(checkboxes.get().reverse()).each(function() {
     if ($(this).parent().parent().prev().children().children("input").is(":checked")) {
       Mailpile.pile_action_select($(this).parent().parent());

@@ -10,6 +10,7 @@ if (!window.console) window.console = {
 
 Mailpile = {
     instance:           {},
+    search_target:      'none',
     search_cache:       [],
     messages_cache:     [],
     messages_composing: {},
@@ -27,19 +28,23 @@ Mailpile = {
         ["normal", "g s",    function() { Mailpile.go("/settings/profiles/"); }],
         ["normal", "command+z ctrl+z",  function() { alert('Undo Something ') }],
         ["normal", "s a",    function() { Mailpile.bulk_action_select_all(); }],
+        ["normal", "s b",    function() { Mailpile.bulk_action_select_between(); }],
         ["normal", "s n",    function() { Mailpile.bulk_action_select_none(); }],
         ["normal", "s i",    function() { Mailpile.bulk_action_select_invert(); }],
         ["normal", "k",      function() { Mailpile.bulk_action_selection_down(); }],
         ["normal", "j",      function() { Mailpile.bulk_action_selection_up(); }],
         ["normal", "enter",  function() { Mailpile.open_selected_thread(); }],
         ["normal", "f",      function() { Mailpile.update_search(); }],
-        ["normal", ["a"], function() { Mailpile.keybinding_move_message(''); }],
-        ["normal", ["d"], function() { Mailpile.keybinding_move_message('trash'); }],
-        ["normal", ["r"], function() { Mailpile.bulk_action_read(); }],
-        ["normal", ["m s"], function() { Mailpile.keybinding_move_message('spam'); }],
-        ["normal", ["t"], function() { Mailpile.render_modal_tags(); }],
-        ["normal", ["u"], function() { Mailpile.bulk_action_unread(); }],
-        ["global", "esc", function() {
+        ["normal", ["m a"],  function() { Mailpile.keybinding_move_message(''); }],
+        ["normal", ["m s"],  function() { Mailpile.keybinding_move_message('spam'); }],
+        ["normal", ["m d"],  function() { Mailpile.keybinding_move_message('trash'); }],
+        ["normal", ["t"],    function() { Mailpile.render_modal_tags(); }],
+        ["normal", ["r"],    function() { Mailpile.bulk_action_read(); }],
+        ["normal", ["u"],    function() { Mailpile.bulk_action_unread(); }],
+        ["normal", ["up"],   function() { Mailpile.keybinding_target('up'); }],
+        ["normal", ["down"], function() { Mailpile.keybinding_target('down'); }],
+        ["normal", "shift",  function() { Mailpile.keybinding_shift_router(); }],
+        ["global", "esc",    function() {
             $('input[type=text]').blur();
             $('textarea').blur();
         }]
