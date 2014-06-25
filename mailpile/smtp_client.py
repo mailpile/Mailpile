@@ -46,6 +46,10 @@ else:
     SMTP_SSL = SMTP
 
 
+class SendMailError(IOError):
+    pass
+
+
 def _RouteTuples(session, from_to_msg_ev_tuples):
     tuples = []
     for frm, to, msg, events in from_to_msg_ev_tuples:
@@ -111,6 +115,17 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 session.config.event_log.log_event(ev)
         session.ui.mark(msg)
 
+    def fail(msg, events):
+        mark(msg, events, log=True)
+        for ev in events:
+            ev.data['last_error'] = msg
+        raise SendMailError(msg)
+
+    def smtp_do_or_die(msg, events, method, *args, **kwargs):
+        rc, msg = method(*args, **kwargs)
+        if rc != 250:
+           fail(msg + ' (%s %s)' % (rc, msg), events)
+
     # Do the actual delivering...
     for frm, sendmail, to, msg, events in routes:
 
@@ -127,8 +142,12 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
             sm_startup = None
             sm_write = proc.stdin.write
-            sm_close = proc.stdin.close
-            sm_cleanup = lambda: [sm_close(), proc.wait()]
+            def sm_close():
+                proc.stdin.close()
+                rv = proc.wait()
+                if rv != 0:
+                    fail(_('%s failed with exit code %d') % (cmd, rv), events)
+            sm_cleanup = lambda: [proc.stdin.close(), proc.wait()]
             # FIXME: Update session UI with progress info
             for ev in events:
                 ev.data['proto'] = 'subprocess'
@@ -157,31 +176,39 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 sys.stderr.write(_('SMTP connection to: %s:%s as %s@%s\n'
                                    ) % (host, port, user, pwd))
 
-            server = smtp_ssl and SMTP_SSL() or SMTP()
+            server = (smtp_ssl and SMTP_SSL or SMTP
+                      )(local_hostname='mailpile', timeout=25)
             def sm_startup():
+                if 'sendmail' in session.config.sys.debug:
+                    server.set_debuglevel(1)
                 if proto == 'smtorp':
                     server.connect(host, int(port),
                                    socket_cls=session.config.get_tor_socket())
                 else:
                     server.connect(host, int(port))
-                server.ehlo()
                 if not smtp_ssl:
                     # We always try to enable TLS, even if the user just requested
                     # plain-text smtp.  But we only throw errors if the user asked
                     # for encryption.
                     try:
                         server.starttls()
-                        server.ehlo()
                     except:
                         if sendmail.startswith('smtptls'):
                             raise InsecureSmtpError()
                 if user and pwd:
-                    server.login(user, pwd)
+                    try:
+                        server.login(user, pwd)
+                    except smtplib.SMTPAuthenticationError:
+                        fail(_('Invalid username or password'), events)
 
-                server.mail(frm)
+                smtp_do_or_die(_('Sender rejected by SMTP server'),
+                               events, server.mail, frm)
                 for rcpt in to:
-                    server.rcpt(rcpt)
-                server.docmd('DATA')
+                    smtp_do_or_die(_('Sender rejected recpient: %s') % rcpt,
+                                   events, server.rcpt, rcpt)
+                rcode, rmsg = server.docmd('DATA')
+                if rcode != 354:
+                    fail(_('Server rejected DATA: %s %s') % (rcode, rmsg))
 
             def sm_write(data):
                 for line in data.splitlines(True):
@@ -191,13 +218,14 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
 
             def sm_close():
                 server.send('\r\n.\r\n')
+                smtp_do_or_die(_('Error spooling mail'),
+                               events, server.getreply)
 
             def sm_cleanup():
                 if hasattr(server, 'sock'):
                     server.close()
         else:
-            raise Exception(_('Invalid sendmail command/SMTP server: %s'
-                              ) % sendmail)
+            fail(_('Invalid sendmail command/SMTP server: %s') % sendmail)
 
         try:
             # Run the entire connect/login sequence in a single timer...
@@ -216,6 +244,11 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 RunTimed(20, sm_write, msg_string[:20480])
                 msg_string = msg_string[20480:]
             RunTimed(10, sm_close)
+
+            mark(_n('Message sent, %d byte',
+                    'Message sent, %d bytes',
+                    total
+                    ) % total, events)
             for ev in events:
                 for rcpt in to:
                     vcard = session.config.vcards.get_vcard(rcpt)
@@ -225,9 +258,5 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 ev.data['bytes'] = total
                 ev.data['delivered'] = len([k for k in ev.private_data
                                             if ev.private_data[k]])
-            mark(_n('Message sent, %d byte',
-                    'Message sent, %d bytes',
-                    total
-                    ) % total, events)
         finally:
             sm_cleanup()

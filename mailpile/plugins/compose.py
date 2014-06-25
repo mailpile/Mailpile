@@ -671,6 +671,10 @@ class Sendit(CompositionCommand):
         'to': 'recipients'
     }
 
+    # We set our events' source class explicitly, so subclasses don't
+    # accidentally create orphaned mail tracking events.
+    EVENT_SOURCE = 'mailpile.plugins.compose.Sendit'
+
     def command(self, emails=None):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
@@ -705,12 +709,13 @@ class Sendit(CompositionCommand):
                 # We load up any incomplete events for sending this message
                 # to this set of recipients. If nothing is in flight, create
                 # a new event for tracking this operation.
-                events = list(config.event_log.incomplete(source=self,
-                                                          data_mid=msg_mid,
-                                                          data_sid=msg_sid))
+                events = list(config.event_log.incomplete(
+                    source=self.EVENT_SOURCE,
+                    data_mid=msg_mid,
+                    data_sid=msg_sid))
                 if not events:
                     events.append(config.event_log.log(
-                        source=self,
+                        source=self.EVENT_SOURCE,
                         flags=Event.RUNNING,
                         message=_('Sending message'),
                         data={'mid': msg_mid, 'sid': msg_sid}))
@@ -733,6 +738,7 @@ class Sendit(CompositionCommand):
                 session.ui.warning(message)
                 missing_keys.extend(kle.missing)
                 self._ignore_exception()
+            # FIXME: Also fatal, when the SMTP server REJECTS the mail
             except:
                 # We want to try that again!
                 message = _('Failed to send %s') % email
@@ -784,7 +790,7 @@ class Update(CompositionCommand):
         try:
             if (self.data.get('file-data') or [''])[0]:
                 if not Attach(session, data=self.data).command(emails=emails):
-                    return False
+                    return self._error(_('Failed to attach files'))
 
             for email, update_string in email_updates:
                 email.update_from_string(session, update_string, final=outbox)
@@ -839,26 +845,27 @@ class UpdateAndSendit(Update):
         return Update.command(self, create=create, outbox=outbox)
 
 
-class EmptyOutbox(Command):
+class EmptyOutbox(Sendit):
     """Try to empty the outbox."""
     SYNOPSIS = (None, 'sendmail', None, None)
 
     @classmethod
     def sendmail(cls, session):
-        cfg, idx = session.config, session.config.index
+        cls(session).run()
+
+    def command(self):
+        cfg, idx = self.session.config, self.session.config.index
         messages = []
         for tag in cfg.get_tags(type='outbox'):
             search = ['in:%s' % tag._key]
-            for msg_idx_pos in idx.search(session, search,
+            for msg_idx_pos in idx.search(self.session, search,
                                           order='flat-index').as_set():
                 messages.append('=%s' % b36(msg_idx_pos))
         if messages:
-            return Sendit(session, arg=messages).run()
+            self.args = tuple(messages)
+            return Sendit.command(self)
         else:
-            return True
-
-    def command(self):
-        return self.sendmail(self.session)
+            return self._success(_('The outbox is empty'))
 
 
 _plugins.register_config_variables('prefs', {
