@@ -51,7 +51,9 @@ class Search(Command):
 
         def as_text(self):
             if self.result:
-                if isinstance(self.result, (list, set)):
+                if isinstance(self.result, (bool, str, unicode, int, float)):
+                    return unicode(self.result)
+                elif isinstance(self.result, (list, set)):
                     return '\n'.join([r.as_text() for r in self.result])
                 else:
                     return self.result.as_text()
