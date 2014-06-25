@@ -102,21 +102,29 @@ class Search(Command):
         elif d_end:
             args[:0] = ['@%s' % (d_end - num + 1)]
 
+        start = 0
         if args and args[0].startswith('@'):
             spoint = args.pop(0)[1:]
             try:
                 start = int(spoint) - 1
             except ValueError:
                 raise UsageError(_('Weird starting point: %s') % spoint)
-        else:
-            start = 0
 
-        # FIXME: Is this dumb?
+        prefix = ''
         for arg in args:
-            if ':' in arg or (arg and arg[0] in ('-', '+')):
+            if arg.endswith(':'):
+                prefix = arg
+            elif ':' in arg or (arg and arg[0] in ('-', '+')):
+                prefix = ''
                 session.searched.append(arg.lower())
+            elif prefix and '@' in arg:
+                session.searched.append(prefix + arg.lower())
             else:
-                session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
+                words = re.findall(WORD_REGEXP, arg.lower())
+                session.searched.extend([prefix + word for word in words])
+
+        if not session.searched:
+             session.searched = ['all:mail']
 
         session.order = session.order or session.config.prefs.default_order
         session.results = list(idx.search(session, session.searched).as_set())
