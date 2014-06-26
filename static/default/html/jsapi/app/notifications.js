@@ -45,8 +45,8 @@ EventLog.init = function() {
     });
 
     EventLog.timer = $.timer(EventLog.heartbeat_warning);
-    EventLog.timer.set({ time : 22000, autostart : true });
-    EventLog.poll();
+    EventLog.timer.set({ time : 22500, autostart : true });
+    setTimeout(EventLog.poll, 500); // make event log start async (e.g. for proper page load event handling)
 };
 
 EventLog.pause = function() {
