@@ -49,6 +49,7 @@ if '-v' not in sys.argv:
 
 cfg.plugins.load('demos', process_manifest=True)
 cfg.plugins.load('hacks', process_manifest=True)
+cfg.plugins.load('smtp_server', process_manifest=True)
 
 
 def contents(fn):
@@ -78,11 +79,13 @@ def do_setup():
     config.profiles['0'].email = MY_FROM
     config.profiles['0'].name = MY_NAME
     config.sys.http_port = 33414
+    config.sys.smtpd.host = 'localhost'
+    config.sys.smtpd.port = 33415
     config.prefs.openpgp_header = 'encrypt'
     config.prefs.crypto_policy = 'openpgp-sign'
 
     if '-v' in sys.argv:
-        config.sys.debug = 'rescan sendmail log compose'
+        config.sys.debug = 'log http vcard rescan sendmail log compose'
 
     # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
@@ -239,6 +242,7 @@ def test_composition():
     assert(mp.search('tag:blank').result['stats']['count'] == 0)
 
     # First attempt to send should fail & record failure to event log
+    config.prefs.default_messageroute = 'default'
     config.routes['default'] = {"command": '/no/such/file'}
     config.profiles['0'].messageroute = 'default'
     mp.sendmail()
@@ -288,6 +292,27 @@ def test_composition():
     assert('BEGIN PGP SIG' in contents(mailpile_sent))
     assert('END PGP SIG' in contents(mailpile_sent))
 
+def test_smtp():
+    config.prepare_workers(mp._session, daemons=True)
+    new_mid = mp.message_compose().result['thread_ids'][0]
+    msg_data = {
+        'from': ['%s#%s' % (MY_FROM, MY_KEYID)],
+        'mid': [new_mid],
+        'subject': ['This the OTHER TESTMSG...'],
+        'body': ['Hello SMTP world!']
+    }
+    config.prefs.default_messageroute = 'default'
+    config.prefs.always_bcc_self = False
+    config.routes['default'] = {
+        'protocol': 'smtp',
+        'host': 'localhost',
+        'port': 33415
+    }
+    mp.message_update(**msg_data)
+    mp.message_send(mid=[new_mid], to=['nasty@test.com'])
+    mp.sendmail()
+    config.stop_workers()
+
 def test_html():
     say("Testing HTML")
 
@@ -304,6 +329,7 @@ try:
         test_message_data()
         test_html()
         test_composition()
+        test_smtp()
         if '-v' not in sys.argv:
             sys.stderr.write("\nTests passed, woot!\n")
         else:

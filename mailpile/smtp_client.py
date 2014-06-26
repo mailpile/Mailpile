@@ -1,4 +1,5 @@
 import random
+import hashlib
 import smtplib
 import socket
 import subprocess
@@ -10,6 +11,41 @@ from mailpile.util import *
 from mailpile.config import ssl, socks
 from mailpile.mailutils import CleanMessage, MessageAsString
 from mailpile.eventlog import Event
+
+
+def Sha512Check(challenge, bits, solution):
+    hexchars = bits // 4
+    wanted = '0' * hexchars
+    digest = hashlib.sha512('-'.join([solution, challenge])).hexdigest()
+    return (digest[:hexchars] == wanted)
+
+
+def Sha512Collide(challenge, bits, callback100k=None):
+    sha512 = hashlib.sha512
+    hexchars = bits // 4
+    wanted = '0' * hexchars
+    for i in xrange(1, 0x100):
+        if callback100k is not None:
+            callback100k(i)
+        challenge_i = '-'.join([str(i), challenge])
+        for j in xrange(0, 102400):
+            collision = '-'.join([str(j), challenge_i])
+            digest = sha512(collision).hexdigest()
+            if digest[:hexchars] == wanted:
+                return '-'.join(collision.split('-')[:2])
+    return None
+
+
+SMTORP_HASHCASH_RCODE = 450
+SMTORP_HASHCASH_PREFIX = 'Please collide'
+SMTORP_HASHCASH_FORMAT = (SMTORP_HASHCASH_PREFIX +
+                          ' %(bits)d,%(challenge)s or retry. See: %(url)s')
+
+def SMTorP_HashCash(rcpt, msg, callback100k=None):
+    bits_challenge_etc = msg[len(SMTORP_HASHCASH_PREFIX):].strip()
+    bits, challenge = bits_challenge_etc.split()[0].split(',', 1)
+    return '%s##%s' % (rcpt, Sha512Collide(challenge, int(bits),
+                                           callback100k=callback100k))
 
 
 def _AddSocksHooks(cls, SSL=False):
@@ -131,10 +167,10 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
 
         if 'sendmail' in session.config.sys.debug:
             sys.stderr.write(_('SendMail: from %s, to %s via %s\n'
-                               ) % (frm, to, sendmail))
+                               ) % (frm, to, sendmail.split('@')[-1]))
         sm_write = sm_close = lambda: True
 
-        mark(_('Connecting to %s') % sendmail, events)
+        mark(_('Connecting to %s') % sendmail.split('@')[-1], events)
 
         if sendmail.startswith('|'):
             sendmail %= {"rcpt": ",".join(to)}
@@ -173,11 +209,11 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 ev.data['auth'] = bool(user and pwd)
 
             if 'sendmail' in session.config.sys.debug:
-                sys.stderr.write(_('SMTP connection to: %s:%s as %s@%s\n'
-                                   ) % (host, port, user, pwd))
+                sys.stderr.write(_('SMTP connection to: %s:%s as %s\n'
+                                   ) % (host, port, user or '(anon)'))
 
             server = (smtp_ssl and SMTP_SSL or SMTP
-                      )(local_hostname='mailpile', timeout=25)
+                      )(local_hostname='mailpile.local', timeout=25)
             def sm_startup():
                 if 'sendmail' in session.config.sys.debug:
                     server.set_debuglevel(1)
@@ -204,8 +240,12 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 smtp_do_or_die(_('Sender rejected by SMTP server'),
                                events, server.mail, frm)
                 for rcpt in to:
-                    smtp_do_or_die(_('Sender rejected recpient: %s') % rcpt,
-                                   events, server.rcpt, rcpt)
+                    rc, msg = server.rcpt(rcpt)
+                    if (rc == SMTORP_HASHCASH_RCODE and
+                            msg.startswith(SMTORP_HASHCASH_PREFIX)):
+                        rc, msg = server.rcpt(SMTorP_HashCash(rcpt, msg))
+                    if rc != 250:
+                        fail(_('Server rejected recpient: %s') % rcpt, events)
                 rcode, rmsg = server.docmd('DATA')
                 if rcode != 354:
                     fail(_('Server rejected DATA: %s %s') % (rcode, rmsg))
