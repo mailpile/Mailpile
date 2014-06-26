@@ -91,13 +91,15 @@ Mailpile.compose_autosave = function(mid, form_data) {
 
         var new_mid = response.result.message_ids[0];
 
-        // Update ephermal IDs, Message Model, fadeout UI msg
+        // Update ephermal IDs
         if (mid !== new_mid) {
           Mailpile.compose_autosave_update_ephemeral(mid, new_mid);
         }
 
+        // Update message model
         Mailpile.messages_composing['compose-text-' + new_mid] = $('#compose-text-' + new_mid).val();
-
+        
+        // Fadeout autosave UI msg
         setTimeout(function() {
           $('#compose-message-autosaving-' + new_mid).fadeOut();
         }, 2000);
@@ -123,6 +125,10 @@ Mailpile.compose_autosave_timer = $.timer(function() {
 /* Compose - Instance of select2 contact selecting */
 Mailpile.compose_address_field = function(id) {
 
+  // Get MID
+  var mid = $('#'+id).data('mid');
+
+  // 
   $('#' + id).select2({
     id: function(object) {
       if (object.flags.secure) {
@@ -215,13 +221,31 @@ Mailpile.compose_address_field = function(id) {
 
   /* On select update encryption state */
   $('#' + id).on('select2-selecting', function(e) {
-      var status = Mailpile.compose_determine_encryption(e.val);
+      var status = Mailpile.compose_determine_encryption(mid, e.val);
       Mailpile.compose_render_encryption(status);
     }).on('select2-removed', function(e) {
-      var status = Mailpile.compose_determine_encryption();
+      var status = Mailpile.compose_determine_encryption(mid, false);
       Mailpile.compose_render_encryption(status);
   });
 };
+
+
+/* Compose - Change Encryption Status */
+$(document).on('click', '.compose-crypto-encryption', function() {
+  var status = $('#compose-encryption').val();
+  var change = '';
+  var mid = $(this).data('mid');
+
+  if (status == 'encrypt') {
+    change = 'none';
+  } else {
+    if (Mailpile.compose_determine_encryption(mid, false) == "encrypt") {
+      change = 'encrypt';
+    }
+  }
+
+  Mailpile.compose_render_encryption(change);
+});
 
 
 /* Compose - Change Signature Status */
@@ -239,23 +263,6 @@ $(document).on('click', '.compose-crypto-signature', function() {
 });
 
 
-/* Compose - Change Encryption Status */
-$(document).on('click', '.compose-crypto-encryption', function() {
-  var status = $('#compose-encryption').val();
-  var change = '';
-
-  if (status == 'encrypt') {
-    change = 'none';
-  } else {
-    if (Mailpile.compose_determine_encryption() == "encrypt") {
-      change = 'encrypt';
-    }
-  }
-
-  Mailpile.compose_render_encryption(change);
-});
-
-
 /* Compose - Show Cc, Bcc */
 $(document).on('click', '.compose-show-field', function(e) {
   $(this).hide();
@@ -270,27 +277,20 @@ $(document).on('click', '.compose-hide-field', function(e) {
 });
 
 
-/* Compose - Subject Field */
-$('#compose-from').keyup(function(e) {
-  var code = (e.keyCode ? e.keyCode : e.which);
-  if (code === 9 && $('#compose-subject:focus').val() === '') {
-  }
-});
-
-
 /* Compose - Quote */
 $(document).on('click', '.compose-apply-quote', function(e) {
-
   e.preventDefault();
-  var mid = $(this).parent().parent().data('mid');
-
-  if ($(this).prop('checked')) {
-    $('#compose-text-' + mid).val();
+  var mid = $(this).data('mid');
+  if ($(this).attr('checked')) {
+    console.log('is CHECKED ' + mid);
+    $(this).attr('checked', false)
+//    $('#compose-text-' + mid).val();
   }
   else {
-    $('#compose-text-' + mid).val('');
+    console.log('is UNCHECKED ' + mid);
+    $(this).attr('checked', true)
+//    $('#compose-text-' + mid).val('');
   }
-
 });
 
 
@@ -366,7 +366,7 @@ $(document).on('click', '.compose-show-details', function(e) {
   if ($('#compose-details-' + mid).hasClass('hide')) {
     $('#compose-details-' + mid).slideDown('fast').removeClass('hide');
     $('#compose-to-summary-' + mid).hide();
-    $(this).html(new_message);
+    $(this).html('<span class="icon-eye"></span> ' + new_message);
   } else {
     $('#compose-details-' + mid).slideUp('fast').addClass('hide');
     $('#compose-to-summary-' + mid).show();

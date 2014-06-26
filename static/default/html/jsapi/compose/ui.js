@@ -87,48 +87,48 @@ Mailpile.compose_render_encryption = function(status) {
 
 /* Compose - Render adding new message to thread */
 Mailpile.compose_render_message_thread = function(mid) {
-    window.location.href = Mailpile.urls.message_sent + mid + "/";
-    // FIXME: make this ajaxy and nice transitions and such
-    // $('#form-compose-' + mid).slideUp().remove();
+  window.location.href = Mailpile.urls.message_sent + mid + "/";
+  // FIXME: make this ajaxy and nice transitions and such
+  // $('#form-compose-' + mid).slideUp().remove();
 };
 
 
 Mailpile.find_missing_keys_locally = function(addr) {
-    Mailpile.API.async_crypto_keylookup({"address": addr, "allowremote": false}, function(data, ev) {
-        // Do stuff..        
-    })
+  Mailpile.API.async_crypto_keylookup({"address": addr, "allowremote": false}, function(data, ev) {
+      // Do stuff..        
+  })
 };
 
 
 Mailpile.find_missing_keys = function(addr) {
-    $("#modal-full").html($("#modal-search-keyservers").html());
-    Mailpile.API.async_crypto_keylookup({"address": addr}, function(data, ev) {
-        console.log(ev);
-        if (data.result) {
-            $("#modal-search-keyservers-results").html("Found " + data.result.length + " keys");
-        }
-        if (data.runningsearch) {
-            $("#modal-search-keyservers-looking").html("Searching " + data.runningsearch + "...");
-        } else {
-            $("#modal-search-keyservers-looking").html();
-        }
-        if (ev.flags == "c") {
-            $("#modal-search-keyservers-progress").html("");
-        }
-        $("#keyservers-result-list").html("");
-        for (k in data.result) {
-            var key = data.result[k];
-            $("#keyserver-result-list").append(
-                   "<tr>"
-                 + "<td>" + key.uids[0].name + " &lt;" + key.uids[0].email + "&gt;</td>"
-                 + "<td>" + key.fingerprint.split(/(....)/).join(" ") + "</td>"
-                 + "</tr>");
-        }
-    });
-    $('#modal-full').modal({
-        backdrop: true,
-        keyboard: true,
-        show: true,
-        remote: false
-    });
-}
+  $("#modal-full").html($("#modal-search-keyservers").html());
+  Mailpile.API.async_crypto_keylookup({"address": addr}, function(data, ev) {
+    console.log(ev);
+    if (data.result) {
+      $("#modal-search-keyservers-results").html("Found " + data.result.length + " keys");
+    }
+    if (data.runningsearch) {
+      $("#modal-search-keyservers-looking").html("Searching " + data.runningsearch + "...");
+    } else {
+      $("#modal-search-keyservers-looking").html();
+    }
+    if (ev.flags == "c") {
+      $("#modal-search-keyservers-progress").html("");
+    }
+    $("#keyservers-result-list").html("");
+    for (k in data.result) {
+      var key = data.result[k];
+      $("#keyserver-result-list").append("<tr>"
+           + "<td>" + key.uids[0].name + " &lt;" + key.uids[0].email + "&gt;</td>"
+           + "<td>" + key.fingerprint.split(/(....)/).join(" ") + "</td>"
+           + "</tr>");
+    }
+  });
+
+  $('#modal-full').modal({
+    backdrop: true,
+    keyboard: true,
+    show: true,
+    remote: false
+  });
+};

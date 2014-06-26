@@ -2,13 +2,15 @@
 {% include("jsapi/app/activities.js") %}
 {% include("jsapi/app/drag_drop.js") %}
 {% include("jsapi/app/global.js") %}
-{% include("jsapi/app/gpg.js") %}
 {% include("jsapi/app/keybindings.js") %}
 {% include("jsapi/app/notifications.js") %}
 
+/* JS - Crypto */
+{% include("jsapi/crypto/gpg.js") %}
+
 /* JS - Compose */
+{% include("jsapi/compose/crypto.js") %}
 {% include("jsapi/compose/content.js") %}
-{% include("jsapi/compose/gpg.js") %}
 {% include("jsapi/compose/tooltips.js") %}
 {% include("jsapi/compose/ui.js") %}
 

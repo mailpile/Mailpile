@@ -8,30 +8,31 @@
         <a id="compose-cc-show" class="compose-show-field {% if editing_strings.cc %}hide{% endif %}" href="#">{{_("Cc")}}</a>
         <a id="compose-bcc-show" class="compose-show-field {% if editing_strings.bcc %}hide{% endif %}" href="#">{{_("Bcc")}}</a>
       </label>
-      <input id="compose-to-{{mid}}" class="compose-address-field" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
+      <input id="compose-to-{{mid}}" class="has-mid compose-address-field" data-mid="{{mid}}" name="to" type="text" tabindex="1" alt="{{_("To")}}" value="{{editing_strings.to}}">
     </div>
     <div id="compose-cc-html" class="compose-headers compose-cc {% if not editing_strings.cc %}hide{% endif %}">
       <label class="left">{{_("Cc")}}</label>
       <label class="right">
         <a href="#cc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
       </label>
-      <input id="compose-cc-{{mid}}" class="compose-address-field" name="cc" type="text" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
+      <input id="compose-cc-{{mid}}" class="has-mid compose-address-field" data-mid="{{mid}}" name="cc" type="text" alt="{{_("Cc")}}" value="{{editing_strings.cc}}">
     </div>
     <div id="compose-bcc-html" class="compose-headers compose-bcc {% if not editing_strings.bcc %}hide{% endif %}">
       <label class="left">{{_("Bcc")}}</label>
       <label class="right">
         <a href="#bcc" class="compose-hide-field"><span class="icon-eye"></span> hide</a>
       </label>
-      <input id="compose-bcc-{{mid}}" class="compose-address-field" name="bcc" type="text" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
+      <input id="compose-bcc-{{mid}}" class="has-mid compose-address-field" data-mid="{{mid}}" name="bcc" type="text" alt="{{_("Bcc")}}" value="{{editing_strings.bcc}}">
     </div>
     <div class="compose-headers compose-subject">
       <label>{{_("Subject")}}</label>
       <input id="compose-subject" name="subject" tabindex="3" type="text" placeholder="{{_("Subject")}}" alt="{{_("Subject")}}" value="{{editing_strings.subject}}">
     </div>
   </div>
-  <div class="compose-options clearfix" data-mid="{{mid}}">
+  <div class="compose-options has-mid clearfix" data-mid="{{mid}}">
     <div class="compose-options-crypto">
-      <div class="compose-crypto-encryption none"
+      <div class="has-mid compose-crypto-encryption none"
+          data-mid="{{mid}}"
           data-crypto_none="{{_("None")}}"
           data-crypto_encrypt="{{_("Encrypted")}}"
           data-crypto_cant_encrypt="{{_("Can't Encrypt")}}"
@@ -42,7 +43,8 @@
           data-crypto_title_encrypt_error="{{_("There was an error prepping this message for encryption")}}">
           <span class="icon icon-lock-open"></span><span class="text hide">{{_("None")}}</span>
       </div>
-      <div class="compose-crypto-signature none"
+      <div class="has-mid compose-crypto-signature none"
+          data-mid="{{mid}}"
           data-crypto_signed="{{_("Signed")}}"
           data-crypto_not_signed="{{_("Unsigned")}}"
           data-crypto_signed_error="{{_("Signature Error")}}"
@@ -64,7 +66,7 @@
       </li>
     </ul>
     {% if command == "view" %}
-    <label class="compose-apply-quote right"><input class="compose-apply-quote" type="checkbox" checked="checked"> Quote</label>
+    <label class="compose-apply-quote right"><input class="compose-apply-quote has-mid" data-mid="{{mid}}" type="checkbox" checked="checked"> Quote</label>
     {% endif %} 
   </div>
   <div id="compose-body-{{mid}}" class="compose-body has-mid clearfix" data-mid="{{mid}}">

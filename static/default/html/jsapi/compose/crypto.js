@@ -62,10 +62,10 @@ Mailpile.compose_determine_signature = function() {
 
 
 /* Compose - Determine possible crypto "encryption" of a message */
-Mailpile.compose_determine_encryption = function(contact) {
+Mailpile.compose_determine_encryption = function(mid, contact) {
 
   var status = 'none';
-  var addresses  = $('#compose-to').val() + ', ' + $('#compose-cc').val() + ', ' + $('#compose-bcc').val();
+  var addresses  = $('#compose-to-' + mid).val() + ', ' + $('#compose-cc-' + mid).val() + ', ' + $('#compose-bcc-' + mid).val();
   var recipients = addresses.split(/, */);
 
   if (contact) {
