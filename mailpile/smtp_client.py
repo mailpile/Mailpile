@@ -52,9 +52,6 @@ def _AddSocksHooks(cls, SSL=False):
 
     class Socksified(cls):
         def _get_socket(self, host, port, timeout):
-            print ('Creating socket -> %s:%s/%s using %s, SSL=%s'
-                   ) % (host, port, timeout, self.socket, SSL)
-
             new_socket = self.socket()
             new_socket.connect((host, port))
 
