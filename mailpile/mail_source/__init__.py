@@ -1,6 +1,7 @@
 import os
 import random
 import re
+import thread
 import threading
 import traceback
 import time
@@ -72,7 +73,10 @@ class BaseMailSource(threading.Thread):
                 raise
             finally:
                 self._state = ostate
-                self._lock.release()
+                try:
+                    self._lock.release()
+                except thread.error:
+                    pass
         return locked_func
 
     def _pfn(self):
@@ -326,7 +330,10 @@ class BaseMailSource(threading.Thread):
                 if locked:
                     # We need to unlock here, because the mailbox scanner
                     # may need to interact with us.
-                    self._lock.release()
+                    try:
+                        self._lock.release()
+                    except thread.error:
+                        locked = False
                 return self.session.config.index.scan_mailbox(
                     self.session, mbx_key, mbx.local or path,
                     self.session.config.open_mailbox,
@@ -361,7 +368,10 @@ class BaseMailSource(threading.Thread):
                 continue
             waiters, self._rescan_waiters = self._rescan_waiters, []
             for b, e, s in waiters:
-                b.release()
+                try:
+                    b.release()
+                except thread.error:
+                    pass
                 if s:
                     self.session = s
             try:
@@ -381,7 +391,7 @@ class BaseMailSource(threading.Thread):
                 for b, e, s in waiters:
                     try:
                         e.release()
-                    except threading.ThreadError:
+                    except thread.error:
                         pass
                 self.session = _original_session
         self._save_state()
@@ -416,7 +426,7 @@ class BaseMailSource(threading.Thread):
             for l in (begin, end):
                 try:
                     l.release()
-                except threading.ThreadError:
+                except thread.error:
                     pass
 
     def quit(self, join='ignored'):

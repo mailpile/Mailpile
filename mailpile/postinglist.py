@@ -329,8 +329,9 @@ class GlobalPostingList(PostingList):
                 GLOBAL_POSTING_LIST[sig].add(mail_id)
 
     def __init__(self, *args, **kwargs):
-        PostingList.__init__(self, *args, **kwargs)
-        self.lock = GLOBAL_GPL_LOCK
+        with GLOBAL_GPL_LOCK:
+            PostingList.__init__(self, *args, **kwargs)
+            self.lock = GLOBAL_GPL_LOCK
 
     def _fmt_file(self, prefix):
         return PostingList._fmt_file(self, 'ALL')
