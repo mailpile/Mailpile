@@ -27,10 +27,11 @@ class Events(Command):
         'data': 'var:value',
         'private_data': 'var:value'
     }
+    LOG_NOTHING = True
+    IS_USER_ACTIVITY = False
 
     DEFAULT_WAIT_TIME = 10.0
     GATHER_TIME = 0.5
-    LOG_NOTHING = True
 
     _FALSE = ('0', 'off', 'no', 'false')
 
@@ -111,6 +112,7 @@ class Cancel(Command):
     HTTP_POST_VARS = {
         'event_id': 'Event ID'
     }
+    IS_USER_ACTIVITY = False
 
     def command(self):
         if self.args and 'all' in self.args:
@@ -140,6 +142,7 @@ class Undo(Command):
     HTTP_POST_VARS = {
         'event_id': 'Event ID'
     }
+    IS_USER_ACTIVITY = False
 
     def command(self):
         event_id = self.data.get('event_id', [None])[0] or self.args[0]

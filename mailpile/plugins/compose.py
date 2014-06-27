@@ -848,6 +848,7 @@ class UpdateAndSendit(Update):
 class EmptyOutbox(Sendit):
     """Try to empty the outbox."""
     SYNOPSIS = (None, 'sendmail', None, None)
+    IS_USER_ACTIVITY = False
 
     @classmethod
     def sendmail(cls, session):

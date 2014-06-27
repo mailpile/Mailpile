@@ -1110,8 +1110,10 @@ class Optimize(Command):
     SYNOPSIS = (None, 'optimize', None, '[harder]')
     ORDER = ('Internals', 3)
 
-    def command(self):
+    def command(self, slowly=False):
         try:
+            if not slowly:
+                mailpile.util.LAST_USER_ACTIVITY = 0
             self._idx().save(self.session)
             GlobalPostingList.Optimize(self.session, self._idx(),
                                        force=('harder' in self.args))
@@ -1566,6 +1568,7 @@ class Output(Command):
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
     ORDER = ('Internals', 7)
     HTTP_STRICT_VARS = False
+    IS_USER_ACTIVITY = False
     LOG_NOTHING = True
 
     def get_render_mode(self):
