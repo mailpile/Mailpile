@@ -633,13 +633,17 @@ class Filter(FilterCommand):
             auto_tag = True
 
         if not terms or (len(args) < 1):
-            raise UsageError('Need flags and search terms or a hook')
+            raise UsageError(_('Need flags and search terms or a hook'))
 
         tags, tids = [], []
         while args and args[0][0] in ('-', '+'):
             tag = args.pop(0)
-            tags.append(tag)
-            tids.append(tag[0] + config.get_tag_id(tag[1:]))
+            tid = config.get_tag_id(tag[1:])
+            if tid is not None:
+                tags.append(tag)
+                tids.append(tag[0] + tid)
+            else:
+                raise UsageError(_('No such tag: %s') % tag)
 
         if not args:
             args = ['Filter for %s' % ' '.join(tags)]
