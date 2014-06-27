@@ -244,7 +244,8 @@ class Command:
 
     def _background_save(self,
                          everything=False, config=False,
-                         index=False, index_full=False):
+                         index=False, index_full=False,
+                         wait=False, wait_callback=None):
         session, cfg, idx = self.session, self.session.config, self._idx()
         aut = cfg.save_worker.add_unique_task
         if everything or config:
@@ -255,6 +256,9 @@ class Command:
             elif everything or index:
                 aut(session, 'Save index changes',
                     lambda: self._idx().save_changes(session))
+        if wait:
+            wait_callback = wait_callback or (lambda: True)
+            cfg.save_worker.do(session, 'Waiting', wait_callback)
 
     def _choose_messages(self, words, allow_ephemeral=False):
         msg_ids = set()
@@ -1582,15 +1586,32 @@ class Output(Command):
 
 class Quit(Command):
     """Exit Mailpile """
-    SYNOPSIS = ("q", "quit", None, None)
+    SYNOPSIS = ("q", "quit", "quitquitquit", None)
     ABOUT = ("Quit mailpile")
     ORDER = ("Internals", 2)
     RAISES = (KeyboardInterrupt,)
 
     def command(self):
-        config = self.session.config
+        self._background_save(index=True, config=True, wait=True)
         mailpile.util.QUITTING = True
-        raise KeyboardInterrupt()
+        return self._success(_('Shutting down...'))
+
+
+class Abort(Command):
+    """Exit Mailpile without saving"""
+    SYNOPSIS = (None, "quit/abort", "abortabortabort", None)
+    ABOUT = ("Quit mailpile")
+    ORDER = ("Internals", 2)
+    HTTP_QUERY_VARS = {
+        'no_save': 'Do not try to save state'
+    }
+
+    def command(self):
+        if 'no_save' not in self.data:
+            self._background_save(index=True, config=True, wait=True,
+                                  wait_callback=lambda: os._exit(1))
+        else:
+            os._exit(1)
 
 
 class Help(Command):
@@ -1818,6 +1839,6 @@ COMMANDS = [
     Optimize, Rescan, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    RenderPage, Output, Help, HelpVars, HelpSplash, Quit
+    RenderPage, Output, Help, HelpVars, HelpSplash, Quit, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']
