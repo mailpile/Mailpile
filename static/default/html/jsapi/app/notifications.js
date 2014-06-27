@@ -1,3 +1,4 @@
+/* Notifications -  */
 Mailpile.notification = function(status, message_text, complete, complete_action) {
     var default_messages = {
         "success" : "Success, we did exactly what you asked.",
@@ -40,13 +41,10 @@ var EventLog = {
 };
 
 EventLog.init = function() {
-    $('.message-close').on('click', function() {
-        $(this).parent().fadeOut();
-    });
-
     EventLog.timer = $.timer(EventLog.heartbeat_warning);
     EventLog.timer.set({ time : 22500, autostart : true });
-    setTimeout(EventLog.poll, 500); // make event log start async (e.g. for proper page load event handling)
+    // make event log start async (e.g. for proper page load event handling)
+    setTimeout(EventLog.poll, 500);
 };
 
 EventLog.pause = function() {
@@ -58,6 +56,7 @@ EventLog.play = function() {
 }
 
 EventLog.heartbeat_warning = function() {
+    console.log('heartbeat_warning() just fired');
     EventLog.cancelwarning = Mailpile.notification("warning", "Having trouble connecting to Mailpile... will retry in a few seconds.");
     EventLog.poll();
 }
@@ -72,6 +71,7 @@ EventLog.request = function(conditions, callback) {
 }
 
 EventLog.poll = function() {
+    console.log('poll() just fired');
     EventLog.request({since: EventLog.last_ts, wait: 20});     // Request everything new.
 };
 
@@ -81,11 +81,9 @@ EventLog.process_result = function(result, textstatus) {
         for (id in EventLog.eventbindings) {
             binding = EventLog.eventbindings[id][0];
             callback = EventLog.eventbindings[id][1];
-            if (   (!binding.source || 
-                         ev.source.match(new RegExp("^" + binding.source + "$")))
+            if ((!binding.source || ev.source.match(new RegExp("^" + binding.source + "$")))
                     && (!binding.event_id || ev.event_id == binding.event_id)
-                    && (!binding.flags || ev.flags.match(new RegExp(binding.flags)))
-                   ) {
+                    && (!binding.flags || ev.flags.match(new RegExp(binding.flags)))) {
                 callback(ev);
             }
         }
@@ -136,20 +134,26 @@ EventLog.unsubscribe = function(ev, func_or_id) {
 };
 
 
-$(document).ready(function() {
-    /* Message Close */
-    $('.message-close').on('click', function() {
-        $(this).parent().fadeOut(function() {
-            //$('#header').css('padding-top', statusHeaderPadding());
-        });
-    });
+/* Message Close */
+$(document).on('click', '.message-close', function() {
+  $(this).parent().fadeOut(function() {
+    //$('#header').css('padding-top', statusHeaderPadding());
+  });
+});
 
+
+$(document).ready(function() {
+
+    // Start
     EventLog.init();
 
+    // HTML5 Browser Notifications
     if (Notification.permission == "granted") {
-        $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
+      $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
     }
+
     $('#notifications-permission-option').click(function() {
-        Notification.requestPermission();
+      Notification.requestPermission();
     });
+
 });
