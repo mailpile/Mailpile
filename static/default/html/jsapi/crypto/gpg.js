@@ -1,29 +1,67 @@
-/* Crypto - Receive key from keyserver */
-$(document).on('click', '.contact-add-search-item', function() {
+/* Crypto - Try to find keys locally & remotely */
+Mailpile.find_missing_keys = function(address) {
+
+  $("#modal-full").html($("#modal-search-keyservers").html());
+
+  // This used to be called Mailpile.API.async_crypto_keylookup() but was undefined method
+  // Also had the arg "allowremote": true which seemed to be trigger a bad variable error
+  Mailpile.API.async_crypto_gpg_searchkey({"address": address}, function(data, ev) {
+
+    if (data.result) {
+      $("#modal-search-keyservers-results").html("Found " + data.result.length + " keys");
+    }
+
+    if (data.runningsearch) {
+      $("#modal-search-keyservers-looking").html("Searching " + data.runningsearch + "...");
+    } else {
+      $("#modal-search-keyservers-looking").html();
+    }
+
+    if (ev.flags == "c") {
+      $("#modal-search-keyservers-progress").html("");
+    }
+
+    $("#keyservers-result-list").html("");
+    for (k in data.result) {
+      var key = data.result[k];
+      $("#keyserver-result-list").append("<tr>"
+           + "<td>" + key.uids[0].name + " &lt;" + key.uids[0].email + "&gt;</td>"
+           + "<td>" + key.fingerprint.split(/(....)/).join(" ") + "</td>"
+           + "<td><input type='checkbox' name='crypto-key'></td>"
+           + "</tr>");
+    }
+  });
+
+  $('#modal-full').modal({
+    backdrop: true,
+    keyboard: true,
+    show: true,
+    remote: false
+  });
+};
+
+
+/* Crypto - Import key from keyserver */
+$(document).on('click', '.contact-add-key-item', function() {
 
   var key_data = { keyid: $(this).data('keyid') };
 
-  $('#contact-search-keyserver-input').html('');
   $('#contact-search-keyserver-result').html('');
 
-  $.ajax({
-    url      : '/api/0/crypto/gpg/receivekey/',
-    type     : 'POST',
-    data     : key_data,
-    dataType : 'json',
-    success  : function(response) {
-      $('#contact-add-key').html('<span class="icon-key"></span> PGP Key: ' + key_data.keyid);
-      if (response.status === 'success') {
-        $('#contact-search-keyserver-result').html('w00t, something here will happen with this key: ' + response.result);
-      } else {
-        $('#contact-search-keyserver-result').html('Oopsie daisy something is rotten in Denmark :(');
-      }
+  Mailpile.API.async_crypto_gpg_receivekey({}, function() {
+    $('#contact-add-key').html('<span class="icon-key"></span> Encryption Key: ' + key_data.keyid);
+    if (response.status === 'success') {
+      $('#contact-search-keyserver-result').html('w00t, something here will happen with this key: ' + response.result);
+    } else {
+      $('#contact-search-keyserver-result').html('Oopsie daisy something is rotten in Denmark :(');
     }
-  });  
+  });
 });
 
 
+/* Crypto -  */
 $(document).on('click', '#button-contact-search-keyserver', function(e) {
+
   e.preventDefault();
 
   // Update Querying UI Feedback

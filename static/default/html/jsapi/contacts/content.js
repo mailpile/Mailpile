@@ -1,20 +1,4 @@
-Mailpile.contact_add = function(form_name, complete) {
-  $.ajax({
-    url      : '/api/0/contacts/add/',
-    type     : 'POST',
-    data     : $(form_name).serialize(),
-    dataType : 'json',
-    success  : function(response) {
-      console.log(response);
-      if (response.status === 'success') {
-        complete(response.result);
-      }
-    }
-  });
-};
-
-
-/* Show Contact Add Form */
+/* Contacts - Show contact add form */
 $(document).on('click', '.btn-activity-contact_add', function(e) {
 
   e.preventDefault();
@@ -29,10 +13,10 @@ $(document).on('click', '.btn-activity-contact_add', function(e) {
 });
 
 
-/* Contact - Add */
+/* Contact - Form -  */
 $(document).on('submit', '#form-contact-add', function(e) {
   e.preventDefault();
-  Mailpile.contact_add('#form-contact-add', function() {
+  Mailpile.API.contacts_add('#form-contact-add', function() {
     alert('Woot, contact added');
   });
 });
@@ -44,15 +28,6 @@ $(document).on('click', '#contact-add-keysearch', function() {
   var query = $('.contact-add-name').val() + ' ' + $('.contact-add-email').val();
   Mailpile.find_missing_keys(query);
 
-});
-
-
-$(document).on('blur', '.contact-add-name, .contact-add-email', function(e) {
-  if ($(this).val() !== '') {
-    var query  = $('.contact-add-name').val() + ' ' + $('.contact-add-email').val();
-    var button = _.template($('#template-search-keyserver').html(), { query: query });
-    $('#contact-search-keyserver-input').html(button);
-  }
 });
 
 

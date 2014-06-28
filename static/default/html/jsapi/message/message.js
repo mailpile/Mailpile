@@ -77,8 +77,9 @@ $(document).on('click', '.message-action-trash', function() {
 
 
 /* Message - Add Contact */
-$(document).on('click', '.message-action-add-contact', function() {
+$(document).on('click', '.message-action-add-contact', function(e) {
 
+  e.preventDefault();
   var mid = $(this).parent().parent().data('mid');
   var name = $(this).data('name');
   var address = $(this).data('address');
@@ -96,13 +97,22 @@ $(document).on('click', '.message-action-add-contact', function() {
 });
 
 
-/* Message - Add contact from a message */
-$(document).on('submit', '#form-contact-add-modal', function(e) {
-  e.preventDefault();
-  Mailpile.contact_add('#form-contact-add-modal', function() {
-    $('#modal-full').modal('hide');
-    $('#message-' + mid).find('.message-action-add-contact').parent().remove();
-  });
+/* Message - Discover keys */
+$(document).on('click', '.message-action-find-keys', function() {
+  var address = $(this).parent().parent().data('address');
+  Mailpile.find_missing_keys(address);
+});
+
+
+/* Message - Go to contact's profile */
+$(document).on('click', '.message-action-view-profile', function() {
+  window.location.href = '/contacts/view/' + $(this).parent().parent().data('address') + '/';
+});
+
+
+/* Message - Search for messages from this address */
+$(document).on('click', '.message-action-search-messages', function() {
+  window.location.href = '/search/?q=from:' + $(this).parent().parent().data('address');
 });
 
 
@@ -152,4 +162,14 @@ $(document).on('click', '.message-crypto-investigate', function() {
       $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
     });     
   }
+});
+
+
+/* Message - Form - Add contact from a message */
+$(document).on('submit', '#form-contact-add-modal', function(e) {
+  e.preventDefault();
+  Mailpile.contact_add('#form-contact-add-modal', function() {
+    $('#modal-full').modal('hide');
+    $('#message-' + mid).find('.message-action-add-contact').parent().remove();
+  });
 });
