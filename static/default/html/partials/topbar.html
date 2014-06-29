@@ -62,7 +62,6 @@
         <li class="nav-search"><a href="#" title="{{_("Search")}}"><span class="link-icon icon-search"></span></a></li>
         <li {% if command == "edit" %}class="navigation-on"{% endif %}><a href="#" id="button-compose" title="{{_("Compose")}}" alt="{{_("Compose")}}"><span class="link-icon icon-compose"></span></a></li>
         <li {% if command == "contacts" %}class="navigation-on"{% endif %}><a href="/contacts/" title="{{_("Contacts")}}" alt="{{_("Contacts")}}"><span class="link-icon icon-user"></span></a></li>
-        <li {% if state.command_url in ("/tags/", "/filter/list/") %}class="navigation-on"{% endif %}><a href="/tags/" title="{{_("Tags")}}" alt="{{_("Tags")}}"><span class="link-icon icon-tag"></span></a></li>
         <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
         <li {% if state.command_url in ("/settings/") %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}" alt="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
         {%- for a in get_ui_elements('activities', state, '/') -%}

@@ -48,6 +48,13 @@
       {%- for tag in mailpile("tags", "mode=tree", "display=tag").result.tags -%}
       {{ render_sidebar_tag(tag) }}
       {%- endfor -%}
+      <li {% if state.command_url in ("/tags/", "/filter/list/") %}class="navigation-on"{% endif %}>
+        <a href="/tags/" class="sidebar-tag" style="color: #b3b3b3 !important"
+          title="{{_("Edit tags")}}" alt="{{_("Edit tags")}}">
+          <span class="sidebar-icon icon-tag"></span>
+          <span class="sidebar-name">{{_("Edit tags")}}</span>
+        </a>
+      </li>
     </ul>
     <a href="#" class="button-sidebar-edit" data-message="{{_("Done Editing")}}" data-state="done">
       <span class="icon icon-settings"></span>
