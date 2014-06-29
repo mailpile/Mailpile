@@ -3,6 +3,7 @@ from gettext import gettext as _
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
 from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
+from mailpile.mailutils import AddressHeaderParser
 from mailpile.vcard import MailpileVCard, VCardLine, AddressInfo
 from mailpile.util import *
 
@@ -616,9 +617,52 @@ class ListProfiles(ProfileVCard(ListVCards)):
     """Find profiles"""
 
 
+class ChooseFromAddress(Command):
+    """Display a single vcard"""
+    SYNOPSIS = (None, 'profiles/choose_from', 'profiles/choose_from',
+                '<MIDs or addresses>')
+    ORDER = ('Internals', 6)
+    HTTP_CALLABLE = ('GET',)
+    HTTP_QUERY_VARS = {
+        'mid': 'Message ID',
+        'email': 'E-mail address',
+        'no_from': 'Ignore From: lines'
+    }
+
+    def command(self):
+        idx, vcards = self._idx(), self.session.config.vcards
+
+        emails = [e for e in self.args if '@' in e]
+        emails.extend(self.data.get('email', []))
+
+        messages = self._choose_messages(
+            [m for m in self.args if '@' not in m] +
+            ['=%s' % mid for mid in self.data.get('mid', [])]
+        )
+        for msg_idx_pos in messages:
+            try:
+                msg_info = idx.get_msg_at_idx_pos(msg_idx_pos)
+                msg_emails = (idx.expand_to_list(msg_info, field=idx.MSG_TO) +
+                              idx.expand_to_list(msg_info, field=idx.MSG_CC))
+                emails.extend(msg_emails)
+                if 'no_from' not in self.data:
+                    emails.append(msg_info[idx.MSG_FROM])
+            except ValueError:
+                pass
+
+        addrs = [ai for ee in emails
+                 for ai in AddressHeaderParser(unicode_data=ee)]
+        return self._success(_('Choosing from address'), result={
+            'emails': addrs,
+            'from': vcards.choose_from_address(self.session.config, addrs)
+        })
+
+
+
 _plugins.register_commands(VCard, AddVCard, RemoveVCard, ListVCards,
                            VCardAddLines, VCardRemoveLines)
 _plugins.register_commands(Contact, AddContact, RemoveContact, ListContacts,
                            AddressSearch)
-_plugins.register_commands(Profile, AddProfile, RemoveProfile, ListProfiles)
+_plugins.register_commands(Profile, AddProfile, RemoveProfile, ListProfiles,
+                           ChooseFromAddress)
 _plugins.register_commands(ContactImport, ContactImporters)

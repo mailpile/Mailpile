@@ -161,10 +161,13 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
 
     # Do the actual delivering...
     for frm, sendmail, to, msg, events in routes:
+        frm_vcard = session.config.vcards.get_vcard(frm)
 
         if 'sendmail' in session.config.sys.debug:
-            sys.stderr.write(_('SendMail: from %s, to %s via %s\n'
-                               ) % (frm, to, sendmail.split('@')[-1]))
+            sys.stderr.write(_('SendMail: from %s (%s), to %s via %s\n'
+                               ) % (frm,
+                                    frm_vcard and frm_vcard.random_uid or '',
+                                    to, sendmail.split('@')[-1]))
         sm_write = sm_close = lambda: True
 
         mark(_('Connecting to %s') % sendmail.split('@')[-1], events)
@@ -291,6 +294,9 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                     vcard = session.config.vcards.get_vcard(rcpt)
                     if vcard:
                         vcard.record_history('send', time.time(), msg_mid)
+                        if frm_vcard and vcard.sending_profile(rcpt)[0]:
+                            vcard.prefer_sender(rcpt, frm_vcard)
+                        vcard.save()
                     ev.private_data['>'.join([frm, rcpt])] = True
                 ev.data['bytes'] = total
                 ev.data['delivered'] = len([k for k in ev.private_data

@@ -347,7 +347,7 @@ class Reply(RelativeCompose):
         result = {'from': '', 'to': [], 'cc': []}
 
         def merge_contact(ai):
-            vcard = session.config.vcards.get_vcard(ai.address)
+            vcard = config.vcards.get_vcard(ai.address)
             if vcard:
                 ai.merge_vcard(vcard)
             return ai
@@ -363,23 +363,15 @@ class Reply(RelativeCompose):
                 alist += [d.address for d in dst]
                 dst.extend([a for a in addresses if a.address not in alist])
 
-        # 1st, choose a from address. We'll use the system default if
-        # nothing is found, but hopefully we'll find an address we
-        # recognize in one of the headers.
-        from_address = (session.config.prefs.default_email or
-                        session.config.profiles[0].email)
-        profile_emails = [p.email for p in session.config.profiles if p.email]
-        for src in (ref_from, ref_to, ref_cc):
-            matches = [s for s in src if s.address in profile_emails]
-            if matches:
-                from_address = matches[0].address
-                break
-        result['from'] = ahp.normalized(addresses=[AddressInfo(p.email, p.name)
-            for p in session.config.profiles if p.email == from_address],
-                                        force_name=True)
+        # 1st, choose a from address.
+        from_ai = config.vcards.choose_from_address(
+            config, ref_from, ref_to, ref_cc)  # Note: order matters!
+        if from_ai:
+            result['from'] = ahp.normalized(addresses=[from_ai],
+                                            force_name=True)
 
         def addresses(addrs, exclude=[]):
-            alist = [from_address] + [a.address for a in exclude]
+            alist = [from_ai.address] + [a.address for a in exclude]
             return [merge_contact(a) for a in addrs
                     if a.address not in alist
                     and not a.address.startswith('noreply@')
@@ -387,7 +379,7 @@ class Reply(RelativeCompose):
 
         # If only replying to messages sent from chosen from, then this is
         # a follow-up or clarification, so just use the same headers.
-        if len([e for e in ref_from if e.address == from_address]
+        if len([e for e in ref_from if e.address == from_ai.address]
                ) == len(ref_from):
             if ref_to:
                 result['to'] = addresses(ref_to)

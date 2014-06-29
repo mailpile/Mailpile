@@ -577,9 +577,10 @@ class SearchResults(dict):
                 pass
 
         # Misc flags
-        if [e for e in self.idx.config.profiles if (e.email.lower()
-                                                    == fe.lower())]:
-            expl['flags']['from_me'] = True
+        sender_vcard = self.idx.config.vcards.get_vcard(fe.lower())
+        if sender_vcard:
+            if sender_vcard.kind == 'profile':
+                expl['flags']['from_me'] = True
         tag_types = [self.idx.config.get_tag(t).type for t in expl['tag_tids']]
         for t in self.TAG_TYPE_FLAG_MAP:
             if t in tag_types:

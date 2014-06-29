@@ -512,7 +512,8 @@ class SimpleVCard(object):
                     dedup[-1].set_attr('x-rank', rank)
 
             for line in lines[1:]:
-                if dedup[-1].name == line.name and dedup[-1].value == line.value:
+                if (dedup[-1].name == line.name and
+                        dedup[-1].value == line.value):
                     rank += 1
                 else:
                     rankit(rank)
@@ -567,6 +568,7 @@ class SimpleVCard(object):
 
     def _sort_lines(self, lines=None):
         lines = self._lines if (lines is None) else lines
+
         def sortkey(l):
             if not l:
                 return (3, 0, 0, 0)
@@ -577,6 +579,7 @@ class SimpleVCard(object):
                           or (50 - (l.get('pid', 0) and 50))
                           or int(l.get('x-rank', 0)))),
                     (l.line_id))
+
         with self._lock:
             lines.sort(key=sortkey)
         return lines
@@ -633,19 +636,19 @@ class SimpleVCard(object):
             self.add(VCardLine(name=key, value=value, pref=None))
 
     nickname = property(
-        lambda self: self._vcard_get('nickname'),
+        lambda self: unicode(self._vcard_get('nickname')),
         lambda self, e: self._vcard_set('nickname', e))
 
     email = property(
-        lambda self: self._vcard_get('email'),
+        lambda self: unicode(self._vcard_get('email')),
         lambda self, e: self._vcard_set('email', e))
 
     kind = property(
-        lambda self: self._vcard_get('kind'),
+        lambda self: unicode(self._vcard_get('kind')),
         lambda self, e: self._vcard_set('kind', e))
 
     fn = property(
-        lambda self: self._vcard_get('fn'),
+        lambda self: unicode(self._vcard_get('fn')),
         lambda self, e: self._vcard_set('fn', e))
 
 
@@ -694,7 +697,51 @@ class MailpileVCard(SimpleVCard):
             entries, history = self._history_parse_expire(history_vcl, now)
             entries.append('%s-%s-%s' % (what[0], b36(int(when)), mid))
             history_vcl.value = ','.join(entries)
-        self.save()
+
+    def prefer_sender(self, address, sender):
+        address = address.lower()
+        for vcl in self.get_all('x-mailpile-prefer-profile'):
+            addr = vcl.get('address')
+            if addr and addr == address:
+                vcl.value = sender.random_uid
+                return
+        self.add(VCardLine(name='x-mailpile-prefer-profile',
+                           value=sender.random_uid,
+                           address=address))
+
+    def sending_profile(self, address):
+        default = None
+        which_email = None
+        for vcl in self.get_all('x-mailpile-prefer-profile'):
+            addr = vcl.get('address')
+            value = vcl.value
+            if addr:
+                if addr == address.lower():
+                    if ',' in value:
+                        value, which_email = value.split(',')
+                    return (value, which_email)
+            else:
+                if ',' in value:
+                    default, which_email = value.split(',')
+                else:
+                    default, which_email = value, None
+        return (default, which_email)
+
+    def sends_to(self, address):
+        domain = address.rsplit('#')[0].rsplit('@', 1)[-1].lower()
+        address = address.lower()
+        my_email = self.email
+        for vcl in self.get_all('x-mailpile-scope'):
+            if vcl.value in (domain, address):
+                return vcl.get('address') or my_email
+        return False
+
+    def same_domain(self, address):
+        domain = address.rsplit('#')[0].rsplit('@')[-1].lower()
+        for vcl in self.get_all('email'):
+            if domain == vcl.value.rsplit('@', 1)[-1].lower():
+                return vcl.value
+        return False
 
     def _random_uid(self):
         with self._lock:
@@ -797,11 +844,11 @@ class MailpileVCard(SimpleVCard):
 class AddressInfo(dict):
 
     fn = property(
-        lambda self: self['fn'],
+        lambda self: unicode(self['fn']),
         lambda self, v: self.__setitem__('fn', v))
 
     address = property(
-        lambda self: self['address'],
+        lambda self: unicode(self['address']),
         lambda self, v: self.__setitem__('address', v))
 
     rank = property(
@@ -843,7 +890,6 @@ class AddressInfo(dict):
             base_rank = 10.0
             self['flags']['contact'] = True
 
-        self['x-mailpile-rid'] = vcard.random_uid
         keys = []
         for k in vcard.get_all('KEY'):
             val = k.value.split("data:")[1]
@@ -857,7 +903,10 @@ class AddressInfo(dict):
         if photos:
             self['photo'] = photos[0].value
 
+        self['x-mailpile-rid'] = vcard.random_uid
         self['rank'] += base_rank + 25 * len(keys) + 5 * len(photos)
+        if vcard.email == self.address:
+            self['rank'] *= 2
 
 
 class VCardStore(dict):
@@ -939,7 +988,8 @@ class VCardStore(dict):
                         c.encryption_key = lambda: prfs.get('obfuscate_index')
                         self.index_vcard(c)
                         if session:
-                            session.ui.mark('Loaded %s from %s' % (c.email, fn))
+                            session.ui.mark('Loaded %s from %s'
+                                            % (c.email, fn))
                     except KeyboardInterrupt:
                         raise
                     except ValueError:
@@ -959,8 +1009,10 @@ class VCardStore(dict):
 
     def find_vcards_with_line(vcards, name, value):
         # FIXME: This is pretty slow. Can we do better?
-        return [vc for vc in set(vcards.values())
-                if [vcl for vcl in vc.get_all(name) if vcl.value == value]]
+        vcards = [vc for vc in set(vcards.values())
+                  if [vcl for vcl in vc.get_all(name) if vcl.value == value]]
+        vcards.sort(key=lambda vc: (vc.fn, vc.email))
+        return vcards
 
     def find_vcards(vcards, terms, kinds=['individual']):
         results = []
@@ -998,6 +1050,131 @@ class VCardStore(dict):
                 os.remove(card.filename)
             except (OSError, IOError):
                 pass
+
+    def choose_from_address(vcards, *args, **kwargs):
+        """
+        This method will choose a from address from the available
+        profiles, using the given config and lists of addresses as
+        a guideline. An address is chosen by assigning each potential
+        from address a cumulative score, where scores express roughly
+        the following preferences.
+
+        1. If one of the profiles' e-mail addresses is present in the
+           headers, prefer that so replies come from the address they
+           were sent to.
+        2. Else, if we have a preferred profile for communicating
+           with a given contact, use that.
+        3. Else, if any of the profiles lists one of the addresses
+           or their domains as being "in scope", use that.
+        4. Else, try and match on domain names.
+        5. Finally, use the global default or pick a profile at random.
+
+        >>> vcs = VCardStore(cfg, '/tmp')
+        >>> vcs.add_vcards(MailpileVCard(VCardLine('FN:Evil Dude'),
+        ...                              VCardLine('EMAIL:d@evil.com'),
+        ...                              VCardLine('KIND:profile')),
+        ...                MailpileVCard(VCardLine('FN:Guy'),
+        ...                              VCardLine('EMAIL;TYPE=PREF:g@f.com'),
+        ...                              VCardLine('EMAIL:ok@foo.com'),
+        ...                              VCardLine('X-MAILPILE-SCOPE;zzz'),
+        ...                              VCardLine('X-MAILPILE-SCOPE;'
+        ...                                        'address=ok@foo.com:x.y'),
+        ...                              VCardLine('KIND:profile')),
+        ...                MailpileVCard(VCardLine('FN:Icelander'),
+        ...                              VCardLine('EMAIL:x@bla.is'),
+        ...                              VCardLine('KIND:individual')))
+        >>> c41 = AddressInfo(u'dude@evil.com', 'Dude')
+        >>> c42 = AddressInfo(u'dude@f.com', 'Other dude')
+        >>> c31 = AddressInfo(u'd@x.y', 'D at X dot Y')
+        >>> c32 = AddressInfo(u'd@zzz', 'D at ZZZ')
+        >>> c21 = AddressInfo(u'x@bla.is', 'Icelander')
+        >>> c11 = AddressInfo(u'd@evil.com', 'Evil dude')
+
+        # Case 5
+        >>> '@' in vcs.choose_from_address(None, [c21]).address
+        True
+
+        # Case 4
+        >>> vcs.choose_from_address(None, [c41]).address
+        u'd@evil.com'
+        >>> vcs.choose_from_address(None, [c42]).address
+        u'g@f.com'
+
+        # Case 3
+        >>> vcs.choose_from_address(None, [c31], [c42, c41]).address
+        u'ok@foo.com'
+        >>> vcs.choose_from_address(None, [c32], [c42, c41]).address
+        u'g@f.com'
+
+        # Case 2
+        >>> vcs.get_vcard(c21.address).add(
+        ...    VCardLine(name='X-MAILPILE-PREFER-PROFILE',
+        ...              value=vcs.get_vcard('g@f.com').random_uid))
+        >>> vcs.choose_from_address(None, [c42, c41], [c31, c32],
+        ...                               [c21]).address
+        u'g@f.com'
+
+        # Case 1
+        >>> vcs.choose_from_address(None, [c42, c41], [c31, c32],
+        ...                               [c21, c11]).address
+        u'd@evil.com'
+
+        """
+        fa_list = vcards.choose_from_addresses(*args, **kwargs)
+        return fa_list and fa_list[0] or None 
+
+    def choose_from_addresses(vcards, config, *address_lists):
+        # Generate all the possible e-mail address / vcard pairs
+        profile_cards = vcards.find_vcards([], kinds=['profile'])
+        matches = []
+        for pc in profile_cards:
+            for vcl in pc.get_all('email'):
+                ai = AddressInfo(vcl.value, pc.fn, vcard=pc)
+                if config and config.prefs.default_email == vcl.value:
+                    ai.rank *= 1.75
+                matches.append((ai, pc))
+
+        # Iterate through all the provided addresses, and update the match
+        # scores based on how suitable each is for that address.  We assume
+        # the most important addresses are first.
+        order = 1.0
+        for addrinfo in (ai for src in address_lists for ai in src):
+            vcs = vcards.get_vcard(addrinfo.address)
+            if vcs:
+                sp_rid, sp_e = vcs.sending_profile(addrinfo.address)
+            else:
+                sp_rid = sp_e = None
+
+            for pc_ai, pc in matches:
+                pc_e = pc.sends_to(addrinfo.address)
+                pc_d = pc.same_domain(addrinfo.address)
+
+                # Is this address already in the headers?
+                if pc_ai.address == addrinfo.address:
+                    pc_ai.rank += (100000 * order)
+
+                # Does the user's card have a preference for this profile?
+                if sp_rid and sp_rid == pc.random_uid:
+                    if sp_e and sp_e == pc_ai.address:
+                        pc_ai.rank += (15000 * order)
+                    else:
+                        pc_ai.rank += (10000 * order)
+
+                # Does the profile card have a prefernce for this user?
+                if pc_e == pc_ai.address:
+                    pc_ai.rank += (1000 * order)
+
+                # Does the domain at least match??
+                if pc_d == pc_ai.address:
+                    pc_ai.rank += (100 * order)
+
+            order *= 0.95
+
+        if not matches:
+            return None
+
+        matches.sort(key=lambda m: -m[0].rank)
+        return [m[0] for m in matches]
 
 
 GUID_COUNTER = 0
