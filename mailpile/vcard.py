@@ -753,6 +753,10 @@ class MailpileVCard(SimpleVCard):
                 self.add(VCardLine(name='x-mailpile-rid', value=rid))
         return rid
 
+    signature = property(
+        lambda self: self._vcard_get('x-mailpile-signature'),
+        lambda self, v: self._vcard_set('x-mailpile-signature', v))
+
     random_uid = property(_random_uid)
 
     def _mpcdict(self, vcl):

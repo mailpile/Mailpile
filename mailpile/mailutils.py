@@ -313,18 +313,22 @@ class Email(object):
     @classmethod
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
-               msg_subject=None, msg_text=None, msg_references=None,
+               msg_subject=None, msg_text='', msg_references=None,
                save=True, ephemeral_mid='not-saved', append_sig=True):
         msg = MIMEMultipart()
         msg.signature_info = SignatureInfo()
         msg.encryption_info = EncryptionInfo()
         msg_ts = int(time.time())
 
-        if not msg_from:
-            msg_from = idx.config.get_profile().get('email', None)
-            from_name = idx.config.get_profile().get('name', None)
-            if msg_from and from_name:
-                msg_from = '%s <%s>' % (from_name, msg_from)
+        if msg_from:
+            from_email = AddressHeaderParser(unicode_data=msg_from)[0].address
+            from_profile = idx.config.get_profile(email=from_email)
+        else:
+            from_profile = idx.config.get_profile()
+            from_email = from_profile.get('email', None)
+            from_name = from_profile.get('name', None)
+            if from_email and from_name:
+                msg_from = '%s <%s>' % (from_name, from_email)
         if not msg_from:
             raise NoFromAddressError()
 
@@ -347,6 +351,10 @@ class Email(object):
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
 
+        sig = from_profile.get('signature')
+        if sig and ('\n-- \n' not in (msg_text or '')):
+            msg_text = (msg_text or '\n\n') + ('\n\n-- \n%s' % sig)
+
         if msg_text:
             try:
                 msg_text.encode('us-ascii')
@@ -358,20 +366,6 @@ class Email(object):
             textpart.encryption_info = EncryptionInfo()
             msg.attach(textpart)
             del textpart['MIME-Version']
-
-        if append_sig:
-            sig = idx.config.get_profile().get('signature', '')
-            if sig not in ['', None]:
-                try:
-                    sig.encode('us-ascii')
-                    charset = 'us-ascii'
-                except UnicodeEncodeError:
-                    charset = 'utf-8'
-                textpart = MIMEText(sig, _subtype='plain', _charset=charset)
-                textpart.signature_info = SignatureInfo()
-                textpart.encryption_info = EncryptionInfo()
-                msg.attach(textpart)
-                del textpart['MIME-Version']
 
         if save:
             msg_key = mbx.add(msg)

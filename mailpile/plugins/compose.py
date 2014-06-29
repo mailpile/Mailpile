@@ -410,11 +410,13 @@ class Reply(RelativeCompose):
         msg_bodies = []
         for t in trees:
             # FIXME: Templates/settings for how we quote replies?
-            text = split_long_lines(
-                (_('%s wrote:') % t['headers_lc']['from']) + '\n' +
-                ''.join([p['data'] for p in t['text_parts']
-                         if p['type'] in cls._TEXT_PARTTYPES]))
-            msg_bodies.append('\n\n' + text.replace('\n', '\n> '))
+            quoted = ''.join([p['data'] for p in t['text_parts']
+                              if p['type'] in cls._TEXT_PARTTYPES
+                              and p['data']])
+            if quoted:
+                text = ((_('%s wrote:') % t['headers_lc']['from']) + '\n' +
+                        split_long_lines(quoted))
+                msg_bodies.append('\n\n' + text.replace('\n', '\n> '))
 
         if not ephemeral:
             local_id, lmbox = session.config.open_local_mailbox(session)

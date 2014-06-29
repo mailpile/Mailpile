@@ -1263,17 +1263,31 @@ class ConfigManager(ConfigDict):
 
     def get_profile(self, email=None):
         find = email or self.prefs.get('default_email', None)
+        default_sig = _('Sent using Mailpile, Free Software '
+                        'from www.mailpile.is')
         default_profile = {
             'name': None,
             'email': find,
-            'signature': None,
-            'messageroute': self.prefs.default_messageroute
+            'messageroute': self.prefs.default_messageroute,
+            'signature': default_sig,
+            'vcard': None
         }
-        for profile in self.profiles:
-            if profile.email == find or not find:
-                if not email:
-                    self.prefs.default_email = profile.email
-                return dict_merge(default_profile, profile)
+        profiles = []
+        if find:
+            profiles = [self.vcards.get_vcard(find)]
+        if not profiles and not profiles[0]:
+            profiles = self.find_vcards([], kinds=['profile'])
+        if profiles and profiles[0]:
+            profile = profiles[0]
+            psig = profile.signature
+            default_profile.update({
+                'name': profile.fn,
+                'email': find or profile.email,
+                'signature': psig if (psig is not None) else default_sig,
+                'vcard': profile
+            })
+            for vcl in profile.get_all('x-mailpile-profile-messageroute'):
+                default_profile['messageroute'] = vcl.value
         return default_profile
 
     def get_sendmail(self, frm, rcpts=['-t']):
