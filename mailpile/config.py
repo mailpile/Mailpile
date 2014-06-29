@@ -1275,19 +1275,20 @@ class ConfigManager(ConfigDict):
         profiles = []
         if find:
             profiles = [self.vcards.get_vcard(find)]
-        if not profiles and not profiles[0]:
-            profiles = self.find_vcards([], kinds=['profile'])
+        if not profiles or not profiles[0]:
+            profiles = self.vcards.find_vcards([], kinds=['profile'])
         if profiles and profiles[0]:
             profile = profiles[0]
             psig = profile.signature
+            proute = profile.route
             default_profile.update({
                 'name': profile.fn,
                 'email': find or profile.email,
                 'signature': psig if (psig is not None) else default_sig,
+                'messageroute': (proute if (proute is not None)
+                                 else self.prefs.default_messageroute),
                 'vcard': profile
             })
-            for vcl in profile.get_all('x-mailpile-profile-messageroute'):
-                default_profile['messageroute'] = vcl.value
         return default_profile
 
     def get_sendmail(self, frm, rcpts=['-t']):

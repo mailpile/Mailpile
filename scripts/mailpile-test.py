@@ -75,9 +75,10 @@ def do_setup():
     # Set up initial tags and such
     mp.setup()
 
+    config.vcards.get(MY_FROM).fn = MY_NAME
+    config.prefs.default_email = MY_FROM
+
     # Configure our fake mail sending setup
-    config.profiles['0'].email = MY_FROM
-    config.profiles['0'].name = MY_NAME
     config.sys.http_port = 33414
     config.sys.smtpd.host = 'localhost'
     config.sys.smtpd.port = 33415

@@ -77,13 +77,6 @@ CONFIG_RULES = {
             'context':     [_("VCard context helper settings"), False,     {}],
         }],
     }],
-    'profiles': [_('User profiles and personalities'), {
-        'name':            (_('Account name'), 'str', ''),
-        'email':           (_('E-mail address'), 'email', ''),
-        'signature':       (_('Message signature'), 'multiline', ''),
-        'route':           (_('DEPRECATED, DO NOT USE'), str, ''),
-        'messageroute':    (_('Outgoing mail route'), str, ''),
-    }, []],
     'routes': [_('Outgoing message routes'), {
         'name':            (_('Route name'), str, ''),
         'protocol':        (_('Messaging protocol'),
@@ -128,7 +121,16 @@ CONFIG_RULES = {
             'primary_tag': (_('A tag representing this mailbox'), str, ''),
             'apply_tags':  (_('Tags applied to messages'), str, []),
         }, {})
-    }, {}]
+    }, {}],
+
+    ### OLD CRAP, JUST HERE SO AS NOT TO KILL CONFIG FILES
+    'profiles': [_('DEPRECATED: User profiles and personalities'), {
+        'name':            (_('Account name'), 'str', ''),
+        'email':           (_('E-mail address'), 'email', ''),
+        'signature':       (_('Message signature'), 'multiline', ''),
+        'route':           (_('DEPRECATED, DO NOT USE'), str, ''),
+        'messageroute':    (_('Outgoing mail route'), str, ''),
+    }, []]
 }
 
 

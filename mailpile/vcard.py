@@ -754,8 +754,12 @@ class MailpileVCard(SimpleVCard):
         return rid
 
     signature = property(
-        lambda self: self._vcard_get('x-mailpile-signature'),
-        lambda self, v: self._vcard_set('x-mailpile-signature', v))
+        lambda self: self._vcard_get('x-mailpile-profile-signature'),
+        lambda self, v: self._vcard_set('x-mailpile-profile-signature', v))
+
+    route = property(
+        lambda self: self._vcard_get('x-mailpile-profile-route'),
+        lambda self, v: self._vcard_set('x-mailpile-profile-route', v))
 
     random_uid = property(_random_uid)
 
@@ -771,7 +775,7 @@ class MailpileVCard(SimpleVCard):
 
     MPCARD_SINGLETONS = ('fn', 'kind',
                          'x-mailpile-profile-signature',
-                         'x-mailpile-profile-messageroute')
+                         'x-mailpile-profile-route')
     MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
 
     def as_mpCard(self):
