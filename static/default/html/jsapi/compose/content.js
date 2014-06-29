@@ -1,21 +1,3 @@
-/* Generate New draft MID */
-Mailpile.compose = function(data) {
-  $.ajax({
-    url      : Mailpile.api.compose,
-    type     : 'POST',
-    data     : data,
-    dataType : 'json'
-  }).done(function(response) {
-
-    if (response.status === 'success') {
-      window.location.href = Mailpile.urls.message_draft + response.result.created + '/';
-    } else {
-      Mailpile.notification(response.status, response.message);
-    }
-  });
-};
-
-
 /* Composer - To, Cc, Bcc */
 Mailpile.compose_analyze_address = function(address) {
   var check = address.match(/([^<]+?)\s<(.+?)(#[a-zA-Z0-9]+)?>/);
@@ -52,7 +34,7 @@ Mailpile.compose_analyze_recipients = function(addresses) {
 };
 
 
-/* Compose - */
+/* Compose - Update ephemeral with real MID */
 Mailpile.compose_autosave_update_ephemeral = function(mid, new_mid) {
 
   // Update UI Elements
@@ -80,7 +62,6 @@ Mailpile.compose_autosave = function(mid, form_data) {
     // UI Feedback
     var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
     $('#compose-message-autosaving-' + mid).html(autosave_msg).fadeIn();
-
   	$.ajax({
   		url			 : Mailpile.api.compose_save,
   		type		 : 'POST',
@@ -96,9 +77,9 @@ Mailpile.compose_autosave = function(mid, form_data) {
           Mailpile.compose_autosave_update_ephemeral(mid, new_mid);
         }
 
-        // Update message model
-        Mailpile.messages_composing['compose-text-' + new_mid] = $('#compose-text-' + new_mid).val();
-        
+        // Update Message
+        Mailpile.messages_composing[new_mid] = $('#compose-text-' + new_mid).val();
+
         // Fadeout autosave UI msg
         setTimeout(function() {
           $('#compose-message-autosaving-' + new_mid).fadeOut();
@@ -228,6 +209,12 @@ Mailpile.compose_address_field = function(id) {
       Mailpile.compose_render_encryption(status);
   });
 };
+
+
+$(document).on('click', '.compose-contact-find-keys', function() {
+  var address = $(this).data('address');
+  Mailpile.find_missing_keys(address);
+});
 
 
 /* Compose - Change Encryption Status */
