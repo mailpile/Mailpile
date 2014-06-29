@@ -403,10 +403,11 @@ class MailpileCommand(Extension):
     @classmethod
     def _contact_name(self, profiles, person):
         name = person['fn']
-        for profile in profiles:
-            if profile['email'] == person['address']:
-                name = profile['name']
-                break
+        # FIXME: bre and bnvk should discuss this :)
+        #for profile in profiles:
+        #    if profile['email'] == person['address']:
+        #        name = profile['name']
+        #        break
         return name
 
     URL_RE_HTTP = re.compile('(<a [^>]*?)'            # 1: <a

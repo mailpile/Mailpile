@@ -67,10 +67,10 @@
     </ul>
     {% if command == "view" %}
     <label class="compose-apply-quote right"><input class="compose-apply-quote has-mid" data-mid="{{mid}}" type="checkbox" checked="checked"> Quote</label>
-    {% endif %} 
+    {% endif %}
   </div>
   <div id="compose-body-{{mid}}" class="compose-body has-mid clearfix" data-mid="{{mid}}">
-    <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text has-mid" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>  
+    <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text has-mid" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
     <div id="compose-attachments-{{mid}}" class="compose-attachments has-mid" data-mid="{{mid}}">
       <ul id="compose-attachments-files-{{mid}}" class="horizontal">
         {% if editing_strings.attachments %}
@@ -107,11 +107,17 @@
     </div>
     <div class="compose-buttons right has-mid" data-mid="{{mid}}">
       <select class="compose-from" name="from">
-        {% for p in profiles %}
-        <option value="{{p.name}} &lt;{{p.email}}&gt;" {% if p.email == editing_strings.from %}selected="selected"{% endif %}>{{p.name}} &lt;{{p.email}}&gt;</option>
-        {% endfor %}
+        <option value="">{{_("Choose sending profile ...")}}</option>
+      {% set from_email = editing_addresses and
+                          editing_strings.from_aids and
+                      editing_addresses[editing_strings.from_aids.0].address
+                          or '' %}
+      {% for pe in profiles.emails|sort %}
+        {% set p = profiles.profiles[profiles.emails[pe]] %}
+        <option value="{{p.fn}} &lt;{{pe}}&gt;" {% if pe == from_email %}selected="selected"{% endif %}>{{p.fn}} &lt;{{pe}}&gt;</option>
+      {% endfor %}
       </select>
-      <!-- FIXME: Add nice pretty dropdown
+{# FIXME: Add nice pretty dropdown
       <ul class="left">
         <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" id="compose-from" href="#">
@@ -126,18 +132,18 @@
               {{ profile.name }}
               <span>{{ profile.email }}</span></a>
             </li>
-            {% endfor %} 
+            {% endfor %}
           </ul>
         </li>
       </ul>
-      --> 
+#}
      <button class="compose-action button-alert" type="submit" name="save" value="save" alt="{{_("Save")}}">
         <span class="icon-compose"></span>{{_("Save")}}
       </button>
       {% if command == "view" %}
       <button class="compose-action" type="submit" name="reply" value="reply" alt="{{_("Reply")}}">
         <span class="icon-reply"></span> {{_("Reply")}}
-      </button>  
+      </button>
       {% else %}
       <button class="compose-action" type="submit" name="send" value="send" alt="{{_("Send")}}">
         <span class="icon-sent"></span> {{_("Send")}}

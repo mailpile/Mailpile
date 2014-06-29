@@ -81,14 +81,35 @@ class VCardCommand(Command):
     def _pre_delete_vcard(self, vcard):
         pass
 
-    def _vcard_list(self, vcards, mode='mpCard', info=None):
+    def _vcard_list(self, vcards, mode='mpCard', info=None, simplify=False):
         info = info or {}
         if mode == 'lines':
             data = [x.as_lines() for x in vcards if x]
         else:
             data = [x.as_mpCard() for x in vcards if x]
+
+        # Generate some helpful indexes for finding stuff
+        by_email = {}
+        by_rid = {}
+        for count, vc in enumerate(vcards):
+            by_rid[vc.random_uid] = count
+            by_email[vc.email] = count
+        for count, vc in enumerate(vcards):
+            for vcl in vc.get_all('EMAIL'):
+                if vcl.value not in by_email:
+                    by_email[vcl.value] = count
+
+        # Simplify lists when there is only one element?
+        if simplify and len(data) == 1:
+            data = data[0]
+            whatsit = self.VCARD
+        else:
+            whatsit = self.VCARD + 's'
+
         info.update({
-            self.VCARD + 's': data,
+            whatsit: data,
+            "emails": by_email,
+            "rids": by_rid,
             "count": len(vcards)
         })
         return info
@@ -109,12 +130,8 @@ class VCard(VCardCommand):
                 vcards.append(vcard)
             else:
                 session.ui.warning('No such %s: %s' % (self.VCARD, email))
-        if len(vcards) == 1:
-            result = {self.VCARD: vcards[0].as_mpCard()}
-        else:
-            result = {self.VCARD + 's': [x.as_mpCard() for x in vcards]}
         return self._success(_('Found %d results') % len(vcards),
-                             result=result)
+                             result=self._vcard_list(vcards, simplify=True))
 
 
 class AddVCard(VCardCommand):
@@ -181,7 +198,7 @@ class AddVCard(VCardCommand):
         else:
             return self._error('Nothing to do!')
         return self._success(_('Added %d contacts') % len(vcards),
-            result={self.VCARD + 's': [x.as_mpCard() for x in vcards]})
+            result=self._vcard_list(vcards, simplify=True))
 
 
 class RemoveVCard(VCardCommand):
@@ -232,7 +249,7 @@ class VCardAddLines(VCardCommand):
                     vcard.add(VCardLine(l))
             vcard.save()
             return self._success(_("Added %d lines") % len(lines),
-                result=self._vcard_list([vcard], info={
+                result=self._vcard_list([vcard], simplify=True, info={
                     'updated': handle,
                     'added': len(lines)
                 }))
@@ -265,7 +282,7 @@ class VCardRemoveLines(VCardCommand):
             removed = vcard.remove(*[int(li) for li in line_ids])
             vcard.save()
             return self._success(_("Removed %d lines") % removed,
-                result=self._vcard_list([vcard], info={
+                result=self._vcard_list([vcard], simplify=True, info={
                     'updated': handle,
                     'removed': removed
                 }))

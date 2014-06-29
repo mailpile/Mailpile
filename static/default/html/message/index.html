@@ -5,7 +5,7 @@
 {% set start_mid     = result.thread_ids[-1] %}
 {% set last_mid      = result.thread_ids.0 %}
 {% set start_subject = result.data.metadata[start_mid].subject %}
-{% set profiles      = mailpile('settings', 'profiles').result.profiles %}
+{% set profiles      = mailpile('profiles').result %}
 
 {% set loop_history  = [] %}
 {% for mid in result.thread_ids|reverse %}
