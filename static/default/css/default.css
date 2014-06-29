@@ -5680,7 +5680,7 @@ a.sidebar-tag span.sidebar-tag-archive:hover {
 .compose-options,
 .compose-body {
   width: 85%;
-  max-width: 800px;
+  max-width: 750px;
 }
 /* Compose - Headers */
 .compose-headers {
@@ -5725,6 +5725,7 @@ a.compose-show-field {
 }
 /* Compose - Options */
 .compose-options {
+  margin-top: 3px;
   margin-bottom: 0px;
   padding: 0 0 0px 0;
 }
@@ -5743,8 +5744,8 @@ a.compose-show-field {
   border-left: 1px solid #cccccc;
   border-top: 1px solid #cccccc;
   border-right: 1px solid #cccccc;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
   font-size: 14px;
   font-weight: normal;
   line-height: 14px;
@@ -5794,9 +5795,11 @@ a.compose-show-field {
   font-weight: normal;
   line-height: 14px;
 }
-.compose-options a {
-  font-weight: normal;
+.compose-options ul li a {
   color: #b3b3b3;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 14px;
 }
 .compose-options label.right {
   position: relative;
@@ -5809,7 +5812,7 @@ a.compose-show-field {
   font-weight: normal;
   line-height: 14px;
   font-style: italic;
-  color: #b3b3b3;
+  color: #4d4d4d;
 }
 .compose-to-summary {
   max-width: 500px;
@@ -5882,7 +5885,7 @@ li.compose-attachment img {
 /* Compose - Actions */
 .compose-actions {
   width: 85%;
-  max-width: 800px;
+  max-width: 750px;
   margin-top: 10px;
   padding-bottom: 15px;
 }
@@ -6231,6 +6234,7 @@ li.compose-attachment img {
 }
 /* Pile	- Drag & Drop */
 #pile-results tr.result:hover td.draggable,
+#pile-results tr.result-hover td.draggable,
 #pile-results tr.result-on:hover td.draggable {
   background: url('/static/img/draggable-pattern.png'), #ffffff;
   opacity: 0.3;
@@ -6394,11 +6398,10 @@ li.compose-attachment img {
 }
 .thread-item-metadata-details {
   display: none;
-  margin-bottom: 25px;
-  border-bottom: 1px solid #cccccc;
+  padding-bottom: 5px;
 }
 .thread-item-metadata-details ul {
-  margin: 10px 0px 15px 20px;
+  margin: 10px 0px 10px 20px;
 }
 .thread-item-metadata-details ul li {
   display: inline-block;
