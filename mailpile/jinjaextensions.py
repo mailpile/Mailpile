@@ -395,9 +395,9 @@ class MailpileCommand(Extension):
     @classmethod
     def _contact_url(self, person):
         if 'contact' in person['flags']:
-            url = "/contact/" + person['address'] + "/"
+            url = "/contact/view/" + person['address'] + "/"
         else:
-            url = "/contact/add/" + person['address'] + "/"
+            url = "/#add-contact"
         return url
 
     @classmethod

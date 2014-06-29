@@ -89,29 +89,7 @@
     </div>
   </div>
   <div class="compose-actions clearfix">
-    <div class="left">
-    <!-- FIXME: Add nice pretty dropdown
-    <ul class="left">
-      <li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" id="compose-from" href="#">
-          <img class="compose-from-avatar" src="/static/img/avatar-default.png">
-          {{profiles[0].name}} <span class="icon-arrow-left"></span>
-          <span class="compose-from-address">{{profiles[0].email}}</span>
-        </a>
-        <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="compose-from">
-          {% for profile in profiles %}
-          <li role="presentation"><a href="#">
-            <img src="/static/img/avatar-default.png">
-            {{ profile.name }}
-            <span>{{ profile.email }}</span></a>
-          </li>
-          {% endfor %} 
-        </ul>
-      </li>
-    </ul>
-    -->
-    <ul>
-    <li class="dropdown">
+    <div class="dropdown left">
       <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-archive"></span> Send <span id="reply-datetime-display">Now</span></a>
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="now" href="#">Now</a></li>
@@ -126,8 +104,6 @@
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="1209600" href="#">2 weeks</a></li>
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2592000" href="#">1 month</a></li>
       </ul>
-    </li>
-    </ul>
     </div>
     <div class="compose-buttons right has-mid" data-mid="{{mid}}">
       <select class="compose-from" name="from">
@@ -135,7 +111,27 @@
         <option value="{{p.name}} &lt;{{p.email}}&gt;" {% if p.email == editing_strings.from %}selected="selected"{% endif %}>{{p.name}} &lt;{{p.email}}&gt;</option>
         {% endfor %}
       </select>
-      <button class="compose-action button-alert" type="submit" name="save" value="save" alt="{{_("Save")}}">
+      <!-- FIXME: Add nice pretty dropdown
+      <ul class="left">
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" id="compose-from" href="#">
+            <img class="compose-from-avatar" src="/static/img/avatar-default.png">
+            {{profiles[0].name}} <span class="icon-arrow-left"></span>
+            <span class="compose-from-address">{{profiles[0].email}}</span>
+          </a>
+          <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="compose-from">
+            {% for profile in profiles %}
+            <li role="presentation"><a href="#">
+              <img src="/static/img/avatar-default.png">
+              {{ profile.name }}
+              <span>{{ profile.email }}</span></a>
+            </li>
+            {% endfor %} 
+          </ul>
+        </li>
+      </ul>
+      --> 
+     <button class="compose-action button-alert" type="submit" name="save" value="save" alt="{{_("Save")}}">
         <span class="icon-compose"></span>{{_("Save")}}
       </button>
       {% if command == "view" %}

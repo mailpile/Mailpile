@@ -1,6 +1,6 @@
 /* Compose */
 
-  @compose-max-width: 800px;
+  @compose-max-width: 750px;
 
   .form-compose {
     padding: 15px 20px 10px 20px;
@@ -101,6 +101,7 @@
 /* Compose - Options */
 
   .compose-options {
+    margin-top: 3px;
     margin-bottom: 0px;
 		padding: 0 0 0px 0;
   }
@@ -121,8 +122,8 @@
     border-left: 1px solid @grayMid;
     border-top: 1px solid @grayMid;
     border-right: 1px solid @grayMid;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
     .compose-options-size();
   }
 
@@ -173,9 +174,10 @@
     .compose-options-size();
   }
 
-  .compose-options a {
+  .compose-options ul li a {
     font-weight: normal;
     color: @gray;
+    .compose-options-size();
   }
 
   .compose-options label.right {
@@ -187,7 +189,7 @@
     cursor: pointer;
     .compose-options-size();
     font-style: italic;
-    color: @gray;
+    color: @grayDark;
   }
 
   .compose-to-summary {
