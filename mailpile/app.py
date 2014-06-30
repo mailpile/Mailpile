@@ -22,6 +22,13 @@ Help.ABOUT = mailpile.defaults.ABOUT
 readline = None
 
 
+try: # Only neccesary for windows. this kills Ctrl-d functionality for some reason
+    import colorama
+    colorama.init()
+except ImportError:
+        pass
+
+
 ##[ Main ]####################################################################
 
 
