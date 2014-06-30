@@ -7,7 +7,7 @@ import time
 from email.utils import formatdate, parsedate_tz, mktime_tz
 
 from mailpile.crypto.streamer import EncryptingStreamer, DecryptingStreamer
-from mailpile.util import CleanText
+from mailpile.util import CleanText, json_helper
 
 
 EVENT_COUNTER_LOCK = threading.Lock()
@@ -77,7 +77,7 @@ class Event(object):
         self._set_ts(ts or time.time())
 
     def __str__(self):
-        return json.dumps(self._data)
+        return json.dumps(self._data, default=json_helper)
 
     def _set_ts(self, ts):
         if hasattr(ts, 'timetuple'):
@@ -93,13 +93,16 @@ class Event(object):
         self._data[col] = value
 
     def _get_source_class(self):
-        module_name, class_name = CleanText(self.source,
-                                            banned=CleanText.NONDNS
-                                            ).clean.rsplit('.', 1)
-        if module_name.startswith('.'):
-            module_name = 'mailpile' + module_name
-        module = __import__(module_name, globals(), locals(), class_name)
-        return getattr(module, class_name)
+        try:
+            module_name, class_name = CleanText(self.source,
+                                                banned=CleanText.NONDNS
+                                                ).clean.rsplit('.', 1)
+            if module_name.startswith('.'):
+                module_name = 'mailpile' + module_name
+            module = __import__(module_name, globals(), locals(), class_name)
+            return getattr(module, class_name)
+        except (ValueError, AttributeError, ImportError):
+            return None
 
     date = property(lambda s: s._data[0], lambda s, v: s._set_ts(v))
     ts = property(lambda s: s._ts, lambda s, v: s._set_ts(v))
@@ -237,12 +240,7 @@ class EventLog(object):
             if lines:
                 for line in lines.splitlines():
                     event = Event.Parse(line)
-                    if Event.COMPLETE in event.flags:
-                        if event.event_id in self._events:
-                            del self._events[event.event_id]
-                    else:
-                        self._events[event.event_id] = event
-        self._save_events(self._events.values())
+                    self._events[event.event_id] = event
 
     def _match(self, event, filters):
         for kw, rule in filters.iteritems():
@@ -260,7 +258,10 @@ class EventLog(object):
                 if truth != (event.flags == rule):
                     return False
             elif kw == 'since':
-                if truth != (event.ts > float(rule)):
+                when = float(rule)
+                if when < 0:
+                    when += time.time()
+                if truth != (event.ts > when):
                     return False
             elif kw.startswith('data_'):
                 if truth != (str(event.data.get(kw[5:])) == str(rule)):
@@ -285,6 +286,8 @@ class EventLog(object):
 
     def since(self, ts, **filters):
         """Return all events since a given time, in order."""
+        if ts < 0:
+            ts += time.time()
         for ek in sorted(self._events.keys()):
             e = self._events.get(ek, None)
             if (e is not None and
@@ -294,6 +297,9 @@ class EventLog(object):
 
     def events(self, **filters):
         return self.since(0, **filters)
+
+    def get(self, event_id, default=None):
+        return self._events.get(event_id, default)
 
     def log_event(self, event):
         """Log an Event object."""
@@ -319,6 +325,11 @@ class EventLog(object):
         finally:
             self._lock.release()
 
+    def _prune_completed(self):
+        for event_id in self._events.keys():
+            if Event.COMPLETE in self._events[event_id].flags:
+                del self._events[event_id]
+
     def load(self):
         self._lock.acquire()
         try:
@@ -329,6 +340,8 @@ class EventLog(object):
                 except (OSError, IOError):
                     import traceback
                     traceback.print_exc()
+            self._prune_completed()
+            self._save_events(self._events.values())
             return self
         finally:
             self._lock.release()

@@ -39,6 +39,15 @@ class EditableSearchResults(SearchResults):
 
 def AddComposeMethods(cls):
     class newcls(cls):
+        def _create_contacts(self, emails):
+            try:
+                from mailpile.plugins.contacts import AddContact
+                AddContact(self.session,
+                           arg=['=%s' % e.msg_mid() for e in emails]
+                           ).run(recipients=True, quietly=True)
+            except (TypeError, ValueError, IndexError):
+                self._ignore_exception()
+
         def _tag_emails(self, emails, tag):
             try:
                 idx = self._idx()
@@ -212,7 +221,7 @@ class CompositionCommand(AddComposeMethods(Search)):
             if tag:
                 self._tag_blank(emails, untag=True)
                 self._tag_drafts(emails)
-                idx.save_changes()
+                self._background_save(index=True)
             self.message = _('%d message(s) edited') % len(emails)
         else:
             self.message = _('%d message(s) created') % len(emails)
@@ -238,7 +247,7 @@ class Draft(AddComposeMethods(View)):
         elif session.ui.edit_messages(session, emails):
             self._tag_blank(emails, untag=True)
             self._tag_drafts(emails)
-            idx.save_changes()
+            self._background_save(index=True)
             self.message = _('%d message(s) edited') % len(emails)
         else:
             self.message = _('%d message(s) unchanged') % len(emails)
@@ -338,7 +347,7 @@ class Reply(RelativeCompose):
         result = {'from': '', 'to': [], 'cc': []}
 
         def merge_contact(ai):
-            vcard = session.config.vcards.get_vcard(ai.address)
+            vcard = config.vcards.get_vcard(ai.address)
             if vcard:
                 ai.merge_vcard(vcard)
             return ai
@@ -354,33 +363,23 @@ class Reply(RelativeCompose):
                 alist += [d.address for d in dst]
                 dst.extend([a for a in addresses if a.address not in alist])
 
-        # 1st, choose a from address. We'll use the system default if
-        # nothing is found, but hopefully we'll find an address we
-        # recognize in one of the headers.
-        from_address = (session.config.prefs.default_email or
-                        session.config.profiles[0].email)
-        profile_emails = [p.email for p in session.config.profiles if p.email]
-        for src in (ref_from, ref_to, ref_cc):
-            matches = [s for s in src if s.address in profile_emails]
-            if matches:
-                from_address = matches[0].address
-                break
-        result['from'] = ahp.normalized(addresses=[AddressInfo(p.email, p.name)
-            for p in session.config.profiles if p.email == from_address],
-                                        force_name=True)
+        # 1st, choose a from address.
+        from_ai = config.vcards.choose_from_address(
+            config, ref_from, ref_to, ref_cc)  # Note: order matters!
+        if from_ai:
+            result['from'] = ahp.normalized(addresses=[from_ai],
+                                            force_name=True)
 
         def addresses(addrs, exclude=[]):
-            alist = [from_address] + [a.address for a in exclude]
-            return ahp.normalized_addresses(addresses=[merge_contact(a)
-                for a in addrs if a.address not in alist
-                and not a.address.startswith('noreply@')
-                and '@noreply' not in a.address],
-                                            with_keys=True,
-                                            force_name=True)
+            alist = [from_ai.address] + [a.address for a in exclude]
+            return [merge_contact(a) for a in addrs
+                    if a.address not in alist
+                    and not a.address.startswith('noreply@')
+                    and '@noreply' not in a.address]
 
         # If only replying to messages sent from chosen from, then this is
         # a follow-up or clarification, so just use the same headers.
-        if len([e for e in ref_from if e.address == from_address]
+        if len([e for e in ref_from if e.address == from_ai.address]
                ) == len(ref_from):
             if ref_to:
                 result['to'] = addresses(ref_to)
@@ -411,11 +410,13 @@ class Reply(RelativeCompose):
         msg_bodies = []
         for t in trees:
             # FIXME: Templates/settings for how we quote replies?
-            text = split_long_lines(
-                (_('%s wrote:') % t['headers_lc']['from']) + '\n' +
-                ''.join([p['data'] for p in t['text_parts']
-                         if p['type'] in cls._TEXT_PARTTYPES]))
-            msg_bodies.append('\n\n' + text.replace('\n', '\n> '))
+            quoted = ''.join([p['data'] for p in t['text_parts']
+                              if p['type'] in cls._TEXT_PARTTYPES
+                              and p['data']])
+            if quoted:
+                text = ((_('%s wrote:') % t['headers_lc']['from']) + '\n' +
+                        split_long_lines(quoted))
+                msg_bodies.append('\n\n' + text.replace('\n', '\n> '))
 
         if not ephemeral:
             local_id, lmbox = session.config.open_local_mailbox(session)
@@ -664,6 +665,10 @@ class Sendit(CompositionCommand):
         'to': 'recipients'
     }
 
+    # We set our events' source class explicitly, so subclasses don't
+    # accidentally create orphaned mail tracking events.
+    EVENT_SOURCE = 'mailpile.plugins.compose.Sendit'
+
     def command(self, emails=None):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
@@ -698,20 +703,21 @@ class Sendit(CompositionCommand):
                 # We load up any incomplete events for sending this message
                 # to this set of recipients. If nothing is in flight, create
                 # a new event for tracking this operation.
-                events = list(config.event_log.incomplete(source=self,
-                                                          data_mid=msg_mid,
-                                                          data_sid=msg_sid))
+                events = list(config.event_log.incomplete(
+                    source=self.EVENT_SOURCE,
+                    data_mid=msg_mid,
+                    data_sid=msg_sid))
                 if not events:
                     events.append(config.event_log.log(
-                        source=self,
+                        source=self.EVENT_SOURCE,
                         flags=Event.RUNNING,
                         message=_('Sending message'),
                         data={'mid': msg_mid, 'sid': msg_sid}))
 
-                SendMail(session, [PrepareMessage(config,
-                                                  email.get_msg(pgpmime=False),
-                                                  rcpts=(bounce_to or None),
-                                                  events=events)])
+                SendMail(session, msg_mid,
+                         [PrepareMessage(config, email.get_msg(pgpmime=False),
+                                         rcpts=(bounce_to or None),
+                                         events=events)])
                 for ev in events:
                     ev.flags = Event.COMPLETE
                     config.event_log.log_event(ev)
@@ -726,6 +732,7 @@ class Sendit(CompositionCommand):
                 session.ui.warning(message)
                 missing_keys.extend(kle.missing)
                 self._ignore_exception()
+            # FIXME: Also fatal, when the SMTP server REJECTS the mail
             except:
                 # We want to try that again!
                 message = _('Failed to send %s') % email
@@ -777,7 +784,7 @@ class Update(CompositionCommand):
         try:
             if (self.data.get('file-data') or [''])[0]:
                 if not Attach(session, data=self.data).command(emails=emails):
-                    return False
+                    return self._error(_('Failed to attach files'))
 
             for email, update_string in email_updates:
                 email.update_from_string(session, update_string, final=outbox)
@@ -790,6 +797,7 @@ class Update(CompositionCommand):
             self._tag_outbox(emails, untag=(not outbox))
 
             if outbox:
+                self._create_contacts(emails)
                 return self._return_search_results(message, emails,
                                                    sent=emails)
             else:
@@ -831,26 +839,28 @@ class UpdateAndSendit(Update):
         return Update.command(self, create=create, outbox=outbox)
 
 
-class EmptyOutbox(Command):
+class EmptyOutbox(Sendit):
     """Try to empty the outbox."""
     SYNOPSIS = (None, 'sendmail', None, None)
+    IS_USER_ACTIVITY = False
 
     @classmethod
     def sendmail(cls, session):
-        cfg, idx = session.config, session.config.index
+        cls(session).run()
+
+    def command(self):
+        cfg, idx = self.session.config, self.session.config.index
         messages = []
         for tag in cfg.get_tags(type='outbox'):
             search = ['in:%s' % tag._key]
-            for msg_idx_pos in idx.search(session, search,
+            for msg_idx_pos in idx.search(self.session, search,
                                           order='flat-index').as_set():
                 messages.append('=%s' % b36(msg_idx_pos))
         if messages:
-            return Sendit(session, arg=messages).run()
+            self.args = tuple(messages)
+            return Sendit.command(self)
         else:
-            return True
-
-    def command(self):
-        return self.sendmail(self.session)
+            return self._success(_('The outbox is empty'))
 
 
 _plugins.register_config_variables('prefs', {

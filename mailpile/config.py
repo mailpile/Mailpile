@@ -32,12 +32,12 @@ except ImportError:
 from mailpile.commands import Rescan
 from mailpile.eventlog import EventLog
 from mailpile.httpd import HttpWorker
-from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, NoSuchMailboxError
-from mailpile.mailboxes import wervd
+from mailpile.mailboxes import OpenMailbox, NoSuchMailboxError, wervd
+from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
-from mailpile.vcard import SimpleVCard, VCardStore
+from mailpile.vcard import VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
 
 
@@ -218,7 +218,7 @@ def _B36Check(b36val):
     """
     Verify that a string is a valid path base-36 integer.
 
-    >>> _B36Check('aa')
+    >>> _B36Check('Aa')
     'aa'
 
     >>> _B36Check('.')
@@ -483,10 +483,10 @@ def RuledContainer(pcls):
                                   ) % (type(value), name, repr(value)))
 
         def __fixkey__(self, key):
-            return key
+            return key.lower()
 
         def fmt_key(self, key):
-            return key
+            return key.lower()
 
         def get_rule(self, key):
             key = self.__fixkey__(key)
@@ -665,7 +665,7 @@ class ConfigList(RuledContainer(list)):
         list.append(self, None)
         try:
             self[len(self) - 1] = value
-            return b36(len(self) - 1)
+            return b36(len(self) - 1).lower()
         except:
             self[len(self) - 1:] = []
             raise
@@ -691,12 +691,15 @@ class ConfigList(RuledContainer(list)):
         f = b36(self.__fixkey__(key)).lower()
         return ('0000' + f)[-4:] if (len(f) < 4) else f
 
-    def keys(self):
-        return [self.fmt_key(i) for i in range(0, len(self))]
+    def iterkeys(self):
+        return (self.fmt_key(i) for i in range(0, len(self)))
 
     def iteritems(self):
-        for k in self.keys():
+        for k in self.iterkeys():
             yield (k, self[k])
+
+    def keys(self):
+        return list(self.iterkeys())
 
     def values(self):
         return self[:]
@@ -886,7 +889,9 @@ class ConfigManager(ConfigDict):
         self.background = None
         self.cron_worker = None
         self.http_worker = None
-        self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
+        self.dumb_worker = DumbWorker('Dumb worker', None)
+        self.slow_worker = self.dumb_worker
+        self.save_worker = self.dumb_worker
         self.other_workers = []
         self.mail_sources = {}
 
@@ -1101,19 +1106,15 @@ class ConfigManager(ConfigDict):
 
     def _find_mail_source(self, mbx_id):
         for src in self.sources.values():
-            if mbx_id in src.mailbox:
+            # Note: we cannot test 'mbx_id in ...' because of case sensitivity.
+            if src.mailbox[FormatMbxId(mbx_id)] is not None:
                 return src
         return None
 
     def get_mailboxes(self, standalone=True, mail_sources=False):
-        def fmt_mbxid(k):
-            k = b36(int(k, 36))
-            if len(k) > MBX_ID_LEN:
-                raise ValueError(_('Mailbox ID too large: %s') % k)
-            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
-        mailboxes = [(fmt_mbxid(k),
+        mailboxes = [(FormatMbxId(k),
                       self.sys.mailbox[k],
-                      self._find_mail_source(fmt_mbxid(k)))
+                      self._find_mail_source(k))
                      for k in self.sys.mailbox.keys()]
 
         if not standalone:
@@ -1133,7 +1134,7 @@ class ConfigManager(ConfigDict):
 
     def is_editable_message(self, msg_info):
         for ptr in msg_info[MailIndex.MSG_PTRS].split(','):
-            if not self.is_editable_mailbox(ptr[: MBX_ID_LEN]):
+            if not self.is_editable_mailbox(ptr[:MBX_ID_LEN]):
                 return False
         editable = False
         for tid in msg_info[MailIndex.MSG_TAGS].split(','):
@@ -1145,11 +1146,15 @@ class ConfigManager(ConfigDict):
         return editable
 
     def is_editable_mailbox(self, mailbox_id):
-        mailbox_id = ((mailbox_id is None and -1) or
-                      (mailbox_id == '' and -1) or
-                      int(mailbox_id, 36))
-        local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'), 36)
-        return (mailbox_id == local_mailbox_id)
+        try:
+            mailbox_id = ((mailbox_id is None and -1) or
+                          (mailbox_id == '' and -1) or
+                          int(mailbox_id, 36))
+            local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'),
+                                   36)
+            return (mailbox_id == local_mailbox_id)
+        except ValueError:
+            return False
 
     def load_pickle(self, pfn):
         with open(os.path.join(self.workdir, pfn), 'rb') as fd:
@@ -1177,13 +1182,13 @@ class ConfigManager(ConfigDict):
 
     def open_mailbox(self, session, mailbox_id, prefer_local=True):
         try:
-            mbx_id = mailbox_id.upper()
+            mbx_id = FormatMbxId(mailbox_id)
             src = self._find_mail_source(mailbox_id)
             mfn = self.sys.mailbox[mbx_id]
             if prefer_local:
                 mfn = src and src.mailbox[mbx_id].local or mfn
             pfn = 'pickled-mailbox.%s' % mbx_id.lower()
-        except KeyError:
+        except (KeyError, TypeError):
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
 
         self._lock.acquire()
@@ -1251,28 +1256,42 @@ class ConfigManager(ConfigDict):
         try:
             if not local_id:
                 mailbox, mbx = self.create_local_mailstore(session, name='')
-                local_id = self.sys.mailbox.append(mailbox)
-                local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+                local_id = FormatMbxId(self.sys.mailbox.append(mailbox))
                 self.sys.local_mailbox_id = local_id
             else:
-                local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+                local_id = FormatMbxId(local_id)
         finally:
             self._lock.release()
         return local_id, self.open_mailbox(session, local_id)
 
     def get_profile(self, email=None):
         find = email or self.prefs.get('default_email', None)
+        default_sig = _('Sent using Mailpile, Free Software '
+                        'from www.mailpile.is')
         default_profile = {
             'name': None,
             'email': find,
-            'signature': None,
-            'messageroute': self.prefs.default_messageroute
+            'messageroute': self.prefs.default_messageroute,
+            'signature': default_sig,
+            'vcard': None
         }
-        for profile in self.profiles:
-            if profile.email == find or not find:
-                if not email:
-                    self.prefs.default_email = profile.email
-                return dict_merge(default_profile, profile)
+        profiles = []
+        if find:
+            profiles = [self.vcards.get_vcard(find)]
+        if not profiles or not profiles[0]:
+            profiles = self.vcards.find_vcards([], kinds=['profile'])
+        if profiles and profiles[0]:
+            profile = profiles[0]
+            psig = profile.signature
+            proute = profile.route
+            default_profile.update({
+                'name': profile.fn,
+                'email': find or profile.email,
+                'signature': psig if (psig is not None) else default_sig,
+                'messageroute': (proute if (proute is not None)
+                                 else self.prefs.default_messageroute),
+                'vcard': profile
+            })
         return default_profile
 
     def get_sendmail(self, frm, rcpts=['-t']):
@@ -1419,7 +1438,6 @@ class ConfigManager(ConfigDict):
             config.background = Session(config)
             config.background.ui = BackgroundInteraction(config,
                                                          log_parent=session.ui)
-            config.background.ui.block()
 
         # Start the workers
         if daemons:
@@ -1439,6 +1457,9 @@ class ConfigManager(ConfigDict):
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', session)
                 config.slow_worker.start()
+            if config.save_worker == config.dumb_worker:
+                config.save_worker = Worker('Save worker', session)
+                config.save_worker.start()
             if not config.cron_worker:
                 config.cron_worker = Cron('Cron worker', session)
                 config.cron_worker.start()
@@ -1464,8 +1485,9 @@ class ConfigManager(ConfigDict):
                     if 'rescan' not in config._running:
                         rsc = Rescan(config.background, 'rescan')
                         rsc.serialize = False
-                        config.slow_worker.add_task(config.background,
-                                                    'Rescan', rsc.run)
+                        config.slow_worker.add_task(
+                            config.background, 'Rescan',
+                            lambda: rsc.run(slowly=True))
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
             # Schedule plugin jobs
@@ -1497,6 +1519,7 @@ class ConfigManager(ConfigDict):
             for wait in (False, True):
                 for w in ([config.http_worker,
                            config.slow_worker,
+                           config.save_worker,
                            config.cron_worker] +
                           config.other_workers +
                           config.mail_sources.values()):
@@ -1510,6 +1533,7 @@ class ConfigManager(ConfigDict):
             config.other_workers = []
             config.http_worker = config.cron_worker = None
             config.slow_worker = config.dumb_worker
+            config.save_worker = config.dumb_worker
         finally:
             config._lock.release()
 

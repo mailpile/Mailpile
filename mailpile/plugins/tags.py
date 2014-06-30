@@ -212,14 +212,9 @@ class TagCommand(Command):
             order += 1
 
     def finish(self, save=True):
-        idx = self._idx()
         if save:
-            # Background save makes things feel fast!
-            def background():
-                if idx:
-                    idx.save_changes()
-                self.session.config.save()
-            self._background('Save index', background)
+            self._background_save(config=True, index=True)
+        return True
 
 
 class Tag(TagCommand):
@@ -242,31 +237,34 @@ class Tag(TagCommand):
             what = []
             if self.result['tagged']:
                 what.append('Tagged ' +
-                            ', '.join([k['name'] for k
+                            ', '.join([k['name'] for k, ids
                                        in self.result['tagged']]))
             if self.result['untagged']:
                 what.append('Untagged ' +
-                            ', '.join([k['name'] for k
+                            ', '.join([k['name'] for k, ids
                                        in self.result['untagged']]))
             return '%s (%d messages)' % (', '.join(what),
                                          len(self.result['msg_ids']))
 
-    def command(self, save=True, auto=False):
-        idx = self._idx()
-
+    def _get_ops_and_msgids(self, words):
         if 'mid' in self.data:
             msg_ids = [int(m.replace('=', ''), 36) for m in self.data['mid']]
             ops = (['+%s' % t for t in self.data.get('add', []) if t] +
                    ['-%s' % t for t in self.data.get('del', []) if t])
         else:
-            words = list(self.args)
             ops = []
             while words and words[0][0] in ('-', '+'):
                 ops.append(words.pop(0))
             msg_ids = self._choose_messages(words)
+        return ops, msg_ids
 
-        rv = {'msg_ids': [], 'tagged': [], 'untagged': []}
-        rv['msg_ids'] = [b36(i) for i in msg_ids]
+    def _do_tagging(self, ops, msg_ids, save=True, auto=False):
+        idx = self._idx()
+        rv = {
+            'msg_ids': [b36(i) for i in msg_ids],
+            'tagged': [],
+            'untagged': []
+        }
         for op in ops:
             tag = self.session.config.get_tag(op[1:])
             if tag:
@@ -275,13 +273,17 @@ class Tag(TagCommand):
                 tag["tid"] = tag_id
                 conversation = ('flat' not in (self.session.order or ''))
                 if op[0] == '-':
-                    idx.remove_tag(self.session, tag_id, msg_idxs=msg_ids,
-                                   conversation=conversation)
-                    rv['untagged'].append(tag)
+                    removed = idx.remove_tag(self.session, tag_id,
+                                             msg_idxs=msg_ids,
+                                             conversation=conversation)
+                    rv['untagged'].append((tag, sorted([b36(i)
+                                                        for i in removed])))
                 else:
-                    idx.add_tag(self.session, tag_id, msg_idxs=msg_ids,
-                                conversation=conversation)
-                    rv['tagged'].append(tag)
+                    added = idx.add_tag(self.session, tag_id,
+                                        msg_idxs=msg_ids,
+                                        conversation=conversation)
+                    rv['tagged'].append((tag, sorted([b36(i)
+                                                      for i in added])))
                 # Record behavior
                 if len(msg_ids) < 15:
                     for t in self.session.config.get_tags(type='tagged'):
@@ -289,8 +291,66 @@ class Tag(TagCommand):
             else:
                 self.session.ui.warning('Unknown tag: %s' % op)
 
+        self.event.data['undo'] = _("Untag %d messages") % len(msg_ids)
+        self.event.private_data['undo'] = {
+            'tagged': [[t['tid'], mids] for t, mids in rv['tagged']],
+            'untagged': [[t['tid'], mids] for t, mids in rv['untagged']],
+        }
+
         self.finish(save=save)
-        return self._success(_('Tagged %d messagse') % len(msg_ids), rv)
+        return self._success(_('Tagged %d messages') % len(msg_ids), rv)
+
+    @classmethod
+    def Undo(cls, undo, event):
+        idx = undo._idx()
+        rv = {
+            'tagged': [],
+            'untagged': []
+        }
+        for tid, msg_mids in event.private_data['undo']['tagged']:
+            removed = idx.remove_tag(undo.session, tid,
+                                     msg_idxs=[int(i, 36) for i in msg_mids],
+                                     conversation=False)
+            rv['untagged'].append((tid, sorted([b36(i) for i in removed])))
+
+        for tid, msg_mids in event.private_data['undo']['untagged']:
+            added = idx.add_tag(undo.session, tid,
+                                msg_idxs=[int(i, 36) for i in msg_mids],
+                                conversation=False)
+            rv['tagged'].append((tid, sorted([b36(i) for i in added])))
+        return undo._success(_('Undid tagging operation'), rv)
+
+    def command(self, **kwargs):
+        return self._do_tagging(*self._get_ops_and_msgids(list(self.args)),
+                                **kwargs)
+
+
+class TagLater(Tag):
+    """Schedule a tag operation to happen later."""
+    SYNOPSIS = (None, 'tag/later', 'tag/later', '<seconds> <[+|-]tags> <msgs>')
+
+    def command(self, **kwargs):
+        args = list(self.args)
+        seconds = args.pop(0)
+        ops, msg_ids = self._get_ops_and_msgids(args)
+        # FIXME: Schedule event!
+        return self._success(_('Scheduled %d messages for future tagging')
+                             % len(msg_ids), {
+            'msg_ids': [b36(i) for i in msg_ids],
+            'seconds': seconds
+        })
+
+
+class TagTemporarily(Tag):
+    """Temporarily add or remove tags."""
+    SYNOPSIS = (None, 'tag/tmp', 'tag/tmp', '<seconds> <[+|-]tags> <msgs>')
+
+    def command(self, **kwargs):
+        args = list(self.args)
+        seconds = args.pop(0)
+        rv = self._do_tagging(*self._get_ops_and_msgids(args), **kwargs)
+        # FIXME: Schedule undo event!
+        return rv
 
 
 class AddTag(TagCommand):
@@ -529,13 +589,8 @@ class DeleteTag(TagCommand):
 
 class FilterCommand(Command):
     def finish(self, save=True):
-        def save_filter():
-            self.session.config.save()
-            if self.session.config.index:
-                self.session.config.index.save_changes()
-            return True
-        if save:
-            self._serialize('Save filter', save_filter)
+        self._background_save(config=True, index=True)
+        return True
 
 
 class Filter(FilterCommand):
@@ -578,13 +633,17 @@ class Filter(FilterCommand):
             auto_tag = True
 
         if not terms or (len(args) < 1):
-            raise UsageError('Need flags and search terms or a hook')
+            raise UsageError(_('Need flags and search terms or a hook'))
 
         tags, tids = [], []
         while args and args[0][0] in ('-', '+'):
             tag = args.pop(0)
-            tags.append(tag)
-            tids.append(tag[0] + config.get_tag_id(tag[1:]))
+            tid = config.get_tag_id(tag[1:])
+            if tid is not None:
+                tags.append(tag)
+                tids.append(tag[0] + tid)
+            else:
+                raise UsageError(_('No such tag: %s') % tag)
 
         if not args:
             args = ['Filter for %s' % ' '.join(tags)]
@@ -716,10 +775,11 @@ class MoveFilter(ListFilters):
 
     def command(self):
         self.session.config.filter_move(self.args[0], self.args[1])
-        self.session.config.save()
+        self._background_save(config=True)
         return ListFilters.command(self, want_fid=self.args[1])
 
 
-_plugins.register_commands(Tag, AddTag, DeleteTag, ListTags,
+_plugins.register_commands(Tag, TagLater, TagTemporarily,
+                           AddTag, DeleteTag, ListTags,
                            Filter, DeleteFilter,
                            MoveFilter, ListFilters)

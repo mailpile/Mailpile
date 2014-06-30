@@ -159,6 +159,8 @@ class MailpileSeleniumTest(MailPileUnittest):
         if not MailpileSeleniumTest.DRIVER:
             driver = webdriver.PhantomJS()  # or add to your PATH
             driver.set_window_size(1280, 1024)  # optional
+            driver.implicitly_wait(5)
+            driver.set_page_load_timeout(5)
             MailpileSeleniumTest.DRIVER = driver
 
     @classmethod

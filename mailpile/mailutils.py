@@ -1,3 +1,4 @@
+# vim: set fileencoding=utf-8 :
 import base64
 import copy
 import email.header
@@ -35,6 +36,14 @@ from mailpile.vcard import AddressInfo
 
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
+
+
+def FormatMbxId(n):
+    if not isinstance(n, (str, unicode)):
+        n = b36(n)
+    if len(n) > MBX_ID_LEN:
+        raise ValueError(_('%s is too large to be a mailbox ID') % n)
+    return ('0000' + n).lower()[-MBX_ID_LEN:]
 
 
 class NotEditableError(ValueError):
@@ -304,18 +313,22 @@ class Email(object):
     @classmethod
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
-               msg_subject=None, msg_text=None, msg_references=None,
+               msg_subject=None, msg_text='', msg_references=None,
                save=True, ephemeral_mid='not-saved', append_sig=True):
         msg = MIMEMultipart()
         msg.signature_info = SignatureInfo()
         msg.encryption_info = EncryptionInfo()
         msg_ts = int(time.time())
 
-        if not msg_from:
-            msg_from = idx.config.get_profile().get('email', None)
-            from_name = idx.config.get_profile().get('name', None)
-            if msg_from and from_name:
-                msg_from = '%s <%s>' % (from_name, msg_from)
+        if msg_from:
+            from_email = AddressHeaderParser(unicode_data=msg_from)[0].address
+            from_profile = idx.config.get_profile(email=from_email)
+        else:
+            from_profile = idx.config.get_profile()
+            from_email = from_profile.get('email', None)
+            from_name = from_profile.get('name', None)
+            if from_email and from_name:
+                msg_from = '%s <%s>' % (from_name, from_email)
         if not msg_from:
             raise NoFromAddressError()
 
@@ -324,18 +337,23 @@ class Email(object):
         msg['Message-Id'] = email.utils.make_msgid('mailpile')
         msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
+
+        ahp = AddressHeaderParser()
+        norm = lambda a: ', '.join(sorted(list(set(ahp.normalized_addresses(
+            addresses=a, with_keys=True, force_name=True)))))
         if msg_to:
-            msg['To'] = cls.encoded_hdr(None, 'to',
-                                        value=', '.join(set(msg_to)))
+            msg['To'] = cls.encoded_hdr(None, 'to', value=norm(msg_to))
         if msg_cc:
-            msg['Cc'] = cls.encoded_hdr(None, 'cc',
-                                        value=', '.join(set(msg_cc)))
+            msg['Cc'] = cls.encoded_hdr(None, 'cc', value=norm(msg_cc))
         if msg_bcc:
-            msg['Bcc'] = cls.encoded_hdr(None, 'bcc',
-                                         value=', '.join(set(msg_bcc)))
+            msg['Bcc'] = cls.encoded_hdr(None, 'bcc', value=norm(msg_bcc))
         if msg_references:
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
+
+        sig = from_profile.get('signature')
+        if sig and ('\n-- \n' not in (msg_text or '')):
+            msg_text = (msg_text or '\n\n') + ('\n\n-- \n%s' % sig)
 
         if msg_text:
             try:
@@ -348,20 +366,6 @@ class Email(object):
             textpart.encryption_info = EncryptionInfo()
             msg.attach(textpart)
             del textpart['MIME-Version']
-
-        if append_sig:
-            sig = idx.config.get_profile().get('signature', '')
-            if sig not in ['', None]:
-                try:
-                    sig.encode('us-ascii')
-                    charset = 'us-ascii'
-                except UnicodeEncodeError:
-                    charset = 'utf-8'
-                textpart = MIMEText(sig, _subtype='plain', _charset=charset)
-                textpart.signature_info = SignatureInfo()
-                textpart.encryption_info = EncryptionInfo()
-                msg.attach(textpart)
-                del textpart['MIME-Version']
 
         if save:
             msg_key = mbx.add(msg)
@@ -1157,8 +1161,18 @@ class AddressHeaderParser(list):
 
     >>> AddressHeaderParser('Weird email@somewhere.com Header').normalized()
     u'"Weird Header" <email@somewhere.com>'
+
+    >>> ai = AddressHeaderParser(unicode_data=ahp.TEST_UNICODE_DATA)
+    >>> ai[0].fn
+    u'Bjarni R\\xfanar'
+    >>> ai[0].fn == ahp.TEST_UNICODE_NAME
+    True
+    >>> ai[0].address
+    u'b@c.x'
     """
 
+    TEST_UNICODE_DATA = u'Bjarni R\xfanar <b@c.x#61A015763D28D4>'
+    TEST_UNICODE_NAME = u'Bjarni R\xfanar'
     TEST_HEADER_DATA = """
         bre@klaki.net  ,
         bre@klaki.net Bjarni ,
@@ -1168,7 +1182,7 @@ class AddressHeaderParser(list):
         (FIXME: (nested) bre@wrongmail.com parser breaker) bre@klaki.net,
         undisclosed-recipients-gets-ignored:,
         Bjarni [mailto:bre@klaki.net],
-        "This is a key test" <bre@klaki.net#123456789>,
+        "This is a key test" <bre@klaki.net#61A015763D28D410A87B197328191D9B3B4199B4>,
         bre@klaki.net (Bjarni Runar Einar's son);
         Bjarni is bre @klaki.net,
         Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
@@ -1229,13 +1243,17 @@ class AddressHeaderParser(list):
     # useful info from the message itself.
     DEFAULT_CHARSET_ORDER = ('iso-8859-1', 'utf-8')
 
-    def __init__(self, data=None, charset_order=None, **kwargs):
+    def __init__(self,
+                 data=None, unicode_data=None, charset_order=None, **kwargs):
         self.charset_order = charset_order or self.DEFAULT_CHARSET_ORDER
         self._parse_args = kwargs
-        if data is None:
+        if data is None and unicode_data is None:
             self._reset(**kwargs)
-        else:
+        elif data is not None:
             self.parse(data)
+        else:
+            self.charset_order = ['utf-8']
+            self.parse(unicode_data.encode('utf-8'))
 
     def _reset(self, _raw_data=None, strict=False, _raise=False):
         self._raw_data = _raw_data
@@ -1285,11 +1303,11 @@ class AddressHeaderParser(list):
                 return quopri.decodestring(data, header=True).decode(cs)
 
         for cs in charset_order or self.charset_order:
-             try:
-                 string = string.decode(cs)
-                 break
-             except UnicodeDecodeError:
-                 pass
+            try:
+                string = string.decode(cs)
+                break
+            except UnicodeDecodeError:
+                pass
 
         return re.sub(self.RE_QUOTED, uq, string)
 
@@ -1413,6 +1431,8 @@ class AddressHeaderParser(list):
                              force_name=False):
         if addresses is None:
             addresses = self
+        elif not addresses:
+            addresses = []
         def fmt(ai):
             email = ai.address
             if with_keys and ai.keys:
@@ -1426,7 +1446,7 @@ class AddressHeaderParser(list):
                  return ' '.join([quote and self.quote(email) or email, epart])
             else:
                  return epart
-        return [fmt(ai) for ai in (addresses or [])]
+        return [fmt(ai) for ai in addresses]
 
     def normalized(self, **kwargs):
         return ', '.join(self.normalized_addresses(**kwargs))

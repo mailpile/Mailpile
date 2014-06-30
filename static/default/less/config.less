@@ -82,7 +82,7 @@
 	@strong-font-weight: bold;
 	@strong-color: inherit;
 
-	@text-shadow-on-light: 1px 1px 1px #888888;
+	@text-shadow-on-light: 1px 1px 1px #;
 	@text-shadow-on-dark: 0 -1px 0 rgba(0, 0, 0, 0.4);
 
 	@pre-margin-bottom: 20px;
@@ -170,7 +170,7 @@
 	.button-globals(@color: #eeeeee, @shadow: 1px 1px 1px #333333) {
 
 		// Font
-		color: @color;
+		color: @color !important;
 		font-family: @mailpile-text-font-family-semibold;	
 		font-size: 16px;
 		font-weight: bold;
@@ -226,23 +226,23 @@
 	@button-primary-border: @blue;
 	@button-primary-border-hover: @blue;
 	
-	@button-secondary-top: @grayLight;
-	@button-secondary-top-hover: darken(@button-secondary-top, 20%);
-	@button-secondary-bottom: @grayLight;
-	@button-secondary-bottom-hover: darken(@button-secondary-bottom, 20%);
-	@button-secondary-color: @grayLight;
-	@button-secondary-shadow: @text-shadow-on-dark;
-	@button-secondary-border: @grayMid;
+	@button-secondary-top: @white;
+	@button-secondary-top-hover: @grayLight;
+	@button-secondary-bottom: @white;
+	@button-secondary-bottom-hover: @grayLight;
+	@button-secondary-color: @grayDark;
+	@button-secondary-shadow: @grayDark;
+	@button-secondary-border: @gray;
 	@button-secondary-border-hover: @gray;
 
-	@button-alert-top: @brown;
-	@button-alert-top-hover: darken(@button-alert-top, 20%);
-	@button-alert-bottom: @brown;
-	@button-alert-bottom-hover: darken(@button-alert-bottom, 20%);
+	@button-alert-top: @green;
+	@button-alert-top-hover: darken(@button-alert-top, 12%);
+	@button-alert-bottom: @green;
+	@button-alert-bottom-hover: darken(@button-alert-bottom, 12%);
 	@button-alert-color: @white;
 	@button-alert-shadow: @text-shadow-on-dark;
 	@button-alert-border: #8596b3;
-	@button-alert-border-hover: @blue;
+	@button-alert-border-hover: @green;
 
 	@button-warning-top: @red;
 	@button-warning-top-hover: darken(@button-warning-top, 20%);

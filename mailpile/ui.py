@@ -386,6 +386,8 @@ class UserInteraction:
                 if isinstance(obj, (list, dict, str, unicode,
                                     int, float, bool, type(None))):
                     return JSONEncoder.default(self, obj)
+                if isinstance(obj, datetime.datetime):
+                    return str(obj)
                 return "COMPLEXBLOB"
 
         return json.dumps(data, indent=1, cls=NoFailEncoder, sort_keys=True)
@@ -454,6 +456,7 @@ class UserInteraction:
 
         sep = '-' * 79 + '\n'
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
+        self.block()
 
         tf = tempfile.NamedTemporaryFile()
         tf.write(edit_this.encode('utf-8'))
@@ -463,6 +466,7 @@ class UserInteraction:
         edited = tf.read().decode('utf-8')
         tf.close()
 
+        self.unblock()
         if edited == edit_this:
             return False
 

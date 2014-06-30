@@ -48,8 +48,8 @@ var update_using_jhtml = function(original_url) {
 };
 
 $(document).ready(function(){
-    if (mailpile && mailpile.instance &&
-            mailpile.instance['command'] == 'search') {
+    if (Mailpile && Mailpile.instance &&
+            Mailpile.instance['command'] == 'search') {
         $('a').each(function(idx, elem) {
             var url = $(elem).attr('href');
             if (url && ((url.indexOf('/in/') == 0) ||

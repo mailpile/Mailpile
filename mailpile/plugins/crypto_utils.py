@@ -6,11 +6,9 @@ from gettext import gettext as _
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.plugins.search import Search
-from mailpile.mailutils import Email, MBX_ID_LEN
+from mailpile.mailutils import Email
 
 from mailpile.crypto.gpgi import GnuPG
-from mailpile.crypto.nicknym import Nicknym
-
 
 _plugins = PluginManager(builtin=__file__)
 
@@ -146,7 +144,7 @@ class GPGKeyImportFromMail(Search):
 
 
 class GPGKeyList(Command):
-    """Import a GPG Key."""
+    """List GPG Keys."""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/gpg/keylist', 
                 'crypto/gpg/keylist', '<address>')
@@ -168,6 +166,17 @@ class GPGKeyList(Command):
         return self._success("Searched for keys for e-mail address", res)
 
 
+class GPGKeyListSecret(Command):
+    """List Secret GPG Keys"""
+    ORDER = ('', 0)
+    SYNOPSIS = (None, 'crypto/gpg/keylist/secret', 
+                'crypto/gpg/keylist/secret', '<address>')
+    HTTP_CALLABLE = ('GET', )
+
+    def command(self):
+        g = GnuPG()
+        res = g.list_secret_keys()
+        return self._success("Searched for secret keys", res)
 
 
 class GPGUsageStatistics(Search):
@@ -226,45 +235,6 @@ class GPGUsageStatistics(Search):
 
 
 
-class NicknymGetKey(Command):
-    """Get a key from a nickserver"""
-    ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/nicknym/getkey', 'crypto/nicknym/getkey', 
-        '<address> [<keytype>] [<server>]')
-
-    HTTP_CALLABLE = ('POST',)
-    HTTP_QUERY_VARS = {
-        'address': 'The nick/address to fetch a key for',
-       'keytype': 'What type of key to import (defaults to OpenPGP)',
-       'server': 'The Nicknym server to use (defaults to autodetect)'}
-
-    def command(self):
-        address = self.data.get('address', self.args[0])
-        keytype = self.data.get('keytype', None)
-        server = self.data.get('server', None)
-        if len(self.args) > 1:
-            keytype = self.args[1]
-        else:
-            keytype = 'openpgp'
-
-        if len(self.args) > 2:
-            server = self.args[2]
-
-        n = Nicknym(self.session.config)
-        return n.get_key(address, keytype, server)
-
-class NicknymRefreshKeys(Command):
-    """Get a key from a nickserver"""
-    ORDER = ('', 0)
-    SYNOPSIS = (None, 'crypto/nicknym/refreshkeys', 
-        'crypto/nicknym/refreshkeys', '')
-
-    HTTP_CALLABLE = ('POST',)
-
-    def command(self):
-        n = Nicknym(self.session.config)
-        n.refresh_keys()
-        return True
 
 _plugins.register_commands(GPGKeySearch)
 _plugins.register_commands(GPGKeyReceive)
@@ -273,5 +243,4 @@ _plugins.register_commands(GPGKeyImportFromMail)
 _plugins.register_commands(GPGKeySign)
 _plugins.register_commands(GPGKeyList)
 _plugins.register_commands(GPGUsageStatistics)
-_plugins.register_commands(NicknymGetKey)
-_plugins.register_commands(NicknymRefreshKeys)
+_plugins.register_commands(GPGKeyListSecret)

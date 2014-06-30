@@ -23,7 +23,8 @@ __all__ = [
     'dates', 'sizes', 'autotag', 'cryptostate', 'crypto_utils',
     'setup_magic', 'exporters', 'plugins',
     'vcard_carddav', 'vcard_gnupg', 'vcard_gravatar', 'vcard_mork',
-    'html_magic', 'migrate', 'smtp_server', 'crypto_policy'
+    'html_magic', 'migrate', 'smtp_server', 'crypto_policy', 
+    'keylookup'
 ]
 
 
@@ -377,19 +378,18 @@ class PluginManager(object):
         for info in manifest_path('periodic_jobs', 'slow'):
             reg_job(info, 'slow', self.register_slow_periodic_job)
 
+        ucfull_name = full_name.capitalize()
         for ui_type, elems in manifest.get('user_interface', {}).iteritems():
             for hook in elems:
                 if 'javascript_setup' in hook:
                     js = hook['javascript_setup']
-                    if not js.startswith('mailpile.'):
-                       # FIXME: Remove the new_ once namespaces have been
-                       #        cleaned up a bit.
-                       hook['javascript_setup'] = 'new_%s.%s' % (full_name, js)
+                    if not js.startswith('Mailpile.'):
+                       hook['javascript_setup'] = '%s.%s' % (ucfull_name, js)
                 if 'javascript_events' in hook:
                     for event, call in hook['javascript_events'].iteritems():
-                        if not call.startswith('mailpile.'):
-                            hook['javascript_events'][event] = 'new_%s.%s' \
-                                % (full_name, call)
+                        if not call.startswith('Mailpile.'):
+                            hook['javascript_events'][event] = '%s.%s' \
+                                % (ucfull_name, call)
                 self.register_ui_element(ui_type, **hook)
 
     def _process_startup_hooks(self, package,

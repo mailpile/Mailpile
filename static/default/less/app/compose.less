@@ -1,11 +1,11 @@
 /* Compose */
 
-  @compose-max-width: 800px;
+  @compose-max-width: 750px;
 
   .form-compose {
-    min-height: 225px;
-    padding: 10px 15px;
+    padding: 15px 20px 10px 20px;
     background: @grayLight;
+    border-bottom: 1px solid @grayMid;
   }
 
   .form-compose label {
@@ -32,82 +32,27 @@
   .compose-from {
     float: left;
     height: 32px;
-    background-color: #fafafa;
+    background-color: @white;
     border-color: #cccccc;
     border-radius: 5px;
     font-size: 12px;
   }
 
-  .compose-options {
-    position: relative;
-    top: -20px;
-    right: 10px;
-  }
-
-  .compose-options li {
-    margin-left: 25px;    
-  }
-
-  .compose-options li label.compose-apply-quote,
-  .compose-options li span.text,
-  .compose-options li a.compose-show-details {
-    font-size: 14px;
-    font-style: bold;
-    line-height: 14px;
-  }
-
-
-/* Compose - Crypto */
-
-  .compose-crypto-signature,
-  .compose-crypto-encryption {
-    font-weight: bold;
-  }
-
-  .compose-crypto-signature:hover,
-  .compose-crypto-encryption:hover {
-    cursor: pointer;
-  }
-  .compose-crypto-signature.none {
-    color: @gray;
-  }
-  .compose-crypto-signature.signed {
-    color: @blue;
-  }
-  .compose-crypto-signature.error {
-    color: @red;
-  }
-
-  .compose-crypto-encryption.none {
-    color: @gray;
-  }
-  .compose-crypto-encryption.none {
-    color: @gray;
-  }  
-  .compose-crypto-encryption.cannot {
-    color: @orange;
-  }
-  .compose-crypto-encryption.encrypted {
-    color: @green;
-  }
-  .compose-crypto-encryption.error {
-   color: @red;
+  .compose-headers,
+  .compose-subject,
+  .compose-options,
+  .compose-body {
+    width: 85%;
+    max-width: @compose-max-width;
   }
 
 
 /* Compose - Headers */
 
-
-
-  .compose-headers,
-  .compose-subject,
-  .compose-message {
-    width: 85%;
-    max-width: @compose-max-width;
-		padding: 10px 0 0 0;    
+  .compose-headers {
+    padding-bottom: 15px;
   }
-
-
+  
 	a.compose-show-field {
 	  font-family: @text-font-family;
     font-size: 18px;
@@ -130,7 +75,7 @@
   }
 
 
-/* Compose - Subject & Message */
+/* Compose - Subject */
 
   .compose-subject input[type=text] {
     width: 100%;
@@ -144,32 +89,191 @@
     line-height: 18px;
   }
 
-  .compose-message label.right {
-    font-style: italic;
-    color: @gray;
-  }
-
-  .compose-message textarea {
-    width: 100%;
-    min-height: 94px;
-    padding: 10px;
-    border: 1px solid @grayMid;
-    border-radius: 4px;
-   -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;    
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    line-height: 18px;
-  }
-
-  .compose-subject input[type=text]:focus, 
-  .compose-message textarea:focus {
+  .compose-subject input[type=text]:focus { 
     outline: none;
     border: 1px solid @gray;
     box-shadow: 0 0 3px @gray;
     -moz-box-shadow: 0 0 3px @gray;
     -webkit-box-shadow: 0 0 3px @gray;
+  }
+
+
+/* Compose - Options */
+
+  .compose-options {
+    margin-top: 3px;
+    margin-bottom: 0px;
+		padding: 0 0 0px 0;
+  }
+
+  .compose-options-size {
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 14px;
+  }
+
+  .compose-options-crypto {
+    width: 74px;
+    position: relative;
+    bottom: -1px;
+    display: inline-block;
+    text-align: center;
+    background: @white;
+    border-left: 1px solid @grayMid;
+    border-top: 1px solid @grayMid;
+    border-right: 1px solid @grayMid;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    .compose-options-size();
+  }
+
+  .compose-options-crypto .compose-crypto-encryption,
+  .compose-options-crypto .compose-crypto-signature {
+    display: inline-block;
+    margin: 10px 6px;
+  }
+
+  .compose-crypto-signature:hover,
+  .compose-crypto-encryption:hover {
+    cursor: pointer;
+  }
+  .compose-crypto-signature.none {
+    color: @gray;
+  }
+  .compose-crypto-signature.signed {
+    color: @green;
+  }
+  .compose-crypto-signature.error {
+    color: @red;
+  }
+  .compose-crypto-encryption.none {
+    color: @gray;
+  }
+  .compose-crypto-encryption.none {
+    color: @gray;
+  }  
+  .compose-crypto-encryption.cannot {
+    color: @orange;
+  }
+  .compose-crypto-encryption.encrypted {
+    color: @green;
+  }
+  .compose-crypto-encryption.error {
+   color: @red;
+  }
+
+  .compose-options ul {
+    display: inline-block;
+    margin-left: 10px;
+    margin-bottom: 0px;
+    padding: 0px;
+  }
+
+  .compose-options ul li {
+    margin: 0px 10px 0px 0px;
+    .compose-options-size();
+  }
+
+  .compose-options ul li a {
+    font-weight: normal;
+    color: @gray;
+    .compose-options-size();
+  }
+
+  .compose-options label.right {
+    position: relative;
+    top: 9px;
+    right: 10px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    cursor: pointer;
+    .compose-options-size();
+    font-style: italic;
+    color: @grayDark;
+  }
+
+  .compose-to-summary {
+    max-width: 500px;
+    word-wrap: normal;
+    word-break: normal;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+
+/* Compose - Body */
+
+  .compose-body {
+    border-radius: 4px;
+    background: @white;
+    border: 1px solid @grayMid;
+    padding-bottom: 0px;
+  }
+
+  .compose-body textarea {
+    width: 97%;
+    display: block;
+    min-height: 78px;
+    margin: 12px auto 0px auto;
+    padding: 0px 0px 12px 0px;
+    border: 0px;
+    border-radius: 4px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;    
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 18px;
+    resize: none;
+  }
+
+  .compose-body textarea:focus {
+    outline: none;    
+  }
+
+
+/* Compose - Body - Attachments */
+
+  .compose-attachments {
+    margin-top: 0px;
+    padding: 10px 10px 10px 10px;
+    font-size: 14px;
+  }
+  
+  .compose-attachments ul {
+    margin-bottom: 0px;
+  }
+
+  li.compose-attachment {
+    width: 100px;
+    padding: @base-padding;
+    margin-right: 15px;
+  }
+
+  li.compose-attachment img {
+    width: 100px;
+  }
+
+  .compose-attachment-remove {
+    float: right;
+    position: relative;
+    top: 15px;
+    right: 10px;
+  }
+
+  .compose-attachment-filename {
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .attachment-browswer-unsupported {
+    color: @gray;
+    font-style: italic;
+  }
+
+  .attachment-browswer-unsupported a {
+    color: @gray;
   }
 
 
@@ -179,14 +283,9 @@
     width: 85%;
     max-width: @compose-max-width;
     margin-top: 10px;
+    padding-bottom: @base-padding;
   }
 
-  .compose-attachments {
-    border-radius: 4px;
-    border: 1px solid @grayLight;
-    padding: 10px;
-  }
-  
   .compose-buttons {
     text-align: right;  
   }

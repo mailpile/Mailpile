@@ -11,14 +11,14 @@
 from urllib import quote, unquote
 from gettext import gettext as _
 
+from mailpile.mailutils import MBX_ID_LEN
+
 
 __all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'wervd',
            'MBX_ID_LEN',
            'NoSuchMailboxError', 'IsMailbox', 'OpenMailbox']
 
 MAILBOX_CLASSES = []
-
-MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
 
 
 class NoSuchMailboxError(OSError):

@@ -19,7 +19,7 @@
   <form id="form-contact-add" class="standard">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close button-secondary" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title"><span class="icon-groups"></span> {{_("Add Contact")}}</h4>
       </div>
       <div class="modal-body clearfix">
@@ -32,11 +32,17 @@
           <input type="text" name="email" data-type="email" class="contact-add-email" value="<%= address %>" placeholder="chelsea@manning.com">
           <div class="contact-add-signature"></div>
         </fieldset>
+        <fieldset class="contact-key-search-results">
+        </fieldset>
         <div id="contact-add-key"></div>
       </div>
       <div class="modal-footer">
-        <button title="{{_("Cancel")}}" alt="{{_("Cancel")}}" data-dismiss="modal">{{_("Cancel")}}</button>
-        <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">{{_("Add")}}</button>
+        <a id="contact-add-keysearch" title="{{_("Search for Keys")}}" alt="{{_("Search for Keys")}}" data-action="keysearch" class="button-alert">
+          <span class="icon-key"></span> {{_("Search for Keys")}}
+        </a>
+        <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+          <span class="icon-plus"></span> {{_("Add")}}
+        </button>
       </div>
     </div>
   </form>
@@ -58,7 +64,7 @@
         <ul id="tag-picker-archive"><%= archive %></ul>      
       </div>
       <div class="modal-footer">
-        <button title="{{_("Close")}}" alt="{{_("Close")}}" data-dismiss="modal">{{_("Close")}}</button>
+        <button title="{{_("Close")}}" class="left button-secondary" alt="{{_("Close")}}" data-dismiss="modal">{{_("Close")}}</button>
         <button title="{{_("Remove")}}" alt="{{_("Remove")}}" data-action="remove">{{_("Remove")}}</button>
         <button title="{{_("Apply")}}" alt="{{_("Apply")}}" data-action="add">{{_("Apply")}}</button>
       </div>
@@ -86,7 +92,7 @@
       </ol>
     </div>
     <div class="modal-footer">
-      <button title="{{_("Cancel")}}" alt="{{_("Cancel")}}" class="left button-secondary" data-dismiss="modal">{{_("Cancel")}}</button>
+      <button title="{{_("Cancel")}}" class="left button-secondary" alt="{{_("Cancel")}}" data-dismiss="modal">{{_("Cancel")}}</button>
       <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">{{_("Add")}}</button>
     </div>
   </div>
@@ -99,17 +105,21 @@
    <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h4 class="modal-title"><span class="icon-search"></span> {{_("Searching Keyservers")}}</h4>
+      <h4 class="modal-title">
+        <span class="icon-search"></span>
+        {{_("Searching for encryption keys")}}
+        <span id="modal-search-keyservers-progress"><img src="/static/css/select2-spinner.gif"/></span>
+      </h4>
     </div>
     <div class="modal-body clearfix">
-      <h3><%= name %></h3>
-      <ul>
-        <%= keys %>
-      </ul>
+      <div id="modal-search-keyservers-results"></div>
+      <table width="100%" id="keyserver-result-list">
+      </table>
+      <div id="modal-search-keyservers-looking">...</div>
     </div>
     <div class="modal-footer">
-      <button title="{{_("Cancel")}}" alt="{{_("Cancel")}}" class="left button-secondary" data-dismiss="modal">{{_("Cancel")}}</button>
-      <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">{{_("Add")}}</button>
+      <button title="{{_("Cancel")}}" class="left button-secondary" alt="{{_("Cancel")}}" data-dismiss="modal">{{_("Cancel")}}</button>
+      <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">{{_("Import selected keys")}}</button>
     </div>
   </div>
   </div>

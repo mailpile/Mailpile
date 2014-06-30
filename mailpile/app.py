@@ -63,8 +63,7 @@ def Interact(session):
         prompt = session.ui.term.color('mailpile> ',
                                        color=session.ui.term.BLACK,
                                        weight=session.ui.term.BOLD)
-
-        while True:
+        while not mailpile.util.QUITTING:
             session.ui.block()
             opt = raw_input(prompt).decode('utf-8').strip()
             session.ui.term.check_max_width()
@@ -104,11 +103,11 @@ def Main(args):
         # Create our global config manager and the default (CLI) session
         config = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
         session = Session(config)
-        session.config.load(session)
-        session.main = True
         session.ui = UserInteraction(config)
         if sys.stdout.isatty():
             session.ui.term = ANSIColors()
+        session.main = True
+        session.config.load(session)
     except AccessError, e:
         sys.stderr.write('Access denied: %s\n' % e)
         sys.exit(1)
@@ -157,7 +156,10 @@ def Main(args):
             if readline:
                 readline.write_history_file(session.config.history_file())
 
+        # Make everything in the background quit ASAP...
+        mailpile.util.LAST_USER_ACTIVITY = 0
         mailpile.util.QUITTING = True
+
         config.plugins.process_shutdown_hooks()
         config.stop_workers()
         if config.index:

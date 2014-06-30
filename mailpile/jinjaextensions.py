@@ -105,6 +105,10 @@ class MailpileCommand(Extension):
         environment.globals['make_filter_groups'] = self._make_filter_groups
         environment.filters['make_filter_groups'] = self._make_filter_groups
 
+        # Make Nice Summary of Recipients
+        environment.globals['recipient_summary'] = self._recipient_summary
+        environment.filters['recipient_summary'] = self._recipient_summary
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -391,18 +395,19 @@ class MailpileCommand(Extension):
     @classmethod
     def _contact_url(self, person):
         if 'contact' in person['flags']:
-            url = "/contact/" + person['address'] + "/"
+            url = "/contact/view/" + person['address'] + "/"
         else:
-            url = "/contact/add/" + person['address'] + "/"
+            url = "/#add-contact"
         return url
 
     @classmethod
     def _contact_name(self, profiles, person):
         name = person['fn']
-        for profile in profiles:
-            if profile['email'] == person['address']:
-                name = _('You')
-                break
+        # FIXME: bre and bnvk should discuss this :)
+        #for profile in profiles:
+        #    if profile['email'] == person['address']:
+        #        name = profile['name']
+        #        break
         return name
 
     URL_RE_HTTP = re.compile('(<a [^>]*?)'            # 1: <a
@@ -487,11 +492,16 @@ class MailpileCommand(Extension):
         return self.env.session.ui.render_json(d)
 
     def _nice_text(self, text):
-        # trim starting & ending empty lines
-        output = text.strip()
-        # render markdown
-        # output = markdown(output)
-        return output
+        trimmed = ''
+        previous = 'not'
+        for line in text.splitlines():
+            if line or previous == 'not':
+                trimmed += line + '\n'
+                if line:
+                    previous = 'not'
+                else:
+                    previous = 'blank'
+        return trimmed.strip()
 
     @classmethod
     def _nice_subject(self, subject):
@@ -502,7 +512,22 @@ class MailpileCommand(Extension):
         if len(name) > truncate:
             name = name[:truncate-3] + '...'
         return name
-        
+
+    def _recipient_summary(self, editing_strings, addresses, truncate):
+        summary_list = []
+        recipients = editing_strings['to_aids'] + editing_strings['cc_aids'] + editing_strings['bcc_aids']
+        for aid in recipients:
+            summary_list.append(addresses[aid].fn)
+        summary = ', '.join(summary_list)
+        if len(summary) > truncate:
+            others = ''
+            if len(recipients) > 1:
+                others = _("and") + ' ' + str(len(recipients) - 1) + ' ' + _("others")
+            summary = summary[:truncate] + '... ' + others
+        else:
+            summary
+        return summary
+
     def _attachment_type(self, mime):
         if mime in [
             "application/octet-stream",

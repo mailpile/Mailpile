@@ -109,6 +109,10 @@
     line-height: 16px;
   }
 
+  .thread-item-from a:hover {
+    color: @blue;
+  }
+
   .thread-item-metadata-address {
     font-size: 12px;
     line-height: 12px;
@@ -168,12 +172,11 @@
 
   .thread-item-metadata-details {
     display: none;
-    margin-bottom: 25px;
-    border-bottom: 1px solid @grayMid;
+    padding-bottom: 5px;
   }
 
   .thread-item-metadata-details ul {
-    margin: 10px 0px 15px 20px;
+    margin: 10px 0px 10px 20px;
   }
 
   .thread-item-metadata-details ul li {
@@ -183,6 +186,10 @@
     font-size: 14px;
     font-weight: normal;   
     line-height: 14px;
+  }
+
+	.thread-item-metadata-details a:hover {
+    color: @blue;
   }
   
   .thread-item-metadata-contact {
@@ -198,14 +205,18 @@
     padding-right: 5px;
   }
 
-	.thread-item-metadata-contact a:hover {
-    color: @red;
+  .thread-item-metadata-contact a span {
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 11px;
+    color: @gray;
   }
 
 	.thread-item-metadata-contact a img {
-     width: 21px;
-     height: 21px;
-     padding-right: 5px;
+     width: 24px;
+     height: 24px;
+     border-radius: @base-border-radius;
+     margin-right: 5px;
   }
 
   .thread-item-crypto {
@@ -300,6 +311,7 @@
 /* Thread Message Attachments */
 
 	div.thread-message-attachments {
+    margin-top: 15px;
   	margin-left: 20px;
   	margin-bottom: 0px;
 	}

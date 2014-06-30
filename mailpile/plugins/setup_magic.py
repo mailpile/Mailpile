@@ -1,4 +1,5 @@
 import os
+import random
 from gettext import gettext as _
 from datetime import date
 
@@ -122,7 +123,7 @@ class Setup(Command):
         'Files': {
             'type': 'tag',
             'icon': 'icon-document',
-            'label_color': '06-blue',          
+            'label_color': '06-blue',
             'search_terms': 'has:attachment',
             'name': _('Files'),
             'template': 'files',
@@ -147,11 +148,10 @@ class Setup(Command):
         'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible'},
     }
 
-    def command(self):
-        session = self.session
-
-        if session.config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
+    def setup_command(self, session):
+        # Stop the workers...
+        want_daemons = session.config.cron_worker is not None
+        session.config.stop_workers()
 
         # Perform any required migrations
         Migrate(session).run(before_setup=True, after_setup=False)
@@ -195,6 +195,7 @@ class Setup(Command):
         except ImportError:
             session.ui.warning(_('Please install spambayes '
                                  'for super awesome spam filtering'))
+
         session.config.save()
         session.config.load(session)
 
@@ -281,7 +282,200 @@ class Setup(Command):
         Migrate(session).run(before_setup=False, after_setup=True)
 
         session.config.save()
+        session.config.prepare_workers(session, daemons=want_daemons)
+
         return self._success(_('Performed initial Mailpile setup'))
 
+    def command(self):
+        session = self.session
+        if session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+        return self.setup_command(session)
 
-_plugins.register_commands(Setup)
+
+class TestableWebbable(Setup):
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = {
+        'testing': 'Yes or No, if testing'
+    }
+    TRUTHY = {
+        '0': False, 'no': False, 'fuckno': False, 'false': False,
+        '1': True, 'yes': True, 'hellyeah': True, 'true': True,
+    }
+
+    def _testing_yes(self, method, *args, **kwargs):
+        testination = self.data.get('testing')
+        if testination:
+            self.testing = random.randint(0, 1)
+            if testination[0].lower() in self.TRUTHY:
+                self.testing = self.TRUTHY[testination[0].lower()]
+            return self.testing
+        self.testing = None
+        return method(*args, **kwargs)
+
+    def _testing_data(self, method, tdata, *args, **kwargs):
+        result = self._testing_yes(method, *args, **kwargs) or []
+        return (result
+                if (self.testing is None) else
+                (self.testing and tdata or []))
+
+    def setup_command(self, session):
+        raise Exception('FIXME')
+
+
+class SetupCheckKeychain(TestableWebbable):
+    """Gather some stats about the local keychain"""
+    SYNOPSIS = (None, 'setup/check_keychain', 'setup/check_keychain', None)
+
+    def _have_gnupg_keyring(self):
+        raise Exception('FIXME')
+
+    def setup_command(self, session):
+        accepted_keys = []
+        if not self._testing_yes(self._have_gnupg_keyring):
+            return self._error(_('Oh noes, we have no GnuPG'))
+
+        if self.testing:
+            return self._success(_('Found a keychain'), result={
+                'private_keys': 5,
+                'public_keys': 31337
+            })
+
+        raise Exception('FIXME')
+
+
+class SetupCreateNewKey(SetupCheckKeychain):
+    """Create a new PGP key and keychain"""
+    SYNOPSIS = (None, 'setup/create_key', 'setup/create_key', None)
+
+    def setup_command(self, session):
+        if not self._testing_yes(self._have_gnupg_keyring):
+            return self._error(_('Oh noes, we have no GnuPG'))
+
+        if self.testing:
+            time.sleep(90)
+            return self._success(_('Created a new key'), result={
+                'type': 'OpenPGP',
+                'bits': 42,
+                'algorithm': 'Ballistic Carve',
+                'fingerprint': '0123456789ABCDEF0123456789ABCDEF'
+            })
+
+        raise Exception('FIXME')
+
+
+class SetupGuessEmails(TestableWebbable):
+    """Discover and guess which emails this user has"""
+    SYNOPSIS = (None, 'setup/guess_emails', 'setup/guess_emails', None)
+
+    def _get_tbird_emails(self):
+        raise Exception('FIXME')
+
+    def _get_macmail_emails(self):
+        raise Exception('FIXME')
+
+    def _get_gnupg_emails(self):
+        raise Exception('FIXME')
+
+    def setup_command(self, session):
+        # FIXME: Implement and add more potential sources of e-mails
+        macmail_emails = self._testing_data(self._get_macmail_emails, ['1'])
+        tbird_emails = self._testing_data(self._get_tbird_emails, ['1'])
+        gnupg_emails = self._testing_data(self._get_gnupg_emails, [
+            {
+                'name': 'Innocent Adventurer',
+                'address': 'luncheon@meat.trunch.eon',
+                'source': 'The Youtubes'
+            },
+            {
+                'name': 'Chelsea Manning',
+                'address': 'chelsea@manning.org',
+                'source': 'Internal Tribute Store'
+            },
+            {
+                'name': 'MUSCULAR',
+                'address': 'muscular@nsa.gov',
+                'source': 'Well funded adversaries'
+            }
+        ])
+
+        emails = macmail_emails + tbird_emails + gnupg_emails
+        if not emails:
+            return self._error(_('No e-mail addresses found'))
+        else:
+            return self._success(_('Discovered e-mail addresses'), {
+                'emails': emails
+            })
+
+
+class SetupTestEmailSettings(TestableWebbable):
+    """Test the settings for an e-mail account"""
+    SYNOPSIS = (None, 'setup/test_mailroute', 'setup/test_mailroute', None)
+    HTTP_CALLABLE = ('POST', )
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
+        'protocol': 'IMAP, POP3 or SMTP',
+        'username': 'User name',
+        'password': 'Password',
+        'host': 'Server host name',
+        'port': 'Server port number',
+        'use_tls': 'Use TLS to connect'
+    })
+
+    def _test_settings(self):
+        raise Exception('FIXME')
+
+    def setup_command(self, session):
+        # This will throw a keyerror if any of the settings are missing
+        try:
+            settings = dict([(p, self.data[p][0]) for p in
+                             set(self.HTTP_POST_VARS.keys())
+                             - set(['testing'])])
+        except KeyError:
+            return self._error(_('Incomplete settings'))
+
+        if self._testing_yes(self._test_settings):
+            return self._success(_('That all worked'))
+        else:
+            return self._error(_('Invalid settings'))
+
+
+
+class SetupGetEmailSettings(TestableWebbable):
+    """Guess server details for an e-mail address"""
+    SYNOPSIS = (None, 'setup/email_servers', 'setup/email_servers', None)
+    HTTP_CALLABLE = ('GET', )
+    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
+        'email': 'E-mail address'
+    })
+    TEST_DATA = {
+        'imap_host': 'imap.wigglebonk.com',
+        'imap_port': 993,
+        'imap_tls': True,
+        'pop3_host': 'pop3.wigglebonk.com',
+        'pop3_port': 110,
+        'pop3_tls': False,
+        'smtp_host': 'smtp.wigglebonk.com',
+        'smtp_port': 465,
+        'smtp_tls': False
+    }
+
+    def _get_domain_settings(self, domain):
+        raise Exception('FIXME')
+
+    def setup_command(self, session):
+        results = {}
+        for email in list(self.args) + self.data.get('email'):
+            settings = self._testing_data(self._get_domain_settings,
+                                          self.TEST_DATA, email)
+            if settings:
+                results[email] = settings
+        if results:
+            self._success(_('Found settings for %d addresses'), results)
+        else:
+            self._error(_('No settings found'))
+
+
+_plugins.register_commands(Setup,
+                           SetupCheckKeychain, SetupCreateNewKey,
+                           SetupGuessEmails, SetupTestEmailSettings,
+                           Setup)

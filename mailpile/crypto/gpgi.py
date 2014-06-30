@@ -18,7 +18,7 @@ from threading import Thread
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 
-DEFAULT_SERVER = "pool.sks-keyservers.net"
+DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
 BLOCKSIZE = 65536
@@ -201,7 +201,10 @@ class GnuPGRecordParser:
         self.keys[self.curkey]["subkeys"].append(subkey)
 
     def parse_fingerprint(self, line):
-        self.keys[self.curkey]["fingerprint"] = line["keyid"]
+        self.keys[self.curkey]["fingerprint"] = line["uid"]
+        self.keys[line["uid"]] = self.keys[self.curkey]
+        del(self.keys[self.curkey])
+        self.curkey = line["uid"]
 
     def parse_userattribute(self, line):
         # TODO: We are currently ignoring user attributes as not useful.
@@ -241,7 +244,10 @@ class GnuPGRecordParser:
     def parse_none(line):
         pass
 
+
 UID_PARSE_RE = "([^\(\<]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}"
+
+
 def parse_uid(uidstr):
     matches = re.match(UID_PARSE_RE, uidstr)
     if matches:
@@ -271,11 +277,17 @@ def parse_uid(uidstr):
 
     return email, name, comment
 
+
 class StreamReader(Thread):
-    def __init__(self, fd, callback, lines=True):
+    def __init__(self, name, fd, callback, lines=True):
         Thread.__init__(self, target=self.readin, args=(fd, callback))
+        self.name = name
         self.lines = lines
         self.start()
+
+    def __str__(self):
+        return '%s(%s, lines=%s)' % (Thread.__str__(self),
+                                     self.name, self.lines)
 
     def readin(self, fd, callback):
         try:
@@ -293,37 +305,54 @@ class StreamReader(Thread):
         finally:
             fd.close()
 
+
 class StreamWriter(Thread):
-    def __init__(self, fd, output):
+    def __init__(self, name, fd, output, partial_write_ok=False):
         Thread.__init__(self, target=self.writeout, args=(fd, output))
+        self.name = name
+        self.partial_write_ok = partial_write_ok
         self.start()
+
+    def __str__(self):
+        return '%s(%s)' % (Thread.__str__(self), self.name)
 
     def writeout(self, fd, output):
         if isinstance(output, (str, unicode)):
+            total = len(output)
             output = StringIO.StringIO(output)
+        else:
+            total = 0
         try:
             while True:
                 line = output.read(BLOCKSIZE)
                 if line == "":
                     break
                 fd.write(line)
+                total -= len(line)
             output.close()
         except:
-            traceback.print_exc()
+            if not self.partial_write_ok:
+                print '%s: %s bytes left' % (self, total)
+                traceback.print_exc()
         finally:
             fd.close()
+
 
 class GnuPG:
     """
     Wrap GnuPG and make all functionality feel Pythonic.
     """
-    def __init__(self):
+    def __init__(self, session=None):
         self.available = None
         self.gpgbinary = 'gpg'
         self.passphrase = None
         self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
-        self.homedir = None
+        self.session = session
+        if self.session:
+            self.homedir = session.config.sys.gpg_home or GNUPG_HOMEDIR
+        else:
+            self.homedir = GNUPG_HOMEDIR
 
     def set_home(self, path):
         self.homedir = path
@@ -341,9 +370,13 @@ class GnuPG:
 
         return self.available
 
-    def run(self, args=[], output=None, outputfd=None):
+    def run(self,
+            args=[], gpg_input=None, outputfd=None, partial_read_ok=False):
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
         self.pipes = {}
+        self.threads = {}
+
+        wtf = ' '.join(args)
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
         args.insert(1, "--with-colons")
@@ -364,42 +397,55 @@ class GnuPG:
             args.insert(1, "--passphrase-fd")
             args.insert(2, "%d" % self.statuspipe[0])
 
-        proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE, 
-            bufsize=1, close_fds=False)
+        try:
+            proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                bufsize=1, close_fds=False)
 
-        self.threads = {
-            "stderr": StreamReader(proc.stderr, self.parse_stderr),
-            "status": StreamReader(self.status, self.parse_status),
-        }
-        if self.passphrase:
-            self.threads["passphrase"] = StreamWriter(self.passphrase_handle, 
-                                                      self.passphrase)
+            self.threads = {
+                "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
+                                       proc.stderr, self.parse_stderr),
+                "status": StreamReader('gpgi-status(%s)' % wtf,
+                                       self.status, self.parse_status),
+            }
+            if self.passphrase:
+                self.threads["passphrase"] = StreamWriter(
+                    'gpgi-passphrase(%s)' % wtf,
+                    self.passphrase_handle, self.passphrase)
 
-        if outputfd:
-            self.threads["stdout"] = StreamReader(proc.stdout, outputfd.write,
-                                                  lines=False)
-        else:
-            self.threads["stdout"] = StreamReader(proc.stdout,
-                                                  self.parse_stdout)
+            if outputfd:
+                self.threads["stdout"] = StreamReader(
+                    'gpgi-stdout-to-fd(%s)' % wtf,
+                    proc.stdout, outputfd.write, lines=False)
+            else:
+                self.threads["stdout"] = StreamReader(
+                    'gpgi-stdout-parsed(%s)' % wtf,
+                    proc.stdout, self.parse_stdout)
 
-        if output:
-            # If we have output, we just stream it. Technically, this
-            # doesn't really need to be a thread at the moment.
-            StreamWriter(proc.stdin, output).join()
-        else:
+            if gpg_input:
+                # If we have output, we just stream it. Technically, this
+                # doesn't really need to be a thread at the moment.
+                StreamWriter('gpgi-output(%s)' % wtf,
+                             proc.stdin, gpg_input,
+                             partial_write_ok=partial_read_ok).join()
+            else:
+                proc.stdin.close()
+
+            # Reap GnuPG
+            proc.wait()
+
+        finally:
+            # Close our pipes so the threads finish
+            os.close(self.statuspipe[1])
             proc.stdin.close()
-
-        # Reap GnuPG
-        proc.wait()
-
-        # Close our pipes so the threads finish
-        os.close(self.statuspipe[1])
-        if self.passphrase:
-            os.close(self.passphrase_pipe[1])
+            if self.passphrase:
+                os.close(self.passphrase_pipe[1])
 
         # Reap the threads
         for name, thr in self.threads.iteritems():
-            thr.join()
+            if thr.isAlive():
+                thr.join(timeout=15)
+                if thr.isAlive():
+                    print 'SCARY WARNING: FAILED TO REAP THREAD %s' % thr
 
         if outputfd:
             outputfd.close()
@@ -461,8 +507,62 @@ class GnuPG:
         >>> g.import_keys(key_data)
         {'failed': [], 'updated': [{'details_text': 'unchanged', 'details': 0, 'fingerprint': '08A650B8E2CBC1B02297915DC65626EED13C70DA'}], 'imported': [], 'results': {'sec_dups': 0, 'unchanged': 1, 'num_uids': 0, 'skipped_new_keys': 0, 'no_userids': 0, 'num_signatures': 0, 'num_revoked': 0, 'sec_imported': 0, 'sec_read': 0, 'not_imported': 0, 'count': 1, 'imported_rsa': 0, 'imported': 0, 'num_subkeys': 0}}
         """
-        retvals = self.run(["--import"], output=key_data)
-        return self.parse_import(retvals[1]["status"])
+        retvals = self.run(["--import"], gpg_input=key_data)
+        return self._parse_import(retvals[1]["status"])
+
+    def _parse_import(self, output):
+        res = {"imported": [], "updated": [], "failed": []}
+        for x in output:
+            if x[0] == "IMPORTED":
+                res["imported"].append({
+                    "fingerprint": x[1],
+                    "username": x[2]
+                })
+            elif x[0] == "IMPORT_OK":
+                reasons = {
+                    "0": "unchanged",
+                    "1": "new key",
+                    "2": "new user IDs",
+                    "4": "new signatures",
+                    "8": "new subkeys",
+                    "16": "contains private key",
+                }
+                res["updated"].append({
+                    "details": int(x[1]),
+                    "details_text": reasons[x[1]],
+                    "fingerprint": x[2],
+                })
+            elif x[0] == "IMPORT_PROBLEM":
+                reasons = {
+                    "0": "no reason given",
+                    "1": "invalid certificate",
+                    "2": "issuer certificate missing",
+                    "3": "certificate chain too long",
+                    "4": "error storing certificate",
+                }
+                res["failed"].append({
+                    "details": int(x[1]),
+                    "details_text": reasons[x[1]],
+                    "fingerprint": x[2]
+                })
+            elif x[0] == "IMPORT_RES":
+                res["results"] = {
+                    "count": int(x[1]),
+                    "no_userids": int(x[2]),
+                    "imported": int(x[3]),
+                    "imported_rsa": int(x[4]),
+                    "unchanged": int(x[5]),
+                    "num_uids": int(x[6]),
+                    "num_subkeys": int(x[7]),
+                    "num_signatures": int(x[8]),
+                    "num_revoked": int(x[9]),
+                    "sec_read": int(x[10]),
+                    "sec_imported": int(x[11]),
+                    "sec_dups": int(x[12]),
+                    "skipped_new_keys": int(x[13]),
+                    "not_imported": int(x[14]),
+                }
+        return res
 
     def decrypt(self, data, outputfd=None, passphrase=None, as_lines=False):
         """
@@ -476,7 +576,7 @@ class GnuPG:
         if passphrase:
             self.passphrase = passphrase
         action = ["--decrypt"]
-        retvals = self.run(action, output=data, outputfd=outputfd)
+        retvals = self.run(action, gpg_input=data, outputfd=outputfd)
         self.passphrase = None
 
         if as_lines:
@@ -484,7 +584,6 @@ class GnuPG:
             retvals[1]["stdout"] = []
 
         rp = GnuPGResultParser().parse(retvals)
-
         return (rp.signature_info, rp.encryption_info,
                 as_lines or rp.plaintext)
 
@@ -503,7 +602,7 @@ class GnuPG:
             params.append(sig.name)
             params.append("-")
 
-        ret, retvals = self.run(params, output=data)
+        ret, retvals = self.run(params, gpg_input=data, partial_read_ok=True)
 
         return GnuPGResultParser().parse([None, retvals]).signature_info
 
@@ -519,7 +618,7 @@ class GnuPG:
         for r in tokeys:
             action.append("--recipient")
             action.append(r)
-        retvals = self.run(action, output=data)
+        retvals = self.run(action, gpg_input=data)
         return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign(self, data,
@@ -544,9 +643,9 @@ class GnuPG:
             action.append("--local-user")
             action.append(fromkey)
 
-        retvals = self.run(action, output=data)
+        retvals = self.run(action, gpg_input=data)
         self.passphrase = None
-        return retvals[0], retvals[1]["stdout"][0]
+        return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign_encrypt(self, data, fromkey=None, tokeys=[], armor=True,
                      detatch=False, clearsign=True):
@@ -572,10 +671,11 @@ class GnuPG:
 
     def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver, '--recv-key', keyid])
-        return self.parse_import(retvals[1]["status"])
+        return self._parse_import(retvals[1]["status"])
 
     def search_key(self, term, keyserver=DEFAULT_SERVER):
         retvals = self.run(['--keyserver', keyserver,
+                            '--fingerprint',
                             '--search-key', self._escape_hex_keyid_term(term)]
                             )[1]["stdout"]
         results = {}
@@ -589,7 +689,9 @@ class GnuPG:
                 results[curpub] = {"created": datetime.fromtimestamp(int(line[4])),
                                    "keytype_name": openpgp_algorithms[int(line[2])],
                                    "keysize": line[3],
-                                   "uids": []}
+                                   "uids": [],
+                                   "fingerprint": curpub
+                                  }
             elif line[0] == "uid":
                 email, name, comment = parse_uid(line[1])
                 results[curpub]["uids"].append({"name": name,
@@ -622,6 +724,7 @@ class GnuPG:
         else:
             return term
 
+
 def GetKeys(gnupg, config, people):
     keys = []
     missing = []
@@ -647,14 +750,14 @@ def GetKeys(gnupg, config, people):
 
     # FIXME: This doesn't really feel scalable...
     all_keys = gnupg.list_keys()
-    for key in all_keys.values():
-        for uid in key["uids"]:
-            if uid["email"] in missing:
+    for key_id, key in all_keys.iteritems():
+        for uid in key.get("uids", []):
+            if uid.get("email", None) in missing:
                 missing.remove(uid["email"])
-                keys.append(key["fingerprint"])
+                keys.append(key_id)
 
     # Next, we go make sure all those keys are really in our keychain.
-    fprints = [k["fingerprint"] for k in all_keys.values()]
+    fprints = all_keys.keys()
     for key in keys:
         if key not in keys and key not in fprints:
             missing.append(key)
@@ -663,6 +766,7 @@ def GetKeys(gnupg, config, people):
         raise KeyLookupError(_('Keys missing or ambiguous for %s'
                                ) % ', '.join(missing), missing)
     return keys
+
 
 class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
     CRYPTO_CLASS = GnuPG
@@ -673,6 +777,7 @@ class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
 
     def get_keys(self, who):
         return GetKeys(self.crypto, self.config, who)
+
 
 class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
     CRYPTO_CLASS = GnuPG

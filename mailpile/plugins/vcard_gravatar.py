@@ -123,7 +123,7 @@ class GravatarImporter(VCardImporter):
                 ))
 
             vcls.append(VCardLine(name='email', value=email))
-            results.append(SimpleVCard(*vcls))
+            results.append(MailpileVCard(*vcls))
         return results
 
 

@@ -3,8 +3,6 @@
 {% block content %}
 <div id="contact-view" class="content-normal">
 {% if result.contact %}  
-  {% set profiles = mailpile('settings', 'profiles').result.profiles %}
-
   <div class="clearfix">
     {% if result.contact.photo %}
       <img class="contact-avatar left" width="80" src="{{ show_avatar(result.contact.photo.0) }}">
@@ -12,14 +10,8 @@
       <img class="contact-avatar left" width="80" src="{{ show_avatar("") }}">
     {% endif %}
     <h2  class="contact-name ">{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}</h2>
-    {% if result.contact.email %}
-    {% for profile in profiles %}
-      {% for email in result.contact.email %}
-      {% if profile.email == email.email %}
+    {% if result.contact.kind == 'profile' %}
       <h5 class="contact-subname">{{_("Hey that's you")}} :)</h5>
-      {% endif %}
-      {% endfor %}
-    {% endfor %}    
     {% endif %}
   </div>
   <hr>
@@ -110,7 +102,7 @@
   {% if conversations %}
   <ul class="contact-tag-filter">
     <li><select><option>Most Recent</option><option>Longest Conversations</option><option>Oldest</option></select></li>
-    {% if conversations.data.tags %}
+    {% if conversations.data and conversations.data.tags %}
     {% for tid, tag in conversations.data.tags.iteritems() %}
     {% if tag.display in ("priority", "tag", "archive") %}
     <li><a href="" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tid}}"><span class="{{tag.icon}}"></span> {{tag.name}}</a></li>

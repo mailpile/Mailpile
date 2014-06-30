@@ -4,7 +4,7 @@ import time
 from gettext import gettext as _
 
 from mailpile.commands import Command, SearchResults
-from mailpile.mailutils import Email, MBX_ID_LEN
+from mailpile.mailutils import Email, FormatMbxId
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
@@ -51,7 +51,9 @@ class Search(Command):
 
         def as_text(self):
             if self.result:
-                if isinstance(self.result, (list, set)):
+                if isinstance(self.result, (bool, str, unicode, int, float)):
+                    return unicode(self.result)
+                elif isinstance(self.result, (list, set)):
                     return '\n'.join([r.as_text() for r in self.result])
                 else:
                     return self.result.as_text()
@@ -100,21 +102,29 @@ class Search(Command):
         elif d_end:
             args[:0] = ['@%s' % (d_end - num + 1)]
 
+        start = 0
         if args and args[0].startswith('@'):
             spoint = args.pop(0)[1:]
             try:
                 start = int(spoint) - 1
             except ValueError:
                 raise UsageError(_('Weird starting point: %s') % spoint)
-        else:
-            start = 0
 
-        # FIXME: Is this dumb?
+        prefix = ''
         for arg in args:
-            if ':' in arg or (arg and arg[0] in ('-', '+')):
+            if arg.endswith(':'):
+                prefix = arg
+            elif ':' in arg or (arg and arg[0] in ('-', '+')):
+                prefix = ''
                 session.searched.append(arg.lower())
+            elif prefix and '@' in arg:
+                session.searched.append(prefix + arg.lower())
             else:
-                session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
+                words = re.findall(WORD_REGEXP, arg.lower())
+                session.searched.extend([prefix + word for word in words])
+
+        if not session.searched:
+             session.searched = ['all:mail']
 
         session.order = session.order or session.config.prefs.default_order
         session.results = list(idx.search(session, session.searched).as_set())
@@ -369,7 +379,7 @@ _plugins.register_commands(Extract, Next, Order, Previous, Search, View)
 def mailbox_search(config, idx, term, hits):
     word = term.split(':', 1)[1].lower()
     try:
-        mbox_id = (('0' * MBX_ID_LEN) + b36(int(word, 36)))[-MBX_ID_LEN:]
+        mbox_id = FormatMbxId(b36(int(word, 36)))
     except ValueError:
         mbox_id = None
 
@@ -377,7 +387,7 @@ def mailbox_search(config, idx, term, hits):
                  if (mbox_id == m) or word in config.sys.mailbox[m].lower()]
     rt = []
     for mbox_id in mailboxes:
-        mbox_id = (('0' * MBX_ID_LEN) + mbox_id)[-MBX_ID_LEN:]
+        mbox_id = FormatMbxId(mbox_id)
         rt.extend(hits('%s:mailbox' % mbox_id))
     return rt
 

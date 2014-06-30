@@ -64,14 +64,14 @@ return {
         node.on("click", function(d, m, q) {
             // d.attr("toggled", !d.attr("toggled"));
             // d.style("color", "#f00");
-            if (mailpile.graphselected.indexOf(d["email"]) < 0) {
+            if (Mailpile.graphselected.indexOf(d["email"]) < 0) {
                 d3.select(node[q][m]).selectAll("circle").style("fill", "#4b7945");
-                mailpile.graphselected.push(d["email"]);
+                Mailpile.graphselected.push(d["email"]);
             } else {
-                mailpile.graphselected.pop(d["email"]);
+                Mailpile.graphselected.pop(d["email"]);
                 d3.select(node[q][m]).selectAll("circle").style("fill", "#3a6b8c");
             }
-            mailpile.graph_actionbuttons();
+            Mailpile.graph_actionbuttons();
         });
         node.on("mouseover", function(d, m, q) {
             d3.select(node[q][m]).selectAll("text").style("opacity", "1");

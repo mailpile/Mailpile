@@ -16,8 +16,10 @@ from gettext import gettext as _
 
 import mailpile.util
 import mailpile.ui
+import mailpile.postinglist
 from mailpile.eventlog import Event
 from mailpile.mailboxes import IsMailbox
+from mailpile.mailutils import AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.postinglist import GlobalPostingList
 from mailpile.search import MailIndex
@@ -38,7 +40,6 @@ class Command:
 
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
-    SERIALIZE = False
     SPLIT_ARG = True  # Uses shlex by default
     RAISES = (UsageError, UrlRedirectException)
 
@@ -80,12 +81,14 @@ class Command:
                 happy = '%s: %s' % (self.result and _('OK') or _('Failed'),
                                     self.message or self.doc)
                 if not self.result and self.error_info:
-                    return '%s\n%s' % (happy, json.dumps(self.error_info,
-                                                         indent=4))
+                    return '%s\n%s' % (happy,
+                        json.dumps(self.error_info, indent=4,
+                                   default=mailpile.util.json_helper))
                 else:
                     return happy
             elif isinstance(self.result, (dict, list, tuple)):
-                return json.dumps(self.result, indent=4, sort_keys=True)
+                return json.dumps(self.result, indent=4, sort_keys=True,
+                    default=mailpile.util.json_helper)
             else:
                 return unicode(self.result)
 
@@ -105,6 +108,7 @@ class Command:
                 'status': self.status,
                 'message': self.message,
                 'result': self.result,
+                'event_id': self.command_obj.event.event_id,
                 'elapsed': '%.3f' % self.session.ui.time_elapsed,
             }
             if self.error_info:
@@ -155,20 +159,24 @@ class Command:
 
             return render()
 
-    def __init__(self, session, name=None, arg=None, data=None):
+    def __init__(self, session, name=None, arg=None, data=None, async=False):
         self.session = session
-        self.serialize = self.SERIALIZE
         self.name = self.SYNOPSIS[1] or self.SYNOPSIS[2] or name
         self.data = data or {}
         self.status = 'unknown'
         self.message = name
         self.error_info = {}
         self.result = None
+        self.run_async = async
         if type(arg) in (type(list()), type(tuple())):
             self.args = tuple(arg)
         elif arg:
             if self.SPLIT_ARG is True:
-                self.args = tuple(shlex.split(arg))
+                try:
+                    self.args = tuple([a.decode('utf-8') for a in
+                                       shlex.split(arg.encode('utf-8'))])
+                except (ValueError, UnicodeEncodeError, UnicodeDecodeError):
+                    raise UsageError(_('Failed to parse arguments'))
             else:
                 self.args = (arg, )
         else:
@@ -223,16 +231,34 @@ class Command:
             return idx
 
         if wait:
-            rv = config.slow_worker.do(session, 'Load', __do_load1)
+            rv = config.save_worker.do(session, 'Load', __do_load1)
             session.ui.reset_marks(quiet=quiet)
         else:
-            config.slow_worker.add_task(session, 'Load', __do_load1)
+            config.save_worker.add_task(session, 'Load', __do_load1)
             rv = None
 
         if not wait_all:
-            config.slow_worker.add_task(session, 'Load2', __do_load2)
+            config.save_worker.add_task(session, 'Load2', __do_load2)
 
         return rv
+
+    def _background_save(self,
+                         everything=False, config=False,
+                         index=False, index_full=False,
+                         wait=False, wait_callback=None):
+        session, cfg, idx = self.session, self.session.config, self._idx()
+        aut = cfg.save_worker.add_unique_task
+        if everything or config:
+            aut(session, 'Save config', cfg.save)
+        if idx:
+            if index_full:
+                aut(session, 'Save index', lambda: idx.save(session))
+            elif everything or index:
+                aut(session, 'Save index changes',
+                    lambda: self._idx().save_changes(session))
+        if wait:
+            wait_callback = wait_callback or (lambda: True)
+            cfg.save_worker.do(session, 'Waiting', wait_callback)
 
     def _choose_messages(self, words, allow_ephemeral=False):
         msg_ids = set()
@@ -308,8 +334,7 @@ class Command:
         self.session.ui.debug(traceback.format_exc())
 
     def _serialize(self, name, function):
-        session, config = self.session, self.session.config
-        return config.slow_worker.do(session, name, function)
+        return function()
 
     def _background(self, name, function):
         session, config = self.session, self.session.config
@@ -357,10 +382,13 @@ class Command:
         if self.args:
             private_data['args'] = self._sloppy_copy(self.args)
 
-        self.event = Event(source=self,
-                           message=self._fmt_msg(self.LOG_STARTING),
-                           data={},
-                           private_data=private_data)
+        self.event = self._make_command_event(private_data)
+
+    def _make_command_event(self, private_data):
+        return Event(source=self,
+                     message=self._fmt_msg(self.LOG_STARTING),
+                     data={},
+                     private_data=private_data)
 
     def _finishing(self, command, rv):
         # FIXME: Remove this when stuff is up to date
@@ -375,6 +403,11 @@ class Command:
                                     rv, self.status, self.message,
                                     error_info=self.error_info)
 
+        if not self.run_async:
+            self._update_finished_event()
+        return result
+
+    def _update_finished_event(self):
         # Update the event!
         if self.message:
             self.event.message = self.message
@@ -388,9 +421,8 @@ class Command:
             details=('timing' in self.session.config.sys.debug))
         if self.name:
             self.session.ui.finish_command(self.name)
-        return result
 
-    def _run(self, *args, **kwargs):
+    def _run_sync(self, *args, **kwargs):
         def command(self, *args, **kwargs):
             return self.command(*args, **kwargs)
         try:
@@ -404,16 +436,35 @@ class Command:
                                         'args': ' '.join(self.args)})
             return self._finishing(command, False)
 
+    def _run(self, *args, **kwargs):
+        if self.run_async:
+            def streetcar():
+                try:
+                    rv = self._run_sync(*args, **kwargs).as_dict()
+                    self.event.private_data.update(rv)
+                    self._update_finished_event()
+                except:
+                    traceback.print_exc()
+
+            self._starting()
+            self._update_event_state(self.event.RUNNING, log=True)
+            result = Command.CommandResult(self, self.session, self.name,
+                                           self.__doc__,
+                                           {"resultid": self.event.event_id},
+                                           "success",
+                                           "Running in background")
+
+            self.session.config.slow_worker.add_task(self.session, self.name,
+                                                     streetcar)
+            return result
+
+        else:
+            return self._run_sync(*args, **kwargs)
+
     def run(self, *args, **kwargs):
         if self.IS_USER_ACTIVITY:
             mailpile.util.LAST_USER_ACTIVITY = time.time()
-        if self.serialize:
-            # Some functions we always run in the slow worker, to make sure
-            # they don't get run in parallel with other things.
-            return self._serialize(self.serialize,
-                                   lambda: self._run(*args, **kwargs))
-        else:
-            return self._run(*args, **kwargs)
+        return self._run(*args, **kwargs)
 
     def command(self):
         return None
@@ -499,7 +550,7 @@ class SearchResults(dict):
             'to_aids': self._msg_addresses(msg_info, no_from=True, no_cc=True),
             'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
             'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
-            'tag_tids': self._msg_tags(msg_info),
+            'tag_tids': sorted(self._msg_tags(msg_info)),
             'thread_mid': msg_info[MailIndex.MSG_THREAD_MID],
             'subject': msg_info[MailIndex.MSG_SUBJECT],
             'body': MailIndex.get_body(msg_info),
@@ -526,9 +577,10 @@ class SearchResults(dict):
                 pass
 
         # Misc flags
-        if [e for e in self.idx.config.profiles if (e.email.lower()
-                                                    == fe.lower())]:
-            expl['flags']['from_me'] = True
+        sender_vcard = self.idx.config.vcards.get_vcard(fe.lower())
+        if sender_vcard:
+            if sender_vcard.kind == 'profile':
+                expl['flags']['from_me'] = True
         tag_types = [self.idx.config.get_tag(t).type for t in expl['tag_tids']]
         for t in self.TAG_TYPE_FLAG_MAP:
             if t in tag_types:
@@ -551,29 +603,39 @@ class SearchResults(dict):
 
         return expl
 
-    def _msg_addresses(self, msg_info,
+    def _msg_addresses(self, msg_info=None, addresses=[],
                        no_from=False, no_to=False, no_cc=False):
-        if no_to:
-            cids = set()
-        else:
-            to = [t for t in msg_info[MailIndex.MSG_TO].split(',') if t]
-            cids = set(to)
-        if not no_cc:
-            cc = [t for t in msg_info[MailIndex.MSG_CC].split(',') if t]
-            cids |= set(cc)
-        if not no_from:
-            fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
-            if fe:
-                try:
-                    cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
-                except KeyError:
-                    cids.add(b36(self.idx._add_email(fe, name=fn)))
+        cids = set()
+
+        for ai in addresses:
+            try:
+                cids.add(b36(self.idx.EMAIL_IDS[ai.address.lower()]))
+            except KeyError:
+                cids.add(b36(self.idx._add_email(ai.address, name=ai.fn)))
+
+        if msg_info:
+            if not no_to:
+                to = [t for t in msg_info[MailIndex.MSG_TO].split(',') if t]
+                cids |= set(to)
+            if not no_cc:
+                cc = [t for t in msg_info[MailIndex.MSG_CC].split(',') if t]
+                cids |= set(cc)
+            if not no_from:
+                fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
+                if fe:
+                    try:
+                        cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
+                    except KeyError:
+                        cids.add(b36(self.idx._add_email(fe, name=fn)))
+
         return sorted(list(cids))
 
     def _address(self, cid=None, e=None, n=None):
         if cid and not (e and n):
             e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
         vcard = self.session.config.vcards.get_vcard(e)
+        if vcard and '@' in n:
+            n = vcard.fn
         return AddressInfo(e, n, vcard=vcard)
 
     def _msg_tags(self, msg_info):
@@ -612,6 +674,20 @@ class SearchResults(dict):
         tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
                                             self.WANT_MSG_TREE))
         email.evaluate_pgp(tree, decrypt=True)
+
+        editing_strings = tree.get('editing_strings')
+        if editing_strings:
+            for key in ('from', 'to', 'cc', 'bcc'):
+                if key in editing_strings:
+                    cids = self._msg_addresses(
+                        addresses=AddressHeaderParser(
+                            unicode_data=editing_strings[key]))
+                    editing_strings['%s_aids' % key] = cids
+                    for cid in cids:
+                        if cid not in self['data']['addresses']:
+                            self['data']['addresses'
+                                         ][cid] = self._address(cid=cid)
+
         return self._prune_msg_tree(tree)
 
     def __init__(self, session, idx,
@@ -866,29 +942,27 @@ class Load(Command):
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None, '[full|vcards|mailboxes|sources|<msgs>]')
+    SYNOPSIS = (None, 'rescan', None,
+                '[full|vcards|both|mailboxes|sources|<msgs>]')
     ORDER = ('Internals', 2)
-    SERIALIZE = 'Rescan'
     LOG_PROGRESS = True
 
-    def command(self):
+    def command(self, slowly=False):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
 
         if config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
-        delay = play_nice_with_threads()
-        if delay > 0:
-            session.ui.notify((
-                _('Note: periodic delay is %ss, run from shell to '
-                  'speed up: mp --rescan=...')
-            ) % delay)
+        # Pretend we're idle, to make rescan go fast fast.
+        if not slowly:
+            mailpile.util.LAST_USER_ACTIVITY = 0
 
         if args and args[0].lower() == 'vcards':
             return self._success(_('Rescanned vcards'),
                                  result=self._rescan_vcards(session))
-        elif args and args[0].lower() in ('mailboxes', 'sources', 'editable'):
+        elif args and args[0].lower() in ('both', 'mailboxes', 'sources',
+                                          'editable'):
             which = args[0].lower()
             return self._success(_('Rescanned mailboxes'),
                                  result=self._rescan_mailboxes(session,
@@ -910,6 +984,11 @@ class Rescan(Command):
                     self._ignore_exception()
                     session.ui.warning(_('Failed to reindex: %s'
                                          ) % e.msg_mid())
+
+            self.event.data["messages"] = len(msg_idxs)
+            self.session.config.event_log.log_event(self.event)
+            self._background_save(index=True)
+
             return self._success(_('Indexed %d messages') % len(msg_idxs),
                                  result={'messages': len(msg_idxs)})
 
@@ -922,6 +1001,9 @@ class Rescan(Command):
                 results = {}
                 results.update(self._rescan_vcards(session))
                 results.update(self._rescan_mailboxes(session))
+
+                self.event.data.update(results)
+                self.session.config.event_log.log_event(self.event)
                 if 'aborted' in results:
                     raise KeyboardInterrupt()
                 return self._success(_('Rescanned vcards and mailboxes'),
@@ -937,6 +1019,7 @@ class Rescan(Command):
         imported = 0
         importer_cfgs = config.prefs.vcard.importers
         try:
+            session.ui.mark(_('Rescanning: %s') % 'vcards')
             for importer in PluginManager.VCARD_IMPORTERS.values():
                 for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
                     if cfg:
@@ -955,6 +1038,8 @@ class Rescan(Command):
         mbox_count = 0
         rv = True
         try:
+            session.ui.mark(_('Rescanning: %s') % which)
+
             pre_command = config.prefs.rescan_command
             if pre_command and not mailpile.util.QUITTING:
                 session.ui.mark(_('Running: %s') % pre_command)
@@ -967,6 +1052,7 @@ class Rescan(Command):
                 for src in sources:
                     if mailpile.util.QUITTING:
                         break
+                    session.ui.mark(_('Rescanning: %s') % (src, ))
                     count = src.rescan_now(session)
                     if count > 0:
                         msg_count += count
@@ -985,6 +1071,7 @@ class Rescan(Command):
                     if fpath == '/dev/null':
                         continue
                     try:
+                        session.ui.mark(_('Rescanning: %s %s') % (fid, fpath))
                         if which == 'editable':
                             count = idx.scan_mailbox(session, fid, fpath,
                                                      config.open_mailbox,
@@ -1016,9 +1103,9 @@ class Rescan(Command):
             if msg_count:
                 session.ui.mark('\n')
                 if msg_count < 500:
-                    idx.save_changes(session)
+                    self._background_save(index=True)
                 else:
-                    idx.save(session)
+                    self._background_save(index_full=True)
         return {'messages': msg_count,
                 'mailboxes': mbox_count}
 
@@ -1027,10 +1114,11 @@ class Optimize(Command):
     """Optimize the keyword search index"""
     SYNOPSIS = (None, 'optimize', None, '[harder]')
     ORDER = ('Internals', 3)
-    SERIALIZE = 'Optimize'
 
-    def command(self):
+    def command(self, slowly=False):
         try:
+            if not slowly:
+                mailpile.util.LAST_USER_ACTIVITY = 0
             self._idx().save(self.session)
             GlobalPostingList.Optimize(self.session, self._idx(),
                                        force=('harder' in self.args))
@@ -1086,24 +1174,25 @@ class RenderPage(Command):
 
 class ProgramStatus(Command):
     """Display list of running threads, locks and outstanding events."""
-    SYNOPSIS = (None, 'ps', None, None)
+    SYNOPSIS = (None, 'ps', 'ps', None)
     ORDER = ('Internals', 5)
     IS_USER_ACTIVITY = False
+    LOG_NOTHING = True
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
             cevents = self.result['cevents']
             if cevents:
-                cevents = '\n'.join(['  %s %s' % (e.source, e.message)
+                cevents = '\n'.join(['  %s %s' % (e.event_id, e.message)
                                      for e in cevents])
             else:
                 cevents = _('Nothing Found')
 
             ievents = self.result['ievents']
             if ievents:
-                ievents = '\n'.join(['  %s:%s %s' % (e.source,
-                                                     e.flags,
-                                                     e.message)
+                ievents = '\n'.join([' %s:%s %s' % (e.event_id,
+                                                    e.flags,
+                                                    e.message)
                                      for e in ievents])
             else:
                 ievents = _('Nothing Found')
@@ -1134,9 +1223,23 @@ class ProgramStatus(Command):
         config = self.session.config
 
         try:
-            locks = [(config.index, '_lock', config.index._lock._is_owned())]
+            idx = config.index
+            locks = [
+                ('config.index', '_lock', idx._lock._is_owned()),
+                ('config.index', '_save_lock', idx._save_lock._is_owned())
+            ]
         except AttributeError:
             locks = []
+        locks.extend([
+            ('config', '_lock', config._lock._is_owned()),
+            ('config.vcards', '_lock', config.vcards._lock._is_owned()),
+            ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
+             mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
+            ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
+             mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
+            ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
+             mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),
+        ])
 
         threads = threading.enumerate()
         for thread in threads:
@@ -1145,9 +1248,9 @@ class ProgramStatus(Command):
                     locks.append([thread, 'lock', thread.lock])
                 if hasattr(thread, '_lock'):
                     locks.append([thread, '_lock', thread._lock])
-                if hasattr(locks[-1][-1], 'locked'):
+                if locks and hasattr(locks[-1][-1], 'locked'):
                     locks[-1][-1] = locks[-1][-1].locked()
-                elif hasattr(locks[-1][-1], '_is_owned'):
+                elif locks and hasattr(locks[-1][-1], '_is_owned'):
                     locks[-1][-1] = locks[-1][-1]._is_owned()
             except AttributeError:
                 pass
@@ -1157,7 +1260,7 @@ class ProgramStatus(Command):
             'ievents': config.event_log.incomplete(),
             'delay': play_nice_with_threads(),
             'threads': threads,
-            'locks': locks
+            'locks': sorted(locks)
         })
 
 
@@ -1300,7 +1403,7 @@ class ConfigSet(Command):
                 cfg, v1, v2 = config.walk(path.strip(), parent=2)
                 cfg[v1] = {v2: value}
 
-        self._serialize('Save config', lambda: config.save())
+        self._background_save(config=True)
         return self._success(_('Updated your settings'), result=updated)
 
 
@@ -1347,7 +1450,7 @@ class ConfigAdd(Command):
             cfg[var].append(value)
             updated[path] = value
 
-        self._serialize('Save config', lambda: config.save())
+        self._background_save(config=True)
         return self._success(_('Updated your settings'), result=updated)
 
 
@@ -1375,7 +1478,7 @@ class ConfigUnset(Command):
                 del cfg[vn]
                 updated.append(v)
 
-        self._serialize('Save config', lambda: config.save())
+        self._background_save(config=True)
         return self._success(_('Reset to default values'), result=updated)
 
 
@@ -1456,7 +1559,7 @@ class AddMailboxes(Command):
         for arg in adding:
             added[config.sys.mailbox.append(arg)] = arg
         if added:
-            self._serialize('Save config', lambda: config.save())
+            self._background_save(config=True)
             return self._success(_('Added %d mailboxes') % len(added),
                                  result={'added': added})
         else:
@@ -1470,6 +1573,7 @@ class Output(Command):
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
     ORDER = ('Internals', 7)
     HTTP_STRICT_VARS = False
+    IS_USER_ACTIVITY = False
     LOG_NOTHING = True
 
     def get_render_mode(self):
@@ -1483,15 +1587,32 @@ class Output(Command):
 
 class Quit(Command):
     """Exit Mailpile """
-    SYNOPSIS = ("q", "quit", None, None)
+    SYNOPSIS = ("q", "quit", "quitquitquit", None)
     ABOUT = ("Quit mailpile")
     ORDER = ("Internals", 2)
     RAISES = (KeyboardInterrupt,)
 
     def command(self):
-        config = self.session.config
+        self._background_save(index=True, config=True, wait=True)
         mailpile.util.QUITTING = True
-        raise KeyboardInterrupt()
+        return self._success(_('Shutting down...'))
+
+
+class Abort(Command):
+    """Exit Mailpile without saving"""
+    SYNOPSIS = (None, "quit/abort", "abortabortabort", None)
+    ABOUT = ("Quit mailpile")
+    ORDER = ("Internals", 2)
+    HTTP_QUERY_VARS = {
+        'no_save': 'Do not try to save state'
+    }
+
+    def command(self):
+        if 'no_save' not in self.data:
+            self._background_save(index=True, config=True, wait=True,
+                                  wait_callback=lambda: os._exit(1))
+        else:
+            os._exit(1)
 
 
 class Help(Command):
@@ -1719,6 +1840,6 @@ COMMANDS = [
     Optimize, Rescan, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    RenderPage, Output, Help, HelpVars, HelpSplash, Quit
+    RenderPage, Output, Help, HelpVars, HelpSplash, Quit, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

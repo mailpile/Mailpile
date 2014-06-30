@@ -1,6 +1,7 @@
 import os
 import random
 import re
+import thread
 import threading
 import traceback
 import time
@@ -10,6 +11,7 @@ import mailpile.util
 from mailpile.util import *
 from mailpile.eventlog import Event
 from mailpile.mailboxes import *
+from mailpile.mailutils import FormatMbxId
 
 
 __all__ = ['mbox', 'maildir', 'imap']
@@ -66,9 +68,15 @@ class BaseMailSource(threading.Thread):
                 self._lock.acquire()
                 ostate, self._state = self._state, func.__name__
                 return func(*args, **kwargs)
+            except:
+                traceback.print_exc()
+                raise
             finally:
                 self._state = ostate
-                self._lock.release()
+                try:
+                    self._lock.release()
+                except thread.error:
+                    pass
         return locked_func
 
     def _pfn(self):
@@ -92,6 +100,8 @@ class BaseMailSource(threading.Thread):
     def _log_status(self, message):
         self.event.message = message
         self.session.config.event_log.log_event(self.event)
+        if 'sources' in self.session.config.sys.debug:
+            self.session.ui.debug('%s: %s' % (self, message))
 
     def _unlocked_open(self):
         """Open mailboxes or connect to the remote mail source."""
@@ -120,6 +130,7 @@ class BaseMailSource(threading.Thread):
         self._last_rescan_count = rescanned = errors = 0
         self._interrupt = None
         batch = self.RESCAN_BATCH_SIZE
+        errors = rescanned = 0
         if self.session.config.sys.debug:
             batch //= 10
         for mbx in unsorted(self.my_config.mailbox.values()):
@@ -135,6 +146,7 @@ class BaseMailSource(threading.Thread):
                 # anyway just in case looks are deceiving.
                 if batch > 0 and (self._has_mailbox_changed(mbx, state) or
                                   random.randint(0, 20) == 10):
+
                     count = self._unlocked_rescan_mailbox(mbx._key,
                                                           stop_after=batch)
                     if count >= 0:
@@ -221,6 +233,7 @@ class BaseMailSource(threading.Thread):
     def _unlocked_take_over_mailbox(self, mailbox_idx):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
+        mailbox_idx = FormatMbxId(mailbox_idx)
         self.my_config.mailbox[mailbox_idx] = {
             'path': '@%s' % mailbox_idx,
             'policy': disco_cfg.policy,
@@ -290,7 +303,13 @@ class BaseMailSource(threading.Thread):
         return ProcessNew(self.session, msg, msg_ts, keywords, snippet)
 
     def _unlocked_rescan_mailbox(self, mbx_key, stop_after=None):
+        mbx_key = FormatMbxId(mbx_key)
+        if self._rescanning:
+            # We unlock below, so there is a chance someone will try to
+            # rescan again while we're in a mailbox. If they do, fail.
+            return -1
         try:
+            self._rescanning = True
             ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
                                                                    stop_after)
 
@@ -302,18 +321,30 @@ class BaseMailSource(threading.Thread):
             if mbx.local:
                 # FIXME: Should copy any new messages to our local stash
                 pass
-            self._rescanning = True
             self._log_status(_('Rescanning: %s') % path)
             apply_tags = mbx.apply_tags[:]
             if mbx.primary_tag:
                 apply_tags.append(mbx.primary_tag)
-            return self.session.config.index.scan_mailbox(
-                self.session, mbx_key, mbx.local or path,
-                self.session.config.open_mailbox,
-                process_new=(mbx.process_new and self._process_new or False),
-                apply_tags=(apply_tags or []),
-                stop_after=stop_after)
+            locked = self._lock.locked()
+            try:
+                if locked:
+                    # We need to unlock here, because the mailbox scanner
+                    # may need to interact with us.
+                    try:
+                        self._lock.release()
+                    except thread.error:
+                        locked = False
+                return self.session.config.index.scan_mailbox(
+                    self.session, mbx_key, mbx.local or path,
+                    self.session.config.open_mailbox,
+                    process_new=(mbx.process_new and self._process_new or False),
+                    apply_tags=(apply_tags or []),
+                    stop_after=stop_after)
+            finally:
+                if locked:
+                    self._lock.acquire()
         except ValueError:
+            self.session.ui.debug(traceback.format_exc())
             return -1
         finally:
             self._state = ostate
@@ -337,7 +368,10 @@ class BaseMailSource(threading.Thread):
                 continue
             waiters, self._rescan_waiters = self._rescan_waiters, []
             for b, e, s in waiters:
-                b.release()
+                try:
+                    b.release()
+                except thread.error:
+                    pass
                 if s:
                     self.session = s
             try:
@@ -357,7 +391,7 @@ class BaseMailSource(threading.Thread):
                 for b, e, s in waiters:
                     try:
                         e.release()
-                    except threading.ThreadError:
+                    except thread.error:
                         pass
                 self.session = _original_session
         self._save_state()
@@ -392,10 +426,11 @@ class BaseMailSource(threading.Thread):
             for l in (begin, end):
                 try:
                     l.release()
-                except threading.ThreadError:
+                except thread.error:
                     pass
 
     def quit(self, join='ignored'):
+        self.interrupt_rescan(_('Shut down'))
         self.alive = False
         self.wake_up()
 
