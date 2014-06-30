@@ -66,16 +66,12 @@ def Interact(session):
 
         while True:
             session.ui.block()
-            # This suddenly stopped working... i have noooo idea why.. i had to comment out this line on account that decode was returning bogus arguments
-            opt = raw_input(prompt).strip()#decode('utf-8').strip()
+            opt = raw_input(prompt).decode('utf-8').strip()
             session.ui.term.check_max_width()
             session.ui.unblock()
             if opt:
                 if ' ' in opt:
                     opt, arg = opt.split(' ', 1)
-                    #DEBUG
-                    print('operation: ' + opt)
-                    print('argument: '+arg)
                 else:
                     arg = ''
                 try:
