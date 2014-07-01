@@ -410,7 +410,7 @@ class GnuPG:
 
         try:
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-                bufsize=1, close_fds=False)
+                bufsize=0, close_fds=False)
 
             self.threads = {
                 "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
