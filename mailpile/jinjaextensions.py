@@ -401,13 +401,12 @@ class MailpileCommand(Extension):
         return url
 
     @classmethod
-    def _contact_name(self, profiles, person):
+    def _contact_name(self, person):
         name = person['fn']
-        # FIXME: bre and bnvk should discuss this :)
-        #for profile in profiles:
-        #    if profile['email'] == person['address']:
-        #        name = profile['name']
-        #        break
+        if (not name or '@' in name) and person.get('email'):
+            vcard = self.env.session.config.vcards.get_vcard(person['email'])
+            if vcard:
+                return vcard.fn
         return name
 
     URL_RE_HTTP = re.compile('(<a [^>]*?)'            # 1: <a

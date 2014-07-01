@@ -1,7 +1,7 @@
 <div class="thread-item-metadata clearfix">
   <div class="thread-item-from-avatar dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{{_("From")}}: {{ from.address }}"><img src="{{ show_avatar(from) }}"></a>
-    <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime" data-address="{{from.address}}" data-name="{{contact_name(profiles, from)}}">
+    <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime" data-address="{{from.address}}" data-name="{{contact_name(from)}}">
       {% if not from.flags.contact and not from.flags.profile: %}
       <li role="presentation"><a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#"><span class="icon-plus"></span> Add Contact</a></li>
       {% else %}
@@ -12,7 +12,7 @@
     </ul>
   </div>
   <div class="thread-item-from">
-    <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}: {{ from.address}}">{{ contact_name(profiles, from) }}</a>
+    <a href="{{ contact_url(from) }}" class="name" title="{{_("From")}}: {{ from.address}}">{{ contact_name(from) }}</a>
     <div class="thread-item-metadata-address">
       {{from.address}}
     </div>
@@ -33,7 +33,7 @@
     {% for to_aid in metadata.to_aids %}{% set person = result.data.addresses[to_aid] %}
     <li class="thread-item-metadata-contact">
       <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
-      <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}">{{ contact_name(profiles, person) }}<br> <span>{{person.address}}</span></a>
+      <a href="{{ contact_url(person) }}" title="{{_("To")}}: {{ person.address }}">{{ contact_name(person) }}<br> <span>{{person.address}}</span></a>
     </li>
     {% endfor %}
     {% else %}
@@ -46,7 +46,7 @@
     {% for cc_aid in metadata.cc_aids %}{% set person = result.data.addresses[cc_aid] %}
     <li class="thread-item-metadata-contact">
       <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
-      <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}">{{ contact_name(profiles, person) }}<br> <span>{{person.address}}</span></a>
+      <a href="{{ contact_url(person) }}" title="{{_("Cc")}}: {{ person.address }}">{{ contact_name(person) }}<br> <span>{{person.address}}</span></a>
     </li>
     {% endfor %}
   </ul>
@@ -57,7 +57,7 @@
     {% for bcc_aid in metadata.bcc_aids %}{% set person = result.data.addresses[bcc_aid] %}
     <li class="thread-item-metadata-contact">
       <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}"><img src="{{ show_avatar(person) }}"></a>
-      <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}">{{ contact_name(profiles, person) }}<br> <span>{{person.address}}</span></a>
+      <a href="{{ contact_url(person) }}" title="{{_("Bcc:")}}: {{ person.address }}">{{ contact_name(person) }}<br> <span>{{person.address}}</span></a>
     </li>
     {% endfor %}
   </ul>
