@@ -2,7 +2,7 @@
   <div class="thread-item-from-avatar dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{{_("From")}}: {{ from.address }}"><img src="{{ show_avatar(from) }}"></a>
     <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime" data-address="{{from.address}}" data-name="{{contact_name(profiles, from)}}">
-      {% if not from.flags.contact %}
+      {% if not from.flags.contact and not from.flags.profile: %}
       <li role="presentation"><a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#"><span class="icon-plus"></span> Add Contact</a></li>
       {% else %}
       <li role="presentation"><a class="message-action-view-profile" role="menuitem" tabindex="-1" href="#"><span class="icon-user"></span> View Profile</a></li>

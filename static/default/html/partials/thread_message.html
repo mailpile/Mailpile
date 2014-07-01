@@ -120,7 +120,7 @@
     {% if "quote" in special_text_parts or "signature" in special_text_parts %}
     <li><a class="thread-message-actions-quote">&middot;&middot;&middot;&middot;</a></li>
     {% endif %}
-    {% if not from.flags.contact %}
+    {% if not from.flags.contact and not from.flags.profile %}
     <li><a class="message-action-add-contact" href="#" data-name="{{from.fn}}" data-address="{{from.address}}"><span class="icon-user"></span> {{_("Add Contact")}}</a></li>
     {% endif %}
     {% if "pgp-key" in special_text_parts %}
