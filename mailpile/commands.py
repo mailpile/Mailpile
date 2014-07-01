@@ -951,9 +951,6 @@ class Rescan(Command):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
 
-        if config.sys.lockdown:
-            return self._error(_('In lockdown, doing nothing.'))
-
         # Pretend we're idle, to make rescan go fast fast.
         if not slowly:
             mailpile.util.LAST_USER_ACTIVITY = 0
@@ -1283,6 +1280,10 @@ class ListDir(Command):
 
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         try:
             file_list = [(f.decode('utf-8'),
                           os.path.getsize(f),
@@ -1304,6 +1305,10 @@ class ChangeDir(ListDir):
 
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         try:
             os.chdir(args.pop(0).encode('utf-8'))
             return ListDir.command(self, args=args)
@@ -1327,6 +1332,9 @@ class CatFile(Command):
     def command(self, args=None):
         lines = []
         files = list(args or self.args)
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
 
         target = tfd = None
         if files and files[-1] and files[-1][:1] == '>':
@@ -1593,6 +1601,9 @@ class Quit(Command):
     RAISES = (KeyboardInterrupt,)
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         self._background_save(index=True, config=True, wait=True)
         mailpile.util.QUITTING = True
         return self._success(_('Shutting down...'))
@@ -1608,6 +1619,9 @@ class Abort(Command):
     }
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         if 'no_save' not in self.data:
             self._background_save(index=True, config=True, wait=True,
                                   wait_callback=lambda: os._exit(1))

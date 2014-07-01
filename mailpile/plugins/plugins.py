@@ -38,6 +38,10 @@ class LoadPlugin(mailpile.commands.Command):
 
     def command(self):
         config = self.session.config
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         plugins = config.plugins
         for plugin in self.args:
             if plugin in plugins.LOADED:
@@ -67,6 +71,10 @@ class DisablePlugin(mailpile.commands.Command):
 
     def command(self):
         config = self.session.config
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         plugins = config.plugins
         for plugin in self.args:
             if plugin in plugins.REQUIRED:

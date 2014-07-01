@@ -47,6 +47,9 @@ class ExportMail(Command):
         session, config, idx = self.session, self.session.config, self._idx()
         mbox_type = config.prefs.export_format
 
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         args = list(self.args)
         if args and ':' in args[-1]:
             mbox_type, path = args.pop(-1).split(':', 1)

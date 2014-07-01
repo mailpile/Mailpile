@@ -252,6 +252,9 @@ class Migrate(Command):
         session = self.session
         err = cnt = 0
 
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         migrations = []
         for a in self.args:
             if a in MIGRATIONS:

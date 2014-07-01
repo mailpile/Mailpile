@@ -42,7 +42,6 @@ class GPGKeyReceive(Command):
     HTTP_CALLABLE = ('POST', )
     HTTP_QUERY_VARS = {'keyid': 'ID of key to fetch'}
 
-
     def command(self):
         keyid = self.data.get("keyid", self.args)
         g = GnuPG()
@@ -83,6 +82,9 @@ class GPGKeySign(Command):
                        'signingkey': 'The key to sign with'}
 
     def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
         signingkey = None
         keyid = None
         args = list(self.args)

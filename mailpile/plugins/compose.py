@@ -623,6 +623,9 @@ class Attach(CompositionCommand):
                 count += 1
         else:
             while os.path.exists(args[-1]):
+                # Attaching from the local filesystem is scary!
+                if self.session.config.sys.lockdown:
+                    return self._error(_('In lockdown, doing nothing.'))
                 files.append(args.pop(-1))
 
         if not files:
@@ -672,6 +675,9 @@ class Sendit(CompositionCommand):
     def command(self, emails=None):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
 
         bounce_to = []
         while args and '@' in args[-1]:

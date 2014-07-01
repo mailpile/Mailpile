@@ -337,6 +337,8 @@ class Extract(Command):
             mode = args.pop(0)
 
         if len(args) > 0 and args[-1].startswith('>'):
+            if self.session.config.sys.lockdown:
+                return self._error(_('In lockdown, doing nothing.'))
             name_fmt = args.pop(-1)[1:]
 
         if (args[0].startswith('#') or
@@ -348,9 +350,6 @@ class Extract(Command):
 
         eids = self._choose_messages(args)
         emails = [Email(idx, i) for i in eids]
-
-        print 'Download %s from %s as %s/%s' % (cid, eids, mode, name_fmt)
-
         results = []
         for e in emails:
             if cid[0] == '*':
