@@ -282,27 +282,34 @@ class StreamReader(Thread):
     def __init__(self, name, fd, callback, lines=True):
         Thread.__init__(self, target=self.readin, args=(fd, callback))
         self.name = name
+        self.state = 'startup'
         self.lines = lines
         self.start()
 
     def __str__(self):
-        return '%s(%s, lines=%s)' % (Thread.__str__(self),
-                                     self.name, self.lines)
+        return '%s(%s/%s, lines=%s)' % (Thread.__str__(self),
+                                        self.name, self.state, self.lines)
 
     def readin(self, fd, callback):
         try:
             if self.lines:
+                self.state = 'read'
                 for line in iter(fd.readline, b''):
+                    self.state = 'callback'
                     callback(line)
+                    self.state = 'read'
             else:
                 while True:
+                    self.state = 'read'
                     buf = fd.read(BLOCKSIZE)
+                    self.state = 'callback'
                     callback(buf)
                     if buf == "":
                         break
         except:
             traceback.print_exc()
         finally:
+            self.state = 'done'
             fd.close()
 
 
@@ -310,11 +317,12 @@ class StreamWriter(Thread):
     def __init__(self, name, fd, output, partial_write_ok=False):
         Thread.__init__(self, target=self.writeout, args=(fd, output))
         self.name = name
+        self.state = 'startup'
         self.partial_write_ok = partial_write_ok
         self.start()
 
     def __str__(self):
-        return '%s(%s)' % (Thread.__str__(self), self.name)
+        return '%s(%s/%s)' % (Thread.__str__(self), self.name, self.state)
 
     def writeout(self, fd, output):
         if isinstance(output, (str, unicode)):
@@ -324,9 +332,11 @@ class StreamWriter(Thread):
             total = 0
         try:
             while True:
+                self.state = 'read'
                 line = output.read(BLOCKSIZE)
                 if line == "":
                     break
+                self.state = 'write'
                 fd.write(line)
                 total -= len(line)
             output.close()
@@ -335,6 +345,7 @@ class StreamWriter(Thread):
                 print '%s: %s bytes left' % (self, total)
                 traceback.print_exc()
         finally:
+            self.state = 'done'
             fd.close()
 
 
