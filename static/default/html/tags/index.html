@@ -6,42 +6,32 @@
 </div>
 <div id="content-view">
   {% macro render_tag(tag) -%}
-   <div class="boxes-outer" id="tag-card-{{tag.tid}}" data-tid="{{tag.tid}}">
-    <div class="boxes-inner">
-      <a class="tag-card-name" href="{{tag.url}}" style="color: {{theme_settings().colors[tag.label_color]}};">
+   <div class="rectangles-outer" id="tag-card-{{tag.tid}}" data-tid="{{tag.tid}}">
+    <div class="rectangles-inner">
+      <a class="tag-card-name" href="/tags/{{tag.slug}}/edit.html" style="color: {{theme_settings().colors[tag.label_color]}};">
         <span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span>
-        {{tag.name}}
+        {{tag.name[:11]}}
       </a>
-      <div class="tag-card-numbers">
+      <input type="checkbox" class="tag-card-checkbox">
+      <div class="tag-card-details">
         {% if tag.subtag_ids %}
         {% set total_count = tag.stats.sum_all %}
         {% else %}
         {% set total_count = tag.stats.all %}
         {% endif %}
-        <div class="tag-card-stat">
-          <span class="tag-card-label">{{_("Total")}}</span>
-          <span class="tag-card-stat-count">{{total_count}}</span>
-        </div>
-        <div class="tag-card-stat">
-          {% if tag.stats.new > 0 %}
-          <span class="tag-card-label">{{_("New")}}</span>
-          <span class="tag-card-stat-count">{{tag.stats.new}}</span>
-          {% endif %}
-        </div>
+        <span class="tag-card-stat-count">{{total_count}}</span> {{_("Messages")}} &nbsp;
         {% if tag.subtag_ids %}
-        <div class="tag-card-stat">
-          <span class="tag-card-label">{{_("Tags")}}</span>
-          <span class="tag-card-stat-count">{{tag.subtag_ids|length}}</span>
-        </div>
+        <span class="tag-card-stat-count">{{tag.subtag_ids|length}}</span> {{_("Subtags")}}
         {% endif %}
       </div>
-      <input type="checkbox" class="bottom boxes-inner-select">
-      <a class="bottom right tag-card-message-link" href="/tags/{{tag.slug}}/edit.html"><span class="icon-settings"></span> {{_("Settings")}}</a>
     </div>
   </div>
   {%- endmacro %}
   <!-- Priority -->
-  <div id="tags-priority-list" class="container boxes-container center">
+  <div class="content-normal">
+    <h3>{{_("Priority Tags")}}</h3>
+  </div>
+  <div id="tags-priority-list" class="container rectangles-container center">
     <div class="clearfix"></div>
     {% for tag in result.tags %}
     {% if tag.display == "priority" and not tag.parent %}
@@ -51,10 +41,10 @@
   </div>
 
   <!-- Tag -->
-  <div class="add-top add-bottom">
-    <h3 class="text-center"><span class="icon-tag"></span> {{_("Tags")}}</h3>
+  <div class="content-normal">
+    <h3>{{_("Tags")}}</h3>
   </div>
-  <div id="tags-list" class="container boxes-container center">
+  <div id="tags-list" class="container rectangles-container center">
     <div class="clearfix"></div>
     {% for tag in result.tags %}
     {% if tag.display == "tag" and not tag.parent %}
@@ -71,9 +61,10 @@
   {% endif %}
   {% endfor %} 
   {% if tag_archive|length > 0 %}
-  <div class="add-top add-bottom">
-    <h3 class="text-center"><span class="icon-archive"></span> {{_("Archived")}}</h3>
-    <div id="tags-archived-list" class="container boxes-container center hide">
+  <div class="content-normal">
+    <h3>{{_("Archived")}}</h3>
+  </div>
+  <div id="tags-archived-list" class="container rectangles-container center hide">
     <div class="clearfix"></div>
     {% for tag in result.tags %}
     {% if tag.display == "archive" %}
@@ -81,7 +72,7 @@
     {% endif %}
     {% endfor %}
     </div>
-    <div class="text-center">
+    <div class="content-normal">
       <button id="button-tag-toggle-archive" data-message="{{_("Hide Archived")}}">{{_("Show Archived")}}</button>
     </div>
   </div>
