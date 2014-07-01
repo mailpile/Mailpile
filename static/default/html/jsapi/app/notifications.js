@@ -94,7 +94,7 @@ EventLog.process_result = function(result, textstatus) {
     EventLog.timer.play();
     EventLog.poll();
     if (EventLog.cancelwarning) {
-        EventLog.cancelwarning();
+        // DISABLED: EventLog.cancelwarning();
         EventLog.cancelwarning = null;
     }
 };
