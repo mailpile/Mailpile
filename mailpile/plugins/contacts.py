@@ -66,10 +66,10 @@ class VCardCommand(Command):
                         lines.append('   %-26.26s key:%s' % ('', key))
             return '\n'.join(lines)
 
-    def _make_new_vcard(self, handle, name):
+    def _make_new_vcard(self, handle, name, kind):
         l = [VCardLine(name='fn', value=name),
-             VCardLine(name='kind', value=self.KIND)]
-        if self.KIND in ('individual', 'profile'):
+             VCardLine(name='kind', value=kind)]
+        if self.KIND in ('individual', 'profile', 'internal'):
             return MailpileVCard(VCardLine(name='email',
                                            value=handle, type='pref'), *l)
         else:
@@ -146,6 +146,11 @@ class AddVCard(VCardCommand):
         'mid': 'Message ID'
     }
 
+    IGNORED_EMAILS_AND_DOMAINS = (
+        'reply.airbnb.com',
+        'notifications@github.com'
+    )
+
     def _add_from_messages(self, args, add_recipients):
         pairs, idx = [], self._idx()
         for email in [Email(idx, i) for i in self._choose_messages(args)]:
@@ -155,10 +160,15 @@ class AddVCard(VCardCommand):
                 people = (idx.expand_to_list(msg_info) +
                           idx.expand_to_list(msg_info, field=idx.MSG_CC))
                 for e in people:
-                    pairs.append(ExtractEmailAndName(e))
+                    pair = ExtractEmailAndName(e)
+                    domain = pair[0].split('@')[-1]
+                    if (pair[0] not in self.IGNORED_EMAILS_AND_DOMAINS and
+                            domain not in self.IGNORED_EMAILS_AND_DOMAINS and
+                            'noreply' not in pair[0]):
+                        pairs.append(pair)
         return pairs
 
-    def command(self, recipients=False, quietly=False):
+    def command(self, recipients=False, quietly=False, internal=False):
         session, config, idx = self.session, self.session.config, self._idx()
         args = list(self.args)
 
@@ -186,13 +196,20 @@ class AddVCard(VCardCommand):
 
         if pairs:
             vcards = []
+            kind = self.KIND if not internal else 'internal'
             for handle, name in pairs:
-                if handle.lower() in config.vcards:
+                vcard = config.vcards.get(handle.lower())
+                if vcard:
                     if not quietly:
                         session.ui.warning('Already exists: %s' % handle)
-                    if self.KIND != 'profile':
+                    if kind != 'profile' and old_vcard.kind != 'internal':
                         continue
-                vcard = self._make_new_vcard(handle.lower(), name)
+                if vcard and vcard.kind == 'internal':
+                    config.vcards.deindex_vcard(vcard)
+                    vcard.email = handle.lower()
+                    vcard.kind = kind
+                else:
+                    vcard = self._make_new_vcard(handle.lower(), name, kind)
                 config.vcards.add_vcards(vcard)
                 vcards.append(vcard)
         else:

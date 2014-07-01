@@ -44,7 +44,7 @@ def AddComposeMethods(cls):
                 from mailpile.plugins.contacts import AddContact
                 AddContact(self.session,
                            arg=['=%s' % e.msg_mid() for e in emails]
-                           ).run(recipients=True, quietly=True)
+                           ).run(recipients=True, quietly=True, internal=True)
             except (TypeError, ValueError, IndexError):
                 self._ignore_exception()
 

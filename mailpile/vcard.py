@@ -955,7 +955,8 @@ class VCardStore(dict):
         self._lock = threading.RLock()
 
     def index_vcard(self, card):
-        attrs = (['email'] if (card.kind in ('individual', 'profile'))
+        attrs = (['email']
+                 if (card.kind in ('internal', 'individual', 'profile'))
                  else ['nickname'])
         with self._lock:
             for attr in attrs:
@@ -966,7 +967,8 @@ class VCardStore(dict):
             self[card.random_uid] = card
 
     def deindex_vcard(self, card):
-        attrs = (['email'] if (card.kind in ('individual', 'profile'))
+        attrs = (['email']
+                 if (card.kind in ('internal', 'individual', 'profile'))
                  else ['nickname'])
         with self._lock:
             for attr in attrs:
