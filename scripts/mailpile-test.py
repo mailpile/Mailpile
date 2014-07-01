@@ -245,7 +245,6 @@ def test_composition():
     # First attempt to send should fail & record failure to event log
     config.prefs.default_messageroute = 'default'
     config.routes['default'] = {"command": '/no/such/file'}
-    config.profiles['0'].messageroute = 'default'
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
                          'data_mid=%s' % new_mid).result['events']
