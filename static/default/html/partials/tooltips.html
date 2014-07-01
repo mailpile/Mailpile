@@ -1,0 +1,20 @@
+<script id="tooltip-pile-tag-details" type="text/template">
+  <div>
+    <h4 class="text-center" style="color: <%= Mailpile.theme.colors[label_color] %> "><span class=" <%= icon %> "></span> <%= name %></h4>
+    <p><a href="<%= url %>" data-mid="<%= mid %>"><span class="icon-links"></span> {{_("Browse Tag")}}</a></p>
+    <p><a href="#" data-tid="<%= tid %>" data-mid="<%= mid %>" class="pile-tag-delete"><span class="icon-circle-x"></span> {{_("Remove Tag")}}</a></p>
+  </div>
+</script>
+
+<script id="tooltip-contact-details" type="text/template">
+  <h3><a href="/contacts/view/<%= address %>/"><%= fn %></a></h3>
+  <% if (flags.secure) { %>
+  <select class="compose-address-change-key">
+    <% _.each(keys, function(key) { %>
+    <option><%= key.fingerprint %></option>
+    <% }); %>
+  </select>
+  <% } else { %>
+  <a onclick="Mailpile.find_missing_keys('<%= address %>');">Search for PGP Keys</a>
+  <% } %>
+</script>

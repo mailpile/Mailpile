@@ -1,13 +1,21 @@
 # Common crypto state and structure
 
 
-STATE_CONTEXT_ID = 0
-
-
 class KeyLookupError(ValueError):
     def __init__(self, message, missing):
         ValueError.__init__(self, message)
         self.missing = missing
+
+
+STATE_CONTEXT_ID = 0
+
+
+def NewContextID():
+    global STATE_CONTEXT_ID
+    context = STATE_CONTEXT_ID
+    STATE_CONTEXT_ID += 1
+    STATE_CONTEXT_ID %= 1000
+    return context
 
 
 class CryptoInfo(dict):
@@ -18,10 +26,7 @@ class CryptoInfo(dict):
 
     def __init__(self, copy=None):
         self.update(copy or self.DEFAULTS)
-        global STATE_CONTEXT_ID
-        self["context"] = STATE_CONTEXT_ID
-        STATE_CONTEXT_ID += 1
-        STATE_CONTEXT_ID %= 1000
+        self["context"] = NewContextID()
 
     def __setitem__(self, item, value):
         assert(item in self.KEYS)
@@ -43,9 +48,11 @@ class CryptoInfo(dict):
                 < self.STATUSES.index(ci["status"])):
             for k in self.keys():
                 del self[k]
+            context = self.get("context") or NewContextID()
             self.update(ci)
             if not ci["status"].startswith('mixed-'):
                 self["status"] = "mixed-%s" % ci["status"]
+                self["context"] = context
         elif self["status"] != "none":
             self["status"] = 'mixed-%s' % self["status"]
 

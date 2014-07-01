@@ -1,0 +1,857 @@
+Return-Path: <bounce-mc.us6_13990351.453669-hi=brennannovak.com@mail351.us3.mcdlv.net>
+X-Original-To: reverse@heart.reverseproductions.com
+Delivered-To: reverse@heart.reverseproductions.com
+Received: by heart.reverseproductions.com (Postfix, from userid 5001)
+	id 7B2086C925; Fri,  4 Apr 2014 19:39:28 -0700 (PDT)
+X-Spam-Checker-Version: SpamAssassin 3.3.2 (2011-06-06) on
+	heart.reverseproductions.com
+X-Spam-Level: 
+X-Spam-Status: No, score=-4.5 required=3.0 tests=BAYES_00,HTML_MESSAGE,
+	MIME_QP_LONG_LINE,RCVD_IN_DNSWL_NONE,RCVD_IN_IADB_DK,RCVD_IN_IADB_LISTED,
+	RCVD_IN_IADB_RDNS,RCVD_IN_IADB_SENDERID,RCVD_IN_IADB_SPF,RCVD_IN_IADB_VOUCHED,
+	SPF_HELO_PASS,T_DKIM_INVALID autolearn=ham version=3.3.2
+Received: from mail351.us3.mcdlv.net (mail351.us3.mcdlv.net [173.231.177.95])
+	by heart.reverseproductions.com (Postfix) with ESMTP id 236D86C7F9
+	for <hi@brennannovak.com>; Fri,  4 Apr 2014 19:39:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed/relaxed; s=k1; d=mail351.us3.mcdlv.net;
+ h=Subject:From:Reply-To:To:Date:Message-ID:List-Unsubscribe:Sender:Content-Type:MIME-Version; i=hello=3Dtheheretic.me@mail351.us3.mcdlv.net;
+ bh=UmTI1tp07MXJ25va+t4UbFOaUXA=;
+ b=rzkoqSDfjClEHI2cNjGYV5Qr5sY8e/GZxNC8Mmpo7YFr1GS6fzRb5NyS8jw4D5QC5nziVzAZxjyY
+   Fi8AhnY+3u0bBjIuEjoniux8OqiDlyp8l8sQr+ZM8jpaW4RST5uXhOodEDul9ViazZNWvsgAO5L2
+   52l1OcucGl6npAp8HSE=
+DomainKey-Signature: a=rsa-sha1; c=nofws; q=dns; s=k1; d=mail351.us3.mcdlv.net;
+ b=rhvgbxaFJVX9S+/sEzS/EHtaNPcTjNvHkNvJbmJcqcmwQnyh+HWUfLkjESUrxiRlDmeKrhsl8UX6
+   ryoPLB+0bAiSEa/nvHByZ1siM6MImaFbe3qkLI8S1nZWB3p6mpZT8xuvqssvSD5mFiWSQ6GiGJSe
+   6bdeyTaEXg+mRjFi+k8=;
+Received: from (127.0.0.1) by mail351.us3.mcdlv.net id h7tlbi174i4j for <hi@brennannovak.com>; Sat, 5 Apr 2014 02:30:16 +0000 (envelope-from <bounce-mc.us6_13990351.453669-hi=brennannovak.com@mail351.us3.mcdlv.net>)
+Subject: =?utf-8?Q?Verb.=20Target.=20Outcome.?=
+From: =?utf-8?Q?The=20Heretic=20=28Pascal=20Finette=29?= <hello@theheretic.me>
+Reply-To: =?utf-8?Q?The=20Heretic=20=28Pascal=20Finette=29?= <hello@theheretic.me>
+To: <hi@brennannovak.com>
+Date: Sat, 5 Apr 2014 02:30:16 +0000
+Message-ID: <73ed86d918cf26bfbf6cc6c1d3e3df2695d.20140405023914@mail351.us3.mcdlv.net>
+X-Mailer: MailChimp Mailer - **CID21d0da1bd63e3df2695d**
+X-Campaign: mailchimp73ed86d918cf26bfbf6cc6c1d.21d0da1bd6
+X-campaignid: mailchimp73ed86d918cf26bfbf6cc6c1d.21d0da1bd6
+X-Report-Abuse: Please report abuse for this campaign here: http://www.mailchimp.com/abuse/abuse.phtml?u=73ed86d918cf26bfbf6cc6c1d&id=21d0da1bd6&e=3e3df2695d
+X-MC-User: 73ed86d918cf26bfbf6cc6c1d
+X-Feedback-ID: 13990351:13990351.453669:us6:mc
+X-Accounttype: pd
+List-Unsubscribe: <mailto:unsubscribe-73ed86d918cf26bfbf6cc6c1d-21d0da1bd6-3e3df2695d@mailin1.us2.mcsv.net?subject=unsubscribe>, <http://theheretic.us6.list-manage.com/unsubscribe?u=73ed86d918cf26bfbf6cc6c1d&id=7eed73b8d8&e=3e3df2695d&c=21d0da1bd6>
+Sender: "The Heretic (Pascal Finette)" <hello=theheretic.me@mail351.us3.mcdlv.net>
+x-mcda: FALSE
+Content-Type: multipart/alternative; boundary="_----------=_MCPart_2029475464"
+MIME-Version: 1.0
+
+This is a multi-part message in MIME format
+
+--_----------=_MCPart_2029475464
+Content-Type: text/plain; charset="us-ascii";
+
+http://theheretic.me/ Apr 4, 2014
+
+
+** Verb. Target. Outcome.
+------------------------------------------------------------
+
+Here's another gem from the amazing Kevin Starr - this one is so good that I consider it mandatory for any entrepreneur:
+
+When you describe your company's mission (which truly is the core and essence of your company - what and why you do what you do) use eight words (or less) in the format: Verb. Target. Outcome.
+
+Simple, concise, to the point.
+
+Let me make this clearer with some of Kevin's examples:
+* Living Goods (http://livinggoods.org/) : Save (verb) African kids' (target) lifes (measurable outcome).
+
+Brilliant! Want another example?
+* One Acre (http://www.oneacrefund.org/) : Get (verb) African families (target) out of extreme poverty (measurable outcome).
+
+You get it, right? That's your 5 second pitch - right there.
+
+With that being said - here's mine: Inspire and support young leaders to become entrepreneurs.
+
+What's yours?
+
+P.S. I made some changes to the email template I'm using (adding more compatibility with legacy email clients). Let me know if something doesn't work.
+
+Always Run. Never Walk.
+Pascal
+
+P.S.: Want to comment, ask a question or just say hi? Simply hit reply!
+
+Join the discussion in our Facebook Group (https://www.facebook.com/groups/theheretic/) . Find help within the Heretic Network (http://theheretic.me/network/) . And grab your Golden Ticket (http://theheretic.me/goldenticket/) .
+
+The Heretic (http://theheretic.me/) | Archive (http://theheretic.me/archive/) | Subscribe (http://theheretic.me/#newsletter) | Email Me (mailto:hello@theheretic.me) | Tweet This (http://twitter.com/share?url=http://theheretic.me/2014/04/04/verb-target-outcome/&text=The%20Heretic:%20%22Verb. Target. Outcome.%22%20%2D)
+
+This email was sent to hi@brennannovak.com
+why did I get this? (http://theheretic.us6.list-manage.com/about?u=73ed86d918cf26bfbf6cc6c1d&id=7eed73b8d8&e=3e3df2695d&c=21d0da1bd6)     unsubscribe from this list (http://theheretic.us6.list-manage.com/unsubscribe?u=73ed86d918cf26bfbf6cc6c1d&id=7eed73b8d8&e=3e3df2695d&c=21d0da1bd6)     update subscription preferences (http://theheretic.us6.list-manage1.com/profile?u=73ed86d918cf26bfbf6cc6c1d&id=7eed73b8d8&e=3e3df2695d)
+The Heretic (aka Pascal Finette) · 20445 Williams Ave · Saratoga, CA 95070 · USA
+--_----------=_MCPart_2029475464
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.or=
+g/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns=3D"http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8">
+<meta name=3D"viewport" content=3D"width=3Ddevice-width">
+<!-- Facebook sharing information tags -->
+<meta property=3D"og:title" content=3D"Verb. Target. Outcome.">
+<title>Verb. Target. Outcome.</title>
+<style type=3D"text/css">
+=09=09a:hover{
+=09=09=09color:#2795b6 !important;
+=09=09}
+=09=09a:active{
+=09=09=09color:#2795b6 !important;
+=09=09}
+=09=09a:visited{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h1 a:active{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h2 a:active{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h3 a:active{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h4 a:active{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h5 a:active{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h6 a:active{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h1 a:visited{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h2 a:visited{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h3 a:visited{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h4 a:visited{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h5 a:visited{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09h6 a:visited{
+=09=09=09color:#2ba6cb !important;
+=09=09}
+=09=09table.button:hover td{
+=09=09=09background:#2795b6 !important;
+=09=09}
+=09=09table.button:visited td{
+=09=09=09background:#2795b6 !important;
+=09=09}
+=09=09table.button:active td{
+=09=09=09background:#2795b6 !important;
+=09=09}
+=09=09table.button:hover td a{
+=09=09=09color:#fff !important;
+=09=09}
+=09=09table.button:visited td a{
+=09=09=09color:#fff !important;
+=09=09}
+=09=09table.button:active td a{
+=09=09=09color:#fff !important;
+=09=09}
+=09=09table.button:hover td{
+=09=09=09background:#2795b6 !important;
+=09=09}
+=09=09table.tiny-button:hover td{
+=09=09=09background:#2795b6 !important;
+=09=09}
+=09=09table.small-button:hover td{
+=09=09=09background:#2795b6 !important;
+=09=09}
+=09=09table.medium-button:hover td{
+=09=09=09background:#2795b6 !important;
+=09=09}
+=09=09table.large-button:hover td{
+=09=09=09background:#2795b6 !important;
+=09=09}
+=09=09table.button:hover td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.button:active td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.button td a:visited{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.tiny-button:hover td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.tiny-button:active td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.tiny-button td a:visited{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.small-button:hover td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.small-button:active td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.small-button td a:visited{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.medium-button:hover td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.medium-button:active td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.medium-button td a:visited{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.large-button:hover td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.large-button:active td a{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.large-button td a:visited{
+=09=09=09color:#ffffff !important;
+=09=09}
+=09=09table.secondary:hover td{
+=09=09=09background:#d0d0d0 !important;
+=09=09=09color:#555;
+=09=09}
+=09=09table.secondary:hover td a{
+=09=09=09color:#555 !important;
+=09=09}
+=09=09table.secondary td a:visited{
+=09=09=09color:#555 !important;
+=09=09}
+=09=09table.secondary:active td a{
+=09=09=09color:#555 !important;
+=09=09}
+=09=09table.success:hover td{
+=09=09=09background:#457a1a !important;
+=09=09}
+=09=09table.alert:hover td{
+=09=09=09background:#970b0e !important;
+=09=09}
+=09=09a:hover{
+=09=09=09color:#111111 !important;
+=09=09}
+=09=09a:active{
+=09=09=09color:#111111 !important;
+=09=09}
+=09=09a:visited{
+=09=09=09color:#333332 !important;
+=09=09}
+=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] img{
+=09=09=09width:auto !important;
+=09=09=09height:auto !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] center{
+=09=09=09min-width:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .container{
+=09=09=09width:95% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .row{
+=09=09=09width:100% !important;
+=09=09=09display:block !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .wrapper{
+=09=09=09display:block !important;
+=09=09=09padding-right:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns{
+=09=09=09table-layout:fixed !important;
+=09=09=09float:none !important;
+=09=09=09width:100% !important;
+=09=09=09padding-right:0px !important;
+=09=09=09padding-left:0px !important;
+=09=09=09display:block !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column{
+=09=09=09table-layout:fixed !important;
+=09=09=09float:none !important;
+=09=09=09width:100% !important;
+=09=09=09padding-right:0px !important;
+=09=09=09padding-left:0px !important;
+=09=09=09display:block !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .wrapper.first .columns{
+=09=09=09display:table !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .wrapper.first .column{
+=09=09=09display:table !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] table.columns td{
+=09=09=09width:100% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] table.column td{
+=09=09=09width:100% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.one{
+=09=09=09width:8.333333% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.one{
+=09=09=09width:8.333333% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.two{
+=09=09=09width:16.666666% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.two{
+=09=09=09width:16.666666% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.three{
+=09=09=09width:25% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.three{
+=09=09=09width:25% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.four{
+=09=09=09width:33.333333% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.four{
+=09=09=09width:33.333333% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.five{
+=09=09=09width:41.666666% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.five{
+=09=09=09width:41.666666% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.six{
+=09=09=09width:50% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.six{
+=09=09=09width:50% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.seven{
+=09=09=09width:58.333333% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.seven{
+=09=09=09width:58.333333% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.eight{
+=09=09=09width:66.666666% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.eight{
+=09=09=09width:66.666666% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.nine{
+=09=09=09width:75% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.nine{
+=09=09=09width:75% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.ten{
+=09=09=09width:83.333333% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.ten{
+=09=09=09width:83.333333% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.eleven{
+=09=09=09width:91.666666% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.eleven{
+=09=09=09width:91.666666% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .columns td.twelve{
+=09=09=09width:100% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .column td.twelve{
+=09=09=09width:100% !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-one{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-two{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-three{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-four{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-five{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-six{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-seven{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-eight{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-nine{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-ten{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] td.offset-by-eleven{
+=09=09=09padding-left:0 !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] table.columns td.expander{
+=09=09=09width:1px !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .right-text-pad{
+=09=09=09padding-left:10px !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .text-pad-right{
+=09=09=09padding-left:10px !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .left-text-pad{
+=09=09=09padding-right:10px !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .text-pad-left{
+=09=09=09padding-right:10px !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .hide-for-small{
+=09=09=09display:none !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .show-for-desktop{
+=09=09=09display:none !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .show-for-small{
+=09=09=09display:inherit !important;
+=09=09}
+
+}=09@media only screen and (max-width: 600px){
+=09=09table[class=3Dbody] .hide-for-desktop{
+=09=09=09display:inherit !important;
+=09=09}
+
+}</style></head>
+<body style=3D"width: 100% !important; min-width: 100%; -webkit-text-size-=
+adjust: 100%; -ms-text-size-adjust: 100%; color: #333332; font-family: 'He=
+lvetica Neue'=2C'Helvetica'=2C 'Arial'=2C sans-serif; font-weight: normal;=
+ text-align: left; line-height: 19px; font-size: 14px; margin: 0; padding:=
+ 0;">
+<table class=3D"body" style=3D"border-spacing: 0; border-collapse: collaps=
+e; vertical-align: top; text-align: left; height: 100%; width: 100%; color=
+: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C sans-=
+serif; font-weight: normal; line-height: 19px; font-size: 14px; margin: 0;=
+ padding: 0;"><tr style=3D"vertical-align: top; text-align: left; padding:=
+ 0;" align=3D"left"><td class=3D"center" align=3D"center" valign=3D"top" s=
+tyle=3D"word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto;=
+ hyphens: auto; border-collapse: collapse !important; vertical-align: top;=
+ text-align: center; color: #333332; font-family: 'Helvetica Neue'=2C'Helv=
+etica'=2C 'Arial'=2C sans-serif; font-weight: normal; line-height: 19px; f=
+ont-size: 14px; margin: 0; padding: 0;">
+<center style=3D"width: 100%; min-width: 580px;">
+
+<!-- HEADER -->
+<table class=3D"row header" style=3D"border-spacing: 0; border-collapse: c=
+ollapse; vertical-align: top; text-align: left; width: 100%; position: rel=
+ative; background: #EEEEEE; padding: 0px;" bgcolor=3D"#EEEEEE"><tr style=
+=3D"vertical-align: top; text-align: left; padding: 0;" align=3D"left"><td=
+ class=3D"center" align=3D"center" style=3D"word-break: break-word; -webki=
+t-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: colla=
+pse !important; vertical-align: top; text-align: center; color: #333332; f=
+ont-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C sans-serif; font-=
+weight: normal; line-height: 19px; font-size: 14px; margin: 0; padding: 0;=
+" valign=3D"top">
+<center style=3D"width: 100%; min-width: 580px;">
+
+<table class=3D"container" style=3D"border-spacing: 0; border-collapse: co=
+llapse; vertical-align: top; text-align: inherit; width: 580px; margin: 0=
+ auto; padding: 0;"><tr style=3D"vertical-align: top; text-align: left; pa=
+dding: 0;" align=3D"left"><td class=3D"wrapper last" style=3D"word-break:=
+ break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; bor=
+der-collapse: collapse !important; vertical-align: top; text-align: left;=
+ position: relative; color: #333332; font-family: 'Helvetica Neue'=2C'Helv=
+etica'=2C 'Arial'=2C sans-serif; font-weight: normal; line-height: 19px; f=
+ont-size: 14px; margin: 0; padding: 10px 0px 0px;" align=3D"left" valign=
+=3D"top">
+
+<table class=3D"twelve columns" style=3D"border-spacing: 0; border-collaps=
+e: collapse; vertical-align: top; text-align: left; width: 580px; margin:=
+ 0 auto; padding: 0;"><tr style=3D"vertical-align: top; text-align: left;=
+ padding: 0;" align=3D"left"><td class=3D"six sub-columns" style=3D"word-b=
+reak: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto=
+; border-collapse: collapse !important; vertical-align: top; text-align: l=
+eft; min-width: 0px; width: 50%; color: #333332; font-family: 'Helvetica N=
+eue'=2C'Helvetica'=2C 'Arial'=2C sans-serif; font-weight: normal; line-hei=
+ght: 19px; font-size: 14px; margin: 0; padding: 0px 10px 10px 0px;" align=
+=3D"left" valign=3D"top">
+<a href=3D"http://theheretic.us6.list-manage2.com/track/click?u=3D73ed86d9=
+18cf26bfbf6cc6c1d&id=3Dced461ca4b&e=3D3e3df2695d" style=3D"color: #333332=
+; text-decoration: underline;"><img heigth=3D"64" width=3D"210" src=3D"htt=
+p://theheretic.me/img/masthead-logo.png" style=3D"outline: none; text-deco=
+ration: none; -ms-interpolation-mode: bicubic; width: auto; max-width: 100=
+%; float: left; clear: both; display: block; border: none;" align=3D"left"=
+></a>
+</td>
+<td class=3D"six sub-columns last" style=3D"text-align: right; vertical-al=
+ign: middle; word-break: break-word; -webkit-hyphens: auto; -moz-hyphens:=
+ auto; hyphens: auto; border-collapse: collapse !important; min-width: 0px=
+; width: 50%; color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=
+=2C 'Arial'=2C sans-serif; font-weight: normal; line-height: 19px; font-si=
+ze: 14px; margin: 0; padding: 0px 0px 10px;" align=3D"right" valign=3D"mid=
+dle">
+<span class=3D"template-label" style=3D"color: #333332; font-weight: bold;=
+ font-size: 11px;">Apr 4=2C 2014</span>
+</td>
+<td class=3D"expander" style=3D"word-break: break-word; -webkit-hyphens: a=
+uto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !importa=
+nt; vertical-align: top; text-align: left; visibility: hidden; width: 0px;=
+ color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C=
+ sans-serif; font-weight: normal; line-height: 19px; font-size: 14px; marg=
+in: 0; padding: 0;" align=3D"left" valign=3D"top"></td>
+</tr></table></td>
+</tr></table></center>
+</td>
+</tr></table><!-- HEADER --><!-- MAIN --><table class=3D"container" style=
+=3D"border-spacing: 0; border-collapse: collapse; vertical-align: top; tex=
+t-align: inherit; width: 580px; margin: 0 auto; padding: 0;"><tr style=3D"=
+vertical-align: top; text-align: left; padding: 0;" align=3D"left"><td sty=
+le=3D"word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; h=
+yphens: auto; border-collapse: collapse !important; vertical-align: top; t=
+ext-align: left; color: #333332; font-family: 'Helvetica Neue'=2C'Helvetic=
+a'=2C 'Arial'=2C sans-serif; font-weight: normal; line-height: 19px; font-=
+size: 14px; margin: 0; padding: 0;" align=3D"left" valign=3D"top">
+
+
+<!-- CONTENT -->
+<table class=3D"row" style=3D"border-spacing: 0; border-collapse: collapse=
+; vertical-align: top; text-align: left; width: 100%; position: relative;=
+ display: block; padding: 0px;"><tr style=3D"vertical-align: top; text-ali=
+gn: left; padding: 0;" align=3D"left"><td class=3D"wrapper last" style=3D"=
+word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens=
+: auto; border-collapse: collapse !important; vertical-align: top; text-al=
+ign: left; position: relative; color: #333332; font-family: 'Helvetica Neu=
+e'=2C'Helvetica'=2C 'Arial'=2C sans-serif; font-weight: normal; line-heigh=
+t: 19px; font-size: 14px; margin: 0; padding: 10px 0px 0px;" align=3D"left=
+" valign=3D"top">
+
+<table class=3D"twelve columns" style=3D"border-spacing: 0; border-collaps=
+e: collapse; vertical-align: top; text-align: left; width: 580px; margin:=
+ 0 auto; padding: 0;"><tr style=3D"vertical-align: top; text-align: left;=
+ padding: 0;" align=3D"left"><td style=3D"word-break: break-word; -webkit-=
+hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collaps=
+e !important; vertical-align: top; text-align: left; color: #333332; font-=
+family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C sans-serif; font-weig=
+ht: normal; line-height: 19px; font-size: 14px; margin: 0; padding: 0px 0p=
+x 10px;" align=3D"left" valign=3D"top">
+<h3 style=3D"color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=
+=2C 'Arial'=2C sans-serif; font-weight: lighter; text-align: left; line-he=
+ight: 1.3; word-break: normal; font-size: 32px; margin: 0; padding: 24px 0=
+ 12px;" align=3D"left">Verb. Target. Outcome.</h3>
+<div class=3D"mainContent" style=3D"font-size: 16px; line-height: 1.6;">
+<div><p>Here's another gem from the amazing Kevin Starr - this one is so g=
+ood that I consider it <strong>mandatory</strong> for any entrepreneur:</p=
+>
+<p>When you describe your company's mission (which truly is the core and e=
+ssence of your company - what and why you do what you do) use <strong>eigh=
+t words (or less)</strong> in the format: <strong>Verb. Target. Outcome.</=
+strong></p>
+<p>Simple=2C concise=2C to the point.</p>
+<p>Let me make this clearer with some of Kevin's examples: </p>
+<ul><li><em><a href=3D"http://theheretic.us6.list-manage.com/track/click?u=
+=3D73ed86d918cf26bfbf6cc6c1d&id=3D543ee7e569&e=3D3e3df2695d">Living Goods=
+</a>:</em> Save (verb) African kids' (target) lifes (measurable outcome).<=
+/li></ul>
+<p>Brilliant! Want another example?</p>
+<ul><li><em><a href=3D"http://theheretic.us6.list-manage1.com/track/click?=
+u=3D73ed86d918cf26bfbf6cc6c1d&id=3D163df8d873&e=3D3e3df2695d">One Acre</a=
+>:</em> Get (verb) African families (target) out of extreme poverty (measu=
+rable outcome).</li></ul>
+<p>You get it=2C right? That's your 5 second pitch - right there.</p>
+<p>With that being said - here's mine: <strong>Inspire and support young l=
+eaders to become entrepreneurs.</strong></p>
+<p>What's yours?</p>
+<p><em>P.S. I made some changes to the email template I'm using (adding mo=
+re compatibility with legacy email clients). Let me know if something does=
+n't work.</em></p>
+</div>
+<div><p style=3D"color: #333332; font-family: 'Helvetica Neue'=2C'Helvetic=
+a'=2C 'Arial'=2C sans-serif; font-weight: normal; text-align: left; line-h=
+eight: 1.6; font-size: 16px; margin: 0 0 10px; padding: 0;" align=3D"left"=
+>Always Run. Never Walk.<br>Pascal</p></div>
+<p style=3D"color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C=
+ 'Arial'=2C sans-serif; font-weight: normal; text-align: left; line-height=
+: 1.6; font-size: 16px; margin: 0 0 10px; padding: 0;" align=3D"left"><em>=
+P.S.: Want to comment=2C ask a question or just say hi? Simply hit reply!<=
+/em></p>
+</div>
+</td>
+<td class=3D"expander" style=3D"word-break: break-word; -webkit-hyphens: a=
+uto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !importa=
+nt; vertical-align: top; text-align: left; visibility: hidden; width: 0px;=
+ color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C=
+ sans-serif; font-weight: normal; line-height: 19px; font-size: 14px; marg=
+in: 0; padding: 0;" align=3D"left" valign=3D"top"></td>
+</tr></table></td>
+</tr></table><!-- CONTENT --><!-- CALLOUT --><table class=3D"row callout"=
+ style=3D"border-spacing: 0; border-collapse: collapse; vertical-align: to=
+p; text-align: left; width: 100%; position: relative; display: block; padd=
+ing: 0px;"><tr style=3D"vertical-align: top; text-align: left; padding: 0;=
+" align=3D"left"><td class=3D"wrapper last" style=3D"word-break: break-wor=
+d; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collap=
+se: collapse !important; vertical-align: top; text-align: left; position:=
+ relative; color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C=
+ 'Arial'=2C sans-serif; font-weight: normal; line-height: 19px; font-size:=
+ 14px; margin: 0; padding: 10px 0px 20px;" align=3D"left" valign=3D"top">
+
+<table class=3D"twelve columns" style=3D"border-spacing: 0; border-collaps=
+e: collapse; vertical-align: top; text-align: left; width: 580px; margin:=
+ 0 auto; padding: 0;"><tr style=3D"vertical-align: top; text-align: left;=
+ padding: 0;" align=3D"left"><td class=3D"panel" style=3D"word-break: brea=
+k-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-c=
+ollapse: collapse !important; vertical-align: top; text-align: left; color=
+: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C sans-=
+serif; font-weight: normal; line-height: 19px; font-size: 14px; background=
+: #E7E7E7; margin: 0; padding: 10px; border: 1px solid #d2d2d2;" align=3D"=
+left" bgcolor=3D"#E7E7E7" valign=3D"top">
+<div class=3D"mainContent" style=3D"font-size: 16px; line-height: 1.6;">
+<p style=3D"color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C=
+ 'Arial'=2C sans-serif; font-weight: normal; text-align: left; line-height=
+: 1.6; font-size: 16px; margin: 0; padding: 0;" align=3D"left">Join the di=
+scussion in our <a href=3D"http://theheretic.us6.list-manage.com/track/cli=
+ck?u=3D73ed86d918cf26bfbf6cc6c1d&id=3Def72e160cd&e=3D3e3df2695d" target=
+=3D"_blank" style=3D"color: #333332; text-decoration: underline;">Facebook=
+ Group</a>. Find help within the <a href=3D"http://theheretic.us6.list-man=
+age.com/track/click?u=3D73ed86d918cf26bfbf6cc6c1d&id=3Dadf2637f73&e=3D=
+3e3df2695d" target=3D"_blank" style=3D"color: #333332; text-decoration: under=
+line;">Heretic Network</a>. And grab your <a href=3D"http://theheretic.us6=
+=2Elist-manage.com/track/click?u=3D73ed86d918cf26bfbf6cc6c1d&id=3D177ce84b18=
+&e=3D3e3df2695d" target=3D"_blank" style=3D"color: #333332; text-decorati=
+on: underline;">Golden Ticket</a>.</p>
+</div>
+</td>
+<td class=3D"expander" style=3D"word-break: break-word; -webkit-hyphens: a=
+uto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !importa=
+nt; vertical-align: top; text-align: left; visibility: hidden; width: 0px;=
+ color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C=
+ sans-serif; font-weight: normal; line-height: 19px; font-size: 14px; marg=
+in: 0; padding: 0;" align=3D"left" valign=3D"top"></td>
+</tr></table></td>
+</tr></table><!-- CALLOUT --><!-- FOOTER --><table class=3D"row" style=3D"=
+border-spacing: 0; border-collapse: collapse; vertical-align: top; text-al=
+ign: left; width: 100%; position: relative; display: block; padding: 0px;"=
+><tr style=3D"vertical-align: top; text-align: left; padding: 0;" align=3D=
+"left"><td class=3D"wrapper last" style=3D"word-break: break-word; -webkit=
+-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collap=
+se !important; vertical-align: top; text-align: left; position: relative;=
+ color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C=
+ sans-serif; font-weight: normal; line-height: 19px; font-size: 14px; marg=
+in: 0; padding: 10px 0px 0px;" align=3D"left" valign=3D"top">
+
+<table class=3D"twelve columns" style=3D"border-spacing: 0; border-collaps=
+e: collapse; vertical-align: top; text-align: left; width: 580px; margin:=
+ 0 auto; padding: 0;"><tr style=3D"vertical-align: top; text-align: left;=
+ padding: 0;" align=3D"left"><td align=3D"center" style=3D"word-break: bre=
+ak-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-=
+collapse: collapse !important; vertical-align: top; text-align: left; colo=
+r: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C sans=
+-serif; font-weight: normal; line-height: 19px; font-size: 14px; margin: 0=
+; padding: 0px 0px 10px;" valign=3D"top">
+<center style=3D"width: 100%; min-width: 580px;">
+<div class=3D"mainContent" style=3D"font-size: 16px; line-height: 1.6;">
+<p style=3D"text-align: center; color: #333332; font-family: 'Helvetica Ne=
+ue'=2C'Helvetica'=2C 'Arial'=2C sans-serif; font-weight: normal; line-heig=
+ht: 1.6; font-size: 16px; margin: 0 0 10px; padding: 0;" align=3D"center">=
+<a href=3D"http://theheretic.us6.list-manage.com/track/click?u=3D73ed86d91=
+8cf26bfbf6cc6c1d&id=3D5ca2720ed0&e=3D3e3df2695d" target=3D"_blank" style=
+=3D"color: #333332; text-decoration: underline;">The Heretic</a> | <a href=
+=3D"http://theheretic.us6.list-manage.com/track/click?u=3D73ed86d918cf26bf=
+bf6cc6c1d&id=3De8b6793105&e=3D3e3df2695d" target=3D"_blank" style=3D"colo=
+r: #333332; text-decoration: underline;">Archive</a> | <a href=3D"http://t=
+heheretic.us6.list-manage1.com/track/click?u=3D73ed86d918cf26bfbf6cc6c1d&i=
+d=3D4b4a7a073f&e=3D3e3df2695d" target=3D"_blank" style=3D"color: #333332;=
+ text-decoration: underline;">Subscribe</a> | <a href=3D"mailto:hello@theh=
+eretic.me" style=3D"color: #333332; text-decoration: underline;">Email Me<=
+/a> | <span><a href=3D"http://theheretic.us6.list-manage1.com/track/click?=
+u=3D73ed86d918cf26bfbf6cc6c1d&id=3Daa589c8771&e=3D3e3df2695d" style=3D"co=
+lor: #333332; text-decoration: underline;" target=3D"_blank">Tweet This</a=
+></span></p>
+</div>
+</center>
+</td>
+<td class=3D"expander" style=3D"word-break: break-word; -webkit-hyphens: a=
+uto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !importa=
+nt; vertical-align: top; text-align: left; visibility: hidden; width: 0px;=
+ color: #333332; font-family: 'Helvetica Neue'=2C'Helvetica'=2C 'Arial'=2C=
+ sans-serif; font-weight: normal; line-height: 19px; font-size: 14px; marg=
+in: 0; padding: 0;" align=3D"left" valign=3D"top"></td>
+</tr></table></td>
+</tr></table><!-- FOOTER --></td>
+</tr></table><!-- MAIN --></center>
+</td>
+</tr></table>            <center>
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" wi=
+dth=3D"100%" id=3D"canspamBarWrapper" style=3D"background-color:#FFFFFF; b=
+order-top:1px solid #E5E5E5;">
+                    <tr>
+                        <td align=3D"center" valign=3D"top" style=3D"paddi=
+ng-top:20px; padding-bottom:20px;">
+                            <table border=3D"0" cellpadding=3D"0" cellspac=
+ing=3D"0" id=3D"canspamBar">
+                                <tr>
+                                    <td align=3D"center" valign=3D"top" st=
+yle=3D"color:#606060; font-family:Helvetica=2C Arial=2C sans-serif; font-s=
+ize:11px; line-height:150%; padding-right:20px; padding-bottom:5px; paddin=
+g-left:20px; text-align:center;">
+                                        This email was sent to <a href=3D"=
+hi@brennannovak.com" target=3D"_blank" style=3D"color:#404040 !important;">=
+hi@brennannovak.com</a>
+                                        <br />
+                                        <a href=3D"http://theheretic.us6.l=
+ist-manage.com/about?u=3D73ed86d918cf26bfbf6cc6c1d&id=3D7eed73b8d8&e=3D=
+3e3df2695d&c=3D21d0da1bd6" target=3D"_blank" style=3D"color:#404040 !important;=
+"><em>why did I get this?</em></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=3D"http:=
+//theheretic.us6.list-manage.com/unsubscribe?u=3D73ed86d918cf26bfbf6cc6c1d=
+&id=3D7eed73b8d8&e=3D3e3df2695d&c=3D21d0da1bd6" style=3D"color:#404040 !impo=
+rtant;">unsubscribe from this list</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=3D"h=
+ttp://theheretic.us6.list-manage1.com/profile?u=3D73ed86d918cf26bfbf6cc6c1=
+d&id=3D7eed73b8d8&e=3D3e3df2695d" style=3D"color:#404040 !important;">update=
+ subscription preferences</a>
+                                        <br />
+                                        The Heretic (aka Pascal Finette) &=
+middot; 20445 Williams Ave &middot; Saratoga=2C CA 95070 &middot; USA
+                                        <br />
+                                        <br />
+
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <style type=3D"text/css">
+                    @media only screen and (max-width: 480px){
+                        table[id=3D"canspamBar"] td{font-size:14px !impor=
+tant;}
+                        table[id=3D"canspamBar"] td a{display:block !impo=
+rtant; margin-top:10px !important;}
+                    }
+                </style>
+            </center><img src=3D"http://theheretic.us6.list-manage.com/tra=
+ck/open.php?u=3D73ed86d918cf26bfbf6cc6c1d&id=3D21d0da1bd6&e=3D3e3df2695d"=
+ height=3D"1" width=3D"1"></body>
+</html>
+--_----------=_MCPart_2029475464--

@@ -1,0 +1,126 @@
+<!-- Modal -->
+<div class="modal fade" id="modal-full" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"></h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Contact Add -->
+<script id="modal-contact-add" type="text/template">
+  <div class="modal-dialog">
+  <form id="form-contact-add" class="standard">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close button-secondary" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-groups"></span> {{_("Add Contact")}}</h4>
+      </div>
+      <div class="modal-body clearfix">
+        <input type="hidden" class="contact-add-mid">
+        <fieldset class="contact-add-fields">
+          <input type="hidden" name="csrf" value="">
+          <label>{{_("Name")}}</label>
+          <input type="text" name="name" data-type="name" class="contact-add-name" value="<%= name %>" placeholder="Chelsea Manning">
+          <label>{{_("E-mail")}}</label>
+          <input type="text" name="email" data-type="email" class="contact-add-email" value="<%= address %>" placeholder="chelsea@manning.com">
+          <div class="contact-add-signature"></div>
+        </fieldset>
+        <fieldset class="contact-key-search-results">
+        </fieldset>
+        <div id="contact-add-key"></div>
+      </div>
+      <div class="modal-footer">
+        <a id="contact-add-keysearch" title="{{_("Search for Keys")}}" alt="{{_("Search for Keys")}}" data-action="keysearch" class="button-alert">
+          <span class="icon-key"></span> {{_("Search for Keys")}}
+        </a>
+        <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
+          <span class="icon-plus"></span> {{_("Add")}}
+        </button>
+      </div>
+    </div>
+  </form>
+  </div>
+</script>
+
+
+<script id="modal-tag-picker" type="text/template">
+  <div class="modal-dialog">
+  <form id="form-tag-picker">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"><span class="icon-tag"></span> {{_("Tag Selection")}}</h4>
+      </div>
+      <div class="modal-body">
+        <ul id="tag-picker-tags"><%= tags %></ul>
+        <h3>{{_("Archive")}}</h3>
+        <ul id="tag-picker-archive"><%= archive %></ul>      
+      </div>
+      <div class="modal-footer">
+        <button title="{{_("Close")}}" class="left button-secondary" alt="{{_("Close")}}" data-dismiss="modal">{{_("Close")}}</button>
+        <button title="{{_("Remove")}}" alt="{{_("Remove")}}" data-action="remove">{{_("Remove")}}</button>
+        <button title="{{_("Apply")}}" alt="{{_("Apply")}}" data-action="add">{{_("Apply")}}</button>
+      </div>
+    </div>
+  </form>
+  </div>
+</script>
+
+
+<!-- Crypto -->
+<script id="modal-send-public-key" type="text/template">
+  <div class="modal-dialog">
+   <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title"><span class="icon-key"></span> {{_("Send Public Key")}}</h4>
+    </div>
+    <div class="modal-body clearfix">
+      <h3><%= name %></h3>
+      <p><%= address %></p>
+      <ol>
+        <li>Attach pubkey to composer below</li>
+        <li>Compose new message with pubkey</li>
+        <li>Send an automated email with pubkey</li>
+      </ol>
+    </div>
+    <div class="modal-footer">
+      <button title="{{_("Cancel")}}" class="left button-secondary" alt="{{_("Cancel")}}" data-dismiss="modal">{{_("Cancel")}}</button>
+      <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">{{_("Add")}}</button>
+    </div>
+  </div>
+  </div>
+</script>
+
+
+<script id="modal-search-keyservers" type="text/template">
+  <div class="modal-dialog">
+   <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title">
+        <span class="icon-search"></span>
+        {{_("Searching for encryption keys")}}
+        <span id="modal-search-keyservers-progress"><img src="/static/css/select2-spinner.gif"/></span>
+      </h4>
+    </div>
+    <div class="modal-body clearfix">
+      <div id="modal-search-keyservers-results"></div>
+      <table width="100%" id="keyserver-result-list">
+      </table>
+      <div id="modal-search-keyservers-looking">...</div>
+    </div>
+    <div class="modal-footer">
+      <button title="{{_("Cancel")}}" class="left button-secondary" alt="{{_("Cancel")}}" data-dismiss="modal">{{_("Cancel")}}</button>
+      <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">{{_("Import selected keys")}}</button>
+    </div>
+  </div>
+  </div>
+</script>

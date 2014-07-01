@@ -3,17 +3,21 @@ import os
 import time
 from gettext import gettext as _
 
-import mailpile.plugins
 import mailpile.config
+from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.commands import Command
 from mailpile.mailutils import Email
 
 
+_plugins = PluginManager(builtin=os.path.basename(__file__)[:-3])
+
+
 ##[ Configuration ]###########################################################
 
 MAILBOX_FORMATS = ('mbox', 'maildir')
-mailpile.plugins.register_config_variables('prefs', {
+
+_plugins.register_config_variables('prefs', {
     'export_format': ['Default format for exporting mail',
                       MAILBOX_FORMATS, 'mbox'],
 })
@@ -23,7 +27,7 @@ mailpile.plugins.register_config_variables('prefs', {
 
 class ExportMail(Command):
     """Export messages to an external mailbox"""
-    SYNOPSIS = (None, 'export', None, '<msgs> [<fmt>:<path>]')
+    SYNOPSIS = (None, 'export', None, '<msgs> [flat] [<fmt>:<path>]')
     ORDER = ('Searching', 99)
 
     def export_path(self, mbox_type):
@@ -43,35 +47,57 @@ class ExportMail(Command):
         session, config, idx = self.session, self.session.config, self._idx()
         mbox_type = config.prefs.export_format
 
-        if self.args and ':' in self.args[-1]:
-            mbox_type, path = self.args.pop(-1).split(':', 1)
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
+        args = list(self.args)
+        if args and ':' in args[-1]:
+            mbox_type, path = args.pop(-1).split(':', 1)
         else:
             path = self.export_path(mbox_type)
+
+        if args and args[-1] == 'flat':
+            flat = True
+            args.pop(-1)
+        else:
+            flat = False
 
         if os.path.exists(path):
             return self._error('Already exists: %s' % path)
 
-        msg_idxs = self._choose_messages(self.args)
+        msg_idxs = list(self._choose_messages(args))
         if not msg_idxs:
             session.ui.warning('No messages selected')
             return False
 
+        # Exporting messages without their threads barely makes any
+        # sense.
+        if not flat:
+            for i in reversed(range(0, len(msg_idxs))):
+                mi = msg_idxs[i]
+                msg_idxs[i:i+1] = [int(m[idx.MSG_MID], 36)
+                                   for m in idx.get_conversation(msg_idx=mi)]
+
+        # Let's always export in the same order. Stability is nice.
+        msg_idxs.sort()
+
         mbox = self.create_mailbox(mbox_type, path)
-        for msg_idx in msg_idxs:
-            e = Email(idx, msg_idx)
-            session.ui.mark('Exporting =%s ...' % e.msg_mid())
-            m = e.get_msg()
-            # FIXME: This doesn't work
-            #tags = [t.slug for t in e.get_message_tags()]
-            #print 'Tags: %s' % tags
-            #m['X-Mailpile-Tags'] = ', '.join(tags)
-            mbox.add(m)
+        exported = {}
+        while msg_idxs:
+            msg_idx = msg_idxs.pop(0)
+            if msg_idx not in exported:
+                e = Email(idx, msg_idx)
+                session.ui.mark('Exporting =%s ...' % e.msg_mid())
+                mbox.add(e.get_msg())
+                exported[msg_idx] = 1
+
         mbox.flush()
 
-        session.ui.mark('Exported %d messages to %s' % (len(msg_idxs), path))
-        return {
-            'exported': len(msg_idxs),
-            'created': path
-        }
+        return self._success(
+            _('Exported %d messages to %s') % (len(exported), path),
+            {
+                'exported': len(exported),
+                'created': path
+            })
 
-mailpile.plugins.register_commands(ExportMail)
+_plugins.register_commands(ExportMail)

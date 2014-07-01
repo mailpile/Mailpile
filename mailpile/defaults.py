@@ -1,3 +1,15 @@
+APPVER = "0.1.0"
+ABOUT = """\
+Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
+               for searching and                   <https://www.mailpile.is/>
+           organizing piles of e-mail
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of either the GNU Affero General Public License as published by the
+Free Software Foundation or the Apache License 2.0 as published by the Apache
+Software Foundation. See the file COPYING.md for details.
+"""
+#############################################################################
 import os
 import time
 from gettext import gettext as _
@@ -8,7 +20,7 @@ from mailpile.config import PathDict
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
 CONFIG_PLUGINS = []
 CONFIG_RULES = {
-    'version': [_('Mailpile program version'), int, 1],
+    'version': [_('Mailpile program version'), False, APPVER],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
     'sys': [_('Technical system settings'), False, {
         'fd_cache_size':  (_('Max files kept open at once'), int,         500),
@@ -20,6 +32,8 @@ CONFIG_RULES = {
         'debug':          (_('Debugging flags'), str,                      ''),
         'gpg_keyserver':  (_('Host:port of PGP keyserver'),
                            str, 'pool.sks-keyservers.net'),
+        'gpg_home':       (_('Override the home directory of GnuPG'), 'dir',
+                           None),
         'http_host':      (_('Listening host for web UI'),
                            'hostname', 'localhost'),
         'local_mailbox_id': (_('Local read/write Maildir'), 'b36',         ''),
@@ -32,6 +46,7 @@ CONFIG_RULES = {
             'html_theme': [_('Default theme'),
                            'dir', os.path.join('static', 'default')],
             'vcards':     [_('Location of vcards'), 'dir', 'vcards'],
+            'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
         'lockdown':       [_('Demo mode, disallow changes'), bool,      False],
     }],
@@ -52,8 +67,9 @@ CONFIG_RULES = {
                             bool, False),
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
-        'default_route':   (_('Default outgoing mail route'),
-                            'mailroute', DEFAULT_SENDMAIL),
+        'default_route':   (_('Default outgoing mail route'), str, ''),
+        'always_bcc_self': (_('Always BCC self on outgoing mail'), bool, True),
+        'default_messageroute': (_('Default outgoing mail route'), str,    ''),
         'language':        (_('User interface language'), str,             ''),
         'vcard':           [_("VCard import/export settings"), False, {
             'importers':   [_("VCard import settings"), False,             {}],
@@ -61,11 +77,59 @@ CONFIG_RULES = {
             'context':     [_("VCard context helper settings"), False,     {}],
         }],
     }],
-    'profiles': [_('User profiles and personalities'), {
+    'routes': [_('Outgoing message routes'), {
+        'name':            (_('Route name'), str, ''),
+        'protocol':        (_('Messaging protocol'),
+                            ["smtp", "smtptls", "smtpssl", "local"],
+                            'smtp'),
+        'username':        (_('User name'), str, ''),
+        'password':        (_('Password'), str, ''),
+        'command':         (_('Shell command'), str, ''),
+        'host':            (_('Host'), str, ''),
+        'port':            (_('Port'), int, 587)
+    }, {}],
+    'sources': [_('Incoming message sources'), {
+        'name':            (_('Source name'), str, ''),
+        'protocol':        (_('Mailbox protocol or format'),
+                            ["mbox", "maildir", "macmaildir", "gmvault",
+                             "imap", "imap_ssl", "pop3"],
+                            ''),
+        'pre_command':     (_('Shell command run before syncing'), str, ''),
+        'post_command':    (_('Shell command run after syncing'), str, ''),
+        'interval':        (_('How frequently to check for mail'), int, 300),
+        'username':        (_('User name'), str, ''),
+        'password':        (_('Password'), str, ''),
+        'host':            (_('Host'), str, ''),
+        'port':            (_('Port'), int, 993),
+        'discovery':       (_('Mailbox discovery policy'), False, {
+            'paths':       (_('Paths to watch for new mailboxes'), str, []),
+            'policy':      (_('Default mailbox policy'),
+                            ['unknown', 'ignore', 'watch',
+                             'read', 'move', 'sync'], 'unknown'),
+            'local_copy':  (_('Copy mail to a local mailbox?'), bool, False),
+            'create_tag':  (_('Create a tag for each mailbox?'), bool, True),
+            'process_new': (_('Is a potential source of new mail'), bool, True),
+            'apply_tags':  (_('Tags applied to messages'), str, []),
+        }),
+        'mailbox': (_('Mailboxes'), {
+            'path':        (_('Mailbox source path'), str, ''),
+            'policy':      (_('Mailbox policy'),
+                            ['unknown', 'ignore', 'read', 'move', 'sync'],
+                            'ignore'),
+            'local':       (_('Local mailbox path'), str, ''),
+            'process_new': (_('Is a source of new mail'), bool, True),
+            'primary_tag': (_('A tag representing this mailbox'), str, ''),
+            'apply_tags':  (_('Tags applied to messages'), str, []),
+        }, {})
+    }, {}],
+
+    ### OLD CRAP, JUST HERE SO AS NOT TO KILL CONFIG FILES
+    'profiles': [_('DEPRECATED: User profiles and personalities'), {
         'name':            (_('Account name'), 'str', ''),
         'email':           (_('E-mail address'), 'email', ''),
         'signature':       (_('Message signature'), 'multiline', ''),
-        'route':           (_('Outgoing mail route'), 'mailroute', ''),
+        'route':           (_('DEPRECATED, DO NOT USE'), str, ''),
+        'messageroute':    (_('Outgoing mail route'), str, ''),
     }, []]
 }
 

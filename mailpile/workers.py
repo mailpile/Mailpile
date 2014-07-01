@@ -28,10 +28,14 @@ class Cron(threading.Thread):
         self.ALIVE = False
         self.name = name
         self.session = session
+        self.running = 'Idle'
         self.schedule = {}
         self.sleep = 10
         # This lock is used to synchronize
         self.lock = threading.Lock()
+
+    def __str__(self):
+        return '%s: %s' % (threading.Thread.__str__(self), self.running)
 
     def add_task(self, name, interval, task):
         """
@@ -105,7 +109,14 @@ class Cron(threading.Thread):
             for name, task in tasksToBeExecuted:
                 # Set last_executed
                 self.schedule[name][3] = time.time()
-                task()
+                try:
+                    self.running = name
+                    task()
+                except Exception, e:
+                    self.session.ui.error(('%s failed in %s: %s'
+                                           ) % (name, self.name, e))
+                finally:
+                    self.running = 'Idle'
 
             # Some tasks take longer than others, so use the time before
             # executing tasks as reference for the delay
@@ -143,20 +154,38 @@ class Cron(threading.Thread):
 
 class Worker(threading.Thread):
 
-    def __init__(self, name, session):
+    def __init__(self, name, session, daemon=False):
         threading.Thread.__init__(self)
-        self.NAME = name or 'Worker'
+        self.daemon = daemon
+        self.name = name or 'Worker'
         self.ALIVE = False
         self.JOBS = []
         self.LOCK = threading.Condition()
+        self.running = 'Idle'
         self.pauses = 0
         self.session = session
 
+    def __str__(self):
+        return '%s: %s' % (threading.Thread.__str__(self), self.running)
+
     def add_task(self, session, name, task):
         self.LOCK.acquire()
-        self.JOBS.append((session, name, task))
-        self.LOCK.notify()
-        self.LOCK.release()
+        try:
+            self.JOBS.append((session, name, task))
+        finally:
+            self.LOCK.notify()
+            self.LOCK.release()
+
+    def add_unique_task(self, session, name, task):
+        self.LOCK.acquire()
+        try:
+            for s, n, t in self.JOBS:
+                if n == name:
+                    return
+            self.JOBS.append((session, name, task))
+        finally:
+            self.LOCK.notify()
+            self.LOCK.release()
 
     def do(self, session, name, task):
         if session and session.main:
@@ -185,6 +214,7 @@ class Worker(threading.Thread):
             self.LOCK.release()
 
             try:
+                self.running = name
                 if session:
                     session.ui.mark('Starting: %s' % name)
                     session.report_task_completed(name, task())
@@ -192,9 +222,11 @@ class Worker(threading.Thread):
                     task()
             except Exception, e:
                 self.session.ui.error(('%s failed in %s: %s'
-                                       ) % (name, self.NAME, e))
+                                       ) % (name, self.name, e))
                 if session:
                     session.report_task_failed(name)
+            finally:
+                self.running = 'Idle'
 
     def pause(self, session):
         self.LOCK.acquire()
@@ -221,7 +253,7 @@ class Worker(threading.Thread):
     def die_soon(self, session=None):
         def die():
             self.ALIVE = False
-        self.add_task(session, '%s shutdown' % self.NAME, die)
+        self.add_task(session, '%s shutdown' % self.name, die)
 
     def quit(self, session=None, join=True):
         self.die_soon(session=session)

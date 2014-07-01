@@ -25,7 +25,8 @@ os.environ['GNUPGHOME'] = mailpile_gpgh
 
 # Add the root to our import path, import API and demo plugins
 sys.path.append(mailpile_root)
-import mailpile.plugins.demos
+from mailpile.mail_source.mbox import MboxMailSource
+from mailpile.mail_source.maildir import MaildirMailSource
 from mailpile import Mailpile
 
 
@@ -40,6 +41,15 @@ MY_KEYID = '0x7848252F'
 os.system('rm -rf %s' % mailpile_home)
 mp = Mailpile(workdir=mailpile_home)
 cfg = config = mp._session.config
+ui = mp._session.ui
+
+if '-v' not in sys.argv:
+    from mailpile.ui import SilentInteraction
+    mp._session.ui = SilentInteraction(config)
+
+cfg.plugins.load('demos', process_manifest=True)
+cfg.plugins.load('hacks', process_manifest=True)
+cfg.plugins.load('smtp_server', process_manifest=True)
 
 
 def contents(fn):
@@ -57,19 +67,26 @@ def grepv(w, fn):
 def say(stuff):
     mp._session.ui.mark(stuff)
     mp._session.ui.reset_marks()
+    if '-v' not in sys.argv:
+        sys.stderr.write('.')
 
 
 def do_setup():
     # Set up initial tags and such
     mp.setup()
 
+    config.vcards.get(MY_FROM).fn = MY_NAME
+    config.prefs.default_email = MY_FROM
+
     # Configure our fake mail sending setup
-    mp.set('profiles/0/email = %s' % MY_FROM)
-    mp.set('profiles/0/name = %s' % MY_NAME)
-    mp.set('profiles/0/route = |%s -i %%(rcpt)s' % mailpile_send)
-    mp.set('sys/debug = sendmail log compose')
-    mp.set('prefs/openpgp_header = encrypt')
-    mp.set('prefs/crypto_policy = openpgp-sign')
+    config.sys.http_port = 33414
+    config.sys.smtpd.host = 'localhost'
+    config.sys.smtpd.port = 33415
+    config.prefs.openpgp_header = 'encrypt'
+    config.prefs.crypto_policy = 'openpgp-sign'
+
+    if '-v' in sys.argv:
+        config.sys.debug = 'log http vcard rescan sendmail log compose'
 
     # Set up dummy conctact importer fortesting, disable Gravatar
     mp.set('prefs/vcard/importers/demo/0/name = Mr. Rogers')
@@ -80,18 +97,28 @@ def do_setup():
     assert(not mp._config.prefs.vcard.importers.gpg[0].active)
     assert(not mp._config.prefs.vcard.importers.gravatar[0].active)
 
-    # Add the mailboxes, scan them
-    for mailbox in ('tests.mbx', 'Maildir'):
+    # Copy the test Maildir...
+    for mailbox in ('Maildir', 'Maildir2'):
+        path = os.path.join(mailpile_home, mailbox)
+        os.system('cp -a %s/Maildir %s' % (mailpile_test, path))
+
+    # Add the test mailboxes
+    for mailbox in ('tests.mbx', ):
         mp.add(os.path.join(mailpile_test, mailbox))
+    mp.add(os.path.join(mailpile_home, 'Maildir'))
+
 
 def test_vcards():
+    say("Testing vcards")
+
     # Do we have a Mr. Rogers contact?
     mp.rescan('vcards')
-    assert(mp.contact('mr@rogers.com'
-                      ).result['contact']['fn'] == u'Mr. Rogers')
-    assert(len(mp.contact_list('rogers').result['contacts']) == 1)
+    assert(mp.contacts_view('mr@rogers.com'
+                            ).result['contact']['fn'] == u'Mr. Rogers')
+    assert(len(mp.contacts('rogers').result['contacts']) == 1)
 
 def test_load_save_rescan():
+    say("Testing load/save/rescan")
     mp.rescan()
 
     # Save and load the index, just for kicks
@@ -103,7 +130,10 @@ def test_load_save_rescan():
     mp._session.ui.reset_marks()
     assert(len(mp._config.index.INDEX) == messages)
 
-    # Rescan AGAIN, so we can test for the presence of duplicates.
+    # Rescan AGAIN, so we can test for the presence of duplicates and
+    # verify that the move-detection code actually works.
+    os.system('rm -f %s/Maildir/*/*' % mailpile_home)
+    mp.add(os.path.join(mailpile_home, 'Maildir2'))
     mp.rescan()
 
     # Search for things, there should be exactly one match for each.
@@ -115,12 +145,12 @@ def test_load_save_rescan():
                    ['dates:2013-09-17', 'feministinn'],
                    ['mailbox:tests.mbx'] + FROM_BRE,
                    ['att:jpg', 'fimmtudaginn'],
-                   ['subject:Moderation', 'kde-isl'],
+                   ['subject:Moderation', 'kde-isl', '-is:unread'],
                    ['from:bjarni', 'subject:testing', 'subject:encryption',
                     'should', 'encrypted', 'message', 'tag:mp_enc-decrypted'],
                    ['from:bjarni', 'subject:inline', 'subject:encryption',
                     'grand', 'tag:mp_enc-mixed-decrypted'],
-                   ['from:bjarni', 'subject:signatures',
+                   ['from:bjarni', 'subject:signatures', '-is:unread',
                     'tag:mp_sig-unverified'],
                    ['from:brennan', 'subject:encrypted',
                     'testing', 'purposes', 'only', 'tag:mp_enc-decrypted'],
@@ -128,6 +158,7 @@ def test_load_save_rescan():
                     'tag:mp_sig-unverified'],
                    ['from:barnaby', 'subject:testing', 'soup',
                     'tag:mp_sig-unknown', 'tag:mp_enc-decrypted'],
+                   ['from:square', 'subject:here', '-has:attachment'],
                    ):
         say('Searching for: %s' % search)
         results = mp.search(*search)
@@ -135,12 +166,23 @@ def test_load_save_rescan():
 
     say('Checking size of inbox')
     mp.order('flat-date')
-    assert(mp.search('tag:inbox').result['stats']['count'] == 14)
+    assert(mp.search('tag:inbox').result['stats']['count'] == 18)
 
     say('FIXME: Make sure message signatures verified')
 
 def test_message_data():
+    say("Testing message contents")
+
     # Load up a message and take a look at it...
+    search_md = mp.search('subject:emerging').result
+    result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
+    view_md = mp.view('=%s' % result_md['mid']).result
+
+    # That loaded?
+    message_md = view_md['data']['messages'][result_md['mid']]
+    assert('athygli' in message_md['text_parts'][0]['data'])
+
+    # Load up another message and take a look at it...
     search_bre = mp.search(*FROM_BRE).result
     result_bre = search_bre['data']['metadata'][search_bre['thread_ids'][0]]
     view_bre = mp.view('=%s' % result_bre['mid']).result
@@ -162,7 +204,16 @@ def test_message_data():
         say('Checking encoding: %s: %s' % (key, val))
         assert('utf' not in val)
 
+    # This message broke our HTML engine that one time
+    search_md = mp.search('from:heretic', 'subject:outcome').result
+    result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
+    view_md = mp.view('=%s' % result_md['mid'])
+    assert('Outcome' in view_md.as_html())
+
+
 def test_composition():
+    say("Testing composition")
+
     # Create a message...
     new_mid = mp.message_compose().result['thread_ids'][0]
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
@@ -188,9 +239,29 @@ def test_composition():
     del msg_data['subject']
     msg_data['body'] = ['Hello world: thisisauniquestring :)']
     mp.message_update_send(**msg_data)
-    mp.sendmail()
     assert(mp.search('tag:drafts').result['stats']['count'] == 0)
     assert(mp.search('tag:blank').result['stats']['count'] == 0)
+
+    # First attempt to send should fail & record failure to event log
+    config.prefs.default_messageroute = 'default'
+    config.routes['default'] = {"command": '/no/such/file'}
+    mp.sendmail()
+    events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
+                         'data_mid=%s' % new_mid).result['events']
+    assert(len(events) == 1)
+    assert(events[0]['flags'] == 'i')
+    assert(len(mp.eventlog('incomplete').result['events']) == 1)
+
+    # Second attempt should succeed!
+    config.routes.default.command = '%s -i %%(rcpt)s' % mailpile_send
+    mp.sendmail()
+    events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
+                         'data_mid=%s' % new_mid).result['events']
+    assert(len(events) == 1)
+    assert(events[0]['flags'] == 'c')
+    assert(len(mp.eventlog('incomplete').result['events']) == 0)
+
+    # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
     assert('thisisauniquestring' in contents(mailpile_sent))
     assert(MY_KEYID not in contents(mailpile_sent))
@@ -205,7 +276,7 @@ def test_composition():
         say('Searching for: %s' % search)
         assert(mp.search(*search).result['stats']['count'] == 1)
     assert('thisisauniquestring' in contents(mailpile_sent))
-    assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
+    assert('OpenPGP: id=3D95' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     os.remove(mailpile_sent)
@@ -214,10 +285,41 @@ def test_composition():
     mp.message_send(mid=[new_mid], to=['nasty@test.com'])
     mp.sendmail()
     assert('thisisauniquestring' in contents(mailpile_sent))
-    assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
+    assert('OpenPGP: id=3D95' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
     assert('secret@test.com' not in grepv('X-Args', mailpile_sent))
     assert('-i nasty@test.com' in contents(mailpile_sent))
+    assert('BEGIN PGP SIG' in contents(mailpile_sent))
+    assert('END PGP SIG' in contents(mailpile_sent))
+
+def test_smtp():
+    config.prepare_workers(mp._session, daemons=True)
+    new_mid = mp.message_compose().result['thread_ids'][0]
+    msg_data = {
+        'from': ['%s#%s' % (MY_FROM, MY_KEYID)],
+        'mid': [new_mid],
+        'subject': ['This the OTHER TESTMSG...'],
+        'body': ['Hello SMTP world!']
+    }
+    config.prefs.default_messageroute = 'default'
+    config.prefs.always_bcc_self = False
+    config.routes['default'] = {
+        'protocol': 'smtp',
+        'host': 'localhost',
+        'port': 33415
+    }
+    mp.message_update(**msg_data)
+    mp.message_send(mid=[new_mid], to=['nasty@test.com'])
+    mp.sendmail()
+    config.stop_workers()
+
+def test_html():
+    say("Testing HTML")
+
+    mp.output("jhtml")
+    assert('&lt;bang&gt;' in '%s' % mp.search('in:inbox').as_html())
+    mp.output("text")
+
 
 def test_html():
     mp.output("jhtml")
@@ -227,17 +329,19 @@ def test_html():
 
 try:
     do_setup()
-    if '-n' in sys.argv:
-        say("Skipping tests...")
-    else:
+    if '-n' not in sys.argv:
         test_vcards()
         test_load_save_rescan()
         test_message_data()
         test_html()
         test_composition()
-        say("Tests passed, woot!")
+        test_smtp()
+        if '-v' not in sys.argv:
+            sys.stderr.write("\nTests passed, woot!\n")
+        else:
+            say("Tests passed, woot!")
 except:
-    say("Tests FAILED!")
+    sys.stderr.write("\nTests FAILED!\n")
     print
     traceback.print_exc()
 
@@ -247,6 +351,7 @@ except:
 if '-i' in sys.argv:
     mp.set('prefs/vcard/importers/gravatar/0/active = true')
     mp.set('prefs/vcard/importers/gpg/0/active = true')
+    mp._session.ui = ui
     mp.Interact()
 
 

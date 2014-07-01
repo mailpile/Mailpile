@@ -13,9 +13,9 @@ class TestUI(MailPileUnittest):
     def test_ui_debug_log_debug_not_set(self):
         old_ui = self._ui_swap()
         try:
+            self.mp._ui.log_prefix = 'testprefix'
             with capture() as out:
-                self.mp._ui._debug_log("text", UserInteraction.LOG_ALL,
-                                       prefix='testprefix')
+                self.mp._ui._debug_log("text", UserInteraction.LOG_ALL)
             self.assertNotIn("testprefixlog(99): text", ''.join(out))
         finally:
             self.mp._ui = old_ui
@@ -23,10 +23,10 @@ class TestUI(MailPileUnittest):
     def test_ui_debug_log_debug_set(self):
         old_ui = self._ui_swap()
         try:
+            self.mp._ui.log_prefix = 'testprefix'
             with capture() as out:
                 self.mp.set("sys.debug=log")
-                self.mp._ui._debug_log("text", UserInteraction.LOG_ALL,
-                                       prefix='testprefix')
+                self.mp._ui._debug_log("text", UserInteraction.LOG_ALL)
             self.assertIn("testprefixlog(99): text", ''.join(out))
         finally:
             self.mp._ui = old_ui
@@ -88,7 +88,10 @@ class TestUI(MailPileUnittest):
                 self.mp._ui.render_mode = 'text'
                 result = self.mp.rescan()
                 self.mp._ui.display_result(result)
-            self.assertEquals(out[0],
-                              "{'messages': 0, 'vcards': 0, 'mailboxes': 0}\n")
+            self.assertEquals(out[0], ('{\n'
+                                       '    "mailboxes": 0, \n'
+                                       '    "messages": 0, \n'
+                                       '    "vcards": 0\n'
+                                       '}\n'))
         finally:
             self.mp._ui = old_ui

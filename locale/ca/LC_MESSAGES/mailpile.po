@@ -1,32 +1,260 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Josep Sànchez <papapep@gmx.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-12 15:32+0000\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-02-13 13:32+0000\n"
 "PO-Revision-Date: 2013-12-03 10:45+0000\n"
 "Last-Translator: Josep Sànchez <papapep@gmx.com>\n"
-"Language-Team: Catalan (http://www.transifex.com/projects/p/mailpile/language/ca/)\n"
+"Language-Team: Catalan (http://www.transifex.com/projects/p/mailpile/"
+"language/ca/)\n"
+"Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ca\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: mailpile/defaults.py:10
+#: mailpile/commands.py:202
+#, fuzzy, python-format
+msgid "No such ID: %s"
+msgstr "No existeix la clau: %s"
+
+#: mailpile/commands.py:208 mailpile/commands.py:215 mailpile/commands.py:221
+#, python-format
+msgid "What message is %s?"
+msgstr "Quin missatge és %s?"
+
+#: mailpile/commands.py:512
+#, fuzzy, python-format
+msgid "Search: %s"
+msgstr "S'està cercant %s"
+
+#: mailpile/commands.py:674 mailpile/commands.py:843 mailpile/commands.py:893
+#: mailpile/commands.py:935 mailpile/commands.py:984
+#: mailpile/plugins/setup_magic.py:85
+msgid "In lockdown, doing nothing."
+msgstr ""
+
+#: mailpile/commands.py:680
+#, python-format
+msgid ""
+"Note: periodic delay is %ss, run from shell to speed up: mp --rescan=..."
+msgstr ""
+
+#: mailpile/commands.py:730
+#, python-format
+msgid "Running: %s"
+msgstr "S'està executant: %s"
+
+#: mailpile/commands.py:742
+#, fuzzy, python-format
+msgid "Failed to rescan: %s"
+msgstr "No s'ha pogut desxifrar el missatge"
+
+#: mailpile/commands.py:757
+msgid "Nothing changed"
+msgstr "Sense canvis"
+
+#: mailpile/commands.py:759
+#, python-format
+msgid "Aborted: %s"
+msgstr "S'ha cancel·lat: %s"
+
+#: mailpile/commands.py:788
+msgid "Aborted"
+msgstr "S'ha cancel·lat"
+
+#: mailpile/commands.py:965
+#, python-format
+msgid "No such key: %s"
+msgstr "No existeix la clau: %s"
+
+#: mailpile/commands.py:1038
+#, fuzzy, python-format
+msgid "The Web interface address is: %s"
+msgstr "L'interfície web és %s"
+
+#: mailpile/commands.py:1041
+#, fuzzy
+msgid "The Web interface is disabled."
+msgstr "L'interfície web és %s"
+
+#: mailpile/commands.py:1046
+#, fuzzy
+msgid "Type `help` for instructions or press <Ctrl-d> to quit."
+msgstr "Per a instruccions, escriviu `help`, premeu <CTRL-D> per sortir."
+
+#: mailpile/commands.py:1065
+msgid "Commands:"
+msgstr "Ordres:"
+
+#: mailpile/commands.py:1097
+msgid "Tags:  (use a tag as a command to display tagged messages)"
+msgstr ""
+"Etiquetes: (empreu les etiquetes com a ordres per mostrar els missatges "
+"etiquetats)"
+
+#: mailpile/commands.py:1106 mailpile/jinjaextensions.py:125
+#: mailpile/jinjaextensions.py:210
+msgid "Error"
+msgstr "Error"
+
+#: mailpile/commands.py:1140
+msgid "Unknown command"
+msgstr "Ordre desconeguda"
+
+#: mailpile/commands.py:1238
+#, python-format
+msgid "Unknown command: %s"
+msgstr "Ordre desconeguda: %s"
+
+#: mailpile/config.py:103
+msgid "true"
+msgstr ""
+
+#: mailpile/config.py:103
+msgid "yes"
+msgstr ""
+
+#: mailpile/config.py:103
+msgid "on"
+msgstr ""
+
+#: mailpile/config.py:106
+msgid "false"
+msgstr ""
+
+#: mailpile/config.py:106
+msgid "no"
+msgstr ""
+
+#: mailpile/config.py:106
+#, fuzzy
+msgid "off"
+msgstr "de"
+
+#: mailpile/config.py:108
+#, fuzzy, python-format
+msgid "Invalid boolean: %s"
+msgstr "Nom d'ordinador incorrecte: %s"
+
+#: mailpile/config.py:131
+#, python-format
+msgid "Invalid URL slug: %s"
+msgstr "URL incorrecta: %s"
+
+#: mailpile/config.py:163
+#, python-format
+msgid "Invalid hostname: %s"
+msgstr "Nom d'ordinador incorrecte: %s"
+
+#: mailpile/config.py:197
+#, python-format
+msgid "File/directory does not exist: %s"
+msgstr "No existeix el fitxer/directori: %s"
+
+#: mailpile/config.py:215
+#, python-format
+msgid "Not a file: %s"
+msgstr "No és un fitxer: %s"
+
+#: mailpile/config.py:233
+#, python-format
+msgid "Not a directory: %s"
+msgstr "No és un directori: %s"
+
+#: mailpile/config.py:369
+#, fuzzy
+msgid "Please override this method"
+msgstr "Ignora això"
+
+#: mailpile/config.py:429
+#, fuzzy, python-format
+msgid "Invalid type \"%s\" for key \"%s\" (value: %s)"
+msgstr "Tipus incorrecte per %s predeterminat = %s"
+
+#: mailpile/config.py:440
+#, python-format
+msgid "Invalid key for %s: %s"
+msgstr "Clau incorrecta per %s: %s"
+
+#: mailpile/config.py:523
+#, python-format
+msgid "Modifying %s/%s is not allowed"
+msgstr "No es pot modificar %s/%s"
+
+#: mailpile/config.py:527 mailpile/config.py:535
+#, python-format
+msgid "Invalid value for %s/%s: %s"
+msgstr "Valor incorrecte per %s/%s: %s"
+
+#: mailpile/config.py:538
+#, python-format
+msgid "Unknown constraint for %s/%s: %s"
+msgstr "Restricció desconeguda per %s/%s: %s"
+
+#: mailpile/config.py:743
+msgid "Cannot append to fixed dict"
+msgstr "No es pot afegir al diccionari fix"
+
+#: mailpile/config.py:791
+#, python-format
+msgid "Creating: %s"
+msgstr "S'està creant: %s"
+
+#: mailpile/config.py:850
+#, python-format
+msgid "Invalid (%s): section %s does not exist"
+msgstr "Incorrecte (%s): la secció %s no existeix"
+
+#: mailpile/config.py:861
+#, python-format
+msgid "Invalid (%s): section %s, variable %s"
+msgstr "Incorrecte (%s): secció %s, variable %s"
+
+#: mailpile/config.py:913
+#, fuzzy, python-format
+msgid "Loading plugin: %s"
+msgstr "Línia errònia: %s"
+
+#: mailpile/config.py:938
+#, python-format
+msgid "Mailbox ID too large: %s"
+msgstr "ID de la bústia massa llarga: %s"
+
+#: mailpile/config.py:1001
+#, python-format
+msgid "No such mailbox: %s"
+msgstr "No existeix la bústia: %s"
+
+#: mailpile/config.py:1008
+#, python-format
+msgid "%s: Updating: %s"
+msgstr "%s: s'està actualitzant: %s"
+
+#: mailpile/config.py:1015
+#, python-format
+msgid "%s: Opening: %s (may take a while)"
+msgstr "%s: s'està obrint: %s (pot trigar una estona)"
+
+#: mailpile/config.py:1126
+msgid "Parent paths are not allowed"
+msgstr "No es permeten els camins superiors"
+
+#: mailpile/defaults.py:11
 msgid "Mailpile program version"
 msgstr "Versió del Mailpile"
 
-#: mailpile/defaults.py:11
+#: mailpile/defaults.py:12
 msgid "Configuration timestamp"
 msgstr "Marca horària de la configuració"
 
-#: mailpile/defaults.py:12
+#: mailpile/defaults.py:13
 msgid "Technical system settings"
 msgstr "Paràmetres tècnics del sistema"
 
@@ -35,7 +263,8 @@ msgid "Max files kept open at once"
 msgstr "Nombre màxim de fitxers oberts simultàniament"
 
 #: mailpile/defaults.py:15
-msgid "History length (lines, <0 = no save)"
+#, fuzzy
+msgid "History length (lines, <0=no save)"
 msgstr "Llargada de l'històric (línies, <0=no desar-lo)"
 
 #: mailpile/defaults.py:16
@@ -62,904 +291,1353 @@ msgstr "Opcions de depuració"
 msgid "Host:port of PGP keyserver"
 msgstr "Ordinador:port del servidor de claus PGP"
 
-#: mailpile/defaults.py:22
+#: mailpile/defaults.py:23
 msgid "Listening host for web UI"
 msgstr "Ordinador que escolta per la UI web"
 
-#: mailpile/defaults.py:23
+#: mailpile/defaults.py:25
 msgid "Local read/write Maildir"
 msgstr "Maildir local de lectura/escriptura"
 
-#: mailpile/defaults.py:24
+#: mailpile/defaults.py:26
 msgid "Metadata index file"
 msgstr "Fitxer índex de les metadades"
 
-#: mailpile/defaults.py:25
+#: mailpile/defaults.py:27
 msgid "Search index directory"
 msgstr "Directori de l'índex de cerca"
 
-#: mailpile/defaults.py:26
+#: mailpile/defaults.py:28
 msgid "Mailboxes we index"
 msgstr "Comptes de correu indexats"
 
-#: mailpile/defaults.py:27
+#: mailpile/defaults.py:29
+msgid "Plugins to load on startup"
+msgstr ""
+
+#: mailpile/defaults.py:31
 msgid "Locations of assorted data"
 msgstr "Ubicacions de diverses dades"
 
-#: mailpile/defaults.py:28
+#: mailpile/defaults.py:32
 msgid "Default theme"
 msgstr "Tema predeterminat"
 
-#: mailpile/defaults.py:30
+#: mailpile/defaults.py:34
 msgid "Location of vcards"
 msgstr "Ubicació de les vcards"
 
-#: mailpile/defaults.py:33
+#: mailpile/defaults.py:36
+msgid "Demo mode, disallow changes"
+msgstr ""
+
+#: mailpile/defaults.py:38
 msgid "User preferences"
 msgstr "Paràmetres d'usuari"
 
-#: mailpile/defaults.py:35
+#: mailpile/defaults.py:39
 msgid "Search results per page"
 msgstr "Resultats de la cerca per pàgina"
 
-#: mailpile/defaults.py:36
+#: mailpile/defaults.py:40
 msgid "New mail check frequency"
 msgstr "Freqüència de la comprovació de correu"
 
-#: mailpile/defaults.py:37
+#: mailpile/defaults.py:41
 msgid "Inline PGP signatures or attached"
 msgstr "Signeu amb PGP en línia o per adjunt"
 
-#: mailpile/defaults.py:38
-msgid "Default sort order"
-msgstr "Tipus d'ordenació predeterminada"
-
-#: mailpile/defaults.py:39
+#: mailpile/defaults.py:43
 msgid "Encrypt local data to ..."
 msgstr "Xifrar les dades locals a ..."
 
-#: mailpile/defaults.py:40
+#: mailpile/defaults.py:44
+msgid "Advertise GPG preferences in a header?"
+msgstr ""
+
+#: mailpile/defaults.py:47
+#, fuzzy
+msgid "Default encryption policy for outgoing mail"
+msgstr "Ruta de correu de sortida predeterminada"
+
+#: mailpile/defaults.py:49
+msgid "Default sort order"
+msgstr "Tipus d'ordenació predeterminada"
+
+#: mailpile/defaults.py:50
 msgid "Key to use to scramble the index"
 msgstr "La clau a utilitzar per xifrar l'índex"
 
-#: mailpile/defaults.py:41
+#: mailpile/defaults.py:51
+msgid "Make encrypted content searchable"
+msgstr ""
+
+#: mailpile/defaults.py:53
 msgid "Command run before rescanning"
 msgstr "Ordre executada abans de tornar a analitzar"
 
-#: mailpile/defaults.py:42
+#: mailpile/defaults.py:54
 msgid "Default outgoing e-mail address"
 msgstr "Adreça de correu de sortida predeterminada "
 
-#: mailpile/defaults.py:43
+#: mailpile/defaults.py:55
 msgid "Default outgoing mail route"
 msgstr "Ruta de correu de sortida predeterminada"
 
-#: mailpile/defaults.py:45
+#: mailpile/defaults.py:57
 msgid "User interface language"
 msgstr "Llengua de l'interfície d'usuari"
 
-#: mailpile/defaults.py:46
+#: mailpile/defaults.py:58
 msgid "VCard import/export settings"
 msgstr "Paràmetres d'importació/exportació de les VCard"
 
-#: mailpile/defaults.py:48
+#: mailpile/defaults.py:59
 msgid "VCard import settings"
 msgstr "Paràmetres d'importació de les VCard"
 
-#: mailpile/defaults.py:49
+#: mailpile/defaults.py:60
 msgid "VCard export settings"
 msgstr "Paràmetres d'exportació de les VCard"
 
-#: mailpile/defaults.py:50
+#: mailpile/defaults.py:61
 msgid "VCard context helper settings"
 msgstr "Paràmetres d'ajuda al context de les VCard"
 
-#: mailpile/defaults.py:53
+#: mailpile/defaults.py:64
 msgid "User profiles and personalities"
 msgstr "Perfils d'usuari i identitats"
 
-#: mailpile/defaults.py:54
+#: mailpile/defaults.py:65
 msgid "Account name"
 msgstr "Nom del compte"
 
-#: mailpile/defaults.py:55
+#: mailpile/defaults.py:66
 msgid "E-mail address"
 msgstr "Adreça electrònica"
 
-#: mailpile/defaults.py:56
+#: mailpile/defaults.py:67
 msgid "Message signature"
 msgstr "Signatura del missatge"
 
-#: mailpile/defaults.py:57
+#: mailpile/defaults.py:68
 msgid "Outgoing mail route"
 msgstr "Ruta de sortida del correu"
 
-#: mailpile/config.py:94
-#, python-format
-msgid "Invalid URL slug: %s"
-msgstr "URL incorrecta: %s"
-
-#: mailpile/config.py:126
-#, python-format
-msgid "Invalid hostname: %s"
-msgstr "Nom d'ordinador incorrecte: %s"
-
-#: mailpile/config.py:160
-#, python-format
-msgid "File/directory does not exist: %s"
-msgstr "No existeix el fitxer/directori: %s"
-
-#: mailpile/config.py:178
-#, python-format
-msgid "Not a file: %s"
-msgstr "No és un fitxer: %s"
-
-#: mailpile/config.py:196
-#, python-format
-msgid "Not a directory: %s"
-msgstr "No és un directori: %s"
-
-#: mailpile/config.py:329
-msgid "Override this"
-msgstr "Ignora això"
-
-#: mailpile/config.py:388
-#, python-format
-msgid "Invalid type for default %s = %s"
-msgstr "Tipus incorrecte per %s predeterminat = %s"
-
-#: mailpile/config.py:399
-#, python-format
-msgid "Invalid key for %s: %s"
-msgstr "Clau incorrecta per %s: %s"
-
-#: mailpile/config.py:482
-#, python-format
-msgid "Modifying %s/%s is not allowed"
-msgstr "No es pot modificar %s/%s"
-
-#: mailpile/config.py:486 mailpile/config.py:494
-#, python-format
-msgid "Invalid value for %s/%s: %s"
-msgstr "Valor incorrecte per %s/%s: %s"
-
-#: mailpile/config.py:497
-#, python-format
-msgid "Unknown constraint for %s/%s: %s"
-msgstr "Restricció desconeguda per %s/%s: %s"
-
-#: mailpile/config.py:702
-msgid "Cannot append to fixed dict"
-msgstr "No es pot afegir al diccionari fix"
-
-#: mailpile/config.py:750
-#, python-format
-msgid "Creating: %s"
-msgstr "S'està creant: %s"
-
-#: mailpile/config.py:808
-#, python-format
-msgid "Invalid (%s): section %s does not exist"
-msgstr "Incorrecte (%s): la secció %s no existeix"
-
-#: mailpile/config.py:819
-#, python-format
-msgid "Invalid (%s): section %s, variable %s"
-msgstr "Incorrecte (%s): secció %s, variable %s"
-
-#: mailpile/config.py:834
-#, python-format
-msgid "WARNING: Imported old config from %s"
-msgstr "AVÍS: configuració antiga importada de %s"
-
-#: mailpile/config.py:837
-#, python-format
-msgid "WARNING: Failed to import config from %s"
-msgstr "AVÍS: no s'ha pogut importar la configuració de %s"
-
-#: mailpile/config.py:876
-#, python-format
-msgid "Mailbox ID too large: %s"
-msgstr "ID de la bústia massa llarga: %s"
-
-#: mailpile/config.py:906
-#, python-format
-msgid "No such mailbox: %s"
-msgstr "No existeix la bústia: %s"
-
-#: mailpile/config.py:913
-#, python-format
-msgid "%s: Updating: %s"
-msgstr "%s: s'està actualitzant: %s"
-
-#: mailpile/config.py:920
-#, python-format
-msgid "%s: Opening: %s (may take a while)"
-msgstr "%s: s'està obrint: %s (pot trigar una estona)"
-
-#: mailpile/config.py:1021
-msgid "Parent paths are not allowed"
-msgstr "No es permeten els camins superiors"
-
-#: mailpile/config.py:1137
-#, python-format
-msgid "Could not parse (%s): %s"
-msgstr "No s'ha pogut analitzar (%s): %s"
-
-#: mailpile/config.py:1150
-#, python-format
-msgid "Could not assign mailbox:%s = %s"
-msgstr "No s'ha pogut assignar bústia de correu:%s = %s"
-
-#: mailpile/gpgi.py:14
-msgid "Trust not calculated"
-msgstr "No s'ha calculat la verificació"
-
-#: mailpile/gpgi.py:15
-msgid "Unknown trust"
-msgstr "Verificació desconeguda"
-
-#: mailpile/gpgi.py:16
-msgid "Undefined trust"
-msgstr "Verificació indefinida"
-
-#: mailpile/gpgi.py:17
-msgid "Never trust"
-msgstr "No verificar mai"
-
-#: mailpile/gpgi.py:18
-msgid "Marginally trust"
-msgstr "Verificada parcialment"
-
-#: mailpile/gpgi.py:19
-msgid "Full trust"
-msgstr "Verificada completament"
-
-#: mailpile/gpgi.py:20
-msgid "Ultimate trust"
-msgstr "Verificada completament"
-
-#: mailpile/gpgi.py:21
-msgid "Expired key, not trusted"
-msgstr "La clau ha expirat, no verificada"
-
-#: mailpile/gpgi.py:22
-msgid "Revoked key, not trusted"
-msgstr "La clau ha estat revocada, no verificada"
-
-#: mailpile/gpgi.py:23
-msgid "Disabled key, not trusted"
-msgstr "La clau ha estat inhabilitada, no verificada"
-
-#: mailpile/gpgi.py:26
-msgid "RSA"
-msgstr "RSA"
-
-#: mailpile/gpgi.py:27
-msgid "RSA (encrypt only)"
-msgstr "RSA (només xifrar)"
-
-#: mailpile/gpgi.py:28
-msgid "RSA (sign only)"
-msgstr "RSA (només signar)"
-
-#: mailpile/gpgi.py:29
-msgid "Elgamal (encrypt only)"
-msgstr "Elgamal (només xifrar)"
-
-#: mailpile/gpgi.py:30
-msgid "DSA"
-msgstr "DSA"
-
-#: mailpile/gpgi.py:31
-msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr "Elgamal (xifrar/signar) [COMPROMÈS]"
-
-#: mailpile/commands.py:154
-#, python-format
-msgid "ID out of bounds: %s"
-msgstr "La ID és fora de límits: %s"
-
-#: mailpile/commands.py:157 mailpile/commands.py:163 mailpile/commands.py:168
-#, python-format
-msgid "What message is %s?"
-msgstr "Quin missatge és %s?"
-
-#: mailpile/commands.py:255
-#, python-format
-msgid "FIXME: rescan messages: %s"
-msgstr "ARREGLA'M: torna a analitzar els missatge: %s"
-
-#: mailpile/commands.py:288
-#, python-format
-msgid "Running: %s"
-msgstr "S'està executant: %s"
-
-#: mailpile/commands.py:309
-msgid "Nothing changed"
-msgstr "Sense canvis"
-
-#: mailpile/commands.py:311
-#, python-format
-msgid "Aborted: %s"
-msgstr "S'ha cancel·lat: %s"
-
-#: mailpile/commands.py:341
-msgid "Aborted"
-msgstr "S'ha cancel·lat"
-
-#: mailpile/commands.py:355
-msgid "Statistics updated"
-msgstr "S'ha actualitzat les estadístiques"
-
-#: mailpile/commands.py:521
-#, python-format
-msgid "No such key: %s"
-msgstr "No existeix la clau: %s"
-
-#: mailpile/commands.py:590
-#, python-format
-msgid "The web interface is %s"
-msgstr "L'interfície web és %s"
-
-#: mailpile/commands.py:591
-msgid "disabled."
-msgstr "inhabilitat."
-
-#: mailpile/commands.py:593
-msgid "For instructions, type `help`, press <CTRL-D> to quit."
-msgstr "Per a instruccions, escriviu `help`, premeu <CTRL-D> per sortir."
-
-#: mailpile/commands.py:612
-msgid "Commands:"
-msgstr "Ordres:"
-
-#: mailpile/commands.py:643
-msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr "Etiquetes: (empreu les etiquetes com a ordres per mostrar els missatges etiquetats)"
-
-#: mailpile/commands.py:651
-msgid "Error"
-msgstr "Error"
-
-#: mailpile/commands.py:684
-msgid "Unknown command"
-msgstr "Ordre desconeguda"
-
-#: mailpile/commands.py:782
-#, python-format
-msgid "Unknown command: %s"
-msgstr "Ordre desconeguda: %s"
-
-#: mailpile/plugins/demos.py:41
-msgid "Demo Contacts"
-msgstr "Contactes d'exemple"
-
-#: mailpile/plugins/demos.py:42
-msgid "This is the demo importer"
-msgstr "Aquest és l'importador d'exemple"
-
-#: mailpile/plugins/demos.py:45
-msgid "Contact name"
-msgstr "Nom del contacte"
-
-#: mailpile/plugins/demos.py:46
-msgid "Contact email"
-msgstr "Adreça electrònica del contacte"
-
-#: mailpile/plugins/vcard_gnupg.py:17
-msgid "Import contacts from GnuPG keyring"
-msgstr "Importa el contacte de l'anell de claus de GnuPG"
-
-#: mailpile/plugins/vcard_gnupg.py:20
-msgid "Location of keyring"
-msgstr "Ubicació de l'anell de claus"
-
-#: mailpile/httpd.py:143
+#: mailpile/httpd.py:191
 msgid "XMLRPC has been disabled for now."
 msgstr "S'ha inhabilitat l'XMLRPC"
 
-#: mailpile/httpd.py:161
+#: mailpile/httpd.py:210
 msgid "OMG, input too big"
 msgstr "L'entrada és massa gran"
 
-#: mailpile/httpd.py:164
+#: mailpile/httpd.py:213
 msgid "Unknown content-type"
 msgstr "Tipus de contingut desconegut"
 
-#: mailpile/httpd.py:169
+#: mailpile/httpd.py:219
 msgid "Internal Error"
 msgstr "Error intern"
 
-#: mailpile/httpd.py:237
+#: mailpile/httpd.py:290
 msgid "Internal error"
 msgstr "Error intern"
 
-#: mailpile/search.py:168
+#: mailpile/jinjaextensions.py:113 mailpile/jinjaextensions.py:146
+#: mailpile/jinjaextensions.py:187
+#, fuzzy
+msgid "Unknown"
+msgstr "Verificació desconeguda"
+
+#: mailpile/jinjaextensions.py:114
+msgid "There is something unknown or wrong with this signature"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:119
+#, fuzzy
+msgid "No Signature"
+msgstr "Signatura del missatge"
+
+#: mailpile/jinjaextensions.py:120
+msgid ""
+"This message contains no signature, which means it could have come from "
+"anyone, not necessarily the real sender"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:126
+msgid "There was a weird error with this signature"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:130
+msgid "Invalid"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:131
+msgid "The signature was invalid or bad"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:135
+msgid "Revoked"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:136
+msgid ""
+"Watch out, the signature was made with a key that has beenrevoked- this is "
+"not a good thing"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:141
+msgid "Expired"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:142
+msgid "The signature was made with an expired key"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:147
+msgid "the signature was made with an unknown key, so we can not verify it"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:152
+msgid "Unverified"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:153
+msgid "The signature was good but it came from a key that is not verified yet"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:158
+msgid "Verified"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:159
+msgid "The signature was good and came from a verified key, w00t!"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:188
+msgid "There is some unknown thing wrong with this encryption"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:193
+#: static/default/html/partials/compose.html:49
+#, fuzzy
+msgid "Not Encrypted"
+msgstr "Xifrat"
+
+#: mailpile/jinjaextensions.py:194
+msgid ""
+"This message was not encrypted. It may have been intercepted en route to you "
+"and read by an unauthorized party."
+msgstr ""
+
+#: mailpile/jinjaextensions.py:199
+#: static/default/html/partials/compose.html:46
+msgid "Encrypted"
+msgstr "Xifrat"
+
+#: mailpile/jinjaextensions.py:200
+msgid ""
+"This message was encrypted, but we were successfully able to decrypt it. "
+"Great job being secure"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:205
+msgid "Missing Key"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:206
+msgid "You do not have any of the private keys that will decrypt this message"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:211
+#, fuzzy
+msgid "We failed to decrypt message and are unsure why"
+msgstr "No s'ha pogut desxifrar el missatge"
+
+#: mailpile/jinjaextensions.py:249
+msgid "You"
+msgstr ""
+
+#: mailpile/mailutils.py:223
+#, python-format
+msgid "SendMail: from %s, to %s\n"
+msgstr "SendMail: de %s a %s\n"
+
+#: mailpile/mailutils.py:226
+#, python-format
+msgid "Connecting to %s"
+msgstr "S'està connectant a %s"
+
+#: mailpile/mailutils.py:248
+#, python-format
+msgid "SMTP connection to: %s:%s as %s@%s\n"
+msgstr "Connexió SMTP a: %s:%s as %s@%s\n"
+
+#: mailpile/mailutils.py:286
+#, fuzzy, python-format
+msgid "Invalid sendmail command/SMTP server: %s"
+msgstr "El sendmail no és vàlid: %s"
+
+#: mailpile/mailutils.py:289
+msgid "Preparing message..."
+msgstr "S'està preparant el missatge..."
+
+#: mailpile/mailutils.py:299
+#, python-format
+msgid "Message sent, %d bytes"
+msgstr "S'ha enviat el missatge, %d bytes"
+
+#: mailpile/mailutils.py:539 mailpile/mailutils.py:549
+#: mailpile/mailutils.py:617
+msgid "Mailbox is read-only."
+msgstr "La bústia és només de lectura"
+
+#: mailpile/mailutils.py:542 mailpile/mailutils.py:553
+#, fuzzy
+msgid "Message is read-only."
+msgstr "La bústia és només de lectura"
+
+#: mailpile/mailutils.py:664
+msgid "Message not found?"
+msgstr "No s'ha trobat el missatge?"
+
+#: mailpile/mailutils.py:742
+#, python-format
+msgid "Extracted attachment %s"
+msgstr "S'ha extret l'adjunt %s"
+
+#: mailpile/mailutils.py:749
+#, python-format
+msgid "Wrote preview to: %s"
+msgstr "S'ha escrit la previsualització a: %s"
+
+#: mailpile/mailutils.py:757
+msgid "Failed to generate thumbnail"
+msgstr "No s'ha pogut generar la miniatura"
+
+#: mailpile/mailutils.py:763
+#, python-format
+msgid "Wrote attachment to: %s"
+msgstr "S'ha escrit l'adjunt a: %s"
+
+#: mailpile/mailutils.py:767
+#, python-format
+msgid "No attachments found for: %s"
+msgstr "No s'han trobat adjunts per: %s"
+
+#: mailpile/mailutils.py:908
+msgid "[Binary data suppressed]\n"
+msgstr ""
+
+#: mailpile/search.py:177
+msgid "Your metadata index is either too old, too new or corrupt!"
+msgstr ""
+
+#: mailpile/search.py:194
 msgid "Loading metadata index..."
 msgstr "Carregant l'índex de metadades..."
 
-#: mailpile/search.py:180
+#: mailpile/search.py:207
 #, python-format
 msgid "Metadata index not found: %s"
 msgstr "No s'ha trobat l'índex de metadades: %s"
 
-#: mailpile/search.py:184
+#: mailpile/search.py:214
 #, python-format
 msgid "Loaded metadata, %d messages"
 msgstr "S'han carregat les metadades, %d missatges"
 
-#: mailpile/search.py:191
+#: mailpile/search.py:235
 msgid "Saving metadata index changes..."
 msgstr "S'estan desant els canvis de l'índex de les metadades..."
 
-#: mailpile/search.py:201
+#: mailpile/search.py:246
 msgid "Saved metadata index changes"
 msgstr "S'estan desant els canvis de l'índex de les metadades"
 
-#: mailpile/search.py:207
+#: mailpile/search.py:257
 msgid "Saving metadata index..."
 msgstr "S'està desant l'índex de les metadades..."
 
-#: mailpile/search.py:219
+#: mailpile/search.py:279
 msgid "Saved metadata index"
 msgstr "S'ha desat l'índex de les metadades"
 
-#: mailpile/search.py:222
+#: mailpile/search.py:284
 msgid "Updating high level indexes"
 msgstr "S'estan actualitzant els índexos d'alt nivell"
 
-#: mailpile/search.py:230
+#: mailpile/search.py:292
 #, python-format
 msgid "Bogus line: %s"
 msgstr "Línia errònia: %s"
 
-#: mailpile/search.py:300
-#, python-format
-msgid "=%s/%s using Recieved: instead of Date:"
+#: mailpile/search.py:362
+#, fuzzy, python-format
+msgid "=%s/%s using Received: instead of Date:"
 msgstr "=%s/%s empra Rebut: enlloc de Data:"
 
-#: mailpile/search.py:307
+#: mailpile/search.py:369
 #, python-format
 msgid "=%s/%s has a bogus date"
 msgstr "=%s/%s conté una data errònia"
 
-#: mailpile/search.py:324
+#: mailpile/search.py:390
 #, python-format
 msgid "WARNING: No proper Message-ID for %s"
 msgstr "AVÍS: %s no té ID de missatge correcte"
 
-#: mailpile/search.py:331
+#: mailpile/search.py:397
 #, python-format
 msgid "%s: Skipped: %s"
 msgstr "%s: omet: %s"
 
-#: mailpile/search.py:335
+#: mailpile/search.py:401
 #, python-format
 msgid "%s: Checking: %s"
 msgstr "%s: s'està comprovant: %s"
 
-#: mailpile/search.py:338
+#: mailpile/search.py:404
 #, python-format
 msgid "%s: Error opening: %s (%s)"
 msgstr "%s: error en obrir: %s (%s)"
 
-#: mailpile/search.py:357
+#: mailpile/search.py:423
 #, python-format
 msgid "%s: Reading your mail: %d%% (%d/%d messages)"
 msgstr "%s: llegint el correu: %d%% (%d/%d missatges)"
 
-#: mailpile/search.py:412
+#: mailpile/search.py:497
 #, python-format
 msgid "%s: Indexed mailbox: %s"
 msgstr "%s: s'està indexant la bústia: %s"
 
-#: mailpile/search.py:621
+#: mailpile/search.py:780
 #, python-format
 msgid "=%s/%s has bogus HTML."
 msgstr "=%s/%s conté HTML erroni."
 
-#: mailpile/search.py:726
+#: mailpile/search.py:905
 #, python-format
 msgid "%s is outside the index"
 msgstr "%s és fora de l'índex"
 
-#: mailpile/search.py:769
+#: mailpile/search.py:951
 #, python-format
 msgid "Tagging %d messages (%s)"
 msgstr "S'estan etiquetant %d missatges (%s)"
 
-#: mailpile/search.py:796
+#: mailpile/search.py:983
 #, python-format
 msgid "Untagging conversations (%s)"
 msgstr "S'estan desetiquetant converses (%s)"
 
-#: mailpile/search.py:802
+#: mailpile/search.py:989
 #, python-format
 msgid "Untagging %d messages (%s)"
 msgstr "S'estan desetiquetant %d missatges (%s)"
 
-#: mailpile/search.py:830
+#: mailpile/search.py:1030
 #, python-format
 msgid "Searching for %s"
 msgstr "S'està cercant %s"
 
-#: mailpile/search.py:859
+#: mailpile/search.py:1055
 #, python-format
 msgid "Ignoring common word: %s"
 msgstr "S'ignora la paraula comúna: %s"
 
-#: mailpile/search.py:925
+#: mailpile/search.py:1124
 #, python-format
 msgid "Found %d results (%d suppressed)"
 msgstr "S'han trobat %d resultats (se n'ha omès %d)"
 
-#: mailpile/search.py:932
+#: mailpile/search.py:1143
 #, python-format
 msgid "Finding conversations (%d messages)..."
 msgstr "Cercant converses (%d missatges)..."
 
-#: mailpile/search.py:945 mailpile/search.py:959
-#, python-format
-msgid "Sorting %d messages in %s order..."
+#: mailpile/search.py:1152 mailpile/search.py:1172
+#, fuzzy, python-format
+msgid "Sorting %d messages by %s..."
 msgstr "S'estan ordenant %d missatges en ordre %s..."
 
-#: mailpile/search.py:983
+#: mailpile/search.py:1196
 msgid "Recovering from bogus sort, corrupt index?"
 msgstr "Restaurant d'ordenació errònia, s'ha malmès l'índex?"
 
-#: mailpile/search.py:984
+#: mailpile/search.py:1198
 msgid "Please tell team@mailpile.is !"
 msgstr "Contacteu amb team@mailpile.is !"
 
-#: mailpile/search.py:993
+#: mailpile/search.py:1207
 #, python-format
 msgid "Unknown sort order: %s"
 msgstr "Ordenació desconeguda: %s"
 
-#: mailpile/search.py:998
+#: mailpile/search.py:1212
 msgid "Sort failed, sorting badly. Partial index?"
 msgstr "Ha fallat la ordenació. L'índex és parcial?"
 
-#: mailpile/search.py:1011
+#: mailpile/search.py:1225
 #, python-format
 msgid "Sorted %d messages by %s, %d conversations"
 msgstr "S'han ordenat %d missatges per %s, %d converses"
 
-#: mailpile/search.py:1014
-#, python-format
-msgid "Sorted %d messages in %s order"
+#: mailpile/search.py:1228
+#, fuzzy, python-format
+msgid "Sorted %d messages by %s"
 msgstr "S'ha ordenat %d missatges per %s"
 
-#: mailpile/search.py:1029
-#, python-format
-msgid "Counting messages in tag:%s"
-msgstr "Recompte de missatges amb l'etiqueta: %s"
-
-#: mailpile/ui.py:168
+#: mailpile/ui.py:192
 #, python-format
 msgid "Elapsed: %.3fs (%s)"
 msgstr "Temps transcorregut: %.3fs (%s)"
 
-#: mailpile/ui.py:180
+#: mailpile/ui.py:206
 #, python-format
 msgid "Completed %s in %.3fs"
 msgstr "S'ha completat %s en %.3fs"
 
-#: mailpile/ui.py:279
+#: mailpile/ui.py:317
 #, python-format
 msgid ""
 "<h1>Template not found</h1>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
-msgstr "<h1>No s'ha trobat la plantilla</h1>\n<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+"<h1>No s'ha trobat la plantilla</h1>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
 
-#: mailpile/ui.py:283
+#: mailpile/ui.py:323
 #, python-format
 msgid ""
 "<h1>Template error</h1>\n"
 "<pre>%s</pre>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
-msgstr "<h1>Error de plantilla</h1>\n<pre>%s</pre>\n<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+"<h1>Error de plantilla</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
 
-#: mailpile/ui.py:290
+#: mailpile/ui.py:330
 #, python-format
 msgid ""
 "<h1>Template error in %s</h1>\n"
-"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
-msgstr "<h1>Error de plantilla a %s</h1>\nAnalitzant la plantilla %s: <b>%s</b> a la línia %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
+msgstr ""
+"<h1>Error de plantilla a %s</h1>\n"
+"Analitzant la plantilla %s: <b>%s</b> a la línia %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
 
-#: mailpile/ui.py:299
-msgid "Sorry, this UI cannot edit messages."
-msgstr "Aquesta interfície d'usuari no pot editar missatges"
+#: mailpile/ui.py:358
+msgid "Number of edit messages does not match!"
+msgstr ""
 
-#: mailpile/ui.py:335
+#: mailpile/ui.py:403
 msgid "FIXME: Multiple results, OMG WTF"
 msgstr "FIXME: Multiple results, OMG WTF"
 
-#: mailpile/mailutils.py:137
+#: mailpile/util.py:230
+msgid "today"
+msgstr ""
+
+#: mailpile/util.py:232
 #, python-format
-msgid "SendMail: from %s, to %s\n"
-msgstr "SendMail: de %s a %s\n"
+msgid "%d day"
+msgstr ""
 
-#: mailpile/mailutils.py:140
+#: mailpile/util.py:234
 #, python-format
-msgid "Connecting to %s"
-msgstr "S'està connectant a %s"
+msgid "%d days"
+msgstr ""
 
-#: mailpile/mailutils.py:161
+#: mailpile/util.py:315
+msgid "Symmetric decryption is not available without config and key."
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:20
+msgid "Trust not calculated"
+msgstr "No s'ha calculat la verificació"
+
+#: mailpile/crypto/gpgi.py:21
+msgid "Unknown trust"
+msgstr "Verificació desconeguda"
+
+#: mailpile/crypto/gpgi.py:22
+msgid "Undefined trust"
+msgstr "Verificació indefinida"
+
+#: mailpile/crypto/gpgi.py:23
+msgid "Never trust"
+msgstr "No verificar mai"
+
+#: mailpile/crypto/gpgi.py:24
+msgid "Marginally trust"
+msgstr "Verificada parcialment"
+
+#: mailpile/crypto/gpgi.py:25
+msgid "Full trust"
+msgstr "Verificada completament"
+
+#: mailpile/crypto/gpgi.py:26
+msgid "Ultimate trust"
+msgstr "Verificada completament"
+
+#: mailpile/crypto/gpgi.py:27
+msgid "Expired key, not trusted"
+msgstr "La clau ha expirat, no verificada"
+
+#: mailpile/crypto/gpgi.py:28
+msgid "Disabled key, not trusted"
+msgstr "La clau ha estat inhabilitada, no verificada"
+
+#: mailpile/crypto/gpgi.py:29
+msgid "Revoked key, not trusted"
+msgstr "La clau ha estat revocada, no verificada"
+
+#: mailpile/crypto/gpgi.py:31
+msgid "RSA"
+msgstr "RSA"
+
+#: mailpile/crypto/gpgi.py:32
+msgid "RSA (encrypt only)"
+msgstr "RSA (només xifrar)"
+
+#: mailpile/crypto/gpgi.py:33
+msgid "RSA (sign only)"
+msgstr "RSA (només signar)"
+
+#: mailpile/crypto/gpgi.py:34
+msgid "Elgamal (encrypt only)"
+msgstr "Elgamal (només xifrar)"
+
+#: mailpile/crypto/gpgi.py:35
+msgid "DSA"
+msgstr "DSA"
+
+#: mailpile/crypto/gpgi.py:36
+msgid "Elgamal (encrypt/sign) [COMPROMISED]"
+msgstr "Elgamal (xifrar/signar) [COMPROMÈS]"
+
+#: mailpile/crypto/gpgi.py:760
 #, python-format
-msgid "SMTP connection to: %s:%s as %s@%s\n"
-msgstr "Connexió SMTP a: %s:%s as %s@%s\n"
+msgid "Keys missing or ambiguous for %s"
+msgstr ""
 
-#: mailpile/mailutils.py:199
+#: mailpile/crypto/mime.py:193 mailpile/crypto/mime.py:233
+#, fuzzy
+msgid "Failed to sign message!"
+msgstr "No s'ha pogut desxifrar el missatge"
+
+#: mailpile/mailboxes/mbox.py:97
+#, fuzzy
+msgid "Mailbox has been modified"
+msgstr "Comptes de correu indexats"
+
+#: mailpile/mailboxes/mbox.py:127
 #, python-format
-msgid "Invalid sendmail: %s"
-msgstr "El sendmail no és vàlid: %s"
+msgid "Saving %s state to %s"
+msgstr ""
 
-#: mailpile/mailutils.py:201
-msgid "Preparing message..."
-msgstr "S'està preparant el missatge..."
-
-#: mailpile/mailutils.py:211
-#, python-format
-msgid "Message sent, %d bytes"
-msgstr "S'ha enviat el missatge, %d bytes"
-
-#: mailpile/mailutils.py:496 mailpile/mailutils.py:503
+#: mailpile/mailboxes/mbox.py:142
 msgid "No data found"
 msgstr "No s'han trobat dades"
 
-#: mailpile/mailutils.py:525
+#: mailpile/mailboxes/mbox.py:172
 msgid "Message not found"
 msgstr "No s'ha trobat cap missatge"
 
-#: mailpile/mailutils.py:690 mailpile/mailutils.py:698
-#: mailpile/mailutils.py:752
-msgid "Mailbox is read-only."
-msgstr "La bústia és només de lectura"
+#: mailpile/plugins/autotag.py:152
+msgid "Retraining SpamBayes autotaggers"
+msgstr ""
 
-#: mailpile/mailutils.py:797
-msgid "Message not found?"
-msgstr "No s'ha trobat el missatge?"
-
-#: mailpile/mailutils.py:875
+#: mailpile/plugins/autotag.py:172
 #, python-format
-msgid "Extracted attachment %s"
-msgstr "S'ha extret l'adjunt %s"
+msgid "Have %d interesting %s messages"
+msgstr ""
 
-#: mailpile/mailutils.py:883
+#: mailpile/plugins/autotag.py:243
 #, python-format
-msgid "Wrote preview to: %s"
-msgstr "S'ha escrit la previsualització a: %s"
+msgid "Retrained SpamBayes auto-tagging for %s"
+msgstr ""
 
-#: mailpile/mailutils.py:885
-msgid "Failed to generate thumbnail"
-msgstr "No s'ha pogut generar la miniatura"
+#: mailpile/plugins/autotag.py:264
+#, fuzzy, python-format
+msgid "Unknown tag: %s"
+msgstr "Ordre desconeguda: %s"
 
-#: mailpile/mailutils.py:892
+#: mailpile/plugins/compose.py:30
+#, fuzzy, python-format
+msgid "Sent: %s"
+msgstr "S'està creant: %s"
+
+#: mailpile/plugins/compose.py:144
+msgid "Cannot update from multiple files"
+msgstr ""
+
+#: mailpile/plugins/compose.py:202 mailpile/plugins/compose.py:233
 #, python-format
-msgid "Wrote attachment to: %s"
+msgid "%d message(s) edited"
+msgstr ""
+
+#: mailpile/plugins/compose.py:204
+#, python-format
+msgid "%d message(s) created"
+msgstr ""
+
+#: mailpile/plugins/compose.py:228
+#, fuzzy
+msgid "No messages!"
+msgstr "Missatges"
+
+#: mailpile/plugins/compose.py:235
+#, python-format
+msgid "%d message(s) unchanged"
+msgstr ""
+
+#: mailpile/plugins/compose.py:265
+msgid "Please use update for editing messages"
+msgstr ""
+
+#: mailpile/plugins/compose.py:335
+#, python-format
+msgid "%s wrote:"
+msgstr ""
+
+#: mailpile/plugins/compose.py:379
+msgid "You must configure a From address first."
+msgstr ""
+
+#: mailpile/plugins/compose.py:388 mailpile/plugins/compose.py:475
+#, fuzzy
+msgid "No message found"
+msgstr "No s'ha trobat dades"
+
+#: mailpile/plugins/compose.py:460
+msgid "Sorry, ephemeral messages cannot have attachments at this time."
+msgstr ""
+
+#: mailpile/plugins/compose.py:507
+#, fuzzy
+msgid "No files found"
+msgstr "No s'ha trobat dades"
+
+#: mailpile/plugins/compose.py:513
+msgid "No messages selected"
+msgstr ""
+
+#: mailpile/plugins/compose.py:522
+#, fuzzy, python-format
+msgid "Read-only message: %s"
+msgstr "ARREGLA'M: torna a analitzar els missatge: %s"
+
+#: mailpile/plugins/compose.py:524
+#, fuzzy, python-format
+msgid "Error attaching to %s"
 msgstr "S'ha escrit l'adjunt a: %s"
 
-#: mailpile/mailutils.py:895
+#: mailpile/plugins/compose.py:527
+#, fuzzy, python-format
+msgid "Attached %s to %d messages"
+msgstr "S'han carregat les metadades, %d missatges"
+
+#: mailpile/plugins/compose.py:575
+#, fuzzy, python-format
+msgid "Failed to send %s"
+msgstr "No s'ha pogut desxifrar el missatge"
+
+#: mailpile/plugins/compose.py:595
+#, fuzzy
+msgid "Nothing was sent"
+msgstr "Sense canvis"
+
+#: mailpile/plugins/compose.py:613 mailpile/plugins/compose.py:657
+#, fuzzy
+msgid "Nothing to do!"
+msgstr "Sense canvis"
+
+#: mailpile/plugins/compose.py:623
 #, python-format
-msgid "No attachments found for: %s"
-msgstr "No s'han trobat adjunts per: %s"
+msgid "%d message(s) updated"
+msgstr ""
 
-#: mailpile/mailutils.py:991
+#: mailpile/plugins/compose.py:634
+msgid "Missing encryption keys"
+msgstr ""
+
+#: mailpile/plugins/compose.py:691
+msgid "Delay between attempts to send mail"
+msgstr ""
+
+#: mailpile/plugins/contacts.py:304
 #, python-format
-msgid "Decode failed: %s %s"
-msgstr "S'ha produït un error en descodificar: %s %s"
+msgid "Required paramter missing. Required parameters are: %s"
+msgstr ""
 
-#: static/default/html/page/donate/index.html:7
-msgid "Please Donate To Mailpile"
-msgstr "Feu una donació a Mailpile"
+#: mailpile/plugins/contacts.py:312
+#, python-format
+msgid ""
+"Unknown parameter passed to importer. Provided %s; but known parameters are: "
+"%s"
+msgstr ""
 
-#: static/default/html/page/donate/index.html:11
-msgid "Or you can donate to our"
-msgstr "O podeu fer una donació al nostre"
+#: mailpile/plugins/demos.py:45
+msgid "Demo Contacts"
+msgstr "Contactes d'exemple"
 
-#: static/default/html/page/donate/index.html:11
-msgid "Bitcoin Wallet"
-msgstr "moneder Bitcoin"
+#: mailpile/plugins/demos.py:46
+msgid "This is the demo importer"
+msgstr "Aquest és l'importador d'exemple"
 
-#: static/default/html/layouts/base.html:66
+#: mailpile/plugins/demos.py:49
+#, fuzzy
+msgid "Activate demo importer"
+msgstr "Aquest és l'importador d'exemple"
+
+#: mailpile/plugins/demos.py:50
+msgid "Contact name"
+msgstr "Nom del contacte"
+
+#: mailpile/plugins/demos.py:51
+msgid "Contact email"
+msgstr "Adreça electrònica del contacte"
+
+#: mailpile/plugins/search.py:52
+#, fuzzy
+msgid "No results"
+msgstr "No s'ha trobat dades"
+
+#: mailpile/plugins/search.py:89
+#, python-format
+msgid "Weird starting point: %s"
+msgstr ""
+
+#: mailpile/plugins/search.py:204
+#, fuzzy, python-format
+msgid "Raw message: %s"
+msgstr "Quin missatge és %s?"
+
+#: mailpile/plugins/setup_magic.py:113
+msgid "Created default tags"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:124
+msgid "Enabling spambayes autotagger"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:126
+msgid "Please install spambayes for super awesome spam filtering"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:134
+msgid "Enabling gravatar image importer"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:140
+#, fuzzy
+msgid "Importing contacts from GPG keyring"
+msgstr "Importa el contacte de l'anell de claus de GnuPG"
+
+#: mailpile/plugins/setup_magic.py:183
+#, fuzzy, python-format
+msgid "Encrypting config to %s"
+msgstr "S'està connectant a %s"
+
+#: mailpile/plugins/setup_magic.py:187
+msgid "Oh no, PGP/GPG support is unavailable!"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:197
+msgid "Obfuscating search index and enabling indexing of encrypted e-mail. "
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:16
+msgid "Import contacts from GnuPG keyring"
+msgstr "Importa el contacte de l'anell de claus de GnuPG"
+
+#: mailpile/plugins/vcard_gnupg.py:19 mailpile/plugins/vcard_gravatar.py:28
+msgid "Enable this importer"
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:20
+msgid "Location of keyring"
+msgstr "Ubicació de l'anell de claus"
+
+#: mailpile/plugins/vcard_gravatar.py:25
+#, fuzzy
+msgid "Import contact info from a Gravatar server"
+msgstr "Importa el contacte de l'anell de claus de GnuPG"
+
+#: mailpile/plugins/vcard_gravatar.py:29
+msgid "Minimum days between refreshing"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:30
+msgid "Max batch size per update"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:31
+#, fuzzy
+msgid "Default thumbnail style"
+msgstr "Tema predeterminat"
+
+#: mailpile/plugins/vcard_gravatar.py:32
+msgid "Preferred thumbnail rating"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:34
+msgid "Preferred thumbnail size"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:35
+msgid "Gravatar server URL"
+msgstr ""
+
+#: mailpile/plugins/vcard_mork.py:39
+#, fuzzy
+msgid "Location of Mork database"
+msgstr "Ubicacions de diverses dades"
+
+#: static/default/html/contact/index.html:19
+msgid "Hey that's you"
+msgstr ""
+
+#: static/default/html/contact/list.html:14
+#, fuzzy
+msgid "Emails"
+msgstr "Adreça electrònica"
+
+#: static/default/html/contact/list.html:17
+msgid "Compose Email To This Address"
+msgstr ""
+
+#: static/default/html/contact/list.html:20
+msgid "More Address"
+msgstr ""
+
+#: static/default/html/contact/list.html:28
+#: static/default/html/search/index.html:16
+msgid "Previous"
+msgstr "Anterior"
+
+#: static/default/html/contact/list.html:31
+#: static/default/html/search/index.html:21
+msgid "Next"
+msgstr "Següent"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "of"
+msgstr "de"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/contact/list.html:44
+#: static/default/html/layouts/base.html:81
+#: static/default/html/partials/tools_contacts.html:3
+#: static/default/html/partials/tools_contacts.html:11
+msgid "Contacts"
+msgstr "Contactes"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "1 Conversation"
+msgstr "1 conversa"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "No results found"
+msgstr "No s'ha trobat dades"
+
+#: static/default/html/layouts/base.html:46
+msgid "Close"
+msgstr ""
+
+#: static/default/html/layouts/base.html:71
 #, python-format
 msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
 msgstr "%(name)s<small> mailpile de <b>%(size)s</b> correus</small>"
 
-#: static/default/html/layouts/base.html:124
-msgid "Encrypted"
-msgstr "Xifrat"
+#: static/default/html/layouts/base.html:80
+msgid "Compose"
+msgstr ""
 
-#: static/default/html/layouts/base.html:130
+#: static/default/html/layouts/base.html:82
+#: static/default/html/partials/tools_tags.html:3
+#: static/default/html/partials/tools_tags.html:10
+#: static/default/html/tag/list.html:54
+msgid "Tags"
+msgstr "Etiquetes"
+
+#: static/default/html/layouts/base.html:83
+msgid "Donate"
+msgstr ""
+
+#: static/default/html/layouts/base.html:84
+#: static/default/html/tag/list.html:30
+#, fuzzy
+msgid "Settings"
+msgstr "S'està creant: %s"
+
+#: static/default/html/layouts/base.html:98
+#, fuzzy
+msgid "emails"
+msgstr "Adreça electrònica"
+
+#: static/default/html/layouts/base.html:127
 msgid "Photos"
 msgstr "Fotografies"
 
-#: static/default/html/layouts/base.html:136
+#: static/default/html/layouts/base.html:133
 msgid "Files"
 msgstr "Fitxers"
 
-#: static/default/html/layouts/base.html:142
+#: static/default/html/layouts/base.html:139
 msgid "Links"
 msgstr "Enllaços"
 
-#: static/default/html/layouts/base.html:148
+#: static/default/html/layouts/base.html:145
 msgid "Groups"
 msgstr "Grups"
 
-#: static/default/html/layouts/base.html:160
-msgid "Mailpile"
-msgstr "Mailpile"
-
-#: static/default/html/layouts/base.html:160
-msgid "is free software made by"
-msgstr "és programari lliure fet per"
-
-#: static/default/html/layouts/base.html:160
-msgid "more"
-msgstr "més"
-
-#: static/default/html/layouts/base.html:175
-#: static/default/html/message/index.html:16
-msgid "Date:"
-msgstr "Data:"
-
-#: static/default/html/layouts/base.html:175
-msgid "Start time"
-msgstr "Hora d'inici"
-
-#: static/default/html/layouts/base.html:175
-msgid "to"
-msgstr "a"
-
-#: static/default/html/layouts/base.html:175
-msgid "Present"
-msgstr "Actual"
-
-#: static/default/html/layouts/base.html:176
-msgid "With:"
-msgstr "Amb:"
-
-#: static/default/html/layouts/base.html:176
-msgid "No Tags"
-msgstr "Sense etiquetes"
-
-#: static/default/html/layouts/base.html:177
-msgid "And:"
-msgstr "I:"
-
-#: static/default/html/layouts/base.html:177
-msgid "All groups"
-msgstr "Tots els grups"
-
-#: static/default/html/message/index.html:16
-msgid "at"
-msgstr "a"
-
-#: static/default/html/message/index.html:17
-msgid "From:"
-msgstr "Des de:"
-
-#: static/default/html/message/index.html:18
-msgid "To:"
-msgstr "A:"
-
-#: static/default/html/message/index.html:20
-msgid "Cc:"
-msgstr "Cc:"
-
-#: static/default/html/message/index.html:23
-msgid "Bcc:"
-msgstr "Cco:"
-
-#: static/default/html/message/index.html:25
-msgid "Subject:"
-msgstr "Assumpte:"
-
-#: static/default/html/message/index.html:34
-msgid "Signed by"
-msgstr "Signat per"
-
-#: static/default/html/message/index.html:35
-msgid "Unknown signature from"
-msgstr "Signatura desconeguda de"
-
-#: static/default/html/message/index.html:36
-msgid "Signed with unknown key"
-msgstr "Signat amb una clau desconeguda"
-
-#: static/default/html/message/index.html:41
-msgid "Successfully decrypted message"
-msgstr "S'ha desxifrat correctament el missatge"
-
-#: static/default/html/message/index.html:42
-msgid "Failed to decrypt message"
-msgstr "No s'ha pogut desxifrar el missatge"
-
-#: static/default/html/message/index.html:63
-msgid "Reply"
-msgstr "Respon"
-
-#: static/default/html/message/index.html:66
-#: static/default/html/partials/sub_nav_search.html:3
-msgid "All"
-msgstr "Tots"
-
-#: static/default/html/message/index.html:69
-msgid "Forward"
-msgstr "Reenvia"
-
-#: static/default/html/message/draft.html:14
-msgid "To"
-msgstr "A"
-
-#: static/default/html/message/draft.html:16
-#: static/default/html/message/draft.html:24
-msgid "Bcc"
-msgstr "Cco"
-
-#: static/default/html/message/draft.html:17
-#: static/default/html/message/draft.html:20
-msgid "Cc"
-msgstr "Cc"
-
-#: static/default/html/message/draft.html:28
+#: static/default/html/layouts/base.html:200
+#: static/default/html/partials/compose.html:27
+#: static/default/html/partials/thread_metadata.html:3
+#: static/default/html/partials/thread_metadata.html:6
 msgid "From"
 msgstr "De"
 
-#: static/default/html/message/draft.html:38
+#: static/default/html/layouts/base.html:200
+#, fuzzy
+msgid "Start Date"
+msgstr "Hora d'inici"
+
+#: static/default/html/layouts/base.html:200
+msgid "to"
+msgstr "a"
+
+#: static/default/html/layouts/base.html:200
+msgid "Present"
+msgstr "Actual"
+
+#: static/default/html/layouts/base.html:201
+#, fuzzy
+msgid "With"
+msgstr "Amb:"
+
+#: static/default/html/layouts/base.html:201
+msgid "No Tags"
+msgstr "Sense etiquetes"
+
+#: static/default/html/layouts/base.html:202
+msgid "In"
+msgstr ""
+
+#: static/default/html/layouts/base.html:202
+#, fuzzy
+msgid "All Groups"
+msgstr "Tots els grups"
+
+#: static/default/html/layouts/base.html:203
+#, fuzzy
+msgid "And"
+msgstr "I:"
+
+#: static/default/html/layouts/base.html:203
+#, fuzzy
+msgid "All Contacts"
+msgstr "Contactes"
+
+#: static/default/html/page/donate/index.html:2
+#: static/default/html/page/donate/index.html:7
+#, fuzzy
+msgid "Donate To Mailpile"
+msgstr "Feu una donació a Mailpile"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Or you can donate to our"
+msgstr "O podeu fer una donació al nostre"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Bitcoin Wallet"
+msgstr "moneder Bitcoin"
+
+#: static/default/html/page/donate/index.html:22
+msgid "Mailpile"
+msgstr "Mailpile"
+
+#: static/default/html/page/donate/index.html:22
+msgid "is free software made by"
+msgstr "és programari lliure fet per"
+
+#: static/default/html/page/donate/index.html:22
+msgid "more"
+msgstr "més"
+
+#: static/default/html/partials/compose.html:40
+#, fuzzy
+msgid "Not Signed"
+msgstr "Signat per"
+
+#: static/default/html/partials/compose.html:41
+#, fuzzy
+msgid "Signature Error"
+msgstr "Error intern"
+
+#: static/default/html/partials/compose.html:42
+#: static/default/html/partials/compose.html:43
+#, fuzzy
+msgid "Signed"
+msgstr "Signat per"
+
+#: static/default/html/partials/compose.html:45
+msgid "None"
+msgstr ""
+
+#: static/default/html/partials/compose.html:47
+#, fuzzy
+msgid "Can't Encrypt"
+msgstr "Xifrat"
+
+#: static/default/html/partials/compose.html:48
+msgid "Error Encrypting"
+msgstr ""
+
+#: static/default/html/partials/compose.html:74
+msgid "To"
+msgstr "A"
+
+#: static/default/html/partials/compose.html:75
+#: static/default/html/partials/compose.html:81
+msgid "Cc"
+msgstr "Cc"
+
+#: static/default/html/partials/compose.html:76
+#: static/default/html/partials/compose.html:85
+msgid "Bcc"
+msgstr "Cco"
+
+#: static/default/html/partials/compose.html:89
 msgid "Subject"
 msgstr "Assumpte"
 
-#: static/default/html/message/draft.html:45
-msgid "No Attachments"
-msgstr "Sense adjunts"
+#: static/default/html/partials/compose.html:90
+#, fuzzy
+msgid "New Subject"
+msgstr "Assumpte"
 
-#: static/default/html/message/draft.html:50
-msgid "Send"
-msgstr "Envia"
+#: static/default/html/partials/compose.html:94
+#, fuzzy
+msgid "Message"
+msgstr "Missatges"
 
-#: static/default/html/message/draft.html:51
+#: static/default/html/partials/compose.html:95
+msgid "Your reply..."
+msgstr ""
+
+#: static/default/html/partials/compose.html:103
 msgid "Save"
 msgstr "Desa"
 
-#: static/default/html/message/draft.html:60
-msgid "Message not found!"
-msgstr "No s'ha trobat cap missatge!"
+#: static/default/html/partials/compose.html:107
+msgid "Reply"
+msgstr "Respon"
 
-#: static/default/html/tag/list.html:14
-msgid "Total"
-msgstr "Total"
+#: static/default/html/partials/compose.html:111
+msgid "Send"
+msgstr "Envia"
 
-#: static/default/html/tag/list.html:19
-#: static/default/html/partials/sub_nav_search.html:4
-msgid "New"
-msgstr "Nou"
+#: static/default/html/partials/contact_add.html:1
+#, fuzzy
+msgid "Add New Contact"
+msgstr "Afegeix un contacte"
 
-#: static/default/html/tag/list.html:24
-msgid "View Messages"
-msgstr "Vegeu els missatges"
+#: static/default/html/partials/contact_add.html:6
+#: static/default/html/settings/index.html:20
+msgid "Name"
+msgstr "Nom"
 
-#: static/default/html/tag/list.html:34
-msgid "Archived"
-msgstr "Arxivats"
+#: static/default/html/partials/contact_add.html:9
+msgid "E-mail"
+msgstr "Adreça electrònica"
 
-#: static/default/html/tag/add.html:3
-msgid "Enter New Tag Info"
-msgstr "Introduïu la informació de la nova etiqueta"
-
-#: static/default/html/tag/add.html:9
-msgid "Tag"
-msgstr "Etiqueta"
-
-#: static/default/html/tag/add.html:12
-msgid "Slug"
-msgstr "Slug"
-
-#: static/default/html/tag/add.html:15
+#: static/default/html/partials/contact_add.html:12
+#: static/default/html/tag/add.html:40
 msgid "Add"
 msgstr "Afegeix"
+
+#: static/default/html/partials/errors_content.html:3
+#, fuzzy
+msgid "Oops, You've Found a Quirk"
+msgstr "Heu trobat un error!"
+
+#: static/default/html/partials/errors_content.html:4
+msgid ""
+"We were unable to find the message you requested, perhaps it was deleted?"
+msgstr "No s'ha pogut trobar el missatge que cerqueu. Potser s'ha suprimit?"
+
+#: static/default/html/partials/errors_content.html:6
+#, fuzzy
+msgid "Contact Missing"
+msgstr "Contactes"
+
+#: static/default/html/partials/errors_content.html:7
+#, fuzzy
+msgid ""
+"We were unable to find the contact you requested, perhaps it was typed (or "
+"linked to) incorrectly?"
+msgstr "No s'ha pogut trobar el missatge que cerqueu. Potser s'ha suprimit?"
+
+#: static/default/html/partials/errors_content.html:9
+#, python-format
+msgid ""
+"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
+"\">bug report</a>"
+msgstr ""
+"Si creieu que això és un bug, <a href=\"%(url)s\" target=\"_blank\">feu-nos-"
+"ho saber</a>"
+
+#: static/default/html/partials/thread_message.html:17
+msgid "No Recipients"
+msgstr ""
+
+#: static/default/html/partials/thread_metadata.html:17
+#, fuzzy
+msgid "Expand Message"
+msgstr "Missatges"
+
+#: static/default/html/partials/tools_contacts.html:4
+msgid "Add Contact"
+msgstr "Afegeix un contacte"
+
+#: static/default/html/partials/tools_contacts.html:5
+msgid "Import Contacts"
+msgstr "Importa contactes"
+
+#: static/default/html/partials/tools_contacts.html:11
+#: static/default/html/partials/tools_tags.html:10
+msgid "selected"
+msgstr "seleccionats"
+
+#: static/default/html/partials/tools_message.html:2
+#, fuzzy
+msgid "No Subject"
+msgstr "Assumpte"
+
+#: static/default/html/partials/tools_message.html:4
+msgid "People"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:10
+#: static/default/html/tag/list.html:29
+msgid "Messages"
+msgstr "Missatges"
+
+#: static/default/html/partials/tools_message.html:12
+msgid "Move Whole Thread to Later"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:13
+msgid "Assign Tags to Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:14
+msgid "Archive Whole Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:15
+msgid "Delete Whole Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:3
+msgid "All"
+msgstr "Tots"
+
+#: static/default/html/partials/tools_search.html:4
+msgid "Unread"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:6
+#: static/default/html/tag/add.html:15 static/default/html/tag/index.html:19
+#: static/default/html/tag/list.html:24
+msgid "Display"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:8
+msgid "Snug"
+msgstr "Acollidor"
+
+#: static/default/html/partials/tools_search.html:9
+msgid "Cozy"
+msgstr "Còmode"
+
+#: static/default/html/partials/tools_search.html:10
+msgid "Comfy"
+msgstr "Comfortable"
+
+#: static/default/html/partials/tools_search.html:11
+msgid "Detailed"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:27
+#, fuzzy
+msgid "Messages Selected"
+msgstr "Missatges"
+
+#: static/default/html/partials/tools_search.html:27
+#: static/default/html/partials/tools_search.html:28
+msgid "Click message or checkbox to select"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:32
+msgid "Move to Later"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:33
+msgid "Move to Group"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:34
+msgid "Assign Tags"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:36
+msgid "Archive Selection"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:38
+msgid "Untag"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:40
+msgid "Delete Selection"
+msgstr ""
+
+#: static/default/html/partials/tools_tags.html:4
+msgid "Add Tag"
+msgstr "Afegeix una etiqueta"
+
+#: static/default/html/search/index.html:25
+msgid "Conversations"
+msgstr "Converses"
+
+#: static/default/html/search/index.html:30
+msgid "No Results Found"
+msgstr "No s'ha trobat dades"
+
+#: static/default/html/search/index.html:34
+#, python-format
+msgid ""
+"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
+"strong> seconds."
+msgstr ""
+"S'ha cercat <strong>%(number)s</strong> missatges en <strong>%(elapsed)s</"
+"strong> segons."
+
+#: static/default/html/search/index.html:34
+msgid "Vroom!"
+msgstr "A tota màquina!"
 
 #: static/default/html/settings/index.html:7
 msgid "Your Profiles"
@@ -969,14 +1647,17 @@ msgstr "Els vostres perfils"
 msgid "Add New Profile"
 msgstr "Afegeix un nou perfil"
 
-#: static/default/html/settings/index.html:20
-#: static/default/html/contact/add.html:9
-msgid "Name"
-msgstr "Nom"
+#: static/default/html/settings/index.html:21
+msgid "Chelsea Manning"
+msgstr ""
 
 #: static/default/html/settings/index.html:23
 msgid "Email"
 msgstr "Adreça electrònica"
+
+#: static/default/html/settings/index.html:24
+msgid "chelsea@email.com"
+msgstr ""
 
 #: static/default/html/settings/index.html:26
 msgid "SMTP Server"
@@ -986,6 +1667,10 @@ msgstr "Servidor SMTP"
 msgid "Login"
 msgstr "Entrada"
 
+#: static/default/html/settings/index.html:28
+msgid "username@mailserver.org"
+msgstr ""
+
 #: static/default/html/settings/index.html:30
 msgid "Password"
 msgstr "Contrasenya"
@@ -993,6 +1678,10 @@ msgstr "Contrasenya"
 #: static/default/html/settings/index.html:33
 msgid "Server"
 msgstr "Servidor"
+
+#: static/default/html/settings/index.html:34
+msgid "smtp.mailserver.org"
+msgstr ""
 
 #: static/default/html/settings/index.html:36
 msgid "Port"
@@ -1002,129 +1691,169 @@ msgstr "Port"
 msgid "Add Profile"
 msgstr "Afegeix un perfil"
 
-#: static/default/html/partials/bulk_actions.html:2
-msgid "Messages"
-msgstr "Missatges"
+#: static/default/html/tag/add.html:3
+#, fuzzy
+msgid "Add New Tag"
+msgstr "Afegeix una etiqueta"
 
-#: static/default/html/partials/bulk_actions.html:2
-msgid "selected"
-msgstr "seleccionats"
+#: static/default/html/tag/add.html:9 static/default/html/tag/add.html:17
+#: static/default/html/tag/index.html:13 static/default/html/tag/index.html:21
+msgid "Tag"
+msgstr "Etiqueta"
 
-#: static/default/html/partials/sub_nav_contacts.html:3
-msgid "Contacts"
-msgstr "Contactes"
+#: static/default/html/tag/add.html:10 static/default/html/tag/index.html:14
+msgid "Friends & Family"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_contacts.html:4
-msgid "Add Contact"
-msgstr "Afegeix un contacte"
+#: static/default/html/tag/add.html:12 static/default/html/tag/index.html:16
+msgid "Slug"
+msgstr "Slug"
 
-#: static/default/html/partials/sub_nav_contacts.html:5
-msgid "Import Contacts"
-msgstr "Importa contactes"
+#: static/default/html/tag/add.html:13 static/default/html/tag/index.html:17
+msgid "friends-family"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_message.html:6
+#: static/default/html/tag/add.html:18 static/default/html/tag/index.html:23
 msgid "Archive"
 msgstr "Arxiva"
 
-#: static/default/html/partials/sub_nav_message.html:7
-msgid "Delete"
-msgstr "Suprimeix"
+#: static/default/html/tag/add.html:21 static/default/html/tag/index.html:27
+msgid "Parent"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_message.html:8
-msgid "Show All"
-msgstr "Mostra'ls tots"
+#: static/default/html/tag/add.html:23 static/default/html/tag/index.html:29
+msgid "none"
+msgstr ""
 
-#: static/default/html/partials/errors_content.html:3
-msgid "Oops, you've found a quirk!"
-msgstr "Heu trobat un error!"
+#: static/default/html/tag/add.html:31 static/default/html/tag/index.html:38
+msgid "Template"
+msgstr ""
 
-#: static/default/html/partials/errors_content.html:4
-msgid ""
-"We were unable to find the message you requested, perhaps it was deleted?"
-msgstr "No s'ha pogut trobar el missatge que cerqueu. Potser s'ha suprimit?"
+#: static/default/html/tag/add.html:33 static/default/html/tag/index.html:40
+#, fuzzy
+msgid "Default"
+msgstr "Tema predeterminat"
 
-#: static/default/html/partials/errors_content.html:5
-#, python-format
-msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" "
-"target=\"_blank\">bug report</a>"
-msgstr "Si creieu que això és un bug, <a href=\"%(url)s\" target=\"_blank\">feu-nos-ho saber</a>"
+#: static/default/html/tag/add.html:36 static/default/html/tag/index.html:43
+#, fuzzy
+msgid "Search Terms"
+msgstr "S'està cercant %s"
 
-#: static/default/html/partials/sub_nav_tags.html:3
-msgid "Tags"
-msgstr "Etiquetes"
+#: static/default/html/tag/index.html:22
+msgid "Priority Tag"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_tags.html:4
-msgid "Add Tag"
-msgstr "Afegeix una etiqueta"
+#: static/default/html/tag/index.html:24
+msgid "Invisible"
+msgstr ""
 
-#: static/default/html/partials/details_search_speed.html:2
-#, python-format
-msgid ""
-"Searched <strong>%(number)s</strong> messages in "
-"<strong>%(elapsed)s</strong> seconds."
-msgstr "S'ha cercat <strong>%(number)s</strong> missatges en <strong>%(elapsed)s</strong> segons."
+#: static/default/html/tag/index.html:48
+#, fuzzy
+msgid "Save tag"
+msgstr "Desa"
 
-#: static/default/html/partials/details_search_speed.html:2
-msgid "Vroom!"
-msgstr "A tota màquina!"
+#: static/default/html/tag/list.html:13
+msgid "Total"
+msgstr "Total"
 
-#: static/default/html/search/index.html:20
-msgid "Previous"
-msgstr "Anterior"
+#: static/default/html/tag/list.html:18
+msgid "New"
+msgstr "Nou"
 
-#: static/default/html/search/index.html:20
-msgid "Next"
-msgstr "Següent"
+#: static/default/html/tag/list.html:44
+#, fuzzy
+msgid "Archived Tags"
+msgstr "Arxivats"
 
-#: static/default/html/search/index.html:22
-msgid "of"
-msgstr "de"
+#~ msgid "WARNING: Imported old config from %s"
+#~ msgstr "AVÍS: configuració antiga importada de %s"
 
-#: static/default/html/search/index.html:22
-msgid "Conversations"
-msgstr "Converses"
+#~ msgid "WARNING: Failed to import config from %s"
+#~ msgstr "AVÍS: no s'ha pogut importar la configuració de %s"
 
-#: static/default/html/search/index.html:22
-msgid "1 Conversation"
-msgstr "1 conversa"
+#~ msgid "Could not parse (%s): %s"
+#~ msgstr "No s'ha pogut analitzar (%s): %s"
 
-#: static/default/html/search/index.html:22
-msgid "No results found"
-msgstr "No s'ha trobat dades"
+#~ msgid "Could not assign mailbox:%s = %s"
+#~ msgstr "No s'ha pogut assignar bústia de correu:%s = %s"
 
-#: static/default/html/search/index.html:23
-msgid "Snug"
-msgstr "Acollidor"
+#~ msgid "ID out of bounds: %s"
+#~ msgstr "La ID és fora de límits: %s"
 
-#: static/default/html/search/index.html:24
-msgid "Cozy"
-msgstr "Còmode"
+#~ msgid "Statistics updated"
+#~ msgstr "S'ha actualitzat les estadístiques"
 
-#: static/default/html/search/index.html:25
-msgid "Comfy"
-msgstr "Comfortable"
+#~ msgid "disabled."
+#~ msgstr "inhabilitat."
 
-#: static/default/html/search/index.html:26
-msgid "Fluffy"
-msgstr "Tou"
+#~ msgid "Counting messages in tag:%s"
+#~ msgstr "Recompte de missatges amb l'etiqueta: %s"
 
-#: static/default/html/search/index.html:32
-msgid "No Results Found"
-msgstr "No s'ha trobat dades"
+#~ msgid "Sorry, this UI cannot edit messages."
+#~ msgstr "Aquesta interfície d'usuari no pot editar missatges"
 
-#: static/default/html/contact/add.html:3
-msgid "Contact Info"
-msgstr "Informació del contacte"
+#~ msgid "Decode failed: %s %s"
+#~ msgstr "S'ha produït un error en descodificar: %s %s"
 
-#: static/default/html/contact/add.html:12
-msgid "E-mail"
-msgstr "Adreça electrònica"
+#~ msgid "Date:"
+#~ msgstr "Data:"
 
-#: static/default/html/contact/add.html:15
-msgid "Website"
-msgstr "Lloc web"
+#~ msgid "at"
+#~ msgstr "a"
 
-#: static/default/html/contact/add.html:18
-msgid "PGP Key"
-msgstr "Clau PGP"
+#~ msgid "From:"
+#~ msgstr "Des de:"
+
+#~ msgid "To:"
+#~ msgstr "A:"
+
+#~ msgid "Cc:"
+#~ msgstr "Cc:"
+
+#~ msgid "Bcc:"
+#~ msgstr "Cco:"
+
+#~ msgid "Subject:"
+#~ msgstr "Assumpte:"
+
+#~ msgid "Unknown signature from"
+#~ msgstr "Signatura desconeguda de"
+
+#~ msgid "Signed with unknown key"
+#~ msgstr "Signat amb una clau desconeguda"
+
+#~ msgid "Successfully decrypted message"
+#~ msgstr "S'ha desxifrat correctament el missatge"
+
+#~ msgid "Forward"
+#~ msgstr "Reenvia"
+
+#~ msgid "No Attachments"
+#~ msgstr "Sense adjunts"
+
+#~ msgid "Message not found!"
+#~ msgstr "No s'ha trobat cap missatge!"
+
+#~ msgid "View Messages"
+#~ msgstr "Vegeu els missatges"
+
+#~ msgid "Enter New Tag Info"
+#~ msgstr "Introduïu la informació de la nova etiqueta"
+
+#~ msgid "Delete"
+#~ msgstr "Suprimeix"
+
+#~ msgid "Show All"
+#~ msgstr "Mostra'ls tots"
+
+#~ msgid "Fluffy"
+#~ msgstr "Tou"
+
+#~ msgid "Contact Info"
+#~ msgstr "Informació del contacte"
+
+#~ msgid "Website"
+#~ msgstr "Lloc web"
+
+#~ msgid "PGP Key"
+#~ msgstr "Clau PGP"

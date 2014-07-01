@@ -1,7 +1,9 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
 {% if result %}
-  <table id="pile-results">
+  <!-- FIXME: make density class be pulled from user profile setting -->
+    <div class="hide" id="pile-newmessages-notification">New messages received! Click here (or press f) to refresh your view.</div>
+  <table id="pile-results" class="comfy">
   <tbody>
   {% for mid in result.thread_ids %}
     {% include("partials/search_item.html") %}
@@ -12,12 +14,12 @@
     {% set searchterms = result.search_terms|join(' ') %}
     {% if result.stats.start > 1 %}
     {% set newstart = result.stats.start-result.stats.count %}
-    {% set newend = newstart+result.stats.count %}
+    {% set newend = newstart+result.stats.count-1 %}
     <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Previous")}}</a>
     {% endif %}
     {% if result.stats.start + result.stats.count < result.stats.total %}
     {% set newstart = result.stats.start+result.stats.count %}
-    {% set newend = newstart+result.stats.count %}
+    {% set newend = newstart+result.stats.count-1 %}
     <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Next")}}</a>
     {% endif %}
     <div>
@@ -25,12 +27,12 @@
       <h5>{% if stats.total > 1 %}{{stats.start}} - {{stats.end}} {{_("of")}} {{stats.total}} {{_("Conversations")}} {% elif stats.total == 1 %} {{_("1 Conversation")}} {% else %} {{_("No results found")}} {% endif %}</h5><br>
     </div>
   </div>
+  <div id="pile-speed">
+    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
+  </div>  
 {% else %}
   <div class="add-top add-bottom center">
     <h2 class="add-top text-center">{{_("No Results Found")}}</h2>
   </div>
 {% endif %}
-<div id="pile-speed">
-  <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
-</div>
 {% endblock %}

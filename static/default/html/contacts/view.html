@@ -1,0 +1,132 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}{% endblock %}
+{% block content %}
+<div id="contact-view" class="content-normal">
+{% if result.contact %}  
+  <div class="clearfix">
+    {% if result.contact.photo %}
+      <img class="contact-avatar left" width="80" src="{{ show_avatar(result.contact.photo.0) }}">
+    {% else %}
+      <img class="contact-avatar left" width="80" src="{{ show_avatar("") }}">
+    {% endif %}
+    <h2  class="contact-name ">{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}</h2>
+    {% if result.contact.kind == 'profile' %}
+      <h5 class="contact-subname">{{_("Hey that's you")}} :)</h5>
+    {% endif %}
+  </div>
+  <hr>
+ 
+  <h4><span class="icon-compose"></span> {{_("Addresses")}}</h4>
+  <ul class="contact-detail">
+  {% if result.contact.email %}
+    {% for email in result.contact.email %}
+    <li>
+      <h5>{{email.email}}</h5>
+      <a class="search-by-email" href="/search/?q={{ email.email }}"><span class="icon-search"></span> {{_("Search")}}</a> 
+      <a class="compose-to-email" href="/compose/{{ email.email }}"><span class="icon-compose"></span> {{_("Compose")}}</a>
+    </li>
+    {% endfor %}
+  {% endif %}
+  </ul>
+
+  <h4><span class="icon-lock-closed"></span> {{_("Security & Keys")}}</h4>
+  {% set keys = mailpile("crypto/gpg/keylist", result.contact.email.0.email).result %}  
+  {% if keys %}
+  <ul class="contact-detail">
+    {% for id, key in keys.iteritems() %}
+    <li>
+      <h5><span class="icon-fingerprint"></span> {{ nice_fingerprint(key.fingerprint) }}</h5>
+      <h5><span class="icon-key"></span> {{id[8:]}}</h5>
+      <select name="" class="contact-key-use">
+        <option value="true">Use Key</option>
+        <option value="false">Don't Use Key</option>
+      </select>
+      <a href="#" class="show-key-details" data-keyid="{{id[8:]}}">See Details</a>
+      <div id="contact-key-details-{{id[8:]}}" class="contact-key-details">
+        Created: <strong>{{key['creation-date']}}</strong><br>
+        Expires: <strong>{{key['revocation-date']}}</strong><br>
+        Capabilities: <strong>{{capabilities}}</strong><br>
+        Length: <strong>{{key.keysize}}</strong><br>
+        Type: <strong>{{key.keytype}}</strong><br>
+        Trust: <strong>{{key.trust}}</strong><br><br>
+        {% for uid in key.uids %}
+          {% if uid.name or uid.email or uid.comment %}
+          {{uid.name}}<br>
+          {{uid.email}}<br>
+          {% if uid.comment %}{{uid.comment}}<br>{% endif %}
+          {{uid['creation-date']}}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </li>
+    {% endfor %}
+    <li>
+      <h5>{{_("Crypto Policy")}}</h5>
+      <select id="crypto-policy">
+        {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
+        <option value="{{ policy }}" {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected"{% endif %}>{{ _(policy) }}</option>
+        {% endfor %}
+      </select>
+    </li>
+  </ul>
+  {% endif %} 
+
+  <h4><span class="icon-pie-chart"></span> Stats</h4>
+  <ul class="contact-detail">
+    <li>
+      <h5>Messages Sent To: {{result.sent_messages}}</h5>
+      <h5>Messages Received From: {{result.received_messages}}</h5>
+    </li>
+    <li>
+    {% if result.last_contact_to %}
+      <h5>Last Contacted: <a href="{{result.last_contact_to_msg_url}}">{{ friendly_datetime(result.last_contact_to) }}</a></h5>
+    {% else %}
+      <h5>You've Never Contacted {{ result.contact.fn }}</h5>
+    {% endif %}
+    {% if result.last_contact_from %}
+      <h5>Last Contacted You: <a href="{{result.last_contact_from_msg_url}}">{{ friendly_datetime(result.last_contact_from) }}</a></h5>
+    {% else %}
+      <h5>You've Never Been Contacted By {{ result.contact.fn }}</h5>
+    {% endif %}
+    </li>
+  </ul>
+
+  <h4><span class="icon-tag"></span> Tags</h4>
+  <ul class="contact-detail">
+    <li>No tags automatically assigned for this contact</li>
+  </ul>  
+
+  <h4><span class="icon-forum"></span> Conversations</h4>
+  {% set contact_search = "email:" + result.contact.email.0.email %}
+  {% set conversations = mailpile("search", contact_search).result %}
+  {% if conversations %}
+  <ul class="contact-tag-filter">
+    <li><select><option>Most Recent</option><option>Longest Conversations</option><option>Oldest</option></select></li>
+    {% if conversations.data and conversations.data.tags %}
+    {% for tid, tag in conversations.data.tags.iteritems() %}
+    {% if tag.display in ("priority", "tag", "archive") %}
+    <li><a href="" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tid}}"><span class="{{tag.icon}}"></span> {{tag.name}}</a></li>
+    {% endif %}
+    {% endfor %} 
+    {% endif %}
+  </ul>
+  <ul class="contact-detail">
+    {% for mid in conversations.thread_ids %}
+      {% set thread_mid = conversations.data.metadata[mid].thread_mid %}
+      {% set conversation = conversations.data.metadata[mid] %}
+      {% set thread_count = conversations.data.threads[thread_mid]|length + 1 %}
+      <li>
+        <h5><a href="/thread/={{ mid }}/">{{ nice_subject(conversation.subject) }}</a></h5>
+         <span class="icon-inbox"></span> {{ thread_count }} Messages <span class="icon-social"></span> {{ conversation.to_aids|length + conversation.cc_aids|length }} People
+      </li>
+    {% endfor %}  
+  </ul>
+  {% endif %}
+
+{% else %}
+    {% set error_title = "contact_missing" %}
+    {% include("partials/errors_content.html") %}
+{% endif %}
+</div>
+
+{% endblock %}

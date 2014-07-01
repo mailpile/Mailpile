@@ -1,18 +1,25 @@
 # These are the Mailpile commands, the public "API" we expose for searching,
 # tagging and editing e-mail.
 #
+import copy
 import datetime
 import json
 import os
 import os.path
+import random
 import re
+import shlex
 import traceback
+import threading
 import time
 from gettext import gettext as _
 
 import mailpile.util
 import mailpile.ui
+import mailpile.postinglist
+from mailpile.eventlog import Event
 from mailpile.mailboxes import IsMailbox
+from mailpile.mailutils import AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.postinglist import GlobalPostingList
 from mailpile.search import MailIndex
@@ -22,17 +29,27 @@ from mailpile.vcard import AddressInfo
 
 class Command:
     """Generic command object all others inherit from"""
-    SYNOPSIS = (None,    # CLI shortcode, e.g. A:
-                None,    # CLI shortname, e.g. add
-                None,    # API endpoint, e.g. sys/addmailbox
-                None)    # Positional argument list
-    EXAMPLES = None
+    SYNOPSIS = (None,     # CLI shortcode, e.g. A:
+                None,     # CLI shortname, e.g. add
+                None,     # API endpoint, e.g. sys/addmailbox
+                None)     # Positional argument list
+    SYNOPSIS_ARGS = None  # New-style positional argument list
+    API_VERSION = None
+    UI_CONTEXT = None
+    IS_USER_ACTIVITY = False
+
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
-    SERIALIZE = False
-    SPLIT_ARG = 10000  # A big number!
+    SPLIT_ARG = True  # Uses shlex by default
     RAISES = (UsageError, UrlRedirectException)
 
+    # Event logging settings
+    LOG_NOTHING = False
+    LOG_PROGRESS = False
+    LOG_STARTING = '%(name)s: Starting'
+    LOG_FINISHED = '%(name)s: %(message)s'
+
+    # HTTP settings (note: security!)
     HTTP_CALLABLE = ('GET', )
     HTTP_POST_VARS = {}
     HTTP_QUERY_VARS = {}
@@ -40,11 +57,12 @@ class Command:
     HTTP_STRICT_VARS = True
 
     class CommandResult:
-        def __init__(self, session, command, template_id, doc, result,
-                     status, message, args=[], kwargs={}, error_info={}):
+        def __init__(self, command_obj, session,
+                     command_name, doc, result, status, message,
+                     template_id=None, kwargs={}, error_info={}):
             self.session = session
-            self.command = command
-            self.args = args[:]
+            self.command_obj = command_obj
+            self.command_name = command_name
             self.kwargs = {}
             self.kwargs.update(kwargs)
             self.template_id = template_id
@@ -60,20 +78,37 @@ class Command:
 
         def as_text(self):
             if isinstance(self.result, bool):
-                return '%s: %s' % (self.result and 'Succeeded' or 'Failed',
-                                   self.doc)
-            return unicode(self.result)
+                happy = '%s: %s' % (self.result and _('OK') or _('Failed'),
+                                    self.message or self.doc)
+                if not self.result and self.error_info:
+                    return '%s\n%s' % (happy,
+                        json.dumps(self.error_info, indent=4,
+                                   default=mailpile.util.json_helper))
+                else:
+                    return happy
+            elif isinstance(self.result, (dict, list, tuple)):
+                return json.dumps(self.result, indent=4, sort_keys=True,
+                    default=mailpile.util.json_helper)
+            else:
+                return unicode(self.result)
 
         __str__ = lambda self: self.as_text()
 
         __unicode__ = lambda self: self.as_text()
 
         def as_dict(self):
+            from mailpile.urlmap import UrlMap
             rv = {
-                'command': self.command,
+                'command': self.command_name,
+                'state': {
+                    'command_url': UrlMap.ui_url(self.command_obj),
+                    'context_url': UrlMap.context_url(self.command_obj),
+                    'query_args': self.command_obj.state_as_query_args()
+                },
                 'status': self.status,
                 'message': self.message,
                 'result': self.result,
+                'event_id': self.command_obj.event.event_id,
                 'elapsed': '%.3f' % self.session.ui.time_elapsed,
             }
             if self.error_info:
@@ -83,46 +118,94 @@ class Command:
                 rv[ui_key] = self.kwargs[ui_key]
             return rv
 
-        def as_html(self, template=None):
-            path_parts = (self.template_id or 'command').split('/')
-            if len(path_parts) == 1:
-                path_parts.append('index')
-            if template not in (None, 'html', 'as.html'):
-                # Security: The template request may come from the URL, so we
-                #           sanitize it very aggressively before heading off
-                #           to the filesystem.
-                clean_tpl = CleanText(template.replace('.html', ''),
-                                      banned=(CleanText.FS +
-                                              CleanText.WHITESPACE))
-                path_parts[-1] += '-%s' % clean_tpl
-            tpath = os.path.join(*path_parts)
-            data = self.as_dict()
-            data['title'] = self.message
-            data['html_in_json'] = 'jhtml' in self.session.ui.render_mode
-            return self.session.ui.render_html(self.session.config, [tpath],
-                                               data)
-
         def as_json(self):
             return self.session.ui.render_json(self.as_dict())
 
-    def __init__(self, session, name=None, arg=None, data=None):
+        def as_html(self, template=None):
+            return self.as_template('html', template)
+
+        def as_js(self, template=None):
+            return self.as_template('js', template)
+
+        def as_css(self, template=None):
+            return self.as_template('css', template)
+
+        def as_rss(self, template=None):
+            return self.as_template('rss', template)
+
+        def as_xml(self, template=None):
+            return self.as_template('xml', template)
+
+        def as_txt(self, template=None):
+            return self.as_template('txt', template)
+
+        def as_template(self, etype, template=None):
+            tpath = self.command_obj.template_path(
+                etype, template_id=self.template_id, template=template)
+
+            data = self.as_dict()
+            data['title'] = self.message
+            data['render_mode'] = 'full'
+
+            def render():
+                return self.session.ui.render_web(
+                    self.session.config, [tpath], data)
+
+            for e in ('jhtml', 'jjs', 'jcss', 'jxml', 'jrss'):
+                if self.session.ui.render_mode.endswith(e):
+                    data['render_mode'] = 'content'
+                    data['result'] = render()
+                    return self.session.ui.render_json(data)
+
+            return render()
+
+    def __init__(self, session, name=None, arg=None, data=None, async=False):
         self.session = session
-        self.serialize = self.SERIALIZE
-        self.name = name
+        self.name = self.SYNOPSIS[1] or self.SYNOPSIS[2] or name
         self.data = data or {}
-        self.status = 'success'
+        self.status = 'unknown'
         self.message = name
         self.error_info = {}
         self.result = None
+        self.run_async = async
         if type(arg) in (type(list()), type(tuple())):
-            self.args = list(arg)
+            self.args = tuple(arg)
         elif arg:
-            if self.SPLIT_ARG:
-                self.args = arg.split(' ', self.SPLIT_ARG)
+            if self.SPLIT_ARG is True:
+                try:
+                    self.args = tuple([a.decode('utf-8') for a in
+                                       shlex.split(arg.encode('utf-8'))])
+                except (ValueError, UnicodeEncodeError, UnicodeDecodeError):
+                    raise UsageError(_('Failed to parse arguments'))
             else:
-                self.args = [arg]
+                self.args = (arg, )
         else:
-            self.args = []
+            self.args = tuple([])
+        if 'arg' in self.data:
+            self.args = tuple(list(self.args) + self.data['arg'])
+        self._create_event()
+
+    def state_as_query_args(self):
+        args = {}
+        if self.args:
+            args['arg'] = self._sloppy_copy(self.args)
+        args.update(self._sloppy_copy(self.data))
+        return args
+
+    def template_path(self, etype, template_id=None, template=None):
+        path_parts = (template_id or self.SYNOPSIS[2] or 'command').split('/')
+        if len(path_parts) == 1:
+            path_parts.append('index')
+        if template not in (None, etype, 'as.' + etype):
+            # Security: The template request may come from the URL, so we
+            #           sanitize it very aggressively before heading off
+            #           to the filesystem.
+            clean_tpl = CleanText(template.replace('.%s' % etype, ''),
+                                  banned=(CleanText.FS +
+                                          CleanText.WHITESPACE))
+            path_parts[-1] += '-%s' % clean_tpl
+        path_parts[-1] += '.' + etype
+        return os.path.join(*path_parts)
 
     def _idx(self, reset=False, wait=True, wait_all=True, quiet=False):
         session, config = self.session, self.session.config
@@ -132,7 +215,7 @@ class Command:
         def __do_load2():
             config.vcards.load_vcards(session)
             if not wait_all:
-                session.ui.reset_marks(quiet=quiet)
+                session.ui.report_marks(quiet=quiet)
 
         def __do_load1():
             if reset:
@@ -144,19 +227,38 @@ class Command:
             if wait_all:
                 __do_load2()
             if not wait:
-                session.ui.reset_marks(quiet=quiet)
+                session.ui.report_marks(quiet=quiet)
             return idx
 
         if wait:
-            rv = config.slow_worker.do(session, 'Load', __do_load1)
+            rv = config.save_worker.do(session, 'Load', __do_load1)
+            session.ui.reset_marks(quiet=quiet)
         else:
-            config.slow_worker.add_task(session, 'Load', __do_load1)
+            config.save_worker.add_task(session, 'Load', __do_load1)
             rv = None
 
         if not wait_all:
-            config.slow_worker.add_task(session, 'Load2', __do_load2)
+            config.save_worker.add_task(session, 'Load2', __do_load2)
 
         return rv
+
+    def _background_save(self,
+                         everything=False, config=False,
+                         index=False, index_full=False,
+                         wait=False, wait_callback=None):
+        session, cfg, idx = self.session, self.session.config, self._idx()
+        aut = cfg.save_worker.add_unique_task
+        if everything or config:
+            aut(session, 'Save config', cfg.save)
+        if idx:
+            if index_full:
+                aut(session, 'Save index', lambda: idx.save(session))
+            elif everything or index:
+                aut(session, 'Save index changes',
+                    lambda: self._idx().save_changes(session))
+        if wait:
+            wait_callback = wait_callback or (lambda: True)
+            cfg.save_worker.do(session, 'Waiting', wait_callback)
 
     def _choose_messages(self, words, allow_ephemeral=False):
         msg_ids = set()
@@ -179,7 +281,7 @@ class Command:
                         self.session.ui.warning((_('No such ID: %s')
                                                  ) % (what[1:], ))
                 except ValueError:
-                    if allow_ephemeral and ':' in what:
+                    if allow_ephemeral and '-' in what:
                         msg_ids.add(what[1:])
                     else:
                         self.session.ui.warning(_('What message is %s?'
@@ -199,14 +301,28 @@ class Command:
                                               ) % (what, ))
         return msg_ids
 
-    def _error(self, message, info={}, prefix=None):
+    def _error(self, message, info=None):
         self.status = 'error'
-        self.message = '%s%s' % ((prefix is None)
-                                 and ('%s error: ' % self.name) or prefix,
-                                 message)
-        self.error_info.update(info)
-        self.session.ui.error(message)
+        self.message = message
+
+        ui_message = _('%s error: %s') % (self.name, message)
+        if info:
+            self.error_info.update(info)
+            details = ' '.join(['%s=%s' % (k, info[k]) for k in info])
+            ui_message += ' (%s)' % details
+        self.session.ui.mark(self.name)
+        self.session.ui.error(ui_message)
+
         return False
+
+    def _success(self, message, result=True):
+        self.status = 'success'
+        self.message = message
+
+        ui_message = _('%s: %s') % (self.name, message)
+        self.session.ui.mark(ui_message)
+
+        return self.view(result)
 
     def _read_file_or_data(self, fn):
         if fn in self.data:
@@ -218,29 +334,95 @@ class Command:
         self.session.ui.debug(traceback.format_exc())
 
     def _serialize(self, name, function):
-        session, config = self.session, self.session.config
-        return config.slow_worker.do(session, name, function)
+        return function()
 
     def _background(self, name, function):
         session, config = self.session, self.session.config
         return config.slow_worker.add_task(session, name, function)
 
+    def _update_event_state(self, state, log=False):
+        self.event.flags = state
+        self.event.data['elapsed'] = int(1000 * (time.time()-self._start_time))
+
+        if (log or self.LOG_PROGRESS) and not self.LOG_NOTHING:
+            ui = str(self.session.ui.__class__).replace('mailpile.', '.')
+            self.event.data['ui'] = ui
+            self.event.data['output'] = self.session.ui.render_mode
+            self.session.config.event_log.log_event(self.event)
+
     def _starting(self):
+        self._start_time = time.time()
+        self._update_event_state(Event.RUNNING)
         if self.name:
             self.session.ui.start_command(self.name, self.args, self.data)
 
+    def _fmt_msg(self, message):
+        return message % {'name': self.name,
+                          'status': self.status or '',
+                          'message': self.message or ''}
+
+    def _sloppy_copy(self, data):
+        def copy_value(v):
+            try:
+                unicode(v).encode('utf-8')
+                return unicode(v)[:1024]
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                return '(BINARY DATA)'
+        if isinstance(data, (list, tuple)):
+            return [self._sloppy_copy(i) for i in data]
+        elif isinstance(data, dict):
+            return dict((k, self._sloppy_copy(v)) for k, v in data.iteritems())
+        else:
+            return copy_value(data)
+
+    def _create_event(self):
+        private_data = {}
+        if self.data:
+            private_data['data'] = self._sloppy_copy(self.data)
+        if self.args:
+            private_data['args'] = self._sloppy_copy(self.args)
+
+        self.event = self._make_command_event(private_data)
+
+    def _make_command_event(self, private_data):
+        return Event(source=self,
+                     message=self._fmt_msg(self.LOG_STARTING),
+                     data={},
+                     private_data=private_data)
+
     def _finishing(self, command, rv):
-        if self.name:
-            self.session.ui.finish_command()
-        result = self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
+        # FIXME: Remove this when stuff is up to date
+        if self.status == 'unknown':
+            self.session.ui.warning('FIXME: %s should use self._success'
+                                    ' etc. (issue #383)' % self.__class__)
+            self.status = 'success'
+
+        self.session.ui.mark(_('Generating result'))
+        result = self.CommandResult(self, self.session, self.name,
                                     command.__doc__ or self.__doc__,
                                     rv, self.status, self.message,
-                                    args=self.args,
-                                    kwargs=self.data,
                                     error_info=self.error_info)
+
+        if not self.run_async:
+            self._update_finished_event()
         return result
 
-    def _run(self, *args, **kwargs):
+    def _update_finished_event(self):
+        # Update the event!
+        if self.message:
+            self.event.message = self.message
+        if self.error_info:
+            self.event.private_data['error_info'] = self.error_info
+        self.event.message = self._fmt_msg(self.LOG_FINISHED)
+        self._update_event_state(Event.COMPLETE, log=True)
+
+        self.session.ui.mark(self.event.message)
+        self.session.ui.report_marks(
+            details=('timing' in self.session.config.sys.debug))
+        if self.name:
+            self.session.ui.finish_command(self.name)
+
+    def _run_sync(self, *args, **kwargs):
         def command(self, *args, **kwargs):
             return self.command(*args, **kwargs)
         try:
@@ -254,17 +436,42 @@ class Command:
                                         'args': ' '.join(self.args)})
             return self._finishing(command, False)
 
-    def run(self, *args, **kwargs):
-        if self.serialize:
-            # Some functions we always run in the slow worker, to make sure
-            # they don't get run in parallel with other things.
-            return self._serialize(self.serialize,
-                                   lambda: self._run(*args, **kwargs))
+    def _run(self, *args, **kwargs):
+        if self.run_async:
+            def streetcar():
+                try:
+                    rv = self._run_sync(*args, **kwargs).as_dict()
+                    self.event.private_data.update(rv)
+                    self._update_finished_event()
+                except:
+                    traceback.print_exc()
+
+            self._starting()
+            self._update_event_state(self.event.RUNNING, log=True)
+            result = Command.CommandResult(self, self.session, self.name,
+                                           self.__doc__,
+                                           {"resultid": self.event.event_id},
+                                           "success",
+                                           "Running in background")
+
+            self.session.config.slow_worker.add_task(self.session, self.name,
+                                                     streetcar)
+            return result
+
         else:
-            return self._run(*args, **kwargs)
+            return self._run_sync(*args, **kwargs)
+
+    def run(self, *args, **kwargs):
+        if self.IS_USER_ACTIVITY:
+            mailpile.util.LAST_USER_ACTIVITY = time.time()
+        return self._run(*args, **kwargs)
 
     def command(self):
         return None
+
+    @classmethod
+    def view(cls, result):
+        return result
 
 
 ##[ Shared basic Search Result class]#########################################
@@ -330,27 +537,23 @@ class SearchResults(dict):
         nz = lambda l: [v for v in l if v]
         msg_ts = long(msg_info[MailIndex.MSG_DATE], 36)
         msg_date = datetime.datetime.fromtimestamp(msg_ts)
-        um = mailpile.urlmap.UrlMap(self.session)
+
         fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
+        f_info = self._address(e=fe, n=fn)
+        f_info['aid'] = (self._msg_addresses(msg_info, no_to=True, no_cc=True)
+                         or [''])[0]
         expl = {
             'mid': msg_info[MailIndex.MSG_MID],
             'id': msg_info[MailIndex.MSG_ID],
             'timestamp': msg_ts,
-            'from': {
-                'email': fe,
-                'fn': fn,
-                'aid': (self._msg_addresses(msg_info, no_to=True, no_cc=True)
-                        or [''])[0],
-            },
+            'from': f_info,
             'to_aids': self._msg_addresses(msg_info, no_from=True, no_cc=True),
             'cc_aids': self._msg_addresses(msg_info, no_from=True, no_to=True),
             'msg_kb': int(msg_info[MailIndex.MSG_KB], 36),
-            'tag_tids': self._msg_tags(msg_info),
+            'tag_tids': sorted(self._msg_tags(msg_info)),
             'thread_mid': msg_info[MailIndex.MSG_THREAD_MID],
             'subject': msg_info[MailIndex.MSG_SUBJECT],
-            'body': {
-                'snippet': msg_info[MailIndex.MSG_BODY],
-            },
+            'body': MailIndex.get_body(msg_info),
             'flags': {
             },
             'crypto': {
@@ -358,10 +561,10 @@ class SearchResults(dict):
         }
 
         # Ephemeral messages do not have URLs
-        if ':' not in msg_info[MailIndex.MSG_MID]:
+        if '-' not in msg_info[MailIndex.MSG_MID]:
             expl['urls'] = {
-                'thread': um.url_thread(msg_info[MailIndex.MSG_MID]),
-                'source': um.url_source(msg_info[MailIndex.MSG_MID]),
+                'thread': self.urlmap.url_thread(msg_info[MailIndex.MSG_MID]),
+                'source': self.urlmap.url_source(msg_info[MailIndex.MSG_MID]),
             }
         else:
             expl['flags']['ephemeral'] = True
@@ -374,9 +577,10 @@ class SearchResults(dict):
                 pass
 
         # Misc flags
-        if [e for e in self.idx.config.profiles if (e.email.lower()
-                                                    == fe.lower())]:
-            expl['flags']['from_me'] = True
+        sender_vcard = self.idx.config.vcards.get_vcard(fe.lower())
+        if sender_vcard:
+            if sender_vcard.kind == 'profile':
+                expl['flags']['from_me'] = True
         tag_types = [self.idx.config.get_tag(t).type for t in expl['tag_tids']]
         for t in self.TAG_TYPE_FLAG_MAP:
             if t in tag_types:
@@ -393,38 +597,50 @@ class SearchResults(dict):
         # Extra behavior for editable messages
         if 'draft' in expl['flags']:
             if self.idx.config.is_editable_message(msg_info):
-                expl['urls']['editing'] = um.url_edit(expl['mid'])
+                expl['urls']['editing'] = self.urlmap.url_edit(expl['mid'])
             else:
                 del expl['flags']['draft']
 
         return expl
 
-    def _msg_addresses(self, msg_info,
+    def _msg_addresses(self, msg_info=None, addresses=[],
                        no_from=False, no_to=False, no_cc=False):
-        if no_to:
-            cids = set()
-        else:
-            to = [t for t in msg_info[MailIndex.MSG_TO].split(',') if t]
-            cids = set(to)
-        if not no_cc:
-            cc = [t for t in msg_info[MailIndex.MSG_CC].split(',') if t]
-            cids |= set(cc)
-        if not no_from:
-            fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
-            if fe:
-                try:
-                    cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
-                except KeyError:
-                    cids.add(b36(self.idx._add_email(fe, name=fn)))
+        cids = set()
+
+        for ai in addresses:
+            try:
+                cids.add(b36(self.idx.EMAIL_IDS[ai.address.lower()]))
+            except KeyError:
+                cids.add(b36(self.idx._add_email(ai.address, name=ai.fn)))
+
+        if msg_info:
+            if not no_to:
+                to = [t for t in msg_info[MailIndex.MSG_TO].split(',') if t]
+                cids |= set(to)
+            if not no_cc:
+                cc = [t for t in msg_info[MailIndex.MSG_CC].split(',') if t]
+                cids |= set(cc)
+            if not no_from:
+                fe, fn = ExtractEmailAndName(msg_info[MailIndex.MSG_FROM])
+                if fe:
+                    try:
+                        cids.add(b36(self.idx.EMAIL_IDS[fe.lower()]))
+                    except KeyError:
+                        cids.add(b36(self.idx._add_email(fe, name=fn)))
+
         return sorted(list(cids))
 
-    def _address(self, cid):
-        e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
+    def _address(self, cid=None, e=None, n=None):
+        if cid and not (e and n):
+            e, n = ExtractEmailAndName(self.idx.EMAILS[int(cid, 36)])
         vcard = self.session.config.vcards.get_vcard(e)
+        if vcard and '@' in n:
+            n = vcard.fn
         return AddressInfo(e, n, vcard=vcard)
 
     def _msg_tags(self, msg_info):
-        tids = [t for t in msg_info[MailIndex.MSG_TAGS].split(',') if t]
+        tids = [t for t in msg_info[MailIndex.MSG_TAGS].split(',')
+                if t and t in self.session.config.tags]
         return tids
 
     def _tag(self, tid, attributes={}):
@@ -458,6 +674,20 @@ class SearchResults(dict):
         tree = email.get_message_tree(want=(email.WANT_MSG_TREE_PGP +
                                             self.WANT_MSG_TREE))
         email.evaluate_pgp(tree, decrypt=True)
+
+        editing_strings = tree.get('editing_strings')
+        if editing_strings:
+            for key in ('from', 'to', 'cc', 'bcc'):
+                if key in editing_strings:
+                    cids = self._msg_addresses(
+                        addresses=AddressHeaderParser(
+                            unicode_data=editing_strings[key]))
+                    editing_strings['%s_aids' % key] = cids
+                    for cid in cids:
+                        if cid not in self['data']['addresses']:
+                            self['data']['addresses'
+                                         ][cid] = self._address(cid=cid)
+
         return self._prune_msg_tree(tree)
 
     def __init__(self, session, idx,
@@ -469,6 +699,8 @@ class SearchResults(dict):
         self.people = people
         self.emails = emails
         self.idx = idx
+        self.urlmap = mailpile.urlmap.UrlMap(self.session)
+
         results = self.results = results or session.results or []
 
         num = num or session.config.prefs.num_results
@@ -478,6 +710,9 @@ class SearchResults(dict):
             start = len(results)
         if start < 0:
             start = 0
+
+        self.session.ui.mark(_('Parsing metadata for %d results '
+                               '(full_threads=%s)') % (num, full_threads))
 
         try:
             threads = [b36(r) for r in results[start:start + num]]
@@ -490,7 +725,7 @@ class SearchResults(dict):
             'stats': {
                 'count': len(threads),
                 'start': start + 1,
-                'end': start + num,
+                'end': start + min(num, len(results)-start),
                 'total': len(results),
             },
             'search_terms': session.searched,
@@ -558,13 +793,14 @@ class SearchResults(dict):
         # Populate data.person
         for cid in self._msg_addresses(msg_info):
             if cid not in self['data']['addresses']:
-                self['data']['addresses'][cid] = self._address(cid)
+                self['data']['addresses'][cid] = self._address(cid=cid)
 
         # Populate data.tag
         if 'tags' in self.session.config:
             for tid in self._msg_tags(msg_info):
                 if tid not in self['data']['tags']:
-                    self['data']['tags'][tid] = self._tag(tid)
+                    self['data']['tags'][tid] = self._tag(tid,
+                                                          {"searched": False})
 
     def add_email(self, e):
         if e not in self.emails:
@@ -590,34 +826,97 @@ class SearchResults(dict):
                              end=stats['start'] - 1)
 
     def as_text(self):
+        from mailpile.jinjaextensions import MailpileCommand as JE
         clen = max(3, len('%d' % len(self.session.results)))
         cfmt = '%%%d.%ds' % (clen, clen)
+
+        term_width = self.session.ui.term.max_width()
+        fs_width = int((22 + 53) * (term_width / 79.0))
+        f_width = min(32, int(0.30 * fs_width))
+        s_width = fs_width - f_width
+
         text = []
         count = self['stats']['start']
         expand_ids = [e.msg_idx_pos for e in (self.emails or [])]
         addresses = self.get('data', {}).get('addresses', {})
+
         for mid in self['thread_ids']:
-            if mid in self['data'].get('message', {}):
+            m = self['data']['metadata'][mid]
+            tags = [self['data']['tags'][t] for t in m['tag_tids']]
+            tag_names = [t['name'] for t in tags
+                         if not t.get('searched', False)
+                         and t.get('label', True)
+                         and t.get('display', '') != 'invisible']
+            tag_new = [t for t in tags if t.get('type') == 'unread']
+            tag_names.sort()
+            msg_meta = tag_names and ('  (' + '('.join(tag_names)) or ''
+
+            # FIXME: this is a bit ugly, but useful for development
+            es = ['', '']
+            for t in [t['slug'] for t in tags]:
+                if t.startswith('mp_enc') and 'none' not in t:
+                    es[1] = 'E'
+                if t.startswith('mp_sig') and 'none' not in t:
+                    es[0] = 'S'
+            es = ''.join([e for e in es if e])
+            if es:
+                msg_meta = (msg_meta or '  ') + ('[%s]' % es)
+            elif msg_meta:
+                msg_meta += ')'
+            else:
+                msg_meta += '  '
+            msg_meta += elapsed_datetime(m['timestamp'])
+
+            from_info = (m['from'].get('fn') or m['from'].get('email')
+                         or '(anonymous)')
+            if from_info[:1] in ('<', '"', '\''):
+                from_info = from_info[1:]
+                if from_info[-1:] in ('>', '"', '\''):
+                    from_info = from_info[:-1]
+            if '@' in from_info and len(from_info) > 18:
+                e, d = from_info.split('@', 1)
+                if d in ('gmail.com', 'yahoo.com', 'hotmail.com'):
+                    from_info = '%s@%s..' % (e, d[0])
+                else:
+                    from_info = '%s..@%s' % (e[0], d)
+
+            if not expand_ids:
+                def gg(pos):
+                    return (pos < 10) and pos or '>'
+                thread = [m['thread_mid']]
+                thread += self['data']['threads'][m['thread_mid']]
+                if m['mid'] not in thread:
+                    thread.append(m['mid'])
+                pos = thread.index(m['mid']) + 1
+                if pos > 1:
+                    from_info = '%s>%s' % (gg(pos-1), from_info)
+                else:
+                    from_info = '  ' + from_info
+                if pos < len(thread):
+                    from_info = '%s>%s' % (from_info[:20], gg(len(thread)-pos))
+
+            subject = re.sub('^(\\[[^\\]]{6})[^\\]]{3,}\\]\\s*', '\\1..] ',
+                             JE._nice_subject(m['subject']))
+
+            sfmt = '%%-%d.%ds%%s' % (max(1, s_width - (clen + len(msg_meta))),
+                                     max(1, s_width - (clen + len(msg_meta))))
+            ffmt = ' %%-%d.%ds %%s' % (f_width, f_width)
+            tfmt = cfmt + ffmt + sfmt
+            text.append(tfmt % (count, from_info, tag_new and '*' or ' ',
+                                subject, msg_meta))
+
+            if mid in self['data'].get('messages', {}):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
                 msg_tree = exp_email.get_message_tree()
-                text.append(exp_email.get_editing_string(msg_tree))
-            else:
-                m = self['data']['metadata'][mid]
-                tags = [self['data']['tags'][t] for t in m['tag_tids']]
-                tag_names = [t['name'] for t in tags
-                             if 'searched' not in t
-                             and t.get('label', True)
-                             and t.get('display', '') != 'invisible']
-                tag_new = [t for t in tags if t.get('type') == 'unread']
-                tag_names.sort()
-                msg_tags = tag_names and (' <' + '<'.join(tag_names)) or ''
-                sfmt = '%%-%d.%ds%%s' % (46 - (clen + len(msg_tags)),
-                                         46 - (clen + len(msg_tags)))
-                text.append((cfmt + ' %s%-22.22s ' + sfmt + '%7s'
-                             ) % (count, tag_new and '*' or ' ',
-                                  m['from'].get('fn') or m['from']['email'],
-                                  m['subject'], msg_tags,
-                                  elapsed_datetime(m['timestamp'])))
+                text.append('-' * term_width)
+                text.append(exp_email.get_editing_string(msg_tree).strip())
+                if msg_tree['attachments']:
+                    text.append('\nAttachments:')
+                    for a in msg_tree['attachments']:
+                        text.append('%5.5s %s' % ('#%s' % a['count'],
+                                                  a['filename']))
+                text.append('-' * term_width)
+
             count += 1
         if not count:
             text = ['(No messages found)']
@@ -632,109 +931,168 @@ class Load(Command):
     ORDER = ('Internals', 1)
 
     def command(self, reset=True, wait=True, wait_all=False, quiet=False):
-        return self._idx(reset=reset,
-                         wait=wait,
-                         wait_all=wait_all,
-                         quiet=quiet) and True or False
+        if self._idx(reset=reset,
+                     wait=wait,
+                     wait_all=wait_all,
+                     quiet=quiet):
+            return self._success(_('Loaded metadata index'))
+        else:
+            return self._error(_('Failed to loaded metadata index'))
 
 
 class Rescan(Command):
     """Add new messages to index"""
-    SYNOPSIS = (None, 'rescan', None, '[all|vcards|mailboxes|<msgs>]')
+    SYNOPSIS = (None, 'rescan', None,
+                '[full|vcards|both|mailboxes|sources|<msgs>]')
     ORDER = ('Internals', 2)
-    SERIALIZE = 'Rescan'
+    LOG_PROGRESS = True
 
-    def command(self):
+    def command(self, slowly=False):
         session, config, idx = self.session, self.session.config, self._idx()
+        args = list(self.args)
 
-        if config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+        # Pretend we're idle, to make rescan go fast fast.
+        if not slowly:
+            mailpile.util.LAST_USER_ACTIVITY = 0
 
-        delay = play_nice_with_threads()
-        if delay > 0:
-            session.ui.notify((
-                _('Note: periodic delay is %ss, run from shell to '
-                  'speed up: mp --rescan=...')
-            ) % delay)
+        if args and args[0].lower() == 'vcards':
+            return self._success(_('Rescanned vcards'),
+                                 result=self._rescan_vcards(session))
+        elif args and args[0].lower() in ('both', 'mailboxes', 'sources',
+                                          'editable'):
+            which = args[0].lower()
+            return self._success(_('Rescanned mailboxes'),
+                                 result=self._rescan_mailboxes(session,
+                                                               which=which))
+        elif args and args[0].lower() == 'full':
+            config.clear_mbox_cache()
+            args.pop(0)
 
-        if self.args and self.args[0].lower() == 'vcards':
-            return self._rescan_vcards(session, config)
-        elif self.args and self.args[0].lower() == 'mailboxes':
-            return self._rescan_mailboxes(session, config)
-        elif self.args and self.args[0].lower() == 'all':
-            self.args.pop(0)
-
-        msg_idxs = self._choose_messages(self.args)
+        msg_idxs = self._choose_messages(args)
         if msg_idxs:
             for msg_idx_pos in msg_idxs:
                 e = Email(idx, msg_idx_pos)
-                session.ui.mark('Re-indexing %s' % e.msg_mid())
-                idx.index_email(self.session, e)
-            return {'messages': len(msg_idxs)}
+                try:
+                    session.ui.mark('Re-indexing %s' % e.msg_mid())
+                    idx.index_email(self.session, e)
+                except KeyboardInterrupt:
+                    raise
+                except:
+                    self._ignore_exception()
+                    session.ui.warning(_('Failed to reindex: %s'
+                                         ) % e.msg_mid())
+
+            self.event.data["messages"] = len(msg_idxs)
+            self.session.config.event_log.log_event(self.event)
+            self._background_save(index=True)
+
+            return self._success(_('Indexed %d messages') % len(msg_idxs),
+                                 result={'messages': len(msg_idxs)})
+
         else:
             # FIXME: Need a lock here?
             if 'rescan' in config._running:
-                return True
+                return self._success(_('Rescan already in progress'))
             config._running['rescan'] = True
             try:
-                return dict_merge(
-                    self._rescan_vcards(session, config),
-                    self._rescan_mailboxes(session, config)
-                )
+                results = {}
+                results.update(self._rescan_vcards(session))
+                results.update(self._rescan_mailboxes(session))
+
+                self.event.data.update(results)
+                self.session.config.event_log.log_event(self.event)
+                if 'aborted' in results:
+                    raise KeyboardInterrupt()
+                return self._success(_('Rescanned vcards and mailboxes'),
+                                     result=results)
+            except (KeyboardInterrupt), e:
+                return self._error(_('User aborted'), info=results)
             finally:
                 del config._running['rescan']
 
-    def _rescan_vcards(self, session, config):
-        import mailpile.plugins
+    def _rescan_vcards(self, session):
+        from mailpile.plugins import PluginManager
+        config = session.config
         imported = 0
         importer_cfgs = config.prefs.vcard.importers
-        for importer in mailpile.plugins.VCARD_IMPORTERS.values():
-            for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
-                if cfg:
-                    imp = importer(session, cfg)
-                    imported += imp.import_vcards(session, config.vcards)
+        try:
+            session.ui.mark(_('Rescanning: %s') % 'vcards')
+            for importer in PluginManager.VCARD_IMPORTERS.values():
+                for cfg in importer_cfgs.get(importer.SHORT_NAME, []):
+                    if cfg:
+                        imp = importer(session, cfg)
+                        imported += imp.import_vcards(session, config.vcards)
+                    if mailpile.util.QUITTING:
+                        return {'vcards': imported, 'aborted': True}
+        except KeyboardInterrupt:
+            return {'vcards': imported, 'aborted': True}
         return {'vcards': imported}
 
-    def _rescan_mailboxes(self, session, config):
+    def _rescan_mailboxes(self, session, which='mailboxes'):
+        config = session.config
         idx = self._idx()
         msg_count = 0
         mbox_count = 0
         rv = True
         try:
+            session.ui.mark(_('Rescanning: %s') % which)
+
             pre_command = config.prefs.rescan_command
-            if pre_command:
+            if pre_command and not mailpile.util.QUITTING:
                 session.ui.mark(_('Running: %s') % pre_command)
                 subprocess.check_call(pre_command, shell=True)
             msg_count = 1
-            for fid, fpath in config.get_mailboxes():
-                if fpath == '/dev/null':
-                    continue
-                if mailpile.util.QUITTING:
-                    break
-                try:
-                    count = idx.scan_mailbox(session, fid, fpath,
-                                             config.open_mailbox)
-                except ValueError:
-                    session.ui.warning(_('Failed to rescan: %s') % fpath)
-                    count = 0
 
-                if count:
-                    msg_count += count
-                    mbox_count += 1
-                config.clear_mbox_cache()
-                session.ui.mark('\n')
+            if which in ('both', 'sources'):
+                sources = config.mail_sources.values()
+                sources.sort(key=lambda k: random.randint(0, 100))
+                for src in sources:
+                    if mailpile.util.QUITTING:
+                        break
+                    session.ui.mark(_('Rescanning: %s') % (src, ))
+                    count = src.rescan_now(session)
+                    if count > 0:
+                        msg_count += count
+                        mbox_count += 1
+                    session.ui.mark('\n')
+
+            if which in ('both', 'mailboxes', 'editable'):
+                if which == 'editable':
+                    mailboxes = config.get_mailboxes(mail_sources=True)
+                else:
+                    mailboxes = config.get_mailboxes(mail_sources=False)
+
+                for fid, fpath, sc in mailboxes:
+                    if mailpile.util.QUITTING:
+                        break
+                    if fpath == '/dev/null':
+                        continue
+                    try:
+                        session.ui.mark(_('Rescanning: %s %s') % (fid, fpath))
+                        if which == 'editable':
+                            count = idx.scan_mailbox(session, fid, fpath,
+                                                     config.open_mailbox,
+                                                     process_new=False,
+                                                     editable=True)
+                        else:
+                            count = idx.scan_mailbox(session, fid, fpath,
+                                                     config.open_mailbox)
+                    except ValueError:
+                        count = -1
+                    if count < 0:
+                        session.ui.warning(_('Failed to rescan: %s') % fpath)
+                    elif count > 0:
+                        msg_count += count
+                        mbox_count += 1
+                    session.ui.mark('\n')
+
             msg_count -= 1
             if msg_count:
-                if not mailpile.util.QUITTING:
-                    idx.cache_sort_orders(session)
                 if not mailpile.util.QUITTING:
                     GlobalPostingList.Optimize(session, idx, quick=True)
             else:
                 session.ui.mark(_('Nothing changed'))
         except (KeyboardInterrupt, subprocess.CalledProcessError), e:
-            session.ui.mark(_('Aborted: %s') % e)
-            self._ignore_exception()
             return {'aborted': True,
                     'messages': msg_count,
                     'mailboxes': mbox_count}
@@ -742,9 +1100,9 @@ class Rescan(Command):
             if msg_count:
                 session.ui.mark('\n')
                 if msg_count < 500:
-                    idx.save_changes(session)
+                    self._background_save(index=True)
                 else:
-                    idx.save(session)
+                    self._background_save(index_full=True)
         return {'messages': msg_count,
                 'mailboxes': mbox_count}
 
@@ -753,17 +1111,17 @@ class Optimize(Command):
     """Optimize the keyword search index"""
     SYNOPSIS = (None, 'optimize', None, '[harder]')
     ORDER = ('Internals', 3)
-    SERIALIZE = 'Optimize'
 
-    def command(self):
+    def command(self, slowly=False):
         try:
+            if not slowly:
+                mailpile.util.LAST_USER_ACTIVITY = 0
             self._idx().save(self.session)
             GlobalPostingList.Optimize(self.session, self._idx(),
                                        force=('harder' in self.args))
-            return True
+            return self._success(_('Optimized search engine'))
         except KeyboardInterrupt:
-            self.session.ui.mark(_('Aborted'))
-            return False
+            return self._error(_('Aborted'))
 
 
 class RunWWW(Command):
@@ -775,7 +1133,19 @@ class RunWWW(Command):
         self.session.config.prepare_workers(self.session, daemons=True)
         while not mailpile.util.QUITTING:
             time.sleep(1)
-        return True
+        return self_success(_('Started the web server'))
+
+
+class WritePID(Command):
+    """Write the PID to a file"""
+    SYNOPSIS = (None, 'pidfile', None, "</path/to/pidfile>")
+    ORDER = ('Internals', 5)
+    SPLIT_ARG = False
+
+    def command(self):
+        with open(self.args[0], 'w') as fd:
+            fd.write('%d' % os.getpid())
+        return self._success(_('Wrote PID to %s') % self.args)
 
 
 class RenderPage(Command):
@@ -784,18 +1154,211 @@ class RenderPage(Command):
     ORDER = ('Internals', 6)
     SPLIT_ARG = False
     HTTP_STRICT_VARS = False
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
             Command.CommandResult.__init__(self, *args, **kwargs)
             if self.result and 'path' in self.result:
-                self.template_id += '/' + self.result['path'] + '/index'
+                self.template_id = 'page/' + self.result['path'] + '/index'
 
     def command(self):
-        return {
+        return self._success(_('Rendered the page'), result={
             'path': (self.args and self.args[0] or ''),
             'data': self.data
-        }
+        })
+
+
+class ProgramStatus(Command):
+    """Display list of running threads, locks and outstanding events."""
+    SYNOPSIS = (None, 'ps', 'ps', None)
+    ORDER = ('Internals', 5)
+    IS_USER_ACTIVITY = False
+    LOG_NOTHING = True
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            cevents = self.result['cevents']
+            if cevents:
+                cevents = '\n'.join(['  %s %s' % (e.event_id, e.message)
+                                     for e in cevents])
+            else:
+                cevents = _('Nothing Found')
+
+            ievents = self.result['ievents']
+            if ievents:
+                ievents = '\n'.join([' %s:%s %s' % (e.event_id,
+                                                    e.flags,
+                                                    e.message)
+                                     for e in ievents])
+            else:
+                ievents = _('Nothing Found')
+
+            threads = self.result['threads']
+            if threads:
+                threads = '\n'.join([('  ' + str(t)) for t in threads])
+            else:
+                threads = _('Nothing Found')
+
+            locks = self.result['locks']
+            if locks:
+                locks = '\n'.join([('  %s.%s is %slocked'
+                                    ) % (l[0], l[1], '' if l[2] else 'un')
+                                   for l in locks])
+            else:
+                locks = _('Nothing Found')
+
+            return ('Recent events:\n%s\n\n'
+                    'Events in progress:\n%s\n\n'
+                    'Threads: (bg delay %.3fs)\n%s\n\n'
+                    'Locks:\n%s'
+                    ) % (cevents, ievents,
+                         self.result['delay'], threads,
+                         locks)
+
+    def command(self, args=None):
+        config = self.session.config
+
+        try:
+            idx = config.index
+            locks = [
+                ('config.index', '_lock', idx._lock._is_owned()),
+                ('config.index', '_save_lock', idx._save_lock._is_owned())
+            ]
+        except AttributeError:
+            locks = []
+        locks.extend([
+            ('config', '_lock', config._lock._is_owned()),
+            ('config.vcards', '_lock', config.vcards._lock._is_owned()),
+            ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
+             mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
+            ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
+             mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
+            ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
+             mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),
+        ])
+
+        threads = threading.enumerate()
+        for thread in threads:
+            try:
+                if hasattr(thread, 'lock'):
+                    locks.append([thread, 'lock', thread.lock])
+                if hasattr(thread, '_lock'):
+                    locks.append([thread, '_lock', thread._lock])
+                if locks and hasattr(locks[-1][-1], 'locked'):
+                    locks[-1][-1] = locks[-1][-1].locked()
+                elif locks and hasattr(locks[-1][-1], '_is_owned'):
+                    locks[-1][-1] = locks[-1][-1]._is_owned()
+            except AttributeError:
+                pass
+
+        return self._success(_("Listed events, threads, and locks"), result={
+            'cevents': list(config.event_log.events(flag='c'))[-10:],
+            'ievents': config.event_log.incomplete(),
+            'delay': play_nice_with_threads(),
+            'threads': threads,
+            'locks': sorted(locks)
+        })
+
+
+class ListDir(Command):
+    """Display working directory listing"""
+    SYNOPSIS = (None, 'ls', None, "<.../new/path/...>")
+    ORDER = ('Internals', 5)
+    IS_USER_ACTIVITY = True
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            if self.result:
+                lines = []
+                for fn, sz, isdir in self.result:
+                    lines.append(('%10.10s  %s%s'
+                                  ) % (sz, fn, isdir and '/' or ''))
+                return '\n'.join(lines)
+            else:
+                return _('Nothing Found')
+
+    def command(self, args=None):
+        args = list((args is None) and self.args or args or [])
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
+        try:
+            file_list = [(f.decode('utf-8'),
+                          os.path.getsize(f),
+                          os.path.isdir(f))
+                         for f in os.listdir('.') if not f.startswith('.')
+                         and not args or [a for a in args if a in f]]
+            file_list.sort(key=lambda i: i[0].lower())
+            return self._success(_('Current directory is %s') % os.getcwd(),
+                                 result=file_list)
+        except (OSError, IOError, UnicodeDecodeError), e:
+            return self._error(_('Failed to list directory: %s') % e)
+
+
+class ChangeDir(ListDir):
+    """Change working directory"""
+    SYNOPSIS = (None, 'cd', None, "<.../new/path/...>")
+    ORDER = ('Internals', 5)
+    IS_USER_ACTIVITY = True
+
+    def command(self, args=None):
+        args = list((args is None) and self.args or args or [])
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
+        try:
+            os.chdir(args.pop(0).encode('utf-8'))
+            return ListDir.command(self, args=args)
+        except (OSError, IOError, UnicodeEncodeError), e:
+            return self._error(_('Failed to change directories: %s') % e)
+
+
+class CatFile(Command):
+    """Dump the contents of a file, decrypting if necessary"""
+    SYNOPSIS = (None, 'cat', None, "</path/to/file> [>/path/to/output]")
+    ORDER = ('Internals', 5)
+    IS_USER_ACTIVITY = True
+
+    class CommandResult(Command.CommandResult):
+        def as_text(self):
+            if isinstance(self.result, list):
+                return ''.join(self.result)
+            else:
+                return ''
+
+    def command(self, args=None):
+        lines = []
+        files = list(args or self.args)
+
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
+        target = tfd = None
+        if files and files[-1] and files[-1][:1] == '>':
+            target = files.pop(-1)[1:]
+            if os.path.exists(target):
+                return self._error(_('That file already exists: %s'
+                                     ) % target)
+            tfd = open(target, 'wb')
+            cb = lambda ll: [tfd.write(l) for l in ll]
+        else:
+            cb = lambda ll: lines.extend((l.decode('utf-8') for l in ll))
+
+        for fn in files:
+            with open(fn, 'r') as fd:
+                decrypt_and_parse_lines(fd, cb, self.session.config,
+                                        newlines=True, decode=None)
+
+        if tfd:
+            tfd.close()
+            return self._success(_('Dumped to %s: %s'
+                                   ) % (target, ', '.join(files)))
+        else:
+            return self._success(_('Dumped: %s') % ', '.join(files),
+                                   result=lines)
 
 
 ##[ Configuration commands ]###################################################
@@ -810,20 +1373,20 @@ class ConfigSet(Command):
     HTTP_POST_VARS = {
         'section.variable': 'value|json-string',
     }
+    IS_USER_ACTIVITY = True
 
     def command(self):
         config = self.session.config
-        args = self.args[:]
+        args = list(self.args)
         ops = []
 
         if config.sys.lockdown:
-            self.session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
             if parts[0] in config.rules:
-                ops.append((var, self.data[var]))
+                ops.append((var, self.data[var][0]))
 
         if self.args:
             arg = ' '.join(self.args)
@@ -835,6 +1398,7 @@ class ConfigSet(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        updated = {}
         for path, value in ops:
             value = value.strip()
             if value.startswith('{') or value.startswith('['):
@@ -842,17 +1406,18 @@ class ConfigSet(Command):
             try:
                 cfg, var = config.walk(path.strip(), parent=1)
                 cfg[var] = value
+                updated[path] = value
             except IndexError:
                 cfg, v1, v2 = config.walk(path.strip(), parent=2)
                 cfg[v1] = {v2: value}
 
-        self._serialize('Save config', lambda: config.save())
-        return True
+        self._background_save(config=True)
+        return self._success(_('Updated your settings'), result=updated)
 
 
 class ConfigAdd(Command):
     """Add a new value to a list (or ordered dict) setting"""
-    SYNOPSIS = ('S', 'append', 'settings/add', '<section.variable> <value>')
+    SYNOPSIS = (None, 'append', 'settings/add', '<section.variable> <value>')
     ORDER = ('Config', 1)
     SPLIT_ARG = False
     HTTP_CALLABLE = ('POST', 'UPDATE')
@@ -860,15 +1425,14 @@ class ConfigAdd(Command):
     HTTP_POST_VARS = {
         'section.variable': 'value|json-string',
     }
+    IS_USER_ACTIVITY = True
 
     def command(self):
         config = self.session.config
-        args = self.args[:]
         ops = []
 
         if config.sys.lockdown:
-            self.session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
@@ -885,15 +1449,17 @@ class ConfigAdd(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
+        updated = {}
         for path, value in ops:
             value = value.strip()
             if value.startswith('{') or value.startswith('['):
                 value = json.loads(value)
             cfg, var = config.walk(path.strip(), parent=1)
             cfg[var].append(value)
+            updated[path] = value
 
-        self._serialize('Save config', lambda: config.save())
-        return True
+        self._background_save(config=True)
+        return self._success(_('Updated your settings'), result=updated)
 
 
 class ConfigUnset(Command):
@@ -904,44 +1470,49 @@ class ConfigUnset(Command):
     HTTP_POST_VARS = {
         'var': 'section.variables'
     }
+    IS_USER_ACTIVITY = True
 
     def command(self):
         session, config = self.session, self.session.config
 
         if config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
-        vlist = self.args[:]
-        vlist.extend(self.data.get('var', None) or [])
+        updated = []
+        vlist = list(self.args) + (self.data.get('var', None) or [])
         for v in vlist:
             cfg, vn = config.walk(v, parent=True)
             if vn in cfg:
                 del cfg[vn]
-        self._serialize('Save config', lambda: config.save())
-        return True
+                updated.append(v)
+
+        self._background_save(config=True)
+        return self._success(_('Reset to default values'), result=updated)
 
 
 class ConfigPrint(Command):
     """Print one or more settings"""
     SYNOPSIS = ('P', 'print', 'settings', '<var>')
     ORDER = ('Config', 3)
-    SPLIT_ARG = False
     HTTP_QUERY_VARS = {
         'var': 'section.variable'
     }
+    IS_USER_ACTIVITY = True
 
     def command(self):
         session, config = self.session, self.session.config
         result = {}
-        try:
-            # FIXME: Are there privacy implications here somewhere?
-            for key in (self.args + self.data.get('var', [])):
+        invalid = []
+        # FIXME: Are there privacy implications here somewhere?
+        for key in (self.args + tuple(self.data.get('var', []))):
+            try:
                 result[key] = config.walk(key)
-        except KeyError:
-            session.ui.error(_('No such key: %s') % key)
-            return False
-        return result
+            except KeyError:
+                invalid.append(key)
+        if invalid:
+            return self._error(_('Invalid keys'), info={'keys': invalid})
+        else:
+            return self._success(_('Displayed settings'), result=result)
 
 
 class AddMailboxes(Command):
@@ -950,43 +1521,57 @@ class AddMailboxes(Command):
     ORDER = ('Config', 4)
     SPLIT_ARG = False
     HTTP_CALLABLE = ('POST', 'UPDATE')
+    IS_USER_ACTIVITY = True
+
+    MAX_PATHS = 50000
 
     def command(self):
         session, config = self.session, self.session.config
         adding = []
         existing = config.sys.mailbox
-        paths = self.args[:]
+        paths = list(self.args)
 
         if config.sys.lockdown:
-            session.ui.warning(_('In lockdown, doing nothing.'))
-            return False
+            return self._error(_('In lockdown, doing nothing.'))
 
-        while paths:
-            raw_fn = paths.pop(0)
-            fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
-            if raw_fn in existing or fn in existing:
-                session.ui.warning('Already in the pile: %s' % raw_fn)
-            elif raw_fn.startswith("imap://"):
-                adding.append(raw_fn)
-            elif os.path.exists(fn):
-                if IsMailbox(fn):
-                    adding.append(fn)
-                elif os.path.isdir(fn):
-                    session.ui.mark('Scanning %s for mailboxes' % fn)
-                    for f in [f for f in os.listdir(fn)
-                              if not f.startswith('.')]:
-                        paths.append(os.path.join(fn, f))
-            else:
-                return self._error('No such file/directory: %s' % raw_fn)
+        try:
+            while paths:
+                raw_fn = paths.pop(0)
+                fn = os.path.normpath(os.path.expanduser(raw_fn))
+                fn = os.path.abspath(fn)
+                if raw_fn in existing or fn in existing:
+                    session.ui.warning('Already in the pile: %s' % raw_fn)
+                elif raw_fn.startswith("imap://"):
+                    adding.append(raw_fn)
+                elif IsMailbox(fn, config):
+                    adding.append(raw_fn)
+                elif os.path.exists(fn) and os.path.isdir(fn):
+                        session.ui.mark('Scanning %s for mailboxes' % fn)
+                        try:
+                            for f in [f for f in os.listdir(fn)
+                                      if not f.startswith('.')]:
+                                paths.append(os.path.join(fn, f))
+                                if len(paths) > self.MAX_PATHS:
+                                    return self._error(_('Too many files'))
+                        except OSError:
+                            if raw_fn in self.args:
+                                return self._error(_('Failed to read: %s'
+                                                     ) % raw_fn)
+                elif raw_fn in self.args:
+                    return self._error(_('No such file or directory: %s'
+                                         ) % raw_fn)
+        except KeyboardInterrupt:
+            return self._error(_('User aborted'))
 
         added = {}
         for arg in adding:
             added[config.sys.mailbox.append(arg)] = arg
         if added:
-            self._serialize('Save config', lambda: config.save())
-            return {'added': added}
+            self._background_save(config=True)
+            return self._success(_('Added %d mailboxes') % len(added),
+                                 result={'added': added})
         else:
-            return True
+            return self._success(_('Nothing was added'))
 
 
 ###############################################################################
@@ -996,17 +1581,60 @@ class Output(Command):
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
     ORDER = ('Internals', 7)
     HTTP_STRICT_VARS = False
+    IS_USER_ACTIVITY = False
+    LOG_NOTHING = True
+
+    def get_render_mode(self):
+        return self.args and self.args[0] or 'text'
 
     def command(self):
-        self.session.ui.render_mode = self.args and self.args[0] or 'text'
-        return {'output': self.session.ui.render_mode}
+        m = self.session.ui.render_mode = self.get_render_mode()
+        return self._success(_('Set output mode to: %s') % m,
+                             result={'output': m})
+
+
+class Quit(Command):
+    """Exit Mailpile """
+    SYNOPSIS = ("q", "quit", "quitquitquit", None)
+    ABOUT = ("Quit mailpile")
+    ORDER = ("Internals", 2)
+    RAISES = (KeyboardInterrupt,)
+
+    def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
+        self._background_save(index=True, config=True, wait=True)
+        mailpile.util.QUITTING = True
+        return self._success(_('Shutting down...'))
+
+
+class Abort(Command):
+    """Exit Mailpile without saving"""
+    SYNOPSIS = (None, "quit/abort", "abortabortabort", None)
+    ABOUT = ("Quit mailpile")
+    ORDER = ("Internals", 2)
+    HTTP_QUERY_VARS = {
+        'no_save': 'Do not try to save state'
+    }
+
+    def command(self):
+        if self.session.config.sys.lockdown:
+            return self._error(_('In lockdown, doing nothing.'))
+
+        if 'no_save' not in self.data:
+            self._background_save(index=True, config=True, wait=True,
+                                  wait_callback=lambda: os._exit(1))
+        else:
+            os._exit(1)
 
 
 class Help(Command):
     """Print help on Mailpile or individual commands."""
-    SYNOPSIS = ('h', 'help', 'help', '[<command-group>|variables]')
+    SYNOPSIS = ('h', 'help', 'help', '[<command-group>]')
     ABOUT = ('This is Mailpile!')
     ORDER = ('Config', 9)
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
 
@@ -1045,6 +1673,7 @@ class Help(Command):
             width = self.result.get('width', 8)
             ckeys = cmds.keys()
             ckeys.sort(key=lambda k: cmds[k][3])
+            arg_width = min(50, max(14, self.session.ui.term.max_width()-70))
             for c in ckeys:
                 cmd, args, explanation, rank = cmds[c]
                 if not rank or not cmd:
@@ -1058,10 +1687,11 @@ class Help(Command):
                     c = '%s|' % c[0]
                 fmt = '  %%s%%-%d.%ds' % (width, width)
                 if explanation:
-                    if len(args or '') <= 15:
-                        fmt += ' %-15.15s %s'
+                    if len(args or '') <= arg_width:
+                        fmt += ' %%-%d.%ds %%s' % (arg_width, arg_width)
                     else:
-                        fmt += ' %%s\n%s %%s' % (' ' * (len(c) + width + 18))
+                        pad = len(c) + width + 3 + arg_width
+                        fmt += ' %%s\n%s %%s' % (' ' * pad)
                 else:
                     explanation = ''
                     fmt += ' %s %s '
@@ -1091,7 +1721,7 @@ class Help(Command):
     def command(self):
         self.session.ui.reset_marks(quiet=True)
         if self.args:
-            command = self.args.pop(0)
+            command = self.args[0]
             for cls in COMMANDS:
                 name = cls.SYNOPSIS[1] or cls.SYNOPSIS[2]
                 width = len(name)
@@ -1108,12 +1738,11 @@ class Help(Command):
                         cmd_list['_%s' % scmd] = (scmd, ssynopsis,
                                                   scls.__doc__, order)
                         width = max(len(scmd or surl), width)
-                    return {
+                    return self._success(_('Displayed help'), result={
                         'pre': cls.__doc__,
                         'commands': cmd_list,
-                        'width': width,
-                        'post': cls.EXAMPLES
-                    }
+                        'width': width
+                    })
             return self._error(_('Unknown command'))
 
         else:
@@ -1127,17 +1756,17 @@ class Help(Command):
                         cmd_list[c or '_%s' % name] = (name, synopsis,
                                                        cls.__doc__,
                                                        count + cls.ORDER[1])
-            return {
+            return self._success(_('Displayed help'), result={
                 'commands': cmd_list,
-                'tags': GetCommand('tag/list')(self.session).run(),
+                'tags': GetCommand('tags')(self.session).run(),
                 'index': self._idx()
-            }
+            })
 
     def _starting(self):
         pass
 
     def _finishing(self, command, rv):
-        return self.CommandResult(self.session, self.name, self.SYNOPSIS[2],
+        return self.CommandResult(self, self.session, self.name,
                                   command.__doc__ or self.__doc__, rv,
                                   self.status, self.message)
 
@@ -1145,28 +1774,33 @@ class Help(Command):
 class HelpVars(Help):
     """Print help on Mailpile variables"""
     SYNOPSIS = (None, 'help/variables', 'help/variables', None)
+    ABOUT = ('The available mailpile variables')
     ORDER = ('Config', 9)
+    IS_USER_ACTIVITY = True
 
     def command(self):
-        config = self.session.config
+        config = self.session.config.rules
         result = []
-        for cat in config.CATEGORIES.keys():
+        categories = ["sys", "prefs", "profiles"]
+        for cat in categories:
             variables = []
-            for what in config.INTS, config.STRINGS, config.DICTS:
-                for ii, i in what.iteritems():
+            what = config[cat]
+            if isinstance(what[2], dict):
+                for ii, i in what[2].iteritems():
                     variables.append({
                         'var': ii,
-                        'type': i[0],
-                        'desc': i[2]
+                        'type': str(i[1]),
+                        'desc': i[0]
                     })
             variables.sort(key=lambda k: k['var'])
             result.append({
                 'category': cat,
-                'name': config.CATEGORIES[cat][1],
+                'name': config[cat][0],
                 'variables': variables
             })
-        result.sort(key=lambda k: config.CATEGORIES[k['category']][0])
-        return {'variables': result}
+        result.sort(key=lambda k: config[k['category']][0])
+        return self._success(_('Displayed variables'),
+                             result={'variables': result})
 
 
 class HelpSplash(Help):
@@ -1180,10 +1814,10 @@ class HelpSplash(Help):
             http_url = 'http://%s:%s/' % http_worker.httpd.sspec
         else:
             http_url = ''
-        return {
+        return self._success(_('Displayed welcome message'), result={
             'splash': self.ABOUT,
             'http_url': http_url,
-        }
+        })
 
 
 def GetCommand(name):
@@ -1217,8 +1851,9 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, RenderPage,
-    ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
-    Output, Help, HelpVars, HelpSplash
+    Optimize, Rescan, RunWWW, ProgramStatus,
+    ListDir, ChangeDir, CatFile,
+    WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
+    RenderPage, Output, Help, HelpVars, HelpSplash, Quit, Abort
 ]
 COMMAND_GROUPS = ['Internals', 'Config', 'Searching', 'Tagging', 'Composing']

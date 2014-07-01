@@ -1,11 +1,15 @@
+# vim: set fileencoding=utf-8 :
+import base64
 import copy
 import email.header
 import email.parser
 import email.utils
 import errno
+import lxml.html
 import mailbox
 import mimetypes
 import os
+import quopri
 import re
 import StringIO
 import threading
@@ -20,7 +24,6 @@ from email.mime.application import MIMEApplication
 from lxml.html.clean import Cleaner
 from mailpile.util import *
 from platform import system
-from smtplib import SMTP, SMTP_SSL
 from urllib import quote, unquote
 
 from mailpile.crypto.gpgi import GnuPG
@@ -29,9 +32,18 @@ from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.mail_generator import Generator
+from mailpile.vcard import AddressInfo
 
 
 MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
+
+
+def FormatMbxId(n):
+    if not isinstance(n, (str, unicode)):
+        n = b36(n)
+    if len(n) > MBX_ID_LEN:
+        raise ValueError(_('%s is too large to be a mailbox ID') % n)
+    return ('0000' + n).lower()[-MBX_ID_LEN:]
 
 
 class NotEditableError(ValueError):
@@ -131,7 +143,7 @@ def CleanMessage(config, msg):
     return msg
 
 
-def PrepareMessage(config, msg, sender=None, rcpts=None):
+def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     msg = copy.deepcopy(msg)
 
     # Short circuit if this message has already been prepared.
@@ -139,7 +151,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None):
         return (sender or msg['x-mp-internal-sender'],
                 rcpts or [r.strip()
                           for r in msg['x-mp-internal-rcpts'].split(',')],
-                msg)
+                msg,
+                events)
 
     crypto_policy = config.prefs.crypto_policy.lower()
     rcpts = rcpts or []
@@ -166,19 +179,22 @@ def PrepareMessage(config, msg, sender=None, rcpts=None):
         crypto_policy = config.prefs.crypto_policy
 
     # This is the BCC hack that Brennan hates!
-    rcpts += [sender]
+    if config.prefs.always_bcc_self:
+        rcpts += [sender]
 
     sender = ExtractEmails(sender, strip_keys=False)[0]
     sender_keyid = None
     if config.prefs.openpgp_header:
         try:
             gnupg = GnuPG()
-            seckeys = dict([(x["email"], y["fingerprint"])
-                            for y in gnupg.list_secret_keys().values()
-                            for x in y["uids"]])
-            sender_keyid = seckeys[sender]
-        except:
-            pass
+            seckeys = dict([(uid["email"], fp) for fp, key
+                            in gnupg.list_secret_keys().iteritems()
+                            if key["capabilities_map"][0].get("encrypt")
+                            and key["capabilities_map"][0].get("sign")
+                            for uid in key["uids"]])
+            sender_keyid = seckeys.get(sender)
+        except (KeyError, TypeError, IndexError, ValueError):
+            traceback.print_exc()
 
     rcpts, rr = [sender], rcpts
     for r in rr:
@@ -214,89 +230,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None):
     msg['x-mp-internal-readonly'] = str(int(time.time()))
     msg['x-mp-internal-sender'] = sender
     msg['x-mp-internal-rcpts'] = ', '.join(rcpts)
-    return (sender, rcpts, msg)
-
-
-def SendMail(session, from_to_msg_tuples):
-    for frm, to, msg in from_to_msg_tuples:
-        if 'sendmail' in session.config.sys.debug:
-            sys.stderr.write(_('SendMail: from %s, to %s\n') % (frm, to))
-        sm_write = sm_close = lambda: True
-        sendmail = session.config.get_sendmail(frm, to).strip()
-        session.ui.mark(_('Connecting to %s') % sendmail)
-        if sendmail.startswith('|'):
-            cmd = sendmail[1:].strip().split()
-            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-            sm_write = proc.stdin.write
-            sm_close = proc.stdin.close
-            sm_cleanup = lambda: proc.wait()
-            # FIXME: Update session UI with progress info
-
-        elif (sendmail.startswith('smtp:') or
-              sendmail.startswith('smtpssl:') or
-              sendmail.startswith('smtptls:')):
-            host, port = sendmail.split(':', 1
-                                        )[1].replace('/', '').rsplit(':', 1)
-            smtp_ssl = sendmail.startswith('smtpssl')
-            if '@' in host:
-                userpass, host = host.rsplit('@', 1)
-                user, pwd = userpass.split(':', 1)
-            else:
-                user = pwd = None
-
-            if 'sendmail' in session.config.sys.debug:
-                sys.stderr.write(_('SMTP connection to: %s:%s as %s@%s\n'
-                                   ) % (host, port, user, pwd))
-
-            server = smtp_ssl and SMTP_SSL() or SMTP()
-            server.connect(host, int(port))
-            server.ehlo()
-            if not smtp_ssl:
-                # We always try to enable TLS, even if the user just requested
-                # plain-text smtp.  But we only throw errors if the user asked
-                # for encryption.
-                try:
-                    server.starttls()
-                    server.ehlo()
-                except:
-                    if sendmail.startswith('smtptls'):
-                        raise InsecureSmtpError()
-            if user and pwd:
-                server.login(user, pwd)
-
-            server.mail(frm)
-            for rcpt in to:
-                server.rcpt(rcpt)
-            server.docmd('DATA')
-
-            def sender(data):
-                for line in data.splitlines(1):
-                    if line.startswith('.'):
-                        server.send('.')
-                    server.send(line)
-
-            def closer():
-                server.send('\r\n.\r\n')
-                server.quit()
-
-            sm_write = sender
-            sm_close = closer
-            sm_cleanup = lambda: True
-        else:
-            raise Exception(_('Invalid sendmail command/SMTP server: %s'
-                              ) % sendmail)
-
-        session.ui.mark(_('Preparing message...'))
-        msg_string = MessageAsString(CleanMessage(session.config, msg))
-        total = len(msg_string)
-        while msg_string:
-            sm_write(msg_string[:20480])
-            msg_string = msg_string[20480:]
-            session.ui.mark(('Sending message... (%d%%)'
-                             ) % (100 * (total-len(msg_string))/total))
-        sm_close()
-        sm_cleanup()
-        session.ui.mark(_('Message sent, %d bytes') % total)
+    return (sender, rcpts, msg, events)
 
 
 MUA_HEADERS = ('date', 'from', 'to', 'cc', 'subject', 'message-id', 'reply-to',
@@ -334,20 +268,22 @@ class Email(object):
     """This is a lazy-loading object representing a single email."""
 
     def __init__(self, idx, msg_idx_pos,
-                 msg_parsed=None, msg_info=None, ephemeral_mid=None):
+                 msg_parsed=None, msg_parsed_pgpmime=None,
+                 msg_info=None, ephemeral_mid=None):
         self.index = idx
         self.config = idx.config
         self.msg_idx_pos = msg_idx_pos
         self.ephemeral_mid = ephemeral_mid
-        self.msg_info = msg_info
-        self.msg_parsed = msg_parsed
+        self.reset_caches(msg_parsed=msg_parsed,
+                          msg_parsed_pgpmime=msg_parsed_pgpmime,
+                          msg_info=msg_info)
 
     def msg_mid(self):
         return self.ephemeral_mid or b36(self.msg_idx_pos)
 
     @classmethod
     def encoded_hdr(self, msg, hdr, value=None):
-        hdr_value = value or msg[hdr]
+        hdr_value = value or (msg and msg.get(hdr)) or ''
         try:
             hdr_value.encode('us-ascii')
         except:
@@ -377,36 +313,47 @@ class Email(object):
     @classmethod
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
-               msg_subject=None, msg_text=None, msg_references=None,
-               save=True, ephemeral_mid='not:saved'):
+               msg_subject=None, msg_text='', msg_references=None,
+               save=True, ephemeral_mid='not-saved', append_sig=True):
         msg = MIMEMultipart()
         msg.signature_info = SignatureInfo()
         msg.encryption_info = EncryptionInfo()
         msg_ts = int(time.time())
-        if not msg_from:
-            msg_from = idx.config.get_profile().get('email', None)
-            from_name = idx.config.get_profile().get('name', None)
-            if msg_from and from_name:
-                msg_from = '%s <%s>' % (from_name, msg_from)
+
+        if msg_from:
+            from_email = AddressHeaderParser(unicode_data=msg_from)[0].address
+            from_profile = idx.config.get_profile(email=from_email)
+        else:
+            from_profile = idx.config.get_profile()
+            from_email = from_profile.get('email', None)
+            from_name = from_profile.get('name', None)
+            if from_email and from_name:
+                msg_from = '%s <%s>' % (from_name, from_email)
         if not msg_from:
             raise NoFromAddressError()
+
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
         msg['Date'] = email.utils.formatdate(msg_ts)
         msg['Message-Id'] = email.utils.make_msgid('mailpile')
-        msg_subj = (msg_subject or 'New message')
+        msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
+
+        ahp = AddressHeaderParser()
+        norm = lambda a: ', '.join(sorted(list(set(ahp.normalized_addresses(
+            addresses=a, with_keys=True, force_name=True)))))
         if msg_to:
-            msg['To'] = cls.encoded_hdr(None, 'to',
-                                        value=', '.join(set(msg_to)))
+            msg['To'] = cls.encoded_hdr(None, 'to', value=norm(msg_to))
         if msg_cc:
-            msg['Cc'] = cls.encoded_hdr(None, 'cc',
-                                        value=', '.join(set(msg_cc)))
+            msg['Cc'] = cls.encoded_hdr(None, 'cc', value=norm(msg_cc))
         if msg_bcc:
-            msg['Bcc'] = cls.encoded_hdr(None, 'bcc',
-                                         value=', '.join(set(msg_bcc)))
+            msg['Bcc'] = cls.encoded_hdr(None, 'bcc', value=norm(msg_bcc))
         if msg_references:
             msg['In-Reply-To'] = msg_references[-1]
             msg['References'] = ', '.join(msg_references)
+
+        sig = from_profile.get('signature')
+        if sig and ('\n-- \n' not in (msg_text or '')):
+            msg_text = (msg_text or '\n\n') + ('\n\n-- \n%s' % sig)
 
         if msg_text:
             try:
@@ -441,12 +388,18 @@ class Email(object):
                                          msg_to=msg_to,
                                          msg_cc=msg_cc)
             return cls(idx, -1,
-                       msg_parsed=msg, msg_info=msg_info,
+                       msg_info=msg_info,
+                       msg_parsed=msg, msg_parsed_pgpmime=msg,
                        ephemeral_mid=ephemeral_mid)
 
-    def is_editable(self):
-        return (self.ephemeral_mid or
-                self.config.is_editable_message(self.get_msg_info()))
+    def is_editable(self, quick=False):
+        if self.ephemeral_mid:
+            return True
+        if not self.config.is_editable_message(self.get_msg_info()):
+            return False
+        if quick:
+            return True
+        return ('x-mp-internal-readonly' not in self.get_msg())
 
     MIME_HEADERS = ('mime-version', 'content-type', 'content-disposition',
                     'content-transfer-encoding')
@@ -536,22 +489,17 @@ class Email(object):
 
     def add_attachments(self, session, filenames, filedata=None):
         if not self.is_editable():
-            raise NotEditableError(_('Mailbox is read-only.'))
+            raise NotEditableError(_('Message or mailbox is read-only.'))
         msg = self.get_msg()
-        if 'x-mp-internal-readonly' in msg:
-            raise NotEditableError(_('Message is read-only.'))
         for fn in filenames:
             msg.attach(self.make_attachment(fn, filedata=filedata))
         return self.update_from_msg(session, msg)
 
     def update_from_string(self, session, data, final=False):
         if not self.is_editable():
-            raise NotEditableError(_('Mailbox is read-only.'))
+            raise NotEditableError(_('Message or mailbox is read-only.'))
 
         oldmsg = self.get_msg()
-        if 'x-mp-internal-readonly' in oldmsg:
-            raise NotEditableError(_('Message is read-only.'))
-
         if not data:
             outmsg = oldmsg
 
@@ -576,6 +524,8 @@ class Email(object):
 
             # Copy the message text
             new_body = newmsg.get_payload().decode('utf-8')
+            if final:
+                new_body = split_long_lines(new_body)
             try:
                 new_body.encode('us-ascii')
                 charset = 'us-ascii'
@@ -609,23 +559,37 @@ class Email(object):
 
         # Save result back to mailbox
         if final:
-            sender, rcpts, outmsg = PrepareMessage(self.config, outmsg)
+            sender, rcpts, outmsg, ev = PrepareMessage(self.config, outmsg)
         return self.update_from_msg(session, outmsg)
 
     def update_from_msg(self, session, newmsg):
         if not self.is_editable():
-            raise NotEditableError(_('Mailbox is read-only.'))
+            raise NotEditableError(_('Message or mailbox is read-only.'))
 
         mbx, ptr, fd = self.get_mbox_ptr_and_fd()
-        mbx[ptr[MBX_ID_LEN:]] = newmsg
+
+        # OK, adding to the mailbox worked
+        newptr = ptr[:MBX_ID_LEN] + mbx.add(newmsg)
+
+        # Remove the old message...
+        mbx.remove(ptr[MBX_ID_LEN:])
 
         # FIXME: We should DELETE the old version from the index first.
 
         # Update the in-memory-index
+        mi = self.get_msg_info()
+        mi[self.index.MSG_PTRS] = newptr
+        self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
         self.index.index_email(session, Email(self.index, self.msg_idx_pos))
 
-        self.msg_parsed = None
+        self.reset_caches()
         return self
+
+    def reset_caches(self,
+                     msg_info=None, msg_parsed=None, msg_parsed_pgpmime=None):
+        self.msg_info = msg_info
+        self.msg_parsed = msg_parsed
+        self.msg_parsed_pgpmime = msg_parsed_pgpmime
 
     def get_msg_info(self, field=None):
         if not self.msg_info:
@@ -637,14 +601,16 @@ class Email(object):
 
     def get_mbox_ptr_and_fd(self):
         for msg_ptr in self.get_msg_info(self.index.MSG_PTRS).split(','):
+            if msg_ptr == '':
+                continue
             try:
                 mbox = self.config.open_mailbox(None, msg_ptr[:MBX_ID_LEN])
                 fd = mbox.get_file_by_ptr(msg_ptr)
                 # FIXME: How do we know we have the right message?
                 return mbox, msg_ptr, fd
-            except (IOError, OSError):
+            except (IOError, OSError, KeyError, ValueError, IndexError):
                 # FIXME: If this pointer is wrong, should we fix the index?
-                print '%s not in %s' % (msg_ptr, self)
+                print 'WARNING: %s not found' % msg_ptr
         return None, None, None
 
     def get_file(self):
@@ -655,14 +621,23 @@ class Email(object):
         fd.seek(0, 2)
         return fd.tell()
 
+    def _get_parsed_msg(self, pgpmime):
+        fd = self.get_file()
+        if fd:
+            return ParseMessage(fd, pgpmime=pgpmime)
+
     def get_msg(self, pgpmime=True):
-        if not self.msg_parsed:
-            fd = self.get_file()
-            if fd:
-                self.msg_parsed = ParseMessage(fd, pgpmime=pgpmime)
-        if not self.msg_parsed:
-            IndexError(_('Message not found?'))
-        return self.msg_parsed
+        if pgpmime:
+            if not self.msg_parsed_pgpmime:
+                self.msg_parsed_pgpmime = self._get_parsed_msg(pgpmime)
+            result = self.msg_parsed_pgpmime
+        else:
+            if not self.msg_parsed:
+                self.msg_parsed = self._get_parsed_msg(pgpmime)
+            result = self.msg_parsed
+        if not result:
+            raise IndexError(_('Message not found?'))
+        return result
 
     def get_headerprint(self):
         return HeaderPrint(self.get_msg())
@@ -694,7 +669,7 @@ class Email(object):
             self.get_msg_info(self.index.MSG_BODY),
             self.get_msg_info(self.index.MSG_DATE),
             self.get_msg_info(self.index.MSG_TAGS).split(','),
-            self.is_editable()
+            self.is_editable(quick=True)
         ]
 
     def extract_attachment(self, session, att_id,
@@ -773,6 +748,54 @@ class Email(object):
         tids = self.get_msg_info(self.index.MSG_TAGS).split(',')
         return [self.config.get_tag(t) for t in tids]
 
+    RE_HTML_BORING = re.compile('(\s+|<style[^>]*>[^<>]*</style>)')
+    RE_EXCESS_WHITESPACE = re.compile('\n\s*\n\s*')
+    RE_HTML_NEWLINES = re.compile('(<br|</(tr|table))')
+    RE_HTML_PARAGRAPHS = re.compile('(</?p|</?(title|div|html|body))')
+    RE_HTML_LINKS = re.compile('<a\s+[^>]*href=[\'"]?([^\'">]+)[^>]*>'
+                               '([^<]*)</a>')
+    RE_HTML_IMGS = re.compile('<img\s+[^>]*src=[\'"]?([^\'">]+)[^>]*>')
+    RE_HTML_IMG_ALT = re.compile('<img\s+[^>]*alt=[\'"]?([^\'">]+)[^>]*>')
+
+    def _extract_text_from_html(self, html):
+        try:
+            # We compensate for some of the limitations of lxml...
+            links, imgs = [], []
+            def delink(m):
+                url, txt = m.group(1), m.group(2).strip()
+                if txt[:4] in ('http', 'www.'):
+                    return txt
+                elif url.startswith('mailto:'):
+                    if '@' in txt:
+                        return txt
+                    else:
+                        return '%s (%s)' % (txt, url.split(':', 1)[1])
+                else:
+                    links.append(' [%d] %s%s' % (len(links) + 1,
+                                                 txt and (txt + ': ') or '',
+                                                 url))
+                    return '%s[%d]' % (txt, len(links))
+            def deimg(m):
+                tag, url = m.group(0), m.group(1)
+                if ' alt=' in tag:
+                    return re.sub(self.RE_HTML_IMG_ALT, '\1', tag).strip()
+                else:
+                    imgs.append(' [%d] %s' % (len(imgs)+1, url))
+                    return '[Image %d]' % len(imgs)
+            html = re.sub(self.RE_HTML_PARAGRAPHS, '\n\n\\1',
+                       re.sub(self.RE_HTML_NEWLINES, '\n\\1',
+                           re.sub(self.RE_HTML_BORING, ' ',
+                               re.sub(self.RE_HTML_LINKS, delink,
+                                   re.sub(self.RE_HTML_IMGS, deimg, html)))))
+            text = (lxml.html.fromstring(html).text_content() +
+                    (links and '\n\nLinks:\n' or '') + '\n'.join(links) +
+                    (imgs and '\n\nImages:\n' or '') + '\n'.join(imgs))
+            return re.sub(self.RE_EXCESS_WHITESPACE, '\n\n', text).strip()
+        except:
+            import traceback
+            traceback.print_exc()
+            return html
+
     def get_message_tree(self, want=None):
         msg = self.get_msg()
         tree = {
@@ -818,6 +841,13 @@ class Email(object):
             tree['header_list'] = [(k, self.index.hdr(msg, k, value=v))
                                    for k, v in msg.items()]
 
+        if want is None or 'addresses' in want:
+            tree['addresses'] = {}
+            for hdr in msg.keys():
+                hdrl = hdr.lower()
+                if hdrl in ('reply-to', 'from', 'to', 'cc', 'bcc'):
+                    tree['addresses'][hdrl] = AddressHeaderParser(msg[hdr])
+
         # FIXME: Decide if this is strict enough or too strict...?
         html_cleaner = Cleaner(page_structure=True, meta=True, links=True,
                                javascript=True, scripts=True, frames=True,
@@ -842,10 +872,9 @@ class Email(object):
             if (part.get('content-disposition', 'inline') == 'inline'
                     and mimetype in ('text/plain', 'text/html')):
                 payload, charset = self.decode_payload(part)
+                start = payload[:100].strip()
 
-                if (mimetype == 'text/html'
-                        or '<html>' in payload
-                        or '</body>' in payload):
+                if mimetype == 'text/html':
                     if want is None or 'html_parts' in want:
                         tree['html_parts'].append({
                             'charset': charset,
@@ -854,9 +883,15 @@ class Email(object):
                                       and html_cleaner.clean_html(payload))
                                      or '')
                         })
+
                 elif want is None or 'text_parts' in want:
-                    text_parts = self.parse_text_part(payload, charset)
-                    if want is None or 'text_parts' in want:
+                    if start[:3] in ('<di', '<ht', '<p>', '<p ', '<ta', '<bo'):
+                        payload = self._extract_text_from_html(payload)
+                    # Ignore white-space only text parts, they usually mean
+                    # the message is HTML only and we want the code below
+                    # to try and extract meaning from it.
+                    if (start or payload.strip()) != '':
+                        text_parts = self.parse_text_part(payload, charset)
                         tree['text_parts'].extend(text_parts)
 
             elif want is None or 'attachments' in want:
@@ -868,6 +903,14 @@ class Email(object):
                     'content-id': part.get('content-id', ''),
                     'filename': part.get_filename() or ''
                 })
+
+        if want is None or 'text_parts' in want:
+            if tree.get('html_parts') and not tree.get('text_parts'):
+                html_part = tree['html_parts'][0]
+                payload = self._extract_text_from_html(html_part['data'])
+                text_parts = self.parse_text_part(payload,
+                                                  html_part['charset'])
+                tree['text_parts'].extend(text_parts)
 
         if self.is_editable():
             if not want or 'editing_strings' in want:
@@ -891,7 +934,8 @@ class Email(object):
 
     def decode_text(self, payload, charset='utf-8', binary=True):
         if charset:
-            charsets = [charset]
+            charsets = [charset] + [c for c in self.CHARSET_PRIORITY_LIST
+                                    if charset.lower() != c]
         else:
             charsets = self.CHARSET_PRIORITY_LIST
 
@@ -899,7 +943,7 @@ class Email(object):
             try:
                 payload = payload.decode(charset)
                 return payload, charset
-            except (UnicodeDecodeError, TypeError):
+            except (UnicodeDecodeError, TypeError, LookupError):
                 pass
 
         if binary:
@@ -908,7 +952,7 @@ class Email(object):
             return _('[Binary data suppressed]\n'), 'utf-8'
 
     def decode_payload(self, part):
-        charset = part.get_charset() or None
+        charset = part.get_content_charset() or None
         payload = part.get_payload(None, True) or ''
         return self.decode_text(payload, charset=charset)
 
@@ -1079,3 +1123,342 @@ class Email(object):
             if line.startswith('charset:'):
                 return decrypted.decode(line.split()[1])
         return decrypted.decode('utf-8')
+
+
+class AddressHeaderParser(list):
+    """
+    This is a class which tries very hard to interpret the From:, To:
+    and Cc: lines found in real-world e-mail and make sense of them.
+
+    The general strategy of this parser is to:
+       1. parse header data into tokens
+       2. group tokens together into address + name constructs.
+
+    And optionaly,
+       3. normalize each group to a standard format
+
+    In practice, we do this in multiple passes: first a strict pass where
+    we try to parse things semi-sensibly, followed by fuzzier heuristics.
+
+    Ideally, if folks format things correctly we should parse correctly.
+    But if that fails, there are are other passes where we try to cope
+    with various types of weirdness we've seen in the wild. The wild can
+    be pretty wild.
+
+    This parser is NOT (yet) fully RFC2822 compliant - in particular it
+    will get confused by nested comments (see FIXME in tests below).
+
+    Examples:
+
+    >>> ahp = AddressHeaderParser(AddressHeaderParser.TEST_HEADER_DATA)
+    >>> ai = ahp[1]
+    >>> ai.fn
+    u'Bjarni'
+    >>> ai.address
+    u'bre@klaki.net'
+    >>> ahp.normalized_addresses() == ahp.TEST_EXPECT_NORMALIZED_ADDRESSES
+    True
+
+    >>> AddressHeaderParser('Weird email@somewhere.com Header').normalized()
+    u'"Weird Header" <email@somewhere.com>'
+
+    >>> ai = AddressHeaderParser(unicode_data=ahp.TEST_UNICODE_DATA)
+    >>> ai[0].fn
+    u'Bjarni R\\xfanar'
+    >>> ai[0].fn == ahp.TEST_UNICODE_NAME
+    True
+    >>> ai[0].address
+    u'b@c.x'
+    """
+
+    TEST_UNICODE_DATA = u'Bjarni R\xfanar <b@c.x#61A015763D28D4>'
+    TEST_UNICODE_NAME = u'Bjarni R\xfanar'
+    TEST_HEADER_DATA = """
+        bre@klaki.net  ,
+        bre@klaki.net Bjarni ,
+        bre@klaki.net bre@klaki.net,
+        bre@klaki.net (bre@notmail.com),
+        bre@klaki.net ((nested) bre@notmail.com comment),
+        (FIXME: (nested) bre@wrongmail.com parser breaker) bre@klaki.net,
+        undisclosed-recipients-gets-ignored:,
+        Bjarni [mailto:bre@klaki.net],
+        "This is a key test" <bre@klaki.net#61A015763D28D410A87B197328191D9B3B4199B4>,
+        bre@klaki.net (Bjarni Runar Einar's son);
+        Bjarni is bre @klaki.net,
+        Bjarni =?iso-8859-1?Q?Runar?=Einarsson<' bre'@ klaki.net>,
+    """
+    TEST_EXPECT_NORMALIZED_ADDRESSES = [
+        '<bre@klaki.net>',
+        '"Bjarni" <bre@klaki.net>',
+        '"bre@klaki.net" <bre@klaki.net>',
+        '"bre@notmail.com" <bre@klaki.net>',
+        '"(nested bre@notmail.com comment)" <bre@klaki.net>',
+        '"(FIXME: nested parser breaker) bre@klaki.net" <bre@wrongmail.com>',
+        '"Bjarni" <bre@klaki.net>',
+        '"This is a key test" <bre@klaki.net>',
+        '"Bjarni Runar Einar\\\'s son" <bre@klaki.net>',
+        '"Bjarni is" <bre@klaki.net>',
+        '"Bjarni Runar Einarsson" <bre@klaki.net>']
+
+    # Escaping and quoting
+    TXT_RE_QUOTE = '=\\?([^\\?\\s]+)\\?([QqBb])\\?([^\\?\\s]+)\\?='
+    TXT_RE_QUOTE_NG = TXT_RE_QUOTE.replace('(', '(?:')
+    RE_ESCAPES = re.compile('\\\\([\\\\"\'])')
+    RE_QUOTED = re.compile(TXT_RE_QUOTE)
+    RE_SHOULD_ESCAPE = re.compile('([\\\\"\'])')
+    RE_SHOULD_QUOTE = re.compile('[^a-zA-Z0-9()\.:/_ \'"+@-]')
+
+    # This is how we normally break a header line into tokens
+    RE_TOKENIZER = re.compile('(<[^<>]*>'                    # <stuff>
+                              '|\\([^\\(\\)]*\\)'            # (stuff)
+                              '|\\[[^\\[\\]]*\\]'            # [stuff]
+                              '|"(?:\\\\\\\\|\\\\"|[^"])*"'  # "stuff"
+                              "|'(?:\\\\\\\\|\\\\'|[^'])*'"  # 'stuff'
+                              '|' + TXT_RE_QUOTE_NG +        # =?stuff?=
+                              '|,'                           # ,
+                              '|;'                           # ;
+                              '|\\s+'                        # white space
+                              '|[^\\s;,]+'                   # non-white space
+                              ')')
+
+    # Where to insert spaces to help the tokenizer parse bad data
+    RE_MUNGE_TOKENSPACERS = (re.compile('(\S)(<)'), re.compile('(\S)(=\\?)'))
+
+    # Characters to strip aware entirely when tokenizing munged data
+    RE_MUNGE_TOKENSTRIPPERS = (re.compile('[<>"]'),)
+
+    # This is stuff we ignore (undisclosed-recipients, etc)
+    RE_IGNORED_GROUP_TOKENS = re.compile('(?i)undisclosed')
+
+    # Things we strip out to try and un-mangle e-mail addresses when
+    # working with bad data.
+    RE_MUNGE_STRIP = re.compile('(?i)(?:\\bmailto:|[\\s"\']|\?$)')
+
+    # This a simple regular expression for detecting e-mail addresses.
+    RE_MAYBE_EMAIL = re.compile('^[^()<>@,;:\\\\"\\[\\]\\s\000-\031]+'
+                                '@[a-zA-Z0-9_\\.-]+(?:#[A-Za-z0-9]+)?$')
+
+    # We try and interpret non-ascii data as a particular charset, in
+    # this order by default. Should be overridden whenever we have more
+    # useful info from the message itself.
+    DEFAULT_CHARSET_ORDER = ('iso-8859-1', 'utf-8')
+
+    def __init__(self,
+                 data=None, unicode_data=None, charset_order=None, **kwargs):
+        self.charset_order = charset_order or self.DEFAULT_CHARSET_ORDER
+        self._parse_args = kwargs
+        if data is None and unicode_data is None:
+            self._reset(**kwargs)
+        elif data is not None:
+            self.parse(data)
+        else:
+            self.charset_order = ['utf-8']
+            self.parse(unicode_data.encode('utf-8'))
+
+    def _reset(self, _raw_data=None, strict=False, _raise=False):
+        self._raw_data = _raw_data
+        self._tokens = []
+        self._groups = []
+        self[:] = []
+
+    def parse(self, data):
+        return self._parse(data, **self._parse_args)
+
+    def _parse(self, data, strict=False, _raise=False):
+        self._reset(_raw_data=data)
+
+        # 1st pass, strict
+        try:
+            self._tokens = self._tokenize(self._raw_data)
+            self._groups = self._group(self._tokens)
+            self[:] = self._find_addresses(self._groups,
+                                           _raise=(not strict))
+            return self
+        except ValueError:
+            if strict and _raise:
+                raise
+        if strict:
+            return self
+
+        # 2nd & 3rd passes; various types of sloppy
+        for _pass in ('2', '3'):
+            try:
+                self._tokens = self._tokenize(self._raw_data, munge=_pass)
+                self._groups = self._group(self._tokens, munge=_pass)
+                self[:] = self._find_addresses(self._groups,
+                                               munge=_pass,
+                                               _raise=_raise)
+                return self
+            except ValueError:
+                if _pass == 3 and _raise:
+                    raise
+        return self
+
+    def unquote(self, string, charset_order=None):
+        def uq(m):
+            cs, how, data = m.group(1), m.group(2), m.group(3)
+            if how in ('b', 'B'):
+                return base64.b64decode(data).decode(cs)
+            else:
+                return quopri.decodestring(data, header=True).decode(cs)
+
+        for cs in charset_order or self.charset_order:
+            try:
+                string = string.decode(cs)
+                break
+            except UnicodeDecodeError:
+                pass
+
+        return re.sub(self.RE_QUOTED, uq, string)
+
+    @classmethod
+    def unescape(self, string):
+        return re.sub(self.RE_ESCAPES, lambda m: m.group(1), string)
+
+    @classmethod
+    def escape(self, strng):
+        return re.sub(self.RE_SHOULD_ESCAPE, lambda m: '\\'+m.group(0), strng)
+
+    @classmethod
+    def quote(self, strng):
+        if re.search(self.RE_SHOULD_QUOTE, strng):
+            enc = quopri.encodestring(strng.encode('utf-8'), False,
+                                      header=True)
+            return '=?utf-8?Q?%s?=' % enc
+        else:
+            return '"%s"' % self.escape(strng)
+
+    def _tokenize(self, string, munge=False):
+        if munge:
+            for ts in self.RE_MUNGE_TOKENSPACERS:
+                string = re.sub(ts, '\\1 \\2', string)
+            if munge == 3:
+                for ts in self.RE_MUNGE_TOKENSTRIPPERS:
+                    string = re.sub(ts, '', string)
+        return re.findall(self.RE_TOKENIZER, string)
+
+    def _clean(self, token):
+        if token[:1] in ('"', "'"):
+            if token[:1] == token[-1:]:
+                return self.unescape(token[1:-1])
+        elif token.startswith('[mailto:') and token[-1:] == ']':
+            # Just convert [mailto:...] crap into a <address>
+            return '<%s>' % token[8:-1]
+        elif (token[:1] == '[' and token[-1:] == ']'):
+            return token[1:-1]
+        return token
+
+    def _group(self, tokens, munge=False):
+        groups = [[]]
+        for token in tokens:
+            token = token.strip()
+            if token in (',', ';'):
+                # Those tokens SHOULD separate groups, but we don't like to
+                # create groups that have no e-mail addresses at all.
+                if groups[-1]:
+                    if [g for g in groups[-1] if '@' in g]:
+                        groups.append([])
+                        continue
+                    # However, this stuff is just begging to be ignored.
+                    elif [g for g in groups[-1]
+                          if re.match(self.RE_IGNORED_GROUP_TOKENS, g)]:
+                        groups[-1] = []
+                        continue
+            if token:
+                groups[-1].append(self.unquote(self._clean(token)))
+        if not groups[-1]:
+            groups.pop(-1)
+        return groups
+
+    def _find_addresses(self, groups, **fa_kwargs):
+        alist = [self._find_address(g, **fa_kwargs) for g in groups]
+        return [a for a in alist if a]
+
+    def _find_address(self, g, _raise=False, munge=False):
+        if g:
+            g = g[:]
+        else:
+            return []
+
+        def email_at(i):
+            for j in range(0, len(g)):
+                if g[j][:1] == '(' and g[j][-1:] == ')':
+                    g[j] = g[j][1:-1]
+            rest = ' '.join([g[j] for j in range(0, len(g)) if j != i
+                             ]).replace(' ,', ',').replace(' ;', ';')
+            email, keys = g[i], None
+            if '#' in email[email.index('@'):]:
+                email, key = email.rsplit('#', 1)
+                keys = [{'fingerprint': key}]
+            return AddressInfo(email, rest.strip(), keys=keys)
+
+        def munger(string):
+            if munge:
+                return re.sub(self.RE_MUNGE_STRIP, '', string)
+            else:
+                return string
+
+        # If munging, look for email @domain.com in two parts, rejoin
+        if munge:
+            for i in range(0, len(g)):
+                if i > 0 and i < len(g) and g[i][:1] == '@':
+                    g[i-1:i+1] = [g[i-1]+g[i]]
+                elif i < len(g)-1 and g[i][-1:] == '@':
+                    g[i:i+2] = [g[i]+g[i+1]]
+
+        # 1st, look for <email@domain.com>
+        for i in range(0, len(g)):
+            if g[i][:1] == '<' and g[i][-1:] == '>':
+                maybemail = munger(g[i][1:-1])
+                if re.match(self.RE_MAYBE_EMAIL, maybemail):
+                    g[i] = maybemail
+                    return email_at(i)
+
+        # 2nd, look for bare email@domain.com
+        for i in range(0, len(g)):
+            maybemail = munger(g[i])
+            if re.match(self.RE_MAYBE_EMAIL, maybemail):
+                g[i] = maybemail
+                return email_at(i)
+
+        if _raise:
+            raise ValueError('No email found in %s' % (g,))
+        else:
+            return None
+
+    def normalized_addresses(self,
+                             addresses=None, quote=True, with_keys=False,
+                             force_name=False):
+        if addresses is None:
+            addresses = self
+        elif not addresses:
+            addresses = []
+        def fmt(ai):
+            email = ai.address
+            if with_keys and ai.keys:
+                fp = ai.keys[0].get('fingerprint')
+                epart = '<%s%s>' % (email, fp and ('#%s' % fp) or '')
+            else:
+                epart = '<%s>' % email
+            if ai.fn:
+                 return ' '.join([quote and self.quote(ai.fn) or ai.fn, epart])
+            elif force_name:
+                 return ' '.join([quote and self.quote(email) or email, epart])
+            else:
+                 return epart
+        return [fmt(ai) for ai in addresses]
+
+    def normalized(self, **kwargs):
+        return ', '.join(self.normalized_addresses(**kwargs))
+
+
+if __name__ == "__main__":
+    import doctest
+    import sys
+
+    results = doctest.testmod(optionflags=doctest.ELLIPSIS,
+                              extraglobs={})
+    print
+    print '%s' % (results, )
+    if results.failed:
+        sys.exit(1)

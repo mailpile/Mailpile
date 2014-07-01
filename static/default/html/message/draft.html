@@ -1,8 +1,8 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
+{% block title %}{{_("Compose")}}{% endblock %}
 {% block content %}
 {% if result %}
-{% set profiles = mailpile('settings', 'profiles').result.profiles %}
-
+{% set profiles = mailpile('profiles').result %}
   {# Note: this code follows the pattern described on the following
            stackexchange link, collecting information about how the loop
            and inner IF-statements went into the found_editable list, so
@@ -22,6 +22,7 @@
         {% do found_editable.append(mid) %}
         {% set composer_view = "draft" %}
         {% set editing_strings = message.editing_strings %}
+        {% set editing_addresses = result.data.addresses %}
         {% include("partials/compose.html") %}
       {% endif %}
     {% endif %}

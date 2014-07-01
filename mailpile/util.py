@@ -15,7 +15,9 @@ import tempfile
 import threading
 import time
 import StringIO
+from distutils import spawn
 from gettext import gettext as _
+from mailpile.crypto.gpgi import GnuPG
 
 try:
     from PIL import Image
@@ -23,16 +25,19 @@ except:
     Image = None
 
 
-global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING
 
 
 QUITTING = False
+LAST_USER_ACTIVITY = 0
 
 DEFAULT_PORT = 33411
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                          ':\"|;\'\\\<\>\?,\.\/\-]{2,}')
+
+PROSE_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
+                          ':\"|;\'\\\<\>\?,\.\/\-]{1,}')
 
 STOPLIST = set(['an', 'and', 'are', 'as', 'at', 'by', 'for', 'from',
                 'has', 'http', 'https', 'i', 'in', 'is', 'it',
@@ -54,6 +59,8 @@ B64W_TRANSLATE = string.maketrans('/+', '_-')
 STRHASH_RE = re.compile('[^0-9a-z]+')
 
 B36_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+RE_LONG_LINE_SPLITTER = re.compile('([^\n]{,72}) ')
 
 
 class WorkerError(Exception):
@@ -133,7 +140,7 @@ def _hash(cls, data):
     return h
 
 
-def sha1b64(s):
+def sha1b64(*data):
     """
     Apply the SHA1 hash algorithm to a string
     and return the base64-encoded hash value
@@ -147,7 +154,7 @@ def sha1b64(s):
     Keyword arguments:
     s -- The string to hash
     """
-    return _hash(hashlib.sha1, [s]).digest().encode('base64')
+    return _hash(hashlib.sha1, data).digest().encode('base64')
 
 
 def sha512b64(*data):
@@ -219,15 +226,64 @@ def b36(number):
     return ''.join(reversed(base36))
 
 
+def split_long_lines(text):
+    """
+    Split long lines of text into shorter ones, ignoring ascii art.
+
+    >>> test_string = (('abcd efgh ijkl mnop ' + ('q' * 72) + ' ') * 2)[:-1]
+    >>> print split_long_lines(test_string)
+    abcd efgh ijkl mnop
+    qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+    abcd efgh ijkl mnop
+    qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+    >>> print split_long_lines('> ' + ('q' * 72))
+    > qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+    The function should be stable:
+
+    >>> split_long_lines(test_string) == split_long_lines(
+    ...                                    split_long_lines(test_string))
+    True
+    """
+    lines = text.splitlines()
+    for i in range(0, len(lines)):
+        buffered, done = [], False
+        while (not done and
+               len(lines[i]) > 72 and
+               re.match(PROSE_REGEXP, lines[i])):
+            n = re.sub(RE_LONG_LINE_SPLITTER, '\\1\n', lines[i], 1
+                       ).split('\n')
+            if len(n) == 1:
+                done = True
+            else:
+                buffered.append(n[0])
+                lines[i] = n[1]
+        if buffered:
+            lines[i] = '\n'.join(buffered + [lines[i]])
+    return '\n'.join(lines)
+
+
 def elapsed_datetime(timestamp):
     """
     Return "X days ago" style relative dates for recent dates.
     """
-    ts = datetime.date.fromtimestamp(timestamp)
-    days_ago = (datetime.date.today() - ts).days
+    ts = datetime.datetime.fromtimestamp(timestamp)
+    elapsed = datetime.datetime.today() - ts
+    days_ago = elapsed.days
+    hours_ago, remainder = divmod(elapsed.seconds, 3600)
+    minutes_ago, seconds_ago = divmod(remainder, 60)
 
     if days_ago < 1:
-        return _('today')
+        if hours_ago < 1:
+            if minutes_ago < 3:
+                return _('now')
+            elif minutes_ago >= 3:
+                return _('%d mins') % minutes_ago
+        elif hours_ago < 2:
+            return _('%d hour') % hours_ago
+        else:
+            return _('%d hours') % hours_ago
     elif days_ago < 2:
         return _('%d day') % days_ago
     elif days_ago < 7:
@@ -274,52 +330,31 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
     return fmt % (number, powers[count], suffix)
 
 
-GPG_BEGIN_MESSAGE = '-----BEGIN PGP MESSAGE'
-GPG_END_MESSAGE = '-----END PGP MESSAGE'
+def decrypt_and_parse_lines(fd, parser, config,
+                            newlines=False, decode='utf-8'):
+    import mailpile.crypto.streamer as cstrm
+    begin_sym = cstrm.PartialDecryptingStreamer.BEGIN_MED[:-1]
+    begin_pgp = cstrm.PartialDecryptingStreamer.BEGIN_PGP[:-1]
+    symmetric_key = config and config.prefs.obfuscate_index or 'missing'
 
-
-def decrypt_gpg(lines, fd):
-    for line in fd:
-        lines.append(line)
-        if line.startswith(GPG_END_MESSAGE):
-            break
-
-    gpg = subprocess.Popen(['gpg', '--batch'],
-                           stdin=subprocess.PIPE,
-                           stderr=subprocess.PIPE,
-                           stdout=subprocess.PIPE)
-    lines = gpg.communicate(input=''.join(lines))[0].splitlines(True)
-    if gpg.wait() != 0:
-        raise AccessError("GPG was unable to decrypt the data.")
-
-    return lines
-
-
-def decrypt_and_parse_lines(fd, parser, config, newlines=False):
-    import mailpile.crypto.symencrypt as symencrypt
     if not newlines:
-        _parser = lambda l: parser(l.rstrip('\r\n'))
+        if decode:
+            _parser = lambda ll: parser((l.rstrip('\r\n').decode(decode)
+                                         for l in ll))
+        else:
+            _parser = lambda ll: parser((l.rstrip('\r\n') for l in ll))
+    elif decode:
+        _parser = lambda ll: parser((l.decode(decode) for l in ll))
     else:
         _parser = parser
-    size = 0
-    while True:
-        line = fd.readline(102400)
-        if line == '':
-            break
-        size += len(line)
-        if line.startswith(GPG_BEGIN_MESSAGE):
-            for line in decrypt_gpg([line], fd):
-                _parser(line.decode('utf-8'))
-        elif line.startswith(symencrypt.SymmetricEncrypter.BEGIN_DATA):
-            if not config or not config.prefs.obfuscate_index:
-                raise ValueError(_("Symmetric decryption is not available "
-                                   "without config and key."))
-            for line in symencrypt.SymmetricEncrypter(
-                    config.prefs.obfuscate_index).decrypt_fd([line], fd):
-                _parser(line.decode('utf-8'))
+
+    for line in fd:
+        if cstrm.PartialDecryptingStreamer.StartEncrypted(line):
+            with cstrm.PartialDecryptingStreamer(
+                    [line], symmetric_key, fd) as pdsfd:
+                _parser(pdsfd)
         else:
-            _parser(line.decode('utf-8'))
-    return size
+            _parser([line])
 
 
 def backup_file(filename, backups=5, min_age_delta=0):
@@ -337,10 +372,22 @@ def backup_file(filename, backups=5, min_age_delta=0):
         os.rename(filename, '%s.1' % filename)
 
 
+def json_helper(obj):
+    if isinstance(obj, datetime.datetime):
+        return str(obj)
+
+
 class GpgWriter(object):
     def __init__(self, gpg):
         self.fd = gpg.stdin
         self.gpg = gpg
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
 
     def write(self, data):
         self.fd.write(data)
@@ -374,83 +421,22 @@ def dict_merge(*dicts):
     return final
 
 
-# Indexing messages is an append-heavy operation, and some files are
-# appended to much more often than others.  This implements a simple
-# LRU cache of file descriptors we are appending to.
-APPEND_FD_CACHE = {}
-APPEND_FD_CACHE_SIZE = 500
-APPEND_FD_CACHE_ORDER = []
-APPEND_FD_CACHE_LOCK = threading.Lock()
-
-
-def flush_append_cache(ratio=1, count=None, lock=True):
-    try:
-        if lock:
-            APPEND_FD_CACHE_LOCK.acquire()
-        drop = count or int(ratio * len(APPEND_FD_CACHE_ORDER))
-        for fn in APPEND_FD_CACHE_ORDER[:drop]:
-            try:
-                APPEND_FD_CACHE[fn].close()
-                del APPEND_FD_CACHE[fn]
-            except KeyError:
-                pass
-        APPEND_FD_CACHE_ORDER[:drop] = []
-    finally:
-        if lock:
-            APPEND_FD_CACHE_LOCK.release()
-
-
-
-def cached_open(filename, mode):
-    try:
-        APPEND_FD_CACHE_LOCK.acquire()
-        if mode == 'a':
-            fd = None
-            if filename in APPEND_FD_CACHE:
-                while filename in APPEND_FD_CACHE_ORDER:
-                    APPEND_FD_CACHE_ORDER.remove(filename)
-                fd = APPEND_FD_CACHE[filename]
-            if not fd or fd.closed:
-                if len(APPEND_FD_CACHE) > APPEND_FD_CACHE_SIZE:
-                    flush_append_cache(count=1, lock=False)
-                try:
-                    fd = APPEND_FD_CACHE[filename] = open(filename, 'a')
-                except (IOError, OSError):
-                    # Too many open files?  Close a bunch and try again.
-                    flush_append_cache(ratio=0.3, lock=False)
-                    fd = APPEND_FD_CACHE[filename] = open(filename, 'a')
-            APPEND_FD_CACHE_ORDER.append(filename)
-            return fd
-        else:
-            fd = APPEND_FD_CACHE.get(filename)
-            if fd:
-                try:
-                    if 'w' in mode or '+' in mode:
-                        del APPEND_FD_CACHE[filename]
-                        APPEND_FD_CACHE_ORDER.remove(filename)
-                        fd.close()
-                    else:
-                        fd.flush()
-                except (ValueError, IOError):
-                    pass
-            try:
-                return open(filename, mode)
-            except (IOError, OSError):
-                # Too many open files?  Close a bunch and try again.
-                flush_append_cache(ratio=0.3, lock=False)
-                return open(filename, mode)
-    finally:
-        APPEND_FD_CACHE_LOCK.release()
-
-
 def play_nice_with_threads():
     """
     Long-running batch jobs should call this now and then to pause
-    their activities if there are other threads that would like to
-    run. This is a bit of a hack!
+    their activities in case there are other threads that would like to
+    run. Recent user activity increases the delay significantly, to
+    hopefully make the app more responsive when it is in use.
     """
-    delay = max(0, 0.01 * (threading.activeCount() - 2))
-    if delay:
+    threads = threading.activeCount() - 3
+    if threads < 1:
+        return 0
+
+    activity_threshold = (300 - time.time() + LAST_USER_ACTIVITY) / 300
+    delay = (max(0, 0.002 * threads) +
+             max(0, min(0.20, 0.400 * activity_threshold)))
+
+    if delay > 0.005:
         time.sleep(delay)
     return delay
 
@@ -561,6 +547,37 @@ def HideBinary(text):
         return text
     except UnicodeDecodeError:
         return '[BINARY DATA, %d BYTES]' % len(text)
+
+
+class TimedOut(IOError):
+    """We treat timeouts as a particular type of IO error."""
+    pass
+
+
+class RunTimedThread(threading.Thread):
+    def __init__(self, name, func):
+        threading.Thread.__init__(self, target=func)
+        self.name = name
+        self.daemon = True
+
+    def run_timed(self, timeout):
+        self.start()
+        self.join(timeout=timeout)
+        if self.isAlive():
+            raise TimedOut('Timed out: %s' % self.name)
+
+
+def RunTimed(timeout, func, *args, **kwargs):
+    result, exception = [], []
+    def work():
+        try:
+            result.append(func(*args, **kwargs))
+        except Exception as e:
+            exception.append(e)
+    RunTimedThread(func.__name__, work).run_timed(timeout)
+    if exception:
+        raise exception[0]
+    return result[0]
 
 
 class DebugFileWrapper(object):

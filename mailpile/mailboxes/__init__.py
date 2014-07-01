@@ -9,15 +9,16 @@
 ## larger mailbox.
 
 from urllib import quote, unquote
+from gettext import gettext as _
+
+from mailpile.mailutils import MBX_ID_LEN
 
 
-__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail',
+__all__ = ['mbox', 'maildir', 'gmvault', 'imap', 'macmail', 'wervd',
            'MBX_ID_LEN',
            'NoSuchMailboxError', 'IsMailbox', 'OpenMailbox']
 
 MAILBOX_CLASSES = []
-
-MBX_ID_LEN = 4  # 4x36 == 1.6 million mailboxes
 
 
 class NoSuchMailboxError(OSError):
@@ -30,20 +31,24 @@ def register(prio, cls):
     MAILBOX_CLASSES.sort()
 
 
-def IsMailbox(fn):
+def IsMailbox(fn, config):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
-            if mbox_cls.parse_path(fn):
+            if mbox_cls.parse_path(config, fn):
                 return True
+        except KeyboardInterrupt:
+            raise
         except:
             pass
     return False
 
 
-def OpenMailbox(fn, create=False):
+def OpenMailbox(fn, config, create=False):
     for pri, mbox_cls in MAILBOX_CLASSES:
         try:
-            return mbox_cls(*mbox_cls.parse_path(fn, create=create))
+            return mbox_cls(*mbox_cls.parse_path(config, fn, create=create))
+        except KeyboardInterrupt:
+            raise
         except:
             pass
     raise ValueError('Not a mailbox: %s' % fn)
@@ -57,23 +62,21 @@ def UnorderedPicklable(parent, editable=False):
             parent.__init__(self, *args, **kwargs)
             self.editable = editable
             self._save_to = None
-            self.parsed = {}
-
-        def unparsed(self):
-            return [i for i in self.keys() if i not in self.parsed]
-
-        def mark_parsed(self, i):
-            self.parsed[i] = True
+            self._encryption_key_func = lambda: None
 
         def __setstate__(self, data):
             self.__dict__.update(data)
             self._save_to = None
+            self._encryption_key_func = lambda: None
             self.update_toc()
 
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
-            del odict['_save_to']
+            for dk in ('_save_to', '_encryption_key_func',
+                       '_file', '_lock', 'parsed'):
+                if dk in odict:
+                    del odict[dk]
             return odict
 
         def save(self, session=None, to=None, pickler=None):
@@ -82,7 +85,7 @@ def UnorderedPicklable(parent, editable=False):
             if self._save_to and len(self) > 0:
                 pickler, fn = self._save_to
                 if session:
-                    session.ui.mark('Saving %s state to %s' % (self, fn))
+                    session.ui.mark(_('Saving %s state to %s') % (self, fn))
                 pickler(self, fn)
 
         def update_toc(self):

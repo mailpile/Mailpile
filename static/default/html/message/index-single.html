@@ -1,9 +1,9 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
-
 {% if result %}
-  {% set profiles = mailpile('settings', 'profiles').result.profiles %}
+  {% set profiles = mailpile('profiles').result %}
   {% set showed_composer = [] %}
+  {% set show_reply = "true" %}
   {% for mid in result.thread_ids|reverse %}
     {% if mid in result.data.messages %}
       {% set metadata = result.data.metadata[mid] %}

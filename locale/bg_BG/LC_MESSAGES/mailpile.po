@@ -1,33 +1,259 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # cveti.prof <cveti.prof@gmail.com>, 2013-2014
 # haripetrov <haripetrov@gmail.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: Mailpile\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-12 15:32+0000\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-02-13 13:32+0000\n"
 "PO-Revision-Date: 2014-01-01 16:54+0000\n"
 "Last-Translator: cveti.prof <cveti.prof@gmail.com>\n"
-"Language-Team: Bulgarian (Bulgaria) (http://www.transifex.com/projects/p/mailpile/language/bg_BG/)\n"
+"Language-Team: Bulgarian (Bulgaria) (http://www.transifex.com/projects/p/"
+"mailpile/language/bg_BG/)\n"
+"Language: bg_BG\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: bg_BG\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: mailpile/defaults.py:10
+#: mailpile/commands.py:202
+#, fuzzy, python-format
+msgid "No such ID: %s"
+msgstr "Не съществува такъв ключ: %s"
+
+#: mailpile/commands.py:208 mailpile/commands.py:215 mailpile/commands.py:221
+#, python-format
+msgid "What message is %s?"
+msgstr "Какво съобщение е %s?"
+
+#: mailpile/commands.py:512
+#, fuzzy, python-format
+msgid "Search: %s"
+msgstr "Извършва се търсене за %s"
+
+#: mailpile/commands.py:674 mailpile/commands.py:843 mailpile/commands.py:893
+#: mailpile/commands.py:935 mailpile/commands.py:984
+#: mailpile/plugins/setup_magic.py:85
+msgid "In lockdown, doing nothing."
+msgstr ""
+
+#: mailpile/commands.py:680
+#, python-format
+msgid ""
+"Note: periodic delay is %ss, run from shell to speed up: mp --rescan=..."
+msgstr ""
+
+#: mailpile/commands.py:730
+#, python-format
+msgid "Running: %s"
+msgstr "Продължителност: %s"
+
+#: mailpile/commands.py:742
+#, fuzzy, python-format
+msgid "Failed to rescan: %s"
+msgstr "Съобщението не може да се декриптира"
+
+#: mailpile/commands.py:757
+msgid "Nothing changed"
+msgstr "Не са направени промени"
+
+#: mailpile/commands.py:759
+#, python-format
+msgid "Aborted: %s"
+msgstr "Прекратено: %s"
+
+#: mailpile/commands.py:788
+msgid "Aborted"
+msgstr "Прекратено"
+
+#: mailpile/commands.py:965
+#, python-format
+msgid "No such key: %s"
+msgstr "Не съществува такъв ключ: %s"
+
+#: mailpile/commands.py:1038
+#, fuzzy, python-format
+msgid "The Web interface address is: %s"
+msgstr "Потребителският уеб интерфейс е %s"
+
+#: mailpile/commands.py:1041
+#, fuzzy
+msgid "The Web interface is disabled."
+msgstr "Потребителският уеб интерфейс е %s"
+
+#: mailpile/commands.py:1046
+#, fuzzy
+msgid "Type `help` for instructions or press <Ctrl-d> to quit."
+msgstr "За инструкции напишете `help`, натиснете <CTRL-D> за излизане."
+
+#: mailpile/commands.py:1065
+msgid "Commands:"
+msgstr "Команди:"
+
+#: mailpile/commands.py:1097
+msgid "Tags:  (use a tag as a command to display tagged messages)"
+msgstr "Етикети: (търсете по етикет, за да се появят съобщенията с етикети)"
+
+#: mailpile/commands.py:1106 mailpile/jinjaextensions.py:125
+#: mailpile/jinjaextensions.py:210
+msgid "Error"
+msgstr "Грешка"
+
+#: mailpile/commands.py:1140
+msgid "Unknown command"
+msgstr "Непозната команда"
+
+#: mailpile/commands.py:1238
+#, python-format
+msgid "Unknown command: %s"
+msgstr "Непозната команда: %s"
+
+#: mailpile/config.py:103
+msgid "true"
+msgstr ""
+
+#: mailpile/config.py:103
+msgid "yes"
+msgstr ""
+
+#: mailpile/config.py:103
+msgid "on"
+msgstr ""
+
+#: mailpile/config.py:106
+msgid "false"
+msgstr ""
+
+#: mailpile/config.py:106
+msgid "no"
+msgstr ""
+
+#: mailpile/config.py:106
+#, fuzzy
+msgid "off"
+msgstr "от"
+
+#: mailpile/config.py:108
+#, fuzzy, python-format
+msgid "Invalid boolean: %s"
+msgstr "Невалидно име на сървър: %s"
+
+#: mailpile/config.py:131
+#, python-format
+msgid "Invalid URL slug: %s"
+msgstr "Описателната част от адреса не е валидна: %s"
+
+#: mailpile/config.py:163
+#, python-format
+msgid "Invalid hostname: %s"
+msgstr "Невалидно име на сървър: %s"
+
+#: mailpile/config.py:197
+#, python-format
+msgid "File/directory does not exist: %s"
+msgstr "Файлът/директорията не съществува: %s"
+
+#: mailpile/config.py:215
+#, python-format
+msgid "Not a file: %s"
+msgstr "Не е файл: %s"
+
+#: mailpile/config.py:233
+#, python-format
+msgid "Not a directory: %s"
+msgstr "Не е директория: %s"
+
+#: mailpile/config.py:369
+#, fuzzy
+msgid "Please override this method"
+msgstr "Презапиши това"
+
+#: mailpile/config.py:429
+#, fuzzy, python-format
+msgid "Invalid type \"%s\" for key \"%s\" (value: %s)"
+msgstr "Невалиден тип на настройката по подразбиране %s = %s"
+
+#: mailpile/config.py:440
+#, python-format
+msgid "Invalid key for %s: %s"
+msgstr "Невалиден ключ за %s: %s"
+
+#: mailpile/config.py:523
+#, python-format
+msgid "Modifying %s/%s is not allowed"
+msgstr "Промяната %s/%s не е разрешена"
+
+#: mailpile/config.py:527 mailpile/config.py:535
+#, python-format
+msgid "Invalid value for %s/%s: %s"
+msgstr "Невалидна стойност за %s/%s: %s"
+
+#: mailpile/config.py:538
+#, python-format
+msgid "Unknown constraint for %s/%s: %s"
+msgstr "Неизвестно ограничение за %s/%s: %s"
+
+#: mailpile/config.py:743
+msgid "Cannot append to fixed dict"
+msgstr "Не може да се приложи към фиксиран речник"
+
+#: mailpile/config.py:791
+#, python-format
+msgid "Creating: %s"
+msgstr "Създава се: %s"
+
+#: mailpile/config.py:850
+#, python-format
+msgid "Invalid (%s): section %s does not exist"
+msgstr "Невалидно (%s): секция %s не съществува"
+
+#: mailpile/config.py:861
+#, python-format
+msgid "Invalid (%s): section %s, variable %s"
+msgstr "Невалидно (%s): секция %s, променлива %s"
+
+#: mailpile/config.py:913
+#, fuzzy, python-format
+msgid "Loading plugin: %s"
+msgstr "Несъществуваща линия: %s"
+
+#: mailpile/config.py:938
+#, python-format
+msgid "Mailbox ID too large: %s"
+msgstr "Идентификационният номер на пощенската кутия е твърде дълъг: %s"
+
+#: mailpile/config.py:1001
+#, python-format
+msgid "No such mailbox: %s"
+msgstr "Не съществува такава пощенска кутия: %s"
+
+#: mailpile/config.py:1008
+#, python-format
+msgid "%s: Updating: %s"
+msgstr "%s: Обновява се: %s"
+
+#: mailpile/config.py:1015
+#, python-format
+msgid "%s: Opening: %s (may take a while)"
+msgstr "%s: Зарежда се: %s (може да отнеме известно време)"
+
+#: mailpile/config.py:1126
+msgid "Parent paths are not allowed"
+msgstr "Свързаните пътища не са позволени"
+
+#: mailpile/defaults.py:11
 msgid "Mailpile program version"
 msgstr "Версия на програмата Mailpile"
 
-#: mailpile/defaults.py:11
+#: mailpile/defaults.py:12
 msgid "Configuration timestamp"
 msgstr "Настройка на времето за отчитане на събитие"
 
-#: mailpile/defaults.py:12
+#: mailpile/defaults.py:13
 msgid "Technical system settings"
 msgstr "Технически системни настройки"
 
@@ -36,7 +262,8 @@ msgid "Max files kept open at once"
 msgstr "Максимален брой файлове, които могат да бъдат отворени наведнъж"
 
 #: mailpile/defaults.py:15
-msgid "History length (lines, <0 = no save)"
+#, fuzzy
+msgid "History length (lines, <0=no save)"
 msgstr "Дължина на историята (линии, <0 = незапазени)"
 
 #: mailpile/defaults.py:16
@@ -63,904 +290,1357 @@ msgstr "Отметки за дебъгване"
 msgid "Host:port of PGP keyserver"
 msgstr "Хост:порт на PGP сървъра, съхраняващ ключове"
 
-#: mailpile/defaults.py:22
+#: mailpile/defaults.py:23
 msgid "Listening host for web UI"
 msgstr "Сървър за потребителския уеб интерфейс"
 
-#: mailpile/defaults.py:23
+#: mailpile/defaults.py:25
 msgid "Local read/write Maildir"
 msgstr "Локална директория за четене/запис"
 
-#: mailpile/defaults.py:24
+#: mailpile/defaults.py:26
 msgid "Metadata index file"
 msgstr "Индекс файл за метаданни"
 
-#: mailpile/defaults.py:25
+#: mailpile/defaults.py:27
 msgid "Search index directory"
 msgstr "Индекс директория за търсене"
 
-#: mailpile/defaults.py:26
+#: mailpile/defaults.py:28
 msgid "Mailboxes we index"
 msgstr "Пощенски кутии, които се индексират"
 
-#: mailpile/defaults.py:27
+#: mailpile/defaults.py:29
+msgid "Plugins to load on startup"
+msgstr ""
+
+#: mailpile/defaults.py:31
 msgid "Locations of assorted data"
 msgstr "Местоположения на сортираните данни"
 
-#: mailpile/defaults.py:28
+#: mailpile/defaults.py:32
 msgid "Default theme"
 msgstr "Тема по подразбиране"
 
-#: mailpile/defaults.py:30
+#: mailpile/defaults.py:34
 msgid "Location of vcards"
 msgstr "Местоположение на vcards"
 
-#: mailpile/defaults.py:33
+#: mailpile/defaults.py:36
+msgid "Demo mode, disallow changes"
+msgstr ""
+
+#: mailpile/defaults.py:38
 msgid "User preferences"
 msgstr "Потребителски настройки"
 
-#: mailpile/defaults.py:35
+#: mailpile/defaults.py:39
 msgid "Search results per page"
 msgstr "Резултати на страница"
 
-#: mailpile/defaults.py:36
+#: mailpile/defaults.py:40
 msgid "New mail check frequency"
 msgstr "Честота на проверката за нови съобщения"
 
-#: mailpile/defaults.py:37
+#: mailpile/defaults.py:41
 msgid "Inline PGP signatures or attached"
 msgstr "Вградени или прикачени PGP подписи"
 
-#: mailpile/defaults.py:38
-msgid "Default sort order"
-msgstr "Подредба по подразбиране"
-
-#: mailpile/defaults.py:39
+#: mailpile/defaults.py:43
 msgid "Encrypt local data to ..."
 msgstr "Криптиране на локалните данни в …"
 
-#: mailpile/defaults.py:40
+#: mailpile/defaults.py:44
+msgid "Advertise GPG preferences in a header?"
+msgstr ""
+
+#: mailpile/defaults.py:47
+#, fuzzy
+msgid "Default encryption policy for outgoing mail"
+msgstr "Изходящ пощенски маршрут по подразбиране"
+
+#: mailpile/defaults.py:49
+msgid "Default sort order"
+msgstr "Подредба по подразбиране"
+
+#: mailpile/defaults.py:50
 msgid "Key to use to scramble the index"
 msgstr "Ключ, използван за кодиране на индекса"
 
-#: mailpile/defaults.py:41
+#: mailpile/defaults.py:51
+msgid "Make encrypted content searchable"
+msgstr ""
+
+#: mailpile/defaults.py:53
 msgid "Command run before rescanning"
 msgstr "Команда, изпълнена преди повторно сканиране"
 
-#: mailpile/defaults.py:42
+#: mailpile/defaults.py:54
 msgid "Default outgoing e-mail address"
 msgstr "Изходящ пощенски адрес по подразбиране"
 
-#: mailpile/defaults.py:43
+#: mailpile/defaults.py:55
 msgid "Default outgoing mail route"
 msgstr "Изходящ пощенски маршрут по подразбиране"
 
-#: mailpile/defaults.py:45
+#: mailpile/defaults.py:57
 msgid "User interface language"
 msgstr "Език на потребителския интерфейс"
 
-#: mailpile/defaults.py:46
+#: mailpile/defaults.py:58
 msgid "VCard import/export settings"
 msgstr "Импортиране/експортиране на VCard настройки"
 
-#: mailpile/defaults.py:48
+#: mailpile/defaults.py:59
 msgid "VCard import settings"
 msgstr "VCard настройки за импортиране"
 
-#: mailpile/defaults.py:49
+#: mailpile/defaults.py:60
 msgid "VCard export settings"
 msgstr "VCard настройки за експортиране"
 
-#: mailpile/defaults.py:50
+#: mailpile/defaults.py:61
 msgid "VCard context helper settings"
 msgstr "Контекстов помощник за VCard настройки"
 
-#: mailpile/defaults.py:53
+#: mailpile/defaults.py:64
 msgid "User profiles and personalities"
 msgstr "Потребителски профили и персонални настройки"
 
-#: mailpile/defaults.py:54
+#: mailpile/defaults.py:65
 msgid "Account name"
 msgstr "Потребителско име"
 
-#: mailpile/defaults.py:55
+#: mailpile/defaults.py:66
 msgid "E-mail address"
 msgstr "Пощенски адрес"
 
-#: mailpile/defaults.py:56
+#: mailpile/defaults.py:67
 msgid "Message signature"
 msgstr "Подпис на съобщението"
 
-#: mailpile/defaults.py:57
+#: mailpile/defaults.py:68
 msgid "Outgoing mail route"
 msgstr "Изходящ маршрут за пощенския трафик"
 
-#: mailpile/config.py:94
-#, python-format
-msgid "Invalid URL slug: %s"
-msgstr "Описателната част от адреса не е валидна: %s"
-
-#: mailpile/config.py:126
-#, python-format
-msgid "Invalid hostname: %s"
-msgstr "Невалидно име на сървър: %s"
-
-#: mailpile/config.py:160
-#, python-format
-msgid "File/directory does not exist: %s"
-msgstr "Файлът/директорията не съществува: %s"
-
-#: mailpile/config.py:178
-#, python-format
-msgid "Not a file: %s"
-msgstr "Не е файл: %s"
-
-#: mailpile/config.py:196
-#, python-format
-msgid "Not a directory: %s"
-msgstr "Не е директория: %s"
-
-#: mailpile/config.py:329
-msgid "Override this"
-msgstr "Презапиши това"
-
-#: mailpile/config.py:388
-#, python-format
-msgid "Invalid type for default %s = %s"
-msgstr "Невалиден тип на настройката по подразбиране %s = %s"
-
-#: mailpile/config.py:399
-#, python-format
-msgid "Invalid key for %s: %s"
-msgstr "Невалиден ключ за %s: %s"
-
-#: mailpile/config.py:482
-#, python-format
-msgid "Modifying %s/%s is not allowed"
-msgstr "Промяната %s/%s не е разрешена"
-
-#: mailpile/config.py:486 mailpile/config.py:494
-#, python-format
-msgid "Invalid value for %s/%s: %s"
-msgstr "Невалидна стойност за %s/%s: %s"
-
-#: mailpile/config.py:497
-#, python-format
-msgid "Unknown constraint for %s/%s: %s"
-msgstr "Неизвестно ограничение за %s/%s: %s"
-
-#: mailpile/config.py:702
-msgid "Cannot append to fixed dict"
-msgstr "Не може да се приложи към фиксиран речник"
-
-#: mailpile/config.py:750
-#, python-format
-msgid "Creating: %s"
-msgstr "Създава се: %s"
-
-#: mailpile/config.py:808
-#, python-format
-msgid "Invalid (%s): section %s does not exist"
-msgstr "Невалидно (%s): секция %s не съществува"
-
-#: mailpile/config.py:819
-#, python-format
-msgid "Invalid (%s): section %s, variable %s"
-msgstr "Невалидно (%s): секция %s, променлива %s"
-
-#: mailpile/config.py:834
-#, python-format
-msgid "WARNING: Imported old config from %s"
-msgstr "ВНИМАНИЕ: Заредена е неактуална конфигурация от %s"
-
-#: mailpile/config.py:837
-#, python-format
-msgid "WARNING: Failed to import config from %s"
-msgstr "ВНИМАНИЕ: Неуспешно импортиране на конфигурация от %s"
-
-#: mailpile/config.py:876
-#, python-format
-msgid "Mailbox ID too large: %s"
-msgstr "Идентификационният номер на пощенската кутия е твърде дълъг: %s"
-
-#: mailpile/config.py:906
-#, python-format
-msgid "No such mailbox: %s"
-msgstr "Не съществува такава пощенска кутия: %s"
-
-#: mailpile/config.py:913
-#, python-format
-msgid "%s: Updating: %s"
-msgstr "%s: Обновява се: %s"
-
-#: mailpile/config.py:920
-#, python-format
-msgid "%s: Opening: %s (may take a while)"
-msgstr "%s: Зарежда се: %s (може да отнеме известно време)"
-
-#: mailpile/config.py:1021
-msgid "Parent paths are not allowed"
-msgstr "Свързаните пътища не са позволени"
-
-#: mailpile/config.py:1137
-#, python-format
-msgid "Could not parse (%s): %s"
-msgstr "Не може да зареди (%s): %s"
-
-#: mailpile/config.py:1150
-#, python-format
-msgid "Could not assign mailbox:%s = %s"
-msgstr "Пощенската кутия не може да бъде асоциирана:%s = %s"
-
-#: mailpile/gpgi.py:14
-msgid "Trust not calculated"
-msgstr "Сигурността не е изчислена"
-
-#: mailpile/gpgi.py:15
-msgid "Unknown trust"
-msgstr "Неизвестна сигурност"
-
-#: mailpile/gpgi.py:16
-msgid "Undefined trust"
-msgstr "Неопределена сигурност"
-
-#: mailpile/gpgi.py:17
-msgid "Never trust"
-msgstr "Никога не се доверявайте"
-
-#: mailpile/gpgi.py:18
-msgid "Marginally trust"
-msgstr "Ниска сигурност"
-
-#: mailpile/gpgi.py:19
-msgid "Full trust"
-msgstr "Пълна сигурност"
-
-#: mailpile/gpgi.py:20
-msgid "Ultimate trust"
-msgstr "Безусловна сигурност"
-
-#: mailpile/gpgi.py:21
-msgid "Expired key, not trusted"
-msgstr "Изтекъл ключ, не е надежден"
-
-#: mailpile/gpgi.py:22
-msgid "Revoked key, not trusted"
-msgstr "Анулиран ключ, не е надежден"
-
-#: mailpile/gpgi.py:23
-msgid "Disabled key, not trusted"
-msgstr "Спрян ключ, не е надежден"
-
-#: mailpile/gpgi.py:26
-msgid "RSA"
-msgstr "RSA"
-
-#: mailpile/gpgi.py:27
-msgid "RSA (encrypt only)"
-msgstr "RSA (само криптиране)"
-
-#: mailpile/gpgi.py:28
-msgid "RSA (sign only)"
-msgstr "RSA (само подписване)"
-
-#: mailpile/gpgi.py:29
-msgid "Elgamal (encrypt only)"
-msgstr "Elgamal (само криптиране)"
-
-#: mailpile/gpgi.py:30
-msgid "DSA"
-msgstr "DSA"
-
-#: mailpile/gpgi.py:31
-msgid "Elgamal (encrypt/sign) [COMPROMISED]"
-msgstr "Elgamal (криптиране/подписване) [КОМПРОМЕТИРАН]"
-
-#: mailpile/commands.py:154
-#, python-format
-msgid "ID out of bounds: %s"
-msgstr "Идентификация извън обхват: %s"
-
-#: mailpile/commands.py:157 mailpile/commands.py:163 mailpile/commands.py:168
-#, python-format
-msgid "What message is %s?"
-msgstr "Какво съобщение е %s?"
-
-#: mailpile/commands.py:255
-#, python-format
-msgid "FIXME: rescan messages: %s"
-msgstr "Поправи: сканирай отново съобщения: %s"
-
-#: mailpile/commands.py:288
-#, python-format
-msgid "Running: %s"
-msgstr "Продължителност: %s"
-
-#: mailpile/commands.py:309
-msgid "Nothing changed"
-msgstr "Не са направени промени"
-
-#: mailpile/commands.py:311
-#, python-format
-msgid "Aborted: %s"
-msgstr "Прекратено: %s"
-
-#: mailpile/commands.py:341
-msgid "Aborted"
-msgstr "Прекратено"
-
-#: mailpile/commands.py:355
-msgid "Statistics updated"
-msgstr "Статистиката е обновена"
-
-#: mailpile/commands.py:521
-#, python-format
-msgid "No such key: %s"
-msgstr "Не съществува такъв ключ: %s"
-
-#: mailpile/commands.py:590
-#, python-format
-msgid "The web interface is %s"
-msgstr "Потребителският уеб интерфейс е %s"
-
-#: mailpile/commands.py:591
-msgid "disabled."
-msgstr "изключен."
-
-#: mailpile/commands.py:593
-msgid "For instructions, type `help`, press <CTRL-D> to quit."
-msgstr "За инструкции напишете `help`, натиснете <CTRL-D> за излизане."
-
-#: mailpile/commands.py:612
-msgid "Commands:"
-msgstr "Команди:"
-
-#: mailpile/commands.py:643
-msgid "Tags:  (use a tag as a command to display tagged messages)"
-msgstr "Етикети: (търсете по етикет, за да се появят съобщенията с етикети)"
-
-#: mailpile/commands.py:651
-msgid "Error"
-msgstr "Грешка"
-
-#: mailpile/commands.py:684
-msgid "Unknown command"
-msgstr "Непозната команда"
-
-#: mailpile/commands.py:782
-#, python-format
-msgid "Unknown command: %s"
-msgstr "Непозната команда: %s"
-
-#: mailpile/plugins/demos.py:41
-msgid "Demo Contacts"
-msgstr "Тестови контакти"
-
-#: mailpile/plugins/demos.py:42
-msgid "This is the demo importer"
-msgstr "Това е тестово импортиране"
-
-#: mailpile/plugins/demos.py:45
-msgid "Contact name"
-msgstr "Име за връзка"
-
-#: mailpile/plugins/demos.py:46
-msgid "Contact email"
-msgstr "Пощенски адрес за връзка"
-
-#: mailpile/plugins/vcard_gnupg.py:17
-msgid "Import contacts from GnuPG keyring"
-msgstr "Внасяне на контакти от GnuPG ключодържател"
-
-#: mailpile/plugins/vcard_gnupg.py:20
-msgid "Location of keyring"
-msgstr "Местоположение на ключодържателя"
-
-#: mailpile/httpd.py:143
+#: mailpile/httpd.py:191
 msgid "XMLRPC has been disabled for now."
 msgstr "XMLRPC е деактивиран за момента."
 
-#: mailpile/httpd.py:161
+#: mailpile/httpd.py:210
 msgid "OMG, input too big"
 msgstr "Ехе-е-е, входящата информация е твърде обемиста"
 
-#: mailpile/httpd.py:164
+#: mailpile/httpd.py:213
 msgid "Unknown content-type"
 msgstr "Неизвестен тип съдържание"
 
-#: mailpile/httpd.py:169
+#: mailpile/httpd.py:219
 msgid "Internal Error"
 msgstr "Вътрешна грешка"
 
-#: mailpile/httpd.py:237
+#: mailpile/httpd.py:290
 msgid "Internal error"
 msgstr "Вътрешна грешка"
 
-#: mailpile/search.py:168
+#: mailpile/jinjaextensions.py:113 mailpile/jinjaextensions.py:146
+#: mailpile/jinjaextensions.py:187
+#, fuzzy
+msgid "Unknown"
+msgstr "Неизвестна сигурност"
+
+#: mailpile/jinjaextensions.py:114
+msgid "There is something unknown or wrong with this signature"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:119
+#, fuzzy
+msgid "No Signature"
+msgstr "Подпис на съобщението"
+
+#: mailpile/jinjaextensions.py:120
+msgid ""
+"This message contains no signature, which means it could have come from "
+"anyone, not necessarily the real sender"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:126
+msgid "There was a weird error with this signature"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:130
+msgid "Invalid"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:131
+msgid "The signature was invalid or bad"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:135
+msgid "Revoked"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:136
+msgid ""
+"Watch out, the signature was made with a key that has beenrevoked- this is "
+"not a good thing"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:141
+msgid "Expired"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:142
+msgid "The signature was made with an expired key"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:147
+msgid "the signature was made with an unknown key, so we can not verify it"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:152
+msgid "Unverified"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:153
+msgid "The signature was good but it came from a key that is not verified yet"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:158
+msgid "Verified"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:159
+msgid "The signature was good and came from a verified key, w00t!"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:188
+msgid "There is some unknown thing wrong with this encryption"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:193
+#: static/default/html/partials/compose.html:49
+#, fuzzy
+msgid "Not Encrypted"
+msgstr "Криптиран"
+
+#: mailpile/jinjaextensions.py:194
+msgid ""
+"This message was not encrypted. It may have been intercepted en route to you "
+"and read by an unauthorized party."
+msgstr ""
+
+#: mailpile/jinjaextensions.py:199
+#: static/default/html/partials/compose.html:46
+msgid "Encrypted"
+msgstr "Криптиран"
+
+#: mailpile/jinjaextensions.py:200
+msgid ""
+"This message was encrypted, but we were successfully able to decrypt it. "
+"Great job being secure"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:205
+msgid "Missing Key"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:206
+msgid "You do not have any of the private keys that will decrypt this message"
+msgstr ""
+
+#: mailpile/jinjaextensions.py:211
+#, fuzzy
+msgid "We failed to decrypt message and are unsure why"
+msgstr "Съобщението не може да се декриптира"
+
+#: mailpile/jinjaextensions.py:249
+msgid "You"
+msgstr ""
+
+#: mailpile/mailutils.py:223
+#, python-format
+msgid "SendMail: from %s, to %s\n"
+msgstr "SendMail: от %s, до %s\n"
+
+#: mailpile/mailutils.py:226
+#, python-format
+msgid "Connecting to %s"
+msgstr "Свързва се към %s"
+
+#: mailpile/mailutils.py:248
+#, python-format
+msgid "SMTP connection to: %s:%s as %s@%s\n"
+msgstr "SMTP връзка към: %s:%s като %s@%s\n"
+
+#: mailpile/mailutils.py:286
+#, fuzzy, python-format
+msgid "Invalid sendmail command/SMTP server: %s"
+msgstr "Невалиден sendmail: %s"
+
+#: mailpile/mailutils.py:289
+msgid "Preparing message..."
+msgstr "Съобщението се подготвя…"
+
+#: mailpile/mailutils.py:299
+#, python-format
+msgid "Message sent, %d bytes"
+msgstr "Съобщението е изпратено, %d байтове"
+
+#: mailpile/mailutils.py:539 mailpile/mailutils.py:549
+#: mailpile/mailutils.py:617
+msgid "Mailbox is read-only."
+msgstr "Пощенската кутия е в режим само за четене."
+
+#: mailpile/mailutils.py:542 mailpile/mailutils.py:553
+#, fuzzy
+msgid "Message is read-only."
+msgstr "Пощенската кутия е в режим само за четене."
+
+#: mailpile/mailutils.py:664
+msgid "Message not found?"
+msgstr "Съобщението не е намерено?"
+
+#: mailpile/mailutils.py:742
+#, python-format
+msgid "Extracted attachment %s"
+msgstr "Извлечен прикачен файл %s"
+
+#: mailpile/mailutils.py:749
+#, python-format
+msgid "Wrote preview to: %s"
+msgstr "Предварителен преглед записан в: %s"
+
+#: mailpile/mailutils.py:757
+msgid "Failed to generate thumbnail"
+msgstr "Генерирането на иконка беше неуспешно"
+
+#: mailpile/mailutils.py:763
+#, python-format
+msgid "Wrote attachment to: %s"
+msgstr "Прикачен файл записан в: %s"
+
+#: mailpile/mailutils.py:767
+#, python-format
+msgid "No attachments found for: %s"
+msgstr "Няма намерени прикачени файлове за: %s"
+
+#: mailpile/mailutils.py:908
+msgid "[Binary data suppressed]\n"
+msgstr ""
+
+#: mailpile/search.py:177
+msgid "Your metadata index is either too old, too new or corrupt!"
+msgstr ""
+
+#: mailpile/search.py:194
 msgid "Loading metadata index..."
 msgstr "Зарежда се индексът за метаданни…"
 
-#: mailpile/search.py:180
+#: mailpile/search.py:207
 #, python-format
 msgid "Metadata index not found: %s"
 msgstr "Индексът за метаданни не е намерен: %s"
 
-#: mailpile/search.py:184
+#: mailpile/search.py:214
 #, python-format
 msgid "Loaded metadata, %d messages"
 msgstr "Заредени метаданни, %d съобщения"
 
-#: mailpile/search.py:191
+#: mailpile/search.py:235
 msgid "Saving metadata index changes..."
 msgstr "Запазват се промените свързани с индекса за метаданни…"
 
-#: mailpile/search.py:201
+#: mailpile/search.py:246
 msgid "Saved metadata index changes"
 msgstr "Промените свързани с индекса за метаданни са запазени"
 
-#: mailpile/search.py:207
+#: mailpile/search.py:257
 msgid "Saving metadata index..."
 msgstr "Запазва се индексът за метаданни…"
 
-#: mailpile/search.py:219
+#: mailpile/search.py:279
 msgid "Saved metadata index"
 msgstr "Запазен е индексът за метаданни…"
 
-#: mailpile/search.py:222
+#: mailpile/search.py:284
 msgid "Updating high level indexes"
 msgstr "Актуализиране на високо приоритетните индекси"
 
-#: mailpile/search.py:230
+#: mailpile/search.py:292
 #, python-format
 msgid "Bogus line: %s"
 msgstr "Несъществуваща линия: %s"
 
-#: mailpile/search.py:300
-#, python-format
-msgid "=%s/%s using Recieved: instead of Date:"
+#: mailpile/search.py:362
+#, fuzzy, python-format
+msgid "=%s/%s using Received: instead of Date:"
 msgstr "=%s/%s използване на „получен/и“: вместо дата:"
 
-#: mailpile/search.py:307
+#: mailpile/search.py:369
 #, python-format
 msgid "=%s/%s has a bogus date"
 msgstr "=%s/%s има фалшива дата"
 
-#: mailpile/search.py:324
+#: mailpile/search.py:390
 #, python-format
 msgid "WARNING: No proper Message-ID for %s"
 msgstr "ВНИМАНИЕ: Неправилно въведен номер на съобщението за %s"
 
-#: mailpile/search.py:331
+#: mailpile/search.py:397
 #, python-format
 msgid "%s: Skipped: %s"
 msgstr "%s: пропуснат: %s"
 
-#: mailpile/search.py:335
+#: mailpile/search.py:401
 #, python-format
 msgid "%s: Checking: %s"
 msgstr "%s: проверява се: %s"
 
-#: mailpile/search.py:338
+#: mailpile/search.py:404
 #, python-format
 msgid "%s: Error opening: %s (%s)"
 msgstr "%s: грешка при отваряне на: %s (%s)"
 
-#: mailpile/search.py:357
+#: mailpile/search.py:423
 #, python-format
 msgid "%s: Reading your mail: %d%% (%d/%d messages)"
 msgstr "%s: Изчитане на вашата поща: %d%% (%d/%d съобщения)"
 
-#: mailpile/search.py:412
+#: mailpile/search.py:497
 #, python-format
 msgid "%s: Indexed mailbox: %s"
 msgstr "%s: индексирана пощенска кутия: %s"
 
-#: mailpile/search.py:621
+#: mailpile/search.py:780
 #, python-format
 msgid "=%s/%s has bogus HTML."
 msgstr "=%s/%s има невалиден HTML."
 
-#: mailpile/search.py:726
+#: mailpile/search.py:905
 #, python-format
 msgid "%s is outside the index"
 msgstr "%s е извън индекса"
 
-#: mailpile/search.py:769
+#: mailpile/search.py:951
 #, python-format
 msgid "Tagging %d messages (%s)"
 msgstr "Маркиране %d съобщения (%s)"
 
-#: mailpile/search.py:796
+#: mailpile/search.py:983
 #, python-format
 msgid "Untagging conversations (%s)"
 msgstr "Премахване на етикети на разговорите (%s)"
 
-#: mailpile/search.py:802
+#: mailpile/search.py:989
 #, python-format
 msgid "Untagging %d messages (%s)"
 msgstr "Премахване на етикетите на %d съобщения (%s)"
 
-#: mailpile/search.py:830
+#: mailpile/search.py:1030
 #, python-format
 msgid "Searching for %s"
 msgstr "Извършва се търсене за %s"
 
-#: mailpile/search.py:859
+#: mailpile/search.py:1055
 #, python-format
 msgid "Ignoring common word: %s"
 msgstr "Игнорира се обща дума: %s"
 
-#: mailpile/search.py:925
+#: mailpile/search.py:1124
 #, python-format
 msgid "Found %d results (%d suppressed)"
 msgstr "Намерени %d резултати (%d скрити)"
 
-#: mailpile/search.py:932
+#: mailpile/search.py:1143
 #, python-format
 msgid "Finding conversations (%d messages)..."
 msgstr "Търсят се разговори (%d съобщения)…"
 
-#: mailpile/search.py:945 mailpile/search.py:959
-#, python-format
-msgid "Sorting %d messages in %s order..."
+#: mailpile/search.py:1152 mailpile/search.py:1172
+#, fuzzy, python-format
+msgid "Sorting %d messages by %s..."
 msgstr "Сортират се %d съобщенията в %s ред…"
 
-#: mailpile/search.py:983
+#: mailpile/search.py:1196
 msgid "Recovering from bogus sort, corrupt index?"
 msgstr "Възстановяване след неправилно сортиране, повреден индекс?"
 
-#: mailpile/search.py:984
+#: mailpile/search.py:1198
 msgid "Please tell team@mailpile.is !"
 msgstr "Съобщете на team@mailpile.is !"
 
-#: mailpile/search.py:993
+#: mailpile/search.py:1207
 #, python-format
 msgid "Unknown sort order: %s"
 msgstr "Неизвестен ред на сортиране: %s"
 
-#: mailpile/search.py:998
+#: mailpile/search.py:1212
 msgid "Sort failed, sorting badly. Partial index?"
-msgstr "Сортирането е неуспешно вследствие на неправилна подредба. Частичен индекс?"
+msgstr ""
+"Сортирането е неуспешно вследствие на неправилна подредба. Частичен индекс?"
 
-#: mailpile/search.py:1011
+#: mailpile/search.py:1225
 #, python-format
 msgid "Sorted %d messages by %s, %d conversations"
 msgstr "Сортирани %d съобщения по %s, %d разговори"
 
-#: mailpile/search.py:1014
-#, python-format
-msgid "Sorted %d messages in %s order"
+#: mailpile/search.py:1228
+#, fuzzy, python-format
+msgid "Sorted %d messages by %s"
 msgstr "Сортирани %d съобщения в %s ред"
 
-#: mailpile/search.py:1029
-#, python-format
-msgid "Counting messages in tag:%s"
-msgstr "Брой съобщения с етикет:%s"
-
-#: mailpile/ui.py:168
+#: mailpile/ui.py:192
 #, python-format
 msgid "Elapsed: %.3fs (%s)"
 msgstr "Изминало:  %.3fs (%s)"
 
-#: mailpile/ui.py:180
+#: mailpile/ui.py:206
 #, python-format
 msgid "Completed %s in %.3fs"
 msgstr "Завършено %s за %.3fs"
 
-#: mailpile/ui.py:279
+#: mailpile/ui.py:317
 #, python-format
 msgid ""
 "<h1>Template not found</h1>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
-msgstr "<h1>Шаблонът не е намерен</h1>\n<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+"<h1>Шаблонът не е намерен</h1>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
 
-#: mailpile/ui.py:283
+#: mailpile/ui.py:323
 #, python-format
 msgid ""
 "<h1>Template error</h1>\n"
 "<pre>%s</pre>\n"
 "<p>%s</p><p><b>DATA:</b> %s</p>"
-msgstr "<h1>Грешка в шаблона</h1>\n<pre>%s</pre>\n<p>%s</p><p><b>DATA:</b> %s</p>"
+msgstr ""
+"<h1>Грешка в шаблона</h1>\n"
+"<pre>%s</pre>\n"
+"<p>%s</p><p><b>DATA:</b> %s</p>"
 
-#: mailpile/ui.py:290
+#: mailpile/ui.py:330
 #, python-format
 msgid ""
 "<h1>Template error in %s</h1>\n"
-"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
-msgstr "<h1> Грешка в шаблона при %s</h1>\n\nАнализиране на шаблон %s: <b>%s</b> на линия %s<br/><div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>"
+"Parsing template %s: <b>%s</b> on line %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
+msgstr ""
+"<h1> Грешка в шаблона при %s</h1>\n"
+"\n"
+"Анализиране на шаблон %s: <b>%s</b> на линия %s<br/><div><xmp>%s</"
+"xmp><hr><p><b>DATA:</b> %s</p></div>"
 
-#: mailpile/ui.py:299
-msgid "Sorry, this UI cannot edit messages."
-msgstr "Съжаляваме, този графичен интерфейс не може да редактира съобщения."
+#: mailpile/ui.py:358
+msgid "Number of edit messages does not match!"
+msgstr ""
 
-#: mailpile/ui.py:335
+#: mailpile/ui.py:403
 msgid "FIXME: Multiple results, OMG WTF"
 msgstr "ПОПРАВИ МЕ: Множество резултати, нещо странно се е случило…"
 
-#: mailpile/mailutils.py:137
+#: mailpile/util.py:230
+msgid "today"
+msgstr ""
+
+#: mailpile/util.py:232
 #, python-format
-msgid "SendMail: from %s, to %s\n"
-msgstr "SendMail: от %s, до %s\n"
+msgid "%d day"
+msgstr ""
 
-#: mailpile/mailutils.py:140
+#: mailpile/util.py:234
 #, python-format
-msgid "Connecting to %s"
-msgstr "Свързва се към %s"
+msgid "%d days"
+msgstr ""
 
-#: mailpile/mailutils.py:161
+#: mailpile/util.py:315
+msgid "Symmetric decryption is not available without config and key."
+msgstr ""
+
+#: mailpile/crypto/gpgi.py:20
+msgid "Trust not calculated"
+msgstr "Сигурността не е изчислена"
+
+#: mailpile/crypto/gpgi.py:21
+msgid "Unknown trust"
+msgstr "Неизвестна сигурност"
+
+#: mailpile/crypto/gpgi.py:22
+msgid "Undefined trust"
+msgstr "Неопределена сигурност"
+
+#: mailpile/crypto/gpgi.py:23
+msgid "Never trust"
+msgstr "Никога не се доверявайте"
+
+#: mailpile/crypto/gpgi.py:24
+msgid "Marginally trust"
+msgstr "Ниска сигурност"
+
+#: mailpile/crypto/gpgi.py:25
+msgid "Full trust"
+msgstr "Пълна сигурност"
+
+#: mailpile/crypto/gpgi.py:26
+msgid "Ultimate trust"
+msgstr "Безусловна сигурност"
+
+#: mailpile/crypto/gpgi.py:27
+msgid "Expired key, not trusted"
+msgstr "Изтекъл ключ, не е надежден"
+
+#: mailpile/crypto/gpgi.py:28
+msgid "Disabled key, not trusted"
+msgstr "Спрян ключ, не е надежден"
+
+#: mailpile/crypto/gpgi.py:29
+msgid "Revoked key, not trusted"
+msgstr "Анулиран ключ, не е надежден"
+
+#: mailpile/crypto/gpgi.py:31
+msgid "RSA"
+msgstr "RSA"
+
+#: mailpile/crypto/gpgi.py:32
+msgid "RSA (encrypt only)"
+msgstr "RSA (само криптиране)"
+
+#: mailpile/crypto/gpgi.py:33
+msgid "RSA (sign only)"
+msgstr "RSA (само подписване)"
+
+#: mailpile/crypto/gpgi.py:34
+msgid "Elgamal (encrypt only)"
+msgstr "Elgamal (само криптиране)"
+
+#: mailpile/crypto/gpgi.py:35
+msgid "DSA"
+msgstr "DSA"
+
+#: mailpile/crypto/gpgi.py:36
+msgid "Elgamal (encrypt/sign) [COMPROMISED]"
+msgstr "Elgamal (криптиране/подписване) [КОМПРОМЕТИРАН]"
+
+#: mailpile/crypto/gpgi.py:760
 #, python-format
-msgid "SMTP connection to: %s:%s as %s@%s\n"
-msgstr "SMTP връзка към: %s:%s като %s@%s\n"
+msgid "Keys missing or ambiguous for %s"
+msgstr ""
 
-#: mailpile/mailutils.py:199
+#: mailpile/crypto/mime.py:193 mailpile/crypto/mime.py:233
+#, fuzzy
+msgid "Failed to sign message!"
+msgstr "Съобщението не може да се декриптира"
+
+#: mailpile/mailboxes/mbox.py:97
+#, fuzzy
+msgid "Mailbox has been modified"
+msgstr "Пощенски кутии, които се индексират"
+
+#: mailpile/mailboxes/mbox.py:127
 #, python-format
-msgid "Invalid sendmail: %s"
-msgstr "Невалиден sendmail: %s"
+msgid "Saving %s state to %s"
+msgstr ""
 
-#: mailpile/mailutils.py:201
-msgid "Preparing message..."
-msgstr "Съобщението се подготвя…"
-
-#: mailpile/mailutils.py:211
-#, python-format
-msgid "Message sent, %d bytes"
-msgstr "Съобщението е изпратено, %d байтове"
-
-#: mailpile/mailutils.py:496 mailpile/mailutils.py:503
+#: mailpile/mailboxes/mbox.py:142
 msgid "No data found"
 msgstr "Не е намерена информация"
 
-#: mailpile/mailutils.py:525
+#: mailpile/mailboxes/mbox.py:172
 msgid "Message not found"
 msgstr "Съобщението не е намерено"
 
-#: mailpile/mailutils.py:690 mailpile/mailutils.py:698
-#: mailpile/mailutils.py:752
-msgid "Mailbox is read-only."
-msgstr "Пощенската кутия е в режим само за четене."
+#: mailpile/plugins/autotag.py:152
+msgid "Retraining SpamBayes autotaggers"
+msgstr ""
 
-#: mailpile/mailutils.py:797
-msgid "Message not found?"
-msgstr "Съобщението не е намерено?"
-
-#: mailpile/mailutils.py:875
+#: mailpile/plugins/autotag.py:172
 #, python-format
-msgid "Extracted attachment %s"
-msgstr "Извлечен прикачен файл %s"
+msgid "Have %d interesting %s messages"
+msgstr ""
 
-#: mailpile/mailutils.py:883
+#: mailpile/plugins/autotag.py:243
 #, python-format
-msgid "Wrote preview to: %s"
-msgstr "Предварителен преглед записан в: %s"
+msgid "Retrained SpamBayes auto-tagging for %s"
+msgstr ""
 
-#: mailpile/mailutils.py:885
-msgid "Failed to generate thumbnail"
-msgstr "Генерирането на иконка беше неуспешно"
+#: mailpile/plugins/autotag.py:264
+#, fuzzy, python-format
+msgid "Unknown tag: %s"
+msgstr "Непозната команда: %s"
 
-#: mailpile/mailutils.py:892
+#: mailpile/plugins/compose.py:30
+#, fuzzy, python-format
+msgid "Sent: %s"
+msgstr "Създава се: %s"
+
+#: mailpile/plugins/compose.py:144
+msgid "Cannot update from multiple files"
+msgstr ""
+
+#: mailpile/plugins/compose.py:202 mailpile/plugins/compose.py:233
 #, python-format
-msgid "Wrote attachment to: %s"
+msgid "%d message(s) edited"
+msgstr ""
+
+#: mailpile/plugins/compose.py:204
+#, python-format
+msgid "%d message(s) created"
+msgstr ""
+
+#: mailpile/plugins/compose.py:228
+#, fuzzy
+msgid "No messages!"
+msgstr "Съобщения"
+
+#: mailpile/plugins/compose.py:235
+#, python-format
+msgid "%d message(s) unchanged"
+msgstr ""
+
+#: mailpile/plugins/compose.py:265
+msgid "Please use update for editing messages"
+msgstr ""
+
+#: mailpile/plugins/compose.py:335
+#, python-format
+msgid "%s wrote:"
+msgstr ""
+
+#: mailpile/plugins/compose.py:379
+msgid "You must configure a From address first."
+msgstr ""
+
+#: mailpile/plugins/compose.py:388 mailpile/plugins/compose.py:475
+#, fuzzy
+msgid "No message found"
+msgstr "Не са открити резултати"
+
+#: mailpile/plugins/compose.py:460
+msgid "Sorry, ephemeral messages cannot have attachments at this time."
+msgstr ""
+
+#: mailpile/plugins/compose.py:507
+#, fuzzy
+msgid "No files found"
+msgstr "Не са открити резултати"
+
+#: mailpile/plugins/compose.py:513
+msgid "No messages selected"
+msgstr ""
+
+#: mailpile/plugins/compose.py:522
+#, fuzzy, python-format
+msgid "Read-only message: %s"
+msgstr "Поправи: сканирай отново съобщения: %s"
+
+#: mailpile/plugins/compose.py:524
+#, fuzzy, python-format
+msgid "Error attaching to %s"
 msgstr "Прикачен файл записан в: %s"
 
-#: mailpile/mailutils.py:895
+#: mailpile/plugins/compose.py:527
+#, fuzzy, python-format
+msgid "Attached %s to %d messages"
+msgstr "Заредени метаданни, %d съобщения"
+
+#: mailpile/plugins/compose.py:575
+#, fuzzy, python-format
+msgid "Failed to send %s"
+msgstr "Съобщението не може да се декриптира"
+
+#: mailpile/plugins/compose.py:595
+#, fuzzy
+msgid "Nothing was sent"
+msgstr "Не са направени промени"
+
+#: mailpile/plugins/compose.py:613 mailpile/plugins/compose.py:657
+#, fuzzy
+msgid "Nothing to do!"
+msgstr "Не са направени промени"
+
+#: mailpile/plugins/compose.py:623
 #, python-format
-msgid "No attachments found for: %s"
-msgstr "Няма намерени прикачени файлове за: %s"
+msgid "%d message(s) updated"
+msgstr ""
 
-#: mailpile/mailutils.py:991
+#: mailpile/plugins/compose.py:634
+msgid "Missing encryption keys"
+msgstr ""
+
+#: mailpile/plugins/compose.py:691
+msgid "Delay between attempts to send mail"
+msgstr ""
+
+#: mailpile/plugins/contacts.py:304
 #, python-format
-msgid "Decode failed: %s %s"
-msgstr "Декодирането беше неуспешно: %s %s"
+msgid "Required paramter missing. Required parameters are: %s"
+msgstr ""
 
-#: static/default/html/page/donate/index.html:7
-msgid "Please Donate To Mailpile"
-msgstr "Моля, направете дарение за Mailpile"
+#: mailpile/plugins/contacts.py:312
+#, python-format
+msgid ""
+"Unknown parameter passed to importer. Provided %s; but known parameters are: "
+"%s"
+msgstr ""
 
-#: static/default/html/page/donate/index.html:11
-msgid "Or you can donate to our"
-msgstr "или можете да дарите чрез нашия"
+#: mailpile/plugins/demos.py:45
+msgid "Demo Contacts"
+msgstr "Тестови контакти"
 
-#: static/default/html/page/donate/index.html:11
-msgid "Bitcoin Wallet"
-msgstr "Биткойн портфейл"
+#: mailpile/plugins/demos.py:46
+msgid "This is the demo importer"
+msgstr "Това е тестово импортиране"
 
-#: static/default/html/layouts/base.html:66
+#: mailpile/plugins/demos.py:49
+#, fuzzy
+msgid "Activate demo importer"
+msgstr "Това е тестово импортиране"
+
+#: mailpile/plugins/demos.py:50
+msgid "Contact name"
+msgstr "Име за връзка"
+
+#: mailpile/plugins/demos.py:51
+msgid "Contact email"
+msgstr "Пощенски адрес за връзка"
+
+#: mailpile/plugins/search.py:52
+#, fuzzy
+msgid "No results"
+msgstr "Не са открити резултати"
+
+#: mailpile/plugins/search.py:89
+#, python-format
+msgid "Weird starting point: %s"
+msgstr ""
+
+#: mailpile/plugins/search.py:204
+#, fuzzy, python-format
+msgid "Raw message: %s"
+msgstr "Какво съобщение е %s?"
+
+#: mailpile/plugins/setup_magic.py:113
+msgid "Created default tags"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:124
+msgid "Enabling spambayes autotagger"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:126
+msgid "Please install spambayes for super awesome spam filtering"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:134
+msgid "Enabling gravatar image importer"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:140
+#, fuzzy
+msgid "Importing contacts from GPG keyring"
+msgstr "Внасяне на контакти от GnuPG ключодържател"
+
+#: mailpile/plugins/setup_magic.py:183
+#, fuzzy, python-format
+msgid "Encrypting config to %s"
+msgstr "Свързва се към %s"
+
+#: mailpile/plugins/setup_magic.py:187
+msgid "Oh no, PGP/GPG support is unavailable!"
+msgstr ""
+
+#: mailpile/plugins/setup_magic.py:197
+msgid "Obfuscating search index and enabling indexing of encrypted e-mail. "
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:16
+msgid "Import contacts from GnuPG keyring"
+msgstr "Внасяне на контакти от GnuPG ключодържател"
+
+#: mailpile/plugins/vcard_gnupg.py:19 mailpile/plugins/vcard_gravatar.py:28
+msgid "Enable this importer"
+msgstr ""
+
+#: mailpile/plugins/vcard_gnupg.py:20
+msgid "Location of keyring"
+msgstr "Местоположение на ключодържателя"
+
+#: mailpile/plugins/vcard_gravatar.py:25
+#, fuzzy
+msgid "Import contact info from a Gravatar server"
+msgstr "Внасяне на контакти от GnuPG ключодържател"
+
+#: mailpile/plugins/vcard_gravatar.py:29
+msgid "Minimum days between refreshing"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:30
+msgid "Max batch size per update"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:31
+#, fuzzy
+msgid "Default thumbnail style"
+msgstr "Тема по подразбиране"
+
+#: mailpile/plugins/vcard_gravatar.py:32
+msgid "Preferred thumbnail rating"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:34
+msgid "Preferred thumbnail size"
+msgstr ""
+
+#: mailpile/plugins/vcard_gravatar.py:35
+msgid "Gravatar server URL"
+msgstr ""
+
+#: mailpile/plugins/vcard_mork.py:39
+#, fuzzy
+msgid "Location of Mork database"
+msgstr "Местоположения на сортираните данни"
+
+#: static/default/html/contact/index.html:19
+msgid "Hey that's you"
+msgstr ""
+
+#: static/default/html/contact/list.html:14
+#, fuzzy
+msgid "Emails"
+msgstr "Пощенски адрес"
+
+#: static/default/html/contact/list.html:17
+msgid "Compose Email To This Address"
+msgstr ""
+
+#: static/default/html/contact/list.html:20
+msgid "More Address"
+msgstr ""
+
+#: static/default/html/contact/list.html:28
+#: static/default/html/search/index.html:16
+msgid "Previous"
+msgstr "Назад"
+
+#: static/default/html/contact/list.html:31
+#: static/default/html/search/index.html:21
+msgid "Next"
+msgstr "Напред"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "of"
+msgstr "от"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/contact/list.html:44
+#: static/default/html/layouts/base.html:81
+#: static/default/html/partials/tools_contacts.html:3
+#: static/default/html/partials/tools_contacts.html:11
+msgid "Contacts"
+msgstr "Контакти"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "1 Conversation"
+msgstr "1 разговор"
+
+#: static/default/html/contact/list.html:34
+#: static/default/html/search/index.html:25
+msgid "No results found"
+msgstr "Не са открити резултати"
+
+#: static/default/html/layouts/base.html:46
+msgid "Close"
+msgstr ""
+
+#: static/default/html/layouts/base.html:71
 #, python-format
 msgid "%(name)s<small> mailpile of <b>%(size)s</b> emails</small>"
 msgstr "%(name)s<small> mailpile на <b>%(size)s</b> адреси</small>"
 
-#: static/default/html/layouts/base.html:124
-msgid "Encrypted"
-msgstr "Криптиран"
+#: static/default/html/layouts/base.html:80
+msgid "Compose"
+msgstr ""
 
-#: static/default/html/layouts/base.html:130
+#: static/default/html/layouts/base.html:82
+#: static/default/html/partials/tools_tags.html:3
+#: static/default/html/partials/tools_tags.html:10
+#: static/default/html/tag/list.html:54
+msgid "Tags"
+msgstr "Етикети"
+
+#: static/default/html/layouts/base.html:83
+msgid "Donate"
+msgstr ""
+
+#: static/default/html/layouts/base.html:84
+#: static/default/html/tag/list.html:30
+#, fuzzy
+msgid "Settings"
+msgstr "Създава се: %s"
+
+#: static/default/html/layouts/base.html:98
+#, fuzzy
+msgid "emails"
+msgstr "Пощенски адрес"
+
+#: static/default/html/layouts/base.html:127
 msgid "Photos"
 msgstr "Снимки"
 
-#: static/default/html/layouts/base.html:136
+#: static/default/html/layouts/base.html:133
 msgid "Files"
 msgstr "Файлове"
 
-#: static/default/html/layouts/base.html:142
+#: static/default/html/layouts/base.html:139
 msgid "Links"
 msgstr "Връзки"
 
-#: static/default/html/layouts/base.html:148
+#: static/default/html/layouts/base.html:145
 msgid "Groups"
 msgstr "Групи"
 
-#: static/default/html/layouts/base.html:160
-msgid "Mailpile"
-msgstr "Mailpile"
-
-#: static/default/html/layouts/base.html:160
-msgid "is free software made by"
-msgstr "е свободен софтуер, създаден от"
-
-#: static/default/html/layouts/base.html:160
-msgid "more"
-msgstr "повече"
-
-#: static/default/html/layouts/base.html:175
-#: static/default/html/message/index.html:16
-msgid "Date:"
-msgstr "Дата:"
-
-#: static/default/html/layouts/base.html:175
-msgid "Start time"
-msgstr "Начало"
-
-#: static/default/html/layouts/base.html:175
-msgid "to"
-msgstr "до"
-
-#: static/default/html/layouts/base.html:175
-msgid "Present"
-msgstr "Настоящ"
-
-#: static/default/html/layouts/base.html:176
-msgid "With:"
-msgstr "С:"
-
-#: static/default/html/layouts/base.html:176
-msgid "No Tags"
-msgstr "Без етикети"
-
-#: static/default/html/layouts/base.html:177
-msgid "And:"
-msgstr "И:"
-
-#: static/default/html/layouts/base.html:177
-msgid "All groups"
-msgstr "Всички групи"
-
-#: static/default/html/message/index.html:16
-msgid "at"
-msgstr "в"
-
-#: static/default/html/message/index.html:17
-msgid "From:"
-msgstr "От:"
-
-#: static/default/html/message/index.html:18
-msgid "To:"
-msgstr "До:"
-
-#: static/default/html/message/index.html:20
-msgid "Cc:"
-msgstr "Як:"
-
-#: static/default/html/message/index.html:23
-msgid "Bcc:"
-msgstr "Ск:"
-
-#: static/default/html/message/index.html:25
-msgid "Subject:"
-msgstr "Тема:"
-
-#: static/default/html/message/index.html:34
-msgid "Signed by"
-msgstr "Подписано от"
-
-#: static/default/html/message/index.html:35
-msgid "Unknown signature from"
-msgstr "Непознат подпис от"
-
-#: static/default/html/message/index.html:36
-msgid "Signed with unknown key"
-msgstr "Подписано с непознат ключ"
-
-#: static/default/html/message/index.html:41
-msgid "Successfully decrypted message"
-msgstr "Съобщението беше успешно декриптирано"
-
-#: static/default/html/message/index.html:42
-msgid "Failed to decrypt message"
-msgstr "Съобщението не може да се декриптира"
-
-#: static/default/html/message/index.html:63
-msgid "Reply"
-msgstr "Отговор"
-
-#: static/default/html/message/index.html:66
-#: static/default/html/partials/sub_nav_search.html:3
-msgid "All"
-msgstr "Всички"
-
-#: static/default/html/message/index.html:69
-msgid "Forward"
-msgstr "Препращане"
-
-#: static/default/html/message/draft.html:14
-msgid "To"
-msgstr "До"
-
-#: static/default/html/message/draft.html:16
-#: static/default/html/message/draft.html:24
-msgid "Bcc"
-msgstr "Ск"
-
-#: static/default/html/message/draft.html:17
-#: static/default/html/message/draft.html:20
-msgid "Cc"
-msgstr "Як"
-
-#: static/default/html/message/draft.html:28
+#: static/default/html/layouts/base.html:200
+#: static/default/html/partials/compose.html:27
+#: static/default/html/partials/thread_metadata.html:3
+#: static/default/html/partials/thread_metadata.html:6
 msgid "From"
 msgstr "От"
 
-#: static/default/html/message/draft.html:38
+#: static/default/html/layouts/base.html:200
+#, fuzzy
+msgid "Start Date"
+msgstr "Начало"
+
+#: static/default/html/layouts/base.html:200
+msgid "to"
+msgstr "до"
+
+#: static/default/html/layouts/base.html:200
+msgid "Present"
+msgstr "Настоящ"
+
+#: static/default/html/layouts/base.html:201
+#, fuzzy
+msgid "With"
+msgstr "С:"
+
+#: static/default/html/layouts/base.html:201
+msgid "No Tags"
+msgstr "Без етикети"
+
+#: static/default/html/layouts/base.html:202
+msgid "In"
+msgstr ""
+
+#: static/default/html/layouts/base.html:202
+#, fuzzy
+msgid "All Groups"
+msgstr "Всички групи"
+
+#: static/default/html/layouts/base.html:203
+#, fuzzy
+msgid "And"
+msgstr "И:"
+
+#: static/default/html/layouts/base.html:203
+#, fuzzy
+msgid "All Contacts"
+msgstr "Контакти"
+
+#: static/default/html/page/donate/index.html:2
+#: static/default/html/page/donate/index.html:7
+#, fuzzy
+msgid "Donate To Mailpile"
+msgstr "Моля, направете дарение за Mailpile"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Or you can donate to our"
+msgstr "или можете да дарите чрез нашия"
+
+#: static/default/html/page/donate/index.html:15
+msgid "Bitcoin Wallet"
+msgstr "Биткойн портфейл"
+
+#: static/default/html/page/donate/index.html:22
+msgid "Mailpile"
+msgstr "Mailpile"
+
+#: static/default/html/page/donate/index.html:22
+msgid "is free software made by"
+msgstr "е свободен софтуер, създаден от"
+
+#: static/default/html/page/donate/index.html:22
+msgid "more"
+msgstr "повече"
+
+#: static/default/html/partials/compose.html:40
+#, fuzzy
+msgid "Not Signed"
+msgstr "Подписано от"
+
+#: static/default/html/partials/compose.html:41
+#, fuzzy
+msgid "Signature Error"
+msgstr "Вътрешна грешка"
+
+#: static/default/html/partials/compose.html:42
+#: static/default/html/partials/compose.html:43
+#, fuzzy
+msgid "Signed"
+msgstr "Подписано от"
+
+#: static/default/html/partials/compose.html:45
+msgid "None"
+msgstr ""
+
+#: static/default/html/partials/compose.html:47
+#, fuzzy
+msgid "Can't Encrypt"
+msgstr "Криптиран"
+
+#: static/default/html/partials/compose.html:48
+msgid "Error Encrypting"
+msgstr ""
+
+#: static/default/html/partials/compose.html:74
+msgid "To"
+msgstr "До"
+
+#: static/default/html/partials/compose.html:75
+#: static/default/html/partials/compose.html:81
+msgid "Cc"
+msgstr "Як"
+
+#: static/default/html/partials/compose.html:76
+#: static/default/html/partials/compose.html:85
+msgid "Bcc"
+msgstr "Ск"
+
+#: static/default/html/partials/compose.html:89
 msgid "Subject"
 msgstr "Тема"
 
-#: static/default/html/message/draft.html:45
-msgid "No Attachments"
-msgstr "Няма прикачени файлове"
+#: static/default/html/partials/compose.html:90
+#, fuzzy
+msgid "New Subject"
+msgstr "Тема"
 
-#: static/default/html/message/draft.html:50
-msgid "Send"
-msgstr "Изпращане"
+#: static/default/html/partials/compose.html:94
+#, fuzzy
+msgid "Message"
+msgstr "Съобщения"
 
-#: static/default/html/message/draft.html:51
+#: static/default/html/partials/compose.html:95
+msgid "Your reply..."
+msgstr ""
+
+#: static/default/html/partials/compose.html:103
 msgid "Save"
 msgstr "Запазване"
 
-#: static/default/html/message/draft.html:60
-msgid "Message not found!"
-msgstr "Съобщението не е намерено!"
+#: static/default/html/partials/compose.html:107
+msgid "Reply"
+msgstr "Отговор"
 
-#: static/default/html/tag/list.html:14
-msgid "Total"
-msgstr "Общо"
+#: static/default/html/partials/compose.html:111
+msgid "Send"
+msgstr "Изпращане"
 
-#: static/default/html/tag/list.html:19
-#: static/default/html/partials/sub_nav_search.html:4
-msgid "New"
-msgstr "Ново"
+#: static/default/html/partials/contact_add.html:1
+#, fuzzy
+msgid "Add New Contact"
+msgstr "Добавяне на контакт"
 
-#: static/default/html/tag/list.html:24
-msgid "View Messages"
-msgstr "Преглед на съобщенията"
+#: static/default/html/partials/contact_add.html:6
+#: static/default/html/settings/index.html:20
+msgid "Name"
+msgstr "Име"
 
-#: static/default/html/tag/list.html:34
-msgid "Archived"
-msgstr "Архивиран"
+#: static/default/html/partials/contact_add.html:9
+msgid "E-mail"
+msgstr "Пощенски адрес"
 
-#: static/default/html/tag/add.html:3
-msgid "Enter New Tag Info"
-msgstr "Въвеждане на нов информационен етикет"
-
-#: static/default/html/tag/add.html:9
-msgid "Tag"
-msgstr "Етикет"
-
-#: static/default/html/tag/add.html:12
-msgid "Slug"
-msgstr "красив адрес"
-
-#: static/default/html/tag/add.html:15
+#: static/default/html/partials/contact_add.html:12
+#: static/default/html/tag/add.html:40
 msgid "Add"
 msgstr "Добавяне"
+
+#: static/default/html/partials/errors_content.html:3
+#, fuzzy
+msgid "Oops, You've Found a Quirk"
+msgstr "О, открита е особеност!"
+
+#: static/default/html/partials/errors_content.html:4
+msgid ""
+"We were unable to find the message you requested, perhaps it was deleted?"
+msgstr ""
+"Системата не успя да намери заявеното съобщение, може би е било изтрито?"
+
+#: static/default/html/partials/errors_content.html:6
+#, fuzzy
+msgid "Contact Missing"
+msgstr "Контакти"
+
+#: static/default/html/partials/errors_content.html:7
+#, fuzzy
+msgid ""
+"We were unable to find the contact you requested, perhaps it was typed (or "
+"linked to) incorrectly?"
+msgstr ""
+"Системата не успя да намери заявеното съобщение, може би е било изтрито?"
+
+#: static/default/html/partials/errors_content.html:9
+#, python-format
+msgid ""
+"If you think this is a bug, please file a <a href=\"%(url)s\" target=\"_blank"
+"\">bug report</a>"
+msgstr ""
+"Ако смятате, че това е бъг, моля изпратете <a href=\"%(url)s\" target="
+"\"_blank\">доклад за бъг</a>"
+
+#: static/default/html/partials/thread_message.html:17
+msgid "No Recipients"
+msgstr ""
+
+#: static/default/html/partials/thread_metadata.html:17
+#, fuzzy
+msgid "Expand Message"
+msgstr "Съобщения"
+
+#: static/default/html/partials/tools_contacts.html:4
+msgid "Add Contact"
+msgstr "Добавяне на контакт"
+
+#: static/default/html/partials/tools_contacts.html:5
+msgid "Import Contacts"
+msgstr "Импортиране на контакти"
+
+#: static/default/html/partials/tools_contacts.html:11
+#: static/default/html/partials/tools_tags.html:10
+msgid "selected"
+msgstr "избран"
+
+#: static/default/html/partials/tools_message.html:2
+#, fuzzy
+msgid "No Subject"
+msgstr "Тема"
+
+#: static/default/html/partials/tools_message.html:4
+msgid "People"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:10
+#: static/default/html/tag/list.html:29
+msgid "Messages"
+msgstr "Съобщения"
+
+#: static/default/html/partials/tools_message.html:12
+msgid "Move Whole Thread to Later"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:13
+msgid "Assign Tags to Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:14
+msgid "Archive Whole Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_message.html:15
+msgid "Delete Whole Thread"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:3
+msgid "All"
+msgstr "Всички"
+
+#: static/default/html/partials/tools_search.html:4
+msgid "Unread"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:6
+#: static/default/html/tag/add.html:15 static/default/html/tag/index.html:19
+#: static/default/html/tag/list.html:24
+msgid "Display"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:8
+msgid "Snug"
+msgstr "Спретнат"
+
+#: static/default/html/partials/tools_search.html:9
+msgid "Cozy"
+msgstr "Уютен"
+
+#: static/default/html/partials/tools_search.html:10
+msgid "Comfy"
+msgstr "Комфортен"
+
+#: static/default/html/partials/tools_search.html:11
+msgid "Detailed"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:27
+#, fuzzy
+msgid "Messages Selected"
+msgstr "Съобщения"
+
+#: static/default/html/partials/tools_search.html:27
+#: static/default/html/partials/tools_search.html:28
+msgid "Click message or checkbox to select"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:32
+msgid "Move to Later"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:33
+msgid "Move to Group"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:34
+msgid "Assign Tags"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:36
+msgid "Archive Selection"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:38
+msgid "Untag"
+msgstr ""
+
+#: static/default/html/partials/tools_search.html:40
+msgid "Delete Selection"
+msgstr ""
+
+#: static/default/html/partials/tools_tags.html:4
+msgid "Add Tag"
+msgstr "Добави етикет"
+
+#: static/default/html/search/index.html:25
+msgid "Conversations"
+msgstr "Разговори"
+
+#: static/default/html/search/index.html:30
+msgid "No Results Found"
+msgstr "Не са открити резултати"
+
+#: static/default/html/search/index.html:34
+#, python-format
+msgid ""
+"Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</"
+"strong> seconds."
+msgstr ""
+"Проверени <strong>%(number)s</strong> съобщения за <strong>%(elapsed)s</"
+"strong> секунди."
+
+#: static/default/html/search/index.html:34
+msgid "Vroom!"
+msgstr "Бръъм!"
 
 #: static/default/html/settings/index.html:7
 msgid "Your Profiles"
@@ -970,14 +1650,17 @@ msgstr "Вашите профили"
 msgid "Add New Profile"
 msgstr "Добавяне на нов профил"
 
-#: static/default/html/settings/index.html:20
-#: static/default/html/contact/add.html:9
-msgid "Name"
-msgstr "Име"
+#: static/default/html/settings/index.html:21
+msgid "Chelsea Manning"
+msgstr ""
 
 #: static/default/html/settings/index.html:23
 msgid "Email"
 msgstr "Пощенски адрес"
+
+#: static/default/html/settings/index.html:24
+msgid "chelsea@email.com"
+msgstr ""
 
 #: static/default/html/settings/index.html:26
 msgid "SMTP Server"
@@ -987,6 +1670,10 @@ msgstr "SMTP сървър"
 msgid "Login"
 msgstr "Вписване"
 
+#: static/default/html/settings/index.html:28
+msgid "username@mailserver.org"
+msgstr ""
+
 #: static/default/html/settings/index.html:30
 msgid "Password"
 msgstr "Парола"
@@ -994,6 +1681,10 @@ msgstr "Парола"
 #: static/default/html/settings/index.html:33
 msgid "Server"
 msgstr "Сървър"
+
+#: static/default/html/settings/index.html:34
+msgid "smtp.mailserver.org"
+msgstr ""
 
 #: static/default/html/settings/index.html:36
 msgid "Port"
@@ -1003,129 +1694,169 @@ msgstr "Порт"
 msgid "Add Profile"
 msgstr "Добавяне на профил"
 
-#: static/default/html/partials/bulk_actions.html:2
-msgid "Messages"
-msgstr "Съобщения"
+#: static/default/html/tag/add.html:3
+#, fuzzy
+msgid "Add New Tag"
+msgstr "Добави етикет"
 
-#: static/default/html/partials/bulk_actions.html:2
-msgid "selected"
-msgstr "избран"
+#: static/default/html/tag/add.html:9 static/default/html/tag/add.html:17
+#: static/default/html/tag/index.html:13 static/default/html/tag/index.html:21
+msgid "Tag"
+msgstr "Етикет"
 
-#: static/default/html/partials/sub_nav_contacts.html:3
-msgid "Contacts"
-msgstr "Контакти"
+#: static/default/html/tag/add.html:10 static/default/html/tag/index.html:14
+msgid "Friends & Family"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_contacts.html:4
-msgid "Add Contact"
-msgstr "Добавяне на контакт"
+#: static/default/html/tag/add.html:12 static/default/html/tag/index.html:16
+msgid "Slug"
+msgstr "красив адрес"
 
-#: static/default/html/partials/sub_nav_contacts.html:5
-msgid "Import Contacts"
-msgstr "Импортиране на контакти"
+#: static/default/html/tag/add.html:13 static/default/html/tag/index.html:17
+msgid "friends-family"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_message.html:6
+#: static/default/html/tag/add.html:18 static/default/html/tag/index.html:23
 msgid "Archive"
 msgstr "Архивиране"
 
-#: static/default/html/partials/sub_nav_message.html:7
-msgid "Delete"
-msgstr "Изтриване"
+#: static/default/html/tag/add.html:21 static/default/html/tag/index.html:27
+msgid "Parent"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_message.html:8
-msgid "Show All"
-msgstr "Показване на всички"
+#: static/default/html/tag/add.html:23 static/default/html/tag/index.html:29
+msgid "none"
+msgstr ""
 
-#: static/default/html/partials/errors_content.html:3
-msgid "Oops, you've found a quirk!"
-msgstr "О, открита е особеност!"
+#: static/default/html/tag/add.html:31 static/default/html/tag/index.html:38
+msgid "Template"
+msgstr ""
 
-#: static/default/html/partials/errors_content.html:4
-msgid ""
-"We were unable to find the message you requested, perhaps it was deleted?"
-msgstr "Системата не успя да намери заявеното съобщение, може би е било изтрито?"
+#: static/default/html/tag/add.html:33 static/default/html/tag/index.html:40
+#, fuzzy
+msgid "Default"
+msgstr "Тема по подразбиране"
 
-#: static/default/html/partials/errors_content.html:5
-#, python-format
-msgid ""
-"If you think this is a bug, please file a <a href=\"%(url)s\" "
-"target=\"_blank\">bug report</a>"
-msgstr "Ако смятате, че това е бъг, моля изпратете <a href=\"%(url)s\" target=\"_blank\">доклад за бъг</a>"
+#: static/default/html/tag/add.html:36 static/default/html/tag/index.html:43
+#, fuzzy
+msgid "Search Terms"
+msgstr "Извършва се търсене за %s"
 
-#: static/default/html/partials/sub_nav_tags.html:3
-msgid "Tags"
-msgstr "Етикети"
+#: static/default/html/tag/index.html:22
+msgid "Priority Tag"
+msgstr ""
 
-#: static/default/html/partials/sub_nav_tags.html:4
-msgid "Add Tag"
-msgstr "Добави етикет"
+#: static/default/html/tag/index.html:24
+msgid "Invisible"
+msgstr ""
 
-#: static/default/html/partials/details_search_speed.html:2
-#, python-format
-msgid ""
-"Searched <strong>%(number)s</strong> messages in "
-"<strong>%(elapsed)s</strong> seconds."
-msgstr "Проверени <strong>%(number)s</strong> съобщения за <strong>%(elapsed)s</strong> секунди."
+#: static/default/html/tag/index.html:48
+#, fuzzy
+msgid "Save tag"
+msgstr "Запазване"
 
-#: static/default/html/partials/details_search_speed.html:2
-msgid "Vroom!"
-msgstr "Бръъм!"
+#: static/default/html/tag/list.html:13
+msgid "Total"
+msgstr "Общо"
 
-#: static/default/html/search/index.html:20
-msgid "Previous"
-msgstr "Назад"
+#: static/default/html/tag/list.html:18
+msgid "New"
+msgstr "Ново"
 
-#: static/default/html/search/index.html:20
-msgid "Next"
-msgstr "Напред"
+#: static/default/html/tag/list.html:44
+#, fuzzy
+msgid "Archived Tags"
+msgstr "Архивиран"
 
-#: static/default/html/search/index.html:22
-msgid "of"
-msgstr "от"
+#~ msgid "WARNING: Imported old config from %s"
+#~ msgstr "ВНИМАНИЕ: Заредена е неактуална конфигурация от %s"
 
-#: static/default/html/search/index.html:22
-msgid "Conversations"
-msgstr "Разговори"
+#~ msgid "WARNING: Failed to import config from %s"
+#~ msgstr "ВНИМАНИЕ: Неуспешно импортиране на конфигурация от %s"
 
-#: static/default/html/search/index.html:22
-msgid "1 Conversation"
-msgstr "1 разговор"
+#~ msgid "Could not parse (%s): %s"
+#~ msgstr "Не може да зареди (%s): %s"
 
-#: static/default/html/search/index.html:22
-msgid "No results found"
-msgstr "Не са открити резултати"
+#~ msgid "Could not assign mailbox:%s = %s"
+#~ msgstr "Пощенската кутия не може да бъде асоциирана:%s = %s"
 
-#: static/default/html/search/index.html:23
-msgid "Snug"
-msgstr "Спретнат"
+#~ msgid "ID out of bounds: %s"
+#~ msgstr "Идентификация извън обхват: %s"
 
-#: static/default/html/search/index.html:24
-msgid "Cozy"
-msgstr "Уютен"
+#~ msgid "Statistics updated"
+#~ msgstr "Статистиката е обновена"
 
-#: static/default/html/search/index.html:25
-msgid "Comfy"
-msgstr "Комфортен"
+#~ msgid "disabled."
+#~ msgstr "изключен."
 
-#: static/default/html/search/index.html:26
-msgid "Fluffy"
-msgstr "Пухкав"
+#~ msgid "Counting messages in tag:%s"
+#~ msgstr "Брой съобщения с етикет:%s"
 
-#: static/default/html/search/index.html:32
-msgid "No Results Found"
-msgstr "Не са открити резултати"
+#~ msgid "Sorry, this UI cannot edit messages."
+#~ msgstr "Съжаляваме, този графичен интерфейс не може да редактира съобщения."
 
-#: static/default/html/contact/add.html:3
-msgid "Contact Info"
-msgstr "Контакти"
+#~ msgid "Decode failed: %s %s"
+#~ msgstr "Декодирането беше неуспешно: %s %s"
 
-#: static/default/html/contact/add.html:12
-msgid "E-mail"
-msgstr "Пощенски адрес"
+#~ msgid "Date:"
+#~ msgstr "Дата:"
 
-#: static/default/html/contact/add.html:15
-msgid "Website"
-msgstr "Сайт"
+#~ msgid "at"
+#~ msgstr "в"
 
-#: static/default/html/contact/add.html:18
-msgid "PGP Key"
-msgstr "PGP ключ"
+#~ msgid "From:"
+#~ msgstr "От:"
+
+#~ msgid "To:"
+#~ msgstr "До:"
+
+#~ msgid "Cc:"
+#~ msgstr "Як:"
+
+#~ msgid "Bcc:"
+#~ msgstr "Ск:"
+
+#~ msgid "Subject:"
+#~ msgstr "Тема:"
+
+#~ msgid "Unknown signature from"
+#~ msgstr "Непознат подпис от"
+
+#~ msgid "Signed with unknown key"
+#~ msgstr "Подписано с непознат ключ"
+
+#~ msgid "Successfully decrypted message"
+#~ msgstr "Съобщението беше успешно декриптирано"
+
+#~ msgid "Forward"
+#~ msgstr "Препращане"
+
+#~ msgid "No Attachments"
+#~ msgstr "Няма прикачени файлове"
+
+#~ msgid "Message not found!"
+#~ msgstr "Съобщението не е намерено!"
+
+#~ msgid "View Messages"
+#~ msgstr "Преглед на съобщенията"
+
+#~ msgid "Enter New Tag Info"
+#~ msgstr "Въвеждане на нов информационен етикет"
+
+#~ msgid "Delete"
+#~ msgstr "Изтриване"
+
+#~ msgid "Show All"
+#~ msgstr "Показване на всички"
+
+#~ msgid "Fluffy"
+#~ msgstr "Пухкав"
+
+#~ msgid "Contact Info"
+#~ msgstr "Контакти"
+
+#~ msgid "Website"
+#~ msgstr "Сайт"
+
+#~ msgid "PGP Key"
+#~ msgstr "PGP ключ"

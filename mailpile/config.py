@@ -3,21 +3,68 @@ import cPickle
 import io
 import json
 import os
+import random
 import re
+import threading
+import traceback
 import ConfigParser
 from gettext import translation, gettext, NullTranslations
 from gettext import gettext as _
 
+from jinja2 import Environment, BaseLoader, TemplateNotFound
+
 from urllib import quote, unquote
+from mailpile.crypto.streamer import DecryptingStreamer
+
+try:
+    import ssl
+except ImportError:
+    ssl = None
+
+try:
+    import sockschain as socks
+except ImportError:
+    try:
+        import socks
+    except ImportError:
+        socks = None
 
 from mailpile.commands import Rescan
+from mailpile.eventlog import EventLog
 from mailpile.httpd import HttpWorker
-from mailpile.mailboxes import MBX_ID_LEN, OpenMailbox, maildir
+from mailpile.mailboxes import OpenMailbox, NoSuchMailboxError, wervd
+from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
-from mailpile.vcard import SimpleVCard, VCardStore
+from mailpile.vcard import VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
+
+
+def ConfigPrinter(cfg, indent=''):
+    rv = []
+    if isinstance(cfg, dict):
+        pairer = cfg.iteritems()
+    else:
+        pairer = enumerate(cfg)
+    for key, val in pairer:
+        if hasattr(val, 'rules'):
+            preamble = '[%s: %s] ' % (val._NAME, val._COMMENT)
+        else:
+            preamble = ''
+        if isinstance(val, (dict, list, tuple)):
+            if isinstance(val, dict):
+                b, e = '{', '}'
+            else:
+                b, e = '[', ']'
+            rv.append(('%s: %s%s\n%s\n%s'
+                       '' % (key, preamble, b, ConfigPrinter(val, '  '), e)
+                       ).replace('\n  \n', ''))
+        elif isinstance(val, (str, unicode)):
+            rv.append('%s: "%s"' % (key, val))
+        else:
+            rv.append('%s: %s' % (key, val))
+    return indent + ',\n'.join(rv).replace('\n', '\n'+indent)
 
 
 def getLocaleDirectory():
@@ -67,10 +114,12 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
                 in ConfigParser.RawConfigParser.items(self, section)]
 
 
-def _MakeCheck(pcls, rules):
-    class CD(pcls):
+def _MakeCheck(pcls, name, comment, rules):
+    class Checker(pcls):
+        _NAME = name
         _RULES = rules
-    return CD
+        _COMMENT = comment
+    return Checker
 
 
 def _BoolCheck(value):
@@ -157,7 +206,8 @@ def _HostNameCheck(host):
         ...
     ValueError: Invalid hostname: not/a/hostname
     """
-    # FIXME: Check DNS?
+    # FIXME: We do not want to check the network, but rules for DNS are
+    #        still stricter than this so a static check could do more.
     if not unicode(host) == CleanText(unicode(host),
                                       banned=CleanText.NONDNS).clean:
         raise ValueError(_('Invalid hostname: %s') % host)
@@ -168,7 +218,7 @@ def _B36Check(b36val):
     """
     Verify that a string is a valid path base-36 integer.
 
-    >>> _B36Check('aa')
+    >>> _B36Check('Aa')
     'aa'
 
     >>> _B36Check('.')
@@ -264,7 +314,7 @@ def RuledContainer(pcls):
     details, examples and tests.
     """
 
-    class RC(pcls):
+    class _RuledContainer(pcls):
         RULE_COMMENT = 0
         RULE_CHECKER = 1
         # Reserved ...
@@ -284,7 +334,6 @@ def RuledContainer(pcls):
             'int': int,
             'long': long,
             'multiline': unicode,
-            'mailroute': unicode,  # FIXME: Make more strict
             'new file': _NewPathCheck,
             'new dir': _NewPathCheck,
             'new directory': _NewPathCheck,
@@ -300,20 +349,26 @@ def RuledContainer(pcls):
         }
         _NAME = 'container'
         _RULES = None
+        _COMMENT = None
+        _MAGIC = True
 
         def __init__(self, *args, **kwargs):
             rules = kwargs.get('_rules', self._RULES or {})
             self._name = kwargs.get('_name', self._NAME)
-            self._comment = kwargs.get('_comment', None)
-            for kw in ('_rules', '_comment', '_name'):
+            self._comment = kwargs.get('_comment', self._COMMENT)
+            enable_magic = kwargs.get('_magic', self._MAGIC)
+            for kw in ('_rules', '_comment', '_name', '_magic'):
                 if kw in kwargs:
                     del kwargs[kw]
 
             pcls.__init__(self)
             self._key = self._name
             self._rules_source = rules
+            self.rules = {}
             self.set_rules(rules)
             self.update(*args, **kwargs)
+
+            self._magic = enable_magic  # Enable the getitem/getattr magic
 
         def __str__(self):
             return json.dumps(self, sort_keys=True, indent=2)
@@ -375,9 +430,12 @@ def RuledContainer(pcls):
                 self.add_rule(key, rule)
 
         def add_rule(self, key, rule):
-            assert(isinstance(rule, (list, tuple)))
-            assert(key == CleanText(key, banned=CleanText.NONVARS).clean)
-            assert(not hasattr(self, key))
+            if not ((isinstance(rule, (list, tuple))) and
+                    (key == CleanText(key, banned=CleanText.NONVARS).clean) and
+                    (not self.real_hasattr(key))):
+                raise TypeError('add_rule(%s, %s): Bad key or rule.'
+                                % (key, rule))
+
             rule = list(rule[:])
             self.rules[key] = rule
             check = rule[self.RULE_CHECKER]
@@ -391,38 +449,33 @@ def RuledContainer(pcls):
             comment = rule[self.RULE_COMMENT]
             value = rule[self.RULE_DEFAULT]
 
-            if type(check) == dict:
-                check_rule = rule[:]
-                check_rule[self.RULE_DEFAULT] = None
-                check_rule[self.RULE_CHECKER] = _MakeCheck(ConfigDict, check)
-                check_rule = {'_any': check_rule}
-            else:
-                check_rule = None
+            if (isinstance(check, dict) and value is not None
+                    and not isinstance(value, (dict, list))):
+                raise TypeError(_('Only lists or dictionaries can contain '
+                                  'dictionary values (key %s).') % name)
 
-            if isinstance(value, dict):
-                rule[self.RULE_CHECKER] = False
-                if check_rule:
-                    pcls.__setitem__(self, key, ConfigDict(_name=name,
-                                                           _comment=comment,
-                                                           _rules=check_rule))
-                else:
-                    pcls.__setitem__(self, key, ConfigDict(_name=name,
-                                                           _comment=comment,
-                                                           _rules=value))
+            if isinstance(value, dict) and check is False:
+                pcls.__setitem__(self, key, ConfigDict(_name=name,
+                                                       _comment=comment,
+                                                       _rules=value))
+
+            elif isinstance(value, dict):
+                if value:
+                    raise ValueError(_('Subsections must be immutable '
+                                       '(key %s).') % name)
+                sub_rule = {'_any': [rule[self.RULE_COMMENT], check, None]}
+                checker = _MakeCheck(ConfigDict, name, check, sub_rule)
+                pcls.__setitem__(self, key, checker())
+                rule[self.RULE_CHECKER] = checker
 
             elif isinstance(value, list):
-                rule[self.RULE_CHECKER] = False
-                if check_rule:
-                    pcls.__setitem__(self, key, ConfigList(_name=name,
-                                                           _comment=comment,
-                                                           _rules=check_rule))
-                else:
-                    pcls.__setitem__(self, key, ConfigList(
-                        _name=name,
-                        _comment=comment,
-                        _rules={
-                            '_any': [rule[self.RULE_COMMENT], check, None]
-                        }))
+                if value:
+                    raise ValueError(_('Lists cannot have default values '
+                                       '(key %s).') % name)
+                sub_rule = {'_any': [rule[self.RULE_COMMENT], check, None]}
+                checker = _MakeCheck(ConfigList, name, comment, sub_rule)
+                pcls.__setitem__(self, key, checker())
+                rule[self.RULE_CHECKER] = checker
 
             elif not isinstance(value, (type(None), int, long, bool,
                                         float, str, unicode)):
@@ -430,16 +483,28 @@ def RuledContainer(pcls):
                                   ) % (type(value), name, repr(value)))
 
         def __fixkey__(self, key):
-            return key
+            return key.lower()
+
+        def fmt_key(self, key):
+            return key.lower()
 
         def get_rule(self, key):
             key = self.__fixkey__(key)
-            if key not in self.rules:
+            rule = self.rules.get(key, None)
+            if rule is None:
                 if '_any' in self.rules:
-                    return self.rules['_any']
-                raise InvalidKeyError(_('Invalid key for %s: %s'
-                                        ) % (self._name, key))
-            return self.rules[key]
+                    rule = self.rules['_any']
+                else:
+                    raise InvalidKeyError(_('Invalid key for %s: %s'
+                                            ) % (self._name, key))
+            if isinstance(rule[self.RULE_CHECKER], dict):
+                rule = rule[:]
+                rule[self.RULE_CHECKER] = _MakeCheck(
+                    ConfigDict,
+                    '%s/%s' % (self._name, key),
+                    rule[self.RULE_COMMENT],
+                    rule[self.RULE_CHECKER])
+            return rule
 
         def ignored_keys(self):
             return set([k for k in self.rules
@@ -478,25 +543,31 @@ def RuledContainer(pcls):
                 return self.get(key)
             return pcls.__getitem__(self, key)
 
-        def __getattr__(self, attr, default=None):
+        def real_getattr(self, attr):
             try:
-                rules = self.__getattribute__('rules')
+                return pcls.__getattribute__(self, attr)
             except AttributeError:
-                rules = {}
-            if self.__fixkey__(attr) in rules or '_any' in rules:
-                return self[attr]
-            else:
-                return self.__getattribute__(attr)
+                return False
+
+        def real_hasattr(self, attr):
+            try:
+                pcls.__getattribute__(self, attr)
+                return True
+            except AttributeError:
+                return False
+
+        def real_setattr(self, attr, value):
+            return pcls.__setattr__(self, attr, value)
+
+        def __getattr__(self, attr, default=None):
+            if self.real_hasattr(attr) or not self.real_getattr('_magic'):
+                return pcls.__getattribute__(self, attr)
+            return self[attr]
 
         def __setattr__(self, attr, value):
-            try:
-                rules = self.__getattribute__('rules')
-            except AttributeError:
-                rules = {}
-            if self.__fixkey__(attr) in rules:
-                self.__setitem__(attr, value)
-            else:
-                pcls.__setattr__(self, attr, value)
+            if self.real_hasattr(attr) or not self.real_getattr('_magic'):
+                return self.real_setattr(attr, value)
+            self.__setitem__(attr, value)
 
         def __passkey__(self, key, value):
             if hasattr(value, '__passkey__'):
@@ -528,7 +599,10 @@ def RuledContainer(pcls):
                                            ) % (self._name, key, value))
                 elif isinstance(checker, (type, type(RuledContainer))):
                     try:
-                        value = checker(value)
+                        if value is None:
+                            value = checker()
+                        else:
+                            value = checker(value)
                     except (IgnoreValue):
                         return
                     except (ValueError, TypeError):
@@ -549,7 +623,7 @@ def RuledContainer(pcls):
             self.extend(src)
             return self
 
-    return RC
+    return _RuledContainer
 
 
 class ConfigList(RuledContainer(list)):
@@ -580,8 +654,10 @@ class ConfigList(RuledContainer(list)):
             self[:] = []
 
     def __createkey_and_setitem__(self, key, value):
+        while key > len(self):
+            self.append(self.rules['_any'][self.RULE_DEFAULT])
         if key == len(self):
-            list.append(self, value)
+            self.append(value)
         else:
             list.__setitem__(self, key, value)
 
@@ -589,7 +665,7 @@ class ConfigList(RuledContainer(list)):
         list.append(self, None)
         try:
             self[len(self) - 1] = value
-            return b36(len(self) - 1)
+            return b36(len(self) - 1).lower()
         except:
             self[len(self) - 1:] = []
             raise
@@ -611,11 +687,19 @@ class ConfigList(RuledContainer(list)):
     def __getitem__(self, key):
         return list.__getitem__(self, self.__fixkey__(key))
 
+    def fmt_key(self, key):
+        f = b36(self.__fixkey__(key)).lower()
+        return ('0000' + f)[-4:] if (len(f) < 4) else f
+
+    def iterkeys(self):
+        return (self.fmt_key(i) for i in range(0, len(self)))
+
+    def iteritems(self):
+        for k in self.iterkeys():
+            yield (k, self[k])
+
     def keys(self):
-        def fmt_key(k):
-            f = b36(i).lower()
-            return (len(f) < 4) and ('0000' + f)[-4:] or f
-        return [fmt_key(i) for i in range(0, len(self))]
+        return list(self.iterkeys())
 
     def values(self):
         return self[:]
@@ -664,7 +748,7 @@ class ConfigDict(RuledContainer(dict)):
     ...                                            'x': ['X', str, '']}, []],
     ...                          'colors': ['Colors', ('red', 'blue'), []]})
     >>> sorted(pot.keys()), sorted(pot.values())
-    (['colors', 'liquids', 'tags'], [{...}, [], []])
+    (['colors', 'liquids', 'tags'], [[], [], {}])
 
     >>> pot['potatoes'] = pot['liquids']['vodka'] = "123"
     >>> pot['potatoes']
@@ -761,6 +845,31 @@ class PathDict(ConfigDict):
     }
 
 
+class MailpileJinjaLoader(BaseLoader):
+    """
+    A Jinja2 template loader which uses the Mailpile configuration
+    and plugin system to find template files.
+    """
+    def __init__(self, config):
+        self.config = config
+
+    def get_source(self, environment, template):
+        tpl = os.path.join('html', template)
+        path, mt = self.config.data_file_and_mimetype('html_theme', tpl)
+        if not path:
+            raise TemplateNotFound(tpl)
+
+        mtime = os.path.getmtime(path)
+        unchanged = lambda: (
+            path == self.config.data_file_and_mimetype('html_theme', tpl)[0]
+            and mtime == os.path.getmtime(path))
+
+        with file(path) as f:
+            source = f.read().decode('utf-8')
+
+        return source, path, unchanged
+
+
 class ConfigManager(ConfigDict):
     """
     This class manages the live global mailpile configuration. This includes
@@ -771,19 +880,31 @@ class ConfigManager(ConfigDict):
                                      os.path.expanduser('~/.mailpile'))
 
     def __init__(self, workdir=None, rules={}):
-        ConfigDict.__init__(self, _rules=rules)
+        ConfigDict.__init__(self, _rules=rules, _magic=False)
+
         self.workdir = workdir or self.DEFAULT_WORKDIR
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
 
+        self.plugins = None
         self.background = None
         self.cron_worker = None
         self.http_worker = None
-        self.dumb_worker = self.slow_worker = DumbWorker('Dumb worker', None)
+        self.dumb_worker = DumbWorker('Dumb worker', None)
+        self.slow_worker = self.dumb_worker
+        self.save_worker = self.dumb_worker
+        self.other_workers = []
+        self.mail_sources = {}
 
+        self.jinja_env = None
+
+        self.event_log = None
         self.index = None
         self.vcards = {}
         self._mbox_cache = {}
         self._running = {}
+        self._lock = threading.RLock()
+
+        self._magic = True  # Enable the getattr/getitem magic
 
     def _mkworkdir(self, session):
         if not os.path.exists(self.workdir):
@@ -828,7 +949,7 @@ class ConfigManager(ConfigDict):
         def item_sorter(i):
             try:
                 return (int(i[0], 36), i[1])
-            except:
+            except (ValueError, IndexError, KeyError, TypeError):
                 return i
 
         all_okay = True
@@ -836,14 +957,12 @@ class ConfigManager(ConfigDict):
             okay = True
             cfgpath = section.split(':')[0].split('/')[1:]
             cfg = self
+            added_parts = []
             for part in cfgpath:
-                if part in cfg:
+                if cfg.fmt_key(part) in cfg.keys():
                     cfg = cfg[part]
                 elif '_any' in cfg.rules:
-                    if isinstance(cfg, list):
-                        cfg.append({})
-                    else:
-                        cfg[part] = {}
+                    cfg[part] = {}
                     cfg = cfg[part]
                 else:
                     if session:
@@ -851,20 +970,27 @@ class ConfigManager(ConfigDict):
                                 'exist') % (source, section)
                         session.ui.warning(msg)
                     all_okay = okay = False
-            items = okay and parser.items(section) or []
+            items = parser.items(section) if okay else []
             items.sort(key=item_sorter)
             for var, val in items:
                 try:
                     cfg[var] = val
                 except (ValueError, KeyError, IndexError):
                     if session:
-                        msg = _(u'Invalid (%s): section %s, variable %s'
-                                ) % (source, section, var)
+                        msg = _(u'Invalid (%s): section %s, variable %s=%s'
+                                ) % (source, section, var, val)
                         session.ui.warning(msg)
                     all_okay = okay = False
         return all_okay
 
-    def load(self, session, filename=None):
+    def load(self, *args, **kwargs):
+        self._lock.acquire()
+        try:
+            return self._unlocked_load(*args, **kwargs)
+        finally:
+            self._lock.release()
+
+    def _unlocked_load(self, session, filename=None):
         self._mkworkdir(session)
         self.index = None
         self.reset(rules=False, data=True)
@@ -872,49 +998,93 @@ class ConfigManager(ConfigDict):
         filename = filename or self.conffile
         lines = []
         try:
-            fd = open(filename, 'rb')
-            try:
-                decrypt_and_parse_lines(fd, lambda l: lines.append(l), None)
-            except ValueError:
-                pass
-            fd.close()
+            with open(filename, 'rb') as fd:
+                decrypt_and_parse_lines(fd, lambda ll: lines.extend(ll), None)
+        except ValueError:
+            pass
         except IOError:
             pass
 
-        # Discover plugins and update the config rule
-        import mailpile.plugins
-        pds = [os.path.join(self.workdir, 'plugins')]
-        pds = mailpile.plugins.Discover(pds)
-        self.sys.plugins.rules['_any'][1] = pds
+        # Discover plugins and update the config rule to match
+        from mailpile.plugins import PluginManager
+        self.plugins = PluginManager(config=self, builtin=True).discover([
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         '..', 'plugins'),
+            os.path.join(self.workdir, 'plugins')
+        ])
+        self.sys.plugins.rules['_any'][self.RULE_CHECKER
+                                       ] = [None] + self.plugins.available()
 
         # Parse once (silently), to figure out which plugins to load...
         self.parse_config(None, '\n'.join(lines), source=filename)
+
         if len(self.sys.plugins) == 0:
-            self.sys.plugins.extend(mailpile.plugins.__all__)
+            self.sys.plugins.extend(self.plugins.DEFAULT)
         self.load_plugins(session)
 
         # Now all the plugins are loaded, reset and parse again!
-        self.set_rules(self._rules_source)
-        self.sys.plugins.rules['_any'][1] = pds
+        self.reset_rules_from_source()
         self.parse_config(session, '\n'.join(lines), source=filename)
 
+        # Open event log
+        self.event_log = EventLog(self.data_directory('event_log',
+                                                      mode='rw', mkdir=True),
+                                  # FIXME: Disbled encryption for now
+                                  lambda: False and self.prefs.obfuscate_index
+                                  ).load()
+
         # Enable translations
-        self.get_i18n_translation(session)
+        translation = self.get_i18n_translation(session)
+
+        # Configure jinja2
+        self.jinja_env = Environment(
+            loader=MailpileJinjaLoader(self),
+            autoescape=True,
+            trim_blocks=True,
+            extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
+                        'jinja2.ext.do', 'jinja2.ext.autoescape',
+                        'mailpile.jinjaextensions.MailpileCommand']
+        )
+        self.jinja_env.install_gettext_translations(translation,
+                                                    newstyle=True)
 
         # Load VCards
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
                                                            mkdir=True))
 
-    def load_plugins(self, session):
-        import mailpile.plugins
-        plugin_list = set(mailpile.plugins.REQUIRED + self.sys.plugins)
-        for plugin in plugin_list:
-            session.ui.mark(_('Loading plugin: %s') % plugin)
-            mailpile.plugins.Load(plugin)
-        self.prepare_workers(session)
+    def reset_rules_from_source(self):
+        self._lock.acquire()
+        try:
+            self.set_rules(self._rules_source)
+            self.sys.plugins.rules['_any'][self.RULE_CHECKER
+                                           ] = [None] + self.plugins.available()
+        finally:
+            self._lock.release()
 
-    def save(self):
+    def load_plugins(self, session):
+        self._lock.acquire()
+        try:
+            from mailpile.plugins import PluginManager
+            plugin_list = set(PluginManager.REQUIRED + self.sys.plugins)
+            for plugin in plugin_list:
+                if plugin is not None:
+                    session.ui.mark(_('Loading plugin: %s') % plugin)
+                    self.plugins.load(plugin)
+            session.ui.mark(_('Processing manifests'))
+            self.plugins.process_manifests()
+            self.prepare_workers(session)
+        finally:
+            self._lock.release()
+
+    def save(self, *args, **kwargs):
+        self._lock.acquire()
+        try:
+            self._unlocked_save(*args, **kwargs)
+        finally:
+            self._lock.release()
+
+    def _unlocked_save(self):
         self._mkworkdir(None)
         newfile = '%s.new' % self.conffile
         fd = gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb')
@@ -931,19 +1101,37 @@ class ConfigManager(ConfigDict):
     def clear_mbox_cache(self):
         self._mbox_cache = {}
 
-    def get_mailboxes(self):
-        def fmt_mbxid(k):
-            k = b36(int(k, 36))
-            if len(k) > MBX_ID_LEN:
-                raise ValueError(_('Mailbox ID too large: %s') % k)
-            return (('0' * MBX_ID_LEN) + k)[-MBX_ID_LEN:]
-        mailboxes = [fmt_mbxid(k) for k in self.sys.mailbox.keys()]
+    def _find_mail_source(self, mbx_id):
+        for src in self.sources.values():
+            # Note: we cannot test 'mbx_id in ...' because of case sensitivity.
+            if src.mailbox[FormatMbxId(mbx_id)] is not None:
+                return src
+        return None
+
+    def get_mailboxes(self, standalone=True, mail_sources=False):
+        mailboxes = [(FormatMbxId(k),
+                      self.sys.mailbox[k],
+                      self._find_mail_source(k))
+                     for k in self.sys.mailbox.keys()]
+
+        if not standalone:
+            mailboxes = [(i, p, s) for i, p, s in mailboxes if s]
+
+        if mail_sources:
+            for i in range(0, len(mailboxes)):
+                mid, path, src = mailboxes[i]
+                mailboxes[i] = (mid,
+                                src and src.mailbox[mid].local or path,
+                                src)
+        else:
+            mailboxes = [(i, p, s) for i, p, s in mailboxes if not s]
+
         mailboxes.sort()
-        return [(k, self.sys.mailbox[k]) for k in mailboxes]
+        return mailboxes
 
     def is_editable_message(self, msg_info):
         for ptr in msg_info[MailIndex.MSG_PTRS].split(','):
-            if not self.is_editable_mailbox(ptr[: MBX_ID_LEN]):
+            if not self.is_editable_mailbox(ptr[:MBX_ID_LEN]):
                 return False
         editable = False
         for tid in msg_info[MailIndex.MSG_TAGS].split(','):
@@ -955,106 +1143,168 @@ class ConfigManager(ConfigDict):
         return editable
 
     def is_editable_mailbox(self, mailbox_id):
-        mailbox_id = ((mailbox_id is None and -1) or
-                      (mailbox_id == '' and -1) or
-                      int(mailbox_id, 36))
-        local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'), 36)
-        return (mailbox_id == local_mailbox_id)
+        try:
+            mailbox_id = ((mailbox_id is None and -1) or
+                          (mailbox_id == '' and -1) or
+                          int(mailbox_id, 36))
+            local_mailbox_id = int(self.sys.get('local_mailbox_id', 'ZZZZZ'),
+                                   36)
+            return (mailbox_id == local_mailbox_id)
+        except ValueError:
+            return False
 
     def load_pickle(self, pfn):
-        fd = None
-        try:
-            fd = open(os.path.join(self.workdir, pfn), 'r')
+        with open(os.path.join(self.workdir, pfn), 'rb') as fd:
             if self.prefs.obfuscate_index:
-                lines = []
-                decrypt_and_parse_lines(fd, lambda l: lines.append(l), self,
-                                        newlines=True)
-                return cPickle.loads(str(''.join(lines)))
+                from mailpile.crypto.streamer import DecryptingStreamer
+                with DecryptingStreamer(self.prefs.obfuscate_index,
+                                        fd) as streamer:
+                    return cPickle.loads(streamer.read())
             else:
-                return cPickle.load(fd)
-        finally:
-            if fd:
-                fd.close()
+                return cPickle.loads(fd.read())
 
     def save_pickle(self, obj, pfn):
-        if self.prefs.obfuscate_index and not True:
-            # FIXME: Encryption disabled for now, openssl hangs.
-            from mailpile.crypto.symencrypt import EncryptedFile
-            fd = EncryptedFile(os.path.join(self.workdir, pfn),
-                               self.prefs.obfuscate_index,
-                               mode='wb')
-        else:
-            fd = open(os.path.join(self.workdir, pfn), 'wb')
-
-        # We deliberately use protocol 0, which is compatible with text
-        # mode file I/O. This allows the decrypt_and_parse_lines logic
-        # in load_pickle to operate without a hitch.
-        cPickle.dump(obj, fd, protocol=0)
-        fd.close()
-
-    def open_mailbox(self, session, mailbox_id):
         try:
-            mbx_id = mailbox_id.lower()
+            if self.prefs.obfuscate_index:
+                from mailpile.crypto.streamer import EncryptingStreamer
+                fd = EncryptingStreamer(self.prefs.obfuscate_index,
+                                        dir=self.workdir)
+                cPickle.dump(obj, fd, protocol=0)
+                fd.save(os.path.join(self.workdir, pfn))
+            else:
+                fd = open(os.path.join(self.workdir, pfn), 'wb')
+                cPickle.dump(obj, fd, protocol=0)
+        finally:
+            fd.close()
+
+    def open_mailbox(self, session, mailbox_id, prefer_local=True):
+        try:
+            mbx_id = FormatMbxId(mailbox_id)
+            src = self._find_mail_source(mailbox_id)
             mfn = self.sys.mailbox[mbx_id]
-            pfn = 'pickled-mailbox.%s' % mbx_id
-        except KeyError:
+            if prefer_local:
+                mfn = src and src.mailbox[mbx_id].local or mfn
+            pfn = 'pickled-mailbox.%s' % mbx_id.lower()
+        except (KeyError, TypeError):
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
 
+        self._lock.acquire()
         try:
-            if mbx_id in self._mbox_cache:
+            try:
+                if mbx_id not in self._mbox_cache:
+                    if session:
+                        session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
+                    self._mbox_cache[mbx_id] = self.load_pickle(pfn)
                 self._mbox_cache[mbx_id].update_toc()
-            else:
+            except KeyboardInterrupt:
+                raise
+            except IOError:
+                pass
+            except:
+                if self.sys.debug:
+                    import traceback
+                    traceback.print_exc()
+
+            if mbx_id not in self._mbox_cache:
                 if session:
-                    session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
-                self._mbox_cache[mbx_id] = self.load_pickle(pfn)
-        except:
-            if self.sys.debug:
-                import traceback
-                traceback.print_exc()
-            if session:
-                session.ui.mark(_('%s: Opening: %s (may take a while)'
-                                  ) % (mbx_id, mfn))
-            editable = self.is_editable_mailbox(mbx_id)
-            mbox = OpenMailbox(mfn, create=editable)
-            mbox.editable = editable
-            mbox.save(session,
-                      to=pfn,
-                      pickler=lambda o, f: self.save_pickle(o, f))
-            self._mbox_cache[mbx_id] = mbox
+                    session.ui.mark(_('%s: Opening: %s (may take a while)'
+                                      ) % (mbx_id, mfn))
+                editable = self.is_editable_mailbox(mbx_id)
+                mbox = None
+                if src:
+                    msrc = self.mail_sources.get(src._key)
+                    mbox = msrc and msrc.open_mailbox(mbx_id, mfn)
+                if not mbox:
+                    mbox = OpenMailbox(mfn, self, create=editable)
+                    mbox.editable = editable
+                mbox.save(session,
+                          to=pfn,
+                          pickler=lambda o, f: self.save_pickle(o, f))
+                self._mbox_cache[mbx_id] = mbox
+        finally:
+            self._lock.release()
+
+        # Always set this, it can't be pickled
+        self._mbox_cache[mbx_id]._encryption_key_func = \
+            lambda: self.prefs.obfuscate_index
 
         return self._mbox_cache[mbx_id]
 
+    def create_local_mailstore(self, session, name=None):
+        self._lock.acquire()
+        try:
+            path = os.path.join(self.workdir, 'mail')
+            if name is None:
+                name = '%5.5x' % random.randint(0, 16**5)
+                while os.path.exists(os.path.join(path, name)):
+                    name = '%5.5x' % random.randint(0, 16**5)
+            if name != '':
+                path = os.path.join(path, name)
+
+            mbx = wervd.MailpileMailbox(path)
+            mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
+            return path, mbx
+        finally:
+            self._lock.release()
+
     def open_local_mailbox(self, session):
+        self._lock.acquire()
         local_id = self.sys.get('local_mailbox_id', None)
-        if not local_id:
-            mailbox = os.path.join(self.workdir, 'mail')
-            mbx = maildir.MailpileMailbox(mailbox)
-            local_id = self.sys.mailbox.append(mailbox)
-            local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
-            self.sys.local_mailbox_id = local_id
-        else:
-            local_id = (('0' * MBX_ID_LEN) + local_id)[-MBX_ID_LEN:]
+        try:
+            if not local_id:
+                mailbox, mbx = self.create_local_mailstore(session, name='')
+                local_id = FormatMbxId(self.sys.mailbox.append(mailbox))
+                self.sys.local_mailbox_id = local_id
+            else:
+                local_id = FormatMbxId(local_id)
+        finally:
+            self._lock.release()
         return local_id, self.open_mailbox(session, local_id)
 
     def get_profile(self, email=None):
         find = email or self.prefs.get('default_email', None)
+        default_sig = _('Sent using Mailpile, Free Software '
+                        'from www.mailpile.is')
         default_profile = {
             'name': None,
             'email': find,
-            'signature': None,
-            'route': self.prefs.default_route
+            'messageroute': self.prefs.default_messageroute,
+            'signature': default_sig,
+            'vcard': None
         }
-        for profile in self.profiles:
-            if profile.email == find or not find:
-                if not email:
-                    self.prefs.default_email = profile.email
-                return dict_merge(default_profile, profile)
+        profiles = []
+        if find:
+            profiles = [self.vcards.get_vcard(find)]
+        if not profiles or not profiles[0]:
+            profiles = self.vcards.find_vcards([], kinds=['profile'])
+        if profiles and profiles[0]:
+            profile = profiles[0]
+            psig = profile.signature
+            proute = profile.route
+            default_profile.update({
+                'name': profile.fn,
+                'email': find or profile.email,
+                'signature': psig if (psig is not None) else default_sig,
+                'messageroute': (proute if (proute is not None)
+                                 else self.prefs.default_messageroute),
+                'vcard': profile
+            })
         return default_profile
 
-    def get_sendmail(self, frm, rcpts='-t'):
-        return self.get_profile(frm)['route'] % {
-            'rcpt': ', '.join(rcpts)
-        }
+    def get_sendmail(self, frm, rcpts=['-t']):
+        if len(rcpts) == 1:
+            if rcpts[0].lower().endswith('.onion'):
+                return {"protocol": "smtorp",
+                        "host": rcpts[0].split('@')[-1],
+                        "port": 25,
+                        "username": "",
+                        "password": ""}
+        routeid = self.get_profile(frm)['messageroute']
+        if self.routes[routeid] is not None:
+            return self.routes[routeid]
+        else:
+            print "Migration notice: Try running 'setup/migrate'."
+            raise ValueError(_("Route %s does not exist.") % routeid)
 
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """
@@ -1065,17 +1315,37 @@ class ConfigManager(ConfigDict):
         >>> p == os.path.abspath('static/default')
         True
         """
-        # This should raise a KeyError if the ftype is unrecognized
-        bpath = self.sys.path.get(ftype)
-        if not bpath.startswith('/'):
-            cpath = os.path.join(self.workdir, bpath)
-            if os.path.exists(cpath) or 'w' in mode:
-                bpath = cpath
-                if mkdir and not os.path.exists(cpath):
-                    os.mkdir(cpath)
-            else:
-                bpath = os.path.join(os.path.dirname(__file__), '..', bpath)
-        return os.path.abspath(bpath)
+        self._lock.acquire()
+        try:
+            # This should raise a KeyError if the ftype is unrecognized
+            bpath = self.sys.path.get(ftype)
+            if not bpath.startswith('/'):
+                cpath = os.path.join(self.workdir, bpath)
+                if os.path.exists(cpath) or 'w' in mode:
+                    bpath = cpath
+                    if mkdir and not os.path.exists(cpath):
+                        os.mkdir(cpath)
+                else:
+                    bpath = os.path.join(os.path.dirname(__file__),
+                                         '..', bpath)
+            return os.path.abspath(bpath)
+        finally:
+            self._lock.release()
+
+    def data_file_and_mimetype(self, ftype, fpath, *args, **kwargs):
+        # The theme gets precedence
+        core_path = self.data_directory(ftype, *args, **kwargs)
+        path, mimetype = os.path.join(core_path, fpath), None
+
+        # If there's nothing there, check our plugins
+        if not os.path.exists(path):
+            from mailpile.plugins import PluginManager
+            path, mimetype = PluginManager().get_web_asset(fpath, path)
+
+        if os.path.exists(path):
+            return path, mimetype
+        else:
+            return None, None
 
     def history_file(self):
         return os.path.join(self.workdir, 'history')
@@ -1084,66 +1354,109 @@ class ConfigManager(ConfigDict):
         return os.path.join(self.workdir, 'mailpile.idx')
 
     def postinglist_dir(self, prefix):
-        d = os.path.join(self.workdir, 'search')
-        if not os.path.exists(d):
-            os.mkdir(d)
-        d = os.path.join(d, prefix and prefix[0] or '_')
-        if not os.path.exists(d):
-            os.mkdir(d)
-        return d
+        self._lock.acquire()
+        try:
+            d = os.path.join(self.workdir, 'search')
+            if not os.path.exists(d):
+                os.mkdir(d)
+            d = os.path.join(d, prefix and prefix[0] or '_')
+            if not os.path.exists(d):
+                os.mkdir(d)
+            return d
+        finally:
+            self._lock.release()
 
     def get_index(self, session):
-        if self.index:
-            return self.index
-        idx = MailIndex(self)
-        idx.load(session)
-        self.index = idx
-        return idx
+        self._lock.acquire()
+        try:
+            if self.index:
+                return self.index
+            idx = MailIndex(self)
+            idx.load(session)
+            self.index = idx
+            return idx
+        finally:
+            self._lock.release()
+
+    def get_tor_socket(self):
+        if socks:
+            socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5,
+                                  'localhost', 9050, True)
+        return socks.socksocket
 
     def get_i18n_translation(self, session=None):
-        language = self.prefs.language
-        trans = None
-        if language != "":
-            try:
+        self._lock.acquire()
+        try:
+            language = self.prefs.language
+            trans = None
+            if language != "":
+                try:
+                    trans = translation("mailpile", getLocaleDirectory(),
+                                        [language], codeset="utf-8")
+                except IOError:
+                    if session:
+                        session.ui.warning(('Failed to load language %s'
+                                            ) % language)
+            if not trans:
                 trans = translation("mailpile", getLocaleDirectory(),
-                                    [language], codeset="utf-8")
-            except IOError:
-                if session:
-                    session.ui.warning('Failed to load language %s' % language)
-        if not trans:
-            trans = translation("mailpile", getLocaleDirectory(),
-                                codeset='utf-8', fallback=True)
-            if session and isinstance(trans, NullTranslations):
-                session.ui.warning('Failed to configure i18n. Using fallback.')
-
-        if trans:
-            trans.set_output_charset("utf-8")
-            trans.install(unicode=True)
-        return trans
+                                    codeset='utf-8', fallback=True)
+                if session and isinstance(trans, NullTranslations):
+                    session.ui.warning('Failed to configure i18n. '
+                                       'Using fallback.')
+            if trans:
+                trans.set_output_charset("utf-8")
+                trans.install(unicode=True)
+            return trans
+        finally:
+            self._lock.release()
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
             raise ValueError(_('Parent paths are not allowed'))
-        bpath = self.data_directory(ftype, mode=mode, mkdir=mkdir)
-        fpath = os.path.join(bpath, fpath)
-        return fpath, open(fpath, mode)
+        fpath, mt = self.data_file_and_mimetype(ftype, fpath,
+                                                mode=mode, mkdir=mkdir)
+        if not fpath:
+            raise IOError(2, 'Not Found')
+        return fpath, open(fpath, mode), mt
 
-    def prepare_workers(config, session=None, daemons=False):
+    def prepare_workers(self, *args, **kwargs):
+        self._lock.acquire()
+        try:
+            return self._unlocked_prepare_workers(*args, **kwargs)
+        finally:
+            self._lock.release()
+
+    def _unlocked_prepare_workers(config, session=None, daemons=False):
         # Set globals from config first...
         import mailpile.util
-        mailpile.util.APPEND_FD_CACHE_SIZE = config.sys.fd_cache_size
 
         # Make sure we have a silent background session
         if not config.background:
             config.background = Session(config)
-            config.background.ui = BackgroundInteraction(config)
-            config.background.ui.block()
+            config.background.ui = BackgroundInteraction(config,
+                                                         log_parent=session.ui)
 
         # Start the workers
         if daemons:
+            for src_id, src_config in config.sources.iteritems():
+                ms_thread = config.mail_sources.get(src_id)
+                if ms_thread and not ms_thread.isAlive():
+                    ms_thread = None
+                if not ms_thread:
+                    from mailpile.mail_source import MailSource
+                    try:
+                        config.mail_sources[src_id] = MailSource(
+                            config.background, src_config)
+                        config.mail_sources[src_id].start()
+                    except ValueError:
+                        pass
+
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', session)
                 config.slow_worker.start()
+            if config.save_worker == config.dumb_worker:
+                config.save_worker = Worker('Save worker', session)
+                config.save_worker.start()
             if not config.cron_worker:
                 config.cron_worker = Cron('Cron worker', session)
                 config.cron_worker.start()
@@ -1153,50 +1466,79 @@ class ConfigManager(ConfigDict):
                 if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
                     config.http_worker = HttpWorker(session, sspec)
                     config.http_worker.start()
+            if not config.other_workers:
+                from mailpile.plugins import PluginManager
+                for worker in PluginManager.WORKERS:
+                    w = worker(config.background)
+                    w.start()
+                    config.other_workers.append(w)
 
         # Update the cron jobs, if necessary
         if config.cron_worker:
-            session = session or config.background
-
             # Schedule periodic rescanning, if requested.
             rescan_interval = config.prefs.rescan_interval
             if rescan_interval:
                 def rescan():
                     if 'rescan' not in config._running:
-                        rsc = Rescan(session, 'rescan')
+                        rsc = Rescan(config.background, 'rescan')
                         rsc.serialize = False
-                        config.slow_worker.add_task(session, 'Rescan', rsc.run)
+                        config.slow_worker.add_task(
+                            config.background, 'Rescan',
+                            lambda: rsc.run(slowly=True))
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
 
             # Schedule plugin jobs
-            import mailpile.plugins
+            from mailpile.plugins import PluginManager
 
             def interval(i):
                 if isinstance(i, (str, unicode)):
                     i = config.walk(i)
                 return int(i)
 
-            for job, (i, f) in mailpile.plugins.FAST_PERIODIC_JOBS.iteritems():
-                config.cron_worker.add_task(job, interval(i),
-                                            lambda: f(session))
-            for job, (i, f) in mailpile.plugins.SLOW_PERIODIC_JOBS.iteritems():
-                def wrap():
-                    config.slow_worker.add_task(session, job,
-                                                lambda: f(session))
-                config.cron_worker.add_task(job, interval(i), wrap)
+            def wrap_fast(func):
+                def wrapped():
+                    return func(config.background)
+                return wrapped
+
+            def wrap_slow(func):
+                def wrapped():
+                    config.slow_worker.add_task(config.background, job,
+                                                lambda: func(config.background))
+                return wrapped
+            for job, (i, f) in PluginManager.FAST_PERIODIC_JOBS.iteritems():
+                config.cron_worker.add_task(job, interval(i), wrap_fast(f))
+            for job, (i, f) in PluginManager.SLOW_PERIODIC_JOBS.iteritems():
+                config.cron_worker.add_task(job, interval(i), wrap_slow(f))
 
     def stop_workers(config):
-        for wait in (False, True):
-            for w in (config.http_worker,
-                      config.slow_worker,
-                      config.cron_worker):
-                if w:
-                    w.quit(join=wait)
+        config._lock.acquire()
+        try:
+            for wait in (False, True):
+                for w in ([config.http_worker,
+                           config.slow_worker,
+                           config.save_worker,
+                           config.cron_worker] +
+                          config.other_workers +
+                          config.mail_sources.values()):
+                    if w and w.isAlive():
+                        if config.sys.debug:
+                            if wait:
+                                print 'Waiting for %s' % w
+                            else:
+                                print 'Stopping %s' % w
+                        w.quit(join=wait)
+            config.other_workers = []
+            config.http_worker = config.cron_worker = None
+            config.slow_worker = config.dumb_worker
+            config.save_worker = config.dumb_worker
+        finally:
+            config._lock.release()
 
 
 ##############################################################################
 
 if __name__ == "__main__":
+    import copy
     import doctest
     import sys
     import mailpile.config
@@ -1204,18 +1546,65 @@ if __name__ == "__main__":
     import mailpile.plugins.tags
     import mailpile.ui
 
-    cfg = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
+    rules = copy.deepcopy(mailpile.defaults.CONFIG_RULES)
+    rules.update({
+        'nest1': ['Nest1', {
+            'nest2': ['Nest2', str, []],
+            'nest3': ['Nest3', {
+                'nest4': ['Nest4', str, []]
+            }, []],
+        }, {}]
+    })
+    cfg = mailpile.config.ConfigManager(rules=rules)
     session = mailpile.ui.Session(cfg)
     session.ui.block()
 
-    for tn in range(0, 11):
-        cfg.tags.append({'name': 'Test Tag %s' % tn})
+    for tries in (1, 2):
+        # This tests that we can set (and reset) dicts of unnested objects
+        cfg.tags = {}
+        assert(cfg.tags.a is None)
+        for tn in range(0, 11):
+            cfg.tags.append({'name': 'Test Tag %s' % tn})
+        assert(cfg.tags.a['name'] == 'Test Tag 10')
 
-    assert(cfg.tags.a['name'] == 'Test Tag 10')
+        # This tests the same thing for lists
+        cfg.profiles = []
+        assert(len(cfg.profiles) == 0)
+        cfg.profiles.append({'name': 'Test Profile'})
+        assert(len(cfg.profiles) == 1)
+        assert(cfg.profiles[0].name == 'Test Profile')
+
+        # This is the complicated one: multiple nesting layers
+        cfg.nest1 = {}
+        assert(cfg.nest1.a is None)
+        cfg.nest1.a = {
+            'nest2': ['hello', 'world'],
+            'nest3': [{'nest4': ['Hooray']}]
+        }
+        cfg.nest1.b = {
+            'nest2': ['hello', 'world'],
+            'nest3': [{'nest4': ['Hooray', 'Bravo']}]
+        }
+        assert(cfg.nest1.a.nest3[0].nest4[0] == 'Hooray')
+        assert(cfg.nest1.b.nest3[0].nest4[1] == 'Bravo')
+
     assert(cfg.sys.http_port ==
            mailpile.defaults.CONFIG_RULES['sys'][-1]['http_port'][-1])
     assert(cfg.sys.path.vcards == 'vcards')
     assert(cfg.walk('sys.path.vcards') == 'vcards')
+
+    # Verify that the tricky nested stuff from above persists and
+    # load/save doesn't change lists.
+    for passes in (1, 2, 3):
+        cfg2 = mailpile.config.ConfigManager(rules=rules)
+        cfg2.parse_config(session, cfg.as_config_bytes())
+        cfg.parse_config(session, cfg2.as_config_bytes())
+        assert(cfg2.nest1.a.nest3[0].nest4[0] == 'Hooray')
+        assert(cfg2.nest1.b.nest3[0].nest4[1] == 'Bravo')
+        assert(len(cfg2.nest1) == 2)
+        assert(len(cfg.nest1) == 2)
+        assert(len(cfg.profiles) == 1)
+        assert(len(cfg.tags) == 11)
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'cfg': cfg,

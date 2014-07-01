@@ -1,5 +1,7 @@
 import unittest
 import mailpile
+from mock import patch
+from mailpile.commands import Action as action
 
 from tests import MailPileUnittest
 
@@ -7,7 +9,7 @@ from tests import MailPileUnittest
 class TestCommands(MailPileUnittest):
     def test_index(self):
         res = self.mp.rescan()
-        self.assertEqual(res.as_dict()["message"], 'rescan')
+        self.assertEqual(res.as_dict()["status"], 'success')
 
     def test_search(self):
         # A random search must return results in less than 0.2 seconds.
@@ -26,14 +28,13 @@ class TestCommands(MailPileUnittest):
     def test_unset(self):
         self.mp.unset("prefs.num_results")
         results = self.mp.search("twitter")
-        self.assertEqual(results.result['stats']['count'], 2)
+        self.assertEqual(results.result['stats']['count'], 3)
 
     def test_add(self):
         res = self.mp.add("tests")
         self.assertEqual(res.as_dict()["result"], True)
 
     def test_add_mailbox_already_in_pile(self):
-        res = self.mp.add("tests")
         res = self.mp.add("tests")
         self.assertEqual(res.as_dict()["result"], True)
 
@@ -49,6 +50,10 @@ class TestCommands(MailPileUnittest):
         res = self.mp.help()
         self.assertEqual(len(res.result), 3)
 
+    def test_help_variables(self):
+        res = self.mp.help_variables()
+        self.assertGreater(len(res.result['variables']), 1)
+
     def test_help_with_param_search(self):
         res = self.mp.help('search')
         self.assertEqual(res.result['pre'], 'Search your mail!')
@@ -63,6 +68,15 @@ class TestCommands(MailPileUnittest):
         res = self.mp.help_urlmap()
         self.assertEqual(len(res.result), 1)
         self.assertGreater(res.as_text(), 0)
+
+    def test_crypto_policy_auto_set_all_action(self):
+        res = self.mp.crypto_policy_auto_set_all()
+        self.assertEqual(res.as_dict()["message"], 'crypto_policy/auto_set_all')
+        self.assertEqual(set(), res.as_dict()['result'])
+
+    def test_crypto_policy_action(self):
+        res = self.mp.crypto_policy("foobar")
+        self.assertEqual(res.as_dict()["message"], 'crypto_policy')
 
 
 class TestCommandResult(MailPileUnittest):
@@ -95,6 +109,55 @@ class TestCommandResult(MailPileUnittest):
 
 class TestTagging(MailPileUnittest):
     def test_addtag(self):
+        pass
+
+
+class TestGPG(MailPileUnittest):
+    def test_key_search(self):
+        gpg_result = {
+            "D13C70DA": {
+                "uids": [
+                    {
+                        "email": "smari@mailpile.is"
+                    }
+                ]
+            }
+        }
+
+        with patch('mailpile.plugins.crypto_utils.GnuPG') as gpg_mock:
+            gpg_mock.return_value.search_key.return_value = gpg_result
+
+            res = action(self.mp._session, "crypto/gpg/searchkey", "D13C70DA")
+            email = res.result["D13C70DA"]["uids"][0]["email"]
+            self.assertEqual(email, "smari@mailpile.is")
+            gpg_mock.return_value.search_key.assert_called_with("D13C70DA")
+
+    def test_key_receive(self):
+        gpg_result = {
+            "updated": [
+                {
+                    "fingerprint": "08A650B8E2CBC1B02297915DC65626EED13C70DA"
+                }
+            ]
+        }
+
+        with patch('mailpile.plugins.crypto_utils.GnuPG') as gpg_mock:
+            gpg_mock.return_value.recv_key.return_value = gpg_result
+
+            res = action(self.mp._session, "crypto/gpg/receivekey", "D13C70DA")
+            self.assertEqual(res.result[0]["updated"][0]["fingerprint"],
+                             "08A650B8E2CBC1B02297915DC65626EED13C70DA")
+            gpg_mock.return_value.recv_key.assert_called_with("D13C70DA")
+
+    def test_key_import(self):
+        res = action(self.mp._session, "crypto/gpg/importkey",
+                                       'testing/pub.key')
+        self.assertEqual(res.result["results"]["count"], 1)
+
+    def test_nicknym_get_key(self):
+        pass
+
+    def test_nicknym_refresh_key(self):
         pass
 
 

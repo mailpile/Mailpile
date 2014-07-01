@@ -4,7 +4,7 @@ from urlparse import parse_qs, urlparse
 from urllib import quote
 
 from mailpile.commands import Command, COMMANDS
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.util import *
 
 
@@ -70,7 +70,8 @@ class UrlMap:
                                            or not strict)))]
 
     def _command(self, name,
-                 args=None, query_data=None, post_data=None, method='GET'):
+                 args=None, query_data=None, post_data=None, 
+                 method='GET', async=False):
         """
         Return an instantiated mailpile.command object or raise a UsageError.
 
@@ -107,7 +108,7 @@ class UrlMap:
             raise BadMethodError('Invalid method (%s): %s' % (method, name))
 
         # FIXME: Move this somewhere smarter
-        SPECIAL_VARS = ('csrf', )
+        SPECIAL_VARS = ('csrf', 'arg')
 
         if command.HTTP_STRICT_VARS:
             for var in (post_data or []):
@@ -131,7 +132,8 @@ class UrlMap:
                          (ui_keys, post_data),
                          (command.HTTP_QUERY_VARS, query_data),
                          (command.HTTP_QUERY_VARS, post_data),
-                         (command.HTTP_POST_VARS, post_data))
+                         (command.HTTP_POST_VARS, post_data),
+                         (['arg'], query_data))
         else:
             for var in command.HTTP_BANNED_VARS:
                 var = var.replace('[]', '')
@@ -140,7 +142,8 @@ class UrlMap:
                     raise BadDataError('Bad variable (%s): %s' % (var, name))
 
             copy_vars = (((query_data or {}).keys(), query_data),
-                         ((post_data or {}).keys(), post_data))
+                         ((post_data or {}).keys(), post_data),
+                         (['arg'], query_data))
 
         data = {
             '_method': method
@@ -149,15 +152,24 @@ class UrlMap:
             for var in vlist:
                 varBB = var + '[]'
                 if src and (var in src or varBB in src):
-                    sdata = (var in src) and src[var] or src.get(varBB, '')
+                    sdata = src[var] if (var in src) else src[varBB]
                     if isinstance(sdata, cgi.FieldStorage):
-                        data[var] = [_FancyString(sdata.value.decode('utf-8'))]
                         if hasattr(sdata, 'filename'):
+                            data[var] = [_FancyString(sdata.value)]
                             data[var][0].filename = sdata.filename
+                        else:
+                            data[var] = [sdata.value.decode('utf-8')]
                     else:
                         data[var] = [d.decode('utf-8') for d in sdata]
 
-        return command(self.session, name, args, data=data)
+        return command(self.session, name, args, data=data, async=async)
+
+    OUTPUT_SUFFIXES = ['.css', '.html', '.js',  '.json', '.rss', '.txt',
+                       '.text', '.vcf', '.xml',
+                       # These are the template-based ones which can
+                       # be embedded in JSON.
+                       '.jcss', '.jhtml', '.jjs', '.jrss', '.jtxt',
+                       '.jxml']
 
     def _choose_output(self, path_parts, fmt='html'):
         """
@@ -186,14 +198,16 @@ class UrlMap:
             path_parts.pop(-1)
         else:
             fn = path_parts.pop(-1)
-            for suffix in ('.html', '.jhtml'):
+            for suffix in self.OUTPUT_SUFFIXES:
+                if suffix == '.' + fn:
+                    return self._command('output', [suffix[1:]], method=False)
                 if fn.endswith(suffix):
-                    # FIXME: We are passing user input here which may
-                    #        have security implications.
-                    return self._command('output', [fn], method=False)
-            for suffix in ('as.json', 'as.xml', 'as.vcf', 'as.txt', 'as.text'):
-                if fn == suffix:
-                    return self._command('output', [suffix[3:]], method=False)
+                    if fn == 'as' + suffix:
+                        return self._command('output', [fn[3:]], method=False)
+                    else:
+                        # FIXME: We are passing user input here which may
+                        #        have security implications.
+                        return self._command('output', [fn], method=False)
             raise UsageError('Invalid output format: %s' % fn)
         return self._command('output', [fmt], method=False)
 
@@ -210,9 +224,9 @@ class UrlMap:
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
         >>> commands[0].args
-        ['json']
+        ('json',)
         >>> commands[1].args
-        ['@20', 'in:inbox']
+        ('@20', 'in:inbox')
         """
         output = self._choose_output(path_parts)
 
@@ -246,7 +260,7 @@ class UrlMap:
         >>> commands
         [<mailpile.commands.Output...>, <mailpile.plugins.search.View...>]
         >>> commands[1].args
-        ['=123']
+        ('=123',)
         """
         message_mids, i = [], 1
         while path_parts[i].startswith('='):
@@ -264,7 +278,7 @@ class UrlMap:
         """RESERVED FOR LATER."""
 
     def _map_api_command(self, method, path_parts,
-                         query_data, post_data, fmt='html'):
+                         query_data, post_data, fmt='html', async=False):
         """Map a path to a command list, prefering the longest match.
 
         >>> urlmap._map_api_command('GET', ['message', 'draft', ''], {}, {})
@@ -285,7 +299,8 @@ class UrlMap:
                                   args=path_parts[bp:],
                                   query_data=query_data,
                                   post_data=post_data,
-                                  method=method)
+                                  method=method, 
+                                  async=async)
                 ]
             except UsageError:
                 pass
@@ -295,6 +310,7 @@ class UrlMap:
                                                        '/'.join(path_parts)))
 
     MAP_API = 'api'
+    MAP_ASYNC_API = 'async'
     MAP_PATHS = {
         '': _map_root,
         'in': _map_tag,
@@ -322,9 +338,13 @@ class UrlMap:
         UsageError: Not available for GET: bogus
 
         The root currently just redirects to /in/inbox/:
+        >>> urlmap.map(request, 'GET', '/async/0/search/', {}, {})
+        [<mailpile.commands.Output...>, <mailpile.plugins.search.Search...>]
+
+        The root currently just redirects to /in/inbox/:
         >>> r = urlmap.map(request, 'GET', '/', {}, {})[0]
         >>> r, r.args
-        (<...UrlRedirect instance at 0x...>, ['/in/inbox/'])
+        (<...UrlRedirect instance at 0x...>, ('/in/inbox/',))
 
         Tag searches have an /in/TAGNAME shorthand:
         >>> urlmap.map(request, 'GET', '/in/inbox/', {}, {})
@@ -342,12 +362,15 @@ class UrlMap:
         """
 
         # Check the API first.
-        if path.startswith('/%s/' % self.MAP_API):
+        is_async = path.startswith('/%s/' % self.MAP_ASYNC_API)
+        is_api = path.startswith('/%s/' % self.MAP_API)
+        if is_api or is_async:
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:
                 raise UsageError('Unknown API level: %s' % path_parts[2])
             return self._map_api_command(method, path_parts[3:],
-                                         query_data, post_data, fmt='json')
+                                         query_data, post_data, 
+                                         fmt='json', async=is_async)
 
         path_parts = path[1:].split('/')
         try:
@@ -440,6 +463,21 @@ class UrlMap:
             prefix = '/search/'
         return self._url(prefix, output, 'q=' + quote(' '.join(search_terms)))
 
+    @classmethod
+    def canonical_url(self, cls):
+        """Return the full versioned URL for a command"""
+        return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
+                                cls.SYNOPSIS[2])
+    @classmethod
+    def ui_url(self, cls):
+        """Return the full user-facing URL for a command"""
+        return '/%s/' % cls.SYNOPSIS[2]
+
+    @classmethod
+    def context_url(self, cls):
+        """Return the UI context URL for a command"""
+        return '/%s/' % (cls.UI_CONTEXT or cls.SYNOPSIS[2])
+
     def map_as_markdown(self):
         """Describe the current URL map as markdown"""
 
@@ -487,7 +525,8 @@ class UrlMap:
                     pos_args = '%s%s/' % (padding, pos_args)
                     if qs:
                         qs = newline + qs
-                text.append('    %s/%s/%s%s' % (api, command[0], pos_args, qs))
+                text.append('    %s%s%s' % (self.canonical_url(command[1]),
+                                            pos_args, qs))
                 if cls.HTTP_POST_VARS:
                     ps = '&'.join(['%s=[%s]' % (v, cls.HTTP_POST_VARS[v])
                                    for v in cls.HTTP_POST_VARS])
@@ -571,9 +610,10 @@ class HelpUrlMap(Command):
         return {'urlmap': UrlMap(self.session).map_as_markdown()}
 
 
+plugin_manager = PluginManager(builtin=True)
 if __name__ != "__main__":
-    mailpile.plugins.register_commands(HelpUrlMap, UrlRedirect,
-                                       UrlRedirectEdit, UrlRedirectThread)
+    plugin_manager.register_commands(HelpUrlMap, UrlRedirect,
+                                     UrlRedirectEdit, UrlRedirectThread)
 
 else:
     # If run as a python script, print map and run doctests.
@@ -581,12 +621,12 @@ else:
     import sys
     import mailpile.app
     import mailpile.config
-    import mailpile.plugins.tags
-    import mailpile.plugins.search
-    import mailpile.plugins.compose
-    import mailpile.defaults
     import mailpile.plugins
+    import mailpile.defaults
     import mailpile.ui
+
+    # Import all the default plugins
+    from mailpile.plugins import *
 
     rules = mailpile.defaults.CONFIG_RULES
     config = mailpile.config.ConfigManager(rules=rules)
@@ -599,7 +639,7 @@ else:
     urlmap.print_map_markdown()
 
     # For the UrlMap._map_api_command test
-    mailpile.plugins.register_commands(UrlRedirect)
+    plugin_manager.register_commands(UrlRedirect)
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'urlmap': urlmap,

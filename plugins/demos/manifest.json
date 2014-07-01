@@ -1,0 +1,190 @@
+# This is a Mailpile plugin manifest, describing the `demos` plugin.
+#
+# This file describes the resources associated with this plugin and how
+# they are meant to interact with the rest of the Mailpile application.
+#
+# NOTE: The Mailpile plugin manifest format is JSON, with the optional
+#       extension that comments are allowed.  Comments must be on lines of
+#       their own and begin with a '#' character optionally preceded by
+#       some whitespace.  No other comment styles are supported.
+#
+{
+    "name": "demos",
+    "author": "The Mailpile Team <team@mailpile.is>",
+
+    "code": {
+        # Python modules end up in the namespace mailpile.plugins.<plugin>.
+        # Generally, the file stuff.py becomes mailpile.plugins.demos.stuff,
+        # with the exception that demos.py goes straight to the root.  If
+        # a directory is given (including "." for the plugin root dir), an
+        # __init__.py file is loaded per normal Pythonic conventions.
+        "python": ["demos.py"],
+
+        # ...
+        "javascript": ["demos.js"],
+
+        # ...
+        "css": ["demos.css"]
+    },
+
+    # This section defines URL routes and MIME types.
+    "routes": {
+        # Routes associating templates with API methods.
+        #
+        # Note: To communicate which API version is being developed against,
+        #       please either use full /api/N/ URL paths, or provide an "api"
+        #       attribute (both styles are illustrated below). If no view
+        #       type (filename part) is specified in the URL, HTML is assumed.
+        #
+        "/md5sum/": {"file": "md5sum.html", "api": 0},
+        "/md5sum/wordy.html": {"file": "md5sum-wordy.html", "api": 0},
+        "/api/0/md5sum/as.xml": {"file": "md5sum.xml"},
+        "/search/demos.html": {"file": "search.html", "api": 0},
+
+        # Static content can be injected anywhere under the /static/
+        # namespace. Optionally, non-obvious mime-types can be specified.
+        "/static/img/demos.png": {"file": "demos.png"},
+        "/static/data/demos.txt": {"file": "manifest.json",
+                                   "mimetype": "text/plain"}
+    },
+
+    # Please see https://github.com/pagekite/Mailpile/wiki/Config for
+    # details about the configuration file syntax.
+    "config": {
+        "sections": {},
+        "variables": {
+            "sys": {
+                "md5sum_blacklist": ["Words hated by the md5sum command",
+                                     "str", "gross"]
+            }
+        }
+    },
+
+    # This section tells the current Mailpile theme where and how to make
+    # this plugin visible in the user interface.
+    # Most of these will only be applicable in one (or rarely more) contexts,
+    # which is communicated by listing API endpoints as versioned URLs.
+    "user_interface": {
+        # These are stand-alone activities that exist within a context they 
+        # are coupled to a higher level command. These examples utilize the 
+        # javascript_setup attribute which is a way to init whatever your
+        # plugins JS code does before / or when it is triggered
+        "activities": [
+            {
+                "context": ["/"],
+                "name": "demo",
+                "text": "(demo)",
+                "icon": "/static/img/demos.png",
+                "description": "New Tool (demo)",
+                "url": "#could-be-a-fallback",
+                "javascript_setup": "new_tool_setup",
+                "javascript_events": {
+                    "click": "new_tool"
+                }
+            },
+            {
+                "context": ["/tag/list/"],
+                "name": "tag-list-demo-activity",
+                "text": "Earthquake (demo)",
+                "description": "This button makes your tags shake",
+                "url": "#useless",
+                "icon": "/static/img/demos.png",
+                "javascript_setup": "earthquake_setup",
+                "javascript_events": {
+                    "mouseover": "earthquake"
+                }
+            }
+        ],
+        # These are different ways to render data of a command
+        "display_modes": [
+            {
+                "context": ["/md5sum/"],
+                "name": "md5sum",
+                "text": "Default",
+                "description": "Default MD5 sum view",
+                "url": "/md5sum/"
+            },
+            {
+                "context": ["/md5sum/"],
+                "name": "md5sum/wordy",
+                "text": "Wordy",
+                "description": "Wordy MD5 sum view",
+                "url": "/md5sum/wordy.html"
+            },
+            # Here is a mode triggered & rendered by JS
+            {
+                "context": ["/tag/list/"],
+                "name": "tag-list-demo-mode",
+                "text": "Tag List (demo)",
+                "description": "This is a useless button",
+                "url": "#taglist",
+                "icon": "/static/img/demos.png",
+                "javascript_events": {
+                    "click": "tag_list"
+                }
+            }
+        ],
+        # These are ways to refine a certain view (e.g. a search)
+        "display_refiners": [
+            {
+                "context": ["/search/"],
+                "name": "demo_search",
+                "text": "Demo",
+                "description": "Demo search!!!",
+                "url_args_remove": [["qr", ""]],
+                "url_args_add": [["qr", "demo"]],
+                "icon": "/static/img/demos.png"
+            }
+        ],
+        # Actions that can be performed on selected items
+        "selection_actions": []
+    },
+
+    # These are our Python-related hooks
+    "commands": [
+        {
+            # Native API commands (controllers)
+            "class": "md5sumCommand",
+            "url": "md5sum",
+            "name": "md5sum"
+        },
+        {
+            # Data views provide alternate data representations
+            "class": "md5sumWordyView",
+            "input": "md5sum",
+            "name": "wordy"
+        }
+    ],
+    # Register custom mailbox types
+    "mailboxes": [
+        {
+            "class": "DemoMailbox",
+            "priority": "100"
+        }
+    ],
+    "contacts": {
+        "importers": ["DemoVCardImporter"],
+        "exporters": [],
+        "context": []
+    },
+    "periodic_jobs": {
+        "fast": [{"interval": 5, "class": "TickJob"}],
+        "slow": [{"interval": 15, "class": "TickJob"}]
+    },
+    "keyword_extractors": [
+    ],
+    "search_terms": [
+    ],
+    "filters": {
+        "pre": [],
+        "post": []
+    },
+    "threads": [
+        "MyWorker"
+    ],
+    # List method names to be called after plugin is loaded or before its unloaded
+    "lifecycle": {
+        "startup": ["on_plugin_start"],
+        "shutdown": ["on_plugin_shutdown"]
+    }
+}

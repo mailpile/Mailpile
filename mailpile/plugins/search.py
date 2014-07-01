@@ -3,14 +3,17 @@ import re
 import time
 from gettext import gettext as _
 
-import mailpile.plugins
 from mailpile.commands import Command, SearchResults
-from mailpile.mailutils import Email, MBX_ID_LEN
+from mailpile.mailutils import Email, FormatMbxId
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
+from mailpile.plugins import PluginManager
 from mailpile.search import MailIndex
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import SuppressHtmlOutput
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Commands ]################################################################
@@ -22,19 +25,23 @@ class Search(Command):
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
         'q': 'search terms',
+        'qr': 'search refinements',
         'order': 'sort order',
         'start': 'start position',
-        'end': 'end position'
+        'end': 'end position',
+        'full': 'return all metadata'
     }
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
             Command.CommandResult.__init__(self, *args, **kwargs)
             self.fixed_up = False
             if isinstance(self.result, dict):
-                self.message = self.result['summary']
+                self.message = self.result.get('summary', '')
             elif isinstance(self.result, list):
-                self.message = ', '.join([r['summary'] for r in self.result])
+                self.message = ', '.join([r.get('summary', '')
+                                          for r in self.result])
 
         def _fixup(self):
             if self.fixed_up:
@@ -44,7 +51,9 @@ class Search(Command):
 
         def as_text(self):
             if self.result:
-                if isinstance(self.result, (list, set)):
+                if isinstance(self.result, (bool, str, unicode, int, float)):
+                    return unicode(self.result)
+                elif isinstance(self.result, (list, set)):
                     return '\n'.join([r.as_text() for r in self.result])
                 else:
                     return self.result.as_text()
@@ -59,13 +68,25 @@ class Search(Command):
             return Command.CommandResult.as_dict(self._fixup(),
                                                  *args, **kwargs)
 
+    def state_as_query_args(self):
+        try:
+            return self._search_state
+        except (AttributeError, NameError):
+            return Command.state_as_query_args(self)
+
     def _do_search(self, search=None):
         session, idx = self.session, self._idx()
         session.searched = search or []
-        args = self.args[:]
+        args = list(self.args)
 
         for q in self.data.get('q', []):
             args.extend(q.split())
+
+        # Query refinements...
+        qrs = []
+        for qr in self.data.get('qr', []):
+            qrs.extend(qr.split())
+        args.extend(qrs)
 
         for order in self.data.get('order', []):
             session.order = order
@@ -81,31 +102,53 @@ class Search(Command):
         elif d_end:
             args[:0] = ['@%s' % (d_end - num + 1)]
 
+        start = 0
         if args and args[0].startswith('@'):
             spoint = args.pop(0)[1:]
             try:
                 start = int(spoint) - 1
             except ValueError:
                 raise UsageError(_('Weird starting point: %s') % spoint)
-        else:
-            start = 0
 
-        # FIXME: Is this dumb?
+        prefix = ''
         for arg in args:
-            if ':' in arg or (arg and arg[0] in ('-', '+')):
+            if arg.endswith(':'):
+                prefix = arg
+            elif ':' in arg or (arg and arg[0] in ('-', '+')):
+                prefix = ''
                 session.searched.append(arg.lower())
+            elif prefix and '@' in arg:
+                session.searched.append(prefix + arg.lower())
             else:
-                session.searched.extend(re.findall(WORD_REGEXP, arg.lower()))
+                words = re.findall(WORD_REGEXP, arg.lower())
+                session.searched.extend([prefix + word for word in words])
+
+        if not session.searched:
+             session.searched = ['all:mail']
 
         session.order = session.order or session.config.prefs.default_order
         session.results = list(idx.search(session, session.searched).as_set())
         idx.sort_results(session, session.results, session.order)
+
+        self._search_state = {
+            'q': [a for a in args if not (a.startswith('@') or a in qrs)],
+            'qr': qrs,
+            'start': [a for a in args if a.startswith('@')],
+            'order': [session.order]
+        }
         return session, idx, start, num
 
     def command(self, search=None):
         session, idx, start, num = self._do_search(search=search)
-        session.displayed = SearchResults(session, idx, start=start, num=num)
-        return session.displayed
+        full_threads = self.data.get('full', False)
+        session.displayed = SearchResults(session, idx,
+                                          start=start, num=num,
+                                          full_threads=full_threads)
+        session.ui.mark(_('Prepared %d search results') % len(session.results))
+        return self._success(_('Found %d results in %.3fs'
+                               ) % (len(session.results),
+                                    session.ui.report_marks(quiet=True)),
+                             result=session.displayed)
 
 
 class Next(Search):
@@ -116,8 +159,14 @@ class Next(Search):
 
     def command(self):
         session = self.session
-        session.displayed = session.displayed.next_set()
-        return session.displayed
+        try:
+            session.displayed = session.displayed.next_set()
+        except AttributeError:
+            session.ui.error(_("You must perform a search before "
+                               "requesting the next page."))
+            return False
+        return self._success(_('Displayed next page of results.'),
+                             result=session.displayed)
 
 
 class Previous(Search):
@@ -128,8 +177,14 @@ class Previous(Search):
 
     def command(self):
         session = self.session
-        session.displayed = session.displayed.previous_set()
-        return session.displayed
+        try:
+            session.displayed = session.displayed.previous_set()
+        except AttributeError:
+            session.ui.error(_("You must perform a search before "
+                               "requesting the previous page."))
+            return False
+        return self._success(_('Displayed previous page of results.'),
+                             result=session.displayed)
 
 
 class Order(Search):
@@ -143,7 +198,8 @@ class Order(Search):
         session.order = self.args and self.args[0] or None
         idx.sort_results(session, session.results, session.order)
         session.displayed = SearchResults(session, idx)
-        return session.displayed
+        return self._success(_('Changed sort order to %s') % session.order,
+                             result=session.displayed)
 
 
 class View(Search):
@@ -183,14 +239,18 @@ class View(Search):
                           msg_idxs=[e.msg_idx_pos for e in emails])
         return None
 
+    def state_as_query_args(self):
+        return Command.state_as_query_args(self)
+
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
         results = []
-        if self.args and self.args[0].lower() == 'raw':
-            raw = self.args.pop(0)
+        args = list(self.args)
+        if args and args[0].lower() == 'raw':
+            raw = args.pop(0)
         else:
             raw = False
-        emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
+        emails = [Email(idx, mid) for mid in self._choose_messages(args)]
 
         rv = self._side_effects(emails)
         if rv is not None:
@@ -210,8 +270,8 @@ class View(Search):
                     if email.msg_idx_pos in result.results:
                         old_result = result
                 if old_result:
-                   old_result.add_email(email)
-                   continue
+                    old_result.add_email(email)
+                    continue
 
                 conv = [int(c[0], 36) for c
                         in idx.get_conversation(msg_idx=email.msg_idx_pos)]
@@ -226,13 +286,15 @@ class View(Search):
                     return -int(info[idx.MSG_DATE], 36)
                 conv.sort(key=sort_conv_key)
 
-                results.append(SearchResults(session, idx,
-                                             results=conv, num=len(conv),
-                                             emails=[email]))
+                session.results = conv
+                results.append(SearchResults(session, idx, emails=[email]))
         if len(results) == 1:
-            return results[0]
+            return self._success(_('Displayed a single message'),
+                                 result=results[0])
         else:
-            return results
+            session.results = []
+            return self._success(_('Displayed %d messages') % len(results),
+                                 result=results)
 
 
 class Extract(Command):
@@ -240,6 +302,7 @@ class Extract(Command):
     SYNOPSIS = ('e', 'extract', 'message/download', '<msgs> <att> [><fn>]')
     ORDER = ('Searching', 5)
     RAISES = (SuppressHtmlOutput, UrlRedirectException)
+    IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
@@ -269,36 +332,45 @@ class Extract(Command):
         mode = 'download'
         name_fmt = None
 
-        if self.args[0] in ('inline', 'inline-preview', 'preview', 'download'):
-            mode = self.args.pop(0)
+        args = list(self.args)
+        if args[0] in ('inline', 'inline-preview', 'preview', 'download'):
+            mode = args.pop(0)
 
-        if len(self.args) > 0 and self.args[-1].startswith('>'):
-            name_fmt = self.args.pop(-1)[1:]
+        if len(args) > 0 and args[-1].startswith('>'):
+            if self.session.config.sys.lockdown:
+                return self._error(_('In lockdown, doing nothing.'))
+            name_fmt = args.pop(-1)[1:]
 
-        if self.args[0].startswith('#') or self.args[0].startswith('part:'):
-            cid = self.args.pop(0)
+        if (args[0].startswith('#') or
+                args[0].startswith('part:') or
+                args[0].startswith('ext:')):
+            cid = args.pop(0)
         else:
-            cid = self.args.pop(-1)
+            cid = args.pop(-1)
 
-        eids = self._choose_messages(self.args)
-        print 'Download %s from %s as %s/%s' % (cid, eids, mode, name_fmt)
-
+        eids = self._choose_messages(args)
         emails = [Email(idx, i) for i in eids]
         results = []
         for e in emails:
-            fn, info = e.extract_attachment(session, cid,
-                                            name_fmt=name_fmt,
-                                            mode=mode)
-            if info:
-                info['idx'] = email.msg_idx_pos
-                if fn:
-                    info['created_file'] = fn
-                results.append(info)
+            if cid[0] == '*':
+                tree = e.get_message_tree(want=['attachments'])
+                cids = [('#%s' % a['count']) for a in tree['attachments']
+                        if a['filename'].lower().endswith(cid[1:].lower())]
+            else:
+                cids = [cid]
+
+            for c in cids:
+                fn, info = e.extract_attachment(session, c,
+                                                name_fmt=name_fmt, mode=mode)
+                if info:
+                    info['idx'] = e.msg_idx_pos
+                    if fn:
+                        info['created_file'] = fn
+                    results.append(info)
         return results
 
 
-mailpile.plugins.register_commands(Extract, Next, Order, Previous,
-                                   Search, View)
+_plugins.register_commands(Extract, Next, Order, Previous, Search, View)
 
 
 ##[ Search terms ]############################################################
@@ -306,17 +378,17 @@ mailpile.plugins.register_commands(Extract, Next, Order, Previous,
 def mailbox_search(config, idx, term, hits):
     word = term.split(':', 1)[1].lower()
     try:
-        mailbox_id = b36(int(word, 36))
+        mbox_id = FormatMbxId(b36(int(word, 36)))
     except ValueError:
-        mailbox_id = None
+        mbox_id = None
 
     mailboxes = [m for m in config.sys.mailbox.keys()
-                 if word in config.sys.mailbox[m].lower() or mailbox_id == m]
+                 if (mbox_id == m) or word in config.sys.mailbox[m].lower()]
     rt = []
     for mbox_id in mailboxes:
-        mbox_id = (('0' * MBX_ID_LEN) + mbox_id)[-MBX_ID_LEN:]
+        mbox_id = FormatMbxId(mbox_id)
         rt.extend(hits('%s:mailbox' % mbox_id))
     return rt
 
 
-mailpile.plugins.register_search_term('mailbox', mailbox_search)
+_plugins.register_search_term('mailbox', mailbox_search)

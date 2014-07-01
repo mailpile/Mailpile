@@ -1,39 +1,40 @@
-/*	Rebar v0.1
-*	Designed and built by @brennannovak
+/* Mailpile - Default Theme
+*  Version 0.1.0
+*	 Designed and built by @brennannovak and others
 */
 
 /* Global - Must be included before the config file incase you want specify custom fonts or backgrounds */
-@import "app/credits.less";
 @import "app/webfonts.less";
 @import "app/icons.less";
-@import "app/backgrounds.less";
 
 /* Config - Change the settings in this file change the look and feel of your style */
 @import "config.less";
 
-/* Mixins */
-@import "mixins/animate.less";
-@import "mixins/elements.less";
-@import "mixins/shapes.less";
-@import "mixins/grid.less";
-@import "mixins/resuable.less";
-@import "mixins/bootstrap.less";
+/* Bower */
+@import (less) "../bower_components/animate.css/animate.css";
+@import "../bower_components/less-elements/elements.less";
 
-/* Rebar - These files reset and style all the basic HTML elements */
-@import "rebar/base.less";
-@import "rebar/links.less";
-@import "rebar/typography.less";
-@import "rebar/navigation.less";
-@import "rebar/lists.less";
-@import "rebar/separators.less";
-@import "rebar/images.less";
-@import "rebar/buttons.less";
-@import "rebar/forms.less";
-@import "rebar/tables.less";
-/* @import "rebar/responsive-boxes.less"; */
-@import "rebar/clearing.less";
+/* Rebar - these files reset and style all the basic HTML elements */
+@import "../bower_components/rebar/less/rebar/base.less";
+@import "../bower_components/rebar/less/rebar/buttons.less";
+@import "../bower_components/rebar/less/rebar/clearing.less";
+@import "../bower_components/rebar/less/rebar/forms.less";
+@import "../bower_components/rebar/less/rebar/images.less";
+@import "../bower_components/rebar/less/rebar/links.less";
+@import "../bower_components/rebar/less/rebar/lists.less";
+/*
+@import "../bower_components/rebar/less/rebar/messages.less";
+@import "../bower_components/rebar/less/rebar/navigation.less";
+@import "../bower_components/rebar/less/rebar/grid.less";
+ */
+@import "../bower_components/rebar/less/rebar/boxes.less";
+@import "../bower_components/rebar/less/rebar/separators.less";
+@import "../bower_components/rebar/less/rebar/shapes.less";
+@import "../bower_components/rebar/less/rebar/tables.less";
+@import "../bower_components/rebar/less/rebar/typography.less";
 
 /* Libraries */
+@import "libraries/bootstrap.less";
 @import "libraries/select2.less";
 @import "libraries/nanoscroller.less";
 @import "libraries/jquery.qtip.less"; 
@@ -41,19 +42,19 @@
 @import "libraries/modals.less";
 
 /* App */
+@import "app/global.less";
 @import "app/messages.less";
 @import "app/notifications.less";
 @import "app/navigation.less";
-@import "app-web/global.less";
-@import "app-web/topbar.less";
-@import "app-web/sidebar.less";
-@import "app-web/compose.less";
-@import "app-web/contacts.less";
-@import "app-web/search.less";
-@import "app-web/pile.less";
-@import "app-web/thread.less";
-@import "app-web/tags.less";
-@import "app-web/files.less";
-
-@import "app-tablet/global.less";
-@import "app-mobile/global.less";
+@import "app/topbar.less";
+@import "app/sidebar.less";
+@import "app/compose.less";
+@import "app/contacts.less";
+@import "app/search.less";
+@import "app/pile.less";
+@import "app/thread.less";
+@import "app/tags.less";
+@import "app/files.less";
+@import "app/tooltips.less";
+@import "app/tablet.less";
+@import "app/mobile.less";

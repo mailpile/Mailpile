@@ -3,7 +3,10 @@ import time
 import datetime
 from gettext import gettext as _
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Keywords ]################################################################
@@ -14,7 +17,7 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
         return []
     return ['%s:ln2sz' % int(math.log(msg_size, 2))]
 
-mailpile.plugins.register_meta_kw_extractor('sizes', meta_kw_extractor)
+_plugins.register_meta_kw_extractor('sizes', meta_kw_extractor)
 
 
 ##[ Search terms ]############################################################
@@ -81,4 +84,4 @@ def search(config, idx, term, hits):
         raise ValueError('Invalid size: %s' % term)
 
 
-mailpile.plugins.register_search_term('size', search)
+_plugins.register_search_term('size', search)

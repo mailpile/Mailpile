@@ -6,38 +6,59 @@ all:	docs alltests dev web compilemessages
 dev:
 	@echo export PYTHONPATH=`pwd`
 
+arch-dev:
+	sudo pacman -Syu community/python2-pillow extra/python2-lxml community/python2-jinja \
+	                 community/python2-pep8 extra/python2-nose community/phantomjs \
+	                 extra/python2-pip community/python2-mock \
+	                 extra/ruby
+	yaourt yuicompressor
+	yaourt spambayes 
+	sudo pip2 install 'selenium>=2.40.0'
+	which lessc >/dev/null || sudo gem install therubyracer less
+
 debian-dev:
 	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
-	                     rubygems ruby-dev yui-compressor python-nose \
-	                     spambayes
-	sudo gem install therubyracer less
+	                     ruby-dev yui-compressor python-nose spambayes \
+	                     phantomjs python-pip python-mock
+	if [ "$(shell cat /etc/debian_version)" = "jessie/sid"  ]; then\
+		 sudo apt-get install rubygems-integration;\
+	else \
+		sudo apt-get install rubygems; \
+	fi
+	sudo pip install 'selenium>=2.40.0'
+	which lessc >/dev/null || sudo gem install therubyracer less
 
 docs:
 	@test -d doc || \
-           git clone https://github.com/pagekite/Mailpile.wiki.git doc
-	@python mailpile/urlmap.py >doc/URLS.md
+           git submodule update --remote
+	@python2 mailpile/urlmap.py |grep -v ^FIXME: >doc/URLS.md
 	@ls -l doc/URLS.md
-	@python mailpile/defaults.py |grep -v ';timestamp' >doc/defaults.cfg
+	@python2 mailpile/defaults.py |grep -v -e ^FIXME -e ';timestamp' \
+           >doc/defaults.cfg
 	@ls -l doc/defaults.cfg
 
 web: less js
 	@true
 
-alltests: docs
-	@python mailpile/config.py
-	@python mailpile/util.py
-	@python mailpile/vcard.py
-	@python mailpile/workers.py
-	@nosetests tests
+alltests: clean docs
+	@python2 mailpile/mailutils.py
+	@python2 mailpile/config.py
+	@python2 mailpile/util.py
+	@python2 mailpile/vcard.py
+	@python2 mailpile/workers.py
+	@python2 mailpile/mail_source/imap.py
+	@chmod go-rwx testing/gpg-keyring
+	@python2 scripts/mailpile-test.py
+	@nosetests
 
 clean:
-	@rm -vf *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py
-	@rm -vf .appver MANIFEST setup.cfg .SELF .*deps
-	@rm -vf scripts/less-compiler.mk
-	@rm -vrf *.egg-info build/ mp-virtualenv/ dist/
+	@rm -f *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py
+	@rm -f .appver MANIFEST setup.cfg .SELF .*deps
+	@rm -f scripts/less-compiler.mk
+	@rm -rf *.egg-info build/ mp-virtualenv/ dist/ testing/tmp/
 
 virtualenv:
-	virtualenv mp-virtualenv
+	virtualenv -p python2 mp-virtualenv
 	bash -c 'source mp-virtualenv/bin/activate && pip install -r requirements.txt && python setup.py install'
 
 js:
@@ -68,4 +89,3 @@ genmessages:
 
 compilemessages:
 	@scripts/compile-messages.sh
-

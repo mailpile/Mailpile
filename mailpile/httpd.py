@@ -17,7 +17,6 @@ from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.ui import *
 
-global APPEND_FD_CACHE, APPEND_FD_CACHE_ORDER, APPEND_FD_CACHE_SIZE
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
 
 DEFAULT_PORT = 33411
@@ -71,8 +70,6 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
 
     def send_http_redirect(self, destination):
-        if '//' not in destination:
-            pass#destination = '%s%s' % (self.server_url(), destination)
         self.send_http_response(302, 'Found')
         self.wfile.write(('Location: %s\r\n\r\n'
                           '<h1><a href="%s">Please look here!</a></h1>\n'
@@ -152,8 +149,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         else:
             try:
                 tpl = config.sys.path.get(self.http_host(), 'html_theme')
-                fpath, fd = config.open_file(tpl, filename)
-                mimetype = self.guess_mimetype(fpath)
+                fpath, fd, mt = config.open_file(tpl, filename)
+                mimetype = mt or self.guess_mimetype(fpath)
                 message = fd.read()
                 fd.close()
                 code, msg = 200, "OK"
@@ -224,14 +221,12 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     def do_GET(self, post_data={}, suppress_body=False, method='GET'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
         query_data = parse_qs(query)
-        path = unquote(path)
+        opath = path = unquote(path)
 
         # HTTP is stateless, so we create a new session for each request.
-        config = self.server.session.config
+        server_session = self.server.session
+        config = server_session.config
 
-        if 'http' in config.sys.debug:
-            sys.stderr.write(('%s: %s qs = %s post = %s\n'
-                              ) % (method, path, query_data, post_data))
         if 'httpdata' in config.sys.debug:
             self.wfile = DebugFileWrapper(sys.stderr, self.wfile)
 
@@ -244,7 +239,16 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             return self.send_file(config, path[len('/static/'):])
 
         session = Session(config)
-        session.ui = HttpUserInteraction(self, config)
+        session.ui = HttpUserInteraction(self, config,
+                                         log_parent=server_session.ui)
+
+        if 'http' in config.sys.debug:
+            session.ui.warning = server_session.ui.warning
+            session.ui.notify = server_session.ui.notify
+            session.ui.error = server_session.ui.error
+            session.ui.debug = server_session.ui.debug
+            session.ui.debug('%s: %s qs = %s post = %s'
+                             % (method, opath, query_data, post_data))
 
         idx = session.config.index
         name = session.config.get_profile().get('name', 'Chelsea Manning')
@@ -272,7 +276,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                                                    query_data, post_data)
                     url = quote(path) + '/'
                     if query:
-                            url += '?' + query
+                        url += '?' + query
                     return self.send_http_redirect(url)
                 else:
                     raise
@@ -285,7 +289,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             return
         except:
             e = traceback.format_exc()
-            print e
+            session.ui.debug(e)
             if not session.config.sys.debug:
                 e = _('Internal error')
             self.send_full_response(e, code=500, mimetype='text/plain')
@@ -311,6 +315,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     def __init__(self, session, sspec, handler):
         SimpleXMLRPCServer.__init__(self, sspec, handler)
+        self.daemon_threads = True
         self.session = session
         self.sessions = {}
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -340,4 +345,5 @@ class HttpWorker(threading.Thread):
     def quit(self, join=False):
         if self.httpd:
             self.httpd.shutdown()
+            self.httpd.server_close()
         self.httpd = None

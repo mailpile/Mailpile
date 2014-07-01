@@ -1,0 +1,49 @@
+{#
+## This file defines macros for rendering tag data either as HTML
+## or Javascript (JSON). See index.html and index.js for examples
+## of how it is used.
+##
+## This may be a smarter way to build partials?
+##
+############################################################################}
+
+{# 1st. Create a macro for the template fragment #}
+{%- macro render_tag(tag) -%}
+  <li id={{tag.tid}}>{{tag.name}} ({{tag.stats_new}})</li>
+{%- endmacro -%}
+
+{# 2nd. Create a structure with just the data the macro cares about
+##
+## Note: This will usually be the most complicated part of the
+##       template. Once it is stable, this logic should probably
+##       move to a DataView for speed and API awesomeness.
+#}
+{%- set data = [] -%}
+{%- for tag in mailpile("tags").result.tags -%}
+  {% do data.append({
+    'tid': tag.tid,
+    'name': tag.name,
+    'stats_new': tag.stats.new
+  }) %}
+{%- endfor -%}
+
+{# 3rd. Render as HTML #}
+{%- macro render_html() -%}
+<ul>
+  {%- for tag in data -%}
+    {{ render_tag(tag) }}
+  {%- endfor -%}
+</ul>
+{%- endmacro -%}
+
+{# 4th. Expose raw data and template to Javascript #}
+{%- macro render_json() -%}
+{
+  "data": {{ data|json|safe }},
+  "template": {{ render_tag({
+    'tid': '{{tag.tid}}',
+    'name': '{{tag.name}}',
+    'stats_new': '{{tag.stats_new}}',
+  })|json|safe }}
+}
+{%- endmacro -%}

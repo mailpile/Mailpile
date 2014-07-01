@@ -6,8 +6,11 @@ import getopt
 from gettext import gettext as _
 from sys import stdin, stdout, stderr
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.vcard import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 def hexcmp(x, y):
@@ -327,13 +330,13 @@ class MorkImporter(VCardImporter):
         return results
 
     def load(self):
-        fh = open(self.config.filename, "r")
-        data = fh.read()
+        with open(self.config.filename, "r") as fh:
+            data = fh.read()
 
-        if data.find("<mdb:mork") < 0:
-            raise ValueError("Mork file required")
+            if data.find("<mdb:mork") < 0:
+                raise ValueError("Mork file required")
 
-        self.inputMork(data)
+            self.inputMork(data)
 
     def get_vcards(self):
         self.load()
@@ -343,7 +346,7 @@ class MorkImporter(VCardImporter):
         results = []
         vcards = {}
         for person in people:
-            card = SimpleVCard()
+            card = MailpileVCard()
             if "name" in person:
                 card.add(VCardLine(name="FN", value=person["name"]))
             if "email" in person:
@@ -361,4 +364,4 @@ if __name__ == "__main__":
     m.load()
     print m.get_contacts(data)
 else:
-    mailpile.plugins.register_vcard_importers(MorkImporter)
+    _plugins.register_vcard_importers(MorkImporter)

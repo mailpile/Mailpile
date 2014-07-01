@@ -5,9 +5,13 @@ import time
 from gettext import gettext as _
 from urllib2 import urlopen
 
-import mailpile.plugins
+import mailpile.util
+from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.vcard import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 class GravatarImporter(VCardImporter):
@@ -68,12 +72,14 @@ class GravatarImporter(VCardImporter):
 
         def _get(url):
             self.session.ui.mark('Getting: %s' % url)
-            return urlopen(url).read()
+            return urlopen(url, data=None, timeout=3).read()
 
         results = []
         for contact in self._want_update():
-            vcls = [VCardLine(name=self.VCARD_TS, value=int(time.time()))]
+            if mailpile.util.QUITTING:
+                return []
 
+            vcls = [VCardLine(name=self.VCARD_TS, value=int(time.time()))]
             email = contact.email
             if not email:
                 continue
@@ -82,6 +88,8 @@ class GravatarImporter(VCardImporter):
             for vcl in contact.get_all('email'):
                 digest = md5_hex(vcl.value.lower())
                 try:
+                    if mailpile.util.QUITTING:
+                        return []
                     if not img:
                         img = _get(('%s/avatar/%s.jpg?s=%s&r=%s&d=404'
                                     ) % (self.config.url,
@@ -115,8 +123,8 @@ class GravatarImporter(VCardImporter):
                 ))
 
             vcls.append(VCardLine(name='email', value=email))
-            results.append(SimpleVCard(*vcls))
+            results.append(MailpileVCard(*vcls))
         return results
 
 
-mailpile.plugins.register_vcard_importers(GravatarImporter)
+_plugins.register_vcard_importers(GravatarImporter)

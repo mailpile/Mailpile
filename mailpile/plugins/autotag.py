@@ -10,10 +10,13 @@ import datetime
 from gettext import gettext as _
 
 import mailpile.config
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.mailutils import Email
 from mailpile.util import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 ##[ Configuration ]###########################################################
@@ -21,7 +24,7 @@ from mailpile.util import *
 TAGGERS = {}
 TRAINERS = {}
 
-mailpile.plugins.register_config_section(
+_plugins.register_config_section(
     'prefs', 'autotag', ["Auto-tagging", {
         'match_tag': ['Tag we are adding to automatically', str, ''],
         'unsure_tag': ['If unsure, add to this tag', str, ''],
@@ -68,8 +71,8 @@ def SaveAutoTagger(config, at_config):
 
 
 def LoadAutoTagger(config, at_config):
-    if not hasattr(config, 'autotag'):
-        config.autotag = {}
+    if not config.real_hasattr('autotag'):
+        config.real_setattr('autotag', {})
     aid = at_identify(at_config)
     at = config.autotag.get(aid)
     if aid not in config.autotag:
@@ -145,13 +148,17 @@ class Retrain(AutoTagCommand):
     SYNOPSIS = (None, 'autotag/retrain', None, '[<tags>]')
 
     def command(self):
+        self._retrain(tags=self.args)
+
+    def _retrain(self, tags=None):
+        "Retrain autotaggers"
         session, config, idx = self.session, self.session.config, self._idx()
-        tags = self.args or [asb.match_tag for asb in config.prefs.autotag]
+        tags = tags or [asb.match_tag for asb in config.prefs.autotag]
         tids = [config.get_tag(t)._key for t in tags if t]
 
         session.ui.mark(_('Retraining SpamBayes autotaggers'))
-        if not hasattr(config, 'autotag'):
-            config.autotag = {}
+        if not config.real_hasattr('autotag'):
+            config.real_setattr('autotag', {})
 
         # Find all the interesting messages! We don't look in the trash,
         # but we do look at interesting spam.
@@ -172,7 +179,7 @@ class Retrain(AutoTagCommand):
             session.ui.notify(_('Have %d interesting %s messages'
                                 ) % (len(interest[ttype]), ttype))
 
-        retrained = []
+        retrained, unreadable = [], []
         count_all = 0
         for at_config in config.prefs.autotag:
             at_tag = config.get_tag(at_config.match_tag)
@@ -225,25 +232,63 @@ class Retrain(AutoTagCommand):
                 for tset, mset, srch, which in yn:
                     count = 0
                     for msg_idx in tset:
-                        e = Email(idx, msg_idx)
-                        count += 1
-                        count_all += 1
-                        session.ui.mark(('Reading %s (%d/%d, %s=%s)'
-                                         ) % (e.msg_mid(), count, len(tset),
-                                              at_tag.name, which))
-                        atagger.learn(at_config,
-                                      e.get_msg(),
-                                      self._get_keywords(e),
-                                      which)
+                        try:
+                            e = Email(idx, msg_idx)
+                            count += 1
+                            count_all += 1
+                            session.ui.mark(
+                                _('Reading %s (%d/%d, %s=%s)'
+                                  ) % (e.msg_mid(), count, len(tset),
+                                       at_tag.name, which))
+                            atagger.learn(at_config,
+                                          e.get_msg(),
+                                          self._get_keywords(e),
+                                          which)
+                        except (IndexError, TypeError, ValueError,
+                                OSError, IOError):
+                            if session.config.sys.debug:
+                                import traceback
+                                traceback.print_exc()
+                            unreadable.append(msg_idx)
+                            session.ui.warning(
+                                _('Failed to process message at =%s'
+                                  ) % (b36(msg_idx)))
 
                 # We got this far without crashing, so save the result.
                 config.save_auto_tagger(at_config)
                 retrained.append(at_tag.name)
 
-        session.ui.mark(_('Retrained SpamBayes auto-tagging for %s'
-                          ) % ', '.join(retrained))
-        return {'retrained': retrained, 'read_messages': count_all}
+        message = _('Retrained SpamBayes auto-tagging for %s'
+                    ) % ', '.join(retrained)
+        session.ui.mark(message)
+        return self._success(message, result={
+            'retrained': retrained,
+            'unreadable': unreadable,
+            'read_messages': count_all
+        })
 
+    @classmethod
+    def interval_retrain(cls, session):
+        """
+        Retrains autotaggers
+
+        Classmethod used for periodic automatic retraining
+        """
+        result = cls(session)._retrain()
+        if result:
+            return True
+        else:
+            return False
+
+
+_plugins.register_config_variables('prefs', {
+    'autotag_retrain_interval': [_('Periodically retrain autotagger (seconds)'),
+                                  int, 24*60*60],
+})
+
+_plugins.register_slow_periodic_job('retrain_autotag',
+                                    'prefs.autotag_retrain_interval',
+                                    Retrain.interval_retrain)
 
 class Classify(AutoTagCommand):
     SYNOPSIS = (None, 'autotag/classify', None, '<msgs>')
@@ -277,7 +322,8 @@ class Classify(AutoTagCommand):
     def command(self):
         session, config, idx = self.session, self.session.config, self._idx()
         emails = [Email(idx, mid) for mid in self._choose_messages(self.args)]
-        return self._classify(emails)
+        return self._success(_('Classified %d messages') % len(emails),
+                             self._classify(emails))
 
 
 class AutoTag(Classify):
@@ -311,20 +357,15 @@ class AutoTag(Classify):
         for tid in tag:
             idx.add_tag(session, tid, msg_idxs=[int(i, 36) for i in tag[tid]])
 
-        return tag
+        return self._success(_('Auto-tagged %d messages') % len(emails), tag)
 
 
-mailpile.plugins.register_commands(Retrain, Classify, AutoTag)
-
-
-##[ Cron jobs ]###############################################################
-
-# FIXME: We should periodically retrain?
+_plugins.register_commands(Retrain, Classify, AutoTag)
 
 
 ##[ Keywords ]################################################################
 
-def filter_hook(session, msg_mid, msg, keywords):
+def filter_hook(session, msg_mid, msg, keywords, **ignored_kwargs):
     """Classify this message."""
     config = session.config
     for at_config in config.prefs.autotag:
@@ -355,4 +396,4 @@ def filter_hook(session, msg_mid, msg, keywords):
 # We add a filter pre-hook with a high (late) priority.  Late priority to
 # maximize the amount of data we are feeding to the classifier, but a
 # pre-hook so normal filter rules will override the autotagging.
-mailpile.plugins.register_filter_hook_post('90-autotag', filter_hook)
+_plugins.register_filter_hook_pre('90-autotag', filter_hook)

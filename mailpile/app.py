@@ -1,81 +1,65 @@
-APPVER = "0.0.0+github"
-ABOUT = """\
-Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
-               for searching and                   <https://www.mailpile.is/>
-           organizing piles of e-mail
-
-This program is free software: you can redistribute it and/or modify it under
-the terms of either the GNU Affero General Public License as published by the
-Free Software Foundation or the Apache License 2.0 as published by the Apache
-Software Foundation. See the file COPYING.md for details.
-"""
-###############################################################################
-import cgi
-import codecs
-import datetime
-import email.parser
 import getopt
-import hashlib
-import locale
-import mailbox
-import os
-import cPickle
-import random
-import re
-import rfc822
-import socket
-import struct
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import SocketServer
-from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
-from urlparse import parse_qs, urlparse
-import lxml.html
 import gettext
+import locale
+import os
+import sys
 from gettext import gettext as _
 
 import mailpile.util
 import mailpile.defaults
 from mailpile.commands import COMMANDS, Action, Help, HelpSplash, Load, Rescan
 from mailpile.config import ConfigManager, getLocaleDirectory
-from mailpile.vcard import SimpleVCard
-from mailpile.mailboxes import *
-from mailpile.mailutils import *
-from mailpile.httpd import *
-from mailpile.search import *
-from mailpile.ui import *
+from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
-from mailpile.workers import *
 
-Help.ABOUT = ABOUT
+# This makes sure mailbox "plugins" get loaded... has to go somewhere?
+from mailpile.mailboxes import *
+
+# This is also a bit silly, should be somewhere else?
+Help.ABOUT = mailpile.defaults.ABOUT
+
+# We may try to load readline later on... maybe?
+readline = None
 
 
 ##[ Main ]####################################################################
 
+
 def Interact(session):
-    import readline
+    global readline
     try:
-        readline.read_history_file(session.config.history_file())
+        import readline as rl  # Unix-only
+        readline = rl
+    except ImportError:
+        pass
+
+    try:
+        if readline:
+            readline.read_history_file(session.config.history_file())
+            readline.set_completer_delims(Completer.DELIMS)
+            readline.set_completer(Completer(session).get_completer())
+            for opt in ["tab: complete", "set show-all-if-ambiguous on"]:
+                readline.parse_and_bind(opt)
     except IOError:
         pass
 
     # Negative history means no saving state to disk.
     history_length = session.config.sys.history_length
-    if history_length >= 0:
+    if readline is None:
+        pass  # history currently not supported under Windows / Mac
+    elif history_length >= 0:
         readline.set_history_length(history_length)
     else:
         readline.set_history_length(-history_length)
 
     try:
-        prompt = session.ui.palette.color('mailpile> ',
-                                          color=session.ui.palette.BLACK,
-                                          weight=session.ui.palette.BOLD)
-        while True:
+        prompt = session.ui.term.color('mailpile> ',
+                                       color=session.ui.term.BLACK,
+                                       weight=session.ui.term.BOLD)
+        while not mailpile.util.QUITTING:
             session.ui.block()
             opt = raw_input(prompt).decode('utf-8').strip()
+            session.ui.term.check_max_width()
             session.ui.unblock()
             if opt:
                 if ' ' in opt:
@@ -90,6 +74,8 @@ def Interact(session):
                     session.error('Tried to redirect to: %s' % e.url)
     except EOFError:
         print
+    finally:
+        session.ui.unblock()
 
     try:
         if session.config.sys.history_length > 0:
@@ -101,9 +87,6 @@ def Interact(session):
 
 
 def Main(args):
-    re.UNICODE = 1
-    re.LOCALE = 1
-
     # Bootstrap translations until we've loaded everything else
     translation = gettext.translation("mailpile", getLocaleDirectory(),
                                       fallback=True)
@@ -113,11 +96,11 @@ def Main(args):
         # Create our global config manager and the default (CLI) session
         config = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
         session = Session(config)
-        session.config.load(session)
-        session.main = True
         session.ui = UserInteraction(config)
         if sys.stdout.isatty():
-            session.ui.palette = ANSIColors()
+            session.ui.term = ANSIColors()
+        session.main = True
+        session.config.load(session)
     except AccessError, e:
         sys.stderr.write('Access denied: %s\n' % e)
         sys.exit(1)
@@ -161,7 +144,16 @@ def Main(args):
         pass
 
     finally:
+        if session.interactive and config.sys.debug:
+            session.ui.display_result(Action(session, 'ps', ''))
+            if readline:
+                readline.write_history_file(session.config.history_file())
+
+        # Make everything in the background quit ASAP...
+        mailpile.util.LAST_USER_ACTIVITY = 0
         mailpile.util.QUITTING = True
+
+        config.plugins.process_shutdown_hooks()
         config.stop_workers()
         if config.index:
             config.index.save_changes()

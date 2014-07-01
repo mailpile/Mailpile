@@ -17,15 +17,15 @@ import sys
 import tempfile
 import traceback
 import json
+import urllib
 from collections import defaultdict
 from gettext import gettext as _
 from json import JSONEncoder
-from jinja2 import Environment, FileSystemLoader
 from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound
 from jinja2 import TemplatesNotFound, TemplateAssertionError, UndefinedError
-from lxml.html.clean import autolink_html
 
 import mailpile.commands
+import mailpile.util
 from mailpile.util import *
 from mailpile.search import MailIndex
 
@@ -43,6 +43,9 @@ def default_dict(*args):
 
 class NoColors:
     """Dummy color constants"""
+    C_SAVE = ''
+    C_RESTORE = ''
+
     NORMAL = ''
     BOLD = ''
     NONE = ''
@@ -50,11 +53,34 @@ class NoColors:
     RED = ''
     YELLOW = ''
     BLUE = ''
+    MAGENTA = ''
+    CYAN = ''
     FORMAT = "%s%s"
     RESET = ''
+    LINE_BELOW = ''
+
+    def max_width(self):
+        return 79
 
     def color(self, text, color='', weight=''):
         return '%s%s%s' % (self.FORMAT % (color, weight), text, self.RESET)
+
+    def replace_line(self, text, chars=None):
+        pad = ' ' * max(0, min(self.max_width(),
+                               self.max_width()-(chars or len(unicode(text)))))
+        return '%s%s\r' % (text, pad)
+
+    def add_line_below(self):
+        pass
+
+    def print_below(self):
+        pass
+
+    def write(self, data):
+        sys.stderr.write(data)
+
+    def check_max_width(self):
+        pass
 
 
 class ANSIColors(NoColors):
@@ -66,14 +92,66 @@ class ANSIColors(NoColors):
     RED = "31"
     YELLOW = "33"
     BLUE = "34"
+    MAGENTA = '35'
+    CYAN = '36'
     RESET = "\x1B[0m"
     FORMAT = "\x1B[%s%sm"
+
+    CURSOR_UP = "\x1B[1A"
+    CURSOR_DN = "\x1B[1B"
+    CURSOR_SAVE = "\x1B[s"
+    CURSOR_RESTORE = "\x1B[u"
+    CLEAR_LINE = "\x1B[2K"
+
+    def __init__(self):
+        self.check_max_width()
+
+    def replace_line(self, text, chars=None):
+        return '%s%s%s\r%s' % (self.CURSOR_SAVE,
+                               self.CLEAR_LINE, text,
+                               self.CURSOR_RESTORE)
+
+    def max_width(self):
+        return self.MAX_WIDTH
+
+    def check_max_width(self):
+        try:
+            import fcntl, termios, struct
+            fcntl_result = fcntl.ioctl(sys.stdin.fileno(),
+                                       termios.TIOCGWINSZ,
+                                       struct.pack('HHHH', 0, 0, 0, 0))
+            h, w, hp, wp = struct.unpack('HHHH', fcntl_result)
+            self.MAX_WIDTH = (w-1)
+        except:
+            self.MAX_WIDTH = 79
+
+
+class Completer(object):
+    """Readline autocompler"""
+    DELIMS = ' \t\n`~!@#$%^&*()-=+[{]}\\|;:\'",<>?'
+
+    def __init__(self, session):
+        self.session = session
+
+    def _available_opts(self, text):
+        opts = ([s.SYNOPSIS[1] for s in mailpile.commands.COMMANDS] +
+                [s.SYNOPSIS[2] for s in mailpile.commands.COMMANDS] +
+                [t.name.lower() for t in self.session.config.tags.values()])
+        return sorted([o for o in opts if o and o.startswith(text)])
+
+    def _autocomplete(self, text, state):
+        try:
+            return self._available_opts(text)[state] + ' '
+        except IndexError:
+            return None
+
+    def get_completer(self):
+        return lambda t, s: self._autocomplete(t, s)
 
 
 class UserInteraction:
     """Log the progress and performance of individual operations"""
-    MAX_BUFFER_LEN = 150
-    MAX_WIDTH = 79
+    MAX_BUFFER_LEN = 550
 
     LOG_URGENT = 0
     LOG_RESULT = 5
@@ -84,17 +162,19 @@ class UserInteraction:
     LOG_DEBUG = 50
     LOG_ALL = 99
 
-    def __init__(self, config, log_parent=None):
+    LOG_PREFIX = ''
+
+    def __init__(self, config, log_parent=None, log_prefix=None):
         self.log_parent = log_parent
         self.log_buffer = []
         self.log_buffering = False
         self.log_level = self.LOG_ALL
+        self.log_prefix = log_prefix or self.LOG_PREFIX
         self.interactive = False
         self.time_tracking = [('Main', [])]
         self.time_elapsed = 0.0
-        self.last_display = [self.LOG_PROGRESS, 0]
         self.render_mode = 'text'
-        self.palette = NoColors()
+        self.term = NoColors()
         self.config = config
         self.html_variables = {
             'title': 'Mailpile',
@@ -105,33 +185,46 @@ class UserInteraction:
         }
 
     # Logging
-    def _debug_log(self, text, level, prefix=''):
-        if 'log' in self.config.sys.debug:
-            sys.stderr.write('%slog(%s): %s\n' % (prefix, level, text))
+
+    def _fmt_log(self, text, level=LOG_URGENT):
+        c, w, clip = self.term.NONE, self.term.NORMAL, 2048
+        if level == self.LOG_URGENT:
+            c, w = self.term.RED, self.term.BOLD
+        elif level == self.LOG_ERROR:
+            c = self.term.RED
+        elif level == self.LOG_WARNING:
+            c = self.term.YELLOW
+        elif level == self.LOG_NOTIFY:
+            c = self.term.CYAN
+        elif level == self.LOG_DEBUG:
+            c = self.term.MAGENTA
+        elif level == self.LOG_PROGRESS:
+            c, clip = self.term.BLUE, 78
+
+        formatted = self.term.replace_line(self.term.color(
+            unicode(text[:clip]).encode('utf-8'), color=c, weight=w),
+            chars=len(text[:clip]))
+        if level != self.LOG_PROGRESS:
+            formatted += '\n'
+
+        return formatted
 
     def _display_log(self, text, level=LOG_URGENT):
-        pad = ' ' * max(0, min(self.MAX_WIDTH,
-                               self.MAX_WIDTH-len(unicode(text))))
-        if self.last_display[0] not in (self.LOG_PROGRESS, ):
-            sys.stderr.write('\n')
+        if not text.startswith(self.log_prefix):
+            text = '%slog(%s): %s' % (self.log_prefix, level, text)
+        if self.log_parent:
+            self.log_parent.log(level, text)
+        else:
+            self.term.write(self._fmt_log(text, level=level))
 
-        c, w, clip = self.palette.NONE, self.palette.NORMAL, 2048
-        if level == self.LOG_URGENT:
-            c, w = self.palette.RED, self.palette.BOLD
-        elif level == self.LOG_ERROR:
-            c = self.palette.RED
-        elif level == self.LOG_WARNING:
-            c = self.palette.YELLOW
-        elif level == self.LOG_PROGRESS:
-            c, clip = self.palette.BLUE, 78
-
-        sys.stderr.write('%s%s\r' % (
-            self.palette.color(unicode(text[:clip]).encode('utf-8'),
-                               color=c, weight=w), pad))
-
-        if level == self.LOG_ERROR:
-            sys.stderr.write('\n')
-        self.last_display = [level, len(unicode(text))]
+    def _debug_log(self, text, level):
+        if text and 'log' in self.config.sys.debug:
+            if not text.startswith(self.log_prefix):
+                text = '%slog(%s): %s' % (self.log_prefix, level, text)
+            if self.log_parent:
+                return self.log_parent.log(level, text)
+            else:
+                self.term.write(self._fmt_log(text, level=level))
 
     def clear_log(self):
         self.log_buffer = []
@@ -151,7 +244,6 @@ class UserInteraction:
 
     def unblock(self):
         self.log_buffering = False
-        self.last_display = [self.LOG_RESULT, 0]
         self.flush_log()
 
     def log(self, level, message):
@@ -175,65 +267,81 @@ class UserInteraction:
     debug = lambda self, msg: self.log(self.LOG_DEBUG, msg)
 
     # Progress indication and performance tracking
-    times = property(lambda self: self.time_tracking[0][1])
+    times = property(lambda self: self.time_tracking[-1][1])
 
-    def mark(self, action, percent=None):
+    def mark(self, action=None, percent=None):
         """Note that we are about to perform an action."""
+        if not action:
+            try:
+                action = self.times[-1][1]
+            except IndexError:
+                action = 'mark'
         self.progress(action)
         self.times.append((time.time(), action))
 
-    def reset_marks(self, quiet=False):
-        """This sequence of actions is complete."""
+    def report_marks(self, quiet=False, details=False):
         t = self.times
-        self.times = []
-        if t:
+        if t and t[0]:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
                 self.notify(_('Elapsed: %.3fs (%s)') % (elapsed, t[-1][1]))
+                if details:
+                    for i in range(0, len(self.times)-1):
+                        e = t[i+1][0] - t[i][0]
+                        self.debug(' -> %.3fs (%s)' % (e, t[i][1]))
             return elapsed
-        else:
-            return 0
+        return 0
 
-    def mark_push(self, subtask):
-        """We are beginnning a sub-sequence we want to track separately."""
-        self.time_tracking[:0] = [(subtask, [])]
+    def reset_marks(self, mark=True, quiet=False, details=False):
+        """This sequence of actions is complete."""
+        if self.times and mark:
+            self.mark()
+        elapsed = self.report_marks(quiet=quiet, details=details)
+        self.times[:] = []
+        return elapsed
 
-    def mark_pop(self, quiet=False):
-        """Sub-task completed."""
-        elapsed = self.reset_marks(quiet=quiet)
+    def push_marks(self, subtask):
+        """Start tracking a new sub-task."""
+        self.time_tracking.append((subtask, []))
+
+    def pop_marks(self, name=None, quiet=True):
+        """Sub-task ended!"""
+        elapsed = self.report_marks(quiet=quiet)
         if len(self.time_tracking) > 1:
-            subtask, times = self.time_tracking.pop(0)
-            self.mark(_('Completed %s in %.3fs') % (subtask, elapsed))
+            if not name or (self.time_tracking[-1][0] == name):
+                self.time_tracking.pop(-1)
         return elapsed
 
     # Higher level command-related methods
     def _display_result(self, result):
-        sys.stdout.write(unicode(result)+'\n')
+        sys.stdout.write(unicode(result).rstrip())
+        sys.stdout.write('\n')
 
     def start_command(self, cmd, args, kwargs):
         self.flush_log()
-        self.mark('%s(%s)' % (cmd, ', '.join((args or []) + ['%s' % kwargs])))
+        self.push_marks(cmd)
+        self.mark(('%s(%s)'
+                   ) % (cmd, ', '.join((args or tuple()) +
+                                       ('%s' % kwargs, ))))
 
-    def finish_command(self):
-        self.reset_marks()
+    def finish_command(self, cmd):
+        self.pop_marks(name=cmd)
 
     def display_result(self, result):
         """Render command result objects to the user"""
         self._display_log('', level=self.LOG_RESULT)
         if self.render_mode == 'json':
             return self._display_result(result.as_json())
-        elif self.render_mode.endswith('html'):
-            if self.render_mode in ('html', 'jhtml'):
-                template = 'html'
-            else:
-                template = self.render_mode.replace('.jhtml', '.html')
-            return self._display_result(result.as_html(template=template))
-        elif self.render_mode == 'xml':
-            return self._display_result(result.as_xml())
-        elif self.render_mode == 'rss':
-            return self._display_result(result.as_rss())
-        else:
-            return self._display_result(unicode(result))
+        for suffix in ('css', 'html', 'js', 'rss', 'txt', 'xml'):
+            if self.render_mode.endswith(suffix):
+                if self.render_mode in (suffix, 'j' + suffix):
+                    template = 'as.' + suffix
+                else:
+                    template = self.render_mode.replace('.j' + suffix,
+                                                        '.' + suffix)
+                return self._display_result(
+                    result.as_template(suffix, template=template))
+        return self._display_result(unicode(result))
 
     # Creating output files
     DEFAULT_DATA_NAME_FMT = '%(msg_mid)s.%(count)s_%(att_name)s.%(att_ext)s'
@@ -278,25 +386,18 @@ class UserInteraction:
                 if isinstance(obj, (list, dict, str, unicode,
                                     int, float, bool, type(None))):
                     return JSONEncoder.default(self, obj)
+                if isinstance(obj, datetime.datetime):
+                    return str(obj)
                 return "COMPLEXBLOB"
 
         return json.dumps(data, indent=1, cls=NoFailEncoder, sort_keys=True)
 
-    def _html_template(self, config, tpl_names, elems=None):
-        theme_path = os.path.join(config.data_directory('html_theme'), 'html')
-        env = Environment(loader=FileSystemLoader('%s' % theme_path),
-                          autoescape=True,
-                          extensions=[
-                              'jinja2.ext.i18n', 'jinja2.ext.with_',
-                              'jinja2.ext.do',
-                              'mailpile.jinjaextensions.MailpileCommand'])
-        env.install_gettext_translations(config.get_i18n_translation(),
-                                         newstyle=True)
+    def _web_template(self, config, tpl_names, elems=None):
+        env = config.jinja_env
         env.session = Session(config)
-        env.session.ui = HttpUserInteraction(None, config)
-        for tpl_name in tpl_names:
+        env.session.ui = HttpUserInteraction(None, config, log_parent=self)
+        for fn in tpl_names:
             try:
-                fn = '%s.html' % tpl_name
                 # FIXME(Security): Here we need to sanitize the file name
                 #                  very strictly in case it somehow came
                 #                  from user data.
@@ -305,13 +406,13 @@ class UserInteraction:
                 pass
         return None
 
-    def render_html(self, cfg, tpl_names, data):
+    def render_web(self, cfg, tpl_names, data):
         """Render data as HTML"""
         alldata = default_dict(self.html_variables)
         alldata["config"] = cfg
         alldata.update(data)
         try:
-            template = self._html_template(cfg, tpl_names)
+            template = self._web_template(cfg, tpl_names)
             if template:
                 return template.render(alldata)
             else:
@@ -326,8 +427,15 @@ class UserInteraction:
             return emsg % (escape_html(traceback.format_exc()),
                            ' or '.join([escape_html(tn) for tn in tpl_names]),
                            escape_html('%.4096s' % alldata))
-        except (TemplateError, TemplateSyntaxError, TemplateAssertionError,
-                TemplateNotFound, TemplatesNotFound), e:
+        except (TemplateNotFound, TemplatesNotFound), e:
+            emsg = _("<h1>Template not found in %s</h1>\n"
+                     "<b>%s</b><br/>"
+                     "<div><hr><p><b>DATA:</b> %s</p></div>")
+            return emsg % tuple([escape_html(unicode(v))
+                                 for v in (e.name, e.message,
+                                           '%.4096s' % alldata)])
+        except (TemplateError, TemplateSyntaxError,
+                TemplateAssertionError,), e:
             emsg = _("<h1>Template error in %s</h1>\n"
                      "Parsing template %s: <b>%s</b> on line %s<br/>"
                      "<div><xmp>%s</xmp><hr><p><b>DATA:</b> %s</p></div>")
@@ -340,8 +448,15 @@ class UserInteraction:
         if not self.interactive:
             return False
 
+        for e in emails:
+            if not e.is_editable():
+                from mailpile.mailutils import NotEditableError
+                raise NotEditableError(_('Message %s is not editable')
+                                       % e.msg_mid())
+
         sep = '-' * 79 + '\n'
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
+        self.block()
 
         tf = tempfile.NamedTemporaryFile()
         tf.write(edit_this.encode('utf-8'))
@@ -351,6 +466,7 @@ class UserInteraction:
         edited = tf.read().decode('utf-8')
         tf.close()
 
+        self.unblock()
         if edited == edit_this:
             return False
 
@@ -363,6 +479,8 @@ class UserInteraction:
 
 
 class HttpUserInteraction(UserInteraction):
+    LOG_PREFIX = 'http/'
+
     def __init__(self, request, *args, **kwargs):
         UserInteraction.__init__(self, *args, **kwargs)
         self.request = request
@@ -371,7 +489,7 @@ class HttpUserInteraction(UserInteraction):
 
     # Just buffer up rendered data
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level, prefix='http/')
+        self._debug_log(text, level)
         self.logged.append((level, text))
 
     def _display_result(self, result):
@@ -381,20 +499,16 @@ class HttpUserInteraction(UserInteraction):
     def open_for_data(self, name_fmt=None, attributes={}):
         return 'HTTP Client', RawHttpResponder(self.request, attributes)
 
-    # Render to HTML/JSON/...
-    def _render_jhtml_response(self, config):
-        return json.dumps(default_dict(self.html_variables, {
-            'results': self.results,
-            'logged': self.logged,
-        }))
+    def _render_text_responses(self, config):
+        if config.sys.debug:
+            return '%s\n%s' % (
+                '\n'.join([l[1] for l in self.logged]),
+                ('\n%s\n' % ('=' * 79)).join(self.results)
+            )
+        else:
+            return ('\n%s\n' % ('=' * 79)).join(self.results)
 
-    def _render_text_response(self, config):
-        return '%s\n%s' % (
-            '\n'.join([l[1] for l in self.logged]),
-            ('\n%s\n' % ('=' * 79)).join(self.results)
-        )
-
-    def _render_html_response(self, config):
+    def _render_single_response(self, config):
         if len(self.results) == 1:
             return self.results[0]
         if len(self.results) > 1:
@@ -402,37 +516,48 @@ class HttpUserInteraction(UserInteraction):
         return ""
 
     def render_response(self, config):
-        if self.render_mode == 'json':
+        if (self.render_mode == 'json' or
+                self.render_mode.split('.')[-1] in ('jcss', 'jhtml', 'jjs',
+                                                    'jrss', 'jtxt', 'jxml')):
             if len(self.results) == 1:
                 return ('application/json', self.results[0])
             else:
                 return ('application/json', '[%s]' % ','.join(self.results))
-        elif self.render_mode.endswith('.jhtml'):
-            return ('application/json', self._render_jhtml_response(config))
         elif self.render_mode.endswith('html'):
-            return ('text/html', self._render_html_response(config))
+            return ('text/html', self._render_single_response(config))
+        elif self.render_mode.endswith('js'):
+            return ('text/javascript', self._render_single_response(config))
+        elif self.render_mode.endswith('css'):
+            return ('text/css', self._render_single_response(config))
+        elif self.render_mode.endswith('txt'):
+            return ('text/plain', self._render_single_response(config))
+        elif self.render_mode.endswith('rss'):
+            return ('application/rss+xml',
+                    self._render_single_response(config))
+        elif self.render_mode.endswith('xml'):
+            return ('application/xml', self._render_single_response(config))
         else:
-            return ('text/plain', self._render_text_response(config))
+            return ('text/plain', self._render_text_responses(config))
 
     def edit_messages(self, session, emails):
         return False
 
-    def print_filters(self, args):
-        print args
-        return args
-
 
 class BackgroundInteraction(UserInteraction):
+    LOG_PREFIX = 'bg/'
+
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level, prefix='bg/')
+        self._debug_log(text, level)
 
     def edit_messages(self, session, emails):
         return False
 
 
 class SilentInteraction(UserInteraction):
+    LOG_PREFIX = 'silent/'
+
     def _display_log(self, text, level=UserInteraction.LOG_URGENT):
-        self._debug_log(text, level, prefix='silent/')
+        self._debug_log(text, level)
 
     def _display_result(self, result):
         return result
@@ -456,11 +581,18 @@ class RawHttpResponder:
         disposition = attributes.get('disposition', 'attachment')
         length = attributes['length']
         request.send_http_response(200, 'OK')
-        request.send_standard_headers(header_list=[
+        headers = [
             ('Content-Length', length),
-            ('Content-Disposition',
-             '%s; filename="%s"' % (disposition, filename))
-        ], mimetype=mimetype)
+        ]
+        if disposition and filename:
+            encfilename = urllib.quote(filename.encode("utf-8"))
+            headers.append(('Content-Disposition',
+                            '%s; filename*=UTF-8\'\'%s' % (disposition,
+                                                           encfilename)))
+        elif disposition:
+            headers.append(('Content-Disposition', disposition))
+        request.send_standard_headers(header_list=headers,
+                                      mimetype=mimetype)
 
     def write(self, data):
         self.request.wfile.write(data)
@@ -495,7 +627,7 @@ class Session(object):
         self.report_task_completed(name, None)
 
     def wait_for_task(self, wait_for, quiet=False):
-        while True:
+        while not mailpile.util.QUITTING:
             self.wait_lock.acquire()
             for i in range(0, len(self.task_results)):
                 if self.task_results[i][0] == wait_for:

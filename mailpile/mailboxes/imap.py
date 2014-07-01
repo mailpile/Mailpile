@@ -3,6 +3,7 @@ try:
 except ImportError:
     import StringIO
 
+from gettext import gettext as _
 from imaplib import IMAP4, IMAP4_SSL
 from mailbox import Mailbox, Message
 
@@ -18,7 +19,7 @@ class IMAPMailbox(Mailbox):
     """
     def __init__(self, host,
                  port=993, user=None, password=None, mailbox=None,
-                 use_ssl=True, factory=None):
+                 use_ssl=True):
         """Initialize a Mailbox instance."""
         if use_ssl:
             self._mailbox = IMAP4_SSL(host, port)
@@ -29,7 +30,6 @@ class IMAPMailbox(Mailbox):
             mailbox = "INBOX"
         self.mailbox = mailbox
         self._mailbox.select(mailbox)
-        self._factory = factory
 
     def add(self, message):
         """Add message and return assigned key."""
@@ -108,7 +108,7 @@ class IMAPMailbox(Mailbox):
 
 class MailpileMailbox(UnorderedPicklable(IMAPMailbox)):
     @classmethod
-    def parse_path(cls, path, create=False):
+    def parse_path(cls, config, path, create=False):
         if path.startswith("imap://"):
             url = path[7:]
             try:

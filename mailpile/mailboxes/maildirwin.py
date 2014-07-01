@@ -1,5 +1,6 @@
 import mailpile.mailboxes
 import mailpile.mailboxes.maildir as maildir
+from gettext import gettext as _
 
 
 class MailpileMailbox(maildir.MailpileMailbox):

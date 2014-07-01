@@ -1,0 +1,17 @@
+{% extends "layouts/" + render_mode + ".html" %}
+{% block content %}
+<div id="eventlog" class="content-normal">
+{% if result %}
+  {% for item in result %}
+    <strong>{{ item.message }}</strong><br>
+    {{ item.date }}<br>
+    {{ item.source }}
+    <hr>
+  {% endfor %}
+{% else %}
+  <div class="add-top add-bottom center">
+    <h2 class="add-top text-center">{{_("No Events Found")}}</h2>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

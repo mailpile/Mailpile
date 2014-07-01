@@ -1,6 +1,8 @@
 language: python
 python:
   - "2.7"
+before_install:
+  - sudo apt-get install gnupg
 install:
   - pip install -r requirements.txt --use-mirrors
   - pip install coverage coveralls nose --use-mirrors
@@ -9,3 +11,4 @@ script:
   - "nosetests tests --with-coverage --cover-package=mailpile"
 after_success:
   - "coveralls"
+

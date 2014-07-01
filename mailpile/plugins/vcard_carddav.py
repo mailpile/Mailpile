@@ -7,9 +7,12 @@ import getopt
 from gettext import gettext as _
 from lxml import etree
 
-import mailpile.plugins
+from mailpile.plugins import PluginManager
 from mailpile.vcard import *
 from mailpile.util import *
+
+
+_plugins = PluginManager(builtin=__file__)
 
 
 class DAVClient:
@@ -91,7 +94,7 @@ class CardDAV(DAVClient):
 
     def get_vcard(self, url):
         status, msg, header, resbody = self.request(url, "GET")
-        card = SimpleVCard()
+        card = MailpileVCard()
         card.load(data=resbody)
         return card
 
@@ -135,4 +138,4 @@ class CardDAVImporter(VCardImporter):
         pass
 
 
-mailpile.plugins.register_vcard_importers(CardDAVImporter)
+_plugins.register_vcard_importers(CardDAVImporter)
