@@ -52,7 +52,7 @@ class GravatarImporter(VCardImporter):
 
         want = []
         vcards = self.session.config.vcards
-        for vcard in vcards.find_vcards([]):
+        for vcard in vcards.find_vcards([], kinds=vcards.KINDS_PEOPLE):
             try:
                 ts = int(vcard.get(self.VCARD_TS).value)
             except IndexError:

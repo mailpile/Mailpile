@@ -4,7 +4,7 @@ from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
 from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import AddressHeaderParser
-from mailpile.vcard import MailpileVCard, VCardLine, AddressInfo
+from mailpile.vcard import VCardLine, VCardStore, MailpileVCard, AddressInfo
 from mailpile.util import *
 
 
@@ -69,7 +69,7 @@ class VCardCommand(Command):
     def _make_new_vcard(self, handle, name, kind):
         l = [VCardLine(name='fn', value=name),
              VCardLine(name='kind', value=kind)]
-        if self.KIND in ('individual', 'profile', 'internal'):
+        if self.KIND in VCardStore.KINDS_PEOPLE:
             return MailpileVCard(VCardLine(name='email',
                                            value=handle, type='pref'), *l)
         else:
@@ -524,8 +524,8 @@ class AddressSearch(VCardCommand):
 
     def _vcard_addresses(self, cfg, terms):
         addresses = {}
-        for vcard in cfg.vcards.find_vcards(terms, kinds=['individual',
-                                                          'profile']):
+        for vcard in cfg.vcards.find_vcards(terms,
+                                            kinds=VCardStore.KINDS_PEOPLE):
             fn = vcard.get('fn')
             for email_vcl in vcard.get_all('email'):
                 info = addresses.get(email_vcl.value) or {}
