@@ -1026,7 +1026,7 @@ class VCardStore(dict):
         return vcards
 
     def find_vcards(vcards, terms, kinds=None):
-        kinds = kinds or self.KINDS_ALL
+        kinds = kinds or vcards.KINDS_ALL
         results = []
         with vcards._lock:
             if not terms:
