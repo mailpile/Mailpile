@@ -328,7 +328,7 @@ class ListVCards(VCardCommand):
 
     def command(self):
         session, config = self.session, self.session.config
-        kinds = self.KIND and [self.KIND] or []
+        kinds = self.KIND and [self.KIND] or None
         args = list(self.args)
 
         if 'format' in self.data:

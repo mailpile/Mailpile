@@ -1025,7 +1025,8 @@ class VCardStore(dict):
         vcards.sort(key=lambda vc: (vc.fn, vc.email))
         return vcards
 
-    def find_vcards(vcards, terms, kinds=['individual']):
+    def find_vcards(vcards, terms, kinds=None):
+        kinds = kinds or self.KINDS_ALL
         results = []
         with vcards._lock:
             if not terms:
