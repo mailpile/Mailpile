@@ -1,8 +1,20 @@
-/* Profile Add */
-$(document).on('submit', '#form-profile-add', function(e) {
+/* Settings - Shows profile add modal */
+$(document).on('click', '#btn-settings-profile-add', function(e) {
+  $("#modal-full").html($("#modal-settings-profile-add").html());
+  $('#modal-full').modal({
+    backdrop: true,
+    keyboard: true,
+    show: true,
+    remote: false
+  });
+});
+
+
+
+/* Settings - Submit profile add form */
+$(document).on('submit', '#form-settings-profile-add', function(e) {
 
   e.preventDefault();
-
   var profile_data = {
     name : $('#profile-add-name').val(),
     email: $('#profile-add-email').val()
@@ -14,18 +26,33 @@ $(document).on('submit', '#form-profile-add', function(e) {
     profile_data.route = 'smtp://' + smtp_route;
   }
 
-	$.ajax({
-    url      : Mailpile.api.settings_add,
-		type     : 'POST',
-		data     : {profiles: JSON.stringify(profile_data)},
-		dataType : 'json',
-    success  : function(response) {
+  // FIXME: this is currently g'borked
+  // {profiles: JSON.stringify(profile_data)}
+});
 
-      Mailpile.notification(response.status, response.message);
-      if (response.status === 'success') {
-        console.log(response);
-      }
-    }
-	});
+
+/* Settings - Shows route add modal */
+$(document).on('click', '#btn-settings-route-add', function(e) {
+  $("#modal-full").html($("#modal-settings-route-add").html());
+  $('#modal-full').modal({
+    backdrop: true,
+    keyboard: true,
+    show: true,
+    remote: false
+  });
+});
+
+
+$(document).on('submit', '#form-settings-route-add', function(e) {
+
+  alert('This is not quite implemented yet :)');
+
+});
+
+
+/* Settings - Submit route edit form */
+$(document).on('submit', '.form-settings-route-edit', function() {
+
+  
 
 });
