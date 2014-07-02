@@ -130,7 +130,7 @@ def Main(args):
                 Action(session, args[0], ' '.join(args[1:]).decode('utf-8'))
 
         except (getopt.GetoptError, UsageError), e:
-            session.error(e)
+            session.error(unicode(e))
 
         if not opts and not args:
             # Create and start the rest of the threads, load the index.
