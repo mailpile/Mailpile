@@ -5,6 +5,9 @@ return {
     load: function(e) {
         Mailpile.plugins.maildeck.column_add('in:Inbox');
         Mailpile.plugins.maildeck.column_add('in:New');
+        
+        // Add Prefix to search box
+        $('#search-query').val('maildeck: ');
     },
     activity_setup: function(e) {
 
