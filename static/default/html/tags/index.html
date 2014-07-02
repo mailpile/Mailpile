@@ -1,35 +1,38 @@
 {% extends "layouts/" + render_mode + "-wide.html" %}
 {% block title %}{{_("Tags")}}{% endblock %}
 {% block content %}
+{% macro render_tag(tag) -%}
+<div class="rectangles-outer" id="tag-card-{{tag.tid}}" data-tid="{{tag.tid}}">
+  <div class="rectangles-inner">
+    <a class="tag-card-name" href="/tags/{{tag.slug}}/edit.html" style="color: {{theme_settings().colors[tag.label_color]}};">
+      <span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span>
+      {% if tag.name|length > 11 %}
+      {{tag.name[:11]}}...
+      {% else %}
+      {{tag.name}}
+      {% endif %}
+    </a>
+    <input type="checkbox" class="right">
+    <div class="tag-card-details">
+      {% if tag.subtag_ids %}
+      {% set total_count = tag.stats.sum_all %}
+      {% else %}
+      {% set total_count = tag.stats.all %}
+      {% endif %}
+      <span class="tag-card-stat-count">{{total_count}}</span> {{_("Messages")}} &nbsp;
+      {% if tag.subtag_ids %}
+      <span class="tag-card-stat-count">{{tag.subtag_ids|length}}</span> {{_("Subtags")}}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{%- endmacro %}
 <div id="content-tools">
   {% include("partials/tools_tags.html") %}
 </div>
 <div id="content-view">
-  {% macro render_tag(tag) -%}
-   <div class="rectangles-outer" id="tag-card-{{tag.tid}}" data-tid="{{tag.tid}}">
-    <div class="rectangles-inner">
-      <a class="tag-card-name" href="/tags/{{tag.slug}}/edit.html" style="color: {{theme_settings().colors[tag.label_color]}};">
-        <span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span>
-        {{tag.name[:11]}}
-      </a>
-      <input type="checkbox" class="tag-card-checkbox">
-      <div class="tag-card-details">
-        {% if tag.subtag_ids %}
-        {% set total_count = tag.stats.sum_all %}
-        {% else %}
-        {% set total_count = tag.stats.all %}
-        {% endif %}
-        <span class="tag-card-stat-count">{{total_count}}</span> {{_("Messages")}} &nbsp;
-        {% if tag.subtag_ids %}
-        <span class="tag-card-stat-count">{{tag.subtag_ids|length}}</span> {{_("Subtags")}}
-        {% endif %}
-      </div>
-    </div>
-  </div>
-  {%- endmacro %}
-  <!-- Priority -->
   <div class="content-normal">
-    <h3>{{_("Priority Tags")}}</h3>
+    <h4>{{_("Priority Tags")}}</h4>
   </div>
   <div id="tags-priority-list" class="container rectangles-container center">
     <div class="clearfix"></div>
@@ -39,10 +42,8 @@
     {% endif %}
     {% endfor %}
   </div>
-
-  <!-- Tag -->
   <div class="content-normal">
-    <h3>{{_("Tags")}}</h3>
+    <h4>{{_("Tags")}}</h4>
   </div>
   <div id="tags-list" class="container rectangles-container center">
     <div class="clearfix"></div>
@@ -52,8 +53,6 @@
     {% endif %}
     {% endfor %}
   </div>
-
-  <!-- Archive -->
   {% set tag_archive = [] %}
   {% for tag in result.tags %}
   {% if tag.display == "archive" %}
@@ -62,7 +61,7 @@
   {% endfor %} 
   {% if tag_archive|length > 0 %}
   <div class="content-normal">
-    <h3>{{_("Archived")}}</h3>
+    <h4>{{_("Archived")}}</h4>
   </div>
   <div id="tags-archived-list" class="container rectangles-container center hide">
     <div class="clearfix"></div>
