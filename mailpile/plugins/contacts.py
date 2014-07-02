@@ -562,7 +562,7 @@ class AddressSearch(VCardCommand):
                     match = False
                     break
             if match:
-                matches[frm] = matches.get(frm, 0) + 1
+                matches[frm] = matches.get(frm, 0) + 3
                 if len(matches) > (count * 10):
                     break
             elif len(matches) and time.time() > deadline:
@@ -579,9 +579,9 @@ class AddressSearch(VCardCommand):
                 match = not (tags & invisible)
                 if match:
                     frm = msg_info[index.MSG_FROM]
-                    frm_lower = frm.lower()
+                    search = (frm + ' ' + msg_info[index.MSG_SUBJECT]).lower()
                     for term in terms:
-                        if term not in frm_lower:
+                        if term not in search:
                             match = False
                             break
                     if match:
