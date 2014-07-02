@@ -20,7 +20,11 @@
           {% endif %}
         </a>
         <a class="contact-card-name" href="/contacts/view/{{ contact.email.0.email }}/">
-          {{ contact.fn }}
+          {% if contact.fn|length > 24 %}
+          {{contact.fn[:24]}}
+          {% else %}
+          {{contact.fn}}
+          {% endif %}
         </a>
         <input type="checkbox" class="contact-card-checkbox right">
       </div>
