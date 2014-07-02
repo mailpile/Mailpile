@@ -15,11 +15,12 @@
   }
 
   #thread-title h1 {
-    margin: 0px;
+    margin: 0px @base-margin;
     padding: 0px;
     font-family: @mailpile-text-font-family-bold;
     font-size: 24px;
     font-weight: bold;
+    line-height: 30px;
   }
 
   #thread-title ul {
@@ -231,14 +232,16 @@
   .thread-item-crypto-info .text { font-size: 12px; font-family: Helvetica, Arial, sans-serif; font-weight: bold; text-transform: uppercase; }
 
   .thread-item-crypto-error {
-    width: 40%;
+    width: 50%;
     text-align: center;
-    color: @grayMid;
-    margin-top: @base-margin;
-    margin-bottom: @base-margin;
-    margin-left: @base-margin;
+    color: @gray;
+    margin: 0px auto @base-margin auto;    
   }
-  
+
+  .thread-item-crypto-error p {
+    line-height: 18px;
+  }
+
   .thread-item-crypto-error .icon {
     font-size: 48px;
     line-height: 48px;
