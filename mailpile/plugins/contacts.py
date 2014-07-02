@@ -1,3 +1,5 @@
+import random
+import time
 from gettext import gettext as _
 
 from mailpile.plugins import PluginManager
@@ -508,7 +510,8 @@ class AddressSearch(VCardCommand):
     HTTP_QUERY_VARS = {
         'q': 'search terms',
         'count': 'number of results',
-        'offset': 'offset results'
+        'offset': 'offset results',
+        'ms': 'deadline in ms'
     }
 
     def _boost_rank(self, term, *matches):
@@ -522,7 +525,7 @@ class AddressSearch(VCardCommand):
                     boost += 5 * (float(len(term)) / len(match))
         return int(boost)
 
-    def _vcard_addresses(self, cfg, terms):
+    def _vcard_addresses(self, cfg, terms, ignored_count, deadline):
         addresses = {}
         for vcard in cfg.vcards.find_vcards(terms,
                                             kinds=VCardStore.KINDS_PEOPLE):
@@ -535,48 +538,62 @@ class AddressSearch(VCardCommand):
                 for term in terms:
                     info['rank'] += self._boost_rank(term, fn.value,
                                                      email_vcl.value)
+            if len(addresses) and time.time() > deadline:
+                break
 
         return addresses.values()
 
-    def _index_addresses(self, cfg, terms, vcard_addresses):
+    def _index_addresses(self, cfg, terms, vcard_addresses, count, deadline):
         existing = dict([(k['address'].lower(), k) for k in vcard_addresses])
         index = self._idx()
 
         # Figure out which tags are invisible so we can skip messages marked
         # with those tags.
         invisible = set([t._key for t in cfg.get_tags(flag_hides=True)])
-
-        # 1st, go through the last 1000 or so messages in the index and search
-        # for matching senders or recipients, give medium priority.
         matches = {}
         addresses = []
-        for msg_idx in xrange(max(0, len(index.INDEX)-2500), len(index.INDEX)):
-            msg_info = index.get_msg_at_idx_pos(msg_idx)
-            tags = set(msg_info[index.MSG_TAGS].split(','))
-            frm = msg_info[index.MSG_FROM]
-            match = not (tags & invisible)
-            if match:
-                for term in terms:
-                    if term not in frm.lower():
-                        match = False
-            if match:
-                matches[frm] = matches.get(frm, 0) + 1
-            if len(matches) > 1000:
-                break
 
-        # FIXME: 2nd, search the social graph for matches, give low priority.
+        # 1st, search the social graph for matches, give low priority.
         for frm in index.EMAILS:
+            frm_lower = frm.lower()
             match = True
             for term in terms:
-                if term not in frm.lower():
+                if term not in frm_lower:
                     match = False
+                    break
             if match:
                 matches[frm] = matches.get(frm, 0) + 1
+                if len(matches) > (count * 10):
+                    break
+            elif len(matches) and time.time() > deadline:
+                break
+
+        # 2nd, go through at most the last 5000 messages in the index and
+        # search for matching senders or recipients, give medium priority.
+        # Note: This is more CPU intensive, so we do this last.
+        if len(matches) < (count * 5):
+            for msg_idx in xrange(max(0, len(index.INDEX)-5000),
+                                  len(index.INDEX)):
+                msg_info = index.get_msg_at_idx_pos(msg_idx)
+                tags = set(msg_info[index.MSG_TAGS].split(','))
+                match = not (tags & invisible)
+                if match:
+                    frm = msg_info[index.MSG_FROM]
+                    frm_lower = frm.lower()
+                    for term in terms:
+                        if term not in frm_lower:
+                            match = False
+                            break
+                    if match:
+                        matches[frm] = matches.get(frm, 0) + 1
+                        if len(matches) > (count * 5):
+                            break
+                    if len(matches) and time.time() > deadline:
+                        break
 
         # Assign info & scores!
         for frm in matches:
             email, fn = ExtractEmailAndName(frm)
-
             boost = min(10, matches[frm])
             for term in terms:
                 boost += self._boost_rank(term, fn, email)
@@ -596,18 +613,22 @@ class AddressSearch(VCardCommand):
 
     def command(self):
         session, config = self.session, self.session.config
-        if 'q' in self.data:
-            terms = [t.lower() for t in self.data['q']]
-        else:
-            terms = [t.lower() for t in self.args]
+
         count = int(self.data.get('count', 10))
         offset = int(self.data.get('offset', 0))
+        deadline = time.time() + float(self.data.get('ms', 150)) / 1000.0
+        terms = []
+        for q in self.data.get('q', []):
+            terms.extend(q.lower().split())
+        for a in self.args:
+            terms.extend(a.lower().split())
 
         self.session.ui.mark('Searching VCards')
-        vcard_addrs = self._vcard_addresses(config, terms)
+        vcard_addrs = self._vcard_addresses(config, terms, count, deadline)
 
         self.session.ui.mark('Searching Metadata')
-        index_addrs = self._index_addresses(config, terms, vcard_addrs)
+        index_addrs = self._index_addresses(config, terms, vcard_addrs,
+                                            count, deadline)
 
         self.session.ui.mark('Sorting')
         addresses = vcard_addrs + index_addrs
