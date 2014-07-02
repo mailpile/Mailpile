@@ -42,8 +42,13 @@ $(document).ready(function() {
   });
 
 
-
   $('.compose-to-email').qtip({
+    content: {
+      title: false,
+      text: function(event, api) {
+        return 'Compose To: ' + $(this).attr('href').replace('mailto:', '');
+      }
+    },  
     style: {
       classes: 'qtip-tipped'
     },
@@ -56,7 +61,7 @@ $(document).ready(function() {
 			}
     },
     show: {
-      delay: 500
+      delay: 450
     }
   });
 
