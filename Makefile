@@ -19,12 +19,13 @@ arch-dev:
 debian-dev:
 	sudo apt-get install python-imaging python-lxml python-jinja2 pep8 \
 	                     ruby-dev yui-compressor python-nose spambayes \
-	                     phantomjs python-pip python-mock python-pgpdump
+	                     phantomjs python-pip python-mock
 	if [ "$(shell cat /etc/debian_version)" = "jessie/sid"  ]; then\
-		 sudo apt-get install rubygems-integration;\
+		sudo apt-get install rubygems-integration;\
 	else \
 		sudo apt-get install rubygems; \
 	fi
+	sudo apt-get install python-pgpdump || pip install pgpdump
 	sudo pip install 'selenium>=2.40.0'
 	which lessc >/dev/null || sudo gem install therubyracer less
 
