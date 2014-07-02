@@ -390,7 +390,8 @@ class UserInteraction:
                     return str(obj)
                 return "COMPLEXBLOB"
 
-        return json.dumps(data, indent=1, cls=NoFailEncoder, sort_keys=True)
+        return json.dumps(data, indent=1, cls=NoFailEncoder,
+                                sort_keys=True, allow_nan=False)
 
     def _web_template(self, config, tpl_names, elems=None):
         env = config.jinja_env
