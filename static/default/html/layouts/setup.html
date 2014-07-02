@@ -85,13 +85,13 @@
 </script>
 
 <script id="template-setup-basic" type="text/template">
-  <div class="setup-box setup-box-small animated bounceInRight">
+  <div id="setup-box-basic" class="setup-box setup-box-small animated bounceInRight">
     <h2 class="text-center"><span class="icon-user"></span> {{_("Basic Information")}}</h2>
     <form class="standard text-center">
       <label>{{_("Name")}}</label>
       <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
       <label>{{_("Password")}}</label>
-      <input type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
+      <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
       <p class="text-center">{{_("If you have a PGP key with a passphrase, use that passphrase here!")}}</p>
       <button id="btn-setup-basic-info" class="text-center">{{_("Next")}}</button>
     </form>
@@ -101,9 +101,9 @@
 
 <!-- Discovery -->
 <script id="template-setup-discovery" type="text/template">
-  <div id="setup-welcome" class="setup-white">
+  <div id="setup-box-discovery" class="setup-white animated bounceInRight">
     <h1>Discovering things</h1>
-    <p></p>
+    <p>We are analyzing your computer to figure out how to best help you install Mailpile.</p>
   </div>
 </script>
 
