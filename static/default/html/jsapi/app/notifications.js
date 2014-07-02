@@ -1,4 +1,4 @@
-/* Notifications -  */
+/* Notifications - UI notification at top of window */
 Mailpile.notification = function(status, message_text, complete, complete_action) {
     var default_messages = {
         "success" : "Success, we did exactly what you asked.",
@@ -20,7 +20,7 @@ Mailpile.notification = function(status, message_text, complete, complete_action
 
     // Complete Action
     if (complete == undefined) {
-    
+
     } else if (complete == 'hide') {
         message.delay(5000).fadeOut('normal', function() {
             message.find('span.message-text').empty();
@@ -71,7 +71,7 @@ EventLog.request = function(conditions, callback) {
 }
 
 EventLog.poll = function() {
-    console.log('poll() just fired');
+    // console.log('poll() just fired');
     EventLog.request({since: EventLog.last_ts, wait: 20});     // Request everything new.
 };
 
@@ -116,8 +116,7 @@ EventLog.subscribe = function(ev, func) {
 
 EventLog.unsubscribe = function(ev, func_or_id) {
     // Given an event class and a subscription id
-    //   or a function, will unsubscribe from the 
-    //   event.
+    // or a function, will unsubscribe from the event.
     // Returns true if successfully unsubscribed.
     if ($.isFunction(func_or_id)) {
         for (i in this.eventbindings) {
@@ -137,23 +136,22 @@ EventLog.unsubscribe = function(ev, func_or_id) {
 /* Message Close */
 $(document).on('click', '.message-close', function() {
   $(this).parent().fadeOut(function() {
-    //$('#header').css('padding-top', statusHeaderPadding());
   });
 });
 
 
 $(document).ready(function() {
 
-    // Start
-    EventLog.init();
+  // Start
+  EventLog.init();
 
-    // HTML5 Browser Notifications
-    if (Notification.permission == "granted") {
-      $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
-    }
+  // HTML5 Browser Notifications
+  if (Notification.permission == "granted") {
+    $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
+  }
 
-    $('#notifications-permission-option').click(function() {
-      Notification.requestPermission();
-    });
+  $('#notifications-permission-option').click(function() {
+    Notification.requestPermission();
+  });
 
 });
