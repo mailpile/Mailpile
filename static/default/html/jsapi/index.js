@@ -100,13 +100,24 @@ Mailpile.API = {
     _endpoints: {
 {% for command in result.api_methods %}
         {{command.url|replace("/", "_")}}: "/0/{{command.url}}/"{% if not loop.last %},{% endif %}
+
 {% endfor %}
     },
     _sync_url: "/api",
     _async_url: "/async",
-}
+};
+
+Mailpile.API._ajax_error =  function(base_url, command, data, method, response, status) {
+    console.log('Oops, an AJAX call returned as error :(');
+    console.log('url: ' + base_url + command);
+    console.log('method: ' + method);
+    console.log(data);
+    console.log('status: ' + status);
+    console.log(response);
+};
 
 Mailpile.API._action = function(base_url, command, data, method, callback) {
+
     if (method != "GET" && method != "POST") {
         method = "GET";
     }
@@ -119,18 +130,26 @@ Mailpile.API._action = function(base_url, command, data, method, callback) {
         var params = $.param(data);
         $.ajax({
             url      : base_url + command + "?" + params,
-            type     : method,
+            type     : 'GET',
             dataType : 'json',
             success  : callback,
+            error: function(response, status) {
+              Mailpile.API._ajax_error(base_url, command, data, method, response, status);
+            }
         });
     } else if (method =="POST") {
         $.ajax({
             url      : base_url + command,
-            type     : method,
+            type     : 'POST',
             data     : data,
             dataType : 'json',
             success  : callback,
+            error    : function(response, status) {
+              Mailpile.API._ajax_error(base_url, command, data, method, response, status);
+            }
         });
+    } else {
+      alert('Somethings rotten in Denmark');
     }
 
     return true;
@@ -154,8 +173,9 @@ Mailpile.API._async_action = function(command, data, method, callback, flags) {
     }
 
     Mailpile.API._action(Mailpile.API._async_url, command, data, method, handle_event, flags);
-}
+};
 
+/* Create sync & asyn API commands */
 {% for command in result.api_methods -%}
 Mailpile.API.{{command.url|replace("/", "_")}} = function(data, callback, method) {
     var methods = ["{{command.method}}"];
@@ -181,8 +201,7 @@ Mailpile.API.async_{{command.url|replace("/", "_")}} = function(data, callback, 
         method,
         callback
     );
-}
-
+};
 {% endfor %}
 
 /* Plugin Javascript - we do this in multiple commands instead of one big
