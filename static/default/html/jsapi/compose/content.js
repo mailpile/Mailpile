@@ -213,7 +213,7 @@ Mailpile.compose_address_field = function(id) {
 
 $(document).on('click', '.compose-contact-find-keys', function() {
   var address = $(this).data('address');
-  Mailpile.find_missing_keys(address);
+  Mailpile.find_encryption_keys(address);
 });
 
 
@@ -363,11 +363,16 @@ $(document).on('click', '.compose-show-details', function(e) {
 });
 
 
-/* Compose - Sent To Email */
+/* Compose - Create a new email to an address */
 $(document).on('click', '.compose-to-email', function(e) {
   e.preventDefault();
-  Mailpile.compose({
-    to: $(this).data('email')
+  var address = $(this).attr('href').replace('mailto:', '');
+  Mailpile.API.message_compose({to: address}, function(response) {
+    if (response.status === 'success') {
+      window.location.href = Mailpile.urls.message_draft + response.result.created[0] + '/';
+    } else {
+      Mailpile.notification(response.status, response.message);
+    }
   });
 });
 
