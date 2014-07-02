@@ -177,12 +177,13 @@ class SharedImapConn(threading.Thread):
     def run(self):
         # FIXME: Do IDLE stuff if requested.
         try:
-            while True:
+            while self._conn:
                 # By default, all this does is send a NOOP every 120 seconds
                 # to keep the connection alive (or detect errors).
                 time.sleep(120)
-                with self as raw_conn:
-                    raw_conn.noop()
+                if self._conn:
+                    with self as raw_conn:
+                        raw_conn.noop()
         except:
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())

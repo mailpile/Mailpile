@@ -26,6 +26,7 @@ Mailpile = {
         ["normal", "g t",    function() { Mailpile.go("/tag/list/"); }],
         ["normal", "g n t",  function() { Mailpile.go("/tag/add/"); }],
         ["normal", "g s",    function() { Mailpile.go("/settings/profiles/"); }],
+        ["normal", "h",      function() { Mailpile.go("/help/"); }],
         ["normal", "command+z ctrl+z",  function() { alert('Undo Something ') }],
         ["normal", "s a",    function() { Mailpile.bulk_action_select_all(); }],
         ["normal", "s b",    function() { Mailpile.bulk_action_select_between(); }],
@@ -105,9 +106,19 @@ Mailpile.API = {
     },
     _sync_url: "/api",
     _async_url: "/async",
-}
+};
 
-Mailpile.API._sync_action = function(command, data, method, callback) {
+Mailpile.API._ajax_error =  function(base_url, command, data, method, response, status) {
+    console.log('Oops, an AJAX call returned as error :(');
+    console.log('url: ' + base_url + command);
+    console.log('method: ' + method);
+    console.log(data);
+    console.log('status: ' + status);
+    console.log(response);
+};
+
+Mailpile.API._action = function(base_url, command, data, method, callback) {
+
     if (method != "GET" && method != "POST") {
         method = "GET";
     }
@@ -119,24 +130,35 @@ Mailpile.API._sync_action = function(command, data, method, callback) {
         }
         var params = $.param(data);
         $.ajax({
-            url      : Mailpile.API._sync_url + command + "?" + params,
-            type     : method,
+            url      : base_url + command + "?" + params,
+            type     : 'GET',
             dataType : 'json',
             success  : callback,
+            error: function(response, status) {
+              Mailpile.API._ajax_error(base_url, command, data, method, response, status);
+            }
         });
     } else if (method =="POST") {
         $.ajax({
-            url      : Mailpile.API._sync_url + command,
-            type     : method,
+            url      : base_url + command,
+            type     : 'POST',
             data     : data,
             dataType : 'json',
             success  : callback,
+            error    : function(response, status) {
+              Mailpile.API._ajax_error(base_url, command, data, method, response, status);
+            }
         });
+    } else {
+      alert('Somethings rotten in Denmark');
     }
 
     return true;
 };
 
+Mailpile.API._sync_action = function(command, data, method, callback) {
+  return Mailpile.API._action(Mailpile.API._sync_url, command, data, method, callback);
+};
 
 Mailpile.API._async_action = function(command, data, method, callback, flags) {
     function handle_event(data) {
@@ -151,26 +173,16 @@ Mailpile.API._async_action = function(command, data, method, callback, flags) {
         }
     }
 
-    Mailpile.API._sync_action(command, data, method, handle_event, flags);
-}
+    Mailpile.API._action(Mailpile.API._async_url, command, data, method, handle_event, flags);
+};
 
+/* Create sync & asyn API commands */
 {% for command in result.api_methods -%}
 Mailpile.API.{{command.url|replace("/", "_")}} = function(data, callback, method) {
     var methods = ["{{command.method}}"];
     if (!method || methods.indexOf(method) == -1) {
         method = methods[0];
     }
-/*
-    {%- for key in command.query_vars -%}pv_{{key|replace("@", "")}}, {% endfor -%}
-    {%- for key in command.post_vars -%}pv_{{key|replace("@", "")|replace(".","_")|replace("-","_")}}, {%- endfor -%}
-    
-    {%- for key in command.query_vars -%}
-        "{{key}}": pv_{{key|replace("@", "")}},
-    {% endfor %}
-    {%- for key in command.post_vars -%}
-        "{{key}}": pv_{{key|replace("@", "")}},
-    {% endfor %}
-*/
     return Mailpile.API._sync_action(
         Mailpile.API._endpoints.{{command.url|replace("/", "_")}}, 
         data,
@@ -184,27 +196,14 @@ Mailpile.API.async_{{command.url|replace("/", "_")}} = function(data, callback, 
     if (!method || methods.indexOf(method) == -1) {
         method = methods[0];
     }
-/*
-    {%- for key in command.query_vars -%}pv_{{key|replace("@", "")}}, {% endfor -%}
-    {%- for key in command.post_vars -%}pv_{{key|replace("@", "")|replace(".","_")|replace("-","_")}}, {%- endfor -%}
-    
-    {%- for key in command.query_vars -%}
-        "{{key}}": pv_{{key|replace("@", "")}},
-    {% endfor %}
-    {%- for key in command.post_vars -%}
-        "{{key}}": pv_{{key|replace("@", "")}},
-    {% endfor %}
-*/
     return Mailpile.API._async_action(
         Mailpile.API._endpoints.{{command.url|replace("/", "_")}}, 
         data,
         method,
         callback
     );
-}
-
+};
 {% endfor %}
-
 
 /* Plugin Javascript - we do this in multiple commands instead of one big
    dict, so plugin setup code can reference other plugins. Plugins are

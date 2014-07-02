@@ -39,13 +39,6 @@
 <div id="sidebar" class="comfy">
   <nav>
     <ul id="sidebar-priority" class="sidebar-sortable">
-      <li {% if command == "edit" %}class="navigation-on"{% endif %}>
-        <a href="#" id="button-compose" class="sidebar-tag color-08-green"
-          title="{{_("Compose")}}" alt="{{_("Compose")}}">
-          <span class="sidebar-icon icon-compose" style="color: #4b9441;"></span>
-          <span class="sidebar-name">{{_("Compose")}}</span>
-        </a>
-      </li>
       {%- for tag in mailpile("tags", "mode=tree", "display=priority").result.tags -%}
       {{ render_sidebar_tag(tag) }}
       {%- endfor -%}

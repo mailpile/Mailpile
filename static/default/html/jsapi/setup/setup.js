@@ -11,23 +11,20 @@ Welcome.bind_button("#btn-setup-welcome-begin", function() {
 
 /* Basic - Collect */
 var Basic = new Page("#template-setup-basic", "{{_("Welcome to Mailpile!")}}");
-Basic.bind_button("#btn-setup-basic-info", function() {
-
-  console.log('Go Basic -> Dicovery');  
+Basic.bind_button("#btn-setup-basic-info", function(e) {
+  e.preventDefault();
   Basic.next();
-
 });
 
+
 Basic.bind_validator("#input-name-name", function(m) {
-
+  $('#setup-box-basic').removeClass('bounceInRight').addClass('bounceOutLeft');
+  console.log('Go Basic -> Dicovery'); 
   return m.value != "";
-
 });
 
 Basic.bind_hide(function() {
-
 	setupdata["name"] = $("#input-name-name").value();
-
 });
 
 
@@ -35,6 +32,7 @@ Basic.bind_hide(function() {
 var Discovery = new Page("#template-setup-discovery", "{{_("Analyzing your Computer")}}");
 Discovery.bind_button("#btn-setup-basic-next", function() {
   console.log('Go Basic -> Crypto');  
+  $('#setup-box-discovery').removeClass('bounceInRight').addClass('bounceOutLeft');
   Discovery.next();
 });
 

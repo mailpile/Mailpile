@@ -947,6 +947,9 @@ class VCardStore(dict):
     >>> vcs.find_vcards(['guy'])
     []
     """
+    KINDS_ALL = ('individual', 'group', 'profile', 'internal')
+    KINDS_PEOPLE = ('individual', 'profile', 'internal')
+
     def __init__(self, config, vcard_dir):
         dict.__init__(self)
         self.config = config
@@ -955,7 +958,7 @@ class VCardStore(dict):
         self._lock = threading.RLock()
 
     def index_vcard(self, card):
-        attrs = (['email'] if (card.kind in ('individual', 'profile'))
+        attrs = (['email'] if (card.kind in self.KINDS_PEOPLE)
                  else ['nickname'])
         with self._lock:
             for attr in attrs:
@@ -966,7 +969,7 @@ class VCardStore(dict):
             self[card.random_uid] = card
 
     def deindex_vcard(self, card):
-        attrs = (['email'] if (card.kind in ('individual', 'profile'))
+        attrs = (['email'] if (card.kind in self.KINDS_PEOPLE)
                  else ['nickname'])
         with self._lock:
             for attr in attrs:
@@ -1022,7 +1025,8 @@ class VCardStore(dict):
         vcards.sort(key=lambda vc: (vc.fn, vc.email))
         return vcards
 
-    def find_vcards(vcards, terms, kinds=['individual']):
+    def find_vcards(vcards, terms, kinds=None):
+        kinds = kinds or vcards.KINDS_ALL
         results = []
         with vcards._lock:
             if not terms:

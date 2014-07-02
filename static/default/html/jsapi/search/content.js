@@ -66,6 +66,14 @@ $('td.draggable').draggable({
 });
 
 
+/* Search - Searches web for people (currently keyservers only) */
+$(document).on('click', '#btn-pile-empty-search-web', function(e) {
+  e.preventDefault();
+  var query = $('#pile-empty-search-terms').html();
+  Mailpile.find_encryption_keys(query);
+});
+
+
 /* Search - DOM is ready */
 $(document).ready(function() {
   

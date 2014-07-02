@@ -1,17 +1,3 @@
-Mailpile.tag_list = function(complete) {
-  $.ajax({
-    url      : Mailpile.api.tag_list,
-    type     : 'GET',
-    dataType : 'json',
-    success  : function(response) {
-      if (response.status === 'success') {
-        complete(response.result);
-      }
-    }
-  });
-};
-
-
 /* Pile - Tag Add */
 Mailpile.tag_add = function(tag_add, mids, complete) {
   $.ajax({
@@ -81,12 +67,14 @@ Mailpile.render_modal_tags = function() {
   if (Mailpile.messages_cache.length) {
 
     // Open Modal with selection options
-    Mailpile.tag_list(function(result) {
-  
+    Mailpile.API.tags({}, function(data) {
+
+      console.log('callback fired');
+
       var tags_html = '';
       var archive_html = '';
   
-      $.each(result.tags, function(key, value) {
+      $.each(data.result.tags, function(key, value) {
         if (value.display === 'tag') {
           tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
         }
@@ -94,7 +82,7 @@ Mailpile.render_modal_tags = function() {
           archive_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
         }
       });
-  
+
       var modal_html = $("#modal-tag-picker").html();
       $('#modal-full').html(_.template(modal_html, { tags: tags_html, archive: archive_html }));
       $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });

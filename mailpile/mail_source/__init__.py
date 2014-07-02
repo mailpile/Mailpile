@@ -164,7 +164,7 @@ class BaseMailSource(threading.Thread):
                 self._log_status(_('Internal error'))
                 raise
 
-        if batch > 0 and not errors:
+        if batch > 0:
             self._log_status(_('Checking for new mailboxes'))
             self._unlocked_discover_mailboxes(self.my_config.discovery.paths)
 

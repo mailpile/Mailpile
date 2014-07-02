@@ -159,8 +159,10 @@ def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None, subtags=None):
         'url': UrlMap(config=cfg).url_tag(tid),
     }
     for k in tag.all_keys():
-#       if k not in INFO_HIDES_TAG_METADATA:
-            info[k] = tag[k]
+        if k in ('display_order', ):
+            if str(tag[k]) == 'nan':
+                tag[k] = 0.01 * len(info)
+        info[k] = tag[k]
     if subtags:
         info['subtag_ids'] = [t._key for t in subtags]
     exclude = exclude or set()

@@ -44,7 +44,7 @@ def AddComposeMethods(cls):
                 from mailpile.plugins.contacts import AddContact
                 AddContact(self.session,
                            arg=['=%s' % e.msg_mid() for e in emails]
-                           ).run(recipients=True, quietly=True)
+                           ).run(recipients=True, quietly=True, internal=True)
             except (TypeError, ValueError, IndexError):
                 self._ignore_exception()
 
@@ -298,6 +298,9 @@ class Compose(CompositionCommand):
         email, ephemeral = self.CreateMessage(idx, session,
                                               cid=cid,
                                               ephemeral=ephemeral)
+        if not ephemeral:
+            self._tag_blank([email])
+
         email_updates = self._get_email_updates(idx,
                                                 emails=[email],
                                                 create=True)
@@ -305,8 +308,6 @@ class Compose(CompositionCommand):
         if update_string:
             email.update_from_string(session, update_string)
 
-        if not ephemeral:
-            self._tag_blank([email])
         return self._edit_messages([email], ephemeral=ephemeral, new=True)
 
 

@@ -67,7 +67,7 @@ Mailpile.update_search = function(ev) {
 
 $().ready(function() {
     $("#pile-newmessages-notification").click(Mailpile.update_search);
-    EventLog.subscribe(".commands.Rescan", function(ev) {
+    EventLog.subscribe(".commands.Rescan-DISABLED", function(ev) {
         if (ev.flags.indexOf("R") != -1) {
             console.log("Started rescanning...");
             $("#topbar-logo-bluemail").fadeOut(2000);

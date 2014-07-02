@@ -401,13 +401,12 @@ class MailpileCommand(Extension):
         return url
 
     @classmethod
-    def _contact_name(self, profiles, person):
+    def _contact_name(self, person):
         name = person['fn']
-        # FIXME: bre and bnvk should discuss this :)
-        #for profile in profiles:
-        #    if profile['email'] == person['address']:
-        #        name = profile['name']
-        #        break
+        if (not name or '@' in name) and person.get('email'):
+            vcard = self.env.session.config.vcards.get_vcard(person['email'])
+            if vcard:
+                return vcard.fn
         return name
 
     URL_RE_HTTP = re.compile('(<a [^>]*?)'            # 1: <a
@@ -463,17 +462,14 @@ class MailpileCommand(Extension):
                             ' target=_blank ',
                             m.group(2), url, m.group(4), desc, m.group(6)])
 
-        # FIXME: Disabled for now, we will instead grab the mailto: URLs
-        #        using javascript. A mailto: link is a reasonable fallback
-        #        until we have a GET'able compose dialog.
-        #
-        #def mailto_fixer(m):
-        #    return ''.join([m.group(1), 'href=\'javascript:compose("',
-        #                    m.group(3), '")\'>', m.group(5), m.group(6)])
-        #
-        #return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
-        #                     re.sub(self.URL_RE_MAILTO, mailto_fixer,
-        #                            text)))
+        def mailto_fixer(m):
+            return ''.join([m.group(1), 'href="mailto:', m.group(3),
+                            '" class="compose-to-email">',
+                            m.group(5), m.group(6)])
+        
+        return Markup(re.sub(self.URL_RE_HTTP, http_fixer,
+                             re.sub(self.URL_RE_MAILTO, mailto_fixer,
+                                    text)))
 
         return Markup(re.sub(self.URL_RE_HTTP, http_fixer, text))
 
