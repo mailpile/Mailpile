@@ -1,34 +1,35 @@
 /* Contact - List */
 
-  #contacts-list {
-    width: 100%;
-    height: 100%;
+  .contact-card-avatar { 
+    display: inline-block;
+    margin-right: 10px;
   }
 
-  .contact-avatar { 
-  }
-  
-  .contact-avatar img {
+  .contact-card-avatar img {
     width: 50px;
     border-radius: @base-border-radius;
   }
 
-
-  #contacts-list .contact-name {
-    font-family: @mailpile-text-font-family-bold;    
-  }
-
-  #contacts-list .compose-to-email {
-    font-family: Helvetica, Arial, sans-serif !important;
-    color: @grayDark;
-  }
-  
-  #contacts-list .contact-details {
-    font-family: Helvetica, Arial, sans-serif !important;
+  .contact-card-name {
+    max-width: 130px;
+    display: inline-block;
+    border: 1px solid @white;
+    margin-top: 0px;
+    padding-top: 0px;
     font-size: 14px;
-    color: @gray;
+    line-height: 18px;
+    vertical-align: top;
+    word-break: break-word;
   }
 
+  .contact-card-name:hover {
+    color: @blue;
+  }
+
+  .contact-card-checkbox {
+    margin-top: 0px;
+    vertical-align: top;
+  }
 
 /* Contact - View */
 
