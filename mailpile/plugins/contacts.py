@@ -603,12 +603,17 @@ class AddressSearch(VCardCommand):
         count = int(self.data.get('count', 10))
         offset = int(self.data.get('offset', 0))
 
+        self.session.ui.mark('Searching VCards')
         vcard_addrs = self._vcard_addresses(config, terms)
+
+        self.session.ui.mark('Searching Metadata')
         index_addrs = self._index_addresses(config, terms, vcard_addrs)
+
+        self.session.ui.mark('Sorting')
         addresses = vcard_addrs + index_addrs
         addresses.sort(key=lambda k: -k['rank'])
         total = len(addresses)
-        return {
+        return self._success(_('Searched for addresses'), result={
             'addresses': addresses[offset:min(offset+count, total)],
             'displayed': min(count, total),
             'total': total,
@@ -616,7 +621,7 @@ class AddressSearch(VCardCommand):
             'count': count,
             'start': offset,
             'end': offset+count,
-        }
+        })
 
 
 def ProfileVCard(parent):
