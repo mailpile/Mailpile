@@ -97,7 +97,7 @@ $(document).ready(function() {
     scroll: false,
     opacity: 0.8,
 		stop: function(event, ui) {
-     
+
       var get_order = function(index, base) {
         $elem = $('.sidebar-sortable li:nth-child(' + index + ')');
         if ($elem.length) {
@@ -106,7 +106,7 @@ $(document).ready(function() {
             return display_order;
           }
         }
-        return base;    
+        return base;
       };
 
       var tid   = $(ui.item).data('tid');
