@@ -202,7 +202,7 @@ class AddVCard(VCardCommand):
                 if vcard:
                     if not quietly:
                         session.ui.warning('Already exists: %s' % handle)
-                    if kind != 'profile' and old_vcard.kind != 'internal':
+                    if kind != 'profile' and vcard.kind != 'internal':
                         continue
                 if vcard and vcard.kind == 'internal':
                     config.vcards.deindex_vcard(vcard)
