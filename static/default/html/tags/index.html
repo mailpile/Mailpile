@@ -4,7 +4,7 @@
 {% macro render_tag(tag) -%}
 <div class="rectangles-outer" id="tag-card-{{tag.tid}}" data-tid="{{tag.tid}}">
   <div class="rectangles-inner">
-    <a class="tag-card-name left" href="/tags/{{tag.slug}}/edit.html" title="{{tag.name}}" style="color: {{theme_settings().colors[tag.label_color]}};">
+    <a class="tag-card-name left" href="/tags/edit.html?only={{tag.slug}}" title="{{tag.name}}" style="color: {{theme_settings().colors[tag.label_color]}};">
       <span class="icon {% if tag.icon %}{{tag.icon}}{% else %}icon-tag{% endif%}"></span>
       {% if tag.name|length > 15 %}
       {{tag.name[:12]}}...
