@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-02-13 13:32+0000\n"
-"PO-Revision-Date: 2014-02-24 08:05-0000\n"
+"PO-Revision-Date: 2014-05-11 09:06-0000\n"
 "Last-Translator: Anton Strömkvist <teun@lutic.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv_SE\n"
@@ -447,9 +447,8 @@ msgstr "Inre fel"
 
 #: mailpile/jinjaextensions.py:113 mailpile/jinjaextensions.py:146
 #: mailpile/jinjaextensions.py:187
-#, fuzzy
 msgid "Unknown"
-msgstr "Okänd tillit"
+msgstr "Okänd"
 
 #: mailpile/jinjaextensions.py:114
 msgid "There is something unknown or wrong with this signature"
@@ -625,6 +624,7 @@ msgstr "Skrev förhandsvisning till: %s"
 msgid "Failed to generate thumbnail"
 msgstr "Misslyckades med att generera ikon"
 
+# Kanske "Sparade bilaga till"
 #: mailpile/mailutils.py:763
 #, fuzzy, python-format
 msgid "Wrote attachment to: %s"
@@ -972,7 +972,7 @@ msgstr "Har %d intressanta %s meddelanden"
 #: mailpile/plugins/autotag.py:243
 #, fuzzy, python-format
 msgid "Retrained SpamBayes auto-tagging for %s"
-msgstr "Omskolar SpamBayes autotaggning för %s"
+msgstr "Omskolade SpamBayes autotaggning för %s"
 
 #: mailpile/plugins/autotag.py:264
 #, python-format
