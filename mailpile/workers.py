@@ -272,6 +272,9 @@ class DumbWorker(Worker):
         finally:
             self.LOCK.release()
 
+    def add_unique_task(self, session, name, task):
+        return self.add_task(session, name, task)
+
     def do(self, session, name, task):
         return self.add_task(session, name, task)
 
