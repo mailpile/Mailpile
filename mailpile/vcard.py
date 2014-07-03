@@ -376,6 +376,8 @@ class SimpleVCard(object):
         """
         for vcl in vcls:
             with self._lock:
+                if not vcl.name:
+                    continue
                 cardinality = self._cardinality(vcl)
                 count = len([l for l in self._lines
                              if l and l.name == vcl.name])
@@ -512,6 +514,8 @@ class SimpleVCard(object):
                     dedup[-1].set_attr('x-rank', rank)
 
             for line in lines[1:]:
+                if line.name in ('version',):  # Do not merge these
+                    continue
                 if (dedup[-1].name == line.name and
                         dedup[-1].value == line.value):
                     rank += 1
