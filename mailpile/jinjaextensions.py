@@ -350,9 +350,8 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-closed",
             _("Missing Key"),
-            _("You don't have any of the private keys that will decrypt this "
-              "message. Perhaps it was encrypted to an old key you don't have "
-              "anymore?")],
+            _("You do not have a private key that will decrypt this message. "
+              "Perhaps it was encrypted to an old key you don't have anymore?")],
         "mixed-missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
@@ -395,7 +394,7 @@ class MailpileCommand(Extension):
     @classmethod
     def _contact_url(self, person):
         if 'contact' in person['flags']:
-            url = "/contact/view/" + person['address'] + "/"
+            url = "/contacts/view/" + person['address'] + "/"
         else:
             url = "/#add-contact"
         return url

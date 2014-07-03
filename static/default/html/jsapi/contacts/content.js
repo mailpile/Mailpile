@@ -26,7 +26,7 @@ $(document).on('submit', '#form-contact-add', function(e) {
 $(document).on('click', '#contact-add-keysearch', function() {
 
   var query = $('.contact-add-name').val() + ' ' + $('.contact-add-email').val();
-  Mailpile.find_missing_keys(query);
+  Mailpile.find_encryption_keys(query);
 
 });
 

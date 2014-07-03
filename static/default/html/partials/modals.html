@@ -37,9 +37,9 @@
         <div id="contact-add-key"></div>
       </div>
       <div class="modal-footer">
-        <a id="contact-add-keysearch" title="{{_("Search for Keys")}}" alt="{{_("Search for Keys")}}" data-action="keysearch" class="button-alert">
-          <span class="icon-key"></span> {{_("Search for Keys")}}
-        </a>
+        <button id="contact-add-keysearch" title="{{_("Find Encryption Keys")}}" alt="{{_("Find Encryption Keys")}}" data-action="keysearch" class="button-alert left">
+          <span class="icon-key"></span> {{_("Find Encryption Keys")}}
+        </button>
         <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">
           <span class="icon-plus"></span> {{_("Add")}}
         </button>
@@ -64,9 +64,10 @@
         <ul id="tag-picker-archive"><%= archive %></ul>      
       </div>
       <div class="modal-footer">
-        <button title="{{_("Close")}}" class="left button-secondary" alt="{{_("Close")}}" data-dismiss="modal">{{_("Close")}}</button>
-        <button title="{{_("Remove")}}" alt="{{_("Remove")}}" data-action="remove">{{_("Remove")}}</button>
-        <button title="{{_("Apply")}}" alt="{{_("Apply")}}" data-action="add">{{_("Apply")}}</button>
+        <button class="left button-warning" title="{{_("Remove")}}" alt="{{_("Remove")}}" data-action="remove">{{_("Remove")}}</button>
+        <button title="{{_("Apply")}}" alt="{{_("Apply")}}" data-action="add">
+          <span class="icon-plus"></span> {{_("Apply")}}
+        </button>
       </div>
     </div>
   </form>
@@ -74,53 +75,49 @@
 </script>
 
 
-<!-- Crypto -->
+<!-- Crypto - Modal with instructions to send public key to recipient -->
 <script id="modal-send-public-key" type="text/template">
   <div class="modal-dialog">
    <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h4 class="modal-title"><span class="icon-key"></span> {{_("Send Public Key")}}</h4>
+      <h4 class="modal-title"><span class="icon-key"></span> {{_("Send Your Public Key")}}</h4>
     </div>
     <div class="modal-body clearfix">
-      <h3><%= name %></h3>
-      <p><%= address %></p>
-      <ol>
-        <li>Attach pubkey to composer below</li>
-        <li>Compose new message with pubkey</li>
-        <li>Send an automated email with pubkey</li>
-      </ol>
+      {% for key, private in mailpile("crypto/gpg/keylist/secret").result.iteritems() %}
+        <strong>{{private.uids[1].name}}</strong><br>
+        {{private.uids[1].email}}<br>
+        Key: {{key}}<br>
+        Expires: {{private.expiration_date}}<br>
+        Length: {{private.keysize}}<br>
+        Type: {{private.keytype_name}}<br>
+      {% endfor %}
     </div>
     <div class="modal-footer">
-      <button title="{{_("Cancel")}}" class="left button-secondary" alt="{{_("Cancel")}}" data-dismiss="modal">{{_("Cancel")}}</button>
-      <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">{{_("Add")}}</button>
+      <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add"><span class="icon-sent"></span> {{_("Send Selected Keys")}}</button>
     </div>
   </div>
   </div>
 </script>
 
 
+<!-- Crypto - Modal with processing & results from searching keyservers -->
 <script id="modal-search-keyservers" type="text/template">
   <div class="modal-dialog">
-   <div class="modal-content">
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h4 class="modal-title">
-        <span class="icon-search"></span>
-        {{_("Searching for encryption keys")}}
-        <span id="modal-search-keyservers-progress"><img src="/static/css/select2-spinner.gif"/></span>
-      </h4>
+  <form id="form-search-keyservers-items">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">
+          <span class="icon-search"></span>
+          <span class="title">{{_("Finding Encryption Keys")}}</span> <img class="progress-spinner" src="/static/css/select2-spinner.gif"/></span>
+        </h4>
+      </div>
+      <div class="modal-body clearfix"></div>
+      <div class="modal-footer">
+        <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add"><span class="icon-key"></span> {{_("Import Selected Keys")}}</button>
+      </div>
     </div>
-    <div class="modal-body clearfix">
-      <div id="modal-search-keyservers-results"></div>
-      <table width="100%" id="keyserver-result-list">
-      </table>
-      <div id="modal-search-keyservers-looking">...</div>
-    </div>
-    <div class="modal-footer">
-      <button title="{{_("Cancel")}}" class="left button-secondary" alt="{{_("Cancel")}}" data-dismiss="modal">{{_("Cancel")}}</button>
-      <button title="{{_("Add")}}" alt="{{_("Add")}}" data-action="add">{{_("Import selected keys")}}</button>
-    </div>
+  </form>
   </div>
-  </div>
-</script>
+</script> 

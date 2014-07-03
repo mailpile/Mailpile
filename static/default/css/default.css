@@ -2921,7 +2921,7 @@ table {
 ================================================== */
 body {
   background:    #ffffff;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: normal;
   font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 24px;
@@ -3441,17 +3441,17 @@ ul ol li,
 ol ol li,
 ol ul li {
   margin-bottom: 5px;
-  line-height: 18px;
+  line-height: 14px;
 }
 li {
   margin-bottom: 5px;
-  line-height: 18px;
+  line-height: 14px;
 }
 ul li p,
 ul.large li,
 ol.large li {
-  font-size: 27px;
-  line-height: 27px;
+  font-size: 21px;
+  line-height: 21px;
 }
 ul.horizontal li,
 ol.horizontal li {
@@ -3502,7 +3502,7 @@ ol.horizontal li {
 @media only screen and (min-width: 1140px) {
   .container .rectangles-outer {
     width: 19.1%;
-    height: 75px;
+    height: 70px;
     margin-right: 1.1%;
     margin-bottom: 1.2%;
   }
@@ -3562,7 +3562,7 @@ ol.horizontal li {
 @media only screen and (min-width: 960px) and (max-width: 1139px) {
   .container .rectangles-outer {
     width: 23.1%;
-    height: 75px;
+    height: 70px;
     margin-right: 2.25%;
     margin-bottom: 2%;
   }
@@ -3622,7 +3622,7 @@ ol.horizontal li {
 @media only screen and (min-width: 768px) and (max-width: 959px) {
   .container .rectangles-outer {
     width: 31.25%;
-    height: 75px;
+    height: 70px;
     margin-right: 2.75%;
     margin-bottom: 2.25%;
   }
@@ -3682,7 +3682,7 @@ ol.horizontal li {
 @media only screen and (max-width: 767px) {
   .container .rectangles-outer {
     width: 48.5%;
-    height: 75px;
+    height: 70px;
     margin-right: 3%;
     margin-bottom: 3%;
   }
@@ -3742,7 +3742,7 @@ ol.horizontal li {
 @media only screen and (max-width: 480px) {
   .container .rectangles-outer {
     width: 100%;
-    height: 75px;
+    height: 70px;
     margin-right: 4%;
     margin-bottom: 2%;
   }
@@ -4918,7 +4918,7 @@ x:-o-prefocus,
   padding: 5px 0;
   margin: 2px 0 0;
   list-style: none;
-  font-size: 18px;
+  font-size: 14px;
   background-color: #ffffff;
   border: 1px solid #cccccc;
   border: 1px solid rgba(0, 0, 0, 0.15);
@@ -4934,7 +4934,7 @@ x:-o-prefocus,
 }
 .dropdown-menu .divider {
   height: 1px;
-  margin: 179px 0;
+  margin: 139px 0;
   overflow: hidden;
   background-color: #cccccc;
 }
@@ -5305,7 +5305,17 @@ ul.items li.item h5 {
 .rectangles-outer:hover {
   background: #f6f6f6;
 }
-/* Messages - Error, Warning, Debug, Info, Success */
+/* Contact Avatar + Name */
+.global-avatar {
+  display: inline-block;
+  width: 45px;
+  margin-right: 10px;
+}
+.global-avatar-img {
+  width: 45px;
+  border-radius: 3px;
+}
+/* Notifications - Messages (error, warning, debug, info, success) */
 #messages {
   width: 100%;
   position: fixed;
@@ -5365,7 +5375,7 @@ ul.items li.item h5 {
 #messages .success {
   background-color: #4b9441;
 }
-/* Notifications */
+/* Notifications - Menu */
 #notifications {
   width: 300px;
   height: 400px;
@@ -6068,10 +6078,11 @@ li.compose-attachment img {
 /* Contact - List */
 .contact-card-avatar {
   display: inline-block;
+  width: 45px;
   margin-right: 10px;
 }
 .contact-card-avatar img {
-  width: 50px;
+  width: 45px;
   border-radius: 3px;
 }
 .contact-card-name {
@@ -6120,6 +6131,14 @@ li.compose-attachment img {
 }
 .contact-detail li h5 {
   margin-bottom: 13.33333333px;
+}
+.contact-detail a span.contact-detail-light {
+  color: #b3b3b3;
+  font-weight: normal;
+}
+.contact-detail a:hover span.contact-detail-light,
+.contact-detail a span.contact-detail-light:hover {
+  color: #be1c21;
 }
 .contact-key-details {
   margin-top: 20px;
@@ -6185,6 +6204,52 @@ li.compose-attachment img {
   display: block;
   font-size: 14px;
   font-family: Helvetica, Arial, sans-serif;
+}
+/* Crypto - Results from searchkey command */
+.searchkey-result-item {
+  list-style-type: none;
+  padding: 15px;
+  border: 1px solid #cccccc;
+  border-radius: 3px;
+  margin-bottom: 20px;
+}
+.searchkey-result-item:hover {
+  cursor: pointer;
+  background: #f6f6f6;
+}
+.searchkey-result-item .avatar {
+  display: inline-block;
+  width: 45px;
+  margin-right: 10px;
+}
+.searchkey-result-item .avatar img {
+  width: 45px;
+  border-radius: 3px;
+}
+.searchkey-result-item .name {
+  width: 150px;
+  display: inline-block;
+  font-weight: bold;
+  word-break: break-word;
+  color: #4d4d4d;
+  vertical-align: top;
+}
+.searchkey-result-item .name span {
+  display: inline-block;
+  color: #b3b3b3;
+  font-size: 12px;
+  font-weight: normal;
+}
+.searchkey-result-item .icon-fingerprint {
+  display: inline-block;
+  font-size: 30px;
+  line-height: 30px;
+  vertical-align: top;
+}
+.searchkey-result-item .fingerprint {
+  display: inline-block;
+  width: 200px;
+  vertical-align: top;
 }
 /* Search */
 #button-search-options {
@@ -6371,28 +6436,21 @@ li.compose-attachment img {
   margin: 15px;
 }
 #pile-bottom h5 {
-  float: right;
   color: #4d4d4d;
 }
 #pile-bottom div {
-  float: right;
   text-align: right;
 }
-#pile-bottom a.change-view-size {
-  font-size: 12px;
-  margin: 0 6px;
-  padding: 5px 8px;
-  border-radius: 3px;
+#pile-empty {
+  padding: 15px;
+  background: #ffffff;
+  border-bottom: 1px solid #cccccc;
+  font-size: 14px;
 }
-#pile-bottom a.view-size-selected {
-  background: #cccccc;
-  color: #333333;
-}
-#pile-bottom ul {
-  clear: both;
-}
-#pile-bottom ul > li {
-  display: inline;
+#pile-empty-search-terms {
+  font-size: 24px;
+  font-weight: bold;
+  color: #b3b3b3;
 }
 /* Pile Speed */
 #pile-speed {
@@ -6447,11 +6505,12 @@ li.compose-attachment img {
   padding: 10px 0 5px 0;
 }
 #thread-title h1 {
-  margin: 0px;
+  margin: 0px 20px;
   padding: 0px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 24px;
   font-weight: bold;
+  line-height: 30px;
 }
 #thread-title ul {
   display: inline-block;
@@ -6491,7 +6550,9 @@ li.compose-attachment img {
   margin: 0px;
 }
 .thread-item-from-avatar {
+  display: inline-block;
   width: 45px;
+  margin-right: 10px;
   display: table-cell;
   padding-top: 15px;
   padding-left: 15px;
@@ -6545,7 +6606,7 @@ li.compose-attachment img {
   text-align: right;
   font-size: 14px;
   font-weight: bold;
-  color: #4d4d4d;
+  color: #b3b3b3;
   line-height: 14px;
 }
 .thread-item-details a.datetime:active,
@@ -6632,12 +6693,13 @@ li.compose-attachment img {
   text-transform: uppercase;
 }
 .thread-item-crypto-error {
-  width: 40%;
+  width: 50%;
   text-align: center;
-  color: #cccccc;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  margin-left: 20px;
+  color: #b3b3b3;
+  margin: 0px auto 20px auto;
+}
+.thread-item-crypto-error p {
+  line-height: 18px;
 }
 .thread-item-crypto-error .icon {
   font-size: 48px;
