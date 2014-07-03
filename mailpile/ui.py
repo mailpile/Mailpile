@@ -314,7 +314,7 @@ class UserInteraction:
 
     # Higher level command-related methods
     def _display_result(self, result):
-        sys.stdout.write(unicode(result).rstrip())
+        sys.stdout.write(unicode(result).encode('utf-8').rstrip())
         sys.stdout.write('\n')
 
     def start_command(self, cmd, args, kwargs):
