@@ -182,6 +182,8 @@ class ChecksummingStreamer(OutputCoprocess):
         if finish:
             self.finish()
         if not self.saved:
+            # close the tempfile since this causes the compose CLI command to fail on windows..
+            self.tempfile.close()
             # 1st save just renames the tempfile
             os.rename(self.tempfile.name, filename)
             self.saved = True
