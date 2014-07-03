@@ -85,8 +85,8 @@
     </div>
     <div class="modal-body clearfix">
       {% for key, private in mailpile("crypto/gpg/keylist/secret").result.iteritems() %}
-        <strong>{{private.uids[1].name}}</strong><br>
-        {{private.uids[1].email}}<br>
+        <strong>{{private.uids[0].name}}</strong><br>
+        {{private.uids[0].email}}<br>
         Key: {{key}}<br>
         Expires: {{private.expiration_date}}<br>
         Length: {{private.keysize}}<br>
