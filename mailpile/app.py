@@ -96,9 +96,7 @@ def Main(args):
         # Create our global config manager and the default (CLI) session
         config = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
         session = Session(config)
-        session.ui = UserInteraction(config)
-        if sys.stdout.isatty():
-            session.ui.term = ANSIColors()
+        cli_ui = session.ui = UserInteraction(config)
         session.main = True
         session.config.load(session)
     except AccessError, e:
@@ -125,9 +123,11 @@ def Main(args):
 
             opts, args = getopt.getopt(args, shorta, longa)
             for opt, arg in opts:
-                Action(session, opt.replace('-', ''), arg.decode('utf-8'))
+                session.ui.display_result(Action(
+                    session, opt.replace('-', ''), arg.decode('utf-8')))
             if args:
-                Action(session, args[0], ' '.join(args[1:]).decode('utf-8'))
+                session.ui.display_result(Action(
+                    session, args[0], ' '.join(args[1:]).decode('utf-8')))
 
         except (getopt.GetoptError, UsageError), e:
             session.error(unicode(e))
@@ -135,6 +135,9 @@ def Main(args):
         if not opts and not args:
             # Create and start the rest of the threads, load the index.
             session.interactive = session.ui.interactive = True
+            if sys.stdout.isatty():
+                session.ui.term = ANSIColors()
+
             config.prepare_workers(session, daemons=True)
             Load(session, '').run(quiet=True)
             session.ui.display_result(HelpSplash(session, 'help', []).run())
