@@ -98,21 +98,9 @@ $(document).on('click', '.message-action-add-contact', function(e) {
 
 
 /* Message - Discover keys */
-$(document).on('click', '.message-action-find-keys', function() {
-  var address = $(this).parent().parent().data('address');
-  Mailpile.find_missing_keys(address);
-});
-
-
-/* Message - Go to contact's profile */
-$(document).on('click', '.message-action-view-profile', function() {
-  window.location.href = '/contacts/view/' + $(this).parent().parent().data('address') + '/';
-});
-
-
-/* Message - Search for messages from this address */
-$(document).on('click', '.message-action-search-messages', function() {
-  window.location.href = '/search/?q=from:' + $(this).parent().parent().data('address');
+$(document).on('click', '.message-action-find-keys', function(e) {
+  e.preventDefault();
+  Mailpile.find_encryption_keys($(this).attr('href'));
 });
 
 
@@ -136,10 +124,15 @@ $(document).on('click', '.message-action-import-key', function() {
 $(document).on('click', '.message-crypto-action', function() {
 
   var mid = $(this).data('mid');
-
   var modal_html = $("#modal-send-public-key").html();
-  $('#modal-full').html(_.template(modal_html, { name: 'User Name', address: 'name@address.org' }));
-  $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+  var modal_data = { name: 'User Name', address: 'name@address.org' };
+  $('#modal-full').html(_.template(modal_html, modal_data));
+  $('#modal-full').modal({
+    backdrop: true,
+    keyboard: true,
+    show: true,
+    remote: false
+  });
 });
 
 
