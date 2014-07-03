@@ -15,6 +15,6 @@
     <% }); %>
   </select>
   <% } else { %>
-  <a onclick="Mailpile.find_missing_keys('<%= address %>');">Search for PGP Keys</a>
+  <a href="#" class="compose-contact-find-keys">{{_("Find Encryption Keys")}}</a>
   <% } %>
 </script>
