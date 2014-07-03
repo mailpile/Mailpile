@@ -1,37 +1,56 @@
 /* Crypto - Try to find keys locally & remotely */
-Mailpile.find_missing_keys = function(address) {
+Mailpile.find_encryption_keys = function(query) {
 
   $("#modal-full").html($("#modal-search-keyservers").html());
 
   // This used to be called Mailpile.API.async_crypto_keylookup() but was undefined method
   // Also had the arg "allowremote": true which seemed to be trigger a bad variable error
-  Mailpile.API.async_crypto_gpg_searchkey({"address": address}, function(data, ev) {
+  Mailpile.API.async_crypto_gpg_searchkey({"q": query}, function(data, ev) {
+
+    console.log('called crypto_gpg_searchkey');
 
     if (data.result) {
-      $("#modal-search-keyservers-results").html("Found " + data.result.length + " keys");
+      var count = _.size(data.result);
+      var total = "1 Key";
+      if (count > 1) {
+        total = count + " Keys";
+      }
+      $('#modal-full').find('.modal-title .title').html('Found ' + total);
+      $('#modal-full').find('.progress-spinner').addClass('hide');
     }
 
     if (data.runningsearch) {
-      $("#modal-search-keyservers-looking").html("Searching " + data.runningsearch + "...");
-    } else {
-      $("#modal-search-keyservers-looking").html();
+      console.log('reuningsearch');
+      var searching_data = { query: query };
+      var searching_html = _.template($("#template-searchkey-running").html(), searching_data);
+      $('#modal-full').find('.modal-body').html(searching_html);
     }
 
     if (ev.flags == "c") {
       $("#modal-search-keyservers-progress").html("");
     }
 
-    $("#keyservers-result-list").html("");
-    for (k in data.result) {
-      var key = data.result[k];
-      $("#keyserver-result-list").append("<tr>"
-           + "<td>" + key.uids[0].name + " &lt;" + key.uids[0].email + "&gt;</td>"
-           + "<td>" + key.fingerprint.split(/(....)/).join(" ") + "</td>"
-           + "<td><input type='checkbox' name='crypto-key'></td>"
-           + "</tr>");
+    // Build HTML Result
+    var items_html = '';
+
+    for (item in data.result) {
+
+      var key = data.result[item];
+      var avatar   = '/static/img/avatar-default.png';
+      var contact  = _.findWhere(Mailpile.instance.addresses, {address: key.uids[0].email});
+
+      if (contact == true && contact.photo !== undefined) {
+        var avatar = contact.photo;
+      }
+
+      var item_data = {avatar: avatar, uid: key.uids[0], fingerprint: key.fingerprint.split(/(....)/).join(' ')};
+      items_html += _.template($('#template-searchkey-result-item').html(), item_data);
     }
+
+    $('#modal-full').find('.modal-body').html('<ul>' + items_html + '</ul>');
   });
 
+  // Show Modal
   $('#modal-full').modal({
     backdrop: true,
     keyboard: true,
@@ -64,48 +83,5 @@ $(document).on('click', '#button-contact-search-keyserver', function(e) {
 
   e.preventDefault();
 
-  // Update Querying UI Feedback
-  $(this).hide();
-  $('#contact-search-keyserver-query').hide();
-  $('#contact-search-keyserver-input label').html($(this).data('searching'));
-  $('#contact-search-keyserver-result').html('<img src="/static/css/select2-spinner.gif">');
-
-  var search_complete = $(this).data('complete');
-  var search_query = $(this).data('query');
-
-  $.ajax({
-    url      : '/api/0/crypto/gpg/searchkey/?q=' + search_query,
-    type     : 'GET',
-    dataType : 'json',
-    success  : function(response) {
-      if (response.status === 'success' && _.isEmpty(response.result) === false) {
-
-        // Update Title
-        $('#contact-search-keyserver-input label').html(_.size(response.result) + ' ' + search_complete + ' ' + search_query);
-
-        // Build Results
-        var items = '';
-        var item_html = $('#template-search-keyserver-item').html();
-
-        $.each(response.result, function(keyid, object) {
-          $.each(object.uids, function(key, value) {
-            items += _.template(item_html, { 
-              keyid: keyid,
-              keysize: object.keysize,
-              keytype: object.keytype,
-              created: object.created,
-              name: value.name, 
-              email: value.email
-            });
-          });
-        });
-
-        // Display Results
-        $('#contact-search-keyserver-result').html('<ul>' + items + '</ul>');
-      }
-      else if (response.status === 'success' && _.isEmpty(response.result) === true) {
-        $('#contact-search-keyserver-input label').html('<p>No keys found</p>');
-      }
-    }
-  });
+  
 });

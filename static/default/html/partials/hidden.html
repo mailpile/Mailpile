@@ -94,19 +94,32 @@
 </script>
 
 
-<!-- GPG Crypto -->
+<!-- Crypto - Results and templates for interacting with keyservers -->
+<script id="template-searchkey-running" type="text/template">
+  {{_("We are searching numerous sources for encryption keys that match the address: ")}} <strong><%= query %></strong>
+</script>
+
+<script id="template-searchkey-result-item" type="text/template">
+<li class="searchkey-result-item">
+  <div class="avatar"><img src="<%= avatar %>"></div>
+  <div class="name">
+    <%= uid.name %>
+    <span><%= uid.email %></%=>
+  </div>
+  <span class="icon-fingerprint"></span>
+  <div class="fingerprint">
+    <%= fingerprint %>
+  </div>
+  <input class="right" type="checkbox" name="crypto-key">
+</li>
+</script>
+
+
 <script id="template-search-keyserver-results" type="text/template">
   <div class="contact-add-search-keyserver">
     <div id="contact-search-keyserver-input"></div>
     <div id="contact-search-keyserver-result"></div>
   </div>
-</script>
-
-
-<script id="template-search-keyserver" type="text/template">
-  <label>{{_("Search for encryption keys matching:")}}</label>
-  <p id="contact-search-keyserver-query"><b><%= query %></b></p>
-  <p><a href="#" class="button-primary" id="button-contact-search-keyserver" data-searching="{{_('Searching keyservers')}}" data-query="<%= query %>" data-complete="{{_('Results for:')}}"><span class="icon-search"></span> {{_("Go")}}</a></p>
 </script>
 
 
