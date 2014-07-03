@@ -507,7 +507,7 @@ class GnuPG:
         #       (This is a better workaround than doing an additional 
         #       --list-keys and trying to aggregate it though...)
         #
-        retvals = self.run(["--list-secret-keys", ".", "--fingerprint"])
+        retvals = self.run(["--list-secret-keys", "--fingerprint"])
         return self.parse_keylist(retvals[1]["stdout"])
 
     def import_keys(self, key_data=None):
