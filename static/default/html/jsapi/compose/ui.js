@@ -40,6 +40,7 @@ Mailpile.compose_render_signature = function(status) {
 
 /* Compose - Render crypto "encryption" of a message */
 Mailpile.compose_render_encryption = function(status) {
+    console.log("Status: le " + status);
     if (status == 'encrypt') {
         $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-green');
         $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_encrypt'));
@@ -54,7 +55,7 @@ Mailpile.compose_render_encryption = function(status) {
         $('.compose-crypto-encryption span.text').html($('.compose-crypto-encryption').data('crypto_cannot_encrypt'));
         $('.compose-crypto-encryption').removeClass('none encrypted error').addClass('cannot');
 
-    } else if (status === 'none') {
+    } else if (status === 'none' || status == '') {
         $('.compose-crypto-encryption').data('crypto_color', 'crypto-color-gray');
         $('.compose-crypto-encryption').attr('title', $('.compose-crypto-encryption').data('crypto_title_none'));
         $('.compose-crypto-encryption span.icon').removeClass('icon-lock-closed').addClass('icon-lock-open');
