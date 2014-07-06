@@ -78,7 +78,7 @@ Mailpile = {
     theme: {}
 };
 
-var favicon = new Favico({animation:'popFade'});
+//var favicon = new Favico({animation:'popFade'});
 
 
 /* **[ Mailpile - JSAPI ]******************************************************
