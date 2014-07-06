@@ -25,13 +25,12 @@
       {% endif %}
       <li role="presentation">
         <a role="menuitem" tabindex="-1" href="/search/?q=from:{{from.address}}">
-          <span class="icon-search"></span>{{_("Search Messages")}}
+          <span class="icon-search"></span> {{_("Search Messages")}}
         </a>
       </li>
       <li role="presentation">
         <a class="message-action-find-keys" role="menuitem" tabindex="-1" href="{{from.address}}">
-          <span class="icon-key"></span>
-          {% if from.flags.secure %}{{_("Show Encryption Keys")}}{% else %}{{_("Find Encryption Keys")}}{% endif %}
+          <span class="icon-key"></span> {% if from.flags.secure %}{{_("Show Encryption Keys")}}{% else %}{{_("Find Encryption Keys")}}{% endif %}
         </a>
       </li>
     </ul>
