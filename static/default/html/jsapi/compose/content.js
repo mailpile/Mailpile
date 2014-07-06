@@ -348,18 +348,20 @@ $(document).on('click', '.pick-send-datetime', function(e) {
 $(document).on('click', '.compose-show-details', function(e) {
   e.preventDefault();
   var mid = $(this).data('mid');
-  var old_message = $(this).html();
   var new_message = $(this).data('message');
   if ($('#compose-details-' + mid).hasClass('hide')) {
+    var old_message = $(this).html();
     $('#compose-details-' + mid).slideDown('fast').removeClass('hide');
     $('#compose-to-summary-' + mid).hide();
-    $(this).html('<span class="icon-eye"></span> ' + new_message);
+    $(this).html('<span class="icon-eye"></span> <span class="text">' + new_message + '</span>');
+    $(this).data('message', old_message).attr('data-message', old_message);
   } else {
+    var old_message = $(this).find('.text').html();
     $('#compose-details-' + mid).slideUp('fast').addClass('hide');
     $('#compose-to-summary-' + mid).show();
     $(this).html(new_message);
+    $(this).data('message', old_message).attr('data-message', old_message);
   }
-  $(this).data('message', old_message).attr('data-message', old_message);
 });
 
 
