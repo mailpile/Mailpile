@@ -11,12 +11,29 @@
     </div>
     <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime" data-address="{{from.address}}" data-name="{{contact_name(from)}}">
       {% if not from.flags.contact and not from.flags.profile: %}
-      <li role="presentation"><a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#"><span class="icon-plus"></span> Add Contact</a></li>
+      <li role="presentation">
+        <a class="message-action-add-contact" role="menuitem" tabindex="-1" href="#">
+          <span class="icon-plus"></span> {{_("Add Contact")}}
+        </a>
+      </li>
       {% else %}
-      <li role="presentation"><a role="menuitem" tabindex="-1" href="/contacts/view/{{from.address}}/"><span class="icon-user"></span> View Profile</a></li>
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" href="/contacts/view/{{from.address}}/">
+          <span class="icon-user"></span> {{_("View Profile")}}
+        </a>
+      </li>
       {% endif %}
-      <li role="presentation"><a role="menuitem" tabindex="-1" href="/search/?q=from:{{from.address}}"><span class="icon-search"></span> Search Messages</a></li>
-      <li role="presentation"><a class="message-action-find-keys" role="menuitem" tabindex="-1" href="{{from.address}}"><span class="icon-key"></span> Find Encryption Keys</a></li>
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" href="/search/?q=from:{{from.address}}">
+          <span class="icon-search"></span>{{_("Search Messages")}}
+        </a>
+      </li>
+      <li role="presentation">
+        <a class="message-action-find-keys" role="menuitem" tabindex="-1" href="{{from.address}}">
+          <span class="icon-key"></span>
+          {% if from.flags.secure %}{{_("Show Encryption Keys")}}{% else %}{{_("Find Encryption Keys")}}{% endif %}
+        </a>
+      </li>
     </ul>
   </div>
   <div class="thread-item-details">
