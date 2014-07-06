@@ -65,6 +65,7 @@
         <label id="compose-message-autosaving-{{mid}}" class="has-mid" data-mid="{{mid}}" data-autosave_msg="{{_("autosaving...")}}" data-autosave_error_msg="{{_("error autosaving")}}"></label>
       </li>
     </ul>
+    <a class="compose-message-trash right has-mid" data-mid="{{mid}}" href="#" title="{{_("Move Draft to Trash")}}"><span class="icon-trash"></span> Trash</a>
     {% if command == "view" %}
     <label class="compose-apply-quote right"><input class="compose-apply-quote has-mid" data-mid="{{mid}}" type="checkbox" checked="checked"> Quote</label>
     {% endif %}
@@ -90,6 +91,7 @@
   </div>
   <div class="compose-actions clearfix">
     <div class="dropdown left">
+      <!-- 
       <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="icon icon-archive"></span> Send <span id="reply-datetime-display">Now</span></a>
       <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="reply-datetime">
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="now" href="#">Now</a></li>
@@ -104,6 +106,7 @@
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="1209600" href="#">2 weeks</a></li>
         <li role="presentation"><a role="menuitem" tabindex="-1" class="pick-send-datetime" data-datetime="2592000" href="#">1 month</a></li>
       </ul>
+    -->
     </div>
     <div class="compose-buttons right has-mid" data-mid="{{mid}}">
       <select class="compose-from" name="from">

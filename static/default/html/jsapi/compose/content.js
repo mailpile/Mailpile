@@ -496,6 +496,27 @@ var uploader = function(settings) {
 };
 
 
+/* Compose - Delete message that's in a composer */
+$(document).on('click', '.compose-message-trash', function() {
+  var mid = $(this).data('mid');
+  //Mailpile.API.message_unthread({ mid: mid }, function(response) {
+  $.ajax({
+    url      : '/api/0/message/unthread/',
+    type     : 'POST',
+    data     : { mid: mid },
+    success  : function(response) {
+      Mailpile.API.tag({mid: mid, add: 'trash', del: ['drafts', 'blank']}, function(response_2) {
+        if (response_2.status == 'success') {
+          $('#form-compose-' + mid).slideUp('fast');
+        } else {
+          Mailpile.notification(response_2.status, response_2.message);        
+        }
+      });
+    }
+  });
+});
+
+
 /* Compose - Autogrow composer boxes */
 $(document).on('focus', '.compose-text', function() {
   $(this).autosize();

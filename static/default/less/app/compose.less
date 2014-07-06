@@ -110,6 +110,7 @@
     font-size: 14px;
     font-weight: normal;
     line-height: 14px;
+    color: @gray;
   }
 
   .compose-options-crypto {
@@ -162,6 +163,13 @@
    color: @red;
   }
 
+  .compose-options-right {
+    height: 
+    border: 1px solid red;
+    display: table-cell;
+    vertical-align: text-top;
+  }
+
   .compose-options ul {
     display: inline-block;
     margin-left: 10px;
@@ -174,10 +182,17 @@
     .compose-options-size();
   }
 
-  .compose-options ul li a {
+  .compose-options ul li a,
+  .compose-options label.right,
+  .compose-options a.right {
     font-weight: normal;
-    color: @gray;
     .compose-options-size();
+  }
+
+  .compose-options ul li a:hover,
+  .compose-options label.right:hover,
+  .compose-options a.right:hover {
+    color: @grayDark;
   }
 
   .compose-options label.right {
@@ -187,9 +202,14 @@
     padding-bottom: 0px;
     margin-bottom: 0px;
     cursor: pointer;
-    .compose-options-size();
     font-style: italic;
-    color: @grayDark;
+  }
+
+  .compose-options a.right {
+    position: relative;
+    top: 9px;
+    right: 5px;
+    margin-left: 10px;
   }
 
   .compose-to-summary {
