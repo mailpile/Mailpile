@@ -1,4 +1,65 @@
-/* Crypto - Results from searchkey command */
+/* Modals */
+
+  .modal-body-light-gray {
+    background: @grayLight;
+  }
+
+
+/* Modal - Tag picker */
+
+  table.modal-tag-picker-items {
+    width: 100%;
+    background: @white;
+    border-top: 1px solid @grayMid;
+    border-right: 1px solid @grayMid;
+    border-left: 1px solid @grayMid;
+    border-radius: @base-border-radius;
+  }
+
+  tr.modal-tag-picker-header,
+  tr.modal-tag-picker-item {
+    width: 100%;
+  }
+
+  tr.modal-tag-picker-header:hover {
+    cursor: pointer;
+    background: @colorExpand;
+  }
+
+  tr.modal-tag-picker-header td {
+    border-bottom: 1px solid @grayMid;
+    padding: (@base-padding / 2);
+    font-style: italic;
+    color: @grayDark;
+    padding-left: 10px;
+  }
+
+  tr.modal-tag-picker-item.archive,
+  tr.modal-tag-picker-item.tag {
+    display: none;
+  }
+
+  tr.modal-tag-picker-item td {
+    border-bottom: 1px solid @grayMid;
+    padding: (@base-padding / 2);
+  }
+
+  tr.modal-tag-picker-item td.tag span.text {
+    font-weight: bold;
+  }
+
+  tr.modal-tag-picker-item td.selection {
+    color: @gray;
+    font-style: italic;
+    padding-right: 0px;
+  }
+
+  tr.modal-tag-picker-item td.checkbox {
+    width: 30px;
+  }
+
+
+/* Modal - Results from crypto searchkey command */
 
   .searchkey-result-item {
     list-style-type: none;

@@ -138,3 +138,12 @@
 <script id="template-search-pile-tags-link" type="text/template">
   <a class="pile-message-tag" id="pile-message-tag-<%= mid %>-<%= tid %>" href="/thread/=<%= mid %>/" data-tag_name="<%= name %>" data-tag_url="/in/<%= slug %>/" data-tag_tid="<%= tid %>"><%= name %></a>
 </script>
+
+
+<script id="template-modal-tag-picker-item" type="text/template">
+  <tr class="modal-tag-picker-item <%= display %>" data-tid="<%= tid %>">
+    <td class="tag text-left color-<%= label_color %>"><span class="<%= icon %>"></span> <span class="text"><%= name %></span></td>
+    <td class="selection text-right">6 selected</td>
+    <td class="checkbox text-center"><input type="checkbox"></td>
+  </tr>
+</script>
