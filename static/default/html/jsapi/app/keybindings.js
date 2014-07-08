@@ -44,8 +44,8 @@ Mailpile.keybinding_target =  function(direction) {
 
   this.search_target = next;
 
-  $('#pile-results tr').eq(current).removeClass('result-hover').find('td.draggable');
-  $('#pile-results tr').eq(next).addClass('result-hover').find('td.draggable');
+  $('#pile-results tr').eq(current).removeClass('is-target result-hover').find('td.draggable');
+  $('#pile-results tr').eq(next).addClass('is-target result-hover').find('td.draggable');
 };
 
 

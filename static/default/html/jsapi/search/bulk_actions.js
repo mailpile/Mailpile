@@ -33,6 +33,15 @@ Mailpile.bulk_action_unread = function() {
 };
 
 
+Mailpile.bulk_action_select_target = function() {
+  var target = this.search_target;
+  var mid = $('#pile-results tr').eq(target).data('mid');
+  Mailpile.bulk_cache_add('messages_cache', mid);
+  $('#pile-message-' + mid).addClass('result-on').find('input[type=checkbox]').attr('checked','checked');
+  return true;
+};
+
+
 Mailpile.bulk_action_select_all = function() {
   var checkboxes = $('#pile-results input[type=checkbox]');
   $.each(checkboxes, function() {      
