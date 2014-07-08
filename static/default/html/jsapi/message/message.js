@@ -58,7 +58,10 @@ $(document).on('click', '.message-action-unthread', function() {
     data     : { mid: mid },
     success  : function(response) {
       if (response.status === 'success') {
-        window.location.href = Mailpile.urls.message_sent + mid + '/';
+        var notification_data = { url: Mailpile.urls.message_sent + mid + '/' };
+        $('#message-' + mid).removeClass('thread-snippet thread-message')
+                            .addClass('thread-notification')
+                            .html(_.template($('#template-thread-notification-unthreaded').html(), notification_data));
       } else {
         Mailpile.notification(response.status, response.message);
       }
