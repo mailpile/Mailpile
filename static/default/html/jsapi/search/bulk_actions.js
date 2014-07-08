@@ -38,6 +38,7 @@ Mailpile.bulk_action_select_target = function() {
   var mid = $('#pile-results tr').eq(target).data('mid');
   Mailpile.bulk_cache_add('messages_cache', mid);
   $('#pile-message-' + mid).addClass('result-on').find('input[type=checkbox]').attr('checked','checked');
+  this.bulk_actions_update_ui();
   return true;
 };
 
