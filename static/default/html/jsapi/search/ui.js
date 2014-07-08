@@ -65,6 +65,45 @@ Mailpile.update_search = function(ev) {
     });
 };
 
+
+Mailpile.render_modal_tags = function() {
+  if (Mailpile.messages_cache.length) {
+
+    // Open Modal with selection options
+    Mailpile.API.tags({}, function(data) {
+
+      var template_html = $('#template-modal-tag-picker-item').html();
+      var priority_html = '';
+      var tags_html     = '';
+      var archive_html  = '';
+
+      $.each(data.result.tags, function(key, value) {
+        if (value.display === 'priority') {
+          priority_data = value;
+          priority_html += _.template(template_html, priority_data);
+        }
+        else if (value.display === 'tag') {
+          tag_data = value;
+          tags_html += _.template($('#template-modal-tag-picker-item').html(), tag_data);
+        }
+        else if (value.display === 'archive') {
+          archive_data = value;
+          archive_html += _.template($('#template-modal-tag-picker-item').html(), archive_data);
+        }
+      });
+
+      var modal_html = $("#modal-tag-picker").html();
+      $('#modal-full').html(_.template(modal_html, { priority: priority_html, tags: tags_html, archive: archive_html }));
+      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
+    });
+ 
+  } else {
+    // FIXME: Needs more internationalization support
+    alert('No Messages Selected');
+  }
+};
+
+
 $().ready(function() {
     $("#pile-newmessages-notification").click(Mailpile.update_search);
     EventLog.subscribe(".commands.Rescan-DISABLED", function(ev) {

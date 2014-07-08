@@ -63,38 +63,6 @@ Mailpile.tag_update = function(tid, setting, value, complete) {
 };
 
 
-Mailpile.render_modal_tags = function() {
-  if (Mailpile.messages_cache.length) {
-
-    // Open Modal with selection options
-    Mailpile.API.tags({}, function(data) {
-
-      console.log('callback fired');
-
-      var tags_html = '';
-      var archive_html = '';
-  
-      $.each(data.result.tags, function(key, value) {
-        if (value.display === 'tag') {
-          tags_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
-        }
-        else if (value.display === 'archive') {
-          archive_html += '<li class="checkbox-item-picker" data-tid="' + value.tid + '" data-slug="' + value.slug + '"><input type="checkbox"> ' + value.name + '</li>';
-        }
-      });
-
-      var modal_html = $("#modal-tag-picker").html();
-      $('#modal-full').html(_.template(modal_html, { tags: tags_html, archive: archive_html }));
-      $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
-    });
- 
-  } else {
-    // FIXME: Needs more internationalization support
-    alert('No Messages Selected');
-  }
-};
-
-
 $(document).on('click', '#button-tag-change-icon', function() {
 
   var icons_html = '';
