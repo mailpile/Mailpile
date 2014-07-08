@@ -2,12 +2,20 @@ import os
 import hashlib
 import random
 import sys
+import re
 import threading
 from datetime import datetime
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 
+from mailpile.util import md5_hex
 from mailpile.util import sha512b64 as genkey
+
+
+LEN_MD5 = len(md5_hex('testing'))
+MD5_SUM_FORMAT = 'md5sum: %s'
+MD5_SUM_PLACEHOLDER = MD5_SUM_FORMAT % ('0' * LEN_MD5)
+MD5_SUM_RE = re.compile('(?m)^' + MD5_SUM_FORMAT % (r'[^\n]+',))
 
 
 class IOFilter(threading.Thread):
@@ -115,8 +123,11 @@ class OutputCoprocess(IOCoprocess):
                       bufsize=0, close_fds=True)
          return proc, proc.stdin
 
-    def write(self, *args):
-        return self._fd.write(*args)
+    def _write_filter(self, data):
+        return data
+
+    def write(self, data, *args, **kwargs):
+        return self._fd.write(self._write_filter(data), *args, **kwargs)
 
 
 class InputCoprocess(IOCoprocess):
@@ -128,18 +139,20 @@ class InputCoprocess(IOCoprocess):
                      bufsize=0, close_fds=True)
         return proc, proc.stdout
 
+    def _read_filter(self, data):
+        return data
+
     def __iter__(self, *args):
-        return self._fd.__iter__(*args)
+        return (self._read_filter(d) for d in self._fd.__iter__(*args))
 
     def readline(self, *args):
-        return self._fd.readline(*args)
+        return self._read_filter(self._fd.readline(*args))
 
     def readlines(self, *args):
-        return self._fd.readlines(*args)
+        return [self._read_filter(line) for line in self.readlines(*args)]
 
     def read(self, *args):
-        return self._fd.read(*args)
-
+        return self._read_filter(self._fd.read(*args))
 
 
 class ChecksummingStreamer(OutputCoprocess):
@@ -148,17 +161,21 @@ class ChecksummingStreamer(OutputCoprocess):
     can then be read back or linked to a final location.
     """
     def __init__(self, dir=None):
-        self.tempfile = NamedTemporaryFile(dir=dir, delete=False)
+        self.tempfile, self.temppath = self._mk_tempfile_and_path(dir)
 
         self.outer_md5sum = None
         self.outer_md5 = hashlib.md5()
-        self.md5filter = IOFilter(self.tempfile, self._outer_md5_callback)
+        self.md5filter = IOFilter(self.tempfile, self._md5_callback)
         self.fd = self.md5filter.writer()
 
         self.saved = False
         self.finished = False
         self._write_preamble()
         OutputCoprocess.__init__(self, self._mk_command(), self.fd)
+
+    def _mk_tempfile_and_path(self, _dir):
+        ntf = NamedTemporaryFile(dir=_dir, delete=False)
+        return ntf, ntf.name
 
     def _mk_command(self):
         return None
@@ -183,7 +200,7 @@ class ChecksummingStreamer(OutputCoprocess):
             self.finish()
         if not self.saved:
             # 1st save just renames the tempfile
-            os.rename(self.tempfile.name, filename)
+            os.rename(self.temppath, filename)
             self.saved = True
         else:
             # 2nd save creates a copy
@@ -197,7 +214,7 @@ class ChecksummingStreamer(OutputCoprocess):
             ofd.write(data)
             data = self.tempfile.read(4096)
 
-    def _outer_md5_callback(self, data):
+    def _md5_callback(self, data):
         if data is None:
             # EOF...
             self.outer_md5sum = self.outer_md5.hexdigest()
@@ -215,13 +232,14 @@ class ChecksummingStreamer(OutputCoprocess):
         pass
 
 
-class EncryptingStreamer(ChecksummingStreamer):
+class EncryptingDelimitedStreamer(ChecksummingStreamer):
     """
     This class creates a coprocess for encrypting data. The data will
     be streamed to a named temporary file on disk, which can then be
     read back or linked to a final location.
     """
     BEGIN_DATA = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
+    EXTRA_HEADERS = ""
     END_DATA = "-----END MAILPILE ENCRYPTED DATA-----\n"
 
     # We would prefer AES-256-GCM, but unfortunately openssl does not
@@ -230,16 +248,56 @@ class EncryptingStreamer(ChecksummingStreamer):
 
     def __init__(self, key, dir=None, cipher=None):
         self.cipher = cipher or self.DEFAULT_CIPHER
-        self.nonce, self.key = self._mutate_key(key)
+        self.nonce, self.key = self._nonce_and_mutated_key(key)
         ChecksummingStreamer.__init__(self, dir=dir)
+
+        self.inner_md5sum = None
+        self.inner_md5 = hashlib.md5()
+        self.inner_md5.update(self.key)
+        self.inner_md5.update(self.nonce or '')
+
         self._send_key()
 
-    def _mutate_key(self, key):
+    def _write_filter(self, data):
+        if data:
+            self.inner_md5.update(data)
+        return data
+
+    def finish(self, *args, **kwargs):
+        if not self.finished:
+            rv = ChecksummingStreamer.finish(self, *args, **kwargs)
+            self._write_inner_md5sum()
+            return rv
+        else:
+            return ChecksummingStreamer.finish(self, *args, **kwargs)
+
+    def _write_inner_md5sum(self):
+        if not self.inner_md5sum:
+            self.inner_md5sum = self.inner_md5.hexdigest()
+            pos = self.tempfile.tell()
+            self.tempfile.seek(0, 0)
+            old_data = self.tempfile.read(4096)
+
+            md5_sum_header = MD5_SUM_FORMAT % (self.inner_md5sum, )
+            new_data = re.sub(MD5_SUM_RE, md5_sum_header, old_data)
+            if old_data != new_data:
+                self.tempfile.seek(0, 0)
+                self.tempfile.write(new_data)
+
+            self.tempfile.seek(pos, 0)
+
+    def _nonce_and_mutated_key(self, key):
+        #
+        # Note: This nonce is NOT generated using strong randomness.
+        #       That is not the point and should not matter.
+        #
         nonce = genkey(str(random.getrandbits(512)))[:32].strip()
         return nonce, genkey(key, nonce)[:32].strip()
 
     def _send_key(self):
-        self.write('%s\n' % self.key)
+        # We talk directly to the underlying FD, to avoid corrupting the
+        # inner MD5 sum (calculated using the _write_filter() above).
+        self._fd.write('%s\n' % self.key)
 
     def _mk_command(self):
         return ["openssl", "enc", "-e", "-a", "-%s" % self.cipher,
@@ -248,14 +306,41 @@ class EncryptingStreamer(ChecksummingStreamer):
     def _write_preamble(self):
         self.fd.write(self.BEGIN_DATA)
         self.fd.write('cipher: %s\n' % self.cipher)
-        self.fd.write('nonce: %s\n' % self.nonce)
+        if self.nonce:
+            self.fd.write('nonce: %s\n' % self.nonce)
+        self.fd.write(MD5_SUM_PLACEHOLDER + '\n')
+        if self.EXTRA_HEADERS:
+            self.fd.write(self.EXTRA_HEADERS)
         self.fd.write('\n')
         self.fd.flush()
 
     def _write_postamble(self):
-        self.fd.write('\n')
-        self.fd.write(self.END_DATA)
+        if self.END_DATA:
+            self.fd.write('\n')
+            self.fd.write(self.END_DATA)
         self.fd.flush()
+
+
+class EncryptingUndelimitedStreamer(EncryptingDelimitedStreamer):
+    """
+    This class creates a coprocess for encrypting data. The data will
+    be streamed to a named temporary file on disk, which can then be
+    read back or linked to a final location.
+    """
+    BEGIN_DATA = "X-Mailpile-Encrypted-Data: v1\n"
+    EXTRA_HEADERS = ("From: Mailpile <encrypted@mailpile.is>\n"
+                     "Subject: Mailpile encrypted data\n")
+    END_DATA = ""
+
+
+def EncryptingStreamer(*args, **kwargs):
+    delimited = kwargs.get('delimited', False)
+    if 'delimited' in kwargs:
+        del kwargs['delimited']
+    if delimited:
+        return EncryptingDelimitedStreamer(*args, **kwargs)
+    else:
+        return EncryptingUndelimitedStreamer(*args, **kwargs)
 
 
 class DecryptingStreamer(InputCoprocess):
@@ -265,20 +350,23 @@ class DecryptingStreamer(InputCoprocess):
     BEGIN_PGP = "-----BEGIN PGP MESSAGE-----"
     END_PGP = "-----END PGP MESSAGE-----"
     BEGIN_MED = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
+    BEGIN_MED2 = "X-Mailpile-Encrypted-Data: "
     END_MED = "-----END MAILPILE ENCRYPTED DATA-----\n"
     DEFAULT_CIPHER = "aes-256-cbc"
 
     STATE_BEGIN = 0
     STATE_HEADER = 1
     STATE_DATA = 2
-    STATE_END = 3
-    STATE_RAW_DATA = 4
-    STATE_PGP_DATA = 5
+    STATE_ONLY_DATA = 3
+    STATE_END = 4
+    STATE_RAW_DATA = 5
+    STATE_PGP_DATA = 6
     STATE_ERROR = -1
 
     @classmethod
     def StartEncrypted(cls, line):
         return (line.startswith(cls.BEGIN_MED[:-1]) or
+                line.startswith(cls.BEGIN_MED2) or
                 line.startswith(cls.BEGIN_PGP[:-1]))
 
     @classmethod
@@ -288,7 +376,9 @@ class DecryptingStreamer(InputCoprocess):
 
     def __init__(self, key, fd, md5sum=None, cipher=None):
         self.expected_outer_md5sum = md5sum
+        self.expected_inner_md5sum = None
         self.outer_md5 = hashlib.md5()
+        self.inner_md5 = hashlib.md5()
         self.data_filter = self._mk_data_filter(fd, self._read_data)
         self.cipher = self.DEFAULT_CIPHER
         self.state = self.STATE_BEGIN
@@ -306,12 +396,29 @@ class DecryptingStreamer(InputCoprocess):
         InputCoprocess.__init__(self, self._mk_command(), self.read_fd)
         self.startup_lock = None
 
-    def verify(self):
+    def _read_filter(self, data):
+        if data:
+            self.inner_md5.update(data)
+        return data
+
+    def verify(self, testing=False):
         if self.close() != 0:
+            if testing:
+                print 'Close returned nonzero'
             return False
-        if not self.expected_outer_md5sum:
+        if (self.expected_inner_md5sum and
+                self.expected_inner_md5sum != self.inner_md5.hexdigest()):
+            if testing:
+                print 'Inner %s != %s' % (self.expected_inner_md5sum,
+                                          self.inner_md5.hexdigest())
             return False
-        return (self.expected_outer_md5sum == self.outer_md5.hexdigest())
+        if (self.expected_outer_md5sum and
+                self.expected_outer_md5sum != self.outer_md5.hexdigest()):
+            if testing:
+                print 'Outer %s != %s' % (self.expected_outer_md5sum,
+                                          self.outer_md5.hexdigest())
+            return False
+        return True
 
     def _mk_data_filter(self, fd, cb):
         return IOFilter(fd, cb)
@@ -326,7 +433,12 @@ class DecryptingStreamer(InputCoprocess):
             return ''
 
         if self.expected_outer_md5sum:
-            self.outer_md5.update(data.replace('\r', '').replace('\n', '\r\n'))
+            if self.state in (self.STATE_BEGIN, self.STATE_HEADER):
+                sum_data = re.sub(MD5_SUM_RE, MD5_SUM_PLACEHOLDER, data)
+            else:
+                sum_data = data
+            sum_data = sum_data.replace('\r', '').replace('\n', '\r\n')
+            self.outer_md5.update(sum_data)
 
         if self.state in (self.STATE_RAW_DATA, self.STATE_PGP_DATA):
             return data
@@ -338,8 +450,12 @@ class DecryptingStreamer(InputCoprocess):
                 self.state = self.STATE_PGP_DATA
                 self.startup_lock.release()
                 return self.buffered
-            if len(self.buffered) >= len(self.BEGIN_MED):
-                if not self.buffered.startswith(self.BEGIN_MED):
+            # Note: The max() check is OK, because both formats add more
+            #       data which covers the difference.
+            if len(self.buffered) >= max(len(self.BEGIN_MED),
+                                         len(self.BEGIN_MED2)):
+                if not (self.buffered.startswith(self.BEGIN_MED) or
+                        self.buffered.startswith(self.BEGIN_MED2)):
                     self.state = self.STATE_RAW_DATA
                     self.startup_lock.release()
                     return self.buffered
@@ -358,12 +474,23 @@ class DecryptingStreamer(InputCoprocess):
 
         if self.state == self.STATE_HEADER:
             headers = dict([l.split(': ', 1) for l in headlines[1:]])
-            self.cipher = headers.get('cipher', self.cipher)
-            nonce = headers.get('nonce')
+            nonce = headers.get('nonce', '')
             mutated = self._mutate_key(self.key, nonce)
+
+            self.cipher = headers.get('cipher', self.cipher)
+            self.expected_inner_md5sum = headers.get('md5sum')
+            self.inner_md5.update(mutated)
+            self.inner_md5.update(nonce)
+
             data = '\n'.join((mutated, data))
-            self.state = self.STATE_DATA
+            if self.buffered.startswith(self.BEGIN_MED2):
+                self.state = self.STATE_ONLY_DATA
+            else:
+                self.state = self.STATE_DATA
             self.startup_lock.release()
+
+        if self.state == self.STATE_ONLY_DATA:
+            return data
 
         if self.state == self.STATE_DATA:
             if '\n\n-' in data:
@@ -446,28 +573,32 @@ if __name__ == "__main__":
      assert(data == 'Hello world!')
      assert(bc[0] == 12)
 
-     # Encryption test
-     data = 'Hello world! This is great!\nHooray, lalalalla!\n'
-     es = EncryptingStreamer('test key', dir='/tmp')
-     es.write(data)
-     es.finish()
-     fn = '/tmp/%s.aes' % es.outer_md5sum
-     open(fn, 'wb').write('junk')  # Make sure overwriting works
-     es.save(fn)
-
-     # Decryption test!
-     ds = DecryptingStreamer('test key', open(fn, 'rb'),
-                             md5sum=es.outer_md5sum)
-     new_data = ds.read()
-     assert(ds.verify())
-     assert(data == new_data)
 
      # Null decryption test, md5 verification only
      ds = DecryptingStreamer('test key', open('/tmp/iofilter.tmp', 'rb'),
                              md5sum='86fb269d190d2c85f6e0468ceca42a20')
      assert('Hello world!' == ds.read())
-     assert(ds.verify())
+     assert(ds.verify(testing=True))
 
-     # Cleanup
+     # Encryption test
+     for delim in (True, False):
+         data = 'Hello world! This is great!\nHooray, lalalalla!\n'
+         es = EncryptingStreamer('test key', dir='/tmp', delimited=delim)
+         es.write(data)
+         es.finish()
+         fn = '/tmp/%s.aes' % es.outer_md5sum
+         open(fn, 'wb').write('junk')  # Make sure overwriting works
+         es.save(fn)
+
+         # Decryption test!
+         ds = DecryptingStreamer('test key', open(fn, 'rb'),
+                                 md5sum=es.outer_md5sum)
+         new_data = ds.read()
+         assert(ds.close() == 0)
+         assert(data == new_data)
+         assert(ds.verify(testing=True))
+
+
+         # Cleanup
+         os.unlink(fn)
      os.unlink('/tmp/iofilter.tmp')
-     os.unlink(fn)

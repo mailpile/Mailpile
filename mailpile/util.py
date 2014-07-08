@@ -333,8 +333,6 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
 def decrypt_and_parse_lines(fd, parser, config,
                             newlines=False, decode='utf-8'):
     import mailpile.crypto.streamer as cstrm
-    begin_sym = cstrm.PartialDecryptingStreamer.BEGIN_MED[:-1]
-    begin_pgp = cstrm.PartialDecryptingStreamer.BEGIN_PGP[:-1]
     symmetric_key = config and config.prefs.obfuscate_index or 'missing'
 
     if not newlines:

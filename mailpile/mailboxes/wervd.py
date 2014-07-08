@@ -74,7 +74,8 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
         try:
             if key:
                 es = EncryptingStreamer(key,
-                                        dir=os.path.join(self._path, 'tmp'))
+                                        dir=os.path.join(self._path, 'tmp'),
+                                        delimited=False)
             else:
                 es = ChecksummingStreamer(dir=os.path.join(self._path, 'tmp'))
             self._dump_message(message, es)
