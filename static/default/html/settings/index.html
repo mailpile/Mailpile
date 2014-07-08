@@ -16,13 +16,13 @@
 {% macro render_form_settings_route(rid, route) -%}
   <input type="hidden" name="route_id" value="{{rid}}"/>
   <label>{{_("Route name")}}</label>
-  <input type="text" name="name" value="{{route.name}}" placeholder="{{_("my delivery route")}}" id="route-add-name"/>
+  <input type="text" name="name" value="{{route.name or ""}}" placeholder="{{_("my delivery route")}}" id="route-add-name"/>
   <label>{{_("Login")}}</label>
-  <input type="text" name="username" value="{{route.username}}" placeholder="{{_("username@smtp.mailserver.org")}}" autocorrect="off" autocapitalize="off" id="route-add-username"/>
+  <input type="text" name="username" value="{{route.username or ""}}" placeholder="{{_("username@smtp.mailserver.org")}}" autocorrect="off" autocapitalize="off" id="route-add-username"/>
   <label>{{_("Password")}}</label>
-  <input type="password" name="password" value="{{route.password}}" placeholder="1234567890" autocorrect="off" autocapitalize="off" id="route-add-password"/>
+  <input type="password" name="password" value="{{route.password or ""}}" placeholder="1234567890" autocorrect="off" autocapitalize="off" id="route-add-password"/>
   <label>{{_("Server")}}</label>
-  <input type="text" name="host" value="{{route.host}}" placeholder="{{_("smtp.mailserver.org")}}" id="route-add-server"/>
+  <input type="text" name="host" value="{{route.host or ""}}" placeholder="{{_("smtp.mailserver.org")}}" id="route-add-server"/>
   <label>{{_("Port")}}</label>
   <select name="port" id="route-add-port">
     <option {% if route.port == 25 %}selected {% endif %}value="25">25</option>
