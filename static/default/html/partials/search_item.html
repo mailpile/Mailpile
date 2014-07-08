@@ -44,7 +44,12 @@
     {% endfor %}
     {% endif %}
     </span>
-    <a class="item-subject" href="{{url}}">{% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
+    <a class="item-subject" href="{{url}}">
+    {% if metadata.crypto.encryption in ('decrypted', 'mixed-decrypted') %}
+    <span class="icon-lock-closed color-08-green"></span> 
+    {% elif metadata.crypto.encryption in ('error', 'mixed-error', 'missingkey', 'mixed-missingkey') %}
+    <span class="icon-lock-closed color-12-red"></span> 
+    {% endif %}{% if metadata.subject %}{{ metadata.subject|nice_subject }}{% else %}({{_("No Subject")}}){% endif %}</a>
   </td>
   <td class="date">
     <a href="/search/dates:{{metadata.date}}/">{{metadata.timestamp|elapsed_datetime}}</a>
