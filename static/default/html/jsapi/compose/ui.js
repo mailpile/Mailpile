@@ -1,7 +1,7 @@
 /* Compose - Render crypto "signature" of a message */
 Mailpile.compose_render_signature = function(status) {
     if (status === 'sign') {
-        $('.compose-crypto-signature').data('crypto_color', 'crypto-color-blue');  
+        $('.compose-crypto-signature').data('crypto_color', 'crypto-color-green');  
         $('.compose-crypto-signature').attr('title', $('.compose-crypto-signature').data('crypto_title_signed'));
         $('.compose-crypto-signature span.icon').removeClass('icon-signature-none').addClass('icon-signature-verified');
         $('.compose-crypto-signature span.text').html($('.compose-crypto-signature').data('crypto_signed'));
