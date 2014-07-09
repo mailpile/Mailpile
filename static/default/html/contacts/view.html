@@ -113,7 +113,7 @@
       {% set conversation = conversations.data.metadata[mid] %}
       {% set thread_count = conversations.data.threads[thread_mid]|length + 1 %}
       <li>
-        <a href="/thread/={{ mid }}/">{{ nice_subject(conversation.subject) }}&nbsp;&nbsp;
+        <a href="/thread/={{ mid }}/">{{ nice_subject(conversation) }}&nbsp;&nbsp;
           <span class="contact-detail-light"><span class="icon-inbox"></span> {{ thread_count }} Messages &nbsp; <span class="icon-social"></span> {{ conversation.to_aids|length + conversation.cc_aids|length }} People</span>
         </a>
       </li>

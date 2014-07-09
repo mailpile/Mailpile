@@ -10,7 +10,7 @@
   {% endfor %}
   </tbody>
   </table>
-  {% if result.stats.total > 1 %}
+  {% if result.stats.total > 0 %}
   <div id="pile-bottom" class="clearfix">
     {% set searchterms = result.search_terms|join(' ') %}
     {% if result.stats.start > 1 %}
