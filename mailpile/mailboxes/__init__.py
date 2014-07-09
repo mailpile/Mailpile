@@ -61,13 +61,20 @@ def UnorderedPicklable(parent, editable=False):
         def __init__(self, *args, **kwargs):
             parent.__init__(self, *args, **kwargs)
             self.editable = editable
+            self.source_map = {}
             self._save_to = None
             self._encryption_key_func = lambda: None
+            self.__init2__(*args, **kwargs)
+
+        def __init2__(self, *args, **kwargs):
+            pass
 
         def __setstate__(self, data):
             self.__dict__.update(data)
             self._save_to = None
             self._encryption_key_func = lambda: None
+            if not hasattr(self, 'source_map'):
+                self.source_map = {}
             self.update_toc()
 
         def __getstate__(self):
@@ -87,6 +94,11 @@ def UnorderedPicklable(parent, editable=False):
                 if session:
                     session.ui.mark(_('Saving %s state to %s') % (self, fn))
                 pickler(self, fn)
+
+        def add_from_source(self, source_id, *args, **kwargs):
+            key = self.add(*args, **kwargs)
+            self.source_map[source_id] = key
+            return key
 
         def update_toc(self):
             self._refresh()

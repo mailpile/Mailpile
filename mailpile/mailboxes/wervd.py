@@ -24,8 +24,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
             return (fn, )
         raise ValueError('Not a Maildir: %s' % fn)
 
-    def __init__(self, *args, **kwargs):
-        mailbox.Maildir.__init__(self, *args, **kwargs)
+    def __init2__(self, *args, **kwargs):
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
 
     def remove(self, key):

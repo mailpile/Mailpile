@@ -142,6 +142,8 @@ class SharedImapConn(threading.Thread):
             info = dict(self._conn.response(f) for f in
                         ('FLAGS', 'EXISTS', 'RECENT', 'UIDVALIDITY'))
             self._selected = ((mailbox, readonly), rv, info)
+        else:
+            info = '(error)'
         if 'imap' in self.session.config.sys.debug:
             self.session.ui.debug('select(%s, %s) = %s %s'
                                   % (mailbox, readonly, rv, info))
@@ -229,6 +231,7 @@ class SharedImapMailbox(Mailbox):
             return False
 
     def add(self, message):
+        raise Exception('FIXME: Need to RETURN AN ID.')
         with self.open_imap() as imap:
             ok, data = self.timed_imap(imap.append, self.path, message=message)
             self._assert(ok, _('Failed to add message'))
@@ -480,7 +483,8 @@ class ImapMailSource(BaseMailSource):
     def open_mailbox(self, mbx_id, mfn):
         if FormatMbxId(mbx_id) in self.my_config.mailbox:
             proto_me, path = mfn.split('/', 1)
-            return SharedImapMailbox(self.session, self, mailbox_path=path)
+            if proto_me.startswith('src:imap'):
+                return SharedImapMailbox(self.session, self, mailbox_path=path)
         return False
 
     def _has_mailbox_changed(self, mbx, state):

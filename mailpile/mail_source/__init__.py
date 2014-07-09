@@ -133,7 +133,7 @@ class BaseMailSource(threading.Thread):
         errors = rescanned = 0
         if self.session.config.sys.debug:
             batch //= 10
-        for mbx in unsorted(self.my_config.mailbox.values()):
+        for mbx_cfg in unsorted(self.my_config.mailbox.values()):
             if mailpile.util.QUITTING or self._interrupt:
                 self._log_status(_('Interrupted: %s'
                                    ) % (self._interrupt or _('Quitting')))
@@ -144,17 +144,17 @@ class BaseMailSource(threading.Thread):
                 # Generally speaking, we only rescan if a mailbox looks like
                 # it has changed. However, 1/20th of the time we take a look
                 # anyway just in case looks are deceiving.
-                if batch > 0 and (self._has_mailbox_changed(mbx, state) or
+                if batch > 0 and (self._has_mailbox_changed(mbx_cfg, state) or
                                   random.randint(0, 20) == 10):
 
-                    count = self._unlocked_rescan_mailbox(mbx._key,
+                    count = self._unlocked_rescan_mailbox(mbx_cfg._key,
                                                           stop_after=batch)
                     if count >= 0:
                         batch -= count
                         if (count and batch > 0 and
                                 not self._interrupt and
                                 not mailpile.util.QUITTING):
-                            self._mark_mailbox_rescanned(mbx, state)
+                            self._mark_mailbox_rescanned(mbx_cfg, state)
                             rescanned += 1
                     else:
                         errors += 1
@@ -193,8 +193,9 @@ class BaseMailSource(threading.Thread):
 
     def _existing_mailboxes(self):
         return set(self.session.config.sys.mailbox +
-                   [mbx.local for mbx in self.my_config.mailbox.values()
-                    if mbx.local])
+                   [mbx_cfg.local
+                    for mbx_cfg in self.my_config.mailbox.values()
+                    if mbx_cfg.local])
 
     def _unlocked_discover_mailboxes(self, paths):
         config = self.session.config
@@ -222,8 +223,8 @@ class BaseMailSource(threading.Thread):
         for path in adding:
             new[config.sys.mailbox.append(path)] = path
         for mailbox_idx in new.keys():
-            mbx = self._unlocked_take_over_mailbox(mailbox_idx)
-            if mbx.policy != 'unknown':
+            mbx_cfg = self._unlocked_take_over_mailbox(mailbox_idx)
+            if mbx_cfg.policy != 'unknown':
                 del new[mailbox_idx]
         if new:
             self.event.data['have_unknown'] = True
@@ -239,21 +240,34 @@ class BaseMailSource(threading.Thread):
             'policy': disco_cfg.policy,
             'process_new': disco_cfg.process_new,
         }
-        mbx = self.my_config.mailbox[mailbox_idx]
-        mbx.apply_tags.extend(disco_cfg.apply_tags)
-        if disco_cfg.create_tag:
-            tag_name_or_id = self._create_tag_name(self._path(mbx))
-            mbx['primary_tag'] = tag_name_or_id
-            if disco_cfg.policy != 'unknown':
-                try:
-                    mbx['primary_tag'] = self._create_tag(tag_name_or_id,
-                                                          unique=True)
-                except ValueError:
-                    pass  # FIXME: This suxors
-        if disco_cfg.local_copy:
+        mbx_cfg = self.my_config.mailbox[mailbox_idx]
+        mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
+        self._create_primary_tag(mbx_cfg)
+        self._create_local_mailbox(mbx_cfg)
+        return mbx_cfg
+
+    def _create_local_mailbox(self, mbx_cfg):
+        config = self.session.config
+        disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
+        if mbx_cfg.local == 'CREATE' or disco_cfg.local_copy:
             path, wervd = config.create_local_mailstore(self.session)
-            mbx.local = path
-        return mbx
+            mbx_cfg.local = path
+        return mbx_cfg
+
+    def _create_primary_tag(self, mbx_cfg):
+        config = self.session.config
+        if mbx_cfg.primary_tag and (mbx_cfg.primary_tag in config.tags):
+            return
+        disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
+        if disco_cfg.create_tag and mbx_cfg.policy != 'unknown':
+            tag_name_or_id = (mbx_cfg.primary_tag or
+                              self._create_tag_name(self._path(mbx_cfg)))
+            mbx_cfg.primary_tag = tag_name_or_id
+            try:
+                mbx_cfg.primary_tag = self._create_tag(tag_name_or_id,
+                                                       unique=True)
+            except (ValueError, IndexError):
+                self.session.ui.debug(traceback.format_exc())
 
     BORING_FOLDER_RE = re.compile('(?i)^(home|mail|data|user\S*|[^a-z]+)$')
 
@@ -291,7 +305,10 @@ class BaseMailSource(threading.Thread):
             from mailpile.plugins.tags import AddTag
             AddTag(self.session, arg=[tag_name_or_id]).run(save=False)
             tags = self.session.config.get_tags(tag_name_or_id)
-            tag_id = tags[0]._key
+            if tags:
+                tag_id = tags[0]._key
+            else:
+                raise ValueError('Failed to create tag?')
         return tag_id
 
     def interrupt_rescan(self, reason):
@@ -302,7 +319,34 @@ class BaseMailSource(threading.Thread):
     def _process_new(self, msg, msg_ts, keywords, snippet):
         return ProcessNew(self.session, msg, msg_ts, keywords, snippet)
 
+    def _unlocked_copy_new_messages(self, mbx_key, mbx_cfg, stop_after=-1):
+        session, config = self.session, self.session.config
+        locked = self._lock.locked()
+        try:
+            if locked:
+                self._lock.release()
+            src = config.open_mailbox(session, mbx_key, prefer_local=False)
+            loc = config.open_mailbox(session, mbx_key, prefer_local=True)
+            if src == loc:
+                raise ValueError('OMG WTF')
+            for key in src.iterkeys():
+                if key not in loc.source_map:
+                    loc.add_from_source(key, src.get_bytes(key))
+                    stop_after -= 1
+                    if stop_after == 0:
+                        break
+                if mailpile.util.QUITTING or self._interrupt:
+                    break
+        except IOError:
+            # These just abort the download/read, which we're going to just
+            # take in stride for now.
+            pass
+        finally:
+            if locked:
+                self._lock.acquire()
+
     def _unlocked_rescan_mailbox(self, mbx_key, stop_after=None):
+        session, config = self.session, self.session.config
         mbx_key = FormatMbxId(mbx_key)
         if self._rescanning:
             # We unlock below, so there is a chance someone will try to
@@ -313,18 +357,26 @@ class BaseMailSource(threading.Thread):
             ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
                                                                    stop_after)
 
-            mbx = self.my_config.mailbox[mbx_key]
-            path = self._path(mbx)
+            mbx_cfg = self.my_config.mailbox[mbx_key]
+            path = self._path(mbx_cfg)
             if (path in ('/dev/null', '', None)
-                    or mbx.policy in ('ignore', 'unknown')):
+                    or mbx_cfg.policy in ('ignore', 'unknown')):
                 return 0
-            if mbx.local:
-                # FIXME: Should copy any new messages to our local stash
-                pass
             self._log_status(_('Rescanning: %s') % path)
-            apply_tags = mbx.apply_tags[:]
-            if mbx.primary_tag:
-                apply_tags.append(mbx.primary_tag)
+
+            if mbx_cfg.local:
+                self._create_local_mailbox(mbx_cfg)
+                self._unlocked_copy_new_messages(mbx_key, mbx_cfg,
+                                                 stop_after=stop_after)
+
+            apply_tags = mbx_cfg.apply_tags[:]
+
+            self._create_primary_tag(mbx_cfg)
+            if mbx_cfg.primary_tag:
+                tid = config.get_tag_id(mbx_cfg.primary_tag)
+                if tid:
+                    apply_tags.append(tid)
+
             locked = self._lock.locked()
             try:
                 if locked:
@@ -334,17 +386,18 @@ class BaseMailSource(threading.Thread):
                         self._lock.release()
                     except thread.error:
                         locked = False
-                return self.session.config.index.scan_mailbox(
-                    self.session, mbx_key, mbx.local or path,
-                    self.session.config.open_mailbox,
-                    process_new=(mbx.process_new and self._process_new or False),
+                return config.index.scan_mailbox(
+                    session, mbx_key, mbx_cfg.local or path,
+                    config.open_mailbox,
+                    process_new=(mbx_cfg.process_new and
+                                 self._process_new or False),
                     apply_tags=(apply_tags or []),
                     stop_after=stop_after)
             finally:
                 if locked:
                     self._lock.acquire()
         except ValueError:
-            self.session.ui.debug(traceback.format_exc())
+            session.ui.debug(traceback.format_exc())
             return -1
         finally:
             self._state = ostate
