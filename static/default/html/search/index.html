@@ -16,14 +16,23 @@
     {% if result.stats.start > 1 %}
     {% set newstart = result.stats.start-result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
-    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Previous")}}</a>
+    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left">{{_("Previous")}}</a>
     {% endif %}
     {% if result.stats.start + result.stats.count < result.stats.total %}
     {% set newstart = result.stats.start+result.stats.count %}
     {% set newend = newstart+result.stats.count-1 %}
-    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary">{{_("Next")}}</a>
+    <a href="/search/?q={{searchterms|urlencode}}&start={{newstart}}&end={{newend}}" class="button-primary left">{{_("Next")}}</a>
     {% endif %}    
-    <h5 class="right">{{result.stats.start}} - {{result.stats.end}} {{_("of")}} {{result.stats.total}} {{_("Conversations")}} {% elif result.stats.total == 1 %} {{_("1 Conversation")}}</h5>
+    <h5 class="text-right">
+    {% if result.stats.total > 1 %}
+      {{result.stats.start}} - {{result.stats.end}} {{_("of")}} {{result.stats.total}} {{_("Conversations")}}
+    {% elif result.stats.total == 1 %}
+      {{_("1 Conversation")}}
+    {% endif %}
+    </h5>
+  </div>
+  <div id="pile-speed" class="text-center clearfix">
+    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
   </div>
   {% else %}
   <div id="pile-empty" class="clearfix add-bottom text-center">
@@ -35,9 +44,6 @@
     <p class="add-bottom"><a href="#" id="btn-pile-empty-search-web" class="button-primary"><span class="icon-search"></span> Search The Web For People</a></p>
   </div>
   {% endif %}
-  <div id="pile-speed">
-    <span class="icon-speed"></span>{{_("Searched <strong>%(number)s</strong> messages in <strong>%(elapsed)s</strong> seconds.", number=mailpile_size, elapsed=elapsed)}} {{_("Vroom!")}}
-  </div>  
 {% else %}
   <div class="add-top add-bottom text-center">
     <h2 class="add-top center">{{_("Hrm, We Could Not Find Anything")}}</h2>
