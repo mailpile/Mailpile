@@ -251,6 +251,7 @@ class Command:
         if everything or config:
             aut(session, 'Save config', cfg.save)
         if idx:
+            cfg.flush_mbox_cache(session, clear=False, wait=wait)
             if index_full:
                 aut(session, 'Save index', lambda: idx.save(session))
             elif everything or index:
@@ -965,7 +966,7 @@ class Rescan(Command):
                                  result=self._rescan_mailboxes(session,
                                                                which=which))
         elif args and args[0].lower() == 'full':
-            config.clear_mbox_cache()
+            config.flush_mbox_cache(session, wait=True)
             args.pop(0)
 
         msg_idxs = self._choose_messages(args)

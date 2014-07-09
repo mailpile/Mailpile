@@ -42,6 +42,9 @@ from mailpile.vcard import VCardStore
 from mailpile.workers import Worker, DumbWorker, Cron
 
 
+MAX_CACHED_MBOXES = 5
+
+
 def ConfigPrinter(cfg, indent=''):
     rv = []
     if isinstance(cfg, dict):
@@ -901,7 +904,7 @@ class ConfigManager(ConfigDict):
         self.event_log = None
         self.index = None
         self.vcards = {}
-        self._mbox_cache = {}
+        self._mbox_cache = []
         self._running = {}
         self._lock = threading.RLock()
 
@@ -1101,9 +1104,6 @@ class ConfigManager(ConfigDict):
         self.get_i18n_translation()
         self.prepare_workers()
 
-    def clear_mbox_cache(self):
-        self._mbox_cache = {}
-
     def _find_mail_source(self, mbx_id):
         for src in self.sources.values():
             # Note: we cannot test 'mbx_id in ...' because of case sensitivity.
@@ -1180,25 +1180,60 @@ class ConfigManager(ConfigDict):
         finally:
             fd.close()
 
-    def open_mailbox(self, session, mailbox_id, prefer_local=True):
+    def _mailbox_info(self, mailbox_id, prefer_local=True):
         try:
-            mbx_id = FormatMbxId(mailbox_id)
-            src = self._find_mail_source(mailbox_id)
-            mfn = self.sys.mailbox[mbx_id]
-            if prefer_local:
-                mfn = src and src.mailbox[mbx_id].local or mfn
-            pfn = 'pickled-mailbox.%s' % mbx_id.lower()
+            with self._lock:
+                mbx_id = FormatMbxId(mailbox_id)
+                src = self._find_mail_source(mailbox_id)
+                mfn = self.sys.mailbox[mbx_id]
+                pfn = 'pickled-mailbox.%s' % mbx_id.lower()
+                if prefer_local:
+                    mfn = src and src.mailbox[mbx_id].local or mfn
+                else:
+                    pfn += '-R'
         except (KeyError, TypeError):
             raise NoSuchMailboxError(_('No such mailbox: %s') % mbx_id)
+        return mbx_id, src, mfn, pfn
 
-        self._lock.acquire()
-        try:
+    def save_mailbox(self, session, pfn, mbox):
+        mbox.save(session,
+                  to=pfn, pickler=lambda o, f: self.save_pickle(o, f))
+
+    def cache_mailbox(self, session, pfn, mbx_id, mbox):
+        with self._lock:
+            self._mbox_cache = [c for c in self._mbox_cache if c[0] != pfn]
+            self._mbox_cache.append((pfn, mbx_id, mbox))
+            while len(self._mbox_cache) > MAX_CACHED_MBOXES:
+                pfn, mbx_id, mbox = self._mbox_cache.pop(0)
+                self.save_worker.add_task(
+                    session, 'Save mailbox %s' % mbx_id,
+                    lambda: self.save_mailbox(session, pfn, mbox))
+
+    def flush_mbox_cache(self, session, clear=True, wait=False):
+        with self._lock:
+            flush = self._mbox_cache
+            if clear:
+                self._mbox_cache = []
+            if wait:
+                saver = self.save_worker.do
+            else:
+                saver = self.save_worker.add_task
+            for pfn, mbx_id, mbox in flush:
+                saver(session, 'Save mailbox %s' % mbx_id,
+                      lambda: self.save_mailbox(session, pfn, mbox))
+
+    def open_mailbox(self, session, mailbox_id, prefer_local=True):
+        mbx_id, src, mfn, pfn = self._mailbox_info(mailbox_id,
+                                                   prefer_local=prefer_local)
+        with self._lock:
+            mbox = dict(((p, m) for p, i, m in self._mbox_cache)
+                        ).get(pfn, None)
             try:
-                if mbx_id not in self._mbox_cache:
+                if not mbox:
                     if session:
                         session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
-                    self._mbox_cache[mbx_id] = self.load_pickle(pfn)
-                self._mbox_cache[mbx_id].update_toc()
+                    mbox = self.load_pickle(pfn)
+                mbox.update_toc()
             except KeyboardInterrupt:
                 raise
             except IOError:
@@ -1208,35 +1243,32 @@ class ConfigManager(ConfigDict):
                     import traceback
                     traceback.print_exc()
 
-            if mbx_id not in self._mbox_cache:
+            if not mbox:
                 if session:
                     session.ui.mark(_('%s: Opening: %s (may take a while)'
                                       ) % (mbx_id, mfn))
                 editable = self.is_editable_mailbox(mbx_id)
-                mbox = None
                 if src:
                     msrc = self.mail_sources.get(src._key)
                     mbox = msrc and msrc.open_mailbox(mbx_id, mfn)
                 if not mbox:
                     mbox = OpenMailbox(mfn, self, create=editable)
                     mbox.editable = editable
-                mbox.save(session,
-                          to=pfn,
-                          pickler=lambda o, f: self.save_pickle(o, f))
-                self._mbox_cache[mbx_id] = mbox
-        finally:
-            self._lock.release()
 
-        # Always set this, it can't be pickled
-        self._mbox_cache[mbx_id]._encryption_key_func = \
-            lambda: self.prefs.obfuscate_index
+            # Always set this, it can't be pickled
+            mbox._encryption_key_func = lambda: self.prefs.obfuscate_index
 
-        return self._mbox_cache[mbx_id]
+            # Finally, re-add to the cache
+            self.cache_mailbox(session, pfn, mbx_id, mbox)
+
+        return mbox
 
     def create_local_mailstore(self, session, name=None):
         self._lock.acquire()
         try:
             path = os.path.join(self.workdir, 'mail')
+            if not os.path.exists(path):
+                os.mkdir(path)
             if name is None:
                 name = '%5.5x' % random.randint(0, 16**5)
                 while os.path.exists(os.path.join(path, name)):

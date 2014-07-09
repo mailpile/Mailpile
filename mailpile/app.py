@@ -157,6 +157,7 @@ def Main(args):
         mailpile.util.QUITTING = True
 
         config.plugins.process_shutdown_hooks()
+        config.flush_mbox_cache(session, wait=True)
         config.stop_workers()
         if config.index:
             config.index.save_changes()
