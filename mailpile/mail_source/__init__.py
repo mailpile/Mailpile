@@ -132,7 +132,7 @@ class BaseMailSource(threading.Thread):
         batch = self.RESCAN_BATCH_SIZE
         errors = rescanned = 0
         if self.session.config.sys.debug:
-            batch //= 10
+            batch = 5
         for mbx_cfg in unsorted(self.my_config.mailbox.values()):
             if mailpile.util.QUITTING or self._interrupt:
                 self._log_status(_('Interrupted: %s'

@@ -137,7 +137,7 @@ class SharedImapConn(threading.Thread):
         assert(self._lock.locked())
         if self._selected and self._selected[0] == (mailbox, readonly):
             return self._selected[1]
-        rv = self._conn.select(mailbox=mailbox, readonly=readonly)
+        rv = self._conn.select(mailbox='"%s"' % mailbox, readonly=readonly)
         if rv[0].upper() == 'OK':
             info = dict(self._conn.response(f) for f in
                         ('FLAGS', 'EXISTS', 'RECENT', 'UIDVALIDITY'))
@@ -417,6 +417,7 @@ class ImapMailSource(BaseMailSource):
             def mkconn():
                 return conn_cls(my_config.host, my_config.port)
             conn = self.timed(mkconn)
+            conn.debug = ('imap' in self.session.config.sys.debug) and 4 or 0
 
             ok, data = self.timed_imap(conn.login,
                                        my_config.username,
