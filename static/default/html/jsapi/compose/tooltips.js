@@ -1,6 +1,4 @@
-$(document).ready(function() {
-
-  // Show Crypto Tooltips
+Mailpile.tooltip_compose_crypto_signature = function() {
   $('.compose-crypto-signature').qtip({
     content: {
       title: false,
@@ -38,8 +36,10 @@ $(document).ready(function() {
       show: function(event, api) {}
     }
   });
+};
 
 
+Mailpile.tooltip_compose_crypto_encryption = function() {
   $('.compose-crypto-encryption').qtip({
     content: {
       title: false,
@@ -100,6 +100,14 @@ $(document).ready(function() {
       }
     }
   });
+};
+
+
+$(document).ready(function() {
+
+  // Show Crypto Tooltips
+  Mailpile.tooltip_compose_crypto_signature();
+  Mailpile.tooltip_compose_crypto_encryption();
 
 
   $('.compose-choice-wrapper').qtip({

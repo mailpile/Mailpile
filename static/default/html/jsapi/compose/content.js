@@ -232,6 +232,7 @@ $(document).on('click', '.compose-crypto-encryption', function() {
   }
 
   Mailpile.compose_render_encryption(change);
+  Mailpile.tooltip_compose_crypto_encryption();
 });
 
 
@@ -247,6 +248,7 @@ $(document).on('click', '.compose-crypto-signature', function() {
   }
 
   Mailpile.compose_render_signature(change);
+  Mailpile.tooltip_compose_crypto_signature();
 });
 
 
