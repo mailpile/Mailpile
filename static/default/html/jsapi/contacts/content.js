@@ -16,8 +16,12 @@ $(document).on('click', '.btn-activity-contact_add', function(e) {
 /* Contact - Form -  */
 $(document).on('submit', '#form-contact-add', function(e) {
   e.preventDefault();
-  Mailpile.API.contacts_add('#form-contact-add', function() {
-    alert('Woot, contact added');
+  Mailpile.API.contacts_add($('#form-contact-add').serialize(), function(result) {
+    if (result.status == 'success') {
+      $('#modal-full').modal('hide');
+      // FIXME: Will currenlty hide all instances of button
+      $('.message-action-add-contact').hide();
+    }
   });
 });
 

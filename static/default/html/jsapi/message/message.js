@@ -159,13 +159,3 @@ $(document).on('click', '.message-crypto-investigate', function() {
     });     
   }
 });
-
-
-/* Message - Form - Add contact from a message */
-$(document).on('submit', '#form-contact-add-modal', function(e) {
-  e.preventDefault();
-  Mailpile.contact_add('#form-contact-add-modal', function() {
-    $('#modal-full').modal('hide');
-    $('#message-' + mid).find('.message-action-add-contact').parent().remove();
-  });
-});
