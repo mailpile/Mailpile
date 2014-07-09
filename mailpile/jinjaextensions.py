@@ -499,8 +499,13 @@ class MailpileCommand(Extension):
         return trimmed.strip()
 
     @classmethod
-    def _nice_subject(self, subject):
-        output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', subject)
+    def _nice_subject(self, metadata):
+        #if metadata['subject'] != _("Encrypted Email"):
+        if metadata['subject']:
+            output = re.sub('(?i)^((re|fw|fwd|aw|wg):\s+)+', '', metadata['subject'])
+        else:
+            output = '(' + _("No Subject") + ')'
+
         return output
 
     def _nice_name(self, name, truncate=100):
