@@ -1267,13 +1267,13 @@ class ConfigManager(ConfigDict):
         self._lock.acquire()
         try:
             path = os.path.join(self.workdir, 'mail')
-            if not os.path.exists(path):
-                os.mkdir(path)
             if name is None:
                 name = '%5.5x' % random.randint(0, 16**5)
                 while os.path.exists(os.path.join(path, name)):
                     name = '%5.5x' % random.randint(0, 16**5)
             if name != '':
+                if not os.path.exists(path):
+                    root_mbx = wervd.MailpileMailbox(path)
                 path = os.path.join(path, name)
 
             mbx = wervd.MailpileMailbox(path)
