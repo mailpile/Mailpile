@@ -897,7 +897,7 @@ class SearchResults(dict):
                     from_info = '%s>%s' % (from_info[:20], gg(len(thread)-pos))
 
             subject = re.sub('^(\\[[^\\]]{6})[^\\]]{3,}\\]\\s*', '\\1..] ',
-                             JE._nice_subject(m['subject']))
+                             JE._nice_subject(m))
 
             sfmt = '%%-%d.%ds%%s' % (max(1, s_width - (clen + len(msg_meta))),
                                      max(1, s_width - (clen + len(msg_meta))))
