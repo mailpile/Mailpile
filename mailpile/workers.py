@@ -164,28 +164,23 @@ class Worker(threading.Thread):
         self.running = 'Idle'
         self.pauses = 0
         self.session = session
+        self.important = False
 
     def __str__(self):
         return '%s: %s' % (threading.Thread.__str__(self), self.running)
 
     def add_task(self, session, name, task):
-        self.LOCK.acquire()
-        try:
+        with self.LOCK:
             self.JOBS.append((session, name, task))
-        finally:
             self.LOCK.notify()
-            self.LOCK.release()
 
     def add_unique_task(self, session, name, task):
-        self.LOCK.acquire()
-        try:
+        with self.LOCK:
             for s, n, t in self.JOBS:
                 if n == name:
                     return
             self.JOBS.append((session, name, task))
-        finally:
             self.LOCK.notify()
-            self.LOCK.release()
 
     def do(self, session, name, task):
         if session and session.main:
@@ -204,14 +199,18 @@ class Worker(threading.Thread):
                 rv = True
         return rv
 
+    def _keep_running(self):
+        return (self.ALIVE and not mailpile.util.QUITTING)
+
     def run(self):
         self.ALIVE = True
-        while self.ALIVE and not mailpile.util.QUITTING:
-            self.LOCK.acquire()
-            while len(self.JOBS) < 1:
-                self.LOCK.wait()
-            session, name, task = self.JOBS.pop(0)
-            self.LOCK.release()
+        while self._keep_running():
+            with self.LOCK:
+                while len(self.JOBS) < 1:
+                    if not self._keep_running():
+                        return
+                    self.LOCK.wait()
+                session, name, task = self.JOBS.pop(0)
 
             try:
                 self.running = name
@@ -229,26 +228,23 @@ class Worker(threading.Thread):
                 self.running = 'Idle'
 
     def pause(self, session):
-        self.LOCK.acquire()
-        self.pauses += 1
-        if self.pauses == 1:
-            self.LOCK.release()
+        with self.LOCK:
+            self.pauses += 1
+            first = (self.pauses == 1)
 
+        if first:
             def pause_task():
                 session.report_task_completed('Pause', True)
                 session.wait_for_task('Unpause', quiet=True)
 
             self.add_task(None, 'Pause', pause_task)
             session.wait_for_task('Pause', quiet=True)
-        else:
-            self.LOCK.release()
 
     def unpause(self, session):
-        self.LOCK.acquire()
-        self.pauses -= 1
-        if self.pauses == 0:
-            session.report_task_completed('Unpause', True)
-        self.LOCK.release()
+        with self.LOCK:
+            self.pauses -= 1
+            if self.pauses == 0:
+                session.report_task_completed('Unpause', True)
 
     def die_soon(self, session=None):
         def die():
@@ -264,13 +260,28 @@ class Worker(threading.Thread):
                 pass
 
 
+class ImportantWorker(Worker):
+    def _keep_running(self, _pass=1):
+        # This is a much more careful shutdown test, that refuses to
+        # stop with jobs queued up and tries to compensate for potential
+        # race conditions in our quitting code by waiting a bit and
+        # then re-checking if it looks like it is time to die.
+        if len(self.JOBS) > 0:
+            return True
+        else:
+             if _pass == 2:
+                 return (self.ALIVE and not mailpile.util.QUITTING)
+             if self.ALIVE and not mailpile.util.QUITTING:
+                 return True
+             else:
+                 time.sleep(1)
+                 return self._keep_running(_pass=2)
+
+
 class DumbWorker(Worker):
     def add_task(self, session, name, task):
-        try:
-            self.LOCK.acquire()
+        with self.LOCK:
             return task()
-        finally:
-            self.LOCK.release()
 
     def add_unique_task(self, session, name, task):
         return self.add_task(session, name, task)

@@ -857,6 +857,9 @@ class EmptyOutbox(Sendit):
 
     def command(self):
         cfg, idx = self.session.config, self.session.config.index
+        if not idx:
+            return self._error(_('The index is not ready yet'))
+
         messages = []
         for tag in cfg.get_tags(type='outbox'):
             search = ['in:%s' % tag._key]

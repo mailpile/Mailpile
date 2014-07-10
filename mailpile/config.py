@@ -39,7 +39,7 @@ from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.ui import Session, BackgroundInteraction
 from mailpile.vcard import VCardStore
-from mailpile.workers import Worker, DumbWorker, Cron
+from mailpile.workers import Worker, ImportantWorker, DumbWorker, Cron
 
 
 MAX_CACHED_MBOXES = 5
@@ -1490,7 +1490,7 @@ class ConfigManager(ConfigDict):
                 config.slow_worker = Worker('Slow worker', session)
                 config.slow_worker.start()
             if config.save_worker == config.dumb_worker:
-                config.save_worker = Worker('Save worker', session)
+                config.save_worker = ImportantWorker('Save worker', session)
                 config.save_worker.start()
             if not config.cron_worker:
                 config.cron_worker = Cron('Cron worker', session)
@@ -1546,12 +1546,10 @@ class ConfigManager(ConfigDict):
                 config.cron_worker.add_task(job, interval(i), wrap_slow(f))
 
     def stop_workers(config):
-        config._lock.acquire()
-        try:
+        with config._lock:
             for wait in (False, True):
                 for w in ([config.http_worker,
                            config.slow_worker,
-                           config.save_worker,
                            config.cron_worker] +
                           config.other_workers +
                           config.mail_sources.values()):
@@ -1565,9 +1563,15 @@ class ConfigManager(ConfigDict):
             config.other_workers = []
             config.http_worker = config.cron_worker = None
             config.slow_worker = config.dumb_worker
+
+            # Handle the save worker last, once all the others are
+            # no longer feeding it new things to do.
+            print 'Waiting for %s' % config.save_worker
+            config.save_worker.quit(join=True)
             config.save_worker = config.dumb_worker
-        finally:
-            config._lock.release()
+
+            # Hooray!
+            print 'All stopped!'
 
 
 ##############################################################################

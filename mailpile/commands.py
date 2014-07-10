@@ -1595,7 +1595,7 @@ class Output(Command):
 
 
 class Quit(Command):
-    """Exit Mailpile """
+    """Exit Mailpile, normal shutdown"""
     SYNOPSIS = ("q", "quit", "quitquitquit", None)
     ABOUT = ("Quit mailpile")
     ORDER = ("Internals", 2)
@@ -1605,13 +1605,13 @@ class Quit(Command):
         if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
-        self._background_save(index=True, config=True, wait=True)
         mailpile.util.QUITTING = True
+        self._background_save(index=True, config=True, wait=True)
         return self._success(_('Shutting down...'))
 
 
 class Abort(Command):
-    """Exit Mailpile without saving"""
+    """Force exit Mailpile (kills threads)"""
     SYNOPSIS = (None, "quit/abort", "abortabortabort", None)
     ABOUT = ("Quit mailpile")
     ORDER = ("Internals", 2)
@@ -1623,6 +1623,7 @@ class Abort(Command):
         if self.session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
+        mailpile.util.QUITTING = True
         if 'no_save' not in self.data:
             self._background_save(index=True, config=True, wait=True,
                                   wait_callback=lambda: os._exit(1))
