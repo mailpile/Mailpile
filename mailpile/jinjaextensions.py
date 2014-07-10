@@ -350,8 +350,8 @@ class MailpileCommand(Extension):
             "crypto-color-red",
             "icon-lock-closed",
             _("Missing Key"),
-            _("You do not have a private key that will decrypt this message. "
-              "Perhaps it was encrypted to an old key you don't have anymore?")],
+            _("You don't have the encryption key to decrypt this message, "
+              "perhaps it was encrypted to an old key you don't have anymore?")],
         "mixed-missingkey": [
             "crypto-color-red",
             "icon-lock-closed",
