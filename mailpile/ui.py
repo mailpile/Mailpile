@@ -151,7 +151,7 @@ class Completer(object):
 
 class UserInteraction:
     """Log the progress and performance of individual operations"""
-    MAX_BUFFER_LEN = 550
+    MAX_BUFFER_LEN = 150
 
     LOG_URGENT = 0
     LOG_RESULT = 5
@@ -619,26 +619,22 @@ class Session(object):
         self.ui = UserInteraction(config)
 
     def report_task_completed(self, name, result):
-        self.wait_lock.acquire()
-        self.task_results.append((name, result))
-        self.wait_lock.notify_all()
-        self.wait_lock.release()
+        with self.wait_lock:
+            self.task_results.append((name, result))
+            self.wait_lock.notify_all()
 
     def report_task_failed(self, name):
         self.report_task_completed(name, None)
 
     def wait_for_task(self, wait_for, quiet=False):
         while not mailpile.util.QUITTING:
-            self.wait_lock.acquire()
-            for i in range(0, len(self.task_results)):
-                if self.task_results[i][0] == wait_for:
-                    tn, rv = self.task_results.pop(i)
-                    self.wait_lock.release()
-                    self.ui.reset_marks(quiet=quiet)
-                    return rv
-
-            self.wait_lock.wait()
-            self.wait_lock.release()
+            with self.wait_lock:
+                for i in range(0, len(self.task_results)):
+                    if self.task_results[i][0] == wait_for:
+                        tn, rv = self.task_results.pop(i)
+                        self.ui.reset_marks(quiet=quiet)
+                        return rv
+                self.wait_lock.wait()
 
     def error(self, message):
         self.ui.error(message)
