@@ -33,7 +33,7 @@ class BaseMailSource(threading.Thread):
 
     def __init__(self, session, my_config):
         threading.Thread.__init__(self)
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self.my_config = my_config
         self.session = session
         self.alive = None
@@ -47,52 +47,27 @@ class BaseMailSource(threading.Thread):
         self._last_rescan_count = 0
         self._last_saved = time.time()  # Saving right away would be silly
 
-        # Make locked versions of a few functions
-        self._load_state = self._locked(self._unlocked_load_state)
-        self.open = self._locked(self._unlocked_open)
-        self.sync_mail = self._locked(self._unlocked_sync_mail)
-        self.rescan_mailbox = self._locked(self._unlocked_rescan_mailbox)
-        self.take_over_mailbox = self._locked(self._unlocked_take_over_mailbox)
-        self.discover_mailboxes = self._locked(
-            self._unlocked_discover_mailboxes)
-
     def __str__(self):
         rv = ': '.join([threading.Thread.__str__(self), self._state])
         if self._sleeping > 0:
             rv += '(%s)' % self._sleeping
         return rv
 
-    def _locked(self, func):
-        def locked_func(*args, **kwargs):
-            try:
-                self._lock.acquire()
-                ostate, self._state = self._state, func.__name__
-                return func(*args, **kwargs)
-            except:
-                traceback.print_exc()
-                raise
-            finally:
-                self._state = ostate
-                try:
-                    self._lock.release()
-                except thread.error:
-                    pass
-        return locked_func
-
     def _pfn(self):
         return 'mail-source.%s' % self.my_config._key
 
-    def _unlocked_load_state(self):
-        config, my_config = self.session.config, self.my_config
-        events = list(config.event_log.incomplete(source=self,
-                                                  data_id=my_config._key))
-        if events:
-            self.event = events[0]
-        else:
-            self.event = config.event_log.log(source=self,
-                                              flags=Event.RUNNING,
-                                              message=_('Starting up'),
-                                              data={'id': my_config._key})
+    def _load_state(self):
+        with self._lock:
+            config, my_config = self.session.config, self.my_config
+            events = list(config.event_log.incomplete(source=self,
+                                                      data_id=my_config._key))
+            if events:
+                self.event = events[0]
+            else:
+                self.event = config.event_log.log(source=self,
+                                                  flags=Event.RUNNING,
+                                                  message=_('Starting up'),
+                                                  data={'id': my_config._key})
 
     def _save_state(self):
         self.session.config.event_log.log_event(self.event)
@@ -103,17 +78,19 @@ class BaseMailSource(threading.Thread):
         if 'sources' in self.session.config.sys.debug:
             self.session.ui.debug('%s: %s' % (self, message))
 
-    def _unlocked_open(self):
+    def open(self):
         """Open mailboxes or connect to the remote mail source."""
-        raise NotImplemented('Please override _open in %s' % self)
+        raise NotImplemented('Please override open in %s' % self)
 
     def _has_mailbox_changed(self, mbx, state):
         """For the default sync_mail routine, report if mailbox changed."""
-        raise NotImplemented('Please override _open in %s' % self)
+        raise NotImplemented('Please override _has_mailbox_changed in %s'
+                             % self)
 
     def _mark_mailbox_rescanned(self, mbx, state):
         """For the default sync_mail routine, note mailbox was rescanned."""
-        raise NotImplemented('Please override _open in %s' % self)
+        raise NotImplemented('Please override _mark_mailbox_rescanned in %s'
+                             % self)
 
     def _path(self, mbx):
         if mbx.path.startswith('@'):
@@ -121,7 +98,7 @@ class BaseMailSource(threading.Thread):
         else:
             return mbx.path
 
-    def _unlocked_sync_mail(self):
+    def sync_mail(self):
         """Iterates through all the mailboxes and scans if necessary."""
         def unsorted(l):
             l.sort(key=lambda k: random.randint(0, 500))
@@ -147,8 +124,7 @@ class BaseMailSource(threading.Thread):
                 if batch > 0 and (self._has_mailbox_changed(mbx_cfg, state) or
                                   random.randint(0, 20) == 10):
 
-                    count = self._unlocked_rescan_mailbox(mbx_cfg._key,
-                                                          stop_after=batch)
+                    count = self.rescan_mailbox(mbx_cfg._key, stop_after=batch)
                     if count >= 0:
                         batch -= count
                         if (count and batch > 0 and
@@ -164,9 +140,7 @@ class BaseMailSource(threading.Thread):
                 self._log_status(_('Internal error'))
                 raise
 
-        if batch > 0:
-            self._log_status(_('Checking for new mailboxes'))
-            self._unlocked_discover_mailboxes(self.my_config.discovery.paths)
+        self.discover_mailboxes()
 
         if errors:
             self._log_status(_('Rescanned %d mailboxes, failed to rescan %d'
@@ -197,11 +171,13 @@ class BaseMailSource(threading.Thread):
                     for mbx_cfg in self.my_config.mailbox.values()
                     if mbx_cfg.local])
 
-    def _unlocked_discover_mailboxes(self, paths):
+    def discover_mailboxes(self, paths=None):
         config = self.session.config
+        self._log_status(_('Checking for new mailboxes'))
+
         existing = self._existing_mailboxes()
         adding = []
-        paths = paths[:]
+        paths = (paths or self.my_config.discovery.paths)[:]
         while paths:
             raw_fn = paths.pop(0)
             fn = os.path.abspath(os.path.normpath(os.path.expanduser(raw_fn)))
@@ -223,7 +199,7 @@ class BaseMailSource(threading.Thread):
         for path in adding:
             new[config.sys.mailbox.append(path)] = path
         for mailbox_idx in new.keys():
-            mbx_cfg = self._unlocked_take_over_mailbox(mailbox_idx)
+            mbx_cfg = self.take_over_mailbox(mailbox_idx)
             if mbx_cfg.policy != 'unknown':
                 del new[mailbox_idx]
         if new:
@@ -231,17 +207,18 @@ class BaseMailSource(threading.Thread):
 
         return True
 
-    def _unlocked_take_over_mailbox(self, mailbox_idx):
+    def take_over_mailbox(self, mailbox_idx):
         config = self.session.config
         disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
-        mailbox_idx = FormatMbxId(mailbox_idx)
-        self.my_config.mailbox[mailbox_idx] = {
-            'path': '@%s' % mailbox_idx,
-            'policy': disco_cfg.policy,
-            'process_new': disco_cfg.process_new,
-        }
-        mbx_cfg = self.my_config.mailbox[mailbox_idx]
-        mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
+        with self._lock:
+            mailbox_idx = FormatMbxId(mailbox_idx)
+            self.my_config.mailbox[mailbox_idx] = {
+                'path': '@%s' % mailbox_idx,
+                'policy': disco_cfg.policy,
+                'process_new': disco_cfg.process_new,
+            }
+            mbx_cfg = self.my_config.mailbox[mailbox_idx]
+            mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
         self._create_primary_tag(mbx_cfg)
         self._create_local_mailbox(mbx_cfg)
         return mbx_cfg
@@ -319,12 +296,9 @@ class BaseMailSource(threading.Thread):
     def _process_new(self, msg, msg_ts, keywords, snippet):
         return ProcessNew(self.session, msg, msg_ts, keywords, snippet)
 
-    def _unlocked_copy_new_messages(self, mbx_key, mbx_cfg, stop_after=-1):
+    def _copy_new_messages(self, mbx_key, mbx_cfg, stop_after=-1):
         session, config = self.session, self.session.config
-        locked = self._lock.locked()
         try:
-            if locked:
-                self._lock.release()
             src = config.open_mailbox(session, mbx_key, prefer_local=False)
             loc = config.open_mailbox(session, mbx_key, prefer_local=True)
             if src == loc:
@@ -334,68 +308,56 @@ class BaseMailSource(threading.Thread):
                     loc.add_from_source(key, src.get_bytes(key))
                     stop_after -= 1
                     if stop_after == 0:
-                        break
+                        return
                 if mailpile.util.QUITTING or self._interrupt:
-                    break
+                    return
         except IOError:
             # These just abort the download/read, which we're going to just
             # take in stride for now.
             pass
-        finally:
-            if locked:
-                self._lock.acquire()
 
-    def _unlocked_rescan_mailbox(self, mbx_key, stop_after=None):
+    def rescan_mailbox(self, mbx_key, stop_after=None):
         session, config = self.session, self.session.config
-        mbx_key = FormatMbxId(mbx_key)
-        if self._rescanning:
-            # We unlock below, so there is a chance someone will try to
-            # rescan again while we're in a mailbox. If they do, fail.
-            return -1
-        try:
+
+        with self._lock:
+            if self._rescanning:
+                return -1
             self._rescanning = True
+
+        try:
             ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
                                                                    stop_after)
-
-            mbx_cfg = self.my_config.mailbox[mbx_key]
-            path = self._path(mbx_cfg)
-            if (path in ('/dev/null', '', None)
-                    or mbx_cfg.policy in ('ignore', 'unknown')):
-                return 0
-            self._log_status(_('Rescanning: %s') % path)
+            with self._lock:
+                mbx_key = FormatMbxId(mbx_key)
+                mbx_cfg = self.my_config.mailbox[mbx_key]
+                path = self._path(mbx_cfg)
+                if (path in ('/dev/null', '', None)
+                        or mbx_cfg.policy in ('ignore', 'unknown')):
+                    return 0
+                self._log_status(_('Rescanning: %s') % path)
 
             if mbx_cfg.local:
-                self._create_local_mailbox(mbx_cfg)
-                self._unlocked_copy_new_messages(mbx_key, mbx_cfg,
-                                                 stop_after=stop_after)
+                with self._lock:
+                    self._create_local_mailbox(mbx_cfg)
+                self._copy_new_messages(mbx_key, mbx_cfg,
+                                        stop_after=stop_after)
 
-            apply_tags = mbx_cfg.apply_tags[:]
+            with self._lock:
+                apply_tags = mbx_cfg.apply_tags[:]
+                self._create_primary_tag(mbx_cfg)
+                if mbx_cfg.primary_tag:
+                    tid = config.get_tag_id(mbx_cfg.primary_tag)
+                    if tid:
+                        apply_tags.append(tid)
 
-            self._create_primary_tag(mbx_cfg)
-            if mbx_cfg.primary_tag:
-                tid = config.get_tag_id(mbx_cfg.primary_tag)
-                if tid:
-                    apply_tags.append(tid)
+            return config.index.scan_mailbox(
+                session, mbx_key, mbx_cfg.local or path,
+                config.open_mailbox,
+                process_new=(mbx_cfg.process_new and
+                             self._process_new or False),
+                apply_tags=(apply_tags or []),
+                stop_after=stop_after)
 
-            locked = self._lock.locked()
-            try:
-                if locked:
-                    # We need to unlock here, because the mailbox scanner
-                    # may need to interact with us.
-                    try:
-                        self._lock.release()
-                    except thread.error:
-                        locked = False
-                return config.index.scan_mailbox(
-                    session, mbx_key, mbx_cfg.local or path,
-                    config.open_mailbox,
-                    process_new=(mbx_cfg.process_new and
-                                 self._process_new or False),
-                    apply_tags=(apply_tags or []),
-                    stop_after=stop_after)
-            finally:
-                if locked:
-                    self._lock.acquire()
         except ValueError:
             session.ui.debug(traceback.format_exc())
             return -1

@@ -15,17 +15,18 @@ class MboxMailSource(BaseMailSource):
         BaseMailSource.__init__(self, *args, **kwargs)
         self.watching = -1
 
-    def _unlocked_open(self):
-        mailboxes = self.my_config.mailbox.values()
-        if self.watching == len(mailboxes):
-            return True
-        else:
-            self.watching = len(mailboxes)
+    def open(self):
+        with self._lock:
+            mailboxes = self.my_config.mailbox.values()
+            if self.watching == len(mailboxes):
+                return True
+            else:
+                self.watching = len(mailboxes)
 
-        # Prepare the data section of our event, for keeping state.
-        for d in ('mtimes', 'sizes'):
-            if d not in self.event.data:
-                self.event.data[d] = {}
+            # Prepare the data section of our event, for keeping state.
+            for d in ('mtimes', 'sizes'):
+                if d not in self.event.data:
+                    self.event.data[d] = {}
 
         self._log_status(_('Watching %d mbox mailboxes') % self.watching)
         return True

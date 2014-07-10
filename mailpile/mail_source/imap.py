@@ -200,7 +200,7 @@ class SharedImapMailbox(Mailbox):
 
     >>> imap = ImapMailSource(session, imap_config)
     >>> mailbox = SharedImapMailbox(session, imap, conn_cls=_MockImap)
-    >>> mailbox.add('From: Bjarni\\r\\nBarely a message')
+    >>> #mailbox.add('From: Bjarni\\r\\nBarely a message')
     """
 
     def __init__(self, session, mail_source,
@@ -380,24 +380,23 @@ class ImapMailSource(BaseMailSource):
             pass
         return BaseMailSource._sleep(self, seconds)
 
-    def _unlocked_open(self, conn_cls=None, throw=False):
-        #
-        # When opening an IMAP connection, we need to do a few things:
-        #  1. Connect, log in
-        #  2. Check the capabilities of the remote server
-        #  3. If there is IDLE support, subscribe to all the paths we
-        #     are currently watching.
+    def open(self, conn_cls=None, throw=False):
+        conn = self.conn
+        if conn:
+            try:
+                with conn as c:
+                    if self.timed(c.noop)[0] == 'OK':
+                        return conn
+            except self.CONN_ERRORS + (AttributeError, ):
+                pass
+            with self._lock:
+                if self.conn == conn:
+                    self.conn = None
+            conn.quit()
 
+        conn = None
         my_config = self.my_config
         mailboxes = my_config.mailbox.values()
-        if self.conn:
-            try:
-                with self.conn as conn:
-                    if self.timed(conn.noop)[0] == 'OK':
-                        return self.conn
-            except self.CONN_ERRORS + (AttributeError, ):
-                self.conn.quit()
-        conn = self.conn = None
 
         # If we are given a conn class, use that - this allows mocks for
         # testing.
@@ -417,7 +416,8 @@ class ImapMailSource(BaseMailSource):
             def mkconn():
                 return conn_cls(my_config.host, my_config.port)
             conn = self.timed(mkconn)
-            conn.debug = ('imap' in self.session.config.sys.debug) and 4 or 0
+            conn.debug = ('imaplib' in self.session.config.sys.debug
+                          ) and 4 or 0
 
             ok, data = self.timed_imap(conn.login,
                                        my_config.username,
@@ -430,27 +430,33 @@ class ImapMailSource(BaseMailSource):
 
             ok, data = self.timed_imap(conn.capability)
             if ok:
-                self.capabilities = set(' '.join(data).upper().split())
+                capabilities = set(' '.join(data).upper().split())
             else:
-                self.capabilities = set()
+                capabilities = set()
 
-            if 'IDLE' in self.capabilities:
-                self.conn = SharedImapConn(self.session, conn,
-                                           idle_mailbox='INBOX',
-                                           idle_callback=self._idle_callback)
-            else:
-                self.conn = SharedImapConn(self.session, conn)
+            with self._lock:
+                if self.conn is not None:
+                    raise IOError('Woah, we lost a race.')
+                self.capabilities = capabilities
+                if 'IDLE' in capabilities:
+                    self.conn = SharedImapConn(
+                        self.session, conn,
+                        idle_mailbox='INBOX',
+                        idle_callback=self._idle_callback)
+                else:
+                    self.conn = SharedImapConn(self.session, conn)
 
-            # Prepare the data section of our event, for keeping state.
-            for d in ('uidvalidity', 'uidnext'):
-                if d not in event.data:
-                    event.data[d] = {}
+                # Prepare the data section of our event, for keeping state.
+                for d in ('uidvalidity', 'uidnext'):
+                    if d not in event.data:
+                        event.data[d] = {}
 
             if self.event:
                 self._log_status(_('Connected to IMAP server %s'
                                    ) % my_config.host)
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug('CONNECTED %s' % self.conn)
+
             return self.conn
 
         except TimedOut:
@@ -505,13 +511,13 @@ class ImapMailSource(BaseMailSource):
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)
 
-    def _unlocked_discover_mailboxes(self, unused_paths):
+    def discover_mailboxes(self, unused_paths=None):
         config = self.session.config
         existing = self._existing_mailboxes()
         discovered = []
-        with self._unlocked_open() as raw_conn:
+        with self.open() as raw_conn:
             try:
-                ok, data = self.timed_imap(raw_conn.list)
+                ok, data = self.timed_imap(raw_conn.list, '', '%')
                 while ok and len(data) >= 3:
                     (flags, sep, path), data[:3] = data[:3], []
                     path = self._fmt_path(path)
@@ -522,7 +528,7 @@ class ImapMailSource(BaseMailSource):
 
         for path, flags in discovered:
             idx = config.sys.mailbox.append(path)
-            mbx = self._unlocked_take_over_mailbox(idx)
+            mbx = self._take_over_mailbox(idx)
             if mbx.policy == 'unknown':
                 self.event.data['have_unknown'] = True
 

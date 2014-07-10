@@ -15,16 +15,17 @@ class MaildirMailSource(BaseMailSource):
         BaseMailSource.__init__(self, *args, **kwargs)
         self.watching = -1
 
-    def _unlocked_open(self):
-        mailboxes = self.my_config.mailbox.values()
-        if self.watching == len(mailboxes):
-            return True
-        else:
-            self.watching = len(mailboxes)
+    def open(self):
+        with self._lock:
+            mailboxes = self.my_config.mailbox.values()
+            if self.watching == len(mailboxes):
+                return True
+            else:
+                self.watching = len(mailboxes)
 
-        for d in ('mtimes_cur', 'mtimes_new', 'mtimes_tmp'):
-            if d not in self.event.data:
-                self.event.data[d] = {}
+            for d in ('mtimes_cur', 'mtimes_new', 'mtimes_tmp'):
+                if d not in self.event.data:
+                    self.event.data[d] = {}
 
         self._log_status(_('Watching %d maildir mailboxes') % self.watching)
         return True
