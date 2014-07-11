@@ -34,7 +34,16 @@ $(document).on('click', '.message-action-forward', function() {
 /* Message - Move message to inbox */
 $(document).on('click', '.message-action-inbox', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
-  Mailpile.tag_add_delete(['inbox'], ['spam', 'trash'], mid, function(result) {
+  Mailpile.tag_add_delete(['inbox'], ['spam', 'trash'], mid, function() {
+    window.location.href = '/in/inbox/';
+  });
+});
+
+
+/* Message - Move message to archive */
+$(document).on('click', '.message-action-archive', function() {
+  var mid = $(this).parent().parent().parent().parent().data('mid');
+  Mailpile.tag_add_delete('', ['inbox'], mid, function(response) {
     window.location.href = '/in/inbox/';
   });
 });
