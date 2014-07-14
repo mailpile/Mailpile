@@ -247,7 +247,7 @@ class MailIndex:
         if session:
             session.ui.mark(_('Loading metadata index...'))
         try:
-            with self._lock, self._save_lock:
+            with self._save_lock:
                 with open(self.config.mailindex_file(), 'r') as fd:
                     decrypt_and_parse_lines(fd, process_lines, self.config,
                                             newlines=True, decode=False)

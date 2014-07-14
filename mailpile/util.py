@@ -75,25 +75,37 @@ def WhereAmI(start=1):
 
 def _TracedLock(what, *a, **kw):
     lock = what(*a, **kw)
+
     class Wrapper:
         def acquire(self, *args, **kwargs):
-            print '===!=== %s at %s' % (str(lock), WhereAmI(2))
+            if self.locked():
+                print '==!== Waiting for %s at %s' % (str(lock), WhereAmI(2))
             return lock.acquire(*args, **kwargs)
         def release(self, *args, **kwargs):
             return lock.release(*args, **kwargs)
         def __enter__(self, *args, **kwargs):
-            print '===!=== %s at %s' % (str(lock), WhereAmI(2))
+            if self.locked():
+                print '==!== Waiting for %s at %s' % (str(lock), WhereAmI(2))
             return lock.__enter__(*args, **kwargs)
         def __exit__(self, *args, **kwargs):
             return lock.__exit__(*args, **kwargs)
         def _is_owned(self, *args, **kwargs):
             return lock._is_owned(*args, **kwargs)
         def locked(self, *args, **kwargs):
-            return lock.locked(*args, **kwargs)
+            acquired = False
+            try:
+                acquired = lock.acquire(False)
+                return (not acquired)
+            finally:
+                if acquired:
+                    lock.release()
+
     return Wrapper()
+
 
 def TracedLock(*args, **kwargs):
     return _TracedLock(threading.Lock, *args, **kwargs)
+
 
 def TracedRLock(*args, **kwargs):
     return _TracedLock(threading.RLock, *args, **kwargs)
@@ -102,15 +114,15 @@ def TracedRLock(*args, **kwargs):
 TracedLocks = (TracedLock, TracedRLock)
 UnTracedLocks = (threading.Lock, threading.RLock)
 
-EventLock, EventRLock = UnTracedLocks
-ConfigLock, ConfigRLock = UnTracedLocks
+EventLock, EventRLock = TracedLocks
+ConfigLock, ConfigRLock = TracedLocks
 CryptoLock, CryptoRLock = TracedLocks
 UiLock, UiRLock = TracedLocks
 WorkerLock, WorkerRLock = TracedLocks
 MboxLock, MboxRLock = TracedLocks
-SearchLock, SearchRLock = UnTracedLocks
-PListLock, PListRLock = UnTracedLocks
-VCardLock, VCardRLock = UnTracedLocks
+SearchLock, SearchRLock = TracedLocks
+PListLock, PListRLock = TracedLocks
+VCardLock, VCardRLock = TracedLocks
 MSrcLock, MSrcRLock = TracedLocks
 
 ##############################################################################

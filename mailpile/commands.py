@@ -1236,7 +1236,7 @@ class ProgramStatus(Command):
             ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
              mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
             ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
-             mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),
+             mailpile.postinglist.GLOBAL_GPL_LOCK.locked()),
         ])
 
         threads = threading.enumerate()

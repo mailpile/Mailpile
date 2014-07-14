@@ -147,10 +147,8 @@ def Main(args):
         pass
 
     finally:
-        if session.interactive and config.sys.debug:
-            session.ui.display_result(Action(session, 'ps', ''))
-            if readline:
-                readline.write_history_file(session.config.history_file())
+        if readline:
+            readline.write_history_file(session.config.history_file())
 
         # Make everything in the background quit ASAP...
         mailpile.util.LAST_USER_ACTIVITY = 0
@@ -161,6 +159,9 @@ def Main(args):
         config.stop_workers()
         if config.index:
             config.index.save_changes()
+
+        if session.interactive and config.sys.debug:
+            session.ui.display_result(Action(session, 'ps', ''))
 
 if __name__ == "__main__":
     Main(sys.argv[1:])

@@ -268,7 +268,7 @@ class PostingList(object):
             return self
 
 
-GLOBAL_GPL_LOCK = PListRLock()
+GLOBAL_GPL_LOCK = PListLock()
 
 
 class GlobalPostingList(PostingList):
