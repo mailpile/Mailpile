@@ -9,8 +9,8 @@ from mailpile.util import *
 
 
 GLOBAL_POSTING_LIST = None
-GLOBAL_POSTING_LOCK = TracedRLock()
-GLOBAL_OPTIMIZE_LOCK = TracedLock()
+GLOBAL_POSTING_LOCK = PListRLock()
+GLOBAL_OPTIMIZE_LOCK = PListLock()
 
 
 # FIXME: Create a tiny cache for PostingList objects, so we can start
@@ -169,7 +169,7 @@ class PostingList(object):
         self.sig = sig or self.WordSig(word, self.config)
         self.word = word
         self.WORDS = {self.sig: set()}
-        self.lock = TracedRLock()
+        self.lock = PListRLock()
         self.load()
 
     def _parse_lines(self, lines):
@@ -268,7 +268,7 @@ class PostingList(object):
             return self
 
 
-GLOBAL_GPL_LOCK = TracedRLock()
+GLOBAL_GPL_LOCK = PListRLock()
 
 
 class GlobalPostingList(PostingList):

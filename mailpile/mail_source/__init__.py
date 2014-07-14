@@ -33,7 +33,7 @@ class BaseMailSource(threading.Thread):
 
     def __init__(self, session, my_config):
         threading.Thread.__init__(self)
-        self._lock = TracedRLock()
+        self._lock = MSrcRLock()
         self.my_config = my_config
         self.session = session
         self.alive = None
@@ -417,7 +417,7 @@ class BaseMailSource(threading.Thread):
         self._sleeping = 0
 
     def rescan_now(self, session=None, started_callback=None):
-        begin, end = TracedLock(), TracedLock()
+        begin, end = MSrcLock(), MSrcLock()
         for l in (begin, end):
             l.acquire()
         try:

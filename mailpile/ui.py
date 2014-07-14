@@ -611,7 +611,7 @@ class Session(object):
         self.interactive = False
         self.main = False
         self.order = None
-        self.wait_lock = threading.Condition(TracedRLock())
+        self.wait_lock = threading.Condition(UiRLock())
         self.results = []
         self.searched = []
         self.displayed = (0, 0)

@@ -34,8 +34,6 @@ LAST_USER_ACTIVITY = 0
 
 DEFAULT_PORT = 33411
 
-DEBUG_LOCKS = False
-
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                          ':\"|;\'\\\<\>\?,\.\/\-]{2,}')
 
@@ -73,35 +71,49 @@ def WhereAmI(start=1):
          for i in reversed(range(start, len(stack)-1))])
 
 
-if DEBUG_LOCKS:
-    def _TracedLock(what, *a, **kw):
-        lock = what(*a, **kw)
-        class Wrapper:
-            def acquire(self, *args, **kwargs):
-                print '===!=== %s at %s' % (str(lock), WhereAmI(2))
-                return lock.acquire(*args, **kwargs)
-            def release(self, *args, **kwargs):
-                return lock.release(*args, **kwargs)
-            def __enter__(self, *args, **kwargs):
-                print '===!=== %s at %s' % (str(lock), WhereAmI(2))
-                return lock.__enter__(*args, **kwargs)
-            def __exit__(self, *args, **kwargs):
-                return lock.__exit__(*args, **kwargs)
-            def _is_owned(self, *args, **kwargs):
-                return lock._is_owned(*args, **kwargs)
-            def locked(self, *args, **kwargs):
-                return lock.locked(*args, **kwargs)
-        return Wrapper()
+##[ Lock debugging tools ]##################################################
 
-    def TracedLock(*args, **kwargs):
-        return _TracedLock(threading.Lock, *args, **kwargs)
+def _TracedLock(what, *a, **kw):
+    lock = what(*a, **kw)
+    class Wrapper:
+        def acquire(self, *args, **kwargs):
+            print '===!=== %s at %s' % (str(lock), WhereAmI(2))
+            return lock.acquire(*args, **kwargs)
+        def release(self, *args, **kwargs):
+            return lock.release(*args, **kwargs)
+        def __enter__(self, *args, **kwargs):
+            print '===!=== %s at %s' % (str(lock), WhereAmI(2))
+            return lock.__enter__(*args, **kwargs)
+        def __exit__(self, *args, **kwargs):
+            return lock.__exit__(*args, **kwargs)
+        def _is_owned(self, *args, **kwargs):
+            return lock._is_owned(*args, **kwargs)
+        def locked(self, *args, **kwargs):
+            return lock.locked(*args, **kwargs)
+    return Wrapper()
 
-    def TracedRLock(*args, **kwargs):
-        return _TracedLock(threading.RLock, *args, **kwargs)
+def TracedLock(*args, **kwargs):
+    return _TracedLock(threading.Lock, *args, **kwargs)
 
-else:
-    TracedLock = threading.Lock
-    TracedRLock = threading.RLock
+def TracedRLock(*args, **kwargs):
+    return _TracedLock(threading.RLock, *args, **kwargs)
+
+
+TracedLocks = (TracedLock, TracedRLock)
+UnTracedLocks = (threading.Lock, threading.RLock)
+
+EventLock, EventRLock = UnTracedLocks
+ConfigLock, ConfigRLock = UnTracedLocks
+CryptoLock, CryptoRLock = TracedLocks
+UiLock, UiRLock = TracedLocks
+WorkerLock, WorkerRLock = TracedLocks
+MboxLock, MboxRLock = TracedLocks
+SearchLock, SearchRLock = UnTracedLocks
+PListLock, PListRLock = UnTracedLocks
+VCardLock, VCardRLock = UnTracedLocks
+MSrcLock, MSrcRLock = TracedLocks
+
+##############################################################################
 
 
 class WorkerError(Exception):

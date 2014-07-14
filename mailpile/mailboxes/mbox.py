@@ -29,14 +29,14 @@ class MailpileMailbox(mailbox.mbox):
         self._mtime = 0
         self._save_to = None
         self._encryption_key_func = lambda: None
-        self._lock = TracedLock()
+        self._lock = MboxLock()
 
     def _get_fd(self):
         return open(self._path, 'rb+')
 
     def __setstate__(self, dict):
         self.__dict__.update(dict)
-        self._lock = TracedLock()
+        self._lock = MboxLock()
         with self._lock:
             self._save_to = None
             self._encryption_key_func = lambda: None

@@ -322,7 +322,7 @@ class SimpleVCard(object):
         self.encryption_key = lambda: None
         self.filename = None
         self._lines = []
-        self._lock = TracedRLock()
+        self._lock = VCardRLock()
         if 'data' in kwargs and kwargs['data'] is not None:
             self.load(data=kwargs['data'])
         self.add(*lines)
@@ -959,7 +959,7 @@ class VCardStore(dict):
         self.config = config
         self.vcard_dir = vcard_dir
         self.loaded = False
-        self._lock = TracedRLock()
+        self._lock = VCardRLock()
 
     def index_vcard(self, card):
         attrs = (['email'] if (card.kind in self.KINDS_PEOPLE)

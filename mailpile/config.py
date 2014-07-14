@@ -906,7 +906,7 @@ class ConfigManager(ConfigDict):
         self.vcards = {}
         self._mbox_cache = []
         self._running = {}
-        self._lock = TracedRLock()
+        self._lock = ConfigRLock()
 
         self._magic = True  # Enable the getattr/getitem magic
 

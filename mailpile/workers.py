@@ -32,7 +32,7 @@ class Cron(threading.Thread):
         self.schedule = {}
         self.sleep = 10
         # This lock is used to synchronize
-        self.lock = TracedLock()
+        self.lock = WorkerLock()
 
     def __str__(self):
         return '%s: %s' % (threading.Thread.__str__(self), self.running)
@@ -153,7 +153,7 @@ class Worker(threading.Thread):
         self.name = name or 'Worker'
         self.ALIVE = False
         self.JOBS = []
-        self.LOCK = threading.Condition(TracedRLock())
+        self.LOCK = threading.Condition(WorkerRLock())
         self.running = 'Idle'
         self.pauses = 0
         self.session = session

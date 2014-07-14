@@ -7,7 +7,7 @@ import time
 from email.utils import formatdate, parsedate_tz, mktime_tz
 
 from mailpile.crypto.streamer import EncryptingStreamer, DecryptingStreamer
-from mailpile.util import TracedRLock, TracedLock, CleanText, json_helper
+from mailpile.util import EventRLock, EventLock, CleanText, json_helper
 
 
 EVENT_COUNTER_LOCK = threading.Lock()
@@ -165,8 +165,8 @@ class EventLog(object):
         self._events = {}
 
         # Internals...
-        self._waiter = threading.Condition(TracedRLock())
-        self._lock = TracedLock()
+        self._waiter = threading.Condition(EventRLock())
+        self._lock = EventLock()
         self._log_fd = None
 
     def _notify_waiters(self):
