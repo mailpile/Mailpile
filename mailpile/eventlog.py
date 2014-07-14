@@ -7,7 +7,7 @@ import time
 from email.utils import formatdate, parsedate_tz, mktime_tz
 
 from mailpile.crypto.streamer import EncryptingStreamer, DecryptingStreamer
-from mailpile.util import CleanText, json_helper
+from mailpile.util import TracedRLock, TracedLock, CleanText, json_helper
 
 
 EVENT_COUNTER_LOCK = threading.Lock()
@@ -20,13 +20,10 @@ def NewEventId():
     events per second. Beyond that, all bets are off. :-P
     """
     global EVENT_COUNTER
-    try:
-        EVENT_COUNTER_LOCK.acquire()
+    with EVENT_COUNTER_LOCK:
         EVENT_COUNTER = EVENT_COUNTER+1
         EVENT_COUNTER %= 0x100000
         return '%8.8x.%5.5x.%x' % (time.time(), EVENT_COUNTER, os.getpid())
-    finally:
-        EVENT_COUNTER_LOCK.release()
 
 
 def _ClassName(obj):
@@ -168,19 +165,17 @@ class EventLog(object):
         self._events = {}
 
         # Internals...
-        self._waiter = threading.Condition()
-        self._lock = threading.Lock()
+        self._waiter = threading.Condition(TracedRLock())
+        self._lock = TracedLock()
         self._log_fd = None
 
     def _notify_waiters(self):
-        self._waiter.acquire()
-        self._waiter.notifyAll()
-        self._waiter.release()
+        with self._waiter:
+            self._waiter.notifyAll()
 
     def wait(self, timeout=None):
-        self._waiter.acquire()
-        self._waiter.wait(timeout)
-        self._waiter.release()
+        with self._waiter:
+            self._waiter.wait(timeout)
 
     def _save_filename(self):
         return os.path.join(self.logdir, self._log_start_id)
@@ -303,14 +298,11 @@ class EventLog(object):
 
     def log_event(self, event):
         """Log an Event object."""
-        self._lock.acquire()
-        try:
+        with self._lock:
             self._save_events([event])
             self._logged += 1
             self._maybe_rotate_log()
             self._notify_waiters()
-        finally:
-            self._lock.release()
         return event
 
     def log(self, *args, **kwargs):
@@ -318,12 +310,9 @@ class EventLog(object):
         return self.log_event(Event(*args, **kwargs))
 
     def close(self):
-        self._lock.acquire()
-        try:
+        with self._lock:
             self._log_fd.close()
             self._log_fd = None
-        finally:
-            self._lock.release()
 
     def _prune_completed(self):
         for event_id in self._events.keys():
@@ -331,8 +320,7 @@ class EventLog(object):
                 del self._events[event_id]
 
     def load(self):
-        self._lock.acquire()
-        try:
+        with self._lock:
             self._open_log()
             for lf in self._list_logfiles()[-4:]:
                 try:
@@ -343,8 +331,6 @@ class EventLog(object):
             self._prune_completed()
             self._save_events(self._events.values())
             return self
-        finally:
-            self._lock.release()
 
     def purge_old_logfiles(self, keep=None):
         keep = keep or self.KEEP_LOGS

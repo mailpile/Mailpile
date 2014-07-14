@@ -8,7 +8,7 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 
-from mailpile.util import md5_hex
+from mailpile.util import md5_hex, TracedLock
 from mailpile.util import sha512b64 as genkey
 
 
@@ -386,7 +386,7 @@ class DecryptingStreamer(InputCoprocess):
         self.key = key
 
         # Start reading our data...
-        self.startup_lock = threading.Lock()
+        self.startup_lock = TracedLock()
         self.startup_lock.acquire()
         self.read_fd = self.data_filter.reader()
 

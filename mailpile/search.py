@@ -121,8 +121,8 @@ class MailIndex:
         self.EMAILS_SAVED = 0
         self._scanned = {}
         self._saved_changes = 0
-        self._lock = threading.RLock()
-        self._save_lock = threading.RLock()
+        self._lock = TracedRLock()
+        self._save_lock = TracedRLock()
         self._prepare_sorting()
 
     @classmethod

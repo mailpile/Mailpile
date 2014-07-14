@@ -32,7 +32,7 @@ class Cron(threading.Thread):
         self.schedule = {}
         self.sleep = 10
         # This lock is used to synchronize
-        self.lock = threading.Lock()
+        self.lock = TracedLock()
 
     def __str__(self):
         return '%s: %s' % (threading.Thread.__str__(self), self.running)
@@ -46,14 +46,10 @@ class Cron(threading.Thread):
         interval -- The interval (in seconds) of the task
         task    -- A task function
         """
-        self.lock.acquire()
-        try:
+        with self.lock:
             self.schedule[name] = [name, interval, task, time.time()]
             self.sleep = 1
             self.__recalculateSleep()
-        finally:
-            # Not releasing the lock will block the entire cron thread
-            self.lock.release()
 
     def __recalculateSleep(self):
         """
@@ -81,12 +77,9 @@ class Cron(threading.Thread):
         name -- The name of the task to cancel
         """
         if name in self.schedule:
-            self.lock.acquire()
-            try:
+            with self.lock:
                 del self.schedule[name]
                 self.__recalculateSleep()
-            finally:
-                self.lock.release()
 
     def run(self):
         """
@@ -96,16 +89,16 @@ class Cron(threading.Thread):
         self.ALIVE = True
         # Main thread loop
         while self.ALIVE and not mailpile.util.QUITTING:
+            tasksToBeExecuted = []  # Contains tuples (name, func)
             now = time.time()
             # Check if any of the task is (over)due
-            self.lock.acquire()
-            tasksToBeExecuted = []  # Contains tuples (name, func)
-            for task_spec in self.schedule.values():
-                name, interval, task, last = task_spec
-                if last + interval <= now:
-                    tasksToBeExecuted.append((name, task))
-            self.lock.release()
-            #Execute the tasks
+            with self.lock:
+                for task_spec in self.schedule.values():
+                    name, interval, task, last = task_spec
+                    if last + interval <= now:
+                        tasksToBeExecuted.append((name, task))
+
+            # Execute the tasks
             for name, task in tasksToBeExecuted:
                 # Set last_executed
                 self.schedule[name][3] = time.time()
@@ -160,7 +153,7 @@ class Worker(threading.Thread):
         self.name = name or 'Worker'
         self.ALIVE = False
         self.JOBS = []
-        self.LOCK = threading.Condition()
+        self.LOCK = threading.Condition(TracedRLock())
         self.running = 'Idle'
         self.pauses = 0
         self.session = session

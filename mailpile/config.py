@@ -906,7 +906,7 @@ class ConfigManager(ConfigDict):
         self.vcards = {}
         self._mbox_cache = []
         self._running = {}
-        self._lock = threading.RLock()
+        self._lock = TracedRLock()
 
         self._magic = True  # Enable the getattr/getitem magic
 
@@ -988,11 +988,8 @@ class ConfigManager(ConfigDict):
         return all_okay
 
     def load(self, *args, **kwargs):
-        self._lock.acquire()
-        try:
+        with self._lock:
             return self._unlocked_load(*args, **kwargs)
-        finally:
-            self._lock.release()
 
     def _unlocked_load(self, session, filename=None):
         self._mkworkdir(session)
@@ -1058,17 +1055,13 @@ class ConfigManager(ConfigDict):
                                                            mkdir=True))
 
     def reset_rules_from_source(self):
-        self._lock.acquire()
-        try:
+        with self._lock:
             self.set_rules(self._rules_source)
-            self.sys.plugins.rules['_any'][self.RULE_CHECKER
-                                           ] = [None] + self.plugins.available()
-        finally:
-            self._lock.release()
+            self.sys.plugins.rules['_any'][
+                self.RULE_CHECKER] = [None] + self.plugins.available()
 
     def load_plugins(self, session):
-        self._lock.acquire()
-        try:
+        with self._lock:
             from mailpile.plugins import PluginManager
             plugin_list = set(PluginManager.REQUIRED + self.sys.plugins)
             for plugin in plugin_list:
@@ -1078,15 +1071,10 @@ class ConfigManager(ConfigDict):
             session.ui.mark(_('Processing manifests'))
             self.plugins.process_manifests()
             self.prepare_workers(session)
-        finally:
-            self._lock.release()
 
     def save(self, *args, **kwargs):
-        self._lock.acquire()
-        try:
+        with self._lock:
             self._unlocked_save(*args, **kwargs)
-        finally:
-            self._lock.release()
 
     def _unlocked_save(self):
         self._mkworkdir(None)
@@ -1203,24 +1191,24 @@ class ConfigManager(ConfigDict):
         with self._lock:
             self._mbox_cache = [c for c in self._mbox_cache if c[0] != pfn]
             self._mbox_cache.append((pfn, mbx_id, mbox))
-            while len(self._mbox_cache) > MAX_CACHED_MBOXES:
-                pfn, mbx_id, mbox = self._mbox_cache.pop(0)
-                self.save_worker.add_task(
-                    session, 'Save mailbox %s' % mbx_id,
-                    lambda: self.save_mailbox(session, pfn, mbox))
+        while len(self._mbox_cache) > MAX_CACHED_MBOXES:
+            pfn, mbx_id, mbox = self._mbox_cache.pop(0)
+            self.save_worker.add_task(
+                session, 'Save mailbox %s' % mbx_id,
+                lambda: self.save_mailbox(session, pfn, mbox))
 
     def flush_mbox_cache(self, session, clear=True, wait=False):
         with self._lock:
-            flush = self._mbox_cache
+            flush = self._mbox_cache[:]
             if clear:
                 self._mbox_cache = []
-            if wait:
-                saver = self.save_worker.do
-            else:
-                saver = self.save_worker.add_task
-            for pfn, mbx_id, mbox in flush:
-                saver(session, 'Save mailbox %s' % mbx_id,
-                      lambda: self.save_mailbox(session, pfn, mbox))
+        if wait:
+            saver = self.save_worker.do
+        else:
+            saver = self.save_worker.add_task
+        for pfn, mbx_id, mbox in flush:
+            saver(session, 'Save mailbox %s' % mbx_id,
+                  lambda: self.save_mailbox(session, pfn, mbox))
 
     def open_mailbox(self, session, mailbox_id, prefer_local=True):
         mbx_id, src, mfn, pfn = self._mailbox_info(mailbox_id,
@@ -1228,44 +1216,43 @@ class ConfigManager(ConfigDict):
         with self._lock:
             mbox = dict(((p, m) for p, i, m in self._mbox_cache)
                         ).get(pfn, None)
-            try:
-                if not mbox:
-                    if session:
-                        session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
-                    mbox = self.load_pickle(pfn)
-                mbox.update_toc()
-            except KeyboardInterrupt:
-                raise
-            except IOError:
-                pass
-            except:
-                if self.sys.debug:
-                    import traceback
-                    traceback.print_exc()
-
+        try:
             if not mbox:
                 if session:
-                    session.ui.mark(_('%s: Opening: %s (may take a while)'
-                                      ) % (mbx_id, mfn))
-                editable = self.is_editable_mailbox(mbx_id)
-                if src:
-                    msrc = self.mail_sources.get(src._key)
-                    mbox = msrc and msrc.open_mailbox(mbx_id, mfn)
-                if not mbox:
-                    mbox = OpenMailbox(mfn, self, create=editable)
-                    mbox.editable = editable
+                    session.ui.mark(_('%s: Updating: %s') % (mbx_id, mfn))
+                mbox = self.load_pickle(pfn)
+            mbox.update_toc()
+        except KeyboardInterrupt:
+            raise
+        except IOError:
+            pass
+        except:
+            if self.sys.debug:
+                import traceback
+                traceback.print_exc()
 
-            # Always set this, it can't be pickled
-            mbox._encryption_key_func = lambda: self.prefs.obfuscate_index
+        if not mbox:
+            if session:
+                session.ui.mark(_('%s: Opening: %s (may take a while)'
+                                  ) % (mbx_id, mfn))
+            editable = self.is_editable_mailbox(mbx_id)
+            if src:
+                msrc = self.mail_sources.get(src._key)
+                mbox = msrc and msrc.open_mailbox(mbx_id, mfn)
+            if not mbox:
+                mbox = OpenMailbox(mfn, self, create=editable)
+                mbox.editable = editable
 
-            # Finally, re-add to the cache
-            self.cache_mailbox(session, pfn, mbx_id, mbox)
+        # Always set this, it can't be pickled
+        mbox._encryption_key_func = lambda: self.prefs.obfuscate_index
+
+        # Finally, re-add to the cache
+        self.cache_mailbox(session, pfn, mbx_id, mbox)
 
         return mbox
 
     def create_local_mailstore(self, session, name=None):
-        self._lock.acquire()
-        try:
+        with self._lock:
             path = os.path.join(self.workdir, 'mail')
             if name is None:
                 name = '%5.5x' % random.randint(0, 16**5)
@@ -1279,21 +1266,16 @@ class ConfigManager(ConfigDict):
             mbx = wervd.MailpileMailbox(path)
             mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
             return path, mbx
-        finally:
-            self._lock.release()
 
     def open_local_mailbox(self, session):
-        self._lock.acquire()
-        local_id = self.sys.get('local_mailbox_id', None)
-        try:
+        with self._lock:
+            local_id = self.sys.get('local_mailbox_id', None)
             if not local_id:
                 mailbox, mbx = self.create_local_mailstore(session, name='')
                 local_id = FormatMbxId(self.sys.mailbox.append(mailbox))
                 self.sys.local_mailbox_id = local_id
             else:
                 local_id = FormatMbxId(local_id)
-        finally:
-            self._lock.release()
         return local_id, self.open_mailbox(session, local_id)
 
     def get_profile(self, email=None):
@@ -1350,8 +1332,7 @@ class ConfigManager(ConfigDict):
         >>> p == os.path.abspath('static/default')
         True
         """
-        self._lock.acquire()
-        try:
+        with self._lock:
             # This should raise a KeyError if the ftype is unrecognized
             bpath = self.sys.path.get(ftype)
             if not bpath.startswith('/'):
@@ -1364,8 +1345,6 @@ class ConfigManager(ConfigDict):
                     bpath = os.path.join(os.path.dirname(__file__),
                                          '..', bpath)
             return os.path.abspath(bpath)
-        finally:
-            self._lock.release()
 
     def data_file_and_mimetype(self, ftype, fpath, *args, **kwargs):
         # The theme gets precedence
@@ -1389,8 +1368,7 @@ class ConfigManager(ConfigDict):
         return os.path.join(self.workdir, 'mailpile.idx')
 
     def postinglist_dir(self, prefix):
-        self._lock.acquire()
-        try:
+        with self._lock:
             d = os.path.join(self.workdir, 'search')
             if not os.path.exists(d):
                 os.mkdir(d)
@@ -1398,20 +1376,17 @@ class ConfigManager(ConfigDict):
             if not os.path.exists(d):
                 os.mkdir(d)
             return d
-        finally:
-            self._lock.release()
 
     def get_index(self, session):
-        self._lock.acquire()
-        try:
+        # Note: This is a long-running lock, but having two sets of the
+        # index would really suck and this should only ever happen once.
+        with self._lock:
             if self.index:
                 return self.index
             idx = MailIndex(self)
             idx.load(session)
             self.index = idx
             return idx
-        finally:
-            self._lock.release()
 
     def get_tor_socket(self):
         if socks:
@@ -1420,8 +1395,7 @@ class ConfigManager(ConfigDict):
         return socks.socksocket
 
     def get_i18n_translation(self, session=None):
-        self._lock.acquire()
-        try:
+        with self._lock:
             language = self.prefs.language
             trans = None
             if language != "":
@@ -1442,8 +1416,6 @@ class ConfigManager(ConfigDict):
                 trans.set_output_charset("utf-8")
                 trans.install(unicode=True)
             return trans
-        finally:
-            self._lock.release()
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:
@@ -1455,11 +1427,8 @@ class ConfigManager(ConfigDict):
         return fpath, open(fpath, mode), mt
 
     def prepare_workers(self, *args, **kwargs):
-        self._lock.acquire()
-        try:
+        with self._lock:
             return self._unlocked_prepare_workers(*args, **kwargs)
-        finally:
-            self._lock.release()
 
     def _unlocked_prepare_workers(config, session=None, daemons=False):
         # Set globals from config first...
@@ -1547,12 +1516,19 @@ class ConfigManager(ConfigDict):
 
     def stop_workers(config):
         with config._lock:
-            for wait in (False, True):
-                for w in ([config.http_worker,
-                           config.slow_worker,
-                           config.cron_worker] +
-                          config.other_workers +
-                          config.mail_sources.values()):
+            worker_list = ([config.http_worker,
+                            config.slow_worker,
+                            config.cron_worker] +
+                           config.other_workers +
+                           config.mail_sources.values())
+            save_worker = config.save_worker
+            config.other_workers = []
+            config.http_worker = config.cron_worker = None
+            config.slow_worker = config.dumb_worker
+            config.save_worker = config.dumb_worker
+
+        for wait in (False, True):
+                for w in worker_list:
                     if w and w.isAlive():
                         if config.sys.debug:
                             if wait:
@@ -1560,18 +1536,14 @@ class ConfigManager(ConfigDict):
                             else:
                                 print 'Stopping %s' % w
                         w.quit(join=wait)
-            config.other_workers = []
-            config.http_worker = config.cron_worker = None
-            config.slow_worker = config.dumb_worker
 
-            # Handle the save worker last, once all the others are
-            # no longer feeding it new things to do.
-            print 'Waiting for %s' % config.save_worker
-            config.save_worker.quit(join=True)
-            config.save_worker = config.dumb_worker
+        # Handle the save worker last, once all the others are
+        # no longer feeding it new things to do.
+        print 'Waiting for %s' % save_worker
+        save_worker.quit(join=True)
 
-            # Hooray!
-            print 'All stopped!'
+        # Hooray!
+        print 'All stopped!'
 
 
 ##############################################################################

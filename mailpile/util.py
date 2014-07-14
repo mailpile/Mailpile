@@ -5,6 +5,7 @@
 import cgi
 import datetime
 import hashlib
+import inspect
 import locale
 import re
 import subprocess
@@ -32,6 +33,8 @@ QUITTING = False
 LAST_USER_ACTIVITY = 0
 
 DEFAULT_PORT = 33411
+
+DEBUG_LOCKS = False
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'
                          ':\"|;\'\\\<\>\?,\.\/\-]{2,}')
@@ -61,6 +64,44 @@ STRHASH_RE = re.compile('[^0-9a-z]+')
 B36_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 RE_LONG_LINE_SPLITTER = re.compile('([^\n]{,72}) ')
+
+
+def WhereAmI(start=1):
+    stack = inspect.stack()
+    return '%s' % '->'.join(
+        ['%s:%s' % ('/'.join(stack[i][1].split('/')[-2:]), stack[i][2])
+         for i in reversed(range(start, len(stack)-1))])
+
+
+if DEBUG_LOCKS:
+    def _TracedLock(what, *a, **kw):
+        lock = what(*a, **kw)
+        class Wrapper:
+            def acquire(self, *args, **kwargs):
+                print '===!=== %s at %s' % (str(lock), WhereAmI(2))
+                return lock.acquire(*args, **kwargs)
+            def release(self, *args, **kwargs):
+                return lock.release(*args, **kwargs)
+            def __enter__(self, *args, **kwargs):
+                print '===!=== %s at %s' % (str(lock), WhereAmI(2))
+                return lock.__enter__(*args, **kwargs)
+            def __exit__(self, *args, **kwargs):
+                return lock.__exit__(*args, **kwargs)
+            def _is_owned(self, *args, **kwargs):
+                return lock._is_owned(*args, **kwargs)
+            def locked(self, *args, **kwargs):
+                return lock.locked(*args, **kwargs)
+        return Wrapper()
+
+    def TracedLock(*args, **kwargs):
+        return _TracedLock(threading.Lock, *args, **kwargs)
+
+    def TracedRLock(*args, **kwargs):
+        return _TracedLock(threading.RLock, *args, **kwargs)
+
+else:
+    TracedLock = threading.Lock
+    TracedRLock = threading.RLock
 
 
 class WorkerError(Exception):
@@ -561,7 +602,7 @@ class RunTimedThread(threading.Thread):
     def run_timed(self, timeout):
         self.start()
         self.join(timeout=timeout)
-        if self.isAlive():
+        if self.isAlive() or QUITTING:
             raise TimedOut('Timed out: %s' % self.name)
 
 
