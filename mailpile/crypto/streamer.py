@@ -25,10 +25,11 @@ class IOFilter(threading.Thread):
     """
     BLOCKSIZE = 8192
 
-    def __init__(self, fd, callback):
+    def __init__(self, fd, callback, error_callback=None):
         threading.Thread.__init__(self)
         self.fd = fd
         self.callback = callback
+        self.error_callback = error_callback
         self.writing = None
         self.pipe = os.pipe()
 
@@ -81,10 +82,18 @@ class IOFilter(threading.Thread):
             pass
 
     def run(self):
-        if self.writing is True:
-            self._do_write()
-        elif self.writing is False:
-            self._do_read()
+        try:
+            if self.writing is True:
+                self._do_write()
+            elif self.writing is False:
+                self._do_read()
+        except:
+            if self.error_callback:
+                try:
+                    self.error_callback()
+                except:
+                    pass
+            raise
 
 
 class IOCoprocess(object):
@@ -379,7 +388,6 @@ class DecryptingStreamer(InputCoprocess):
         self.expected_inner_md5sum = None
         self.outer_md5 = hashlib.md5()
         self.inner_md5 = hashlib.md5()
-        self.data_filter = self._mk_data_filter(fd, self._read_data)
         self.cipher = self.DEFAULT_CIPHER
         self.state = self.STATE_BEGIN
         self.buffered = ''
@@ -388,6 +396,8 @@ class DecryptingStreamer(InputCoprocess):
         # Start reading our data...
         self.startup_lock = CryptoLock()
         self.startup_lock.acquire()
+        self.data_filter = self._mk_data_filter(fd, self._read_data,
+                                                self.startup_lock.release)
         self.read_fd = self.data_filter.reader()
 
         # Once the header has been processed (_read_data() will release the
@@ -420,8 +430,8 @@ class DecryptingStreamer(InputCoprocess):
             return False
         return True
 
-    def _mk_data_filter(self, fd, cb):
-        return IOFilter(fd, cb)
+    def _mk_data_filter(self, fd, cb, ecb):
+        return IOFilter(fd, cb, error_callback=ecb)
 
     def _read_data(self, data):
         if data is None:
@@ -521,10 +531,11 @@ class ReadLineIOFilter(IOFilter):
     This is a line-based IOFilter, which can stop when it sees a
     particular marker to hand off processing to others.
     """
-    def __init__(self, fd, callback, start_data=None, stop_check=None):
+    def __init__(self, fd, callback,
+                 start_data=None, stop_check=None, error_callback=None):
         self.stop_check = stop_check
         self.start_data = start_data
-        IOFilter.__init__(self, fd, callback)
+        IOFilter.__init__(self, fd, callback, error_callback=error_callback)
 
     def _do_read(self):
         if self.start_data:
@@ -544,10 +555,11 @@ class PartialDecryptingStreamer(DecryptingStreamer):
         self.start_data = start_data
         DecryptingStreamer.__init__(self, *args, **kwargs)
 
-    def _mk_data_filter(self, fd, cb):
+    def _mk_data_filter(self, fd, cb, ecb):
         return ReadLineIOFilter(fd, cb,
                                 start_data=self.start_data,
-                                stop_check=self.EndEncrypted)
+                                stop_check=self.EndEncrypted,
+                                error_callback=ecb)
 
 
 if __name__ == "__main__":
