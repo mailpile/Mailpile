@@ -421,17 +421,16 @@ class GnuPG:
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
                 bufsize=0, close_fds=False)
 
+            if self.passphrase:
+                self.passphrase_handle.write(self.passphrase + "\n")
+                self.passphrase_handle.close()
+
             self.threads = {
                 "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
                                        proc.stderr, self.parse_stderr),
                 "status": StreamReader('gpgi-status(%s)' % wtf,
                                        self.status, self.parse_status),
             }
-            if self.passphrase:
-                self.threads["passphrase"] = StreamWriter(
-                    'gpgi-passphrase(%s)' % wtf,
-                    self.passphrase_handle, self.passphrase,
-                    send_newline=True)
 
             if outputfd:
                 self.threads["stdout"] = StreamReader(
@@ -458,8 +457,6 @@ class GnuPG:
             # Close our pipes so the threads finish
             os.close(self.statuspipe[1])
             proc.stdin.close()
-            if self.passphrase:
-                os.close(self.passphrase_pipe[1])
 
         # Reap the threads
         for name, thr in self.threads.iteritems():
