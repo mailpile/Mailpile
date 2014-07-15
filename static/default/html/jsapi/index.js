@@ -28,7 +28,7 @@ Mailpile = {
         ["normal", "g s",    function() { Mailpile.go("/settings/profiles/"); }],
         ["normal", "h",      function() { Mailpile.go("/help/"); }],
         ["normal", "command+z ctrl+z",  function() { alert('Undo Something ') }],
-        ["normal", "s",      function() { Mailpile.bulk_action_select_target(); }],
+        ["normal", "space",  function() { Mailpile.bulk_action_select_target(); }],
         ["normal", "s a",    function() { Mailpile.bulk_action_select_all(); }],
         ["normal", "s b",    function() { Mailpile.bulk_action_select_between(); }],
         ["normal", "s n",    function() { Mailpile.bulk_action_select_none(); }],
