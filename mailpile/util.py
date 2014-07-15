@@ -116,12 +116,12 @@ UnTracedLocks = (threading.Lock, threading.RLock)
 
 EventLock, EventRLock = TracedLocks
 ConfigLock, ConfigRLock = TracedLocks
-CryptoLock, CryptoRLock = TracedLocks
+CryptoLock, CryptoRLock = UnTracedLocks
 UiLock, UiRLock = TracedLocks
 WorkerLock, WorkerRLock = TracedLocks
 MboxLock, MboxRLock = TracedLocks
 SearchLock, SearchRLock = TracedLocks
-PListLock, PListRLock = TracedLocks
+PListLock, PListRLock = UnTracedLocks
 VCardLock, VCardRLock = TracedLocks
 MSrcLock, MSrcRLock = TracedLocks
 
