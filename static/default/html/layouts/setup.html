@@ -79,7 +79,7 @@
       <span class="setup-welcome-icon icon-donate"></span>
       <img src="/static/img/logo-color.svg">
     </div>
-    <h3>{{_("You're about to experience secure email like never before!")}}</h3>
+    <h3>{{_("Experience secure email like never before!")}}</h3>
     <button id="btn-setup-welcome-begin">{{_("Begin")}}</button>
   </div>
 </script>
@@ -92,7 +92,7 @@
       <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
       <label>{{_("Password")}}</label>
       <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
-      <p class="text-center">{{_("If you have a PGP key with a passphrase, use that passphrase here!")}}</p>
+      <p class="text-center setup-text-detail">{{_("If you have a PGP key with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
       <button id="btn-setup-basic-info" class="text-center">{{_("Next")}}</button>
     </form>
   </div>
@@ -101,58 +101,132 @@
 
 <!-- Discovery -->
 <script id="template-setup-discovery" type="text/template">
-  <div id="setup-box-discovery" class="setup-white animated bounceInRight">
-    <h1>Discovering things</h1>
-    <p>We are analyzing your computer to figure out how to best help you install Mailpile.</p>
-  </div>
-</script>
-
-<script id="template-setup-" type="text/template">
-  <div class="setup-box">
-    <h3><span class="icon-"></span></h3>
-    <p></p>
+  <div id="setup-box-discovery" class="setup-white animated fadeIn">
+    <h1 class="text-center"><span class="icon-discover"></span> Discovery</h1>
+    <p class="text-center">We are analyzing your computer to figure out how to best help you install Mailpile.</p>
+    <div class="text-center">
+      <button id="btn-setup-discovery" class="hide">{{_("Start")}}</button>
+    </div>
   </div>
 </script>
 
 
 <!-- Crypto -->
 <script id="template-setup-crypto-found-keys" type="text/template">
-  <div class="setup-box">
-    <h3>{{_("We found an existing PGP keychain")}}</h3>
-    <%= public_key_count %><br>
-    <%= private_key_count %>
-    <p>{{_("Do you want to generate a new key or import this keychain?")}}</p>
-    <p><a href="#">{{_("Learn About PGP Keys")}}</a></p>
-    <button>{{_("Generate")}}</button>
-    <button>{{_("Import")}}</button>
+  <div id="setup-box-crypto-found-key" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-key"></span> {{_("We Found Existing Encryption Keys")}}</h3>
+    <div class="text-center">
+      <span id="setup-crypto-public-key-count" class="setup-text-detail-large"><%= public_key_count %></span> {{_("Public Keys")}}<br>
+      <span id="setup-crypto-private-key-count" class="setup-text-detail-large"><%= private_key_count %></span> {{_("Private Keys")}}
+    </div>
+    <p class="text-center">{{_("Do you want to generate a new key or import this keychain?")}}</p>
+    <div class="text-center">
+      <button id="btn-setup-crypto-import">{{_("Import")}}</button>
+    </div>
+    <br>
+    <div class="text-center">
+      <a href="#">{{_("Learn About PGP Keys")}}</a>
+    </div>
   </div>
 </script>
 
 <script id="template-setup-crypto-generated" type="text/template">
-  <div class="setup-box">
-    <h3>{{_("New PGP key generated")}}</h3>
+  <div id="setup-box-crypto-generated" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-key"></span> {{_("New Encryption Key Generated")}}</h3>
     <p>{{_("This is your key’s verification fingerprint")}}</p>
     <span class="icon-fingerprint"></span> <%= fingerprint %>
-    <p><a href="#">{{_("See Key Details")}}</a> <a href="#">{{_("Learn About PGP Keys")}}</a></p>
+    <p><a href="#">{{_("See Key Details")}}</a> <a href="#">{{_("Learn About Encryption Keys")}}</a></p>
+    <div class="text-center">
+      <button id="btn-setup-crypto-next">{{_("Next")}}</button>
+    </div>
   </div>
 </script>
 
 
-<!-- Views -->
-<script id="template-setup-" type="text/template">
-  <div class="setup-box">
-    <h3><span class="icon-"></span></h3>
+<!-- Source Local -->
+<script id="template-setup-source-local" type="text/template">
+  <div id="setup-box-source-local" class="setup-box setup-box-medium animated bounceInRight">
+    <h3 class="text-center"><span class="icon-inbox"></span> We Discovered <%= source_type %></h3>
+    <p class="setup-text-detail text-center">Select the mail folders you would like to import</p>
+    <table id="setup-source-local-items" class="rounded full-width-table">
+    </table>
+    <div class="text-center">
+      <button id="btn-setup-source-local" class="center">{{_("Next")}}</button>
+    </div>
+  </div>
+</script>
+
+<!-- Source Local Settings -->
+<script id="template-setup-source-local-settings" type="text/template">
+  <div id="setup-box-source-settings" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
     <p></p>
+    <div class="text-center">
+      <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+    </div>
   </div>
 </script>
 
-<script id="template-setup-" type="text/template">
-  <div class="setup-box">
-    <h3><span class="icon-"></span></h3>
+
+<!-- Source Remote -->
+<script id="template-setup-source-remote" type="text/template">
+  <div id="setup-box-source-remote" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-outbox"></span> Connect An Existing Email Service</h3>
     <p></p>
+    <div class="text-center">
+      <button id="btn-setup-source-remote" class="center">{{_("Next")}}</button>
+    </div>
   </div>
 </script>
+
+
+<!-- Source Settings -->
+<script id="template-setup-source-remote-settings" type="text/template">
+  <div id="setup-box-source-settings" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
+    <form class="standard text-center">
+      <p>Keep Messages synchronized <input type="checkbox" name="" checked="checked"></p>
+      <p>Import <%= source_type %> labels into tags <input type="checkbox" name="" checked="checked"></p>
+      <p>Import <%= source_type %> contacts <input type="checkbox" name="" checked="checked"></p>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+
+
+<!-- Labels / Tags -->
+<script id="template-setup-tags" type="text/template">
+  <div id="setup-box-tags" class="setup-box setup-box-large animated bounceInTop">
+    <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
+    <form class="standard text-center">
+      <table>
+      <th>
+        <td><%= source_type %> Label</td>
+        <td>Mailpile Tag</td>
+        <td>Select</td>
+      </th>
+      <tr>
+        <td><td>
+        <td></td>
+        <td></td>
+      </tr>
+      </table>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+
 
 {% include("partials/javascript.html") %}
+<script type="text/javascript">
+$(document).ready(function()
+{
+  SetupWizard.go();
+});
+</script>
 </body>
 </html>

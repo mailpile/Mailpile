@@ -70,7 +70,7 @@ div.setup-white {
   text-align: center;
 }
 div.setup-box {
-  min-height: 200px;
+  min-height: 150px;
   margin: 0px auto;
   padding: 25px;
   border-radius: 5px;
@@ -85,6 +85,13 @@ div.setup-box-medium {
 }
 div.setup-box-large {
   width: 800px;
+}
+.setup-text-detail {
+  color: #b3b3b3;
+}
+.setup-text-detail-large {
+  color: #b3b3b3;
+  font-size: 24px;
 }
 /* Setup Progress */
 #setup-progress {

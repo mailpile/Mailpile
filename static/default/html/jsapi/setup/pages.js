@@ -35,10 +35,10 @@ Page.prototype.bind_validator = function(dom, callback) {
 }
 
 Page.prototype.init = function(parent) {
-    console.log("Intializing page!");
+    // console.log("Intializing page: " + parent);
     if (parent) {
         this.parent = parent;
-        console.log("Set page parent to ", parent);
+        // console.log("Set page parent to ", parent);
     }
 
     return true;
