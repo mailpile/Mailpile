@@ -28,6 +28,7 @@ class Cron(threading.Thread):
         self.ALIVE = False
         self.name = name
         self.session = session
+        self.last_run = time.time()
         self.running = 'Idle'
         self.schedule = {}
         self.sleep = 10
@@ -35,7 +36,8 @@ class Cron(threading.Thread):
         self.lock = WorkerLock()
 
     def __str__(self):
-        return '%s: %s' % (threading.Thread.__str__(self), self.running)
+        return '%s: %s (%ds)' % (threading.Thread.__str__(self),
+                                 self.running, time.time() - self.last_run)
 
     def add_task(self, name, interval, task):
         """
@@ -103,13 +105,15 @@ class Cron(threading.Thread):
                 # Set last_executed
                 self.schedule[name][3] = time.time()
                 try:
+                    self.last_run = time.time()
                     self.running = name
                     task()
                 except Exception, e:
                     self.session.ui.error(('%s failed in %s: %s'
                                            ) % (name, self.name, e))
                 finally:
-                    self.running = 'Idle'
+                    self.last_run = time.time()
+                    self.running = 'Finished %s' % self.running
 
             # Some tasks take longer than others, so use the time before
             # executing tasks as reference for the delay
@@ -154,13 +158,15 @@ class Worker(threading.Thread):
         self.ALIVE = False
         self.JOBS = []
         self.LOCK = threading.Condition(WorkerRLock())
+        self.last_run = time.time()
         self.running = 'Idle'
         self.pauses = 0
         self.session = session
         self.important = False
 
     def __str__(self):
-        return '%s: %s' % (threading.Thread.__str__(self), self.running)
+        return '%s: %s (%ds)' % (threading.Thread.__str__(self),
+                                 self.running, time.time() - self.last_run)
 
     def add_task(self, session, name, task):
         with self.LOCK:
@@ -206,6 +212,7 @@ class Worker(threading.Thread):
                 session, name, task = self.JOBS.pop(0)
 
             try:
+                self.last_run = time.time()
                 self.running = name
                 if session:
                     session.ui.mark('Starting: %s' % name)
@@ -218,7 +225,8 @@ class Worker(threading.Thread):
                 if session:
                     session.report_task_failed(name)
             finally:
-                self.running = 'Idle'
+                self.last_run = time.time()
+                self.running = 'Finished %s' % self.running
 
     def pause(self, session):
         with self.LOCK:

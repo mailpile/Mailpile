@@ -1155,6 +1155,7 @@ class ConfigManager(ConfigDict):
                 return cPickle.loads(fd.read())
 
     def save_pickle(self, obj, pfn):
+        fd = None
         try:
             if self.prefs.obfuscate_index:
                 from mailpile.crypto.streamer import EncryptingStreamer
@@ -1166,7 +1167,8 @@ class ConfigManager(ConfigDict):
                 fd = open(os.path.join(self.workdir, pfn), 'wb')
                 cPickle.dump(obj, fd, protocol=0)
         finally:
-            fd.close()
+            if fd:
+                fd.close()
 
     def _mailbox_info(self, mailbox_id, prefer_local=True):
         try:

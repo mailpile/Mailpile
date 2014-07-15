@@ -4,6 +4,7 @@ import random
 import sys
 import re
 import threading
+import traceback
 from datetime import datetime
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
@@ -31,7 +32,11 @@ class IOFilter(threading.Thread):
         self.callback = callback
         self.error_callback = error_callback
         self.writing = None
-        self.pipe = os.pipe()
+        self.info = 'Starting'
+        self.pipe = list(os.pipe())
+
+    def __str__(self):
+        return '%s: %s' % (threading.Thread.__str__(self), self.info)
 
     def __enter__(self):
         return self
@@ -40,33 +45,46 @@ class IOFilter(threading.Thread):
         self.close()
 
     def writer(self):
-        if self.writing is None:
-            self.writing = True
-            self.start()
-        return os.fdopen(self.pipe[1], 'w')
+        try:
+            if self.writing is None:
+                self.writing = True
+                self.start()
+            return os.fdopen(self.pipe[1], 'w')
+        finally:
+            self.pipe[1] = None
 
     def reader(self):
-        if self.writing is None:
-            self.writing = False
-            self.start()
-        return os.fdopen(self.pipe[0], 'r')
+        try:
+            if self.writing is None:
+                self.writing = False
+                self.daemon = True
+                self.start()
+            return os.fdopen(self.pipe[0], 'r')
+        finally:
+            self.pipe[0] = None
 
     def _do_write(self):
         while True:
+            self.info = 'Writer, reading'
             data = os.read(self.pipe[0], self.BLOCKSIZE)
+            self.info = 'Writer, writing'
             if len(data) == 0:
                 self.fd.write(self.callback(None))
                 self.fd.flush()
+                self.info = 'Writer, done'
                 return
             else:
                 self.fd.write(self.callback(data))
 
     def _do_read(self):
         while True:
+            self.info = 'Reader, reading'
             data = self.fd.read(self.BLOCKSIZE)
+            self.info = 'Reader, writing'
             if len(data) == 0:
                 os.write(self.pipe[1], self.callback(None))
                 os.close(self.pipe[1])
+                self.info = 'Reader, done'
                 return
             else:
                 os.write(self.pipe[1], self.callback(data))
@@ -74,26 +92,31 @@ class IOFilter(threading.Thread):
     def close(self):
         self._close_pipe_fd(self.pipe[0])
         self._close_pipe_fd(self.pipe[1])
+        self.info = 'Closed'
 
     def _close_pipe_fd(self, pipe_fd):
         try:
-            os.close(pipe_fd)
+            if pipe_fd is not None:
+                os.close(pipe_fd)
         except OSError:
             pass
 
     def run(self):
         try:
+            self.info = 'Starting: %s' % self.writing
             if self.writing is True:
                 self._do_write()
             elif self.writing is False:
                 self._do_read()
         except:
+            traceback.print_exc()
             if self.error_callback:
                 try:
                     self.error_callback()
                 except:
                     pass
-            raise
+        finally:
+            self.info = 'Dead'
 
 
 class IOCoprocess(object):
@@ -179,8 +202,17 @@ class ChecksummingStreamer(OutputCoprocess):
 
         self.saved = False
         self.finished = False
-        self._write_preamble()
-        OutputCoprocess.__init__(self, self._mk_command(), self.fd)
+        try:
+            self._write_preamble()
+            OutputCoprocess.__init__(self, self._mk_command(), self.fd)
+        except:
+            try:
+                self.tempfile.close()
+                os.remove(self.temppath)
+                self.fd.close()
+            except (IOError, OSError):
+                pass
+            raise
 
     def _mk_tempfile_and_path(self, _dir):
         ntf = NamedTemporaryFile(dir=_dir, delete=False)
@@ -258,6 +290,7 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
     def __init__(self, key, dir=None, cipher=None):
         self.cipher = cipher or self.DEFAULT_CIPHER
         self.nonce, self.key = self._nonce_and_mutated_key(key)
+
         ChecksummingStreamer.__init__(self, dir=dir)
 
         self.inner_md5sum = None
@@ -399,17 +432,27 @@ class DecryptingStreamer(InputCoprocess):
         self.data_filter = self._mk_data_filter(fd, self._read_data,
                                                 self.startup_lock.release)
         self.read_fd = self.data_filter.reader()
-
-        # Once the header has been processed (_read_data() will release the
-        # lock), fork out our coprocess.
-        self.startup_lock.acquire()
-        InputCoprocess.__init__(self, self._mk_command(), self.read_fd)
-        self.startup_lock = None
+        try:
+            # Once the header has been processed (_read_data() will release
+            # the lock), fork out our coprocess.
+            self.startup_lock.acquire()
+            InputCoprocess.__init__(self, self._mk_command(), self.read_fd)
+            self.startup_lock = None
+        except:
+            try:
+                fd.close()
+                self.read_fd.close()
+            except (IOError, OSError):
+                pass
+            raise
 
     def _read_filter(self, data):
         if data:
             self.inner_md5.update(data)
         return data
+
+    def close(self):
+        return InputCoprocess.close(self)
 
     def verify(self, testing=False):
         if self.close() != 0:
@@ -460,6 +503,7 @@ class DecryptingStreamer(InputCoprocess):
                 self.state = self.STATE_PGP_DATA
                 self.startup_lock.release()
                 return self.buffered
+
             # Note: The max() check is OK, because both formats add more
             #       data which covers the difference.
             if len(self.buffered) >= max(len(self.BEGIN_MED),
