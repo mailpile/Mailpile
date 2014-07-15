@@ -314,11 +314,13 @@ class StreamReader(Thread):
 
 
 class StreamWriter(Thread):
-    def __init__(self, name, fd, output, partial_write_ok=False):
+    def __init__(self, name, fd, output,
+                 partial_write_ok=False, send_newline=False):
         Thread.__init__(self, target=self.writeout, args=(fd, output))
         self.name = name
         self.state = 'startup'
         self.partial_write_ok = partial_write_ok
+        self.send_newline = send_newline
         self.start()
 
     def __str__(self):
@@ -337,8 +339,12 @@ class StreamWriter(Thread):
                 if line == "":
                     break
                 self.state = 'write'
+                print 'W(%s): "%s"' % (self.name, line)
                 fd.write(line)
                 total -= len(line)
+            if self.send_newline:
+                print 'W(%s)<NEWLINE>' % self.name
+                fd.write('\n')
             output.close()
         except:
             if not self.partial_write_ok:
@@ -346,6 +352,9 @@ class StreamWriter(Thread):
                 traceback.print_exc()
         finally:
             self.state = 'done'
+            fd.flush()
+            time.sleep(1)
+            print 'W(%s)<CLOSE>' % self.name
             fd.close()
 
 
@@ -400,14 +409,14 @@ class GnuPG:
 
         self.statuspipe = os.pipe()
         self.status = os.fdopen(self.statuspipe[0], "r")
-        args.insert(1, "--status-fd")
-        args.insert(2, "%d" % self.statuspipe[1])
+        args.insert(1, "--status-fd=%d" % self.statuspipe[1])
         if self.passphrase:
             self.passphrase_pipe = os.pipe()
             self.passphrase_handle = os.fdopen(self.passphrase_pipe[1], "w")
-            args.insert(1, "--passphrase-fd")
-            args.insert(2, "%d" % self.statuspipe[0])
+            args.insert(1, "--no-use-agent")
+            args.insert(2, "--passphrase-fd=%d" % self.passphrase_pipe[0])
 
+        print 'ARGS: %s' % (args,)
         try:
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
                 bufsize=0, close_fds=False)
@@ -421,7 +430,8 @@ class GnuPG:
             if self.passphrase:
                 self.threads["passphrase"] = StreamWriter(
                     'gpgi-passphrase(%s)' % wtf,
-                    self.passphrase_handle, self.passphrase)
+                    self.passphrase_handle, self.passphrase,
+                    send_newline=True)
 
             if outputfd:
                 self.threads["stdout"] = StreamReader(

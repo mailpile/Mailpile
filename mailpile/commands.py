@@ -17,6 +17,7 @@ from gettext import gettext as _
 import mailpile.util
 import mailpile.ui
 import mailpile.postinglist
+from mailpile.crypto.gpgi import GnuPG
 from mailpile.eventlog import Event
 from mailpile.mailboxes import IsMailbox
 from mailpile.mailutils import AddressHeaderParser
@@ -206,6 +207,11 @@ class Command:
             path_parts[-1] += '-%s' % clean_tpl
         path_parts[-1] += '.' + etype
         return os.path.join(*path_parts)
+
+    def _gnupg(self):
+        gpg = GnuPG()
+        gpg.passphrase = self.session.config.gnupg_passphrase.get_reader()
+        return gpg
 
     def _idx(self, reset=False, wait=True, wait_all=True, quiet=False):
         session, config = self.session, self.session.config

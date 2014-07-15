@@ -66,11 +66,16 @@ class NoSuchMailboxError(OSError):
     pass
 
 
-def ParseMessage(fd, pgpmime=True):
+def ParseMessage(fd, pgpmime=True, config=None):
     message = email.parser.Parser().parse(fd)
     if pgpmime and GnuPG:
+        def MakeGnuPG(*args, **kwargs):
+            gnupg = GnuPG(*args, **kwargs)
+            if config:
+                gnupg.passphrase = config.gnupg_passphrase.get_reader()
+            return gnupg
         UnwrapMimeCrypto(message, protocols={
-            'openpgp': GnuPG
+            'openpgp': MakeGnuPG
         })
     else:
         for part in message.walk():
@@ -187,6 +192,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     if config.prefs.openpgp_header:
         try:
             gnupg = GnuPG()
+            gnupg.passphrase = config.gnupg_passphrase.get_reader()
             seckeys = dict([(uid["email"], fp) for fp, key
                             in gnupg.list_secret_keys().iteritems()
                             if key["capabilities_map"][0].get("encrypt")
@@ -624,7 +630,7 @@ class Email(object):
     def _get_parsed_msg(self, pgpmime):
         fd = self.get_file()
         if fd:
-            return ParseMessage(fd, pgpmime=pgpmime)
+            return ParseMessage(fd, pgpmime=pgpmime, config=self.config)
 
     def get_msg(self, pgpmime=True):
         if pgpmime:
@@ -1055,6 +1061,7 @@ class Email(object):
             return tree
 
         pgpdata = []
+        gnupg_passphrase = self.config.gnupg_passphrase
         for part in tree['text_parts']:
             if 'crypto' not in part:
                 part['crypto'] = {}
@@ -1069,6 +1076,7 @@ class Email(object):
                     pgpdata.append(part)
                     try:
                         gpg = GnuPG()
+                        gpg.passphrase = gnupg_passphrase.get_reader()
                         message = ''.join([p['data'].encode(p['charset'])
                                            for p in pgpdata])
                         si = pgpdata[1]['crypto']['signature'
@@ -1086,6 +1094,7 @@ class Email(object):
                     pgpdata.append(part)
 
                     gpg = GnuPG()
+                    gpg.passphrase = gnupg_passphrase.get_reader()
                     (signature_info, encryption_info, text
                      ) = gpg.decrypt(''.join([p['data'] for p in pgpdata]))
 

@@ -45,6 +45,39 @@ from mailpile.workers import Worker, ImportantWorker, DumbWorker, Cron
 MAX_CACHED_MBOXES = 5
 
 
+class SecurePassphraseStorage(object):
+    # FIXME: Replace this with a memlocked ctype buffer, whenever possible
+    def __init__(self, passphrase=''):
+        self.set_passphrase(passphrase)
+
+    def set_passphrase(self, passphrase):
+        self.passphrase = [c for c in passphrase.decode('utf-8')]
+
+    def read_byte_at(self, offset):
+        if offset >= len(self.passphrase):
+            return ''
+        return self.passphrase[offset]
+
+    def get_reader(self):
+        class SecurePassphraseReader(object):
+            def __init__(self, sps):
+                self.storage = sps
+                self.offset = 0
+
+            def read(self, ignored_bytecount=None):
+                one_byte = self.storage.read_byte_at(self.offset)
+                self.offset += 1
+                return one_byte
+
+            def close(self):
+                pass
+
+        if self.passphrase:
+            return SecurePassphraseReader(self)
+        else:
+            return None
+
+
 def ConfigPrinter(cfg, indent=''):
     rv = []
     if isinstance(cfg, dict):
@@ -907,6 +940,8 @@ class ConfigManager(ConfigDict):
         self._mbox_cache = []
         self._running = {}
         self._lock = ConfigRLock()
+
+        self.gnupg_passphrase = SecurePassphraseStorage()
 
         self._magic = True  # Enable the getattr/getitem magic
 

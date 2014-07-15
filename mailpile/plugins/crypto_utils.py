@@ -8,8 +8,6 @@ from mailpile.commands import Command
 from mailpile.plugins.search import Search
 from mailpile.mailutils import Email
 
-from mailpile.crypto.gpgi import GnuPG
-
 _plugins = PluginManager(builtin=__file__)
 
 
@@ -32,8 +30,8 @@ class GPGKeySearch(Command):
         for q in self.data.get('q', []):
             args.extend(q.split())
 
-        g = GnuPG()
-        return g.search_key(" ".join(args))
+        return self._gnupg().search_key(" ".join(args))
+
 
 class GPGKeyReceive(Command):
     """Fetch a GPG Key."""
@@ -44,12 +42,12 @@ class GPGKeyReceive(Command):
 
     def command(self):
         keyid = self.data.get("keyid", self.args)
-        g = GnuPG()
         res = []
         for key in keyid:
-            res.append(g.recv_key(key))
+            res.append(self._gnupg().recv_key(key))
 
         return res
+
 
 class GPGKeyImport(Command):
     """Import a GPG Key."""
@@ -70,8 +68,8 @@ class GPGKeyImport(Command):
             key_data = self.data.get("key_data")
         elif "key_file" in self.data:
             pass
-        g = GnuPG()
-        return g.import_keys(key_data)
+        return self._gnupg().import_keys(key_data)
+
 
 class GPGKeySign(Command):
     """Sign a key."""
@@ -97,8 +95,7 @@ class GPGKeySign(Command):
         if not keyid:
             return self._error("You must supply a keyid", None)
 
-        g = GnuPG()
-        return g.sign_key(keyid, signingkey)
+        return self._gnupg().sign_key(keyid, signingkey)
 
 
 class GPGKeyImportFromMail(Search):
@@ -138,8 +135,7 @@ class GPGKeyImportFromMail(Search):
         email = Email(idx, list(eids)[0])
         fn, attr = email.extract_attachment(session, attid, mode='inline')
         if attr and attr["data"]:
-            g = GnuPG()
-            res = g.import_keys(attr["data"])
+            res = self._gnupg().import_keys(attr["data"])
             return self._success("Imported key", res)
 
         return self._error("No results found", None)
@@ -163,8 +159,7 @@ class GPGKeyList(Command):
         if addr is None:
             return self._error("Must supply e-mail address", None)
 
-        g = GnuPG()
-        res = g.address_to_keys(args[0])
+        res = self._gnupg().address_to_keys(args[0])
         return self._success("Searched for keys for e-mail address", res)
 
 
@@ -176,8 +171,7 @@ class GPGKeyListSecret(Command):
     HTTP_CALLABLE = ('GET', )
 
     def command(self):
-        g = GnuPG()
-        res = g.list_secret_keys()
+        res = self._gnupg().list_secret_keys()
         return self._success("Searched for secret keys", res)
 
 

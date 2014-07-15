@@ -44,7 +44,6 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None):
 
         if mimetype == 'multipart/signed':
             try:
-                gpg = crypto_cls()
                 boundary = part.get_boundary()
                 payload, signature = part.get_payload()
 
@@ -54,7 +53,7 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None):
                 head, raw_payload, junk = part.as_string(
                     ).replace('\r\n', '\n').split('\n--%s\n' % boundary, 2)
 
-                part.signature_info = gpg.verify(
+                part.signature_info = crypto_cls().verify(
                     Normalize(raw_payload), signature.get_payload())
 
                 # Reparent the contents up, removing the signature wrapper
@@ -77,11 +76,10 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None):
 
         elif mimetype == 'multipart/encrypted':
             try:
-                gpg = crypto_cls()
                 preamble, payload = part.get_payload()
 
                 (part.signature_info, part.encryption_info, decrypted
-                 ) = gpg.decrypt(payload.as_string())
+                 ) = crypto_cls().decrypt(payload.as_string())
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 part.encryption_info = EncryptionInfo()
                 part.encryption_info["status"] = "error"

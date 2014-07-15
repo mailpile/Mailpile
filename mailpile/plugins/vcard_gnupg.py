@@ -32,7 +32,9 @@ class GnuPGImporter(VCardImporter):
             return []
 
         gnupg = GnuPG()
+        gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
         keys = gnupg.list_keys()
+
         results = []
         vcards = {}
         for key_id, key in keys.iteritems():
