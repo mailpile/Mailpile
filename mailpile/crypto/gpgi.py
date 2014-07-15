@@ -421,8 +421,15 @@ class GnuPG:
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
                 bufsize=0, close_fds=False)
 
+            # GnuPG is a bit crazy, and requires that the passphrase
+            # be sent and the filehandle closed before anything else
+            # interesting happens.
             if self.passphrase:
-                self.passphrase_handle.write(self.passphrase + "\n")
+                c = self.passphrase.read(BLOCKSIZE)
+                while c != '':
+                    self.passphrase_handle.write(c)
+                    c = self.passphrase.read(BLOCKSIZE)
+                self.passphrase_handle.write('\n')
                 self.passphrase_handle.close()
 
             self.threads = {
