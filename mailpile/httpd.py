@@ -2,10 +2,13 @@
 # Mailpile's built-in HTTPD
 #
 ###############################################################################
+import Cookie
 import mimetypes
 import os
+import random
 import socket
 import SocketServer
+import time
 from gettext import gettext as _
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urllib import quote, unquote
@@ -60,6 +63,16 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         #rsplit removes port
         return self.headers.get('host', 'localhost').rsplit(':', 1)[0]
 
+    def http_session(self):
+        """Fetch the session ID from a cookie, or assign a new one"""
+        cookies = Cookie.SimpleCookie(self.headers.get('cookie'))
+        session_id = cookies.get(self.server.session_cookie)
+        if session_id:
+            session_id = session_id.value
+        else:
+            session_id = self.server.make_session_id(self)
+        return session_id
+
     def server_url(self):
         """Return the current server URL, e.g. 'http://localhost:33411/'"""
         return '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
@@ -99,6 +112,15 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         self.send_header('Content-Type', mimetype)
         for header in header_list:
             self.send_header(header[0], header[1])
+        session_id = self.session.ui.html_variables.get('http_session')
+        if session_id:
+            cookies = Cookie.SimpleCookie()
+            cookies[self.server.session_cookie] = session_id
+            cookies[self.server.session_cookie]['path'] = '/'
+            #cookies[self.server.session_cookie]['secure'] = True
+            cookies[self.server.session_cookie]['max-age'] = 7 * 24 * 3600
+            self.send_header(*cookies.output().split(': ', 1))
+            self.send_header('Cache-Control', 'no-cache="set-cookie"')
         self.end_headers()
 
     def send_full_response(self, message,
@@ -188,7 +210,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             raise ValueError(_('XMLRPC has been disabled for now.'))
             #return SimpleXMLRPCRequestHandler.do_POST(self)
 
-        config = self.server.session.config
+        self.session, config = self.server.session, self.server.session.config
         post_data = {}
         try:
             ue = 'application/x-www-form-urlencoded'
@@ -224,8 +246,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         opath = path = unquote(path)
 
         # HTTP is stateless, so we create a new session for each request.
+        self.session, config = self.server.session, self.server.session.config
         server_session = self.server.session
-        config = server_session.config
 
         if 'httpdata' in config.sys.debug:
             self.wfile = DebugFileWrapper(sys.stderr, self.wfile)
@@ -238,7 +260,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if path.startswith('/static/'):
             return self.send_file(config, path[len('/static/'):])
 
-        session = Session(config)
+        self.session = session = Session(config)
         session.ui = HttpUserInteraction(self, config,
                                          log_parent=server_session.ui)
 
@@ -257,6 +279,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             'http_host': self.headers.get('host', 'localhost'),
             'http_hostname': self.http_host(),
             'http_method': method,
+            'http_session': self.http_session(),
             'message_count': (idx and len(idx.INDEX) or 0),
             'name': name,
             'title': 'Mailpile dummy title',
@@ -267,7 +290,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         try:
             try:
                 commands = UrlMap(session).map(self, method, path,
-                                               query_data, post_data)
+                                               query_data, post_data,
+                                               authenticate=True)
             except UsageError:
                 if (not path.endswith('/') and
                         not session.config.sys.debug and
@@ -318,11 +342,34 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         self.daemon_threads = True
         self.session = session
         self.sessions = {}
+        self.session_cookie = None
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sspec = (sspec[0] or 'localhost', self.socket.getsockname()[1])
-        # FIXME: This could be more securely random
-        self.secret = '-'.join([str(x) for x in [self.socket, self.sspec,
-                                                 time.time(), self.session]])
+
+        # This hash includes the index ofuscation master key, which means
+        # it should be very strongly unguessable.
+        self.secret = b64w(sha512b64(
+            '-'.join([str(x) for x in [session, time.time(),
+                                       random.randint(0, 0xfffffff),
+                                       session.config]])))
+
+        # Generate a new unguessable session cookie name on startup
+        while not self.session_cookie:
+            rn = str(random.randint(0, 0xfffffff))
+            self.session_cookie = CleanText(sha512b64(self.secret, rn),
+                                            banned=CleanText.NONALNUM
+                                            ).clean[:8].lower()
+
+    def make_session_id(self, request):
+        """Generate an unguessable and unauthenticated new session ID."""
+        session_id = None
+        while session_id in self.sessions or session_id is None:
+            session_id = b64w(sha1b64('%s %s %x %s' % (
+                self.secret,
+                request.headers,
+                random.randint(0, 0xffffffff),
+                time.time())))
+        return session_id
 
     def finish_request(self, request, client_address):
         try:
