@@ -60,7 +60,7 @@ class TestCommands(MailPileUnittest):
 
     def test_help_splash(self):
         res = self.mp.help_splash()
-        self.assertEqual(len(res.result), 3)
+        self.assertEqual(len(res.result), 4)
         self.assertGreater(res.result['splash'], 0)
         self.assertGreater(res.as_text(), 0)
 

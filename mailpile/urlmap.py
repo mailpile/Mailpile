@@ -364,11 +364,15 @@ class UrlMap:
         [<mailpile.commands.Output...>, <mailpile.plugins.compose.Draft...>]
         """
 
+        if self.session:
+            sid = self.session.ui.html_variables.get('http_session')
+            user_session = (mailpile.auth.SESSION_CACHE.get(sid)
+                            if sid else None)
+        else:
+            user_session = None
+
         if authenticate:
-            def auth(commands):
-                sid = self.session.ui.html_variables.get('http_session')
-                user_session = (mailpile.auth.SESSION_CACHE.get(sid)
-                                if sid else None)
+            def auth(commands, user_session):
                 if user_session:
                     if user_session.is_expired():
                         mailpile.auth.SESSION_CACHE.delete_expired()
@@ -381,7 +385,7 @@ class UrlMap:
                             self.redirect_to_login(method, path, query_data)
                 return commands
         else:
-            def auth(commands):
+            def auth(commands, user_session):
                 return commands
 
         # Check the API first.
@@ -393,18 +397,26 @@ class UrlMap:
                 raise UsageError('Unknown API level: %s' % path_parts[2])
             return auth(self._map_api_command(method, path_parts[3:],
                                               query_data, post_data,
-                                              fmt='json', async=is_async))
+                                              fmt='json', async=is_async),
+                        user_session)
 
         path_parts = path[1:].split('/')
         try:
             return auth(self._map_api_command(method, path_parts[:],
-                                              query_data, post_data))
+                                              query_data, post_data),
+                        user_session)
         except UsageError:
             # Finally check for the registered shortcuts
             if path_parts[0] in self.MAP_PATHS:
+                # Just redirect potentially mapped paths straightaway
+                if authenticate and (not user_session or
+                                     not user_session.auth):
+                    self.redirect_to_login(method, path, query_data)
+
                 mapper = self.MAP_PATHS[path_parts[0]]
                 return auth(mapper(self, request, path_parts,
-                                   query_data, post_data))
+                                   query_data, post_data),
+                            user_session)
             raise
 
     def _url(self, url, output='', qs=''):

@@ -52,18 +52,32 @@ class Authenticate(Command):
         'pass': 'Password or passphrase'
     }
 
-    def _logged_in(self):
-        return self._success(_('Hello world, welcome!'))
+    def _logged_in(self, user=None):
+        user = user or 'DEFAULT'
+
+        session_id = self.session.ui.html_variables['http_session']
+        SESSION_CACHE[session_id] = UserSession(auth=user)
+
+        if '_path' in self.data:
+            qs = [(k, v) for k, vl in self.data.iteritems() for v in vl
+                  if k not in ('_method', '_path', 'user', 'pass')]
+            qs = urlencode(qs)
+            url = ''.join([self.data['_path'][0], '?%s' % qs if qs else ''])
+            raise UrlRedirectException(url)
+
+        return self._success(_('Hello world, welcome!'), result={
+            'authenticated': user
+        })
 
     def _do_logout(self):
         pass
 
     def _do_login(self, user, password, load_index=False):
-        from mailpile.config import SecurePassphraseStorage
         session, config = self.session, self.session.config
-        sps = SecurePassphraseStorage(password)
-        password = ''
         if not user:
+            from mailpile.config import SecurePassphraseStorage
+            sps = SecurePassphraseStorage(password)
+            password = ''
             try:
                 # Verify the passphrase
                 gpg = GnuPG(use_agent=False)
@@ -78,10 +92,19 @@ class Authenticate(Command):
                     self._config()
                     if load_index:
                         self._idx()
+                    else:
+                        pass  # FIXME: Start load in background
+
                 return self._logged_in()
             except (AssertionError, IOError):
                 return self._error(_('Invalid passphrase, please try again'))
-        return self._error(_('Please log in'))
+
+        elif user.lower() in config.logins:
+            # FIXME: Salt and hash the password, check if it matches
+            #        the entry in our user/password list.
+            raise Exception('FIXME')
+
+        self._error(_('Incorrect username or password'))
 
     def command(self):
         session_id = self.session.ui.html_variables.get('http_session')
@@ -89,9 +112,10 @@ class Authenticate(Command):
         if self.data.get('_method', '') == 'POST':
             if 'logout' in self.data:
                 return self._do_logout()
-            if 'user' in self.data and 'pass' in self.data:
-                return self._do_login(self.data['user'][0],
+            if 'pass' in self.data:
+                return self._do_login(self.data.get('user', [None])[0],
                                       self.data['pass'][0])
+
         elif not self.data:
             password = self.session.ui.get_password(_('Your password: '))
             return self._do_login(None, password, load_index=True)
