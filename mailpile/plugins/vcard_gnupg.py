@@ -32,7 +32,7 @@ class GnuPGImporter(VCardImporter):
             return []
 
         gnupg = GnuPG()
-        gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
+        gnupg.passphrase = self.session.config.gnupg_passphrase.get_reader()
         keys = gnupg.list_keys()
 
         results = []
