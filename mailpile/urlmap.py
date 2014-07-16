@@ -70,7 +70,7 @@ class UrlMap:
                                            or not strict)))]
 
     def _command(self, name,
-                 args=None, query_data=None, post_data=None, 
+                 args=None, query_data=None, post_data=None,
                  method='GET', async=False):
         """
         Return an instantiated mailpile.command object or raise a UsageError.
@@ -299,7 +299,7 @@ class UrlMap:
                                   args=path_parts[bp:],
                                   query_data=query_data,
                                   post_data=post_data,
-                                  method=method, 
+                                  method=method,
                                   async=async)
                 ]
             except UsageError:
@@ -318,7 +318,8 @@ class UrlMap:
         'static': _map_RESERVED,
     }
 
-    def map(self, request, method, path, query_data, post_data):
+    def map(self, request, method, path, query_data, post_data,
+            authenticate=False):
         """
         Convert an HTTP request to a list of mailpile.command objects.
 
