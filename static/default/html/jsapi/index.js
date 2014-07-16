@@ -7,7 +7,6 @@ if (!window.console) window.console = {
     error: $.noop 
 };
 
-
 Mailpile = {
     instance:           {},
     search_target:      'none',
@@ -185,7 +184,7 @@ Mailpile.API.{{command.url|replace("/", "_")}} = function(data, callback, method
         method = methods[0];
     }
     return Mailpile.API._sync_action(
-        Mailpile.API._endpoints.{{command.url|replace("/", "_")}}, 
+        Mailpile.API._endpoints.{{command.url|replace("/", "_")}},
         data,
         method,
         callback
@@ -198,7 +197,7 @@ Mailpile.API.async_{{command.url|replace("/", "_")}} = function(data, callback, 
         method = methods[0];
     }
     return Mailpile.API._async_action(
-        Mailpile.API._endpoints.{{command.url|replace("/", "_")}}, 
+        Mailpile.API._endpoints.{{command.url|replace("/", "_")}},
         data,
         method,
         callback
