@@ -88,11 +88,17 @@
   <div id="setup-box-basic" class="setup-box setup-box-small animated bounceInRight">
     <h2 class="text-center"><span class="icon-user"></span> {{_("Basic Information")}}</h2>
     <form class="standard text-center">
+      <label>Where are you installing Mailpile?</label>
+      <select name="install_type" class="center">
+        <option>Laptop</option>
+        <option>Desktop</option>
+        <option>Cloud / Server</option>
+      </select>
       <label>{{_("Name")}}</label>
       <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
       <label>{{_("Password")}}</label>
       <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
-      <p class="text-center setup-text-detail">{{_("If you have a PGP key with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
+      <p class="text-center setup-text-detail">{{_("If you have a PGP keychain with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
       <button id="btn-setup-basic-info" class="text-center">{{_("Next")}}</button>
     </form>
   </div>

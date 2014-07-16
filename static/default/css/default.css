@@ -5156,6 +5156,152 @@ x:-o-prefocus,
   }
 }
 /* App */
+/* Login */
+#login {
+  width: 100%;
+  border: 8px solid #cccccc;
+  box-sizing: border-box;
+}
+#login-left {
+  width: 65%;
+  height: 100px;
+  background: #f6f6f6;
+  border-right: 4px solid #b3b3b3;
+  box-sizing: border-box;
+  display: inline-block;
+  float: left;
+}
+#login-right {
+  width: 35%;
+  height: 100%;
+  background: #f6f6f6;
+  border-left: 2px solid #b3b3b3;
+  box-sizing: border-box;
+  display: inline-block;
+  float: right;
+}
+#login-logo .logo-icon {
+  width: 150px;
+  height: 100px;
+  display: block;
+  margin: 100px auto 35px auto;
+}
+#login-logo .logo-name {
+  width: 223px;
+  height: 72px;
+  display: block;
+  margin: 0 auto;
+}
+#login-vault-lock-outer {
+  width: 225px;
+  height: 225px;
+  border-radius: 112.5px;
+  border: 1px solid #4d4d4d;
+  box-sizing: border-box;
+  background: #b3b3b3;
+  margin: 0 auto;
+  position: relative;
+  left: 190px;
+  top: -700px;
+}
+#login-vault-lock-inner {
+  width: 171px;
+  height: 171px;
+  border-radius: 85.5px;
+  border: 1px solid #4d4d4d;
+  box-sizing: border-box;
+  background: #ffffff;
+  position: relative;
+  top: 27px;
+  left: 27px;
+}
+#login-vault-lock {
+  font-size: 72px;
+  line-height: 72px;
+  position: relative;
+  top: 42px;
+  left: 47px;
+}
+#login-details {
+  width: 500px;
+  margin: 0px auto;
+  position: relative;
+  top: -600px;
+  left: 115px;
+}
+.form-text {
+  display: inline-block;
+  position: relative;
+  top: -12px;
+  left: 0px;
+  font-size: 18px;
+  line-height: 18px;
+}
+.form-login {
+  width: 246px;
+  height: 36px;
+  display: inline-block;
+  margin-top: 5px;
+  margin-left: 15px;
+  border-radius: 5px;
+  border: 1px solid #b3b3b3;
+}
+.form-login input {
+  width: 178px;
+  height: 18px;
+  padding: 9px 12px;
+  float: left;
+  font: normal 18px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  border: 0;
+  background: #ffffff;
+  border-radius: 5px 0 0 5px;
+  color: #cccccc;
+}
+.form-login input:focus {
+  outline: 0;
+  background: #fff;
+  box-shadow: 0 0 1px #4d4d4d inset;
+  color: #4d4d4d;
+}
+.form-login input::-webkit-input-placeholder,
+.form-login input:-moz-placeholder,
+.form-login input:-ms-input-placeholder {
+  color: #999;
+  font-weight: normal;
+  font-style: italic;
+}
+.form-login button {
+  overflow: visible;
+  position: relative;
+  float: right;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  height: 36px;
+  width: 44px;
+  font: bold 18px/40px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #ffffff;
+  background: #337fb2;
+  border-radius: 0 3px 3px 0;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+.form-login button:hover {
+  background: #2d719e;
+}
+.form-login button:active,
+.form-login button:focus {
+  background: #225577;
+  outline: 0;
+}
+.form-login button::-moz-focus-inner {
+  /* remove extra button spacing for Mozilla Firefox */
+  border: 0;
+  padding: 0;
+}
+.form-login button .icon-key {
+  font-size: 24px;
+  line-height: 24px;
+}
 /* Content */
 #content {
   min-width: 800px;
@@ -5965,11 +6111,6 @@ a.compose-show-field {
 .compose-crypto-encryption.error {
   color: #be1c21;
 }
-.compose-options-right {
-  height: border: 1px solid red;
-  display: table-cell;
-  vertical-align: text-top;
-}
 .compose-options ul {
   display: inline-block;
   margin-left: 10px;
@@ -6497,13 +6638,14 @@ tr.modal-tag-picker-item td.checkbox {
 }
 /* Pile Bottom */
 #pile-bottom {
-  margin: 15px;
+  margin: 15px 15px 0px 15px;
 }
 #pile-bottom h5 {
+  margin-top: 10px;
   color: #4d4d4d;
 }
-#pile-bottom div {
-  text-align: right;
+#pile-bottom a {
+  margin-right: 15px;
 }
 #pile-empty {
   padding: 15px;
@@ -6519,12 +6661,11 @@ tr.modal-tag-picker-item td.checkbox {
 /* Pile Speed */
 #pile-speed {
   margin-bottom: 50px;
-  text-align: center;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #b3b3b3;
 }
 #pile-speed span {
-  font-size: 24px;
+  font-size: 21px;
   margin-right: 10px;
   position: relative;
   top: 3px;
