@@ -1121,7 +1121,8 @@ class ConfigManager(ConfigDict):
         # Keep the last 5 config files around... just in case.
         backup_file(self.conffile, backups=5, min_age_delta=10)
         if sys.platform == "win32":
-            os.remove(self.conffile)
+            try: os.remove(self.conffile)
+            except WindowsError: pass
         os.rename(newfile, self.conffile)
 
         self.get_i18n_translation()
