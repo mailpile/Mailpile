@@ -15,9 +15,6 @@ cd $MAILPILE_PATH
 echo '.. initial setup (creates folders and tags)'
 $AS_VAGRANT ./mp --setup
 
-echo '.. setting http host to listen on 0.0.0.0 (unsafe for production scenarios, use only in dev!)'
-$AS_VAGRANT ./mp --set sys.http_host=0.0.0.0
-
 echo '.. adding a test mailbox'
 $AS_VAGRANT ./mp --add $MAILPILE_PATH/testing
 echo -n
@@ -29,7 +26,7 @@ echo
 
 if [ $? -eq 0 ]; then
   echo 'Done. To start the web interface, enter the following command:'
-  echo '  $ vagrant ssh -c "cd /srv/Mailpile && ./mp --www"'
+  echo '$ vagrant ssh -c "cd /srv/Mailpile && ./mp --www=0.0.0.0:33411 --wait"'
 else
   echo 'Something failed.'
 

@@ -936,7 +936,14 @@ class ConfigManager(ConfigDict):
         self.other_workers = []
         self.mail_sources = {}
 
-        self.jinja_env = None
+        self.jinja_env = Environment(
+            loader=MailpileJinjaLoader(self),
+            autoescape=True,
+            trim_blocks=True,
+            extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
+                        'jinja2.ext.do', 'jinja2.ext.autoescape',
+                        'mailpile.jinjaextensions.MailpileCommand']
+        )
 
         self.event_log = None
         self.index = None
@@ -1083,15 +1090,6 @@ class ConfigManager(ConfigDict):
         # Enable translations
         translation = self.get_i18n_translation(session)
 
-        # Configure jinja2
-        self.jinja_env = Environment(
-            loader=MailpileJinjaLoader(self),
-            autoescape=True,
-            trim_blocks=True,
-            extensions=['jinja2.ext.i18n', 'jinja2.ext.with_',
-                        'jinja2.ext.do', 'jinja2.ext.autoescape',
-                        'mailpile.jinjaextensions.MailpileCommand']
-        )
         self.jinja_env.install_gettext_translations(translation,
                                                     newstyle=True)
 
@@ -1485,15 +1483,14 @@ class ConfigManager(ConfigDict):
         with self._lock:
             return self._unlocked_prepare_workers(*args, **kwargs)
 
-    def daemons_started(config):
-        return (config.save_worker != config.dumb_worker)
+    def daemons_started(config, which=None):
+        return ((which or config.save_worker)
+                not in (None, config.dumb_worker))
 
-    def _unlocked_prepare_workers(config, session=None, daemons=False):
+    def _unlocked_prepare_workers(config, session=None,
+                                  daemons=False, httpd_spec=None):
         # Set globals from config first...
         import mailpile.util
-
-        if not config.loaded_config:
-            return
 
         # Make sure we have a silent background session
         if not config.background:
@@ -1501,7 +1498,19 @@ class ConfigManager(ConfigDict):
             config.background.ui = BackgroundInteraction(config,
                                                          log_parent=session.ui)
 
-        # Start the workers
+        def start_httpd(sspec=None):
+            sspec = sspec or (config.sys.http_host, config.sys.http_port)
+            if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
+                config.http_worker = HttpWorker(session, sspec)
+                config.http_worker.start()
+
+        # We may start the HTTPD without the loaded config...
+        if not config.loaded_config:
+            if httpd_spec and not config.http_worker:
+                 start_httpd(httpd_spec)
+            return
+
+        # Start the other workers
         if daemons:
             for src_id, src_config in config.sources.iteritems():
                 ms_thread = config.mail_sources.get(src_id)
@@ -1526,11 +1535,7 @@ class ConfigManager(ConfigDict):
                 config.cron_worker = Cron('Cron worker', session)
                 config.cron_worker.start()
             if not config.http_worker:
-                # Start the HTTP worker if requested
-                sspec = (config.sys.http_host, config.sys.http_port)
-                if sspec[0].lower() != 'disabled' and sspec[1] >= 0:
-                    config.http_worker = HttpWorker(session, sspec)
-                    config.http_worker.start()
+                start_httpd()
             if not config.other_workers:
                 from mailpile.plugins import PluginManager
                 for worker in PluginManager.WORKERS:

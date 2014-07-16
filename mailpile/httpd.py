@@ -273,7 +273,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                              % (method, opath, query_data, post_data))
 
         idx = session.config.index
-        name = session.config.get_profile().get('name', 'Chelsea Manning')
+        if session.config.loaded_config:
+            name = session.config.get_profile().get('name', 'Chelsea Manning')
+        else:
+            name = 'Chelsea Manning'
+
         session.ui.html_variables = {
             'csrf': self.csrf(),
             'http_host': self.headers.get('host', 'localhost'),

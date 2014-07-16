@@ -7,10 +7,14 @@ from gettext import gettext as _
 
 import mailpile.util
 import mailpile.defaults
-from mailpile.commands import COMMANDS, Action, Help, HelpSplash, Load, Rescan
+from mailpile.commands import COMMANDS, Command, Action
+from mailpile.commands import Help, HelpSplash, Load, Rescan
 from mailpile.config import ConfigManager, getLocaleDirectory
+from mailpile.plugins import PluginManager
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
+
+_plugins = PluginManager(builtin=__file__)
 
 # This makes sure mailbox "plugins" get loaded... has to go somewhere?
 from mailpile.mailboxes import *
@@ -86,6 +90,44 @@ def Interact(session):
         pass
 
 
+class InteractCommand(Command):
+    SYNOPSIS = (None, 'interact', None, None)
+    ORDER = ('Internals', 2)
+    CONFIG_REQUIRED = False
+    RAISES = (KeyboardInterrupt,)
+
+    def command(self):
+        session, config = self.session, self.session.config
+
+        session.interactive = True
+        if sys.stdout.isatty():
+            session.ui.term = ANSIColors()
+
+        # Create and start the rest of the threads, load the index.
+        if config.loaded_config:
+            Load(session, '').run(quiet=True)
+
+        session.ui.display_result(HelpSplash(session, 'help', []).run())
+        Interact(session)
+
+        session.interactive = False
+        return self._success(_('Ran interactive shell'))
+
+
+class WaitCommand(Command):
+    SYNOPSIS = (None, 'wait', None, None)
+    ORDER = ('Internals', 2)
+    CONFIG_REQUIRED = False
+    RAISES = (KeyboardInterrupt,)
+
+    def command(self):
+        self.session.ui.display_result(HelpSplash(self.session, 'help', []
+                                                  ).run(interactive=False))
+        while not mailpile.util.QUITTING:
+            time.sleep(1)
+        return self._success(_('Did nothing much for a while'))
+
+
 def Main(args):
     # Bootstrap translations until we've loaded everything else
     translation = gettext.translation("mailpile", getLocaleDirectory(),
@@ -135,16 +177,7 @@ def Main(args):
             session.error(unicode(e))
 
         if not opts and not args:
-            session.interactive = True
-            if sys.stdout.isatty():
-                session.ui.term = ANSIColors()
-
-            # Create and start the rest of the threads, load the index.
-            if config.loaded_config:
-                Load(session, '').run(quiet=True)
-
-            session.ui.display_result(HelpSplash(session, 'help', []).run())
-            Interact(session)
+            InteractCommand(session).run()
 
     except KeyboardInterrupt:
         pass
@@ -168,6 +201,9 @@ def Main(args):
 
         if session.interactive and config.sys.debug:
             session.ui.display_result(Action(session, 'ps', ''))
+
+
+_plugins.register_commands(InteractCommand, WaitCommand)
 
 if __name__ == "__main__":
     Main(sys.argv[1:])

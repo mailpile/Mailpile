@@ -1159,15 +1159,27 @@ class Optimize(Command):
 
 class RunWWW(Command):
     """Just run the web server"""
-    SYNOPSIS = (None, 'www', None, None)
+    SYNOPSIS = (None, 'www', None, '[<host:port>]')
     ORDER = ('Internals', 5)
     CONFIG_REQUIRED = False
 
     def command(self):
-        self.session.config.prepare_workers(self.session, daemons=True)
-        while not mailpile.util.QUITTING:
-            time.sleep(1)
-        return self._success(_('Started the web server'))
+        config = self.session.config
+
+        if self.args:
+            sspec = self.args[0].split(':', 1)
+            sspec[1] = int(sspec[1])
+        else:
+            sspec = (config.sys.http_host, config.sys.http_port)
+
+        self.session.config.prepare_workers(self.session,
+                                            httpd_spec=tuple(sspec),
+                                            daemons=True)
+        if config.http_worker:
+            http_url = 'http://%s:%s/' % config.http_worker.httpd.sspec
+            return self._success(_('Started the web server on %s') % http_url)
+        else:
+            return self._error(_('Failed to started the web server'))
 
 
 class WritePID(Command):
@@ -1416,13 +1428,16 @@ class ConfigSet(Command):
     """Change a setting"""
     SYNOPSIS = ('S', 'set', 'settings/set', '<section.variable> <value>')
     ORDER = ('Config', 1)
+    CONFIG_REQUIRED = False
+    IS_USER_ACTIVITY = True
+
     SPLIT_ARG = False
+
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_STRICT_VARS = False
     HTTP_POST_VARS = {
         'section.variable': 'value|json-string',
     }
-    IS_USER_ACTIVITY = True
 
     def command(self):
         config = self.session.config
@@ -1431,6 +1446,10 @@ class ConfigSet(Command):
 
         if config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
+
+        if not config.loaded_config:
+            self.session.ui.warning(_('WARNING: Any changes will '
+                                      'be overwritten on login'))
 
         for var in self.data.keys():
             parts = ('.' in var) and var.split('.') or var.split('/')
@@ -1460,7 +1479,9 @@ class ConfigSet(Command):
                 cfg, v1, v2 = config.walk(path.strip(), parent=2)
                 cfg[v1] = {v2: value}
 
-        self._background_save(config=True)
+        if config.loaded_config:
+            self._background_save(config=True)
+
         return self._success(_('Updated your settings'), result=updated)
 
 
@@ -1700,14 +1721,18 @@ class Help(Command):
                                   ) % self.result['http_url']
             else:
                 web_interface = _('The Web interface is disabled.')
+
             login = (_('Please log in using the `%s` command.'
                        ) % self.result['login_cmd'] + '\n'
-                     if self.result['login_cmd'] else '')
+                     if (self.result['login_cmd'] and
+                         self.result['interactive']) else '')
+
             return '\n'.join([
                 self.result['splash'],
                 web_interface,
                 login,
-                _('Type `help` for instructions or press <Ctrl-d> to quit.'),
+                (_('Type `help` for instructions or press <Ctrl-d> to quit.')
+                 if self.result['interactive'] else ''),
                 ''
             ])
 
@@ -1880,7 +1905,7 @@ class HelpSplash(Help):
     ORDER = ('Config', 9)
     CONFIG_REQUIRED = False
 
-    def command(self):
+    def command(self, interactive=True):
         from mailpile.auth import Authenticate
         http_worker = self.session.config.http_worker
         if http_worker:
@@ -1891,7 +1916,8 @@ class HelpSplash(Help):
             'splash': self.ABOUT,
             'http_url': http_url,
             'login_cmd': (Authenticate.SYNOPSIS[1]
-                          if not self.session.config.loaded_config else '')
+                          if not self.session.config.loaded_config else ''),
+            'interactive': interactive
         })
 
 
