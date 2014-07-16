@@ -5,8 +5,8 @@ except:
 
 import urllib2
 
-from mailpile.crypto.gpgi import GnuPG
-from mailpile.plugins.keylookup import LookupHandler, register_crypto_key_lookup_handler
+from mailpile.plugins.keylookup import LookupHandler
+from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
 
 #
 #  Support for DNS PKA (_pka) entries.
@@ -65,8 +65,7 @@ class DNSPKALookupHandler(LookupHandler):
 
     def _getkey(self, key):
         if key["fingerprint"] and not key["url"]:
-            g = GnuPG()
-            res = g.recv_key(key["fingerprint"])
+            res = self._gnupg().recv_key(key["fingerprint"])
         elif key["url"]:
             r = urllib2.urlopen(key["url"])
             result = r.readlines()
@@ -79,8 +78,7 @@ class DNSPKALookupHandler(LookupHandler):
                 elif result[i].startswith("-----END PGP"):
                     end = i
             result = "".join(result[start:end])
-            g = GnuPG()
-            res = g.import_keys(result)
+            res = self._gnupg().import_keys(result)
             return res
         else:
             raise ValueError("Need a fingerprint or a URL")

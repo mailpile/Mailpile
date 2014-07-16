@@ -11,6 +11,13 @@ def register_crypto_key_lookup_handler(handler):
         KEY_LOOKUP_HANDLERS.append(handler)
 
 
+def _GnuPG(session):
+    gpg = GnuPG()
+    if session and session.config:
+        gpg.passphrase = session.config.gnupg_passphrase.get_reader()
+    return gpg
+
+
 def crypto_keys_scorer(known_keys_list, key):
     score = 0
     if key in known_keys_list:
@@ -71,8 +78,7 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
 
     x = _calc_scores(x, scores)
 
-    g = GnuPG()
-    known_keys_list = g.list_keys()
+    known_keys_list = _GnuPG(session).list_keys()
     for key in x.keys():
         x[key]["fingerprint"] = key
         x[key]["score"] += crypto_keys_scorer(known_keys_list, key)
@@ -117,6 +123,9 @@ class LookupHandler:
     def __init__(self, session):
         self.session = session
 
+    def _gnupg(self):
+        return _GnuPG(self.session)
+
     def _score(self, key):
         raise NotImplemented("Subclass and override _score")
 
@@ -146,8 +155,7 @@ class KeyserverLookupHandler(LookupHandler):
         return 1
 
     def _lookup(self, address):
-        g = GnuPG()
-        return g.search_key(address)
+        return self._gnupg().search_key(address)
 
     def _getkey(self, key):
         pass

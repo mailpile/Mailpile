@@ -1,4 +1,3 @@
-from mailpile.crypto.gpgi import GnuPG
 from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import (LookupHandler, 
     register_crypto_key_lookup_handler)
