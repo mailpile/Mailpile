@@ -416,7 +416,8 @@ class DecryptingStreamer(InputCoprocess):
         return (line.startswith(cls.END_MED[:-1]) or
                 line.startswith(cls.END_PGP[:-1]))
 
-    def __init__(self, key, fd, md5sum=None, cipher=None):
+    def __init__(self, fd,
+                 mep_key=None, gpg_pass=None, md5sum=None, cipher=None):
         self.expected_outer_md5sum = md5sum
         self.expected_inner_md5sum = None
         self.outer_md5 = hashlib.md5()
@@ -424,7 +425,8 @@ class DecryptingStreamer(InputCoprocess):
         self.cipher = self.DEFAULT_CIPHER
         self.state = self.STATE_BEGIN
         self.buffered = ''
-        self.key = key
+        self.mep_key = mep_key
+        self.gpg_pass = gpg_pass
 
         # Start reading our data...
         self.startup_lock = CryptoLock()
@@ -454,22 +456,28 @@ class DecryptingStreamer(InputCoprocess):
     def close(self):
         return InputCoprocess.close(self)
 
-    def verify(self, testing=False):
+    def verify(self, testing=False, _raise=None):
         if self.close() != 0:
             if testing:
                 print 'Close returned nonzero'
+            if _raise:
+                raise _raise('Non-zero exit code from coprocess')
             return False
         if (self.expected_inner_md5sum and
                 self.expected_inner_md5sum != self.inner_md5.hexdigest()):
             if testing:
                 print 'Inner %s != %s' % (self.expected_inner_md5sum,
                                           self.inner_md5.hexdigest())
+            if _raise:
+                raise _raise('Invalid inner MD5 sum')
             return False
         if (self.expected_outer_md5sum and
                 self.expected_outer_md5sum != self.outer_md5.hexdigest()):
             if testing:
                 print 'Outer %s != %s' % (self.expected_outer_md5sum,
                                           self.outer_md5.hexdigest())
+            if _raise:
+                raise _raise('Invalid outer MD5 sum')
             return False
         return True
 
@@ -501,8 +509,16 @@ class DecryptingStreamer(InputCoprocess):
             if (len(self.buffered) >= len(self.BEGIN_PGP)
                     and self.buffered.startswith(self.BEGIN_PGP)):
                 self.state = self.STATE_PGP_DATA
-                self.startup_lock.release()
-                return self.buffered
+                if self.gpg_pass:
+                    passphrase, c = [], self.gpg_pass.read(1)
+                    while c != '':
+                        passphrase.append(c)
+                        c = self.gpg_pass.read(1)
+                    self.startup_lock.release()
+                    return ''.join(passphrase + ['\n', self.buffered])
+                else:
+                    self.startup_lock.release()
+                    return self.buffered
 
             # Note: The max() check is OK, because both formats add more
             #       data which covers the difference.
@@ -529,7 +545,7 @@ class DecryptingStreamer(InputCoprocess):
         if self.state == self.STATE_HEADER:
             headers = dict([l.split(': ', 1) for l in headlines[1:]])
             nonce = headers.get('nonce', '')
-            mutated = self._mutate_key(self.key, nonce)
+            mutated = self._mutate_key(self.mep_key, nonce)
 
             self.cipher = headers.get('cipher', self.cipher)
             self.expected_inner_md5sum = headers.get('md5sum')
@@ -565,7 +581,10 @@ class DecryptingStreamer(InputCoprocess):
         if self.state == self.STATE_RAW_DATA:
             return None
         elif self.state == self.STATE_PGP_DATA:
-            return ["gpg", "--batch"]
+            gpg = ["gpg", "--batch"]
+            if self.gpg_pass:
+                gpg.extend(["--no-use-agent", "--passphrase-fd=0"])
+            return gpg
         return ["openssl", "enc", "-d", "-a", "-%s" % self.cipher,
                 "-pass", "stdin"]
 
@@ -631,7 +650,8 @@ if __name__ == "__main__":
 
 
      # Null decryption test, md5 verification only
-     ds = DecryptingStreamer('test key', open('/tmp/iofilter.tmp', 'rb'),
+     ds = DecryptingStreamer(open('/tmp/iofilter.tmp', 'rb'),
+                             mep_key='test key',
                              md5sum='86fb269d190d2c85f6e0468ceca42a20')
      assert('Hello world!' == ds.read())
      assert(ds.verify(testing=True))
@@ -647,7 +667,8 @@ if __name__ == "__main__":
          es.save(fn)
 
          # Decryption test!
-         ds = DecryptingStreamer('test key', open(fn, 'rb'),
+         ds = DecryptingStreamer(open(fn, 'rb'),
+                                 mep_key='test key',
                                  md5sum=es.outer_md5sum)
          new_data = ds.read()
          assert(ds.close() == 0)

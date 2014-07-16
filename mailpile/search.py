@@ -249,8 +249,12 @@ class MailIndex:
         try:
             with self._save_lock:
                 with open(self.config.mailindex_file(), 'r') as fd:
+                    # We don't raise on errors, in case only some of the chunks
+                    # are corrupt - we want to read the rest of them.
+                    # FIXME: Differentiate between partial index and no index?
                     decrypt_and_parse_lines(fd, process_lines, self.config,
-                                            newlines=True, decode=False)
+                                            newlines=True, decode=False,
+                                            _raise=False)
         except IOError:
             if session:
                 session.ui.warning(_('Metadata index not found: %s'

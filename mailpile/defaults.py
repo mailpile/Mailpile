@@ -77,6 +77,9 @@ CONFIG_RULES = {
             'context':     [_("VCard context helper settings"), False,     {}],
         }],
     }],
+    'logins': [_('Credentials allowed to access Mailpile'), {
+        'password':        (_('Salted and hashed password'), str, '')
+    }, {}],
     'routes': [_('Outgoing message routes'), {
         'name':            (_('Route name'), str, ''),
         'protocol':        (_('Messaging protocol'),

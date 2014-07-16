@@ -1,0 +1,8 @@
+{% extends "layouts/login.html" %}
+{% block title %}{{_("Please log in")}}{% endblock %}
+{% block content %}
+<h1>Please log in!</h1>
+<form method='POST'>
+   Password: <input type=password name=pass value=''>
+</form>
+{% endblock %}

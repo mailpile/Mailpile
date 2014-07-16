@@ -353,13 +353,14 @@ class GnuPG:
     """
     Wrap GnuPG and make all functionality feel Pythonic.
     """
-    def __init__(self, session=None):
+    def __init__(self, session=None, use_agent=True):
         self.available = None
         self.gpgbinary = 'gpg'
         self.passphrase = None
         self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
         self.session = session
+        self.use_agent = use_agent
         if self.session:
             self.homedir = session.config.sys.gpg_home or GNUPG_HOMEDIR
         else:
@@ -382,7 +383,8 @@ class GnuPG:
         return self.available
 
     def run(self,
-            args=[], gpg_input=None, outputfd=None, partial_read_ok=False):
+            args=[], gpg_input=None, outputfd=None, partial_read_ok=False,
+            _raise=None):
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
         self.pipes = {}
         self.threads = {}
@@ -394,6 +396,8 @@ class GnuPG:
         args.insert(1, "--verbose")
         args.insert(1, "--batch")
         args.insert(1, "--enable-progress-filter")
+        if not self.use_agent:
+            args.insert(1, "--no-use-agent")
 
         if self.homedir:
             args.insert(1, "--homedir=%s" % self.homedir)
@@ -404,7 +408,8 @@ class GnuPG:
         if self.passphrase:
             self.passphrase_pipe = os.pipe()
             self.passphrase_handle = os.fdopen(self.passphrase_pipe[1], "w")
-            args.insert(1, "--no-use-agent")
+            if self.use_agent:
+                args.insert(1, "--no-use-agent")
             args.insert(2, "--passphrase-fd=%d" % self.passphrase_pipe[0])
 
         try:
@@ -448,7 +453,7 @@ class GnuPG:
                 proc.stdin.close()
 
             # Reap GnuPG
-            proc.wait()
+            gpg_retcode = proc.wait()
 
         finally:
             # Close our pipes so the threads finish
@@ -464,6 +469,9 @@ class GnuPG:
 
         if outputfd:
             outputfd.close()
+
+        if gpg_retcode != 0 and _raise:
+            raise _raise('GnuPG failed, exit code: %s' % gpg_retcode)
 
         return proc.returncode, self.outputbuffers
 

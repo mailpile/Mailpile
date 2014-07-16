@@ -230,8 +230,9 @@ class EventLog(object):
             if enc_key:
                 lines = fd.read()
             else:
-                with DecryptingStreamer(enc_key, fd) as streamer:
+                with DecryptingStreamer(fd, mep_key=enc_key) as streamer:
                     lines = streamer.read()
+                    streamer.verify(_raise=IOError)
             if lines:
                 for line in lines.splitlines():
                     event = Event.Parse(line)

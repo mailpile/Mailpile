@@ -10,6 +10,7 @@
 #
 ###############################################################################
 import datetime
+import getpass
 import os
 import random
 import re
@@ -478,6 +479,15 @@ class UserInteraction:
             emails[i].update_from_string(session, updates[i])
         return True
 
+    def get_password(self, prompt):
+        if not self.interactive:
+            return ''
+        try:
+            self.block()
+            return getpass.getpass(prompt)
+        finally:
+            self.unblock()
+
 
 class HttpUserInteraction(UserInteraction):
     LOG_PREFIX = 'http/'
@@ -608,7 +618,6 @@ class Session(object):
 
     def __init__(self, config):
         self.config = config
-        self.interactive = False
         self.main = False
         self.order = None
         self.wait_lock = threading.Condition(UiRLock())
@@ -617,6 +626,12 @@ class Session(object):
         self.displayed = (0, 0)
         self.task_results = []
         self.ui = UserInteraction(config)
+
+    def set_interactive(self, val):
+        self.ui.interactive = val
+
+    interactive = property(lambda s: s.ui.interactive,
+                           lambda s, v: s.set_interactive(v))
 
     def report_task_completed(self, name, result):
         with self.wait_lock:

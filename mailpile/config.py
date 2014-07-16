@@ -47,16 +47,20 @@ MAX_CACHED_MBOXES = 5
 
 class SecurePassphraseStorage(object):
     # FIXME: Replace this with a memlocked ctype buffer, whenever possible
+
     def __init__(self, passphrase=''):
         self.set_passphrase(passphrase)
 
     def set_passphrase(self, passphrase):
-        self.passphrase = [c for c in passphrase.decode('utf-8')]
+        # This stores the passphrase as a list of integers, which is a
+        # primitive in-memory obfuscation relying on how Python represents
+        # small integers as globally shared objects. Better Than Nothing!
+        self.data = [ord(c) for c in passphrase.decode('utf-8')]
 
     def read_byte_at(self, offset):
-        if offset >= len(self.passphrase):
+        if offset >= len(self.data):
             return ''
-        return self.passphrase[offset]
+        return chr(self.data[offset])
 
     def get_reader(self):
         class SecurePassphraseReader(object):
@@ -72,7 +76,7 @@ class SecurePassphraseStorage(object):
             def close(self):
                 pass
 
-        if self.passphrase:
+        if self.data:
             return SecurePassphraseReader(self)
         else:
             return None
@@ -941,7 +945,8 @@ class ConfigManager(ConfigDict):
         self._running = {}
         self._lock = ConfigRLock()
 
-        self.gnupg_passphrase = SecurePassphraseStorage()
+        self.loaded_config = False
+        self.gnupg_passphrase = SecurePassphraseStorage('')  #'mailpile')
 
         self._magic = True  # Enable the getattr/getitem magic
 
@@ -1029,16 +1034,22 @@ class ConfigManager(ConfigDict):
     def _unlocked_load(self, session, filename=None):
         self._mkworkdir(session)
         self.index = None
+        self.loaded_config = False
         self.reset(rules=False, data=True)
 
         filename = filename or self.conffile
         lines = []
         try:
-            with open(filename, 'rb') as fd:
-                decrypt_and_parse_lines(fd, lambda ll: lines.extend(ll), None)
-        except ValueError:
-            pass
+            if os.path.exists(filename):
+                with open(filename, 'rb') as fd:
+                    decrypt_and_parse_lines(fd, lambda ll: lines.extend(ll),
+                                            self)
         except IOError:
+            # Abort early and reset if config failed to load
+            self.reset(rules=False, data=True)
+            raise
+        except (ValueError, OSError):
+            # Bad data in config or config doesn't exist: just forge onwards
             pass
 
         # Discover plugins and update the config rule to match
@@ -1088,6 +1099,7 @@ class ConfigManager(ConfigDict):
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
                                                            mkdir=True))
+        self.loaded_config = True
 
     def reset_rules_from_source(self):
         with self._lock:
@@ -1112,6 +1124,9 @@ class ConfigManager(ConfigDict):
             self._unlocked_save(*args, **kwargs)
 
     def _unlocked_save(self):
+        if not self.loaded_config:
+            return
+
         self._mkworkdir(None)
         newfile = '%s.new' % self.conffile
         fd = gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb')
@@ -1184,9 +1199,11 @@ class ConfigManager(ConfigDict):
         with open(os.path.join(self.workdir, pfn), 'rb') as fd:
             if self.prefs.obfuscate_index:
                 from mailpile.crypto.streamer import DecryptingStreamer
-                with DecryptingStreamer(self.prefs.obfuscate_index,
-                                        fd) as streamer:
-                    return cPickle.loads(streamer.read())
+                with DecryptingStreamer(fd, mep_key=self.prefs.obfuscate_index
+                                        ) as streamer:
+                    rv = cPickle.loads(streamer.read())
+                    streamer.verify(_raise=IOError)
+                    return rv
             else:
                 return cPickle.loads(fd.read())
 
@@ -1468,9 +1485,15 @@ class ConfigManager(ConfigDict):
         with self._lock:
             return self._unlocked_prepare_workers(*args, **kwargs)
 
+    def daemons_started(config):
+        return (config.save_worker != config.dumb_worker)
+
     def _unlocked_prepare_workers(config, session=None, daemons=False):
         # Set globals from config first...
         import mailpile.util
+
+        if not config.loaded_config:
+            return
 
         # Make sure we have a silent background session
         if not config.background:
@@ -1544,8 +1567,9 @@ class ConfigManager(ConfigDict):
 
             def wrap_slow(func):
                 def wrapped():
-                    config.slow_worker.add_task(config.background, job,
-                                                lambda: func(config.background))
+                    config.slow_worker.add_task(
+                        config.background, job,
+                        lambda: func(config.background))
                 return wrapped
             for job, (i, f) in PluginManager.FAST_PERIODIC_JOBS.iteritems():
                 config.cron_worker.add_task(job, interval(i), wrap_fast(f))

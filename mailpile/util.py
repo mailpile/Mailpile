@@ -18,7 +18,6 @@ import time
 import StringIO
 from distutils import spawn
 from gettext import gettext as _
-from mailpile.crypto.gpgi import GnuPG
 
 try:
     from PIL import Image
@@ -396,7 +395,8 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
 
 
 def decrypt_and_parse_lines(fd, parser, config,
-                            newlines=False, decode='utf-8'):
+                            newlines=False, decode='utf-8',
+                            _raise=IOError):
     import mailpile.crypto.streamer as cstrm
     symmetric_key = config and config.prefs.obfuscate_index or 'missing'
 
@@ -414,8 +414,11 @@ def decrypt_and_parse_lines(fd, parser, config,
     for line in fd:
         if cstrm.PartialDecryptingStreamer.StartEncrypted(line):
             with cstrm.PartialDecryptingStreamer(
-                    [line], symmetric_key, fd) as pdsfd:
+                    [line], fd, mep_key=symmetric_key,
+                    gpg_pass=(config.gnupg_passphrase.get_reader()
+                              if config else None)) as pdsfd:
                 _parser(pdsfd)
+                pdsfd.verify(_raise=_raise)
         else:
             _parser([line])
 

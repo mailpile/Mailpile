@@ -38,6 +38,8 @@ class Command:
     API_VERSION = None
     UI_CONTEXT = None
     IS_USER_ACTIVITY = False
+    IS_INTERACTIVE = False
+    CONFIG_REQUIRED = True
 
     FAILURE = 'Failed: %(name)s %(args)s'
     ORDER = (None, 0)
@@ -56,6 +58,7 @@ class Command:
     HTTP_QUERY_VARS = {}
     HTTP_BANNED_VARS = {}
     HTTP_STRICT_VARS = True
+    HTTP_AUTH_REQUIRED = False  # FIXME: Should be True
 
     class CommandResult:
         def __init__(self, command_obj, session,
@@ -213,8 +216,19 @@ class Command:
         gpg.passphrase = self.session.config.gnupg_passphrase.get_reader()
         return gpg
 
-    def _idx(self, reset=False, wait=True, wait_all=True, quiet=False):
+    def _config(self):
         session, config = self.session, self.session.config
+        if not config.loaded_config:
+            config.load(session)
+            parent = session
+            config.prepare_workers(session, daemons=self.IS_INTERACTIVE)
+        if self.IS_INTERACTIVE and not config.daemons_started():
+            config.prepare_workers(session, daemons=True)
+        return config
+
+    def _idx(self, reset=False, wait=True, wait_all=True, quiet=False):
+        session, config = self.session, self._config()
+
         if not reset and config.index:
             return config.index
 
@@ -355,7 +369,8 @@ class Command:
             ui = str(self.session.ui.__class__).replace('mailpile.', '.')
             self.event.data['ui'] = ui
             self.event.data['output'] = self.session.ui.render_mode
-            self.session.config.event_log.log_event(self.event)
+            if self.session.config.event_log:
+                self.session.config.event_log.log_event(self.event)
 
     def _starting(self):
         self._start_time = time.time()
@@ -431,6 +446,11 @@ class Command:
 
     def _run_sync(self, *args, **kwargs):
         def command(self, *args, **kwargs):
+            if self.CONFIG_REQUIRED:
+                if not self.session.config.loaded_config:
+                    return self._error(_('Please log in'))
+                if mailpile.util.QUITTING:
+                    return self._error(_('Shutting down'))
             return self.command(*args, **kwargs)
         try:
             self._starting()
@@ -936,15 +956,21 @@ class Load(Command):
     """Load or reload the metadata index"""
     SYNOPSIS = (None, 'load', None, None)
     ORDER = ('Internals', 1)
+    CONFIG_REQUIRED = False
+    IS_INTERACTIVE = True
 
     def command(self, reset=True, wait=True, wait_all=False, quiet=False):
-        if self._idx(reset=reset,
-                     wait=wait,
-                     wait_all=wait_all,
-                     quiet=quiet):
-            return self._success(_('Loaded metadata index'))
-        else:
-            return self._error(_('Failed to loaded metadata index'))
+        try:
+            if self._idx(reset=reset,
+                         wait=wait,
+                         wait_all=wait_all,
+                         quiet=quiet):
+                return self._success(_('Loaded metadata index'))
+            else:
+                return self._error(_('Failed to loaded metadata index'))
+        except IOError:
+            return self._error(_('Failed to decrypt configuration, '
+                                 'please log in!'))
 
 
 class Rescan(Command):
@@ -1135,18 +1161,20 @@ class RunWWW(Command):
     """Just run the web server"""
     SYNOPSIS = (None, 'www', None, None)
     ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
 
     def command(self):
         self.session.config.prepare_workers(self.session, daemons=True)
         while not mailpile.util.QUITTING:
             time.sleep(1)
-        return self_success(_('Started the web server'))
+        return self._success(_('Started the web server'))
 
 
 class WritePID(Command):
     """Write the PID to a file"""
     SYNOPSIS = (None, 'pidfile', None, "</path/to/pidfile>")
     ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
     SPLIT_ARG = False
 
     def command(self):
@@ -1159,6 +1187,7 @@ class RenderPage(Command):
     """Does nothing, for use by semi-static jinja2 pages"""
     SYNOPSIS = (None, None, 'page', None)
     ORDER = ('Internals', 6)
+    CONFIG_REQUIRED = False
     SPLIT_ARG = False
     HTTP_STRICT_VARS = False
     IS_USER_ACTIVITY = True
@@ -1180,34 +1209,35 @@ class ProgramStatus(Command):
     """Display list of running threads, locks and outstanding events."""
     SYNOPSIS = (None, 'ps', 'ps', None)
     ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = False
     LOG_NOTHING = True
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
-            cevents = self.result['cevents']
+            cevents = self.result.get('cevents')
             if cevents:
                 cevents = '\n'.join(['  %s %s' % (e.event_id, e.message)
                                      for e in cevents])
             else:
-                cevents = _('Nothing Found')
+                cevents = '  ' + _('Nothing Found')
 
-            ievents = self.result['ievents']
+            ievents = self.result.get('ievents')
             if ievents:
                 ievents = '\n'.join([' %s:%s %s' % (e.event_id,
                                                     e.flags,
                                                     e.message)
                                      for e in ievents])
             else:
-                ievents = _('Nothing Found')
+                ievents = '  ' + _('Nothing Found')
 
-            threads = self.result['threads']
+            threads = self.result.get('threads')
             if threads:
                 threads = '\n'.join([('  ' + str(t)) for t in threads])
             else:
                 threads = _('Nothing Found')
 
-            locks = self.result['locks']
+            locks = self.result.get('locks')
             if locks:
                 locks = '\n'.join([('  %s.%s is %slocked'
                                     ) % (l[0], l[1], '' if l[2] else 'un')
@@ -1234,9 +1264,12 @@ class ProgramStatus(Command):
             ]
         except AttributeError:
             locks = []
+        if config.vcards:
+            locks.extend([
+                ('config.vcards', '_lock', config.vcards._lock._is_owned()),
+            ])
         locks.extend([
             ('config', '_lock', config._lock._is_owned()),
-            ('config.vcards', '_lock', config.vcards._lock._is_owned()),
             ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
              mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
             ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
@@ -1259,19 +1292,26 @@ class ProgramStatus(Command):
             except AttributeError:
                 pass
 
-        return self._success(_("Listed events, threads, and locks"), result={
-            'cevents': list(config.event_log.events(flag='c'))[-10:],
-            'ievents': config.event_log.incomplete(),
+        result = {
             'delay': play_nice_with_threads(),
             'threads': threads,
             'locks': sorted(locks)
-        })
+        }
+        if config.event_log:
+            result.update({
+                'cevents': list(config.event_log.events(flag='c'))[-10:],
+                'ievents': config.event_log.incomplete(),
+            })
+
+        return self._success(_("Listed events, threads, and locks"),
+                             result=result)
 
 
 class ListDir(Command):
     """Display working directory listing"""
     SYNOPSIS = (None, 'ls', None, "<.../new/path/...>")
     ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
@@ -1308,6 +1348,7 @@ class ChangeDir(ListDir):
     """Change working directory"""
     SYNOPSIS = (None, 'cd', None, "<.../new/path/...>")
     ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
 
     def command(self, args=None):
@@ -1327,6 +1368,7 @@ class CatFile(Command):
     """Dump the contents of a file, decrypting if necessary"""
     SYNOPSIS = (None, 'cat', None, "</path/to/file> [>/path/to/output]")
     ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
@@ -1501,6 +1543,7 @@ class ConfigPrint(Command):
     """Print one or more settings"""
     SYNOPSIS = ('P', 'print', 'settings', '<var>')
     ORDER = ('Config', 3)
+    CONFIG_REQUIRED = False
     HTTP_QUERY_VARS = {
         'var': 'section.variable'
     }
@@ -1587,7 +1630,9 @@ class Output(Command):
     """Choose format for command results."""
     SYNOPSIS = (None, 'output', None, '[json|text|html|<template>.html|...]')
     ORDER = ('Internals', 7)
+    CONFIG_REQUIRED = False
     HTTP_STRICT_VARS = False
+    HTTP_AUTH_REQUIRED = False
     IS_USER_ACTIVITY = False
     LOG_NOTHING = True
 
@@ -1605,6 +1650,7 @@ class Quit(Command):
     SYNOPSIS = ("q", "quit", "quitquitquit", None)
     ABOUT = ("Quit mailpile")
     ORDER = ("Internals", 2)
+    CONFIG_REQUIRED = False
     RAISES = (KeyboardInterrupt,)
 
     def command(self):
@@ -1621,6 +1667,7 @@ class Abort(Command):
     SYNOPSIS = (None, "quit/abort", "abortabortabort", None)
     ABOUT = ("Quit mailpile")
     ORDER = ("Internals", 2)
+    CONFIG_REQUIRED = False
     HTTP_QUERY_VARS = {
         'no_save': 'Do not try to save state'
     }
@@ -1642,6 +1689,7 @@ class Help(Command):
     SYNOPSIS = ('h', 'help', 'help', '[<command-group>]')
     ABOUT = ('This is Mailpile!')
     ORDER = ('Config', 9)
+    CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
 
     class CommandResult(Command.CommandResult):
@@ -1652,10 +1700,13 @@ class Help(Command):
                                   ) % self.result['http_url']
             else:
                 web_interface = _('The Web interface is disabled.')
+            login = (_('Please log in using the `%s` command.'
+                       ) % self.result['login_cmd'] + '\n'
+                     if self.result['login_cmd'] else '')
             return '\n'.join([
                 self.result['splash'],
                 web_interface,
-                '',
+                login,
                 _('Type `help` for instructions or press <Ctrl-d> to quit.'),
                 ''
             ])
@@ -1706,7 +1757,7 @@ class Help(Command):
                 text.append(fmt % (c, cmd.replace('=', ''),
                                    args and ('%s' % (args, )) or '',
                                    (explanation.splitlines() or [''])[0]))
-            if 'tags' in self.result:
+            if self.result.get('tags'):
                 text.extend([
                     '',
                     _('Tags:  (use a tag as a command to display tagged '
@@ -1727,6 +1778,7 @@ class Help(Command):
             ])
 
     def command(self):
+        config = self.session.config
         self.session.ui.reset_marks(quiet=True)
         if self.args:
             command = self.args[0]
@@ -1759,15 +1811,25 @@ class Help(Command):
             for grp in COMMAND_GROUPS:
                 count += 10
                 for cls in COMMANDS:
+                    if cls.CONFIG_REQUIRED and not config.loaded_config:
+                        continue
                     c, name, url, synopsis = cls.SYNOPSIS[:4]
                     if cls.ORDER[0] == grp and '/' not in (name or ''):
                         cmd_list[c or '_%s' % name] = (name, synopsis,
                                                        cls.__doc__,
                                                        count + cls.ORDER[1])
+            if config.loaded_config:
+                tags = GetCommand('tags')(self.session).run()
+            else:
+                tags = {}
+            try:
+                index = self._idx()
+            except IOError:
+                index = None
             return self._success(_('Displayed help'), result={
                 'commands': cmd_list,
-                'tags': GetCommand('tags')(self.session).run(),
-                'index': self._idx()
+                'tags': tags,
+                'index': index
             })
 
     def _starting(self):
@@ -1784,6 +1846,7 @@ class HelpVars(Help):
     SYNOPSIS = (None, 'help/variables', 'help/variables', None)
     ABOUT = ('The available mailpile variables')
     ORDER = ('Config', 9)
+    CONFIG_REQUIRED = False
     IS_USER_ACTIVITY = True
 
     def command(self):
@@ -1815,8 +1878,10 @@ class HelpSplash(Help):
     """Print Mailpile splash screen"""
     SYNOPSIS = (None, 'help/splash', 'help/splash', None)
     ORDER = ('Config', 9)
+    CONFIG_REQUIRED = False
 
     def command(self):
+        from mailpile.auth import Authenticate
         http_worker = self.session.config.http_worker
         if http_worker:
             http_url = 'http://%s:%s/' % http_worker.httpd.sspec
@@ -1825,6 +1890,8 @@ class HelpSplash(Help):
         return self._success(_('Displayed welcome message'), result={
             'splash': self.ABOUT,
             'http_url': http_url,
+            'login_cmd': (Authenticate.SYNOPSIS[1]
+                          if not self.session.config.loaded_config else '')
         })
 
 
@@ -1848,10 +1915,11 @@ def Action(session, opt, arg, data=None):
         return command(session, opt, arg, data=data).run()
 
     # Tags are commands
-    tag = config.get_tag(opt)
-    if tag:
-        return GetCommand('search')(session, opt, arg=arg, data=data
-                                    ).run(search=['in:%s' % tag._key])
+    if config.loaded_config:
+        tag = config.get_tag(opt)
+        if tag:
+            return GetCommand('search')(session, opt, arg=arg, data=data
+                                        ).run(search=['in:%s' % tag._key])
 
     # OK, give up!
     raise UsageError(_('Unknown command: %s') % opt)
@@ -1859,7 +1927,7 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Optimize, Rescan, RunWWW, ProgramStatus,
+    Load, Optimize, Rescan, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     RenderPage, Output, Help, HelpVars, HelpSplash, Quit, Abort

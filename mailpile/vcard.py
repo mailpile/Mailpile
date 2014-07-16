@@ -812,9 +812,12 @@ class MailpileVCard(SimpleVCard):
             from mailpile.crypto.streamer import DecryptingStreamer
             self.filename = filename or self.filename
             with open(self.filename, 'rb') as fd:
-                with DecryptingStreamer(config.prefs.obfuscate_index,
-                                        fd) as streamer:
+                with DecryptingStreamer(
+                        fd, mep_key=config.prefs.obfuscate_index,
+                        gpg_pass=config.gnupg_passphrase.get_reader()
+                        ) as streamer:
                     data = streamer.read().decode('utf-8')
+                    streamer.verify(_raise=IOError)
         else:
             raise ValueError('Need data or a filename!')
 

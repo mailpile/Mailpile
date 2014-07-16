@@ -1,8 +1,10 @@
 import cgi
+import time
 from gettext import gettext as _
 from urlparse import parse_qs, urlparse
-from urllib import quote
+from urllib import quote, urlencode
 
+import mailpile.auth
 from mailpile.commands import Command, COMMANDS
 from mailpile.plugins import PluginManager
 from mailpile.util import *
@@ -362,6 +364,26 @@ class UrlMap:
         [<mailpile.commands.Output...>, <mailpile.plugins.compose.Draft...>]
         """
 
+        if authenticate:
+            def auth(commands):
+                sid = self.session.ui.html_variables.get('http_session')
+                user_session = (mailpile.auth.SESSION_CACHE.get(sid)
+                                if sid else None)
+                if user_session:
+                    if user_session.is_expired():
+                        mailpile.auth.SESSION_CACHE.delete_expired()
+                        user_session = None
+                    else:
+                        user_session.update_ts()
+                if not user_session or not user_session.auth:
+                    for c in commands:
+                        if c.HTTP_AUTH_REQUIRED:
+                            self.redirect_to_login(method, path, query_data)
+                return commands
+        else:
+            def auth(commands):
+                return commands
+
         # Check the API first.
         is_async = path.startswith('/%s/' % self.MAP_ASYNC_API)
         is_api = path.startswith('/%s/' % self.MAP_API)
@@ -369,19 +391,20 @@ class UrlMap:
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:
                 raise UsageError('Unknown API level: %s' % path_parts[2])
-            return self._map_api_command(method, path_parts[3:],
-                                         query_data, post_data, 
-                                         fmt='json', async=is_async)
+            return auth(self._map_api_command(method, path_parts[3:],
+                                              query_data, post_data,
+                                              fmt='json', async=is_async))
 
         path_parts = path[1:].split('/')
         try:
-            return self._map_api_command(method, path_parts[:],
-                                         query_data, post_data)
+            return auth(self._map_api_command(method, path_parts[:],
+                                              query_data, post_data))
         except UsageError:
             # Finally check for the registered shortcuts
             if path_parts[0] in self.MAP_PATHS:
                 mapper = self.MAP_PATHS[path_parts[0]]
-                return mapper(self, request, path_parts, query_data, post_data)
+                return auth(mapper(self, request, path_parts,
+                                   query_data, post_data))
             raise
 
     def _url(self, url, output='', qs=''):
@@ -400,6 +423,16 @@ class UrlMap:
     def url_edit(self, message_id, output=''):
         """Map a message to it's short-hand editing URL."""
         return self._url('/message/draft/=%s/' % message_id, output)
+
+    def redirect_to_login(self, method, path, query_data):
+        """Redirect to the /auth/ endpoint"""
+        if method.lower() == 'get':
+            qd = [(k, v) for k, vl in query_data.iteritems() for v in vl]
+            qd.append(('_path', path))
+        else:
+            qd = []
+        path = '/%s/' % mailpile.auth.Authenticate.SYNOPSIS[2]
+        raise UrlRedirectException(self._url(path, qs=urlencode(qd)))
 
     def url_tag(self, tag_id, output=''):
         """

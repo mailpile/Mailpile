@@ -98,15 +98,17 @@ def Main(args):
         session = Session(config)
         cli_ui = session.ui = UserInteraction(config)
         session.main = True
-        session.config.load(session)
+        try:
+            config.load(session)
+            config.prepare_workers(session)
+        except IOError:
+            session.ui.error(_('Failed to decrypt configuration, '
+                               'please log in!'))
     except AccessError, e:
-        sys.stderr.write('Access denied: %s\n' % e)
+        session.ui.error('Access denied: %s\n' % e)
         sys.exit(1)
 
     try:
-        # Create and start (most) worker threads
-        config.prepare_workers(session)
-
         try:
             shorta, longa = '', []
             for cls in COMMANDS:
@@ -133,13 +135,14 @@ def Main(args):
             session.error(unicode(e))
 
         if not opts and not args:
-            # Create and start the rest of the threads, load the index.
-            session.interactive = session.ui.interactive = True
+            session.interactive = True
             if sys.stdout.isatty():
                 session.ui.term = ANSIColors()
 
-            config.prepare_workers(session, daemons=True)
-            Load(session, '').run(quiet=True)
+            # Create and start the rest of the threads, load the index.
+            if config.loaded_config:
+                Load(session, '').run(quiet=True)
+
             session.ui.display_result(HelpSplash(session, 'help', []).run())
             Interact(session)
 
@@ -154,8 +157,11 @@ def Main(args):
         mailpile.util.LAST_USER_ACTIVITY = 0
         mailpile.util.QUITTING = True
 
-        config.plugins.process_shutdown_hooks()
-        config.flush_mbox_cache(session, wait=True)
+        if config.plugins:
+            config.plugins.process_shutdown_hooks()
+        if config.loaded_config:
+            config.flush_mbox_cache(session, wait=True)
+
         config.stop_workers()
         if config.index:
             config.index.save_changes()
