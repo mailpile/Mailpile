@@ -52,13 +52,13 @@ var loginUnlock = function() {
 };
 
 $(document).ready(function() {
-
-  $('#content-wide').css({'height': '100%', 'margin-top': '0px'});
   
   var height = $(window).height() - 16;
+  $('#content-wide').css({'height': height, 'margin-top': '0px'});
   $('#login').height(height);
   $('#login-left').height(height);
   $('#login-right').height(height);
+
 
   $('#login-passphrase').focus();
 
@@ -67,7 +67,6 @@ $(document).ready(function() {
 $(document).on('submit', '#form-login', function(e) {
 
   //e.preventDefault();
-  loginUnlock();
 
 });
 </script>
