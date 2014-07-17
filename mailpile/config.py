@@ -936,6 +936,16 @@ class ConfigManager(ConfigDict):
         self.other_workers = []
         self.mail_sources = {}
 
+        self.event_log = None
+        self.index = None
+        self.vcards = {}
+        self._mbox_cache = []
+        self._running = {}
+        self._lock = ConfigRLock()
+        self.loaded_config = False
+
+        self.gnupg_passphrase = SecurePassphraseStorage('')  #'mailpile')
+
         self.jinja_env = Environment(
             loader=MailpileJinjaLoader(self),
             autoescape=True,
@@ -944,16 +954,9 @@ class ConfigManager(ConfigDict):
                         'jinja2.ext.do', 'jinja2.ext.autoescape',
                         'mailpile.jinjaextensions.MailpileCommand']
         )
-
-        self.event_log = None
-        self.index = None
-        self.vcards = {}
-        self._mbox_cache = []
-        self._running = {}
-        self._lock = ConfigRLock()
-
-        self.loaded_config = False
-        self.gnupg_passphrase = SecurePassphraseStorage('')  #'mailpile')
+        translation = self.get_i18n_translation()
+        self.jinja_env.install_gettext_translations(translation,
+                                                    newstyle=True)
 
         self._magic = True  # Enable the getattr/getitem magic
 
@@ -1089,7 +1092,6 @@ class ConfigManager(ConfigDict):
 
         # Enable translations
         translation = self.get_i18n_translation(session)
-
         self.jinja_env.install_gettext_translations(translation,
                                                     newstyle=True)
 
@@ -1449,9 +1451,12 @@ class ConfigManager(ConfigDict):
 
     def get_i18n_translation(self, session=None):
         with self._lock:
-            language = self.prefs.language
+            if session:
+                language = self.prefs.language
+            else:
+                language = ''
             trans = None
-            if language != "":
+            if language != '':
                 try:
                     trans = translation("mailpile", getLocaleDirectory(),
                                         [language], codeset="utf-8")

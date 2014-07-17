@@ -22,8 +22,8 @@
 
 <div id="login-details" class="animated">
   <div class="form-text">To Log In Please Enter</div>
-  <form id="form-login" class="form-login clearfix animated">
-	  <input id="login-passphrase" type="text" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="Your Passphrase">
+  <form method='POST' id="form-login" class="form-login clearfix animated">
+	  <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="Your Passphrase">
 	  <button type="submit" class="submit"><span class="icon-key"></span></button>
   </form>
 </div>
@@ -66,7 +66,7 @@ $(document).ready(function() {
 
 $(document).on('submit', '#form-login', function(e) {
 
-  e.preventDefault();
+  //e.preventDefault();
   loginUnlock();
 
 });
