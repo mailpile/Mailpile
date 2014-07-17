@@ -117,8 +117,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             cookies = Cookie.SimpleCookie()
             cookies[self.server.session_cookie] = session_id
             cookies[self.server.session_cookie]['path'] = '/'
-            #cookies[self.server.session_cookie]['secure'] = True
-            cookies[self.server.session_cookie]['max-age'] = 7 * 24 * 3600
+            cookies[self.server.session_cookie]['max-age'] = 24 * 3600
             self.send_header(*cookies.output().split(': ', 1))
             self.send_header('Cache-Control', 'no-cache="set-cookie"')
         self.end_headers()

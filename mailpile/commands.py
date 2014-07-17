@@ -1227,6 +1227,20 @@ class ProgramStatus(Command):
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
+            now = time.time()
+
+            sessions = self.result.get('sessions')
+            if sessions:
+                sessions = '\n'.join(['  %s/%s = %s (%ds)'
+                                      % (us['sessionid'][:16],
+                                         us['userdata'],
+                                         us['userinfo'],
+                                         now - us['timestamp'])
+                                     for us in sessions])
+            else:
+                sessions = '  ' + _('Nothing Found')
+
+            ievents = self.result.get('ievents')
             cevents = self.result.get('cevents')
             if cevents:
                 cevents = '\n'.join(['  %s %s' % (e.event_id, e.message)
@@ -1259,13 +1273,15 @@ class ProgramStatus(Command):
 
             return ('Recent events:\n%s\n\n'
                     'Events in progress:\n%s\n\n'
+                    'Live sessions:\n%s\n\n'
                     'Threads: (bg delay %.3fs)\n%s\n\n'
                     'Locks:\n%s'
-                    ) % (cevents, ievents,
+                    ) % (cevents, ievents, sessions,
                          self.result['delay'], threads,
                          locks)
 
     def command(self, args=None):
+        import mailpile.auth
         config = self.session.config
 
         try:
@@ -1305,6 +1321,11 @@ class ProgramStatus(Command):
                 pass
 
         result = {
+            'sessions': [{'sessionid': k,
+                          'timestamp': v.ts,
+                          'userdata': v.data,
+                          'userinfo': v.auth} for k, v in
+                         mailpile.auth.SESSION_CACHE.iteritems()],
             'delay': play_nice_with_threads(),
             'threads': threads,
             'locks': sorted(locks)

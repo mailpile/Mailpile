@@ -56,7 +56,10 @@ class Authenticate(Command):
 
         session_id = self.session.ui.html_variables.get('http_session')
         if session_id:
-            SESSION_CACHE[session_id] = UserSession(auth=user)
+            self.session.ui.debug('Logged in %s as %s' % (session_id, user))
+            SESSION_CACHE[session_id] = UserSession(auth=user, data={
+                't': '%x' % int(time.time()),
+            })
 
         if redirect:
             if '_path' in self.data:
@@ -74,6 +77,8 @@ class Authenticate(Command):
 
     def _do_login(self, user, password, load_index=False, redirect=False):
         session, config = self.session, self.session.config
+        session_id = self.session.ui.html_variables.get('http_session')
+
         user = user and user.lower()
         if not user:
             from mailpile.config import SecurePassphraseStorage
@@ -97,12 +102,15 @@ class Authenticate(Command):
                         else:
                             pass  # FIXME: Start load in background
 
+                    session.ui.debug('Good passphrase for %s' % session_id)
                     return self._logged_in(redirect=redirect)
                 else:
+                    session.ui.debug('No GnuPG, checking DEFAULT user')
                     # No GnuPG, see if there is a DEFAULT user in the config
                     user = 'DEFAULT'
 
             except (AssertionError, IOError):
+                session.ui.debug('Bad passphrase for %s' % session_id)
                 return self._error(_('Invalid passphrase, please try again'))
 
         if user in config.logins:
@@ -110,6 +118,7 @@ class Authenticate(Command):
             #        the entry in our user/password list.
             # NOTE:  This hack effectively disables auth without GnUPG
             if user == 'DEFAULT':
+                session.ui.debug('FIXME: Unauthorized login allowed')
                 return self._logged_in(redirect=redirect)
             raise Exception('FIXME')
 
@@ -147,6 +156,7 @@ class DeAuthenticate(Command):
         session_id = self.session.ui.html_variables.get('http_session')
         if session_id:
             try:
+                self.session.ui.debug('Logging out %s' % session_id)
                 del SESSION_CACHE[session_id]
             except KeyError:
                 pass

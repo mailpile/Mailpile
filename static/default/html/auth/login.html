@@ -21,11 +21,14 @@
 </div>
 
 <div id="login-details" class="animated">
-  <div class="form-text">To Log In Please Enter</div>
+  <div class="form-text">{{_("To Log In Please Enter")}}</div>
   <form method='POST' id="form-login" class="form-login clearfix animated">
-	  <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="Your Passphrase">
-	  <button type="submit" class="submit"><span class="icon-key"></span></button>
+    <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="Your Passphrase">
+    <button type="submit" class="submit"><span class="icon-key"></span></button>
   </form>
+  {% if status == 'error' %}
+  <p class="wrong-passphrase">{{_("Oops, wrong passphrase. Try again?")}}</p>
+  {% endif %}
 </div>
 
 
@@ -66,7 +69,7 @@ $(document).ready(function() {
 
 $(document).on('submit', '#form-login', function(e) {
 
-  //e.preventDefault();
+  loginUnlock();
 
 });
 </script>
