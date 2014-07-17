@@ -26,12 +26,18 @@
     float: right;
   }
 
+  #login-logo {
+    width: 223px;
+    position: absolute;
+    top: 13%;
+    left: 20%;
+  }
+
   #login-logo .logo-icon {
     width: 150px;
     height: 100px;
     display: block;
-    margin: 100px auto 35px auto;
-
+    margin: 0px auto 35px auto;
   }
 
   #login-logo .logo-name {
@@ -49,9 +55,9 @@
     box-sizing: border-box;
     background: @gray;
     margin: 0 auto;
-    position: relative;
-    left: 190px;
-    top: -700px;
+    position: absolute;
+    top: 10%;
+    left: 55%;
   }
 
   #login-vault-lock-inner {
@@ -75,11 +81,11 @@
   }
 
   #login-details {
-    width: 500px;
+    width: 465px;
     margin: 0px auto;
-    position: relative;
-    top: -600px;
-    left: 115px;
+    position: absolute;
+    top: 50%;
+    left: 33%;
   }
 
   .form-text {
@@ -162,4 +168,15 @@
    .form-login button .icon-key {
      font-size: 24px;
      line-height: 24px;
+   }
+
+   .login-wrong-passphrase {
+     background: @orange;
+     display: inline-block;
+     margin: @base-margin auto @base-margin 15%;
+     padding: @base-padding;
+     border-radius: (@base-border-radius * 2);
+     text-align: center;
+     font-size: 18px;
+     color: @white;
    }

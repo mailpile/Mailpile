@@ -2,16 +2,13 @@
 {% block title %}{{_("Please log in")}}{% endblock %}
 {% block content %}
 <div id="login">
-
-  <div id="login-left" class="animated"> 
-    <div id="login-logo" class="animated fadeIn">
-    {% include("../img/logo-color.svg") %}
-    {% include("../img/logo-name.svg") %}
-    </div>
-  </div>
-
+  <div id="login-left" class="animated"></div>
   <div id="login-right" class="animated"></div>
+</div>
 
+<div id="login-logo" class="animated">
+{% include("../img/logo-color.svg") %}
+{% include("../img/logo-name.svg") %}
 </div>
 
 <div id="login-vault-lock-outer" class="animated">
@@ -27,13 +24,25 @@
     <button type="submit" class="submit"><span class="icon-key"></span></button>
   </form>
   {% if status == 'error' %}
-  <p class="wrong-passphrase">{{_("Oops, wrong passphrase. Try again?")}}</p>
+  <div class="login-wrong-passphrase animated bounceIn">{{_("Oops, wrong passphrase. Try again?")}}</div>
   {% endif %}
 </div>
 
-
 <script>
-var loginUnlock = function() {
+$(document).ready(function() {
+
+  var height = $(window).height() - 16;
+  $('#content-wide').css({'height': height, 'margin-top': '0px'});
+  $('#login').height(height);
+  $('#login-left').height(height);
+  $('#login-right').height(height);
+
+  $('#login-passphrase').focus();
+
+});
+
+// Login Form is submitted
+$(document).on('submit', '#form-login', function(e) {
 
   // Details
   $('#login-details').addClass('bounceOutDown');
@@ -52,26 +61,21 @@ var loginUnlock = function() {
     $('#login-left').addClass('bounceOutLeft');
     $('#login-right').addClass('bounceOutRight');
   }, 850);
-};
 
-$(document).ready(function() {
-  
-  var height = $(window).height() - 16;
-  $('#content-wide').css({'height': height, 'margin-top': '0px'});
-  $('#login').height(height);
-  $('#login-left').height(height);
-  $('#login-right').height(height);
+  // Loading
+  setTimeout(function() {
+    $('#login-logo').css({'left': '40%', 'top': '20%'});
+  }, 1000);
 
-
-  $('#login-passphrase').focus();
-
-});
-
-$(document).on('submit', '#form-login', function(e) {
-
-  loginUnlock();
+  setInterval(function() {
+    $("#logo-bluemail").fadeOut(2000);
+    $("#logo-redmail").hide(2000);
+    $("#logo-greenmail").hide(3000);
+    $("#logo-bluemail").fadeIn(2000);
+    $("#logo-greenmail").fadeIn(4000);
+    $("#logo-redmail").fadeIn(6000);
+  }, 1000);
 
 });
 </script>
-
 {% endblock %}
