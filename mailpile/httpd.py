@@ -293,9 +293,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
         try:
             try:
-                commands = UrlMap(session).map(self, method, path,
-                                               query_data, post_data,
-                                               authenticate=True)
+                commands = UrlMap(session).map(
+                    self, method, path, query_data, post_data,
+                    authenticate=(not mailpile.util.TESTING))
             except UsageError:
                 if (not path.endswith('/') and
                         not session.config.sys.debug and
@@ -388,6 +388,7 @@ class HttpWorker(threading.Thread):
     def __init__(self, session, sspec):
         threading.Thread.__init__(self)
         self.httpd = HttpServer(session, sspec, HttpRequestHandler)
+        self.daemon = True
         self.session = session
 
     def run(self):

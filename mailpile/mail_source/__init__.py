@@ -33,6 +33,7 @@ class BaseMailSource(threading.Thread):
 
     def __init__(self, session, my_config):
         threading.Thread.__init__(self)
+        self.daemon = mailpile.util.TESTING
         self._lock = MSrcRLock()
         self.my_config = my_config
         self.session = session

@@ -36,7 +36,7 @@ SESSION_CACHE = UserSessionCache()
 
 
 class Authenticate(Command):
-    """Authenticate a user"""
+    """Authenticate a user (log in)"""
     SYNOPSIS = (None, 'login', 'auth/login', None)
     ORDER = ('Internals', 5)
     SPLIT_ARG = False
@@ -132,6 +132,7 @@ class Authenticate(Command):
 
 
 class DeAuthenticate(Command):
+    """De-authenticate a user (log out)"""
     SYNOPSIS = (None, 'logout', 'auth/logout', None)
     ORDER = ('Internals', 5)
     SPLIT_ARG = False

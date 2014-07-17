@@ -9,6 +9,7 @@ from cStringIO import StringIO
 
 # Mailpile core
 import mailpile
+import mailpile.util
 from mailpile.plugins.tags import AddTag, Filter
 from mailpile.crypto.gpgi import GNUPG_HOMEDIR
 from mailpile.ui import SilentInteraction
@@ -40,11 +41,13 @@ TAGS = {
 def _initialize_mailpile_for_testing(workdir, test_data):
     config = mailpile.app.ConfigManager(workdir=workdir,
                                         rules=mailpile.defaults.CONFIG_RULES)
-    config.sys.http_port = random.randint(33500, 34000)
     session = mailpile.ui.Session(config)
     session.config.load(session)
     session.main = True
     ui = session.ui = SilentInteraction(config)
+
+    mailpile.util.TESTING = True
+    config.sys.http_port = random.randint(33500, 34000)
 
     mp = mailpile.Mailpile(session=session)
     session.config.plugins.load('demos')
@@ -87,7 +90,6 @@ def get_shared_mailpile():
         os.mkdir(os.path.join(test_data, "new"))
 
     MP = _initialize_mailpile_for_testing(tmpdir, test_data)
-
     return MP
 
 

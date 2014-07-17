@@ -26,6 +26,7 @@ class Cron(threading.Thread):
         """
         threading.Thread.__init__(self)
         self.ALIVE = False
+        self.daemon = mailpile.util.TESTING
         self.name = name
         self.session = session
         self.last_run = time.time()
@@ -153,7 +154,7 @@ class Worker(threading.Thread):
 
     def __init__(self, name, session, daemon=False):
         threading.Thread.__init__(self)
-        self.daemon = daemon
+        self.daemon = mailpile.util.TESTING or daemon
         self.name = name or 'Worker'
         self.ALIVE = False
         self.JOBS = []
