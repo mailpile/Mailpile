@@ -1,0 +1,76 @@
+{% extends "layouts/login.html" %}
+{% block title %}{{_("Please log in")}}{% endblock %}
+{% block content %}
+<div id="login">
+
+  <div id="login-left" class="animated"> 
+    <div id="login-logo" class="animated fadeIn">
+    {% include("../img/logo-color.svg") %}
+    {% include("../img/logo-name.svg") %}
+    </div>
+  </div>
+
+  <div id="login-right" class="animated"></div>
+
+</div>
+
+<div id="login-vault-lock-outer" class="animated">
+  <div id="login-vault-lock-inner" class="animated">
+    <div id="login-vault-lock" class="icon-lock-closed animated"></div>
+  </div>
+</div>
+
+<div id="login-details" class="animated">
+  <h1>YOU ARE SO LOGGED OUT MAN</h1>
+  <div class="form-text">To Log In Please Enter</div>
+  <form action='/auth/login/' method='POST' id="form-login" class="form-login clearfix animated">
+	  <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="Your Passphrase">
+	  <button type="submit" class="submit"><span class="icon-key"></span></button>
+  </form>
+</div>
+
+
+<script>
+var loginUnlock = function() {
+
+  // Details
+  $('#login-details').addClass('bounceOutDown');
+
+  // Lock
+  setTimeout(function() {
+    $('#login-vault-lock').addClass('fadeOut');
+  }, 250);
+
+  setTimeout(function() {
+    $('#login-vault-lock-outer').addClass('bounceOutUp');
+  }, 500);
+
+  // Panels
+  setTimeout(function() {
+    $('#login-left').addClass('bounceOutLeft');
+    $('#login-right').addClass('bounceOutRight');
+  }, 850);
+};
+
+$(document).ready(function() {
+
+  $('#content-wide').css({'height': '100%', 'margin-top': '0px'});
+  
+  var height = $(window).height() - 16;
+  $('#login').height(height);
+  $('#login-left').height(height);
+  $('#login-right').height(height);
+
+  $('#login-passphrase').focus();
+
+});
+
+$(document).on('submit', '#form-login', function(e) {
+
+  //e.preventDefault();
+  loginUnlock();
+
+});
+</script>
+
+{% endblock %}

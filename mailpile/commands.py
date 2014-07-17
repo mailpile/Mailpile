@@ -58,7 +58,7 @@ class Command:
     HTTP_QUERY_VARS = {}
     HTTP_BANNED_VARS = {}
     HTTP_STRICT_VARS = True
-    HTTP_AUTH_REQUIRED = False  # FIXME: Should be True
+    HTTP_AUTH_REQUIRED = True
 
     class CommandResult:
         def __init__(self, command_obj, session,
