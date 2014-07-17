@@ -114,16 +114,17 @@ def TracedRLock(*args, **kwargs):
 TracedLocks = (TracedLock, TracedRLock)
 UnTracedLocks = (threading.Lock, threading.RLock)
 
-EventLock, EventRLock = TracedLocks
-ConfigLock, ConfigRLock = TracedLocks
+# Replace with as necessary TracedLocks to track down deadlocks.
+EventLock, EventRLock = UnTracedLocks
+ConfigLock, ConfigRLock = UnTracedLocks
 CryptoLock, CryptoRLock = UnTracedLocks
-UiLock, UiRLock = TracedLocks
-WorkerLock, WorkerRLock = TracedLocks
-MboxLock, MboxRLock = TracedLocks
-SearchLock, SearchRLock = TracedLocks
+UiLock, UiRLock = UnTracedLocks
+WorkerLock, WorkerRLock = UnTracedLocks
+MboxLock, MboxRLock = UnTracedLocks
+SearchLock, SearchRLock = UnTracedLocks
 PListLock, PListRLock = UnTracedLocks
-VCardLock, VCardRLock = TracedLocks
-MSrcLock, MSrcRLock = TracedLocks
+VCardLock, VCardRLock = UnTracedLocks
+MSrcLock, MSrcRLock = UnTracedLocks
 
 ##############################################################################
 
