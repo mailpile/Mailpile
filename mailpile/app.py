@@ -106,11 +106,12 @@ class InteractCommand(Command):
         # Create and start the rest of the threads, load the index.
         if config.loaded_config:
             Load(session, '').run(quiet=True)
+        else:
+            config.prepare_workers(session, daemons=True)
 
         session.ui.display_result(HelpSplash(session, 'help', []).run())
         Interact(session)
 
-        session.interactive = False
         return self._success(_('Ran interactive shell'))
 
 
@@ -142,10 +143,10 @@ def Main(args):
         session.main = True
         try:
             config.load(session)
-            config.prepare_workers(session)
         except IOError:
             session.ui.error(_('Failed to decrypt configuration, '
                                'please log in!'))
+        config.prepare_workers(session)
     except AccessError, e:
         session.ui.error('Access denied: %s\n' % e)
         sys.exit(1)

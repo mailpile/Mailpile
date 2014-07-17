@@ -285,11 +285,14 @@ class UserInteraction:
         if t and t[0]:
             self.time_elapsed = elapsed = t[-1][0] - t[0][0]
             if not quiet:
-                self.notify(_('Elapsed: %.3fs (%s)') % (elapsed, t[-1][1]))
-                if details:
-                    for i in range(0, len(self.times)-1):
-                        e = t[i+1][0] - t[i][0]
-                        self.debug(' -> %.3fs (%s)' % (e, t[i][1]))
+                try:
+                    self.notify(_('Elapsed: %.3fs (%s)') % (elapsed, t[-1][1]))
+                    if details:
+                        for i in range(0, len(self.times)-1):
+                            e = t[i+1][0] - t[i][0]
+                            self.debug(' -> %.3fs (%s)' % (e, t[i][1]))
+                except IndexError:
+                    self.notify(_('Elapsed: %.3fs') % elapsed)
             return elapsed
         return 0
 

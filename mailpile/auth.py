@@ -55,8 +55,9 @@ class Authenticate(Command):
     def _logged_in(self, user=None):
         user = user or 'DEFAULT'
 
-        session_id = self.session.ui.html_variables['http_session']
-        SESSION_CACHE[session_id] = UserSession(auth=user)
+        session_id = self.session.ui.html_variables.get('http_session')
+        if session_id:
+            SESSION_CACHE[session_id] = UserSession(auth=user)
 
         if '_path' in self.data:
             qs = [(k, v) for k, vl in self.data.iteritems() for v in vl

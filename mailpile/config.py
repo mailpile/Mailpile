@@ -82,6 +82,20 @@ class SecurePassphraseStorage(object):
             return None
 
 
+def ConfigRule(*args):
+    class _ConfigRule(list):
+        def __init__(self):
+            list.__init__(self, args)
+            self.public = False
+    return _ConfigRule()
+
+
+def PublicConfigRule(*args):
+    c = ConfigRule(*args)
+    c.public = True
+    return c
+
+
 def ConfigPrinter(cfg, indent=''):
     rv = []
     if isinstance(cfg, dict):
@@ -430,9 +444,15 @@ def RuledContainer(pcls):
             added_section = False
 
             keys = self.rules.keys()
+            if not private:
+                keys = [k for k in keys
+                        if hasattr(self.rules[k], 'public')
+                        and self.rules[k].public]
+
             ignore = self.ignored_keys() | set(['_any'])
-            if not keys or '_any' in keys:
-                keys.extend(self.keys())
+            if private:
+                if not keys or '_any' in keys:
+                    keys.extend(self.keys())
             keys = [k for k in sorted(set(keys)) if k not in ignore]
             set_keys = set(self.keys())
 
@@ -457,7 +477,7 @@ def RuledContainer(pcls):
                         config.set(section, key, value, comment)
             for key in keys:
                 if hasattr(self[key], 'as_config'):
-                    self[key].as_config(config=config)
+                    self[key].as_config(config=config, private=private)
 
             return config
 
@@ -477,7 +497,10 @@ def RuledContainer(pcls):
                 raise TypeError('add_rule(%s, %s): Bad key or rule.'
                                 % (key, rule))
 
-            rule = list(rule[:])
+            orule, rule = rule, ConfigRule(*rule[:])
+            if hasattr(orule, 'public'):
+                rule.public = orule.public
+
             self.rules[key] = rule
             check = rule[self.RULE_CHECKER]
             try:
@@ -925,6 +948,7 @@ class ConfigManager(ConfigDict):
 
         self.workdir = workdir or self.DEFAULT_WORKDIR
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
+        self.conf_pub = os.path.join(self.workdir, 'mailpile.rc')
 
         self.plugins = None
         self.background = None
@@ -954,9 +978,6 @@ class ConfigManager(ConfigDict):
                         'jinja2.ext.do', 'jinja2.ext.autoescape',
                         'mailpile.jinjaextensions.MailpileCommand']
         )
-        translation = self.get_i18n_translation()
-        self.jinja_env.install_gettext_translations(translation,
-                                                    newstyle=True)
 
         self._magic = True  # Enable the getattr/getitem magic
 
@@ -1041,7 +1062,7 @@ class ConfigManager(ConfigDict):
         with self._lock:
             return self._unlocked_load(*args, **kwargs)
 
-    def _unlocked_load(self, session, filename=None):
+    def _unlocked_load(self, session, filename=None, public=False):
         self._mkworkdir(session)
         self.index = None
         self.loaded_config = False
@@ -1055,12 +1076,23 @@ class ConfigManager(ConfigDict):
                     decrypt_and_parse_lines(fd, lambda ll: lines.extend(ll),
                                             self)
         except IOError:
-            # Abort early and reset if config failed to load
-            self.reset(rules=False, data=True)
-            raise
+            if public:
+                raise
+            try:
+                # Probably unauthenticated, load the public subset instead.
+                self._unlocked_load(session,
+                                    filename=self.conf_pub,
+                                    public=True)
+            finally:
+                self.loaded_config = False
         except (ValueError, OSError):
             # Bad data in config or config doesn't exist: just forge onwards
             pass
+
+        # Enable translations
+        translation = self.get_i18n_translation(session)
+        self.jinja_env.install_gettext_translations(translation,
+                                                    newstyle=True)
 
         # Discover plugins and update the config rule to match
         from mailpile.plugins import PluginManager
@@ -1074,6 +1106,9 @@ class ConfigManager(ConfigDict):
 
         # Parse once (silently), to figure out which plugins to load...
         self.parse_config(None, '\n'.join(lines), source=filename)
+        if public:
+            # Stop here when loading the public config...
+            raise IOError('Failed to load main config')
 
         if len(self.sys.plugins) == 0:
             self.sys.plugins.extend(self.plugins.DEFAULT)
@@ -1086,19 +1121,13 @@ class ConfigManager(ConfigDict):
         # Open event log
         self.event_log = EventLog(self.data_directory('event_log',
                                                       mode='rw', mkdir=True),
-                                  # FIXME: Disbled encryption for now
-                                  lambda: False and self.prefs.obfuscate_index
+                                  lambda: False # self.prefs.obfuscate_index
                                   ).load()
-
-        # Enable translations
-        translation = self.get_i18n_translation(session)
-        self.jinja_env.install_gettext_translations(translation,
-                                                    newstyle=True)
-
         # Load VCards
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
                                                            mkdir=True))
+
         self.loaded_config = True
 
     def reset_rules_from_source(self):
@@ -1127,11 +1156,12 @@ class ConfigManager(ConfigDict):
         if not self.loaded_config:
             return
 
-        self._mkworkdir(None)
         newfile = '%s.new' % self.conffile
-        fd = gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb')
-        fd.write(self.as_config_bytes(private=True))
-        fd.close()
+        pubfile = self.conf_pub
+
+        self._mkworkdir(None)
+        with gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb') as fd:
+            fd.write(self.as_config_bytes(private=True))
 
         # Keep the last 5 config files around... just in case.
         backup_file(self.conffile, backups=5, min_age_delta=10)
@@ -1139,6 +1169,9 @@ class ConfigManager(ConfigDict):
             try: os.remove(self.conffile)
             except WindowsError: pass
         os.rename(newfile, self.conffile)
+
+        with open(pubfile, 'wb') as fd:
+            fd.write(self.as_config_bytes(private=False))
 
         self.get_i18n_translation()
         self.prepare_workers()
@@ -1511,7 +1544,7 @@ class ConfigManager(ConfigDict):
 
         # We may start the HTTPD without the loaded config...
         if not config.loaded_config:
-            if httpd_spec and not config.http_worker:
+            if not config.http_worker:
                  start_httpd(httpd_spec)
             return
 
