@@ -19,7 +19,7 @@
 
 <div id="login-details" class="animated">
   <div class="form-text">{{_("To Log In Please Enter")}}</div>
-  <form method='POST' id="form-login" class="form-login clearfix animated">
+  <form method="POST" id="form-login" class="form-login clearfix animated">
     <input id="login-passphrase" type="password" name="pass" autocomplete="off" tabindex=1 alt="{{_("Your Passphrase")}}" placeholder="Your Passphrase">
     <button type="submit" class="submit"><span class="icon-key"></span></button>
   </form>
@@ -64,7 +64,8 @@ $(document).on('submit', '#form-login', function(e) {
 
   // Loading
   setTimeout(function() {
-    $('#login-logo').css({'left': '40%', 'top': '20%'});
+    $('#login-logo .logo-name').addClass('fadeOut');
+    $('#login-logo').css({'left': '40%'});
   }, 1000);
 
   setInterval(function() {

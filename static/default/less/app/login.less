@@ -81,7 +81,7 @@
   }
 
   #login-details {
-    width: 465px;
+    width: 485px;
     margin: 0px auto;
     position: absolute;
     top: 50%;
@@ -93,8 +93,11 @@
     position: relative;
     top: -12px;
     left: 0px;
+    font-weight: bold;
+    font-family: @mailpile-text-font-family-bold;
     font-size: 18px;
     line-height: 18px;
+    color: @grayDark;
   }
 
   .form-login {
@@ -173,10 +176,25 @@
    .login-wrong-passphrase {
      background: @orange;
      display: inline-block;
-     margin: @base-margin auto @base-margin 15%;
+     margin: @base-margin auto @base-margin 23%;
      padding: @base-padding;
      border-radius: (@base-border-radius * 2);
      text-align: center;
-     font-size: 18px;
+     font-weight: bold;
+     font-size: 14px;
+     line-height: 14px;
+     color: @white;
+   }
+
+   .logged-out-message {
+     background: @blue;
+     display: inline-block;
+     margin: @base-margin auto @base-margin 23%;
+     padding: @base-padding;
+     border-radius: (@base-border-radius * 2);
+     text-align: center;
+     font-weight: bold;
+     font-size: 14px;
+     line-height: 14px;
      color: @white;
    }
