@@ -124,7 +124,7 @@ MboxLock, MboxRLock = UnTracedLocks
 SearchLock, SearchRLock = UnTracedLocks
 PListLock, PListRLock = UnTracedLocks
 VCardLock, VCardRLock = UnTracedLocks
-MSrcLock, MSrcRLock = UnTracedLocks
+MSrcLock, MSrcRLock = TracedLocks
 
 ##############################################################################
 
