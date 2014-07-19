@@ -1236,7 +1236,7 @@ class ProgramStatus(Command):
             sessions = self.result.get('sessions')
             if sessions:
                 sessions = '\n'.join(sorted(['  %s/%s = %s (%ds)'
-                                             % (us['sessionid'][:16],
+                                             % (us['sessionid'],
                                                 us['userdata'],
                                                 us['userinfo'],
                                                 now - us['timestamp'])
@@ -1786,7 +1786,7 @@ class Help(Command):
             cmds = self.result['commands']
             width = self.result.get('width', 8)
             ckeys = cmds.keys()
-            ckeys.sort(key=lambda k: cmds[k][3])
+            ckeys.sort(key=lambda k: (cmds[k][3], cmds[k][0]))
             arg_width = min(50, max(14, self.session.ui.term.max_width()-70))
             for c in ckeys:
                 cmd, args, explanation, rank = cmds[c]
