@@ -1340,8 +1340,8 @@ class ConfigManager(ConfigDict):
         return mbox
 
     def create_local_mailstore(self, session, name=None):
+        path = os.path.join(self.workdir, 'mail')
         with self._lock:
-            path = os.path.join(self.workdir, 'mail')
             if name is None:
                 name = '%5.5x' % random.randint(0, 16**5)
                 while os.path.exists(os.path.join(path, name)):
@@ -1349,7 +1349,10 @@ class ConfigManager(ConfigDict):
             if name != '':
                 if not os.path.exists(path):
                     root_mbx = wervd.MailpileMailbox(path)
-                path = os.path.join(path, name)
+                if name.startswith(path) and '..' not in name:
+                    path = name
+                else:
+                    path = os.path.join(path, os.path.basename(name))
 
             mbx = wervd.MailpileMailbox(path)
             mbx._encryption_key_func = lambda: self.prefs.obfuscate_index

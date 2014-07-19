@@ -250,16 +250,19 @@ class BaseMailSource(threading.Thread):
         config = self.session.config
         disco_cfg = self.my_config.discovery
 
-        if (mbx_cfg.local and mbx_cfg.local != 'CREATE' and
-               not os.path.exists(mbx_cfg.local)):
-            path, wervd = config.create_local_mailstore(self.session,
-                                                        name=mbx_cfg.local)
-        else:
-            if mbx_cfg.local == 'CREATE' or disco_cfg.local_copy:
-                path, wervd = config.create_local_mailstore(self.session)
+        if mbx_cfg.local and mbx_cfg.local != 'CREATE':
+            if not os.path.exists(mbx_cfg.local):
+                path, wervd = config.create_local_mailstore(self.session,
+                                                            name=mbx_cfg.local)
                 mbx_cfg.local = path
                 if save:
                     self._save_config()
+
+        elif mbx_cfg.local == 'CREATE' or disco_cfg.local_copy:
+            path, wervd = config.create_local_mailstore(self.session)
+            mbx_cfg.local = path
+            if save:
+                self._save_config()
 
         return mbx_cfg
 
