@@ -595,7 +595,7 @@ class _MockImap(object):
 
     >>> imap = ImapMailSource(session, imap_config)
     >>> imap.open(conn_cls=_MockImap)
-    <SharedImapConn(...)>
+    <SharedImapConn(mock, started ...)>
 
     >>> sorted(imap.capabilities)
     ['IMAP4REV1', 'X-MAGIC-BEANS']
@@ -611,6 +611,7 @@ class _MockImap(object):
     RESULTS = {}
 
     def __init__(self, *args, **kwargs):
+        self.host = 'mock'
         def mkcmd(rval):
             def cmd(*args, **kwargs):
                 return rval
