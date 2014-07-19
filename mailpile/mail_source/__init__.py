@@ -107,6 +107,16 @@ class BaseMailSource(threading.Thread):
         else:
             return mbx.path
 
+    def _check_interrupt(self, clear=True):
+        if mailpile.util.QUITTING or self._interrupt:
+            if clear:
+                self._log_status(_('Interrupted: %s')
+                                 % (self._interrupt or _('Quitting')))
+                self._interrupt = None
+            return True
+        else:
+            return False
+
     def sync_mail(self):
         """Iterates through all the mailboxes and scans if necessary."""
         def unsorted(l):
@@ -119,12 +129,9 @@ class BaseMailSource(threading.Thread):
         errors = rescanned = 0
         if self.session.config.sys.debug:
             batch = 5
+
+        ostate = self._state
         for mbx_cfg in unsorted(self.my_config.mailbox.values()):
-            if mailpile.util.QUITTING or self._interrupt:
-                self._log_status(_('Interrupted: %s'
-                                   ) % (self._interrupt or _('Quitting')))
-                self._interrupt = None
-                break
             try:
                 state = {}
                 # Generally speaking, we only rescan if a mailbox looks like
@@ -133,9 +140,13 @@ class BaseMailSource(threading.Thread):
                 if batch > 0 and (self._has_mailbox_changed(mbx_cfg, state) or
                                   random.randint(0, 20) == 10):
 
+                    self._state = 'Waiting...'
                     with GLOBAL_RESCAN_LOCK:
+                        if self._check_interrupt(clear=False):
+                            break
                         count = self.rescan_mailbox(mbx_cfg._key,
                                                     stop_after=batch)
+
                     if count >= 0:
                         batch -= count
                         if (count and batch > 0 and
@@ -151,15 +162,19 @@ class BaseMailSource(threading.Thread):
                 self._log_status(_('Internal error'))
                 raise
 
+        self._state = 'Waiting...'
         with GLOBAL_RESCAN_LOCK:
-            self.discover_mailboxes()
+            if not self._check_interrupt():
+                self.discover_mailboxes()
 
         if errors:
             self._log_status(_('Rescanned %d mailboxes, failed to rescan %d'
                                ) % (rescanned, errors))
         else:
             self._log_status(_('Rescanned %d mailboxes') % rescanned)
+
         self._last_rescan_count = rescanned
+        self._state = ostate
         return rescanned
 
     def _jitter(self, seconds):
@@ -346,7 +361,7 @@ class BaseMailSource(threading.Thread):
                     stop_after -= 1
                     if stop_after == 0:
                         return
-                if mailpile.util.QUITTING or self._interrupt:
+                if self._check_interrupt(clear=False):
                     return
                 play_nice_with_threads()
         except IOError:
