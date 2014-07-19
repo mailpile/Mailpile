@@ -157,9 +157,11 @@ class EventLog(object):
     """
     KEEP_LOGS = 2
 
-    def __init__(self, logdir, encryption_key_func, rollover=10240):
+    def __init__(self, logdir, decryption_key_func, encryption_key_func,
+                 rollover=1024):
         self.logdir = logdir
-        self.encryption_key_func = encryption_key_func
+        self.decryption_key_func = decryption_key_func or (lambda: None)
+        self.encryption_key_func = encryption_key_func or (lambda: None)
         self.rollover = rollover
 
         self._events = {}
@@ -190,10 +192,12 @@ class EventLog(object):
         self._log_start_id = NewEventId()
         enc_key = self.encryption_key_func()
         if enc_key:
-            self._log_fd = EncryptingStreamer(enc_key, dir=self.logdir)
+            self._log_fd = EncryptingStreamer(enc_key,
+                                              dir=self.logdir,
+                                              name='EventLog/ES')
             self._log_fd.save(self._save_filename(), finish=False)
         else:
-            self._log_fd = open(self._save_filename(), 'w', 0)
+            self._log_fd = open(self._save_filename(), 'wb', 0)
 
         # Write any incomplete events to the new file
         for e in self.incomplete():
@@ -216,23 +220,31 @@ class EventLog(object):
         return sorted([l for l in os.listdir(self.logdir)
                        if not l.startswith('.')])
 
-    def _save_events(self, events):
+    def _save_events(self, events, recursed=False):
         if not self._log_fd:
             self._open_log()
         events.sort(key=lambda ev: ev.ts)
-        for event in events:
-            self._log_fd.write('%s\n' % event)
-            self._events[event.event_id] = event
+        try:
+            for event in events:
+                self._log_fd.write('%s\n' % event)
+                self._events[event.event_id] = event
+        except IOError:
+            if recursed:
+                raise
+            else:
+                self._unlocked_close()
+                return self._save_events(events, recursed=True)
 
     def _load_logfile(self, lfn):
-        enc_key = self.encryption_key_func()
+        enc_key = self.decryption_key_func()
         with open(os.path.join(self.logdir, lfn)) as fd:
             if enc_key:
-                lines = fd.read()
-            else:
-                with DecryptingStreamer(fd, mep_key=enc_key) as streamer:
+                with DecryptingStreamer(fd, mep_key=enc_key,
+                                        name='EventLog/DS') as streamer:
                     lines = streamer.read()
                     streamer.verify(_raise=IOError)
+            else:
+                lines = fd.read()
             if lines:
                 for line in lines.splitlines():
                     event = Event.Parse(line)
@@ -312,8 +324,14 @@ class EventLog(object):
 
     def close(self):
         with self._lock:
+            return self._unlocked_close()
+
+    def _unlocked_close(self):
+        try:
             self._log_fd.close()
             self._log_fd = None
+        except (OSError, IOError):
+            pass
 
     def _prune_completed(self):
         for event_id in self._events.keys():
@@ -327,8 +345,8 @@ class EventLog(object):
                 try:
                     self._load_logfile(lf)
                 except (OSError, IOError):
-                    import traceback
-                    traceback.print_exc()
+                    # Nothing we can do, no point complaining...
+                    pass
             self._prune_completed()
             self._save_events(self._events.values())
             return self

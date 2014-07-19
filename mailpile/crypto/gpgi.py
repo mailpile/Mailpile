@@ -15,6 +15,7 @@ from gettext import gettext as _
 from subprocess import Popen, PIPE
 from threading import Thread
 
+from mailpile.util import popen_ignore_signals
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
 
@@ -42,6 +43,7 @@ openpgp_algorithms = {1: _("RSA"),
                       20: _("Elgamal (encrypt/sign) [COMPROMISED]")}
 # For details on type 20 compromisation, see
 # http://lists.gnupg.org/pipermail/gnupg-announce/2003q4/000160.html
+
 
 class GnuPGResultParser:
     """
@@ -414,7 +416,8 @@ class GnuPG:
 
         try:
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-                bufsize=0, close_fds=False)
+                         bufsize=0, close_fds=False,
+                         preexec_fn=popen_ignore_signals)
 
             # GnuPG is a bit crazy, and requires that the passphrase
             # be sent and the filehandle closed before anything else

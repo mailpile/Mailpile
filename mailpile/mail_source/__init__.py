@@ -84,6 +84,7 @@ class BaseMailSource(threading.Thread):
     def _log_status(self, message):
         self.event.message = message
         self.session.config.event_log.log_event(self.event)
+        self.session.ui.mark(message)
         if 'sources' in self.session.config.sys.debug:
             self.session.ui.debug('%s: %s' % (self, message))
 
@@ -357,6 +358,7 @@ class BaseMailSource(threading.Thread):
                 return
             for key in src.iterkeys():
                 if key not in loc.source_map:
+                    session.ui.mark(_('Copying message: %s') % key)
                     loc.add_from_source(key, src.get_bytes(key))
                     stop_after -= 1
                     if stop_after == 0:

@@ -199,6 +199,8 @@ def Main(args):
         config.stop_workers()
         if config.index:
             config.index.save_changes()
+        if config.event_log:
+            config.event_log.close()
 
         if session.interactive and config.sys.debug:
             session.ui.display_result(Action(session, 'ps', ''))

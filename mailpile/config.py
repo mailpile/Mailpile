@@ -1119,9 +1119,12 @@ class ConfigManager(ConfigDict):
         self.parse_config(session, '\n'.join(lines), source=filename)
 
         # Open event log
+        dec_key_func = lambda: self.prefs.obfuscate_index
+        enc_key_func = lambda: (self.prefs.encrypt_events and
+                                self.prefs.obfuscate_index)
         self.event_log = EventLog(self.data_directory('event_log',
                                                       mode='rw', mkdir=True),
-                                  lambda: False # self.prefs.obfuscate_index
+                                  dec_key_func, enc_key_func
                                   ).load()
         # Load VCards
         self.vcards = VCardStore(self, self.data_directory('vcards',
@@ -1232,7 +1235,9 @@ class ConfigManager(ConfigDict):
         with open(os.path.join(self.workdir, pfn), 'rb') as fd:
             if self.prefs.obfuscate_index:
                 from mailpile.crypto.streamer import DecryptingStreamer
-                with DecryptingStreamer(fd, mep_key=self.prefs.obfuscate_index
+                with DecryptingStreamer(fd,
+                                        mep_key=self.prefs.obfuscate_index,
+                                        name='load_pickle'
                                         ) as streamer:
                     rv = cPickle.loads(streamer.read())
                     streamer.verify(_raise=IOError)
@@ -1241,20 +1246,16 @@ class ConfigManager(ConfigDict):
                 return cPickle.loads(fd.read())
 
     def save_pickle(self, obj, pfn):
-        fd = None
-        try:
-            if self.prefs.obfuscate_index:
-                from mailpile.crypto.streamer import EncryptingStreamer
-                fd = EncryptingStreamer(self.prefs.obfuscate_index,
-                                        dir=self.workdir)
+        if self.prefs.obfuscate_index and self.prefs.encrypt_misc:
+            from mailpile.crypto.streamer import EncryptingStreamer
+            with EncryptingStreamer(self.prefs.obfuscate_index,
+                                    dir=self.workdir,
+                                    name='save_pickle') as fd:
                 cPickle.dump(obj, fd, protocol=0)
                 fd.save(os.path.join(self.workdir, pfn))
-            else:
-                fd = open(os.path.join(self.workdir, pfn), 'wb')
+        else:
+            with open(os.path.join(self.workdir, pfn), 'wb') as fd:
                 cPickle.dump(obj, fd, protocol=0)
-        finally:
-            if fd:
-                fd.close()
 
     def _mailbox_info(self, mailbox_id, prefer_local=True):
         try:
@@ -1331,8 +1332,10 @@ class ConfigManager(ConfigDict):
                 mbox = OpenMailbox(mfn, self, create=editable)
                 mbox.editable = editable
 
-        # Always set this, it can't be pickled
-        mbox._encryption_key_func = lambda: self.prefs.obfuscate_index
+        # Always set these, they can't be pickled
+        mbox._decryption_key_func = lambda: self.prefs.obfuscate_index
+        mbox._encryption_key_func = lambda: (self.prefs.encrypt_mail and
+                                             self.prefs.obfuscate_index)
 
         # Finally, re-add to the cache
         self.cache_mailbox(session, pfn, mbx_id, mbox)
@@ -1355,7 +1358,9 @@ class ConfigManager(ConfigDict):
                     path = os.path.join(path, os.path.basename(name))
 
             mbx = wervd.MailpileMailbox(path)
-            mbx._encryption_key_func = lambda: self.prefs.obfuscate_index
+            mbx._decryption_key_func = lambda: self.prefs.obfuscate_index
+            mbx._encryption_key_func = lambda: (self.prefs.encrypt_mail and
+                                                self.prefs.obfuscate_index)
             return path, mbx
 
     def open_local_mailbox(self, session):

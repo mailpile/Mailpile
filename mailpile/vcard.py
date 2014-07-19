@@ -318,8 +318,6 @@ class SimpleVCard(object):
     VCARD4_REQUIRED = ('VERSION', 'FN')
 
     def __init__(self, *lines, **kwargs):
-        self.gpg_recipient = lambda: None
-        self.encryption_key = lambda: None
         self.filename = None
         self._lines = []
         self._lock = VCardRLock()
@@ -662,6 +660,20 @@ class MailpileVCard(SimpleVCard):
     """
     HISTORY_MAX_AGE = 31 * 24 * 3600
 
+    def __init__(self, *lines, **kwargs):
+        SimpleVCard.__init__(self, *lines, **kwargs)
+        self.configure_encryption(kwargs.get('config'))
+
+    def configure_encryption(self, config):
+        if config:
+            dec = lambda: config.prefs.obfuscate_index
+            enc = lambda: (config.prefs.encrypt_vcards and
+                           config.prefs.obfuscate_index)
+        else:
+            enc = dec = lambda: None
+        self.encryption_key_func = enc
+        self.decryption_key_func = dec
+
     def _history_parse_expire(self, history_vcl, now):
         history = {
             'sent': [],
@@ -812,10 +824,9 @@ class MailpileVCard(SimpleVCard):
             from mailpile.crypto.streamer import DecryptingStreamer
             self.filename = filename or self.filename
             with open(self.filename, 'rb') as fd:
-                with DecryptingStreamer(
-                        fd, mep_key=config.prefs.obfuscate_index,
-                        gpg_pass=config.gnupg_passphrase.get_reader()
-                        ) as streamer:
+                with DecryptingStreamer(fd,
+                                        mep_key=self.decryption_key_func(),
+                                        name='VCard/load') as streamer:
                     data = streamer.read().decode('utf-8')
                     streamer.verify(_raise=IOError)
         else:
@@ -837,20 +848,20 @@ class MailpileVCard(SimpleVCard):
 
         return self
 
-    def save(self, filename=None, gpg_recipient=None, encryption_key=None):
+    def save(self, filename=None):
         filename = filename or self.filename
         if filename:
-            gpg_recipient = gpg_recipient or self.gpg_recipient()
-            encryption_key = encryption_key or self.encryption_key()
+            encryption_key = self.encryption_key_func()
             if encryption_key:
                 from mailpile.crypto.streamer import EncryptingStreamer
                 with EncryptingStreamer(encryption_key,
-                                        dir=os.path.dirname(filename)) as es:
+                                        dir=os.path.dirname(filename),
+                                        name='VCard/save') as es:
                     es.write(self.as_vCard())
                     es.save(filename)
             else:
-                with gpg_open(filename, gpg_recipient, 'wb') as gpg:
-                    gpg.write(self.as_vCard())
+                with open(filename, 'wb') as fd:
+                    fd.write(self.as_vCard())
             return self
         else:
             raise ValueError('Save to what file?')
@@ -995,15 +1006,14 @@ class VCardStore(dict):
             with self._lock:
                 self.loaded = True
                 prfs = self.config.prefs
+                key_func = lambda: prfs.get('obfuscate_index')
                 for fn in sorted(os.listdir(self.vcard_dir)):
                     if mailpile.util.QUITTING:
                         return
                     try:
-                        c = MailpileVCard().load(
-                            os.path.join(self.vcard_dir, fn),
-                            config=(session and session.config))
-                        c.gpg_recipient = lambda: prfs.get('gpg_recipient')
-                        c.encryption_key = lambda: prfs.get('obfuscate_index')
+                        c = MailpileVCard(config=self.config)
+                        c.load(os.path.join(self.vcard_dir, fn),
+                               config=self.config)
                         self.index_vcard(c)
                         if session:
                             session.ui.mark('Loaded %s from %s'
@@ -1057,8 +1067,7 @@ class VCardStore(dict):
         for card in cards:
             card.filename = os.path.join(self.vcard_dir,
                                          card.random_uid) + '.vcf'
-            card.gpg_recipient = lambda: prefs.get('gpg_recipient')
-            card.encryption_key = lambda: prefs.get('obfuscate_index')
+            card.configure_encryption(self.config)
             card.save()
             self.index_vcard(card)
 
@@ -1248,7 +1257,7 @@ class VCardImporter(VCardPluginClass):
 
             # Otherwise, create new ones.
             if not existing:
-                new_vcard = MailpileVCard()
+                new_vcard = MailpileVCard(config=self.config)
                 new_vcard.merge(self.config.guid, vcard.as_lines())
                 vcard_store.add_vcards(new_vcard)
                 updated.append(new_vcard)
