@@ -244,17 +244,27 @@ class ChecksummingStreamer(OutputCoprocess):
         self.finish()
         self.tempfile.close()
 
-    def save(self, filename, finish=True):
+    def save(self, filename, finish=True, mode='wb'):
         if finish:
             self.finish()
-        if not self.saved:
-            # 1st save just renames the tempfile
-            os.rename(self.temppath, filename)
-            self.saved = True
-        else:
-            # 2nd save creates a copy
-            with open(filename, 'wb') as out:
-                self.save_copy(out)
+        exists = os.path.exists(filename)
+
+        # 1st save just renames the tempfile
+        if (not self.saved and
+                (('a' not in mode) or not exists)):
+            if exists:
+                os.remove(filename)
+            try:
+                os.rename(self.temppath, filename)
+                self.saved = True
+                return
+            except (OSError, IOError):
+                pass
+
+        # 2nd save (or append to existing) creates a copy
+        with open(filename, mode) as out:
+            self.save_copy(out)
+        self.saved = True
 
     def save_copy(self, ofd):
         self.tempfile.seek(0, 0)

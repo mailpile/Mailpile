@@ -68,7 +68,7 @@ CONFIG_RULES = {
         'index_encrypted': (_('Make encrypted content searchable'),
                             bool, False),
         'encrypt_mail':    (_('Encrypt locally stored mail'), bool,      True),
-        'encrypt_index':   (_('Encrypt the local search index'), bool,   True),
+        'encrypt_index':   (_('Encrypt the local search index'), bool,  False),
         'encrypt_vcards':  (_('Encrypt the contact database'), bool,     True),
         'encrypt_events':  (_('Encrypt the event log'), bool,            True),
         'encrypt_misc':    (_('Encrypt misc. local data'), bool,         True),
