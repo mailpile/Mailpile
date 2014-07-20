@@ -270,10 +270,28 @@ class Setup(Command):
         if (session.config.prefs.gpg_recipient
                 and not (self._idx() and self._idx().INDEX)
                 and not session.config.prefs.obfuscate_index):
-            randcrap = b64c(sha512b64(open('/dev/urandom').read(1024),
-                                      session.config.prefs.gpg_recipient,
-                                      '%s' % time.time()))
-            session.config.prefs.obfuscate_index = randcrap
+            #
+            # This secret is arguably the most critical bit of data in the
+            # app, it is used as an encryption key and to seed hashes in
+            # a few places.  As such, the user may need to type this in
+            # manually as part of data recovery, so we keep it reasonably
+            # sized and devoid of confusing chars.
+            #
+            # The strategy below should give about 281 bits of randomness:
+            #
+            #   import math
+            #   math.log((25 + 25 + 8) ** (12 * 4), 2) == 281.183...
+            #
+            secret = ''
+            chars = 12 * 4
+            while len(secret) < chars:
+                secret = sha512b64(open('/dev/urandom').read(1024),
+                                   '%s' % session.config,
+                                   '%s' % time.time())
+                secret = CleanText(secret,
+                                   banned=CleanText.NONALNUM + 'O01l'
+                                   ).clean[:chars]
+            session.config.prefs.obfuscate_index = secret
             session.config.prefs.index_encrypted = True
             session.ui.notify(_('Obfuscating search index and enabling '
                                 'indexing of encrypted e-mail. '))
