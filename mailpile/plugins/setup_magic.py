@@ -496,4 +496,5 @@ class SetupGetEmailSettings(TestableWebbable):
 _plugins.register_commands(Setup,
                            SetupCheckKeychain, SetupCreateNewKey,
                            SetupGuessEmails, SetupTestEmailSettings,
+                           SetupGetEmailSettings,
                            Setup)
