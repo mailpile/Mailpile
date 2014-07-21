@@ -74,12 +74,14 @@
         {% elif part.type in ("pgpbegin", "pgpend") %}
           <div class="thread-item-{{part.type}} hide">{{part.data}}</div>
         {% elif part.type == "quote" %}
-          {# Is signature at end of message (hide it) #}
-          {%- if loop.last and message.text_parts[last_part].type == "signature" -%}
+          {# If this is the 2nd-to-last part, and the LAST part is a quote
+             or signature, we shall also hide. #}
+          {%- if loop.index == (loop.length - 1) and
+                 message.text_parts[last_part].type in ("signature", "quote") -%}
             {% do special_text_parts.append("quote") %}
             <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
-          {# Is quote at end of message (hide it) #}
-          {% elif loop.last and message.text_parts[last_part].type == "quote" %}
+          {# Is this part is a quote at end of message, hide #}
+          {% elif loop.last %}
             {% do special_text_parts.append("quote") %}
             <div class="thread-item-quote hide">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
           {% else %}
