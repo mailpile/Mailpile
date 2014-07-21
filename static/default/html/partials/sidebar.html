@@ -49,10 +49,9 @@
       {{ render_sidebar_tag(tag) }}
       {%- endfor -%}
       <li {% if state.command_url in ("/tags/", "/filter/list/") %}class="navigation-on"{% endif %}>
-        <a href="/tags/" class="sidebar-tag" style="color: #b3b3b3 !important"
-          title="{{_("Edit tags")}}" alt="{{_("Edit tags")}}">
+        <a href="/tags/" class="sidebar-tag" style="color: #b3b3b3 !important">
           <span class="sidebar-icon icon-tag"></span>
-          <span class="sidebar-name">{{_("Edit tags")}}</span>
+          <span class="sidebar-name">{{_("All tags")}} …</span>
         </a>
       </li>
     </ul>
