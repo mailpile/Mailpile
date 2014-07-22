@@ -1,10 +1,8 @@
 /* JS App Files */
-{# include("jsapi/setup/wizards.js") #}
-{# include("jsapi/setup/pages.js") #}
-{# include("jsapi/setup/setup.js") #}
-
 {% include("jsapi/setup/model.js") %}
-{% include("jsapi/setup/view.js") %}
+{% include("jsapi/setup/view-identity.js") %}
+{% include("jsapi/setup/view-organize.js") %}
+{% include("jsapi/setup/view-advanced.js") %}
 {% include("jsapi/setup/router.js") %}
 
 var SetupApp = (function ($, Backbone, global) {
@@ -17,8 +15,9 @@ var SetupApp = (function ($, Backbone, global) {
       global.SourceModel = new SourceModel();
 
       // Views
-      global.SetupView = new SetupView({ el: $('#setup') });
-      global.SettingsView = new SettingsView({ el: $('#setup') });
+      global.IdentityView = new IdentityView({ el: $('#setup') });
+      global.OrganizeView = new OrganizeView({ el: $('#setup') });
+      global.AdvancedView = new AdvancedView({ el: $('#setup') });
 
   		// Router
   		global.Router = new SetupRouter($('#setup'));
