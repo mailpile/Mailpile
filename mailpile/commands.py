@@ -490,8 +490,14 @@ class Command:
 
     def run(self, *args, **kwargs):
         if self.IS_USER_ACTIVITY:
-            mailpile.util.LAST_USER_ACTIVITY = time.time()
-        return self._run(*args, **kwargs)
+            try:
+                mailpile.util.LAST_USER_ACTIVITY = time.time()
+                mailpile.util.LIVE_USER_ACTIVITIES += 1
+                return self._run(*args, **kwargs)
+            finally:
+                mailpile.util.LIVE_USER_ACTIVITIES -= 1
+        else:
+            return self._run(*args, **kwargs)
 
     def command(self):
         return None
@@ -1279,11 +1285,11 @@ class ProgramStatus(Command):
             return ('Recent events:\n%s\n\n'
                     'Events in progress:\n%s\n\n'
                     'Live sessions:\n%s\n\n'
-                    'Threads: (bg delay %.3fs)\n%s\n\n'
+                    'Threads: (bg delay %.3fs, live=%s)\n%s\n\n'
                     'Locks:\n%s'
                     ) % (cevents, ievents, sessions,
-                         self.result['delay'], threads,
-                         locks)
+                         self.result['delay'], self.result['live'],
+                         threads, locks)
 
     def command(self, args=None):
         import mailpile.auth
@@ -1335,7 +1341,8 @@ class ProgramStatus(Command):
                           'userdata': v.data,
                           'userinfo': v.auth} for k, v in
                          mailpile.auth.SESSION_CACHE.iteritems()],
-            'delay': play_nice_with_threads(),
+            'delay': play_nice_with_threads(sleep=False),
+            'live': mailpile.util.LIVE_USER_ACTIVITIES,
             'threads': threads,
             'locks': sorted(locks)
         }

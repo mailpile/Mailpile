@@ -191,6 +191,7 @@ class BaseMailSource(threading.Thread):
                 time.sleep(min(1, self._sleeping))
                 self._sleeping -= 1
         self._sleeping = None
+        play_nice_with_threads()
         return (self.alive and not mailpile.util.QUITTING)
 
     def _existing_mailboxes(self):
@@ -357,15 +358,15 @@ class BaseMailSource(threading.Thread):
             if src == loc:
                 return
             for key in src.iterkeys():
+                if self._check_interrupt(clear=False):
+                    return
+                play_nice_with_threads()
                 if key not in loc.source_map:
                     session.ui.mark(_('Copying message: %s') % key)
                     loc.add_from_source(key, src.get_bytes(key))
                     stop_after -= 1
                     if stop_after == 0:
                         return
-                if self._check_interrupt(clear=False):
-                    return
-                play_nice_with_threads()
         except IOError:
             # These just abort the download/read, which we're going to just
             # take in stride for now.
@@ -404,6 +405,7 @@ class BaseMailSource(threading.Thread):
                     if tid:
                         apply_tags.append(tid)
 
+            play_nice_with_threads()
             return config.index.scan_mailbox(
                 session, mbx_key, mbx_cfg.local or path,
                 config.open_mailbox,

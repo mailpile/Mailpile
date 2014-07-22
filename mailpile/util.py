@@ -31,6 +31,7 @@ global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING
 TESTING = False
 QUITTING = False
 LAST_USER_ACTIVITY = 0
+LIVE_USER_ACTIVITIES = 0
 
 DEFAULT_PORT = 33411
 
@@ -499,7 +500,7 @@ def dict_merge(*dicts):
     return final
 
 
-def play_nice_with_threads():
+def play_nice_with_threads(sleep=True):
     """
     Long-running batch jobs should call this now and then to pause
     their activities in case there are other threads that would like to
@@ -510,12 +511,22 @@ def play_nice_with_threads():
     if threads < 1:
         return 0
 
-    activity_threshold = (300 - time.time() + LAST_USER_ACTIVITY) / 300
-    delay = (max(0, 0.002 * threads) +
-             max(0, min(0.20, 0.400 * activity_threshold)))
+    lc = 0
+    while True:
+        activity_threshold = (300 - time.time() + LAST_USER_ACTIVITY) / 300
+        delay = (max(0, 0.002 * threads) +
+                 max(0, min(0.10, 0.400 * activity_threshold)))
+        if not sleep:
+            break
 
-    if delay > 0.005:
+        # This isn't just about sleeping, this is also basically a hack
+        # to release the GIL and let other threads run.
         time.sleep(delay)
+
+        lc += 1
+        if QUITTING or LIVE_USER_ACTIVITIES < 1 or lc > 10:
+            break
+
     return delay
 
 
