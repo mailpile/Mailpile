@@ -1,10 +1,10 @@
 // Make console.log not crash JS browsers that don't support it
-if (!window.console) window.console = { 
-    log: $.noop, 
-    group: $.noop, 
-    groupEnd: $.noop, 
-    info: $.noop, 
-    error: $.noop 
+if (!window.console) window.console = {
+    log: $.noop,
+    group: $.noop,
+    groupEnd: $.noop,
+    info: $.noop,
+    error: $.noop
 };
 
 Mailpile = {
@@ -77,8 +77,6 @@ Mailpile = {
     plugins: [],
     theme: {}
 };
-
-//var favicon = new Favico({animation:'popFade'});
 
 
 /* **[ Mailpile - JSAPI ]******************************************************
