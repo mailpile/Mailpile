@@ -28,7 +28,7 @@ Basic.bind_validator("#input-name-name", function(m) {
 });
 
 Basic.bind_hide(function() {
-	setupdata["name"] = $("#input-name-name").value();
+  setupdata["name"] = $("#input-name-name").value();
 });
 */
 
@@ -158,10 +158,10 @@ SourceRemoteSettings.bind_button("#btn-setup-source-remote", function(e) {
 /* Wizard order / route table */
 var SetupWizard = new Wizard("#setup", "span.title");
 SetupWizard.pages = [
-	Welcome,
-	Basic,
+  Welcome,
+  Basic,
   Discovery,
-	CryptoFound,
+  CryptoFound,
   SourceLocal,
   SourceLocalSettings,
   SourceRemote,
