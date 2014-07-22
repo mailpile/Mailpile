@@ -404,17 +404,21 @@ class GnuPG:
         if self.homedir:
             args.insert(1, "--homedir=%s" % self.homedir)
 
-        self.statuspipe = os.pipe()
-        self.status = os.fdopen(self.statuspipe[0], "r")
-        args.insert(1, "--status-fd=%d" % self.statuspipe[1])
-        if self.passphrase:
-            self.passphrase_pipe = os.pipe()
-            self.passphrase_handle = os.fdopen(self.passphrase_pipe[1], "w")
-            if self.use_agent:
-                args.insert(1, "--no-use-agent")
-            args.insert(2, "--passphrase-fd=%d" % self.passphrase_pipe[0])
-
+        gpg_retcode = -1
+        proc = status_handle = passphrase_handle = None
+        status_pipe = passphrase_pipe = [None, None]
         try:
+            status_pipe = os.pipe()
+            status_handle = os.fdopen(status_pipe[0], "r")
+            args.insert(1, "--status-fd=%d" % status_pipe[1])
+
+            if self.passphrase:
+                passphrase_pipe = os.pipe()
+                passphrase_handle = os.fdopen(passphrase_pipe[1], "w")
+                if self.use_agent:
+                    args.insert(1, "--no-use-agent")
+                args.insert(2, "--passphrase-fd=%d" % passphrase_pipe[0])
+
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
                          bufsize=0, close_fds=False,
                          preexec_fn=popen_ignore_signals)
@@ -425,16 +429,16 @@ class GnuPG:
             if self.passphrase:
                 c = self.passphrase.read(BLOCKSIZE)
                 while c != '':
-                    self.passphrase_handle.write(c)
+                    passphrase_handle.write(c)
                     c = self.passphrase.read(BLOCKSIZE)
-                self.passphrase_handle.write('\n')
-                self.passphrase_handle.close()
+                passphrase_handle.write('\n')
+                passphrase_handle.close()
 
             self.threads = {
                 "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
                                        proc.stderr, self.parse_stderr),
                 "status": StreamReader('gpgi-status(%s)' % wtf,
-                                       self.status, self.parse_status),
+                                       status_handle, self.parse_status),
             }
 
             if outputfd:
@@ -459,9 +463,25 @@ class GnuPG:
             gpg_retcode = proc.wait()
 
         finally:
-            # Close our pipes so the threads finish
-            os.close(self.statuspipe[1])
-            proc.stdin.close()
+            def closer(method, *args):
+                try:
+                    method(*args)
+                except (IOError, OSError):
+                    pass
+            # Here we close GPG's end of the status pipe, because
+            # otherwise things may hang. We also close the passphrase pipe
+            # at both ends, as it should be completely finished.
+            for fdn in (status_pipe[1],
+                        passphrase_pipe[0], passphrase_pipe[1]):
+                if fdn is not None:
+                    closer(os.close, fdn)
+            for fd in (passphrase_handle,):
+                if fd is not None:
+                    closer(fd.close)
+            # Close this so GPG will terminate. This should already have
+            # been done, but we're handling errors here...
+            if proc and proc.stdin:
+                closer(proc.stdin.close)
 
         # Reap the threads
         for name, thr in self.threads.iteritems():
@@ -476,7 +496,7 @@ class GnuPG:
         if gpg_retcode != 0 and _raise:
             raise _raise('GnuPG failed, exit code: %s' % gpg_retcode)
 
-        return proc.returncode, self.outputbuffers
+        return gpg_retcode, self.outputbuffers
 
     def parse_status(self, line, *args):
         line = line.replace("[GNUPG:] ", "")
