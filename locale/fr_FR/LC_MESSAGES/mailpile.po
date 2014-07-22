@@ -27,7 +27,7 @@ msgstr ""
 
 #: mailpile/commands.py:81
 msgid "Failed"
-msgstr ""
+msgstr "Échec"
 
 #: mailpile/commands.py:179
 #, fuzzy
@@ -47,16 +47,16 @@ msgstr "Quel message est %s?"
 #: mailpile/commands.py:308
 #, python-format
 msgid "%s error: %s"
-msgstr ""
+msgstr "%s erreur: %s"
 
 #: mailpile/commands.py:322
 #, python-format
 msgid "%s: %s"
-msgstr ""
+msgstr "%s: %s"
 
 #: mailpile/commands.py:400
 msgid "Generating result"
-msgstr ""
+msgstr "Génération de résultat"
 
 #: mailpile/commands.py:714
 #, python-format
@@ -1851,65 +1851,65 @@ msgstr ""
 #: mailpile/plugins/eventlog.py:156
 #, fuzzy
 msgid "Event not found"
-msgstr "Message introuvable"
+msgstr "Évenement non trouvé"
 
 #: mailpile/plugins/exporters.py:97
 #, fuzzy, python-format
 msgid "Exported %d messages to %s"
-msgstr "%d messages triés en ordre %s"
+msgstr "Exported %d messages to %s"
 
 #: mailpile/plugins/html_magic.py:93
 msgid "Generated Javascript API"
-msgstr ""
+msgstr "Généré API Javascript"
 
 #: mailpile/plugins/migrate.py:33
 #, python-format
 msgid "%(user)s on %(host)s"
-msgstr ""
+msgstr "%(user)s on %(host)s"
 
 #: mailpile/plugins/migrate.py:42
 #, fuzzy, python-format
 msgid "Could not migrate route: %s"
-msgstr "Impossible de lire le contenu de  (%s) : %s"
+msgstr "Could not migrate route: %s"
 
 #: mailpile/plugins/migrate.py:263
 #, python-format
 msgid "Unknown migration: %s (available: %s)"
-msgstr ""
+msgstr "Unknown migration: %s (available: %s)"
 
 #: mailpile/plugins/migrate.py:281
 #, python-format
 msgid "Performed %d migrations, failed %d."
-msgstr ""
+msgstr "%d migrations effectuées, %d échoué."
 
 #: mailpile/plugins/plugins.py:30
 msgid "Listed available plugins"
-msgstr ""
+msgstr "Listé plugins disponibles"
 
 #: mailpile/plugins/plugins.py:48
 #, python-format
 msgid "Already loaded: %s"
-msgstr ""
+msgstr "Déjà chargé: %s"
 
 #: mailpile/plugins/plugins.py:58
 #, fuzzy, python-format
 msgid "Failed to load plugin: %s"
-msgstr "Le déchiffrage du message a échoué"
+msgstr "Le chargement du plugin a échoué"
 
 #: mailpile/plugins/plugins.py:62
 #, fuzzy, python-format
 msgid "Loaded plugins: %s"
-msgstr "Ligne fausse: %s"
+msgstr "Plugin chargés: %s"
 
 #: mailpile/plugins/plugins.py:81
 #, python-format
 msgid "Required plugins can not be disabled: %s"
-msgstr ""
+msgstr "Les plugins requis ne peuvent pas être désactivés: %s"
 
 #: mailpile/plugins/plugins.py:84
 #, python-format
 msgid "Plugin not loaded: %s"
-msgstr ""
+msgstr "Plugin non chargé: %s"
 
 #: mailpile/plugins/plugins.py:91
 #, python-format
@@ -1945,27 +1945,27 @@ msgstr ""
 
 #: mailpile/plugins/search.py:186
 msgid "Displayed previous page of results."
-msgstr ""
+msgstr "Page de resultat précédents affichée"
 
 #: mailpile/plugins/search.py:201
 #, fuzzy, python-format
 msgid "Changed sort order to %s"
-msgstr "Ordre de tri inconnu: %s"
+msgstr "Ordre de tri changé pour %s"
 
 #: mailpile/plugins/search.py:264
 #, fuzzy, python-format
 msgid "Raw message: %s"
-msgstr "Quel message est %s?"
+msgstr "Message brut: %s?"
 
 #: mailpile/plugins/search.py:292
 #, fuzzy
 msgid "Displayed a single message"
-msgstr "Le déchiffrage du message a échoué"
+msgstr "Afficher message seul"
 
 #: mailpile/plugins/search.py:296
 #, fuzzy, python-format
 msgid "Displayed %d messages"
-msgstr "Métadonnées chargées, %d messages"
+msgstr "%d messages affichés"
 
 #: mailpile/plugins/setup_magic.py:34
 msgid "New"
@@ -1973,32 +1973,32 @@ msgstr "Nouveau"
 
 #: mailpile/plugins/setup_magic.py:42
 msgid "Inbox"
-msgstr ""
+msgstr "Boite de réception"
 
 #: mailpile/plugins/setup_magic.py:48
 msgid "Blank"
-msgstr ""
+msgstr "Vide"
 
 #: mailpile/plugins/setup_magic.py:57
 msgid "Drafts"
-msgstr ""
+msgstr "Brouillons"
 
 #: mailpile/plugins/setup_magic.py:65
 msgid "Outbox"
-msgstr ""
+msgstr "Boite d'envoi"
 
 #: mailpile/plugins/setup_magic.py:73
 #, fuzzy
 msgid "Sent"
-msgstr "Création: %s"
+msgstr "Envoyé"
 
 #: mailpile/plugins/setup_magic.py:82
 msgid "Spam"
-msgstr ""
+msgstr "Spam"
 
 #: mailpile/plugins/setup_magic.py:88
 msgid "MaybeSpam"
-msgstr ""
+msgstr "Spam"
 
 #: mailpile/plugins/setup_magic.py:93
 msgid "Ham"
@@ -2006,11 +2006,11 @@ msgstr ""
 
 #: mailpile/plugins/setup_magic.py:102
 msgid "Trash"
-msgstr ""
+msgstr "Corbeille"
 
 #: mailpile/plugins/setup_magic.py:111
 msgid "All Mail"
-msgstr ""
+msgstr "Tous les Mails"
 
 #: mailpile/plugins/setup_magic.py:119
 msgid "Photos"
@@ -2048,31 +2048,31 @@ msgstr "Importer des contacts depuis le trousseau de clés GnuPG"
 #: mailpile/plugins/setup_magic.py:258
 #, fuzzy, python-format
 msgid "Encrypting config to %s"
-msgstr "Connexion à %s"
+msgstr "Coniguration de chiffrement pour %s"
 
 #: mailpile/plugins/setup_magic.py:268
 msgid "Oh no, PGP/GPG support is unavailable!"
-msgstr ""
+msgstr "Oh non, le support de PGP/GPG n'est pas disponible!"
 
 #: mailpile/plugins/setup_magic.py:278
 msgid "Obfuscating search index and enabling indexing of encrypted e-mail. "
-msgstr ""
+msgstr "Brouillage index de recherche et permettant l'indexation des e-mails cryptés."
 
 #: mailpile/plugins/setup_magic.py:287
 msgid "Performed initial Mailpile setup"
-msgstr ""
+msgstr "Installation initiale de Mailpile effectué"
 
 #: mailpile/plugins/setup_magic.py:336 mailpile/plugins/setup_magic.py:353
 msgid "Oh noes, we have no GnuPG"
-msgstr ""
+msgstr "Oh, non, nous n'avons pas GnuPG"
 
 #: mailpile/plugins/setup_magic.py:339
 msgid "Found a keychain"
-msgstr ""
+msgstr "Trouver un portefeuille"
 
 #: mailpile/plugins/setup_magic.py:357
 msgid "Created a new key"
-msgstr ""
+msgstr "Créer une nouvelle clé"
 
 #: mailpile/plugins/setup_magic.py:404
 #, fuzzy
@@ -2087,79 +2087,79 @@ msgstr "Adresse E-mail"
 #: mailpile/plugins/setup_magic.py:434
 #, fuzzy
 msgid "Incomplete settings"
-msgstr "Paramètres techniques du système"
+msgstr "Paramètres incomplets"
 
 #: mailpile/plugins/setup_magic.py:437
 msgid "That all worked"
-msgstr ""
+msgstr "Tout fonctionne"
 
 #: mailpile/plugins/setup_magic.py:439
 #, fuzzy
 msgid "Invalid settings"
-msgstr "Nom d'hôte invalide: %s"
+msgstr "Paramètres invalides"
 
 #: mailpile/plugins/setup_magic.py:473
 #, python-format
 msgid "Found settings for %d addresses"
-msgstr ""
+msgstr "Paramètre trouvé pour %d adresses"
 
 #: mailpile/plugins/setup_magic.py:475
 #, fuzzy
 msgid "No settings found"
-msgstr "Aucun résultat trouvé"
+msgstr "Aucun paramètre trouvé"
 
 #: mailpile/plugins/smtp_server.py:24
 msgid "SMTP Daemon"
-msgstr ""
+msgstr "Service SMTP"
 
 #: mailpile/plugins/smtp_server.py:25
 #, fuzzy
 msgid "Listening host for SMTP daemon"
-msgstr "Hôte d'écoute de l'interface web"
+msgstr "Hôte d'écoute pour le service SMTP"
 
 #: mailpile/plugins/smtp_server.py:26
 #, fuzzy
 msgid "Listening port for SMTP daemon"
-msgstr "Port d'écoute de l'interface web"
+msgstr "Port d'écoute pour le service SMTP"
 
 #: mailpile/plugins/tags.py:296
 #, fuzzy, python-format
 msgid "Untag %d messages"
-msgstr "Suppression des étiquettes dans %d messages (%s)"
+msgstr "Désétiquetter %d messages"
 
 #: mailpile/plugins/tags.py:303
 #, fuzzy, python-format
 msgid "Tagged %d messages"
-msgstr "Étiquetage de %d messages (%s)"
+msgstr "%d messages étiqueté"
 
 #: mailpile/plugins/tags.py:323
 #, fuzzy
 msgid "Undid tagging operation"
-msgstr "Suppression des étiquettes des conversations (%s)"
+msgstr "Annulation"
 
 #: mailpile/plugins/tags.py:339
 #, python-format
 msgid "Scheduled %d messages for future tagging"
-msgstr ""
+msgstr "%d messages classés pour un futur étiquettage"
 
 #: mailpile/plugins/tags.py:392
 msgid "Add tags here!"
-msgstr ""
+msgstr "Ajouter étiquette"
 
 #: mailpile/plugins/tags.py:426
 #, python-format
 msgid "Added %d tags"
-msgstr ""
+msgstr "%d étiquettes ajoutées"
 
 #: mailpile/plugins/tags.py:529
 #, python-format
 msgid "Listed %d tags"
-msgstr ""
+msgstr "%d étiquettes listées"
 
 #: mailpile/plugins/tags.py:588
 #, python-format
 msgid "Deleted %d tags"
-msgstr ""
+msgstr "%d étiquettes supprimées"
 
 #: mailpile/plugins/tags.py:638
 msgid "Need flags and search terms or a hook"
@@ -2168,7 +2168,7 @@ msgstr ""
 #: mailpile/plugins/tags.py:648
 #, fuzzy, python-format
 msgid "No such tag: %s"
-msgstr "Aucun clé de ce type: %s"
+msgstr "Aucune étiquette de ce type: %s"
 
 #: mailpile/plugins/vcard_gnupg.py:19
 msgid "Import contacts from GnuPG keyring"
@@ -2185,32 +2185,32 @@ msgstr "Emplacement du trousseau de clés"
 #: mailpile/plugins/vcard_gravatar.py:29
 #, fuzzy
 msgid "Import contact info from a Gravatar server"
-msgstr "Importer des contacts depuis le trousseau de clés GnuPG"
+msgstr "Importer les infos du contact depuis le serveur Gravatar"
 
 #: mailpile/plugins/vcard_gravatar.py:33
 msgid "Minimum days between refreshing"
-msgstr ""
+msgstr "Nombre de jours minimum avant rafraichissement"
 
 #: mailpile/plugins/vcard_gravatar.py:34
 msgid "Max batch size per update"
-msgstr ""
+msgstr "Taille maximum du batch pour update"
 
 #: mailpile/plugins/vcard_gravatar.py:35
 #, fuzzy
 msgid "Default thumbnail style"
-msgstr "Thème par défaut"
+msgstr "Thème par défaut des miniatures"
 
 #: mailpile/plugins/vcard_gravatar.py:36
 msgid "Preferred thumbnail rating"
-msgstr ""
+msgstr "Classement préféré des miniatures"
 
 #: mailpile/plugins/vcard_gravatar.py:38
 msgid "Preferred thumbnail size"
-msgstr ""
+msgstr "Taille préférée des miniatures"
 
 #: mailpile/plugins/vcard_gravatar.py:39
 msgid "Gravatar server URL"
-msgstr ""
+msgstr "Gravatar serveur URL"
 
 #: mailpile/plugins/vcard_mork.py:42
 #, fuzzy
@@ -2240,11 +2240,11 @@ msgstr "Email du contact"
 
 #: plugins/demos/demos.py:112
 msgid "I refuse to work with empty or gross data"
-msgstr ""
+msgstr "Ne peut marcher avec des grosses données ou rien"
 
 #: plugins/demos/demos.py:116
 msgid "I hashed your data for you, yay!"
-msgstr ""
+msgstr "J'ai hashé vos données pour vous, yeah!"
 
 #: plugins/hacks/hacks.py:56
 #, fuzzy
@@ -2253,7 +2253,7 @@ msgstr "Index des métadonnées sauvegardé"
 
 #: plugins/hacks/hacks.py:88
 msgid "That was fun!"
-msgstr ""
+msgstr "C'était fun!"
 
 #: plugins/hacks/hacks.py:130
 msgid "Displayed raw metadata"
@@ -2336,48 +2336,50 @@ msgstr "Aucun résultat trouvé"
 #: static/default/html/partials/search_item.html:26
 #, fuzzy
 msgid "No Name"
-msgstr "Nom"
+msgstr "Pas de Nom"
 
 #: static/default/html/contacts/view.html:16
 msgid "Hey that's you"
-msgstr ""
+msgstr "Hey, c'est vous"
 
 #: static/default/html/contacts/view.html:24
 #: static/default/html/partials/topbar.html:63
 msgid "Compose"
-msgstr ""
+msgstr "Écrire"
 
 #: static/default/html/contacts/view.html:25
 #: static/default/html/partials/topbar.html:57
 #: static/default/html/partials/topbar.html:62
 #, fuzzy
 msgid "Search"
-msgstr "Recherche de %s"
+msgstr "Recherche"
 
 #: static/default/html/contacts/view.html:31
 msgid "Security & Keys"
-msgstr ""
+msgstr "Sécurité et Clés"
 
 #: static/default/html/contacts/view.html:64
 msgid ""
 "You have no encryption keys for this contact. You need encryption keys in "
 "order to communicate securely."
 msgstr ""
+"Vous n'avez pas de clés de chiffrement pour ce contact. Vous avez besoin d'une clé de chiffrement"
+"pour pouvoir communiquer sûrement"
 
 #: static/default/html/contacts/view.html:65
 #: static/default/html/partials/modals.html:40
 #: static/default/html/partials/modals.html:41
 #: static/default/html/partials/tooltips.html:18
 msgid "Find Encryption Keys"
-msgstr ""
+msgstr "Chercher Clés de Chiffrement"
 
 #: static/default/html/contacts/view.html:69
 msgid "Crypto Policy"
-msgstr ""
+msgstr "Politique de Chiffrement"
 
 #: static/default/html/contacts/view.html:78
 msgid "Stats"
-msgstr ""
+msgstr "Statistiques"
 
 #: static/default/html/contacts/view.html:96
 #: static/default/html/search/index.html:26
@@ -2387,18 +2389,18 @@ msgstr "Conversations"
 #: static/default/html/eventlog/index.html:13
 #, fuzzy
 msgid "No Events Found"
-msgstr "Aucun résultat trouvé"
+msgstr "Aucun évenement trouvé"
 
 #: static/default/html/filter/list.html:2
 #: static/default/html/partials/tools_tags.html:16
 msgid "Filters"
-msgstr ""
+msgstr "Filtres"
 
 #: static/default/html/filter/list.html:30
 #: static/default/html/settings/index.html:48
 #: static/default/html/settings/index.html:71
 msgid "Edit"
-msgstr ""
+msgstr "Éditer"
 
 #: static/default/html/filter/list.html:31
 #: static/default/html/settings/index.html:49
@@ -2408,7 +2410,7 @@ msgstr "Supprimer"
 
 #: static/default/html/help/index.html:2 static/default/html/help/index.html:7
 msgid "Help"
-msgstr ""
+msgstr "Aide"
 
 #: static/default/html/layouts/setup.html:17
 #: static/default/html/layouts/setup.html:32
@@ -2421,7 +2423,7 @@ msgstr "%(name)s<small> pile d'e-mails de <b>%(size)s</b> e-mails</small>"
 #: static/default/html/layouts/setup.html:48
 #, fuzzy
 msgid "Welcome to Mailpile!"
-msgstr "Merci de faire un don à Mailpile"
+msgstr "Bienvenue sur Mailpile!"
 
 #: static/default/html/layouts/setup.html:82
 msgid "You're about to experience secure email like never before!"
@@ -2429,53 +2431,53 @@ msgstr ""
 
 #: static/default/html/layouts/setup.html:83
 msgid "Begin"
-msgstr ""
+msgstr "Début"
 
 #: static/default/html/layouts/setup.html:89
 msgid "Basic Information"
-msgstr ""
+msgstr "Information de base"
 
 #: static/default/html/layouts/setup.html:95
 msgid "If you have a PGP key with a passphrase, use that passphrase here!"
-msgstr ""
+msgstr "Si vous voulez une clé PGP avec mot de passe, indiquez le ici!"
 
 #: static/default/html/layouts/setup.html:121
 msgid "We found an existing PGP keychain"
-msgstr ""
+msgstr "Nous avons trouvé un portefeuille de clé PGP existant"
 
 #: static/default/html/layouts/setup.html:124
 msgid "Do you want to generate a new key or import this keychain?"
-msgstr ""
+msgstr "Voulez vous générer une nouvelle clé ou importer ce portefeuille ? "
 
 #: static/default/html/layouts/setup.html:125
 #: static/default/html/layouts/setup.html:136
 msgid "Learn About PGP Keys"
-msgstr ""
+msgstr "En savoir plus sur les Clés PGP"
 
 #: static/default/html/layouts/setup.html:126
 msgid "Generate"
-msgstr ""
+msgstr "Générer"
 
 #: static/default/html/layouts/setup.html:127
 msgid "Import"
-msgstr ""
+msgstr "Importer"
 
 #: static/default/html/layouts/setup.html:133
 msgid "New PGP key generated"
-msgstr ""
+msgstr "Nouvelle Clé PGP générée"
 
 #: static/default/html/layouts/setup.html:134
 msgid "This is your key’s verification fingerprint"
-msgstr ""
+msgstr "Votre empreinte de vérification de clé"
 
 #: static/default/html/layouts/setup.html:136
 msgid "See Key Details"
-msgstr ""
+msgstr "Voir détails Clé"
 
 #: static/default/html/page/donate/index.html:2
 #: static/default/html/partials/topbar.html:66
 msgid "Donate"
-msgstr ""
+msgstr "Doner"
 
 #: static/default/html/page/donate/index.html:6
 #, fuzzy
@@ -2504,7 +2506,7 @@ msgstr "plus"
 
 #: static/default/html/page/setup/index.html:2
 msgid "Setup"
-msgstr ""
+msgstr "Installation"
 
 #: static/default/html/partials/compose.html:5
 #: static/default/html/partials/compose.html:11
@@ -2543,85 +2545,91 @@ msgstr ""
 #: static/default/html/partials/compose.html:38
 #, fuzzy
 msgid "Can't Encrypt"
-msgstr "Chiffré"
+msgstr "Ne peut pas chiffrer"
 
 #: static/default/html/partials/compose.html:39
 msgid "Error Encrypting"
-msgstr ""
+msgstr "Erreur de chiffrement"
 
 #: static/default/html/partials/compose.html:40
 msgid "This message and metadata will not be encrypted"
-msgstr ""
+msgstr "Ce message et ses métadonnées ne seront pas chiffrés"
 
 #: static/default/html/partials/compose.html:41
 msgid ""
 "This message and attachments will be encrypted. The recipients & subject "
 "(metadata) will not"
 msgstr ""
+"Ce message et ses pièces jointes vont être chiffrés. Les destinataires et "
+"objet (métadonnées) ne le seront pas"
 
 #: static/default/html/partials/compose.html:42
 msgid ""
 "This message cannot be encrypted because you do not have keys for one or "
 "more recipients"
 msgstr ""
+"Ce message ne peut pas être chiffré parce que vous n'avez pas les clés "
+"d'un ou de plusieurs destinataires"
 
 #: static/default/html/partials/compose.html:43
 msgid "There was an error prepping this message for encryption"
-msgstr ""
+msgstr "Il y a eu une erreur lors du chiffrement de ce message"
 
 #: static/default/html/partials/compose.html:48
 #, fuzzy
 msgid "Signed"
-msgstr "Signé par"
+msgstr "Signé"
 
 #: static/default/html/partials/compose.html:49
 #: static/default/html/partials/compose.html:54
 #, fuzzy
 msgid "Unsigned"
-msgstr "Signé par"
+msgstr "Non signé"
 
 #: static/default/html/partials/compose.html:50
 #, fuzzy
 msgid "Signature Error"
-msgstr "Erreur interne"
+msgstr "Erreur de signature"
 
 #: static/default/html/partials/compose.html:51
 msgid ""
 "This message will be signed with your key. Recipients who have your key will "
 "know it actually came from you :)"
-msgstr ""
+msgstr "Ce message a été signé par votre clé. Les destinataires qui ont votre "
+"clé pourront vérifier qu'il vient bien de vous :)"
 
 #: static/default/html/partials/compose.html:52
 msgid ""
 "This message will not be signed with your key. Recipients will have no way "
 "of knowing it actually came from you."
-msgstr ""
+msgstr "Ce message n'a pas été signé par votre clé. Vos destinataires ne"
+"pourront pas savoir si ce message viens réellement de vous"
 
 #: static/default/html/partials/compose.html:53
 #, fuzzy
 msgid "Error accesing your key"
-msgstr "Pièce jointe écrite à : %s"
+msgstr "Erreur d'accès à vos clés"
 
 #: static/default/html/partials/compose.html:61
 msgid "hide details"
-msgstr ""
+msgstr "cacher détails"
 
 #: static/default/html/partials/compose.html:65
 msgid "autosaving..."
-msgstr ""
+msgstr "Sauvegarde auto..."
 
 #: static/default/html/partials/compose.html:65
 msgid "error autosaving"
-msgstr ""
+msgstr "Erreur sauvegarde auto"
 
 #: static/default/html/partials/compose.html:73
 #, fuzzy
 msgid "Your Message..."
-msgstr "Messages"
+msgstr "Vos Messages"
 
 #: static/default/html/partials/compose.html:110
 msgid "Choose sending profile ..."
-msgstr ""
+msgstr "Choisir d'envoyer le profil ..."
 
 #: static/default/html/partials/compose.html:140
 #: static/default/html/partials/compose.html:141
@@ -2652,7 +2660,7 @@ msgstr ""
 #: static/default/html/partials/errors_content.html:6
 #, fuzzy
 msgid "Contact Missing"
-msgstr "Contacts"
+msgstr "Contact Manquant"
 
 #: static/default/html/partials/errors_content.html:7
 #, fuzzy
@@ -2660,12 +2668,12 @@ msgid ""
 "We were unable to find the contact you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
 msgstr ""
-"Le message que vous cherchez est introuvable. Il a peut-être été supprimé ?"
+"Nous n'avons pas trouvé le contact demandé, peut-être une erreur de frappe ?"
 
 #: static/default/html/partials/errors_content.html:9
 #, fuzzy
 msgid "Tag Missing"
-msgstr "Contacts"
+msgstr "Étiquette manquante"
 
 #: static/default/html/partials/errors_content.html:10
 #, fuzzy
@@ -2673,18 +2681,20 @@ msgid ""
 "We were unable to find the tag you requested, perhaps it was typed (or "
 "linked to) incorrectly?"
 msgstr ""
-"Le message que vous cherchez est introuvable. Il a peut-être été supprimé ?"
+"Nous n'avons pas trouver, peut êtr une erreur de frappe ?"
 
 #: static/default/html/partials/errors_content.html:12
 #, fuzzy
 msgid "Oops, You've Found a Quirk"
-msgstr "Oups, vous avez trouvé un soucis !"
+msgstr "Oups, vous avez trouvé un bug !"
 
 #: static/default/html/partials/errors_content.html:13
 msgid ""
 "There's something happening here. What it is ain't exactly clear. Everybody "
 "look what's going down."
 msgstr ""
+"Il y a un problème. Ce n'est pas très clair. Des personnes "
+"regardent ce qu'il en est."
 
 #: static/default/html/partials/errors_content.html:18
 #, python-format
@@ -2697,12 +2707,12 @@ msgstr ""
 
 #: static/default/html/partials/hidden.html:5
 msgid "Notifications"
-msgstr ""
+msgstr "Notifications"
 
 #: static/default/html/partials/hidden.html:49
 #, fuzzy
 msgid "All Notifications"
-msgstr "Contacts"
+msgstr "Toutes les Notifications"
 
 #: static/default/html/partials/hidden.html:59
 #: static/default/html/partials/thread_metadata.html:4
@@ -2726,7 +2736,7 @@ msgstr "Aujourd'hui"
 #: static/default/html/partials/hidden.html:60
 #, fuzzy
 msgid "With"
-msgstr "Avec :"
+msgstr "Avec"
 
 #: static/default/html/partials/hidden.html:60
 msgid "No Tags"
@@ -2734,7 +2744,7 @@ msgstr "Aucune étiquette"
 
 #: static/default/html/partials/hidden.html:61
 msgid "In"
-msgstr ""
+msgstr "Dans"
 
 #: static/default/html/partials/hidden.html:61
 #, fuzzy
@@ -2744,18 +2754,20 @@ msgstr "Tous les groupes"
 #: static/default/html/partials/hidden.html:62
 #, fuzzy
 msgid "And"
-msgstr "Et :"
+msgstr "Et"
 
 #: static/default/html/partials/hidden.html:62
 #, fuzzy
 msgid "All Contacts"
-msgstr "Contacts"
+msgstr "Tous les Contacts"
 
 #: static/default/html/partials/hidden.html:99
 msgid ""
 "We are searching numerous sources for encryption keys that match the "
 "address: "
 msgstr ""
+"Nous sommes à la recherche de nombreuses sources pour les clés de chiffrement qui correspondent à l'"
+"adresse: "
 
 #: static/default/html/partials/hidden.html:130
 #, fuzzy
@@ -2764,20 +2776,20 @@ msgstr "Clé PGP"
 
 #: static/default/html/partials/hidden.html:131
 msgid "Created"
-msgstr ""
+msgstr "Créé"
 
 #: static/default/html/partials/hidden.html:132
 msgid "Key Size"
-msgstr ""
+msgstr "Taille Clé"
 
 #: static/default/html/partials/hidden.html:133
 msgid "Key Type"
-msgstr ""
+msgstr "Type de Clé"
 
 #: static/default/html/partials/modals.html:59
 #, fuzzy
 msgid "Tag Selection"
-msgstr "Messages"
+msgstr "Selection Étiquette"
 
 #: static/default/html/partials/modals.html:63
 #: static/default/html/partials/tag_add.html:18
@@ -2787,42 +2799,42 @@ msgstr "Archive"
 
 #: static/default/html/partials/modals.html:67
 msgid "Remove"
-msgstr ""
+msgstr "Supprimer"
 
 #: static/default/html/partials/modals.html:68
 #: static/default/html/partials/modals.html:69
 msgid "Apply"
-msgstr ""
+msgstr "Appliquer"
 
 #: static/default/html/partials/modals.html:84
 msgid "Send Your Public Key"
-msgstr ""
+msgstr "Envoyer votre Clé Publique"
 
 #: static/default/html/partials/modals.html:97
 msgid "Send Selected Keys"
-msgstr ""
+msgstr "Envoyer les Clés selecionnées"
 
 #: static/default/html/partials/modals.html:113
 msgid "Finding Encryption Keys"
-msgstr ""
+msgstr "Trouver des Clés de Chiffrement"
 
 #: static/default/html/partials/modals.html:118
 msgid "Import Selected Keys"
-msgstr ""
+msgstr "Importer les Clés selectionnés"
 
 #: static/default/html/partials/search_item.html:47
 #: static/default/html/partials/tools_message.html:2
 #, fuzzy
 msgid "No Subject"
-msgstr "Sujet"
+msgstr "Pas de Sujet"
 
 #: static/default/html/partials/sidebar.html:52
 msgid "Done Editing"
-msgstr ""
+msgstr "Édition terminée"
 
 #: static/default/html/partials/sidebar.html:54
 msgid "Edit Sidebar"
-msgstr ""
+msgstr "Éditer Sidebar"
 
 #: static/default/html/partials/tag_add.html:3
 #, fuzzy
@@ -2838,7 +2850,7 @@ msgstr "Tag"
 #: static/default/html/partials/tag_add.html:10
 #: static/default/html/tags/form.html:14
 msgid "Friends & Family"
-msgstr ""
+msgstr "Amis et Famille"
 
 #: static/default/html/partials/tag_add.html:12
 #: static/default/html/tags/form.html:16
@@ -2848,42 +2860,42 @@ msgstr "Slug"
 #: static/default/html/partials/tag_add.html:13
 #: static/default/html/tags/form.html:17
 msgid "friends-family"
-msgstr ""
+msgstr "amis-famille"
 
 #: static/default/html/partials/tag_add.html:15
 #: static/default/html/partials/tools_search.html:3
 #: static/default/html/tags/form.html:24
 msgid "Display"
-msgstr ""
+msgstr "Affichage"
 
 #: static/default/html/partials/tag_add.html:21
 msgid "Parent"
-msgstr ""
+msgstr "Parent"
 
 #: static/default/html/partials/tag_add.html:23
 #: static/default/html/tags/form.html:34
 msgid "none"
-msgstr ""
+msgstr "nul"
 
 #: static/default/html/partials/tag_add.html:31
 #: static/default/html/tags/form.html:42
 msgid "Template"
-msgstr ""
+msgstr "Modèle"
 
 #: static/default/html/partials/tag_add.html:33
 #: static/default/html/tags/form.html:44
 #, fuzzy
 msgid "Default"
-msgstr "Thème par défaut"
+msgstr "Défaut"
 
 #: static/default/html/partials/tag_add.html:36
 #, fuzzy
 msgid "Search Terms"
-msgstr "Recherche de %s"
+msgstr "Recherche"
 
 #: static/default/html/partials/thread_metadata.html:42
 msgid "No Recipients"
-msgstr ""
+msgstr "Pas de Destinataires"
 
 #: static/default/html/partials/thread_metadata.html:58
 #: static/default/html/partials/thread_metadata.html:61
@@ -2893,7 +2905,7 @@ msgstr "Cci :"
 
 #: static/default/html/partials/thread_metadata.html:69
 msgid "Raw Source"
-msgstr ""
+msgstr "Source brute"
 
 #: static/default/html/partials/tools_contacts.html:5
 #, fuzzy
@@ -2913,7 +2925,7 @@ msgstr "sélectionné"
 #: static/default/html/partials/tools_default.html:83
 #: static/default/html/partials/tools_default.html:84
 msgid "Click item or checkbox to select"
-msgstr ""
+msgstr "Cliquer pour sélectionner"
 
 #: static/default/html/partials/tools_message.html:4
 msgid "Messages"
@@ -2921,7 +2933,7 @@ msgstr "Messages"
 
 #: static/default/html/partials/tools_message.html:5
 msgid "People"
-msgstr ""
+msgstr "Personnes"
 
 #: static/default/html/partials/tools_message.html:7
 #: static/default/html/partials/tools_tags.html:4
@@ -2943,60 +2955,60 @@ msgstr "Confortable"
 
 #: static/default/html/partials/tools_search.html:12
 msgid "Assign Tags"
-msgstr ""
+msgstr "Assigner les Étiquettes"
 
 #: static/default/html/partials/tools_search.html:13
 msgid "Archive Selection"
-msgstr ""
+msgstr "Archive"
 
 #: static/default/html/partials/tools_search.html:14
 #: static/default/html/partials/tools_search.html:32
 msgid "Unread"
-msgstr ""
+msgstr "Non Lu"
 
 #: static/default/html/partials/tools_search.html:15
 msgid "Read"
-msgstr ""
+msgstr "Lu"
 
 #: static/default/html/partials/tools_search.html:16
 msgid "Move to Spam"
-msgstr ""
+msgstr "Spam"
 
 #: static/default/html/partials/tools_search.html:17
 #, fuzzy
 msgid "Delete Messages"
-msgstr "Voir les messages"
+msgstr "Supprimer les messages"
 
 #: static/default/html/partials/tools_search.html:24
 msgid "All"
-msgstr "Tout"
+msgstr "Tous"
 
 #: static/default/html/partials/tools_search.html:25
 #, fuzzy
 msgid "All messages"
-msgstr "Messages"
+msgstr "Tous les messages"
 
 #: static/default/html/partials/tools_search.html:33
 #, fuzzy
 msgid "Unread messages"
-msgstr "Messages"
+msgstr "Messages non lus"
 
 #: static/default/html/partials/tools_search.html:40
 #, fuzzy
 msgid "Attachments"
-msgstr "Aucune pièce jointe"
+msgstr "Pièces jointes"
 
 #: static/default/html/partials/tools_search.html:41
 msgid "Messages with attachments"
-msgstr ""
+msgstr "Messages avec pièces jointes"
 
 #: static/default/html/partials/tools_search.html:48
 msgid "List"
-msgstr ""
+msgstr "Liste"
 
 #: static/default/html/partials/tools_search.html:49
 msgid "List view"
-msgstr ""
+msgstr "Liste d'affichages"
 
 #: static/default/html/partials/tools_settings.html:3
 #: static/default/html/settings/index.html:152
@@ -3008,24 +3020,24 @@ msgstr "Vos profils"
 #: static/default/html/settings/index.html:64
 #: static/default/html/settings/index.html:154
 msgid "Routes"
-msgstr ""
+msgstr "Routes"
 
 #: static/default/html/partials/tools_settings.html:5
 #: static/default/html/settings/index.html:89
 #: static/default/html/settings/index.html:156
 #, fuzzy
 msgid "Preferences"
-msgstr "Préférences de l'utilisateur"
+msgstr "Préférences"
 
 #: static/default/html/partials/tools_settings.html:6
 #: static/default/html/settings/index.html:158
 msgid "Advanced"
-msgstr ""
+msgstr "Avancé"
 
 #: static/default/html/partials/tools_tags.html:5
 #, fuzzy
 msgid "View all tags"
-msgstr "Voir les messages"
+msgstr "Voir tous les messages"
 
 #: static/default/html/partials/tools_tags.html:10
 #: static/default/html/tags/add.html:2 static/default/html/tags/add.html:4
@@ -3034,31 +3046,31 @@ msgstr "Ajouter une étiquette"
 
 #: static/default/html/partials/tools_tags.html:11
 msgid "Create a new tag"
-msgstr ""
+msgstr "Créer une nouvelle étiquette"
 
 #: static/default/html/partials/tools_tags.html:17
 msgid "All current filters"
-msgstr ""
+msgstr "Filtres courants"
 
 #: static/default/html/partials/tools_tags.html:24
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: static/default/html/partials/tools_tags.html:25
 msgid "Show Tag by type"
-msgstr ""
+msgstr "Afficher Étiquette par type"
 
 #: static/default/html/partials/tooltips.html:4
 msgid "Browse Tag"
-msgstr ""
+msgstr "Parcourir Étiquette"
 
 #: static/default/html/partials/tooltips.html:5
 msgid "Remove Tag"
-msgstr ""
+msgstr "Supprimer Étiquette"
 
 #: static/default/html/partials/topbar.html:4
 msgid "Close"
-msgstr ""
+msgstr "Fermer"
 
 #: static/default/html/partials/topbar.html:67
 #: static/default/html/settings/index.html:152
@@ -3068,7 +3080,7 @@ msgstr ""
 #: static/default/html/settings/index.html:160
 #, fuzzy
 msgid "Settings"
-msgstr "Création: %s"
+msgstr "Paramètres"
 
 #: static/default/html/search/index.html:30
 msgid "No Results Found"
@@ -3079,10 +3091,12 @@ msgid ""
 "It seems your Mailpile does not contain any messages, tags or contacts for "
 "the search"
 msgstr ""
+"Il semble que votre boite email ne contienne aucun message, étiquette ou contact pour
+"cette recherche"
 
 #: static/default/html/search/index.html:33
 msgid "Here are some other options for you"
-msgstr ""
+msgstr "Nous avons quelques options pour vous ici"
 
 #: static/default/html/search/index.html:39
 #, python-format
@@ -3099,11 +3113,11 @@ msgstr "Vroom !"
 
 #: static/default/html/search/index.html:43
 msgid "Hrm, We Could Not Find Anything"
-msgstr ""
+msgstr "Hmm, Nous ne pouvons rien trouver"
 
 #: static/default/html/settings/index.html:5
 msgid "Chelsea Manning"
-msgstr ""
+msgstr "Chelsea Manning"
 
 #: static/default/html/settings/index.html:6
 msgid "Email"
@@ -3111,15 +3125,15 @@ msgstr "E-mail"
 
 #: static/default/html/settings/index.html:7
 msgid "chelsea@email.com"
-msgstr ""
+msgstr "chelsea@email.com"
 
 #: static/default/html/settings/index.html:8
 msgid "Delivery route"
-msgstr ""
+msgstr "Route d'acheminement"
 
 #: static/default/html/settings/index.html:19
 msgid "my delivery route"
-msgstr ""
+msgstr "Ma route d'acheminement"
 
 #: static/default/html/settings/index.html:20
 msgid "Login"
@@ -3127,7 +3141,7 @@ msgstr "Identifiant"
 
 #: static/default/html/settings/index.html:21
 msgid "username@smtp.mailserver.org"
-msgstr ""
+msgstr "username@smtp.mailserver.org"
 
 #: static/default/html/settings/index.html:24
 msgid "Server"
@@ -3135,7 +3149,7 @@ msgstr "Serveur"
 
 #: static/default/html/settings/index.html:25
 msgid "smtp.mailserver.org"
-msgstr ""
+msgstr "smtp.mailserver.org"
 
 #: static/default/html/settings/index.html:39
 #: static/default/html/settings/index.html:118
@@ -3149,55 +3163,55 @@ msgstr "Vos profils"
 
 #: static/default/html/settings/index.html:45
 msgid "Address:"
-msgstr ""
+msgstr "Adresse"
 
 #: static/default/html/settings/index.html:46
 msgid "Route:"
-msgstr ""
+msgstr "Route :"
 
 #: static/default/html/settings/index.html:63
 #: static/default/html/settings/index.html:137
 #: static/default/html/settings/index.html:143
 #, fuzzy
 msgid "Add Route"
-msgstr "Ajouter un contact"
+msgstr "Ajouter une route"
 
 #: static/default/html/settings/index.html:75
 msgid "Edit Route"
-msgstr ""
+msgstr "Éditer Route"
 
 #: static/default/html/settings/index.html:90
 msgid "Permit browser notifications"
-msgstr ""
+msgstr "Autoriser les notifications du navigateur"
 
 #: static/default/html/settings/index.html:102
 #, fuzzy
 msgid "Advanced Settings"
-msgstr "Création: %s"
+msgstr "Paramètres avancés"
 
 #: static/default/html/tags/form.html:19
 msgid "Icon & Color"
-msgstr ""
+msgstr "Icone & Couleur"
 
 #: static/default/html/tags/form.html:21
 msgid "Change Icon"
-msgstr ""
+msgstr "Changer Icone"
 
 #: static/default/html/tags/form.html:22
 msgid "Change Color"
-msgstr ""
+msgstr "Changer couleur"
 
 #: static/default/html/tags/form.html:27
 msgid "Priority Tag"
-msgstr ""
+msgstr "Étiquette prioritaire"
 
 #: static/default/html/tags/form.html:29
 msgid "Invisible"
-msgstr ""
+msgstr "Invisible"
 
 #: static/default/html/tags/form.html:32
 msgid "Parent Tag"
-msgstr ""
+msgstr "Étiquette parente"
 
 #: static/default/html/tags/form.html:53
 #, fuzzy
@@ -3206,30 +3220,30 @@ msgstr "Supprimer"
 
 #: static/default/html/tags/form.html:62
 msgid "Pick Tag Icon"
-msgstr ""
+msgstr "Icone de l'étiquette"
 
 #: static/default/html/tags/form.html:78
 msgid "Pick Tag Color"
-msgstr ""
+msgstr "Couleur de l'étiquette"
 
 #: static/default/html/tags/index-edit.html:6
 msgid "Edit: "
-msgstr ""
+msgstr "Éditer"
 
 #: static/default/html/tags/index-edit.html:8
 #, fuzzy
 msgid "Edit Tag"
-msgstr "Ajouter une étiquette"
+msgstr "Éditer l'étiquette"
 
 #~ msgid "No such key: %s"
-#~ msgstr "Aucun clé de ce type: %s"
+#~ msgstr "Aucune clé de ce type: %s"
 
 #~ msgid "Mailbox ID too large: %s"
 #~ msgstr "Identifiant de la boîte mail est trop grand : %s"
 
 #, fuzzy
 #~ msgid "No Signature"
-#~ msgstr "Signature du message"
+#~ msgstr "Pas de Signature"
 
 #, fuzzy
 #~ msgid "Message is read-only."
@@ -3253,15 +3267,15 @@ msgstr "Ajouter une étiquette"
 
 #, fuzzy
 #~ msgid "Mailbox has been modified"
-#~ msgstr "Boites mail que nous indexons"
+#~ msgstr "La boite mail a été modifiée"
 
 #, fuzzy
 #~ msgid "Emails"
-#~ msgstr "E-mail"
+#~ msgstr "Emails"
 
 #, fuzzy
 #~ msgid "emails"
-#~ msgstr "E-mail"
+#~ msgstr "emails"
 
 #~ msgid "Groups"
 #~ msgstr "Groupes"
