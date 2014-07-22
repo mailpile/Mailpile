@@ -1,0 +1,39 @@
+<!-- Organize - Source Settings -->
+<script id="template-setup-source-remote-settings" type="text/template">
+  <div id="setup-box-source-settings" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
+    <form class="standard text-center">
+      <p>Keep Messages synchronized <input type="checkbox" name="" checked="checked"></p>
+      <p>Import <%= source_type %> labels into tags <input type="checkbox" name="" checked="checked"></p>
+      <p>Import <%= source_type %> contacts <input type="checkbox" name="" checked="checked"></p>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+
+
+<!-- Organize - Tags -->
+<script id="template-setup-tags" type="text/template">
+  <div id="setup-box-tags" class="setup-box setup-box-large animated bounceInTop">
+    <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
+    <form class="standard text-center">
+      <table>
+      <th>
+        <td><%= source_type %> Label</td>
+        <td>Mailpile Tag</td>
+        <td>Select</td>
+      </th>
+      <tr>
+        <td><td>
+        <td></td>
+        <td></td>
+      </tr>
+      </table>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+      </div>
+    </form>
+  </div>
+</script>

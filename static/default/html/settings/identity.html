@@ -1,0 +1,123 @@
+<!-- Identity - Basic -->
+<script id="template-setup-basic" type="text/template">
+  <div class="setup-box setup-box-small animated bounceInRight">
+    <h2 class="text-center"><span class="icon-user"></span> {{_("Basic Information")}}</h2>
+    <form id="form-setup-basic-info" class="standard text-center">
+      <label>{{_("Name")}}</label>
+      <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
+      <label>{{_("Email")}}</label>
+      <input type="email" name="email" autocorrect="off" autocapitalize="off" class="center" placeholder="chelsea@Manning.org">
+      <label>{{_("Password")}}</label>
+      <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
+      <p class="text-center setup-text-detail">{{_("If you have a PGP keychain with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
+      <button id="btn-setup-basic-info" type="submit" class="text-center button-primary">{{_("Next")}}</button>
+    </form>
+  </div>
+</script>
+
+
+<!-- Identity - Discovery -->
+<script id="template-setup-discovery" type="text/template">
+  <div id="setup-box-discovery" class="setup-white animated fadeIn">
+    <h1 class="text-center"><span class="icon-flashlight"></span> Discovery</h1>
+    <p class="text-center">We are analyzing your computer to figure out how to best help you install Mailpile.</p>
+    <div class="text-center hide" id="demo-setup-discovery-action">
+      <a href="#crypto-found">2.a Go to Crypto Found</a><br>
+      <a href="#crypto-generated">2.b Go to Crypto Generated</a><br>
+      <a href="#source-settings">3. Go to Source Settings</a><br>
+      <a href="#source-choose">4. Go to Source Choose</a>
+    </div>
+  </div>
+</script>
+
+
+<!-- Identity - Crypto -->
+<script id="template-setup-crypto-found-keys" type="text/template">
+  <div id="setup-box-crypto-found-key" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-key"></span> {{_("We Found Existing Encryption Keys")}}</h3>
+    <div class="text-center">
+      <span id="setup-crypto-public-key-count" class="setup-text-detail-large"><%= public_key_count %></span> {{_("Public Keys")}}<br>
+      <span id="setup-crypto-private-key-count" class="setup-text-detail-large"><%= private_key_count %></span> {{_("Private Keys")}}
+    </div>
+    <p class="text-center">{{_("Do you want to generate a new key or import this keychain?")}}</p>
+    <div class="text-center">
+      <button id="btn-setup-crypto-import">{{_("Import")}}</button>
+    </div>
+    <br>
+    <div class="text-center">
+      <a href="">{{_("Learn About PGP Keys")}}</a>
+    </div>
+  </div>
+</script>
+
+<script id="template-setup-crypto-generated" type="text/template">
+  <div id="setup-box-crypto-generated" class="setup-box setup-box-small animated bounceInRight text-center">
+    <h3 class="text-center">{{_("New Encryption Key Generated")}}</h3>
+    <h1 class="text-center"><span class="icon-key"></span></h1>
+    <p>{{_("This is your key's unique fingerprint. Fingerprints are used to verify encryption keys. You can learn more about this later")}}</p>
+    <h1><span class="icon-fingerprint"></span></h1> <%= fingerprint %>
+    <p><a href="#">{{_("View Encryption Key Details")}}</a></p>
+    <div class="text-center">
+      <a href="#source-settings" id="btn-setup-crypto-next" class="button-primary">{{_("Next")}}</a><br>
+    </div>
+  </div>
+</script>
+
+
+<!-- Source Local -->
+<script id="template-setup-source" type="text/template">
+  <div id="setup-box-source-local" class="setup-box setup-box-medium animated bounceInUp add-bottom">
+    <h3 class="text-center"><span class="icon-inbox"></span> We Discovered <%= source_type %></h3>
+    <p class="setup-text-detail text-center">Select the mail folders you would like to import</p>
+    <table id="setup-source-local-items" class="rounded full-width-table setup-table">
+    <% _.each(source_items, function(value) { %>
+    <tr>
+      <td><strong><%= value.name %> <span><%= value.count %><span></strong><br><%= value.path %></td>
+      <td><input type="checkbox"></td>
+    </tr>
+    <% }); %>
+    </table>
+    <div class="text-center">
+      <button id="btn-setup-source-local-import" class="center">{{_("Next")}}</button>
+    </div>
+  </div>
+</script>
+
+<!-- Source Local Settings -->
+<script id="template-setup-source-settings" type="text/template">
+  <div class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
+    <form class="standard text-center">
+      <p>Is this a mail source you would like to keep checking for new mail periodically or would you like to import mail only once?</p>
+      <select name="source_sync" class="center">
+        <option value="once">One Time Import</option>
+        <option value="sycn">Keep Checking</option>
+        <optgroup>
+        <option value="sycn">Unsure</option>
+        </optgroup>
+      </select>
+      <p>Would you like to import contacts from this address book?</p>
+      <select name="source_contacts" class="center">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+
+
+<!-- Source Remote -->
+<script id="template-setup-source-remote-choose" type="text/template">
+  <div id="setup-box-source-remote" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-outbox"></span> Connect An Existing Email Service</h3>
+    <div class="text-center">
+      <p><a href="#"><img src="/static/img/remote-source-gmail.jpg" width="50%"></a></p>
+      <p><a href="#"><img src="/static/img/remote-source-yahoo.jpg" width="50%"></a></p>
+      <p><a href="#"><img src="/static/img/remote-source-outlook.png"></a></p>
+      <p><a href="#" class="button-primary">Other</a></p>
+    </div>
+  </div>
+</script>

@@ -1,0 +1,46 @@
+<!-- Advanced - Access -->
+<script id="template-setup-access" type="text/template">
+  <div class="setup-box setup-box-medium animated bounceInTop">
+    <h3 class="text-center"><span class="icon-settings"></span> Access Settings</h3>
+    <form class="standard text-center">
+      <label>Do you want to access this install of Mailpile from other computers and devices over the internet?</label>
+      <select name="install_type" class="center">
+        <option>Yes</option>
+        <option>Do</option>
+      </select>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Save")}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+
+<!-- Advanced - Security -->
+<script id="template-setup-security" type="text/template">
+  <div class="setup-box setup-box-medium animated bounceInTop">
+    <h3 class="text-center"><span class="icon-lock-closed"></span> Security Settings</h3>
+    <form class="standard">
+      <label class="clearfix">What is your personal security needs?
+        <select name="security_model" class="right">
+          <option>You wear a hat, underwear, and socks made of tin foil</option>
+          <option>Relatively paranoid</option>
+          <option>Above average</option>
+          <option>Privacy concerned</option>
+          <option>Normal person</option>
+          <option>Totally unconcerned</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" name="security_tor">
+        Send web requests through Tor for better anonymity and privacy
+      </label>
+      <label>
+        <input type="checkbox" name="security_upload_keyservers">
+        Upload public encryption key to keyservers for better discovery
+      </label>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Save")}}</button>
+      </div>
+    </form>
+  </div>
+</script>
