@@ -51,7 +51,7 @@ BORING_HEADERS = ('received', 'date',
 
 EXPECTED_HEADERS = ('from', 'to', 'subject', 'date')
 
-B64C_STRIP = '\n='
+B64C_STRIP = '\r\n='
 
 B64C_TRANSLATE = string.maketrans('/', '_')
 
@@ -416,7 +416,9 @@ def decrypt_and_parse_lines(fd, parser, config,
     for line in fd:
         if cstrm.PartialDecryptingStreamer.StartEncrypted(line):
             with cstrm.PartialDecryptingStreamer(
-                    [line], fd, mep_key=symmetric_key,
+                    [line], fd,
+                    name='decrypt_and_parse',
+                    mep_key=symmetric_key,
                     gpg_pass=(config.gnupg_passphrase.get_reader()
                               if config else None)) as pdsfd:
                 _parser(pdsfd)
@@ -465,12 +467,20 @@ class GpgWriter(object):
         self.gpg.wait()
 
 
+def popen_ignore_signals():
+    try:
+        os.setpgrp()
+    except:
+        pass
+
+
 def gpg_open(filename, recipient, mode):
     fd = open(filename, mode)
     if recipient and ('a' in mode or 'w' in mode):
         gpg = subprocess.Popen(['gpg', '--batch', '-aer', recipient],
                                stdin=subprocess.PIPE,
-                               stdout=fd)
+                               stdout=fd,
+                               preexec_fn=popen_ignore_signals)
         return GpgWriter(gpg)
     return fd
 

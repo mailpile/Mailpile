@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import threading
 import time
@@ -6,23 +7,246 @@ from gettext import gettext as _
 
 import mailpile.util
 from mailpile.util import *
+from mailpile.crypto.streamer import EncryptingStreamer
 
 
-GLOBAL_POSTING_LIST = None
+NEW_POSTING_LIST = True
+
 GLOBAL_POSTING_LOCK = PListRLock()
 GLOBAL_OPTIMIZE_LOCK = PListLock()
 
+GLOBAL_GPL_LOCK = PListRLock()
+GLOBAL_GPL = None
 
-# FIXME: Create a tiny cache for PostingList objects, so we can start
-#        encrypting them.  We should have a read-cache of moderate size,
-# and a one-element write cache which only writes to disk when a PostingList
-# gets evicted OR the cache in its entirety is flushed. Due to how keywords
-# are grouped into posting lists and the fact that they are flushed to
-# disk in sorted order, this should be enough to group everything together
-# that can actually be grouped.
+PLC_CACHE_LOCK = PListLock()
+PLC_CACHE = {}
 
 
-class PostingList(object):
+def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5):
+    def save(plc):
+        job_name = _('Save PLC %s') % plc.sig
+        session.ui.mark(job_name)
+        session.config.save_worker.add_unique_task(session, job_name, plc.save)
+
+    def remove(ts, plc):
+        with PLC_CACHE_LOCK:
+            if plc.sig in PLC_CACHE and ts == PLC_CACHE[plc.sig][0]:
+               del PLC_CACHE[plc.sig]
+
+    expire = int(time.time()) - max(30, 300 - len(PLC_CACHE))
+    savets = int(time.time()) - 15
+
+    with PLC_CACHE_LOCK:
+        plc_cache = sorted(PLC_CACHE.values())
+
+    for ts, plc in plc_cache[:-keep]:
+        if plc.changes:
+            save(plc)
+        remove(ts, plc)
+
+    for ts, plc in plc_cache[-keep:]:
+        if (plc.changes > min_changes) or (plc.changes and ts < savets):
+            save(plc)
+        if ts < expire:
+            remove(ts, plc)
+
+
+class PostingListContainer(object):
+    """A container for posting lists mapping search terms to message IDs."""
+
+    MAX_ITEMS = int((60 * 1024) / 5)  # Target size of about 60KB
+    MAX_HASH_LEN = 24
+
+    @classmethod
+    def Load(cls, session, sig, uncached_cb=None):
+        fn, sig = cls._GetFilenameAndSig(session.config, sig)
+        found = plc = None
+        with PLC_CACHE_LOCK:
+            if sig in PLC_CACHE:
+                found = PLC_CACHE[sig][0] = int(time.time())
+            else:
+                PLC_CACHE[sig] = [int(time.time()), cls(session, sig)]
+            plc = PLC_CACHE[sig][1]
+        if uncached_cb and not found:
+            uncached_cb()
+        return plc
+
+    def __init__(self, session, sig, fd=None):
+        self.session = session
+        self.config = session.config
+
+        self.lock = PListRLock()
+        self.sig = sig
+        self.fd = fd
+        self.words = {sig: set()}
+
+        self.changes = 0
+        self._load()
+
+    def get(self, sig, default=None):
+        return self.words.get(sig, default)
+
+    def add(self, *args, **kwargs):
+        with self.lock:
+            return self._unlocked_add(*args, **kwargs)
+
+    def remove(self, *args, **kwargs):
+        with self.lock:
+            self.changed = True
+            return self._unlocked_remove(*args, **kwargs)
+
+    def _deleted_set(self):
+        return set()
+
+    def save(self, split=True):
+        if not self.changes:
+            return
+
+        if split and len(self.words) > 1:
+            with self.lock:
+                for plc in self._splits():
+                    plc.save(split=False)
+            return
+
+        encryption_key = self.config.prefs.obfuscate_index
+        outfile = self._SaveFile(self.config, self.sig)
+        with self.lock:
+            # Optimizing for fast loads, so deletion only happens on save.
+            del_set = self._deleted_set()
+            output = '\n'.join('\t'.join(l) for l
+                               in ([sig] + [str(v) for v in (values-del_set)]
+                                   for sig, values in self.words.iteritems())
+                               if len(l) > 1)
+
+            if not output:
+                try:
+                    os.path.remove(outfile)
+                except OSError:
+                    pass
+            elif self.config.prefs.encrypt_index and encryption_key:
+                with EncryptingStreamer(encryption_key,
+                                        delimited=True,
+                                        name='PLC/%s' % self.sig) as fd:
+                    fd.write(output)
+                    fd.save(outfile)
+            else:
+                with open(outfile, 'wb') as fd:
+                    fd.write(output)
+
+            self.changes = 0
+
+    def _splits(self):
+        # FIXME
+        return [self]
+
+    def _load(self):
+        if not self.fd:
+            fn, self.sig = self._GetFilenameAndSig(self.config, self.sig)
+            try:
+                self.fd = open(fn, 'rb')
+            except (IOError, OSError):
+                return
+        with self.lock, self.fd:
+            try:
+                decrypt_and_parse_lines(self.fd,
+                                        self._unlocked_parse_lines,
+                                        self.config)
+                self.changes = 0
+                self.fd = None
+            except (ValueError, IOError):
+                self.session.ui.warning('load(%s) %s'
+                                        % (self.sig, sys.exc_info()))
+
+    def _unlocked_parse_lines(self, lines):
+        for line in lines:
+            words = line.strip().split('\t')
+            if len(words) > 1:
+                self._unlocked_add(words[0], words[1:])
+
+    def _unlocked_add(self, sig, values):
+        wset = set(values)
+        self.changes += len(wset)
+        if sig in self.words:
+            self.words[sig] |= wset
+        else:
+            self.words[sig] = wset
+
+    def _unlocked_remove(self, sig, values):
+        wset = set(values)
+        self.changes += len(wset)
+        if sig in self.words:
+            self.words[sig] -= wset
+            if not self.words[sig]:
+                del self.words[sig]
+
+    @classmethod
+    def _SaveFile(cls, config, sig):
+        return os.path.join(config.postinglist_dir(sig), sig)
+
+    @classmethod
+    def _GetFilenameAndSig(cls, config, sig):
+        """Find and the closest matching posting list container file"""
+        sig = sig[:cls.MAX_HASH_LEN]
+        while len(sig) > 0:
+            fn = cls._SaveFile(config, sig)
+            try:
+                if os.path.exists(fn):
+                    return (fn, sig)
+            except (IOError, OSError):
+                pass
+
+            if len(sig) > 1:
+                sig = sig[:-1]
+            else:
+                return (fn, sig)
+
+        # Not reached
+        return (None, None)
+
+
+class NewPostingList(object):
+    """A posting list is a map of search terms to message IDs."""
+
+    HASH_LEN = 24
+
+    @classmethod
+    def Append(cls, session, word, values, compact=False, sig=None):
+        sig = sig or self._WordSig(word, session.config)
+        PostingListContainer.Load(session, sig).add(sig, values)
+
+    @classmethod
+    def Optimize(cls, session, index, lazy=False, quick=False):
+        threshold = (quick or lazy) and 250 or 50
+        PLC_CACHE_FlushAndClean(session, min_changes=threshold)
+
+    def __init__(self, session, word):
+        self.config = session.config
+        self.session = session
+        if word:
+            self.word = word
+            self.sig = self._WordSig(word, self.config)
+            self.plc = PostingListContainer.Load(self.session, self.sig)
+
+    def hits(self):
+        return self.plc.get(self.sig) or set()
+
+    def append(self, *eids):
+        self.plc.add(self.sig, eids)
+        return self
+
+    def remove(self, eids):
+        self.plc.remove(self.sig, eids)
+        return self
+
+    @classmethod
+    def _WordSig(cls, word, config):
+        return strhash(word, cls.HASH_LEN,
+                       obfuscate=config.prefs.obfuscate_index)
+
+
+##############################################################################
+
+class OldPostingList(object):
     """A posting list is a map of search terms to message IDs."""
 
     CHARACTERS = 'abcdefghijklmnopqrstuvwxyz0123456789+_'
@@ -102,15 +326,17 @@ class PostingList(object):
                 if compact:
                     max_size = ((1024 * config.sys.postinglist_kb) -
                                 (cls.HASH_LEN * 6))
-                    compact = (os.path.getsize(fn_path) > max_size and
-                               random.randint(0, 50) == 1)
+                    if (os.path.getsize(fn_path) > max_size and
+                            random.randint(0, 50) == 1):
+                        break
                 if fd:
                     with fd:
-                        if not compact:
-                            fd.write('%s\t%s\n' % (sig, '\t'.join(mail_ids)))
-                            return
+                        fd.write('%s\t%s\n' % (sig, '\t'.join(mail_ids)))
+                        return
             except IOError:
-                print 'OMGWTF: compact=%s %s / %s' % (compact, fn_path, fd)
+                self.session.ui.warning('RETRY: APPEND(compact=%s, %s, %s) %s'
+                                        % (compact, fn_path, fd,
+                                           sys.exc_info()))
                 time.sleep(0.2)
                 fd = None
 
@@ -167,6 +393,7 @@ class PostingList(object):
         self.config = config or session.config
         self.session = session
         self.sig = sig or self.WordSig(word, self.config)
+        self.size = 0
         self.word = word
         self.WORDS = {self.sig: set()}
         self.lock = PListRLock()
@@ -185,16 +412,15 @@ class PostingList(object):
 
     def load(self):
         fd, self.filename = self.GetFile(self.session, self.sig)
-        if fd:
+        if not fd:
+            return
+        with self.lock, fd:
             try:
-                self.lock.acquire()
                 self.size = 0
                 decrypt_and_parse_lines(fd, self._parse_lines, self.config)
-            except ValueError:
-                pass
-            finally:
-                self.lock.release()
-                fd.close()
+            except (ValueError, IOError):
+                self.session.ui.warning('load(%s) %s'
+                                        % (self.filename, sys.exc_info()))
 
     def _fmt_file(self, prefix):
         output = []
@@ -207,46 +433,51 @@ class PostingList(object):
                                ) % (word, '\t'.join(['%s' % x for x in data])))
         return ''.join(output)
 
-    def _compact(self, prefix, output, locked=False):
+    def _compact(self, prefix, output):
         while ((len(output) > 1024 * self.config.sys.postinglist_kb) and
                (len(prefix) < self.HASH_LEN)):
-            biggest = self.sig
-            for word in self.WORDS:
-                if (len(self.WORDS.get(word, []))
-                        > len(self.WORDS.get(biggest, []))):
-                    biggest = word
-            if len(biggest) > len(prefix):
-                biggest = biggest[:len(prefix) + 1]
-                self.save(prefix=biggest, mode='a', locked=locked)
-                for key in [k for k in self.WORDS if k.startswith(biggest)]:
-                    del self.WORDS[key]
-                output = self._fmt_file(prefix)
+            with self.lock:
+                biggest = self.sig
+                for word in self.WORDS:
+                    if (len(self.WORDS.get(word, []))
+                            > len(self.WORDS.get(biggest, []))):
+                        biggest = word
+                if len(biggest) > len(prefix):
+                    biggest = biggest[:len(prefix) + 1]
+                    self.save(prefix=biggest, mode='ab')
+                    for key in [k for k in self.WORDS
+                                if k.startswith(biggest)]:
+                        del self.WORDS[key]
+                    output = self._fmt_file(prefix)
         return prefix, output
 
-    def save(self, prefix=None, compact=True, mode='w', locked=False):
-        if not locked:
-            self.lock.acquire()
-        try:
+    def save(self, prefix=None, compact=True, mode='wb'):
+        with self.lock:
             prefix = prefix or self.filename
             output = self._fmt_file(prefix)
             if compact:
-                prefix, output = self._compact(prefix, output, locked=True)
+                prefix, output = self._compact(prefix, output)
             try:
                 outfile = self.SaveFile(self.session, prefix)
                 self.session.ui.mark('Writing %d bytes to %s' % (len(output),
                                                                  outfile))
                 if output:
-                    with open(outfile, mode) as fd:
-                        fd.write(output)
-                        return len(output)
+                    if self.config.prefs.encrypt_index:
+                        encryption_key = self.config.prefs.obfuscate_index
+                        with EncryptingStreamer(encryption_key,
+                                                delimited=True,
+                                                name='PostingList') as efd:
+                            efd.write(output)
+                            efd.save(outfile, mode=mode)
+                    else:
+                        with open(outfile, mode) as fd:
+                            fd.write(output)
+                    return len(output)
                 elif os.path.exists(outfile):
                     os.remove(outfile)
             except:
-                self.session.ui.warning('%s' % (sys.exc_info(), ))
+                self.session.ui.warning('%s=>%s' % (outfile, sys.exc_info(),))
             return 0
-        finally:
-            if not locked:
-                self.lock.release()
 
     def hits(self):
         return self.WORDS[self.sig]
@@ -268,18 +499,15 @@ class PostingList(object):
             return self
 
 
-GLOBAL_GPL_LOCK = PListLock()
-
-
-class GlobalPostingList(PostingList):
+class GlobalPostingList(OldPostingList):
 
     @classmethod
     def _Optimize(cls, session, idx, force=False, lazy=False, quick=False):
         count = 0
-        global GLOBAL_POSTING_LIST
-        if (GLOBAL_POSTING_LIST
-                and (not lazy or len(GLOBAL_POSTING_LIST) > 40*1024)):
-            keys = sorted(GLOBAL_POSTING_LIST.keys())
+        global GLOBAL_GPL
+        if (GLOBAL_GPL
+                and (not lazy or len(GLOBAL_GPL) > 40*1024)):
+            keys = sorted(GLOBAL_GPL.keys())
             pls = GlobalPostingList(session, '')
             for sig in keys:
                 if (count % 97) == 0:
@@ -292,15 +520,17 @@ class GlobalPostingList(PostingList):
                 # compaction here. Otherwise it follows the normal
                 # rules (compacts as necessary).
                 pls._migrate(sig, compact=quick)
+                PLC_CACHE_FlushAndClean(session, min_changes=1000)
                 count += 1
                 if mailpile.util.QUITTING:
                     break
+            PLC_CACHE_FlushAndClean(session)
             pls.save()
 
         if quick or mailpile.util.QUITTING:
             return count
         else:
-            return PostingList._Optimize(session, idx, force=force)
+            return OldPostingList._Optimize(session, idx, force=force)
 
     @classmethod
     def SaveFile(cls, session, prefix):
@@ -319,22 +549,22 @@ class GlobalPostingList(PostingList):
         super(GlobalPostingList, cls)._Append(session, word, mail_ids,
                                               compact=compact)
         with GLOBAL_GPL_LOCK:
-            global GLOBAL_POSTING_LIST
+            global GLOBAL_GPL
             sig = cls.WordSig(word, session.config)
-            if GLOBAL_POSTING_LIST is None:
-                GLOBAL_POSTING_LIST = {}
-            if sig not in GLOBAL_POSTING_LIST:
-                GLOBAL_POSTING_LIST[sig] = set()
+            if GLOBAL_GPL is None:
+                GLOBAL_GPL = {}
+            if sig not in GLOBAL_GPL:
+                GLOBAL_GPL[sig] = set()
             for mail_id in mail_ids:
-                GLOBAL_POSTING_LIST[sig].add(mail_id)
+                GLOBAL_GPL[sig].add(mail_id)
 
     def __init__(self, *args, **kwargs):
         with GLOBAL_GPL_LOCK:
-            PostingList.__init__(self, *args, **kwargs)
+            OldPostingList.__init__(self, *args, **kwargs)
             self.lock = GLOBAL_GPL_LOCK
 
     def _fmt_file(self, prefix):
-        return PostingList._fmt_file(self, 'ALL')
+        return OldPostingList._fmt_file(self, 'ALL')
 
     def _compact(self, prefix, output, **kwargs):
         return prefix, output
@@ -342,12 +572,12 @@ class GlobalPostingList(PostingList):
     def load(self):
         with self.lock:
             self.filename = 'kw-journal.dat'
-            global GLOBAL_POSTING_LIST
-            if GLOBAL_POSTING_LIST:
-                self.WORDS = GLOBAL_POSTING_LIST
+            global GLOBAL_GPL
+            if GLOBAL_GPL:
+                self.WORDS = GLOBAL_GPL
             else:
-                PostingList.load(self)
-                GLOBAL_POSTING_LIST = self.WORDS
+                OldPostingList.load(self)
+                GLOBAL_GPL = self.WORDS
 
     def _migrate(self, sig=None, compact=True):
         with self.lock:
@@ -358,11 +588,15 @@ class GlobalPostingList(PostingList):
                 del self.WORDS[sig]
 
     def remove(self, eids):
-        PostingList(self.session, self.word,
-                    sig=self.sig, config=self.config).remove(eids).save()
-        return PostingList.remove(self, eids)
+        PostingList(self.session, self.word).remove(eids).save()
+        return OldPostingList.remove(self, eids)
 
     def hits(self):
         return (self.WORDS.get(self.sig, set())
-                | PostingList(self.session, self.word,
-                              sig=self.sig, config=self.config).hits())
+                | PostingList(self.session, self.word).hits())
+
+
+if NEW_POSTING_LIST:
+    PostingList = NewPostingList
+else:
+    PostingList = OldPostingList

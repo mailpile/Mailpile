@@ -64,6 +64,7 @@ def UnorderedPicklable(parent, editable=False):
             self.source_map = {}
             self._save_to = None
             self._encryption_key_func = lambda: None
+            self._decryption_key_func = lambda: None
             self.__init2__(*args, **kwargs)
 
         def __init2__(self, *args, **kwargs):
@@ -73,6 +74,7 @@ def UnorderedPicklable(parent, editable=False):
             self.__dict__.update(data)
             self._save_to = None
             self._encryption_key_func = lambda: None
+            self._decryption_key_func = lambda: None
             if not hasattr(self, 'source_map'):
                 self.source_map = {}
             self.update_toc()
@@ -80,7 +82,8 @@ def UnorderedPicklable(parent, editable=False):
         def __getstate__(self):
             odict = self.__dict__.copy()
             # Pickle can't handle function objects.
-            for dk in ('_save_to', '_encryption_key_func',
+            for dk in ('_save_to',
+                       '_encryption_key_func', '_decryption_key_func',
                        '_file', '_lock', 'parsed'):
                 if dk in odict:
                     del odict[dk]

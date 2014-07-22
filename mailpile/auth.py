@@ -51,6 +51,18 @@ class Authenticate(Command):
         'pass': 'Password or passphrase'
     }
 
+    def _do_redirect(self):
+        if ('_path' in self.data and
+               DeAuthenticate.SYNOPSIS[2] not in self.data['_path'][0] and
+               self.SYNOPSIS[2] not in self.data['_path'][0]):
+            qs = [(k, v) for k, vl in self.data.iteritems() for v in vl
+                  if k not in ('_method', '_path', 'user', 'pass')]
+            qs = urlencode(qs)
+            url = ''.join([self.data['_path'][0], '?%s' % qs if qs else ''])
+            raise UrlRedirectException(url)
+        else:
+            raise UrlRedirectException('/')
+
     def _logged_in(self, user=None, redirect=False):
         user = user or 'DEFAULT'
 
@@ -62,14 +74,7 @@ class Authenticate(Command):
             })
 
         if redirect:
-            if '_path' in self.data:
-                qs = [(k, v) for k, vl in self.data.iteritems() for v in vl
-                      if k not in ('_method', '_path', 'user', 'pass')]
-                qs = urlencode(qs)
-                url = ''.join([self.data['_path'][0], '?%s' % qs if qs else ''])
-                raise UrlRedirectException(url)
-            else:
-                raise UrlRedirectException('/')
+            self._do_redirect()
 
         return self._success(_('Hello world, welcome!'), result={
             'authenticated': user
@@ -79,7 +84,10 @@ class Authenticate(Command):
         session, config = self.session, self.session.config
         session_id = self.session.ui.html_variables.get('http_session')
 
+        # This prevents folks from sending us a DEFAULT user (upper case),
+        # which is an internal security bypass below.
         user = user and user.lower()
+
         if not user:
             from mailpile.config import SecurePassphraseStorage
             sps = SecurePassphraseStorage(password)
@@ -113,9 +121,9 @@ class Authenticate(Command):
                 session.ui.debug('Bad passphrase for %s' % session_id)
                 return self._error(_('Invalid passphrase, please try again'))
 
-        if user in config.logins:
+        if user in config.logins or user == 'DEFAULT':
             # FIXME: Salt and hash the password, check if it matches
-            #        the entry in our user/password list.
+            #        the entry in our user/password list (TODO).
             # NOTE:  This hack effectively disables auth without GnUPG
             if user == 'DEFAULT':
                 session.ui.debug('FIXME: Unauthorized login allowed')
@@ -137,12 +145,17 @@ class Authenticate(Command):
             password = self.session.ui.get_password(_('Your password: '))
             return self._do_login(None, password, load_index=True)
 
+        elif (session_id in SESSION_CACHE and
+                SESSION_CACHE[session_id].auth and
+                '_method' in self.data):
+            self._do_redirect()
+
         return self._success(_('Please log in'))
 
 
 class DeAuthenticate(Command):
     """De-authenticate a user (log out)"""
-    SYNOPSIS = (None, 'logout', 'auth/logout', None)
+    SYNOPSIS = (None, 'logout', 'auth/logout', '[<session ID>]')
     ORDER = ('Internals', 5)
     SPLIT_ARG = False
     IS_INTERACTIVE = True
@@ -154,14 +167,18 @@ class DeAuthenticate(Command):
         # FIXME: This needs CSRF protection.
 
         session_id = self.session.ui.html_variables.get('http_session')
+        if self.args and not session_id:
+            session_id = self.args[0]
+
         if session_id:
             try:
                 self.session.ui.debug('Logging out %s' % session_id)
                 del SESSION_CACHE[session_id]
+                return self._success(_('Goodbye!'))
             except KeyError:
                 pass
 
-        return self._success(_('Goodbye!'))
+        return self._error(_('No session found!'))
 
 
 plugin_manager = PluginManager(builtin=True)

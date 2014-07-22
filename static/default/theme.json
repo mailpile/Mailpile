@@ -52,7 +52,15 @@
     "icon-eye",
     "icon-privacy",
     "icon-lock-closed",
-    "icon-key"
+    "icon-key",
+    "icon-map",
+    "icon-animals",
+    "icon-clock",
+    "icon-columns",
+    "icon-flashlight",
+    "icon-food",
+    "icon-help",
+    "icon-purchases"
   ],
   "colors": {
     "01-gray-mid": "#cccccc",

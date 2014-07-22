@@ -29,6 +29,7 @@ class MailpileMailbox(mailbox.mbox):
         self._mtime = 0
         self._save_to = None
         self._encryption_key_func = lambda: None
+        self._decryption_key_func = lambda: None
         self._lock = MboxLock()
 
     def _get_fd(self):
@@ -40,6 +41,7 @@ class MailpileMailbox(mailbox.mbox):
         with self._lock:
             self._save_to = None
             self._encryption_key_func = lambda: None
+            self._decryption_key_func = lambda: None
             try:
                 if not os.path.exists(self._path):
                     raise NoSuchMailboxError(self._path)
@@ -56,7 +58,8 @@ class MailpileMailbox(mailbox.mbox):
     def __getstate__(self):
         odict = self.__dict__.copy()
         # Pickle can't handle function objects.
-        for dk in ('_save_to', '_encryption_key_func',
+        for dk in ('_save_to',
+                   '_encryption_key_func', '_decryption_key_func',
                    '_file', '_lock', 'parsed'):
             if dk in odict:
                 del odict[dk]

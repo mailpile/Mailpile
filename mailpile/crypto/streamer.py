@@ -9,7 +9,7 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 
-from mailpile.util import md5_hex, CryptoLock
+from mailpile.util import md5_hex, CryptoLock, popen_ignore_signals
 from mailpile.util import sha512b64 as genkey
 
 
@@ -26,7 +26,7 @@ class IOFilter(threading.Thread):
     """
     BLOCKSIZE = 8192
 
-    def __init__(self, fd, callback, error_callback=None):
+    def __init__(self, fd, callback, name=None, error_callback=None):
         threading.Thread.__init__(self)
         self.fd = fd
         self.callback = callback
@@ -34,6 +34,8 @@ class IOFilter(threading.Thread):
         self.writing = None
         self.info = 'Starting'
         self.pipe = list(os.pipe())
+        if name:
+            self.name = name
 
     def __str__(self):
         return '%s: %s' % (threading.Thread.__str__(self), self.info)
@@ -120,9 +122,10 @@ class IOFilter(threading.Thread):
 
 
 class IOCoprocess(object):
-    def __init__(self, command, fd):
+    def __init__(self, command, fd, name=None):
         self.stderr = ''
         self._retval = None
+        self.name = name
         if command:
             self._proc, self._fd = self._popen(command, fd)
         else:
@@ -152,7 +155,8 @@ class OutputCoprocess(IOCoprocess):
     """
     def _popen(self, command, fd):
          proc = Popen(command, stdin=PIPE, stderr=PIPE, stdout=fd,
-                      bufsize=0, close_fds=True)
+                      bufsize=0, close_fds=True,
+                      preexec_fn=popen_ignore_signals)
          return proc, proc.stdin
 
     def _write_filter(self, data):
@@ -168,7 +172,8 @@ class InputCoprocess(IOCoprocess):
     """
     def _popen(self, command, fd):
         proc = Popen(command, stdin=fd, stderr=PIPE, stdout=PIPE,
-                     bufsize=0, close_fds=True)
+                     bufsize=0, close_fds=True,
+                     preexec_fn=popen_ignore_signals)
         return proc, proc.stdout
 
     def _read_filter(self, data):
@@ -192,19 +197,22 @@ class ChecksummingStreamer(OutputCoprocess):
     This checksums and streams data a named temporary file on disk, which
     can then be read back or linked to a final location.
     """
-    def __init__(self, dir=None):
+    def __init__(self, dir=None, name=None):
         self.tempfile, self.temppath = self._mk_tempfile_and_path(dir)
+        self.name = name
 
         self.outer_md5sum = None
         self.outer_md5 = hashlib.md5()
-        self.md5filter = IOFilter(self.tempfile, self._md5_callback)
+        self.md5filter = IOFilter(self.tempfile, self._md5_callback,
+                                  name='%s/md5' % (self.name or 'css'))
         self.fd = self.md5filter.writer()
 
         self.saved = False
         self.finished = False
         try:
             self._write_preamble()
-            OutputCoprocess.__init__(self, self._mk_command(), self.fd)
+            OutputCoprocess.__init__(self, self._mk_command(), self.fd,
+                                     name=self.name)
         except:
             try:
                 self.tempfile.close()
@@ -236,17 +244,27 @@ class ChecksummingStreamer(OutputCoprocess):
         self.finish()
         self.tempfile.close()
 
-    def save(self, filename, finish=True):
+    def save(self, filename, finish=True, mode='wb'):
         if finish:
             self.finish()
-        if not self.saved:
-            # 1st save just renames the tempfile
-            os.rename(self.temppath, filename)
-            self.saved = True
-        else:
-            # 2nd save creates a copy
-            with open(filename, 'wb') as out:
-                self.save_copy(out)
+        exists = os.path.exists(filename)
+
+        # 1st save just renames the tempfile
+        if (not self.saved and
+                (('a' not in mode) or not exists)):
+            if exists:
+                os.remove(filename)
+            try:
+                os.rename(self.temppath, filename)
+                self.saved = True
+                return
+            except (OSError, IOError):
+                pass
+
+        # 2nd save (or append to existing) creates a copy
+        with open(filename, mode) as out:
+            self.save_copy(out)
+        self.saved = True
 
     def save_copy(self, ofd):
         self.tempfile.seek(0, 0)
@@ -287,11 +305,11 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
     # (yet) behave well with it.
     DEFAULT_CIPHER = "aes-256-cbc"
 
-    def __init__(self, key, dir=None, cipher=None):
+    def __init__(self, key, dir=None, cipher=None, name=None):
         self.cipher = cipher or self.DEFAULT_CIPHER
         self.nonce, self.key = self._nonce_and_mutated_key(key)
 
-        ChecksummingStreamer.__init__(self, dir=dir)
+        ChecksummingStreamer.__init__(self, dir=dir, name=name)
 
         self.inner_md5sum = None
         self.inner_md5 = hashlib.md5()
@@ -343,7 +361,7 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
 
     def _mk_command(self):
         return ["openssl", "enc", "-e", "-a", "-%s" % self.cipher,
-                "-pass", "stdin"]
+                "-pass", "stdin", "-bufsize", "0"]
 
     def _write_preamble(self):
         self.fd.write(self.BEGIN_DATA)
@@ -417,9 +435,11 @@ class DecryptingStreamer(InputCoprocess):
                 line.startswith(cls.END_PGP[:-1]))
 
     def __init__(self, fd,
-                 mep_key=None, gpg_pass=None, md5sum=None, cipher=None):
+                 mep_key=None, gpg_pass=None, md5sum=None, cipher=None,
+                 name=None):
         self.expected_outer_md5sum = md5sum
         self.expected_inner_md5sum = None
+        self.name = name
         self.outer_md5 = hashlib.md5()
         self.inner_md5 = hashlib.md5()
         self.cipher = self.DEFAULT_CIPHER
@@ -438,7 +458,8 @@ class DecryptingStreamer(InputCoprocess):
             # Once the header has been processed (_read_data() will release
             # the lock), fork out our coprocess.
             self.startup_lock.acquire()
-            InputCoprocess.__init__(self, self._mk_command(), self.read_fd)
+            InputCoprocess.__init__(self, self._mk_command(), self.read_fd,
+                                    name=name)
             self.startup_lock = None
         except:
             try:
@@ -482,7 +503,8 @@ class DecryptingStreamer(InputCoprocess):
         return True
 
     def _mk_data_filter(self, fd, cb, ecb):
-        return IOFilter(fd, cb, error_callback=ecb)
+        return IOFilter(fd, cb, error_callback=ecb,
+                        name='%s/filter' % (self.name or 'ds'))
 
     def _read_data(self, data):
         if data is None:
@@ -575,7 +597,7 @@ class DecryptingStreamer(InputCoprocess):
         return ''
 
     def _mutate_key(self, key, nonce):
-        return genkey(key, nonce)[:32].strip()
+        return genkey(key or '', nonce)[:32].strip()
 
     def _mk_command(self):
         if self.state == self.STATE_RAW_DATA:

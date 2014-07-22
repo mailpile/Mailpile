@@ -18,7 +18,7 @@
 ') -%}
 {%- set display_refiners = [{
     'name': 'display_all',
-    'icon': 'inbox',
+    'icon': 'message',
     'url': '/search/',
     'url_args_remove': [['qr', '']],
     'text': _("All"),
@@ -50,50 +50,3 @@
 }]
 -%}
 {%- include('partials/tools_default.html') -%}
-
-
-{#-    ###### OLD STUFF ######
-
-<nav class="sub-navigation clearfix">
-	<ul class="left horizontal">
-    <li id="display-all" class="navigation-on"><a class="button-sub-navigation" data-filter="all" href="#"><span class="navigation-icon icon-inbox"></span><span class="navigation-text">{{_("All")}}</span></a>
-		<li id="display-unread"><a class="button-sub-navigation" data-filter="in_unread" href="#"><span class="navigation-icon icon-notifications"></span><span class="navigation-text">{{_("Unread")}}</span></a></li>
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" id="reply-datetime" href="#"><span class="navigation-icon icon-eye"></span> {{_("Display")}}</a>
-      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="display-density">
-        <li role="presentation"><a class="change-view-size" data-view_size="snug" href="#">{{_("Snug")}}</a></li>
-        <li role="presentation"><a class="change-view-size" data-view_size="cozy" href="#">{{_("Cozy")}}</a></li>
-        <li role="presentation"><a class="change-view-size" data-view_size="comfy" href="#">{{_("Comfy")}}</a></li>
-        <li role="presentation"><a class="change-view-size" data-view_size="fluffy" href="#">{{_("Detailed")}}</a></li>
-      </ul>
-    </li>
-	{% for mode in get_ui_elements('activities', state) %}
-		<li id="display-{{mode.name}}"><a href="{{mode.url}}" onclick="{{mode.jsaction}}">{% if mode.icon %}<span class="navigation-icon icon-{{mode.icon}}" title="{{mode.text}}"></span>{% else %}{{mode.text}}{% endif %}</a></li>
-	{% endfor %}    
-  </ul>  
-	<ul class="right horizontal">
-    <li id="btn-display-list" class="navigation-on"><a href="#" onclick="mailpile.results_list();"><span class="navigation-icon icon-list"></span></a></li>
-	{% for mode in get_ui_elements('display_modes', state) %}
-	<li id="btn-display-{{mode.name}}"><a href="{{mode.url}}" onclick="{{mode.jsaction}}">{% if mode.icon %}<span class="navigation-icon icon-{{mode.icon}}" title="{{mode.text}}"></span>{% else %}{{mode.text}}{% endif %}</a></li>
-	{% endfor %}
-  </ul>
-</nav>
-<div class="bulk-actions clearfix">
-	<div id="bulk-actions-message" class="left" data-bulk_selected="{{_("Messages Selected")}}" data-bulk_selected_none="{{_('Click message or checkbox to select')}}">
-    {{_('Click message or checkbox to select')}}
-	</div>
-  <ul class="horizontal right">
-<!-- FIXME
-	  <li><a class="bulk-action" href="#" data-action="later" title="{{_("Move to Later")}}"><span class="icon-later"></span></a></li>
--->
-	  <li class="hide"><a class="bulk-action-tag" href="#" title="{{_("Assign Tags")}}"><span class="icon icon-tag"></span></a></li>
-	  <li class="hide"><a class="bulk-action-archive" href="#" title="{{_("Archive Selection")}}"><span class="icon icon-archive"></span></a></li>
-	  <li class="hide"><a class="bulk-action-untag" href="#" title="{{_("Untag")}}"><span class="icon icon-circle-x"></span></a></li>
-      <li class="hide"><a class="bulk-action-unread" href="#" title="{{_("Unread")}}"><span class="icon icon-notifications"></span></a></li>
-      <li class="hide"><a class="bulk-action-read" href="#" title="{{_("Read")}}"><span class="icon icon-checkmark"></span></a></li>
-	  <li class="hide"><a class="bulk-action-add-to-group" href="#" title="{{_("Add to Group")}}"><span class="icon-groups"></span></a></li>
-	  <li class="hide"><a class="bulk-action-trash" href="#" title="{{_("Delete Messages")}}"><span class="icon icon-trash"></span></a></li>
-	  <li><input type="checkbox" id="pile-select-all-action" class="bulk-action-select-all" tabindex="-1"></li>
-  </ul>
-</div>
--#}

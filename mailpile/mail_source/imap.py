@@ -1,3 +1,44 @@
+# This implements our IMAP mail source. It has been tested against the
+# following IMAP implementations:
+#
+#   * Google's GMail (july 2014)
+#   * UW IMAPD (10.1.legacy from 2001)
+#
+#
+# IMAP resonses seen in the wild:
+#
+# GMail:
+#
+#    Message flags: \* \Answered \Flagged \Draft \Deleted \Seen
+#                   $Phishing receipt-handled $NotPhishing Junk
+#
+#    LIST (\HasNoChildren) "/" "Travel"
+#    LIST (\Noselect \HasChildren) "/" "[Gmail]"
+#
+# UW IMAPD 10.1:
+#
+#    Message flags: \* \Answered \Flagged \Deleted \Draft \Seen
+#
+#    LIST (\NoSelect) "/" 17.03.2002
+#    LIST (\NoInferiors \Marked) "/" in
+#    LIST (\NoInferiors \UnMarked) "/" todays-junk
+#
+# Fastmail.fm:
+#
+#    Message flags: \Answered \Flagged \Draft \Deleted \Seen $X-ME-Annot-2
+#                   $IsMailingList $IsNotification $HasAttachment $HasTD
+#
+#    LIST (\Noinferiors \HasNoChildren) "." INBOX
+#    LIST (\HasNoChildren \Archive) "." Archive
+#    LIST (\HasNoChildren \Drafts) "." Drafts
+#    LIST (\HasNoChildren \Junk) "." "Junk Mail"
+#    LIST (\HasNoChildren \Sent) "." "Sent Items"
+#    LIST (\HasNoChildren \Trash) "." Trash
+#
+# Mykolab.com:
+#    
+#
+#
 import os
 import re
 import socket
@@ -83,7 +124,7 @@ class SharedImapConn(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.session = session
-        self._lock = threading.Lock()
+        self._lock = MSrcLock()
         self._conn = conn
         self._idle_mailbox = idle_mailbox
         self._idle_callback = idle_callback
@@ -94,6 +135,7 @@ class SharedImapConn(threading.Thread):
                      'list', 'login', 'search', 'uid'):
             self.__setattr__(meth, self._mk_proxy(meth))
 
+        self._update_name()
         self.start()
 
     def _mk_proxy(self, method):
@@ -128,6 +170,8 @@ class SharedImapConn(threading.Thread):
     def close(self):
         assert(self._lock.locked())
         self._selected = None
+        if '(closed)' not in self.name:
+            self.name += ' (closed)'
         return self._conn.close()
 
     def select(self, mailbox='INBOX', readonly=False):
@@ -152,9 +196,12 @@ class SharedImapConn(threading.Thread):
     def mailbox_info(self, k, default=None):
         return self._selected[2].get(k, default)
 
-    def __str__(self):
-        return '%s: %s' % (threading.Thread.__str__(self),
-                           self._conn and self._conn.host or '(dead)')
+    def _update_name(self):
+        name = self._conn and self._conn.host
+        if name:
+            self.name = name
+        elif '(dead)' not in self.name:
+            self.name += ' (dead)'
 
     def __enter__(self):
         if not self._conn:
@@ -175,6 +222,7 @@ class SharedImapConn(threading.Thread):
 
     def quit(self):
         self._conn = None
+        self._update_name()
 
     def run(self):
         # FIXME: Do IDLE stuff if requested.
@@ -191,6 +239,7 @@ class SharedImapConn(threading.Thread):
                 self.session.ui.debug(traceback.format_exc())
         finally:
             self._conn = None
+            self._update_name()
 
 
 class SharedImapMailbox(Mailbox):
@@ -490,7 +539,7 @@ class ImapMailSource(BaseMailSource):
     def open_mailbox(self, mbx_id, mfn):
         if FormatMbxId(mbx_id) in self.my_config.mailbox:
             proto_me, path = mfn.split('/', 1)
-            if proto_me.startswith('src:imap'):
+            if proto_me.startswith('src:'):
                 return SharedImapMailbox(self.session, self, mailbox_path=path)
         return False
 
@@ -528,7 +577,7 @@ class ImapMailSource(BaseMailSource):
 
         for path, flags in discovered:
             idx = config.sys.mailbox.append(path)
-            mbx = self._take_over_mailbox(idx)
+            mbx = self.take_over_mailbox(idx)
             if mbx.policy == 'unknown':
                 self.event.data['have_unknown'] = True
 
@@ -546,7 +595,7 @@ class _MockImap(object):
 
     >>> imap = ImapMailSource(session, imap_config)
     >>> imap.open(conn_cls=_MockImap)
-    <SharedImapConn(...)>
+    <SharedImapConn(mock, started ...)>
 
     >>> sorted(imap.capabilities)
     ['IMAP4REV1', 'X-MAGIC-BEANS']
@@ -562,6 +611,7 @@ class _MockImap(object):
     RESULTS = {}
 
     def __init__(self, *args, **kwargs):
+        self.host = 'mock'
         def mkcmd(rval):
             def cmd(*args, **kwargs):
                 return rval

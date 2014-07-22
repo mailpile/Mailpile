@@ -1062,6 +1062,7 @@ class Rescan(Command):
         return {'vcards': imported}
 
     def _rescan_mailboxes(self, session, which='mailboxes'):
+        import mailpile.mail_source
         config = session.config
         idx = self._idx()
         msg_count = 0
@@ -1101,15 +1102,18 @@ class Rescan(Command):
                     if fpath == '/dev/null':
                         continue
                     try:
-                        session.ui.mark(_('Rescanning: %s %s') % (fid, fpath))
-                        if which == 'editable':
-                            count = idx.scan_mailbox(session, fid, fpath,
-                                                     config.open_mailbox,
-                                                     process_new=False,
-                                                     editable=True)
-                        else:
-                            count = idx.scan_mailbox(session, fid, fpath,
-                                                     config.open_mailbox)
+                        session.ui.mark(_('Waiting for lock'))
+                        with mailpile.mail_source.GLOBAL_RESCAN_LOCK:
+                            session.ui.mark(_('Rescanning: %s %s')
+                                            % (fid, fpath))
+                            if which == 'editable':
+                                count = idx.scan_mailbox(session, fid, fpath,
+                                                         config.open_mailbox,
+                                                         process_new=False,
+                                                         editable=True)
+                            else:
+                                count = idx.scan_mailbox(session, fid, fpath,
+                                                         config.open_mailbox)
                     except ValueError:
                         count = -1
                     if count < 0:
@@ -1231,12 +1235,12 @@ class ProgramStatus(Command):
 
             sessions = self.result.get('sessions')
             if sessions:
-                sessions = '\n'.join(['  %s/%s = %s (%ds)'
-                                      % (us['sessionid'][:16],
-                                         us['userdata'],
-                                         us['userinfo'],
-                                         now - us['timestamp'])
-                                     for us in sessions])
+                sessions = '\n'.join(sorted(['  %s/%s = %s (%ds)'
+                                             % (us['sessionid'],
+                                                us['userdata'],
+                                                us['userinfo'],
+                                                now - us['timestamp'])
+                                             for us in sessions]))
             else:
                 sessions = '  ' + _('Nothing Found')
 
@@ -1259,15 +1263,16 @@ class ProgramStatus(Command):
 
             threads = self.result.get('threads')
             if threads:
-                threads = '\n'.join([('  ' + str(t)) for t in threads])
+                threads = '\n'.join(sorted([('  ' + str(t)) for t in threads]))
             else:
                 threads = _('Nothing Found')
 
             locks = self.result.get('locks')
             if locks:
-                locks = '\n'.join([('  %s.%s is %slocked'
-                                    ) % (l[0], l[1], '' if l[2] else 'un')
-                                   for l in locks])
+                locks = '\n'.join(sorted([('  %s.%s is %slocked'
+                                           ) % (l[0], l[1],
+                                                '' if l[2] else 'un')
+                                          for l in locks]))
             else:
                 locks = _('Nothing Found')
 
@@ -1282,6 +1287,8 @@ class ProgramStatus(Command):
 
     def command(self, args=None):
         import mailpile.auth
+        import mailpile.mail_source
+
         config = self.session.config
 
         try:
@@ -1298,12 +1305,14 @@ class ProgramStatus(Command):
             ])
         locks.extend([
             ('config', '_lock', config._lock._is_owned()),
+            ('mailpile.mail_source', 'GLOBAL_RESCAN_LOCK',
+             mailpile.mail_source.GLOBAL_RESCAN_LOCK.locked()),
             ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
              mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
             ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
              mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
             ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
-             mailpile.postinglist.GLOBAL_GPL_LOCK.locked()),
+             mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),
         ])
 
         threads = threading.enumerate()
@@ -1777,7 +1786,7 @@ class Help(Command):
             cmds = self.result['commands']
             width = self.result.get('width', 8)
             ckeys = cmds.keys()
-            ckeys.sort(key=lambda k: cmds[k][3])
+            ckeys.sort(key=lambda k: (cmds[k][3], cmds[k][0]))
             arg_width = min(50, max(14, self.session.ui.term.max_width()-70))
             for c in ckeys:
                 cmd, args, explanation, rank = cmds[c]
