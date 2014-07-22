@@ -666,11 +666,13 @@ class MailpileVCard(SimpleVCard):
 
     def configure_encryption(self, config):
         if config:
-            dec = lambda: config.prefs.obfuscate_index
+            dec = lambda: config.master_key
             enc = lambda: (config.prefs.encrypt_vcards and
-                           config.prefs.obfuscate_index)
+                           config.master_key)
+            self.config = config
         else:
             enc = dec = lambda: None
+            self.config = None
         self.encryption_key_func = enc
         self.decryption_key_func = dec
 
@@ -854,8 +856,11 @@ class MailpileVCard(SimpleVCard):
             encryption_key = self.encryption_key_func()
             if encryption_key:
                 from mailpile.crypto.streamer import EncryptingStreamer
+                subj = self.config.mailpile_path(filename)
                 with EncryptingStreamer(encryption_key,
-                                        dir=os.path.dirname(filename),
+                                        delimited=False,
+                                        dir=self.config.tempfile_dir(),
+                                        header_data={'subject': subj},
                                         name='VCard/save') as es:
                     es.write(self.as_vCard())
                     es.save(filename)
@@ -1006,7 +1011,7 @@ class VCardStore(dict):
             with self._lock:
                 self.loaded = True
                 prfs = self.config.prefs
-                key_func = lambda: prfs.get('obfuscate_index')
+                key_func = lambda: self.config.master_key
                 for fn in sorted(os.listdir(self.vcard_dir)):
                     if mailpile.util.QUITTING:
                         return

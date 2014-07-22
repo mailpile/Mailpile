@@ -108,7 +108,7 @@ class PostingListContainer(object):
                     plc.save(split=False)
             return
 
-        encryption_key = self.config.prefs.obfuscate_index
+        encryption_key = self.config.master_key
         outfile = self._SaveFile(self.config, self.sig)
         with self.lock:
             # Optimizing for fast loads, so deletion only happens on save.
@@ -124,8 +124,11 @@ class PostingListContainer(object):
                 except OSError:
                     pass
             elif self.config.prefs.encrypt_index and encryption_key:
+                subj = self.config.mailpile_path(outfile)
                 with EncryptingStreamer(encryption_key,
-                                        delimited=True,
+                                        delimited=False,
+                                        dir=self.config.tempfile_dir(),
+                                        header_data={'subject': subj},
                                         name='PLC/%s' % self.sig) as fd:
                     fd.write(output)
                     fd.save(outfile)
@@ -241,7 +244,9 @@ class NewPostingList(object):
     @classmethod
     def _WordSig(cls, word, config):
         return strhash(word, cls.HASH_LEN,
-                       obfuscate=config.prefs.obfuscate_index)
+                       obfuscate=(config.prefs.obfuscate_index or
+                                  config.prefs.encrypt_index and
+                                  config.master_key))
 
 
 ##############################################################################
@@ -362,7 +367,9 @@ class OldPostingList(object):
     @classmethod
     def WordSig(cls, word, config):
         return strhash(word, cls.HASH_LEN,
-                       obfuscate=config.prefs.obfuscate_index)
+                       obfuscate=(config.prefs.obfuscate_index or
+                                  config.prefs.encrypt_index and
+                                  config.master_key))
 
     @classmethod
     def SaveFile(cls, session, prefix):
@@ -463,7 +470,7 @@ class OldPostingList(object):
                                                                  outfile))
                 if output:
                     if self.config.prefs.encrypt_index:
-                        encryption_key = self.config.prefs.obfuscate_index
+                        encryption_key = self.config.master_key
                         with EncryptingStreamer(encryption_key,
                                                 delimited=True,
                                                 name='PostingList') as efd:

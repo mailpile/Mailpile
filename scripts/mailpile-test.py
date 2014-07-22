@@ -77,6 +77,7 @@ def do_setup():
 
     config.vcards.get(MY_FROM).fn = MY_NAME
     config.prefs.default_email = MY_FROM
+    config.prefs.encrypt_index = True
 
     # Configure our fake mail sending setup
     config.sys.http_port = 33414

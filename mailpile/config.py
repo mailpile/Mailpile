@@ -86,13 +86,25 @@ def ConfigRule(*args):
     class _ConfigRule(list):
         def __init__(self):
             list.__init__(self, args)
-            self.public = False
+            self._types = []
     return _ConfigRule()
 
 
 def PublicConfigRule(*args):
     c = ConfigRule(*args)
-    c.public = True
+    c._types.append('public')
+    return c
+
+
+def KeyConfigRule(*args):
+    c = ConfigRule(*args)
+    c._types.append('key')
+    return c
+
+
+def PublicOrKeyConfigRule(*args):
+    c = ConfigRule(*args)
+    c._types += ['key', 'public']
     return c
 
 
@@ -431,12 +443,12 @@ def RuledContainer(pcls):
         def __unicode__(self):
             return json.dumps(self, sort_keys=True, indent=2)
 
-        def as_config_bytes(self, private=True):
+        def as_config_bytes(self, _type=None):
             of = io.BytesIO()
-            self.as_config(private=private).write(of)
+            self.as_config(_type=_type).write(of)
             return of.getvalue()
 
-        def as_config(self, config=None, private=True):
+        def as_config(self, config=None, _type=None):
             config = config or CommentedEscapedConfigParser()
             section = self._name
             if self._comment:
@@ -444,13 +456,13 @@ def RuledContainer(pcls):
             added_section = False
 
             keys = self.rules.keys()
-            if not private:
+            if _type:
                 keys = [k for k in keys
-                        if hasattr(self.rules[k], 'public')
-                        and self.rules[k].public]
+                        if hasattr(self.rules[k], '_types')
+                        and _type in self.rules[k]._types]
 
             ignore = self.ignored_keys() | set(['_any'])
-            if private:
+            if not _type:
                 if not keys or '_any' in keys:
                     keys.extend(self.keys())
             keys = [k for k in sorted(set(keys)) if k not in ignore]
@@ -477,7 +489,7 @@ def RuledContainer(pcls):
                         config.set(section, key, value, comment)
             for key in keys:
                 if hasattr(self[key], 'as_config'):
-                    self[key].as_config(config=config, private=private)
+                    self[key].as_config(config=config, _type=_type)
 
             return config
 
@@ -498,8 +510,8 @@ def RuledContainer(pcls):
                                 % (key, rule))
 
             orule, rule = rule, ConfigRule(*rule[:])
-            if hasattr(orule, 'public'):
-                rule.public = orule.public
+            if hasattr(orule, '_types'):
+                rule._types = orule._types
 
             self.rules[key] = rule
             check = rule[self.RULE_CHECKER]
@@ -948,7 +960,12 @@ class ConfigManager(ConfigDict):
 
         self.workdir = workdir or self.DEFAULT_WORKDIR
         self.conffile = os.path.join(self.workdir, 'mailpile.cfg')
+        self.conf_key = os.path.join(self.workdir, 'mailpile.key')
         self.conf_pub = os.path.join(self.workdir, 'mailpile.rc')
+
+        # If the master key changes, we update the file on save, otherwise
+        # the file is untouched. So we keep track of things here.
+        self._master_key_ondisk = None
 
         self.plugins = None
         self.background = None
@@ -1071,6 +1088,14 @@ class ConfigManager(ConfigDict):
         filename = filename or self.conffile
         lines = []
         try:
+            keydata = []
+            if os.path.exists(self.conf_key):
+                with open(self.conf_key, 'rb') as fd:
+                    decrypt_and_parse_lines(fd, lambda d: keydata.extend(d),
+                                            self, newlines=True)
+            self.master_key = ''.join(keydata)
+            self._master_key_ondisk = self.master_key
+
             if os.path.exists(filename):
                 with open(filename, 'rb') as fd:
                     decrypt_and_parse_lines(fd, lambda ll: lines.extend(ll),
@@ -1119,9 +1144,9 @@ class ConfigManager(ConfigDict):
         self.parse_config(session, '\n'.join(lines), source=filename)
 
         # Open event log
-        dec_key_func = lambda: self.prefs.obfuscate_index
+        dec_key_func = lambda: self.master_key
         enc_key_func = lambda: (self.prefs.encrypt_events and
-                                self.prefs.obfuscate_index)
+                                self.master_key)
         self.event_log = EventLog(self.data_directory('event_log',
                                                       mode='rw', mkdir=True),
                                   dec_key_func, enc_key_func
@@ -1130,6 +1155,10 @@ class ConfigManager(ConfigDict):
         self.vcards = VCardStore(self, self.data_directory('vcards',
                                                            mode='rw',
                                                            mkdir=True))
+
+        # FIXME: The master key is actually prefs.obfuscate.index still...
+        if not self.master_key:
+            self.master_key = self.prefs.obfuscate_index
 
         self.loaded_config = True
 
@@ -1161,10 +1190,39 @@ class ConfigManager(ConfigDict):
 
         newfile = '%s.new' % self.conffile
         pubfile = self.conf_pub
+        keyfile = self.conf_key
 
         self._mkworkdir(None)
-        with gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb') as fd:
-            fd.write(self.as_config_bytes(private=True))
+
+        # FIXME: The master key is actually prefs.obfuscate.index still...
+        if not self.master_key:
+            self.master_key = self.prefs.obfuscate_index
+
+        # We keep the master key in a file of its own and never delete
+        # or overwrite master keys.
+        if self._master_key_ondisk != self.master_key:
+            if os.path.exists(keyfile):
+                os.rename(keyfile, keyfile + ('.%x' % time.time()))
+        if not os.path.exists(keyfile):
+            if self.master_key:
+                with gpg_open(keyfile, self.prefs.get('gpg_recipient'), 'wb'
+                              ) as fd:
+                    fd.write(self.master_key)
+                    self._master_key_ondisk = self.master_key
+
+        #with gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb') as fd:
+        from mailpile.crypto.streamer import EncryptingStreamer
+        if self.master_key:
+            subj = self.mailpile_path(self.conffile)
+            with EncryptingStreamer(self.master_key,
+                                    dir=self.tempfile_dir(),
+                                    header_data={'subject': subj},
+                                    name='Config') as fd:
+                fd.write(self.as_config_bytes())
+                fd.save(newfile)
+        else:
+            with open(newfile, 'wb') as fd:
+                fd.write(self.as_config_bytes())
 
         # Keep the last 5 config files around... just in case.
         backup_file(self.conffile, backups=5, min_age_delta=10)
@@ -1174,7 +1232,7 @@ class ConfigManager(ConfigDict):
         os.rename(newfile, self.conffile)
 
         with open(pubfile, 'wb') as fd:
-            fd.write(self.as_config_bytes(private=False))
+            fd.write(self.as_config_bytes(_type='public'))
 
         self.get_i18n_translation()
         self.prepare_workers()
@@ -1233,10 +1291,10 @@ class ConfigManager(ConfigDict):
 
     def load_pickle(self, pfn):
         with open(os.path.join(self.workdir, pfn), 'rb') as fd:
-            if self.prefs.obfuscate_index:
+            if self.master_key:
                 from mailpile.crypto.streamer import DecryptingStreamer
                 with DecryptingStreamer(fd,
-                                        mep_key=self.prefs.obfuscate_index,
+                                        mep_key=self.master_key,
                                         name='load_pickle'
                                         ) as streamer:
                     rv = cPickle.loads(streamer.read())
@@ -1246,15 +1304,17 @@ class ConfigManager(ConfigDict):
                 return cPickle.loads(fd.read())
 
     def save_pickle(self, obj, pfn):
-        if self.prefs.obfuscate_index and self.prefs.encrypt_misc:
+        ppath = os.path.join(self.workdir, pfn)
+        if self.master_key and self.prefs.encrypt_misc:
             from mailpile.crypto.streamer import EncryptingStreamer
-            with EncryptingStreamer(self.prefs.obfuscate_index,
-                                    dir=self.workdir,
+            with EncryptingStreamer(self.master_key,
+                                    dir=self.tempfile_dir(),
+                                    header_data={'subject': pfn},
                                     name='save_pickle') as fd:
                 cPickle.dump(obj, fd, protocol=0)
-                fd.save(os.path.join(self.workdir, pfn))
+                fd.save(ppath)
         else:
-            with open(os.path.join(self.workdir, pfn), 'wb') as fd:
+            with open(ppath, 'wb') as fd:
                 cPickle.dump(obj, fd, protocol=0)
 
     def _mailbox_info(self, mailbox_id, prefer_local=True):
@@ -1333,9 +1393,9 @@ class ConfigManager(ConfigDict):
                 mbox.editable = editable
 
         # Always set these, they can't be pickled
-        mbox._decryption_key_func = lambda: self.prefs.obfuscate_index
+        mbox._decryption_key_func = lambda: self.master_key
         mbox._encryption_key_func = lambda: (self.prefs.encrypt_mail and
-                                             self.prefs.obfuscate_index)
+                                             self.master_key)
 
         # Finally, re-add to the cache
         self.cache_mailbox(session, pfn, mbx_id, mbox)
@@ -1358,9 +1418,9 @@ class ConfigManager(ConfigDict):
                     path = os.path.join(path, os.path.basename(name))
 
             mbx = wervd.MailpileMailbox(path)
-            mbx._decryption_key_func = lambda: self.prefs.obfuscate_index
+            mbx._decryption_key_func = lambda: self.master_key
             mbx._encryption_key_func = lambda: (self.prefs.encrypt_mail and
-                                                self.prefs.obfuscate_index)
+                                                self.master_key)
             return path, mbx
 
     def open_local_mailbox(self, session):
@@ -1462,6 +1522,25 @@ class ConfigManager(ConfigDict):
 
     def mailindex_file(self):
         return os.path.join(self.workdir, 'mailpile.idx')
+
+    def mailpile_path(self, path):
+        base = (self.workdir + os.sep).replace(os.sep+os.sep, os.sep)
+        if path.startswith(base):
+            return path[len(base):]
+
+        rbase = os.path.realpath(base) + os.sep
+        rpath = os.path.realpath(path)
+        if rpath.startswith(rbase):
+            return rpath[len(rbase):]
+
+        return path
+
+    def tempfile_dir(self):
+        with self._lock:
+            d = os.path.join(self.workdir, 'tmp')
+            if not os.path.exists(d):
+                os.mkdir(d)
+            return d
 
     def postinglist_dir(self, prefix):
         with self._lock:

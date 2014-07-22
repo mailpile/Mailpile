@@ -400,7 +400,7 @@ def decrypt_and_parse_lines(fd, parser, config,
                             newlines=False, decode='utf-8',
                             _raise=IOError):
     import mailpile.crypto.streamer as cstrm
-    symmetric_key = config and config.prefs.obfuscate_index or 'missing'
+    symmetric_key = config and config.master_key or 'missing'
 
     if not newlines:
         if decode:

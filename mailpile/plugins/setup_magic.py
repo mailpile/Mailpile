@@ -269,6 +269,7 @@ class Setup(Command):
 
         if (session.config.prefs.gpg_recipient
                 and not (self._idx() and self._idx().INDEX)
+                and not session.config.master_key
                 and not session.config.prefs.obfuscate_index):
             #
             # This secret is arguably the most critical bit of data in the
@@ -291,7 +292,8 @@ class Setup(Command):
                 secret = CleanText(secret,
                                    banned=CleanText.NONALNUM + 'O01l'
                                    ).clean[:chars]
-            session.config.prefs.obfuscate_index = secret
+            session.config.master_key = secret
+            session.config.prefs.obfuscate_index = True
             session.config.prefs.index_encrypted = True
             session.ui.notify(_('Obfuscating search index and enabling '
                                 'indexing of encrypted e-mail. '))

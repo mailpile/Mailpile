@@ -299,15 +299,19 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
     """
     BEGIN_DATA = "-----BEGIN MAILPILE ENCRYPTED DATA-----\n"
     EXTRA_HEADERS = ""
+    EXTRA_DATA = {}
     END_DATA = "-----END MAILPILE ENCRYPTED DATA-----\n"
 
     # We would prefer AES-256-GCM, but unfortunately openssl does not
     # (yet) behave well with it.
     DEFAULT_CIPHER = "aes-256-cbc"
 
-    def __init__(self, key, dir=None, cipher=None, name=None):
+    def __init__(self, key,
+                 dir=None, cipher=None, name=None, header_data=None):
         self.cipher = cipher or self.DEFAULT_CIPHER
         self.nonce, self.key = self._nonce_and_mutated_key(key)
+        self.header_data = (header_data if header_data is not None
+                            else self.EXTRA_DATA)
 
         ChecksummingStreamer.__init__(self, dir=dir, name=name)
 
@@ -370,7 +374,7 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
             self.fd.write('nonce: %s\n' % self.nonce)
         self.fd.write(MD5_SUM_PLACEHOLDER + '\n')
         if self.EXTRA_HEADERS:
-            self.fd.write(self.EXTRA_HEADERS)
+            self.fd.write(self.EXTRA_HEADERS % self.header_data)
         self.fd.write('\n')
         self.fd.flush()
 
@@ -389,7 +393,8 @@ class EncryptingUndelimitedStreamer(EncryptingDelimitedStreamer):
     """
     BEGIN_DATA = "X-Mailpile-Encrypted-Data: v1\n"
     EXTRA_HEADERS = ("From: Mailpile <encrypted@mailpile.is>\n"
-                     "Subject: Mailpile encrypted data\n")
+                     "Subject: %(subject)s\n")
+    EXTRA_DATA = {'subject': 'Mailpile encrypted data'}
     END_DATA = ""
 
 

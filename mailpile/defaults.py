@@ -17,6 +17,7 @@ from gettext import gettext as _
 from mailpile.config import PathDict
 from mailpile.config import ConfigRule as c
 from mailpile.config import PublicConfigRule as p
+from mailpile.config import KeyConfigRule as k
 
 
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'
@@ -24,6 +25,7 @@ CONFIG_PLUGINS = []
 CONFIG_RULES = {
     'version': [_('Mailpile program version'), False, APPVER],
     'timestamp': [_('Configuration timestamp'), int, int(time.time())],
+    'master_key': k(_('Master symmetric encryption key'), str, ''),
     'sys': p(_('Technical system settings'), False, {
         'fd_cache_size':  (_('Max files kept open at once'), int,         500),
         'history_length': (_('History length (lines, <0=no save)'), int,  100),
