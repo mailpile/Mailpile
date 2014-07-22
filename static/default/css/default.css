@@ -399,7 +399,7 @@
 .sidebar-tags-draggable-hover .icon-food:before,
 .sidebar-tags-draggable-hover .icon-help:before,
 .sidebar-tags-draggable-hover .icon-purchases:before {
-  content: "\e654";
+  content: "\e608";
   color: #333333;
 }
 /* Config - Change the settings in this file change the look and feel of your style */
@@ -5803,7 +5803,7 @@ li.notification img {
 }
 .topbar-nav ul li {
   float: left;
-  margin-left: 20px;
+  margin-left: 15px;
   text-align: center;
 }
 .topbar-nav a {

@@ -38,7 +38,7 @@ var Discovery = new Page("#template-setup-discovery", "{{_("Analyzing your Compu
 
 Discovery.bind_show(function(page) {
   setTimeout(function() {
-    $('#btn-setup-discovery').fadeIn('normal');
+    $('#demo-setup-discovery-action').fadeIn('normal');
   }, 1500);
 });
 
@@ -68,6 +68,18 @@ CryptoFound.bind_show(function(page) {
     $('#setup-crypto-public-key-count').html(response.result.public_keys);
     $('#setup-crypto-private-key-count').html(response.result.private_keys);
   });
+});
+
+
+/* Source Settings - Settings for mail sources */
+var SourceLocalSettings = new Page("#template-setup-source-local-settings", "Configure Mail Source", {
+  source_type: "Thunderbird"
+});
+
+SourceLocalSettings.bind_button("#btn-setup-source-local-settings", function(e) {
+  console.log('Source Local Settings -> Source Remote');
+  e.preventDefault();
+  SourceLocalSettings.next();
 });
 
 
@@ -119,29 +131,6 @@ SourceLocal.bind_button("#btn-setup-source-local", function(e) {
 
 
 /* Source Settings - Settings for mail sources */
-var SourceLocalSettings = new Page("#template-setup-source-local-settings", "Configure Mail Source", {
-  source_type: "Thunderbird"
-});
-
-SourceLocalSettings.bind_button("#btn-setup-source-local-settings", function(e) {
-  console.log('Source Local Settings -> Source Remote');
-  e.preventDefault();
-  SourceLocalSettings.next();
-});
-
-
-
-/* Source Remote - Add remote mail sources */
-var SourceRemote = new Page("#template-setup-source-remote", "Add Remote Sources", {});
-
-SourceRemote.bind_button("#btn-setup-source-remote", function(e) {
-  console.log('Source Remote -> Source Settings');
-  e.preventDefault();
-  SourceRemote.next();
-});
-
-
-/* Source Settings - Settings for mail sources */
 var SourceRemoteSettingsData = {
   source_type: "Gmail"
 };
@@ -155,6 +144,16 @@ SourceRemoteSettings.bind_button("#btn-setup-source-remote", function(e) {
 });
 
 
+/* Source Remote - Add remote mail sources */
+var SourceRemote = new Page("#template-setup-source-remote", "Add Remote Sources", {});
+
+SourceRemote.bind_button("#btn-setup-source-remote", function(e) {
+  console.log('Source Remote -> Source Settings');
+  e.preventDefault();
+  SourceRemote.next();
+});
+
+
 /* Wizard order / route table */
 var SetupWizard = new Wizard("#setup", "span.title");
 SetupWizard.pages = [
@@ -164,6 +163,7 @@ SetupWizard.pages = [
   CryptoFound,
   SourceLocal,
   SourceLocalSettings,
-  SourceRemote,
-  SourceRemoteSettings
+  SourceLocal,
+  SourceRemoteSettings,
+  SourceRemote
 ];

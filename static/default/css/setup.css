@@ -93,6 +93,9 @@ div.setup-box-large {
   color: #b3b3b3;
   font-size: 24px;
 }
+.setup-table {
+  background: #ffffff;
+}
 /* Setup Progress */
 #setup-progress {
   width: 700px;

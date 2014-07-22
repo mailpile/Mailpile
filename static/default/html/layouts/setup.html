@@ -12,9 +12,9 @@
 </head>
 <body>
 
-<div id="header" class="topbar">
+<div id="header" class="topbar animated fadeIn">
   <div class="topbar-logo">
-  <a href="/in/inbox/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+  <a href="/page/setup/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
     <svg version="1.1" id="svg_logo" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="51.359px" height="36.152px" viewBox="0 0 51.359 36.152" enable-background="new 0 0 51.359 36.152" xml:space="preserve">
     	<g>
     		<polygon fill="#337FB2" points="30.845,12.283 29.104,1.644 23.619,8.464 20.684,11.224 24.706,15.172 29.83,18.932 29.34,19.619 25.846,17.665 19.871,11.907 16.647,15.924 11.939,13.392 10.562,16.32 5.347,23.443 4.34,22.793 9.494,15.707 11.289,12.473 6.505,10.245 0.663,6.159 1.218,13.629 3.142,24.806 13.08,25.266 24.38,22.949 30.398,22.161 31.59,20.342"/>
@@ -29,7 +29,7 @@
   </a>
   </div>
   <div class="topbar-logo-name">
-    <a href="/in/inbox/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
+    <a href="/page/setup/" title="{{_("%(name)s mailpile has %(size)s messages", name=name, size=mailpile_size)}}">
       <svg version="1.1" id="svg_logo_name" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="116.926px" height="29.117px" viewBox="0 0 116.926 29.117" enable-background="new 0 0 116.926 29.117" xml:space="preserve">
       <g>
       	<path fill="#4E4E4E" d="M1.984,10.559c0-0.48-0.257-0.704-0.704-0.704H0V6.399h3.744c1.439,0,2.144,0.672,2.144,1.824v0.48c0,0.352-0.032,0.704-0.032,0.704H5.92c0.768-1.6,2.72-3.392,5.279-3.392c2.464,0,4.063,1.152,4.768,3.359h0.064c0.863-1.76,2.976-3.359,5.567-3.359c3.392,0,5.344,1.92,5.344,6.208v6.367c0,0.449,0.256,0.705,0.704,0.705h1.247v3.424h-3.839c-1.536,0-2.176-0.641-2.176-2.176v-7.552c0-1.856-0.353-3.264-2.24-3.264c-2.016,0-3.456,1.696-3.904,3.744c-0.191,0.641-0.256,1.312-0.256,2.08v7.168h-4.063v-9.728c0-1.76-0.256-3.264-2.208-3.264c-2.048,0-3.424,1.696-3.936,3.776c-0.16,0.64-0.256,1.312-0.256,2.048v7.168H1.984V10.559z"/>
@@ -70,36 +70,32 @@
 
 <script id="template-setup-welcome" type="text/template">
   <div id="setup-welcome" class="setup-white">
+    <img style="width: 300px" src="/static/img/logo-color.svg">
     <div class="setup-welcome-icons">
-      <span class="setup-welcome-icon icon-inbox"></span>
-      <span class="setup-welcome-icon icon-lock-closed"></span>
-      <span class="setup-welcome-icon icon-tag"></span>
-      <span class="setup-welcome-icon icon-compose"></span>
-      <span class="setup-welcome-icon icon-key"></span>
-      <span class="setup-welcome-icon icon-donate"></span>
-      <img src="/static/img/logo-color.svg">
+      <span class="setup-welcome-icon icon-inbox animated"></span>
+      <span class="setup-welcome-icon icon-lock-closed animated"></span>
+      <span class="setup-welcome-icon icon-tag animated"></span>
+      <span class="setup-welcome-icon icon-compose animated"></span>
+      <span class="setup-welcome-icon icon-key animated"></span>
+      <span class="setup-welcome-icon icon-donate animated"></span>
     </div>
-    <h3>{{_("Experience secure email like never before!")}}</h3>
-    <button id="btn-setup-welcome-begin">{{_("Begin")}}</button>
+    <h4 class="setup-text-detail">{{_("You're about to experience secure email like never before!")}}</h4>
+    <a class="button-primary" id="btn-setup-welcome-begin">{{_("Begin")}}</a>
   </div>
 </script>
 
 <script id="template-setup-basic" type="text/template">
-  <div id="setup-box-basic" class="setup-box setup-box-small animated bounceInRight">
+  <div class="setup-box setup-box-small animated bounceInRight">
     <h2 class="text-center"><span class="icon-user"></span> {{_("Basic Information")}}</h2>
-    <form class="standard text-center">
-      <label>Where are you installing Mailpile?</label>
-      <select name="install_type" class="center">
-        <option>Laptop</option>
-        <option>Desktop</option>
-        <option>Cloud / Server</option>
-      </select>
+    <form id="form-setup-basic-info" class="standard text-center">
       <label>{{_("Name")}}</label>
       <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
+      <label>{{_("Email")}}</label>
+      <input type="email" name="email" autocorrect="off" autocapitalize="off" class="center" placeholder="chelsea@Manning.org">
       <label>{{_("Password")}}</label>
       <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
       <p class="text-center setup-text-detail">{{_("If you have a PGP keychain with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
-      <button id="btn-setup-basic-info" class="text-center">{{_("Next")}}</button>
+      <button id="btn-setup-basic-info" type="submit" class="text-center button-primary">{{_("Next")}}</button>
     </form>
   </div>
 </script>
@@ -110,8 +106,11 @@
   <div id="setup-box-discovery" class="setup-white animated fadeIn">
     <h1 class="text-center"><span class="icon-discover"></span> Discovery</h1>
     <p class="text-center">We are analyzing your computer to figure out how to best help you install Mailpile.</p>
-    <div class="text-center">
-      <button id="btn-setup-discovery" class="hide">{{_("Start")}}</button>
+    <div class="text-center hide" id="demo-setup-discovery-action">
+      <a href="#crypto-found">2.a Go to Crypto Found</a><br>
+      <a href="#crypto-generated">2.b Go to Crypto Generated</a><br>
+      <a href="#source-settings">3. Go to Source Settings</a><br>
+      <a href="#source-choose">4. Go to Source Choose</a>
     </div>
   </div>
 </script>
@@ -131,19 +130,20 @@
     </div>
     <br>
     <div class="text-center">
-      <a href="#">{{_("Learn About PGP Keys")}}</a>
+      <a href="">{{_("Learn About PGP Keys")}}</a>
     </div>
   </div>
 </script>
 
 <script id="template-setup-crypto-generated" type="text/template">
-  <div id="setup-box-crypto-generated" class="setup-box setup-box-small animated bounceInRight">
-    <h3 class="text-center"><span class="icon-key"></span> {{_("New Encryption Key Generated")}}</h3>
-    <p>{{_("This is your key’s verification fingerprint")}}</p>
-    <span class="icon-fingerprint"></span> <%= fingerprint %>
-    <p><a href="#">{{_("See Key Details")}}</a> <a href="#">{{_("Learn About Encryption Keys")}}</a></p>
+  <div id="setup-box-crypto-generated" class="setup-box setup-box-small animated bounceInRight text-center">
+    <h3 class="text-center">{{_("New Encryption Key Generated")}}</h3>
+    <h1 class="text-center"><span class="icon-key"></span></h1>
+    <p>{{_("This is your key's unique fingerprint. Fingerprints are used to verify encryption keys. You can learn more about this later")}}</p>
+    <h1><span class="icon-fingerprint"></span></h1> <%= fingerprint %>
+    <p><a href="#">{{_("View Encryption Key Details")}}</a></p>
     <div class="text-center">
-      <button id="btn-setup-crypto-next">{{_("Next")}}</button>
+      <a href="#source-settings" id="btn-setup-crypto-next" class="button-primary">{{_("Next")}}</a><br>
     </div>
   </div>
 </script>
@@ -151,36 +151,58 @@
 
 <!-- Source Local -->
 <script id="template-setup-source-local" type="text/template">
-  <div id="setup-box-source-local" class="setup-box setup-box-medium animated bounceInRight">
+  <div id="setup-box-source-local" class="setup-box setup-box-medium animated bounceInUp add-bottom">
     <h3 class="text-center"><span class="icon-inbox"></span> We Discovered <%= source_type %></h3>
     <p class="setup-text-detail text-center">Select the mail folders you would like to import</p>
-    <table id="setup-source-local-items" class="rounded full-width-table">
+    <table id="setup-source-local-items" class="rounded full-width-table setup-table">
+    <% _.each(source_items, function(value) { %>
+    <tr>
+      <td><strong><%= value.name %> <span><%= value.count %><span></strong><br><%= value.path %></td>
+      <td><input type="checkbox"></td>
+    </tr>
+    <% }); %>
     </table>
     <div class="text-center">
-      <button id="btn-setup-source-local" class="center">{{_("Next")}}</button>
+      <button id="btn-setup-source-local-import" class="center">{{_("Next")}}</button>
     </div>
   </div>
 </script>
 
 <!-- Source Local Settings -->
 <script id="template-setup-source-local-settings" type="text/template">
-  <div id="setup-box-source-settings" class="setup-box setup-box-small animated bounceInRight">
+  <div class="setup-box setup-box-small animated bounceInRight">
     <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
-    <p></p>
-    <div class="text-center">
-      <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
-    </div>
+    <form class="standard text-center">
+      <p>Is this a mail source you would like to keep checking for new mail periodically or would you like to import mail only once?</p>
+      <select name="source_sync" class="center">
+        <option value="once">One Time Import</option>
+        <option value="sycn">Keep Checking</option>
+        <optgroup>
+        <option value="sycn">Unsure</option>
+        </optgroup>
+      </select>
+      <p>Would you like to import contacts from this address book?</p>
+      <select name="source_contacts" class="center">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+      </div>
+    </form>
   </div>
 </script>
 
 
 <!-- Source Remote -->
-<script id="template-setup-source-remote" type="text/template">
+<script id="template-setup-source-remote-choose" type="text/template">
   <div id="setup-box-source-remote" class="setup-box setup-box-small animated bounceInRight">
     <h3 class="text-center"><span class="icon-outbox"></span> Connect An Existing Email Service</h3>
-    <p></p>
     <div class="text-center">
-      <button id="btn-setup-source-remote" class="center">{{_("Next")}}</button>
+      <p><a href="#"><img src="/static/img/remote-source-gmail.jpg" width="50%"></a></p>
+      <p><a href="#"><img src="/static/img/remote-source-yahoo.jpg" width="50%"></a></p>
+      <p><a href="#"><img src="/static/img/remote-source-outlook.png"></a></p>
+      <p><a href="#" class="button-primary">Other</a></p>
     </div>
   </div>
 </script>
@@ -227,11 +249,31 @@
 </script>
 
 
+<!-- Access -->
+<script id="template-setup-access" type="text/template">
+  <div class="setup-box setup-box-medium animated bounceInTop">
+    <h3 class="text-center"><span class="icon-settings"></span> Access Settings</h3>
+    <form class="standard text-center">
+      <label>Do you want to access this install of Mailpile from other computers and devices over the internet?</label>
+      <select name="install_type" class="center">
+        <option>Yes</option>
+        <option>Do</option>
+      </select>
+      <div class="text-center">
+        <button id="btn-setup-source-settings" class="center">{{_("Save")}}</button>
+      </div>
+    </form>
+  </div>
+</script>
+
+
+
 {% include("partials/javascript.html") %}
 <script type="text/javascript">
 $(document).ready(function()
 {
-  SetupWizard.go();
+  //SetupWizard.go();
+  SetupApp.init();
 });
 </script>
 </body>
