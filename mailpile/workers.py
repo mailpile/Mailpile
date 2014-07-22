@@ -199,7 +199,7 @@ class Worker(threading.Thread):
                 rv = True
         return rv
 
-    def _keep_running(self):
+    def _keep_running(self, **ignored_kwargs):
         return (self.ALIVE and not mailpile.util.QUITTING)
 
     def run(self):
@@ -207,11 +207,13 @@ class Worker(threading.Thread):
         while self._keep_running():
             with self.LOCK:
                 while len(self.JOBS) < 1:
-                    if not self._keep_running():
+                    if not self._keep_running(locked=True):
                         return
                     self.LOCK.wait()
-                session, name, task = self.JOBS.pop(0)
 
+            play_nice_with_threads()
+            with self.LOCK:
+                session, name, task = self.JOBS.pop(0)
             try:
                 self.last_run = time.time()
                 self.running = name
@@ -263,7 +265,7 @@ class Worker(threading.Thread):
 
 
 class ImportantWorker(Worker):
-    def _keep_running(self, _pass=1):
+    def _keep_running(self, _pass=1, locked=False):
         # This is a much more careful shutdown test, that refuses to
         # stop with jobs queued up and tries to compensate for potential
         # race conditions in our quitting code by waiting a bit and
@@ -272,12 +274,19 @@ class ImportantWorker(Worker):
             return True
         else:
              if _pass == 2:
-                 return (self.ALIVE and not mailpile.util.QUITTING)
+                 return Worker._keep_running(self)
              if self.ALIVE and not mailpile.util.QUITTING:
                  return True
              else:
-                 time.sleep(1)
-                 return self._keep_running(_pass=2)
+                 if locked:
+                     try:
+                         self.LOCK.release()
+                         time.sleep(1)
+                     finally:
+                         self.LOCK.acquire()
+                 else:
+                     time.sleep(1)
+                 return self._keep_running(_pass=2, locked=locked)
 
 
 class DumbWorker(Worker):
