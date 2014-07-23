@@ -6,7 +6,7 @@ var AdvancedView = Backbone.View.extend(
     },
     render: function(){},
     events: {
-      "click #btn-setup-welcome-begin": "showAccess",
+      "click #btn-setup-advanced-access": "showAccess",
     },
     showAccess: function() {
       this.$el.html(_.template($("#template-setup-access").html()));

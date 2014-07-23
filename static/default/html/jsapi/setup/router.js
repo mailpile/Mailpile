@@ -6,7 +6,8 @@ var SetupRouter = Backbone.Router.extend(
 	},
 	routes: {
 		"" 						     : "index",
-		"basic"            : "basic",
+		"password"         : "password",
+		"profiles"         : "profiles",
 		"discovery"        : "discovery",
 		"crypto-found"     : "cryptoFound",
 		"crypto-generated" : "cryptoGenerated",
@@ -19,8 +20,11 @@ var SetupRouter = Backbone.Router.extend(
 	index: function() {
 		IdentityView.showIndex();
 	},
-	basic: function() {
-		IdentityView.showBasic();
+	password: function() {
+		IdentityView.showPassword();
+	},
+	profiles: function() {
+		IdentityView.showProfiles();
 	},
   discovery: function() {
 		IdentityView.showDiscovery();
@@ -41,6 +45,7 @@ var SetupRouter = Backbone.Router.extend(
 		IdentityView.showSourceRemoteChoose();
 	},
   access: function() {
+    console.log('inside of access ROUTE');
     AdvancedView.showAccess();
   },
   security: function() {

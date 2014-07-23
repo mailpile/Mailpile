@@ -6,10 +6,10 @@ var OrganizeView = Backbone.View.extend(
     },
     render: function(){},
     events: {
-      "click #btn-setup-welcome-begin": "showBasic",
+      "click #btn-setup-organize-source-settings": "showSourceSettings",
     },
-    showAccess: function() {
-      this.$el.html(_.template($("#template-setup-access").html()));
+    showSourceSettings: function() {
+      this.$el.html(_.template($("#template-setup-organize-source-settings").html()));
     },
     processSourceSettings: function(e) {
 

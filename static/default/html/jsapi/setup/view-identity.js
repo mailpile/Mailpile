@@ -6,6 +6,8 @@ var IdentityView = Backbone.View.extend(
     },
     render: function(){},
     events: {
+      "click #btn-setup-welcome-begin"       : "showPassphrase",
+      "click #btn-setup-passphrase"          : "processPassphrase",
     	"click #btn-setup-basic-info"          : "processBasic",
       "click #btn-setup-crypto-import"       : "processCryptoImport",
     	"click #btn-setup-source-settings"     : "processSourceSettings",
@@ -14,8 +16,14 @@ var IdentityView = Backbone.View.extend(
     showIndex: function() {
       this.$el.html(_.template($("#template-setup-welcome").html()));
     },
+    showPassphrase: function() {
+      this.$el.html(_.template($('#template-setup-passphrase').html()));
+    },
     showBasic: function() {
       this.$el.html(_.template($("#template-setup-basic").html()));
+    },
+    showProfiles: function() {
+      this.$el.html(_.template($('#template-setup-profiles').html()));
     },
     showDiscovery: function() {
       this.$el.html(_.template($("#template-setup-discovery").html()));
@@ -35,6 +43,12 @@ var IdentityView = Backbone.View.extend(
     },
     showSourceRemoteChoose: function() {
       this.$el.html(_.template($('#template-setup-source-remote-choose').html(), {}));      
+    },
+    processPassword: function(e) {
+      e.preventDefault();
+
+      // Update URL & View
+      Backbone.history.navigate('#profiles', true);
     },
     processBasic: function(e) {
 

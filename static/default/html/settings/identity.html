@@ -1,34 +1,45 @@
-<!-- Identity - Basic -->
-<script id="template-setup-basic" type="text/template">
-  <div class="setup-box setup-box-small animated bounceInRight">
-    <h2 class="text-center"><span class="icon-user"></span> {{_("Basic Information")}}</h2>
+<!-- Identity - Passphrase -->
+<script id="template-setup-passphrase" type="text/template">
+  <div class="setup-box setup-box-medium animated bounceInUp">
+    <h3 class="text-center">Enter Your Mailpile Passphrase</h3>
+    <p class="setup-text-detail">Your passphrase should be something really hard to guess but memorable. This passphrase will be used to decrypt and unlock your Mailpile.</p>
     <form id="form-setup-basic-info" class="standard text-center">
-      <label>{{_("Name")}}</label>
-      <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
-      <label>{{_("Email")}}</label>
-      <input type="email" name="email" autocorrect="off" autocapitalize="off" class="center" placeholder="chelsea@Manning.org">
-      <label>{{_("Password")}}</label>
       <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
-      <p class="text-center setup-text-detail">{{_("If you have a PGP keychain with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
-      <button id="btn-setup-basic-info" type="submit" class="text-center button-primary">{{_("Next")}}</button>
+      <p class="text-center setup-text-detail">*{{_("If you have a PGP keychain with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
+      <button id="btn-setup-passphrase" type="submit" class="text-center button-primary">{{_("Next")}}</button>
     </form>
   </div>
 </script>
 
 
-<!-- Identity - Discovery -->
-<script id="template-setup-discovery" type="text/template">
-  <div id="setup-box-discovery" class="setup-white animated fadeIn">
-    <h1 class="text-center"><span class="icon-flashlight"></span> Discovery</h1>
-    <p class="text-center">We are analyzing your computer to figure out how to best help you install Mailpile.</p>
-    <div class="text-center hide" id="demo-setup-discovery-action">
-      <a href="#crypto-found">2.a Go to Crypto Found</a><br>
-      <a href="#crypto-generated">2.b Go to Crypto Generated</a><br>
-      <a href="#source-settings">3. Go to Source Settings</a><br>
-      <a href="#source-choose">4. Go to Source Choose</a>
-    </div>
+<!-- Identity - Profiles -->
+<script id="template-setup-profiles" type="text/template">
+  <div class="setup-box setup-box-medium animated bounceInUp">
+    <h2 class="text-center"><span class="icon-profiles"></span> Profiles</h2>
+    <h5>A profile is "how" you use an email address. You can have as many profiles as you would like. Some examples profiles are: personal, work, newsletters, etc...</h5>
+    <ul>
+      <li>
+        <span class="avatar"><img src="/static/img/avatar-default.png"></span>
+        <span class="name">Brennan Novak</span>
+        <span class="">hi@brennannovak.com</span>
+        <a href="#">Disable</a>
+      </li>
+    </ul>
+
+    <form id="form-setup-basic-info" class="standard text-center">
+      <label>{{_("Profile Name")}}</label>
+      <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
+      <label>{{_("Email")}}</label>
+      <input type="email" name="email" autocorrect="off" autocapitalize="off" class="center" placeholder="chelsea@Manning.org">
+      <label>{{_("Password")}}</label>
+      <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
+      <p class="text-center setup-text-detail">*{{_("If you have a PGP keychain with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
+      <button id="btn-setup-basic-info" type="submit" class="text-center button-primary">{{_("Next")}}</button>
+    </form>
+
   </div>
 </script>
+
 
 
 <!-- Identity - Crypto -->
