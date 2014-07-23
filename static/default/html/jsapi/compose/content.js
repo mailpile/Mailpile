@@ -19,14 +19,15 @@ Mailpile.compose_analyze_recipients = function(addresses) {
 
   // Is Valid & Has Multiple
   if (addresses) {
-    var multiple = addresses.split(/, */);
+    // FIXME: Only solves the comma specific issue. We should do a full RFC 2822 solution eventually.
+    var multiple = addresses.split(/>, */);
 
     if (multiple.length > 1) {
       $.each(multiple, function(key, value){
-        existing.push(Mailpile.compose_analyze_address(value));
+        existing.push(Mailpile.compose_analyze_address(value + '>')); // Add back on the '>' since the split pulled it off.
       });
     } else {
-      existing.push(Mailpile.compose_analyze_address(multiple[0]));
+      existing.push(Mailpile.compose_analyze_address(multiple[0] + '>'));
     }
 
     return existing;
@@ -109,7 +110,7 @@ Mailpile.compose_address_field = function(id) {
   // Get MID
   var mid = $('#'+id).data('mid');
 
-  // 
+  //
   $('#' + id).select2({
     id: function(object) {
       if (object.flags.secure) {
@@ -179,12 +180,12 @@ Mailpile.compose_address_field = function(id) {
       var avatar = '<span class="icon-user"></span>';
       var name   = state.fn;
       var secure = '<span class="icon-blank"></span>';
-  
+
       if (state.photo) {
         avatar = '<span class="avatar"><img src="' + state.photo + '"></span>';
       }
       if (!state.fn) {
-        name = state.address; 
+        name = state.address;
       }
       if (state.flags.secure) {
         secure = '<span class="icon-lock-closed"></span>';
@@ -326,7 +327,7 @@ $(document).on('click', '.compose-action', function(e) {
       }
     },
     error: function() {
-      Mailpile.notification('error', 'Could not ' + action + ' your message');      
+      Mailpile.notification('error', 'Could not ' + action + ' your message');
     }
 	});
 });
@@ -399,11 +400,11 @@ var uploader = function(settings) {
     // and loading image data from various sources.
     // Wiki: https://github.com/moxiecode/moxie/wiki/Image
     var preloader = new mOxie.Image();
-    
+
     // Define the onload BEFORE you execute the load()
     // command as load() does not execute async.
     preloader.onload = function() {
-    
+
         // This will scale the image (in memory) before it
         // tries to render it. This just reduces the amount
         // of Base64 data that needs to be rendered.
@@ -415,7 +416,7 @@ var uploader = function(settings) {
         // client-side file binary.
         image.prop("src", preloader.getAsDataURL());
     };
-    
+
     // Calling the .getSource() on the file will return an
     // instance of mOxie.File, which is a unified file
     // wrapper that can be used across the various runtime
@@ -513,7 +514,7 @@ $(document).on('click', '.compose-message-trash', function() {
         if (response_2.status == 'success') {
           $('#form-compose-' + mid).slideUp('fast');
         } else {
-          Mailpile.notification(response_2.status, response_2.message);        
+          Mailpile.notification(response_2.status, response_2.message);
         }
       });
     }
