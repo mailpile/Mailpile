@@ -44,6 +44,7 @@ class IOFilter(threading.Thread):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.join()
         self.close()
 
     def writer(self):
@@ -468,7 +469,6 @@ class DecryptingStreamer(InputCoprocess):
             self.startup_lock = None
         except:
             try:
-                fd.close()
                 self.read_fd.close()
             except (IOError, OSError):
                 pass
@@ -480,7 +480,9 @@ class DecryptingStreamer(InputCoprocess):
         return data
 
     def close(self):
-        return InputCoprocess.close(self)
+        rv = InputCoprocess.close(self)
+        self.read_fd.close()
+        return rv
 
     def verify(self, testing=False, _raise=None):
         if self.close() != 0:
@@ -653,6 +655,24 @@ class PartialDecryptingStreamer(DecryptingStreamer):
 
 
 if __name__ == "__main__":
+     # Create a pipe, this tells us which FDs are available next
+     fdpair1 = os.pipe()
+     for fd in fdpair1:
+         os.close(fd)
+     def fdcheck(where):
+         fdpair2 = os.pipe()
+         try:
+             for fd in fdpair2:
+                 if fd not in fdpair1:
+                     print 'Probably have an FD leak at %s!' % where
+                     print 'Verify with: lsof -g %s' % os.getpid()
+                     import time
+                     time.sleep(900)
+                     return False
+             return True
+         finally:
+             for fd in fdpair2:
+                 os.close(fd)
 
      bc = [0]
      def counter(data):
@@ -660,49 +680,60 @@ if __name__ == "__main__":
          return data or ''
 
      # Test the IOFilter in write mode
-     iof = IOFilter(open('/tmp/iofilter.tmp', 'w'), counter)
-     fd = iof.writer()
-     fd.write('Hello world!')
-     fd.close()
-     iof.join()
-     assert(open('/tmp/iofilter.tmp', 'r').read() == 'Hello world!')
+     with open('/tmp/iofilter.tmp', 'w') as bfd:
+         with IOFilter(bfd, counter) as iof:
+             fd = iof.writer()
+             fd.write('Hello world!')
+             fd.close()
+     with open('/tmp/iofilter.tmp', 'r') as iof:
+         assert(iof.read() == 'Hello world!')
      assert(bc[0] == 12)
+     assert(fdcheck('IOFilter in write mode'))
 
      # Test the IOFilter in read mode
      bc[0] = 0
-     iof = IOFilter(open('/tmp/iofilter.tmp', 'r'), counter)
-     data = iof.reader().read()
-     assert(data == 'Hello world!')
-     assert(bc[0] == 12)
-
+     with open('/tmp/iofilter.tmp', 'r') as bfd:
+         with IOFilter(bfd, counter) as iof:
+             data = iof.reader().read()
+             assert(data == 'Hello world!')
+             assert(bc[0] == 12)
+     assert(fdcheck('IOFilter in read mode'))
 
      # Null decryption test, md5 verification only
-     ds = DecryptingStreamer(open('/tmp/iofilter.tmp', 'rb'),
-                             mep_key='test key',
-                             md5sum='86fb269d190d2c85f6e0468ceca42a20')
-     assert('Hello world!' == ds.read())
-     assert(ds.verify(testing=True))
+     with open('/tmp/iofilter.tmp', 'rb') as bfd:
+         with DecryptingStreamer(bfd,
+                                 mep_key='test key',
+                                 md5sum='86fb269d190d2c85f6e0468ceca42a20'
+                                 ) as ds:
+             assert('Hello world!' == ds.read())
+             assert(ds.verify(testing=True))
+     assert(fdcheck('Decrypting test, md5 verification'))
 
      # Encryption test
      for delim in (True, False):
          data = 'Hello world! This is great!\nHooray, lalalalla!\n'
-         es = EncryptingStreamer('test key', dir='/tmp', delimited=delim)
-         es.write(data)
-         es.finish()
-         fn = '/tmp/%s.aes' % es.outer_md5sum
-         open(fn, 'wb').write('junk')  # Make sure overwriting works
-         es.save(fn)
+         with EncryptingStreamer('test key', dir='/tmp',
+                                 delimited=delim) as es:
+             es.write(data)
+             es.finish()
+             fn = '/tmp/%s.aes' % es.outer_md5sum
+             with open(fn, 'wb') as fd:
+                 fd.write('junk')  # Make sure overwriting works
+             es.save(fn)
+         assert(fdcheck('Encrypted data, delimited=%s' % delim))
 
          # Decryption test!
-         ds = DecryptingStreamer(open(fn, 'rb'),
-                                 mep_key='test key',
-                                 md5sum=es.outer_md5sum)
-         new_data = ds.read()
-         assert(ds.close() == 0)
-         assert(data == new_data)
-         assert(ds.verify(testing=True))
-
+         with open(fn, 'rb') as bfd:
+             with DecryptingStreamer(bfd,
+                                     mep_key='test key',
+                                     md5sum=es.outer_md5sum) as ds:
+                 new_data = ds.read()
+                 assert(ds.close() == 0)
+                 assert(data == new_data)
+                 assert(ds.verify(testing=True))
+         assert(fdcheck('Decrypting test, delimited=%s' % delim))
 
          # Cleanup
          os.unlink(fn)
      os.unlink('/tmp/iofilter.tmp')
+     assert(fdcheck('All done'))
