@@ -1,7 +1,9 @@
 import json
+import os
 from gettext import gettext as _
 from urllib import urlencode, URLopener
 
+import mailpile.auth
 from mailpile.commands import Command, Help
 from mailpile.mailutils import *
 from mailpile.search import *
@@ -131,6 +133,8 @@ class ViewMetadata(Hacks):
             [self._explain(i) for i in self._choose_messages(self.args)])
 
 
+HACKS_SESSION_ID = None
+
 class Http(Hacks):
     """Send HTTP requests to the web server"""
     SYNOPSIS = (None, 'hacks/http', None,
@@ -171,8 +175,18 @@ class Http(Hacks):
             qv = urlencode(qv)
             url += ('?' in url and '&' or '?') + qv
 
+        # Log us in automagically!
+        httpd = self.session.config.http_worker.httpd
+        global HACKS_SESSION_ID
+        if HACKS_SESSION_ID is None:
+            HACKS_SESSION_ID = httpd.make_session_id(None)
+        us = mailpile.auth.UserSession(auth='Hacks plugin HTTP client')
+        mailpile.auth.SESSION_CACHE[HACKS_SESSION_ID] = us
+        cookie = httpd.session_cookie
+
         try:
             uo = URLopener()
+            uo.addheader('Cookie', '%s=%s' % (cookie, HACKS_SESSION_ID))
             if method == 'POST':
                 (fn, hdrs) = uo.retrieve(url, data=urlencode(pv))
             else:

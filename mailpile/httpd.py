@@ -369,7 +369,7 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         while session_id in self.sessions or session_id is None:
             session_id = b64w(sha1b64('%s %s %x %s' % (
                 self.secret,
-                request.headers,
+                request and request.headers,
                 random.randint(0, 0xffffffff),
                 time.time())))
         return session_id
