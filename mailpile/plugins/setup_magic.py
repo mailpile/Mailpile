@@ -693,9 +693,9 @@ class Setup(SetupMagic):
         for guard, step in [
             (config.prefs.language, SetupWelcome),
             (config.prefs.gpg_recipient, SetupCrypto),
-            (config.prefs.default_email, SetupProfiles),
-            (config.routes, SetupRoutes),
-            (config.sources, SetupSources),
+            #(config.prefs.default_email, SetupProfiles),
+            #(config.routes, SetupRoutes),
+            #(config.sources, SetupSources),
         ]:
             if not guard:
                 return step
