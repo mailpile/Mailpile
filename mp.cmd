@@ -1,6 +1,8 @@
 @echo off
 set PYTHONPATH=%~dp0
-if exist c:\python27\python.exe (
+if exist python27\python.exe (
+  set PYTHONBIN=python27\python.exe
+) else if exist c:\python27\python.exe (
   set PYTHONBIN=c:\python27\python.exe
 ) else (
   set PYTHONBIN=python
