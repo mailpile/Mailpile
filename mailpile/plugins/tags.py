@@ -391,7 +391,7 @@ class AddTag(TagCommand):
         if self.data.get('_method', 'not-http').upper() == 'GET':
             return self._success(_('Add tags here!'), {
                 'form': self.HTTP_POST_VARS,
-                'rules': self.session.config.tags.rules['_any'][1]._RULES
+                'rules': self.session.config.tags.rules['_any'][1]
             })
 
         slugs = self.data.get('slug', [])
