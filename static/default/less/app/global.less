@@ -156,6 +156,39 @@
 	}
 
 
+/* Text */
+
+  .text-detail {
+    color: @gray;
+  }
+
+
+/* Form Inputs */
+/* Rebar: move this rebar/forms.less library at some point */
+
+  input[type="text"].input-medium,
+	input[type="password"].input-medium,
+	input[type="email"].input-medium,
+	input[type="url"].input-medium,
+	input[type="phone"].input-medium,
+	input[type="address"].input-medium,
+  textarea.input-medium,
+  select.input-medium {
+    width: 350px;
+  }
+
+  input[type="text"].input-large,
+	input[type="password"].input-large,
+	input[type="email"].input-large,
+	input[type="url"].input-large,
+	input[type="phone"].input-large,
+	input[type="address"].input-large,
+  textarea.input-large,
+  select.input-large {
+    width: 500px;
+  }
+
+
 /* List Items */
 
   ul.items {}
@@ -193,3 +226,34 @@
     border-radius: 3px;
   }
 
+
+/* Crypto */
+
+  .vault-lock-outer {
+    width: 225px;
+    height: 225px;
+    border-radius: 112.5px;
+    border: 1px solid @grayDark;
+    box-sizing: border-box;
+    background: @gray;
+  }
+
+  .vault-lock-inner {
+    width: 171px;
+    height: 171px;
+    border-radius: 85.5px;
+    border: 1px solid @grayDark;
+    box-sizing: border-box;
+    background: @white;
+    position: relative;
+    top: 27px;
+    left: 27px;
+  }
+
+  .vault-lock {
+    font-size: 72px;
+    line-height: 72px;
+    position: relative;
+    top: 42px;
+    left: 47px;
+  }
