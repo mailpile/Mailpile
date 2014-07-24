@@ -142,21 +142,10 @@ $(document).on('submit', '#form-tag-add', function(e) {
     data: tag_data,
     dataType : 'json',
     success: function(response) {
-
-      Mailpile.notification(response.status, response.message);
-
       if (response.status === 'success') {
-      
-        // Reset form fields
-        $('#data-tag-add-tag').val('');
-        $('#data-tag-add-slug').val('');
-        $('#data-tag-add-display option[value="tag"]').prop("selected", true);
-        $('#data-tag-add-parrent option[value=""]').prop("selected", true);
-        $('#data-tag-add-template option[value="default"]').prop("selected", true);
-        $('#data-tag-add-search-terms').val('');
-        
-        // Reset Slugify
-        $('#data-tag-add-slug').slugify('#data-tag-add-tag');
+        window.location.href = '/tags/edit.html?only=' + $('#data-tag-add-slug').val();
+      } else {
+        Mailpile.notification(response.status, response.message);
       }
     }
   });
@@ -193,10 +182,20 @@ $(document).on('click', '#button-tag-toggle-archive', function(e) {
 });
 
 
-/* Tag - Update */
+/* Tag - Update Name & Slug */
 $(document).on('blur', '#data-tag-add-tag', function(e) {
+  Mailpile.tag_update($('#data-tag-tid').val(), 'name', $(this).val(), function() {
+    Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function() {
+      Mailpile.notification('success', 'Tag Name & Slug Updated');
+    });
+  });
+});
 
-  alert('Saving: ' + $(this).val())  
+
+$(document).on('blur', '#data-tag-add-slug', function(e) {
+
+  console.log('FIXME: This needs to save name & slug values');
+
 
 });
 
@@ -213,4 +212,12 @@ $(document).on('change', '#data-tag-parent', function(e) {
   Mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function() {
     // FIXME: show (or move) change update in sidebar
   });  
+});
+
+
+$(document).ready(function() {
+
+  // Slugify
+  $('#data-tag-add-slug').slugify('#data-tag-add-tag');
+
 });
