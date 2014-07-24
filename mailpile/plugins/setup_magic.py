@@ -603,7 +603,7 @@ class SetupCrypto(TestableWebbable):
                 if passphrase and not error_info:
                     sps = mailpile.auth.VerifyAndStorePassphrase(
                         session.config, passphrase=passphrase)
-                    session.config.gnupg_passphrase = sps.data
+                    session.config.gnupg_passphrase.data = sps.data
                     if not session.config.prefs.gpg_recipient:
                         session.config.prefs.gpg_recipient = '!CREATE'
                     changed = results['updated_passphrase'] = True
