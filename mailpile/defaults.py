@@ -59,7 +59,7 @@ CONFIG_RULES = {
         'rescan_interval': (_('New mail check frequency'), int,             0),
         'gpg_clearsign':   (_('Inline PGP signatures or attached'),
                             bool, False),
-        'gpg_recipient':   (_('Encrypt local data to ...'), str,           ''),
+        'gpg_recipient':  p(_('Encrypt local data to ...'), str,           ''),
         'openpgp_header':  (_('Advertise GPG preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
                             'signencrypt'),

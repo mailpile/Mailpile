@@ -1,0 +1,31 @@
+{% extends "layouts/auth.html" %}
+{% block title %}{{_("Welcome to Mailpile!")}}{% endblock %}
+{% block content %}
+
+<h1>Ohai! Welcome to Mailpile!</h1>
+
+<form method="POST">
+  <select name="language">
+    <option value="">Language ...</option>
+{% set selected = {result.language: ' selected'} %}
+{#
+   FIXME:  We shouldn't hard-code in what languages are available, the
+           backend should tell us. But I don't think the backend knows
+           that at the moment, so for now we hard-code.
+#}
+{% for lc, lang in (("en", "English"),
+                    ("is", "Icelandic"),
+                    ("fi", "Finnish")) %}
+    <option value="{{ lc }}"{{ selected[lc] }}>{{ lang }}</option>
+{% endfor %}
+  </select>
+  <br>
+{# 
+   This tells the backend to validate and redirect to the next step of
+   the flow. AJAXY use will probably not send this variable.
+#}
+  <input type="hidden" name="advance" value="Yes">
+  <input type="submit" value="Continue...">   
+</form>
+
+{% endblock %}

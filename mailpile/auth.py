@@ -32,6 +32,22 @@ class UserSessionCache(dict):
                 del self[k]
 
 
+def VerifyAndStorePassphrase(config, passphrase=None, sps=None):
+    if passphrase and not sps:
+        from mailpile.config import SecurePassphraseStorage
+        sps = SecurePassphraseStorage(passphrase)
+        passphrase = 'this probably does not really overwrite :-( '
+
+    assert(sps is not None)
+    gpg = GnuPG(use_agent=False)
+    if gpg.is_available():
+        gpg.passphrase = sps.get_reader()
+        # FIXME: Sign with the gpg_recipient key, not just any key!
+        assert(gpg.sign('Sign This!')[0] == 0)
+
+    return sps
+
+
 SESSION_CACHE = UserSessionCache()
 
 
@@ -89,16 +105,10 @@ class Authenticate(Command):
         user = user and user.lower()
 
         if not user:
-            from mailpile.config import SecurePassphraseStorage
-            sps = SecurePassphraseStorage(password)
-            password = ''
             try:
                 # Verify the passphrase
-                gpg = GnuPG(use_agent=False)
-                if gpg.is_available():
-                    gpg.passphrase = sps.get_reader()
-                    assert(gpg.sign('Sign This!')[0] == 0)
-
+                sps = VerifyAndStorePassphrase(config, passphrase=password)
+                if sps:
                     # Store the varified passphrase
                     config.gnupg_passphrase.data = sps.data
 

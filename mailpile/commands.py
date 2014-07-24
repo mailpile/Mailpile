@@ -322,7 +322,7 @@ class Command:
                                               ) % (what, ))
         return msg_ids
 
-    def _error(self, message, info=None):
+    def _error(self, message, info=None, result=None):
         self.status = 'error'
         self.message = message
 
@@ -334,7 +334,10 @@ class Command:
         self.session.ui.mark(self.name)
         self.session.ui.error(ui_message)
 
-        return False
+        if result:
+            return self.view(result)
+        else:
+            return False
 
     def _success(self, message, result=True):
         self.status = 'success'
@@ -1335,6 +1338,7 @@ class ProgramStatus(Command):
             except AttributeError:
                 pass
 
+        import mailpile.auth
         result = {
             'sessions': [{'sessionid': k,
                           'timestamp': v.ts,

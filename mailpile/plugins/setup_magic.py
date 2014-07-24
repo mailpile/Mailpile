@@ -3,13 +3,13 @@ import random
 from gettext import gettext as _
 from datetime import date
 
+import mailpile.auth
 from mailpile.plugins import PluginManager
 from mailpile.plugins import __all__ as PLUGINS
 from mailpile.commands import Command
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.util import *
 from mailpile.plugins.migrate import Migrate
-
 from mailpile.plugins.tags import AddTag
 
 
@@ -18,9 +18,9 @@ _plugins = PluginManager(builtin=__file__)
 
 ##[ Commands ]################################################################
 
-class Setup(Command):
+class SetupMagic(Command):
     """Perform initial setup"""
-    SYNOPSIS = (None, 'setup', None, None)
+    SYNOPSIS = (None, None, None, None)
     ORDER = ('Internals', 0)
     LOG_PROGRESS = True
 
@@ -252,8 +252,8 @@ class Setup(Command):
                         "name": uid["name"],
                     }
                     session.config.profiles.append(profile)
-                if (not session.config.prefs.gpg_recipient
-                   and details["capabilities_map"][0]["encrypt"]):
+                if (session.config.prefs.gpg_recipient in (None, '', '!CREATE')
+                       and details["capabilities_map"][0]["encrypt"]):
                     session.config.prefs.gpg_recipient = key
                     session.ui.notify(_('Encrypting config to %s') % key)
                 if session.config.prefs.crypto_policy == 'none':
@@ -267,7 +267,7 @@ class Setup(Command):
         else:
             session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 
-        if (session.config.prefs.gpg_recipient
+        if (session.config.prefs.gpg_recipient not in (None, '', '!CREATE')
                 and not (self._idx() and self._idx().INDEX)
                 and not session.config.master_key
                 and not session.config.prefs.obfuscate_index):
@@ -286,7 +286,7 @@ class Setup(Command):
             secret = ''
             chars = 12 * 4
             while len(secret) < chars:
-                secret = sha512b64(open('/dev/urandom').read(1024),
+                secret = sha512b64(os.urandom(1024),
                                    '%s' % session.config,
                                    '%s' % time.time())
                 secret = CleanText(secret,
@@ -313,15 +313,41 @@ class Setup(Command):
         return self.setup_command(session)
 
 
-class TestableWebbable(Setup):
+class TestableWebbable(SetupMagic):
+    HTTP_AUTH_REQUIRED = False
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
-        'testing': 'Yes or No, if testing'
+        'testing': 'Yes or No, if testing',
+        'advance': 'Yes or No, advance setup flow',
+        '_path': 'Redirect path'
     }
     TRUTHY = {
         '0': False, 'no': False, 'fuckno': False, 'false': False,
         '1': True, 'yes': True, 'hellyeah': True, 'true': True,
     }
+
+    def _advance(self):
+        path = self.data.get('_path', [None])[0]
+        if path and path != '/%s/' % Setup.SYNOPSIS[2]:
+            nxt = Setup.Next(self.session.config, None)
+            if nxt:
+                url = '/%s/' % nxt.SYNOPSIS[2]
+            else:
+                url = path
+        else:
+            url = '/%s/' % Setup.Next(self.session.config, SetupWelcome
+                                      ).SYNOPSIS[2]
+        raise UrlRedirectException(url)
+
+    def _success(self, message, result=True, advance=False):
+        if (advance or
+                self.data.get('advance', [''])[0].lower() in self.TRUTHY):
+            self._advance()
+        return SetupMagic._success(self, message, result=result)
+
+    def _testing(self):
+        self._testing_yes(lambda: True)
+        return (self.testing is not None)
 
     def _testing_yes(self, method, *args, **kwargs):
         testination = self.data.get('testing')
@@ -345,7 +371,7 @@ class TestableWebbable(Setup):
 
 class SetupCheckKeychain(TestableWebbable):
     """Gather some stats about the local keychain"""
-    SYNOPSIS = (None, 'setup/check_keychain', 'setup/check_keychain', None)
+    SYNOPSIS = (None, None, 'setup/check_keychain', None)
 
     def _have_gnupg_keyring(self):
         raise Exception('FIXME')
@@ -355,7 +381,7 @@ class SetupCheckKeychain(TestableWebbable):
         if not self._testing_yes(self._have_gnupg_keyring):
             return self._error(_('Oh noes, we have no GnuPG'))
 
-        if self.testing:
+        if self._testing():
             return self._success(_('Found a keychain'), result={
                 'private_keys': 5,
                 'public_keys': 31337
@@ -495,8 +521,201 @@ class SetupGetEmailSettings(TestableWebbable):
             self._error(_('No settings found'))
 
 
-_plugins.register_commands(Setup,
+class SetupWelcome(TestableWebbable):
+    SYNOPSIS = (None, None, 'setup/welcome', None)
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_POST_VARS = {
+        'language': 'Language selection'
+    }
+
+    def setup_command(self, session):
+        if self.data.get('_method') == 'POST' or self._testing():
+            language = self.data.get('language', [''])[0]
+            if language:
+                try:
+                    session.config.prefs.language = language
+                    if not self._testing_yes(lambda: True):
+                        raise ValueError('Test fail')
+                    if not self._testing():
+                        self._background_save(config=True)
+                except ValueError:
+                    return self._error(_('Invalid language: %s') % language)
+
+        results = {
+            'language': session.config.prefs.language
+        }
+        return self._success(_('Welcome to Mailpile!'), results)
+
+
+class SetupCrypto(TestableWebbable):
+    SYNOPSIS = (None, None, 'setup/crypto', None)
+
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_POST_VARS = {
+        'choose_key': 'Select an existing key to use',
+        'passphrase': 'Specify a passphrase',
+        'index_encrypted': 'y/n: index encrypted mail?',
+        'obfuscate_index': 'y/n: obfuscate keywords?',
+        'encrypt_mail': 'y/n: encrypt locally stored mail?',
+        'encrypt_index': 'y/n: encrypt search index?',
+        'encrypt_vcards': 'y/n: encrypt vcards?',
+        'encrypt_events': 'y/n: encrypt event log?',
+        'encrypt_misc': 'y/n: encrypt plugin and misc data?'
+    }
+    TEST_DATA = {}
+
+    def setup_command(self, session):
+        changed = authed = False
+        results = {
+            'secret_keys': self._gnupg().list_secret_keys(),
+        }
+        error_info = None
+
+        if self.data.get('_method') == 'POST' or self._testing():
+            for key in self.HTTP_POST_VARS.keys():
+                if key in ('choose_key', 'passphrase'):
+                    continue
+                try:
+                    val = self.data.get(key, [''])[0]
+                    if val:
+                        session.config.prefs[key] = self.TRUTHY[val.lower()]
+                        changed = True
+                except (ValueError, KeyError):
+                    error_info = (_('Invalid preference'), {
+                        'invalid_setting': True,
+                        'variable': key
+                    })
+                    break
+
+            choose_key = self.data.get('choose_key', [''])[0]
+            if choose_key and not error_info:
+                if choose_key not in results['secret_keys']:
+                    error_info = (_('Invalid passphrase'), {
+                        'invalid_key': True,
+                        'chosen_key': choose_key
+                    })
+                else:
+                    session.config.prefs.gpg_recipient = choose_key
+                    changed = True
+
+            try:
+                passphrase = self.data.get('passphrase', [''])[0]
+                if passphrase and not error_info:
+                    sps = mailpile.auth.VerifyAndStorePassphrase(
+                        session.config, passphrase=passphrase)
+                    session.config.gnupg_passphrase = sps.data
+                    if not session.config.prefs.gpg_recipient:
+                        session.config.prefs.gpg_recipient = '!CREATE'
+                    changed = results['updated_passphrase'] = True
+            except AssertionError:
+                error_info = (_('Invalid passphrase'), {
+                    'invalid_passphrase': True,
+                    'chosen_key': session.config.prefs.gpg_recipient
+                })
+
+        results.update({
+            'chosen_key': session.config.prefs.gpg_recipient,
+            'prefs': {
+                'index_encrypted': session.config.prefs.index_encrypted,
+                'obfuscate_index': session.config.prefs.obfuscate_index,
+                'encrypt_mail': session.config.prefs.encrypt_mail,
+                'encrypt_index': session.config.prefs.encrypt_index,
+                'encrypt_vcards': session.config.prefs.encrypt_vcards,
+                'encrypt_events': session.config.prefs.encrypt_events,
+                'encrypt_misc': session.config.prefs.encrypt_misc
+            }
+        })
+
+        if changed:
+            self._background_save(config=True)
+
+        if error_info:
+            return self._error(error_info[0],
+                               info=error_info[1], result=results)
+        elif changed:
+            return self._success(_('Updated crypto preferences'), results)
+        else:
+            return self._success(_('Configure crypto preferences'), results)
+
+
+class SetupProfiles(TestableWebbable):
+    SYNOPSIS = (None, None, 'setup/profiles', None)
+
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
+    })
+    TEST_DATA = {}
+
+    def setup_command(self, session):
+        results = {}
+        return self._success(_(''), results)
+
+
+class SetupRoutes(TestableWebbable):
+    SYNOPSIS = (None, None, 'setup/routes', None)
+
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
+    })
+    TEST_DATA = {}
+
+    def setup_command(self, session):
+        results = {}
+        return self._success(_(''), results)
+
+
+class SetupSources(TestableWebbable):
+    SYNOPSIS = (None, None, 'setup/sources', None)
+
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
+    })
+    TEST_DATA = {}
+
+    def setup_command(self, session):
+        results = {}
+        return self._success(_(''), results)
+
+
+class Setup(SetupMagic):
+    """Enter setup flow"""
+    SYNOPSIS = (None, 'setup', 'setup', None)
+
+    ORDER = ('Internals', 0)
+    LOG_PROGRESS = True
+    HTTP_CALLABLE = ('GET',)
+
+    @classmethod
+    def Next(cls, config, final):
+        if not config.loaded_config:
+            return final
+
+        for guard, step in [
+            (config.prefs.language, SetupWelcome),
+            (config.prefs.gpg_recipient, SetupCrypto),
+            (config.prefs.default_email, SetupProfiles),
+            (config.routes, SetupRoutes),
+            (config.sources, SetupSources),
+        ]:
+            if not guard:
+                return step
+
+        return final
+
+    def setup_command(self, session):
+        if '_method' in self.data:
+            return self.success(_('Entering setup flow'), advance=True)
+        else:
+            return SetupMagic.setup_command(self, session)
+
+
+_plugins.register_commands(SetupMagic,
                            SetupCheckKeychain, SetupCreateNewKey,
                            SetupGuessEmails, SetupTestEmailSettings,
                            SetupGetEmailSettings,
+                           SetupWelcome,
+                           SetupCrypto,
+                           SetupProfiles,
+                           SetupRoutes,
+                           SetupSources,
                            Setup)
