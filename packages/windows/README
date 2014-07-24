@@ -1,0 +1,11 @@
+In order for this to work, you need to add three things here:
+
+  - a folder called GnuPG, containing a standalone Windows build of GnuPG >= 2.0.25.
+  - a folder called OpenSSL, containing a standalone Windows build of OpenSSL >= 1.0.1h.
+  - a folder called Python27, containing a standalone Windows build of Python >= 2.7.6.
+
+On top of that, you need to install NSIS (Nullsoft Installer System).
+
+Then just run "make".
+
+
