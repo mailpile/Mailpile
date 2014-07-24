@@ -6,7 +6,6 @@ var IdentityView = Backbone.View.extend(
     },
     render: function(){},
     events: {
-      "click #btn-setup-welcome-begin"       : "showPassphrase",
       "click #btn-setup-passphrase"          : "processPassphrase",
     	"click #btn-setup-basic-info"          : "processBasic",
       "click #btn-setup-crypto-import"       : "processCryptoImport",
@@ -17,10 +16,11 @@ var IdentityView = Backbone.View.extend(
       this.$el.html(_.template($("#template-setup-welcome").html()));
     },
     showPassphrase: function() {
-      this.$el.html(_.template($('#template-setup-passphrase').html()));
-    },
-    showBasic: function() {
-      this.$el.html(_.template($("#template-setup-basic").html()));
+      Mailpile.API.setup_check_keychain({ testing: 'Yes'}, function(response) {
+        console.log(response.result);
+
+        $('#setup').html(_.template($('#template-setup-passphrase').html(), response.result));
+      });
     },
     showProfiles: function() {
       this.$el.html(_.template($('#template-setup-profiles').html()));
@@ -28,9 +28,6 @@ var IdentityView = Backbone.View.extend(
     showDiscovery: function() {
       this.$el.html(_.template($("#template-setup-discovery").html()));
       $('#demo-setup-discovery-action').delay(1500).fadeIn('normal');
-    },
-    showCryptoFound: function() {
-      this.$el.html(_.template($("#template-setup-crypto-found-keys").html(), CryptoModel.attributes));
     },
     showCryptoGenerated: function() {
       this.$el.html(_.template($('#template-setup-crypto-generated').html(), CryptoModel.attributes));
@@ -44,11 +41,16 @@ var IdentityView = Backbone.View.extend(
     showSourceRemoteChoose: function() {
       this.$el.html(_.template($('#template-setup-source-remote-choose').html(), {}));      
     },
-    processPassword: function(e) {
-      e.preventDefault();
+    processPassphrase: function(e) {
 
-      // Update URL & View
-      Backbone.history.navigate('#profiles', true);
+      e.preventDefault();
+      //var passphrase_data = $('#form-setup-passphrase').serialize();
+      // SETUP: If has keychain GO TO #profiles
+      if ($('#data-setup-passphrase').val() == 'haskey') {
+        Backbone.history.navigate('#profiles', true);
+      } else {
+        Backbone.history.navigate('#crypto-generated', true)
+      }
     },
     processBasic: function(e) {
 

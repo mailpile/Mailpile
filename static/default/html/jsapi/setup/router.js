@@ -6,11 +6,10 @@ var SetupRouter = Backbone.Router.extend(
 	},
 	routes: {
 		"" 						     : "index",
-		"password"         : "password",
+		"passphrase"       : "passphrase",
+		"crypto-generated" : "cryptoGenerated",
 		"profiles"         : "profiles",
 		"discovery"        : "discovery",
-		"crypto-found"     : "cryptoFound",
-		"crypto-generated" : "cryptoGenerated",
 		"source-settings"  : "sourceSettings",
 		"source-local"     : "sourceLocal",
 		"source-choose"    : "sourceRemoteChoose",
@@ -20,8 +19,11 @@ var SetupRouter = Backbone.Router.extend(
 	index: function() {
 		IdentityView.showIndex();
 	},
-	password: function() {
-		IdentityView.showPassword();
+	passphrase: function() {
+		IdentityView.showPassphrase();
+	},
+	cryptoGenerated: function() {
+		IdentityView.showCryptoGenerated();
 	},
 	profiles: function() {
 		IdentityView.showProfiles();
@@ -29,12 +31,6 @@ var SetupRouter = Backbone.Router.extend(
   discovery: function() {
 		IdentityView.showDiscovery();
   },
-	cryptoFound: function() {
-		IdentityView.showCryptoFound();
-	},
-	cryptoGenerated: function() {
-		IdentityView.showCryptoGenerated();
-	},
 	sourceSettings: function() {
 		IdentityView.showSourceSettings();
 	},
