@@ -10,7 +10,7 @@ import mailpile.config
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.mailutils import Email
-from mailpile.smtp_client import Sha512Check, Sha512Collide
+from mailpile.smtp_client import sha512_512kCheck, sha512_512kCollide
 from mailpile.smtp_client import SMTORP_HASHCASH_RCODE, SMTORP_HASHCASH_FORMAT
 from mailpile.util import *
 
@@ -29,7 +29,7 @@ _plugins.register_config_section(
 
 class SMTPChannel(smtpd.SMTPChannel):
     MAX_MESSAGE_SIZE = 1024 * 1024 * 50
-    HASHCASH_WANT_BITS = 20  # average of 1 million hash operations
+    HASHCASH_WANT_BITS = 8  # Only 128-or-so expensive sha512_512k ops
     HASHCASH_URL = 'https://www.mailpile.is/hashcash/'
 
     def __init__(self, session, *args, **kwargs):
@@ -48,6 +48,7 @@ class SMTPChannel(smtpd.SMTPChannel):
         return False  # FIXME
 
     def push(self, msg):
+        play_nice_with_threads()
         if msg.startswith('220'):
             # This is a hack, because these days it is no longer considered
             # reasonable to tell everyone your hostname and version number.
@@ -79,7 +80,8 @@ class SMTPChannel(smtpd.SMTPChannel):
         want_bits = self.HASHCASH_WANT_BITS
         addrpair = '%s, %s' % (self.__mailfrom, address)
         if solution and addrpair in self.want_hashcash:
-            if Sha512Check(self.want_hashcash[addrpair], want_bits, solution):
+            if sha512_512kCheck(self.want_hashcash[addrpair],
+                               want_bits, solution):
                 return address
             else:
                 self.push('550 Hashcash is null and void')
@@ -157,6 +159,7 @@ class SMTPServer(smtpd.SMTPServer):
         session, config = self.session, self.session.config
         blank_tid = config.get_tags(type='blank')[0]._key
         idx = config.index
+        play_nice_with_threads()
         try:
             message = email.parser.Parser().parsestr(data)
             lid, lmbox = config.open_local_mailbox(session)
@@ -205,10 +208,10 @@ class HashCash(Command):
         bits, challenge = int(self.args[0]), self.args[1]
         expected = 2 ** bits
         def marker(counter):
-            progress = ((102400.0 * counter) / expected) * 100
+            progress = ((1024.0 * counter) / expected) * 100
             self.session.ui.mark('Finding a %d-bit collision for %s (%d%%)'
                                  % (bits, challenge, progress))
-        collision = Sha512Collide(challenge, bits, callback100k=marker)
+        collision = sha512_512kCollide(challenge, bits, callback1k=marker)
         return self._success({
             'challenge': challenge,
             'collision': collision

@@ -13,25 +13,42 @@ from mailpile.mailutils import CleanMessage, MessageAsString
 from mailpile.eventlog import Event
 
 
-def Sha512Check(challenge, bits, solution):
+def sha512_512k(data):
+    #
+    # This abuse of sha512 forces it to work with at least 512kB of data,
+    # no matter what it started with. On each iteration, we add one
+    # hexdigest to the front of the string (to prevent reuse of state).
+    # Each hexdigest is 128 bytes, so that gives:
+    #
+    # Total == 128 * (0 + 1 + 2 + ... + 90) + 128 == 128 * 4096 == 524288
+    #
+    # Max memory use is sadly only 10KB or so - hardly memory-hard. :-)
+    # Oh well!  I'm no cryptographer, and yes, we should probably just
+    # be using scrypt.
+    #
+    sha512 = hashlib.sha512
+    for i in range(0, 91):
+        data = sha512(data).hexdigest() + data
+    return sha512(data).hexdigest()
+
+
+def sha512_512kCheck(challenge, bits, solution):
     hexchars = bits // 4
     wanted = '0' * hexchars
-    digest = hashlib.sha512('-'.join([solution, challenge])).hexdigest()
+    digest = sha512_512k('-'.join([solution, challenge]))
     return (digest[:hexchars] == wanted)
 
 
-def Sha512Collide(challenge, bits, callback100k=None):
-    sha512 = hashlib.sha512
+def sha512_512kCollide(challenge, bits, callback1k=None):
     hexchars = bits // 4
     wanted = '0' * hexchars
-    for i in xrange(1, 0x100):
-        if callback100k is not None:
-            callback100k(i)
+    for i in xrange(1, 0x10000):
+        if callback1k is not None:
+            callback1k(i)
         challenge_i = '-'.join([str(i), challenge])
-        for j in xrange(0, 102400):
+        for j in xrange(0, 1024):
             collision = '-'.join([str(j), challenge_i])
-            digest = sha512(collision).hexdigest()
-            if digest[:hexchars] == wanted:
+            if sha512_512k(collision)[:hexchars] == wanted:
                 return '-'.join(collision.split('-')[:2])
     return None
 
@@ -41,11 +58,15 @@ SMTORP_HASHCASH_PREFIX = 'Please collide'
 SMTORP_HASHCASH_FORMAT = (SMTORP_HASHCASH_PREFIX +
                           ' %(bits)d,%(challenge)s or retry. See: %(url)s')
 
-def SMTorP_HashCash(rcpt, msg, callback100k=None):
+def SMTorP_HashCash(rcpt, msg, callback1k=None):
     bits_challenge_etc = msg[len(SMTORP_HASHCASH_PREFIX):].strip()
     bits, challenge = bits_challenge_etc.split()[0].split(',', 1)
-    return '%s##%s' % (rcpt, Sha512Collide(challenge, int(bits),
-                                           callback100k=callback100k))
+    def cb(*args, **kwargs):
+        play_nice_with_threads()
+        if callback1k:
+            callback1k(*args, **kwargs)
+    return '%s##%s' % (rcpt, sha512_512kCollide(challenge, int(bits),
+                                                callback1k=cb))
 
 
 def _AddSocksHooks(cls, SSL=False):
