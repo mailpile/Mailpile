@@ -2,7 +2,7 @@
 <script id="template-setup-access" type="text/template">
   <div class="setup-box setup-box-medium animated bounceInTop">
     <h3 class="text-center"><span class="icon-settings"></span> Access Settings</h3>
-    <form class="standard text-center">
+    <form class="standard">
       <label>Do you want to access this install of Mailpile from other computers and devices over the internet?</label>
       <select name="install_type" class="center">
         <option>Yes</option>
@@ -20,8 +20,9 @@
   <div class="setup-box setup-box-medium animated bounceInTop">
     <h3 class="text-center"><span class="icon-lock-closed"></span> Security Settings</h3>
     <form class="standard">
-      <label class="clearfix">What is your personal security needs?
-        <select name="security_model" class="right">
+      <label class="clearfix">What is your personal security needs?</label>
+      <p>
+        <select name="security_model">
           <option>You wear a hat, underwear, and socks made of tin foil</option>
           <option>Relatively paranoid</option>
           <option>Above average</option>
@@ -29,6 +30,35 @@
           <option>Normal person</option>
           <option>Totally unconcerned</option>
         </select>
+      </p>
+
+      <label>
+        <input type="checkbox" name="encrypt_events" checked="true">
+        Encrypt system events & notifications
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_index" checked="">
+        Encrypt your index of search terms
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_mail" checked="true">
+        Encrypt mail (is this sending or downloaded to disk??)
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_vcards" checked="true">
+        Encrypted your address book & contacts
+      </label>
+      <label>
+        <input type="checkbox" name="index_encrypted" checked="true">
+        Index encrypted (how is this different from encrypt_index??)
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_misc" checked="true">
+        Encrypt various other things
+      </label>
+      <label>
+        <input type="checkbox" name="obfuscate_index" checked="">
+        Obfuscate your search index
       </label>
       <label>
         <input type="checkbox" name="security_tor">
@@ -36,7 +66,7 @@
       </label>
       <label>
         <input type="checkbox" name="security_upload_keyservers">
-        Upload public encryption key to keyservers for better discovery
+        Upload your public encryption key to keyservers for better discovery
       </label>
       <div class="text-center">
         <button id="btn-setup-source-settings" class="center">{{_("Save")}}</button>
