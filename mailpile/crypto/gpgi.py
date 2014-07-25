@@ -152,17 +152,19 @@ class GnuPGRecordParser:
         self.keys = {}
         self.curkey = None
 
-        self.record_fields = ["record", "validity", "keysize", "keytype", 
-                              "keyid", "creation_date", "expiration_date", 
-                              "uidhash", "ownertrust", "uid", "sigclass", 
-                              "capabilities", "flag", "sn", "hashtype", "curve"]
-        self.record_types = ["pub", "sub", "ssb", "fpr", "uat", "sec", "tru", 
+        self.record_fields = ["record", "validity", "keysize", "keytype",
+                              "keyid", "creation_date", "expiration_date",
+                              "uidhash", "ownertrust", "uid", "sigclass",
+                              "capabilities", "flag", "sn", "hashtype",
+                              "curve"]
+        self.record_types = ["pub", "sub", "ssb", "fpr", "uat", "sec", "tru",
                              "sig", "rev", "uid", "gpg"]
-        self.record_parsers = [self.parse_pubkey, self.parse_subkey, 
-                          self.parse_subkey, self.parse_fingerprint,
-                          self.parse_userattribute, self.parse_privkey, 
-                          self.parse_trust, self.parse_signature, 
-                          self.parse_revoke, self.parse_uidline, self.parse_none]
+        self.record_parsers = [self.parse_pubkey, self.parse_subkey,
+                               self.parse_subkey, self.parse_fingerprint,
+                               self.parse_userattribute, self.parse_privkey,
+                               self.parse_trust, self.parse_signature,
+                               self.parse_revoke, self.parse_uidline,
+                               self.parse_none]
 
         self.dispatch = dict(zip(self.record_types, self.record_parsers))
 
@@ -197,7 +199,8 @@ class GnuPGRecordParser:
         self.parse_uidline(line)
 
     def parse_subkey(self, line):
-        subkey = {"id": line["keyid"], "keysize": line["keysize"],
+        subkey = {"id": line["keyid"],
+                  "keysize": line["keysize"],
                   "creation_date": line["creation_date"],
                   "keytype_name": openpgp_algorithms[int(line["keytype"])]}
         self.keys[self.curkey]["subkeys"].append(subkey)
@@ -219,10 +222,18 @@ class GnuPGRecordParser:
 
     def parse_uidline(self, line):
         email, name, comment = parse_uid(line["uid"])
-        self.keys[self.curkey]["uids"].append({"email": email,
-                                     "name": name,
-                                     "comment": comment,
-                                     "creation_date": line["creation_date"]})
+        if email or name or comment:
+            self.keys[self.curkey]["uids"].append({
+                "email": email,
+                "name": name,
+                "comment": comment,
+                "creation_date": line["creation_date"]
+            })
+        else:
+            pass  # This is the case where a uid or sec line have no
+                  # information aside from the creation date, which we
+                  # parse elsewhere. As these lines are effectively blank,
+                  # we omit them to simplify presentation to the user.
 
     def parse_trust(self, line):
         # TODO: We are currently ignoring commentary from the Trust DB.
@@ -231,9 +242,13 @@ class GnuPGRecordParser:
     def parse_signature(self, line):
         if "signatures" not in self.keys[self.curkey]:
             self.keys[self.curkey]["signatures"] = []
-        sig = {"signer": line[9], "signature_date": line[5],
-               "keyid": line[4], "trust": line[10], "keytype": line[4]}
-
+        sig = {
+            "signer": line[9],
+            "signature_date": line[5],
+            "keyid": line[4],
+            "trust": line[10],
+            "keytype": line[4]
+        }
         self.keys[self.curkey]["signatures"].append(sig)
 
     def parse_revoke(self, line):
@@ -247,7 +262,7 @@ class GnuPGRecordParser:
         pass
 
 
-UID_PARSE_RE = "([^\(\<]+){0,1}( \((.+)\)){0,1} (\<(.+)\>){0,1}"
+UID_PARSE_RE = "^([^\(\<]+?){0,1}( \((.+?)\)){0,1}( \<(.+?)\>){0,1}\s*$"
 
 
 def parse_uid(uidstr):
@@ -257,8 +272,10 @@ def parse_uid(uidstr):
         comment = matches.groups(0)[2] or ""
         name = matches.groups(0)[0] or ""
     else:
-        email = uidstr
-        name = ""
+        if '@' in uidstr and ' ' not in uidstr:
+            email, name = uidstr, ""
+        else:
+            email, name = "", uidstr
         comment = ""
 
     try:
@@ -528,7 +545,7 @@ class GnuPG:
         #
         # Note: The "." parameter that is passed is to work around a bug
         #       in GnuPG < 2.1, where --list-secret-keys does not list
-        #       details about key capabilities or expiry for 
+        #       details about key capabilities or expiry for
         #       --list-secret-keys unless a selector is provided. A dot
         #       is reasonably likely to appear in all PGP keys, as it is
         #       a common component of e-mail addresses (and @ does not
@@ -539,7 +556,7 @@ class GnuPG:
         #       Therefore, this paramter should be removed when GnuPG >= 2.1
         #       becomes commonplace.
         #
-        #       (This is a better workaround than doing an additional 
+        #       (This is a better workaround than doing an additional
         #       --list-keys and trying to aggregate it though...)
         #
         retvals = self.run(["--list-secret-keys", ".", "--fingerprint"])
