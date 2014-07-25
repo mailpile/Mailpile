@@ -82,8 +82,9 @@ $(document).on('click', '.sidebar-tag-archive', function(e) {
   e.preventDefault();
   // FIXME: This should use Int. language
   alert('This will mark this tag as "archived" and remove it from your sidebar, you can go edit this in the Tags -> Tag Name -> Settings page at anytime');
-  Mailpile.tag_update($(this).parent().data('tid'), 'display', 'archive', function() {
-    $(this).parent().parent().fadeOut();
+  var tid = $(this).parent().data('tid');
+  Mailpile.tag_update(tid, 'display', 'archive', function() {
+    $('#sidebar-tag-' + tid).fadeOut();
   });
 });
 
