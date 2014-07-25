@@ -1336,15 +1336,29 @@ class ConfigManager(ConfigDict):
         mbox.save(session,
                   to=pfn, pickler=lambda o, f: self.save_pickle(o, f))
 
+    def uncache_mailbox(self, session, pfn, mbox, drop=True):
+        with self._lock:
+            if drop:
+                self._mbox_cache = [c for c in self._mbox_cache if c[0] != pfn]
+
+        self.save_mailbox(session, pfn, mbox)
+
+        with self._lock:
+            if not drop:
+                keep2 = self._mbox_cache[-MAX_CACHED_MBOXES:]
+                keep1 = [c for c in self._mbox_cache[:-MAX_CACHED_MBOXES]
+                         if c[0] != pfn]
+                self._mbox_cache = keep1 + keep2
+
     def cache_mailbox(self, session, pfn, mbx_id, mbox):
         with self._lock:
             self._mbox_cache = [c for c in self._mbox_cache if c[0] != pfn]
             self._mbox_cache.append((pfn, mbx_id, mbox))
-        while len(self._mbox_cache) > MAX_CACHED_MBOXES:
-            pfn, mbx_id, mbox = self._mbox_cache.pop(0)
-            self.save_worker.add_task(
-                session, 'Save mailbox %s' % mbx_id,
-                lambda: self.save_mailbox(session, pfn, mbox))
+            flush = self._mbox_cache[:-MAX_CACHED_MBOXES]
+        for pfn, mbx_id, mbox in flush:
+            self.save_worker.add_unique_task(
+                session, 'Save mailbox %s (drop=%s)' % (mbx_id, False),
+                lambda: self.uncache_mailbox(session, pfn, mbox, drop=False))
 
     def flush_mbox_cache(self, session, clear=True, wait=False):
         with self._lock:
@@ -1356,8 +1370,10 @@ class ConfigManager(ConfigDict):
         else:
             saver = self.save_worker.add_task
         for pfn, mbx_id, mbox in flush:
-            saver(session, 'Save mailbox %s' % mbx_id,
-                  lambda: self.save_mailbox(session, pfn, mbox))
+            saver(session,
+                  'Save mailbox %s (drop=%s)' % (mbx_id, clear),
+                  lambda: self.uncache_mailbox(session, pfn, mbox, drop=clear),
+                  unique=True)
 
     def open_mailbox(self, session, mailbox_id, prefer_local=True):
         mbx_id, src, mfn, pfn = self._mailbox_info(mailbox_id,

@@ -166,23 +166,25 @@ class Worker(threading.Thread):
         self.important = False
 
     def __str__(self):
-        return '%s: %s (%ds)' % (threading.Thread.__str__(self),
-                                 self.running, time.time() - self.last_run)
+        return ('%s: %s (%ds, jobs=%s)'
+                % (threading.Thread.__str__(self),
+                   self.running,
+                   time.time() - self.last_run,
+                   len(self.JOBS)))
 
-    def add_task(self, session, name, task):
+    def add_task(self, session, name, task, unique=False):
         with self.LOCK:
+            if unique:
+                for s, n, t in self.JOBS:
+                    if n == name:
+                        return
             self.JOBS.append((session, name, task))
             self.LOCK.notify()
 
     def add_unique_task(self, session, name, task):
-        with self.LOCK:
-            for s, n, t in self.JOBS:
-                if n == name:
-                    return
-            self.JOBS.append((session, name, task))
-            self.LOCK.notify()
+        return self.add_task(session, name, task, unique=True)
 
-    def do(self, session, name, task):
+    def do(self, session, name, task, unique=False):
         if session and session.main:
             # We run this in the foreground on the main interactive session,
             # so CTRL-C has a chance to work.
@@ -192,7 +194,7 @@ class Worker(threading.Thread):
             finally:
                 self.unpause(session)
         else:
-            self.add_task(session, name, task)
+            self.add_task(session, name, task, unique=unique)
             if session:
                 rv = session.wait_for_task(name)
             else:
@@ -201,6 +203,15 @@ class Worker(threading.Thread):
 
     def _keep_running(self, **ignored_kwargs):
         return (self.ALIVE and not mailpile.util.QUITTING)
+
+    def _failed(self, session, name, task, e):
+        self.session.ui.error(('%s failed in %s: %s'
+                               ) % (name, self.name, e))
+        if session:
+            session.report_task_failed(name)
+
+    def _play_nice_with_threads(self):
+        play_nice_with_threads()
 
     def run(self):
         self.ALIVE = True
@@ -211,7 +222,7 @@ class Worker(threading.Thread):
                         return
                     self.LOCK.wait()
 
-            play_nice_with_threads()
+            self._play_nice_with_threads()
             with self.LOCK:
                 session, name, task = self.JOBS.pop(0)
             try:
@@ -222,11 +233,11 @@ class Worker(threading.Thread):
                     session.report_task_completed(name, task())
                 else:
                     task()
+            except (IOError, OSError), e:
+                self._failed(session, name, task, e)
+                time.sleep(1)
             except Exception, e:
-                self.session.ui.error(('%s failed in %s: %s'
-                                       ) % (name, self.name, e))
-                if session:
-                    session.report_task_failed(name)
+                self._failed(session, name, task, e)
             finally:
                 self.last_run = time.time()
                 self.running = 'Finished %s' % self.running
@@ -287,6 +298,16 @@ class ImportantWorker(Worker):
                  else:
                      time.sleep(1)
                  return self._keep_running(_pass=2, locked=locked)
+
+    def _failed(self, session, name, task, e):
+        # Important jobs!  Re-queue if they fail, it might be transient
+        Worker._failed(self, session, name, task, e)
+        self.add_unique_task(session, name, task)
+
+    def _play_nice_with_threads(self):
+        # Our jobs are important, if we have too many we stop playing nice
+        if len(self.JOBS) < 10:
+            play_nice_with_threads()
 
 
 class DumbWorker(Worker):
