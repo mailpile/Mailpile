@@ -320,9 +320,11 @@ class TestableWebbable(SetupMagic):
     HTTP_AUTH_REQUIRED = False
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
+        '_path': 'Redirect path'
+    }
+    HTTP_POST_VARS = {
         'testing': 'Yes or No, if testing',
         'advance': 'Yes or No, advance setup flow',
-        '_path': 'Redirect path'
     }
     TRUTHY = {
         '0': False, 'no': False, 'fuckno': False, 'false': False,
@@ -330,17 +332,26 @@ class TestableWebbable(SetupMagic):
     }
 
     def _advance(self):
+        from mailpile.urlmap import UrlMap
+
         path = self.data.get('_path', [None])[0]
+        data = dict([(k, v) for k, v in self.data.iteritems()
+                     if k not in self.HTTP_POST_VARS
+                     and k not in ('_method',)])
+
         if path and path != '/%s/' % Setup.SYNOPSIS[2]:
             nxt = Setup.Next(self.session.config, None)
             if nxt:
                 url = '/%s/' % nxt.SYNOPSIS[2]
             else:
-                url = path
+                # Use the same redirection logic as the Authenticator
+                mailpile.auth.Authenticate.RedirectBack(path, data)
         else:
             url = '/%s/' % Setup.Next(self.session.config, SetupWelcome
                                       ).SYNOPSIS[2]
-        raise UrlRedirectException(url)
+
+        qs = urlencode([(k, v) for k, vl in data.iteritems() for v in vl])
+        raise UrlRedirectException(''.join([url, '?%s' % qs if qs else '']))
 
     def _success(self, message, result=True, advance=False):
         if (advance or
@@ -461,7 +472,7 @@ class SetupTestEmailSettings(TestableWebbable):
     """Test the settings for an e-mail account"""
     SYNOPSIS = (None, 'setup/test_mailroute', 'setup/test_mailroute', None)
     HTTP_CALLABLE = ('POST', )
-    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
         'protocol': 'IMAP, POP3 or SMTP',
         'username': 'User name',
         'password': 'Password',
@@ -527,25 +538,28 @@ class SetupGetEmailSettings(TestableWebbable):
 class SetupWelcome(TestableWebbable):
     SYNOPSIS = (None, None, 'setup/welcome', None)
     HTTP_CALLABLE = ('GET', 'POST')
-    HTTP_POST_VARS = {
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
         'language': 'Language selection'
-    }
+    })
 
     def setup_command(self, session):
+        config = session.config
         if self.data.get('_method') == 'POST' or self._testing():
             language = self.data.get('language', [''])[0]
             if language:
                 try:
-                    session.config.prefs.language = language
-                    if not self._testing_yes(lambda: True):
-                        raise ValueError('Test fail')
+                    i18n = lambda: ActivateTranslation(session, config,
+                                                       language)
+                    if not self._testing_yes(i18n):
+                        raise ValueError('Failed to configure i18n')
+                    config.prefs.language = language
                     if not self._testing():
                         self._background_save(config=True)
                 except ValueError:
                     return self._error(_('Invalid language: %s') % language)
 
         results = {
-            'language': session.config.prefs.language
+            'language': config.prefs.language
         }
         return self._success(_('Welcome to Mailpile!'), results)
 
@@ -554,7 +568,7 @@ class SetupCrypto(TestableWebbable):
     SYNOPSIS = (None, None, 'setup/crypto', None)
 
     HTTP_CALLABLE = ('GET', 'POST')
-    HTTP_POST_VARS = {
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
         'choose_key': 'Select an existing key to use',
         'passphrase': 'Specify a passphrase',
         'index_encrypted': 'y/n: index encrypted mail?',
@@ -564,7 +578,7 @@ class SetupCrypto(TestableWebbable):
         'encrypt_vcards': 'y/n: encrypt vcards?',
         'encrypt_events': 'y/n: encrypt event log?',
         'encrypt_misc': 'y/n: encrypt plugin and misc data?'
-    }
+    })
     TEST_DATA = {}
 
     def setup_command(self, session):
@@ -576,7 +590,8 @@ class SetupCrypto(TestableWebbable):
 
         if self.data.get('_method') == 'POST' or self._testing():
             for key in self.HTTP_POST_VARS.keys():
-                if key in ('choose_key', 'passphrase'):
+                if key in (['choose_key', 'passphrase'] +
+                           TestableWebbable.HTTP_POST_VARS.keys()):
                     continue
                 try:
                     val = self.data.get(key, [''])[0]

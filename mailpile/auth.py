@@ -68,15 +68,19 @@ class Authenticate(Command):
         'pass': 'Password or passphrase'
     }
 
+    @classmethod
+    def RedirectBack(cls, url, data):
+        qs = [(k, v) for k, vl in data.iteritems() for v in vl
+              if k not in ('_method', '_path', 'user', 'pass')]
+        qs = urlencode(qs)
+        url = ''.join([url, '?%s' % qs if qs else ''])
+        raise UrlRedirectException(url)
+
     def _do_redirect(self):
         if ('_path' in self.data and
                DeAuthenticate.SYNOPSIS[2] not in self.data['_path'][0] and
                self.SYNOPSIS[2] not in self.data['_path'][0]):
-            qs = [(k, v) for k, vl in self.data.iteritems() for v in vl
-                  if k not in ('_method', '_path', 'user', 'pass')]
-            qs = urlencode(qs)
-            url = ''.join([self.data['_path'][0], '?%s' % qs if qs else ''])
-            raise UrlRedirectException(url)
+            self.RedirectBack(self.data['_path'][0], self.data)
         else:
             raise UrlRedirectException('/')
 
