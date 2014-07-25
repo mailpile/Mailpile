@@ -9,13 +9,14 @@ import re
 import threading
 import traceback
 import ConfigParser
-from gettext import translation, gettext, NullTranslations
-from gettext import gettext as _
 
 from jinja2 import Environment, BaseLoader, TemplateNotFound
-
 from urllib import quote, unquote
+
 from mailpile.crypto.streamer import DecryptingStreamer
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+import mailpile.i18n
 
 try:
     import ssl
@@ -132,12 +133,6 @@ def ConfigPrinter(cfg, indent=''):
         else:
             rv.append('%s: %s' % (key, val))
     return indent + ',\n'.join(rv).replace('\n', '\n'+indent)
-
-
-def getLocaleDirectory():
-    """Get the gettext translation object, no matter where our CWD is"""
-    # NOTE: MO files are loaded from the directory where the scripts reside in
-    return os.path.join(os.path.dirname(__file__), "..", "locale")
 
 
 class InvalidKeyError(ValueError):
@@ -471,7 +466,7 @@ def RuledContainer(pcls):
             for key in keys:
                 if not hasattr(self[key], 'as_config'):
                     if key in self.rules:
-                        comment = _(self.rules[key][self.RULE_COMMENT])
+                        comment = self.rules[key][self.RULE_COMMENT]
                     else:
                         comment = ''
                     value = unicode(self[key])
@@ -1114,11 +1109,6 @@ class ConfigManager(ConfigDict):
             # Bad data in config or config doesn't exist: just forge onwards
             pass
 
-        # Enable translations
-        translation = self.get_i18n_translation(session)
-        self.jinja_env.install_gettext_translations(translation,
-                                                    newstyle=True)
-
         # Discover plugins and update the config rule to match
         from mailpile.plugins import PluginManager
         self.plugins = PluginManager(config=self, builtin=True).discover([
@@ -1131,13 +1121,18 @@ class ConfigManager(ConfigDict):
 
         # Parse once (silently), to figure out which plugins to load...
         self.parse_config(None, '\n'.join(lines), source=filename)
+
+        # Enable translations
+        mailpile.i18n.ActivateTranslation(session, self, self.prefs.language)
+
         if public:
             # Stop here when loading the public config...
             raise IOError('Failed to load main config')
 
-        if len(self.sys.plugins) == 0:
-            self.sys.plugins.extend(self.plugins.DEFAULT)
-        self.load_plugins(session)
+        with mailpile.i18n.i18n_disabled:
+            if len(self.sys.plugins) == 0:
+                self.sys.plugins.extend(self.plugins.DEFAULT)
+            self.load_plugins(session)
 
         # Now all the plugins are loaded, reset and parse again!
         self.reset_rules_from_source()
@@ -1234,7 +1229,10 @@ class ConfigManager(ConfigDict):
         with open(pubfile, 'wb') as fd:
             fd.write(self.as_config_bytes(_type='public'))
 
-        self.get_i18n_translation()
+        # Enable translations
+        mailpile.i18n.ActivateTranslation(None, self, self.prefs.language)
+
+        # Prepare workers
         self.prepare_workers()
 
     def _find_mail_source(self, mbx_id):
@@ -1495,6 +1493,13 @@ class ConfigManager(ConfigDict):
             print "Migration notice: Try running 'setup/migrate'."
             raise ValueError(_("Route %s does not exist.") % routeid)
 
+    @classmethod
+    def getLocaleDirectory(self):
+        """Get the gettext translation object, no matter where our CWD is"""
+        # NOTE: MO files are loaded from the directory where the
+        #       scripts reside in
+        return os.path.join(os.path.dirname(__file__), "..", "locale")
+
     def data_directory(self, ftype, mode='rb', mkdir=False):
         """
         Return the path to a data directory for a particular type of file
@@ -1584,32 +1589,6 @@ class ConfigManager(ConfigDict):
             socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5,
                                   'localhost', 9050, True)
         return socks.socksocket
-
-    def get_i18n_translation(self, session=None):
-        with self._lock:
-            if session:
-                language = self.prefs.language
-            else:
-                language = ''
-            trans = None
-            if language != '':
-                try:
-                    trans = translation("mailpile", getLocaleDirectory(),
-                                        [language], codeset="utf-8")
-                except IOError:
-                    if session:
-                        session.ui.warning(('Failed to load language %s'
-                                            ) % language)
-            if not trans:
-                trans = translation("mailpile", getLocaleDirectory(),
-                                    codeset='utf-8', fallback=True)
-                if session and isinstance(trans, NullTranslations):
-                    session.ui.warning('Failed to configure i18n. '
-                                       'Using fallback.')
-            if trans:
-                trans.set_output_charset("utf-8")
-                trans.install(unicode=True)
-            return trans
 
     def open_file(self, ftype, fpath, mode='rb', mkdir=False):
         if '..' in fpath:

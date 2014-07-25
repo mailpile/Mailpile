@@ -9,8 +9,9 @@
 ## larger mailbox.
 
 from urllib import quote, unquote
-from gettext import gettext as _
 
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import MBX_ID_LEN
 
 

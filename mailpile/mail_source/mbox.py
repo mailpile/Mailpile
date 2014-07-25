@@ -1,7 +1,8 @@
 import os
-from gettext import gettext as _
 
 from mailpile.mail_source import BaseMailSource
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 
 
 class MboxMailSource(BaseMailSource):

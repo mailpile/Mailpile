@@ -1,9 +1,10 @@
 import datetime
 import re
 import time
-from gettext import gettext as _
 
 from mailpile.commands import Command, SearchResults
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import Email, FormatMbxId
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.plugins import PluginManager

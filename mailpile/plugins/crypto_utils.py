@@ -1,8 +1,9 @@
 import datetime
 import re
 import time
-from gettext import gettext as _
 
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.plugins.search import Search

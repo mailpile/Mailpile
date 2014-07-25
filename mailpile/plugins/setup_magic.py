@@ -1,9 +1,12 @@
 import os
 import random
-from gettext import gettext as _
 from datetime import date
+from urllib import urlencode
 
 import mailpile.auth
+from mailpile.i18n import ActivateTranslation
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.plugins import __all__ as PLUGINS
 from mailpile.commands import Command

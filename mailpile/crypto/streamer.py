@@ -9,6 +9,8 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.util import md5_hex, CryptoLock, popen_ignore_signals
 from mailpile.util import sha512b64 as genkey
 

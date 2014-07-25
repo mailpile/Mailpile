@@ -5,13 +5,15 @@ import json
 import os
 import sys
 import traceback
-from gettext import gettext as _
 
-from mailpile.util import *
 import mailpile.commands
 import mailpile.defaults
 import mailpile.vcard
+from mailpile.i18n import i18n_disabled
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import register as register_mailbox
+from mailpile.util import *
 
 
 ##[ Plugin discovery ]########################################################
@@ -127,8 +129,9 @@ class PluginManager(object):
         # load actual module
         sys.modules[full_name] = imp.new_module(full_name)
         sys.modules[full_name].__file__ = full_path
-        with open(full_path, 'r') as mfd:
-            exec mfd.read() in sys.modules[full_name].__dict__
+        with i18n_disabled:
+            with open(full_path, 'r') as mfd:
+                exec mfd.read() in sys.modules[full_name].__dict__
 
     def _load(self, plugin_name, process_manifest=False, config=None):
         full_name = 'mailpile.plugins.%s' % plugin_name

@@ -5,9 +5,10 @@ import warnings
 import rfc822
 import time
 import errno
-from gettext import gettext as _
 
 import mailpile.mailboxes
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import UnorderedPicklable
 
 

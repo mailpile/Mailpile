@@ -1,6 +1,8 @@
 import mailpile.mailboxes
 import mailpile.mailboxes.maildir as maildir
-from gettext import gettext as _
+
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 
 
 class MailpileMailbox(maildir.MailpileMailbox):

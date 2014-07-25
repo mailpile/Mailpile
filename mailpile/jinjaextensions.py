@@ -5,13 +5,15 @@ import re
 import urllib
 import json
 import shlex
-from gettext import gettext as _
 from jinja2 import nodes, UndefinedError, Markup
 from jinja2.ext import Extension
 from jinja2.utils import contextfunction, import_string
+
 #from markdown import markdown
 
 from mailpile.commands import Action
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.util import *
 from mailpile.ui import HttpUserInteraction
 from mailpile.urlmap import UrlMap

@@ -2,10 +2,11 @@ import mailbox
 import os
 import gzip
 import rfc822
-from gettext import gettext as _
 
 import mailpile.mailboxes
 import mailpile.mailboxes.maildir as maildir
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 
 
 class MailpileMailbox(maildir.MailpileMailbox):

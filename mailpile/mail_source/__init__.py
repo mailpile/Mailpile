@@ -5,13 +5,14 @@ import thread
 import threading
 import traceback
 import time
-from gettext import gettext as _
 
 import mailpile.util
-from mailpile.util import *
 from mailpile.eventlog import Event
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import *
 from mailpile.mailutils import FormatMbxId
+from mailpile.util import *
 
 
 __all__ = ['mbox', 'maildir', 'imap']

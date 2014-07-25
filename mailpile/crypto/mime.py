@@ -8,6 +8,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mail_generator import Generator
 
 ##[ Common utilities ]#########################################################

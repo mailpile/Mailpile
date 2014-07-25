@@ -43,7 +43,6 @@ import os
 import re
 import socket
 import traceback
-from gettext import gettext as _
 from imaplib import IMAP4, IMAP4_SSL
 from mailbox import Mailbox, Message
 from urllib import quote, unquote
@@ -54,9 +53,11 @@ except ImportError:
     import StringIO
 
 from mailpile.eventlog import Event
-from mailpile.util import *
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mail_source import BaseMailSource
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN
+from mailpile.util import *
 
 
 IMAP_TOKEN = re.compile('("[^"]*"'

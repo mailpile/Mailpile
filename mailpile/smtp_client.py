@@ -4,10 +4,11 @@ import smtplib
 import socket
 import subprocess
 import sys
-from gettext import ngettext as _n
 
 import mailpile.util
 from mailpile.util import *
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.config import ssl, socks
 from mailpile.mailutils import CleanMessage, MessageAsString
 from mailpile.eventlog import Event

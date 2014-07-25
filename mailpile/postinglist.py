@@ -3,11 +3,12 @@ import sys
 import random
 import threading
 import time
-from gettext import gettext as _
 
 import mailpile.util
-from mailpile.util import *
 from mailpile.crypto.streamer import EncryptingStreamer
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+from mailpile.util import *
 
 
 NEW_POSTING_LIST = True

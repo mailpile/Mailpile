@@ -12,13 +12,14 @@ import shlex
 import traceback
 import threading
 import time
-from gettext import gettext as _
 
 import mailpile.util
 import mailpile.ui
 import mailpile.postinglist
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.eventlog import Event
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import IsMailbox
 from mailpile.mailutils import AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
@@ -343,7 +344,7 @@ class Command:
         self.status = 'success'
         self.message = message
 
-        ui_message = _('%s: %s') % (self.name, message)
+        ui_message = '%s: %s' % (self.name, message)
         self.session.ui.mark(ui_message)
 
         return self.view(result)

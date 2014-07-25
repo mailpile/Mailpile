@@ -20,15 +20,16 @@ import traceback
 import json
 import urllib
 from collections import defaultdict
-from gettext import gettext as _
 from json import JSONEncoder
 from jinja2 import TemplateError, TemplateSyntaxError, TemplateNotFound
 from jinja2 import TemplatesNotFound, TemplateAssertionError, UndefinedError
 
 import mailpile.commands
 import mailpile.util
-from mailpile.util import *
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.search import MailIndex
+from mailpile.util import *
 
 
 class SuppressHtmlOutput(Exception):

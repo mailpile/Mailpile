@@ -12,12 +12,14 @@ Software Foundation. See the file COPYING.md for details.
 #############################################################################
 import os
 import time
-from gettext import gettext as _
 
 from mailpile.config import PathDict
 from mailpile.config import ConfigRule as c
 from mailpile.config import PublicConfigRule as p
 from mailpile.config import KeyConfigRule as k
+
+
+_ = lambda string: string
 
 
 DEFAULT_SENDMAIL = '|/usr/sbin/sendmail -i %(rcpt)s'

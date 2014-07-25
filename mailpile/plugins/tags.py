@@ -1,7 +1,7 @@
-from gettext import gettext as _
-
 import mailpile.config
 from mailpile.commands import Command
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.urlmap import UrlMap
 from mailpile.util import *

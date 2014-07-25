@@ -1,10 +1,10 @@
-from gettext import gettext as _
-
 import mailpile.app
 import mailpile.commands
 import mailpile.defaults
 import mailpile.ui
 import mailpile.util
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 
 
 __all__ = ['Mailpile',

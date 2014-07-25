@@ -1,11 +1,12 @@
 import cgi
 import time
-from gettext import gettext as _
 from urlparse import parse_qs, urlparse
 from urllib import quote, urlencode
 
 import mailpile.auth
 from mailpile.commands import Command, COMMANDS
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 

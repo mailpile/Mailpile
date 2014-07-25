@@ -1,13 +1,14 @@
 import mailbox
 import os
 import time
-from gettext import gettext as _
 
 import mailpile.config
+from mailpile.commands import Command
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+from mailpile.mailutils import Email
 from mailpile.plugins import PluginManager
 from mailpile.util import *
-from mailpile.commands import Command
-from mailpile.mailutils import Email
 
 
 _plugins = PluginManager(builtin=os.path.basename(__file__)[:-3])

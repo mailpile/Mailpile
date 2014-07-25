@@ -4,11 +4,11 @@
 # which should allow us to actually introspect a bit into the behavior
 # of the classifier.
 
-from gettext import gettext as _
-
 from spambayes.classifier import Classifier
 
 import mailpile.plugins.autotag
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 
 
 def _classifier(autotagger):

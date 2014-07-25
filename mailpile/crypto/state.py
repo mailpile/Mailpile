@@ -1,5 +1,8 @@
 # Common crypto state and structure
 
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+
 
 class KeyLookupError(ValueError):
     def __init__(self, message, missing):

@@ -3,13 +3,14 @@ import gettext
 import locale
 import os
 import sys
-from gettext import gettext as _
 
 import mailpile.util
 import mailpile.defaults
 from mailpile.commands import COMMANDS, Command, Action
 from mailpile.commands import Help, HelpSplash, Load, Rescan
-from mailpile.config import ConfigManager, getLocaleDirectory
+from mailpile.config import ConfigManager
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.ui import ANSIColors, Session, UserInteraction, Completer
 from mailpile.util import *
@@ -131,10 +132,7 @@ class WaitCommand(Command):
 
 def Main(args):
     # Bootstrap translations until we've loaded everything else
-    translation = gettext.translation("mailpile", getLocaleDirectory(),
-                                      fallback=True)
-    translation.install(unicode=True)
-
+    mailpile.i18n.ActivateTranslation(None, ConfigManager, None)
     try:
         # Create our global config manager and the default (CLI) session
         config = ConfigManager(rules=mailpile.defaults.CONFIG_RULES)

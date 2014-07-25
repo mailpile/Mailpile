@@ -5,12 +5,11 @@ import rfc822
 import time
 import threading
 import traceback
-from gettext import gettext as _
-from gettext import ngettext as _n
 from urllib import quote, unquote
 
 import mailpile.util
-from mailpile.util import *
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.mailutils import FormatMbxId, MBX_ID_LEN, NoSuchMailboxError
 from mailpile.mailutils import AddressHeaderParser
@@ -18,6 +17,7 @@ from mailpile.mailutils import ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import Email, ParseMessage, HeaderPrint
 from mailpile.postinglist import GlobalPostingList
 from mailpile.ui import *
+from mailpile.util import *
 
 
 _plugins = PluginManager()

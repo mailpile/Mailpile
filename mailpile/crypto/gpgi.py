@@ -11,13 +11,15 @@ import select
 from datetime import datetime
 from email.parser import Parser
 from email.message import Message
-from gettext import gettext as _
 from subprocess import Popen, PIPE
 from threading import Thread
 
-from mailpile.util import popen_ignore_signals
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
+from mailpile.util import popen_ignore_signals
+
 
 DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
 GPG_KEYID_LENGTH = 8

@@ -1,9 +1,10 @@
 import random
 import time
-from gettext import gettext as _
 
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command, Action
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailutils import Email, ExtractEmails, ExtractEmailAndName
 from mailpile.mailutils import AddressHeaderParser
 from mailpile.vcard import VCardLine, VCardStore, MailpileVCard, AddressInfo

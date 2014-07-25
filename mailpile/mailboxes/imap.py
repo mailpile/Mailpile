@@ -3,11 +3,12 @@ try:
 except ImportError:
     import StringIO
 
-from gettext import gettext as _
 from imaplib import IMAP4, IMAP4_SSL
 from mailbox import Mailbox, Message
 
 import mailpile.mailboxes
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.mailboxes import UnorderedPicklable
 
 

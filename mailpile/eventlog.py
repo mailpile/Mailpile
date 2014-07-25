@@ -7,6 +7,8 @@ import time
 from email.utils import formatdate, parsedate_tz, mktime_tz
 
 from mailpile.crypto.streamer import EncryptingStreamer, DecryptingStreamer
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.util import EventRLock, EventLock, CleanText, json_helper
 
 

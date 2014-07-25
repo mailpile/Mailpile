@@ -2,10 +2,11 @@
 import os
 import random
 import time
-from gettext import gettext as _
 from urllib2 import urlopen
 
 import mailpile.util
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.util import *
 from mailpile.vcard import *

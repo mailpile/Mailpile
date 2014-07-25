@@ -17,7 +17,10 @@ import threading
 import time
 import StringIO
 from distutils import spawn
-from gettext import gettext as _
+
+from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
+
 
 try:
     from PIL import Image
