@@ -60,10 +60,25 @@ B64W_TRANSLATE = string.maketrans('/+', '_-')
 
 STRHASH_RE = re.compile('[^0-9a-z]+')
 
+ALPHA_RE  = re.compile("\A[a-zA-Z]+\Z")
+EMAIL_RE = re.compile("\A.+@.+\Z")
+DNSNAME_RE = re.compile("\A([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,32}\Z")
+
 B36_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 RE_LONG_LINE_SPLITTER = re.compile('([^\n]{,72}) ')
 
+# see: http://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+# currently we just use common ones
+PERMANENT_URI_SCHEMES = set([
+  "data", "file", "ftp", "gopher", "http", "https", "imap",
+  "jabber", "mailto", "news", "telnet", "tftp", "ws", "wss"
+])
+PROVISIONAL_URI_SCHEMES = set([
+  "bitcoin", "chrome", "cvs", "feed", "git", "irc", "magnet",
+  "sftp", "smtp", "ssh", "steam", "svn"
+])
+URI_SCHEMES = PERMANENT_URI_SCHEMES.union(PROVISIONAL_URI_SCHEMES)
 
 def WhereAmI(start=1):
     stack = inspect.stack()

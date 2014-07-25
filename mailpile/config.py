@@ -9,6 +9,8 @@ import re
 import threading
 import traceback
 import ConfigParser
+import socket
+from urlparse import urlparse
 from gettext import translation, gettext, NullTranslations
 from gettext import gettext as _
 
@@ -258,6 +260,61 @@ def _SlashSlugCheck(slug):
     return _SlugCheck(slug, allow='/')
 
 
+def _RouteProtocolCheck(proto):
+    """
+    Verify that the protocol is actually a protocol.
+    (FIXME: Should reference a list of registered protocols...)
+
+    >>> _RouteProtocolCheck('SMTP')
+    'smtp'
+    """
+    proto = str(proto).strip().lower()
+    if proto not in ("smtp", "smtptls", "smtpssl", "local"):
+        raise ValueError(_('Invalid message delivery protocol: %s') % proto)
+    return proto
+
+def _DnsNameValid(dnsname):
+    """
+    Tests whether a string is a valid dns name, returns a boolean value
+    """
+    if not dnsname or not DNSNAME_RE.match(dnsname):
+        return False
+    else:
+        return True
+
+def _HostNameValid(host):
+    """
+    Tests whether a string is a valid host-name, return a boolean value
+
+    >>> _HostNameValid("127.0.0.1")
+    True
+
+    >>> _HostNameValid("::1")
+    True
+
+    >>> _HostNameValid("localhost")
+    True
+
+    >>> _HostNameValid("22.45")
+    False
+    """
+    valid = False
+    for attr in ["AF_INET","AF_INET6"]:
+        try:
+            socket.inet_pton(socket.__getattribute__(attr), host)
+            valid = True
+            break
+        except (socket.error):
+            pass
+    if not valid:
+        # the host is not an IP so check if its a hostname i.e. 'localhost' or 'site.com'
+        if not host or (not _DnsNameValid(host) and not ALPHA_RE.match(host)):
+            return False
+        else:
+            return True
+    else:
+        return True
+
 def _HostNameCheck(host):
     """
     Verify that a string is a valid host-name, return it lowercased.
@@ -273,10 +330,8 @@ def _HostNameCheck(host):
         ...
     ValueError: Invalid hostname: not/a/hostname
     """
-    # FIXME: We do not want to check the network, but rules for DNS are
-    #        still stricter than this so a static check could do more.
-    if not unicode(host) == CleanText(unicode(host),
-                                      banned=CleanText.NONDNS).clean:
+    # Check DNS, IPv4, and finally IPv6
+    if not _HostNameValid(host):
         raise ValueError(_('Invalid hostname: %s') % host)
     return str(host).lower()
 
@@ -366,6 +421,40 @@ def _NewPathCheck(path):
     _PathCheck(os.path.dirname(path))
     return os.path.abspath(path)
 
+def _UrlCheck(url):
+    """
+    Verify that a url parsed string has a valid uri scheme
+
+    >>> _UrlCheck("http://mysite.com")
+    "http://mysite.com"
+
+    >>> _UrlCheck("/not-valid.net")
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a valid url: /not-valid.net"
+
+    >>> _UrlCheck("telnet://some-host.com")
+    Traceback (most recent call last):
+        ...
+    ValueError: Not a valid http url: telnet://some-host.com
+    """
+    uri = urlparse(url)
+    if not uri.scheme in URI_SCHEMES:
+        raise ValueError(_("Not a valid url: %s") % url)
+    else:
+        return url
+
+def _EmailCheck(email):
+    """
+    Verify that a string is a valid email
+
+    >>> _EmailCheck("test@test.com")
+    'test@test.com'
+    """
+    if not EMAIL_RE.match(email):
+        raise ValueError(_("Not a valid email: %s") % email)
+    return email
+
 
 class IgnoreValue(Exception):
     pass
@@ -393,7 +482,7 @@ def RuledContainer(pcls):
             'dir': _DirCheck,
             'directory': _DirCheck,
             'ignore': _IgnoreCheck,
-            'email': unicode,  # FIXME: Make more strict
+            'email': _EmailCheck,
             'False': False, 'false': False,
             'file': _FileCheck,
             'float': float,
@@ -412,7 +501,7 @@ def RuledContainer(pcls):
             'True': True, 'true': True,
             'timestamp': long,
             'unicode': unicode,
-            'url': unicode,  # FIXME: Make more strict
+            'url': _UrlCheck, # FIXME: check more than the scheme?
         }
         _NAME = 'container'
         _RULES = None
