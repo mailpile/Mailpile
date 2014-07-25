@@ -28,6 +28,7 @@ class i18n_disabler:
         ACTIVE_TRANSLATION = None
 
     def __exit__(self, *args, **kwargs):
+        global ACTIVE_TRANSLATION
         ACTIVE_TRANSLATION = self.stack.pop(-1)
 
 
