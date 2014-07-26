@@ -132,10 +132,8 @@ $(document).on('click', '.modal-tag-color-option', function(e) {
 
 /* API - Tag Add */
 $(document).on('submit', '#form-tag-add', function(e) {
-
   e.preventDefault();
   var tag_data = $('#form-tag-add').serialize();
-
   $.ajax({
     url: Mailpile.api.tag_add,
     type: 'POST',
@@ -155,15 +153,9 @@ $(document).on('submit', '#form-tag-add', function(e) {
 /* Tag - Delete Tag */
 $(document).on('click', '#button-tag-delete', function(e) {
   if (confirm('Sure you want to delete this tag?') === true) { 
-    $.ajax({
-      url: '/api/0/tag/delete/',
-      type: 'POST',
-      data: {tag: $('#data-tag-add-slug').val() },
-      dataType : 'json',
-      success: function(response) {
-        Mailpile.notification(response.status, response.message, 'redirect', Mailpile.urls.tags);
-      }
-    });
+    Mailpile.API.tags_delete({ tag: $('#data-tag-add-slug').val() }, function(response) {
+      Mailpile.notification(response.status, response.message, 'redirect', Mailpile.urls.tags);
+    }, 'POST');
   }
 });
 
@@ -182,7 +174,7 @@ $(document).on('click', '#button-tag-toggle-archive', function(e) {
 });
 
 
-/* Tag - Update Name & Slug */
+/* Tag - Update the Name & Slug */
 $(document).on('blur', '#data-tag-add-tag', function(e) {
   Mailpile.tag_update($('#data-tag-tid').val(), 'name', $(this).val(), function() {
     Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function() {
@@ -192,25 +184,26 @@ $(document).on('blur', '#data-tag-add-tag', function(e) {
 });
 
 
+/* Tag - Update the Slug */
 $(document).on('blur', '#data-tag-add-slug', function(e) {
-
-  console.log('FIXME: This needs to save name & slug values');
-
-
+  Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function() {
+    Mailpile.notification('success', 'Tag Name & Slug Updated');
+  });
 });
 
 
 /* Tag - Update (multiple attribute events) */
 $(document).on('change', '#data-tag-display', function(e) {
   Mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function() {
-    // FIXME: show (or move) change update in sidebar
+    Mailpile.notification(response.status, response.message);
   });  
 });
 
 
+/* Tag - Update parent */
 $(document).on('change', '#data-tag-parent', function(e) {
   Mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function() {
-    // FIXME: show (or move) change update in sidebar
+    Mailpile.notification(response.status, response.message);
   });  
 });
 
