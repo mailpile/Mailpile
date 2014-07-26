@@ -872,11 +872,11 @@ msgstr ""
 
 #: mailpile/jinjaextensions.py:264
 msgid "Expired"
-msgstr ""
+msgstr "Verlopen"
 
 #: mailpile/jinjaextensions.py:265
 msgid "The signature was made with an expired key"
-msgstr ""
+msgstr "De handtekening is gemaakt met een verlopen sleutel"
 
 #: mailpile/jinjaextensions.py:269
 msgid "Mixed Expired"
@@ -888,7 +888,7 @@ msgstr ""
 
 #: mailpile/jinjaextensions.py:276
 msgid "The signature was made with an unknown key, so we can not verify it"
-msgstr ""
+msgstr "de handtekening is gemaakt met een onbekende sleutel, dus kunnen we hem niet controleren"
 
 #: mailpile/jinjaextensions.py:281
 #, fuzzy
@@ -900,27 +900,10 @@ msgid ""
 "Parts of this message have a signature made with an unknown key which we can "
 "not verify"
 msgstr ""
-=======
-#: mailpile/jinjaextensions.py:141
-msgid "Expired"
-msgstr "Verlopen"
-
-#: mailpile/jinjaextensions.py:142
-msgid "The signature was made with an expired key"
-msgstr "De handtekening is gemaakt met een verlopen sleutel"
-
-#: mailpile/jinjaextensions.py:147
-msgid "the signature was made with an unknown key, so we can not verify it"
-msgstr "de handtekening is gemaakt met een onbekende sleutel, dus kunnen we hem niet controleren"
-
-#: mailpile/jinjaextensions.py:152
-msgid "Unverified"
-msgstr "Ongecontroleerd"
->>>>>>> f696b63921c290aff3125c453cb2f451b8fbb2cd
 
 #: mailpile/jinjaextensions.py:287
 msgid "Unverified"
-msgstr ""
+msgstr "Ongecontroleerd"
 
 #: mailpile/jinjaextensions.py:288
 msgid "The signature was good but it came from a key that is not verified yet"
@@ -2947,11 +2930,11 @@ msgstr "Gezellig"
 
 #: static/default/html/partials/tools_search.html:12
 msgid "Assign Tags"
-msgstr ""
+msgstr "Ken tags toe"
 
 #: static/default/html/partials/tools_search.html:13
 msgid "Archive Selection"
-msgstr ""
+msgstr "Archiveer selectie"
 
 #: static/default/html/partials/tools_search.html:14
 #: static/default/html/partials/tools_search.html:32
@@ -3054,39 +3037,6 @@ msgstr ""
 #: static/default/html/partials/tooltips.html:5
 msgid "Remove Tag"
 msgstr ""
-=======
-msgid "Messages Selected"
-msgstr "Berichten Geselecteerd"
-
-#: static/default/html/partials/tools_search.html:27
-#: static/default/html/partials/tools_search.html:28
-msgid "Click message or checkbox to select"
-msgstr "Klik bericht of checkbox om te kiezen"
-
-#: static/default/html/partials/tools_search.html:32
-msgid "Move to Later"
-msgstr "Verplaats naar later"
-
-#: static/default/html/partials/tools_search.html:33
-msgid "Move to Group"
-msgstr "Verplaats naar groep"
-
-#: static/default/html/partials/tools_search.html:34
-msgid "Assign Tags"
-msgstr "Ken tags toe"
-
-#: static/default/html/partials/tools_search.html:36
-msgid "Archive Selection"
-msgstr "Archiveer selectie"
-
-#: static/default/html/partials/tools_search.html:38
-msgid "Untag"
-msgstr "Verwijder tags"
-
-#: static/default/html/partials/tools_search.html:40
-msgid "Delete Selection"
-msgstr "Verwijder selectie"
->>>>>>> f696b63921c290aff3125c453cb2f451b8fbb2cd
 
 #: static/default/html/partials/topbar.html:4
 msgid "Close"
