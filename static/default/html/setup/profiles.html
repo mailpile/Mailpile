@@ -47,7 +47,9 @@
               target=_blank>
        {{ profile.name }}
        &lt;{{ email }}&gt;
-       <input type='submit' value='Remove'>
+       {% if email != result.default_email %}
+         <input type='submit' value='Remove'>
+       {% endif %}
     </form></li>
   {% endfor %}
 </ul>

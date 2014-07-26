@@ -17,7 +17,6 @@
   <form method="POST">
     <p>
     <select name="language">
-      <option value="">Language ...</option>
       {% set selected = {(result.language or 'en_US'): ' selected'} %}
       {% for lc in result.languages|sort %}
       <option value="{{ lc }}"{{ selected[lc] }}>{{ result.languages[lc] }}</option>

@@ -9,9 +9,12 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.plugins import __all__ as PLUGINS
+from mailpile.plugins.contacts import AddProfile
+from mailpile.plugins.contacts import ListProfiles
 from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
+from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.plugins.migrate import Migrate
 from mailpile.plugins.tags import AddTag
@@ -340,23 +343,19 @@ class TestableWebbable(SetupMagic):
     }
 
     def _advance(self):
-        from mailpile.urlmap import UrlMap
-
         path = self.data.get('_path', [None])[0]
         data = dict([(k, v) for k, v in self.data.iteritems()
                      if k not in self.HTTP_POST_VARS
                      and k not in ('_method',)])
 
-        if path and path != '/%s/' % Setup.SYNOPSIS[2]:
-            nxt = Setup.Next(self.session.config, None)
-            if nxt:
-                url = '/%s/' % nxt.SYNOPSIS[2]
-            else:
-                # Use the same redirection logic as the Authenticator
-                mailpile.auth.Authenticate.RedirectBack(path, data)
+        nxt = Setup.Next(self.session.config, None)
+        if nxt:
+            url = '/%s/' % nxt.SYNOPSIS[2]
+        elif path and path != '/%s/' % Setup.SYNOPSIS[2]:
+            # Use the same redirection logic as the Authenticator
+            mailpile.auth.Authenticate.RedirectBack(path, data)
         else:
-            url = '/%s/' % Setup.Next(self.session.config, SetupWelcome
-                                      ).SYNOPSIS[2]
+            url = '/'
 
         qs = urlencode([(k, v) for k, vl in data.iteritems() for v in vl])
         raise UrlRedirectException(''.join([url, '?%s' % qs if qs else '']))
@@ -713,7 +712,6 @@ class SetupProfiles(TestableWebbable):
     PASSWORD_CACHE = {}
 
     def get_profiles(self):
-        from mailpile.plugins.contacts import ListProfiles
         data = ListProfiles(self.session).run().result
         profiles = {}
         for rid, ofs in data["rids"].iteritems():
@@ -755,7 +753,6 @@ class SetupProfiles(TestableWebbable):
         }
 
     def setup_command(self, session):
-        from mailpile.plugins.contacts import AddProfile
         changed = False
         if self.data.get('_method') == 'POST' or self._testing():
             name, email, pwd = (self.data.get(k, [None])[0]
@@ -819,14 +816,14 @@ class Setup(SetupMagic):
             return final
 
         for guard, step in [
-            (config.prefs.language, SetupWelcome),
-            (config.prefs.gpg_recipient and config.gnupg_passphrase.data,
-             SetupCrypto),
-            (config.prefs.default_email, SetupProfiles),
+            (lambda: config.prefs.language, SetupWelcome),
+            (lambda: (config.prefs.gpg_recipient and
+                      config.gnupg_passphrase.data), SetupCrypto),
+            (lambda: config.get_profile()['email'], SetupProfiles),
             #(config.routes, SetupRoutes),
             #(config.sources, SetupSources),
         ]:
-            if not guard:
+            if not guard():
                 return step
 
         return final
