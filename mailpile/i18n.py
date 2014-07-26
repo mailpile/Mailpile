@@ -1,19 +1,33 @@
 import gettext
 import os
+import threading
 from gettext import translation, gettext, NullTranslations
 from jinja2 import Environment, BaseLoader, TemplateNotFound
 
 
 ACTIVE_TRANSLATION = None
 
+RECENTLY_TRANSLATED_LOCK = threading.Lock()
+RECENTLY_TRANSLATED = []
+
 
 def gettext(string):
+    with RECENTLY_TRANSLATED_LOCK:
+        global RECENTLY_TRANSLATED
+        RECENTLY_TRANSLATED = [t for t in RECENTLY_TRANSLATED[-100:]
+                               if t != string] + [string]
     if not ACTIVE_TRANSLATION:
         return string
     return ACTIVE_TRANSLATION.gettext(string).decode('utf-8')
 
 
 def ngettext(string1, string2, n):
+    with RECENTLY_TRANSLATED_LOCK:
+        global RECENTLY_TRANSLATED
+        RECENTLY_TRANSLATED = [t for t in RECENTLY_TRANSLATED[-100:]
+                               if t not in (string1, string2)
+                               ] + [string1, string2]
+
     if not ACTIVE_TRANSLATION:
         return string1 if (n == 1) else string2
     return ACTIVE_TRANSLATION.ngettext(string1, string2, n).decode('utf-8')
@@ -37,7 +51,7 @@ i18n_disabled = i18n_disabler()
 
 
 def ActivateTranslation(session, config, language):
-    global ACTIVE_TRANSLATION
+    global ACTIVE_TRANSLATION, RECENTLY_TRANSLATED
 
     trans = None
     if language:
@@ -57,6 +71,8 @@ def ActivateTranslation(session, config, language):
                                'Using fallback.')
 
     if trans:
+        with RECENTLY_TRANSLATED_LOCK:
+            RECENTLY_TRANSLATED = []
         ACTIVE_TRANSLATION = trans
         trans.set_output_charset("utf-8")
 
