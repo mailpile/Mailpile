@@ -1,5 +1,19 @@
-<!-- Organize - Source Settings -->
-<script id="template-setup-source-remote-settings" type="text/template">
+<!-- Setup - Organize - Add a new source that isn't a profile (like local mail client) -->
+<script id="template-setup-source-remote-choose" type="text/template">
+  <div id="setup-box-source-remote" class="setup-box setup-box-small animated bounceInRight">
+    <h3 class="text-center"><span class="icon-outbox"></span> Connect An Existing Email Service</h3>
+    <div class="text-center">
+      <p><a href="#"><img src="/static/img/remote-source-gmail.jpg" width="50%"></a></p>
+      <p><a href="#"><img src="/static/img/remote-source-yahoo.jpg" width="50%"></a></p>
+      <p><a href="#"><img src="/static/img/remote-source-outlook.png"></a></p>
+      <p><a href="#" class="button-primary">Other</a></p>
+    </div>
+  </div>
+</script>
+
+
+<!-- Setup - Organize - Source Settings -->
+<script id="template-setup-organize-source-settings" type="text/template">
   <div id="setup-box-source-settings" class="setup-box setup-box-small animated bounceInRight">
     <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
     <form class="standard text-center">
@@ -14,26 +28,52 @@
 </script>
 
 
-<!-- Organize - Tags -->
-<script id="template-setup-tags" type="text/template">
-  <div id="setup-box-tags" class="setup-box setup-box-large animated bounceInTop">
+<!-- Setup - Organize - Settings for a given source -->
+<script id="template-setup-source-settings" type="text/template">
+  <div class="setup-box setup-box-small animated bounceInRight">
     <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
     <form class="standard text-center">
-      <table>
-      <th>
-        <td><%= source_type %> Label</td>
-        <td>Mailpile Tag</td>
-        <td>Select</td>
-      </th>
-      <tr>
-        <td><td>
-        <td></td>
-        <td></td>
-      </tr>
-      </table>
+      <p>Is this a mail source you would like to keep checking for new mail periodically or would you like to import mail only once?</p>
+      <select name="source_sync" class="center">
+        <option value="once">One Time Import</option>
+        <option value="sycn">Keep Checking</option>
+        <optgroup>
+        <option value="sycn">Unsure</option>
+        </optgroup>
+      </select>
+      <p>Would you like to import contacts from this address book?</p>
+      <select name="source_contacts" class="center">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
       <div class="text-center">
         <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
       </div>
     </form>
+  </div>
+</script>
+
+
+<!-- Setup - Organize - Map source labels or folders to Mailpile tags -->
+<script id="template-setup-source" type="text/template">
+  <div id="setup-box-source-local" class="setup-box setup-box-medium animated bounceInUp add-bottom">
+    <h3 class="text-center"><span class="icon-inbox"></span> We Discovered <%= source_type %></h3>
+    <p class="text-detail text-center">Select the mail folders you would like to import</p>
+    <table id="setup-source-local-items" class="rounded full-width-table setup-table">
+    <th>
+      <td><%= source_type %> Label</td>
+      <td>Mailpile Tag</td>
+      <td>Select</td>
+    </th>
+    <% _.each(source_items, function(value) { %>
+    <tr>
+      <td><strong><%= value.name %> <span><%= value.count %><span></strong><br><%= value.path %></td>
+      <td><input type="checkbox"></td>
+    </tr>
+    <% }); %>
+    </table>
+    <div class="text-center">
+      <button id="btn-setup-source-local-import" class="center">{{_("Save")}}</button>
+    </div>
   </div>
 </script>

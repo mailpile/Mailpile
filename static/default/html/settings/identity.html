@@ -1,134 +1,137 @@
-<!-- Identity - Passphrase -->
+<!-- Setup - Identity - Passphrase -->
 <script id="template-setup-passphrase" type="text/template">
   <div class="setup-box setup-box-medium animated bounceInUp">
-    <h3 class="text-center">Enter Your Mailpile Passphrase</h3>
-    <p class="setup-text-detail">Your passphrase should be something really hard to guess but memorable. This passphrase will be used to decrypt and unlock your Mailpile.</p>
-    <form id="form-setup-basic-info" class="standard text-center">
-      <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
-      <p class="text-center setup-text-detail">*{{_("If you have a PGP keychain with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
+    <div id="identity-vault-lock" class="vault-lock-outer">
+      <div class="vault-lock-inner">
+        <div class="vault-lock icon-lock-closed animated"></div>
+      </div>
+    </div>
+    <form id="form-setup-passphrase" class="standard text-center">
+
+      {% set setup_crypto = mailpile("setup/crypto") %}
+      {% if setup_crypto.result.secret_keys|length == 0 %}
+
+      <h3 class="add-top text-center">Create Your Passphrase</h3>
+
+      <div id="setup-passphrase-new-keys">
+
+        <p>We will create a key for you, you lucky person you!</p>
+  
+        <input name="choose_key" value="!CREATE" type="hidden">
+  
+       <p class="text-center">
+          Your passphrase should be something really hard to guess but memorable<br>
+          This passphrase will be used to decrypt and unlock your Mailpile and your encryption keys
+        </p>
+      
+        <input id="data-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+
+        <label>Confirm by Entering Passphrase Again</label>
+        <input id="data-setup-passphrase-confirm" class="input-medium center" type="password" name="passphrase-confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+
+        <span class="text-detail">We will be creating a new 4096 bit RSA key</span>
+
+      </div>
+
+      {% elif setup_crypto.result.secret_keys|length == 1 %}
+
+      <h3 class="add-top text-center">Your Security Passphrase</h3>
+
+      <div id="setup-passphrase-has-keys">
+        <input id="data-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+      </div>
+      
+      {% elif setup_crypto.result.secret_keys|length > 1 %}
+
+      <h3 class="add-top text-center">Your Security Passphrase</h3>
+
+      <div id="setup-passphrase-has-keys">
+        Select one of the <strong>{{setup_crypto.result.secret_keys|length}} Private Encryption Keys</strong> we found, and enter the passphrase
+        <ul>
+        {% for key in setup_crypto.result.secret_keys %}
+          {% set key_info = setup_crypto.result.secret_keys[key] %}
+          {% if key_info.capabilities_map.0.encrypt and key_info.capabilities_map.0.sign and not key_info.disabled %}
+          <li>
+          <label class="setup-key-info">
+            <input name="choose_key" value="{{ key }}" type="radio" {% if key == result.chosen_key %}checked{% endif %}>
+            {{ key_info.keytype_name }} key {{ key }}, {{ key_info.keysize }} bits, created on {{ key_info.creation_date }}
+            {% if key_info.expiration_date %}
+            (expires {{ key_info.expiration_date }})
+            {% endif %}
+          </label>
+          </li>
+          {% endif %}
+        {% endfor %}
+        </ul>
+
+        <input id="data-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+
+      </div>
+
+      {% endif %}
+
       <button id="btn-setup-passphrase" type="submit" class="text-center button-primary">{{_("Next")}}</button>
     </form>
   </div>
 </script>
 
 
-<!-- Identity - Profiles -->
+<!--  Setup - Identity - Profiles -->
 <script id="template-setup-profiles" type="text/template">
   <div class="setup-box setup-box-medium animated bounceInUp">
     <h2 class="text-center"><span class="icon-profiles"></span> Profiles</h2>
-    <h5>A profile is "how" you use an email address. You can have as many profiles as you would like. Some examples profiles are: personal, work, newsletters, etc...</h5>
-    <ul>
-      <li>
+    <p class="text-center">A profile is the context of how you use an email address. You can have as many profiles as you'd like, some examples profiles: Personal, Work, Newsletters, etc...</p>
+    <p class="text-detail text-center">You currently have <strong>5 active</strong> and <strong>2 inactive</strong> profiles!</p>
+    <ul id="setup-profile-list">
+      <li class="setup-profile clearfix">
         <span class="avatar"><img src="/static/img/avatar-default.png"></span>
         <span class="name">Brennan Novak</span>
-        <span class="">hi@brennannovak.com</span>
-        <a href="#">Disable</a>
+        <span class="email">hi@brennannovak.com</span>
+        <span class="fingerprint">01AE EADB 9EED 1B5B 4280 E5B6</span>
+        <a href="#" class="setup-profile-disable"><span class="icon-minus"></span> Disable</a>
       </li>
     </ul>
-
-    <form id="form-setup-basic-info" class="standard text-center">
-      <label>{{_("Profile Name")}}</label>
-      <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
-      <label>{{_("Email")}}</label>
-      <input type="email" name="email" autocorrect="off" autocapitalize="off" class="center" placeholder="chelsea@Manning.org">
-      <label>{{_("Password")}}</label>
-      <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="">
-      <p class="text-center setup-text-detail">*{{_("If you have a PGP keychain with a passphrase")}}<br>{{_("enter that passphrase here!")}}</p>
-      <button id="btn-setup-basic-info" type="submit" class="text-center button-primary">{{_("Next")}}</button>
+    <form id="form-setup-basic-info" class="standard">
+      <h3>Add Profile</h3>
+      <table class="full-width-table">
+      <tr>
+        <td>
+          <label>{{_("Profile Name")}}</label>
+          <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
+        </td>
+        <td>
+          <label>{{_("Email")}}</label>
+          <input type="email" name="email" autocorrect="off" autocapitalize="off" class="center" placeholder="chelsea@manning.org">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label>{{_("Password")}}</label>
+          <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="password">
+        </td>
+        <td>
+          <label>Server</label>
+        <input type="text" name="server" autocorrect="off" autocapitalize="off" class="center" placeholder="imap.freeserver.org">
+        </td>
+      </tr>
+      </table>
+      <button id="btn-setup-basic-info" type="submit" class="text-center button-primary"><span class="icon-plus"></span> {{_("Save Profile")}}</button>
     </form>
-
   </div>
 </script>
 
 
-
-<!-- Identity - Crypto -->
-<script id="template-setup-crypto-found-keys" type="text/template">
-  <div id="setup-box-crypto-found-key" class="setup-box setup-box-small animated bounceInRight">
-    <h3 class="text-center"><span class="icon-key"></span> {{_("We Found Existing Encryption Keys")}}</h3>
-    <div class="text-center">
-      <span id="setup-crypto-public-key-count" class="setup-text-detail-large"><%= public_key_count %></span> {{_("Public Keys")}}<br>
-      <span id="setup-crypto-private-key-count" class="setup-text-detail-large"><%= private_key_count %></span> {{_("Private Keys")}}
-    </div>
-    <p class="text-center">{{_("Do you want to generate a new key or import this keychain?")}}</p>
-    <div class="text-center">
-      <button id="btn-setup-crypto-import">{{_("Import")}}</button>
-    </div>
-    <br>
-    <div class="text-center">
-      <a href="">{{_("Learn About PGP Keys")}}</a>
-    </div>
-  </div>
-</script>
-
+<!-- Setup - Identity - Crypto generated key -->
 <script id="template-setup-crypto-generated" type="text/template">
   <div id="setup-box-crypto-generated" class="setup-box setup-box-small animated bounceInRight text-center">
-    <h3 class="text-center">{{_("New Encryption Key Generated")}}</h3>
     <h1 class="text-center"><span class="icon-key"></span></h1>
-    <p>{{_("This is your key's unique fingerprint. Fingerprints are used to verify encryption keys. You can learn more about this later")}}</p>
+    <h3 class="text-center">{{_("Encryption Key Generated")}}</h3>
+    <p>{{_("This is your key's unique fingerprint. Fingerprints are used to verify encryption keys. You can learn more about this later.")}}</p>
     <h1><span class="icon-fingerprint"></span></h1> <%= fingerprint %>
-    <p><a href="#">{{_("View Encryption Key Details")}}</a></p>
+    <p><a href="#" class="link-details">{{_("View Encryption Key Details")}}</a></p>
     <div class="text-center">
       <a href="#source-settings" id="btn-setup-crypto-next" class="button-primary">{{_("Next")}}</a><br>
     </div>
   </div>
 </script>
 
-
-<!-- Source Local -->
-<script id="template-setup-source" type="text/template">
-  <div id="setup-box-source-local" class="setup-box setup-box-medium animated bounceInUp add-bottom">
-    <h3 class="text-center"><span class="icon-inbox"></span> We Discovered <%= source_type %></h3>
-    <p class="setup-text-detail text-center">Select the mail folders you would like to import</p>
-    <table id="setup-source-local-items" class="rounded full-width-table setup-table">
-    <% _.each(source_items, function(value) { %>
-    <tr>
-      <td><strong><%= value.name %> <span><%= value.count %><span></strong><br><%= value.path %></td>
-      <td><input type="checkbox"></td>
-    </tr>
-    <% }); %>
-    </table>
-    <div class="text-center">
-      <button id="btn-setup-source-local-import" class="center">{{_("Next")}}</button>
-    </div>
-  </div>
-</script>
-
-<!-- Source Local Settings -->
-<script id="template-setup-source-settings" type="text/template">
-  <div class="setup-box setup-box-small animated bounceInRight">
-    <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
-    <form class="standard text-center">
-      <p>Is this a mail source you would like to keep checking for new mail periodically or would you like to import mail only once?</p>
-      <select name="source_sync" class="center">
-        <option value="once">One Time Import</option>
-        <option value="sycn">Keep Checking</option>
-        <optgroup>
-        <option value="sycn">Unsure</option>
-        </optgroup>
-      </select>
-      <p>Would you like to import contacts from this address book?</p>
-      <select name="source_contacts" class="center">
-        <option value="yes">Yes</option>
-        <option value="no">No</option>
-      </select>
-      <div class="text-center">
-        <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
-      </div>
-    </form>
-  </div>
-</script>
-
-
-<!-- Source Remote -->
-<script id="template-setup-source-remote-choose" type="text/template">
-  <div id="setup-box-source-remote" class="setup-box setup-box-small animated bounceInRight">
-    <h3 class="text-center"><span class="icon-outbox"></span> Connect An Existing Email Service</h3>
-    <div class="text-center">
-      <p><a href="#"><img src="/static/img/remote-source-gmail.jpg" width="50%"></a></p>
-      <p><a href="#"><img src="/static/img/remote-source-yahoo.jpg" width="50%"></a></p>
-      <p><a href="#"><img src="/static/img/remote-source-outlook.png"></a></p>
-      <p><a href="#" class="button-primary">Other</a></p>
-    </div>
-  </div>
-</script>
