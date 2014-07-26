@@ -1857,7 +1857,7 @@ class Help(Command):
                     cmd_list = {'_main': (name, cls.SYNOPSIS[3],
                                           cls.__doc__, order)}
                     subs = [c for c in COMMANDS
-                            if (c.SYNOPSIS[1] or c.SYNOPSIS[2]
+                            if (c.SYNOPSIS[1] or c.SYNOPSIS[2] or ''
                                 ).startswith(name + '/')]
                     for scls in sorted(subs):
                         sc, scmd, surl, ssynopsis = scls.SYNOPSIS[:4]

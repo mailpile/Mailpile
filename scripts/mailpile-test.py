@@ -73,7 +73,7 @@ def say(stuff):
 
 def do_setup():
     # Set up initial tags and such
-    mp.setup()
+    mp.setup('do_gpg_stuff')
 
     config.vcards.get(MY_FROM).fn = MY_NAME
     config.prefs.default_email = MY_FROM

@@ -153,7 +153,9 @@ class SetupMagic(Command):
         'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible'},
     }
 
-    def setup_command(self, session):
+    def setup_command(self, session, do_gpg_stuff=False):
+        do_gpg_stuff = do_gpg_stuff or ('do_gpg_stuff' in self.args)
+
         # Stop the workers...
         want_daemons = session.config.cron_worker is not None
         session.config.stop_workers()
@@ -230,47 +232,48 @@ class SetupMagic(Command):
         #             If you don't already have secret keys, you should have
         #             one made for you, if GnuPG is available.
         #             If GnuPG is not available, you should be warned.
-#        gnupg = GnuPG()
-#        accepted_keys = []
-#        if gnupg.is_available():
-#            keys = gnupg.list_secret_keys()
-#            for key, details in keys.iteritems():
-#                # Ignore revoked/expired keys.
-#                if ("revocation-date" in details and
-#                    details["revocation-date"] <=
-#                        date.today().strftime("%Y-%m-%d")):
-#                    continue
-#
-#                accepted_keys.append(key)
-#                for uid in details["uids"]:
-#                    if "email" not in uid or uid["email"] == "":
-#                        continue
-#
-#                    if uid["email"] in [x["email"]
-#                                        for x in session.config.profiles]:
-#                        # Don't set up the same e-mail address twice.
-#                        continue
-#
-#                    # FIXME: Add route discovery mechanism.
-#                    profile = {
-#                        "email": uid["email"],
-#                        "name": uid["name"],
-#                    }
-#                    session.config.profiles.append(profile)
-#                if (session.config.prefs.gpg_recipient in (None, '', '!CREATE')
-#                       and details["capabilities_map"][0]["encrypt"]):
-#                    session.config.prefs.gpg_recipient = key
-#                    session.ui.notify(_('Encrypting config to %s') % key)
-#                if session.config.prefs.crypto_policy == 'none':
-#                    session.config.prefs.crypto_policy = 'openpgp-sign'
-#
-#            if len(accepted_keys) == 0:
-#                # FIXME: Start background process generating a key once a user
-#                #        has supplied a name and e-mail address.
-#                pass
-#
-#        else:
-#            session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
+        if do_gpg_stuff:
+            gnupg = GnuPG()
+            accepted_keys = []
+            if gnupg.is_available():
+                keys = gnupg.list_secret_keys()
+                for key, details in keys.iteritems():
+                    # Ignore revoked/expired keys.
+                    if ("revocation-date" in details and
+                        details["revocation-date"] <=
+                            date.today().strftime("%Y-%m-%d")):
+                        continue
+
+                    accepted_keys.append(key)
+                    for uid in details["uids"]:
+                        if "email" not in uid or uid["email"] == "":
+                            continue
+
+                        if uid["email"] in [x["email"]
+                                            for x in session.config.profiles]:
+                            # Don't set up the same e-mail address twice.
+                            continue
+
+                        # FIXME: Add route discovery mechanism.
+                        profile = {
+                            "email": uid["email"],
+                            "name": uid["name"],
+                        }
+                        session.config.profiles.append(profile)
+                    if (session.config.prefs.gpg_recipient in (None, '', '!CREATE')
+                           and details["capabilities_map"][0]["encrypt"]):
+                        session.config.prefs.gpg_recipient = key
+                        session.ui.notify(_('Encrypting config to %s') % key)
+                    if session.config.prefs.crypto_policy == 'none':
+                        session.config.prefs.crypto_policy = 'openpgp-sign'
+
+                if len(accepted_keys) == 0:
+                    # FIXME: Start background process generating a key once a user
+                    #        has supplied a name and e-mail address.
+                    pass
+
+            else:
+                session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 
         if (session.config.prefs.gpg_recipient not in (None, '', '!CREATE')
                 and not (self._idx() and self._idx().INDEX)
@@ -311,11 +314,11 @@ class SetupMagic(Command):
 
         return self._success(_('Performed initial Mailpile setup'))
 
-    def command(self):
+    def command(self, *args, **kwargs):
         session = self.session
         if session.config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
-        return self.setup_command(session)
+        return self.setup_command(session, *args, **kwargs)
 
 
 class TestableWebbable(SetupMagic):
@@ -731,7 +734,7 @@ class SetupSources(TestableWebbable):
 
 class Setup(SetupMagic):
     """Enter setup flow"""
-    SYNOPSIS = (None, 'setup', 'setup', None)
+    SYNOPSIS = (None, 'setup', 'setup', '[do_gpg_stuff]')
 
     ORDER = ('Internals', 0)
     LOG_PROGRESS = True
