@@ -42,7 +42,7 @@ _plugins.register_config_section('tags', ["Tags", {
     'magic_terms': ['Extra terms to search for', 'str', ''],
 
     # Tag display attributes for search results/lists/UI placement
-    'icon': ['URL to default tag icon', 'url', 'icon-tag'],
+    'icon': ['URL to default tag icon', 'str', 'icon-tag'],
     'label': ['Display as label in results', 'bool', True],
     'label_color': ['Color to use in label', 'str', '#4D4D4D'],
     'display': ['Display context in UI', ['priority', 'tag', 'subtag',
