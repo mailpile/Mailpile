@@ -542,7 +542,7 @@ class UrlMap:
         """Return the UI context URL for a command"""
         return '/%s/' % (cls.UI_CONTEXT or cls.SYNOPSIS[2])
 
-    def map_as_markdown(self):
+    def map_as_markdown(self, prefix=None):
         """Describe the current URL map as markdown"""
 
         api_version = self.API_VERSIONS[-1]
@@ -563,7 +563,8 @@ class UrlMap:
         ])
         api = '/api/%s' % api_version
         for method in ('GET', 'POST', 'UPDATE', 'DELETE'):
-            commands = cmds(method)
+            commands = [c for c in cmds(method)
+                        if not prefix or (c[0] and c[0].startswith(prefix))]
             if commands:
                 text.extend([
                     '### %s%s' % (method, method == 'GET' and
@@ -573,6 +574,7 @@ class UrlMap:
             commands.sort()
             for command in commands:
                 cls = command[1]
+                url = self.canonical_url(cls)
                 query_vars = cls.HTTP_QUERY_VARS
                 pos_args = (cls.SYNOPSIS[3] and
                             unicode(cls.SYNOPSIS[3]).replace(' ', '/') or '')
@@ -589,22 +591,24 @@ class UrlMap:
                     pos_args = '%s%s/' % (padding, pos_args)
                     if qs:
                         qs = newline + qs
-                text.append('    %s%s%s' % (self.canonical_url(command[1]),
-                                            pos_args, qs))
+                text.append('    %s%s%s' % (url, pos_args, qs))
                 if cls.HTTP_POST_VARS:
                     ps = '&'.join(['%s=[%s]' % (v, cls.HTTP_POST_VARS[v])
                                    for v in cls.HTTP_POST_VARS])
                     text.append('    ... POST only: %s' % ps)
             text.append('')
-        text.extend([
-            '',
-            '## Pretty shortcuts (HTML output)',
-            '',
-        ])
-        for path in sorted(self.MAP_PATHS.keys()):
-            doc = self.MAP_PATHS[path].__doc__.strip().split('\n')[0]
-            path = ('/%s/' % path).replace('//', '/')
-            text.append('    %s %s %s' % (path, ' ' * (10 - len(path)), doc))
+
+        if not prefix:
+            text.extend([
+                '',
+                '## Pretty shortcuts (HTML output)',
+                '',
+            ])
+            for path in sorted(self.MAP_PATHS.keys()):
+                doc = self.MAP_PATHS[path].__doc__.strip().split('\n')[0]
+                path = ('/%s/' % path).replace('//', '/')
+                text.append('    %s %s %s' % (path, ' ' * (10 - len(path)), doc))
+
         text.extend([
             '',
             '## Default command URLs (HTML output)',
@@ -613,6 +617,8 @@ class UrlMap:
             '',
         ])
         for command in sorted(list(set(cmds('GET') + cmds('POST')))):
+            if prefix and not command[0].startswith(prefix):
+                continue
             text.append('    /%s/' % (command[0], ))
         text.append('')
         return '\n'.join(text)
@@ -653,7 +659,7 @@ class UrlRedirectThread(Command):
 
 class HelpUrlMap(Command):
     """Describe the current API and URL mapping"""
-    SYNOPSIS = (None, 'help/urlmap', 'help/urlmap', None)
+    SYNOPSIS = (None, 'help/urlmap', 'help/urlmap', '[<prefix>]')
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
@@ -671,7 +677,8 @@ class HelpUrlMap(Command):
             return Command.CommandResult.as_html(self, *args, **kwargs)
 
     def command(self):
-        return {'urlmap': UrlMap(self.session).map_as_markdown()}
+        prefix = self.args[0] if self.args else None
+        return {'urlmap': UrlMap(self.session).map_as_markdown(prefix=prefix)}
 
 
 plugin_manager = PluginManager(builtin=True)
