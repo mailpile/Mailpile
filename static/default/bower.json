@@ -18,6 +18,7 @@
   ],
   "dependencies": {
     "backbone": "~1.1.2",
+    "backbone-validation": "~0.9.1",
     "bootstrap": "~3.1.1",
     "d3": "~3.4.3",
     "favico.js": "~0.3.4",
