@@ -1,37 +1,4 @@
-<script id="template-setup-welcome" type="text/template">
-  <div id="setup-welcome" class="setup-white">
-    <img style="width: 300px" src="/static/img/logo-color.svg">
-    <div class="setup-welcome-icons">
-      <span class="setup-welcome-icon icon-message animated"></span>
-      <span class="setup-welcome-icon icon-inbox animated"></span>
-      <span class="setup-welcome-icon icon-lock-closed animated"></span>
-      <span class="setup-welcome-icon icon-tag animated"></span>
-      <span class="setup-welcome-icon icon-compose animated"></span>
-      <span class="setup-welcome-icon icon-key animated"></span>
-      <span class="setup-welcome-icon icon-donate animated"></span>
-    </div>
-    <h4 class="text-detail">{{_("You're about to experience secure email like never before!")}}</h4>
-    <p>
-    <select id="setup-language" name="language">
-      <optgroup label="{{_("Select Language")}}...">
-        {% set selected = {result.language: ' selected'} %}
-        {#
-           FIXME:  We shouldn't hard-code in what languages are available, the
-                   backend should tell us. But I don't think the backend knows
-                   that at the moment, so for now we hard-code.
-        #}
-        {% for lc, lang in (("en", "English"), ("is", "Icelandic"), ("fi", "Finnish")) %}
-        <option value="{{ lc }}"{{ selected[lc] }}>{{ lang }}</option>
-        {% endfor %}
-      </optgroup>
-    </select>
-    </p>
-    <a href="#passphrase" class="button-primary">{{_("Begin")}}</a>
-  </div>
-</script>
-
-
-<!-- Various - Discovery -->
+<!-- Setup - Various - Discovery -->
 <script id="template-setup-discovery" type="text/template">
   <div id="setup-box-discovery" class="setup-white animated fadeIn">
     <h1 class="text-center"><span class="icon-flashlight"></span> Discovery</h1>
@@ -43,6 +10,7 @@
 </script>
 
 
+<!-- Setup - Various - Importing -->
 <script id="template-setup-importing" type="text/template">
   <div id="setup-welcome" class="setup-white">
     <img style="width: 300px" src="/static/img/logo-color.svg">

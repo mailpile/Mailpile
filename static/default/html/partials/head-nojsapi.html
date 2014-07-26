@@ -1,6 +1,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <link rel="stylesheet" href="/static/css/default.css" />
   <link rel="stylesheet" href="/static/css/print.css" media="print" />
+  {% if state.command_url in ("/setup/", "/setup/welcome/", "/setup/crypto/", "/setup/profiles/") %}
+  <link rel="stylesheet" href="/static/css/setup.css">
+  {% endif %}
 
   <!--[if lt IE 9]>
     <script src="/static/js/html5.js"></script>
@@ -13,6 +16,7 @@
   <!-- Favicon -->
   <link rel="shortcut icon" id="basic-favicon" href="/static/img/favicon.png" />
   <link rel="icon" id="basic-favicon" type="image/png" href="/static/img/favicon.png" />
+
 
   <script src="/static/js/libraries/jquery.min.js"></script>
   <script src="/static/js/libraries-min.js"></script>
