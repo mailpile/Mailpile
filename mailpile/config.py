@@ -428,17 +428,17 @@ def _UrlCheck(url):
     Verify that a url parsed string has a valid uri scheme
 
     >>> _UrlCheck("http://mysite.com")
-    "http://mysite.com"
+    'http://mysite.com'
 
     >>> _UrlCheck("/not-valid.net")
     Traceback (most recent call last):
         ...
-    ValueError: Not a valid url: /not-valid.net"
+    ValueError: Not a valid url: ...
 
-    >>> _UrlCheck("telnet://some-host.com")
+    >>> _UrlCheck("tallnet://some-host.com")
     Traceback (most recent call last):
         ...
-    ValueError: Not a valid http url: telnet://some-host.com
+    ValueError: Not a valid url: tallnet://some-host.com
     """
     uri = urlparse(url)
     if not uri.scheme in URI_SCHEMES:

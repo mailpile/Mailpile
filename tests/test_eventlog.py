@@ -145,8 +145,11 @@ class TestEventlog(MailPileUnittest):
     #
     def test_eventlog(self):
         rotate_lines = 100
-        evt_log = mailpile.eventlog.EventLog(mailpile_tmp, lambda: False, rotate_lines)
+        evt_log = mailpile.eventlog.EventLog(mailpile_tmp,
+                                             lambda: False,
+                                             lambda: False, rotate_lines)
         self.assertEqual(len(evt_log._events), 0)
-        evt = mailpile.eventlog.Event(source=self.mp.help(), data={}, message="test-event")
+        evt = mailpile.eventlog.Event(source=self.mp.help(), data={},
+                                      message="test-event")
         evt_log.log_event(evt)
         self.assertEqual(len(evt_log._events), 1)

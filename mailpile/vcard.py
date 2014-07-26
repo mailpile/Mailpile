@@ -162,7 +162,7 @@ class VCardLine(dict):
         Quote values so they can be safely represented in a VCard.
 
         >>> print VCardLine.Quote('Comma, semicolon; backslash\\ newline\\n')
-        Comma\\, semicolon\\; backslash\\\\ newline\\\\n
+        Comma\\, semicolon\\; backslash\\\\ newline\\n
         """
         return unicode(''.join([self.QUOTE_MAP.get(c, c) for c in text]))
 
