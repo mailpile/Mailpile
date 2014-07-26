@@ -16,11 +16,8 @@ var IdentityView = Backbone.View.extend(
       this.$el.html(_.template($("#template-setup-welcome").html()));
     },
     showPassphrase: function() {
-      Mailpile.API.setup_check_keychain({ testing: 'Yes'}, function(response) {
-        console.log(response.result);
-
-        $('#setup').html(_.template($('#template-setup-passphrase').html(), response.result));
-      });
+      $('#setup-progress').find('')
+      this.$el.html(_.template($('#template-setup-passphrase').html()));
     },
     showProfiles: function() {
       this.$el.html(_.template($('#template-setup-profiles').html()));
@@ -42,17 +39,28 @@ var IdentityView = Backbone.View.extend(
       this.$el.html(_.template($('#template-setup-source-remote-choose').html(), {}));      
     },
     processPassphrase: function(e) {
-
       e.preventDefault();
-      //var passphrase_data = $('#form-setup-passphrase').serialize();
-      // SETUP: If has keychain GO TO #profiles
-      if ($('#data-setup-passphrase').val() == 'haskey') {
-        Backbone.history.navigate('#profiles', true);
-      } else {
-        Backbone.history.navigate('#crypto-generated', true)
-      }
+
+      // Validate
+
+      var passphrase_data = $('#form-setup-passphrase').serialize();
+      console.log(passphrase_data);
+      Mailpile.API.setup_crypto(passphrase_data, function(result) {
+        console.log(result);
+
+        if (result.status == 'success') {
+          Backbone.history.navigate('#profiles', true);
+        }
+        else if (result.status == 'error' && result.error.invalid_passphrase) {
+          
+          $('#identity-vault-lock').find('.icon-lock-closed').addClass('color-12-red bounce');
+          Mailpile.notification(result.status, result.message);
+
+        }
+
+      });
     },
-    processBasic: function(e) {
+    processProfileAdd: function(e) {
 
       e.preventDefault();
 
@@ -65,6 +73,8 @@ var IdentityView = Backbone.View.extend(
 
       // Update Model
       SetupModel.set(basic_data);
+
+      Backbone.history.navigate('#crypto-generated', true);
 
       // Update URL & View
       Backbone.history.navigate('#discovery', true);
