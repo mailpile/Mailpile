@@ -7,16 +7,14 @@
 <form method="POST">
   <select name="language">
     <option value="">Language ...</option>
-{% set selected = {result.language: ' selected'} %}
+{% set selected = {(result.language or 'en_US'): ' selected'} %}
 {#
    FIXME:  We shouldn't hard-code in what languages are available, the
            backend should tell us. But I don't think the backend knows
            that at the moment, so for now we hard-code.
 #}
-{% for lc, lang in (("en", "English"),
-                    ("is", "Icelandic"),
-                    ("fi", "Finnish")) %}
-    <option value="{{ lc }}"{{ selected[lc] }}>{{ lang }}</option>
+{% for lc in result.languages|sort %}
+    <option value="{{ lc }}"{{ selected[lc] }}>{{ result.languages[lc] }}</option>
 {% endfor %}
   </select>
   <br>

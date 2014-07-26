@@ -1,4 +1,5 @@
 import gettext
+import os
 from gettext import translation, gettext, NullTranslations
 from jinja2 import Environment, BaseLoader, TemplateNotFound
 
@@ -67,3 +68,20 @@ def ActivateTranslation(session, config, language):
             session.ui.debug(gettext('Loaded language %s') % language)
 
     return trans
+
+
+def ListTranslations(config):
+    locales = config.getLocaleDirectory()
+    languages = {}
+    for lang in os.listdir(locales):
+        try:
+            with open(os.path.join(locales, lang,
+                                   'LC_MESSAGES', 'mailpile.po')) as fd:
+                for line in fd.read(8192).splitlines():
+                    if line[1:].startswith('Language-Team: '):
+                        languages[lang] = ' '.join([word for word in
+                                                    line[1:-2].split()[1:-1]]
+                                                   ).replace('LANGUAGE', lang)
+        except (IOError, OSError):
+            pass
+    return languages

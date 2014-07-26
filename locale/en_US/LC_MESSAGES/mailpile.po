@@ -1,17 +1,16 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Placeholde English translation file
+# Copyright (C) 2014 Mailpile ehf.
+# This file is distributed under the same license as the Mailpile package.
+# Mailpile Team <team@mailpile.is>, 2014.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"Project-Id-Version: Mailpile\n"
+"Report-Msgid-Bugs-To: team@mailpile.is\n"
 "POT-Creation-Date: 2014-07-03 14:33+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2014-08-26 14:00+0000\n"
+"Last-Translator: Mailpile Team <team@mailpile.is>\n"
+"Language-Team: English (United States) <translations-en@mailpile.is>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"

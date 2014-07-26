@@ -4,7 +4,7 @@ from datetime import date
 from urllib import urlencode
 
 import mailpile.auth
-from mailpile.i18n import ActivateTranslation
+from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -17,6 +17,7 @@ from mailpile.plugins.migrate import Migrate
 from mailpile.plugins.tags import AddTag
 
 
+_ = lambda s: s
 _plugins = PluginManager(builtin=__file__)
 
 
@@ -559,7 +560,12 @@ class SetupWelcome(TestableWebbable):
                 except ValueError:
                     return self._error(_('Invalid language: %s') % language)
 
+            if not session.config.tags:
+                # Intial configuration of app goes here
+                SetupMagic.setup_command(self, session)
+
         results = {
+            'languages': ListTranslations(config),
             'language': config.prefs.language
         }
         return self._success(_('Welcome to Mailpile!'), results)
@@ -756,6 +762,7 @@ class Setup(SetupMagic):
             return SetupMagic.setup_command(self, session)
 
 
+_ = gettext
 _plugins.register_commands(SetupMagic,
                            SetupCheckKeychain, SetupCreateNewKey,
                            SetupGuessEmails, SetupTestEmailSettings,

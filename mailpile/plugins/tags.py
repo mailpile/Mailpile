@@ -169,6 +169,7 @@ def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None, subtags=None):
     if stats and (unread is not None):
         messages = (cfg.index.TAGS.get(tid, set()) - exclude)
         stats_all = len(messages)
+        info['name'] = _(info['name'])
         info['stats'] = {
             'all': stats_all,
             'new': len(messages & unread),
