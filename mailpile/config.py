@@ -49,8 +49,11 @@ MAX_CACHED_MBOXES = 5
 class SecurePassphraseStorage(object):
     # FIXME: Replace this with a memlocked ctype buffer, whenever possible
 
-    def __init__(self, passphrase=''):
-        self.set_passphrase(passphrase)
+    def __init__(self, passphrase=None):
+        if passphrase is not None:
+            self.set_passphrase(passphrase)
+        else:
+            self.data = None
 
     def set_passphrase(self, passphrase):
         # This stores the passphrase as a list of integers, which is a
@@ -58,8 +61,12 @@ class SecurePassphraseStorage(object):
         # small integers as globally shared objects. Better Than Nothing!
         self.data = [ord(c) for c in passphrase.decode('utf-8')]
 
+    def compare(self, passphrase):
+        return (self.data is not None and
+                self.data == [ord(c) for c in passphrase.decode('utf-8')])
+
     def read_byte_at(self, offset):
-        if offset >= len(self.data):
+        if self.data is None or offset >= len(self.data):
             return ''
         return chr(self.data[offset])
 
@@ -77,7 +84,7 @@ class SecurePassphraseStorage(object):
             def close(self):
                 pass
 
-        if self.data:
+        if self.data is not None:
             return SecurePassphraseReader(self)
         else:
             return None
@@ -980,7 +987,7 @@ class ConfigManager(ConfigDict):
         self._lock = ConfigRLock()
         self.loaded_config = False
 
-        self.gnupg_passphrase = SecurePassphraseStorage('')  #'mailpile')
+        self.gnupg_passphrase = SecurePassphraseStorage()
 
         self.jinja_env = Environment(
             loader=MailpileJinjaLoader(self),
@@ -1199,13 +1206,12 @@ class ConfigManager(ConfigDict):
             if os.path.exists(keyfile):
                 os.rename(keyfile, keyfile + ('.%x' % time.time()))
         if not os.path.exists(keyfile):
-            if self.master_key:
-                with gpg_open(keyfile, self.prefs.get('gpg_recipient'), 'wb'
-                              ) as fd:
+            gpgr = self.prefs.get('gpg_recipient')
+            if self.master_key and gpgr != '!CREATE':
+                with gpg_open(keyfile, gpgr, 'wb') as fd:
                     fd.write(self.master_key)
                     self._master_key_ondisk = self.master_key
 
-        #with gpg_open(newfile, self.prefs.get('gpg_recipient'), 'wb') as fd:
         from mailpile.crypto.streamer import EncryptingStreamer
         if self.master_key:
             subj = self.mailpile_path(self.conffile)

@@ -382,9 +382,12 @@ class UrlMap:
                         user_session.update_ts()
                 if not user_session or not user_session.auth:
                     for c in commands:
-                        if c.HTTP_AUTH_REQUIRED:
+                        if c.HTTP_AUTH_REQUIRED is True:
                             self.redirect_to_auth_or_setup(method, path,
                                                            query_data)
+                        elif (c.HTTP_AUTH_REQUIRED == 'Maybe' and
+                                 self.session.config.prefs.gpg_recipient):
+                            self.redirect_to_auth(method, path, query_data)
                 return commands
         else:
             def auth(commands, user_session):
@@ -438,19 +441,28 @@ class UrlMap:
         """Map a message to it's short-hand editing URL."""
         return self._url('/message/draft/=%s/' % message_id, output)
 
-    def redirect_to_auth_or_setup(self, method, path, query_data):
+    def redirect_to_auth_or_setup(self, method, path, query_data, setup=True):
         """Redirect to the /auth/ or a /setup/* endpoint"""
         from mailpile.plugins.setup_magic import Setup
 
         if method.lower() == 'get':
             qd = [(k, v) for k, vl in query_data.iteritems() for v in vl]
-            qd.append(('_path', path))
+            if '_path' not in query_data:
+                qd.append(('_path', path))
         else:
             qd = []
 
-        path = '/%s/' % Setup.Next(self.session.config,
-                                   mailpile.auth.Authenticate).SYNOPSIS[2]
+        if setup:
+            path = '/%s/' % Setup.Next(self.session.config,
+                                       mailpile.auth.Authenticate).SYNOPSIS[2]
+        else:
+            path = '/%s/' % mailpile.auth.Authenticate.SYNOPSIS[2]
+
         raise UrlRedirectException(self._url(path, qs=urlencode(qd)))
+
+    def redirect_to_auth(self, method, path, query_data):
+        return self.redirect_to_auth_or_setup(method, path, query_data,
+                                              setup=False)
 
     def url_tag(self, tag_id, output=''):
         """

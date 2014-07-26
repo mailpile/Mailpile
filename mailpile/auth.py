@@ -43,10 +43,33 @@ def VerifyAndStorePassphrase(config, passphrase=None, sps=None):
     gpg = GnuPG(use_agent=False)
     if gpg.is_available():
         gpg.passphrase = sps.get_reader()
-        # FIXME: Sign with the gpg_recipient key, not just any key!
-        assert(gpg.sign('Sign This!')[0] == 0)
+        gpgr = config.prefs.gpg_recipient
+        gpgr = gpgr if (gpgr not in (None, '', '!CREATE')) else None
+        assert(gpg.sign('Sign This!', fromkey=gpgr)[0] == 0)
 
     return sps
+
+
+def SetLoggedIn(cmd, user=None, redirect=False, session_id=None):
+    user = user or 'DEFAULT'
+
+    sid = session_id or cmd.session.ui.html_variables.get('http_session')
+    if sid:
+        if cmd:
+            cmd.session.ui.debug('Logged in %s as %s' % (sid, user))
+        SESSION_CACHE[sid] = UserSession(auth=user, data={
+            't': '%x' % int(time.time()),
+        })
+
+    if cmd:
+        if redirect:
+            return cmd._do_redirect()
+        else:
+            return cmd._success(_('Hello world, welcome!'), result={
+                'authenticated': user
+            })
+    else:
+        return True
 
 
 SESSION_CACHE = UserSessionCache()
@@ -71,35 +94,19 @@ class Authenticate(Command):
     @classmethod
     def RedirectBack(cls, url, data):
         qs = [(k, v) for k, vl in data.iteritems() for v in vl
-              if k not in ('_method', '_path', 'user', 'pass')]
+              if k not in ['_method', '_path'] + cls.HTTP_POST_VARS.keys()]
         qs = urlencode(qs)
         url = ''.join([url, '?%s' % qs if qs else ''])
         raise UrlRedirectException(url)
 
     def _do_redirect(self):
-        if ('_path' in self.data and
-               DeAuthenticate.SYNOPSIS[2] not in self.data['_path'][0] and
-               self.SYNOPSIS[2] not in self.data['_path'][0]):
-            self.RedirectBack(self.data['_path'][0], self.data)
+        path = self.data.get('_path', [None])[0]
+        if (path and
+               not path[1:].startswith(DeAuthenticate.SYNOPSIS[2] or '!') and
+               not path[1:].startswith(self.SYNOPSIS[2] or '!')):
+            self.RedirectBack(path, self.data)
         else:
             raise UrlRedirectException('/')
-
-    def _logged_in(self, user=None, redirect=False):
-        user = user or 'DEFAULT'
-
-        session_id = self.session.ui.html_variables.get('http_session')
-        if session_id:
-            self.session.ui.debug('Logged in %s as %s' % (session_id, user))
-            SESSION_CACHE[session_id] = UserSession(auth=user, data={
-                't': '%x' % int(time.time()),
-            })
-
-        if redirect:
-            self._do_redirect()
-
-        return self._success(_('Hello world, welcome!'), result={
-            'authenticated': user
-        })
 
     def _do_login(self, user, password, load_index=False, redirect=False):
         session, config = self.session, self.session.config
@@ -112,7 +119,11 @@ class Authenticate(Command):
         if not user:
             try:
                 # Verify the passphrase
-                sps = VerifyAndStorePassphrase(config, passphrase=password)
+                if (config.gnupg_passphrase and
+                        config.gnupg_passphrase.compare(password)):
+                    sps = config.gnupg_passphrase
+                else:
+                    sps = VerifyAndStorePassphrase(config, passphrase=password)
                 if sps:
                     # Store the varified passphrase
                     config.gnupg_passphrase.data = sps.data
@@ -126,7 +137,7 @@ class Authenticate(Command):
                             pass  # FIXME: Start load in background
 
                     session.ui.debug('Good passphrase for %s' % session_id)
-                    return self._logged_in(redirect=redirect)
+                    return SetLoggedIn(self, redirect=redirect)
                 else:
                     session.ui.debug('No GnuPG, checking DEFAULT user')
                     # No GnuPG, see if there is a DEFAULT user in the config
@@ -175,6 +186,7 @@ class DeAuthenticate(Command):
     SPLIT_ARG = False
     IS_INTERACTIVE = True
     CONFIG_REQUIRED = False
+    HTTP_AUTH_REQUIRED = False
     HTTP_CALLABLE = ('GET', 'POST')
 
     def command(self):

@@ -315,9 +315,11 @@ class MailIndex:
                     quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
                     emails.append('@%s\t%s\n' % (b36(eid), quoted_email))
                 self.EMAILS_SAVED = total
+
             # Unlocked, try to write this out
-            with gpg_open(self.config.mailindex_file(),
-                          self.config.prefs.gpg_recipient, 'a') as fd:
+            gpgr = self.config.prefs.gpg_recipient
+            gpgr = gpgr if gpgr not in (None, '', '!CREATE') else None
+            with gpg_open(self.config.mailindex_file(), gpgr, 'a') as fd:
                 fd.write(''.join(emails))
                 for pos in mods:
                     fd.write(self.INDEX[pos] + '\n')
@@ -346,7 +348,9 @@ class MailIndex:
             idxfile = self.config.mailindex_file()
             newfile = '%s.new' % idxfile
 
-            with gpg_open(newfile, self.config.prefs.gpg_recipient, 'w') as fd:
+            gpgr = self.config.prefs.gpg_recipient
+            gpgr = gpgr if gpgr not in (None, '', '!CREATE') else None
+            with gpg_open(newfile, gpgr, 'w') as fd:
                 fd.write('# This is the mailpile.py index file.\n')
                 fd.write('# We have %d messages!\n' % len(self.INDEX))
 

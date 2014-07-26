@@ -312,14 +312,14 @@ class ImportantWorker(Worker):
 
 
 class DumbWorker(Worker):
-    def add_task(self, session, name, task):
+    def add_task(self, session, name, task, unique=False):
         with self.LOCK:
             return task()
 
     def add_unique_task(self, session, name, task):
         return self.add_task(session, name, task)
 
-    def do(self, session, name, task):
+    def do(self, session, name, task, unique=False):
         return self.add_task(session, name, task)
 
     def run(self):

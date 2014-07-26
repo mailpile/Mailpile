@@ -180,8 +180,9 @@ class Http(Hacks):
         global HACKS_SESSION_ID
         if HACKS_SESSION_ID is None:
             HACKS_SESSION_ID = httpd.make_session_id(None)
-        us = mailpile.auth.UserSession(auth='Hacks plugin HTTP client')
-        mailpile.auth.SESSION_CACHE[HACKS_SESSION_ID] = us
+        mailpile.auth.SetLoggedIn(None,
+                                  user='Hacks plugin HTTP client',
+                                  session_id=HACKS_SESSION_ID)
         cookie = httpd.session_cookie
 
         try:

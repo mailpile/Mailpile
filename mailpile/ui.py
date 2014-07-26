@@ -488,7 +488,7 @@ class UserInteraction:
             return ''
         try:
             self.block()
-            return getpass.getpass(prompt)
+            return getpass.getpass(prompt.encode('utf-8'))
         finally:
             self.unblock()
 

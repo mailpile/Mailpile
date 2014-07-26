@@ -10,6 +10,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
 from mailpile.plugins import __all__ as PLUGINS
 from mailpile.commands import Command
+from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.util import *
 from mailpile.plugins.migrate import Migrate
@@ -228,47 +229,47 @@ class SetupMagic(Command):
         #             If you don't already have secret keys, you should have
         #             one made for you, if GnuPG is available.
         #             If GnuPG is not available, you should be warned.
-        gnupg = GnuPG()
-        accepted_keys = []
-        if gnupg.is_available():
-            keys = gnupg.list_secret_keys()
-            for key, details in keys.iteritems():
-                # Ignore revoked/expired keys.
-                if ("revocation-date" in details and
-                    details["revocation-date"] <=
-                        date.today().strftime("%Y-%m-%d")):
-                    continue
-
-                accepted_keys.append(key)
-                for uid in details["uids"]:
-                    if "email" not in uid or uid["email"] == "":
-                        continue
-
-                    if uid["email"] in [x["email"]
-                                        for x in session.config.profiles]:
-                        # Don't set up the same e-mail address twice.
-                        continue
-
-                    # FIXME: Add route discovery mechanism.
-                    profile = {
-                        "email": uid["email"],
-                        "name": uid["name"],
-                    }
-                    session.config.profiles.append(profile)
-                if (session.config.prefs.gpg_recipient in (None, '', '!CREATE')
-                       and details["capabilities_map"][0]["encrypt"]):
-                    session.config.prefs.gpg_recipient = key
-                    session.ui.notify(_('Encrypting config to %s') % key)
-                if session.config.prefs.crypto_policy == 'none':
-                    session.config.prefs.crypto_policy = 'openpgp-sign'
-
-            if len(accepted_keys) == 0:
-                # FIXME: Start background process generating a key once a user
-                #        has supplied a name and e-mail address.
-                pass
-
-        else:
-            session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
+#        gnupg = GnuPG()
+#        accepted_keys = []
+#        if gnupg.is_available():
+#            keys = gnupg.list_secret_keys()
+#            for key, details in keys.iteritems():
+#                # Ignore revoked/expired keys.
+#                if ("revocation-date" in details and
+#                    details["revocation-date"] <=
+#                        date.today().strftime("%Y-%m-%d")):
+#                    continue
+#
+#                accepted_keys.append(key)
+#                for uid in details["uids"]:
+#                    if "email" not in uid or uid["email"] == "":
+#                        continue
+#
+#                    if uid["email"] in [x["email"]
+#                                        for x in session.config.profiles]:
+#                        # Don't set up the same e-mail address twice.
+#                        continue
+#
+#                    # FIXME: Add route discovery mechanism.
+#                    profile = {
+#                        "email": uid["email"],
+#                        "name": uid["name"],
+#                    }
+#                    session.config.profiles.append(profile)
+#                if (session.config.prefs.gpg_recipient in (None, '', '!CREATE')
+#                       and details["capabilities_map"][0]["encrypt"]):
+#                    session.config.prefs.gpg_recipient = key
+#                    session.ui.notify(_('Encrypting config to %s') % key)
+#                if session.config.prefs.crypto_policy == 'none':
+#                    session.config.prefs.crypto_policy = 'openpgp-sign'
+#
+#            if len(accepted_keys) == 0:
+#                # FIXME: Start background process generating a key once a user
+#                #        has supplied a name and e-mail address.
+#                pass
+#
+#        else:
+#            session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 
         if (session.config.prefs.gpg_recipient not in (None, '', '!CREATE')
                 and not (self._idx() and self._idx().INDEX)
@@ -317,7 +318,7 @@ class SetupMagic(Command):
 
 
 class TestableWebbable(SetupMagic):
-    HTTP_AUTH_REQUIRED = False
+    HTTP_AUTH_REQUIRED = 'Maybe'
     HTTP_CALLABLE = ('GET', )
     HTTP_QUERY_VARS = {
         '_path': 'Redirect path'
@@ -581,10 +582,28 @@ class SetupCrypto(TestableWebbable):
     })
     TEST_DATA = {}
 
+    def _list_secret_keys(self):
+        today = date.today().strftime("%Y-%m-%d")
+        keylist = {}
+        for key, details in self._gnupg().list_secret_keys().iteritems():
+            # Ignore revoked keys
+            if ("revocation-date" in details and
+                    details["revocation-date"] <= today):
+                # FIXME: Does this check expiry as well?
+                continue
+
+            # Ignore keys that cannot both encrypt and sign
+            caps = details["capabilities_map"][0]
+            if not caps["encrypt"] or not caps["sign"]:
+                continue
+
+            keylist[key] = details
+        return keylist
+
     def setup_command(self, session):
         changed = authed = False
         results = {
-            'secret_keys': self._gnupg().list_secret_keys(),
+            'secret_keys': self._list_secret_keys(),
         }
         error_info = None
 
@@ -607,8 +626,9 @@ class SetupCrypto(TestableWebbable):
 
             choose_key = self.data.get('choose_key', [''])[0]
             if choose_key and not error_info:
-                if choose_key not in results['secret_keys']:
-                    error_info = (_('Invalid passphrase'), {
+                if (choose_key not in results['secret_keys'] and
+                        choose_key != '!CREATE'):
+                    error_info = (_('Invalid key'), {
                         'invalid_key': True,
                         'chosen_key': choose_key
                     })
@@ -618,13 +638,19 @@ class SetupCrypto(TestableWebbable):
 
             try:
                 passphrase = self.data.get('passphrase', [''])[0]
-                if passphrase and not error_info:
-                    sps = mailpile.auth.VerifyAndStorePassphrase(
-                        session.config, passphrase=passphrase)
-                    session.config.gnupg_passphrase.data = sps.data
+                if not error_info:
+                    if session.config.prefs.gpg_recipient == '!CREATE':
+                        assert(passphrase != '')
+                        sps = SecurePassphraseStorage(passphrase)
+                    else:
+                        sps = mailpile.auth.VerifyAndStorePassphrase(
+                            session.config, passphrase=passphrase)
                     if not session.config.prefs.gpg_recipient:
                         session.config.prefs.gpg_recipient = '!CREATE'
-                    changed = results['updated_passphrase'] = True
+                        changed == True
+                    results['updated_passphrase'] = True
+                    session.config.gnupg_passphrase.data = sps.data
+                    mailpile.auth.SetLoggedIn(self)
             except AssertionError:
                 error_info = (_('Invalid passphrase'), {
                     'invalid_passphrase': True,
@@ -659,6 +685,7 @@ class SetupCrypto(TestableWebbable):
 class SetupProfiles(TestableWebbable):
     SYNOPSIS = (None, None, 'setup/profiles', None)
 
+    HTTP_AUTH_REQUIRED = True
     HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
     })
@@ -672,6 +699,7 @@ class SetupProfiles(TestableWebbable):
 class SetupRoutes(TestableWebbable):
     SYNOPSIS = (None, None, 'setup/routes', None)
 
+    HTTP_AUTH_REQUIRED = True
     HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
     })
@@ -710,7 +738,8 @@ class Setup(SetupMagic):
 
         for guard, step in [
             (config.prefs.language, SetupWelcome),
-            (config.prefs.gpg_recipient, SetupCrypto),
+            (config.prefs.gpg_recipient and config.gnupg_passphrase.data,
+             SetupCrypto),
             #(config.prefs.default_email, SetupProfiles),
             #(config.routes, SetupRoutes),
             #(config.sources, SetupSources),
