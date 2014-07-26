@@ -1221,10 +1221,6 @@ class ConfigManager(ConfigDict):
         # Enable translations
         mailpile.i18n.ActivateTranslation(session, self, self.prefs.language)
 
-        if public:
-            # Stop here when loading the public config...
-            raise IOError('Failed to load main config')
-
         with mailpile.i18n.i18n_disabled:
             if len(self.sys.plugins) == 0:
                 self.sys.plugins.extend(self.plugins.DEFAULT)
@@ -1233,6 +1229,10 @@ class ConfigManager(ConfigDict):
         # Now all the plugins are loaded, reset and parse again!
         self.reset_rules_from_source()
         self.parse_config(session, '\n'.join(lines), source=filename)
+
+        if public:
+            # Stop here when loading the public config...
+            raise IOError('Failed to load main config')
 
         # Open event log
         dec_key_func = lambda: self.master_key

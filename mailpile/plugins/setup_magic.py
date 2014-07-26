@@ -190,9 +190,15 @@ class SetupMagic(Command):
             session.ui.notify(_('Created default tags'))
 
         # Import all the basic plugins
+        reload_config = False
         for plugin in PLUGINS:
             if plugin not in session.config.sys.plugins:
                 session.config.sys.plugins.append(plugin)
+                reload_config = True
+        if reload_config:
+            session.config.save()
+            session.config.load(session)
+
         try:
             # If spambayes is not installed, this will fail
             import mailpile.plugins.autotag_sb
@@ -202,9 +208,6 @@ class SetupMagic(Command):
         except ImportError:
             session.ui.warning(_('Please install spambayes '
                                  'for super awesome spam filtering'))
-
-        session.config.save()
-        session.config.load(session)
 
         vcard_importers = session.config.prefs.vcard.importers
         if not vcard_importers.gravatar:
@@ -360,7 +363,7 @@ class TestableWebbable(SetupMagic):
 
     def _success(self, message, result=True, advance=False):
         if (advance or
-                self.data.get('advance', [''])[0].lower() in self.TRUTHY):
+                self.TRUTHY.get(self.data.get('advance', ['no'])[0].lower())):
             self._advance()
         return SetupMagic._success(self, message, result=result)
 
@@ -698,11 +701,81 @@ class SetupProfiles(TestableWebbable):
     HTTP_CALLABLE = ('GET', 'POST')
     HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
     })
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
+        'email': 'Create a profile for this e-mail address',
+        'name': 'Name associated with this e-mail',
+        'pass': 'Password for remote accounts',
+    })
     TEST_DATA = {}
 
+    # This is where we cache the passwords we are given, for use later.
+    # This is deliberately made a singleton on the class.
+    PASSWORD_CACHE = {}
+
+    def get_profiles(self):
+        from mailpile.plugins.contacts import ListProfiles
+        data = ListProfiles(self.session).run().result
+        profiles = {}
+        for rid, ofs in data["rids"].iteritems():
+            profile = data["profiles"][ofs]
+            email = profile["email"][0]["email"]
+            name = profile["fn"]
+            profiles[email] = {
+                "name": name,
+                "pgp_keys": [],  # FIXME
+                "rid": rid
+            }
+        return profiles
+
+    def discover_new_email_addresses(self, profiles):
+        addresses = {}
+        for key, info in self._gnupg().list_secret_keys().iteritems():
+            for uid in info['uids']:
+                email = uid.get('email')
+                if email:
+                    if email in profiles:
+                        continue
+                    if email not in addresses:
+                        addresses[email] = {'pgp_keys': [], 'name': ''}
+                    ai = addresses[email]
+                    name = uid.get('name')
+                    ai['name'] = name if name else ai['name']
+                    ai['pgp_keys'].append(key)
+
+        # FIXME: Scan Thunderbird and MacMail for e-mails, other apps...
+
+        return addresses
+
+    def _result(self):
+        profiles = self.get_profiles()
+        return {
+            'new_emails': self.discover_new_email_addresses(profiles),
+            'profiles': profiles,
+            'default_email': self.session.config.prefs.default_email
+        }
+
     def setup_command(self, session):
-        results = {}
-        return self._success(_(''), results)
+        from mailpile.plugins.contacts import AddProfile
+        changed = False
+        if self.data.get('_method') == 'POST' or self._testing():
+            name, email, pwd = (self.data.get(k, [None])[0]
+                                for k in ('name', 'email', 'pass'))
+            if email:
+                rv = AddProfile(session, data=self.data).run()
+                if rv.status == 'success':
+                    if not session.config.prefs.default_email:
+                        session.config.prefs.default_email = email
+                        changed = True
+                else:
+                    return self._error(_('Failed to add profile'),
+                                       info=rv.error_info,
+                                       result=self._result())
+            if email and pwd:
+                self.PASSWORD_CACHE[email] = SecurePassphraseStorage(pwd)
+
+        if changed:
+            self._background_save(config=True)
+        return self._success(_('Your profiles'), self._result())
 
 
 class SetupRoutes(TestableWebbable):
@@ -749,7 +822,7 @@ class Setup(SetupMagic):
             (config.prefs.language, SetupWelcome),
             (config.prefs.gpg_recipient and config.gnupg_passphrase.data,
              SetupCrypto),
-            #(config.prefs.default_email, SetupProfiles),
+            (config.prefs.default_email, SetupProfiles),
             #(config.routes, SetupRoutes),
             #(config.sources, SetupSources),
         ]:

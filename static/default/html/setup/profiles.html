@@ -2,12 +2,55 @@
 {% block title %}{{_("Who are you?")}}{% endblock %}
 {% block content %}
 
-<h1>FIXME</h1>
+<h1>These are profiles</h1>
 
-<form method="POST">
+{% if error %}
+  <h2>Oh shits {{ error }}</h2>
+{% endif %}
 
+{% if result.new_emails %}
+  <hr><h3>Discovered e-mail addresses</h3>
+  <ul>
+    {% for email in result.new_emails|sort %}<li>
+      {% set info = result.new_emails[email] %}
+      <form method="POST">
+        {% if info.name %}{{ info.name }}{% endif %}
+        &lt;{{ email }}&gt;
+        {% if info.pgp_keys %}(on keys: {{ info.pgp_keys|join(", ") }}){% endif %}
+        <input type="hidden" name="email" value="{{ email }}">
+        <input type="hidden" name="name" value="{{ info.name }}">
+        <input type="submit" value="Add to profiles">
+        Account password: <input type="password" name="pass" value="">
+      </form>
+    </li>{% endfor %}
+  </ul>
+{% endif %}
+
+<hr><form method="POST">
+  <h3>Add another e-mail address</h3>
+  E-mail: <input type="text" name="email" value=""><br>
+  Name: <input type="text" name="name" value=""><br>
+  Account password: <input type="password" name="pass" value=""><br>
+  <input type="submit" value="Add to profiles">
+</form>
+
+{% if result.profiles %}
+<hr><form method="POST">
   <input type="hidden" name="advance" value="Yes">
   <input type="submit" value="Continue...">   
 </form>
+<hr><h3>Configured profiles ...</h3>
+<ul>
+  {% for email in result.profiles|sort %}
+    {% set profile = result.profiles[email] %}
+    <li><form method="POST" action='/profiles/remove/{{ profile.rid }}/'
+              target=_blank>
+       {{ profile.name }}
+       &lt;{{ email }}&gt;
+       <input type='submit' value='Remove'>
+    </form></li>
+  {% endfor %}
+</ul>
+{% endif %}
 
 {% endblock %}
