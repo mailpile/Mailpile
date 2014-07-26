@@ -151,7 +151,6 @@ class PluginManager(object):
 
             # Load the Python requested by the manifest.json
             files = manifest.get('code', {}).get('python', [])
-            files.sort(key=lambda f: len(f))
             try:
                 for filename in files:
                     path = os.path.join(dirname, filename)
