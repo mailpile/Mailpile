@@ -55,6 +55,7 @@ CONFIG_RULES = {
             'event_log':  [_('Location of event log'), 'dir', 'logs'],
         }],
         'lockdown':       [_('Demo mode, disallow changes'), bool,      False],
+        'login_banner':   [_('A custom banner for the login page'), str,   ''],
     }),
     'prefs': p(_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),

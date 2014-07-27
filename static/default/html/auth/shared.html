@@ -26,6 +26,8 @@
   </form>
   {% if status_message == 'error' %}
   <div class="login-wrong-passphrase animated bounceIn">{{_("Oops, wrong passphrase. Try again?")}}</div>
+  {% elif result.login_banner %}
+  <div class="logged-out-message animated bounceIn">{{ result.login_banner|safe }}</div>
   {% endif %}
   {% if status_message == 'logout' %}
   <div class="logged-out-message">{{_("You Have Been Logged Out!")}}</div>

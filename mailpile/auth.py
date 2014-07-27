@@ -99,6 +99,18 @@ class Authenticate(Command):
         url = ''.join([url, '?%s' % qs if qs else ''])
         raise UrlRedirectException(url)
 
+    def _result(self, result=None):
+        result = result or {}
+        result['login_banner'] = self.session.config.sys.login_banner
+        return result
+
+    def _error(self, message, info=None, result=None):
+        return Command._error(self, message,
+                              info=info, result=self._result(result))
+
+    def _success(self, message, result=None):
+        return Command._success(self, message, result=self._result(result))
+
     def _do_redirect(self):
         path = self.data.get('_path', [None])[0]
         if (path and
@@ -156,7 +168,7 @@ class Authenticate(Command):
                 return self._logged_in(redirect=redirect)
             raise Exception('FIXME')
 
-        self._error(_('Incorrect username or password'))
+        return self._error(_('Incorrect username or password'))
 
     def command(self):
         session_id = self.session.ui.html_variables.get('http_session')
