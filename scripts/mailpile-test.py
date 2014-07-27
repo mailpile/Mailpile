@@ -75,6 +75,11 @@ def do_setup():
     # Set up initial tags and such
     mp.setup('do_gpg_stuff')
 
+    # Setup GPG access credentials and TELL EVERYONE!
+    config.sys.login_banner = 'Pssst! The password is: mailpile'
+    #config.gnupg_passphrase.set_passphrase('mailpile')
+    #config.prefs.gpg_recipient = '3D955B5D7848252F'
+
     config.vcards.get(MY_FROM).fn = MY_NAME
     config.prefs.default_email = MY_FROM
     config.prefs.encrypt_index = True
@@ -117,6 +122,7 @@ def test_vcards():
     assert(mp.contacts_view('mr@rogers.com'
                             ).result['contact']['fn'] == u'Mr. Rogers')
     assert(len(mp.contacts('rogers').result['contacts']) == 1)
+
 
 def test_load_save_rescan():
     say("Testing load/save/rescan")
