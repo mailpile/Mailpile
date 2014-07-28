@@ -1,48 +1,53 @@
 {% extends "layouts/auth.html" %}
-{% block title %}{{_("Let's talk about security...")}}{% endblock %}
+{% block title %}{{_("Passphrase")}} | {{_('Setup')}}{% endblock %}
 {% block content %}
 
-<h1>Configure crypto stuff, yay!</h1>
+<div class="setup-box setup-box-medium animated bounceInUp">
+  <h2 class="text-center"><span class="icon-lock-closed"></span> Passphrase</h2>
+  <hr>
 
-{% if error %}
-  <h2>Oh shits {{ error }}</h2>
-{% endif %}
-
-<form method="POST">
-
-{% if result.secret_keys|length == 0 %}
-  <p>We will create a key for you, you lucky person you!</p>
-  <p>Choose a passphrase!
-     <input type="password" name="passphrase" value=""></p>
-
-{% else %}
-  <p>You have PGP keys! Use one?</p>
-  {% for key in result.secret_keys %}
-    {% set key_info = result.secret_keys[key] %}
-    {% if key_info.capabilities_map.0.encrypt and
-          key_info.capabilities_map.0.sign and
-          not key_info.disabled %}
-    <div class='key_info'>
-      <input name='choose_key' value='{{ key }}' type='radio'
-             {% if key == result.chosen_key %}checked{% endif %}>
-      {{ key_info.keytype_name }} key {{ key }},
-      {{ key_info.keysize }} bits,
-      created on {{ key_info.creation_date }}
-      {% if key_info.expiration_date %} (expires {{ key_info.expiration_date }})
+  {% if error %}
+    <h2>Oh shits {{ error }}</h2>
+  {% endif %}
+  
+  <form method="POST">
+  
+  {% if result.secret_keys|length == 0 %}
+    <p>We will create a key for you, you lucky person you!</p>
+    <p>Choose a passphrase!
+       <input type="password" name="passphrase" value=""></p>
+  
+  {% else %}
+    <p>You have PGP keys! Use one?</p>
+    {% for key in result.secret_keys %}
+      {% set key_info = result.secret_keys[key] %}
+      {% if key_info.capabilities_map.0.encrypt and
+            key_info.capabilities_map.0.sign and
+            not key_info.disabled %}
+      <div class='key_info'>
+        <input name='choose_key' value='{{ key }}' type='radio'
+               {% if key == result.chosen_key %}checked{% endif %}>
+        {{ key_info.keytype_name }} key {{ key }},
+        {{ key_info.keysize }} bits,
+        created on {{ key_info.creation_date }}
+        {% if key_info.expiration_date %} (expires {{ key_info.expiration_date }})
+        {% endif %}
+      </div>
       {% endif %}
+    {% endfor %}
+    <div class='key_info'>
+      <input name='choose_key' value='!CREATE' type='radio'>
+      Create a new 4096 bit RSA key
     </div>
-    {% endif %}
-  {% endfor %}
-  <div class='key_info'>
-    <input name='choose_key' value='!CREATE' type='radio'>
-    Create a new 4096 bit RSA key
-  </div>
+  
+    <p>Passphrase:
+       <input type="password" name="passphrase" value=""></p>
+  {% endif %}
+  
+    <input type="hidden" name="advance" value="Yes">
+    <input type="submit" value="Continue...">   
+  </form>
 
-  <p>Passphrase:
-     <input type="password" name="passphrase" value=""></p>
-{% endif %}
+</div>
 
-  <input type="hidden" name="advance" value="Yes">
-  <input type="submit" value="Continue...">   
-</form>
 {% endblock %}
