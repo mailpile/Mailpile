@@ -2,21 +2,22 @@
 {% block title %}{{_("Welcome to Mailpile!")}}{% endblock %}
 {% block content %}
 <div id="setup-welcome" class="setup-white">
-  <h1>Welcome to Mailpile!</h1>
-  <img style="width: 300px" src="/static/img/logo-color.svg">
-  <div class="setup-welcome-icons">
-    <span class="setup-welcome-icon icon-message animated"></span>
-    <span class="setup-welcome-icon icon-inbox animated"></span>
-    <span class="setup-welcome-icon icon-lock-closed animated"></span>
-    <span class="setup-welcome-icon icon-tag animated"></span>
-    <span class="setup-welcome-icon icon-compose animated"></span>
-    <span class="setup-welcome-icon icon-key animated"></span>
-    <span class="setup-welcome-icon icon-donate animated"></span>
+  <h1 class="animated fadeIn">Welcome to Mailpile!</h1>
+  <img style="width: 300px" src="/static/img/logo-color.svg" class="animated bounceIn">
+  <div class="setup-welcome-icons animated fadeIn">
+    <span class="setup-welcome-icon icon-message"></span>
+    <span class="setup-welcome-icon icon-inbox"></span>
+    <span class="setup-welcome-icon icon-lock-closed"></span>
+    <span class="setup-welcome-icon icon-tag"></span>
+    <span class="setup-welcome-icon icon-compose"></span>
+    <span class="setup-welcome-icon icon-key"></span>
+    <span class="setup-welcome-icon icon-donate"></span>
   </div>
-  <h4 class="text-detail">{{_("You're about to experience secure email like never before!")}}</h4>
-  <form method="POST">
+  <h4 class="text-detail animated fadeIn">{{_("You're about to experience secure email like never before!")}}</h4>
+  <form method="POST" action="/setup/welcome/" class="animated bounceIn">
     <p>
     <select name="language">
+      <option value="">{{_("Select Language")}}...</option>
       {% set selected = {(result.language or 'en_US'): ' selected'} %}
       {% for lc in result.languages|sort %}
       <option value="{{ lc }}"{{ selected[lc] }}>{{ result.languages[lc] }}</option>
