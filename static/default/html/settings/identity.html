@@ -6,7 +6,7 @@
         <div class="vault-lock icon-lock-closed animated"></div>
       </div>
     </div>
-    <form id="form-setup-passphrase" class="standard text-center">
+    <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center">
 
       {% set setup_crypto = mailpile("setup/crypto") %}
       {% if setup_crypto.result.secret_keys|length == 0 %}
@@ -16,18 +16,20 @@
       <div id="setup-passphrase-new-keys">
 
         <p>We will create a key for you, you lucky person you!</p>
-  
+
         <input name="choose_key" value="!CREATE" type="hidden">
   
-       <p class="text-center">
+        <p class="text-center">
           Your passphrase should be something really hard to guess but memorable<br>
-          This passphrase will be used to decrypt and unlock your Mailpile and your encryption keys
+          This passphrase will be used to unlock your Mailpile and for your encryption keys
         </p>
-      
-        <input id="data-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+
+        <span id="error-setup-passphrase" class="validation-error validation-message"></span>
+        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
 
         <label>Confirm by Entering Passphrase Again</label>
-        <input id="data-setup-passphrase-confirm" class="input-medium center" type="password" name="passphrase-confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+        <span id="error-setup-passphrase_confirm" class="validation-error validation-message"></span>
+        <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
 
         <span class="text-detail">We will be creating a new 4096 bit RSA key</span>
 
@@ -39,6 +41,7 @@
 
       <div id="setup-passphrase-has-keys">
         <input id="data-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+        <span id="error-setup-passphrase"></span>
       </div>
       
       {% elif setup_crypto.result.secret_keys|length > 1 %}
@@ -53,7 +56,7 @@
           {% if key_info.capabilities_map.0.encrypt and key_info.capabilities_map.0.sign and not key_info.disabled %}
           <li>
           <label class="setup-key-info">
-            <input name="choose_key" value="{{ key }}" type="radio" {% if key == result.chosen_key %}checked{% endif %}>
+            <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key %}checked{% endif %}>
             {{ key_info.keytype_name }} key {{ key }}, {{ key_info.keysize }} bits, created on {{ key_info.creation_date }}
             {% if key_info.expiration_date %}
             (expires {{ key_info.expiration_date }})
@@ -64,7 +67,11 @@
         {% endfor %}
         </ul>
 
+        <span id="error-setup-passphrase" class="validation-error validation-message"></span>
         <input id="data-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+
+        <span id="error-setup-passphrase_confirm" class="validation-error validation-message"></span>
+        <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
 
       </div>
 
@@ -78,44 +85,58 @@
 
 <!--  Setup - Identity - Profiles -->
 <script id="template-setup-profiles" type="text/template">
+  {% set setup_profiles = mailpile("setup/profiles") %}
   <div class="setup-box setup-box-medium animated bounceInUp">
     <h2 class="text-center"><span class="icon-profiles"></span> Profiles</h2>
-    <p class="text-center">A profile is the context of how you use an email address. You can have as many profiles as you'd like, some examples profiles: Personal, Work, Newsletters, etc...</p>
-    <p class="text-detail text-center">You currently have <strong>5 active</strong> and <strong>2 inactive</strong> profiles!</p>
+    {% if setup_profiles.result.profiles %}
+    <p class="text-detail text-center">You currently have <strong>{{ setup_profiles.result.profiles|length }} profiles</strong> that you can send messages from!</p>
     <ul id="setup-profile-list">
-      <li class="setup-profile clearfix">
-        <span class="avatar"><img src="/static/img/avatar-default.png"></span>
-        <span class="name">Brennan Novak</span>
-        <span class="email">hi@brennannovak.com</span>
-        <span class="fingerprint">01AE EADB 9EED 1B5B 4280 E5B6</span>
-        <a href="#" class="setup-profile-disable"><span class="icon-minus"></span> Disable</a>
+      {% for email in setup_profiles.result.profiles|sort %}
+      {% set profile = setup_profiles.result.profiles[email] %}
+      <li class="setup-profile" data-profile_id="{{ profile.rid }}/">
+        <div class="clearfix">
+          <span class="avatar"><img src="/static/img/avatar-default.png"></span>
+          <span class="name">{{ profile.name }}</span>
+          <span class="email">{{ email }}</span>
+          <span class="icon-fingerprint"></span> <span class="fingerprint">01AE EADB 9EED 1B5B 4280 E5B6</span>
+        </div>
+        {% if email != setup_profiles.result.default_email %}
+        <a href="/" class="setup-profile-remove" class="right"><span class="icon-circle-x"></span> Remove</a>
+        {% endif %}
       </li>
+      {% endfor %}
     </ul>
-    <form id="form-setup-basic-info" class="standard">
-      <h3>Add Profile</h3>
-      <table class="full-width-table">
-      <tr>
-        <td>
-          <label>{{_("Profile Name")}}</label>
-          <input type="text" name="name" autocorrect="off" autocapitalize="off" class="center" placeholder="Chelsea Manning">
-        </td>
-        <td>
-          <label>{{_("Email")}}</label>
-          <input type="email" name="email" autocorrect="off" autocapitalize="off" class="center" placeholder="chelsea@manning.org">
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label>{{_("Password")}}</label>
-          <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" class="center" placeholder="password">
-        </td>
-        <td>
-          <label>Server</label>
-        <input type="text" name="server" autocorrect="off" autocapitalize="off" class="center" placeholder="imap.freeserver.org">
-        </td>
-      </tr>
-      </table>
-      <button id="btn-setup-basic-info" type="submit" class="text-center button-primary"><span class="icon-plus"></span> {{_("Save Profile")}}</button>
+    <button id="btn-setup-show-add-profile">Add Profile</button>
+    {% else %}{# Has no profiles #}
+    <p class="text-center">A profile is the context of how you use an email address. You can have as many profiles as you'd like, some examples profiles: Personal, Work, Newsletters, etc...</p>
+    {% endif %}
+    <form id="form-setup-profile-add" class="standard {% if setup_profiles.result.profiles %}hide{% endif %}">
+    <h3>Add Profile <a href="#" id="btn-setup-hide-add-profile"><span class="icon-eye"></span> Hide</a></h3>
+    <table class="full-width-table">
+    <tr>
+      <td>
+        <label>{{_("Name")}} <span class="validation-error"></span></label>
+        <input type="text" name="name" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning">
+      </td>
+      <td>
+        <label>{{_("Email")}} <span class="validation-error"></span></label>
+        <input type="email" name="email" autocorrect="off" autocapitalize="off" placeholder="chelsea@manning.org">
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <label>{{_("Password")}} <span class="validation-error"></span></label>
+        <input id="" type="password" name="password" autocorrect="off" autocapitalize="off" placeholder="your email password">
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <button id="btn-setup-basic-info" type="submit" class="text-center button-primary">
+          <span class="icon-plus"></span> {{_("Save Profile")}}
+        </button>
+      </td>
+    </tr>
+    </table>
     </form>
   </div>
 </script>

@@ -1,4 +1,4 @@
-/* Profiles Model */
+/* Setup - Profiles - Model */
 var ProfileModel = Backbone.Model.extend({
   validation: {
     name: {
@@ -17,7 +17,7 @@ var ProfileModel = Backbone.Model.extend({
 });
 
 
-/* Profiles View */
+/* Setup - Profiles - View */
 var ProfilesView = Backbone.View.extend({
   initialize: function() {
     Backbone.Validation.bind(this);
@@ -26,31 +26,50 @@ var ProfilesView = Backbone.View.extend({
   render: function() {
   },
   events: {
+    "click #btn-setup-show-add-profile": "showAddProfile",
+    "click #btn-setup-hide-add-profile": "hideAddProfile",
+    "click .setup-profile-remove": "removeProfile",
   	"click #btn-setup-basic-info": "processBasic"
   },
   showProfiles: function() {
-    this.$el.html(_.template($('#template-setup-profiles').html()));
+
+    this.$el.html($('#template-setup-profiles').html());
+  },
+  showAddProfile: function() {
+    $('#btn-setup-show-add-profile').hide();
+    $('#form-setup-profile-add').fadeIn();
+  },
+  hideAddProfile: function(e) {
+    e.preventDefault();
+    $('#btn-setup-show-add-profile').fadeIn();
+    $('#form-setup-profile-add').hide();    
   },
   processProfileAdd: function(e) {
 
     e.preventDefault();
 
-    // Prepare Data
-    var profile_data = $('#form-setup-basic-info').serializeObject();
-
     // Set Model & Validate
-    this.model.set(profile_data);
+    this.model.set($('#form-setup-profile-add').serializeObject());
     var validate = this.model.validate();
 
     // Process
     if (validate === undefined) {
 
-      Backbone.history.navigate('#crypto-generated', true);
+      Mailpile.API.profiles_remove({ key: value}, function() {
+
+      });
+
+      // Backbone.history.navigate('#crypto-generated', true);
    }
     else {
       $.each(validate, function(elem, msg){
         $('#error-setup-' + elem).html(msg);
       });
     }
+  },
+  removeProfile: function() {
+
+    
+    alert('this will remove a profile');
   }
 });
