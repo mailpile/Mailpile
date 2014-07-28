@@ -6,6 +6,7 @@ import time
 import re
 import StringIO
 import tempfile
+import threading
 import traceback
 import select
 from datetime import datetime
@@ -852,3 +853,227 @@ class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
 
     def get_keys(self, who):
         return GetKeys(self.crypto, self.config, who)
+
+
+class GnuPGExpectScript(threading.Thread):
+    STARTUP = 'Startup'
+    START_THREAD = 'Start Thread'
+    START_GPG = 'Start GPG'
+    FINISHED = 'Finished'
+    SCRIPT = []
+    VARIABLES = {}
+    RUNNING_STATES = [START_GPG]
+
+    def __init__(self, sps=None, logfile=None, variables={}, on_complete=None):
+        threading.Thread.__init__(self)
+        self.daemon = True
+        self._lock = threading.RLock()
+        with self._lock:
+            self.state = self.STARTUP
+            self.logfile = logfile
+            self.variables = variables or self.VARIABLES
+            self.on_complete = [on_complete] if on_complete else []
+            self.gpg = None
+            self.main_script = self.SCRIPT[:]
+            if sps:
+                self.sps = sps
+                self.variables['passphrase'] = '!!<SPS'
+
+    def __str__(self):
+        return '%s: %s' % (threading.Thread.__str__(self), self.state)
+
+    running = property(lambda self: (self.state in self.RUNNING_STATES))
+    failed = property(lambda self: False)
+
+    def __del__(self):
+        if self.gpg:
+            self.gpg.close(force=True)
+
+    def in_state(self, state):
+        pass
+
+    def set_state(self, state):
+        self.state = state
+        self.in_state(state)
+
+    def sendline(self, line):
+        if line == '!!<SPS':
+            reader = self.sps.get_reader()
+            while True:
+                c = reader.read()
+                if c != '':
+                    self.gpg.send(c)
+                else:
+                    self.gpg.send('\n')
+                    break
+        else:
+            self.gpg.sendline(line)
+
+    def run_script(self, script):
+        for exp, rpl, tmo, state in script:
+            self.gpg.expect_exact(exp, timeout=tmo)
+            if rpl:
+                self.sendline((rpl % self.variables).strip())
+            if state:
+                self.set_state(state)
+
+    def gpg_args(self):
+        return ['--list-keys']
+
+    def run(self):
+        try:
+            self.set_state(self.START_THREAD)
+            try:
+                import pexpect
+                pspawn = pexpect.spawn
+            except ImportError:
+                import winpexpect
+                pspawn = winpexpect.winspawn
+
+            self.set_state(self.START_GPG)
+            self.gpg = pspawn('gpg', self.gpg_args(), logfile=self.logfile)
+            self.run_script(self.main_script)
+
+            self.set_state(self.FINISHED)
+        except:
+            import traceback
+            traceback.print_exc()
+        finally:
+            with self._lock:
+                if self.gpg is not None:
+                    self.gpg.close(force=True)
+                    self.gpg = None
+                if self.state != self.FINISHED:
+                    self.state = 'Failed: ' + self.state
+                for callback in self.on_complete:
+                    callback()
+                self.on_complete = None
+
+    def on_complete(self, callback):
+        with self._lock:
+            if self.on_complete is not None:
+                self.on_complete.append(callback)
+            else:
+                callback()
+
+
+class GnuPGKeyGenerator(GnuPGExpectScript):
+    """This is a background thread which generates a new PGP key."""
+    KEY_SETUP = 'Key Setup'
+    GATHER_ENTROPY = 'Gathering Entropy'
+    HAVE_KEY = 'Have Key'
+    SCRIPT = [
+        ('(1) RSA and RSA',               '%(keytype)s',   -1, KEY_SETUP),
+        ('What keysize do you want?',        '%(bits)s',   -1, None),
+        ('Key is valid for?',                       '0',   -1, None),
+        ('Is this correct?',                        'y',   -1, None),
+        ('Real name:',                       '%(name)s',   -1, None),
+        ('Email address:',                  '%(email)s',   -1, None),
+        ('Comment:',                      '%(comment)s',   -1, None),
+        ('(O)kay/(Q)uit?',                          'O',   -1, None),
+        ('Enter passphrase:',          '%(passphrase)s',   -1, None),
+        ('Repeat passphrase:',         '%(passphrase)s',   -1, None),
+        ('We need to generate a lot',              None,   -1, GATHER_ENTROPY),
+        ('marked as ultimately trusted',           None, 1800, HAVE_KEY)
+    ]
+    VARIABLES = {
+        'keytype': '1',
+        'bits': '1024',  # FIXME: '4096',
+        'name': 'Mailpile Generated Key',
+        'email': '',
+        'comment': 'www.mailpile.is',
+        'passphrase': 'mailpile'
+    }
+    RUNNING_STATES = (GnuPGExpectScript.RUNNING_STATES +
+                      [KEY_SETUP, GATHER_ENTROPY, HAVE_KEY])
+
+    failed = property(lambda self: (not self.running and
+                                    not self.generated_key))
+
+    def __init__(self, *args, **kwargs):
+        GnuPGExpectScript.__init__(self, *args, **kwargs)
+        self.generated_key = None
+
+    def gpg_args(self):
+        return ['--gen-key']
+
+    def in_state(self, state):
+        if state == self.HAVE_KEY:
+             self.generated_key = self.gpg.before.strip().split()[-1]
+
+
+class GnuPGKeyEditor(GnuPGExpectScript):
+    """This is a background thread which edits the UIDs on a PGP key."""
+    HAVE_SKEY = 'Have Secret Key'
+    DELETING_UID = 'Deleting a UID'
+    DELETED_UIDS = 'Deleted UIDs'
+    ADDING_UID = 'Adding a UID'
+    ADDED_UID = 'Added a UID'
+    SAVED = 'Saved keychain'
+    SCRIPT = [
+        ('Secret key is available.',                '',   -1, HAVE_SKEY),
+    ]
+    DELETE_SCRIPT = [
+        ('gpg>',                               'uid 1',   -1, DELETING_UID),
+        ('gpg>',                              'deluid',   -1, DELETING_UID),
+        ('Really remove this user ID? (y/N)',      'Y',   -1, None),
+    ]
+    DELETE_DONE_SCRIPT = [
+        ('gpg>',                                'deluid', -1, DELETING_UID),
+        ('You can\'t delete the last user ID!',       '', -1, DELETED_UIDS)
+    ]
+    ADD_UID_SCRIPT = [
+        ('gpg>',                                'adduid', -1, ADDING_UID),
+        ('Real name:',                        '%(name)s', -1, None),
+        ('address:',                         '%(email)s', -1, None),
+        ('Comment:',                       '%(comment)s', -1, None),
+        ('(O)kay/(Q)uit?',                           'O', -1, None),
+        ('Enter passphrase:',           '%(passphrase)s', -1, None),
+        ('trust: ultimate',                           '', -1, ADDED_UID),
+    ]
+    SAVE_SCRIPT = [
+        ('gpg>',                                  'save', -1, SAVED),
+    ]
+    VARIABLES = {
+        'name': '',
+        'email': '',
+        'comment': '',
+        'passphrase': 'mailpile'
+    }
+    RUNNING_STATES = (GnuPGExpectScript.RUNNING_STATES +
+                      [HAVE_SKEY,
+                       DELETING_UID, DELETED_UIDS, ADDING_UID, ADDED_UID])
+
+    def __init__(self, keyid, set_uids=None, deletes=5, logfile=None):
+        GnuPGExpectScript.__init__(self, logfile=logfile)
+        self.keyid = keyid
+
+        # First, we try and delete all the existing UIDs.
+        # We should be able to delete all but the last one..
+        for i in range(0, deletes):
+            self.main_script.extend(self.DELETE_SCRIPT)
+        self.main_script.extend(self.DELETE_DONE_SCRIPT)
+
+        # Next, add scripts to add our new UIDs.
+        first = True
+        self.uids = set_uids
+        for uid in set_uids:
+            # Magic: the in_state() method updates the variables for each
+            #        instance of this script.
+            self.main_script.extend(self.ADD_UID_SCRIPT)
+            if first:
+                # We added one, so we can delete the last of the old ones
+                self.main_script.extend(self.DELETE_SCRIPT)
+                first = False
+
+        self.main_script.extend(self.SAVE_SCRIPT)
+        print '\n'.join([str(s) for s in self.main_script])
+
+    def in_state(self, state):
+        if state == self.ADDING_UID:
+            self.variables = {}
+            self.variables.update(self.VARIABLES)
+            self.variables.update(self.uids.pop(0))
+
+    def gpg_args(self):
+        return ['--edit-key', self.keyid]
