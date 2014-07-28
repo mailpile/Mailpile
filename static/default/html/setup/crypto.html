@@ -4,19 +4,20 @@
 
 <div class="setup-box setup-box-medium animated bounceInUp">
   <h2 class="text-center"><span class="icon-lock-closed"></span> Passphrase</h2>
-  <hr>
 
   {% if error %}
     <h2>Oh shits {{ error }}</h2>
   {% endif %}
-  
+
   <form method="POST">
-  
+
   {% if result.secret_keys|length == 0 %}
     <p>We will create a key for you, you lucky person you!</p>
+    <input type="hidden" name="choose_key" value="!CREATE">
+
     <p>Choose a passphrase!
        <input type="password" name="passphrase" value=""></p>
-  
+
   {% else %}
     <p>You have PGP keys! Use one?</p>
     {% for key in result.secret_keys %}
@@ -35,17 +36,18 @@
       </div>
       {% endif %}
     {% endfor %}
+
     <div class='key_info'>
       <input name='choose_key' value='!CREATE' type='radio'>
       Create a new 4096 bit RSA key
     </div>
-  
+
     <p>Passphrase:
        <input type="password" name="passphrase" value=""></p>
   {% endif %}
-  
+
     <input type="hidden" name="advance" value="Yes">
-    <input type="submit" value="Continue...">   
+    <input type="submit" value="Continue...">
   </form>
 
 </div>

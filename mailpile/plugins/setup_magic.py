@@ -1,5 +1,6 @@
 import os
 import random
+import sys
 from datetime import date
 from urllib import urlencode
 
@@ -14,6 +15,7 @@ from mailpile.plugins.contacts import ListProfiles
 from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
+from mailpile.crypto.gpgi import GnuPGKeyGenerator
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.plugins.migrate import Migrate
@@ -156,16 +158,9 @@ class SetupMagic(Command):
         'mp_ham': {'type': 'ham', 'label': False, 'display': 'invisible'},
     }
 
-    def setup_command(self, session, do_gpg_stuff=False):
-        do_gpg_stuff = do_gpg_stuff or ('do_gpg_stuff' in self.args)
-
-        # Stop the workers...
-        want_daemons = session.config.cron_worker is not None
-        session.config.stop_workers()
-
-        # Perform any required migrations
-        Migrate(session).run(before_setup=True, after_setup=False)
-
+    def basic_app_config(self, session,
+                         save_and_update_workers=True,
+                         want_daemons=True):
         # Create local mailboxes
         session.config.open_local_mailbox(session)
 
@@ -199,8 +194,9 @@ class SetupMagic(Command):
                 session.config.sys.plugins.append(plugin)
                 reload_config = True
         if reload_config:
-            session.config.save()
-            session.config.load(session)
+            with session.config._lock:
+                session.config.save()
+                session.config.load(session)
 
         try:
             # If spambayes is not installed, this will fail
@@ -232,6 +228,25 @@ class SetupMagic(Command):
                 'trainer': 'spambayes'
             })
             session.config.prefs.autotag[0].exclude_tags[0] = 'ham'
+
+        if save_and_update_workers:
+            session.config.save()
+            session.config.prepare_workers(session, daemons=want_daemons)
+
+    def setup_command(self, session, do_gpg_stuff=False):
+        do_gpg_stuff = do_gpg_stuff or ('do_gpg_stuff' in self.args)
+
+        # Stop the workers...
+        want_daemons = session.config.cron_worker is not None
+        session.config.stop_workers()
+
+        # Perform any required migrations
+        Migrate(session).run(before_setup=True, after_setup=False)
+
+        # Basic app config, tags, plugins, etc.
+        self.basic_app_config(session,
+                              save_and_update_workers=False,
+                              want_daemons=want_daemons)
 
         # Assumption: If you already have secret keys, you want to
         #             use the associated addresses for your e-mail.
@@ -281,8 +296,20 @@ class SetupMagic(Command):
             else:
                 session.ui.warning(_('Oh no, PGP/GPG support is unavailable!'))
 
+        # If we have a GPG key, but no master key, create it
+        self.make_master_key()
+
+        # Perform any required migrations
+        Migrate(session).run(before_setup=False, after_setup=True)
+
+        session.config.save()
+        session.config.prepare_workers(session, daemons=want_daemons)
+
+        return self._success(_('Performed initial Mailpile setup'))
+
+    def make_master_key(self):
+        session = self.session
         if (session.config.prefs.gpg_recipient not in (None, '', '!CREATE')
-                and not (self._idx() and self._idx().INDEX)
                 and not session.config.master_key
                 and not session.config.prefs.obfuscate_index):
             #
@@ -307,18 +334,18 @@ class SetupMagic(Command):
                                    banned=CleanText.NONALNUM + 'O01l'
                                    ).clean[:chars]
             session.config.master_key = secret
-            session.config.prefs.obfuscate_index = True
-            session.config.prefs.index_encrypted = True
-            session.ui.notify(_('Obfuscating search index and enabling '
-                                'indexing of encrypted e-mail. '))
-
-        # Perform any required migrations
-        Migrate(session).run(before_setup=False, after_setup=True)
-
-        session.config.save()
-        session.config.prepare_workers(session, daemons=want_daemons)
-
-        return self._success(_('Performed initial Mailpile setup'))
+            if self._idx() and self._idx().INDEX:
+                session.ui.warning(_('Unable to obfuscate search index '
+                                     'without losing data. Not indexing '
+                                     'encrypted mail.'))
+            else:
+                session.config.prefs.obfuscate_index = True
+                session.config.prefs.index_encrypted = True
+                session.ui.notify(_('Obfuscating search index and enabling '
+                                    'indexing of encrypted e-mail. Yay!'))
+            return True
+        else:
+            return False
 
     def command(self, *args, **kwargs):
         session = self.session
@@ -390,91 +417,6 @@ class TestableWebbable(SetupMagic):
         raise Exception('FIXME')
 
 
-class SetupCheckKeychain(TestableWebbable):
-    """Gather some stats about the local keychain"""
-    SYNOPSIS = (None, None, 'setup/check_keychain', None)
-
-    def _have_gnupg_keyring(self):
-        raise Exception('FIXME')
-
-    def setup_command(self, session):
-        accepted_keys = []
-        if not self._testing_yes(self._have_gnupg_keyring):
-            return self._error(_('Oh noes, we have no GnuPG'))
-
-        if self._testing():
-            return self._success(_('Found a keychain'), result={
-                'private_keys': 5,
-                'public_keys': 31337
-            })
-
-        raise Exception('FIXME')
-
-
-class SetupCreateNewKey(SetupCheckKeychain):
-    """Create a new PGP key and keychain"""
-    SYNOPSIS = (None, 'setup/create_key', 'setup/create_key', None)
-
-    def setup_command(self, session):
-        if not self._testing_yes(self._have_gnupg_keyring):
-            return self._error(_('Oh noes, we have no GnuPG'))
-
-        if self.testing:
-            time.sleep(90)
-            return self._success(_('Created a new key'), result={
-                'type': 'OpenPGP',
-                'bits': 42,
-                'algorithm': 'Ballistic Carve',
-                'fingerprint': '0123456789ABCDEF0123456789ABCDEF'
-            })
-
-        raise Exception('FIXME')
-
-
-class SetupGuessEmails(TestableWebbable):
-    """Discover and guess which emails this user has"""
-    SYNOPSIS = (None, 'setup/guess_emails', 'setup/guess_emails', None)
-
-    def _get_tbird_emails(self):
-        raise Exception('FIXME')
-
-    def _get_macmail_emails(self):
-        raise Exception('FIXME')
-
-    def _get_gnupg_emails(self):
-        raise Exception('FIXME')
-
-    def setup_command(self, session):
-        # FIXME: Implement and add more potential sources of e-mails
-        macmail_emails = self._testing_data(self._get_macmail_emails, ['1'])
-        tbird_emails = self._testing_data(self._get_tbird_emails, ['1'])
-        gnupg_emails = self._testing_data(self._get_gnupg_emails, [
-            {
-                'name': 'Innocent Adventurer',
-                'address': 'luncheon@meat.trunch.eon',
-                'source': 'The Youtubes'
-            },
-            {
-                'name': 'Chelsea Manning',
-                'address': 'chelsea@manning.org',
-                'source': 'Internal Tribute Store'
-            },
-            {
-                'name': 'MUSCULAR',
-                'address': 'muscular@nsa.gov',
-                'source': 'Well funded adversaries'
-            }
-        ])
-
-        emails = macmail_emails + tbird_emails + gnupg_emails
-        if not emails:
-            return self._error(_('No e-mail addresses found'))
-        else:
-            return self._success(_('Discovered e-mail addresses'), {
-                'emails': emails
-            })
-
-
 class SetupTestEmailSettings(TestableWebbable):
     """Test the settings for an e-mail account"""
     SYNOPSIS = (None, 'setup/test_mailroute', 'setup/test_mailroute', None)
@@ -504,7 +446,6 @@ class SetupTestEmailSettings(TestableWebbable):
             return self._success(_('That all worked'))
         else:
             return self._error(_('Invalid settings'))
-
 
 
 class SetupGetEmailSettings(TestableWebbable):
@@ -549,6 +490,15 @@ class SetupWelcome(TestableWebbable):
         'language': 'Language selection'
     })
 
+    def bg_setup_stage_1(self):
+        # Intial configuration of app goes here...
+        if not self.session.config.tags:
+            self.basic_app_config(self.session)
+
+        # Next, if we have any secret GPG keys, extract all the e-mail
+        # addresses and create a profile for each one.
+        SetupProfiles(self.session).auto_create_profiles()
+
     def setup_command(self, session):
         config = session.config
         if self.data.get('_method') == 'POST' or self._testing():
@@ -565,9 +515,8 @@ class SetupWelcome(TestableWebbable):
                 except ValueError:
                     return self._error(_('Invalid language: %s') % language)
 
-            if not session.config.tags:
-                # Intial configuration of app goes here
-                SetupMagic.setup_command(self, session)
+            config.slow_worker.add_unique_task(
+                session, 'Setup, Stage 1', lambda: self.bg_setup_stage_1())
 
         results = {
             'languages': ListTranslations(config),
@@ -593,7 +542,9 @@ class SetupCrypto(TestableWebbable):
     })
     TEST_DATA = {}
 
-    def _list_secret_keys(self):
+    KEY_CREATION_THREAD = None
+
+    def list_secret_keys(self):
         today = date.today().strftime("%Y-%m-%d")
         keylist = {}
         for key, details in self._gnupg().list_secret_keys().iteritems():
@@ -611,10 +562,16 @@ class SetupCrypto(TestableWebbable):
             keylist[key] = details
         return keylist
 
+    def gpg_key_ready(self, gpg_keygen):
+        if not gpg_keygen.failed:
+            self.session.config.prefs.gpg_recipient = gpg_keygen.generated_key
+            self.make_master_key()
+            self._background_save(config=True)
+
     def setup_command(self, session):
         changed = authed = False
         results = {
-            'secret_keys': self._list_secret_keys(),
+            'secret_keys': self.list_secret_keys(),
         }
         error_info = None
 
@@ -645,6 +602,7 @@ class SetupCrypto(TestableWebbable):
                     })
                 else:
                     session.config.prefs.gpg_recipient = choose_key
+                    self.make_master_key()
                     changed = True
 
             try:
@@ -667,6 +625,16 @@ class SetupCrypto(TestableWebbable):
                     'invalid_passphrase': True,
                     'chosen_key': session.config.prefs.gpg_recipient
                 })
+
+            if ((not error_info) and
+                    (session.config.prefs.gpg_recipient == '!CREATE') and
+                    (SetupCrypto.KEY_CREATION_THREAD is None or
+                     SetupCrypto.KEY_CREATION_THREAD.failed)):
+                gk = GnuPGKeyGenerator(
+                    sps=session.config.gnupg_passphrase,
+                    on_complete=lambda: self.gpg_key_ready(gk))
+                SetupCrypto.KEY_CREATION_THREAD = gk
+                SetupCrypto.KEY_CREATION_THREAD.start()
 
         results.update({
             'chosen_key': session.config.prefs.gpg_recipient,
@@ -693,7 +661,7 @@ class SetupCrypto(TestableWebbable):
             return self._success(_('Configure crypto preferences'), results)
 
 
-class SetupProfiles(TestableWebbable):
+class SetupProfiles(SetupCrypto):
     SYNOPSIS = (None, None, 'setup/profiles', None)
 
     HTTP_AUTH_REQUIRED = True
@@ -711,27 +679,33 @@ class SetupProfiles(TestableWebbable):
     # This is deliberately made a singleton on the class.
     PASSWORD_CACHE = {}
 
-    def get_profiles(self):
+    def get_profiles(self, secret_keys=None):
         data = ListProfiles(self.session).run().result
         profiles = {}
         for rid, ofs in data["rids"].iteritems():
             profile = data["profiles"][ofs]
             email = profile["email"][0]["email"]
             name = profile["fn"]
-            profiles[email] = {
+            profiles[rid] = {
                 "name": name,
                 "pgp_keys": [],  # FIXME
-                "rid": rid
+                "email": email
             }
+        for key, info in (secret_keys or {}).iteritems():
+            for uid in info['uids']:
+                email = uid.get('email')
+                if email in profiles:
+                    profiles[email]["pgp_keys"].append(key)
         return profiles
 
     def discover_new_email_addresses(self, profiles):
         addresses = {}
+        existing = set([p['email'] for p in profiles.values()])
         for key, info in self._gnupg().list_secret_keys().iteritems():
             for uid in info['uids']:
                 email = uid.get('email')
                 if email:
-                    if email in profiles:
+                    if email in existing:
                         continue
                     if email not in addresses:
                         addresses[email] = {'pgp_keys': [], 'name': ''}
@@ -743,6 +717,15 @@ class SetupProfiles(TestableWebbable):
         # FIXME: Scan Thunderbird and MacMail for e-mails, other apps...
 
         return addresses
+
+    def auto_create_profiles(self):
+        new_emails = self.discover_new_email_addresses(self.get_profiles())
+        for email, info in new_emails.iteritems():
+            AddProfile(self.session, data={
+                '_method': 'POST',
+                'email': [email],
+                'name': [info['name']]
+            }).run()
 
     def _result(self):
         profiles = self.get_profiles()
@@ -760,6 +743,10 @@ class SetupProfiles(TestableWebbable):
             if email:
                 rv = AddProfile(session, data=self.data).run()
                 if rv.status == 'success':
+                    #
+                    # FIXME: We need to fire off a background process to
+                    #        try and auto-discover routes and sources.
+                    #
                     if not session.config.prefs.default_email:
                         session.config.prefs.default_email = email
                         changed = True
@@ -768,11 +755,49 @@ class SetupProfiles(TestableWebbable):
                                        info=rv.error_info,
                                        result=self._result())
             if email and pwd:
-                self.PASSWORD_CACHE[email] = SecurePassphraseStorage(pwd)
+                sps = SecurePassphraseStorage(pwd)
+                SetupProfiles.PASSWORD_CACHE[email] = sps
+
+            result = self._result()
+            if not result['default_email']:
+                profiles = result['profiles'].values()
+                profiles.sort(key=lambda p: (len(p['pgp_keys']),
+                                             len(p['name'])))
+                e = result['default_email'] = profiles[-1]['email']
+                session.config.prefs.default_email = e
+                changed = True
+        else:
+            result = self._result()
 
         if changed:
             self._background_save(config=True)
-        return self._success(_('Your profiles'), self._result())
+        return self._success(_('Your profiles'), result)
+
+
+class SetupConfigureKey(SetupProfiles):
+    SYNOPSIS = (None, None, 'setup/configure_key', None)
+
+    HTTP_AUTH_REQUIRED = True
+    HTTP_CALLABLE = ('GET', 'POST')
+    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
+    })
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
+    })
+    TEST_DATA = {}
+
+    def _result(self):
+        keylist = self.list_secret_keys()
+        profiles = self.get_profiles(secret_keys=keylist)
+        return {
+            'secret_keys': keylist,
+            'profiles': profiles,
+        }
+
+    def setup_command(self, session):
+
+        # FIXME!
+
+        return self._success(_('Configuring a key'), self._result())
 
 
 class SetupRoutes(TestableWebbable):
@@ -802,7 +827,7 @@ class SetupSources(TestableWebbable):
         return self._success(_(''), results)
 
 
-class Setup(SetupMagic):
+class Setup(TestableWebbable):
     """Enter setup flow"""
     SYNOPSIS = (None, 'setup', 'setup', '[do_gpg_stuff]')
 
@@ -816,12 +841,19 @@ class Setup(SetupMagic):
             return final
 
         for guard, step in [
+            # Stage 0: Welcome: Choose app language
             (lambda: config.prefs.language, SetupWelcome),
+
+            # Stage 1: Identity: Configure profiles and GPG key
             (lambda: (config.prefs.gpg_recipient and
                       config.gnupg_passphrase.data), SetupCrypto),
-            (lambda: config.get_profile()['email'], SetupProfiles),
-            #(config.routes, SetupRoutes),
-            #(config.sources, SetupSources),
+            (lambda: (config.prefs.default_email and
+                      config.get_profile()['email']), SetupProfiles),
+            (lambda: config.prefs.crypto_policy != 'none', SetupConfigureKey),
+
+            # Stage 2: Communication: Configure routes & sources
+            #(lambda: config.routes, SetupRoutes),
+            #(lambda: config.sources, SetupSources),
         ]:
             if not guard():
                 return step
@@ -830,19 +862,19 @@ class Setup(SetupMagic):
 
     def setup_command(self, session):
         if '_method' in self.data:
-            return self.success(_('Entering setup flow'), advance=True)
+            return self._success(_('Entering setup flow'), advance=True)
         else:
             return SetupMagic.setup_command(self, session)
 
 
 _ = gettext
 _plugins.register_commands(SetupMagic,
-                           SetupCheckKeychain, SetupCreateNewKey,
-                           SetupGuessEmails, SetupTestEmailSettings,
+                           SetupTestEmailSettings,
                            SetupGetEmailSettings,
                            SetupWelcome,
                            SetupCrypto,
                            SetupProfiles,
+                           SetupConfigureKey,
                            SetupRoutes,
                            SetupSources,
                            Setup)
