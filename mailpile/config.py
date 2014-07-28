@@ -1179,13 +1179,13 @@ class ConfigManager(ConfigDict):
         filename = filename or self.conffile
         lines = []
         try:
-            keydata = []
-            if os.path.exists(self.conf_key):
+            if os.path.exists(self.conf_key) and not public:
+                keydata = []
                 with open(self.conf_key, 'rb') as fd:
                     decrypt_and_parse_lines(fd, lambda d: keydata.extend(d),
                                             self, newlines=True)
-            self.master_key = ''.join(keydata)
-            self._master_key_ondisk = self.master_key
+                self.master_key = ''.join(keydata)
+                self._master_key_ondisk = self.master_key
 
             if os.path.exists(filename):
                 with open(filename, 'rb') as fd:
