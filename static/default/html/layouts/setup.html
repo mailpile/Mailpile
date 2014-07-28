@@ -7,6 +7,7 @@
   <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %} | {{name}}'s mailpile</title>
   {% block head %}{% endblock %}
   {% include("partials/head.html") %}
+  <script src="/static/bower_components/backbone.stickit/backbone.stickit.js"></script>
   <script src="/api/0/jsapi/setup.js"></script>
 </head>
 <body>
@@ -49,9 +50,7 @@
   </div>
 </div>
 
-<div id="setup" class="clearfix">
-  {% block content %}{{results}}{% endblock %}
-</div>
+{% block content %}{{results}}{% endblock %}
 
 <div id="setup-progress">
   <ul class="horizontal">
@@ -62,8 +61,6 @@
     <li><div class="setup-progress-circle"><span class="setup-progress-icon icon-settings"></span></div></li>
     <li><div><span class="setup-progress-line"></span></div></li>
     <li><div class="setup-progress-circle"><span class="setup-progress-icon icon-inbox"></span></div></li>
-    <li><div><span class="setup-progress-line"></span></div></li>
-    <li><div class="setup-progress-circle"><span class="setup-progress-icon icon-checkmark"></span></div></li>
   </ul>
 </div>
 
@@ -82,7 +79,6 @@
 <script type="text/javascript">
 $(document).ready(function()
 {
-  //SetupWizard.go();
   SetupApp.init();
 });
 </script>
