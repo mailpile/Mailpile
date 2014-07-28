@@ -64,10 +64,6 @@ def SetLoggedIn(cmd, user=None, redirect=False, session_id=None):
     if cmd:
         if redirect:
             return cmd._do_redirect()
-        else:
-            return cmd._success(_('Hello world, welcome!'), result={
-                'authenticated': user
-            })
     else:
         return True
 
@@ -149,7 +145,9 @@ class Authenticate(Command):
                             pass  # FIXME: Start load in background
 
                     session.ui.debug('Good passphrase for %s' % session_id)
-                    return SetLoggedIn(self, redirect=redirect)
+                    return self._success(_('Hello world, welcome!'), result={
+                        'authenticated': SetLoggedIn(self, redirect=redirect)
+                    })
                 else:
                     session.ui.debug('No GnuPG, checking DEFAULT user')
                     # No GnuPG, see if there is a DEFAULT user in the config

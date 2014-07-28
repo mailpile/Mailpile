@@ -453,8 +453,10 @@ class UrlMap:
             qd = []
 
         if setup:
-            path = '/%s/' % Setup.Next(self.session.config,
-                                       mailpile.auth.Authenticate).SYNOPSIS[2]
+            nxt = Setup.Next(self.session.config, mailpile.auth.Authenticate)
+            if nxt.HTTP_AUTH_REQUIRED is True:
+                nxt = mailpile.auth.Authenticate
+            path = '/%s/' % nxt.SYNOPSIS[2]
         else:
             path = '/%s/' % mailpile.auth.Authenticate.SYNOPSIS[2]
 
