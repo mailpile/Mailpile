@@ -227,11 +227,17 @@ class RemoveVCard(VCardCommand):
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'DELETE')
+    HTTP_POST_VARS = {
+        'email': 'delete by e-mail',
+        'rid': 'delete by x-mailpile-rid'
+    }
 
     def command(self):
         session, config = self.session, self.session.config
         removed = []
-        for handle in self.args:
+        for handle in (list(self.args) +
+                       self.data.get('email', []) +
+                       self.data.get('rid', [])):
             vcard = config.vcards.get_vcard(handle)
             if vcard:
                 self._pre_delete_vcard(vcard)
