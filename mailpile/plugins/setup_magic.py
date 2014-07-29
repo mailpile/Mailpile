@@ -862,7 +862,7 @@ class Setup(TestableWebbable):
 
     def setup_command(self, session):
         if '_method' in self.data:
-            return self._success(_('Entering setup flow'), advance=True)
+            return self._success(_('Entering setup flow'))  #, advance=True)
         else:
             return SetupMagic.setup_command(self, session)
 
