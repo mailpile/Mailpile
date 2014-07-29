@@ -4,7 +4,8 @@
 {% include("jsapi/setup/sources.js") %}
 {# include("jsapi/setup/view-identity.js") #}
 {# include("jsapi/setup/view-organize.js") #}
-{# include("jsapi/setup/view-advanced.js") #}
+{% include("jsapi/setup/security.js") %}
+{% include("jsapi/setup/access.js") %}
 {% include("jsapi/setup/router.js") %}
 
 var SetupApp = (function ($, Backbone, global) {
@@ -20,7 +21,8 @@ var SetupApp = (function ($, Backbone, global) {
       global.SourcesView    = new SourcesView({ el: $('#setup') });
 //      global.IdentityView   = new IdentityView({ el: $('#setup') });
 //      global.OrganizeView   = new OrganizeView({ el: $('#setup') });
-//      global.AdvancedView   = new AdvancedView({ el: $('#setup') });
+      global.SecurityView   = new SecurityView({ el: $('#setup') });
+      global.AccessView     = new AccessView({ el: $('#setup') });
 
   		// Router
   		global.Router = new SetupRouter($('#setup'));

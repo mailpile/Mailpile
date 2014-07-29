@@ -40,10 +40,9 @@ var SetupRouter = Backbone.Router.extend({
 		IdentityView.showSourceRemoteChoose();
 	},
   access: function() {
-    console.log('inside of access ROUTE');
-    AdvancedView.showAccess();
+    AccessView.show();
   },
   security: function() {
-    AdvancedView.showSecurity();
+    SecurityView.show();
   }
 });
