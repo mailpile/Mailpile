@@ -1,4 +1,5 @@
 @echo off
+set PATH=%PATH%;GnuPG\;OpenSSL\;
 set PYTHONPATH=%~dp0
 if exist python27\python.exe (
   set PYTHONBIN=python27\python.exe
@@ -9,4 +10,4 @@ if exist python27\python.exe (
 )
 REM i18n support doesn't work on Windows, default to English.
 set LANG=en
-%PYTHONBIN% scripts\mailpile %*
+START /B %PYTHONBIN% scripts\mailpile %*
