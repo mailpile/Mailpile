@@ -1,25 +1,23 @@
 {% extends "layouts/auth.html" %}
-{% block title %}{{_("Creating your key")}}{% endblock %}
+{% block title %}{{_("Create Encryption Key")}} | {{_("Setup")}}{% endblock %}
 {% block content %}
+
 <div class="setup-box setup-box-medium animated bounceInUp">
+  <h1 class="text-center"><span class="icon-key"></span> Your Encryption Key</h1>
   
-  <h1>Your encryption key</h1>
-  
-  <p>
-    <b>BRE:</b> <i>The options and dialog below are questions we may not want
+  {# BRE: The options and dialog below are questions we may not want
     to ask, if they're complicating things too much.  It's a lot of text.
     But I'm asking them here anyway, as a straw man for us to discuss
     futher. Maybe they belong elsewhere in the flow?  Or we just don't
     make them configurable at all?  I err towards asking, as this relates
-    to privacy, but...</i>
-  </p>
-  
+    to privacy, but... #}
+
   {% if error %}
     <h2>Oh shits {{ error }}</h2>
   {% endif %}
   
   <form method="POST">
-  
+
   {% if result.have_key %}
     
     <p>HERE THERE SHOULD BE SOME INFO ABOUT THE KEY</p>
@@ -36,7 +34,6 @@
        people cannot send you encrypted e-mail or verify your digital
        signatures. So the public part has to be shared, but it is up to you
        how widely you share it and what information it contains.</p>
-  
     <hr>
     <p>Much like a business card, you can list a variety of contact information
        on the key, and this helps people figure out who the key belongs to and
@@ -86,5 +83,6 @@
   <input type=submit value='Continue...'>
   
   </form>
+
 </div>
 {% endblock %}

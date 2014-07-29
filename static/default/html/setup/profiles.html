@@ -4,12 +4,11 @@
 
 <div class="setup-box setup-box-medium animated bounceInUp">
   <h2 class="text-center"><span class="icon-profiles"></span> Profiles</h2>
-  <hr>
 
   {% if error %}
   <h3>Oh shits {{ error }}</h3>
-  <hr>
   {% endif %}
+  <hr>
   
   {% if result.new_emails %}
     <h3>Discovered e-mail addresses</h3>
