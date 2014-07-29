@@ -32,7 +32,7 @@
     <h3>Add another e-mail address</h3>
     E-mail: <input type="text" name="email" value=""><br>
     Name: <input type="text" name="name" value=""><br>
-    Account password: <input type="password" name="pass" value=""><br>
+    Note: <input type="text" name="note" value=""><br>
     <input type="submit" value="Add to profiles">
   </form>
   
@@ -50,8 +50,9 @@
          {{ profile.name }}
          &lt;{{ profile.email }}&gt;
          {% if profile.note %}({{ profile.note }}){% endif %}
+         [auto_configurable={{ profile.auto_configurable }}]
          {% if profile.email != result.default_email %}
-           <input type='submit' value='Remove'>
+           &nbsp; &nbsp; <input type='submit' value='Remove'>
          {% endif %}
       </form></li>
     {% endfor %}

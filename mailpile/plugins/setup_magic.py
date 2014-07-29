@@ -680,6 +680,10 @@ class SetupProfiles(SetupCrypto):
     # This is deliberately made a singleton on the class.
     PASSWORD_CACHE = {}
 
+    def _auto_configurable(self, email):
+        # FIXME: Actually look things up, this is super lame
+        return email.endswith('@gmail.com')
+
     def get_profiles(self, secret_keys=None):
         data = ListProfiles(self.session).run().result
         profiles = {}
@@ -692,7 +696,8 @@ class SetupProfiles(SetupCrypto):
                 "name": name,
                 "note": note,
                 "pgp_keys": [],  # FIXME
-                "email": email
+                "email": email,
+                "auto_configurable": self._auto_configurable(email)
             }
         for key, info in (secret_keys or {}).iteritems():
             for uid in info['uids']:
