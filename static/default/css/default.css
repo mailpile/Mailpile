@@ -3867,7 +3867,7 @@ hr.giant {
 }
 .full-width-table td,
 .full-width-table th {
-  padding: 15px;
+  padding: 10px 0px;
 }
 .rounded {
   border-right: solid #ccc 1px;
@@ -3881,7 +3881,7 @@ hr.giant {
 .rounded th {
   border-left: 1px solid #ccc;
   border-top: 1px solid #ccc;
-  padding: 15px;
+  padding: 10px 0px;
   text-align: left;
 }
 .rounded th {
@@ -5231,35 +5231,11 @@ x:-o-prefocus,
   display: block;
   margin: 0 auto;
 }
-#login-vault-lock-outer {
-  width: 225px;
-  height: 225px;
-  border-radius: 112.5px;
-  border: 1px solid #4d4d4d;
-  box-sizing: border-box;
-  background: #b3b3b3;
+#login-vault-lock {
   margin: 0 auto;
   position: absolute;
   top: 10%;
   left: 55%;
-}
-#login-vault-lock-inner {
-  width: 171px;
-  height: 171px;
-  border-radius: 85.5px;
-  border: 1px solid #4d4d4d;
-  box-sizing: border-box;
-  background: #ffffff;
-  position: relative;
-  top: 27px;
-  left: 27px;
-}
-#login-vault-lock {
-  font-size: 72px;
-  line-height: 72px;
-  position: relative;
-  top: 42px;
-  left: 47px;
 }
 #login-details {
   width: 485px;
@@ -5491,7 +5467,38 @@ div.content-normal {
   margin: 0px 5px;
   padding: 0px;
 }
+/* Text */
+.text-detail {
+  color: #b3b3b3;
+}
+/* Form Inputs */
+/* Rebar: move this rebar/forms.less library at some point */
+input[type="text"].input-medium,
+input[type="password"].input-medium,
+input[type="email"].input-medium,
+input[type="url"].input-medium,
+input[type="phone"].input-medium,
+input[type="address"].input-medium,
+textarea.input-medium,
+select.input-medium {
+  width: 350px;
+}
+input[type="text"].input-large,
+input[type="password"].input-large,
+input[type="email"].input-large,
+input[type="url"].input-large,
+input[type="phone"].input-large,
+input[type="address"].input-large,
+textarea.input-large,
+select.input-large {
+  width: 500px;
+}
 /* List Items */
+/* REBAR: Move these more global styles to Rebar */
+ul.items.grouped {
+  background: #ffffff;
+  border-radius: 3px;
+}
 ul.items li.separate {
   background: #ffffff;
   margin-bottom: 20px;
@@ -5499,7 +5506,12 @@ ul.items li.separate {
   border: 1px solid #b3b3b3;
   border-radius: 3px;
 }
-ul.items li.item h5 {
+ul.items.grouped li.grouped {
+  border-top: 1px solid #b3b3b3;
+  padding: 15px;
+}
+ul.items li.separate h5,
+ul.items li.grouped h5 {
   margin-bottom: 13.33333333px;
 }
 /* Response Rectangles - Tags & Contacts */
@@ -5526,6 +5538,33 @@ ul.items li.item h5 {
 .global-avatar-img {
   width: 45px;
   border-radius: 3px;
+}
+/* Crypto */
+.vault-lock-outer {
+  width: 225px;
+  height: 225px;
+  border-radius: 112.5px;
+  border: 1px solid #4d4d4d;
+  box-sizing: border-box;
+  background: #b3b3b3;
+}
+.vault-lock-inner {
+  width: 171px;
+  height: 171px;
+  border-radius: 85.5px;
+  border: 1px solid #4d4d4d;
+  box-sizing: border-box;
+  background: #ffffff;
+  position: relative;
+  top: 27px;
+  left: 27px;
+}
+.vault-lock {
+  font-size: 72px;
+  line-height: 72px;
+  position: relative;
+  top: 42px;
+  left: 47px;
 }
 /* Notifications - Messages (error, warning, debug, info, success) */
 #messages {
@@ -6036,6 +6075,31 @@ a.sidebar-tag span.sidebar-tag-archive:hover {
   font-weight: bold;
   z-index: 9999;
 }
+/* Crypto */
+.compose-crypto-signature.none {
+  color: #b3b3b3;
+}
+.compose-crypto-signature.signed {
+  color: #4b9441;
+}
+.compose-crypto-signature.error {
+  color: #be1c21;
+}
+.compose-crypto-encryption.none {
+  color: #b3b3b3;
+}
+.compose-crypto-encryption.none {
+  color: #b3b3b3;
+}
+.compose-crypto-encryption.cannot {
+  color: #fbb03b;
+}
+.compose-crypto-encryption.encrypted {
+  color: #4b9441;
+}
+.compose-crypto-encryption.error {
+  color: #be1c21;
+}
 /* Compose */
 .form-compose {
   padding: 15px 20px 10px 20px;
@@ -6152,30 +6216,6 @@ a.compose-show-field {
 .compose-crypto-signature:hover,
 .compose-crypto-encryption:hover {
   cursor: pointer;
-}
-.compose-crypto-signature.none {
-  color: #b3b3b3;
-}
-.compose-crypto-signature.signed {
-  color: #4b9441;
-}
-.compose-crypto-signature.error {
-  color: #be1c21;
-}
-.compose-crypto-encryption.none {
-  color: #b3b3b3;
-}
-.compose-crypto-encryption.none {
-  color: #b3b3b3;
-}
-.compose-crypto-encryption.cannot {
-  color: #fbb03b;
-}
-.compose-crypto-encryption.encrypted {
-  color: #4b9441;
-}
-.compose-crypto-encryption.error {
-  color: #be1c21;
 }
 .compose-options ul {
   display: inline-block;
@@ -6773,11 +6813,12 @@ tr.modal-tag-picker-item td.checkbox {
 /* Thread Title */
 #thread-title {
   text-align: center;
-  padding: 10px 0 5px 0;
+  padding: 0px 0 0px 0;
 }
 #thread-title h1 {
-  margin: 0px 20px;
-  padding: 0px;
+  display: inline-block;
+  margin: 0 20px;
+  padding: 8px 0px 5px 0px;
   font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 24px;
   font-weight: bold;
@@ -6798,6 +6839,16 @@ tr.modal-tag-picker-item td.checkbox {
 }
 #thread-title ul a:hover {
   color: #4d4d4d;
+}
+#thread-title div.thread-draggable {
+  width: 12px;
+  min-height: 73px;
+  background: url('/static/img/draggable-pattern.png'), #ffffff;
+  opacity: 0.3;
+  filter: alpha(opacity=30);
+}
+#thread-title div.thread-draggable:hover {
+  cursor: move;
 }
 /* Thread Snippet - Preview of messages */
 .thread-snippet {
@@ -7289,4 +7340,19 @@ a.modal-tag-color-option:hover {
   #pile-results td.avatar {
     padding-left: 12px;
   }
+}
+/* REBAR: move to core */
+/* Validation */
+/* REBAR: move this to Rebar core lib, in Issue #17 */
+.validation-message {
+  font-style: italic;
+}
+.validation-success {
+  color: #4b9441;
+}
+.validation-warning {
+  color: #fbb03b;
+}
+.validation-error {
+  color: #be1c21;
 }

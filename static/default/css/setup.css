@@ -86,9 +86,6 @@ div.setup-box-medium {
 div.setup-box-large {
   width: 800px;
 }
-.setup-text-detail {
-  color: #b3b3b3;
-}
 .setup-text-detail-large {
   color: #b3b3b3;
   font-size: 24px;
@@ -113,10 +110,57 @@ div.setup-progress-circle {
 }
 span.setup-progress-icon {
   display: inline-block;
+  color: #b3b3b3;
 }
 span.setup-progress-line {
   width: 100px;
   display: block;
   border-bottom: 1px solid #cccccc;
   margin: 23px 8px 0px 8px;
+}
+/* Idenity */
+#identity-vault-lock {
+  margin: 20px auto;
+}
+#setup-profile-list {
+  background: #ffffff;
+  border-radius: 5px;
+  border: 1px solid #cccccc;
+}
+#setup-profile-list li:first-child {
+  border-top: 0px solid;
+}
+.setup-profile {
+  padding: 15px;
+  border-top: 1px solid #cccccc;
+}
+.setup-profile .avatar {
+  width: 50px;
+  display: inline-block;
+  float: left;
+  margin-right: 20px;
+}
+.setup-profile .avatar img {
+  width: 50px;
+}
+.setup-profile .name {
+  display: block;
+  margin-bottom: 5px;
+  vertical-align: text-top;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 18px;
+  color: #4d4d4d;
+}
+.setup-profile .email {
+  font-size: 14px;
+  line-height: 14px;
+  color: #b3b3b3;
+}
+.setup-profile-disable .icon-minus {
+  font-size: 10px;
+  background: #4d4d4d;
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 3px;
 }
