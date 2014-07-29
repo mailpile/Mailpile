@@ -1721,7 +1721,7 @@ class ConfigManager(ConfigDict):
 
         # We may start the HTTPD without the loaded config...
         if not config.loaded_config:
-            if not config.http_worker:
+            if daemons and not config.http_worker:
                  start_httpd(httpd_spec)
             return
 
@@ -1750,7 +1750,7 @@ class ConfigManager(ConfigDict):
                 config.cron_worker = Cron('Cron worker', session)
                 config.cron_worker.start()
             if not config.http_worker:
-                start_httpd()
+                start_httpd(httpd_spec)
             if not config.other_workers:
                 from mailpile.plugins import PluginManager
                 for worker in PluginManager.WORKERS:
