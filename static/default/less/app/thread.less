@@ -11,12 +11,13 @@
 
   #thread-title {
     text-align: center;
-    padding: 10px 0 5px 0;
+    padding: 0px 0 0px 0;
   }
 
   #thread-title h1 {
-    margin: 0px @base-margin;
-    padding: 0px;
+    display: inline-block;
+    margin: 0 @base-margin;
+    padding: 8px 0px 5px 0px;
     font-family: @mailpile-text-font-family-bold;
     font-size: 24px;
     font-weight: bold;
@@ -41,6 +42,18 @@
 
   #thread-title ul a:hover {
     color: @grayDark;
+  }
+
+  #thread-title div.thread-draggable {
+    width: 12px;
+    min-height: 73px;
+    background: url('/static/img/draggable-pattern.png'), rgba(255,255,255,1);
+    opacity: 0.3;
+    filter:alpha(opacity=30);
+  }
+
+  #thread-title div.thread-draggable:hover {
+    cursor: move;
   }
 
 

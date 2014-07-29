@@ -105,6 +105,51 @@ $(document).on('click', '.dropdown-toggle', function() {
 });
 
 
+/* Search - Dragging items from search to sidebar */
+$('div.thread-draggable').draggable({
+  containment: "#container",
+  appendTo: 'body',
+  cursor: 'move',
+  scroll: false,
+  revert: false,
+  opacity: 1,
+  helper: function(event) {
+    return $('<div class="pile-results-drag ui-widget-header"><span class="icon-inbox"></span> Moving Thread</div>');
+  },
+  start: function(event, ui) {
+
+    // Add Draggable MID
+    var mid = location.href.split("thread/=")[1].split("/")[0];
+    console.log('dragging mid: ' + mid);
+    Mailpile.bulk_cache_add('messages_cache', mid);
+
+    // Update Bulk UI
+
+  	// Style & Select Checkbox
+  	
+  },
+  stop: function(event, ui) {}
+});
+
+
+/* Search - Make search items draggable to sidebar */
+$('li.sidebar-tags-draggable').droppable({
+  accept: 'div.thread-draggable',
+  activeClass: 'sidebar-tags-draggable-hover',
+  hoverClass: 'sidebar-tags-draggable-active',
+  tolerance: 'pointer',
+  drop: function(event, ui) {
+    // FIXME: this action is up for discussion
+    // Github Issue - https://github.com/pagekite/Mailpile/issues/794
+    var tid = $(this).find('a').data('tid');
+    Mailpile.bulk_cache_add('messages_cache', ui.draggable.parent().data('mid'));
+    Mailpile.tag_add_delete(tid, ['inbox'], Mailpile.messages_cache, function() {
+      window.location.href = '/in/inbox/';
+    });
+  }
+});
+
+
 /* Thread Tooltips */
 $(document).ready(function() {
 
