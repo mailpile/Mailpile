@@ -7,6 +7,17 @@
 {% include("settings/various.html") %}
 {% include("settings/identity.html") %}
 {% include("settings/organize.html") %}
-{% include("settings/advanced.html") %}
+
+<script id="template-setup-crypto-generated" type="text/template">
+{% include("setup/key_generated.html") %}
+</script>
+
+<script id="template-setup-access" type="text/template">
+{% include("setup/access.html") %}
+</script>
+
+<script id="template-setup-security" type="text/template">
+{% include("setup/security.html") %}
+</script>
 
 {% endblock %}
