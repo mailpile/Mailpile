@@ -439,9 +439,13 @@ class GnuPG:
                     args.insert(1, "--no-use-agent")
                 args.insert(2, "--passphrase-fd=%d" % passphrase_pipe[0])
 
-            proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-                         bufsize=0, close_fds=False,
-                         preexec_fn=popen_ignore_signals)
+            if sys.platform == "win32":
+                proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                             bufsize=0, close_fds=False)
+            else:
+                proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                             bufsize=0, close_fds=False,
+                             preexec_fn=popen_ignore_signals)
 
             # GnuPG is a bit crazy, and requires that the passphrase
             # be sent and the filehandle closed before anything else
