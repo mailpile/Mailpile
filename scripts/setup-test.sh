@@ -1,7 +1,10 @@
 #!/bin/bash
 
+
 export MAILPILE_HOME="$(pwd)/testing/setup-tmp"
-export GNUPGHOME="$MAILPILE_HOME"
+if [ "$1" != "--mygpg" ]; then
+    export GNUPGHOME="$MAILPILE_HOME"
+fi
 
 rm -rf "$MAILPILE_HOME"
 mkdir "$MAILPILE_HOME"

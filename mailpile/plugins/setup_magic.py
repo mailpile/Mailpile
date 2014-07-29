@@ -671,6 +671,7 @@ class SetupProfiles(SetupCrypto):
     HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
         'email': 'Create a profile for this e-mail address',
         'name': 'Name associated with this e-mail',
+        'note': 'Profile note',
         'pass': 'Password for remote accounts',
     })
     TEST_DATA = {}
@@ -686,8 +687,10 @@ class SetupProfiles(SetupCrypto):
             profile = data["profiles"][ofs]
             email = profile["email"][0]["email"]
             name = profile["fn"]
+            note = profile.get('note', '')
             profiles[rid] = {
                 "name": name,
+                "note": note,
                 "pgp_keys": [],  # FIXME
                 "email": email
             }
@@ -704,14 +707,17 @@ class SetupProfiles(SetupCrypto):
         for key, info in self._gnupg().list_secret_keys().iteritems():
             for uid in info['uids']:
                 email = uid.get('email')
+                note = uid.get('comment')
                 if email:
                     if email in existing:
                         continue
                     if email not in addresses:
-                        addresses[email] = {'pgp_keys': [], 'name': ''}
+                        addresses[email] = {'pgp_keys': [],
+                                            'name': '', 'note': ''}
                     ai = addresses[email]
                     name = uid.get('name')
                     ai['name'] = name if name else ai['name']
+                    ai['note'] = note if note else ai['note']
                     ai['pgp_keys'].append(key)
 
         # FIXME: Scan Thunderbird and MacMail for e-mails, other apps...
@@ -724,6 +730,7 @@ class SetupProfiles(SetupCrypto):
             AddProfile(self.session, data={
                 '_method': 'POST',
                 'email': [email],
+                'note': [info["note"]],
                 'name': [info['name']]
             }).run()
 
@@ -738,8 +745,8 @@ class SetupProfiles(SetupCrypto):
     def setup_command(self, session):
         changed = False
         if self.data.get('_method') == 'POST' or self._testing():
-            name, email, pwd = (self.data.get(k, [None])[0]
-                                for k in ('name', 'email', 'pass'))
+            name, email, note, pwd = (self.data.get(k, [None])[0] for k in
+                                      ('name', 'email', 'note', 'pass'))
             if email:
                 rv = AddProfile(session, data=self.data).run()
                 if rv.status == 'success':

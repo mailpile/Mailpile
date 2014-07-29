@@ -49,6 +49,7 @@
                 target=_blank>
          {{ profile.name }}
          &lt;{{ profile.email }}&gt;
+         {% if profile.note %}({{ profile.note }}){% endif %}
          {% if profile.email != result.default_email %}
            <input type='submit' value='Remove'>
          {% endif %}

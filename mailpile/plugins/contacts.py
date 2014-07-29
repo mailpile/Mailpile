@@ -60,18 +60,21 @@ class VCardCommand(Command):
                 else:
                     emails = [k['email'] for k in card['email']]
                     photos = [k['photo'] for k in card.get('photo', [])]
-                    lines.append('%s %-26.26s %s'
+                    lines.append('%s %-32.32s %s'
                                  % (photos and ':)' or '  ',
-                                    card['fn'],
+                                    card['fn'] + (' (%s)' % card['note']
+                                                  if card.get('note') else ''),
                                     ', '.join(emails)))
                     for key in [k['key'].split(',')[-1]
                                 for k in card.get('key', [])]:
-                        lines.append('   %-26.26s key:%s' % ('', key))
+                        lines.append('   %-32.32s key:%s' % ('', key))
             return '\n'.join(lines)
 
-    def _make_new_vcard(self, handle, name, kind):
+    def _make_new_vcard(self, handle, name, note, kind):
         l = [VCardLine(name='fn', value=name),
              VCardLine(name='kind', value=kind)]
+        if note:
+            l.append(VCardLine(name='note', value=note))
         if self.KIND in VCardStore.KINDS_PEOPLE:
             return MailpileVCard(VCardLine(name='email',
                                            value=handle, type='pref'), *l)
@@ -144,8 +147,9 @@ class AddVCard(VCardCommand):
     KIND = ''
     HTTP_CALLABLE = ('POST', 'PUT', 'GET')
     HTTP_POST_VARS = {
-        'email': 'e-mail address',
+        'email': 'E-mail address',
         'name': 'Contact name',
+        'note': 'Note about contact',
         'mid': 'Message ID'
     }
 
@@ -169,7 +173,7 @@ class AddVCard(VCardCommand):
                             domain not in self.IGNORED_EMAILS_AND_DOMAINS and
                             'noreply' not in pair[0]):
                         pairs.append(pair)
-        return pairs
+        return [(p1, p2, '') for p1, p2 in pairs]
 
     def command(self, recipients=False, quietly=False, internal=False):
         session, config, idx = self.session, self.session.config, self._idx()
@@ -183,24 +187,44 @@ class AddVCard(VCardCommand):
         if (len(args) > 2
                 and args[1] == '='
                 and self._valid_vcard_handle(args[0])):
-            pairs = [(args[0], ' '.join(args[2:]))]
+            handle = args[0]
+            name = []
+            note = []
+            inname = True
+            for v in args[2:]:
+                if v.startswith('('):
+                    inname = False
+                    v = v[1:]
+                if v.endswith(')'):
+                    v = v[:-1]
+                if inname:
+                    name.append(v)
+                else:
+                    note.append(v)
+
+            triplets = [(args[0], ' '.join(name), ' '.join(note))]
 
         elif self.data:
-            if self.data.get('name') and self.data.get('email'):
-                pairs = zip(self.data["email"], self.data["name"])
+            if self.data.get('email'):
+                emails = self.data["email"]
+                names = self.data["name"][:]
+                names.extend(['' for i in range(len(names), len(emails))])
+                notes = self.data.get("note", [])[:]
+                notes.extend(['' for i in range(len(notes), len(emails))])
+                triplets = zip(emails, names, notes)
             elif self.data.get('mid'):
                 mids = self.data.get('mid')
-                pairs = self._add_from_messages(
+                triplets = self._add_from_messages(
                     ['=%s' % mid.replace('=', '') for mid in mids])
         else:
             if args and args[0] == 'all':
                 recipients = args.pop(0) and True
-            pairs = self._add_from_messages(args, recipients)
+            triplets = self._add_from_messages(args, recipients)
 
-        if pairs:
+        if triplets:
             vcards = []
             kind = self.KIND if not internal else 'internal'
-            for handle, name in pairs:
+            for handle, name, note in triplets:
                 vcard = config.vcards.get(handle.lower())
                 if vcard:
                     if not quietly:
@@ -210,9 +234,12 @@ class AddVCard(VCardCommand):
                 if vcard and vcard.kind == 'internal':
                     config.vcards.deindex_vcard(vcard)
                     vcard.email = handle.lower()
+                    vcard.name = name
+                    vcard.note = note
                     vcard.kind = kind
                 else:
-                    vcard = self._make_new_vcard(handle.lower(), name, kind)
+                    vcard = self._make_new_vcard(handle.lower(), name, note,
+                                                 kind)
                 config.vcards.add_vcards(vcard)
                 vcards.append(vcard)
         else:

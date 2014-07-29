@@ -654,6 +654,10 @@ class SimpleVCard(object):
         lambda self: unicode(self._vcard_get('fn')),
         lambda self, e: self._vcard_set('fn', e))
 
+    note = property(
+        lambda self: unicode(self._vcard_get('note')),
+        lambda self, e: self._vcard_set('note', e.replace('\n', ' ')))
+
 
 class MailpileVCard(SimpleVCard):
     """
@@ -792,7 +796,7 @@ class MailpileVCard(SimpleVCard):
                     d[k] = vcl[k]
         return d
 
-    MPCARD_SINGLETONS = ('fn', 'kind',
+    MPCARD_SINGLETONS = ('fn', 'kind', 'note',
                          'x-mailpile-profile-signature',
                          'x-mailpile-profile-route')
     MPCARD_SUPPRESSED = ('version', 'x-mailpile-rid')
@@ -1155,7 +1159,7 @@ class VCardStore(dict):
 
         """
         fa_list = vcards.choose_from_addresses(*args, **kwargs)
-        return fa_list and fa_list[0] or None 
+        return fa_list and fa_list[0] or None
 
     def choose_from_addresses(vcards, config, *address_lists):
         # Generate all the possible e-mail address / vcard pairs
