@@ -6812,6 +6812,7 @@ tr.modal-tag-picker-item td.checkbox {
 }
 /* Thread Title */
 #thread-title {
+  display: table;
   text-align: center;
   padding: 0px 0 0px 0;
 }
@@ -6842,13 +6843,17 @@ tr.modal-tag-picker-item td.checkbox {
 }
 #thread-title div.thread-draggable {
   width: 12px;
-  min-height: 73px;
+  height: 100%;
+  display: table-cell;
   background: url('/static/img/draggable-pattern.png'), #ffffff;
   opacity: 0.3;
   filter: alpha(opacity=30);
 }
 #thread-title div.thread-draggable:hover {
   cursor: move;
+}
+#thread-title div.thread-details {
+  display: table-cell;
 }
 /* Thread Snippet - Preview of messages */
 .thread-snippet {
