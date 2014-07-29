@@ -1,5 +1,6 @@
 /* Setup - Profiles - Model */
 var ProfileModel = Backbone.Model.extend({
+  url: '/api/0/profiles_add/',
   validation: {
     name: {
       required: true,
@@ -26,10 +27,11 @@ var ProfilesView = Backbone.View.extend({
   render: function() {
   },
   events: {
-    "click #btn-setup-show-add-profile": "showAddProfile",
-    "click #btn-setup-hide-add-profile": "hideAddProfile",
-    "click .setup-profile-remove": "removeProfile",
-  	"click #btn-setup-basic-info": "processBasic"
+    "click #btn-setup-show-add-profile"   : "showAddProfile",
+    "click #btn-setup-cancel-add-profile" : "cancelAddProfile",
+    "click #btn-setup-add-profile"        : "processAddProfile",
+    "click .setup-profile-remove"         : "processRemoveProfile",
+  	"click #btn-setup-basic-info"         : "processBasic"
   },
   showProfiles: function() {
 
@@ -39,12 +41,12 @@ var ProfilesView = Backbone.View.extend({
     $('#btn-setup-show-add-profile').hide();
     $('#form-setup-profile-add').fadeIn();
   },
-  hideAddProfile: function(e) {
+  cancelAddProfile: function(e) {
     e.preventDefault();
     $('#btn-setup-show-add-profile').fadeIn();
     $('#form-setup-profile-add').hide();    
   },
-  processProfileAdd: function(e) {
+  processAddProfile: function(e) {
 
     e.preventDefault();
 
@@ -55,21 +57,25 @@ var ProfilesView = Backbone.View.extend({
     // Process
     if (validate === undefined) {
 
-      Mailpile.API.profiles_remove({ key: value}, function() {
+      var add_profile = this.model.sync();
+      console.log(add_profile);
 
-      });
-
-      // Backbone.history.navigate('#crypto-generated', true);
-   }
+    }
     else {
       $.each(validate, function(elem, msg){
         $('#error-setup-' + elem).html(msg);
       });
     }
   },
-  removeProfile: function() {
+  processRemoveProfile: function() {
 
-    
     alert('this will remove a profile');
+    var profile_id = ;
+    
+    Mailpile.API.profiles_remove({ rid: profile_id }, function(result) {
+      console.log(result);
+
+    });
+
   }
 });

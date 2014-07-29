@@ -2,12 +2,12 @@
 var PassphraseModel = Backbone.Model.extend({
   validation: {
     passphrase: {
-      minLength: 10,
+      minLength: 5,
       required: true,
       msg: 'Enter a passphrase of at least 10 letters'
     },
     passphrase_confirm: {
-      minLength: 10,
+      minLength: 5,
       required: true,
       equalTo: 'passphrase',
       msg: 'Your confirmation passphrase does not match'
@@ -43,20 +43,25 @@ var PassphraseView = Backbone.View.extend({
     $('#setup-progress').find('')
   },
   processPassphrase: function(e) {
+
     e.preventDefault();
 
-    // Prepare Data
-    var basic_data = $('#form-setup-passphrase').serializeObject();
-
     // Set Model & Validate
-    this.model.set(basic_data);
+    var passphrase_data = $('#form-setup-passphrase').serializeObject();
+    this.model.set(passphrase_data);
     var validate = this.model.validate();
 
     // Process
     if (validate === undefined) {
       Mailpile.API.setup_crypto(passphrase_data, function(result) {
         if (result.status == 'success') {
-          Backbone.history.navigate('#profiles', true);
+          $('#identity-vault-lock')
+            .find('.icon-lock-closed')
+            .removeClass('icon-lock-closed')
+            .addClass('icon-lock-open color-08-green bounce');
+          setTimeout(function() {
+            Backbone.history.navigate('#profiles', true);
+          }, 2500);
         }
         else if (result.status == 'error' && result.error.invalid_passphrase) {
           $('#identity-vault-lock').find('.icon-lock-closed').addClass('color-12-red bounce');

@@ -1,6 +1,5 @@
 // Setup Router
-var SetupRouter = Backbone.Router.extend(
-{
+var SetupRouter = Backbone.Router.extend({
 	initialize: function(el) {
 		this.el = el;
 	},
@@ -17,22 +16,22 @@ var SetupRouter = Backbone.Router.extend(
 		"security"         : "security"
 	},
 	index: function() {
-		IdentityView.showIndex();
-	},
+    Backbone.history.navigate('#passphrase', true); 
+  },
 	passphrase: function() {
-		IdentityView.showPassphrase();
+		PassphraseView.showPassphrase();
 	},
 	cryptoGenerated: function() {
 		IdentityView.showCryptoGenerated();
 	},
 	profiles: function() {
-		IdentityView.showProfiles();
+		ProfilesView.showProfiles();
 	},
   discovery: function() {
 		IdentityView.showDiscovery();
   },
 	sourceSettings: function() {
-		IdentityView.showSourceSettings();
+		sourceView.showSourceSettings();
 	},
 	sourceLocal: function() {
 		IdentityView.showSourceLocal();

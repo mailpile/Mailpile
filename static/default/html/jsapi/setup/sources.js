@@ -28,8 +28,7 @@ var SourceModel = Backbone.Model.extend({
         path: "/Users/brennannovak/Library/Mail/Folders/old-archive.mbox"
       }
     ]
-  },
-  initialize: function() {}
+  }
 });
 
 
