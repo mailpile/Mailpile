@@ -532,6 +532,7 @@ class SetupCrypto(TestableWebbable):
     HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
         'choose_key': 'Select an existing key to use',
         'passphrase': 'Specify a passphrase',
+        'passphrase_confirm': 'Confirm the passphrase',
         'index_encrypted': 'y/n: index encrypted mail?',
         'obfuscate_index': 'y/n: obfuscate keywords?',
         'encrypt_mail': 'y/n: encrypt locally stored mail?',
@@ -570,12 +571,16 @@ class SetupCrypto(TestableWebbable):
         changed = authed = False
         results = {
             'secret_keys': self.list_secret_keys(),
+            'creating_key': (Setup.KEY_CREATION_THREAD is not None and
+                             not Setup.KEY_CREATION_THREAD.failed),
+            'creating_failed': (Setup.KEY_CREATION_THREAD is not None and
+                                Setup.KEY_CREATION_THREAD.failed)
         }
         error_info = None
 
         if self.data.get('_method') == 'POST' or self._testing():
             for key in self.HTTP_POST_VARS.keys():
-                if key in (['choose_key', 'passphrase'] +
+                if key in (['choose_key', 'passphrase', 'passphrase_confirm'] +
                            TestableWebbable.HTTP_POST_VARS.keys()):
                     continue
                 try:
@@ -604,8 +609,10 @@ class SetupCrypto(TestableWebbable):
                     changed = True
 
             try:
-                passphrase = self.data.get('passphrase', [''])[0]
                 if not error_info:
+                    passphrase = self.data.get('passphrase', [''])[0]
+                    passphrase2 = self.data.get('passphrase_confirm', [''])[0]
+                    assert(passphrase == passphrase2)
                     if session.config.prefs.gpg_recipient == '!CREATE':
                         assert(passphrase != '')
                         sps = SecurePassphraseStorage(passphrase)

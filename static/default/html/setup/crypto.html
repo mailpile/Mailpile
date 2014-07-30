@@ -11,12 +11,18 @@
 
   <form method="POST">
 
-  {% if result.secret_keys|length == 0 %}
+  {% if result.creating_key %}
+
+    <p>Key creation is in progress... this may take a while.</p>
+
+  {% elif result.secret_keys|length == 0 %}
     <p>We will create a key for you, you lucky person you!</p>
     <input type="hidden" name="choose_key" value="!CREATE">
 
     <p>Choose a passphrase!
        <input type="password" name="passphrase" value=""></p>
+    <p>Type it again, just in case:
+       <input type="password" name="passphrase_confirm" value=""></p>
 
   {% else %}
     <p>You have PGP keys! Use one?</p>
