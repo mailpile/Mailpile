@@ -542,8 +542,6 @@ class SetupCrypto(TestableWebbable):
     })
     TEST_DATA = {}
 
-    KEY_CREATION_THREAD = None
-
     def list_secret_keys(self):
         today = date.today().strftime("%Y-%m-%d")
         keylist = {}
@@ -628,13 +626,13 @@ class SetupCrypto(TestableWebbable):
 
             if ((not error_info) and
                     (session.config.prefs.gpg_recipient == '!CREATE') and
-                    (SetupCrypto.KEY_CREATION_THREAD is None or
-                     SetupCrypto.KEY_CREATION_THREAD.failed)):
+                    (Setup.KEY_CREATION_THREAD is None or
+                     Setup.KEY_CREATION_THREAD.failed)):
                 gk = GnuPGKeyGenerator(
                     sps=session.config.gnupg_passphrase,
                     on_complete=lambda: self.gpg_key_ready(gk))
-                SetupCrypto.KEY_CREATION_THREAD = gk
-                SetupCrypto.KEY_CREATION_THREAD.start()
+                Setup.KEY_CREATION_THREAD = gk
+                Setup.KEY_CREATION_THREAD.start()
 
         results.update({
             'chosen_key': session.config.prefs.gpg_recipient,
@@ -846,6 +844,9 @@ class Setup(TestableWebbable):
     ORDER = ('Internals', 0)
     LOG_PROGRESS = True
     HTTP_CALLABLE = ('GET',)
+
+    # This is a global, may be modified...
+    KEY_CREATION_THREAD = None
 
     @classmethod
     def Next(cls, config, final):

@@ -32,6 +32,7 @@ class JsApi(Command):
     SYNOPSIS = (None, None, 'jsapi', None)
     ORDER = ('Internals', 0)
     HTTP_CALLABLE = ('GET', )
+    HTTP_AUTH_REQUIRED = 'Maybe'
 
     def command(self, save=True, auto=False):
         session, config = self.session, self.session.config
