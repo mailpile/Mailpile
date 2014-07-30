@@ -1604,22 +1604,40 @@ class ConfigUnset(Command):
 
 class ConfigPrint(Command):
     """Print one or more settings"""
-    SYNOPSIS = ('P', 'print', 'settings', '<var>')
+    SYNOPSIS = ('P', 'print', 'settings', '[-short] <var>')
     ORDER = ('Config', 3)
     CONFIG_REQUIRED = False
     HTTP_QUERY_VARS = {
-        'var': 'section.variable'
+        'var': 'section.variable',
+        'short': 'Set True to omit unchanged values (defaults)'
     }
     IS_USER_ACTIVITY = True
+
+    def _maybe_all(self, list_all, data):
+        if list_all:
+            rv = {}
+            for key in data.all_keys():
+                rv[key] = data[key]
+                if hasattr(rv[key], 'all_keys'):
+                    rv[key] = self._maybe_all(True, rv[key])
+            return rv
+        return data
 
     def command(self):
         session, config = self.session, self.session.config
         result = {}
         invalid = []
+
+        args = list(self.args)
+        if args[0] == '-short':
+            list_all = not args.pop(0)
+        else:
+            list_all = True
+
         # FIXME: Are there privacy implications here somewhere?
-        for key in (self.args + tuple(self.data.get('var', []))):
+        for key in (args + self.data.get('var', [])):
             try:
-                result[key] = config.walk(key)
+                result[key] = self._maybe_all(list_all, config.walk(key))
             except KeyError:
                 invalid.append(key)
         if invalid:
