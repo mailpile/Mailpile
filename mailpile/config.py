@@ -1770,7 +1770,7 @@ class ConfigManager(ConfigDict):
                     if 'rescan' not in config._running:
                         rsc = Rescan(config.background, 'rescan')
                         rsc.serialize = False
-                        config.slow_worker.add_task(
+                        config.slow_worker.add_unique_task(
                             config.background, 'Rescan',
                             lambda: rsc.run(slowly=True))
                 config.cron_worker.add_task('rescan', rescan_interval, rescan)
@@ -1790,7 +1790,7 @@ class ConfigManager(ConfigDict):
 
             def wrap_slow(func):
                 def wrapped():
-                    config.slow_worker.add_task(
+                    config.slow_worker.add_unique_task(
                         config.background, job,
                         lambda: func(config.background))
                 return wrapped
