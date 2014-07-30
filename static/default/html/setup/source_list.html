@@ -1,0 +1,20 @@
+<div id="setup-box-source-local" class="setup-box setup-box-medium animated bounceInUp add-bottom">
+  <h3 class="text-center"><span class="icon-inbox"></span> We Discovered <%= source_type %></h3>
+  <p class="text-detail text-center">Select the mail folders you would like to import</p>
+  <table id="setup-source-local-items" class="rounded full-width-table setup-table">
+  <th>
+    <td><%= source_type %> Label</td>
+    <td>Mailpile Tag</td>
+    <td>Select</td>
+  </th>
+  <% _.each(source_items, function(value) { %>
+  <tr>
+    <td><strong><%= value.name %> <span><%= value.count %><span></strong><br><%= value.path %></td>
+    <td><input type="checkbox"></td>
+  </tr>
+  <% }); %>
+  </table>
+  <div class="text-center">
+    <button id="btn-setup-source-local-import" class="center">{{_("Save")}}</button>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+<div class="setup-box setup-box-small animated bounceInRight">
+  <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
+  <form class="standard text-center">
+    <p>Is this a mail source you would like to keep checking for new mail periodically or would you like to import mail only once?</p>
+    <select name="source_sync" class="center">
+      <option value="once">One Time Import</option>
+      <option value="sycn">Keep Checking</option>
+      <optgroup>
+      <option value="sycn">Unsure</option>
+      </optgroup>
+    </select>
+    <p>Would you like to import contacts from this address book?</p>
+    <select name="source_contacts" class="center">
+      <option value="yes">Yes</option>
+      <option value="no">No</option>
+    </select>
+    <div class="text-center">
+      <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+    </div>
+  </form>
+</div>
