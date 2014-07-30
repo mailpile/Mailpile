@@ -150,11 +150,13 @@ class MailIndex:
     @classmethod
     def get_body(self, msg_info):
         if msg_info[self.MSG_BODY].startswith('{'):
-            return json.loads(msg_info[self.MSG_BODY])
-        else:
-            return {
-                'snippet': msg_info[self.MSG_BODY]
-            }
+            try:
+                return json.loads(msg_info[self.MSG_BODY])
+            except ValueError:
+                pass
+        return {
+            'snippet': msg_info[self.MSG_BODY]
+        }
 
     @classmethod
     def truncate_body_snippet(self, body, max_chars):
