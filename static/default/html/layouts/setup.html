@@ -75,10 +75,12 @@
   <a href="#source-choose">4. Go to Source Choose</a>
 </div>
 
-{% include("partials/javascript.html") %}
-<script type="text/javascript">
-$(document).ready(function()
-{
+<script>
+$(document).ready(function() {
+
+  // Print JSON for JS Use
+  Mailpile.instance = {};
+
   SetupApp.init();
 });
 </script>
