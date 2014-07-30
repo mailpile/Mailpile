@@ -864,12 +864,19 @@ class Setup(TestableWebbable):
             # Stage 0: Welcome: Choose app language
             (lambda: config.prefs.language, SetupWelcome),
 
-            # Stage 1: Identity: Configure profiles and GPG key
+            # Stage Z: Go fancy single-page install!
             (lambda: (config.prefs.gpg_recipient and
-                      config.gnupg_passphrase.data), SetupCrypto),
-            (lambda: (config.prefs.default_email and
-                      config.get_profile()['email']), SetupProfiles),
-            (lambda: config.prefs.crypto_policy != 'none', SetupConfigureKey),
+                      config.gnupg_passphrase.data and
+                      config.prefs.default_email and
+                      config.get_profile()['email'] and
+                      config.prefs.crypto_policy != 'none'), Setup),
+
+            # Stage 1: Identity: Configure profiles and GPG key
+            #(lambda: (config.prefs.gpg_recipient and
+            #          config.gnupg_passphrase.data), SetupCrypto),
+            #(lambda: (config.prefs.default_email and
+            #          config.get_profile()['email']), SetupProfiles),
+            #(lambda: config.prefs.crypto_policy != 'none', SetupConfigureKey),
 
             # Stage 2: Communication: Configure routes & sources
             #(lambda: config.routes, SetupRoutes),
