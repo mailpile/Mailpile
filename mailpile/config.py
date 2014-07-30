@@ -868,6 +868,9 @@ class ConfigList(RuledContainer(list)):
     def keys(self):
         return list(self.iterkeys())
 
+    def all_keys(self):
+        return list(self.iterkeys())
+
     def values(self):
         return self[:]
 
