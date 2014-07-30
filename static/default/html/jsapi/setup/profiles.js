@@ -1,13 +1,19 @@
 /* Setup - Profiles - Model */
-var ProfileModel = Backbone.Model.extend({
-  url: '/api/0/profiles_add/',
+var ProfilesModel = Backbone.Model.extend({
+  url: '/setup/profiles/',
   validation: {
     name: {
+      maxLength: 48,
       required: true,
       msg: 'Enter a name for your profile'
     },
+    none: {
+      maxLength: 48,
+      required: false,
+      msg: 'Enter a name for your profile'
+    },
     email: {
-      pattner: 'email',
+      maxLength: 128,
       required: true,
       msg: 'Enter a valid email address'
     },
@@ -25,6 +31,7 @@ var ProfilesView = Backbone.View.extend({
 		this.render();
   },
   render: function() {
+    return this;
   },
   events: {
     "click #btn-setup-show-add-profile"   : "showAddProfile",
@@ -33,8 +40,7 @@ var ProfilesView = Backbone.View.extend({
     "click .setup-profile-remove"         : "processRemoveProfile",
   	"click #btn-setup-basic-info"         : "processBasic"
   },
-  showProfiles: function() {
-
+  show: function() {
     this.$el.html($('#template-setup-profiles').html());
   },
   showAddProfile: function() {
@@ -48,17 +54,19 @@ var ProfilesView = Backbone.View.extend({
   },
   processAddProfile: function(e) {
 
+    console.log('saving stuff here');
     e.preventDefault();
 
     // Set Model & Validate
-    this.model.set($('#form-setup-profile-add').serializeObject());
+    var profile_data = $('#form-setup-profile-add').serializeObject();
+    this.model.set(profile_data);
     var validate = this.model.validate();
 
     // Process
     if (validate === undefined) {
 
-      var add_profile = this.model.sync();
-      console.log(add_profile);
+      console.log('inside validate yes');
+      var add_profile = this.model.save();
 
     }
     else {
@@ -70,8 +78,8 @@ var ProfilesView = Backbone.View.extend({
   processRemoveProfile: function() {
 
     alert('this will remove a profile');
-    var profile_id = ;
-    
+    var profile_id = $(this).data('profile_id');
+
     Mailpile.API.profiles_remove({ rid: profile_id }, function(result) {
       console.log(result);
 

@@ -19,13 +19,13 @@ var SetupRouter = Backbone.Router.extend({
     Backbone.history.navigate('#passphrase', true); 
   },
 	passphrase: function() {
-		PassphraseView.showPassphrase();
+		PassphraseView.show();
 	},
 	cryptoGenerated: function() {
 		IdentityView.showCryptoGenerated();
 	},
 	profiles: function() {
-		ProfilesView.showProfiles();
+		ProfilesView.show();
 	},
   discovery: function() {
 		IdentityView.showDiscovery();

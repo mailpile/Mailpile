@@ -2,12 +2,12 @@
 var PassphraseModel = Backbone.Model.extend({
   validation: {
     passphrase: {
-      minLength: 5,
+      minLength: 2,
       required: true,
       msg: 'Enter a passphrase of at least 10 letters'
     },
     passphrase_confirm: {
-      minLength: 5,
+      minLength: 2,
       required: true,
       equalTo: 'passphrase',
       msg: 'Your confirmation passphrase does not match'
@@ -26,8 +26,6 @@ var PassphraseView = Backbone.View.extend({
 		this.render();
   },
   render: function() {
-    this.$el.html($('#template-setup-passphrase').html());
-//  this.stickit();
     return this;
   },
   events: {
@@ -39,8 +37,9 @@ var PassphraseView = Backbone.View.extend({
     '#input-setup-passphrase-confirm': 'passphrase_confirm'
   },
 */
-  showPassphrase: function() {
+  show: function() {
     $('#setup-progress').find('')
+    this.$el.html($('#template-setup-passphrase').html());
   },
   processPassphrase: function(e) {
 
@@ -71,7 +70,7 @@ var PassphraseView = Backbone.View.extend({
           }, 2500);
         }
       });
-   }
+    }
     else {
       $.each(validate, function(elem, msg){
         $('#error-setup-' + elem).html(msg);
