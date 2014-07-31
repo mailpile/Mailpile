@@ -6,14 +6,15 @@ var SetupRouter = Backbone.Router.extend({
 	routes: {
 		"" 						     : "index",
 		"passphrase"       : "passphrase",
-		"crypto-generated" : "cryptoGenerated",
 		"profiles"         : "profiles",
+		"crypto-generated" : "cryptoGenerated",
 		"discovery"        : "discovery",
-		"source-settings"  : "sourceSettings",
-		"source-local"     : "sourceLocal",
-		"source-choose"    : "sourceRemoteChoose",
-		"access"           : "access",
-		"security"         : "security"
+    "sources"          : "sources",
+		"sending"          : "sending",
+		"advanced"         : "advanced",
+		"security"         : "security",
+		"backups"          : "backups",
+		"access"           : "access"
 	},
 	index: function() {
     Backbone.history.navigate('#passphrase', true); 
@@ -21,28 +22,31 @@ var SetupRouter = Backbone.Router.extend({
 	passphrase: function() {
 		PassphraseView.show();
 	},
-	cryptoGenerated: function() {
-		IdentityView.showCryptoGenerated();
-	},
 	profiles: function() {
 		ProfilesView.show();
 	},
   discovery: function() {
 		IdentityView.showDiscovery();
   },
-	sourceSettings: function() {
-		sourceView.showSourceSettings();
+	cryptoGenerated: function() {
+		IdentityView.showCryptoGenerated();
 	},
-	sourceLocal: function() {
-		IdentityView.showSourceLocal();
+  sources: function() {
+    SourcesView.show();
+  },
+	sending: function() {
+		SendingView.show();
 	},
-	sourceRemoteChoose: function() {
-		IdentityView.showSourceRemoteChoose();
-	},
-  access: function() {
-    AccessView.show();
+  advanced: function() {
+    AdvancedView.show();
   },
   security: function() {
     SecurityView.show();
+  },
+  backups: function() {
+    BackupsView.show();
+  },
+  access: function() {
+    AccessView.show();
   }
 });

@@ -2,9 +2,10 @@
 {% include("jsapi/setup/passphrase.js") %}
 {% include("jsapi/setup/profiles.js") %}
 {% include("jsapi/setup/sources.js") %}
-{# include("jsapi/setup/view-identity.js") #}
-{# include("jsapi/setup/view-organize.js") #}
+{% include("jsapi/setup/sending.js") %}
+{% include("jsapi/setup/advanced.js") %}
 {% include("jsapi/setup/security.js") %}
+{% include("jsapi/setup/backups.js") %}
 {% include("jsapi/setup/access.js") %}
 {% include("jsapi/setup/router.js") %}
 
@@ -12,16 +13,14 @@ var SetupApp = (function ($, Backbone, global) {
 
     var init = function() {
 
-      // Model
-      global.SourceModel = new SourceModel();
-
       // Views
       global.PassphraseView = new PassphraseView({ model: new PassphraseModel(), el: $('#setup') });
       global.ProfilesView   = new ProfilesView({ model: new ProfilesModel(), el: $('#setup') });
-      global.SourcesView    = new SourcesView({ el: $('#setup') });
-//    global.IdentityView   = new IdentityView({ el: $('#setup') });
-//    global.OrganizeView   = new OrganizeView({ el: $('#setup') });
+      global.SourcesView    = new SourcesView({ model: new SourceModel(), el: $('#setup') });
+      global.SendingView    = new SendingView({ el: $('#setup') });
+      global.AdvancedView   = new AdvancedView({ el: $('#setup') });
       global.SecurityView   = new SecurityView({ el: $('#setup') });
+      global.BackupsView    = new BackupsView({ el: $('#setup') });
       global.AccessView     = new AccessView({ el: $('#setup') });
 
   		// Router
