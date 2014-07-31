@@ -1,20 +1,38 @@
-<div id="setup-box-source-local" class="setup-box setup-box-medium animated bounceInUp add-bottom">
-  <h3 class="text-center"><span class="icon-inbox"></span> We Discovered <%= source_type %></h3>
-  <p class="text-detail text-center">Select the mail folders you would like to import</p>
-  <table id="setup-source-local-items" class="rounded full-width-table setup-table">
-  <th>
-    <td><%= source_type %> Label</td>
-    <td>Mailpile Tag</td>
-    <td>Select</td>
-  </th>
-  <% _.each(source_items, function(value) { %>
-  <tr>
-    <td><strong><%= value.name %> <span><%= value.count %><span></strong><br><%= value.path %></td>
-    <td><input type="checkbox"></td>
-  </tr>
-  <% }); %>
-  </table>
-  <div class="text-center">
-    <button id="btn-setup-source-local-import" class="center">{{_("Save")}}</button>
+<div id="setup-box-source-list" class="setup-box setup-box-medium animated bounceInUp add-bottom">
+  <div class="clearfix">
+    <h2 class="left"><span class="icon-inbox"></span> Sources</h2>
+    <button id="btn-setup-show-add-source" class="right"><span class="icon-plus"></span> Add Source</button>
   </div>
+
+  {% for source_id, source in mailpile("settings", "sources").result.sources.iteritems() %}
+
+  {% if source.protocol in ('maildir', 'macmaildir', 'mbox') %}
+    <h4>{{source.name}}</h4>
+    <table id="setup-source-{{source_id}}" class="rounded full-width-table setup-table">
+    <tr>
+      <th colspan="3">Select the folders you would like to import or synchronize</th>
+    </tr>
+    {% for mail_id, mailbox in source.mailbox.iteritems() %}
+    <tr>
+      <td><strong>{{mailbox.policy}} <span>msg<span></strong></td>
+      <td>Ohai there</td>
+      <td><input type="checkbox"></td>
+    </tr>
+    {% endfor %}
+    </table>
+
+  {% elif source.protocol in ('gmvault', 'imap', 'imap_ssl') %}
+
+    gmvault
+    IMAP
+    IMAP (ssl)
+
+  {% elif source.protocol == 'pop3' %}
+
+    POP3
+
+  {% endif %}
+
+  {% endfor %}
+
 </div>

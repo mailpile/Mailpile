@@ -10,6 +10,25 @@
   {% endif %}
   <hr>
   
+  {% if result.profiles %}
+  <h3>Configured profiles</h3>
+  <ul>
+    {% for rid in result.profiles|sort %}
+      {% set profile = result.profiles[rid] %}
+      <li><form method="POST" action='/profiles/remove/{{ rid }}/'
+                target=_blank>
+         {{ profile.name }}
+         &lt;{{ profile.email }}&gt;
+         {% if profile.note %}({{ profile.note }}){% endif %}
+         [auto_configurable={{ profile.auto_configurable }}]
+         {% if profile.email != result.default_email %}
+           &nbsp; &nbsp; <input type='submit' value='Remove'>
+         {% endif %}
+      </form></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
   {% if result.new_emails %}
     <h3>Discovered e-mail addresses</h3>
     <ul>
@@ -37,26 +56,11 @@
   </form>
   
   {% if result.profiles %}
-  <hr><form method="POST">
+  <hr>
+  <form method="POST">
     <input type="hidden" name="advance" value="Yes">
     <input type="submit" value="Continue...">   
   </form>
-  <hr><h3>Configured profiles ...</h3>
-  <ul>
-    {% for rid in result.profiles|sort %}
-      {% set profile = result.profiles[rid] %}
-      <li><form method="POST" action='/profiles/remove/{{ rid }}/'
-                target=_blank>
-         {{ profile.name }}
-         &lt;{{ profile.email }}&gt;
-         {% if profile.note %}({{ profile.note }}){% endif %}
-         [auto_configurable={{ profile.auto_configurable }}]
-         {% if profile.email != result.default_email %}
-           &nbsp; &nbsp; <input type='submit' value='Remove'>
-         {% endif %}
-      </form></li>
-    {% endfor %}
-  </ul>
   {% endif %}
 
 </div>

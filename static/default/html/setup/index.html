@@ -2,22 +2,45 @@
 {% block title %}{{_("Setup")}}{% endblock %}
 {% block content %}
 
-<div id="setup" class="clearfix"></div>
+<div id="setup" class="clearfix add-bottom"></div>
 
 {% include("settings/various.html") %}
 {% include("settings/identity.html") %}
-{% include("settings/organize.html") %}
+
+<script id="template-setup-sources" type="text/template">
+{% include("setup/source_list.html") %}
+</script>
+
+<script id="template-setup-source-add" type="text/template">
+{% include("setup/source_add.html") %}
+</script>
+
+<script id="template-setup-source-settings" type="text/template">
+{% include("setup/source_settings.html") %}
+</script>
+
+<script id="template-setup-sending" type="text/template">
+{% include("setup/sending.html") %}
+</script>
 
 <script id="template-setup-crypto-generated" type="text/template">
 {% include("setup/key_generated.html") %}
 </script>
 
-<script id="template-setup-access" type="text/template">
-{% include("setup/access.html") %}
+<script id="template-setup-advanced" type="text/template">
+{% include("setup/advanced.html") %}
 </script>
 
 <script id="template-setup-security" type="text/template">
 {% include("setup/security.html") %}
+</script>
+
+<script id="template-setup-backups" type="text/template">
+{% include("setup/backups.html") %}
+</script>
+
+<script id="template-setup-access" type="text/template">
+{% include("setup/access.html") %}
 </script>
 
 {% endblock %}

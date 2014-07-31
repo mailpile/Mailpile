@@ -1,21 +1,80 @@
-<div class="setup-box setup-box-small animated bounceInRight">
-  <h3 class="text-center"><span class="icon-inbox"></span> <%= source_type %> Account Settings</h3>
-  <form class="standard text-center">
-    <p>Is this a mail source you would like to keep checking for new mail periodically or would you like to import mail only once?</p>
-    <select name="source_sync" class="center">
+<div id="setup-box-source-settings" class="setup-box setup-box-medium add-bottom animated bounceInRight">
+  <h3 class="text-center"><span class="icon-settings"></span> Add Account</h3>
+  <form id="form-setup-add-source" class="standard">
+
+    <label>{{_('Source Name')}}</label>
+    <input type="text" name="name" value="" placeholder="My Gmail, Work Server">
+
+    <table class="full-width-table">
+    <tr>
+      <td>
+        <label>{{_('Mailbox protocol or format')}}</label>
+        <select name="protocol">
+          <option value="mbox">Mbox</option>
+          <option value="maildir">Maildir</option>
+          <option value="macmaildir">Mac Mail</option>
+          <option value="gmvault">gmvault</option>
+          <option value="imap">IMAP</option>
+          <option value="imap_ssl">IMAP (ssl)</option>
+          <option value="pop3">POP3</option>
+        </select>
+      </td>
+      <td>
+        <label>{{_('How frequently to check for mail')}}</label>
+        <select name="interval">
+          <option value="300">5 mins</option>
+          <option value="600">10 mins</option>
+          <option value="900">15 mins</option>
+          <option value="1800">30 mins</option>
+          <option value="3600">1 hour</option>
+          <option value="21600">6 hours</option>
+          <option value="86400">1 day</option>
+        </select>
+      </td>
+    </tr>
+    </table>
+
+    <h4>Server</h4>
+    <table class="full-width-table">
+    <tr>
+      <td>
+        <label>{{_('Username')}}</label>
+        <input type="text" name="username" value="" placeholder="name@email.com">
+      </td>
+      <td>
+        <label>{{_('Password')}}</label>
+        <input type="text" name="password" value="" placeholder="secret*pass">
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label>{{_('Host')}}</label>
+        <input type="text" name="host" value="" placeholder="mail.server.com">
+      </td>
+      <td>
+        <label>{{_('Port')}}</label>
+        <input type="text" value="" value="" placeholder="993">
+      </td>
+    </tr>
+    </table>    
+
+    <p>Would like to keep checking for new mail or only import once?</p>
+    <select name="source_sync" class="">
       <option value="once">One Time Import</option>
-      <option value="sycn">Keep Checking</option>
-      <optgroup>
-      <option value="sycn">Unsure</option>
-      </optgroup>
+      <option value="sync">Keep Checking</option>
+      <option value="unsure">Unsure</option>
     </select>
+
     <p>Would you like to import contacts from this address book?</p>
-    <select name="source_contacts" class="center">
+    <select name="source_contacts" class="">
       <option value="yes">Yes</option>
       <option value="no">No</option>
     </select>
-    <div class="text-center">
-      <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+
+    <div class="text-center clearfix">
+      <a href="#" id="btn-setup-source-add-cancel" class="button-secondary left">{{_("Cancel")}}</a>
+      <button id="btn-setup-source-settings" class="right">{{_("Save Source")}}</button>
     </div>
+
   </form>
 </div>
