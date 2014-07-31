@@ -1,0 +1,22 @@
+<div class="setup-box setup-box-medium animated bounceInRight">
+  <div class="clearfix">
+    <h3 class="text-center left"><span class="icon-routes"></span> Routes</h3>
+    <button id="btn-settings-route-add" class="right"><span class="icon-plus"></span> {{_("Add Route")}}</button>
+  </div>
+  <ul class="items">
+    {% for route_id, route in mailpile("settings", "routes").result.routes.iteritems() %}
+    <li class="separate">
+      <h4 class="">{{route.name}}</h4>
+      <ul class="horizontal right">
+        <li><a href="#" onclick="$('.route').hide();$('#route_{{id}}').show();"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+        <li><a href="#"><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
+      </ul>
+      <form id="form-settings-route-{{rid}}" class="form-settings-route-edit hide standard">
+        <h4>{{_("Edit Route")}}</h4>
+        <input type="submit" value="Cancel" class="button-secondary">
+        <input type="submit" value="Save">
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
