@@ -37,7 +37,7 @@ $(document).on('blur', '#button-search-options', function(key) {
 /* Activities - Create New Blank Message */
 $(document).on('click', '#button-compose', function(e) {
 	e.preventDefault();
-	Mailpile.API.message_compose({}, function(response) {
+	Mailpile.API.message_compose_post({}, function(response) {
     if (response.status === 'success') {
       window.location.href = Mailpile.urls.message_draft + response.result.created[0] + '/';
     } else {

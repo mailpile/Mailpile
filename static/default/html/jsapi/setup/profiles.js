@@ -61,7 +61,7 @@ var ProfilesView = Backbone.View.extend({
     // Process
     if (validate === undefined) {
       console.log('inside validate yes');
-      Mailpile.API.setup_profiles(profile_data, function(result) {
+      Mailpile.API.setup_profiles_post(profile_data, function(result) {
         console.log(result);
       });
     }
@@ -78,7 +78,7 @@ var ProfilesView = Backbone.View.extend({
 
     console.log(profile_id);
 
-    Mailpile.API.profiles_remove({ rid: 'asdasdasd' }, function(result) {
+    Mailpile.API.profiles_remove_post({ rid: 'asdasdasd' }, function(result) {
       console.log(result);
 
     });

@@ -52,7 +52,7 @@ var PassphraseView = Backbone.View.extend({
 
     // Process
     if (validate === undefined) {
-      Mailpile.API.setup_crypto(passphrase_data, function(result) {
+      Mailpile.API.setup_crypto_post(passphrase_data, function(result) {
         if (result.status == 'success') {
           $('#identity-vault-lock')
             .find('.icon-lock-closed')

@@ -5,7 +5,7 @@ Mailpile.find_encryption_keys = function(query) {
 
   // This used to be called Mailpile.API.async_crypto_keylookup() but was undefined method
   // Also had the arg "allowremote": true which seemed to be trigger a bad variable error
-  Mailpile.API.async_crypto_gpg_searchkey({"q": query}, function(data, ev) {
+  Mailpile.API.async_crypto_gpg_searchkey_get({"q": query}, function(data, ev) {
 
     console.log('called crypto_gpg_searchkey');
 
@@ -67,7 +67,7 @@ $(document).on('click', '.contact-add-key-item', function() {
 
   $('#contact-search-keyserver-result').html('');
 
-  Mailpile.API.async_crypto_gpg_receivekey({}, function() {
+  Mailpile.API.async_crypto_gpg_receivekey_post({}, function() {
     $('#contact-add-key').html('<span class="icon-key"></span> Encryption Key: ' + key_data.keyid);
     if (response.status === 'success') {
       $('#contact-search-keyserver-result').html('w00t, something here will happen with this key: ' + response.result);

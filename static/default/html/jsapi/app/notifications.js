@@ -67,7 +67,7 @@ EventLog.request = function(conditions, callback) {
         callback = EventLog.process_result;
     }
 
-    Mailpile.API.eventlog(conditions, callback);
+    Mailpile.API.eventlog_get(conditions, callback);
 }
 
 EventLog.poll = function() {

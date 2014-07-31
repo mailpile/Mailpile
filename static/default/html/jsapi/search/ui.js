@@ -70,7 +70,7 @@ Mailpile.render_modal_tags = function() {
   if (Mailpile.messages_cache.length) {
 
     // Open Modal with selection options
-    Mailpile.API.tags({}, function(data) {
+    Mailpile.API.tags_get({}, function(data) {
 
       var template_html = $('#template-modal-tag-picker-item').html();
       var priority_html = '';

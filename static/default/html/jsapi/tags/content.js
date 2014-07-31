@@ -153,7 +153,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
 /* Tag - Delete Tag */
 $(document).on('click', '#button-tag-delete', function(e) {
   if (confirm('Sure you want to delete this tag?') === true) { 
-    Mailpile.API.tags_delete({ tag: $('#data-tag-add-slug').val() }, function(response) {
+    Mailpile.API.tags_delete_post({ tag: $('#data-tag-add-slug').val() }, function(response) {
       Mailpile.notification(response.status, response.message, 'redirect', Mailpile.urls.tags);
     }, 'POST');
   }

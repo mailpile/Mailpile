@@ -61,7 +61,7 @@ return {
     column_refresh: function(id) {
         var col = this.columns[id];
         var self = this;
-        Mailpile.command(Mailpile.api.search + "?q=" + col["search"], {}, "GET", function(data) {
+        Mailpile.command(Mailpile.API.search_get + "?q=" + col["search"], {}, "GET", function(data) {
             self.columns[id]["lastresult"] = data;
             self.column_render(id);
         });
