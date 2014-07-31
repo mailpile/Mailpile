@@ -52,10 +52,10 @@
   line-height: 30px;
 }
 /* Setup */
-#setup {
+#setup-container {
   position: relative;
-  top: 0px;
-  margin-top: 100px;
+  top: 65px;
+  left: 0px;
 }
 .setup-welcome-icons {
   margin-top: 40px;
@@ -99,7 +99,7 @@ div.setup-box-large {
   margin: 40px auto 20px auto;
   text-align: center;
 }
-div.setup-progress-circle {
+a.setup-progress-circle {
   display: table-cell;
   height: 45px;
   width: 45px;
@@ -107,6 +107,11 @@ div.setup-progress-circle {
   border-radius: 25px;
   background: #f6f6f6;
   border: 1px solid #b3b3b3;
+}
+a.setup-progress-circle:hover,
+a.setup-progress-circle:hover span.setup-progress-icon {
+  color: #4d4d4d;
+  background: #dddddd;
 }
 span.setup-progress-icon {
   display: inline-block;
