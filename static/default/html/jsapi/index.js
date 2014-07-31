@@ -98,7 +98,7 @@ Mailpile.theme = {{ theme_settings|json|safe }}
 Mailpile.API = {
     _endpoints: {
 {% for command in result.api_methods %}
-        {{command.url|replace("/", "_")}}: "/0/{{command.url}}/"{% if not loop.last %},{% endif %}
+        {{command.url|replace("/", "_")}}_{{command.method|lower}}: "/0/{{command.url}}/"{% if not loop.last %},{% endif %}
 
 {% endfor %}
     },
@@ -176,26 +176,26 @@ Mailpile.API._async_action = function(command, data, method, callback, flags) {
 
 /* Create sync & asyn API commands */
 {% for command in result.api_methods -%}
-Mailpile.API.{{command.url|replace("/", "_")}} = function(data, callback, method) {
+Mailpile.API.{{command.url|replace("/", "_")}}_{{command.method|lower}} = function(data, callback, method) {
     var methods = ["{{command.method}}"];
     if (!method || methods.indexOf(method) == -1) {
         method = methods[0];
     }
     return Mailpile.API._sync_action(
-        Mailpile.API._endpoints.{{command.url|replace("/", "_")}},
+        Mailpile.API._endpoints.{{command.url|replace("/", "_")}}_{{command.method|lower}},
         data,
         method,
         callback
     );
 };
 
-Mailpile.API.async_{{command.url|replace("/", "_")}} = function(data, callback, method) {
+Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = function(data, callback, method) {
     var methods = ["{{command.method}}"];
     if (!method || methods.indexOf(method) == -1) {
         method = methods[0];
     }
     return Mailpile.API._async_action(
-        Mailpile.API._endpoints.{{command.url|replace("/", "_")}},
+        Mailpile.API._endpoints.{{command.url|replace("/", "_")}}_{{command.method|lower}},
         data,
         method,
         callback
