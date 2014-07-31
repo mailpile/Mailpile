@@ -16,9 +16,6 @@ var ProfilesModel = Backbone.Model.extend({
       maxLength: 128,
       required: true,
       msg: 'Enter a valid email address'
-    },
-    password: {
-      required: false
     }
   }
 });
@@ -54,7 +51,6 @@ var ProfilesView = Backbone.View.extend({
   },
   processAddProfile: function(e) {
 
-    console.log('saving stuff here');
     e.preventDefault();
 
     // Set Model & Validate
@@ -64,10 +60,10 @@ var ProfilesView = Backbone.View.extend({
 
     // Process
     if (validate === undefined) {
-
       console.log('inside validate yes');
-      var add_profile = this.model.save();
-
+      Mailpile.API.setup_profiles(profile_data, function(result) {
+        console.log(result);
+      });
     }
     else {
       $.each(validate, function(elem, msg){
@@ -75,12 +71,14 @@ var ProfilesView = Backbone.View.extend({
       });
     }
   },
-  processRemoveProfile: function() {
+  processRemoveProfile: function(e) {
 
-    alert('this will remove a profile');
-    var profile_id = $(this).data('profile_id');
+    e.preventDefault();
+    var profile_id = $(e.target).data('profile_id');
 
-    Mailpile.API.profiles_remove({ rid: profile_id }, function(result) {
+    console.log(profile_id);
+
+    Mailpile.API.profiles_remove({ rid: 'asdasdasd' }, function(result) {
       console.log(result);
 
     });

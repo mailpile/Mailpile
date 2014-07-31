@@ -1,8 +1,6 @@
 /* Setup - Security - Model */
 var SecurityModel = Backbone.Model.extend({
-  url: '/api/0//',
-  validation: {
-  }
+  validation: {}
 });
 
 
@@ -11,7 +9,9 @@ var SecurityView = Backbone.View.extend({
   initialize: function() {
 		this.render();
   },
-  render: function(){},
+  render: function(){
+    return this;
+  },
   events: {
     "click #btn-setup-advanced-access": "showAccess",
   },
