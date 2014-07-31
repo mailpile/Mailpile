@@ -1629,7 +1629,7 @@ class ConfigPrint(Command):
         invalid = []
 
         args = list(self.args)
-        if args[0] == '-short':
+        if args and args[0] == '-short':
             list_all = not args.pop(0)
         else:
             list_all = True
