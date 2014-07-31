@@ -50,29 +50,34 @@
   </div>
 </div>
 
-{% block content %}{{results}}{% endblock %}
+<div id="setup-container">
 
-<div id="setup-progress">
-  <ul class="horizontal">
-    <li><div class="setup-progress-circle"><span class="setup-progress-icon icon-lock-closed"></span></div></li>
-    <li><div><span class="setup-progress-line"></span></div></li>
-    <li><div class="setup-progress-circle"><span class="setup-progress-icon icon-profiles"></span></div></li>
-    <li><div><span class="setup-progress-line"></span></div></li>
-    <li><div class="setup-progress-circle"><span class="setup-progress-icon icon-inbox"></span></div></li>
-    <li><div><span class="setup-progress-line"></span></div></li>
-    <li><div class="setup-progress-circle"><span class="setup-progress-icon icon-settings"></span></div></li>
-  </ul>
-</div>
+  <div id="setup-progress" class="add-bottom clearfix">
+    <ul class="horizontal">
+      <li><a href="#passphrase" class="setup-progress-circle"><span class="setup-progress-icon icon-lock-closed"></span></a></li>
+      <li><div><span class="setup-progress-line"></span></div></li>
+      <li><a href="#profiles" class="setup-progress-circle"><span class="setup-progress-icon icon-profiles"></span></a></li>
+      <li><div><span class="setup-progress-line"></span></div></li>
+      <li><a href="#sources" class="setup-progress-circle"><span class="setup-progress-icon icon-inbox"></span></a></li>
+      <li><div><span class="setup-progress-line"></span></div></li>
+      <li><a href="#routes" class="setup-progress-circle"><span class="setup-progress-icon icon-sent"></span></a></li>
+      <li><div><span class="setup-progress-line"></span></div></li>
+      <li><a href="#advanced" class="setup-progress-circle"><span class="setup-progress-icon icon-settings"></span></a></li>
+    </ul>
+  </div>
 
-<div class="clearfix"></div>
-<div class="text-center add-top add-bottom">
-  <h3>TOC</h3>
-  <a href="/page/setup/#">0. Welcome</a><br>
-  <a href="#passphrase">1. Passphrase</a><br>
-  <a href="#profiles">2. Profiles</a><br>
-  <a href="#crypto-generated">2.5 Crypto Generated</a><br>
-  <a href="#source-settings">3. Go to Source Settings</a><br>
-  <a href="#source-choose">4. Go to Source Choose</a>
+  {% block content %}{{results}}{% endblock %}
+
+  <div class="clearfix"></div>
+  <div class="text-center add-top add-bottom hide">
+    <h3>TOC</h3>
+    <a href="/setup/#">0. Welcome</a><br>
+    <a href="#passphrase">1. Passphrase</a><br>
+    <a href="#profiles">2. Profiles</a><br>
+    <a href="#crypto-generated">2.5 Crypto Generated</a><br>
+    <a href="#sources">3. Sources</a><br>
+    <a href="#sending">4. Sending</a>
+  </div>
 </div>
 
 <script>
