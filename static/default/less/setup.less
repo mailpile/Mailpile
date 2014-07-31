@@ -39,10 +39,14 @@
 
 /* Setup */
 
-  #setup {
+  #setup-container {
     position: relative;
-    top: 0px;
-    margin-top: 100px;
+    top: 65px;
+    left: 0px;
+  }
+
+  #setup {
+    
   }
   
   .setup-welcome-icons {
@@ -80,10 +84,6 @@
   div.setup-box-large {
     width: 800px;
   }
-  
-  .setup-text-detail {
-    color: @gray;
-  }
 
   .setup-text-detail-large {
     color: @gray;
@@ -94,6 +94,7 @@
     background: @white;
   }
 
+
 /* Setup Progress */
 
   #setup-progress {
@@ -103,7 +104,7 @@
   }
   
   
-  div.setup-progress-circle {
+  a.setup-progress-circle {
     display: table-cell;
     height: 45px;
     width: 45px;
@@ -112,9 +113,16 @@
     background: @grayLight;
     border: 1px solid @gray;
   }
+
+  a.setup-progress-circle:hover,
+  a.setup-progress-circle:hover span.setup-progress-icon {
+    color: @grayDark;
+    background: darken(@grayLight, 10%);
+  }
   
   span.setup-progress-icon {
     display: inline-block;
+    color: @gray;
   }
   
   span.setup-progress-line {
@@ -122,4 +130,68 @@
     display: block;
     border-bottom: 1px solid @grayMid;
     margin: 23px 8px 0px 8px;
+  }
+
+
+/* Idenity */
+
+  #identity-vault-lock {
+    margin: @base-margin auto;
+  }
+
+
+
+  #setup-profile-list {
+    background: @white;
+    border-radius: 5px;
+    border: 1px solid @grayMid;
+  }
+
+  #setup-profile-list li:first-child {
+    border-top: 0px solid;
+  }
+
+  .setup-profile {
+    padding: @base-padding;
+    border-top: 1px solid @grayMid;
+  }
+
+  .setup-profile .avatar {
+    width: 50px;
+    display: inline-block;
+    float: left;
+    margin-right: @base-margin;
+  }
+
+  .setup-profile .avatar img {
+    width: 50px;
+  }
+
+  .setup-profile .name {
+    display: block;
+    margin-bottom: 5px;
+    vertical-align: text-top;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 18px;
+    color: @grayDark;
+  }
+
+  .setup-profile .email {
+    font-size: 14px;
+    line-height: 14px;
+    color: @gray;
+  }
+
+
+  .setup-profile-disable {
+    
+  }
+
+  .setup-profile-disable .icon-minus {
+    font-size: 10px;
+    background: @grayDark;
+    color: @white;
+    border-radius: 10px;
+    padding: 3px;
   }

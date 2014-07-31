@@ -190,8 +190,15 @@
 
 
 /* List Items */
+/* REBAR: Move these more global styles to Rebar */
 
-  ul.items {}
+  ul.items {
+  }
+
+  ul.items.grouped {
+    background: @white;
+    border-radius: @base-border-radius; 
+  }
 
   ul.items li.separate {
     background: @white;
@@ -201,7 +208,13 @@
     border-radius: @base-border-radius;
   }
 
-  ul.items li.item h5 {
+  ul.items.grouped li.grouped {
+    border-top: 1px solid @gray;
+    padding: @base-padding;
+  }
+
+  ul.items li.separate h5,
+  ul.items li.grouped  h5 {
     margin-bottom: @base-margin / 1.5;
   }
 
