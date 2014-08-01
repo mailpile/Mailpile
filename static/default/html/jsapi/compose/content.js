@@ -510,7 +510,7 @@ $(document).on('click', '.compose-message-trash', function() {
     type     : 'POST',
     data     : { mid: mid },
     success  : function(response) {
-      Mailpile.API.tag({mid: mid, add: 'trash', del: ['drafts', 'blank']}, function(response_2) {
+      Mailpile.API.tag_post({mid: mid, add: 'trash', del: ['drafts', 'blank']}, function(response_2) {
         if (response_2.status == 'success') {
           $('#form-compose-' + mid).slideUp('fast');
         } else {
