@@ -78,8 +78,10 @@ var ProfilesView = Backbone.View.extend({
 
     console.log(profile_id);
 
-    Mailpile.API.profiles_remove_post({ rid: 'asdasdasd' }, function(result) {
+    Mailpile.API.profiles_remove_post({ rid: profile_id }, function(result) {
       console.log(result);
+
+      $('#setup-profile-' + profile_id).fadeOut();
 
     });
 
