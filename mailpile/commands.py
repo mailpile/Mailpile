@@ -1482,6 +1482,8 @@ class ConfigSet(Command):
     }
 
     def command(self):
+        from mailpile.httpd import BLOCK_HTTPD_LOCK
+
         config = self.session.config
         args = list(self.args)
         ops = []
@@ -1508,18 +1510,21 @@ class ConfigSet(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
-        updated = {}
-        for path, value in ops:
-            value = value.strip()
-            if value.startswith('{') or value.startswith('['):
-                value = json.loads(value)
-            try:
-                cfg, var = config.walk(path.strip(), parent=1)
-                cfg[var] = value
-                updated[path] = value
-            except IndexError:
-                cfg, v1, v2 = config.walk(path.strip(), parent=2)
-                cfg[v1] = {v2: value}
+        # We don't have transactions really, but making sure the HTTPD
+        # doesn't fire off new requests while we are working may help.
+        with BLOCK_HTTPD_LOCK:
+            updated = {}
+            for path, value in ops:
+                value = value.strip()
+                if value.startswith('{') or value.startswith('['):
+                    value = json.loads(value)
+                try:
+                    cfg, var = config.walk(path.strip(), parent=1)
+                    cfg[var] = value
+                    updated[path] = value
+                except IndexError:
+                    cfg, v1, v2 = config.walk(path.strip(), parent=2)
+                    cfg[v1] = {v2: value}
 
         if config.loaded_config:
             self._background_save(config=True)
@@ -1540,6 +1545,8 @@ class ConfigAdd(Command):
     IS_USER_ACTIVITY = True
 
     def command(self):
+        from mailpile.httpd import BLOCK_HTTPD_LOCK
+
         config = self.session.config
         ops = []
 
@@ -1561,16 +1568,21 @@ class ConfigAdd(Command):
                 var, value = arg.split(' ', 1)
             ops.append((var, value))
 
-        updated = {}
-        for path, value in ops:
-            value = value.strip()
-            if value.startswith('{') or value.startswith('['):
-                value = json.loads(value)
-            cfg, var = config.walk(path.strip(), parent=1)
-            cfg[var].append(value)
-            updated[path] = value
+        # We don't have transactions really, but making sure the HTTPD
+        # doesn't fire off new requests while we are working may help.
+        with BLOCK_HTTPD_LOCK:
+            updated = {}
+            for path, value in ops:
+                value = value.strip()
+                if value.startswith('{') or value.startswith('['):
+                    value = json.loads(value)
+                cfg, var = config.walk(path.strip(), parent=1)
+                cfg[var].append(value)
+                updated[path] = value
 
-        self._background_save(config=True)
+        if updated:
+            self._background_save(config=True)
+
         return self._success(_('Updated your settings'), result=updated)
 
 
@@ -1585,20 +1597,27 @@ class ConfigUnset(Command):
     IS_USER_ACTIVITY = True
 
     def command(self):
+        from mailpile.httpd import BLOCK_HTTPD_LOCK
+
         session, config = self.session, self.session.config
 
         if config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
-        updated = []
-        vlist = list(self.args) + (self.data.get('var', None) or [])
-        for v in vlist:
-            cfg, vn = config.walk(v, parent=True)
-            if vn in cfg:
-                del cfg[vn]
-                updated.append(v)
+        # We don't have transactions really, but making sure the HTTPD
+        # doesn't fire off new requests while we are working may help.
+        with BLOCK_HTTPD_LOCK:
+            updated = []
+            vlist = list(self.args) + (self.data.get('var', None) or [])
+            for v in vlist:
+                cfg, vn = config.walk(v, parent=True)
+                if vn in cfg:
+                    del cfg[vn]
+                    updated.append(v)
 
-        self._background_save(config=True)
+        if updated:
+            self._background_save(config=True)
+
         return self._success(_('Reset to default values'), result=updated)
 
 
@@ -1657,6 +1676,8 @@ class AddMailboxes(Command):
     MAX_PATHS = 50000
 
     def command(self):
+        from mailpile.httpd import BLOCK_HTTPD_LOCK
+
         session, config = self.session, self.session.config
         adding = []
         existing = config.sys.mailbox
@@ -1695,8 +1716,9 @@ class AddMailboxes(Command):
             return self._error(_('User aborted'))
 
         added = {}
-        for arg in adding:
-            added[config.sys.mailbox.append(arg)] = arg
+        with BLOCK_HTTPD_LOCK:
+            for arg in adding:
+                added[config.sys.mailbox.append(arg)] = arg
         if added:
             self._background_save(config=True)
             return self._success(_('Added %d mailboxes') % len(added),

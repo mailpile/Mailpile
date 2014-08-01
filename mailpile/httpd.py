@@ -25,6 +25,8 @@ global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
 
 DEFAULT_PORT = 33411
 
+BLOCK_HTTPD_LOCK = UiRLock()
+
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
@@ -260,7 +262,10 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if path.startswith('/static/'):
             return self.send_file(config, path[len('/static/'):])
 
-        self.session = session = Session(config)
+        # This is just to allow other processes to block us for a bit
+        with BLOCK_HTTPD_LOCK:
+            self.session = session = Session(config)
+
         session.ui = HttpUserInteraction(self, config,
                                          log_parent=server_session.ui)
 

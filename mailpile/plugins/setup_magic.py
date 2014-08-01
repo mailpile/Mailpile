@@ -16,6 +16,7 @@ from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.crypto.gpgi import GnuPGKeyGenerator
+from mailpile.httpd import BLOCK_HTTPD_LOCK
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.plugins.migrate import Migrate
@@ -491,13 +492,19 @@ class SetupWelcome(TestableWebbable):
     })
 
     def bg_setup_stage_1(self):
+        # Wait a bit, so the user has something to look at befor we
+        # block the web server and do real work.
+        time.sleep(2)
+
         # Intial configuration of app goes here...
         if not self.session.config.tags:
-            self.basic_app_config(self.session)
+            with BLOCK_HTTPD_LOCK:
+                self.basic_app_config(self.session)
 
         # Next, if we have any secret GPG keys, extract all the e-mail
         # addresses and create a profile for each one.
-        SetupProfiles(self.session).auto_create_profiles()
+        with BLOCK_HTTPD_LOCK:
+            SetupProfiles(self.session).auto_create_profiles()
 
     def setup_command(self, session):
         config = session.config
@@ -628,20 +635,21 @@ class SetupCrypto(TestableWebbable):
                     'chosen_key': session.config.prefs.gpg_recipient
                 })
 
-            if choose_key and not error_info:
-                session.config.prefs.gpg_recipient = choose_key
-                self.make_master_key()
-                changed = True
+            with BLOCK_HTTPD_LOCK:
+                if choose_key and not error_info:
+                    session.config.prefs.gpg_recipient = choose_key
+                    self.make_master_key()
+                    changed = True
 
-            if ((not error_info) and
-                    (session.config.prefs.gpg_recipient == '!CREATE') and
-                    (Setup.KEY_CREATION_THREAD is None or
-                     Setup.KEY_CREATION_THREAD.failed)):
-                gk = GnuPGKeyGenerator(
-                    sps=session.config.gnupg_passphrase,
-                    on_complete=lambda: self.gpg_key_ready(gk))
-                Setup.KEY_CREATION_THREAD = gk
-                Setup.KEY_CREATION_THREAD.start()
+                if ((not error_info) and
+                        (session.config.prefs.gpg_recipient == '!CREATE') and
+                        (Setup.KEY_CREATION_THREAD is None or
+                         Setup.KEY_CREATION_THREAD.failed)):
+                    gk = GnuPGKeyGenerator(
+                        sps=session.config.gnupg_passphrase,
+                        on_complete=lambda: self.gpg_key_ready(gk))
+                    Setup.KEY_CREATION_THREAD = gk
+                    Setup.KEY_CREATION_THREAD.start()
 
         results.update({
             'chosen_key': session.config.prefs.gpg_recipient,
