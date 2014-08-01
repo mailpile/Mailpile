@@ -29,6 +29,7 @@ cd "$MAILPILE_BREW_ROOT"
 [ -e bin/brew ] || \
     curl -kL https://github.com/Homebrew/homebrew/tarball/master \
     | tar xz --strip 1
+echo
 brew install git
 brew install gnupg
 brew install openssl
@@ -49,7 +50,7 @@ _pip() {
     shift
     _ptest $_PM || pip install "$@"
 }
-
+echo
 _pip   DNS       pydns
 _pip   jinja2    jinja2
 _pip   pexpect   pexpect
@@ -59,13 +60,6 @@ _pip   spambayes http://pypi.python.org/packages/source/s/spambayes/spambayes-1.
 _pip   PIL       pillow
 _ptest lxml ||   STATIC_DEPS=true pip install lxml
 _pip   objc      pyobjc || echo 'Incomplete pyobjc build'
-
-#
-# Slim down: remove *.pyo and *.pyc files
-#
-rm -f $(find . -name *.pyc)
-rm -f $(find . -name *.pyo)
-rm -f $(find . -name *.a)
 
 
 #
@@ -122,8 +116,8 @@ done
 #
 # Make symbolic links relative
 #
-TDIR=/tmp/symlinks-mailpile.$$
 if [ ! -e "$MAILPILE_BREW_ROOT"/bin/symlinks ]; then
+    TDIR=/tmp/symlinks-mailpile.$$
     mkdir $TDIR
     cd $TDIR
     curl -O http://pkgs.fedoraproject.org/repo/pkgs/symlinks/symlinks-1.2.tar.gz/b4bab0a5140e977c020d96e7811cec61/symlinks-1.2.tar.gz
@@ -136,6 +130,8 @@ if [ ! -e "$MAILPILE_BREW_ROOT"/bin/symlinks ]; then
     cp symlinks "$MAILPILE_BREW_ROOT"/bin/
     cd "$MAILPILE_BREW_ROOT"
     rm -rf $TDIR
+else
+    cd "$MAILPILE_BREW_ROOT"
 fi
 # This needs to run twice... just because
 ./bin/symlinks -s -c -r "$MAILPILE_BREW_ROOT"
@@ -153,12 +149,21 @@ for target in /lib/python2.7/site-packages/sitecustomize.py \
         .$target
 done
 
+
+#
+# Pre-test, slim down: remove *.pyo and *.pyc files
+#
+cd "$MAILPILE_BREW_ROOT"
+find . -name *.pyc -or -name *.pyo -or -name *.a | xargs rm -f
+
+
 #
 # Test our installation, make sure it works
 #
+echo
 mv "$MAILPILE_BREW_ROOT" "$MAILPILE_BREW_ROOT".RELOC
 cd "$MAILPILE_BREW_ROOT".RELOC
-echo |./bin/openssl && echo ... is OK
+echo |./bin/openssl 2>/dev/null && echo ... is OK
 ./bin/gpg --list-keys >/dev/null 2>&1 && echo 'GnuPG is OK'
 cat << tac | ./bin/python
 import DNS
@@ -176,3 +181,12 @@ tac
 cd
 mv "$MAILPILE_BREW_ROOT".RELOC "$MAILPILE_BREW_ROOT"
 echo "== Tests passed, we are happy =="
+
+
+#
+# Finally, slim down again: remove *.pyo and *.pyc files created
+# by the test-run above.
+#
+cd "$MAILPILE_BREW_ROOT"
+find . -name *.pyc -or -name *.pyo -or -name *.a | xargs rm -f
+
