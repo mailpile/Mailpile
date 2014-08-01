@@ -9,6 +9,17 @@
 {% include("jsapi/setup/access.js") %}
 {% include("jsapi/setup/router.js") %}
 
+/* Validation UI Feedback */
+_.extend(Backbone.Validation.callbacks, {
+  valid: function(view, attr, selector) {
+    // do something
+  },
+  invalid: function(view, attr, error, selector) {
+    $('#error-setup-' + attr).html(error);
+  }
+});
+
+/* Main Init Call */
 var SetupApp = (function ($, Backbone, global) {
 
     var init = function() {
