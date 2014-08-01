@@ -372,6 +372,9 @@ class UrlMap:
         else:
             user_session = None
 
+        is_async = path.startswith('/%s/' % self.MAP_ASYNC_API)
+        is_api = path.startswith('/%s/' % self.MAP_API)
+
         if authenticate:
             def auth(commands, user_session):
                 if user_session:
@@ -382,11 +385,11 @@ class UrlMap:
                         user_session.update_ts()
                 if not user_session or not user_session.auth:
                     for c in commands:
-                        if c.HTTP_AUTH_REQUIRED is True:
-                            self.redirect_to_auth_or_setup(method, path,
-                                                           query_data)
-                        elif (c.HTTP_AUTH_REQUIRED == 'Maybe' and
-                                 self.session.config.prefs.gpg_recipient):
+                        if (c.HTTP_AUTH_REQUIRED is True or
+                               (c.HTTP_AUTH_REQUIRED == 'Maybe' and
+                                self.session.config.prefs.gpg_recipient)):
+                            if is_async or is_api:
+                                raise AccessError()
                             self.redirect_to_auth(method, path, query_data)
                 return commands
         else:
@@ -394,8 +397,6 @@ class UrlMap:
                 return commands
 
         # Check the API first.
-        is_async = path.startswith('/%s/' % self.MAP_ASYNC_API)
-        is_api = path.startswith('/%s/' % self.MAP_API)
         if is_api or is_async:
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:

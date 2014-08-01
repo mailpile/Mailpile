@@ -345,7 +345,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         except UrlRedirectException, e:
             return self.send_http_redirect(e.url)
         except SuppressHtmlOutput:
-            return
+            return None
+        except AccessError:
+            self.send_full_response(_('Access Denied'),
+                                    code=403, mimetype='text/plain')
+            return None
         except:
             e = traceback.format_exc()
             session.ui.debug(e)
