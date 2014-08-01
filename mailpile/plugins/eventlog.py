@@ -29,6 +29,7 @@ class Events(Command):
         'private_data': 'var:value'
     }
     LOG_NOTHING = True
+    IS_HANGING_ACTIVITY = True
     IS_USER_ACTIVITY = False
 
     DEFAULT_WAIT_TIME = 10.0

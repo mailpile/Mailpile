@@ -39,6 +39,7 @@ class Command:
     API_VERSION = None
     UI_CONTEXT = None
     IS_USER_ACTIVITY = False
+    IS_HANGING_ACTIVITY = False
     IS_INTERACTIVE = False
     CONFIG_REQUIRED = True
 
@@ -1289,10 +1290,12 @@ class ProgramStatus(Command):
             return ('Recent events:\n%s\n\n'
                     'Events in progress:\n%s\n\n'
                     'Live sessions:\n%s\n\n'
-                    'Threads: (bg delay %.3fs, live=%s)\n%s\n\n'
+                    'Threads: (bg delay %.3fs, live=%s, httpd=%s)\n%s\n\n'
                     'Locks:\n%s'
                     ) % (cevents, ievents, sessions,
-                         self.result['delay'], self.result['live'],
+                         self.result['delay'],
+                         self.result['live'],
+                         self.result['httpd'],
                          threads, locks)
 
     def command(self, args=None):
@@ -1340,6 +1343,7 @@ class ProgramStatus(Command):
                 pass
 
         import mailpile.auth
+        import mailpile.httpd
         result = {
             'sessions': [{'sessionid': k,
                           'timestamp': v.ts,
@@ -1348,6 +1352,7 @@ class ProgramStatus(Command):
                          mailpile.auth.SESSION_CACHE.iteritems()],
             'delay': play_nice_with_threads(sleep=False),
             'live': mailpile.util.LIVE_USER_ACTIVITIES,
+            'httpd': mailpile.httpd.LIVE_HTTP_REQUESTS,
             'threads': threads,
             'locks': sorted(locks)
         }
@@ -1482,7 +1487,7 @@ class ConfigSet(Command):
     }
 
     def command(self):
-        from mailpile.httpd import BLOCK_HTTPD_LOCK
+        from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 
         config = self.session.config
         args = list(self.args)
@@ -1511,8 +1516,8 @@ class ConfigSet(Command):
             ops.append((var, value))
 
         # We don't have transactions really, but making sure the HTTPD
-        # doesn't fire off new requests while we are working may help.
-        with BLOCK_HTTPD_LOCK:
+        # is idle (aside from this request) will definitely help.
+        with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             updated = {}
             for path, value in ops:
                 value = value.strip()
@@ -1545,7 +1550,7 @@ class ConfigAdd(Command):
     IS_USER_ACTIVITY = True
 
     def command(self):
-        from mailpile.httpd import BLOCK_HTTPD_LOCK
+        from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 
         config = self.session.config
         ops = []
@@ -1569,8 +1574,8 @@ class ConfigAdd(Command):
             ops.append((var, value))
 
         # We don't have transactions really, but making sure the HTTPD
-        # doesn't fire off new requests while we are working may help.
-        with BLOCK_HTTPD_LOCK:
+        # is idle (aside from this request) will definitely help.
+        with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             updated = {}
             for path, value in ops:
                 value = value.strip()
@@ -1597,7 +1602,7 @@ class ConfigUnset(Command):
     IS_USER_ACTIVITY = True
 
     def command(self):
-        from mailpile.httpd import BLOCK_HTTPD_LOCK
+        from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 
         session, config = self.session, self.session.config
 
@@ -1605,8 +1610,8 @@ class ConfigUnset(Command):
             return self._error(_('In lockdown, doing nothing.'))
 
         # We don't have transactions really, but making sure the HTTPD
-        # doesn't fire off new requests while we are working may help.
-        with BLOCK_HTTPD_LOCK:
+        # is idle (aside from this request) will definitely help.
+        with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             updated = []
             vlist = list(self.args) + (self.data.get('var', None) or [])
             for v in vlist:
@@ -1676,7 +1681,7 @@ class AddMailboxes(Command):
     MAX_PATHS = 50000
 
     def command(self):
-        from mailpile.httpd import BLOCK_HTTPD_LOCK
+        from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 
         session, config = self.session, self.session.config
         adding = []
@@ -1716,7 +1721,9 @@ class AddMailboxes(Command):
             return self._error(_('User aborted'))
 
         added = {}
-        with BLOCK_HTTPD_LOCK:
+        # We don't have transactions really, but making sure the HTTPD
+        # is idle (aside from this request) will definitely help.
+        with BLOCK_HTTPD_LOCK, Idle_HTTPD():
             for arg in adding:
                 added[config.sys.mailbox.append(arg)] = arg
         if added:

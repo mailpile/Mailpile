@@ -26,6 +26,18 @@ global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT
 DEFAULT_PORT = 33411
 
 BLOCK_HTTPD_LOCK = UiRLock()
+LIVE_HTTP_REQUESTS = 0
+
+
+def Idle_HTTPD(allowed=1):
+    with BLOCK_HTTPD_LOCK:
+        sleep = 100
+        while (sleep and
+                not mailpile.ui.QUITTING and
+                LIVE_HTTP_REQUESTS > allowed):
+            time.sleep(0.05)
+            sleep -= 1
+        return BLOCK_HTTPD_LOCK
 
 
 class HttpRequestHandler(SimpleXMLRPCRequestHandler):
@@ -242,7 +254,16 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             return None
         return self.do_GET(post_data=post_data, method=method)
 
-    def do_GET(self, post_data={}, suppress_body=False, method='GET'):
+    def do_GET(self, *args, **kwargs):
+        global LIVE_HTTP_REQUESTS
+        try:
+            with BLOCK_HTTPD_LOCK:
+                LIVE_HTTP_REQUESTS += 1
+            return self._real_do_GET(*args, **kwargs)
+        finally:
+            LIVE_HTTP_REQUESTS -= 1
+
+    def _real_do_GET(self, post_data={}, suppress_body=False, method='GET'):
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
         query_data = parse_qs(query)
         opath = path = unquote(path)
@@ -262,10 +283,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         if path.startswith('/static/'):
             return self.send_file(config, path[len('/static/'):])
 
-        # This is just to allow other processes to block us for a bit
-        with BLOCK_HTTPD_LOCK:
-            self.session = session = Session(config)
-
+        self.session = session = Session(config)
         session.ui = HttpUserInteraction(self, config,
                                          log_parent=server_session.ui)
 
@@ -314,8 +332,16 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                 else:
                     raise
 
-            results = [cmd.run() for cmd in commands]
-            session.ui.display_result(results[-1])
+            global LIVE_HTTP_REQUESTS
+            hang_fix = 1 if ([1 for c in commands if c.IS_HANGING_ACTIVITY]
+                             ) else 0
+            try:
+                LIVE_HTTP_REQUESTS -= hang_fix
+                results = [cmd.run() for cmd in commands]
+                session.ui.display_result(results[-1])
+            finally:
+                LIVE_HTTP_REQUESTS += hang_fix
+
         except UrlRedirectException, e:
             return self.send_http_redirect(e.url)
         except SuppressHtmlOutput:

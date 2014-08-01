@@ -16,7 +16,7 @@ from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.crypto.gpgi import GnuPGKeyGenerator
-from mailpile.httpd import BLOCK_HTTPD_LOCK
+from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.plugins.migrate import Migrate
@@ -498,12 +498,12 @@ class SetupWelcome(TestableWebbable):
 
         # Intial configuration of app goes here...
         if not self.session.config.tags:
-            with BLOCK_HTTPD_LOCK:
+            with BLOCK_HTTPD_LOCK, Idle_HTTPD(allowed=0):
                 self.basic_app_config(self.session)
 
         # Next, if we have any secret GPG keys, extract all the e-mail
         # addresses and create a profile for each one.
-        with BLOCK_HTTPD_LOCK:
+        with BLOCK_HTTPD_LOCK, Idle_HTTPD(allowed=0):
             SetupProfiles(self.session).auto_create_profiles()
 
     def setup_command(self, session):
@@ -635,7 +635,7 @@ class SetupCrypto(TestableWebbable):
                     'chosen_key': session.config.prefs.gpg_recipient
                 })
 
-            with BLOCK_HTTPD_LOCK:
+            with BLOCK_HTTPD_LOCK, Idle_HTTPD():
                 if choose_key and not error_info:
                     session.config.prefs.gpg_recipient = choose_key
                     self.make_master_key()
