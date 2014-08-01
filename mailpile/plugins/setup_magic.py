@@ -603,25 +603,22 @@ class SetupCrypto(TestableWebbable):
                         'invalid_key': True,
                         'chosen_key': choose_key
                     })
-                else:
-                    session.config.prefs.gpg_recipient = choose_key
-                    self.make_master_key()
-                    changed = True
 
             try:
                 if not error_info:
+                    chosen_key = ((not error_info) and choose_key
+                                  ) or session.config.prefs.gpg_recipient
                     passphrase = self.data.get('passphrase', [''])[0]
                     passphrase2 = self.data.get('passphrase_confirm', [''])[0]
                     assert(passphrase == passphrase2)
-                    if session.config.prefs.gpg_recipient == '!CREATE':
+                    if chosen_key == '!CREATE':
                         assert(passphrase != '')
                         sps = SecurePassphraseStorage(passphrase)
                     else:
                         sps = mailpile.auth.VerifyAndStorePassphrase(
                             session.config, passphrase=passphrase)
-                    if not session.config.prefs.gpg_recipient:
-                        session.config.prefs.gpg_recipient = '!CREATE'
-                        changed == True
+                    if not chosen_key:
+                        choose_key = '!CREATE'
                     results['updated_passphrase'] = True
                     session.config.gnupg_passphrase.data = sps.data
                     mailpile.auth.SetLoggedIn(self)
@@ -630,6 +627,11 @@ class SetupCrypto(TestableWebbable):
                     'invalid_passphrase': True,
                     'chosen_key': session.config.prefs.gpg_recipient
                 })
+
+            if choose_key and not error_info:
+                session.config.prefs.gpg_recipient = choose_key
+                self.make_master_key()
+                changed = True
 
             if ((not error_info) and
                     (session.config.prefs.gpg_recipient == '!CREATE') and
