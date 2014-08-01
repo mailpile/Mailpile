@@ -2,18 +2,17 @@
 var PassphraseModel = Backbone.Model.extend({
   validation: {
     passphrase: {
-      minLength: 2,
       required: true,
       msg: 'Enter a passphrase of at least 10 letters'
     },
     passphrase_confirm: {
-      minLength: 2,
       required: true,
       equalTo: 'passphrase',
       msg: 'Your confirmation passphrase does not match'
     },
     choose_key: {
-      required: false
+      required: false,
+      msg: 'You must select'
     }
   }
 });
@@ -31,12 +30,6 @@ var PassphraseView = Backbone.View.extend({
   events: {
     "click #btn-setup-passphrase": "processPassphrase"
   },
-/*
-  bindings: {
-    '#input-setup-passphrase': 'passphrase',
-    '#input-setup-passphrase-confirm': 'passphrase_confirm'
-  },
-*/
   show: function() {
     $('#setup-progress').find('')
     this.$el.html($('#template-setup-passphrase').html());
@@ -45,13 +38,20 @@ var PassphraseView = Backbone.View.extend({
 
     e.preventDefault();
 
-    // Set Model & Validate
+    // Has Keychain (set passprhase_confirm)
+    if ($('#input-setup-passphrase_confirm').attr('type') == 'hidden') {
+      $('#input-setup-passphrase_confirm').val($('#input-setup-passphrase').val());
+    }
+
+    // Prep & Validate Data
     var passphrase_data = $('#form-setup-passphrase').serializeObject();
     this.model.set(passphrase_data);
-    var validate = this.model.validate();
 
-    // Process
-    if (validate === undefined) {
+    // Process Form
+    if (!this.model.validate()) {
+      $('#form-setup-passphrase').hide();
+      
+
       Mailpile.API.setup_crypto_post(passphrase_data, function(result) {
         if (result.status == 'success') {
           $('#identity-vault-lock')
@@ -63,17 +63,16 @@ var PassphraseView = Backbone.View.extend({
           }, 2500);
         }
         else if (result.status == 'error' && result.error.invalid_passphrase) {
+
+          $('#form-setup-passphrase').show();
+
+
           $('#identity-vault-lock').find('.icon-lock-closed').addClass('color-12-red bounce');
           Mailpile.notification(result.status, result.message);
           setTimeout(function() {
             $('#identity-vault-lock').find('.icon-lock-closed').removeClass('color-12-red bounce');
           }, 2500);
         }
-      });
-    }
-    else {
-      $.each(validate, function(elem, msg){
-        $('#error-setup-' + elem).html(msg);
       });
     }
   }
