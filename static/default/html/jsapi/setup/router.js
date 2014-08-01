@@ -10,6 +10,7 @@ var SetupRouter = Backbone.Router.extend({
 		"crypto-generated" : "cryptoGenerated",
 		"discovery"        : "discovery",
     "sources"          : "sources",
+    "sources-add"      : "sourcesAdd",
 		"sending"          : "sending",
 		"advanced"         : "advanced",
 		"security"         : "security",
@@ -33,6 +34,9 @@ var SetupRouter = Backbone.Router.extend({
 	},
   sources: function() {
     SourcesView.show();
+  },
+  sourcesAdd: function() {
+    SourcesView.showAddSource();
   },
 	sending: function() {
 		SendingView.show();
