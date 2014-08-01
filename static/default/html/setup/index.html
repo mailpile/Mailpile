@@ -4,8 +4,19 @@
 
 <div id="setup" class="clearfix add-bottom"></div>
 
-{% include("settings/various.html") %}
-{% include("settings/identity.html") %}
+{% include("setup/various.html") %}
+
+<script id="template-setup-passphrase" type="text/template">
+{% include("setup/passphrase.html") %}
+</script>
+
+<script id="template-setup-profiles" type="text/template">
+{% include("setup/profile_list.html") %}
+</script>
+
+<script id="template-setup-profile-add" type="text/template">
+{% include("setup/profile_add.html") %}
+</script>
 
 <script id="template-setup-sources" type="text/template">
 {% include("setup/source_list.html") %}
