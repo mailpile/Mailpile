@@ -164,7 +164,7 @@
 
 
 /* Form Inputs */
-/* Rebar: move this rebar/forms.less library at some point */
+/* REBAR: move this rebar/forms.less library at some point */
 
   input[type="text"].input-medium,
 	input[type="password"].input-medium,
@@ -186,6 +186,45 @@
   textarea.input-large,
   select.input-large {
     width: 500px;
+  }
+
+
+  ul.radio-list-items {
+    background: @white;
+    border: 1px solid @gray;
+    border-radius: @base-border-radius;
+  }
+
+  ul.radio-list-items li {
+    margin-bottom: 0px; 
+    border-top: 1px solid @gray;
+  }
+
+  ul.radio-list-items li:first-child {
+    border-top: 0px;
+  }
+
+  label.radio-list-item {
+    width: 100%;
+    height: 100%;
+    display: table;
+    margin-bottom: 0px;
+    box-sizing: content-box;
+  }
+
+  label.radio-list-item:hover {
+    background: @colorSelect;
+    cursor: pointer;
+  }
+
+  label.radio-list-item div {
+    display: table-cell;
+    padding: @base-padding;
+    vertical-align: middle;
+  }
+
+  span.radio-list-item-detail {
+    color: @grayLight;
   }
 
 

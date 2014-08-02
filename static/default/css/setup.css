@@ -127,6 +127,16 @@ span.setup-progress-line {
 #identity-vault-lock {
   margin: 20px auto;
 }
+label.radio-list-item div.radio {
+  width: 35px;
+}
+label.radio-list-item div.icon {
+  width: 35px;
+}
+label.radio-list-item .icon-key {
+  font-size: 30px;
+  line-height: 30px;
+}
 #setup-profile-list {
   background: #ffffff;
   border-radius: 5px;
