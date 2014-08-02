@@ -6,11 +6,19 @@
 <head>
   <title>{% if result %}{% block title %}{{title}}{% endblock %}{% else %}Error{% endif %}</title>
   {% block head %}{% endblock %}
-  {% include("partials/head-nojsapi.html") %}
+  {% include("partials/head.html") %}
 </head>
 <body>
 <div id="content-wide">
   {% block content %}{{results}}{% endblock %}
 </div>
+{% if state.command_url in ("/setup/") %}
+<script>
+$(document).ready(function() {
+  Mailpile.instance = {};
+  SetupApp.init();
+});
+</script>
+{% endif %}
 </body>
 </html>
