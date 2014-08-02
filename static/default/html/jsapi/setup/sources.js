@@ -1,21 +1,46 @@
 /* Setup - Sources - Model */
 var SourceModel = Backbone.Model.extend({
-  url: '/setup/sources/',
   validation: {
     name: {
-      maxLength: 48,
-      required: true,
-      msg: 'Enter a name for your profile'
+      msg: "{{_('Source name')}}",
     },
-    none: {
-      maxLength: 48,
-      required: false,
-      msg: 'Enter a name for your profile'
+    protocol: {
+      oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3"],
+      msg: "{{_('Mailbox protocol or format')}}"
+    }, 
+    interval: {
+      msg: "{{_('How frequently to check for mail')}}"
     },
-    email: {
-      maxLength: 128,
-      required: true,
-      msg: 'Enter a valid email address'
+    username: {
+      msg: "{{_('User name')}}"
+    },
+    password: {
+      msg: "{{_('Password')}}"
+    }, 
+    host: {
+      msg: "{{_('Host')}}"
+    },
+    port: {
+      msg: "{{_('Port')}}"
+    },
+    'discovery.paths': {
+      msg: "{{_('Paths to watch for new mailboxes')}}"
+    },
+    'discovery.policy': {
+      oneOf: ['unknown', 'ignore', 'watch','read', 'move', 'sync'],
+      msg: "{{_('Default mailbox policy')}}"
+    },
+    'discovery.local_copy': {
+      msg: "{{_('Copy mail to a local mailbox?')}}"
+    },
+    'discovery.create_tag': {
+      msg: "{{_('Create a tag for each mailbox?')}}"
+    },
+    'discovery.process_new': {
+      msg: "{{_('Is a potential source of new mail')}}"
+    },
+    'discovery.apply_tags': {
+      msg: "{{_('Tags applied to messages')}}"
     }
   }
 });
@@ -31,17 +56,15 @@ var SourcesView = Backbone.View.extend({
     return this;
   },
   events: {
-    "click #btn-setup-show-add-source"     : "showAddSource",
     "click #btn-setup-source-add-cancel"   : "cancelAddSource",
   	"click #btn-setup-source-settings"     : "showSourceSettings"
   },
   show: function() {
     this.$el.html(_.template($("#template-setup-sources").html()));
   },
-  showAddSource: function(e) {
-    e.preventDefault();
+  showAddSource: function() {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    $('#setup').prepend($('#template-setup-source-settings').html());
+    this.$el.html(_.template($('#template-setup-source-settings').html()));
   },
   cancelAddSource: function(e) {
     e.prevenDefault();
