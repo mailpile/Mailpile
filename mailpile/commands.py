@@ -1638,7 +1638,7 @@ class ConfigPrint(Command):
     IS_USER_ACTIVITY = True
 
     def _maybe_all(self, list_all, data):
-        if list_all:
+        if isinstance(data, (dict, list)) and list_all:
             rv = {}
             for key in data.all_keys():
                 rv[key] = data[key]
