@@ -1793,6 +1793,8 @@ class Abort(Command):
         else:
             os._exit(1)
 
+        return self._success(_('Shutting down...'))
+
 
 class Help(Command):
     """Print help on Mailpile or individual commands."""
