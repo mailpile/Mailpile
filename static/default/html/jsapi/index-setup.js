@@ -25,7 +25,6 @@ var SetupApp = (function ($, Backbone, global) {
     var init = function() {
 
       // Views
-      global.PassphraseView = new PassphraseView({ model: new PassphraseModel(), el: $('#setup') });
       global.ProfilesView   = new ProfilesView({ model: new ProfilesModel(), el: $('#setup') });
       global.SourcesView    = new SourcesView({ model: new SourceModel(), el: $('#setup') });
       global.SendingView    = new SendingView({ el: $('#setup') });

@@ -25,21 +25,20 @@ var PassphraseView = Backbone.View.extend({
 		this.render();
   },
   render: function() {
+    if ($('#setup-passphrase-keys-exists').length) {
+      $('#setup-passphrase-existing-confirm').addClass('hide');
+    }
     return this;
   },
   events: {
     "click #btn-setup-passphrase": "processPassphrase"
-  },
-  show: function() {
-    $('#setup-progress').find('')
-    this.$el.html($('#template-setup-passphrase').html());
   },
   processPassphrase: function(e) {
 
     e.preventDefault();
 
     // Has Keychain (set passprhase_confirm)
-    if ($('#input-setup-passphrase_confirm').attr('type') == 'hidden') {
+    if ($('#setup-passphrase-keys-exists').length) {
       $('#input-setup-passphrase_confirm').val($('#input-setup-passphrase').val());
     }
 
@@ -49,8 +48,9 @@ var PassphraseView = Backbone.View.extend({
 
     // Process Form
     if (!this.model.validate()) {
-      $('#form-setup-passphrase').hide();
-      
+
+      // Hide Form
+      $('#form-setup-passphrase').hide();      
 
       Mailpile.API.setup_crypto_post(passphrase_data, function(result) {
         if (result.status == 'success') {
@@ -58,16 +58,21 @@ var PassphraseView = Backbone.View.extend({
             .find('.icon-lock-closed')
             .removeClass('icon-lock-closed')
             .addClass('icon-lock-open color-08-green bounce');
+          
+          $('#setup-passphrase-authenticated').fadeIn();
+
           setTimeout(function() {
-            Backbone.history.navigate('#profiles', true);
+            window.location.href = '/setup/';
           }, 2500);
         }
         else if (result.status == 'error' && result.error.invalid_passphrase) {
 
+          // Show Form
           $('#form-setup-passphrase').show();
-
-
+        
+          // Error UI feedback
           $('#identity-vault-lock').find('.icon-lock-closed').addClass('color-12-red bounce');
+
           Mailpile.notification(result.status, result.message);
           setTimeout(function() {
             $('#identity-vault-lock').find('.icon-lock-closed').removeClass('color-12-red bounce');

@@ -1,19 +1,25 @@
 {% extends "layouts/auth.html" %}
 {% block title %}{{_("Passphrase")}} | {{_('Setup')}}{% endblock %}
 {% block content %}
-
-<div class="setup-box setup-box-medium animated add-bottom bounceInUp">
+<div id="setup-passphrase" class="setup-box setup-box-medium animated add-bottom bounceInUp">
   <div id="identity-vault-lock" class="vault-lock-outer">
     <div class="vault-lock-inner">
       <div class="vault-lock icon-lock-closed animated"></div>
     </div>
   </div>
-  <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center">
+  <div id="setup-passphrase-authenticated" class="hide text-center">
+    You successfully authenticated with that encryption key
+  </div>
+  <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center add-top">
 
     {% set setup_crypto = mailpile("setup/crypto") %}
-    {% if setup_crypto.result.secret_keys|length == 0 %}
-    <h3 class="add-top text-center">Create Your Passphrase</h3>
-    <div id="setup-passphrase-new-keys">
+    {% if result.creating_key %}
+
+      <h3 class="text-center"><span class="icon-key"></span> Encryption Key Processing</h3>
+      <p class="text-center">Key creation is in progress... this may take a while.</p>
+
+    {% elif setup_crypto.result.secret_keys|length == 0 %}
+      <h3 class="text-center">Create Your Passphrase</h3>
 
       <p class="text-center">
         Your passphrase should be something really hard to guess but memorable<br>
@@ -29,43 +35,57 @@
 
       <input name="choose_key" value="!CREATE" type="hidden">
 
-    </div>
-
     {% elif setup_crypto.result.secret_keys|length >= 1 %}
 
-    <h3 class="add-top text-center">Your Security Passphrase</h3>
-    <div id="setup-passphrase-has-keys">
-      <p>Select one of the <strong>{{setup_crypto.result.secret_keys|length}} Private Encryption Keys</strong> and enter the keys passphrase:</p>
+      <label>Select the encryption key you would like to use</label>
       <ul class="radio-list-items">
       {% for key in setup_crypto.result.secret_keys %}
         {% set key_info = setup_crypto.result.secret_keys[key] %}
         {% if key_info.capabilities_map.0.encrypt and key_info.capabilities_map.0.sign and not key_info.disabled %}
         <li class="text-left">
         <label class="radio-list-item">
-          <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key %}checked{% endif %}>
-          <strong>{{ key_info.keytype_name }} key {{ key }}</strong>, {{ key_info.keysize }} bits<br>
-         
-          <span class="text-detail">
-            created on {{ key_info.creation_date }}  {% if key_info.expiration_date %}expires {{ key_info.expiration_date }}{% endif %}
-          </span>
+          <div class="radio text-center">
+            <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key %}checked{% endif %}>
+          </div>
+          <div class="icon text-center">
+            <span class="icon-key"></span>
+          </div>
+          <div>
+            <strong>{{ key }}</strong> &nbsp; {{ key_info.keytype_name }} Key / {{ key_info.keysize }} bits<br>         
+            <span>
+              Created on {{ key_info.creation_date }} &nbsp;&nbsp; {% if key_info.expiration_date %}Expires {{ key_info.expiration_date }}{% endif %}
+            </span>
+          </div>
         </label>
         </li>
         {% endif %}
       {% endfor %}
       </ul>
 
-      <span id="error-setup-passphrase" class="validation-error validation-message"></span>
-      <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+      <label>Enter the passphrase for the <strong>encryption key</strong> you selected:</label>
+      <span id="error-setup-passphrase" class="validation-error validation-message text-center">
+      {% if error and error.invalid_passphrase %}
+        Passphrase you entered is incorrect
+      {% endif %}
+      </span>
+      <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase">
 
-      <span id="error-setup-passphrase_confirm" class="hide"></span>
-      <input id="input-setup-passphrase_confirm" class="input-medium center" type="hidden" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
-
-    </div>
-
+      <div id="setup-passphrase-existing-confirm">
+        <span id="error-setup-passphrase_confirm"></span>
+        <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase">
+      </div>
+      <input type="hidden" id="setup-passphrase-keys-exists" value="exists">
     {% endif %}
 
-    <button id="btn-setup-passphrase" type="submit" class="text-center button-primary">{{_("Next")}}</button>
+    <button id="btn-setup-passphrase" type="submit">{{_("Authenticate")}}</button>
 
   </form>
 </div>
+
+<script>
+$(document).ready(function() {
+  Mailpile.instance = {};
+  PassphraseView = new PassphraseView({ model: new PassphraseModel(), el: $('#setup-passphrase') });
+});
+</script>
 {% endblock %}

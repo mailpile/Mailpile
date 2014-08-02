@@ -6,10 +6,7 @@
 
 {% include("setup/various.html") %}
 
-<script id="template-setup-passphrase" type="text/template">
-{% include("setup/passphrase.html") %}
-</script>
-
+{% set setup_profiles = mailpile("setup/profiles") %}
 <script id="template-setup-profiles" type="text/template">
 {% include("setup/profile_list.html") %}
 </script>

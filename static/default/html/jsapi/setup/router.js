@@ -5,7 +5,6 @@ var SetupRouter = Backbone.Router.extend({
 	},
 	routes: {
 		"" 						     : "index",
-		"passphrase"       : "passphrase",
 		"profiles"         : "profiles",
 		"crypto-generated" : "cryptoGenerated",
 		"discovery"        : "discovery",
@@ -18,11 +17,8 @@ var SetupRouter = Backbone.Router.extend({
 		"access"           : "access"
 	},
 	index: function() {
-    Backbone.history.navigate('#passphrase', true); 
+    Backbone.history.navigate('#profiles', true);
   },
-	passphrase: function() {
-		PassphraseView.show();
-	},
 	profiles: function() {
 		ProfilesView.show();
 	},
