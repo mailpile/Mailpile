@@ -122,12 +122,14 @@ class PluginManager(object):
         parents = full_name.split('.')[2:] # skip mailpile.plugins
         module = "mailpile.plugins"
         for parent in parents:
-            module = '%s.%s' % (module, parent)
-            if module not in sys.modules:
-                sys.modules[module] = imp.new_module(module)
+            mp = '%s.%s' % (module, parent)
+            if mp not in sys.modules:
+                sys.modules[mp] = imp.new_module(mp)
+                sys.modules[module].__dict__[parent] = sys.modules[mp]
+            module = mp
+        assert(module == full_name)
 
         # load actual module
-        sys.modules[full_name] = imp.new_module(full_name)
         sys.modules[full_name].__file__ = full_path
         with i18n_disabled:
             with open(full_path, 'r') as mfd:
