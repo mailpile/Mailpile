@@ -6,6 +6,7 @@ var SetupRouter = Backbone.Router.extend({
 	routes: {
 		"" 						     : "index",
 		"profiles"         : "profiles",
+		"profiles-add"     : "profilesAdd",
 		"crypto-generated" : "cryptoGenerated",
 		"discovery"        : "discovery",
     "sources"          : "sources",
@@ -21,6 +22,9 @@ var SetupRouter = Backbone.Router.extend({
   },
 	profiles: function() {
 		ProfilesView.show();
+	},
+	profilesAdd: function() {
+		ProfilesView.showAddProfile();
 	},
   discovery: function() {
 		IdentityView.showDiscovery();
