@@ -8,23 +8,19 @@
 
 {% set setup_profiles = mailpile("setup/profiles") %}
 <script id="template-setup-profiles" type="text/template">
-{% include("setup/profile_list.html") %}
+{% include("setup/profiles_list.html") %}
 </script>
 
-<script id="template-setup-profile-add" type="text/template">
-{% include("setup/profile_add.html") %}
+<script id="template-setup-profiles-add" type="text/template">
+{% include("setup/profiles_add.html") %}
 </script>
 
 <script id="template-setup-sources" type="text/template">
-{% include("setup/source_list.html") %}
-</script>
-
-<script id="template-setup-source-add" type="text/template">
-{% include("setup/source_add.html") %}
+{% include("setup/sources_list.html") %}
 </script>
 
 <script id="template-setup-source-settings" type="text/template">
-{% include("setup/source_settings.html") %}
+{% include("setup/sources_settings.html") %}
 </script>
 
 <script id="template-setup-sending" type="text/template">
