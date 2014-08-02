@@ -42,11 +42,11 @@ var PassphraseView = Backbone.View.extend({
       $('#input-setup-passphrase_confirm').val($('#input-setup-passphrase').val());
     }
 
-    // Prep & Validate Data
+    // Update Model
     var passphrase_data = $('#form-setup-passphrase').serializeObject();
     this.model.set(passphrase_data);
 
-    // Process Form
+    // Validate & Process
     if (!this.model.validate()) {
 
       // Hide Form
