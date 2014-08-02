@@ -159,7 +159,7 @@ class OutputCoprocess(IOCoprocess):
     def _popen(self, command, fd):
          proc = Popen(command, stdin=PIPE, stderr=PIPE, stdout=fd,
                       bufsize=0, close_fds=True,
-                      preexec_fn=popen_ignore_signals)
+                      **popen_ignore_signals)
          return proc, proc.stdin
 
     def _write_filter(self, data):
@@ -176,7 +176,7 @@ class InputCoprocess(IOCoprocess):
     def _popen(self, command, fd):
         proc = Popen(command, stdin=fd, stderr=PIPE, stdout=PIPE,
                      bufsize=0, close_fds=True,
-                     preexec_fn=popen_ignore_signals)
+                     **popen_ignore_signals)
         return proc, proc.stdout
 
     def _read_filter(self, data):

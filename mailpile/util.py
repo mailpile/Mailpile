@@ -28,6 +28,12 @@ except:
     Image = None
 
 
+if sys.platform == 'win32':
+    popen_ignore_signals = {}
+else:
+    popen_ignore_signals = {'preexec_fn': os.setpgrp}
+
+
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING
 
 
@@ -486,20 +492,13 @@ class GpgWriter(object):
         self.gpg.wait()
 
 
-def popen_ignore_signals():
-    try:
-        os.setpgrp()
-    except:
-        pass
-
-
 def gpg_open(filename, recipient, mode):
     fd = open(filename, mode)
     if recipient and ('a' in mode or 'w' in mode):
         gpg = subprocess.Popen(['gpg', '--batch', '-aer', recipient],
                                stdin=subprocess.PIPE,
                                stdout=fd,
-                               preexec_fn=popen_ignore_signals)
+                               **popen_ignore_signals)
         return GpgWriter(gpg)
     return fd
 
