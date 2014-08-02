@@ -41,9 +41,16 @@ def _real_startup(config):
                                      bufsize=1,  # line buffered
                                      stdin=subprocess.PIPE,
                                      **popen_ignore_signals)
+    ico = lambda s: os.path.join(script_dir, 'icons-%(theme)s', s)
     gui.stdin.write(json.dumps({
         'app_name': 'Mailpile',
-        'indicator_icon': os.path.join(script_dir, 'mailpile.png'),
+        'indicator_icons': {
+            'startup': ico('startup.png'),
+            'normal': ico('normal.png'),
+            'working': ico('working.png'),
+            'attention': ico('attention.png'),
+            'shutdown': ico('shutdown.png')
+        },
         'indicator_menu': [
             {
                 'label': _('Starting up ...'),

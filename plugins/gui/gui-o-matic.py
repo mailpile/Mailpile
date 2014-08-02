@@ -16,6 +16,9 @@ import webbrowser
 ##[ Parent Indicator class, interface and common helpers ]####################
 
 class Indicator(object):
+
+    ICON_THEME = 'light'
+
     def __init__(self, config):
         self.config = config
         self.ready = False
@@ -49,6 +52,9 @@ class Indicator(object):
                 if 'message' in data:
                     self.notify_user(data['message'])
 
+    def _theme_icon(self, pathname):
+        return pathname.replace('%(theme)s', self.ICON_THEME)
+
     def _add_menu_item(self, item='item', label='Menu item', sensitive=False,
                              op=None, args=None, **ignored_kwargs):
         pass
@@ -57,26 +63,32 @@ class Indicator(object):
         for item_info in self.config.get('indicator_menu', []):
             self._add_menu_item(**item_info)
 
-    def notify_user(self, message):
-        print 'NOTIFY: %s' % message
+    def _set_status(self, status):
+        print 'STATUS: %s' % status
 
     def set_status_startup(self):
-        pass
+        self._set_status('startup')
 
     def set_status_normal(self):
-        pass
+        self._set_status('normal')
 
     def set_status_working(self):
-        pass
+        self._set_status('working')
 
     def set_status_attention(self):
-        pass
+        self._set_status('attention')
+
+    def set_status_shutdown(self):
+        self._set_status('shutdown')
 
     def set_menu_label(self, item=None, label=None):
         pass
 
     def set_menu_sensitive(self, item=None, sensitive=True):
         pass
+
+    def notify_user(self, message):
+        print 'NOTIFY: %s' % message
 
 
 ##[ An indicator for Ubuntu's Unity ]##########################################
@@ -90,6 +102,8 @@ def UnityIndicator():
         pynotify.init("Mailpile")
     except ImportError:
         pynotify = None
+
+    ICON_THEME = 'light'
 
     gobject.threads_init()
 
@@ -116,14 +130,10 @@ def UnityIndicator():
         def _ind_setup(self):
             self.ind = appindicator.Indicator(
                 self.config.get('app_name', 'app').lower() + "-indicator",
-                "indicator-messages",
-                appindicator.CATEGORY_COMMUNICATIONS)
-            if 'indicator_icon' in self.config:
-                self.ind.set_icon(self.config['indicator_icon'])
-            else:
-                self.ind.set_attention_icon("new-messages-red")
+                # FIXME: Make these two configurable...
+                "indicator-messages", appindicator.CATEGORY_COMMUNICATIONS)
+            self._set_status('startup', now=True)
             self.ind.set_menu(self.menu)
-            self.set_status_startup()
 
         def notify_user(self, message):
             if pynotify:
@@ -134,21 +144,25 @@ def UnityIndicator():
             else:
                 print 'FIXME: Notify: %s' % message
 
-        def set_status_startup(self):
-            gobject.idle_add(self.ind.set_status,
-                             appindicator.STATUS_ACTIVE)
-
-        def set_status_normal(self):
-            gobject.idle_add(self.ind.set_status,
-                             appindicator.STATUS_ACTIVE)
-
-        def set_status_working(self):
-            gobject.idle_add(self.ind.set_status,
-                             appindicator.STATUS_ACTIVE)
-
-        def set_status_attention(self):
-            gobject.idle_add(self.ind.set_status,
-                             appindicator.STATUS_ATTENTION)
+        _STATUS_MODES = {
+            'startup': appindicator.STATUS_ACTIVE,
+            'normal': appindicator.STATUS_ACTIVE,
+            'working': appindicator.STATUS_ACTIVE,
+            'attention': appindicator.STATUS_ATTENTION,
+            'shutdown': appindicator.STATUS_ATTENTION,
+        }
+        def _set_status(self, mode, now=False):
+            if now:
+                do = lambda o, a: o(a)
+            else:
+                do = gobject.idle_add
+            if 'indicator_icons' in self.config:
+                icon = self.config['indicator_icons'].get(mode)
+                if not icon:
+                    icon = self.config['indicator_icons'].get('normal')
+                if icon:
+                    do(self.ind.set_icon, self._theme_icon(icon))
+            do(self.ind.set_status, self._STATUS_MODES[mode])
 
         def set_menu_label(self, item=None, label=None):
             if item and item in self.items:
@@ -176,7 +190,7 @@ try:
     import objc
     from Foundation import *
     from AppKit import *
-    from PyObjCTools import AppHelpler
+    from PyObjCTools import AppHelper
 except ImportError:
     objc = None
 
@@ -184,65 +198,90 @@ except ImportError:
 def MacOSXIndicator():
     assert(objc is not None)
 
+    class MacOSXThing(NSObject):
+        indicator = None
+
+        def applicationDidFinishLaunching_(self, notification):
+            print 'app launched'
+            self.indicator._menu_setup()
+            self.indicator._ind_setup()
+            self.indicator.ready = True
+
+        def activate_(self, notification):
+            for i, v in self.indicator.items.iteritems():
+                if notification == v:
+                    if i in self.indicator.callbacks:
+                        self.indicator.callbacks[i]()
+                    return
+            print 'activated an unknown item: %s' % notification
+
     class MailpileIndicator(Indicator):
+
+        ICON_THEME = 'osx'  # OS X has its own theme because it is too
+                            # dumb to auto-resize menu bar icons.
+
         def _menu_setup(self):
-            statusbar = NSStatusBar.systemStatusBar()
-            statusitem = statusbar.statusItemWithLength_(
-                NSSquareStatusItemLength)
-            statusitem.setImage_()
-            statusitem.setMenu_()
+            # Build a very simple menu
+            self.menu = NSMenu.alloc().init()
+            self.menu.setAutoenablesItems_(objc.NO)
+            self.items = {}
+            self.callbacks = {}
+            self._create_menu_from_config()
+
+        def _add_menu_item(self, item='item', label='Menu item',
+                                 sensitive=False,
+                                 op=None, args=None,
+                                 **ignored_kwarg):
+            # For now, bind everything to the notify method
+            menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                label, 'activate:', '')
+            menuitem.setEnabled_(sensitive)
+            self.menu.addItem_(menuitem)
+            self.items[item] = menuitem
+            if op:
+                def activate(o, a):
+                    return lambda: self._do(o, a)
+                self.callbacks[item] = activate(op, args or [])
 
         def _ind_setup(self):
-            self.ind = appindicator.Indicator(
-                "mailpile-indicator", "indicator-messages",
-                appindicator.CATEGORY_COMMUNICATIONS)
-            self.ind.set_icon(
-                os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             'mailpile.png'))
-            self.ind.set_status(appindicator.STATUS_ATTENTION)
-            self.ind.set_attention_icon("new-messages-red")
-            self.ind.set_menu(self.menu)
+            # Create the statusbar item
+            self.ind = NSStatusBar.systemStatusBar().statusItemWithLength_(
+                NSVariableStatusItemLength)
+
+            # Load all images, set initial
+            self.images = {}
+            for s, p in self.config.get('indicator_icons', {}).iteritems():
+                p = self._theme_icon(p)
+                self.images[s] = NSImage.alloc().initByReferencingFile_(p)
+            if self.images:
+                self.ind.setImage_(self.images['normal'])
+
+            self.ind.setHighlightMode_(1)
+            #self.ind.setToolTip_('Sync Trigger')
+            self.ind.setMenu_(self.menu)
             self.set_status_startup()
 
-        def notify_user(self, message):
-            if pynotify:
-                notification = pynotify.Notification(
-                    "Mailpile", message, "dialog-warning")
-                notification.set_urgency(pynotify.URGENCY_NORMAL)
-                notification.show()
-            else:
-                print 'FIXME: Notify: %s' % message
+        def _set_status(self, status):
+            self.ind.setImage_(self.images.get(status, self.images['normal']))
 
-        def set_status_startup(self):
-            gobject.idle_add(self.ind.set_status,
-                             appindicator.STATUS_ACTIVE)
-
-        def set_status_normal(self):
-            gobject.idle_add(self.ind.set_status,
-                             appindicator.STATUS_ACTIVE)
-
-        def set_status_working(self):
-            gobject.idle_add(self.ind.set_status,
-                             appindicator.STATUS_ACTIVE)
-
-        def set_status_attention(self):
-            gobject.idle_add(self.ind.set_status,
-                             appindicator.STATUS_ATTENTION)
-
-        def set_menu_name(self, item=None, label=None):
+        def set_menu_label(self, item=None, label=None):
             if item and item in self.items:
-                gobject.idle_add(self.items[item].set_label, label)
+                self.items[item].setTitle_(label)
 
         def set_menu_sensitive(self, item=None, sensitive=True):
             if item and item in self.items:
-                gobject.idle_add(self.items[item].set_sensitive, sensitive)
+                self.items[item].setEnabled_(sensitive)
+
+        def notify_user(self, message):
+            pass  # FIXME
 
         def run(self):
-            self._menu_setup()
-            self._ind_setup()
-            self.ready = True
+            app = NSApplication.sharedApplication()
+            osxthing = MacOSXThing.alloc().init()
+            osxthing.indicator = self
+            app.setDelegate_(osxthing)
             try:
-                gtk.main()
+                AppHelper.runEventLoop()
             except:
                 traceback.print_exc()
 
@@ -300,6 +339,7 @@ if __name__ == '__main__':
         try:
             indicator = cls()
         except (AssertionError, ImportError, NameError):
+#           traceback.print_exc()
             indicator = None
         if indicator:
             indi = indicator(config)
