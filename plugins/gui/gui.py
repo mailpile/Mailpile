@@ -82,13 +82,13 @@ def _real_startup(config):
     # FIXME: We should do more with the indicator... this is a bit lame.
     while True:
         if mailpile.util.QUITTING:
-            indicator('set_status_working')
+            indicator('set_status_shutdown')
             indicator('set_menu_sensitive', item='open', sensitive=False)
             indicator('set_menu_sensitive', item='quit', sensitive=False)
             indicator('set_menu_label',
-                item='status', label=_('Shutting down...'))
-            gui.stdin.close()
-            break
+                item='status',
+                label=_('Shutting down...'))
+            time.sleep(300)
         else:
             indicator('set_menu_label',
                 item='status',
