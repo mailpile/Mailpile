@@ -1,6 +1,5 @@
 import json
 import os
-import subprocess
 import sys
 import threading
 import time
@@ -8,6 +7,7 @@ import time
 import mailpile.auth
 from mailpile.util import *
 from mailpile.i18n import gettext as _
+from mailpile.safe_popen import Popen, PIPE
 
 
 __GUI__ = None
@@ -37,10 +37,10 @@ def _real_startup(config):
     script = os.path.join(script_dir, 'gui-o-matic.py')
 
     global __GUI__
-    gui = __GUI__ = subprocess.Popen(['python', '-u', script],
-                                     bufsize=1,  # line buffered
-                                     stdin=subprocess.PIPE,
-                                     **popen_ignore_signals)
+    gui = __GUI__ = Popen(['python', '-u', script],
+                          bufsize=1,  # line buffered
+                          stdin=PIPE,
+                          long_running=True)
     ico = lambda s: os.path.join(script_dir, 'icons-%(theme)s', s)
     gui.stdin.write(json.dumps({
         'app_name': 'Mailpile',

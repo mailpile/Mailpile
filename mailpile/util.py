@@ -20,18 +20,13 @@ from distutils import spawn
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.safe_popen import Popen, PIPE
 
 
 try:
     from PIL import Image
 except:
     Image = None
-
-
-if sys.platform == 'win32':
-    popen_ignore_signals = {}
-else:
-    popen_ignore_signals = {'preexec_fn': os.setpgrp}
 
 
 global WORD_REGEXP, STOPLIST, BORING_HEADERS, DEFAULT_PORT, QUITTING
@@ -495,10 +490,8 @@ class GpgWriter(object):
 def gpg_open(filename, recipient, mode):
     fd = open(filename, mode)
     if recipient and ('a' in mode or 'w' in mode):
-        gpg = subprocess.Popen(['gpg', '--batch', '-aer', recipient],
-                               stdin=subprocess.PIPE,
-                               stdout=fd,
-                               **popen_ignore_signals)
+        gpg = Popen(['gpg', '--batch', '-aer', recipient],
+                    stdin=PIPE, stdout=fd)
         return GpgWriter(gpg)
     return fd
 

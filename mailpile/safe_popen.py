@@ -1,0 +1,155 @@
+#
+# This module implements a safer version of Popen, to avoid deadlocks
+# caused by file descriptors being shared between processes.
+#
+# This changes the default subprocess.Popen semantics in the following
+# ways:
+#
+#   * close_fds=True is mandatory on all Unix operating systems
+#   * fd_whitelist=[] can be passed to explicitly keep other FDs open
+#   * preexec_fn will call os.setpgrp on all Unix operating systems
+#
+# On Windows, close_fds and preexec_fn are unavailable in Python 2.7, so
+# instead we do the following:
+#
+#   * close_fds=False, most of the time
+#   * creationflags=CREATE_NEW_PROCESS_GROUP is set
+#   * subprocesses hold a global lock for as long as is "reasonable"
+#
+#
+import os
+import subprocess
+import sys
+import threading
+
+
+Unsafe_Popen = subprocess.Popen
+PIPE = subprocess.PIPE
+
+SERIALIZE_POPEN_ALWAYS = True
+SERIALIZE_POPEN_LOCK = threading.Lock()
+
+
+class Safe_Popen(Unsafe_Popen):
+    def __init__(self, args, bufsize=0,
+                             executable=None,
+                             stdin=None,
+                             stdout=None,
+                             stderr=None,
+                             preexec_fn=None,
+                             close_fds=None,
+                             shell=False,
+                             cwd=None,
+                             env=None,
+                             universal_newlines=False,
+                             startupinfo=None,
+                             creationflags=None,
+                             keep_open=None,
+                             long_running=False):
+
+        # Raise assertions if people try to explicitly use the API in
+        # an unsafe way.  These all have different meanings on differnt
+        # platforms, so we don't allow the programmer to configure them
+        # at all.
+        assert(preexec_fn is None)
+        assert(close_fds is None)
+        assert(startupinfo is None)
+        assert(creationflags is None)
+
+        # Set our default locking strategy
+        self._SAFE_POPEN_hold_lock = SERIALIZE_POPEN_ALWAYS
+
+        # The goal of the following sections is to achieve two things:
+        #
+        #    1. Prevent file descriptor leaks from causing deadlocks
+        #    2. Prevent signals from propagating
+        #
+        if sys.platform == 'win32':
+            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP  # 2.
+            if (stdin is not None or
+                    stdout is not None or
+                    stderr is not None or
+                    keep_open):
+                close_fds = False
+                self._SAFE_POPEN_hold_lock = True  # 1.
+            else:
+                close_fds = True  # 1.
+
+        else:
+            creationflags = 0
+            if keep_open:
+                close_fds = False
+                if stdin is not None:
+                    keep_open.append(0)
+                if stdout is not None:
+                    keep_open.append(1)
+                if stderr is not None:
+                    keep_open.append(2)
+                for i in range(0, len(keep_open)):
+                    if hasattr(keep_open[i], 'fileno'):
+                        keep_open[i] = keep_open[i].fileno()
+            else:
+                close_fds = True  # 1.
+
+            def pre_exec_magic():
+                try:
+                    os.setpgrp()  # 2.
+                except (OSError, NameError):
+                    pass
+                # FIXME: some platforms may give us more FDs...
+                if not close_fds:
+                    for i in set(range(0, 1024)) - set(keep_open):
+                        try:
+                            os.close(i)
+                        except OSError:
+                            pass
+
+            preexec_fn = pre_exec_magic
+
+        if self._SAFE_POPEN_hold_lock:
+            SERIALIZE_POPEN_LOCK.acquire()
+        try:
+            Unsafe_Popen.__init__(self, args,
+                                  bufsize=bufsize,
+                                  executable=executable,
+                                  stdin=stdin,
+                                  stdout=stdout,
+                                  stderr=stderr,
+                                  preexec_fn=preexec_fn,
+                                  close_fds=close_fds,
+                                  shell=shell,
+                                  cwd=cwd,
+                                  env=env,
+                                  universal_newlines=universal_newlines,
+                                  startupinfo=startupinfo,
+                                  creationflags=creationflags)
+        except:
+            self._SAFE_POPEN_unlock()
+            raise
+
+        if long_running:
+            self._SAFE_POPEN_unlock()
+
+    def _SAFE_POPEN_unlock(self):
+        if self._SAFE_POPEN_hold_lock:
+            self._SAFE_POPEN_hold_lock = False
+            SERIALIZE_POPEN_LOCK.release()
+
+    def communicate(self, *args, **kwargs):
+        rv = Unsafe_Popen.communicate(self, *args, **kwargs)
+        self._SAFE_POPEN_unlock()
+        return rv
+
+    def wait(self, *args, **kwargs):
+        rv = Unsafe_Popen.wait(self, *args, **kwargs)
+        self._SAFE_POPEN_unlock()
+        return rv
+
+    def __del__(self):
+        Unsafe_Popen.__del__(self)
+        self._SAFE_POPEN_unlock()
+
+
+# This is a vain attempt to monkeypatch, whether it works or not will
+# depend on module load order.
+Popen = subprocess.Popen = Safe_Popen

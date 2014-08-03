@@ -6,12 +6,12 @@ import re
 import threading
 import traceback
 from datetime import datetime
-from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.util import md5_hex, CryptoLock, popen_ignore_signals
+from mailpile.safe_popen import Popen, PIPE
+from mailpile.util import md5_hex, CryptoLock
 from mailpile.util import sha512b64 as genkey
 
 
@@ -125,12 +125,12 @@ class IOFilter(threading.Thread):
 
 
 class IOCoprocess(object):
-    def __init__(self, command, fd, name=None):
+    def __init__(self, command, fd, name=None, long_running=False):
         self.stderr = ''
         self._retval = None
         self.name = name
         if command:
-            self._proc, self._fd = self._popen(command, fd)
+            self._proc, self._fd = self._popen(command, fd, long_running)
         else:
             self._proc, self._fd = None, fd
 
@@ -156,11 +156,10 @@ class OutputCoprocess(IOCoprocess):
     """
     This class will stream data to an external coprocess.
     """
-    def _popen(self, command, fd):
-         proc = Popen(command, stdin=PIPE, stderr=PIPE, stdout=fd,
-                      bufsize=0, close_fds=True,
-                      **popen_ignore_signals)
-         return proc, proc.stdin
+    def _popen(self, command, fd, long_running):
+        proc = Popen(command, stdin=PIPE, stdout=fd, stderr=PIPE,
+                              bufsize=0, long_running=long_running)
+        return proc, proc.stdin
 
     def _write_filter(self, data):
         return data
@@ -173,10 +172,9 @@ class InputCoprocess(IOCoprocess):
     """
     This class will stream data from an external coprocess.
     """
-    def _popen(self, command, fd):
-        proc = Popen(command, stdin=fd, stderr=PIPE, stdout=PIPE,
-                     bufsize=0, close_fds=True,
-                     **popen_ignore_signals)
+    def _popen(self, command, fd, long_running):
+        proc = Popen(command, stdin=fd, stdout=PIPE, stderr=PIPE,
+                              bufsize=0, long_running=long_running)
         return proc, proc.stdout
 
     def _read_filter(self, data):
@@ -200,7 +198,7 @@ class ChecksummingStreamer(OutputCoprocess):
     This checksums and streams data a named temporary file on disk, which
     can then be read back or linked to a final location.
     """
-    def __init__(self, dir=None, name=None):
+    def __init__(self, dir=None, name=None, long_running=False):
         self.tempfile, self.temppath = self._mk_tempfile_and_path(dir)
         self.name = name
 
@@ -215,7 +213,8 @@ class ChecksummingStreamer(OutputCoprocess):
         try:
             self._write_preamble()
             OutputCoprocess.__init__(self, self._mk_command(), self.fd,
-                                     name=self.name)
+                                     name=self.name,
+                                     long_running=long_running)
         except:
             try:
                 self.tempfile.close()
@@ -310,13 +309,15 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
     DEFAULT_CIPHER = "aes-256-cbc"
 
     def __init__(self, key,
-                 dir=None, cipher=None, name=None, header_data=None):
+                 dir=None, cipher=None, name=None, header_data=None,
+                 long_running=False):
         self.cipher = cipher or self.DEFAULT_CIPHER
         self.nonce, self.key = self._nonce_and_mutated_key(key)
         self.header_data = (header_data if header_data is not None
                             else self.EXTRA_DATA)
 
-        ChecksummingStreamer.__init__(self, dir=dir, name=name)
+        ChecksummingStreamer.__init__(self, dir=dir, name=name,
+                                      long_running=long_running)
 
         self.inner_md5sum = None
         self.inner_md5 = hashlib.md5()
@@ -444,7 +445,7 @@ class DecryptingStreamer(InputCoprocess):
 
     def __init__(self, fd,
                  mep_key=None, gpg_pass=None, md5sum=None, cipher=None,
-                 name=None):
+                 name=None, long_running=False):
         self.expected_outer_md5sum = md5sum
         self.expected_inner_md5sum = None
         self.name = name
@@ -467,7 +468,7 @@ class DecryptingStreamer(InputCoprocess):
             # the lock), fork out our coprocess.
             self.startup_lock.acquire()
             InputCoprocess.__init__(self, self._mk_command(), self.read_fd,
-                                    name=name)
+                                    name=name, long_running=long_running)
             self.startup_lock = None
         except:
             try:

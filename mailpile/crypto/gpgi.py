@@ -12,14 +12,13 @@ import select
 from datetime import datetime
 from email.parser import Parser
 from email.message import Message
-from subprocess import Popen, PIPE
 from threading import Thread
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
-from mailpile.util import popen_ignore_signals
+from mailpile.safe_popen import Popen, PIPE
 
 
 DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
@@ -427,10 +426,12 @@ class GnuPG:
         gpg_retcode = -1
         proc = status_handle = passphrase_handle = None
         status_pipe = passphrase_pipe = [None, None]
+        popen_keeps_open = []
         try:
             status_pipe = os.pipe()
             status_handle = os.fdopen(status_pipe[0], "r")
             args.insert(1, "--status-fd=%d" % status_pipe[1])
+            popen_keeps_open.append(status_pipe[1])
 
             if self.passphrase:
                 passphrase_pipe = os.pipe()
@@ -438,10 +439,11 @@ class GnuPG:
                 if self.use_agent:
                     args.insert(1, "--no-use-agent")
                 args.insert(2, "--passphrase-fd=%d" % passphrase_pipe[0])
+                popen_keeps_open.append(passphrase_pipe[0])
 
+            # Here we go!
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-                         bufsize=0, close_fds=False,
-                         **popen_ignore_signals)
+                         bufsize=0, keep_open=popen_keeps_open)
 
             # GnuPG is a bit crazy, and requires that the passphrase
             # be sent and the filehandle closed before anything else

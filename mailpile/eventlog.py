@@ -196,7 +196,8 @@ class EventLog(object):
         if enc_key:
             self._log_fd = EncryptingStreamer(enc_key,
                                               dir=self.logdir,
-                                              name='EventLog/ES')
+                                              name='EventLog/ES',
+                                              long_running=True)
             self._log_fd.save(self._save_filename(), finish=False)
         else:
             self._log_fd = open(self._save_filename(), 'wb', 0)

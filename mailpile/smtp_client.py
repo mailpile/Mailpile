@@ -2,7 +2,6 @@ import random
 import hashlib
 import smtplib
 import socket
-import subprocess
 import sys
 
 import mailpile.util
@@ -12,6 +11,7 @@ from mailpile.i18n import ngettext as _n
 from mailpile.config import ssl, socks
 from mailpile.mailutils import CleanMessage, MessageAsString
 from mailpile.eventlog import Event
+from mailpile.safe_popen import Popen, PIPE
 
 
 def sha512_512k(data):
@@ -197,7 +197,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
         if sendmail.startswith('|'):
             sendmail %= {"rcpt": ",".join(to)}
             cmd = sendmail[1:].strip().split()
-            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+            proc = Popen(cmd, stdin=PIPE, long_running=True)
             sm_startup = None
             sm_write = proc.stdin.write
             def sm_close():
