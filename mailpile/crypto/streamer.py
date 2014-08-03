@@ -30,12 +30,20 @@ class IOFilter(threading.Thread):
 
     def __init__(self, fd, callback, name=None, error_callback=None):
         threading.Thread.__init__(self)
-        self.fd = fd
         self.callback = callback
         self.error_callback = error_callback
+
+        self.fd = fd
         self.writing = None
+        self.reading_from = None
+        self.writing_to = None
+        self.exposed_fd = None
+        pipe = os.pipe()
+        self.pipe_reader = os.fdopen(pipe[0], 'rb', 0)
+        self.pipe_writer = os.fdopen(pipe[1], 'wb', 0)
+
         self.info = 'Starting'
-        self.pipe = list(os.pipe())
+        self.aborting = False
         if name:
             self.name = name
 
@@ -46,73 +54,64 @@ class IOFilter(threading.Thread):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.join()
         self.close()
-
-    def writer(self):
-        try:
-            if self.writing is None:
-                self.writing = True
-                self.start()
-            return os.fdopen(self.pipe[1], 'w')
-        finally:
-            self.pipe[1] = None
-
-    def reader(self):
-        try:
-            if self.writing is None:
-                self.writing = False
-                self.daemon = True
-                self.start()
-            return os.fdopen(self.pipe[0], 'r')
-        finally:
-            self.pipe[0] = None
-
-    def _do_write(self):
-        while True:
-            self.info = 'Writer, reading'
-            data = os.read(self.pipe[0], self.BLOCKSIZE)
-            self.info = 'Writer, writing'
-            if len(data) == 0:
-                self.fd.write(self.callback(None))
-                self.fd.flush()
-                self.info = 'Writer, done'
-                return
-            else:
-                self.fd.write(self.callback(data))
-
-    def _do_read(self):
-        while True:
-            self.info = 'Reader, reading'
-            data = self.fd.read(self.BLOCKSIZE)
-            self.info = 'Reader, writing'
-            if len(data) == 0:
-                os.write(self.pipe[1], self.callback(None))
-                os.close(self.pipe[1])
-                self.info = 'Reader, done'
-                return
-            else:
-                os.write(self.pipe[1], self.callback(data))
+        self.join()
 
     def close(self):
-        self._close_pipe_fd(self.pipe[0])
-        self._close_pipe_fd(self.pipe[1])
-        self.info = 'Closed'
+        self.aborting = True
+        if self.writing:
+            self.reading_from.close()
+        else:
+            self.writing_to.close()
+        self.exposed_fd.close()
 
-    def _close_pipe_fd(self, pipe_fd):
+    def join(self, aborting=None):
+        if aborting is not None:
+            self.reading_from.close()
+            self.aborting = aborting
+        return threading.Thread.join(self)
+
+    def writer(self):
+        if self.writing is None:
+            self.writing = True
+            self.reading_from = self.pipe_reader
+            self.writing_to = self.fd
+            self.exposed_fd = self.pipe_writer
+            self.start()
+        return self.pipe_writer
+
+    def reader(self):
+        if self.writing is None:
+            self.daemon = True
+            self.writing = False
+            self.reading_from = self.fd
+            self.writing_to = self.pipe_writer
+            self.exposed_fd = self.pipe_reader
+            self.start()
+        return self.pipe_reader
+
+    def _copy_loop(self):
         try:
-            if pipe_fd is not None:
-                os.close(pipe_fd)
-        except OSError:
-            pass
+            while not self.aborting:
+                self.info = 'reading'
+                data = self.reading_from.read(self.BLOCKSIZE)
+                self.info = 'writing'
+                if len(data) == 0:
+                    self.writing_to.write(self.callback(None) or '')
+                    break
+                else:
+                    self.writing_to.write(self.callback(data))
+        finally:
+            if self.writing:
+                self.reading_from.close()
+            else:
+                self.writing_to.close()
+            self.info = 'done'
 
     def run(self):
         try:
             self.info = 'Starting: %s' % self.writing
-            if self.writing is True:
-                self._do_write()
-            elif self.writing is False:
-                self._do_read()
+            self._copy_loop()
         except:
             traceback.print_exc()
             if self.error_callback:
@@ -181,13 +180,13 @@ class InputCoprocess(IOCoprocess):
         return data
 
     def __iter__(self, *args):
-        return (self._read_filter(d) for d in self._fd.__iter__(*args))
+        return (self._read_filter(ln) for ln in self._fd.__iter__(*args))
 
     def readline(self, *args):
         return self._read_filter(self._fd.readline(*args))
 
     def readlines(self, *args):
-        return [self._read_filter(line) for line in self.readlines(*args)]
+        return [self._read_filter(ln) for ln in self._fd.readlines(*args)]
 
     def read(self, *args):
         return self._read_filter(self._fd.read(*args))
@@ -472,7 +471,8 @@ class DecryptingStreamer(InputCoprocess):
             self.startup_lock = None
         except:
             try:
-                self.read_fd.close()
+                self.data_filter.join(aborting=True)
+                self.data_filter.close()
             except (IOError, OSError):
                 pass
             raise
@@ -483,9 +483,9 @@ class DecryptingStreamer(InputCoprocess):
         return data
 
     def close(self):
-        rv = InputCoprocess.close(self)
+        self.data_filter.join()
         self.read_fd.close()
-        return rv
+        return InputCoprocess.close(self)
 
     def verify(self, testing=False, _raise=None):
         if self.close() != 0:
@@ -627,22 +627,30 @@ class ReadLineIOFilter(IOFilter):
     particular marker to hand off processing to others.
     """
     def __init__(self, fd, callback,
-                 start_data=None, stop_check=None, error_callback=None):
+                 start_data=None, stop_check=None, **kwargs):
         self.stop_check = stop_check
         self.start_data = start_data
-        IOFilter.__init__(self, fd, callback, error_callback=error_callback)
+        IOFilter.__init__(self, fd, callback, **kwargs)
 
-    def _do_read(self):
-        if self.start_data:
-            os.write(self.pipe[1], self.callback(''.join(self.start_data)))
+    def _copy_loop(self):
+        try:
+            if self.start_data:
+                self.info = 'writing'
+                self.writing_to.write(self.callback(''.join(self.start_data)))
 
-        for data in self.fd:
-            os.write(self.pipe[1], self.callback(data))
-            if self.stop_check and self.stop_check(data):
-                break
+            self.info = 'reading'
+            for data in self.reading_from:
+                self.info = 'writing'
+                self.writing_to.write(self.callback(data))
+                if self.stop_check and self.stop_check(data):
+                    break
+                self.info = 'reading'
 
-        os.write(self.pipe[1], self.callback(None))
-        os.close(self.pipe[1])
+            self.info = 'writing'
+            self.writing_to.write(self.callback(None) or '')
+        finally:
+            self.writing_to.close()
+            self.info = 'done'
 
 
 class PartialDecryptingStreamer(DecryptingStreamer):
@@ -654,7 +662,8 @@ class PartialDecryptingStreamer(DecryptingStreamer):
         return ReadLineIOFilter(fd, cb,
                                 start_data=self.start_data,
                                 stop_check=self.EndEncrypted,
-                                error_callback=ecb)
+                                error_callback=ecb,
+                                name='%s/filter' % (self.name or 'ds'))
 
 
 if __name__ == "__main__":
@@ -680,9 +689,9 @@ if __name__ == "__main__":
      bc = [0]
      def counter(data):
          bc[0] += len(data or '')
-         return data or ''
+         return data
 
-     # Test the IOFilter in write mode
+     print 'Test the IOFilter in write mode'
      with open('/tmp/iofilter.tmp', 'w') as bfd:
          with IOFilter(bfd, counter) as iof:
              fd = iof.writer()
@@ -693,7 +702,7 @@ if __name__ == "__main__":
      assert(bc[0] == 12)
      assert(fdcheck('IOFilter in write mode'))
 
-     # Test the IOFilter in read mode
+     print 'Test the IOFilter in read mode'
      bc[0] = 0
      with open('/tmp/iofilter.tmp', 'r') as bfd:
          with IOFilter(bfd, counter) as iof:
@@ -702,7 +711,7 @@ if __name__ == "__main__":
              assert(bc[0] == 12)
      assert(fdcheck('IOFilter in read mode'))
 
-     # Null decryption test, md5 verification only
+     print 'Null decryption test, md5 verification only'
      with open('/tmp/iofilter.tmp', 'rb') as bfd:
          with DecryptingStreamer(bfd,
                                  mep_key='test key',
@@ -712,8 +721,9 @@ if __name__ == "__main__":
              assert(ds.verify(testing=True))
      assert(fdcheck('Decrypting test, md5 verification'))
 
-     # Encryption test
      for delim in (True, False):
+         print 'Encryption test, delim=%s' % delim
+
          data = 'Hello world! This is great!\nHooray, lalalalla!\n'
          with EncryptingStreamer('test key', dir='/tmp',
                                  delimited=delim) as es:
@@ -725,7 +735,7 @@ if __name__ == "__main__":
              es.save(fn)
          assert(fdcheck('Encrypted data, delimited=%s' % delim))
 
-         # Decryption test!
+         print 'Decryption test, delim=%s' % delim
          with open(fn, 'rb') as bfd:
              with DecryptingStreamer(bfd,
                                      mep_key='test key',
