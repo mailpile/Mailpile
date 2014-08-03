@@ -6,26 +6,37 @@ var SetupRouter = Backbone.Router.extend({
 	routes: {
 		"" 						     : "index",
 		"profiles"         : "profiles",
-		"profiles-add"     : "profilesAdd",
+		"profiles/add"     : "profilesAdd",
+		"profiles/:id"     : "profilesEdit",
 		"crypto-generated" : "cryptoGenerated",
 		"discovery"        : "discovery",
     "sources"          : "sources",
-    "sources-add"      : "sourcesAdd",
+    "sources/add"      : "sourcesAdd",
+    "sources/:id"      : "sourcesEdit",
 		"sending"          : "sending",
+		"sending/add"      : "sendingAdd",
+    "sending/:id"      : "sendingEdit",
 		"advanced"         : "advanced",
 		"security"         : "security",
 		"backups"          : "backups",
 		"access"           : "access"
 	},
 	index: function() {
-    Backbone.history.navigate('#profiles', true);
+    if ($('#setup-profiles-count').val() > 0) {
+      Backbone.history.navigate('#profiles', true);
+    } else {
+      Backbone.history.navigate('#profiles-add', true);
+    }
   },
 	profiles: function() {
 		ProfilesView.show();
 	},
 	profilesAdd: function() {
-		ProfilesView.showAddProfile();
+		ProfilesView.showAdd();
 	},
+  profilesEdit: function(id) {
+    ProfilesView.showEdit(id);
+  },
   discovery: function() {
 		IdentityView.showDiscovery();
   },
@@ -38,9 +49,18 @@ var SetupRouter = Backbone.Router.extend({
   sourcesAdd: function() {
     SourcesView.showAddSource();
   },
+  sourcesEdit: function(id) {
+    SourcesView.showEdit(id);
+  },
 	sending: function() {
 		SendingView.show();
 	},
+  sendingAdd: function() {
+    SendingView.showAdd();
+  },
+  sendingEdit: function(id) {
+    SendingView.showEdit(id);
+  },
   advanced: function() {
     AdvancedView.show();
   },
