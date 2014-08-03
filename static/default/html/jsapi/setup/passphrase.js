@@ -50,7 +50,7 @@ var PassphraseView = Backbone.View.extend({
     if (!this.model.validate()) {
 
       // Hide Form
-      $('#form-setup-passphrase').hide();      
+      $('#form-setup-passphrase').hide();
 
       Mailpile.API.setup_crypto_post(passphrase_data, function(result) {
         if (result.status == 'success') {
@@ -58,18 +58,14 @@ var PassphraseView = Backbone.View.extend({
             .find('.icon-lock-closed')
             .removeClass('icon-lock-closed')
             .addClass('icon-lock-open color-08-green bounce');
-          
-          $('#setup-passphrase-authenticated').fadeIn();
 
-          setTimeout(function() {
-            window.location.href = '/setup/';
-          }, 2500);
+          $('#setup-passphrase-authenticated').fadeIn();
         }
         else if (result.status == 'error' && result.error.invalid_passphrase) {
 
           // Show Form
           $('#form-setup-passphrase').show();
-        
+
           // Error UI feedback
           $('#identity-vault-lock').find('.icon-lock-closed').addClass('color-12-red bounce');
 

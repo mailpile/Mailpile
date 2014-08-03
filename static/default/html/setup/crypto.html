@@ -1,18 +1,22 @@
 {% extends "layouts/auth.html" %}
 {% block title %}{{_("Passphrase")}} | {{_('Setup')}}{% endblock %}
 {% block content %}
+{% set setup_crypto = mailpile("setup/crypto") %}
 <div id="setup-passphrase" class="setup-box setup-box-medium animated add-bottom bounceInUp">
   <div id="identity-vault-lock" class="vault-lock-outer">
     <div class="vault-lock-inner">
       <div class="vault-lock icon-lock-closed animated"></div>
     </div>
   </div>
-  <div id="setup-passphrase-authenticated" class="hide text-center">
-    <h3>You Successfully Authenticated that Encryption Key</h3>
+  <div id="setup-passphrase-authenticated" class="hide text-center add-top">
+    <h3>You Successfully Authenticated</h3>
+    <p>The <strong>fingerprint</strong> for the <strong>encryption key</strong> you chose was:</p>
+    <h1><span class="icon-fingerprint"></span></h1>
+    <h3>{{ setup_crypto.result.chosen_key }}</h3>
+    <p><a href="/setup/#profiles" class="button-primary">{{_("Next")}}</a></p>
   </div>
   <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center add-top">
 
-    {% set setup_crypto = mailpile("setup/crypto") %}
     {% if result.creating_key %}
 
       <h3 class="text-center"><span class="icon-key"></span> Encryption Key Processing</h3>
