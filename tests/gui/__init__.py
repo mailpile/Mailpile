@@ -174,6 +174,11 @@ class MailpileSeleniumTest(MailPileUnittest):
 
     @classmethod
     def setUpClass(cls):
+        # Undo the monkey-patching, to make Selenium happy
+        import subprocess
+        import mailpile.safe_popen
+        subprocess.Popen = mailpile.safe_popen.Unsafe_Popen
+
         MailpileSeleniumTest._start_selenium_driver()
         MailpileSeleniumTest._start_web_server()
 

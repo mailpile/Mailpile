@@ -56,16 +56,19 @@ docs:
 web: less js
 	@true
 
-alltests: clean docs
+alltests: pytests clean docs
+	@chmod go-rwx testing/gpg-keyring
+	@python2 scripts/mailpile-test.py
+	@nosetests
+
+pytests:
 	@python2 mailpile/mailutils.py
 	@python2 mailpile/config.py
 	@python2 mailpile/util.py
 	@python2 mailpile/vcard.py
 	@python2 mailpile/workers.py
+	@python2 mailpile/crypto/streamer.py
 	@python2 mailpile/mail_source/imap.py
-	@chmod go-rwx testing/gpg-keyring
-	@python2 scripts/mailpile-test.py
-	@nosetests
 
 clean:
 	@rm -f *.pyc */*.pyc */*/*.pyc mailpile-tmp.py mailpile.py

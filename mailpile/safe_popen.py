@@ -20,12 +20,14 @@
 import os
 import subprocess
 import sys
+import thread
 import threading
 
 
 Unsafe_Popen = subprocess.Popen
 PIPE = subprocess.PIPE
 
+SERIALIZE_POPEN_STRICT = True
 SERIALIZE_POPEN_ALWAYS = True
 SERIALIZE_POPEN_LOCK = threading.Lock()
 
@@ -47,17 +49,18 @@ class Safe_Popen(Unsafe_Popen):
                              keep_open=None,
                              long_running=False):
 
+        # Set our default locking strategy
+        self._SAFE_POPEN_hold_lock = SERIALIZE_POPEN_ALWAYS
+
         # Raise assertions if people try to explicitly use the API in
         # an unsafe way.  These all have different meanings on differnt
         # platforms, so we don't allow the programmer to configure them
         # at all.
-        assert(preexec_fn is None)
-        assert(close_fds is None)
-        assert(startupinfo is None)
-        assert(creationflags is None)
-
-        # Set our default locking strategy
-        self._SAFE_POPEN_hold_lock = SERIALIZE_POPEN_ALWAYS
+        if SERIALIZE_POPEN_STRICT:
+            assert(preexec_fn is None)
+            assert(close_fds is None)
+            assert(startupinfo is None)
+            assert(creationflags is None)
 
         # The goal of the following sections is to achieve two things:
         #
@@ -133,7 +136,10 @@ class Safe_Popen(Unsafe_Popen):
     def _SAFE_POPEN_unlock(self):
         if self._SAFE_POPEN_hold_lock:
             self._SAFE_POPEN_hold_lock = False
-            SERIALIZE_POPEN_LOCK.release()
+            try:
+                SERIALIZE_POPEN_LOCK.release()
+            except thread.error:
+                pass
 
     def communicate(self, *args, **kwargs):
         rv = Unsafe_Popen.communicate(self, *args, **kwargs)

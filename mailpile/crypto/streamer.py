@@ -58,17 +58,16 @@ class IOFilter(threading.Thread):
         self.join()
 
     def close(self):
-        self.aborting = True
-        if self.writing:
-            self.reading_from.close()
-        else:
-            self.writing_to.close()
-        self.exposed_fd.close()
+        if self.exposed_fd is not None:
+            self.exposed_fd.close()
+            self.exposed_fd = None
 
     def join(self, aborting=None):
         if aborting is not None:
-            self.reading_from.close()
             self.aborting = aborting
+            if self.reading_from is not None:
+                self.reading_from.close()
+                self.reading_from = None
         return threading.Thread.join(self)
 
     def writer(self):
@@ -103,7 +102,9 @@ class IOFilter(threading.Thread):
                     self.writing_to.write(self.callback(data))
         finally:
             if self.writing:
-                self.reading_from.close()
+                if self.reading_from is not None:
+                    self.reading_from.close()
+                    self.reading_from = None
             else:
                 self.writing_to.close()
             self.info = 'done'
@@ -691,12 +692,16 @@ if __name__ == "__main__":
          bc[0] += len(data or '')
          return data
 
+     # Cleanup...
+     try:
+         os.unlink('/tmp/iofilter.tmp')
+     except OSError:
+         pass
+
      print 'Test the IOFilter in write mode'
      with open('/tmp/iofilter.tmp', 'w') as bfd:
          with IOFilter(bfd, counter) as iof:
-             fd = iof.writer()
-             fd.write('Hello world!')
-             fd.close()
+             iof.writer().write('Hello world!')
      with open('/tmp/iofilter.tmp', 'r') as iof:
          assert(iof.read() == 'Hello world!')
      assert(bc[0] == 12)
@@ -748,5 +753,6 @@ if __name__ == "__main__":
 
          # Cleanup
          os.unlink(fn)
+
      os.unlink('/tmp/iofilter.tmp')
      assert(fdcheck('All done'))
