@@ -632,8 +632,6 @@ class MailIndex:
                     updated += 1
         play_nice_with_threads()
 
-        if added or updated:
-            mbox.save(session)
         self._scanned[mailbox_idx] = messages_md5
         short_fn = '/'.join(mailbox_fn.split('/')[-2:])
         session.ui.mark(_('%s: Indexed mailbox: ...%s (%d new, %d updated)'

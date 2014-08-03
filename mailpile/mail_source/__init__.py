@@ -137,10 +137,10 @@ class BaseMailSource(threading.Thread):
             try:
                 state = {}
                 # Generally speaking, we only rescan if a mailbox looks like
-                # it has changed. However, 1/20th of the time we take a look
+                # it has changed. However, 1/50th of the time we take a look
                 # anyway just in case looks are deceiving.
                 if batch > 0 and (self._has_mailbox_changed(mbx_cfg, state) or
-                                  random.randint(0, 20) == 10):
+                                  random.randint(0, 50) == 10):
 
                     self._state = 'Waiting...'
                     with GLOBAL_RESCAN_LOCK:
@@ -151,7 +151,7 @@ class BaseMailSource(threading.Thread):
 
                     if count >= 0:
                         batch -= count
-                        if (count and batch > 0 and
+                        if ((count == 0 or batch > 0) and
                                 not self._interrupt and
                                 not mailpile.util.QUITTING):
                             self._mark_mailbox_rescanned(mbx_cfg, state)
@@ -391,9 +391,9 @@ class BaseMailSource(threading.Thread):
                 if (path in ('/dev/null', '', None)
                         or mbx_cfg.policy in ('ignore', 'unknown')):
                     return 0
-                self._log_status(_('Rescanning: %s') % path)
 
             if mbx_cfg.local or self.my_config.discovery.local_copy:
+                self._log_status(_('Copying mail: %s') % path)
                 self._create_local_mailbox(mbx_cfg)
                 self._copy_new_messages(mbx_key, mbx_cfg,
                                         stop_after=stop_after)
@@ -407,6 +407,7 @@ class BaseMailSource(threading.Thread):
                         apply_tags.append(tid)
 
             play_nice_with_threads()
+            self._log_status(_('Rescanning: %s') % path)
             return config.index.scan_mailbox(
                 session, mbx_key, mbx_cfg.local or path,
                 config.open_mailbox,
