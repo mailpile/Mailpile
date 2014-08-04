@@ -1304,6 +1304,13 @@ class ConfigManager(ConfigDict):
                     fd.write(self.master_key)
                     self._master_key_ondisk = self.master_key
 
+        # This slight over-complication, is a reaction to segfaults in
+        # Python 2.7.5's fd.write() method.  Let's just feed it chunks
+        # of data and hope for the best. :-/
+        config_bytes = self.as_config_bytes()
+        config_chunks = (config_bytes[i:i + 4096]
+                         for i in range(0, len(config_bytes), 4096))
+
         from mailpile.crypto.streamer import EncryptingStreamer
         if self.master_key:
             subj = self.mailpile_path(self.conffile)
@@ -1311,11 +1318,13 @@ class ConfigManager(ConfigDict):
                                     dir=self.tempfile_dir(),
                                     header_data={'subject': subj},
                                     name='Config') as fd:
-                fd.write(self.as_config_bytes())
+                for chunk in config_chunks:
+                    fd.write(chunk)
                 fd.save(newfile)
         else:
             with open(newfile, 'wb') as fd:
-                fd.write(self.as_config_bytes())
+                for chunk in config_chunks:
+                    fd.write(chunk)
 
         # Keep the last 5 config files around... just in case.
         backup_file(self.conffile, backups=5, min_age_delta=10)
