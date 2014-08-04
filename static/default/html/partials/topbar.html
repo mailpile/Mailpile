@@ -72,7 +72,7 @@
         );
         </script>
         <li {% if command == "page" %}class="navigation-on"{% endif %}><a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
-        <li {% if state.command_url in ("/settings/") %}class="navigation-on"{% endif %}><a href="/settings/profiles/" title="{{_("Settings")}}" alt="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
+        <li {% if state.command_url in ("/settings/") %}class="navigation-on"{% endif %}><a href="/setup/#profiles" title="{{_("Settings")}}" alt="{{_("Settings")}}"><span class="link-icon icon-settings"></span></a></li>
         <li><a href="/auth/logout/" title="{{_("Logout")}}" alt="{{_("Logout")}}"><span class="link-icon icon-logout"></span></a></li>
       </ul>
     </nav>
