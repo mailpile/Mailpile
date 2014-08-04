@@ -1,27 +1,92 @@
 <div id="setup-box-source-settings" class="setup-box setup-box-medium add-bottom animated bounceInRight">
-  <h3 class="text-center"><span class="icon-inbox"></span> Add Source</h3>
-  <form id="form-setup-add-source" class="standard">
+  <h2 class="text-center"><span class="icon-inbox"></span> Add Source</h2>
 
-    <label>{{_('Source Name')}}</label>
-    <input type="text" name="name" value="" placeholder="My Gmail, Work Server">
+  <form id="form-setup-source-settings" class="standard">
 
-    <table class="full-width-table">
-    <tr>
-      <td>
-        <label>{{_('Mailbox protocol or format')}}</label>
-        <select name="protocol">
-          <option value="mbox">Mbox</option>
-          <option value="maildir">Maildir</option>
-          <option value="macmaildir">Mac Mail</option>
-          <option value="gmvault">gmvault</option>
-          <option value="imap">IMAP</option>
-          <option value="imap_ssl">IMAP (ssl)</option>
-          <option value="pop3">POP3</option>
-        </select>
-      </td>
-      <td>
-        <label>{{_('How frequently to check for mail')}}</label>
+    <div id="setup-source-settings-source" class="">
+      <table class="full-width-table">
+      <tr>
+        <td>
+          <label>Name this mail source</label>
+          <input type="text" name="name" value="" id="input-setup-source-name" placeholder="My Gmail, Work Server">
+        </td>
+        <td>
+          <label>Where is this mail source?</label>
+          <select name="source_type" id="input-setup-source-type">
+            <option value="">select...</option>
+            <option value="local">On This Computer</option>
+            <option value="remote">Remote Server</option>
+          </select>
+        </td>
+      </tr>
+      </table>
+    </div>
+
+    <div id="setup-source-settings-local" class="hide clearfix add-bottom">
+      <h4>On This Computer</h4>
+      <label>What app (or format) is this mail in?</label>
+      <select name="protocol" id="input-setup-source-protocol">
+        <option value="">select...</option>
+        <option value="macmaildir">Mac Mail</option>
+        <option value="mbox">Thunderbird</option>
+        <option value="outlook">Outlook</option>
+        <option value="mbox">Mbox</option>
+        <option value="maildir">Maildir</option>
+      </select>   
+      <label>Path to where mail on this computer is located:</label>
+      <input type="text" name="local_path" class="input-large" value="" placeholder="/home/chelsea/email">
+    </div>
+
+    <div id="setup-source-settings-server" class="hide clearfix">
+      <h4>Remote Server Settings</h4>
+      <table class="full-width-table">
+      <tr>
+        <td>
+          <label>{{_('Username')}}</label>
+          <input type="text" name="username" value="" placeholder="name@email.com">
+        </td>
+        <td>
+          <label>{{_('Password')}}</label>
+          <input type="text" name="password" value="" placeholder="secret*pass">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label>{{_('Host')}}</label>
+          <input type="text" name="host" value="" placeholder="mail.server.com">
+        </td>
+        <td>
+          <label>{{_('Port')}}</label>
+          <input type="text" value="" value="" placeholder="993">
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <label>{{_("Protocol")}}</label>
+          <select name="protocol" id="input-setup-source-protocol">
+            <option value="">select...</option>
+            <option value="imap">IMAP</option>
+            <option value="imap_ssl">IMAP (ssl)</option>
+            <option value="pop">POP3</option>
+          </select>
+        </td>
+      </tr>
+      </table>
+    </div>
+
+    <div id="setup-source-settings-details" class="hide add-bottom clearfix">
+      <h4>Details</h4>
+
+      <label>Keep checking for new mail or only import once?</label>
+      <select name="source_sync" id="input-setup-source_sync">
+        <option value="once">One Time Import</option>
+        <option value="sync">Keep Checking</option>
+      </select>
+
+      <div id="setup-source-settings-sync-interval" class="hide">
+        <label>{{_('Check for mail every')}}</label>
         <select name="interval">
+          <option value="" selected="selected">select...</option>
           <option value="60">1 minute</option>
           <option value="300">5 minutes</option>
           <option value="600">10 minutes</option>
@@ -31,50 +96,18 @@
           <option value="21600">6 hours</option>
           <option value="86400">1 day</option>
         </select>
-      </td>
-    </tr>
-    </table>
-
-    <h4>Server</h4>
-    <table class="full-width-table">
-    <tr>
-      <td>
-        <label>{{_('Username')}}</label>
-        <input type="text" name="username" value="" placeholder="name@email.com">
-      </td>
-      <td>
-        <label>{{_('Password')}}</label>
-        <input type="text" name="password" value="" placeholder="secret*pass">
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <label>{{_('Host')}}</label>
-        <input type="text" name="host" value="" placeholder="mail.server.com">
-      </td>
-      <td>
-        <label>{{_('Port')}}</label>
-        <input type="text" value="" value="" placeholder="993">
-      </td>
-    </tr>
-    </table>    
-
-    <p>Would like to keep checking for new mail or only import once?</p>
-    <select name="source_sync" class="">
-      <option value="once">One Time Import</option>
-      <option value="sync">Keep Checking</option>
-      <option value="unsure">Unsure</option>
-    </select>
-
-    <p>Would you like to import contacts from this address book?</p>
-    <select name="source_contacts" class="">
-      <option value="yes">Yes</option>
-      <option value="no">No</option>
-    </select>
+      </div>
+      
+      <label>Import contacts from this address book?</label>
+      <select name="source_contacts" class="">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </div>
 
     <div class="text-center clearfix">
-      <a href="#" id="btn-setup-source-add-cancel" class="button-secondary left">{{_("Cancel")}}</a>
-      <button id="btn-setup-source-settings" class="right">{{_("Save Source")}}</button>
+      <a href="#sources" id="btn-setup-source-add-cancel" class="button-secondary left">{{_("Cancel")}}</a>
+      <button id="btn-setup-source-save" data-id="new" class="right">{{_("Save Source")}}</button>
     </div>
 
   </form>
