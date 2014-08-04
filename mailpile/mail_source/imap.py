@@ -36,7 +36,7 @@
 #    LIST (\HasNoChildren \Trash) "." Trash
 #
 # Mykolab.com:
-#    
+#
 #
 #
 import os
@@ -497,7 +497,7 @@ class ImapMailSource(BaseMailSource):
                     self.conn = SharedImapConn(self.session, conn)
 
                 # Prepare the data section of our event, for keeping state.
-                for d in ('uidvalidity', 'uidnext'):
+                for d in ('uidvalidity', 'exists'):
                     if d not in event.data:
                         event.data[d] = {}
 
@@ -545,18 +545,18 @@ class ImapMailSource(BaseMailSource):
         return False
 
     def _has_mailbox_changed(self, mbx, state):
-        return True
-        # FIXME: This is wrong
-        mt = state['mt'] = long(os.path.getmtime(self._path(mbx)))
-        sz = state['sz'] = long(os.path.getsize(self._path(mbx)))
-        return (mt != self.event.data['mtimes'].get(mbx._key) or
-                sz != self.event.data['sizes'].get(mbx._key))
+        src = self.session.config.open_mailbox(self.session,
+                                               FormatMbxId(mbx._key),
+                                               prefer_local=False)
+        with src.open_imap() as imap:
+            uv = state['uv'] = imap.mailbox_info('UIDVALIDITY', ['0'])[0]
+            ex = state['ex'] = imap.mailbox_info('EXISTS', ['0'])[0]
+            return (uv != self.event.data['uidvalidity'].get(mbx._key) or
+                    ex != self.event.data['exists'].get(mbx._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
-        return True
-        # FIXME: This is wrong
-        self.event.data['mtimes'][mbx._key] = state['mt']
-        self.event.data['sizes'][mbx._key] = state['sz']
+        self.event.data['uidvalidity'][mbx._key] = state['uv']
+        self.event.data['exists'][mbx._key] = state['ex']
 
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)

@@ -135,10 +135,17 @@ class BaseMailSource(threading.Thread):
         ostate = self._state
         for mbx_cfg in unsorted(self.my_config.mailbox.values()):
             try:
-                state = {}
+                with self._lock:
+                    mbx_key = FormatMbxId(mbx_cfg._key)
+                    path = self._path(mbx_cfg)
+                    if (path in ('/dev/null', '', None)
+                            or mbx_cfg.policy in ('ignore', 'unknown')):
+                        continue
+
                 # Generally speaking, we only rescan if a mailbox looks like
                 # it has changed. However, 1/50th of the time we take a look
                 # anyway just in case looks are deceiving.
+                state = {}
                 if batch > 0 and (self._has_mailbox_changed(mbx_cfg, state) or
                                   random.randint(0, 50) == 10):
 
@@ -146,7 +153,7 @@ class BaseMailSource(threading.Thread):
                     with GLOBAL_RESCAN_LOCK:
                         if self._check_interrupt(clear=False):
                             break
-                        count = self.rescan_mailbox(mbx_cfg._key,
+                        count = self.rescan_mailbox(mbx_key, mbx_cfg, path,
                                                     stop_after=batch)
 
                     if count >= 0:
@@ -228,7 +235,7 @@ class BaseMailSource(threading.Thread):
                                 return False
                     except OSError:
                         pass
-    
+
             new = {}
             for path in adding:
                 new[config.sys.mailbox.append(path)] = path
@@ -238,10 +245,10 @@ class BaseMailSource(threading.Thread):
                     del new[mailbox_idx]
             if new:
                 self.event.data['have_unknown'] = True
-    
+
             if adding:
                 self._save_config()
-    
+ 
             return True
         finally:
             self._state = ostate
@@ -373,7 +380,7 @@ class BaseMailSource(threading.Thread):
             # take in stride for now.
             pass
 
-    def rescan_mailbox(self, mbx_key, stop_after=None):
+    def rescan_mailbox(self, mbx_key, mbx_cfg, path, stop_after=None):
         session, config = self.session, self.session.config
 
         with self._lock:
@@ -384,14 +391,6 @@ class BaseMailSource(threading.Thread):
         try:
             ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
                                                                    stop_after)
-            with self._lock:
-                mbx_key = FormatMbxId(mbx_key)
-                mbx_cfg = self.my_config.mailbox[mbx_key]
-                path = self._path(mbx_cfg)
-                if (path in ('/dev/null', '', None)
-                        or mbx_cfg.policy in ('ignore', 'unknown')):
-                    return 0
-
             if mbx_cfg.local or self.my_config.discovery.local_copy:
                 self._log_status(_('Copying mail: %s') % path)
                 self._create_local_mailbox(mbx_cfg)
