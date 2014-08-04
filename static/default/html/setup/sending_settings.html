@@ -1,0 +1,26 @@
+<div id="setup-sending-settings" class="setup-box setup-box-small animated bounceInRight">
+  <form id="form-setup-sending-settings" class="standard">
+    <h2 class="text-center"><span class="icon-routes"></span> <%= action %> Route</h2>
+    <fieldset>
+      <input type="hidden" name="route_id" value=""/>
+      <label>{{_("Route Name")}}</label>
+      <input type="text" name="name" value="" placeholder="{{_("my delivery route")}}" id="route-add-name"/>
+      <label>{{_("Login")}}</label>
+      <input type="text" name="username" value="" placeholder="{{_("username@smtp.mailserver.org")}}" autocorrect="off" autocapitalize="off" id="route-add-username"/>
+      <label>{{_("Password")}}</label>
+      <input type="password" name="password" value="" placeholder="1234567890" autocorrect="off" autocapitalize="off" id="route-add-password"/>
+      <label>{{_("Server")}}</label>
+      <input type="text" name="host" value="" placeholder="{{_("smtp.mailserver.org")}}" id="route-add-server"/>
+      <label>{{_("Port")}}</label>
+      <select name="port" id="route-add-port">
+        <option value="25">25</option>
+        <option value="587">587</option>
+        <option value="465">465 (TLS)</option>
+      </select>
+    </fieldset>
+    <a href="#sending" class="button-secondary">{{_("Cancel")}}</a>
+    <button id="btn-setup-add-profile" type="submit" class="button-primary right">
+      <span class="icon-plus"></span> {{_("Save Route")}}
+    </button>
+  </form>
+</div>
