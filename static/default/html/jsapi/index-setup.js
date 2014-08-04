@@ -24,8 +24,10 @@ var SetupApp = (function ($, Backbone, global) {
 
     var init = function() {
 
+      global.ProfilesCollection = new ProfilesCollection();
+
       // Views
-      global.ProfilesView   = new ProfilesView({ model: new ProfilesModel(), el: $('#setup') });
+      global.ProfilesView   = new ProfilesView({ model: new ProfileModel(), el: $('#setup') });
       global.SourcesView    = new SourcesView({ model: new SourceModel(), el: $('#setup') });
       global.SendingView    = new SendingView({ el: $('#setup') });
       global.AdvancedView   = new AdvancedView({ el: $('#setup') });
