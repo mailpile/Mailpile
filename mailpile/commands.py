@@ -1483,7 +1483,8 @@ class ConfigSet(Command):
     HTTP_CALLABLE = ('POST', 'UPDATE')
     HTTP_STRICT_VARS = False
     HTTP_POST_VARS = {
-        'section.variable': 'value|json-string',
+        '_section': 'common section, create if needed',
+        'section.variable': 'value|json-string'
     }
 
     def command(self):
@@ -1500,10 +1501,19 @@ class ConfigSet(Command):
             self.session.ui.warning(_('WARNING: Any changes will '
                                       'be overwritten on login'))
 
+        section = self.data.get('_section', [None])[0]
+        if section:
+            # Make sure section exists
+            ops.append((section, '{}'))
+
         for var in self.data.keys():
-            parts = ('.' in var) and var.split('.') or var.split('/')
+            if var in ('_section', '_method'):
+                continue
+            sep = '/' if ('/' in (section+var)) else '.'
+            svar = (section+sep+var) if section else var
+            parts = svar.split(sep)
             if parts[0] in config.rules:
-                ops.append((var, self.data[var][0]))
+                ops.append((svar, self.data[var][0]))
 
         if self.args:
             arg = ' '.join(self.args)
