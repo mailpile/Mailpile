@@ -59,8 +59,12 @@ var PassphraseView = Backbone.View.extend({
             .removeClass('icon-lock-closed')
             .addClass('icon-lock-open color-08-green bounce');
 
-          $('#setup-crypto-chosen_key').html(result.result.chosen_key);
-          $('#setup-passphrase-authenticated').fadeIn();
+          if (result.result.creating_key) {
+            $('#setup-passphrase-creating').fadeIn().removeClass('hide');
+          } else {
+            $('#setup-crypto-chosen_key').html(result.result.chosen_key);
+            $('#setup-passphrase-authenticated').fadeIn();
+          }
         }
         else if (result.status == 'error' && result.error.invalid_passphrase) {
 
