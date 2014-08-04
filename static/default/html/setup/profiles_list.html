@@ -1,46 +1,18 @@
 <div id="setup-profiles-list" class="setup-box setup-box-medium animated bounceInUp">
   <div class="clearfix">
     <h2 class="left"><span class="icon-profiles"></span> Profiles</h2>
-    <a href="#profiles-add" class="button-primary right"><span class="icon-plus"></span> Add Profile</a>
+    <a href="#profiles/add" class="button-primary right"><span class="icon-plus"></span> Add Profile</a>
   </div>
   {% if setup_profiles.result.profiles %}
-    <p class="text-detail text-center">You currently have <strong>{{ setup_profiles.result.profiles|length }} profiles</strong> that you can send messages from</p>
-    <ul id="setup-profile-list">
-    {% for profile_id, profile in setup_profiles.result.profiles.iteritems() %}
-    <li class="setup-profile" id="setup-profile-{{ profile_id }}">
-      <div class="clearfix">
-        <span class="avatar"><img src="/static/img/avatar-default.png"></span>
-        <span class="name">{{ profile.name }}</span>
-        <span class="email">{{ profile.email }}</span>
-        {% if profile.pgp_keys %}
-        <span class="icon-lock-closed"></span>
-        {% endif %}
-        {% if email != setup_profiles.result.default_email %}
-        <a href="#dogs" data-profile_id="{{ profile_id }}" class="setup-profile-remove right"><span class="icon-circle-x"></span> Remove</a>
-        {% endif %}
-      </div>
-    </li>
-    {% endfor %}
-    </ul>
+  <p class="text-detail text-center">You currently have <strong>{{ setup_profiles.result.profiles|length }} profiles</strong> that you can send messages from</p>
   {% elif setup_profiles.result.new_emails %}
-    {% for profile_id, profile in setup_profiles.result.new_emails.iteritems() %}
-    <ul id="setup-profile-list">
-    <li class="setup-profile" id="setup-profile-{{ profile_id }}">
-      <div class="clearfix">
-        <span class="avatar"><img src="/static/img/avatar-default.png"></span>
-        <span class="name">{{ profile.name }}</span>
-        <span class="email">{{ profile.email }}</span>
-        {% if profile.pgp_keys %}
-        <span class="icon-lock-closed"></span>
-        {% endif %}
-        {% if email != setup_profiles.result.default_email %}
-        <a href="#dogs" data-profile_id="{{ profile_id }}" class="setup-profile-remove right"><span class="icon-plus"></span> Create Profile</a>
-        {% endif %}
-      </div>
-    </li>
-    </ul> 
-    {% endfor %}
-  {% else %}{# Has no profiles #}
+  <p class="text-detail text-center">We found <strong>{{ setup_profiles.result.new_emails|length }} addresses</strong> that we can turn into profiles</p>
+  {% else %}
   <p class="text-center">A profile is the context of how you use an email address. You can have as many profiles as you'd like, some examples profiles: Personal, Work, Newsletters, etc...</p>
   {% endif %}
+  <ul id="setup-profiles-list-items"></ul>
+  <div class="clearfix">
+    <a href="/setup/crypto/" class="button-secondary left">Previous</a>
+    <a href="#sources" class="button-primary right">Next</a>
+  </div>
 </div>
