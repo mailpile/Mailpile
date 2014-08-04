@@ -137,12 +137,12 @@ label.radio-list-item .icon-key {
   font-size: 30px;
   line-height: 30px;
 }
-#setup-profile-list {
+#setup-profiles-list-items {
   background: #ffffff;
   border-radius: 5px;
   border: 1px solid #cccccc;
 }
-#setup-profile-list li:first-child {
+#setup-profiles-list-items li:first-child {
   border-top: 0px solid;
 }
 .setup-profile {

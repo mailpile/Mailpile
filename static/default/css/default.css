@@ -3344,7 +3344,7 @@ input::-moz-focus-inner {
 .standard select {
   padding: 10px 12px;
   outline: none;
-  font-size: 18px;
+  font-size: 16px;
   font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #666666;
   width: 210px;
@@ -3386,7 +3386,7 @@ input::-moz-focus-inner {
   margin-bottom: 5px;
 }
 .standard select {
-  color: #337fb2;
+  color: #4d4d4d;
   width: 220px;
 }
 .standard input[type="checkbox"] {
@@ -3403,7 +3403,7 @@ input::-moz-focus-inner {
 }
 .standard label span.form_error {
   margin: 0 0 0 3px;
-  color: #337fb2;
+  color: #4d4d4d;
 }
 /* #Images
 ================================================== */
@@ -3867,7 +3867,7 @@ hr.giant {
 }
 .full-width-table td,
 .full-width-table th {
-  padding: 10px 0px;
+  padding: 5px 0px;
 }
 .rounded {
   border-right: solid #ccc 1px;
@@ -3881,7 +3881,7 @@ hr.giant {
 .rounded th {
   border-left: 1px solid #ccc;
   border-top: 1px solid #ccc;
-  padding: 10px 0px;
+  padding: 5px 0px;
   text-align: left;
 }
 .rounded th {
