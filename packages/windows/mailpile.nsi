@@ -33,12 +33,16 @@ Section
 
 	WriteRegStr HKCU "Software\Mailpile" "" $INSTDIR
 
-	createShortCut "$SMPROGRAMS\Mailpile.lnk" "$INSTDIR\mailpile\mp.cmd" # Call startup script...
-
 	File /r /x packages /x .git "../../../Mailpile/*"
 	File /r "GnuPG"
 	File /r "OpenSSL"
 	File /r "Python27"
+	File "mailpile.ico"
+
+	createDirectory "$SMPROGRAMS\Mailpile"
+	createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\mp.cmd" "" "$INSTDIR\mailpile.ico" # Call startup script...
+	WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" "InternetShortcut" "URL" "http://localhost:33411"
+	
 
 	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Run" \
 			"Mailpile" "$INSTDIR\mp.cmd"
@@ -47,7 +51,9 @@ SectionEnd
 
 Section "un.Uninstall"
 	RMDir "$INSTDIR"
-	Delete "$SMPROGRAMS\Mailpile.lnk"
+	Delete "$SMPROGRAMS\Mailpile\Start Mailpile.lnk"
+	Delete "$SMPROGRAMS\Mailpile\Open Mailpile.url"
+	RMDir "$SMPROGRAMS\Mailpile"
 
 	DeleteRegKey /ifempty HKCU "Software\Mailpile"
 SectionEnd

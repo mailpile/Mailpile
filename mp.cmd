@@ -1,6 +1,6 @@
 @echo off
 set PATH=%PATH%;GnuPG\;OpenSSL\;
-set PYTHONPATH=%~dp0
+set PYTHONPATH=%~dp0;%~dp0\GnuPG\;%~dp0\OpenSSL\;
 if exist python27\python.exe (
   set PYTHONBIN=python27\python.exe
 ) else if exist c:\python27\python.exe (
