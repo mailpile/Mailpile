@@ -19,7 +19,13 @@ var SendingView = Backbone.View.extend({
   show: function() {
     this.$el.html(_.template($("#template-setup-sending").html()));
   },
-  showSendingSettings: function() {
+  showAdd: function() {
+    this.$el.html(_.template($("#template-setup-sending-settings").html(), { action: 'Add' }));
+  },
+  showEdit: function(id) {
+
     alert('ohai sending route settings');
+    this.$el.html(_.template($("#template-setup-sending-settings").html(), { action: 'Edit' }));
+
   }
 });
