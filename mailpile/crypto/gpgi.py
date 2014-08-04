@@ -864,7 +864,7 @@ class GnuPGExpectScript(threading.Thread):
     FINISHED = 'Finished'
     SCRIPT = []
     VARIABLES = {}
-    RUNNING_STATES = [START_GPG]
+    RUNNING_STATES = [STARTUP, START_THREAD, START_GPG]
 
     def __init__(self, sps=None, logfile=None, variables={}, on_complete=None):
         threading.Thread.__init__(self)

@@ -578,10 +578,6 @@ class SetupCrypto(TestableWebbable):
         changed = authed = False
         results = {
             'secret_keys': self.list_secret_keys(),
-            'creating_key': (Setup.KEY_CREATION_THREAD is not None and
-                             not Setup.KEY_CREATION_THREAD.failed),
-            'creating_failed': (Setup.KEY_CREATION_THREAD is not None and
-                                Setup.KEY_CREATION_THREAD.failed)
         }
         error_info = None
 
@@ -612,6 +608,7 @@ class SetupCrypto(TestableWebbable):
                     })
 
             try:
+                # FIXME: Key changing is fubar
                 if not error_info:
                     chosen_key = ((not error_info) and choose_key
                                   ) or session.config.prefs.gpg_recipient
@@ -621,6 +618,11 @@ class SetupCrypto(TestableWebbable):
                     if chosen_key == '!CREATE':
                         assert(passphrase != '')
                         sps = SecurePassphraseStorage(passphrase)
+                    elif chosen_key:
+                        sps = mailpile.auth.VerifyAndStorePassphrase(
+                            session.config,
+                            passphrase=passphrase,
+                            key=chosen_key)
                     else:
                         sps = mailpile.auth.VerifyAndStorePassphrase(
                             session.config, passphrase=passphrase)
@@ -652,6 +654,10 @@ class SetupCrypto(TestableWebbable):
                     Setup.KEY_CREATION_THREAD.start()
 
         results.update({
+            'creating_key': (Setup.KEY_CREATION_THREAD is not None and
+                             Setup.KEY_CREATION_THREAD.running),
+            'creating_failed': (Setup.KEY_CREATION_THREAD is not None and
+                                Setup.KEY_CREATION_THREAD.failed),
             'chosen_key': session.config.prefs.gpg_recipient,
             'prefs': {
                 'index_encrypted': session.config.prefs.index_encrypted,

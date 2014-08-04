@@ -33,7 +33,8 @@ class UserSessionCache(dict):
                 del self[k]
 
 
-def VerifyAndStorePassphrase(config, passphrase=None, sps=None):
+def VerifyAndStorePassphrase(config, passphrase=None, sps=None,
+                                     key=None):
     if passphrase and not sps:
         from mailpile.config import SecurePassphraseStorage
         sps = SecurePassphraseStorage(passphrase)
@@ -44,7 +45,7 @@ def VerifyAndStorePassphrase(config, passphrase=None, sps=None):
     if gpg.is_available():
         gpg.passphrase = sps.get_reader()
         gpgr = config.prefs.gpg_recipient
-        gpgr = gpgr if (gpgr not in (None, '', '!CREATE')) else None
+        gpgr = key or (gpgr if (gpgr not in (None, '', '!CREATE')) else None)
         assert(gpg.sign('Sign This!', fromkey=gpgr)[0] == 0)
 
     return sps
