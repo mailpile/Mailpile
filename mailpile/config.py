@@ -48,6 +48,10 @@ from mailpile.workers import Worker, ImportantWorker, DumbWorker, Cron
 MAX_CACHED_MBOXES = 5
 
 
+class ConfigValueError(ValueError):
+    pass
+
+
 class SecurePassphraseStorage(object):
     # FIXME: Replace this with a memlocked ctype buffer, whenever possible
 
@@ -628,8 +632,8 @@ def RuledContainer(pcls):
 
             elif isinstance(value, dict):
                 if value:
-                    raise ValueError(_('Subsections must be immutable '
-                                       '(key %s).') % name)
+                    raise ConfigValueError(_('Subsections must be immutable '
+                                             '(key %s).') % name)
                 sub_rule = {'_any': [rule[self.RULE_COMMENT], check, None]}
                 checker = _MakeCheck(ConfigDict, name, check, sub_rule)
                 pcls.__setitem__(self, key, checker())
@@ -637,8 +641,8 @@ def RuledContainer(pcls):
 
             elif isinstance(value, list):
                 if value:
-                    raise ValueError(_('Lists cannot have default values '
-                                       '(key %s).') % name)
+                    raise ConfigValueError(_('Lists cannot have default '
+                                             'values (key %s).') % name)
                 sub_rule = {'_any': [rule[self.RULE_COMMENT], check, None]}
                 checker = _MakeCheck(ConfigList, name, comment, sub_rule)
                 pcls.__setitem__(self, key, checker())
@@ -758,18 +762,24 @@ def RuledContainer(pcls):
             checker = self.get_rule(key)[self.RULE_CHECKER]
             if not checker is True:
                 if checker is False:
-                    raise ValueError(_('Modifying %s/%s is not allowed'
-                                       ) % (self._name, key))
-                if isinstance(checker, (list, set, tuple)):
+                    if isinstance(value, dict) and isinstance(self[key], dict):
+                        for k, v in value.iteritems():
+                            self[key][k] = v
+                        return
+                    raise ConfigValueError(_('Modifying %s/%s is not '
+                                             'allowed') % (self._name, key))
+                elif isinstance(checker, (list, set, tuple)):
                     if value not in checker:
-                        raise ValueError(_('Invalid value for %s/%s: %s'
-                                           ) % (self._name, key, value))
+                        raise ConfigValueError(_('Invalid value for %s/%s: %s'
+                                                 ) % (self._name, key, value))
                 elif isinstance(checker, (type, type(RuledContainer))):
                     try:
                         if value is None:
                             value = checker()
                         else:
                             value = checker(value)
+                    except (ConfigValueError):
+                        raise
                     except (IgnoreValue):
                         return
                     except (ValueError, TypeError):
@@ -963,7 +973,7 @@ class ConfigDict(RuledContainer(dict)):
     >>> pot['colors'].append('green')
     Traceback (most recent call last):
         ...
-    ValueError: Invalid value for config/colors/4: green
+    ConfigValueError: Invalid value for config/colors/4: green
 
     >>> pot.rules['potatoes']
     ['How many potatoes?', <type 'int'>, 0]
