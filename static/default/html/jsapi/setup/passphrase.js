@@ -59,6 +59,7 @@ var PassphraseView = Backbone.View.extend({
             .removeClass('icon-lock-closed')
             .addClass('icon-lock-open color-08-green bounce');
 
+          $('#setup-crypto-chosen_key').html(result.result.chosen_key);
           $('#setup-passphrase-authenticated').fadeIn();
         }
         else if (result.status == 'error' && result.error.invalid_passphrase) {
@@ -69,7 +70,7 @@ var PassphraseView = Backbone.View.extend({
           // Error UI feedback
           $('#identity-vault-lock').find('.icon-lock-closed').addClass('color-12-red bounce');
 
-          Mailpile.notification(result.status, result.message);
+          alert(result.message);
           setTimeout(function() {
             $('#identity-vault-lock').find('.icon-lock-closed').removeClass('color-12-red bounce');
           }, 2500);

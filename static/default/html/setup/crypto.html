@@ -12,7 +12,7 @@
     <h3>You Successfully Authenticated</h3>
     <p>The <strong>fingerprint</strong> for the <strong>encryption key</strong> you chose was:</p>
     <h1><span class="icon-fingerprint"></span></h1>
-    <h3>{{ setup_crypto.result.chosen_key }}</h3>
+    <h3 id="setup-crypto-chosen_key">{{ setup_crypto.result.chosen_key }}</h3>
     <p><a href="/setup/#profiles" class="button-primary">{{_("Next")}}</a></p>
   </div>
   <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center add-top">
