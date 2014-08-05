@@ -54,11 +54,11 @@ $(document).on('submit', '#form-login', function(e) {
 
   // Lock
   setTimeout(function() {
-    $('#login-vault-lock .vault-lock').addClass('fadeOut');
+    $('#login-vault-lock').find('div.vault-lock').addClass('fadeOut');
   }, 250);
 
   setTimeout(function() {
-    $('#login-vault-lock .vault-lock-outer').addClass('bounceOutUp');
+    $('#login-vault-lock').addClass('bounceOutUp');
   }, 500);
 
   // Panels

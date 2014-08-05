@@ -166,6 +166,28 @@
 /* Form Inputs */
 /* REBAR: move this rebar/forms.less library at some point */
 
+  input[type="text"].input-tiny,
+	input[type="password"].input-tiny,
+	input[type="email"].input-tiny,
+	input[type="url"].input-tiny,
+	input[type="phone"].input-tiny,
+	input[type="address"].input-tiny,
+  textarea.input-tiny,
+  select.input-tiny {
+    width: 75px;
+  }
+
+  input[type="text"].input-small,
+	input[type="password"].input-small,
+	input[type="email"].input-small,
+	input[type="url"].input-small,
+	input[type="phone"].input-small,
+	input[type="address"].input-small,
+  textarea.input-small,
+  select.input-small {
+    width: 135px;
+  }
+
   input[type="text"].input-medium,
 	input[type="password"].input-medium,
 	input[type="email"].input-medium,
@@ -282,6 +304,7 @@
 /* Crypto */
 
   .vault-lock-outer {
+    display: inline-block;
     width: 225px;
     height: 225px;
     border-radius: 112.5px;
@@ -291,6 +314,7 @@
   }
 
   .vault-lock-inner {
+    display: inline-block;
     width: 171px;
     height: 171px;
     border-radius: 85.5px;
@@ -303,6 +327,7 @@
   }
 
   .vault-lock {
+    display: inline-block;
     font-size: 72px;
     line-height: 72px;
     position: relative;
