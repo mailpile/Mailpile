@@ -25,6 +25,7 @@ var SetupApp = (function ($, Backbone, global) {
     var init = function() {
 
       global.ProfilesCollection = new ProfilesCollection();
+      global.SourcesCollection = new SourcesCollection();
 
       // Views
       global.ProfilesView   = new ProfilesView({ model: new ProfileModel(), el: $('#setup') });
