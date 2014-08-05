@@ -1352,7 +1352,7 @@ class ConfigManager(ConfigDict):
         mailpile.i18n.ActivateTranslation(None, self, self.prefs.language)
 
         # Prepare workers
-        self.prepare_workers()
+        self.prepare_workers(daemons=self.daemons_started())
 
     def _find_mail_source(self, mbx_id):
         for src in self.sources.values():
