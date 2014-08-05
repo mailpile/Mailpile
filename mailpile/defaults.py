@@ -105,6 +105,7 @@ CONFIG_RULES = {
     }, {}],
     'sources': [_('Incoming message sources'), {
         'name':            (_('Source name'), str, ''),
+        'enabled':         (_('Is this mail source enabled?'), bool, True),
         'protocol':        (_('Mailbox protocol or format'),
                             ["mbox", "maildir", "macmaildir", "gmvault",
                              "imap", "imap_ssl", "pop3"],
@@ -127,6 +128,7 @@ CONFIG_RULES = {
             'apply_tags':  (_('Tags applied to messages'), str, []),
         }),
         'mailbox': (_('Mailboxes'), {
+            'name':        (_('The name of this mailbox'), str, ''),
             'path':        (_('Mailbox source path'), str, ''),
             'policy':      (_('Mailbox policy'),
                             ['unknown', 'ignore', 'read', 'move', 'sync'],

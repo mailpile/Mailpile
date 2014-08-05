@@ -30,7 +30,7 @@ class BaseMailSource(threading.Thread):
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
     RESCAN_BATCH_SIZE = 2500    # Index at most this many new e-mails at once
-    MAX_PATHS = 50000           # Abort if asked to scan too many directories
+    MAX_PATHS = 100             # Abort if asked to scan too many directories
 
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.BaseMailSource'
@@ -265,11 +265,15 @@ class BaseMailSource(threading.Thread):
             }
             mbx_cfg = self.my_config.mailbox[mailbox_idx]
             mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
+        mbx_cfg.name = self._mailbox_name(self._path(mbx_cfg))
         self._create_primary_tag(mbx_cfg, save=False)
         self._create_local_mailbox(mbx_cfg, save=False)
         if save:
             self._save_config()
         return mbx_cfg
+
+    def _mailbox_name(self, path):
+        return path.split('/')[-1]
 
     def _create_local_mailbox(self, mbx_cfg, save=True):
         config = self.session.config
@@ -436,7 +440,8 @@ class BaseMailSource(threading.Thread):
         self.event.flags = Event.RUNNING
         _original_session = self.session
         self._sleep(random.randint(0, self.my_config.interval))
-        while self._sleep(self._jitter(self.my_config.interval)):
+        while (self._sleep(self._jitter(self.my_config.interval)) and
+                self.my_config.enabled):
             self.name = self.my_config.name  # In case the config changes
             if not self.session.config.index:
                 continue

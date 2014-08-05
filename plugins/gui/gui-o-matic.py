@@ -24,7 +24,7 @@ class Indicator(object):
         self.ready = False
 
     def _do(self, op, args):
-        op = op.lower()
+        op, args = op.lower(), args[:]
 
         if op == 'show_url':
             webbrowser.open(args[0])
