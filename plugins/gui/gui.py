@@ -5,9 +5,11 @@ import threading
 import time
 
 import mailpile.auth
-from mailpile.util import *
+from mailpile.commands import Quit
 from mailpile.i18n import gettext as _
 from mailpile.safe_popen import Popen, PIPE
+from mailpile.ui import Session
+from mailpile.util import *
 
 
 __GUI__ = None
@@ -33,76 +35,91 @@ def _real_startup(config):
     while config.http_worker is None:
         time.sleep(0.1)
 
-    session_id = config.http_worker.httpd.make_session_id(None)
-    mailpile.auth.SetLoggedIn(None, user='GUI plugin client',
-                                    session_id=session_id)
-    cookie = config.http_worker.httpd.session_cookie
-    base_url = 'http://%s:%s' % (config.sys.http_host, config.sys.http_port)
+    try:
+        session_id = config.http_worker.httpd.make_session_id(None)
+        mailpile.auth.SetLoggedIn(None, user='GUI plugin client',
+                                        session_id=session_id)
+        cookie = config.http_worker.httpd.session_cookie
+        base_url = 'http://%s:%s' % (config.sys.http_host,
+                                     config.sys.http_port)
+  
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        script = os.path.join(script_dir, 'gui-o-matic.py')
 
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    script = os.path.join(script_dir, 'gui-o-matic.py')
+        global __GUI__
+        gui = __GUI__ = Popen(['python', '-u', script],
+                              bufsize=1,  # line buffered
+                              stdin=PIPE, stderr=PIPE,
+                              long_running=True)
+        stderr = []
+        eater = threading.Thread(target=output_eater,
+                                 args=[gui.stderr, stderr])
+        eater.name = 'GUI(stderr)'
+        eater.daemon = True
+        eater.start()
 
-    global __GUI__
-    gui = __GUI__ = Popen(['python', '-u', script],
-                          bufsize=1,  # line buffered
-                          stdin=PIPE, stderr=PIPE,
-                          long_running=True)
-    stderr = []
-    eater = threading.Thread(target=output_eater, args=[gui.stderr, stderr])
-    eater.name = 'GUI(stderr)'
-    eater.daemon = True
-    eater.start()
+        ico = lambda s: os.path.join(script_dir, 'icons-%(theme)s', s)
+        gui.stdin.write(json.dumps({
+            'app_name': 'Mailpile',
+            'indicator_icons': {
+                'startup': ico('startup.png'),
+                'normal': ico('normal.png'),
+                'working': ico('working.png'),
+                'attention': ico('attention.png'),
+                'shutdown': ico('shutdown.png')
+            },
+            'indicator_menu': [
+                {
+                    'label': _('Starting up ...'),
+                    'item': 'status'
+                },{
+                    'label': _('Open Mailpile'),
+                    'item': 'open',
+                    'op': 'show_url',
+                    'args': [base_url]
+                },{
+                    'label': _('Quit'),
+                    'item': 'quit',
+                    'op': 'get_url',
+                    'args': [base_url + '/api/0/quitquitquit/']
+                }
+            ],
+            'http_cookies': {
+                 base_url: [[cookie, session_id]]
+            },
+        }).strip() + '\nOK GO\n')
 
-    ico = lambda s: os.path.join(script_dir, 'icons-%(theme)s', s)
-    gui.stdin.write(json.dumps({
-        'app_name': 'Mailpile',
-        'indicator_icons': {
-            'startup': ico('startup.png'),
-            'normal': ico('normal.png'),
-            'working': ico('working.png'),
-            'attention': ico('attention.png'),
-            'shutdown': ico('shutdown.png')
-        },
-        'indicator_menu': [
-            {
-                'label': _('Starting up ...'),
-                'item': 'status'
-            },{
-                'label': _('Open Mailpile'),
-                'item': 'open',
-                'op': 'show_url',
-                'args': [base_url]
-            },{
-                'label': _('Quit'),
-                'item': 'quit',
-                'op': 'get_url',
-                'args': [base_url + '/api/0/quitquitquit/']
-            }
-        ],
-        'http_cookies': {
-             base_url: [[cookie, session_id]]
-        },
-    }).strip() + '\nOK GO\n')
+        indicator('set_menu_sensitive', item='quit')
+        indicator('set_menu_sensitive', item='open')
+    except:
+        # If the basic indicator setup fails, we just assume it doesn't
+        # work and go silently dead...
+        return
 
-    indicator('set_menu_sensitive', item='quit')
-    indicator('set_menu_sensitive', item='open')
+    try:
+        # ...however, getting this far means if the indicator dies, then
+        # the user tried to quit the app, so we should cooperate and die
+        # (via the except below).
 
-    while config.index is None or not config.tags:
-        time.sleep(1)
-    indicator('set_status_normal')
+        while config.index is None or not config.tags:
+            time.sleep(1)
+        indicator('set_status_normal')
 
-    # FIXME: We should do more with the indicator... this is a bit lame.
-    while True:
-        if mailpile.util.QUITTING:
-            indicator('set_status_shutdown')
-            indicator('set_menu_sensitive', item='open', sensitive=False)
-            indicator('set_menu_sensitive', item='quit', sensitive=False)
-            indicator('set_menu_label',
-                item='status',
-                label=_('Shutting down...'))
-            time.sleep(300)
-        else:
-            indicator('set_menu_label',
-                item='status',
-                label=_('%d messages') % len(config.index.INDEX))
-            time.sleep(5)
+        # FIXME: We should do more with the indicator... this is a bit lame.
+        while True:
+            if mailpile.util.QUITTING:
+                indicator('set_status_shutdown')
+                indicator('set_menu_sensitive', item='open', sensitive=False)
+                indicator('set_menu_sensitive', item='quit', sensitive=False)
+                indicator('set_menu_label',
+                    item='status',
+                    label=_('Shutting down...'))
+                time.sleep(300)
+            else:
+                indicator('set_menu_label',
+                    item='status',
+                    label=_('%d messages') % len(config.index.INDEX))
+                time.sleep(5)
+
+    except (IOError, OSError):
+        Quit(Session(config)).run()
