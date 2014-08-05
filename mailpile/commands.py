@@ -1782,6 +1782,12 @@ class Quit(Command):
 
         mailpile.util.QUITTING = True
         self._background_save(index=True, config=True, wait=True)
+        try:
+            import signal
+            os.kill(mailpile.util.MAIN_PID, signal.SIGINT)
+        except:
+            pass
+
         return self._success(_('Shutting down...'))
 
 

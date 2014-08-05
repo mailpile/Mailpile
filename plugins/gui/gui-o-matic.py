@@ -202,7 +202,6 @@ def MacOSXIndicator():
         indicator = None
 
         def applicationDidFinishLaunching_(self, notification):
-            print 'app launched'
             self.indicator._menu_setup()
             self.indicator._ind_setup()
             self.indicator.ready = True

@@ -19,8 +19,14 @@ def indicator(command, **kwargs):
 
 def startup(config):
     th = threading.Thread(target=_real_startup, args=[config])
+    th.name = 'GUI'
     th.daemon = True
     th.start()
+
+
+def output_eater(fd, buf):
+    for line in fd:
+        buf.append(line)
 
 
 def _real_startup(config):
@@ -39,8 +45,14 @@ def _real_startup(config):
     global __GUI__
     gui = __GUI__ = Popen(['python', '-u', script],
                           bufsize=1,  # line buffered
-                          stdin=PIPE,
+                          stdin=PIPE, stderr=PIPE,
                           long_running=True)
+    stderr = []
+    eater = threading.Thread(target=output_eater, args=[gui.stderr, stderr])
+    eater.name = 'GUI(stderr)'
+    eater.daemon = True
+    eater.start()
+
     ico = lambda s: os.path.join(script_dir, 'icons-%(theme)s', s)
     gui.stdin.write(json.dumps({
         'app_name': 'Mailpile',
@@ -72,12 +84,12 @@ def _real_startup(config):
         },
     }).strip() + '\nOK GO\n')
 
+    indicator('set_menu_sensitive', item='quit')
+    indicator('set_menu_sensitive', item='open')
+
     while config.index is None or not config.tags:
         time.sleep(1)
-
     indicator('set_status_normal')
-    indicator('set_menu_sensitive', item='open')
-    indicator('set_menu_sensitive', item='quit')
 
     # FIXME: We should do more with the indicator... this is a bit lame.
     while True:

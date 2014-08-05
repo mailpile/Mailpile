@@ -37,6 +37,7 @@ QUITTING = False
 LAST_USER_ACTIVITY = 0
 LIVE_USER_ACTIVITIES = 0
 
+MAIN_PID = os.getpid()
 DEFAULT_PORT = 33411
 
 WORD_REGEXP = re.compile('[^\s!@#$%^&*\(\)_+=\{\}\[\]'

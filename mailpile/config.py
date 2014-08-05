@@ -1237,6 +1237,8 @@ class ConfigManager(ConfigDict):
         with mailpile.i18n.i18n_disabled:
             if len(self.sys.plugins) == 0:
                 self.sys.plugins.extend(self.plugins.DEFAULT)
+                if sys.platform in ('darwin', ) or os.getenv('DISPLAY'):
+                    self.sys.plugins.append('gui')
             self.load_plugins(session)
 
         # Now all the plugins are loaded, reset and parse again!
