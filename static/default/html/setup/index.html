@@ -33,6 +33,20 @@
 {% include("setup/profiles_settings.html") %}
 </script>
 
+
+<script id="template-setup-sources-item" type="text/template">
+  <li class="setup-source" id="setup-source-<%= id %>">
+    <div class="clearfix">
+      <span class="name"><%= name %></span>
+      <span class="username"><%= username %></span>
+      <ul class="horizontal right">
+        <li><a href="#sources/<%= id %>"><span class="icon-settings"></span> Edit</a></li>
+        <li><a href="#" data-id="<%= id %>" class="setup-source-remove"><span class="icon-circle-x"></span> Remove</a></li>
+      </ul>
+    </div>
+  </li>
+</script>
+
 <script id="template-setup-sources" type="text/template">
 {% include("setup/sources_list.html") %}
 </script>

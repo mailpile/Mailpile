@@ -1,18 +1,27 @@
 /* Setup - Sources - Model */
 var SourceModel = Backbone.Model.extend({
+  url: '/settings/',
+  defaults: {
+    _section: '', 
+    name: '',
+    username: '',
+    password: '',
+    host: '',
+    port: 993,
+    protocol: '',
+    interval: 300,
+    'discovery.paths': '',
+    'discovery.policy': 'unknown',
+    'discovery.local_copy': true,
+    'discovery.process_new': true,
+    'discovery.create_tag': false,
+    'discovery.apply_tags': ['']
+  },
   validation: {
     name: {
       minLength: 2,
       required: true,
       msg: "{{_('Source Name')}}"      
-    },
-    protocol: {
-      oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3"],
-      required: true,
-      msg: "{{_('Mailbox protocol or format')}}"
-    }, 
-    interval: {
-      msg: "{{_('How frequently to check for mail')}}"
     },
     username: {
       required: false,
@@ -30,26 +39,47 @@ var SourceModel = Backbone.Model.extend({
       required: false,
       msg: "{{_('Port')}}"
     },
+    protocol: {
+      oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3"],
+      required: true,
+      msg: "{{_('Mailbox protocol or format')}}"
+    }, 
+    interval: {
+      required: false,
+      msg: "{{_('How frequently to check for mail')}}"
+    },
     'discovery.paths': {
+      required: false,
       msg: "{{_('Paths to watch for new mailboxes')}}"
     },
     'discovery.policy': {
       oneOf: ['unknown', 'ignore', 'watch','read', 'move', 'sync'],
+      required: false,
       msg: "{{_('Default mailbox policy')}}"
     },
     'discovery.local_copy': {
+      required: false,
       msg: "{{_('Copy mail to a local mailbox?')}}"
     },
     'discovery.create_tag': {
+      required: false,
       msg: "{{_('Create a tag for each mailbox?')}}"
     },
     'discovery.process_new': {
+      required: false,
       msg: "{{_('Is a potential source of new mail')}}"
     },
     'discovery.apply_tags': {
+      required: false,
       msg: "{{_('Tags applied to messages')}}"
     }
   }
+});
+
+
+var SourcesCollection = Backbone.Collection.extend({
+  url: '/settings/as.json?var=sources',
+  model: SourceModel
 });
 
 
@@ -63,10 +93,10 @@ var SourcesView = Backbone.View.extend({
     return this;
   },
   events: {
-  	"click #btn-setup-source-settings"  : "showSourceSettings",
-    "change #input-setup-source-type"   : "actionSourceSelected",
-    "change #input-setup-source_sync"   : "actionSyncSelected",
-    "click #btn-setup-source-save"      : "processSource"
+    "change #input-setup-source-type"  : "actionSelected",
+    "change #input-setup-source_sync"  : "actionSyncSelected",
+    "click #btn-setup-source-save"     : "processSource",
+    "click .setup-source-remove"       : "processRemove"
   },
   show: function() {
 
@@ -80,25 +110,30 @@ var SourcesView = Backbone.View.extend({
       }
 
       _.each(result.result.sources, function(val, key) {
-//        var source = new SourceModel(_.extend({id: key, action: 'Edit'}, val));
-//        SourcesCollection.add(source);
-//        $('#setup-sources-list-items').append(_.template($('#template-setup-profiles-item').html(), source.attributes));
+        var source = new SourceModel(_.extend({id: key, action: 'Edit'}, val));
+        SourcesCollection.add(source);
+        $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
       });
+
     });
 
+    return this;
   },
-  showAddSource: function() {
+  showAdd: function() {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    this.$el.html(_.template($('#template-setup-source-settings').html()));
+    this.model.set({_section: 'sources.' + Math.random().toString(36).substring(2) })
+    this.$el.html(_.template($('#template-setup-source-settings').html(), this.model.attributes));
   },
-  showEditSource: function(id) {
-
+  showEdit: function(id) {
+    $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
+    var source = SourcesCollection.get(id);
+    if (source !== undefined) {
+      this.$el.html(_.template($('#template-setup-source-settings').html(), source.attributes));
+    } else {
+      Backbone.history.navigate('#sources', true);
+    }
   },
-  showSourceSettings: function() {
-    this.$el.html(_.template($('#template-setup-source-local-settings').html(), SourceModel.attributes));
-  },
-  actionSourceSelected: function(e) {
-
+  actionSelected: function(e) {
     if ($(e.target).val() == 'local') {
       $('#setup-source-settings-server').hide();
       $('#setup-source-settings-local').fadeIn().removeClass('hide');
@@ -127,23 +162,25 @@ var SourcesView = Backbone.View.extend({
 
     e.preventDefault();
 
-    if ($(e.target).data('id') == 'new') {
+    // Update Model
+    var source_data = $('#form-setup-source-settings').serializeObject();
+//    source_data = _.omit(source_data, 'source_type');
+    this.model.set(source_data);
 
-      // Update Model
-      var source_data = $('#form-setup-source-settings').serializeObject();
-      this.model.set(source_data);
+    // Validate & Process
+    if (!this.model.validate()) {
+      Mailpile.API.settings_set_post(source_data, function(result) {
 
-      console.log(source_data);
-  
-      // Validate & Process
-      if (!this.model.validate()) {
-/*
-        Mailpile.API.setup_profiles_post(profile_data, function(result) {
-          Backbone.history.navigate('#profiles', true);
-        });
-*/
-      }
+        SourcesView.model.set({name: '', username: '', password: '', port: ''});
+        Backbone.history.navigate('#sources', true);
+      });
     }
-    
+  },
+  processRemove: function(e) {
+    e.preventDefault();
+    var source_id = $(e.target).data('id');
+    Mailpile.API.settings_unset_post({ rid: source_id }, function(result) {
+      $('#setup-source-' + source_id).fadeOut();
+    });
   }
 });

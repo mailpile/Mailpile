@@ -3,37 +3,8 @@
     <h2 class="left"><span class="icon-inbox"></span> Sources</h2>
     <a href="#sources/add" id="btn-setup-show-add-source" class="button-primary right"><span class="icon-plus"></span> Add Source</a>
   </div>
-
-  {% for source_id, source in mailpile("settings", "sources").result.sources.iteritems() %}
-
-  {% if source.protocol in ('maildir', 'macmaildir', 'mbox') %}
-    <h4>{{source.name}}</h4>
-    <table id="setup-source-{{source_id}}" class="rounded full-width-table setup-table">
-    <tr>
-      <th colspan="3">Select the folders you would like to import or synchronize</th>
-    </tr>
-    {% for mail_id, mailbox in source.mailbox.iteritems() %}
-    <tr>
-      <td><strong>{{mailbox.policy}} <span>msg<span></strong></td>
-      <td>Ohai there</td>
-      <td><input type="checkbox"></td>
-    </tr>
-    {% endfor %}
-    </table>
-
-  {% elif source.protocol in ('gmvault', 'imap', 'imap_ssl') %}
-
-    gmvault
-    IMAP
-    IMAP (ssl)
-
-  {% elif source.protocol == 'pop3' %}
-
-    POP3
-
-  {% endif %}
-
-  {% endfor %}
+  <ul id="setup-sources-list-items">
+  </ul>
   <div class="clearfix">
     <a href="#profiles" class="button-secondary left">Previous</a>
     <a href="#sending" class="button-primary right">Next</a>
