@@ -123,7 +123,8 @@ def _real_startup(config):
             else:
                 indicator('set_menu_label',
                     item='status',
-                    label=_('%d messages') % len(config.index.INDEX))
+                    label=_('%d messages') % len(config.index and
+                                                 config.index.INDEX or []))
                 time.sleep(5)
 
     finally:
