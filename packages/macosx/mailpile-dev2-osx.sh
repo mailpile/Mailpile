@@ -1,5 +1,5 @@
 #!/bin/bash
-[ -e ~/.mailpile/osx.pwd ] && cd "$(cat ~/.mailpile/osx.pwd)"
+[ -e ~/.mailpile/osx-dev.pwd ] && cd "$(cat ~/.mailpile/osx-dev.pwd)"
 
 export MAILPILE_BREW_ROOT="$(pwd)/Mailpile-Brew"
 export MAILPILE_ROOT="$(pwd)/Mailpile"
@@ -17,4 +17,4 @@ end tell
 EOF
 
 clear
-exec ./mp --www= --interact
+exec ./scripts/setup-test.sh --mygpg
