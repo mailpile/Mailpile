@@ -439,9 +439,18 @@ class BaseMailSource(threading.Thread):
         self._load_state()
         self.event.flags = Event.RUNNING
         _original_session = self.session
-        self._sleep(random.randint(0, self.my_config.interval))
-        while (self._sleep(self._jitter(self.my_config.interval)) and
-                self.my_config.enabled):
+
+        # If this is the first time we look at this source (it has just
+        # been configured), we don't delay, we get right to it.
+        first = (len(self.my_config.mailbox) == 0)
+        if not first:
+            self._sleep(random.randint(0, self.my_config.interval))
+
+        while first or self._sleep(self._jitter(self.my_config.interval)):
+            first = False
+            if not self.my_config.enabled:
+                break
+
             self.name = self.my_config.name  # In case the config changes
             if not self.session.config.index:
                 continue

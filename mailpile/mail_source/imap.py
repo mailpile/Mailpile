@@ -566,6 +566,10 @@ class ImapMailSource(BaseMailSource):
         self.event.data['uidvalidity'][mbx._key] = state['uv']
         self.event.data['exists'][mbx._key] = state['ex']
 
+    def _mailbox_name(self, path):
+        # len('src:/') = 5
+        return path[(5 + len(self.my_config._key)):]
+
     def _fmt_path(self, path):
         return 'src:%s/%s' % (self.my_config._key, path)
 
