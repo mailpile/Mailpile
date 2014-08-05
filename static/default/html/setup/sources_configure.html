@@ -1,0 +1,36 @@
+<div id="setup-box-source-configure" class="setup-box setup-box-medium animated bounceInUp add-bottom">
+  <div class="clearfix text-center">
+    <h2><span class="icon-tag"></span> Configure <%= name %></h2>
+  </div>
+  <form class="standard text-center">
+    <table class="full-width-table rounded background-white add-bottom">
+    <tr>
+      <th>On <%= name %></th>
+      <th>In Mailpile</th>
+      <th><input type="checkbox" id="source-mailbox-read-all"> Download All</th>
+    </tr>
+    <% _.each(mailbox, function(mailbox, key) { %>
+    <tr id="sources-mailbox-">
+      <td><%= mailbox.name %></td>
+      <td>
+        <select name="mailbox.<%= key %>.policy" class="input-small">
+          <option value="dogs">Dogs</option>
+          <option value="cats">Longer Crazy Yo</option>
+          <option value="">Crazy Crazy</option>
+          <option value="cats">Cats</option>
+          <option value="">Super Duper Long Cra Cra Tag</option>
+          <option value="!CREATE">+ Add Tag</option>
+        </select>
+      </td>        
+      <td class="text-right">
+        <input type="checkbox" class="source-mailbox-policy" name="mailbox.<%= key %>.policy" value="<%= mailbox.policy %>" <% if (mailbox.policy == 'read') { %>checked<% } %>>
+      </td>
+    </tr>
+    <% }); %>
+    </table>
+    <div class="text-center">
+      <a href="#sources" class="button-secondary left">Previous</a>
+      <button id="btn-setup-source-settings" class="center">{{_("Next")}}</button>
+    </div>
+  </form>
+</div>

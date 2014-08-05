@@ -96,7 +96,8 @@ var SourcesView = Backbone.View.extend({
     "change #input-setup-source-type"  : "actionSelected",
     "change #input-setup-source_sync"  : "actionSyncSelected",
     "click #btn-setup-source-save"     : "processSource",
-    "click .setup-source-remove"       : "processRemove"
+    "click .setup-source-remove"       : "processRemove",
+    "click #source-mailbox-read-all"   : "actionMailboxReadAll"
   },
   show: function() {
 
@@ -122,13 +123,23 @@ var SourcesView = Backbone.View.extend({
   showAdd: function() {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     this.model.set({_section: 'sources.' + Math.random().toString(36).substring(2) })
-    this.$el.html(_.template($('#template-setup-source-settings').html(), this.model.attributes));
+    this.$el.html(_.template($('#template-setup-sources-settings').html(), this.model.attributes));
   },
   showEdit: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     var source = SourcesCollection.get(id);
     if (source !== undefined) {
-      this.$el.html(_.template($('#template-setup-source-settings').html(), source.attributes));
+      this.$el.html(_.template($('#template-setup-sources-settings').html(), source.attributes));
+    } else {
+      Backbone.history.navigate('#sources', true);
+    }
+  },
+  showConfigure: function(id) {
+    $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
+    var source = SourcesCollection.get(id);
+    if (source !== undefined) {
+
+      this.$el.html(_.template($('#template-setup-sources-configure').html(), source.attributes));
     } else {
       Backbone.history.navigate('#sources', true);
     }
@@ -156,6 +167,17 @@ var SourcesView = Backbone.View.extend({
     }
     else if ($(e.target).val() == 'sync'){
       $('#setup-source-settings-sync-interval').fadeIn().removeClass('hide');
+    }
+  },
+  actionMailboxReadAll: function(e) {
+    if ($(e.target).is(':checked')) {
+      _.each($('input.source-mailbox-policy'), function(val, key) {      
+        $(val).attr({'value': 'read', 'checked': true});
+      });
+    } else {
+      _.each($('input.source-mailbox-policy'), function(val, key) {      
+        $(val).attr({'value': 'ignore', 'checked': false});
+      });
     }
   },
   processSource: function(e) {

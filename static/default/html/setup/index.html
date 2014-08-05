@@ -39,6 +39,7 @@
       <span class="name"><%= name %></span>
       <span class="username"><%= username %></span>
       <ul class="horizontal right">
+        <li><a href="#sources/configure/<%= id %>"><span class="icon-tag"></span> Configure</a></li>
         <li><a href="#sources/<%= id %>"><span class="icon-settings"></span> Edit</a></li>
         <li><a href="#" data-id="<%= id %>" class="setup-source-remove"><span class="icon-circle-x"></span> Remove</a></li>
       </ul>
@@ -50,7 +51,11 @@
 {% include("setup/sources_list.html") %}
 </script>
 
-<script id="template-setup-source-settings" type="text/template">
+<script id="template-setup-sources-configure" type="text/template">
+{% include("setup/sources_configure.html") %}
+</script>
+
+<script id="template-setup-sources-settings" type="text/template">
 {% include("setup/sources_settings.html") %}
 </script>
 
