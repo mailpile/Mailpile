@@ -136,7 +136,10 @@
 /* Idenity */
 
   #identity-vault-lock {
-    margin: @base-margin auto;
+    margin: @base-margin 0;
+    position: relative;
+    left: 32%;
+    top: 0px;
   }
 
   label.radio-list-item div.radio {
@@ -152,34 +155,41 @@
     line-height: 30px;
   }
 
-
-  #setup-profiles-list-items {
+  .setup-list-items {
     background: @white;
     border-radius: 5px;
     border: 1px solid @grayMid;
   }
 
-  #setup-profiles-list-items li:first-child {
+  .setup-list-items li:first-child {
     border-top: 0px solid;
   }
 
-  .setup-profile {
+  .setup-item {
     padding: @base-padding;
     border-top: 1px solid @grayMid;
   }
 
-  .setup-profile .avatar {
+  .setup-item ul {
+    margin-bottom: 0px;
+  }
+  
+  .setup-item ul li {
+    margin-left: @base-margin;
+  }
+
+  .setup-item .avatar {
     width: 50px;
     display: inline-block;
     float: left;
     margin-right: @base-margin;
   }
 
-  .setup-profile .avatar img {
+  .setup-item .avatar img {
     width: 50px;
   }
 
-  .setup-profile .name {
+  .setup-item .name {
     display: block;
     margin-bottom: 5px;
     vertical-align: text-top;
@@ -189,7 +199,7 @@
     color: @grayDark;
   }
 
-  .setup-profile .email {
+  .setup-item .email {
     font-size: 14px;
     line-height: 14px;
     color: @gray;

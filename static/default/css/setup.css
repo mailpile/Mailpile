@@ -125,7 +125,10 @@ span.setup-progress-line {
 }
 /* Idenity */
 #identity-vault-lock {
-  margin: 20px auto;
+  margin: 20px 0;
+  position: relative;
+  left: 32%;
+  top: 0px;
 }
 label.radio-list-item div.radio {
   width: 35px;
@@ -137,28 +140,34 @@ label.radio-list-item .icon-key {
   font-size: 30px;
   line-height: 30px;
 }
-#setup-profiles-list-items {
+.setup-list-items {
   background: #ffffff;
   border-radius: 5px;
   border: 1px solid #cccccc;
 }
-#setup-profiles-list-items li:first-child {
+.setup-list-items li:first-child {
   border-top: 0px solid;
 }
-.setup-profile {
+.setup-item {
   padding: 15px;
   border-top: 1px solid #cccccc;
 }
-.setup-profile .avatar {
+.setup-item ul {
+  margin-bottom: 0px;
+}
+.setup-item ul li {
+  margin-left: 20px;
+}
+.setup-item .avatar {
   width: 50px;
   display: inline-block;
   float: left;
   margin-right: 20px;
 }
-.setup-profile .avatar img {
+.setup-item .avatar img {
   width: 50px;
 }
-.setup-profile .name {
+.setup-item .name {
   display: block;
   margin-bottom: 5px;
   vertical-align: text-top;
@@ -167,7 +176,7 @@ label.radio-list-item .icon-key {
   line-height: 18px;
   color: #4d4d4d;
 }
-.setup-profile .email {
+.setup-item .email {
   font-size: 14px;
   line-height: 14px;
   color: #b3b3b3;

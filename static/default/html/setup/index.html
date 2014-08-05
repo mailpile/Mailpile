@@ -7,7 +7,7 @@
 {% include("setup/various.html") %}
 
 <script id="template-setup-profiles-item" type="text/template">
-  <li class="setup-profile" id="setup-profile-<%= id %>">
+  <li class="setup-item" id="setup-profile-<%= id %>">
     <div class="clearfix">
       <span class="avatar"><img src="/static/img/avatar-default.png"></span>
       <span class="name"><%= name %></span>
@@ -33,9 +33,8 @@
 {% include("setup/profiles_settings.html") %}
 </script>
 
-
 <script id="template-setup-sources-item" type="text/template">
-  <li class="setup-source" id="setup-source-<%= id %>">
+  <li class="setup-item" id="setup-source-<%= id %>">
     <div class="clearfix">
       <span class="name"><%= name %></span>
       <span class="username"><%= username %></span>
