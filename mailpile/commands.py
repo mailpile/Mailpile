@@ -1513,7 +1513,10 @@ class ConfigSet(Command):
             svar = (section+sep+var) if section else var
             parts = svar.split(sep)
             if parts[0] in config.rules:
-                ops.append((svar, self.data[var][0]))
+                if svar.endswith('[]'):
+                    ops.append((svar[:-2], json.dumps(self.data[var])))
+                else:
+                    ops.append((svar, self.data[var][0]))
 
         if self.args:
             arg = ' '.join(self.args)
