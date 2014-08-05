@@ -12,10 +12,10 @@
         </td>
         <td>
           <label>Where is this mail located?</label>
-          <select name="source_type" id="input-setup-source-type">
+          <select id="input-setup-source-type">
             <option value="">select...</option>
             <option value="local">On This Computer</option>
-            <option value="remote">Remote Server</option>
+            <option value="server">Remote Server</option>
           </select>
         </td>
       </tr>
@@ -23,9 +23,9 @@
     </div>
 
     <div id="setup-source-settings-local" class="hide add-bottom">
- {#
       <label>What app (or format) is this mail in?</label>
-      <select name="protocol" id="input-setup-source-protocol" class="input-small">
+      <span id="" class="validation-message"></span>
+      <select name="protocol" id="input-setup-source-local-protocol" class="input-small">
         <option value="">select...</option>
         <option value="macmaildir">Mac Mail</option>
         <option value="mbox">Thunderbird</option>
@@ -34,14 +34,12 @@
         <option value="maildir">Maildir</option>
       </select>   
       <label>Path to where mail on this computer is located:</label>
-      <input type="text" name="discovery.paths" class="input-large" value="" placeholder="/home/chelsea/email">
-      
+      <input type="text" name="discovery.paths[]" class="input-large" value="" placeholder="/home/chelsea/email">
       <label>Make a copy of these messages in Mailpile</label>
-      <select name="discovery.local_copy" class="input-tiny">
+      <select name="discovery.local_copy" id="input-setup-source-local-local_copy" class="input-tiny">
         <option value="false" selected="selected">No</option>
         <option value="">Yes</option>
       </select>
-      #}
     </div>
 
     <div id="setup-source-settings-server" class="hide">
@@ -63,7 +61,7 @@
         </td>
         <td>
           <label>{{_("Protocol")}}</label>
-          <select name="protocol" id="input-setup-source-protocol" class="input-small">
+          <select name="protocol" id="input-setup-source-server-protocol" class="input-small">
             <option value="imap_ssl" selected="selected">IMAP (ssl)</option>
             <option value="imap">IMAP</option>
             <option value="pop">POP3</option>
@@ -73,11 +71,11 @@
       <tr>
         <td>
           <label>{{_('Port')}}</label>
-          <input type="text" name="port" value="<%= port %>" placeholder="993" class="input-tiny">
+          <input type="text" name="port" value="<%= port %>" placeholder="993" id="setup-source-settings-port" class="input-tiny">
         </td>
         <td>
           <label>Download mail locally</label>
-          <select name="discovery.local_copy" class="input-tiny">
+          <select name="discovery.local_copy" id="input-setup-source-server-local_copy" class="input-tiny">
             <option value="true" selected="selected">Yes</option>
             <option value="false">No</option>
           </select>

@@ -10,7 +10,7 @@ var SourceModel = Backbone.Model.extend({
     port: 993,
     protocol: '',
     interval: 300,
-    'discovery.paths': '',
+    'discovery.paths': [],
     'discovery.policy': 'unknown',
     'discovery.local_copy': true,
     'discovery.process_new': true,
@@ -139,7 +139,7 @@ var SourcesView = Backbone.View.extend({
       $('#setup-source-settings-local').fadeIn().removeClass('hide');
       $('#setup-source-settings-details').fadeIn().removeClass('hide');
     }
-    else if ($(e.target).val() == 'remote') {
+    else if ($(e.target).val() == 'server') {
       $('#setup-source-settings-local').hide();
       $('#setup-source-settings-server').fadeIn().removeClass('hide');
       $('#setup-source-settings-details').fadeIn().removeClass('hide');
@@ -162,17 +162,31 @@ var SourcesView = Backbone.View.extend({
 
     e.preventDefault();
 
+    if ($('#input-setup-source-type').val() == 'local') {
+      $('#input-setup-source-server-protocol').remove();
+      $('#input-setup-source-server-local_copy').remove();
+    }
+    else if ($('#input-setup-source-type').val() == 'server') {
+      $('#input-setup-source-local-protocol').remove();
+      $('#input-setup-source-local-local_copy').remove();
+    }
+
     // Update Model
     var source_data = $('#form-setup-source-settings').serializeObject();
-//    source_data = _.omit(source_data, 'source_type');
+    source_data = _.omit(source_data, 'source_type');
+    console.log(source_data);
+
     this.model.set(source_data);
 
     // Validate & Process
     if (!this.model.validate()) {
       Mailpile.API.settings_set_post(source_data, function(result) {
-
-        SourcesView.model.set({name: '', username: '', password: '', port: ''});
-        Backbone.history.navigate('#sources', true);
+        if (result.status == 'success') {
+          SourcesView.model.set({name: '', username: '', password: '', port: ''});
+          Backbone.history.navigate('#sources', true);
+        } else {
+          alert('Error saving Sources');          
+        }
       });
     }
   },
