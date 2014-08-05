@@ -1,6 +1,5 @@
 /* Setup - Profiles - Model */
 var ProfileModel = Backbone.Model.extend({
-  url: '/setup/profiles/',
   defaults: {
     id: 'new',
     action: 'Add',
@@ -82,8 +81,12 @@ var ProfilesView = Backbone.View.extend({
   },
   showEdit: function(id) {
     $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    var this_profile = ProfilesCollection.get(id).attributes;
-    this.$el.html(_.template($('#template-setup-profiles-add').html(), this_profile));
+    var profile = ProfilesCollection.get(id);
+    if (profile !== undefined) {
+      this.$el.html(_.template($('#template-setup-profiles-add').html(), profile.attributes));
+    } else {
+      Backbone.history.navigate('#profiles', true);
+    }
   },
   processSettings: function(e) {
 
