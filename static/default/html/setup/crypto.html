@@ -9,6 +9,7 @@
     </div>
   </div>
 
+  {# Authenticated Confirmation Views #}
   <div id="setup-passphrase-creating" class="{% if not result.create_key %}hide{% endif %} text-center add-top">
     <h3 class="text-center"><span class="icon-key"></span> Processing Encryption Key</h3>
     <p class="text-center">Key creation is in progress... this may take a while.</p>
@@ -24,23 +25,23 @@
     <p><a href="/setup/#profiles" class="button-primary">{{_("Next")}}</a></p>
   </div>
 
+  {# Input Form For Authenticating #}
   <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center add-top">
 
     {% if not result.creating_key and setup_crypto.result.secret_keys|length == 0 %}
       <h3 class="text-center">Create Your Passphrase</h3>
-
       <p class="text-center">
         Your passphrase should be something really hard to guess but memorable<br>
         This passphrase will be used to unlock your Mailpile and for your encryption keys
       </p>
-
-      <span id="error-setup-passphrase" class="validation-error validation-message"></span>
-      <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
-
-      <label>Confirm Your Passphrase</label>
-      <span id="error-setup-passphrase_confirm" class="validation-error validation-message"></span>
-      <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
-
+      <span id="validation-passphrase">
+        <span class="validation-message"></span>
+        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+      </span>
+      <span id="validation-passphrase_confirm">
+        <label class="validation-message">Confirm Your Passphrase</label>
+        <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" class="center" placeholder="top secret super duper passphrase">
+      </span>
       <input name="choose_key" value="!CREATE" type="hidden">
 
     {% elif setup_crypto.result.secret_keys|length >= 1 %}
@@ -70,23 +71,26 @@
       {% endfor %}
       </ul>
 
-      <label>Enter the passphrase for the <strong>encryption key</strong> you selected:</label>
-      <span id="error-setup-passphrase" class="validation-error validation-message text-center">
-      {% if error and error.invalid_passphrase %}
-        Passphrase you entered is incorrect
-      {% endif %}
+      <span id="validation-passphrase">
+        <label class="validation-message text-center {% if error and error.invalid_passphrase %}validation-error{% endif %}">
+          {% if error and error.invalid_passphrase %}
+          Passphrase you entered is incorrect
+          {% else %}
+          Enter the passphrase for the <strong>encryption key</strong> you selected:
+          {% endif %}
+        </label>
+        <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase">
       </span>
-      <input id="input-setup-passphrase" class="input-medium center" type="password" name="passphrase" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase">
-
       <div id="setup-passphrase-existing-confirm">
-        <span id="error-setup-passphrase_confirm"></span>
-        <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase">
+        <span id="validation-passphrase_confirm">
+          <label class="validation-message"></label>
+          <input id="input-setup-passphrase_confirm" class="input-medium center" type="password" name="passphrase_confirm" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase">
+        </span>
       </div>
       <input type="hidden" id="setup-passphrase-keys-exists" value="exists">
     {% endif %}
 
     <button id="btn-setup-passphrase" type="submit">{{_("Authenticate")}}</button>
-
   </form>
 </div>
 

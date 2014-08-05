@@ -5,14 +5,27 @@
     font-style: italic;
   }
 
-  .validation-success {
+  span.validation-success,
+  label.validation-success {
     color: @green;
   }
+  input.validation-success {
+     border: 1px solid @green !important;
+  }
 
-  .validation-warning {
+  span.validation-warning,
+  label.validation-warning {
     color: @orange;
   }
+  input.validation-warning {
+     border: 1px solid @orange !important;
+  }
 
-  .validation-error {
+  span.validation-error,
+  label.validation-error {
     color: @red;
   }
+  input.validation-error {
+    border: 1px solid @red !important;
+  }
+  

@@ -12,10 +12,15 @@
 /* Validation UI Feedback */
 _.extend(Backbone.Validation.callbacks, {
   valid: function(view, attr, selector) {
-    // do something
+    var msg = $('#validation-' + attr).find('.validation-message').data('message');
+    $('#validation-' + attr).find('.validation-message').html(msg).removeClass('validation-error');
+    $('#validation-' + attr).find('[' + selector + '=' + attr +']').removeClass('validation-error');
   },
   invalid: function(view, attr, error, selector) {
-    $('#error-setup-' + attr).html(error);
+    var message = $('#validation-' + attr).find('.validation-message').html();
+    $('#validation-' + attr).find('.validation-message').data('message', message)
+    $('#validation-' + attr).find('.validation-message').html(error).addClass('validation-error');
+    $('#validation-' + attr).find('[' + selector + '=' + attr +']').addClass('validation-error');
   }
 });
 

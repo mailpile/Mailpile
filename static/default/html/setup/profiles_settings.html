@@ -2,14 +2,23 @@
   <form id="form-setup-profile-settings" class="standard">
     <h2 class="text-center"><span class="icon-profiles"></span> <%= action %> Profile</h2>
     <fieldset>
-      <label>{{_("Name")}} <span id="error-setup-name" class="validation-error validation-message"></span></label>
-      <input type="text" name="name" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning" value="<%= name %>">
-      <label>{{_("Email")}} <span id="error-setup-email" class="validation-error validation-message"></span></label>
-      <input type="email" name="email" autocorrect="off" autocapitalize="off" placeholder="chelsea@manning.org" value="<%= email %>">
-      <label>{{_("Password")}} <span id="error-setup-pass" class="validation-error validation-message"></span></label>
-      <input type="password" name="pass" autocorrect="off" autocapitalize="off" placeholder="" value="<%= pass %>">
-      <label>{{_("Note")}} <span id="error-setup-note" class="validation-error validation-message"></span></label>
-      <input type="text" name="note" autocorrect="off" autocapitalize="off" placeholder="Personal, Work" value="<%= note %>">
+      <span id="validation-name">
+        <label class="validation-message">{{_("Name")}}</label>
+        <span ></span>      
+        <input type="text" name="name" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning" value="<%= name %>">
+      </span>
+      <span id="validation-email">
+        <label class="validation-message">{{_("Email")}}</label>
+        <input type="email" name="email" autocorrect="off" autocapitalize="off" placeholder="chelsea@manning.org" value="<%= email %>">
+      </span>
+      <span id="validation-pass">
+        <label class="validation-message">{{_("Password")}}</label>
+        <input type="password" name="pass" autocorrect="off" autocapitalize="off" placeholder="" value="<%= pass %>">
+      </span>
+      <span id="validation-note">
+        <label class="validation-message">{{_("Note")}}</label>
+        <input type="text" name="note" autocorrect="off" autocapitalize="off" placeholder="Personal, Work" value="<%= note %>">
+      </span>
     </fieldset>
     <a href="#profiles" class="button-secondary">{{_("Cancel")}}</a>
     <button id="btn-setup-profile-save" data-id="<%= id %>" type="submit" class="button-primary right">
