@@ -15,7 +15,7 @@ from mailpile.plugins.contacts import ListProfiles
 from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
-from mailpile.crypto.gpgi import GnuPGKeyGenerator
+from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
@@ -573,6 +573,49 @@ class SetupCrypto(TestableWebbable):
             self.session.config.prefs.gpg_recipient = gpg_keygen.generated_key
             self.make_master_key()
             self._background_save(config=True)
+            self.save_profiles_to_key()
+
+    def save_profiles_to_key(self, key_id=None, add_all=False, now=False,
+                                   profiles=None):
+        if key_id is None:
+            if (Setup.KEY_CREATING_THREAD and
+                    not Setup.KEY_CREATING_THREAD.failed):
+                key_id = Setup.KEY_CREATING_THREAD.generated_key
+                add_all = True
+
+        assert(add_all)  # FIXME: Make more granular!
+        if key_id is not None:
+            uids = []
+            data = ListProfiles(self.session).run().result
+            for profile in data['profiles']:
+                uids.append({
+                    'name': profile["fn"],
+                    'email': profile["email"][0]["email"],
+                    'comment': profile.get('note', '')
+                })
+            if not uids:
+                return
+
+            editor = GnuPGKeyEditor(key_id, set_uids=uids,
+                                    sps=self.session.config.gnupg_passphrase,
+                                    deletes=max(10, 2*len(uids)))
+
+            def start_editor(*unused_args):
+                with Setup.KEY_WORKER_LOCK:
+                    Setup.KEY_EDITING_THREAD = editor
+                    editor.start()
+
+            with Setup.KEY_WORKER_LOCK:
+                 if now:
+                     start_editor()
+                 elif Setup.KEY_EDITING_THREAD is not None:
+                     Setup.KEY_EDITING_THREAD.on_complete('edit keys',
+                                                          start_editor)
+                 elif Setup.KEY_CREATING_THREAD is not None:
+                     Setup.KEY_CREATING_THREAD.on_complete('edit keys',
+                                                           start_editor)
+                 else:
+                     start_editor()
 
     def setup_command(self, session):
         changed = authed = False
@@ -643,21 +686,24 @@ class SetupCrypto(TestableWebbable):
                     self.make_master_key()
                     changed = True
 
-                if ((not error_info) and
-                        (session.config.prefs.gpg_recipient == '!CREATE') and
-                        (Setup.KEY_CREATION_THREAD is None or
-                         Setup.KEY_CREATION_THREAD.failed)):
-                    gk = GnuPGKeyGenerator(
-                        sps=session.config.gnupg_passphrase,
-                        on_complete=lambda: self.gpg_key_ready(gk))
-                    Setup.KEY_CREATION_THREAD = gk
-                    Setup.KEY_CREATION_THREAD.start()
+                with Setup.KEY_WORKER_LOCK:
+                    if ((not error_info) and
+                            (session.config.prefs.gpg_recipient
+                             == '!CREATE') and
+                            (Setup.KEY_CREATING_THREAD is None or
+                             Setup.KEY_CREATING_THREAD.failed)):
+                        gk = GnuPGKeyGenerator(
+                            sps=session.config.gnupg_passphrase,
+                            on_complete=('notify',
+                                         lambda: self.gpg_key_ready(gk)))
+                        Setup.KEY_CREATING_THREAD = gk
+                        Setup.KEY_CREATING_THREAD.start()
 
         results.update({
-            'creating_key': (Setup.KEY_CREATION_THREAD is not None and
-                             Setup.KEY_CREATION_THREAD.running),
-            'creating_failed': (Setup.KEY_CREATION_THREAD is not None and
-                                Setup.KEY_CREATION_THREAD.failed),
+            'creating_key': (Setup.KEY_CREATING_THREAD is not None and
+                             Setup.KEY_CREATING_THREAD.running),
+            'creating_failed': (Setup.KEY_CREATING_THREAD is not None and
+                                Setup.KEY_CREATING_THREAD.failed),
             'chosen_key': session.config.prefs.gpg_recipient,
             'prefs': {
                 'index_encrypted': session.config.prefs.index_encrypted,
@@ -783,6 +829,7 @@ class SetupProfiles(SetupCrypto):
                     if not session.config.prefs.default_email:
                         session.config.prefs.default_email = email
                         changed = True
+                    self.save_profiles_to_key()
                 else:
                     return self._error(_('Failed to add profile'),
                                        info=rv.error_info,
@@ -804,6 +851,7 @@ class SetupProfiles(SetupCrypto):
 
         if changed:
             self._background_save(config=True)
+
         return self._success(_('Your profiles'), result)
 
 
@@ -868,8 +916,10 @@ class Setup(TestableWebbable):
     LOG_PROGRESS = True
     HTTP_CALLABLE = ('GET',)
 
-    # This is a global, may be modified...
-    KEY_CREATION_THREAD = None
+    # These are a global, may be modified...
+    KEY_WORKER_LOCK = CryptoRLock()
+    KEY_CREATING_THREAD = None
+    KEY_EDITING_THREAD = None
 
     @classmethod
     def Next(cls, config, final):

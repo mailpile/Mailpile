@@ -874,11 +874,11 @@ class GnuPGExpectScript(threading.Thread):
             self.state = self.STARTUP
             self.logfile = logfile
             self.variables = variables or self.VARIABLES
-            self.on_complete = [on_complete] if on_complete else []
+            self._on_complete = [on_complete] if on_complete else []
             self.gpg = None
             self.main_script = self.SCRIPT[:]
+            self.sps = sps
             if sps:
-                self.sps = sps
                 self.variables['passphrase'] = '!!<SPS'
 
     def __str__(self):
@@ -909,7 +909,7 @@ class GnuPGExpectScript(threading.Thread):
                     self.gpg.send('\n')
                     break
         else:
-            self.gpg.sendline(line)
+            self.gpg.sendline(line.encode('utf-8'))
 
     def run_script(self, script):
         for exp, rpl, tmo, state in script:
@@ -937,24 +937,26 @@ class GnuPGExpectScript(threading.Thread):
             self.run_script(self.main_script)
 
             self.set_state(self.FINISHED)
+            self.gpg.wait()
         except:
             import traceback
             traceback.print_exc()
         finally:
             with self._lock:
                 if self.gpg is not None:
-                    self.gpg.close(force=True)
+                    self.gpg.close(force=(self.state != self.FINISHED))
                     self.gpg = None
                 if self.state != self.FINISHED:
                     self.state = 'Failed: ' + self.state
-                for callback in self.on_complete:
+                for name, callback in self._on_complete:
                     callback()
-                self.on_complete = None
+                self._on_complete = None
 
-    def on_complete(self, callback):
+    def on_complete(self, name, callback):
         with self._lock:
-            if self.on_complete is not None:
-                self.on_complete.append(callback)
+            if self._on_complete is not None:
+                if name not in [o[0] for o in self._on_complete]:
+                    self._on_complete.append((name, callback))
             else:
                 callback()
 
@@ -1016,13 +1018,9 @@ class GnuPGKeyEditor(GnuPGExpectScript):
         ('Secret key is available.',                '',   -1, HAVE_SKEY),
     ]
     DELETE_SCRIPT = [
-        ('gpg>',                               'uid 1',   -1, DELETING_UID),
+        ('gpg>',                           'uid %(n)s',   -1, DELETING_UID),
         ('gpg>',                              'deluid',   -1, DELETING_UID),
-        ('Really remove this user ID? (y/N)',      'Y',   -1, None),
-    ]
-    DELETE_DONE_SCRIPT = [
-        ('gpg>',                                'deluid', -1, DELETING_UID),
-        ('You can\'t delete the last user ID!',       '', -1, DELETED_UIDS)
+        ('user ID',                                'Y',   -1, None),
     ]
     ADD_UID_SCRIPT = [
         ('gpg>',                                'adduid', -1, ADDING_UID),
@@ -1046,15 +1044,15 @@ class GnuPGKeyEditor(GnuPGExpectScript):
                       [HAVE_SKEY,
                        DELETING_UID, DELETED_UIDS, ADDING_UID, ADDED_UID])
 
-    def __init__(self, keyid, set_uids=None, deletes=5, logfile=None):
-        GnuPGExpectScript.__init__(self, logfile=logfile)
+    def __init__(self, keyid, set_uids=None, deletes=5, **kwargs):
+        GnuPGExpectScript.__init__(self, **kwargs)
         self.keyid = keyid
 
         # First, we try and delete all the existing UIDs.
         # We should be able to delete all but the last one..
-        for i in range(0, deletes):
-            self.main_script.extend(self.DELETE_SCRIPT)
-        self.main_script.extend(self.DELETE_DONE_SCRIPT)
+        for i in reversed(range(2, deletes+1)):
+            for want, snd, tmo, st in self.DELETE_SCRIPT:
+                self.main_script.append((want, snd % {'n': i}, tmo, st))
 
         # Next, add scripts to add our new UIDs.
         first = True
@@ -1065,17 +1063,23 @@ class GnuPGKeyEditor(GnuPGExpectScript):
             self.main_script.extend(self.ADD_UID_SCRIPT)
             if first:
                 # We added one, so we can delete the last of the old ones
-                self.main_script.extend(self.DELETE_SCRIPT)
+                for want, snd, tmo, st in self.DELETE_SCRIPT:
+                    self.main_script.append((want, snd % {'n': 1}, tmo, st))
                 first = False
 
         self.main_script.extend(self.SAVE_SCRIPT)
-        print '\n'.join([str(s) for s in self.main_script])
 
     def in_state(self, state):
         if state == self.ADDING_UID:
             self.variables = {}
             self.variables.update(self.VARIABLES)
             self.variables.update(self.uids.pop(0))
+            if not self.variables.get('name'):
+                self.variables['name'] = 'An Ony Mouse'
+            if len(self.variables['name']) < 5:
+                self.variables['name'] += ' ....'
+            if self.sps:
+                self.variables['passphrase'] = '!!<SPS'
 
     def gpg_args(self):
         return ['--edit-key', self.keyid]
