@@ -100,10 +100,14 @@ var ProfilesView = Backbone.View.extend({
       // Validate & Process
       if (!this.model.validate()) {
         Mailpile.API.setup_profiles_post(profile_data, function(result) {
-          
-          // Reset Model & Navigate
-          ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
-          Backbone.history.navigate('#profiles', true);
+          if (result.status == 'success') {
+            // Reset Model & Navigate
+            ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
+            Backbone.history.navigate('#profiles', true);
+          }
+          else {
+            alert('Error saving Profile');
+          }
         });
       }
     } else {
