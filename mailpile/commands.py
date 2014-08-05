@@ -268,14 +268,14 @@ class Command:
                          everything=False, config=False,
                          index=False, index_full=False,
                          wait=False, wait_callback=None):
-        session, cfg, idx = self.session, self.session.config, self._idx()
+        session, cfg = self.session, self.session.config
         aut = cfg.save_worker.add_unique_task
         if everything or config:
             aut(session, 'Save config', cfg.save)
-        if idx:
+        if cfg.index:
             cfg.flush_mbox_cache(session, clear=False, wait=wait)
             if index_full:
-                aut(session, 'Save index', lambda: idx.save(session))
+                aut(session, 'Save index', lambda: self._idx().save(session))
             elif everything or index:
                 aut(session, 'Save index changes',
                     lambda: self._idx().save_changes(session))

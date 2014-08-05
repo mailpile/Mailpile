@@ -5,6 +5,7 @@ import threading
 import time
 
 import mailpile.auth
+import mailpile.util
 from mailpile.commands import Quit
 from mailpile.i18n import gettext as _
 from mailpile.safe_popen import Popen, PIPE
@@ -102,6 +103,10 @@ def _real_startup(config):
         # (via the except below).
 
         while config.index is None or not config.tags:
+            if mailpile.util.QUITTING:
+                return
+            if gui.poll() is not None:
+                return
             time.sleep(1)
         indicator('set_status_normal')
 
@@ -121,5 +126,6 @@ def _real_startup(config):
                     label=_('%d messages') % len(config.index.INDEX))
                 time.sleep(5)
 
-    except (IOError, OSError):
-        Quit(Session(config)).run()
+    finally:
+        if not mailpile.util.QUITTING:
+            Quit(Session(config)).run()
