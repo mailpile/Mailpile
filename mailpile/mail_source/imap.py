@@ -411,6 +411,7 @@ class ImapMailSource(BaseMailSource):
         self.watching = -1
         self.capabilities = set()
         self.conn = None
+        self.conn_id = ''
 
     @classmethod
     def Tester(cls, conn_cls, *args, **kwargs):
@@ -430,12 +431,18 @@ class ImapMailSource(BaseMailSource):
             pass
         return BaseMailSource._sleep(self, seconds)
 
+    def _conn_id(self):
+        return md5_hex('\n'.join([str(self.my_config[k]) for k in
+                                  ('host', 'port', 'password', 'username')]))
+
     def open(self, conn_cls=None, throw=False):
         conn = self.conn
+        conn_id = self._conn_id()
         if conn:
             try:
                 with conn as c:
-                    if self.timed(c.noop)[0] == 'OK':
+                    if (conn_id == self.conn_id and
+                            self.timed(c.noop)[0] == 'OK'):
                         return conn
             except self.CONN_ERRORS + (AttributeError, ):
                 pass
@@ -507,6 +514,7 @@ class ImapMailSource(BaseMailSource):
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug('CONNECTED %s' % self.conn)
 
+            self.conn_id = conn_id
             return self.conn
 
         except TimedOut:
