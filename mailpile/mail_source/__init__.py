@@ -437,7 +437,7 @@ class BaseMailSource(threading.Thread):
         _original_session = self.session
         self._sleep(random.randint(0, self.my_config.interval))
         while self._sleep(self._jitter(self.my_config.interval)):
-            self.name = my_config.name  # Update, in case the config changes
+            self.name = self.my_config.name  # In case the config changes
             if not self.session.config.index:
                 continue
             waiters, self._rescan_waiters = self._rescan_waiters, []
