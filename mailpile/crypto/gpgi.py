@@ -937,7 +937,10 @@ class GnuPGExpectScript(threading.Thread):
             self.run_script(self.main_script)
 
             self.set_state(self.FINISHED)
-            self.gpg.wait()
+            try:
+                self.gpg.wait()
+            except:
+                pass
         except:
             import traceback
             traceback.print_exc()
