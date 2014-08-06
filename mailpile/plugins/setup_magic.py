@@ -881,33 +881,6 @@ class SetupConfigureKey(SetupProfiles):
         return self._success(_('Configuring a key'), self._result())
 
 
-class SetupRoutes(TestableWebbable):
-    SYNOPSIS = (None, None, 'setup/routes', None)
-
-    HTTP_AUTH_REQUIRED = True
-    HTTP_CALLABLE = ('GET', 'POST')
-    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
-    })
-    TEST_DATA = {}
-
-    def setup_command(self, session):
-        results = {}
-        return self._success(_(''), results)
-
-
-class SetupSources(TestableWebbable):
-    SYNOPSIS = (None, None, 'setup/sources', None)
-
-    HTTP_CALLABLE = ('GET', 'POST')
-    HTTP_QUERY_VARS = dict_merge(TestableWebbable.HTTP_QUERY_VARS, {
-    })
-    TEST_DATA = {}
-
-    def setup_command(self, session):
-        results = {}
-        return self._success(_(''), results)
-
-
 class Setup(TestableWebbable):
     """Enter setup flow"""
     SYNOPSIS = (None, 'setup', 'setup', '[do_gpg_stuff]')
@@ -972,6 +945,4 @@ _plugins.register_commands(SetupMagic,
                            SetupCrypto,
                            SetupProfiles,
                            SetupConfigureKey,
-                           SetupRoutes,
-                           SetupSources,
                            Setup)
