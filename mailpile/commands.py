@@ -1543,15 +1543,18 @@ class ConfigSet(Command):
             updated = {}
             for path, value in ops:
                 value = value.strip()
-                if value.startswith('{') or value.startswith('['):
+                if value[:1] in ('{', '[') and value[-1:] in ( ']', '}'):
                     value = json.loads(value)
                 try:
-                    cfg, var = config.walk(path.strip(), parent=1)
-                    cfg[var] = value
-                    updated[path] = value
-                except IndexError:
-                    cfg, v1, v2 = config.walk(path.strip(), parent=2)
-                    cfg[v1] = {v2: value}
+                    try:
+                        cfg, var = config.walk(path.strip(), parent=1)
+                        cfg[var] = value
+                        updated[path] = value
+                    except IndexError:
+                        cfg, v1, v2 = config.walk(path.strip(), parent=2)
+                        cfg[v1] = {v2: value}
+                except TypeError:
+                    raise ValueError('No such variable: %s') % path
 
         if config.loaded_config:
             self._background_save(config=True)
