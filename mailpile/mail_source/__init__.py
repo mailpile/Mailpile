@@ -473,7 +473,7 @@ class BaseMailSource(threading.Thread):
             # take in stride for now.
             pass
         finally:
-            del progress['running']
+            progress['running'] = False
 
     def rescan_mailbox(self, mbx_key, mbx_cfg, path, stop_after=None):
         session, config = self.session, self.session.config

@@ -515,7 +515,7 @@ class ImapMailSource(BaseMailSource):
                     self.conn = SharedImapConn(self.session, conn)
 
                 # Prepare the data section of our event, for keeping state.
-                for d in ('uidvalidity', 'exists'):
+                for d in ('mailbox_state',):
                     if d not in event.data:
                         event.data[d] = {}
 
@@ -571,12 +571,12 @@ class ImapMailSource(BaseMailSource):
         with src.open_imap() as imap:
             uv = state['uv'] = imap.mailbox_info('UIDVALIDITY', ['0'])[0]
             ex = state['ex'] = imap.mailbox_info('EXISTS', ['0'])[0]
-            return (uv != self.event.data['uidvalidity'].get(mbx._key) or
-                    ex != self.event.data['exists'].get(mbx._key))
+            uvex = '%s/%s' % (uv, ex)
+            return (uvex != self.event.data['mailbox_state'].get(mbx._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
-        self.event.data['uidvalidity'][mbx._key] = state['uv']
-        self.event.data['exists'][mbx._key] = state['ex']
+        uvex = '%s/%s' % (state['uv'], state['ex'])
+        self.event.data['mailbox_state'][mbx._key] = uvex
 
     def _mailbox_name(self, path):
         # len('src:/') = 5

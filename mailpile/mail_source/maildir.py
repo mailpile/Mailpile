@@ -27,7 +27,7 @@ class MaildirMailSource(BaseMailSource):
             else:
                 self.watching = len(mailboxes)
 
-            for d in ('mtimes_cur', 'mtimes_new', 'mtimes_tmp'):
+            for d in ('mailbox_state', ):
                 if d not in self.event.data:
                     self.event.data[d] = {}
 
@@ -37,18 +37,15 @@ class MaildirMailSource(BaseMailSource):
     def _has_mailbox_changed(self, mbx, state):
         for sub in ('cur', 'new', 'tmp'):
             try:
-                mt = os.path.getmtime(os.path.join(self._path(mbx), sub))
+                state[sub] = os.path.getmtime(os.path.join(self._path(mbx), sub))
             except (OSError, IOError):
-                mt = -1
-            state[sub] = long(mt)
-        for sub in ('cur', 'new', 'tmp'):
-            if state[sub] != self.event.data['mtimes_%s' % sub].get(mbx._key):
-                return True
-        return False
+                state[sub] = None
+        cnt = '/'.join([str(state[i]) for i in ('cur', 'new', 'tmp')])
+        return (self.event.data['mailbox_state'].get(mbx._key) != cnt)
 
     def _mark_mailbox_rescanned(self, mbx, state):
-        for sub in ('cur', 'new', 'tmp'):
-            self.event.data['mtimes_%s' % sub][mbx._key] = state[sub]
+        cnt = '/'.join([str(state[i]) for i in ('cur', 'new', 'tmp')])
+        self.event.data['mailbox_state'][mbx._key] = cnt
 
     def is_mailbox(self, fn):
         if not os.path.isdir(fn):

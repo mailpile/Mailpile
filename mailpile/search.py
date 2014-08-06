@@ -558,7 +558,7 @@ class MailIndex:
             if event:
                 event.data['rescans'].append(
                     (mailbox_idx, code, message, kwargs))
-                del progress['running']
+                progress['running'] = False
                 if 'complete' in kwargs:
                     progress['complete'] = kwargs['complete']
             session.ui.mark(message)

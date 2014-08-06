@@ -28,7 +28,7 @@ class MboxMailSource(BaseMailSource):
                 self.watching = len(mailboxes)
 
             # Prepare the data section of our event, for keeping state.
-            for d in ('mtimes', 'sizes'):
+            for d in ('mailbox_state', ):
                 if d not in self.event.data:
                     self.event.data[d] = {}
 
@@ -41,12 +41,12 @@ class MboxMailSource(BaseMailSource):
             sz = state['sz'] = long(os.path.getsize(self._path(mbx)))
         except (OSError, IOError):
             mt = sz = state['mt'] = state['sz'] = -1
-        return (mt != self.event.data['mtimes'].get(mbx._key) or
-                sz != self.event.data['sizes'].get(mbx._key))
+        mtsz = '%s/%s' % (mt, sz)
+        return (mtsz != self.event.data['mailbox_state'])
 
     def _mark_mailbox_rescanned(self, mbx, state):
-        self.event.data['mtimes'][mbx._key] = state['mt']
-        self.event.data['sizes'][mbx._key] = state['sz']
+        mtsz = '%s/%s' % (state['mt'], state['sz'])
+        self.event.data['mailbox_state'] = mtsz
 
     def is_mailbox(self, fn):
         try:
