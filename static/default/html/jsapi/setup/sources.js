@@ -113,7 +113,7 @@ var SourcesView = Backbone.View.extend({
       }
 
       _.each(result.result.sources, function(val, key) {
-        var source = new SourceModel(_.extend({id: key, action: 'Edit'}, val));
+        var source = new SourceModel(_.extend({id: 'sources.'+key, action: 'Edit'}, val));
         SourcesCollection.add(source);
         $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
       });
@@ -133,7 +133,8 @@ var SourcesView = Backbone.View.extend({
   },
   showAdd: function() {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    this.model.set({_section: 'sources.' + Math.random().toString(36).substring(2) })
+    var source_id = 'sources.' + Math.random().toString(36).substring(2);
+    this.model.set({_section: source_id, id: source_id })
     this.$el.html(_.template($('#template-setup-sources-settings').html(), this.model.attributes));
   },
   showEdit: function(id) {
@@ -151,9 +152,7 @@ var SourcesView = Backbone.View.extend({
     if (source !== undefined) {
 
       Mailpile.API.tags_get({}, function(result) {
-
         console.log(result);
-
       });
 
       this.$el.html(_.template($('#template-setup-sources-configure').html(), source.attributes));
