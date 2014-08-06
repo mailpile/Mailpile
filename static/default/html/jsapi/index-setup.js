@@ -1,4 +1,5 @@
 /* JS App Files */
+{% include("jsapi/setup/magic.js") %}
 {% include("jsapi/setup/passphrase.js") %}
 {% include("jsapi/setup/profiles.js") %}
 {% include("jsapi/setup/sources.js") %}
