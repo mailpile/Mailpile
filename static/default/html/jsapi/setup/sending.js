@@ -1,15 +1,20 @@
 /* Setup - Routes - Model */
 var SendingModel = Backbone.Model.extend({
-  url: '/',
+  url: '/api/0/settings/',
+  defaults: {
+    _section: '', 
+    name: '',
+    username: '',
+    password: '',
+    host: '',
+    port: 587,
+    protocol: 'smtp'
+  },
   validation: {
     name: {
       minLength: 2,
       required: true,
       msg: "{{_('Source Name')}}"      
-    },
-    protocol: {
-      oneOf: ["smtp", "smtptls", "smtpssl", "local"],
-      msg: "{{_('Specify a messaging protocol')}}"
     },
     username: {
       msg: "{{_('User name')}}"
@@ -40,6 +45,7 @@ var SendingCollection = Backbone.Collection.extend({
 /* Setup - Routes - View */
 var SendingView = Backbone.View.extend({
   initialize: function() {
+    Backbone.Validation.bind(this);
 		this.render();
   },
   render: function(){
@@ -62,18 +68,16 @@ var SendingView = Backbone.View.extend({
       }
 
       _.each(result.result.routes, function(val, key) {
-        console.log(key);
-        console.log(val);
-//      var source = new SourceModel(_.extend({id: key, action: 'Edit'}, val));
-//      SourcesCollection.add(source);
-//      $('#setup-sources-list-items').append(_.template($('#template-setup-profiles-item').html(), source.attributes));
+        var sending = new SendingModel(_.extend({id: key, action: 'Edit'}, val));
+        SourcesCollection.add(sending);
+        $('#setup-sending-list-items').append(_.template($('#template-setup-sending-item').html(), sending.attributes));
       });
-
     });
-
   },
   showAdd: function() {
-    this.$el.html(_.template($("#template-setup-sending-settings").html(), { action: 'Add' }));
+    $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
+    this.model.set({_section: 'routes.' + Math.random().toString(36).substring(2) })
+    this.$el.html(_.template($("#template-setup-sending-settings").html(), this.model.attributes));
   },
   showEdit: function(id) {
 
@@ -91,17 +95,13 @@ var SendingView = Backbone.View.extend({
 
     var sending_data = $('#form-setup-sending-settings').serializeObject();
     //source_data = _.omit(source_data, 'source_type');
-    var sending_id = Math.random().toString(36).substring(2);
-
     this.model.set(sending_data);
 
     // Validate & Process
     if (!this.model.validate()) {
-/*
-      Mailpile.API.setup_profiles_post(profile_data, function(result) {
-        Backbone.history.navigate('#profiles', true);
+      Mailpile.API.setup_profiles_post(sending_data, function(result) {
+        Backbone.history.navigate('#sending', true);
       });
-*/
     }
 
   }

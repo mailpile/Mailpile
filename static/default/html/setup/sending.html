@@ -1,17 +1,8 @@
-<div class="setup-box setup-box-medium animated bounceInRight">
+<div id="setup-sending-list" class="setup-box setup-box-medium animated bounceInRight">
   <div class="clearfix">
     <h2 class="text-center left"><span class="icon-routes"></span> Routes</h2>
     <a href="#sending/add" class="button-primary right"><span class="icon-plus"></span> {{_("Add Route")}}</a>
   </div>
   <ul id="setup-sending-list-items" class="setup-list-items">
-    {% for route_id, route in mailpile("settings", "routes").result.routes.iteritems() %}
-    <li class="setup-item">
-      <span class="name">{{route.name}}</span>
-      <ul class="horizontal right">
-        <li><a href="#" onclick="$('.route').hide();$('#route_{{id}}').show();"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
-        <li><a href="#"><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
-      </ul>
-    </li>
-    {% endfor %}
   </ul>
 </div>

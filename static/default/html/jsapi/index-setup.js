@@ -31,11 +31,12 @@ var SetupApp = (function ($, Backbone, global) {
 
       global.ProfilesCollection = new ProfilesCollection();
       global.SourcesCollection = new SourcesCollection();
+      global.SendingCollection = new SendingCollection();
 
       // Views
       global.ProfilesView   = new ProfilesView({ model: new ProfileModel(), el: $('#setup') });
       global.SourcesView    = new SourcesView({ model: new SourceModel(), el: $('#setup') });
-      global.SendingView    = new SendingView({ el: $('#setup') });
+      global.SendingView    = new SendingView({ model: new SendingModel(), el: $('#setup') });
       global.AdvancedView   = new AdvancedView({ el: $('#setup') });
       global.SecurityView   = new SecurityView({ el: $('#setup') });
       global.BackupsView    = new BackupsView({ el: $('#setup') });

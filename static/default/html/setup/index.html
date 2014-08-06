@@ -39,9 +39,14 @@
       <span class="name"><%= name %></span>
       <span class="username"><%= username %></span>
       <ul class="horizontal right">
+        <% if (_.isEmpty(mailbox)) { %>
+        <li><em>Analyzing...</em></li>
+        <li><a href="#sources/<%= id %>"><span class="icon-settings"></span> Edit</a></li>
+        <% } else { %>
         <li><a href="#sources/configure/<%= id %>"><span class="icon-tag"></span> Configure</a></li>
         <li><a href="#sources/<%= id %>"><span class="icon-settings"></span> Edit</a></li>
         <li><a href="#" data-id="<%= id %>" class="setup-source-remove"><span class="icon-circle-x"></span> Remove</a></li>
+        <% } %>
       </ul>
     </div>
   </li>
@@ -57,6 +62,16 @@
 
 <script id="template-setup-sources-settings" type="text/template">
 {% include("setup/sources_settings.html") %}
+</script>
+
+<script id="template-setup-sending-item" type="text/template">
+ <li class="setup-item">
+    <span class="name"><%= name %></span>
+    <ul class="horizontal right">
+      <li><a href="#sending/<%= id %>"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
+      <li><a href="#"><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
+    </ul>
+  </li>
 </script>
 
 <script id="template-setup-sending" type="text/template">
