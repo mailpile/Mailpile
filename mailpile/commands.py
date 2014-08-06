@@ -1113,20 +1113,29 @@ class Rescan(Command):
                     if fpath == '/dev/null':
                         continue
                     try:
-                        session.ui.mark(_('Waiting for lock'))
-                        with mailpile.mail_source.GLOBAL_RESCAN_LOCK:
+                        lock = mailpile.mail_source.GLOBAL_RESCAN_LOCK
+                        locked = lock.acquire(False)
+                        if locked:
                             session.ui.mark(_('Rescanning: %s %s')
                                             % (fid, fpath))
                             if which == 'editable':
                                 count = idx.scan_mailbox(session, fid, fpath,
                                                          config.open_mailbox,
                                                          process_new=False,
-                                                         editable=True)
+                                                         editable=True,
+                                                         event=self.event)
                             else:
                                 count = idx.scan_mailbox(session, fid, fpath,
-                                                         config.open_mailbox)
+                                                         config.open_mailbox,
+                                                         event=self.event)
+                        else:
+                            session.ui.mark(_('Rescan already in progress'))
+                            count = 0
                     except ValueError:
                         count = -1
+                    finally:
+                        if locked:
+                            lock.release()
                     if count < 0:
                         session.ui.warning(_('Failed to rescan: %s') % fpath)
                     elif count > 0:
