@@ -535,22 +535,48 @@ class MailIndex:
 
     def scan_mailbox(self, session, mailbox_idx, mailbox_fn, mailbox_opener,
                      process_new=None, apply_tags=None, stop_after=None,
-                     editable=False):
+                     editable=False, event=None):
+        if event and 'rescans' not in event.data:
+            event.data['rescans'] = []
+            event.data['rescan'] = progress = {}
+        else:
+            progress = {}
+
         mailbox_idx = FormatMbxId(mailbox_idx)
+        progress.update({
+            'running': True,
+            'complete': False,
+            'mailbox_id': mailbox_idx,
+            'errors': [],
+            'added': 0,
+            'updated': 0,
+            'total': 0,
+            'batch_size': 0
+        })
+
+        def finito(code, message, **kwargs):
+            if event:
+                event.data['rescans'].append(
+                    (mailbox_idx, code, message, kwargs))
+                del progress['running']
+                if 'complete' in kwargs:
+                    progress['complete'] = kwargs['complete']
+            session.ui.mark(message)
+            return code
+
         try:
             mbox = mailbox_opener(session, mailbox_idx)
             if mbox.editable != editable:
-                session.ui.mark(_('%s: Skipped: %s'
-                                  ) % (mailbox_idx, mailbox_fn))
-                return 0
+                return finito(0, _('%s: Skipped: %s'
+                                   ) % (mailbox_idx, mailbox_fn))
             else:
                 session.ui.mark(_('%s: Checking: %s'
                                   ) % (mailbox_idx, mailbox_fn))
                 mbox.update_toc()
         except (IOError, OSError, ValueError, NoSuchMailboxError), e:
-            session.ui.mark(_('%s: Error opening: %s (%s)'
-                              ) % (mailbox_idx, mailbox_fn, e))
-            return -1
+            return finito(-1, _('%s: Error opening: %s (%s)'
+                                ) % (mailbox_idx, mailbox_fn, e),
+                          error=True)
 
         if len(self.PTRS.keys()) == 0:
             self.update_ptrs_and_msgids(session)
@@ -559,7 +585,9 @@ class MailIndex:
         messages = sorted(mbox.keys())
         messages_md5 = md5_hex(str(messages))
         if messages_md5 == self._scanned.get(mailbox_idx, ''):
-            return 0
+            return finito(0, _('%s: No new mail in: %s'
+                               ) % (mailbox_idx, mailbox_fn),
+                          complete=True)
 
         parse_fmt1 = _('%s: Reading your mail: %d%% (%d/%d message)')
         parse_fmtn = _('%s: Reading your mail: %d%% (%d/%d messages)')
@@ -568,15 +596,21 @@ class MailIndex:
             return ((n == 1) and parse_fmt1 or parse_fmtn
                     ) % (mailbox_idx, 100 * ui / n, ui, n)
 
+        progress.update({
+            'total': len(messages),
+            'batch_size': stop_after or len(messages)
+        })
+
         added = updated = 0
         last_date = long(time.time())
+        not_done_yet = 'NOT DONE YET'
         for ui in range(0, len(messages)):
             if mailpile.util.QUITTING or self.interrupt:
-                session.ui.debug(_('Rescan interrupted: %s') % self.interrupt)
                 self.interrupt = None
-                return -1
+                return finito(-1, _('Rescan interrupted: %s'
+                                    ) % self.interrupt)
             if stop_after and added >= stop_after:
-                messages_md5 = 'NOT DONE YET'
+                messages_md5 = not_done_yet
                 break
 
             i = messages[ui]
@@ -601,6 +635,7 @@ class MailIndex:
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 if session.config.sys.debug:
                     traceback.print_exc()
+                progress['errors'].append(i)
                 session.ui.warning(('Reading message %s/%s FAILED, skipping'
                                     ) % (mailbox_idx, i))
                 continue
@@ -624,19 +659,31 @@ class MailIndex:
                 GlobalPostingList.Optimize(session, self,
                                            lazy=True, quick=True)
 
+            progress.update({
+                'added': added,
+                'updated': updated,
+            })
+
         with self._lock:
             for msg_ptr in self.PTRS.keys():
                 if (msg_ptr[:MBX_ID_LEN] == mailbox_idx and
                         msg_ptr not in existing_ptrs):
                     self._remove_location(session, msg_ptr)
                     updated += 1
+        progress.update({
+            'added': added,
+            'updated': updated,
+        })
         play_nice_with_threads()
 
         self._scanned[mailbox_idx] = messages_md5
         short_fn = '/'.join(mailbox_fn.split('/')[-2:])
-        session.ui.mark(_('%s: Indexed mailbox: ...%s (%d new, %d updated)'
-                          ) % (mailbox_idx, short_fn, added, updated))
-        return added
+        return finito(added,
+                      _('%s: Indexed mailbox: ...%s (%d new, %d updated)'
+                        ) % (mailbox_idx, short_fn, added, updated),
+                      new=added,
+                      updated=updated,
+                      complete=(messages_md5 != not_done_yet))
 
     def edit_msg_info(self, msg_info,
                       msg_mid=None, raw_msg_id=None, msg_id=None, msg_ts=None,
