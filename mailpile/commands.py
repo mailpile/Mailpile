@@ -1526,6 +1526,8 @@ class ConfigSet(Command):
                     ops.append((svar[:-2], json.dumps(self.data[var])))
                 else:
                     ops.append((svar, self.data[var][0]))
+            else:
+                raise ValueError(_('Invalid section or variable: %s') % var)
 
         if self.args:
             arg = ' '.join(self.args)
