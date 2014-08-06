@@ -93,6 +93,10 @@ class BaseMailSource(threading.Thread):
         """Open mailboxes or connect to the remote mail source."""
         raise NotImplemented('Please override open in %s' % self)
 
+    def close(self):
+        """Close mailboxes or disconnect from the remote mail source."""
+        raise NotImplemented('Please override open in %s' % self)
+
     def _has_mailbox_changed(self, mbx, state):
         """For the default sync_mail routine, report if mailbox changed."""
         raise NotImplemented('Please override _has_mailbox_changed in %s'
@@ -524,6 +528,8 @@ class BaseMailSource(threading.Thread):
                 next_save_time = self._last_saved + self.SAVE_STATE_INTERVAL
                 if self.alive and time.time() >= next_save_time:
                     self._save_state()
+                    if not self.my_config.keepalive:
+                        self.close()
             except:
                 self.event.data['traceback'] = traceback.format_exc()
                 self.session.ui.debug(self.event.data['traceback'])

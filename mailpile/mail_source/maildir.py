@@ -16,6 +16,9 @@ class MaildirMailSource(BaseMailSource):
         BaseMailSource.__init__(self, *args, **kwargs)
         self.watching = -1
 
+    def close(self):
+        pass
+
     def open(self):
         with self._lock:
             mailboxes = self.my_config.mailbox.values()

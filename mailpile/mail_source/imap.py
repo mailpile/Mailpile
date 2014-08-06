@@ -435,6 +435,11 @@ class ImapMailSource(BaseMailSource):
         return md5_hex('\n'.join([str(self.my_config[k]) for k in
                                   ('host', 'port', 'password', 'username')]))
 
+    def close(self):
+        if self.conn:
+            self.conn.quit()
+            self.conn = None
+
     def open(self, conn_cls=None, throw=False):
         conn = self.conn
         conn_id = self._conn_id()
