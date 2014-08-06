@@ -123,6 +123,8 @@ CONFIG_RULES = {
                             ['unknown', 'ignore', 'watch',
                              'read', 'move', 'sync'], 'unknown'),
             'local_copy':  (_('Copy mail to a local mailbox?'), bool, False),
+            'parent_tag':  (_('Parent tag for mailbox tags'), str, '!CREATE'),
+            'guess_tags':  (_('Guess which local tags match'), bool, True),
             'create_tag':  (_('Create a tag for each mailbox?'), bool, True),
             'process_new': (_('Is a potential source of new mail'), bool, True),
             'apply_tags':  (_('Tags applied to messages'), str, []),

@@ -122,7 +122,7 @@ class BaseMailSource(threading.Thread):
     def sync_mail(self):
         """Iterates through all the mailboxes and scans if necessary."""
         def unsorted(l):
-            l.sort(key=lambda k: random.randint(0, 500))
+            random.shuffle(l)
             return l
         config = self.session.config
         self._last_rescan_count = rescanned = errors = 0
@@ -266,11 +266,25 @@ class BaseMailSource(threading.Thread):
             mbx_cfg = self.my_config.mailbox[mailbox_idx]
             mbx_cfg.apply_tags.extend(disco_cfg.apply_tags)
         mbx_cfg.name = self._mailbox_name(self._path(mbx_cfg))
+        if disco_cfg.guess_tags:
+            self._guess_tags(mbx_cfg)
         self._create_primary_tag(mbx_cfg, save=False)
         self._create_local_mailbox(mbx_cfg, save=False)
         if save:
             self._save_config()
         return mbx_cfg
+
+    def _guess_tags(self, mbx_cfg):
+        if not mbx_cfg.name:
+            return
+        name = mbx_cfg.name.lower()
+        tags = set(mbx_cfg.apply_tags)
+        for tagtype in ('inbox', 'drafts', 'sent', 'spam'):
+            for tag in self.session.config.get_tags(type=tagtype):
+                if (tag.name.lower() in name or
+                        _(tag.name).lower() in name):
+                    tags.add(tag._key)
+        mbx_cfg.apply_tags = sorted(list(tags))
 
     def _mailbox_name(self, path):
         return path.split('/')[-1]
@@ -279,7 +293,7 @@ class BaseMailSource(threading.Thread):
         config = self.session.config
         disco_cfg = self.my_config.discovery
 
-        if mbx_cfg.local and mbx_cfg.local != 'CREATE':
+        if mbx_cfg.local and mbx_cfg.local != '!CREATE':
             if not os.path.exists(mbx_cfg.local):
                 path, wervd = config.create_local_mailstore(self.session,
                                                             name=mbx_cfg.local)
@@ -287,7 +301,7 @@ class BaseMailSource(threading.Thread):
                 if save:
                     self._save_config()
 
-        elif mbx_cfg.local == 'CREATE' or disco_cfg.local_copy:
+        elif mbx_cfg.local == '!CREATE' or disco_cfg.local_copy:
             path, wervd = config.create_local_mailstore(self.session)
             mbx_cfg.local = path
             if save:
@@ -295,18 +309,50 @@ class BaseMailSource(threading.Thread):
 
         return mbx_cfg
 
+    def _create_parent_tag(self, save=True):
+        disco_cfg = self.my_config.discovery
+        if disco_cfg.parent_tag:
+            if disco_cfg.parent_tag == '!CREATE':
+                name = (self.my_config.name or
+                        (self.my_config.username or '').split('@')[-1] or
+                        (disco_cfg.paths and
+                         os.path.basename(disco_cfg.paths[0])) or
+                        self.my_config._key)
+                if len(name) < 4:
+                    name = _('Mail: %s') % name
+                disco_cfg.parent_tag = name
+            disco_cfg.parent_tag = self._create_tag(disco_cfg.parent_tag,
+                                                    use_existing=False,
+                                                    unique=False)
+            return disco_cfg.parent_tag
+        else:
+            return None
+
     def _create_primary_tag(self, mbx_cfg, save=True):
         config = self.session.config
         if mbx_cfg.primary_tag and (mbx_cfg.primary_tag in config.tags):
             return
-        disco_cfg = self.my_config.discovery  # Stayin' alive! Stayin' alive!
-        if disco_cfg.create_tag and mbx_cfg.policy != 'unknown':
-            tag_name_or_id = (mbx_cfg.primary_tag or
-                              self._create_tag_name(self._path(mbx_cfg)))
-            mbx_cfg.primary_tag = tag_name_or_id
+
+        # Stayin' alive! Stayin' alive!
+        disco_cfg = self.my_config.discovery
+        if not disco_cfg.create_tag:
+            return
+
+        # We configure the primary_tag with a name, if it doesn't have
+        # one already.
+        if not mbx_cfg.primary_tag:
+            mbx_cfg.primary_tag = self._create_tag_name(self._path(mbx_cfg))
+
+        # If we have a policy for this mailbox, we really go and create
+        # tags. The gap here allows the user to edit the primary_tag
+        # proposal before changing the policy from 'unknown'.
+        if mbx_cfg.policy != 'unknown':
+            parent = self._create_parent_tag(save=save)
             try:
-                mbx_cfg.primary_tag = self._create_tag(tag_name_or_id,
-                                                       unique=True)
+                mbx_cfg.primary_tag = self._create_tag(mbx_cfg.primary_tag,
+                                                       use_existing=False,
+                                                       unique=False,
+                                                       parent=parent)
                 if save:
                     self._save_config()
             except (ValueError, IndexError):
@@ -320,9 +366,9 @@ class BaseMailSource(threading.Thread):
         parts = ('/' in path) and path.split('/') or path.split('\\')
         parts = [p for p in parts if not re.match(self.BORING_FOLDER_RE, p)]
         tagname = parts.pop(-1).split('.')[0]
-        if self.session.config.get_tags(tagname):
-            tagname = '%s/%s' % (parts[-1], tagname)
-        return tagname.replace('-', ' ').replace('_', ' ')
+        if self.my_config.name:
+            tagname = '%s/%s' % (self.my_config.name, tagname)
+        return tagname.replace('_', ' ')
 
     def _unique_tag_name(self, tagname):  # -> unused tag name
         """This makes sure a tagname really is unused"""
@@ -336,11 +382,17 @@ class BaseMailSource(threading.Thread):
         """Convert a path to a unique tag name."""
         return self._unique_tag_name(self._path_to_tagname(path))
 
-    def _create_tag(self, tag_name_or_id, unique=False):  # -> tag ID
+    def _create_tag(self, tag_name_or_id,
+                    use_existing=True,
+                    unique=False, parent=None):  # -> tag ID
+        if tag_name_or_id in self.session.config.tags:
+            # Short circuit if this is a tag ID for an existing tag
+            return tag_name_or_id
+
         tags = self.session.config.get_tags(tag_name_or_id)
         if tags and unique:
             raise ValueError('Tag name is not unique!')
-        elif len(tags) == 1:
+        elif len(tags) == 1 and use_existing:
             tag_id = tags[0]._key
         elif len(tags) > 1:
             raise ValueError('Tag name matches multiple tags!')
@@ -349,6 +401,8 @@ class BaseMailSource(threading.Thread):
             AddTag(self.session, arg=[tag_name_or_id]).run(save=False)
             tags = self.session.config.get_tags(tag_name_or_id)
             if tags:
+                if parent:
+                    tags[0].parent = parent
                 tag_id = tags[0]._key
             else:
                 raise ValueError('Failed to create tag?')
