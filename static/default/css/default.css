@@ -420,6 +420,7 @@
 /* Buttons */
 /* Forms */
 /* Tables */
+/* REBAR: Add th custom color styling, better actual use of these values */
 /* Grid */
 /* Boxes */
 /* Rectangles */
@@ -5564,6 +5565,11 @@ ul.items.grouped li.grouped {
 ul.items li.separate h5,
 ul.items li.grouped h5 {
   margin-bottom: 13.33333333px;
+}
+/* Tables */
+/* REBAR: Move these more global styles to Rebar */
+table.background-white {
+  background: #ffffff;
 }
 /* Response Rectangles - Tags & Contacts */
 .rectangles-container {
