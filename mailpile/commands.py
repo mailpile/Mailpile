@@ -1510,7 +1510,7 @@ class ConfigSet(Command):
             self.session.ui.warning(_('WARNING: Any changes will '
                                       'be overwritten on login'))
 
-        section = self.data.get('_section', [None])[0]
+        section = self.data.get('_section', [''])[0]
         if section:
             # Make sure section exists
             ops.append((section, '{}'))
