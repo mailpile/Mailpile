@@ -920,7 +920,7 @@ class GnuPGExpectScript(threading.Thread):
                 self.set_state(state)
 
     def gpg_args(self):
-        return ['--list-keys']
+        return ['--no-use-agent', '--list-keys']
 
     def run(self):
         try:
@@ -1002,7 +1002,7 @@ class GnuPGKeyGenerator(GnuPGExpectScript):
         self.generated_key = None
 
     def gpg_args(self):
-        return ['--gen-key']
+        return ['--no-use-agent', '--gen-key']
 
     def in_state(self, state):
         if state == self.HAVE_KEY:
@@ -1085,4 +1085,4 @@ class GnuPGKeyEditor(GnuPGExpectScript):
                 self.variables['passphrase'] = '!!<SPS'
 
     def gpg_args(self):
-        return ['--edit-key', self.keyid]
+        return ['--no-use-agent', '--edit-key', self.keyid]
