@@ -437,6 +437,10 @@ class ImapMailSource(BaseMailSource):
 
     def close(self):
         if self.conn:
+            self.event.data['connection'] = {
+                'live': False,
+                'error': [False, _('Nothing is wrong')]
+            }
             self.conn.quit()
             self.conn = None
 
@@ -456,6 +460,10 @@ class ImapMailSource(BaseMailSource):
                     self.conn = None
             conn.quit()
 
+        ev = self.event.data['connection'] = {
+            'live': False,
+            'error': [False, _('Nothing is wrong')]
+        }
         conn = None
         my_config = self.my_config
         mailboxes = my_config.mailbox.values()
@@ -472,8 +480,6 @@ class ImapMailSource(BaseMailSource):
         else:
             event = Event(source=self, flags=Event.RUNNING, data={})
 
-        if 'conn_error' in event.data:
-            del event.data['conn_error']
         try:
             def mkconn():
                 return conn_cls(my_config.host, my_config.port)
@@ -485,7 +491,7 @@ class ImapMailSource(BaseMailSource):
                                        my_config.username,
                                        my_config.password)
             if not ok:
-                event.data['conn_error'] = _('Bad username or password')
+                ev['error'] = ['auth', _('Invalid username or password')]
                 if throw:
                     raise throw(event.data['conn_error'])
                 return WithaBool(False)
@@ -520,20 +526,21 @@ class ImapMailSource(BaseMailSource):
                 self.session.ui.debug('CONNECTED %s' % self.conn)
 
             self.conn_id = conn_id
+            ev['live'] = True
             return self.conn
 
         except TimedOut:
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())
-            event.data['conn_error'] = _('Connection timed out')
+            ev['error'] = ['timeout', _('Connection timed out')]
         except (IMAP_IOError, IMAP4.error):
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())
-            event.data['conn_error'] = _('An IMAP protocol error occurred')
+            ev['error'] = ['protocol', _('An IMAP protocol error occurred')]
         except (IOError, AttributeError, socket.error):
             if 'imap' in self.session.config.sys.debug:
                 self.session.ui.debug(traceback.format_exc())
-            event.data['conn_error'] = _('A network error occurred')
+            ev['error'] = ['network', _('A network error occurred')]
 
         try:
             if conn:
@@ -544,7 +551,7 @@ class ImapMailSource(BaseMailSource):
         except (AttributeError, IOError, socket.error):
             pass
         if throw:
-            raise throw(event.data['conn_error'])
+            raise throw(ev['error'])
         return WithaBool(False)
 
     def _idle_callback(self, data):

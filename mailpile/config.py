@@ -1752,10 +1752,9 @@ class ConfigManager(ConfigDict):
         # Start the other workers
         if daemons:
             for src_id, src_config in config.sources.iteritems():
-                if not src_config.enabled:
-                    continue
                 ms_thread = config.mail_sources.get(src_id)
-                if ms_thread and not ms_thread.isAlive():
+                if (ms_thread and src_config.enabled
+                        and not ms_thread.isAlive()):
                     ms_thread = None
                 if not ms_thread:
                     from mailpile.mail_source import MailSource
