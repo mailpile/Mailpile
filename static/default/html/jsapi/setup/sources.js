@@ -96,6 +96,7 @@ var SourcesView = Backbone.View.extend({
     "change #input-setup-source-type"  : "actionSelected",
     "change #input-setup-source_sync"  : "actionSyncSelected",
     "click #btn-setup-source-save"     : "processSource",
+    "click #btn-setup-source-configure": "processConfigure",
     "click .setup-source-remove"       : "processRemove",
     "click #source-mailbox-read-all"   : "actionMailboxReadAll"
   },
@@ -211,6 +212,23 @@ var SourcesView = Backbone.View.extend({
         }
       });
     }
+  },
+  processConfigure: function(e) {
+
+    e.preventDefault();
+
+    var mailbox_data = $('#form-setup-source-configure').serializeObject();
+    console.log(mailbox_data);
+
+    // Validate & Process
+    Mailpile.API.settings_set_post(mailbox_data, function(result) {
+      if (result.status == 'success') {
+
+        //Backbone.history.navigate('#sources', true);
+      } else {
+        alert('Error saving Sources');          
+      }
+    });
   },
   processRemove: function(e) {
     e.preventDefault();
