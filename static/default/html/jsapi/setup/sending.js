@@ -1,10 +1,11 @@
 /* Setup - Routes - Model */
 var SendingModel = Backbone.Model.extend({
-  url: '/api/0/settings/',
+  url: '/api/0/settings/as.json?var=routes',
   defaults: {
-    _section: '', 
+    _section: '',
+    command: '',
     name: '',
-    username: '',
+    login: '',
     password: '',
     host: '',
     port: 587,
@@ -16,8 +17,8 @@ var SendingModel = Backbone.Model.extend({
       required: true,
       msg: "{{_('Source Name')}}"      
     },
-    username: {
-      msg: "{{_('User name')}}"
+    login: {
+      msg: "{{_('Login')}}"
     },
     password: {
       msg: "{{_('Password')}}",
@@ -37,7 +38,7 @@ var SendingModel = Backbone.Model.extend({
 
 
 var SendingCollection = Backbone.Collection.extend({
-  url: '/settings/as.json?var=routes',
+  url: '/api/0/settings/as.json?var=routes',
   model: SendingModel
 });
 
@@ -68,6 +69,7 @@ var SendingView = Backbone.View.extend({
       }
 
       _.each(result.result.routes, function(val, key) {
+        console.log(val);
         var sending = new SendingModel(_.extend({id: key, action: 'Edit'}, val));
         SourcesCollection.add(sending);
         $('#setup-sending-list-items').append(_.template($('#template-setup-sending-item').html(), sending.attributes));
@@ -80,9 +82,12 @@ var SendingView = Backbone.View.extend({
     this.$el.html(_.template($("#template-setup-sending-settings").html(), this.model.attributes));
   },
   showEdit: function(id) {
-
-    this.$el.html(_.template($("#template-setup-sending-settings").html(), { action: 'Edit' }));
-
+    var sending = SendingCollection.get(id);
+    if (sending !== undefined) {
+      this.$el.html(_.template($("#template-setup-sending-settings").html(), sending.attributes));
+    } else {
+      Backbone.history.navigate('#sending', true);
+    }
   },
   processSendingTest: function(e) {
     e.preventDefault();
@@ -94,12 +99,11 @@ var SendingView = Backbone.View.extend({
     e.preventDefault();
 
     var sending_data = $('#form-setup-sending-settings').serializeObject();
-    //source_data = _.omit(source_data, 'source_type');
     this.model.set(sending_data);
 
     // Validate & Process
     if (!this.model.validate()) {
-      Mailpile.API.setup_profiles_post(sending_data, function(result) {
+      Mailpile.API.settings_set_post(sending_data, function(result) {
         Backbone.history.navigate('#sending', true);
       });
     }
