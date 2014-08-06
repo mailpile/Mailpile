@@ -17,9 +17,7 @@
     <tr id="sources-mailbox-">
       <td><%= mailbox.name %></td>
       <td>
-        <select name="mailbox.<%= key %>.primary_tag" class="input-small">
-          <option value="<%= mailbox.name %>" selected><%= mailbox.name %></option>
-          <option value="!CREATE">+ Add Tag</option>
+          <input type="text" name="mailbox.<%= key %>.primary_tag" value="<%= mailbox.primary_tag %>">
         </select>
       </td>
       <td>

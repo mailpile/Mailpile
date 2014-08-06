@@ -1,6 +1,6 @@
 /* Setup - Sources - Model */
 var SourceModel = Backbone.Model.extend({
-  url: '/settings/',
+  url: '/api/0/settings/as.json?var=sources',
   defaults: {
     _section: '', 
     name: '',
@@ -78,7 +78,7 @@ var SourceModel = Backbone.Model.extend({
 
 
 var SourcesCollection = Backbone.Collection.extend({
-  url: '/settings/as.json?var=sources',
+  url: '/api/0/settings/as.json?var=sources',
   model: SourceModel
 });
 
@@ -107,6 +107,7 @@ var SourcesView = Backbone.View.extend({
     // Load Data & Add to Collection
     Mailpile.API.settings_get({ var: 'sources' }, function(result) {
 
+      // Redirect to Add
       if (_.isEmpty(result.result.sources)) {
         Backbone.history.navigate('#sources/add', true);
       }
@@ -116,7 +117,16 @@ var SourcesView = Backbone.View.extend({
         SourcesCollection.add(source);
         $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
       });
+    });
 
+    Mailpile.API.eventlog_get({incomplete: 1}, function(result) {
+      if (result.status == 'success') {
+        _.each(result.result.events, function(event, key) {
+          if (event.source.indexOf(".mail_source.") > -1) {
+            $('#setup-source-' + event.data.id + '-message').html('<em>' + event.message + '<em>');
+          }
+        });
+      }
     });
 
     return this;
@@ -139,6 +149,12 @@ var SourcesView = Backbone.View.extend({
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     var source = SourcesCollection.get(id);
     if (source !== undefined) {
+
+      Mailpile.API.tags_get({}, function(result) {
+
+        console.log(result);
+
+      });
 
       this.$el.html(_.template($('#template-setup-sources-configure').html(), source.attributes));
     } else {
