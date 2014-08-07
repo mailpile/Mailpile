@@ -925,8 +925,11 @@ class Setup(TestableWebbable):
             #(lambda: config.routes, SetupRoutes),
             #(lambda: config.sources, SetupSources),
         ]:
+            auth_required = (step.HTTP_AUTH_REQUIRED is True
+                             or (config.prefs.gpg_recipient and
+                                 step.HTTP_AUTH_REQUIRED == 'Maybe'))
             if not guard():
-                if (not needed_auth) or (step.HTTP_AUTH_REQUIRED is not True):
+                if (not needed_auth) or (not auth_required):
                     return step
 
         return default
