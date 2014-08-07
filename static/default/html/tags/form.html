@@ -30,6 +30,7 @@
         <option value="invisible"{% if tag.display == "invisible"%} selected="selected"{% endif %}>{{_("Invisible")}}</option>
       </select>
 
+      {% if not tag.subtags %}
       <label>{{_("Parent Tag")}}</label>
       <select name="parent" id="data-tag-parent">
         <option value="">-------- {{_("none")}} --------</option>
@@ -39,11 +40,21 @@
         {% endif %}    
         {% endfor %}
       </select>
+      {% endif %}
   
       <label>{{_("Template")}}</label>
       <select name="template">
         <option value="default">{{_("Default")}}</option>
       </select>
+
+      {% if tag.subtags %}
+      <h3>{{_("Subtags")}}</h3>
+      <ul>
+        {% for sub in tag.subtags %}
+        <li><span class="{{sub.icon}}" style="color: {{theme_settings().colors[sub.label_color]}}"></span> {{sub.name}} - <a href="/tags/edit.html?only={{sub.slug}}">{{_("edit")}}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
     </div>
 
     {% if state.command_url == "/tags/add/" %}
