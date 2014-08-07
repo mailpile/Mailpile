@@ -11,9 +11,12 @@ __all__ = ['email_keylookup', 'nicknym', 'dnspka']
 KEY_LOOKUP_HANDLERS = []
 
 
+##[ Internal code, functions ]################################################
+
 def register_crypto_key_lookup_handler(handler):
     if handler not in KEY_LOOKUP_HANDLERS:
         KEY_LOOKUP_HANDLERS.append(handler)
+    KEY_LOOKUP_HANDLERS.sort(key=lambda h: (h.LOCAL and 0 or 1, h.PRIORITY))
 
 
 def _GnuPG(session):
@@ -23,9 +26,14 @@ def _GnuPG(session):
     return gpg
 
 
-def score_and_check_known_keys(key_id, key_info, known_keys_list):
-    key_info["score"] = sum([score for score, reason in
-                             key_info.get('scores', {}).values()])
+def _update_scores(key_id, key_info, known_keys_list):
+    key_info["score"] = sum([score for source, (score, reason)
+                             in key_info.get('scores', {}).iteritems()
+                             if source != 'Known keys'])
+
+    # This is done here, not on the keychain lookup handler, in case
+    # for some reason (e.g. UID changes on source keys) remote sources
+    # suggest matches which our local search doesn't catch.
     if key_id in known_keys_list:
         score = 0
         known_info = known_keys_list[key_id]
@@ -45,14 +53,12 @@ def score_and_check_known_keys(key_id, key_info, known_keys_list):
             score += 50
             reason = _('Key is trusted')
         else:
-            score += 10
+            score += 9
             reason = _('Key is on keychain')
 
         key_info["on_keychain"] = True
         key_info['score'] += score
-        key_info['scores']['Keychain'] = [score, reason]
-    else:
-        key_info["on_keychain"] = False
+        key_info['scores']['Known keys'] = [score, reason]
 
     sc, reason = max([(abs(score), reason)
                      for score, reason in key_info['scores'].values()])
@@ -62,13 +68,16 @@ def score_and_check_known_keys(key_id, key_info, known_keys_list):
     key_info['score_stars'] = (max(1, min(int(round(log_score)), 5))
                                * (-1 if (key_info['score'] < 0) else 1))
 
+    if "on_keychain" not in key_info:
+        key_info["on_keychain"] = False
+
 
 def lookup_crypto_keys(session, address, event=None, allowremote=True):
     known_keys_list = _GnuPG(session).list_keys()
     found_keys = {}
     ordered_keys = []
     for handler in KEY_LOOKUP_HANDLERS:
-        h = handler(session)
+        h = handler(session, known_keys_list)
         if not allowremote and not h.LOCAL:
             continue
 
@@ -83,16 +92,25 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
         for key_id, key_info in results.iteritems():
             if key_id in found_keys:
                 old_scores = found_keys[key_id].get('scores', {})
+                old_uids = found_keys[key_id].get('uids', [])
                 found_keys[key_id].update(key_info)
                 if 'scores' in found_keys[key_id]:
                     found_keys[key_id]['scores'].update(old_scores)
                     # No need for an else, as old_scores will be empty
+
+                # Merge in the old UIDs
+                uid_emails = [u['email'] for u in key_info.get('uids', [])]
+                if 'uids' not in found_keys[key_id]:
+                    found_keys[key_id]['uids'] = []
+                for uid in old_uids:
+                    email = uid.get('email')
+                    if email and email not in uid_emails:
+                        found_keys[key_id]['uids'].append(uid)
             else:
                 found_keys[key_id] = key_info
                 found_keys[key_id]["origin"] = []
             found_keys[key_id]["origin"].append(h.NAME)
-            score_and_check_known_keys(key_id, found_keys[key_id],
-                                       known_keys_list)
+            _update_scores(key_id, found_keys[key_id], known_keys_list)
 
         # This updates and sorts ordered_keys in place. This will magically
         # also update the data on the viewable event, because Python.
@@ -104,6 +122,12 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
         session.config.event_log.log_event(event)
     return ordered_keys
 
+
+def import_crypto_key(session, address, fingerprints, origins, event=None):
+    return []
+
+
+##[ API endpoints / commands ]#################################################
 
 class KeyLookup(Command):
     """Perform a key lookup"""
@@ -134,39 +158,46 @@ class KeyImport(Command):
     """Import keys"""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/keyimport', 'crypto/keyimport',
-                '<address>')
+                      '<address> <fingerprint> <origins ...>')
     HTTP_CALLABLE = ('POST',)
-    HTTP_QUERY_VARS = {
+    HTTP_POST_VARS = {
         'address': 'The nick/address to find a key for',
         'fingerprints': 'List of fingerprints we want',
         'origins': 'List of origins to search'
     }
 
     def command(self):
-        if len(self.args) > 1:
-            allowremote = self.args.pop()
+        args = list(self.args)
+        if args:
+            address, fprints, sources = args[0], args[1].split(','), args[2:]
         else:
-            allowremote = self.data.get('allowremote', True)
+            address = self.data.get('address', [''])[0]
+            fprints = self.data.get('fingerprints', [])
+            origins = self.data.get('origins', [])
+        assert(address or fprints or origins)
 
-        address = " ".join(self.data.get('address', self.args))
-        result = lookup_crypto_keys(self.session, address, event=self.event,
-                                    allowremote=allowremote)
-        return self._success(_n('Found %d key', 'Found %d keys', len(result)
-                                ) % len(result),
+        result = import_crypto_keys(self.session,
+                                    address, fingerprints, origins,
+                                    event=self.event)
+
+        return self._success(_n('Imported %d key', 'Imported %d keys',
+                                len(result)) % len(result),
                              result=result)
 
 
+PluginManager(builtin=__file__).register_commands(KeyLookup, KeyImport)
 
-_plugins = PluginManager(builtin=__file__)
-_plugins.register_commands(KeyLookup)
 
+##[ Basic lookup handlers ]###################################################
 
 class LookupHandler:
     NAME = "NONE"
+    PRIORITY = 10000
     LOCAL = False
 
-    def __init__(self, session):
+    def __init__(self, session, known_keys_list):
         self.session = session
+        self.known_keys = known_keys_list
 
     def _gnupg(self):
         return _GnuPG(self.session)
@@ -191,13 +222,40 @@ class LookupHandler:
     def key_import(self, address):
         return True
 
-#########################################
 
-from mailpile.plugins.keylookup.email_keylookup import EmailKeyLookupHandler
-from mailpile.plugins.keylookup.dnspka import DNSPKALookupHandler
+class KeychainLookupHandler(LookupHandler):
+    NAME = "GnuPG keychain"
+    LOCAL = True
+    PRIORITY = 0
+
+    def _score(self, key):
+        return (1, _('Found key in keychain'))
+
+    def _getkey(self, key):
+        pass  # Key is already on keychain
+
+    def _lookup(self, address):
+        address = address.lower()
+        results = {}
+        for key_id, key_info in self.known_keys.iteritems():
+            for uid in key_info.get('uids', []):
+                if (address in uid.get('name', '').lower() or
+                        address in uid.get('email', '').lower()):
+                    results[key_id] = {}
+                    for k in ('created', 'fingerprint', 'keysize',
+                              'key_name', 'uids'):
+                        if k in key_info:
+                            results[key_id][k] = key_info[k]
+        return results
+
+    def _getkey(self, key):
+        pass
+
 
 class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
+    LOCAL = False
+    PRIORITY = 200
 
     def _score(self, key):
         return (1, _('Found key in keyserver'))
@@ -209,4 +267,10 @@ class KeyserverLookupHandler(LookupHandler):
         pass
 
 
+register_crypto_key_lookup_handler(KeychainLookupHandler)
 register_crypto_key_lookup_handler(KeyserverLookupHandler)
+
+# We do this down here, as that seems to make the Python module loader
+# things happy enough with the circular dependencies...
+from mailpile.plugins.keylookup.email_keylookup import EmailKeyLookupHandler
+from mailpile.plugins.keylookup.dnspka import DNSPKALookupHandler

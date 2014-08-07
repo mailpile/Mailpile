@@ -12,11 +12,12 @@ _ = lambda t: t
 
 class EmailKeyLookupHandler(LookupHandler, Search):
     NAME = _("E-mail keys")
+    PRIORITY = 5
     LOCAL = True
 
-    def __init__(self, session):
+    def __init__(self, session, *args, **kwargs):
+        LookupHandler.__init__(self, session, *args, **kwargs)
         Search.__init__(self, session)
-        LookupHandler.__init__(self, session)
 
     def _score(self, key):
         return (1, _('Found key in local e-mail'))

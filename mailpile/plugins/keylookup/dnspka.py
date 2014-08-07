@@ -18,8 +18,10 @@ _ = lambda t: t
 
 class DNSPKALookupHandler(LookupHandler):
     NAME = _("DNS PKA records")
+    PRIORITY = 100
 
-    def __init__(self, session=None):
+    def __init__(self, *args, **kwargs):
+        LookupHandler.__init__(self, *args, **kwargs)
         if not DNS:
             return
         DNS.ParseResolvConf()
