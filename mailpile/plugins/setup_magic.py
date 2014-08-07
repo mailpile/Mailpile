@@ -376,7 +376,7 @@ class TestableWebbable(SetupMagic):
                      if k not in self.HTTP_POST_VARS
                      and k not in ('_method',)])
 
-        nxt = Setup.Next(self.session.config, None)
+        nxt = Setup.Next(self.session.config, None, needed_auth=False)
         if nxt:
             url = '/%s/' % nxt.SYNOPSIS[2]
         elif path and path != '/%s/' % Setup.SYNOPSIS[2]:
@@ -896,17 +896,16 @@ class Setup(TestableWebbable):
     KEY_EDITING_THREAD = None
 
     @classmethod
-    def Next(cls, config, final):
+    def Next(cls, config, default, needed_auth=True):
         if not config.loaded_config:
-            return final
+            return default
 
         for guard, step in [
             # Stage 0: Welcome: Choose app language
             (lambda: config.prefs.language, SetupWelcome),
 
             # Stage 1: Identity: Configure profiles and GPG key
-            (lambda: (config.prefs.gpg_recipient and
-                      config.gnupg_passphrase.data), SetupCrypto),
+            (lambda: config.prefs.gpg_recipient, SetupCrypto),
 
             # Stage Z: Go fancy single-page install!
             (lambda: (config.prefs.gpg_recipient and
@@ -927,9 +926,10 @@ class Setup(TestableWebbable):
             #(lambda: config.sources, SetupSources),
         ]:
             if not guard():
-                return step
+                if (not needed_auth) or (step.HTTP_AUTH_REQUIRED is not True):
+                    return step
 
-        return final
+        return default
 
     def setup_command(self, session):
         if '_method' in self.data:
