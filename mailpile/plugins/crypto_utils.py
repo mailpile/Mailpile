@@ -160,7 +160,7 @@ class GPGKeyList(Command):
         if addr is None:
             return self._error("Must supply e-mail address", None)
 
-        res = self._gnupg().address_to_keys(args[0])
+        res = self._gnupg().address_to_keys(addr)
         return self._success("Searched for keys for e-mail address", res)
 
 
