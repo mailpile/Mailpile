@@ -49,7 +49,7 @@ class PluginManager(object):
     REQUIRED = [
         'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
         'dates', 'sizes', 'cryptostate', 'setup_magic', 'html_magic',
-        'plugins'
+        'plugins', 'keylookup'
     ]
     DISCOVERED = {}
     LOADED = []

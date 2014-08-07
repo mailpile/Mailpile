@@ -63,7 +63,9 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
             m = _calc_scores(x, scores)
             m = [i for i in m.values()]
             m.sort(key=lambda k: -k["score"])
-            event.private_data = {"result": m, "runningsearch": h.NAME}
+            event.message = _('Searching for keys in: %s') % h.NAME
+            event.private_data = {"result": m,
+                                  "runningsearch": h.NAME}
             session.config.event_log.log_event(event)
 
         r, s = h.lookup(address)
@@ -86,7 +88,7 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
     x = [i for i in x.values()]
     x.sort(key=lambda k: -k["score"])
     if event:
-        event.private_data = {"result": x, "runningsearch": None}
+        event.private_data = {"result": x, "runningsearch": False}
         session.config.event_log.log_event(event)
     return x
 
@@ -109,8 +111,10 @@ class KeyLookup(Command):
             allowremote = self.data.get('allowremote', True)
             
         address = " ".join(self.data.get('address', self.args))
-        return lookup_crypto_keys(self.session, address, event=self.event,
-                                  allowremote=allowremote)
+        result = lookup_crypto_keys(self.session, address, event=self.event,
+                                    allowremote=allowremote)
+        return self._success(_('Found %d keys') % len(result),
+                             result=result)
 
 _plugins = PluginManager(builtin=__file__)
 _plugins.register_commands(KeyLookup)
