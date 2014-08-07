@@ -92,6 +92,11 @@ def _real_startup(config):
 
         indicator('set_menu_sensitive', item='quit')
         indicator('set_menu_sensitive', item='open')
+
+        # FIXME: This sleep is lame
+        time.sleep(5)
+        if (gui.poll() is not None) or mailpile.util.QUITTING:
+            return
     except:
         # If the basic indicator setup fails, we just assume it doesn't
         # work and go silently dead...
