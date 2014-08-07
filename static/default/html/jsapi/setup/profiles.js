@@ -51,6 +51,7 @@ var ProfilesView = Backbone.View.extend({
   },
   events: {
     "click #btn-setup-show-add-profile"   : "showAdd",
+    "blur #input-setup-profile-email"     : "actionCheckEmailMagic",
     "click #btn-setup-profile-save"       : "processSettings",
     "click .setup-profile-remove"         : "processRemove"
   },
@@ -86,6 +87,13 @@ var ProfilesView = Backbone.View.extend({
       this.$el.html(_.template($('#template-setup-profiles-add').html(), profile.attributes));
     } else {
       Backbone.history.navigate('#profiles', true);
+    }
+  },
+  actionCheckEmailMagic: function(e) {
+    var domain = $(e.target).val().replace(/.*@/, "");
+    var check = SetupMagic.providers[domain];
+    if (check) {
+      $('#validation-pass').fadeIn();
     }
   },
   processSettings: function(e) {
