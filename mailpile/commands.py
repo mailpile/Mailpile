@@ -487,8 +487,8 @@ class Command:
                                            "success",
                                            "Running in background")
 
-            self.session.config.slow_worker.add_task(self.session, self.name,
-                                                     streetcar)
+            self.session.config.async_worker.add_task(self.session, self.name,
+                                                      streetcar)
             return result
 
         else:

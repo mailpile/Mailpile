@@ -1078,6 +1078,7 @@ class ConfigManager(ConfigDict):
         self.dumb_worker = DumbWorker('Dumb worker', None)
         self.slow_worker = self.dumb_worker
         self.save_worker = self.dumb_worker
+        self.async_worker = self.dumb_worker
         self.other_workers = []
         self.mail_sources = {}
 
@@ -1768,6 +1769,9 @@ class ConfigManager(ConfigDict):
             if config.slow_worker == config.dumb_worker:
                 config.slow_worker = Worker('Slow worker', session)
                 config.slow_worker.start()
+            if config.async_worker == config.dumb_worker:
+                config.async_worker = Worker('Async worker', session)
+                config.async_worker.start()
             if config.save_worker == config.dumb_worker:
                 config.save_worker = ImportantWorker('Save worker', session)
                 config.save_worker.start()

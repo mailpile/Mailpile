@@ -18,6 +18,7 @@ _ = lambda t: t
 
 class DNSPKALookupHandler(LookupHandler):
     NAME = _("DNS PKA records")
+    TIMEOUT = 10
     PRIORITY = 100
 
     def __init__(self, *args, **kwargs):

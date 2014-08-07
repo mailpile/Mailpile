@@ -1,9 +1,10 @@
 import math
-from mailpile.crypto.gpgi import GnuPG
-from mailpile.plugins import PluginManager
 from mailpile.commands import Command
+from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
+from mailpile.plugins import PluginManager
+from mailpile.util import *
 
 
 __all__ = ['email_keylookup', 'nicknym', 'dnspka']
@@ -88,7 +89,11 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
                                   "runningsearch": h.NAME}
             session.config.event_log.log_event(event)
 
-        results = h.lookup(address)
+        try:
+            results = RunTimed(h.TIMEOUT, h.lookup, address)
+        except (TimedOut, IOError):
+            results = {}
+
         for key_id, key_info in results.iteritems():
             if key_id in found_keys:
                 old_scores = found_keys[key_id].get('scores', {})
@@ -192,6 +197,7 @@ PluginManager(builtin=__file__).register_commands(KeyLookup, KeyImport)
 
 class LookupHandler:
     NAME = "NONE"
+    TIMEOUT = 2
     PRIORITY = 10000
     LOCAL = False
 
@@ -255,6 +261,7 @@ class KeychainLookupHandler(LookupHandler):
 class KeyserverLookupHandler(LookupHandler):
     NAME = "PGP Keyservers"
     LOCAL = False
+    TIMEOUT = 20  # We know these are slow...
     PRIORITY = 200
 
     def _score(self, key):
