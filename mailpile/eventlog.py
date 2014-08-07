@@ -268,6 +268,9 @@ class EventLog(object):
             elif kw == 'flags':
                 if truth != (event.flags == rule):
                     return False
+            elif kw == 'event_id':
+                if truth != (event.event_id == rule):
+                    return False
             elif kw == 'since':
                 when = float(rule)
                 if when < 0:
@@ -288,7 +291,11 @@ class EventLog(object):
 
     def incomplete(self, **filters):
         """Return all the incomplete events, in order."""
-        for ek in sorted(self._events.keys()):
+        if 'event_id' in filters:
+            ids = [filters['event_id']]
+        else:
+            ids = sorted(self._events.keys())
+        for ek in ids:
             e = self._events.get(ek, None)
             if (e is not None and
                     Event.COMPLETE not in e.flags and
@@ -299,7 +306,11 @@ class EventLog(object):
         """Return all events since a given time, in order."""
         if ts < 0:
             ts += time.time()
-        for ek in sorted(self._events.keys()):
+        if 'event_id' in filters and filters['event_id'][:1] != '!':
+            ids = [filters['event_id']]
+        else:
+            ids = sorted(self._events.keys())
+        for ek in ids:
             e = self._events.get(ek, None)
             if (e is not None and
                     e.ts >= ts and

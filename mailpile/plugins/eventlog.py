@@ -20,6 +20,7 @@ class Events(Command):
         'wait': 'seconds to wait for new data',
         'incomplete': 'incomplete events only?',
         # Filtering by event attributes
+        'event_id': 'an event ID',
         'flag': 'require a flag',
         'flags': 'match all flags',
         'since': 'wait for new data?',
@@ -68,7 +69,7 @@ class Events(Command):
             else:
                 filters[arg] = val
         for arg in self.data:
-            if arg in ('source', 'flags', 'flag', 'since'):
+            if arg in ('source', 'flags', 'flag', 'since', 'event_id'):
                 fset(arg, self.data[arg][0])
             elif arg in ('data', 'private_data'):
                 for data in self.data[arg]:
