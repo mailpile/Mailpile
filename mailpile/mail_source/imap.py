@@ -460,10 +460,21 @@ class ImapMailSource(BaseMailSource):
                     self.conn = None
             conn.quit()
 
-        ev = self.event.data['connection'] = {
+        # This facilitates testing, event should already exist in real life.
+        if self.event:
+            event = self.event
+        else:
+            event = Event(source=self, flags=Event.RUNNING, data={})
+
+        # Prepare the data section of our event, for keeping state.
+        for d in ('mailbox_state',):
+            if d not in event.data:
+                event.data[d] = {}
+        ev = event.data['connection'] = {
             'live': False,
             'error': [False, _('Nothing is wrong')]
         }
+
         conn = None
         my_config = self.my_config
         mailboxes = my_config.mailbox.values()
@@ -473,12 +484,6 @@ class ImapMailSource(BaseMailSource):
         if not conn_cls:
             want_ssl = (my_config.protocol == 'imap_ssl')
             conn_cls = IMAP4_SSL if want_ssl else IMAP4
-
-        # This also facilitates testing, should already exist in real life.
-        if self.event:
-            event = self.event
-        else:
-            event = Event(source=self, flags=Event.RUNNING, data={})
 
         try:
             def mkconn():
@@ -513,11 +518,6 @@ class ImapMailSource(BaseMailSource):
                         idle_callback=self._idle_callback)
                 else:
                     self.conn = SharedImapConn(self.session, conn)
-
-                # Prepare the data section of our event, for keeping state.
-                for d in ('mailbox_state',):
-                    if d not in event.data:
-                        event.data[d] = {}
 
             if self.event:
                 self._log_status(_('Connected to IMAP server %s'
@@ -572,11 +572,15 @@ class ImapMailSource(BaseMailSource):
             uv = state['uv'] = imap.mailbox_info('UIDVALIDITY', ['0'])[0]
             ex = state['ex'] = imap.mailbox_info('EXISTS', ['0'])[0]
             uvex = '%s/%s' % (uv, ex)
-            return (uvex != self.event.data['mailbox_state'].get(mbx._key))
+            return (uvex != self.event.data.get('mailbox_state',
+                                                {}).get(mbx._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
         uvex = '%s/%s' % (state['uv'], state['ex'])
-        self.event.data['mailbox_state'][mbx._key] = uvex
+        if 'mailbox_state' in self.event.data:
+            self.event.data['mailbox_state'][mbx._key] = uvex
+        else:
+            self.event.data['mailbox_state'] = {mbx._key: uvex}
 
     def _mailbox_name(self, path):
         # len('src:/') = 5

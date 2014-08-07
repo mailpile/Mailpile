@@ -41,11 +41,14 @@ class MaildirMailSource(BaseMailSource):
             except (OSError, IOError):
                 state[sub] = None
         cnt = '/'.join([str(state[i]) for i in ('cur', 'new', 'tmp')])
-        return (self.event.data['mailbox_state'].get(mbx._key) != cnt)
+        return (self.event.data.get('mailbox_state', {}).get(mbx._key) != cnt)
 
     def _mark_mailbox_rescanned(self, mbx, state):
         cnt = '/'.join([str(state[i]) for i in ('cur', 'new', 'tmp')])
-        self.event.data['mailbox_state'][mbx._key] = cnt
+        if 'mailbox_state' in self.event:
+            self.event.data['mailbox_state'][mbx._key] = cnt
+        else:
+            self.event.data['mailbox_state'] = {mbx._key: cnt}
 
     def is_mailbox(self, fn):
         if not os.path.isdir(fn):

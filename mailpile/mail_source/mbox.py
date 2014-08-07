@@ -42,11 +42,14 @@ class MboxMailSource(BaseMailSource):
         except (OSError, IOError):
             mt = sz = state['mt'] = state['sz'] = -1
         mtsz = '%s/%s' % (mt, sz)
-        return (mtsz != self.event.data['mailbox_state'])
+        return (mtsz != self.event.data.get('mailbox_state', {}).get(mbx._key))
 
     def _mark_mailbox_rescanned(self, mbx, state):
         mtsz = '%s/%s' % (state['mt'], state['sz'])
-        self.event.data['mailbox_state'] = mtsz
+        if 'mailbox_state' in self.event.data:
+            self.event.data['mailbox_state'][mbx._key] = mtsz
+        else:
+            self.event.data['mailbox_state'] = {mbx._key: mtsz}
 
     def is_mailbox(self, fn):
         try:
