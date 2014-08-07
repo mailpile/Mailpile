@@ -89,7 +89,8 @@ EventLog.process_result = function(result, textstatus) {
         }
         EventLog.last_ts = result.result.ts;
     }
-    console.log("eventlog ---- processed", result.result.count, "results");
+    // HIDDEN
+    // console.log("eventlog ---- processed", result.result.count, "results");
     EventLog.timer.stop();
     EventLog.timer.play();
     EventLog.poll();
