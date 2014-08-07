@@ -888,6 +888,7 @@ class Setup(TestableWebbable):
     ORDER = ('Internals', 0)
     LOG_PROGRESS = True
     HTTP_CALLABLE = ('GET',)
+    HTTP_AUTH_REQUIRED = True
 
     # These are a global, may be modified...
     KEY_WORKER_LOCK = CryptoRLock()

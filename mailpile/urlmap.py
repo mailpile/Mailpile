@@ -390,7 +390,8 @@ class UrlMap:
                                 self.session.config.prefs.gpg_recipient)):
                             if is_async or is_api:
                                 raise AccessError()
-                            self.redirect_to_auth(method, path, query_data)
+                            self.redirect_to_auth_or_setup(method, path,
+                                                           query_data)
                 return commands
         else:
             def auth(commands, user_session):
