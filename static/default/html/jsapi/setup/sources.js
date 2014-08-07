@@ -113,7 +113,7 @@ var SourcesView = Backbone.View.extend({
       }
 
       _.each(result.result.sources, function(val, key) {
-        var source = new SourceModel(_.extend({id: 'sources.'+key, action: 'Edit'}, val));
+        var source = new SourceModel(_.extend({id: key, action: 'Edit'}, val));
         SourcesCollection.add(source);
         $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
       });
@@ -133,7 +133,7 @@ var SourcesView = Backbone.View.extend({
   },
   showAdd: function() {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    var source_id = 'sources.' + Math.random().toString(36).substring(2);
+    var source_id = Math.random().toString(36).substring(2);
     this.model.set({_section: source_id, id: source_id })
     this.$el.html(_.template($('#template-setup-sources-settings').html(), this.model.attributes));
   },
@@ -152,10 +152,19 @@ var SourcesView = Backbone.View.extend({
     if (source !== undefined) {
 
       Mailpile.API.tags_get({}, function(result) {
-        console.log(result);
+        var tags = {};
+
+        _.each(result.result.tags, function(tag, key) {
+          if (_.indexOf(['inbox', 'drafts', 'sent', 'spam', 'trash'], tag.type) > -1) {
+            tags[tag.type] = tag.tid;
+          }
+        });
+
+        var configure = _.extend(source.attributes, { tags: tags});
+        console.log(configure);
+        $('#setup').html(_.template($('#template-setup-sources-configure').html(), configure));
       });
 
-      this.$el.html(_.template($('#template-setup-sources-configure').html(), source.attributes));
     } else {
       Backbone.history.navigate('#sources', true);
     }
@@ -197,7 +206,6 @@ var SourcesView = Backbone.View.extend({
     }
   },
   processSource: function(e) {
-
     e.preventDefault();
 
     if ($('#input-setup-source-type').val() == 'local') {
@@ -209,11 +217,9 @@ var SourcesView = Backbone.View.extend({
       $('#input-setup-source-local-local_copy').remove();
     }
 
-    // Update Model
+    // Get, Prep, Update Model
     var source_data = $('#form-setup-source-settings').serializeObject();
     source_data = _.omit(source_data, 'source_type');
-    console.log(source_data);
-
     this.model.set(source_data);
 
     // Validate & Process
@@ -229,17 +235,14 @@ var SourcesView = Backbone.View.extend({
     }
   },
   processConfigure: function(e) {
-
     e.preventDefault();
 
     var mailbox_data = $('#form-setup-source-configure').serializeObject();
-    console.log(mailbox_data);
 
     // Validate & Process
     Mailpile.API.settings_set_post(mailbox_data, function(result) {
       if (result.status == 'success') {
-
-        //Backbone.history.navigate('#sources', true);
+        Backbone.history.navigate('#sources', true);
       } else {
         alert('Error saving Sources');          
       }
