@@ -1513,7 +1513,7 @@ class ConfigSet(Command):
         section = self.data.get('_section', [''])[0]
         if section:
             # Make sure section exists
-            ops.append((section, '{}'))
+            ops.append((section, '!CREATE_SECTION'))
 
         for var in self.data.keys():
             if var in ('_section', '_method'):
@@ -1550,13 +1550,17 @@ class ConfigSet(Command):
                 try:
                     try:
                         cfg, var = config.walk(path.strip(), parent=1)
-                        cfg[var] = value
-                        updated[path] = value
+                        if value == '!CREATE_SECTION':
+                            if var not in cfg:
+                                cfg[var] = {}
+                        else:
+                            cfg[var] = value
+                            updated[path] = value
                     except IndexError:
                         cfg, v1, v2 = config.walk(path.strip(), parent=2)
                         cfg[v1] = {v2: value}
                 except TypeError:
-                    raise ValueError('No such variable: %s') % path
+                    raise ValueError('Could not set variable: %s' % path)
 
         if config.loaded_config:
             self._background_save(config=True)
@@ -1636,6 +1640,19 @@ class ConfigUnset(Command):
         if config.sys.lockdown:
             return self._error(_('In lockdown, doing nothing.'))
 
+        def unset(cfg, key):
+            if isinstance(cfg[key], dict):
+                if '_any' in cfg[key].rules:
+                    for skey in cfg[key].keys():
+                        del cfg[key][skey]
+                else:
+                    for skey in cfg[key].keys():
+                        unset(cfg[key], skey)
+            elif isinstance(cfg[key], list):
+                cfg[key] = []
+            else:
+                del cfg[key]
+
         # We don't have transactions really, but making sure the HTTPD
         # is idle (aside from this request) will definitely help.
         with BLOCK_HTTPD_LOCK, Idle_HTTPD():
@@ -1643,9 +1660,7 @@ class ConfigUnset(Command):
             vlist = list(self.args) + (self.data.get('var', None) or [])
             for v in vlist:
                 cfg, vn = config.walk(v, parent=True)
-                if vn in cfg:
-                    del cfg[vn]
-                    updated.append(v)
+                unset(cfg, vn)
 
         if updated:
             self._background_save(config=True)
