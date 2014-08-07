@@ -601,6 +601,14 @@ class MailIndex:
             'batch_size': stop_after or len(messages)
         })
 
+        # Figure out which messages exist at all (so we can remove
+        # stale pointers later on).
+        for ui in range(0, len(messages)):
+            msg_ptr = mbox.get_msg_ptr(mailbox_idx, messages[ui])
+            existing_ptrs.add(msg_ptr)
+            if (ui % 317) == 0:
+                play_nice_with_threads()
+
         added = updated = 0
         last_date = long(time.time())
         not_done_yet = 'NOT DONE YET'
@@ -615,7 +623,6 @@ class MailIndex:
 
             i = messages[ui]
             msg_ptr = mbox.get_msg_ptr(mailbox_idx, i)
-            existing_ptrs.add(msg_ptr)
             if msg_ptr in self.PTRS:
                 if (ui % 317) == 0:
                     session.ui.mark(parse_status(ui))
