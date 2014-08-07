@@ -5,8 +5,11 @@ except:
 
 import urllib2
 
+from mailpile.i18n import gettext
 from mailpile.plugins.keylookup import LookupHandler
 from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
+
+_ = lambda t: t
 
 #
 #  Support for DNS PKA (_pka) entries.
@@ -14,7 +17,7 @@ from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
 #
 
 class DNSPKALookupHandler(LookupHandler):
-    NAME = "DNS PKA records"
+    NAME = _("DNS PKA records")
 
     def __init__(self, session=None):
         if not DNS:
@@ -84,4 +87,5 @@ class DNSPKALookupHandler(LookupHandler):
             raise ValueError("Need a fingerprint or a URL")
 
 
+_ = gettext
 register_crypto_key_lookup_handler(DNSPKALookupHandler)

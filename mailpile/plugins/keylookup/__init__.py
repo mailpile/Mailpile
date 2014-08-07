@@ -1,10 +1,13 @@
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command
+from mailpile.i18n import gettext as _
+
 
 __all__ = ['email_keylookup', 'nicknym', 'dnspka']
 
 KEY_LOOKUP_HANDLERS = []
+
 
 def register_crypto_key_lookup_handler(handler):
     if handler not in KEY_LOOKUP_HANDLERS:
@@ -63,7 +66,7 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
             m = _calc_scores(x, scores)
             m = [i for i in m.values()]
             m.sort(key=lambda k: -k["score"])
-            event.message = _('Searching for keys in: %s') % h.NAME
+            event.message = _('Searching for keys in: %s') % _(h.NAME)
             event.private_data = {"result": m,
                                   "runningsearch": h.NAME}
             session.config.event_log.log_event(event)
@@ -163,5 +166,6 @@ class KeyserverLookupHandler(LookupHandler):
 
     def _getkey(self, key):
         pass
+
 
 register_crypto_key_lookup_handler(KeyserverLookupHandler)

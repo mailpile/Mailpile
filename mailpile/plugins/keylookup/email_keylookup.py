@@ -1,3 +1,4 @@
+from mailpile.i18n import gettext
 from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import (LookupHandler, 
     register_crypto_key_lookup_handler)
@@ -6,8 +7,11 @@ from mailpile.mailutils import Email
 
 import pgpdump
 
+_ = lambda t: t
+
+
 class EmailKeyLookupHandler(LookupHandler, Search):
-    NAME = "E-mail keys"
+    NAME = _("E-mail keys")
     LOCAL = True
 
     def __init__(self, session):
@@ -67,3 +71,4 @@ def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader):
 
 _plugins = PluginManager(builtin=__file__)
 _plugins.register_data_kw_extractor('pgpkey', has_pgpkey_data_kw_extractor)
+_ = gettext
