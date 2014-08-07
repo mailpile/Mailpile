@@ -38,7 +38,7 @@
         <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.trash %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == tags.trash; }) == tags.trash) { %>checked<% } %>>
       </td>
       <td class="text-right">
-        <input type="checkbox" class="source-mailbox-policy" name="mailbox.<%= key %>.policy" value="<%= mailbox.policy %>" <% if (mailbox.policy == 'read') { %>checked<% } %>>
+        <input type="checkbox" class="source-mailbox-policy" name="mailbox.<%= key %>.policy" value="<% if (mailbox.policy == 'unknown') { %>ignore<% } %>" <% if (mailbox.policy == 'read') { %>checked<% } %>>
       </td>
     </tr>
     <% }); %>

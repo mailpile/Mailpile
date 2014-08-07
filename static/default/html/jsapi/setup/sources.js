@@ -1,6 +1,5 @@
 /* Setup - Sources - Model */
 var SourceModel = Backbone.Model.extend({
-  url: '/api/0/settings/as.json?var=sources',
   defaults: {
     _section: '', 
     name: '',
@@ -119,6 +118,7 @@ var SourcesView = Backbone.View.extend({
       });
     });
 
+    
     Mailpile.API.eventlog_get({incomplete: 1}, function(result) {
       if (result.status == 'success') {
         _.each(result.result.events, function(event, key) {
@@ -134,13 +134,15 @@ var SourcesView = Backbone.View.extend({
   showAdd: function() {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     var source_id = Math.random().toString(36).substring(2);
-    this.model.set({_section: source_id, id: source_id })
-    this.$el.html(_.template($('#template-setup-sources-settings').html(), this.model.attributes));
+    var NewSource = new SourceModel();
+    NewSource.set({ _section: source_id, id: source_id });
+    this.$el.html(_.template($('#template-setup-sources-settings').html(), NewSource.attributes));
   },
   showEdit: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     var source = SourcesCollection.get(id);
     if (source !== undefined) {
+
       this.$el.html(_.template($('#template-setup-sources-settings').html(), source.attributes));
     } else {
       Backbone.history.navigate('#sources', true);
@@ -226,6 +228,8 @@ var SourcesView = Backbone.View.extend({
     if (!this.model.validate()) {
       Mailpile.API.settings_set_post(source_data, function(result) {
         if (result.status == 'success') {
+
+          // Reset Model
           SourcesView.model.set({name: '', username: '', password: '', port: ''});
           Backbone.history.navigate('#sources', true);
         } else {
