@@ -24,6 +24,7 @@ from mailpile.mailboxes import IsMailbox
 from mailpile.mailutils import AddressHeaderParser
 from mailpile.mailutils import ExtractEmails, ExtractEmailAndName, Email
 from mailpile.postinglist import GlobalPostingList
+from mailpile.safe_popen import MakePopenUnsafe, MakePopenSafe
 from mailpile.search import MailIndex
 from mailpile.util import *
 from mailpile.vcard import AddressInfo
@@ -1085,7 +1086,11 @@ class Rescan(Command):
             pre_command = config.prefs.rescan_command
             if pre_command and not mailpile.util.QUITTING:
                 session.ui.mark(_('Running: %s') % pre_command)
-                subprocess.check_call(pre_command, shell=True)
+                try:
+                    MakePopenUnsafe()
+                    subprocess.check_call(pre_command, shell=True)
+                finally:
+                    MakePopenSafe()
             msg_count = 1
 
             if which in ('both', 'sources'):

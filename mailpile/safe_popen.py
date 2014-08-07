@@ -158,4 +158,12 @@ class Safe_Popen(Unsafe_Popen):
 
 # This is a vain attempt to monkeypatch, whether it works or not will
 # depend on module load order.
-Popen = subprocess.Popen = Safe_Popen
+def MakePopenUnsafe():
+    subprocess.Popen = Unsafe_Popen
+
+
+def MakePopenSafe():
+    subprocess.Popen = Safe_Popen
+    return Safe_Popen
+
+Popen = MakePopenSafe()
