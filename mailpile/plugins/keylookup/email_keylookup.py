@@ -19,7 +19,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         LookupHandler.__init__(self, session)
 
     def _score(self, key):
-        return 1
+        return (1, _('Found key in local e-mail'))
 
     def _lookup(self, address):
         results = {}
