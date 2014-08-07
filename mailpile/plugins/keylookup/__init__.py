@@ -2,6 +2,7 @@ from mailpile.crypto.gpgi import GnuPG
 from mailpile.plugins import PluginManager
 from mailpile.commands import Command
 from mailpile.i18n import gettext as _
+from mailpile.i18n import ngettext as _n
 
 
 __all__ = ['email_keylookup', 'nicknym', 'dnspka']
@@ -116,7 +117,8 @@ class KeyLookup(Command):
         address = " ".join(self.data.get('address', self.args))
         result = lookup_crypto_keys(self.session, address, event=self.event,
                                     allowremote=allowremote)
-        return self._success(_('Found %d keys') % len(result),
+        return self._success(_n('Found %d key', 'Found %d keys', len(result)
+                                ) % len(result),
                              result=result)
 
 _plugins = PluginManager(builtin=__file__)
