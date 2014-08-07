@@ -29,7 +29,7 @@ class BaseMailSource(threading.Thread):
     DEFAULT_JITTER = 15         # Fudge factor to tame thundering herds
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
-    RESCAN_BATCH_SIZE = 2500    # Index at most this many new e-mails at once
+    RESCAN_BATCH_SIZE = 250     # Index at most this many new e-mails at once
     MAX_PATHS = 100             # Abort if asked to scan too many directories
 
     # This is a helper for the events.
@@ -133,8 +133,9 @@ class BaseMailSource(threading.Thread):
         self._interrupt = None
         batch = self.RESCAN_BATCH_SIZE
         errors = rescanned = 0
+
         if self.session.config.sys.debug:
-            batch = 5
+            batch //= 5
 
         ostate = self._state
         for mbx_cfg in unsorted(self.my_config.mailbox.values()):
