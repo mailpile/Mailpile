@@ -56,7 +56,7 @@ EventLog.play = function() {
 }
 
 EventLog.heartbeat_warning = function() {
-    console.log('heartbeat_warning() just fired');
+    // console.log('heartbeat_warning() just fired');
     // DISABLED: EventLog.cancelwarning = Mailpile.notification("warning", "Having trouble connecting to Mailpile... will retry in a few seconds.");
     EventLog.poll();
 }
