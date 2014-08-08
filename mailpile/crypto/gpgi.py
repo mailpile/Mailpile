@@ -543,7 +543,7 @@ class GnuPG:
         >>> g.list_keys()[0]
         0
         """
-        retvals = self.run(["--list-keys", "--fingerprint"])
+        retvals = self.run(["--fingerprint", "--list-keys"])
         return self.parse_keylist(retvals[1]["stdout"])
 
     def list_secret_keys(self):
@@ -564,7 +564,17 @@ class GnuPG:
         #       (This is a better workaround than doing an additional
         #       --list-keys and trying to aggregate it though...)
         #
-        retvals = self.run(["--list-secret-keys", ".", "--fingerprint"])
+        #       BRE: Put --fingerprint at the front and added selectors
+        #            for the worlds MOST POPULAR LETTERS!  Yaaay!
+        #
+        retvals = self.run(["--fingerprint",
+                            "--list-secret-keys", ".",
+                            "--list-secret-keys", "a",
+                            "--list-secret-keys", "e",
+                            "--list-secret-keys", "i",
+                            "--list-secret-keys", "p",
+                            "--list-secret-keys", "t",
+                            "--list-secret-keys", "k"])
         return self.parse_keylist(retvals[1]["stdout"])
 
     def import_keys(self, key_data=None):
