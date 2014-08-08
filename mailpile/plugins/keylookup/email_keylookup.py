@@ -1,3 +1,5 @@
+import time
+
 from mailpile.i18n import gettext
 from mailpile.plugins import PluginManager
 from mailpile.plugins.keylookup import (LookupHandler, 
@@ -7,13 +9,15 @@ from mailpile.mailutils import Email
 
 import pgpdump
 
+
 _ = lambda t: t
+GLOBAL_KEY_CACHE = {}
 
 
 class EmailKeyLookupHandler(LookupHandler, Search):
     NAME = _("E-mail keys")
     PRIORITY = 5
-    TIMEOUT = 10  # 2 seconds per message we are willing to parse
+    TIMEOUT = 25  # 5 seconds per message we are willing to parse
     LOCAL = True
 
     def __init__(self, session, *args, **kwargs):
@@ -27,15 +31,30 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         results = {}
         terms = ['from:%s' % address, 'has:pgpkey']
         session, idx, _, _ = self._do_search(search=terms)
+        deadline = time.time() + (0.75 * self.TIMEOUT)
         for messageid in session.results[:5]:
+            for key in self._get_keys(messageid):
+                results.update(self._get_keydata(key))
+            if len(results) > 5 or time.time() > deadline:
+                break
+        return results
+
+    def _get_keys(self, messageid):
+        global GLOBAL_KEY_CACHE
+        if len(GLOBAL_KEY_CACHE) > 50:
+            GLOBAL_KEY_CACHE = {}
+
+        keys = GLOBAL_KEY_CACHE.get(messageid, [])
+        if not keys:
             email = Email(self._idx(), messageid)
             attachments = email.get_message_tree("attachments")["attachments"]
             for part in attachments:
                 if part["mimetype"] == "application/pgp-keys":
-                    key = part["part"].get_payload(None, True)
-                    results.update(self._get_keydata(key))
-
-        return results
+                    keys.append(part["part"].get_payload(None, True))
+                    if len(keys) > 5:  # Just to set some limit...
+                        break
+            GLOBAL_KEY_CACHE[messageid] = keys
+        return keys
 
     def _get_keydata(self, data):
         results = {}
@@ -62,6 +81,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
                     "email": m.user_email})
 
         return results
+
 
 register_crypto_key_lookup_handler(EmailKeyLookupHandler)
 

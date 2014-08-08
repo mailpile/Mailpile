@@ -1,4 +1,5 @@
 import math
+import traceback
 from mailpile.commands import Command
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
@@ -40,6 +41,7 @@ def _score_validity(validity, local=False):
 
 
 def _update_scores(key_id, key_info, known_keys_list):
+    """Update scores and score explanations"""
     key_info["score"] = sum([score for source, (score, reason)
                              in key_info.get('scores', {}).iteritems()
                              if source != 'Known keys'])
@@ -72,8 +74,23 @@ def _update_scores(key_id, key_info, known_keys_list):
     key_info['score_stars'] = (max(1, min(int(round(log_score)), 5))
                                * (-1 if (key_info['score'] < 0) else 1))
 
-    if "on_keychain" not in key_info:
-        key_info["on_keychain"] = False
+
+def _normalize_key(key_info):
+    """Make sure expected attributes are on all keys"""
+    if not key_info.get("uids"):
+        key_info["uids"] = [{"name": "", "email": "", "comment": ""}]
+    for uid in key_info["uids"]:
+        uid["name"] = uid.get("name", _('Anonymous'))
+        uid["email"] = uid.get("email", '')
+        uid["comment"] = uid.get("comment", '')
+    for key, default in [('on_keychain', False),
+                         ('keysize', '0'),
+                         ('keytype_name', 'unknown'),
+                         ('created', '1970-01-01 00:00:00'),
+                         ('fingerprint', 'FINGERPRINT_IS_MISSING'),
+                         ('validity', '')]:
+        if key not in key_info:
+            key_info[key] = default
 
 
 def lookup_crypto_keys(session, address,
@@ -113,7 +130,9 @@ def lookup_crypto_keys(session, address,
             wanted = ungotten[:]
             results = RunTimed(timeout, h.lookup, address, get=wanted)
             ungotten[:] = wanted
-        except (TimedOut, IOError):
+        except (TimedOut, IOError, ValueError):
+            if session.config.sys.debug:
+                traceback.print_exc()
             results = {}
 
         for key_id, key_info in results.iteritems():
@@ -135,9 +154,10 @@ def lookup_crypto_keys(session, address,
                         found_keys[key_id]['uids'].append(uid)
             else:
                 found_keys[key_id] = key_info
-                found_keys[key_id]["origin"] = []
-            found_keys[key_id]["origin"].append(h.NAME)
+                found_keys[key_id]["origins"] = []
+            found_keys[key_id]["origins"].append(h.NAME)
             _update_scores(key_id, found_keys[key_id], known_keys_list)
+            _normalize_key(found_keys[key_id])
 
         # This updates and sorts ordered_keys in place. This will magically
         # also update the data on the viewable event, because Python.
