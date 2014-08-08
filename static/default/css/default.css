@@ -5550,6 +5550,7 @@ span.radio-list-item-detail {
 ul.items.grouped {
   background: #ffffff;
   border-radius: 3px;
+  border: 1px solid #b3b3b3;
 }
 ul.items li.separate {
   background: #ffffff;
@@ -5557,6 +5558,9 @@ ul.items li.separate {
   padding: 15px;
   border: 1px solid #b3b3b3;
   border-radius: 3px;
+}
+ul.items.grouped li.grouped:first-child {
+  border-top: 0px;
 }
 ul.items.grouped li.grouped {
   border-top: 1px solid #b3b3b3;
@@ -5570,6 +5574,20 @@ ul.items li.grouped h5 {
 /* REBAR: Move these more global styles to Rebar */
 table.background-white {
   background: #ffffff;
+}
+/* Clearing */
+/* REBAR: Move these more global styles to clearing.less */
+.add-right {
+  margin-right: 20px;
+}
+.add-right-half {
+  margin-right: 10px;
+}
+.add-left {
+  margin-left: 20px;
+}
+.add-left-half {
+  margin-left: 10px;
 }
 /* Response Rectangles - Tags & Contacts */
 .rectangles-container {
@@ -6530,6 +6548,9 @@ li.compose-attachment img {
   font-family: Helvetica, Arial, sans-serif;
 }
 /* Modals */
+.modal-title .title {
+  text-transform: capitalize;
+}
 .modal-body-light-gray {
   background: #f6f6f6;
 }
