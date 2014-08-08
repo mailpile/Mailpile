@@ -1953,7 +1953,7 @@ class Help(Command):
             command = self.args[0]
             for cls in COMMANDS:
                 name = cls.SYNOPSIS[1] or cls.SYNOPSIS[2]
-                width = len(name)
+                width = len(name or '')
                 if name and name == command:
                     order = 1
                     cmd_list = {'_main': (name, cls.SYNOPSIS[3],
