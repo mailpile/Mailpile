@@ -1828,6 +1828,7 @@ class ConfigManager(ConfigDict):
     def stop_workers(config):
         with config._lock:
             worker_list = ([config.http_worker,
+                            config.async_worker,
                             config.slow_worker,
                             config.cron_worker] +
                            config.other_workers +
