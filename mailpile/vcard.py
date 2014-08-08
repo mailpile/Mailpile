@@ -513,7 +513,8 @@ class SimpleVCard(object):
                     dedup[-1].set_attr('x-rank', rank)
 
             for line in lines[1:]:
-                if line.name in ('version',):  # Do not merge these
+                if line.name in self.UNREMOVABLE:
+                    # Do not merge these
                     continue
                 if (dedup[-1].name == line.name and
                         dedup[-1].value == line.value):
