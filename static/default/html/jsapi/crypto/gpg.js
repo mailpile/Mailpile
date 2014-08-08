@@ -104,4 +104,8 @@ $(document).on('click', '.crypto-key-import', function(e) {
 
 
 /* Crypto - Key Use */
+$(document).on('change', '.crypto-key-policy', function() {
+  
+  alert('Change Key Policy to: ' + $(this).val() + ' for fingerprint: ' + $(this).data('fingerprint'));
 
+});

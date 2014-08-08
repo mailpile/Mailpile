@@ -50,6 +50,10 @@ class MailpileCommand(Extension):
                             ] = self._show_message_encryption
         environment.filters['show_message_encryption'
                             ] = self._show_message_encryption
+        environment.globals['show_crypto_policy'
+                            ] = self._show_crypto_policy
+        environment.filters['show_crypto_policy'
+                            ] = self._show_crypto_policy
         environment.globals['contact_url'] = self._contact_url
         environment.filters['contact_url'] = self._contact_url
         environment.globals['contact_name'] = self._contact_name
@@ -391,7 +395,44 @@ class MailpileCommand(Extension):
             'message': message
         }
 
-        return classes
+    _DEFAULT_CRYPTO_POLICY = [
+        _("Automatic"),
+        _("Mailpile will intelligently try to guess and suggest the best "
+          "security with this given contact")]
+    _CRYPTO_POLICY = {
+        "default": [
+            _("Automatic"),
+            _("Mailpile will intelligently try to guess and suggest the best "
+              "security with this given contact")],
+        "none": [
+            _("Don't Sign or Encrypt"),
+            _("Messages will not be encrypted nor signed by your encryption key")],
+        "sign": [
+            _("Only Sign"),
+            _("Messages will only be signed by your encryption key")],
+        "encrypt": [
+            _("Only Encrypt"),
+            _("Messages will only be encrypted but not signed by your encryption key")],
+        "sign-encrypt": [
+            _("Always Encrypt & Sign"),
+            _("Messages will be both encrypted and signed by your encryption key")]
+    }
+
+    @classmethod
+    def _show_crypto_policy(self, policy):
+        # This avoids crashes when attributes are missing.
+        try:
+            if policy.startswith('hack the planet'):
+                pass
+        except UndefinedError:
+            policy = ''
+
+        text, message = self._CRYPTO_POLICY.get(policy, self._DEFAULT_CRYPTO_POLICY)
+
+        return {
+            'text': text,
+            'message': message
+        }
 
     @classmethod
     def _contact_url(self, person):
