@@ -36,35 +36,29 @@ class KeylookupDNSPKILookup(KeylookupBaseTest):
     def test_lookup_dnspki(self):
         with patch('DNS.Request') as dns_mock:
             dns_mock.return_value.req.return_value.answers = DNSPKA_MOCK_RETURN
-            d = DNSPKALookupHandler()
+            d = DNSPKALookupHandler(None, {})
             res = d.lookup('test@mailpile.is')
 
         self.assertIsNotNone(res)
-        self.assertEqual(len(res), 2)
-        self.assertEqual(len(res[0].keys()), len(res[1].keys()))
-        self.assertEqual(res[0][fpr]["fingerprint"], fpr)
-        self.assertEqual(res[0][fpr]["url"], url)
+        self.assertEqual(res[fpr]["fingerprint"], fpr)
+        self.assertEqual(res[fpr]["url"], url)
 
 
 class KeylookupPGPKeyserverLookup(KeylookupBaseTest):
     def test_lookup_pgpkeyserver(self):
         with patch('mailpile.crypto.gpgi.GnuPG.search_key') as gpg_mock:
             gpg_mock.return_value = GPG_MOCK_RETURN
-            d = KeyserverLookupHandler(None)
+            d = KeyserverLookupHandler(None, {})
             res = d.lookup('test@mailpile.is')
         self.assertIsNotNone(res)
-        self.assertEqual(len(res), 2)
-        self.assertEqual(len(res[0].keys()), len(res[1].keys()))
 
 
 class KeylookupEmailLookup(KeylookupBaseTest):
     def test_lookup_emailkeys(self):
         m = get_shared_mailpile()[0]
-        d = EmailKeyLookupHandler(m._session)
+        d = EmailKeyLookupHandler(m._session, {})
         res = d.lookup('smari@mailpile.is')
         self.assertIsNotNone(res)
-        self.assertEqual(len(res), 2)
-        self.assertEqual(len(res[0].keys()), len(res[1].keys()))
 
 
 class KeylookupOverallTest(KeylookupBaseTest):

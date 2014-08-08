@@ -138,7 +138,7 @@ def lookup_crypto_keys(session, address,
         for key_id, key_info in results.iteritems():
             if key_id in found_keys:
                 old_scores = found_keys[key_id].get('scores', {})
-                old_uids = found_keys[key_id].get('uids', [])
+                old_uids = found_keys[key_id].get('uids', [])[:]
                 found_keys[key_id].update(key_info)
                 if 'scores' in found_keys[key_id]:
                     found_keys[key_id]['scores'].update(old_scores)

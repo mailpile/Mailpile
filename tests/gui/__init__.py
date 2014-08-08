@@ -8,6 +8,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from mailpile.httpd import HttpWorker
 from tests import MailPileUnittest, get_shared_mailpile
 
+from mailpile.safe_popen import MakePopenUnsafe
+
+MakePopenUnsafe()
+
 
 class ElementHasClass(object):
     def __init__(self, locator_tuple, class_name):
@@ -174,11 +178,6 @@ class MailpileSeleniumTest(MailPileUnittest):
 
     @classmethod
     def setUpClass(cls):
-        # Undo the monkey-patching, to make Selenium happy
-        import subprocess
-        import mailpile.safe_popen
-        subprocess.Popen = mailpile.safe_popen.Unsafe_Popen
-
         MailpileSeleniumTest._start_selenium_driver()
         MailpileSeleniumTest._start_web_server()
 
