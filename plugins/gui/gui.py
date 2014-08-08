@@ -41,9 +41,9 @@ def _real_startup(config):
         mailpile.auth.SetLoggedIn(None, user='GUI plugin client',
                                         session_id=session_id)
         cookie = config.http_worker.httpd.session_cookie
-        base_url = 'http://%s:%s' % (config.sys.http_host,
-                                     config.sys.http_port)
-  
+        sspec = config.http_worker.httpd.sspec
+        base_url = 'http://%s:%s' % sspec
+
         script_dir = os.path.dirname(os.path.realpath(__file__))
         script = os.path.join(script_dir, 'gui-o-matic.py')
 
