@@ -764,6 +764,7 @@ class SetupProfiles(SetupCrypto):
                 "note": note,
                 "pgp_keys": [],  # FIXME
                 "email": email,
+                "photo": profile.get('photo', [{}])[0].get('photo', ''),
                 "auto_configurable": self._auto_configurable(email)
             }
         for key, info in (secret_keys or {}).iteritems():
