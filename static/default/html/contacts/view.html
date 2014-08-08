@@ -2,7 +2,12 @@
 {% block title %}{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}{% endblock %}
 {% block content %}
 <div id="contact-view" class="content-normal">
-{% if result.contact %}  
+{% if result.contact %}
+  {% if result.contact.fn %}
+  {% set name = result.contact.fn %}
+  {% else %}
+  {% set name = _("No Name") %}
+  {% endif %}
   <ul class="contact-detail">
     <li>
       <div class="clearfix">
@@ -11,43 +16,59 @@
     {% else %}
       <img class="contact-avatar left" width="80" src="{{ show_avatar("") }}">
     {% endif %}
-    <h2  class="contact-name ">{% if result.contact.fn %}{{ result.contact.fn }}{% else %}{{_("No Name")}}{% endif %}</h2>
+    <h2  class="contact-name ">{{name}}</h2>
     {% if result.contact.kind == 'profile' %}
       <h5 class="contact-subname">{{_("Hey that's you")}} :)</h5>
     {% endif %}
       </div>
     </li>
+  </ul>
+  <ul class="items grouped">
   {% if result.contact.email %}
     {% for email in result.contact.email %}
-    <li>
+    <li class="grouped">
       <h5>{{email.email}}</h5>
       <a class="compose-to-email" href="mailto:{{ email.email }}"><span class="icon-compose"></span> {{_("Compose")}}</a> &nbsp;&nbsp;
-      <a class="search-by-email" href="/search/?q={{ email.email }}"><span class="icon-search"></span> {{_("Search")}}</a> 
+      <a class="search-by-email" href="/search/?q={{ email.email }}"><span class="icon-search"></span> {{_("Search Messages")}}</a>
     </li>
     {% endfor %}
   {% endif %}
   </ul>
 
   <h4>{{_("Security & Keys")}}</h4>
-  <ul class="contact-detail">
+  <ul class="items grouped">
+    <li class="grouped">
+      <select id="crypto-policy">
+        {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
+        {% set crypto_policy = show_crypto_policy(policy) %}
+        <option value="{{ policy }}"
+          {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected"{% endif %}
+          data-message="{{crypto_policy.message}}">{{crypto_policy.text}}</option>
+        {% endfor %}
+      </select>
+      {{_("messages when communicating with")}} {{name}}
+    </li>
     {% set keys = mailpile("crypto/gpg/keylist", result.contact.email.0.email).result %}  
     {% if keys %}
     {% for id, key in keys.iteritems() %}
-    <li>
-      <select name="contact-key" class="contact-key-use right">
-        <option value="true">Use Key</option>
-        <option value="false">Don't Use Key</option>
+    <li class="grouped">
+      <select class="crypto-key-policy right" data-fingerprint="{{key.fingerprint}}">
+        <option value="true">Use This Key</option>
+        <option value="false">Don't Use This Key</option>
       </select>
       <h5><span class="icon-fingerprint"></span> {{ nice_fingerprint(key.fingerprint) }}</h5>
       <h5><span class="icon-key"></span> {{id[8:]}}</h5>
       <a href="#" class="show-key-details" data-keyid="{{id[8:]}}">See Details</a>
-      <div id="contact-key-details-{{id[8:]}}" class="contact-key-details">
+      <div id="contact-key-details-{{id[8:]}}" class="contact-key-details clearfix">
+        <div class="left add-right">
         Created: <strong>{{key['creation-date']}}</strong><br>
         Expires: <strong>{{key['revocation-date']}}</strong><br>
         Capabilities: <strong>{{capabilities}}</strong><br>
         Length: <strong>{{key.keysize}}</strong><br>
         Type: <strong>{{key.keytype}}</strong><br>
         Trust: <strong>{{key.trust}}</strong><br><br>
+        </div>
+        <div class="left">
         {% for uid in key.uids %}
           {% if uid.name or uid.email or uid.comment %}
           {{uid.name}}<br>
@@ -56,6 +77,7 @@
           {{uid['creation-date']}}
           {% endif %}
         {% endfor %}
+        </div>
       </div>
     </li>
     {% endfor %}
@@ -65,16 +87,9 @@
       <p><a href="#" class="button-alert"><span class="icon-key"></span> {{_("Find Encryption Keys")}}</a></p>
     </li>
     {% endif %}
-    <li>
-      <h5>{{_("Crypto Policy")}}</h5>
-      <select id="crypto-policy">
-        {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
-        <option value="{{ policy }}" {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected"{% endif %}>{{ _(policy) }}</option>
-        {% endfor %}
-      </select>
-    </li>
   </ul>
 
+  {# FIXME: Commenting out for Beta
   <h4>{{_("Stats")}}</h4>
   <ul class="contact-detail">
     <li>
@@ -92,29 +107,32 @@
       {% endif %}
     </li>
   </ul>
+  #}
 
   <h4>{{_("Conversations")}}</h4>
   {% set contact_search = "email:" + result.contact.email.0.email %}
   {% set conversations = mailpile("search", contact_search).result %}
   {% if conversations %}
   <ul class="contact-tag-filter">
+    <!-- FIXME: Commented out for Beta
     <li><select><option>Most Recent</option><option>Longest Conversations</option><option>Oldest</option></select></li>
+    -->
     {% if conversations.data and conversations.data.tags %}
     {% for tid, tag in conversations.data.tags.iteritems() %}
     {% if tag.display in ("priority", "tag", "archive") %}
-    <li><a href="" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tid}}"><span class="{{tag.icon}}"></span> {{tag.name}}</a></li>
+    <li><a href="/search/?q=from:{{result.contact.email.0.email}}&tag:{{tag.slug}}" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tid}}"><span class="{{tag.icon}}"></span> {{tag.name}}</a></li>
     {% endif %}
     {% endfor %} 
     {% endif %}
   </ul>
-  <ul class="contact-detail">
+  <ul class="items grouped">
     {% for mid in conversations.thread_ids %}
       {% set thread_mid = conversations.data.metadata[mid].thread_mid %}
       {% set conversation = conversations.data.metadata[mid] %}
       {% set thread_count = conversations.data.threads[thread_mid]|length + 1 %}
-      <li>
+      <li class="grouped">
         <a href="/thread/={{ mid }}/">{{ nice_subject(conversation) }}&nbsp;&nbsp;
-          <span class="contact-detail-light"><span class="icon-inbox"></span> {{ thread_count }} Messages &nbsp; <span class="icon-social"></span> {{ conversation.to_aids|length + conversation.cc_aids|length }} People</span>
+          <span class="text-detail"><span class="icon-message"></span> {{ thread_count }} Messages &nbsp; <span class="icon-social"></span> {{ conversation.to_aids|length + conversation.cc_aids|length }} People</span>
         </a>
       </li>
     {% endfor %}  
