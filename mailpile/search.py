@@ -782,7 +782,8 @@ class MailIndex:
 
     def index_email(self, session, email):
         # Extract info from the email object...
-        msg = email.get_msg(pgpmime=session.config.prefs.index_encrypted)
+        msg = email.get_msg(pgpmime=session.config.prefs.index_encrypted,
+                            crypto_state_feedback=False)
         msg_mid = email.msg_mid()
         msg_info = email.get_msg_info()
         msg_size = email.get_msg_size()

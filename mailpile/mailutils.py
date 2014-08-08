@@ -633,11 +633,39 @@ class Email(object):
         if fd:
             return ParseMessage(fd, pgpmime=pgpmime, config=self.config)
 
-    def get_msg(self, pgpmime=True):
+    def get_msg(self, pgpmime=True, crypto_state_feedback=True):
         if pgpmime:
             if not self.msg_parsed_pgpmime:
                 self.msg_parsed_pgpmime = self._get_parsed_msg(pgpmime)
             result = self.msg_parsed_pgpmime
+
+            # Post-parse, we want to make sure that the crypto-state
+            # recorded on this message's metadata is up to date.
+            if (crypto_state_feedback and
+                    self.config.tags and
+                    self.msg_idx_pos >= 0 and
+                    not self.ephemeral_mid):
+                import mailpile.plugins.cryptostate as cs
+                kw = cs.meta_kw_extractor(self.index, self.msg_mid(), result,
+                                          0, 0)  # msg_size, msg_ts = ignored
+                msg_info = self.get_msg_info()
+                msg_tags = sorted([t for t
+                                   in msg_info[self.index.MSG_TAGS].split(',')
+                                   if t])
+
+                # Note: this has the side effect of cleaning junk off the
+                #       tag list, not just updating crypto state.
+                def tag_not_crypto(tag_id):
+                    tag = self.config.get_tag(tag_id)
+                    return tag and tag.slug[:6] not in ('mp_enc', 'mp_sig')
+                new_tags = sorted([t for t in msg_tags if tag_not_crypto(t)] +
+                                  [ti.split(':', 1)[0] for ti in kw
+                                   if ti.endswith(':in')])
+
+                if msg_tags != new_tags:
+                    msg_info[self.index.MSG_TAGS] = ','.join(new_tags)
+                    self.index.set_msg_at_idx_pos(self.msg_idx_pos, msg_info)
+
         else:
             if not self.msg_parsed:
                 self.msg_parsed = self._get_parsed_msg(pgpmime)
