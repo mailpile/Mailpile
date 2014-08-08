@@ -134,16 +134,26 @@ $(document).on('click', '.message-action-import-key', function() {
 
 /* Message - Crypto Feedback Actions */
 $(document).on('click', '.message-crypto-action', function() {
+  Mailpile.API.crypto_gpg_keylist_secret_get({}, function(result) {
+    var mid = $(this).data('mid');
+    var modal_html = $("#modal-send-public-key").html();
+    var modal_data = { name: 'User Name', address: 'name@address.org' };
+    $('#modal-full').html(_.template(modal_html, modal_data));
 
-  var mid = $(this).data('mid');
-  var modal_html = $("#modal-send-public-key").html();
-  var modal_data = { name: 'User Name', address: 'name@address.org' };
-  $('#modal-full').html(_.template(modal_html, modal_data));
-  $('#modal-full').modal({
-    backdrop: true,
-    keyboard: true,
-    show: true,
-    remote: false
+    var key_html = '';
+
+    _.each(result.result, function(key) {
+      key_html += _.template($('#template-modal-private-key-item').html(), key);
+    });
+
+    $('#crypto-private-key-list').html(key_html);
+
+    $('#modal-full').modal({
+      backdrop: true,
+      keyboard: true,
+      show: true,
+      remote: false
+    });
   });
 });
 
@@ -168,3 +178,4 @@ $(document).on('click', '.message-crypto-investigate', function() {
     });     
   }
 });
+

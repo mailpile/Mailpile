@@ -113,16 +113,16 @@
     </div>
     <span class="icon-fingerprint"></span>
     <div class="fingerprint">
-      <%= fingerprint.split(/(....)/).join(' ') %>
+      <%= Mailpile.nice_fingerprint(fingerprint) %>
     </div>
   </div>
   <div class="half-top clearfix">
     <div class="searchkey-result-score left">
-      <% if (score_stars == 5) { %>
-      <span class="icon-signature-unverified color-08-green"></span>
+      <% if (score_stars >= 5) { %>
+      <span class="icon-signature-verified color-08-green"></span>
       <% } else if (score_stars < 5 && score_stars > 2) { %>
       <span class="icon-signature-unverified color-06-blue"></span>
-      <% } else if (score_stars < 2 && score_stars > 0) { %>
+      <% } else if (score_stars <= 2 && score_stars >= 0) { %>
       <span class="icon-signature-unverified color-02-gray"></span>
       <% } else if (score_stars < 2 && score_stars > -3) { %>
       <span class="icon-signature-unknown color-10-orange"></span>
@@ -185,6 +185,27 @@
     <td class="selection text-right">6 selected</td>
     <td class="checkbox text-center"><input type="checkbox"></td>
   </tr>
+</script>
+
+
+<script id="template-modal-private-key-item" type="text/template">
+<li class="grouped">
+  <h4><span class="icon-fingerprint"></span> <%= Mailpile.nice_fingerprint(fingerprint) %></h4>
+  <% if (expiration_date) { %>
+  <em>Key expires: <%= expiration_date %></em>
+  <% } %>
+
+  <% _.each(uids, function(uid, key) { %>
+  <strong><%= uid.name %></strong><br>
+  <%= uid.email %><br><br>
+  <% }); %>
+
+  <%= keytype_name %> Key / <%= keysize %> bits
+  
+  <label class="right">
+  Send Key <input type="checkbox" name="send_key" value="<%= fingerprint %>">
+  </label>
+</li>
 </script>
 
 
