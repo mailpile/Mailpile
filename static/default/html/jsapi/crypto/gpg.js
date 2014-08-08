@@ -24,20 +24,21 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
       }
     }
 
-    var item_data = _.extend({avatar: avatar, uid: uid}, key);
-
+    var item_data = _.extend({avatar: avatar, uid: uid, address: query}, key);
     items_html += _.template($('#template-searchkey-result-item').html(), item_data);
-  })
+ 
+    // Set Lookup State
+    Mailpile.crypto_keylookup.push({fingerprints: key.fingerprint, address: query, origins: key.origins });
+ });
 
   $('#modal-full').find('.modal-body').data('result', '').html('<ul>' + items_html + '</ul>');
-
-  // Set Lookup State
-  this.crypto_keylookup = 'results';
 };
 
+
 Mailpile.render_find_encryption_keys_done = function(query) {
-  
-  if (this.crypto_keylookup !== 'results') {
+  if (this.crypto_keylookup.length) {
+    $('#modal-full').find('.progress-spinner').addClass('hide');    
+  } else {
     $('#modal-full').find('.modal-body').html('<p>Sorry, we could not find any encryption keys for the email address: <strong>' + query + '</strong></p>');
   }
 };
@@ -54,7 +55,7 @@ Mailpile.find_encryption_keys = function(query) {
     if (data.result) {
 
       $('#modal-full').find('.modal-title .title').html(data.message);
-      $('#modal-full').find('.progress-spinner').addClass('hide');
+//      $('#modal-full').find('.progress-spinner').addClass('hide');
 
       Mailpile.render_find_encryption_keys_found(data, query);
     }
@@ -87,14 +88,16 @@ Mailpile.find_encryption_keys = function(query) {
 $(document).on('click', '.crypto-key-import', function(e) {
 
   e.preventDefault();
-  var keydata = $(this).data('fingerprint');
-  Mailpile.API.async_crypto_keyimport_post(key_data, function(data, ev) {
+  var key_data = _.findWhere(Mailpile.crypto_keylookup, {fingerprints: $(this).data('fingerprint')});
+  console.log(key_data);
+
+  Mailpile.API.crypto_keyimport_post(key_data, function(result) {
 
     console.log('inside of crypto_gpg_receivekey_post');
-    console.log(data);
+    console.log(result);
 
-    if (response.status === 'success') {
-      $('#contact-search-keyserver-result').html('w00t, something here will happen with this key: ' + response.result);
+    if (result.status === 'success') {
+      $('#contact-search-keyserver-result').html('w00t, something here will happen with this key: ');
     } else {
       $('#contact-search-keyserver-result').html('Oopsie daisy something is rotten in Denmark :(');
     }

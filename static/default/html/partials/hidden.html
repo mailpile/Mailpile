@@ -132,10 +132,12 @@
       <em><%= score_reason %></em>
     </div>
     <div class="searchkey-result-details hide">
-      <h4>Key Score: <%= score %></h4>
-      <% _.each(origin, function(item) { %>
+      <h4>Score: <%= score %></h4>
+      <p>This encryption key score is calculated from the following facts
+      <% _.each(origins, function(item) { %>
       <%= item %><br>
       <% }); %>
+      </p>
     </div>
     <div class="searchkey-result-actions right">
       <% if (on_keychain) { %>

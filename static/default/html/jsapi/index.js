@@ -13,7 +13,7 @@ Mailpile = {
     search_cache:       [],
     messages_cache:     [],
     messages_composing: {},
-    crypto_keylookup:   'empty',
+    crypto_keylookup:   [],
     tags_cache:         [],
     contacts_cache:     [],
     keybindings:        [
