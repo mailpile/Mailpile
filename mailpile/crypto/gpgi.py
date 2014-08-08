@@ -67,7 +67,8 @@ class GnuPGResultParser:
 
         # First pass, set some initial state.
         for data in retvals[1]["status"]:
-            keyword = data[0].strip()
+            keyword = data[0].strip()  # The last keyword often ends in \n
+
             if keyword == "DECRYPTION_FAILED":
                 missing = [x[1] for x in retvals[1]["status"]
                            if x[0] == "NO_SECKEY"]
@@ -106,7 +107,7 @@ class GnuPGResultParser:
 
         # Second pass, this may update/mutate the state set above
         for data in retvals[1]["status"]:
-            keyword = data[0]
+            keyword = data[0].strip()  # The last keyword often ends in \n
 
             if keyword == "NO_SECKEY":
                 if "missing_keys" not in encryption_info:
@@ -143,7 +144,7 @@ class GnuPGResultParser:
             elif keyword == "NO_PUBKEY":
                 signature_info["status"] = "unknown"
 
-            elif keyword in ["TRUST_ULTIMATE", "TRUST_FULLY"]:
+            elif keyword in ("TRUST_ULTIMATE", "TRUST_FULLY"):
                 if signature_info["status"] == "unverified":
                     signature_info["status"] = "verified"
 
