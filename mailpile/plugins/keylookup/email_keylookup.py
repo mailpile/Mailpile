@@ -1,9 +1,10 @@
 import time
+import copy
 
 from mailpile.i18n import gettext
 from mailpile.plugins import PluginManager
-from mailpile.plugins.keylookup import (LookupHandler, 
-    register_crypto_key_lookup_handler)
+from mailpile.plugins.keylookup import LookupHandler
+from mailpile.plugins.keylookup import register_crypto_key_lookup_handler
 from mailpile.plugins.search import Search
 from mailpile.mailutils import Email
 
@@ -24,6 +25,11 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         LookupHandler.__init__(self, session, *args, **kwargs)
         Search.__init__(self, session)
 
+        global GLOBAL_KEY_CACHE
+        if len(GLOBAL_KEY_CACHE) > 50:
+            GLOBAL_KEY_CACHE = {}
+        self.key_cache = GLOBAL_KEY_CACHE
+
     def _score(self, key):
         return (1, _('Found key in local e-mail'))
 
@@ -33,31 +39,37 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         session, idx, _, _ = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
         for messageid in session.results[:5]:
-            for key in self._get_keys(messageid):
-                results.update(self._get_keydata(key))
+            for key_data in self._get_keys(messageid):
+                results[key_data["fingerprint"]] = copy.copy(key_data)
             if len(results) > 5 or time.time() > deadline:
                 break
         return results
 
-    def _get_keys(self, messageid):
-        global GLOBAL_KEY_CACHE
-        if len(GLOBAL_KEY_CACHE) > 50:
-            GLOBAL_KEY_CACHE = {}
+    def _getkey(self, keydata):
+        data = self.key_cache.get(keydata["fingerprint"])
+        if data:
+            return self._gnupg().import_keys(data)
+        else:
+            raise ValueError("Key not found")
 
-        keys = GLOBAL_KEY_CACHE.get(messageid, [])
+    def _get_keys(self, messageid):
+        keys = self.key_cache.get(messageid, [])
         if not keys:
             email = Email(self._idx(), messageid)
             attachments = email.get_message_tree("attachments")["attachments"]
             for part in attachments:
                 if part["mimetype"] == "application/pgp-keys":
-                    keys.append(part["part"].get_payload(None, True))
+                    key = part["part"].get_payload(None, True)
+                    for keydata in self._get_keydata(key):
+                        keys.append(keydata)
+                        self.key_cache[keydata["fingerprint"]] = key
                     if len(keys) > 5:  # Just to set some limit...
                         break
-            GLOBAL_KEY_CACHE[messageid] = keys
+            self.key_cache[messageid] = keys
         return keys
 
     def _get_keydata(self, data):
-        results = {}
+        results = []
         try:
             if "-----BEGIN" in data:
                 ak = pgpdump.AsciiData(data)
@@ -66,19 +78,23 @@ class EmailKeyLookupHandler(LookupHandler, Search):
         except TypeError:
             return []
 
-        curfp = None
+        now = time.time()
         for m in ak.packets():
             if isinstance(m, pgpdump.packet.PublicKeyPacket):
-                curfp = m.fingerprint
-                results[curfp] = {
+                results.append({
                     "fingerprint": m.fingerprint,
-                    "expires": m.expiration_time,
                     "created": m.datetime,
+                    "validity": ('e'
+                                 if (0 < (int(m.expiration_time or 0)) < now)
+                                 else ''),
+                    "keytype_name": (m.pub_algorithm or '').split()[0],
+                    "keysize": str(int(1.024 *
+                                       round(len('%x' % m.modulus) / 0.256))),
                     "uids": [],
-                }
+                })
             if isinstance(m, pgpdump.packet.UserIDPacket):
-                results[curfp]["uids"].append({"name": m.user_name, 
-                    "email": m.user_email})
+                results[-1]["uids"].append({"name": m.user_name,
+                                            "email": m.user_email})
 
         return results
 
