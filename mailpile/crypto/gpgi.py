@@ -754,12 +754,18 @@ class GnuPG:
                 pass
             elif line[0] == "pub":
                 curpub = line[1]
-                results[curpub] = {"created": datetime.fromtimestamp(int(line[4])),
-                                   "keytype_name": openpgp_algorithms[int(line[2])],
-                                   "keysize": line[3],
-                                   "uids": [],
-                                   "fingerprint": curpub
-                                  }
+                validity = line[6]
+                if line[5]:
+                    if int(line[5]) < time.time():
+                        validity += 'e'
+                results[curpub] = {
+                    "created": datetime.fromtimestamp(int(line[4])),
+                    "keytype_name": openpgp_algorithms[int(line[2])],
+                    "keysize": line[3],
+                    "validity": validity,
+                    "uids": [],
+                    "fingerprint": curpub
+                }
             elif line[0] == "uid":
                 email, name, comment = parse_uid(line[1])
                 results[curpub]["uids"].append({"name": name,

@@ -13,6 +13,7 @@ _ = lambda t: t
 class EmailKeyLookupHandler(LookupHandler, Search):
     NAME = _("E-mail keys")
     PRIORITY = 5
+    TIMEOUT = 10  # 2 seconds per message we are willing to parse
     LOCAL = True
 
     def __init__(self, session, *args, **kwargs):
@@ -24,10 +25,9 @@ class EmailKeyLookupHandler(LookupHandler, Search):
 
     def _lookup(self, address):
         results = {}
-        terms = ["from:%s" % x for x in address.split('@')]
-        terms.append("has:pgpkey")
+        terms = ['from:%s' % address, 'has:pgpkey']
         session, idx, _, _ = self._do_search(search=terms)
-        for messageid in session.results:
+        for messageid in session.results[:5]:
             email = Email(self._idx(), messageid)
             attachments = email.get_message_tree("attachments")["attachments"]
             for part in attachments:

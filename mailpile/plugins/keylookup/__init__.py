@@ -27,6 +27,18 @@ def _GnuPG(session):
     return gpg
 
 
+def _score_validity(validity, local=False):
+    if "r" in validity:
+        return (-1000, _('Key is revoked'))
+    elif "d" in validity:
+        return (-1000, _('Key is disabled'))
+    elif "e" in validity:
+        return (-100, _('Key has expired'))
+    elif local and ("f" in validity or "u" in validity):
+        return (50, _('Key is trusted'))
+    return (0, '')
+
+
 def _update_scores(key_id, key_info, known_keys_list):
     key_info["score"] = sum([score for source, (score, reason)
                              in key_info.get('scores', {}).iteritems()
@@ -36,30 +48,21 @@ def _update_scores(key_id, key_info, known_keys_list):
     # for some reason (e.g. UID changes on source keys) remote sources
     # suggest matches which our local search doesn't catch.
     if key_id in known_keys_list:
-        score = 0
-        known_info = known_keys_list[key_id]
-        if "e" in known_info["validity"]:
-            score += -100
-            reason = _('Key has expired')
-        elif "r" in known_info["validity"]:
-            score += -1000
-            reason = _('Key is revoked')
-        elif "d" in known_info["validity"]:
-            score += -1000
-            reason = _('Key is disabled')
-        elif "f" in known_info["validity"]:
-            score += 50
-            reason = _('Key is trusted')
-        elif "u" in known_info["validity"]:
-            score += 50
-            reason = _('Key is trusted')
-        else:
+        score, reason = _score_validity(known_keys_list[key_id]["validity"],
+                                        local=True)
+        if score == 0:
             score += 9
             reason = _('Key is on keychain')
 
         key_info["on_keychain"] = True
         key_info['score'] += score
         key_info['scores']['Known keys'] = [score, reason]
+
+    if "keysize" in key_info:
+        bits = int(key_info["keysize"])
+        score = bits // 1024
+        key_info['score'] += score
+        key_info['scores']['Key size'] = [score, _('Key is %d bits') % bits]
 
     sc, reason = max([(abs(score), reason)
                      for score, reason in key_info['scores'].values()])
@@ -73,11 +76,21 @@ def _update_scores(key_id, key_info, known_keys_list):
         key_info["on_keychain"] = False
 
 
-def lookup_crypto_keys(session, address, event=None, allowremote=True):
+def lookup_crypto_keys(session, address,
+                       event=None, allowremote=True, origins=None, get=None):
     known_keys_list = _GnuPG(session).list_keys()
     found_keys = {}
     ordered_keys = []
-    for handler in KEY_LOOKUP_HANDLERS:
+    if origins:
+        handlers = [h for h in KEY_LOOKUP_HANDLERS if h.NAME in origins]
+    else:
+        handlers = KEY_LOOKUP_HANDLERS
+    ungotten = get and get[:] or []
+    for handler in handlers:
+        if get and not ungotten:
+            # We have all the keys!
+            break
+
         h = handler(session, known_keys_list)
         if not allowremote and not h.LOCAL:
             continue
@@ -90,7 +103,16 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
             session.config.event_log.log_event(event)
 
         try:
-            results = RunTimed(h.TIMEOUT, h.lookup, address)
+            # We allow for more time when importing keys
+            timeout = h.TIMEOUT
+            if ungotten:
+                timeout *= 4
+
+            # h.lookup will remove found keys from the wanted list,
+            # but we have to watch out for the effects of timeouts.
+            wanted = ungotten[:]
+            results = RunTimed(timeout, h.lookup, address, get=wanted)
+            ungotten[:] = wanted
         except (TimedOut, IOError):
             results = {}
 
@@ -128,10 +150,6 @@ def lookup_crypto_keys(session, address, event=None, allowremote=True):
     return ordered_keys
 
 
-def import_crypto_key(session, address, fingerprints, origins, event=None):
-    return []
-
-
 ##[ API endpoints / commands ]#################################################
 
 class KeyLookup(Command):
@@ -163,7 +181,7 @@ class KeyImport(Command):
     """Import keys"""
     ORDER = ('', 0)
     SYNOPSIS = (None, 'crypto/keyimport', 'crypto/keyimport',
-                      '<address> <fingerprint> <origins ...>')
+                      '<address> <fingerprint,...> <origins ...>')
     HTTP_CALLABLE = ('POST',)
     HTTP_POST_VARS = {
         'address': 'The nick/address to find a key for',
@@ -174,15 +192,16 @@ class KeyImport(Command):
     def command(self):
         args = list(self.args)
         if args:
-            address, fprints, sources = args[0], args[1].split(','), args[2:]
+            address, fprints, origins = args[0], args[1].split(','), args[2:]
         else:
             address = self.data.get('address', [''])[0]
             fprints = self.data.get('fingerprints', [])
             origins = self.data.get('origins', [])
         assert(address or fprints or origins)
 
-        result = import_crypto_keys(self.session,
-                                    address, fingerprints, origins,
+        result = lookup_crypto_keys(self.session, address,
+                                    get=[f.strip() for f in fprints],
+                                    origins=origins,
                                     event=self.event)
 
         return self._success(_n('Imported %d key', 'Imported %d keys',
@@ -211,17 +230,40 @@ class LookupHandler:
     def _score(self, key):
         raise NotImplemented("Subclass and override _score")
 
+    def _getkey(self, key):
+        raise NotImplemented("Subclass and override _getkey")
+
+    def _gk_succeeded(self, result):
+        return 0 < (len(result.get('imported', [])) +
+                    len(result.get('updated', [])))
+
     def _lookup(self, address):
         raise NotImplemented("Subclass and override _lookup")
 
-    def lookup(self, address):
-        keys = self._lookup(address)
-        for key_id, key_info in keys.iteritems():
-            score, reason = self._score(key_info)
-            key_info["score"] = score
-            key_info['scores'] = {
-                self.NAME: [score, reason]
-            }
+    def lookup(self, address, get=None):
+        all_keys = self._lookup(address)
+        keys = {}
+        for key_id, key_info in all_keys.iteritems():
+            fprint = key_info.get('fingerprint', '')
+            if (not get) or fprint in get:
+
+                score, reason = self._score(key_info)
+                if 'validity' in key_info:
+                    vscore, vreason = _score_validity(key_info['validity'])
+                    if abs(vscore) > abs(score):
+                        reason = vreason
+                    score += vscore
+
+                key_info["score"] = score
+                key_info['scores'] = {
+                    self.NAME: [score, reason]
+                }
+                if get:
+                    get.remove(fprint)
+                    if self._gk_succeeded(self._getkey(key_info)):
+                        keys[key_id] = key_info
+                else:
+                    keys[key_id] = key_info
 
         return keys
 
@@ -238,7 +280,7 @@ class KeychainLookupHandler(LookupHandler):
         return (1, _('Found key in keychain'))
 
     def _getkey(self, key):
-        pass  # Key is already on keychain
+        return False  # Already on keychain
 
     def _lookup(self, address):
         address = address.lower()
@@ -271,7 +313,7 @@ class KeyserverLookupHandler(LookupHandler):
         return self._gnupg().search_key(address)
 
     def _getkey(self, key):
-        pass
+        return self._gnupg().recv_key(key['fingerprint'])
 
 
 register_crypto_key_lookup_handler(KeychainLookupHandler)
