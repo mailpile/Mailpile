@@ -176,9 +176,9 @@ $(document).on('click', '#button-tag-toggle-archive', function(e) {
 
 /* Tag - Update the Name & Slug */
 $(document).on('blur', '#data-tag-add-tag', function(e) {
-  Mailpile.tag_update($('#data-tag-tid').val(), 'name', $(this).val(), function() {
-    Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function() {
-      Mailpile.notification('success', 'Tag Name & Slug Updated');
+  Mailpile.tag_update($('#data-tag-tid').val(), 'name', $(this).val(), function(response) {
+    Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function(response) {
+      Mailpile.notification(response.status, '{{_("Tag Name & Slug Updated")}}');
     });
   });
 });
@@ -186,15 +186,15 @@ $(document).on('blur', '#data-tag-add-tag', function(e) {
 
 /* Tag - Update the Slug */
 $(document).on('blur', '#data-tag-add-slug', function(e) {
-  Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function() {
-    Mailpile.notification('success', 'Tag Name & Slug Updated');
+  Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function(response) {
+    Mailpile.notification(response.status, '{{("Tag Name & Slug Updated")}}');
   });
 });
 
 
 /* Tag - Update (multiple attribute events) */
 $(document).on('change', '#data-tag-display', function(e) {
-  Mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function() {
+  Mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function(response) {
     Mailpile.notification(response.status, response.message);
   });  
 });
@@ -202,7 +202,7 @@ $(document).on('change', '#data-tag-display', function(e) {
 
 /* Tag - Update parent */
 $(document).on('change', '#data-tag-parent', function(e) {
-  Mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function() {
+  Mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function(response) {
     Mailpile.notification(response.status, response.message);
   });  
 });
