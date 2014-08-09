@@ -15,13 +15,12 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
     if (uid) {
 
       var contact  = _.findWhere(Mailpile.instance.addresses, {address: uid.email});
-      console.log();
+      console.log(contact);
       var avatar   = '/static/img/avatar-default.png';
-
-      if (contact == true && contact.photo !== undefined) {
+      if (contact.photo) {
         avatar = contact.photo;
-        console.log(avatar);
       }
+      console.log(avatar);  
     }
 
     var item_data = _.extend({avatar: avatar, uid: uid, address: query}, key);
@@ -36,8 +35,9 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
 
 
 Mailpile.render_find_encryption_keys_done = function(query) {
+  $('#modal-full').find('.progress-spinner').addClass('hide');
   if (this.crypto_keylookup.length) {
-    $('#modal-full').find('.progress-spinner').addClass('hide');    
+    this.crypto_keylookup.length = [];
   } else {
     $('#modal-full').find('.modal-body').html('<p>Sorry, we could not find any encryption keys for the email address: <strong>' + query + '</strong></p>');
   }
@@ -53,17 +53,14 @@ Mailpile.find_encryption_keys = function(query) {
 
     // Render each result found
     if (data.result) {
-
       $('#modal-full').find('.modal-title .title').html(data.message);
-//      $('#modal-full').find('.progress-spinner').addClass('hide');
-
       Mailpile.render_find_encryption_keys_found(data, query);
     }
 
     // Running Search
+    console.log('AT DA data.runningsearch');
+    console.log(data.runningsearch);
     if (data.runningsearch) {
-      // Wire in UI feedback updates like this:
-      // data.result.runningsearch: PGP Keyservers ?
       var searching_data = { query: query };
       var searching_html = _.template($("#template-searchkey-running").html(), searching_data);
       $('#modal-full').find('.modal-body').html(searching_html);
@@ -71,7 +68,6 @@ Mailpile.find_encryption_keys = function(query) {
     else {
       Mailpile.render_find_encryption_keys_done(query);
     }
-
   });
 
   // Show Modal
@@ -101,7 +97,6 @@ $(document).on('click', '.crypto-key-import', function(e) {
     } else {
       $('#contact-search-keyserver-result').html('Oopsie daisy something is rotten in Denmark :(');
     }
-
   });
 });
 
