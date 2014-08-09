@@ -1098,7 +1098,7 @@ class Email(object):
 
         stripped = line.rstrip()
 
-        if stripped == '-----BEGIN PGP SIGNED MESSAGE-----':
+        if stripped == GnuPG.ARMOR_BEGIN_SIGNED:
             return 'pgpbeginsigned', 'pgpbeginsigned'
         if block == 'pgpbeginsigned':
             if line.startswith('Hash: ') or stripped == '':
@@ -1106,17 +1106,17 @@ class Email(object):
             else:
                 return 'pgpsignedtext', 'pgpsignedtext'
         if block == 'pgpsignedtext':
-            if (stripped == '-----BEGIN PGP SIGNATURE-----'):
+            if stripped == GnuPG.ARMOR_BEGIN_SIGNATURE:
                 return 'pgpsignature', 'pgpsignature'
             else:
                 return 'pgpsignedtext', 'pgpsignedtext'
         if block == 'pgpsignature':
-            if stripped == '-----END PGP SIGNATURE-----':
+            if stripped == GnuPG.ARMOR_END_SIGNATURE:
                 return 'pgpend', 'pgpsignature'
             else:
                 return 'pgpsignature', 'pgpsignature'
 
-        if stripped == '-----BEGIN PGP MESSAGE-----':
+        if stripped == GnuPG.ARMOR_BEGIN_ENCRYPTED:
             return 'pgpbegin', 'pgpbegin'
         if block == 'pgpbegin':
             if ':' in line or stripped == '':
@@ -1124,7 +1124,7 @@ class Email(object):
             else:
                 return 'pgptext', 'pgptext'
         if block == 'pgptext':
-            if stripped == '-----END PGP MESSAGE-----':
+            if stripped == GnuPG.ARMOR_END_ENCRYPTED:
                 return 'pgpend', 'pgpend'
             else:
                 return 'pgptext', 'pgptext'

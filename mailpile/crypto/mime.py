@@ -28,7 +28,7 @@ class SignatureFailureError(ValueError):
 
 ##[ Methods for unwrapping encrypted parts ]###################################
 
-def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None):
+def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties
@@ -70,7 +70,8 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None):
                 return UnwrapMimeCrypto(part,
                                         protocols=protocols,
                                         si=part.signature_info,
-                                        ei=part.encryption_info)
+                                        ei=part.encryption_info,
+                                        charsets=charsets)
 
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 part.signature_info = SignatureInfo()
@@ -102,7 +103,8 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None):
                 return UnwrapMimeCrypto(part,
                                         protocols=protocols,
                                         si=part.signature_info,
-                                        ei=part.encryption_info)
+                                        ei=part.encryption_info,
+                                        charsets=charsets)
 
         # If we are still multipart after the above shenanigans, recurse
         # into our subparts and unwrap them too.
@@ -111,12 +113,60 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None):
                 UnwrapMimeCrypto(subpart,
                                  protocols=protocols,
                                  si=part.signature_info,
-                                 ei=part.encryption_info)
+                                 ei=part.encryption_info,
+                                 charsets=charsets)
+
+    elif mimetype == 'text/plain':
+        UnwrapPlainTextCrypto(part, protocols=protocols,
+                                    si=part.signature_info,
+                                    ei=part.encryption_info,
+                                    charsets=charsets)
 
     else:
         # FIXME: This is where we would handle cryptoschemes that don't
         #        appear as multipart/...
         pass
+
+
+DEFAULT_CHARSETS = ['utf-8', 'iso-8859-1']
+
+def _decode(part, payload, charsets=None):
+    for cs in (c for c in ([part.get_content_charset() or None] +
+                           (charsets or DEFAULT_CHARSETS)) if c):
+        try:
+            return cs, payload.decode(cs)
+        except (UnicodeDecodeError, TypeError, LookupError):
+            pass
+    return '8bit', payload
+
+
+def UnwrapPlainTextCrypto(part, protocols=None, si=None, ei=None,
+                                charsets=None):
+    """
+    This method will replace encrypted and signed parts with their
+    contents and set part attributes describing the security properties
+    instead.
+    """
+    payload = part.get_payload().strip()
+
+    for crypto_cls in protocols.values():
+        crypto = crypto_cls()
+
+        if (payload.startswith(crypto.ARMOR_BEGIN_ENCRYPTED) and
+                payload.endswith(crypto.ARMOR_END_ENCRYPTED)):
+            si, ei, text = crypto.decrypt(payload)
+            # FIXME: Should we be doing something about charsets?
+            part.set_payload(text)
+            break
+
+        elif (payload.startswith(crypto.ARMOR_BEGIN_SIGNED) and
+                payload.endswith(crypto.ARMOR_END_SIGNED)):
+            si = crypto.verify(payload)
+            part.set_payload(crypto.remove_armor(payload))
+            break
+
+    part.signature_info = si or SignatureInfo()
+    part.encryption_info = ei or EncryptionInfo()
 
 
 ##[ Methods for encrypting and signing ]#######################################

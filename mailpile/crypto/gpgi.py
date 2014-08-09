@@ -375,6 +375,14 @@ class GnuPG:
     """
     Wrap GnuPG and make all functionality feel Pythonic.
     """
+    ARMOR_BEGIN_SIGNED    = '-----BEGIN PGP SIGNED MESSAGE-----'
+    ARMOR_BEGIN_SIGNATURE = '-----BEGIN PGP SIGNATURE-----'
+    ARMOR_END_SIGNATURE   = '-----END PGP SIGNATURE-----'
+    ARMOR_END_SIGNED      = '-----END PGP SIGNATURE-----'
+
+    ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
+    ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
+
     def __init__(self, session=None, use_agent=True):
         self.available = None
         self.gpgbinary = 'gpg'
@@ -665,6 +673,17 @@ class GnuPG:
         rp = GnuPGResultParser().parse(retvals)
         return (rp.signature_info, rp.encryption_info,
                 as_lines or rp.plaintext)
+
+    def remove_armor(self, text):
+        lines = text.strip().splitlines(True)
+        if lines[0].startswith(self.ARMOR_BEGIN_SIGNED):
+            for idx in reversed(range(0, len(lines))):
+                if lines[idx].startswith(self.ARMOR_BEGIN_SIGNATURE):
+                    lines = lines[:idx]
+                    while lines and lines[0].strip():
+                        lines.pop(0)
+                    break
+        return ''.join(lines).strip()
 
     def verify(self, data, signature=None):
         """
