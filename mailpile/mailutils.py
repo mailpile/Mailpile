@@ -28,6 +28,7 @@ from urllib import quote, unquote
 from mailpile.crypto.gpgi import GnuPG
 from mailpile.crypto.gpgi import OpenPGPMimeSigningWrapper
 from mailpile.crypto.gpgi import OpenPGPMimeEncryptingWrapper
+from mailpile.crypto.gpgi import OpenPGPMimeSignEncryptWrapper
 from mailpile.crypto.mime import UnwrapMimeCrypto
 from mailpile.crypto.state import EncryptionInfo, SignatureInfo
 from mailpile.i18n import gettext as _
@@ -244,21 +245,20 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
                                                    config.prefs.openpgp_header)
 
+    print 'CRYPTO POLICY IS: %s' % crypto_policy
     if 'openpgp' in crypto_policy:
-
-        # FIXME: Make a more efficient sign+encrypt wrapper
-
-        cleaner = lambda m: CleanMessage(config, m)
-        if 'sign' in crypto_policy:
-            msg = OpenPGPMimeSigningWrapper(config,
-                                            sender=sender,
-                                            cleaner=cleaner,
-                                            recipients=rcpts).wrap(msg)
-        if 'encrypt' in crypto_policy:
-            msg = OpenPGPMimeEncryptingWrapper(config,
-                                               sender=sender,
-                                               cleaner=cleaner,
-                                               recipients=rcpts).wrap(msg)
+        wrapper = None
+        if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
+            wrapper = OpenPGPMimeSignEncryptWrapper
+        elif 'sign' in crypto_policy:
+            wrapper = OpenPGPMimeSigningWrapper
+        elif 'encrypt' in crypto_policy:
+            wrapper = OpenPGPMimeEncryptingWrapper
+        if wrapper:
+            msg = wrapper(config,
+                          sender=sender,
+                          cleaner=lambda m: CleanMessage(config, m),
+                          recipients=rcpts).wrap(msg)
 
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
     msg['x-mp-internal-readonly'] = str(int(time.time()))

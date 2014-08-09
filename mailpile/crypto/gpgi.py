@@ -704,7 +704,8 @@ class GnuPG:
 
         return GnuPGResultParser().parse([None, retvals]).signature_info
 
-    def encrypt(self, data, tokeys=[], armor=True):
+    def encrypt(self, data, tokeys=[], armor=True,
+                            sign=False, fromkey=None):
         """
         >>> g = GnuPG()
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
@@ -716,6 +717,11 @@ class GnuPG:
         for r in tokeys:
             action.append("--recipient")
             action.append(r)
+        if sign:
+            action.append("--sign")
+        if sign and fromkey:
+            action.append("--local-user")
+            action.append(fromkey)
         retvals = self.run(action, gpg_input=data)
         return retvals[0], "".join(retvals[1]["stdout"])
 
@@ -891,6 +897,19 @@ class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
 
     def get_keys(self, who):
         return GetKeys(self.crypto, self.config, who)
+
+
+class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
+    CRYPTO_CLASS = GnuPG
+    CONTAINER_PARAMS = (('protocol', 'application/pgp-encrypted'), )
+    ENCRYPTION_TYPE = 'application/pgp-encrypted'
+    ENCRYPTION_VERSION = 1
+
+    def _encrypt(self, message_text, tokeys=None, armor=False):
+        from_key = self.get_keys([self.sender])[0]
+        return self.crypto.encrypt(message_text,
+                                   tokeys=tokeys, armor=True,
+                                   sign=True, fromkey=from_key)
 
 
 class GnuPGExpectScript(threading.Thread):

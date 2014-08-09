@@ -265,6 +265,10 @@ class MimeEncryptingWrapper(MimeWrapper):
         self.attach(self.version)
         self.attach(self.enc_data)
 
+    def _encrypt(self, message_text, tokeys=None, armor=False):
+        return self.crypto.encrypt(message_text,
+                                   tokeys=tokeys, armor=True)
+
     def wrap(self, msg):
         MimeWrapper.wrap(self, msg)
 
@@ -274,10 +278,10 @@ class MimeEncryptingWrapper(MimeWrapper):
         message_text = Normalize(self.flatten(msg))
 
         to_keys = set(self.get_keys(self.recipients + [self.sender]))
-        status, enc = self.crypto.encrypt(message_text,
-                                          tokeys=to_keys, armor=True)
+        status, enc = self._encrypt(message_text,
+                                    tokeys=to_keys, armor=True)
         if status == 0:
             self.enc_data.set_payload(enc)
             return self.container
         else:
-            raise EncryptionFailureError(_('Failed to sign message!'))
+            raise EncryptionFailureError(_('Failed to encrypt message!'))
