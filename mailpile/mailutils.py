@@ -99,6 +99,8 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             'openpgp': MakeGnuPG
         })
     else:
+        if not hasattr(fd, 'read'):  # Not a file, is it a function?
+            fd = fd()
         message = email.parser.Parser().parse(fd)
         for part in message.walk():
             part.signature_info = SignatureInfo()
@@ -669,14 +671,12 @@ class Email(object):
         return fd.tell()
 
     def _get_parsed_msg(self, pgpmime, update_cache=False):
-        fd = self.get_file()
-        if fd:
-            cache_id = self.msg_idx_pos if (self.msg_idx_pos >= 0 and
-                                            not self.ephemeral_mid) else None
-            return ParseMessage(fd, cache_id=cache_id,
-                                    update_cache=update_cache,
-                                    pgpmime=pgpmime,
-                                    config=self.config)
+        cache_id = self.msg_idx_pos if (self.msg_idx_pos >= 0 and
+                                        not self.ephemeral_mid) else None
+        return ParseMessage(self.get_file, cache_id=cache_id,
+                                           update_cache=update_cache,
+                                           pgpmime=pgpmime,
+                                           config=self.config)
 
     def _update_crypto_state(self):
         if not (self.config.tags and
