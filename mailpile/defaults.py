@@ -68,6 +68,7 @@ CONFIG_RULES = {
                             'signencrypt'),
         'crypto_policy':   (_('Default encryption policy for outgoing mail'),
                             str, 'none'),
+        'inline_pgp':      (_('Use inline PGP when possible'), bool,     True),
         'default_order':   (_('Default sort order'), str,          'rev-date'),
         'obfuscate_index': (_('Key to use to scramble the index'), str,    ''),
         'index_encrypted': (_('Make encrypted content searchable'),

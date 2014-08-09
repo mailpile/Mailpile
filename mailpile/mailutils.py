@@ -245,7 +245,6 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
                                                    config.prefs.openpgp_header)
 
-    print 'CRYPTO POLICY IS: %s' % crypto_policy
     if 'openpgp' in crypto_policy:
         wrapper = None
         if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
@@ -255,10 +254,12 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         elif 'encrypt' in crypto_policy:
             wrapper = OpenPGPMimeEncryptingWrapper
         if wrapper:
+            cpi = config.prefs.inline_pgp
             msg = wrapper(config,
                           sender=sender,
                           cleaner=lambda m: CleanMessage(config, m),
-                          recipients=rcpts).wrap(msg)
+                          recipients=rcpts
+                          ).wrap(msg, prefer_inline=cpi)
 
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
     msg['x-mp-internal-readonly'] = str(int(time.time()))

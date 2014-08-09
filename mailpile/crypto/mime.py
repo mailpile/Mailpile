@@ -202,6 +202,19 @@ class MimeWrapper:
         Generator(buf).flatten(msg, unixfrom=unixfrom, linesep='\r\n')
         return buf.getvalue()
 
+    def get_only_text_part(self, msg):
+        count = 0
+        only_text_part = None
+        for part in msg.walk():
+            if part.is_multipart():
+                continue
+            count += 1
+            if part.get_content_type() != 'text/plain' or count != 1:
+                return False
+            else:
+                only_text_part = part
+        return only_text_part
+
     def wrap(self, msg):
         for h in msg.keys():
             hl = h.lower()
@@ -227,20 +240,34 @@ class MimeSigningWrapper(MimeWrapper):
                       "attachment; filename=\"signature.asc\"")):
             self.sigblock.add_header(h, v)
 
-    def wrap(self, msg):
-        MimeWrapper.wrap(self, msg)
-        self.attach(msg)
-        self.attach(self.sigblock)
-
-        message_text = Normalize(self.flatten(msg))
+    def wrap(self, msg, prefer_inline=False):
         from_key = self.get_keys([self.sender])[0]
-        status, sig = self.crypto.sign(message_text,
-                                       fromkey=from_key, armor=True)
-        if status == 0:
-            self.sigblock.set_payload(sig)
-            return self.container
+
+        if prefer_inline:
+            prefer_inline = self.get_only_text_part(msg)
+
+        if prefer_inline is not False:
+            message_text = Normalize(prefer_inline.get_payload())
+            status, sig = self.crypto.sign(message_text,
+                                           fromkey=from_key,
+                                           clearsign=True,
+                                           armor=True)
+            if status == 0:
+                prefer_inline.set_payload(sig)
+                return msg
+
         else:
-            raise SignatureFailureError(_('Failed to sign message!'))
+            MimeWrapper.wrap(self, msg)
+            self.attach(msg)
+            self.attach(self.sigblock)
+            message_text = Normalize(self.flatten(msg))
+            status, sig = self.crypto.sign(message_text,
+                                           fromkey=from_key, armor=True)
+            if status == 0:
+                self.sigblock.set_payload(sig)
+                return self.container
+
+        raise SignatureFailureError(_('Failed to sign message!'))
 
 
 class MimeEncryptingWrapper(MimeWrapper):
@@ -269,19 +296,32 @@ class MimeEncryptingWrapper(MimeWrapper):
         return self.crypto.encrypt(message_text,
                                    tokeys=tokeys, armor=True)
 
-    def wrap(self, msg):
-        MimeWrapper.wrap(self, msg)
-
-        del msg['MIME-Version']
-        if self.cleaner:
-            self.cleaner(msg)
-        message_text = Normalize(self.flatten(msg))
-
+    def wrap(self, msg, prefer_inline=False):
         to_keys = set(self.get_keys(self.recipients + [self.sender]))
-        status, enc = self._encrypt(message_text,
-                                    tokeys=to_keys, armor=True)
-        if status == 0:
-            self.enc_data.set_payload(enc)
-            return self.container
+
+        if prefer_inline:
+            prefer_inline = self.get_only_text_part(msg)
+
+        if prefer_inline is not False:
+            message_text = Normalize(prefer_inline.get_payload())
+            status, enc = self._encrypt(message_text,
+                                        tokeys=to_keys,
+                                        armor=True)
+            if status == 0:
+                prefer_inline.set_payload(enc)
+                return msg
+
         else:
-            raise EncryptionFailureError(_('Failed to encrypt message!'))
+            MimeWrapper.wrap(self, msg)
+            del msg['MIME-Version']
+            if self.cleaner:
+                self.cleaner(msg)
+            message_text = Normalize(self.flatten(msg))
+            status, enc = self._encrypt(message_text,
+                                        tokeys=to_keys,
+                                        armor=True)
+            if status == 0:
+                self.enc_data.set_payload(enc)
+                return self.container
+
+        raise EncryptionFailureError(_('Failed to encrypt message!'))
