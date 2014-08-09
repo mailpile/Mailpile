@@ -28,7 +28,7 @@ Unsafe_Popen = subprocess.Popen
 PIPE = subprocess.PIPE
 
 SERIALIZE_POPEN_STRICT = True
-SERIALIZE_POPEN_ALWAYS = True
+SERIALIZE_POPEN_ALWAYS = False
 SERIALIZE_POPEN_LOCK = threading.Lock()
 
 
