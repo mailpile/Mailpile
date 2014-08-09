@@ -5,12 +5,12 @@
     <label class="clearfix">What is your personal security needs?</label>
     <p>
       <select name="security_model">
-        <option>You wear a hat, underwear, and socks made of tin foil</option>
-        <option>Relatively paranoid</option>
-        <option>Above average</option>
-        <option>Privacy concerned</option>
-        <option>Normal person</option>
-        <option>Totally unconcerned</option>
+        <option>You Collect Tinfoil Hats</option>
+        <option>Relatively Paranoid</option>
+        <option>Above Average</option>
+        <option>Privacy Concerned</option>
+        <option>Normal Person</option>
+        <option>Totally unconcerned (really?)</option>
       </select>
     </p>
     <label>
@@ -42,12 +42,20 @@
       Obfuscate your search index
     </label>
     <label>
-      <input type="checkbox" name="security_tor">
+      <input type="checkbox" name="security_tor" checked="">
       Send web requests through Tor for better anonymity and privacy
     </label>
     <label>
       <input type="checkbox" name="security_upload_keyservers">
       Upload your public encryption key to keyservers for better discovery
+    </label>
+    <label>
+      <input type="checkbox" name="security_upload_keyservers">
+      Attach public key to outgoing email
+    </label>
+    <label>
+      <input type="checkbox" name="security_use_gravatar">
+      Download contact pictures via Gravatar securely
     </label>
     <div class="text-center">
       <a href="#advanced" class="button-secondary">{{_("Back")}}</a> &nbsp;&nbsp;
