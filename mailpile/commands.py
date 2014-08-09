@@ -845,11 +845,13 @@ class SearchResults(dict):
         if e not in self.emails:
             self.emails.append(e)
         mid = e.msg_mid()
-        self.add_msg_info(mid, e.get_msg_info())
         if mid not in self['data']['messages']:
             self['data']['messages'][mid] = self._message(e)
         if mid not in self['message_ids']:
             self['message_ids'].append(mid)
+        # This happens last, as the parsing above may have side-effects
+        # which matter once we get this far.
+        self.add_msg_info(mid, e.get_msg_info(uncached=True))
 
     def __nonzero__(self):
         return True

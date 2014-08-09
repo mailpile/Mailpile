@@ -1094,7 +1094,8 @@ class MailIndex:
                                             ('text_parts', )))
 
             # Look for inline PGP parts, update our status if found
-            e.evaluate_pgp(tree, decrypt=session.config.prefs.index_encrypted)
+            e.evaluate_pgp(tree, decrypt=session.config.prefs.index_encrypted,
+                                 crypto_state_feedback=False)
             msg.signature_info = tree['crypto']['signature']
             msg.encryption_info = tree['crypto']['encryption']
 

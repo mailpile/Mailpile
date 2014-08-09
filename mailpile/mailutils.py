@@ -67,9 +67,28 @@ class NoSuchMailboxError(OSError):
     pass
 
 
-def ParseMessage(fd, pgpmime=True, config=None):
-    message = email.parser.Parser().parse(fd)
-    if pgpmime and GnuPG:
+GLOBAL_PARSE_CACHE_LOCK = MboxLock()
+GLOBAL_PARSE_CACHE = []
+
+def ParseMessage(fd, cache_id=None, update_cache=False,
+                     pgpmime=True, config=None):
+    if not GnuPG:
+        pgpmime = False
+
+    if cache_id is not None and not update_cache:
+        with GLOBAL_PARSE_CACHE_LOCK:
+            for cid, pm, message in GLOBAL_PARSE_CACHE:
+                if cid == cache_id and pm == pgpmime:
+                    return message
+
+    if pgpmime:
+        message = ParseMessage(fd, cache_id=cache_id,
+                                   pgpmime=False,
+                                   config=config)
+        if cache_id:
+            # Caching is enabled, let's not clobber the encrypted version
+            # of this message with a fancy decrypted one.
+            message = copy.copy(message)
         def MakeGnuPG(*args, **kwargs):
             gnupg = GnuPG(*args, **kwargs)
             if config:
@@ -79,9 +98,17 @@ def ParseMessage(fd, pgpmime=True, config=None):
             'openpgp': MakeGnuPG
         })
     else:
+        message = email.parser.Parser().parse(fd)
         for part in message.walk():
             part.signature_info = SignatureInfo()
             part.encryption_info = EncryptionInfo()
+
+    if cache_id is not None:
+        with GLOBAL_PARSE_CACHE_LOCK:
+            # Keep 25 items, put new ones at the front
+            GLOBAL_PARSE_CACHE[24:] = []
+            GLOBAL_PARSE_CACHE[:0] = [(cache_id, pgpmime, message)]
+
     return message
 
 
@@ -597,9 +624,21 @@ class Email(object):
         self.msg_info = msg_info
         self.msg_parsed = msg_parsed
         self.msg_parsed_pgpmime = msg_parsed_pgpmime
+        if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
+            with GLOBAL_PARSE_CACHE_LOCK:
+                GPC = GLOBAL_PARSE_CACHE
+                for i in range(0, len(GPC)):
+                    cache_id, pgpmime, message = GPC[i]
+                    if cache_id == self.msg_idx_pos:
+                        if pgpmime and msg_parsed_pgpmime:
+                            GPC[i] = (cache_id, True, msg_parsed_pgpmime)
+                        elif not pgpmime and msg_parsed:
+                            GPC[i] = (cache_id, False, msg_parsed)
+                        else:
+                            GPC[i] = (None, None, None)
 
-    def get_msg_info(self, field=None):
-        if not self.msg_info:
+    def get_msg_info(self, field=None, uncached=False):
+        if uncached or not self.msg_info:
             self.msg_info = self.index.get_msg_at_idx_pos(self.msg_idx_pos)
         if field is None:
             return self.msg_info
@@ -628,44 +667,65 @@ class Email(object):
         fd.seek(0, 2)
         return fd.tell()
 
-    def _get_parsed_msg(self, pgpmime):
+    def _get_parsed_msg(self, pgpmime, update_cache=False):
         fd = self.get_file()
         if fd:
-            return ParseMessage(fd, pgpmime=pgpmime, config=self.config)
+            cache_id = self.msg_idx_pos if (self.msg_idx_pos >= 0 and
+                                            not self.ephemeral_mid) else None
+            return ParseMessage(fd, cache_id=cache_id,
+                                    update_cache=update_cache,
+                                    pgpmime=pgpmime,
+                                    config=self.config)
+
+    def _update_crypto_state(self):
+        if not (self.config.tags and
+                self.msg_idx_pos >= 0 and
+                self.msg_parsed_pgpmime and
+                not self.ephemeral_mid):
+            return
+
+        import mailpile.plugins.cryptostate as cs
+        kw = cs.meta_kw_extractor(self.index,
+                                  self.msg_mid(),
+                                  self.msg_parsed_pgpmime,
+                                  0, 0)  # msg_size, msg_ts
+
+        # We do NOT want to update tags if we are getting back
+        # a none/none state, as that can happen for the more
+        # complex nested crypto-in-text messages, which a more
+        # forceful parse of the message may have caught earlier.
+        no_sig = '%s:in' % self.config.get_tag('mp_sig-none')._key
+        no_enc = '%s:in' % self.config.get_tag('mp_enc-none')._key
+        if no_sig not in kw or no_enc not in kw:
+            msg_info = self.get_msg_info()
+            msg_tags = msg_info[self.index.MSG_TAGS].split(',')
+            msg_tags = sorted([t for t in msg_tags if t])
+
+            # Note: this has the side effect of cleaning junk off
+            #       the tag list, not just updating crypto state.
+            def tcheck(tag_id):
+                tag = self.config.get_tag(tag_id)
+                return (tag and tag.slug[:6] not in ('mp_enc', 'mp_sig'))
+            new_tags = sorted([t for t in msg_tags if tcheck(t)] +
+                              [ti.split(':', 1)[0] for ti in kw
+                               if ti.endswith(':in')])
+
+            if msg_tags != new_tags:
+                msg_info[self.index.MSG_TAGS] = ','.join(new_tags)
+                self.index.set_msg_at_idx_pos(self.msg_idx_pos, msg_info)
 
     def get_msg(self, pgpmime=True, crypto_state_feedback=True):
         if pgpmime:
-            if not self.msg_parsed_pgpmime:
-                self.msg_parsed_pgpmime = self._get_parsed_msg(pgpmime)
-            result = self.msg_parsed_pgpmime
+            if self.msg_parsed_pgpmime:
+                result = self.msg_parsed_pgpmime
+            else:
+                result = self._get_parsed_msg(pgpmime)
+                self.msg_parsed_pgpmime = result
 
-            # Post-parse, we want to make sure that the crypto-state
-            # recorded on this message's metadata is up to date.
-            if (crypto_state_feedback and
-                    self.config.tags and
-                    self.msg_idx_pos >= 0 and
-                    not self.ephemeral_mid):
-                import mailpile.plugins.cryptostate as cs
-                kw = cs.meta_kw_extractor(self.index, self.msg_mid(), result,
-                                          0, 0)  # msg_size, msg_ts = ignored
-                msg_info = self.get_msg_info()
-                msg_tags = sorted([t for t
-                                   in msg_info[self.index.MSG_TAGS].split(',')
-                                   if t])
-
-                # Note: this has the side effect of cleaning junk off the
-                #       tag list, not just updating crypto state.
-                def tag_not_crypto(tag_id):
-                    tag = self.config.get_tag(tag_id)
-                    return tag and tag.slug[:6] not in ('mp_enc', 'mp_sig')
-                new_tags = sorted([t for t in msg_tags if tag_not_crypto(t)] +
-                                  [ti.split(':', 1)[0] for ti in kw
-                                   if ti.endswith(':in')])
-
-                if msg_tags != new_tags:
-                    msg_info[self.index.MSG_TAGS] = ','.join(new_tags)
-                    self.index.set_msg_at_idx_pos(self.msg_idx_pos, msg_info)
-
+                # Post-parse, we want to make sure that the crypto-state
+                # recorded on this message's metadata is up to date.
+                if crypto_state_feedback:
+                    self._update_crypto_state()
         else:
             if not self.msg_parsed:
                 self.msg_parsed = self._get_parsed_msg(pgpmime)
@@ -1085,7 +1145,8 @@ class Email(object):
         'pgpend': 'pgpverification',
     }
 
-    def evaluate_pgp(self, tree, check_sigs=True, decrypt=False):
+    def evaluate_pgp(self, tree, check_sigs=True, decrypt=False,
+                                 crypto_state_feedback=True):
         if 'text_parts' not in tree:
             return tree
 
@@ -1153,6 +1214,8 @@ class Email(object):
             if not part['crypto']:
                 del part['crypto']
 
+        if crypto_state_feedback:
+            self._update_crypto_state()
         return tree
 
     def _decode_gpg(self, message, decrypted):
