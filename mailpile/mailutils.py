@@ -694,8 +694,10 @@ class Email(object):
         # a none/none state, as that can happen for the more
         # complex nested crypto-in-text messages, which a more
         # forceful parse of the message may have caught earlier.
-        no_sig = '%s:in' % self.config.get_tag('mp_sig-none')._key
-        no_enc = '%s:in' % self.config.get_tag('mp_enc-none')._key
+        no_sig = self.config.get_tag('mp_sig-none')
+        no_sig = no_sig and '%s:in' % no_sig._key
+        no_enc = self.config.get_tag('mp_enc-none')
+        no_enc = no_enc and '%s:in' % no_enc._key
         if no_sig not in kw or no_enc not in kw:
             msg_info = self.get_msg_info()
             msg_tags = msg_info[self.index.MSG_TAGS].split(',')
