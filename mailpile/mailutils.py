@@ -247,7 +247,8 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         msg["OpenPGP"] = "id=%s; preference=%s" % (sender_keyid,
                                                    config.prefs.openpgp_header)
 
-    if 'openpgp' in crypto_policy:
+    # Should be 'openpgp', but there is no point in being precise
+    if 'pgp' in crypto_policy or 'gpg' in crypto_policy:
         wrapper = None
         if 'sign' in crypto_policy and 'encrypt' in crypto_policy:
             wrapper = OpenPGPMimeSignEncryptWrapper
@@ -255,13 +256,18 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
             wrapper = OpenPGPMimeSigningWrapper
         elif 'encrypt' in crypto_policy:
             wrapper = OpenPGPMimeEncryptingWrapper
+        elif 'none' not in crypto_policy:
+            raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
         if wrapper:
+            print 'Wrapping in: %s' % wrapper
             cpi = config.prefs.inline_pgp
             msg = wrapper(config,
                           sender=sender,
                           cleaner=lambda m: CleanMessage(config, m),
                           recipients=rcpts
                           ).wrap(msg, prefer_inline=cpi)
+    elif crypto_policy and crypto_policy != 'none':
+        raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
 
     rcpts = set([r.rsplit('#', 1)[0] for r in rcpts])
     msg['x-mp-internal-readonly'] = str(int(time.time()))

@@ -29,7 +29,7 @@ Mailpile.compose_set_crypto_state = function() {
     state = 'openpgp-sign-encrypt'; 
   }
   else if (signature == 'sign') {
-    state = 'opengpg-sign';
+    state = 'openpgp-sign';
   }
   else if (encryption == 'encrypt') {
     state = 'openpgp-encrypt';
