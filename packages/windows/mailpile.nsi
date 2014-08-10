@@ -1,4 +1,4 @@
-SetCompressor /SOLID lzma
+; SetCompressor /SOLID lzma
 
 !include "MUI2.nsh"
 !define MUI_ICON "mailpile.ico"
@@ -33,14 +33,17 @@ Section
 
 	WriteRegStr HKCU "Software\Mailpile" "" $INSTDIR
 
-	File /r /x packages /x .git "../../../Mailpile/*"
+	File /r /x packages /x junk /x .git "../../../Mailpile/*"
 	File /r "GnuPG"
 	File /r "OpenSSL"
 	File /r "Python27"
 	File "mailpile.ico"
+	File "launcher.exe"
+	File "launcher.exe.config"
+	File /r "img"
 
 	createDirectory "$SMPROGRAMS\Mailpile"
-	createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\mp.cmd" "" "$INSTDIR\mailpile.ico" # Call startup script...
+	createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\launcher.exe" "" "$INSTDIR\mailpile.ico" # Call startup script...
 	WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" "InternetShortcut" "URL" "http://localhost:33411"
 	
 
