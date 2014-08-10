@@ -1,43 +1,48 @@
 <div id="setup-box-source-configure" class="setup-box setup-box-large animated bounceInUp add-bottom">
   <div class="clearfix text-center">
     <h2><span class="icon-tag"></span> Configure <%= name %></h2>
+    <p class="text-detail remove-bottom">Configure which mailboxes to import & which tags to apply after mail is imported</p>
   </div>
   <form id="form-setup-source-configure" class="standard text-center">
     <table class="full-width-table rounded background-white">
     <tr>
-      <th>Mailbox</th>
-      <th>Mailpile (Tag)</th>
+      <th><strong>Mailbox</strong></th>
+      <th><strong>Mailpile (Tag)</strong></th>
       <th class="text-center"><span class="icon-inbox"></span></th>
       <th class="text-center"><span class="icon-compose"></span></th>
       <th class="text-center"><span class="icon-sent"></span></th>
       <th class="text-center"><span class="icon-spam"></span></th>
       <th class="text-center"><span class="icon-trash"></span></th>
-      <th class="text-center"><input type="checkbox" id="source-mailbox-read-all"> Download</th>
+      <th class="text-center"><input type="checkbox" id="source-mailbox-read-all"></th>
     </tr>
     <% _.each(mailbox, function(mailbox, key) { %>
-    <tr id="sources-mailbox-">
-      <td>
+    <tr>
+      <td class="middle">
+        <% if (mailbox.name) { %>
         <%= mailbox.name %>
+        <% } else { %>
+        <em>{{_("No Name")}}</em>
+        <% } %>
       </td>
-      <td>
-          <input type="text" name="mailbox.<%= key %>.primary_tag" value="<%= mailbox.primary_tag %>">
+      <td class="middle">
+        <input type="text" name="mailbox.<%= key %>.primary_tag" value="<%= mailbox.primary_tag %>" class="input-full remove-bottom">
       </td>
-      <td>
+      <td class="middle text-center">
         <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.inbox %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == tags.inbox; }) == tags.inbox) { %>checked<% } %>>
       </td>
-      <td>
+      <td class="middle text-center">
         <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.drafts %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == tags.drafts; }) == tags.drafts) { %>checked<% } %>>
       </td>
-      <td>
+      <td class="middle text-center">
         <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.sent %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == tags.sent; }) == tags.sent) { %>checked<% } %>>
       </td>
-      <td>
+      <td class="middle text-center">
         <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.spam %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == tags.spam; }) == tags.spam) { %>checked<% } %>>
       </td>
-      <td>
+      <td class="middle text-center">
         <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.trash %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == tags.trash; }) == tags.trash) { %>checked<% } %>>
       </td>
-      <td class="text-right">
+      <td class="middle text-center">
         <input type="checkbox" class="source-mailbox-policy" name="mailbox.<%= key %>.policy" value="<% if (mailbox.policy == 'unknown') { %>ignore<% } %>" <% if (mailbox.policy == 'read') { %>checked<% } %>>
       </td>
     </tr>
