@@ -81,16 +81,13 @@ class Safe_Popen(Unsafe_Popen):
         else:
             creationflags = 0
             if keep_open:
-                close_fds = False
-                if stdin is not None:
-                    keep_open.append(0)
-                if stdout is not None:
-                    keep_open.append(1)
-                if stderr is not None:
-                    keep_open.append(2)
+                # Always leave stdin, stdout and stderr alone so we don't
+                # end up with different assumptions from subprocess.Popen.
+                keep_open.extend([0, 1, 2])
                 for i in range(0, len(keep_open)):
                     if hasattr(keep_open[i], 'fileno'):
                         keep_open[i] = keep_open[i].fileno()
+                close_fds = False
             else:
                 close_fds = True  # 1.
 
