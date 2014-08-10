@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Mailpile\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-07-03 14:33+0100\n"
-"PO-Revision-Date: 2014-08-08 20:44+0100\n"
+"PO-Revision-Date: 2014-08-10 10:20+0100\n"
 "Last-Translator: Lazlo Westerhof <hello@lazlo.me>\n"
 "Language-Team: Dutch (Netherlands) (http://www.transifex.com/projects/p/"
 "mailpile/language/nl_NL/)\n"
@@ -446,7 +446,7 @@ msgstr "%s: Openen: %s (dit kan even duren)"
 
 #: mailpile/config.py:1266
 msgid "Sent using Mailpile, Free Software from www.mailpile.is"
-msgstr "Verzonden via Mailpile, Gratis Software van www.mailpile.is"
+msgstr "Verzonden via Mailpile, Vrije Software van www.mailpile.is"
 
 #: mailpile/config.py:1307
 #, python-format
@@ -2290,11 +2290,11 @@ msgstr "Geen resultaten gevonden"
 #: static/default/html/contacts/view.html:14
 #: static/default/html/partials/search_item.html:26
 msgid "No Name"
-msgstr "Geen Naam"
+msgstr "Geen naam"
 
 #: static/default/html/contacts/view.html:16
 msgid "Hey that's you"
-msgstr "Hee, dit ben jij"
+msgstr "Hee, dat ben jij"
 
 #: static/default/html/contacts/view.html:24
 #: static/default/html/partials/topbar.html:63
