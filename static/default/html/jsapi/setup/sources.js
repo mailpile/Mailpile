@@ -140,36 +140,33 @@ var SourcesView = Backbone.View.extend({
   },
   showEdit: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    var source = SourcesCollection.get(id);
-    if (source !== undefined) {
 
-      this.$el.html(_.template($('#template-setup-sources-settings').html(), source.attributes));
-    } else {
-      Backbone.history.navigate('#sources', true);
-    }
+    Mailpile.API.settings_get({ var: 'sources.'+id }, function(result) {
+
+      var source = result.result['sources.'+id];
+      source = _.extend(source, {id: id});
+      $('#setup').html(_.template($('#template-setup-sources-settings').html(), source));
+    });
   },
   showConfigure: function(id) {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    var source = SourcesCollection.get(id);
-    if (source !== undefined) {
+    Mailpile.API.settings_get({ var: 'sources.'+id }, function(result) {
+
+      var source = result.result['sources.'+id];
 
       Mailpile.API.tags_get({}, function(result) {
-        var tags = {};
 
+        var tags = {};
         _.each(result.result.tags, function(tag, key) {
           if (_.indexOf(['inbox', 'drafts', 'sent', 'spam', 'trash'], tag.type) > -1) {
             tags[tag.type] = tag.tid;
           }
         });
 
-        var configure = _.extend(source.attributes, { tags: tags});
-        console.log(configure);
+        var configure = _.extend(source, { id: id, tags: tags });
         $('#setup').html(_.template($('#template-setup-sources-configure').html(), configure));
       });
-
-    } else {
-      Backbone.history.navigate('#sources', true);
-    }
+    });
   },
   actionSelected: function(e) {
     if ($(e.target).val() == 'local') {
@@ -233,14 +230,13 @@ var SourcesView = Backbone.View.extend({
           SourcesView.model.set({name: '', username: '', password: '', port: ''});
           Backbone.history.navigate('#sources', true);
         } else {
-          alert('Error saving Sources');          
+          alert('Error saving Sources');
         }
       });
     }
   },
   processConfigure: function(e) {
     e.preventDefault();
-
     var mailbox_data = $('#form-setup-source-configure').serializeObject();
 
     // Validate & Process
@@ -248,7 +244,7 @@ var SourcesView = Backbone.View.extend({
       if (result.status == 'success') {
         Backbone.history.navigate('#sources', true);
       } else {
-        alert('Error saving Sources');          
+        alert('Error saving Sources');
       }
     });
   },
