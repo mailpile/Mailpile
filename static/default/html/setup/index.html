@@ -7,20 +7,7 @@
 {% include("setup/various.html") %}
 
 <script id="template-setup-profiles-item" type="text/template">
-  <li class="setup-item" id="setup-profile-<%= id %>">
-    <div class="clearfix">
-      <span class="avatar"><img src="/static/img/avatar-default.png"></span>
-      <span class="name"><%= name %></span>
-      <span class="email"><%= email %></span>
-      <% if (pgp_keys) { %>
-      <span class="icon-lock-closed"></span>
-      <% } %>
-      <ul class="horizontal right">
-        <li><a href="#profiles/<%= id %>"><span class="icon-settings"></span> Edit</a></li>
-        <li><a href="#" data-id="<%= id %>" class="setup-profile-remove"><span class="icon-circle-x"></span> Remove</a></li>
-      </ul>
-    </div>
-  </li>
+{% include("setup/profiles_list_item.html") %}
 </script>
 
 {% set setup_profiles = mailpile("setup/profiles") %}
@@ -34,23 +21,7 @@
 </script>
 
 <script id="template-setup-sources-item" type="text/template">
-  <li class="setup-item" id="setup-source-<%= id %>">
-    <div class="clearfix">
-      <span class="name"><%= name %></span>
-      <span class="username"><%= username %></span>
-      <ul id="setup-source-<%= id %>-actions" class="horizontal right">
-        <% if (_.isEmpty(mailbox)) { %>
-        <li class="source-state-analyzing"><em>Analyzing...</em></li>
-        <li><a href="#sources/<%= id %>"><span class="icon-settings"></span> Edit</a></li>
-        <% } else { %>
-        <li><a href="#sources/configure/<%= id %>"><span class="icon-tag"></span> Configure</a></li>
-        <li><a href="#sources/<%= id %>"><span class="icon-settings"></span> Edit</a></li>
-        <% } %>
-        <li><a href="#" data-id="<%= id %>" class="setup-source-remove"><span class="icon-minus"></span> Disable</a></li>
-      </ul>
-    </div>
-    <div id="setup-source-<%= id %>-message"></div>
-  </li>
+{% include("setup/sources_list_item.html") %}
 </script>
 
 <script id="template-setup-sources" type="text/template">
@@ -66,13 +37,7 @@
 </script>
 
 <script id="template-setup-sending-item" type="text/template">
- <li class="setup-item">
-    <span class="name"><%= name %></span>
-    <ul class="horizontal right">
-      <li><a href="#sending/<%= id %>"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
-      <li><a href="#"><span class="icon-circle-x"></span> {{_("Delete")}}</a></li>
-    </ul>
-  </li>
+{% include("setup/sending_list_item.html") %}
 </script>
 
 <script id="template-setup-sending" type="text/template">
