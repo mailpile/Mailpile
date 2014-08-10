@@ -24,6 +24,10 @@ from mailpile.safe_popen import Popen, PIPE
 DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
+GPG_BINARY = 'gpg'
+if sys.platform == "win32":
+    GPG_BINARY = 'GnuPG\\gpg.exe'
+    print "On Windows, so switching binary path"
 BLOCKSIZE = 65536
 
 openpgp_trust = {"-": _("Trust not calculated"),
@@ -385,7 +389,7 @@ class GnuPG:
 
     def __init__(self, session=None, use_agent=True):
         self.available = None
-        self.gpgbinary = 'gpg'
+        self.gpgbinary = GPG_BINARY
         self.passphrase = None
         self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
@@ -980,15 +984,15 @@ class GnuPGExpectScript(threading.Thread):
     def run(self):
         try:
             self.set_state(self.START_THREAD)
-            try:
+            if not sys.platform == "win32":
                 import pexpect
                 pspawn = pexpect.spawn
-            except ImportError:
+            else:
                 import winpexpect
                 pspawn = winpexpect.winspawn
 
             self.set_state(self.START_GPG)
-            self.gpg = pspawn('gpg', self.gpg_args(), logfile=self.logfile)
+            self.gpg = pspawn(GPG_BINARY, self.gpg_args(), logfile=self.logfile)
             self.run_script(self.main_script)
 
             self.set_state(self.FINISHED)
