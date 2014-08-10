@@ -73,6 +73,7 @@ GLOBAL_PARSE_CACHE = []
 
 def ParseMessage(fd, cache_id=None, update_cache=False,
                      pgpmime=True, config=None):
+    global GLOBAL_PARSE_CACHE
     if not GnuPG:
         pgpmime = False
 
@@ -84,12 +85,12 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
 
     if pgpmime:
         message = ParseMessage(fd, cache_id=cache_id,
-                                   pgpmime=False,
-                                   config=config)
-        if cache_id:
+                               pgpmime=False,
+                               config=config)
+        if cache_id is not None:
             # Caching is enabled, let's not clobber the encrypted version
             # of this message with a fancy decrypted one.
-            message = copy.copy(message)
+            message = copy.deepcopy(message)
         def MakeGnuPG(*args, **kwargs):
             gnupg = GnuPG(*args, **kwargs)
             if config:
@@ -319,7 +320,8 @@ class Email(object):
         self.ephemeral_mid = ephemeral_mid
         self.reset_caches(msg_parsed=msg_parsed,
                           msg_parsed_pgpmime=msg_parsed_pgpmime,
-                          msg_info=msg_info)
+                          msg_info=msg_info,
+                          clear_parse_cache=False)
 
     def msg_mid(self):
         return self.ephemeral_mid or b36(self.msg_idx_pos)
@@ -616,6 +618,7 @@ class Email(object):
 
         # Remove the old message...
         mbx.remove(ptr[MBX_ID_LEN:])
+        self.clear_from_parse_cache()
 
         # FIXME: We should DELETE the old version from the index first.
 
@@ -629,22 +632,21 @@ class Email(object):
         return self
 
     def reset_caches(self,
-                     msg_info=None, msg_parsed=None, msg_parsed_pgpmime=None):
+                     msg_info=None, msg_parsed=None, msg_parsed_pgpmime=None,
+                     clear_parse_cache=True):
         self.msg_info = msg_info
         self.msg_parsed = msg_parsed
         self.msg_parsed_pgpmime = msg_parsed_pgpmime
+        if clear_parse_cache:
+            self.clear_from_parse_cache()
+
+    def clear_from_parse_cache(self):
         if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
             with GLOBAL_PARSE_CACHE_LOCK:
                 GPC = GLOBAL_PARSE_CACHE
                 for i in range(0, len(GPC)):
-                    cache_id, pgpmime, message = GPC[i]
-                    if cache_id == self.msg_idx_pos:
-                        if pgpmime and msg_parsed_pgpmime:
-                            GPC[i] = (cache_id, True, msg_parsed_pgpmime)
-                        elif not pgpmime and msg_parsed:
-                            GPC[i] = (cache_id, False, msg_parsed)
-                        else:
-                            GPC[i] = (None, None, None)
+                    if GPC[i][0] == self.msg_idx_pos:
+                        GPC[i] = (None, None, None)
 
     def get_msg_info(self, field=None, uncached=False):
         if uncached or not self.msg_info:
