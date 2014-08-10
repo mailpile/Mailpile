@@ -25,29 +25,32 @@
        # one security context to the next, and need to let the user know.
        #}
       {% if part.data %}
-        {% if part.crypto %}
+        {% set part_encryption = (part.crypto and part.crypto.encryption or message.crypto.encryption) %}
+        {% set part_signature = (part.crypto and part.crypto.signature or message.crypto.signature) %}
+        {% if part_encryption or part_signature %}
         <div class="thread-item-crypto clearfix">
-            {% if part.crypto.encryption %}
-              {% if encryption_context and part.crypto.encryption.context != encryption_context[-1] %}
-              {% set encryption = show_message_encryption(part.crypto.encryption.status) %}
+            {% if part_encryption %}
+              {% if encryption_context and part_encryption.context != encryption_context[-1] %}
+              {% set encryption = show_text_part_encryption(part_encryption.status) %}
               <span class="thread-item-crypto-info" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}">
                 <span class="icon {{ encryption.color + ' ' + encryption.icon }}"></span> <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
               </span>
               {% endif %}
-              {% do encryption_context.append(part.crypto.encryption.context) %}
+              {% do encryption_context.append(part_encryption.context) %}
             {% endif %}
-            {% if part.crypto.signature %}
-              {% if signature_context and part.crypto.signature.context != signature_context[-1] %}
-              {% set signature = show_message_signature(part.crypto.signature.status) %}
+            {% if part_signature %}
+              {% if signature_context and part_signature.context != signature_context[-1] %}
+              {% set signature = show_text_part_signature(part_signature.status) %}
               <span class="thread-item-crypto-info" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}">
                 <span class="icon {{ signature.color + ' ' + signature.icon }}"></span> <span class="text {{ signature.color }}">{{ signature.text }}</span>
               </span>
               {% endif %}
-              {% do signature_context.append(part.crypto.signature.context) %}
+              {% do signature_context.append(part_signature.context) %}
             {% endif %}
           <div class="thread-item-crypto-line left"></div>
         </div>
         {% endif %}
+
         {% autoescape false %}
         {% if part.type == "text" %}
           <div class="thread-item-text">{{ part.data|nice_text|e|urlize|fix_urls(40, url_danger) }}</div>
