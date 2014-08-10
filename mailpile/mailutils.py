@@ -260,7 +260,6 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
         elif 'none' not in crypto_policy:
             raise ValueError(_('Unknown crypto policy: %s') % crypto_policy)
         if wrapper:
-            print 'Wrapping in: %s' % wrapper
             cpi = config.prefs.inline_pgp
             msg = wrapper(config,
                           sender=sender,
@@ -331,7 +330,7 @@ class Email(object):
         hdr_value = value or (msg and msg.get(hdr)) or ''
         try:
             hdr_value.encode('us-ascii')
-        except:
+        except (UnicodeEncodeError, UnicodeDecodeError):
             if hdr.lower() in ('from', 'to', 'cc', 'bcc'):
                 addrs = []
                 for addr in [a.strip() for a in hdr_value.split(',')]:
@@ -404,7 +403,7 @@ class Email(object):
             try:
                 msg_text.encode('us-ascii')
                 charset = 'us-ascii'
-            except UnicodeEncodeError:
+            except (UnicodeEncodeError, UnicodeDecodeError):
                 charset = 'utf-8'
             textpart = MIMEText(msg_text, _subtype='plain', _charset=charset)
             textpart.signature_info = SignatureInfo()
@@ -574,13 +573,13 @@ class Email(object):
             try:
                 new_body.encode('us-ascii')
                 charset = 'us-ascii'
-            except:
+            except (UnicodeEncodeError, UnicodeDecodeError):
                 charset = 'utf-8'
             textbody = MIMEText(new_body, _subtype='plain', _charset=charset)
             outmsg.attach(textbody)
             del textbody['MIME-Version']
 
-            # FIXME: Use markdown and template to generate fancy HTML part
+            # FIXME: Use markdown and template to generate fancy HTML part?
 
             # Copy the attachments we are keeping
             attachments = [h for h in newmsg.keys()

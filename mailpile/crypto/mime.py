@@ -26,6 +26,27 @@ class SignatureFailureError(ValueError):
     pass
 
 
+DEFAULT_CHARSETS = ['utf-8', 'iso-8859-1']
+
+
+def _decode_text_part(part, payload, charsets=None):
+    for cs in (c for c in ([part.get_content_charset() or None] +
+                           (charsets or DEFAULT_CHARSETS)) if c):
+        try:
+            return cs, payload.decode(cs)
+        except (UnicodeDecodeError, TypeError, LookupError):
+            pass
+    return '8bit', payload
+
+
+def _update_text_payload(part, payload, charsets=None):
+    if 'content-transfer-encoding' in part:
+        # We want this recalculated by the charset setting below
+        del part['content-transfer-encoding']
+    charset, payload = _decode_text_part(part, payload, charsets=charsets)
+    part.set_payload(payload, charset)
+
+
 ##[ Methods for unwrapping encrypted parts ]###################################
 
 def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
@@ -128,18 +149,6 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
         pass
 
 
-DEFAULT_CHARSETS = ['utf-8', 'iso-8859-1']
-
-def _decode(part, payload, charsets=None):
-    for cs in (c for c in ([part.get_content_charset() or None] +
-                           (charsets or DEFAULT_CHARSETS)) if c):
-        try:
-            return cs, payload.decode(cs)
-        except (UnicodeDecodeError, TypeError, LookupError):
-            pass
-    return '8bit', payload
-
-
 def UnwrapPlainTextCrypto(part, protocols=None, si=None, ei=None,
                                 charsets=None):
     """
@@ -147,7 +156,7 @@ def UnwrapPlainTextCrypto(part, protocols=None, si=None, ei=None,
     contents and set part attributes describing the security properties
     instead.
     """
-    payload = part.get_payload().strip()
+    payload = part.get_payload(None, True).strip()
 
     for crypto_cls in protocols.values():
         crypto = crypto_cls()
@@ -155,14 +164,14 @@ def UnwrapPlainTextCrypto(part, protocols=None, si=None, ei=None,
         if (payload.startswith(crypto.ARMOR_BEGIN_ENCRYPTED) and
                 payload.endswith(crypto.ARMOR_END_ENCRYPTED)):
             si, ei, text = crypto.decrypt(payload)
-            # FIXME: Should we be doing something about charsets?
-            part.set_payload(text)
+            _update_text_payload(part, text, charsets=charsets)
             break
 
         elif (payload.startswith(crypto.ARMOR_BEGIN_SIGNED) and
                 payload.endswith(crypto.ARMOR_END_SIGNED)):
             si = crypto.verify(payload)
-            part.set_payload(crypto.remove_armor(payload))
+            text = crypto.remove_armor(payload)
+            _update_text_payload(part, text, charsets=charsets)
             break
 
     part.signature_info = si or SignatureInfo()
@@ -247,13 +256,13 @@ class MimeSigningWrapper(MimeWrapper):
             prefer_inline = self.get_only_text_part(msg)
 
         if prefer_inline is not False:
-            message_text = Normalize(prefer_inline.get_payload())
+            message_text = Normalize(prefer_inline.get_payload(None, True))
             status, sig = self.crypto.sign(message_text,
                                            fromkey=from_key,
                                            clearsign=True,
                                            armor=True)
             if status == 0:
-                prefer_inline.set_payload(sig)
+                _update_text_payload(prefer_inline, sig)
                 return msg
 
         else:
@@ -303,12 +312,12 @@ class MimeEncryptingWrapper(MimeWrapper):
             prefer_inline = self.get_only_text_part(msg)
 
         if prefer_inline is not False:
-            message_text = Normalize(prefer_inline.get_payload())
+            message_text = Normalize(prefer_inline.get_payload(None, True))
             status, enc = self._encrypt(message_text,
                                         tokeys=to_keys,
                                         armor=True)
             if status == 0:
-                prefer_inline.set_payload(enc)
+                _update_text_payload(prefer_inline, enc)
                 return msg
 
         else:
