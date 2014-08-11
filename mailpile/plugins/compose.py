@@ -137,6 +137,7 @@ class CompositionCommand(AddComposeMethods(Search)):
         'bcc': '..',
         'body': '..',
         'encryption': '..',
+        'attachment': '..',
     }
 
     UPDATE_HEADERS = ('Subject', 'From', 'To', 'Cc', 'Bcc', 'Encryption')
@@ -175,6 +176,13 @@ class CompositionCommand(AddComposeMethods(Search)):
                     else:
                         data = defaults.get(hdr.lower(), '')
                     up.append('%s: %s' % (hdr, data))
+                att_keep = (self.data.get('attachment', [])
+                            if 'attachment' in self.data
+                            else defaults.get('attachments').keys())
+                for att_id, att_fn in defaults.get('attachments',
+                                                   {}).iteritems():
+                    if att_id in att_keep:
+                        up.append('Attachment-%s: %s' % (att_id, att_fn))
                 updates.append((e, '\n'.join(
                     up +
                     ['', '\n'.join(self.data.get('body',
