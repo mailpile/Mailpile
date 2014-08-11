@@ -2,6 +2,7 @@ import os
 import sys
 import random
 import threading
+import traceback
 import time
 
 import mailpile.util
@@ -27,7 +28,7 @@ def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5):
     def save(plc):
         job_name = _('Save PLC %s') % plc.sig
         session.ui.mark(job_name)
-        session.config.save_worker.add_unique_task(session, job_name, plc.save)
+        session.config.save_worker.do(session, job_name, plc.save)
 
     def remove(ts, plc):
         with PLC_CACHE_LOCK:
@@ -156,10 +157,12 @@ class PostingListContainer(object):
                                         self._unlocked_parse_lines,
                                         self.config)
                 self.changes = 0
-                self.fd = None
             except (ValueError, IOError):
                 self.session.ui.warning('load(%s) %s'
                                         % (self.sig, sys.exc_info()))
+                if self.config.sys.debug:
+                    traceback.print_exc()
+        self.fd = None
 
     def _unlocked_parse_lines(self, lines):
         for line in lines:
