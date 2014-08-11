@@ -256,7 +256,8 @@ class MimeSigningWrapper(MimeWrapper):
             prefer_inline = self.get_only_text_part(msg)
 
         if prefer_inline is not False:
-            message_text = Normalize(prefer_inline.get_payload(None, True))
+            message_text = Normalize(prefer_inline.get_payload(None, True)
+                                     .strip() + '\n\n')
             status, sig = self.crypto.sign(message_text,
                                            fromkey=from_key,
                                            clearsign=True,
