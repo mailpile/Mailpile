@@ -5,7 +5,7 @@ var SendingModel = Backbone.Model.extend({
     _section: '',
     command: '',
     name: '',
-    login: '',
+    username: '',
     password: '',
     host: '',
     port: 587,
@@ -15,10 +15,10 @@ var SendingModel = Backbone.Model.extend({
     name: {
       minLength: 2,
       required: true,
-      msg: "{{_('Source Name')}}"      
+      msg: "{{_('You must name this route')}}"
     },
-    login: {
-      msg: "{{_('Login')}}"
+    username: {
+      msg: "{{_('Username')}}"
     },
     password: {
       msg: "{{_('Password')}}",
@@ -31,7 +31,7 @@ var SendingModel = Backbone.Model.extend({
     },
     port: {
       required: true,
-      msg: "{{_('Specify port')}}"
+      msg: "{{_('You must specify a port')}}"
     }
   }
 });
@@ -54,7 +54,7 @@ var SendingView = Backbone.View.extend({
   },
   events: {
     "click #btn-setup-advanced-access" : "showRouteSettings",
-    "click #btn-setup-sending-test"    : "processSendingTest",
+    "change #route-add-port"           : "actionChangePort",
     "click #btn-setup-sending-save"    : "processSending"
   },
   show: function() {
@@ -69,7 +69,6 @@ var SendingView = Backbone.View.extend({
       }
 
       _.each(result.result.routes, function(val, key) {
-        console.log(val);
         var sending = new SendingModel(_.extend({id: key, action: 'Edit'}, val));
         SourcesCollection.add(sending);
         $('#setup-sending-list-items').append(_.template($('#template-setup-sending-item').html(), sending.attributes));
@@ -78,21 +77,26 @@ var SendingView = Backbone.View.extend({
   },
   showAdd: function() {
     $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    this.model.set({_section: 'routes.' + Math.random().toString(36).substring(2) })
+    this.model.set({id: 'routes.' + Math.random().toString(36).substring(2) })
     this.$el.html(_.template($("#template-setup-sending-settings").html(), this.model.attributes));
   },
   showEdit: function(id) {
-    var sending = SendingCollection.get(id);
-    if (sending !== undefined) {
-      this.$el.html(_.template($("#template-setup-sending-settings").html(), sending.attributes));
-    } else {
-      Backbone.history.navigate('#sending', true);
-    }
+    $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
+    Mailpile.API.settings_get({ var: 'routes.'+id }, function(result) {
+      var sending = result.result['routes.'+id];
+      sending = _.extend(sending, {id: id});
+      $('#setup').html(_.template($('#template-setup-sending-settings').html(), sending));
+    });
   },
-  processSendingTest: function(e) {
-    e.preventDefault();
-    alert('This will at some point test a route');
-    
+  actionChangePort: function(e) {
+    var port = $(e.target).val();
+    if (port === 'other') {
+      $(e.target).hide();
+      $('#setup-route-port').parent('span').fadeIn();
+      $('#setup-route-port').val('');
+    } else {
+      $('#setup-route-port').val(port);
+    }
   },
   processSending: function(e) {
 

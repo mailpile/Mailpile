@@ -20,21 +20,22 @@
       </span>
       <span id="validation-port">
         <label class="validation-message">{{_("Port")}}</label>
-        <select name="port" id="route-add-port">
-          <option value="25">25</option>
+        <select id="route-add-port">
           <option value="587">587</option>
-          <option value="465">465 (TLS)</option>
+          <option value="465">465</option>
+          <option value="25">25</option>
+          <option value="other">{{_("Other")}}</option>
         </select>
+        <span class="hide">
+          <input id="setup-route-port" type="text" name="port" value="<%= port %>">
+        </span>
       </span>
     </fieldset>
-    <input type="hidden" name="_section" value="<%= _section %>">
+    <input type="hidden" name="_section" value="<%= id %>">
     <div class="clearfix">
       <a href="#sending" class="button-secondary">{{_("Cancel")}}</a>
       <button id="btn-setup-sending-save" type="submit" class="button-primary right">
         <span class="icon-plus"></span> {{_("Save Route")}}
-      </button>
-      <button id="btn-setup-sending-test" type="button" class="button-alert right">
-        {{_("Test Route")}}
       </button>
     </div>
   </form>
