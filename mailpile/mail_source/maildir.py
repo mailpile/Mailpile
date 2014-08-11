@@ -45,7 +45,7 @@ class MaildirMailSource(BaseMailSource):
 
     def _mark_mailbox_rescanned(self, mbx, state):
         cnt = '/'.join([str(state[i]) for i in ('cur', 'new', 'tmp')])
-        if 'mailbox_state' in self.event:
+        if 'mailbox_state' in self.event.data:
             self.event.data['mailbox_state'][mbx._key] = cnt
         else:
             self.event.data['mailbox_state'] = {mbx._key: cnt}
