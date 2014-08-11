@@ -32,12 +32,16 @@ class IOFilter(threading.Thread):
         threading.Thread.__init__(self)
         self.callback = callback
         self.error_callback = error_callback
+        self.exc_info = None
 
         self.fd = fd
         self.writing = None
         self.reading_from = None
         self.writing_to = None
+
         self.exposed_fd = None
+        self.my_pipe_fd = None
+
         pipe = os.pipe()
         self.pipe_reader = os.fdopen(pipe[0], 'rb', 0)
         self.pipe_writer = os.fdopen(pipe[1], 'wb', 0)
@@ -55,27 +59,34 @@ class IOFilter(threading.Thread):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-        self.join()
 
     def close(self):
-        if self.exposed_fd is not None:
-            self.exposed_fd.close()
-            self.exposed_fd = None
+        fd, self.exposed_fd = self.exposed_fd, None
+        if fd is not None:
+            try:
+                fd.close()
+            except OSError:  # May already have been closed, that's fine
+                pass
+
+        if self.writing is False:
+            self.aborting = 'Closed reader'
+
+        self.join()
 
     def join(self, aborting=None):
         if aborting is not None:
             self.aborting = aborting
-            if self.reading_from is not None:
-                self.reading_from.close()
-                self.reading_from = None
         return threading.Thread.join(self)
 
     def writer(self):
         if self.writing is None:
             self.writing = True
+
             self.reading_from = self.pipe_reader
             self.writing_to = self.fd
+            self.my_pipe_fd = self.pipe_reader
             self.exposed_fd = self.pipe_writer
+
             self.start()
         return self.pipe_writer
 
@@ -83,37 +94,40 @@ class IOFilter(threading.Thread):
         if self.writing is None:
             self.daemon = True
             self.writing = False
+
             self.reading_from = self.fd
             self.writing_to = self.pipe_writer
+            self.my_pipe_fd = self.pipe_writer
             self.exposed_fd = self.pipe_reader
+
             self.start()
         return self.pipe_reader
 
     def _copy_loop(self):
-        try:
-            while not self.aborting:
-                self.info = 'reading'
-                data = self.reading_from.read(self.BLOCKSIZE)
+        while not self.aborting:
+            self.info = 'reading'
+            data = self.reading_from.read(self.BLOCKSIZE)
+            if not self.aborting:
                 self.info = 'writing'
                 if len(data) == 0:
                     self.writing_to.write(self.callback(None) or '')
                     break
                 else:
                     self.writing_to.write(self.callback(data))
-        finally:
-            if self.writing:
-                if self.reading_from is not None:
-                    self.reading_from.close()
-                    self.reading_from = None
-            else:
-                self.writing_to.close()
-            self.info = 'done'
 
     def run(self):
+        okay = [AssertionError]
+        if self.writing is False:
+            # If we close early, we may get ValueErrors
+            okay.append(ValueError)
+
         try:
             self.info = 'Starting: %s' % self.writing
             self._copy_loop()
+        except tuple(okay):
+            pass
         except:
+            self.exc_info = sys.exc_info()
             traceback.print_exc()
             if self.error_callback:
                 try:
@@ -121,6 +135,9 @@ class IOFilter(threading.Thread):
                 except:
                     pass
         finally:
+            fd, self.my_pipe_fd = self.my_pipe_fd, None
+            if fd is not None:
+                fd.close()
             self.info = 'Dead'
 
 
@@ -128,9 +145,16 @@ class IOCoprocess(object):
     def __init__(self, command, fd, name=None, long_running=False):
         self.stderr = ''
         self._retval = None
+        self._reading = False
         self.name = name
         if command:
-            self._proc, self._fd = self._popen(command, fd, long_running)
+            try:
+                self._proc, self._fd = self._popen(command, fd, long_running)
+            except:
+                print 'Popen(%s, %s, %s)' % (command, fd, long_running)
+                traceback.print_exc()
+                print
+                raise
         else:
             self._proc, self._fd = None, fd
 
@@ -142,11 +166,18 @@ class IOCoprocess(object):
 
     def close(self, *args):
         if self._retval is None:
-            self._fd.close(*args)
-            if self._proc:
-                self.stderr = self._proc.stderr.read()
-                self._retval = self._proc.wait()
-                self._proc = None
+            proc, fd, self._proc, self._fd = self._proc, self._fd, None, None
+            if proc and fd:
+                fd.close(*args)
+                # If we were reading from the process, not writing, then
+                # closing our FD above may not be enough to terminate it,
+                # and the following calls may hang. So kill kill kill.
+                if self._reading:
+                    proc.terminate()
+                    if proc.poll() is None:
+                        proc.kill()
+                self.stderr = proc.stderr.read()
+                self._retval = proc.wait()
             else:
                 self._retval = 0
         return self._retval
@@ -173,6 +204,7 @@ class InputCoprocess(IOCoprocess):
     This class will stream data from an external coprocess.
     """
     def _popen(self, command, fd, long_running):
+        self._reading = True
         proc = Popen(command, stdin=fd, stdout=PIPE, stderr=PIPE,
                               bufsize=0, long_running=long_running)
         return proc, proc.stdout
@@ -217,9 +249,10 @@ class ChecksummingStreamer(OutputCoprocess):
                                      long_running=long_running)
         except:
             try:
+                self.fd.close()
+                self.md5filter.close()
                 self.tempfile.close()
                 os.remove(self.temppath)
-                self.fd.close()
             except (IOError, OSError):
                 pass
             raise
@@ -232,14 +265,16 @@ class ChecksummingStreamer(OutputCoprocess):
         return None
 
     def finish(self):
-        if self.finished:
+        fin, self.finished = self.finished, True
+        if fin:
             return
-        self.finished = True
+        # Stop sending output to our coprocess, wait for it to finish
         OutputCoprocess.close(self)
+        # Write postamble (the md5filter), close that too
         self._write_postamble()
         self.fd.close()
-        self.md5filter.join()
         self.md5filter.close()
+        # Reset our tempfile to the beginning for reading
         self.tempfile.seek(0, 0)
 
     def close(self):
@@ -503,6 +538,8 @@ class DecryptingStreamer(InputCoprocess):
             if _raise:
                 raise _raise('Invalid inner MD5 sum')
             return False
+        elif testing and not self.expected_inner_md5sum:
+            print 'No inner MD5 sum expected'
         if (self.expected_outer_md5sum and
                 self.expected_outer_md5sum != self.outer_md5.hexdigest()):
             if testing:
@@ -511,6 +548,8 @@ class DecryptingStreamer(InputCoprocess):
             if _raise:
                 raise _raise('Invalid outer MD5 sum')
             return False
+        elif testing and not self.expected_outer_md5sum:
+            print 'No outer MD5 sum expected'
         return True
 
     def _mk_data_filter(self, fd, cb, ecb):
@@ -581,7 +620,9 @@ class DecryptingStreamer(InputCoprocess):
             mutated = self._mutate_key(self.mep_key, nonce)
 
             self.cipher = headers.get('cipher', self.cipher)
-            self.expected_inner_md5sum = headers.get('md5sum')
+            eim = self.expected_inner_md5sum = headers.get('md5sum')
+            if eim == '00000000000000000000000000000000':
+                self.expected_inner_md5sum = None
             self.inner_md5.update(mutated)
             self.inner_md5.update(nonce)
 
@@ -634,24 +675,23 @@ class ReadLineIOFilter(IOFilter):
         IOFilter.__init__(self, fd, callback, **kwargs)
 
     def _copy_loop(self):
-        try:
-            if self.start_data:
-                self.info = 'writing'
-                self.writing_to.write(self.callback(''.join(self.start_data)))
+        if self.start_data:
+            self.info = 'writing'
+            self.writing_to.write(self.callback(''.join(self.start_data)))
 
+        self.info = 'reading'
+        for data in self.reading_from:
+            if self.aborting:
+                break
+            self.info = 'writing'
+            self.writing_to.write(self.callback(data) or '')
+            if self.aborting or (self.stop_check and self.stop_check(data)):
+                break
             self.info = 'reading'
-            for data in self.reading_from:
-                self.info = 'writing'
-                self.writing_to.write(self.callback(data))
-                if self.stop_check and self.stop_check(data):
-                    break
-                self.info = 'reading'
 
+        if not self.aborting:
             self.info = 'writing'
             self.writing_to.write(self.callback(None) or '')
-        finally:
-            self.writing_to.close()
-            self.info = 'done'
 
 
 class PartialDecryptingStreamer(DecryptingStreamer):
@@ -690,7 +730,7 @@ if __name__ == "__main__":
      bc = [0]
      def counter(data):
          bc[0] += len(data or '')
-         return data
+         return (data or '')
 
      # Cleanup...
      try:
@@ -715,6 +755,27 @@ if __name__ == "__main__":
              assert(data == 'Hello world!')
              assert(bc[0] == 12)
      assert(fdcheck('IOFilter in read mode'))
+
+     print 'Test the IOFilter in incomplete read mode'
+     bc[0] = 0
+     with open('/dev/urandom', 'r') as bfd:
+         with IOFilter(bfd, counter) as iof:
+             data = iof.reader().read(4096)
+     assert(bc[0] >= 4096)
+     assert(len(data) == 4096)
+     assert(fdcheck('IOFilter in incomplete read mode'))
+
+     print 'Test the ReadLineIOFilter in incomplete read mode'
+     bc[0], syslogline = 0, ''
+     with open('/etc/passwd', 'r') as bfd:
+         with IOFilter(bfd, counter) as iof:
+             for line in iof.reader():
+                 if 'syslog' in line:
+                     syslogline = line
+                     break
+     assert(bc[0] > 80)
+     assert('syslog' in syslogline)
+     assert(fdcheck('ReadLineIOFilter in incomplete read mode'))
 
      print 'Null decryption test, md5 verification only'
      with open('/tmp/iofilter.tmp', 'rb') as bfd:
