@@ -167,22 +167,31 @@ class CompositionCommand(AddComposeMethods(Search)):
                 updates.append((e, self._read_file_or_data(files[fofs])))
             elif update_header_set:
                 # No file name, construct an update string from the POST data.
-                up = []
                 etree = e and e.get_message_tree() or {}
                 defaults = etree.get('editing_strings', {})
+
+                up = []
                 for hdr in self.UPDATE_HEADERS:
                     if hdr.lower() in self.data:
                         data = ', '.join(self.data[hdr.lower()])
                     else:
                         data = defaults.get(hdr.lower(), '')
                     up.append('%s: %s' % (hdr, data))
-                att_keep = (self.data.get('attachment', [])
+
+                # This weird thing converts attachment=1234:bla.txt into a
+                # dict of 1234=>bla.txt values, attachment=1234 to 1234=>None.
+                # .. or just keeps all attachments if nothing is specified.
+                att_keep = (dict([(ai.split(':', 1) if (':' in ai)
+                                   else (ai, None))
+                                  for ai in self.data.get('attachment', [])])
                             if 'attachment' in self.data
-                            else defaults.get('attachments').keys())
+                            else defaults.get('attachments', {}))
                 for att_id, att_fn in defaults.get('attachments',
                                                    {}).iteritems():
                     if att_id in att_keep:
-                        up.append('Attachment-%s: %s' % (att_id, att_fn))
+                        fn = att_keep[att_id] or att_fn
+                        up.append('Attachment-%s: %s' % (att_id, fn))
+
                 updates.append((e, '\n'.join(
                     up +
                     ['', '\n'.join(self.data.get('body',
@@ -204,7 +213,8 @@ class CompositionCommand(AddComposeMethods(Search)):
         return updates
 
     def _return_search_results(self, message, emails,
-                               expand=None, new=[], sent=[], ephemeral=False):
+                               expand=None, new=[], sent=[], ephemeral=False,
+                               error=None):
         session, idx = self.session, self._idx()
         if not ephemeral:
             session.results = [e.msg_idx_pos for e in emails]
@@ -215,7 +225,12 @@ class CompositionCommand(AddComposeMethods(Search)):
                                                   results=session.results,
                                                   num=len(emails),
                                                   emails=expand)
-        return self._success(message, result=session.displayed)
+        if error:
+            return self._error(message,
+                               result=session.displayed,
+                               error_info=error)
+        else:
+            return self._success(message, result=session.displayed)
 
     def _edit_messages(self, *args, **kwargs):
         try:
@@ -649,22 +664,31 @@ class Attach(CompositionCommand):
             return self._error(_('No messages selected'))
 
         updated = []
+        errors = []
+        def err(msg):
+            errors.append(msg)
+            session.ui.error(msg)
         for email in emails:
             subject = email.get_msg_info(MailIndex.MSG_SUBJECT)
             try:
                 email.add_attachments(session, files, filedata=filedata)
                 updated.append(email)
             except NotEditableError:
-                session.ui.error(_('Read-only message: %s') % subject)
+                err(_('Read-only message: %s') % subject)
             except:
-                session.ui.error(_('Error attaching to %s') % subject)
+                err(_('Error attaching to %s') % subject)
                 self._ignore_exception()
 
-        self.message = _('Attached %s to %d messages'
-                         ) % (', '.join(files), len(updated))
+        if errors:
+            self.message = _('Attached %s to %d messages, failed %d'
+                             ) % (', '.join(files), len(updated), len(errors))
+        else:
+            self.message = _('Attached %s to %d messages'
+                             ) % (', '.join(files), len(updated))
+
         session.ui.notify(self.message)
         return self._return_search_results(self.message, updated,
-                                           expand=updated)
+                                           expand=updated, error=errors)
 
 
 class Sendit(CompositionCommand):

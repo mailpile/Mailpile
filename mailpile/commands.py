@@ -951,7 +951,8 @@ class SearchResults(dict):
                 exp_email = self.emails[expand_ids.index(int(mid, 36))]
                 msg_tree = exp_email.get_message_tree()
                 text.append('-' * term_width)
-                text.append(exp_email.get_editing_string(msg_tree).strip())
+                text.append(exp_email.get_editing_string(msg_tree,
+                    attachment_headers=False).strip())
                 if msg_tree['attachments']:
                     text.append('\nAttachments:')
                     for a in msg_tree['attachments']:

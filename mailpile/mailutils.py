@@ -10,6 +10,7 @@ import mailbox
 import mimetypes
 import os
 import quopri
+import random
 import re
 import StringIO
 import threading
@@ -66,6 +67,17 @@ class InsecureSmtpError(ValueError):
 
 class NoSuchMailboxError(OSError):
     pass
+
+
+GLOBAL_CONTENT_ID_LOCK = MboxLock()
+GLOBAL_CONTENT_ID = random.randint(0, 0xfffffff)
+
+def MakeContentID():
+    global GLOBAL_CONTENT_ID
+    with GLOBAL_CONTENT_ID_LOCK:
+        GLOBAL_CONTENT_ID += 1
+        GLOBAL_CONTENT_ID %= 0xfffffff
+        return '%x' % GLOBAL_CONTENT_ID
 
 
 GLOBAL_PARSE_CACHE_LOCK = MboxLock()
@@ -468,6 +480,19 @@ class Email(object):
         'encryption': 99,
     }
 
+    def _attachment_aid(self, att):
+        aid = att.get('aid')
+        if not aid:
+            cid = att.get('content-id')  # This comes from afar and might
+                                         # be malicious, so check it.
+            if (cid and
+                    cid == CleanText(cid, banned=(CleanText.WHITESPACE +
+                                                  CleanText.FS)).clean):
+                aid = cid
+            else:
+                aid = 'part:%s' % att['count']
+        return aid
+
     def get_editing_strings(self, tree=None):
         tree = tree or self.get_message_tree()
         strings = {
@@ -483,7 +508,7 @@ class Email(object):
         for mandate in self.MANDATORY_HEADERS:
             hdrs[mandate.lower()] = hdrs.get(mandate.lower(), mandate)
         keys = hdrs.keys()
-        keys.sort(key=lambda k: (self.HEADER_ORDER.get(k, 99), k))
+        keys.sort(key=lambda k: (self.HEADER_ORDER.get(k.lower(), 99), k))
         lowman = [m.lower() for m in self.MANDATORY_HEADERS]
         for hdr in [hdrs[k] for k in keys]:
             data = tree['headers'].get(hdr, '')
@@ -493,8 +518,8 @@ class Email(object):
                 header_lines.append(unicode('%s: %s' % (hdr, data)))
 
         for att in tree['attachments']:
-            strings['attachments'][att['count']] = (att['filename']
-                                                    or '(unnamed)')
+            aid = self._attachment_aid(att)
+            strings['attachments'][aid] = fn = (att['filename'] or '(unnamed)')
 
         if not strings['encryption']:
             strings['encryption'] = unicode(self.config.prefs.crypto_policy)
@@ -511,17 +536,31 @@ class Email(object):
                                   ).replace('\r\n', '\n')
         return strings
 
-    def get_editing_string(self, tree=None):
+    def get_editing_string(self, tree=None, attachment_headers=True):
         tree = tree or self.get_message_tree()
         estrings = self.get_editing_strings(tree)
-        bits = [estrings['headers']]
+        bits = [estrings['headers']] if estrings['headers'] else []
         for mh in self.MANDATORY_HEADERS:
             bits.append('%s: %s' % (mh, estrings[mh.lower()]))
+        if attachment_headers:
+            for att in tree['attachments']:
+                aid = self._attachment_aid(att)
+                bits.append('Attachment-%s: %s' % (aid, (att['filename']
+                                                         or '(unnamed)')))
         bits.append('')
         bits.append(estrings['body'])
         return '\n'.join(bits)
 
-    def make_attachment(self, fn, filedata=None):
+    def _update_att_name(self, part, filename):
+        try:
+            del part['Content-Disposition']
+        except KeyError:
+            pass
+        part.add_header('Content-Disposition', 'attachment',
+                        filename=filename)
+        return part
+
+    def _make_attachment(self, fn, filedata=None):
         if filedata and fn in filedata:
             data = filedata[fn]
         else:
@@ -534,6 +573,7 @@ class Email(object):
             att = MIMEBase(maintype, subtype)
             att.set_payload(data)
             encoders.encode_base64(att)
+        att.add_header('Content-Id', MakeContentID())
         att.add_header('Content-Disposition', 'attachment',
                        filename=os.path.basename(fn))
         return att
@@ -543,7 +583,7 @@ class Email(object):
             raise NotEditableError(_('Message or mailbox is read-only.'))
         msg = self.get_msg()
         for fn in filenames:
-            msg.attach(self.make_attachment(fn, filedata=filedata))
+            msg.attach(self._make_attachment(fn, filedata=filedata))
         return self.update_from_msg(session, msg)
 
     def update_from_string(self, session, data, final=False):
@@ -560,7 +600,7 @@ class Email(object):
 
             # Copy over editable headers from the input string, skipping blanks
             for hdr in newmsg.keys():
-                if hdr.startswith('Attachment-'):
+                if hdr.startswith('Attachment-') or hdr == 'Attachment':
                     pass
                 else:
                     encoded_hdr = self.encoded_hdr(newmsg, hdr)
@@ -590,21 +630,20 @@ class Email(object):
 
             # Copy the attachments we are keeping
             attachments = [h for h in newmsg.keys()
-                           if h.startswith('Attachment-')]
+                           if h.lower().startswith('attachment')]
             if attachments:
                 oldtree = self.get_message_tree()
                 for att in oldtree['attachments']:
-                    hdr = 'Attachment-%s' % att['count']
+                    hdr = 'Attachment-%s' % self._attachment_aid(att)
                     if hdr in attachments:
-                        # FIXME: Update the filename to match whatever
-                        #        the user typed
-                        outmsg.attach(att['part'])
+                        outmsg.attach(self._update_att_name(att['part'],
+                                                            newmsg[hdr]))
                         attachments.remove(hdr)
 
             # Attach some new files?
             for hdr in attachments:
                 try:
-                    outmsg.attach(self.make_attachment(newmsg[hdr]))
+                    outmsg.attach(self._make_attachment(newmsg[hdr]))
                 except:
                     pass  # FIXME: Warn user that failed...
 
@@ -621,10 +660,10 @@ class Email(object):
 
         # OK, adding to the mailbox worked
         newptr = ptr[:MBX_ID_LEN] + mbx.add(newmsg)
+        self.update_parse_cache(newmsg)
 
         # Remove the old message...
         mbx.remove(ptr[MBX_ID_LEN:])
-        self.clear_from_parse_cache()
 
         # FIXME: We should DELETE the old version from the index first.
 
@@ -634,7 +673,7 @@ class Email(object):
         self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
         self.index.index_email(session, Email(self.index, self.msg_idx_pos))
 
-        self.reset_caches()
+        self.reset_caches(clear_parse_cache=False)
         return self
 
     def reset_caches(self,
@@ -645,6 +684,14 @@ class Email(object):
         self.msg_parsed_pgpmime = msg_parsed_pgpmime
         if clear_parse_cache:
             self.clear_from_parse_cache()
+
+    def update_parse_cache(self, newmsg):
+        if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
+            with GLOBAL_PARSE_CACHE_LOCK:
+                GPC = GLOBAL_PARSE_CACHE
+                for i in range(0, len(GPC)):
+                    if GPC[i][0] == self.msg_idx_pos:
+                        GPC[i] = (self.msg_idx_pos, False, newmsg)
 
     def clear_from_parse_cache(self):
         if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
@@ -815,6 +862,7 @@ class Email(object):
                     'content-id': content_id,
                     'filename': pfn,
                 }
+                attributes['aid'] = self._attachment_aid(attributes)
                 if pfn:
                     if '.' in pfn:
                         pfn, attributes['att_ext'] = pfn.rsplit('.', 1)
@@ -1007,14 +1055,16 @@ class Email(object):
                         tree['text_parts'].extend(text_parts)
 
             elif want is None or 'attachments' in want:
-                tree['attachments'].append({
+                att = {
                     'mimetype': mimetype,
                     'count': count,
                     'part': part,
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
                     'filename': part.get_filename() or ''
-                })
+                }
+                att['aid'] = self._attachment_aid(att)
+                tree['attachments'].append(att)
 
         if want is None or 'text_parts' in want:
             if tree.get('html_parts') and not tree.get('text_parts'):

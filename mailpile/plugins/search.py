@@ -349,8 +349,7 @@ class Extract(Command):
         else:
             cid = args.pop(-1)
 
-        eids = self._choose_messages(args)
-        emails = [Email(idx, i) for i in eids]
+        emails = [Email(idx, i) for i in self._choose_messages(args)]
         results = []
         for e in emails:
             if cid[0] == '*':
