@@ -82,12 +82,17 @@ var ProfilesView = Backbone.View.extend({
   },
   showEdit: function(id) {
     $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    var profile = ProfilesCollection.get(id);
-    if (profile !== undefined) {
-      this.$el.html(_.template($('#template-setup-profiles-add').html(), profile.attributes));
-    } else {
-      Backbone.history.navigate('#profiles', true);
-    }
+
+    // Load Data & Add to Collection
+    Mailpile.API.setup_profiles_get({}, function(result) {
+
+      var profile = result.result.profiles[id];
+      if (profile !== undefined) {
+        profile = _.extend({ id: id, action: 'Edit' }, profile);
+        $('#setup').html(_.template($('#template-setup-profiles-add').html(), profile));
+      }
+    });
+
   },
   actionCheckEmailMagic: function(e) {
     var domain = $(e.target).val().replace(/.*@/, "");
