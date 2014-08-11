@@ -750,14 +750,15 @@ class SearchResults(dict):
         if start < 0:
             start = 0
 
-        self.session.ui.mark(_('Parsing metadata for %d results '
-                               '(full_threads=%s)') % (num, full_threads))
-
         try:
             threads = [b36(r) for r in results[start:start + num]]
         except TypeError:
             results = threads = []
             start = end = 0
+
+        self.session.ui.mark(_('Parsing metadata for %d results '
+                               '(full_threads=%s)') % (len(threads),
+                                                       full_threads))
 
         self.update({
             'summary': _('Search: %s') % ' '.join(session.searched),
