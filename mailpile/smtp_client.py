@@ -102,10 +102,12 @@ else:
 
 
 class SendMailError(IOError):
-    pass
+    def __init__(self, msg, details=None):
+        IOError.__init__(self, msg)
+        self.error_info = details or {}
 
 
-def _RouteTuples(session, from_to_msg_ev_tuples):
+def _RouteTuples(session, from_to_msg_ev_tuples, test_route=None):
     tuples = []
     for frm, to, msg, events in from_to_msg_ev_tuples:
         dest = {}
@@ -125,10 +127,17 @@ def _RouteTuples(session, from_to_msg_ev_tuples):
                          "host": "",
                          "port": 25
                          }
-                route.update(session.config.get_sendmail(frm, [recipient]))
+
+                if test_route:
+                    route.update(test_route)
+                else:
+                    route.update(session.config.get_sendmail(frm, [recipient]))
+
                 if route["command"]:
                     txtroute = "|%(command)s" % route
                 else:
+                    # FIXME: This is dumb, makes it hard to handle usernames
+                    #        or passwords with funky characters in them :-(
                     txtroute = "%(protocol)s://%(username)s:%(password)s@" \
                                + "%(host)s:%(port)d"
                     txtroute %= route
@@ -140,8 +149,10 @@ def _RouteTuples(session, from_to_msg_ev_tuples):
     return tuples
 
 
-def SendMail(session, msg_mid, from_to_msg_ev_tuples):
-    routes = _RouteTuples(session, from_to_msg_ev_tuples)
+def SendMail(session, msg_mid, from_to_msg_ev_tuples,
+             test_only=False, test_route=None):
+    routes = _RouteTuples(session, from_to_msg_ev_tuples,
+                          test_route=test_route)
 
     # Randomize order of routes, so we don't always try the broken
     # one first. Any failure will bail out, but we do keep track of
@@ -170,16 +181,17 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 session.config.event_log.log_event(ev)
         session.ui.mark(msg)
 
-    def fail(msg, events):
+    def fail(msg, events, details=None):
         mark(msg, events, log=True)
         for ev in events:
             ev.data['last_error'] = msg
-        raise SendMailError(msg)
+        raise SendMailError(msg, details=details)
 
     def smtp_do_or_die(msg, events, method, *args, **kwargs):
         rc, msg = method(*args, **kwargs)
         if rc != 250:
-           fail(msg + ' (%s %s)' % (rc, msg), events)
+           fail(msg + ' (%s %s)' % (rc, msg), events,
+                details={'smtp_error': '%s: %s' % (rc, msg)})
 
     # Do the actual delivering...
     for frm, sendmail, to, msg, events in routes:
@@ -204,7 +216,10 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 proc.stdin.close()
                 rv = proc.wait()
                 if rv != 0:
-                    fail(_('%s failed with exit code %d') % (cmd, rv), events)
+                    fail(_('%s failed with exit code %d') % (cmd, rv), events,
+                         details={'failed_command': cmd,
+                                  'exit_code': rv})
+
             sm_cleanup = lambda: [proc.stdin.close(), proc.wait()]
             # FIXME: Update session UI with progress info
             for ev in events:
@@ -257,7 +272,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                     try:
                         server.login(user, pwd)
                     except smtplib.SMTPAuthenticationError:
-                        fail(_('Invalid username or password'), events)
+                        fail(_('Invalid username or password'), events,
+                             details={'authentication_error': True})
 
                 smtp_do_or_die(_('Sender rejected by SMTP server'),
                                events, server.mail, frm)
@@ -287,14 +303,19 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                 if hasattr(server, 'sock'):
                     server.close()
         else:
-            fail(_('Invalid sendmail command/SMTP server: %s') % sendmail)
+            fail(_('Invalid sendmail command/SMTP server: %s') % sendmail,
+                 events)
 
         try:
             # Run the entire connect/login sequence in a single timer...
             if sm_startup:
                 RunTimed(30, sm_startup)
 
+            if test_only:
+                return True
+
             mark(_('Preparing message...'), events)
+
             msg_string = MessageAsString(CleanMessage(session.config, msg))
             total = len(msg_string)
             while msg_string:
@@ -325,3 +346,4 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples):
                                             if ev.private_data[k]])
         finally:
             sm_cleanup()
+    return True

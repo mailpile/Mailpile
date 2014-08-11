@@ -5,6 +5,7 @@ from datetime import date
 from urllib import urlencode
 
 import mailpile.auth
+from mailpile.defaults import CONFIG_RULES
 from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
@@ -17,6 +18,7 @@ from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
 from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
+from mailpile.smtp_client import SendMail, SendMailError
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
 from mailpile.plugins.migrate import Migrate
@@ -416,37 +418,6 @@ class TestableWebbable(SetupMagic):
 
     def setup_command(self, session):
         raise Exception('FIXME')
-
-
-class SetupTestEmailSettings(TestableWebbable):
-    """Test the settings for an e-mail account"""
-    SYNOPSIS = (None, 'setup/test_mailroute', 'setup/test_mailroute', None)
-    HTTP_CALLABLE = ('POST', )
-    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS, {
-        'protocol': 'IMAP, POP3 or SMTP',
-        'username': 'User name',
-        'password': 'Password',
-        'host': 'Server host name',
-        'port': 'Server port number',
-        'use_tls': 'Use TLS to connect'
-    })
-
-    def _test_settings(self):
-        raise Exception('FIXME')
-
-    def setup_command(self, session):
-        # This will throw a keyerror if any of the settings are missing
-        try:
-            settings = dict([(p, self.data[p][0]) for p in
-                             set(self.HTTP_POST_VARS.keys())
-                             - set(['testing'])])
-        except KeyError:
-            return self._error(_('Incomplete settings'))
-
-        if self._testing_yes(self._test_settings):
-            return self._success(_('That all worked'))
-        else:
-            return self._error(_('Invalid settings'))
 
 
 class SetupGetEmailSettings(TestableWebbable):
@@ -882,6 +853,64 @@ class SetupConfigureKey(SetupProfiles):
         return self._success(_('Configuring a key'), self._result())
 
 
+class SetupTestRoute(SetupProfiles):
+    SYNOPSIS = (None, None, 'setup/test_route', None)
+
+    HTTP_AUTH_REQUIRED = True
+    HTTP_CALLABLE = ('POST', )
+    HTTP_POST_VARS = dict_merge(TestableWebbable.HTTP_POST_VARS,
+                                dict((k, v[0]) for k, v in
+                                     CONFIG_RULES['routes'][1].iteritems()),
+                                {'route_id': 'ID of existing route'})
+    TEST_DATA = {}
+
+    def setup_command(self, session):
+
+        if self.args:
+            route_id = self.args[0]
+        elif 'route_id' in self.data:
+            route_id = self.data['route_id'][0]
+        else:
+            route_id = None
+
+        if route_id:
+            route = self.session.config.routes[route_id]
+            assert(route)
+        else:
+            route = []
+            for k in CONFIG_RULES['routes'][1]:
+                route[k] = self.data[k][0]
+
+        fromaddr = route.get('username', '')
+        if '@' not in fromaddr:
+            fromaddr = self.session.config.get_profile()['email']
+        assert(fromaddr)
+
+        error_info = {'error': _('Unknown error')}
+        try:
+            assert(SendMail(self.session, None,
+                            [(fromaddr,
+                              [fromaddr, 'test@mailpile.is'],
+                              None,
+                              [self.event])],
+                            test_only=True, test_route=route))
+            return self._success(_('Route is working'),
+                                 result=route)
+        except OSError:
+            error_info = {'error': _('Invalid command'),
+                          'invalid_command': True}
+        except SendMailError, e:
+            error_info = {'error': e.message,
+                          'sendmail_error': True}
+            error_info.update(e.error_info)
+        except:
+            import traceback
+            traceback.print_exc()
+
+        return self._error(_('Route is not working'),
+                           result=route, info=error_info)
+
+
 class Setup(TestableWebbable):
     """Enter setup flow"""
     SYNOPSIS = (None, 'setup', 'setup', '[do_gpg_stuff]')
@@ -944,10 +973,10 @@ class Setup(TestableWebbable):
 
 _ = gettext
 _plugins.register_commands(SetupMagic,
-                           SetupTestEmailSettings,
                            SetupGetEmailSettings,
                            SetupWelcome,
                            SetupCrypto,
                            SetupProfiles,
                            SetupConfigureKey,
+                           SetupTestRoute,
                            Setup)
