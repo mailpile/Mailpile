@@ -71,15 +71,15 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     def add(self, message, copies=1):
         """Add message and return assigned key."""
         key = self._encryption_key_func()
+        es = None
         try:
+            tmpdir = os.path.join(self._path, 'tmp')
             if key:
                 es = EncryptingStreamer(key,
-                                        dir=os.path.join(self._path, 'tmp'),
-                                        name='WERVD',
+                                        dir=tmpdir, name='WERVD',
                                         delimited=False)
             else:
-                es = ChecksummingStreamer(dir=os.path.join(self._path, 'tmp'),
-                                          name='WERVD')
+                es = ChecksummingStreamer(dir=tmpdir, name='WERVD')
             self._dump_message(message, es)
             es.finish()
 
@@ -105,7 +105,8 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
             return key
         finally:
-            es.close()
+            if es is not None:
+                es.close()
 
     def _dump_message(self, message, target):
         if isinstance(message, email.message.Message):
