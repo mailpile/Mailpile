@@ -1,0 +1,41 @@
+# This is a Mailpile plugin manifest, describing the `i18nhelper` plugin.
+{
+    "name": "i18nhelper",
+    "author": "The Mailpile Team <team@mailpile.is>",
+    "code": {
+        "python": ["i18nhelper.py"],
+        "javascript": ["i18nhelper.js"],
+        "css": []
+    },
+
+    # This section defines URL routes and MIME types.
+    "routes": {
+        "/static/i18nhelper/icon.png": {"file": "i18n.png"}
+    },
+
+    "user_interface": {
+        "activities": [
+            {
+                "context": ["/"],
+                "name": "i18nhelper",
+                "text": "Internationalization",
+                "icon": "/static/i18nhelper/icon.png",
+                "description": "i18n helper functions",
+                "url": "#",
+                "javascript_setup": "activity_setup"
+            }
+        ]
+    },
+
+    # Please see https://github.com/pagekite/Mailpile/wiki/Config for
+    # details about the configuration file syntax.
+    "config": {},
+
+    # These are our Python-related hooks
+    "commands": [
+        {
+            "class": "I18NRecent",
+            "name": "i18n/recent"
+        }
+    ]
+}
