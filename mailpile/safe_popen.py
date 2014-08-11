@@ -1,12 +1,12 @@
 #
-# This module implements a safer version of Popen, to avoid deadlocks
-# caused by file descriptors being shared between processes.
+# This module implements a safer version of Popen and a safe wrapper around
+# os.pipe(), to avoid deadlocks caused by file descriptors being shared
+# between processes and threads.
 #
-# This changes the default subprocess.Popen semantics in the following
-# ways:
+# The subprocess.Popen semantics are changed in the following ways:
 #
 #   * close_fds=True is mandatory on all Unix operating systems
-#   * fd_whitelist=[] can be passed to explicitly keep other FDs open
+#   * keep_open=[] can be passed to explicitly keep other FDs open
 #   * preexec_fn will call os.setpgrp on all Unix operating systems
 #
 # On Windows, close_fds and preexec_fn are unavailable in Python 2.7, so
@@ -16,6 +16,10 @@
 #   * creationflags=CREATE_NEW_PROCESS_GROUP is set
 #   * subprocesses hold a global lock for as long as is "reasonable"
 #
+# The os.pipe() wrapper simply makes sure pipe file handles are wrapped
+# in Python file objects so Python's garbage collector and intelligent
+# handling of close() are taken advantage of, and adds a couple of
+# convenience functions and properties to make piping code more readable.
 #
 import os
 import subprocess
@@ -32,7 +36,7 @@ SERIALIZE_POPEN_ALWAYS = False
 SERIALIZE_POPEN_LOCK = threading.Lock()
 
 
-class SafePipe(object):
+class Safe_Pipe(object):
     """
     Creates a pipe consisting of two Python file objects.
 

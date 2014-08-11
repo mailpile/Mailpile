@@ -18,7 +18,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
-from mailpile.safe_popen import Popen, PIPE, SafePipe
+from mailpile.safe_popen import Popen, PIPE, Safe_Pipe
 
 
 DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
@@ -440,12 +440,12 @@ class GnuPG:
         proc = status_pipe = passphrase_pipe = None
         popen_keeps_open = []
         try:
-            status_pipe = SafePipe()
+            status_pipe = Safe_Pipe()
             args.insert(1, "--status-fd=%d" % status_pipe.write_end.fileno())
             popen_keeps_open.append(status_pipe.write_end)
 
             if self.passphrase:
-                passphrase_pipe = SafePipe()
+                passphrase_pipe = Safe_Pipe()
                 if self.use_agent:
                     args.insert(1, "--no-use-agent")
                 args.insert(2, "--passphrase-fd=%d"
