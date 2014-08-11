@@ -87,6 +87,8 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
         message = ParseMessage(fd, cache_id=cache_id,
                                pgpmime=False,
                                config=config)
+        if message is None:
+            return None
         if cache_id is not None:
             # Caching is enabled, let's not clobber the encrypted version
             # of this message with a fancy decrypted one.
@@ -100,8 +102,13 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             'openpgp': MakeGnuPG
         })
     else:
-        if not hasattr(fd, 'read'):  # Not a file, is it a function?
-            fd = fd()
+        try:
+            if not hasattr(fd, 'read'):  # Not a file, is it a function?
+                fd = fd()
+            assert(hasattr(fd, 'read'))
+        except (TypeError, AssertionError):
+            return None
+
         message = email.parser.Parser().parse(fd)
         for part in message.walk():
             part.signature_info = SignatureInfo()
