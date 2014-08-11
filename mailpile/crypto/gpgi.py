@@ -18,7 +18,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.crypto.state import *
 from mailpile.crypto.mime import MimeSigningWrapper, MimeEncryptingWrapper
-from mailpile.safe_popen import Popen, PIPE
+from mailpile.safe_popen import Popen, PIPE, SafePipe
 
 
 DEFAULT_SERVER = "hkp://subset.pool.sks-keyservers.net"
@@ -437,22 +437,20 @@ class GnuPG:
             args.insert(1, "--homedir=%s" % self.homedir)
 
         gpg_retcode = -1
-        proc = status_handle = passphrase_handle = None
-        status_pipe = passphrase_pipe = [None, None]
+        proc = status_pipe = passphrase_pipe = None
         popen_keeps_open = []
         try:
-            status_pipe = os.pipe()
-            status_handle = os.fdopen(status_pipe[0], "r")
-            args.insert(1, "--status-fd=%d" % status_pipe[1])
-            popen_keeps_open.append(status_pipe[1])
+            status_pipe = SafePipe()
+            args.insert(1, "--status-fd=%d" % status_pipe.write_end.fileno())
+            popen_keeps_open.append(status_pipe.write_end)
 
             if self.passphrase:
-                passphrase_pipe = os.pipe()
-                passphrase_handle = os.fdopen(passphrase_pipe[1], "w")
+                passphrase_pipe = SafePipe()
                 if self.use_agent:
                     args.insert(1, "--no-use-agent")
-                args.insert(2, "--passphrase-fd=%d" % passphrase_pipe[0])
-                popen_keeps_open.append(passphrase_pipe[0])
+                args.insert(2, "--passphrase-fd=%d"
+                               % passphrase_pipe.read_end.fileno())
+                popen_keeps_open.append(passphrase_pipe.read_end)
 
             # Here we go!
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
@@ -464,16 +462,17 @@ class GnuPG:
             if self.passphrase:
                 c = self.passphrase.read(BLOCKSIZE)
                 while c != '':
-                    passphrase_handle.write(c)
+                    passphrase_pipe.write(c)
                     c = self.passphrase.read(BLOCKSIZE)
-                passphrase_handle.write('\n')
-                passphrase_handle.close()
+                passphrase_pipe.write('\n')
+                passphrase_pipe.write_end.close()
 
             self.threads = {
                 "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
                                        proc.stderr, self.parse_stderr),
                 "status": StreamReader('gpgi-status(%s)' % wtf,
-                                       status_handle, self.parse_status),
+                                       status_pipe.read_end,
+                                       self.parse_status),
             }
 
             if outputfd:
@@ -498,25 +497,18 @@ class GnuPG:
             gpg_retcode = proc.wait()
 
         finally:
-            def closer(method, *args):
-                try:
-                    method(*args)
-                except (IOError, OSError):
-                    pass
             # Here we close GPG's end of the status pipe, because
             # otherwise things may hang. We also close the passphrase pipe
             # at both ends, as it should be completely finished.
-            for fdn in (status_pipe[1],
-                        passphrase_pipe[0], passphrase_pipe[1]):
-                if fdn is not None:
-                    closer(os.close, fdn)
-            for fd in (passphrase_handle,):
-                if fd is not None:
-                    closer(fd.close)
+            if status_pipe:
+                status_pipe.write_end.close()
+            if passphrase_pipe:
+                passphrase_pipe.close()
+
             # Close this so GPG will terminate. This should already have
             # been done, but we're handling errors here...
             if proc and proc.stdin:
-                closer(proc.stdin.close)
+                proc.stdin.close()
 
         # Reap the threads
         for name, thr in self.threads.iteritems():

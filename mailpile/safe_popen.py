@@ -32,6 +32,30 @@ SERIALIZE_POPEN_ALWAYS = False
 SERIALIZE_POPEN_LOCK = threading.Lock()
 
 
+class SafePipe(object):
+    """
+    Creates a pipe consisting of two Python file objects.
+
+    This prevents leaks and prevents weird thread bugs cuased by closing
+    the underlying FD more than once, because Python's objects are smart
+    (as opposed to dumb ints).
+    """
+    def __init__(self):
+        p = os.pipe()
+        self.read_end = os.fdopen(p[0], 'r')
+        self.write_end = os.fdopen(p[1], 'w')
+
+    def write(self, *args, **kwargs):
+        return self.write_end.write(*args, **kwargs)
+
+    def read(self, *args, **kwargs):
+        return self.read_end.read(*args, **kwargs)
+
+    def close(self):
+        self.read_end.close()
+        self.write_end.close()
+
+
 class Safe_Popen(Unsafe_Popen):
     def __init__(self, args, bufsize=0,
                              executable=None,
