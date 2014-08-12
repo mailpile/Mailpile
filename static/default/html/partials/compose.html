@@ -124,8 +124,14 @@
           </span>
         </div>
         <ul class="dropdown-menu">
-        {% for profile_email in profiles.emails|sort %}
-          {% set profile = profiles.profiles[profiles.emails[profile_email]] %}
+        {% set emails = profiles.emails|sort %}
+        {% if from.address not in emails %}
+          {% set emails = [from.address] + emails %}
+        {% endif %}
+        {% for profile_email in emails %}
+          {% set profile = profiles.emails[profile_email]
+                           and profiles.profiles[profiles.emails[profile_email]]
+                           or {'fn': from.fn, 'email': from.address} %}
           <li role="presentation">
             <a href="#" class="compose-from" data-mid="{{mid}}">
               <span class="avatar">
@@ -139,7 +145,7 @@
               <span class="address">{{ profile_email }}</span>
             </a>
           </li>
-          {% endfor %}
+        {% endfor %}
         </ul>
       </div>
       <input id="compose-from-{{mid}}" type="hidden" name="from" value="{{from.fn}} &lt;{{from.address}}&gt;">
