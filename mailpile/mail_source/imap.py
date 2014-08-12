@@ -92,7 +92,11 @@ def _parse_imap(reply):
     pdata = []
     for dline in reply[1]:
         while True:
-            m = IMAP_TOKEN.match(dline)
+            if isinstance(dline, (str, unicode)):
+                m = IMAP_TOKEN.match(dline)
+            else:
+                print 'WARNING: Unparsed IMAP response data: %s' % (dline)
+                m = None
             if m:
                 token = m.group(0)
                 dline = dline[len(token):]

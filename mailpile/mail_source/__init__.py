@@ -154,7 +154,7 @@ class BaseMailSource(threading.Thread):
                 if batch > 0 and (self._has_mailbox_changed(mbx_cfg, state) or
                                   random.randint(0, 50) == 10):
 
-                    self._state = 'Waiting...'
+                    self._state = 'Waiting... (rescan)'
                     with GLOBAL_RESCAN_LOCK:
                         if self._check_interrupt(clear=False):
                             break
@@ -190,7 +190,7 @@ class BaseMailSource(threading.Thread):
                 self._log_status(_('Internal error'))
                 raise
 
-        self._state = 'Waiting...'
+        self._state = 'Waiting... (disco)'
         with GLOBAL_RESCAN_LOCK:
             if not self._check_interrupt():
                 self.discover_mailboxes()
