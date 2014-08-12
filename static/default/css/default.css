@@ -5514,6 +5514,16 @@ textarea.input-large,
 select.input-large {
   width: 500px;
 }
+input[type="text"].input-full,
+input[type="password"].input-full,
+input[type="email"].input-full,
+input[type="url"].input-full,
+input[type="phone"].input-full,
+input[type="address"].input-full,
+textarea.input-full,
+select.input-full {
+  width: 100%;
+}
 ul.radio-list-items {
   background: #ffffff;
   border: 1px solid #b3b3b3;
@@ -5572,11 +5582,27 @@ ul.items li.grouped h5 {
 }
 /* Tables */
 /* REBAR: Move these more global styles to Rebar */
+table th.text-center,
+table td.text-center {
+  text-align: center;
+}
 table.background-white {
   background: #ffffff;
 }
+table.background-white th {
+  border-top: 1px solid #cccccc;
+  background: #ffffff;
+}
+table.background-white th,
+table.background-white td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
 /* Clearing */
 /* REBAR: Move these more global styles to clearing.less */
+.middle {
+  vertical-align: middle;
+}
 .add-right {
   margin-right: 20px;
 }
@@ -5774,6 +5800,46 @@ li.notification img {
 }
 .notification-normal {
   background: #b3b3b3;
+}
+/* Notification Bubbles */
+#notification-bubbles {
+  position: absolute;
+  top: 0px;
+  right: 15px;
+  width: 250px;
+  display: inline-block;
+  z-index: 1000;
+  box-sizing: content-box;
+}
+div.notification-bubble {
+  margin-top: 13.33333333px;
+  background: #4d4d4d;
+  border-radius: 3px;
+  padding: 7.5px 15px;
+  box-sizing: padding-box;
+  font-weight: normal;
+  font-size: 14px;
+  color: #b3b3b3;
+}
+div.notification-bubble .title {
+  display: inline-block;
+  font-weight: bold;
+  color: #ffffff;
+}
+div.notification-bubble .icon {
+  color: #ffffff;
+}
+div.notification-bubble a {
+  color: #b3b3b3;
+}
+div.notification-bubble a:visited {
+  color: #b3b3b3;
+}
+div.notification-bubble a:hover {
+  color: #be1c21;
+}
+div.notification-bubble a.notification-close:hover {
+  color: #ffffff;
 }
 /* Navigation */
 .navigation-on {
@@ -6182,7 +6248,6 @@ a.sidebar-tag span.sidebar-tag-archive:hover {
 .form-compose {
   padding: 15px 20px 10px 20px;
   background: #f6f6f6;
-  border-bottom: 1px solid #cccccc;
 }
 .form-compose label {
   display: block;
@@ -6200,14 +6265,6 @@ a.sidebar-tag span.sidebar-tag-archive:hover {
 .form-compose label span,
 .form-compose label a.compose-hide-field {
   color: #b3b3b3;
-}
-.compose-from {
-  float: left;
-  height: 32px;
-  background-color: #ffffff;
-  border-color: #cccccc;
-  border-radius: 5px;
-  font-size: 12px;
 }
 .compose-headers,
 .compose-subject,
@@ -6228,15 +6285,6 @@ a.compose-show-field {
   font-weight: bold;
   color: #4d4d4d;
   margin-left: 10px;
-}
-.compose-from-avatar {
-  width: 45px;
-}
-.compose-from-address {
-  color: #b3b3b3;
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 12px;
-  font-weight: normal;
 }
 /* Compose - Subject */
 .compose-subject input[type=text] {
@@ -6353,7 +6401,7 @@ a.compose-show-field {
 .compose-body textarea {
   width: 97%;
   display: block;
-  min-height: 78px;
+  min-height: 75px;
   margin: 12px auto 0px auto;
   padding: 0px 0px 12px 0px;
   border: 0px;
@@ -6403,6 +6451,82 @@ li.compose-attachment img {
 }
 .attachment-browswer-unsupported a {
   color: #b3b3b3;
+}
+/* Compose - From Menu */
+.compose-from-select {
+  display: table;
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 3px;
+  padding: 8px 10px;
+  line-height: 14px;
+}
+.compose-from-select:hover {
+  cursor: pointer;
+  background: #4d4d4d;
+  color: #ffffff;
+}
+.compose-from-select:hover .name {
+  color: #ffffff;
+}
+.compose-from-selected {
+  display: table-cell;
+  vertical-align: middle;
+}
+.compose-from-caret {
+  display: table-cell;
+  padding-left: 5px;
+}
+.compose-from-selected .avatar {
+  width: 24px;
+  display: inline-block;
+  margin-right: 5px;
+}
+.compose-from-selected .avatar img {
+  width: 24px;
+  border-radius: 3px;
+}
+.compose-from-selected .name {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 14px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  line-height: 14px;
+}
+.compose-from-selected .address {
+  font-size: 12px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  color: #cccccc;
+  line-height: 12px;
+}
+.compose-from {
+  height: 32px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+}
+.compose-from .avatar {
+  width: 32px;
+  margin: 5px 8px 5px 0px;
+}
+.compose-from .avatar img {
+  width: 32px;
+  border-radius: 3px;
+}
+.compose-from .name {
+  display: inline-block;
+  vertical-align: text-top;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+}
+.compose-from .address {
+  color: #b3b3b3;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
 }
 /* Compose - Actions */
 .compose-actions {

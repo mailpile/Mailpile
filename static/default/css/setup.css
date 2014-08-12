@@ -167,6 +167,7 @@ label.radio-list-item .icon-key {
 }
 .setup-item .avatar img {
   width: 50px;
+  border-radius: 3px;
 }
 .setup-item .name {
   display: block;
