@@ -1,7 +1,18 @@
 <li class="setup-item" id="setup-source-<%= id %>">
   <div class="clearfix">
-    <span class="name"><%= name %></span>
-    <span class="username"><%= username %></span>
+    <div class="left">
+      <span class="name"><%= name %></span>
+      <span class="text-detail">
+      <% if (username) { %>
+        <%= username %>
+      <% } else { %>
+        <%= protocol %> source
+      <% } %>
+      </span>
+    </div>
+    <a href="#" data-id="<%= id %>" class="setup-source-remove right"><span class="icon-minus"></span> Disable</a>
+  </div>
+  <div class="half-top">
     <ul id="setup-source-<%= id %>-actions" class="horizontal right">
       <% if (_.isEmpty(mailbox)) { %>
       <li class="source-state-analyzing"><em>Analyzing...</em></li>
@@ -10,7 +21,6 @@
       <li><a href="#sources/configure/<%= id %>"><span class="icon-tag"></span> Configure</a></li>
       <li><a href="#sources/<%= id %>"><span class="icon-settings"></span> Edit</a></li>
       <% } %>
-      <li><a href="#" data-id="<%= id %>" class="setup-source-remove"><span class="icon-minus"></span> Disable</a></li>
     </ul>
   </div>
   <div id="setup-source-<%= id %>-message"></div>
