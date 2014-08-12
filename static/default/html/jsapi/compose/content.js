@@ -522,6 +522,19 @@ $(document).on('click', '.compose-message-trash', function() {
 });
 
 
+$(document).on('click', '.compose-from', function(e) {
+  e.preventDefault();
+  var mid = $(this).data('mid');
+  var avatar = $(this).find('.avatar img').attr('src');
+  var name = $(this).find('.name').html();
+  var address = $(this).find('.address').html();
+  $('#compose-from-selected-' + mid).find('.avatar img').attr('src', avatar);
+  $('#compose-from-selected-' + mid).find('.name').html(name);
+  $('#compose-from-selected-' + mid).find('.address').html(address);
+  $('#compose-from-' + mid).val(name + ' <' + address + '>');
+});
+
+
 /* Compose - Autogrow composer boxes */
 $(document).on('focus', '.compose-text', function() {
   $(this).autosize();
