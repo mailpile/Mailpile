@@ -37,34 +37,23 @@
   <h4>{{_("Security & Keys")}}</h4>
   <ul class="items grouped">
     {% if keys %}
-    <li class="grouped">
-      <select id="crypto-policy">
-        {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
-        {% set crypto_policy = show_crypto_policy(policy) %}
-        <option value="{{ policy }}"
-          {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected"{% endif %}
-          data-message="{{crypto_policy.message}}">{{crypto_policy.text}}</option>
-        {% endfor %}
-      </select>
-      {{_("messages when communicating with")}} {{name}}
-    </li>
     {% for id, key in keys.iteritems() %}
     <li class="grouped">
       <select class="crypto-key-policy right" data-fingerprint="{{key.fingerprint}}">
         <option value="true">Use This Key</option>
         <option value="false">Don't Use This Key</option>
       </select>
-      <h5><span class="icon-fingerprint"></span> {{ nice_fingerprint(key.fingerprint) }}</h5>
-      <h5><span class="icon-key"></span> {{id[8:]}}</h5>
+      <span class="icon-fingerprint left"></span>
+      <h5 class="contact-key">{{ nice_fingerprint(key.fingerprint) }}</h5>
       <a href="#" class="show-key-details" data-keyid="{{id[8:]}}">See Details</a>
       <div id="contact-key-details-{{id[8:]}}" class="contact-key-details clearfix">
         <div class="left add-right">
         Created: <strong>{{key['creation-date']}}</strong><br>
-        Expires: <strong>{{key['revocation-date']}}</strong><br>
-        Capabilities: <strong>{{capabilities}}</strong><br>
+        {% if key['revocation-date'] %}Expires: <strong>{{key['revocation-date']}}</strong>{% else %}Does not expire{% endif %}<br>
+        {% if key.capabilities %}Capabilities: <strong>{{key.capabilities}}</strong><br>{% endif %}
         Length: <strong>{{key.keysize}}</strong><br>
         Type: <strong>{{key.keytype}}</strong><br>
-        Trust: <strong>{{key.trust}}</strong><br><br>
+        {% if key.trust %}Trust: <strong>{{key.trust}}</strong><br><br>{% endif %}
         </div>
         <div class="left">
         {% for uid in key.uids %}
@@ -79,6 +68,17 @@
       </div>
     </li>
     {% endfor %}
+    <li class="grouped">
+      <select id="crypto-policy">
+        {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
+        {% set crypto_policy = show_crypto_policy(policy) %}
+        <option value="{{ policy }}"
+          {% if result.contact['crypto-policy'] and result.contact['crypto-policy'] == policy %} selected="selected"{% endif %}
+          data-message="{{crypto_policy.message}}">{{crypto_policy.text}}</option>
+        {% endfor %}
+      </select>
+      {{_("messages when communicating with")}} {{name}}
+    </li>
     {% else %}
     <li class="grouped">
       {{_("You have no encryption keys for this contact. You need encryption keys in order to communicate securely.")}}
