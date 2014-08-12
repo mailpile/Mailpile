@@ -21,7 +21,7 @@
     <h3>You Successfully Authenticated</h3>
     <p>The <strong>fingerprint</strong> for the <strong>encryption key</strong> you chose was:</p>
     <h1><span class="icon-fingerprint"></span></h1>
-    <h3 id="setup-crypto-chosen_key">{{ setup_crypto.result.chosen_key }}</h3>
+    <h3 id="setup-crypto-chosen_key">{{ nice_fingerprint(setup_crypto.result.chosen_key) }}</h3>
     <p><a href="/setup/#profiles" class="button-primary">{{_("Next")}}</a></p>
   </div>
 
@@ -53,16 +53,17 @@
         {% if key_info.capabilities_map.0.encrypt and key_info.capabilities_map.0.sign and not key_info.disabled %}
         <li class="text-left">
         <label class="radio-list-item">
-          <div class="radio text-center">
+          <div class="radio text-right">
             <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key %}checked{% endif %}>
           </div>
           <div class="icon text-center">
             <span class="icon-key"></span>
           </div>
           <div>
-            <strong>{{ key }}</strong> &nbsp; {{ key_info.keytype_name }} Key / {{ key_info.keysize }} bits<br>         
+            <strong>{{ nice_fingerprint(key) }}</strong><br>
             <span>
-              Created on {{ key_info.creation_date }} &nbsp;&nbsp; {% if key_info.expiration_date %}Expires {{ key_info.expiration_date }}{% endif %}
+              {{ key_info.keytype_name }} Key / {{ key_info.keysize }} bits &nbsp;
+              Created {{ key_info.creation_date }} &nbsp;&nbsp; {% if key_info.expiration_date %}Expires {{ key_info.expiration_date }}{% endif %}
             </span>
           </div>
         </label>

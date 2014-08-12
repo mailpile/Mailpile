@@ -62,7 +62,7 @@ var PassphraseView = Backbone.View.extend({
           if (result.result.creating_key) {
             $('#setup-passphrase-creating').fadeIn().removeClass('hide');
           } else {
-            $('#setup-crypto-chosen_key').html(result.result.chosen_key);
+            $('#setup-crypto-chosen_key').html(Mailpile.nice_fingerprint(result.result.chosen_key));
             $('#setup-passphrase-authenticated').fadeIn();
           }
         }
