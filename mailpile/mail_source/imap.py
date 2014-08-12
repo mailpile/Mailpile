@@ -95,7 +95,7 @@ def _parse_imap(reply):
             if isinstance(dline, (str, unicode)):
                 m = IMAP_TOKEN.match(dline)
             else:
-                print 'WARNING: Unparsed IMAP response data: %s' % (dline)
+                print 'WARNING: Unparsed IMAP response data: %s' % (dline,)
                 m = None
             if m:
                 token = m.group(0)
