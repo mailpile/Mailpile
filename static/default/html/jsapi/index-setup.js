@@ -8,6 +8,7 @@
 {% include("jsapi/setup/security.js") %}
 {% include("jsapi/setup/backups.js") %}
 {% include("jsapi/setup/access.js") %}
+{% include("jsapi/setup/tooltips.js") %}
 {% include("jsapi/setup/router.js") %}
 
 /* Validation UI Feedback */
@@ -24,6 +25,7 @@ _.extend(Backbone.Validation.callbacks, {
     $('#validation-' + attr).find('[' + selector + '=' + attr +']').addClass('validation-error');
   }
 });
+
 
 /* Main Init Call */
 var SetupApp = (function ($, Backbone, global) {
@@ -42,6 +44,7 @@ var SetupApp = (function ($, Backbone, global) {
       global.SecurityView   = new SecurityView({ el: $('#setup') });
       global.BackupsView    = new BackupsView({ el: $('#setup') });
       global.AccessView     = new AccessView({ el: $('#setup') });
+      global.TooltipsView   = new TooltipsView({ el: $('#setup') });
 
   		// Router
   		global.Router = new SetupRouter($('#setup'));
@@ -53,3 +56,6 @@ var SetupApp = (function ($, Backbone, global) {
     return { init: init };
 
 } (jQuery, Backbone, window));
+
+{% include("jsapi/setup/tooltips.js") %}
+

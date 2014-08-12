@@ -165,6 +165,8 @@ var SourcesView = Backbone.View.extend({
 
         var configure = _.extend(source, { id: id, tags: tags });
         $('#setup').html(_.template($('#template-setup-sources-configure').html(), configure));
+
+        TooltipsView.show();
       });
     });
   },

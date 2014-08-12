@@ -6,18 +6,18 @@
   <form id="form-setup-source-configure" class="standard text-center">
     <table class="full-width-table rounded background-white">
     <tr>
-      <th><strong>Mailbox</strong></th>
-      <th><strong>Mailpile (Tag)</strong></th>
-      <th class="text-center"><span class="icon-inbox"></span></th>
-      <th class="text-center"><span class="icon-compose"></span></th>
-      <th class="text-center"><span class="icon-sent"></span></th>
-      <th class="text-center"><span class="icon-spam"></span></th>
-      <th class="text-center"><span class="icon-trash"></span></th>
-      <th class="text-center"><input type="checkbox" id="source-mailbox-read-all"></th>
+      <th class="text-center setup-tooltip" title="Where these messages are coming from"><strong>Mailbox</strong></th>
+      <th class="text-center setup-tooltip" title="Will create a new Tag in your Mailpile"><strong>Mailpile (Tag)</strong></th>
+      <th class="text-center setup-tooltip" title="Apply the Inbox tag to these messages"><span class="icon-inbox"></span></th>
+      <th class="text-center setup-tooltip" title="Apply the Drafts tag to these messages"><span class="icon-compose"></span></th>
+      <th class="text-center setup-tooltip" title="Apply the Sent tag to these messages"><span class="icon-sent"></span></th>
+      <th class="text-center setup-tooltip" title="Apply the Spam tag to these messages"><span class="icon-spam"></span></th>
+      <th class="text-center setup-tooltip" title="Apply the Trash tag to these messages"><span class="icon-trash"></span></th>
+      <th class="text-center setup-tooltip" title="Import these messages"><input type="checkbox" id="source-mailbox-read-all"></th>
     </tr>
     <% _.each(mailbox, function(mailbox, key) { %>
     <tr>
-      <td class="middle">
+      <td class="middle text-center">
         <% if (mailbox.name) { %>
         <%= mailbox.name %>
         <% } else { %>
