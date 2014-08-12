@@ -417,13 +417,14 @@ class GnuPG:
         return self.available
 
     def run(self,
-            args=[], gpg_input=None, outputfd=None, partial_read_ok=False,
+            args=None, gpg_input=None, outputfd=None, partial_read_ok=False,
             _raise=None):
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
         self.pipes = {}
         self.threads = {}
 
         wtf = ' '.join(args)
+        args = args[:] if args else []
         args.insert(0, self.gpgbinary)
         args.insert(1, "--utf8-strings")
         args.insert(1, "--with-colons")
@@ -511,11 +512,7 @@ class GnuPG:
                 proc.stdin.close()
 
         # Reap the threads
-        for name, thr in self.threads.iteritems():
-            if thr.isAlive():
-                thr.join(timeout=15)
-                if thr.isAlive():
-                    print 'SCARY WARNING: FAILED TO REAP THREAD %s' % thr
+        self._reap_threads()
 
         if outputfd:
             outputfd.close()
@@ -524,6 +521,13 @@ class GnuPG:
             raise _raise('GnuPG failed, exit code: %s' % gpg_retcode)
 
         return gpg_retcode, self.outputbuffers
+
+    def _reap_threads(self):
+        for name, thr in self.threads.iteritems():
+            if thr.isAlive():
+                thr.join(timeout=15)
+                if thr.isAlive():
+                    print 'SCARY WARNING: FAILED TO REAP THREAD %s' % thr
 
     def parse_status(self, line, *args):
         line = line.replace("[GNUPG:] ", "")
@@ -830,6 +834,32 @@ class GnuPG:
         else:
             return term
 
+    def chat(self, gpg_args, callback, *args, **kwargs):
+        """This lets a callback have a chat with the GPG process..."""
+        gpg_args = [self.gpgbinary,
+                    "--utf8-strings",
+                    "--no-use-agent",
+                    "--no-tty",
+                    "--command-fd=0",
+                    "--status-fd=1"] + (gpg_args or [])
+        if self.homedir:
+            gpg_args.insert(1, "--homedir=%s" % self.homedir)
+
+        proc = None
+        try:
+            # Here we go!
+            proc = Popen(gpg_args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                         bufsize=0)
+
+            return callback(proc, *args, **kwargs)
+        finally:
+            # Close this so GPG will terminate. This should already have
+            # been done, but we're handling errors here...
+            if proc and proc.stdin:
+                proc.stdin.close()
+            if proc:
+                proc.wait()
+
 
 def GetKeys(gnupg, config, people):
     keys = []
@@ -910,17 +940,17 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
 
 class GnuPGExpectScript(threading.Thread):
     STARTUP = 'Startup'
-    START_THREAD = 'Start Thread'
     START_GPG = 'Start GPG'
     FINISHED = 'Finished'
     SCRIPT = []
     VARIABLES = {}
-    RUNNING_STATES = [STARTUP, START_THREAD, START_GPG]
+    RUNNING_STATES = [STARTUP, START_GPG]
 
     def __init__(self, sps=None, logfile=None, variables={}, on_complete=None):
         threading.Thread.__init__(self)
         self.daemon = True
         self._lock = threading.RLock()
+        self.before = ''
         with self._lock:
             self.state = self.STARTUP
             self.logfile = logfile
@@ -949,24 +979,48 @@ class GnuPGExpectScript(threading.Thread):
         self.state = state
         self.in_state(state)
 
-    def sendline(self, line):
+    def sendline(self, proc, line):
         if line == '!!<SPS':
             reader = self.sps.get_reader()
             while True:
                 c = reader.read()
                 if c != '':
-                    self.gpg.send(c)
+                    proc.stdin.write(c)
                 else:
-                    self.gpg.send('\n')
+                    proc.stdin.write('\n')
                     break
         else:
-            self.gpg.sendline(line.encode('utf-8'))
+            proc.stdin.write(line.encode('utf-8'))
+            proc.stdin.write('\n')
 
-    def run_script(self, script):
+    def _expecter(self, proc, exp, timebox):
+        while timebox[0] > 0:
+            self.before += proc.stdout.read(1)
+            if exp in self.before:
+                self.before = self.before.split(exp)[0]
+                return True
+        return False
+
+    def expect_exact(self, proc, exp, timeout=None):
+        from mailpile.util import RunTimed, TimedOut
+        timeout = timeout if (timeout and timeout > 0) else 5
+        timebox = [timeout]
+        self.before = ''
+        try:
+            if RunTimed(timeout, self._expecter, proc, exp, timebox):
+                return True
+            else:
+                raise TimedOut()
+        except TimedOut:
+            timebox[0] = 0
+            print 'Boo! %s not found in %s' % (exp, self.before)
+            raise
+
+    def run_script(self, proc, script):
         for exp, rpl, tmo, state in script:
-            self.gpg.expect_exact(exp, timeout=tmo)
+            self.expect_exact(proc, exp, timeout=tmo)
             if rpl:
-                self.sendline((rpl % self.variables).strip())
+                self.sendline(proc, (rpl % self.variables).strip())
             if state:
                 self.set_state(state)
 
@@ -975,23 +1029,9 @@ class GnuPGExpectScript(threading.Thread):
 
     def run(self):
         try:
-            self.set_state(self.START_THREAD)
-            if not sys.platform == "win32":
-                import pexpect
-                pspawn = pexpect.spawn
-            else:
-                import winpexpect
-                pspawn = winpexpect.winspawn
-
             self.set_state(self.START_GPG)
-            self.gpg = pspawn(GPG_BINARY, self.gpg_args(), logfile=self.logfile)
-            self.run_script(self.main_script)
-
+            GnuPG().chat(self.gpg_args(), self.run_script, self.main_script)
             self.set_state(self.FINISHED)
-            try:
-                self.gpg.wait()
-            except:
-                pass
         except:
             import traceback
             traceback.print_exc()
@@ -1018,21 +1058,20 @@ class GnuPGExpectScript(threading.Thread):
 class GnuPGKeyGenerator(GnuPGExpectScript):
     """This is a background thread which generates a new PGP key."""
     KEY_SETUP = 'Key Setup'
-    GATHER_ENTROPY = 'Gathering Entropy'
+    GATHER_ENTROPY = 'Creating key'
+    CREATED_KEY = 'Created key'
     HAVE_KEY = 'Have Key'
     SCRIPT = [
-        ('(1) RSA and RSA',               '%(keytype)s',   -1, KEY_SETUP),
-        ('What keysize do you want?',        '%(bits)s',   -1, None),
-        ('Key is valid for?',                       '0',   -1, None),
-        ('Is this correct?',                        'y',   -1, None),
-        ('Real name:',                       '%(name)s',   -1, None),
-        ('Email address:',                  '%(email)s',   -1, None),
-        ('Comment:',                      '%(comment)s',   -1, None),
-        ('(O)kay/(Q)uit?',                          'O',   -1, None),
-        ('Enter passphrase:',          '%(passphrase)s',   -1, None),
-        ('Repeat passphrase:',         '%(passphrase)s',   -1, None),
-        ('We need to generate a lot',              None,   -1, GATHER_ENTROPY),
-        ('marked as ultimately trusted',           None, 1800, HAVE_KEY)
+        ('GET_LINE keygen.algo',          '%(keytype)s',   -1, KEY_SETUP),
+        ('GET_LINE keygen.size',             '%(bits)s',   -1, None),
+        ('GET_LINE keygen.valid',                   '0',   -1, None),
+        ('GET_LINE keygen.name',             '%(name)s',   -1, None),
+        ('GET_LINE keygen.email',           '%(email)s',   -1, None),
+        ('GET_LINE keygen.comment',       '%(comment)s',   -1, None),
+        ('GET_HIDDEN passphrase',      '%(passphrase)s',   -1, None),
+        ('GOT_IT',                                 None,   -1, GATHER_ENTROPY),
+        ('KEY_CREATED',                            None, 1800, CREATED_KEY),
+        ('\n',                                     None,   -1, HAVE_KEY)
     ]
     VARIABLES = {
         'keytype': '1',
@@ -1057,7 +1096,7 @@ class GnuPGKeyGenerator(GnuPGExpectScript):
 
     def in_state(self, state):
         if state == self.HAVE_KEY:
-             self.generated_key = self.gpg.before.strip().split()[-1]
+             self.generated_key = self.before.strip().split()[-1]
 
 
 class GnuPGKeyEditor(GnuPGExpectScript):
@@ -1069,24 +1108,22 @@ class GnuPGKeyEditor(GnuPGExpectScript):
     ADDED_UID = 'Added a UID'
     SAVED = 'Saved keychain'
     SCRIPT = [
-        ('Secret key is available.',                '',   -1, HAVE_SKEY),
     ]
     DELETE_SCRIPT = [
-        ('gpg>',                           'uid %(n)s',   -1, DELETING_UID),
-        ('gpg>',                              'deluid',   -1, DELETING_UID),
-        ('user ID',                                'Y',   -1, None),
+        ('GET_LINE keyedit.prompt',        'uid %(n)s',   -1, DELETING_UID),
+        ('GET_LINE keyedit.prompt',           'deluid',   -1, DELETING_UID),
+        ('GNUPG',                                  'Y',   -1, None),
     ]
     ADD_UID_SCRIPT = [
-        ('gpg>',                                'adduid', -1, ADDING_UID),
-        ('Real name:',                        '%(name)s', -1, None),
-        ('address:',                         '%(email)s', -1, None),
-        ('Comment:',                       '%(comment)s', -1, None),
-        ('(O)kay/(Q)uit?',                           'O', -1, None),
-        ('Enter passphrase:',           '%(passphrase)s', -1, None),
-        ('trust: ultimate',                           '', -1, ADDED_UID),
+        ('GET_LINE keyedit.prompt',             'adduid', -1, ADDING_UID),
+        ('GET_LINE keygen.name',              '%(name)s', -1, None),
+        ('GET_LINE keygen.email',            '%(email)s', -1, None),
+        ('GET_LINE keygen.comment',        '%(comment)s', -1, None),
+        ('GET_HIDDEN passphrase',       '%(passphrase)s', -1, None),
+        ('GOOD_PASSPHRASE',                           '', -1, ADDED_UID),
     ]
     SAVE_SCRIPT = [
-        ('gpg>',                                  'save', -1, SAVED),
+        ('GET_LINE keyedit.prompt',               'save', -1, SAVED),
     ]
     VARIABLES = {
         'name': '',
