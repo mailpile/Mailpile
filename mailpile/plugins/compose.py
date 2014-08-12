@@ -103,7 +103,9 @@ def AddComposeMethods(cls):
                 return Email(idx, ephemeral_mid)
 
             msgid, mid = ephemeral_mid.rsplit('-', 1)
-            etype, msgid = ephemeral_mid.split('-', 1)
+            etype, etarg, msgid = ephemeral_mid.split('-', 2)
+            if etarg not in ('all', 'att'):
+                msgid = etarg + '-' + msgid
             msgid = '<%s>' % msgid.replace('_', '@')
             etype = etype.lower()
 
@@ -113,16 +115,16 @@ def AddComposeMethods(cls):
                 # Already actualized, just return a normal Email
                 return Email(idx, msg_idx)
 
-            if etype in ('forward', 'forward-att'):
+            if etype == 'forward':
                 refs = [Email(idx, int(mid, 36))]
                 e = Forward.CreateForward(idx, self.session, refs, msgid,
-                                          with_atts=('att' in etype))[0]
+                                          with_atts=(etarg == 'att'))[0]
                 self._track_action('fwded', refs)
 
-            elif etype in ('reply', 'reply-all'):
+            elif etype == 'reply':
                 refs = [Email(idx, int(mid, 36))]
                 e = Reply.CreateReply(idx, self.session, refs, msgid,
-                                      reply_all=('all' in etype))[0]
+                                      reply_all=(etarg == 'all'))[0]
                 self._track_action('replied', refs)
 
             else:
