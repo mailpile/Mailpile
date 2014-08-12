@@ -134,18 +134,8 @@ $(document).on('click', '.modal-tag-color-option', function(e) {
 $(document).on('submit', '#form-tag-add', function(e) {
   e.preventDefault();
   var tag_data = $('#form-tag-add').serialize();
-  $.ajax({
-    url: Mailpile.api.tag_add,
-    type: 'POST',
-    data: tag_data,
-    dataType : 'json',
-    success: function(response) {
-      if (response.status === 'success') {
-        window.location.href = '/tags/edit.html?only=' + $('#data-tag-add-slug').val();
-      } else {
-        Mailpile.notification(response.status, response.message);
-      }
-    }
+  Mailpile.API.tags_add_post(tag_data, function() {
+    window.location.href = '/tags/edit.html?only=' + $('#data-tag-add-slug').val();
   });
 });
 
@@ -154,7 +144,7 @@ $(document).on('submit', '#form-tag-add', function(e) {
 $(document).on('click', '#button-tag-delete', function(e) {
   if (confirm('Sure you want to delete this tag?') === true) { 
     Mailpile.API.tags_delete_post({ tag: $('#data-tag-add-slug').val() }, function(response) {
-      Mailpile.notification(response.status, response.message, 'redirect', Mailpile.urls.tags);
+      window.location.href = '/tags/';
     }, 'POST');
   }
 });
