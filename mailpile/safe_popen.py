@@ -177,7 +177,8 @@ class Safe_Popen(Unsafe_Popen):
         return rv
 
     def __del__(self):
-        Unsafe_Popen.__del__(self)
+        if Unsafe_Popen is not None:
+            Unsafe_Popen.__del__(self)
         self._SAFE_POPEN_unlock()
 
 
