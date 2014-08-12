@@ -55,7 +55,8 @@ var SendingView = Backbone.View.extend({
   events: {
     "click #btn-setup-advanced-access" : "showRouteSettings",
     "change #route-add-port"           : "actionChangePort",
-    "click #btn-setup-sending-save"    : "processSending"
+    "click #btn-setup-sending-save"    : "processSending",
+    "click .setup-sending-remove"      : "processRemove"
   },
   show: function() {
 
@@ -69,15 +70,17 @@ var SendingView = Backbone.View.extend({
       }
 
       _.each(result.result.routes, function(val, key) {
-        var sending = new SendingModel(_.extend({id: key, action: 'Edit'}, val));
-        SourcesCollection.add(sending);
-        $('#setup-sending-list-items').append(_.template($('#template-setup-sending-item').html(), sending.attributes));
+        if (val.name && val.host) {
+          var sending = new SendingModel(_.extend({id: key, action: 'Edit'}, val));
+          SourcesCollection.add(sending);
+          $('#setup-sending-list-items').append(_.template($('#template-setup-sending-item').html(), sending.attributes));
+        }
       });
     });
   },
   showAdd: function() {
     $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    this.model.set({id: 'routes.' + Math.random().toString(36).substring(2) })
+    this.model.set({id: Math.random().toString(36).substring(2) })
     this.$el.html(_.template($("#template-setup-sending-settings").html(), this.model.attributes));
   },
   showEdit: function(id) {
@@ -111,6 +114,12 @@ var SendingView = Backbone.View.extend({
         Backbone.history.navigate('#sending', true);
       });
     }
-
+  },
+  processRemove: function(e) {
+    e.preventDefault();
+    var route_id = $(e.target).attr('href');
+    Mailpile.API.settings_unset_post({var: 'routes.' + route_id }, function(result) {
+      $('#setup-sending-' + route_id).fadeOut();
+    });
   }
 });
