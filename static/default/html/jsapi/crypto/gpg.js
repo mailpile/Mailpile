@@ -8,25 +8,30 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
     // Loop through UIDs for match to Query
     var uid = _.findWhere(key.uids, {email: query});
 
-    console.log('DA UID');
+    console.log('UID that matches query');
     console.log(uid);
 
     // Try to find Avatar
     if (uid) {
 
       var contact  = _.findWhere(Mailpile.instance.addresses, {address: uid.email});
-      console.log(contact);
       var avatar   = '/static/img/avatar-default.png';
-      if (contact.photo) {
-        avatar = contact.photo;
+
+      if (contact) {
+        if (contact.photo) {
+          avatar = contact.photo;
+        }
       }
-      console.log(avatar);  
+
+      console.log(contact);
+      console.log(avatar);
     }
 
+    // Show View
     var item_data = _.extend({avatar: avatar, uid: uid, address: query}, key);
     items_html += _.template($('#template-searchkey-result-item').html(), item_data);
  
-    // Set Lookup State
+    // Set Lookup State (data model)
     Mailpile.crypto_keylookup.push({fingerprints: key.fingerprint, address: query, origins: key.origins });
  });
 
