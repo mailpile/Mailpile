@@ -56,6 +56,3 @@ var SetupApp = (function ($, Backbone, global) {
     return { init: init };
 
 } (jQuery, Backbone, window));
-
-{% include("jsapi/setup/tooltips.js") %}
-

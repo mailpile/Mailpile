@@ -2,23 +2,25 @@
   <form id="form-setup-profile-settings" class="standard">
     <h2 class="text-center"><span class="icon-profiles"></span> <%= action %> Profile</h2>
     <fieldset>
-      <span id="validation-name">
+      <div id="validation-name">
         <label class="validation-message">{{_("Name")}}</label>
         <span ></span>      
         <input type="text" name="name" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning" value="<%= name %>">
-      </span>
-      <span id="validation-email">
+      </div>
+      <div id="validation-email">
         <label class="validation-message">{{_("Email")}}</label>
         <input id="input-setup-profile-email" type="email" name="email" autocorrect="off" autocapitalize="off" placeholder="name@email.com" value="<%= email %>">
-      </span>
-      <span id="validation-pass" class="hide">
+      </div>
+      <div id="validation-pass" class="hide">
         <label class="validation-message">{{_("Password")}}</label>
-        <input type="password" name="pass" autocorrect="off" autocapitalize="off" placeholder="" value="">
-      </span>
-      <span id="validation-note">
+        <input id="input-setup-profile-pass" class="remove-bottom" data-provider="" type="password" name="pass" autocorrect="off" autocapitalize="off" placeholder="" value="">
+        <div class="check-auth half-top"></div>
+        <br>
+      </div>
+      <div id="validation-note">
         <label class="validation-message">{{_("Note")}}</label>
         <input type="text" name="note" autocorrect="off" autocapitalize="off" placeholder="Personal, Work" value="<%= note %>">
-      </span>
+      </div>
     </fieldset>
     <a href="#profiles" class="button-secondary">{{_("Cancel")}}</a>
     <button id="btn-setup-profile-save" data-id="<%= id %>" type="submit" class="button-primary right">

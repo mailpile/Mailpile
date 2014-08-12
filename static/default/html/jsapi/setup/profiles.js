@@ -22,6 +22,7 @@ var ProfileModel = Backbone.Model.extend({
       msg: 'Enter a valid email address'
     },
     pass: {
+      minLength: 1,
       required: false
     },
     note: {
@@ -52,6 +53,7 @@ var ProfilesView = Backbone.View.extend({
   events: {
     "click #btn-setup-show-add-profile"   : "showAdd",
     "blur #input-setup-profile-email"     : "actionCheckEmailMagic",
+    "blur #input-setup-profile-pass"      : "actionCheckAuth",
     "click #btn-setup-profile-save"       : "processSettings",
     "click .setup-profile-remove"         : "processRemove"
   },
@@ -96,9 +98,40 @@ var ProfilesView = Backbone.View.extend({
   },
   actionCheckEmailMagic: function(e) {
     var domain = $(e.target).val().replace(/.*@/, "");
-    var check = SetupMagic.providers[domain];
-    if (check) {
+    var provider = SetupMagic.providers[domain];
+    if (provider) {
+      
+      $('#input-setup-profile-pass').data('provider', provider).attr('data-provider', provider);
       $('#validation-pass').fadeIn();
+    }
+  },
+  actionCheckAuth: function(e) {
+
+    if ($('#input-setup-profile-email').val() && $(e.target).val()) {
+
+      $('#validation-pass').find('.check-auth')
+        .removeClass('color-12-red color-08-green')
+        .html('<em>{{_("Testing Credentials")}}</em> <img src="/static/css/select2-spinner.gif">');
+
+      var provider = $(e.target).data('provider');
+      var presets = SetupMagic.presets[provider];
+      var sending_data = _.extend(presets.sending, { username: $('#input-setup-profile-email').val(), password: $(e.target).val() });
+
+      Mailpile.API.setup_test_route_post(sending_data, function(result) {
+        if (result.status ==  'success') {
+          $('#validation-pass').find('.check-auth')
+            .removeClass('color-12-red')
+            .addClass('color-08-green')
+            .html(result.message + ' <span class="icon-checkmark"></span>');
+          SetupMagic.can_dance = provider;
+        }
+        else if (result.status == 'error') {
+          $('#validation-pass').find('.check-auth')
+            .removeClass('color-08-green')
+            .addClass('color-12-red')
+            .html(result.message + ' <span class="icon-x"></span>');
+        }
+      });
     }
   },
   processSettings: function(e) {
@@ -113,14 +146,19 @@ var ProfilesView = Backbone.View.extend({
       // Validate & Process
       if (!this.model.validate()) {
         Mailpile.API.setup_profiles_post(profile_data, function(result) {
-          if (result.status == 'success') {
-            // Reset Model & Navigate
-            ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
-            Backbone.history.navigate('#profiles', true);
+
+          // Add Setup Magic
+          if (SetupMagic.can_dance) {
+            SetupMagic.processAdd({
+              username: $('#input-setup-profile-email').val(),
+              password: $('#input-setup-profile-pass').val()
+            });
           }
-          else {
-            alert('Error saving Profile');
-          }
+
+          // Reset Model & Navigate
+          ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
+
+          Backbone.history.navigate('#profiles', true);
         });
       }
     } else {
