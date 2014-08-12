@@ -119,3 +119,50 @@
 	.notification-normal {
 		background: @gray;  	
 	}
+
+
+/* Notification Bubbles */
+
+  #notification-bubbles {
+    position: absolute;
+    top: 0px;
+    right: 15px;
+    width: 250px;
+    display: inline-block;
+    z-index: 1000;
+    box-sizing: content-box;
+  }
+
+  div.notification-bubble {
+    margin-top: (@base-margin / 1.5);
+    background: @grayDark;
+    border-radius: (@base-border-radius);
+    padding: (@base-padding / 2) @base-padding;
+    box-sizing: padding-box;
+    font-weight: normal;
+    font-size: 14px;
+    color: @gray;
+  }
+
+  div.notification-bubble .title {
+    display: inline-block;
+    font-weight: bold;
+    color: @white;
+  }
+
+  div.notification-bubble .icon {
+    color: @white;    
+  }
+
+  div.notification-bubble a {
+    color: @gray;
+  }
+  div.notification-bubble a:visited {
+    color: @gray;
+  }  
+  div.notification-bubble a:hover {
+    color: @red;
+  }
+  div.notification-bubble a.notification-close:hover {
+    color: @white;
+  }
