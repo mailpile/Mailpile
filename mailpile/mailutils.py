@@ -376,7 +376,7 @@ class Email(object):
     @classmethod
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
-               msg_subject=None, msg_text='', msg_references=None,
+               msg_subject=None, msg_text='', msg_references=None, msg_id=None,
                save=True, ephemeral_mid='not-saved', append_sig=True):
         msg = MIMEMultipart()
         msg.signature_info = SignatureInfo()
@@ -397,7 +397,7 @@ class Email(object):
 
         msg['From'] = cls.encoded_hdr(None, 'from', value=msg_from)
         msg['Date'] = email.utils.formatdate(msg_ts)
-        msg['Message-Id'] = email.utils.make_msgid('mailpile')
+        msg['Message-Id'] = msg_id or email.utils.make_msgid('mailpile')
         msg_subj = (msg_subject or '')
         msg['Subject'] = cls.encoded_hdr(None, 'subject', value=msg_subj)
 
