@@ -5,7 +5,6 @@
   .form-compose {
     padding: 15px 20px 10px 20px;
     background: @grayLight;
-    border-bottom: 1px solid @grayMid;
   }
 
   .form-compose label {
@@ -27,15 +26,6 @@
   .form-compose label span,
   .form-compose label a.compose-hide-field {
     color: @gray;
-  }
-
-  .compose-from {
-    float: left;
-    height: 32px;
-    background-color: @white;
-    border-color: #cccccc;
-    border-radius: 5px;
-    font-size: 12px;
   }
 
   .compose-headers,
@@ -62,17 +52,6 @@
     color: @grayDark;
     margin-left: 10px;
 	}
-
-  .compose-from-avatar {
-    width: 45px;
-  }
-
-  .compose-from-address {
-    color: @gray;
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 12px;
-    font-weight: normal;
-  }
 
 
 /* Compose - Subject */
@@ -263,6 +242,98 @@
 
   .attachment-browswer-unsupported a {
     color: @gray;
+  }
+
+
+/* Compose - From Menu */
+
+  .compose-from-select {
+    display: table;
+    background: @white;
+    border: 1px solid @grayMid;
+    border-radius: @base-border-radius;
+    padding: 8px 10px;
+    line-height: 14px;
+  }
+
+  .compose-from-select:hover {
+    cursor: pointer;
+    background: @grayDark;
+    color: @white
+  }
+
+  .compose-from-select:hover .name {
+    color: @white;
+  }
+
+  .compose-from-selected {
+    display: table-cell;
+    vertical-align: middle;
+  }
+
+  .compose-from-caret {
+    display: table-cell;
+    padding-left: 5px;
+  }
+
+  .compose-from-selected .avatar {
+    width: 24px;
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  .compose-from-selected .avatar img {
+    width: 24px;
+    border-radius: @base-border-radius;
+  }
+
+  .compose-from-selected .name {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 14px;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    line-height: 14px;
+  }
+
+  .compose-from-selected .address {
+    font-size: 12px;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: normal;
+    color: @grayMid;
+    line-height: 12px;
+  }
+
+  .compose-from {
+    height: 32px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 14px;
+  }
+
+  .compose-from .avatar {
+    width: 32px;
+    margin: 5px 8px 5px 0px;
+  }
+
+  .compose-from .avatar img {
+    width: 32px;
+    border-radius: @base-border-radius;
+  }
+
+  .compose-from .name {
+    display: inline-block;
+    vertical-align: text-top;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 14px;
+  }
+
+  .compose-from .address {
+    color: @gray;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: normal;
   }
 
 
