@@ -390,7 +390,7 @@ $(document).ready(function() {
       console.log('js uploader: ' + mid);
       uploader({
         browse_button: 'compose-attachment-pick-' + mid,
-        container: 'form-compose-' + mid,
+        container: 'compose-attachments-' + mid,
         mid: mid
       });
     });
