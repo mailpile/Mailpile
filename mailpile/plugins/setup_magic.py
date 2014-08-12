@@ -554,7 +554,10 @@ class SetupCrypto(TestableWebbable):
                 key_id = Setup.KEY_CREATING_THREAD.generated_key
                 add_all = True
 
-        assert(add_all)  # FIXME: Make more granular!
+        if not add_all:
+            self.session.ui.warning('FIXME: Not updating GPG key!')
+            return
+
         if key_id is not None:
             uids = []
             data = ListProfiles(self.session).run().result
