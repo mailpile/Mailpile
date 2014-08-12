@@ -1827,35 +1827,36 @@ class ConfigManager(ConfigDict):
 
     def stop_workers(config):
         with config._lock:
-            worker_list = ([config.http_worker,
+            worker_list = (config.mail_sources.values() +
+                           config.other_workers +
+                           [config.http_worker,
                             config.async_worker,
                             config.slow_worker,
-                            config.cron_worker] +
-                           config.other_workers +
-                           config.mail_sources.values())
-            save_worker = config.save_worker
+                            config.cron_worker])
             config.other_workers = []
             config.http_worker = config.cron_worker = None
             config.slow_worker = config.dumb_worker
-            config.save_worker = config.dumb_worker
+            config.async_worker = config.dumb_worker
 
         for wait in (False, True):
-                for w in worker_list:
-                    if w and w.isAlive():
-                        if config.sys.debug:
-                            if wait:
-                                print 'Waiting for %s' % w
-                            else:
-                                print 'Stopping %s' % w
-                        w.quit(join=wait)
+            for w in worker_list:
+                if w and w.isAlive():
+                    if config.sys.debug and wait:
+                        print 'Waiting for %s' % w
+                    w.quit(join=wait)
 
         # Handle the save worker last, once all the others are
         # no longer feeding it new things to do.
-        print 'Waiting for %s' % save_worker
+        with config._lock:
+            save_worker = config.save_worker
+            config.save_worker = config.dumb_worker
+        if config.sys.debug:
+            print 'Waiting for %s' % save_worker
         save_worker.quit(join=True)
 
-        # Hooray!
-        print 'All stopped!'
+        if config.sys.debug:
+            # Hooray!
+            print 'All stopped!'
 
 
 ##############################################################################

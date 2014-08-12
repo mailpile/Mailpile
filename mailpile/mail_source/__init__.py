@@ -617,10 +617,12 @@ class BaseMailSource(threading.Thread):
                 except thread.error:
                     pass
 
-    def quit(self, join='ignored'):
+    def quit(self, join=False):
         self.interrupt_rescan(_('Shut down'))
         self.alive = False
         self.wake_up()
+        if join:
+            self.join()
 
 
 def ProcessNew(session, msg, msg_ts, keywords, snippet):
