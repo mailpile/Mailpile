@@ -8,8 +8,8 @@
   {% else %}
   {% set name = _("No Name") %}
   {% endif %}
-  <ul class="contact-detail">
-    <li>
+  <ul class="items grouped">
+    <li class="grouped">
       <div class="clearfix">
     {% if result.contact.photo %}
       <img class="contact-avatar left" width="80" src="{{ show_avatar(result.contact.photo.0) }}">
@@ -22,8 +22,6 @@
     {% endif %}
       </div>
     </li>
-  </ul>
-  <ul class="items grouped">
   {% if result.contact.email %}
     {% for email in result.contact.email %}
     <li class="grouped">
@@ -35,8 +33,10 @@
   {% endif %}
   </ul>
 
+  {% set keys = mailpile("crypto/gpg/keylist", result.contact.email.0.email).result %}  
   <h4>{{_("Security & Keys")}}</h4>
   <ul class="items grouped">
+    {% if keys %}
     <li class="grouped">
       <select id="crypto-policy">
         {% for policy in ['default', 'none', 'sign', 'encrypt', 'sign-encrypt'] %}
@@ -48,8 +48,6 @@
       </select>
       {{_("messages when communicating with")}} {{name}}
     </li>
-    {% set keys = mailpile("crypto/gpg/keylist", result.contact.email.0.email).result %}  
-    {% if keys %}
     {% for id, key in keys.iteritems() %}
     <li class="grouped">
       <select class="crypto-key-policy right" data-fingerprint="{{key.fingerprint}}">
@@ -82,12 +80,15 @@
     </li>
     {% endfor %}
     {% else %}
-    <li>
-      <p>{{_("You have no encryption keys for this contact. You need encryption keys in order to communicate securely.")}}<a href="">{{_("")}}</a></p>
-      <p><a href="#" class="button-alert"><span class="icon-key"></span> {{_("Find Encryption Keys")}}</a></p>
+    <li class="grouped">
+      {{_("You have no encryption keys for this contact. You need encryption keys in order to communicate securely.")}}
     </li>
     {% endif %}
   </ul>
+
+      <a href="{{result.contact.email.0.email}}" class="button-alert message-action-find-keys add-bottom">
+        <span class="icon-key"></span> {{_("Find Encryption Keys")}}
+      </a>
 
   {# FIXME: Commenting out for Beta
   <h4>{{_("Stats")}}</h4>
@@ -109,15 +110,15 @@
   </ul>
   #}
 
-  <h4>{{_("Conversations")}}</h4>
   {% set contact_search = "email:" + result.contact.email.0.email %}
   {% set conversations = mailpile("search", contact_search).result %}
-  {% if conversations %}
+  {% if conversations and conversations.data %}
+  <h4>{{_("Conversations")}}</h4>
   <ul class="contact-tag-filter">
     <!-- FIXME: Commented out for Beta
     <li><select><option>Most Recent</option><option>Longest Conversations</option><option>Oldest</option></select></li>
     -->
-    {% if conversations.data and conversations.data.tags %}
+    {% if conversations.data.tags %}
     {% for tid, tag in conversations.data.tags.iteritems() %}
     {% if tag.display in ("priority", "tag", "archive") %}
     <li><a href="/search/?q=from:{{result.contact.email.0.email}}&tag:{{tag.slug}}" style="color: {{theme_settings().colors[tag.label_color]}}" data-tid="{{tid}}"><span class="{{tag.icon}}"></span> {{tag.name}}</a></li>
@@ -137,6 +138,8 @@
       </li>
     {% endfor %}  
   </ul>
+  {% else %}
+  <h4>{{_("No Conversations")}} :(</h4>
   {% endif %}
 
 {% else %}
