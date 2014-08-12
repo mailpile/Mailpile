@@ -300,7 +300,11 @@ class SharedImapMailbox(Mailbox):
         with self.open_imap() as imap:
             uidv, uid = (int(k, 36) for k in key.split('.'))
             ok, data = self.timed_imap(imap.uid, 'FETCH', uid,
-                                       '(RFC822.SIZE FLAGS ENVELOPE)',
+                                       # Note: It seems that either python's
+                                       #       imaplib, or our parser cannot
+                                       #       handle dovecot's ENVELOPE
+                                       #       details. So omit that for now.
+                                       '(RFC822.SIZE FLAGS)',
                                        mailbox=self.path)
             if not ok:
                 raise KeyError
