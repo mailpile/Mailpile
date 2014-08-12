@@ -274,7 +274,7 @@ def test_composition():
     # Verify that it actually got sent correctly
     assert('the TESTMSG subject' in contents(mailpile_sent))
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIK'
+    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
            in contents(mailpile_sent))
     assert(MY_KEYID not in contents(mailpile_sent))
     assert(MY_FROM in grep('X-Args', mailpile_sent))
@@ -288,7 +288,7 @@ def test_composition():
         say('Searching for: %s' % search)
         assert(mp.search(*search).result['stats']['count'] == 1)
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIK'
+    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
            in contents(mailpile_sent))
     assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))
@@ -299,7 +299,7 @@ def test_composition():
     mp.message_send(mid=[new_mid], to=['nasty@test.com'])
     mp.sendmail()
     # This is the base64 encoding of thisisauniquestring
-    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIK'
+    assert('ZDogdGhpc2lzYXVuaXF1ZXN0cmluZyA6KSByw7puYXIN'
            in contents(mailpile_sent))
     assert('OpenPGP: id=CF5E' in contents(mailpile_sent))
     assert('; preference=encrypt' in contents(mailpile_sent))

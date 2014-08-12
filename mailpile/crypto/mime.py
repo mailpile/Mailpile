@@ -15,7 +15,20 @@ from mailpile.mail_generator import Generator
 ##[ Common utilities ]#########################################################
 
 def Normalize(payload):
-    return re.sub(r'\r?\n', '\r\n', payload).rstrip() + '\r\n'
+    # http://tools.ietf.org/html/rfc3156 says we must:
+    #
+    #   - use CRLF everywhere
+    #   - strip trailing whitespace
+    #   - end with a CRLF
+    #
+    # In particlar, the stripping of trailing whitespace seems (based on
+    # experiments with mutt), to in practice mean "strip trailing whitespace
+    # off the last line"...
+    #
+    text = re.sub(r'\r?\n', '\r\n', payload).rstrip(' \t')
+    if not text.endswith('\r\n'):
+        text += '\r\n'
+    return text
 
 
 class EncryptionFailureError(ValueError):
