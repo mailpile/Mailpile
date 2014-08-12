@@ -35,75 +35,6 @@ Mailpile.compose_analyze_recipients = function(addresses) {
 };
 
 
-/* Compose - Update ephemeral with real MID */
-Mailpile.compose_autosave_update_ephemeral = function(mid, new_mid) {
-
-  // Update UI Elements
-  $.each($('.has-mid'), function(key, elem) {
-    $(this).data('mid', new_mid).attr('data-mid', new_mid);
-    if ($(this).attr('id') !== undefined) {
-      var new_id = $(this).attr('id').replace(mid, new_mid, "gi");
-      $(this).attr('id', new_id);
-    }
-  });
-
-  $('#compose-mid-' + new_mid).val(new_mid);
-
-  // Remove Ephermal From Model - is added with new MID in Mailpile.compose_autosave()
-  Mailpile.messages_composing = _.omit(Mailpile.messages_composing, mid);
-};
-
-
-/* Compose - Perform autosave checking & save */
-Mailpile.compose_autosave = function(mid, form_data) {
-
-  // Text is different, run autosave
-  if ($('#compose-text-' + mid).val() !== Mailpile.messages_composing['compose-text-' + mid]) {
-
-    // UI Feedback
-    var autosave_msg = $('#compose-message-autosaving-' + mid).data('autosave_msg');
-    $('#compose-message-autosaving-' + mid).html(autosave_msg).fadeIn();
-  	$.ajax({
-  		url			 : Mailpile.api.compose_save,
-  		type		 : 'POST',
-      timeout  : 15000,
-  		data     : form_data,
-  		dataType : 'json',
-  	  success  : function(response) {
-
-        var new_mid = response.result.message_ids[0];
-
-        // Update ephermal IDs
-        if (mid !== new_mid) {
-          Mailpile.compose_autosave_update_ephemeral(mid, new_mid);
-        }
-
-        // Update Message
-        Mailpile.messages_composing[new_mid] = $('#compose-text-' + new_mid).val();
-
-        // Fadeout autosave UI msg
-        setTimeout(function() {
-          $('#compose-message-autosaving-' + new_mid).fadeOut();
-        }, 2000);
-      },
-      error: function() {
-        var autosave_error_msg = $('#compose-message-autosaving-' + mid).data('autosave_error_msg');
-        $('#compose-message-autosaving-' + mid).html('<span class="icon-x"></span>' + autosave_error_msg).fadeIn();
-      }
-  	});
-  }
-};
-
-
-/* Compose Autosave - finds each compose form and performs action */
-Mailpile.compose_autosave_timer = $.timer(function() {
-  // UNTESTED: should handle multiples in a thread
-  $('.form-compose').each(function(key, form) {
-    Mailpile.compose_autosave($(form).data('mid'), $(form).serialize());
-  });
-});
-
-
 /* Compose - Instance of select2 contact selecting */
 Mailpile.compose_address_field = function(id) {
 
@@ -260,6 +191,7 @@ $(document).on('click', '.compose-show-field', function(e) {
   $('#compose-' + field + '-html').show().removeClass('hide');
 });
 
+
 $(document).on('click', '.compose-hide-field', function(e) {
   var field = $(this).attr('href').substr(1);
   $('#compose-' + field + '-html').hide().addClass('hide');
@@ -274,12 +206,10 @@ $(document).on('click', '.compose-apply-quote', function(e) {
   if ($(this).attr('checked')) {
     console.log('is CHECKED ' + mid);
     $(this).attr('checked', false)
-//    $('#compose-text-' + mid).val();
   }
   else {
     console.log('is UNCHECKED ' + mid);
     $(this).attr('checked', true)
-//    $('#compose-text-' + mid).val('');
   }
 });
 
@@ -380,125 +310,6 @@ $(document).on('click', '.compose-to-email', function(e) {
     }
   });
 });
-
-
-/* Compose - Attachments uploader */
-var uploader = function(settings) {
-
-  var dom = {
-    uploader: $('#compose-attachments-' + settings.mid),
-    uploads: $('#compose-attachments-files-' + settings.mid)
-  };
-
-  var upload_image_preview = function(file) {
-
-    var item = $("<li></li>").prependTo(dom.uploads);
-    var image = $(new Image()).appendTo(item);
-
-    // Create an instance of the mOxie Image object. This
-    // utility object provides several means of reading in
-    // and loading image data from various sources.
-    // Wiki: https://github.com/moxiecode/moxie/wiki/Image
-    var preloader = new mOxie.Image();
-
-    // Define the onload BEFORE you execute the load()
-    // command as load() does not execute async.
-    preloader.onload = function() {
-
-        // This will scale the image (in memory) before it
-        // tries to render it. This just reduces the amount
-        // of Base64 data that needs to be rendered.
-        preloader.downsize(100, 100);
-
-        // Now that the image is preloaded, grab the Base64
-        // encoded data URL. This will show the image
-        // without making an Network request using the
-        // client-side file binary.
-        image.prop("src", preloader.getAsDataURL());
-    };
-
-    // Calling the .getSource() on the file will return an
-    // instance of mOxie.File, which is a unified file
-    // wrapper that can be used across the various runtime
-    // Wiki: https://github.com/moxiecode/plupload/wiki/File
-    preloader.load(file.getSource());
-  };
-
-  var uploader = new plupload.Uploader({
-	runtimes : 'html5',
-	browse_button : settings.browse_button, // you can pass in id...
-	container: settings.container, // ... or DOM Element itself
-  drop_element: settings.container,
-	url : '/api/0/message/attach/',
-  multipart : true,
-  multipart_params : {'mid': settings.mid},
-  file_data_name : 'file-data',
-	filters : {
-		max_file_size : '50mb',
-		mime_types: [
-			{title : "Audio files", extensions : "mp3,aac,flac,wav,ogg,aiff,midi"},
-			{title : "Document files", extensions : "pdf,doc,docx,xls"},
-			{title : "Image files", extensions : "jpg,gif,png,svg"},
-			{title : "Image files", extensions : "mp2,mp4,mov,avi,mkv"},
-			{title : "Zip files", extensions : "zip,rar"},
-			{title : "Crypto files", extensions : "asc,pub,key"}
-		]
-	},
-  resize: {
-    width: '3600',
-    height: '3600',
-    crop: true,
-    quaility: 100
-  },
-  views: {
-    list: true,
-    thumbs: true,
-    active: 'thumbs'
-  },
-	init: {
-    PostInit: function() {
-      $('#compose-attachments-' + settings.mid).find('.compose-attachment-pick').removeClass('hide');
-      $('#compose-attachments-' + settings.mid).find('.attachment-browswer-unsupported').addClass('hide');
-      uploader.refresh();
-    },
-    FilesAdded: function(up, files) {
-      var start_upload = true;
-
-    	plupload.each(files, function(file) {
-
-        // Show Preview while uploading
-        upload_image_preview(file);
-
-        // Add to attachments
-        var attachment_html = '<li id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></li>';
-    		$('#compose-attachments-files').append(attachment_html);
-
-        console.log(file);
-
-        // Show Warning for 10mb or larger
-        if (file.size > 10485760) {
-          start_upload = false;
-          alert(file.name + ' is ' + plupload.formatSize(file.size) + '. Some people cannot receive attachments that are 10 mb or larger');
-        }
-    	});
-
-      if (start_upload) {
-        uploader.start();
-      }
-    },
-    UploadProgress: function(up, file) {
-    	$('#' + file.id).find('b').html('<span>' + file.percent + '%</span>');
-    },
-    Error: function(up, err) {
-      console.log("Error #" + err.code + ": " + err.message);
-      $('#' + err.file.id).find('b').html('Failed');
-      uploader.refresh();
-    }
-  }
-  });
-
-  return uploader.init();
-};
 
 
 /* Compose - Delete message that's in a composer */

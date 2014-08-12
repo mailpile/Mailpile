@@ -22,6 +22,8 @@ $(document).ready(function() {
 
 /* JS - Compose */
 {% include("jsapi/compose/crypto.js") %}
+{% include("jsapi/compose/autosave.js") %}
+{% include("jsapi/compose/attachments.js") %}
 {% include("jsapi/compose/content.js") %}
 {% include("jsapi/compose/tooltips.js") %}
 {% include("jsapi/compose/ui.js") %}
