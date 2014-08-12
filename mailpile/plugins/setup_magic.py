@@ -877,9 +877,14 @@ class SetupTestRoute(SetupProfiles):
             route = self.session.config.routes[route_id]
             assert(route)
         else:
-            route = []
+            route = {}
             for k in CONFIG_RULES['routes'][1]:
-                route[k] = self.data[k][0]
+                if k not in self.data:
+                    pass
+                elif CONFIG_RULES['routes'][1][k][1] in (int, 'int'):
+                    route[k] = int(self.data[k][0])
+                else:
+                    route[k] = self.data[k][0]
 
         fromaddr = route.get('username', '')
         if '@' not in fromaddr:
