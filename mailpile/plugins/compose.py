@@ -102,7 +102,8 @@ def AddComposeMethods(cls):
                 # Not actually ephemeral, just return a normal Email
                 return Email(idx, ephemeral_mid)
 
-            etype, msgid, mid = ephemeral_mid.rsplit('-', 2)
+            msgid, mid = ephemeral_mid.rsplit('-', 1)
+            etype, msgid = ephemeral_mid.split('-', 1)
             msgid = '<%s>' % msgid.replace('_', '@')
             etype = etype.lower()
 
@@ -244,7 +245,7 @@ class CompositionCommand(AddComposeMethods(Search)):
         if error:
             return self._error(message,
                                result=session.displayed,
-                               error_info=error)
+                               info=error)
         else:
             return self._success(message, result=session.displayed)
 
