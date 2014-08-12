@@ -15,7 +15,7 @@ from mailpile.mail_generator import Generator
 ##[ Common utilities ]#########################################################
 
 def Normalize(payload):
-    return re.sub(r'\r?\n', '\r\n', payload)
+    return re.sub(r'\r?\n', '\r\n', payload).rstrip() + '\r\n'
 
 
 class EncryptionFailureError(ValueError):
@@ -193,6 +193,8 @@ class MimeWrapper:
         self.recipients = recipients or []
         self.container = MIMEMultipart()
         self.container.set_type(self.CONTAINER_TYPE)
+        if self.cleaner:
+            self.cleaner(self.container)
         for pn, pv in self.CONTAINER_PARAMS:
             self.container.set_param(pn, pv)
 

@@ -109,7 +109,7 @@ class ExportMail(Command):
                             '',
                             body
                         ]))
-                    mbox.add(data)
+                    mbox.add(data.replace('\r\n', '\n'))
                     exported[msg_idx] = 1
                 finally:
                     fd.close()

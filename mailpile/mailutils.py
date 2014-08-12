@@ -171,7 +171,7 @@ def ExtractEmailAndName(string):
 def MessageAsString(part, unixfrom=False):
     buf = StringIO.StringIO()
     Generator(buf).flatten(part, unixfrom=unixfrom, linesep='\r\n')
-    return buf.getvalue()
+    return buf.getvalue().replace('--\r\n--', '--\r\n\r\n--')
 
 
 def CleanMessage(config, msg):
@@ -431,7 +431,7 @@ class Email(object):
             del textpart['MIME-Version']
 
         if save:
-            msg_key = mbx.add(msg)
+            msg_key = mbx.add(MessageAsString(msg))
             msg_to = msg_cc = []
             msg_ptr = mbx.get_msg_ptr(mbox_id, msg_key)
             msg_id = idx.get_msg_id(msg, msg_ptr)
@@ -659,7 +659,7 @@ class Email(object):
         mbx, ptr, fd = self.get_mbox_ptr_and_fd()
 
         # OK, adding to the mailbox worked
-        newptr = ptr[:MBX_ID_LEN] + mbx.add(newmsg)
+        newptr = ptr[:MBX_ID_LEN] + mbx.add(MessageAsString(newmsg))
         self.update_parse_cache(newmsg)
 
         # Remove the old message...
