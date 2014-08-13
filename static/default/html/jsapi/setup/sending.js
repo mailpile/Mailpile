@@ -1,6 +1,5 @@
 /* Setup - Routes - Model */
 var SendingModel = Backbone.Model.extend({
-  url: '/api/0/settings/as.json?var=routes',
   defaults: {
     _section: '',
     command: '',
@@ -53,10 +52,11 @@ var SendingView = Backbone.View.extend({
     return this;
   },
   events: {
-    "click #btn-setup-advanced-access" : "showRouteSettings",
-    "change #route-add-port"           : "actionChangePort",
-    "click #btn-setup-sending-save"    : "processSending",
-    "click .setup-sending-remove"      : "processRemove"
+    "click #btn-setup-advanced-access"   : "showRouteSettings",
+    "change #route-add-port"             : "actionChangePort",
+    "click #btn-setup-sending-check"     : "actionCheckAuth",
+    "click #btn-setup-sending-save"      : "processSending",
+    "click .setup-sending-remove"        : "processRemove"
   },
   show: function() {
 
@@ -96,10 +96,35 @@ var SendingView = Backbone.View.extend({
     if (port === 'other') {
       $(e.target).hide();
       $('#setup-route-port').parent('span').fadeIn();
-      $('#setup-route-port').val('');
     } else {
       $('#setup-route-port').val(port);
     }
+  },
+  actionCheckAuth: function(e) {
+    e.preventDefault();
+
+    // Status UI Message
+    $('#setup-sending-check-auth')
+      .removeClass('color-12-red color-08-green')
+      .html('<em>{{_("Testing Credentials")}}</em> <img src="/static/css/select2-spinner.gif">');
+
+    var sending_data = $('#form-setup-sending-settings').serializeObject();
+    sending_data = _.omit(sending_data, '_section');
+
+    Mailpile.API.setup_test_route_post(sending_data, function(result) {
+       if (result.status ==  'success') {
+          $('#setup-sending-check-auth')
+            .removeClass('color-12-red')
+            .addClass('color-08-green')
+            .html('<span class="icon-checkmark"></span> {{_("Successfully Connected")}}');
+        }
+        else if (result.status == 'error') {
+          $('#setup-sending-check-auth')
+            .removeClass('color-08-green')
+            .addClass('color-12-red')
+            .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
+        }
+    });
   },
   processSending: function(e) {
 
