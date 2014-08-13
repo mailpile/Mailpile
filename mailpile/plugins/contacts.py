@@ -294,25 +294,61 @@ class RemoveVCard(VCardCommand):
 
 class VCardAddLines(VCardCommand):
     """Add a lines to a VCard"""
-    SYNOPSIS = (None, 'vcards/addlines', None, '<email> <[<LID>=]line> ...')
+    SYNOPSIS = (None,
+                'vcards/addlines', 'vcards/addlines',
+                '<email> <[[<NR>]=]line> ...')
     ORDER = ('Internals', 6)
     KIND = ''
     HTTP_CALLABLE = ('POST', 'UPDATE')
+    HTTP_POST_VARS = {
+        'email': 'update by e-mail',
+        'rid': 'update by x-mailpile-rid',
+        'name': 'Line name',
+        'value': 'Line value',
+        'replace': 'int=replace line by number',
+        'replace_all': 'If nonzero, replaces all lines'
+    }
 
     def command(self):
         session, config = self.session, self.session.config
-        handle, lines = self.args[0], self.args[1:]
+
+        if self.args:
+            handle, lines = self.args[0], self.args[1:]
+        else:
+            handle = self.data.get('rid', self.data.get('email', [None]))[0]
+            if not handle:
+                raise ValueError('Must set rid or email to choose VCard')
+            name, value, replace, replace_all = (self.data.get(n, [None])[0]
+                for n in ('name', 'value', 'replace', 'replace_all'))
+            if not name or not value or ':' in name or '=' in name:
+                raise ValueError('Must send a line name and line data')
+            value = '%s:%s' % (name, value)
+            if replace:
+                value = '%d=%s:%s' % (replace, value)
+            elif replace_all:
+                value = '=%s:%s' % (replace, value)
+            lines = [value]
+
         vcard = config.vcards.get_vcard(handle)
         if not vcard:
             return self._error('%s not found: %s' % (self.VCARD, handle))
         config.vcards.deindex_vcard(vcard)
         try:
             for l in lines:
-                if '=' in l[:5]:
+                if l[0] == '=':
+                    l = l[1:]
+                    name = l.split(':', 1)[0]
+                    existing = [ex._line_id for ex in vcard.get_all(name)]
+                    vcard.add(VCardLine(l.strip()))
+                    vcard.remove(*existing)
+
+                elif '=' in l[:5]:
                     ln, l = l.split('=', 1)
                     vcard.set_line(int(ln.strip()), VCardLine(l.strip()))
+
                 else:
                     vcard.add(VCardLine(l))
+
             vcard.save()
             return self._success(_("Added %d lines") % len(lines),
                 result=self._vcard_list([vcard], simplify=True, info={
