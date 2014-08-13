@@ -551,6 +551,7 @@ class BaseMailSource(threading.Thread):
             else:
                 return min(max(5, self.my_config.interval // 10), 30)
 
+        first = True
         while first or self._sleep(self._jitter(sleeptime())):
             first = False
             if not self.my_config.enabled:
