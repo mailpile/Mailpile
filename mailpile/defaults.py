@@ -59,7 +59,7 @@ CONFIG_RULES = {
     }),
     'prefs': p(_("User preferences"), False, {
         'num_results':     (_('Search results per page'), int,             20),
-        'rescan_interval': (_('New mail check frequency'), int,             0),
+        'rescan_interval': (_('New mail check frequency'), int,           900),
         'open_in_browser': (_('Open in browser on startup'), bool,       True),
         'gpg_clearsign':   (_('Inline PGP signatures or attached'),
                             bool, False),
