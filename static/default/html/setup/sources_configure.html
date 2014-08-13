@@ -6,14 +6,14 @@
   <form id="form-setup-source-configure" class="standard text-center">
     <table class="full-width-table rounded background-white">
     <tr>
-      <th class="text-center setup-tooltip" title="Where these messages are coming from"><strong>Mailbox</strong></th>
-      <th class="text-center setup-tooltip" title="Will create a new Tag in your Mailpile"><strong>Mailpile (Tag)</strong></th>
-      <th class="text-center setup-tooltip" title="Apply the Inbox tag to these messages"><span class="icon-inbox"></span></th>
-      <th class="text-center setup-tooltip" title="Apply the Drafts tag to these messages"><span class="icon-compose"></span></th>
-      <th class="text-center setup-tooltip" title="Apply the Sent tag to these messages"><span class="icon-sent"></span></th>
-      <th class="text-center setup-tooltip" title="Apply the Spam tag to these messages"><span class="icon-spam"></span></th>
-      <th class="text-center setup-tooltip" title="Apply the Trash tag to these messages"><span class="icon-trash"></span></th>
-      <th class="text-center setup-tooltip" title="Import these messages"><input type="checkbox" id="source-mailbox-read-all"></th>
+      <th class="text-center setup-tooltip" title="{{_('Source of these Messages')}}"><strong>Mailbox</strong></th>
+      <th class="text-center setup-tooltip" title="{{_('Create a Tag in your Mailpile')}}"><strong>Mailpile (Tag)</strong></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Inbox tag to these Messages')}}"><span class="icon-inbox"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Drafts tag to these Messages')}}"><span class="icon-compose"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Sent tag to these Messages')}}"><span class="icon-sent"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Spam tag to these Messages')}}"><span class="icon-spam"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Apply the Trash tag to these Messages')}}"><span class="icon-trash"></span></th>
+      <th class="text-center setup-tooltip" title="{{_('Import these Messages')}}"><input type="checkbox" id="source-mailbox-read-all"></th>
     </tr>
     <% _.each(mailbox, function(mailbox, key) { %>
     <tr>
@@ -43,7 +43,7 @@
         <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.trash %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == tags.trash; }) == tags.trash) { %>checked<% } %>>
       </td>
       <td class="middle text-center">
-        <input type="checkbox" class="source-mailbox-policy" name="mailbox.<%= key %>.policy" value="<% if (mailbox.policy == 'unknown') { %>ignore<% } %>" <% if (mailbox.policy == 'read') { %>checked<% } %>>
+        <input type="checkbox" class="source-mailbox-policy" name="mailbox.<%= key %>.policy" value="<% if (mailbox.policy == 'unknown') { %>read<% } else { %><%= mailbox.policy %><% } %>" <% if (mailbox.policy == 'read' || mailbox.policy == 'unknown') { %>checked<% } %>>
       </td>
     </tr>
     <% }); %>

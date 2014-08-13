@@ -97,7 +97,8 @@ var SourcesView = Backbone.View.extend({
     "click #btn-setup-source-save"     : "processSource",
     "click #btn-setup-source-configure": "processConfigure",
     "click .setup-source-remove"       : "processRemove",
-    "click #source-mailbox-read-all"   : "actionMailboxReadAll"
+    "click #source-mailbox-read-all"   : "actionMailboxReadAll",
+    "click .source-mailbox-policy"     : "actionMailboxToggle"
   },
   show: function() {
 
@@ -153,6 +154,15 @@ var SourcesView = Backbone.View.extend({
     Mailpile.API.settings_get({ var: 'sources.'+id }, function(result) {
 
       var source = result.result['sources.'+id];
+      var mailbox_count = 0;
+      var checked_count = 0;
+
+      _.each(source.mailbox, function(mailbox, key) {
+        mailbox_count ++;
+        if (mailbox.policy == 'read' || mailbox.policy == 'unknown') {
+          checked_count++;
+        }
+      });
 
       Mailpile.API.tags_get({}, function(result) {
 
@@ -163,9 +173,16 @@ var SourcesView = Backbone.View.extend({
           }
         });
 
+        // Render HTML
         var configure = _.extend(source, { id: id, tags: tags });
         $('#setup').html(_.template($('#template-setup-sources-configure').html(), configure));
 
+
+        if (mailbox_count === checked_count) {
+          $('#source-mailbox-read-all').attr({'value': 'read', 'checked': true});
+        }
+
+        // Show Tooltips
         TooltipsView.show();
       });
     });
@@ -198,12 +215,19 @@ var SourcesView = Backbone.View.extend({
   actionMailboxReadAll: function(e) {
     if ($(e.target).is(':checked')) {
       _.each($('input.source-mailbox-policy'), function(val, key) {      
-        $(val).attr({'value': 'read', 'checked': true});
+        $(val).attr('value', 'read').prop('checked', true);
       });
     } else {
       _.each($('input.source-mailbox-policy'), function(val, key) {      
-        $(val).attr({'value': 'ignore', 'checked': false});
+        $(val).attr('value', 'ignore').prop('checked', false);
       });
+    }
+  },
+  actionMailboxToggle: function(e) {
+    if ($(e.target).is(':checked')) {
+      $(e.target).attr('value', 'read').prop('checked', true);
+    } else {
+      $(e.target).attr('value', 'ignore').prop('checked', false);
     }
   },
   processSource: function(e) {
@@ -239,14 +263,21 @@ var SourcesView = Backbone.View.extend({
   },
   processConfigure: function(e) {
     e.preventDefault();
+
     var mailbox_data = $('#form-setup-source-configure').serializeObject();
+
+    // Set Unchecked Checkboxes
+    _.each($('input.source-mailbox-policy:checkbox:not(:checked)'), function(val, key) {
+      var name = $(val).attr('name');
+      mailbox_data[name] = 'ignore';
+    });
 
     // Validate & Process
     Mailpile.API.settings_set_post(mailbox_data, function(result) {
       if (result.status == 'success') {
         Backbone.history.navigate('#sources', true);
       } else {
-        alert('Error saving Sources');
+        
       }
     });
   },
