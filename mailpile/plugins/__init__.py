@@ -102,7 +102,7 @@ class PluginManager(object):
                     continue
                 if pname in self.DISCOVERED and not update:
                     # FIXME: this is lame
-                    print 'Ignoring duplicate plugin: %s' % pname
+                    # print 'Ignoring duplicate plugin: %s' % pname
                     continue
                 plug_path = os.path.join(pdir, subdir)
                 manifest_filename = os.path.join(plug_path, 'manifest.json')

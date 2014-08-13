@@ -729,14 +729,6 @@ class SetupProfiles(SetupCrypto):
         # FIXME: Actually look things up, this is super lame
         return email.endswith('@gmail.com')
 
-    def get_routes(self):
-        routes = {}
-        for route_id, route_info in self.session.config.routes.iteritems():
-             routes[route_id] = (route_info.name
-                                 or route_info.host
-                                 or route_info.command)
-        return routes
-
     def get_profiles(self, secret_keys=None):
         data = ListProfiles(self.session).run().result
         profiles = {}
@@ -799,7 +791,7 @@ class SetupProfiles(SetupCrypto):
         return {
             'new_emails': self.discover_new_email_addresses(profiles),
             'profiles': profiles,
-            'routes': self.get_routes(),
+            'routes': self.session.config.routes,
             'default_email': self.session.config.prefs.default_email
         }
 
