@@ -1176,7 +1176,8 @@ class Email(object):
     def parse_line_type(self, line, block):
         # FIXME: Detect forwarded messages, ...
 
-        if block in ('body', 'quote') and line in ('-- \n', '-- \r\n'):
+        if block in ('body', 'quote') and line in ('-- \n', '-- \r\n',
+                                                   '- --\n', '- --\r\n'):
             return 'signature', 'signature'
 
         if block == 'signature':
