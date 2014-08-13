@@ -22,10 +22,11 @@ def indicator(command, **kwargs):
 
 
 def startup(config):
-    th = threading.Thread(target=_real_startup, args=[config])
-    th.name = 'GUI'
-    th.daemon = True
-    th.start()
+    if sys.platform in ('darwin', ) or os.getenv('DISPLAY'):
+        th = threading.Thread(target=_real_startup, args=[config])
+        th.name = 'GUI'
+        th.daemon = True
+        th.start()
 
 
 def output_eater(fd, buf):

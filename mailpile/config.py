@@ -33,6 +33,7 @@ except ImportError:
     except ImportError:
         socks = None
 
+import mailpile.util
 from mailpile.commands import Rescan
 from mailpile.eventlog import EventLog
 from mailpile.httpd import HttpWorker
@@ -1238,8 +1239,9 @@ class ConfigManager(ConfigDict):
         with mailpile.i18n.i18n_disabled:
             if len(self.sys.plugins) == 0:
                 self.sys.plugins.extend(self.plugins.DEFAULT)
-                if sys.platform in ('darwin', ) or os.getenv('DISPLAY'):
-                    self.sys.plugins.append('gui')
+                for plugin in self.plugins.WANTED:
+                    if plugin in self.plugins.available():
+                        self.sys.plugins.append(plugin)
             self.load_plugins(session)
 
         # Now all the plugins are loaded, reset and parse again!
@@ -1349,15 +1351,16 @@ class ConfigManager(ConfigDict):
         with open(pubfile, 'wb') as fd:
             fd.write(self.as_config_bytes(_type='public'))
 
-        # Enable translations
-        mailpile.i18n.ActivateTranslation(None, self, self.prefs.language)
+        if not mailpile.util.QUITTING:
+            # Enable translations
+            mailpile.i18n.ActivateTranslation(None, self, self.prefs.language)
 
-        # Prepare workers
-        self.prepare_workers(daemons=self.daemons_started())
-        delay = 1
-        for mail_source in self.mail_sources.values():
-            mail_source.wake_up(after=delay)
-            delay += 2
+            # Prepare workers
+            self.prepare_workers(daemons=self.daemons_started())
+            delay = 1
+            for mail_source in self.mail_sources.values():
+                mail_source.wake_up(after=delay)
+                delay += 2
 
     def _find_mail_source(self, mbx_id):
         for src in self.sources.values():
@@ -1733,9 +1736,6 @@ class ConfigManager(ConfigDict):
 
     def _unlocked_prepare_workers(config, session=None,
                                   daemons=False, httpd_spec=None):
-        # Set globals from config first...
-        import mailpile.util
-
         # Make sure we have a silent background session
         if not config.background:
             config.background = Session(config)

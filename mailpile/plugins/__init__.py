@@ -28,6 +28,7 @@ __all__ = [
     'html_magic', 'migrate', 'smtp_server', 'crypto_policy', 
     'keylookup'
 ]
+PLUGINS = __all__
 
 
 class PluginError(Exception):
@@ -50,6 +51,10 @@ class PluginManager(object):
         'eventlog', 'search', 'tags', 'contacts', 'compose', 'groups',
         'dates', 'sizes', 'cryptostate', 'setup_magic', 'html_magic',
         'plugins', 'keylookup'
+    ]
+    # Plugins we want, if they are discovered
+    WANTED = [
+        'gui'
     ]
     DISCOVERED = {}
     LOADED = []

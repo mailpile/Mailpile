@@ -10,9 +10,11 @@ from mailpile.i18n import ListTranslations, ActivateTranslation, gettext
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
-from mailpile.plugins import __all__ as PLUGINS
+from mailpile.plugins import PLUGINS
 from mailpile.plugins.contacts import AddProfile
 from mailpile.plugins.contacts import ListProfiles
+from mailpile.plugins.migrate import Migrate
+from mailpile.plugins.tags import AddTag
 from mailpile.commands import Command
 from mailpile.config import SecurePassphraseStorage
 from mailpile.crypto.gpgi import GnuPG, SignatureInfo, EncryptionInfo
@@ -21,8 +23,6 @@ from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.smtp_client import SendMail, SendMailError
 from mailpile.urlmap import UrlMap
 from mailpile.util import *
-from mailpile.plugins.migrate import Migrate
-from mailpile.plugins.tags import AddTag
 
 
 _ = lambda s: s
@@ -196,6 +196,9 @@ class SetupMagic(Command):
             if plugin not in session.config.sys.plugins:
                 session.config.sys.plugins.append(plugin)
                 reload_config = True
+        for plugin in session.config.plugins.WANTED:
+            if plugin in session.config.plugins.available():
+                session.config.sys.plugins.append(plugin)
         if reload_config:
             with session.config._lock:
                 session.config.save()
