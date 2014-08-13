@@ -385,8 +385,8 @@ class BaseMailSource(threading.Thread):
         parts = ('/' in path) and path.split('/') or path.split('\\')
         parts = [p for p in parts if not re.match(self.BORING_FOLDER_RE, p)]
         tagname = parts.pop(-1).split('.')[0]
-        if self.my_config.name:
-            tagname = '%s/%s' % (self.my_config.name, tagname)
+#       if self.my_config.name:
+#           tagname = '%s/%s' % (self.my_config.name, tagname)
         return tagname.replace('_', ' ')
 
     def _unique_tag_name(self, tagname):  # -> unused tag name
