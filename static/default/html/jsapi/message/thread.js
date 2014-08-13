@@ -7,6 +7,7 @@ Mailpile.render_thread_message = function(mid) {
     success  : function(response) {
       if (response.result) {
         $('#snippet-' + mid).replaceWith(response.result);
+        Mailpile.thread_initialize_tooltips();
       }
     },
     error: function() {
