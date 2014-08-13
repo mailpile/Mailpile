@@ -9,9 +9,11 @@ import os.path
 import random
 import re
 import shlex
+import sys
 import traceback
 import threading
 import time
+import webbrowser
 
 import mailpile.util
 import mailpile.ui
@@ -1870,25 +1872,30 @@ class Help(Command):
     class CommandResult(Command.CommandResult):
 
         def splash_as_text(self):
+            text = [
+                self.result['splash']
+            ]
+
             if self.result['http_url']:
-                web_interface = _('The Web interface address is: %s'
-                                  ) % self.result['http_url']
+                text.append(_('The Web interface address is: %s'
+                              ) % self.result['http_url'])
             else:
-                web_interface = _('The Web interface is disabled.')
+                text.append(_('The Web interface is disabled.'))
 
-            login = (_('Please log in using the `%s` command.'
-                       ) % self.result['login_cmd'] + '\n'
-                     if (self.result['login_cmd'] and
-                         self.result['interactive']) else '')
+            text.append('')
+            b = '   * '
+            if self.result['interactive']:
+                text.append(b + _('Type `help` for instructions or `quit` '
+                                  'to quit.'))
+                text.append(b + _('Long running operations can be aborted '
+                                  'by pressing: <CTRL-C>'))
+            if self.result['login_cmd'] and self.result['interactive']:
+                text.append(b + _('You can log in using the `%s` command.'
+                                  ) % self.result['login_cmd'])
+            if self.result['in_browser']:
+                text.append(b + _('Check your web browser!'))
 
-            return '\n'.join([
-                self.result['splash'],
-                web_interface,
-                login,
-                (_('Type `help` for instructions or press <Ctrl-d> to quit.')
-                 if self.result['interactive'] else ''),
-                ''
-            ])
+            return '\n'.join(text)
 
         def variables_as_text(self):
             text = []
@@ -2062,13 +2069,26 @@ class HelpSplash(Help):
     def command(self, interactive=True):
         from mailpile.auth import Authenticate
         http_worker = self.session.config.http_worker
+
+        in_browser = False
         if http_worker:
             http_url = 'http://%s:%s/' % http_worker.httpd.sspec
+            if ((sys.platform in ('darwin', 'win32') or os.getenv('DISPLAY'))
+                    and self.session.config.prefs.open_in_browser):
+                try:
+                    MakePopenUnsafe()
+                    webbrowser.open(http_url)
+                    in_browser = True
+                    time.sleep(2)
+                finally:
+                    MakePopenSafe()
         else:
             http_url = ''
+
         return self._success(_('Displayed welcome message'), result={
             'splash': self.ABOUT,
             'http_url': http_url,
+            'in_browser': in_browser,
             'login_cmd': (Authenticate.SYNOPSIS[1]
                           if not self.session.config.loaded_config else ''),
             'interactive': interactive
