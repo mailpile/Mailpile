@@ -107,7 +107,13 @@ def MoveFilter(cfg, filter_id, filter_new_id):
 def GetTags(cfg, tn=None, default=None, **kwargs):
     results = []
     if tn is not None:
+        #
         # Hack, allow the tn= to be any of: TID, name or slug.
+        #
+        # However, the most precise style of match wins - so TID lookups
+        # will never get confused by slugs, and slug lookups will never
+        # get confused by names.
+        #
         tn = tn.lower()
         try:
             if tn in cfg.tags:
@@ -149,6 +155,17 @@ def GetTag(cfg, tn, default=None):
 def GetTagID(cfg, tn):
     tags = GetTags(cfg, tn=tn, default=[None])
     return tags and (len(tags) == 1) and tags[0]._key or None
+
+
+def Slugify(tag_name, tags=None):
+    slug = CleanText(tag_name.lower().replace(' ', '-'),
+                     banned=CleanText.NONDNS.replace('/', '')
+                     ).clean.lower()
+    n = 1
+    while tags and slug in [t.slug for t in tags.values()]:
+        n += 1
+        slug = Slugify('%s-%s' % (tag_name, n))
+    return slug
 
 
 def GetTagInfo(cfg, tn, stats=False, unread=None, exclude=None, subtags=None):
@@ -200,11 +217,6 @@ mailpile.config.ConfigManager.filter_move = MoveFilter
 ##[ Commands ]################################################################
 
 class TagCommand(Command):
-    def slugify(self, tag_name):
-        return CleanText(tag_name.lower().replace(' ', '-'),
-                         banned=CleanText.NONDNS.replace('/', '')
-                         ).clean.lower()
-
     def _reorder_all_tags(self):
         taglist = [(t.display, t.display_order, t.slug, t._key)
                    for t in self.session.config.tags.values()]
@@ -400,12 +412,12 @@ class AddTag(TagCommand):
         if slugs and len(names) != len(slugs):
             return self._error('Name/slug pairs do not match')
         elif names and not slugs:
-            slugs = [self.slugify(n) for n in names]
-        slugs.extend([self.slugify(s) for s in self.args])
+            slugs = [Slugify(n, config.tags) for n in names]
+        slugs.extend([Slugify(s, config.tags) for s in self.args])
         names.extend(self.args)
 
         for slug in slugs:
-            if slug != self.slugify(slug):
+            if slug != Slugify(slug, config.tags):
                 return self._error('Invalid tag slug: %s' % slug)
 
         for tag in config.tags.values():

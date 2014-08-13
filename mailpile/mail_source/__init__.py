@@ -407,8 +407,10 @@ class BaseMailSource(threading.Thread):
         if tag_name_or_id in self.session.config.tags:
             # Short circuit if this is a tag ID for an existing tag
             return tag_name_or_id
+        else:
+            tag_name = tag_name_or_id
 
-        tags = self.session.config.get_tags(tag_name_or_id)
+        tags = self.session.config.get_tags(tag_name)
         if tags and unique:
             raise ValueError('Tag name is not unique!')
         elif len(tags) == 1 and use_existing:
@@ -416,10 +418,13 @@ class BaseMailSource(threading.Thread):
         elif len(tags) > 1:
             raise ValueError('Tag name matches multiple tags!')
         else:
-            from mailpile.plugins.tags import AddTag
-            AddTag(self.session, arg=[tag_name_or_id]).run(save=False)
-            tags = self.session.config.get_tags(tag_name_or_id)
+            from mailpile.plugins.tags import AddTag, Slugify
+            bogus_name = 'New-Tag-%s' % len(str(self.session.config))
+            AddTag(self.session, arg=[bogus_name]).run(save=False)
+            tags = self.session.config.get_tags(bogus_name)
             if tags:
+                tags[0].slug = Slugify(tag_name, self.session.config.tags)
+                tags[0].name = tag_name
                 if parent:
                     tags[0].parent = parent
                 tag_id = tags[0]._key
