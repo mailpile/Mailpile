@@ -122,9 +122,11 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             return None
 
         message = email.parser.Parser().parse(fd)
+        msi = message.signature_info = SignatureInfo(bubbly=False)
+        mei = message.encryption_info = EncryptionInfo(bubbly=False)
         for part in message.walk():
-            part.signature_info = SignatureInfo()
-            part.encryption_info = EncryptionInfo()
+            part.signature_info = SignatureInfo(parent=msi)
+            part.encryption_info = EncryptionInfo(parent=mei)
 
     if cache_id is not None:
         with GLOBAL_PARSE_CACHE_LOCK:
@@ -425,8 +427,8 @@ class Email(object):
             except (UnicodeEncodeError, UnicodeDecodeError):
                 charset = 'utf-8'
             textpart = MIMEText(msg_text, _subtype='plain', _charset=charset)
-            textpart.signature_info = SignatureInfo()
-            textpart.encryption_info = EncryptionInfo()
+            textpart.signature_info = msg.signature_info
+            textpart.encryption_info = msg.encryption_info
             msg.attach(textpart)
             del textpart['MIME-Version']
 
@@ -1033,6 +1035,10 @@ class Email(object):
                     and mimetype in ('text/plain', 'text/html')):
                 payload, charset = self.decode_payload(part)
                 start = payload[:100].strip()
+                crypto = {
+                    'signature': part.signature_info,
+                    'encryption': part.encryption_info,
+                }
 
                 if mimetype == 'text/html':
                     if want is None or 'html_parts' in want:
@@ -1051,7 +1057,8 @@ class Email(object):
                     # the message is HTML only and we want the code below
                     # to try and extract meaning from it.
                     if (start or payload.strip()) != '':
-                        text_parts = self.parse_text_part(payload, charset)
+                        text_parts = self.parse_text_part(payload, charset,
+                                                          crypto)
                         tree['text_parts'].extend(text_parts)
 
             elif want is None or 'attachments' in want:
@@ -1061,7 +1068,8 @@ class Email(object):
                     'part': part,
                     'length': len(part.get_payload(None, True) or ''),
                     'content-id': part.get('content-id', ''),
-                    'filename': part.get_filename() or ''
+                    'filename': part.get_filename() or '',
+                    'crypto': crypto
                 }
                 att['aid'] = self._attachment_aid(att)
                 tree['attachments'].append(att)
@@ -1071,7 +1079,8 @@ class Email(object):
                 html_part = tree['html_parts'][0]
                 payload = self._extract_text_from_html(html_part['data'])
                 text_parts = self.parse_text_part(payload,
-                                                  html_part['charset'])
+                                                  html_part['charset'],
+                                                  crypto)
                 tree['text_parts'].extend(text_parts)
 
         if self.is_editable():
@@ -1088,6 +1097,8 @@ class Email(object):
                 tree['crypto']['encryption'] = msg.encryption_info
                 tree['crypto']['signature'] = msg.signature_info
 
+        msg.signature_info.mix_bubbles()
+        msg.encryption_info.mix_bubbles()
         return tree
 
     # FIXME: This should be configurable by the user, depending on where
@@ -1118,10 +1129,16 @@ class Email(object):
         payload = part.get_payload(None, True) or ''
         return self.decode_text(payload, charset=charset)
 
-    def parse_text_part(self, data, charset):
+    def parse_text_part(self, data, charset, crypto):
+        psi = crypto['signature']
+        pei = crypto['encryption']
         current = {
             'type': 'bogus',
             'charset': charset,
+            'crypto': {
+                'signature': SignatureInfo(parent=psi),
+                'encryption': EncryptionInfo(parent=pei)
+            }
         }
         parse = []
         block = 'body'
@@ -1146,6 +1163,10 @@ class Email(object):
                     'type': ltype,
                     'data': ''.join(clines),
                     'charset': charset,
+                    'crypto': {
+                        'signature': SignatureInfo(parent=psi),
+                        'encryption': EncryptionInfo(parent=pei)
+                    }
                 }
                 parse.append(current)
             current['data'] += line
@@ -1236,9 +1257,9 @@ class Email(object):
                         gpg.passphrase = gnupg_passphrase.get_reader()
                         message = ''.join([p['data'].encode(p['charset'])
                                            for p in pgpdata])
-                        si = pgpdata[1]['crypto']['signature'
-                                                  ] = gpg.verify(message)
+                        si = gpg.verify(message)
                         pgpdata[0]['data'] = ''
+                        pgpdata[1]['crypto']['signature'] = si
                         pgpdata[2]['data'] = ''
 
                     except Exception, e:
@@ -1250,37 +1271,39 @@ class Email(object):
                 elif part['type'] == 'pgpend':
                     pgpdata.append(part)
 
+                    data = ''.join([p['data'] for p in pgpdata])
                     gpg = GnuPG()
                     gpg.passphrase = gnupg_passphrase.get_reader()
-                    (signature_info, encryption_info, text
-                     ) = gpg.decrypt(''.join([p['data'] for p in pgpdata]))
+                    si, ei, text = gpg.decrypt(data)
 
                     # FIXME: If the data is binary, we should provide some
                     #        sort of download link or maybe leave the PGP
                     #        blob entirely intact, undecoded.
                     text, charset = self.decode_text(text, binary=False)
 
-                    ei = pgpdata[1]['crypto']['encryption'] = encryption_info
-                    si = pgpdata[1]['crypto']['signature'] = signature_info
-                    if encryption_info["status"] == "decrypted":
-                        pgpdata[1]['data'] = text
+                    pgpdata[1]['crypto']['encryption'] = ei
+                    pgpdata[1]['crypto']['signature'] = si
+                    if ei["status"] == "decrypted":
                         pgpdata[0]['data'] = ""
+                        pgpdata[1]['data'] = text
                         pgpdata[2]['data'] = ""
 
             # Bubbling up!
             if (si or ei) and 'crypto' not in tree:
-                tree['crypto'] = {'signature': SignatureInfo(),
-                                  'encryption': EncryptionInfo()}
+                tree['crypto'] = {'signature': SignatureInfo(bubbly=False),
+                                  'encryption': EncryptionInfo(bubbly=False)}
             if si:
-                tree['crypto']['signature'].mix(si)
+                si.bubble_up(tree['crypto']['signature'])
             if ei:
-                tree['crypto']['encryption'].mix(ei)
+                ei.bubble_up(tree['crypto']['encryption'])
 
         # Cleanup, remove empty 'crypto': {} blocks.
         for part in tree['text_parts']:
             if not part['crypto']:
                 del part['crypto']
 
+        tree['crypto']['signature'].mix_bubbles()
+        tree['crypto']['encryption'].mix_bubbles()
         if crypto_state_feedback:
             self._update_crypto_state()
         return tree

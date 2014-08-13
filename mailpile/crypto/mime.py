@@ -62,14 +62,14 @@ def _update_text_payload(part, payload, charsets=None):
 
 ##[ Methods for unwrapping encrypted parts ]###################################
 
-def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
+def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None):
     """
     This method will replace encrypted and signed parts with their
     contents and set part attributes describing the security properties
     instead.
     """
-    part.signature_info = si or SignatureInfo()
-    part.encryption_info = ei or EncryptionInfo()
+    part.signature_info = SignatureInfo(parent=psi)
+    part.encryption_info = EncryptionInfo(parent=pei)
     mimetype = part.get_content_type()
     if part.is_multipart():
 
@@ -77,6 +77,10 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
         # FIXME: This is where we add hooks for other MIME encryption
         #        schemes, so route to callbacks by protocol.
         crypto_cls = protocols['openpgp']
+
+        # Containers are by default not bubbly
+        part.signature_info.bubbly = False
+        part.encryption_info.bubbly = False
 
         if mimetype == 'multipart/signed':
             try:
@@ -91,6 +95,7 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
 
                 part.signature_info = crypto_cls().verify(
                     Normalize(raw_payload), signature.get_payload())
+                part.signature_info.bubble_up(psi)
 
                 # Reparent the contents up, removing the signature wrapper
                 part.set_payload(payload.get_payload())
@@ -101,15 +106,16 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
 
                 # Try again, in case we just unwrapped another layer
                 # of multipart/something.
-                return UnwrapMimeCrypto(part,
-                                        protocols=protocols,
-                                        si=part.signature_info,
-                                        ei=part.encryption_info,
-                                        charsets=charsets)
+                UnwrapMimeCrypto(part,
+                                 protocols=protocols,
+                                 psi=part.signature_info,
+                                 pei=part.encryption_info,
+                                 charsets=charsets)
 
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 part.signature_info = SignatureInfo()
                 part.signature_info["status"] = "error"
+                part.signature_info.bubble_up(psi)
 
         elif mimetype == 'multipart/encrypted':
             try:
@@ -120,6 +126,9 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 part.encryption_info = EncryptionInfo()
                 part.encryption_info["status"] = "error"
+
+            part.signature_info.bubble_up(psi)
+            part.encryption_info.bubble_up(pei)
 
             if part.encryption_info['status'] == 'decrypted':
                 newpart = email.parser.Parser().parse(
@@ -134,27 +143,28 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
 
                 # Try again, in case we just unwrapped another layer
                 # of multipart/something.
-                return UnwrapMimeCrypto(part,
-                                        protocols=protocols,
-                                        si=part.signature_info,
-                                        ei=part.encryption_info,
-                                        charsets=charsets)
-
-        # If we are still multipart after the above shenanigans, recurse
-        # into our subparts and unwrap them too.
-        if part.is_multipart():
-            for subpart in part.get_payload():
-                UnwrapMimeCrypto(subpart,
+                UnwrapMimeCrypto(part,
                                  protocols=protocols,
-                                 si=part.signature_info,
-                                 ei=part.encryption_info,
+                                 psi=part.signature_info,
+                                 pei=part.encryption_info,
+                                 charsets=charsets)
+
+        # If we are still multipart after the above shenanigans (perhaps due
+        # to an error state), recurse into our subparts and unwrap them too.
+        elif part.is_multipart():
+            for sp in part.get_payload():
+                UnwrapMimeCrypto(sp,
+                                 protocols=protocols,
+                                 psi=part.signature_info,
+                                 pei=part.encryption_info,
                                  charsets=charsets)
 
     elif mimetype == 'text/plain':
-        UnwrapPlainTextCrypto(part, protocols=protocols,
-                                    si=part.signature_info,
-                                    ei=part.encryption_info,
-                                    charsets=charsets)
+        return UnwrapPlainTextCrypto(part,
+                                     protocols=protocols,
+                                     psi=psi,
+                                     pei=pei,
+                                     charsets=charsets)
 
     else:
         # FIXME: This is where we would handle cryptoschemes that don't
@@ -162,7 +172,16 @@ def UnwrapMimeCrypto(part, protocols=None, si=None, ei=None, charsets=None):
         pass
 
 
-def UnwrapPlainTextCrypto(part, protocols=None, si=None, ei=None,
+    # Mix in our bubbles
+    part.signature_info.mix_bubbles()
+    part.encryption_info.mix_bubbles()
+
+    # Bubble up!
+    part.signature_info.bubble_up(psi)
+    part.encryption_info.bubble_up(pei)
+
+
+def UnwrapPlainTextCrypto(part, protocols=None, psi=None, pei=None,
                                 charsets=None):
     """
     This method will replace encrypted and signed parts with their
@@ -170,25 +189,36 @@ def UnwrapPlainTextCrypto(part, protocols=None, si=None, ei=None,
     instead.
     """
     payload = part.get_payload(None, True).strip()
-
+    si = SignatureInfo(parent=psi)
+    ei = EncryptionInfo(parent=pei)
     for crypto_cls in protocols.values():
         crypto = crypto_cls()
 
         if (payload.startswith(crypto.ARMOR_BEGIN_ENCRYPTED) and
                 payload.endswith(crypto.ARMOR_END_ENCRYPTED)):
-            si, ei, text = crypto.decrypt(payload)
-            _update_text_payload(part, text, charsets=charsets)
+            try:
+                si, ei, text = crypto.decrypt(payload)
+                _update_text_payload(part, text, charsets=charsets)
+            except (IOError, OSError, ValueError, IndexError, KeyError):
+                ei = EncryptionInfo()
+                ei["status"] = "error"
             break
 
         elif (payload.startswith(crypto.ARMOR_BEGIN_SIGNED) and
                 payload.endswith(crypto.ARMOR_END_SIGNED)):
-            si = crypto.verify(payload)
-            text = crypto.remove_armor(payload)
-            _update_text_payload(part, text, charsets=charsets)
+            try:
+                si = crypto.verify(payload)
+            except (IOError, OSError, ValueError, IndexError, KeyError):
+                si = SignatureInfo()
+                si["status"] = "error"
+            _update_text_payload(part, crypto.remove_armor(payload),
+                                 charsets=charsets)
             break
 
-    part.signature_info = si or SignatureInfo()
-    part.encryption_info = ei or EncryptionInfo()
+    part.signature_info = si
+    part.signature_info.bubble_up(psi)
+    part.encryption_info = ei
+    part.encryption_info.bubble_up(pei)
 
 
 ##[ Methods for encrypting and signing ]#######################################

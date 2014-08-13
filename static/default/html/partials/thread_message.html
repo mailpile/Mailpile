@@ -2,8 +2,8 @@
   {% set from = metadata.from %}
   {% set url_danger = metadata.flags.spam %}
   {% include("partials/thread_metadata.html") %}
-  {% set encryption_context = [message.crypto.encryption.context] %}
-  {% set signature_context = [message.crypto.signature.context] %}
+  {% set encryption_status = [message.crypto.encryption.status] %}
+  {% set signature_status = [message.crypto.signature.status] %}
   {# If no text_part, show html_part }
   {% if not message.text_parts %}
     {% for part in message.html_parts %}
@@ -20,7 +20,7 @@
     {% set last_part = message.text_parts|length - 1 %}
     {% for part in message.text_parts %}
       {# Parts that do not have own crypto attribute inherit from message itself
-       # Watch for changes to the "context" which is present in each encryption and
+       # Watch for changes to the "status" which is present in each encryption and
        # signature section - if either has changed, then we have moved from
        # one security context to the next, and need to let the user know.
        #}
@@ -30,22 +30,22 @@
         {% if part_encryption or part_signature %}
         <div class="thread-item-crypto clearfix">
             {% if part_encryption %}
-              {% if encryption_context and part_encryption.context != encryption_context[-1] %}
+              {% if encryption_status and part_encryption.status != encryption_status[-1] %}
               {% set encryption = show_text_part_encryption(part_encryption.status) %}
               <span class="thread-item-crypto-info" title="{{ encryption.text }}" data-crypto_color="{{ encryption.color }}" data-crypto_icon="{{ encryption.icon }}" data-crypto_message="{{ encryption.message }}">
                 <span class="icon {{ encryption.color + ' ' + encryption.icon }}"></span> <span class="text {{ encryption.color }}">{{ encryption.text }}</span>
               </span>
               {% endif %}
-              {% do encryption_context.append(part_encryption.context) %}
+              {% do encryption_status.append(part_encryption.status) %}
             {% endif %}
             {% if part_signature %}
-              {% if signature_context and part_signature.context != signature_context[-1] %}
+              {% if signature_status and part_signature.status != signature_status[-1] %}
               {% set signature = show_text_part_signature(part_signature.status) %}
               <span class="thread-item-crypto-info" title="{{ signature.text }}" data-crypto_color="{{ signature.color }}" data-crypto_icon="{{ signature.icon }}" data-crypto_message="{{ signature.message }}">
                 <span class="icon {{ signature.color + ' ' + signature.icon }}"></span> <span class="text {{ signature.color }}">{{ signature.text }}</span>
               </span>
               {% endif %}
-              {% do signature_context.append(part_signature.context) %}
+              {% do signature_status.append(part_signature.status) %}
             {% endif %}
           <div class="thread-item-crypto-line left"></div>
         </div>

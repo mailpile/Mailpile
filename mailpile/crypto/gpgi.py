@@ -77,13 +77,13 @@ class GnuPGResultParser:
                 missing = [x[1] for x in retvals[1]["status"]
                            if x[0] == "NO_SECKEY"]
                 if missing:
-                    encryption_info["status"] = "missingkey"
+                    encryption_info.part_status = "missingkey"
                     encryption_info["missing_keys"] = missing
                 else:
-                    encryption_info["status"] = "error"
+                    encryption_info.part_status = "error"
 
             elif keyword == "DECRYPTION_OKAY":
-                encryption_info["status"] = "decrypted"
+                encryption_info.part_status = "decrypted"
                 rp.plaintext = "".join(retvals[1]["stdout"])
 
             elif keyword == "ENC_TO":
@@ -92,7 +92,7 @@ class GnuPGResultParser:
                     keylist.append(data[1])
                 encryption_info["have_keys"] = keylist
 
-            elif signature_info["status"] == "none":
+            elif signature_info.part_status == "none":
                 # Only one of these will ever be emitted per key, use
                 # this to set initial state. We may end up revising
                 # the status depending on more info later.
@@ -101,11 +101,11 @@ class GnuPGResultParser:
                         " ".join(data[2:]).decode('utf-8'))
                     signature_info["name"] = fn
                     signature_info["email"] = email
-                    signature_info["status"] = ((keyword == "GOODSIG")
-                                                and "unverified"
-                                                or "invalid")
+                    signature_info.part_status = ((keyword == "GOODSIG")
+                                                  and "unverified"
+                                                  or "invalid")
                 elif keyword == "ERRSIG":
-                    signature_info["status"] = "error"
+                    signature_info.part_status = "error"
                     signature_info["keyinfo"] = data[1]
                     signature_info["timestamp"] = int(data[5])
 
@@ -134,23 +134,23 @@ class GnuPGResultParser:
                     " ".join(data[2:]).decode('utf-8'))
                 signature_info["name"] = fn
                 signature_info["email"] = email
-                signature_info["status"] = ((keyword == "EXPKEYSIG")
-                                            and "expired"
-                                            or "revoked")
+                signature_info.part_status = ((keyword == "EXPKEYSIG")
+                                              and "expired"
+                                              or "revoked")
 
           # FIXME: This appears to be spammy. Is my key borked, or
           #        is GnuPG being stupid?
           #
           # elif keyword == "KEYEXPIRED":  # Ignoring: SIGEXPIRED
-          #     signature_info["status"] = "expired"
+          #     signature_info.part_status = "expired"
             elif keyword == "KEYREVOKED":
-                signature_info["status"] = "revoked"
+                signature_info.part_status = "revoked"
             elif keyword == "NO_PUBKEY":
-                signature_info["status"] = "unknown"
+                signature_info.part_status = "unknown"
 
             elif keyword in ("TRUST_ULTIMATE", "TRUST_FULLY"):
-                if signature_info["status"] == "unverified":
-                    signature_info["status"] = "verified"
+                if signature_info.part_status == "unverified":
+                    signature_info.part_status = "verified"
 
         return rp
 
