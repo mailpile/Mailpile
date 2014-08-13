@@ -20,6 +20,9 @@ MD5_SUM_FORMAT = 'md5sum: %s'
 MD5_SUM_PLACEHOLDER = MD5_SUM_FORMAT % ('0' * LEN_MD5)
 MD5_SUM_RE = re.compile('(?m)^' + MD5_SUM_FORMAT % (r'[^\n]+',))
 
+OPENSSL_COMMAND = "openssl"
+if sys.platform == "win32":
+    OPENSSL_COMMAND = 'OpenSSL\\bin\\openssl.exe'
 
 class IOFilter(threading.Thread):
     """
@@ -403,7 +406,7 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
         self._fd.write('%s\n' % self.key)
 
     def _mk_command(self):
-        return ["openssl", "enc", "-e", "-a", "-%s" % self.cipher,
+        return [OPENSSL_COMMAND, "enc", "-e", "-a", "-%s" % self.cipher,
                 "-pass", "stdin", "-bufsize", "0"]
 
     def _write_preamble(self):
@@ -659,7 +662,7 @@ class DecryptingStreamer(InputCoprocess):
             if self.gpg_pass:
                 gpg.extend(["--no-use-agent", "--passphrase-fd=0"])
             return gpg
-        return ["openssl", "enc", "-d", "-a", "-%s" % self.cipher,
+        return [OPENSSL_COMMAND, "enc", "-d", "-a", "-%s" % self.cipher,
                 "-pass", "stdin"]
 
 
