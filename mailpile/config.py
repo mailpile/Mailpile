@@ -1354,6 +1354,10 @@ class ConfigManager(ConfigDict):
 
         # Prepare workers
         self.prepare_workers(daemons=self.daemons_started())
+        delay = 1
+        for mail_source in self.mail_sources.values():
+            mail_source.wake_up(after=delay)
+            delay += 2
 
     def _find_mail_source(self, mbx_id):
         for src in self.sources.values():

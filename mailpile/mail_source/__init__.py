@@ -591,8 +591,8 @@ class BaseMailSource(threading.Thread):
         self.event.flags = Event.COMPLETE
         self._log_status(_('Shut down'))
 
-    def wake_up(self):
-        self._sleeping = 0
+    def wake_up(self, after=0):
+        self._sleeping = after
 
     def rescan_now(self, session=None, started_callback=None):
         begin, end = MSrcLock(), MSrcLock()
