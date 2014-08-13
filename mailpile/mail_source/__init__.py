@@ -29,7 +29,7 @@ class BaseMailSource(threading.Thread):
     DEFAULT_JITTER = 15         # Fudge factor to tame thundering herds
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
-    RESCAN_BATCH_SIZE = 250     # Index at most this many new e-mails at once
+    RESCAN_BATCH_SIZE = 50      # Index at most this many new e-mails at once
     MAX_PATHS = 100             # Abort if asked to scan too many directories
 
     # This is a helper for the events.
@@ -51,6 +51,7 @@ class BaseMailSource(threading.Thread):
         self._rescanning = False
         self._rescan_waiters = []
         self._last_rescan_count = 0
+        self._last_rescan_completed = True
         self._last_saved = time.time()  # Saving right away would be silly
 
     def __str__(self):
@@ -130,12 +131,10 @@ class BaseMailSource(threading.Thread):
             return l
         config = self.session.config
         self._last_rescan_count = rescanned = errors = 0
+        self._last_rescan_completed = True
         self._interrupt = None
         batch = self.RESCAN_BATCH_SIZE
         errors = rescanned = 0
-
-        if self.session.config.sys.debug:
-            batch //= 5
 
         ostate = self._state
         for mbx_cfg in unsorted(self.my_config.mailbox.values()):
@@ -157,6 +156,7 @@ class BaseMailSource(threading.Thread):
                     self._state = 'Waiting... (rescan)'
                     with GLOBAL_RESCAN_LOCK:
                         if self._check_interrupt(clear=False):
+                            self._last_rescan_completed = False
                             break
                         count = self.rescan_mailbox(mbx_key, mbx_cfg, path,
                                                     stop_after=batch)
@@ -179,9 +179,12 @@ class BaseMailSource(threading.Thread):
                                                    {'complete': True}
                                                    ).get('complete'):
                             complete = False
+
                         # OK, everything looks complete, mark it!
                         if complete:
                             self._mark_mailbox_rescanned(mbx_cfg, state)
+                        else:
+                            self._last_rescan_completed = False
                     else:
                         errors += 1
             except (NoSuchMailboxError, IOError, OSError):
@@ -209,8 +212,6 @@ class BaseMailSource(threading.Thread):
         return seconds + random.randint(0, self.jitter)
 
     def _sleep(self, seconds):
-        if self.session.config.sys.debug:
-            seconds //= 10
         if self._sleeping != 0:
             self._sleeping = seconds
             while (self.alive and self._sleeping > 0 and
@@ -387,7 +388,8 @@ class BaseMailSource(threading.Thread):
         tagname = parts.pop(-1).split('.')[0]
 #       if self.my_config.name:
 #           tagname = '%s/%s' % (self.my_config.name, tagname)
-        return tagname.replace('_', ' ')
+        return CleanText(tagname.replace('_', ' '),
+                         banned=CleanText.NONALNUM + '{}[]').clean
 
     def _unique_tag_name(self, tagname):  # -> unused tag name
         """This makes sure a tagname really is unused"""
@@ -543,13 +545,13 @@ class BaseMailSource(threading.Thread):
         self.event.flags = Event.RUNNING
         _original_session = self.session
 
-        # If this is the first time we look at this source (it has just
-        # been configured), we don't delay, we get right to it.
-        first = (len(self.my_config.mailbox) == 0)
-        if not first:
-            self._sleep(random.randint(0, self.my_config.interval))
+        def sleeptime():
+            if self._last_rescan_completed:
+                return self.my_config.interval
+            else:
+                return min(max(5, self.my_config.interval // 10), 30)
 
-        while first or self._sleep(self._jitter(self.my_config.interval)):
+        while first or self._sleep(self._jitter(sleeptime())):
             first = False
             if not self.my_config.enabled:
                 break
@@ -575,6 +577,9 @@ class BaseMailSource(threading.Thread):
                     self._save_state()
                     if not self.my_config.keepalive:
                         self.close()
+                elif (self._last_rescan_completed and
+                        not self.my_config.keepalive):
+                    self.close()
             except:
                 self.event.data['traceback'] = traceback.format_exc()
                 self.session.ui.debug(self.event.data['traceback'])
