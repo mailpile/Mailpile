@@ -183,7 +183,7 @@ var SourcesView = Backbone.View.extend({
         }
 
         // Show Tooltips
-        TooltipsView.show();
+        TooltipsView.showSourceConfigure();
       });
     });
   },

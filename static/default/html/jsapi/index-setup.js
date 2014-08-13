@@ -51,6 +51,8 @@ var SetupApp = (function ($, Backbone, global) {
 
       // Start Backbone History
       Backbone.history.start();
+
+      TooltipsView.showProgress();
     };
 
     return { init: init };
