@@ -418,7 +418,11 @@ class Command:
                      data={},
                      private_data=private_data)
 
-    def _finishing(self, command, rv):
+    def _finishing(self, command, rv, just_cleanup=False):
+        if just_cleanup:
+            self._update_finished_event()
+            return rv
+
         # FIXME: Remove this when stuff is up to date
         if self.status == 'unknown':
             self.session.ui.warning('FIXME: %s should use self._success'
@@ -462,6 +466,8 @@ class Command:
             self._starting()
             return self._finishing(command, command(self, *args, **kwargs))
         except self.RAISES:
+            self.status = 'success'
+            self._finishing(command, True, just_cleanup=True)
             raise
         except:
             self._ignore_exception()
@@ -2008,7 +2014,7 @@ class Help(Command):
     def _starting(self):
         pass
 
-    def _finishing(self, command, rv):
+    def _finishing(self, command, rv, *args, **kwargs):
         return self.CommandResult(self, self.session, self.name,
                                   command.__doc__ or self.__doc__, rv,
                                   self.status, self.message)

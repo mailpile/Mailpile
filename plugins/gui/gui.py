@@ -3,12 +3,13 @@ import os
 import sys
 import threading
 import time
+import webbrowser
 
 import mailpile.auth
 import mailpile.util
 from mailpile.commands import Quit
 from mailpile.i18n import gettext as _
-from mailpile.safe_popen import Popen, PIPE
+from mailpile.safe_popen import Popen, PIPE, MakePopenSafe, MakePopenUnsafe
 from mailpile.ui import Session
 from mailpile.util import *
 
