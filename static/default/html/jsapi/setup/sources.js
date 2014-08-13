@@ -166,15 +166,15 @@ var SourcesView = Backbone.View.extend({
 
       Mailpile.API.tags_get({}, function(result) {
 
-        var tags = {};
+        var special_tags = {};
         _.each(result.result.tags, function(tag, key) {
           if (_.indexOf(['inbox', 'drafts', 'sent', 'spam', 'trash'], tag.type) > -1) {
-            tags[tag.type] = tag.tid;
+            special_tags[tag.type] = tag.tid;
           }
         });
 
         // Render HTML
-        var configure = _.extend(source, { id: id, tags: tags });
+        var configure = _.extend(source, { id: id, tags: result.result.tags, special_tags: special_tags });
         $('#setup').html(_.template($('#template-setup-sources-configure').html(), configure));
 
 
