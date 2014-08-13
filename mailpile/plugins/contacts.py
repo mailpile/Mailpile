@@ -224,6 +224,16 @@ class AddVCard(VCardCommand):
         if triplets:
             vcards = []
             kind = self.KIND if not internal else 'internal'
+
+            route_id = self.data.get('route_id', [None])[0]
+            if route_id:
+                if len(triplets) > 1 or kind != 'profile':
+                    raise ValueError('Can only configure route_IDs '
+                                     'for one profile at a time')
+                if route_id not in self.session.config.routes:
+                    raise ValueError(_('Not a valid route ID: %s')
+                                     % route_id)
+
             for handle, name, note in triplets:
                 vcard = config.vcards.get(handle.lower())
                 if vcard:
@@ -231,6 +241,7 @@ class AddVCard(VCardCommand):
                         session.ui.warning('Already exists: %s' % handle)
                     if kind != 'profile' and vcard.kind != 'internal':
                         continue
+
                 if vcard and vcard.kind == 'internal':
                     config.vcards.deindex_vcard(vcard)
                     vcard.email = handle.lower()
@@ -240,6 +251,8 @@ class AddVCard(VCardCommand):
                 else:
                     vcard = self._make_new_vcard(handle.lower(), name, note,
                                                  kind)
+                if route_id:
+                    vcard.route = route_id
                 config.vcards.add_vcards(vcard)
                 vcards.append(vcard)
         else:
@@ -700,6 +713,9 @@ class Profile(ProfileVCard(VCard)):
 
 class AddProfile(ProfileVCard(AddVCard)):
     """Add profiles"""
+    HTTP_POST_VARS = dict_merge(AddVCard.HTTP_POST_VARS, {
+        'route_id': 'Route ID for sending mail'
+    })
 
 
 class RemoveProfile(ProfileVCard(RemoveVCard)):

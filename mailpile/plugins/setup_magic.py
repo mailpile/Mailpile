@@ -714,6 +714,7 @@ class SetupProfiles(SetupCrypto):
         'name': 'Name associated with this e-mail',
         'note': 'Profile note',
         'pass': 'Password for remote accounts',
+        'route_id': 'Route ID for sending mail',
     })
     TEST_DATA = {}
 
@@ -738,6 +739,7 @@ class SetupProfiles(SetupCrypto):
                 "note": note,
                 "pgp_keys": [],  # FIXME
                 "email": email,
+                "route_id": profile.get('x-mailpile-profile-route', ''),
                 "photo": profile.get('photo', [{}])[0].get('photo', ''),
                 "auto_configurable": self._auto_configurable(email)
             }
