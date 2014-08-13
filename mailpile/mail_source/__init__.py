@@ -194,16 +194,20 @@ class BaseMailSource(threading.Thread):
                 raise
 
         self._state = 'Waiting... (disco)'
+        discovered = 0
         with GLOBAL_RESCAN_LOCK:
             if not self._check_interrupt():
-                self.discover_mailboxes()
+                discovered = self.discover_mailboxes()
 
+        status = []
+        if discovered > 0:
+            status.append(_('Discovered %d mailboxes') % discovered)
+        if discovered < 1 or rescanned > 0:
+            status.append(_('Rescanned %d mailboxes') % rescanned)
         if errors:
-            self._log_status(_('Rescanned %d mailboxes, failed to rescan %d'
-                               ) % (rescanned, errors))
-        else:
-            self._log_status(_('Rescanned %d mailboxes') % rescanned)
+            status.append(_('Failed to rescan %d') % errors)
 
+        self._log_status(', '.join(status))
         self._last_rescan_count = rescanned
         self._state = ostate
         return rescanned
@@ -252,7 +256,7 @@ class BaseMailSource(threading.Thread):
                                   if f not in ('.', '..')]:
                             paths.append(os.path.join(fn, f))
                             if len(paths) > self.MAX_PATHS:
-                                return False
+                                return -1
                     except OSError:
                         pass
 
@@ -269,7 +273,7 @@ class BaseMailSource(threading.Thread):
             if adding:
                 self._save_config()
 
-            return True
+            return len(adding)
         finally:
             self._state = ostate
 
@@ -515,6 +519,7 @@ class BaseMailSource(threading.Thread):
             if 'rescans' in self.event.data:
                 keep = len(self.my_config.mailbox)
                 self.event.data['rescans'][:-keep] = []
+
             return config.index.scan_mailbox(
                 session, mbx_key, mbx_cfg.local or path,
                 config.open_mailbox,
@@ -573,6 +578,9 @@ class BaseMailSource(threading.Thread):
                     del self.event.data['traceback']
                 if self.open():
                     self.sync_mail()
+                else:
+                    self._log_conn_errors()
+
                 next_save_time = self._last_saved + self.SAVE_STATE_INTERVAL
                 if self.alive and time.time() >= next_save_time:
                     self._save_state()
@@ -596,6 +604,14 @@ class BaseMailSource(threading.Thread):
         self._save_state()
         self.event.flags = Event.COMPLETE
         self._log_status(_('Shut down'))
+
+    def _log_conn_errors(self):
+        if 'connection' in self.event.data:
+            cinfo = self.event.data['connection']
+            if not cinfo.get('live'):
+                err_msg = cinfo.get('error', [None, None])[1]
+                if err_msg:
+                    self._log_status(err_msg)
 
     def wake_up(self, after=0):
         self._sleeping = after

@@ -500,9 +500,12 @@ class ImapMailSource(BaseMailSource):
             conn.debug = ('imaplib' in self.session.config.sys.debug
                           ) and 4 or 0
 
-            ok, data = self.timed_imap(conn.login,
-                                       my_config.username,
-                                       my_config.password)
+            try:
+                ok, data = self.timed_imap(conn.login,
+                                           my_config.username,
+                                           my_config.password)
+            except IMAP4.error:
+                ok = False
             if not ok:
                 ev['error'] = ['auth', _('Invalid username or password')]
                 if throw:
