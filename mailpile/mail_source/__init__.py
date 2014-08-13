@@ -51,7 +51,7 @@ class BaseMailSource(threading.Thread):
         self._rescanning = False
         self._rescan_waiters = []
         self._last_rescan_count = 0
-        self._last_rescan_completed = True
+        self._last_rescan_completed = False
         self._last_saved = time.time()  # Saving right away would be silly
 
     def __str__(self):
