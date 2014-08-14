@@ -187,6 +187,12 @@ var SourcesView = Backbone.View.extend({
       });
     });
   },
+  showImporting: function() {
+
+
+    this.$el.html(_.template($('#template-setup-sources-importing').html(), {}));
+
+  },
   actionSelected: function(e) {
     if ($(e.target).val() == 'local') {
       $('#setup-source-settings-server').hide();
