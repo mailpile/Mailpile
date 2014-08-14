@@ -66,9 +66,11 @@
       </li>
     </ul>
     <a class="compose-message-trash right" data-mid="{{mid}}" href="#" title="{{_("Move Draft to Trash")}}"><span class="icon-trash"></span> Trash</a>
+    {# FIXME: Removed for beta freeze
     {% if command == "view" %}
     <label class="compose-apply-quote right"><input class="compose-apply-quote" data-mid="{{mid}}" type="checkbox" checked="checked"> Quote</label>
     {% endif %}
+    #}
   </div>
   <div id="compose-body-{{mid}}" class="compose-body clearfix" data-mid="{{mid}}">
     <textarea id="compose-text-{{mid}}" data-mid="{{mid}}" class="compose-text" name="body" tabindex="4" placeholder="{{_("Your Message...")}}" alt="{{_("Your Message...")}}">{{editing_strings.body}}</textarea>
