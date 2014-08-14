@@ -178,17 +178,10 @@ var SourcesView = Backbone.View.extend({
       });
     });
   },
-  showImporting: function() {
-
-
-    this.$el.html(_.template($('#template-setup-sources-importing').html(), {}));
-
-  },
   showEvent: function(event) {
 
     // Default Message
     var message = event.message;
-    console.log(message)
 
     // Connection / Behavior (message)
     if (event.data.connection.live && !event.data.connection.error[0]) {
@@ -197,23 +190,30 @@ var SourcesView = Backbone.View.extend({
       if (event.data.copying && event.data.copying.running && event.data.copying.total) {
         message = '{{_("Downloading")}} ' + event.data.copying.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("messages")}}';
       } else if (event.data.copying && event.data.copying.running) {
-        message = '{{_("Found some messages to start downloading")}}';
+        message = '{{_("Found some messages to download")}}';
       } else if (event.data.rescan) {
         message = '{{_("Rescanning mailboxes")}}';
       }
     }
     else if (!event.data.connection.live && !event.data.connection.error[0]) {
-      message = '<em>{{_("Not connected to server")}}</em>';
+      message = '{{_("Not connected to server")}}';
     }
-    else if (!event.data.connection.live && !event.data.connection.error[0]) {
+    else if (!event.data.connection.live && event.data.connection.error[0] == 'auth') {
+      message =  '{{_("Can not connect to mailserver")}}';
+      $('#setup-source-notice-' + event.data.id)
+        .html('{{_("The username & password are incorrect")}} <a href="/setup/#sources/' + event.data.id + '">{{_("edit them now")}}</a>')
+        .fadeIn();
+    }
+    else if (!event.data.connection.live && event.data.connection.error[0]) {
       message = event.data.connection.error[1];
     }
+
 
     // Has Unconfigured Mailboxes (action)
     if (event.data.have_unknown) {
 
       $('#setup-source-notice-' + event.data.id)
-        .html('{{_("You have unconfigured mailboxes")}} <a href="/setup/#sources/configure/' + event.data.id + '">{{_("configure them now")}}!</a>')
+        .html('{{_("You have unconfigured mailboxes")}} <a href="/setup/#sources/configure/' + event.data.id + '">{{_("configure them now")}}</a>')
         .fadeIn();
 
       $('#btn-setup-sources-next').attr('disabled', true);
