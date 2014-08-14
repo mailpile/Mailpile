@@ -1,6 +1,6 @@
 <div id="setup-sending-settings" class="setup-box setup-box-small animated bounceInRight">
   <form id="form-setup-sending-settings" class="standard">
-    <h2 class="text-center"><span class="icon-routes"></span> Route</h2>
+    <h2 class="text-center"><span class="icon-routes"></span> <%= action %> Route</h2>
     <fieldset>
       <span id="validation-name">
         <label class="validation-message">{{_("Route Name")}}</label>
@@ -12,7 +12,7 @@
       </span>
       <div id="validation-password">
         <label class="validation-message">{{_("Password")}}</label>
-        <input id="input-setup-sending-password" class="remove-bottom" type="password" name="password" value="<%= password %>" placeholder="1234567890" autocorrect="off" autocapitalize="off" id="route-add-password"/>
+        <input id="input-setup-sending-password" type="password" name="password" value="<%= password %>" placeholder="1234567890" autocorrect="off" autocapitalize="off" id="route-add-password"/>
       </span>
       <span id="validation-host">
         <label class="validation-message">{{_("Server")}}</label>
@@ -31,7 +31,7 @@
         </span>
       </span>
       <div id="setup-sending-check-auth">
-        <a href="#" id="btn-setup-sending-check" class="setup-check-connection"><span class="icon-help"></span> Test Route</a>
+        <a href="#" id="btn-setup-sending-check" class="setup-check-connection"><span class="icon-help"></span> {{_("Test Route")}}</a>
       </div>
     </fieldset>
     <input type="hidden" name="protocol" value="<%= protocol %>">

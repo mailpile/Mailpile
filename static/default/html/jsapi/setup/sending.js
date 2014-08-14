@@ -2,6 +2,8 @@
 var SendingModel = Backbone.Model.extend({
   defaults: {
     _section: '',
+    action: 'Add',
+    complete: '',
     command: '',
     name: '',
     username: '',
@@ -87,7 +89,7 @@ var SendingView = Backbone.View.extend({
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     Mailpile.API.settings_get({ var: 'routes.'+id }, function(result) {
       var sending = result.result['routes.'+id];
-      sending = _.extend(sending, {id: id});
+      sending = _.extend(sending, { id: id, action: 'Edit' });
       $('#setup').html(_.template($('#template-setup-sending-settings').html(), sending));
     });
   },
@@ -124,6 +126,11 @@ var SendingView = Backbone.View.extend({
             .addClass('color-12-red')
             .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
         }
+        setTimeout(function() {
+          $('#setup-sending-check-auth')
+            .removeClass('color-08-green color-12-red')
+            .html('<span class="icon-help"></span> {{_("Test Route")}}');
+        }, 1750);
     });
   },
   processSending: function(e) {
@@ -136,7 +143,7 @@ var SendingView = Backbone.View.extend({
     // Validate & Process
     if (!this.model.validate()) {
       Mailpile.API.settings_set_post(sending_data, function(result) {
-        Backbone.history.navigate('#sending', true);
+        window.history.go(-1);
       });
     }
   },
