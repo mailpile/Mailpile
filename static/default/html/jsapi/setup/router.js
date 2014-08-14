@@ -79,6 +79,6 @@ var SetupRouter = Backbone.Router.extend({
     AccessView.show();
   },
   importing: function() {
-    SourcesView.showImporting();
+    ImportingView.show();
   }
 });

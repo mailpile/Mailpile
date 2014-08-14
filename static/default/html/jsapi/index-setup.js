@@ -8,6 +8,7 @@
 {% include("jsapi/setup/security.js") %}
 {% include("jsapi/setup/backups.js") %}
 {% include("jsapi/setup/access.js") %}
+{% include("jsapi/setup/importing.js") %}
 {% include("jsapi/setup/tooltips.js") %}
 {% include("jsapi/setup/router.js") %}
 
@@ -44,6 +45,7 @@ var SetupApp = (function ($, Backbone, global) {
       global.SecurityView   = new SecurityView({ el: $('#setup') });
       global.BackupsView    = new BackupsView({ el: $('#setup') });
       global.AccessView     = new AccessView({ el: $('#setup') });
+      global.ImportingView  = new ImportingView({ el: $('#setup') });
       global.TooltipsView   = new TooltipsView({ el: $('#setup') });
 
   		// Router
@@ -52,7 +54,34 @@ var SetupApp = (function ($, Backbone, global) {
       // Start Backbone History
       Backbone.history.start();
 
+      // Global Tooltips
       TooltipsView.showProgress();
+
+      // Eventlog Polling
+      var Events = {};
+      Events = $.timer(function() {
+
+        // Get Events
+        Mailpile.API.eventlog_get({incomplete: 1}, function(result) {
+          if (result.status == 'success') {
+            _.each(result.result.events, function(event, key) {
+
+              // Mailsource & Sources Page
+              if (event.source.indexOf(".mail_source.") > -1 && Backbone.history.fragment === 'sources') {
+                SourcesView.showEvent(event);
+              }
+
+              // Mailsource & Importing Page
+              if (event.source.indexOf(".mail_source.") > -1 && Backbone.history.fragment === 'importing') {
+                //ImportingView.showEvent(event);
+              }
+            });
+          }
+        });  
+      });
+  
+      Events.set({ time : 2500, autostart : true });
+      Events.play();
     };
 
     return { init: init };
