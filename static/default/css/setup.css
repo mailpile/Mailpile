@@ -131,14 +131,6 @@ a.setup-check-connection {
 a.setup-check-connection:hover {
   color: #4b9441;
 }
-ul.setup-actions li {
-  border-radius: 3px;
-  padding: 3px;
-}
-li.setup-action-state-alert {
-  background: #fbb03b;
-  border: 1px solid #fa9c09;
-}
 /* Idenity */
 #identity-vault-lock {
   margin: 20px 0;
@@ -204,4 +196,10 @@ label.radio-list-item .icon-key {
   color: #ffffff;
   border-radius: 10px;
   padding: 3px;
+}
+/* Setup - Sources */
+.setup-source-notice {
+  background: #fcc46d;
+  padding: 15px;
+  border-radius: 3px;
 }
