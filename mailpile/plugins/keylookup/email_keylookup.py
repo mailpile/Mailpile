@@ -80,21 +80,27 @@ class EmailKeyLookupHandler(LookupHandler, Search):
 
         now = time.time()
         for m in ak.packets():
-            if isinstance(m, pgpdump.packet.PublicKeyPacket):
-                results.append({
-                    "fingerprint": m.fingerprint,
-                    "created": m.datetime,
-                    "validity": ('e'
-                                 if (0 < (int(m.expiration_time or 0)) < now)
-                                 else ''),
-                    "keytype_name": (m.pub_algorithm or '').split()[0],
-                    "keysize": str(int(1.024 *
-                                       round(len('%x' % m.modulus) / 0.256))),
-                    "uids": [],
-                })
-            if isinstance(m, pgpdump.packet.UserIDPacket):
-                results[-1]["uids"].append({"name": m.user_name,
-                                            "email": m.user_email})
+            try:
+                if isinstance(m, pgpdump.packet.PublicKeyPacket):
+                    size = str(int(1.024 *
+                                   round(len('%x' % m.modulus) / 0.256)))
+                    validity = ('e'
+                                if (0 < (int(m.expiration_time or 0)) < now)
+                                else '')
+                    results.append({
+                        "fingerprint": m.fingerprint,
+                        "created": m.datetime,
+                        "validity": validity,
+                        "keytype_name": (m.pub_algorithm or '').split()[0],
+                        "keysize": size,
+                        "uids": [],
+                    })
+                if isinstance(m, pgpdump.packet.UserIDPacket):
+                    results[-1]["uids"].append({"name": m.user_name,
+                                                "email": m.user_email})
+            except (AttributeError, KeyError, IndexError, NameError):
+                import traceback
+                traceback.print_exc()
 
         return results
 
