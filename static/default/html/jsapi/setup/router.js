@@ -20,7 +20,8 @@ var SetupRouter = Backbone.Router.extend({
 		"advanced"         : "advanced",
 		"security"         : "security",
 		"backups"          : "backups",
-		"access"           : "access"
+		"access"           : "access",
+    "importing"        : "importing"
 	},
 	index: function() {
     if ($('#setup-profiles-count').val() > 0) {
@@ -76,5 +77,8 @@ var SetupRouter = Backbone.Router.extend({
   },
   access: function() {
     AccessView.show();
+  },
+  importing: function() {
+    SourcesView.showImporting();
   }
 });
