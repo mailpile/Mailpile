@@ -27,8 +27,7 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
  
     // Set Lookup State (data model)
     var key_data = {fingerprints: key.fingerprint, address: query, origins: key.origins };
-    console.log(key_data);
-    Mailpile.crypto_keylookup.push('asdasd');
+    Mailpile.crypto_keylookup.push(key_data);
  });
 
   $('#modal-full').find('.modal-body').data('result', '').html('<ul>' + items_html + '</ul>');
@@ -37,9 +36,7 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
 
 Mailpile.render_find_encryption_keys_done = function(query) {
   $('#modal-full').find('.progress-spinner').addClass('hide');
-  if (this.crypto_keylookup.length) {
-    this.crypto_keylookup.length = [];
-  } else {
+  if (!this.crypto_keylookup.length) {
     $('#modal-full').find('.modal-body').html('<p>Sorry, we could not find any encryption keys for the email address: <strong>' + query + '</strong></p>');
   }
 };
@@ -81,21 +78,10 @@ Mailpile.find_encryption_keys = function(query) {
 
 /* Crypto - Import Key */
 $(document).on('click', '.crypto-key-import', function(e) {
-
   e.preventDefault();
   var key_data = _.findWhere(Mailpile.crypto_keylookup, {fingerprints: $(this).data('fingerprint')});
-  console.log(key_data);
-
   Mailpile.API.crypto_keyimport_post(key_data, function(result) {
-
-    console.log('inside of crypto_gpg_receivekey_post');
-    console.log(result);
-
-    if (result.status === 'success') {
-      $('#contact-search-keyserver-result').html('w00t, something here will happen with this key: ');
-    } else {
-      $('#contact-search-keyserver-result').html('Oopsie daisy something is rotten in Denmark :(');
-    }
+    $('#modal-full').modal('hide');
   });
 });
 
