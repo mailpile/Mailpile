@@ -381,8 +381,8 @@ class Email(object):
                msg_subject=None, msg_text='', msg_references=None, msg_id=None,
                save=True, ephemeral_mid='not-saved', append_sig=True):
         msg = MIMEMultipart()
-        msg.signature_info = SignatureInfo()
-        msg.encryption_info = EncryptionInfo()
+        msg.signature_info = SignatureInfo(bubbly=False)
+        msg.encryption_info = EncryptionInfo(bubbly=False)
         msg_ts = int(time.time())
 
         if msg_from:
@@ -603,6 +603,8 @@ class Email(object):
         else:
             newmsg = email.parser.Parser().parsestr(data.encode('utf-8'))
             outmsg = MIMEMultipart()
+            outmsg.signature_info = SignatureInfo(bubbly=False)
+            outmsg.encryption_info = EncryptionInfo(bubbly=False)
 
             # Copy over editable headers from the input string, skipping blanks
             for hdr in newmsg.keys():
