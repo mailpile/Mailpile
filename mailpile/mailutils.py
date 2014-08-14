@@ -628,9 +628,12 @@ class Email(object):
                 charset = 'us-ascii'
             except (UnicodeEncodeError, UnicodeDecodeError):
                 charset = 'utf-8'
-            textbody = MIMEText(new_body, _subtype='plain', _charset=charset)
-            outmsg.attach(textbody)
-            del textbody['MIME-Version']
+
+            tp = MIMEText(new_body, _subtype='plain', _charset=charset)
+            tp.signature_info = SignatureInfo(parent=outmsg.signature_info)
+            tp.encryption_info = EncryptionInfo(parent=outmsg.encryption_info)
+            outmsg.attach(tp)
+            del tp['MIME-Version']
 
             # FIXME: Use markdown and template to generate fancy HTML part?
 
