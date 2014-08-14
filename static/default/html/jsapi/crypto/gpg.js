@@ -8,9 +8,6 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
     // Loop through UIDs for match to Query
     var uid = _.findWhere(key.uids, {email: query});
 
-    console.log('UID that matches query');
-    console.log(uid);
-
     // Try to find Avatar
     if (uid) {
 
@@ -22,9 +19,6 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
           avatar = contact.photo;
         }
       }
-
-      console.log(contact);
-      console.log(avatar);
     }
 
     // Show View
@@ -32,7 +26,9 @@ Mailpile.render_find_encryption_keys_found = function(data, query) {
     items_html += _.template($('#template-searchkey-result-item').html(), item_data);
  
     // Set Lookup State (data model)
-    Mailpile.crypto_keylookup.push({fingerprints: key.fingerprint, address: query, origins: key.origins });
+    var key_data = {fingerprints: key.fingerprint, address: query, origins: key.origins };
+    console.log(key_data);
+    Mailpile.crypto_keylookup.push('asdasd');
  });
 
   $('#modal-full').find('.modal-body').data('result', '').html('<ul>' + items_html + '</ul>');
@@ -63,8 +59,6 @@ Mailpile.find_encryption_keys = function(query) {
     }
 
     // Running Search
-    console.log('AT DA data.runningsearch');
-    console.log(data.runningsearch);
     if (data.runningsearch) {
       var searching_data = { query: query };
       var searching_html = _.template($("#template-searchkey-running").html(), searching_data);
