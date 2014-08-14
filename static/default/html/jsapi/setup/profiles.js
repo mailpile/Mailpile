@@ -83,6 +83,10 @@ var ProfilesView = Backbone.View.extend({
         $('#setup-profiles-list-items').append(_.template($('#template-setup-profiles-item').html(), profile.attributes));
       });
 
+      // Hide Delete (if only 1 profile)
+      if (ProfilesCollection.length === 1) {
+        $('.setup-profile-remove').parent().hide();
+      }
     });
 
     return this;
