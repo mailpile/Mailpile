@@ -99,7 +99,8 @@ var SourcesView = Backbone.View.extend({
     "click #btn-setup-source-configure": "processConfigure",
     "click .setup-source-remove"       : "processRemove",
     "click #source-mailbox-read-all"   : "actionMailboxReadAll",
-    "click .source-mailbox-policy"     : "actionMailboxToggle"
+    "click .source-mailbox-policy"     : "actionMailboxToggle",
+    "click #btn-setup-sources-next"    : "actionGoToImporting"
   },
   show: function() {
 
@@ -119,31 +120,6 @@ var SourcesView = Backbone.View.extend({
         $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
       });
     });
-
-    var Events = {};
-    Events = $.timer(function() {
-
-      console.log('timer has fired')
-
-      Mailpile.API.eventlog_get({incomplete: 1}, function(result) {
-        if (result.status == 'success') {
-          _.each(result.result.events, function(event, key) {
-            if (event.source.indexOf(".mail_source.") > -1) {
-              $('#setup-source-' + event.data.id + '-message').html('<em>' + event.message + '<em>');
-  
-              if (event.data.have_unknown) {
-                $('#item-source-configure-' + event.data.id).addClass('setup-action-state-alert');
-                $('#item-source-configure-' + event.data.id).find('.icon-tag').removeClass('icon-tag').addClass('icon-tag');
-              }
-            }
-          });
-        }
-      });
-
-    });
-
-    Events.set({ time : 7500, autostart : true });
-    Events.play();
 
     return this;
   },
@@ -192,7 +168,7 @@ var SourcesView = Backbone.View.extend({
         var configure = _.extend(source, { id: id, tags: result.result.tags, special_tags: special_tags });
         $('#setup').html(_.template($('#template-setup-sources-configure').html(), configure));
 
-
+        // Select All (if all)
         if (mailbox_count === checked_count) {
           $('#source-mailbox-read-all').attr({'value': 'read', 'checked': true});
         }
@@ -206,6 +182,47 @@ var SourcesView = Backbone.View.extend({
 
 
     this.$el.html(_.template($('#template-setup-sources-importing').html(), {}));
+
+  },
+  showEvent: function(event) {
+
+    // Default Message
+    var message = event.message;
+    console.log(message)
+
+    // Connection / Behavior (message)
+    if (event.data.connection.live && !event.data.connection.error[0]) {
+
+      // Various Found or Is downloading
+      if (event.data.copying && event.data.copying.running && event.data.copying.total) {
+        message = '{{_("Downloading")}} ' + event.data.copying.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("messages")}}';
+      } else if (event.data.copying && event.data.copying.running) {
+        message = '{{_("Found some messages to start downloading")}}';
+      } else if (event.data.rescan) {
+        message = '{{_("Rescanning mailboxes")}}';
+      }
+    }
+    else if (!event.data.connection.live && !event.data.connection.error[0]) {
+      message = '<em>{{_("Not connected to server")}}</em>';
+    }
+    else if (!event.data.connection.live && !event.data.connection.error[0]) {
+      message = event.data.connection.error[1];
+    }
+
+    // Has Unconfigured Mailboxes (action)
+    if (event.data.have_unknown) {
+
+      $('#setup-source-notice-' + event.data.id)
+        .html('{{_("You have unconfigured mailboxes")}} <a href="/setup/#sources/configure/' + event.data.id + '">{{_("configure them now")}}!</a>')
+        .fadeIn();
+
+      $('#btn-setup-sources-next').attr('disabled', true);
+    } else {
+      $('#btn-setup-sources-next').attr('disabled', false);
+    }
+
+    // UI Message
+    $('#setup-source-message-' + event.data.id).html('<em>' + message + '</em>');
 
   },
   actionSelected: function(e) {
@@ -250,6 +267,10 @@ var SourcesView = Backbone.View.extend({
     } else {
       $(e.target).attr('value', 'ignore').prop('checked', false);
     }
+  },
+  actionGoToImporting: function(e) {
+    e.preventDefault();
+    Backbone.history.navigate('#importing', true);
   },
   processSource: function(e) {
     e.preventDefault();
