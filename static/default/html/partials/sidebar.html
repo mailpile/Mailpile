@@ -16,7 +16,7 @@
 {% endif %}
   <a href="{{tag.url}}" class="sidebar-tag color-{{tag.label_color}}{% if tag_new_count %} has_unread{% endif %}" title="{{tag.name}} {{tag.stats.all}}" data-tid="{{tag.tid}}">
     <span class="sidebar-icon {% if tag.get("subtags") %}icon-tags{% else %}{{tag.icon}}{% endif %}" style="color: {{theme_settings().colors[tag.label_color]}};"></span>
-    <span class="sidebar-name">{{tag.name}}</span>
+    <span class="sidebar-name">{{tag.name}}</span> 
     <span class="sidebar-notification">{% if tag_new_count %} {{friendly_number(tag_new_count)}}{% endif %}</span>
   </a>
 </li>
@@ -25,7 +25,7 @@
 <li id="sidebar-tag-{{subtag.tid}}" data-tid="{{subtag.tid}}" data-display_order="{{subtag.display_order}}" class="sidebar-subtag sidebar-tags-draggable subtag-of-{{tag.tid}} hide">
   <a href="{{subtag.url}}" class="sidebar-tag hide" title="{{subtag.name}} {{subtag.stats.all}}" data-tid="{{subtag.tid}}">
     <span class="sidebar-icon icon-minus"></span>
-    <span class="sidebar-name">{{subtag.name}}</span>
+    <span class="sidebar-name">{{subtag.name}}</span> 
     {% if subtag.stats.new %}
     <span class="sidebar-notification" id="sidebar-notifications-{{tag.tid}}">{{ friendly_number(subtag.stats.new) }}</span>
     {% endif %}
