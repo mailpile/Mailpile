@@ -20,7 +20,7 @@ var SetupMagic = {
         'discovery.paths': []
       },
       sending: {
-        name: 'Gmail',
+        name: 'Gmail Sending',
         host: 'smtp.gmail.com',
         port: 587,
         protocol: 'smtp'
@@ -36,7 +36,7 @@ var SetupMagic = {
         'discovery.paths': []
       },
       sending: {
-        name: 'Outlook',
+        name: 'Outlook Sending',
         host: 'smtp-mail.outlook.com',
         port: 587,
         protocol: 'smtp'
@@ -52,7 +52,7 @@ var SetupMagic = {
         'discovery.paths': []
       },
       sending: {
-        name: 'Yahoo',
+        name: 'Yahoo Sending',
         host: 'smtp.mail.yahoo.com',
         port: 587,
         protocol: 'smtp'
@@ -64,17 +64,10 @@ var SetupMagic = {
     var provider = this.provider;
     var provider_data = this.presets[provider];
 
-    // Add Sending
-    var sending_data = _.extend(provider_data.sending, auth_data);
-    sending_data['_section'] = 'routes.' + this.random_id;
-
-    Mailpile.API.settings_set_post(sending_data, function(result) {
-
-    });
-
     // Add Source
     var source_data = _.extend(provider_data.source, auth_data);
     source_data['_section'] = 'sources.' + this.random_id;
+    source_data['discovery.local_copy'] = true;
 
     Mailpile.API.settings_set_post(source_data, function(result) {
 

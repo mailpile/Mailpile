@@ -5,22 +5,36 @@
       <div id="validation-name">
         <label class="validation-message">{{_("Name")}}</label>
         <span ></span>      
-        <input type="text" name="name" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning" value="<%= name %>">
+        <input type="text" class="profile-update" name="name" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning" value="<%= name %>" tabindex="1">
       </div>
       <div id="validation-email">
         <label class="validation-message">{{_("Email")}}</label>
-        <input id="input-setup-profile-email" type="email" name="email" autocorrect="off" autocapitalize="off" placeholder="name@email.com" value="<%= email %>">
+        <input id="input-setup-profile-email" type="email" name="email" autocorrect="off" autocapitalize="off" placeholder="name@email.com" value="<%= email %>" tabindex="2">
       </div>
       <div id="validation-pass" class="hide">
         <label class="validation-message">{{_("Password")}}</label>
-        <input id="input-setup-profile-pass" class="remove-bottom" data-provider="" type="password" name="pass" autocorrect="off" autocapitalize="off" placeholder="" value="">
+        <input id="input-setup-profile-pass" class="remove-bottom" data-provider="" type="password" name="pass" autocorrect="off" autocapitalize="off" placeholder="" value="" tabindex="3">
         <div class="check-auth half-top"></div>
         <br>
       </div>
+      <div id="validation-route_id">
+        <label class="validation-message">{{_("Sending Route")}}</label>
+        <select id="input-setup-profile-route_id" name="route_id" class="profile-update" tabindex="5">
+          <option value="">{{_("Select...")}}</option>
+            <% _.each(routes, function(route, id) { if (route) { %>
+            <option value="<%= id %>" <% if (id == route_id) { %>selected="selected"<% } %>><%= route.name %></option>
+            <% } }) %>
+            <option value="new">+ {{_("Add New Route")}}</option>
+        </select>
+        <div id="setup-profile-edit-route" class="half-bottom <% if (!route_id) { %>hide<% } %>">
+          <a href="#" class="btn-setup-profile-edit-route"><span class="icon-routes"></span> {{_("Edit Route")}}</a>
+        </div>
+      </div>
       <div id="validation-note">
         <label class="validation-message">{{_("Note")}}</label>
-        <input type="text" name="note" autocorrect="off" autocapitalize="off" placeholder="Personal, Work" value="<%= note %>">
+        <input type="text" name="note" autocorrect="off" autocapitalize="off" placeholder="Personal, Work" value="<%= note %>" tabindex="4">
       </div>
+      <input id="input-setup-profile-id" value="<%= id %>" type="hidden">
     </fieldset>
     <a href="#profiles" class="button-secondary">{{_("Cancel")}}</a>
     <button id="btn-setup-profile-save" data-id="<%= id %>" type="submit" class="button-primary right">

@@ -6,7 +6,8 @@ var ProfileModel = Backbone.Model.extend({
     name: '',
     email: '',
     pass: '',
-    note: ''
+    note: '',
+    route_id: ''
   },
   validation: {
     name: {
@@ -22,8 +23,12 @@ var ProfileModel = Backbone.Model.extend({
       msg: 'Enter a valid email address'
     },
     pass: {
-      minLength: 1,
       required: false
+    },
+    route_id: {
+      minLength: 1,
+      required: true,
+      msg: 'Create & select a sending route'
     },
     note: {
       maxLength: 48,
@@ -55,7 +60,10 @@ var ProfilesView = Backbone.View.extend({
     "blur #input-setup-profile-email"     : "actionCheckEmailMagic",
     "blur #input-setup-profile-pass"      : "actionCheckAuth",
     "mouseover #btn-setup-profile-save"   : "actionCheckAuth",
+    "change #input-setup-profile-route_id": "actionHandleRoute",
+    "click .btn-setup-profile-edit-route" : "actionEditRoute",
     "click #btn-setup-profile-save"       : "processSettings",
+    "keyup .profile-update"               : "processUpdate",
     "click .setup-profile-remove"         : "processRemove"
   },
   show: function() {
@@ -81,7 +89,11 @@ var ProfilesView = Backbone.View.extend({
   },
   showAdd: function() {
     $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    this.$el.html(_.template($('#template-setup-profiles-add').html(), this.model.attributes));
+    var new_model = this.model.attributes;
+    Mailpile.API.setup_profiles_get({}, function(result) {
+      var add_data = _.extend(new_model, {routes: result.result.routes});
+      $('#setup').html(_.template($('#template-setup-profiles-add').html(), add_data));
+    });
   },
   showEdit: function(id) {
     $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
@@ -89,9 +101,10 @@ var ProfilesView = Backbone.View.extend({
     // Load Data & Add to Collection
     Mailpile.API.setup_profiles_get({}, function(result) {
       var profile = result.result.profiles[id];
-      if (profile !== undefined) {
-        profile = _.extend({ id: id, action: 'Edit' }, profile);
-        $('#setup').html(_.template($('#template-setup-profiles-add').html(), profile));
+      if (profile !== undefined) {        
+        _.extend(profile, { id: id, action: 'Edit' });
+        var edit_data = _.extend(profile, {routes: result.result.routes});
+        $('#setup').html(_.template($('#template-setup-profiles-add').html(), edit_data));
       }
     });
   },
@@ -136,17 +149,61 @@ var ProfilesView = Backbone.View.extend({
           $('#validation-pass').find('.check-auth')
             .removeClass('color-12-red')
             .addClass('color-08-green')
-            .html('{{_("Successfully Connected")}} <span class="icon-checkmark"></span>');
+            .html('<span class="icon-checkmark"></span> {{_("Successfully Connected")}}');
+
+          // Add Sending
           SetupMagic.provider = provider;
+          sending_data['_section'] = 'routes.' + SetupMagic.random_id;
+
+          Mailpile.API.settings_set_post(sending_data, function(result) {
+            $('#input-setup-profile-route_id').prepend('<option value="' + SetupMagic.random_id + '">' + sending_data.name + '</option>');
+            $('#validation-route').fadeIn();
+          });
         }
         else if (result.status == 'error') {
           $('#validation-pass').find('.check-auth')
             .removeClass('color-08-green')
             .addClass('color-12-red')
-            .html('{{_("Error Connecting")}} <span class="icon-x"></span>');
+            .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
         }
       });
     }
+  },
+  actionHandleRoute: function(e) {
+    e.preventDefault();
+    var route_id = $('#input-setup-profile-route_id').val();
+    console.log(route_id)
+    if (route_id == 'new') {
+
+      $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
+
+      
+      var domain = $('#input-setup-profile-email').val().replace(/.*@/, "");
+      SendingView.model.set({
+        id: Math.random().toString(36).substring(2),
+        complete: 'profiles',
+        name: domain,
+        username: $('#input-setup-profile-email').val(),
+        password: $('#input-setup-profile-pass').val(),
+        host: 'smtp.' + domain
+      });
+
+      this.$el.html(_.template($("#template-setup-sending-settings").html(), SendingView.model.attributes));
+
+    } else if (route_id && route_id !== 'new') {
+      $('#input-setup-profile-route_id').addClass('half-bottom');
+      $('#setup-profile-edit-route').removeClass('hide');
+    } else if (route_id === '') {
+      $('#input-setup-profile-route_id').removeClass('half-bottom');
+      $('#setup-profile-edit-route').addClass('hide');
+    }
+  },
+  actionEditRoute: function(e) {
+    e.preventDefault();
+    var route_id = $('#input-setup-profile-route_id').find('option:selected').val();
+
+    Backbone.history.navigate('#sending/' + route_id, true);
+
   },
   processSettings: function(e) {
 
@@ -177,6 +234,19 @@ var ProfilesView = Backbone.View.extend({
       }
     } else {
       alert('We do not support editing profiles yet, sorry!');
+    }
+  },
+  processUpdate: function(e) {
+
+    if ($('#input-setup-profile-id').val() !== 'new') {
+
+      var rid = $('#input-setup-profile-id').val();
+      var name = $(e.target).attr('name');
+      var value = $(e.target).val();
+
+      Mailpile.API.vcards_addlines_post({ route_id: rid, name: name, value: value }, function(result) {
+
+      });
     }
   },
   processRemove: function(e) {
