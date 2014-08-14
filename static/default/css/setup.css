@@ -124,6 +124,21 @@ span.setup-progress-line {
   border-bottom: 1px solid #cccccc;
   margin: 23px 8px 0px 8px;
 }
+/* Setup - Details */
+a.setup-check-connection {
+  font-weight: normal;
+}
+a.setup-check-connection:hover {
+  color: #4b9441;
+}
+ul.setup-actions li {
+  border-radius: 3px;
+  padding: 3px;
+}
+li.setup-action-state-alert {
+  background: #fbb03b;
+  border: 1px solid #fa9c09;
+}
 /* Idenity */
 #identity-vault-lock {
   margin: 20px 0;
@@ -132,10 +147,10 @@ span.setup-progress-line {
   top: 0px;
 }
 label.radio-list-item div.radio {
-  width: 35px;
+  width: 30px;
 }
 label.radio-list-item div.icon {
-  width: 35px;
+  width: 30px;
 }
 label.radio-list-item .icon-key {
   font-size: 30px;

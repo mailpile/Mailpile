@@ -5232,6 +5232,13 @@ x:-o-prefocus,
   display: block;
   margin: 0 auto;
 }
+#login-messages {
+  position: absolute;
+  top: 35%;
+  margin: 20px auto;
+  width: 400px;
+  font-weight: bold;
+}
 #login-vault-lock {
   margin: 0 auto;
   position: absolute;
@@ -6152,6 +6159,18 @@ div.notification-bubble a.notification-close:hover {
   padding-top: 1px;
   padding-bottom: 1px;
 }
+#sidebar ul li.sidebar-subtag a.sidebar-tag {
+  font-size: 16px;
+  font-family: Helvetica, Arial, sans-serif;
+}
+#sidebar ul li.sidebar-subtag a.sidebar-tag span.sidebar-name,
+#sidebar ul li.sidebar-subtag a.sidebar-tag span.sidebar-notification {
+  vertical-align: middle;
+  font-family: Mailpile-300, "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  font-size: 18px;
+  line-height: 24px;
+}
 /* Sidebar - Edit */
 .button-sidebar-edit {
   display: block;
@@ -6586,6 +6605,13 @@ li.compose-attachment img {
   display: block;
   float: left;
   color: #b3b3b3;
+}
+#contact-view h5.contact-key {
+  width: 315px;
+}
+#contact-view .icon-fingerprint {
+  font-size: 36px;
+  margin-right: 10px;
 }
 /* Contact - Details */
 .contact-detail li {
