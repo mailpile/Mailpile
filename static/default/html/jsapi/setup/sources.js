@@ -119,16 +119,30 @@ var SourcesView = Backbone.View.extend({
       });
     });
 
-    
-    Mailpile.API.eventlog_get({incomplete: 1}, function(result) {
-      if (result.status == 'success') {
-        _.each(result.result.events, function(event, key) {
-          if (event.source.indexOf(".mail_source.") > -1) {
-            $('#setup-source-' + event.data.id + '-message').html('<em>' + event.message + '<em>');
-          }
-        });
-      }
+    var Events = {};
+    Events = $.timer(function() {
+
+      console.log('timer has fired')
+
+      Mailpile.API.eventlog_get({incomplete: 1}, function(result) {
+        if (result.status == 'success') {
+          _.each(result.result.events, function(event, key) {
+            if (event.source.indexOf(".mail_source.") > -1) {
+              $('#setup-source-' + event.data.id + '-message').html('<em>' + event.message + '<em>');
+  
+              if (event.data.have_unknown) {
+                $('#item-source-configure-' + event.data.id).addClass('setup-action-state-alert');
+                $('#item-source-configure-' + event.data.id).find('.icon-tag').removeClass('icon-tag').addClass('icon-tag');
+              }
+            }
+          });
+        }
+      });
+
     });
+
+    Events.set({ time : 7500, autostart : true });
+    Events.play();
 
     return this;
   },
