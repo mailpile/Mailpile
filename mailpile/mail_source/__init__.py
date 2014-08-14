@@ -232,6 +232,13 @@ class BaseMailSource(threading.Thread):
                     for mbx_cfg in self.my_config.mailbox.values()
                     if mbx_cfg.local])
 
+    def _update_unknown_state(self):
+        have_unknown = False
+        for mailbox in self.my_config.mailbox.values():
+            if mailbox.policy == 'unknown':
+                have_unknown = True
+        self.event.data['have_unknown'] = have_unknown
+
     def discover_mailboxes(self, paths=None):
         config = self.session.config
         self._log_status(_('Checking for new mailboxes'))
@@ -267,8 +274,6 @@ class BaseMailSource(threading.Thread):
                 mbx_cfg = self.take_over_mailbox(mailbox_idx, save=False)
                 if mbx_cfg.policy != 'unknown':
                     del new[mailbox_idx]
-            if new:
-                self.event.data['have_unknown'] = True
 
             if adding:
                 self._save_config()
@@ -563,8 +568,10 @@ class BaseMailSource(threading.Thread):
                 break
 
             self.name = self.my_config.name  # In case the config changes
+            self._update_unknown_state()
             if not self.session.config.index:
                 continue
+
             waiters, self._rescan_waiters = self._rescan_waiters, []
             for b, e, s in waiters:
                 try:
@@ -601,6 +608,7 @@ class BaseMailSource(threading.Thread):
                     except thread.error:
                         pass
                 self.session = _original_session
+            self._update_unknown_state()
         self._save_state()
         self.event.flags = Event.COMPLETE
         self._log_status(_('Shut down'))

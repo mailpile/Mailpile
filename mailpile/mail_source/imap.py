@@ -618,8 +618,6 @@ class ImapMailSource(BaseMailSource):
         for path, flags in discovered:
             idx = config.sys.mailbox.append(path)
             mbx = self.take_over_mailbox(idx)
-            if mbx.policy == 'unknown':
-                self.event.data['have_unknown'] = True
 
     def quit(self, *args, **kwargs):
         if self.conn:
