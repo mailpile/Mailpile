@@ -224,8 +224,8 @@ var ProfilesView = Backbone.View.extend({
           // Add Setup Magic (Source)
           if (SetupMagic.status == 'success') {
             SetupMagic.processAdd({
-              username: $('#input-setup-profile-email').val(),
-              password: $('#input-setup-profile-pass').val()
+              username: profile_data.email,
+              password: profile_data.pass
             });
           }
         });
