@@ -96,7 +96,7 @@ var ProfilesView = Backbone.View.extend({
     });
   },
   showEdit: function(id) {
-    $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
+    $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutUp');
 
     // Load Data & Add to Collection
     Mailpile.API.setup_profiles_get({}, function(result) {
@@ -172,11 +172,10 @@ var ProfilesView = Backbone.View.extend({
   actionHandleRoute: function(e) {
     e.preventDefault();
     var route_id = $('#input-setup-profile-route_id').val();
-    console.log(route_id)
+
     if (route_id == 'new') {
 
       $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-
       
       var domain = $('#input-setup-profile-email').val().replace(/.*@/, "");
       SendingView.model.set({

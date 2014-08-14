@@ -1,4 +1,4 @@
-<div id="setup-profiles-add" class="setup-box setup-box-small animated bounceInRight">
+<div id="setup-profiles-add" class="setup-box setup-box-small animated bounceInUp">
   <form id="form-setup-profile-settings" class="standard">
     <h2 class="text-center"><span class="icon-profiles"></span> <%= action %> Profile</h2>
     <fieldset>
@@ -19,7 +19,7 @@
       </div>
       <div id="validation-route_id">
         <label class="validation-message">{{_("Sending Route")}}</label>
-        <select id="input-setup-profile-route_id" name="route_id" class="profile-update" tabindex="5">
+        <select id="input-setup-profile-route_id" name="route_id" class="profile-update <% if (route_id) { %>half-bottom<% } %>" tabindex="5">
           <option value="">{{_("Select...")}}</option>
             <% _.each(routes, function(route, id) { if (route) { %>
             <option value="<%= id %>" <% if (id == route_id) { %>selected="selected"<% } %>><%= route.name %></option>
