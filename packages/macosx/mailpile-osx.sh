@@ -12,6 +12,7 @@ cd "$MAILPILE_ROOT"
 
 osascript <<EOF
 tell app "Terminal"
+   set miniaturized of the front window to true
    set custom title of first window to "Mailpile"
 end tell
 EOF
