@@ -609,6 +609,9 @@ class ImapMailSource(BaseMailSource):
                 ok, data = self.timed_imap(raw_conn.list, '', '%')
                 while ok and len(data) >= 3:
                     (flags, sep, path), data[:3] = data[:3], []
+                    if '[Gmail]' in path:
+                        # FIXME: Temp hack to ignore the [Gmail] thing
+                        continue
                     path = self._fmt_path(path)
                     if path not in existing:
                         discovered.append((path, flags))
