@@ -27,7 +27,7 @@ var SetupRouter = Backbone.Router.extend({
     if ($('#setup-profiles-count').val() > 0) {
       Backbone.history.navigate('#profiles', true);
     } else {
-      Backbone.history.navigate('#profiles-add', true);
+      Backbone.history.navigate('#profiles/add', true);
     }
   },
 	profiles: function() {
