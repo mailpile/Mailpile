@@ -2,6 +2,7 @@
 var SourceModel = Backbone.Model.extend({
   defaults: {
     _section: '', 
+    action: '{{_("Add")}}',
     name: '',
     username: '',
     password: '',
@@ -113,7 +114,7 @@ var SourcesView = Backbone.View.extend({
       }
 
       _.each(result.result.sources, function(val, key) {
-        var source = new SourceModel(_.extend({id: key, action: 'Edit'}, val));
+        var source = new SourceModel(_.extend({id: key, action: '{{_("Edit")}}'}, val));
         SourcesCollection.add(source);
         $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
       });
@@ -150,7 +151,7 @@ var SourcesView = Backbone.View.extend({
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     var source_id = Math.random().toString(36).substring(2);
     var NewSource = new SourceModel();
-    NewSource.set({ _section: source_id, id: source_id });
+    NewSource.set({ _section: source_id, id: source_id, });
     this.$el.html(_.template($('#template-setup-sources-settings').html(), NewSource.attributes));
   },
   showEdit: function(id) {
@@ -159,7 +160,7 @@ var SourcesView = Backbone.View.extend({
     Mailpile.API.settings_get({ var: 'sources.'+id }, function(result) {
 
       var source = result.result['sources.'+id];
-      source = _.extend(source, {id: id});
+      source = _.extend(source, {id: id, action: '{{_("Edit")}}'});
       $('#setup').html(_.template($('#template-setup-sources-settings').html(), source));
     });
   },
