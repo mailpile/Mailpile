@@ -426,11 +426,11 @@ class Email(object):
                 charset = 'us-ascii'
             except (UnicodeEncodeError, UnicodeDecodeError):
                 charset = 'utf-8'
-            textpart = MIMEText(msg_text, _subtype='plain', _charset=charset)
-            textpart.signature_info = msg.signature_info
-            textpart.encryption_info = msg.encryption_info
-            msg.attach(textpart)
-            del textpart['MIME-Version']
+            tp = MIMEText(msg_text, _subtype='plain', _charset=charset)
+            tp.signature_info = SignatureInfo(parent=msg.signature_info)
+            tp.encryption_info = EncryptionInfo(parent=msg.encryption_info)
+            msg.attach(tp)
+            del tp['MIME-Version']
 
         if save:
             msg_key = mbx.add(MessageAsString(msg))
@@ -562,7 +562,7 @@ class Email(object):
                         filename=filename)
         return part
 
-    def _make_attachment(self, fn, filedata=None):
+    def _make_attachment(self, fn, msg, filedata=None):
         if filedata and fn in filedata:
             data = filedata[fn]
         else:
@@ -578,6 +578,8 @@ class Email(object):
         att.add_header('Content-Id', MakeContentID())
         att.add_header('Content-Disposition', 'attachment',
                        filename=os.path.basename(fn))
+        att.signature_info = SignatureInfo(parent=msg.signature_info)
+        att.encryption_info = EncryptionInfo(parent=msg.encryption_info)
         return att
 
     def add_attachments(self, session, filenames, filedata=None):
@@ -585,7 +587,9 @@ class Email(object):
             raise NotEditableError(_('Message or mailbox is read-only.'))
         msg = self.get_msg()
         for fn in filenames:
-            msg.attach(self._make_attachment(fn, filedata=filedata))
+            att = self._make_attachment(fn, msg, filedata=filedata)
+            msg.attach(att)
+            del att['MIME-Version']
         return self.update_from_msg(session, msg)
 
     def update_from_string(self, session, data, final=False):
@@ -645,7 +649,9 @@ class Email(object):
             # Attach some new files?
             for hdr in attachments:
                 try:
-                    outmsg.attach(self._make_attachment(newmsg[hdr]))
+                    att = self._make_attachment(newmsg[hdr], outmsg)
+                    outmsg.attach(att)
+                    del att['MIME-Version']
                 except:
                     pass  # FIXME: Warn user that failed...
 
