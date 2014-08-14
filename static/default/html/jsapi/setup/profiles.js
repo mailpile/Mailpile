@@ -156,7 +156,7 @@ var ProfilesView = Backbone.View.extend({
           sending_data['_section'] = 'routes.' + SetupMagic.random_id;
 
           Mailpile.API.settings_set_post(sending_data, function(result) {
-            $('#input-setup-profile-route_id').prepend('<option value="' + SetupMagic.random_id + '">' + sending_data.name + '</option>');
+            $('#input-setup-profile-route_id').prepend('<option value="' + SetupMagic.random_id + '">' + sending_data.name + '</option>').val(SetupMagic.random_id);
             $('#validation-route').fadeIn();
           });
         }
@@ -217,18 +217,17 @@ var ProfilesView = Backbone.View.extend({
       if (!this.model.validate()) {
         Mailpile.API.setup_profiles_post(profile_data, function(result) {
 
-          // Add Setup Magic
+          // Reset Model & Navigate
+          ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
+          Backbone.history.navigate('#profiles', true);
+
+          // Add Setup Magic (Source)
           if (SetupMagic.status == 'success') {
             SetupMagic.processAdd({
               username: $('#input-setup-profile-email').val(),
               password: $('#input-setup-profile-pass').val()
             });
           }
-
-          // Reset Model & Navigate
-          ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
-
-          Backbone.history.navigate('#profiles', true);
         });
       }
     } else {

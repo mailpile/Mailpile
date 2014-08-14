@@ -21,7 +21,7 @@
         <label class="validation-message">{{_("Sending Route")}}</label>
         <select id="input-setup-profile-route_id" name="route_id" class="profile-update <% if (route_id) { %>half-bottom<% } %>" tabindex="5">
           <option value="">{{_("Select...")}}</option>
-            <% _.each(routes, function(route, id) { if (route) { %>
+            <% _.each(routes, function(route, id) { if (route.name) { %>
             <option value="<%= id %>" <% if (id == route_id) { %>selected="selected"<% } %>><%= route.name %></option>
             <% } }) %>
             <option value="new">+ {{_("Add New Route")}}</option>
