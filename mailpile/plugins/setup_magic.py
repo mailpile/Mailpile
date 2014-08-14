@@ -940,35 +940,34 @@ class Setup(TestableWebbable):
     KEY_EDITING_THREAD = None
 
     @classmethod
+    def _CHECKPOINTS(self, config):
+        return [
+            # Stage 0: Welcome: Choose app language
+            ('language', lambda: config.prefs.language, SetupWelcome),
+
+            # Stage 1: Crypto: Configure our master key stuff
+            ('crypto', lambda: config.prefs.gpg_recipient, SetupCrypto),
+
+            # Stage 2: Identity (via. single page install flow)
+            ('profiles', lambda: (config.prefs.default_email and
+                                  config.get_profile()['email']), Setup),
+
+            # Stage 3: Routes (via. single page install flow)
+            ('routes', lambda: config.routes, Setup),
+
+            # Stage 4: Sources (via. single page install flow)
+            ('sources', lambda: config.sources, Setup),
+
+            # FIXME: Check for this too?
+            #(lambda: config.prefs.crypto_policy != 'none', SetupConfigureKey),
+        ]
+
+    @classmethod
     def Next(cls, config, default, needed_auth=True):
         if not config.loaded_config:
             return default
 
-        for guard, step in [
-            # Stage 0: Welcome: Choose app language
-            (lambda: config.prefs.language, SetupWelcome),
-
-            # Stage 1: Identity: Configure profiles and GPG key
-            (lambda: config.prefs.gpg_recipient, SetupCrypto),
-
-            # Stage Z: Go fancy single-page install!
-            (lambda: (config.prefs.gpg_recipient and
-                      config.gnupg_passphrase.data and
-                      config.prefs.default_email and
-                      config.get_profile()['email'] and
-                      config.prefs.crypto_policy != 'none'), Setup),
-
-            # Stage 1: Identity: Configure profiles and GPG key
-            #(lambda: (config.prefs.gpg_recipient and
-            #          config.gnupg_passphrase.data), SetupCrypto),
-            #(lambda: (config.prefs.default_email and
-            #          config.get_profile()['email']), SetupProfiles),
-            #(lambda: config.prefs.crypto_policy != 'none', SetupConfigureKey),
-
-            # Stage 2: Communication: Configure routes & sources
-            #(lambda: config.routes, SetupRoutes),
-            #(lambda: config.sources, SetupSources),
-        ]:
+        for name, guard, step in cls._CHECKPOINTS(config):
             auth_required = (step.HTTP_AUTH_REQUIRED is True
                              or (config.prefs.gpg_recipient and
                                  step.HTTP_AUTH_REQUIRED == 'Maybe'))
@@ -980,7 +979,10 @@ class Setup(TestableWebbable):
 
     def setup_command(self, session):
         if '_method' in self.data:
-            return self._success(_('Entering setup flow'))  #, advance=True)
+            return self._success(_('Entering setup flow'), result=dict(
+                ((c[0], c[1]() and True or False)
+                 for c in self._CHECKPOINTS(session.config)
+            )))
         else:
             return SetupMagic.setup_command(self, session)
 
