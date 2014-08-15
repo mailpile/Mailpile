@@ -1030,6 +1030,11 @@ class Email(object):
         #       above
         count = 0
         for part in msg.walk():
+            crypto = {
+                'signature': part.signature_info,
+                'encryption': part.encryption_info,
+            }
+
             mimetype = part.get_content_type()
             if (mimetype.startswith('multipart/')
                     or mimetype == "application/pgp-encrypted"):
@@ -1046,10 +1051,6 @@ class Email(object):
                     and mimetype in ('text/plain', 'text/html')):
                 payload, charset = self.decode_payload(part)
                 start = payload[:100].strip()
-                crypto = {
-                    'signature': part.signature_info,
-                    'encryption': part.encryption_info,
-                }
 
                 if mimetype == 'text/html':
                     if want is None or 'html_parts' in want:
