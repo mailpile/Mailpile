@@ -230,7 +230,7 @@ class MimeWrapper:
 
     def __init__(self, config, cleaner=None, sender=None, recipients=None):
         self.config = config
-        self.crypto = self.CRYPTO_CLASS()
+        self.crypto = self.CRYPTO_CLASS
         self.sender = sender
         self.cleaner = cleaner
         self.recipients = recipients or []
@@ -303,10 +303,10 @@ class MimeSigningWrapper(MimeWrapper):
         if prefer_inline is not False:
             message_text = Normalize(prefer_inline.get_payload(None, True)
                                      .strip() + '\n\n')
-            status, sig = self.crypto.sign(message_text,
-                                           fromkey=from_key,
-                                           clearsign=True,
-                                           armor=True)
+            status, sig = self.crypto().sign(message_text,
+                                             fromkey=from_key,
+                                             clearsign=True,
+                                             armor=True)
             if status == 0:
                 _update_text_payload(prefer_inline, sig)
                 return msg
@@ -316,8 +316,8 @@ class MimeSigningWrapper(MimeWrapper):
             self.attach(msg)
             self.attach(self.sigblock)
             message_text = Normalize(self.flatten(msg))
-            status, sig = self.crypto.sign(message_text,
-                                           fromkey=from_key, armor=True)
+            status, sig = self.crypto().sign(message_text,
+                                             fromkey=from_key, armor=True)
             if status == 0:
                 self.sigblock.set_payload(sig)
                 return self.container
@@ -348,8 +348,8 @@ class MimeEncryptingWrapper(MimeWrapper):
         self.attach(self.enc_data)
 
     def _encrypt(self, message_text, tokeys=None, armor=False):
-        return self.crypto.encrypt(message_text,
-                                   tokeys=tokeys, armor=True)
+        return self.crypto().encrypt(message_text,
+                                     tokeys=tokeys, armor=True)
 
     def wrap(self, msg, prefer_inline=False):
         to_keys = set(self.get_keys(self.recipients + [self.sender]))
