@@ -905,31 +905,43 @@ def GetKeys(gnupg, config, people):
 
 
 class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
-    CRYPTO_CLASS = GnuPG
     CONTAINER_PARAMS = (('micalg', 'pgp-sha1'),
                         ('protocol', 'application/pgp-signature'))
     SIGNATURE_TYPE = 'application/pgp-signature'
     SIGNATURE_DESC = 'OpenPGP Digital Signature'
+
+    def CRYPTO_CLASS(self):
+        gnupg = GnuPG()
+        gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
+        return gnupg
 
     def get_keys(self, who):
         return GetKeys(self.crypto, self.config, who)
 
 
 class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
-    CRYPTO_CLASS = GnuPG
     CONTAINER_PARAMS = (('protocol', 'application/pgp-encrypted'), )
     ENCRYPTION_TYPE = 'application/pgp-encrypted'
     ENCRYPTION_VERSION = 1
+
+    def CRYPTO_CLASS(self):
+        gnupg = GnuPG()
+        gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
+        return gnupg
 
     def get_keys(self, who):
         return GetKeys(self.crypto, self.config, who)
 
 
 class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
-    CRYPTO_CLASS = GnuPG
     CONTAINER_PARAMS = (('protocol', 'application/pgp-encrypted'), )
     ENCRYPTION_TYPE = 'application/pgp-encrypted'
     ENCRYPTION_VERSION = 1
+
+    def CRYPTO_CLASS(self):
+        gnupg = GnuPG()
+        gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
+        return gnupg
 
     def _encrypt(self, message_text, tokeys=None, armor=False):
         from_key = self.get_keys([self.sender])[0]
