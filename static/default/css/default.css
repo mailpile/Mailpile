@@ -7394,8 +7394,12 @@ ul.thread-message-attachments a small {
   margin-left: 20px;
   margin-bottom: 10px;
 }
-.thread-message-actions li {
+.thread-message-actions li.action {
   margin-right: 25px;
+}
+.thread-message-actions li.action ul.dropdown-menu li {
+  display: block;
+  float: none;
 }
 .thread-message-actions-quote {
   display: inline-block;

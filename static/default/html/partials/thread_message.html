@@ -140,10 +140,10 @@
     <li><a class="message-action-reply" href="#"><span class="icon-reply"></span> {{_("Reply")}}</a></li>
     {% endif %}
     #}
-    <li><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
-    <li class="dropdown">
+    <li class="action"><a class="message-action-forward" href="#"><span class="icon-forward"></span> {{_("Forward")}}</a></li>
+    <li class="dropdown action">
       <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="icon-move"></span> {{_("Move")}}</a>
-      <ul id="menu1" class="dropdown-menu" role="menu" aria-labelledby="thread-message-move">
+      <ul id="menu1" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="thread-message-move">
         <li role="presentation"><a class="message-action-archive" role="menuitem" tabindex="-1" href="#"><span class="icon-archive"></span> {{_("Archive Message")}}</a></li>
         <li role="presentation"><a class="message-action-inbox" role="menuitem" tabindex="-1" href="#"><span class="icon-inbox"></span> {{_("Move to Inbox")}}</a></li>
         <li role="presentation"><a class="message-action-spam" role="menuitem" tabindex="-1" href="#"><span class="icon-spam"></span> {{_("Flag as Spam")}}</a></li>
@@ -152,7 +152,7 @@
         {% endif %}
       </ul>
     </li>
-    <li><a class="message-action-trash" href="#"><span class="icon-trash"></span> {{_("Trash")}}</a></li>
+    <li class="action"><a class="message-action-trash" href="#"><span class="icon-trash"></span> {{_("Trash")}}</a></li>
   </ul>
   </div>
 </div>
