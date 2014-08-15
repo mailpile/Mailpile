@@ -226,11 +226,9 @@ def UnwrapPlainTextCrypto(part, protocols=None, psi=None, pei=None,
 class MimeWrapper:
     CONTAINER_TYPE = 'multipart/mixed'
     CONTAINER_PARAMS = ()
-    CRYTPO_CLASS = None
 
     def __init__(self, config, cleaner=None, sender=None, recipients=None):
         self.config = config
-        self.crypto = self.CRYPTO_CLASS
         self.sender = sender
         self.cleaner = cleaner
         self.recipients = recipients or []
@@ -240,6 +238,9 @@ class MimeWrapper:
             self.cleaner(self.container)
         for pn, pv in self.CONTAINER_PARAMS:
             self.container.set_param(pn, pv)
+
+    def crypto(self):
+        return NotImplementedError("Please override me")
 
     def attach(self, part):
         self.container.attach(part)

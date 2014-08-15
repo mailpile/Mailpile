@@ -910,13 +910,13 @@ class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
     SIGNATURE_TYPE = 'application/pgp-signature'
     SIGNATURE_DESC = 'OpenPGP Digital Signature'
 
-    def CRYPTO_CLASS(self):
+    def crypto(self):
         gnupg = GnuPG()
         gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
         return gnupg
 
     def get_keys(self, who):
-        return GetKeys(self.crypto, self.config, who)
+        return GetKeys(self.crypto(), self.config, who)
 
 
 class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
@@ -924,13 +924,13 @@ class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
     ENCRYPTION_TYPE = 'application/pgp-encrypted'
     ENCRYPTION_VERSION = 1
 
-    def CRYPTO_CLASS(self):
+    def crypto(self):
         gnupg = GnuPG()
         gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
         return gnupg
 
     def get_keys(self, who):
-        return GetKeys(self.crypto, self.config, who)
+        return GetKeys(self.crypto(), self.config, who)
 
 
 class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
@@ -938,7 +938,7 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
     ENCRYPTION_TYPE = 'application/pgp-encrypted'
     ENCRYPTION_VERSION = 1
 
-    def CRYPTO_CLASS(self):
+    def crypto(self):
         gnupg = GnuPG()
         gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
         return gnupg
