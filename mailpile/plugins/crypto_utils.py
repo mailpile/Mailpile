@@ -4,10 +4,10 @@ import time
 
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
-from mailpile.plugins import PluginManager
 from mailpile.commands import Command
+from mailpile.mailutils import Email, ClearParseCache
+from mailpile.plugins import PluginManager
 from mailpile.plugins.search import Search
-from mailpile.mailutils import Email
 
 _plugins = PluginManager(builtin=__file__)
 
@@ -47,6 +47,10 @@ class GPGKeyReceive(Command):
         for key in keyid:
             res.append(self._gnupg().recv_key(key))
 
+        # Previous crypto evaluations may now be out of date, so we
+        # clear the cache so users can see results right away.
+        ClearParseCache(pgpmime=True)
+
         return res
 
 
@@ -69,7 +73,13 @@ class GPGKeyImport(Command):
             key_data = self.data.get("key_data")
         elif "key_file" in self.data:
             pass
-        return self._gnupg().import_keys(key_data)
+        rv = self._gnupg().import_keys(key_data)
+
+        # Previous crypto evaluations may now be out of date, so we
+        # clear the cache so users can see results right away.
+        ClearParseCache(pgpmime=True)
+
+        return rv
 
 
 class GPGKeySign(Command):
@@ -95,8 +105,13 @@ class GPGKeySign(Command):
         print keyid
         if not keyid:
             return self._error("You must supply a keyid", None)
+        rv = self._gnupg().sign_key(keyid, signingkey)
 
-        return self._gnupg().sign_key(keyid, signingkey)
+        # Previous crypto evaluations may now be out of date, so we
+        # clear the cache so users can see results right away.
+        ClearParseCache(pgpmime=True)
+
+        return rv
 
 
 class GPGKeyImportFromMail(Search):
@@ -137,6 +152,11 @@ class GPGKeyImportFromMail(Search):
         fn, attr = email.extract_attachment(session, attid, mode='inline')
         if attr and attr["data"]:
             res = self._gnupg().import_keys(attr["data"])
+
+            # Previous crypto evaluations may now be out of date, so we
+            # clear the cache so users can see results right away.
+            ClearParseCache(pgpmime=True)
+
             return self._success("Imported key", res)
 
         return self._error("No results found", None)

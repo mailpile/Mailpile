@@ -83,6 +83,17 @@ def MakeContentID():
 GLOBAL_PARSE_CACHE_LOCK = MboxLock()
 GLOBAL_PARSE_CACHE = []
 
+def ClearParseCache(cache_id=None, pgpmime=False, full=False):
+    global GLOBAL_PARSE_CACHE
+    with GLOBAL_PARSE_CACHE_LOCK:
+        GPC = GLOBAL_PARSE_CACHE
+        for i in range(0, len(GPC)):
+            if (full or
+                    (pgpmime and GPC[i][1]) or
+                    (cache_id and GPC[i][0] == cache_id)):
+                GPC[i] = (None, None, None)
+
+
 def ParseMessage(fd, cache_id=None, update_cache=False,
                      pgpmime=True, config=None):
     global GLOBAL_PARSE_CACHE
@@ -717,11 +728,7 @@ class Email(object):
 
     def clear_from_parse_cache(self):
         if self.msg_idx_pos >= 0 and not self.ephemeral_mid:
-            with GLOBAL_PARSE_CACHE_LOCK:
-                GPC = GLOBAL_PARSE_CACHE
-                for i in range(0, len(GPC)):
-                    if GPC[i][0] == self.msg_idx_pos:
-                        GPC[i] = (None, None, None)
+            ClearParseCache(cache_id=self.msg_idx_pos)
 
     def get_msg_info(self, field=None, uncached=False):
         if uncached or not self.msg_info:
