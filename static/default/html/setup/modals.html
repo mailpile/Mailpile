@@ -1,0 +1,39 @@
+<div class="modal fade" id="modal-full" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"></h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer"></div>
+    </div>
+  </div>
+</div>
+
+<script id="modal-error-gmail-auth" type="text/template">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">
+          <span class="icon-signature-unknown"></span>
+          <span class="title">{{_("Could Not Connect To Gmail")}}</span>
+        </h4>
+      </div>
+      <div class="modal-body clearfix">
+        <p>Unfortunately we could not connect to your Gmail account. The reason could be one of the following:</p>
+        <ul class="circle">
+          <li>You entered the wrong Gmail address or password.</li>
+          <li>Your Google security settings might be set to block non Google apps.</li> 
+          <li>You might have Google's 2 factor auth enabled.</li>
+        </ul>
+        <p>
+          <a href="/page/gmail-2-step-verification/" class="button-alert" target="_blank">
+            <span class="icon-help"></span> Help: Gmail's 2-Step Verification
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</script>

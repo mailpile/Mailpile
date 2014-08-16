@@ -163,6 +163,24 @@ var ProfilesView = Backbone.View.extend({
             $('#validation-route').fadeIn();
           });
         }
+        else if (result.status == 'error' && provider == 'gmail') {
+
+          $('#validation-pass').find('.check-auth')
+            .removeClass('color-08-green')
+            .addClass('color-12-red')
+            .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
+
+          // Load Content
+          $('#modal-full').html($('#modal-error-gmail-auth').html());
+          
+          // Instantiate
+          $('#modal-full').modal({
+            backdrop: true,
+            keyboard: true,
+            show: true,
+            remote: false
+          });
+        }
         else if (result.status == 'error') {
           $('#validation-pass').find('.check-auth')
             .removeClass('color-08-green')
