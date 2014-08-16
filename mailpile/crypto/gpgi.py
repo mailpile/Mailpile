@@ -375,6 +375,8 @@ class StreamWriter(Thread):
             fd.close()
 
 
+DEBUG_GNUPG = False
+
 class GnuPG:
     """
     Wrap GnuPG and make all functionality feel Pythonic.
@@ -387,29 +389,43 @@ class GnuPG:
     ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
     ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
 
-    def __init__(self, session=None, use_agent=False):
+    def __init__(self, config, session=None, use_agent=False):
+        global DEBUG_GNUPG
         self.available = None
         self.gpgbinary = GPG_BINARY
-        self.passphrase = None
         self.outputfds = ["stdout", "stderr", "status"]
         self.errors = []
         self.session = session
+        self.config = config or (session and session.config) or None
         self.use_agent = use_agent
-        if self.session:
-            self.homedir = session.config.sys.gpg_home or GNUPG_HOMEDIR
+        if self.config:
+            self.homedir = self.config.sys.gpg_home or GNUPG_HOMEDIR
+            DEBUG_GNUPG = ('gnupg' in self.config.sys.debug)
+            self.passphrase = self.config.gnupg_passphrase.get_reader()
         else:
+            self.passphrase = None
             self.homedir = GNUPG_HOMEDIR
+        self.debug = self._debug_all if DEBUG_GNUPG else self._debug_none
+
+    def _debug_all(self, msg):
+        if self.session:
+            self.session.debug(msg.rstrip())
+        else:
+            print '%s' % msg.rstrip()
+
+    def _debug_none(self, msg):
+        pass
 
     def set_home(self, path):
         self.homedir = path
 
     def version(self):
-        retvals = self.run(["--version"])
+        retvals = self.run(["--version"], no_passphrase_ok=True)
         return retvals[1]["stdout"][0].split('\n')[0]
 
     def is_available(self):
         try:
-            retvals = self.run(["--version"])
+            retvals = self.run(["--version"], no_passphrase_ok=True)
             self.available = True
         except OSError:
             self.available = False
@@ -418,7 +434,7 @@ class GnuPG:
 
     def run(self,
             args=None, gpg_input=None, outputfd=None, partial_read_ok=False,
-            _raise=None):
+            no_passphrase_ok=False, _raise=None):
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
         self.pipes = {}
         self.threads = {}
@@ -453,9 +469,11 @@ class GnuPG:
                                % passphrase_pipe.read_end.fileno())
                 popen_keeps_open.append(passphrase_pipe.read_end)
 
-            if not self.passphrase:
-                print 'WARNING: No passphrase for %s' % ' '.join(args)
-                traceback.print_stack()
+            if not self.passphrase and not no_passphrase_ok:
+                self.debug('Running WITHOUT PASSPHRASE %s' % ' '.join(args))
+                self.debug(traceback.format_stack())
+            else:
+                self.debug('Running %s' % ' '.join(args))
 
             # Here we go!
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
@@ -492,6 +510,7 @@ class GnuPG:
             if gpg_input:
                 # If we have output, we just stream it. Technically, this
                 # doesn't really need to be a thread at the moment.
+                self.debug('<<STDOUT<< %s' % gpg_input)
                 StreamWriter('gpgi-output(%s)' % wtf,
                              proc.stdin, gpg_input,
                              partial_write_ok=partial_read_ok).join()
@@ -534,6 +553,7 @@ class GnuPG:
                     print 'SCARY WARNING: FAILED TO REAP THREAD %s' % thr
 
     def parse_status(self, line, *args):
+        self.debug('<<STATUS<< %s' % line)
         line = line.replace("[GNUPG:] ", "")
         if line == "":
             return
@@ -541,9 +561,11 @@ class GnuPG:
         self.outputbuffers["status"].append(elems)
 
     def parse_stdout(self, line):
+        self.debug('<<STDOUT<< %s' % line)
         self.outputbuffers["stdout"].append(line)
 
     def parse_stderr(self, line):
+        self.debug('<<STDERR<< %s' % line)
         self.outputbuffers["stderr"].append(line)
 
     def parse_keylist(self, keylist):
@@ -552,7 +574,7 @@ class GnuPG:
 
     def list_keys(self):
         """
-        >>> g = GnuPG()
+        >>> g = GnuPG(None)
         >>> g.list_keys()[0]
         0
         """
@@ -594,7 +616,7 @@ class GnuPG:
         """
         Imports gpg keys from a file object or string.
         >>> key_data = open("testing/pub.key").read()
-        >>> g = GnuPG()
+        >>> g = GnuPG(None)
         >>> g.import_keys(key_data)
         {'failed': [], 'updated': [{'details_text': 'unchanged', 'details': 0, 'fingerprint': '08A650B8E2CBC1B02297915DC65626EED13C70DA'}], 'imported': [], 'results': {'sec_dups': 0, 'unchanged': 1, 'num_uids': 0, 'skipped_new_keys': 0, 'no_userids': 0, 'num_signatures': 0, 'num_revoked': 0, 'sec_imported': 0, 'sec_read': 0, 'not_imported': 0, 'count': 1, 'imported_rsa': 0, 'imported': 0, 'num_subkeys': 0}}
         """
@@ -659,7 +681,7 @@ class GnuPG:
         """
         Note that this test will fail if you don't replace the recipient with
         one whose key you control.
-        >>> g = GnuPG()
+        >>> g = GnuPG(None)
         >>> ct = g.encrypt("Hello, World", to=["smari@mailpile.is"])[1]
         >>> g.decrypt(ct)["text"]
         'Hello, World'
@@ -691,7 +713,7 @@ class GnuPG:
 
     def verify(self, data, signature=None):
         """
-        >>> g = GnuPG()
+        >>> g = GnuPG(None)
         >>> s = g.sign("Hello, World", _from="smari@mailpile.is",
             clearsign=True)[1]
         >>> g.verify(s)
@@ -711,7 +733,7 @@ class GnuPG:
     def encrypt(self, data, tokeys=[], armor=True,
                             sign=False, fromkey=None):
         """
-        >>> g = GnuPG()
+        >>> g = GnuPG(None)
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
         0
         """
@@ -733,7 +755,7 @@ class GnuPG:
              fromkey=None, armor=True, detatch=True, clearsign=False,
              passphrase=None):
         """
-        >>> g = GnuPG()
+        >>> g = GnuPG(None)
         >>> g.sign("Hello, World", fromkey="smari@mailpile.is")[0]
         0
         """
@@ -915,9 +937,7 @@ class OpenPGPMimeSigningWrapper(MimeSigningWrapper):
     SIGNATURE_DESC = 'OpenPGP Digital Signature'
 
     def crypto(self):
-        gnupg = GnuPG()
-        gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
-        return gnupg
+        return GnuPG(self.config)
 
     def get_keys(self, who):
         return GetKeys(self.crypto(), self.config, who)
@@ -929,9 +949,7 @@ class OpenPGPMimeEncryptingWrapper(MimeEncryptingWrapper):
     ENCRYPTION_VERSION = 1
 
     def crypto(self):
-        gnupg = GnuPG()
-        gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
-        return gnupg
+        return GnuPG(self.config)
 
     def get_keys(self, who):
         return GetKeys(self.crypto(), self.config, who)
@@ -943,9 +961,7 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
     ENCRYPTION_VERSION = 1
 
     def crypto(self):
-        gnupg = GnuPG()
-        gnupg.passphrase = self.config.gnupg_passphrase.get_reader()
-        return gnupg
+        return GnuPG(self.config)
 
     def _encrypt(self, message_text, tokeys=None, armor=False):
         from_key = self.get_keys([self.sender])[0]
@@ -1046,7 +1062,8 @@ class GnuPGExpectScript(threading.Thread):
     def run(self):
         try:
             self.set_state(self.START_GPG)
-            GnuPG().chat(self.gpg_args(), self.run_script, self.main_script)
+            GnuPG(None).chat(self.gpg_args(),
+                             self.run_script, self.main_script)
             self.set_state(self.FINISHED)
         except:
             import traceback

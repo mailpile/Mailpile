@@ -117,9 +117,9 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             # of this message with a fancy decrypted one.
             message = copy.deepcopy(message)
         def MakeGnuPG(*args, **kwargs):
-            gnupg = GnuPG(*args, **kwargs)
             if config:
-                gnupg.passphrase = config.gnupg_passphrase.get_reader()
+                kwargs['config'] = config
+            gnupg = GnuPG(*args, **kwargs)
             return gnupg
         UnwrapMimeCrypto(message, protocols={
             'openpgp': MakeGnuPG
@@ -255,8 +255,7 @@ def PrepareMessage(config, msg, sender=None, rcpts=None, events=None):
     sender_keyid = None
     if config.prefs.openpgp_header:
         try:
-            gnupg = GnuPG()
-            gnupg.passphrase = config.gnupg_passphrase.get_reader()
+            gnupg = GnuPG(config)
             seckeys = dict([(uid["email"], fp) for fp, key
                             in gnupg.list_secret_keys().iteritems()
                             if key["capabilities_map"][0].get("encrypt")
@@ -1268,7 +1267,6 @@ class Email(object):
             return tree
 
         pgpdata = []
-        gnupg_passphrase = self.config.gnupg_passphrase
         for part in tree['text_parts']:
             if 'crypto' not in part:
                 part['crypto'] = {}
@@ -1282,8 +1280,7 @@ class Email(object):
                 elif part['type'] == 'pgpsignature':
                     pgpdata.append(part)
                     try:
-                        gpg = GnuPG()
-                        gpg.passphrase = gnupg_passphrase.get_reader()
+                        gpg = GnuPG(self.config)
                         message = ''.join([p['data'].encode(p['charset'])
                                            for p in pgpdata])
                         si = gpg.verify(message)
@@ -1301,8 +1298,7 @@ class Email(object):
                     pgpdata.append(part)
 
                     data = ''.join([p['data'] for p in pgpdata])
-                    gpg = GnuPG()
-                    gpg.passphrase = gnupg_passphrase.get_reader()
+                    gpg = GnuPG(self.config)
                     si, ei, text = gpg.decrypt(data)
 
                     # FIXME: If the data is binary, we should provide some

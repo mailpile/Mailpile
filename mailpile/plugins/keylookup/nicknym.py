@@ -72,9 +72,7 @@ class Nicknym:
 
     def _import_key(self, result, keytype):
         if keytype == "openpgp":
-            g = GnuPG()
-            if self.config:
-                g.passphrase = self.config.gnupg_passphrase.get_reader()
+            g = GnuPG(self.config)
             res = g.import_keys(result[keytype])
             if len(res["updated"]):
                 self._managed_keys_add(result["address"], keytype)

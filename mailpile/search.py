@@ -638,7 +638,8 @@ class MailIndex:
             try:
                 msg_fd = mbox.get_file(i)
                 msg = ParseMessage(msg_fd,
-                                   pgpmime=session.config.prefs.index_encrypted)
+                                   pgpmime=session.config.prefs.index_encrypted,
+                                   config=session.config)
             except (IOError, OSError, ValueError, IndexError, KeyError):
                 if session.config.sys.debug:
                     traceback.print_exc()

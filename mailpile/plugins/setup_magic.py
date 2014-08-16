@@ -260,7 +260,7 @@ class SetupMagic(Command):
         #             one made for you, if GnuPG is available.
         #             If GnuPG is not available, you should be warned.
         if do_gpg_stuff:
-            gnupg = GnuPG()
+            gnupg = GnuPG(None)
             accepted_keys = []
             if gnupg.is_available():
                 keys = gnupg.list_secret_keys()

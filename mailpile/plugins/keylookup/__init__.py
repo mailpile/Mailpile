@@ -22,13 +22,6 @@ def register_crypto_key_lookup_handler(handler):
     KEY_LOOKUP_HANDLERS.sort(key=lambda h: (h.LOCAL and 0 or 1, h.PRIORITY))
 
 
-def _GnuPG(session):
-    gpg = GnuPG()
-    if session and session.config:
-        gpg.passphrase = session.config.gnupg_passphrase.get_reader()
-    return gpg
-
-
 def _score_validity(validity, local=False):
     if "r" in validity:
         return (-1000, _('Key is revoked'))
@@ -96,7 +89,7 @@ def _normalize_key(key_info):
 
 def lookup_crypto_keys(session, address,
                        event=None, allowremote=True, origins=None, get=None):
-    known_keys_list = _GnuPG(session).list_keys()
+    known_keys_list = GnuPG(session.config).list_keys()
     found_keys = {}
     ordered_keys = []
     if origins:
@@ -250,7 +243,7 @@ class LookupHandler:
         self.known_keys = known_keys_list
 
     def _gnupg(self):
-        return _GnuPG(self.session)
+        return GnuPG(self.session.config)
 
     def _score(self, key):
         raise NotImplemented("Subclass and override _score")
