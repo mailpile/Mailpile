@@ -741,8 +741,9 @@ class MailpileCommand(Extension):
     def _nice_fingerprint(self, fingerprint):
         if fingerprint:
             slices = [fingerprint[i:i + 4] for i in range(0, len(fingerprint), 4)]
-            output = slices[0] + " " + slices[1] + " " + slices[2] + " " + slices[3] + " " + slices[4] + " "
-            output +=  slices[5] + " " + slices[6] + " " + slices[7] + " " + slices[8] + " " + slices[9]
+            output = ""
+            for group in slices:
+                output += group + " "
             return output
         else:
             return _("No Fingerprint")
