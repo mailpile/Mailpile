@@ -945,9 +945,9 @@ class OpenPGPMimeSignEncryptWrapper(OpenPGPMimeEncryptingWrapper):
 
     def _encrypt(self, message_text, tokeys=None, armor=False):
         from_key = self.get_keys([self.sender])[0]
-        return self.crypto.encrypt(message_text,
-                                   tokeys=tokeys, armor=True,
-                                   sign=True, fromkey=from_key)
+        return self.crypto().encrypt(message_text,
+                                     tokeys=tokeys, armor=True,
+                                     sign=True, fromkey=from_key)
 
 
 class GnuPGExpectScript(threading.Thread):
