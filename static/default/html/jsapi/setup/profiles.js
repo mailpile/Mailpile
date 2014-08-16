@@ -63,7 +63,6 @@ var ProfilesView = Backbone.View.extend({
     "change #input-setup-profile-route_id": "actionHandleRoute",
     "click .btn-setup-profile-edit-route" : "actionEditRoute",
     "click #btn-setup-profile-save"       : "processSettings",
-    "keyup .profile-update"               : "processUpdate",
     "click .setup-profile-remove"         : "processRemove"
   },
   show: function() {
@@ -174,13 +173,14 @@ var ProfilesView = Backbone.View.extend({
     }
   },
   actionHandleRoute: function(e) {
+
     e.preventDefault();
     var route_id = $('#input-setup-profile-route_id').val();
 
+    // Show Add Route Form
     if (route_id == 'new') {
+      console.log('ROUTE CHANGE: go add new route');
 
-      $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-      
       var domain = $('#input-setup-profile-email').val().replace(/.*@/, "");
       SendingView.model.set({
         id: Math.random().toString(36).substring(2),
@@ -191,12 +191,36 @@ var ProfilesView = Backbone.View.extend({
         host: 'smtp.' + domain
       });
 
+      // Show Sending Form
+      $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
       this.$el.html(_.template($("#template-setup-sending-settings").html(), SendingView.model.attributes));
+    }
+    // Update route to Profile
+    else if (route_id && route_id !== 'new' && $('#input-setup-profile-id').val() !== 'new') {
+      console.log('ROUTE CHANGE: update profile vcard');
 
-    } else if (route_id && route_id !== 'new') {
+      var vcard_data = {
+        rid: $('#input-setup-profile-id').val(),
+        name: 'x-mailpile-profile-route',
+        value: route_id
+      };
+      
+      console.log(vcard_data);
+
+      Mailpile.API.vcards_addlines_post(vcard_data, function(result) {
+        if (result.status == 'success') {
+          console.log('ROUTE CHANGE: route_id was updated');
+        }
+      });
+
       $('#input-setup-profile-route_id').addClass('half-bottom');
       $('#setup-profile-edit-route').removeClass('hide');
+    }
+    // Route for New Profile 
+    else if (route_id && route_id !== 'new' && $('#input-setup-profile-id').val() !== 'new') {
+      console.log('ROUTE CHANGE: will be added to new profile');
     } else if (route_id === '') {
+      console.log('ROUTE CHANGE: no route id, not updating');
       $('#input-setup-profile-route_id').removeClass('half-bottom');
       $('#setup-profile-edit-route').addClass('hide');
     }
@@ -204,9 +228,7 @@ var ProfilesView = Backbone.View.extend({
   actionEditRoute: function(e) {
     e.preventDefault();
     var route_id = $('#input-setup-profile-route_id').find('option:selected').val();
-
-    Backbone.history.navigate('#sending/' + route_id, true);
-
+    Backbone.history.navigate('#sending/'+route_id, true);
   },
   processSettings: function(e) {
 
@@ -235,27 +257,24 @@ var ProfilesView = Backbone.View.extend({
         });
       }
     } else {
-      alert('We do not support editing profiles yet, sorry!');
-    }
-  },
-  processUpdate: function(e) {
 
-    if ($('#input-setup-profile-id').val() !== 'new') {
+      console.log('UPDATE NAME & EMAIL');
+      var profile_id = $('#input-setup-profile-id').val();
+      _.each($('.profile-update'), function(item, key) {
+        var name = $(item).data('vcard_name');
+        var value = $(item).val();
+        var vcard_data = { rid: profile_id, name: name, value: value };
+        console.log(vcard_data);
 
-      var rid = $('#input-setup-profile-id').val();
-      var name = $(e.target).attr('name');
-      var value = $(e.target).val();
-
-      Mailpile.API.vcards_addlines_post({ route_id: rid, name: name, value: value }, function(result) {
-
+        Mailpile.API.vcards_addlines_post(vcard_data, function(result) {
+          console.log(result);
+        });
       });
     }
   },
   processRemove: function(e) {
-
     e.preventDefault();
     var profile_id = $(e.target).data('id');
-
     Mailpile.API.profiles_remove_post({ rid: profile_id }, function(result) {
       $('#setup-profile-' + profile_id).fadeOut();
     });
