@@ -590,14 +590,9 @@ class Forward(RelativeCompose):
                              msg_text='\n\n'.join(msg_bodies),
                              msg_subject=('Fwd: %s' % ref_subjs[-1]),
                              msg_id=msgid,
+                             msg_atts=msg_atts,
                              save=(not ephemeral),
                              ephemeral_mid=ephemeral and ephemeral[0])
-
-        if msg_atts:
-            msg = email.get_msg()
-            for att in msg_atts:
-                msg.attach(att)
-            email.update_from_msg(session, msg)
 
         return email, ephemeral
 

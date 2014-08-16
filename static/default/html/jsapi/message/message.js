@@ -19,7 +19,7 @@ $(document).on('click', '.message-action-forward', function() {
   $.ajax({
     url      : '/api/0/message/forward/',
     type     : 'POST',
-    data     : { mid: mid },
+    data     : { mid: mid, 'atts': true },
     success  : function(response) {
       if (response.status === 'success') {
         window.location.href = Mailpile.urls.message_draft + response.result.created + '/';

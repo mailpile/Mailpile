@@ -378,11 +378,12 @@ class Email(object):
     @classmethod
     def Create(cls, idx, mbox_id, mbx,
                msg_to=None, msg_cc=None, msg_bcc=None, msg_from=None,
-               msg_subject=None, msg_text='', msg_references=None, msg_id=None,
+               msg_subject=None, msg_text='', msg_references=None,
+               msg_id=None, msg_atts=None,
                save=True, ephemeral_mid='not-saved', append_sig=True):
         msg = MIMEMultipart()
-        msg.signature_info = SignatureInfo(bubbly=False)
-        msg.encryption_info = EncryptionInfo(bubbly=False)
+        msg.signature_info = msi = SignatureInfo(bubbly=False)
+        msg.encryption_info = mei = EncryptionInfo(bubbly=False)
         msg_ts = int(time.time())
 
         if msg_from:
@@ -427,10 +428,18 @@ class Email(object):
             except (UnicodeEncodeError, UnicodeDecodeError):
                 charset = 'utf-8'
             tp = MIMEText(msg_text, _subtype='plain', _charset=charset)
-            tp.signature_info = SignatureInfo(parent=msg.signature_info)
-            tp.encryption_info = EncryptionInfo(parent=msg.encryption_info)
+            tp.signature_info = SignatureInfo(parent=msi)
+            tp.encryption_info = EncryptionInfo(parent=mei)
             msg.attach(tp)
             del tp['MIME-Version']
+
+        if msg_atts:
+            for att in msg_atts:
+                att = copy.deepcopy(att)
+                att.signature_info = SignatureInfo(parent=msi)
+                att.encryption_info = EncryptionInfo(parent=mei)
+                msg.attach(att)
+                del att['MIME-Version']
 
         if save:
             msg_key = mbx.add(MessageAsString(msg))
