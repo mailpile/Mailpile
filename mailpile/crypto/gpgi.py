@@ -387,7 +387,7 @@ class GnuPG:
     ARMOR_BEGIN_ENCRYPTED = '-----BEGIN PGP MESSAGE-----'
     ARMOR_END_ENCRYPTED   = '-----END PGP MESSAGE-----'
 
-    def __init__(self, session=None, use_agent=True):
+    def __init__(self, session=None, use_agent=False):
         self.available = None
         self.gpgbinary = GPG_BINARY
         self.passphrase = None
@@ -452,6 +452,10 @@ class GnuPG:
                 args.insert(2, "--passphrase-fd=%d"
                                % passphrase_pipe.read_end.fileno())
                 popen_keeps_open.append(passphrase_pipe.read_end)
+
+            if not self.passphrase:
+                print 'WARNING: No passphrase for %s' % ' '.join(args)
+                traceback.print_stack()
 
             # Here we go!
             proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
