@@ -2,7 +2,7 @@
 {% block title %}{{_("Passphrase")}} | {{_('Setup')}}{% endblock %}
 {% block content %}
 {% set setup_crypto = mailpile("setup/crypto") %}
-<div id="setup-passphrase" class="setup-box setup-box-medium animated add-bottom bounceInUp">
+<div id="setup-passphrase" class="setup-box setup-box-medium animated half-bottom bounceInUp">
   <div id="identity-vault-lock" class="vault-lock-outer">
     <div class="vault-lock-inner">
       <div class="vault-lock icon-lock-closed animated"></div>
@@ -10,7 +10,7 @@
   </div>
 
   {# Authenticated Confirmation Views #}
-  <div id="setup-passphrase-creating" class="{% if not result.create_key %}hide{% endif %} text-center add-top">
+  <div id="setup-passphrase-creating" class="{% if not result.create_key %}hide{% endif %} text-center half-top">
     <h3 class="text-center"><span class="icon-key"></span> Processing Encryption Key</h3>
     <p class="text-center">Key creation is in progress... this may take a while.</p>
     <p class="text-center">You can move your mouse around or proceed setting things up ;)</p>
@@ -26,7 +26,7 @@
   </div>
 
   {# Input Form For Authenticating #}
-  <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center add-top">
+  <form method="POST" action="/setup/crypto/" id="form-setup-passphrase" class="standard text-center half-top">
 
     {% if not result.creating_key and setup_crypto.result.secret_keys|length == 0 %}
       <h3 class="text-center">Create Your Passphrase</h3>
@@ -48,8 +48,7 @@
 
       <label>Select the encryption key you would like to use</label>
       <ul class="radio-list-items">
-      {% for key in setup_crypto.result.secret_keys %}
-        {% set key_info = setup_crypto.result.secret_keys[key] %}
+      {% for key, key_info in setup_crypto.result.secret_keys.iteritems() %}
         {% if key_info.capabilities_map.0.encrypt and key_info.capabilities_map.0.sign and not key_info.disabled %}
         <li class="text-left">
         <label class="radio-list-item">
@@ -62,6 +61,12 @@
           <div>
             <strong>{{ nice_fingerprint(key) }}</strong><br>
             <span>
+              {% for uid in key_info.uids %}
+               {% if uid.name %}{{uid.name}}{% endif%}
+               {% if uid.email %}{{uid.email}}{% endif %}
+               {% if uid.note %}{{uid.note.decode('utf-8') }}{% endif %}<br>
+              {% endfor %}
+
               {{ key_info.keytype_name }} Key / {{ key_info.keysize }} bits &nbsp;
               Created {{ key_info.creation_date }} &nbsp;&nbsp; {% if key_info.expiration_date %}Expires {{ key_info.expiration_date }}{% endif %}
             </span>
