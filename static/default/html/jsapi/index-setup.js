@@ -33,6 +33,8 @@ var SetupApp = (function ($, Backbone, global) {
 
     var init = function() {
 
+      global.SecurityModel = new SecurityModel();
+
       global.ProfilesCollection = new ProfilesCollection();
       global.SourcesCollection = new SourcesCollection();
       global.SendingCollection = new SendingCollection();
@@ -80,7 +82,7 @@ var SetupApp = (function ($, Backbone, global) {
         });  
       });
   
-      Events.set({ time : 2500, autostart : true });
+      Events.set({ time : 7500, autostart : true });
       Events.play();
     };
 
