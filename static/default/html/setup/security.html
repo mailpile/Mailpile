@@ -1,65 +1,70 @@
 <!-- Advanced - Security -->
 <div class="setup-box setup-box-medium animated bounceInTop">
   <h3 class="text-center"><span class="icon-key"></span> Security Settings</h3>
-  <form class="standard">
+  <form id="form-setup-security" class="standard">
     <label class="clearfix">What is your personal security needs?</label>
     <p>
-      <select name="security_model">
-        <option>You Collect Tinfoil Hats</option>
-        <option>Relatively Paranoid</option>
-        <option>Above Average</option>
-        <option>Privacy Concerned</option>
-        <option>Normal Person</option>
-        <option>Totally unconcerned (really?)</option>
+      <select id="input-setup-security-level" name="security_model">
+        <option value="">Select...</option>
+        <option value="tinfoil">You Collect Tinfoil Hats</option>
+        <option value="paranoid">Relatively Paranoid</option>
+        <option value="above">Above Average Paranoia</option>
+        <option value="concerned">Privacy Concerned</option>
+        <option value="normal">Normal Person</option>
+        <option value="crazy">Totally Unconcerned</option>
       </select>
     </p>
-    <label>
-      <input type="checkbox" name="encrypt_events" checked="true">
-      Encrypt system events & notifications
-    </label>
-    <label>
-      <input type="checkbox" name="encrypt_index" checked="">
-      Encrypt your index of search terms
-    </label>
-    <label>
-      <input type="checkbox" name="encrypt_mail" checked="true">
-      Encrypt mail (is this sending or downloaded to disk??)
-    </label>
-    <label>
-      <input type="checkbox" name="encrypt_vcards" checked="true">
-      Encrypted your address book & contacts
-    </label>
-    <label>
-      <input type="checkbox" name="index_encrypted" checked="true">
-      Index encrypted (how is this different from encrypt_index??)
-    </label>
-    <label>
-      <input type="checkbox" name="encrypt_misc" checked="true">
-      Encrypt various other things
-    </label>
-    <label>
-      <input type="checkbox" name="obfuscate_index" checked="">
-      Obfuscate your search index
-    </label>
-    <label>
-      <input type="checkbox" name="security_tor" checked="">
-      Send web requests through Tor for better anonymity and privacy
-    </label>
-    <label>
-      <input type="checkbox" name="security_upload_keyservers">
-      Upload your public encryption key to keyservers for better discovery
-    </label>
-    <label>
-      <input type="checkbox" name="security_upload_keyservers">
-      Attach public key to outgoing email
-    </label>
-    <label>
-      <input type="checkbox" name="security_use_gravatar">
-      Download contact pictures via Gravatar securely
-    </label>
-    <div class="text-center">
+    <fieldset>
+      <label>
+        <input type="checkbox" name="encrypt_events" checked="true">
+        Encrypt system events & notifications
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_index" checked="">
+        Encrypt your index of search terms
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_mail" checked="true">
+        Encrypt mail (is this sending or downloaded to disk??)
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_vcards" checked="true">
+        Encrypted your address book & contacts
+      </label>
+      <label>
+        <input type="checkbox" name="index_encrypted" checked="true">
+        Index encrypted (how is this different from encrypt_index??)
+      </label>
+      <label>
+        <input type="checkbox" name="encrypt_misc" checked="true">
+        Encrypt various other things
+      </label>
+      <label>
+        <input type="checkbox" name="obfuscate_index" checked="">
+        Obfuscate your search index
+      </label>
+      <label>
+        <input type="checkbox" name="use_tor" checked="">
+        Send web requests through Tor for better anonymity and privacy
+      </label>
+      <label>
+        <input type="checkbox" name="upload_keyservers">
+        Upload your public encryption key to keyservers for better discovery
+      </label>
+      <label>
+        <input type="checkbox" name="email_key">
+        Attach public key to outgoing emails
+      </label>
+      <label>
+        <input type="checkbox" name="use_gravatar">
+        Download contact pictures via Gravatar (over HTTPS)
+      </label>
+    </fieldset>
+    <div class="clearfix half-top">
       <a href="#advanced" class="button-secondary">{{_("Back")}}</a> &nbsp;&nbsp;
-      <button id="btn-setup-source-settings">{{_("Save")}}</button>
+      <button id="btn-setup-security-save">
+        <span class="icon-plus"></span> {{_("Save")}}
+      </button>
     </div>
   </form>
 </div>
