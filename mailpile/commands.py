@@ -9,6 +9,7 @@ import os.path
 import random
 import re
 import shlex
+import socket
 import sys
 import traceback
 import threading
@@ -1198,6 +1199,42 @@ class Optimize(Command):
             return self._error(_('Aborted'))
 
 
+class BrowseOrLaunch(Command):
+    """Launch browser and exit, if already running"""
+    SYNOPSIS = (None, 'browse_or_launch', None, None)
+    ORDER = ('Internals', 5)
+    CONFIG_REQUIRED = False
+    RAISES = (KeyboardInterrupt,)
+
+    @classmethod
+    def Browse(cls, sspec):
+        http_url = 'http://%s:%s/' % sspec
+        try:
+            MakePopenUnsafe()
+            webbrowser.open(http_url)
+            return http_url
+        finally:
+            MakePopenSafe()
+        return False
+
+    def command(self):
+        config = self.session.config
+
+        if config.http_worker:
+            sspec = config.http_worker.sspec
+        else:
+            sspec = (config.sys.http_host, config.sys.http_port)
+
+        try:
+            socket.create_connection(sspec)
+            self.Browse(sspec)
+            os._exit(1)
+        except IOError:
+            pass
+
+        return self._success(_('Launching Mailpile'), result=True)
+
+
 class RunWWW(Command):
     """Just run the web server"""
     SYNOPSIS = (None, 'www', None, '[<host:port>]')
@@ -2075,13 +2112,9 @@ class HelpSplash(Help):
             http_url = 'http://%s:%s/' % http_worker.httpd.sspec
             if ((sys.platform in ('darwin', 'win32') or os.getenv('DISPLAY'))
                     and self.session.config.prefs.open_in_browser):
-                try:
-                    MakePopenUnsafe()
-                    webbrowser.open(http_url)
+                if BrowseOrLaunch.Browse(http_worker.httpd.sspec):
                     in_browser = True
                     time.sleep(2)
-                finally:
-                    MakePopenSafe()
         else:
             http_url = ''
 
@@ -2127,7 +2160,7 @@ def Action(session, opt, arg, data=None):
 
 # Commands starting with _ don't get single-letter shortcodes...
 COMMANDS = [
-    Load, Optimize, Rescan, RunWWW, ProgramStatus,
+    Load, Optimize, Rescan, BrowseOrLaunch, RunWWW, ProgramStatus,
     ListDir, ChangeDir, CatFile,
     WritePID, ConfigPrint, ConfigSet, ConfigAdd, ConfigUnset, AddMailboxes,
     RenderPage, Output, Help, HelpVars, HelpSplash, Quit, Abort

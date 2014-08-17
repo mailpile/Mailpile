@@ -7,6 +7,12 @@ mkdir -p ~/.mailpile
 chmod 700 ~/.mailpile
 pwd > ~/.mailpile/osx.pwd
 
-exec /usr/bin/open \
+# This checks if Mailpile is already running and just opens a new browser
+# window/tab if it is...
+(
+   cd Mailpile
+   exec ./mp --browse_or_launch 2>/dev/null >/dev/null
+
+) && exec /usr/bin/open \
      -a /Applications/Utilities/Terminal.app \
      Mailpile/packages/macosx/mailpile-osx.sh
