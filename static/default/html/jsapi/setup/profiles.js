@@ -60,6 +60,7 @@ var ProfilesView = Backbone.View.extend({
     "blur #input-setup-profile-email"     : "actionCheckEmailMagic",
     "blur #input-setup-profile-pass"      : "actionCheckAuth",
     "mouseover #btn-setup-profile-save"   : "actionCheckAuth",
+    "click #btn-setup-connection-check"   : "actionCheckAuth",
     "change #input-setup-profile-route_id": "actionHandleRoute",
     "click .btn-setup-profile-edit-route" : "actionEditRoute",
     "click #btn-setup-profile-save"       : "processSettings",
@@ -180,6 +181,14 @@ var ProfilesView = Backbone.View.extend({
             show: true,
             remote: false
           });
+
+          // Empty Password & Add Testing Link
+          setTimeout(function() {
+            $('#input-setup-profile-pass').val('');
+            $('#validation-pass').find('.check-auth')
+              .removeClass('color-08-green color-12-red')
+              .html('<a href="#" id="btn-setup-connection-check" class="setup-check-connection"><span class="icon-help"></span> {{_("Test Connection")}}</a>');
+          }, 1000);
         }
         else if (result.status == 'error') {
           $('#validation-pass').find('.check-auth')
