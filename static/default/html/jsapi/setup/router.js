@@ -55,7 +55,7 @@ var SetupRouter = Backbone.Router.extend({
     SourcesView.showEdit(id);
   },
   sourcesConfigure: function(id) {
-    SourcesView.showConfigure(id);
+    SourcesConfigureView.show(id);
   },
 	sending: function() {
 		SendingView.show();
