@@ -126,6 +126,7 @@ a.setup-check-connection:hover {
 }
 .welcome-logo {
   width: 25%;
+  max-height: 30%;
 }
 .welcome-icons {
   width: 470px;
