@@ -3,6 +3,7 @@ var ProfileModel = Backbone.Model.extend({
   defaults: {
     id: 'new',
     action: 'Add',
+    warning: 'none',
     name: '',
     email: '',
     pass: '',
@@ -112,6 +113,30 @@ var ProfilesView = Backbone.View.extend({
       }
     });
   },
+  showGmailWarning: function(message) {
+    if (this.model.attributes.warning !== 'used' || message !== 'warning') {
+      this.model.set({warning: 'used'});
+
+      // Load Content
+      $('#modal-full').html($('#modal-gmail-auth-' + message).html());
+  
+      // Instantiate
+      $('#modal-full').modal({
+        backdrop: true,
+        keyboard: true,
+        show: true,
+        remote: false
+      });
+
+      // Empty Password & Add Testing Link
+      setTimeout(function() {
+        $('#input-setup-profile-pass').val('');
+        $('#validation-pass').find('.check-auth')
+          .removeClass('color-08-green color-12-red')
+          .html('<a href="#" id="btn-setup-connection-check" class="setup-check-connection"><span class="icon-help"></span> {{_("Test Connection")}}</a>');
+      }, 1000);
+    }
+  },
   actionCheckEmailMagic: function(e) {
     var domain = $(e.target).val().replace(/.*@/, "");
     var provider = SetupMagic.providers[domain];
@@ -120,6 +145,11 @@ var ProfilesView = Backbone.View.extend({
       $('#validation-pass').fadeIn(function(){
         $('#input-setup-profile-pass').attr("tabindex", -1).focus();
       });
+
+      // Show Gmail Warning
+      if (provider === 'gmail') {
+        ProfilesView.showGmailWarning('warning');
+      }
     }
   },
   actionCheckAuth: function(e) {
@@ -166,29 +196,12 @@ var ProfilesView = Backbone.View.extend({
         }
         else if (result.status == 'error' && provider == 'gmail') {
 
-          $('#validation-pass').find('.check-auth')
-            .removeClass('color-08-green')
-            .addClass('color-12-red')
-            .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
+        $('#validation-pass').find('.check-auth')
+          .removeClass('color-08-green')
+          .addClass('color-12-red')
+          .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
 
-          // Load Content
-          $('#modal-full').html($('#modal-error-gmail-auth').html());
-          
-          // Instantiate
-          $('#modal-full').modal({
-            backdrop: true,
-            keyboard: true,
-            show: true,
-            remote: false
-          });
-
-          // Empty Password & Add Testing Link
-          setTimeout(function() {
-            $('#input-setup-profile-pass').val('');
-            $('#validation-pass').find('.check-auth')
-              .removeClass('color-08-green color-12-red')
-              .html('<a href="#" id="btn-setup-connection-check" class="setup-check-connection"><span class="icon-help"></span> {{_("Test Connection")}}</a>');
-          }, 1000);
+          ProfilesView.showGmailWarning('error');
         }
         else if (result.status == 'error') {
           $('#validation-pass').find('.check-auth')
