@@ -9,9 +9,7 @@
   {% include("partials/head.html") %}
 </head>
 <body>
-<div id="content-wide">
   {% block content %}{{results}}{% endblock %}
-</div>
 {% if state.command_url in ("/setup/") %}
 <script>
 $(document).ready(function() {

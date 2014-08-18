@@ -48,21 +48,6 @@
   #setup {
     
   }
-  
-  .setup-welcome-icons {
-    margin-top: (@base-margin * 2);
-    margin-bottom: (@base-margin * 3);
-  }
-
-  .setup-welcome-icon {
-    margin: 0 @base-margin;
-    font-size: 72px;
-    line-height: 72px;
-  }
-
-  div.setup-white {
-    text-align: center;
-  }
 
   div.setup-box {
     min-height: 150px;
@@ -144,7 +129,32 @@
   }
 
 
-/* Idenity */
+/* Setup - Welcome */
+
+  #setup-welcome {
+    width: 100%;
+    height: 100%;
+  }
+
+  .welcome-logo {
+    width: 25%;
+  }
+
+  .welcome-icons {
+    width: 470px;
+    font-size: 40px;
+    line-height: 40px;
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto; 
+  }
+
+  .welcome-icons li {
+    margin: 0px (@base-margin / 1.5);
+  }
+
+
+/* Setup - Crypto */
 
   #identity-vault-lock {
     margin: @base-margin 0;
