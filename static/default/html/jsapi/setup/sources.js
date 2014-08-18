@@ -86,7 +86,6 @@ var SourcesCollection = Backbone.Collection.extend({
 /* Setup - Sources - View */
 var SourcesView = Backbone.View.extend({
   initialize: function() {
-    Backbone.Validation.bind(this);
 		this.render();
   },
   render: function() {
@@ -95,10 +94,10 @@ var SourcesView = Backbone.View.extend({
   events: {
     "change #input-setup-source-type"  : "actionSelected",
     "change #input-setup-source_sync"  : "actionSyncSelected",
-    "click #btn-setup-source-save"     : "processSource",
-    "click .setup-source-remove"       : "processRemove",
     "click .source-mailbox-policy"     : "actionMailboxToggle",
-    "click #btn-setup-sources-next"    : "actionGoToImporting"
+    "click #btn-setup-sources-next"    : "actionGoToImporting",
+    "click #btn-setup-source-save"     : "processSource",
+    "click .setup-source-disable"      : "processDisable"
   },
   show: function() {
 
@@ -120,23 +119,6 @@ var SourcesView = Backbone.View.extend({
     });
 
     return this;
-  },
-  showAdd: function() {
-    $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    var source_id = Math.random().toString(36).substring(2);
-    var NewSource = new SourceModel();
-    NewSource.set({ _section: source_id, id: source_id, });
-    this.$el.html(_.template($('#template-setup-sources-settings').html(), NewSource.attributes));
-  },
-  showEdit: function(id) {
-    $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-
-    Mailpile.API.settings_get({ var: 'sources.'+id }, function(result) {
-
-      var source = result.result['sources.'+id];
-      source = _.extend(source, {id: id, action: '{{_("Edit")}}'});
-      $('#setup').html(_.template($('#template-setup-sources-settings').html(), source));
-    });
   },
   showEvent: function(event) {
 
@@ -188,70 +170,14 @@ var SourcesView = Backbone.View.extend({
     $('#setup-source-message-' + event.data.id).html('<em>' + message + '</em>');
 
   },
-  actionSelected: function(e) {
-    if ($(e.target).val() == 'local') {
-      $('#setup-source-settings-server').hide();
-      $('#setup-source-settings-local').fadeIn().removeClass('hide');
-      $('#setup-source-settings-details').fadeIn().removeClass('hide');
-    }
-    else if ($(e.target).val() == 'server') {
-      $('#setup-source-settings-local').hide();
-      $('#setup-source-settings-server').fadeIn().removeClass('hide');
-      $('#setup-source-settings-details').fadeIn().removeClass('hide');
-    }
-    else {
-      $('#setup-source-settings-local').hide();
-      $('#setup-source-settings-server').hide();
-      $('#setup-source-settings-details').hide();      
-    }
-  },
-  actionSyncSelected:  function(e) {
-    if ($(e.target).val() == 'once') {
-      $('#setup-source-settings-sync-interval').hide();
-    }
-    else if ($(e.target).val() == 'sync'){
-      $('#setup-source-settings-sync-interval').fadeIn().removeClass('hide');
-    }
-  },
   actionGoToImporting: function(e) {
     e.preventDefault();
     Backbone.history.navigate('#importing', true);
   },
-  processSource: function(e) {
-    e.preventDefault();
-
-    if ($('#input-setup-source-type').val() == 'local') {
-      $('#input-setup-source-server-protocol').remove();
-      $('#input-setup-source-server-local_copy').remove();
-    }
-    else if ($('#input-setup-source-type').val() == 'server') {
-      $('#input-setup-source-local-protocol').remove();
-      $('#input-setup-source-local-local_copy').remove();
-    }
-
-    // Get, Prep, Update Model
-    var source_data = $('#form-setup-source-settings').serializeObject();
-    source_data = _.omit(source_data, 'source_type');
-    this.model.set(source_data);
-
-    // Validate & Process
-    if (!this.model.validate()) {
-      Mailpile.API.settings_set_post(source_data, function(result) {
-        if (result.status == 'success') {
-
-          // Reset Model
-          SourcesView.model.set({name: '', username: '', password: '', port: ''});
-          Backbone.history.navigate('#sources', true);
-        } else {
-          alert('Error saving Sources');
-        }
-      });
-    }
-  },
-  processRemove: function(e) {
+  processDisable: function(e) {
     e.preventDefault();
     var source_id = $(e.target).data('id');
-    Mailpile.API.settings_unset_post({ rid: source_id }, function(result) {
+    Mailpile.API.settings_set_post({ _section: source_id, enabled: false }, function(result) {
       $('#setup-source-' + source_id).fadeOut();
     });
   }

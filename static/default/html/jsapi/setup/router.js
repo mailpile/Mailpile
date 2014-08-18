@@ -49,10 +49,10 @@ var SetupRouter = Backbone.Router.extend({
     SourcesView.show();
   },
   sourcesAdd: function() {
-    SourcesView.showAdd();
+    SourcesSettingsView.show();
   },
   sourcesEdit: function(id) {
-    SourcesView.showEdit(id);
+    SourcesSettingsView.showEdit(id);
   },
   sourcesConfigure: function(id) {
     SourcesConfigureView.show(id);
