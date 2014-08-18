@@ -89,7 +89,7 @@ def _normalize_key(key_info):
 
 def lookup_crypto_keys(session, address,
                        event=None, allowremote=True, origins=None, get=None):
-    known_keys_list = GnuPG(session.config).list_keys()
+    known_keys_list = GnuPG(session and session.config or None).list_keys()
     found_keys = {}
     ordered_keys = []
     if origins:
@@ -243,7 +243,7 @@ class LookupHandler:
         self.known_keys = known_keys_list
 
     def _gnupg(self):
-        return GnuPG(self.session.config)
+        return GnuPG(self.session and self.session.config or None)
 
     def _score(self, key):
         raise NotImplemented("Subclass and override _score")
