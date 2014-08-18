@@ -218,9 +218,7 @@ class Command:
         return os.path.join(*path_parts)
 
     def _gnupg(self):
-        gpg = GnuPG()
-        gpg.passphrase = self.session.config.gnupg_passphrase.get_reader()
-        return gpg
+        return GnuPG(self.session.config)
 
     def _config(self):
         session, config = self.session, self.session.config

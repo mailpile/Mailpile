@@ -117,10 +117,7 @@ def ParseMessage(fd, cache_id=None, update_cache=False,
             # of this message with a fancy decrypted one.
             message = copy.deepcopy(message)
         def MakeGnuPG(*args, **kwargs):
-            if config:
-                kwargs['config'] = config
-            gnupg = GnuPG(*args, **kwargs)
-            return gnupg
+            return GnuPG(config, *args, **kwargs)
         UnwrapMimeCrypto(message, protocols={
             'openpgp': MakeGnuPG
         })
