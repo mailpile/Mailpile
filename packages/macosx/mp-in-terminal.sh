@@ -10,8 +10,15 @@ pwd > ~/.mailpile/osx.pwd
 # This checks if Mailpile is already running and just opens a new browser
 # window/tab if it is...
 (
-   cd Mailpile
-   exec ./mp --browse_or_launch 2>/dev/null >/dev/null
+    export MAILPILE_BREW_ROOT="$(pwd)/Mailpile-Brew"
+    export MAILPILE_ROOT="$(pwd)/Mailpile"
+
+    export PATH="$MAILPILE_BREW_ROOT/bin:/usr/bin:/bin"
+    export PYTHONHOME="$MAILPILE_BREW_ROOT/Cellar/python/2.7.8/Frameworks/Python.framework/Versions/2.7/"
+    export OPENSSL_CONF="$MAILPILE_BREW_ROOT/etc/openssl/openssl.cnf"
+
+    cd Mailpile
+    exec ./mp --browse_or_launch 2>/dev/null >/dev/null
 
 ) && exec /usr/bin/open \
      -a /Applications/Utilities/Terminal.app \

@@ -10,12 +10,22 @@ export OPENSSL_CONF="$MAILPILE_BREW_ROOT/etc/openssl/openssl.cnf"
 
 cd "$MAILPILE_ROOT"
 
+echo -n -e "\033]0;Mailpile CLI\007"
 osascript <<EOF
 tell app "Terminal"
    set miniaturized of the front window to true
-   set custom title of first window to "Mailpile"
 end tell
 EOF
+#   set custom title of first window to "Mailpile CLI"
 
 clear
-exec ./mp --www= --interact
+./mp --www= --interact
+
+osascript <<EOF &
+delay 0.3
+tell app "Terminal"
+   close (every window whose name contains "Mailpile CLI")
+end tell
+#delay 0.3
+#tell application "System Events" to click UI element "Close" of sheet 1 of application process "Terminal"
+EOF

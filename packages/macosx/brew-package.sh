@@ -149,6 +149,14 @@ for target in /lib/python2.7/site-packages/sitecustomize.py \
         .$target
 done
 
+#
+# Fix Python's launcher to avoid the rocket ship
+#
+LSUIELEM="<key>LSUIElement</key><string>1</string>"
+perl -pi.bak -e \
+    "s|(\\s+)(<key>CFBundleDocumentTypes)|\\1$LSUIELEM\\2|" \
+    ./Cellar/python/*/Frame*/Python*/V*/C*/Res*/Python.app/Cont*/Info.plist
+
 
 #
 # Pre-test, slim down: remove *.pyo and *.pyc files
