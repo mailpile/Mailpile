@@ -7,11 +7,13 @@
       <table class="full-width-table half-bottom">
       <tr>
         <td>
-          <label>Name of mail source</label>
-          <input type="text" name="name" value="<%= name %>" id="input-setup-source-name" placeholder="My Gmail, Work Server">
+          <fiedset id="validation-name">
+            <label class="validation-message">Name of mail source</label>
+            <input type="text" name="name" value="<%= name %>" id="input-setup-source-name" placeholder="My Gmail, Work Server">
+          </fied>
         </td>
         <td>
-          <label>Where is this mail located?</label>
+          <label class="validation-message">Where is this mail located?</label>
           <select id="input-setup-source-type">
             <option value="" <% if (!protocol) { %>selected<% } %>>select...</option>
             <option value="local" <% if (_.indexOf(['mbox', 'maildir'], protocol) > -1) { %>selected<% } %>>On This Computer</option>
@@ -23,20 +25,21 @@
     </div>
 
     <div id="setup-source-settings-local" class="<% if (_.indexOf(['mbox', 'maildir'], protocol) === -1) { %>hide<% } %> add-bottom">
-      <label>What app (or format) is this mail in?</label>
-      <span id="" class="validation-message"></span>
-      <select name="protocol" id="input-setup-source-local-protocol" class="input-small">
-        <option value="">select...</option>
-        <!--
-        <option value="mbox" <% if (protocol === 'mbox') { %>selected<% } %>>Thunderbird</option>
-        <option value="macmaildir">Mac Mail</option>
-        <option value="outlook">Outlook</option>
-        -->
-        <option value="mbox" <% if (protocol === 'mbox') { %>selected<% } %>>Mbox (Thunderbird)</option>
-        <option value="maildir" <% if (protocol === 'maildir') { %>selected<% } %>>Maildir</option>
-      </select>   
-      <label>Path to where mail on this computer is located:</label>
-      
+      <fiedset id="validation-protocol">
+        <label class="validation-message">What app (or format) is this mail in?</label>
+        <select name="protocol" id="input-setup-source-local-protocol" class="input-small">
+          <option value="">select...</option>
+          <!--
+          <option value="mbox" <% if (protocol === 'mbox') { %>selected<% } %>>Thunderbird</option>
+          <option value="macmaildir">Mac Mail</option>
+          <option value="outlook">Outlook</option>
+          -->
+          <option value="mbox" <% if (protocol === 'mbox') { %>selected<% } %>>Mbox (Thunderbird)</option>
+          <option value="maildir" <% if (protocol === 'maildir') { %>selected<% } %>>Maildir</option>
+        </select>
+      </fieldset>
+
+      <label>Path to where mail on this computer is located:</label>      
       <input type="text" name="discovery.paths[]" class="input-large" value="" placeholder="/home/chelsea/email">
       <label>Make a copy of these messages in Mailpile</label>
       <select name="discovery.local_copy" id="input-setup-source-local-local_copy" class="input-tiny">

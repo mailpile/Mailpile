@@ -11,9 +11,7 @@ var SourcesSettingsView = Backbone.View.extend({
     "change #input-setup-source-type"  : "actionSelected",
     "change #input-setup-source_sync"  : "actionSyncSelected",
     "click .source-mailbox-policy"     : "actionMailboxToggle",
-    "click #btn-setup-sources-next"    : "actionGoToImporting",
-    "click #btn-setup-source-save"     : "processSource",
-    "click .setup-source-disable"      : "processDisable"
+    "click #btn-setup-source-save"     : "processSource"
   },
   show: function() {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
