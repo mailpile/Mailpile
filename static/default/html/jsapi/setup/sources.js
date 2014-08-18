@@ -42,7 +42,7 @@ var SourceModel = Backbone.Model.extend({
     protocol: {
       oneOf: ["mbox", "maildir", "macmaildir", "gmvault", "imap", "imap_ssl", "pop3"],
       required: true,
-      msg: "{{_('Mailbox protocol or format')}}"
+      msg: "{{_('You must pick a protocol or format')}}"
     }, 
     interval: {
       required: false,
@@ -120,7 +120,30 @@ var SourcesView = Backbone.View.extend({
 
     return this;
   },
-  showEvent: function(event) {
+  eventUnconfigured: function(event) {
+    // Has Unconfigured Mailboxes (action)
+    if (event.data.have_unknown) {
+      $('#setup-source-notice-' + event.data.id)
+        .html('{{_("You have unconfigured mailboxes")}} <a href="/setup/#sources/configure/' + event.data.id + '">{{_("configure them now")}}</a>')
+        .fadeIn();
+
+      $('#btn-setup-sources-next').attr('disabled', true);
+    } else {
+      $('#btn-setup-sources-next').attr('disabled', false);
+    }
+  },
+  eventCopying: function(event) {
+    // Various Found or Is downloading
+    if (event.data.copying && event.data.copying.running && event.data.copying.total) {
+      message = '{{_("Downloading")}} ' + event.data.copying.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("messages")}}';
+    } else if (event.data.copying && event.data.copying.running) {
+      message = '{{_("Found some messages to download")}}';
+    } else if (event.data.rescan) {
+      message = '{{_("Rescanning mailboxes")}}';
+    }
+    return message;
+  },
+  eventConnection: function(event) {
 
     // Default Message
     var message = event.message;
@@ -130,16 +153,7 @@ var SourcesView = Backbone.View.extend({
 
       // Connection / Behavior (message)
       if (event.data.connection && event.data.connection.live && !event.data.connection.error[0]) {
-  
-        // Various Found or Is downloading
-        if (event.data.copying && event.data.copying.running && event.data.copying.total) {
-          message = '{{_("Downloading")}} ' + event.data.copying.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("messages")}}';
-        } else if (event.data.copying && event.data.copying.running) {
-          message = '{{_("Found some messages to download")}}';
-        } else if (event.data.rescan) {
-          message = '{{_("Rescanning mailboxes")}}';
-        }
-
+        message = this.eventCopying(event);
       }
       else if (!event.data.connection.live && !event.data.connection.error[0]) {
         message = '{{_("Not connected to server")}}';
@@ -154,21 +168,12 @@ var SourcesView = Backbone.View.extend({
         message = event.data.connection.error[1];
       }
     }
-
-    // Has Unconfigured Mailboxes (action)
-    if (event.data.have_unknown) {
-      $('#setup-source-notice-' + event.data.id)
-        .html('{{_("You have unconfigured mailboxes")}} <a href="/setup/#sources/configure/' + event.data.id + '">{{_("configure them now")}}</a>')
-        .fadeIn();
-
-      $('#btn-setup-sources-next').attr('disabled', true);
-    } else {
-      $('#btn-setup-sources-next').attr('disabled', false);
+    else {
+      message = this.eventCopying(event);
     }
 
     // UI Message
     $('#setup-source-message-' + event.data.id).html('<em>' + message + '</em>');
-
   },
   actionGoToImporting: function(e) {
     e.preventDefault();
