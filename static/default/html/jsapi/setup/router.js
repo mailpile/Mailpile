@@ -35,10 +35,10 @@ var SetupRouter = Backbone.Router.extend({
 		ProfilesView.show();
 	},
 	profilesAdd: function() {
-		ProfilesView.showAdd();
+		ProfilesSettingsView.show();
 	},
   profilesEdit: function(id) {
-    ProfilesView.showEdit(id);
+    ProfilesSettingsView.showEdit(id);
   },
   discovery: function() {
 		IdentityView.showDiscovery();

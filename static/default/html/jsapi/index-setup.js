@@ -3,6 +3,7 @@
 {% include("jsapi/setup/passphrase.js") %}
 {% include("jsapi/setup/home.js") %}
 {% include("jsapi/setup/profiles.js") %}
+{% include("jsapi/setup/profiles_settings.js") %}
 {% include("jsapi/setup/sources.js") %}
 {% include("jsapi/setup/sources_settings.js") %}
 {% include("jsapi/setup/sources_configure.js") %}
@@ -44,6 +45,7 @@ var SetupApp = (function ($, Backbone, global) {
       // Views
       global.HomeView       = new HomeView({ el: $('#setup') });
       global.ProfilesView   = new ProfilesView({ model: new ProfileModel(), el: $('#setup') });
+      global.ProfilesSettingsView = new ProfilesSettingsView({ model: new ProfileModel(), el: $('#setup') });
       global.SourcesView    = new SourcesView({ el: $('#setup') });
       global.SourcesSettingsView = new SourcesSettingsView({ model: new SourceModel(), el: $('#setup') });
       global.SourcesConfigureView = new SourcesConfigureView({ el: $('#setup') });
