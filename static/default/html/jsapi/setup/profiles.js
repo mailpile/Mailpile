@@ -109,7 +109,7 @@ var ProfilesView = Backbone.View.extend({
       if (profile !== undefined) {
         var provider = SetupMagic.providers[profile.email.replace(/.*@/, "")];
         console.log(provider);
-        _.extend(profile, { id: id, action: '{{_("Edit")}}', provider: provider });
+        _.extend(profile, { id: id, action: 'Edit', provider: provider });
         var edit_data = _.extend(profile, {routes: result.result.routes});
         $('#setup').html(_.template($('#template-setup-profiles-add').html(), edit_data));
       }
@@ -142,9 +142,10 @@ var ProfilesView = Backbone.View.extend({
   actionCheckEmailMagic: function(e) {
     var domain = $(e.target).val().replace(/.*@/, "");
     var provider = SetupMagic.providers[domain];
+    console.log(provider);
     if (provider) {
       $('#input-setup-profile-pass').data('provider', provider).attr('data-provider', provider);
-      $('#validation-pass').fadeIn(function(){
+      $('#validation-pass').fadeIn('fast', function(){
         $('#input-setup-profile-pass').attr("tabindex", -1).focus();
       });
 
