@@ -11,12 +11,14 @@
         <label class="validation-message">{{_("Email")}}</label>
         <input id="input-setup-profile-email" class="profile-update" type="email" name="email" data-vcard_name="emails" autocorrect="off" autocapitalize="off" placeholder="name@email.com" value="<%= email %>" tabindex="2">
       </div>
-      <div id="validation-pass" class="hide">
+      <% if (id === 'new' && provider) { %>
+      <div id="validation-pass">
         <label class="validation-message">{{_("Password")}}</label>
         <input id="input-setup-profile-pass" class="remove-bottom" data-provider="" type="password" name="pass" autocorrect="off" autocapitalize="off" placeholder="" value="" tabindex="3">
         <div class="check-auth half-top"></div>
         <br>
       </div>
+      <% } %>
       <div id="validation-route_id">
         <label class="validation-message">{{_("Sending Route")}}</label>
         <select id="input-setup-profile-route_id" name="route_id" class="<% if (route_id) { %>half-bottom<% } %>" tabindex="5">

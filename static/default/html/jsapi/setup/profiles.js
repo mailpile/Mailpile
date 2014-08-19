@@ -2,7 +2,7 @@
 var ProfileModel = Backbone.Model.extend({
   defaults: {
     id: 'new',
-    action: 'Add',
+    action: '{{_("Add")}}',
     warning: 'none',
     name: '',
     email: '',
@@ -96,7 +96,7 @@ var ProfilesView = Backbone.View.extend({
     $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     var new_model = this.model.attributes;
     Mailpile.API.setup_profiles_get({}, function(result) {
-      var add_data = _.extend(new_model, {routes: result.result.routes});
+      var add_data = _.extend(new_model, {routes: result.result.routes, provider: ''});
       $('#setup').html(_.template($('#template-setup-profiles-add').html(), add_data));
     });
   },
@@ -106,8 +106,10 @@ var ProfilesView = Backbone.View.extend({
     // Load Data & Add to Collection
     Mailpile.API.setup_profiles_get({}, function(result) {
       var profile = result.result.profiles[id];
-      if (profile !== undefined) {        
-        _.extend(profile, { id: id, action: 'Edit' });
+      if (profile !== undefined) {
+        var provider = SetupMagic.providers[profile.email.replace(/.*@/, "")];
+        console.log(provider);
+        _.extend(profile, { id: id, action: '{{_("Edit")}}', provider: provider });
         var edit_data = _.extend(profile, {routes: result.result.routes});
         $('#setup').html(_.template($('#template-setup-profiles-add').html(), edit_data));
       }
