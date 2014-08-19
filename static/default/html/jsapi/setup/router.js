@@ -25,7 +25,8 @@ var SetupRouter = Backbone.Router.extend({
 	},
 	index: function() {
     if ($('#setup-profiles-count').val() > 0) {
-      Backbone.history.navigate('#profiles', true);
+      HomeView.show();
+      // Backbone.history.navigate('#profiles', true);
     } else {
       Backbone.history.navigate('#profiles/add', true);
     }
