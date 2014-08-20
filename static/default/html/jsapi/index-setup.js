@@ -75,9 +75,16 @@ var SetupApp = (function ($, Backbone, global) {
             _.each(result.result.events, function(event, key) {
 
               // Mailsource & Sources Page
-              if (event.source.indexOf(".mail_source.") > -1 && Backbone.history.fragment === 'sources') {
-                SourcesView.eventUnconfigured(event);
-                SourcesView.eventConnection(event);
+              if (Backbone.history.fragment === 'sources') {
+                if (_.indexOf(['.mail_source.imap.ImapMailSource'], event.source) > -1) {
+                  SourcesView.eventUnconfigured(event);
+                  SourcesView.eventRemote(event);
+                }
+                else if (_.indexOf(['.mail_source.maildir.MaildirMailSource', '.mail_source.mbox.MboxMailSource'], event.source) > -1) {
+                  console.log('yolo');
+                  SourcesView.eventUnconfigured(event);
+                  SourcesView.eventLocal(event);
+                }
               }
 
               // Mailsource & Importing Page
