@@ -81,7 +81,6 @@ var SetupApp = (function ($, Backbone, global) {
                   SourcesView.eventRemote(event);
                 }
                 else if (_.indexOf(['.mail_source.maildir.MaildirMailSource', '.mail_source.mbox.MboxMailSource'], event.source) > -1) {
-                  console.log('yolo');
                   SourcesView.eventUnconfigured(event);
                   SourcesView.eventLocal(event);
                 }
