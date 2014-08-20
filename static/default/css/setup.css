@@ -126,7 +126,6 @@ a.setup-check-connection:hover {
 }
 .welcome-logo {
   width: 25%;
-  max-height: 30%;
 }
 .welcome-icons {
   width: 470px;
@@ -198,12 +197,11 @@ label.radio-list-item .icon-key {
   line-height: 14px;
   color: #b3b3b3;
 }
-.setup-profile-disable .icon-minus {
-  font-size: 10px;
-  background: #4d4d4d;
-  color: #ffffff;
-  border-radius: 10px;
-  padding: 3px;
+.setup-item.disabled,
+.setup-item.disabled .name,
+.setup-item.disabled .email,
+.setup-item.disabled .setup-actions a {
+  color: #cccccc;
 }
 /* Setup - Sources */
 .setup-source-notice {

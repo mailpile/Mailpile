@@ -1,4 +1,4 @@
-<li class="setup-item" id="setup-source-<%= id %>">
+<li id="setup-source-<%= id %>" class="setup-item <% if (!enabled) { %>disabled<% } %>">
   <div class="clearfix">
     <div class="left">
       <span class="name"><%= name %></span>
@@ -10,7 +10,11 @@
       <% } %>
       </span>
     </div>
+    <% if (enabled) { %>
     <a href="#" data-id="<%= id %>" class="setup-source-disable right" data-state="<%= enabled %>" data-message="{{_("Disabled")}}">{{_("Enabled")}}</a>
+    <% } else { %>
+    <a href="#" data-id="<%= id %>" class="setup-source-disable right" data-state="<%= enabled %>" data-message="{{_("Enabled")}}">{{_("Disabled")}}</a>
+    <% } %>
   </div>
   <div class="half-top clearfix">
   <div id="setup-source-message-<%= id %>" class="left"><em>{{_("Getting Status...")}}</em></div>
