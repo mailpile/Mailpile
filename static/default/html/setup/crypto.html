@@ -44,7 +44,7 @@
       </span>
       <input name="choose_key" value="!CREATE" type="hidden">
 
-    {% elif setup_crypto.result.secret_keys|length >= 1 %}
+    {% elif setup_crypto.result.secret_keys|length > 0 %}
 
       <label>Select the encryption key you would like to use</label>
       <ul class="radio-list-items">
@@ -53,7 +53,7 @@
         <li class="text-left">
         <label class="radio-list-item">
           <div class="radio text-right">
-            <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key %}checked{% endif %}>
+            <input name="choose_key" value="{{ key }}" type="radio" {% if key == setup_crypto.result.chosen_key or setup_crypto.result.secret_keys|length == 1 %}checked{% endif %}>
           </div>
           <div class="icon text-center">
             <span class="icon-key"></span>
