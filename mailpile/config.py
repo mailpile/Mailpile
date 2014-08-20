@@ -1342,7 +1342,7 @@ class ConfigManager(ConfigDict):
                     fd.write(chunk)
 
         # Keep the last 5 config files around... just in case.
-        backup_file(self.conffile, backups=5, min_age_delta=10)
+        backup_file(self.conffile, backups=5, min_age_delta=900)
         if sys.platform == "win32":
             try: os.remove(self.conffile)
             except WindowsError: pass
