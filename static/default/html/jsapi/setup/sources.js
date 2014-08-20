@@ -196,9 +196,25 @@ var SourcesView = Backbone.View.extend({
   },
   processDisable: function(e) {
     e.preventDefault();
-    var source_id = $(e.target).data('id');
-    Mailpile.API.settings_set_post({ _section: source_id, enabled: false }, function(result) {
-      $('#setup-source-' + source_id).fadeOut();
+    var source_id   = $(e.target).data('id');
+    var old_message = $(e.target).html();
+    var new_message = $(e.target).data('message');
+
+    // Is Enabled, Then Disable
+    if ($(e.target).data('state')) {
+      var state = false;
+    }
+    // Then Enable
+    else {
+      var state = true;
+    }
+
+    console.log(status);
+
+    Mailpile.API.settings_set_post({ _section: source_id, enabled: state }, function(result) {
+      $(e.target).html(new_message);
+      $(e.target).data('state', state);
+      $(e.target).data('message', old_message);
     });
   }
 });
