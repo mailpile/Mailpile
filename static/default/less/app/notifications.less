@@ -144,10 +144,18 @@
     color: @gray;
   }
 
-  div.notification-bubble .title {
+  div.notification-bubble span.title {
     display: inline-block;
     font-weight: bold;
     color: @white;
+  }
+
+  div.notification-bubble.success span.title {
+    color: 1px solid @green;
+  }
+
+  div.notification-bubble.error span.title {
+    color: 1px solid @red;
   }
 
   div.notification-bubble .icon {
@@ -164,5 +172,5 @@
     color: @red;
   }
   div.notification-bubble a.notification-close:hover {
-    color: @white;
+    color: @grayLight;
   }
