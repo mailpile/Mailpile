@@ -109,11 +109,14 @@ Mailpile.API = {
 
 Mailpile.API._ajax_error =  function(base_url, command, data, method, response, status) {
     console.log('Oops, an AJAX call returned as error :(');
-    console.log('url: ' + base_url + command);
-    console.log('method: ' + method);
-    console.log(data);
+    console.log('method: ' + method + ' base_url: ' + base_url + ' command: ' + command);
     console.log('status: ' + status);
     console.log(response);
+
+    // Hide Connection Down
+    if (command == '/0/eventlog/' && status == 'error' && response.status == 404) {
+      $('body').append($('#template-connection-down').html());
+    }
 };
 
 Mailpile.API._action = function(base_url, command, data, method, callback) {
@@ -203,6 +206,7 @@ Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = 
     );
 };
 {% endfor %}
+
 
 /* Plugin Javascript - we do this in multiple commands instead of one big
    dict, so plugin setup code can reference other plugins. Plugins are

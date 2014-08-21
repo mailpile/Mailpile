@@ -56,12 +56,18 @@ EventLog.play = function() {
 }
 
 EventLog.heartbeat_warning = function() {
-    // console.log('heartbeat_warning() just fired');
+    console.log('heartbeat_warning() just fired');
     // DISABLED: EventLog.cancelwarning = Mailpile.notification("warning", "Having trouble connecting to Mailpile... will retry in a few seconds.");
     EventLog.poll();
 }
 
 EventLog.request = function(conditions, callback) {
+
+    // Hide Connection Down
+    if ($('#connection-down').length) {
+      $('#connection-down').fadeOut().remove();
+    }
+
     conditions = conditions || {};
     if (!callback) {
         callback = EventLog.process_result;
@@ -71,7 +77,6 @@ EventLog.request = function(conditions, callback) {
 }
 
 EventLog.poll = function() {
-    // console.log('poll() just fired');
     EventLog.request({since: EventLog.last_ts, wait: 20});     // Request everything new.
 };
 
@@ -140,6 +145,11 @@ $(document).on('click', '.message-close', function() {
   });
 });
 
+
+/* Connection Down - Hide */
+$(document).on('click', '#connection-down-hide', function() {
+  $('#connection-down').fadeOut().remove();
+});
 
 $(document).ready(function() {
 
