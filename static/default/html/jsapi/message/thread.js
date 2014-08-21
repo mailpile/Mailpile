@@ -1,5 +1,4 @@
 Mailpile.render_thread_message = function(mid) {
-  
   $.ajax({
     url			 : Mailpile.api.message + mid + "/single.jhtml",
     type		 : 'GET',
@@ -11,7 +10,7 @@ Mailpile.render_thread_message = function(mid) {
       }
     },
     error: function() {
-      Mailpile.notification('error', 'Could not retrieve message');
+      Mailpile.notification({status: 'error', message: 'Could not retrieve message'});
     }
   });
 };
@@ -19,10 +18,8 @@ Mailpile.render_thread_message = function(mid) {
 
 /* Thread - iframe styling */
 Mailpile.thread_html_iframe = function(element) {
-
   var new_iframe_height = $(element).contents().height();
   $('.thread-item-html').height(new_iframe_height);
-
   $(element).contents().find('body div').addClass('thread-item-html-text');
 };
 
@@ -62,7 +59,6 @@ $(document).on('click', '.show-thread-tags', function() {
 
 /* Thread - Show Security */
 $(document).on('click', '.show-thread-security', function() {
-  
   alert('FIXME: Show details about security of thread');
 });
 
@@ -121,11 +117,9 @@ $('div.thread-draggable').draggable({
 
     // Add Draggable MID
     var mid = location.href.split("thread/=")[1].split("/")[0];
-    console.log('dragging mid: ' + mid);
     Mailpile.bulk_cache_add('messages_cache', mid);
 
     // Update Bulk UI
-
   	// Style & Select Checkbox
   	
   },

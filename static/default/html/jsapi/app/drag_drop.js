@@ -32,7 +32,7 @@ Mailpile.sidebar_tags_droppable_opts = {
 
     Mailpile.API.tag_post({ add: tid, del: tags_delete, mid: Mailpile.messages_cache}, function(result) {
 
-      console.log(result);
+      // Show
       Mailpile.notification(result);
 
       // Update Pile View

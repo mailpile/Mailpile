@@ -12,7 +12,7 @@ Mailpile.tag_add = function(tag_add, mids, complete) {
       if (response.status == 'success') {
        complete(response.result);       
       } else {
-        Mailpile.notification(response.status, response.message);
+        Mailpile.notification(response);
       }
     }
   });
@@ -35,7 +35,7 @@ Mailpile.tag_update = function(tid, setting, value, complete) {
       if (response.status == 'success') {
         complete(response.result);
       } else {
-        Mailpile.notification(response.status, response.message);
+        Mailpile.notification(response);
       }
     }
   });
@@ -147,7 +147,7 @@ $(document).on('click', '#button-tag-toggle-archive', function(e) {
 $(document).on('blur', '#data-tag-add-tag', function(e) {
   Mailpile.tag_update($('#data-tag-tid').val(), 'name', $(this).val(), function(response) {
     Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function(response) {
-      Mailpile.notification(response.status, '{{_("Tag Name & Slug Updated")}}');
+      Mailpile.notification(response);
     });
   });
 });
@@ -156,7 +156,7 @@ $(document).on('blur', '#data-tag-add-tag', function(e) {
 /* Tag - Update the Slug */
 $(document).on('blur', '#data-tag-add-slug', function(e) {
   Mailpile.tag_update($('#data-tag-tid').val(), 'slug', $('#data-tag-add-slug').val(), function(response) {
-    Mailpile.notification(response.status, '{{("Tag Name & Slug Updated")}}');
+    Mailpile.notification(response);
   });
 });
 
@@ -164,7 +164,7 @@ $(document).on('blur', '#data-tag-add-slug', function(e) {
 /* Tag - Update (multiple attribute events) */
 $(document).on('change', '#data-tag-display', function(e) {
   Mailpile.tag_update($('#data-tag-tid').val(), 'display', $(this).val(), function(response) {
-    Mailpile.notification(response.status, response.message);
+    Mailpile.notification(response);
   });  
 });
 
@@ -172,7 +172,7 @@ $(document).on('change', '#data-tag-display', function(e) {
 /* Tag - Update parent */
 $(document).on('change', '#data-tag-parent', function(e) {
   Mailpile.tag_update($('#data-tag-tid').val(), 'parent', $(this).val(), function(response) {
-    Mailpile.notification(response.status, response.message);
+    Mailpile.notification(response);
   });  
 });
 

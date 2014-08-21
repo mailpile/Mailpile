@@ -24,7 +24,7 @@ $(document).on('click', '.message-action-forward', function() {
       if (response.status === 'success') {
         window.location.href = Mailpile.urls.message_draft + response.result.created + '/';
       } else {
-        Mailpile.notification(response.status, response.message);
+        Mailpile.notification(response);
       }
     }
   });
@@ -72,7 +72,7 @@ $(document).on('click', '.message-action-unthread', function() {
                             .addClass('thread-notification')
                             .html(_.template($('#template-thread-notification-unthreaded').html(), notification_data));
       } else {
-        Mailpile.notification(response.status, response.message);
+        Mailpile.notification(response);
       }
     }
   });

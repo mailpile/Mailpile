@@ -253,7 +253,7 @@ $(document).on('click', '.compose-action', function(e) {
         Mailpile.compose_render_message_thread(response.result.thread_ids[0]);
       }
       else {
-        Mailpile.notification(response.status, response.message);
+        Mailpile.notification(response);
       }
     },
     error: function() {

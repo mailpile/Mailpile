@@ -89,7 +89,12 @@ var ProfilesView = Backbone.View.extend({
     e.preventDefault();
     var profile_id = $(e.target).data('id');
     Mailpile.API.profiles_remove_post({ rid: profile_id }, function(result) {
-      $('#setup-profile-' + profile_id).fadeOut();
+      $('#setup-profile-' + profile_id).fadeOut(function() {
+        $(this).remove();
+      });
+      if ($('#setup-profiles-list-items li.setup-item').length === 1) {
+        $('.setup-profile-remove').parent().hide();
+      }
     });
   }
 });
