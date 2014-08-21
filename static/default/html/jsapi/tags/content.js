@@ -19,27 +19,6 @@ Mailpile.tag_add = function(tag_add, mids, complete) {
 };
 
 
-Mailpile.tag_add_delete = function(tag_add, tag_del, mids, complete) {
-  $.ajax({
-	  url			 : Mailpile.api.tag,
-	  type		 : 'POST',
-	  data     : {
-      add: tag_add,
-      del: tag_del,
-      mid: mids
-    },
-	  dataType : 'json',
-    success  : function(response) {
-      if (response.status == 'success') {
-        complete(response.result);
-      } else {
-        Mailpile.notification(response.status, response.message);
-      }
-    }
-  });
-};
-
-
 Mailpile.tag_update = function(tid, setting, value, complete) {
 
   // Prep Update Value

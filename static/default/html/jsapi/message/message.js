@@ -34,7 +34,7 @@ $(document).on('click', '.message-action-forward', function() {
 /* Message - Move message to inbox */
 $(document).on('click', '.message-action-inbox', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
-  Mailpile.tag_add_delete(['inbox'], ['spam', 'trash'], mid, function() {
+  Mailpile.API.tag_post({ add: ['inbox'],  del: ['spam', 'trash'], mid: mid}, function() {
     window.location.href = '/in/inbox/';
   });
 });
@@ -43,7 +43,7 @@ $(document).on('click', '.message-action-inbox', function() {
 /* Message - Move message to archive */
 $(document).on('click', '.message-action-archive', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
-  Mailpile.tag_add_delete('', ['inbox'], mid, function(response) {
+  Mailpile.API.tag_post({ add: '', del: ['inbox'], mid: mid}, function(response) {
     window.location.href = '/in/inbox/';
   });
 });
@@ -52,7 +52,7 @@ $(document).on('click', '.message-action-archive', function() {
 /* Message - Mark message as spam */
 $(document).on('click', '.message-action-spam', function() {
   var mid = $(this).parent().parent().parent().parent().data('mid');
-  Mailpile.tag_add_delete(['spam'], ['trash', 'inbox'], mid, function() {
+  Mailpile.API.tag_post({ add: ['spam'], del: ['trash', 'inbox'], mid: mid}, function() {
     window.location.href = '/in/inbox/';
   });
 });
@@ -82,7 +82,7 @@ $(document).on('click', '.message-action-unthread', function() {
 /* Message - Move a message to trash */
 $(document).on('click', '.message-action-trash', function() {
   var mid = $(this).parent().parent().data('mid');
-  Mailpile.tag_add_delete(['trash'], ['spam', 'inbox'], mid, function() {
+  Mailpile.API.tag_post({ add: ['trash'], del: ['spam', 'inbox'], mid: mid}, function() {
     window.location.href = '/in/inbox/';
   });
 });

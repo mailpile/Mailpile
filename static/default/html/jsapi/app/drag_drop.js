@@ -30,7 +30,10 @@ Mailpile.sidebar_tags_droppable_opts = {
       var tags_delete = Mailpile.instance.search_tag_ids;
     }
 
-    Mailpile.tag_add_delete(tid, tags_delete, Mailpile.messages_cache, function() {
+    Mailpile.API.tag_post({ add: tid, del: tags_delete, mid: Mailpile.messages_cache}, function(result) {
+
+      console.log(result);
+      Mailpile.notification(result);
 
       // Update Pile View
       if (Mailpile.instance.state.command_url == '/search/') {

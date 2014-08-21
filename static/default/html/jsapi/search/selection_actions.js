@@ -26,7 +26,7 @@ $(document).on('click', '.bulk-action-tag', function() {
 
 /* Search - Bulk Action - Archive */
 $(document).on('click', '.bulk-action-archive', function() {
-  Mailpile.tag_add_delete('', 'inbox', Mailpile.messages_cache, function() {
+  Mailpile.API.tag_post({ add: '', del: 'inbox', mid: Mailpile.messages_cache}, function() {
 
     // Update Pile View
     $.each(Mailpile.messages_cache, function(key, mid) {
@@ -44,7 +44,7 @@ $(document).on('click', '.bulk-action-archive', function() {
 
 /* Search - Bulk Action - Trash */
 $(document).on('click', '.bulk-action-trash', function() {
-  Mailpile.tag_add_delete('trash', 'new', Mailpile.messages_cache, function() {
+  Mailpile.API.tag_post({ add: 'trash', del: 'new', mid: Mailpile.messages_cache}, function() {
 
     // Update Pile View
     $.each(Mailpile.messages_cache, function(key, mid) {
@@ -62,7 +62,7 @@ $(document).on('click', '.bulk-action-trash', function() {
 
 /* Search - Bulk Action - Spam */
 $(document).on('click', '.bulk-action-spam', function() {
-  Mailpile.tag_add_delete('spam', 'new', Mailpile.messages_cache, function() {
+  Mailpile.API.tag_post({ add: 'spam', del: 'new', mid: Mailpile.messages_cache}, function() {
 
     // Update Pile View
     $.each(Mailpile.messages_cache, function(key, mid) {
@@ -106,7 +106,7 @@ $(document).on('submit', '#form-tag-picker', function(e) {
   }
 
   // Send Result
-   Mailpile.tag_add_delete(add_tags, remove_tags, Mailpile.messages_cache, function(result) {
+   Mailpile.API.tag_post({ add: add_tags, del: remove_tags, mid: Mailpile.messages_cache}, function(result) {
     var tag_link_template = $('#template-search-pile-tags-link').html();
 
     $.each(result.msg_ids, function(key, mid) {

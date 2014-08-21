@@ -7,7 +7,7 @@ Mailpile.keybinding_move_message = function(add_tag) {
     delete_tags.push('new');
 
     // Add / Delete
-    Mailpile.tag_add_delete(add_tag, delete_tags, Mailpile.messages_cache, function() {
+    Mailpile.API.tag_post({ add: add_tag,del: delete_tags, mid: Mailpile.messages_cache}, function() {
 
       // Update Pile View
       $.each(Mailpile.messages_cache, function(key, mid) {
