@@ -5720,67 +5720,7 @@ table.background-white td {
   top: 42px;
   left: 47px;
 }
-/* Notifications - Messages (error, warning, debug, info, success) */
-#messages {
-  width: 100%;
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  z-index: 1000;
-}
-#messages div {
-  margin: 0px;
-  padding: 10px 10px 10px 20px;
-  list-style: none;
-  font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-  color: #ffffff;
-  border-bottom: 1px solid #b3b3b3;
-  background-color: #ffffff;
-  display: none;
-}
-#messages span.message-text {
-  width: 90%;
-  padding-top: 3px;
-  display: block;
-  float: left;
-  text-align: left;
-}
-#messages span.message-text a {
-  color: #b3b3b3;
-}
-#messages abbr.message-close {
-  cursor: pointer;
-  float: right;
-  display: block;
-  background: #ffffff;
-  color: #333333;
-  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
-  padding: 2px 10px;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 4px;
-}
-#messages abbr.message-close:hover {
-  background: #b3b3b3;
-  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
-}
-#messages .error {
-  background-color: #be1c21;
-}
-#messages .warning {
-  background-color: #fbb03b;
-}
-#messages .debug {
-  background-color: #b3b3b3;
-}
-#messages .info {
-  background-color: #337fb2;
-}
-#messages .success {
-  background-color: #4b9441;
-}
-/* Notifications - Menu */
+/* Notifications - Not implemented dropdown */
 #notifications {
   width: 300px;
   height: 400px;
@@ -5855,7 +5795,7 @@ li.notification img {
 #notification-bubbles {
   position: absolute;
   top: 0px;
-  right: 15px;
+  right: 10px;
   width: 250px;
   display: inline-block;
   z-index: 1000;
@@ -5863,6 +5803,7 @@ li.notification img {
 }
 div.notification-bubble {
   margin-top: 13.33333333px;
+  display: table;
   background: #4d4d4d;
   border-radius: 3px;
   padding: 7.5px 15px;
@@ -5871,25 +5812,57 @@ div.notification-bubble {
   font-size: 14px;
   color: #b3b3b3;
 }
-div.notification-bubble .title {
-  display: inline-block;
-  font-weight: bold;
+div.notification-bubble span.icon {
+  display: table-cell;
+  vertical-align: text-top;
   color: #ffffff;
+  margin-right: 5px;
+  font-size: 14px;
+  line-height: 14px;
 }
-div.notification-bubble .icon {
-  color: #ffffff;
-}
-div.notification-bubble a {
-  color: #b3b3b3;
-}
-div.notification-bubble a:visited {
-  color: #b3b3b3;
-}
-div.notification-bubble a:hover {
+div.notification-bubble.error .icon {
   color: #be1c21;
 }
-div.notification-bubble a.notification-close:hover {
+div.notification-bubble.warning .icon {
+  color: #fbb03b;
+}
+div.notification-bubble.success .icon {
+  color: #4b9441;
+}
+div.notification-bubble span.text {
+  width: 175px;
+  display: table-cell;
+  vertical-align: text-top;
+  padding-left: 10px;
+  padding-bottom: 3px;
+  font-size: 14px;
+  line-height: 18px;
   color: #ffffff;
+}
+div.notification-bubble span.title {
+  font-weight: bold;
+}
+div.notification-bubble span.undo {
+  font-weight: normal;
+  font-style: italic;
+  color: #b3b3b3;
+}
+div.notification-bubble a.notification-undo {
+  color: #b3b3b3;
+}
+div.notification-bubble a.notification-undo:visited {
+  color: #b3b3b3;
+}
+div.notification-bubble a.notification-undo:hover {
+  color: #be1c21;
+}
+div.notification-bubble a.notification-close {
+  display: table-cell;
+  vertical-align: text-top;
+  color: #b3b3b3;
+}
+div.notification-bubble a.notification-close:hover {
+  color: #f6f6f6;
 }
 /* Navigation */
 .navigation-on {
@@ -6034,12 +6007,12 @@ div.notification-bubble a.notification-close:hover {
 .topbar-nav ul:after {
   clear: both;
 }
-.topbar-nav ul li {
+.topbar-nav > ul > li {
   float: left;
   margin-left: 15px;
   text-align: center;
 }
-.topbar-nav a {
+.topbar-nav > ul > li > a {
   width: 32px;
   height: 32px;
   display: block;
@@ -6050,33 +6023,38 @@ div.notification-bubble a.notification-close:hover {
   -moz-transition-duration: 0.3s;
   transition-duration: 0.3s;
 }
-.topbar-nav a:hover {
+.topbar-nav > ul > li > a:hover {
   color: #337fb2;
   -webkit-transition-duration: 0.2s;
   -moz-transition-duration: 0.2s;
   transition-duration: 0.2s;
 }
-.topbar-nav a img {
+.topbar-nav > ul > li > a img {
   height: 32px;
 }
-.topbar-nav a.donate:hover {
+.topbar-nav > ul > li > a.donate:hover {
   color: #be1c21;
 }
-.topbar-nav span.link-icon {
+.topbar-nav > ul > li > a span.link-icon {
   display: block;
   font-size: 32px;
   line-height: 32px;
 }
-.topbar-nav .navigation-on {
+.topbar-nav > ul > li.navigation-on {
   background: #cccccc;
   border-radius: 3px;
 }
-.topbar-nav .navigation-on a {
+.topbar-nav > ul > li.navigation-on > a {
   color: #4d4d4d;
   cursor: default;
 }
 .topbar-nav .nav-search {
   display: none;
+}
+.topbar-nav > ul > li.nav-dropdown ul.dropdown-menu li {
+  display: block;
+  float: none;
+  text-align: left;
 }
 /* Sidebar */
 #sidebar {

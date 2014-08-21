@@ -19,11 +19,13 @@ Mailpile.notification = function(result, complete, complete_action) {
     result.message = default_messages[result.status];
   }
 
-  var notification_data = _.extend(result, {
-    icon: 'icon-message',
-    undo: false
-  });
+  if (result.undo == undefined) {
+    result['undo'] = false;
+  }
 
+  var notification_data = _.extend(result, {
+    icon: 'icon-message'
+  });
 
   // Add Notification
   var notification_html = _.template($('#template-notification-bubble').html(), notification_data);
@@ -39,7 +41,7 @@ Mailpile.notification = function(result, complete, complete_action) {
       $('#event-' + result.event_id).fadeOut(function() {
         $(this).remove();
       });
-    }, 7500);
+    }, 8000);
   } else if (complete == 'hide') {
       message.delay(5000).fadeOut('normal', function() {
           message.find('span.message-text').empty();

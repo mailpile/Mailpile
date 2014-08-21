@@ -231,10 +231,13 @@
 
 <script id="template-notification-bubble" type="text/template">
   <div id="event-<%= event_id %>" class="notification-bubble <%= status %> hide">
-    <a href="#" class="notification-close right"><span class="icon-circle-x"></span></a>
-    <span class="icon <%= icon %>"></span> <span class="title"><%= message %></span><br> 
-    <% if (undo) { %>
-    {{_("A mistake?")}} <a href="#">{{_("Undo")}}</a>
-    <% } %>
+    <span class="icon <%= icon %>"></span> 
+    <span class="text">
+      <span class="title"><%= message %></span><br> 
+      <% if (undo) { %>
+      <span class="undo">{{_("A mistake")}}, <a href="#" class="notification-undo">{{_("undo")}}</a></span>
+      <% } %>
+    </span>
+    <a href="#" class="notification-close"><span class="icon-circle-x"></span></a>
   </div>
 </script>

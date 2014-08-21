@@ -1,63 +1,4 @@
-/* Notifications - Messages (error, warning, debug, info, success) */
-
-  #messages {
-    width: 100%;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    z-index: 1000;
-  }
-
-	#messages div {
-		margin: 0px;
-		padding: 10px 10px 10px 20px;
-		list-style: none;
-		font-family: @text-font-family-bold;
-		text-shadow: @text-shadow-on-dark;
-		color: @white;
-		border-bottom: 1px solid @gray;
-		background-color: @white;
-		display: none;
-	}
-
-	#messages span.message-text {
-		width: 90%;
-		padding-top: 3px;
-		display: block;
-		float: left;
-		text-align: left;
-	}
-
-	#messages span.message-text a {
-    color: @gray;
-  }
-
-	#messages abbr.message-close {
-		cursor: pointer;
-		float: right;
-		display: block;
-		background: @white;
-		color: @text-color;
-		box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
-		padding: 2px 10px;
-		font-size: 12px;
-		font-weight: bold;
-		border-radius: 4px;
-	}
-	
-	#messages abbr.message-close:hover {
-		background: @gray;
-		box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);		
-	}
-
-	#messages .error   { background-color: @red; }
-	#messages .warning { background-color: @orange; }
-	#messages .debug   { background-color: @gray; }
-	#messages .info    { background-color: @blue; }
-	#messages .success { background-color: @green; }
-
-
-/* Notifications - Menu */
+/* Notifications - Not implemented dropdown */
 
   #notifications {
     width: 300px;
@@ -126,7 +67,7 @@
   #notification-bubbles {
     position: absolute;
     top: 0px;
-    right: 15px;
+    right: 10px;
     width: 250px;
     display: inline-block;
     z-index: 1000;
@@ -135,6 +76,7 @@
 
   div.notification-bubble {
     margin-top: (@base-margin / 1.5);
+    display: table;
     background: @grayDark;
     border-radius: (@base-border-radius);
     padding: (@base-padding / 2) @base-padding;
@@ -144,33 +86,43 @@
     color: @gray;
   }
 
-  div.notification-bubble span.title {
-    display: inline-block;
-    font-weight: bold;
+  div.notification-bubble span.icon {
+    display: table-cell;
+    vertical-align: text-top;
+    color: @white;
+    margin-right: 5px;
+    font-size: 14px;
+    line-height: 14px;
+  }
+
+  div.notification-bubble.error   .icon { color: @red; }
+	div.notification-bubble.warning .icon { color: @orange; }
+  div.notification-bubble.success .icon { color: @green; }
+
+  div.notification-bubble span.text {
+    width: 175px;
+    display: table-cell;
+    vertical-align: text-top;
+    padding-left: 10px;
+    padding-bottom: 3px;
+    font-size: 14px;
+    line-height: 18px;
     color: @white;
   }
 
-  div.notification-bubble.success span.title {
-    color: 1px solid @green;
+  div.notification-bubble span.title {
+    font-weight: bold;
   }
 
-  div.notification-bubble.error span.title {
-    color: 1px solid @red;
-  }
-
-  div.notification-bubble .icon {
-    color: @white;    
-  }
-
-  div.notification-bubble a {
-    color: @gray;
-  }
-  div.notification-bubble a:visited {
+  div.notification-bubble span.undo {
+    font-weight: normal;
+    font-style: italic;
     color: @gray;
   }  
-  div.notification-bubble a:hover {
-    color: @red;
-  }
-  div.notification-bubble a.notification-close:hover {
-    color: @grayLight;
-  }
+
+  div.notification-bubble a.notification-undo         { color: @gray; }
+  div.notification-bubble a.notification-undo:visited { color: @gray; }  
+  div.notification-bubble a.notification-undo:hover   { color: @red; }
+
+  div.notification-bubble a.notification-close        { display: table-cell; vertical-align: text-top; color: @gray; }
+  div.notification-bubble a.notification-close:hover  { color: @grayLight; }
