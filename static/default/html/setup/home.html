@@ -2,33 +2,39 @@
   <h2 class="text-center"><span class="icon-settings"></span> {{_("Setup")}}</h2>
   <table class="full-width add-top">
   <tr>
-    <td class="text-center add-bottom">
-      <a href="/setup/crypto/" class="button-primary half-bottom"><span class="icon-lock-closed"></span> Encryption Keys</a>
-      <p class="add-bottom">Manage your encryption keys and the passphrase you access your Mailpile with</p>
+    <td>
+      <h3 class="half-bottom"><span class="icon-lock-closed"></span> {{_("Encryption Keys")}}</h3>
+      <p>Manage your encryption keys and the passphrase you access your Mailpile with</p>
+      <a href="/setup/crypto/" class="button-primary ad-bottom">{{_("Edit")}}</a>
     </td>
-    <td class="text-center">
-      <a href="/setup/#profiles" class="button-primary half-bottom"><span class="icon-profiles"></span> Profiles</a>
-      <p class="add-bottom">Manage profiles that you send messages from & store on your encryption key</p>
-    </td>
-  </tr>
-  <tr>
-    <td class="text-center">
-      <a href="/setup/#sources" class="button-primary half-bottom"><span class="icon-inbox"></span> Sources</a>
-      <p class="add-bottom">Manage sources of where your messages from and how they're organized.</p>
-    </td>
-    <td class="text-center">
-      <a href="/setup/#security" class="button-primary half-bottom"><span class="icon-privacy"></span> Security</a>
-      <p class="add-bottom">Security settings of how you keep things safe and sound and away from unwanted prying eyes.</p>
+    <td>
+      <h3 class="half-bottom"><span class="icon-profiles"></span> {{_("Profiles")}}</h3>
+      <p>Manage profiles that you send messages from & store on your encryption key</p>
+      <a href="/setup/#profiles" class="button-primary add-bottom">{{_("Edit")}}</a>
     </td>
   </tr>
   <tr>
-    <td class="text-center">
-      <a href="/setup/#backups" class="button-primary half-bottom"><span class="icon-list"></span> Backups</a>
-      <p class="add-bottom">Configure how your Mailpile is backed up so you never lose your emails and contacts.</p>
+    <td>
+      <h3 class="half-bottom"><span class="icon-inbox"></span> {{_("Sources")}}</h3>
+      <p>Manage sources of where your messages from and how they're organized.</p>
+      <a href="/setup/#sources" class="button-primary add-bottom">{{_("Edit")}}</a>
     </td>
-    <td class="text-center">
-      <a href="/setup/#access" class="button-primary half-bottom"><span class="icon-list"></span> Access</a>
-      <p class="add-bottom">Want to access your Mailpile from your smartphone, tablet or work computer?</p>
+    <td>
+      <h3 class="half-bottom"><span class="icon-privacy"></span> {{_("Security")}}</h3>
+      <p>Security settings of how you keep things safe and sound and away from unwanted prying eyes.</p>
+      <a href="/setup/#security" class="button-primary add-bottom">{{_("Edit")}}</a>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h3 class="half-bottom"><span class="icon-list"></span> {{_("Backups")}}</h3>
+      <p>Configure how your Mailpile is backed up so you never lose your emails and contacts.</p>
+      <a href="/setup/#backups" class="button-primary add-bottom">{{_("Edit")}}</a>
+    </td>
+    <td>
+      <h3 class="half-bottom"><span class="icon-list"></span> {{_("Access")}}</h3>
+      <p>Want to access your Mailpile from your smartphone, tablet or work computer?</p>
+      <a href="/setup/#access" class="button-primary add-bottom">{{_("Edit")}}</a>
     </td>
   </tr>
   </table>
