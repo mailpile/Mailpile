@@ -169,6 +169,20 @@ class UrlRedirectException(Exception):
         self.url = url
 
 
+class MultiContext:
+    def __init__(self, contexts):
+        self.contexts = contexts or []
+
+    def __enter__(self, *args, **kwargs):
+        for ctx in self.contexts:
+            ctx.__enter__(*args, **kwargs)
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        for ctx in reversed(self.contexts):
+            ctx.__exit__(*args, **kwargs)
+
+
 def b64c(b):
     """
     Rewrite a base64 string:

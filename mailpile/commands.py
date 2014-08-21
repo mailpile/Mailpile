@@ -51,6 +51,7 @@ class Command:
     ORDER = (None, 0)
     SPLIT_ARG = True  # Uses shlex by default
     RAISES = (UsageError, UrlRedirectException)
+    WITH_CONTEXT = ()
 
     # Event logging settings
     LOG_NOTHING = False
@@ -480,9 +481,10 @@ class Command:
         if self.run_async:
             def streetcar():
                 try:
-                    rv = self._run_sync(*args, **kwargs).as_dict()
-                    self.event.private_data.update(rv)
-                    self._update_finished_event()
+                    with MultiContext(self.WITH_CONTEXT):
+                        rv = self._run_sync(*args, **kwargs).as_dict()
+                        self.event.private_data.update(rv)
+                        self._update_finished_event()
                 except:
                     traceback.print_exc()
 
@@ -502,15 +504,16 @@ class Command:
             return self._run_sync(*args, **kwargs)
 
     def run(self, *args, **kwargs):
-        if self.IS_USER_ACTIVITY:
-            try:
-                mailpile.util.LAST_USER_ACTIVITY = time.time()
-                mailpile.util.LIVE_USER_ACTIVITIES += 1
+        with MultiContext(self.WITH_CONTEXT):
+            if self.IS_USER_ACTIVITY:
+                try:
+                    mailpile.util.LAST_USER_ACTIVITY = time.time()
+                    mailpile.util.LIVE_USER_ACTIVITIES += 1
+                    return self._run(*args, **kwargs)
+                finally:
+                    mailpile.util.LIVE_USER_ACTIVITIES -= 1
+            else:
                 return self._run(*args, **kwargs)
-            finally:
-                mailpile.util.LIVE_USER_ACTIVITIES -= 1
-        else:
-            return self._run(*args, **kwargs)
 
     def command(self):
         return None
