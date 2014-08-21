@@ -33,19 +33,19 @@
         <% } %>
       </td>
       <td class="middle text-center">
-        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.inbox %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.inbox; }) == special_tags.inbox) { %>checked<% } %>>
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.inbox %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.inbox; }) == special_tags.inbox) { %>checked<% } %>>
       </td>
       <td class="middle text-center">
-        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.drafts %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.drafts; }) == special_tags.drafts) { %>checked<% } %>>
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.drafts %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.drafts; }) == special_tags.drafts) { %>checked<% } %>>
       </td>
       <td class="middle text-center">
-        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.sent %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.sent; }) == special_tags.sent) { %>checked<% } %>>
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.sent %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.sent; }) == special_tags.sent) { %>checked<% } %>>
       </td>
       <td class="middle text-center">
-        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.spam %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.spam; }) == special_tags.spam) { %>checked<% } %>>
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.spam %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.spam; }) == special_tags.spam) { %>checked<% } %>>
       </td>
       <td class="middle text-center">
-        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= tags.trash %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.trash; }) == special_tags.trash) { %>checked<% } %>>
+        <input type="checkbox" name="mailbox.<%= key %>.apply_tags[]" value="<%= special_tags.trash %>" <% if (_.filter(mailbox.apply_tags, function(item){ return item == special_tags.trash; }) == special_tags.trash) { %>checked<% } %>>
       </td>
       <td class="middle text-center">
         <input type="checkbox" class="source-mailbox-policy" name="mailbox.<%= key %>.policy" value="<% if (mailbox.policy == 'unknown') { %>read<% } else { %><%= mailbox.policy %><% } %>" <% if (mailbox.policy == 'read' || mailbox.policy == 'unknown') { %>checked<% } %>>
