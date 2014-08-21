@@ -1365,6 +1365,7 @@ class ProgramStatus(Command):
     def command(self, args=None):
         import mailpile.auth
         import mailpile.mail_source
+        import mailpile.plugins.compose
 
         config = self.session.config
 
@@ -1387,6 +1388,8 @@ class ProgramStatus(Command):
             ('mailpile.postinglist', 'GLOBAL_POSTING_LOCK',
              mailpile.postinglist.GLOBAL_POSTING_LOCK._is_owned()),
             ('mailpile.postinglist', 'GLOBAL_OPTIMIZE_LOCK',
+             mailpile.plugins.compose.GLOBAL_EDITING_LOCK._is_owned()),
+            ('mailpile.plugins.compose', 'GLOBAL_EDITING_LOCK',
              mailpile.postinglist.GLOBAL_OPTIMIZE_LOCK.locked()),
             ('mailpile.postinglist', 'GLOBAL_GPL_LOCK',
              mailpile.postinglist.GLOBAL_GPL_LOCK._is_owned()),

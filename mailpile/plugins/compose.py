@@ -24,6 +24,8 @@ from mailpile.vcard import AddressInfo
 from mailpile.plugins.search import Search, SearchResults, View
 
 
+GLOBAL_EDITING_LOCK = MboxRLock()
+
 _plugins = PluginManager(builtin=__file__)
 
 
@@ -41,6 +43,8 @@ class EditableSearchResults(SearchResults):
 
 def AddComposeMethods(cls):
     class newcls(cls):
+        WITH_CONTEXT = (GLOBAL_EDITING_LOCK, )
+
         def _create_contacts(self, emails):
             try:
                 from mailpile.plugins.contacts import AddContact
