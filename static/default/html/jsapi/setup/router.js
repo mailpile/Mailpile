@@ -1,7 +1,9 @@
 // Setup Router
 var SetupRouter = Backbone.Router.extend({
-	initialize: function(el) {
-		this.el = el;
+	initialize: function(options) {
+    this.state = options.state;
+    this.el = options.el;
+    this.index();
 	},
 	routes: {
 		"" 						     : "index",
@@ -23,16 +25,26 @@ var SetupRouter = Backbone.Router.extend({
 		"access"           : "access",
     "importing"        : "importing"
 	},
+	checkView: function(view) {
+
+    var state = StateModel.checkState(view);
+
+		if (view == state) {
+      return true;
+		}
+    else {
+      Backbone.history.navigate(state, true);
+    }
+	},
 	index: function() {
-    if ($('#setup-profiles-count').val() > 0) {
+    if (this.checkView('#')) {
       HomeView.show();
-      // Backbone.history.navigate('#profiles', true);
-    } else {
-      Backbone.history.navigate('#profiles/add', true);
     }
   },
 	profiles: function() {
-		ProfilesView.show();
+    if (this.checkView('#profiles')) {
+      ProfilesView.show();
+    }
 	},
 	profilesAdd: function() {
 		ProfilesSettingsView.show();
@@ -40,17 +52,15 @@ var SetupRouter = Backbone.Router.extend({
   profilesEdit: function(id) {
     ProfilesSettingsView.showEdit(id);
   },
-  discovery: function() {
-		IdentityView.showDiscovery();
-  },
-	cryptoGenerated: function() {
-		IdentityView.showCryptoGenerated();
-	},
   sources: function() {
-    SourcesView.show();
+    if (this.checkView('#sources')) {
+      SourcesView.show();
+    }
   },
   sourcesAdd: function() {
-    SourcesSettingsView.show();
+    if (this.checkView('#sources/add')) {
+      SourcesSettingsView.show();
+    }
   },
   sourcesEdit: function(id) {
     SourcesSettingsView.showEdit(id);
@@ -59,7 +69,9 @@ var SetupRouter = Backbone.Router.extend({
     SourcesConfigureView.show(id);
   },
 	sending: function() {
-		SendingView.show();
+    if (this.checkView('#sending')) {
+      SendingView.show();
+    }
 	},
   sendingAdd: function() {
     SendingView.showAdd();
@@ -80,6 +92,8 @@ var SetupRouter = Backbone.Router.extend({
     AccessView.show();
   },
   importing: function() {
-    ImportingView.show();
+    if (this.checkView('#importing')) {
+      ImportingView.show();
+    }
   }
 });

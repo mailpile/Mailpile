@@ -1,6 +1,7 @@
 /* JS App Files */
 {% include("jsapi/setup/magic.js") %}
 {% include("jsapi/setup/passphrase.js") %}
+{% include("jsapi/setup/state.js") %}
 {% include("jsapi/setup/home.js") %}
 {% include("jsapi/setup/profiles.js") %}
 {% include("jsapi/setup/profiles_settings.js") %}
@@ -30,24 +31,24 @@ _.extend(Backbone.Validation.callbacks, {
   }
 });
 
-
 /* Main Init Call */
 var SetupApp = (function ($, Backbone, global) {
 
     var init = function() {
 
+      global.StateModel     = new StateModel();
       global.SecurityModel = new SecurityModel();
 
       global.ProfilesCollection = new ProfilesCollection();
-      global.SourcesCollection = new SourcesCollection();
-      global.SendingCollection = new SendingCollection();
+      global.SourcesCollection  = new SourcesCollection();
+      global.SendingCollection  = new SendingCollection();
 
       // Views
       global.HomeView       = new HomeView({ el: $('#setup') });
       global.ProfilesView   = new ProfilesView({ model: new ProfileModel(), el: $('#setup') });
       global.ProfilesSettingsView = new ProfilesSettingsView({ model: new ProfileModel(), el: $('#setup') });
-      global.SourcesView    = new SourcesView({ el: $('#setup') });
-      global.SourcesSettingsView = new SourcesSettingsView({ model: new SourceModel(), el: $('#setup') });
+      global.SourcesView          = new SourcesView({ el: $('#setup') });
+      global.SourcesSettingsView  = new SourcesSettingsView({ model: new SourceModel(), el: $('#setup') });
       global.SourcesConfigureView = new SourcesConfigureView({ el: $('#setup') });
       global.SendingView    = new SendingView({ model: new SendingModel(), el: $('#setup') });
       global.SecurityView   = new SecurityView({ el: $('#setup') });
@@ -56,11 +57,13 @@ var SetupApp = (function ($, Backbone, global) {
       global.ImportingView  = new ImportingView({ el: $('#setup') });
       global.TooltipsView   = new TooltipsView({ el: $('#setup') });
 
-  		// Router
-  		global.Router = new SetupRouter($('#setup'));
-
-      // Start Backbone History
-      Backbone.history.start();
+  		// Fetch State, Start Router
+      StateModel.fetch({
+        success: function(model) {
+          global.Router = new SetupRouter({ state: model.attributes.result, el: $('#setup') });
+          Backbone.history.start();
+        }
+      });
 
       // Global Tooltips
       TooltipsView.showProgress();

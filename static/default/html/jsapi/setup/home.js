@@ -1,9 +1,3 @@
-/* Setup - Home - Model */
-var HomeModel = Backbone.Model.extend({
-  validation: {}
-});
-
-
 /* Setup - Home - View */
 var HomeView = Backbone.View.extend({
   initialize: function() {
