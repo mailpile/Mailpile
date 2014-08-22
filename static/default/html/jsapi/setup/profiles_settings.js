@@ -77,7 +77,7 @@ var ProfilesSettingsView = Backbone.View.extend({
 
       // Show Gmail Warning
       if (provider === 'gmail') {
-        ProfilesView.showGmailWarning('warning');
+        ProfilesSettingsView.showGmailWarning('warning');
       }
     }
   },
@@ -130,7 +130,7 @@ var ProfilesSettingsView = Backbone.View.extend({
           .addClass('color-12-red')
           .html('<span class="icon-x"></span> {{_("Error Connecting")}}');
 
-          ProfilesView.showGmailWarning('error');
+          ProfilesSettingsView.showGmailWarning('error');
         }
         else if (result.status == 'error') {
           $('#validation-pass').find('.check-auth')
@@ -211,6 +211,9 @@ var ProfilesSettingsView = Backbone.View.extend({
       // Validate & Process
       if (!this.model.validate()) {
         Mailpile.API.setup_profiles_post(profile_data, function(result) {
+
+          // Update State
+          StateModel.fetch();
 
           // Reset Model & Navigate
           ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
