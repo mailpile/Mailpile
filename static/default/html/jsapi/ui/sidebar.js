@@ -160,7 +160,7 @@ $(document).ready(function() {
       Mailpile.bulk_cache_add('messages_cache', $(event.target).data('mid'));
 
       // Save Update
-      Mailpile.API.tag_post({ add: ui.draggable.data('tid'), del: '', mid: Mailpile.messages_cache}, function() {
+      Mailpile.API.tag_post({ add: ui.draggable.data('tid'), mid: Mailpile.messages_cache }, function() {
 
         var tag = _.findWhere(Mailpile.instance.tags, { tid: ui.draggable.data('tid').toString() });
         var hex = Mailpile.theme.colors[tag.label_color];

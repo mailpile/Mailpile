@@ -26,7 +26,7 @@ $(document).on('click', '.bulk-action-tag', function() {
 
 /* Search - Bulk Action - Archive */
 $(document).on('click', '.bulk-action-archive', function() {
-  Mailpile.API.tag_post({ add: '', del: 'inbox', mid: Mailpile.messages_cache}, function() {
+  Mailpile.API.tag_post({ del: 'inbox', mid: Mailpile.messages_cache}, function() {
 
     // Update Pile View
     $.each(Mailpile.messages_cache, function(key, mid) {

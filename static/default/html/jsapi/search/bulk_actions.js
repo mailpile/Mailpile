@@ -16,7 +16,7 @@ Mailpile.bulk_actions_update_ui = function() {
 
 
 Mailpile.bulk_action_read = function() {
-  this.tag_add_delete(Mailpile.tags_cache, 'new', Mailpile.messages_cache, function(result) {
+  Mailpile.API.tag_post({ del: 'new', mid: Mailpile.messages_cache }, function(result) {
     $.each(Mailpile.messages_cache, function(key, mid) {
       $('#pile-message-' + mid).removeClass('in_new');
     });
@@ -25,7 +25,7 @@ Mailpile.bulk_action_read = function() {
 
 
 Mailpile.bulk_action_unread = function() {
-  this.tag_add_delete('new', Mailpile.tags_cache, Mailpile.messages_cache, function(result) {
+  Mailpile.API.tag_post({ add: 'new', mid: Mailpile.messages_cache }, function(result) {
     $.each(Mailpile.messages_cache, function(key, mid) {
       $('#pile-message-' + mid).addClass('in_new');
     });
