@@ -15,3 +15,11 @@
     </ul>
   </div>
 </li>
+<% if (!route_id) { %>
+<li class="setup-item-notification">
+  <div class="clearfix">
+    <em>This Profile needs a sending route</em>
+    <a href="#profiles/<%= id %>" class="right"><span class="icon-signature-unknown"></span> Configure Now</a>
+  </div>
+</li>
+<% } %>
