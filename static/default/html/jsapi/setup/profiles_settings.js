@@ -14,7 +14,8 @@ var ProfilesSettingsView = Backbone.View.extend({
     "click #btn-setup-connection-check"   : "actionCheckAuth",
     "change #input-setup-profile-route_id": "actionHandleRoute",
     "click .btn-setup-profile-edit-route" : "actionEditRoute",
-    "click #btn-setup-profile-save"       : "processSettings"
+    "click #btn-setup-profile-add"        : "processSettingsAdd",
+    "click #btn-setup-profile-edit"       : "processSettingsEdit"
   },
   show: function() {
     $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
@@ -159,7 +160,7 @@ var ProfilesSettingsView = Backbone.View.extend({
       SendingView.model.set({
         id: Math.random().toString(36).substring(2),
         complete: 'profiles',
-        name: domain,
+        name: $('#input-setup-profile-name').val() + '{{_("Route")}}',
         username: $('#input-setup-profile-email').val(),
         password: $('#input-setup-profile-pass').val(),
         host: 'smtp.' + domain
@@ -169,28 +170,7 @@ var ProfilesSettingsView = Backbone.View.extend({
       $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
       this.$el.html(_.template($("#template-setup-sending-settings").html(), SendingView.model.attributes));
     }
-    // Update route to Profile
-    else if (route_id && route_id !== 'new' && $('#input-setup-profile-id').val() !== 'new') {
-      console.log('ROUTE CHANGE: update profile vcard');
-
-      var vcard_data = {
-        rid: $('#input-setup-profile-id').val(),
-        name: 'x-mailpile-profile-route',
-        value: route_id
-      };
-      
-      console.log(vcard_data);
-
-      Mailpile.API.vcards_addlines_post(vcard_data, function(result) {
-        if (result.status == 'success') {
-          console.log('ROUTE CHANGE: route_id was updated');
-        }
-      });
-
-      $('#input-setup-profile-route_id').addClass('half-bottom');
-      $('#setup-profile-edit-route').removeClass('hide');
-    }
-    // Route for New Profile 
+    // Route for New Profile
     else if (route_id && route_id !== 'new' && $('#input-setup-profile-id').val() !== 'new') {
       console.log('ROUTE CHANGE: will be added to new profile');
     } else if (route_id === '') {
@@ -204,50 +184,59 @@ var ProfilesSettingsView = Backbone.View.extend({
     var route_id = $('#input-setup-profile-route_id').find('option:selected').val();
     Backbone.history.navigate('#sending/'+route_id, true);
   },
-  processSettings: function(e) {
+  processSettingsAdd: function(e) {
 
     e.preventDefault();
-    if ($(e.target).data('id') == 'new') {
 
-      // Update Model
-      var profile_data = $('#form-setup-profile-settings').serializeObject();
-      this.model.set(profile_data);
-  
-      // Validate & Process
-      if (!this.model.validate()) {
-        Mailpile.API.setup_profiles_post(profile_data, function(result) {
+    // Update Model
+    var profile_data = $('#form-setup-profile-settings').serializeObject();
+    this.model.set(profile_data);
 
-          // Update State
-          StateModel.fetch();
+    // Validate & Process
+    if (!this.model.validate()) {
+      Mailpile.API.setup_profiles_post(profile_data, function(result) {
 
-          // Reset Model & Navigate
-          ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
-          Backbone.history.navigate('#profiles', true);
+        // Update State
+        StateModel.fetch();
 
-          // Add Setup Magic (Source)
-          if (SetupMagic.status == 'success') {
-            SetupMagic.processAdd({
-              username: profile_data.email,
-              password: profile_data.pass
-            });
-          }
-        });
-      }
-    // Editing Profile
-    } else {
+        // Reset Model & Navigate
+        ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
+        Backbone.history.navigate('#profiles', true);
 
-      console.log('UPDATE NAME & EMAIL');
+        // Add Setup Magic (Source)
+        if (SetupMagic.status == 'success') {
+          SetupMagic.processAdd({
+            username: profile_data.email,
+            password: profile_data.pass
+          });
+        }
+      });
+    }
+  },
+  processSettingsEdit: function(e) {
+
+    e.preventDefault();
+    var profile_data = $('#form-setup-profile-settings').serializeObject();
+    this.model.set(profile_data);
+
+    // Validate & Process
+    if (!this.model.validate()) {
+
       var profile_id = $('#input-setup-profile-id').val();
-      _.each($('.profile-update'), function(item, key) {
-        var name = $(item).data('vcard_name');
-        var value = $(item).val();
-        var vcard_data = { rid: profile_id, name: name, value: value };
-        console.log(vcard_data);
 
+      // Loop through elements
+      _.each($('.profile-update'), function(item, key) {
+        var vcard_data = { rid:
+          profile_id, name: $(item).data('vcard_name'),
+          value: $(item).val(),
+          replace_all: true
+        };
+
+        // Update VCard
         Mailpile.API.vcards_addlines_post(vcard_data, function(result) {
           console.log(result);
         });
       });
     }
-  },
+  }
 });

@@ -5,7 +5,7 @@
       <div id="validation-name">
         <label class="validation-message">{{_("Name")}}</label>
         <span ></span>      
-        <input type="text" class="profile-update" name="name" data-vcard_name="fn" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning" value="<%= name %>" tabindex="1">
+        <input id="input-setup-profile-name" type="text" class="profile-update" name="name" data-vcard_name="fn" autocorrect="off" autocapitalize="off" placeholder="Chelsea Manning" value="<%= name %>" tabindex="1">
       </div>
       <div id="validation-email">
         <label class="validation-message">{{_("Email")}}</label>
@@ -19,7 +19,7 @@
       </div>
       <div id="validation-route_id">
         <label class="validation-message">{{_("Sending Route")}}</label>
-        <select id="input-setup-profile-route_id" name="route_id" class="<% if (route_id) { %>half-bottom<% } %>" tabindex="5">
+        <select id="input-setup-profile-route_id" name="route_id" data-vcard_name="x-mailpile-profile-route" class="profile-update <% if (route_id) { %>half-bottom<% } %>" tabindex="5">
           <option value="">{{_("Select...")}}</option>
             <% _.each(routes, function(route, id) { if (route.name) { %>
             <option value="<%= id %>" <% if (id == route_id) { %>selected<% } %>><%= route.name %></option>
@@ -37,7 +37,7 @@
       <input id="input-setup-profile-id" value="<%= id %>" type="hidden">
     </fieldset>
     <a href="#profiles" class="button-secondary">{{_("Cancel")}}</a>
-    <button id="btn-setup-profile-save" data-id="<%= id %>" type="submit" class="button-primary right">
+    <button id="btn-setup-profile-<%= action.toLowerCase() %>" data-id="<%= id %>" type="submit" class="button-primary right">
       <span class="icon-plus"></span> {{_("Save Profile")}}
     </button>
   </form>
