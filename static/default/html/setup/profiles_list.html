@@ -3,16 +3,15 @@
     <h2 class="left"><span class="icon-profiles"></span> Profiles</h2>
     <a href="#profiles/add" class="button-primary right"><span class="icon-plus"></span> Add Profile</a>
   </div>
-  {% if setup_profiles.result.profiles %}
-  <p class="text-detail text-center">You currently have <strong>{{ setup_profiles.result.profiles|length }} profiles</strong> that you can send messages from</p>
-  {% elif setup_profiles.result.new_emails %}
-  <p class="text-detail text-center">We found <strong>{{ setup_profiles.result.new_emails|length }} addresses</strong> that we can turn into profiles</p>
-  {% else %}
+  {% if not setup_profiles.result.profiles %}
   <p class="text-center">A profile is the context of how you use an email address. You can have as many profiles as you'd like, some examples profiles: Personal, Work, Newsletters, etc...</p>
   {% endif %}
   <ul id="setup-profiles-list-items" class="setup-list-items"></ul>
   <div class="clearfix">
-    <a href="/setup/crypto/" class="button-secondary left">Previous</a>
-    <a href="#sources" class="button-primary right">Next</a>
+    <a href="/setup/crypto/" class="button-secondary left">{{_("Previous")}}</a>
+    <div id="setup-profiles-next" class="right">
+      <a id="btn-setup-profiles-next" href="#sources" class="button-primary hide">{{_("Next")}}</a>
+      <em id="setup-profiles-no-next" class="hide">{{_("You need one profile to send mail from")}}</em>
+    </div>
   </div>
 </div>

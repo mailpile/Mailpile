@@ -14,12 +14,10 @@
       <li><a href="#" data-id="<%= id %>" class="setup-profile-remove"><span class="icon-circle-x"></span> {{_("Remove")}}</a></li>
     </ul>
   </div>
-</li>
-<% if (!route_id) { %>
-<li class="setup-item-notification">
-  <div class="clearfix">
-    <em>This Profile needs a sending route</em>
-    <a href="#profiles/<%= id %>" class="right"><span class="icon-signature-unknown"></span> Configure Now</a>
+  <% if (!route_id) { %>
+  <div class="setup-item-notice half-top clearfix">
+    <em>{{_("Needs Sending Route")}}</em>
+    <a href="#profiles/<%= id %>" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>
   </div>
+  <% } %>
 </li>
-<% } %>

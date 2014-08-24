@@ -1,5 +1,3 @@
-
-
 /* Setup - Profiles - View */
 var ProfilesSettingsView = Backbone.View.extend({
   initialize: function() {
@@ -33,11 +31,18 @@ var ProfilesSettingsView = Backbone.View.extend({
     Mailpile.API.setup_profiles_get({}, function(result) {
       var profile = result.result.profiles[id];
       if (profile !== undefined) {
+
+        // Prep Data
         var provider = SetupMagic.providers[profile.email.replace(/.*@/, "")];
-        console.log(provider);
         _.extend(profile, { id: id, action: 'Edit', provider: provider });
         var edit_data = _.extend(profile, {routes: result.result.routes});
+
+        // Render
         $('#setup').html(_.template($('#template-setup-profiles-add').html(), edit_data));
+
+        // Show Validation Feedback
+        ProfilesSettingsView.model.set(edit_data);
+        ProfilesSettingsView.model.validate();
       }
     });
   },
@@ -228,6 +233,7 @@ var ProfilesSettingsView = Backbone.View.extend({
           }
         });
       }
+    // Editing Profile
     } else {
 
       console.log('UPDATE NAME & EMAIL');

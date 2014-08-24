@@ -15,13 +15,13 @@ var ProfileModel = Backbone.Model.extend({
       minLength: 1,
       maxLength: 48,
       required: true,
-      msg: 'Enter a name for your profile'
+      msg: '{{_("Enter a name for your profile")}}'
     },
     email: {
       maxLength: 128,
       pattern: 'email',
       required: true,
-      msg: 'Enter a valid email address'
+      msg: '{{_("Enter a valid email address")}}'
     },
     pass: {
       required: false
@@ -29,7 +29,7 @@ var ProfileModel = Backbone.Model.extend({
     route_id: {
       minLength: 1,
       required: true,
-      msg: 'Create & select a sending route'
+      msg: '{{_("Create or select a sending route")}}'
     },
     note: {
       maxLength: 48,
@@ -71,7 +71,15 @@ var ProfilesView = Backbone.View.extend({
         Backbone.history.navigate('#profiles/add', true);
       }
 
+      // Can Go Next
+      var can_next = [];
       _.each(result.result.profiles, function(val, key) {
+        if (val.route_id) {
+          can_next.push(true); 
+        } else {
+          can_next.push(false);
+        }
+
         var profile = new ProfileModel(_.extend({id: key, action: 'Edit'}, val));
         ProfilesCollection.add(profile);
         $('#setup-profiles-list-items').append(_.template($('#template-setup-profiles-item').html(), profile.attributes));
@@ -80,6 +88,13 @@ var ProfilesView = Backbone.View.extend({
       // Hide Delete (if only 1 profile)
       if (ProfilesCollection.length === 1) {
         $('.setup-profile-remove').parent().hide();
+      }
+
+      // Display (or not) Next Button
+      if (_.indexOf(can_next, true) > -1) {
+        $('#btn-setup-profiles-next').show();
+      } else {
+        $('#setup-profiles-no-next').show();
       }
     });
 
