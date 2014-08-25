@@ -26,9 +26,7 @@ var SetupRouter = Backbone.Router.extend({
     "importing"        : "importing"
 	},
 	checkView: function(view) {
-
     var state = StateModel.checkState(view);
-
 		if (view == state) {
       return true;
 		}
