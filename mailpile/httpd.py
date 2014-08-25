@@ -9,6 +9,7 @@ import random
 import socket
 import SocketServer
 import time
+import threading
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from urllib import quote, unquote
 from urlparse import parse_qs, urlparse
@@ -224,6 +225,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             raise ValueError(_('XMLRPC has been disabled for now.'))
             #return SimpleXMLRPCRequestHandler.do_POST(self)
 
+        # Update thread name for debugging purposes
+        threading.current_thread().name = 'POST:%s' % self.path.split('?')[0]
+
         self.session, config = self.server.session, self.server.session.config
         post_data = {}
         try:
@@ -257,8 +261,13 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     def do_GET(self, *args, **kwargs):
         global LIVE_HTTP_REQUESTS
         try:
+            path = self.path.split('?')[0]
+
+            threading.current_thread().name = 'WAIT:%s' % path
             with BLOCK_HTTPD_LOCK:
                 LIVE_HTTP_REQUESTS += 1
+
+            threading.current_thread().name = 'WORK:%s' % path
             return self._real_do_GET(*args, **kwargs)
         finally:
             LIVE_HTTP_REQUESTS -= 1
