@@ -11,15 +11,14 @@
 
   {# Authenticated Confirmation Views #}
   <div id="setup-passphrase-creating" class="{% if not result.create_key %}hide{% endif %} text-center half-top">
-    <h3 class="text-center"><span class="icon-key"></span> Processing Encryption Key</h3>
-    <p class="text-center">Key creation is in progress... this may take a while.</p>
-    <p class="text-center">You can move your mouse around or proceed setting things up ;)</p>
+    <h3 class="text-center"><span class="icon-key"></span> Creating Encryption Keys</h3>
+    <p class="text-center">Your encryption keys are being created. You may proceed with setting up your Mailpile while this happening in the background.</p>
     <p><a href="/setup/" class="button-primary">{{_("Next")}}</a></p>
   </div>
 
   <div id="setup-passphrase-authenticated" class="hide text-center add-top">
     <h3>You Successfully Authenticated</h3>
-    <p>The <strong>fingerprint</strong> for the <strong>encryption key</strong> you chose was:</p>
+    <p>The <strong>fingerprint</strong> for your <strong>encryption key</strong> is:</p>
     <h1><span class="icon-fingerprint"></span></h1>
     <h3 id="setup-crypto-chosen_key">{{ nice_fingerprint(setup_crypto.result.chosen_key) }}</h3>
     <p><a href="/setup/" class="button-primary">{{_("Next")}}</a></p>
