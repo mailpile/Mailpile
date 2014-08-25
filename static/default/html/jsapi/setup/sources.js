@@ -111,11 +111,29 @@ var SourcesView = Backbone.View.extend({
         Backbone.history.navigate('#sources/add', true);
       }
 
+      // Can Go Next
+      var can_next = [];
       _.each(result.result.sources, function(val, key) {
+
+        console.log(val.mailbox);
+        console.log(val.enabled);
+        if (!_.isEmpty(val.mailbox) && val.enabled) {
+          can_next.push(true); 
+        } else {
+          can_next.push(false);
+        }
+
         var source = new SourceModel(_.extend({id: key, action: '{{_("Edit")}}'}, val));
         SourcesCollection.add(source);
         $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
       });
+
+      // Display (or not) Next Button
+      if (_.indexOf(can_next, true) > -1) {
+        $('#btn-setup-sources-next').show();
+      } else {
+        $('#setup-sources-not-configured').show();
+      }
     });
 
     return this;
@@ -123,8 +141,8 @@ var SourcesView = Backbone.View.extend({
   eventUnconfigured: function(event) {
     // Has Unconfigured Mailboxes (action)
     if (event.data.have_unknown) {
-      $('#setup-source-notice-' + event.data.id)
-        .html('{{_("You have unconfigured mailboxes")}} <a href="/setup/#sources/configure/' + event.data.id + '">{{_("configure them now")}}</a>')
+      $('#setup-setup-notice-' + event.data.id)
+        .html('<em>{{_("You have unconfigured mailboxes")}}</em> <a href="/setup/#sources/configure/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>')
         .fadeIn();
 
       $('#btn-setup-sources-next').attr('disabled', true);
@@ -142,6 +160,8 @@ var SourcesView = Backbone.View.extend({
         message = '{{_("Downloading")}} ' + event.data.copying.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("messages")}}';
       } else if (event.data.copying && event.data.copying.running) {
         message = '{{_("Found some messages to download")}}';
+      } else if (event.data.copying && event.data.copying.complete) {
+        message = '{{_("Mailbox up to date")}}';
       }
     }
     // Is Recanning

@@ -6,6 +6,9 @@
   <ul id="setup-sources-list-items" class="setup-list-items"></ul>
   <div class="clearfix">
     <a href="#profiles" class="button-secondary left">{{_("Previous")}}</a>
-    <button id="btn-setup-sources-next" class="right" disabled="disabled">{{_("Next")}}</button>
+    <div id="setup-profiles-next" class="right">
+      <a id="btn-setup-sources-next" href="#sources" class="button-primary hide">{{_("Next")}}</a>
+      <em id="setup-sources-not-configured" class="hide">{{_("You need one source configured & enabled")}}</em>
+    </div>
   </div>
 </div>
