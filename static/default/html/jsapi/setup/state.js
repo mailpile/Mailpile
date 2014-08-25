@@ -41,6 +41,9 @@ var StateModel = Backbone.Model.extend({
       console.log('Needs Sources');
       state = '#sources/add';
     }
+    else if (check.profiles && view == '#sources/add') {
+      state = '#sources/add';
+    }
     else if (check.sources && view == '#sources') {
       state = '#sources';
     }
