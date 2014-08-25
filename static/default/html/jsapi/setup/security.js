@@ -84,7 +84,9 @@ var SecurityView = Backbone.View.extend({
     "click #btn-setup-security-save"     : "processSecurity",
   },
   show: function() {
-    this.$el.html(_.template($("#template-setup-security").html()));
+    Mailpile.API.setup_crypto_get({}, function(result) {
+      $('#setup').html(_.template($("#template-setup-security").html(), result.result.prefs ));
+    });
   },
   actionSecurityLevel: function(e) {
     e.preventDefault();
@@ -102,16 +104,26 @@ var SecurityView = Backbone.View.extend({
       });
     }
   },
-  processSecurity: function() {
+  processSecurity: function(e) {
 
-    // Update Model
-    var security_data = $('#form-setup-security').serializeObject();
+    e.preventDefault();
+
+    var security_form = $('#form-setup-security').serializeObject();
+    var security_data = {};
+
+    _.each(security_form, function(setting, key) {
+      security_data['prefs.'+key] = setting;
+    });
+
+    _.each($('#form-setup-security input:checkbox:not(:checked)'), function(val, key) {
+      security_data['prefs.'+$(val).attr('name')] = false;
+    });
 
     // Hide Form
     Mailpile.API.setup_crypto_post(security_data, function(result) {
-      
-      
-  
+
+      console.log(result);
+
     });
   }
 });
