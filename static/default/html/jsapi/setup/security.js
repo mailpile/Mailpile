@@ -1,4 +1,10 @@
 /* Setup - Security - Model */
+/* Commented out until supported
+  'use_tor': true,
+  'upload_keyservers': false,
+  'email_key': false,
+  'use_gravatar': false
+*/
 var SecurityModel = Backbone.Model.extend({
   defaults: {
     tinfoil: {
@@ -8,11 +14,7 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': true,
       'encrypt_vcards': true,
       'index_encrypted': true,
-      'obfuscate_index': true,
-      'use_tor': true,
-      'upload_keyservers': false,
-      'email_key': false,
-      'use_gravatar': false
+      'obfuscate_index': true
     },
     paranoid: {
       'encrypt_events': true,
@@ -20,12 +22,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_mail': true,
       'encrypt_misc': true,
       'encrypt_vcards': true,
-      'index_encrypted': true,
-      'obfuscate_index': true,
-      'use_tor': true,
-      'upload_keyservers': false,
-      'email_key': true,
-      'use_gravatar': false
+      'index_encrypted': false,
+      'obfuscate_index': true
     },
     above: {
       'encrypt_events': false,
@@ -33,12 +31,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_mail': true,
       'encrypt_misc': true,
       'encrypt_vcards': true,
-      'index_encrypted': true,
-      'obfuscate_index': true,
-      'use_tor': true,
-      'upload_keyservers': false,
-      'email_key': true,
-      'use_gravatar': true
+      'index_encrypted': false,
+      'obfuscate_index': true
     },
     concerned: {
       'encrypt_events': false,
@@ -46,12 +40,8 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_mail': false,
       'encrypt_misc': true,
       'encrypt_vcards': true,
-      'index_encrypted': true,
-      'obfuscate_index': false,
-      'use_tor': true,
-      'upload_keyservers': true,
-      'email_key': true,
-      'use_gravatar': true
+      'index_encrypted': false,
+      'obfuscate_index': true
     },
     normal: {
       'encrypt_events': false,
@@ -60,11 +50,7 @@ var SecurityModel = Backbone.Model.extend({
       'encrypt_misc': false,
       'encrypt_vcards': false,
       'index_encrypted': false,
-      'obfuscate_index': false,
-      'use_tor': false,
-      'upload_keyservers': true,
-      'email_key': true,
-      'use_gravatar': true
+      'obfuscate_index': true
     }
   }
 });
@@ -85,7 +71,21 @@ var SecurityView = Backbone.View.extend({
   },
   show: function() {
     Mailpile.API.setup_crypto_get({}, function(result) {
-      $('#setup').html(_.template($("#template-setup-security").html(), result.result.prefs ));
+
+      // Generate UI friendly 'level' value
+      var settings = _.values(result.result.prefs);
+      settings[6] = true;
+      settings = settings.join('-');
+      level = '';
+      _.each(SecurityModel.attributes, function(state, name) {
+        var check = _.values(state).join('-');
+        if (settings == check) {
+          level = name;
+        }
+      });
+
+      var settings_data = _.extend({security_level: level}, result.result.prefs);
+      $('#setup').html(_.template($("#template-setup-security").html(), settings_data));
     });
   },
   actionSecurityLevel: function(e) {
@@ -108,15 +108,10 @@ var SecurityView = Backbone.View.extend({
 
     e.preventDefault();
 
-    var security_form = $('#form-setup-security').serializeObject();
-    var security_data = {};
-
-    _.each(security_form, function(setting, key) {
-      security_data['prefs.'+key] = setting;
-    });
+    var security_data = $('#form-setup-security').serializeObject();
 
     _.each($('#form-setup-security input:checkbox:not(:checked)'), function(val, key) {
-      security_data['prefs.'+$(val).attr('name')] = false;
+      security_data[$(val).attr('name')] = false;
     });
 
     // Hide Form

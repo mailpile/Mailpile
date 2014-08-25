@@ -2,16 +2,16 @@
 <div class="setup-box setup-box-medium add-top animated bounceInTop">
   <h2 class="text-center"><span class="icon-key"></span> Security Settings</h2>
   <form id="form-setup-security" class="standard">
-    <label class="clearfix">What is your personal security needs?</label>
+    <label class="clearfix">What are your personal security & privacy preferences?</label>
     <p>
       <select id="input-setup-security-level">
         <option value="">Select...</option>
-        <option value="tinfoil">You Collect Tinfoil Hats</option>
-        <option value="paranoid">Relatively Paranoid</option>
-        <option value="above">Above Average Paranoia</option>
-        <option value="concerned">Privacy Concerned</option>
-        <option value="normal">Normal Person</option>
-        <option value="crazy">Totally Unconcerned</option>
+        <option value="tinfoil" <% if (security_level == 'tinfoil' ) { %>selected<% } %>>You Collect Tinfoil Hats</option>
+        <option value="paranoid" <% if (security_level == 'paranoid' ) { %>selected<% } %>>Relatively Paranoid</option>
+        <option value="above" <% if (security_level == 'above' ) { %>selected<% } %>>Above Average Paranoia</option>
+        <option value="concerned" <% if (security_level == 'concerned' ) { %>selected<% } %>>Privacy Concerned</option>
+        <option value="normal" <% if (security_level == 'normal' ) { %>selected<% } %>>Normal Person</option>
+        <option value="crazy" <% if (security_level == 'crazy' ) { %>selected<% } %>>Totally Unconcerned</option>
       </select>
     </p>
     <fieldset>
@@ -21,11 +21,11 @@
       </label>
       <label>
         <input type="checkbox" name="encrypt_index" <% if (encrypt_index) { %>checked<% } %>>
-        Encrypt your index of search terms
+        Encrypt your search index of terms
       </label>
       <label>
         <input type="checkbox" name="encrypt_mail" <% if (encrypt_mail) { %>checked<% } %>>
-        Encrypt mail (is this sending or downloaded to disk??)
+        Encrypt messages after downloaded to your machine
       </label>
       <label>
         <input type="checkbox" name="encrypt_vcards" <% if (encrypt_vcards) { %>checked<% } %>>
@@ -33,15 +33,11 @@
       </label>
       <label>
         <input type="checkbox" name="index_encrypted" <% if (index_encrypted) { %>checked<% } %>>
-        Index encrypted (how is this different from encrypt_index??)
+        Index encrypted messages that were encrypted
       </label>
       <label>
         <input type="checkbox" name="encrypt_misc" <% if (encrypt_misc) { %>checked<% } %>>
         Encrypt various other things
-      </label>
-      <label>
-        <input type="checkbox" name="obfuscate_index" <% if (obfuscate_index) { %>checked<% } %>>
-        Obfuscate your search index
       </label>
 <!-- FIXME: Commented out settings not supported by backend 
       <label>
