@@ -9,7 +9,7 @@
   {% include("partials/head.html") %}
 </head>
 <body>
-{% if result.language and result.crypto and result.profiles and result.routes and result.sources %}
+{% if result.complete %}
 {% include("partials/topbar.html") %}
 {% else %}
 {% include("partials/topbar_setup.html") %}
