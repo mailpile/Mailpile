@@ -90,8 +90,9 @@ var SendingView = Backbone.View.extend({
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
     Mailpile.API.settings_get({ var: 'routes.'+id }, function(result) {
       var sending = result.result['routes.'+id];
-      sending = _.extend(sending, { id: id, action: 'Edit' });
-      $('#setup').html(_.template($('#template-setup-sending-settings').html(), sending));
+      sending_data = _.extend(sending, { id: id, action: 'Edit', complete: 'sending' });
+      console.log(sending);
+      $('#setup').html(_.template($('#template-setup-sending-settings').html(), sending_data));
     });
   },
   actionChangePort: function(e) {
