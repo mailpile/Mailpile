@@ -4,6 +4,13 @@ This folder contains tools pertaining to the Mac OS X bundling of
 Mailpile.
 
 
+### Repackaging on Linux
+
+If you are on Linux and just want to repackage the latest Mailpile HEAD
+as a DMG, there is a `repackage-linux.sh` script which does all the
+interesting stuff and leaves a .dmg file in `/tmp/mailpile-builder/`.
+
+
 ### How it works
 
 The current method for packaging Mailpile is as follows:
