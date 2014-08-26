@@ -324,9 +324,9 @@ class VCardAddLines(VCardCommand):
                 raise ValueError('Must send a line name and line data')
             value = '%s:%s' % (name, value)
             if replace:
-                value = '%d=%s:%s' % (replace, value)
+                value = '%d=%s' % (replace, value)
             elif replace_all:
-                value = '=%s:%s' % (replace, value)
+                value = '=' + value
             lines = [value]
 
         vcard = config.vcards.get_vcard(handle)
