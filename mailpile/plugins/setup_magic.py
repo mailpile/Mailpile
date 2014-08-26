@@ -22,6 +22,7 @@ from mailpile.crypto.gpgi import GnuPGKeyGenerator, GnuPGKeyEditor
 from mailpile.httpd import BLOCK_HTTPD_LOCK, Idle_HTTPD
 from mailpile.smtp_client import SendMail, SendMailError
 from mailpile.urlmap import UrlMap
+from mailpile.ui import Session
 from mailpile.util import *
 
 
@@ -940,6 +941,22 @@ class Setup(TestableWebbable):
     KEY_EDITING_THREAD = None
 
     @classmethod
+    def _check_profiles(self, config):
+        data = ListProfiles(Session(config)).run().result
+        okay = bad = 0
+        for rid, ofs in data["rids"].iteritems():
+            profile = data["profiles"][ofs]
+            if not profile.get('email', None):
+                bad += 1
+            else:
+                route_id = profile.get('x-mailpile-profile-route', '')
+                if route_id and route_id in config.routes:
+                    okay += 1
+                else:
+                    bad += 1
+        return (bad == 0) and (okay > 0)
+
+    @classmethod
     def _CHECKPOINTS(self, config):
         return [
             # Stage 0: Welcome: Choose app language
@@ -949,8 +966,7 @@ class Setup(TestableWebbable):
             ('crypto', lambda: config.prefs.gpg_recipient, SetupCrypto),
 
             # Stage 2: Identity (via. single page install flow)
-            ('profiles', lambda: (config.prefs.default_email and
-                                  config.get_profile()['email']), Setup),
+            ('profiles', lambda: self._check_profiles(config), Setup),
 
             # Stage 3: Routes (via. single page install flow)
             ('routes', lambda: config.routes, Setup),
