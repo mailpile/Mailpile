@@ -1,8 +1,10 @@
-<div id="setup-sending-settings" class="setup-box setup-box-small add-top add-bottom animated bounceInRight">
+<div id="setup-sending-settings" class="setup-box setup-box-small animated <% if (complete == 'sending') { %>add-top bounceInRight<% } else { %>half-top bounceInUp<% } %> add-bottom">
   <form id="form-setup-sending-settings" class="standard">
+    <% if (complete == 'sending') { %>
     <h2 class="text-center"><span class="icon-routes"></span> <%= action %> Route</h2>
-    <fieldset>
-      <span id="validation-name">
+    <% } %>
+    <fieldset>     
+      <span id="validation-name"  class="<% if (complete == 'profiles') { %>hide<% } %>">
         <label class="validation-message">{{_("Route Name")}}</label>
         <input type="text" name="name" value="<%= name %>" placeholder="{{_("my delivery route")}}" id="route-add-name"/>
       </span>
@@ -36,6 +38,7 @@
     </fieldset>
     <input type="hidden" name="protocol" value="<%= protocol %>">
     <input type="hidden" name="_section" value="routes.<%= id %>">
+    <input type="hidden" id="input-sending-complete" value="<%= complete %>">
     <div class="clearfix">
       <a href="#profiles" id="btn-setup-sending-back" class="button-secondary">{{_("Back")}}</a>
       <button id="btn-setup-sending-save" type="submit" class="button-primary right">

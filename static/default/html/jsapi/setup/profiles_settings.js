@@ -160,15 +160,18 @@ var ProfilesSettingsView = Backbone.View.extend({
       SendingView.model.set({
         id: Math.random().toString(36).substring(2),
         complete: 'profiles',
-        name: $('#input-setup-profile-name').val() + '{{_("Route")}}',
+        name: $('#input-setup-profile-name').val() + ' {{_("Route")}}',
         username: $('#input-setup-profile-email').val(),
         password: $('#input-setup-profile-pass').val(),
         host: 'smtp.' + domain
       });
 
       // Show Sending Form
-      $('#setup-sending-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-      this.$el.html(_.template($("#template-setup-sending-settings").html(), SendingView.model.attributes));
+      $('#form-setup-profile-settings').hide();
+      $('#setup-profiles-route-editing').removeClass('hide').find('span.name').html($('#input-setup-profile-name').val());
+      var sending_html = $("#template-setup-sending-settings").html();
+      var template_html = _.template(sending_html, SendingView.model.attributes);
+      $('#setup-profiles-route-settings').html(template_html).show();
     }
     // Route for New Profile
     else if (route_id && route_id !== 'new' && $('#input-setup-profile-id').val() !== 'new') {
@@ -183,6 +186,16 @@ var ProfilesSettingsView = Backbone.View.extend({
     e.preventDefault();
     var route_id = $('#input-setup-profile-route_id').find('option:selected').val();
     Backbone.history.navigate('#sending/'+route_id, true);
+  },
+  actionRouteAdded: function(route_id, route_name) {
+
+    // Hide Sending Form
+    $('#setup-profiles-route-editing').addClass('hide')
+    $('#setup-profiles-route-settings').html('').addClass('hide');
+
+    // Show Profile Again
+    $('#form-setup-profile-settings').show();
+    $('#input-setup-profile-route_id').prepend('<option value="' + route_id + '">' + route_name + '</option>').val(route_id);
   },
   processSettingsAdd: function(e) {
 

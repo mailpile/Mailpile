@@ -3,7 +3,7 @@ var SendingModel = Backbone.Model.extend({
   defaults: {
     _section: '',
     action: 'Add',
-    complete: '',
+    complete: 'sending',
     command: '',
     name: '',
     username: '',
@@ -142,13 +142,18 @@ var SendingView = Backbone.View.extend({
 
     e.preventDefault();
 
+    var complete = $('#input-sending-complete').val();
     var sending_data = $('#form-setup-sending-settings').serializeObject();
     this.model.set(sending_data);
 
     // Validate & Process
     if (!this.model.validate()) {
       Mailpile.API.settings_set_post(sending_data, function(result) {
-        window.history.go(-1);
+        if (complete === 'sending') {
+          Backbone.history.navigate('#sending', true);        
+        } else if (complete === 'profiles') { 
+          ProfilesSettingsView.actionRouteAdded(sending_data._section.replace('routes.', ''), sending_data.name);
+        }
       });
     }
   },
