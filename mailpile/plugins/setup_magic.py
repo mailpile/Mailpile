@@ -974,6 +974,9 @@ class Setup(TestableWebbable):
             # Stage 4: Sources (via. single page install flow)
             ('sources', lambda: config.sources, Setup),
 
+            # Stage 5: Is All Complete
+            ('complete', lambda: config.web.setup_complete, Setup),
+
             # FIXME: Check for this too?
             #(lambda: config.prefs.crypto_policy != 'none', SetupConfigureKey),
         ]
