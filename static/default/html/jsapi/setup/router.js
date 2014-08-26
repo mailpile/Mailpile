@@ -77,8 +77,11 @@ var SetupRouter = Backbone.Router.extend({
   sendingEdit: function(id) {
     SendingView.showEdit(id);
   },
-  advanced: function() {
-    AdvancedView.show();
+  importing: function() {
+    console.log('here inside importing()');
+    if (this.checkView('#importing')) {
+      ImportingView.show();
+    }
   },
   security: function() {
     SecurityView.show();
@@ -89,9 +92,4 @@ var SetupRouter = Backbone.Router.extend({
   access: function() {
     AccessView.show();
   },
-  importing: function() {
-    if (this.checkView('#importing')) {
-      ImportingView.show();
-    }
-  }
 });
