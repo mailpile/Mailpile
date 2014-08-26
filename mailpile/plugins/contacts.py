@@ -13,12 +13,15 @@ from mailpile.util import *
 
 _plugins = PluginManager(builtin=__file__)
 
+GLOBAL_VCARD_LOCK = VCardRLock()
+
 
 ##[ VCards ]########################################
 
 class VCardCommand(Command):
     VCARD = "vcard"
     IS_USER_ACTIVITY = True
+    WITH_CONTEXT = (GLOBAL_VCARD_LOCK,)
 
     class CommandResult(Command.CommandResult):
         IGNORE = ('line_id', 'pid', 'x-rank')
