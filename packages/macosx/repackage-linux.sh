@@ -7,7 +7,14 @@ set -e
 cd $(dirname $0)
 SCRIPTDIR=$(pwd)
 WORKDIR="/tmp/mailpile-builder/"
-mkdir -p $WORKDIR && cd $WORKDIR
+
+OUTPUT="Mailpile-Beta.dmg"
+if [ "$1" = "--output" -a "$2" != "" ]; then
+    OUTPUT="$2"
+    shift
+    shift
+fi
+echo "=== Target file is: $OUTPUT"
 
 echo '=== Install apps we depend on'
 which genisoimage >/dev/null || sudo apt-get install genisoimage
@@ -15,6 +22,7 @@ which wget        >/dev/null || sudo apt-get install wget
 which cmake       >/dev/null || sudo apt-get install cmake
 
 echo '=== Fetch / update Mailpile itself'
+mkdir -p $WORKDIR && cd $WORKDIR
 [ -d Mailpile ]       || git clone https://github.com/pagekite/Mailpile
 (cd Mailpile && git pull)
 
@@ -23,7 +31,11 @@ echo '=== Fetch / update tool for building the compressed DMG'
 (cd libdmg-hfsplus && git pull && cmake . && cd dmg && make)
 
 echo '=== Fetch the latest version of the Homebrew environment'
-wget -c 'https://www.mailpile.is/files/build/Mailpile-Brew.LATEST.tar.gz'
+if [ "$(hostname)" = "mailpile.is" ]; then
+    cp /home/mailpile/www/files/build/Mailpile-Brew.LATEST.tar.gz .
+else
+    wget -c $'https://www.mailpile.is/files/build/Mailpile-Brew.LATEST.tar.gz'
+fi
 
 echo '=== Create skeleton filesystem and app'
 cd $WORKDIR
@@ -62,12 +74,15 @@ chmod -R ugo-w .
 genisoimage -quiet -D -V 'Mailpile' -no-pad -r -apple -o ../DMG.iso .
 echo -n ' dmg..'
 cd "$WORKDIR/"
-./libdmg-hfsplus/dmg/dmg dmg DMG.iso Mailpile.dmg >/dev/null
+./libdmg-hfsplus/dmg/dmg dmg DMG.iso "$OUTPUT" >/dev/null
 echo -n ' cleanup..'
 rm DMG.iso
 [ -d DMG ] && chmod -R +w DMG && rm -rf DMG/
 echo ' done.'
 
 echo
-ls -lh Mailpile.dmg
+ls -lh "$OUTPUT"
 echo
+
+[ "$1" = "--copy" -a "$2" != "" ] && cp "$OUTPUT" "$2"
+[ "$1" = "--move" -a "$2" != "" ] && mv "$OUTPUT" "$2"
