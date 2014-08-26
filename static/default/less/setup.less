@@ -50,7 +50,6 @@
   }
 
   div.setup-box {
-    min-height: 150px;
     margin: 0px auto;
     padding: 25px;
     border-radius: 5px;
@@ -234,11 +233,14 @@
     color: @grayMid;
   }
 
+  .setup-item-notice {
+    background: @colorSelectHover;
+    padding: @base-padding;
+    margin-bottom: 0px;
+    border-radius: (@base-border-radius * 1.5);
+  }
+
+
 
 /* Setup - Sources */
 
-  .setup-source-notice {
-    background: lighten(@orange, 10%);
-    padding: 15px;
-    border-radius: @base-border-radius;
-  }

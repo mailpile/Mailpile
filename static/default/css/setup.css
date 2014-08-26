@@ -59,7 +59,6 @@
   left: 0px;
 }
 div.setup-box {
-  min-height: 150px;
   margin: 0px auto;
   padding: 25px;
   border-radius: 5px;
@@ -203,9 +202,10 @@ label.radio-list-item .icon-key {
 .setup-item.disabled .setup-actions a {
   color: #cccccc;
 }
-/* Setup - Sources */
-.setup-source-notice {
-  background: #fcc46d;
+.setup-item-notice {
+  background: #f8f3b9;
   padding: 15px;
-  border-radius: 3px;
+  margin-bottom: 0px;
+  border-radius: 4.5px;
 }
+/* Setup - Sources */
