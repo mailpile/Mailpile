@@ -91,6 +91,9 @@ CONFIG_RULES = {
             'context':     [_("VCard context helper settings"), False,     {}],
         }],
     }),
+    'web': p(_("Web Interface Preferences"), False, {
+        'setup_complete':  (_('User completed setup experience'), bool, False),
+    }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')
     }, {}],
