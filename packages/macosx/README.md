@@ -13,7 +13,7 @@ The current method for packaging Mailpile is as follows:
       behind this, but whether it runs depends on the current state of
       the Homebrew github master.  If it's not working for you, a working
       tree can be downloaded from:
-      <https://www.mailpile.is/files/Mailpile-Brew.2014-08-05.tar.gz>
+      <https://www.mailpile.is/files/build/Mailpile-Brew.LATEST.tar.gz>
 
    2. Use Platypus to build a basic app tree for Mailpile, invoking the
       `mp-in-terminal.sh` script found in this folder.  The results of
