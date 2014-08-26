@@ -8,7 +8,7 @@ var ProfilesSettingsView = Backbone.View.extend({
     return this;
   },
   events: {
-    "blur #input-setup-profile-email"     : "actionCheckEmailMagic",
+    "keyup #input-setup-profile-email"     : "actionCheckEmailMagic",
     "blur #input-setup-profile-pass"      : "actionCheckAuth",
     "mouseover #btn-setup-profile-save"   : "actionCheckAuth",
     "click #btn-setup-connection-check"   : "actionCheckAuth",
@@ -48,6 +48,7 @@ var ProfilesSettingsView = Backbone.View.extend({
     });
   },
   showGmailWarning: function(message) {
+
     if (this.model.attributes.warning !== 'used' || message !== 'warning') {
       this.model.set({warning: 'used'});
 
@@ -72,10 +73,11 @@ var ProfilesSettingsView = Backbone.View.extend({
     }
   },
   actionCheckEmailMagic: function(e) {
+
     var domain = $(e.target).val().replace(/.*@/, "");
     var provider = SetupMagic.providers[domain];
-    console.log(provider);
-    if (provider) {
+
+    if (provider && this.model.attributes.warning !== 'used') {
       $('#input-setup-profile-pass').data('provider', provider).attr('data-provider', provider);
       $('#validation-pass').fadeIn('fast', function(){
         $('#input-setup-profile-pass').attr("tabindex", -1).focus();
@@ -196,6 +198,10 @@ var ProfilesSettingsView = Backbone.View.extend({
     // Show Profile Again
     $('#form-setup-profile-settings').show();
     $('#input-setup-profile-route_id').prepend('<option value="' + route_id + '">' + route_name + '</option>').val(route_id);
+
+    this.model.set({ route_id: route_id });
+    this.model.validate();
+
   },
   processSettingsAdd: function(e) {
 
