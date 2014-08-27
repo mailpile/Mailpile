@@ -95,7 +95,6 @@ var SourcesView = Backbone.View.extend({
     "change #input-setup-source-type"  : "actionSelected",
     "change #input-setup-source_sync"  : "actionSyncSelected",
     "click .source-mailbox-policy"     : "actionMailboxToggle",
-    "click #btn-setup-sources-next"    : "actionGoToImporting",
     "click #btn-setup-source-save"     : "processSource",
     "click .setup-source-disable"      : "processDisable"
   },
@@ -209,10 +208,6 @@ var SourcesView = Backbone.View.extend({
 
     // UI Message
     $('#setup-source-message-' + event.data.id).html('<em>' + message + '</em>');
-  },
-  actionGoToImporting: function(e) {
-    e.preventDefault();
-    Backbone.history.navigate('#importing', true);
   },
   processDisable: function(e) {
     e.preventDefault();
