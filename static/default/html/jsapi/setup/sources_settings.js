@@ -8,10 +8,11 @@ var SourcesSettingsView = Backbone.View.extend({
     return this;
   },
   events: {
-    "change #input-setup-source-type"  : "actionSelected",
-    "change #input-setup-source_sync"  : "actionSyncSelected",
-    "click .source-mailbox-policy"     : "actionMailboxToggle",
-    "click #btn-setup-source-save"     : "processSource"
+    "change #input-setup-source-type"    : "actionSelected",
+    "change #input-setup-source_sync"    : "actionSyncSelected",
+    "click .source-mailbox-policy"       : "actionMailboxToggle",
+    "keyup #input-setup-source-username" : "actionCheckEmailMagic",
+    "click #btn-setup-source-save"       : "processSource"
   },
   show: function() {
     $('#setup-box-source-list').removeClass('bounceInUp').addClass('bounceOutLeft');
@@ -53,6 +54,22 @@ var SourcesSettingsView = Backbone.View.extend({
     }
     else if ($(e.target).val() == 'sync'){
       $('#setup-source-settings-sync-interval').fadeIn().removeClass('hide');
+    }
+  },
+  actionCheckEmailMagic: function(e) {
+    var domain = $(e.target).val().replace(/.*@/, "");
+    var provider = SetupMagic.providers[domain];
+
+    if (provider) {
+      var magic = SetupMagic.presets[provider];
+      $('#form-setup-source-settings').find('input[name=host]').val(magic.source.host);
+      $('#form-setup-source-settings').find('input[name=port]').val(magic.source.port);
+      $('#input-setup-source-server-protocol').val(magic.source.protocol);
+
+      // Show Gmail Warning
+      if (provider === 'gmail') {
+        ProfilesSettingsView.showGmailWarning('warning');
+      }
     }
   },
   processSource: function(e) {
