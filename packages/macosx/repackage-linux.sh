@@ -4,8 +4,8 @@
 # from github.  It's tested on an Ubnutu 14.04 box, YMMV.
 #
 set -e
-cd $(dirname $0)
-SCRIPTDIR=$(pwd)
+cd $(dirname "$0")
+SCRIPTDIR="$(pwd)"
 WORKDIR="/tmp/mailpile-builder/"
 
 OUTPUT="Mailpile-Beta.dmg"
@@ -23,7 +23,7 @@ which cmake       >/dev/null || sudo apt-get install cmake
 
 echo '=== Fetch / update Mailpile itself'
 mkdir -p $WORKDIR && cd $WORKDIR
-[ -d Mailpile ]       || git clone https://github.com/pagekite/Mailpile
+[ -d Mailpile ] || git clone https://github.com/pagekite/Mailpile
 (cd Mailpile && git pull)
 
 echo '=== Fetch / update tool for building the compressed DMG'
