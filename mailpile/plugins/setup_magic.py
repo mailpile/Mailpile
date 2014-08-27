@@ -516,7 +516,7 @@ class SetupCrypto(TestableWebbable):
         'passphrase': 'Specify a passphrase',
         'passphrase_confirm': 'Confirm the passphrase',
         'index_encrypted': 'y/n: index encrypted mail?',
-        'obfuscate_index': 'y/n: obfuscate keywords?',
+#       'obfuscate_index': 'y/n: obfuscate keywords?',  # Omitted do to DANGER
         'encrypt_mail': 'y/n: encrypt locally stored mail?',
         'encrypt_index': 'y/n: encrypt search index?',
         'encrypt_vcards': 'y/n: encrypt vcards?',
@@ -603,22 +603,8 @@ class SetupCrypto(TestableWebbable):
         error_info = None
 
         if self.data.get('_method') == 'POST' or self._testing():
-            for key in self.HTTP_POST_VARS.keys():
-                if key in (['choose_key', 'passphrase', 'passphrase_confirm'] +
-                           TestableWebbable.HTTP_POST_VARS.keys()):
-                    continue
-                try:
-                    val = self.data.get(key, [''])[0]
-                    if val:
-                        session.config.prefs[key] = self.TRUTHY[val.lower()]
-                        changed = True
-                except (ValueError, KeyError):
-                    error_info = (_('Invalid preference'), {
-                        'invalid_setting': True,
-                        'variable': key
-                    })
-                    break
 
+            # 1st, are we choosing or creating a new key?
             choose_key = self.data.get('choose_key', [''])[0]
             if choose_key and not error_info:
                 if (choose_key not in results['secret_keys'] and
@@ -628,13 +614,18 @@ class SetupCrypto(TestableWebbable):
                         'chosen_key': choose_key
                     })
 
+            # 2nd, check authentication...
+            #
+            # FIXME: Creating a new key will allow a malicious actor to
+            #        bypass authentication and change settings.
+            #
             try:
-                # FIXME: Key changing is fubar
+                passphrase = self.data.get('passphrase', [''])[0]
+                passphrase2 = self.data.get('passphrase_confirm', [''])[0]
+                chosen_key = ((not error_info) and choose_key
+                              ) or session.config.prefs.gpg_recipient
+
                 if not error_info:
-                    chosen_key = ((not error_info) and choose_key
-                                  ) or session.config.prefs.gpg_recipient
-                    passphrase = self.data.get('passphrase', [''])[0]
-                    passphrase2 = self.data.get('passphrase_confirm', [''])[0]
                     assert(passphrase == passphrase2)
                     if chosen_key == '!CREATE':
                         assert(passphrase != '')
@@ -658,9 +649,12 @@ class SetupCrypto(TestableWebbable):
                     'chosen_key': session.config.prefs.gpg_recipient
                 })
 
+            # 3rd, if necessary master key and/or GPG key
             with BLOCK_HTTPD_LOCK, Idle_HTTPD():
                 if choose_key and not error_info:
                     session.config.prefs.gpg_recipient = choose_key
+                    # FIXME: This should probably only happen if the GPG
+                    #        key was successfully created.
                     self.make_master_key()
                     changed = True
 
@@ -676,6 +670,28 @@ class SetupCrypto(TestableWebbable):
                                          lambda: self.gpg_key_ready(gk)))
                         Setup.KEY_CREATING_THREAD = gk
                         Setup.KEY_CREATING_THREAD.start()
+
+            # Finally we update misc. settings
+            for key in self.HTTP_POST_VARS.keys():
+                # FIXME: This should probably only happen if the GPG
+                #        key was successfully created.
+
+                # Continue iff all is well...
+                if error_info:
+                    break
+                if key in (['choose_key', 'passphrase', 'passphrase_confirm'] +
+                           TestableWebbable.HTTP_POST_VARS.keys()):
+                    continue
+                try:
+                    val = self.data.get(key, [''])[0]
+                    if val:
+                        session.config.prefs[key] = self.TRUTHY[val.lower()]
+                        changed = True
+                except (ValueError, KeyError):
+                    error_info = (_('Invalid preference'), {
+                        'invalid_setting': True,
+                        'variable': key
+                    })
 
         results.update({
             'creating_key': (Setup.KEY_CREATING_THREAD is not None and
