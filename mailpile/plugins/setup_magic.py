@@ -959,18 +959,20 @@ class Setup(TestableWebbable):
     @classmethod
     def _check_profiles(self, config):
         data = ListProfiles(Session(config)).run().result
-        okay = bad = 0
+        okay = routes = bad = 0
         for rid, ofs in data["rids"].iteritems():
             profile = data["profiles"][ofs]
-            if not profile.get('email', None):
-                bad += 1
-            else:
+            if profile.get('email', None):
+                okay += 1
                 route_id = profile.get('x-mailpile-profile-route', '')
-                if route_id and route_id in config.routes:
-                    okay += 1
-                else:
-                    bad += 1
-        return (bad == 0) and (okay > 0)
+                if route_id:
+                    if route_id in config.routes:
+                        routes += 1
+                    else:
+                        bad += 1
+            else:
+                bad += 1
+        return (routes > 0) and (okay > 0) and (bad == 0)
 
     @classmethod
     def _CHECKPOINTS(self, config):
