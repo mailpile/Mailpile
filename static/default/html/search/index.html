@@ -1,9 +1,8 @@
 {% extends "layouts/" + render_mode + ".html" %}
 {% block content %}
 {% if result %}
-  <!-- FIXME: make density class be pulled from user profile setting -->
-    <div class="hide" id="pile-newmessages-notification">New messages received! Click here (or press f) to refresh your view.</div>
-  <table id="pile-results" class="comfy">
+  <div class="hide" id="pile-newmessages-notification">New messages received! Click here (or press f) to refresh your view.</div>
+  <table id="pile-results" class="{{ config.web.display_density }}">
   <tbody>
   {% for mid in result.thread_ids %}
     {% include("partials/search_item.html") %}

@@ -36,7 +36,7 @@
 {%- endmacro %}
 
 <!-- FIXME: make "density" class be pulled from user profile setting -->
-<div id="sidebar" class="comfy">
+<div id="sidebar" class="{{ config.web.display_density }}">
   <nav>
     <ul id="sidebar-priority" class="sidebar-sortable">
       {%- for tag in mailpile("tags", "mode=tree", "display=priority").result.tags -%}
