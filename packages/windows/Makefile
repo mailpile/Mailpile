@@ -5,18 +5,19 @@ all: gnupg openssl python
 	makensis mailpile.nsi
 
 getbinaries:
-	wget http://slproweb.com/download/Win32OpenSSL_Light-1_0_1h.exe
-	wget http://files.gpg4win.org/gpg4win-light-2.2.1.exe
-	wget https://www.python.org/ftp/python/3.4.1/python-3.4.1.msi
+	@echo "FIXME"
 
 gnupg:
 	@echo "Building GnuPG for Windows."
+	@echo "FIXME"
 
 openssl:
 	@echo "Building OpenSSL for Windows."
+	@echo "FIXME"
 
 python:
 	@echo "Building Python for Windows."
+	@echo "FIXME"
 
 clean:
 	rm "Mailpile Installer.exe"
