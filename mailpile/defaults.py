@@ -15,6 +15,7 @@ import time
 
 from mailpile.config import PathDict
 from mailpile.config import ConfigRule as c
+from mailpile.config import CriticalConfigRule as X
 from mailpile.config import PublicConfigRule as p
 from mailpile.config import KeyConfigRule as k
 
@@ -61,24 +62,24 @@ CONFIG_RULES = {
         'num_results':     (_('Search results per page'), int,             20),
         'rescan_interval': (_('New mail check frequency'), int,           900),
         'open_in_browser': (_('Open in browser on startup'), bool,       True),
-        'gpg_clearsign':   (_('Inline PGP signatures or attached'),
+        'gpg_clearsign':  X(_('Inline PGP signatures or attached'),
                             bool, False),
         'gpg_recipient':  p(_('Encrypt local data to ...'), str,           ''),
-        'openpgp_header':  (_('Advertise GPG preferences in a header?'),
+        'openpgp_header': X(_('Advertise GPG preferences in a header?'),
                             ['', 'sign', 'encrypt', 'signencrypt'],
                             'signencrypt'),
-        'crypto_policy':   (_('Default encryption policy for outgoing mail'),
+        'crypto_policy':  X(_('Default encryption policy for outgoing mail'),
                             str, 'none'),
         'inline_pgp':      (_('Use inline PGP when possible'), bool,     True),
         'default_order':   (_('Default sort order'), str,          'rev-date'),
-        'obfuscate_index': (_('Key to use to scramble the index'), str,    ''),
-        'index_encrypted': (_('Make encrypted content searchable'),
-                            bool, False),
-        'encrypt_mail':    (_('Encrypt locally stored mail'), bool,      True),
-        'encrypt_index':   (_('Encrypt the local search index'), bool,  False),
-        'encrypt_vcards':  (_('Encrypt the contact database'), bool,     True),
-        'encrypt_events':  (_('Encrypt the event log'), bool,            True),
-        'encrypt_misc':    (_('Encrypt misc. local data'), bool,         True),
+        'obfuscate_index': X(_('Key to use to scramble the index'), str,    ''),
+        'index_encrypted': X(_('Make encrypted content searchable'),
+                             bool, False),
+        'encrypt_mail':   X(_('Encrypt locally stored mail'), bool,      True),
+        'encrypt_index':  X(_('Encrypt the local search index'), bool,  False),
+        'encrypt_vcards': X(_('Encrypt the contact database'), bool,     True),
+        'encrypt_events': X(_('Encrypt the event log'), bool,            True),
+        'encrypt_misc':   X(_('Encrypt misc. local data'), bool,         True),
         'rescan_command':  (_('Command run before rescanning'), str,       ''),
         'default_email':   (_('Default outgoing e-mail address'), 'email', ''),
         'default_route':   (_('Default outgoing mail route'), str, ''),
@@ -91,7 +92,7 @@ CONFIG_RULES = {
             'context':     [_("VCard context helper settings"), False,     {}],
         }],
     }),
-    'web': p(_("Web Interface Preferences"), False, {
+    'web': (_("Web Interface Preferences"), False, {
         'setup_complete':  (_('User completed setup experience'), bool, False),
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {

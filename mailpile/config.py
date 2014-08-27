@@ -117,9 +117,11 @@ def KeyConfigRule(*args):
     return c
 
 
-def PublicOrKeyConfigRule(*args):
+# FIXME: This should be enforced somehow when variables are altered.
+#        Run in a context?
+def CriticalConfigRule(*args):
     c = ConfigRule(*args)
-    c._types += ['key', 'public']
+    c._types += ['critical']
     return c
 
 
