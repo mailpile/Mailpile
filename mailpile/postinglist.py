@@ -248,8 +248,8 @@ class NewPostingList(object):
     @classmethod
     def _WordSig(cls, word, config):
         return strhash(word, cls.HASH_LEN,
-                       obfuscate=(config.prefs.obfuscate_index or
-                                  config.prefs.encrypt_index and
+                       obfuscate=((config.prefs.obfuscate_index or
+                                   config.prefs.encrypt_index) and
                                   config.master_key))
 
 
@@ -371,8 +371,8 @@ class OldPostingList(object):
     @classmethod
     def WordSig(cls, word, config):
         return strhash(word, cls.HASH_LEN,
-                       obfuscate=(config.prefs.obfuscate_index or
-                                  config.prefs.encrypt_index and
+                       obfuscate=((config.prefs.obfuscate_index or
+                                   config.prefs.encrypt_index) and
                                   config.master_key))
 
     @classmethod
