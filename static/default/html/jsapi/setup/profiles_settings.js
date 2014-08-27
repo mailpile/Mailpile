@@ -245,17 +245,23 @@ var ProfilesSettingsView = Backbone.View.extend({
 
       // Loop through elements
       _.each($('.profile-update'), function(item, key) {
-        var vcard_data = { rid:
-          profile_id, name: $(item).data('vcard_name'),
-          value: $(item).val(),
-          replace_all: true
-        };
-
-        // Update VCard
-        Mailpile.API.vcards_addlines_post(vcard_data, function(result) {
-          console.log(result);
-        });
+        if ($(item).val() !== '') {
+          var vcard_data = { rid:
+            profile_id, name: $(item).data('vcard_name'),
+            value: $(item).val(),
+            replace_all: true
+          };
+  
+          // Update VCard
+          Mailpile.API.vcards_addlines_post(vcard_data, function(result) {
+            console.log(result);
+          });
+        }
       });
+
+
+      Backbone.history.navigate('#profiles', true);
+
     }
   }
 });

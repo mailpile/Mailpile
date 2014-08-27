@@ -9,7 +9,7 @@
       </div>
       <div id="validation-email">
         <label class="validation-message">{{_("Email")}}</label>
-        <input id="input-setup-profile-email" class="profile-update" type="email" name="email" data-vcard_name="emails" autocorrect="off" autocapitalize="off" placeholder="name@email.com" value="<%= email %>" tabindex="2">
+        <input id="input-setup-profile-email" class="profile-update" type="email" name="email" data-vcard_name="email" autocorrect="off" autocapitalize="off" placeholder="name@email.com" value="<%= email %>" tabindex="2">
       </div>
       <div id="validation-pass" class="hide">
         <label class="validation-message">{{_("Password")}}</label>
@@ -32,7 +32,7 @@
       </div>
       <div id="validation-note">
         <label class="validation-message">{{_("Note")}}</label>
-        <input type="text" name="note" autocorrect="off" autocapitalize="off" placeholder="Personal, Work" value="<%= note %>" tabindex="4">
+        <input type="text" class="profile-update" name="note" data-vcard_name="note" autocorrect="off" autocapitalize="off" placeholder="Personal, Work" value="<%= note %>" tabindex="4">
       </div>
       <input id="input-setup-profile-id" value="<%= id %>" type="hidden">
     </fieldset>
@@ -43,7 +43,7 @@
   </form>
   <div id="setup-profiles-route-editing" class="hide">
     <h2 class="text-center half-bottom"><span class="icon-profiles"></span> <span class="name"></span></h2>
-    <p class="text-center remove-bottom text-detail">Enter the username & password needed to access your sending mail server (SMTP)</p>
+    <p class="text-center remove-bottom text-detail">Enter credentials for your sending mail server (SMTP)</p>
   </div>
 </div>
 <div id="setup-profiles-route-settings" class="hide"></div>
