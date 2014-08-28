@@ -420,12 +420,12 @@ class GnuPG:
         self.homedir = path
 
     def version(self):
-        retvals = self.run(["--version"], no_passphrase_ok=True)
+        retvals = self.run(["--version"])
         return retvals[1]["stdout"][0].split('\n')[0]
 
     def is_available(self):
         try:
-            retvals = self.run(["--version"], no_passphrase_ok=True)
+            retvals = self.run(["--version"])
             self.available = True
         except OSError:
             self.available = False
@@ -434,9 +434,8 @@ class GnuPG:
 
     def run(self,
             args=None, gpg_input=None, outputfd=None, partial_read_ok=False,
-            no_passphrase_ok=False, _raise=None):
+            send_passphrase=False, _raise=None):
         self.outputbuffers = dict([(x, []) for x in self.outputfds])
-        self.pipes = {}
         self.threads = {}
 
         wtf = ' '.join(args)
@@ -454,48 +453,37 @@ class GnuPG:
             args.insert(1, "--homedir=%s" % self.homedir)
 
         gpg_retcode = -1
-        proc = status_pipe = passphrase_pipe = None
-        popen_keeps_open = []
+        proc = None
         try:
-            status_pipe = Safe_Pipe()
-            args.insert(1, "--status-fd=%d" % status_pipe.write_end.fileno())
-            popen_keeps_open.append(status_pipe.write_end)
+            args.insert(1, "--status-fd=2")
 
-            if self.passphrase:
-                passphrase_pipe = Safe_Pipe()
+            if self.passphrase and send_passphrase:
                 if self.use_agent:
                     args.insert(1, "--no-use-agent")
-                args.insert(2, "--passphrase-fd=%d"
-                               % passphrase_pipe.read_end.fileno())
-                popen_keeps_open.append(passphrase_pipe.read_end)
+                args.insert(2, "--passphrase-fd=0")
 
-            if not self.passphrase and not no_passphrase_ok:
+            if not self.passphrase and send_passphrase:
                 self.debug('Running WITHOUT PASSPHRASE %s' % ' '.join(args))
                 self.debug(traceback.format_stack())
             else:
                 self.debug('Running %s' % ' '.join(args))
 
             # Here we go!
-            proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-                         bufsize=0, keep_open=popen_keeps_open)
+            proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE, bufsize=0)
 
             # GnuPG is a bit crazy, and requires that the passphrase
             # be sent and the filehandle closed before anything else
             # interesting happens.
-            if self.passphrase:
+            if self.passphrase and send_passphrase:
                 c = self.passphrase.read(BLOCKSIZE)
                 while c != '':
-                    passphrase_pipe.write(c)
+                    proc.stdin.write(c)
                     c = self.passphrase.read(BLOCKSIZE)
-                passphrase_pipe.write('\n')
-                passphrase_pipe.write_end.close()
+                proc.stdin.write('\n')
 
             self.threads = {
                 "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
-                                       proc.stderr, self.parse_stderr),
-                "status": StreamReader('gpgi-status(%s)' % wtf,
-                                       status_pipe.read_end,
-                                       self.parse_status),
+                                       proc.stderr, self.parse_stderr)
             }
 
             if outputfd:
@@ -521,14 +509,6 @@ class GnuPG:
             gpg_retcode = proc.wait()
 
         finally:
-            # Here we close GPG's end of the status pipe, because
-            # otherwise things may hang. We also close the passphrase pipe
-            # at both ends, as it should be completely finished.
-            if status_pipe:
-                status_pipe.write_end.close()
-            if passphrase_pipe:
-                passphrase_pipe.close()
-
             # Close this so GPG will terminate. This should already have
             # been done, but we're handling errors here...
             if proc and proc.stdin:
@@ -565,6 +545,8 @@ class GnuPG:
         self.outputbuffers["stdout"].append(line)
 
     def parse_stderr(self, line):
+        if line.startswith("[GNUPG:] "):
+            return self.parse_status(line)
         self.debug('<<STDERR<< %s' % line)
         self.outputbuffers["stderr"].append(line)
 
@@ -689,7 +671,8 @@ class GnuPG:
         if passphrase:
             self.passphrase = passphrase
         action = ["--decrypt"]
-        retvals = self.run(action, gpg_input=data, outputfd=outputfd)
+        retvals = self.run(action, gpg_input=data, outputfd=outputfd,
+                                   send_passphrase=True)
         self.passphrase = None
 
         if as_lines:
@@ -748,7 +731,7 @@ class GnuPG:
         if sign and fromkey:
             action.append("--local-user")
             action.append(fromkey)
-        retvals = self.run(action, gpg_input=data)
+        retvals = self.run(action, gpg_input=data, send_passphrase=sign)
         return retvals[0], "".join(retvals[1]["stdout"])
 
     def sign(self, data,
@@ -773,7 +756,7 @@ class GnuPG:
             action.append("--local-user")
             action.append(fromkey)
 
-        retvals = self.run(action, gpg_input=data)
+        retvals = self.run(action, gpg_input=data, send_passphrase=True)
         self.passphrase = None
         return retvals[0], "".join(retvals[1]["stdout"])
 
@@ -796,7 +779,7 @@ class GnuPG:
         if signingkey:
             action.insert(1, "-u")
             action.insert(2, signingkey)
-        retvals = self.run(action)
+        retvals = self.run(action, send_passphrase=True)
         return retvals
 
     def recv_key(self, keyid, keyserver=DEFAULT_SERVER):
