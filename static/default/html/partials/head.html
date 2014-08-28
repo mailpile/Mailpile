@@ -3,7 +3,6 @@
   <link rel="stylesheet" href="/static/css/print.css" media="print" />
   {% if state.command_url not in ("/auth/login/", "/auth/logout/") %}
   <link rel="stylesheet" href="/jsapi/as.css" />
-  <link rel="stylesheet" href="/static/css/setup.css">
   {% endif %}
 
   <!--[if lt IE 9]>
@@ -24,5 +23,4 @@
 
   {% if state.command_url not in ("/auth/login/", "/auth/logout/") %}
   <script src="/api/0/jsapi/as.js"></script>
-  <script src="/api/0/jsapi/setup.js"></script>
   {% endif %}
