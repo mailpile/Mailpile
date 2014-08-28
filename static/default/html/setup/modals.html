@@ -86,3 +86,30 @@
     </div>
   </div>
 </script>
+
+
+<script id="modal-security-enter-passphrase" type="text/template">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">
+          <span class="icon-lock-closed"></span>
+          <span class="title"> Save Security Settings</span>
+        </h4>
+      </div>
+      <div class="modal-body clearfix">
+      <form id="form-setup-security-passphrase" class="standard half-bottom">
+          <p>In order to update your security settings, please enter your Mailpile passphrase.</p>
+          <input id="input-setup-security-passphrase" class="input-medium" type="password" name="passphrase" autocorrect="off" autocapitalize="off" placeholder="top secret super duper passphrase">  
+          <div id="setup-security-passphrase-status" class="half-bottom">
+            <span class="validation-message"></span>
+          </div>
+          <a href="#" id="btn-setup-security-passphrase" class="button-primary" title="{{_("Save Changes")}}" alt="{{_("Save Changes")}}">
+            {{_("Save Changes")}}
+          </a>
+      </form>
+      </div>
+    </div>
+  </div>
+</script>

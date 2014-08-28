@@ -45,7 +45,7 @@ var SecurityModel = Backbone.Model.extend({
     },
     normal: {
       'encrypt_events': false,
-      'encrypt_index': false,
+      'encrypt_index': true,
       'encrypt_mail': false,
       'encrypt_misc': false,
       'encrypt_vcards': false,
@@ -65,9 +65,14 @@ var SecurityView = Backbone.View.extend({
     return this;
   },
   events: {
-    "click #btn-setup-advanced-access"   : "showAccess",
-    "change #input-setup-security-level" : "actionSecurityLevel",
-    "click #btn-setup-security-save"     : "processSecurity",
+    "click #btn-setup-security-save"       : "showPassphrase",
+    "change #input-setup-security-level"   : "actionSecurityLevel",
+    "click #btn-setup-security-passphrase" : "processSecurity"
+  },
+  testThisShit: function(e) {
+
+    e.preventDefault();
+    console.log('yo dawwg town');
   },
   show: function() {
     Mailpile.API.setup_crypto_get({}, function(result) {
@@ -87,6 +92,10 @@ var SecurityView = Backbone.View.extend({
       var settings_data = _.extend({security_level: level}, result.result.prefs);
       $('#setup').html(_.template($("#template-setup-security").html(), settings_data));
     });
+  },
+  showPassphrase: function(e) {
+    $('#modal-full').html($('#modal-security-enter-passphrase').html());
+    $('#modal-full').modal({ backdrop: true, keyboard: true, show: true, remote: false });
   },
   actionSecurityLevel: function(e) {
     e.preventDefault();
@@ -109,16 +118,23 @@ var SecurityView = Backbone.View.extend({
     e.preventDefault();
 
     var security_data = $('#form-setup-security').serializeObject();
-
     _.each($('#form-setup-security input:checkbox:not(:checked)'), function(val, key) {
       security_data[$(val).attr('name')] = false;
     });
 
+    security_data['passphrase'] = $('#input-setup-security-passphrase').val();
+    security_data['passphrase_confirm'] = $('#input-setup-security-passphrase').val();
+
     // Hide Form
     Mailpile.API.setup_crypto_post(security_data, function(result) {
-
-      console.log(result);
-
+      if (result.status === 'success') {
+        $('#setup-security-passphrase-status').find('.validation-message').addClass('validation-success').html(result.message);
+        setTimeout(function() {
+          $('#modal-full').modal('hide');
+        }, 1650);
+      } else {
+        $('#setup-security-passphrase-status').find('.validation-message').addClass('validation-error').html(result.message);
+      }
     });
   }
 });

@@ -5,39 +5,39 @@
     <label class="clearfix">What are your personal security & privacy preferences?</label>
     <p>
       <select id="input-setup-security-level">
-        <option value="">Select...</option>
-        <option value="tinfoil" <% if (security_level == 'tinfoil' ) { %>selected<% } %>>You Collect Tinfoil Hats</option>
-        <option value="paranoid" <% if (security_level == 'paranoid' ) { %>selected<% } %>>Relatively Paranoid</option>
-        <option value="above" <% if (security_level == 'above' ) { %>selected<% } %>>Above Average Paranoia</option>
-        <option value="concerned" <% if (security_level == 'concerned' ) { %>selected<% } %>>Privacy Concerned</option>
-        <option value="normal" <% if (security_level == 'normal' ) { %>selected<% } %>>Normal Person</option>
-        <option value="crazy" <% if (security_level == 'crazy' ) { %>selected<% } %>>Totally Unconcerned</option>
+        <option value="">{{_("select...")}}</option>
+        <option value="tinfoil" <% if (security_level == 'tinfoil' ) { %>selected<% } %>>{{_("You collect tinfoil hats")}}</option>
+        <option value="paranoid" <% if (security_level == 'paranoid' ) { %>selected<% } %>>{{_("Relatively paranoid")}}</option>
+        <option value="above" <% if (security_level == 'above' ) { %>selected<% } %>>{{_("Above average paranoia")}}</option>
+        <option value="concerned" <% if (security_level == 'concerned' ) { %>selected<% } %>>{{_("Privacy concerned")}}</option>
+        <option value="normal" <% if (security_level == 'normal' ) { %>selected<% } %>>{{_("Normal person")}}</option>
+        <option value="crazy" <% if (security_level == 'crazy' ) { %>selected<% } %>>{{_("Totally unconcerned")}}</option>
       </select>
     </p>
     <fieldset>
       <label>
-        <input type="checkbox" name="encrypt_events"  <% if (encrypt_events) { %>checked<% } %>>
-        Encrypt system events & notifications
+        <input type="checkbox" name="encrypt_events"  <% if (encrypt_events) { %>checked value="true"<% } %>>
+        {{_("Encrypt system events & notifications")}}
       </label>
       <label class="">
-        <input type="checkbox" name="encrypt_index" <% if (encrypt_index) { %>checked<% } %>>
-        Encrypt your search index of terms
+        <input type="checkbox" name="encrypt_index" <% if (encrypt_index) { %>checked value="true"<% } %>>
+        {{_("Encrypt your search index of terms")}}
       </label>
       <label>
-        <input type="checkbox" name="encrypt_mail" <% if (encrypt_mail) { %>checked<% } %>>
-        Encrypt messages after downloaded to your machine
+        <input type="checkbox" name="encrypt_mail" <% if (encrypt_mail) { %>checked value="true"<% } %>>
+        {{_("Encrypt messages after downloaded to your machine")}}
       </label>
       <label>
-        <input type="checkbox" name="encrypt_vcards" <% if (encrypt_vcards) { %>checked<% } %>>
-        Encrypted your address book & contacts
+        <input type="checkbox" name="encrypt_vcards" <% if (encrypt_vcards) { %>checked value="true"<% } %>>
+        {{_("Encrypt your address book & contacts")}}
       </label>
       <label>
-        <input type="checkbox" name="index_encrypted" <% if (index_encrypted) { %>checked<% } %>>
-        Index encrypted messages that were encrypted
+        <input type="checkbox" name="index_encrypted" <% if (index_encrypted) { %>checked value="true"<% } %>>
+        {{_("Index messages that you sent and received that were encrypted")}}
       </label>
       <label>
-        <input type="checkbox" name="encrypt_misc" <% if (encrypt_misc) { %>checked<% } %>>
-        Encrypt various other things
+        <input type="checkbox" name="encrypt_misc" <% if (encrypt_misc) { %>checked value="true"<% } %>>
+        {{_("Encrypt various other things")}}
       </label>
 <!-- FIXME: Commented out settings not supported by backend 
       <label>
@@ -58,11 +58,11 @@
       </label>
 -->
     </fieldset>
-    <div class="clearfix half-top">
-      <a href="/setup/#" class="button-secondary">{{_("Back")}}</a> &nbsp;&nbsp;
-      <button id="btn-setup-security-save">
-        <span class="icon-plus"></span> {{_("Save")}}
-      </button>
-    </div>
   </form>
+  <div class="clearfix half-top">
+    <a href="/setup/#" class="button-secondary">{{_("Back")}}</a> &nbsp;&nbsp;
+    <button id="btn-setup-security-save" title="{{_("Save Changes")}}" alt="{{_("Save Changes")}}">
+      <span class="icon-checkmark"></span> {{_("Save Changes")}}
+    </button>
+  </div>
 </div>
