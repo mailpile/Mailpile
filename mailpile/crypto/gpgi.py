@@ -411,7 +411,7 @@ class GnuPG:
         if self.session:
             self.session.debug(msg.rstrip())
         else:
-            print '%s' % msg.rstrip()
+            print '%s' % str(msg).rstrip()
 
     def _debug_none(self, msg):
         pass
