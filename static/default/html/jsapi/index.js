@@ -1,82 +1,83 @@
 // Make console.log not crash JS browsers that don't support it
 if (!window.console) window.console = {
-    log: $.noop,
-    group: $.noop,
-    groupEnd: $.noop,
-    info: $.noop,
-    error: $.noop
+  log: $.noop,
+  group: $.noop,
+  groupEnd: $.noop,
+  info: $.noop,
+  error: $.noop
 };
 
+
 Mailpile = {
-    instance:           {},
-    search_target:      'none',
-    search_cache:       [],
-    messages_cache:     [],
-    messages_composing: {},
-    crypto_keylookup:   [],
-    tags_cache:         [],
-    contacts_cache:     [],
-    keybindings:        [
-        ["normal", "/",      function() { $("#search-query").focus(); return false; }],
-        ["normal", "c",      function() { Mailpile.compose(); }],
-        ["normal", "g i",    function() { Mailpile.go("/in/inbox/"); }],
-        ["normal", "g d",    function() { Mailpile.go("/in/drafts/"); }],
-        ["normal", "g c",    function() { Mailpile.go("/contacts/"); }],
-        ["normal", "g n c",  function() { Mailpile.go("/contacts/add/"); }],
-        ["normal", "g t",    function() { Mailpile.go("/tag/list/"); }],
-        ["normal", "g n t",  function() { Mailpile.go("/tag/add/"); }],
-        ["normal", "g s",    function() { Mailpile.go("/settings/profiles/"); }],
-        ["normal", "h",      function() { Mailpile.go("/help/"); }],
-        ["normal", "command+z ctrl+z",  function() { alert('Undo Something ') }],
-        ["normal", "space",  function() { Mailpile.bulk_action_select_target(); }],
-        ["normal", "s a",    function() { Mailpile.bulk_action_select_all(); }],
-        ["normal", "s b",    function() { Mailpile.bulk_action_select_between(); }],
-        ["normal", "s n",    function() { Mailpile.bulk_action_select_none(); }],
-        ["normal", "s i",    function() { Mailpile.bulk_action_select_invert(); }],
-        ["normal", "k",      function() { Mailpile.bulk_action_selection_down(); }],
-        ["normal", "j",      function() { Mailpile.bulk_action_selection_up(); }],
-        ["normal", "enter",  function() { Mailpile.open_selected_thread(); }],
-        ["normal", "f",      function() { Mailpile.update_search(); }],
-        ["normal", ["m a"],  function() { Mailpile.keybinding_move_message(''); }],
-        ["normal", ["m s"],  function() { Mailpile.keybinding_move_message('spam'); }],
-        ["normal", ["m d"],  function() { Mailpile.keybinding_move_message('trash'); }],
-        ["normal", ["t"],    function() { Mailpile.render_modal_tags(); }],
-        ["normal", ["r"],    function() { Mailpile.bulk_action_read(); }],
-        ["normal", ["u"],    function() { Mailpile.bulk_action_unread(); }],
-        ["normal", ["up"],   function() { Mailpile.keybinding_target('up'); }],
-        ["normal", ["down"], function() { Mailpile.keybinding_target('down'); }],
-        ["normal", "shift",  function() { Mailpile.keybinding_shift_router(); }],
-        ["global", "esc",    function() {
-            $('input[type=text]').blur();
-            $('textarea').blur();
-        }]
-    ],
-    commands:         [],
-    graphselected:    [],
-    defaults: {
-        view_size: "comfy"
-    },
-    api: {
-        compose      : "/api/0/message/compose/",
-        compose_send : "/api/0/message/update/send/",
-        compose_save : "/api/0/message/update/",
-        contacts     : "/api/0/search/address/",
-        message      : "/api/0/message/=",
-        tag          : "/api/0/tag/",
-        tag_list     : "/api/0/tags/",
-        tag_add      : "/api/0/tags/add/",
-        tag_update   : "/api/0/settings/set/",
-        search_new   : "/api/0/search/?q=in%3Anew",
-        search       : "/api/0/search/",
-        settings_add : "/api/0/settings/add/"
-    },
-    urls: {
-        message_draft : "/message/draft/=",
-        message_sent  : "/thread/=",
-        tags          : "/tags/"
-    },
-    plugins: [],
-    theme: {}
+  instance:           {},
+  search_target:      'none',
+  search_cache:       [],
+  messages_cache:     [],
+  messages_composing: {},
+  crypto_keylookup:   [],
+  tags_cache:         [],
+  contacts_cache:     [],
+  keybindings:        [
+    ["normal", "/",      function() { $("#search-query").focus(); return false; }],
+    ["normal", "c",      function() { Mailpile.compose(); }],
+    ["normal", "g i",    function() { Mailpile.go("/in/inbox/"); }],
+    ["normal", "g d",    function() { Mailpile.go("/in/drafts/"); }],
+    ["normal", "g c",    function() { Mailpile.go("/contacts/"); }],
+    ["normal", "g n c",  function() { Mailpile.go("/contacts/add/"); }],
+    ["normal", "g t",    function() { Mailpile.go("/tag/list/"); }],
+    ["normal", "g n t",  function() { Mailpile.go("/tag/add/"); }],
+    ["normal", "g s",    function() { Mailpile.go("/settings/profiles/"); }],
+    ["normal", "h",      function() { Mailpile.go("/help/"); }],
+    ["normal", "command+z ctrl+z",  function() { alert('Undo Something ') }],
+    ["normal", "space",  function() { Mailpile.bulk_action_select_target(); }],
+    ["normal", "s a",    function() { Mailpile.bulk_action_select_all(); }],
+    ["normal", "s b",    function() { Mailpile.bulk_action_select_between(); }],
+    ["normal", "s n",    function() { Mailpile.bulk_action_select_none(); }],
+    ["normal", "s i",    function() { Mailpile.bulk_action_select_invert(); }],
+    ["normal", "k",      function() { Mailpile.bulk_action_selection_down(); }],
+    ["normal", "j",      function() { Mailpile.bulk_action_selection_up(); }],
+    ["normal", "enter",  function() { Mailpile.open_selected_thread(); }],
+    ["normal", "f",      function() { Mailpile.update_search(); }],
+    ["normal", ["m a"],  function() { Mailpile.keybinding_move_message(''); }],
+    ["normal", ["m s"],  function() { Mailpile.keybinding_move_message('spam'); }],
+    ["normal", ["m d"],  function() { Mailpile.keybinding_move_message('trash'); }],
+    ["normal", ["t"],    function() { Mailpile.render_modal_tags(); }],
+    ["normal", ["r"],    function() { Mailpile.bulk_action_read(); }],
+    ["normal", ["u"],    function() { Mailpile.bulk_action_unread(); }],
+    ["normal", ["up"],   function() { Mailpile.keybinding_target('up'); }],
+    ["normal", ["down"], function() { Mailpile.keybinding_target('down'); }],
+    ["normal", "shift",  function() { Mailpile.keybinding_shift_router(); }],
+    ["global", "esc",    function() {
+      $('input[type=text]').blur();
+      $('textarea').blur();
+    }]
+  ],
+  commands:      [],
+  graphselected: [],
+  defaults: {
+    view_size: "comfy"
+  },
+  api: {
+    compose      : "/api/0/message/compose/",
+    compose_send : "/api/0/message/update/send/",
+    compose_save : "/api/0/message/update/",
+    contacts     : "/api/0/search/address/",
+    message      : "/api/0/message/=",
+    tag          : "/api/0/tag/",
+    tag_list     : "/api/0/tags/",
+    tag_add      : "/api/0/tags/add/",
+    tag_update   : "/api/0/settings/set/",
+    search_new   : "/api/0/search/?q=in%3Anew",
+    search       : "/api/0/search/",
+    settings_add : "/api/0/settings/add/"
+  },
+  urls: {
+    message_draft : "/message/draft/=",
+    message_sent  : "/thread/=",
+    tags          : "/tags/"
+  },
+  plugins: [],
+  theme: {}
 };
 
 
@@ -107,6 +108,7 @@ Mailpile.API = {
   _async_url: "/async",
 };
 
+
 Mailpile.API._ajax_error =  function(base_url, command, data, method, response, status) {
   console.log('Oops, an AJAX call returned as error :(');
   console.log('status: ' + status + ' method: ' + method + ' base_url: ' + base_url + ' command: ' + command);
@@ -117,6 +119,7 @@ Mailpile.API._ajax_error =  function(base_url, command, data, method, response, 
     $('body').append($('#template-connection-down').html());
   }
 };
+
 
 Mailpile.API._action = function(base_url, command, data, method, callback) {
 
@@ -157,9 +160,11 @@ Mailpile.API._action = function(base_url, command, data, method, callback) {
   return true;
 };
 
+
 Mailpile.API._sync_action = function(command, data, method, callback) {
   return Mailpile.API._action(Mailpile.API._sync_url, command, data, method, callback);
 };
+
 
 Mailpile.API._async_action = function(command, data, method, callback, flags) {
   function handle_event(data) {
@@ -176,6 +181,7 @@ Mailpile.API._async_action = function(command, data, method, callback, flags) {
 
   Mailpile.API._action(Mailpile.API._async_url, command, data, method, handle_event, flags);
 };
+
 
 /* Create sync & asyn API commands */
 {% for command in result.api_methods -%}
