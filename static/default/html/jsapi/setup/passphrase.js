@@ -31,7 +31,13 @@ var PassphraseView = Backbone.View.extend({
     return this;
   },
   events: {
-    "click #btn-setup-passphrase": "processPassphrase"
+    "click .setup-crypto-more-uid" : "showMoreUID",
+    "click #btn-setup-passphrase"  : "processPassphrase"
+  },
+  showMoreUID: function(e) {
+    e.preventDefault();
+    $(e.target).hide();
+    $('.setup-crypto-uid-more').fadeIn();
   },
   processPassphrase: function(e) {
 

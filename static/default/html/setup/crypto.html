@@ -58,14 +58,26 @@
             <span class="icon-key"></span>
           </div>
           <div>
-            <strong>{{ nice_fingerprint(key) }}</strong><br>
+            <strong class="half-bottom">{{ nice_fingerprint(key) }}</strong>
+            {% set uid_count = 0 %}
+            {% for uid in key_info.uids %}
+              {% set uid_count = uid_count + 1 %}
+              {% if uid_count <= 1 %}
+              <span>
+                {% if uid.name %}{{uid.name}}{% endif%}
+                {% if uid.email %}{{uid.email}}{% endif %}
+                {% if uid.note %}{{uid.note.decode('utf-8') }}{% endif %}
+                {% if key_info.uids|length > 1 %}<a href="#" class="setup-crypto-more-uid">see more</a>{% endif %}
+              </span>
+              {% else %}
+              <span class="setup-crypto-uid-more hide"><br>
+                {% if uid.name %}{{uid.name}}{% endif%}
+                {% if uid.email %}{{uid.email}}{% endif %}
+                {% if uid.note %}{{uid.note.decode('utf-8') }}{% endif %}
+              </span>
+              {% endif %}
+            {% endfor %}<br>
             <span>
-              {% for uid in key_info.uids %}
-               {% if uid.name %}{{uid.name}}{% endif%}
-               {% if uid.email %}{{uid.email}}{% endif %}
-               {% if uid.note %}{{uid.note.decode('utf-8') }}{% endif %}<br>
-              {% endfor %}
-
               {{ key_info.keytype_name }} Key / {{ key_info.keysize }} bits &nbsp;
               Created {{ key_info.creation_date }} &nbsp;&nbsp; {% if key_info.expiration_date %}Expires {{ key_info.expiration_date }}{% endif %}
             </span>
