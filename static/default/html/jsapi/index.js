@@ -97,65 +97,64 @@ Mailpile.theme = {{ theme_settings|json|safe }}
 
 /* **[AJAX Wappers - for the Mailpile API]********************************** */
 Mailpile.API = {
-    _endpoints: {
+  _endpoints: {
 {% for command in result.api_methods %}
-        {{command.url|replace("/", "_")}}_{{command.method|lower}}: "/0/{{command.url}}/"{% if not loop.last %},{% endif %}
+    {{command.url|replace("/", "_")}}_{{command.method|lower}}: "/0/{{command.url}}/"{% if not loop.last %},{% endif %}
 
 {% endfor %}
-    },
-    _sync_url: "/api",
-    _async_url: "/async",
+  },
+  _sync_url: "/api",
+  _async_url: "/async",
 };
 
 Mailpile.API._ajax_error =  function(base_url, command, data, method, response, status) {
-    console.log('Oops, an AJAX call returned as error :(');
-    console.log('method: ' + method + ' base_url: ' + base_url + ' command: ' + command);
-    console.log('status: ' + status);
-    console.log(response);
+  console.log('Oops, an AJAX call returned as error :(');
+  console.log('status: ' + status + ' method: ' + method + ' base_url: ' + base_url + ' command: ' + command);
+  console.log(response);
 
-    // Hide Connection Down
-    if (command == '/0/eventlog/' && status == 'error' && response.status == 404) {
-      $('body').append($('#template-connection-down').html());
-    }
+  // Hide Connection Down
+  if (command == '/0/eventlog/' && status == 'error' && response.status == 404) {
+    $('body').append($('#template-connection-down').html());
+  }
 };
 
 Mailpile.API._action = function(base_url, command, data, method, callback) {
 
-    if (method != "GET" && method != "POST") {
-        method = "GET";
+  if (method != "GET" && method != "POST") {
+    method = "GET";
+  }
+  if (method == "GET") {
+    for(var k in data) {
+      if(!data[k] || data[k] == undefined) {
+        delete data[k];
+      }
     }
-    if (method == "GET") {
-        for(var k in data) {
-            if(!data[k] || data[k] == undefined) {
-                delete data[k];
-            }
-        }
-        var params = $.param(data);
-        $.ajax({
-            url      : base_url + command + "?" + params,
-            type     : 'GET',
-            dataType : 'json',
-            success  : callback,
-            error: function(response, status) {
-              Mailpile.API._ajax_error(base_url, command, data, method, response, status);
-            }
-        });
-    } else if (method =="POST") {
-        $.ajax({
-            url      : base_url + command,
-            type     : 'POST',
-            data     : data,
-            dataType : 'json',
-            success  : callback,
-            error    : function(response, status) {
-              Mailpile.API._ajax_error(base_url, command, data, method, response, status);
-            }
-        });
-    } else {
-      alert('Somethings rotten in Denmark');
-    }
+    var params = $.param(data);
+    $.ajax({
+      url      : base_url + command + "?" + params,
+      type     : 'GET',
+      dataType : 'json',
+      success  : callback,
+      error: function(response, status) {
+        Mailpile.API._ajax_error(base_url, command, data, method, response, status);
+      }
+    });
+  } else if (method =="POST") {
+    $.ajax({
+      url      : base_url + command,
+      type     : 'POST',
+      data     : data,
+      dataType : 'json',
+      success  : callback,
+      error    : function(response, status) {
+        Mailpile.API._ajax_error(base_url, command, data, method, response, status);
+      }
+    });
+  } else {
+    alert('Somethings rotten in Denmark');
+  }
 
-    return true;
+  return true;
 };
 
 Mailpile.API._sync_action = function(command, data, method, callback) {
@@ -163,47 +162,47 @@ Mailpile.API._sync_action = function(command, data, method, callback) {
 };
 
 Mailpile.API._async_action = function(command, data, method, callback, flags) {
-    function handle_event(data) {
-        if (data.result.resultid) {
-            subreq = {event_id: data.result.resultid, flags: flags};
-            var subid = EventLog.subscribe(subreq, function(ev) {
-                callback(ev.private_data, ev);
-                if (ev.flags == "c") {
-                    EventLog.unsubscribe(data.result.resultid, subid);
-                }
-            });
+  function handle_event(data) {
+    if (data.result.resultid) {
+      subreq = {event_id: data.result.resultid, flags: flags};
+      var subid = EventLog.subscribe(subreq, function(ev) {
+        callback(ev.private_data, ev);
+        if (ev.flags == "c") {
+          EventLog.unsubscribe(data.result.resultid, subid);
         }
+      });
     }
+  }
 
-    Mailpile.API._action(Mailpile.API._async_url, command, data, method, handle_event, flags);
+  Mailpile.API._action(Mailpile.API._async_url, command, data, method, handle_event, flags);
 };
 
 /* Create sync & asyn API commands */
 {% for command in result.api_methods -%}
 Mailpile.API.{{command.url|replace("/", "_")}}_{{command.method|lower}} = function(data, callback, method) {
-    var methods = ["{{command.method}}"];
-    if (!method || methods.indexOf(method) == -1) {
-        method = methods[0];
-    }
-    return Mailpile.API._sync_action(
-        Mailpile.API._endpoints.{{command.url|replace("/", "_")}}_{{command.method|lower}},
-        data,
-        method,
-        callback
-    );
+  var methods = ["{{command.method}}"];
+  if (!method || methods.indexOf(method) == -1) {
+    method = methods[0];
+  }
+  return Mailpile.API._sync_action(
+    Mailpile.API._endpoints.{{command.url|replace("/", "_")}}_{{command.method|lower}},
+    data,
+    method,
+    callback
+  );
 };
 
 Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = function(data, callback, method) {
-    var methods = ["{{command.method}}"];
-    if (!method || methods.indexOf(method) == -1) {
-        method = methods[0];
-    }
-    return Mailpile.API._async_action(
-        Mailpile.API._endpoints.{{command.url|replace("/", "_")}}_{{command.method|lower}},
-        data,
-        method,
-        callback
-    );
+  var methods = ["{{command.method}}"];
+  if (!method || methods.indexOf(method) == -1) {
+    method = methods[0];
+  }
+  return Mailpile.API._async_action(
+    Mailpile.API._endpoints.{{command.url|replace("/", "_")}}_{{command.method|lower}},
+    data,
+    method,
+    callback
+  );
 };
 {% endfor %}
 
@@ -212,7 +211,6 @@ Mailpile.API.async_{{command.url|replace("/", "_")}}_{{command.method|lower}} = 
    dict, so plugin setup code can reference other plugins. Plugins are
    expected to return a dictionary of values they want to make globally
    accessible.
-
    FIXME: Make sure the order is somehow sane given dependenies.
 */
 {% for js_class in result.javascript_classes %}
