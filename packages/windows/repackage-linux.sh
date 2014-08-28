@@ -32,7 +32,7 @@ mkdir -p $WORKDIR/Downloads && cd $WORKDIR/Downloads
 #              Jinja2-2.7.3.win32-py2.7.exe \
 for package in python-2.7.8-win32.zip \
                openssl-1.0.1h-win32.zip \
-               gnupg-2.2.1-win32.zip \
+               gnupg-1.4.18-win32.zip \
                MailpileLauncher.zip \
                lxml-3.3.5.win32-py2.7.exe \
                Pillow-2.5.3.win32-py2.7.exe \
