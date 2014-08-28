@@ -1,3 +1,4 @@
+import errno
 import mailbox
 import os
 import threading
