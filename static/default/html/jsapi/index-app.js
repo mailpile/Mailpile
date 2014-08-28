@@ -1,16 +1,5 @@
-{% set tags_json = mailpile("tags", "display=*", "mode=flat").result.tags|json %}
-$(document).ready(function() {
-
-  // Print JSON for JS Use
-  Mailpile.instance['tags'] = {{ tags_json|safe }};
-
-  var inbox = _.findWhere(Mailpile.instance.tags, {slug: 'inbox'});
-  var favicon = new Favico({animation:'popFade'});
-  favicon.badge(inbox.stats.new);
-});
-
-
 /* JS App Files */
+{% include("jsapi/app/eventlog.js") %}
 {% include("jsapi/app/activities.js") %}
 {% include("jsapi/app/drag_drop.js") %}
 {% include("jsapi/app/global.js") %}
@@ -57,3 +46,22 @@ $(document).ready(function() {
 {% include("jsapi/ui/topbar.js") %}
 {% include("jsapi/ui/sidebar.js") %}
 {% include("jsapi/ui/tooltips.js") %}
+
+
+{% set tags_json = mailpile("tags", "display=*", "mode=flat").result.tags|json %}
+$(document).ready(function() {
+
+  // Print JSON for JS Use
+  Mailpile.instance['tags'] = {{ tags_json|safe }};
+
+  var inbox = _.findWhere(Mailpile.instance.tags, {slug: 'inbox'});
+  var favicon = new Favico({animation:'popFade'});
+  favicon.badge(inbox.stats.new);
+
+  // Start Eventlog
+  setTimeout(function() {
+    EventLog.init();
+  }, 250);
+
+});
+

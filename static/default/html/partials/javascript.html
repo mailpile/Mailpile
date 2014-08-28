@@ -27,6 +27,16 @@ $(document).ready(function() {
    "search_tag_ids": {% if result.search_tag_ids %}{{result.search_tag_ids|safe }}{% else %}[]{% endif %},
    "search_addresses": []
   };
+
+  // HTML5 Browser Notifications
+  if (Notification.permission == "granted") {
+    $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")
+  }
+
+  $('#notifications-permission-option').click(function() {
+    Notification.requestPermission();
+  });
+
 });
 </script>
 <script src="/api/0/jsapi/app.js"></script>
