@@ -78,7 +78,6 @@ var SetupRouter = Backbone.Router.extend({
     SendingView.showEdit(id);
   },
   importing: function() {
-    console.log('here inside importing()');
     if (this.checkView('#importing')) {
       ImportingView.show();
     }

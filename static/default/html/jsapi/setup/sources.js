@@ -79,7 +79,8 @@ var SourceModel = Backbone.Model.extend({
 
 var SourcesCollection = Backbone.Collection.extend({
   url: '/api/0/settings/as.json?var=sources',
-  model: SourceModel
+  model: SourceModel,
+  can_next: false
 });
 
 
@@ -110,26 +111,26 @@ var SourcesView = Backbone.View.extend({
         Backbone.history.navigate('#sources/add', true);
       }
 
-      // Can Go Next
+      // Loop Sources
       var can_next = [];
       _.each(result.result.sources, function(val, key) {
 
-        console.log(val.mailbox);
-        console.log(val.enabled);
+        // Tally CanNext
         if (!_.isEmpty(val.mailbox) && val.enabled) {
           can_next.push(true); 
         } else {
           can_next.push(false);
         }
 
+        // Render HTML Items
         var source = new SourceModel(_.extend({id: key, action: '{{_("Edit")}}'}, val));
         SourcesCollection.add(source);
         $('#setup-sources-list-items').append(_.template($('#template-setup-sources-item').html(), source.attributes));
       });
 
       // Display (or not) Next Button
-      if (_.indexOf(can_next, true) > -1) {
-        $('#btn-setup-sources-next').show();
+      if (StateModel.attributes.result.sources === true && _.indexOf(can_next, true) > -1) {
+        SourcesCollection.can_next = true;
       } else {
         $('#setup-sources-not-configured').show();
       }
@@ -138,15 +139,20 @@ var SourcesView = Backbone.View.extend({
     return this;
   },
   eventUnconfigured: function(event) {
+
     // Has Unconfigured Mailboxes (action)
     if (event.data.have_unknown) {
       $('#setup-setup-notice-' + event.data.id)
-        .html('<em>{{_("You have unconfigured mailboxes")}}</em> <a href="/setup/#sources/configure/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>')
+        .html('<em>{{_("Source has unconfigured mailboxes")}}</em> <a href="/setup/#sources/configure/' + event.data.id + '" class="right"><span class="icon-signature-unknown"></span> {{_("Configure Now")}}</a>')
         .fadeIn();
 
-      $('#btn-setup-sources-next').attr('disabled', true);
-    } else {
-      $('#btn-setup-sources-next').attr('disabled', false);
+      $('#setup-sources-analyzing').hide();
+      $('#setup-sources-next-state').html('{{_("You need at least one mail source configured!")}}');
+    }
+    // Show Next
+    else if (SourcesCollection.can_next && StateModel.attributes.result.sources) {
+      $('#setup-sources-next-state').hide();
+      $('#btn-setup-sources-next').show();
     }
   },
   eventProcessing: function(event) {
@@ -158,7 +164,7 @@ var SourcesView = Backbone.View.extend({
       if (event.data.copying.running && event.data.copying.total) {
         message = '{{_("Downloading")}} ' + event.data.copying.copied_messages + ' {{_("of")}} ' + event.data.copying.total + ' {{_("messages")}}';
       } else if (event.data.copying && event.data.copying.running) {
-        message = '{{_("Found some messages to download")}}';
+        message = '{{_("Found messages to download")}}';
       } else if (event.data.copying && event.data.copying.complete) {
         message = '{{_("Mailbox up to date")}}';
       }

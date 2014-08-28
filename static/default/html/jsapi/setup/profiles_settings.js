@@ -8,7 +8,7 @@ var ProfilesSettingsView = Backbone.View.extend({
     return this;
   },
   events: {
-    "keyup #input-setup-profile-email"     : "actionCheckEmailMagic",
+    "keyup #input-setup-profile-email"    : "actionCheckEmailMagic",
     "blur #input-setup-profile-pass"      : "actionCheckAuth",
     "mouseover #btn-setup-profile-save"   : "actionCheckAuth",
     "click #btn-setup-connection-check"   : "actionCheckAuth",
@@ -215,12 +215,13 @@ var ProfilesSettingsView = Backbone.View.extend({
     if (!this.model.validate()) {
       Mailpile.API.setup_profiles_post(profile_data, function(result) {
 
-        // Update State
-        StateModel.fetch();
-
         // Reset Model & Navigate
-        ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
-        Backbone.history.navigate('#profiles', true);
+        StateModel.fetch({
+          success: function(model) {
+            ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
+            Backbone.history.navigate('#profiles', true);
+          }
+        });
 
         // Add Setup Magic (Source)
         if (SetupMagic.status == 'success') {
@@ -259,9 +260,12 @@ var ProfilesSettingsView = Backbone.View.extend({
         }
       });
 
-
-      Backbone.history.navigate('#profiles', true);
-
+      // Update State
+      StateModel.fetch({
+        success: function(model) {
+          Backbone.history.navigate('#profiles', true);
+        }
+      });
     }
   }
 });

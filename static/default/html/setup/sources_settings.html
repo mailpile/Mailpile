@@ -16,8 +16,8 @@
           <label class="validation-message">{{_("Where is this source located?")}}</label>
           <select id="input-setup-source-type" tabindex="2">
             <option value="" <% if (!protocol) { %>selected<% } %>>{{_("select...")}}</option>
-            <option value="local" <% if (_.indexOf(['mbox', 'maildir'], protocol) > -1) { %>selected<% } %>>{{_("On Same Computer As Mailpile")}}</option>
-            <option value="server" <% if (_.indexOf(['imap_ssl', 'imap', 'pop'], protocol) > -1) { %>selected<% } %>>{{_("On Different Computer")}}</option>
+            <option value="local" <% if (_.indexOf(['mbox', 'maildir'], protocol) > -1) { %>selected<% } %>>{{_("On same computer as Mailpile")}}</option>
+            <option value="server" <% if (_.indexOf(['imap_ssl', 'imap', 'pop'], protocol) > -1) { %>selected<% } %>>{{_("On different computer (server)")}}</option>
           </select>
         </td>
       </tr>

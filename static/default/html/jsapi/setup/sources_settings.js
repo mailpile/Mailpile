@@ -95,8 +95,12 @@ var SourcesSettingsView = Backbone.View.extend({
         if (result.status == 'success') {
 
           // Reset Model
-          SourcesSettingsView.model.set({name: '', username: '', password: '', port: ''});
-          Backbone.history.navigate('#sources', true);
+          StateModel.fetch({
+            success: function(model) {
+              SourcesSettingsView.model.set({name: '', username: '', password: '', port: ''});
+              Backbone.history.navigate('#sources', true);
+            }
+          });
         } else {
           alert('Error saving Sources');
         }
