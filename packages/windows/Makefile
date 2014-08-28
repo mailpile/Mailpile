@@ -1,11 +1,11 @@
 all: GnuPG OpenSSL Python27
-	@echo "Making Nullsoft Installer package."
+	@echo "=== Making Nullsoft Installer package."
 	#makensis mailpile.nsi
 	@echo "FIXME"
 
 GnuPG:
+	@echo "=== Building GnuPG for Windows."
 	sudo apt-get install wine mingw32
-	@echo "Building GnuPG for Windows."
 	@mkdir -p Downloads
 	@(cd Downloads \
           && wget -q -c ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-1.4.18.tar.bz2)
@@ -22,12 +22,15 @@ GnuPG:
 	@rm -rf gnupg-1.4.18
 
 OpenSSL:
-	@echo "Building OpenSSL for Windows."
+	@echo "=== Building OpenSSL for Windows."
 	@echo "FIXME"
 
 Python27:
-	@echo "Building Python for Windows."
+	@echo "=== Building Python for Windows."
 	@echo "FIXME"
 
 clean:
-	rm -rf GnuPG "Mailpile Installer.exe"
+	@rm -rf GnuPG OpenSSL Python27 gnupg-1.4.18
+
+distclean: clean
+	@rm -rf Downloads "Mailpile Installer.exe"
