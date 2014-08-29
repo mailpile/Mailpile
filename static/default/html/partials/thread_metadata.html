@@ -24,6 +24,11 @@
       </li>
       {% endif %}
       <li role="presentation">
+        <a role="menuitem" tabindex="-1" href="mailto:{{from.address}}/">
+          <span class="icon-compose"></span> {{_("Compose New")}}
+        </a>
+      </li>
+      <li role="presentation">
         <a role="menuitem" tabindex="-1" href="/search/?q=from:{{from.address}}">
           <span class="icon-search"></span> {{_("Search Messages")}}
         </a>
