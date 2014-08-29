@@ -30,35 +30,30 @@
       </svg>
     </a>
   </div>
-  <div class="topbar-middle">
-    <span class="title">{{_("Welcome to Mailpile!")}}</span>
-
-    <div id="setup-progress" class="add-bottom hide clearfix">
-      <ul class="horizontal">
-        <li>
-          <a href="/setup/crypto/" class="setup-progress-circle" title="{{_("Passphrase")}}">
-            <span class="setup-progress-icon icon-lock-closed"></span></a>
-        </li>
-        <li><div><span class="setup-progress-line"></span></div></li>
-        <li>
-          <a href="#profiles" class="setup-progress-circle" title="{{_("Profiles")}}">
-            <span class="setup-progress-icon icon-profiles"></span>
-          </a>
-        </li>
-        <li><div><span class="setup-progress-line"></span></div></li>
-        <li>
-          <a href="#sources" class="setup-progress-circle" title="{{_("Sources")}}">
-            <span class="setup-progress-icon icon-inbox"></span>
-          </a>
-        </li>
-        <li><div><span class="setup-progress-line"></span></div></li>
-        <li>
-          <a href="#importing" class="setup-progress-circle" title="{{_("Importing")}}">
-            <span class="setup-progress-icon icon-checkmark"></span>
-          </a>
-        </li>
-      </ul>
-    </div>
-
+  <div id="setup-progress" class="clearfix">
+    <ul class="horizontal">
+      <li class="setup-progress-crypto">
+        <a href="/setup/crypto/" class="setup-progress-circle" title="{{_("Encryption Keys")}}">
+          <span class="icon icon-lock-closed"></span></a>
+      </li>
+      <li><div><span class="setup-progress-line"></span></div></li>
+      <li class="setup-progress-profiles">
+        <a href="#profiles" class="setup-progress-circle" title="{{_("Profiles")}}">
+          <span class="icon icon-profiles"></span>
+        </a>
+      </li>
+      <li><div><span class="setup-progress-line"></span></div></li>
+      <li class="setup-progress-sources">
+        <a href="#sources" class="setup-progress-circle" title="{{_("Mail Sources")}}">
+          <span class="icon icon-inbox"></span>
+        </a>
+      </li>
+      <li><div><span class="setup-progress-line"></span></div></li>
+      <li class="setup-progress-complete">
+        <a href="#importing" class="setup-progress-circle" title="{{_("Complete")}}">
+          <span class="icon icon-checkmark"></span>
+        </a>
+      </li>
+    </ul>
   </div>
 </div>

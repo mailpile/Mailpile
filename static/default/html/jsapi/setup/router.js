@@ -28,9 +28,11 @@ var SetupRouter = Backbone.Router.extend({
 	checkView: function(view) {
     var state = StateModel.checkState(view);
 		if (view == state) {
+      TooltipsView.showProgressCircles(view);
       return true;
 		}
     else {
+      TooltipsView.showProgressCircles(view);
       Backbone.history.navigate(state, true);
     }
 	},

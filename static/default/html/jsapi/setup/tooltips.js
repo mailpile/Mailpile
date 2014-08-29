@@ -6,12 +6,26 @@ var TooltipsView = Backbone.View.extend({
   render: function() {
     return this;
   },
+  showProgressCircles: function(view) {
+    var view = view.split('/')[0];
+    _.each(StateModel.attributes.result, function(val, key) {
+      if (view === '#' + key) {
+        $('li.setup-progress-' + key).find('a.setup-progress-circle').addClass('on');        
+      }
+      else if (val) {
+        $('li.setup-progress-' + key).find('a.setup-progress-circle').addClass('complete');
+      }
+      else {
+        $('li.setup-progress-' + key).find('a.setup-progress-circle').removeClass('complete on');
+      }
+    });
+  },
   showProgress: function() {
     $('.setup-progress-circle').qtip({
       style: {
        tip: {
-          corner: 'bottom center',
-          mimic: 'bottom center',
+          corner: 'top center',
+          mimic: 'top center',
           border: 0,
           width: 10,
           height: 10
