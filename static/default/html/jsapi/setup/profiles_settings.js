@@ -156,7 +156,6 @@ var ProfilesSettingsView = Backbone.View.extend({
 
     // Show Add Route Form
     if (route_id == 'new') {
-      console.log('ROUTE CHANGE: go add new route');
 
       var domain = $('#input-setup-profile-email').val().replace(/.*@/, "");
       SendingView.model.set({
@@ -171,15 +170,10 @@ var ProfilesSettingsView = Backbone.View.extend({
       // Show Sending Form
       $('#form-setup-profile-settings').hide();
       $('#setup-profiles-route-editing').removeClass('hide').find('span.name').html($('#input-setup-profile-name').val());
-      var sending_html = $("#template-setup-sending-settings").html();
-      var template_html = _.template(sending_html, SendingView.model.attributes);
-      $('#setup-profiles-route-settings').html(template_html).show();
-    }
-    // Route for New Profile
-    else if (route_id && route_id !== 'new' && $('#input-setup-profile-id').val() !== 'new') {
-      console.log('ROUTE CHANGE: will be added to new profile');
+      var sending_html = _.template($("#template-setup-sending-settings").html(), SendingView.model.attributes);
+      $('#setup-profiles-route-settings').html(sending_html).removeClass('hide');
+
     } else if (route_id === '') {
-      console.log('ROUTE CHANGE: no route id, not updating');
       $('#input-setup-profile-route_id').removeClass('half-bottom');
       $('#setup-profile-edit-route').addClass('hide');
     }
@@ -192,12 +186,18 @@ var ProfilesSettingsView = Backbone.View.extend({
   actionRouteAdded: function(route_id, route_name) {
 
     // Hide Sending Form
-    $('#setup-profiles-route-editing').addClass('hide')
-    $('#setup-profiles-route-settings').html('').addClass('hide');
+    $('#setup-sending-settings').removeClass('bounceInBottom').addClass('bounceOutDown');
+
+    setTimeout(function() {
+      $('#setup-profiles-route-editing').addClass('hide');
+      $('#setup-profiles-route-settings').addClass('hide');
+    }, 400);
 
     // Show Profile Again
-    $('#form-setup-profile-settings').show();
-    $('#input-setup-profile-route_id').prepend('<option value="' + route_id + '">' + route_name + '</option>').val(route_id);
+    setTimeout(function() {
+      $('#form-setup-profile-settings').fadeIn();
+      $('#input-setup-profile-route_id').prepend('<option value="' + route_id + '">' + route_name + '</option>').val(route_id);
+    }, 550);
 
     this.model.set({ route_id: route_id });
     this.model.validate();
