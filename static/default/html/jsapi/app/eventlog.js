@@ -6,14 +6,6 @@ var EventLog = {
 };
 
 
-EventLog.init = function() {
-  EventLog.timer = $.timer(EventLog.heartbeat_warning);
-  EventLog.timer.set({ time : 22500, autostart : false });
-  // make event log start async (e.g. for proper page load event handling)
-  setTimeout(EventLog.poll, 1000);
-};
-
-
 EventLog.pause = function() {
   return EventLog.timer.pause();
 };
@@ -25,13 +17,14 @@ EventLog.play = function() {
 
 
 EventLog.heartbeat_warning = function() {
-  console.log('heartbeat_warning() just fired');
+  console.log('EventLog.heartbeat_warning()');
   // DISABLED: EventLog.cancelwarning = Mailpile.notification("warning", "Having trouble connecting to Mailpile... will retry in a few seconds.");
-  //EventLog.poll();
+  EventLog.poll();
 };
 
 
 EventLog.request = function(conditions, callback) {
+  console.log('EventLog.request()');
 
   // Hide Connection Down
   if ($('#connection-down').length) {
@@ -49,12 +42,16 @@ EventLog.request = function(conditions, callback) {
 
 
 EventLog.poll = function() {
+  console.log('EventLog.poll()');
   // Request everything new
   EventLog.request({since: EventLog.last_ts, wait: 20});
 };
 
 
 EventLog.process_result = function(result, textstatus) {
+
+  console.log('EventLog.process_result()');
+
   for (event in result.result.events) {
     var ev = result.result.events[event];
     for (id in EventLog.eventbindings) {

@@ -59,7 +59,15 @@ $(document).ready(function() {
   favicon.badge(inbox.stats.new);
 
   // Start Eventlog
-  EventLog.init();
+  //EventLog.init();
+  setTimeout(function() {
+
+    EventLog.timer = $.timer();
+    EventLog.timer.set({ time : 22500, autostart : false });
+    // make event log start async (e.g. for proper page load event handling)
+    EventLog.poll();
+
+  }, 1000);
 
 });
 

@@ -116,7 +116,8 @@ Mailpile.API._ajax_error =  function(base_url, command, data, method, response, 
 
   // Hide Connection Down
   if (command == '/0/eventlog/' && status == 'error' && response.status == 404) {
-    $('body').append($('#template-connection-down').html());
+    console.log('SHOW CONNECTION DOWN!!!');
+    //$('body').append($('#template-connection-down').html());
   }
 };
 
@@ -167,11 +168,17 @@ Mailpile.API._sync_action = function(command, data, method, callback) {
 
 
 Mailpile.API._async_action = function(command, data, method, callback, flags) {
+
   function handle_event(data) {
+
     if (data.result.resultid) {
+
       subreq = {event_id: data.result.resultid, flags: flags};
+
       var subid = EventLog.subscribe(subreq, function(ev) {
+
         callback(ev.private_data, ev);
+
         if (ev.flags == "c") {
           EventLog.unsubscribe(data.result.resultid, subid);
         }

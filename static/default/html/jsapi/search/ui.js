@@ -5,6 +5,7 @@ Mailpile.focus_search = function() {
 
 /* Search - Action Select */
 Mailpile.pile_action_select = function(item) {
+
     // Add To Data Model
     Mailpile.bulk_cache_add('messages_cache', item.data('mid'));
 
@@ -104,30 +105,30 @@ Mailpile.render_modal_tags = function() {
 };
 
 
-$().ready(function() {
-    $("#pile-newmessages-notification").click(Mailpile.update_search);
-    EventLog.subscribe(".commands.Rescan-DISABLED", function(ev) {
-        if (ev.flags.indexOf("R") != -1) {
-            console.log("Started rescanning...");
-            $("#topbar-logo-bluemail").fadeOut(2000);
-            $("#topbar-logo-redmail").hide(2000);
-            $("#topbar-logo-greenmail").hide(3000);
-            $("#topbar-logo-bluemail").fadeIn(2000);
-            $("#topbar-logo-greenmail").fadeIn(4000);
-            $("#topbar-logo-redmail").fadeIn(6000);
-        }
-        if (ev.flags.indexOf("c") != -1 && ev.data.messages > 0) {
-            $("#pile-newmessages-notification").slideDown("slow");
+$(document).ready(function() {
 
-            if (Notification.permission == "granted") {
-                new Notification(
-                    ev.data.messages + "{{_(' new messages received')}}", 
-                    { 
-                        body:'{{_("Your pile is growing...")}}',
-                        icon:'/static/img/logo-color.png', 
-                    }  
-                )
-            }
-        }
-    });
+  $("#pile-newmessages-notification").click(Mailpile.update_search);
+
+  EventLog.subscribe(".commands.Rescan-DISABLED", function(ev) {
+    if (ev.flags.indexOf("R") != -1) {
+      console.log("Started rescanning...");
+      $("#topbar-logo-bluemail").fadeOut(2000);
+      $("#topbar-logo-redmail").hide(2000);
+      $("#topbar-logo-greenmail").hide(3000);
+      $("#topbar-logo-bluemail").fadeIn(2000);
+      $("#topbar-logo-greenmail").fadeIn(4000);
+      $("#topbar-logo-redmail").fadeIn(6000);
+    }
+    if (ev.flags.indexOf("c") != -1 && ev.data.messages > 0) {
+      $("#pile-newmessages-notification").slideDown("slow");
+
+      if (Notification.permission == "granted") {
+        new Notification(ev.data.messages + "{{_(' new messages received')}}", { 
+            body:'{{_("Your pile is growing...")}}',
+            icon:'/static/img/logo-color.png', 
+          }  
+        )
+      }
+    }
+  });
 });
