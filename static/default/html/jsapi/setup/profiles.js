@@ -90,8 +90,11 @@ var ProfilesView = Backbone.View.extend({
         $('.setup-profile-remove').parent().hide();
       }
 
-      // Display (or not) Next Button
-      if (_.indexOf(can_next, true) > -1) {
+      // Display (or not) Button
+      if (StateModel.attributes.result.complete) {
+        $('#setup-profiles-list-buttons').hide();
+      }
+      else if (_.indexOf(can_next, true) > -1) {
         $('#btn-setup-profiles-next').show();
       } else {
         $('#setup-profiles-no-next').show();

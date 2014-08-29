@@ -129,7 +129,10 @@ var SourcesView = Backbone.View.extend({
       });
 
       // Display (or not) Next Button
-      if (StateModel.attributes.result.sources === true && _.indexOf(can_next, true) > -1) {
+      if (StateModel.attributes.result.complete) {
+        $('#setup-profiles-list-buttons').hide();
+      }
+      else if (StateModel.attributes.result.sources === true && _.indexOf(can_next, true) > -1) {
         SourcesCollection.can_next = true;
       } else {
         $('#setup-sources-not-configured').show();
