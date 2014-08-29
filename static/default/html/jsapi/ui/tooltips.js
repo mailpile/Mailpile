@@ -46,7 +46,7 @@ $(document).ready(function() {
     content: {
       title: false,
       text: function(event, api) {
-        return 'Compose To: ' + $(this).attr('href').replace('mailto:', '');
+        return '{{_("Compose To:")}} ' + $(this).attr('href').replace('mailto:', '');
       }
     },  
     style: {
