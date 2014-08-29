@@ -16,11 +16,19 @@
     <p><a href="/setup/" class="button-primary">{{_("Next")}}</a></p>
   </div>
 
-  <div id="setup-passphrase-authenticated" class="hide text-center add-top">
-    <h3>{{_("You Successfully Authenticated")}}</h3>
-    <p>{{_("The fingerprint for your encryption key is")}}</p>
-    <h1><span class="icon-fingerprint"></span></h1>
-    <h3 id="setup-crypto-chosen_key">{{ nice_fingerprint(setup_crypto.result.chosen_key) }}</h3>
+  <div id="setup-passphrase-authenticated" class="hide text-center half-top">
+    <h3 class="half-bottom">{{_("Successfully Authenticated")}}</h3>
+    <p>{{_("Below is the unique fingerprint of your encryption key.")}} <a href="#" class="setup-crypto-fingerprint-learn">{{_("Learn More")}}</a></p>
+    <ul class="setup-list-items">
+      <li class="setup-item">
+        <div class="setup-cryto-fingerprint-icon">
+          <span class="icon-fingerprint"></span>
+        </div>
+        <div id="setup-crypto-chosen_key" class="setup-crypto-fingerprint-fingerprint">
+          {{ nice_fingerprint(setup_crypto.result.chosen_key) }}
+        </div>
+      </li>
+    </ul>
     <p><a href="/setup/" class="button-primary">{{_("Next")}}</a></p>
   </div>
 

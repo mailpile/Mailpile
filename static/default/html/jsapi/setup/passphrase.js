@@ -32,12 +32,17 @@ var PassphraseView = Backbone.View.extend({
   },
   events: {
     "click .setup-crypto-more-uid" : "showMoreUID",
+    "click .setup-crypto-fingerprint-learn": "showFingerprintLearn",
     "click #btn-setup-passphrase"  : "processPassphrase"
   },
   showMoreUID: function(e) {
     e.preventDefault();
     $(e.target).hide();
     $('.setup-crypto-uid-more').fadeIn();
+  },
+  showFingerprintLearn: function(e) {
+    e.preventDefault();
+    alert('Use this to help other people verify your encryption key by reading it to them in person, phone, or video chat, and have them compare it to the fingerprint on the encryption key they have!');
   },
   processPassphrase: function(e) {
 

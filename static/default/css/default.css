@@ -5312,6 +5312,19 @@ a.setup-check-connection:hover {
   left: 32%;
   top: 0px;
 }
+.setup-cryto-fingerprint-icon {
+  font-size: 48px;
+  line-height: 48px;
+  display: inline-block;
+}
+.setup-crypto-fingerprint-fingerprint {
+  font-size: 21px;
+  line-height: 24px;
+  font-weight: normal;
+  font-style: italic;
+  display: inline-block;
+  width: 320px;
+}
 label.radio-list-item div.radio {
   width: 30px;
 }
