@@ -122,7 +122,7 @@ class PostingListContainer(object):
 
             if not output:
                 try:
-                    os.path.remove(outfile)
+                    os.remove(outfile)
                 except OSError:
                     pass
             elif self.config.prefs.encrypt_index and encryption_key:

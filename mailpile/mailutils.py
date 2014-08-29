@@ -686,6 +686,7 @@ class Email(object):
             raise NotEditableError(_('Message or mailbox is read-only.'))
 
         mbx, ptr, fd = self.get_mbox_ptr_and_fd()
+        fd.close()  # Windows needs this
 
         # OK, adding to the mailbox worked
         newptr = ptr[:MBX_ID_LEN] + mbx.add(MessageAsString(newmsg))
@@ -753,8 +754,9 @@ class Email(object):
 
     def get_msg_size(self):
         mbox, ptr, fd = self.get_mbox_ptr_and_fd()
-        fd.seek(0, 2)
-        return fd.tell()
+        with fd:
+            fd.seek(0, 2)
+            return fd.tell()
 
     def _get_parsed_msg(self, pgpmime, update_cache=False):
         cache_id = self.msg_idx_pos if (self.msg_idx_pos >= 0 and
