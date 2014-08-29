@@ -8,6 +8,7 @@ import traceback
 from urllib import quote, unquote
 
 import mailpile.util
+from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.plugins import PluginManager
@@ -323,10 +324,13 @@ class MailIndex:
             # Unlocked, try to write this out
             gpgr = self.config.prefs.gpg_recipient
             gpgr = gpgr if gpgr not in (None, '', '!CREATE') else None
-            with gpg_open(self.config.mailindex_file(), gpgr, 'a') as fd:
-                fd.write(''.join(emails))
-                for pos in mods:
-                    fd.write(self.INDEX[pos] + '\n')
+            data = ''.join(emails + [self.INDEX[pos] + '\n' for pos in mods])
+            if gpgr:
+                status, edata = GnuPG(self.config).encrypt(data, tokeys=[gpgr])
+                if status == 0:
+                    data = edata
+            with open(self.config.mailindex_file(), 'a') as fd:
+                fd.write(data)
                 self._saved_changes += 1
 
             if session:
@@ -352,20 +356,28 @@ class MailIndex:
             idxfile = self.config.mailindex_file()
             newfile = '%s.new' % idxfile
 
+            data = [
+                '# This is the mailpile.py index file.\n',
+                '# We have %d messages!\n' % len(self.INDEX)
+            ]
+            self.EMAILS_SAVED = email_counter = len(self.EMAILS)
+            for eid in range(0, email_counter):
+                quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
+                data.append('@%s\t%s\n' % (b36(eid), quoted_email))
+            index_counter = len(self.INDEX)
+            for i in range(0, index_counter):
+                data.append(self.INDEX[i] + '\n')
+            data = ''.join(data)
+
             gpgr = self.config.prefs.gpg_recipient
             gpgr = gpgr if gpgr not in (None, '', '!CREATE') else None
-            with gpg_open(newfile, gpgr, 'w') as fd:
-                fd.write('# This is the mailpile.py index file.\n')
-                fd.write('# We have %d messages!\n' % len(self.INDEX))
+            if gpgr:
+                status, edata = GnuPG(self.config).encrypt(data, tokeys=[gpgr])
+                if status == 0:
+                    data = edata
 
-                self.EMAILS_SAVED = email_counter = len(self.EMAILS)
-                for eid in range(0, email_counter):
-                    quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                    fd.write('@%s\t%s\n' % (b36(eid), quoted_email))
-
-                index_counter = len(self.INDEX)
-                for i in range(0, index_counter):
-                    fd.write(self.INDEX[i] + '\n')
+            with open(newfile, 'w') as fd:
+                fd.write(data)
 
             # Keep the last 5 index files around... just in case.
             backup_file(idxfile, backups=5, min_age_delta=10)
