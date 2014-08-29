@@ -502,15 +502,6 @@ class GpgWriter(object):
         self.gpg.wait()
 
 
-def gpg_open(filename, recipient, mode):
-    fd = open(filename, mode)
-    if recipient and ('a' in mode or 'w' in mode):
-        gpg = Popen(['gpg', '--batch', '-aer', recipient],
-                    stdin=PIPE, stdout=fd)
-        return GpgWriter(gpg)
-    return fd
-
-
 def dict_merge(*dicts):
     """
     Merge one or more dicts into one.
