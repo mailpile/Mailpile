@@ -59,9 +59,7 @@ $(document).ready(function() {
   favicon.badge(inbox.stats.new);
 
   // Start Eventlog
-  setTimeout(function() {
-    EventLog.init();
-  }, 250);
+  EventLog.init();
 
 });
 

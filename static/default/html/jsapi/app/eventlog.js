@@ -8,9 +8,9 @@ var EventLog = {
 
 EventLog.init = function() {
   EventLog.timer = $.timer(EventLog.heartbeat_warning);
-  EventLog.timer.set({ time : 22500, autostart : true });
+  EventLog.timer.set({ time : 22500, autostart : false });
   // make event log start async (e.g. for proper page load event handling)
-  setTimeout(EventLog.poll, 500);
+  setTimeout(EventLog.poll, 1000);
 };
 
 
@@ -27,7 +27,7 @@ EventLog.play = function() {
 EventLog.heartbeat_warning = function() {
   console.log('heartbeat_warning() just fired');
   // DISABLED: EventLog.cancelwarning = Mailpile.notification("warning", "Having trouble connecting to Mailpile... will retry in a few seconds.");
-  EventLog.poll();
+  //EventLog.poll();
 };
 
 
@@ -49,7 +49,8 @@ EventLog.request = function(conditions, callback) {
 
 
 EventLog.poll = function() {
-  EventLog.request({since: EventLog.last_ts, wait: 20});     // Request everything new.
+  // Request everything new
+  EventLog.request({since: EventLog.last_ts, wait: 20});
 };
 
 
@@ -71,7 +72,9 @@ EventLog.process_result = function(result, textstatus) {
   // console.log("eventlog ---- processed", result.result.count, "results");
   EventLog.timer.stop();
   EventLog.timer.play();
+
   EventLog.poll();
+
   if (EventLog.cancelwarning) {
     // DISABLED: EventLog.cancelwarning();
     EventLog.cancelwarning = null;
