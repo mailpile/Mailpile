@@ -16,6 +16,7 @@ from urllib import quote, unquote
 from urlparse import urlparse
 
 from mailpile.crypto.streamer import DecryptingStreamer
+from mailpile.crypto.gpgi import GnuPG
 from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 import mailpile.i18n
@@ -1317,8 +1318,11 @@ class ConfigManager(ConfigDict):
         if not os.path.exists(keyfile):
             gpgr = self.prefs.get('gpg_recipient')
             if self.master_key and gpgr != '!CREATE':
-                with gpg_open(keyfile, gpgr, 'wb') as fd:
-                    fd.write(self.master_key)
+                status, encrypted_key = GnuPG(self).encrypt(self.master_key,
+                                                            tokeys=[gpgr])
+                if status == 0:
+                    with open(keyfile, 'wb') as fd:
+                        fd.write(encrypted_key)
                     self._master_key_ondisk = self.master_key
 
         # This slight over-complication, is a reaction to segfaults in
