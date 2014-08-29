@@ -23,7 +23,7 @@ var SetupRouter = Backbone.Router.extend({
 		"security"         : "security",
 		"backups"          : "backups",
 		"access"           : "access",
-    "importing"        : "importing"
+    "complete"         : "complete"
 	},
 	checkView: function(view) {
     var state = StateModel.checkState(view);
@@ -79,9 +79,9 @@ var SetupRouter = Backbone.Router.extend({
   sendingEdit: function(id) {
     SendingView.showEdit(id);
   },
-  importing: function() {
-    if (this.checkView('#importing')) {
-      ImportingView.show();
+  complete: function() {
+    if (this.checkView('#complete')) {
+      CompleteView.show();
     }
   },
   security: function() {

@@ -12,7 +12,7 @@
 {% include("jsapi/setup/security.js") %}
 {% include("jsapi/setup/backups.js") %}
 {% include("jsapi/setup/access.js") %}
-{% include("jsapi/setup/importing.js") %}
+{% include("jsapi/setup/complete.js") %}
 {% include("jsapi/setup/tooltips.js") %}
 {% include("jsapi/setup/router.js") %}
 

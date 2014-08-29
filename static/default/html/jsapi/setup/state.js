@@ -42,16 +42,16 @@ var StateModel = Backbone.Model.extend({
     else if (check.sources && view == '#sources') {
       state = '#sources';
     }
-    else if (check.complete && view == '#importing') {
-      state = '#';
+    else if (check.complete && view == '#complete') {
+      state = '#complete';
     }
     else if (check.language &&
              check.crypto &&
              check.profiles &&
              check.routes &&
              check.sources &&
-             view == '#importing') {
-      state = '#importing';
+             view == '#complete') {
+      state = '#complete';
     }
     else if (check.complete && view == '#') {
       state = '#';
