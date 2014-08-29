@@ -6073,12 +6073,12 @@ div.notification-bubble a.notification-close:hover {
   background: #d9d9d9;
   border-radius: 3px;
 }
-.navigation-on a {
+.navigation-on > a {
   cursor: default;
   color: #4d4d4d;
 }
-.navigation-on a:hover,
-.navigation-on a:hover span {
+.navigation-on > a:hover,
+.navigation-on > a:hover > span {
   color: #4d4d4d;
 }
 /* Selects */
@@ -6251,6 +6251,9 @@ div.notification-bubble a.notification-close:hover {
 .topbar-nav > ul > li.navigation-on > a {
   color: #4d4d4d;
   cursor: default;
+}
+.topbar-nav > ul > li.navigation-on.nav-dropdown > a:hover {
+  cursor: pointer !important;
 }
 .topbar-nav .nav-search {
   display: none;
