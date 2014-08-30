@@ -1,8 +1,8 @@
 <!-- Advanced - Security -->
-<div class="setup-box setup-box-medium add-top animated bounceInTop">
-  <h2 class="text-center"><span class="icon-privacy"></span> Security Settings</h2>
+<div class="setup-box setup-box-small add-top animated bounceInTop">
+  <h2 class="text-center"><span class="icon-privacy"></span> {{_("Security Settings")}}</h2>
   <form id="form-setup-security" class="standard">
-    <label class="clearfix">What are your personal security & privacy preferences?</label>
+    <label class="clearfix">{{_("What are your security & privacy preferences?")}}</label>
     <p>
       <select id="input-setup-security-level">
         <option value="">{{_("select...")}}</option>
@@ -25,7 +25,7 @@
       </label>
       <label>
         <input type="checkbox" name="encrypt_mail" <% if (encrypt_mail) { %>checked value="true"<% } %>>
-        {{_("Encrypt messages after downloaded to your machine")}}
+        {{_("Encrypt messages after they're downloaded")}}
       </label>
       <label>
         <input type="checkbox" name="encrypt_vcards" <% if (encrypt_vcards) { %>checked value="true"<% } %>>
@@ -33,7 +33,7 @@
       </label>
       <label>
         <input type="checkbox" name="index_encrypted" <% if (index_encrypted) { %>checked value="true"<% } %>>
-        {{_("Index messages that you sent and received that were encrypted")}}
+        {{_("Index messages that were encrypted")}}
       </label>
       <label>
         <input type="checkbox" name="encrypt_misc" <% if (encrypt_misc) { %>checked value="true"<% } %>>
@@ -61,7 +61,7 @@
   </form>
   <div class="clearfix half-top">
     <a href="/setup/#" class="button-secondary">{{_("Back")}}</a> &nbsp;&nbsp;
-    <button id="btn-setup-security-save" title="{{_("Save Changes")}}" alt="{{_("Save Changes")}}">
+    <button id="btn-setup-security-save" class="right" title="{{_("Save Changes")}}" alt="{{_("Save Changes")}}">
       <span class="icon-checkmark"></span> {{_("Save Changes")}}
     </button>
   </div>
