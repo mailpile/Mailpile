@@ -183,6 +183,14 @@ class MultiContext:
             ctx.__exit__(*args, **kwargs)
 
 
+def FixupForWith(obj):
+    if not hasattr(obj, '__enter__'):
+        obj.__enter__ = lambda: obj
+    if not hasattr(obj, '__exit__'):
+        obj.__exit__ = lambda a, b, c: True
+    return obj
+
+
 def b64c(b):
     """
     Rewrite a base64 string:

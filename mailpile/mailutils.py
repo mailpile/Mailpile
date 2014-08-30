@@ -743,7 +743,7 @@ class Email(object):
                 mbox = self.config.open_mailbox(None, msg_ptr[:MBX_ID_LEN])
                 fd = mbox.get_file_by_ptr(msg_ptr)
                 # FIXME: How do we know we have the right message?
-                return mbox, msg_ptr, fd
+                return mbox, msg_ptr, FixupForWith(fd)
             except (IOError, OSError, KeyError, ValueError, IndexError):
                 # FIXME: If this pointer is wrong, should we fix the index?
                 print 'WARNING: %s not found' % msg_ptr

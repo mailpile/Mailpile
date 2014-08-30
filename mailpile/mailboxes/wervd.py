@@ -28,15 +28,35 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
     def __init2__(self, *args, **kwargs):
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
 
+    # Note: This song and dance is thanks to Windows, which sometimes
+    #       refuses to remove a file if it is currently in use.
     def remove(self, key):
         # FIXME: Remove all the copies of this message!
-        os.remove(os.path.join(self._path, self._lookup(key)))
+        fn = self._lookup(key)
+        del self._toc[key]
+        if hasattr(self, '_removing'):
+            self._removing.append(fn)
+        else:
+            self._removing = [fn]
+        self._really_remove()
+
+    def _really_remove(self):
+        if not hasattr(self, '_removing'):
+            return
+        for fn in self._removing[:]:
+            try:
+                os.remove(os.path.join(self._path, fn))
+                self._removing.remove(fn)
+                print 'REMOVED %s' % fn
+            except (OSError, IOError):
+                print 'POSTPONING REMOVAL OF %s' % fn
 
     def _refresh(self):
         mailbox.Maildir._refresh(self)
         # WERVD mail names don't have dots in them
         for t in [k for k in self._toc.keys() if '.' in k]:
             del self._toc[t]
+        self._really_remove()
 
     def _get_fd(self, key):
         fd = open(os.path.join(self._path, self._lookup(key)), 'rb')
@@ -47,23 +67,15 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
     def get_message(self, key):
         """Return a Message representation or raise a KeyError."""
-        fd = self._get_fd(key)
-        try:
+        with self._get_fd(key) as fd:
             if self._factory:
                 return self._factory(fd)
             else:
                 return mailbox.MaildirMessage(fd)
-        finally:
-            fd.close()
 
     def get_string(self, key):
-        fd = None
-        try:
-            fd = self._get_fd(key)
+        with self._get_fd(key) as fd:
             return fd.read()
-        finally:
-            if fd:
-                fd.close()
 
     def get_file(self, key):
         return StringIO.StringIO(self.get_string(key))
