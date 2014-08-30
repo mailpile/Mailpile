@@ -19,8 +19,13 @@ Mailpile.notification = function(result, complete, complete_action) {
     result.message = default_messages[result.status];
   }
 
-  if (result.undo == undefined) {
+  if (result.command === 'tag') {
+    result['undo'] = true;
+    var hide_notification = 20000;
+  }
+  else {
     result['undo'] = false;
+    var hide_notification = 8000;
   }
 
   var notification_data = _.extend(result, {
@@ -41,7 +46,7 @@ Mailpile.notification = function(result, complete, complete_action) {
       $('#event-' + result.event_id).fadeOut(function() {
         $(this).remove();
       });
-    }, 8000);
+    }, hide_notification);
   } else if (complete == 'hide') {
       message.delay(5000).fadeOut('normal', function() {
           message.find('span.message-text').empty();
@@ -49,17 +54,28 @@ Mailpile.notification = function(result, complete, complete_action) {
   } else if (complete == 'redirect') {
       setTimeout(function() {
         window.location.href = complete_action 
-      }, 5000);
+      }, 4000);
   }
 
   return function() { message.fadeOut('normal'); };
 };
 
 
-/* Message Close */
+/* Notification - Close */
 $(document).on('click', '.notification-close', function() {
   $(this).parent().fadeOut(function() {
     $(this).remove();
+  });
+});
+
+
+/* Notification - Undo */
+$(document).on('click', '.notification-undo', function() {
+  var event_id = $(this).data('event_id').split('-').join('.');
+  Mailpile.API.eventlog_undo_post({ event_id: event_id }, function(result) {
+    if (result.status === 'success') {
+      window.location.reload(true);
+    }
   });
 });
 
