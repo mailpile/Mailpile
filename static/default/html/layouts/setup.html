@@ -13,6 +13,9 @@
 {% include("partials/topbar.html") %}
 {% else %}
 {% include("partials/topbar_setup.html") %}
+<script id="template-topbar" type="text/template">
+{% include("partials/topbar.html") %}
+</script>
 {% endif %}
 <div id="setup-container">
   {% block content %}{{results}}{% endblock %}
