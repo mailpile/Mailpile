@@ -29,7 +29,7 @@ class BaseMailSource(threading.Thread):
     DEFAULT_JITTER = 15         # Fudge factor to tame thundering herds
     SAVE_STATE_INTERVAL = 3600  # How frequently we pickle our state
     INTERNAL_ERROR_SLEEP = 900  # Pause time on error, in seconds
-    RESCAN_BATCH_SIZE = 50      # Index at most this many new e-mails at once
+    RESCAN_BATCH_SIZE = 100     # Index at most this many new e-mails at once
     MAX_PATHS = 100             # Abort if asked to scan too many directories
 
     # This is a helper for the events.
@@ -50,6 +50,7 @@ class BaseMailSource(threading.Thread):
         self._interrupt = None
         self._rescanning = False
         self._rescan_waiters = []
+        self._loop_count = 0
         self._last_rescan_count = 0
         self._last_rescan_completed = False
         self._last_saved = time.time()  # Saving right away would be silly
@@ -124,11 +125,15 @@ class BaseMailSource(threading.Thread):
         else:
             return False
 
+    def _sorted_mailboxes(self):
+        mailboxes = self.my_config.mailbox.values()
+        mailboxes.sort(key=lambda m: ('inbox' in m.name.lower() and 1 or 2,
+                                      'sent' in m.name.lower() and 1 or 2,
+                                      m.name))
+        return mailboxes
+
     def sync_mail(self):
         """Iterates through all the mailboxes and scans if necessary."""
-        def unsorted(l):
-            random.shuffle(l)
-            return l
         config = self.session.config
         self._last_rescan_count = rescanned = errors = 0
         self._last_rescan_completed = True
@@ -137,7 +142,7 @@ class BaseMailSource(threading.Thread):
         errors = rescanned = 0
 
         ostate = self._state
-        for mbx_cfg in unsorted(self.my_config.mailbox.values()):
+        for mbx_cfg in self._sorted_mailboxes():
             try:
                 with self._lock:
                     mbx_key = FormatMbxId(mbx_cfg._key)
@@ -500,14 +505,20 @@ class BaseMailSource(threading.Thread):
                 return -1
             self._rescanning = True
 
+        mailboxes = len(self.my_config.mailbox)
         try:
             ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
                                                                    stop_after)
             if mbx_cfg.local or self.my_config.discovery.local_copy:
+                # Note: We copy fewer messages than the batch allows for,
+                # because we might have been aborted on an earlier run and
+                # the rescan may need to catch up. We also start with smaller
+                # batch sizes, because folks are impatient.
                 self._log_status(_('Copying mail: %s') % path)
                 self._create_local_mailbox(mbx_cfg)
-                self._copy_new_messages(mbx_key, mbx_cfg,
-                                        stop_after=stop_after)
+                max_copy = min(self._loop_count,
+                               int(1 + stop_after / (mailboxes + 1)))
+                self._copy_new_messages(mbx_key, mbx_cfg, stop_after=max_copy)
             elif 'copying' in self.event.data:
                 del self.event.data['copying']
 
@@ -522,8 +533,7 @@ class BaseMailSource(threading.Thread):
             play_nice_with_threads()
             self._log_status(_('Rescanning: %s') % path)
             if 'rescans' in self.event.data:
-                keep = len(self.my_config.mailbox)
-                self.event.data['rescans'][:-keep] = []
+                self.event.data['rescans'][:-mailboxes] = []
 
             return config.index.scan_mailbox(
                 session, mbx_key, mbx_cfg.local or path,
@@ -561,9 +571,9 @@ class BaseMailSource(threading.Thread):
             else:
                 return min(max(5, self.my_config.interval // 10), 30)
 
-        first = True
-        while first or self._sleep(self._jitter(sleeptime())):
-            first = False
+        self._loop_count = 0
+        while self._loop_count == 0 or self._sleep(self._jitter(sleeptime())):
+            self._loop_count += 1
             if not self.my_config.enabled:
                 break
 
