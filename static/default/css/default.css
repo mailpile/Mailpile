@@ -5271,7 +5271,7 @@ a.setup-progress-circle:hover span.icon {
   color: #4d4d4d;
   background: #dddddd;
 }
-span.icon {
+a.setup-progress-circle span.icon {
   display: inline-block;
   color: #b3b3b3;
 }
