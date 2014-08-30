@@ -235,7 +235,7 @@
     <span class="text">
       <span class="title"><%= message %></span><br> 
       <% if (undo) { %>
-      <span class="undo">{{_("A mistake")}}, <a href="#" class="notification-undo">{{_("undo")}}</a></span>
+      <span class="undo">{{_("A mistake?")}} <a href="#" data-event_id="<%= event_id %>" class="notification-undo">{{_("undo")}}</a></span>
       <% } %>
     </span>
     <a href="#" class="notification-close"><span class="icon-circle-x"></span></a>
