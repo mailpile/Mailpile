@@ -5,20 +5,25 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Dont look now, we are copying things")}}',
       '{{_("Copying your mail, please do not be alarmed!")}}',
       '{{_("Copying mail. This could take a while")}}',
-      '{{_("Please be patient, we are copying your mail as fast as possible")}}',
-      '{{_("You have a lot of mail. I hope you dont have a plane to catch or anything")}}',
-      '{{_("Copying mail, put your arms above your head and whistle la cucaracha")}}',
-      '{{_("Just making a copy of your mail for ya. Putting it right here in ya inbox, all comfy like")}}'
+      '{{_("Please be patient, we are copying mail as fast as possible")}}',
+      '{{_("Wow, you have a lot of mail")}}',
+      '{{_("I hope you dont have a plane to catch or anything")}}',
+      '{{_("Copying mail. Put your arms above your head and whistle la cucaracha")}}',
+      '{{_("Making a copy of your mail. Putting it in your inbox, all comfy like")}}'
     ],
-    education: [
+    email: [
       '{{_("Mailpile has an advanced tagging system, use Tags to organize and search your mail")}}',
       '{{_("Do you really need to keep all these Amazon Prime shipping confirmations?")}}',
       '{{_("I am pretty sure email from ThinkGeeks 2011 X-mas sale can be deleted.")}}',
       '{{_("Do you really need an email to know when you have been retweeted?")}}',
       '{{_("Email is the largest internet based social network on the planet")}}',
-      '{{_("Mailpile uses OpenGPG / PGP to encrypt and decrypt your messages securely")}}',
       '{{_("Which other technology do you use that is 40 years old?")}}',
-      '{{_("There are 2.5 billion email users worldwide, thats double the amount of Facebook users!")}}'
+      '{{_("There are 2.5 billion email users worldwide, thats double the amount of Facebook users!")}}'  
+    ],
+    security: [
+      '{{_("Mailpile uses OpenGPG / PGP to encrypt and decrypt your messages securely")}}',
+      '{{_("Encrypting emails means your communication actually stays private")}}',
+      '{{_("The more encrypted email you send, the better!")}}'
     ],
     jokes: [
       '{{_("Good things come to those who wait")}}',
@@ -101,7 +106,22 @@ var CompleteModel = Backbone.Model.extend({
       '{{_("Resolving interdependence")}}',
       '{{_("Spinning violently around the y-axis")}}',
       '{{_("Swapping time and space")}}'
-    ]
+    ],
+    state: 0
+  },
+  states: {
+    0: 'complete',
+    1: 'copying',
+    2: 'email',
+    3: 'security',
+    4: 'jokes'
+  },
+  icons: {
+    0: 'icon-like',
+    1: 'icon-inbox',
+    2: 'icon-message',
+    3: 'icon-lock-closed',
+    4: 'icon-star'
   }
 });
 
@@ -115,8 +135,47 @@ var CompleteView = Backbone.View.extend({
     return this;
   },
   show: function() {
-    Mailpile.API.settings_set_post({ 'web.setup_complete': true }, function(result) {
-      $('#setup').html(_.template($('#template-setup-sources-importing').html(), {}));
-    });
+    if (!StateModel.attributes.complete) {
+      Mailpile.API.settings_set_post({ 'web.setup_complete': true }, function(result) {
+        $('#setup').html(_.template($('#template-setup-sources-complete').html(), {}));
+      });
+    } else {
+      $('#setup').html(_.template($('#template-setup-sources-complete').html(), {}));
+    }
+  },
+  showProcessingMessage: function() {
+
+    // Select Message
+    var last = CompleteView.model.get('state');
+    var now = 0;
+
+    if (last < 4) {
+      now = last;
+      now++;
+    } else {
+      last = 4;
+      now = 1;
+    }
+
+    CompleteView.model.set({ state: now });
+
+    var state_now  = CompleteView.model.states[now];
+    var message = _.sample(CompleteView.model.attributes[state_now]);
+
+    var icon_last = CompleteView.model.icons[last];
+    var icon_now  = CompleteView.model.icons[now];
+
+    // Update with live data
+    var copying = 'Copying [LIVE DATA] Mail';
+
+    $('#setup-complete-icon').removeClass('fadeIn').addClass('bounceOutRight');
+    $('#setup-complete-message').removeClass('fadeIn').addClass('bounceOutRight');
+    $('#setup-complete-copying').removeClass('fadeIn').addClass('bounceOutRight');
+
+    setTimeout(function() {
+      $('#setup-complete-icon').removeClass('bounceOutRight ' + icon_last).addClass('fadeIn ' + icon_now);
+      $('#setup-complete-message').html(message).removeClass('bounceOutRight').addClass('fadeIn');
+      $('#setup-complete-copying').html(copying).removeClass('bounceOutRight').addClass('fadeIn');
+    }, 750);
   }
 });

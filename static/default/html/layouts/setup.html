@@ -10,9 +10,11 @@
 </head>
 <body>
 {% if result.complete %}
-{% include("partials/topbar.html") %}
-{% else %}
+{# include("partials/topbar.html") #}
 {% include("partials/topbar_setup.html") %}
+<script id="template-setup-topbar" type="text/template">
+{% include("partials/topbar.html") %}
+</script>
 {% endif %}
 <div id="setup-container">
   {% block content %}{{results}}{% endblock %}
@@ -79,8 +81,8 @@ var SetupApp = (function ($, Backbone, global) {
               }
 
               // Mailsource & Importing Page
-              if (event.source.indexOf(".mail_source.") > -1 && Backbone.history.fragment === 'importing') {
-                //ImportingView.showEvent(event);
+              if (event.source.indexOf(".mail_source.") > -1 && Backbone.history.fragment === 'complete') {
+                CompleteView.showProcessingMessage(event);
               }
             });
           }
