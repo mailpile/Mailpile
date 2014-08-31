@@ -13,9 +13,6 @@
 {% include("partials/topbar.html") %}
 {% else %}
 {% include("partials/topbar_setup.html") %}
-<script id="template-topbar" type="text/template">
-{% include("partials/topbar.html") %}
-</script>
 {% endif %}
 <div id="setup-container">
   {% block content %}{{results}}{% endblock %}
@@ -50,7 +47,7 @@ var SetupApp = (function ($, Backbone, global) {
       global.SecurityView   = new SecurityView({ el: $('body') });
       global.BackupsView    = new BackupsView({ el: $('#setup') });
       global.AccessView     = new AccessView({ el: $('#setup') });
-      global.CompleteView   = new CompleteView({ el: $('#setup') });
+      global.CompleteView   = new CompleteView({ model: new CompleteModel(), el: $('#setup') });
       global.TooltipsView   = new TooltipsView({ el: $('#setup') });
 
   		// Fetch State, Start Router

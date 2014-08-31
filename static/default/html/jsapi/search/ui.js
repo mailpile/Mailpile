@@ -110,15 +110,17 @@ $(document).ready(function() {
   $("#pile-newmessages-notification").click(Mailpile.update_search);
 
   EventLog.subscribe(".commands.Rescan-DISABLED", function(ev) {
+
     if (ev.flags.indexOf("R") != -1) {
       console.log("Started rescanning...");
-      $("#topbar-logo-bluemail").fadeOut(2000);
-      $("#topbar-logo-redmail").hide(2000);
-      $("#topbar-logo-greenmail").hide(3000);
-      $("#topbar-logo-bluemail").fadeIn(2000);
-      $("#topbar-logo-greenmail").fadeIn(4000);
-      $("#topbar-logo-redmail").fadeIn(6000);
+      $("#logo-bluemail").fadeOut(2000);
+      $("#logo-redmail").hide(2000);
+      $("#logo-greenmail").hide(3000);
+      $("#logo-bluemail").fadeIn(2000);
+      $("#logo-greenmail").fadeIn(4000);
+      $("#logo-redmail").fadeIn(6000);
     }
+
     if (ev.flags.indexOf("c") != -1 && ev.data.messages > 0) {
       $("#pile-newmessages-notification").slideDown("slow");
 

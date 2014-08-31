@@ -5277,11 +5277,11 @@ a.setup-progress-circle span.icon {
 }
 a.setup-progress-circle.on {
   background: #337fb2;
-  border: 1px solid #ffffff;
+  border: 1px solid #f6f6f6;
 }
 a.setup-progress-circle.complete {
   background: #4b9441;
-  border: 1px solid #ffffff;
+  border: 1px solid #f6f6f6;
 }
 a.setup-progress-circle.on span.icon,
 a.setup-progress-circle.complete span.icon {
@@ -5481,13 +5481,13 @@ label.radio-list-item .icon-key {
   top: 13%;
   left: 20%;
 }
-#login-logo .logo-icon {
+#login-logo #logo-icon {
   width: 150px;
   height: 100px;
   display: block;
   margin: 0px auto 35px auto;
 }
-#login-logo .logo-name {
+#login-logo #logo-name {
   width: 223px;
   height: 72px;
   display: block;
@@ -6151,9 +6151,10 @@ div.notification-bubble a.notification-close:hover {
   box-sizing: border-box;
   vertical-align: middle;
 }
-.topbar-logo #svg_logo {
+.topbar-logo #logo-icon {
   display: block;
   margin-left: 15px;
+  height: 37px;
 }
 .topbar-logo-name {
   width: 157px;
@@ -6162,7 +6163,7 @@ div.notification-bubble a.notification-close:hover {
   box-sizing: border-box;
   vertical-align: middle;
 }
-.topbar-logo-name #svg_logo_name {
+.topbar-logo-name #logo-name {
   display: block;
   margin-left: 10px;
 }
