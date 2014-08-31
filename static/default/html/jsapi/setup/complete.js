@@ -134,6 +134,9 @@ var CompleteView = Backbone.View.extend({
   render: function(){
     return this;
   },
+  events: {
+    "click #setup-complete-tour-start": "showTour"
+  },
   show: function() {
     if (!StateModel.attributes.complete) {
       Mailpile.API.settings_set_post({ 'web.setup_complete': true }, function(result) {
@@ -142,6 +145,27 @@ var CompleteView = Backbone.View.extend({
     } else {
       $('#setup').html(_.template($('#template-setup-sources-complete').html(), {}));
     }
+  },
+  showTour: function(e) {
+
+    e.preventDefault();
+
+    // Topbar
+    $('#header').addClass('animated bounceOutUp');
+
+    setTimeout(function() {
+      $('#header').remove();
+      var header_html = $('#template-setup-topbar').html();
+      $('body').prepend(header_html).find('#header').addClass('animated bounceInDown');
+    }, 500);
+
+    // Navigation
+    $('#setup-complete-waiting').removeClass('fadeIn').addClass('bounceOutDown');
+
+    setTimeout(function() {
+      $('#setup-complete-waiting').remove();
+      $('#setup-complete-explore').removeClass('hide').addClass('bounceInUp');
+    }, 1000);
   },
   showProcessingMessage: function() {
 

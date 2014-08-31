@@ -5407,7 +5407,11 @@ label.radio-list-item .icon-key {
   margin-bottom: 0px;
   border-radius: 4.5px;
 }
-/* Setup - Sources */
+/* Setup - Complete */
+#setup-complete-icon {
+  font-size: 100px;
+  line-height: 100px;
+}
 /* Connection Down */
 #connection-down {
   position: absolute;
