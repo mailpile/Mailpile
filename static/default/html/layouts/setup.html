@@ -10,7 +10,8 @@
 </head>
 <body>
 {% if result.complete %}
-{# include("partials/topbar.html") #}
+{% include("partials/topbar.html") %}
+{% else %}
 {% include("partials/topbar_setup.html") %}
 <script id="template-setup-topbar" type="text/template">
 {% include("partials/topbar.html") %}
