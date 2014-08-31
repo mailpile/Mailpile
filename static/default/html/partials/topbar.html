@@ -24,11 +24,6 @@
         {%- for a in get_ui_elements('activities', state, '/') -%}
         <li class="{% if command == a.name %}navigation-on{% endif %}"><a href="{{ a.url }}" class="plugin-activity-{{ a.name }}" title="{{ a.description }}"><img alt="{{ a.text }}" class="icon-plugin-activity" src="{{ a.icon }}"></a></li>
         {%- endfor -%}
-        <script>
-        $(document).ready(
-          {{ui_elements_setup('.plugin-activity-%(name)s', get_ui_elements('activities', state, '/'))}}
-        );
-        </script>
         <li class="{% if command == "page" %} navigation-on{% endif %}"><a class="donate" href="/page/donate/" title="{{_("Donate")}}" alt="{{_("Donate")}}"><span class="link-icon icon-donate"></span></a></li>
         <li class="nav-dropdown {% if state.command_url in ("/setup/") %}navigation-on{% endif %}">
           <a href="/setup/#" class="nav-icon dropdown-toggle" data-toggle="dropdown"><span class="link-icon icon-settings"></span></a>

@@ -38,5 +38,10 @@ $(document).ready(function() {
   });
 
 });
+
+/* Plugins */
+$(document).ready(
+  {{ui_elements_setup('.plugin-activity-%(name)s', get_ui_elements('activities', state, '/'))}}
+);
 </script>
 <script src="/api/0/jsapi/app.js"></script>
