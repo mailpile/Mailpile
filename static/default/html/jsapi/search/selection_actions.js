@@ -28,6 +28,9 @@ $(document).on('click', '.bulk-action-tag', function() {
 $(document).on('click', '.bulk-action-archive', function() {
   Mailpile.API.tag_post({ del: 'inbox', mid: Mailpile.messages_cache}, function() {
 
+    // Notifications
+    Mailpile.notification(result);
+
     // Update Pile View
     $.each(Mailpile.messages_cache, function(key, mid) {
       $('#pile-message-' + mid).fadeOut('fast');
@@ -107,6 +110,10 @@ $(document).on('submit', '#form-tag-picker', function(e) {
 
   // Send Result
    Mailpile.API.tag_post({ add: add_tags, del: remove_tags, mid: Mailpile.messages_cache}, function(result) {
+
+    // Notifications
+    Mailpile.notification(result);
+
     var tag_link_template = $('#template-search-pile-tags-link').html();
 
     $.each(result.msg_ids, function(key, mid) {

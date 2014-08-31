@@ -25,6 +25,7 @@ $(document).on('click', '.pile-tag-delete', function(e) {
   var tid = $(this).data('tid');
   var mid = $(this).data('mid');
   Mailpile.API.tag_post({ del: tid, mid: mid }, function(result) {
+    Mailpile.notification(result);
     $('#pile-message-tag-' + tid + '-' + mid).qtip('hide').remove();
   });
 });
