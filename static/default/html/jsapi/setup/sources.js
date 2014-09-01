@@ -170,6 +170,8 @@ var SourcesView = Backbone.View.extend({
         message = '{{_("Found messages to download")}}';
       } else if (event.data.copying && event.data.copying.complete) {
         message = '{{_("Mailbox up to date")}}';
+      } else {
+        message = '{{_("Copying new messages")}}';
       }
     }
     // Is Recanning
@@ -181,6 +183,8 @@ var SourcesView = Backbone.View.extend({
         message = event.data.rescan.added + ' {{_("Messages imported")}}';
       } else if (event.data.rescan.total) {
         message = event.data.rescan.total + ' {{_("Messages")}}';
+      } else {
+        message = '{{_("Rescaning mailboxes")}}';
       }
     }
 
