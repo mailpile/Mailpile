@@ -308,7 +308,7 @@ class Extract(Command):
     class CommandResult(Command.CommandResult):
         def __init__(self, *args, **kwargs):
             self.fixed_up = False
-            return Command.CommandResult.__init__(self, *args, **kwargs)
+            Command.CommandResult.__init__(self, *args, **kwargs)
 
         def _fixup(self):
             if self.fixed_up:
