@@ -95,7 +95,7 @@ CONFIG_RULES = {
     'web': (_("Web Interface Preferences"), False, {
         'setup_complete':  (_('User completed setup experience'), bool, False),
         'display_density': (_('Display density of interface'), str, 'comfy'),
-        'nag_backup_key':  (_('Nag user to backup there key'), int, 0),
+        'nag_backup_key':  (_('Nag user to backup their key'), int, 0),
     }),
     'logins': [_('Credentials allowed to access Mailpile'), {
         'password':        (_('Salted and hashed password'), str, '')
