@@ -125,7 +125,7 @@ class Search(Command):
                 session.searched.extend([prefix + word for word in words])
 
         if not session.searched:
-             session.searched = ['all:mail']
+            session.searched = ['all:mail']
 
         session.order = session.order or session.config.prefs.default_order
         session.results = list(idx.search(session, session.searched).as_set())

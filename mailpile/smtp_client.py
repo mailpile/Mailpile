@@ -192,8 +192,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
     def smtp_do_or_die(msg, events, method, *args, **kwargs):
         rc, msg = method(*args, **kwargs)
         if rc != 250:
-           fail(msg + ' (%s %s)' % (rc, msg), events,
-                details={'smtp_error': '%s: %s' % (rc, msg)})
+            fail(msg + ' (%s %s)' % (rc, msg), events,
+                 details={'smtp_error': '%s: %s' % (rc, msg)})
 
     # Do the actual delivering...
     for frm, sendmail, to, msg, events in routes:

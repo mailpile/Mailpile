@@ -1762,7 +1762,7 @@ class ConfigManager(ConfigDict):
         # We may start the HTTPD without the loaded config...
         if not config.loaded_config:
             if daemons and not config.http_worker:
-                 start_httpd(httpd_spec)
+                start_httpd(httpd_spec)
             return
 
         # Start the other workers

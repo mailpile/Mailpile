@@ -76,12 +76,12 @@ RE_LONG_LINE_SPLITTER = re.compile('([^\n]{,72}) ')
 # see: http://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
 # currently we just use common ones
 PERMANENT_URI_SCHEMES = set([
-  "data", "file", "ftp", "gopher", "http", "https", "imap",
-  "jabber", "mailto", "news", "telnet", "tftp", "ws", "wss"
+    "data", "file", "ftp", "gopher", "http", "https", "imap",
+    "jabber", "mailto", "news", "telnet", "tftp", "ws", "wss"
 ])
 PROVISIONAL_URI_SCHEMES = set([
-  "bitcoin", "chrome", "cvs", "feed", "git", "irc", "magnet",
-  "sftp", "smtp", "ssh", "steam", "svn"
+    "bitcoin", "chrome", "cvs", "feed", "git", "irc", "magnet",
+    "sftp", "smtp", "ssh", "steam", "svn"
 ])
 URI_SCHEMES = PERMANENT_URI_SCHEMES.union(PROVISIONAL_URI_SCHEMES)
 

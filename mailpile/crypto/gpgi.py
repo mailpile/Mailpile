@@ -1113,7 +1113,7 @@ class GnuPGKeyGenerator(GnuPGExpectScript):
 
     def in_state(self, state):
         if state == self.HAVE_KEY:
-             self.generated_key = self.before.strip().split()[-1]
+            self.generated_key = self.before.strip().split()[-1]
 
 
 class GnuPGKeyEditor(GnuPGExpectScript):

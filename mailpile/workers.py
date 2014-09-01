@@ -285,20 +285,20 @@ class ImportantWorker(Worker):
         if len(self.JOBS) > 0:
             return True
         else:
-             if _pass == 2:
-                 return Worker._keep_running(self)
-             if self.ALIVE and not mailpile.util.QUITTING:
-                 return True
-             else:
-                 if locked:
-                     try:
-                         self.LOCK.release()
-                         time.sleep(1)
-                     finally:
-                         self.LOCK.acquire()
-                 else:
-                     time.sleep(1)
-                 return self._keep_running(_pass=2, locked=locked)
+            if _pass == 2:
+                return Worker._keep_running(self)
+            if self.ALIVE and not mailpile.util.QUITTING:
+                return True
+            else:
+                if locked:
+                    try:
+                        self.LOCK.release()
+                        time.sleep(1)
+                    finally:
+                        self.LOCK.acquire()
+                else:
+                    time.sleep(1)
+                return self._keep_running(_pass=2, locked=locked)
 
     def _failed(self, session, name, task, e):
         # Important jobs!  Re-queue if they fail, it might be transient

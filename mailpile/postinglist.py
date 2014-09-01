@@ -33,7 +33,7 @@ def PLC_CACHE_FlushAndClean(session, min_changes=0, keep=5):
     def remove(ts, plc):
         with PLC_CACHE_LOCK:
             if plc.sig in PLC_CACHE and ts == PLC_CACHE[plc.sig][0]:
-               del PLC_CACHE[plc.sig]
+                del PLC_CACHE[plc.sig]
 
     expire = int(time.time()) - max(30, 300 - len(PLC_CACHE))
     savets = int(time.time()) - 15

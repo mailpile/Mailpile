@@ -393,7 +393,7 @@ class PluginManager(object):
                 if 'javascript_setup' in hook:
                     js = hook['javascript_setup']
                     if not js.startswith('Mailpile.'):
-                       hook['javascript_setup'] = '%s.%s' % (ucfull_name, js)
+                        hook['javascript_setup'] = '%s.%s' % (ucfull_name, js)
                 if 'javascript_events' in hook:
                     for event, call in hook['javascript_events'].iteritems():
                         if not call.startswith('Mailpile.'):

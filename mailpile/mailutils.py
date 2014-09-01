@@ -1662,11 +1662,11 @@ class AddressHeaderParser(list):
             else:
                 epart = '<%s>' % email
             if ai.fn:
-                 return ' '.join([quote and self.quote(ai.fn) or ai.fn, epart])
+                return ' '.join([quote and self.quote(ai.fn) or ai.fn, epart])
             elif force_name:
-                 return ' '.join([quote and self.quote(email) or email, epart])
+                return ' '.join([quote and self.quote(email) or email, epart])
             else:
-                 return epart
+                return epart
         return [fmt(ai) for ai in addresses]
 
     def normalized(self, **kwargs):
