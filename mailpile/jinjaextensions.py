@@ -114,6 +114,10 @@ class MailpileCommand(Extension):
         e.globals['recipient_summary'] = s._recipient_summary
         e.filters['recipient_summary'] = s._recipient_summary
 
+        # Nagifications
+        e.globals['show_nagification'] = s._show_nagification
+        e.filters['show_nagification'] = s._show_nagification
+
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
         if 'jinja' in self.env.session.config.sys.debug:
@@ -758,3 +762,9 @@ class MailpileCommand(Extension):
         output['add'] = add
         output['remove'] = remove
         return output
+
+    def _show_nagification(self, nag):
+        now = long((time.time() + 0.5) * 1000)
+        if now > nag:
+            return True
+        return False
