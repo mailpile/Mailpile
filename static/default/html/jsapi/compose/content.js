@@ -257,7 +257,7 @@ $(document).on('click', '.compose-action', function(e) {
       }
     },
     error: function() {
-      Mailpile.notification('error', 'Could not ' + action + ' your message');
+      Mailpile.notification({ status: 'error', message: 'Could not ' + action + ' your message'});
     }
 	});
 });
@@ -310,7 +310,7 @@ $(document).on('click', 'a', function(e) {
       if (response.status === 'success') {
         window.location.href = Mailpile.urls.message_draft + response.result.created[0] + '/';
       } else {
-        Mailpile.notification(response.status, response.message);
+        Mailpile.notification(response);
       }
     });
   }
