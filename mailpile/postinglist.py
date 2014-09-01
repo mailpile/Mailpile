@@ -218,7 +218,7 @@ class NewPostingList(object):
 
     @classmethod
     def Append(cls, session, word, values, compact=False, sig=None):
-        sig = sig or self._WordSig(word, session.config)
+        sig = sig or cls._WordSig(word, session.config)
         PostingListContainer.Load(session, sig).add(sig, values)
 
     @classmethod
@@ -343,9 +343,8 @@ class OldPostingList(object):
                         fd.write('%s\t%s\n' % (sig, '\t'.join(mail_ids)))
                         return
             except IOError:
-                self.session.ui.warning('RETRY: APPEND(compact=%s, %s, %s) %s'
-                                        % (compact, fn_path, fd,
-                                           sys.exc_info()))
+                print ('RETRY: APPEND(compact=%s, %s, %s) %s'
+                       % (compact, fn_path, fd, sys.exc_info()))
                 time.sleep(0.2)
                 fd = None
 
