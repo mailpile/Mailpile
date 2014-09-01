@@ -48,7 +48,6 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
             try:
                 os.remove(os.path.join(self._path, fn))
                 self._removing.remove(fn)
-                print 'REMOVED %s' % fn
             except (OSError, IOError):
                 print 'POSTPONING REMOVAL OF %s' % fn
 
