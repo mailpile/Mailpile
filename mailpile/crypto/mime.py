@@ -12,6 +12,7 @@ from mailpile.i18n import gettext as _
 from mailpile.i18n import ngettext as _n
 from mailpile.mail_generator import Generator
 
+
 ##[ Common utilities ]#########################################################
 
 def Normalize(payload):
@@ -170,7 +171,6 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None):
         # FIXME: This is where we would handle cryptoschemes that don't
         #        appear as multipart/...
         pass
-
 
     # Mix in our bubbles
     part.signature_info.mix_bubbles()

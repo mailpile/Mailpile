@@ -536,6 +536,7 @@ class UrlMap:
         """Return the full versioned URL for a command"""
         return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
                                 cls.SYNOPSIS[2])
+
     @classmethod
     def ui_url(self, cls):
         """Return the full user-facing URL for a command"""

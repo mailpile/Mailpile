@@ -16,6 +16,7 @@ _ = lambda t: t
 #  See http://www.gushi.org/make-dns-cert/HOWTO.html
 #
 
+
 class DNSPKALookupHandler(LookupHandler):
     NAME = _("DNS PKA records")
     TIMEOUT = 10

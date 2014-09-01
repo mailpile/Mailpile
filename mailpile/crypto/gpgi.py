@@ -154,6 +154,7 @@ class GnuPGResultParser:
 
         return rp
 
+
 class GnuPGRecordParser:
     def __init__(self):
         self.keys = {}

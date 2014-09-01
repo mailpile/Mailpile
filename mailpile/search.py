@@ -603,6 +603,7 @@ class MailIndex:
 
         parse_fmt1 = _('%s: Reading your mail: %d%% (%d/%d message)')
         parse_fmtn = _('%s: Reading your mail: %d%% (%d/%d messages)')
+
         def parse_status(ui):
             n = len(messages)
             return ((n == 1) and parse_fmt1 or parse_fmtn

@@ -807,7 +807,6 @@ class ChooseFromAddress(Command):
         })
 
 
-
 _plugins.register_commands(VCard, AddVCard, RemoveVCard, ListVCards,
                            VCardAddLines, VCardRemoveLines)
 _plugins.register_commands(Contact, AddContact, RemoveContact, ListContacts,

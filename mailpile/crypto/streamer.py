@@ -24,6 +24,7 @@ OPENSSL_COMMAND = "openssl"
 if sys.platform == "win32":
     OPENSSL_COMMAND = 'OpenSSL\\bin\\openssl.exe'
 
+
 class IOFilter(threading.Thread):
     """
     This class will wrap a filehandle and spawn a background thread to

@@ -208,10 +208,12 @@ class HashCash(Command):
     def command(self):
         bits, challenge = int(self.args[0]), self.args[1]
         expected = 2 ** bits
+
         def marker(counter):
             progress = ((1024.0 * counter) / expected) * 100
             self.session.ui.mark('Finding a %d-bit collision for %s (%d%%)'
                                  % (bits, challenge, progress))
+
         collision = sha512_512kCollide(challenge, bits, callback1k=marker)
         return self._success({
             'challenge': challenge,

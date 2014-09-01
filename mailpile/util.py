@@ -85,6 +85,7 @@ PROVISIONAL_URI_SCHEMES = set([
 ])
 URI_SCHEMES = PERMANENT_URI_SCHEMES.union(PROVISIONAL_URI_SCHEMES)
 
+
 def WhereAmI(start=1):
     stack = inspect.stack()
     return '%s' % '->'.join(
@@ -102,16 +103,21 @@ def _TracedLock(what, *a, **kw):
             if self.locked():
                 print '==!== Waiting for %s at %s' % (str(lock), WhereAmI(2))
             return lock.acquire(*args, **kwargs)
+
         def release(self, *args, **kwargs):
             return lock.release(*args, **kwargs)
+
         def __enter__(self, *args, **kwargs):
             if self.locked():
                 print '==!== Waiting for %s at %s' % (str(lock), WhereAmI(2))
             return lock.__enter__(*args, **kwargs)
+
         def __exit__(self, *args, **kwargs):
             return lock.__exit__(*args, **kwargs)
+
         def _is_owned(self, *args, **kwargs):
             return lock._is_owned(*args, **kwargs)
+
         def locked(self, *args, **kwargs):
             acquired = False
             try:
@@ -682,6 +688,7 @@ class RunTimedThread(threading.Thread):
 
 def RunTimed(timeout, func, *args, **kwargs):
     result, exception = [], []
+
     def work():
         try:
             result.append(func(*args, **kwargs))

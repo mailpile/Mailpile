@@ -19,6 +19,7 @@ def text_kw_extractor(index, msg, ctype, text):
 
 def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts):
     kw, enc, sig = set(), set(), set()
+
     def crypto_eval(part):
         # This is generic
         if part.encryption_info.get('status') != 'none':

@@ -653,6 +653,7 @@ class _MockImap(object):
 
     def __init__(self, *args, **kwargs):
         self.host = 'mock'
+
         def mkcmd(rval):
             def cmd(*args, **kwargs):
                 return rval

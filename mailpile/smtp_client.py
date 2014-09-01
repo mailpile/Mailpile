@@ -59,9 +59,11 @@ SMTORP_HASHCASH_PREFIX = 'Please collide'
 SMTORP_HASHCASH_FORMAT = (SMTORP_HASHCASH_PREFIX +
                           ' %(bits)d,%(challenge)s or retry. See: %(url)s')
 
+
 def SMTorP_HashCash(rcpt, msg, callback1k=None):
     bits_challenge_etc = msg[len(SMTORP_HASHCASH_PREFIX):].strip()
     bits, challenge = bits_challenge_etc.split()[0].split(',', 1)
+
     def cb(*args, **kwargs):
         play_nice_with_threads()
         if callback1k:
@@ -212,6 +214,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
             proc = Popen(cmd, stdin=PIPE, long_running=True)
             sm_startup = None
             sm_write = proc.stdin.write
+
             def sm_close():
                 proc.stdin.close()
                 rv = proc.wait()
@@ -251,6 +254,7 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
 
             server = (smtp_ssl and SMTP_SSL or SMTP
                       )(local_hostname='mailpile.local', timeout=25)
+
             def sm_startup():
                 if 'sendmail' in session.config.sys.debug:
                     server.set_debuglevel(1)

@@ -426,7 +426,6 @@ class PluginManager(object):
             print ('FIXME: Deprecated use of %s at %s (issue #547)'
                    ) % (stack[1][3], where)
 
-
     ##[ Pluggable configuration ]#############################################
 
     def register_config_variables(self, *args):
@@ -456,7 +455,6 @@ class PluginManager(object):
             raise PluginError('Section already exist: %s/%s' % (path, rname))
         else:
             dest[rname] = rules
-
 
     ##[ Pluggable keyword extractors ]########################################
 
@@ -493,7 +491,6 @@ class PluginManager(object):
         self._compat_check(strict=False)
         return self.META_KW_EXTRACTORS.values()
 
-
     ##[ Pluggable search terms ]##############################################
 
     SEARCH_TERMS = {}
@@ -507,7 +504,6 @@ class PluginManager(object):
         if term in self.SEARCH_TERMS:
             raise PluginError('Already registered: %s' % term)
         self.SEARCH_TERMS[term] = function
-
 
     ##[ Pluggable keyword filters ]###########################################
 
@@ -529,7 +525,6 @@ class PluginManager(object):
     def register_filter_hook_post(self, name, hook):
         self._compat_check()
         self.FILTER_HOOKS_POST[name] = hook
-
 
     ##[ Pluggable vcard functions ]###########################################
 
@@ -578,7 +573,6 @@ class PluginManager(object):
                                mailpile.vcard.VCardContextProvider,
                                self.VCARD_CONTEXT_PROVIDERS)
 
-
     ##[ Pluggable cron jobs ]#################################################
 
     FAST_PERIODIC_JOBS = {}
@@ -594,7 +588,6 @@ class PluginManager(object):
         # FIXME: complain about duplicates?
         self.SLOW_PERIODIC_JOBS[name] = (period, callback)
 
-
     ##[ Pluggable background worker threads ]################################
 
     WORKERS = []
@@ -606,7 +599,6 @@ class PluginManager(object):
         # FIXME: complain about duplicates?
         self.WORKERS.append(thread_obj)
 
-
     ##[ Pluggable commands ]##################################################
 
     def register_commands(self, *args):
@@ -615,7 +607,6 @@ class PluginManager(object):
         for cls in args:
             if cls not in COMMANDS:
                 COMMANDS.append(cls)
-
 
     ##[ Pluggable javascript, CSS template and static content ]###############
 
@@ -642,7 +633,6 @@ class PluginManager(object):
 
     def get_web_asset(self, path, default=None):
         return tuple(self.WEB_ASSETS.get(path, [default, None])[0:2])
-
 
     ##[ Pluggable UI elements ]###############################################
 
