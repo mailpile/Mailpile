@@ -534,8 +534,6 @@ class MailpileCommand(Extension):
                              re.sub(self.URL_RE_MAILTO, mailto_fixer,
                                     text)))
 
-        return Markup(re.sub(self.URL_RE_HTTP, http_fixer, text))
-
     def _urlencode(self, s):
         if type(s) == 'Markup':
             s = s.unescape()
@@ -588,8 +586,6 @@ class MailpileCommand(Extension):
             if len(recipients) > 1:
                 others = _("and") + ' ' + str(len(recipients) - 1) + ' ' + _("others")
             summary = summary[:truncate] + '... ' + others
-        else:
-            summary
         return summary
 
     def _attachment_type(self, mime):
