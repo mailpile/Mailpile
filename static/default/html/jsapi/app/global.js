@@ -17,19 +17,6 @@ Mailpile.bulk_cache_remove = function(type, value) {
 };
 
 
-Mailpile.command = function(command, data, method, callback) {
-  if (method != "GET" && method != "POST") {
-    method = "GET";
-  }
-  $.ajax({
-    url      : command,
-    type     : method,
-    dataType : 'json',
-    success  : callback,
-  });
-};
-
-
 $(document).on('click', '.checkbox-item-picker', function(e) {
 
 	if (e.target.href === undefined && $(this).data('state') === 'selected') {
