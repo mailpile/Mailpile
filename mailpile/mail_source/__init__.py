@@ -53,6 +53,7 @@ class BaseMailSource(threading.Thread):
         self._loop_count = 0
         self._last_rescan_count = 0
         self._last_rescan_completed = False
+        self._last_rescan_failed = False
         self._last_saved = time.time()  # Saving right away would be silly
 
     def __str__(self):
@@ -72,10 +73,18 @@ class BaseMailSource(threading.Thread):
             if events:
                 self.event = events[0]
             else:
-                self.event = config.event_log.log(source=self,
-                                                  flags=Event.RUNNING,
-                                                  message=_('Starting up'),
-                                                  data={'id': my_config._key})
+                self.event = config.event_log.log(
+                    source=self,
+                    flags=Event.RUNNING,
+                    message=_('Starting up'),
+                    data={'id': my_config._key})
+            if 'counters' not in self.event.data:
+                self.event.data['counters'] = {}
+            for c in ('copied_messages',
+                      'indexed_messages',
+                      'unknown_policies'):
+                if c not in self.event.data['counters']:
+                    self.event.data['counters'][c] = 0
 
     def _save_state(self):
         self.session.config.event_log.log_event(self.event)
@@ -137,6 +146,7 @@ class BaseMailSource(threading.Thread):
         config = self.session.config
         self._last_rescan_count = rescanned = errors = 0
         self._last_rescan_completed = True
+        self._last_rescan_failed = False
         self._interrupt = None
         batch = self.RESCAN_BATCH_SIZE
         errors = rescanned = 0
@@ -167,6 +177,7 @@ class BaseMailSource(threading.Thread):
                                                     stop_after=batch)
 
                     if count >= 0:
+                        self.event.data['counters']['indexed_messages'] += count
                         batch -= count
                         complete = ((count == 0 or batch > 0) and
                                     not self._interrupt and
@@ -191,10 +202,14 @@ class BaseMailSource(threading.Thread):
                         else:
                             self._last_rescan_completed = False
                     else:
+                        self._last_rescan_failed = True
+                        self._last_rescan_completed = False
                         errors += 1
             except (NoSuchMailboxError, IOError, OSError):
+                self._last_rescan_failed = True
                 errors += 1
             except:
+                self._last_rescan_failed = True
                 self._log_status(_('Internal error'))
                 raise
 
@@ -238,11 +253,12 @@ class BaseMailSource(threading.Thread):
                     if mbx_cfg.local])
 
     def _update_unknown_state(self):
-        have_unknown = False
+        have_unknown = 0
         for mailbox in self.my_config.mailbox.values():
             if mailbox.policy == 'unknown':
-                have_unknown = True
-        self.event.data['have_unknown'] = have_unknown
+                have_unknown += 1
+        self.event.data['counters']['unknown_policies'] = have_unknown
+        self.event.data['have_unknown'] = (have_unknown > 0)
 
     def discover_mailboxes(self, paths=None):
         config = self.session.config
@@ -484,6 +500,7 @@ class BaseMailSource(threading.Thread):
                     session.ui.mark(_('Copying message: %s') % key)
                     data = src.get_bytes(key)
                     loc.add_from_source(key, data)
+                    self.event.data['counters']['copied_messages'] += 1
                     progress['copied_messages'] += 1
                     progress['copied_bytes'] += len(data)
                     stop_after -= 1
@@ -519,8 +536,6 @@ class BaseMailSource(threading.Thread):
                 max_copy = min(self._loop_count,
                                int(1 + stop_after / (mailboxes + 1)))
                 self._copy_new_messages(mbx_key, mbx_cfg, stop_after=max_copy)
-            elif 'copying' in self.event.data:
-                del self.event.data['copying']
 
             with self._lock:
                 apply_tags = mbx_cfg.apply_tags[:]
@@ -566,10 +581,10 @@ class BaseMailSource(threading.Thread):
         _original_session = self.session
 
         def sleeptime():
-            if self._last_rescan_completed:
+            if self._last_rescan_completed or self._last_rescan_failed:
                 return self.my_config.interval
             else:
-                return min(max(5, self.my_config.interval // 10), 30)
+                return 1
 
         self._loop_count = 0
         while self._loop_count == 0 or self._sleep(self._jitter(sleeptime())):
