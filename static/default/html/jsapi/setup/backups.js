@@ -12,8 +12,7 @@ var BackupsView = Backbone.View.extend({
   render: function(){
     return this;
   },
-  events: {
-  },
+  events: {},
   show: function() {
     this.$el.html(_.template($("#template-setup-backups").html()));
   }
