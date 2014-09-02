@@ -6078,22 +6078,22 @@ div.notification-bubble span.text {
   line-height: 18px;
   color: #ffffff;
 }
-div.notification-bubble span.title {
+div.notification-bubble span.message {
   font-weight: bold;
 }
-div.notification-bubble span.undo {
+div.notification-bubble span.action {
   font-weight: normal;
   font-style: italic;
   color: #b3b3b3;
 }
-div.notification-bubble a.notification-undo {
+div.notification-bubble a.action {
   color: #b3b3b3;
 }
-div.notification-bubble a.notification-undo:visited {
+div.notification-bubble a.action:visited {
   color: #b3b3b3;
 }
-div.notification-bubble a.notification-undo:hover {
-  color: #be1c21;
+div.notification-bubble a.action:hover {
+  color: #f6f6f6;
 }
 div.notification-bubble a.notification-close {
   display: table-cell;
