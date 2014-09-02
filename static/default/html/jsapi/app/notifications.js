@@ -31,8 +31,8 @@ Mailpile.notification = function(result) {
   if (result.complete === undefined) {
     result.complete = 'hide';
   }
-  if (result.complete_action === undefined) {
-    result.complete_action = 8000
+  if (result.action === undefined) {
+    result.action = 8000
   }
   if (result.icon === undefined) {
     result.icon = 'icon-message';
@@ -50,8 +50,10 @@ Mailpile.notification = function(result) {
 
   // If Undo, extend hide
   if (result.undo && result.complete === 'hide') {
-    result.complete_action = 20000;
+    result.action = 20000;
   }
+
+  console.log(result);
 
 
   // Show Notification
@@ -68,11 +70,11 @@ Mailpile.notification = function(result) {
       $('#event-' + result.event_id).fadeOut('normal', function() {
         $(this).remove();
       });
-    }, result.complete_action);
+    }, result.action);
   }
   else if (result.complete == 'redirect') {
     setTimeout(function() {
-      window.location.href = result.complete_action 
+      window.location.href = result.action 
     }, 4000);
   }
 };
@@ -80,6 +82,10 @@ Mailpile.notification = function(result) {
 
 /* Notification - Close */
 $(document).on('click', '.notification-close', function() {
+  if ($(this).data('type') === 'nagify') {
+    var next_nag = new Date().getTime() + (1000 * 60)// * 60 * 24);
+    Mailpile.API.settings_set_post({ 'web.nag_backup_key': next_nag });
+  }
   $(this).parent().fadeOut(function() {
     $(this).remove();
   });
@@ -93,6 +99,17 @@ $(document).on('click', '.notification-undo', function() {
     if (result.status === 'success') {
       window.location.reload(true);
     }
+  });
+});
+
+
+/* Notification - Nag */
+$(document).on('click', '.notification-nag', function(e) {
+  e.preventDefault();
+  var href = $(this).attr('href');
+  var next_nag = new Date().getTime() + (1000 * 60)// * 60 * 24);
+  Mailpile.API.settings_set_post({ 'web.nag_backup_key': next_nag }, function() {
+    window.location.href = href;
   });
 });
 

@@ -30,7 +30,12 @@ $(document).ready(function() {
 
   // Nagifications
   {% if show_nagification(config.web.nag_backup_key) %}
-  Mailpile.notification({status: 'warning', message: '{{_("Back up your encryption key & passphrase")}}', type: 'nagify'});
+  Mailpile.notification({
+    status: 'warning',
+    message: '{{_("Back up your encryption key & passphrase")}}',
+    type: 'nagify',
+    action: '/setup/#backup/keys'
+  });
   {% endif %}
 
   // HTML5 Browser Notifications
