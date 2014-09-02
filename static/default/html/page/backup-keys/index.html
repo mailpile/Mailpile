@@ -41,7 +41,7 @@
   $(document).on('click', '#btn-setup-backups-keys-done', function(e) {
     e.preventDefault();
     Mailpile.API.settings_set_post({ 'web.nag_backup_key': -1 }, function() {
-      window.location.href = '/in/inbox'; 
+      window.location.href = '/in/inbox/'; 
     });
   });
   </script>
