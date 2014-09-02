@@ -500,6 +500,17 @@ class ImapMailSource(BaseMailSource):
             conn.debug = ('imaplib' in self.session.config.sys.debug
                           ) and 4 or 0
 
+            ok, data = self.timed_imap(conn.capability)
+            if ok:
+                capabilities = set(' '.join(data).upper().split())
+            else:
+                capabilities = set()
+
+            #if 'STARTTLS' in capabilities and not want_ssl:
+            #
+            # FIXME: We need to send a STARTTLS and do a switcheroo where
+            #        the connection gets encrypted.
+
             try:
                 ok, data = self.timed_imap(conn.login,
                                            my_config.username,
@@ -511,12 +522,6 @@ class ImapMailSource(BaseMailSource):
                 if throw:
                     raise throw(event.data['conn_error'])
                 return WithaBool(False)
-
-            ok, data = self.timed_imap(conn.capability)
-            if ok:
-                capabilities = set(' '.join(data).upper().split())
-            else:
-                capabilities = set()
 
             with self._lock:
                 if self.conn is not None:
