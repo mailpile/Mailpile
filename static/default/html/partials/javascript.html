@@ -28,6 +28,11 @@ $(document).ready(function() {
    "search_addresses": []
   };
 
+  // Nagifications
+  {% if show_nagification(config.web.nag_backup_key) %}
+  Mailpile.notification({status: 'warning', message: '{{_("Back up your encryption key & passphrase")}}', type: 'nagify'});
+  {% endif %}
+
   // HTML5 Browser Notifications
   if (Notification.permission == "granted") {
     $('#notifications-permission-option').text("{{_("Browser notifications allowed")}}")

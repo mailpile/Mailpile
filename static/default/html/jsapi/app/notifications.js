@@ -1,12 +1,14 @@
 /* Notifications - UI notification at top of window */
-Mailpile.notification = function(result, complete, complete_action) {
+Mailpile.notification = function(result) {
 
+  // Create CSS friend event_id OR fake-id
   if (result.event_id !== undefined) {
     result.event_id = result.event_id.split('.').join('-');
   } else {
-    result['event_id'] = 'fake-id-'+Math.random().toString(24).substring(2);
+    result['event_id'] = 'fake-id-' + Math.random().toString(24).substring(2);
   }
 
+  // Message
   var default_messages = {
     "success" : "Success, we did what you asked",
     "info"    : "Here is a basic info update",
@@ -15,49 +17,64 @@ Mailpile.notification = function(result, complete, complete_action) {
     "error"   : "You have discovered an error"
   }
 
-  if (result.message == undefined) {
-    result.message = default_messages[result.status];
+  if (result.message === undefined) {
+    result['message'] = default_messages[result.status];
   }
 
-  if (result.command === 'tag') {
-    result['undo'] = true;
-    var hide_notification = 20000;
+  // Default Options
+  if (result.undo === undefined) {
+    result.undo = false;
   }
-  else {
-    result['undo'] = false;
-    var hide_notification = 8000;
+  if (result.type === undefined) {
+    result.type = 'notify';
+  }
+  if (result.complete === undefined) {
+    result.complete = 'hide';
+  }
+  if (result.complete_action === undefined) {
+    result.complete_action = 8000
+  }
+  if (result.icon === undefined) {
+    result.icon = 'icon-message';
   }
 
-  var notification_data = _.extend(result, {
-    icon: 'icon-message'
-  });
+  // Undo & Icon
+  if (result.command !== 'tag' && result.type === 'nagify') {
+    result.undo = false;
+    result.icon = 'icon-signature-unknown';
+  }
+  else if (result.command === 'tag') {
+    result.undo = true;
+    result.icon = 'icon-tag';
+  }
 
-  // Add Notification
-  var notification_html = _.template($('#template-notification-bubble').html(), notification_data);
+  // If Undo, extend hide
+  if (result.undo && result.complete === 'hide') {
+    result.complete_action = 20000;
+  }
+
+
+  // Show Notification
+  var notification_html = _.template($('#template-notification-bubble').html(), result);
   $('#notification-bubbles').append(notification_html);
   setTimeout(function() {
     $('#event-' + result.event_id).fadeIn('fast');
   }, 250);
-  
 
-  // Complete Action
-  if (complete == undefined) {
+
+  // If Not Nagify, default
+  if (result.complete === 'hide' && result.type !== 'nagify') {
     setTimeout(function() {
-      $('#event-' + result.event_id).fadeOut(function() {
+      $('#event-' + result.event_id).fadeOut('normal', function() {
         $(this).remove();
       });
-    }, hide_notification);
-  } else if (complete == 'hide') {
-      message.delay(5000).fadeOut('normal', function() {
-          message.find('span.message-text').empty();
-      });
-  } else if (complete == 'redirect') {
-      setTimeout(function() {
-        window.location.href = complete_action 
-      }, 4000);
+    }, result.complete_action);
   }
-
-  return function() { message.fadeOut('normal'); };
+  else if (result.complete == 'redirect') {
+    setTimeout(function() {
+      window.location.href = result.complete_action 
+    }, 4000);
+  }
 };
 
 
