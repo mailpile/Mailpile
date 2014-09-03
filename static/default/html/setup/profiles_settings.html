@@ -19,7 +19,7 @@
       </div>
       <div id="validation-route_id">
         <label class="validation-message">{{_("Sending Route")}}</label>
-        <select id="input-setup-profile-route_id" name="route_id" data-vcard_name="x-mailpile-profile-route" class="profile-update <% if (route_id) { %>half-bottom<% } %>" tabindex="5">
+        <select id="input-setup-profile-route_id" name="route_id" data-vcard_name="x-mailpile-profile-route" class="profile-update <% if (route_id) { %>half-bottom<% } %>" tabindex="4">
           <option value="">{{_("Select...")}}</option>
             <% _.each(routes, function(route, id) { if (route.name) { %>
             <option value="<%= id %>" <% if (id == route_id) { %>selected<% } %>><%= route.name %></option>
@@ -32,7 +32,7 @@
       </div>
       <div id="validation-note">
         <label class="validation-message">{{_("Note")}}</label>
-        <input type="text" class="profile-update" name="note" data-vcard_name="note" autocorrect="off" autocapitalize="off" placeholder="Personal, Work" value="<%= note %>" tabindex="4">
+        <input type="text" class="profile-update" name="note" data-vcard_name="note" placeholder="{{_("Personal, Work")}}" value="<%= note %>" tabindex="5">
       </div>
       <input id="input-setup-profile-id" value="<%= id %>" type="hidden">
     </fieldset>

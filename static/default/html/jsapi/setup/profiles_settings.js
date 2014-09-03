@@ -19,7 +19,7 @@ var ProfilesSettingsView = Backbone.View.extend({
   },
   show: function() {
     $('#setup-profiles-list').removeClass('bounceInUp').addClass('bounceOutLeft');
-    var new_model = this.model.attributes;
+    var new_model = this.model.defaults;
     Mailpile.API.setup_profiles_get({}, function(result) {
       var add_data = _.extend(new_model, {routes: result.result.routes, provider: ''});
       $('#setup').html(_.template($('#template-setup-profiles-add').html(), add_data));
@@ -218,7 +218,7 @@ var ProfilesSettingsView = Backbone.View.extend({
         // Reset Model & Navigate
         StateModel.fetch({
           success: function(model) {
-            ProfilesView.model.set({name: '', email: '', pass: '', note: ''});
+            ProfilesSettingsView.model.set(ProfilesSettingsView.model.defaults);
             Backbone.history.navigate('#profiles', true);
           }
         });
@@ -254,11 +254,12 @@ var ProfilesSettingsView = Backbone.View.extend({
           };
   
           // Update VCard
-          Mailpile.API.vcards_addlines_post(vcard_data, function(result) {
-            console.log(result);
-          });
+          Mailpile.API.vcards_addlines_post(vcard_data, function(result) {});
         }
       });
+
+      // Update Model
+      ProfilesSettingsView.model.set(ProfilesSettingsView.model.defaults);
 
       // Update State
       StateModel.fetch({

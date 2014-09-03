@@ -7,7 +7,7 @@
       <img src="/static/img/avatar-default.png">
       <% } %>
     </span>
-    <span class="name"><%= name %></span>
+    <span class="name"><%= name %> <% if (note) { %>(<%= note %>)<% } %></span>
     <span class="email"><%= email %></span>
     <ul class="horizontal right">
       <li><a href="#profiles/<%= id %>"><span class="icon-settings"></span> {{_("Edit")}}</a></li>
