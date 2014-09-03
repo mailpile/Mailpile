@@ -83,7 +83,7 @@ Mailpile.notification = function(result) {
 /* Notification - Close */
 $(document).on('click', '.notification-close', function() {
   if ($(this).data('type') === 'nagify') {
-    var next_nag = new Date().getTime() + (1000 * 60)// * 60 * 24);
+    var next_nag = new Date().getTime() + Mailpile.nagify;
     Mailpile.API.settings_set_post({ 'web.nag_backup_key': next_nag });
   }
   $(this).parent().fadeOut(function() {
@@ -107,7 +107,7 @@ $(document).on('click', '.notification-undo', function() {
 $(document).on('click', '.notification-nag', function(e) {
   e.preventDefault();
   var href = $(this).attr('href');
-  var next_nag = new Date().getTime() + (1000 * 60)// * 60 * 24);
+  var next_nag = new Date().getTime() + Mailpile.nagify;
   Mailpile.API.settings_set_post({ 'web.nag_backup_key': next_nag }, function() {
     window.location.href = href;
   });
