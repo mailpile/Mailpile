@@ -70,3 +70,6 @@ makensis -V2 -NOCD "$SCRIPTDIR/mailpile.nsi"
 cd ..
 mv -f Mailpile/Mailpile-Installer.exe "$OUTPUT"
 ls -l "$OUTPUT"
+
+[ "$1" = "--copy" -a "$2" != "" ] && cp "$OUTPUT" "$2"
+[ "$1" = "--move" -a "$2" != "" ] && mv "$OUTPUT" "$2"
