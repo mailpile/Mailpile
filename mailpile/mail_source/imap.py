@@ -410,12 +410,13 @@ class ImapMailSource(BaseMailSource):
     # This is a helper for the events.
     __classname__ = 'mailpile.mail_source.imap.ImapMailSource'
 
-    DEFAULT_TIMEOUT = 15
+    TIMEOUT_INITIAL = 15
+    TIMEOUT_LIVE = 60
     CONN_ERRORS = (IOError, IMAP_IOError, IMAP4.error, TimedOut)
 
     def __init__(self, *args, **kwargs):
         BaseMailSource.__init__(self, *args, **kwargs)
-        self.timeout = self.DEFAULT_TIMEOUT
+        self.timeout = self.TIMEOUT_INITIAL
         self.watching = -1
         self.capabilities = set()
         self.conn = None
@@ -460,6 +461,10 @@ class ImapMailSource(BaseMailSource):
                 with conn as c:
                     if (conn_id == self.conn_id and
                             self.timed(c.noop)[0] == 'OK'):
+                        # Make the timeout longer, so we don't drop things
+                        # on every hiccup and so downloads will be more
+                        # efficient (chunk size relates to timeout).
+                        self.timeout = self.TIMEOUT_LIVE
                         return conn
             except self.CONN_ERRORS + (AttributeError, ):
                 pass
