@@ -51,7 +51,11 @@ for package in python-2.7.8-win32.zip \
                markdown-2.4.1-win32-py2.7.zip \
                pgpdump-1.5-win32-py2.7.zip \
 ; do
-    wget -q -c $PYBINARIES/$package || true
+    if [ "$(hostname)" = "mailpile.is" ]; then
+        cp -f /home/mailpile/www/files/build/$package .
+    else
+        wget -q -c $PYBINARIES/$package || true
+    fi
     (cd ../Buildroot; unzip -q -o ../Downloads/$package || true)
 done
 
