@@ -140,6 +140,7 @@ def Main(args):
         cli_ui = session.ui = UserInteraction(config)
         session.main = True
         try:
+            config.clean_tempfile_dir()
             config.load(session)
         except IOError:
             session.ui.error(_('Failed to decrypt configuration, '

@@ -1724,6 +1724,18 @@ class ConfigManager(ConfigDict):
                 os.mkdir(d)
             return d
 
+    def clean_tempfile_dir(self):
+        td = self.tempfile_dir()
+        try:
+            files = os.listdir(td)
+            random.shuffle(files)
+            for fn in files:
+                fn = os.path.join(td, fn)
+                if os.path.isfile(fn):
+                    os.remove(fn)
+        except (OSError, IOError):
+            pass
+
     def postinglist_dir(self, prefix):
         with self._lock:
             d = os.path.join(self.workdir, 'search')
