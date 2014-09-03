@@ -102,7 +102,7 @@ class Safe_Popen(Unsafe_Popen):
                     stderr is not None or
                     keep_open):
                 close_fds = False
-                self._SAFE_POPEN_hold_lock = True  # 1.
+#               self._SAFE_POPEN_hold_lock = True  # 1.
             else:
                 close_fds = True  # 1.
 

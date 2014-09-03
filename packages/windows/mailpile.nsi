@@ -1,13 +1,13 @@
 ; SetCompressor /SOLID lzma
 
 !include "MUI2.nsh"
-!define MUI_ICON "mailpile.ico"
+!define MUI_ICON "packages\windows\mailpile.ico"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "mailpile_logo.bmp"
+!define MUI_HEADERIMAGE_BITMAP "packages\windows\mailpile_logo.bmp"
 !define MUI_ABORTWARNING
 !insertmacro MUI_LANGUAGE "English"
 
-InstallDir "$LOCALAPPDATA\Mailpile"
+InstallDir "$PROGRAMFILES\Mailpile"
 Name Mailpile
   
 ;Get installation folder from registry if available
@@ -16,16 +16,15 @@ InstallDirRegKey HKCU "Software\Mailpile" ""
 ;Request application privileges for Windows Vista
 RequestExecutionLevel user
 
-OutFile "Mailpile Installer.exe"
+OutFile "Mailpile-Installer.exe"
 
-!insertmacro MUI_PAGE_LICENSE "../../COPYING.md"
+!insertmacro MUI_PAGE_LICENSE "COPYING.md"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
   
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
- 
 Section
 	SetOutPath $INSTDIR
 
@@ -33,30 +32,19 @@ Section
 
 	WriteRegStr HKCU "Software\Mailpile" "" $INSTDIR
 
-	File /r /x packages /x junk /x .git "../../../Mailpile/*"
-	File /r "GnuPG"
-	File /r "OpenSSL"
-	File /r "Python27"
-	File "mailpile.ico"
-	File "launcher.exe"
-	File "launcher.exe.config"
-	File /r "img"
+	File /r /x junk /x macosx /x tmp /x .git /x testing "*.*"
 
 	createDirectory "$SMPROGRAMS\Mailpile"
-	createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\launcher.exe" "" "$INSTDIR\mailpile.ico" # Call startup script...
+	createShortCut "$SMPROGRAMS\Mailpile\Start Mailpile.lnk" "$INSTDIR\Mailpile.exe" "" "$INSTDIR\packages\windows\mailpile.ico"
 	WriteINIStr "$SMPROGRAMS\Mailpile\Open Mailpile.url" "InternetShortcut" "URL" "http://localhost:33411"
-	
+	createShortCut "$SMPROGRAMS\Mailpile\Uninstall Mailpile.lnk" "$INSTDIR\uninstall.exe" "" ""
 
 	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Run" \
-			"Mailpile" "$INSTDIR\mp.cmd"
+			"Mailpile" "$INSTDIR\mailpile.exe"
 SectionEnd
 
-
 Section "un.Uninstall"
-	RMDir "$INSTDIR"
-	Delete "$SMPROGRAMS\Mailpile\Start Mailpile.lnk"
-	Delete "$SMPROGRAMS\Mailpile\Open Mailpile.url"
-	RMDir "$SMPROGRAMS\Mailpile"
-
-	DeleteRegKey /ifempty HKCU "Software\Mailpile"
+	RMDir /r "$SMPROGRAMS\Mailpile"
+	RMDir /r "$INSTDIR"
+	DeleteRegKey HKCU "Software\Mailpile"
 SectionEnd

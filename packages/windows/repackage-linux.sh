@@ -8,6 +8,11 @@ SCRIPTDIR="$(pwd)"
 PYBINARIES="https://www.mailpile.is/files/build/"
 WORKDIR="/tmp/mailpile-winbuild/"
 
+if [ "$1" = "--clean" ]; then
+    rm -rf "$WORKDIR"
+    shift
+fi
+
 OUTPUT="Mailpile-Beta-Installer.exe"
 if [ "$1" = "--output" -a "$2" != "" ]; then
     OUTPUT="$2"
@@ -16,13 +21,15 @@ if [ "$1" = "--output" -a "$2" != "" ]; then
 fi
 echo "=== Target file is: $OUTPUT"
 
+
 echo '=== Install apps we depend on'
 which makensis >/dev/null || sudo apt-get install nsis
+
 
 echo '=== Fetch / update Mailpile itself'
 mkdir -p $WORKDIR && cd $WORKDIR
 [ -d Mailpile ] || git clone https://github.com/pagekite/Mailpile
-(cd Mailpile && git pull)
+(cd Mailpile && git pull && git checkout -f master)
 
 
 echo '=== Download and extract binary packages'
@@ -44,14 +51,22 @@ for package in python-2.7.8-win32.zip \
                markdown-2.4.1-win32-py2.7.zip \
                pgpdump-1.5-win32-py2.7.zip \
 ; do
-    wget -q -c $PYBINARIES/$package
+    wget -q -c $PYBINARIES/$package || true
     (cd ../Buildroot; unzip -q -o ../Downloads/$package || true)
 done
+
+echo '=== Assemble Mailpile environment'
 cd ../Buildroot
 mkdir -p Python27/Scripts Python27/Lib/site-packages/
 mv -f PLATLIB/* PURELIB/* Python27/Lib/site-packages/ && rmdir PLATLIB PURELIB
 mv -f SCRIPTS/* Python27/Scripts && rmdir SCRIPTS
-
 rm -rf ../Mailpile/{OpenSSL,GnuPG,Python27,Mailpile.exe,Mailpile.exe.config,img}
 mv OpenSSL GnuPG Python27 MailpileLauncher/MailpileLauncher/* ../Mailpile
+cp -f "$SCRIPTDIR/launcher.exe.config" ../Mailpile/Mailpile.exe.config
 
+echo '=== Build NSIS installer'
+cd ../Mailpile
+makensis -V2 -NOCD "$SCRIPTDIR/mailpile.nsi"
+cd ..
+mv -f Mailpile/Mailpile-Installer.exe "$OUTPUT"
+ls -l "$OUTPUT"
